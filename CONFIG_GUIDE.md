@@ -172,7 +172,7 @@ This guide documents the `CONFIG` object found in `config.js` and explains recen
 - Centralized settings in `config.js`: all tunable constants live in one file for easy editing.
 - Tension Meter: a visible, performant tension bar with caching and pulse animation; includes a line-break timer that triggers failure when tension stays too high.
 - Stamina System: `FishStamina` and `StaminaController` model fish endurance; stamina depletes when player holds ideal tension and regenerates when slack or when float is at screen edges.
-- Spatial Penalty / Edge Mechanics: fish power and stamina behavior scale with the float's horizontal position — the center is the "sweet spot" and edges amplify fish jerks while increasing edge regen for stamina.
+- Spatial Penalty / Edge Mechanics: fish behavior and stamina scaling depend on how far the float is from the screen center. The center region (`centerSweetSpot`) is a safe zone with no penalty; edges trigger fish to pull sideways and increase fish stamina regeneration.
 - Renderer vs Logic separation: rendering reads cached visual values from logic classes (`TensionMeter`) to reduce per-frame allocations and keep the draw path fast.
 - Minor UX: in-canvas overlays for "victory" and "line broken" states and a debug stamina bar for tuning.
 
@@ -192,11 +192,11 @@ This guide documents the `CONFIG` object found in `config.js` and explains recen
 
 - TensionMeter (logic): receives the vertical components of player force and fish force, integrates a smoothed tension value, advances a pulse phase for visual rhythm, and manages a line-break timer when tension exceeds `tension.breakThreshold`. It caches a single color/status string per visual update so the renderer only reads ready-made values.
 
-- FishStamina + StaminaController: `FishStamina` stores current/max stamina and supports `applyDamage`/`applyRegen`. `StaminaController.evaluate(...)` decides whether to regen or damage based on the current tension band (slack, optimal, outside). Damage in the optimal band scales with player pull power, distance from the perfect tension, and the spatial penalty (edges reduce effectiveness). Edges also grant increased regen via `edgeRegenRate`.
+- FishStamina + StaminaController: `FishStamina` stores current/max stamina and supports `applyDamage`/`applyRegen`. `StaminaController.evaluate(...)` processes stamina frame-by-frame: (1) always applies edge regeneration if spatialPenalty > 0, then (2) processes exactly one of these mutually exclusive zones: **Slack Zone** (tension ≤ `slackThreshold`) applies base regen scaled by how relaxed the line is; **Optimal Zone** (tension within `optimalMin`–`optimalMax`) applies damage scaled by pull power, efficiency (distance from `perfectTension`), and reduced by spatial penalty; **Outside Zone** applies no stamina change. This ensures edges grant healing but don't prevent damage in optimal zone.
 
-- Spatial Penalty: both fish power and stamina calculations use a normalized spatial penalty computed from the float's X position. The center region (configurable via `centerSweetSpot`) reduces the penalty; farther toward edges increases `spatialPenalty` (0..1). Fish dynamic power is multiplied by `(1 + spatialPenalty * fish.edgePowerMultiplier)` to produce stronger, jerky behavior near edges.
+- Spatial Penalty: the float's horizontal distance from screen center is normalized into a spatial penalty (0 to 1). The center region (`centerSweetSpot`) acts as a dead zone with zero penalty. Beyond that zone, penalty increases linearly toward the edges, then clamps to [0, 1]. When penalty > 0 (float outside sweet spot), the fish gains sideways pull bias (added to its X-component) and the fish gains additional stamina regeneration. Player's stamina damage is reduced at edges by multiplying damage by (1 - spatialPenalty).
 
-- FishingSystem responsibilities: computes player force (rod+reel+buffs) and fish force (chaos vector scaled by dynamic power). `calculateFishForce(dt, floatX, bounds, config)` now accepts float X and play bounds to compute spatial effects.
+- FishingSystem responsibilities: computes player force (rod+reel+buffs) and fish force (chaotic direction scaled by fish power). `calculateFishForce(dt, floatX, bounds, config)` calculates the spatial penalty (clamped [0,1]), then modulates the chaos vector's **X-component only** by adding sideways bias (via `edgePowerMultiplier`) so the fish "breaks out" horizontally near edges. The vector is then normalized and scaled by base fish power, ensuring Y-axis tension pressure remains stable and the player can always resist.
 
 ## Key config keys added or affected
 
@@ -211,7 +211,7 @@ This guide documents the `CONFIG` object found in `config.js` and explains recen
   - `mechanics.centerSweetSpot` — fraction of the play width around center before spatial penalty begins (0..1). Smaller means smaller sweet spot.
   - `mechanics.edgeRegenRate` — additional regen applied at edges (scaled by how close to the edge).
 
-- `fish.edgePowerMultiplier` — scales how much stronger fish behavior becomes at edges.
+- `fish.edgePowerMultiplier` — strength of the sideways pull bias applied to the fish's X-component when at edges (spatialPenalty * multiplier is added to direction.x before normalization). Increases to make edges feel more "chaotic" without making fish unbeatable.
 
 ## Tuning recommendations
 
@@ -232,3 +232,36 @@ This guide documents the `CONFIG` object found in `config.js` and explains recen
 - The separation of logic (TensionMeter, StaminaController) from rendering reduces per-frame allocation and makes this code easier to port to WebGL or a game engine.
 
 If you want, I can also add a short "quick balance presets" section with suggested config sets (easy/normal/hard). Tell me which presets you'd like.
+
+---
+
+## Game Balance & Corrected Dynamics
+
+The following section documents critical balance fixes integrated into the codebase:
+
+### Spatial Penalty Formula (Clamped)
+```
+rawPenalty = |floatX - centerX| / halfWidth
+spatialPenalty = max(0, (rawPenalty - centerSweetSpot) / (1 - centerSweetSpot))
+spatialPenalty = min(1, spatialPenalty)  // Hard clamp to [0, 1]
+```
+**Why clamping matters:** Without the upper clamp, float positions slightly beyond screen bounds could push penalty > 1.0, breaking multiplier math. Clamping ensures penalty always scales correctly into fish power and stamina damage reductions.
+
+### Fish Edge Mechanics (X-Component Only)
+The fish's chaos vector is modified only in its horizontal component:
+```
+direction.x += sign(floatX - centerX) * spatialPenalty * edgePowerMultiplier
+direction.normalize()  // Keep overall magnitude = 1
+return direction * basePower
+```
+**Why this approach:** Applying multiplier to overall power would make Y-axis tension spike uncontrollably at edges, making the fish unbeatable. Instead, adding sideways bias makes edges feel chaotic (fish "thrashes" horizontally) while keeping Y-tension stable and defeatable. The player can always hold their ground if tension management is perfect.
+
+### Zone Logic (Mutually Exclusive)
+Stamina evaluation follows this sequence each frame:
+1. Always apply edge regeneration if `spatialPenalty > 0`
+2. Process **exactly one** tension zone:
+   - **Slack Zone:** tension ≤ `slackThreshold` → regen scales down as tension rises
+   - **Optimal Zone:** `optimalMin` ≤ tension ≤ `optimalMax` → damage scales with efficiency and (1 - spatialPenalty)
+   - **Outside:** no change
+
+**Why mutually exclusive:** Without `else if`, a fish at edges in optimal tension could receive both edge regen AND zero damage (due to 1 - 1.0 = 0), creating an unbeatable healing loop. The `else if` ensures each frame processes at most one zone after edge regen, keeping balance intact.

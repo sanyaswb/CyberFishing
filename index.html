@@ -259,12 +259,19 @@
             calculateFishForce(dt, floatX, bounds, config) {
                 const centerX = (bounds.left + bounds.right) / 2;
                 const halfWidth = (bounds.right - bounds.left) / 2;
-                let spatialPenalty = Math.abs(floatX - centerX) / (halfWidth || 1);
-                spatialPenalty = Math.max(0, (spatialPenalty - config.stamina.mechanics.centerSweetSpot) / (1 - config.stamina.mechanics.centerSweetSpot));
+                let rawPenalty = Math.abs(floatX - centerX) / (halfWidth || 1);
+                let spatialPenalty = Math.max(0, (rawPenalty - config.stamina.mechanics.centerSweetSpot) / (1 - config.stamina.mechanics.centerSweetSpot));
+                spatialPenalty = Math.min(1, spatialPenalty); // Clamp to [0, 1]
 
-                const dynamicPower = this.#fish.getPower() * (1 + spatialPenalty * config.fish.edgePowerMultiplier);
+                const basePower = this.#fish.getPower();
                 const direction = this.#fish.getChaosVector(dt);
-                return direction.multiplyScalar(dynamicPower);
+                
+                // Apply edge penalty only to X-component (fish tries to break out sideways)
+                const pushDirection = Math.sign(floatX - centerX);
+                direction.x += pushDirection * spatialPenalty * config.fish.edgePowerMultiplier;
+                direction.normalize(); // Normalize to keep vector magnitude = 1
+                
+                return direction.multiplyScalar(basePower);
             }
         }
 
@@ -345,23 +352,22 @@
 
                 const centerX = (bounds.left + bounds.right) / 2;
                 const halfWidth = (bounds.right - bounds.left) / 2;
-                let spatialPenalty = Math.abs(floatX - centerX) / (halfWidth || 1);
-                spatialPenalty = Math.max(0, (spatialPenalty - this.#config.centerSweetSpot) / (1 - this.#config.centerSweetSpot));
+                let rawPenalty = Math.abs(floatX - centerX) / (halfWidth || 1);
+                let spatialPenalty = Math.max(0, (rawPenalty - this.#config.centerSweetSpot) / (1 - this.#config.centerSweetSpot));
+                spatialPenalty = Math.min(1, spatialPenalty); // Clamp to [0, 1]
 
-                // Edge regeneration
+                // Edge regeneration (fish heals when away from center)
                 if (spatialPenalty > 0) {
                     this.#fishStamina.applyRegen(this.#config.edgeRegenRate * spatialPenalty * timeScale);
                 }
 
+                // Zones are mutually exclusive: process only one per frame
                 if (tension <= this.#config.slackThreshold) {
                     this.#processSlackZone(tension, timeScale);
-                    return;
-                }
-
-                if (tension >= this.#config.optimalMin && tension <= this.#config.optimalMax) {
+                } else if (tension >= this.#config.optimalMin && tension <= this.#config.optimalMax) {
                     this.#processOptimalZone(tension, playerPower, timeScale, spatialPenalty);
                 }
-                // Outside optimal -> no stamina depletion
+                // Outside slack and optimal zones -> no stamina change
             }
 
             #processSlackZone(tension, timeScale) {
