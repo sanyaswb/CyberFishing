@@ -160,3 +160,75 @@ CONFIG.fish.behaviorTimerRandom = 1000;
 - Multipliers generally work on a scale of 0-1 for subtle effects, or higher for dramatic changes
 - Fractions (0-1) are used for friction and smoothing values
 - Pixel values are in canvas coordinate space (default 800x600)
+
+--
+
+## Overview
+
+This guide documents the `CONFIG` object found in `config.js` and explains recent changes to the prototype's gameplay and systems. The configuration centralizes tuning for visuals, physics, and new mechanics (tension meter, stamina, and spatial penalties), so you can balance gameplay without editing engine code.
+
+## What changed (summary)
+
+- Centralized settings in `config.js`: all tunable constants live in one file for easy editing.
+- Tension Meter: a visible, performant tension bar with caching and pulse animation; includes a line-break timer that triggers failure when tension stays too high.
+- Stamina System: `FishStamina` and `StaminaController` model fish endurance; stamina depletes when player holds ideal tension and regenerates when slack or when float is at screen edges.
+- Spatial Penalty / Edge Mechanics: fish power and stamina behavior scale with the float's horizontal position — the center is the "sweet spot" and edges amplify fish jerks while increasing edge regen for stamina.
+- Renderer vs Logic separation: rendering reads cached visual values from logic classes (`TensionMeter`) to reduce per-frame allocations and keep the draw path fast.
+- Minor UX: in-canvas overlays for "victory" and "line broken" states and a debug stamina bar for tuning.
+
+## What is it
+
+`CONFIG` is a single JavaScript object (file: [config.js](config.js)) that contains every tunable parameter the prototype uses. It is the single source of truth for gameplay, visual styling, and physics multipliers.
+
+## What is it for
+
+- Rapid iteration: tweak gameplay without changing implementation.
+- Balancing: adjust fish difficulty, rod/reel power, tension sensitivities, stamina rates, and spatial behavior from one place.
+- Portability: keep engine code generic while exposing gameplay variables for designers.
+
+## How it works (high level)
+
+- Game loop: `index.html` runs an update → draw loop. Update steps compute player input, fish chaotic force, apply forces to the float, then update the tension and stamina systems. Draw steps render the float, rod line, tension bar, stamina debug bar, and overlays.
+
+- TensionMeter (logic): receives the vertical components of player force and fish force, integrates a smoothed tension value, advances a pulse phase for visual rhythm, and manages a line-break timer when tension exceeds `tension.breakThreshold`. It caches a single color/status string per visual update so the renderer only reads ready-made values.
+
+- FishStamina + StaminaController: `FishStamina` stores current/max stamina and supports `applyDamage`/`applyRegen`. `StaminaController.evaluate(...)` decides whether to regen or damage based on the current tension band (slack, optimal, outside). Damage in the optimal band scales with player pull power, distance from the perfect tension, and the spatial penalty (edges reduce effectiveness). Edges also grant increased regen via `edgeRegenRate`.
+
+- Spatial Penalty: both fish power and stamina calculations use a normalized spatial penalty computed from the float's X position. The center region (configurable via `centerSweetSpot`) reduces the penalty; farther toward edges increases `spatialPenalty` (0..1). Fish dynamic power is multiplied by `(1 + spatialPenalty * fish.edgePowerMultiplier)` to produce stronger, jerky behavior near edges.
+
+- FishingSystem responsibilities: computes player force (rod+reel+buffs) and fish force (chaos vector scaled by dynamic power). `calculateFishForce(dt, floatX, bounds, config)` now accepts float X and play bounds to compute spatial effects.
+
+## Key config keys added or affected
+
+- `tension.breakThreshold`, `tension.breakTimeout` — when tension is above the threshold for the configured timeout, the line breaks.
+- `tension.colorGradient`, `tension.statuses` — control bar coloration and textual status labels.
+- `stamina` (section)
+  - `fish.baseStaminaMultiplier`, `fish.flatBonus` — base stamina formula: `(level * weight * baseStaminaMultiplier) + flatBonus`.
+  - `mechanics.slackThreshold` — tension under this value is considered slack (regen zone).
+  - `mechanics.optimalMin`, `optimalMax` — tension window where stamina depletes when the player pulls correctly.
+  - `mechanics.perfectTension` — ideal tension value inside the optimal band; distance from this reduces depletion efficiency.
+  - `mechanics.baseDepletionRate`, `baseRegenRate` — rates used by `StaminaController` to hurt/heal stamina (units per second before scaling).
+  - `mechanics.centerSweetSpot` — fraction of the play width around center before spatial penalty begins (0..1). Smaller means smaller sweet spot.
+  - `mechanics.edgeRegenRate` — additional regen applied at edges (scaled by how close to the edge).
+
+- `fish.edgePowerMultiplier` — scales how much stronger fish behavior becomes at edges.
+
+## Tuning recommendations
+
+- If players break the line too often: increase `rod.basePower` or `reel.basePower`, reduce `tension.sensitivityMultiplier`, or increase `tension.breakTimeout`.
+- If stamina depletes too quickly: reduce `stamina.mechanics.baseDepletionRate` or widen `mechanics.optimalMin/Max` away from `perfectTension`.
+- To make edges more punishing visually: increase `fish.edgePowerMultiplier`. To encourage edge play (regen), increase `mechanics.edgeRegenRate`.
+
+## How to test changes quickly
+
+1. Edit [config.js](config.js) values in a code editor.
+2. Open `index.html` in a browser (double-click or host locally). The canvas loads `config.js` and applies changes immediately on refresh.
+3. Watch the tension bar at the bottom and the stamina debug bar at the top (debug); use keyboard (arrow keys / space) or pointer to interact.
+
+## Next steps and notes
+
+- The prototype includes a debug stamina bar for tuning. For release, you may hide it or add a polished UI widget.
+- Consider adding an in-page restart button (non-reload) for faster playtesting; I can implement that on request.
+- The separation of logic (TensionMeter, StaminaController) from rendering reduces per-frame allocation and makes this code easier to port to WebGL or a game engine.
+
+If you want, I can also add a short "quick balance presets" section with suggested config sets (easy/normal/hard). Tell me which presets you'd like.

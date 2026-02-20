@@ -47,7 +47,7 @@ const CONFIG = {
 
     // Reel Settings
     reel: {
-        level: 1,
+        level: 5,
         basePower: 1.0,
     },
 
@@ -56,6 +56,7 @@ const CONFIG = {
         level: 5,
         weight: 5,
         resistance: 1,
+        edgePowerMultiplier: 2.0,
         behaviorTimerMin: 200,
         behaviorTimerRandom: 300, // Random range: min to min+random
         angleOffset: 0.5, // Offset in fishing direction (Y)
@@ -138,6 +139,9 @@ const CONFIG = {
             perfectTension: 65,
             baseDepletionRate: 45,
             baseRegenRate: 30
+        ,
+        centerSweetSpot: 0.2,
+        edgeRegenRate: 150
         }
     },
 };

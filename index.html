@@ -256,10 +256,15 @@
                 return inputDirection.clone().multiplyScalar(totalPower);
             }
 
-            calculateFishForce(dt) {
-                const power = this.#fish.getPower();
+            calculateFishForce(dt, floatX, bounds, config) {
+                const centerX = (bounds.left + bounds.right) / 2;
+                const halfWidth = (bounds.right - bounds.left) / 2;
+                let spatialPenalty = Math.abs(floatX - centerX) / (halfWidth || 1);
+                spatialPenalty = Math.max(0, (spatialPenalty - config.stamina.mechanics.centerSweetSpot) / (1 - config.stamina.mechanics.centerSweetSpot));
+
+                const dynamicPower = this.#fish.getPower() * (1 + spatialPenalty * config.fish.edgePowerMultiplier);
                 const direction = this.#fish.getChaosVector(dt);
-                return direction.multiplyScalar(power);
+                return direction.multiplyScalar(dynamicPower);
             }
         }
 
@@ -333,21 +338,30 @@
                 this.#config = CONFIG.stamina.mechanics;
             }
 
-            evaluate(tension, playerPower, dt) {
+            evaluate(tension, playerPower, dt, floatX, bounds) {
                 if (this.#fishStamina.isExhausted) return;
 
                 const timeScale = dt / 1000;
-                // Slack zone
+
+                const centerX = (bounds.left + bounds.right) / 2;
+                const halfWidth = (bounds.right - bounds.left) / 2;
+                let spatialPenalty = Math.abs(floatX - centerX) / (halfWidth || 1);
+                spatialPenalty = Math.max(0, (spatialPenalty - this.#config.centerSweetSpot) / (1 - this.#config.centerSweetSpot));
+
+                // Edge regeneration
+                if (spatialPenalty > 0) {
+                    this.#fishStamina.applyRegen(this.#config.edgeRegenRate * spatialPenalty * timeScale);
+                }
+
                 if (tension <= this.#config.slackThreshold) {
                     this.#processSlackZone(tension, timeScale);
                     return;
                 }
 
-                // Optimal zone
                 if (tension >= this.#config.optimalMin && tension <= this.#config.optimalMax) {
-                    this.#processOptimalZone(tension, playerPower, timeScale);
+                    this.#processOptimalZone(tension, playerPower, timeScale, spatialPenalty);
                 }
-                // Outside optimal (including critical) -> no stamina depletion here
+                // Outside optimal -> no stamina depletion
             }
 
             #processSlackZone(tension, timeScale) {
@@ -356,12 +370,12 @@
                 this.#fishStamina.applyRegen(heal);
             }
 
-            #processOptimalZone(tension, playerPower, timeScale) {
+            #processOptimalZone(tension, playerPower, timeScale, spatialPenalty) {
                 const range = this.#config.perfectTension - this.#config.optimalMin;
                 const distanceToPerfect = Math.abs(tension - this.#config.perfectTension);
                 const efficiency = Math.max(0, 1 - (distanceToPerfect / range));
 
-                const damage = this.#config.baseDepletionRate * efficiency * playerPower * timeScale;
+                const damage = this.#config.baseDepletionRate * efficiency * playerPower * timeScale * (1 - spatialPenalty);
                 this.#fishStamina.applyDamage(damage);
             }
         }
@@ -581,6 +595,33 @@
                 }
             }
 
+            drawFishStamina(fishStamina, config) {
+                const barWidth = 200;
+                const barHeight = 10;
+                const barX = (this.#width - barWidth) / 2;
+                const barY = this.#height - config.tension.barYOffset - 40; // above tension bar
+
+                const ratio = Math.max(0, Math.min(1, fishStamina.current / fishStamina.max));
+
+                // Background
+                this.#ctx.fillStyle = '#0b1520';
+                this.#ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
+
+                // Fill
+                this.#ctx.fillStyle = '#ffcc00';
+                this.#ctx.fillRect(barX, barY, barWidth * ratio, barHeight);
+
+                // Border
+                this.#ctx.strokeStyle = '#333';
+                this.#ctx.strokeRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
+
+                // Text
+                this.#ctx.fillStyle = '#ffffff';
+                this.#ctx.font = '12px monospace';
+                this.#ctx.textAlign = 'center';
+                this.#ctx.fillText(`${Math.round(fishStamina.current)}/${Math.round(fishStamina.max)}`, barX + barWidth / 2, barY + barHeight + 12);
+            }
+
             #drawLineBreakWarning(x, y, width, progress, config) {
                 // Warning indicator for line breaking
                 this.#ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
@@ -701,8 +742,10 @@
                 }
 
                 const inputState = this.#inputManager.getState();
-                
-                const fishForce = this.#fishingSystem.calculateFishForce(dt);
+                const floatPos = this.#float.getPosition();
+
+                const fishForce = this.#fishingSystem.calculateFishForce(dt, floatPos.x, this.#bounds, CONFIG);
+                // Note: calculateFishForce already includes dynamic scaling; still apply global multiplier if needed
                 fishForce.multiplyScalar(CONFIG.physics.fishForceMultiplier);
                 this.#lastFishForceY = fishForce.y;
                 this.#float.applyForce(fishForce);
@@ -722,8 +765,8 @@
                 // Update tension meter (optimization: only processes when not broken)
                 this.#tensionMeter.update(this.#lastPlayerForceY, this.#lastFishForceY, dt, CONFIG);
 
-                // Evaluate stamina (fish exhaustion)
-                this.#staminaController.evaluate(this.#tensionMeter.getTension(), playerPower, dt);
+                // Evaluate stamina (fish exhaustion), pass float x and bounds for spatial penalty
+                this.#staminaController.evaluate(this.#tensionMeter.getTension(), playerPower, dt, floatPos.x, this.#bounds);
                 if (this.#fishStamina.isExhausted) {
                     this.#gameState = 'victory';
                     return;
@@ -740,6 +783,8 @@
                 
                 // Pass TensionMeter object for rendering (dumb rendering pattern)
                 this.#renderer.drawTensionBar(this.#tensionMeter, CONFIG);
+                // Draw fish stamina for debugging/tuning
+                this.#renderer.drawFishStamina(this.#fishStamina, CONFIG);
 
                 // Draw game over or victory screens
                 if (this.#gameState === 'failed') {
