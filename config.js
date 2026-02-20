@@ -125,4 +125,19 @@ const CONFIG = {
         background: '#0f171e',
         bodyBackground: '#1a1a1a',
     },
+    // Stamina / Fighting mechanics
+    stamina: {
+        fish: {
+            baseStaminaMultiplier: 50,
+            flatBonus: 500
+        },
+        mechanics: {
+            slackThreshold: 25,
+            optimalMin: 45,
+            optimalMax: 85,
+            perfectTension: 65,
+            baseDepletionRate: 45,
+            baseRegenRate: 30
+        }
+    },
 };

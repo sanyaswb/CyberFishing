@@ -56,6 +56,10 @@
                 }
                 return this;
             }
+
+            length() {
+                return Math.hypot(this.x, this.y);
+            }
         }
 
         class InputManager {
@@ -286,6 +290,79 @@
 
             getPosition() {
                 return this.#position;
+            }
+        }
+
+        // ----------------------------
+        // Stamina / Fighting System
+        // ----------------------------
+        class FishStamina {
+            #current;
+            #max;
+            #isExhausted;
+
+            constructor(level, weight) {
+                this.#max = (level * weight * CONFIG.stamina.fish.baseStaminaMultiplier) + CONFIG.stamina.fish.flatBonus;
+                this.#current = this.#max;
+                this.#isExhausted = false;
+            }
+
+            get current() { return this.#current; }
+            get max() { return this.#max; }
+            get isExhausted() { return this.#isExhausted; }
+            get normalized() { return this.#current / this.#max; }
+
+            applyDamage(amount) {
+                if (this.#isExhausted) return;
+                this.#current = Math.max(0, this.#current - amount);
+                if (this.#current === 0) this.#isExhausted = true;
+            }
+
+            applyRegen(amount) {
+                if (this.#isExhausted) return;
+                this.#current = Math.min(this.#max, this.#current + amount);
+            }
+        }
+
+        class StaminaController {
+            #fishStamina;
+            #config;
+
+            constructor(fishStamina) {
+                this.#fishStamina = fishStamina;
+                this.#config = CONFIG.stamina.mechanics;
+            }
+
+            evaluate(tension, playerPower, dt) {
+                if (this.#fishStamina.isExhausted) return;
+
+                const timeScale = dt / 1000;
+                // Slack zone
+                if (tension <= this.#config.slackThreshold) {
+                    this.#processSlackZone(tension, timeScale);
+                    return;
+                }
+
+                // Optimal zone
+                if (tension >= this.#config.optimalMin && tension <= this.#config.optimalMax) {
+                    this.#processOptimalZone(tension, playerPower, timeScale);
+                }
+                // Outside optimal (including critical) -> no stamina depletion here
+            }
+
+            #processSlackZone(tension, timeScale) {
+                const regenFactor = 1 - (tension / this.#config.slackThreshold);
+                const heal = this.#config.baseRegenRate * regenFactor * timeScale;
+                this.#fishStamina.applyRegen(heal);
+            }
+
+            #processOptimalZone(tension, playerPower, timeScale) {
+                const range = this.#config.perfectTension - this.#config.optimalMin;
+                const distanceToPerfect = Math.abs(tension - this.#config.perfectTension);
+                const efficiency = Math.max(0, 1 - (distanceToPerfect / range));
+
+                const damage = this.#config.baseDepletionRate * efficiency * playerPower * timeScale;
+                this.#fishStamina.applyDamage(damage);
             }
         }
 
@@ -540,6 +617,28 @@
                 this.#ctx.font = 'bold 16px monospace';
                 this.#ctx.fillText('Refresh page to try again', canvasWidth / 2, canvasHeight / 2 + 70);
             }
+
+            drawVictory(canvasWidth, canvasHeight) {
+                // Semi-transparent overlay
+                this.#ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+                this.#ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+                // Victory text
+                this.#ctx.fillStyle = '#00ff80';
+                this.#ctx.font = 'bold 48px monospace';
+                this.#ctx.textAlign = 'center';
+                this.#ctx.fillText('FISH EXHAUSTED', canvasWidth / 2, canvasHeight / 2 - 40);
+
+                // Subtext
+                this.#ctx.fillStyle = '#8a9bac';
+                this.#ctx.font = 'bold 20px monospace';
+                this.#ctx.fillText('You wore the fish out — well played!', canvasWidth / 2, canvasHeight / 2 + 10);
+
+                // Instruction
+                this.#ctx.fillStyle = '#00ccff';
+                this.#ctx.font = 'bold 14px monospace';
+                this.#ctx.fillText('Refresh page to try again', canvasWidth / 2, canvasHeight / 2 + 60);
+            }
         }
 
         class Game {
@@ -553,7 +652,9 @@
             #tensionMeter;
             #lastPlayerForceY;
             #lastFishForceY;
-            #gameState; // 'playing' or 'failed'
+            #gameState; // 'playing' | 'failed' | 'victory'
+            #fishStamina;
+            #staminaController;
 
             constructor(canvasId) {
                 this.#canvas = document.getElementById(canvasId);
@@ -570,6 +671,8 @@
                 const initialY = CONFIG.float.initialY ?? this.#canvas.height / 2;
                 this.#float = new FloatEntity(initialX, initialY, CONFIG);
                 this.#tensionMeter = new TensionMeter();
+                this.#fishStamina = new FishStamina(CONFIG.fish.level, CONFIG.fish.weight);
+                this.#staminaController = new StaminaController(this.#fishStamina);
                 
                 this.#lastPlayerForceY = 0;
                 this.#lastFishForceY = 0;
@@ -604,16 +707,27 @@
                 this.#lastFishForceY = fishForce.y;
                 this.#float.applyForce(fishForce);
 
+                // Player force and power
                 this.#lastPlayerForceY = 0;
+                let playerPower = 0;
                 if (inputState.isPulling) {
-                    const playerForce = this.#fishingSystem.calculatePlayerForce(inputState.pullDirection);
-                    playerForce.multiplyScalar(CONFIG.physics.playerForceMultiplier);
+                    const playerForceRaw = this.#fishingSystem.calculatePlayerForce(inputState.pullDirection);
+                    playerPower = playerForceRaw.length();
+
+                    const playerForce = playerForceRaw.clone().multiplyScalar(CONFIG.physics.playerForceMultiplier);
                     this.#lastPlayerForceY = playerForce.y;
                     this.#float.applyForce(playerForce);
                 }
 
                 // Update tension meter (optimization: only processes when not broken)
                 this.#tensionMeter.update(this.#lastPlayerForceY, this.#lastFishForceY, dt, CONFIG);
+
+                // Evaluate stamina (fish exhaustion)
+                this.#staminaController.evaluate(this.#tensionMeter.getTension(), playerPower, dt);
+                if (this.#fishStamina.isExhausted) {
+                    this.#gameState = 'victory';
+                    return;
+                }
 
                 this.#float.update(this.#bounds);
             }
@@ -627,9 +741,11 @@
                 // Pass TensionMeter object for rendering (dumb rendering pattern)
                 this.#renderer.drawTensionBar(this.#tensionMeter, CONFIG);
 
-                // Draw game over screen if line broke
+                // Draw game over or victory screens
                 if (this.#gameState === 'failed') {
                     this.#renderer.drawGameOver(this.#canvas.width, this.#canvas.height);
+                } else if (this.#gameState === 'victory') {
+                    this.#renderer.drawVictory(this.#canvas.width, this.#canvas.height);
                 }
             }
 
