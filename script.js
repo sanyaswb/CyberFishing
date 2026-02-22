@@ -150,6 +150,22 @@ class Reel extends Equipment {
     }
 }
 
+class Hook {
+    #level;
+    #weight;
+    #quality;
+
+    constructor(level, weight, quality) {
+        this.#level = level;
+        this.#weight = weight;
+        this.#quality = quality;
+    }
+
+    getPower() {
+        return ((this.#level * this.#weight) + this.#quality) * 0.01;
+    }
+}
+
 class BuffManager {
     #activeBuffs;
 
@@ -177,7 +193,8 @@ class EventLogger {
         const data = {
             id: crypto.randomUUID ? crypto.randomUUID() : Date.now(),
             timestamp: new Date().toISOString(),
-            event: reason === 'rod' ? 'ROD_BROKEN' : 'LINE_BROKEN',
+            // ЗАМІНИ ЦЕЙ РЯДОК У EventLogger:
+            event: reason === 'rod' ? 'ROD_BROKEN' : reason === 'hook' ? 'FISH_ESCAPED' : 'LINE_BROKEN',
             location: 'Lake Whisper (Mock)',
             fish: 'Pike (Mock)',
             gameplayStats: {
@@ -546,8 +563,10 @@ class TensionMeter {
     #highestTierRolled;
     #equipmentLevelSum;
     #maxBreakTime;
+    #hookPower;
+    #hookCheckTimer;
 
-    constructor(rodLevel, reelLevel, config) {
+    constructor(rodLevel, reelLevel, hook, config) {
         this.#tension = 0;
         this.#targetTension = 0;
         this.#pulsePhase = 0;
@@ -562,9 +581,12 @@ class TensionMeter {
         
         this.#equipmentLevelSum = rodLevel + reelLevel;
         this.#maxBreakTime = config.tension.baseBreakTime + (this.#equipmentLevelSum * config.tension.timePerEquipmentLevel);
+        
+        this.#hookPower = hook.getPower();
+        this.#hookCheckTimer = 0;
     }
 
-    update(isPulling, playerMaxPower, fishPowerMag, reelPower, dt, config) { 
+    update(isPulling, playerMaxPower, fishPowerMag, reelPower, fishMaxForceScaled, dt, config) { 
         if (this.#isBroken) return;
 
         const powerRatio = fishPowerMag / Math.max(0.001, playerMaxPower);
@@ -586,7 +608,7 @@ class TensionMeter {
         this.#pulsePhase += Math.max(1, config.tension.pulseSpeedMax - (this.#tension / config.tension.pulseTensionDivisor)) * config.tension.pulseSpeedBaseMultiplier;
         if (this.#pulsePhase > Math.PI * 2) this.#pulsePhase -= Math.PI * 2;
 
-        // Додаємо мікро-допуск (- 0.1) через математику плаваючої коми
+        // 1. Механіка розриву волосіні та вудилища (100% натягу)
         if (this.#tension >= config.tension.breakThreshold - 0.1) {
             this.#lineBreakTimer += dt;
             this.#evaluateBreakRisk();
@@ -597,10 +619,39 @@ class TensionMeter {
             }
         }
 
+        // 2. Механіка обриву гачка (>50% натягу, перевірка раз на секунду)
+        this.#hookCheckTimer += dt;
+        if (this.#hookCheckTimer >= config.hookMechanics.checkIntervalMs) {
+            this.#hookCheckTimer = 0;
+            this.#evaluateHookRisk(fishMaxForceScaled, config);
+        }
+
         const intTension = Math.round(this.#tension);
         if (intTension !== this.#lastCalculatedTension) {
             this.#updateVisualStates(intTension, config);
             this.#lastCalculatedTension = intTension;
+        }
+    }
+
+    #evaluateHookRisk(fishMaxForceScaled, config) {
+        if (this.#tension <= config.hookMechanics.safeTensionThreshold) return;
+
+        const tensionAboveSafe = this.#tension - config.hookMechanics.safeTensionThreshold;
+        const steps = Math.floor(tensionAboveSafe / 10);
+        
+        let chance = config.hookMechanics.baseEscapeChance + (steps * config.hookMechanics.chancePer10Tension);
+
+        if (fishMaxForceScaled > this.#hookPower) {
+            if (fishMaxForceScaled >= this.#hookPower * 2) {
+                chance *= (config.hookMechanics.fishDominanceMultiplier + config.hookMechanics.extremeDominanceBonus);
+            } else {
+                chance *= config.hookMechanics.fishDominanceMultiplier;
+            }
+        }
+
+        if (Math.random() <= chance) {
+            this.#isBroken = true;
+            this.#breakReason = 'hook';
         }
     }
 
@@ -695,6 +746,7 @@ class TensionMeter {
         this.#breakReason = null;
         this.#highestTierRolled = 0;
         this.#lastCalculatedTension = -1;
+        this.#hookCheckTimer = 0;
     }
 }
 
@@ -841,9 +893,9 @@ class Renderer {
         this.#ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
         this.#ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-        const title = reason === 'rod' ? 'ROD BROKEN' : 'LINE SNAPPED';
-        const titleColor = reason === 'rod' ? '#ff0000' : '#ff4444';
-        const desc = reason === 'rod' ? 'Your equipment could not handle the stress.' : 'Tension exceeded line capacity.';
+        const title = reason === 'rod' ? 'ROD BROKEN' : reason === 'hook' ? 'FISH ESCAPED' : 'LINE SNAPPED';
+        const titleColor = reason === 'rod' ? '#ff0000' : reason === 'hook' ? '#ffaa00' : '#ff4444';
+        const desc = reason === 'rod' ? 'Your equipment could not handle the stress.' : reason === 'hook' ? 'The hook bent and the fish got away.' : 'Tension exceeded line capacity.';
 
         this.#ctx.fillStyle = titleColor;
         this.#ctx.font = 'bold 48px monospace';
@@ -899,6 +951,7 @@ class Game {
         const rod = new Rod(CONFIG.rod.level, CONFIG.rod.basePower);
         const reel = new Reel(CONFIG.reel.level, CONFIG.reel.basePower);
         const fish = new Fish(CONFIG.fish.level, CONFIG.fish.weight, CONFIG.fish.resistance, CONFIG); 
+        const hook = new Hook(CONFIG.hook.level, CONFIG.hook.weight, CONFIG.hook.quality); 
         
         this.#fishingSystem = new FishingSystem(rod, reel, fish);
         
@@ -906,7 +959,7 @@ class Game {
         const initialY = CONFIG.float.initialY ?? this.#canvas.height / 2;
         this.#float = new FloatEntity(initialX, initialY, CONFIG);
         
-        this.#tensionMeter = new TensionMeter(CONFIG.rod.level, CONFIG.reel.level, CONFIG);
+        this.#tensionMeter = new TensionMeter(CONFIG.rod.level, CONFIG.reel.level, hook, CONFIG);
         
         const playerBasePower = rod.getPower() + reel.getPower();
         this.#fishCondition = new FishCondition(CONFIG.fish.level, CONFIG.fish.weight, CONFIG);
@@ -943,8 +996,12 @@ class Game {
         const inputState = this.#inputManager.getState();
         const floatPos = this.#float.getPosition();
 
-        const fishForce = this.#fishingSystem.calculateFishForce(dt, floatPos.x, this.#bounds, CONFIG);
-        fishForce.multiplyScalar(CONFIG.physics.fishForceMultiplier);
+        const fishForceRaw = this.#fishingSystem.calculateFishForce(dt, floatPos.x, this.#bounds, CONFIG);
+        
+        // Розраховуємо чисту силу риби по найбільшій осі з множником 0.01 для гачка
+        const currentFishMaxForceScaled = Math.max(Math.abs(fishForceRaw.x), Math.abs(fishForceRaw.y)) * 0.01;
+
+        const fishForce = fishForceRaw.clone().multiplyScalar(CONFIG.physics.fishForceMultiplier);
         this.#float.applyForce(fishForce);
 
         const rawPlayerPower = this.#fishingSystem.calculatePlayerForce(new Vector2(0, 1), CONFIG).y;
@@ -958,7 +1015,7 @@ class Game {
             this.#float.applyForce(playerForce);
         }
 
-        this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, dt, CONFIG);
+        this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, currentFishMaxForceScaled, dt, CONFIG);
 
         this.#staminaController.evaluate(this.#tensionMeter.getTension(), inputState.isPulling, dt, floatPos.x, this.#bounds);
 

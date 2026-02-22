@@ -11,5 +11,330 @@
       "fishPullMultiplier": 1.4950387522491815,
       "breakTimerProgressPercent": 60.3
     }
+  },
+  {
+    "id": "5297d354-8f6b-42f5-ba96-1c7209d2214d",
+    "timestamp": "2026-02-22T17:00:17.672Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "dash",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 1.4999901350568858,
+      "breakTimerProgressPercent": 0.4
+    }
+  },
+  {
+    "id": "0c4714af-8084-4e0a-9934-f5cf93741e9b",
+    "timestamp": "2026-02-22T17:02:54.247Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "dash",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 1.4980319118432315,
+      "breakTimerProgressPercent": 60.3
+    }
+  },
+  {
+    "id": "a6d67f69-6251-4a35-8a9b-dfc402b317ba",
+    "timestamp": "2026-02-22T17:03:11.081Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "swim",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 0.8162386352489953,
+      "breakTimerProgressPercent": 60.3
+    }
+  },
+  {
+    "id": "a2361b86-7c3c-47ce-a133-511e64ca7abc",
+    "timestamp": "2026-02-22T17:03:49.622Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "swim",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 0.843755441760499,
+      "breakTimerProgressPercent": 60.3
+    }
+  },
+  {
+    "id": "78ba6dc3-3531-436a-a51d-2fe1eae5bae9",
+    "timestamp": "2026-02-22T17:03:54.302Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "swim",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 0.8000002782086023,
+      "breakTimerProgressPercent": 20.1
+    }
+  },
+  {
+    "id": "2ed6549d-860f-4b20-9f64-303c43ef6217",
+    "timestamp": "2026-02-22T17:04:09.976Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "rest",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 0.3753346549621128,
+      "breakTimerProgressPercent": 40.2
+    }
+  },
+  {
+    "id": "b09061d1-adb0-44dc-8f9d-7f584916ade2",
+    "timestamp": "2026-02-22T17:04:14.059Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "swim",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 0.8000014076157553,
+      "breakTimerProgressPercent": 40.2
+    }
+  },
+  {
+    "id": "35a27fb1-6c88-47b6-bf5d-f873f05a23ee",
+    "timestamp": "2026-02-22T17:04:17.371Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "swim",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 0.8000153825815578,
+      "breakTimerProgressPercent": 20.1
+    }
+  },
+  {
+    "id": "30c07505-0c92-4214-8017-03edae2482d3",
+    "timestamp": "2026-02-22T17:04:19.072Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "dash",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 1.4953029992634541,
+      "breakTimerProgressPercent": 20.1
+    }
+  },
+  {
+    "id": "fd428edb-fa61-438a-b4d2-5e856c18f342",
+    "timestamp": "2026-02-22T17:04:22.010Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "swim",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 0.8000444238549878,
+      "breakTimerProgressPercent": 0.4
+    }
+  },
+  {
+    "id": "eb7c2a9c-8918-4cd7-99e7-48a47e7b485f",
+    "timestamp": "2026-02-22T17:04:38.184Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "dash",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 0.9761489010756276,
+      "breakTimerProgressPercent": 0.4
+    }
+  },
+  {
+    "id": "506e85d8-5c13-45c1-b547-ea89ed20a0eb",
+    "timestamp": "2026-02-22T17:04:54.600Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "dash",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 1.5,
+      "breakTimerProgressPercent": 0.4
+    }
+  },
+  {
+    "id": "8f74c64f-a081-4d3f-afb8-8b9fac79bc26",
+    "timestamp": "2026-02-22T17:05:07.746Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "dash",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 1.4949865894794825,
+      "breakTimerProgressPercent": 40.2
+    }
+  },
+  {
+    "id": "98c857f1-491e-41dd-a308-94bfcdb0edea",
+    "timestamp": "2026-02-22T17:05:13.857Z",
+    "event": "ROD_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "swim",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 0.8023045834396308,
+      "breakTimerProgressPercent": 100.1
+    }
+  },
+  {
+    "id": "4df69635-9b1f-446b-9a4c-1496dde86c1c",
+    "timestamp": "2026-02-22T17:06:07.148Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "swim",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 0.8000000000000025,
+      "breakTimerProgressPercent": 20.1
+    }
+  },
+  {
+    "id": "6d35aa8b-c2b0-4575-a578-1a7f9690df81",
+    "timestamp": "2026-02-22T17:06:11.968Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "dash",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 1.4956194029770948,
+      "breakTimerProgressPercent": 20.1
+    }
+  },
+  {
+    "id": "c58d234e-13af-403f-99e9-74411224ff6c",
+    "timestamp": "2026-02-22T17:06:19.551Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "dash",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 1.3102648648024728,
+      "breakTimerProgressPercent": 0.4
+    }
+  },
+  {
+    "id": "89e0d739-01c9-4b90-9311-73ba9ff07e0f",
+    "timestamp": "2026-02-22T17:06:27.870Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "swim",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 0.8000000000050439,
+      "breakTimerProgressPercent": 0.4
+    }
+  },
+  {
+    "id": "a588e00b-7b9d-46e9-b3d4-793d17b7d4a7",
+    "timestamp": "2026-02-22T17:06:31.807Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "dash",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 1.3925353895691088,
+      "breakTimerProgressPercent": 20.1
+    }
+  },
+  {
+    "id": "990123fe-eb29-4342-9682-73d8ea8edf77",
+    "timestamp": "2026-02-22T17:06:35.002Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "rest",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 0.4050459452580548,
+      "breakTimerProgressPercent": 20.1
+    }
+  },
+  {
+    "id": "8edbeb79-a74f-4f5f-8e73-e7a83fd381c7",
+    "timestamp": "2026-02-22T17:06:39.168Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "swim",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 0.8000014702975811,
+      "breakTimerProgressPercent": 20.1
+    }
+  },
+  {
+    "id": "3b2f4576-6248-44a0-b043-6cefd44db556",
+    "timestamp": "2026-02-22T17:06:44.828Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "swim",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 0.7968515052901586,
+      "breakTimerProgressPercent": 0.4
+    }
+  },
+  {
+    "id": "bd81f3d9-b195-4db3-9dab-b311f663be9c",
+    "timestamp": "2026-02-22T17:06:50.439Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "swim",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 0.7999922061757064,
+      "breakTimerProgressPercent": 60.3
+    }
+  },
+  {
+    "id": "3b0d45e3-5d70-4a58-8eb0-26946872548b",
+    "timestamp": "2026-02-22T17:09:13.772Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "dash",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 1.5,
+      "breakTimerProgressPercent": 20.1
+    }
+  },
+  {
+    "id": "b49b2bc6-6498-4543-975f-23ccfd9d0dae",
+    "timestamp": "2026-02-22T17:09:16.619Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "swim",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 0.8038240368498779,
+      "breakTimerProgressPercent": 60.3
+    }
   }
 ]

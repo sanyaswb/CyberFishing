@@ -24,7 +24,7 @@ const CONFIG = {
     },
 
     logs: {
-        events: true,
+        events: false,
         maxEntries: 50,
         endpoint: 'http://localhost:3000/api/events' // ОСЬ ЦЕЙ РЯДОК З'ЄДНУЄ ГРУ З БЕКЕНДОМ
     },
@@ -62,6 +62,23 @@ const CONFIG = {
         basePower: 1.0,
     },
 
+    // Hook Settings
+    hook: {
+        level: 4,
+        weight: 4,
+        quality: 1, // Аналог resistance у риби
+    },
+
+    // Hook Break / Escape Mechanics
+    hookMechanics: {
+        safeTensionThreshold: 50,
+        baseEscapeChance: 0.01,
+        chancePer10Tension: 0.01,
+        fishDominanceMultiplier: 1.5,
+        extremeDominanceBonus: 0.5,
+        checkIntervalMs: 1000
+    },
+
     // Fish Settings
     fish: {
         level: 4,
@@ -71,7 +88,7 @@ const CONFIG = {
         edgePowerMultiplier: 1.0,
         behaviors: {
                 // idle: { pull: 0.05, move: 0.0, minTime: 2000, maxTime: 4000, weight: 10 },
-                rest: { pull: 0.2, move: 0.1, minTime: 1000, maxTime: 2500, weight: 20 },
+                rest: { pull: 0.2, move: 0.1, minTime: 500, maxTime: 1500, weight: 20 },
                 swim: { pull: 0.8, move: 1.0, minTime: 2000, maxTime: 4000, weight: 50 },
                 dash: { pull: 1.5, move: 0.0, minTime: 500, maxTime: 1200, weight: 30 }
             }
