@@ -23,6 +23,12 @@ const CONFIG = {
         overlay: true,
     },
 
+    logs: {
+        events: true,
+        maxEntries: 50,
+        endpoint: 'http://localhost:3000/api/events' // ОСЬ ЦЕЙ РЯДОК З'ЄДНУЄ ГРУ З БЕКЕНДОМ
+    },
+
     // Input Settings
     input: {
         pointerThreshold: 10, // Dead zone (so that random micro-movements don't jerk the rod)
@@ -92,8 +98,12 @@ const CONFIG = {
         pulseMagnitude: 0.5, // 0.5 + sin() * 0.5 = 0 to 1
 
         // Line breaking mechanic
-        breakThreshold: 100, // Tension % at which timer starts
-        breakTimeout: 1500, // Milliseconds in red zone before line breaks
+        // breakThreshold: 100, // Tension % at which timer starts
+        // breakTimeout: 1500, // Milliseconds in red zone before line breaks
+
+        breakThreshold: 100, 
+        baseBreakTime: 1000, 
+        timePerEquipmentLevel: 100,
 
         // Bar Display
         barWidth: 300,

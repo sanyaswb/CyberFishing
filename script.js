@@ -168,6 +168,46 @@ class BuffManager {
     }
 }
 
+class EventLogger {
+    static async logBreakEvent(reason, tensionMeter) {
+        if (typeof CONFIG === 'undefined' || !CONFIG.logs?.events) {
+            return;
+        }
+
+        const data = {
+            id: crypto.randomUUID ? crypto.randomUUID() : Date.now(),
+            timestamp: new Date().toISOString(),
+            event: reason === 'rod' ? 'ROD_BROKEN' : 'LINE_BROKEN',
+            location: 'Lake Whisper (Mock)',
+            fish: 'Pike (Mock)',
+            gameplayStats: {
+                fishState: window.DEBUG_LIVE_FISH_STATE || 'unknown',
+                fishCurrentBasePower: window.DEBUG_LIVE_FISH_POWER || 0,
+                fishPullMultiplier: window.DEBUG_LIVE_FISH_PULL_MULT || 0,
+                breakTimerProgressPercent: +(tensionMeter.getLineBreakProgress() * 100).toFixed(1)
+            }
+        };
+
+        if (CONFIG.logs.endpoint) {
+            try {
+                const response = await fetch(CONFIG.logs.endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    console.log(`[EventLogger] Event ${data.event} successfully sent to backend.`);
+                }
+            } catch (error) {
+                console.error('[EventLogger] Failed to send event to backend.', error);
+            }
+        }
+    }
+}
+
 class FishBehavior {
     #config;
     #currentStateName;
@@ -502,8 +542,12 @@ class TensionMeter {
     #lastCalculatedTension;
     #lineBreakTimer;
     #isBroken;
+    #breakReason;
+    #highestTierRolled;
+    #equipmentLevelSum;
+    #maxBreakTime;
 
-    constructor() {
+    constructor(rodLevel, reelLevel, config) {
         this.#tension = 0;
         this.#targetTension = 0;
         this.#pulsePhase = 0;
@@ -513,6 +557,11 @@ class TensionMeter {
         this.#lastCalculatedTension = -1;
         this.#lineBreakTimer = 0;
         this.#isBroken = false;
+        this.#breakReason = null;
+        this.#highestTierRolled = 0;
+        
+        this.#equipmentLevelSum = rodLevel + reelLevel;
+        this.#maxBreakTime = config.tension.baseBreakTime + (this.#equipmentLevelSum * config.tension.timePerEquipmentLevel);
     }
 
     update(isPulling, playerMaxPower, fishPowerMag, reelPower, dt, config) { 
@@ -525,7 +574,6 @@ class TensionMeter {
         let forceBalance = baseForce * speedMultiplier;
         
         if (!isPulling) {
-            // МАГІЯ КОТУШКИ: розраховуємо бонус відновлення
             const recoveryBonus = 1 + (reelPower * (config.tension.reelRecoveryMultiplier || 0));
             forceBalance = -(forceBalance * recoveryBonus);
         }
@@ -538,19 +586,57 @@ class TensionMeter {
         this.#pulsePhase += Math.max(1, config.tension.pulseSpeedMax - (this.#tension / config.tension.pulseTensionDivisor)) * config.tension.pulseSpeedBaseMultiplier;
         if (this.#pulsePhase > Math.PI * 2) this.#pulsePhase -= Math.PI * 2;
 
-        if (this.#tension >= config.tension.breakThreshold) {
+        // Додаємо мікро-допуск (- 0.1) через математику плаваючої коми
+        if (this.#tension >= config.tension.breakThreshold - 0.1) {
             this.#lineBreakTimer += dt;
-            if (this.#lineBreakTimer >= config.tension.breakTimeout) {
-                this.#isBroken = true;
-            }
+            this.#evaluateBreakRisk();
         } else {
-            this.#lineBreakTimer = 0;
+            this.#lineBreakTimer = Math.max(0, this.#lineBreakTimer - dt * 3);
+            if (this.#lineBreakTimer === 0) {
+                this.#highestTierRolled = 0;
+            }
         }
 
         const intTension = Math.round(this.#tension);
         if (intTension !== this.#lastCalculatedTension) {
             this.#updateVisualStates(intTension, config);
             this.#lastCalculatedTension = intTension;
+        }
+    }
+
+    #evaluateBreakRisk() {
+        const progress = this.#lineBreakTimer / this.#maxBreakTime;
+        let currentTier = 0;
+
+        if (progress >= 1.0) currentTier = 5;
+        else if (progress >= 0.6) currentTier = 4;
+        else if (progress >= 0.4) currentTier = 3;
+        else if (progress >= 0.2) currentTier = 2;
+        else if (progress > 0) currentTier = 1;
+
+        if (currentTier > this.#highestTierRolled && !this.#isBroken) {
+            this.#highestTierRolled = currentTier;
+            this.#rollForBreak(currentTier);
+        }
+    }
+
+    #rollForBreak(tier) {
+        let breakChance = 0;
+        let rodBreakChance = 0;
+
+        if (tier === 1) breakChance = 0.20;
+        else if (tier === 2) breakChance = 0.40;
+        else if (tier === 3) breakChance = 0.60;
+        else if (tier === 4) { breakChance = 0.80; rodBreakChance = 0.20; }
+        else if (tier === 5) { breakChance = 1.00; rodBreakChance = 0.50; }
+
+        if (Math.random() <= breakChance) {
+            this.#isBroken = true;
+            if (Math.random() <= rodBreakChance) {
+                this.#breakReason = 'rod';
+            } else {
+                this.#breakReason = 'line';
+            }
         }
     }
 
@@ -592,8 +678,9 @@ class TensionMeter {
     getCurrentStatusLabel() { return this.#currentStatusLabel; }
     getCurrentStatusColor() { return this.#currentStatusColor; }
     getTension() { return this.#tension; }
-    getLineBreakProgress() { return this.#lineBreakTimer; }
+    getLineBreakProgress() { return this.#lineBreakTimer / this.#maxBreakTime; }
     isBroken() { return this.#isBroken; }
+    getBreakReason() { return this.#breakReason; }
 
     getPulseIntensity(config) {
         return (1 - config.tension.pulseMagnitude) + Math.sin(this.#pulsePhase) * config.tension.pulseMagnitude;
@@ -605,6 +692,8 @@ class TensionMeter {
         this.#pulsePhase = 0;
         this.#lineBreakTimer = 0;
         this.#isBroken = false;
+        this.#breakReason = null;
+        this.#highestTierRolled = 0;
         this.#lastCalculatedTension = -1;
     }
 }
@@ -696,8 +785,9 @@ class Renderer {
         this.#ctx.textAlign = 'right';
         this.#ctx.fillText(statusLabel, barX + barWidth + config.tension.labelOffsetX, barY + config.tension.labelOffsetY);
 
-        if (tension >= config.tension.breakThreshold) {
-            const breakProgress = tensionMeter.getLineBreakProgress() / config.tension.breakTimeout;
+        if (tension >= config.tension.breakThreshold - 0.1) {
+            // getLineBreakProgress вже повертає 0.0 - 1.0, ділити більше не треба!
+            const breakProgress = tensionMeter.getLineBreakProgress();
             this.#drawLineBreakWarning(barX, barY - 25, barWidth, breakProgress, config);
         }
     }
@@ -747,18 +837,22 @@ class Renderer {
         this.#ctx.fillText('LINE BREAK', x + width / 2, y + 18);
     }
 
-    drawGameOver(canvasWidth, canvasHeight) {
-        this.#ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    drawGameOver(canvasWidth, canvasHeight, reason) {
+        this.#ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
         this.#ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-        this.#ctx.fillStyle = '#ff0000';
+        const title = reason === 'rod' ? 'ROD BROKEN' : 'LINE SNAPPED';
+        const titleColor = reason === 'rod' ? '#ff0000' : '#ff4444';
+        const desc = reason === 'rod' ? 'Your equipment could not handle the stress.' : 'Tension exceeded line capacity.';
+
+        this.#ctx.fillStyle = titleColor;
         this.#ctx.font = 'bold 48px monospace';
         this.#ctx.textAlign = 'center';
-        this.#ctx.fillText('LINE BROKEN', canvasWidth / 2, canvasHeight / 2 - 40);
+        this.#ctx.fillText(title, canvasWidth / 2, canvasHeight / 2 - 40);
 
         this.#ctx.fillStyle = '#ffaa00';
-        this.#ctx.font = 'bold 24px monospace';
-        this.#ctx.fillText('Tension exceeded capacity', canvasWidth / 2, canvasHeight / 2 + 20);
+        this.#ctx.font = 'bold 20px monospace';
+        this.#ctx.fillText(desc, canvasWidth / 2, canvasHeight / 2 + 20);
 
         this.#ctx.fillStyle = '#00ccff';
         this.#ctx.font = 'bold 16px monospace';
@@ -793,8 +887,6 @@ class Game {
     #lastTime;
     #bounds;
     #tensionMeter;
-    #lastPlayerForceY;
-    #lastFishForceY;
     #gameState;
     #fishCondition;
     #staminaController;
@@ -813,14 +905,13 @@ class Game {
         const initialX = CONFIG.float.initialX ?? this.#canvas.width / 2;
         const initialY = CONFIG.float.initialY ?? this.#canvas.height / 2;
         this.#float = new FloatEntity(initialX, initialY, CONFIG);
-        this.#tensionMeter = new TensionMeter();
+        
+        this.#tensionMeter = new TensionMeter(CONFIG.rod.level, CONFIG.reel.level, CONFIG);
         
         const playerBasePower = rod.getPower() + reel.getPower();
         this.#fishCondition = new FishCondition(CONFIG.fish.level, CONFIG.fish.weight, CONFIG);
         this.#staminaController = new StaminaController(this.#fishCondition, fish, playerBasePower, CONFIG);
         
-        this.#lastPlayerForceY = 0;
-        this.#lastFishForceY = 0;
         this.#gameState = 'playing';
         
         this.#bounds = {
@@ -845,6 +936,7 @@ class Game {
 
         if (this.#tensionMeter.isBroken()) {
             this.#gameState = 'failed';
+            EventLogger.logBreakEvent(this.#tensionMeter.getBreakReason(), this.#tensionMeter);
             return;
         }
 
@@ -853,20 +945,16 @@ class Game {
 
         const fishForce = this.#fishingSystem.calculateFishForce(dt, floatPos.x, this.#bounds, CONFIG);
         fishForce.multiplyScalar(CONFIG.physics.fishForceMultiplier);
-        this.#lastFishForceY = fishForce.y;
         this.#float.applyForce(fishForce);
 
-        // --- AXIS SEPARATION: Tension uses ONLY Y-axis ---
         const rawPlayerPower = this.#fishingSystem.calculatePlayerForce(new Vector2(0, 1), CONFIG).y;
         const playerMaxPower = Math.abs(rawPlayerPower * CONFIG.physics.playerForceMultiplier);
-        const fishPowerMag = Math.abs(fishForce.y); // No more .length() mixing X and Y
+        const fishPowerMag = Math.abs(fishForce.y); 
         const reelPower = this.#fishingSystem.getReelPower();
 
-        this.#lastPlayerForceY = 0;
         if (inputState.isPulling) {
             const playerForceRaw = this.#fishingSystem.calculatePlayerForce(inputState.pullDirection, CONFIG);
             const playerForce = playerForceRaw.clone().multiplyScalar(CONFIG.physics.playerForceMultiplier);
-            this.#lastPlayerForceY = playerForce.y;
             this.#float.applyForce(playerForce);
         }
 
@@ -891,7 +979,7 @@ class Game {
         this.#renderer.drawFishCondition(this.#fishCondition, CONFIG);
 
         if (this.#gameState === 'failed') {
-            this.#renderer.drawGameOver(this.#canvas.width, this.#canvas.height);
+            this.#renderer.drawGameOver(this.#canvas.width, this.#canvas.height, this.#tensionMeter.getBreakReason());
         } else if (this.#gameState === 'victory') {
             this.#renderer.drawVictory(this.#canvas.width, this.#canvas.height);
         }

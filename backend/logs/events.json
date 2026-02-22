@@ -1,0 +1,15 @@
+[
+  {
+    "id": "f471db5a-a7f4-4c29-8cef-7c04d4ad19c0",
+    "timestamp": "2026-02-22T16:46:16.284Z",
+    "event": "LINE_BROKEN",
+    "location": "Lake Whisper (Mock)",
+    "fish": "Pike (Mock)",
+    "gameplayStats": {
+      "fishState": "dash",
+      "fishCurrentBasePower": 0,
+      "fishPullMultiplier": 1.4950387522491815,
+      "breakTimerProgressPercent": 60.3
+    }
+  }
+]
