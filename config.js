@@ -20,7 +20,7 @@ const CONFIG = {
     },
 
     debug: {
-        overlay: true
+        overlay: true,
     },
 
     // Input Settings
@@ -64,7 +64,7 @@ const CONFIG = {
         agility: 1.0,
         edgePowerMultiplier: 1.0,
         behaviors: {
-                idle: { pull: 0.05, move: 0.0, minTime: 2000, maxTime: 4000, weight: 10 },
+                // idle: { pull: 0.05, move: 0.0, minTime: 2000, maxTime: 4000, weight: 10 },
                 rest: { pull: 0.2, move: 0.1, minTime: 1000, maxTime: 2500, weight: 20 },
                 swim: { pull: 0.8, move: 1.0, minTime: 2000, maxTime: 4000, weight: 50 },
                 dash: { pull: 1.5, move: 0.0, minTime: 500, maxTime: 1200, weight: 30 }
