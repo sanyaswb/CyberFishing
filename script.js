@@ -245,9 +245,13 @@ class FishingSystem {
         const basePower = this.#rod.getPower() + this.#reel.getPower();
         const totalPower = basePower * this.#buffs.getTotalMultiplier();
         
-        let force = inputDirection.clone().multiplyScalar(totalPower);
-        // Apply mechanical advantage of rod for X-axis steering
-        force.x *= config.physics.playerSteeringMultiplier;
+        let force = new Vector2(0, 0);
+        
+        // Y-AXIS: 100% power goes to tug of war, pulling towards self (no angle losses)
+        force.y = inputDirection.y * totalPower;
+        
+        // X-AXIS: Steering, amplified to compensate for fish thrashing (4x mechanical advantage)
+        force.x = inputDirection.x * totalPower * config.physics.playerSteeringMultiplier * 4.0;
         
         return force;
     }
@@ -261,12 +265,18 @@ class FishingSystem {
 
         const basePower = this.#fish.getPower();
         const direction = this.#fish.getChaosVector(dt);
-        let force = direction.multiplyScalar(basePower);
         
+        let force = new Vector2(0, 0);
+        
+        // Y-AXIS: Fish ALWAYS pulls down at 100% power. No compromises.
+        force.y = -basePower;
+        
+        // X-AXIS: Visual thrashing + escape attempt at screen edges
         const pushDirection = Math.sign(floatX - centerX);
         const escapeForceX = pushDirection * spatialPenalty * config.fish.edgePowerMultiplier * basePower;
         
-        force.x += escapeForceX;
+        // Even if the fish thrashes hard sideways, it doesn't reduce its downward pull
+        force.x = (direction.x * basePower) + escapeForceX;
         
         return force;
     }
@@ -784,9 +794,10 @@ class Game {
         this.#lastFishForceY = fishForce.y;
         this.#float.applyForce(fishForce);
 
-        const rawPlayerPower = this.#fishingSystem.calculatePlayerForce(new Vector2(0, 1), CONFIG).length();
-        const playerMaxPower = rawPlayerPower * CONFIG.physics.playerForceMultiplier;
-        const fishPowerMag = fishForce.length();
+        // --- AXIS SEPARATION: Tension uses ONLY Y-axis ---
+        const rawPlayerPower = this.#fishingSystem.calculatePlayerForce(new Vector2(0, 1), CONFIG).y;
+        const playerMaxPower = Math.abs(rawPlayerPower * CONFIG.physics.playerForceMultiplier);
+        const fishPowerMag = Math.abs(fishForce.y); // No more .length() mixing X and Y
         const reelPower = this.#fishingSystem.getReelPower();
 
         this.#lastPlayerForceY = 0;
