@@ -129,21 +129,25 @@ const CONFIG = {
         background: '#0f171e',
         bodyBackground: '#1a1a1a',
     },
-    // Stamina / Fighting mechanics
+    // Stamina & Exhaustion (Fighting mechanics)
     stamina: {
         fish: {
             baseStaminaMultiplier: 50,
             flatBonus: 500
         },
         mechanics: {
+            // Phase 1: Stamina
             slackThreshold: 25,
-            optimalMax: 50,
-            perfectTension: 65,
+            optimalMax: 50, // Player fatigue threshold (0 damage to stamina)
             baseDepletionRate: 45,
-            baseRegenRate: 30
-        ,
-        centerSweetSpot: 0.2,
-        edgeRegenRate: 150
+            baseRegenRate: 30,
+            centerSweetSpot: 0.2,
+            edgeRegenRate: 150,
+            
+            // Phase 2: Exhaustion (When stamina = 0)
+            exhaustionOptimalMax: 85, // Expanded tension limit for second phase
+            basePowerDropPerSec: 0.1, // How much fish base power drops per 1 sec of exhaustion (0.1 base = 0.001 final)
+            minBasePowerRatio: 0.2    // Fish cannot lose more than 80% of initial strength
         }
     },
 };

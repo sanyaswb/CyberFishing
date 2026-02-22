@@ -175,6 +175,7 @@ class Fish {
     #behaviorTimer;
     #currentVector;
     #config;
+    #powerDebuff;
 
     constructor(level, weight, resistance, config) {
         this.#level = level;
@@ -183,10 +184,21 @@ class Fish {
         this.#behaviorTimer = 0;
         this.#currentVector = new Vector2(0, 0);
         this.#config = config;
+        this.#powerDebuff = 0;
+    }
+
+    getInitialPower() {
+        return (this.#level * this.#weight) + this.#resistance;
     }
 
     getPower() {
-        return (this.#level * this.#weight) + this.#resistance;
+        const initial = this.getInitialPower();
+        return Math.max(0, initial - this.#powerDebuff);
+    }
+
+    applyPowerDebuff(amount) {
+        this.#powerDebuff += amount;
+        window.DEBUG_LIVE_FISH_POWER = this.getInitialPower() - this.#powerDebuff;
     }
 
     getChaosVector(dt) {
@@ -290,88 +302,114 @@ class FloatEntity {
     }
 }
 
-class FishStamina {
-    #current;
-    #max;
-    #isExhausted;
+class FishCondition {
+    #maxPoints;
+    #currentStamina;
+    #currentExhaustion;
+    #phase;
 
-    constructor(level, weight) {
-        this.#max = (level * weight * CONFIG.stamina.fish.baseStaminaMultiplier) + CONFIG.stamina.fish.flatBonus;
-        this.#current = this.#max;
-        this.#isExhausted = false;
+    constructor(level, weight, config) {
+        this.#maxPoints = (level * weight * config.stamina.fish.baseStaminaMultiplier) + config.stamina.fish.flatBonus;
+        this.#currentStamina = this.#maxPoints;
+        this.#currentExhaustion = this.#maxPoints;
+        this.#phase = 'stamina';
     }
 
-    get current() { return this.#current; }
-    get max() { return this.#max; }
-    get isExhausted() { return this.#isExhausted; }
-    get normalized() { return this.#current / this.#max; }
+    get phase() { return this.#phase; }
+    get maxPoints() { return this.#maxPoints; }
+    get currentStamina() { return this.#currentStamina; }
+    get currentExhaustion() { return this.#currentExhaustion; }
 
-    applyDamage(amount) {
-        if (this.#isExhausted) return;
-        this.#current = Math.max(0, this.#current - amount);
-        if (this.#current === 0) this.#isExhausted = true;
+    breakExhaustion() {
+        if (this.#phase === 'exhaustion') {
+            this.#phase = 'stamina';
+            this.#currentStamina = this.#maxPoints * 0.05;
+        }
     }
 
-    applyRegen(amount) {
-        if (this.#isExhausted) return;
-        this.#current = Math.min(this.#max, this.#current + amount);
+    applyStaminaDamage(amount) {
+        if (this.#phase !== 'stamina') return;
+        this.#currentStamina = Math.max(0, this.#currentStamina - amount);
+        if (this.#currentStamina === 0) {
+            this.#phase = 'exhaustion';
+        }
+    }
+
+    applyStaminaRegen(amount) {
+        if (this.#phase !== 'stamina') return;
+        this.#currentStamina = Math.min(this.#maxPoints, this.#currentStamina + amount);
+    }
+
+    applyExhaustionDamage(amount) {
+        if (this.#phase !== 'exhaustion') return;
+        this.#currentExhaustion = Math.max(0, this.#currentExhaustion - amount);
     }
 }
 
 class StaminaController {
-            #fishStamina;
-            #config;
+    #condition;
+    #config;
+    #playerBasePower;
+    #fish;
 
-            constructor(fishStamina) {
-                this.#fishStamina = fishStamina;
-                this.#config = CONFIG.stamina.mechanics;
+    constructor(condition, fish, playerBasePower, config) {
+        this.#condition = condition;
+        this.#fish = fish;
+        this.#playerBasePower = playerBasePower;
+        this.#config = config.stamina.mechanics;
+    }
+
+    evaluate(tension, playerPowerIsPulling, dt, floatX, bounds) {
+        const timeScale = dt / 1000;
+        const centerX = (bounds.left + bounds.right) / 2;
+        const halfWidth = (bounds.right - bounds.left) / 2;
+        let rawPenalty = Math.abs(floatX - centerX) / (halfWidth || 1);
+        let spatialPenalty = Math.max(0, (rawPenalty - this.#config.centerSweetSpot) / (1 - this.#config.centerSweetSpot));
+        spatialPenalty = Math.min(1, spatialPenalty); 
+
+        if (this.#condition.phase === 'exhaustion') {
+            if (spatialPenalty > 0 || tension > this.#config.exhaustionOptimalMax) {
+                this.#condition.breakExhaustion();
+                return;
             }
 
-            evaluate(tension, playerPower, dt, floatX, bounds) {
-                if (this.#fishStamina.isExhausted) return;
+            if (this.#condition.currentExhaustion > 0) {
+                const idealDps = this.#config.baseDepletionRate * this.#playerBasePower;
+                const idealTimeSec = this.#condition.maxPoints / Math.max(1, idealDps);
+                const exhaustionDurationSec = idealTimeSec * this.#fish.getInitialPower();
+                const pointsPerSec = this.#condition.maxPoints / exhaustionDurationSec;
 
-                const timeScale = dt / 1000;
+                const damage = pointsPerSec * timeScale;
+                const debuff = this.#config.basePowerDropPerSec * timeScale;
 
-                const centerX = (bounds.left + bounds.right) / 2;
-                const halfWidth = (bounds.right - bounds.left) / 2;
-                let rawPenalty = Math.abs(floatX - centerX) / (halfWidth || 1);
-                let spatialPenalty = Math.max(0, (rawPenalty - this.#config.centerSweetSpot) / (1 - this.#config.centerSweetSpot));
-                spatialPenalty = Math.min(1, spatialPenalty); 
-
-                // Регенерація на краях екрану залишається незалежною
-                if (spatialPenalty > 0) {
-                    this.#fishStamina.applyRegen(this.#config.edgeRegenRate * spatialPenalty * timeScale);
+                if (this.#condition.currentExhaustion <= damage) {
+                    const ratio = this.#condition.currentExhaustion / damage;
+                    this.#condition.applyExhaustionDamage(this.#condition.currentExhaustion);
+                    this.#fish.applyPowerDebuff(debuff * ratio);
+                } else {
+                    this.#condition.applyExhaustionDamage(damage);
+                    this.#fish.applyPowerDebuff(debuff);
                 }
+            }
+            return;
+        }
 
-                // ВЗАЄМОВИКЛЮЧНІ ЗОНИ НА ОСНОВІ ДІЙ ГРАВЦЯ
-                if (playerPower === 0) {
-                    // Якщо гравець ВІДПУСТИВ кнопку -> риба лікується (чим менший натяг, тим швидше)
-                    this.#processSlackZone(tension, timeScale);
-                } else if (tension <= this.#config.optimalMax) {
-                    // Якщо гравець ТЯГНЕ і натяг <= 50% -> наносимо шкоду
-                    this.#processOptimalZone(tension, playerPower, timeScale, spatialPenalty);
-                }
-                // Якщо гравець тягне, але натяг > 50%, нічого не відбувається. Гравець "втомлений" і просто тримає снасть.
+        if (this.#condition.phase === 'stamina') {
+            if (spatialPenalty > 0) {
+                this.#condition.applyStaminaRegen(this.#config.edgeRegenRate * spatialPenalty * timeScale);
             }
 
-            #processSlackZone(tension, timeScale) {
-                // Відновлення риби: максимальне при 0% натягу, падає до нуля при 100% натягу
+            if (!playerPowerIsPulling) {
                 const regenFactor = Math.max(0, 1 - (tension / 100));
-                const heal = this.#config.baseRegenRate * regenFactor * timeScale;
-                this.#fishStamina.applyRegen(heal);
-            }
-
-            #processOptimalZone(tension, playerPower, timeScale, spatialPenalty) {
-                // Ефект втоми гравця: 
-                // tension = 0 -> efficiency = 1.0 (100% шкоди)
-                // tension = 25 -> efficiency = 0.5 (50% шкоди)
-                // tension = 50 -> efficiency = 0.0 (0% шкоди)
+                this.#condition.applyStaminaRegen(this.#config.baseRegenRate * regenFactor * timeScale);
+            } else if (tension <= this.#config.optimalMax) {
                 const efficiency = Math.max(0, 1 - (tension / this.#config.optimalMax));
-
-                const damage = this.#config.baseDepletionRate * efficiency * playerPower * timeScale * (1 - spatialPenalty);
-                this.#fishStamina.applyDamage(damage);
+                const damage = this.#config.baseDepletionRate * efficiency * this.#playerBasePower * timeScale * (1 - spatialPenalty);
+                this.#condition.applyStaminaDamage(damage);
             }
         }
+    }
+}
 
 class TensionMeter {
     #tension;
@@ -583,27 +621,35 @@ class Renderer {
         }
     }
 
-    drawFishStamina(fishStamina, config) {
+    drawFishCondition(condition, config) {
         const barWidth = 200;
         const barHeight = 10;
         const barX = (this.#width - barWidth) / 2;
         const barY = this.#height - config.tension.barYOffset - 40;
 
-        const ratio = Math.max(0, Math.min(1, fishStamina.current / fishStamina.max));
-
         this.#ctx.fillStyle = '#0b1520';
         this.#ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
 
-        this.#ctx.fillStyle = '#ffcc00';
-        this.#ctx.fillRect(barX, barY, barWidth * ratio, barHeight);
+        if (condition.phase === 'stamina') {
+            const ratio = Math.max(0, Math.min(1, condition.currentStamina / condition.maxPoints));
+            this.#ctx.fillStyle = '#ffcc00';
+            this.#ctx.fillRect(barX, barY, barWidth * ratio, barHeight);
+            this.#ctx.fillStyle = '#ffffff';
+            this.#ctx.font = '12px monospace';
+            this.#ctx.textAlign = 'center';
+            this.#ctx.fillText(`STAMINA: ${Math.round(condition.currentStamina)}/${Math.round(condition.maxPoints)}`, barX + barWidth / 2, barY + barHeight + 12);
+        } else {
+            const ratio = Math.max(0, Math.min(1, condition.currentExhaustion / condition.maxPoints));
+            this.#ctx.fillStyle = '#ff4444';
+            this.#ctx.fillRect(barX, barY, barWidth * ratio, barHeight);
+            this.#ctx.fillStyle = '#ffffff';
+            this.#ctx.font = '12px monospace';
+            this.#ctx.textAlign = 'center';
+            this.#ctx.fillText(`EXHAUSTING... ${Math.round(condition.currentExhaustion)}/${Math.round(condition.maxPoints)}`, barX + barWidth / 2, barY + barHeight + 12);
+        }
 
         this.#ctx.strokeStyle = '#333';
         this.#ctx.strokeRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
-
-        this.#ctx.fillStyle = '#ffffff';
-        this.#ctx.font = '12px monospace';
-        this.#ctx.textAlign = 'center';
-        this.#ctx.fillText(`${Math.round(fishStamina.current)}/${Math.round(fishStamina.max)}`, barX + barWidth / 2, barY + barHeight + 12);
     }
 
     #drawLineBreakWarning(x, y, width, progress, config) {
@@ -669,7 +715,7 @@ class Game {
     #lastPlayerForceY;
     #lastFishForceY;
     #gameState;
-    #fishStamina;
+    #fishCondition;
     #staminaController;
 
     constructor(canvasId) {
@@ -687,8 +733,10 @@ class Game {
         const initialY = CONFIG.float.initialY ?? this.#canvas.height / 2;
         this.#float = new FloatEntity(initialX, initialY, CONFIG);
         this.#tensionMeter = new TensionMeter();
-        this.#fishStamina = new FishStamina(CONFIG.fish.level, CONFIG.fish.weight);
-        this.#staminaController = new StaminaController(this.#fishStamina);
+        
+        const playerBasePower = rod.getPower() + reel.getPower();
+        this.#fishCondition = new FishCondition(CONFIG.fish.level, CONFIG.fish.weight, CONFIG);
+        this.#staminaController = new StaminaController(this.#fishCondition, fish, playerBasePower, CONFIG);
         
         this.#lastPlayerForceY = 0;
         this.#lastFishForceY = 0;
@@ -710,6 +758,10 @@ class Game {
     }
 
     update(dt) {
+        if (this.#gameState !== 'playing') {
+            return;
+        }
+
         if (this.#tensionMeter.isBroken()) {
             this.#gameState = 'failed';
             return;
@@ -726,28 +778,25 @@ class Game {
         const rawPlayerPower = this.#fishingSystem.calculatePlayerForce(new Vector2(0, 1), CONFIG).length();
         const playerMaxPower = rawPlayerPower * CONFIG.physics.playerForceMultiplier;
         const fishPowerMag = fishForce.length();
+        const reelPower = this.#fishingSystem.getReelPower();
 
         this.#lastPlayerForceY = 0;
-        let playerPower = 0;
         if (inputState.isPulling) {
             const playerForceRaw = this.#fishingSystem.calculatePlayerForce(inputState.pullDirection, CONFIG);
-            playerPower = playerForceRaw.length();
-
             const playerForce = playerForceRaw.clone().multiplyScalar(CONFIG.physics.playerForceMultiplier);
             this.#lastPlayerForceY = playerForce.y;
             this.#float.applyForce(playerForce);
         }
 
-        const reelPower = this.#fishingSystem.getReelPower();
         this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, dt, CONFIG);
 
-        this.#staminaController.evaluate(this.#tensionMeter.getTension(), playerPower, dt, floatPos.x, this.#bounds);
-        if (this.#fishStamina.isExhausted) {
-            this.#gameState = 'victory';
-            return;
-        }
+        this.#staminaController.evaluate(this.#tensionMeter.getTension(), inputState.isPulling, dt, floatPos.x, this.#bounds);
 
         this.#float.update(this.#bounds);
+
+        if (this.#float.getPosition().y >= this.#bounds.bottom) {
+            this.#gameState = 'victory';
+        }
     }
 
     draw() {
@@ -757,7 +806,7 @@ class Game {
         this.#renderer.drawFloat(pos, CONFIG);
         
         this.#renderer.drawTensionBar(this.#tensionMeter, CONFIG);
-        this.#renderer.drawFishStamina(this.#fishStamina, CONFIG);
+        this.#renderer.drawFishCondition(this.#fishCondition, CONFIG);
 
         if (this.#gameState === 'failed') {
             this.#renderer.drawGameOver(this.#canvas.width, this.#canvas.height);

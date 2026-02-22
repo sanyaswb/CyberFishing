@@ -7,7 +7,7 @@ setTimeout(() => {
     const fPower = (CONFIG.fish.level * CONFIG.fish.weight) + CONFIG.fish.resistance;
 
     const playerPullForce = pPower * CONFIG.physics.playerForceMultiplier;
-    const playerSteerForce = pPower * CONFIG.physics.playerSteeringMultiplier;
+    const playerSteerForce = pPower * CONFIG.physics.playerSteeringMultiplier * 4.0 * CONFIG.physics.playerForceMultiplier;
     const fishPullForce = fPower * CONFIG.physics.fishForceMultiplier;
     const fishEscapeForce = (fPower * CONFIG.fish.edgePowerMultiplier) * CONFIG.physics.fishForceMultiplier;
 
@@ -74,7 +74,7 @@ setTimeout(() => {
     }
 
     console.log('%c====================================', 'color: #4a5b6c;');
-    console.log('%c❤️ Аналіз Стаміни (Виснаження)', 'color: #ffcc00; font-size: 14px; font-weight: bold;');
+    console.log('%c❤️ Аналіз Стаміни (Фаза 1)', 'color: #ffcc00; font-size: 14px; font-weight: bold;');
     
     const maxStamina = (CONFIG.fish.level * CONFIG.fish.weight * CONFIG.stamina.fish.baseStaminaMultiplier) + CONFIG.stamina.fish.flatBonus;
     const maxDps = CONFIG.stamina.mechanics.baseDepletionRate * pPower; 
@@ -88,5 +88,47 @@ setTimeout(() => {
         "Час до виснаження (Ідеальний)": { "Значення": (maxStamina / maxDps).toFixed(1) + " сек", "Опис": "Мінімальний час боротьби при 0% натягу" }
     });
 
+    console.log('%c====================================', 'color: #4a5b6c;');
+    console.log('%c🔥 Аналіз Виснаження (Фаза 2)', 'color: #ff4444; font-size: 14px; font-weight: bold;');
+    
+    const idealTimeSec = maxStamina / Math.max(1, maxDps);
+    const exhaustionTime = idealTimeSec * fPower;
+    const powerDropTotal = exhaustionTime * CONFIG.stamina.mechanics.basePowerDropPerSec;
+    
+    console.table({
+        "Початкова Базова Сила Риби": { "Значення": (fPower).toFixed(2), "Опис": "До початку виснаження" },
+        "Динамічний час виснаження": { "Значення": exhaustionTime.toFixed(1) + " сек", "Опис": "Ідеальний час * Силу риби" },
+        "Швидкість падіння шкали": { "Значення": (maxStamina / exhaustionTime).toFixed(1) + " поінтів/сек", "Опис": "Згідно з формулою" },
+        "Втрата сили за секунду": { "Значення": CONFIG.stamina.mechanics.basePowerDropPerSec + " од.", "Опис": "Зменшення базової сили кожну секунду" },
+        "Орієнтовна сила ПІСЛЯ виснаження": { "Значення": Math.max(fPower * CONFIG.stamina.mechanics.minBasePowerRatio, fPower - powerDropTotal).toFixed(2), "Опис": "Фінальна сила риби після збиття червоної шкали" }
+    });
+
     console.groupEnd();
 }, 500);
+
+// ============================================================================
+// LIVE OVERLAY: Віджет живої статистики виснаження
+// ============================================================================
+const liveDebugContainer = document.createElement('div');
+liveDebugContainer.style.cssText = 'position: absolute; top: 10px; left: 10px; background: rgba(11, 21, 32, 0.9); color: #ffffff; padding: 12px; font-family: monospace; font-size: 14px; border: 1px solid #4a5b6c; border-radius: 5px; pointer-events: none; z-index: 1000; display: none; box-shadow: 0 0 10px rgba(0,0,0,0.5);';
+document.body.appendChild(liveDebugContainer);
+
+// Оновлюємо віджет кожні 100 мс
+setInterval(() => {
+    const initial = (CONFIG.fish.level * CONFIG.fish.weight) + CONFIG.fish.resistance;
+    const current = window.DEBUG_LIVE_FISH_POWER !== undefined ? window.DEBUG_LIVE_FISH_POWER : initial;
+    const lost = initial - current;
+
+    // Показуємо віджет тільки якщо риба отримала хоча б мінімальний дебаф
+    if (lost > 0.001) {
+        liveDebugContainer.innerHTML = `
+            <div style="color: #ffaa00; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">🔥 LIVE: ДЕБАФ СИЛИ</div>
+            <div style="margin-bottom: 4px;">Початкова сила: <span style="color: #8a9bac;">${initial.toFixed(2)}</span></div>
+            <div style="margin-bottom: 4px;">Віднято сили: <span style="color: #ff4444; font-weight: bold;">-${lost.toFixed(2)}</span></div>
+            <div>Поточна сила: <span style="color: #00ff80; font-weight: bold;">${current.toFixed(2)}</span></div>
+        `;
+        liveDebugContainer.style.display = 'block';
+    } else {
+        liveDebugContainer.style.display = 'none';
+    }
+}, 100);
