@@ -368,11 +368,19 @@ class StaminaController {
         spatialPenalty = Math.min(1, spatialPenalty); 
 
         if (this.#condition.phase === 'exhaustion') {
+            // Штраф за помилку: навіть при 0 виснаження риба отримає 5% стаміни і "оживе"
             if (spatialPenalty > 0 || tension > this.#config.exhaustionOptimalMax) {
                 this.#condition.breakExhaustion();
                 return;
             }
 
+            // ФІКС БАГУ: Пауза виснаження. 
+            // Якщо гравець відпустив палець (скидає натяг) — виснаження зупиняється.
+            if (!playerPowerIsPulling) {
+                return; 
+            }
+
+            // ЛОК ПРИ 0: віднімаємо силу тільки доки шкала виснаження не порожня
             if (this.#condition.currentExhaustion > 0) {
                 const idealDps = this.#config.baseDepletionRate * this.#playerBasePower;
                 const idealTimeSec = this.#condition.maxPoints / Math.max(1, idealDps);
@@ -382,6 +390,7 @@ class StaminaController {
                 const damage = pointsPerSec * timeScale;
                 const debuff = this.#config.basePowerDropPerSec * timeScale;
 
+                // Запобігаємо "перевиконанню" віднімання на останньому кадрі
                 if (this.#condition.currentExhaustion <= damage) {
                     const ratio = this.#condition.currentExhaustion / damage;
                     this.#condition.applyExhaustionDamage(this.#condition.currentExhaustion);
