@@ -3,12 +3,45 @@
 // ============================================================================
 
 const CONFIG = {
-    // Canvas Settings
     canvas: {
-        width: 800,
-        height: 600,
         id: 'gameCanvas',
-        backgroundColor: '#0f171e',
+        backgroundColor: '#0f171e' // Цей колір потрібен класу Renderer
+    },
+
+    locations: {
+        baseResolution: { width: 2560, height: 2560 },
+        cellSize: 128,
+        map: {
+            test: {
+                id: 'test',
+                name: 'Test Waters',
+                depthBounds: { min: 1.5, max: 15.0 },
+                zones: {
+                    castable: [
+                        { x: 2, y: 5, w: 16, h: 14 }
+                    ],
+                    collisions: [
+                        { x: 5, y: 7, w: 2, h: 2 },
+                        { x: 15, y: 12, w: 3, h: 1 }
+                    ],
+                    snags: [
+                        { x: 8, y: 10, w: 4, h: 3 }
+                    ],
+                    dynamic: [
+                        { 
+                            id: 'fish_school_1', 
+                            type: 'buff', 
+                            multiplier: 1.5, 
+                            x: 10, y: 15, w: 3, h: 3, 
+                            moving: true, 
+                            speedX: 1.2, 
+                            speedY: 0.8, 
+                            bounds: { x: 2, y: 5, w: 16, h: 14 }
+                        }
+                    ]
+                }
+            }
+        }
     },
 
     // Viewport Settings
@@ -20,7 +53,7 @@ const CONFIG = {
     },
 
     debug: {
-        overlay: true,
+        overlay: false,
     },
 
     logs: {

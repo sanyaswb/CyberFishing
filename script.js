@@ -765,6 +765,50 @@ class Renderer {
         this.#ctx.fillStyle = config.canvas.backgroundColor;
         this.#ctx.fillRect(0, 0, this.#width, this.#height);
     }
+    
+    drawLocationDebug(locationMap, projector, config) {
+        const grid = locationMap.getGrid();
+        const cols = locationMap.getCols();
+        const rows = locationMap.getRows();
+        const cellSize = config.locations.cellSize;
+
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
+                const cell = grid[i][j];
+                const pos = projector.virtualToScreen(cell.x * cellSize, cell.y * cellSize);
+                const size = cellSize * projector.getScale();
+
+                if (cell.hasCollision) {
+                    this.#ctx.fillStyle = 'rgba(255, 0, 0, 0.4)';
+                } else if (cell.hasSnag) {
+                    this.#ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+                } else if (cell.isCastable) {
+                    this.#ctx.fillStyle = 'rgba(0, 255, 0, 0.15)';
+                } else {
+                    this.#ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                    this.#ctx.strokeRect(pos.x, pos.y, size, size);
+                    continue; 
+                }
+                
+                this.#ctx.fillRect(pos.x, pos.y, size, size);
+                this.#ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                this.#ctx.strokeRect(pos.x, pos.y, size, size);
+            }
+        }
+
+        const dynamicZones = locationMap.getDynamicZones();
+        for (const dz of dynamicZones) {
+            const pos = projector.virtualToScreen(dz.x * cellSize, dz.y * cellSize);
+            const w = dz.w * cellSize * projector.getScale();
+            const h = dz.h * cellSize * projector.getScale();
+            
+            this.#ctx.fillStyle = 'rgba(0, 150, 255, 0.5)';
+            this.#ctx.fillRect(pos.x, pos.y, w, h);
+            this.#ctx.strokeStyle = '#00ffff';
+            this.#ctx.lineWidth = 2;
+            this.#ctx.strokeRect(pos.x, pos.y, w, h);
+        }
+    }
 
     drawFloat(position, config) {
         this.#ctx.strokeStyle = config.float.color;
@@ -942,11 +986,21 @@ class Game {
     #gameState;
     #fishCondition;
     #staminaController;
+    #locationMap;
+    #projector;
 
     constructor(canvasId) {
         this.#canvas = document.getElementById(canvasId);
+        
+        this.#resizeCanvas();
+        window.addEventListener('resize', () => this.#resizeCanvas());
+
         this.#inputManager = new InputManager(this.#canvas);
         this.#renderer = new Renderer(this.#canvas);
+        
+        this.#locationMap = new LocationMap('test', CONFIG);
+        const baseRes = CONFIG.locations.baseResolution;
+        this.#projector = new ViewportProjector(baseRes.width, baseRes.height);
         
         const rod = new Rod(CONFIG.rod.level, CONFIG.rod.basePower);
         const reel = new Reel(CONFIG.reel.level, CONFIG.reel.basePower);
@@ -978,11 +1032,22 @@ class Game {
         this.loop = this.loop.bind(this);
     }
 
+    #resizeCanvas() {
+        this.#canvas.width = window.innerWidth;
+        this.#canvas.height = window.innerHeight;
+        if (this.#projector) {
+            this.#projector.update(this.#canvas.width, this.#canvas.height);
+        }
+    }
+
     start() {
         requestAnimationFrame(this.loop);
     }
 
     update(dt) {
+        this.#projector.update(this.#canvas.width, this.#canvas.height);
+        this.#locationMap.update(dt);
+
         if (this.#gameState !== 'playing') {
             return;
         }
@@ -998,7 +1063,6 @@ class Game {
 
         const fishForceRaw = this.#fishingSystem.calculateFishForce(dt, floatPos.x, this.#bounds, CONFIG);
         
-        // Розраховуємо чисту силу риби по найбільшій осі з множником 0.01 для гачка
         const currentFishMaxForceScaled = Math.max(Math.abs(fishForceRaw.x), Math.abs(fishForceRaw.y)) * 0.01;
 
         const fishForce = fishForceRaw.clone().multiplyScalar(CONFIG.physics.fishForceMultiplier);
@@ -1028,6 +1092,9 @@ class Game {
 
     draw() {
         this.#renderer.clear(CONFIG);
+        
+        this.#renderer.drawLocationDebug(this.#locationMap, this.#projector, CONFIG);
+
         const pos = this.#float.getPosition();
         this.#renderer.drawRodLine(pos, CONFIG);
         this.#renderer.drawFloat(pos, CONFIG);
