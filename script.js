@@ -224,6 +224,10 @@ class FishingSystem {
     getBuffManager() {
         return this.#buffs;
     }
+    getReelPower() {
+                // Сила котушки = рівень * базова сила (можна теж множити на бафи, якщо треба)
+        return this.#reel.getPower();
+    }
 
     calculatePlayerForce(inputDirection, config) {
         const basePower = this.#rod.getPower() + this.#reel.getPower();
@@ -392,7 +396,7 @@ class TensionMeter {
         this.#isBroken = false;
     }
 
-    update(isPulling, playerMaxPower, fishPowerMag, dt, config) {
+    update(isPulling, playerMaxPower, fishPowerMag, reelPower, dt, config) { 
         if (this.#isBroken) return;
 
         const powerRatio = fishPowerMag / Math.max(0.001, playerMaxPower);
@@ -400,7 +404,12 @@ class TensionMeter {
         const baseForce = playerMaxPower + fishPowerMag;
 
         let forceBalance = baseForce * speedMultiplier;
-        if (!isPulling) forceBalance = -forceBalance;
+        
+        if (!isPulling) {
+            // МАГІЯ КОТУШКИ: розраховуємо бонус відновлення
+            const recoveryBonus = 1 + (reelPower * (config.tension.reelRecoveryMultiplier || 0));
+            forceBalance = -(forceBalance * recoveryBonus);
+        }
 
         const tensionChange = forceBalance * config.tension.sensitivityMultiplier;
 
@@ -729,7 +738,8 @@ class Game {
             this.#float.applyForce(playerForce);
         }
 
-        this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, dt, CONFIG);
+        const reelPower = this.#fishingSystem.getReelPower();
+        this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, dt, CONFIG);
 
         this.#staminaController.evaluate(this.#tensionMeter.getTension(), playerPower, dt, floatPos.x, this.#bounds);
         if (this.#fishStamina.isExhausted) {

@@ -66,7 +66,7 @@ const CONFIG = {
     // Force Multipliers
     physics: {
         fishForceMultiplier: 0.01,
-        playerForceMultiplier: 0.015,
+        playerForceMultiplier: 0.017,
         playerSteeringMultiplier: 1.5, // Mechanical advantage of rod for X-axis steering
     },
 
