@@ -21,7 +21,8 @@ const CONFIG = {
 
     // Input Settings
     input: {
-        pointerThreshold: 20, // Minimum drag distance to register direction
+        pointerThreshold: 10, // Dead zone (so that random micro-movements don't jerk the rod)
+        dragRadius: 100, // Swipe distance in pixels for maximum steering
     },
 
     // Float/Bobber Settings
@@ -47,25 +48,26 @@ const CONFIG = {
 
     // Reel Settings
     reel: {
-        level: 5,
+        level: 4,
         basePower: 1.0,
     },
 
     // Fish Settings
     fish: {
-        level: 5,
-        weight: 5,
+        level: 4,
+        weight: 4,
         resistance: 1,
-        edgePowerMultiplier: 2.0,
+        edgePowerMultiplier: 1.0,
         behaviorTimerMin: 200,
-        behaviorTimerRandom: 300, // Random range: min to min+random
+        behaviorTimerRandom: 400, // Random range: min to min+random
         angleOffset: 0.5, // Offset in fishing direction (Y)
     },
 
     // Force Multipliers
     physics: {
         fishForceMultiplier: 0.01,
-        playerForceMultiplier: 0.05,
+        playerForceMultiplier: 0.015,
+        playerSteeringMultiplier: 1.5, // Mechanical advantage of rod for X-axis steering
     },
 
     // Tension Meter Settings
@@ -73,6 +75,7 @@ const CONFIG = {
         // Calculation
         sensitivityMultiplier: 0.02,
         smoothApproach: 0.15,
+        reelRecoveryMultiplier: 0.2,
         
         // Pulse effect
         pulseSpeedBaseMultiplier: 0.05,
@@ -134,8 +137,7 @@ const CONFIG = {
         },
         mechanics: {
             slackThreshold: 25,
-            optimalMin: 45,
-            optimalMax: 85,
+            optimalMax: 50,
             perfectTension: 65,
             baseDepletionRate: 45,
             baseRegenRate: 30

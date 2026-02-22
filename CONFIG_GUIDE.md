@@ -265,3 +265,13 @@ Stamina evaluation follows this sequence each frame:
    - **Outside:** no change
 
 **Why mutually exclusive:** Without `else if`, a fish at edges in optimal tension could receive both edge regen AND zero damage (due to 1 - 1.0 = 0), creating an unbeatable healing loop. The `else if` ensures each frame processes at most one zone after edge regen, keeping balance intact.
+
+### Tension Calculation Fix
+```
+// New tension calculation in TensionMeter.update
+forceBalance = playerForceY + Math.abs(fishForceY)
+tensionChange = forceBalance * sensitivityMultiplier
+```
+This change makes the tension meter reflect the sum of opposing efforts: a strong fish raises tension even when the player's rod is weak. It prevents the previous behavior where a strong fish reduced the measured tension, which caused constant slack-zone healing and stopped stamina from depleting.
+
+**Effect on gameplay:** stronger fish now push tension toward the red zone by themselves; players must actively counter high fish force to avoid line break. Stamina drains properly when players hold optimal tension against a strong fish.
