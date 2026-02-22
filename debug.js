@@ -7,7 +7,7 @@ setTimeout(() => {
     const fPower = (CONFIG.fish.level * CONFIG.fish.weight) + CONFIG.fish.resistance;
 
     const playerPullForce = pPower * CONFIG.physics.playerForceMultiplier;
-    const playerSteerForce = pPower * CONFIG.physics.playerSteeringMultiplier * 4.0 * CONFIG.physics.playerForceMultiplier;
+    const playerSteerForce = pPower * CONFIG.physics.playerSteeringMultiplier * CONFIG.physics.playerForceMultiplier;
     const fishPullForce = fPower * CONFIG.physics.fishForceMultiplier;
     const fishEscapeForce = (fPower * CONFIG.fish.edgePowerMultiplier) * CONFIG.physics.fishForceMultiplier;
 

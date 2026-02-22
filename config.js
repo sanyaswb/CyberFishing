@@ -22,7 +22,7 @@ const CONFIG = {
     // Input Settings
     input: {
         pointerThreshold: 10, // Dead zone (so that random micro-movements don't jerk the rod)
-        dragRadius: 100, // Swipe distance in pixels for maximum steering
+        dragRadius: 200, // Swipe distance in pixels for maximum steering
     },
 
     // Float/Bobber Settings

@@ -251,7 +251,7 @@ class FishingSystem {
         force.y = inputDirection.y * totalPower;
         
         // X-AXIS: Steering, amplified to compensate for fish thrashing (4x mechanical advantage)
-        force.x = inputDirection.x * totalPower * config.physics.playerSteeringMultiplier * 4.0;
+        force.x = inputDirection.x * totalPower * config.physics.playerSteeringMultiplier;
         
         return force;
     }
