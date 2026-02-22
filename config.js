@@ -73,7 +73,7 @@ const CONFIG = {
     // Tension Meter Settings
     tension: {
         // Calculation
-        sensitivityMultiplier: 0.02,
+        sensitivityMultiplier: 1.5, // How much player input affects tension
         smoothApproach: 0.15,
         reelRecoveryMultiplier: 0.2,
         
