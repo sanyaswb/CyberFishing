@@ -19,6 +19,10 @@ const CONFIG = {
         marginBottom: 50,
     },
 
+    debug: {
+        overlay: true
+    },
+
     // Input Settings
     input: {
         pointerThreshold: 10, // Dead zone (so that random micro-movements don't jerk the rod)
@@ -57,10 +61,14 @@ const CONFIG = {
         level: 4,
         weight: 4,
         resistance: 1,
+        agility: 1.0,
         edgePowerMultiplier: 1.0,
-        behaviorTimerMin: 200,
-        behaviorTimerRandom: 400, // Random range: min to min+random
-        angleOffset: 0.5, // Offset in fishing direction (Y)
+        behaviors: {
+                idle: { pull: 0.05, move: 0.0, minTime: 2000, maxTime: 4000, weight: 10 },
+                rest: { pull: 0.2, move: 0.1, minTime: 1000, maxTime: 2500, weight: 20 },
+                swim: { pull: 0.8, move: 1.0, minTime: 2000, maxTime: 4000, weight: 50 },
+                dash: { pull: 1.5, move: 0.0, minTime: 500, maxTime: 1200, weight: 30 }
+            }
     },
 
     // Force Multipliers

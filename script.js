@@ -168,23 +168,99 @@ class BuffManager {
     }
 }
 
+class FishBehavior {
+    #config;
+    #currentStateName;
+    #stateTimer;
+    #dirTimer;
+    #currentPull;
+    #targetPull;
+    #currentMove;
+    #targetMove;
+    #currentDirX;
+    #targetDirX;
+
+    constructor(config) {
+        this.#config = config.fish;
+        this.#currentStateName = 'swim';
+        this.#stateTimer = 0;
+        this.#dirTimer = 0;
+        this.#currentPull = 1.0;
+        this.#targetPull = 1.0;
+        this.#currentMove = 0.0;
+        this.#targetMove = 0.0;
+        this.#currentDirX = 0;
+        this.#targetDirX = 0;
+        this.#pickNextState();
+    }
+
+    #pickNextState() {
+        const states = this.#config.behaviors;
+        const keys = Object.keys(states);
+        let totalWeight = 0;
+        
+        for (let k of keys) {
+            totalWeight += states[k].weight;
+        }
+        
+        let r = Math.random() * totalWeight;
+        for (let k of keys) {
+            if (r < states[k].weight) {
+                this.#currentStateName = k;
+                break;
+            }
+            r -= states[k].weight;
+        }
+
+        const state = states[this.#currentStateName];
+        this.#targetPull = state.pull;
+        this.#targetMove = state.move;
+        this.#stateTimer = state.minTime + Math.random() * (state.maxTime - state.minTime);
+    }
+
+    update(dt) {
+        this.#stateTimer -= dt;
+        if (this.#stateTimer <= 0) {
+            this.#pickNextState();
+        }
+
+        this.#dirTimer -= dt;
+        if (this.#dirTimer <= 0) {
+            this.#targetDirX = (Math.random() * 2) - 1;
+            this.#dirTimer = 500 + Math.random() * 1500;
+        }
+
+        const t = Math.min(1, (dt / 1000) * 3.0 * this.#config.agility);
+        
+        this.#currentPull += (this.#targetPull - this.#currentPull) * t;
+        this.#currentMove += (this.#targetMove - this.#currentMove) * t;
+        this.#currentDirX += (this.#targetDirX - this.#currentDirX) * t;
+    }
+
+    getStateData() {
+        return {
+            name: this.#currentStateName,
+            pullMult: this.#currentPull,
+            moveX: this.#currentMove * this.#currentDirX
+        };
+    }
+}
+
 class Fish {
     #level;
     #weight;
     #resistance;
-    #behaviorTimer;
-    #currentVector;
     #config;
     #powerDebuff;
+    #behavior;
 
     constructor(level, weight, resistance, config) {
         this.#level = level;
         this.#weight = weight;
         this.#resistance = resistance;
-        this.#behaviorTimer = 0;
-        this.#currentVector = new Vector2(0, 0);
         this.#config = config;
         this.#powerDebuff = 0;
+        this.#behavior = new FishBehavior(config);
     }
 
     getInitialPower() {
@@ -201,22 +277,9 @@ class Fish {
         window.DEBUG_LIVE_FISH_POWER = this.getInitialPower() - this.#powerDebuff;
     }
 
-    getChaosVector(dt) {
-        this.#behaviorTimer -= dt;
-
-        if (this.#behaviorTimer <= 0) {
-            const angle = (Math.random() * Math.PI) - (Math.PI / 2); 
-            const forceX = Math.sin(angle);
-            const forceY = -Math.abs(Math.cos(angle)) - this.#config.fish.angleOffset; 
-
-            this.#currentVector.x = forceX;
-            this.#currentVector.y = forceY;
-            this.#currentVector.normalize();
-
-            this.#behaviorTimer = this.#config.fish.behaviorTimerMin + Math.random() * this.#config.fish.behaviorTimerRandom;
-        }
-
-        return this.#currentVector.clone();
+    getBehavior(dt) {
+        this.#behavior.update(dt);
+        return this.#behavior.getStateData();
     }
 }
 
@@ -236,8 +299,8 @@ class FishingSystem {
     getBuffManager() {
         return this.#buffs;
     }
+
     getReelPower() {
-                // Сила котушки = рівень * базова сила (можна теж множити на бафи, якщо треба)
         return this.#reel.getPower();
     }
 
@@ -246,11 +309,7 @@ class FishingSystem {
         const totalPower = basePower * this.#buffs.getTotalMultiplier();
         
         let force = new Vector2(0, 0);
-        
-        // Y-AXIS: 100% power goes to tug of war, pulling towards self (no angle losses)
         force.y = inputDirection.y * totalPower;
-        
-        // X-AXIS: Steering, amplified to compensate for fish thrashing (4x mechanical advantage)
         force.x = inputDirection.x * totalPower * config.physics.playerSteeringMultiplier;
         
         return force;
@@ -264,19 +323,22 @@ class FishingSystem {
         spatialPenalty = Math.min(1, spatialPenalty);
 
         const basePower = this.#fish.getPower();
-        const direction = this.#fish.getChaosVector(dt);
+        const behavior = this.#fish.getBehavior(dt);
         
+        // ОПТИМІЗАЦІЯ: Експортуємо дані для віджета ТІЛЬКИ якщо він увімкнений
+        if (config.debug && config.debug.overlay) {
+            window.DEBUG_LIVE_FISH_STATE = behavior.name;
+            window.DEBUG_LIVE_FISH_PULL_MULT = behavior.pullMult;
+            window.DEBUG_LIVE_FISH_MOVE_MULT = Math.abs(behavior.moveX); // Передаємо реальний (згладжений) множник X
+        }
+
         let force = new Vector2(0, 0);
+        force.y = -basePower * behavior.pullMult;
         
-        // Y-AXIS: Fish ALWAYS pulls down at 100% power. No compromises.
-        force.y = -basePower;
-        
-        // X-AXIS: Visual thrashing + escape attempt at screen edges
         const pushDirection = Math.sign(floatX - centerX);
         const escapeForceX = pushDirection * spatialPenalty * config.fish.edgePowerMultiplier * basePower;
         
-        // Even if the fish thrashes hard sideways, it doesn't reduce its downward pull
-        force.x = (direction.x * basePower) + escapeForceX;
+        force.x = (behavior.moveX * basePower) + escapeForceX;
         
         return force;
     }
