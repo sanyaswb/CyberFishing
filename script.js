@@ -39,18 +39,25 @@ class InputManager {
     #isPulling;
     #pullDirection;
     #isDragging;
+    #startX;
+    #startY;
     #lastPointerX;
     #panDeltaX;
+    #clickPos;
+    #config;
 
-    constructor(canvas) {
+    constructor(canvas, config) {
         this.#canvas = canvas;
+        this.#config = config;
         this.#isPulling = false;
         this.#pullDirection = new Vector2(0, 1);
         
-        // Нові змінні для скролу
         this.#isDragging = false;
+        this.#startX = 0;
+        this.#startY = 0;
         this.#lastPointerX = 0;
         this.#panDeltaX = 0;
+        this.#clickPos = null;
 
         this.#bindEvents();
     }
@@ -58,14 +65,20 @@ class InputManager {
     #bindEvents() {
         this.#canvas.addEventListener('pointerdown', (e) => {
             this.#isPulling = true;
-            this.#isDragging = true;
-            this.#lastPointerX = e.clientX; // Запам'ятовуємо, де палець торкнувся екрана
+            this.#isDragging = false;
+            this.#startX = e.clientX;
+            this.#startY = e.clientY;
+            this.#lastPointerX = e.clientX;
             this.#updateDirection(e);
         });
 
         this.#canvas.addEventListener('pointermove', (e) => {
+            const dist = Math.hypot(e.clientX - this.#startX, e.clientY - this.#startY);
+            if (dist > 5) {
+                this.#isDragging = true;
+            }
+
             if (this.#isDragging) {
-                // Вираховуємо свайп: (стара позиція - нова позиція) для природного скролу
                 this.#panDeltaX = this.#lastPointerX - e.clientX;
                 this.#lastPointerX = e.clientX;
             }
@@ -75,6 +88,10 @@ class InputManager {
         });
 
         window.addEventListener('pointerup', (e) => {
+            if (!this.#isDragging) {
+                this.#clickPos = { x: e.clientX, y: e.clientY };
+            }
+            
             this.#isPulling = false;
             this.#isDragging = false;
             this.#pullDirection = new Vector2(0, 1);
@@ -85,10 +102,14 @@ class InputManager {
 
     #updateDirection(e) {
         const rect = this.#canvas.getBoundingClientRect();
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        const dx = e.clientX - rect.left - centerX;
-        const dy = e.clientY - rect.top - centerY;
+        
+        let anchorX = rect.width / 2;
+        if (this.#config.ui?.rod?.x && this.#config.ui.rod.x !== 'center') {
+            anchorX = Number(this.#config.ui.rod.x);
+        }
+        
+        const dx = e.clientX - rect.left - anchorX;
+        const dy = rect.height / 2; 
         
         const length = Math.hypot(dx, dy);
         if (length > 0) {
@@ -100,10 +121,11 @@ class InputManager {
         const state = {
             isPulling: this.#isPulling,
             pullDirection: this.#pullDirection,
-            panDeltaX: this.#panDeltaX
+            panDeltaX: this.#panDeltaX,
+            clickPos: this.#clickPos
         };
-        // Обнуляємо дельту після зчитування, щоб камера не ковзала вічно
-        this.#panDeltaX = 0; 
+        this.#panDeltaX = 0;
+        this.#clickPos = null; 
         return state;
     }
 }
@@ -177,7 +199,6 @@ class EventLogger {
         const data = {
             id: crypto.randomUUID ? crypto.randomUUID() : Date.now(),
             timestamp: new Date().toISOString(),
-            // ЗАМІНИ ЦЕЙ РЯДОК У EventLogger:
             event: reason === 'rod' ? 'ROD_BROKEN' : reason === 'hook' ? 'FISH_ESCAPED' : 'LINE_BROKEN',
             location: 'Lake Whisper (Mock)',
             fish: 'Pike (Mock)',
@@ -365,12 +386,10 @@ class FishingSystem {
 
         const basePower = this.#fish.getPower();
         const behavior = this.#fish.getBehavior(dt);
-        
-        // ОПТИМІЗАЦІЯ: Експортуємо дані для віджета ТІЛЬКИ якщо він увімкнений
         if (config.debug && config.debug.overlay) {
             window.DEBUG_LIVE_FISH_STATE = behavior.name;
             window.DEBUG_LIVE_FISH_PULL_MULT = behavior.pullMult;
-            window.DEBUG_LIVE_FISH_MOVE_MULT = Math.abs(behavior.moveX); // Передаємо реальний (згладжений) множник X
+            window.DEBUG_LIVE_FISH_MOVE_MULT = Math.abs(behavior.moveX);
         }
 
         let force = new Vector2(0, 0);
@@ -412,6 +431,12 @@ class FloatEntity {
 
     getPosition() {
         return this.#position;
+    }
+
+    setPosition(x, y) {
+        this.#position.x = x;
+        this.#position.y = y;
+        this.#velocity = new Vector2(0, 0);
     }
 }
 
@@ -481,19 +506,13 @@ class StaminaController {
         spatialPenalty = Math.min(1, spatialPenalty); 
 
         if (this.#condition.phase === 'exhaustion') {
-            // Штраф за помилку: навіть при 0 виснаження риба отримає 5% стаміни і "оживе"
             if (spatialPenalty > 0 || tension > this.#config.exhaustionOptimalMax) {
                 this.#condition.breakExhaustion();
                 return;
             }
-
-            // ФІКС БАГУ: Пауза виснаження. 
-            // Якщо гравець відпустив палець (скидає натяг) — виснаження зупиняється.
             if (!playerPowerIsPulling) {
                 return; 
             }
-
-            // ЛОК ПРИ 0: віднімаємо силу тільки доки шкала виснаження не порожня
             if (this.#condition.currentExhaustion > 0) {
                 const idealDps = this.#config.baseDepletionRate * this.#playerBasePower;
                 const idealTimeSec = this.#condition.maxPoints / Math.max(1, idealDps);
@@ -502,8 +521,6 @@ class StaminaController {
 
                 const damage = pointsPerSec * timeScale;
                 const debuff = this.#config.basePowerDropPerSec * timeScale;
-
-                // Запобігаємо "перевиконанню" віднімання на останньому кадрі
                 if (this.#condition.currentExhaustion <= damage) {
                     const ratio = this.#condition.currentExhaustion / damage;
                     this.#condition.applyExhaustionDamage(this.#condition.currentExhaustion);
@@ -591,8 +608,6 @@ class TensionMeter {
 
         this.#pulsePhase += Math.max(1, config.tension.pulseSpeedMax - (this.#tension / config.tension.pulseTensionDivisor)) * config.tension.pulseSpeedBaseMultiplier;
         if (this.#pulsePhase > Math.PI * 2) this.#pulsePhase -= Math.PI * 2;
-
-        // 1. Механіка розриву волосіні та вудилища (100% натягу)
         if (this.#tension >= config.tension.breakThreshold - 0.1) {
             this.#lineBreakTimer += dt;
             this.#evaluateBreakRisk();
@@ -602,8 +617,6 @@ class TensionMeter {
                 this.#highestTierRolled = 0;
             }
         }
-
-        // 2. Механіка обриву гачка (>50% натягу, перевірка раз на секунду)
         this.#hookCheckTimer += dt;
         if (this.#hookCheckTimer >= config.hookMechanics.checkIntervalMs) {
             this.#hookCheckTimer = 0;
@@ -735,19 +748,42 @@ class TensionMeter {
 }
 
 class Renderer {
+    #canvas;
     #ctx;
-    #width;
-    #height;
 
     constructor(canvas) {
+        this.#canvas = canvas;
         this.#ctx = canvas.getContext('2d', { alpha: false });
-        this.#width = canvas.width;
-        this.#height = canvas.height;
+    }
+    #resolveX(configValue, elementWidth = 0) {
+        if (configValue === 'center') {
+            return (this.#canvas.width - elementWidth) / 2;
+        }
+        return Number(configValue) || 0;
+    }
+
+    drawInvalidCastMarker(marker) {
+        this.#ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+        this.#ctx.lineWidth = 3;
+        this.#ctx.beginPath();
+        this.#ctx.arc(marker.x, marker.y, 15, 0, Math.PI * 2);
+        this.#ctx.stroke();
+
+        this.#ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+        this.#ctx.fill();
+        
+        // Хрестик всередині
+        this.#ctx.beginPath();
+        this.#ctx.moveTo(marker.x - 8, marker.y - 8);
+        this.#ctx.lineTo(marker.x + 8, marker.y + 8);
+        this.#ctx.moveTo(marker.x + 8, marker.y - 8);
+        this.#ctx.lineTo(marker.x - 8, marker.y + 8);
+        this.#ctx.stroke();
     }
 
     clear(config) {
-        this.#ctx.fillStyle = config.canvas.backgroundColor;
-        this.#ctx.fillRect(0, 0, this.#width, this.#height);
+        this.#ctx.fillStyle = config.canvas.backgroundColor || '#0f171e';
+        this.#ctx.fillRect(0, 0, this.#canvas.width, this.#canvas.height);
     }
     
     drawLocationDebug(locationMap, projector, config) {
@@ -795,6 +831,20 @@ class Renderer {
         }
     }
 
+    drawCatchZone(config) {
+        const h = config.ui?.catchZone?.height || 150;
+        const y = this.#canvas.height - h;
+        this.#ctx.fillStyle = config.ui?.catchZone?.color || 'rgba(0, 150, 255, 0.3)';
+        this.#ctx.fillRect(0, y, this.#canvas.width, h);
+
+        this.#ctx.strokeStyle = 'rgba(0, 200, 255, 0.8)';
+        this.#ctx.lineWidth = 2;
+        this.#ctx.beginPath();
+        this.#ctx.moveTo(0, y);
+        this.#ctx.lineTo(this.#canvas.width, y);
+        this.#ctx.stroke();
+    }
+
     drawFloat(position, config) {
         this.#ctx.strokeStyle = config.float.color;
         this.#ctx.lineWidth = 4;
@@ -812,72 +862,23 @@ class Renderer {
     }
 
     drawRodLine(floatPos, config) {
-        const rodBaseX = this.#width / 2;
-        const rodBaseY = this.#height;
+        if (config.ui?.line?.visible === false) return;
+        const rodBaseX = this.#resolveX(config.ui?.rod?.x, 0);
+        const rodBaseY = this.#canvas.height - (config.ui?.rod?.yOffset || 0);
         
-        this.#ctx.strokeStyle = config.rod.lineColor;
-        this.#ctx.lineWidth = config.rod.lineWidth;
+        this.#ctx.strokeStyle = config.ui?.line?.color || 'rgba(255, 255, 255, 0.3)';
+        this.#ctx.lineWidth = config.ui?.line?.width || 1;
         this.#ctx.beginPath();
         this.#ctx.moveTo(rodBaseX, rodBaseY);
         this.#ctx.lineTo(floatPos.x, floatPos.y);
         this.#ctx.stroke();
     }
 
-    drawTensionBar(tensionMeter, config) {
-        const barWidth = config.tension.barWidth;
-        const barHeight = config.tension.barHeight;
-        const barX = (this.#width - barWidth) / 2;
-        const barY = this.#height - config.tension.barYOffset;
-        const padding = config.tension.borderPadding;
-        const tension = tensionMeter.getTension();
-        const pulseIntensity = tensionMeter.getPulseIntensity(config);
-
-        this.#ctx.fillStyle = config.tension.backgroundColor;
-        this.#ctx.fillRect(barX - padding, barY - padding, barWidth + padding * 2, barHeight + padding * 2);
-
-        this.#ctx.strokeStyle = config.tension.borderColor;
-        this.#ctx.lineWidth = config.tension.barBorderWidth;
-        this.#ctx.strokeRect(barX - padding, barY - padding, barWidth + padding * 2, barHeight + padding * 2);
-
-        const fillWidth = (tension / 100) * barWidth;
-        
-        const fillColor = tensionMeter.getCurrentColor();
-
-        this.#ctx.fillStyle = fillColor;
-        this.#ctx.fillRect(barX, barY, fillWidth, barHeight);
-
-        const glowIntensity = pulseIntensity * config.tension.glowIntensity;
-        this.#ctx.shadowColor = fillColor;
-        this.#ctx.shadowBlur = 10 * glowIntensity;
-        this.#ctx.strokeStyle = fillColor;
-        this.#ctx.lineWidth = 2;
-        this.#ctx.strokeRect(barX, barY, fillWidth, barHeight);
-        this.#ctx.shadowBlur = 0;
-
-        this.#ctx.fillStyle = config.tension.labelColor;
-        this.#ctx.font = config.tension.labelFont;
-        this.#ctx.textAlign = 'left';
-        this.#ctx.fillText(`TENSION: ${Math.round(tension)}%`, barX - config.tension.labelOffsetX, barY + config.tension.labelOffsetY);
-
-        const statusLabel = tensionMeter.getCurrentStatusLabel();
-        const statusColor = tensionMeter.getCurrentStatusColor();
-
-        this.#ctx.fillStyle = statusColor;
-        this.#ctx.textAlign = 'right';
-        this.#ctx.fillText(statusLabel, barX + barWidth + config.tension.labelOffsetX, barY + config.tension.labelOffsetY);
-
-        if (tension >= config.tension.breakThreshold - 0.1) {
-            // getLineBreakProgress вже повертає 0.0 - 1.0, ділити більше не треба!
-            const breakProgress = tensionMeter.getLineBreakProgress();
-            this.#drawLineBreakWarning(barX, barY - 25, barWidth, breakProgress, config);
-        }
-    }
-
     drawFishCondition(condition, config) {
         const barWidth = 200;
         const barHeight = 10;
-        const barX = (this.#width - barWidth) / 2;
-        const barY = this.#height - config.tension.barYOffset - 40;
+        const barX = this.#resolveX(config.ui?.indicators?.x, barWidth);
+        const barY = config.ui?.indicators?.y || 40;
 
         this.#ctx.fillStyle = '#0b1520';
         this.#ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
@@ -904,14 +905,63 @@ class Renderer {
         this.#ctx.strokeRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
     }
 
+    drawTensionBar(tensionMeter, config) {
+        const barWidth = config.tension.barWidth;
+        const barHeight = config.tension.barHeight;
+        const barX = this.#resolveX(config.ui?.indicators?.x, barWidth);
+        const baseY = config.ui?.indicators?.y || 40;
+        const spacing = config.ui?.indicators?.spacing || 40;
+        const barY = baseY + spacing;
+        
+        const padding = config.tension.borderPadding;
+        const tension = tensionMeter.getTension();
+        const pulseIntensity = tensionMeter.getPulseIntensity(config);
+
+        this.#ctx.fillStyle = config.tension.backgroundColor;
+        this.#ctx.fillRect(barX - padding, barY - padding, barWidth + padding * 2, barHeight + padding * 2);
+
+        this.#ctx.strokeStyle = config.tension.borderColor;
+        this.#ctx.lineWidth = config.tension.barBorderWidth;
+        this.#ctx.strokeRect(barX - padding, barY - padding, barWidth + padding * 2, barHeight + padding * 2);
+
+        const fillWidth = (tension / 100) * barWidth;
+        const fillColor = tensionMeter.getCurrentColor();
+
+        this.#ctx.fillStyle = fillColor;
+        this.#ctx.fillRect(barX, barY, fillWidth, barHeight);
+
+        const glowIntensity = pulseIntensity * config.tension.glowIntensity;
+        this.#ctx.shadowColor = fillColor;
+        this.#ctx.shadowBlur = 10 * glowIntensity;
+        this.#ctx.strokeStyle = fillColor;
+        this.#ctx.lineWidth = 2;
+        this.#ctx.strokeRect(barX, barY, fillWidth, barHeight);
+        this.#ctx.shadowBlur = 0;
+
+        this.#ctx.fillStyle = config.tension.labelColor;
+        this.#ctx.font = config.tension.labelFont;
+        this.#ctx.textAlign = 'left';
+        this.#ctx.fillText(`TENSION: ${Math.round(tension)}%`, barX - config.tension.labelOffsetX, barY + config.tension.labelOffsetY);
+
+        const statusLabel = tensionMeter.getCurrentStatusLabel();
+        const statusColor = tensionMeter.getCurrentStatusColor();
+
+        this.#ctx.fillStyle = statusColor;
+        this.#ctx.textAlign = 'right';
+        this.#ctx.fillText(statusLabel, barX + barWidth + config.tension.labelOffsetX, barY + config.tension.labelOffsetY);
+
+        if (tension >= config.tension.breakThreshold - 0.1) {
+            const breakProgress = tensionMeter.getLineBreakProgress();
+            this.#drawLineBreakWarning(barX, barY - 25, barWidth, breakProgress, config);
+        }
+    }
+
     #drawLineBreakWarning(x, y, width, progress, config) {
         this.#ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
         this.#ctx.fillRect(x, y, width * progress, 8);
-        
         this.#ctx.strokeStyle = '#ff0000';
         this.#ctx.lineWidth = 1;
         this.#ctx.strokeRect(x, y, width, 8);
-        
         this.#ctx.fillStyle = '#ff0000';
         this.#ctx.font = 'bold 10px monospace';
         this.#ctx.textAlign = 'center';
@@ -921,7 +971,6 @@ class Renderer {
     drawGameOver(canvasWidth, canvasHeight, reason) {
         this.#ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
         this.#ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
         const title = reason === 'rod' ? 'ROD BROKEN' : reason === 'hook' ? 'FISH ESCAPED' : 'LINE SNAPPED';
         const titleColor = reason === 'rod' ? '#ff0000' : reason === 'hook' ? '#ffaa00' : '#ff4444';
         const desc = reason === 'rod' ? 'Your equipment could not handle the stress.' : reason === 'hook' ? 'The hook bent and the fish got away.' : 'Tension exceeded line capacity.';
@@ -930,11 +979,9 @@ class Renderer {
         this.#ctx.font = 'bold 48px monospace';
         this.#ctx.textAlign = 'center';
         this.#ctx.fillText(title, canvasWidth / 2, canvasHeight / 2 - 40);
-
         this.#ctx.fillStyle = '#ffaa00';
         this.#ctx.font = 'bold 20px monospace';
         this.#ctx.fillText(desc, canvasWidth / 2, canvasHeight / 2 + 20);
-
         this.#ctx.fillStyle = '#00ccff';
         this.#ctx.font = 'bold 16px monospace';
         this.#ctx.fillText('Refresh page to try again', canvasWidth / 2, canvasHeight / 2 + 70);
@@ -943,16 +990,13 @@ class Renderer {
     drawVictory(canvasWidth, canvasHeight) {
         this.#ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
         this.#ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
         this.#ctx.fillStyle = '#00ff80';
         this.#ctx.font = 'bold 48px monospace';
         this.#ctx.textAlign = 'center';
         this.#ctx.fillText('FISH EXHAUSTED', canvasWidth / 2, canvasHeight / 2 - 40);
-
         this.#ctx.fillStyle = '#8a9bac';
         this.#ctx.font = 'bold 20px monospace';
         this.#ctx.fillText('You wore the fish out — well played!', canvasWidth / 2, canvasHeight / 2 + 10);
-
         this.#ctx.fillStyle = '#00ccff';
         this.#ctx.font = 'bold 14px monospace';
         this.#ctx.fillText('Refresh page to try again', canvasWidth / 2, canvasHeight / 2 + 60);
@@ -973,43 +1017,32 @@ class Game {
     #staminaController;
     #locationMap;
     #projector;
+    #cameraToggleBtn;
+    #invalidCastMarker;
 
     constructor(canvasId) {
         this.#canvas = document.getElementById(canvasId);
         
-        // 1. Спочатку створюємо менеджери та модулі локації
         this.#inputManager = new InputManager(this.#canvas);
         this.#renderer = new Renderer(this.#canvas);
         
         this.#locationMap = new LocationMap('test', CONFIG);
         this.#projector = new ViewportProjector(CONFIG);
         
-        // 2. Тепер безпечно викликаємо ресайз (він підтягне розміри екрана і налаштує проектор)
         this.#resizeCanvas();
         window.addEventListener('resize', () => this.#resizeCanvas());
+        this.#cameraToggleBtn = document.getElementById('camera-toggle-btn');
+        if (this.#cameraToggleBtn) {
+            this.#cameraToggleBtn.addEventListener('click', () => this.#toggleCameraMode());
+        }
 
-        // 3. Ініціалізуємо снасті
-        const rod = new Rod(CONFIG.rod.level, CONFIG.rod.basePower);
-        const reel = new Reel(CONFIG.reel.level, CONFIG.reel.basePower);
-        const fish = new Fish(CONFIG.fish.level, CONFIG.fish.weight, CONFIG.fish.resistance, CONFIG); 
-        const hook = new Hook(CONFIG.hook.level, CONFIG.hook.weight, CONFIG.hook.quality); 
-        
-        this.#fishingSystem = new FishingSystem(rod, reel, fish);
-        
         const initialX = CONFIG.float.initialX ?? this.#canvas.width / 2;
         const initialY = CONFIG.float.initialY ?? this.#canvas.height / 2;
         this.#float = new FloatEntity(initialX, initialY, CONFIG);
         
-        this.#tensionMeter = new TensionMeter(CONFIG.rod.level, CONFIG.reel.level, hook, CONFIG);
-        
-        const playerBasePower = rod.getPower() + reel.getPower();
-        this.#fishCondition = new FishCondition(CONFIG.fish.level, CONFIG.fish.weight, CONFIG);
-        this.#staminaController = new StaminaController(this.#fishCondition, fish, playerBasePower, CONFIG);
-        
-        // 4. Оновлюємо стан на режим вибору місця (scouting)
         this.#gameState = 'scouting';
+        this.#invalidCastMarker = null;
         
-        // 5. Межі (bounds) тепер дорівнюють фізичному розміру нашої віртуальної мапи (2560x2560)
         this.#bounds = {
             left: 0,
             right: CONFIG.locations.baseResolution.width,
@@ -1021,11 +1054,41 @@ class Game {
         this.loop = this.loop.bind(this);
     }
 
+    #toggleCameraMode() {
+        if (this.#gameState === 'scouting') {
+            this.#gameState = 'targeting';
+            this.#cameraToggleBtn.innerText = '📷 CAMERA: LOCKED (TAP TO CAST)';
+            this.#cameraToggleBtn.style.backgroundColor = '#555';
+            this.#cameraToggleBtn.style.color = '#fff';
+        } else if (this.#gameState === 'targeting') {
+            this.#gameState = 'scouting';
+            this.#cameraToggleBtn.innerText = '📷 CAMERA: FREE';
+            this.#cameraToggleBtn.style.backgroundColor = '#ffaa00';
+            this.#cameraToggleBtn.style.color = '#111';
+        }
+    }
+
+    #startFishing(virtualX, virtualY) {
+        this.#float.setPosition(virtualX, virtualY);
+        this.#gameState = 'playing';
+        if (this.#cameraToggleBtn) this.#cameraToggleBtn.style.display = 'none';
+        const rod = new Rod(CONFIG.rod.level, CONFIG.rod.basePower);
+        const reel = new Reel(CONFIG.reel.level, CONFIG.reel.basePower);
+        const hook = new Hook(CONFIG.hook.level, CONFIG.hook.weight, CONFIG.hook.quality); 
+        const fish = new Fish(CONFIG.fish.level, CONFIG.fish.weight, CONFIG.fish.resistance, CONFIG); 
+        
+        this.#fishingSystem = new FishingSystem(rod, reel, fish);
+        this.#tensionMeter = new TensionMeter(CONFIG.rod.level, CONFIG.reel.level, hook, CONFIG);
+        this.#fishCondition = new FishCondition(CONFIG.fish.level, CONFIG.fish.weight, CONFIG);
+        
+        const playerBasePower = rod.getPower() + reel.getPower();
+        this.#staminaController = new StaminaController(this.#fishCondition, fish, playerBasePower, CONFIG);
+    }
+
     #resizeCanvas() {
         this.#canvas.width = window.innerWidth;
         this.#canvas.height = window.innerHeight;
         
-        // Якщо проектор змінив масштаб (відбувся ресайз), примусово перераховуємо матрицю
         if (this.#projector && this.#projector.update(this.#canvas.width, this.#canvas.height)) {
             this.#locationMap.recalculateZones(this.#projector, CONFIG.locations.cellSize);
         }
@@ -1040,22 +1103,33 @@ class Game {
         this.#locationMap.update(dt);
 
         const inputState = this.#inputManager.getState();
-
-        // 1. РЕЖИМ ВИБОРУ МІСЦЯ (Скрол локації)
-        if (this.#gameState === 'scouting') {
-            if (inputState.panDeltaX !== 0) {
-                // Переводимо фізичні пікселі екрана у віртуальні через масштаб камери
+        if (this.#gameState === 'scouting' || this.#gameState === 'targeting') {
+            if (this.#gameState === 'scouting' && inputState.panDeltaX !== 0) {
                 const virtualDelta = inputState.panDeltaX / this.#projector.getScale();
                 this.#projector.pan(virtualDelta);
             }
-            // Поки ми обираємо місце, риболовля не йде, тому перериваємо update
+            if (inputState.clickPos) {
+                const vPos = this.#projector.screenToVirtual(inputState.clickPos.x, inputState.clickPos.y);
+                const cell = this.#locationMap.getCellAtVirtualPos(vPos.x, vPos.y, CONFIG.locations.cellSize);
+                
+                if (cell && cell.isCastable && !cell.hasCollision) {
+                    this.#startFishing(vPos.x, vPos.y);
+                } else {
+                    this.#invalidCastMarker = {
+                        x: inputState.clickPos.x,
+                        y: inputState.clickPos.y,
+                        timer: 500
+                    };
+                }
+            }
+            
+            if (this.#invalidCastMarker) {
+                this.#invalidCastMarker.timer -= dt;
+                if (this.#invalidCastMarker.timer <= 0) this.#invalidCastMarker = null;
+            }
             return; 
         }
-
-        // 2. РЕЖИМ РИБОЛОВЛІ (Боротьба)
-        if (this.#gameState !== 'playing') {
-            return;
-        }
+        if (this.#gameState !== 'playing') return;
 
         if (this.#tensionMeter.isBroken()) {
             this.#gameState = 'failed';
@@ -1064,7 +1138,6 @@ class Game {
         }
 
         const floatPos = this.#float.getPosition();
-
         const fishForceRaw = this.#fishingSystem.calculateFishForce(dt, floatPos.x, this.#bounds, CONFIG);
         const currentFishMaxForceScaled = Math.max(Math.abs(fishForceRaw.x), Math.abs(fishForceRaw.y)) * 0.01;
 
@@ -1083,26 +1156,46 @@ class Game {
         }
 
         this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, currentFishMaxForceScaled, dt, CONFIG);
-        this.#staminaController.evaluate(this.#tensionMeter.getTension(), inputState.isPulling, dt, floatPos.x, this.#bounds);
-        this.#float.update(this.#bounds);
+        
+        const castableBounds = this.#locationMap.getCastableBoundsVirtual(CONFIG.locations.cellSize);
+        const catchZoneHeight = CONFIG.ui?.catchZone?.height || 150;
+        
+        const vTopLeft = this.#projector.screenToVirtual(0, 0);
+        const vBottomRight = this.#projector.screenToVirtual(this.#canvas.width, this.#canvas.height - catchZoneHeight);
+        
+        const dynamicBounds = {
+            left: Math.max(vTopLeft.x, castableBounds ? castableBounds.left : 0),
+            right: Math.min(vBottomRight.x, castableBounds ? castableBounds.right : 2560),
+            top: Math.max(vTopLeft.y, castableBounds ? castableBounds.top : 0),
+            bottom: Math.min(vBottomRight.y, castableBounds ? castableBounds.bottom : 2560)
+        };
 
-        if (this.#float.getPosition().y >= this.#bounds.bottom) {
+        this.#staminaController.evaluate(this.#tensionMeter.getTension(), inputState.isPulling, dt, floatPos.x, dynamicBounds);
+        this.#float.update(dynamicBounds);
+        const floatScreenPos = this.#projector.virtualToScreen(floatPos.x, floatPos.y);
+        
+        if (floatScreenPos.y >= this.#canvas.height - catchZoneHeight) {
             this.#gameState = 'victory';
         }
     }
 
     draw() {
         this.#renderer.clear(CONFIG);
-        
         this.#renderer.drawLocationDebug(this.#locationMap, this.#projector, CONFIG);
 
-        const pos = this.#float.getPosition();
-        this.#renderer.drawRodLine(pos, CONFIG);
-        this.#renderer.drawFloat(pos, CONFIG);
-        
-        this.#renderer.drawTensionBar(this.#tensionMeter, CONFIG);
-        this.#renderer.drawFishCondition(this.#fishCondition, CONFIG);
+        if (this.#invalidCastMarker) {
+            this.#renderer.drawInvalidCastMarker(this.#invalidCastMarker);
+        }
 
+        if (this.#gameState === 'playing' || this.#gameState === 'failed' || this.#gameState === 'victory') {
+            const vPos = this.#float.getPosition();
+            const sPos = this.#projector.virtualToScreen(vPos.x, vPos.y);
+            this.#renderer.drawCatchZone(CONFIG);
+            this.#renderer.drawRodLine(sPos, CONFIG);
+            this.#renderer.drawFloat(sPos, CONFIG);
+            this.#renderer.drawTensionBar(this.#tensionMeter, CONFIG);
+            this.#renderer.drawFishCondition(this.#fishCondition, CONFIG);
+        }
         if (this.#gameState === 'failed') {
             this.#renderer.drawGameOver(this.#canvas.width, this.#canvas.height, this.#tensionMeter.getBreakReason());
         } else if (this.#gameState === 'victory') {

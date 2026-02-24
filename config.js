@@ -23,11 +23,12 @@ const CONFIG = {
                 depthBounds: { min: 1.5, max: 15.0 },
                 zones: {
                     castable: [
-                        { x: 0, y: 0, w: 40, h: 40 } 
+                        { x: 0, y: 13, w: 40, h: 20 } 
                     ],
                     collisions: [
-                        // { x: 5, y: 7, w: 2, h: 2 },
-                        // { x: 15, y: 12, w: 3, h: 1 }
+                        { x: 0, y: 0, w: 40, h: 13 },
+                        { x: 0, y: 33, w: 40, h: 7},
+                        { x: 0, y: 14, w: 6, h: 6},
                     ],
                     snags: [
                         // { x: 8, y: 10, w: 4, h: 3 }
@@ -49,12 +50,28 @@ const CONFIG = {
         }
     },
 
-    // Viewport Settings
-    viewport: {
-        marginLeft: 50,
-        marginRight: 50,
-        marginTop: 50,
-        marginBottom: 50,
+    ui: {
+        rod: {
+            x: 'center',
+            yOffset: 0
+        },
+
+        indicators: {
+            x: 'center',
+            y: 40,
+            spacing: 40
+        },
+
+        catchZone: {
+            height: 150,
+            color: 'rgba(0, 150, 255, 0.5)'
+        },
+
+        line: {
+            visible: true,
+            color: 'rgba(255, 255, 255, 0.3)',
+            width: 1
+        }
     },
 
     debug: {

@@ -111,6 +111,22 @@ class LocationMap {
         }
     }
 
+    getCastableBoundsVirtual(cellSize) {
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        const castableZones = this.#config.zones.castable;
+        
+        if (!castableZones || castableZones.length === 0) return null;
+
+        for (const z of castableZones) {
+            minX = Math.min(minX, z.x * cellSize);
+            minY = Math.min(minY, z.y * cellSize);
+            maxX = Math.max(maxX, (z.x + z.w) * cellSize);
+            maxY = Math.max(maxY, (z.y + z.h) * cellSize);
+        }
+
+        return { left: minX, right: maxX, top: minY, bottom: maxY };
+    }
+
     drawBackground(ctx, projector) {
         if (!this.#bgLoaded) return;
         const pos = projector.virtualToScreen(0, 0);
