@@ -145,8 +145,15 @@ class Equipment {
 }
 
 class Rod extends Equipment {
-    constructor(level, power) {
+    #compensation;
+
+    constructor(level, power, compensation = 0) {
         super(level, power);
+        this.#compensation = compensation;
+    }
+
+    getCompensation() {
+        return this.#compensation;
     }
 }
 
@@ -366,13 +373,24 @@ class FishingSystem {
         return this.#reel.getPower();
     }
 
-    calculatePlayerForce(inputDirection, config) {
+    calculatePlayerForce(inputDirection, floatX, floatY, rodVirtualPos, screenOffsetRatio, config) {
         const basePower = this.#rod.getPower() + this.#reel.getPower();
         const totalPower = basePower * this.#buffs.getTotalMultiplier();
         
+        const maxPenalty = config.physics.edgePullPenalty || 0.0;
+        const rodComp = this.#rod.getCompensation();
+        const effectivePenalty = maxPenalty * screenOffsetRatio * (1 - rodComp);
+        const penaltyMultiplier = Math.max(0.1, 1.0 - effectivePenalty);
+        
+        const effectivePower = totalPower * penaltyMultiplier;
+        
+        const pullDir = new Vector2(rodVirtualPos.x - floatX, rodVirtualPos.y - floatY).normalize();
+        
         let force = new Vector2(0, 0);
-        force.y = inputDirection.y * totalPower;
-        force.x = inputDirection.x * totalPower * config.physics.playerSteeringMultiplier;
+        force.x = pullDir.x * inputDirection.y * effectivePower;
+        force.y = pullDir.y * inputDirection.y * effectivePower;
+
+        force.x += inputDirection.x * totalPower * config.physics.playerSteeringMultiplier;
         
         return force;
     }
@@ -862,14 +880,22 @@ class Renderer {
     }
 
     drawRodLine(floatPos, config) {
-        if (config.ui?.line?.visible === false) return;
-        const rodBaseX = this.#resolveX(config.ui?.rod?.x, 0);
-        const rodBaseY = this.#canvas.height - (config.ui?.rod?.yOffset || 0);
+        const rodWidth = 3;
+        const rodHeight = 200;
         
+        let rodBaseX = this.#resolveX(config.ui?.rod?.x, rodWidth);
+        const rodBaseY = this.#canvas.height - (config.ui?.rod?.yOffset || 0);
+        const rodTopY = rodBaseY - rodHeight;
+
+        this.#ctx.fillStyle = '#000000';
+        this.#ctx.fillRect(rodBaseX - (rodWidth / 2), rodTopY, rodWidth, rodHeight);
+
+        if (config.ui?.line?.visible === false) return;
+
         this.#ctx.strokeStyle = config.ui?.line?.color || 'rgba(255, 255, 255, 0.3)';
         this.#ctx.lineWidth = config.ui?.line?.width || 1;
         this.#ctx.beginPath();
-        this.#ctx.moveTo(rodBaseX, rodBaseY);
+        this.#ctx.moveTo(rodBaseX, rodTopY);
         this.#ctx.lineTo(floatPos.x, floatPos.y);
         this.#ctx.stroke();
     }
@@ -1023,7 +1049,7 @@ class Game {
     constructor(canvasId) {
         this.#canvas = document.getElementById(canvasId);
         
-        this.#inputManager = new InputManager(this.#canvas);
+        this.#inputManager = new InputManager(this.#canvas, CONFIG);
         this.#renderer = new Renderer(this.#canvas);
         
         this.#locationMap = new LocationMap('test', CONFIG);
@@ -1103,11 +1129,13 @@ class Game {
         this.#locationMap.update(dt);
 
         const inputState = this.#inputManager.getState();
+        
         if (this.#gameState === 'scouting' || this.#gameState === 'targeting') {
             if (this.#gameState === 'scouting' && inputState.panDeltaX !== 0) {
                 const virtualDelta = inputState.panDeltaX / this.#projector.getScale();
                 this.#projector.pan(virtualDelta);
             }
+            
             if (inputState.clickPos) {
                 const vPos = this.#projector.screenToVirtual(inputState.clickPos.x, inputState.clickPos.y);
                 const cell = this.#locationMap.getCellAtVirtualPos(vPos.x, vPos.y, CONFIG.locations.cellSize);
@@ -1129,6 +1157,7 @@ class Game {
             }
             return; 
         }
+        
         if (this.#gameState !== 'playing') return;
 
         if (this.#tensionMeter.isBroken()) {
@@ -1144,16 +1173,50 @@ class Game {
         const fishForce = fishForceRaw.clone().multiplyScalar(CONFIG.physics.fishForceMultiplier);
         this.#float.applyForce(fishForce);
 
-        const rawPlayerPower = this.#fishingSystem.calculatePlayerForce(new Vector2(0, 1), CONFIG).y;
+        let rodScreenX = this.#canvas.width / 2;
+        if (CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== 'center') {
+            rodScreenX = Number(CONFIG.ui.rod.x);
+        }
+        const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
+        const rodVirtualPos = this.#projector.screenToVirtual(rodScreenX, rodScreenY);
+
+        const floatScreenPosInitial = this.#projector.virtualToScreen(floatPos.x, floatPos.y);
+        const maxOffsetDistance = Math.max(rodScreenX, this.#canvas.width - rodScreenX);
+        const screenOffsetRatio = Math.min(1, Math.abs(floatScreenPosInitial.x - rodScreenX) / maxOffsetDistance);
+
+        const rawPlayerPower = this.#fishingSystem.calculatePlayerForce(new Vector2(0, 1), floatPos.x, floatPos.y, rodVirtualPos, screenOffsetRatio, CONFIG).y;
         const playerMaxPower = Math.abs(rawPlayerPower * CONFIG.physics.playerForceMultiplier);
         const fishPowerMag = Math.abs(fishForce.y); 
         const reelPower = this.#fishingSystem.getReelPower();
 
         if (inputState.isPulling) {
-            const playerForceRaw = this.#fishingSystem.calculatePlayerForce(inputState.pullDirection, CONFIG);
+            const playerForceRaw = this.#fishingSystem.calculatePlayerForce(inputState.pullDirection, floatPos.x, floatPos.y, rodVirtualPos, screenOffsetRatio, CONFIG);
             const playerForce = playerForceRaw.clone().multiplyScalar(CONFIG.physics.playerForceMultiplier);
             this.#float.applyForce(playerForce);
         }
+
+        if (inputState.isPulling) {
+            const playerForceRaw = this.#fishingSystem.calculatePlayerForce(inputState.pullDirection, floatPos.x, floatPos.y, rodVirtualPos, screenOffsetRatio, CONFIG);
+            const playerForce = playerForceRaw.clone().multiplyScalar(CONFIG.physics.playerForceMultiplier);
+            this.#float.applyForce(playerForce);
+            
+            if (CONFIG.debug?.overlay) {
+                window.DEBUG_LIVE_PLAYER_FORCE_Y = Math.abs(playerForce.y);
+                window.DEBUG_LIVE_PLAYER_FORCE_X = Math.abs(playerForce.x);
+            }
+        } else {
+            if (CONFIG.debug?.overlay) {
+                window.DEBUG_LIVE_PLAYER_FORCE_Y = 0;
+                window.DEBUG_LIVE_PLAYER_FORCE_X = 0;
+            }
+        }
+
+        if (CONFIG.debug?.overlay) {
+            window.DEBUG_LIVE_FISH_FORCE_Y = Math.abs(fishForce.y);
+            window.DEBUG_LIVE_FISH_FORCE_X = Math.abs(fishForce.x);
+        }
+
+        this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, currentFishMaxForceScaled, dt, CONFIG);
 
         this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, currentFishMaxForceScaled, dt, CONFIG);
         
@@ -1172,7 +1235,9 @@ class Game {
 
         this.#staminaController.evaluate(this.#tensionMeter.getTension(), inputState.isPulling, dt, floatPos.x, dynamicBounds);
         this.#float.update(dynamicBounds);
-        const floatScreenPos = this.#projector.virtualToScreen(floatPos.x, floatPos.y);
+        
+        const updatedFloatPos = this.#float.getPosition();
+        const floatScreenPos = this.#projector.virtualToScreen(updatedFloatPos.x, updatedFloatPos.y);
         
         if (floatScreenPos.y >= this.#canvas.height - catchZoneHeight) {
             this.#gameState = 'victory';

@@ -75,7 +75,7 @@ const CONFIG = {
     },
 
     debug: {
-        overlay: false,
+        overlay: true,
     },
 
     logs: {
@@ -105,10 +105,7 @@ const CONFIG = {
     rod: {
         level: 5,
         basePower: 1.0,
-        lineColor: '#4a5b6c',
-        lineWidth: 1,
-        baseX: null, // null = canvas center
-        baseY: null, // null = canvas bottom
+        compensation: 0.8
     },
 
     // Reel Settings
@@ -154,6 +151,7 @@ const CONFIG = {
         fishForceMultiplier: 0.01,
         playerForceMultiplier: 0.017,
         playerSteeringMultiplier: 1.5, // Mechanical advantage of rod for X-axis steering
+        edgePullPenalty: 0.5, // 0.5 означає, що на краю екрана гравець втратить 50% сили
     },
 
     // Tension Meter Settings
@@ -219,6 +217,7 @@ const CONFIG = {
         background: '#0f171e',
         bodyBackground: '#1a1a1a',
     },
+
     // Stamina & Exhaustion (Fighting mechanics)
     stamina: {
         fish: {

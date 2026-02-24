@@ -33,16 +33,15 @@ class DebugOverlay {
         const currentFishBase = window.DEBUG_LIVE_FISH_POWER !== undefined ? window.DEBUG_LIVE_FISH_POWER : initialFishBase;
         const lostFishBase = initialFishBase - currentFishBase;
 
-        const pPower = (CONFIG.rod.level * CONFIG.rod.basePower) + (CONFIG.reel.level * CONFIG.reel.basePower);
-        const playerPullForce = pPower * CONFIG.physics.playerForceMultiplier;
-        const playerSteerForce = pPower * CONFIG.physics.playerSteeringMultiplier * CONFIG.physics.playerForceMultiplier;
-
         const currentState = window.DEBUG_LIVE_FISH_STATE;
         const currentPullMult = window.DEBUG_LIVE_FISH_PULL_MULT || 0;
         const currentMoveMult = window.DEBUG_LIVE_FISH_MOVE_MULT || 0;
 
-        const currentFishPullForce = currentFishBase * currentPullMult * CONFIG.physics.fishForceMultiplier;
-        const currentFishEscapeForce = currentFishBase * currentMoveMult * CONFIG.physics.fishForceMultiplier;
+        // ЗЧИТУЄМО РЕАЛЬНІ ФІЗИЧНІ СИЛИ З РУШІЯ
+        const playerPullForce = window.DEBUG_LIVE_PLAYER_FORCE_Y || 0;
+        const currentFishPullForce = window.DEBUG_LIVE_FISH_FORCE_Y || 0;
+        const playerSteerForce = window.DEBUG_LIVE_PLAYER_FORCE_X || 0;
+        const currentFishEscapeForce = window.DEBUG_LIVE_FISH_FORCE_X || 0;
 
         const totalPullForce = playerPullForce + currentFishPullForce;
         const playerPctY = totalPullForce > 0 ? (playerPullForce / totalPullForce) * 100 : 0;
