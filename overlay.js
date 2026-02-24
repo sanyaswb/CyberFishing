@@ -87,6 +87,38 @@ class DebugOverlay {
         
         const maxPossibleForceY = currentFishBase * maxPull * CONFIG.physics.fishForceMultiplier;
         const minPossibleForceY = currentFishBase * minPull * CONFIG.physics.fishForceMultiplier;
+        // --- РОЗРАХУНОК МЕЖ СИЛИ ГРАВЦЯ ---
+        const rPower = (CONFIG.rod.level * CONFIG.rod.basePower);
+        const rlPower = (CONFIG.reel.level * CONFIG.reel.basePower);
+        const pPower = rPower + rlPower; // Базова сила гравця
+        
+        // МАКСИМУМ Y (По центру, 0% штрафу)
+        const playerMaxForceY = pPower * CONFIG.physics.playerForceMultiplier;
+
+        const maxPenalty = CONFIG.physics.edgePullPenalty || 0.0;
+        const rodComp = CONFIG.rod.compensation || 0.0;
+        const worstPenaltyMult = Math.max(0.1, 1.0 - (maxPenalty * 1.0 * (1 - rodComp)));
+        const worstEffectivePower = pPower * worstPenaltyMult;
+
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
+        const rodScreenX = (CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== 'center') ? Number(CONFIG.ui.rod.x) : screenW / 2;
+        const maxOffsetDistance = Math.max(rodScreenX, screenW - rodScreenX);
+        const rodY = screenH - (CONFIG.ui?.catchZone?.height || 150);
+        const fishSpawnY = screenH * 0.2; 
+        const distanceY = rodY - fishSpawnY;
+
+        const worstPullDirLength = Math.hypot(maxOffsetDistance, distanceY);
+        const worstPullDirY = distanceY / worstPullDirLength;
+        const playerMinForceY = worstEffectivePower * worstPullDirY * CONFIG.physics.playerForceMultiplier;
+
+        // РОЗРАХУНОК ОСІ X (ГРАВЕЦЬ ТА РИБА)
+        // Кермування гравця: (Загальна сила) * Множник кермування * Фізичний множник
+        const playerSteerForceBase = pPower * CONFIG.physics.playerSteeringMultiplier * CONFIG.physics.playerForceMultiplier;
+        const playerSteerForceMin = worstEffectivePower * CONFIG.physics.playerSteeringMultiplier * CONFIG.physics.playerForceMultiplier;
+
+        // Ривок риби (Втеча): Залежить від edgePowerMultiplier
+        const fishEscapeForceMax = (currentFishBase * CONFIG.fish.edgePowerMultiplier) * CONFIG.physics.fishForceMultiplier;
 
         this.#container.innerHTML = `
             <div style="color: #00ccff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">🧠 ПОВЕДІНКА (STATE)</div>
@@ -104,10 +136,19 @@ class DebugOverlay {
             <div style="margin-bottom: 2px;">SWIM: ${swimForceStr}</div>
             <div style="margin-bottom: 2px;">IDLE: ${idleForceStr}</div>
             <div style="margin-bottom: 6px;">REST: ${restForceStr}</div>
-            <div style="margin-bottom: 12px; padding-top: 4px; border-top: 1px dashed #4a5b6c; font-size: 13px; font-weight: bold;">
-                АБС. МІНІМУМ: <span style="color: #00ff80;">${minPossibleForceY.toFixed(3)}</span><br>
-                АБС. МАКСИМУМ: <span style="color: #ff4444;">${maxPossibleForceY.toFixed(3)}</span>
+            <div style="margin-bottom: 4px; padding-top: 4px; border-top: 1px dashed #4a5b6c; font-size: 13px; font-weight: bold;">
+                АБС. МІНІМУМ (Y): <span style="color: #00ff80;">${minPossibleForceY.toFixed(3)}</span><br>
+                АБС. МАКСИМУМ (Y): <span style="color: #ff4444;">${maxPossibleForceY.toFixed(3)}</span>
             </div>
+            <div style="margin-bottom: 12px; font-size: 13px; font-weight: bold;">
+                ВТЕЧА В КУТ (MAX X): <span style="color: #ff4444;">${fishEscapeForceMax.toFixed(3)}</span>
+            </div>
+
+            <div style="color: #00ff80; margin-top: 12px; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">📊 СИЛА ГРАВЦЯ (MAX Y & X)</div>
+            <div style="margin-bottom: 2px;">ТЯГА МІНІМУМ (Кут Y): <span style="color: #ffaa00; font-weight: bold;">${playerMinForceY.toFixed(3)}</span></div>
+            <div style="margin-bottom: 6px;">ТЯГА МАКСИМУМ (Центр Y): <span style="color: #00ff80; font-weight: bold;">${playerMaxForceY.toFixed(3)}</span></div>
+            <div style="margin-bottom: 2px;">КЕРМО МІНІМУМ (Кут X): <span style="color: #ffaa00; font-weight: bold;">${playerSteerForceMin.toFixed(3)}</span></div>
+            <div style="margin-bottom: 12px;">КЕРМО МАКСИМУМ (Центр X): <span style="color: #00ff80; font-weight: bold;">${playerSteerForceBase.toFixed(3)}</span></div>
             
             <div style="color: #00ccff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">⚖️ LIVE: ТЯГА (Вісь Y)</div>
             <div style="margin-bottom: 4px;">Гравець: <span style="color: #00ff80;">${playerPullForce.toFixed(3)}</span> | Риба: <span style="color: #ff4444;">${currentFishPullForce.toFixed(3)}</span></div>

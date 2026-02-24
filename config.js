@@ -140,9 +140,9 @@ const CONFIG = {
         edgePowerMultiplier: 1.0,
         behaviors: {
                 // idle: { pull: 0.05, move: 0.0, minTime: 2000, maxTime: 4000, weight: 10 },
-                rest: { pull: 0.2, move: 0.1, minTime: 500, maxTime: 1500, weight: 20 },
-                swim: { pull: 0.8, move: 1.0, minTime: 2000, maxTime: 4000, weight: 50 },
-                dash: { pull: 1.5, move: 0.0, minTime: 500, maxTime: 1200, weight: 30 }
+                rest: { pull: 0.2, move: 0.1, minTime: 5000, maxTime: 15000, weight: 20 },
+                swim: { pull: 0.8, move: 1.0, minTime: 20000, maxTime: 40000, weight: 50 },
+                dash: { pull: 1.5, move: 0.0, minTime: 5000, maxTime: 12000, weight: 30 }
             }
     },
 
