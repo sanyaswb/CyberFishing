@@ -404,10 +404,12 @@ class FishingSystem {
 
         const basePower = this.#fish.getPower();
         const behavior = this.#fish.getBehavior(dt);
+        
         if (config.debug && config.debug.overlay) {
             window.DEBUG_LIVE_FISH_STATE = behavior.name;
             window.DEBUG_LIVE_FISH_PULL_MULT = behavior.pullMult;
             window.DEBUG_LIVE_FISH_MOVE_MULT = Math.abs(behavior.moveX);
+            window.DEBUG_LIVE_FISH_BASE_POWER = basePower;
         }
 
         let force = new Vector2(0, 0);
