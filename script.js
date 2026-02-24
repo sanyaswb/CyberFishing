@@ -767,6 +767,7 @@ class Renderer {
     }
     
     drawLocationDebug(locationMap, projector, config) {
+        locationMap.drawBackground(this.#ctx, projector);
         const grid = locationMap.getGrid();
         const cols = locationMap.getCols();
         const rows = locationMap.getRows();
@@ -992,16 +993,18 @@ class Game {
     constructor(canvasId) {
         this.#canvas = document.getElementById(canvasId);
         
-        this.#resizeCanvas();
-        window.addEventListener('resize', () => this.#resizeCanvas());
-
+        // 1. Спочатку створюємо менеджери та модулі локації
         this.#inputManager = new InputManager(this.#canvas);
         this.#renderer = new Renderer(this.#canvas);
         
         this.#locationMap = new LocationMap('test', CONFIG);
-        const baseRes = CONFIG.locations.baseResolution;
-        this.#projector = new ViewportProjector(baseRes.width, baseRes.height);
+        this.#projector = new ViewportProjector(CONFIG);
         
+        // 2. Тепер безпечно викликаємо ресайз (він підтягне розміри екрана і налаштує проектор)
+        this.#resizeCanvas();
+        window.addEventListener('resize', () => this.#resizeCanvas());
+
+        // 3. Ініціалізуємо снасті
         const rod = new Rod(CONFIG.rod.level, CONFIG.rod.basePower);
         const reel = new Reel(CONFIG.reel.level, CONFIG.reel.basePower);
         const fish = new Fish(CONFIG.fish.level, CONFIG.fish.weight, CONFIG.fish.resistance, CONFIG); 
@@ -1019,13 +1022,15 @@ class Game {
         this.#fishCondition = new FishCondition(CONFIG.fish.level, CONFIG.fish.weight, CONFIG);
         this.#staminaController = new StaminaController(this.#fishCondition, fish, playerBasePower, CONFIG);
         
-        this.#gameState = 'playing';
+        // 4. Оновлюємо стан на режим вибору місця (scouting)
+        this.#gameState = 'scouting';
         
+        // 5. Межі (bounds) тепер дорівнюють фізичному розміру нашої віртуальної мапи (2560x2560)
         this.#bounds = {
-            left: CONFIG.viewport.marginLeft,
-            right: this.#canvas.width - CONFIG.viewport.marginRight,
-            top: CONFIG.viewport.marginTop,
-            bottom: this.#canvas.height - CONFIG.viewport.marginBottom
+            left: 0,
+            right: CONFIG.locations.baseResolution.width,
+            top: 0,
+            bottom: CONFIG.locations.baseResolution.height
         };
 
         this.#lastTime = performance.now();
@@ -1035,8 +1040,10 @@ class Game {
     #resizeCanvas() {
         this.#canvas.width = window.innerWidth;
         this.#canvas.height = window.innerHeight;
-        if (this.#projector) {
-            this.#projector.update(this.#canvas.width, this.#canvas.height);
+        
+        // Якщо проектор змінив масштаб (відбувся ресайз), примусово перераховуємо матрицю
+        if (this.#projector && this.#projector.update(this.#canvas.width, this.#canvas.height)) {
+            this.#locationMap.recalculateZones(this.#projector, CONFIG.locations.cellSize);
         }
     }
 

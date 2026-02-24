@@ -10,34 +10,39 @@ const CONFIG = {
 
     locations: {
         baseResolution: { width: 2560, height: 2560 },
-        cellSize: 128,
+        cellSize: 64,
         map: {
             test: {
                 id: 'test',
                 name: 'Test Waters',
+                bgUrl: 'bg_test.png', // Шлях до твоєї картинки
+                // x: 'left', 'center', 'right'
+                // y: 'top', 'center', 'bottom', 'safeZone'
+                initialAlignment: { x: 'center', y: 'center' }, 
+                safeZone: { top: 0, bottom: 2560 }, 
                 depthBounds: { min: 1.5, max: 15.0 },
                 zones: {
                     castable: [
-                        { x: 2, y: 5, w: 16, h: 14 }
+                        { x: 0, y: 0, w: 40, h: 40 } 
                     ],
                     collisions: [
-                        { x: 5, y: 7, w: 2, h: 2 },
-                        { x: 15, y: 12, w: 3, h: 1 }
+                        // { x: 5, y: 7, w: 2, h: 2 },
+                        // { x: 15, y: 12, w: 3, h: 1 }
                     ],
                     snags: [
-                        { x: 8, y: 10, w: 4, h: 3 }
+                        // { x: 8, y: 10, w: 4, h: 3 }
                     ],
                     dynamic: [
-                        { 
-                            id: 'fish_school_1', 
-                            type: 'buff', 
-                            multiplier: 1.5, 
-                            x: 10, y: 15, w: 3, h: 3, 
-                            moving: true, 
-                            speedX: 1.2, 
-                            speedY: 0.8, 
-                            bounds: { x: 2, y: 5, w: 16, h: 14 }
-                        }
+                        // { 
+                        //     id: 'fish_school_1', 
+                        //     type: 'buff', 
+                        //     multiplier: 1.5, 
+                        //     x: 10, y: 15, w: 3, h: 3, 
+                        //     moving: true, 
+                        //     speedX: 1.2, 
+                        //     speedY: 0.8, 
+                        //     bounds: { x: 0, y: 5, w: 20, h: 14 }
+                        // }
                     ]
                 }
             }
@@ -97,7 +102,7 @@ const CONFIG = {
 
     // Hook Settings
     hook: {
-        level: 4,
+        level: 5,
         weight: 4,
         quality: 1, // Аналог resistance у риби
     },

@@ -85,18 +85,39 @@ class LocationMap {
     #cols;
     #rows;
     #dynamicZones;
+    #bgImage;
+    #bgLoaded;
 
     constructor(locationId, config) {
         this.#config = config.locations.map[locationId];
         this.#id = locationId;
         this.#dynamicZones = [];
+        this.#bgLoaded = false;
         
         const baseRes = config.locations.baseResolution;
         this.#cols = Math.ceil(baseRes.width / config.locations.cellSize);
         this.#rows = Math.ceil(baseRes.height / config.locations.cellSize);
         
+        this.#bgImage = new Image();
+        this.#bgImage.onload = () => { this.#bgLoaded = true; };
+        this.#bgImage.src = this.#config.bgUrl;
+
         this.#buildGrid(config.locations.cellSize);
-        this.#applyZones();
+        
+        if (this.#config.zones.dynamic) {
+            for (const dzConfig of this.#config.zones.dynamic) {
+                this.#dynamicZones.push(new DynamicZone(dzConfig));
+            }
+        }
+    }
+
+    drawBackground(ctx, projector) {
+        if (!this.#bgLoaded) return;
+        const pos = projector.virtualToScreen(0, 0);
+        const scale = projector.getScale();
+        const w = 2560 * scale;
+        const h = 2560 * scale;
+        ctx.drawImage(this.#bgImage, pos.x, pos.y, w, h);
     }
 
     #buildGrid(cellSize) {
@@ -111,21 +132,47 @@ class LocationMap {
         }
     }
 
-    #applyZones() {
+    recalculateZones(projector, cellSize) {
+        // 1. Очищаємо стару сітку
+        for (let i = 0; i < this.#cols; i++) {
+            for (let j = 0; j < this.#rows; j++) {
+                this.#grid[i][j].isCastable = false;
+                this.#grid[i][j].hasCollision = false;
+                this.#grid[i][j].hasSnag = false;
+            }
+        }
+
+        // 2. Вираховуємо видимі межі екрана у віртуальних координатах (для адаптивності)
+        let visibleStartCol = 0;
+        let visibleEndCol = this.#cols;
+
+        if (projector) {
+            const vLeft = projector.screenToVirtual(0, 0).x;
+            const vRight = projector.screenToVirtual(projector.getCanvasWidth(), 0).x;
+            
+            visibleStartCol = Math.max(0, Math.floor(vLeft / cellSize));
+            visibleEndCol = Math.min(this.#cols, Math.ceil(vRight / cellSize));
+        }
+
+        // 3. Застосовуємо зони (з підтримкою adaptiveX)
         for (const z of this.#config.zones.castable) {
-            for (let i = z.x; i < z.x + z.w; i++) {
+            let startX = z.adaptiveX ? visibleStartCol : z.x;
+            let width = z.adaptiveX ? (visibleEndCol - visibleStartCol) : z.w;
+
+            for (let i = startX; i < startX + width; i++) {
                 for (let j = z.y; j < z.y + z.h; j++) {
                     if (this.#isValid(i, j)) this.#grid[i][j].isCastable = true;
                 }
             }
         }
 
+        // Статичні зони колізій і зачепів залишаються на своїх місцях
         for (const z of this.#config.zones.collisions) {
             for (let i = z.x; i < z.x + z.w; i++) {
                 for (let j = z.y; j < z.y + z.h; j++) {
                     if (this.#isValid(i, j)) {
                         this.#grid[i][j].hasCollision = true;
-                        this.#grid[i][j].isCastable = false;
+                        this.#grid[i][j].isCastable = false; // Колізія перекриває зелену зону
                     }
                 }
             }
@@ -138,10 +185,15 @@ class LocationMap {
                 }
             }
         }
-        
-        if (this.#config.zones.dynamic) {
-            for (const dzConfig of this.#config.zones.dynamic) {
-                this.#dynamicZones.push(new DynamicZone(dzConfig));
+
+        // Оновлюємо межі для динамічних зон (щоб риба не випливала за новий adaptiveX)
+        const castableZone = this.#config.zones.castable[0];
+        if (castableZone && castableZone.adaptiveX) {
+            for (const dz of this.#dynamicZones) {
+                if (dz.bounds) {
+                    dz.bounds.x = visibleStartCol;
+                    dz.bounds.w = visibleEndCol - visibleStartCol;
+                }
             }
         }
     }
@@ -169,37 +221,95 @@ class LocationMap {
 }
 
 class ViewportProjector {
-    #canvasWidth;
-    #canvasHeight;
     #virtualWidth;
     #virtualHeight;
+    #safeZoneTop;
+    #safeZoneBottom;
+    #canvasWidth;
+    #canvasHeight;
     #scale;
     #offsetX;
     #offsetY;
+    #cameraX;
+    #maxScrollX;
+    #alignment;
+    #isFirstUpdate;
 
-    constructor(virtualWidth, virtualHeight) {
-        this.#virtualWidth = virtualWidth;
-        this.#virtualHeight = virtualHeight;
+    constructor(config) {
+        this.#virtualWidth = config.locations.baseResolution.width;
+        this.#virtualHeight = config.locations.baseResolution.height;
+        this.#safeZoneTop = config.locations.map.test.safeZone.top;
+        this.#safeZoneBottom = config.locations.map.test.safeZone.bottom;
+        
+        // Зчитуємо об'єкт вирівнювання (з фоллбеком)
+        this.#alignment = config.locations.map.test.initialAlignment || { x: 'center', y: 'safeZone' };
+        
         this.#scale = 1;
         this.#offsetX = 0;
         this.#offsetY = 0;
+        this.#cameraX = 0;
+        this.#maxScrollX = 0;
+        this.#canvasWidth = 0;
+        this.#canvasHeight = 0;
+        this.#isFirstUpdate = true;
     }
 
     update(canvasWidth, canvasHeight) {
-        if (this.#canvasWidth === canvasWidth && this.#canvasHeight === canvasHeight) return;
-        
+        if (this.#canvasWidth === canvasWidth && this.#canvasHeight === canvasHeight) return false;
+
         this.#canvasWidth = canvasWidth;
         this.#canvasHeight = canvasHeight;
 
-        const scaleX = this.#canvasWidth / this.#virtualWidth;
-        const scaleY = this.#canvasHeight / this.#virtualHeight;
-        this.#scale = Math.max(scaleX, scaleY);
+        // 1. РОЗРАХУНОК МАСШТАБУ (Cover Effect)
+        const safeZoneHeight = this.#safeZoneBottom - this.#safeZoneTop;
+        const scaleForWidth = this.#canvasWidth / this.#virtualWidth;
+        const scaleForSafeHeight = this.#canvasHeight / safeZoneHeight;
+        
+        this.#scale = Math.max(scaleForWidth, scaleForSafeHeight);
 
-        const mapDisplayWidth = this.#virtualWidth * this.#scale;
-        const mapDisplayHeight = this.#virtualHeight * this.#scale;
+        // 2. ВЕРТИКАЛЬНЕ ВИРІВНЮВАННЯ (Залежить від alignment.y)
+        const scaledHeight = this.#virtualHeight * this.#scale;
+        
+        if (this.#alignment.y === 'top') {
+            this.#offsetY = 0; // Притиснути до верху
+        } else if (this.#alignment.y === 'bottom') {
+            this.#offsetY = this.#canvasHeight - scaledHeight; // Притиснути до низу
+        } else if (this.#alignment.y === 'center') {
+            this.#offsetY = (this.#canvasHeight - scaledHeight) / 2; // Центр всієї картинки
+        } else { 
+            // 'safeZone' - центрує рівно ігрову зелену зону (для ідеального фокусу на воді)
+            const scaledSafeZoneTop = this.#safeZoneTop * this.#scale;
+            const scaledSafeZoneHeight = safeZoneHeight * this.#scale;
+            this.#offsetY = ((this.#canvasHeight - scaledSafeZoneHeight) / 2) - scaledSafeZoneTop;
+        }
 
-        this.#offsetX = (this.#canvasWidth - mapDisplayWidth) / 2;
-        this.#offsetY = (this.#canvasHeight - mapDisplayHeight) / 2;
+        // 3. ГОРИЗОНТАЛЬНИЙ СКРОЛ ТА ВИРІВНЮВАННЯ
+        const scaledWidth = this.#virtualWidth * this.#scale;
+        this.#maxScrollX = Math.max(0, scaledWidth - this.#canvasWidth);
+
+        if (this.#maxScrollX > 0) {
+            if (this.#isFirstUpdate) {
+                if (this.#alignment.x === 'center') this.#cameraX = this.#maxScrollX / 2;
+                else if (this.#alignment.x === 'right') this.#cameraX = this.#maxScrollX;
+                else this.#cameraX = 0; // left
+                
+                this.#isFirstUpdate = false;
+            } else {
+                this.#cameraX = Math.max(0, Math.min(this.#cameraX, this.#maxScrollX));
+            }
+            this.#offsetX = -this.#cameraX;
+        } else {
+            this.#cameraX = 0;
+            this.#offsetX = (this.#canvasWidth - scaledWidth) / 2;
+        }
+
+        return true; 
+    }
+
+    pan(deltaX) {
+        if (this.#maxScrollX <= 0) return;
+        this.#cameraX = Math.max(0, Math.min(this.#cameraX + deltaX, this.#maxScrollX));
+        this.#offsetX = -this.#cameraX;
     }
 
     screenToVirtual(screenX, screenY) {
@@ -217,4 +327,6 @@ class ViewportProjector {
     }
 
     getScale() { return this.#scale; }
+    getCanvasWidth() { return this.#canvasWidth; }
+    getMaxScrollX() { return this.#maxScrollX; }
 }
