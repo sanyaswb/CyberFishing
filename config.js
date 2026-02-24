@@ -1,7 +1,3 @@
-// ============================================================================
-// FISHING GAME CONFIGURATION
-// ============================================================================
-
 const CONFIG = {
     canvas: {
         id: 'gameCanvas',
@@ -134,16 +130,19 @@ const CONFIG = {
     // Fish Settings
     fish: {
         level: 4,
-        weight: 4,
-        resistance: 1,
-        agility: 1.0,
-        edgePowerMultiplier: 1.0,
-        behaviors: {
-                // idle: { pull: 0.05, move: 0.0, minTime: 2000, maxTime: 4000, weight: 10 },
-                rest: { pull: 0.2, move: 0.1, minTime: 5000, maxTime: 15000, weight: 20 },
-                swim: { pull: 0.8, move: 1.0, minTime: 20000, maxTime: 40000, weight: 50 },
-                dash: { pull: 1.5, move: 0.0, minTime: 5000, maxTime: 12000, weight: 30 }
-            }
+        weight: 4, // Affects base power and stamina
+        resistance: 1, // Affects how much tension increases per unit of player input
+        agility: 1.0, // Affects how quickly fish changes direction
+        edgePowerMultiplier: 1.0, // How much stronger the fish gets near edges (1.0 = no change)
+        bounceCooldownMs: 2000, // Minimum time between direction changes after hitting a wall
+        dirChangeMinMs: 500, // Minimum time between random direction changes
+        dirChangeMaxMs: 1500, // Maximum time between random direction changes
+        behaviors: { // Defines different behavior states with their own pull/move multipliers and durations
+            idle: { pull: 1, move: 0.0, minTime: 500, maxTime: 2000, weight: 50 },
+            rest: { pull: 0.2, move: 0.1, minTime: 500, maxTime: 1500, weight: 10 },
+            swim: { pull: 0.8, move: 1.0, minTime: 2000, maxTime: 4000, weight: 10 },
+            dash: { pull: 1.5, move: 0.0, minTime: 500, maxTime: 1200, weight: 30 }
+        }
     },
 
     // Force Multipliers

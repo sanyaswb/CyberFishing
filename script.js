@@ -287,6 +287,13 @@ class FishBehavior {
         this.#stateTimer = state.minTime + Math.random() * (state.maxTime - state.minTime);
     }
 
+    reactToWall(wallSide) {
+        this.#targetDirX = wallSide === -1 ? 1 : -1;
+        this.#currentDirX = this.#targetDirX;
+        this.#dirTimer = this.#config.bounceCooldownMs || 2000;
+        this.#stateTimer = 0;
+    }
+
     update(dt) {
         this.#stateTimer -= dt;
         if (this.#stateTimer <= 0) {
@@ -296,7 +303,9 @@ class FishBehavior {
         this.#dirTimer -= dt;
         if (this.#dirTimer <= 0) {
             this.#targetDirX = (Math.random() * 2) - 1;
-            this.#dirTimer = 500 + Math.random() * 1500;
+            const minMs = this.#config.dirChangeMinMs || 500;
+            const maxMs = this.#config.dirChangeMaxMs || 2000;
+            this.#dirTimer = minMs + Math.random() * (maxMs - minMs);
         }
 
         const t = Math.min(1, (dt / 1000) * 3.0 * this.#config.agility);
@@ -349,6 +358,12 @@ class Fish {
     getBehavior(dt) {
         this.#behavior.update(dt);
         return this.#behavior.getStateData();
+    }
+
+    reactToWall(wallSide) {
+        if (this.#behavior && typeof this.#behavior.reactToWall === 'function') {
+            this.#behavior.reactToWall(wallSide);
+        }
     }
 }
 
@@ -405,20 +420,37 @@ class FishingSystem {
         const basePower = this.#fish.getPower();
         const behavior = this.#fish.getBehavior(dt);
         
+        const isAtLeftWall = floatX <= bounds.left + 5;
+        const isAtRightWall = floatX >= bounds.right - 5;
+
+        if (isAtLeftWall && behavior.moveX < 0) {
+            this.#fish.reactToWall(-1);
+        } else if (isAtRightWall && behavior.moveX > 0) {
+            this.#fish.reactToWall(1);
+        }
+        
+        const finalBehavior = this.#fish.getBehavior(0); 
+
         if (config.debug && config.debug.overlay) {
-            window.DEBUG_LIVE_FISH_STATE = behavior.name;
-            window.DEBUG_LIVE_FISH_PULL_MULT = behavior.pullMult;
-            window.DEBUG_LIVE_FISH_MOVE_MULT = Math.abs(behavior.moveX);
+            window.DEBUG_LIVE_FISH_STATE = finalBehavior.name;
+            window.DEBUG_LIVE_FISH_PULL_MULT = finalBehavior.pullMult;
+            window.DEBUG_LIVE_FISH_MOVE_MULT = Math.abs(finalBehavior.moveX);
             window.DEBUG_LIVE_FISH_BASE_POWER = basePower;
         }
 
         let force = new Vector2(0, 0);
-        force.y = -basePower * behavior.pullMult;
+        force.y = -basePower * finalBehavior.pullMult;
         
         const pushDirection = Math.sign(floatX - centerX);
-        const escapeForceX = pushDirection * spatialPenalty * config.fish.edgePowerMultiplier * basePower;
+        let escapeForceX = 0;
         
-        force.x = (behavior.moveX * basePower) + escapeForceX;
+        const isSwimmingToCenter = Math.sign(finalBehavior.moveX) === -pushDirection && finalBehavior.moveX !== 0;
+        
+        if (!isSwimmingToCenter) {
+            escapeForceX = pushDirection * spatialPenalty * config.fish.edgePowerMultiplier * basePower;
+        }
+        
+        force.x = (finalBehavior.moveX * basePower) + escapeForceX;
         
         return force;
     }
