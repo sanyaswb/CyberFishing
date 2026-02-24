@@ -35,92 +35,76 @@ class Vector2 {
 }
 
 class InputManager {
-    #state;
     #canvas;
+    #isPulling;
+    #pullDirection;
+    #isDragging;
+    #lastPointerX;
+    #panDeltaX;
 
     constructor(canvas) {
         this.#canvas = canvas;
-        this.#state = {
-            isPulling: false,
-            pullDirection: new Vector2(0, 0),
-            pointerDown: false,
-            pointerStart: new Vector2(0, 0),
-            pointerCurrent: new Vector2(0, 0),
-            keys: { left: false, right: false, space: false }
-        };
+        this.#isPulling = false;
+        this.#pullDirection = new Vector2(0, 1);
+        
+        // Нові змінні для скролу
+        this.#isDragging = false;
+        this.#lastPointerX = 0;
+        this.#panDeltaX = 0;
 
         this.#bindEvents();
     }
 
     #bindEvents() {
-        window.addEventListener('keydown', (e) => this.#handleKey(e, true));
-        window.addEventListener('keyup', (e) => this.#handleKey(e, false));
+        this.#canvas.addEventListener('pointerdown', (e) => {
+            this.#isPulling = true;
+            this.#isDragging = true;
+            this.#lastPointerX = e.clientX; // Запам'ятовуємо, де палець торкнувся екрана
+            this.#updateDirection(e);
+        });
 
-        this.#canvas.addEventListener('mousedown', (e) => this.#handlePointerDown(e.clientX, e.clientY));
-        window.addEventListener('mousemove', (e) => this.#handlePointerMove(e.clientX, e.clientY));
-        window.addEventListener('mouseup', () => this.#handlePointerUp());
-
-        this.#canvas.addEventListener('touchstart', (e) => this.#handlePointerDown(e.touches[0].clientX, e.touches[0].clientY), { passive: false });
-        window.addEventListener('touchmove', (e) => this.#handlePointerMove(e.touches[0].clientX, e.touches[0].clientY), { passive: false });
-        window.addEventListener('touchend', () => this.#handlePointerUp());
-    }
-
-    #handleKey(e, isPressed) {
-        if (e.code === 'ArrowLeft') this.#state.keys.left = isPressed;
-        if (e.code === 'ArrowRight') this.#state.keys.right = isPressed;
-        if (e.code === 'Space') this.#state.keys.space = isPressed;
-        this.#updateInputState();
-    }
-
-    #handlePointerDown(x, y) {
-        this.#state.pointerDown = true;
-        this.#state.pointerStart.x = x;
-        this.#state.pointerStart.y = y;
-        this.#state.pointerCurrent.x = x;
-        this.#state.pointerCurrent.y = y;
-        this.#updateInputState();
-    }
-
-    #handlePointerMove(x, y) {
-        if (!this.#state.pointerDown) return;
-        this.#state.pointerCurrent.x = x;
-        this.#state.pointerCurrent.y = y;
-        this.#updateInputState();
-    }
-
-    #handlePointerUp() {
-        this.#state.pointerDown = false;
-        this.#updateInputState();
-    }
-
-    #updateInputState() {
-        this.#state.isPulling = this.#state.pointerDown || this.#state.keys.space;
-        
-        let rawX = 0;
-        let rawY = 0;
-
-        if (this.#state.keys.left) rawX -= 1;
-        if (this.#state.keys.right) rawX += 1;
-        if (this.#state.keys.space) rawY += 1;
-
-        if (this.#state.pointerDown) {
-            const diffX = this.#state.pointerCurrent.x - this.#state.pointerStart.x;
-            const deadzone = CONFIG.input.pointerThreshold || 10;
-            const dragRadius = CONFIG.input.dragRadius || 100;
-            
-            if (Math.abs(diffX) > deadzone) {
-                const activeDiff = diffX > 0 ? diffX - deadzone : diffX + deadzone;
-                rawX = activeDiff / dragRadius;
+        this.#canvas.addEventListener('pointermove', (e) => {
+            if (this.#isDragging) {
+                // Вираховуємо свайп: (стара позиція - нова позиція) для природного скролу
+                this.#panDeltaX = this.#lastPointerX - e.clientX;
+                this.#lastPointerX = e.clientX;
             }
-            rawY += 1;
-        }
+            if (this.#isPulling) {
+                this.#updateDirection(e);
+            }
+        });
 
-        this.#state.pullDirection.x = Math.max(-1, Math.min(1, rawX));
-        this.#state.pullDirection.y = Math.max(0, Math.min(1, rawY));
+        window.addEventListener('pointerup', (e) => {
+            this.#isPulling = false;
+            this.#isDragging = false;
+            this.#pullDirection = new Vector2(0, 1);
+        });
+
+        this.#canvas.addEventListener('contextmenu', e => e.preventDefault());
+    }
+
+    #updateDirection(e) {
+        const rect = this.#canvas.getBoundingClientRect();
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const dx = e.clientX - rect.left - centerX;
+        const dy = e.clientY - rect.top - centerY;
+        
+        const length = Math.hypot(dx, dy);
+        if (length > 0) {
+            this.#pullDirection = new Vector2(dx / length, dy / length);
+        }
     }
 
     getState() {
-        return this.#state;
+        const state = {
+            isPulling: this.#isPulling,
+            pullDirection: this.#pullDirection,
+            panDeltaX: this.#panDeltaX
+        };
+        // Обнуляємо дельту після зчитування, щоб камера не ковзала вічно
+        this.#panDeltaX = 0; 
+        return state;
     }
 }
 
@@ -1055,6 +1039,20 @@ class Game {
         this.#projector.update(this.#canvas.width, this.#canvas.height);
         this.#locationMap.update(dt);
 
+        const inputState = this.#inputManager.getState();
+
+        // 1. РЕЖИМ ВИБОРУ МІСЦЯ (Скрол локації)
+        if (this.#gameState === 'scouting') {
+            if (inputState.panDeltaX !== 0) {
+                // Переводимо фізичні пікселі екрана у віртуальні через масштаб камери
+                const virtualDelta = inputState.panDeltaX / this.#projector.getScale();
+                this.#projector.pan(virtualDelta);
+            }
+            // Поки ми обираємо місце, риболовля не йде, тому перериваємо update
+            return; 
+        }
+
+        // 2. РЕЖИМ РИБОЛОВЛІ (Боротьба)
         if (this.#gameState !== 'playing') {
             return;
         }
@@ -1065,11 +1063,9 @@ class Game {
             return;
         }
 
-        const inputState = this.#inputManager.getState();
         const floatPos = this.#float.getPosition();
 
         const fishForceRaw = this.#fishingSystem.calculateFishForce(dt, floatPos.x, this.#bounds, CONFIG);
-        
         const currentFishMaxForceScaled = Math.max(Math.abs(fishForceRaw.x), Math.abs(fishForceRaw.y)) * 0.01;
 
         const fishForce = fishForceRaw.clone().multiplyScalar(CONFIG.physics.fishForceMultiplier);
@@ -1087,9 +1083,7 @@ class Game {
         }
 
         this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, currentFishMaxForceScaled, dt, CONFIG);
-
         this.#staminaController.evaluate(this.#tensionMeter.getTension(), inputState.isPulling, dt, floatPos.x, this.#bounds);
-
         this.#float.update(this.#bounds);
 
         if (this.#float.getPosition().y >= this.#bounds.bottom) {
