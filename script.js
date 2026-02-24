@@ -802,11 +802,57 @@ class TensionMeter {
 class Renderer {
     #canvas;
     #ctx;
+    #fullscreenBtn;
 
     constructor(canvas) {
         this.#canvas = canvas;
         this.#ctx = canvas.getContext('2d', { alpha: false });
+        this.#initFullscreenBtn();
     }
+
+    #initFullscreenBtn() {
+        this.#fullscreenBtn = document.createElement('button');
+        this.#fullscreenBtn.innerHTML = '⛶ FULLSCREEN';
+        
+        Object.assign(this.#fullscreenBtn.style, {
+            position: 'absolute',
+            top: '15px',
+            right: '15px',
+            padding: '8px 16px',
+            backgroundColor: 'rgba(15, 23, 30, 0.8)',
+            color: '#00ff80',
+            border: '1px solid #00ff80',
+            borderRadius: '4px',
+            fontFamily: 'monospace',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            zIndex: '9999',
+            transition: 'all 0.2s ease'
+        });
+
+        this.#fullscreenBtn.addEventListener('mouseenter', () => {
+            this.#fullscreenBtn.style.backgroundColor = 'rgba(0, 255, 128, 0.2)';
+        });
+        
+        this.#fullscreenBtn.addEventListener('mouseleave', () => {
+            this.#fullscreenBtn.style.backgroundColor = 'rgba(15, 23, 30, 0.8)';
+        });
+
+        this.#fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            this.#fullscreenBtn.innerHTML = document.fullscreenElement ? '🗗 EXIT FULLSCREEN' : '⛶ FULLSCREEN';
+        });
+
+        document.body.appendChild(this.#fullscreenBtn);
+    }
+
     #resolveX(configValue, elementWidth = 0) {
         if (configValue === 'center') {
             return (this.#canvas.width - elementWidth) / 2;
