@@ -1137,7 +1137,6 @@ class Game {
     #staminaController;
     #locationMap;
     #projector;
-    // #cameraToggleBtn;
     #invalidCastMarker;
     #netCatchChance = null;
     #isNetReady = false;
@@ -1176,20 +1175,6 @@ class Game {
         this.loop = this.loop.bind(this);
     }
 
-    // #toggleCameraMode() {
-    //     if (this.#gameState === 'scouting') {
-    //         this.#gameState = 'targeting';
-    //         this.#cameraToggleBtn.innerText = '📷 CAMERA: LOCKED (TAP TO CAST)';
-    //         this.#cameraToggleBtn.style.backgroundColor = '#555';
-    //         this.#cameraToggleBtn.style.color = '#fff';
-    //     } else if (this.#gameState === 'targeting') {
-    //         this.#gameState = 'scouting';
-    //         this.#cameraToggleBtn.innerText = '📷 CAMERA: FREE';
-    //         this.#cameraToggleBtn.style.backgroundColor = '#ffaa00';
-    //         this.#cameraToggleBtn.style.color = '#111';
-    //     }
-    // }
-
     #startFishing(virtualX, virtualY) {
         this.#float.setPosition(virtualX, virtualY);
         this.#gameState = 'playing';
@@ -1198,7 +1183,6 @@ class Game {
         this.#isNetReady = false;
         this.failReason = null;
 
-        // if (this.#cameraToggleBtn) this.#cameraToggleBtn.style.display = 'none';
         const rod = new Rod(CONFIG.rod.level, CONFIG.rod.basePower);
         const reel = new Reel(CONFIG.reel.level, CONFIG.reel.basePower);
         const hook = new Hook(CONFIG.hook.level, CONFIG.hook.weight, CONFIG.hook.quality); 
@@ -1391,11 +1375,11 @@ class Game {
             document.dispatchEvent(new CustomEvent('debug-live-update', { detail: debugData }));
         }
 
-        this.#uiManager.updateNetButtonState(CONFIG, this.#isNetReady && this.#gameState === 'playing');
-
         if (floatScreenPos.y >= catchLineY) {
             this.#gameState = 'victory';
         }
+
+        this.#uiManager.updateNetButtonState(CONFIG, this.#isNetReady && this.#gameState === 'playing');
     }
 
     draw() {

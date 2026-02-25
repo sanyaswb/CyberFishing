@@ -125,7 +125,7 @@ const CONFIG = {
 
     hook: {
         level: 5,
-        weight: 4,
+        weight: 8, // Affects how much tension increases per unit of player input
         quality: 1, // Аналог resistance у риби
     },
 
@@ -150,7 +150,7 @@ const CONFIG = {
         behaviors: { // Defines different behavior states with their own pull/move multipliers and durations
             idle: { pull: 1, move: 0.5, minTime: 500, maxTime: 2000, weight: 50 },
             rest: { pull: 0.2, move: 0.1, minTime: 500, maxTime: 1500, weight: 10 },
-            swim: { pull: 0.8, move: 1.0, minTime: 2000, maxTime: 4000, weight: 10 },
+            swim: { pull: 0.8, move: 0.5, minTime: 2000, maxTime: 4000, weight: 10 },
             dash: { pull: 1.5, move: 1.2, minTime: 500, maxTime: 1200, weight: 30 }
         }
     },

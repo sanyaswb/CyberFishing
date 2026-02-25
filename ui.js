@@ -1,5 +1,5 @@
 const UI_EXCEPTIONS = {
-    tags: ['INPUT', 'TEXTAREA'],
+    tags: ['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT', 'A'],
     classes: [],
     ids: []
 };
@@ -11,7 +11,6 @@ function initEngineInterface() {
             -webkit-tap-highlight-color: transparent !important;
             -webkit-touch-callout: none !important;
         }
-
         body {
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -20,17 +19,14 @@ function initEngineInterface() {
             touch-action: none;
             overflow: hidden;
         }
-
         *:focus {
             outline: none !important;
         }
-
         button, a {
             transition: transform 0.12s ease-out;
             -webkit-user-select: none;
             user-select: none;
         }
-
         button:active, a:active {
             transform: scale(0.96);
         }
@@ -38,22 +34,42 @@ function initEngineInterface() {
     document.head.appendChild(style);
 
     document.addEventListener('touchstart', () => {}, { passive: true });
-
     document.addEventListener('contextmenu', (e) => {
         const t = e.target;
-        
         const isException = 
             UI_EXCEPTIONS.tags.includes(t.tagName) ||
             UI_EXCEPTIONS.classes.some(c => t.classList.contains(c)) ||
             UI_EXCEPTIONS.ids.includes(t.id);
-
-        if (!isException) {
-            e.preventDefault();
-        }
+        if (!isException) e.preventDefault();
     });
 }
 
 initEngineInterface();
+
+class UIUtils {
+    static makeSolid(element) {
+        if (!element) return;
+
+        const eventsToBlock = [
+            'pointerdown', 'pointerup', 'pointermove', 'mousedown', 'mouseup', 
+            'click', 'dblclick', 'touchstart', 'touchend', 'touchmove', 'wheel'
+        ];
+
+        eventsToBlock.forEach(evt => {
+            // ВИПРАВЛЕННЯ: Використовуємо capture: false (Bubbling)
+            // Це дозволяє дітям (+ / -) та власним обробникам перетягування спрацювати першими.
+            element.addEventListener(evt, (e) => {
+                e.stopPropagation(); 
+                // Ми видалили stopImmediatePropagation, щоб не блокувати 
+                // інші скрипти на цьому ж елементі.
+            }, { capture: false }); 
+        });
+
+        element.addEventListener('contextmenu', e => e.preventDefault());
+        element.style.touchAction = 'none';
+        element.style.pointerEvents = 'all';
+    }
+}
 
 class UIDraggableButton {
     #element;
@@ -76,7 +92,8 @@ class UIDraggableButton {
         this.#holdTimer = null;
         this.#isDragging = false;
         
-        this.#element.style.touchAction = 'none';
+        // Спочатку робимо солідним (буде зупиняти спливання)
+        UIUtils.makeSolid(this.#element);
         
         this.onPointerDown = this.onPointerDown.bind(this);
         this.onPointerMove = this.onPointerMove.bind(this);
@@ -86,22 +103,19 @@ class UIDraggableButton {
     }
 
     #initEvents() {
+        // ВИПРАВЛЕННЯ: Використовуємо стандартну фазу для перетягування
         this.#element.addEventListener('pointerdown', this.onPointerDown);
         
         this.#element.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
         });
-
-        this.#element.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: false });
-        this.#element.addEventListener('touchend', (e) => e.stopPropagation(), { passive: false });
-        this.#element.addEventListener('touchmove', (e) => e.stopPropagation(), { passive: false });
-        this.#element.addEventListener('mousedown', (e) => e.stopPropagation());
-        this.#element.addEventListener('mouseup', (e) => e.stopPropagation());
     }
 
     onPointerDown(e) {
+        // Дозволяємо перетягування, але не даємо події піти до гри
         e.stopPropagation();
+        
         if (e.button !== 0 && e.pointerType === 'mouse') return;
 
         this.#element.setPointerCapture(e.pointerId);
@@ -111,8 +125,8 @@ class UIDraggableButton {
         this.#startY = e.clientY;
 
         const rect = this.#element.getBoundingClientRect();
-        this.#offsetX = e.clientX - rect.left;
-        this.#offsetY = e.clientY - rect.top;
+        this.#offsetX = (e.clientX - rect.left);
+        this.#offsetY = (e.clientY - rect.top);
 
         if (this.#config.ui?.draggableButtons) {
             this.#holdTimer = setTimeout(() => {
@@ -120,6 +134,7 @@ class UIDraggableButton {
             }, this.#config.ui?.dragHoldTimeMs || 1500);
         }
 
+        // Слухачі руху додаємо на вікно або елемент для надійності
         this.#element.addEventListener('pointermove', this.onPointerMove);
         this.#element.addEventListener('pointerup', this.onPointerUp);
         this.#element.addEventListener('pointercancel', this.onPointerUp);
@@ -127,24 +142,19 @@ class UIDraggableButton {
 
     #startDrag() {
         this.#isDragging = true;
-        
         if (!this.#options.noTransform) {
             this.#element.style.transform = 'scale(1.1)';
             this.#element.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
             this.#element.style.transition = 'none';
         }
-        
         this.#element.style.position = 'absolute';
         this.#element.style.margin = '0';
         this.#element.style.right = 'auto';
         this.#element.style.bottom = 'auto';
-        
         this.#updatePosition(this.#startX, this.#startY);
     }
 
     onPointerMove(e) {
-        e.stopPropagation();
-        
         if (!this.#isDragging) {
             const dist = Math.hypot(e.clientX - this.#startX, e.clientY - this.#startY);
             if (dist > 10 && this.#holdTimer) {
@@ -153,29 +163,24 @@ class UIDraggableButton {
             }
             return;
         }
-
         this.#updatePosition(e.clientX, e.clientY);
     }
 
     #updatePosition(clientX, clientY) {
         let x = clientX - this.#offsetX;
         let y = clientY - this.#offsetY;
-
         const rect = this.#element.getBoundingClientRect();
         x = Math.max(0, Math.min(x, window.innerWidth - rect.width));
         y = Math.max(0, Math.min(y, window.innerHeight - rect.height));
-
         this.#element.style.left = `${x}px`;
         this.#element.style.top = `${y}px`;
     }
 
     onPointerUp(e) {
-        e.stopPropagation();
         this.#element.releasePointerCapture(e.pointerId);
-        
-        this.#element.removeEventListener('pointermove', this.onPointerMove);
-        this.#element.removeEventListener('pointerup', this.onPointerUp);
-        this.#element.removeEventListener('pointercancel', this.onPointerUp);
+        this.#element.removeEventListener('pointermove', this.onPointerMove, { capture: true });
+        this.#element.removeEventListener('pointerup', this.onPointerUp, { capture: true });
+        this.#element.removeEventListener('pointercancel', this.onPointerUp, { capture: true });
 
         if (this.#holdTimer) {
             clearTimeout(this.#holdTimer);
@@ -184,7 +189,6 @@ class UIDraggableButton {
 
         if (this.#isDragging) {
             this.#isDragging = false;
-            
             if (!this.#options.noTransform) {
                 this.#element.style.transform = '';
                 this.#element.style.boxShadow = '';
@@ -192,9 +196,7 @@ class UIDraggableButton {
             }
         } else {
             const dist = Math.hypot(e.clientX - this.#startX, e.clientY - this.#startY);
-            if (dist < 10 && this.#onClickCallback) {
-                this.#onClickCallback(e);
-            }
+            if (dist < 10 && this.#onClickCallback) this.#onClickCallback(e);
         }
     }
 }

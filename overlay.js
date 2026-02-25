@@ -23,18 +23,18 @@ class DebugOverlay {
     }
 
     #initDOM() {
-        // 1. Головний контейнер (Він буде перетягуватися)
         this.#container = document.createElement('div');
-        this.#container.style.cssText = 'position: absolute; top: 10px; left: 10px; background: rgba(11, 21, 32, 0.95); color: #ffffff; padding: 15px 15px 50px 15px; font-family: monospace; font-size: 14px; border: 1px solid #4a5b6c; border-radius: 8px; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.6); min-width: 280px; transform-origin: top left; touch-action: none;';
+        this.#container.style.cssText = 'position: absolute; top: 10px; left: 10px; background: rgba(11, 21, 32, 0.95); color: #ffffff; padding: 15px 15px 50px 15px; font-family: monospace; font-size: 14px; border: 1px solid #4a5b6c; border-radius: 8px; z-index: 10000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.6); min-width: 280px; transform-origin: top left; touch-action: none; pointer-events: all;';
         
-        // 2. Контейнер для тексту (який оновлюється кожні 100мс)
+        // Використовуємо універсальний щит
+        UIUtils.makeSolid(this.#container);
+
         this.#content = document.createElement('div');
-        this.#content.style.pointerEvents = 'none'; // Щоб кліки проходили наскрізь до головного контейнера для перетягування
+        this.#content.style.pointerEvents = 'none'; 
         this.#container.appendChild(this.#content);
 
-        // 3. Контейнер для кнопок масштабу (внизу по центру)
         const controlsDiv = document.createElement('div');
-        controlsDiv.style.cssText = 'position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; z-index: 1001;';
+        controlsDiv.style.cssText = 'position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; z-index: 10001; pointer-events: all;';
 
         const btnMinus = document.createElement('button');
         btnMinus.innerHTML = '-';
@@ -44,27 +44,33 @@ class DebugOverlay {
         btnPlus.innerHTML = '+';
         this.#styleZoomBtn(btnPlus);
 
-        // Обробка кліків по кнопках (зупиняємо поширення, щоб не спрацьовувало перетягування)
         const handleZoom = (e, delta) => {
-            e.stopPropagation();
             e.preventDefault();
-            this.#userScale = Math.max(0.3, Math.min(3.0, this.#userScale + delta)); // Обмеження масштабу від 0.3 до 3.0
+            e.stopPropagation();
+            e.stopImmediatePropagation(); 
+            this.#userScale = Math.max(0.3, Math.min(3.0, this.#userScale + delta));
             this.#forceScaleUpdate();
         };
 
-        btnMinus.addEventListener('pointerdown', (e) => handleZoom(e, -0.1));
-        btnPlus.addEventListener('pointerdown', (e) => handleZoom(e, 0.1));
-        // Для надійності на мобільних
-        btnMinus.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: false });
-        btnPlus.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: false });
+        // ВАЖЛИВО: додано { capture: true } для кнопок
+        [ {btn: btnMinus, d: -0.1}, {btn: btnPlus, d: 0.1} ].forEach(({btn, d}) => {
+            btn.addEventListener('pointerdown', (e) => handleZoom(e, d), { capture: true, passive: false });
+            btn.addEventListener('touchstart', (e) => handleZoom(e, d), { capture: true, passive: false });
+            
+            ['pointerup', 'touchend', 'click', 'mousedown', 'mouseup'].forEach(evt => {
+                btn.addEventListener(evt, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                }, { capture: true });
+            });
+        });
 
         controlsDiv.appendChild(btnMinus);
         controlsDiv.appendChild(btnPlus);
         this.#container.appendChild(controlsDiv);
-
         document.body.appendChild(this.#container);
 
-        // 4. Робимо оверлей рухомим через наш універсальний клас!
         if (typeof UIDraggableButton !== 'undefined' && typeof CONFIG !== 'undefined') {
             new UIDraggableButton(this.#container, null, CONFIG, { noTransform: true });
         }
