@@ -1,20 +1,42 @@
+// Зручний конфіг для увімкнення/вимкнення блоків оверлею
+const OVERLAY_MODULES = {
+    state: true,         // 🧠 ПОВЕДІНКА (STATE)
+    fishBase: true,      // 🔥 ПОТОЧНА БАЗОВА СИЛА РИБИ
+    fishStates: true,    // 📊 СИЛА РИБИ ЗА СТАНАМИ (MAX Y та X)
+    worstCase: true,     // 💀 НАЙГІРШИЙ СЦЕНАРІЙ (НИЖНІЙ КУТ)
+    playerMax: true,     // 📊 СИЛА ГРАВЦЯ (MAX Y & X)
+    liveY: true,         // ⚖️ LIVE: ТЯГА (Вісь Y)
+    liveX: true          // ⚖️ LIVE: КЕРУВАННЯ (Вісь X)
+};
+
 class DebugOverlay {
     #container;
     #intervalId;
+    #data = {};
 
     constructor() {
         this.#initDOM();
+        this.#initListener();
         this.#start();
     }
 
     #initDOM() {
         this.#container = document.createElement('div');
-        this.#container.style.cssText = 'position: absolute; top: 10px; left: 10px; background: rgba(11, 21, 32, 0.95); color: #ffffff; padding: 15px; font-family: monospace; font-size: 14px; border: 1px solid #4a5b6c; border-radius: 8px; pointer-events: none; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.6); min-width: 280px;';
+        this.#container.style.cssText = 'position: absolute; top: 10px; left: 10px; background: rgba(11, 21, 32, 0.95); color: #ffffff; padding: 15px; font-family: monospace; font-size: 14px; border: 1px solid #4a5b6c; border-radius: 8px; pointer-events: none; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.6); min-width: 280px; transform-origin: top left;';
         document.body.appendChild(this.#container);
     }
 
+    #initListener() {
+        document.addEventListener('debug-live-update', (e) => {
+            this.#data = e.detail; 
+            if (this.#container.style.display === 'none') {
+                this.#container.style.display = 'block';
+            }
+        });
+    }
+
     #getStateColor(state) {
-        switch(state) {
+        switch(state.toLowerCase()) {
             case 'dash': return '#ff4444';
             case 'swim': return '#ffaa00';
             case 'rest': return '#00ff80';
@@ -24,23 +46,27 @@ class DebugOverlay {
     }
 
     #update() {
-        if (typeof CONFIG === 'undefined' || !CONFIG.debug?.overlay || window.DEBUG_LIVE_FISH_STATE === undefined) {
+        if (typeof CONFIG === 'undefined' || !CONFIG.debug?.overlay) {
             this.#container.style.display = 'none';
             return;
         }
 
+        const d = this.#data;
+        
+        // --- БАЗОВІ ЗМІННІ ---
         const initialFishBase = (CONFIG.fish.level * CONFIG.fish.weight) + CONFIG.fish.resistance;
-        const currentFishBase = window.DEBUG_LIVE_FISH_BASE_POWER !== undefined ? window.DEBUG_LIVE_FISH_BASE_POWER : initialFishBase;
+        const currentFishBase = d.fishBasePower || initialFishBase;
         const lostFishBase = initialFishBase - currentFishBase;
 
-        const currentState = window.DEBUG_LIVE_FISH_STATE;
-        const currentPullMult = window.DEBUG_LIVE_FISH_PULL_MULT || 0;
-        const currentMoveMult = window.DEBUG_LIVE_FISH_MOVE_MULT || 0;
+        const currentState = d.fishState || '---';
+        const currentPullMult = d.pullMult || 0;
+        const currentMoveMult = d.moveMult || 0;
+        const stateColor = this.#getStateColor(currentState);
 
-        const playerPullForce = window.DEBUG_LIVE_PLAYER_FORCE_Y || 0;
-        const currentFishPullForce = window.DEBUG_LIVE_FISH_FORCE_Y || 0;
-        const playerSteerForce = window.DEBUG_LIVE_PLAYER_FORCE_X || 0;
-        const currentFishEscapeForce = window.DEBUG_LIVE_FISH_FORCE_X || 0;
+        const playerPullForce = d.playerForceY || 0;
+        const currentFishPullForce = d.fishForceY || 0;
+        const playerSteerForce = d.playerForceX || 0;
+        const currentFishEscapeForce = d.fishForceX || 0;
 
         const totalPullForce = playerPullForce + currentFishPullForce;
         const playerPctY = totalPullForce > 0 ? (playerPullForce / totalPullForce) * 100 : 0;
@@ -50,122 +76,171 @@ class DebugOverlay {
         const playerPctX = totalSteerForce > 0 ? (playerSteerForce / totalSteerForce) * 100 : 0;
         const fishPctX = totalSteerForce > 0 ? (currentFishEscapeForce / totalSteerForce) * 100 : 0;
 
-        const stateColor = this.#getStateColor(currentState);
-
-        const leaderTextY = fishPctY > playerPctY 
-            ? `<span style="color: #ff4444;">🚨 Риба тягне сильніше на ${(fishPctY - playerPctY).toFixed(1)}%</span>` 
-            : `<span style="color: #00ff80;">💪 Гравець тягне сильніше на ${(playerPctY - fishPctY).toFixed(1)}%</span>`;
-
-        const leaderTextX = fishPctX > playerPctX 
-            ? `<span style="color: #ff4444;">🚨 Риба втікає (Домінує на ${(fishPctX - playerPctX).toFixed(1)}%)</span>` 
-            : `<span style="color: #00ff80;">✅ Керування стабільне (Перевага ${(playerPctX - fishPctX).toFixed(1)}%)</span>`;
-
+        // --- ЛОГІКА ДЛЯ РИБИ ---
         const behaviors = CONFIG.fish.behaviors || {};
-        const getFishStateForce = (stateName) => {
-            if (!behaviors[stateName]) return '<span style="color: #666;">відсутній стан</span>';
-            const statePullMult = behaviors[stateName].pull;
-            const stateForce = currentFishBase * statePullMult * CONFIG.physics.fishForceMultiplier;
-            return `<span style="color: ${this.#getStateColor(stateName)}; font-weight: bold;">${stateForce.toFixed(3)}</span>`;
-        };
-
-        const dashForceStr = getFishStateForce('dash');
-        const swimForceStr = getFishStateForce('swim');
-        const idleForceStr = getFishStateForce('idle');
-        const restForceStr = getFishStateForce('rest');
-
-        let maxPull = 0;
-        let minPull = Infinity;
+        let maxPull = 0, minPull = Infinity, maxMove = 0;
         const behaviorKeys = Object.keys(behaviors);
+        
         if (behaviorKeys.length > 0) {
             behaviorKeys.forEach(k => {
                 if (behaviors[k].pull > maxPull) maxPull = behaviors[k].pull;
                 if (behaviors[k].pull < minPull) minPull = behaviors[k].pull;
+                if (Math.abs(behaviors[k].move || 0) > maxMove) maxMove = Math.abs(behaviors[k].move || 0);
             });
         } else {
             minPull = 0;
         }
-        
+
+        const getFishStateForceCompact = (stateName) => {
+            if (!behaviors[stateName]) return `<div style="margin-bottom: 2px;">${stateName.toUpperCase()}: <span style="color: #666;">відсутній</span></div>`;
+            const yForce = currentFishBase * behaviors[stateName].pull * CONFIG.physics.fishForceMultiplier;
+            const xForce = currentFishBase * Math.abs(behaviors[stateName].move || 0) * CONFIG.physics.fishForceMultiplier;
+            return `
+                <div style="margin-bottom: 2px; display: flex; justify-content: space-between;">
+                    <span style="color: ${this.#getStateColor(stateName)}; font-weight: bold;">${stateName.toUpperCase()}</span>
+                    <span style="color: #e6e6e6;">Y: <span style="color: ${this.#getStateColor(stateName)}; font-weight: bold;">${yForce.toFixed(3)}</span> | X: <span style="color: ${this.#getStateColor(stateName)}; font-weight: bold;">${xForce.toFixed(3)}</span></span>
+                </div>
+            `;
+        };
+
         const maxPossibleForceY = currentFishBase * maxPull * CONFIG.physics.fishForceMultiplier;
         const minPossibleForceY = currentFishBase * minPull * CONFIG.physics.fishForceMultiplier;
-        // --- РОЗРАХУНОК МЕЖ СИЛИ ГРАВЦЯ ---
+        const worstFishY = maxPossibleForceY;
+        const worstFishX = currentFishBase * (maxMove + (CONFIG.fish.edgePowerMultiplier || 0)) * CONFIG.physics.fishForceMultiplier;
+
+        // --- ЛОГІКА ДЛЯ ГРАВЦЯ ---
         const rPower = (CONFIG.rod.level * CONFIG.rod.basePower);
         const rlPower = (CONFIG.reel.level * CONFIG.reel.basePower);
-        const pPower = rPower + rlPower; // Базова сила гравця
-        
-        // МАКСИМУМ Y (По центру, 0% штрафу)
-        const playerMaxForceY = pPower * CONFIG.physics.playerForceMultiplier;
+        const pPower = rPower + rlPower;
 
         const maxPenalty = CONFIG.physics.edgePullPenalty || 0.0;
         const rodComp = CONFIG.rod.compensation || 0.0;
-        const worstPenaltyMult = Math.max(0.1, 1.0 - (maxPenalty * 1.0 * (1 - rodComp)));
+        const worstPenaltyMult = Math.max(0.1, 1.0 - (maxPenalty * (1 - rodComp)));
         const worstEffectivePower = pPower * worstPenaltyMult;
 
         const screenW = window.innerWidth;
         const screenH = window.innerHeight;
         const rodScreenX = (CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== 'center') ? Number(CONFIG.ui.rod.x) : screenW / 2;
         const maxOffsetDistance = Math.max(rodScreenX, screenW - rodScreenX);
-        const rodY = screenH - (CONFIG.ui?.catchZone?.height || 150);
-        const fishSpawnY = screenH * 0.2; 
-        const distanceY = rodY - fishSpawnY;
+        const worstDistanceY = 50; 
+        
+        const worstPullDirLength = Math.hypot(maxOffsetDistance, worstDistanceY);
+        const worstPullDirY = worstDistanceY / worstPullDirLength; 
 
-        const worstPullDirLength = Math.hypot(maxOffsetDistance, distanceY);
-        const worstPullDirY = distanceY / worstPullDirLength;
-        const playerMinForceY = worstEffectivePower * worstPullDirY * CONFIG.physics.playerForceMultiplier;
-
-        // РОЗРАХУНОК ОСІ X (ГРАВЕЦЬ ТА РИБА)
-        // Кермування гравця: (Загальна сила) * Множник кермування * Фізичний множник
+        const worstPlayerY = worstEffectivePower * worstPullDirY * CONFIG.physics.playerForceMultiplier;
         const playerSteerForceBase = pPower * CONFIG.physics.playerSteeringMultiplier * CONFIG.physics.playerForceMultiplier;
         const playerSteerForceMin = worstEffectivePower * CONFIG.physics.playerSteeringMultiplier * CONFIG.physics.playerForceMultiplier;
+        const bestPlayerY = pPower * CONFIG.physics.playerForceMultiplier;
 
-        // Ривок риби (Втеча): Залежить від edgePowerMultiplier
-        const fishEscapeForceMax = (currentFishBase * CONFIG.fish.edgePowerMultiplier) * CONFIG.physics.fishForceMultiplier;
+        // --- ЗБІРКА МОДУЛЬНОГО HTML ---
+        let html = '';
 
-        this.#container.innerHTML = `
-            <div style="color: #00ccff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">🧠 ПОВЕДІНКА (STATE)</div>
-            <div style="margin-bottom: 4px;">Стан: <span style="color: ${stateColor}; text-transform: uppercase; font-weight: bold;">${currentState}</span></div>
-            <div style="margin-bottom: 4px;">Множник Тяги (Y): <span style="color: ${stateColor};">x${currentPullMult.toFixed(2)}</span></div>
-            <div style="margin-bottom: 12px;">Множник Втечі (X): <span style="color: ${stateColor};">x${currentMoveMult.toFixed(2)}</span></div>
-            
-            <div style="color: #ffaa00; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">🔥 ПОТОЧНА БАЗОВА СИЛА РИБИ</div>
-            <div style="margin-bottom: 4px;">Початкова база: <span style="color: #8a9bac;">${initialFishBase.toFixed(2)}</span></div>
-            <div style="margin-bottom: 4px;">Втрачено (Виснаження): <span style="color: #ff4444; font-weight: bold;">-${lostFishBase.toFixed(2)}</span></div>
-            <div style="margin-bottom: 12px; font-size: 16px;">Поточна: <span style="color: #00ff80; font-weight: bold;">${currentFishBase.toFixed(2)}</span></div>
+        if (OVERLAY_MODULES.state) {
+            html += `
+                <div style="color: #00ccff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">🧠 ПОВЕДІНКА (STATE)</div>
+                <div style="margin-bottom: 4px;">Стан: <span style="color: ${stateColor}; text-transform: uppercase; font-weight: bold;">${currentState}</span></div>
+                <div style="margin-bottom: 4px;">Множник Тяги (Y): <span style="color: ${stateColor};">x${currentPullMult.toFixed(2)}</span></div>
+                <div style="margin-bottom: 12px;">Множник Втечі (X): <span style="color: ${stateColor};">x${currentMoveMult.toFixed(2)}</span></div>
+            `;
+        }
 
-            <div style="color: #ffaa00; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">📊 СИЛА РИБИ ЗА СТАНАМИ (MAX Y)</div>
-            <div style="margin-bottom: 2px;">DASH: ${dashForceStr}</div>
-            <div style="margin-bottom: 2px;">SWIM: ${swimForceStr}</div>
-            <div style="margin-bottom: 2px;">IDLE: ${idleForceStr}</div>
-            <div style="margin-bottom: 6px;">REST: ${restForceStr}</div>
-            <div style="margin-bottom: 4px; padding-top: 4px; border-top: 1px dashed #4a5b6c; font-size: 13px; font-weight: bold;">
-                АБС. МІНІМУМ (Y): <span style="color: #00ff80;">${minPossibleForceY.toFixed(3)}</span><br>
-                АБС. МАКСИМУМ (Y): <span style="color: #ff4444;">${maxPossibleForceY.toFixed(3)}</span>
-            </div>
-            <div style="margin-bottom: 12px; font-size: 13px; font-weight: bold;">
-                ВТЕЧА В КУТ (MAX X): <span style="color: #ff4444;">${fishEscapeForceMax.toFixed(3)}</span>
-            </div>
+        if (OVERLAY_MODULES.fishBase) {
+            html += `
+                <div style="color: #ffaa00; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">🔥 ПОТОЧНА БАЗОВА СИЛА РИБИ</div>
+                <div style="margin-bottom: 4px;">Початкова база: <span style="color: #8a9bac;">${initialFishBase.toFixed(2)}</span></div>
+                <div style="margin-bottom: 4px;">Втрачено (Виснаження): <span style="color: #ff4444; font-weight: bold;">-${lostFishBase.toFixed(2)}</span></div>
+                <div style="margin-bottom: 12px; font-size: 16px;">Поточна: <span style="color: #00ff80; font-weight: bold;">${currentFishBase.toFixed(2)}</span></div>
+            `;
+        }
 
-            <div style="color: #00ff80; margin-top: 12px; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">📊 СИЛА ГРАВЦЯ (MAX Y & X)</div>
-            <div style="margin-bottom: 2px;">ТЯГА МІНІМУМ (Кут Y): <span style="color: #ffaa00; font-weight: bold;">${playerMinForceY.toFixed(3)}</span></div>
-            <div style="margin-bottom: 6px;">ТЯГА МАКСИМУМ (Центр Y): <span style="color: #00ff80; font-weight: bold;">${playerMaxForceY.toFixed(3)}</span></div>
-            <div style="margin-bottom: 2px;">КЕРМО МІНІМУМ (Кут X): <span style="color: #ffaa00; font-weight: bold;">${playerSteerForceMin.toFixed(3)}</span></div>
-            <div style="margin-bottom: 12px;">КЕРМО МАКСИМУМ (Центр X): <span style="color: #00ff80; font-weight: bold;">${playerSteerForceBase.toFixed(3)}</span></div>
-            
-            <div style="color: #00ccff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">⚖️ LIVE: ТЯГА (Вісь Y)</div>
-            <div style="margin-bottom: 4px;">Гравець: <span style="color: #00ff80;">${playerPullForce.toFixed(3)}</span> | Риба: <span style="color: #ff4444;">${currentFishPullForce.toFixed(3)}</span></div>
-            <div style="margin-bottom: 4px; font-weight: bold;">
-                <span style="color: #ff4444;">Риба ${fishPctY.toFixed(1)}%</span> VS <span style="color: #00ff80;">Гравець ${playerPctY.toFixed(1)}%</span>
-            </div>
-            <div style="font-weight: bold; font-size: 13px; margin-bottom: 12px;">${leaderTextY}</div>
+        if (OVERLAY_MODULES.fishStates) {
+            html += `
+                <div style="color: #ffaa00; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">📊 СИЛА РИБИ ЗА СТАНАМИ (MAX Y та X)</div>
+                ${getFishStateForceCompact('dash')}
+                ${getFishStateForceCompact('swim')}
+                ${getFishStateForceCompact('idle')}
+                ${getFishStateForceCompact('rest')}
+                <div style="margin-bottom: 12px;"></div>
+            `;
+        }
 
-            <div style="color: #00ccff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">⚖️ LIVE: КЕРУВАННЯ (Вісь X)</div>
-            <div style="margin-bottom: 4px;">Гравець: <span style="color: #00ff80;">${playerSteerForce.toFixed(3)}</span> | Риба: <span style="color: #ff4444;">${currentFishEscapeForce.toFixed(3)}</span></div>
-            <div style="margin-bottom: 4px; font-weight: bold;">
-                <span style="color: #ff4444;">Риба ${fishPctX.toFixed(1)}%</span> VS <span style="color: #00ff80;">Гравець ${playerPctX.toFixed(1)}%</span>
-            </div>
-            <div style="font-weight: bold; font-size: 13px;">${leaderTextX}</div>
-        `;
-        
+        if (OVERLAY_MODULES.worstCase) {
+            html += `
+                <div style="color: #ff4444; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">💀 НАЙГІРШІ УМОВИ (КУТ)</div>
+                <div style="color: #8a9bac; font-size: 12px; margin-bottom: 4px;">Максимальна тяга X:</div>
+                <div style="margin-bottom: 2px; display: flex; justify-content: space-between;">
+                    <span>Риба:</span> <span style="color: #ff4444; font-weight: bold;">${worstFishX.toFixed(3)}</span>
+                </div>
+                <div style="margin-bottom: 8px; display: flex; justify-content: space-between;">
+                    <span>Гравець:</span> <span style="color: #ffaa00; font-weight: bold;">${playerSteerForceMin.toFixed(3)}</span>
+                </div>
+                
+                <div style="color: #8a9bac; font-size: 12px; margin-bottom: 4px;">Максимальна тяга Y:</div>
+                <div style="margin-bottom: 2px; display: flex; justify-content: space-between;">
+                    <span>Риба:</span> <span style="color: #ff4444; font-weight: bold;">${maxPossibleForceY.toFixed(3)}</span>
+                </div>
+                <div style="margin-bottom: 12px; display: flex; justify-content: space-between;">
+                    <span>Гравець:</span> <span style="color: #ffaa00; font-weight: bold;">${worstPlayerY.toFixed(3)}</span>
+                </div>
+            `;
+        }
+
+        if (OVERLAY_MODULES.playerMax) {
+            html += `
+                <div style="color: #00ff80; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">📊 СИЛА ГРАВЦЯ (MAX Y & X)</div>
+                <div style="margin-bottom: 2px; display: flex; justify-content: space-between;"><span>ТЯГА МІН (Кут Y):</span> <span style="color: #ffaa00; font-weight: bold;">${worstPlayerY.toFixed(3)}</span></div>
+                <div style="margin-bottom: 6px; display: flex; justify-content: space-between;"><span>ТЯГА МАКС (Центр Y):</span> <span style="color: #00ff80; font-weight: bold;">${bestPlayerY.toFixed(3)}</span></div>
+                <div style="margin-bottom: 2px; display: flex; justify-content: space-between;"><span>КЕРМО МІН (Кут X):</span> <span style="color: #ffaa00; font-weight: bold;">${playerSteerForceMin.toFixed(3)}</span></div>
+                <div style="margin-bottom: 12px; display: flex; justify-content: space-between;"><span>КЕРМО МАКС (Центр X):</span> <span style="color: #00ff80; font-weight: bold;">${playerSteerForceBase.toFixed(3)}</span></div>
+            `;
+        }
+
+        if (OVERLAY_MODULES.liveY) {
+            const leaderTextY = fishPctY > playerPctY 
+                ? `<span style="color: #ff4444;">🚨 Риба тягне сильніше на ${(fishPctY - playerPctY).toFixed(1)}%</span>` 
+                : `<span style="color: #00ff80;">💪 Гравець тягне сильніше на ${(playerPctY - fishPctY).toFixed(1)}%</span>`;
+
+            html += `
+                <div style="color: #00ccff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">⚖️ LIVE: ТЯГА (Вісь Y)</div>
+                <div style="margin-bottom: 4px;">Гравець: <span style="color: #00ff80;">${playerPullForce.toFixed(3)}</span> | Риба: <span style="color: #ff4444;">${currentFishPullForce.toFixed(3)}</span></div>
+                <div style="margin-bottom: 4px; font-weight: bold;">
+                    <span style="color: #ff4444;">Риба ${fishPctY.toFixed(1)}%</span> VS <span style="color: #00ff80;">Гравець ${playerPctY.toFixed(1)}%</span>
+                </div>
+                <div style="font-weight: bold; font-size: 13px; margin-bottom: 12px;">${leaderTextY}</div>
+            `;
+        }
+
+        if (OVERLAY_MODULES.liveX) {
+            const leaderTextX = fishPctX > playerPctX 
+                ? `<span style="color: #ff4444;">🚨 Риба втікає (Домінує на ${(fishPctX - playerPctX).toFixed(1)}%)</span>` 
+                : `<span style="color: #00ff80;">✅ Керування стабільне (Перевага ${(playerPctX - fishPctX).toFixed(1)}%)</span>`;
+
+            html += `
+                <div style="color: #00ccff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">⚖️ LIVE: КЕРУВАННЯ (Вісь X)</div>
+                <div style="margin-bottom: 4px;">Гравець: <span style="color: #00ff80;">${playerSteerForce.toFixed(3)}</span> | Риба: <span style="color: #ff4444;">${currentFishEscapeForce.toFixed(3)}</span></div>
+                <div style="margin-bottom: 4px; font-weight: bold;">
+                    <span style="color: #ff4444;">Риба ${fishPctX.toFixed(1)}%</span> VS <span style="color: #00ff80;">Гравець ${playerPctX.toFixed(1)}%</span>
+                </div>
+                <div style="font-weight: bold; font-size: 13px;">${leaderTextX}</div>
+            `;
+        }
+
+        this.#container.innerHTML = html;
         this.#container.style.display = 'block';
+
+        // --- ЛОГІКА СКЕЙЛІНГУ ---
+        this.#container.style.transform = 'none';
+        const rect = this.#container.getBoundingClientRect();
+        
+        const availableW = window.innerWidth - 20; 
+        const availableH = window.innerHeight - 20;
+        
+        const scaleX = availableW / rect.width;
+        const scaleY = availableH / rect.height;
+        
+        const finalScale = Math.min(1, scaleX, scaleY);
+        
+        this.#container.style.transform = `scale(${finalScale})`;
     }
 
     #start() {

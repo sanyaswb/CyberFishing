@@ -373,6 +373,11 @@ class FishingSystem {
     #buffs;
     #fish;
 
+    #lastFishState = 'unknown';
+    #lastFishBasePower = 0;
+    #lastPullMult = 0;
+    #lastMoveMult = 0;
+
     constructor(rod, reel, fish) {
         this.#rod = rod;
         this.#reel = reel;
@@ -386,6 +391,22 @@ class FishingSystem {
 
     getReelPower() {
         return this.#reel.getPower();
+    }
+
+    getCurrentState() {
+        return this.#lastFishState;
+    }
+
+    getFishBasePower() {
+        return this.#lastFishBasePower;
+    }
+
+    getPullMultiplier() {
+        return this.#lastPullMult;
+    }
+
+    getMoveMultiplier() {
+        return this.#lastMoveMult;
     }
 
     calculatePlayerForce(inputDirection, floatX, floatY, rodVirtualPos, screenOffsetRatio, config) {
@@ -431,12 +452,10 @@ class FishingSystem {
         
         const finalBehavior = this.#fish.getBehavior(0); 
 
-        if (config.debug && config.debug.overlay) {
-            window.DEBUG_LIVE_FISH_STATE = finalBehavior.name;
-            window.DEBUG_LIVE_FISH_PULL_MULT = finalBehavior.pullMult;
-            window.DEBUG_LIVE_FISH_MOVE_MULT = Math.abs(finalBehavior.moveX);
-            window.DEBUG_LIVE_FISH_BASE_POWER = basePower;
-        }
+        this.#lastFishState = finalBehavior.name;
+        this.#lastFishBasePower = basePower;
+        this.#lastPullMult = finalBehavior.pullMult;
+        this.#lastMoveMult = Math.abs(finalBehavior.moveX);
 
         let force = new Vector2(0, 0);
         force.y = -basePower * finalBehavior.pullMult;
@@ -1365,9 +1384,12 @@ class Game {
         
         if (this.#gameState !== 'playing') return;
 
+        // ВАЖЛИВО: Оновлена обробка обриву ліски (без старого EventLogger)
         if (this.#tensionMeter.isBroken()) {
             this.#gameState = 'failed';
-            EventLogger.logBreakEvent(this.#tensionMeter.getBreakReason(), this.#tensionMeter);
+            const reason = this.#tensionMeter.getBreakReason();
+            this.failReason = reason;
+            document.dispatchEvent(new CustomEvent('fishingFailed', { detail: { reason: reason } }));
             return;
         }
 
@@ -1394,35 +1416,18 @@ class Game {
         const fishPowerMag = Math.abs(fishForce.y); 
         const reelPower = this.#fishingSystem.getReelPower();
 
+        // ВАЖЛИВО: Оголошуємо playerForce ДО блоку if, щоб дебагер міг його прочитати, навіть якщо ми не тягнемо
+        let playerForce = new Vector2(0, 0);
+
+        // ВАЖЛИВО: Залишився тільки один чистий блок pulling
         if (inputState.isPulling) {
             const playerForceRaw = this.#fishingSystem.calculatePlayerForce(inputState.pullDirection, floatPos.x, floatPos.y, rodVirtualPos, screenOffsetRatio, CONFIG);
-            const playerForce = playerForceRaw.clone().multiplyScalar(CONFIG.physics.playerForceMultiplier);
+            playerForce = playerForceRaw.clone().multiplyScalar(CONFIG.physics.playerForceMultiplier);
             this.#float.applyForce(playerForce);
-        }
-
-        if (inputState.isPulling) {
-            const playerForceRaw = this.#fishingSystem.calculatePlayerForce(inputState.pullDirection, floatPos.x, floatPos.y, rodVirtualPos, screenOffsetRatio, CONFIG);
-            const playerForce = playerForceRaw.clone().multiplyScalar(CONFIG.physics.playerForceMultiplier);
-            this.#float.applyForce(playerForce);
-            
-            if (CONFIG.debug?.overlay) {
-                window.DEBUG_LIVE_PLAYER_FORCE_Y = Math.abs(playerForce.y);
-                window.DEBUG_LIVE_PLAYER_FORCE_X = Math.abs(playerForce.x);
-            }
-        } else {
-            if (CONFIG.debug?.overlay) {
-                window.DEBUG_LIVE_PLAYER_FORCE_Y = 0;
-                window.DEBUG_LIVE_PLAYER_FORCE_X = 0;
-            }
-        }
-
-        if (CONFIG.debug?.overlay) {
-            window.DEBUG_LIVE_FISH_FORCE_Y = Math.abs(fishForce.y);
-            window.DEBUG_LIVE_FISH_FORCE_X = Math.abs(fishForce.x);
         }
 
         this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, currentFishMaxForceScaled, dt, CONFIG);
- 
+
         const castableBounds = this.#locationMap.getCastableBoundsVirtual(CONFIG.locations.cellSize);
         const vTopLeft = this.#projector.screenToVirtual(0, 0);
         const vBottomRight = this.#projector.screenToVirtual(this.#canvas.width, this.#canvas.height);
@@ -1474,6 +1479,21 @@ class Game {
             this.#isNetReady = (floatScreenPos.y >= netLineY && floatScreenPos.y < catchLineY);
         } else {
             this.#isNetReady = false;
+        }
+
+        // Відправка даних в дебагер
+        if (CONFIG.debug?.overlay) {
+            const debugData = {
+                playerForceY: Math.abs(playerForce.y),
+                playerForceX: Math.abs(playerForce.x),
+                fishForceY: Math.abs(fishForce.y),
+                fishForceX: Math.abs(fishForce.x),
+                fishState: this.#fishingSystem.getCurrentState ? this.#fishingSystem.getCurrentState() : 'unknown',
+                fishBasePower: this.#fishingSystem.getFishBasePower ? this.#fishingSystem.getFishBasePower() : 0,
+                pullMult: this.#fishingSystem.getPullMultiplier ? this.#fishingSystem.getPullMultiplier() : 1,
+                moveMult: this.#fishingSystem.getMoveMultiplier ? this.#fishingSystem.getMoveMultiplier() : 1
+            };
+            document.dispatchEvent(new CustomEvent('debug-live-update', { detail: debugData }));
         }
 
         this.#renderer.updateNetButtonState(CONFIG, this.#isNetReady && this.#gameState === 'playing');

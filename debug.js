@@ -1,13 +1,13 @@
 const DEBUG_MODULES = {
     location: false,
-    forces: false,
+    forces: true,
     deviations: false,
     tension: false,
     stamina: false,
     exhaustion: false,
     catchTime: false,
     prediction: false,
-    net: true,
+    net: false,
 };
 
 setTimeout(() => {
@@ -35,6 +35,8 @@ setTimeout(() => {
     const powerDropTotal = exhaustionTime * CONFIG.stamina.mechanics.basePowerDropPerSec;
     const finalFPower = Math.max(0, fPower - powerDropTotal);
     const finalFishPullForce = finalFPower * CONFIG.physics.fishForceMultiplier;
+    const totalForceY = playerPullForceBase + fishPullForce;
+    const totalForceX = playerSteerForceBase + fishEscapeForce;
 
     if (DEBUG_MODULES.location) {
         console.log('%c====================================', 'color: #4a5b6c;');
@@ -87,32 +89,27 @@ setTimeout(() => {
         console.log('%c--- ПІСЛЯ ВИСНАЖЕННЯ ---', 'color: #ff4444; font-weight: bold;');
         console.log(`%c📉 Риба: Базова сила впаде до ${finalFPower.toFixed(2)}.`, 'color: #e6e6e6;');
         console.log(`%c⚙️ Множимо на рушій: Риба тягнутиме від тебе на ${finalFPower.toFixed(2)} * ${CONFIG.physics.fishForceMultiplier} = ${finalFishPullForce.toFixed(3)}.`, 'color: #e6e6e6;');
-        console.log('%c--------------------------------', 'color: #00ccff; font-weight: bold;');
 
         console.log('%c--- ЕФЕКТИВНІСТЬ КОТУШКИ ---', 'color: #ffaa00; font-weight: bold;');
         console.log(`%c🔄 Швидкість скидання натягу: 1 + (${rlPower.toFixed(1)} * ${CONFIG.tension.reelRecoveryMultiplier}) = x${recoveryBonus.toFixed(1)}`, 'color: #ffff00;');
         console.log(`%c⏱️ Корисний час тяги (Uptime): 1 / (1 + (1 / ${recoveryBonus.toFixed(1)})) = ${(pullUptime * 100).toFixed(1)}%`, 'color: #00ff80;');
-        console.log('%c--------------------------------', 'color: #00ccff; font-weight: bold;');
 
-        const totalForceY = playerPullForceBase + fishPullForce;
         const playerPercentY = (playerPullForceBase / totalForceY) * 100;
         const fishPercentY = (fishPullForce / totalForceY) * 100;
         const diffPercentY = Math.abs(playerPercentY - fishPercentY);
 
-        console.log(`%c⚖️ Співвідношення сил (на осі Y - Тяга):`, 'color: #ffaa00; font-weight: bold;');
+        console.log(`%c--- СПІВВІДНОШЕННЯ СИЛ (на осі Y - Тяга) ---`, 'color: #ffaa00; font-weight: bold;');
         console.log(`%cРиба = ${fishPercentY.toFixed(1)}%`, 'color: #ff4444;');
         console.log(`%cГравець = ${playerPercentY.toFixed(1)}%`, 'color: #00ff80;');
         if (playerPercentY > fishPercentY) console.log(`%c💪 Гравець сильніший на = ${diffPercentY.toFixed(1)}%`, 'color: #00ff80; font-weight: bold;');
         else if (fishPercentY > playerPercentY) console.log(`%c⚠️ Риба сильніша на = ${diffPercentY.toFixed(1)}%`, 'color: #ff4444; font-weight: bold;');
         else console.log(`%c🤝 Сили абсолютно рівні (0% різниці)`, 'color: #ffff00; font-weight: bold;');
-        console.log('%c--------------------------------', 'color: #00ccff; font-weight: bold;');
 
-        const totalForceX = playerSteerForceBase + fishEscapeForce;
         const playerPercentX = (playerSteerForceBase / totalForceX) * 100;
         const fishPercentX = (fishEscapeForce / totalForceX) * 100;
         const diffPercentX = Math.abs(playerPercentX - fishPercentX);
 
-        console.log(`%c⚖️ Співвідношення сил (на осі X - Керування):`, 'color: #ffaa00; font-weight: bold;');
+        console.log(`%c--- СПІВВІДНОШЕННЯ СИЛ (на осі X - Керування) ---`, 'color: #ffaa00; font-weight: bold;');
         console.log(`%cРиба = ${fishPercentX.toFixed(1)}%`, 'color: #ff4444;');
         console.log(`%cГравець = ${playerPercentX.toFixed(1)}%`, 'color: #00ff80;');
         if (playerPercentX > fishPercentX) console.log(`%c💪 Гравець сильніший на = ${diffPercentX.toFixed(1)}%`, 'color: #00ff80; font-weight: bold;');
@@ -120,10 +117,18 @@ setTimeout(() => {
         else console.log(`%c🤝 Сили абсолютно рівні (0% різниці)`, 'color: #ffff00; font-weight: bold;');
 
         console.table({
-            "🎣 Тяга на себе (Y)": { "Значення": playerPullForceBase.toFixed(3) },
-            "🎣 Керування (X)": { "Значення": playerSteerForceBase.toFixed(3) },
-            "🦈 Опір (Y)": { "Значення": fishPullForce.toFixed(3) },
-            "🦈 Втеча (X)": { "Значення": fishEscapeForce.toFixed(3) },
+            "СИЛА ГРАВЦЯ": {
+                "🎣 Тяга (Y)": playerPullForceBase.toFixed(3),
+                "🎣 Керування (X)": playerSteerForceBase.toFixed(3),
+                "З Котушкою (X)": (playerSteerForceBase * recoveryBonus).toFixed(3),
+            },
+            "СИЛА РИБИ": {
+                "🦈 Опір (Y)": fishPullForce.toFixed(3),
+                "🦈 Втеча (X)": fishEscapeForce.toFixed(3),
+            },
+            "ПІСЛЯ ВИСНАЖЕННЯ": {
+                "🦈 Опір (Y)": finalFishPullForce.toFixed(3),
+            },
         });
     }
 
