@@ -1,6 +1,6 @@
 const DEBUG_MODULES = {
     location: false,
-    forces: true,
+    forces: false,
     deviations: false,
     tension: false,
     stamina: false,

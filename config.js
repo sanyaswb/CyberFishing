@@ -48,6 +48,9 @@ const CONFIG = {
     },
 
     ui: {
+        draggableButtons: true,
+        dragHoldTimeMs: 1000,
+
         rod: {
             x: 'center',
             yOffset: 0
@@ -85,7 +88,6 @@ const CONFIG = {
         dragRadius: 200, // Swipe distance in pixels for maximum steering
     },
 
-    // Float/Bobber Settings
     float: {
         initialX: null, // null = canvas center
         initialY: null, // null = canvas center

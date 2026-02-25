@@ -850,7 +850,8 @@ class Renderer {
             fontWeight: 'bold',
             cursor: 'pointer',
             zIndex: '9999',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
+            touchAction: 'none' // Додаємо сюди для підстраховки мобільних
         });
 
         this.#fullscreenBtn.addEventListener('mouseenter', () => {
@@ -861,15 +862,17 @@ class Renderer {
             this.#fullscreenBtn.style.backgroundColor = 'rgba(15, 23, 30, 0.8)';
         });
 
-        this.#fullscreenBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
-
-        this.#fullscreenBtn.addEventListener('click', () => {
+        // ІНТЕГРАЦІЯ НОВОЇ МЕХАНІКИ:
+        // Ми передаємо елемент, колбек для кліку та глобальний конфіг
+        new UIDraggableButton(this.#fullscreenBtn, () => {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
             } else {
                 document.exitFullscreen();
             }
-        });
+        }, CONFIG);
 
         document.addEventListener('fullscreenchange', () => {
             this.#fullscreenBtn.innerHTML = document.fullscreenElement ? '🗗 EXIT FULLSCREEN' : '⛶ FULLSCREEN';
