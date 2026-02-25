@@ -5,14 +5,14 @@ const CONFIG = {
     },
 
     locations: {
-        debugVisuals: true,
+        debugVisuals: false,
         baseResolution: { width: 2560, height: 2560 },
         cellSize: 64,
         map: {
             test: {
                 id: 'test',
                 name: 'Test Waters',
-                bgUrl: 'bg_test.png', // Шлях до твоєї картинки
+                bgUrl: 'bg_test.webp', // Шлях до твоєї картинки
                 // x: 'left', 'center', 'right'
                 // y: 'top', 'center', 'bottom', 'safeZone'
                 initialAlignment: { x: 'center', y: 'center' }, 

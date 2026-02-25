@@ -15,3 +15,4 @@ dist
 .parcel-cache+
 local-bridge.js
 package-lock.json
+convert-images.js

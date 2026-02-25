@@ -1,5 +1,9 @@
 {
   "dependencies": {
+    "glob": "^13.0.6",
     "qrcode-terminal": "^0.12.0"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5"
   }
 }
