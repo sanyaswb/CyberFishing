@@ -79,7 +79,6 @@ const CONFIG = {
         endpoint: 'http://localhost:3000/api/events' // ОСЬ ЦЕЙ РЯДОК З'ЄДНУЄ ГРУ З БЕКЕНДОМ
     },
 
-    // Input Settings
     input: {
         pointerThreshold: 10, // Dead zone (so that random micro-movements don't jerk the rod)
         dragRadius: 200, // Swipe distance in pixels for maximum steering
@@ -96,27 +95,37 @@ const CONFIG = {
         circleColor: 'rgba(0, 255, 128, 0.2)',
     },
 
-    // Rod Settings
     rod: {
         level: 5,
         basePower: 1.0,
         compensation: 0.8
     },
 
-    // Reel Settings
     reel: {
         level: 4,
         basePower: 1.0,
     },
 
-    // Hook Settings
+    net: {
+        active: true,
+        length: 15.0, // 150px How long the net pull lasts in seconds
+        maxWeight: 3.0,
+        quality: 1.0,
+        type: 'all',
+        chances: [
+            { min: 0, max: 39, chance: 80 },
+            { min: 40, max: 79, chance: 70 },
+            { min: 80, max: 99, chance: 60 },
+            { min: 100, max: Infinity, chance: 50 }
+        ]
+    },
+
     hook: {
         level: 5,
         weight: 4,
         quality: 1, // Аналог resistance у риби
     },
 
-    // Hook Break / Escape Mechanics
     hookMechanics: {
         safeTensionThreshold: 50,
         baseEscapeChance: 0.01,
@@ -126,7 +135,6 @@ const CONFIG = {
         checkIntervalMs: 1000
     },
 
-    // Fish Settings
     fish: {
         level: 4,
         weight: 4, // Affects base power and stamina
@@ -144,7 +152,6 @@ const CONFIG = {
         }
     },
 
-    // Force Multipliers
     physics: {
         fishForceMultiplier: 0.01,
         playerForceMultiplier: 0.017,
@@ -152,9 +159,7 @@ const CONFIG = {
         edgePullPenalty: 0.5, // 0.5 означає, що на краю екрана гравець втратить 50% сили
     },
 
-    // Tension Meter Settings
     tension: {
-        // Calculation
         sensitivityMultiplier: 1.5, // How much player input affects tension
         smoothApproach: 0.15,
         reelRecoveryMultiplier: 0.2,
@@ -210,13 +215,11 @@ const CONFIG = {
         },
     },
 
-    // Colors
     colors: {
         background: '#0f171e',
         bodyBackground: '#1a1a1a',
     },
 
-    // Stamina & Exhaustion (Fighting mechanics)
     stamina: {
         fish: {
             baseStaminaMultiplier: 50,

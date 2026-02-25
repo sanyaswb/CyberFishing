@@ -803,11 +803,15 @@ class Renderer {
     #canvas;
     #ctx;
     #fullscreenBtn;
+    #netBtn;
+
+    onNetClick = null;
 
     constructor(canvas) {
         this.#canvas = canvas;
         this.#ctx = canvas.getContext('2d', { alpha: false });
         this.#initFullscreenBtn();
+        this.#initNetBtn();
     }
 
     #initFullscreenBtn() {
@@ -851,6 +855,64 @@ class Renderer {
         });
 
         document.body.appendChild(this.#fullscreenBtn);
+    }
+
+    #initNetBtn() {
+        this.#netBtn = document.createElement('button');
+        this.#netBtn.innerHTML = 'NET';
+        
+        Object.assign(this.#netBtn.style, {
+            position: 'absolute',
+            bottom: '30px',
+            right: '30px',
+            width: '70px',
+            height: '70px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(128, 128, 128, 0.3)',
+            color: '#fff',
+            border: '2px solid #aaa',
+            fontFamily: 'monospace',
+            fontWeight: 'bold',
+            fontSize: '16px',
+            cursor: 'not-allowed',
+            display: 'none', 
+            zIndex: '9999',
+            transition: 'all 0.2s ease',
+            pointerEvents: 'none',
+            userSelect: 'none'
+        });
+
+        this.#netBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (this.onNetClick) this.onNetClick();
+        });
+
+        document.body.appendChild(this.#netBtn);
+    }
+
+    updateNetButtonState(config, isReady) {
+        if (!config.net || !config.net.active) {
+            this.#netBtn.style.display = 'none';
+            return;
+        }
+        
+        this.#netBtn.style.display = 'flex';
+        this.#netBtn.style.justifyContent = 'center';
+        this.#netBtn.style.alignItems = 'center';
+        
+        if (isReady) {
+            this.#netBtn.style.backgroundColor = 'rgba(0, 255, 128, 0.7)';
+            this.#netBtn.style.borderColor = '#00ff80';
+            this.#netBtn.style.cursor = 'pointer';
+            this.#netBtn.style.pointerEvents = 'auto';
+            this.#netBtn.style.boxShadow = '0 0 15px rgba(0, 255, 128, 0.5)';
+        } else {
+            this.#netBtn.style.backgroundColor = 'rgba(128, 128, 128, 0.3)';
+            this.#netBtn.style.borderColor = '#aaa';
+            this.#netBtn.style.cursor = 'not-allowed';
+            this.#netBtn.style.pointerEvents = 'none';
+            this.#netBtn.style.boxShadow = 'none';
+        }
     }
 
     #resolveX(configValue, elementWidth = 0) {
@@ -949,6 +1011,23 @@ class Renderer {
         this.#ctx.moveTo(0, lineDrawY);
         this.#ctx.lineTo(this.#canvas.width, lineDrawY);
         this.#ctx.stroke();
+
+        if (config.net && config.net.active) {
+            const netBonusPx = config.net.length * 10;
+            const netLineY = catchLineY - netBonusPx;
+            
+            this.#ctx.strokeStyle = 'rgba(0, 255, 128, 0.5)';
+            this.#ctx.lineWidth = 1;
+            this.#ctx.setLineDash([10, 10]);
+            this.#ctx.beginPath();
+            this.#ctx.moveTo(0, netLineY);
+            this.#ctx.lineTo(this.#canvas.width, netLineY);
+            this.#ctx.stroke();
+            this.#ctx.setLineDash([]);
+            
+            this.#ctx.fillStyle = 'rgba(0, 255, 128, 0.05)';
+            this.#ctx.fillRect(0, netLineY, this.#canvas.width, netBonusPx);
+        }
     }
 
     drawFloat(position, config) {
@@ -1085,9 +1164,20 @@ class Renderer {
     drawGameOver(canvasWidth, canvasHeight, reason) {
         this.#ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
         this.#ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-        const title = reason === 'rod' ? 'ROD BROKEN' : reason === 'hook' ? 'FISH ESCAPED' : 'LINE SNAPPED';
-        const titleColor = reason === 'rod' ? '#ff0000' : reason === 'hook' ? '#ffaa00' : '#ff4444';
-        const desc = reason === 'rod' ? 'Your equipment could not handle the stress.' : reason === 'hook' ? 'The hook bent and the fish got away.' : 'Tension exceeded line capacity.';
+        
+        let title = 'LINE SNAPPED';
+        let titleColor = '#ff4444';
+        let desc = 'Tension exceeded line capacity.';
+
+        if (reason === 'rod') {
+            title = 'ROD BROKEN';
+            titleColor = '#ff0000';
+            desc = 'Your equipment could not handle the stress.';
+        } else if (reason === 'hook' || reason === 'net_escape') {
+            title = 'FISH ESCAPED';
+            titleColor = '#ffaa00';
+            desc = reason === 'net_escape' ? 'The fish was too heavy and broke out of the net!' : 'The hook bent and the fish got away.';
+        }
 
         this.#ctx.fillStyle = titleColor;
         this.#ctx.font = 'bold 48px monospace';
@@ -1133,12 +1223,16 @@ class Game {
     #projector;
     #cameraToggleBtn;
     #invalidCastMarker;
+    #netCatchChance = null;
+    #isNetReady = false;
+    failReason = null;
 
     constructor(canvasId) {
         this.#canvas = document.getElementById(canvasId);
         
         this.#inputManager = new InputManager(this.#canvas, CONFIG);
         this.#renderer = new Renderer(this.#canvas);
+        this.#renderer.onNetClick = () => this.#handleNetClick();
         
         this.#locationMap = new LocationMap('test', CONFIG);
         this.#projector = new ViewportProjector(CONFIG);
@@ -1185,6 +1279,11 @@ class Game {
     #startFishing(virtualX, virtualY) {
         this.#float.setPosition(virtualX, virtualY);
         this.#gameState = 'playing';
+
+        this.#netCatchChance = null;
+        this.#isNetReady = false;
+        this.failReason = null;
+
         if (this.#cameraToggleBtn) this.#cameraToggleBtn.style.display = 'none';
         const rod = new Rod(CONFIG.rod.level, CONFIG.rod.basePower);
         const reel = new Reel(CONFIG.reel.level, CONFIG.reel.basePower);
@@ -1210,6 +1309,24 @@ class Game {
 
     start() {
         requestAnimationFrame(this.loop);
+    }
+
+    #handleNetClick() {
+        if (!this.#isNetReady || this.#gameState !== 'playing') return;
+
+        const roll = Math.random() * 100;
+        const isSuccess = roll <= this.#netCatchChance;
+
+        document.dispatchEvent(new CustomEvent('netCatchRoll', { 
+            detail: { chance: this.#netCatchChance, roll: roll, success: isSuccess } 
+        }));
+
+        if (isSuccess) {
+            this.#gameState = 'victory';
+        } else {
+            this.#gameState = 'failed';
+            this.failReason = 'net_escape';
+        }
     }
 
     update(dt) {
@@ -1305,11 +1422,8 @@ class Game {
         }
 
         this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, currentFishMaxForceScaled, dt, CONFIG);
-
-        this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, currentFishMaxForceScaled, dt, CONFIG);
-        
+ 
         const castableBounds = this.#locationMap.getCastableBoundsVirtual(CONFIG.locations.cellSize);
-        
         const vTopLeft = this.#projector.screenToVirtual(0, 0);
         const vBottomRight = this.#projector.screenToVirtual(this.#canvas.width, this.#canvas.height);
         
@@ -1330,6 +1444,39 @@ class Game {
         const mapBottomScreenY = this.#projector.virtualToScreen(0, castableBoundsVirtual.bottom).y;
         
         const catchLineY = Math.min(mapBottomScreenY, this.#canvas.height);
+
+        if (this.#netCatchChance === null) {
+            if (CONFIG.net && CONFIG.net.active) {
+                const fW = CONFIG.fish.weight;
+                const nW = CONFIG.net.maxWeight;
+                if (fW <= nW) {
+                    this.#netCatchChance = 100;
+                } else {
+                    const diffPercent = ((fW - nW) / nW) * 100;
+                    let baseChance = 50;
+                    for (const t of CONFIG.net.chances) {
+                        if (diffPercent >= t.min && diffPercent <= t.max) {
+                            baseChance = t.chance;
+                            break;
+                        }
+                    }
+                    const qualBonus = Math.round((CONFIG.net.quality - 1.0) * 10);
+                    this.#netCatchChance = Math.min(100, baseChance + qualBonus);
+                }
+            } else {
+                this.#netCatchChance = 100;
+            }
+        }
+
+        if (CONFIG.net && CONFIG.net.active) {
+            const netBonusPx = CONFIG.net.length * 10;
+            const netLineY = catchLineY - netBonusPx;
+            this.#isNetReady = (floatScreenPos.y >= netLineY && floatScreenPos.y < catchLineY);
+        } else {
+            this.#isNetReady = false;
+        }
+
+        this.#renderer.updateNetButtonState(CONFIG, this.#isNetReady && this.#gameState === 'playing');
 
         if (floatScreenPos.y >= catchLineY) {
             this.#gameState = 'victory';
@@ -1357,7 +1504,7 @@ class Game {
         }
         
         if (this.#gameState === 'failed') {
-            this.#renderer.drawGameOver(this.#canvas.width, this.#canvas.height, this.#tensionMeter.getBreakReason());
+            this.#renderer.drawGameOver(this.#canvas.width, this.#canvas.height, this.failReason || this.#tensionMeter.getBreakReason());
         } else if (this.#gameState === 'victory') {
             this.#renderer.drawVictory(this.#canvas.width, this.#canvas.height);
         }

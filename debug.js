@@ -1,12 +1,13 @@
 const DEBUG_MODULES = {
-    location: true,
+    location: false,
     forces: false,
     deviations: false,
     tension: false,
     stamina: false,
     exhaustion: false,
     catchTime: false,
-    prediction: false
+    prediction: false,
+    net: true,
 };
 
 setTimeout(() => {
@@ -280,6 +281,44 @@ setTimeout(() => {
         });
     }
 
+    if (DEBUG_MODULES.net) {
+        console.log('%c====================================', 'color: #4a5b6c;');
+        console.log('%c🕸️ АНАЛІЗ ПІДСАКИ (NET)', 'color: #b066ff; font-size: 14px; font-weight: bold;');
+
+        if (!CONFIG.net || !CONFIG.net.active) {
+            console.log('%cПідсака вимкнена (active: false)', 'color: #8a9bac;');
+        } else {
+            const fW = CONFIG.fish.weight;
+            const nW = CONFIG.net.maxWeight;
+            let chance = 100;
+            let diffStr = 'Немає (100% успіх)';
+
+            if (fW > nW) {
+                const diffPercent = ((fW - nW) / nW) * 100;
+                diffStr = `+${diffPercent.toFixed(1)}% перевантаження`;
+                
+                let baseChance = 50;
+                for (const t of CONFIG.net.chances) {
+                    if (diffPercent >= t.min && diffPercent <= t.max) {
+                        baseChance = t.chance;
+                        break;
+                    }
+                }
+                const qualBonus = Math.round((CONFIG.net.quality - 1.0) * 10);
+                chance = Math.min(100, baseChance + qualBonus);
+            }
+
+            console.table({
+                "Статус": { "Значення": "Активна" },
+                "Додаткова Зона (px)": { "Значення": `+${CONFIG.net.length * 10}` },
+                "Вага Риби / Ліміт": { "Значення": `${fW} кг / ${nW} кг` },
+                "Перевантаження": { "Значення": diffStr },
+                "Якість (Бонус)": { "Значення": `${CONFIG.net.quality} (+${Math.round((CONFIG.net.quality - 1.0) * 10)}%)` },
+                "ТЕОРЕТИЧНИЙ ШАНС": { "Значення": `${chance}%` }
+            });
+        }
+    }
+
     if (DEBUG_MODULES.prediction) {
         console.log('%c====================================', 'color: #4a5b6c;');
         console.log('%c🏆 ПРОГНОЗ РЕЗУЛЬТАТУ (По центру)', 'color: #00ccff; font-size: 16px; font-weight: bold;');
@@ -301,3 +340,16 @@ setTimeout(() => {
 
     console.groupEnd();
 }, 500);
+
+document.addEventListener('netCatchRoll', (e) => {
+    if (!DEBUG_MODULES.net) return;
+    const { chance, roll, success } = e.detail;
+    
+    console.log(`%c[NET] Спроба піймати! Шанс: ${chance}%`, 'color: #b066ff; font-weight: bold;');
+    
+    if (success) {
+        console.log(`%c[NET] Успіх! Випало: ${roll.toFixed(1)} <= ${chance}`, 'color: #00ff80;');
+    } else {
+        console.log(`%c[NET] Провал! Випало: ${roll.toFixed(1)} > ${chance}. Підсака порвана.`, 'color: #ff4444;');
+    }
+});
