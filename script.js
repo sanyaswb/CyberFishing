@@ -622,6 +622,7 @@ class StaminaController {
 }
 
 class TensionMeter {
+    #slackTimer;
     #tension;
     #targetTension;
     #pulsePhase;
@@ -656,6 +657,7 @@ class TensionMeter {
         
         this.#hookPower = hook.getPower();
         this.#hookCheckTimer = 0;
+        this.#slackTimer = 0;
     }
 
     update(isPulling, playerMaxPower, fishPowerMag, reelPower, fishMaxForceScaled, dt, config) { 
@@ -676,6 +678,12 @@ class TensionMeter {
 
         this.#targetTension = Math.max(0, Math.min(100, this.#targetTension + tensionChange));
         this.#tension += (this.#targetTension - this.#tension) * config.tension.smoothApproach;
+
+        if (this.#tension <= 0.1) {
+            this.#slackTimer += dt;
+        } else {
+            this.#slackTimer = 0; // Як тільки натягнули ліску - скидаємо таймер
+        }
 
         this.#pulsePhase += Math.max(1, config.tension.pulseSpeedMax - (this.#tension / config.tension.pulseTensionDivisor)) * config.tension.pulseSpeedBaseMultiplier;
         if (this.#pulsePhase > Math.PI * 2) this.#pulsePhase -= Math.PI * 2;
@@ -702,24 +710,56 @@ class TensionMeter {
     }
 
     #evaluateHookRisk(fishMaxForceScaled, config) {
-        if (this.#tension <= config.hookMechanics.safeTensionThreshold) return;
-
-        const tensionAboveSafe = this.#tension - config.hookMechanics.safeTensionThreshold;
-        const steps = Math.floor(tensionAboveSafe / 10);
+        let chance = 0;
+        let isSlackPenalty = false;
         
-        let chance = config.hookMechanics.baseEscapeChance + (steps * config.hookMechanics.chancePer10Tension);
+        const currentFishPower = fishMaxForceScaled;
+        const isFishDominant = currentFishPower > this.#hookPower;
+        
+        const currentThreshold = isFishDominant 
+            ? config.hookMechanics.safeTensionThreshold 
+            : config.hookMechanics.safeTensionThresholdWeakFish;
 
-        if (fishMaxForceScaled > this.#hookPower) {
-            if (fishMaxForceScaled >= this.#hookPower * 2) {
-                chance *= (config.hookMechanics.fishDominanceMultiplier + config.hookMechanics.extremeDominanceBonus);
-            } else {
-                chance *= config.hookMechanics.fishDominanceMultiplier;
+        if (this.#slackTimer >= config.hookMechanics.slackLinePenaltyTimeMs) {
+            chance = config.hookMechanics.slackLineEscapeChance;
+            isSlackPenalty = true;
+            
+            if (typeof DEBUG_MODULES !== 'undefined' && DEBUG_MODULES.tension) {
+                console.log(`%c[Гачок] ⚠️ ПРОБЛЕМА: Ліска провисла! Таймер: ${(this.#slackTimer/1000).toFixed(1)}с. Шанс сходу: ${(chance * 100).toFixed(1)}%`, 'color: #ffaa00;');
+            }
+        } else if (this.#tension > currentThreshold) {
+            const tensionAboveSafe = this.#tension - currentThreshold;
+            const steps = Math.floor(tensionAboveSafe / 10);
+            
+            chance = config.hookMechanics.baseEscapeChance + (steps * config.hookMechanics.chancePer10Tension);
+
+            if (isFishDominant) {
+                if (currentFishPower >= this.#hookPower * 2) {
+                    chance *= (config.hookMechanics.fishDominanceMultiplier + config.hookMechanics.extremeDominanceBonus);
+                } else {
+                    chance *= config.hookMechanics.fishDominanceMultiplier;
+                }
+            }
+            
+            if (config.debug && config.debug.tension) {
+                console.log(`%c[Гачок] 🔥 НЕБЕЗПЕКА: Натяг ${this.#tension.toFixed(1)}% (Межа: ${currentThreshold}%). Шанс: ${(chance * 100).toFixed(1)}% | Гачок: ${this.#hookPower.toFixed(3)} vs Риба: ${currentFishPower.toFixed(3)}`, 'color: #ff4444;');
             }
         }
 
-        if (Math.random() <= chance) {
+        if (chance > 0 && Math.random() <= chance) {
             this.#isBroken = true;
             this.#breakReason = 'hook';
+            
+            if (config.debug && config.debug.tension) {
+                console.log('%c====================================', 'color: #ff4444;');
+                console.log('%c🎣 ЗРИВ ГАЧКА!', 'color: #ff4444; font-size: 14px; font-weight: bold;');
+                console.log(`%cПричина: ${isSlackPenalty ? 'Провисання ліски (>10с)' : 'Перетягування'}`, 'color: #ffaa00;');
+                console.log(`%cНатяг: ${this.#tension.toFixed(1)}%`, 'color: #e6e6e6;');
+                console.log(`%cШанс: ${(chance * 100).toFixed(1)}%`, 'color: #e6e6e6;');
+                console.log(`%cСила Риби в цей момент: ${currentFishPower.toFixed(3)}`, 'color: #ff4444;');
+                console.log(`%cСила Гачка: ${this.#hookPower.toFixed(3)}`, 'color: #00ccff;');
+                console.log('%c====================================', 'color: #ff4444;');
+            }
         }
     }
 
@@ -815,6 +855,8 @@ class TensionMeter {
         this.#highestTierRolled = 0;
         this.#lastCalculatedTension = -1;
         this.#hookCheckTimer = 0;
+        this.#hookCheckTimer = 0;
+        this.#slackTimer = 0;
     }
 }
 

@@ -1,13 +1,13 @@
 const DEBUG_MODULES = {
-    location: false,
-    forces: false,
-    deviations: false,
-    tension: false,
-    stamina: false,
-    exhaustion: false,
-    catchTime: false,
-    prediction: false,
-    net: false,
+    location: false, // Виводить детальну інформацію про локацію, зони та об'єкти
+    forces: false, // Включає детальний розрахунок сил гравця та риби
+    deviations: false, // Включає аналіз впливу відхилень кидка на сили та результат
+    tension: true, // Включає детальний аналіз натягу та гачка
+    stamina: false, // Включає аналіз стаміни та виснаження риби
+    exhaustion: false, // Включає аналіз фази виснаження риби
+    catchTime: false, // Включає аналіз часу витягування риби
+    prediction: false, // Виводить прогноз результату на основі поточних сил
+    net: false, // Включає аналіз підсаки та її впливу на результат
 };
 
 setTimeout(() => {
@@ -114,6 +114,7 @@ setTimeout(() => {
         console.log(`%cГравець = ${playerPercentX.toFixed(1)}%`, 'color: #00ff80;');
         if (playerPercentX > fishPercentX) console.log(`%c💪 Гравець сильніший на = ${diffPercentX.toFixed(1)}%`, 'color: #00ff80; font-weight: bold;');
         else if (fishPercentX > playerPercentX) console.log(`%c⚠️ Риба сильніша на = ${diffPercentX.toFixed(1)}%`, 'color: #ff4444; font-weight: bold;');
+
         else console.log(`%c🤝 Сили абсолютно рівні (0% різниці)`, 'color: #ffff00; font-weight: bold;');
 
         console.table({

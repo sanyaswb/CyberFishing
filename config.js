@@ -130,12 +130,15 @@ const CONFIG = {
     },
 
     hookMechanics: {
-        safeTensionThreshold: 50,
+        safeTensionThreshold: 50,           // Поріг для сильної риби
+        safeTensionThresholdWeakFish: 90,   // Поріг для слабкої риби (НОВЕ)
         baseEscapeChance: 0.01,
         chancePer10Tension: 0.01,
         fishDominanceMultiplier: 1.5,
         extremeDominanceBonus: 0.5,
-        checkIntervalMs: 1000
+        checkIntervalMs: 1000,
+        slackLinePenaltyTimeMs: 10000,      // Час провисання до штрафу (10 сек) (НОВЕ)
+        slackLineEscapeChance: 0.10         // Шанс сходу при провисанні (1%) (НОВЕ)
     },
 
     fish: {
