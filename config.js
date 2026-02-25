@@ -5,6 +5,7 @@ const CONFIG = {
     },
 
     locations: {
+        debugVisuals: true,
         baseResolution: { width: 2560, height: 2560 },
         cellSize: 64,
         map: {
@@ -70,7 +71,7 @@ const CONFIG = {
     },
 
     debug: {
-        overlay: true,
+        overlay: false,
     },
 
     logs: {
@@ -145,10 +146,10 @@ const CONFIG = {
         dirChangeMinMs: 500, // Minimum time between random direction changes
         dirChangeMaxMs: 1500, // Maximum time between random direction changes
         behaviors: { // Defines different behavior states with their own pull/move multipliers and durations
-            idle: { pull: 1, move: 1.0, minTime: 500, maxTime: 2000, weight: 50 },
+            idle: { pull: 1, move: 0.5, minTime: 500, maxTime: 2000, weight: 50 },
             rest: { pull: 0.2, move: 0.1, minTime: 500, maxTime: 1500, weight: 10 },
-            swim: { pull: 0.8, move: 1.2, minTime: 2000, maxTime: 4000, weight: 10 },
-            dash: { pull: 1.5, move: 0.0, minTime: 500, maxTime: 1200, weight: 30 }
+            swim: { pull: 0.8, move: 1.0, minTime: 2000, maxTime: 4000, weight: 10 },
+            dash: { pull: 1.5, move: 1.2, minTime: 500, maxTime: 1200, weight: 30 }
         }
     },
 

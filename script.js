@@ -861,6 +861,8 @@ class Renderer {
             this.#fullscreenBtn.style.backgroundColor = 'rgba(15, 23, 30, 0.8)';
         });
 
+        this.#fullscreenBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
+
         this.#fullscreenBtn.addEventListener('click', () => {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen();
@@ -965,8 +967,11 @@ class Renderer {
         this.#ctx.fillRect(0, 0, this.#canvas.width, this.#canvas.height);
     }
     
-    drawLocationDebug(locationMap, projector, config) {
+    drawBackground(locationMap, projector, config) {
         locationMap.drawBackground(this.#ctx, projector);
+    }
+
+    drawLocationDebug(locationMap, projector, config) {
         const grid = locationMap.getGrid();
         const cols = locationMap.getCols();
         const rows = locationMap.getRows();
@@ -1240,7 +1245,7 @@ class Game {
     #staminaController;
     #locationMap;
     #projector;
-    #cameraToggleBtn;
+    // #cameraToggleBtn;
     #invalidCastMarker;
     #netCatchChance = null;
     #isNetReady = false;
@@ -1258,10 +1263,6 @@ class Game {
         
         this.#resizeCanvas();
         window.addEventListener('resize', () => this.#resizeCanvas());
-        this.#cameraToggleBtn = document.getElementById('camera-toggle-btn');
-        if (this.#cameraToggleBtn) {
-            this.#cameraToggleBtn.addEventListener('click', () => this.#toggleCameraMode());
-        }
 
         const initialX = CONFIG.float.initialX ?? this.#canvas.width / 2;
         const initialY = CONFIG.float.initialY ?? this.#canvas.height / 2;
@@ -1281,19 +1282,19 @@ class Game {
         this.loop = this.loop.bind(this);
     }
 
-    #toggleCameraMode() {
-        if (this.#gameState === 'scouting') {
-            this.#gameState = 'targeting';
-            this.#cameraToggleBtn.innerText = '📷 CAMERA: LOCKED (TAP TO CAST)';
-            this.#cameraToggleBtn.style.backgroundColor = '#555';
-            this.#cameraToggleBtn.style.color = '#fff';
-        } else if (this.#gameState === 'targeting') {
-            this.#gameState = 'scouting';
-            this.#cameraToggleBtn.innerText = '📷 CAMERA: FREE';
-            this.#cameraToggleBtn.style.backgroundColor = '#ffaa00';
-            this.#cameraToggleBtn.style.color = '#111';
-        }
-    }
+    // #toggleCameraMode() {
+    //     if (this.#gameState === 'scouting') {
+    //         this.#gameState = 'targeting';
+    //         this.#cameraToggleBtn.innerText = '📷 CAMERA: LOCKED (TAP TO CAST)';
+    //         this.#cameraToggleBtn.style.backgroundColor = '#555';
+    //         this.#cameraToggleBtn.style.color = '#fff';
+    //     } else if (this.#gameState === 'targeting') {
+    //         this.#gameState = 'scouting';
+    //         this.#cameraToggleBtn.innerText = '📷 CAMERA: FREE';
+    //         this.#cameraToggleBtn.style.backgroundColor = '#ffaa00';
+    //         this.#cameraToggleBtn.style.color = '#111';
+    //     }
+    // }
 
     #startFishing(virtualX, virtualY) {
         this.#float.setPosition(virtualX, virtualY);
@@ -1303,7 +1304,7 @@ class Game {
         this.#isNetReady = false;
         this.failReason = null;
 
-        if (this.#cameraToggleBtn) this.#cameraToggleBtn.style.display = 'none';
+        // if (this.#cameraToggleBtn) this.#cameraToggleBtn.style.display = 'none';
         const rod = new Rod(CONFIG.rod.level, CONFIG.rod.basePower);
         const reel = new Reel(CONFIG.reel.level, CONFIG.reel.basePower);
         const hook = new Hook(CONFIG.hook.level, CONFIG.hook.weight, CONFIG.hook.quality); 
@@ -1354,8 +1355,8 @@ class Game {
 
         const inputState = this.#inputManager.getState();
         
-        if (this.#gameState === 'scouting' || this.#gameState === 'targeting') {
-            if (this.#gameState === 'scouting' && inputState.panDeltaX !== 0) {
+        if (this.#gameState === 'scouting') {
+            if (inputState.panDeltaX !== 0) {
                 const virtualDelta = inputState.panDeltaX / this.#projector.getScale();
                 this.#projector.pan(virtualDelta);
             }
@@ -1505,7 +1506,16 @@ class Game {
 
     draw() {
         this.#renderer.clear(CONFIG);
-        this.#renderer.drawLocationDebug(this.#locationMap, this.#projector, CONFIG);
+
+        // 1. ЗАВЖДИ малюємо візуальний фон локації (воду, берег)
+        if (typeof this.#renderer.drawBackground === 'function') {
+            this.#renderer.drawBackground(this.#locationMap, this.#projector, CONFIG);
+        }
+
+        // 2. Сітку та червоні зони малюємо ТІЛЬКИ якщо це увімкнено в конфігу
+        if (CONFIG.locations && CONFIG.locations.debugVisuals) {
+            this.#renderer.drawLocationDebug(this.#locationMap, this.#projector, CONFIG);
+        }
 
         if (this.#invalidCastMarker) {
             this.#renderer.drawInvalidCastMarker(this.#invalidCastMarker);
