@@ -110,6 +110,10 @@ class DebugOverlay {
     #getStateColor(state) {
         switch(state.toLowerCase()) {
             case 'dash': return '#ff4444';
+            case 'lastdash': return '#ff00ff';
+            case 'panic': return '#ff0055';
+            case 'megadash': return '#ff2222';
+            case 'surrender': return '#888888';
             case 'swim': return '#ffaa00';
             case 'rest': return '#00ff80';
             case 'idle': return '#00ccff';
@@ -172,16 +176,22 @@ class DebugOverlay {
             behaviorKeys.forEach(k => {
                 if (behaviors[k].pull > maxPull) maxPull = behaviors[k].pull;
                 if (behaviors[k].pull < minPull) minPull = behaviors[k].pull;
-                if (Math.abs(behaviors[k].move || 0) > maxMove) maxMove = Math.abs(behaviors[k].move || 0);
+                
+                const edgeMult = behaviors[k].edgePowerMultiplier ?? CONFIG.fish.edgePowerMultiplier ?? 1.0;
+                const effectiveMove = Math.abs(behaviors[k].move || 0) * edgeMult;
+                if (effectiveMove > maxMove) maxMove = effectiveMove;
             });
         } else {
             minPull = 0;
         }
 
         const getFishStateForceCompact = (stateName) => {
-            if (!behaviors[stateName]) return `<div style="margin-bottom: 2px;">${stateName.toUpperCase()}: <span style="color: #666;">відсутній</span></div>`;
+            if (!behaviors[stateName]) return '';
+            
+            const edgeMult = behaviors[stateName].edgePowerMultiplier ?? CONFIG.fish.edgePowerMultiplier ?? 1.0;
             const yForce = currentFishBase * behaviors[stateName].pull * CONFIG.physics.fishForceMultiplier;
-            const xForce = currentFishBase * Math.abs(behaviors[stateName].move || 0) * CONFIG.physics.fishForceMultiplier;
+            const xForce = currentFishBase * Math.abs(behaviors[stateName].move || 0) * edgeMult * CONFIG.physics.fishForceMultiplier;
+            
             return `
                 <div style="margin-bottom: 2px; display: flex; justify-content: space-between;">
                     <span style="color: ${this.#getStateColor(stateName)}; font-weight: bold;">${stateName.toUpperCase()}</span>
@@ -191,9 +201,12 @@ class DebugOverlay {
         };
 
         const maxPossibleForceY = currentFishBase * maxPull * CONFIG.physics.fishForceMultiplier;
-        const minPossibleForceY = currentFishBase * minPull * CONFIG.physics.fishForceMultiplier;
-        const worstFishY = maxPossibleForceY;
-        const worstFishX = currentFishBase * (maxMove + (CONFIG.fish.edgePowerMultiplier || 0)) * CONFIG.physics.fishForceMultiplier;
+        const worstFishX = currentFishBase * maxMove * CONFIG.physics.fishForceMultiplier;
+
+        let dynamicStatesHtml = '';
+        behaviorKeys.forEach(k => {
+            dynamicStatesHtml += getFishStateForceCompact(k);
+        });
 
         // --- ЛОГІКА ДЛЯ ГРАВЦЯ ---
         const rPower = (CONFIG.rod.level * CONFIG.rod.basePower);
@@ -243,10 +256,7 @@ class DebugOverlay {
         if (OVERLAY_MODULES.fishStates) {
             html += `
                 <div style="color: #ffaa00; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">📊 СИЛА РИБИ ЗА СТАНАМИ (MAX Y та X)</div>
-                ${getFishStateForceCompact('dash')}
-                ${getFishStateForceCompact('swim')}
-                ${getFishStateForceCompact('idle')}
-                ${getFishStateForceCompact('rest')}
+                ${dynamicStatesHtml}
                 <div style="margin-bottom: 12px;"></div>
             `;
         }

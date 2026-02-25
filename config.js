@@ -143,18 +143,35 @@ const CONFIG = {
 
     fish: {
         level: 4,
-        weight: 4, // Affects base power and stamina
-        resistance: 1, // Affects how much tension increases per unit of player input
-        agility: 1.0, // Affects how quickly fish changes direction
-        edgePowerMultiplier: 1.0, // How much stronger the fish gets near edges (1.0 = no change)
-        bounceCooldownMs: 2000, // Minimum time between direction changes after hitting a wall
-        dirChangeMinMs: 500, // Minimum time between random direction changes
-        dirChangeMaxMs: 1500, // Maximum time between random direction changes
-        behaviors: { // Defines different behavior states with their own pull/move multipliers and durations
-            idle: { pull: 1, move: 0.5, minTime: 500, maxTime: 2000, weight: 50 },
-            rest: { pull: 0.2, move: 0.1, minTime: 500, maxTime: 1500, weight: 10 },
-            swim: { pull: 0.8, move: 0.5, minTime: 2000, maxTime: 4000, weight: 10 },
-            dash: { pull: 1.5, move: 1.2, minTime: 500, maxTime: 1200, weight: 30 }
+        weight: 4,
+        resistance: 1,
+        agility: 1.0,
+        edgePowerMultiplier: 1.0,
+        bounceCooldownMs: 2000,
+        dirChangeMinMs: 500,
+        dirChangeMaxMs: 1500,
+        lastDashTrigger: {
+            targetState: 'lastDash',
+            isLocked: false,
+            chance: 0.50,
+            checkIntervalMs: 1000
+        },
+        behaviors: {
+            idle: { pull: 0.0, move: 0.5, minTime: 500, maxTime: 2000, weight: 5 },
+            rest: { pull: 0.2, move: 0.1, minTime: 500, maxTime: 2500, weight: 50 },
+            swim: { pull: 0.0, move: 0.5, minTime: 2000, maxTime: 4000, weight: 35 },
+            dash: { pull: 0.0, move: 1.2, minTime: 500, maxTime: 1200, weight: 10 },
+            lastDash: { 
+                pull: 0.6, 
+                move: 2.5, 
+                minTime: 1000, 
+                maxTime: 3000, 
+                weight: 0,
+                dirChangeMinMs: 500,
+                dirChangeMaxMs: 1000,
+                agility: 1.5, // Increased agility during last dash
+                edgePowerMultiplier: 1.2 // No extra edge power during last dash, but can be adjusted if needed
+            }
         }
     },
 

@@ -248,9 +248,10 @@ class FishBehavior {
     #targetMove;
     #currentDirX;
     #targetDirX;
+    #isLocked;
 
     constructor(config) {
-        this.#config = config.fish;
+        this.#config = config.fish || config;
         this.#currentStateName = 'swim';
         this.#stateTimer = 0;
         this.#dirTimer = 0;
@@ -260,55 +261,86 @@ class FishBehavior {
         this.#targetMove = 0.0;
         this.#currentDirX = 0;
         this.#targetDirX = 0;
+        this.#isLocked = false;
         this.#pickNextState();
     }
 
     #pickNextState() {
+        if (this.#isLocked) return; 
+
         const states = this.#config.behaviors;
-        const keys = Object.keys(states);
-        let totalWeight = 0;
+        const validKeys = Object.keys(states).filter(k => states[k].weight > 0);
         
-        for (let k of keys) {
+        if (validKeys.length === 0) return;
+
+        let totalWeight = 0;
+        for (let k of validKeys) {
             totalWeight += states[k].weight;
         }
         
         let r = Math.random() * totalWeight;
-        for (let k of keys) {
+        let selectedKey = validKeys[0];
+
+        for (let k of validKeys) {
             if (r < states[k].weight) {
-                this.#currentStateName = k;
+                selectedKey = k;
                 break;
             }
             r -= states[k].weight;
         }
 
+        this.#currentStateName = selectedKey;
         const state = states[this.#currentStateName];
         this.#targetPull = state.pull;
         this.#targetMove = state.move;
         this.#stateTimer = state.minTime + Math.random() * (state.maxTime - state.minTime);
     }
 
+    forceState(stateName, isLocked = false) {
+        const state = this.#config.behaviors[stateName];
+        if (!state) {
+            console.error(`[BEHAVIOR ERROR] Стан ${stateName} не знайдено!`);
+            return;
+        }
+
+        this.#currentStateName = stateName;
+        this.#targetPull = state.pull;
+        this.#targetMove = state.move;
+        this.#isLocked = isLocked;
+        this.#stateTimer = state.minTime + Math.random() * (state.maxTime - state.minTime);
+        this.#dirTimer = 0; 
+    }
+
     reactToWall(wallSide) {
         this.#targetDirX = wallSide === -1 ? 1 : -1;
         this.#currentDirX = this.#targetDirX;
-        this.#dirTimer = this.#config.bounceCooldownMs || 2000;
-        this.#stateTimer = 0;
+        const stateConfig = this.#config.behaviors[this.#currentStateName];
+        this.#dirTimer = stateConfig.bounceCooldownMs ?? this.#config.bounceCooldownMs ?? 2000;
+        
+        if (!this.#isLocked) {
+            this.#stateTimer = 0;
+        }
     }
 
     update(dt) {
         this.#stateTimer -= dt;
         if (this.#stateTimer <= 0) {
+            if (this.#isLocked) this.#isLocked = false;
             this.#pickNextState();
         }
+
+        const stateConfig = this.#config.behaviors[this.#currentStateName];
 
         this.#dirTimer -= dt;
         if (this.#dirTimer <= 0) {
             this.#targetDirX = (Math.random() * 2) - 1;
-            const minMs = this.#config.dirChangeMinMs || 500;
-            const maxMs = this.#config.dirChangeMaxMs || 2000;
+            const minMs = stateConfig.dirChangeMinMs ?? this.#config.dirChangeMinMs ?? 500;
+            const maxMs = stateConfig.dirChangeMaxMs ?? this.#config.dirChangeMaxMs ?? 2000;
             this.#dirTimer = minMs + Math.random() * (maxMs - minMs);
         }
 
-        const t = Math.min(1, (dt / 1000) * 3.0 * this.#config.agility);
+        const agility = stateConfig.agility ?? this.#config.agility ?? 1.0;
+        const t = Math.min(1, (dt / 1000) * 3.0 * agility);
         
         this.#currentPull += (this.#targetPull - this.#currentPull) * t;
         this.#currentMove += (this.#targetMove - this.#currentMove) * t;
@@ -316,10 +348,12 @@ class FishBehavior {
     }
 
     getStateData() {
+        const stateConfig = this.#config.behaviors[this.#currentStateName];
         return {
             name: this.#currentStateName,
             pullMult: this.#currentPull,
-            moveX: this.#currentMove * this.#currentDirX
+            moveX: this.#currentMove * this.#currentDirX,
+            edgePowerMultiplier: stateConfig.edgePowerMultiplier ?? this.#config.edgePowerMultiplier ?? 1.0
         };
     }
 }
@@ -331,6 +365,8 @@ class Fish {
     #config;
     #powerDebuff;
     #behavior;
+    #isLastDashTriggered = false;
+    #lastDashTimer = 0;
 
     constructor(level, weight, resistance, config) {
         this.#level = level;
@@ -365,6 +401,49 @@ class Fish {
             this.#behavior.reactToWall(wallSide);
         }
     }
+
+    tryTriggerLastDash(dt) {
+        const fishCfg = this.#config.fish || this.#config;
+        const triggerCfg = fishCfg.lastDashTrigger;
+
+        if (!triggerCfg) return;
+
+        if (this.#isLastDashTriggered && (triggerCfg.isLocked ?? true)) return;
+
+        this.#lastDashTimer += dt;
+        const interval = triggerCfg.checkIntervalMs ?? 1000;
+        
+        if (this.#lastDashTimer >= interval) {
+            this.#lastDashTimer = 0;
+
+            const currentBehavior = this.#behavior.getStateData();
+            const targetState = triggerCfg.targetState || 'lastDash';
+            
+            if (currentBehavior.name === targetState) return;
+
+            const chance = triggerCfg.chance ?? 0.05;
+            const roll = Math.random();
+            
+            if (roll <= chance) {
+                this.triggerLastDash();
+            }
+        }
+    }
+
+    triggerLastDash() {
+        const fishCfg = this.#config.fish || this.#config;
+        const triggerCfg = fishCfg.lastDashTrigger;
+
+        if (!this.#isLastDashTriggered) {
+            this.#powerDebuff *= 0.5; 
+            this.#isLastDashTriggered = true;
+        }
+        
+        const targetState = triggerCfg?.targetState || 'lastDash';
+        const isLocked = triggerCfg?.isLocked ?? false;
+
+        this.#behavior.forceState(targetState, isLocked);
+    }
 }
 
 class FishingSystem {
@@ -383,6 +462,18 @@ class FishingSystem {
         this.#reel = reel;
         this.#buffs = new BuffManager();
         this.#fish = fish;
+    }
+
+    triggerFishLastDash() {
+        if (this.#fish && typeof this.#fish.triggerLastDash === 'function') {
+            this.#fish.triggerLastDash();
+        }
+    }
+
+    tryTriggerFishLastDash(dt) {
+        if (this.#fish && typeof this.#fish.tryTriggerLastDash === 'function') {
+            this.#fish.tryTriggerLastDash(dt);
+        }
     }
 
     getBuffManager() {
@@ -466,7 +557,7 @@ class FishingSystem {
         const isSwimmingToCenter = Math.sign(finalBehavior.moveX) === -pushDirection && finalBehavior.moveX !== 0;
         
         if (!isSwimmingToCenter) {
-            escapeForceX = pushDirection * spatialPenalty * config.fish.edgePowerMultiplier * basePower;
+            escapeForceX = pushDirection * spatialPenalty * finalBehavior.edgePowerMultiplier * basePower;
         }
         
         force.x = (finalBehavior.moveX * basePower) + escapeForceX;
@@ -1394,12 +1485,20 @@ class Game {
             }
         }
 
+        let triggerLineY = catchLineY - (this.#canvas.height * 0.10);
+
         if (CONFIG.net && CONFIG.net.active) {
             const netBonusPx = CONFIG.net.length * 10;
-            const netLineY = catchLineY - netBonusPx;
-            this.#isNetReady = (floatScreenPos.y >= netLineY && floatScreenPos.y < catchLineY);
+            triggerLineY = catchLineY - netBonusPx;
+            this.#isNetReady = (floatScreenPos.y >= triggerLineY && floatScreenPos.y < catchLineY);
         } else {
             this.#isNetReady = false;
+        }
+
+        if (floatScreenPos.y >= triggerLineY && floatScreenPos.y < catchLineY) {
+            if (typeof this.#fishingSystem.tryTriggerFishLastDash === 'function') {
+                this.#fishingSystem.tryTriggerFishLastDash(dt);
+            }
         }
 
         // Відправка даних в дебагер
