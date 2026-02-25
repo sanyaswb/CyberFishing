@@ -929,17 +929,25 @@ class Renderer {
         }
     }
 
-    drawCatchZone(config) {
-        const h = config.ui?.catchZone?.height || 150;
-        const y = this.#canvas.height - h;
-        this.#ctx.fillStyle = config.ui?.catchZone?.color || 'rgba(0, 150, 255, 0.3)';
-        this.#ctx.fillRect(0, y, this.#canvas.width, h);
+    drawCatchZone(locationMap, projector, config) {
+        const bounds = locationMap.getCastableBoundsVirtual(config.locations.cellSize);
+        const virtualBottomY = bounds ? bounds.bottom : Infinity;
+        const mapBottomScreenY = projector.virtualToScreen(0, virtualBottomY).y;
 
+        const catchLineY = Math.min(mapBottomScreenY, this.#canvas.height);
+        const heightToDraw = this.#canvas.height - catchLineY;
+
+        if (heightToDraw > 0) {
+            this.#ctx.fillStyle = config.ui?.catchZone?.color || 'rgba(0, 150, 255, 0.3)';
+            this.#ctx.fillRect(0, catchLineY, this.#canvas.width, heightToDraw);
+        }
+
+        const lineDrawY = Math.min(catchLineY, this.#canvas.height - 2); 
         this.#ctx.strokeStyle = 'rgba(0, 200, 255, 0.8)';
         this.#ctx.lineWidth = 2;
         this.#ctx.beginPath();
-        this.#ctx.moveTo(0, y);
-        this.#ctx.lineTo(this.#canvas.width, y);
+        this.#ctx.moveTo(0, lineDrawY);
+        this.#ctx.lineTo(this.#canvas.width, lineDrawY);
         this.#ctx.stroke();
     }
 
@@ -1301,10 +1309,9 @@ class Game {
         this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, currentFishMaxForceScaled, dt, CONFIG);
         
         const castableBounds = this.#locationMap.getCastableBoundsVirtual(CONFIG.locations.cellSize);
-        const catchZoneHeight = CONFIG.ui?.catchZone?.height || 150;
         
         const vTopLeft = this.#projector.screenToVirtual(0, 0);
-        const vBottomRight = this.#projector.screenToVirtual(this.#canvas.width, this.#canvas.height - catchZoneHeight);
+        const vBottomRight = this.#projector.screenToVirtual(this.#canvas.width, this.#canvas.height);
         
         const dynamicBounds = {
             left: Math.max(vTopLeft.x, castableBounds ? castableBounds.left : 0),
@@ -1319,7 +1326,12 @@ class Game {
         const updatedFloatPos = this.#float.getPosition();
         const floatScreenPos = this.#projector.virtualToScreen(updatedFloatPos.x, updatedFloatPos.y);
         
-        if (floatScreenPos.y >= this.#canvas.height - catchZoneHeight) {
+        const castableBoundsVirtual = this.#locationMap.getCastableBoundsVirtual(CONFIG.locations.cellSize);
+        const mapBottomScreenY = this.#projector.virtualToScreen(0, castableBoundsVirtual.bottom).y;
+        
+        const catchLineY = Math.min(mapBottomScreenY, this.#canvas.height);
+
+        if (floatScreenPos.y >= catchLineY) {
             this.#gameState = 'victory';
         }
     }
@@ -1335,12 +1347,15 @@ class Game {
         if (this.#gameState === 'playing' || this.#gameState === 'failed' || this.#gameState === 'victory') {
             const vPos = this.#float.getPosition();
             const sPos = this.#projector.virtualToScreen(vPos.x, vPos.y);
-            this.#renderer.drawCatchZone(CONFIG);
+            
+            this.#renderer.drawCatchZone(this.#locationMap, this.#projector, CONFIG);
+            
             this.#renderer.drawRodLine(sPos, CONFIG);
             this.#renderer.drawFloat(sPos, CONFIG);
             this.#renderer.drawTensionBar(this.#tensionMeter, CONFIG);
             this.#renderer.drawFishCondition(this.#fishCondition, CONFIG);
         }
+        
         if (this.#gameState === 'failed') {
             this.#renderer.drawGameOver(this.#canvas.width, this.#canvas.height, this.#tensionMeter.getBreakReason());
         } else if (this.#gameState === 'victory') {
