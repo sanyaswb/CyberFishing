@@ -59,6 +59,7 @@ class UIDraggableButton {
     #element;
     #onClickCallback;
     #config;
+    #options;
     #holdTimer;
     #isDragging;
     #startX;
@@ -66,10 +67,11 @@ class UIDraggableButton {
     #offsetX;
     #offsetY;
 
-    constructor(element, onClickCallback, config) {
+    constructor(element, onClickCallback, config, options = {}) {
         this.#element = element;
         this.#onClickCallback = onClickCallback;
         this.#config = config;
+        this.#options = options; 
 
         this.#holdTimer = null;
         this.#isDragging = false;
@@ -125,9 +127,12 @@ class UIDraggableButton {
 
     #startDrag() {
         this.#isDragging = true;
-        this.#element.style.transform = 'scale(1.1)';
-        this.#element.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
-        this.#element.style.transition = 'none';
+        
+        if (!this.#options.noTransform) {
+            this.#element.style.transform = 'scale(1.1)';
+            this.#element.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
+            this.#element.style.transition = 'none';
+        }
         
         this.#element.style.position = 'absolute';
         this.#element.style.margin = '0';
@@ -156,8 +161,9 @@ class UIDraggableButton {
         let x = clientX - this.#offsetX;
         let y = clientY - this.#offsetY;
 
-        x = Math.max(0, Math.min(x, window.innerWidth - this.#element.offsetWidth));
-        y = Math.max(0, Math.min(y, window.innerHeight - this.#element.offsetHeight));
+        const rect = this.#element.getBoundingClientRect();
+        x = Math.max(0, Math.min(x, window.innerWidth - rect.width));
+        y = Math.max(0, Math.min(y, window.innerHeight - rect.height));
 
         this.#element.style.left = `${x}px`;
         this.#element.style.top = `${y}px`;
@@ -178,9 +184,12 @@ class UIDraggableButton {
 
         if (this.#isDragging) {
             this.#isDragging = false;
-            this.#element.style.transform = '';
-            this.#element.style.boxShadow = '';
-            this.#element.style.transition = '';
+            
+            if (!this.#options.noTransform) {
+                this.#element.style.transform = '';
+                this.#element.style.boxShadow = '';
+                this.#element.style.transition = '';
+            }
         } else {
             const dist = Math.hypot(e.clientX - this.#startX, e.clientY - this.#startY);
             if (dist < 10 && this.#onClickCallback) {

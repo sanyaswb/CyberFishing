@@ -11,8 +11,10 @@ const OVERLAY_MODULES = {
 
 class DebugOverlay {
     #container;
+    #content;
     #intervalId;
     #data = {};
+    #userScale = 1.0; // Додана змінна для ручного керування масштабом
 
     constructor() {
         this.#initDOM();
@@ -21,9 +23,73 @@ class DebugOverlay {
     }
 
     #initDOM() {
+        // 1. Головний контейнер (Він буде перетягуватися)
         this.#container = document.createElement('div');
-        this.#container.style.cssText = 'position: absolute; top: 10px; left: 10px; background: rgba(11, 21, 32, 0.95); color: #ffffff; padding: 15px; font-family: monospace; font-size: 14px; border: 1px solid #4a5b6c; border-radius: 8px; pointer-events: none; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.6); min-width: 280px; transform-origin: top left;';
+        this.#container.style.cssText = 'position: absolute; top: 10px; left: 10px; background: rgba(11, 21, 32, 0.95); color: #ffffff; padding: 15px 15px 50px 15px; font-family: monospace; font-size: 14px; border: 1px solid #4a5b6c; border-radius: 8px; z-index: 1000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.6); min-width: 280px; transform-origin: top left; touch-action: none;';
+        
+        // 2. Контейнер для тексту (який оновлюється кожні 100мс)
+        this.#content = document.createElement('div');
+        this.#content.style.pointerEvents = 'none'; // Щоб кліки проходили наскрізь до головного контейнера для перетягування
+        this.#container.appendChild(this.#content);
+
+        // 3. Контейнер для кнопок масштабу (внизу по центру)
+        const controlsDiv = document.createElement('div');
+        controlsDiv.style.cssText = 'position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; z-index: 1001;';
+
+        const btnMinus = document.createElement('button');
+        btnMinus.innerHTML = '-';
+        this.#styleZoomBtn(btnMinus);
+        
+        const btnPlus = document.createElement('button');
+        btnPlus.innerHTML = '+';
+        this.#styleZoomBtn(btnPlus);
+
+        // Обробка кліків по кнопках (зупиняємо поширення, щоб не спрацьовувало перетягування)
+        const handleZoom = (e, delta) => {
+            e.stopPropagation();
+            e.preventDefault();
+            this.#userScale = Math.max(0.3, Math.min(3.0, this.#userScale + delta)); // Обмеження масштабу від 0.3 до 3.0
+            this.#forceScaleUpdate();
+        };
+
+        btnMinus.addEventListener('pointerdown', (e) => handleZoom(e, -0.1));
+        btnPlus.addEventListener('pointerdown', (e) => handleZoom(e, 0.1));
+        // Для надійності на мобільних
+        btnMinus.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: false });
+        btnPlus.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: false });
+
+        controlsDiv.appendChild(btnMinus);
+        controlsDiv.appendChild(btnPlus);
+        this.#container.appendChild(controlsDiv);
+
         document.body.appendChild(this.#container);
+
+        // 4. Робимо оверлей рухомим через наш універсальний клас!
+        if (typeof UIDraggableButton !== 'undefined' && typeof CONFIG !== 'undefined') {
+            new UIDraggableButton(this.#container, null, CONFIG, { noTransform: true });
+        }
+    }
+
+    #styleZoomBtn(btn) {
+        Object.assign(btn.style, {
+            width: '32px',
+            height: '32px',
+            backgroundColor: 'rgba(0, 204, 255, 0.1)',
+            color: '#00ccff',
+            border: '1px solid #00ccff',
+            borderRadius: '6px',
+            fontFamily: 'monospace',
+            fontWeight: 'bold',
+            fontSize: '20px',
+            cursor: 'pointer',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            touchAction: 'none'
+        });
+
+        btn.addEventListener('mouseenter', () => btn.style.backgroundColor = 'rgba(0, 204, 255, 0.3)');
+        btn.addEventListener('mouseleave', () => btn.style.backgroundColor = 'rgba(0, 204, 255, 0.1)');
     }
 
     #initListener() {
@@ -43,6 +109,21 @@ class DebugOverlay {
             case 'idle': return '#00ccff';
             default: return '#8a9bac';
         }
+    }
+
+    // Примусове оновлення масштабу без чекання 100мс
+    #forceScaleUpdate() {
+        this.#container.style.transform = 'none';
+        const rect = this.#container.getBoundingClientRect();
+        const availableW = window.innerWidth - 20; 
+        const availableH = window.innerHeight - 20;
+        
+        const scaleX = availableW / rect.width;
+        const scaleY = availableH / rect.height;
+        
+        // Додаємо множник ручного масштабу userScale
+        const finalScale = Math.min(1, scaleX, scaleY) * this.#userScale;
+        this.#container.style.transform = `scale(${finalScale})`;
     }
 
     #update() {
@@ -225,22 +306,11 @@ class DebugOverlay {
             `;
         }
 
-        this.#container.innerHTML = html;
+        // Оновлюємо тільки внутрішній контент, не чіпаючи кнопки!
+        this.#content.innerHTML = html;
         this.#container.style.display = 'block';
 
-        // --- ЛОГІКА СКЕЙЛІНГУ ---
-        this.#container.style.transform = 'none';
-        const rect = this.#container.getBoundingClientRect();
-        
-        const availableW = window.innerWidth - 20; 
-        const availableH = window.innerHeight - 20;
-        
-        const scaleX = availableW / rect.width;
-        const scaleY = availableH / rect.height;
-        
-        const finalScale = Math.min(1, scaleX, scaleY);
-        
-        this.#container.style.transform = `scale(${finalScale})`;
+        this.#forceScaleUpdate();
     }
 
     #start() {

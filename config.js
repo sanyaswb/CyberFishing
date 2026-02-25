@@ -74,7 +74,7 @@ const CONFIG = {
     },
 
     debug: {
-        overlay: false,
+        overlay: true,
     },
 
     logs: {
