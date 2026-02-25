@@ -821,122 +821,10 @@ class TensionMeter {
 class Renderer {
     #canvas;
     #ctx;
-    #fullscreenBtn;
-    #netBtn;
-
-    onNetClick = null;
 
     constructor(canvas) {
         this.#canvas = canvas;
         this.#ctx = canvas.getContext('2d', { alpha: false });
-        this.#initFullscreenBtn();
-        this.#initNetBtn();
-    }
-
-    #initFullscreenBtn() {
-        this.#fullscreenBtn = document.createElement('button');
-        this.#fullscreenBtn.innerHTML = '⛶ FULLSCREEN';
-        
-        Object.assign(this.#fullscreenBtn.style, {
-            position: 'absolute',
-            top: '15px',
-            right: '15px',
-            padding: '8px 16px',
-            backgroundColor: 'rgba(15, 23, 30, 0.8)',
-            color: '#00ff80',
-            border: '1px solid #00ff80',
-            borderRadius: '4px',
-            fontFamily: 'monospace',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            zIndex: '9999',
-            transition: 'all 0.2s ease',
-            touchAction: 'none' // Додаємо сюди для підстраховки мобільних
-        });
-
-        this.#fullscreenBtn.addEventListener('mouseenter', () => {
-            this.#fullscreenBtn.style.backgroundColor = 'rgba(0, 255, 128, 0.2)';
-        });
-        
-        this.#fullscreenBtn.addEventListener('mouseleave', () => {
-            this.#fullscreenBtn.style.backgroundColor = 'rgba(15, 23, 30, 0.8)';
-        });
-
-        // ІНТЕГРАЦІЯ НОВОЇ МЕХАНІКИ:
-        // Ми передаємо елемент, колбек для кліку та глобальний конфіг
-        new UIDraggableButton(this.#fullscreenBtn, () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
-                });
-            } else {
-                document.exitFullscreen();
-            }
-        }, CONFIG);
-
-        document.addEventListener('fullscreenchange', () => {
-            this.#fullscreenBtn.innerHTML = document.fullscreenElement ? '🗗 EXIT FULLSCREEN' : '⛶ FULLSCREEN';
-        });
-
-        document.body.appendChild(this.#fullscreenBtn);
-    }
-
-    #initNetBtn() {
-        this.#netBtn = document.createElement('button');
-        this.#netBtn.innerHTML = 'NET';
-        
-        Object.assign(this.#netBtn.style, {
-            position: 'absolute',
-            bottom: '30px',
-            right: '30px',
-            width: '70px',
-            height: '70px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(128, 128, 128, 0.3)',
-            color: '#fff',
-            border: '2px solid #aaa',
-            fontFamily: 'monospace',
-            fontWeight: 'bold',
-            fontSize: '16px',
-            cursor: 'not-allowed',
-            display: 'none', 
-            zIndex: '9999',
-            transition: 'all 0.2s ease',
-            pointerEvents: 'none',
-            userSelect: 'none'
-        });
-
-        this.#netBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (this.onNetClick) this.onNetClick();
-        });
-
-        document.body.appendChild(this.#netBtn);
-    }
-
-    updateNetButtonState(config, isReady) {
-        if (!config.net || !config.net.active) {
-            this.#netBtn.style.display = 'none';
-            return;
-        }
-        
-        this.#netBtn.style.display = 'flex';
-        this.#netBtn.style.justifyContent = 'center';
-        this.#netBtn.style.alignItems = 'center';
-        
-        if (isReady) {
-            this.#netBtn.style.backgroundColor = 'rgba(0, 255, 128, 0.7)';
-            this.#netBtn.style.borderColor = '#00ff80';
-            this.#netBtn.style.cursor = 'pointer';
-            this.#netBtn.style.pointerEvents = 'auto';
-            this.#netBtn.style.boxShadow = '0 0 15px rgba(0, 255, 128, 0.5)';
-        } else {
-            this.#netBtn.style.backgroundColor = 'rgba(128, 128, 128, 0.3)';
-            this.#netBtn.style.borderColor = '#aaa';
-            this.#netBtn.style.cursor = 'not-allowed';
-            this.#netBtn.style.pointerEvents = 'none';
-            this.#netBtn.style.boxShadow = 'none';
-        }
     }
 
     #resolveX(configValue, elementWidth = 0) {
@@ -1238,6 +1126,7 @@ class Game {
     #canvas;
     #inputManager;
     #renderer;
+    #uiManager;
     #fishingSystem;
     #float;
     #lastTime;
@@ -1259,7 +1148,9 @@ class Game {
         
         this.#inputManager = new InputManager(this.#canvas, CONFIG);
         this.#renderer = new Renderer(this.#canvas);
-        this.#renderer.onNetClick = () => this.#handleNetClick();
+
+        this.#uiManager = new UIManager(CONFIG);
+        this.#uiManager.onNetClick = () => this.#handleNetClick();
         
         this.#locationMap = new LocationMap('test', CONFIG);
         this.#projector = new ViewportProjector(CONFIG);
@@ -1500,7 +1391,7 @@ class Game {
             document.dispatchEvent(new CustomEvent('debug-live-update', { detail: debugData }));
         }
 
-        this.#renderer.updateNetButtonState(CONFIG, this.#isNetReady && this.#gameState === 'playing');
+        this.#uiManager.updateNetButtonState(CONFIG, this.#isNetReady && this.#gameState === 'playing');
 
         if (floatScreenPos.y >= catchLineY) {
             this.#gameState = 'victory';

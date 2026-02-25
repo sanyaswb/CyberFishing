@@ -189,3 +189,132 @@ class UIDraggableButton {
         }
     }
 }
+
+class UIManager {
+    #config;
+    #fullscreenBtn;
+    #netBtn;
+    #isNetReady = false;
+    onNetClick;
+
+    constructor(config) {
+        this.#config = config;
+        this.#initFullscreenBtn();
+        this.#initNetBtn();
+    }
+
+    #initFullscreenBtn() {
+        this.#fullscreenBtn = document.createElement('button');
+        this.#fullscreenBtn.innerHTML = '⛶ FULLSCREEN';
+        
+        Object.assign(this.#fullscreenBtn.style, {
+            position: 'absolute',
+            top: '15px',
+            right: '15px',
+            padding: '8px 16px',
+            backgroundColor: 'rgba(15, 23, 30, 0.8)',
+            color: '#00ff80',
+            border: '1px solid #00ff80',
+            borderRadius: '4px',
+            fontFamily: 'monospace',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            zIndex: '9999',
+            transition: 'all 0.2s ease',
+            touchAction: 'none'
+        });
+
+        this.#fullscreenBtn.addEventListener('mouseenter', () => {
+            this.#fullscreenBtn.style.backgroundColor = 'rgba(0, 255, 128, 0.2)';
+        });
+        
+        this.#fullscreenBtn.addEventListener('mouseleave', () => {
+            this.#fullscreenBtn.style.backgroundColor = 'rgba(15, 23, 30, 0.8)';
+        });
+
+        new UIDraggableButton(this.#fullscreenBtn, () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }, this.#config);
+
+        document.addEventListener('fullscreenchange', () => {
+            this.#fullscreenBtn.innerHTML = document.fullscreenElement ? '🗗 EXIT FULLSCREEN' : '⛶ FULLSCREEN';
+        });
+
+        document.body.appendChild(this.#fullscreenBtn);
+    }
+
+    #initNetBtn() {
+        this.#netBtn = document.createElement('button');
+        this.#netBtn.innerHTML = '🕸️ NET';
+        
+        Object.assign(this.#netBtn.style, {
+            position: 'absolute',
+            bottom: '20px',
+            right: '20px',
+            padding: '15px 30px',
+            borderRadius: '8px',
+            fontFamily: 'monospace',
+            fontWeight: 'bold',
+            fontSize: '18px',
+            zIndex: '9999',
+            display: 'none',
+            touchAction: 'none',
+            transition: 'all 0.2s ease',
+            color: '#fff',
+            borderWidth: '2px',
+            borderStyle: 'solid'
+        });
+
+        // Кнопку можна перетягувати ЗАВЖДИ. А от клік пройде, тільки якщо вона готова.
+        new UIDraggableButton(this.#netBtn, () => {
+            if (this.#isNetReady && this.onNetClick) {
+                this.onNetClick();
+            }
+        }, this.#config);
+
+        document.body.appendChild(this.#netBtn);
+    }
+
+    updateNetButtonState(config, isReady) {
+        if (!this.#netBtn) return;
+        
+        this.#isNetReady = isReady;
+
+        if (!config.net || !config.net.active) {
+            this.#netBtn.style.display = 'none';
+            return;
+        }
+
+        const isAppearing = this.#netBtn.style.display === 'none' || this.#netBtn.style.display === '';
+        
+        this.#netBtn.style.display = 'flex';
+        this.#netBtn.style.justifyContent = 'center';
+        this.#netBtn.style.alignItems = 'center';
+
+        if (isAppearing) {
+            this.#netBtn.style.transform = 'scale(0)';
+            setTimeout(() => {
+                this.#netBtn.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s, box-shadow 0.2s';
+                this.#netBtn.style.transform = 'scale(1)';
+            }, 10);
+        }
+        
+        if (isReady) {
+            this.#netBtn.style.backgroundColor = 'rgba(0, 255, 128, 0.7)';
+            this.#netBtn.style.borderColor = '#00ff80';
+            this.#netBtn.style.cursor = 'pointer';
+            this.#netBtn.style.boxShadow = '0 0 15px rgba(0, 255, 128, 0.5)';
+        } else {
+            this.#netBtn.style.backgroundColor = 'rgba(128, 128, 128, 0.3)';
+            this.#netBtn.style.borderColor = '#aaa';
+            this.#netBtn.style.cursor = 'not-allowed';
+            this.#netBtn.style.boxShadow = 'none';
+        }
+    }
+}
