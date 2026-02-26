@@ -151,24 +151,26 @@ class LocationMap {
         this.#debugCanvas.height = imgHeight;
         const ctx = this.#debugCanvas.getContext('2d', { alpha: true });
 
-        const showDepthText = this.#globalConfig.locations.debugDepthText;
+        const locCfg = this.#globalConfig.locations;
 
-        // 1. Малюємо зони
-        const drawZones = (zones, color) => {
-            if (!zones) return;
-            ctx.fillStyle = color;
-            for (const z of zones) {
-                const w = z.adaptiveX ? imgWidth : (z.w * cellSize);
-                const startX = z.adaptiveX ? 0 : (z.x * cellSize);
-                ctx.fillRect(startX, z.y * cellSize, w, z.h * cellSize);
-            }
-        };
+        // 1. Малюємо кольорові зони (якщо увімкнено)
+        if (locCfg.debugZones) {
+            const drawZones = (zones, color) => {
+                if (!zones) return;
+                ctx.fillStyle = color;
+                for (const z of zones) {
+                    const w = z.adaptiveX ? imgWidth : (z.w * cellSize);
+                    const startX = z.adaptiveX ? 0 : (z.x * cellSize);
+                    ctx.fillRect(startX, z.y * cellSize, w, z.h * cellSize);
+                }
+            };
 
-        drawZones(this.#config.zones.castable, 'rgba(0, 255, 0, 0.15)');
-        drawZones(this.#config.zones.snags, 'rgba(255, 255, 0, 0.3)');
-        drawZones(this.#config.zones.collisions, 'rgba(255, 0, 0, 0.4)');
+            drawZones(this.#config.zones.castable, 'rgba(0, 255, 0, 0.15)');
+            drawZones(this.#config.zones.snags, 'rgba(255, 255, 0, 0.3)');
+            drawZones(this.#config.zones.collisions, 'rgba(255, 0, 0, 0.4)');
+        }
 
-        // 2. Малюємо сітку та текст глибини
+        // 2. Малюємо сітку та цифри
         ctx.font = '10px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -179,10 +181,14 @@ class LocationMap {
                 const x = cell.x * cellSize;
                 const y = cell.y * cellSize;
 
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-                ctx.strokeRect(x, y, cellSize, cellSize);
+                // Малюємо рамку (якщо увімкнено)
+                if (locCfg.debugGrid) {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                    ctx.strokeRect(x, y, cellSize, cellSize);
+                }
 
-                if (showDepthText && cell.depth > 0) {
+                // Малюємо цифри глибини (якщо увімкнено)
+                if (locCfg.debugDepthText && cell.depth > 0) {
                     ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
                     ctx.fillText(cell.depth.toFixed(1), x + cellSize / 2, y + cellSize / 2);
                 }

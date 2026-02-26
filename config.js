@@ -31,9 +31,11 @@ const CONFIG = {
     },
 
     locations: {
-        debugVisuals: true,
-        debugDepthText: false,
-        debugOpacity: 0.0,
+        debugVisuals: false,       // Головний вимикач (якщо false - взагалі нічого не малюється)
+        debugZones: true,         // Показувати кольорові квадрати (зелені, червоні)
+        debugGrid: true,          // Показувати лінії сітки
+        debugDepthText: true,     // Показувати цифри глибини
+        debugOpacity: 0.8,
         baseResolution: { width: 2560, height: 2560 },
         designCellSize: 64,
         cellSize: 32,
