@@ -4,6 +4,32 @@ const CONFIG = {
         backgroundColor: '#0f171e' // Цей колір потрібен класу Renderer
     },
 
+    ui: {
+        draggableButtons: true,
+        dragHoldTimeMs: 1000,
+
+        rod: {
+            x: 'center',
+            yOffset: 0
+        },
+
+        indicators: {
+            x: 'center',
+            y: 40,
+            spacing: 40
+        },
+
+        catchZone: {
+            color: 'rgba(0, 150, 255, 0.5)'
+        },
+
+        line: {
+            visible: true,
+            color: 'rgba(255, 255, 255, 0.3)',
+            width: 1
+        }
+    },
+
     locations: {
         debugVisuals: false,
         baseResolution: { width: 2560, height: 2560 },
@@ -47,30 +73,107 @@ const CONFIG = {
         }
     },
 
-    ui: {
-        draggableButtons: true,
-        dragHoldTimeMs: 1000,
-
-        rod: {
-            x: 'center',
-            yOffset: 0
+    spawns: {
+        tickRateMs: 1000,
+        antiSpam: {
+            baseCooldownMs: 1500,
+            penaltyStepMs: 1000,
+            resetTimeMs: 8000
         },
-
-        indicators: {
-            x: 'center',
-            y: 40,
-            spacing: 40
+        timePhases: {
+            morning: { startHour: 4, endHour: 10 },
+            day: { startHour: 10, endHour: 18 },
+            evening: { startHour: 18, endHour: 23 },
+            night: { startHour: 23, endHour: 4 }
         },
+        fishes: [
+            {
+                id: 'crucian_stalker',
+                name: 'Карась-сталкер',
+                baseChance: 0.15, 
+                maxHookSize: 6,
+                
+                depthConfig: {
+                    minDepth: 1.0, 
+                    maxDepth: 10.0,
+                    minWeightAtMinDepth: 0.125,
+                    maxWeightAtMinDepth: 0.800,
+                    minWeightAtMaxDepth: 1.123,
+                    maxWeightAtMaxDepth: 2.678,
+                    chanceMultAtMaxDepth: 0.4 
+                },
+                
+                weightConfig: {
+                    rarityCurve: 3.5, 
+                    maxLevel: 5,
+                    baseResistance: 0.8,
+                    maxResistance: 2.5
+                },
 
-        catchZone: {
-            color: 'rgba(0, 150, 255, 0.5)'
-        },
+                baitMultipliers: { 'oil_worm': 2.0, 'bread': 0.5 },
+                timeMultipliers: { morning: 1.5, day: 0.8, evening: 1.2, night: 0.2 },
+                dayMultipliers: { 1: 1.0, 2: 1.0, 3: 1.0, 4: 1.0, 5: 1.0, 6: 1.2, 0: 1.2 },
 
-        line: {
-            visible: true,
-            color: 'rgba(255, 255, 255, 0.3)',
-            width: 1
-        }
+                physics: {
+                    agility: 1.0,
+                    edgePowerMultiplier: 1.0,
+                    bounceCooldownMs: 2000,
+                    dirChangeMinMs: 500,
+                    dirChangeMaxMs: 1500,
+                    lastDashTrigger: { targetState: 'lastDash', isLocked: false, chance: 0.50, checkIntervalMs: 1000 },
+                    behaviors: {
+                        idle: { pull: 0.0, move: 0.5, minTime: 500, maxTime: 2000, weight: 5 },
+                        rest: { pull: 0.2, move: 0.1, minTime: 500, maxTime: 2500, weight: 50 },
+                        swim: { pull: 0.0, move: 0.5, minTime: 2000, maxTime: 4000, weight: 35 },
+                        dash: { pull: 0.0, move: 1.2, minTime: 500, maxTime: 1200, weight: 10 },
+                        lastDash: { pull: 0.6, move: 2.5, minTime: 1000, maxTime: 3000, weight: 0, dirChangeMinMs: 500, dirChangeMaxMs: 1000, agility: 1.5, edgePowerMultiplier: 1.2 }
+                    }
+                }
+            },
+            {
+                id: 'perch_radioactive',
+                name: 'Окунь-радіоактивний',
+                baseChance: 0.9, 
+                maxHookSize: 9,
+                
+                depthConfig: {
+                    minDepth: 1.0, 
+                    maxDepth: 10.0,
+                    minWeightAtMinDepth: 0.125,
+                    maxWeightAtMinDepth: 0.800,
+                    minWeightAtMaxDepth: 1.123,
+                    maxWeightAtMaxDepth: 2.678,
+                    chanceMultAtMaxDepth: 0.4 
+                },
+                
+                weightConfig: {
+                    rarityCurve: 3.5, 
+                    maxLevel: 5,
+                    baseResistance: 0.8,
+                    maxResistance: 1.5
+                },
+
+                baitMultipliers: { 'oil_worm': 2.0, 'bread': 0.5 },
+                timeMultipliers: { morning: 1.5, day: 0.8, evening: 1.2, night: 0.2 },
+                dayMultipliers: { 1: 1.0, 2: 1.0, 3: 1.0, 4: 1.0, 5: 1.0, 6: 1.2, 0: 1.2 },
+
+                physics: {
+                    agility: 1.0,
+                    edgePowerMultiplier: 1.0,
+                    bounceCooldownMs: 2000,
+                    dirChangeMinMs: 500,
+                    dirChangeMaxMs: 1500,
+                    lastDashTrigger: { targetState: 'lastDash', isLocked: false, chance: 0.50, checkIntervalMs: 1000 },
+                    behaviors: {
+                        idle: { pull: 0.0, move: 0.5, minTime: 500, maxTime: 2000, weight: 5 },
+                        rest: { pull: 0.2, move: 0.1, minTime: 500, maxTime: 2500, weight: 50 },
+                        swim: { pull: 0.0, move: 0.5, minTime: 2000, maxTime: 4000, weight: 35 },
+                        dash: { pull: 0.0, move: 1.2, minTime: 500, maxTime: 1200, weight: 10 },
+                        lastDash: { pull: 0.6, move: 2.5, minTime: 1000, maxTime: 3000, weight: 0, dirChangeMinMs: 500, dirChangeMaxMs: 1000, agility: 1.5, edgePowerMultiplier: 1.2 }
+                    }
+                }
+            },
+        ]
     },
 
     debug: {
@@ -125,7 +228,7 @@ const CONFIG = {
 
     hook: {
         level: 5,
-        weight: 8, // Affects how much tension increases per unit of player input
+        weight: 4, // Affects how much tension increases per unit of player input
         quality: 1, // Аналог resistance у риби
     },
 

@@ -1,0 +1,407 @@
+class Game {
+    #canvas;
+    #inputManager;
+    #renderer;
+    #uiManager;
+    #fishingSystem;
+    #float;
+    #lastTime;
+    #bounds;
+    #tensionMeter;
+    #gameState;
+    #fishCondition;
+    #staminaController;
+    #locationMap;
+    #projector;
+    #invalidCastMarker;
+    #netCatchChance = null;
+    #isNetReady = false;
+    failReason = null;
+    #castManager;
+    #biteSystem;
+
+    constructor(canvasId) {
+        this.#canvas = document.getElementById(canvasId);
+        
+        this.#inputManager = new InputManager(this.#canvas, CONFIG);
+        this.#renderer = new Renderer(this.#canvas);
+
+        this.#uiManager = new UIManager(CONFIG);
+        this.#uiManager.onNetClick = () => this.#handleNetClick();
+        
+        this.#locationMap = new LocationMap('test', CONFIG);
+        this.#projector = new ViewportProjector(CONFIG);
+        
+        this.#resizeCanvas();
+        window.addEventListener('resize', () => this.#resizeCanvas());
+
+        const initialX = CONFIG.float.initialX ?? this.#canvas.width / 2;
+        const initialY = CONFIG.float.initialY ?? this.#canvas.height / 2;
+        this.#float = new FloatEntity(initialX, initialY, CONFIG);
+        
+        this.#gameState = 'scouting';
+        this.#invalidCastMarker = null;
+        
+        this.#bounds = {
+            left: 0,
+            right: CONFIG.locations.baseResolution.width,
+            top: 0,
+            bottom: CONFIG.locations.baseResolution.height
+        };
+
+        this.#lastTime = performance.now();
+        this.loop = this.loop.bind(this);
+        this.#castManager = new CastManager(CONFIG);
+        this.#biteSystem = new BiteSystem(CONFIG);
+    }
+
+    #castLine(virtualX, virtualY) {
+        this.#float.setPosition(virtualX, virtualY);
+        this.#gameState = 'waiting'; // Новий стан очікування
+        this.#biteSystem.reset();
+        this.failReason = null;
+    }
+
+    #hookFish(hookedFish) {
+        this.#gameState = 'playing';
+        this.#netCatchChance = null;
+        this.#isNetReady = false;
+
+        const rod = new Rod(CONFIG.rod.level, CONFIG.rod.basePower);
+        const reel = new Reel(CONFIG.reel.level, CONFIG.reel.basePower);
+        const hook = new Hook(CONFIG.hook.level, CONFIG.hook.weight, CONFIG.hook.quality); 
+        
+        // 1. Формуємо унікальний конфіг фізики саме для цієї риби
+        const fishSpecificConfig = { fish: hookedFish.physics };
+        
+        // 2. Створюємо рибу з її унікальною вагою, рівнем та опором!
+        const fish = new Fish(hookedFish.level, hookedFish.weight, hookedFish.resistance, fishSpecificConfig); 
+        
+        this.#fishingSystem = new FishingSystem(rod, reel, fish);
+        this.#tensionMeter = new TensionMeter(CONFIG.rod.level, CONFIG.reel.level, hook, CONFIG);
+        
+        // 3. UI теж повинен знати про унікальну вагу
+        this.#fishCondition = new FishCondition(hookedFish.level, hookedFish.weight, CONFIG);
+        
+        const playerBasePower = rod.getPower() + reel.getPower();
+        this.#staminaController = new StaminaController(this.#fishCondition, fish, playerBasePower, CONFIG);
+        
+        // 4. Виводимо паспорт згенерованої риби в консоль
+        console.log(`%c🎣 КЛЮНУВ: ${hookedFish.name}!`, 'color: #00ff00; font-size: 16px; font-weight: bold;');
+        console.table({
+            "Згенерована Вага": hookedFish.weight.toFixed(3) + " кг",
+            "Рівень (Складність)": hookedFish.level,
+            "Базовий Опір": hookedFish.resistance.toFixed(2)
+        });
+    }
+
+    #resizeCanvas() {
+        this.#canvas.width = window.innerWidth;
+        this.#canvas.height = window.innerHeight;
+        
+        if (this.#projector && this.#projector.update(this.#canvas.width, this.#canvas.height)) {
+            this.#locationMap.recalculateZones(this.#projector, CONFIG.locations.cellSize);
+        }
+    }
+
+    start() {
+        requestAnimationFrame(this.loop);
+    }
+
+    #handleNetClick() {
+        if (!this.#isNetReady || this.#gameState !== 'playing') return;
+
+        const roll = Math.random() * 100;
+        const isSuccess = roll <= this.#netCatchChance;
+
+        document.dispatchEvent(new CustomEvent('netCatchRoll', { 
+            detail: { chance: this.#netCatchChance, roll: roll, success: isSuccess } 
+        }));
+
+        if (isSuccess) {
+            this.#gameState = 'victory';
+        } else {
+            this.#gameState = 'failed';
+            this.failReason = 'net_escape';
+        }
+    }
+
+    update(dt) {
+        this.#projector.update(this.#canvas.width, this.#canvas.height);
+        this.#locationMap.update(dt);
+
+        const inputState = this.#inputManager.getState();
+        
+        if (this.#gameState === 'scouting') {
+            if (inputState.panDeltaX !== 0) {
+                const virtualDelta = inputState.panDeltaX / this.#projector.getScale();
+                this.#projector.pan(virtualDelta);
+            }
+            
+            if (inputState.clickPos) {
+                const vPos = this.#projector.screenToVirtual(inputState.clickPos.x, inputState.clickPos.y);
+                const cell = this.#locationMap.getCellAtVirtualPos(vPos.x, vPos.y, CONFIG.locations.cellSize);
+                
+                if (cell && cell.isCastable && !cell.hasCollision) {
+                    if (this.#castManager.canCast()) {
+                        this.#castManager.registerCast(performance.now());
+                        this.#castLine(vPos.x, vPos.y);
+                    } else {
+                        // Анти-спам спрацював
+                        this.#invalidCastMarker = { x: inputState.clickPos.x, y: inputState.clickPos.y, timer: 500 };
+                    }
+                } else {
+                    this.#invalidCastMarker = { x: inputState.clickPos.x, y: inputState.clickPos.y, timer: 500 };
+                }
+            }
+            
+            if (this.#invalidCastMarker) {
+                this.#invalidCastMarker.timer -= dt;
+                if (this.#invalidCastMarker.timer <= 0) this.#invalidCastMarker = null;
+            }
+            return; 
+        }
+
+        this.#castManager.update(dt);
+
+        // --- 1. ФОРМУВАННЯ ДАНИХ СЕРЕДОВИЩА (Для BiteSystem та Дебагу) ---
+        const currentHour = new Date().getHours();
+        let currentPhase = 'day';
+        for (const [phase, times] of Object.entries(CONFIG.spawns.timePhases)) {
+            if (times.startHour < times.endHour) {
+                if (currentHour >= times.startHour && currentHour < times.endHour) currentPhase = phase;
+            } else {
+                if (currentHour >= times.startHour || currentHour < times.endHour) currentPhase = phase;
+            }
+        }
+
+        const floatPos = this.#float.getPosition();
+        const floatScreenPos = this.#projector.virtualToScreen(floatPos.x, floatPos.y);
+
+        // Отримуємо клітинку під поплавцем
+        const currentCell = this.#locationMap.getCellAtVirtualPos(floatPos.x, floatPos.y, CONFIG.locations.cellSize);
+        const currentDepth = currentCell ? currentCell.depth : 0; // Якщо вилетів за карту - глибина 0
+
+        const envData = {
+            depth: currentDepth, 
+            timePhase: currentPhase,
+            dayOfWeek: new Date().getDay(),
+            zoneMultiplier: 1.0 // Пізніше зробимо залежним від динамічних зон (буфів)
+        };
+
+        const playerGear = {
+            hookSize: CONFIG.hook.level,
+            baitId: 'oil_worm' // Тимчасово жорстко задано
+        };
+        // ------------------------------------------------------------------
+
+        // --- 2. СТАН ОЧІКУВАННЯ КЛЬОВУ ---
+        if (this.#gameState === 'waiting') {
+            const hookedFish = this.#biteSystem.evaluateBite(dt, envData, playerGear);
+            
+            if (hookedFish) {
+                this.#hookFish(hookedFish);
+            }
+            
+            // Відправка даних в дебагер під час очікування (лише середовище)
+            if (CONFIG.debug?.overlay) {
+                const liveChances = this.#biteSystem.getLiveChances(envData, playerGear);
+                const debugData = {
+                    gameState: this.#gameState,
+                    floatX: Math.round(floatPos.x), floatY: Math.round(floatPos.y),
+                    depth: envData.depth, bait: playerGear.baitId, phase: envData.timePhase,
+                    liveChances: liveChances,
+                    // Заглушки для фізики
+                    playerForceY: 0, playerForceX: 0, fishForceY: 0, fishForceX: 0, fishState: 'N/A', fishBasePower: 0, pullMult: 1, moveMult: 1
+                };
+                document.dispatchEvent(new CustomEvent('debug-live-update', { detail: debugData }));
+            }
+            return; // Виходимо, бо боротьба ще не почалася
+        }
+
+        // --- 3. СТАН БОРОТЬБИ (PLAYING) ---
+        if (this.#gameState !== 'playing') return;
+
+        if (this.#tensionMeter.isBroken()) {
+            this.#gameState = 'failed';
+            const reason = this.#tensionMeter.getBreakReason();
+            this.failReason = reason;
+            document.dispatchEvent(new CustomEvent('fishingFailed', { detail: { reason: reason } }));
+            return;
+        }
+
+        const fishForceRaw = this.#fishingSystem.calculateFishForce(dt, floatPos.x, this.#bounds, CONFIG);
+        const currentFishMaxForceScaled = Math.max(Math.abs(fishForceRaw.x), Math.abs(fishForceRaw.y)) * 0.01;
+
+        const fishForce = fishForceRaw.clone().multiplyScalar(CONFIG.physics.fishForceMultiplier);
+        this.#float.applyForce(fishForce);
+
+        let rodScreenX = this.#canvas.width / 2;
+        if (CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== 'center') {
+            rodScreenX = Number(CONFIG.ui.rod.x);
+        }
+        const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
+        const rodVirtualPos = this.#projector.screenToVirtual(rodScreenX, rodScreenY);
+
+        const floatScreenPosInitial = this.#projector.virtualToScreen(floatPos.x, floatPos.y);
+        const maxOffsetDistance = Math.max(rodScreenX, this.#canvas.width - rodScreenX);
+        const screenOffsetRatio = Math.min(1, Math.abs(floatScreenPosInitial.x - rodScreenX) / maxOffsetDistance);
+
+        const rawPlayerPower = this.#fishingSystem.calculatePlayerForce(new Vector2(0, 1), floatPos.x, floatPos.y, rodVirtualPos, screenOffsetRatio, CONFIG).y;
+        const playerMaxPower = Math.abs(rawPlayerPower * CONFIG.physics.playerForceMultiplier);
+        const fishPowerMag = Math.abs(fishForce.y); 
+        const reelPower = this.#fishingSystem.getReelPower();
+
+        let playerForce = new Vector2(0, 0);
+
+        if (inputState.isPulling) {
+            const playerForceRaw = this.#fishingSystem.calculatePlayerForce(inputState.pullDirection, floatPos.x, floatPos.y, rodVirtualPos, screenOffsetRatio, CONFIG);
+            playerForce = playerForceRaw.clone().multiplyScalar(CONFIG.physics.playerForceMultiplier);
+            this.#float.applyForce(playerForce);
+        }
+
+        this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, currentFishMaxForceScaled, dt, CONFIG);
+
+        const castableBounds = this.#locationMap.getCastableBoundsVirtual(CONFIG.locations.cellSize);
+        const vTopLeft = this.#projector.screenToVirtual(0, 0);
+        const vBottomRight = this.#projector.screenToVirtual(this.#canvas.width, this.#canvas.height);
+        
+        const dynamicBounds = {
+            left: Math.max(vTopLeft.x, castableBounds ? castableBounds.left : 0),
+            right: Math.min(vBottomRight.x, castableBounds ? castableBounds.right : 2560),
+            top: Math.max(vTopLeft.y, castableBounds ? castableBounds.top : 0),
+            bottom: Math.min(vBottomRight.y, castableBounds ? castableBounds.bottom : 2560)
+        };
+
+        this.#staminaController.evaluate(this.#tensionMeter.getTension(), inputState.isPulling, dt, floatPos.x, dynamicBounds);
+
+        // --- 4. ВІДПРАВКА ДАНИХ У ДЕБАГЕР ПІД ЧАС БОРОТЬБИ ---
+        if (CONFIG.debug?.overlay) {
+            const liveChances = this.#biteSystem.getLiveChances(envData, playerGear);
+            const debugData = {
+                gameState: this.#gameState,
+                floatX: Math.round(floatPos.x), floatY: Math.round(floatPos.y),
+                depth: envData.depth, bait: playerGear.baitId, phase: envData.timePhase,
+                liveChances: liveChances,
+                
+                playerForceY: Math.abs(playerForce.y),
+                playerForceX: Math.abs(playerForce.x),
+                fishForceY: Math.abs(fishForce.y),
+                fishForceX: Math.abs(fishForce.x),
+                fishState: this.#fishingSystem.getCurrentState ? this.#fishingSystem.getCurrentState() : 'unknown',
+                fishBasePower: this.#fishingSystem.getFishBasePower ? this.#fishingSystem.getFishBasePower() : 0,
+                fishInitialPower: this.#fishingSystem.getFishInitialPower ? this.#fishingSystem.getFishInitialPower() : 0,
+                pullMult: this.#fishingSystem.getPullMultiplier ? this.#fishingSystem.getPullMultiplier() : 1,
+                moveMult: this.#fishingSystem.getMoveMultiplier ? this.#fishingSystem.getMoveMultiplier() : 1
+            };
+            document.dispatchEvent(new CustomEvent('debug-live-update', { detail: debugData }));
+        }
+
+        this.#float.update(dynamicBounds);
+        
+        const updatedFloatPos = this.#float.getPosition();
+        const updatedFloatScreenPos = this.#projector.virtualToScreen(updatedFloatPos.x, updatedFloatPos.y);
+        
+        const castableBoundsVirtual = this.#locationMap.getCastableBoundsVirtual(CONFIG.locations.cellSize);
+        const mapBottomScreenY = this.#projector.virtualToScreen(0, castableBoundsVirtual.bottom).y;
+        
+        const catchLineY = Math.min(mapBottomScreenY, this.#canvas.height);
+
+        if (this.#netCatchChance === null) {
+            if (CONFIG.net && CONFIG.net.active && this.#fishingSystem) {
+                const fW = this.#fishingSystem.getFishWeight();
+                const nW = CONFIG.net.maxWeight;
+                if (fW <= nW) {
+                    this.#netCatchChance = 100;
+                } else {
+                    const diffPercent = ((fW - nW) / nW) * 100;
+                    let baseChance = 50;
+                    for (const t of CONFIG.net.chances) {
+                        if (diffPercent >= t.min && diffPercent <= t.max) {
+                            baseChance = t.chance;
+                            break;
+                        }
+                    }
+                    const qualBonus = Math.round((CONFIG.net.quality - 1.0) * 10);
+                    this.#netCatchChance = Math.min(100, baseChance + qualBonus);
+                }
+            } else {
+                this.#netCatchChance = 100;
+            }
+        }
+
+        let triggerLineY = catchLineY - (this.#canvas.height * 0.10);
+
+        if (CONFIG.net && CONFIG.net.active) {
+            const netBonusPx = CONFIG.net.length * 10;
+            triggerLineY = catchLineY - netBonusPx;
+            this.#isNetReady = (updatedFloatScreenPos.y >= triggerLineY && updatedFloatScreenPos.y < catchLineY);
+        } else {
+            this.#isNetReady = false;
+        }
+
+        if (updatedFloatScreenPos.y >= triggerLineY && updatedFloatScreenPos.y < catchLineY) {
+            if (typeof this.#fishingSystem.tryTriggerFishLastDash === 'function') {
+                this.#fishingSystem.tryTriggerFishLastDash(dt);
+            }
+        }
+
+        if (updatedFloatScreenPos.y >= catchLineY) {
+            this.#gameState = 'victory';
+        }
+
+        this.#uiManager.updateNetButtonState(CONFIG, this.#isNetReady && this.#gameState === 'playing');
+    }
+
+    draw() {
+        this.#renderer.clear(CONFIG);
+
+        // 1. ЗАВЖДИ малюємо візуальний фон локації (воду, берег)
+        if (typeof this.#renderer.drawBackground === 'function') {
+            this.#renderer.drawBackground(this.#locationMap, this.#projector, CONFIG);
+        }
+
+        // 2. Сітку та червоні зони малюємо ТІЛЬКИ якщо це увімкнено в конфігу
+        if (CONFIG.locations && CONFIG.locations.debugVisuals) {
+            this.#renderer.drawLocationDebug(this.#locationMap, this.#projector, CONFIG);
+        }
+
+        if (this.#invalidCastMarker) {
+            this.#renderer.drawInvalidCastMarker(this.#invalidCastMarker);
+        }
+
+        if (this.#gameState === 'waiting' || this.#gameState === 'playing' || this.#gameState === 'failed' || this.#gameState === 'victory') {
+            const vPos = this.#float.getPosition();
+            const sPos = this.#projector.virtualToScreen(vPos.x, vPos.y);
+            
+            this.#renderer.drawCatchZone(this.#locationMap, this.#projector, CONFIG);
+            this.#renderer.drawRodLine(sPos, CONFIG);
+            this.#renderer.drawFloat(sPos, CONFIG);
+            
+            // Малюємо UI боротьби ТІЛЬКИ якщо риба вже на гачку
+            if (this.#gameState !== 'waiting' && this.#tensionMeter && this.#fishCondition) {
+                this.#renderer.drawTensionBar(this.#tensionMeter, CONFIG);
+                this.#renderer.drawFishCondition(this.#fishCondition, CONFIG);
+            }
+        }
+        
+        if (this.#gameState === 'failed') {
+            this.#renderer.drawGameOver(this.#canvas.width, this.#canvas.height, this.failReason || this.#tensionMeter.getBreakReason());
+        } else if (this.#gameState === 'victory') {
+            this.#renderer.drawVictory(this.#canvas.width, this.#canvas.height);
+        }
+    }
+
+    loop(timestamp) {
+        const dt = timestamp - this.#lastTime;
+        this.#lastTime = timestamp;
+
+        this.update(dt);
+        this.draw();
+
+        requestAnimationFrame(this.loop);
+    }
+}
+
+const game = new Game('gameCanvas');
+game.start();
