@@ -31,7 +31,8 @@ const CONFIG = {
     },
 
     locations: {
-        debugVisuals: false,
+        debugVisuals: true,
+        debugDepthText: false,
         baseResolution: { width: 2560, height: 2560 },
         cellSize: 64,
         map: {
@@ -39,6 +40,7 @@ const CONFIG = {
                 id: 'test',
                 name: 'Test Waters',
                 bgUrl: 'bg_test.webp', // Шлях до твоєї картинки
+                depthUrl: 'depth.jpg', // Шлях до карти глибин (градації сірого)
                 // x: 'left', 'center', 'right'
                 // y: 'top', 'center', 'bottom', 'safeZone'
                 initialAlignment: { x: 'center', y: 'center' }, 

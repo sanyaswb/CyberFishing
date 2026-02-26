@@ -1016,6 +1016,7 @@ class Renderer {
         const cols = locationMap.getCols();
         const rows = locationMap.getRows();
         const cellSize = config.locations.cellSize;
+        const showDepthText = config.locations.debugDepthText; // Читаємо прапорець з конфігу
 
         for (let i = 0; i < cols; i++) {
             for (let j = 0; j < rows; j++) {
@@ -1032,12 +1033,23 @@ class Renderer {
                 } else {
                     this.#ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
                     this.#ctx.strokeRect(pos.x, pos.y, size, size);
-                    continue; 
+                    // Навіть у пустих зонах можемо бачити глибину, якщо треба (опціонально)
+                    // continue; // Закоментуй цей рядок, якщо хочеш бачити цифри навіть поза зеленою зоною
                 }
                 
                 this.#ctx.fillRect(pos.x, pos.y, size, size);
                 this.#ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
                 this.#ctx.strokeRect(pos.x, pos.y, size, size);
+
+                // --- НОВИЙ БЛОК МАЛЮВАННЯ ЦИФР ГЛИБИНИ ---
+                if (showDepthText && cell.depth > 0) {
+                    this.#ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'; // Напівпрозорий білий текст
+                    this.#ctx.font = '8px monospace';
+                    this.#ctx.textAlign = 'center';
+                    this.#ctx.textBaseline = 'middle';
+                    // Малюємо цифру рівно по центру квадрата
+                    this.#ctx.fillText(cell.depth.toFixed(1), pos.x + size / 2, pos.y + size / 2);
+                }
             }
         }
 

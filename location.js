@@ -87,6 +87,7 @@ class LocationMap {
     #dynamicZones;
     #bgImage;
     #bgLoaded;
+    #depthImage;
 
     constructor(locationId, config) {
         this.#config = config.locations.map[locationId];
@@ -102,13 +103,65 @@ class LocationMap {
         this.#bgImage.onload = () => { this.#bgLoaded = true; };
         this.#bgImage.src = this.#config.bgUrl;
 
+        // 1. Спочатку будуємо сітку з дефолтними значеннями
         this.#buildGrid(config.locations.cellSize);
+        
+        // 2. Асинхронно завантажуємо карту глибин і накладаємо її на сітку
+        if (this.#config.depthUrl) {
+            this.#depthImage = new Image();
+            this.#depthImage.onload = () => this.#processDepthMap(config.locations.cellSize, baseRes.width, baseRes.height);
+            this.#depthImage.src = this.#config.depthUrl;
+        }
         
         if (this.#config.zones.dynamic) {
             for (const dzConfig of this.#config.zones.dynamic) {
                 this.#dynamicZones.push(new DynamicZone(dzConfig));
             }
         }
+    }
+
+    #buildGrid(cellSize) {
+        this.#grid = new Array(this.#cols);
+        for (let i = 0; i < this.#cols; i++) {
+            this.#grid[i] = new Array(this.#rows);
+            for (let j = 0; j < this.#rows; j++) {
+                const cell = new GridCell(i, j, cellSize);
+                cell.depth = this.#config.depthBounds.min + Math.random() * (this.#config.depthBounds.max - this.#config.depthBounds.min);
+                this.#grid[i][j] = cell;
+            }
+        }
+    }
+
+    #processDepthMap(cellSize, imgWidth, imgHeight) {
+        const canvas = document.createElement('canvas');
+        canvas.width = imgWidth;
+        canvas.height = imgHeight;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        
+        ctx.drawImage(this.#depthImage, 0, 0, imgWidth, imgHeight);
+        const imageData = ctx.getImageData(0, 0, imgWidth, imgHeight).data;
+        
+        const minD = this.#config.depthBounds.min;
+        const maxD = this.#config.depthBounds.max;
+
+        for (let i = 0; i < this.#cols; i++) {
+            for (let j = 0; j < this.#rows; j++) {
+                // Шукаємо координати центру квадрата
+                const px = Math.floor(i * cellSize + cellSize / 2);
+                const py = Math.floor(j * cellSize + cellSize / 2);
+                
+                // Знаходимо індекс пікселя в масиві (RGBA)
+                const index = (py * imgWidth + px) * 4;
+                const r = imageData[index]; // Беремо червоний канал (для чорно-білого вони всі рівні)
+                
+                // Логіка: 255 (Білий) = мілина (minD). 0 (Чорний) = яма (maxD)
+                const ratio = r / 255;
+                const actualDepth = maxD - (ratio * (maxD - minD));
+                
+                this.#grid[i][j].depth = actualDepth;
+            }
+        }
+        console.log(`%c🗺️ Карта глибин [${this.#config.depthUrl}] успішно накладена!`, 'color: #00ff80; font-weight: bold;');
     }
 
     getCastableBoundsVirtual(cellSize) {
@@ -134,18 +187,6 @@ class LocationMap {
         const w = 2560 * scale;
         const h = 2560 * scale;
         ctx.drawImage(this.#bgImage, pos.x, pos.y, w, h);
-    }
-
-    #buildGrid(cellSize) {
-        this.#grid = new Array(this.#cols);
-        for (let i = 0; i < this.#cols; i++) {
-            this.#grid[i] = new Array(this.#rows);
-            for (let j = 0; j < this.#rows; j++) {
-                const cell = new GridCell(i, j, cellSize);
-                cell.depth = this.#config.depthBounds.min + Math.random() * (this.#config.depthBounds.max - this.#config.depthBounds.min);
-                this.#grid[i][j] = cell;
-            }
-        }
     }
 
     recalculateZones(projector, cellSize) {
