@@ -93,6 +93,8 @@ class Game {
             "Рівень (Складність)": hookedFish.level,
             "Базовий Опір": hookedFish.resistance.toFixed(2)
         });
+
+        document.dispatchEvent(new CustomEvent('debug-fish-hooked', { detail: hookedFish }));
     }
 
     #resizeCanvas() {

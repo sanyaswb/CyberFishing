@@ -1,34 +1,42 @@
 const DEBUG_MODULES = {
-    location: false, // Виводить детальну інформацію про локацію, зони та об'єкти
-    forces: false, // Включає детальний розрахунок сил гравця та риби
-    deviations: false, // Включає аналіз впливу відхилень кидка на сили та результат
-    tension: true, // Включає детальний аналіз натягу та гачка
-    stamina: false, // Включає аналіз стаміни та виснаження риби
-    exhaustion: false, // Включає аналіз фази виснаження риби
-    catchTime: false, // Включає аналіз часу витягування риби
-    prediction: false, // Виводить прогноз результату на основі поточних сил
-    net: false, // Включає аналіз підсаки та її впливу на результат
+    location: false, 
+    forces: true, 
+    deviations: false, 
+    tension: true, 
+    stamina: false, 
+    exhaustion: false, 
+    catchTime: false, 
+    prediction: false, 
+    net: false
 };
 
-setTimeout(() => {
-    console.group('%c🐟 Аналіз Балансу Механіки Риболовлі (Векторна RPG-версія)', 'color: #00ff80; font-size: 16px; font-weight: bold;');
+// Замість setTimeout тепер слухаємо івент
+document.addEventListener('debug-fish-hooked', (e) => {
+    const fish = e.detail; // Ось вона, наша згенерована унікальна риба!
+    
+    console.group(`%c🐟 Аналіз Балансу: ${fish.name} (${fish.weight.toFixed(3)} кг)`, 'color: #00ff80; font-size: 16px; font-weight: bold;');
 
+    // Базові параметри гравця (статичні)
     const rPower = (CONFIG.rod.level * CONFIG.rod.basePower);
     const rlPower = (CONFIG.reel.level * CONFIG.reel.basePower);
     const pPower = rPower + rlPower;
-    const fPower = (CONFIG.fish.level * CONFIG.fish.weight) + CONFIG.fish.resistance;
+    
+    // БАЗОВІ ПАРАМЕТРИ РИБИ (ДИНАМІЧНІ!)
+    const fPower = (fish.level * fish.weight) + fish.resistance;
+    const fishEdgePowerMult = fish.physics?.edgePowerMultiplier ?? 1.0;
 
     const playerPullForceBase = pPower * CONFIG.physics.playerForceMultiplier;
     const playerSteerForceBase = pPower * CONFIG.physics.playerSteeringMultiplier * CONFIG.physics.playerForceMultiplier;
     const fishPullForce = fPower * CONFIG.physics.fishForceMultiplier;
-    const fishEscapeForce = (fPower * CONFIG.fish.edgePowerMultiplier) * CONFIG.physics.fishForceMultiplier;
+    const fishEscapeForce = (fPower * fishEdgePowerMult) * CONFIG.physics.fishForceMultiplier;
 
     const recoveryBonus = 1 + (rlPower * (CONFIG.tension.reelRecoveryMultiplier || 0));
     const pullUptime = 1 / (1 + (1 / recoveryBonus)); 
 
     const powerRatio = fishPullForce / Math.max(0.001, playerPullForceBase);
     
-    const maxStamina = (CONFIG.fish.level * CONFIG.fish.weight * CONFIG.stamina.fish.baseStaminaMultiplier) + CONFIG.stamina.fish.flatBonus;
+    // СТАМІНА ТА ВИСНАЖЕННЯ (Теж перераховується під вагу!)
+    const maxStamina = (fish.level * fish.weight * CONFIG.stamina.fish.baseStaminaMultiplier) + CONFIG.stamina.fish.flatBonus;
     const maxDps = CONFIG.stamina.mechanics.baseDepletionRate * pPower; 
     const idealTimeSec = maxStamina / Math.max(1, maxDps);
     const exhaustionTime = idealTimeSec * fPower;
@@ -37,6 +45,8 @@ setTimeout(() => {
     const finalFishPullForce = finalFPower * CONFIG.physics.fishForceMultiplier;
     const totalForceY = playerPullForceBase + fishPullForce;
     const totalForceX = playerSteerForceBase + fishEscapeForce;
+
+    // --- ПОЧАТОК МОДУЛЬНОГО ВИВОДУ ---
 
     if (DEBUG_MODULES.location) {
         console.log('%c====================================', 'color: #4a5b6c;');
@@ -59,21 +69,6 @@ setTimeout(() => {
             console.log('%c🟩 ЗЕЛЕНА ЗОНА (Castable):', 'color: #00ff80;');
             console.table(map.zones.castable);
         }
-
-        if (map.zones.collisions && map.zones.collisions.length > 0) {
-            console.log(`%c🟥 КОЛІЗІЇ (Кількість: ${map.zones.collisions.length}):`, 'color: #ff4444;');
-            console.table(map.zones.collisions);
-        }
-
-        if (map.zones.snags && map.zones.snags.length > 0) {
-            console.log(`%c🟫 КОРЯГИ / SNAGS (Кількість: ${map.zones.snags.length}):`, 'color: #ffaa00;');
-            console.table(map.zones.snags);
-        }
-
-        if (map.zones.dynamic && map.zones.dynamic.length > 0) {
-            console.log(`%c🟦 ДИНАМІЧНІ ОБ'ЄКТИ (Кількість: ${map.zones.dynamic.length}):`, 'color: #00ccff;');
-            console.table(map.zones.dynamic);
-        }
     }
 
     if (DEBUG_MODULES.forces) {
@@ -82,8 +77,9 @@ setTimeout(() => {
         const rodStr = `(${CONFIG.rod.level} * ${CONFIG.rod.basePower.toFixed(1)})`;
         const reelStr = `(${CONFIG.reel.level} * ${CONFIG.reel.basePower.toFixed(1)})`;
         console.log(`%c🎣 Гравець: ${rodStr} + ${reelStr} = ${pPower.toFixed(1)} (Базова сила гравця)`, 'color: #e6e6e6;');
-        const fishStr = `(${CONFIG.fish.level} * ${CONFIG.fish.weight})`;
-        console.log(`%c🦈 Риба: ${fishStr} + ${CONFIG.fish.resistance} = ${fPower.toFixed(1)} (Базова сила риби)`, 'color: #e6e6e6;');
+        
+        const fishStr = `(${fish.level} * ${fish.weight.toFixed(3)})`;
+        console.log(`%c🦈 Риба: ${fishStr} + ${fish.resistance.toFixed(2)} = ${fPower.toFixed(1)} (Базова сила риби)`, 'color: #e6e6e6;');
         console.log(`%c⚙️ Множимо на рушій: Гравець тягне на ${pPower.toFixed(1)} * ${CONFIG.physics.playerForceMultiplier} = ${playerPullForceBase.toFixed(3)}. Риба тягне від тебе на ${fPower.toFixed(1)} * ${CONFIG.physics.fishForceMultiplier} = ${fishPullForce.toFixed(3)}.`, 'color: #e6e6e6;');
         
         console.log('%c--- ПІСЛЯ ВИСНАЖЕННЯ ---', 'color: #ff4444; font-weight: bold;');
@@ -114,7 +110,6 @@ setTimeout(() => {
         console.log(`%cГравець = ${playerPercentX.toFixed(1)}%`, 'color: #00ff80;');
         if (playerPercentX > fishPercentX) console.log(`%c💪 Гравець сильніший на = ${diffPercentX.toFixed(1)}%`, 'color: #00ff80; font-weight: bold;');
         else if (fishPercentX > playerPercentX) console.log(`%c⚠️ Риба сильніша на = ${diffPercentX.toFixed(1)}%`, 'color: #ff4444; font-weight: bold;');
-
         else console.log(`%c🤝 Сили абсолютно рівні (0% різниці)`, 'color: #ffff00; font-weight: bold;');
 
         console.table({
@@ -294,7 +289,7 @@ setTimeout(() => {
         if (!CONFIG.net || !CONFIG.net.active) {
             console.log('%cПідсака вимкнена (active: false)', 'color: #8a9bac;');
         } else {
-            const fW = CONFIG.fish.weight;
+            const fW = fish.weight; // ДИНАМІЧНА ВАГА!
             const nW = CONFIG.net.maxWeight;
             let chance = 100;
             let diffStr = 'Немає (100% успіх)';
@@ -317,7 +312,7 @@ setTimeout(() => {
             console.table({
                 "Статус": { "Значення": "Активна" },
                 "Додаткова Зона (px)": { "Значення": `+${CONFIG.net.length * 10}` },
-                "Вага Риби / Ліміт": { "Значення": `${fW} кг / ${nW} кг` },
+                "Вага Риби / Ліміт": { "Значення": `${fW.toFixed(3)} кг / ${nW} кг` },
                 "Перевантаження": { "Значення": diffStr },
                 "Якість (Бонус)": { "Значення": `${CONFIG.net.quality} (+${Math.round((CONFIG.net.quality - 1.0) * 10)}%)` },
                 "ТЕОРЕТИЧНИЙ ШАНС": { "Значення": `${chance}%` }
@@ -345,8 +340,9 @@ setTimeout(() => {
     }
 
     console.groupEnd();
-}, 500);
+});
 
+// Логер підсаки (залишається незалежним)
 document.addEventListener('netCatchRoll', (e) => {
     if (!DEBUG_MODULES.net) return;
     const { chance, roll, success } = e.detail;

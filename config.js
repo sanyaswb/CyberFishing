@@ -122,18 +122,18 @@ const CONFIG = {
                     dirChangeMaxMs: 1500,
                     lastDashTrigger: { targetState: 'lastDash', isLocked: false, chance: 0.50, checkIntervalMs: 1000 },
                     behaviors: {
-                        idle: { pull: 0.0, move: 0.5, minTime: 500, maxTime: 2000, weight: 5 },
-                        rest: { pull: 0.2, move: 0.1, minTime: 500, maxTime: 2500, weight: 50 },
-                        swim: { pull: 0.0, move: 0.5, minTime: 2000, maxTime: 4000, weight: 35 },
-                        dash: { pull: 0.0, move: 1.2, minTime: 500, maxTime: 1200, weight: 10 },
-                        lastDash: { pull: 0.6, move: 2.5, minTime: 1000, maxTime: 3000, weight: 0, dirChangeMinMs: 500, dirChangeMaxMs: 1000, agility: 1.5, edgePowerMultiplier: 1.2 }
+                        idle: { pull: 0.8, move: 0.3, minTime: 500, maxTime: 2000, weight: 20 },
+                        rest: { pull: 0.2, move: 0.1, minTime: 500, maxTime: 2500, weight: 10 },
+                        swim: { pull: 1.0, move: 1.0, minTime: 2000, maxTime: 4000, weight: 50 },
+                        dash: { pull: 1.5, move: 1.5, minTime: 1000, maxTime: 2200, weight: 20 },
+                        lastDash: { pull: 1.5, move: 2.5, minTime: 1000, maxTime: 3000, weight: 0, dirChangeMinMs: 500, dirChangeMaxMs: 1000, agility: 1.5, edgePowerMultiplier: 1.2 }
                     }
                 }
             },
             {
                 id: 'perch_radioactive',
                 name: 'Окунь-радіоактивний',
-                baseChance: 0.9, 
+                baseChance: 0.20, 
                 maxHookSize: 9,
                 
                 depthConfig: {
@@ -142,7 +142,7 @@ const CONFIG = {
                     minWeightAtMinDepth: 0.125,
                     maxWeightAtMinDepth: 0.800,
                     minWeightAtMaxDepth: 1.123,
-                    maxWeightAtMaxDepth: 2.678,
+                    maxWeightAtMaxDepth: 1.678,
                     chanceMultAtMaxDepth: 0.4 
                 },
                 
@@ -158,18 +158,18 @@ const CONFIG = {
                 dayMultipliers: { 1: 1.0, 2: 1.0, 3: 1.0, 4: 1.0, 5: 1.0, 6: 1.2, 0: 1.2 },
 
                 physics: {
-                    agility: 1.0,
+                    agility: 1.3,
                     edgePowerMultiplier: 1.0,
                     bounceCooldownMs: 2000,
                     dirChangeMinMs: 500,
                     dirChangeMaxMs: 1500,
                     lastDashTrigger: { targetState: 'lastDash', isLocked: false, chance: 0.50, checkIntervalMs: 1000 },
                     behaviors: {
-                        idle: { pull: 0.0, move: 0.5, minTime: 500, maxTime: 2000, weight: 5 },
-                        rest: { pull: 0.2, move: 0.1, minTime: 500, maxTime: 2500, weight: 50 },
-                        swim: { pull: 0.0, move: 0.5, minTime: 2000, maxTime: 4000, weight: 35 },
-                        dash: { pull: 0.0, move: 1.2, minTime: 500, maxTime: 1200, weight: 10 },
-                        lastDash: { pull: 0.6, move: 2.5, minTime: 1000, maxTime: 3000, weight: 0, dirChangeMinMs: 500, dirChangeMaxMs: 1000, agility: 1.5, edgePowerMultiplier: 1.2 }
+                        idle: { pull: 0.8, move: 0.8, minTime: 500, maxTime: 2000, weight: 10 },
+                        rest: { pull: 0.5, move: 0.5, minTime: 500, maxTime: 2500, weight: 5 },
+                        swim: { pull: 1.0, move: 1.5, minTime: 2000, maxTime: 4000, weight: 55 },
+                        dash: { pull: 2.0, move: 2.2, minTime: 500, maxTime: 1200, weight: 30 },
+                        lastDash: { pull: 1.5, move: 2.5, minTime: 500, maxTime: 1500, weight: 0, dirChangeMinMs: 500, dirChangeMaxMs: 1000, agility: 1.5, edgePowerMultiplier: 1.2 }
                     }
                 }
             },
