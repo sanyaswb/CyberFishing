@@ -33,8 +33,10 @@ const CONFIG = {
     locations: {
         debugVisuals: true,
         debugDepthText: false,
+        debugOpacity: 0.0,
         baseResolution: { width: 2560, height: 2560 },
-        cellSize: 64,
+        designCellSize: 64,
+        cellSize: 32,
         map: {
             test: {
                 id: 'test',

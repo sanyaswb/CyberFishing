@@ -79,6 +79,7 @@ class DynamicZone {
 }
 
 class LocationMap {
+    #globalConfig;
     #config;
     #id;
     #grid;
@@ -87,30 +88,53 @@ class LocationMap {
     #dynamicZones;
     #bgImage;
     #bgLoaded;
-    #depthImage;
+    #depthImage; 
+    #debugCanvas; // Прихований шар для оптимізації дебагу
 
     constructor(locationId, config) {
-        this.#config = config.locations.map[locationId];
+        this.#globalConfig = config;
+        this.#config = JSON.parse(JSON.stringify(config.locations.map[locationId]));
         this.#id = locationId;
         this.#dynamicZones = [];
         this.#bgLoaded = false;
         
         const baseRes = config.locations.baseResolution;
-        this.#cols = Math.ceil(baseRes.width / config.locations.cellSize);
-        this.#rows = Math.ceil(baseRes.height / config.locations.cellSize);
+        const actualCellSize = config.locations.cellSize;
+        const designCellSize = config.locations.designCellSize || actualCellSize;
+        
+        this.#cols = Math.ceil(baseRes.width / actualCellSize);
+        this.#rows = Math.ceil(baseRes.height / actualCellSize);
+
+        const ratio = designCellSize / actualCellSize;
+        if (ratio !== 1) {
+            const scaleZone = (z) => {
+                z.x = Math.round(z.x * ratio);
+                z.y = Math.round(z.y * ratio);
+                z.w = Math.round(z.w * ratio);
+                z.h = Math.round(z.h * ratio);
+            };
+            if (this.#config.zones.castable) this.#config.zones.castable.forEach(scaleZone);
+            if (this.#config.zones.collisions) this.#config.zones.collisions.forEach(scaleZone);
+            if (this.#config.zones.snags) this.#config.zones.snags.forEach(scaleZone);
+            if (this.#config.zones.dynamic) this.#config.zones.dynamic.forEach(scaleZone);
+        }
         
         this.#bgImage = new Image();
         this.#bgImage.onload = () => { this.#bgLoaded = true; };
         this.#bgImage.src = this.#config.bgUrl;
 
-        // 1. Спочатку будуємо сітку з дефолтними значеннями
-        this.#buildGrid(config.locations.cellSize);
+        this.#buildGrid(actualCellSize);
         
-        // 2. Асинхронно завантажуємо карту глибин і накладаємо її на сітку
+        // Завантажуємо глибину, а потім БЕЙКАЄМО (Pre-render) дебаг-карту
         if (this.#config.depthUrl) {
             this.#depthImage = new Image();
-            this.#depthImage.onload = () => this.#processDepthMap(config.locations.cellSize, baseRes.width, baseRes.height);
+            this.#depthImage.onload = () => {
+                this.#processDepthMap(actualCellSize, baseRes.width, baseRes.height);
+                this.#generateStaticDebugMap(actualCellSize, baseRes.width, baseRes.height);
+            };
             this.#depthImage.src = this.#config.depthUrl;
+        } else {
+            this.#generateStaticDebugMap(actualCellSize, baseRes.width, baseRes.height);
         }
         
         if (this.#config.zones.dynamic) {
@@ -120,13 +144,82 @@ class LocationMap {
         }
     }
 
+    // НОВИЙ МЕТОД: Створює єдину статичну картинку сітки та глибин
+    #generateStaticDebugMap(cellSize, imgWidth, imgHeight) {
+        this.#debugCanvas = document.createElement('canvas');
+        this.#debugCanvas.width = imgWidth;
+        this.#debugCanvas.height = imgHeight;
+        const ctx = this.#debugCanvas.getContext('2d', { alpha: true });
+
+        const showDepthText = this.#globalConfig.locations.debugDepthText;
+
+        // 1. Малюємо зони
+        const drawZones = (zones, color) => {
+            if (!zones) return;
+            ctx.fillStyle = color;
+            for (const z of zones) {
+                const w = z.adaptiveX ? imgWidth : (z.w * cellSize);
+                const startX = z.adaptiveX ? 0 : (z.x * cellSize);
+                ctx.fillRect(startX, z.y * cellSize, w, z.h * cellSize);
+            }
+        };
+
+        drawZones(this.#config.zones.castable, 'rgba(0, 255, 0, 0.15)');
+        drawZones(this.#config.zones.snags, 'rgba(255, 255, 0, 0.3)');
+        drawZones(this.#config.zones.collisions, 'rgba(255, 0, 0, 0.4)');
+
+        // 2. Малюємо сітку та текст глибини
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        for (let i = 0; i < this.#cols; i++) {
+            for (let j = 0; j < this.#rows; j++) {
+                const cell = this.#grid[i][j];
+                const x = cell.x * cellSize;
+                const y = cell.y * cellSize;
+
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.strokeRect(x, y, cellSize, cellSize);
+
+                if (showDepthText && cell.depth > 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.fillText(cell.depth.toFixed(1), x + cellSize / 2, y + cellSize / 2);
+                }
+            }
+        }
+        console.log(`%c[Оптимізація] Статична дебаг-карта успішно згенерована!`, 'color: #00ccff; font-weight: bold;');
+    }
+
+    getCastableBoundsVirtual(cellSize) {
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        const castableZones = this.#config.zones.castable;
+        if (!castableZones || castableZones.length === 0) return null;
+        for (const z of castableZones) {
+            minX = Math.min(minX, z.x * cellSize);
+            minY = Math.min(minY, z.y * cellSize);
+            maxX = Math.max(maxX, (z.x + z.w) * cellSize);
+            maxY = Math.max(maxY, (z.y + z.h) * cellSize);
+        }
+        return { left: minX, right: maxX, top: minY, bottom: maxY };
+    }
+
+    drawBackground(ctx, projector) {
+        if (!this.#bgLoaded) return;
+        const pos = projector.virtualToScreen(0, 0);
+        const scale = projector.getScale();
+        const w = 2560 * scale;
+        const h = 2560 * scale;
+        ctx.drawImage(this.#bgImage, pos.x, pos.y, w, h);
+    }
+
     #buildGrid(cellSize) {
         this.#grid = new Array(this.#cols);
         for (let i = 0; i < this.#cols; i++) {
             this.#grid[i] = new Array(this.#rows);
             for (let j = 0; j < this.#rows; j++) {
                 const cell = new GridCell(i, j, cellSize);
-                cell.depth = this.#config.depthBounds.min + Math.random() * (this.#config.depthBounds.max - this.#config.depthBounds.min);
+                cell.depth = this.#config.depthBounds.min; 
                 this.#grid[i][j] = cell;
             }
         }
@@ -146,51 +239,21 @@ class LocationMap {
 
         for (let i = 0; i < this.#cols; i++) {
             for (let j = 0; j < this.#rows; j++) {
-                // Шукаємо координати центру квадрата
                 const px = Math.floor(i * cellSize + cellSize / 2);
                 const py = Math.floor(j * cellSize + cellSize / 2);
                 
-                // Знаходимо індекс пікселя в масиві (RGBA)
                 const index = (py * imgWidth + px) * 4;
-                const r = imageData[index]; // Беремо червоний канал (для чорно-білого вони всі рівні)
+                const r = imageData[index]; 
                 
-                // Логіка: 255 (Білий) = мілина (minD). 0 (Чорний) = яма (maxD)
                 const ratio = r / 255;
                 const actualDepth = maxD - (ratio * (maxD - minD));
                 
                 this.#grid[i][j].depth = actualDepth;
             }
         }
-        console.log(`%c🗺️ Карта глибин [${this.#config.depthUrl}] успішно накладена!`, 'color: #00ff80; font-weight: bold;');
-    }
-
-    getCastableBoundsVirtual(cellSize) {
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        const castableZones = this.#config.zones.castable;
-        
-        if (!castableZones || castableZones.length === 0) return null;
-
-        for (const z of castableZones) {
-            minX = Math.min(minX, z.x * cellSize);
-            minY = Math.min(minY, z.y * cellSize);
-            maxX = Math.max(maxX, (z.x + z.w) * cellSize);
-            maxY = Math.max(maxY, (z.y + z.h) * cellSize);
-        }
-
-        return { left: minX, right: maxX, top: minY, bottom: maxY };
-    }
-
-    drawBackground(ctx, projector) {
-        if (!this.#bgLoaded) return;
-        const pos = projector.virtualToScreen(0, 0);
-        const scale = projector.getScale();
-        const w = 2560 * scale;
-        const h = 2560 * scale;
-        ctx.drawImage(this.#bgImage, pos.x, pos.y, w, h);
     }
 
     recalculateZones(projector, cellSize) {
-        // 1. Очищаємо стару сітку
         for (let i = 0; i < this.#cols; i++) {
             for (let j = 0; j < this.#rows; j++) {
                 this.#grid[i][j].isCastable = false;
@@ -199,23 +262,19 @@ class LocationMap {
             }
         }
 
-        // 2. Вираховуємо видимі межі екрана у віртуальних координатах (для адаптивності)
         let visibleStartCol = 0;
         let visibleEndCol = this.#cols;
 
         if (projector) {
             const vLeft = projector.screenToVirtual(0, 0).x;
             const vRight = projector.screenToVirtual(projector.getCanvasWidth(), 0).x;
-            
             visibleStartCol = Math.max(0, Math.floor(vLeft / cellSize));
             visibleEndCol = Math.min(this.#cols, Math.ceil(vRight / cellSize));
         }
 
-        // 3. Застосовуємо зони (з підтримкою adaptiveX)
         for (const z of this.#config.zones.castable) {
             let startX = z.adaptiveX ? visibleStartCol : z.x;
             let width = z.adaptiveX ? (visibleEndCol - visibleStartCol) : z.w;
-
             for (let i = startX; i < startX + width; i++) {
                 for (let j = z.y; j < z.y + z.h; j++) {
                     if (this.#isValid(i, j)) this.#grid[i][j].isCastable = true;
@@ -223,13 +282,12 @@ class LocationMap {
             }
         }
 
-        // Статичні зони колізій і зачепів залишаються на своїх місцях
         for (const z of this.#config.zones.collisions) {
             for (let i = z.x; i < z.x + z.w; i++) {
                 for (let j = z.y; j < z.y + z.h; j++) {
                     if (this.#isValid(i, j)) {
                         this.#grid[i][j].hasCollision = true;
-                        this.#grid[i][j].isCastable = false; // Колізія перекриває зелену зону
+                        this.#grid[i][j].isCastable = false; 
                     }
                 }
             }
@@ -243,7 +301,6 @@ class LocationMap {
             }
         }
 
-        // Оновлюємо межі для динамічних зон (щоб риба не випливала за новий adaptiveX)
         const castableZone = this.#config.zones.castable[0];
         if (castableZone && castableZone.adaptiveX) {
             for (const dz of this.#dynamicZones) {
@@ -255,20 +312,17 @@ class LocationMap {
         }
     }
 
-    #isValid(x, y) {
-        return x >= 0 && x < this.#cols && y >= 0 && y < this.#rows;
-    }
+    #isValid(x, y) { return x >= 0 && x < this.#cols && y >= 0 && y < this.#rows; }
 
     update(dt) {
-        for (const dz of this.#dynamicZones) {
-            dz.update(dt, this.#cols, this.#rows);
-        }
+        for (const dz of this.#dynamicZones) { dz.update(dt, this.#cols, this.#rows); }
     }
 
     getGrid() { return this.#grid; }
     getCols() { return this.#cols; }
     getRows() { return this.#rows; }
     getDynamicZones() { return this.#dynamicZones; }
+    getDebugCanvas() { return this.#debugCanvas; } // <--- Геттер для кешу
     getCellAtVirtualPos(vX, vY, cellSize) {
         const c = Math.floor(vX / cellSize);
         const r = Math.floor(vY / cellSize);

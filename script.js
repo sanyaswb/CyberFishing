@@ -1012,48 +1012,23 @@ class Renderer {
     }
 
     drawLocationDebug(locationMap, projector, config) {
-        const grid = locationMap.getGrid();
-        const cols = locationMap.getCols();
-        const rows = locationMap.getRows();
-        const cellSize = config.locations.cellSize;
-        const showDepthText = config.locations.debugDepthText; // Читаємо прапорець з конфігу
-
-        for (let i = 0; i < cols; i++) {
-            for (let j = 0; j < rows; j++) {
-                const cell = grid[i][j];
-                const pos = projector.virtualToScreen(cell.x * cellSize, cell.y * cellSize);
-                const size = cellSize * projector.getScale();
-
-                if (cell.hasCollision) {
-                    this.#ctx.fillStyle = 'rgba(255, 0, 0, 0.4)';
-                } else if (cell.hasSnag) {
-                    this.#ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
-                } else if (cell.isCastable) {
-                    this.#ctx.fillStyle = 'rgba(0, 255, 0, 0.15)';
-                } else {
-                    this.#ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-                    this.#ctx.strokeRect(pos.x, pos.y, size, size);
-                    // Навіть у пустих зонах можемо бачити глибину, якщо треба (опціонально)
-                    // continue; // Закоментуй цей рядок, якщо хочеш бачити цифри навіть поза зеленою зоною
-                }
-                
-                this.#ctx.fillRect(pos.x, pos.y, size, size);
-                this.#ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-                this.#ctx.strokeRect(pos.x, pos.y, size, size);
-
-                // --- НОВИЙ БЛОК МАЛЮВАННЯ ЦИФР ГЛИБИНИ ---
-                if (showDepthText && cell.depth > 0) {
-                    this.#ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'; // Напівпрозорий білий текст
-                    this.#ctx.font = '8px monospace';
-                    this.#ctx.textAlign = 'center';
-                    this.#ctx.textBaseline = 'middle';
-                    // Малюємо цифру рівно по центру квадрата
-                    this.#ctx.fillText(cell.depth.toFixed(1), pos.x + size / 2, pos.y + size / 2);
-                }
-            }
+        // 1. Малюємо кешовану статичну сітку (з цифрами та зонами) одним викликом!
+        const debugCanvas = locationMap.getDebugCanvas();
+        if (debugCanvas) {
+            const pos = projector.virtualToScreen(0, 0);
+            const scale = projector.getScale();
+            const w = debugCanvas.width * scale;
+            const h = debugCanvas.height * scale;
+            
+            const prevAlpha = this.#ctx.globalAlpha;
+            this.#ctx.globalAlpha = config.locations.debugOpacity || 0.7; // Застосовуємо прозорість з конфігу
+            this.#ctx.drawImage(debugCanvas, pos.x, pos.y, w, h);
+            this.#ctx.globalAlpha = prevAlpha;
         }
 
+        // 2. Динамічні зони (зграї риб або буфи) малюємо кадр за кадром, бо вони рухаються
         const dynamicZones = locationMap.getDynamicZones();
+        const cellSize = config.locations.cellSize;
         for (const dz of dynamicZones) {
             const pos = projector.virtualToScreen(dz.x * cellSize, dz.y * cellSize);
             const w = dz.w * cellSize * projector.getScale();
