@@ -136,6 +136,34 @@ class Game {
         this.#locationMap.update(dt);
 
         const inputState = this.#inputManager.getState();
+
+        // 0. ОБРОБКА СКАСУВАННЯ (Подвійний клік / тап)
+        if (inputState.isDoubleClick) {
+            if (this.#gameState === 'waiting' || this.#gameState === 'playing') {
+                this.#gameState = 'scouting';
+                // Скидаємо всі лічильники та гачки при скасуванні
+                if (this.#tensionMeter) this.#tensionMeter.reset();
+                if (this.#biteSystem) this.#biteSystem.reset();
+                return; // Перериваємо поточний кадр
+            }
+        }
+
+        // 0.1 ОБРОБКА ПЕРЕЗАКИДАННЯ (Довгий тап)
+        if (inputState.longPressPos && this.#gameState === 'waiting') {
+            const vPos = this.#projector.screenToVirtual(inputState.longPressPos.x, inputState.longPressPos.y);
+            const cell = this.#locationMap.getCellAtVirtualPos(vPos.x, vPos.y, CONFIG.locations.cellSize);
+            
+            if (cell && cell.isCastable && !cell.hasCollision) {
+                if (this.#castManager.canCast()) {
+                    this.#castManager.registerCast(performance.now());
+                    this.#castLine(vPos.x, vPos.y); // Перезакидаємо
+                } else {
+                    this.#invalidCastMarker = { x: inputState.longPressPos.x, y: inputState.longPressPos.y, timer: 500 };
+                }
+            } else {
+                this.#invalidCastMarker = { x: inputState.longPressPos.x, y: inputState.longPressPos.y, timer: 500 };
+            }
+        }
         
         if (this.#gameState === 'scouting') {
             if (inputState.panDeltaX !== 0) {

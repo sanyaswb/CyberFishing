@@ -39,20 +39,26 @@ class InputManager {
     #isPulling;
     #pullDirection;
     #isDragging;
+    #isPointerDown;
     #startX;
     #startY;
     #lastPointerX;
     #panDeltaX;
     #clickPos;
     #config;
+    #keys = {};
+    #isDoubleClick = false;
+    #longPressPos = null;
+    #lastClickTime = 0;
+    #longPressTimeout = null;
 
     constructor(canvas, config) {
         this.#canvas = canvas;
         this.#config = config;
         this.#isPulling = false;
         this.#pullDirection = new Vector2(0, 1);
-        
         this.#isDragging = false;
+        this.#isPointerDown = false;
         this.#startX = 0;
         this.#startY = 0;
         this.#lastPointerX = 0;
@@ -64,68 +70,139 @@ class InputManager {
 
     #bindEvents() {
         this.#canvas.addEventListener('pointerdown', (e) => {
+            this.#isPointerDown = true;
             this.#isPulling = true;
+            
             this.#isDragging = false;
             this.#startX = e.clientX;
             this.#startY = e.clientY;
             this.#lastPointerX = e.clientX;
             this.#updateDirection(e);
+
+            if (this.#longPressTimeout) clearTimeout(this.#longPressTimeout);
+            this.#longPressTimeout = setTimeout(() => {
+                if (!this.#isDragging) {
+                    this.#longPressPos = { x: e.clientX, y: e.clientY };
+                }
+            }, 500);
         });
 
         this.#canvas.addEventListener('pointermove', (e) => {
+            if (!this.#isPointerDown) return;
+
             const dist = Math.hypot(e.clientX - this.#startX, e.clientY - this.#startY);
             if (dist > 5) {
                 this.#isDragging = true;
+                if (this.#longPressTimeout) clearTimeout(this.#longPressTimeout);
             }
 
             if (this.#isDragging) {
                 this.#panDeltaX = this.#lastPointerX - e.clientX;
                 this.#lastPointerX = e.clientX;
             }
-            if (this.#isPulling) {
-                this.#updateDirection(e);
+            
+            this.#updateDirection(e);
+        });
+
+        const resetInput = (e) => {
+            if (this.#longPressTimeout) clearTimeout(this.#longPressTimeout);
+
+            const isPointerEvent = e && (e.type === 'pointerup' || e.type === 'touchend' || e.type === 'pointercancel');
+            
+            if (isPointerEvent) {
+                this.#isPointerDown = false;
+                
+                if (!this.#isDragging) {
+                    const now = Date.now();
+                    if (now - this.#lastClickTime < 300) {
+                        this.#isDoubleClick = true;
+                    } else {
+                        const clientX = e.clientX || (e.changedTouches && e.changedTouches[0]?.clientX);
+                        const clientY = e.clientY || (e.changedTouches && e.changedTouches[0]?.clientY);
+                        this.#clickPos = { x: clientX, y: clientY };
+                    }
+                    this.#lastClickTime = now;
+                }
+            }
+            
+            this.#isPulling = this.#keys['Space'] === true || this.#isPointerDown === true;
+            
+            if (!this.#isPulling) {
+                this.#pullDirection = new Vector2(0, 1);
+            }
+            this.#isDragging = false;
+        };
+
+        window.addEventListener('pointerup', resetInput, { capture: true });
+        window.addEventListener('pointercancel', resetInput, { capture: true });
+        window.addEventListener('touchend', resetInput, { capture: true });
+        
+        window.addEventListener('blur', () => {
+            this.#keys = {};
+            this.#isPointerDown = false;
+            resetInput();
+        });
+
+        window.addEventListener('keydown', (e) => {
+            this.#keys[e.code] = true;
+            if (e.code === 'Space') {
+                this.#isPulling = true;
+                e.preventDefault(); 
             }
         });
 
-        window.addEventListener('pointerup', (e) => {
-            if (!this.#isDragging) {
-                this.#clickPos = { x: e.clientX, y: e.clientY };
+        window.addEventListener('keyup', (e) => {
+            this.#keys[e.code] = false;
+            if (e.code === 'Space') {
+                this.#isPulling = this.#isPointerDown;
+                if (!this.#isPulling) {
+                    this.#pullDirection = new Vector2(0, 1);
+                }
             }
-            
-            this.#isPulling = false;
-            this.#isDragging = false;
-            this.#pullDirection = new Vector2(0, 1);
         });
 
         this.#canvas.addEventListener('contextmenu', e => e.preventDefault());
     }
 
     #updateDirection(e) {
-        const rect = this.#canvas.getBoundingClientRect();
-        
-        let anchorX = rect.width / 2;
-        if (this.#config.ui?.rod?.x && this.#config.ui.rod.x !== 'center') {
-            anchorX = Number(this.#config.ui.rod.x);
-        }
-        
-        const dx = e.clientX - rect.left - anchorX;
-        const dy = rect.height / 2; 
-        
-        const length = Math.hypot(dx, dy);
-        if (length > 0) {
-            this.#pullDirection = new Vector2(dx / length, dy / length);
+        let keyX = 0;
+        if (this.#keys['KeyA'] || this.#keys['ArrowLeft']) keyX = -1;
+        if (this.#keys['KeyD'] || this.#keys['ArrowRight']) keyX = 1;
+
+        if (keyX !== 0) {
+            this.#pullDirection = new Vector2(keyX, 1).normalize();
+        } else if (e && e.clientX !== undefined) {
+            const rect = this.#canvas.getBoundingClientRect();
+            let anchorX = rect.width / 2;
+            if (this.#config.ui?.rod?.x && this.#config.ui.rod.x !== 'center') anchorX = Number(this.#config.ui.rod.x);
+            
+            const dx = e.clientX - rect.left - anchorX;
+            const dy = rect.height / 2; 
+            
+            const length = Math.hypot(dx, dy);
+            if (length > 0) this.#pullDirection = new Vector2(dx / length, dy / length);
         }
     }
 
     getState() {
+        if (this.#keys['KeyA'] || this.#keys['KeyD'] || this.#keys['ArrowLeft'] || this.#keys['ArrowRight']) {
+            this.#updateDirection();
+        }
+
         const state = {
             isPulling: this.#isPulling,
             pullDirection: this.#pullDirection,
             panDeltaX: this.#panDeltaX,
-            clickPos: this.#clickPos
+            clickPos: this.#clickPos,
+            isDoubleClick: this.#isDoubleClick,
+            longPressPos: this.#longPressPos
         };
+        
         this.#panDeltaX = 0;
         this.#clickPos = null; 
+        this.#isDoubleClick = false;
+        this.#longPressPos = null;
+
         return state;
     }
 }

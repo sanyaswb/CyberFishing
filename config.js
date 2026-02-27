@@ -54,7 +54,7 @@ const CONFIG = {
                 weather: {
                     updateIntervalMs: 10000, 
                     chances: {
-                        rain: 0.90, 
+                        rain: 0.10, 
                         fog: 0.0  
                     }
                 },
