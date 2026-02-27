@@ -520,6 +520,13 @@ class DebugOverlay {
                 html += `<div style="margin-bottom: 4px;">Наживка: <span style="color: #b066ff;">${d.bait}</span></div>`;
                 html += `<div style="margin-bottom: 8px;">Фаза: <span style="color: #ffff00;">${d.phase}</span></div>`;
                 
+                let weatherStr = '';
+                if (d.isRaining) weatherStr += '🌧️ Дощ ';
+                if (d.isFoggy) weatherStr += '🌫️ Туман';
+                if (!d.isRaining && !d.isFoggy) weatherStr = '☀️ Ясно';
+                
+                html += `<div style="margin-bottom: 8px;">Погода: <span style="color: #00ccff;">${weatherStr}</span></div>`;
+                
                 html += `<div style="color: #8a9bac; font-size: 12px; margin-bottom: 4px;">Шанси кльову:</div>`;
                 if (d.liveChances && d.liveChances.length > 0) {
                     d.liveChances.forEach(fish => {

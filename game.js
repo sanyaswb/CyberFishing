@@ -19,6 +19,9 @@ class Game {
     failReason = null;
     #castManager;
     #biteSystem;
+    #isRaining = false;
+    #isFoggy = false;
+    #weatherTimer = 0;
 
     constructor(canvasId) {
         this.#canvas = document.getElementById(canvasId);
@@ -166,6 +169,15 @@ class Game {
 
         this.#castManager.update(dt);
 
+        this.#weatherTimer -= dt;
+        if (this.#weatherTimer <= 0) {
+            const weatherCfg = CONFIG.locations.map.test.weather;
+            
+            this.#isRaining = Math.random() < weatherCfg.chances.rain;
+            this.#isFoggy = Math.random() < weatherCfg.chances.fog;
+            this.#weatherTimer = weatherCfg.updateIntervalMs;
+        }
+
         // --- 1. ФОРМУВАННЯ ДАНИХ СЕРЕДОВИЩА (Для BiteSystem та Дебагу) ---
         const currentHour = new Date().getHours();
         let currentPhase = 'day';
@@ -188,7 +200,9 @@ class Game {
             depth: currentDepth, 
             timePhase: currentPhase,
             dayOfWeek: new Date().getDay(),
-            zoneMultiplier: 1.0 // Пізніше зробимо залежним від динамічних зон (буфів)
+            zoneMultiplier: 1.0, // Пізніше зробимо залежним від динамічних зон (буфів)
+            isRaining: this.#isRaining,
+            isFoggy: this.#isFoggy
         };
 
         const playerGear = {
@@ -214,6 +228,8 @@ class Game {
                     depth: envData.depth, bait: playerGear.baitId, phase: envData.timePhase,
                     liveChances: liveChances,
                     // Заглушки для фізики
+                    isRaining: this.#isRaining,
+                    isFoggy: this.#isFoggy,
                     playerForceY: 0, playerForceX: 0, fishForceY: 0, fishForceX: 0, fishState: 'N/A', fishBasePower: 0, pullMult: 1, moveMult: 1
                 };
                 document.dispatchEvent(new CustomEvent('debug-live-update', { detail: debugData }));
@@ -284,6 +300,8 @@ class Game {
                 gameState: this.#gameState,
                 floatX: Math.round(floatPos.x), floatY: Math.round(floatPos.y),
                 depth: envData.depth, bait: playerGear.baitId, phase: envData.timePhase,
+                isRaining: this.#isRaining,
+                isFoggy: this.#isFoggy,
                 liveChances: liveChances,
                 
                 playerForceY: Math.abs(playerForce.y),

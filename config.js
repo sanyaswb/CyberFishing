@@ -31,10 +31,10 @@ const CONFIG = {
     },
 
     locations: {
-        debugVisuals: false,       // Головний вимикач (якщо false - взагалі нічого не малюється)
+        debugVisuals: true,       // Головний вимикач (якщо false - взагалі нічого не малюється)
         debugZones: true,         // Показувати кольорові квадрати (зелені, червоні)
         debugGrid: true,          // Показувати лінії сітки
-        debugDepthText: true,     // Показувати цифри глибини
+        debugDepthText: false,     // Показувати цифри глибини
         debugOpacity: 0.8,
         baseResolution: { width: 2560, height: 2560 },
         designCellSize: 64,
@@ -43,13 +43,22 @@ const CONFIG = {
             test: {
                 id: 'test',
                 name: 'Test Waters',
-                bgUrl: 'bg_test.webp', // Шлях до твоєї картинки
-                depthUrl: 'depth.jpg', // Шлях до карти глибин (градації сірого)
+                bgUrl: 'bg_test.webp',
+                depthUrl: 'depth.jpg',
                 // x: 'left', 'center', 'right'
                 // y: 'top', 'center', 'bottom', 'safeZone'
                 initialAlignment: { x: 'center', y: 'center' }, 
                 safeZone: { top: 0, bottom: 2560 }, 
                 depthBounds: { min: 1.5, max: 15.0 },
+
+                weather: {
+                    updateIntervalMs: 10000, 
+                    chances: {
+                        rain: 0.90, 
+                        fog: 0.0  
+                    }
+                },
+
                 zones: {
                     castable: [
                         { x: 0, y: 13, w: 40, h: 20 } 
@@ -60,9 +69,9 @@ const CONFIG = {
                         { x: 0, y: 14, w: 6, h: 6},
                     ],
                     snags: [
-                        // { x: 8, y: 10, w: 4, h: 3 }
+                        { x: 15, y: 20, w: 11, h: 9 }
                     ],
-                    dynamic: [
+                    // dynamic: [
                         // { 
                         //     id: 'fish_school_1', 
                         //     type: 'buff', 
@@ -73,7 +82,7 @@ const CONFIG = {
                         //     speedY: 0.8, 
                         //     bounds: { x: 0, y: 5, w: 20, h: 14 }
                         // }
-                    ]
+                    // ]
                 }
             }
         }
@@ -98,6 +107,11 @@ const CONFIG = {
                 name: 'Карась-сталкер',
                 baseChance: 0.15, 
                 maxHookSize: 6,
+
+                weatherMultipliers: {
+                    rain: 1.5,
+                    fog: 1.2
+                },
                 
                 depthConfig: {
                     minDepth: 1.0, 
@@ -141,6 +155,11 @@ const CONFIG = {
                 name: 'Окунь-радіоактивний',
                 baseChance: 0.20, 
                 maxHookSize: 9,
+
+                weatherMultipliers: {
+                    rain: 1.1,
+                    fog: 1.0
+                },
                 
                 depthConfig: {
                     minDepth: 1.0, 

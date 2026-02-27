@@ -78,6 +78,12 @@ class BiteSystem {
             finalChance *= envData.zoneMultiplier || 1.0;
             finalChance *= depthChanceMult; 
 
+            if (envData.isRaining) {
+                finalChance *= fish.weatherMultipliers?.rain ?? 1.0;
+            }
+            if (envData.isFoggy) {
+                finalChance *= fish.weatherMultipliers?.fog ?? 1.0;
+            }
             if (Math.random() <= finalChance) {
                 possibleBites.push(fish);
             }
