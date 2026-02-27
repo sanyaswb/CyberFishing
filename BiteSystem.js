@@ -84,6 +84,8 @@ class BiteSystem {
             if (envData.isFoggy) {
                 finalChance *= fish.weatherMultipliers?.fog ?? 1.0;
             }
+            // apply spam multiplier penalty/bonus
+            finalChance *= (envData.castSpamMultiplier ?? 1.0);
             if (Math.random() <= finalChance) {
                 possibleBites.push(fish);
             }
@@ -121,6 +123,8 @@ class BiteSystem {
             finalChance *= fish.dayMultipliers[envData.dayOfWeek] || 1.0;
             finalChance *= envData.zoneMultiplier || 1.0;
             finalChance *= depthChanceMult;
+            // include cast spam multiplier for display purposes as well
+            finalChance *= (envData.castSpamMultiplier ?? 1.0);
 
             chances.push({ 
                 name: fish.name, 
