@@ -676,6 +676,9 @@ class FloatEntity {
     #animTimer = 0;
     #animDuration = 0;
     
+    #currentSequenceCount = 0;
+    #targetSequenceCount = 0;
+    
     #startAnimState = null;
     #targetAnimState = null;
 
@@ -729,6 +732,7 @@ class FloatEntity {
 
     isGuaranteedBite() { return this.#isGuaranteed; }
     isHooked() { return this.#isHooked; }
+    isBiting() { return this.#isBiting; }
 
     hook() {
         this.#isHooked = true;
@@ -738,6 +742,11 @@ class FloatEntity {
     startBite() {
         this.#isBiting = true;
         this.#isHooked = false;
+        
+        const seqCfg = this.#config.float.biteSequence;
+        this.#currentSequenceCount = 1;
+        this.#targetSequenceCount = Math.floor(this.#getRandom(seqCfg.maxSequences));
+        
         this.#rollBiteSequence();
     }
 
@@ -765,7 +774,12 @@ class FloatEntity {
             if (this.#sequenceQueue.length > 0) {
                 this.#nextAnimStep();
             } else {
-                this.#rollBiteSequence();
+                if (this.#currentSequenceCount >= this.#targetSequenceCount) {
+                    this.stopBite(); 
+                } else {
+                    this.#currentSequenceCount++;
+                    this.#rollBiteSequence();
+                }
             }
         } else if (this.#startAnimState && this.#targetAnimState) {
             const progress = 1.0 - (this.#animTimer / this.#animDuration);
@@ -779,22 +793,36 @@ class FloatEntity {
     #rollBiteSequence() {
         const seqCfg = this.#config.float.biteSequence;
         const isRed = Math.random() <= seqCfg.chanceGuaranteed;
-        this.#isGuaranteed = isRed;
-        this.#currentColor = isRed ? '#ff0000' : '#ffff00';
-
+        const color = isRed ? '#ff0000' : '#ffff00';
         const range = isRed ? seqCfg.guaranteedIters : seqCfg.normalIters;
         const iters = Math.floor(this.#getRandom(range));
 
-        this.#sequenceQueue = [];
+        if (this.#currentSequenceCount > 1) {
+            this.#sequenceQueue.push({
+                duration: this.#getRandom(seqCfg.sequenceIntervalMs),
+                angle: 0,
+                scaleY: 1.0,
+                startMove: false,
+                color: this.#baseColor,
+                isGuaranteed: false
+            });
+        }
+
         for (let i = 0; i < iters; i++) {
             const steps = this.#generateRandomAnim(isRed);
-            this.#sequenceQueue.push(...steps);
+            steps.forEach(s => {
+                s.color = color;
+                s.isGuaranteed = isRed;
+                this.#sequenceQueue.push(s);
+            });
 
             this.#sequenceQueue.push({
                 duration: this.#getRandom(seqCfg.intervalMs),
                 angle: 0,
                 scaleY: 1.0,
-                startMove: false
+                startMove: false,
+                color: color,
+                isGuaranteed: isRed
             });
         }
         
@@ -806,9 +834,9 @@ class FloatEntity {
         const animsCfg = seqCfg.animations;
         const mods = seqCfg.guaranteedModifiers;
         
-        const types = ['bob', 'sink', 'rise', 'tilt'];
+        const types = ['bob', 'sink', 'rise', 'tilt', 'slide'];
         const chosen = types[Math.floor(Math.random() * types.length)];
-        const cfg = animsCfg[chosen];
+        const cfg = animsCfg[chosen] || {};
 
         let targetAngle = 0;
         let targetScaleY = 1.0;
@@ -842,7 +870,7 @@ class FloatEntity {
         let moveVelX = 0, moveVelY = 0, moveTime = 0;
         let startMove = false;
 
-        if (Math.random() <= seqCfg.movementChance) {
+        if (chosen === 'slide' || Math.random() <= seqCfg.movementChance) {
             startMove = true;
             moveTime = this.#getRandom(seqCfg.movementDurationMs);
             let speed = this.#getRandom(seqCfg.movementSpeedPx);
@@ -896,6 +924,8 @@ class FloatEntity {
         const anim = this.#sequenceQueue.shift();
         this.#animDuration = anim.duration;
         this.#animTimer = anim.duration;
+        this.#currentColor = anim.color || this.#baseColor;
+        this.#isGuaranteed = anim.isGuaranteed || false;
 
         this.#startAnimState = {
             angle: this.#currentAngle,

@@ -271,12 +271,20 @@ class Game {
             this.#float.updateBite(dt);
             this.#float.update(dynamicBounds);
 
+            if (!this.#float.isBiting()) {
+                this.#gameState = 'waiting';
+                this.#currentBitingFish = null;
+                if (this.#biteSystem) this.#biteSystem.reset();
+                if (this.#tensionMeter) this.#tensionMeter.reset();
+                return;
+            }
+
             if (inputState.isPulling) {
                 const isGuaranteed = this.#float.isGuaranteedBite();
                 const catchChance = isGuaranteed ? 0.99 : 0.01;
 
                 if (Math.random() <= catchChance) {
-                    this.#float.hook();
+                    this.#float.hook(); 
                     this.#hookFish(this.#currentBitingFish);
                 } else {
                     this.#float.stopBite();

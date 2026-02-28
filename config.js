@@ -224,6 +224,9 @@ const CONFIG = {
         quality: 1.0,
         
         biteSequence: {
+            maxSequences: [2, 5],
+            sequenceIntervalMs: [1555, 5333],
+            
             chanceGuaranteed: 0.30,
             chanceNormal: 0.70,
             normalIters: [1, 10],
@@ -232,14 +235,15 @@ const CONFIG = {
             animDurationMs: [300, 800], 
             
             movementChance: 0.50, 
-            movementSpeedPx: [1, 5], 
-            movementDurationMs: [500, 1500],
+            movementSpeedPx: [2, 5], 
+            movementDurationMs: [1000, 2500],
             
             animations: {
                 bob: { heightPercent: [-5, 5] },
                 sink: { heightPercent: [-50, -10] },
                 rise: { heightPercent: [10, 50] },
-                tilt: { angle: [-45, 45] } 
+                tilt: { angle: [-45, 45] },
+                slide: {} 
             },
             
             guaranteedModifiers: {
@@ -248,8 +252,8 @@ const CONFIG = {
                 riseHeightPercent: [20, 70],
                 holdDurationMs: [500, 1500],
                 tiltAngle: [0, 90],
-                movementSpeedMult: [2.5, 3.5],
-                movementDurationMult: [1.5, 2.5]
+                movementSpeedMult: [2.0, 3.0],
+                movementDurationMult: [2.5, 3.5]
             }
         }
     },
