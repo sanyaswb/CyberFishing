@@ -678,12 +678,16 @@ class FloatEntity {
     
     #startAnimState = null;
     #targetAnimState = null;
+
+    #currentBiteMoveVelocity;
+    #biteMoveTimer = 0;
     
     #baseColor;
 
     constructor(x, y, config) {
         this.#position = new Vector2(x, y);
         this.#velocity = new Vector2(0, 0);
+        this.#currentBiteMoveVelocity = new Vector2(0, 0);
         this.#friction = config.float.friction || 0.85;
         this.#config = config;
         this.#baseColor = config.float.type === 'day' ? '#ffffff' : '#00ff80';
@@ -743,10 +747,17 @@ class FloatEntity {
         this.#currentAngle = 0;
         this.#currentScaleY = 1.0;
         this.#currentColor = this.#baseColor;
+        this.#biteMoveTimer = 0;
     }
 
     updateBite(dt) {
         if (!this.#isBiting) return;
+
+        if (this.#biteMoveTimer > 0) {
+            this.#biteMoveTimer -= dt;
+            this.#position.x += this.#currentBiteMoveVelocity.x * (dt / 1000);
+            this.#position.y += this.#currentBiteMoveVelocity.y * (dt / 1000);
+        }
 
         this.#animTimer -= dt;
 
@@ -762,8 +773,6 @@ class FloatEntity {
 
             this.#currentAngle = this.#lerp(this.#startAnimState.angle, this.#targetAnimState.angle, ease);
             this.#currentScaleY = this.#lerp(this.#startAnimState.scaleY, this.#targetAnimState.scaleY, ease);
-            this.#position.x = this.#lerp(this.#startAnimState.x, this.#targetAnimState.x, ease);
-            this.#position.y = this.#lerp(this.#startAnimState.y, this.#targetAnimState.y, ease);
         }
     }
 
@@ -778,13 +787,14 @@ class FloatEntity {
 
         this.#sequenceQueue = [];
         for (let i = 0; i < iters; i++) {
-            this.#sequenceQueue.push(this.#generateRandomAnim(isRed));
+            const steps = this.#generateRandomAnim(isRed);
+            this.#sequenceQueue.push(...steps);
+
             this.#sequenceQueue.push({
                 duration: this.#getRandom(seqCfg.intervalMs),
                 angle: 0,
                 scaleY: 1.0,
-                moveX: 0,
-                moveY: 0
+                startMove: false
             });
         }
         
@@ -794,34 +804,92 @@ class FloatEntity {
     #generateRandomAnim(isRed) {
         const seqCfg = this.#config.float.biteSequence;
         const animsCfg = seqCfg.animations;
+        const mods = seqCfg.guaranteedModifiers;
         
-        const possibleAnims = isRed ? ['pos1', 'pos2', 'pos3', 'pos4'] : ['pos1', 'pos2', 'pos3'];
-        const chosen = possibleAnims[Math.floor(Math.random() * possibleAnims.length)];
+        const types = ['bob', 'sink', 'rise', 'tilt'];
+        const chosen = types[Math.floor(Math.random() * types.length)];
         const cfg = animsCfg[chosen];
 
-        let percent = this.#getRandom(cfg.heightPercent);
-        if (isRed) percent += seqCfg.guaranteedBonus.heightPercent;
-        
-        const targetScaleY = Math.max(0, 1.0 + (percent / 100));
+        let targetAngle = 0;
+        let targetScaleY = 1.0;
+        let holdDuration = 0;
+        let duration = this.#getRandom(seqCfg.animDurationMs);
 
-        let moveX = 0;
-        let moveY = 0;
-        if (Math.random() <= seqCfg.movementChance) {
-            let spd = this.#getRandom(seqCfg.movementSpeedPx);
-            if (isRed) spd += seqCfg.guaranteedBonus.speedPx;
-            
-            const dirAngle = Math.random() * Math.PI * 2;
-            moveX = Math.cos(dirAngle) * spd;
-            moveY = Math.sin(dirAngle) * spd;
+        if (chosen === 'bob') {
+            let range = [...cfg.heightPercent];
+            if (isRed) {
+                range[0] -= mods.bobAmpAdd;
+                range[1] += mods.bobAmpAdd;
+            }
+            targetScaleY = Math.max(0, 1.0 + (this.#getRandom(range) / 100));
+        } else if (chosen === 'sink') {
+            let range = isRed ? mods.sinkHeightPercent : cfg.heightPercent;
+            targetScaleY = Math.max(0, 1.0 + (this.#getRandom(range) / 100));
+            if (isRed) holdDuration = this.#getRandom(mods.holdDurationMs);
+        } else if (chosen === 'rise') {
+            let range = isRed ? mods.riseHeightPercent : cfg.heightPercent;
+            targetScaleY = Math.max(0, 1.0 + (this.#getRandom(range) / 100));
+            if (isRed) holdDuration = this.#getRandom(mods.holdDurationMs);
+        } else if (chosen === 'tilt') {
+            if (isRed) {
+                targetAngle = this.#getRandom(mods.tiltAngle);
+                holdDuration = this.#getRandom(mods.holdDurationMs); 
+            } else {
+                targetAngle = this.#getRandom(cfg.angle);
+            }
         }
 
-        return {
-            duration: this.#getRandom(seqCfg.animDurationMs),
-            angle: cfg.angle || 0,
+        let moveVelX = 0, moveVelY = 0, moveTime = 0;
+        let startMove = false;
+
+        if (Math.random() <= seqCfg.movementChance) {
+            startMove = true;
+            moveTime = this.#getRandom(seqCfg.movementDurationMs);
+            let speed = this.#getRandom(seqCfg.movementSpeedPx);
+            
+            if (isRed) {
+                const speedMult = this.#getRandom(mods.movementSpeedMult);
+                const durationMult = this.#getRandom(mods.movementDurationMult);
+                moveTime *= durationMult;
+                speed *= speedMult;
+            }
+            
+            const dirAngle = Math.random() * Math.PI * 2;
+            moveVelX = Math.cos(dirAngle) * speed;
+            moveVelY = Math.sin(dirAngle) * speed;
+        }
+
+        if (targetAngle !== 0) {
+            if (startMove && moveVelX !== 0) {
+                const isMovingRight = moveVelX > 0;
+                targetAngle = Math.abs(targetAngle) * (isMovingRight ? -1 : 1);
+            } else {
+                if (Math.random() < 0.5) targetAngle = -targetAngle;
+            }
+        }
+
+        const steps = [];
+        
+        steps.push({
+            duration: duration,
+            angle: targetAngle,
             scaleY: targetScaleY,
-            moveX: moveX,
-            moveY: moveY
-        };
+            startMove: startMove,
+            moveVelX: moveVelX,
+            moveVelY: moveVelY,
+            moveTime: moveTime
+        });
+
+        if (holdDuration > 0) {
+            steps.push({
+                duration: holdDuration,
+                angle: targetAngle,
+                scaleY: targetScaleY,
+                startMove: false
+            });
+        }
+
+        return steps;
     }
 
     #nextAnimStep() {
@@ -831,17 +899,19 @@ class FloatEntity {
 
         this.#startAnimState = {
             angle: this.#currentAngle,
-            scaleY: this.#currentScaleY,
-            x: this.#position.x,
-            y: this.#position.y
+            scaleY: this.#currentScaleY
         };
 
         this.#targetAnimState = {
             angle: anim.angle,
-            scaleY: anim.scaleY,
-            x: this.#position.x + anim.moveX,
-            y: this.#position.y + anim.moveY
+            scaleY: anim.scaleY
         };
+
+        if (anim.startMove) {
+            this.#currentBiteMoveVelocity.x = anim.moveVelX;
+            this.#currentBiteMoveVelocity.y = anim.moveVelY;
+            this.#biteMoveTimer = anim.moveTime;
+        }
     }
 
     #easeInOutQuad(t) {

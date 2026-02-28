@@ -232,16 +232,25 @@ const CONFIG = {
             animDurationMs: [300, 800], 
             
             movementChance: 0.50, 
-            movementSpeedPx: [5, 15], 
+            movementSpeedPx: [1, 5], 
+            movementDurationMs: [500, 1500],
             
             animations: {
-                pos1: { angle: 0, heightPercent: [-5, 5] },
-                pos2: { angle: 0, heightPercent: [-100, -10] },
-                pos3: { angle: 45, heightPercent: [10, 50] },
-                pos4: { angle: 90, heightPercent: [0, 50] } 
+                bob: { heightPercent: [-5, 5] },
+                sink: { heightPercent: [-50, -10] },
+                rise: { heightPercent: [10, 50] },
+                tilt: { angle: [-45, 45] } 
             },
             
-            guaranteedBonus: { heightPercent: 20, speedPx: 10 }
+            guaranteedModifiers: {
+                bobAmpAdd: 10,
+                sinkHeightPercent: [-100, -80],
+                riseHeightPercent: [20, 70],
+                holdDurationMs: [500, 1500],
+                tiltAngle: [0, 90],
+                movementSpeedMult: [2.5, 3.5],
+                movementDurationMult: [1.5, 2.5]
+            }
         }
     },
     
