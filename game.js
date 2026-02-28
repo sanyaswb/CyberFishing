@@ -22,6 +22,7 @@ class Game {
     #isRaining = false;
     #isFoggy = false;
     #weatherTimer = 0;
+    #currentBitingFish = null;
 
     constructor(canvasId) {
         this.#canvas = document.getElementById(canvasId);
@@ -137,25 +138,22 @@ class Game {
 
         const inputState = this.#inputManager.getState();
 
-        // 0. ОБРОБКА СКАСУВАННЯ (Подвійний клік / тап)
         if (inputState.isDoubleClick) {
             if (this.#gameState === 'waiting') {
                 this.#gameState = 'scouting';
-                // Скидаємо всі лічильники та гачки при скасуванні
                 if (this.#tensionMeter) this.#tensionMeter.reset();
                 if (this.#biteSystem) this.#biteSystem.reset();
-                return; // Перериваємо поточний кадр
+                return; 
             }
         }
 
-        // 0.1 ОБРОБКА ПЕРЕЗАКИДАННЯ (Довгий тап)
         if (inputState.longPressPos && this.#gameState === 'waiting') {
             const vPos = this.#projector.screenToVirtual(inputState.longPressPos.x, inputState.longPressPos.y);
             const cell = this.#locationMap.getCellAtVirtualPos(vPos.x, vPos.y, CONFIG.locations.cellSize);
             
             if (cell && cell.isCastable && !cell.hasCollision) {
                 this.#castManager.registerCast(performance.now());
-                this.#castLine(vPos.x, vPos.y); // Перезакидаємо
+                this.#castLine(vPos.x, vPos.y); 
             } else {
                 this.#invalidCastMarker = { x: inputState.longPressPos.x, y: inputState.longPressPos.y, timer: 500 };
             }
@@ -176,7 +174,6 @@ class Game {
                         this.#castManager.registerCast(performance.now());
                         this.#castLine(vPos.x, vPos.y);
                     } else {
-                        // Анти-спам спрацював
                         this.#invalidCastMarker = { x: inputState.clickPos.x, y: inputState.clickPos.y, timer: 500 };
                     }
                 } else {
@@ -202,7 +199,6 @@ class Game {
             this.#weatherTimer = weatherCfg.updateIntervalMs;
         }
 
-        // --- 1. ФОРМУВАННЯ ДАНИХ СЕРЕДОВИЩА (Для BiteSystem та Дебагу) ---
         const currentHour = new Date().getHours();
         let currentPhase = 'day';
         for (const [phase, times] of Object.entries(CONFIG.spawns.timePhases)) {
@@ -216,15 +212,14 @@ class Game {
         const floatPos = this.#float.getPosition();
         const floatScreenPos = this.#projector.virtualToScreen(floatPos.x, floatPos.y);
 
-        // Отримуємо клітинку під поплавцем
         const currentCell = this.#locationMap.getCellAtVirtualPos(floatPos.x, floatPos.y, CONFIG.locations.cellSize);
-        const currentDepth = currentCell ? currentCell.depth : 0; // Якщо вилетів за карту - глибина 0
+        const currentDepth = currentCell ? currentCell.depth : 0; 
 
         const envData = {
             depth: currentDepth, 
             timePhase: currentPhase,
             dayOfWeek: new Date().getDay(),
-            zoneMultiplier: 1.0, // Пізніше зробимо залежним від динамічних зон (буфів)
+            zoneMultiplier: 1.0, 
             isRaining: this.#isRaining,
             isFoggy: this.#isFoggy,
             castSpamMultiplier: this.#castManager.getBiteChanceMultiplier()
@@ -232,19 +227,30 @@ class Game {
 
         const playerGear = {
             hookSize: CONFIG.hook.level,
-            baitId: 'oil_worm' // Тимчасово жорстко задано
+            baitId: 'oil_worm' 
         };
-        // ------------------------------------------------------------------
 
-        // --- 2. СТАН ОЧІКУВАННЯ КЛЬОВУ ---
+        const castableBounds = this.#locationMap.getCastableBoundsVirtual(CONFIG.locations.cellSize);
+        const vTopLeft = this.#projector.screenToVirtual(0, 0);
+        const vBottomRight = this.#projector.screenToVirtual(this.#canvas.width, this.#canvas.height);
+        
+        const dynamicBounds = {
+            left: Math.max(vTopLeft.x, castableBounds ? castableBounds.left : 0),
+            right: Math.min(vBottomRight.x, castableBounds ? castableBounds.right : 2560),
+            top: Math.max(vTopLeft.y, castableBounds ? castableBounds.top : 0),
+            bottom: Math.min(vBottomRight.y, castableBounds ? castableBounds.bottom : 2560)
+        };
+
         if (this.#gameState === 'waiting') {
             const hookedFish = this.#biteSystem.evaluateBite(dt, envData, playerGear);
             
             if (hookedFish) {
-                this.#hookFish(hookedFish);
+                this.#gameState = 'biting';
+                this.#currentBitingFish = hookedFish;
+                this.#float.startBite();
+                return;
             }
             
-            // Відправка даних в дебагер під час очікування (лише середовище)
             if (CONFIG.debug?.overlay) {
                 const liveChances = this.#biteSystem.getLiveChances(envData, playerGear);
                 const debugData = {
@@ -252,17 +258,36 @@ class Game {
                     floatX: Math.round(floatPos.x), floatY: Math.round(floatPos.y),
                     depth: envData.depth, bait: playerGear.baitId, phase: envData.timePhase,
                     liveChances: liveChances,
-                    // Заглушки для фізики
                     isRaining: this.#isRaining,
                     isFoggy: this.#isFoggy,
                     playerForceY: 0, playerForceX: 0, fishForceY: 0, fishForceX: 0, fishState: 'N/A', fishBasePower: 0, pullMult: 1, moveMult: 1
                 };
                 document.dispatchEvent(new CustomEvent('debug-live-update', { detail: debugData }));
             }
-            return; // Виходимо, бо боротьба ще не почалася
+            return; 
         }
 
-        // --- 3. СТАН БОРОТЬБИ (PLAYING) ---
+        if (this.#gameState === 'biting') {
+            this.#float.updateBite(dt);
+            this.#float.update(dynamicBounds);
+
+            if (inputState.isPulling) {
+                const isGuaranteed = this.#float.isGuaranteedBite();
+                const catchChance = isGuaranteed ? 0.99 : 0.01;
+
+                if (Math.random() <= catchChance) {
+                    this.#float.stopBite();
+                    this.#hookFish(this.#currentBitingFish);
+                } else {
+                    this.#float.stopBite();
+                    this.#gameState = 'scouting';
+                    this.#currentBitingFish = null;
+                    if (this.#tensionMeter) this.#tensionMeter.reset();
+                }
+            }
+            return;
+        }
+
         if (this.#gameState !== 'playing') return;
 
         if (this.#tensionMeter.isBroken()) {
@@ -305,20 +330,8 @@ class Game {
 
         this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, currentFishMaxForceScaled, dt, CONFIG);
 
-        const castableBounds = this.#locationMap.getCastableBoundsVirtual(CONFIG.locations.cellSize);
-        const vTopLeft = this.#projector.screenToVirtual(0, 0);
-        const vBottomRight = this.#projector.screenToVirtual(this.#canvas.width, this.#canvas.height);
-        
-        const dynamicBounds = {
-            left: Math.max(vTopLeft.x, castableBounds ? castableBounds.left : 0),
-            right: Math.min(vBottomRight.x, castableBounds ? castableBounds.right : 2560),
-            top: Math.max(vTopLeft.y, castableBounds ? castableBounds.top : 0),
-            bottom: Math.min(vBottomRight.y, castableBounds ? castableBounds.bottom : 2560)
-        };
-
         this.#staminaController.evaluate(this.#tensionMeter.getTension(), inputState.isPulling, dt, floatPos.x, dynamicBounds);
 
-        // --- 4. ВІДПРАВКА ДАНИХ У ДЕБАГЕР ПІД ЧАС БОРОТЬБИ ---
         if (CONFIG.debug?.overlay) {
             const liveChances = this.#biteSystem.getLiveChances(envData, playerGear);
             const debugData = {
@@ -401,12 +414,10 @@ class Game {
     draw() {
         this.#renderer.clear(CONFIG);
 
-        // 1. ЗАВЖДИ малюємо візуальний фон локації (воду, берег)
         if (typeof this.#renderer.drawBackground === 'function') {
             this.#renderer.drawBackground(this.#locationMap, this.#projector, CONFIG);
         }
 
-        // 2. Сітку та червоні зони малюємо ТІЛЬКИ якщо це увімкнено в конфігу
         if (CONFIG.locations && CONFIG.locations.debugVisuals) {
             this.#renderer.drawLocationDebug(this.#locationMap, this.#projector, CONFIG);
         }
@@ -415,16 +426,15 @@ class Game {
             this.#renderer.drawInvalidCastMarker(this.#invalidCastMarker);
         }
 
-        if (this.#gameState === 'waiting' || this.#gameState === 'playing' || this.#gameState === 'failed' || this.#gameState === 'victory') {
+        if (this.#gameState === 'waiting' || this.#gameState === 'biting' || this.#gameState === 'playing' || this.#gameState === 'failed' || this.#gameState === 'victory') {
             const vPos = this.#float.getPosition();
             const sPos = this.#projector.virtualToScreen(vPos.x, vPos.y);
             
             this.#renderer.drawCatchZone(this.#locationMap, this.#projector, CONFIG);
             this.#renderer.drawRodLine(sPos, CONFIG);
-            this.#renderer.drawFloat(sPos, CONFIG);
+            this.#renderer.drawFloat(sPos, this.#float, CONFIG);
             
-            // Малюємо UI боротьби ТІЛЬКИ якщо риба вже на гачку
-            if (this.#gameState !== 'waiting' && this.#tensionMeter && this.#fishCondition) {
+            if (this.#gameState === 'playing' && this.#tensionMeter && this.#fishCondition) {
                 this.#renderer.drawTensionBar(this.#tensionMeter, CONFIG);
                 this.#renderer.drawFishCondition(this.#fishCondition, CONFIG);
             }

@@ -217,13 +217,38 @@ const CONFIG = {
     },
 
     float: {
-        initialX: null, // null = canvas center
-        initialY: null, // null = canvas center
-        size: 15,
-        circleRadius: 20,
-        friction: 0.85,
-        color: '#00ff80',
-        circleColor: 'rgba(0, 255, 128, 0.2)',
+        width: 3,
+        length: 15,
+        type: 'day',
+        level: 1,
+        quality: 1.0,
+        
+        animations: {
+            pos1: { speedPx: 10, heightChange: [-2, 2], durationMs: [500, 3000] },
+            pos2: { heightChange: [-5, 5], durationMs: [300, 1000] },
+            pos3: { angle: 45, heightChange: [-3, 3], durationMs: [300, 800] },
+            pos4: { angle: 90, heightChange: [-5, 5], durationMs: [300, 800] }
+        },
+        
+        biteSequence: {
+            chanceGuaranteed: 0.30,
+            chanceNormal: 0.70,
+            normalIters: [1, 10],
+            guaranteedIters: [1, 3],
+            intervalMs: [300, 800],
+            guaranteedBonus: { heightPx: 2, speedPx: 200 }
+        }
+    },
+    
+    sinker: {
+        level: 1,
+        quality: 1.0
+    },
+    
+    wind: {
+        active: true,
+        speedPxPerSec: 15,
+        direction: { x: 1, y: 0.2 }
     },
 
     rod: {

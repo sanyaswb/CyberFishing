@@ -657,15 +657,31 @@ class FishingSystem {
     }
 }
 
+// Візуальне представлення поплавця та його поведінка під час клювання
 class FloatEntity {
     #position;
     #velocity;
     #friction;
+    #config;
+    
+    #isBiting = false;
+    #isGuaranteed = false;
+    #currentColor;
+    #currentAngle = 0;
+    #currentHeightOffset = 0;
+    
+    #sequenceQueue = [];
+    #animTimer = 0;
+    #isPausing = false;
+    #baseColor;
 
     constructor(x, y, config) {
         this.#position = new Vector2(x, y);
         this.#velocity = new Vector2(0, 0);
-        this.#friction = config.float.friction;
+        this.#friction = config.float.friction || 0.85;
+        this.#config = config;
+        this.#baseColor = config.float.type === 'day' ? '#ffffff' : '#00ff80';
+        this.#currentColor = this.#baseColor;
     }
 
     applyForce(force) {
@@ -691,8 +707,127 @@ class FloatEntity {
         this.#position.y = y;
         this.#velocity = new Vector2(0, 0);
     }
+
+    getVisualState() {
+        return {
+            color: this.#currentColor,
+            angle: this.#currentAngle,
+            heightOffset: this.#currentHeightOffset
+        };
+    }
+
+    isGuaranteedBite() {
+        return this.#isGuaranteed;
+    }
+
+    startBite() {
+        this.#isBiting = true;
+        this.#rollBiteSequence();
+    }
+
+    stopBite() {
+        this.#isBiting = false;
+        this.#sequenceQueue = [];
+        this.#resetVisuals();
+    }
+
+    updateBite(dt) {
+        if (!this.#isBiting) return;
+
+        this.#animTimer -= dt;
+
+        if (this.#animTimer <= 0) {
+            if (this.#isPausing) {
+                this.#isPausing = false;
+                this.#nextAnimStep();
+            } else {
+                this.#resetVisuals();
+                if (this.#sequenceQueue.length > 0) {
+                    this.#isPausing = true;
+                    this.#animTimer = this.#getRandom(this.#config.float.biteSequence.intervalMs);
+                } else {
+                    this.#rollBiteSequence();
+                }
+            }
+        } else if (!this.#isPausing && this.#sequenceQueue.length > 0) {
+            const currentAnim = this.#sequenceQueue[0];
+            if (currentAnim.speedX || currentAnim.speedY) {
+                const stepX = (currentAnim.speedX * (dt / 1000));
+                const stepY = (currentAnim.speedY * (dt / 1000));
+                this.#position.x += stepX;
+                this.#position.y += stepY;
+            }
+        }
+    }
+
+    #rollBiteSequence() {
+        const seqCfg = this.#config.float.biteSequence;
+        const isRed = Math.random() <= seqCfg.chanceGuaranteed;
+        this.#isGuaranteed = isRed;
+        
+        this.#currentColor = isRed ? '#ff0000' : '#ffff00';
+
+        const range = isRed ? seqCfg.guaranteedIters : seqCfg.normalIters;
+        const iters = Math.floor(this.#getRandom(range));
+
+        this.#sequenceQueue = [];
+        for (let i = 0; i < iters; i++) {
+            this.#sequenceQueue.push(this.#generateRandomAnim(isRed));
+        }
+
+        this.#isPausing = true;
+        this.#animTimer = this.#getRandom(seqCfg.intervalMs);
+    }
+
+    #generateRandomAnim(isRed) {
+        const anims = ['pos1', 'pos2', 'pos3', 'pos4'];
+        const chosen = anims[Math.floor(Math.random() * anims.length)];
+        const cfg = this.#config.float.animations[chosen];
+        const bonus = this.#config.float.biteSequence.guaranteedBonus;
+
+        const anim = {
+            duration: this.#getRandom(cfg.durationMs),
+            angle: cfg.angle || 0,
+            heightOffset: this.#getRandom(cfg.heightChange),
+            speedX: 0,
+            speedY: 0
+        };
+
+        if (isRed) {
+            anim.heightOffset += (anim.heightOffset >= 0 ? bonus.heightPx : -bonus.heightPx);
+        }
+
+        if (chosen === 'pos1') {
+            let spd = cfg.speedPx + (isRed ? bonus.speedPx : 0);
+            const dirAngle = Math.random() * Math.PI * 2;
+            anim.speedX = Math.cos(dirAngle) * spd;
+            anim.speedY = Math.sin(dirAngle) * spd;
+        }
+
+        return anim;
+    }
+
+    #nextAnimStep() {
+        const currentAnim = this.#sequenceQueue.shift();
+        this.#animTimer = currentAnim.duration;
+        this.#currentAngle = currentAnim.angle;
+        this.#currentHeightOffset = currentAnim.heightOffset;
+    }
+
+    #resetVisuals() {
+        this.#currentAngle = 0;
+        this.#currentHeightOffset = 0;
+        if (!this.#isBiting) {
+            this.#currentColor = this.#baseColor;
+        }
+    }
+
+    #getRandom(arr) {
+        return arr[0] + Math.random() * (arr[1] - arr[0]);
+    }
 }
 
+// Логіка витривалості риби та її виснаження під час боротьби
 class FishCondition {
     #maxPoints;
     #currentStamina;
@@ -737,6 +872,7 @@ class FishCondition {
     }
 }
 
+// Контролер, який керує логікою витривалості риби та її виснаження
 class StaminaController {
     #condition;
     #config;
@@ -1158,20 +1294,20 @@ class Renderer {
         }
     }
 
-    drawFloat(position, config) {
-        this.#ctx.strokeStyle = config.float.color;
-        this.#ctx.lineWidth = 4;
-        this.#ctx.beginPath();
-        this.#ctx.moveTo(position.x - config.float.size, position.y);
-        this.#ctx.lineTo(position.x + config.float.size, position.y);
-        this.#ctx.moveTo(position.x, position.y - config.float.size);
-        this.#ctx.lineTo(position.x, position.y + config.float.size);
-        this.#ctx.stroke();
+    drawFloat(screenPos, floatEntity, config) {
+        const visualState = floatEntity.getVisualState();
+        const width = config.float.width;
+        const length = config.float.length;
 
-        this.#ctx.fillStyle = config.float.circleColor;
-        this.#ctx.beginPath();
-        this.#ctx.arc(position.x, position.y, config.float.circleRadius, 0, Math.PI * 2);
-        this.#ctx.fill();
+        this.#ctx.save();
+        
+        this.#ctx.translate(screenPos.x, screenPos.y + visualState.heightOffset);
+        this.#ctx.rotate((visualState.angle * Math.PI) / 180);
+
+        this.#ctx.fillStyle = visualState.color;
+        this.#ctx.fillRect(-width / 2, -length, width, length);
+
+        this.#ctx.restore();
     }
 
     drawRodLine(floatPos, config) {
