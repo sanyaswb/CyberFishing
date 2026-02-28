@@ -276,7 +276,7 @@ class Game {
                 const catchChance = isGuaranteed ? 0.99 : 0.01;
 
                 if (Math.random() <= catchChance) {
-                    this.#float.stopBite();
+                    this.#float.hook();
                     this.#hookFish(this.#currentBitingFish);
                 } else {
                     this.#float.stopBite();

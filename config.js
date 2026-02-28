@@ -223,20 +223,25 @@ const CONFIG = {
         level: 1,
         quality: 1.0,
         
-        animations: {
-            pos1: { speedPx: 10, heightChange: [-2, 2], durationMs: [500, 3000] },
-            pos2: { heightChange: [-5, 5], durationMs: [300, 1000] },
-            pos3: { angle: 45, heightChange: [-3, 3], durationMs: [300, 800] },
-            pos4: { angle: 90, heightChange: [-5, 5], durationMs: [300, 800] }
-        },
-        
         biteSequence: {
             chanceGuaranteed: 0.30,
             chanceNormal: 0.70,
             normalIters: [1, 10],
             guaranteedIters: [1, 3],
             intervalMs: [300, 800],
-            guaranteedBonus: { heightPx: 2, speedPx: 200 }
+            animDurationMs: [300, 800], 
+            
+            movementChance: 0.50, 
+            movementSpeedPx: [5, 15], 
+            
+            animations: {
+                pos1: { angle: 0, heightPercent: [-5, 5] },
+                pos2: { angle: 0, heightPercent: [-100, -10] },
+                pos3: { angle: 45, heightPercent: [10, 50] },
+                pos4: { angle: 90, heightPercent: [0, 50] } 
+            },
+            
+            guaranteedBonus: { heightPercent: 20, speedPx: 10 }
         }
     },
     

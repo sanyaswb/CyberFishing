@@ -666,13 +666,19 @@ class FloatEntity {
     
     #isBiting = false;
     #isGuaranteed = false;
+    #isHooked = false;
     #currentColor;
+    
     #currentAngle = 0;
-    #currentHeightOffset = 0;
+    #currentScaleY = 1.0;
     
     #sequenceQueue = [];
     #animTimer = 0;
-    #isPausing = false;
+    #animDuration = 0;
+    
+    #startAnimState = null;
+    #targetAnimState = null;
+    
     #baseColor;
 
     constructor(x, y, config) {
@@ -689,8 +695,10 @@ class FloatEntity {
     }
 
     update(boundsRect) {
-        this.#position.add(this.#velocity);
-        this.#velocity.multiplyScalar(this.#friction);
+        if (!this.#isBiting) {
+            this.#position.add(this.#velocity);
+            this.#velocity.multiplyScalar(this.#friction);
+        }
 
         if (this.#position.x < boundsRect.left) this.#position.x = boundsRect.left;
         if (this.#position.x > boundsRect.right) this.#position.x = boundsRect.right;
@@ -698,37 +706,43 @@ class FloatEntity {
         if (this.#position.y > boundsRect.bottom) this.#position.y = boundsRect.bottom;
     }
 
-    getPosition() {
-        return this.#position;
-    }
+    getPosition() { return this.#position; }
 
     setPosition(x, y) {
         this.#position.x = x;
         this.#position.y = y;
         this.#velocity = new Vector2(0, 0);
+        this.#isHooked = false;
     }
 
     getVisualState() {
         return {
             color: this.#currentColor,
             angle: this.#currentAngle,
-            heightOffset: this.#currentHeightOffset
+            scaleY: this.#currentScaleY
         };
     }
 
-    isGuaranteedBite() {
-        return this.#isGuaranteed;
+    isGuaranteedBite() { return this.#isGuaranteed; }
+    isHooked() { return this.#isHooked; }
+
+    hook() {
+        this.#isHooked = true;
+        this.#isBiting = false;
     }
 
     startBite() {
         this.#isBiting = true;
+        this.#isHooked = false;
         this.#rollBiteSequence();
     }
 
     stopBite() {
         this.#isBiting = false;
         this.#sequenceQueue = [];
-        this.#resetVisuals();
+        this.#currentAngle = 0;
+        this.#currentScaleY = 1.0;
+        this.#currentColor = this.#baseColor;
     }
 
     updateBite(dt) {
@@ -737,26 +751,19 @@ class FloatEntity {
         this.#animTimer -= dt;
 
         if (this.#animTimer <= 0) {
-            if (this.#isPausing) {
-                this.#isPausing = false;
+            if (this.#sequenceQueue.length > 0) {
                 this.#nextAnimStep();
             } else {
-                this.#resetVisuals();
-                if (this.#sequenceQueue.length > 0) {
-                    this.#isPausing = true;
-                    this.#animTimer = this.#getRandom(this.#config.float.biteSequence.intervalMs);
-                } else {
-                    this.#rollBiteSequence();
-                }
+                this.#rollBiteSequence();
             }
-        } else if (!this.#isPausing && this.#sequenceQueue.length > 0) {
-            const currentAnim = this.#sequenceQueue[0];
-            if (currentAnim.speedX || currentAnim.speedY) {
-                const stepX = (currentAnim.speedX * (dt / 1000));
-                const stepY = (currentAnim.speedY * (dt / 1000));
-                this.#position.x += stepX;
-                this.#position.y += stepY;
-            }
+        } else if (this.#startAnimState && this.#targetAnimState) {
+            const progress = 1.0 - (this.#animTimer / this.#animDuration);
+            const ease = this.#easeInOutQuad(Math.max(0, Math.min(1, progress)));
+
+            this.#currentAngle = this.#lerp(this.#startAnimState.angle, this.#targetAnimState.angle, ease);
+            this.#currentScaleY = this.#lerp(this.#startAnimState.scaleY, this.#targetAnimState.scaleY, ease);
+            this.#position.x = this.#lerp(this.#startAnimState.x, this.#targetAnimState.x, ease);
+            this.#position.y = this.#lerp(this.#startAnimState.y, this.#targetAnimState.y, ease);
         }
     }
 
@@ -764,7 +771,6 @@ class FloatEntity {
         const seqCfg = this.#config.float.biteSequence;
         const isRed = Math.random() <= seqCfg.chanceGuaranteed;
         this.#isGuaranteed = isRed;
-        
         this.#currentColor = isRed ? '#ff0000' : '#ffff00';
 
         const range = isRed ? seqCfg.guaranteedIters : seqCfg.normalIters;
@@ -773,53 +779,77 @@ class FloatEntity {
         this.#sequenceQueue = [];
         for (let i = 0; i < iters; i++) {
             this.#sequenceQueue.push(this.#generateRandomAnim(isRed));
+            this.#sequenceQueue.push({
+                duration: this.#getRandom(seqCfg.intervalMs),
+                angle: 0,
+                scaleY: 1.0,
+                moveX: 0,
+                moveY: 0
+            });
         }
-
-        this.#isPausing = true;
-        this.#animTimer = this.#getRandom(seqCfg.intervalMs);
+        
+        this.#nextAnimStep();
     }
 
     #generateRandomAnim(isRed) {
-        const anims = ['pos1', 'pos2', 'pos3', 'pos4'];
-        const chosen = anims[Math.floor(Math.random() * anims.length)];
-        const cfg = this.#config.float.animations[chosen];
-        const bonus = this.#config.float.biteSequence.guaranteedBonus;
+        const seqCfg = this.#config.float.biteSequence;
+        const animsCfg = seqCfg.animations;
+        
+        const possibleAnims = isRed ? ['pos1', 'pos2', 'pos3', 'pos4'] : ['pos1', 'pos2', 'pos3'];
+        const chosen = possibleAnims[Math.floor(Math.random() * possibleAnims.length)];
+        const cfg = animsCfg[chosen];
 
-        const anim = {
-            duration: this.#getRandom(cfg.durationMs),
-            angle: cfg.angle || 0,
-            heightOffset: this.#getRandom(cfg.heightChange),
-            speedX: 0,
-            speedY: 0
-        };
+        let percent = this.#getRandom(cfg.heightPercent);
+        if (isRed) percent += seqCfg.guaranteedBonus.heightPercent;
+        
+        const targetScaleY = Math.max(0, 1.0 + (percent / 100));
 
-        if (isRed) {
-            anim.heightOffset += (anim.heightOffset >= 0 ? bonus.heightPx : -bonus.heightPx);
-        }
-
-        if (chosen === 'pos1') {
-            let spd = cfg.speedPx + (isRed ? bonus.speedPx : 0);
+        let moveX = 0;
+        let moveY = 0;
+        if (Math.random() <= seqCfg.movementChance) {
+            let spd = this.#getRandom(seqCfg.movementSpeedPx);
+            if (isRed) spd += seqCfg.guaranteedBonus.speedPx;
+            
             const dirAngle = Math.random() * Math.PI * 2;
-            anim.speedX = Math.cos(dirAngle) * spd;
-            anim.speedY = Math.sin(dirAngle) * spd;
+            moveX = Math.cos(dirAngle) * spd;
+            moveY = Math.sin(dirAngle) * spd;
         }
 
-        return anim;
+        return {
+            duration: this.#getRandom(seqCfg.animDurationMs),
+            angle: cfg.angle || 0,
+            scaleY: targetScaleY,
+            moveX: moveX,
+            moveY: moveY
+        };
     }
 
     #nextAnimStep() {
-        const currentAnim = this.#sequenceQueue.shift();
-        this.#animTimer = currentAnim.duration;
-        this.#currentAngle = currentAnim.angle;
-        this.#currentHeightOffset = currentAnim.heightOffset;
+        const anim = this.#sequenceQueue.shift();
+        this.#animDuration = anim.duration;
+        this.#animTimer = anim.duration;
+
+        this.#startAnimState = {
+            angle: this.#currentAngle,
+            scaleY: this.#currentScaleY,
+            x: this.#position.x,
+            y: this.#position.y
+        };
+
+        this.#targetAnimState = {
+            angle: anim.angle,
+            scaleY: anim.scaleY,
+            x: this.#position.x + anim.moveX,
+            y: this.#position.y + anim.moveY
+        };
     }
 
-    #resetVisuals() {
-        this.#currentAngle = 0;
-        this.#currentHeightOffset = 0;
-        if (!this.#isBiting) {
-            this.#currentColor = this.#baseColor;
-        }
+    #easeInOutQuad(t) {
+        return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    }
+
+    #lerp(start, end, amt) {
+        return (1 - amt) * start + amt * end;
     }
 
     #getRandom(arr) {
@@ -1297,15 +1327,23 @@ class Renderer {
     drawFloat(screenPos, floatEntity, config) {
         const visualState = floatEntity.getVisualState();
         const width = config.float.width;
-        const length = config.float.length;
-
-        this.#ctx.save();
         
-        this.#ctx.translate(screenPos.x, screenPos.y + visualState.heightOffset);
-        this.#ctx.rotate((visualState.angle * Math.PI) / 180);
+        this.#ctx.save();
+        this.#ctx.translate(screenPos.x, screenPos.y);
 
+        if (floatEntity.isHooked()) {
+            this.#ctx.fillStyle = visualState.color;
+            this.#ctx.fillRect(-1.5, -3, 3, 3);
+            this.#ctx.restore();
+            return;
+        }
+        
+        const length = config.float.length;
+        this.#ctx.rotate((visualState.angle * Math.PI) / 180);
         this.#ctx.fillStyle = visualState.color;
-        this.#ctx.fillRect(-width / 2, -length, width, length);
+        
+        const currentLength = length * visualState.scaleY;
+        this.#ctx.fillRect(-width / 2, -currentLength, width, currentLength);
 
         this.#ctx.restore();
     }
