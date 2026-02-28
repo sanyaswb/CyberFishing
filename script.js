@@ -734,9 +734,21 @@ class FloatEntity {
     isHooked() { return this.#isHooked; }
     isBiting() { return this.#isBiting; }
 
+    // hook() {
+    //     this.#isHooked = true;
+    //     this.#isBiting = false;
+    // }
+
     hook() {
         this.#isHooked = true;
         this.#isBiting = false;
+        
+        this.#velocity.x = 0;
+        this.#velocity.y = 0;
+        
+        this.#currentBiteMoveVelocity.x = 0;
+        this.#currentBiteMoveVelocity.y = 0;
+        this.#biteMoveTimer = 0;
     }
 
     startBite() {

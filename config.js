@@ -31,7 +31,7 @@ const CONFIG = {
     },
 
     locations: {
-        debugVisuals: true,       // Головний вимикач (якщо false - взагалі нічого не малюється)
+        debugVisuals: false,       // Головний вимикач (якщо false - взагалі нічого не малюється)
         debugZones: true,         // Показувати кольорові квадрати (зелені, червоні)
         debugGrid: true,          // Показувати лінії сітки
         debugDepthText: false,     // Показувати цифри глибини
@@ -69,7 +69,7 @@ const CONFIG = {
                         { x: 0, y: 14, w: 6, h: 6},
                     ],
                     snags: [
-                        { x: 15, y: 20, w: 11, h: 9 }
+                        // { x: 15, y: 20, w: 11, h: 9 }
                     ],
                     // dynamic: [
                         // { 
@@ -224,36 +224,36 @@ const CONFIG = {
         quality: 1.0,
         
         biteSequence: {
-            maxSequences: [2, 5],
+            maxSequences: [1, 5],
             sequenceIntervalMs: [1555, 5333],
             
-            chanceGuaranteed: 0.30,
-            chanceNormal: 0.70,
+            chanceGuaranteed: 0.40,
+            chanceNormal: 0.60,
             normalIters: [1, 10],
             guaranteedIters: [1, 3],
             intervalMs: [300, 800],
             animDurationMs: [300, 800], 
             
             movementChance: 0.50, 
-            movementSpeedPx: [2, 5], 
+            movementSpeedPx: [2, 8], 
             movementDurationMs: [1000, 2500],
             
             animations: {
                 bob: { heightPercent: [-5, 5] },
                 sink: { heightPercent: [-50, -10] },
-                rise: { heightPercent: [10, 50] },
-                tilt: { angle: [-45, 45] },
+                rise: { heightPercent: [10, 30] },
+                tilt: { angle: [-25, 25] },
                 slide: {} 
             },
             
             guaranteedModifiers: {
                 bobAmpAdd: 10,
                 sinkHeightPercent: [-100, -80],
-                riseHeightPercent: [20, 70],
-                holdDurationMs: [500, 1500],
-                tiltAngle: [0, 90],
+                riseHeightPercent: [30, 70],
+                holdDurationMs: [1000, 2500],
+                tiltAngle: [75, 90],
                 movementSpeedMult: [2.0, 3.0],
-                movementDurationMult: [2.5, 3.5]
+                movementDurationMult: [3.0, 1.5]
             }
         }
     },
