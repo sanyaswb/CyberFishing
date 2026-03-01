@@ -31,10 +31,10 @@ const CONFIG = {
     },
 
     locations: {
-        debugVisuals: false,       // Головний вимикач (якщо false - взагалі нічого не малюється)
+        debugVisuals: true,       // Головний вимикач (якщо false - взагалі нічого не малюється)
         debugZones: true,         // Показувати кольорові квадрати (зелені, червоні)
         debugGrid: true,          // Показувати лінії сітки
-        debugDepthText: false,     // Показувати цифри глибини
+        debugDepthText: true,     // Показувати цифри глибини
         debugOpacity: 0.8,
         baseResolution: { width: 2560, height: 2560 },
         designCellSize: 64,
@@ -262,7 +262,13 @@ const CONFIG = {
     sinker: {
         level: 1,
         quality: 1.0,
-        maxDepth: 8.0 
+        maxDepth: 8.0,
+        weight: 'light', 
+        weights: {
+            light: { speedMult: 1.0, heightScale: 1.0 },
+            medium: { speedMult: 1.5, heightScale: 0.85 },
+            heavy: { speedMult: 2.0, heightScale: 0.7 }
+        }
     },
     
     wind: {

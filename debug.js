@@ -7,7 +7,7 @@ const DEBUG_MODULES = {
     exhaustion: false, 
     catchTime: false, 
     prediction: false, 
-    net: false
+    net: false,
 };
 
 // Замість setTimeout тепер слухаємо івент

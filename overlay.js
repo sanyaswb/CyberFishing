@@ -7,7 +7,8 @@ const OVERLAY_MODULES = {
     worstCase: true,     // 💀 НАЙГІРШИЙ СЦЕНАРІЙ (НИЖНІЙ КУТ)
     playerMax: true,     // 📊 СИЛА ГРАВЦЯ (MAX Y & X)
     liveY: true,         // ⚖️ LIVE: ТЯГА (Вісь Y)
-    liveX: true          // ⚖️ LIVE: КЕРУВАННЯ (Вісь X)
+    liveX: true,          // ⚖️ LIVE: КЕРУВАННЯ (Вісь X)
+    chancesDetail: true, // 🐟 ДЕТАЛЬНІ ШАНСИ КЛЬОВУ (Показує всі можливі риби та їх шанси)
 };
 
 class DebugOverlay {
@@ -172,6 +173,34 @@ class DebugOverlay {
                 }
             } else {
                 html += `<div style="color: #8a9bac; margin-bottom: 4px;">Закиньте вудку для аналізу...</div>`;
+            }
+            html += `<div style="margin-bottom: 12px;"></div>`;
+        }
+
+        if (OVERLAY_MODULES.chancesDetail && (d.gameState === 'scouting' || d.gameState === 'waiting' || d.gameState === 'biting')) {
+            html += `<div style="color: #b066ff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">🧮 РОЗРАХУНОК ШАНСІВ</div>`;
+            if (d.liveChances && d.liveChances.length > 0) {
+                d.liveChances.forEach(fish => {
+                    const b = fish.breakdown;
+                    html += `<div style="margin-bottom: 8px; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 4px; border-left: 3px solid #b066ff;">`;
+                    html += `<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span style="color: #fff; font-weight: bold;">${fish.name}</span>
+                        <span style="color: #00ff80; font-weight: bold;">${fish.chance}</span>
+                    </div>`;
+                    html += `<div style="color: #8a9bac; font-size: 11px; line-height: 1.4; display: grid; grid-template-columns: 1fr 1fr;">
+                        <span>База: <span style="color:#ddd">${b.base}</span></span>
+                        <span>Наживка: <span style="color:#ddd">x${b.bait}</span></span>
+                        <span>Час: <span style="color:#ddd">x${b.time}</span></span>
+                        <span>День: <span style="color:#ddd">x${b.day}</span></span>
+                        <span>Глибина: <span style="color:#ddd">x${b.depth}</span></span>
+                        <span>Погода: <span style="color:#ddd">x${b.weather}</span></span>
+                        <span>Зона: <span style="color:#ddd">x${b.zone}</span></span>
+                        <span>Спам: <span style="color:${b.spam < 1 ? '#ff4444' : '#ddd'}">x${b.spam}</span></span>
+                        <span style="grid-column: span 2;">Лежачий поплавок: <span style="color:${b.overDepth < 1 ? '#ff4444' : '#ddd'}">x${b.overDepth}</span></span>
+                    </div></div>`;
+                });
+            } else {
+                html += `<div style="color: #ff4444; font-weight: bold; margin-bottom: 2px;">Немає риби для цих умов</div>`;
             }
             html += `<div style="margin-bottom: 12px;"></div>`;
         }

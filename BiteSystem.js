@@ -122,29 +122,33 @@ class BiteSystem {
             t = Math.max(0, Math.min(1, t));
             const depthChanceMult = this.#lerp(1.0, dc.chanceMultAtMaxDepth, t);
 
-            let finalChance = fish.baseChance;
-            finalChance *= baitMult;
-            finalChance *= fish.timeMultipliers[envData.timePhase] || 1.0;
-            finalChance *= fish.dayMultipliers[envData.dayOfWeek] || 1.0;
-            finalChance *= envData.zoneMultiplier || 1.0;
-            finalChance *= depthChanceMult;
+            const timeMult = fish.timeMultipliers[envData.timePhase] || 1.0;
+            const dayMult = fish.dayMultipliers[envData.dayOfWeek] || 1.0;
+            const zoneMult = envData.zoneMultiplier || 1.0;
             
-            if (envData.isRaining) {
-                finalChance *= fish.weatherMultipliers?.rain ?? 1.0;
-            }
-            if (envData.isFoggy) {
-                finalChance *= fish.weatherMultipliers?.fog ?? 1.0;
-            }
+            let rainMult = envData.isRaining ? (fish.weatherMultipliers?.rain ?? 1.0) : 1.0;
+            let fogMult = envData.isFoggy ? (fish.weatherMultipliers?.fog ?? 1.0) : 1.0;
+            const weatherMult = rainMult * fogMult;
+            
+            const spamMult = envData.castSpamMultiplier ?? 1.0;
+            const overDepthMult = envData.hookDepth > envData.bottomDepth ? (this.#config.float.overDepthPenaltyMult || 0.5) : 1.0;
 
-            finalChance *= (envData.castSpamMultiplier ?? 1.0);
-
-            if (envData.hookDepth > envData.bottomDepth) {
-                finalChance *= (this.#config.float.overDepthPenaltyMult || 0.5);
-            }
+            let finalChance = fish.baseChance * baitMult * timeMult * dayMult * zoneMult * depthChanceMult * weatherMult * spamMult * overDepthMult;
 
             chances.push({ 
                 name: fish.name, 
-                chance: (finalChance * 100).toFixed(2) + '%' 
+                chance: (finalChance * 100).toFixed(2) + '%',
+                breakdown: {
+                    base: fish.baseChance.toFixed(3),
+                    bait: baitMult.toFixed(2),
+                    time: timeMult.toFixed(2),
+                    day: dayMult.toFixed(2),
+                    zone: zoneMult.toFixed(2),
+                    depth: depthChanceMult.toFixed(2),
+                    weather: weatherMult.toFixed(2),
+                    spam: spamMult.toFixed(2),
+                    overDepth: overDepthMult.toFixed(2)
+                }
             });
         }
         
