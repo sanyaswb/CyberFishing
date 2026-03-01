@@ -31,7 +31,7 @@ const CONFIG = {
     },
 
     locations: {
-        debugVisuals: true,       // Головний вимикач (якщо false - взагалі нічого не малюється)
+        debugVisuals: false,       // Головний вимикач (якщо false - взагалі нічого не малюється)
         debugZones: true,         // Показувати кольорові квадрати (зелені, червоні)
         debugGrid: true,          // Показувати лінії сітки
         debugDepthText: true,     // Показувати цифри глибини
@@ -43,7 +43,11 @@ const CONFIG = {
             test: {
                 id: 'test',
                 name: 'Test Waters',
-                bgUrl: 'bg_test.webp',
+                bgUrls: {
+                    day: 'assets/bg_test--day.webp',
+                    evening: 'assets/bg_test--evening.webp',
+                    night: 'assets/bg_test--night.webp'
+                },
                 depthUrl: 'depth.jpg',
                 // x: 'left', 'center', 'right'
                 // y: 'top', 'center', 'bottom', 'safeZone'
@@ -217,6 +221,8 @@ const CONFIG = {
 
     debug: {
         overlay: true,
+        // initialTime: 17.5, // Початковий час. 17.5 = 17:30. Якщо поставити null, гра візьме реальний час.
+        // timeScale: 60,     // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
     },
 
     logs: {

@@ -86,10 +86,12 @@ class LocationMap {
     #cols;
     #rows;
     #dynamicZones;
-    #bgImage;
-    #bgLoaded;
+    #bgImages = {};
+    #bgOpacities = { evening: 0, night: 0 };
+    #isDynamicBg = false;
     #depthImage; 
     #debugCanvas; // Прихований шар для оптимізації дебагу
+    #bgLoaded = false;
 
     constructor(locationId, config) {
         this.#globalConfig = config;
@@ -119,9 +121,22 @@ class LocationMap {
             if (this.#config.zones.dynamic) this.#config.zones.dynamic.forEach(scaleZone);
         }
         
-        this.#bgImage = new Image();
-        this.#bgImage.onload = () => { this.#bgLoaded = true; };
-        this.#bgImage.src = this.#config.bgUrl;
+        if (this.#config.bgUrls) {
+            this.#isDynamicBg = true;
+            let loadedCount = 0;
+            ['day', 'evening', 'night'].forEach(key => {
+                this.#bgImages[key] = new Image();
+                this.#bgImages[key].onload = () => {
+                    loadedCount++;
+                    if (loadedCount === 3) this.#bgLoaded = true;
+                };
+                this.#bgImages[key].src = this.#config.bgUrls[key];
+            });
+        } else if (this.#config.bgUrl) {
+            this.#bgImages.default = new Image();
+            this.#bgImages.default.onload = () => { this.#bgLoaded = true; };
+            this.#bgImages.default.src = this.#config.bgUrl;
+        }
 
         this.#buildGrid(actualCellSize);
         
@@ -211,12 +226,38 @@ class LocationMap {
     }
 
     drawBackground(ctx, projector) {
-        if (!this.#bgLoaded) return;
+        if (!this.#bgLoaded) return; // <--- ДОДАНО: Не малюємо, поки картинки не завантажились
+
         const pos = projector.virtualToScreen(0, 0);
         const scale = projector.getScale();
         const w = 2560 * scale;
         const h = 2560 * scale;
-        ctx.drawImage(this.#bgImage, pos.x, pos.y, w, h);
+
+        if (!this.#isDynamicBg) {
+            if (this.#bgImages.default?.complete) ctx.drawImage(this.#bgImages.default, pos.x, pos.y, w, h);
+            return;
+        }
+
+        const opE = this.#bgOpacities.evening;
+        const opN = this.#bgOpacities.night;
+
+        if (opN === 1) {
+            if (this.#bgImages.night?.complete) ctx.drawImage(this.#bgImages.night, pos.x, pos.y, w, h);
+        } else if (opN > 0) {
+            if (this.#bgImages.evening?.complete) ctx.drawImage(this.#bgImages.evening, pos.x, pos.y, w, h);
+            ctx.globalAlpha = opN;
+            if (this.#bgImages.night?.complete) ctx.drawImage(this.#bgImages.night, pos.x, pos.y, w, h);
+            ctx.globalAlpha = 1.0;
+        } else if (opE === 1) {
+            if (this.#bgImages.evening?.complete) ctx.drawImage(this.#bgImages.evening, pos.x, pos.y, w, h);
+        } else if (opE > 0) {
+            if (this.#bgImages.day?.complete) ctx.drawImage(this.#bgImages.day, pos.x, pos.y, w, h);
+            ctx.globalAlpha = opE;
+            if (this.#bgImages.evening?.complete) ctx.drawImage(this.#bgImages.evening, pos.x, pos.y, w, h);
+            ctx.globalAlpha = 1.0;
+        } else {
+            if (this.#bgImages.day?.complete) ctx.drawImage(this.#bgImages.day, pos.x, pos.y, w, h);
+        }
     }
 
     #buildGrid(cellSize) {
@@ -321,6 +362,34 @@ class LocationMap {
     #isValid(x, y) { return x >= 0 && x < this.#cols && y >= 0 && y < this.#rows; }
 
     update(dt) {
+        if (this.#isDynamicBg) {
+            const now = new Date();
+            const time = now.getHours() + (now.getMinutes() / 60);
+
+            let evA = 0, niA = 0;
+
+            if (time >= 9 && time < 17) {
+                evA = 0; niA = 0;
+            } else if (time >= 17 && time < 19) {
+                evA = (time - 17) / 2;
+                niA = 0;
+            } else if (time >= 19 && time < 21) {
+                evA = 1;
+                niA = (time - 19) / 2;
+            } else if (time >= 21 || time < 5) {
+                evA = 1; niA = 1;
+            } else if (time >= 5 && time < 7) {
+                evA = 1;
+                niA = 1 - ((time - 5) / 2);
+            } else if (time >= 7 && time < 9) {
+                evA = 1 - ((time - 7) / 2);
+                niA = 0;
+            }
+
+            this.#bgOpacities.evening = evA;
+            this.#bgOpacities.night = niA;
+        }
+
         for (const dz of this.#dynamicZones) { dz.update(dt, this.#cols, this.#rows); }
     }
 
