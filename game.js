@@ -23,6 +23,8 @@ class Game {
     #isFoggy = false;
     #weatherTimer = 0;
     #currentBitingFish = null;
+    #currentHookDepth = 1.0;
+    #depthUI;
 
     constructor(canvasId) {
         this.#canvas = document.getElementById(canvasId);
@@ -36,6 +38,8 @@ class Game {
         this.#locationMap = new LocationMap('test', CONFIG);
         this.#projector = new ViewportProjector(CONFIG);
         
+        this.#depthUI = new DepthSelectorUI();
+
         this.#resizeCanvas();
         window.addEventListener('resize', () => this.#resizeCanvas());
 
@@ -59,9 +63,11 @@ class Game {
         this.#biteSystem = new BiteSystem(CONFIG);
     }
 
-    #castLine(virtualX, virtualY) {
+    #castLine(virtualX, virtualY, bottomDepth) {
         this.#float.setPosition(virtualX, virtualY);
-        this.#gameState = 'waiting'; // Новий стан очікування
+        const isOverDepth = this.#currentHookDepth > bottomDepth;
+        this.#float.setOverDepth(isOverDepth);
+        this.#gameState = 'waiting';
         this.#biteSystem.reset();
         this.failReason = null;
     }
@@ -153,13 +159,20 @@ class Game {
             
             if (cell && cell.isCastable && !cell.hasCollision) {
                 this.#castManager.registerCast(performance.now());
-                this.#castLine(vPos.x, vPos.y); 
+                this.#castLine(vPos.x, vPos.y, cell.depth);
             } else {
                 this.#invalidCastMarker = { x: inputState.longPressPos.x, y: inputState.longPressPos.y, timer: 500 };
             }
         }
         
         if (this.#gameState === 'scouting') {
+            if (!this.#depthUI.isActive) {
+                const maxDepth = CONFIG.sinker.maxDepth || 8.0;
+                this.#depthUI.show(maxDepth, this.#currentHookDepth, (newDepth) => {
+                    this.#currentHookDepth = newDepth;
+                });
+            }
+
             if (inputState.panDeltaX !== 0) {
                 const virtualDelta = inputState.panDeltaX / this.#projector.getScale();
                 this.#projector.pan(virtualDelta);
@@ -172,7 +185,8 @@ class Game {
                 if (cell && cell.isCastable && !cell.hasCollision) {
                     if (this.#castManager.canCast()) {
                         this.#castManager.registerCast(performance.now());
-                        this.#castLine(vPos.x, vPos.y);
+                        this.#depthUI.hide(); 
+                        this.#castLine(vPos.x, vPos.y, cell.depth);
                     } else {
                         this.#invalidCastMarker = { x: inputState.clickPos.x, y: inputState.clickPos.y, timer: 500 };
                     }
@@ -186,6 +200,10 @@ class Game {
                 if (this.#invalidCastMarker.timer <= 0) this.#invalidCastMarker = null;
             }
             return; 
+        } else {
+            if (this.#depthUI.isActive) {
+                this.#depthUI.hide();
+            }
         }
 
         this.#castManager.update(dt);
@@ -216,7 +234,8 @@ class Game {
         const currentDepth = currentCell ? currentCell.depth : 0; 
 
         const envData = {
-            depth: currentDepth, 
+            hookDepth: this.#currentHookDepth, 
+            bottomDepth: currentDepth,
             timePhase: currentPhase,
             dayOfWeek: new Date().getDay(),
             zoneMultiplier: 1.0, 
@@ -256,7 +275,10 @@ class Game {
                 const debugData = {
                     gameState: this.#gameState,
                     floatX: Math.round(floatPos.x), floatY: Math.round(floatPos.y),
-                    depth: envData.depth, bait: playerGear.baitId, phase: envData.timePhase,
+                    hookDepth: envData.hookDepth,
+                    bottomDepth: envData.bottomDepth,
+                    bait: playerGear.baitId, 
+                    phase: envData.timePhase,
                     liveChances: liveChances,
                     isRaining: this.#isRaining,
                     isFoggy: this.#isFoggy,
@@ -313,9 +335,11 @@ class Game {
         this.#float.applyForce(fishForce);
 
         let rodScreenX = this.#canvas.width / 2;
+
         if (CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== 'center') {
             rodScreenX = Number(CONFIG.ui.rod.x);
         }
+
         const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
         const rodVirtualPos = this.#projector.screenToVirtual(rodScreenX, rodScreenY);
 

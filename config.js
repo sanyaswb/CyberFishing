@@ -222,6 +222,7 @@ const CONFIG = {
         type: 'day',
         level: 1,
         quality: 1.0,
+        overDepthPenaltyMult: 0.5,
         
         biteSequence: {
             maxSequences: [1, 5],
@@ -260,7 +261,8 @@ const CONFIG = {
     
     sinker: {
         level: 1,
-        quality: 1.0
+        quality: 1.0,
+        maxDepth: 8.0 
     },
     
     wind: {

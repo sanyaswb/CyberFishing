@@ -110,9 +110,7 @@ class InputManager {
             const isPointerEvent = e && (e.type === 'pointerup' || e.type === 'touchend' || e.type === 'pointercancel');
             
             if (isPointerEvent) {
-                this.#isPointerDown = false;
-                
-                if (!this.#isDragging) {
+                if (!this.#isDragging && this.#isPointerDown) {
                     const now = Date.now();
                     if (now - this.#lastClickTime < 300) {
                         this.#isDoubleClick = true;
@@ -123,6 +121,7 @@ class InputManager {
                     }
                     this.#lastClickTime = now;
                 }
+                this.#isPointerDown = false;
             }
             
             this.#isPulling = this.#keys['Space'] === true || this.#isPointerDown === true;
@@ -668,6 +667,7 @@ class FloatEntity {
     #isGuaranteed = false;
     #isHooked = false;
     #currentColor;
+    #isOverDepth = false;
     
     #currentAngle = 0;
     #currentScaleY = 1.0;
@@ -722,6 +722,17 @@ class FloatEntity {
         this.#isHooked = false;
     }
 
+    setOverDepth(isOver) {
+        this.#isOverDepth = isOver;
+        if (isOver) {
+            this.#currentAngle = Math.random() < 0.5 ? 90 : -90;
+            this.#currentScaleY = 1.0;
+        } else {
+            this.#currentAngle = 0;
+            this.#currentScaleY = 1.0;
+        }
+    }
+
     getVisualState() {
         return {
             color: this.#currentColor,
@@ -759,6 +770,12 @@ class FloatEntity {
         this.#currentSequenceCount = 1;
         this.#targetSequenceCount = Math.floor(this.#getRandom(seqCfg.maxSequences));
         
+        if (this.#isOverDepth) {
+            this.#animTimer = this.#getRandom([2000, 5000]);
+            this.#isGuaranteed = Math.random() <= seqCfg.chanceGuaranteed;
+            return;
+        }
+
         this.#rollBiteSequence();
     }
 
@@ -773,6 +790,14 @@ class FloatEntity {
 
     updateBite(dt) {
         if (!this.#isBiting) return;
+
+        if (this.#isOverDepth) {
+            this.#animTimer -= dt;
+            if (this.#animTimer <= 0) {
+                this.stopBite();
+            }
+            return;
+        }
 
         if (this.#biteMoveTimer > 0) {
             this.#biteMoveTimer -= dt;
@@ -1618,5 +1643,136 @@ class Renderer {
         this.#ctx.fillStyle = '#00ccff';
         this.#ctx.font = 'bold 14px monospace';
         this.#ctx.fillText('Refresh page to try again', canvasWidth / 2, canvasHeight / 2 + 60);
+    }
+}
+
+class DepthSelectorUI {
+    constructor() {
+        this.container = document.createElement('div');
+        this.container.innerHTML = `
+            <style>
+                #ds-container {
+                    position: fixed; top: 0; right: 0; width: 140px; height: 100%;
+                    display: none; justify-content: center; align-items: center; padding-right: 5%;
+                    font-family: sans-serif; pointer-events: none; z-index: 9999;
+                }
+                #ds-wrapper {
+                    display: flex; align-items: center; gap: 15px; height: 50vh; position: relative;
+                    pointer-events: none;
+                }
+                #ds-input-container {
+                    position: absolute; left: -90px;
+                }
+                #ds-input {
+                    background: #73c2fb; color: #000; font-size: 18px; font-weight: bold;
+                    border: 2px solid #000; border-radius: 4px; padding: 4px;
+                    width: 60px; text-align: center; outline: none;
+                    pointer-events: auto;
+                }
+                #ds-input::after {
+                    content: ''; position: absolute; right: -12px; top: 50%; transform: translateY(-50%);
+                    width: 12px; height: 2px; background: #fff;
+                }
+                #ds-slider-container {
+                    height: 100%; display: flex; align-items: center;
+                }
+                #ds-slider {
+                    appearance: slider-vertical; width: 8px; height: 100%; margin: 0; cursor: pointer;
+                    background: linear-gradient(to top, #002233, #73c2fb); border-radius: 4px; outline: none;
+                    transform: rotate(180deg);
+                    pointer-events: auto;
+                }
+                #ds-labels {
+                    display: flex; flex-direction: column; justify-content: space-between;
+                    height: 100%; color: #fff; font-size: 14px; font-weight: bold; margin-left: 5px;
+                }
+            </style>
+            <div id="ds-container">
+                <div id="ds-wrapper">
+                    <div id="ds-input-container">
+                        <input type="text" id="ds-input" value="1.5">
+                    </div>
+                    <div id="ds-slider-container">
+                        <input type="range" id="ds-slider" min="0.1" step="0.1">
+                    </div>
+                    <div id="ds-labels">
+                        <span id="ds-min">0.1</span>
+                        <span></span>
+                        <span id="ds-max">8.0</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(this.container);
+
+        this.mainContainer = document.getElementById('ds-container');
+        this.slider = document.getElementById('ds-slider');
+        this.input = document.getElementById('ds-input');
+        this.maxLabel = document.getElementById('ds-max');
+        this.inputContainer = document.getElementById('ds-input-container');
+
+        this.onChange = null;
+        this.isActive = false;
+
+        this.#bindEvents();
+    }
+
+    #bindEvents() {
+        this.slider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            this.input.value = val.toFixed(2);
+            this.#updateInputPosition();
+            if (this.onChange) this.onChange(val);
+        });
+
+        this.input.addEventListener('input', (e) => {
+            let val = e.target.value.replace(',', '.').replace(/[^0-9.]/g, '');
+            if ((val.match(/\./g) || []).length > 1) {
+                val = val.substring(0, val.lastIndexOf('.'));
+            }
+            e.target.value = val;
+        });
+
+        this.input.addEventListener('change', (e) => {
+            let val = parseFloat(e.target.value);
+            if (isNaN(val)) val = 0.1;
+            val = Math.max(0.1, Math.min(parseFloat(this.slider.max), val));
+            this.input.value = val.toFixed(2);
+            this.slider.value = val;
+            this.#updateInputPosition();
+            if (this.onChange) this.onChange(val);
+        });
+    }
+
+    #updateInputPosition() {
+        const min = parseFloat(this.slider.min);
+        const max = parseFloat(this.slider.max);
+        const val = parseFloat(this.slider.value);
+        
+        const percent = (val - min) / (max - min); 
+        const sliderHeight = this.slider.clientHeight;
+        const offset = percent * sliderHeight;
+        
+        this.inputContainer.style.top = `calc(${offset}px - 18px)`;
+    }
+
+    show(maxDepth, currentDepth, changeCallback) {
+        this.isActive = true;
+        this.onChange = changeCallback;
+
+        this.slider.max = maxDepth;
+        this.maxLabel.innerText = maxDepth.toFixed(1);
+
+        this.slider.value = currentDepth;
+        this.input.value = currentDepth.toFixed(2);
+
+        this.mainContainer.style.display = 'flex';
+        
+        requestAnimationFrame(() => this.#updateInputPosition());
+    }
+
+    hide() {
+        this.isActive = false;
+        this.mainContainer.style.display = 'none';
     }
 }

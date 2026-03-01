@@ -61,12 +61,12 @@ class BiteSystem {
             const dc = fish.depthConfig;
 
             if (playerGear.hookSize > fish.maxHookSize) continue;
-            if (envData.depth < dc.minDepth || envData.depth > dc.maxDepth) continue;
+            if (envData.hookDepth < dc.minDepth || envData.hookDepth > dc.maxDepth) continue;
 
             const baitMult = fish.baitMultipliers[playerGear.baitId] || 0;
             if (baitMult === 0) continue;
 
-            let t = (envData.depth - dc.minDepth) / (dc.maxDepth - dc.minDepth);
+            let t = (envData.hookDepth - dc.minDepth) / (dc.maxDepth - dc.minDepth);
             t = Math.max(0, Math.min(1, t));
 
             const depthChanceMult = this.#lerp(1.0, dc.chanceMultAtMaxDepth, t);
@@ -84,8 +84,13 @@ class BiteSystem {
             if (envData.isFoggy) {
                 finalChance *= fish.weatherMultipliers?.fog ?? 1.0;
             }
-            // apply spam multiplier penalty/bonus
+            
             finalChance *= (envData.castSpamMultiplier ?? 1.0);
+
+            if (envData.hookDepth > envData.bottomDepth) {
+                finalChance *= (this.#config.float.overDepthPenaltyMult || 0.5);
+            }
+
             if (Math.random() <= finalChance) {
                 possibleBites.push(fish);
             }
@@ -95,7 +100,7 @@ class BiteSystem {
             const randomIndex = Math.floor(Math.random() * possibleBites.length);
             const selectedFishTemplate = possibleBites[randomIndex];
             
-            return this.#generateFishInstance(selectedFishTemplate, envData.depth);
+            return this.#generateFishInstance(selectedFishTemplate, envData.hookDepth);
         }
 
         return null;
@@ -108,12 +113,12 @@ class BiteSystem {
             const dc = fish.depthConfig;
 
             if (playerGear.hookSize > fish.maxHookSize) continue;
-            if (envData.depth < dc.minDepth || envData.depth > dc.maxDepth) continue;
+            if (envData.hookDepth < dc.minDepth || envData.hookDepth > dc.maxDepth) continue;
 
             const baitMult = fish.baitMultipliers[playerGear.baitId] || 0;
             if (baitMult === 0) continue;
 
-            let t = (envData.depth - dc.minDepth) / (dc.maxDepth - dc.minDepth);
+            let t = (envData.hookDepth - dc.minDepth) / (dc.maxDepth - dc.minDepth);
             t = Math.max(0, Math.min(1, t));
             const depthChanceMult = this.#lerp(1.0, dc.chanceMultAtMaxDepth, t);
 
@@ -123,8 +128,19 @@ class BiteSystem {
             finalChance *= fish.dayMultipliers[envData.dayOfWeek] || 1.0;
             finalChance *= envData.zoneMultiplier || 1.0;
             finalChance *= depthChanceMult;
-            // include cast spam multiplier for display purposes as well
+            
+            if (envData.isRaining) {
+                finalChance *= fish.weatherMultipliers?.rain ?? 1.0;
+            }
+            if (envData.isFoggy) {
+                finalChance *= fish.weatherMultipliers?.fog ?? 1.0;
+            }
+
             finalChance *= (envData.castSpamMultiplier ?? 1.0);
+
+            if (envData.hookDepth > envData.bottomDepth) {
+                finalChance *= (this.#config.float.overDepthPenaltyMult || 0.5);
+            }
 
             chances.push({ 
                 name: fish.name, 
