@@ -667,7 +667,6 @@ class FloatEntity {
     #isGuaranteed = false;
     #isHooked = false;
     #currentColor;
-    #isOverDepth = false;
     
     #currentAngle = 0;
     #currentScaleY = 1.0;
@@ -687,6 +686,17 @@ class FloatEntity {
     
     #baseColor;
 
+    #currentHookDepth = 0.1;
+    #targetHookDepth = 0.1;
+    #isSinking = false;
+    #sinkingTimer = 0;
+    #sinkingTotalTime = 0;
+    #sinkingStartAngle = 90;
+    
+    #perspectiveScale = 1.0;
+    #sinkerHeightScale = 1.0;
+    #isOverDepth = false;
+
     constructor(x, y, config) {
         this.#position = new Vector2(x, y);
         this.#velocity = new Vector2(0, 0);
@@ -701,7 +711,61 @@ class FloatEntity {
         this.#velocity.add(force);
     }
 
-    update(boundsRect) {
+    cast(x, y, targetDepth, isOverDepth, sinkerConfig, distanceRatio) {
+        this.#position.x = x;
+        this.#position.y = y;
+        this.#velocity = new Vector2(0, 0);
+        this.#isHooked = false;
+        this.#isBiting = false;
+        this.stopBite();
+
+        this.#targetHookDepth = targetDepth;
+        this.#currentHookDepth = 0.1;
+        this.#isOverDepth = isOverDepth;
+        
+        const weightCfg = sinkerConfig.weights[sinkerConfig.weight];
+        this.#sinkerHeightScale = weightCfg.heightScale;
+        
+        const pRange = this.#config.float.perspectiveScaleRange || [1.3, 0.7];
+        this.#perspectiveScale = pRange[0] + distanceRatio * (pRange[1] - pRange[0]);
+        
+        this.#isSinking = true;
+        this.#sinkingTotalTime = (this.#config.float.sinkingDurationMs || 4000) / weightCfg.speedMult;
+        this.#sinkingTimer = this.#sinkingTotalTime;
+        
+        this.#sinkingStartAngle = Math.random() < 0.5 ? 90 : -90;
+        this.#currentAngle = this.#sinkingStartAngle;
+        this.#currentScaleY = 1.0;
+    }
+
+    getCurrentHookDepth() {
+        return this.#currentHookDepth;
+    }
+
+    update(boundsRect, dt) {
+        if (this.#isSinking) {
+            this.#sinkingTimer -= dt;
+            let progress = 1.0 - Math.max(0, this.#sinkingTimer / this.#sinkingTotalTime);
+            
+            this.#currentHookDepth = this.#lerp(0.1, this.#targetHookDepth, progress);
+            
+            if (!this.#isBiting) {
+                if (this.#isOverDepth) {
+                    this.#currentAngle = this.#sinkingStartAngle; 
+                } else {
+                    this.#currentAngle = this.#lerp(this.#sinkingStartAngle, 0, progress);
+                }
+            }
+
+            if (this.#sinkingTimer <= 0) {
+                this.#isSinking = false;
+                this.#currentHookDepth = this.#targetHookDepth;
+                if (!this.#isBiting && !this.#isOverDepth) {
+                    this.#currentAngle = 0;
+                }
+            }
+        }
+
         if (!this.#isBiting) {
             this.#position.add(this.#velocity);
             this.#velocity.multiplyScalar(this.#friction);
@@ -715,29 +779,12 @@ class FloatEntity {
 
     getPosition() { return this.#position; }
 
-    setPosition(x, y) {
-        this.#position.x = x;
-        this.#position.y = y;
-        this.#velocity = new Vector2(0, 0);
-        this.#isHooked = false;
-    }
-
-    setOverDepth(isOver) {
-        this.#isOverDepth = isOver;
-        if (isOver) {
-            this.#currentAngle = Math.random() < 0.5 ? 90 : -90;
-            this.#currentScaleY = 1.0;
-        } else {
-            this.#currentAngle = 0;
-            this.#currentScaleY = 1.0;
-        }
-    }
-
     getVisualState() {
         return {
             color: this.#currentColor,
             angle: this.#currentAngle,
-            scaleY: this.#currentScaleY
+            scaleY: this.#currentScaleY * this.#sinkerHeightScale,
+            perspectiveScale: this.#perspectiveScale
         };
     }
 
@@ -770,12 +817,6 @@ class FloatEntity {
         this.#currentSequenceCount = 1;
         this.#targetSequenceCount = Math.floor(this.#getRandom(seqCfg.maxSequences));
         
-        if (this.#isOverDepth) {
-            this.#animTimer = this.#getRandom([2000, 5000]);
-            this.#isGuaranteed = Math.random() <= seqCfg.chanceGuaranteed;
-            return;
-        }
-
         this.#rollBiteSequence();
     }
 
@@ -1463,22 +1504,23 @@ class Renderer {
 
     drawFloat(screenPos, floatEntity, config) {
         const visualState = floatEntity.getVisualState();
-        const width = config.float.width;
-        
+        const pScale = visualState.perspectiveScale;
+        const width = config.float.width * pScale;
+        const length = config.float.length * pScale;
+
         this.#ctx.save();
         this.#ctx.translate(screenPos.x, screenPos.y);
 
         if (floatEntity.isHooked()) {
             this.#ctx.fillStyle = visualState.color;
-            this.#ctx.fillRect(-1.5, -3, 3, 3);
+            this.#ctx.fillRect(-1.5 * pScale, -3 * pScale, 3 * pScale, 3 * pScale);
             this.#ctx.restore();
             return;
         }
-        
-        const length = config.float.length;
+
         this.#ctx.rotate((visualState.angle * Math.PI) / 180);
         this.#ctx.fillStyle = visualState.color;
-        
+
         const currentLength = length * visualState.scaleY;
         this.#ctx.fillRect(-width / 2, -currentLength, width, currentLength);
 

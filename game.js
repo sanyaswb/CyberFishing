@@ -64,9 +64,25 @@ class Game {
     }
 
     #castLine(virtualX, virtualY, bottomDepth) {
-        this.#float.setPosition(virtualX, virtualY);
         const isOverDepth = this.#currentHookDepth > bottomDepth;
-        this.#float.setOverDepth(isOverDepth);
+        
+        let rodScreenX = this.#canvas.width / 2;
+        if (CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== 'center') {
+            rodScreenX = Number(CONFIG.ui.rod.x);
+        }
+        const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
+        const rodVirtualPos = this.#projector.screenToVirtual(rodScreenX, rodScreenY);
+        
+        const castableBounds = this.#locationMap.getCastableBoundsVirtual(CONFIG.locations.cellSize);
+        const maxDistX = Math.max(Math.abs(castableBounds.left - rodVirtualPos.x), Math.abs(castableBounds.right - rodVirtualPos.x));
+        const maxDistY = Math.max(Math.abs(castableBounds.top - rodVirtualPos.y), Math.abs(castableBounds.bottom - rodVirtualPos.y));
+        const maxPossibleDist = Math.hypot(maxDistX, maxDistY);
+        
+        const currentDist = Math.hypot(virtualX - rodVirtualPos.x, virtualY - rodVirtualPos.y);
+        const distanceRatio = Math.max(0, Math.min(1, currentDist / maxPossibleDist));
+
+        this.#float.cast(virtualX, virtualY, this.#currentHookDepth, isOverDepth, CONFIG.sinker, distanceRatio);
+        
         this.#gameState = 'waiting';
         this.#biteSystem.reset();
         this.failReason = null;
@@ -234,7 +250,7 @@ class Game {
         const currentDepth = currentCell ? currentCell.depth : 0; 
 
         const envData = {
-            hookDepth: this.#currentHookDepth, 
+            hookDepth: this.#float.getCurrentHookDepth(),
             bottomDepth: currentDepth,
             timePhase: currentPhase,
             dayOfWeek: new Date().getDay(),
@@ -261,6 +277,7 @@ class Game {
         };
 
         if (this.#gameState === 'waiting') {
+            this.#float.update(dynamicBounds, dt); 
             const hookedFish = this.#biteSystem.evaluateBite(dt, envData, playerGear);
             
             if (hookedFish) {
@@ -291,7 +308,7 @@ class Game {
 
         if (this.#gameState === 'biting') {
             this.#float.updateBite(dt);
-            this.#float.update(dynamicBounds);
+            this.#float.update(dynamicBounds, dt);
 
             if (!this.#float.isBiting()) {
                 this.#gameState = 'waiting';
@@ -387,7 +404,7 @@ class Game {
             document.dispatchEvent(new CustomEvent('debug-live-update', { detail: debugData }));
         }
 
-        this.#float.update(dynamicBounds);
+        this.#float.update(dynamicBounds, dt);
         
         const updatedFloatPos = this.#float.getPosition();
         const updatedFloatScreenPos = this.#projector.virtualToScreen(updatedFloatPos.x, updatedFloatPos.y);

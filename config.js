@@ -223,6 +223,9 @@ const CONFIG = {
         level: 1,
         quality: 1.0,
         overDepthPenaltyMult: 0.5,
+
+        sinkingDurationMs: 4000, 
+        perspectiveScaleRange: [1.3, 0.7],
         
         biteSequence: {
             maxSequences: [1, 5],
