@@ -224,7 +224,8 @@ const CONFIG = {
         quality: 1.0,
         overDepthPenaltyMult: 0.5,
 
-        sinkingDurationMs: 4000, 
+        sinkingDelayMs: 500,
+        sinkingDurationMs: 4000,
         perspectiveScaleRange: [1.3, 0.7],
         
         biteSequence: {

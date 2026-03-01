@@ -662,6 +662,7 @@ class FloatEntity {
     #velocity;
     #friction;
     #config;
+    #sinkingDelayTimer = 0;
     
     #isBiting = false;
     #isGuaranteed = false;
@@ -730,7 +731,13 @@ class FloatEntity {
         this.#perspectiveScale = pRange[0] + distanceRatio * (pRange[1] - pRange[0]);
         
         this.#isSinking = true;
-        this.#sinkingTotalTime = (this.#config.float.sinkingDurationMs || 4000) / weightCfg.speedMult;
+        this.#sinkingDelayTimer = this.#config.float.sinkingDelayMs || 500;
+        
+        const maxDepth = sinkerConfig.maxDepth || 8.0;
+        const depthRatio = Math.max(0.1, Math.min(1.0, targetDepth / maxDepth)); 
+        const baseSinkingTime = (this.#config.float.sinkingDurationMs || 4000) * depthRatio;
+        
+        this.#sinkingTotalTime = baseSinkingTime / weightCfg.speedMult;
         this.#sinkingTimer = this.#sinkingTotalTime;
         
         this.#sinkingStartAngle = Math.random() < 0.5 ? 90 : -90;
@@ -744,24 +751,28 @@ class FloatEntity {
 
     update(boundsRect, dt) {
         if (this.#isSinking) {
-            this.#sinkingTimer -= dt;
-            let progress = 1.0 - Math.max(0, this.#sinkingTimer / this.#sinkingTotalTime);
-            
-            this.#currentHookDepth = this.#lerp(0.1, this.#targetHookDepth, progress);
-            
-            if (!this.#isBiting) {
-                if (this.#isOverDepth) {
-                    this.#currentAngle = this.#sinkingStartAngle; 
-                } else {
-                    this.#currentAngle = this.#lerp(this.#sinkingStartAngle, 0, progress);
+            if (this.#sinkingDelayTimer > 0) {
+                this.#sinkingDelayTimer -= dt;
+            } else {
+                this.#sinkingTimer -= dt;
+                let progress = 1.0 - Math.max(0, this.#sinkingTimer / this.#sinkingTotalTime);
+                
+                this.#currentHookDepth = this.#lerp(0.1, this.#targetHookDepth, progress);
+                
+                if (!this.#isBiting) {
+                    if (this.#isOverDepth) {
+                        this.#currentAngle = this.#sinkingStartAngle; 
+                    } else {
+                        this.#currentAngle = this.#lerp(this.#sinkingStartAngle, 0, progress);
+                    }
                 }
-            }
 
-            if (this.#sinkingTimer <= 0) {
-                this.#isSinking = false;
-                this.#currentHookDepth = this.#targetHookDepth;
-                if (!this.#isBiting && !this.#isOverDepth) {
-                    this.#currentAngle = 0;
+                if (this.#sinkingTimer <= 0) {
+                    this.#isSinking = false;
+                    this.#currentHookDepth = this.#targetHookDepth;
+                    if (!this.#isBiting && !this.#isOverDepth) {
+                        this.#currentAngle = 0;
+                    }
                 }
             }
         }
@@ -791,11 +802,6 @@ class FloatEntity {
     isGuaranteedBite() { return this.#isGuaranteed; }
     isHooked() { return this.#isHooked; }
     isBiting() { return this.#isBiting; }
-
-    // hook() {
-    //     this.#isHooked = true;
-    //     this.#isBiting = false;
-    // }
 
     hook() {
         this.#isHooked = true;
@@ -1719,9 +1725,8 @@ class DepthSelectorUI {
                     height: 100%; display: flex; align-items: center;
                 }
                 #ds-slider {
-                    appearance: slider-vertical; width: 8px; height: 100%; margin: 0; cursor: pointer;
-                    background: linear-gradient(to top, #002233, #73c2fb); border-radius: 4px; outline: none;
-                    transform: rotate(180deg);
+                    writing-mode: vertical-lr; width: 8px; height: 100%; margin: 0; cursor: pointer;
+                    background: linear-gradient(to bottom, #002233, #73c2fb); border-radius: 4px; outline: none;
                     pointer-events: auto;
                 }
                 #ds-labels {
