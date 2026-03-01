@@ -59,6 +59,20 @@ const CONFIG = {
                     }
                 },
 
+                environment: {
+                    current: { 
+                        speedPxPerSec: 15, // Сила течії 
+                        direction: { x: 1, y: 0.1 } // Вектор (зносить вправо і трохи вниз)
+                    },
+                    wind: { 
+                        changesPerDay: [4, 12], 
+                        baseAngle: 25, 
+                        gustChancePerSec: 0.4, 
+                        gustDurationMs: [1000, 2500],
+                        rainMultiplier: [1.5, 2.5] 
+                    }
+                },
+
                 zones: {
                     castable: [
                         { x: 0, y: 13, w: 40, h: 20 } 

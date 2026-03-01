@@ -25,6 +25,7 @@ class Game {
     #currentBitingFish = null;
     #currentHookDepth = 1.0;
     #depthUI;
+    #windState = { direction: 0, rainMult: 1.0, timer: 0 };
 
     constructor(canvasId) {
         this.#canvas = document.getElementById(canvasId);
@@ -224,6 +225,17 @@ class Game {
 
         this.#castManager.update(dt);
 
+        const windCfg = CONFIG.locations.map.test.environment.wind;
+        
+        this.#windState.timer -= dt;
+        if (this.#windState.timer <= 0) {
+            const changes = windCfg.changesPerDay[0] + Math.random() * (windCfg.changesPerDay[1] - windCfg.changesPerDay[0]);
+            this.#windState.timer = (24 * 60 * 60 * 1000) / changes;
+            
+            const dirs = [-1, 0, 1];
+            this.#windState.direction = dirs[Math.floor(Math.random() * dirs.length)];
+        }
+
         this.#weatherTimer -= dt;
         if (this.#weatherTimer <= 0) {
             const weatherCfg = CONFIG.locations.map.test.weather;
@@ -231,6 +243,27 @@ class Game {
             this.#isRaining = Math.random() < weatherCfg.chances.rain;
             this.#isFoggy = Math.random() < weatherCfg.chances.fog;
             this.#weatherTimer = weatherCfg.updateIntervalMs;
+            
+            if (this.#isRaining && windCfg.rainMultiplier) {
+                this.#windState.rainMult = windCfg.rainMultiplier[0] + Math.random() * (windCfg.rainMultiplier[1] - windCfg.rainMultiplier[0]);
+            } else {
+                this.#windState.rainMult = 1.0;
+            }
+        }
+
+        const baseEnv = CONFIG.locations.map.test.environment || null;
+        let dynamicEnv = null;
+
+        if (baseEnv) {
+            dynamicEnv = { current: baseEnv.current, wind: null };
+            if (baseEnv.wind && this.#windState.direction !== 0) {
+                dynamicEnv.wind = {
+                    direction: this.#windState.direction,
+                    baseAngle: baseEnv.wind.baseAngle * this.#windState.rainMult,
+                    gustChancePerSec: baseEnv.wind.gustChancePerSec * this.#windState.rainMult,
+                    gustDurationMs: baseEnv.wind.gustDurationMs
+                };
+            }
         }
 
         const currentHour = new Date().getHours();
@@ -277,7 +310,7 @@ class Game {
         };
 
         if (this.#gameState === 'waiting') {
-            this.#float.update(dynamicBounds, dt); 
+            this.#float.update(dynamicBounds, dt, dynamicEnv); 
             const hookedFish = this.#biteSystem.evaluateBite(dt, envData, playerGear);
             
             if (hookedFish) {
@@ -308,7 +341,7 @@ class Game {
 
         if (this.#gameState === 'biting') {
             this.#float.updateBite(dt);
-            this.#float.update(dynamicBounds, dt);
+            this.#float.update(dynamicBounds, dt, dynamicEnv);
 
             if (!this.#float.isBiting()) {
                 this.#gameState = 'waiting';
@@ -404,7 +437,7 @@ class Game {
             document.dispatchEvent(new CustomEvent('debug-live-update', { detail: debugData }));
         }
 
-        this.#float.update(dynamicBounds, dt);
+        this.#float.update(dynamicBounds, dt, dynamicEnv);
         
         const updatedFloatPos = this.#float.getPosition();
         const updatedFloatScreenPos = this.#projector.virtualToScreen(updatedFloatPos.x, updatedFloatPos.y);

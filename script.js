@@ -698,6 +698,10 @@ class FloatEntity {
     #sinkerHeightScale = 1.0;
     #isOverDepth = false;
 
+    #windAngleOffset = 0;
+    #targetWindAngle = 0;
+    #windTimer = 0;
+
     constructor(x, y, config) {
         this.#position = new Vector2(x, y);
         this.#velocity = new Vector2(0, 0);
@@ -749,7 +753,7 @@ class FloatEntity {
         return this.#currentHookDepth;
     }
 
-    update(boundsRect, dt) {
+    update(boundsRect, dt, environment) {
         if (this.#isSinking) {
             if (this.#sinkingDelayTimer > 0) {
                 this.#sinkingDelayTimer -= dt;
@@ -777,6 +781,50 @@ class FloatEntity {
             }
         }
 
+        if (!this.#isBiting && !this.#isHooked) {
+            if (environment) {
+                if (environment.current) {
+                    const sinkerQual = Math.max(1, Math.min(10, this.#config.sinker.quality || 1));
+                    const currentCompRange = this.#config.sinker.currentCompensation || [0.1, 0.99];
+                    const currentComp = this.#lerp(currentCompRange[0], currentCompRange[1], (sinkerQual - 1) / 9);
+                    
+                    const driftSpeed = environment.current.speedPxPerSec * (1 - currentComp);
+                    this.#position.x += environment.current.direction.x * driftSpeed * (dt / 1000);
+                    this.#position.y += environment.current.direction.y * driftSpeed * (dt / 1000);
+                }
+
+                if (environment.wind) {
+                    if (this.#windTimer > 0) {
+                        this.#windTimer -= dt;
+                        this.#windAngleOffset = this.#lerp(this.#windAngleOffset, this.#targetWindAngle, dt * 0.005);
+                    } else {
+                        this.#windAngleOffset = this.#lerp(this.#windAngleOffset, 0, dt * 0.005);
+                        
+                        if (Math.random() < environment.wind.gustChancePerSec * (dt / 1000)) {
+                            this.#windTimer = this.#getRandom(environment.wind.gustDurationMs);
+                            
+                            const floatQual = Math.max(1, Math.min(10, this.#config.float.quality || 1));
+                            const windCompRange = this.#config.float.windCompensation || [0.1, 0.99];
+                            const windComp = this.#lerp(windCompRange[0], windCompRange[1], (floatQual - 1) / 9);
+                            
+                            const dir = environment.wind.direction;
+                            const baseAngle = environment.wind.baseAngle * dir;
+                            this.#targetWindAngle = (baseAngle + this.#getRandom([-10, 10])) * (1 - windComp);
+                        }
+                    }
+                } else {
+                    this.#windAngleOffset = this.#lerp(this.#windAngleOffset, 0, dt * 0.005);
+                    this.#windTimer = 0;
+                }
+            } else {
+                this.#windAngleOffset = this.#lerp(this.#windAngleOffset, 0, dt * 0.005);
+                this.#windTimer = 0;
+            }
+        } else {
+            this.#windAngleOffset = 0; 
+            this.#windTimer = 0;
+        }
+
         if (!this.#isBiting) {
             this.#position.add(this.#velocity);
             this.#velocity.multiplyScalar(this.#friction);
@@ -791,9 +839,15 @@ class FloatEntity {
     getPosition() { return this.#position; }
 
     getVisualState() {
+        let finalAngle = this.#currentAngle;
+        
+        if (!this.#isBiting && !this.#isSinking && !this.#isHooked) {
+            finalAngle += this.#windAngleOffset;
+        }
+
         return {
             color: this.#currentColor,
-            angle: this.#currentAngle,
+            angle: finalAngle,
             scaleY: this.#currentScaleY * this.#sinkerHeightScale,
             perspectiveScale: this.#perspectiveScale
         };
