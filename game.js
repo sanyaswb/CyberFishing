@@ -17,6 +17,7 @@ class Game {
     #netCatchChance = null;
     #isNetReady = false;
     failReason = null;
+    #gameTimeHours = 0;
     #castManager;
     #biteSystem;
     #isRaining = false;
@@ -48,6 +49,9 @@ class Game {
         const initialY = CONFIG.float.initialY ?? this.#canvas.height / 2;
         this.#float = new FloatEntity(initialX, initialY, CONFIG);
         
+        const now = new Date();
+        this.#gameTimeHours = CONFIG.debug?.initialTime ?? (now.getHours() + (now.getMinutes() / 60));
+
         this.#gameState = 'scouting';
         this.#invalidCastMarker = null;
         
@@ -156,8 +160,14 @@ class Game {
     }
 
     update(dt) {
+        // Спочатку рухаємо ігровий час вперед
+        const timeScale = CONFIG.debug?.timeScale || 1;
+        this.#gameTimeHours += (dt / 1000 / 3600) * timeScale;
+        if (this.#gameTimeHours >= 24) this.#gameTimeHours %= 24;
+
+        // Тепер передаємо АКТУАЛЬНИЙ час усім системам
         this.#projector.update(this.#canvas.width, this.#canvas.height);
-        this.#locationMap.update(dt);
+        this.#locationMap.update(dt, this.#gameTimeHours);
 
         const inputState = this.#inputManager.getState();
 
@@ -266,7 +276,7 @@ class Game {
             }
         }
 
-        const currentHour = new Date().getHours();
+        const currentHour = Math.floor(this.#gameTimeHours);
         let currentPhase = 'day';
         for (const [phase, times] of Object.entries(CONFIG.spawns.timePhases)) {
             if (times.startHour < times.endHour) {

@@ -361,10 +361,13 @@ class LocationMap {
 
     #isValid(x, y) { return x >= 0 && x < this.#cols && y >= 0 && y < this.#rows; }
 
-    update(dt) {
+    update(dt, gameTimeHours = null) {
         if (this.#isDynamicBg) {
-            const now = new Date();
-            const time = now.getHours() + (now.getMinutes() / 60);
+            let time = gameTimeHours;
+            if (time === null) {
+                const now = new Date();
+                time = now.getHours() + (now.getMinutes() / 60);
+            }
 
             let evA = 0, niA = 0;
 
