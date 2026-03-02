@@ -26,7 +26,10 @@ class Game {
     #currentBitingFish = null;
     #currentHookDepth = 1.0;
     #depthUI;
+    #timeUI;
     #windState = { direction: 0, rainMult: 1.0, timer: 0 };
+    #lastHour = -1;
+    #currentPhase = 'day';
 
     constructor(canvasId) {
         this.#canvas = document.getElementById(canvasId);
@@ -41,6 +44,7 @@ class Game {
         this.#projector = new ViewportProjector(CONFIG);
         
         this.#depthUI = new DepthSelectorUI();
+        this.#timeUI = new TimeDisplayUI(); // <--- ДОДАНО ОСЬ ЦЕ
 
         this.#resizeCanvas();
         window.addEventListener('resize', () => this.#resizeCanvas());
@@ -160,12 +164,11 @@ class Game {
     }
 
     update(dt) {
-        // Спочатку рухаємо ігровий час вперед
         const timeScale = CONFIG.debug?.timeScale || 1;
         this.#gameTimeHours += (dt / 1000 / 3600) * timeScale;
         if (this.#gameTimeHours >= 24) this.#gameTimeHours %= 24;
 
-        // Тепер передаємо АКТУАЛЬНИЙ час усім системам
+        this.#timeUI.update(this.#gameTimeHours);
         this.#projector.update(this.#canvas.width, this.#canvas.height);
         this.#locationMap.update(dt, this.#gameTimeHours);
 
@@ -277,12 +280,16 @@ class Game {
         }
 
         const currentHour = Math.floor(this.#gameTimeHours);
-        let currentPhase = 'day';
-        for (const [phase, times] of Object.entries(CONFIG.spawns.timePhases)) {
-            if (times.startHour < times.endHour) {
-                if (currentHour >= times.startHour && currentHour < times.endHour) currentPhase = phase;
-            } else {
-                if (currentHour >= times.startHour || currentHour < times.endHour) currentPhase = phase;
+        
+        // Перераховуємо фазу ТІЛЬКИ якщо змінилася година
+        if (currentHour !== this.#lastHour) {
+            this.#lastHour = currentHour;
+            for (const [phase, times] of Object.entries(CONFIG.spawns.timePhases)) {
+                if (times.startHour < times.endHour) {
+                    if (currentHour >= times.startHour && currentHour < times.endHour) this.#currentPhase = phase;
+                } else {
+                    if (currentHour >= times.startHour || currentHour < times.endHour) this.#currentPhase = phase;
+                }
             }
         }
 
@@ -295,7 +302,7 @@ class Game {
         const envData = {
             hookDepth: this.#float.getCurrentHookDepth(),
             bottomDepth: currentDepth,
-            timePhase: currentPhase,
+            timePhase: this.#currentPhase,
             dayOfWeek: new Date().getDay(),
             zoneMultiplier: 1.0, 
             isRaining: this.#isRaining,

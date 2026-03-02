@@ -123,7 +123,7 @@ const CONFIG = {
             {
                 id: 'crucian_stalker',
                 name: 'Карась-сталкер',
-                baseChance: 0.15, 
+                baseChance: 0.02, 
                 maxHookSize: 6,
 
                 weatherMultipliers: {
@@ -171,7 +171,7 @@ const CONFIG = {
             {
                 id: 'perch_radioactive',
                 name: 'Окунь-радіоактивний',
-                baseChance: 0.20, 
+                baseChance: 0.05, 
                 maxHookSize: 9,
 
                 weatherMultipliers: {
@@ -222,7 +222,7 @@ const CONFIG = {
     debug: {
         overlay: true,
         initialTime: 17.5, // Початковий час. 17.5 = 17:30. Якщо поставити null, гра візьме реальний час.
-        timeScale: 60,     // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
+        timeScale: 240,     // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
     },
 
     logs: {
@@ -252,8 +252,8 @@ const CONFIG = {
             maxSequences: [1, 5],
             sequenceIntervalMs: [1555, 5333],
             
-            chanceGuaranteed: 0.40,
-            chanceNormal: 0.60,
+            chanceGuaranteed: 0.30,
+            chanceNormal: 0.70,
             normalIters: [1, 10],
             guaranteedIters: [1, 3],
             intervalMs: [300, 800],
