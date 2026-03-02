@@ -31,11 +31,11 @@ const CONFIG = {
     },
 
     locations: {
-        debugVisuals: false,       // Головний вимикач (якщо false - взагалі нічого не малюється)
+        debugVisuals: false,      // Головний вимикач (якщо false - взагалі нічого не малюється)
         debugZones: true,         // Показувати кольорові квадрати (зелені, червоні)
         debugGrid: true,          // Показувати лінії сітки
         debugDepthText: true,     // Показувати цифри глибини
-        debugOpacity: 0.8,
+        debugOpacity: 1.0,
         baseResolution: { width: 2560, height: 2560 },
         designCellSize: 64,
         cellSize: 32,
@@ -51,26 +51,28 @@ const CONFIG = {
                 depthUrl: 'depth.jpg',
                 // x: 'left', 'center', 'right'
                 // y: 'top', 'center', 'bottom', 'safeZone'
-                initialAlignment: { x: 'center', y: 'center' }, 
-                safeZone: { top: 0, bottom: 2560 }, 
+                initialAlignment: { x: 'center', y: 'center' },
+                safeZone: { top: 0, bottom: 2560 },
                 depthBounds: { min: 1.5, max: 15.0 },
 
                 weather: {
-                    updateIntervalMs: 10000, 
+                    updateIntervalMs: 10000,
                     chances: {
-                        rain: 0.10, 
-                        fog: 0.0  
+                        rain: 0.10,
+                        fog: 0.0
                     }
                 },
 
                 environment: {
-                    current: { 
-                        speedPxPerSec: 15, // Сила течії 
+                    current: {
+                        speedPxPerSec: 5, // Сила течії 
                         direction: { x: 1, y: 0.1 } // Вектор (зносить вправо і трохи вниз)
                     },
                     wind: { 
                         changesPerDay: [4, 12], 
-                        baseAngle: 25, 
+                        breezeAngleRange: [10, 15],
+                        gustAngleRange: [15, 40],
+                        gustFluctuationMs: [200, 500],
                         gustChancePerSec: 0.4, 
                         gustDurationMs: [1000, 2500],
                         rainMultiplier: [1.5, 2.5] 
@@ -241,7 +243,7 @@ const CONFIG = {
         length: 15,
         type: 'day',
         level: 1,
-        quality: 1.0,
+        quality: 10.0,
         overDepthPenaltyMult: 0.5,
 
         sinkingDelayMs: 500,
@@ -285,8 +287,8 @@ const CONFIG = {
     
     sinker: {
         level: 1,
-        quality: 1.0,
-        maxDepth: 8.0,
+        quality: 10.0,
+        maxDepth: 9.0,
         weight: 'light', 
         weights: {
             light: { speedMult: 1.0, heightScale: 1.0 },

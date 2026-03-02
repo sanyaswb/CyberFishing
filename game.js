@@ -270,10 +270,13 @@ class Game {
         if (baseEnv) {
             dynamicEnv = { current: baseEnv.current, wind: null };
             if (baseEnv.wind && this.#windState.direction !== 0) {
+                const mult = this.#windState.rainMult;
                 dynamicEnv.wind = {
                     direction: this.#windState.direction,
-                    baseAngle: baseEnv.wind.baseAngle * this.#windState.rainMult,
-                    gustChancePerSec: baseEnv.wind.gustChancePerSec * this.#windState.rainMult,
+                    breezeAngleRange: [baseEnv.wind.breezeAngleRange[0] * mult, baseEnv.wind.breezeAngleRange[1] * mult],
+                    gustAngleRange: [baseEnv.wind.gustAngleRange[0] * mult, baseEnv.wind.gustAngleRange[1] * mult],
+                    gustFluctuationMs: baseEnv.wind.gustFluctuationMs,
+                    gustChancePerSec: baseEnv.wind.gustChancePerSec * mult,
                     gustDurationMs: baseEnv.wind.gustDurationMs
                 };
             }

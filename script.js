@@ -701,6 +701,7 @@ class FloatEntity {
     #windAngleOffset = 0;
     #targetWindAngle = 0;
     #windTimer = 0;
+    #windFluctuationTimer = 0;
 
     constructor(x, y, config) {
         this.#position = new Vector2(x, y);
@@ -781,7 +782,7 @@ class FloatEntity {
             }
         }
 
-        if (!this.#isBiting && !this.#isHooked) {
+        if (!this.#isHooked) {
             if (environment) {
                 if (environment.current) {
                     const sinkerQual = Math.max(1, Math.min(10, this.#config.sinker.quality || 1));
@@ -793,37 +794,58 @@ class FloatEntity {
                     this.#position.y += environment.current.direction.y * driftSpeed * (dt / 1000);
                 }
 
-                if (environment.wind) {
+                const isFishActivelyPulling = this.#isBiting && (Math.abs(this.#currentAngle) > 0.5 || Math.abs(this.#currentScaleY - 1.0) > 0.02);
+
+                // ДОДАНО: !this.#isSinking, щоб вітер не дув на поплавок, поки той ще опускається
+                if (environment.wind && !isFishActivelyPulling && !this.#isSinking) {
+                    const dir = environment.wind.direction;
+                    const floatQual = Math.max(1, Math.min(10, this.#config.float.quality || 1));
+                    const windCompRange = this.#config.float.windCompensation || [0.1, 0.99];
+                    const windComp = this.#lerp(windCompRange[0], windCompRange[1], (floatQual - 1) / 9);
+
+                    this.#windFluctuationTimer -= dt;
+
                     if (this.#windTimer > 0) {
                         this.#windTimer -= dt;
-                        this.#windAngleOffset = this.#lerp(this.#windAngleOffset, this.#targetWindAngle, dt * 0.005);
-                    } else {
-                        this.#windAngleOffset = this.#lerp(this.#windAngleOffset, 0, dt * 0.005);
                         
+                        // Під час пориву вітру - швидкі та сильні хитання
+                        if (this.#windFluctuationTimer <= 0) {
+                            const gustAngle = this.#getRandom(environment.wind.gustAngleRange) * dir;
+                            this.#targetWindAngle = gustAngle * (1 - windComp);
+                            this.#windFluctuationTimer = this.#getRandom(environment.wind.gustFluctuationMs);
+                        }
+                    } else {
+                        // Спокійний вітер - плавні та легкі хитання
+                        if (this.#windFluctuationTimer <= 0) {
+                            const breezeAngle = this.#getRandom(environment.wind.breezeAngleRange) * dir;
+                            this.#targetWindAngle = breezeAngle * (1 - windComp);
+                            this.#windFluctuationTimer = this.#getRandom(environment.wind.gustFluctuationMs) * 3;
+                        }
+
+                        // Шанс на новий порив
                         if (Math.random() < environment.wind.gustChancePerSec * (dt / 1000)) {
                             this.#windTimer = this.#getRandom(environment.wind.gustDurationMs);
-                            
-                            const floatQual = Math.max(1, Math.min(10, this.#config.float.quality || 1));
-                            const windCompRange = this.#config.float.windCompensation || [0.1, 0.99];
-                            const windComp = this.#lerp(windCompRange[0], windCompRange[1], (floatQual - 1) / 9);
-                            
-                            const dir = environment.wind.direction;
-                            const baseAngle = environment.wind.baseAngle * dir;
-                            this.#targetWindAngle = (baseAngle + this.#getRandom([-10, 10])) * (1 - windComp);
+                            this.#windFluctuationTimer = 0; 
                         }
                     }
                 } else {
-                    this.#windAngleOffset = this.#lerp(this.#windAngleOffset, 0, dt * 0.005);
+                    this.#targetWindAngle = 0;
                     this.#windTimer = 0;
+                    this.#windFluctuationTimer = 0;
                 }
             } else {
-                this.#windAngleOffset = this.#lerp(this.#windAngleOffset, 0, dt * 0.005);
+                this.#targetWindAngle = 0;
                 this.#windTimer = 0;
+                this.#windFluctuationTimer = 0;
             }
         } else {
-            this.#windAngleOffset = 0; 
+            this.#targetWindAngle = 0;
             this.#windTimer = 0;
+            this.#windFluctuationTimer = 0;
         }
+
+        // Згладжування кута завжди працює тут
+        this.#windAngleOffset = this.#lerp(this.#windAngleOffset, this.#targetWindAngle, dt * 0.005);
 
         if (!this.#isBiting) {
             this.#position.add(this.#velocity);
@@ -841,7 +863,7 @@ class FloatEntity {
     getVisualState() {
         let finalAngle = this.#currentAngle;
         
-        if (!this.#isBiting && !this.#isSinking && !this.#isHooked) {
+        if (!this.#isSinking && !this.#isHooked) {
             finalAngle += this.#windAngleOffset;
         }
 
