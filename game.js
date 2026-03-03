@@ -210,11 +210,17 @@ class Game {
         }
         
         if (this.#gameState === 'scouting') {
+            const maxDepth = CONFIG.sinker.maxDepth || 8.0;
+            
             if (!this.#depthUI.isActive) {
-                const maxDepth = CONFIG.sinker.maxDepth || 8.0;
                 this.#depthUI.show(maxDepth, this.#currentHookDepth, (newDepth) => {
                     this.#currentHookDepth = newDepth;
                 });
+            } else {
+                // ДОДАНО: Динамічно оновлюємо макс. глибину, якщо вона змінилась у SettingsUI
+                if (typeof this.#depthUI.updateMax === 'function') {
+                    this.#depthUI.updateMax(maxDepth);
+                }
             }
 
             if (inputState.panDeltaX !== 0) {

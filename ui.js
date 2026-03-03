@@ -209,12 +209,14 @@ class UIManager {
     onNetClick;
     #continueBtn;
     onContinueClick;
+    #settingsUI;
 
     constructor(config) {
         this.#config = config;
         this.#initFullscreenBtn();
         this.#initNetBtn();
         this.#initContinueBtn();
+        this.#settingsUI = new SettingsUI(config);
     }
 
     #initFullscreenBtn() {
@@ -381,9 +383,7 @@ class UIManager {
     }
 }
 
-// ==========================================
 // БЛОК ІНТЕРФЕЙСУ ВИБОРУ ГЛИБИНИ
-// ==========================================
 class DepthSelectorUI {
     constructor() {
         this.container = document.createElement('div');
@@ -508,15 +508,31 @@ class DepthSelectorUI {
         requestAnimationFrame(() => this.#updateInputPosition());
     }
 
+    updateMax(maxDepth) {
+        if (!this.isActive || parseFloat(this.slider.max) === maxDepth) return;
+        
+        this.slider.max = maxDepth;
+        this.maxLabel.innerText = maxDepth.toFixed(1);
+        
+        // Якщо поточна глибина стала більшою за новий ліміт - обрізаємо її
+        let val = parseFloat(this.input.value);
+        if (val > maxDepth) {
+            val = maxDepth;
+            this.input.value = val.toFixed(2);
+            this.slider.value = val;
+            if (this.onChange) this.onChange(val);
+        }
+        
+        requestAnimationFrame(() => this.#updateInputPosition());
+    }
+
     hide() {
         this.isActive = false;
         this.mainContainer.style.display = 'none';
     }
 }
 
-// ==========================================
 // БЛОК ІНТЕРФЕЙСУ ІГРОВОГО ЧАСУ
-// ==========================================
 class TimeDisplayUI {
     constructor() {
         this.container = document.createElement('div');
@@ -567,5 +583,227 @@ class TimeDisplayUI {
             this.timeSpan.innerText = timeStr;
             this.emojiSpan.innerText = emoji;
         }
+    }
+}
+
+// БЛОК ІНТЕРФЕЙСУ НАЛАШТУВАНЬ (ДЕБАГ)
+class SettingsUI {
+    #config;
+    #btn;
+    #modal;
+    #content;
+    #isOpen = false;
+    
+    // Поля, які ми не хочемо виводити в меню налаштувань (шляхи, складні масиви)
+    #excludeKeys = ['id', 'name', 'bgUrls', 'depthUrl', 'endpoint', 'backgroundColor', 'fishes', 'colorGradient', 'statuses', 'chances', 'zones', 'timePhases'];
+
+    constructor(config) {
+        this.#config = config;
+        this.#initStyles();
+        this.#initBtn();
+        this.#initModal();
+    }
+
+    #initStyles() {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .settings-modal {
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center;
+                z-index: 10000; font-family: monospace; color: #fff;
+            }
+            .settings-content {
+                background: #111a22; border: 2px solid #00ccff; border-radius: 8px;
+                width: 90%; max-width: 600px; max-height: 85vh; display: flex; flex-direction: column;
+                box-shadow: 0 0 20px rgba(0, 204, 255, 0.3);
+            }
+            .settings-header {
+                padding: 15px; border-bottom: 1px solid #00ccff; display: flex; justify-content: space-between;
+                align-items: center; background: #0b1520; border-radius: 8px 8px 0 0;
+            }
+            .settings-header h2 { margin: 0; font-size: 20px; color: #00ff80; }
+            .settings-close {
+                background: none; border: none; color: #ff4444; font-size: 24px; cursor: pointer; font-weight: bold;
+            }
+            .settings-body {
+                padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+            }
+            .settings-body::-webkit-scrollbar { width: 8px; }
+            .settings-body::-webkit-scrollbar-track { background: #0b1520; }
+            .settings-body::-webkit-scrollbar-thumb { background: #00ccff; border-radius: 4px; }
+            
+            .settings-section { margin-top: 10px; border-left: 2px solid #00ccff; padding-left: 10px; }
+            .settings-section-title { font-size: 16px; color: #00ccff; margin-bottom: 10px; text-transform: uppercase; }
+            
+            .settings-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 4px 0; border-bottom: 1px dashed #2a3b4c; }
+            .settings-label { font-size: 14px; color: #ccc; }
+            
+            .settings-input-num {
+                background: #0b1520; border: 1px solid #4a5b6c; color: #fff; padding: 4px 8px;
+                border-radius: 4px; width: 80px; text-align: right; font-family: monospace;
+            }
+            .settings-input-text {
+                background: #0b1520; border: 1px solid #4a5b6c; color: #fff; padding: 4px 8px;
+                border-radius: 4px; width: 120px; text-align: right; font-family: monospace;
+            }
+            
+            /* Світчер для boolean */
+            .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+            .switch input { opacity: 0; width: 0; height: 0; }
+            .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #4a5b6c; transition: .2s; border-radius: 20px; }
+            .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .2s; border-radius: 50%; }
+            input:checked + .slider { background-color: #00ff80; }
+            input:checked + .slider:before { transform: translateX(20px); }
+        `;
+        document.head.appendChild(style);
+    }
+
+    #initBtn() {
+        this.#btn = document.createElement('button');
+        this.#btn.innerHTML = '⚙️';
+        
+        Object.assign(this.#btn.style, {
+            position: 'absolute', 
+            top: '15px', 
+            left: '160px', 
+            fontSize: '32px', // Зробили трохи більшою, бо немає рамки
+            background: 'transparent', // Прозорий фон
+            border: 'none', // Без обводки
+            padding: '0',
+            cursor: 'pointer', 
+            zIndex: '9998',
+            filter: 'drop-shadow(0px 2px 5px rgba(0,0,0,0.8))', // Тінь, щоб не губилася на складному фоні
+            transition: 'transform 0.1s ease'
+        });
+
+        UIUtils.makeSolid(this.#btn);
+        
+        // Робимо кнопку перетягуваною, клік відкриває меню
+        new UIDraggableButton(this.#btn, () => this.toggle(), this.#config, { noTransform: true });
+        document.body.appendChild(this.#btn);
+    }
+
+    #initModal() {
+        this.#modal = document.createElement('div');
+        this.#modal.className = 'settings-modal';
+        
+        this.#modal.innerHTML = `
+            <div class="settings-content">
+                <div class="settings-header">
+                    <h2>⚙️ БАЛАНС ТА КОНФІГ</h2>
+                    <button class="settings-close">×</button>
+                </div>
+                <div class="settings-body" id="settings-body"></div>
+            </div>
+        `;
+        
+        document.body.appendChild(this.#modal);
+        UIUtils.makeSolid(this.#modal.querySelector('.settings-content')); // Щоб кліки не йшли в гру
+        
+        this.#modal.querySelector('.settings-close').addEventListener('click', () => this.toggle());
+        
+        // Закриття по кліку на темний фон
+        this.#modal.addEventListener('pointerdown', (e) => {
+            if (e.target === this.#modal) this.toggle();
+        });
+    }
+
+    toggle() {
+        this.#isOpen = !this.#isOpen;
+        this.#modal.style.display = this.#isOpen ? 'flex' : 'none';
+        
+        if (this.#isOpen) {
+            const body = this.#modal.querySelector('#settings-body');
+            body.innerHTML = ''; // Очищаємо перед генерацією
+            this.#buildTree(this.#config, body, []);
+        }
+    }
+
+    // Рекурсивна генерація форми
+    #buildTree(obj, parentElement, path) {
+        for (const key in obj) {
+            if (this.#excludeKeys.includes(key)) continue;
+            
+            const val = obj[key];
+            const currentPath = [...path, key];
+
+            // Якщо це масив з чисел (наприклад [1.5, 2.5] для вітру)
+            if (Array.isArray(val) && typeof val[0] === 'number') {
+                this.#createInputRow(key, val.join(', '), parentElement, currentPath, 'array');
+            } 
+            // Якщо це об'єкт - створюємо нову секцію і заглиблюємось
+            else if (val !== null && typeof val === 'object' && !Array.isArray(val)) {
+                const section = document.createElement('div');
+                section.className = 'settings-section';
+                section.innerHTML = `<div class="settings-section-title">${key}</div>`;
+                parentElement.appendChild(section);
+                this.#buildTree(val, section, currentPath);
+            } 
+            // Прості значення (числа, булеві, строки)
+            else if (typeof val === 'number' || typeof val === 'boolean' || typeof val === 'string') {
+                this.#createInputRow(key, val, parentElement, currentPath, typeof val);
+            }
+        }
+    }
+
+    #createInputRow(key, val, parentElement, path, type) {
+        const row = document.createElement('div');
+        row.className = 'settings-row';
+        
+        const label = document.createElement('div');
+        label.className = 'settings-label';
+        label.innerText = key;
+        row.appendChild(label);
+
+        let inputElement;
+
+        if (type === 'boolean') {
+            inputElement = document.createElement('label');
+            inputElement.className = 'switch';
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.checked = val;
+            const slider = document.createElement('span');
+            slider.className = 'slider';
+            inputElement.appendChild(cb);
+            inputElement.appendChild(slider);
+            
+            cb.addEventListener('change', (e) => this.#updateConfigValue(path, e.target.checked));
+        } else if (type === 'number') {
+            inputElement = document.createElement('input');
+            inputElement.type = 'number';
+            inputElement.step = 'any'; // Дозволяє дроби
+            inputElement.className = 'settings-input-num';
+            inputElement.value = val;
+            
+            inputElement.addEventListener('change', (e) => this.#updateConfigValue(path, parseFloat(e.target.value) || 0));
+        } else {
+            inputElement = document.createElement('input');
+            inputElement.type = 'text';
+            inputElement.className = 'settings-input-text';
+            inputElement.value = val;
+            
+            inputElement.addEventListener('change', (e) => {
+                let newVal = e.target.value;
+                if (type === 'array') {
+                    // Перетворюємо строку "1.5, 2.5" назад у масив чисел [1.5, 2.5]
+                    newVal = newVal.split(',').map(n => parseFloat(n.trim()) || 0);
+                }
+                this.#updateConfigValue(path, newVal);
+            });
+        }
+
+        row.appendChild(inputElement);
+        parentElement.appendChild(row);
+    }
+
+    #updateConfigValue(path, newValue) {
+        // Проходимо по дереву CONFIG і міняємо значення за вказаним шляхом
+        let target = this.#config;
+        for (let i = 0; i < path.length - 1; i++) {
+            target = target[path[i]];
+        }
+        target[path[path.length - 1]] = newValue;
+        console.log(`Updated CONFIG.${path.join('.')} =`, newValue);
     }
 }

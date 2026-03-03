@@ -35,10 +35,15 @@ const CONFIG = {
         debugZones: true,         // Показувати кольорові квадрати (зелені, червоні)
         debugGrid: true,          // Показувати лінії сітки
         debugDepthText: true,     // Показувати цифри глибини
+        enableCastable: true,
+        enableCollisions: true,
+        enableSnags: true,
+
         debugOpacity: 1.0,
         baseResolution: { width: 2560, height: 2560 },
         designCellSize: 64,
         cellSize: 32,
+
         map: {
             test: {
                 id: 'test',

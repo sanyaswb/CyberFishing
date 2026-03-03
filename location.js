@@ -92,6 +92,8 @@ class LocationMap {
     #depthImage; 
     #debugCanvas; // Прихований шар для оптимізації дебагу
     #bgLoaded = false;
+    #lastDebugState = '';
+    #lastProjector = null;
 
     constructor(locationId, config) {
         this.#globalConfig = config;
@@ -161,31 +163,32 @@ class LocationMap {
 
     // НОВИЙ МЕТОД: Створює єдину статичну картинку сітки та глибин
     #generateStaticDebugMap(cellSize, imgWidth, imgHeight) {
-        this.#debugCanvas = document.createElement('canvas');
-        this.#debugCanvas.width = imgWidth;
-        this.#debugCanvas.height = imgHeight;
+        if (!this.#debugCanvas) {
+            this.#debugCanvas = document.createElement('canvas');
+            this.#debugCanvas.width = imgWidth;
+            this.#debugCanvas.height = imgHeight;
+        }
+        
         const ctx = this.#debugCanvas.getContext('2d', { alpha: true });
+        ctx.clearRect(0, 0, imgWidth, imgHeight); 
 
         const locCfg = this.#globalConfig.locations;
+        
+        const drawZones = (zones, color) => {
+            if (!zones) return;
+            ctx.fillStyle = color;
+            for (const z of zones) {
+                const w = z.adaptiveX ? imgWidth : (z.w * cellSize);
+                const startX = z.adaptiveX ? 0 : (z.x * cellSize);
+                ctx.fillRect(startX, z.y * cellSize, w, z.h * cellSize);
+            }
+        };
 
-        // 1. Малюємо кольорові зони (якщо увімкнено)
-        if (locCfg.debugZones) {
-            const drawZones = (zones, color) => {
-                if (!zones) return;
-                ctx.fillStyle = color;
-                for (const z of zones) {
-                    const w = z.adaptiveX ? imgWidth : (z.w * cellSize);
-                    const startX = z.adaptiveX ? 0 : (z.x * cellSize);
-                    ctx.fillRect(startX, z.y * cellSize, w, z.h * cellSize);
-                }
-            };
+        // ВІЗУАЛ: Малюємо тільки те, що увімкнено
+        if (locCfg.enableCastable !== false) drawZones(this.#config.zones.castable, 'rgba(0, 255, 0, 0.15)');
+        if (locCfg.enableSnags !== false) drawZones(this.#config.zones.snags, 'rgba(255, 255, 0, 0.3)');
+        if (locCfg.enableCollisions !== false) drawZones(this.#config.zones.collisions, 'rgba(255, 0, 0, 0.4)');
 
-            drawZones(this.#config.zones.castable, 'rgba(0, 255, 0, 0.15)');
-            drawZones(this.#config.zones.snags, 'rgba(255, 255, 0, 0.3)');
-            drawZones(this.#config.zones.collisions, 'rgba(255, 0, 0, 0.4)');
-        }
-
-        // 2. Малюємо сітку та цифри
         ctx.font = '10px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -196,20 +199,16 @@ class LocationMap {
                 const x = cell.x * cellSize;
                 const y = cell.y * cellSize;
 
-                // Малюємо рамку (якщо увімкнено)
                 if (locCfg.debugGrid) {
                     ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
                     ctx.strokeRect(x, y, cellSize, cellSize);
                 }
-
-                // Малюємо цифри глибини (якщо увімкнено)
                 if (locCfg.debugDepthText && cell.depth > 0) {
                     ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
                     ctx.fillText(cell.depth.toFixed(1), x + cellSize / 2, y + cellSize / 2);
                 }
             }
         }
-        console.log(`%c[Оптимізація] Статична дебаг-карта успішно згенерована!`, 'color: #00ccff; font-weight: bold;');
     }
 
     getCastableBoundsVirtual(cellSize) {
@@ -301,6 +300,9 @@ class LocationMap {
     }
 
     recalculateZones(projector, cellSize) {
+        if (projector) this.#lastProjector = projector;
+        const proj = projector || this.#lastProjector;
+
         for (let i = 0; i < this.#cols; i++) {
             for (let j = 0; j < this.#rows; j++) {
                 this.#grid[i][j].isCastable = false;
@@ -312,38 +314,47 @@ class LocationMap {
         let visibleStartCol = 0;
         let visibleEndCol = this.#cols;
 
-        if (projector) {
-            const vLeft = projector.screenToVirtual(0, 0).x;
-            const vRight = projector.screenToVirtual(projector.getCanvasWidth(), 0).x;
+        if (proj) {
+            const vLeft = proj.screenToVirtual(0, 0).x;
+            const vRight = proj.screenToVirtual(proj.getCanvasWidth(), 0).x;
             visibleStartCol = Math.max(0, Math.floor(vLeft / cellSize));
             visibleEndCol = Math.min(this.#cols, Math.ceil(vRight / cellSize));
         }
 
-        for (const z of this.#config.zones.castable) {
-            let startX = z.adaptiveX ? visibleStartCol : z.x;
-            let width = z.adaptiveX ? (visibleEndCol - visibleStartCol) : z.w;
-            for (let i = startX; i < startX + width; i++) {
-                for (let j = z.y; j < z.y + z.h; j++) {
-                    if (this.#isValid(i, j)) this.#grid[i][j].isCastable = true;
-                }
-            }
-        }
+        const locCfg = this.#globalConfig.locations;
 
-        for (const z of this.#config.zones.collisions) {
-            for (let i = z.x; i < z.x + z.w; i++) {
-                for (let j = z.y; j < z.y + z.h; j++) {
-                    if (this.#isValid(i, j)) {
-                        this.#grid[i][j].hasCollision = true;
-                        this.#grid[i][j].isCastable = false; 
+        // ЛОГІКА: Фізика зон вмикається і вимикається синхронно з візуалом
+        if (locCfg.enableCastable !== false) {
+            for (const z of this.#config.zones.castable) {
+                let startX = z.adaptiveX ? visibleStartCol : z.x;
+                let width = z.adaptiveX ? (visibleEndCol - visibleStartCol) : z.w;
+                for (let i = startX; i < startX + width; i++) {
+                    for (let j = z.y; j < z.y + z.h; j++) {
+                        if (this.#isValid(i, j)) this.#grid[i][j].isCastable = true;
                     }
                 }
             }
         }
 
-        for (const z of this.#config.zones.snags) {
-            for (let i = z.x; i < z.x + z.w; i++) {
-                for (let j = z.y; j < z.y + z.h; j++) {
-                    if (this.#isValid(i, j)) this.#grid[i][j].hasSnag = true;
+        if (locCfg.enableCollisions !== false) {
+            for (const z of this.#config.zones.collisions) {
+                for (let i = z.x; i < z.x + z.w; i++) {
+                    for (let j = z.y; j < z.y + z.h; j++) {
+                        if (this.#isValid(i, j)) {
+                            this.#grid[i][j].hasCollision = true;
+                            this.#grid[i][j].isCastable = false; 
+                        }
+                    }
+                }
+            }
+        }
+
+        if (locCfg.enableSnags !== false) {
+            for (const z of this.#config.zones.snags) {
+                for (let i = z.x; i < z.x + z.w; i++) {
+                    for (let j = z.y; j < z.y + z.h; j++) {
+                        if (this.#isValid(i, j)) this.#grid[i][j].hasSnag = true;
+                    }
                 }
             }
         }
@@ -362,6 +373,20 @@ class LocationMap {
     #isValid(x, y) { return x >= 0 && x < this.#cols && y >= 0 && y < this.#rows; }
 
     update(dt, gameTimeHours = null) {
+        const locCfg = this.#globalConfig.locations;
+        // Кеш стану тепер включає і наші нові перемикачі зон
+        const currentDebugState = `${locCfg.debugGrid}_${locCfg.debugDepthText}_${locCfg.enableCastable}_${locCfg.enableCollisions}_${locCfg.enableSnags}`;
+        
+        if (this.#lastDebugState !== currentDebugState && this.#debugCanvas) {
+            this.#lastDebugState = currentDebugState;
+            const baseRes = locCfg.baseResolution;
+            this.#generateStaticDebugMap(locCfg.cellSize, baseRes.width, baseRes.height);
+            
+            // Якщо щось клацнули - одразу перераховуємо фізику (щоб туди можна було закинути)
+            this.recalculateZones(null, locCfg.cellSize);
+        }
+        
+        // ... (Тут залишається твій старий код для isDynamicBg та dynamicZones)
         if (this.#isDynamicBg) {
             let time = gameTimeHours;
             if (time === null) {
