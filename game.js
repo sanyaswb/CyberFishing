@@ -30,6 +30,10 @@ class Game {
     #windState = { direction: 0, rainMult: 1.0, timer: 0 };
     #lastHour = -1;
     #currentPhase = 'day';
+    #castStartTime = 0;
+    #castDistanceRatio = 0;
+    #lastGameState = null;
+    #playStartTime = 0;
 
     constructor(canvasId) {
         this.#canvas = document.getElementById(canvasId);
@@ -97,6 +101,9 @@ class Game {
         this.#gameState = 'waiting';
         this.#biteSystem.reset();
         this.failReason = null;
+
+        this.#castStartTime = performance.now();
+        this.#castDistanceRatio = distanceRatio;
     }
 
     #hookFish(hookedFish) {
@@ -585,8 +592,54 @@ class Game {
             
             this.#renderer.drawCatchZone(this.#locationMap, this.#projector, CONFIG);
             
+            // --- РОЗРАХУНОК ДИНАМІЧНОЇ ДОВЖИНИ ТА ЗАНУРЕННЯ ЛІСКИ ---
+            let lineLengthRatio = 1.0;
+            let lineDropOffset = 0; // На скільки пікселів ліска йде на дно
+
+            if (this.#gameState === 'waiting' || this.#gameState === 'biting') {
+                const targetDepth = this.#currentHookDepth || 1.0;
+                const sinkRate = CONFIG.sinker?.sinkRate || 1.0; 
+                const durationMs = (targetDepth / sinkRate) * 1000;
+                
+                const elapsed = performance.now() - this.#castStartTime;
+                let progress = durationMs > 0 ? Math.min(1, elapsed / durationMs) : 1;
+                
+                const easePower = CONFIG.ui?.line?.shrinkEasePower ?? 3;
+                let easeOutProgress = progress; 
+                if (easePower > 1) {
+                    easeOutProgress = 1 - Math.pow(1 - progress, easePower);
+                }
+                
+                const targetPercent = (CONFIG.ui?.line?.shrinkPercent ?? 60) / 100;
+                lineLengthRatio = 1.0 - (easeOutProgress * (1.0 - targetPercent));
+                
+                // Опускаємо кінчик ліски вниз по мірі занурення грузила
+                lineDropOffset = easeOutProgress * (CONFIG.ui?.line?.sinkDropPx ?? 40);
+
+            } else if (this.#gameState === 'playing') {
+                if (this.#lastGameState !== 'playing') {
+                    this.#playStartTime = performance.now();
+                }
+                
+                const elapsed = performance.now() - this.#playStartTime;
+                const snapDuration = CONFIG.ui?.line?.snapDurationMs ?? 500;
+                let progress = snapDuration > 0 ? Math.min(1, elapsed / snapDuration) : 1;
+                
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                const targetPercent = (CONFIG.ui?.line?.shrinkPercent ?? 60) / 100;
+                
+                lineLengthRatio = targetPercent + (easeProgress * (1.0 - targetPercent));
+                
+                const maxDrop = CONFIG.ui?.line?.sinkDropPx ?? 40;
+                lineDropOffset = maxDrop * (1 - easeProgress);
+            }
+
+            // Зберігаємо поточний стан для наступного кадру
+            this.#lastGameState = this.#gameState;
+
+            // Передаємо нові дані у рендерер (додав параметр lineDropOffset)
             const currentTension = this.#tensionMeter ? this.#tensionMeter.getTension() : 0;
-            this.#renderer.drawRodLine(sPos, this.#gameState, currentTension, CONFIG);
+            this.#renderer.drawRodLine(sPos, this.#gameState, currentTension, lineLengthRatio, lineDropOffset, CONFIG);
             
             this.#renderer.drawFloat(sPos, this.#float, CONFIG);
             

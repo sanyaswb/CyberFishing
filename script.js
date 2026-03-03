@@ -1656,7 +1656,7 @@ class Renderer {
         this.#ctx.restore();
     }
 
-    drawRodLine(floatPos, gameState, tension, config) {
+    drawRodLine(floatPos, gameState, tension, lineLengthRatio, lineDropOffset, config) { 
         // 1. Відмальовуємо саму вудку
         const rodWidth = 3;
         const rodHeight = 200;
@@ -1668,17 +1668,16 @@ class Renderer {
         this.#ctx.fillStyle = '#000000';
         this.#ctx.fillRect(rodBaseX - (rodWidth / 2), rodTopY, rodWidth, rodHeight);
 
-        // Якщо ліска вимкнена в конфігу - закінчуємо малювати
         if (config.ui?.line?.visible === false) return;
 
-        // 2. Логіка скорочення ліски (ефект занурення)
-        let targetX = floatPos.x;
-        let targetY = floatPos.y;
-
-        if (gameState === 'waiting' || gameState === 'biting') {
-            targetX = rodBaseX + (floatPos.x - rodBaseX) * 0.6;
-            targetY = rodTopY + (floatPos.y - rodTopY) * 0.6;
-        }
+        // 2. Динамічне занурення ліски (довжина + глибина тонення)
+        // Рахуємо так завжди, бо якщо lineLengthRatio = 1 і lineDropOffset = 0, 
+        // то targetX/Y будуть ідеально дорівнювати floatPos.x/y
+        let targetX = rodBaseX + (floatPos.x - rodBaseX) * lineLengthRatio;
+        let targetY = rodTopY + (floatPos.y - rodTopY) * lineLengthRatio;
+        
+        // Магія тонення: тягнемо візуальний кінчик ліски на дно
+        targetY += lineDropOffset;
 
         // 3. Динамічний колір та товщина від натягу
         let lineColor = config.ui?.line?.color || 'rgba(255, 255, 255, 0.3)';
@@ -1697,7 +1696,7 @@ class Renderer {
             }
         }
 
-        // 4. Малюємо саму ліску (Плавне натягування)
+        // 4. Малюємо саму ліску з плавним провисанням
         this.#ctx.save();
         this.#ctx.beginPath();
         this.#ctx.moveTo(rodBaseX, rodTopY); 
@@ -1705,24 +1704,17 @@ class Renderer {
         const straightenThreshold = config.ui?.line?.straightenTension || 50;
         const sagOffset = config.ui?.line?.sagOffset || 60;
         
-        // Розраховуємо коефіцієнт натяжки: 0 = повністю провисла, 1 = ідеально рівна
         let straightFactor = 0;
         if (gameState === 'playing') {
             straightFactor = Math.min(1, Math.max(0, tension / straightenThreshold));
         }
 
-        // X контрольної точки завжди по центру між вудкою і поплавком
         const cpX = (rodBaseX + targetX) / 2;
-        
-        // Y для ідеально рівної лінії
         const straightCpY = (rodTopY + targetY) / 2;
-        // Y для повністю провислої лінії
         const slackCpY = Math.max(rodTopY, targetY) + sagOffset;
 
-        // Плавно змішуємо ці дві точки залежно від того, наскільки гравець тягне
         const currentCpY = slackCpY + (straightCpY - slackCpY) * straightFactor;
 
-        // Малюємо. Коли straightFactor стане 1, крива перетвориться на пряму лінію
         this.#ctx.quadraticCurveTo(cpX, currentCpY, targetX, targetY);
 
         this.#ctx.strokeStyle = lineColor;
