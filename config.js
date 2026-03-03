@@ -26,7 +26,9 @@ const CONFIG = {
         line: {
             visible: true,
             color: 'rgba(255, 255, 255, 0.3)',
-            width: 1
+            width: 1,
+            straightenTension: 50, // Відсоток натягу (0-100), при якому ліска стає ідеально рівною
+            sagOffset: 60          // Наскільки сильно провисає ліска у пікселях
         }
     },
 

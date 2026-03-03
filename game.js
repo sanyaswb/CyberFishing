@@ -584,7 +584,10 @@ class Game {
             const sPos = this.#projector.virtualToScreen(vPos.x, vPos.y);
             
             this.#renderer.drawCatchZone(this.#locationMap, this.#projector, CONFIG);
-            this.#renderer.drawRodLine(sPos, CONFIG);
+            
+            const currentTension = this.#tensionMeter ? this.#tensionMeter.getTension() : 0;
+            this.#renderer.drawRodLine(sPos, this.#gameState, currentTension, CONFIG);
+            
             this.#renderer.drawFloat(sPos, this.#float, CONFIG);
             
             if (this.#gameState === 'playing' && this.#tensionMeter && this.#fishCondition) {
