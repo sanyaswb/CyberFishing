@@ -722,7 +722,10 @@ class SettingsUI {
         if (this.#isOpen) {
             const body = this.#modal.querySelector('#settings-body');
             body.innerHTML = ''; 
-            this.#buildTree(this.#config, body, [], true);
+            
+            // ЗМІНА ТУТ: Останній аргумент змінено з true на false. 
+            // Це каже генератору "згорнути всі кореневі секції за замовчуванням".
+            this.#buildTree(this.#config, body, [], false); 
         }
     }
 
