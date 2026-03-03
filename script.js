@@ -443,6 +443,10 @@ class Fish {
     #behavior;
     #isLastDashTriggered = false;
     #lastDashTimer = 0;
+    
+    // НОВІ ЗМІННІ ДЛЯ ДЕБАФІВ
+    #originalBehaviors = null;
+    #hasActiveDebuff = false;
 
     constructor(level, weight, resistance, config) {
         this.#level = level;
@@ -455,18 +459,10 @@ class Fish {
         window.DEBUG_LIVE_FISH_POWER = this.getInitialPower();
     }
 
-    getWeight() {
-        return this.#weight;
-    }
-
-    getInitialPower() {
-        return (this.#level * this.#weight) + this.#resistance;
-    }
-
-    getPower() {
-        const initial = this.getInitialPower();
-        return Math.max(0, initial - this.#powerDebuff);
-    }
+    getWeight() { return this.#weight; }
+    getInitialPower() { return (this.#level * this.#weight) + this.#resistance; }
+    getPower() { return Math.max(0, this.getInitialPower() - this.#powerDebuff); }
+    get hasActiveDebuff() { return this.#hasActiveDebuff; }
 
     applyPowerDebuff(amount) {
         this.#powerDebuff += amount;
@@ -484,12 +480,53 @@ class Fish {
         }
     }
 
+    // --- СИСТЕМА ДЕБАФІВ ---
+    applyRandomDebuff(debuffsCfg) {
+        const behaviors = this.#config.fish?.behaviors || this.#config.behaviors;
+        if (!behaviors) return;
+
+        // Зберігаємо оригінал при першому застосуванні
+        if (!this.#originalBehaviors) {
+            this.#originalBehaviors = JSON.parse(JSON.stringify(behaviors));
+        }
+
+        this.clearDebuff();
+        this.#hasActiveDebuff = true;
+
+        const types = ['swimPull', 'dashMaxTime', 'idleMaxTime', 'dashPull', 'restWeight', 'restMaxTime'];
+        const debuffType = types[Math.floor(Math.random() * types.length)];
+        console.log(`[DEBUFF] Фаза 2 виснажена! Дебаф: ${debuffType}`);
+
+        switch(debuffType) {
+            case 'swimPull': if (behaviors.swim) behaviors.swim.pull *= debuffsCfg.swimPullMult; break;
+            case 'dashMaxTime': if (behaviors.dash) behaviors.dash.maxTime *= debuffsCfg.dashMaxTimeMult; break;
+            case 'idleMaxTime': if (behaviors.idle) behaviors.idle.maxTime *= debuffsCfg.idleMaxTimeMult; break;
+            case 'dashPull': if (behaviors.dash) behaviors.dash.pull *= debuffsCfg.dashPullMult; break;
+            case 'restWeight':
+                if (behaviors.rest) {
+                    behaviors.rest.weight += debuffsCfg.restWeightAdd;
+                    if (behaviors.swim) behaviors.swim.weight = Math.max(1, behaviors.swim.weight - debuffsCfg.restWeightAdd);
+                }
+                break;
+            case 'restMaxTime': if (behaviors.rest) behaviors.rest.maxTime *= debuffsCfg.restMaxTimeMult; break;
+        }
+    }
+
+    clearDebuff() {
+        if (!this.#originalBehaviors || !this.#hasActiveDebuff) return;
+        const behaviors = this.#config.fish?.behaviors || this.#config.behaviors;
+        for (const key in this.#originalBehaviors) {
+            if (behaviors[key]) Object.assign(behaviors[key], this.#originalBehaviors[key]);
+        }
+        this.#hasActiveDebuff = false;
+        console.log(`[DEBUFF] Стаміна 100%. Дебафи знято.`);
+    }
+
+    // Старі методи LastDash
     tryTriggerLastDash(dt) {
         const fishCfg = this.#config.fish || this.#config;
         const triggerCfg = fishCfg.lastDashTrigger;
-
         if (!triggerCfg) return;
-
         if (this.#isLastDashTriggered && (triggerCfg.isLocked ?? true)) return;
 
         this.#lastDashTimer += dt;
@@ -497,34 +534,22 @@ class Fish {
         
         if (this.#lastDashTimer >= interval) {
             this.#lastDashTimer = 0;
-
             const currentBehavior = this.#behavior.getStateData();
             const targetState = triggerCfg.targetState || 'lastDash';
             
             if (currentBehavior.name === targetState) return;
-
-            const chance = triggerCfg.chance ?? 0.05;
-            const roll = Math.random();
-            
-            if (roll <= chance) {
-                this.triggerLastDash();
-            }
+            if (Math.random() <= (triggerCfg.chance ?? 0.05)) this.triggerLastDash();
         }
     }
 
     triggerLastDash() {
         const fishCfg = this.#config.fish || this.#config;
         const triggerCfg = fishCfg.lastDashTrigger;
-
         if (!this.#isLastDashTriggered) {
             this.#powerDebuff *= 0.5; 
             this.#isLastDashTriggered = true;
         }
-        
-        const targetState = triggerCfg?.targetState || 'lastDash';
-        const isLocked = triggerCfg?.isLocked ?? false;
-
-        this.#behavior.forceState(targetState, isLocked);
+        this.#behavior.forceState(triggerCfg?.targetState || 'lastDash', triggerCfg?.isLocked ?? false);
     }
 }
 
@@ -655,7 +680,6 @@ class FishingSystem {
         return force;
     }
 }
-
 // Візуальне представлення поплавця та його поведінка під час клювання
 class FloatEntity {
     #position;
@@ -1116,7 +1140,6 @@ class FloatEntity {
         return arr[0] + Math.random() * (arr[1] - arr[0]);
     }
 }
-
 // Логіка витривалості риби та її виснаження під час боротьби
 class FishCondition {
     #maxPoints;
@@ -1139,7 +1162,7 @@ class FishCondition {
     breakExhaustion() {
         if (this.#phase === 'exhaustion') {
             this.#phase = 'stamina';
-            this.#currentStamina = this.#maxPoints * 0.05;
+            // БАГ ВИПРАВЛЕНО: Миттєві 5% прибрано. Тепер стаміна починається з 0, що дає плавний перехід.
         }
     }
 
@@ -1160,8 +1183,16 @@ class FishCondition {
         if (this.#phase !== 'exhaustion') return;
         this.#currentExhaustion = Math.max(0, this.#currentExhaustion - amount);
     }
-}
 
+    // НОВИЙ МЕТОД: Карає гравця, відновлюючи Фазу 2
+    applyPunishment(capPercent) {
+        const cap = this.#maxPoints * capPercent;
+        if (this.#currentExhaustion < cap) {
+            this.#currentExhaustion = cap;
+            console.log(`[STAMINA] Риба відновилася! Виснаження повернулося до ${(capPercent*100)}%`);
+        }
+    }
+}
 // Контролер, який керує логікою витривалості риби та її виснаження
 class StaminaController {
     #condition;
@@ -1189,9 +1220,8 @@ class StaminaController {
                 this.#condition.breakExhaustion();
                 return;
             }
-            if (!playerPowerIsPulling) {
-                return; 
-            }
+            if (!playerPowerIsPulling) return; 
+
             if (this.#condition.currentExhaustion > 0) {
                 const idealDps = this.#config.baseDepletionRate * this.#playerBasePower;
                 const idealTimeSec = this.#condition.maxPoints / Math.max(1, idealDps);
@@ -1200,10 +1230,16 @@ class StaminaController {
 
                 const damage = pointsPerSec * timeScale;
                 const debuff = this.#config.basePowerDropPerSec * timeScale;
+                
                 if (this.#condition.currentExhaustion <= damage) {
                     const ratio = this.#condition.currentExhaustion / damage;
                     this.#condition.applyExhaustionDamage(this.#condition.currentExhaustion);
                     this.#fish.applyPowerDebuff(debuff * ratio);
+                    
+                    // АКТИВАЦІЯ ДЕБАФУ: Фаза 2 виснажена
+                    if (!this.#fish.hasActiveDebuff) {
+                        this.#fish.applyRandomDebuff(this.#config.debuffs);
+                    }
                 } else {
                     this.#condition.applyExhaustionDamage(damage);
                     this.#fish.applyPowerDebuff(debuff);
@@ -1213,17 +1249,28 @@ class StaminaController {
         }
 
         if (this.#condition.phase === 'stamina') {
+            // МНОЖНИК ВІДНОВЛЕННЯ: якщо Фаза 2 ще не 0
+            const regenMult = this.#condition.currentExhaustion > 0 ? (this.#config.regenMultiplierPhase1 || 1.5) : 1.0;
+
             if (spatialPenalty > 0) {
-                this.#condition.applyStaminaRegen(this.#config.edgeRegenRate * spatialPenalty * timeScale);
+                this.#condition.applyStaminaRegen(this.#config.edgeRegenRate * spatialPenalty * timeScale * regenMult);
             }
 
             if (!playerPowerIsPulling) {
                 const regenFactor = Math.max(0, 1 - (tension / 100));
-                this.#condition.applyStaminaRegen(this.#config.baseRegenRate * regenFactor * timeScale);
+                this.#condition.applyStaminaRegen(this.#config.baseRegenRate * regenFactor * timeScale * regenMult);
             } else if (tension <= this.#config.optimalMax) {
                 const efficiency = Math.max(0, 1 - (tension / this.#config.optimalMax));
                 const damage = this.#config.baseDepletionRate * efficiency * this.#playerBasePower * timeScale * (1 - spatialPenalty);
                 this.#condition.applyStaminaDamage(damage);
+            }
+
+            // ПОКАРАННЯ ТА ЗНЯТТЯ ДЕБАФІВ: Фаза 1 відновилася до 100%
+            if (this.#condition.currentStamina >= this.#condition.maxPoints) {
+                this.#condition.applyPunishment(this.#config.punishmentCap || 0.8);
+                if (this.#fish.hasActiveDebuff) {
+                    this.#fish.clearDebuff();
+                }
             }
         }
     }

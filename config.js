@@ -478,7 +478,19 @@ const CONFIG = {
             // Phase 2: Exhaustion (When stamina = 0)
             exhaustionOptimalMax: 85, // Expanded tension limit for second phase
             basePowerDropPerSec: 0.1, // How much fish base power drops per 1 sec of exhaustion (0.1 base = 0.001 final)
-            minBasePowerRatio: 0.2    // Fish cannot lose more than 80% of initial strength
+            minBasePowerRatio: 0.2,   // Fish cannot lose more than 80% of initial strength
+
+            regenMultiplierPhase1: 1.5, // Бонус швидкості відновлення, поки риба не виснажена повністю
+            punishmentCap: 0.8,         // До якого відсотка (80%) відновлюється Фаза 2, якщо Фаза 1 досягла 100%
+            
+            debuffs: {
+                swimPullMult: 0.75,   // Зменшує тягу на 25%
+                dashMaxTimeMult: 0.75, // Скорочує тривалість ривка на 25%
+                idleMaxTimeMult: 1.5,  // Збільшує час перепочинку на 50%
+                dashPullMult: 0.75,   // Зменшує силу ривка на 25%
+                restWeightAdd: 25,    // Збільшує шанс стану rest
+                restMaxTimeMult: 1.5  // Збільшує час відпочинку на 50%
+            }
         }
     },
 };
