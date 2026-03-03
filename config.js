@@ -32,7 +32,10 @@ const CONFIG = {
             shrinkPercent: 50,      // На скільки відсотків зменшити довжину лінії при максимальному натягу
             shrinkEasePower: 4,     // Чим вище, тим крутіше крива зменшення довжини (1 = лінійно, >1 = більш різко ближче до 100% натягу)
             sinkDropPx: 120,         // На скільки пікселів опускається ліска при повному зануренні поплавця (для візуального ефекту)
-            snapDurationMs: 500
+            snapDurationMs: 300,
+            snapDepthMaxMultiplier: 2.0,
+            distanceDelayMinMs: 1500,
+            distanceDelayMaxMs: 5000
         }
     },
 
@@ -486,7 +489,7 @@ const CONFIG = {
             basePowerDropPerSec: 0.1, // How much fish base power drops per 1 sec of exhaustion (0.1 base = 0.001 final)
             minBasePowerRatio: 0.2,   // Fish cannot lose more than 80% of initial strength
 
-            regenMultiplierPhase1: 1.5, // Бонус швидкості відновлення, поки риба не виснажена повністю
+            regenMultiplierPhase1: 4.5, // Бонус швидкості відновлення, поки риба не виснажена повністю
             punishmentCap: 0.8,         // До якого відсотка (80%) відновлюється Фаза 2, якщо Фаза 1 досягла 100%
             
             debuffs: {

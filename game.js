@@ -594,12 +594,18 @@ class Game {
             
             // --- РОЗРАХУНОК ДИНАМІЧНОЇ ДОВЖИНИ ТА ЗАНУРЕННЯ ЛІСКИ ---
             let lineLengthRatio = 1.0;
-            let lineDropOffset = 0; // На скільки пікселів ліска йде на дно
+            let lineDropOffset = 0;
 
             if (this.#gameState === 'waiting' || this.#gameState === 'biting') {
                 const targetDepth = this.#currentHookDepth || 1.0;
                 const sinkRate = CONFIG.sinker?.sinkRate || 1.0; 
-                const durationMs = (targetDepth / sinkRate) * 1000;
+                const baseSinkTimeMs = (targetDepth / sinkRate) * 1000;
+                
+                const minDelay = CONFIG.ui?.line?.distanceDelayMinMs ?? 500;
+                const maxDelay = CONFIG.ui?.line?.distanceDelayMaxMs ?? 2000;
+                const distanceDelayMs = minDelay + (this.#castDistanceRatio * (maxDelay - minDelay));
+                
+                const durationMs = baseSinkTimeMs + distanceDelayMs;
                 
                 const elapsed = performance.now() - this.#castStartTime;
                 let progress = durationMs > 0 ? Math.min(1, elapsed / durationMs) : 1;
@@ -613,7 +619,6 @@ class Game {
                 const targetPercent = (CONFIG.ui?.line?.shrinkPercent ?? 60) / 100;
                 lineLengthRatio = 1.0 - (easeOutProgress * (1.0 - targetPercent));
                 
-                // Опускаємо кінчик ліски вниз по мірі занурення грузила
                 lineDropOffset = easeOutProgress * (CONFIG.ui?.line?.sinkDropPx ?? 40);
 
             } else if (this.#gameState === 'playing') {
@@ -622,9 +627,15 @@ class Game {
                 }
                 
                 const elapsed = performance.now() - this.#playStartTime;
-                const snapDuration = CONFIG.ui?.line?.snapDurationMs ?? 500;
-                let progress = snapDuration > 0 ? Math.min(1, elapsed / snapDuration) : 1;
+                const baseSnapDuration = CONFIG.ui?.line?.snapDurationMs ?? 500;
+                const maxMult = CONFIG.ui?.line?.snapDepthMaxMultiplier ?? 2.0;
+                const currentDepth = this.#currentHookDepth || 0;
                 
+                const depthRatio = Math.min(1, currentDepth / 10.0);
+                const dynamicMult = 1.0 + (depthRatio * (maxMult - 1.0));
+                const snapDuration = baseSnapDuration * dynamicMult;
+                
+                let progress = snapDuration > 0 ? Math.min(1, elapsed / snapDuration) : 1;
                 const easeProgress = 1 - Math.pow(1 - progress, 3);
                 const targetPercent = (CONFIG.ui?.line?.shrinkPercent ?? 60) / 100;
                 
@@ -634,10 +645,8 @@ class Game {
                 lineDropOffset = maxDrop * (1 - easeProgress);
             }
 
-            // Зберігаємо поточний стан для наступного кадру
             this.#lastGameState = this.#gameState;
 
-            // Передаємо нові дані у рендерер (додав параметр lineDropOffset)
             const currentTension = this.#tensionMeter ? this.#tensionMeter.getTension() : 0;
             this.#renderer.drawRodLine(sPos, this.#gameState, currentTension, lineLengthRatio, lineDropOffset, CONFIG);
             
