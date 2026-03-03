@@ -39,6 +39,8 @@ class Game {
 
         this.#uiManager = new UIManager(CONFIG);
         this.#uiManager.onNetClick = () => this.#handleNetClick();
+
+        this.#uiManager.onContinueClick = () => this.#resetGame(); // <--- ДОДАНО
         
         this.#locationMap = new LocationMap('test', CONFIG);
         this.#projector = new ViewportProjector(CONFIG);
@@ -161,6 +163,18 @@ class Game {
             this.#gameState = 'failed';
             this.failReason = 'net_escape';
         }
+    }
+
+    #resetGame() {
+        this.#gameState = 'scouting';
+        this.failReason = null;
+        this.#currentBitingFish = null;
+        this.#netCatchChance = null;
+        this.#isNetReady = false;
+        
+        if (this.#tensionMeter) this.#tensionMeter.reset();
+        if (this.#biteSystem) this.#biteSystem.reset();
+        this.#float.stopBite(); 
     }
 
     update(dt) {
@@ -509,8 +523,6 @@ class Game {
         if (updatedFloatScreenPos.y >= catchLineY) {
             this.#gameState = 'victory';
         }
-
-        this.#uiManager.updateNetButtonState(CONFIG, this.#isNetReady && this.#gameState === 'playing');
     }
 
     draw() {
@@ -555,6 +567,12 @@ class Game {
 
         this.update(dt);
         this.draw();
+
+        // Оновлення UI перенесено сюди, щоб гарантовано працювати кожен кадр
+        if (this.#uiManager) {
+            this.#uiManager.updateNetButtonState(CONFIG, this.#isNetReady && this.#gameState === 'playing');
+            this.#uiManager.updateContinueButtonState(this.#gameState === 'failed' || this.#gameState === 'victory');
+        }
 
         requestAnimationFrame(this.loop);
     }

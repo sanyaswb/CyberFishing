@@ -207,11 +207,14 @@ class UIManager {
     #netBtn;
     #isNetReady = false;
     onNetClick;
+    #continueBtn;
+    onContinueClick;
 
     constructor(config) {
         this.#config = config;
         this.#initFullscreenBtn();
         this.#initNetBtn();
+        this.#initContinueBtn();
     }
 
     #initFullscreenBtn() {
@@ -327,6 +330,54 @@ class UIManager {
             this.#netBtn.style.cursor = 'not-allowed';
             this.#netBtn.style.boxShadow = 'none';
         }
+    }
+
+    #initContinueBtn() {
+        this.#continueBtn = document.createElement('button');
+        this.#continueBtn.innerHTML = 'ПРОДОВЖИТИ';
+        
+        Object.assign(this.#continueBtn.style, {
+            position: 'absolute',
+            top: '80%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            padding: '15px 40px',
+            borderRadius: '8px',
+            fontFamily: 'monospace',
+            fontWeight: 'bold',
+            fontSize: '24px',
+            zIndex: '9999',
+            display: 'none',
+            backgroundColor: 'rgba(0, 204, 255, 0.8)',
+            color: '#fff',
+            border: '2px solid #00ccff',
+            cursor: 'pointer',
+            boxShadow: '0 0 15px rgba(0, 204, 255, 0.4)',
+            transition: 'all 0.2s ease'
+        });
+
+        this.#continueBtn.addEventListener('mouseenter', () => {
+            this.#continueBtn.style.backgroundColor = 'rgba(0, 204, 255, 1)';
+            this.#continueBtn.style.transform = 'translate(-50%, -50%) scale(1.05)';
+        });
+
+        this.#continueBtn.addEventListener('mouseleave', () => {
+            this.#continueBtn.style.backgroundColor = 'rgba(0, 204, 255, 0.8)';
+            this.#continueBtn.style.transform = 'translate(-50%, -50%) scale(1)';
+        });
+
+        UIUtils.makeSolid(this.#continueBtn);
+
+        this.#continueBtn.addEventListener('click', () => {
+            if (this.onContinueClick) this.onContinueClick();
+        });
+
+        document.body.appendChild(this.#continueBtn);
+    }
+
+    updateContinueButtonState(isVisible) {
+        if (!this.#continueBtn) return;
+        this.#continueBtn.style.display = isVisible ? 'block' : 'none';
     }
 }
 

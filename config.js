@@ -134,7 +134,7 @@ const CONFIG = {
                 },
                 
                 depthConfig: {
-                    minDepth: 1.0, 
+                    minDepth: 1.0,
                     maxDepth: 10.0,
                     minWeightAtMinDepth: 0.125,
                     maxWeightAtMinDepth: 0.800,
