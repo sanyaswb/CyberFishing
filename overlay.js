@@ -7,8 +7,8 @@ const OVERLAY_MODULES = {
     worstCase: true,     // 💀 НАЙГІРШИЙ СЦЕНАРІЙ (НИЖНІЙ КУТ)
     playerMax: true,     // 📊 СИЛА ГРАВЦЯ (MAX Y & X)
     liveY: true,         // ⚖️ LIVE: ТЯГА (Вісь Y)
-    liveX: true,          // ⚖️ LIVE: КЕРУВАННЯ (Вісь X)
-    chancesDetail: true, // 🐟 ДЕТАЛЬНІ ШАНСИ КЛЬОВУ (Показує всі можливі риби та їх шанси)
+    liveX: true,         // ⚖️ LIVE: КЕРУВАННЯ (Вісь X)
+    chancesDetail: true, // 🐟 ДЕТАЛЬНІ ШАНСИ КЛЬОВУ
 };
 
 class DebugOverlay {
@@ -78,20 +78,9 @@ class DebugOverlay {
 
     #styleZoomBtn(btn) {
         Object.assign(btn.style, {
-            width: '32px',
-            height: '32px',
-            backgroundColor: 'rgba(0, 204, 255, 0.1)',
-            color: '#00ccff',
-            border: '1px solid #00ccff',
-            borderRadius: '6px',
-            fontFamily: 'monospace',
-            fontWeight: 'bold',
-            fontSize: '20px',
-            cursor: 'pointer',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            touchAction: 'none'
+            width: '32px', height: '32px', backgroundColor: 'rgba(0, 204, 255, 0.1)', color: '#00ccff',
+            border: '1px solid #00ccff', borderRadius: '6px', fontFamily: 'monospace', fontWeight: 'bold',
+            fontSize: '20px', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', touchAction: 'none'
         });
 
         btn.addEventListener('mouseenter', () => btn.style.backgroundColor = 'rgba(0, 204, 255, 0.3)');
@@ -143,7 +132,7 @@ class DebugOverlay {
         const d = this.#data;
         let html = '';
 
-        // --- БЛОК 1: ЕХОЛОТ (Тільки коли риба не на гачку) ---
+        // --- БЛОК 1: ЕХОЛОТ ---
         if (OVERLAY_MODULES.echo && (d.gameState === 'scouting' || d.gameState === 'waiting' || d.gameState === 'biting')) {
             html += `<div style="color: #00ff80; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">📡 ЕХОЛОТ</div>`;
             html += `<div style="margin-bottom: 4px;">Стан: <span style="color: #00ccff; text-transform: uppercase;">${d.gameState}</span></div>`;
@@ -205,9 +194,15 @@ class DebugOverlay {
             html += `<div style="margin-bottom: 12px;"></div>`;
         }
 
-        // --- БЛОК 2: БОРОТЬБА (Тільки коли риба на гачку) ---
-        if (d.gameState === 'playing') {
-            const initialFishBase = d.fishInitialPower || ((CONFIG.fish.level * CONFIG.fish.weight) + CONFIG.fish.resistance);
+        // --- БЛОК 2: БОРОТЬБА ---
+        if (d.gameState === 'playing' && d.hookedFish) {
+            
+            // ДИНАМІЧНИЙ РОЗРАХУНОК: Беремо актуальні дані прямо з переданої риби та CONFIG
+            const activeFishParams = d.hookedFish;
+            const fishPhysicsConfig = activeFishParams.physics || CONFIG.fish; // Фолбек на стару структуру, якщо щось пішло не так
+            const behaviors = fishPhysicsConfig.behaviors || {};
+            
+            const initialFishBase = d.fishInitialPower || ((activeFishParams.level * activeFishParams.weight) + activeFishParams.resistance);
             const currentFishBase = d.fishBasePower || initialFishBase;
             const lostFishBase = initialFishBase - currentFishBase;
 
@@ -229,7 +224,6 @@ class DebugOverlay {
             const playerPctX = totalSteerForce > 0 ? (playerSteerForce / totalSteerForce) * 100 : 0;
             const fishPctX = totalSteerForce > 0 ? (currentFishEscapeForce / totalSteerForce) * 100 : 0;
 
-            const behaviors = CONFIG.fish.behaviors || {};
             let maxPull = 0, minPull = Infinity, maxMove = 0;
             const behaviorKeys = Object.keys(behaviors);
             
@@ -237,7 +231,7 @@ class DebugOverlay {
                 behaviorKeys.forEach(k => {
                     if (behaviors[k].pull > maxPull) maxPull = behaviors[k].pull;
                     if (behaviors[k].pull < minPull) minPull = behaviors[k].pull;
-                    const edgeMult = behaviors[k].edgePowerMultiplier ?? CONFIG.fish.edgePowerMultiplier ?? 1.0;
+                    const edgeMult = behaviors[k].edgePowerMultiplier ?? fishPhysicsConfig.edgePowerMultiplier ?? 1.0;
                     const effectiveMove = Math.abs(behaviors[k].move || 0) * edgeMult;
                     if (effectiveMove > maxMove) maxMove = effectiveMove;
                 });
@@ -247,7 +241,7 @@ class DebugOverlay {
 
             const getFishStateForceCompact = (stateName) => {
                 if (!behaviors[stateName]) return '';
-                const edgeMult = behaviors[stateName].edgePowerMultiplier ?? CONFIG.fish.edgePowerMultiplier ?? 1.0;
+                const edgeMult = behaviors[stateName].edgePowerMultiplier ?? fishPhysicsConfig.edgePowerMultiplier ?? 1.0;
                 const yForce = currentFishBase * behaviors[stateName].pull * CONFIG.physics.fishForceMultiplier;
                 const xForce = currentFishBase * Math.abs(behaviors[stateName].move || 0) * edgeMult * CONFIG.physics.fishForceMultiplier;
                 return `
@@ -274,7 +268,6 @@ class DebugOverlay {
             const worstEffectivePower = pPower * worstPenaltyMult;
 
             const screenW = window.innerWidth;
-            const screenH = window.innerHeight;
             const rodScreenX = (CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== 'center') ? Number(CONFIG.ui.rod.x) : screenW / 2;
             const maxOffsetDistance = Math.max(rodScreenX, screenW - rodScreenX);
             const worstDistanceY = 50; 
@@ -288,7 +281,7 @@ class DebugOverlay {
 
             if (OVERLAY_MODULES.state) {
                 html += `
-                    <div style="color: #00ccff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">🧠 ПОВЕДІНКА (STATE)</div>
+                    <div style="color: #00ccff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">🧠 ПОВЕДІНКА (${activeFishParams.name || 'Риба'})</div>
                     <div style="margin-bottom: 4px;">Стан: <span style="color: ${stateColor}; text-transform: uppercase; font-weight: bold;">${currentState}</span></div>
                     <div style="margin-bottom: 4px;">Множник Тяги (Y): <span style="color: ${stateColor};">x${currentPullMult.toFixed(2)}</span></div>
                     <div style="margin-bottom: 12px;">Множник Втечі (X): <span style="color: ${stateColor};">x${currentMoveMult.toFixed(2)}</span></div>

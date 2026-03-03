@@ -503,7 +503,9 @@ class Game {
                 fishBasePower: this.#fishingSystem.getFishBasePower ? this.#fishingSystem.getFishBasePower() : 0,
                 fishInitialPower: this.#fishingSystem.getFishInitialPower ? this.#fishingSystem.getFishInitialPower() : 0,
                 pullMult: this.#fishingSystem.getPullMultiplier ? this.#fishingSystem.getPullMultiplier() : 1,
-                moveMult: this.#fishingSystem.getMoveMultiplier ? this.#fishingSystem.getMoveMultiplier() : 1
+                moveMult: this.#fishingSystem.getMoveMultiplier ? this.#fishingSystem.getMoveMultiplier() : 1,
+
+                hookedFish: this.#currentBitingFish // Передаємо всю інфу про рибу, що зараз на гачку
             };
             document.dispatchEvent(new CustomEvent('debug-live-update', { detail: debugData }));
         }
