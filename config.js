@@ -94,20 +94,20 @@ const CONFIG = {
                         { x: 0, y: 14, w: 6, h: 6},
                     ],
                     snags: [
-                        // { x: 15, y: 20, w: 11, h: 9 }
+                        { x: 15, y: 20, w: 11, h: 9 }
                     ],
-                    // dynamic: [
-                        // { 
-                        //     id: 'fish_school_1', 
-                        //     type: 'buff', 
-                        //     multiplier: 1.5, 
-                        //     x: 10, y: 15, w: 3, h: 3, 
-                        //     moving: true, 
-                        //     speedX: 1.2, 
-                        //     speedY: 0.8, 
-                        //     bounds: { x: 0, y: 5, w: 20, h: 14 }
-                        // }
-                    // ]
+                    dynamic: [
+                        { 
+                            id: 'fish_school_1', 
+                            type: 'buff', 
+                            multiplier: 1.5, 
+                            x: 10, y: 15, w: 3, h: 3, 
+                            moving: true, 
+                            speedX: 1.2, 
+                            speedY: 0.8, 
+                            bounds: { x: 0, y: 5, w: 20, h: 14 }
+                        }
+                    ]
                 }
             }
         }

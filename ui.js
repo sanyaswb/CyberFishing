@@ -591,11 +591,11 @@ class SettingsUI {
     #config;
     #btn;
     #modal;
-    #content;
     #isOpen = false;
     
-    // Поля, які ми не хочемо виводити в меню налаштувань (шляхи, складні масиви)
-    #excludeKeys = ['id', 'name', 'bgUrls', 'depthUrl', 'endpoint', 'backgroundColor', 'fishes', 'colorGradient', 'statuses', 'chances', 'zones', 'timePhases'];
+    // Я прибрав 'fishes', 'timePhases' та 'chances' з виключень, тепер вони доступні для редагування.
+    // Залишаємо лише шляхи, кольори та структурні масиви зон, які не варто чіпати повзунками.
+    #excludeKeys = ['id', 'name', 'bgUrls', 'depthUrl', 'endpoint', 'backgroundColor', 'colorGradient', 'statuses', 'zones'];
 
     constructor(config) {
         this.#config = config;
@@ -632,8 +632,17 @@ class SettingsUI {
             .settings-body::-webkit-scrollbar-track { background: #0b1520; }
             .settings-body::-webkit-scrollbar-thumb { background: #00ccff; border-radius: 4px; }
             
-            .settings-section { margin-top: 10px; border-left: 2px solid #00ccff; padding-left: 10px; }
-            .settings-section-title { font-size: 16px; color: #00ccff; margin-bottom: 10px; text-transform: uppercase; }
+            .settings-section { margin-top: 5px; }
+            .settings-section-title { 
+                font-size: 16px; color: #00ccff; cursor: pointer; padding: 8px 10px; 
+                background: rgba(0, 204, 255, 0.1); border-radius: 4px; user-select: none;
+                transition: background 0.2s, color 0.2s; text-transform: uppercase; font-weight: bold;
+                display: flex; align-items: center; gap: 8px;
+            }
+            .settings-section-title:hover { background: rgba(0, 204, 255, 0.2); color: #fff; }
+            .settings-section-content { 
+                padding-left: 15px; border-left: 2px solid #00ccff; margin-left: 5px; margin-top: 5px;
+            }
             
             .settings-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 4px 0; border-bottom: 1px dashed #2a3b4c; }
             .settings-label { font-size: 14px; color: #ccc; }
@@ -647,7 +656,6 @@ class SettingsUI {
                 border-radius: 4px; width: 120px; text-align: right; font-family: monospace;
             }
             
-            /* Світчер для boolean */
             .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
             .switch input { opacity: 0; width: 0; height: 0; }
             .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #4a5b6c; transition: .2s; border-radius: 20px; }
@@ -666,19 +674,21 @@ class SettingsUI {
             position: 'absolute', 
             top: '15px', 
             left: '160px', 
-            fontSize: '32px', // Зробили трохи більшою, бо немає рамки
-            background: 'transparent', // Прозорий фон
-            border: 'none', // Без обводки
+            fontSize: '32px',
+            background: 'transparent',
+            border: 'none',
             padding: '0',
             cursor: 'pointer', 
             zIndex: '9998',
-            filter: 'drop-shadow(0px 2px 5px rgba(0,0,0,0.8))', // Тінь, щоб не губилася на складному фоні
+            filter: 'drop-shadow(0px 2px 5px rgba(0,0,0,0.8))',
             transition: 'transform 0.1s ease'
         });
 
+        this.#btn.addEventListener('mouseenter', () => this.#btn.style.transform = 'scale(1.1)');
+        this.#btn.addEventListener('mouseleave', () => this.#btn.style.transform = 'scale(1)');
+
         UIUtils.makeSolid(this.#btn);
         
-        // Робимо кнопку перетягуваною, клік відкриває меню
         new UIDraggableButton(this.#btn, () => this.toggle(), this.#config, { noTransform: true });
         document.body.appendChild(this.#btn);
     }
@@ -690,7 +700,7 @@ class SettingsUI {
         this.#modal.innerHTML = `
             <div class="settings-content">
                 <div class="settings-header">
-                    <h2>⚙️ БАЛАНС ТА КОНФІГ</h2>
+                    <h2>⚙️ DEV TOOLS</h2>
                     <button class="settings-close">×</button>
                 </div>
                 <div class="settings-body" id="settings-body"></div>
@@ -698,11 +708,10 @@ class SettingsUI {
         `;
         
         document.body.appendChild(this.#modal);
-        UIUtils.makeSolid(this.#modal.querySelector('.settings-content')); // Щоб кліки не йшли в гру
+        UIUtils.makeSolid(this.#modal.querySelector('.settings-content'));
         
         this.#modal.querySelector('.settings-close').addEventListener('click', () => this.toggle());
         
-        // Закриття по кліку на темний фон
         this.#modal.addEventListener('pointerdown', (e) => {
             if (e.target === this.#modal) this.toggle();
         });
@@ -714,33 +723,62 @@ class SettingsUI {
         
         if (this.#isOpen) {
             const body = this.#modal.querySelector('#settings-body');
-            body.innerHTML = ''; // Очищаємо перед генерацією
-            this.#buildTree(this.#config, body, []);
+            body.innerHTML = ''; 
+            this.#buildTree(this.#config, body, [], true);
         }
     }
 
-    // Рекурсивна генерація форми
-    #buildTree(obj, parentElement, path) {
+    // Допоміжний метод для створення секцій-акордеонів
+    #createSection(labelStr, parentElement, isExpanded = false) {
+        const section = document.createElement('div');
+        section.className = 'settings-section';
+        
+        const title = document.createElement('div');
+        title.className = 'settings-section-title';
+        title.innerHTML = `<span>${isExpanded ? '▼' : '▶'}</span> ${labelStr}`;
+        
+        const content = document.createElement('div');
+        content.className = 'settings-section-content';
+        content.style.display = isExpanded ? 'block' : 'none';
+        
+        title.addEventListener('click', () => {
+            const isHidden = content.style.display === 'none';
+            content.style.display = isHidden ? 'block' : 'none';
+            title.innerHTML = `<span>${isHidden ? '▼' : '▶'}</span> ${labelStr}`;
+        });
+        
+        section.appendChild(title);
+        section.appendChild(content);
+        parentElement.appendChild(section);
+        
+        return content;
+    }
+
+    #buildTree(obj, parentElement, path, isRoot = false) {
         for (const key in obj) {
             if (this.#excludeKeys.includes(key)) continue;
             
             const val = obj[key];
             const currentPath = [...path, key];
 
-            // Якщо це масив з чисел (наприклад [1.5, 2.5] для вітру)
-            if (Array.isArray(val) && typeof val[0] === 'number') {
-                this.#createInputRow(key, val.join(', '), parentElement, currentPath, 'array');
-            } 
-            // Якщо це об'єкт - створюємо нову секцію і заглиблюємось
-            else if (val !== null && typeof val === 'object' && !Array.isArray(val)) {
-                const section = document.createElement('div');
-                section.className = 'settings-section';
-                section.innerHTML = `<div class="settings-section-title">${key}</div>`;
-                parentElement.appendChild(section);
-                this.#buildTree(val, section, currentPath);
-            } 
-            // Прості значення (числа, булеві, строки)
-            else if (typeof val === 'number' || typeof val === 'boolean' || typeof val === 'string') {
+            if (Array.isArray(val)) {
+                if (val.length > 0 && typeof val[0] === 'number') {
+                    // Масив чисел (наприклад: changesPerDay: [4, 12])
+                    this.#createInputRow(key, val.join(', '), parentElement, currentPath, 'array');
+                } else if (val.length > 0 && typeof val[0] === 'object') {
+                    // Масив об'єктів (НОВЕ: наприклад fishes або chances)
+                    const content = this.#createSection(key, parentElement, isRoot);
+                    val.forEach((item, index) => {
+                        const itemLabel = item.id || item.type || `Item [${index}]`;
+                        const itemContent = this.#createSection(itemLabel, content, false);
+                        this.#buildTree(item, itemContent, [...currentPath, index]);
+                    });
+                }
+            } else if (val !== null && typeof val === 'object') {
+                // Вкладений об'єкт (створюємо секцію, головні секції розгорнуті, підсекції згорнуті)
+                const content = this.#createSection(key, parentElement, isRoot);
+                this.#buildTree(val, content, currentPath, false);
+            } else if (typeof val === 'number' || typeof val === 'boolean' || typeof val === 'string') {
                 this.#createInputRow(key, val, parentElement, currentPath, typeof val);
             }
         }
@@ -772,7 +810,7 @@ class SettingsUI {
         } else if (type === 'number') {
             inputElement = document.createElement('input');
             inputElement.type = 'number';
-            inputElement.step = 'any'; // Дозволяє дроби
+            inputElement.step = 'any'; 
             inputElement.className = 'settings-input-num';
             inputElement.value = val;
             
@@ -786,7 +824,6 @@ class SettingsUI {
             inputElement.addEventListener('change', (e) => {
                 let newVal = e.target.value;
                 if (type === 'array') {
-                    // Перетворюємо строку "1.5, 2.5" назад у масив чисел [1.5, 2.5]
                     newVal = newVal.split(',').map(n => parseFloat(n.trim()) || 0);
                 }
                 this.#updateConfigValue(path, newVal);
@@ -798,7 +835,6 @@ class SettingsUI {
     }
 
     #updateConfigValue(path, newValue) {
-        // Проходимо по дереву CONFIG і міняємо значення за вказаним шляхом
         let target = this.#config;
         for (let i = 0; i < path.length - 1; i++) {
             target = target[path[i]];
