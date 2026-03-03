@@ -35,9 +35,9 @@ const CONFIG = {
         debugZones: true,         // Показувати кольорові квадрати (зелені, червоні)
         debugGrid: true,          // Показувати лінії сітки
         debugDepthText: true,     // Показувати цифри глибини
-        enableCastable: true,
+        enableCastable: true,     // Зони, де можна закидати вудку
         enableCollisions: true,
-        enableSnags: true,
+        enableSnags: true,        // Динамічні зони (наприклад, косяк риби)
 
         debugOpacity: 1.0,
         baseResolution: { width: 2560, height: 2560 },
@@ -145,7 +145,7 @@ const CONFIG = {
                     maxWeightAtMinDepth: 0.800,
                     minWeightAtMaxDepth: 1.123,
                     maxWeightAtMaxDepth: 2.678,
-                    chanceMultAtMaxDepth: 0.4 
+                    chanceMultAtMaxDepth: 0.4
                 },
                 
                 weightConfig: {
@@ -230,6 +230,14 @@ const CONFIG = {
         overlay: true,
         initialTime: 17.5, // Початковий час. 17.5 = 17:30. Якщо поставити null, гра візьме реальний час.
         timeScale: 240,     // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
+
+        fixedCatch: {
+            enabled: false,
+            fishId: 'crucian_stalker', // Можна вписати 'perch_radioactive'
+            level: 5,
+            weight: 2.678,
+            resistance: 2.5
+        }
     },
 
     logs: {

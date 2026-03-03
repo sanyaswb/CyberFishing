@@ -349,16 +349,47 @@ class Game {
             bottom: Math.min(vBottomRight.y, castableBounds ? castableBounds.bottom : 2560)
         };
 
-        if (this.#gameState === 'waiting') {
-            this.#float.update(dynamicBounds, dt, dynamicEnv); 
-            const hookedFish = this.#biteSystem.evaluateBite(dt, envData, playerGear);
+        // if (this.#gameState === 'waiting') {
+        //     this.#float.update(dynamicBounds, dt, dynamicEnv); 
+        //     const hookedFish = this.#biteSystem.evaluateBite(dt, envData, playerGear);
             
+        //     if (hookedFish) {
+        //         this.#gameState = 'biting';
+        //         this.#currentBitingFish = hookedFish;
+        //         this.#float.startBite();
+        //         return;
+        //     }
+
+            if (this.#gameState === 'waiting') {
+            this.#float.update(dynamicBounds, dt, dynamicEnv); 
+            let hookedFish = this.#biteSystem.evaluateBite(dt, envData, playerGear);
+            
+            // --- ПЕРЕХОПЛЮВАЧ ДЛЯ ТЕСТУВАННЯ (GOD MODE) ---
+            if (hookedFish && CONFIG.debug?.fixedCatch?.enabled) {
+                const fixed = CONFIG.debug.fixedCatch;
+                // Шукаємо конфіг потрібної риби по ID, якщо помилилися в назві - беремо першу-ліпшу
+                const template = CONFIG.spawns.fishes.find(f => f.id === fixed.fishId) || CONFIG.spawns.fishes[0];
+                
+                // Жорстко перезаписуємо всі рандомні параметри на наші
+                hookedFish = {
+                    id: template.id,
+                    name: template.name + ' (TEST)',
+                    physics: template.physics,
+                    level: fixed.level,
+                    weight: fixed.weight,
+                    resistance: fixed.resistance
+                };
+                console.log(`%c[DEBUG] Рандом відключено. Згенеровано тестову рибу:`, 'color: #ffaa00; font-weight: bold;', hookedFish);
+            }
+
             if (hookedFish) {
                 this.#gameState = 'biting';
                 this.#currentBitingFish = hookedFish;
                 this.#float.startBite();
                 return;
             }
+
+            // ----------------------------------------------
             
             if (CONFIG.debug?.overlay) {
                 const liveChances = this.#biteSystem.getLiveChances(envData, playerGear);

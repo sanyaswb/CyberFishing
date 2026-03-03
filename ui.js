@@ -3,7 +3,7 @@ const UI_EXCEPTIONS = {
     classes: [],
     ids: []
 };
-
+// ІНІЦІАЛІЗАЦІЯ ІНТЕРФЕЙСУ ДЛЯ ДОДАТКОВОЇ ВЗАЄМОДІЇ З КОРИСТУВАЧЕМ
 function initEngineInterface() {
     const style = document.createElement('style');
     style.innerHTML = `
@@ -46,6 +46,7 @@ function initEngineInterface() {
 
 initEngineInterface();
 
+// УТИЛІТИ ДЛЯ ІНТЕРФЕЙСУ
 class UIUtils {
     static makeSolid(element) {
         if (!element) return;
@@ -70,7 +71,7 @@ class UIUtils {
         element.style.pointerEvents = 'all';
     }
 }
-
+// УНІВЕРСАЛЬНИЙ КЛАС ДЛЯ ПЕРЕТЯГУВАННЯ ЛЮБОГО ЕЛЕМЕНТА З КЛІКОМ
 class UIDraggableButton {
     #element;
     #onClickCallback;
@@ -200,7 +201,7 @@ class UIDraggableButton {
         }
     }
 }
-
+// ГОЛОВНИЙ КЛАС ДЛЯ УПРАВЛІННЯ ІНТЕРФЕЙСОМ
 class UIManager {
     #config;
     #fullscreenBtn;
@@ -382,7 +383,6 @@ class UIManager {
         this.#continueBtn.style.display = isVisible ? 'block' : 'none';
     }
 }
-
 // БЛОК ІНТЕРФЕЙСУ ВИБОРУ ГЛИБИНИ
 class DepthSelectorUI {
     constructor() {
@@ -531,7 +531,6 @@ class DepthSelectorUI {
         this.mainContainer.style.display = 'none';
     }
 }
-
 // БЛОК ІНТЕРФЕЙСУ ІГРОВОГО ЧАСУ
 class TimeDisplayUI {
     constructor() {
@@ -585,7 +584,6 @@ class TimeDisplayUI {
         }
     }
 }
-
 // БЛОК ІНТЕРФЕЙСУ НАЛАШТУВАНЬ (ДЕБАГ)
 class SettingsUI {
     #config;
