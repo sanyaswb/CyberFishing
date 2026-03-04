@@ -1,17 +1,11 @@
 {
   "name": "name",
   "source": "index.html",
-  "scripts": {
-    "start": "parcel --open",
-    "build": "rm -rf dist .parcel-cache && parcel build index.html --public-url ./",
-    "deploy": "npm run build && npx gh-pages -d dist"
-  },
   "dependencies": {
     "glob": "^13.0.6",
     "qrcode-terminal": "^0.12.0"
   },
   "devDependencies": {
-    "parcel": "^2.16.4",
     "sharp": "^0.34.5"
   }
 }
