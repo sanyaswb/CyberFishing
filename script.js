@@ -443,6 +443,8 @@ class Fish {
     #behavior;
     #isLastDashTriggered = false;
     #lastDashTimer = 0;
+    #masteryPowerMult = 1.0;
+    #lastDebuffName = null;
     
     // НОВІ ЗМІННІ ДЛЯ ДЕБАФІВ
     #originalBehaviors = null;
@@ -461,7 +463,32 @@ class Fish {
 
     getWeight() { return this.#weight; }
     getInitialPower() { return (this.#level * this.#weight) + this.#resistance; }
-    getPower() { return Math.max(0, this.getInitialPower() - this.#powerDebuff); }
+    getPower() { 
+        const initial = this.getInitialPower();
+        const current = Math.max(0, initial - this.#powerDebuff);
+        return current * this.#masteryPowerMult; // Застосовуємо другий дебаф
+    }
+
+    get activeDebuffName() { 
+        // Якщо є активний дебаф, повертаємо його ім'я, інакше 'Немає'
+        return this.#hasActiveDebuff ? (this.#lastDebuffName || 'Невідомий') : 'Немає'; 
+    }
+    
+    getMasteryMultiplier() { return this.#masteryPowerMult; }
+
+    // --- ЛОГІКА ДРУГОГО ДЕБАФУ (MASTERY) ---
+    setMasteryMultiplier(currentMultiplier) {
+        // Оновлюється кожен кадр плавно, тому без console.log
+        this.#masteryPowerMult = Number(currentMultiplier); 
+    }
+
+    clearMasteryDebuff() {
+        if (this.#masteryPowerMult !== 1.0) {
+            this.#masteryPowerMult = 1.0;
+            console.log(`[MASTERY] Риба вирвалась з центру! Плавне підкорення скинуто.`);
+        }
+    }
+
     get hasActiveDebuff() { return this.#hasActiveDebuff; }
 
     applyPowerDebuff(amount) {
@@ -495,6 +522,7 @@ class Fish {
 
         const types = ['swimPull', 'dashMaxTime', 'idleMaxTime', 'dashPull', 'restWeight', 'restMaxTime'];
         const debuffType = types[Math.floor(Math.random() * types.length)];
+        this.#lastDebuffName = debuffType;
         console.log(`[DEBUFF] Фаза 2 виснажена! Дебаф: ${debuffType}`);
 
         switch(debuffType) {
@@ -613,6 +641,14 @@ class FishingSystem {
 
     getMoveMultiplier() {
         return this.#lastMoveMult;
+    }
+
+    getActiveDebuffName() { 
+        return this.#fish ? this.#fish.activeDebuffName : 'Немає'; 
+    }
+    
+    getMasteryMultiplier() { 
+        return this.#fish ? this.#fish.getMasteryMultiplier() : 1.0; 
     }
 
     calculatePlayerForce(inputDirection, floatX, floatY, rodVirtualPos, screenOffsetRatio, config) {
@@ -1199,12 +1235,24 @@ class StaminaController {
     #config;
     #playerBasePower;
     #fish;
+    #masteryTimer = 0;
+    #isMasteryActive = false;
 
     constructor(condition, fish, playerBasePower, config) {
         this.#condition = condition;
         this.#fish = fish;
         this.#playerBasePower = playerBasePower;
         this.#config = config.stamina.mechanics;
+    }
+
+    getMasteryTimer() { return this.#masteryTimer; }
+    isMasteryActive() { return this.#isMasteryActive; }
+    
+    getExhaustionDurationMs() { 
+        if (!this.#fish) return 1000;
+        const idealDps = this.#config.baseDepletionRate * this.#playerBasePower;
+        const idealTimeSec = this.#condition.maxPoints / Math.max(1, idealDps);
+        return (idealTimeSec * this.#fish.getInitialPower()) * 1000;
     }
 
     evaluate(tension, playerPowerIsPulling, dt, floatX, bounds) {
@@ -1222,12 +1270,50 @@ class StaminaController {
             }
             if (!playerPowerIsPulling) return; 
 
-            if (this.#condition.currentExhaustion > 0) {
-                const idealDps = this.#config.baseDepletionRate * this.#playerBasePower;
-                const idealTimeSec = this.#condition.maxPoints / Math.max(1, idealDps);
-                const exhaustionDurationSec = idealTimeSec * this.#fish.getInitialPower();
-                const pointsPerSec = this.#condition.maxPoints / exhaustionDurationSec;
+            const idealDps = this.#config.baseDepletionRate * this.#playerBasePower;
+            const idealTimeSec = this.#condition.maxPoints / Math.max(1, idealDps);
+            const exhaustionDurationSec = idealTimeSec * this.#fish.getInitialPower();
+            const exhaustionDurationMs = exhaustionDurationSec * 1000;
 
+            // 2. --- ДВОХЕТАПНА ЛОГІКА MASTERY ---
+            if (this.#condition.currentExhaustion <= 0 && spatialPenalty === 0) {
+                const masteryRatio = this.#config.masteryTimeRatio ?? 0.5;
+                const targetPhaseTimeMs = exhaustionDurationMs * masteryRatio; 
+                
+                this.#masteryTimer += dt;
+                
+                if (this.#masteryTimer > targetPhaseTimeMs) {
+                    // ЕТАП 2: Захват пройдено, починається плавне здавлювання (дебаф)
+                    this.#isMasteryActive = true;
+                    
+                    const drainElapsed = this.#masteryTimer - targetPhaseTimeMs;
+                    // Прогрес здавлювання (від 0 до 1) за такий самий проміжок часу
+                    const drainProgress = Math.min(1, drainElapsed / targetPhaseTimeMs); 
+                    
+                    // Якщо конфіг 0.2, максимальне падіння це 20%
+                    const maxDebuffDrop = this.#config.masteryPowerMultiplier ?? 0.2; 
+                    
+                    // Віднімаємо відсоток від 1.0 (наприклад, 1.0 - (0.2 * 1) = 0.8)
+                    const currentMult = 1.0 - (maxDebuffDrop * drainProgress);
+                    
+                    this.#fish.setMasteryMultiplier(currentMult);
+                } else {
+                    // ЕТАП 1: Очікування (накопичення таймеру перед стартом здавлювання)
+                    // Риба ще має 100% сили
+                    this.#fish.setMasteryMultiplier(1.0);
+                }
+            } else {
+                // Якщо риба вийшла з центру — все миттєво злітає
+                this.#masteryTimer = 0;
+                if (this.#isMasteryActive) {
+                    this.#isMasteryActive = false;
+                    this.#fish.clearMasteryDebuff();
+                }
+            }
+
+            // 3. --- ЛОГІКА НАНЕСЕННЯ ШКОДИ В ФАЗІ 2 ---
+            if (this.#condition.currentExhaustion > 0) {
+                const pointsPerSec = this.#condition.maxPoints / exhaustionDurationSec;
                 const damage = pointsPerSec * timeScale;
                 const debuff = this.#config.basePowerDropPerSec * timeScale;
                 
@@ -1236,7 +1322,6 @@ class StaminaController {
                     this.#condition.applyExhaustionDamage(this.#condition.currentExhaustion);
                     this.#fish.applyPowerDebuff(debuff * ratio);
                     
-                    // АКТИВАЦІЯ ДЕБАФУ: Фаза 2 виснажена
                     if (!this.#fish.hasActiveDebuff) {
                         this.#fish.applyRandomDebuff(this.#config.debuffs);
                     }
@@ -1249,7 +1334,6 @@ class StaminaController {
         }
 
         if (this.#condition.phase === 'stamina') {
-            // МНОЖНИК ВІДНОВЛЕННЯ: якщо Фаза 2 ще не 0
             const regenMult = this.#condition.currentExhaustion > 0 ? (this.#config.regenMultiplierPhase1 || 1.5) : 1.0;
 
             if (spatialPenalty > 0) {
@@ -1265,7 +1349,6 @@ class StaminaController {
                 this.#condition.applyStaminaDamage(damage);
             }
 
-            // ПОКАРАННЯ ТА ЗНЯТТЯ ДЕБАФІВ: Фаза 1 відновилася до 100%
             if (this.#condition.currentStamina >= this.#condition.maxPoints) {
                 this.#condition.applyPunishment(this.#config.punishmentCap || 0.8);
                 if (this.#fish.hasActiveDebuff) {

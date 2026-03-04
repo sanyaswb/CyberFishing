@@ -489,7 +489,7 @@ const CONFIG = {
             basePowerDropPerSec: 0.1, // How much fish base power drops per 1 sec of exhaustion (0.1 base = 0.001 final)
             minBasePowerRatio: 0.2,   // Fish cannot lose more than 80% of initial strength
 
-            regenMultiplierPhase1: 4.5, // Бонус швидкості відновлення, поки риба не виснажена повністю
+            regenMultiplierPhase1: 2.5, // Бонус швидкості відновлення, поки риба не виснажена повністю
             punishmentCap: 0.8,         // До якого відсотка (80%) відновлюється Фаза 2, якщо Фаза 1 досягла 100%
             
             debuffs: {
@@ -498,8 +498,11 @@ const CONFIG = {
                 idleMaxTimeMult: 1.5,  // Збільшує час перепочинку на 50%
                 dashPullMult: 0.75,   // Зменшує силу ривка на 25%
                 restWeightAdd: 25,    // Збільшує шанс стану rest
-                restMaxTimeMult: 1.5  // Збільшує час відпочинку на 50%
-            }
+                restMaxTimeMult: 1.5,  // Збільшує час відпочинку на 50%
+            },
+
+            masteryTimeRatio: 0.5,       // Час утримання: 50% (0.5) від часу, який був потрібен на повне виснаження
+            masteryPowerMultiplier: 0.2  // До якого відсотка ПЛАВНО впаде сила (0.2 = залишиться 20%)
         }
     },
 };

@@ -497,7 +497,7 @@ class Game {
             const debugData = {
                 gameState: this.#gameState,
                 floatX: Math.round(floatPos.x), floatY: Math.round(floatPos.y),
-                depth: envData.depth, bait: playerGear.baitId, phase: envData.timePhase,
+                hookDepth: envData.hookDepth, bottomDepth: envData.bottomDepth, bait: playerGear.baitId, phase: envData.timePhase,
                 isRaining: this.#isRaining,
                 isFoggy: this.#isFoggy,
                 liveChances: liveChances,
@@ -512,7 +512,14 @@ class Game {
                 pullMult: this.#fishingSystem.getPullMultiplier ? this.#fishingSystem.getPullMultiplier() : 1,
                 moveMult: this.#fishingSystem.getMoveMultiplier ? this.#fishingSystem.getMoveMultiplier() : 1,
 
-                hookedFish: this.#currentBitingFish // Передаємо всю інфу про рибу, що зараз на гачку
+                hookedFish: this.#currentBitingFish,
+                
+                // --- ДАНІ ДЛЯ АНАЛІЗУ ДЕБАФІВ ТА MASTERY ---
+                activeDebuffName: this.#fishingSystem.getActiveDebuffName ? this.#fishingSystem.getActiveDebuffName() : 'Немає',
+                masteryCurrentMult: this.#fishingSystem.getMasteryMultiplier ? this.#fishingSystem.getMasteryMultiplier() : 1.0,
+                masteryTimerMs: this.#staminaController.getMasteryTimer ? this.#staminaController.getMasteryTimer() : 0,
+                isMasteryActive: this.#staminaController.isMasteryActive ? this.#staminaController.isMasteryActive() : false,
+                exhaustionDurationMs: this.#staminaController.getExhaustionDurationMs ? this.#staminaController.getExhaustionDurationMs() : 1000
             };
             document.dispatchEvent(new CustomEvent('debug-live-update', { detail: debugData }));
         }

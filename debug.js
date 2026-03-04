@@ -1,11 +1,11 @@
 const DEBUG_MODULES = {
     location: false, 
-    forces: true, 
+    forces: false, 
     deviations: false, 
-    tension: true, 
+    tension: false, 
     stamina: false, 
     exhaustion: false, 
-    catchTime: false, 
+    catchTime: true, 
     prediction: false, 
     net: false,
 };
@@ -218,67 +218,79 @@ document.addEventListener('debug-fish-hooked', (e) => {
 
     if (DEBUG_MODULES.catchTime) {
         console.log('%c====================================', 'color: #4a5b6c;');
-        console.log('%c⏱️ ЧАС ВИТЯГУВАННЯ', 'color: #00ff80; font-size: 14px; font-weight: bold;');
+        console.log('%c⏱️ ЧАС ВИТЯГУВАННЯ ТА ВИСНАЖЕННЯ', 'color: #00ffff; font-size: 14px; font-weight: bold;');
         
-        const fps = 60;
-        const rodComp = CONFIG.rod.compensation || 0;
-        const maxPenalty = CONFIG.physics.edgePullPenalty || 0.0;
-        const screenW = window.innerWidth;
-        const screenH = window.innerHeight;
-        const rodY = screenH - (CONFIG.ui?.catchZone?.height || 150); 
-        const fishSpawnY = screenH * 0.2; 
-        const distanceY = rodY - fishSpawnY;
-
-        const currentMap = Object.values(CONFIG.locations.map)[0]; 
-        const castableZones = currentMap.zones.castable;
-        const cellSize = CONFIG.locations.cellSize;
-        const catchZoneHeight = CONFIG.ui?.catchZone?.height || 150;
+        // --- 1. АНАЛІЗ БОРОТЬБИ ЗІ СТАМІНОЮ ТА MASTERY ---
+        const activePullDps = maxDps * 0.5; 
+        const restRegenEps = CONFIG.stamina.mechanics.baseRegenRate * 0.6; 
+        const netDps = (activePullDps * pullUptime) - (restRegenEps * (1 - pullUptime));
+        const phase1RealTime = netDps > 0 ? (maxStamina / netDps) : Infinity;
+        const phase2RealTime = exhaustionTime / pullUptime;
         
-        let minVirtualY = Infinity;
-        let maxVirtualY = 0;
-        
-        castableZones.forEach(z => {
-            const top = z.y * cellSize;
-            const bottom = (z.y + z.h) * cellSize;
-            if (top < minVirtualY) minVirtualY = top;
-            if (bottom > maxVirtualY) maxVirtualY = bottom;
-        });
-        
-        const virtualDistanceY = Math.max(0, (maxVirtualY - minVirtualY) - catchZoneHeight); 
+        // ДОДАНО: Розрахунок змінних Mastery перед таблицею!
+        const masteryRatio = CONFIG.stamina.mechanics.masteryTimeRatio ?? 0.5;
+        const masteryHoldSec = exhaustionTime * masteryRatio;
+        const totalMasterySec = masteryHoldSec * 2; // Утримання + Здавлювання
 
-        const netForceFresh = playerPullForceBase - fishPullForce;
-        const netForceExhausted = playerPullForceBase - finalFishPullForce;
-        
-        const avgVelocityFresh = (netForceFresh * 0.5) / (1 - CONFIG.float.friction);
-        const avgVelocityExhausted = (netForceExhausted * 0.5) / (1 - CONFIG.float.friction);
-
-        const timeToCatchFresh = netForceFresh > 0 ? (virtualDistanceY / (avgVelocityFresh * fps)).toFixed(1) + " сек" : "НІКОЛИ (Блок)";
-        const timeToCatchExhausted = netForceExhausted > 0 ? (virtualDistanceY / (avgVelocityExhausted * fps)).toFixed(1) + " сек" : "НІКОЛИ (Блок)";
-
-        const worstPenaltyMult = Math.max(0.1, 1.0 - (maxPenalty * 1.0 * (1 - rodComp)));
-        const worstEffectivePower = pPower * worstPenaltyMult;
-        
-        const worstFishXOffset = window.innerWidth / 2;
-        const worstPullDirLength = Math.hypot(worstFishXOffset, distanceY);
-        const worstPullDirY = distanceY / worstPullDirLength; 
-        
-        const worstPlayerPullForceY = worstPullDirY * worstEffectivePower * CONFIG.physics.playerForceMultiplier;
-
-        const netForceWorstFresh = worstPlayerPullForceY - fishPullForce;
-        const netForceWorstExhausted = worstPlayerPullForceY - finalFishPullForce;
-
-        const avgVelocityWorstFresh = (netForceWorstFresh * 0.5) / (1 - CONFIG.float.friction);
-        const avgVelocityWorstExhausted = (netForceWorstExhausted * 0.5) / (1 - CONFIG.float.friction);
-
-        const timeToCatchWorstFresh = netForceWorstFresh > 0 ? (virtualDistanceY / (avgVelocityWorstFresh * fps)).toFixed(1) + " сек" : "НІКОЛИ (Блок)";
-        const timeToCatchWorstExhausted = netForceWorstExhausted > 0 ? (virtualDistanceY / (avgVelocityWorstExhausted * fps)).toFixed(1) + " сек" : "НІКОЛИ (Блок)";
+        if (netDps <= 0) {
+            console.log('%c⚠️ УВАГА: Сили гравця недостатньо, щоб пробити регенерацію цієї риби!', 'color: #ff4444; font-size: 12px; font-weight: bold;');
+        }
 
         console.table({
-            "Дистанція": { "Значення": virtualDistanceY + " px" },
-            "ІДЕАЛЬНО: Свіжа риба": { "Значення": timeToCatchFresh },
-            "ІДЕАЛЬНО: Виснажена": { "Значення": timeToCatchExhausted },
-            "НАЙГІРШЕ: Свіжа": { "Значення": timeToCatchWorstFresh },
-            "НАЙГІРШЕ: Виснажена": { "Значення": timeToCatchWorstExhausted }
+            "[СТАМІНА] Аптайм тяги": { "Значення": (pullUptime * 100).toFixed(1) + "% часу" },
+            "[СТАМІНА] Чистий DPS (з регеном)": { "Значення": netDps > 0 ? netDps.toFixed(1) + " / сек" : "РІВЕНЬ ЗАМАЛИЙ" },
+            "[СТАМІНА] Збиття Фази 1": { "Значення": phase1RealTime !== Infinity ? phase1RealTime.toFixed(1) + " сек" : "Ніколи" },
+            "[СТАМІНА] Добивання Фази 2": { "Значення": phase2RealTime.toFixed(1) + " сек" },
+            "-------------------": { "Значення": "-------------------" },
+            "[MASTERY] Етап утримання": { "Значення": masteryHoldSec.toFixed(1) + " сек" },
+            "[MASTERY] Етап здавлювання": { "Значення": masteryHoldSec.toFixed(1) + " сек" },
+            "[MASTERY] Повний час Підкорення": { "Значення": totalMasterySec.toFixed(1) + " сек" }
+        });
+
+        // --- 2. ПРОГНОЗ ФІЗИЧНОГО ВИТЯГУВАННЯ (СПРОЩЕНО) ---
+        const debuffsCfg = CONFIG.stamina.mechanics.debuffs || {};
+        const masteryPowerMult = CONFIG.stamina.mechanics.masteryPowerMultiplier ?? 0.2;
+        
+        const masteredFishPullForce = finalFishPullForce * masteryPowerMult;
+
+        const isFreshPossible = playerPullForceBase > fishPullForce;
+        const isExhaustedPossible = playerPullForceBase > finalFishPullForce;
+        const isMasteredPossible = playerPullForceBase > masteredFishPullForce;
+
+        // Аналіз рятівних дебафів (які впливають на фізичну силу тяги)
+        const swimForce = finalFishPullForce * (debuffsCfg.swimPullMult ?? 1.0);
+        const dashForce = finalFishPullForce * (debuffsCfg.dashPullMult ?? 1.0);
+        
+        let savingDebuffs = [];
+        if (!isExhaustedPossible) {
+            if (playerPullForceBase > swimForce) savingDebuffs.push("swimPull");
+            if (playerPullForceBase > dashForce) savingDebuffs.push("dashPull");
+        }
+
+        let debuffInfo = isExhaustedPossible ? "Вже тягне ✅" : 
+                         (savingDebuffs.length > 0 ? `Врятує: ${savingDebuffs.join(" або ")}` : "❌ Жоден не допоможе");
+
+        console.table({
+            "[ФІЗИКА] 1. Свіжа риба (100%)": { 
+                "Опір риби": fishPullForce.toFixed(3), 
+                "Тяга гравця": playerPullForceBase.toFixed(3), 
+                "Статус": isFreshPossible ? "✅ Витягне" : "❌ Дедлок" 
+            },
+            "[ФІЗИКА] 2. Виснажена (Фаза 2 = 0)": { 
+                "Опір риби": finalFishPullForce.toFixed(3), 
+                "Тяга гравця": playerPullForceBase.toFixed(3), 
+                "Статус": isExhaustedPossible ? "✅ Витягне" : "❌ Дедлок" 
+            },
+            "[ФІЗИКА] 3. Прок випадкового дебафу": { 
+                "Опір риби": `~${swimForce.toFixed(3)} (якщо пощастить)`, 
+                "Тяга гравця": playerPullForceBase.toFixed(3), 
+                "Статус": debuffInfo 
+            },
+            "[ФІЗИКА] 4. Підкорена (Утримана)": { 
+                "Опір риби": masteredFishPullForce.toFixed(3), 
+                "Тяга гравця": playerPullForceBase.toFixed(3), 
+                "Статус": isMasteredPossible ? "✅ Витягне" : "❌ Дедлок" 
+            }
         });
     }
 

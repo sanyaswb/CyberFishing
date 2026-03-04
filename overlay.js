@@ -9,6 +9,7 @@ const OVERLAY_MODULES = {
     liveY: true,         // ⚖️ LIVE: ТЯГА (Вісь Y)
     liveX: true,         // ⚖️ LIVE: КЕРУВАННЯ (Вісь X)
     chancesDetail: true, // 🐟 ДЕТАЛЬНІ ШАНСИ КЛЬОВУ
+    debuffsLive: true    // ☠️ АКТИВНІ ДЕБАФИ ТА MASTERY
 };
 
 class DebugOverlay {
@@ -303,6 +304,111 @@ class DebugOverlay {
                     ${dynamicStatesHtml}
                     <div style="margin-bottom: 12px;"></div>
                 `;
+            }
+
+            // --- БЛОК 3: АКТИВНІ ДЕБАФИ ТА MASTERY ---
+            if (OVERLAY_MODULES.debuffsLive) {
+                html += `<div style="color: #ff00ff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">☠️ АКТИВНІ ДЕБАФИ</div>`;
+                
+                // 1. Рандомний Дебаф (від збиття Фази 2)
+                const debuffName = d.activeDebuffName || 'Немає';
+                let debuffDesc = '<span style="color: #8a9bac;">Фаза 2 ще ціла</span>';
+                
+                if (debuffName !== 'Немає') {
+                    // Дістаємо оригінальний шаблон риби та конфіг дебафів
+                    const fishTemplate = CONFIG.spawns.fishes.find(f => f.id === d.hookedFish?.id) || d.hookedFish;
+                    const b = fishTemplate?.physics?.behaviors || {};
+                    const c = CONFIG.stamina.mechanics.debuffs || {};
+                    
+                    let stateName = 'UNKNOWN';
+                    let calcStr = debuffName;
+                    
+                    // Формуємо детальну математику залежно від дебафу
+                    if (debuffName === 'swimPull' && b.swim) {
+                        stateName = 'SWIM';
+                        const orig = b.swim.pull;
+                        const diff = orig * (1 - c.swimPullMult);
+                        calcStr = `Тяга: ${orig.toFixed(2)} - ${diff.toFixed(2)} (-${Math.round((1-c.swimPullMult)*100)}%)`;
+                    } else if (debuffName === 'dashMaxTime' && b.dash) {
+                        stateName = 'DASH';
+                        const orig = b.dash.maxTime;
+                        const diff = orig * (1 - c.dashMaxTimeMult);
+                        calcStr = `Час: ${orig}ms - ${diff}ms (-${Math.round((1-c.dashMaxTimeMult)*100)}%)`;
+                    } else if (debuffName === 'idleMaxTime' && b.idle) {
+                        stateName = 'IDLE';
+                        const orig = b.idle.maxTime;
+                        const diff = orig * (c.idleMaxTimeMult - 1);
+                        calcStr = `Час: ${orig}ms + ${diff}ms (+${Math.round((c.idleMaxTimeMult-1)*100)}%)`;
+                    } else if (debuffName === 'dashPull' && b.dash) {
+                        stateName = 'DASH';
+                        const orig = b.dash.pull;
+                        const diff = orig * (1 - c.dashPullMult);
+                        calcStr = `Тяга: ${orig.toFixed(2)} - ${diff.toFixed(2)} (-${Math.round((1-c.dashPullMult)*100)}%)`;
+                    } else if (debuffName === 'restWeight' && b.rest) {
+                        stateName = 'REST';
+                        const orig = b.rest.weight;
+                        const diff = c.restWeightAdd;
+                        calcStr = `Шанс (Вага): ${orig} + ${diff}`;
+                    } else if (debuffName === 'restMaxTime' && b.rest) {
+                        stateName = 'REST';
+                        const orig = b.rest.maxTime;
+                        const diff = orig * (c.restMaxTimeMult - 1);
+                        calcStr = `Час: ${orig}ms + ${diff}ms (+${Math.round((c.restMaxTimeMult-1)*100)}%)`;
+                    }
+                    
+                    const sColor = this.#getStateColor(stateName);
+                    debuffDesc = `<span style="color: ${sColor}; font-weight: bold;">[${stateName}]</span> <span style="color: #ffaa00; font-size: 11px;">${calcStr}</span>`;
+                }
+                
+                html += `<div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;"><span>Рандом:</span> <span>${debuffDesc}</span></div>`;
+
+                // 2. Дебаф Підкорення (Mastery)
+                const masteryRatio = CONFIG.stamina.mechanics.masteryTimeRatio ?? 0.5;
+                const exhaustionTime = d.exhaustionDurationMs || 1000;
+                const targetTimeMs = exhaustionTime * masteryRatio;
+                
+                const currentTimer = d.masteryTimerMs || 0;
+                const currentMult = d.masteryCurrentMult || 1.0;
+                
+                let masteryHtml = '';
+                
+                if (currentTimer === 0 && currentMult === 1.0) {
+                    masteryHtml = `<span style="color: #8a9bac;">Тримайте по центру...</span>`;
+                } else if (!d.isMasteryActive) {
+                    // Етап 1: Утримання (підготовка)
+                    const percent = Math.min(100, (currentTimer / targetTimeMs) * 100);
+                    const timeSec = (currentTimer / 1000).toFixed(1);
+                    const targetSec = (targetTimeMs / 1000).toFixed(1);
+                    masteryHtml = `
+                        <div style="color: #00ccff; font-size: 11px; font-weight: bold;">[ФАЗА 1] Утримання: ${percent.toFixed(0)}%</div>
+                        <div style="color: #8a9bac; font-size: 11px; margin-top: 2px;">Час: ${timeSec} / ${targetSec} сек</div>
+                    `;
+                } else {
+                    // Етап 2: Здавлювання (сила риби падає)
+                    const drainTimer = currentTimer - targetTimeMs;
+                    const percent = Math.min(100, (drainTimer / targetTimeMs) * 100);
+                    const powerLostPct = ((1.0 - currentMult) * 100).toFixed(1);
+                    
+                    // Рахуємо абсолютну втрату від ЗАЛИШКОВОЇ бази (до застосування множника Mastery)
+                    const baseWithoutMastery = currentMult > 0 ? (d.fishBasePower / currentMult) : d.fishBasePower;
+                    const absoluteLoss = baseWithoutMastery - d.fishBasePower;
+
+                    const timeSec = (drainTimer / 1000).toFixed(1);
+                    const targetSec = (targetTimeMs / 1000).toFixed(1);
+                    
+                    masteryHtml = `
+                        <div style="color: #ff4444; font-size: 11px; font-weight: bold;">[ФАЗА 2] Здавлювання: ${percent.toFixed(0)}%</div>
+                        <div style="color: #8a9bac; font-size: 11px; margin-top: 2px;">Час: ${timeSec} / ${targetSec} сек</div>
+                        <div style="color: #00ff80; font-weight: bold; margin-top: 6px; font-size: 11px;">
+                            ВПАЛА НА: -${powerLostPct}% <br>
+                            <span style="color: #ffaa00;">(-${absoluteLoss.toFixed(2)} од. від поточної)</span>
+                        </div>
+                    `;
+                }
+
+                html += `<div style="margin-bottom: 2px;"><span>Майстерність:</span></div>`;
+                html += `<div style="background: rgba(0,0,0,0.3); padding: 6px; border-radius: 4px; border-left: 3px solid #ff00ff;">${masteryHtml}</div>`;
+                html += `<div style="margin-bottom: 12px;"></div>`;
             }
 
             if (OVERLAY_MODULES.worstCase) {
