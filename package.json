@@ -1,9 +1,9 @@
 {
   "name": "name",
-  "source": "src/index.html",
+  "source": "index.html",
   "scripts": {
     "start": "parcel --open",
-    "build": "rm -rf dist .parcel-cache && parcel build src/index.html --public-url ./",
+    "build": "rm -rf dist .parcel-cache && parcel build index.html --public-url ./",
     "deploy": "npm run build && npx gh-pages -d dist"
   },
   "dependencies": {
