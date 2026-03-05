@@ -276,8 +276,8 @@ const CONFIG = {
             maxSequences: [1, 5],
             sequenceIntervalMs: [1555, 5333],
             
-            chanceGuaranteed: 0.99,
-            chanceNormal: 0.01,
+            chanceGuaranteed: 0.50,
+            chanceNormal: 0.50,
             normalIters: [1, 10],
             guaranteedIters: [1, 3],
             intervalMs: [300, 800],

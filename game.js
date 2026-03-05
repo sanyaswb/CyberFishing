@@ -677,6 +677,26 @@ class Game {
 
             this.#lastGameState = this.#gameState;
 
+            // --- ДОДАНО: КОМПЛЕКСНИЙ ЗАПОБІЖНИК ВІД ВИХОДУ НА БЕРЕГ ---
+            const bounds = this.#locationMap.getCastableBoundsVirtual(CONFIG.locations.cellSize);
+            const virtualBottomY = bounds ? bounds.bottom : Infinity;
+            const mapBottomScreenY = this.#projector.virtualToScreen(0, virtualBottomY).y;
+            
+            const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
+            const rodTopY = rodScreenY - 200;
+            
+            const distY = sPos.y - rodTopY;
+
+            if (distY < 0) { 
+                const minRatio = (mapBottomScreenY - rodTopY) / distY;
+                lineLengthRatio = Math.max(lineLengthRatio, minRatio);
+            }
+
+            const targetYAfterShrink = rodTopY + distY * lineLengthRatio;
+            const maxAllowedDrop = Math.max(0, mapBottomScreenY - targetYAfterShrink);
+            
+            lineDropOffset = Math.min(lineDropOffset, maxAllowedDrop);
+
             const currentTension = this.#tensionMeter ? this.#tensionMeter.getTension() : 0;
             this.#renderer.drawRodLine(sPos, this.#gameState, currentTension, lineLengthRatio, lineDropOffset, CONFIG);
             
