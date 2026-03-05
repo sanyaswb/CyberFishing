@@ -112,11 +112,21 @@ class LocationMap {
         const ratio = designCellSize / actualCellSize;
         if (ratio !== 1) {
             const scaleZone = (z) => {
-                z.x = Math.round(z.x * ratio);
-                z.y = Math.round(z.y * ratio);
-                z.w = Math.round(z.w * ratio);
-                z.h = Math.round(z.h * ratio);
+                // Перераховуємо саму зону
+                if (z.x !== undefined) z.x = Math.round(z.x * ratio);
+                if (z.y !== undefined) z.y = Math.round(z.y * ratio);
+                if (z.w !== undefined) z.w = Math.round(z.w * ratio);
+                if (z.h !== undefined) z.h = Math.round(z.h * ratio);
+                
+                // --- ДОДАНО: Перераховуємо також дозволені межі руху (bounds) ---
+                if (z.bounds) {
+                    z.bounds.x = Math.round(z.bounds.x * ratio);
+                    z.bounds.y = Math.round(z.bounds.y * ratio);
+                    z.bounds.w = Math.round(z.bounds.w * ratio);
+                    z.bounds.h = Math.round(z.bounds.h * ratio);
+                }
             };
+            
             if (this.#config.zones.castable) this.#config.zones.castable.forEach(scaleZone);
             if (this.#config.zones.collisions) this.#config.zones.collisions.forEach(scaleZone);
             if (this.#config.zones.snags) this.#config.zones.snags.forEach(scaleZone);
@@ -359,7 +369,7 @@ class LocationMap {
             }
         }
 
-        const castableZone = this.#config.zones.castable[0];
+        const castableZone = this.#config.zones.castable?.[0];
         if (castableZone && castableZone.adaptiveX) {
             for (const dz of this.#dynamicZones) {
                 if (dz.bounds) {
