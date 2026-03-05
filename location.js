@@ -425,7 +425,7 @@ class LocationMap {
     getCols() { return this.#cols; }
     getRows() { return this.#rows; }
     getDynamicZones() { return this.#dynamicZones; }
-    getDebugCanvas() { return this.#debugCanvas; } // <--- Геттер для кешу
+    getDebugCanvas() { return this.#debugCanvas; }
     getCellAtVirtualPos(vX, vY, cellSize) {
         const c = Math.floor(vX / cellSize);
         const r = Math.floor(vY / cellSize);
@@ -435,10 +435,9 @@ class LocationMap {
 }
 
 class ViewportProjector {
+    #config;
     #virtualWidth;
     #virtualHeight;
-    #safeZoneTop;
-    #safeZoneBottom;
     #canvasWidth;
     #canvasHeight;
     #scale;
@@ -446,17 +445,15 @@ class ViewportProjector {
     #offsetY;
     #cameraX;
     #maxScrollX;
-    #alignment;
     #isFirstUpdate;
 
+    // TODO: В майбутньому рядок 'test' треба буде зробити змінною (currentLocation)
+    #locationId = 'test'; 
+
     constructor(config) {
+        this.#config = config;
         this.#virtualWidth = config.locations.baseResolution.width;
         this.#virtualHeight = config.locations.baseResolution.height;
-        this.#safeZoneTop = config.locations.map.test.safeZone.top;
-        this.#safeZoneBottom = config.locations.map.test.safeZone.bottom;
-        
-        // Зчитуємо об'єкт вирівнювання (з фоллбеком)
-        this.#alignment = config.locations.map.test.initialAlignment || { x: 'center', y: 'safeZone' };
         
         this.#scale = 1;
         this.#offsetX = 0;
@@ -469,30 +466,35 @@ class ViewportProjector {
     }
 
     update(canvasWidth, canvasHeight) {
-        if (this.#canvasWidth === canvasWidth && this.#canvasHeight === canvasHeight) return false;
+        // Динамічно зчитуємо актуальні дані з конфігу (щоб DevTools працював миттєво)
+        const mapConfig = this.#config.locations.map[this.#locationId];
+        const safeZoneTop = mapConfig.safeZone.top;
+        const safeZoneBottom = mapConfig.safeZone.bottom;
+        const alignment = mapConfig.initialAlignment || { x: 'center', y: 'safeZone' };
 
+        // Прибрали жорстке блокування по розміру канвасу, математика тут дуже швидка
         this.#canvasWidth = canvasWidth;
         this.#canvasHeight = canvasHeight;
 
         // 1. РОЗРАХУНОК МАСШТАБУ (Cover Effect)
-        const safeZoneHeight = this.#safeZoneBottom - this.#safeZoneTop;
+        const safeZoneHeight = safeZoneBottom - safeZoneTop;
         const scaleForWidth = this.#canvasWidth / this.#virtualWidth;
         const scaleForSafeHeight = this.#canvasHeight / safeZoneHeight;
         
         this.#scale = Math.max(scaleForWidth, scaleForSafeHeight);
 
-        // 2. ВЕРТИКАЛЬНЕ ВИРІВНЮВАННЯ (Залежить від alignment.y)
+        // 2. ВЕРТИКАЛЬНЕ ВИРІВНЮВАННЯ
         const scaledHeight = this.#virtualHeight * this.#scale;
         
-        if (this.#alignment.y === 'top') {
-            this.#offsetY = 0; // Притиснути до верху
-        } else if (this.#alignment.y === 'bottom') {
-            this.#offsetY = this.#canvasHeight - scaledHeight; // Притиснути до низу
-        } else if (this.#alignment.y === 'center') {
-            this.#offsetY = (this.#canvasHeight - scaledHeight) / 2; // Центр всієї картинки
+        if (alignment.y === 'top') {
+            this.#offsetY = 0;
+        } else if (alignment.y === 'bottom') {
+            this.#offsetY = this.#canvasHeight - scaledHeight;
+        } else if (alignment.y === 'center') {
+            this.#offsetY = (this.#canvasHeight - scaledHeight) / 2;
         } else { 
-            // 'safeZone' - центрує рівно ігрову зелену зону (для ідеального фокусу на воді)
-            const scaledSafeZoneTop = this.#safeZoneTop * this.#scale;
+            // 'safeZone' - центрує рівно ігрову зелену зону
+            const scaledSafeZoneTop = safeZoneTop * this.#scale;
             const scaledSafeZoneHeight = safeZoneHeight * this.#scale;
             this.#offsetY = ((this.#canvasHeight - scaledSafeZoneHeight) / 2) - scaledSafeZoneTop;
         }
@@ -503,8 +505,8 @@ class ViewportProjector {
 
         if (this.#maxScrollX > 0) {
             if (this.#isFirstUpdate) {
-                if (this.#alignment.x === 'center') this.#cameraX = this.#maxScrollX / 2;
-                else if (this.#alignment.x === 'right') this.#cameraX = this.#maxScrollX;
+                if (alignment.x === 'center') this.#cameraX = this.#maxScrollX / 2;
+                else if (alignment.x === 'right') this.#cameraX = this.#maxScrollX;
                 else this.#cameraX = 0; // left
                 
                 this.#isFirstUpdate = false;

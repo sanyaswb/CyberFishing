@@ -133,5 +133,9 @@ class DevTools {
         }
         target[path[path.length - 1]] = newValue;
         console.log(`[DevTools] Оновлено CONFIG.${path.join('.')} =`, newValue);
+
+        document.dispatchEvent(new CustomEvent('config-updated', { 
+            detail: { path: path, value: newValue } 
+        }));
     }
 }

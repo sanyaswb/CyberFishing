@@ -44,10 +44,19 @@ class Game {
         this.#uiManager = new UIManager(CONFIG);
         this.#uiManager.onNetClick = () => this.#handleNetClick();
 
-        this.#uiManager.onContinueClick = () => this.#resetGame(); // <--- ДОДАНО
+        this.#uiManager.onContinueClick = () => this.#resetGame();
         
         this.#locationMap = new LocationMap('test', CONFIG);
         this.#projector = new ViewportProjector(CONFIG);
+
+        document.addEventListener('config-updated', (e) => {
+            if (e.detail && e.detail.path && e.detail.path[0] === 'locations') {
+                if (this.#projector) {
+                    this.#projector.update(0, 0); 
+                    this.#projector.update(this.#canvas.width, this.#canvas.height);
+                }
+            }
+        });
         
         this.#depthUI = new DepthSelectorUI();
         this.#timeUI = new TimeDisplayUI(); // <--- ДОДАНО ОСЬ ЦЕ
@@ -355,18 +364,6 @@ class Game {
             top: Math.max(vTopLeft.y, castableBounds ? castableBounds.top : 0),
             bottom: Math.min(vBottomRight.y, castableBounds ? castableBounds.bottom : 2560)
         };
-
-        // if (this.#gameState === 'waiting') {
-        //     this.#float.update(dynamicBounds, dt, dynamicEnv); 
-        //     const hookedFish = this.#biteSystem.evaluateBite(dt, envData, playerGear);
-            
-        //     if (hookedFish) {
-        //         this.#gameState = 'biting';
-        //         this.#currentBitingFish = hookedFish;
-        //         this.#float.startBite();
-        //         return;
-        //     }
-
             if (this.#gameState === 'waiting') {
             this.#float.update(dynamicBounds, dt, dynamicEnv); 
             let hookedFish = this.#biteSystem.evaluateBite(dt, envData, playerGear);
@@ -691,3 +688,4 @@ class Game {
 
 const game = new Game('gameCanvas');
 game.start();
+CacheManager.printStorageUsage();

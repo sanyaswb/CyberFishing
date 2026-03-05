@@ -114,22 +114,64 @@ class UIDraggableButton {
         if (savedPos) {
             this.#element.style.position = 'absolute';
             this.#element.style.margin = '0';
-            this.#element.style.right = 'auto';
-            this.#element.style.bottom = 'auto';
-            this.#element.style.left = savedPos.x;
-            this.#element.style.top = savedPos.y;
-            // Також вимикаємо плавний перехід, щоб кнопка не "летіла" на місце при старті
-            this.#element.style.transition = 'none'; 
+            this.#element.style.transition = 'none';
+            
+            // Якщо це старий кеш (де ми зберігали x та y), для сумісності
+            if (savedPos.x !== undefined) {
+                this.#element.style.left = savedPos.x;
+                this.#element.style.top = savedPos.y;
+                this.#element.style.right = 'auto';
+                this.#element.style.bottom = 'auto';
+            } else {
+                // Новий розумний кеш з прив'язкою до країв
+                this.#element.style.left = savedPos.left || 'auto';
+                this.#element.style.right = savedPos.right || 'auto';
+                this.#element.style.top = savedPos.top || 'auto';
+                this.#element.style.bottom = savedPos.bottom || 'auto';
+            }
         }
     }
 
     #savePosition() {
         if (typeof CacheManager === 'undefined') return;
         
-        const pos = {
-            x: this.#element.style.left,
-            y: this.#element.style.top
-        };
+        const rect = this.#element.getBoundingClientRect();
+        const winWidth = window.innerWidth;
+        const winHeight = window.innerHeight;
+
+        // Рахуємо відстань до всіх чотирьох країв екрана
+        const distLeft = rect.left;
+        const distRight = winWidth - rect.right;
+        const distTop = rect.top;
+        const distBottom = winHeight - rect.bottom;
+
+        const pos = {};
+
+        // По горизонталі: прив'язуємо до того краю, який ближче
+        if (distLeft <= distRight) {
+            pos.left = `${Math.max(0, distLeft)}px`;
+            pos.right = 'auto';
+        } else {
+            pos.right = `${Math.max(0, distRight)}px`;
+            pos.left = 'auto';
+        }
+
+        // По вертикалі: прив'язуємо до верху або до низу
+        if (distTop <= distBottom) {
+            pos.top = `${Math.max(0, distTop)}px`;
+            pos.bottom = 'auto';
+        } else {
+            pos.bottom = `${Math.max(0, distBottom)}px`;
+            pos.top = 'auto';
+        }
+
+        // Застосовуємо ці "розумні" координати одразу до елемента
+        this.#element.style.left = pos.left;
+        this.#element.style.right = pos.right;
+        this.#element.style.top = pos.top;
+        this.#element.style.bottom = pos.bottom;
+
+        // Зберігаємо в кеш
         CacheManager.set(`drag_pos_${this.#id}`, pos);
     }
     // -------------------
