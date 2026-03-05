@@ -1691,6 +1691,8 @@ class Renderer {
     }
 
     drawCatchZone(locationMap, projector, config) {
+        if (!config.locations.debugVisuals) return;
+
         const bounds = locationMap.getCastableBoundsVirtual(config.locations.cellSize);
         const virtualBottomY = bounds ? bounds.bottom : Infinity;
         const mapBottomScreenY = projector.virtualToScreen(0, virtualBottomY).y;
@@ -1698,20 +1700,28 @@ class Renderer {
         const catchLineY = Math.min(mapBottomScreenY, this.#canvas.height);
         const heightToDraw = this.#canvas.height - catchLineY;
 
-        if (heightToDraw > 0) {
-            this.#ctx.fillStyle = config.ui?.catchZone?.color || 'rgba(0, 150, 255, 0.3)';
-            this.#ctx.fillRect(0, catchLineY, this.#canvas.width, heightToDraw);
+        // Зчитуємо стани прямо з конфігу локацій
+        const showCatch = config.locations.showCatchZone !== false; 
+        const showNet = config.locations.showNetZone !== false;     
+
+        // 1. МАЛЮЄМО СИНЮ ЗОНУ
+        if (showCatch) {
+            if (heightToDraw > 0) {
+                this.#ctx.fillStyle = config.ui?.catchZone?.color || 'rgba(0, 150, 255, 0.3)';
+                this.#ctx.fillRect(0, catchLineY, this.#canvas.width, heightToDraw);
+            }
+
+            const lineDrawY = Math.min(catchLineY, this.#canvas.height - 2); 
+            this.#ctx.strokeStyle = 'rgba(0, 200, 255, 0.8)';
+            this.#ctx.lineWidth = 2;
+            this.#ctx.beginPath();
+            this.#ctx.moveTo(0, lineDrawY);
+            this.#ctx.lineTo(this.#canvas.width, lineDrawY);
+            this.#ctx.stroke();
         }
 
-        const lineDrawY = Math.min(catchLineY, this.#canvas.height - 2); 
-        this.#ctx.strokeStyle = 'rgba(0, 200, 255, 0.8)';
-        this.#ctx.lineWidth = 2;
-        this.#ctx.beginPath();
-        this.#ctx.moveTo(0, lineDrawY);
-        this.#ctx.lineTo(this.#canvas.width, lineDrawY);
-        this.#ctx.stroke();
-
-        if (config.net && config.net.active) {
+        // 2. МАЛЮЄМО ЗЕЛЕНУ ЗОНУ
+        if (showNet && config.net && config.net.active) {
             const netBonusPx = config.net.length * 10;
             const netLineY = catchLineY - netBonusPx;
             

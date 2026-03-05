@@ -40,13 +40,15 @@ const CONFIG = {
     },
 
     locations: {
-        debugVisuals: false,      // Головний вимикач (якщо false - взагалі нічого не малюється)
-        debugZones: true,         // Показувати кольорові квадрати (зелені, червоні)
-        debugGrid: true,          // Показувати лінії сітки
-        debugDepthText: true,     // Показувати цифри глибини
-        enableCastable: true,     // Зони, де можна закидати вудку
-        enableCollisions: true,
-        enableSnags: true,        // Динамічні зони (наприклад, косяк риби)
+        debugVisuals: false,        // Головний вимикач (якщо false - взагалі нічого не малюється)
+        debugZones: true,           // Показувати кольорові квадрати (зелені, червоні)
+        debugGrid: true,            // Показувати лінії сітки
+        debugDepthText: true,       // Показувати цифри глибини
+        enableCastable: true,       // Зони, де можна закидати вудку
+        enableCollisions: true,     // Колізії з землею (червоні зони) - забороняють закидати.
+        enableSnags: true,          // Динамічні зони (наприклад, косяк риби)
+        showCatchZone: true,        // Відображення синьої зони
+        showNetZone: true,          // Відображення зеленої зони
 
         debugOpacity: 1.0,
         baseResolution: { width: 2560, height: 2560 },
