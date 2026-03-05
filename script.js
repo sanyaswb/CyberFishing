@@ -1105,6 +1105,8 @@ class FloatEntity {
             const dirAngle = Math.random() * Math.PI * 2;
             moveVelX = Math.cos(dirAngle) * speed;
             moveVelY = Math.sin(dirAngle) * speed;
+
+            duration = Math.max(100, moveTime - holdDuration);
         }
 
         if (targetAngle !== 0) {
@@ -1142,10 +1144,23 @@ class FloatEntity {
 
     #nextAnimStep() {
         const anim = this.#sequenceQueue.shift();
+        
+        // Запам'ятовуємо, чи була попередня фаза гарантованою
+        const wasGuaranteed = this.#isGuaranteed; 
+
         this.#animDuration = anim.duration;
         this.#animTimer = anim.duration;
         this.#currentColor = anim.color || this.#baseColor;
         this.#isGuaranteed = anim.isGuaranteed || false;
+
+        // --- ДОДАНО: Запобіжник ---
+        // Якщо червона фаза закінчилася, примусово гасимо залишковий рух, 
+        // щоб поплавок не "летів", коли він вже жовтий
+        if (wasGuaranteed && !this.#isGuaranteed) {
+            this.#biteMoveTimer = 0;
+            this.#currentBiteMoveVelocity.x = 0;
+            this.#currentBiteMoveVelocity.y = 0;
+        }
 
         this.#startAnimState = {
             angle: this.#currentAngle,
