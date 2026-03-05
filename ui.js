@@ -287,7 +287,7 @@ class UIManager {
             } else {
                 document.exitFullscreen();
             }
-        }, this.#config);
+        }, this.#config, { id: 'btn_fullscreen' });
 
         document.addEventListener('fullscreenchange', () => {
             this.#fullscreenBtn.innerHTML = document.fullscreenElement ? '🗗' : '⛶';
@@ -298,7 +298,7 @@ class UIManager {
 
     #initNetBtn() {
         this.#netBtn = document.createElement('button');
-        this.#netBtn.innerHTML = '🕸️ NET';
+        this.#netBtn.innerHTML = '🕸️';
         
         Object.assign(this.#netBtn.style, {
             position: 'absolute',
@@ -322,7 +322,7 @@ class UIManager {
             if (this.#isNetReady && this.onNetClick) {
                 this.onNetClick();
             }
-        }, this.#config);
+        }, this.#config, { id: 'btn_net' });
 
         document.body.appendChild(this.#netBtn);
     }
