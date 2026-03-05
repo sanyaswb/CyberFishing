@@ -5,19 +5,19 @@ class DevTools {
     
     // --- ПОРЯДОК ГОЛОВНИХ СЕКЦІЙ ---
     #sectionOrder = [
-        'OVERLAY MODULES', // 0
-        'CONSOLE MODULES', // 1
-        'rod',             // 2
-        'reel',            // 3
-        'hook',            // 4
-        'tension',         // 5
-        'stamina',         // 6
-        'physics',         // 7
-        'net',             // 8
-        'locations',       // 9
-        'spawns',          // 10
-        'ui',              // 11
-        'debug'            // 12
+        'debug',
+        'OVERLAY MODULES',
+        'CONSOLE MODULES',
+        'spawns',
+        'rod',
+        'reel',
+        'hook',
+        'tension',
+        'stamina',
+        'physics',
+        'net',
+        'locations',
+        'ui',
     ];
     
     #excludeKeys = ['id', 'name', 'bgUrls', 'depthUrl', 'endpoint', 'backgroundColor', 'colorGradient', 'statuses', 'zones'];

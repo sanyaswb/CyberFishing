@@ -82,12 +82,16 @@ class UIDraggableButton {
     #startY;
     #offsetX;
     #offsetY;
+    #id; // Унікальний ідентифікатор для кешу
 
     constructor(element, onClickCallback, config, options = {}) {
         this.#element = element;
         this.#onClickCallback = onClickCallback;
         this.#config = config;
         this.#options = options; 
+        
+        // Визначаємо ID (пріоритет: options.id -> element.id -> дефолтна назва)
+        this.#id = options.id || element.id || 'default_draggable';
 
         this.#holdTimer = null;
         this.#isDragging = false;
@@ -99,7 +103,36 @@ class UIDraggableButton {
         this.onPointerUp = this.onPointerUp.bind(this);
         
         this.#initEvents();
+        this.#restorePosition(); // Відновлюємо позицію при створенні
     }
+
+    // --- МАГІЯ КЕШУ ---
+    #restorePosition() {
+        if (typeof CacheManager === 'undefined') return;
+        
+        const savedPos = CacheManager.get(`drag_pos_${this.#id}`);
+        if (savedPos) {
+            this.#element.style.position = 'absolute';
+            this.#element.style.margin = '0';
+            this.#element.style.right = 'auto';
+            this.#element.style.bottom = 'auto';
+            this.#element.style.left = savedPos.x;
+            this.#element.style.top = savedPos.y;
+            // Також вимикаємо плавний перехід, щоб кнопка не "летіла" на місце при старті
+            this.#element.style.transition = 'none'; 
+        }
+    }
+
+    #savePosition() {
+        if (typeof CacheManager === 'undefined') return;
+        
+        const pos = {
+            x: this.#element.style.left,
+            y: this.#element.style.top
+        };
+        CacheManager.set(`drag_pos_${this.#id}`, pos);
+    }
+    // -------------------
 
     #initEvents() {
         this.#element.addEventListener('pointerdown', this.onPointerDown);
@@ -190,6 +223,8 @@ class UIDraggableButton {
                 this.#element.style.boxShadow = '';
                 this.#element.style.transition = '';
             }
+            // Зберігаємо позицію після того, як кинули кнопку
+            this.#savePosition(); 
         } else {
             const dist = Math.hypot(e.clientX - this.#startX, e.clientY - this.#startY);
             if (dist < 10 && this.#onClickCallback) this.#onClickCallback(e);
@@ -698,63 +733,6 @@ class DevToolsUI {
 
         const style = document.createElement('style');
         style.id = 'devtools-styles';
-        style.innerHTML = `
-            .devtools-panel {
-                position: fixed; top: 0; left: -400px; width: 350px; height: 100vh;
-                background: rgba(17, 26, 34, 0.95); border-right: 2px solid #00ccff;
-                z-index: 10000; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                display: flex; flex-direction: column; font-family: monospace; color: #fff;
-                box-shadow: 10px 0 20px rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px);
-            }
-            .devtools-panel.open { left: 0; }
-            .devtools-header {
-                padding: 15px; border-bottom: 1px solid #00ccff; display: flex; 
-                justify-content: space-between; align-items: center; background: #0b1520;
-            }
-            .devtools-header h2 { margin: 0; font-size: 18px; color: #00ff80; }
-            .devtools-close {
-                background: none; border: none; color: #ff4444; font-size: 24px; 
-                cursor: pointer; font-weight: bold; padding: 0 5px;
-            }
-            .devtools-body {
-                flex: 1; padding: 15px; overflow-y: auto; display: flex; 
-                flex-direction: column; gap: 10px;
-            }
-            .devtools-body::-webkit-scrollbar { width: 6px; }
-            .devtools-body::-webkit-scrollbar-track { background: transparent; }
-            .devtools-body::-webkit-scrollbar-thumb { background: #00ccff; border-radius: 3px; }
-            
-            .devtools-section { margin-top: 5px; }
-            .devtools-section-title { 
-                font-size: 14px; color: #00ccff; cursor: pointer; padding: 8px 10px; 
-                background: rgba(0, 204, 255, 0.1); border-radius: 4px; user-select: none;
-                transition: background 0.2s, color 0.2s; font-weight: bold; display: flex; gap: 8px;
-            }
-            .devtools-section-title:hover { background: rgba(0, 204, 255, 0.2); color: #fff; }
-            .devtools-section-content { 
-                padding-left: 15px; border-left: 2px solid #00ccff; margin-left: 5px; margin-top: 5px;
-            }
-            
-            .devtools-row { 
-                display: flex; justify-content: space-between; align-items: center; 
-                margin-bottom: 8px; padding: 4px 0; border-bottom: 1px dashed #2a3b4c; 
-            }
-            .devtools-label { font-size: 13px; color: #ccc; }
-            
-            .devtools-input-num, .devtools-input-text {
-                background: #0b1520; border: 1px solid #4a5b6c; color: #fff; padding: 4px 8px;
-                border-radius: 4px; text-align: right; font-family: monospace;
-            }
-            .devtools-input-num { width: 70px; }
-            .devtools-input-text { width: 110px; }
-            
-            .switch { position: relative; display: inline-block; width: 36px; height: 18px; }
-            .switch input { opacity: 0; width: 0; height: 0; }
-            .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #4a5b6c; transition: .2s; border-radius: 18px; }
-            .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .2s; border-radius: 50%; }
-            input:checked + .slider { background-color: #00ff80; }
-            input:checked + .slider:before { transform: translateX(18px); }
-        `;
         document.head.appendChild(style);
     }
 
@@ -776,7 +754,7 @@ class DevToolsUI {
         UIUtils.makeSolid(this.#btn);
         
         if (typeof UIDraggableButton !== 'undefined') {
-            new UIDraggableButton(this.#btn, this.#onToggleCallback, config, { noTransform: true });
+            new UIDraggableButton(this.#btn, this.#onToggleCallback, config, { id: 'devtools_btn', noTransform: true });
         } else {
             this.#btn.addEventListener('click', this.#onToggleCallback);
         }

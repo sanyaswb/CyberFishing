@@ -1,4 +1,3 @@
-// Зручний конфіг для увімкнення/вимкнення блоків оверлею
 const OVERLAY_MODULES = {
     echo: true,          // 📡 ЕХОЛОТ (Глибина, Шанси кльову)
     state: true,         // 🧠 ПОВЕДІНКА (STATE)
@@ -18,7 +17,7 @@ class DebugOverlay {
     #intervalId;
     #data = {};
     #userScale = 1.0; 
-
+    
     constructor() {
         this.#initDOM();
         this.#initListener();
@@ -73,7 +72,7 @@ class DebugOverlay {
         document.body.appendChild(this.#container);
 
         if (typeof UIDraggableButton !== 'undefined' && typeof CONFIG !== 'undefined') {
-            new UIDraggableButton(this.#container, null, CONFIG, { noTransform: true });
+            new UIDraggableButton(this.#container, null, CONFIG, { id: 'debug_overlay', noTransform: true });
         }
     }
 
