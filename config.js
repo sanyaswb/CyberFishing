@@ -276,8 +276,8 @@ const CONFIG = {
             maxSequences: [1, 5],
             sequenceIntervalMs: [1555, 5333],
             
-            chanceGuaranteed: 0.30,
-            chanceNormal: 0.70,
+            chanceGuaranteed: 0.99,
+            chanceNormal: 0.01,
             normalIters: [1, 10],
             guaranteedIters: [1, 3],
             intervalMs: [300, 800],
@@ -300,9 +300,9 @@ const CONFIG = {
                 sinkHeightPercent: [-100, -80],
                 riseHeightPercent: [30, 70],
                 holdDurationMs: [1000, 2500],
-                tiltAngle: [75, 90],
-                movementSpeedMult: [2.0, 3.0],
-                movementDurationMult: [3.0, 1.5]
+                tiltAngle: [85, 90],
+                movementSpeedMult: [4.0, 3.0],
+                movementDurationMult: [2.0, 2.0]
             }
         }
     },
@@ -366,42 +366,6 @@ const CONFIG = {
         checkIntervalMs: 1000,
         slackLinePenaltyTimeMs: 10000,      // Час провисання до штрафу (10 сек) (НОВЕ)
         slackLineEscapeChance: 0.10         // Шанс сходу при провисанні (1%) (НОВЕ)
-    },
-
-    fish: {
-        level: 4,
-        weight: 4,
-        resistance: 1,
-        agility: 1.0,
-        edgePowerMultiplier: 1.0,
-        bounceCooldownMs: 2000,
-        dirChangeMinMs: 500,
-        dirChangeMaxMs: 1500,
-        lastDashTrigger: {
-            targetState: 'lastDash',
-            isLocked: false,
-            chance: 0.50,
-            checkIntervalMs: 1000
-        },
-
-        behaviors: {
-            idle: { pull: 0.0, move: 0.5, minTime: 500, maxTime: 2000, weight: 5 },
-            rest: { pull: 0.2, move: 0.1, minTime: 500, maxTime: 2500, weight: 50 },
-            swim: { pull: 0.0, move: 0.5, minTime: 2000, maxTime: 4000, weight: 35 },
-            dash: { pull: 0.0, move: 1.2, minTime: 500, maxTime: 1200, weight: 10 },
-
-            lastDash: { 
-                pull: 0.6, 
-                move: 2.5, 
-                minTime: 1000, 
-                maxTime: 3000, 
-                weight: 0,
-                dirChangeMinMs: 500,
-                dirChangeMaxMs: 1000,
-                agility: 1.5, // Increased agility during last dash
-                edgePowerMultiplier: 1.2 // No extra edge power during last dash, but can be adjusted if needed
-            }
-        }
     },
 
     physics: {

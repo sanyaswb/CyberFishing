@@ -179,6 +179,10 @@ class Game {
             this.#gameState = 'failed';
             this.failReason = 'net_escape';
         }
+
+        if (CONFIG.debug?.overlay) {
+            document.dispatchEvent(new CustomEvent('debug-live-update', { detail: { gameState: this.#gameState } }));
+        }
     }
 
     #resetGame() {
@@ -190,7 +194,10 @@ class Game {
         
         if (this.#tensionMeter) this.#tensionMeter.reset();
         if (this.#biteSystem) this.#biteSystem.reset();
-        this.#float.stopBite(); 
+        this.#float.stopBite();
+        if (CONFIG.debug?.overlay) {
+            document.dispatchEvent(new CustomEvent('debug-live-update', { detail: { gameState: 'scouting' } }));
+        }
     }
 
     update(dt) {
@@ -209,7 +216,12 @@ class Game {
                 this.#gameState = 'scouting';
                 if (this.#tensionMeter) this.#tensionMeter.reset();
                 if (this.#biteSystem) this.#biteSystem.reset();
-                return; 
+
+                // --- ДОДАНО ---
+                if (CONFIG.debug?.overlay) {
+                    document.dispatchEvent(new CustomEvent('debug-live-update', { detail: { gameState: 'scouting' } }));
+                }
+                return;
             }
         }
 
@@ -438,6 +450,10 @@ class Game {
                     this.#gameState = 'scouting';
                     this.#currentBitingFish = null;
                     if (this.#tensionMeter) this.#tensionMeter.reset();
+                    // --- ДОДАНО ---
+                    if (CONFIG.debug?.overlay) {
+                        document.dispatchEvent(new CustomEvent('debug-live-update', { detail: { gameState: 'scouting' } }));
+                    }
                 }
             }
             return;
@@ -450,6 +466,11 @@ class Game {
             const reason = this.#tensionMeter.getBreakReason();
             this.failReason = reason;
             document.dispatchEvent(new CustomEvent('fishingFailed', { detail: { reason: reason } }));
+            
+            // --- ДОДАНО: Вимикаємо оверлей ---
+            if (CONFIG.debug?.overlay) {
+                document.dispatchEvent(new CustomEvent('debug-live-update', { detail: { gameState: 'failed' } }));
+            }
             return;
         }
 
@@ -572,6 +593,11 @@ class Game {
 
         if (updatedFloatScreenPos.y >= catchLineY) {
             this.#gameState = 'victory';
+
+            // --- ДОДАНО: Вимикаємо оверлей ---
+            if (CONFIG.debug?.overlay) {
+                document.dispatchEvent(new CustomEvent('debug-live-update', { detail: { gameState: 'victory' } }));
+            }
         }
     }
 
