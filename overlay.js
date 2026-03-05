@@ -27,7 +27,7 @@ class DebugOverlay {
 
     #initDOM() {
         this.#container = document.createElement('div');
-        this.#container.style.cssText = 'position: absolute; top: 10px; left: 10px; background: rgba(11, 21, 32, 0.95); color: #ffffff; padding: 15px 15px 50px 15px; font-family: monospace; font-size: 14px; border: 1px solid #4a5b6c; border-radius: 8px; z-index: 10000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.6); min-width: 280px; transform-origin: top left; touch-action: none; pointer-events: all;';
+        this.#container.style.cssText = 'position: absolute; bottom: 10px; left: 10px; background: rgba(11, 21, 32, 0.95); color: #ffffff; padding: 15px 15px 50px 15px; font-family: monospace; font-size: 14px; border: 1px solid #4a5b6c; border-radius: 8px; z-index: 10000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.6); min-width: 280px; transform-origin: top left; touch-action: none; pointer-events: all;';
         
         UIUtils.makeSolid(this.#container);
 

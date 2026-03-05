@@ -42,7 +42,7 @@ class CastManager {
             }
         }
         
-        if (typeof DEBUG_MODULES !== 'undefined' && DEBUG_MODULES.forces) {
+        if (typeof window.DEBUG_MODULES !== 'undefined' && window.DEBUG_MODULES.forces) {
             console.log(`[CastManager] Закидання. Штраф: -${this.#penaltyLevel * 25}%. Таймер: ${this.#timer}мс`);
         }
     }

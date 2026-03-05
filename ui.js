@@ -3,7 +3,7 @@ const UI_EXCEPTIONS = {
     classes: [],
     ids: []
 };
-// ІНІЦІАЛІЗАЦІЯ ІНТЕРФЕЙСУ ДЛЯ ДОДАТКОВОЇ ВЗАЄМОДІЇ З КОРИСТУВАЧЕМ
+
 function initEngineInterface() {
     const style = document.createElement('style');
     style.innerHTML = `
@@ -46,7 +46,6 @@ function initEngineInterface() {
 
 initEngineInterface();
 
-// УТИЛІТИ ДЛЯ ІНТЕРФЕЙСУ
 class UIUtils {
     static makeSolid(element) {
         if (!element) return;
@@ -71,7 +70,7 @@ class UIUtils {
         element.style.pointerEvents = 'all';
     }
 }
-// УНІВЕРСАЛЬНИЙ КЛАС ДЛЯ ПЕРЕТЯГУВАННЯ ЛЮБОГО ЕЛЕМЕНТА З КЛІКОМ
+
 class UIDraggableButton {
     #element;
     #onClickCallback;
@@ -93,7 +92,6 @@ class UIDraggableButton {
         this.#holdTimer = null;
         this.#isDragging = false;
         
-        // Спочатку робимо солідним (буде зупиняти спливання)
         UIUtils.makeSolid(this.#element);
         
         this.onPointerDown = this.onPointerDown.bind(this);
@@ -104,7 +102,6 @@ class UIDraggableButton {
     }
 
     #initEvents() {
-        // ВИПРАВЛЕННЯ: Використовуємо стандартну фазу для перетягування
         this.#element.addEventListener('pointerdown', this.onPointerDown);
         
         this.#element.addEventListener('click', (e) => {
@@ -114,7 +111,6 @@ class UIDraggableButton {
     }
 
     onPointerDown(e) {
-        // Дозволяємо перетягування, але не даємо події піти до гри
         e.stopPropagation();
         
         if (e.button !== 0 && e.pointerType === 'mouse') return;
@@ -135,7 +131,6 @@ class UIDraggableButton {
             }, this.#config.ui?.dragHoldTimeMs || 1500);
         }
 
-        // Слухачі руху додаємо на вікно або елемент для надійності
         this.#element.addEventListener('pointermove', this.onPointerMove);
         this.#element.addEventListener('pointerup', this.onPointerUp);
         this.#element.addEventListener('pointercancel', this.onPointerUp);
@@ -201,7 +196,7 @@ class UIDraggableButton {
         }
     }
 }
-// ГОЛОВНИЙ КЛАС ДЛЯ УПРАВЛІННЯ ІНТЕРФЕЙСОМ
+
 class UIManager {
     #config;
     #fullscreenBtn;
@@ -210,19 +205,19 @@ class UIManager {
     onNetClick;
     #continueBtn;
     onContinueClick;
-    #settingsUI;
-
+    
     constructor(config) {
         this.#config = config;
         this.#initFullscreenBtn();
         this.#initNetBtn();
         this.#initContinueBtn();
-        this.#settingsUI = new SettingsUI(config);
+        
+        new DevTools(this.#config); 
     }
 
     #initFullscreenBtn() {
         this.#fullscreenBtn = document.createElement('button');
-        this.#fullscreenBtn.innerHTML = '⛶ FULLSCREEN';
+        this.#fullscreenBtn.innerHTML = '⛶';
         
         Object.assign(this.#fullscreenBtn.style, {
             position: 'absolute',
@@ -260,7 +255,7 @@ class UIManager {
         }, this.#config);
 
         document.addEventListener('fullscreenchange', () => {
-            this.#fullscreenBtn.innerHTML = document.fullscreenElement ? '🗗 EXIT FULLSCREEN' : '⛶ FULLSCREEN';
+            this.#fullscreenBtn.innerHTML = document.fullscreenElement ? '🗗' : '⛶';
         });
 
         document.body.appendChild(this.#fullscreenBtn);
@@ -288,7 +283,6 @@ class UIManager {
             borderStyle: 'solid'
         });
 
-        // Кнопку можна перетягувати ЗАВЖДИ. А от клік пройде, тільки якщо вона готова.
         new UIDraggableButton(this.#netBtn, () => {
             if (this.#isNetReady && this.onNetClick) {
                 this.onNetClick();
@@ -383,7 +377,7 @@ class UIManager {
         this.#continueBtn.style.display = isVisible ? 'block' : 'none';
     }
 }
-// БЛОК ІНТЕРФЕЙСУ ВИБОРУ ГЛИБИНИ
+
 class DepthSelectorUI {
     constructor() {
         this.container = document.createElement('div');
@@ -531,7 +525,7 @@ class DepthSelectorUI {
         this.mainContainer.style.display = 'none';
     }
 }
-// БЛОК ІНТЕРФЕЙСУ ІГРОВОГО ЧАСУ
+
 class TimeDisplayUI {
     constructor() {
         this.container = document.createElement('div');
@@ -584,168 +578,49 @@ class TimeDisplayUI {
         }
     }
 }
-// БЛОК ІНТЕРФЕЙСУ НАЛАШТУВАНЬ (ДЕБАГ)
-class SettingsUI {
-    #config;
+
+class DevToolsUI {
+    #panel;
+    #body;
     #btn;
-    #modal;
-    #isOpen = false;
-    
-    // Я прибрав 'fishes', 'timePhases' та 'chances' з виключень, тепер вони доступні для редагування.
-    // Залишаємо лише шляхи, кольори та структурні масиви зон, які не варто чіпати повзунками.
-    #excludeKeys = ['id', 'name', 'bgUrls', 'depthUrl', 'endpoint', 'backgroundColor', 'colorGradient', 'statuses', 'zones'];
+    #onToggleCallback;
 
-    constructor(config) {
-        this.#config = config;
+    constructor(onToggleCallback, config) {
+        this.#onToggleCallback = onToggleCallback;
         this.#initStyles();
-        this.#initBtn();
-        this.#initModal();
+        this.#initBtn(config);
+        this.#initPanel();
     }
 
-    #initStyles() {
-        const style = document.createElement('style');
-        style.innerHTML = `
-            .settings-modal {
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center;
-                z-index: 10000; font-family: monospace; color: #fff;
-            }
-            .settings-content {
-                background: #111a22; border: 2px solid #00ccff; border-radius: 8px;
-                width: 90%; max-width: 600px; max-height: 85vh; display: flex; flex-direction: column;
-                box-shadow: 0 0 20px rgba(0, 204, 255, 0.3);
-            }
-            .settings-header {
-                padding: 15px; border-bottom: 1px solid #00ccff; display: flex; justify-content: space-between;
-                align-items: center; background: #0b1520; border-radius: 8px 8px 0 0;
-            }
-            .settings-header h2 { margin: 0; font-size: 20px; color: #00ff80; }
-            .settings-close {
-                background: none; border: none; color: #ff4444; font-size: 24px; cursor: pointer; font-weight: bold;
-            }
-            .settings-body {
-                padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
-            }
-            .settings-body::-webkit-scrollbar { width: 8px; }
-            .settings-body::-webkit-scrollbar-track { background: #0b1520; }
-            .settings-body::-webkit-scrollbar-thumb { background: #00ccff; border-radius: 4px; }
-            
-            .settings-section { margin-top: 5px; }
-            .settings-section-title { 
-                font-size: 16px; color: #00ccff; cursor: pointer; padding: 8px 10px; 
-                background: rgba(0, 204, 255, 0.1); border-radius: 4px; user-select: none;
-                transition: background 0.2s, color 0.2s; text-transform: uppercase; font-weight: bold;
-                display: flex; align-items: center; gap: 8px;
-            }
-            .settings-section-title:hover { background: rgba(0, 204, 255, 0.2); color: #fff; }
-            .settings-section-content { 
-                padding-left: 15px; border-left: 2px solid #00ccff; margin-left: 5px; margin-top: 5px;
-            }
-            
-            .settings-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 4px 0; border-bottom: 1px dashed #2a3b4c; }
-            .settings-label { font-size: 14px; color: #ccc; }
-            
-            .settings-input-num {
-                background: #0b1520; border: 1px solid #4a5b6c; color: #fff; padding: 4px 8px;
-                border-radius: 4px; width: 80px; text-align: right; font-family: monospace;
-            }
-            .settings-input-text {
-                background: #0b1520; border: 1px solid #4a5b6c; color: #fff; padding: 4px 8px;
-                border-radius: 4px; width: 120px; text-align: right; font-family: monospace;
-            }
-            
-            .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
-            .switch input { opacity: 0; width: 0; height: 0; }
-            .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #4a5b6c; transition: .2s; border-radius: 20px; }
-            .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .2s; border-radius: 50%; }
-            input:checked + .slider { background-color: #00ff80; }
-            input:checked + .slider:before { transform: translateX(20px); }
-        `;
-        document.head.appendChild(style);
+    get body() {
+        return this.#body;
     }
 
-    #initBtn() {
-        this.#btn = document.createElement('button');
-        this.#btn.innerHTML = '⚙️';
-        
-        Object.assign(this.#btn.style, {
-            position: 'absolute', 
-            top: '15px', 
-            left: '160px', 
-            fontSize: '32px',
-            background: 'transparent',
-            border: 'none',
-            padding: '0',
-            cursor: 'pointer', 
-            zIndex: '9998',
-            filter: 'drop-shadow(0px 2px 5px rgba(0,0,0,0.8))',
-            transition: 'transform 0.1s ease'
-        });
-
-        this.#btn.addEventListener('mouseenter', () => this.#btn.style.transform = 'scale(1.1)');
-        this.#btn.addEventListener('mouseleave', () => this.#btn.style.transform = 'scale(1)');
-
-        UIUtils.makeSolid(this.#btn);
-        
-        new UIDraggableButton(this.#btn, () => this.toggle(), this.#config, { noTransform: true });
-        document.body.appendChild(this.#btn);
-    }
-
-    #initModal() {
-        this.#modal = document.createElement('div');
-        this.#modal.className = 'settings-modal';
-        
-        this.#modal.innerHTML = `
-            <div class="settings-content">
-                <div class="settings-header">
-                    <h2>⚙️ DEV TOOLS</h2>
-                    <button class="settings-close">×</button>
-                </div>
-                <div class="settings-body" id="settings-body"></div>
-            </div>
-        `;
-        
-        document.body.appendChild(this.#modal);
-        UIUtils.makeSolid(this.#modal.querySelector('.settings-content'));
-        
-        this.#modal.querySelector('.settings-close').addEventListener('click', () => this.toggle());
-        
-        this.#modal.addEventListener('pointerdown', (e) => {
-            if (e.target === this.#modal) this.toggle();
-        });
-    }
-
-    toggle() {
-        this.#isOpen = !this.#isOpen;
-        this.#modal.style.display = this.#isOpen ? 'flex' : 'none';
-        
-        if (this.#isOpen) {
-            const body = this.#modal.querySelector('#settings-body');
-            body.innerHTML = ''; 
-            
-            // ЗМІНА ТУТ: Останній аргумент змінено з true на false. 
-            // Це каже генератору "згорнути всі кореневі секції за замовчуванням".
-            this.#buildTree(this.#config, body, [], false); 
+    togglePanel(isOpen) {
+        if (isOpen) {
+            this.#panel.classList.add('open');
+        } else {
+            this.#panel.classList.remove('open');
         }
     }
 
-    // Допоміжний метод для створення секцій-акордеонів
-    #createSection(labelStr, parentElement, isExpanded = false) {
+    createSection(labelStr, parentElement, isExpanded, onToggle) {
         const section = document.createElement('div');
-        section.className = 'settings-section';
+        section.className = 'devtools-section';
         
         const title = document.createElement('div');
-        title.className = 'settings-section-title';
+        title.className = 'devtools-section-title';
         title.innerHTML = `<span>${isExpanded ? '▼' : '▶'}</span> ${labelStr}`;
         
         const content = document.createElement('div');
-        content.className = 'settings-section-content';
+        content.className = 'devtools-section-content';
         content.style.display = isExpanded ? 'block' : 'none';
         
         title.addEventListener('click', () => {
             const isHidden = content.style.display === 'none';
             content.style.display = isHidden ? 'block' : 'none';
             title.innerHTML = `<span>${isHidden ? '▼' : '▶'}</span> ${labelStr}`;
+            if (onToggle) onToggle(isHidden);
         });
         
         section.appendChild(title);
@@ -755,79 +630,62 @@ class SettingsUI {
         return content;
     }
 
-    #buildTree(obj, parentElement, path, isRoot = false) {
-        for (const key in obj) {
-            if (this.#excludeKeys.includes(key)) continue;
-            
-            const val = obj[key];
-            const currentPath = [...path, key];
-
-            if (Array.isArray(val)) {
-                if (val.length > 0 && typeof val[0] === 'number') {
-                    // Масив чисел (наприклад: changesPerDay: [4, 12])
-                    this.#createInputRow(key, val.join(', '), parentElement, currentPath, 'array');
-                } else if (val.length > 0 && typeof val[0] === 'object') {
-                    // Масив об'єктів (НОВЕ: наприклад fishes або chances)
-                    const content = this.#createSection(key, parentElement, isRoot);
-                    val.forEach((item, index) => {
-                        const itemLabel = item.id || item.type || `Item [${index}]`;
-                        const itemContent = this.#createSection(itemLabel, content, false);
-                        this.#buildTree(item, itemContent, [...currentPath, index]);
-                    });
-                }
-            } else if (val !== null && typeof val === 'object') {
-                // Вкладений об'єкт (створюємо секцію, головні секції розгорнуті, підсекції згорнуті)
-                const content = this.#createSection(key, parentElement, isRoot);
-                this.#buildTree(val, content, currentPath, false);
-            } else if (typeof val === 'number' || typeof val === 'boolean' || typeof val === 'string') {
-                this.#createInputRow(key, val, parentElement, currentPath, typeof val);
-            }
-        }
-    }
-
-    #createInputRow(key, val, parentElement, path, type) {
+    createSwitcherRow(labelStr, initialValue, parentElement, onChangeCallback) {
         const row = document.createElement('div');
-        row.className = 'settings-row';
+        row.className = 'devtools-row';
         
         const label = document.createElement('div');
-        label.className = 'settings-label';
+        label.className = 'devtools-label';
+        label.innerText = labelStr;
+        row.appendChild(label);
+
+        const inputElement = document.createElement('label');
+        inputElement.className = 'switch';
+        
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = initialValue;
+        
+        const slider = document.createElement('span');
+        slider.className = 'slider';
+        
+        inputElement.appendChild(cb);
+        inputElement.appendChild(slider);
+        row.appendChild(inputElement);
+        
+        cb.addEventListener('change', (e) => onChangeCallback(e.target.checked));
+        parentElement.appendChild(row);
+    }
+
+    createInputRow(key, val, parentElement, type, onChangeCallback) {
+        const row = document.createElement('div');
+        row.className = 'devtools-row';
+        
+        const label = document.createElement('div');
+        label.className = 'devtools-label';
         label.innerText = key;
         row.appendChild(label);
 
         let inputElement;
 
-        if (type === 'boolean') {
-            inputElement = document.createElement('label');
-            inputElement.className = 'switch';
-            const cb = document.createElement('input');
-            cb.type = 'checkbox';
-            cb.checked = val;
-            const slider = document.createElement('span');
-            slider.className = 'slider';
-            inputElement.appendChild(cb);
-            inputElement.appendChild(slider);
-            
-            cb.addEventListener('change', (e) => this.#updateConfigValue(path, e.target.checked));
-        } else if (type === 'number') {
+        if (type === 'number') {
             inputElement = document.createElement('input');
             inputElement.type = 'number';
             inputElement.step = 'any'; 
-            inputElement.className = 'settings-input-num';
+            inputElement.className = 'devtools-input-num';
             inputElement.value = val;
-            
-            inputElement.addEventListener('change', (e) => this.#updateConfigValue(path, parseFloat(e.target.value) || 0));
+            inputElement.addEventListener('change', (e) => onChangeCallback(parseFloat(e.target.value) || 0));
         } else {
             inputElement = document.createElement('input');
             inputElement.type = 'text';
-            inputElement.className = 'settings-input-text';
+            inputElement.className = 'devtools-input-text';
             inputElement.value = val;
-            
             inputElement.addEventListener('change', (e) => {
                 let newVal = e.target.value;
                 if (type === 'array') {
                     newVal = newVal.split(',').map(n => parseFloat(n.trim()) || 0);
                 }
-                this.#updateConfigValue(path, newVal);
+                onChangeCallback(newVal);
             });
         }
 
@@ -835,12 +693,114 @@ class SettingsUI {
         parentElement.appendChild(row);
     }
 
-    #updateConfigValue(path, newValue) {
-        let target = this.#config;
-        for (let i = 0; i < path.length - 1; i++) {
-            target = target[path[i]];
+    #initStyles() {
+        if (document.getElementById('devtools-styles')) return;
+
+        const style = document.createElement('style');
+        style.id = 'devtools-styles';
+        style.innerHTML = `
+            .devtools-panel {
+                position: fixed; top: 0; left: -400px; width: 350px; height: 100vh;
+                background: rgba(17, 26, 34, 0.95); border-right: 2px solid #00ccff;
+                z-index: 10000; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                display: flex; flex-direction: column; font-family: monospace; color: #fff;
+                box-shadow: 10px 0 20px rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px);
+            }
+            .devtools-panel.open { left: 0; }
+            .devtools-header {
+                padding: 15px; border-bottom: 1px solid #00ccff; display: flex; 
+                justify-content: space-between; align-items: center; background: #0b1520;
+            }
+            .devtools-header h2 { margin: 0; font-size: 18px; color: #00ff80; }
+            .devtools-close {
+                background: none; border: none; color: #ff4444; font-size: 24px; 
+                cursor: pointer; font-weight: bold; padding: 0 5px;
+            }
+            .devtools-body {
+                flex: 1; padding: 15px; overflow-y: auto; display: flex; 
+                flex-direction: column; gap: 10px;
+            }
+            .devtools-body::-webkit-scrollbar { width: 6px; }
+            .devtools-body::-webkit-scrollbar-track { background: transparent; }
+            .devtools-body::-webkit-scrollbar-thumb { background: #00ccff; border-radius: 3px; }
+            
+            .devtools-section { margin-top: 5px; }
+            .devtools-section-title { 
+                font-size: 14px; color: #00ccff; cursor: pointer; padding: 8px 10px; 
+                background: rgba(0, 204, 255, 0.1); border-radius: 4px; user-select: none;
+                transition: background 0.2s, color 0.2s; font-weight: bold; display: flex; gap: 8px;
+            }
+            .devtools-section-title:hover { background: rgba(0, 204, 255, 0.2); color: #fff; }
+            .devtools-section-content { 
+                padding-left: 15px; border-left: 2px solid #00ccff; margin-left: 5px; margin-top: 5px;
+            }
+            
+            .devtools-row { 
+                display: flex; justify-content: space-between; align-items: center; 
+                margin-bottom: 8px; padding: 4px 0; border-bottom: 1px dashed #2a3b4c; 
+            }
+            .devtools-label { font-size: 13px; color: #ccc; }
+            
+            .devtools-input-num, .devtools-input-text {
+                background: #0b1520; border: 1px solid #4a5b6c; color: #fff; padding: 4px 8px;
+                border-radius: 4px; text-align: right; font-family: monospace;
+            }
+            .devtools-input-num { width: 70px; }
+            .devtools-input-text { width: 110px; }
+            
+            .switch { position: relative; display: inline-block; width: 36px; height: 18px; }
+            .switch input { opacity: 0; width: 0; height: 0; }
+            .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #4a5b6c; transition: .2s; border-radius: 18px; }
+            .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .2s; border-radius: 50%; }
+            input:checked + .slider { background-color: #00ff80; }
+            input:checked + .slider:before { transform: translateX(18px); }
+        `;
+        document.head.appendChild(style);
+    }
+
+    #initBtn(config) {
+        this.#btn = document.createElement('button');
+        this.#btn.innerHTML = '⚙️';
+        
+        Object.assign(this.#btn.style, {
+            position: 'absolute', top: '15px', left: '160px', fontSize: '32px',
+            background: 'transparent', border: 'none', padding: '0',
+            cursor: 'pointer', zIndex: '9998',
+            filter: 'drop-shadow(0px 2px 5px rgba(0,0,0,0.8))',
+            transition: 'transform 0.1s ease'
+        });
+
+        this.#btn.addEventListener('mouseenter', () => this.#btn.style.transform = 'scale(1.1)');
+        this.#btn.addEventListener('mouseleave', () => this.#btn.style.transform = 'scale(1)');
+
+        UIUtils.makeSolid(this.#btn);
+        
+        if (typeof UIDraggableButton !== 'undefined') {
+            new UIDraggableButton(this.#btn, this.#onToggleCallback, config, { noTransform: true });
+        } else {
+            this.#btn.addEventListener('click', this.#onToggleCallback);
         }
-        target[path[path.length - 1]] = newValue;
-        console.log(`Updated CONFIG.${path.join('.')} =`, newValue);
+        
+        document.body.appendChild(this.#btn);
+    }
+
+    #initPanel() {
+        this.#panel = document.createElement('div');
+        this.#panel.className = 'devtools-panel';
+        
+        this.#panel.innerHTML = `
+            <div class="devtools-header">
+                <h2>⚙️ DEV TOOLS</h2>
+                <button class="devtools-close">×</button>
+            </div>
+            <div class="devtools-body"></div>
+        `;
+        
+        document.body.appendChild(this.#panel);
+        this.#body = this.#panel.querySelector('.devtools-body');
+        
+        UIUtils.makeSolid(this.#panel);
+        
+        this.#panel.querySelector('.devtools-close').addEventListener('click', this.#onToggleCallback);
     }
 }

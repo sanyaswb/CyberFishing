@@ -1,11 +1,11 @@
-const DEBUG_MODULES = {
+window.DEBUG_MODULES = {
     location: false, 
     forces: false, 
     deviations: false, 
     tension: false, 
     stamina: false, 
     exhaustion: false, 
-    catchTime: true, 
+    catchTime: false, 
     prediction: false, 
     net: false,
 };
@@ -48,7 +48,7 @@ document.addEventListener('debug-fish-hooked', (e) => {
 
     // --- ПОЧАТОК МОДУЛЬНОГО ВИВОДУ ---
 
-    if (DEBUG_MODULES.location) {
+    if (window.DEBUG_MODULES.location) {
         console.log('%c====================================', 'color: #4a5b6c;');
         console.log('%c🗺️ ІНФОРМАЦІЯ ПРО ЛОКАЦІЮ', 'color: #b066ff; font-size: 14px; font-weight: bold;');
         
@@ -71,7 +71,7 @@ document.addEventListener('debug-fish-hooked', (e) => {
         }
     }
 
-    if (DEBUG_MODULES.forces) {
+    if (window.DEBUG_MODULES.forces) {
         console.log('%c====================================', 'color: #4a5b6c;');
         console.log('%c--- ДЕТАЛЬНИЙ РОЗРАХУНОК СИЛ ---', 'color: #00ccff; font-weight: bold;');
         const rodStr = `(${CONFIG.rod.level} * ${CONFIG.rod.basePower.toFixed(1)})`;
@@ -128,7 +128,7 @@ document.addEventListener('debug-fish-hooked', (e) => {
         });
     }
 
-    if (DEBUG_MODULES.deviations) {
+    if (window.DEBUG_MODULES.deviations) {
         console.log('%c====================================', 'color: #4a5b6c;');
         console.log('%c📐 ВПЛИВ ВІДХИЛЕННЯ ТА RPG-КОМПЕНСАЦІЇ', 'color: #ffaa00; font-size: 14px; font-weight: bold;');
         
@@ -167,7 +167,7 @@ document.addEventListener('debug-fish-hooked', (e) => {
         console.table(devTable);
     }
 
-    if (DEBUG_MODULES.tension) {
+    if (window.DEBUG_MODULES.tension) {
         console.log('%c====================================', 'color: #4a5b6c;');
         console.log('%c📈 Аналіз Прогрес Бару (Натяг)', 'color: #00ccff; font-size: 14px; font-weight: bold;');
         
@@ -191,7 +191,7 @@ document.addEventListener('debug-fish-hooked', (e) => {
         });
     }
 
-    if (DEBUG_MODULES.stamina) {
+    if (window.DEBUG_MODULES.stamina) {
         console.log('%c====================================', 'color: #4a5b6c;');
         console.log('%c❤️ Аналіз Стаміни (Фаза 1)', 'color: #ffcc00; font-size: 14px; font-weight: bold;');
         console.table({
@@ -204,7 +204,7 @@ document.addEventListener('debug-fish-hooked', (e) => {
         });
     }
 
-    if (DEBUG_MODULES.exhaustion) {
+    if (window.DEBUG_MODULES.exhaustion) {
         console.log('%c====================================', 'color: #4a5b6c;');
         console.log('%c🔥 Аналіз Виснаження (Фаза 2)', 'color: #ff4444; font-size: 14px; font-weight: bold;');
         console.table({
@@ -216,7 +216,7 @@ document.addEventListener('debug-fish-hooked', (e) => {
         });
     }
 
-    if (DEBUG_MODULES.catchTime) {
+    if (window.DEBUG_MODULES.catchTime) {
         console.log('%c====================================', 'color: #4a5b6c;');
         console.log('%c⏱️ ЧАС ВИТЯГУВАННЯ ТА ВИСНАЖЕННЯ', 'color: #00ffff; font-size: 14px; font-weight: bold;');
         
@@ -294,7 +294,7 @@ document.addEventListener('debug-fish-hooked', (e) => {
         });
     }
 
-    if (DEBUG_MODULES.net) {
+    if (window.DEBUG_MODULES.net) {
         console.log('%c====================================', 'color: #4a5b6c;');
         console.log('%c🕸️ АНАЛІЗ ПІДСАКИ (NET)', 'color: #b066ff; font-size: 14px; font-weight: bold;');
 
@@ -332,7 +332,7 @@ document.addEventListener('debug-fish-hooked', (e) => {
         }
     }
 
-    if (DEBUG_MODULES.prediction) {
+    if (window.DEBUG_MODULES.prediction) {
         console.log('%c====================================', 'color: #4a5b6c;');
         console.log('%c🏆 ПРОГНОЗ РЕЗУЛЬТАТУ (По центру)', 'color: #00ccff; font-size: 16px; font-weight: bold;');
 
@@ -356,7 +356,7 @@ document.addEventListener('debug-fish-hooked', (e) => {
 
 // Логер підсаки (залишається незалежним)
 document.addEventListener('netCatchRoll', (e) => {
-    if (!DEBUG_MODULES.net) return;
+    if (!window.DEBUG_MODULES.net) return;
     const { chance, roll, success } = e.detail;
     
     console.log(`%c[NET] Спроба піймати! Шанс: ${chance}%`, 'color: #b066ff; font-weight: bold;');

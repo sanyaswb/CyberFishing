@@ -27,11 +27,11 @@ const CONFIG = {
             visible: true,
             color: 'rgba(255, 255, 255, 0.3)',
             width: 1,
-            straightenTension: 50, // Відсоток натягу (0-100), при якому ліска стає ідеально рівною
-            sagOffset: 60,         // Наскільки сильно провисає ліска у пікселях
-            shrinkPercent: 50,      // На скільки відсотків зменшити довжину лінії при максимальному натягу
+            straightenTension: 30,  // Відсоток натягу (0-100), при якому ліска стає ідеально рівною
+            sagOffset: 60,          // Наскільки сильно провисає ліска у пікселях
+            shrinkPercent: 70,      // На скільки відсотків зменшити довжину лінії
             shrinkEasePower: 4,     // Чим вище, тим крутіше крива зменшення довжини (1 = лінійно, >1 = більш різко ближче до 100% натягу)
-            sinkDropPx: 120,         // На скільки пікселів опускається ліска при повному зануренні поплавця (для візуального ефекту)
+            sinkDropPx: 120,        // На скільки пікселів опускається ліска при повному зануренні поплавця (для візуального ефекту)
             snapDurationMs: 300,
             snapDepthMaxMultiplier: 2.0,
             distanceDelayMinMs: 1500,
@@ -383,11 +383,13 @@ const CONFIG = {
             chance: 0.50,
             checkIntervalMs: 1000
         },
+
         behaviors: {
             idle: { pull: 0.0, move: 0.5, minTime: 500, maxTime: 2000, weight: 5 },
             rest: { pull: 0.2, move: 0.1, minTime: 500, maxTime: 2500, weight: 50 },
             swim: { pull: 0.0, move: 0.5, minTime: 2000, maxTime: 4000, weight: 35 },
             dash: { pull: 0.0, move: 1.2, minTime: 500, maxTime: 1200, weight: 10 },
+
             lastDash: { 
                 pull: 0.6, 
                 move: 2.5, 

@@ -1458,7 +1458,7 @@ class TensionMeter {
             ? config.hookMechanics.safeTensionThreshold 
             : config.hookMechanics.safeTensionThresholdWeakFish;
 
-        const isDebugTension = typeof DEBUG_MODULES !== 'undefined' && DEBUG_MODULES.tension;
+        const isDebugTension = typeof window.DEBUG_MODULES !== 'undefined' && window.DEBUG_MODULES.tension;
 
         if (this.#slackTimer >= config.hookMechanics.slackLinePenaltyTimeMs) {
             chance = config.hookMechanics.slackLineEscapeChance;
