@@ -8,6 +8,7 @@ class DevTools {
         'debug',
         'OVERLAY MODULES',
         'CONSOLE MODULES',
+        'locations',
         'spawns',
         'rod',
         'reel',
@@ -16,7 +17,6 @@ class DevTools {
         'stamina',
         'physics',
         'net',
-        'locations',
         'ui',
     ];
     

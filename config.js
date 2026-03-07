@@ -40,7 +40,7 @@ const CONFIG = {
     },
 
     locations: {
-        debugVisuals: true,        // Головний вимикач (якщо false - взагалі нічого не малюється)
+        debugVisuals: false,        // Головний вимикач (якщо false - взагалі нічого не малюється)
         debugZones: true,           // Показувати кольорові квадрати (зелені, червоні)
         debugGrid: true,            // Показувати лінії сітки
         debugDepthText: true,       // Показувати цифри глибини
