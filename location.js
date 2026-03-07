@@ -235,12 +235,15 @@ class LocationMap {
     }
 
     drawBackground(ctx, projector) {
-        if (!this.#bgLoaded) return; // <--- ДОДАНО: Не малюємо, поки картинки не завантажились
+        if (!this.#bgLoaded) return; 
 
         const pos = projector.virtualToScreen(0, 0);
         const scale = projector.getScale();
-        const w = 2560 * scale;
-        const h = 2560 * scale;
+        
+        // Динамічно беремо розміри фону з конфігу (2560 і 1440)
+        const baseRes = this.#globalConfig.locations.baseResolution;
+        const w = baseRes.width * scale;
+        const h = baseRes.height * scale;
 
         if (!this.#isDynamicBg) {
             if (this.#bgImages.default?.complete) ctx.drawImage(this.#bgImages.default, pos.x, pos.y, w, h);

@@ -51,7 +51,7 @@ const CONFIG = {
         showNetZone: true,          // Відображення зеленої зони
 
         debugOpacity: 1.0,
-        baseResolution: { width: 2560, height: 2560 },
+        baseResolution: { width: 2560, height: 1440 },
         designCellSize: 64,
         cellSize: 32,
 
@@ -64,11 +64,11 @@ const CONFIG = {
                     evening: 'assets/bg_test--evening.webp',
                     night: 'assets/bg_test--night.webp'
                 },
-                depthUrl: 'depth.jpg',
+                depthUrl: 'depth.webp',
                 // x: 'left', 'center', 'right'
                 // y: 'top', 'center', 'bottom', 'safeZone'
                 initialAlignment: { x: 'center', y: 'center' },
-                safeZone: { top: 0, bottom: 2560 },
+                safeZone: { top: 0, bottom: 1440 },
                 depthBounds: { min: 1.5, max: 15.0 },
 
                 weather: {
