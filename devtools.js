@@ -20,7 +20,7 @@ class DevTools {
         'ui',
     ];
     
-    #excludeKeys = ['id', 'name', 'bgUrls', 'depthUrl', 'endpoint', 'backgroundColor', 'colorGradient', 'statuses', 'zones'];
+    #excludeKeys = ['id', 'name', 'bgUrls', 'depthUrl', 'endpoint', 'backgroundColor', 'colorGradient', 'statuses'];
 
     constructor(config) {
         this.#config = config;

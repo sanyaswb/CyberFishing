@@ -49,11 +49,16 @@ class Game {
         this.#locationMap = new LocationMap('test', CONFIG);
         this.#projector = new ViewportProjector(CONFIG);
 
+        // --- ОНОВЛЕНИЙ СЛУХАЧ ДЛЯ DEVTOOLS ---
         document.addEventListener('config-updated', (e) => {
             if (e.detail && e.detail.path && e.detail.path[0] === 'locations') {
                 if (this.#projector) {
                     this.#projector.update(0, 0); 
                     this.#projector.update(this.#canvas.width, this.#canvas.height);
+                }
+                // Миттєво оновлюємо зони, коли тягнемо повзунки в DevTools
+                if (this.#locationMap) {
+                    this.#locationMap.refreshConfig(CONFIG);
                 }
             }
         });
@@ -210,6 +215,12 @@ class Game {
         this.#locationMap.update(dt, this.#gameTimeHours);
 
         const inputState = this.#inputManager.getState();
+
+        // --- ДОДАНО: Надшвидкий радар сітки (O(1)) ---
+        const checkWater = (vx, vy) => {
+            const cell = this.#locationMap.getCellAtVirtualPos(vx, vy, CONFIG.locations.cellSize);
+            return cell && cell.isCastable && !cell.hasCollision;
+        };
 
         if (inputState.isDoubleClick) {
             if (this.#gameState === 'waiting') {
@@ -377,7 +388,7 @@ class Game {
             bottom: Math.min(vBottomRight.y, castableBounds ? castableBounds.bottom : 2560)
         };
             if (this.#gameState === 'waiting') {
-            this.#float.update(dynamicBounds, dt, dynamicEnv); 
+            this.#float.update(dynamicBounds, dt, dynamicEnv, checkWater); 
             let hookedFish = this.#biteSystem.evaluateBite(dt, envData, playerGear);
             
             // --- ПЕРЕХОПЛЮВАЧ ДЛЯ ТЕСТУВАННЯ (GOD MODE) ---
@@ -427,8 +438,8 @@ class Game {
         }
 
         if (this.#gameState === 'biting') {
-            this.#float.updateBite(dt);
-            this.#float.update(dynamicBounds, dt, dynamicEnv);
+            this.#float.updateBite(dt, checkWater);
+            this.#float.update(dynamicBounds, dt, dynamicEnv, checkWater);
 
             if (!this.#float.isBiting()) {
                 this.#gameState = 'waiting';
@@ -474,7 +485,7 @@ class Game {
             return;
         }
 
-        const fishForceRaw = this.#fishingSystem.calculateFishForce(dt, floatPos.x, this.#bounds, CONFIG);
+        const fishForceRaw = this.#fishingSystem.calculateFishForce(dt, floatPos, this.#bounds, CONFIG, checkWater);
         const currentFishMaxForceScaled = Math.max(Math.abs(fishForceRaw.x), Math.abs(fishForceRaw.y)) * 0.01;
 
         const fishForce = fishForceRaw.clone().multiplyScalar(CONFIG.physics.fishForceMultiplier);
@@ -542,7 +553,7 @@ class Game {
             document.dispatchEvent(new CustomEvent('debug-live-update', { detail: debugData }));
         }
 
-        this.#float.update(dynamicBounds, dt, dynamicEnv);
+        this.#float.update(dynamicBounds, dt, dynamicEnv, checkWater);
         
         const updatedFloatPos = this.#float.getPosition();
         const updatedFloatScreenPos = this.#projector.virtualToScreen(updatedFloatPos.x, updatedFloatPos.y);
@@ -585,16 +596,17 @@ class Game {
             this.#isNetReady = false;
         }
 
-        if (updatedFloatScreenPos.y >= triggerLineY && updatedFloatScreenPos.y < catchLineY) {
+        const catchLineOffset = CONFIG.locations.catchLineOffsetPx ?? 5;
+
+        if (updatedFloatScreenPos.y >= triggerLineY && updatedFloatScreenPos.y < catchLineY - catchLineOffset) {
             if (typeof this.#fishingSystem.tryTriggerFishLastDash === 'function') {
                 this.#fishingSystem.tryTriggerFishLastDash(dt);
             }
         }
 
-        if (updatedFloatScreenPos.y >= catchLineY) {
+        if (updatedFloatScreenPos.y >= catchLineY - catchLineOffset) {
             this.#gameState = 'victory';
 
-            // --- ДОДАНО: Вимикаємо оверлей ---
             if (CONFIG.debug?.overlay) {
                 document.dispatchEvent(new CustomEvent('debug-live-update', { detail: { gameState: 'victory' } }));
             }

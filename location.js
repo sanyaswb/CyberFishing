@@ -9,7 +9,9 @@ class GridCell {
         this.hasSnag = false;
     }
 }
-
+// ----------------------------------------------------
+// 1. КЛАС ДЛЯ ЗГРАЇ РИБ (Динамічна зона)
+// ----------------------------------------------------
 class DynamicZone {
     constructor(config) {
         this.id = config.id;
@@ -28,7 +30,7 @@ class DynamicZone {
         this.dirTimer = 0; 
     }
 
-    update(dt, boundsCols, boundsRows) {
+    update(dt) {
         if (!this.moving) return;
 
         const timeScale = dt / 1000;
@@ -42,33 +44,45 @@ class DynamicZone {
             this.dirTimer = 2000 + Math.random() * 3000; 
         }
 
-        this.x += this.speedX * timeScale;
-        this.y += this.speedY * timeScale;
+        // Запобіжник: якщо зона вилетіла, повертаємо її в стартову точку
+        if (isNaN(this.x) || isNaN(this.y)) {
+            this.x = 10; this.y = 15;
+        }
 
-        const minX = this.bounds ? this.bounds.x : 0;
-        const maxX = this.bounds ? this.bounds.x + this.bounds.w : boundsCols;
-        const minY = this.bounds ? this.bounds.y : 0;
-        const maxY = this.bounds ? this.bounds.y + this.bounds.h : boundsRows;
+        // Логіка перевірки масиву зон
+        const isInside = (px, py) => {
+            if (!this.bounds) return true; 
+            const bArr = Array.isArray(this.bounds) ? this.bounds : [this.bounds];
+            const cx = px + this.w / 2;
+            const cy = py + this.h / 2;
+            
+            for (const b of bArr) {
+                if (b.x !== undefined && !isNaN(b.x)) {
+                    if (cx >= b.x && cx <= b.x + b.w && cy >= b.y && cy <= b.y + b.h) {
+                        return true; 
+                    }
+                }
+            }
+            return false; 
+        };
 
         let bounced = false;
 
-        if (this.x <= minX) {
-            this.x = minX;
-            this.speedX = Math.abs(this.speedX); 
-            bounced = true;
-        } else if (this.x + this.w >= maxX) {
-            this.x = maxX - this.w;
-            this.speedX = -Math.abs(this.speedX); 
+        // Рух по X
+        const nextX = this.x + this.speedX * timeScale;
+        if (isInside(nextX, this.y)) {
+            this.x = nextX;
+        } else {
+            this.speedX *= -1; 
             bounced = true;
         }
 
-        if (this.y <= minY) {
-            this.y = minY;
-            this.speedY = Math.abs(this.speedY); 
-            bounced = true;
-        } else if (this.y + this.h >= maxY) {
-            this.y = maxY - this.h;
-            this.speedY = -Math.abs(this.speedY); 
+        // Рух по Y
+        const nextY = this.y + this.speedY * timeScale;
+        if (isInside(this.x, nextY)) {
+            this.y = nextY;
+        } else {
+            this.speedY *= -1; 
             bounced = true;
         }
 
@@ -78,6 +92,9 @@ class DynamicZone {
     }
 }
 
+// ----------------------------------------------------
+// 2. ГОЛОВНИЙ КЛАС КАРТИ ЛОКАЦІЇ
+// ----------------------------------------------------
 class LocationMap {
     #globalConfig;
     #config;
@@ -90,7 +107,7 @@ class LocationMap {
     #bgOpacities = { evening: 0, night: 0 };
     #isDynamicBg = false;
     #depthImage; 
-    #debugCanvas; // Прихований шар для оптимізації дебагу
+    #debugCanvas; 
     #bgLoaded = false;
     #lastDebugState = '';
     #lastProjector = null;
@@ -112,18 +129,20 @@ class LocationMap {
         const ratio = designCellSize / actualCellSize;
         if (ratio !== 1) {
             const scaleZone = (z) => {
-                // Перераховуємо саму зону
                 if (z.x !== undefined) z.x = Math.round(z.x * ratio);
                 if (z.y !== undefined) z.y = Math.round(z.y * ratio);
                 if (z.w !== undefined) z.w = Math.round(z.w * ratio);
                 if (z.h !== undefined) z.h = Math.round(z.h * ratio);
                 
-                // --- ДОДАНО: Перераховуємо також дозволені межі руху (bounds) ---
+                // Масштабування складних зон
                 if (z.bounds) {
-                    z.bounds.x = Math.round(z.bounds.x * ratio);
-                    z.bounds.y = Math.round(z.bounds.y * ratio);
-                    z.bounds.w = Math.round(z.bounds.w * ratio);
-                    z.bounds.h = Math.round(z.bounds.h * ratio);
+                    const bArr = Array.isArray(z.bounds) ? z.bounds : [z.bounds];
+                    bArr.forEach(b => {
+                        if (b.x !== undefined) b.x = Math.round(b.x * ratio);
+                        if (b.y !== undefined) b.y = Math.round(b.y * ratio);
+                        if (b.w !== undefined) b.w = Math.round(b.w * ratio);
+                        if (b.h !== undefined) b.h = Math.round(b.h * ratio);
+                    });
                 }
             };
             
@@ -152,7 +171,6 @@ class LocationMap {
 
         this.#buildGrid(actualCellSize);
         
-        // Завантажуємо глибину, а потім БЕЙКАЄМО (Pre-render) дебаг-карту
         if (this.#config.depthUrl) {
             this.#depthImage = new Image();
             this.#depthImage.onload = () => {
@@ -171,7 +189,6 @@ class LocationMap {
         }
     }
 
-    // НОВИЙ МЕТОД: Створює єдину статичну картинку сітки та глибин
     #generateStaticDebugMap(cellSize, imgWidth, imgHeight) {
         if (!this.#debugCanvas) {
             this.#debugCanvas = document.createElement('canvas');
@@ -194,7 +211,6 @@ class LocationMap {
             }
         };
 
-        // ВІЗУАЛ: Малюємо тільки те, що увімкнено
         if (locCfg.enableCastable !== false) drawZones(this.#config.zones.castable, 'rgba(0, 255, 0, 0.15)');
         if (locCfg.enableSnags !== false) drawZones(this.#config.zones.snags, 'rgba(255, 255, 0, 0.3)');
         if (locCfg.enableCollisions !== false) drawZones(this.#config.zones.collisions, 'rgba(255, 0, 0, 0.4)');
@@ -221,6 +237,48 @@ class LocationMap {
         }
     }
 
+    refreshConfig(globalConfig) {
+        this.#config = JSON.parse(JSON.stringify(globalConfig.locations.map[this.#id]));
+        
+        const actualCellSize = globalConfig.locations.cellSize;
+        const designCellSize = globalConfig.locations.designCellSize || actualCellSize;
+        const ratio = designCellSize / actualCellSize;
+
+        if (ratio !== 1) {
+            const scaleZone = (z) => {
+                if (z.x !== undefined) z.x = Math.round(z.x * ratio);
+                if (z.y !== undefined) z.y = Math.round(z.y * ratio);
+                if (z.w !== undefined) z.w = Math.round(z.w * ratio);
+                if (z.h !== undefined) z.h = Math.round(z.h * ratio);
+                
+                if (z.bounds) {
+                    const bArr = Array.isArray(z.bounds) ? z.bounds : [z.bounds];
+                    bArr.forEach(b => {
+                        if (b.x !== undefined) b.x = Math.round(b.x * ratio);
+                        if (b.y !== undefined) b.y = Math.round(b.y * ratio);
+                        if (b.w !== undefined) b.w = Math.round(b.w * ratio);
+                        if (b.h !== undefined) b.h = Math.round(b.h * ratio);
+                    });
+                }
+            };
+            if (this.#config.zones.castable) this.#config.zones.castable.forEach(scaleZone);
+            if (this.#config.zones.collisions) this.#config.zones.collisions.forEach(scaleZone);
+            if (this.#config.zones.snags) this.#config.zones.snags.forEach(scaleZone);
+            if (this.#config.zones.dynamic) this.#config.zones.dynamic.forEach(scaleZone);
+        }
+
+        this.#dynamicZones = [];
+        if (this.#config.zones.dynamic) {
+            for (const dzConfig of this.#config.zones.dynamic) {
+                this.#dynamicZones.push(new DynamicZone(dzConfig));
+            }
+        }
+
+        const baseRes = globalConfig.locations.baseResolution;
+        this.#generateStaticDebugMap(actualCellSize, baseRes.width, baseRes.height);
+        this.recalculateZones(null, actualCellSize);
+    }
+
     getCastableBoundsVirtual(cellSize) {
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
         const castableZones = this.#config.zones.castable;
@@ -240,7 +298,6 @@ class LocationMap {
         const pos = projector.virtualToScreen(0, 0);
         const scale = projector.getScale();
         
-        // Динамічно беремо розміри фону з конфігу (2560 і 1440)
         const baseRes = this.#globalConfig.locations.baseResolution;
         const w = baseRes.width * scale;
         const h = baseRes.height * scale;
@@ -336,7 +393,6 @@ class LocationMap {
 
         const locCfg = this.#globalConfig.locations;
 
-        // ЛОГІКА: Фізика зон вмикається і вимикається синхронно з візуалом
         if (locCfg.enableCastable !== false) {
             for (const z of this.#config.zones.castable) {
                 let startX = z.adaptiveX ? visibleStartCol : z.x;
@@ -375,7 +431,7 @@ class LocationMap {
         const castableZone = this.#config.zones.castable?.[0];
         if (castableZone && castableZone.adaptiveX) {
             for (const dz of this.#dynamicZones) {
-                if (dz.bounds) {
+                if (dz.bounds && !Array.isArray(dz.bounds)) {
                     dz.bounds.x = visibleStartCol;
                     dz.bounds.w = visibleEndCol - visibleStartCol;
                 }
@@ -387,19 +443,15 @@ class LocationMap {
 
     update(dt, gameTimeHours = null) {
         const locCfg = this.#globalConfig.locations;
-        // Кеш стану тепер включає і наші нові перемикачі зон
         const currentDebugState = `${locCfg.debugGrid}_${locCfg.debugDepthText}_${locCfg.enableCastable}_${locCfg.enableCollisions}_${locCfg.enableSnags}`;
         
         if (this.#lastDebugState !== currentDebugState && this.#debugCanvas) {
             this.#lastDebugState = currentDebugState;
             const baseRes = locCfg.baseResolution;
             this.#generateStaticDebugMap(locCfg.cellSize, baseRes.width, baseRes.height);
-            
-            // Якщо щось клацнули - одразу перераховуємо фізику (щоб туди можна було закинути)
             this.recalculateZones(null, locCfg.cellSize);
         }
         
-        // ... (Тут залишається твій старий код для isDynamicBg та dynamicZones)
         if (this.#isDynamicBg) {
             let time = gameTimeHours;
             if (time === null) {
@@ -431,7 +483,10 @@ class LocationMap {
             this.#bgOpacities.night = niA;
         }
 
-        for (const dz of this.#dynamicZones) { dz.update(dt, this.#cols, this.#rows); }
+        // ОСЬ ВАЖЛИВИЙ РЯДОК: Оновлюємо динамічні зони
+        for (const dz of this.#dynamicZones) { 
+            dz.update(dt); 
+        }
     }
 
     getGrid() { return this.#grid; }

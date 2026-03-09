@@ -673,7 +673,9 @@ class FishingSystem {
         return force;
     }
 
-    calculateFishForce(dt, floatX, bounds, config) {
+    calculateFishForce(dt, floatPos, bounds, config, checkWater) {
+        const floatX = floatPos.x;
+        const floatY = floatPos.y;
         const centerX = (bounds.left + bounds.right) / 2;
         const halfWidth = (bounds.right - bounds.left) / 2;
         let rawPenalty = Math.abs(floatX - centerX) / (halfWidth || 1);
@@ -683,8 +685,8 @@ class FishingSystem {
         const basePower = this.#fish.getPower();
         const behavior = this.#fish.getBehavior(dt);
         
-        const isAtLeftWall = floatX <= bounds.left + 5;
-        const isAtRightWall = floatX >= bounds.right - 5;
+        const isAtLeftWall = floatX <= bounds.left + 5 || (checkWater && !checkWater(floatX - 10, floatY));
+        const isAtRightWall = floatX >= bounds.right - 5 || (checkWater && !checkWater(floatX + 10, floatY));
 
         if (isAtLeftWall && behavior.moveX < 0) {
             this.#fish.reactToWall(-1);
@@ -814,7 +816,7 @@ class FloatEntity {
         return this.#currentHookDepth;
     }
 
-    update(boundsRect, dt, environment) {
+    update(boundsRect, dt, environment, checkWater) {
         if (this.#isSinking) {
             if (this.#sinkingDelayTimer > 0) {
                 this.#sinkingDelayTimer -= dt;
@@ -850,8 +852,20 @@ class FloatEntity {
                     const currentComp = this.#lerp(currentCompRange[0], currentCompRange[1], (sinkerQual - 1) / 9);
                     
                     const driftSpeed = environment.current.speedPxPerSec * (1 - currentComp);
-                    this.#position.x += environment.current.direction.x * driftSpeed * (dt / 1000);
-                    this.#position.y += environment.current.direction.y * driftSpeed * (dt / 1000);
+                    const dx = environment.current.direction.x * driftSpeed * (dt / 1000);
+                    const dy = environment.current.direction.y * driftSpeed * (dt / 1000);
+                    
+                    let nextX = this.#position.x + dx;
+                    let nextY = this.#position.y + dy;
+
+                    // Окрема перевірка для ковзання
+                    if (checkWater) {
+                        if (!checkWater(nextX, this.#position.y)) nextX = this.#position.x;
+                        if (!checkWater(this.#position.x, nextY)) nextY = this.#position.y;
+                    }
+
+                    this.#position.x = nextX;
+                    this.#position.y = nextY;
                 }
 
                 const isFishActivelyPulling = this.#isBiting && (Math.abs(this.#currentAngle) > 0.5 || Math.abs(this.#currentScaleY - 1.0) > 0.02);
@@ -908,7 +922,24 @@ class FloatEntity {
         this.#windAngleOffset = this.#lerp(this.#windAngleOffset, this.#targetWindAngle, dt * 0.005);
 
         if (!this.#isBiting) {
-            this.#position.add(this.#velocity);
+            let nextX = this.#position.x + this.#velocity.x;
+            let nextY = this.#position.y + this.#velocity.y;
+
+            if (checkWater) {
+                // Ковзання по осі X
+                if (!checkWater(nextX, this.#position.y)) {
+                    this.#velocity.x = 0; 
+                    nextX = this.#position.x;
+                }
+                // Ковзання по осі Y
+                if (!checkWater(this.#position.x, nextY)) {
+                    this.#velocity.y = 0; 
+                    nextY = this.#position.y;
+                }
+            }
+
+            this.#position.x = nextX;
+            this.#position.y = nextY;
             this.#velocity.multiplyScalar(this.#friction);
         }
 
@@ -971,7 +1002,7 @@ class FloatEntity {
         this.#biteMoveTimer = 0;
     }
 
-    updateBite(dt) {
+    updateBite(dt, checkWater) {
         if (!this.#isBiting) return;
 
         if (this.#isOverDepth) {
@@ -984,8 +1015,24 @@ class FloatEntity {
 
         if (this.#biteMoveTimer > 0) {
             this.#biteMoveTimer -= dt;
-            this.#position.x += this.#currentBiteMoveVelocity.x * (dt / 1000);
-            this.#position.y += this.#currentBiteMoveVelocity.y * (dt / 1000);
+            let nextX = this.#position.x + this.#currentBiteMoveVelocity.x * (dt / 1000);
+            let nextY = this.#position.y + this.#currentBiteMoveVelocity.y * (dt / 1000);
+
+            if (checkWater) {
+                // Відскок по X
+                if (!checkWater(nextX, this.#position.y)) {
+                    this.#currentBiteMoveVelocity.x *= -1; 
+                    nextX = this.#position.x;
+                }
+                // Відскок по Y
+                if (!checkWater(this.#position.x, nextY)) {
+                    this.#currentBiteMoveVelocity.y *= -1;
+                    nextY = this.#position.y;
+                }
+            }
+
+            this.#position.x = nextX;
+            this.#position.y = nextY;
         }
 
         this.#animTimer -= dt;
@@ -1373,7 +1420,7 @@ class StaminaController {
         }
     }
 }
-
+// Контролер, який керує натягом ліски, його візуальними ефектами та ризиком обриву
 class TensionMeter {
     #slackTimer;
     #tension;
@@ -1614,7 +1661,7 @@ class TensionMeter {
         this.#slackTimer = 0;
     }
 }
-
+// Відповідає за всі візуальні аспекти: від фону до спеціальних маркерів та зон
 class Renderer {
     #canvas;
     #ctx;
@@ -1660,7 +1707,7 @@ class Renderer {
     }
 
     drawLocationDebug(locationMap, projector, config) {
-        // 1. Малюємо кешовану статичну сітку (з цифрами та зонами) одним викликом!
+        // 1. Статична сітка... (залишається без змін)
         const debugCanvas = locationMap.getDebugCanvas();
         if (debugCanvas) {
             const pos = projector.virtualToScreen(0, 0);
@@ -1669,18 +1716,37 @@ class Renderer {
             const h = debugCanvas.height * scale;
             
             const prevAlpha = this.#ctx.globalAlpha;
-            this.#ctx.globalAlpha = config.locations.debugOpacity || 0.7; // Застосовуємо прозорість з конфігу
+            this.#ctx.globalAlpha = config.locations.debugOpacity || 0.7; 
             this.#ctx.drawImage(debugCanvas, pos.x, pos.y, w, h);
             this.#ctx.globalAlpha = prevAlpha;
         }
 
-        // 2. Динамічні зони (зграї риб або буфи) малюємо кадр за кадром, бо вони рухаються
+        // 2. Динамічні зони
         const dynamicZones = locationMap.getDynamicZones();
         const cellSize = config.locations.cellSize;
+        const pScale = projector.getScale();
+
         for (const dz of dynamicZones) {
+            // Малюємо ДОЗВОЛЕНУ ЗОНУ плавання (bounds) для дебагу
+            if (dz.bounds) {
+                const bArr = Array.isArray(dz.bounds) ? dz.bounds : [dz.bounds];
+                this.#ctx.fillStyle = 'rgba(255, 100, 255, 0.1)'; // Ніжно-рожевий колір для басейну
+                this.#ctx.strokeStyle = 'rgba(255, 100, 255, 0.4)';
+                this.#ctx.lineWidth = 1;
+                
+                for (const b of bArr) {
+                    if (b.x !== undefined && !isNaN(b.x)) {
+                        const bPos = projector.virtualToScreen(b.x, b.y);
+                        this.#ctx.fillRect(bPos.x, bPos.y, b.w * pScale, b.h * pScale);
+                        this.#ctx.strokeRect(bPos.x, bPos.y, b.w * pScale, b.h * pScale);
+                    }
+                }
+            }
+
+            // Малюємо САМУ ЗГРАЮ РИБ (синій квадрат)
             const pos = projector.virtualToScreen(dz.x * cellSize, dz.y * cellSize);
-            const w = dz.w * cellSize * projector.getScale();
-            const h = dz.h * cellSize * projector.getScale();
+            const w = dz.w * cellSize * pScale;
+            const h = dz.h * cellSize * pScale;
             
             this.#ctx.fillStyle = 'rgba(0, 150, 255, 0.5)';
             this.#ctx.fillRect(pos.x, pos.y, w, h);

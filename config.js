@@ -52,8 +52,9 @@ const CONFIG = {
 
         debugOpacity: 1.0,
         baseResolution: { width: 2560, height: 1440 },
-        designCellSize: 64,
-        cellSize: 32,
+        designCellSize: 40,
+        cellSize: 40,
+        catchLineOffsetPx: 5,
 
         map: {
             test: {
@@ -69,7 +70,7 @@ const CONFIG = {
                 // y: 'top', 'center', 'bottom', 'safeZone'
                 initialAlignment: { x: 'center', y: 'center' },
                 safeZone: { top: 0, bottom: 1440 },
-                depthBounds: { min: 1.5, max: 15.0 },
+                depthBounds: { min: 0.1, max: 15.0 },
 
                 weather: {
                     updateIntervalMs: 10000,
@@ -97,26 +98,30 @@ const CONFIG = {
 
                 zones: {
                     castable: [
-                        { x: 0, y: 13, w: 40, h: 20 } 
+                        { x: 9, y: 12, w: 39, h: 1 },
+                        { x: 9, y: 13, w: 55, h: 1 },
+                        { x: 0, y: 14, w: 64, h: 15 },
                     ],
                     collisions: [
-                        { x: 0, y: 0, w: 40, h: 13 },
-                        { x: 0, y: 33, w: 40, h: 7},
-                        { x: 0, y: 14, w: 6, h: 6},
+                        { x: 12, y: 22, w: 3, h: 2 },
                     ],
                     snags: [
-                        { x: 15, y: 20, w: 11, h: 9 }
+                        { x: 50, y: 13, w: 14, h: 8 }
                     ],
                     dynamic: [
                         { 
                             id: 'fish_school_1', 
                             type: 'buff', 
                             multiplier: 1.5, 
-                            x: 10, y: 15, w: 3, h: 3, 
+                            x: 10, y: 15, w: 1, h: 1, 
                             moving: true, 
                             speedX: 1.2, 
                             speedY: 0.8, 
-                            bounds: { x: 0, y: 13, w: 40, h: 20 }
+                            bounds: [
+                                { x: 9, y: 12, w: 39, h: 1 },
+                                { x: 9, y: 13, w: 55, h: 1 },
+                                { x: 0, y: 14, w: 64, h: 15 }
+                            ]
                         }
                     ]
                 }
