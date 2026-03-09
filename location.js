@@ -4,6 +4,7 @@ class GridCell {
         this.y = y;
         this.size = size;
         this.depth = 0;
+        this.isWater = false; // <--- ДОДАНО: Прапорець для води
         this.isCastable = false;
         this.hasCollision = false;
         this.hasSnag = false;
@@ -229,7 +230,8 @@ class LocationMap {
                     ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
                     ctx.strokeRect(x, y, cellSize, cellSize);
                 }
-                if (locCfg.debugDepthText && cell.depth > 0) {
+                
+                if (locCfg.debugDepthText && cell.isWater) {
                     ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
                     ctx.fillText(cell.depth.toFixed(1), x + cellSize / 2, y + cellSize / 2);
                 }
@@ -353,18 +355,29 @@ class LocationMap {
         const minD = this.#config.depthBounds.min;
         const maxD = this.#config.depthBounds.max;
 
-        for (let i = 0; i < this.#cols; i++) {
-            for (let j = 0; j < this.#rows; j++) {
-                const px = Math.floor(i * cellSize + cellSize / 2);
-                const py = Math.floor(j * cellSize + cellSize / 2);
-                
-                const index = (py * imgWidth + px) * 4;
-                const r = imageData[index]; 
-                
-                const ratio = r / 255;
-                const actualDepth = maxD - (ratio * (maxD - minD));
-                
-                this.#grid[i][j].depth = actualDepth;
+        if (!this.#config.zones.castable) return;
+
+        // --- ОПТИМІЗАЦІЯ: Читаємо глибину тільки в зелених зонах ---
+        for (const z of this.#config.zones.castable) {
+            const startCol = z.adaptiveX ? 0 : z.x;
+            const endCol = z.adaptiveX ? this.#cols : z.x + z.w;
+            const startRow = z.y;
+            const endRow = z.y + z.h;
+
+            for (let i = startCol; i < endCol; i++) {
+                for (let j = startRow; j < endRow; j++) {
+                    if (!this.#isValid(i, j)) continue; // Запобіжник виходу за межі масиву
+
+                    const px = Math.floor(i * cellSize + cellSize / 2);
+                    const py = Math.floor(j * cellSize + cellSize / 2);
+                    
+                    const index = (py * imgWidth + px) * 4;
+                    const r = imageData[index]; 
+                    
+                    const ratio = r / 255;
+                    this.#grid[i][j].depth = maxD - (ratio * (maxD - minD));
+                    this.#grid[i][j].isWater = true; // Позначаємо, що тут обчислена вода
+                }
             }
         }
     }
