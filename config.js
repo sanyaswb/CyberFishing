@@ -47,6 +47,7 @@ const CONFIG = {
         enableCastable: true,       // Зони, де можна закидати вудку
         enableCollisions: true,     // Колізії з землею (червоні зони) - забороняють закидати.
         enableSnags: true,          // Динамічні зони (наприклад, косяк риби)
+        showChumZones: true,
         showCatchZone: true,        // Відображення синьої зони
         showNetZone: true,          // Відображення зеленої зони
 
@@ -478,4 +479,45 @@ const CONFIG = {
             masteryPowerMultiplier: 0.2  // До якого відсотка ПЛАВНО впаде сила (0.2 = залишиться 20%)
         }
     },
+};
+
+const CHUM_CONFIG = {
+    currentMethod: 'boat', // Перемикач: 'hand' (руками) або 'boat' (кораблик)
+    
+    deliveryMethods: {
+        hand: {
+            type: 'hand',
+            flightTimeMs: 3000,
+            maxDistanceVirtual: 800
+        },
+        boat: {
+            type: 'boat',
+            level: 1, // Поточний рівень кораблика
+            statsByLevel: {
+                1: { speedPxPerSec: 150, maxEnergy: 60, energyDrainPerSec: 1 }, // Енергії вистачить на 60 сек плавання
+                2: { speedPxPerSec: 200, maxEnergy: 90, energyDrainPerSec: 1 },
+                3: { speedPxPerSec: 250, maxEnergy: 120, energyDrainPerSec: 1 },
+            },
+            turnSpeedRad: 3.0,
+            lookAheadCells: 3, // На скільки клітин дивиться вперед для вибору напрямку
+            perspectiveScaleRange: [0.5, 1.0], 
+            emoji: '🚤'
+        }
+    },
+
+    baits: {
+        'carp_mix_basic': {
+            id: 'carp_mix_basic',
+            name: 'Базова коропова суміш',
+            targetFishes: ['carp', 'crucian'],
+            radiusX: 150, 
+            radiusY: { max: 150, min: 20 },
+            maxBonus: 2.0, 
+            minBonus: 1.2, 
+            rampUpTimeMs: 3600000, 
+            peakDurationMs: 7200000, 
+            totalBonusTimeMs: 14400000, 
+            minBonusDurationHours: 24 
+        }
+    }
 };

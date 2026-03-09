@@ -1,6 +1,7 @@
 const OVERLAY_MODULES = {
     echo: true,          // 📡 ЕХОЛОТ (Глибина, Шанси кльову)
     state: true,         // 🧠 ПОВЕДІНКА (STATE)
+    chum: true,          // 🧲 ПРИКОРМКА
     fishBase: true,      // 🔥 ПОТОЧНА БАЗОВА СИЛА РИБИ
     fishStates: true,    // 📊 СИЛА РИБИ ЗА СТАНАМИ (MAX Y та X)
     worstCase: true,     // 💀 НАЙГІРШИЙ СЦЕНАРІЙ (НИЖНІЙ КУТ)
@@ -461,6 +462,25 @@ class DebugOverlay {
                     <div style="font-weight: bold; font-size: 13px;">${leaderTextX}</div>
                 `;
             }
+        }
+
+        // --- БЛОК 4: ПРИКОРМКА ---
+        if (OVERLAY_MODULES.chum && d.chumZones && d.chumZones.length > 0) {
+            html += `<div style="color: #ffff00; margin-top: 12px; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">🧲 АКТИВНІ ПРИКОРМКИ</div>`;
+            
+            d.chumZones.forEach((z, idx) => {
+                const cfg = z.baitConfig;
+                const activeColor = z.currentBonus > cfg.minBonus ? '#00ff80' : '#8a9bac';
+                const timeStr = z.isExpired ? 'ВИВІТРИЛАСЬ' : `${z.currentBonus.toFixed(2)}x (Бонус)`;
+                
+                html += `
+                    <div style="margin-bottom: 4px; display: flex; justify-content: space-between; font-size: 12px;">
+                        <span>Зона ${idx + 1} (${cfg.name}):</span>
+                        <span style="color: ${activeColor}; font-weight: bold;">${timeStr}</span>
+                    </div>
+                `;
+            });
+            html += `<div style="margin-bottom: 12px;"></div>`;
         }
 
         // Оновлюємо контент лише якщо є що показати

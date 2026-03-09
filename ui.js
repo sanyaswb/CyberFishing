@@ -824,3 +824,78 @@ class DevToolsUI {
         this.#panel.querySelector('.devtools-close').addEventListener('click', this.#onToggleCallback);
     }
 }
+
+class ChumUI {
+    constructor(onClickCallback) {
+        this.button = document.createElement('button');
+        this.button.innerText = 'Прикормка';
+        
+        // Стилізація
+        Object.assign(this.button.style, {
+            position: 'absolute',
+            bottom: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '12px 24px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            backgroundColor: '#ffaa00',
+            color: '#1a1a1a',
+            border: '2px solid #ffcc00',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            zIndex: '100',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.5)',
+            transition: 'all 0.2s ease',
+            touchAction: 'manipulation' // Покращує реакцію на мобільних
+        });
+
+        this.button.addEventListener('click', onClickCallback);
+        document.body.appendChild(this.button);
+    }
+
+    // Новий універсальний метод керування станом кнопки
+    setState(state) {
+        switch(state) {
+            case 'empty':
+                this.button.innerText = 'Розряджено';
+                this.button.style.backgroundColor = '#2c3e50';
+                this.button.style.borderColor = '#34495e';
+                this.button.style.color = '#95a5a6';
+                this.button.style.opacity = '0.9';
+                this.button.style.pointerEvents = 'none';
+                break;
+            case 'aiming':
+                this.button.innerText = 'Відмінити ціль';
+                this.button.style.backgroundColor = '#ff4444';
+                this.button.style.borderColor = '#ff8888';
+                this.button.style.opacity = '1';
+                this.button.style.pointerEvents = 'auto';
+                break;
+            case 'moving':
+                this.button.innerText = 'Пливе...';
+                this.button.style.backgroundColor = '#6c7a89'; // Сірий колір
+                this.button.style.borderColor = '#8a9bac';
+                this.button.style.opacity = '0.7'; // Напівпрозора
+                this.button.style.pointerEvents = 'none'; // БЛОКУЄМО КЛІКИ!
+                break;
+            case 'ready':
+                this.button.innerText = 'Активувати';
+                this.button.style.backgroundColor = '#00ff80'; // Зелений колір
+                this.button.style.borderColor = '#55ffaa';
+                this.button.style.opacity = '1';
+                this.button.style.pointerEvents = 'auto';
+                break;
+            default: // 'idle' (звичайний стан)
+                this.button.innerText = 'Прикормка';
+                this.button.style.backgroundColor = '#ffaa00';
+                this.button.style.borderColor = '#ffcc00';
+                this.button.style.opacity = '1';
+                this.button.style.pointerEvents = 'auto';
+                break;
+        }
+    }
+
+    hide() { this.button.style.display = 'none'; }
+    show() { this.button.style.display = 'block'; }
+}

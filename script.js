@@ -1805,6 +1805,105 @@ class Renderer {
         }
     }
 
+    drawChumZones(chumManager, projector, virtualTopY, virtualBottomY) {
+        const zones = chumManager.getZones();
+        
+        for (const zone of zones) {
+            if (!zone.isDelivered || zone.isExpired) continue;
+            
+            const cfg = zone.baitConfig;
+            
+            let opacity = 0;
+            if (zone.currentBonus > cfg.minBonus) {
+                opacity = (zone.currentBonus - cfg.minBonus) / Math.max(0.01, cfg.maxBonus - cfg.minBonus);
+            }
+            
+            if (opacity <= 0) continue;
+
+            const distRatio = Math.max(0, Math.min(1.0, (zone.y - virtualTopY) / (virtualBottomY - virtualTopY)));
+            const currentRadY = zone.baseRadYMin + ((zone.baseRadYMax - zone.baseRadYMin) * distRatio);
+
+            const centerScreen = projector.virtualToScreen(zone.x, zone.y);
+            const rxScreen = zone.baseRadX * projector.getScale();
+            const ryScreen = currentRadY * projector.getScale();
+
+            this.#ctx.save();
+            this.#ctx.beginPath();
+            this.#ctx.ellipse(centerScreen.x, centerScreen.y, rxScreen, ryScreen, 0, 0, Math.PI * 2);
+            
+            this.#ctx.fillStyle = `rgba(200, 255, 100, ${opacity * 0.25})`; 
+            this.#ctx.fill();
+            
+            this.#ctx.strokeStyle = `rgba(200, 255, 100, ${opacity * 0.6})`; 
+            this.#ctx.lineWidth = 2;
+            this.#ctx.stroke();
+            this.#ctx.restore();
+        }
+    }
+
+    drawChumAiming(projector, rodVirtualPos, maxDistanceVirtual) {
+        const centerScreen = projector.virtualToScreen(rodVirtualPos.x, rodVirtualPos.y);
+        const radiusScreen = maxDistanceVirtual * projector.getScale();
+
+        this.#ctx.save();
+        this.#ctx.beginPath();
+        this.#ctx.arc(centerScreen.x, centerScreen.y, radiusScreen, 0, Math.PI * 2);
+        this.#ctx.strokeStyle = 'rgba(255, 170, 0, 0.4)';
+        this.#ctx.lineWidth = 2;
+        this.#ctx.setLineDash([10, 10]);
+        this.#ctx.stroke();
+        
+        this.#ctx.fillStyle = 'rgba(255, 170, 0, 0.05)';
+        this.#ctx.fill();
+        this.#ctx.restore();
+    }
+
+    drawBoats(chumManager, projector, virtualTopY, virtualBottomY) {
+        const boats = chumManager.getBoats();
+        if (!boats || boats.length === 0) return;
+
+        this.#ctx.save();
+        this.#ctx.textAlign = 'center';
+        this.#ctx.textBaseline = 'middle';
+
+        for (const boat of boats) {
+            const screenPos = projector.virtualToScreen(boat.pos.x, boat.pos.y);
+            
+            const distRatio = Math.max(0, Math.min(1.0, (boat.pos.y - virtualTopY) / (virtualBottomY - virtualTopY)));
+            const scaleRange = boat.config.perspectiveScaleRange || [0.5, 1.0];
+            const scale = scaleRange[0] + (scaleRange[1] - scaleRange[0]) * distRatio;
+            
+            const fontSize = 40 * projector.getScale() * scale; 
+            this.#ctx.font = `${fontSize}px sans-serif`;
+
+            // Малюємо Кораблик
+            this.#ctx.translate(screenPos.x, screenPos.y);
+            this.#ctx.rotate(boat.angle + Math.PI); 
+            this.#ctx.fillText(boat.config.emoji, 0, 0);
+            this.#ctx.rotate(-(boat.angle + Math.PI));
+
+            // Малюємо смужку Енергії
+            const energyPct = boat.energy / boat.stats.maxEnergy;
+            const barWidth = 40 * scale;
+            const barHeight = 4 * scale;
+            const barY = -fontSize / 1.5; // Піднімаємо над корабликом
+
+            // Фон смужки (чорний)
+            this.#ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            this.#ctx.fillRect(-barWidth / 2, barY, barWidth, barHeight);
+            
+            // Колір залежить від заряду
+            if (energyPct > 0.5) this.#ctx.fillStyle = '#00ff80'; // Зелений
+            else if (energyPct > 0.2) this.#ctx.fillStyle = '#ffaa00'; // Жовтий
+            else this.#ctx.fillStyle = '#ff4444'; // Червоний
+
+            this.#ctx.fillRect(-barWidth / 2, barY, barWidth * energyPct, barHeight);
+
+            this.#ctx.translate(-screenPos.x, -screenPos.y);
+        }
+        this.#ctx.restore();
+    }
+
     drawFloat(screenPos, floatEntity, config) {
         const visualState = floatEntity.getVisualState();
         const pScale = visualState.perspectiveScale;
