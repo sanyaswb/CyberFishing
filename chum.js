@@ -217,14 +217,20 @@ class ChumManager {
     }
 
     getWaitingBoat() {
-        return this.#boats.find(b => b.state === 'waiting');
+        return this.#boats.find(b => b.state === 'waiting' && b.zoneId !== null);
     }
 
     activateWaitingBoat() {
         const boat = this.getWaitingBoat();
         if (boat) {
-            boat.isBaitDropped = true;
-            boat.state = 'returning';
+            boat.isBaitDropped = true; 
+            
+            const isManual = CHUM_CONFIG.deliveryMethods.boat.manualControl;
+            if (!isManual) {
+                boat.state = 'returning';
+            } else {
+                boat.state = 'waiting';
+            }
         }
     }
 
@@ -269,10 +275,13 @@ class BaitBoat {
         this.isFinished = false; 
     }
 
-    setTarget(targetX, targetY, zoneId) {
+    setTarget(targetX, targetY, zoneId = null, isReturn = false) {
         this.target = new Vector2(targetX, targetY);
-        this.zoneId = zoneId;
-        this.state = 'deploying';
+        if (zoneId !== null) this.zoneId = zoneId;
+        
+        if (this.state === 'drifting') return; 
+        
+        this.state = isReturn ? 'returning' : 'deploying';
     }
 
     update(dt, checkWater, cellSize, env) {

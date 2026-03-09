@@ -217,13 +217,11 @@ class Game {
     #toggleChumAim() {
         if (this.#gameState !== 'scouting' && this.#gameState !== 'waiting') return;
 
-        // 1. АКТИВАЦІЯ: Якщо кораблик чекає на точці - скидаємо прикормку!
         if (this.#chumManager.getWaitingBoat()) {
             this.#chumManager.activateWaitingBoat();
             return;
         }
 
-        // 2. БЛОКУВАННЯ: Якщо кораблик пливе, кнопка взагалі не реагує
         if (this.#chumManager.isBoatMoving()) {
             console.log("Кораблик в русі, зачекайте!");
             return; 
@@ -274,41 +272,40 @@ class Game {
             this.#chumManager.update(Date.now(), timeScale);
             this.#chumManager.updateBoats(dt, checkWater, CONFIG.locations.cellSize, boatEnv); 
             
-            // --- ДОДАНО: Вилов розрядженого кораблика біля берега / підсакою ---
             const bounds = this.#locationMap.getCastableBoundsVirtual(CONFIG.locations.cellSize);
             if (bounds) {
                 const mapBottomScreenY = this.#projector.virtualToScreen(0, bounds.bottom).y;
                 const catchLineY = Math.min(mapBottomScreenY, this.#canvas.height);
                 
-                // Стандартна зона берега (10% екрану знизу)
                 let triggerLineY = catchLineY - (this.#canvas.height * 0.10); 
                 
-                // Якщо є підсака - зона вилову стає більшою
                 if (CONFIG.net && CONFIG.net.active) {
                     triggerLineY = catchLineY - (CONFIG.net.length * 10); 
                 }
 
                 const boats = this.#chumManager.getBoats();
                 for (const boat of boats) {
-                    // Виловлюємо ТІЛЬКИ якщо він повністю розряджений (drifting)
                     if (boat.state === 'drifting') {
                         const boatScreenY = this.#projector.virtualToScreen(boat.pos.x, boat.pos.y).y;
                         
-                        // Якщо кораблик перетнув лінію підсаки/берега
                         if (boatScreenY >= triggerLineY) {
-                            boat.isFinished = true; // Кажемо менеджеру видалити його
+                            boat.isFinished = true;
                         }
                     }
                 }
             }
-            // -----------------------------------------------------------------
         }
 
         if (this.#chumUI && typeof this.#chumUI.setState === 'function') {
             const isBoatMethod = (CHUM_CONFIG.currentMethod === 'boat');
+            const boats = this.#chumManager ? this.#chumManager.getBoats() : [];
+            const activeBoat = boats.length > 0 ? boats[0] : null;
 
             if (this.#chumManager && this.#chumManager.hasDriftingBoat()) {
                 this.#chumUI.setState('empty');
+
+            } else if (activeBoat && activeBoat.state === 'waiting' && !activeBoat.zoneId) {
+                this.#chumUI.setState('empty');    
             } else if (this.#chumManager && this.#chumManager.getWaitingBoat()) {
                 this.#chumUI.setState('ready');
             } else if (this.#chumManager && this.#chumManager.isBoatMoving()) {
@@ -353,6 +350,32 @@ class Game {
                     this.#invalidCastMarker = { x: inputState.clickPos.x, y: inputState.clickPos.y, timer: 500 };
                 }
                 return;
+            }
+        }
+
+        if (!this.#isAimingChum && inputState.clickPos) {
+            const method = CHUM_CONFIG.currentMethod || 'hand';
+            const isManual = CHUM_CONFIG.deliveryMethods.boat?.manualControl;
+            const boats = this.#chumManager ? this.#chumManager.getBoats() : [];
+            
+            if (method === 'boat' && isManual && boats.length > 0) {
+                const boat = boats[0];
+                const clickY = inputState.clickPos.y;
+                const vPos = this.#projector.screenToVirtual(inputState.clickPos.x, clickY);
+                const cell = this.#locationMap.getCellAtVirtualPos(vPos.x, vPos.y, CONFIG.locations.cellSize);
+                
+                const isBottomClick = clickY > this.#canvas.height * 0.85 || (cell && !cell.isCastable && clickY > this.#canvas.height * 0.7);
+
+                if (isBottomClick) {
+                    boat.setTarget(boat.startPos.x, boat.startPos.y, null, true); 
+                    inputState.clickPos = null;
+                } 
+                else if (cell && cell.isCastable && !cell.hasCollision) {
+                    if (boat.state !== 'drifting') {
+                        boat.setTarget(vPos.x, vPos.y, boat.zoneId, false);
+                    }
+                    inputState.clickPos = null; 
+                }
             }
         }
 

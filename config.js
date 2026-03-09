@@ -492,6 +492,7 @@ const CHUM_CONFIG = {
         },
         boat: {
             type: 'boat',
+            manualControl: true,
             level: 1, // Поточний рівень кораблика
             statsByLevel: {
                 1: { speedPxPerSec: 150, maxEnergy: 60, energyDrainPerSec: 1 }, // Енергії вистачить на 60 сек плавання
@@ -511,7 +512,7 @@ const CHUM_CONFIG = {
             name: 'Базова коропова суміш',
             targetFishes: ['carp', 'crucian'],
             radiusX: 150, 
-            radiusY: { max: 150, min: 20 },
+            radiusY: { max: 110, min: 20 },
             maxBonus: 2.0, 
             minBonus: 1.2, 
             rampUpTimeMs: 3600000, 
