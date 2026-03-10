@@ -83,7 +83,7 @@ class Game {
 
         const initialX = CONFIG.float.initialX ?? this.#canvas.width / 2;
         const initialY = CONFIG.float.initialY ?? this.#canvas.height / 2;
-        this.#float = new FloatEntity(initialX, initialY, CONFIG);
+        this.#float = new FloatEntity(initialX, initialY, CONFIG.float);
         
         const now = new Date();
         this.#gameTimeHours = CONFIG.debug?.initialTime ?? (now.getHours() + (now.getMinutes() / 60));

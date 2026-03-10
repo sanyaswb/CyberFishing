@@ -51,7 +51,8 @@ class FloatEntity {
     #position;
     #velocity;
     #friction;
-    #config;
+    #floatConfig;
+    #sinkerConfig;
     #sinkingDelayTimer = 0;
     
     #isBiting = false;
@@ -93,13 +94,14 @@ class FloatEntity {
     #windTimer = 0;
     #windFluctuationTimer = 0;
 
-    constructor(x, y, config) {
+    constructor(x, y, floatConfig) {
         this.#position = new Vector2(x, y);
         this.#velocity = new Vector2(0, 0);
         this.#currentBiteMoveVelocity = new Vector2(0, 0);
-        this.#friction = config.float.friction || 0.85;
-        this.#config = config;
-        this.#baseColor = config.float.type === 'day' ? '#ffffff' : '#00ff80';
+        this.#floatConfig = floatConfig;
+        this.#sinkerConfig = null;
+        this.#friction = floatConfig.friction || 0.85;
+        this.#baseColor = floatConfig.type === 'day' ? '#ffffff' : '#00ff80';
         this.#currentColor = this.#baseColor;
     }
 
@@ -118,19 +120,20 @@ class FloatEntity {
         this.#targetHookDepth = targetDepth;
         this.#currentHookDepth = 0.1;
         this.#isOverDepth = isOverDepth;
+        this.#sinkerConfig = sinkerConfig;
         
         const weightCfg = sinkerConfig.weights[sinkerConfig.weight];
         this.#sinkerHeightScale = weightCfg.heightScale;
         
-        const pRange = this.#config.float.perspectiveScaleRange || [1.3, 0.7];
+        const pRange = this.#floatConfig.perspectiveScaleRange || [1.3, 0.7];
         this.#perspectiveScale = pRange[0] + distanceRatio * (pRange[1] - pRange[0]);
         
         this.#isSinking = true;
-        this.#sinkingDelayTimer = this.#config.float.sinkingDelayMs || 500;
+        this.#sinkingDelayTimer = this.#floatConfig.sinkingDelayMs || 500;
         
         const maxDepth = sinkerConfig.maxDepth || 8.0;
         const depthRatio = Math.max(0.1, Math.min(1.0, targetDepth / maxDepth)); 
-        const baseSinkingTime = (this.#config.float.sinkingDurationMs || 4000) * depthRatio;
+        const baseSinkingTime = (this.#floatConfig.sinkingDurationMs || 4000) * depthRatio;
         
         this.#sinkingTotalTime = baseSinkingTime / weightCfg.speedMult;
         this.#sinkingTimer = this.#sinkingTotalTime;
@@ -174,9 +177,9 @@ class FloatEntity {
 
         if (!this.#isHooked) {
             if (environment) {
-                if (environment.current) {
-                    const sinkerQual = Math.max(1, Math.min(10, this.#config.sinker.quality || 1));
-                    const currentCompRange = this.#config.sinker.currentCompensation || [0.1, 0.99];
+                if (environment.current && this.#sinkerConfig) {
+                    const sinkerQual = Math.max(1, Math.min(10, this.#sinkerConfig.quality || 1));
+                    const currentCompRange = this.#sinkerConfig.currentCompensation || [0.1, 0.99];
                     const currentComp = this.#lerp(currentCompRange[0], currentCompRange[1], (sinkerQual - 1) / 9);
                     
                     const driftSpeed = environment.current.speedPxPerSec * (1 - currentComp);
@@ -186,7 +189,6 @@ class FloatEntity {
                     let nextX = this.#position.x + dx;
                     let nextY = this.#position.y + dy;
 
-                    // Окрема перевірка для ковзання
                     if (checkWater) {
                         if (!checkWater(nextX, this.#position.y)) nextX = this.#position.x;
                         if (!checkWater(this.#position.x, nextY)) nextY = this.#position.y;
@@ -198,11 +200,10 @@ class FloatEntity {
 
                 const isFishActivelyPulling = this.#isBiting && (Math.abs(this.#currentAngle) > 0.5 || Math.abs(this.#currentScaleY - 1.0) > 0.02);
 
-                // ДОДАНО: !this.#isSinking, щоб вітер не дув на поплавок, поки той ще опускається
                 if (environment.wind && !isFishActivelyPulling && !this.#isSinking) {
                     const dir = environment.wind.direction;
-                    const floatQual = Math.max(1, Math.min(10, this.#config.float.quality || 1));
-                    const windCompRange = this.#config.float.windCompensation || [0.1, 0.99];
+                    const floatQual = Math.max(1, Math.min(10, this.#floatConfig.quality || 1));
+                    const windCompRange = this.#floatConfig.windCompensation || [0.1, 0.99];
                     const windComp = this.#lerp(windCompRange[0], windCompRange[1], (floatQual - 1) / 9);
 
                     this.#windFluctuationTimer -= dt;
@@ -210,21 +211,18 @@ class FloatEntity {
                     if (this.#windTimer > 0) {
                         this.#windTimer -= dt;
                         
-                        // Під час пориву вітру - швидкі та сильні хитання
                         if (this.#windFluctuationTimer <= 0) {
                             const gustAngle = this.#getRandom(environment.wind.gustAngleRange) * dir;
                             this.#targetWindAngle = gustAngle * (1 - windComp);
                             this.#windFluctuationTimer = this.#getRandom(environment.wind.gustFluctuationMs);
                         }
                     } else {
-                        // Спокійний вітер - плавні та легкі хитання
                         if (this.#windFluctuationTimer <= 0) {
                             const breezeAngle = this.#getRandom(environment.wind.breezeAngleRange) * dir;
                             this.#targetWindAngle = breezeAngle * (1 - windComp);
                             this.#windFluctuationTimer = this.#getRandom(environment.wind.gustFluctuationMs) * 3;
                         }
 
-                        // Шанс на новий порив
                         if (Math.random() < environment.wind.gustChancePerSec * (dt / 1000)) {
                             this.#windTimer = this.#getRandom(environment.wind.gustDurationMs);
                             this.#windFluctuationTimer = 0; 
@@ -246,7 +244,6 @@ class FloatEntity {
             this.#windFluctuationTimer = 0;
         }
 
-        // Згладжування кута завжди працює тут
         this.#windAngleOffset = this.#lerp(this.#windAngleOffset, this.#targetWindAngle, dt * 0.005);
 
         if (!this.#isBiting) {
@@ -254,12 +251,10 @@ class FloatEntity {
             let nextY = this.#position.y + this.#velocity.y;
 
             if (checkWater) {
-                // Ковзання по осі X
                 if (!checkWater(nextX, this.#position.y)) {
                     this.#velocity.x = 0; 
                     nextX = this.#position.x;
                 }
-                // Ковзання по осі Y
                 if (!checkWater(this.#position.x, nextY)) {
                     this.#velocity.y = 0; 
                     nextY = this.#position.y;
@@ -314,7 +309,7 @@ class FloatEntity {
         this.#isBiting = true;
         this.#isHooked = false;
         
-        const seqCfg = this.#config.float.biteSequence;
+        const seqCfg = this.#floatConfig.biteSequence;
         this.#currentSequenceCount = 1;
         this.#targetSequenceCount = Math.floor(this.#getRandom(seqCfg.maxSequences));
         
@@ -347,12 +342,10 @@ class FloatEntity {
             let nextY = this.#position.y + this.#currentBiteMoveVelocity.y * (dt / 1000);
 
             if (checkWater) {
-                // Відскок по X
                 if (!checkWater(nextX, this.#position.y)) {
                     this.#currentBiteMoveVelocity.x *= -1; 
                     nextX = this.#position.x;
                 }
-                // Відскок по Y
                 if (!checkWater(this.#position.x, nextY)) {
                     this.#currentBiteMoveVelocity.y *= -1;
                     nextY = this.#position.y;
@@ -386,7 +379,7 @@ class FloatEntity {
     }
 
     #rollBiteSequence() {
-        const seqCfg = this.#config.float.biteSequence;
+        const seqCfg = this.#floatConfig.biteSequence;
         const isRed = Math.random() <= seqCfg.chanceGuaranteed;
         const color = isRed ? '#ff0000' : '#ffff00';
         const range = isRed ? seqCfg.guaranteedIters : seqCfg.normalIters;
@@ -425,7 +418,7 @@ class FloatEntity {
     }
 
     #generateRandomAnim(isRed) {
-        const seqCfg = this.#config.float.biteSequence;
+        const seqCfg = this.#floatConfig.biteSequence;
         const animsCfg = seqCfg.animations;
         const mods = seqCfg.guaranteedModifiers;
         
@@ -520,7 +513,6 @@ class FloatEntity {
     #nextAnimStep() {
         const anim = this.#sequenceQueue.shift();
         
-        // Запам'ятовуємо, чи була попередня фаза гарантованою
         const wasGuaranteed = this.#isGuaranteed; 
 
         this.#animDuration = anim.duration;
@@ -528,9 +520,6 @@ class FloatEntity {
         this.#currentColor = anim.color || this.#baseColor;
         this.#isGuaranteed = anim.isGuaranteed || false;
 
-        // --- ДОДАНО: Запобіжник ---
-        // Якщо червона фаза закінчилася, примусово гасимо залишковий рух, 
-        // щоб поплавок не "летів", коли він вже жовтий
         if (wasGuaranteed && !this.#isGuaranteed) {
             this.#biteMoveTimer = 0;
             this.#currentBiteMoveVelocity.x = 0;
