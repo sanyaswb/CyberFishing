@@ -193,7 +193,11 @@ class DebugOverlay {
       html += `<div style="margin-bottom: 4px;">Стан: <span style="color: #00ccff; text-transform: uppercase;">${d.gameState}</span></div>`;
 
       if (d.gameState === "waiting" || d.gameState === "biting") {
-        html += `<div style="margin-bottom: 4px;">Гачок / Дно: <span style="color: #ffaa00;">${d.hookDepth ? d.hookDepth.toFixed(2) : 0} м / ${d.bottomDepth ? d.bottomDepth.toFixed(2) : 0} м</span></div>`;
+        html += `<div style="margin-bottom: 4px;">
+          Гачок: <span style="color: #ffaa00;">${d.hookDepth ? d.hookDepth.toFixed(2) : 0} м</span> / 
+          Дно: <span style="color: #ffaa00;">${d.bottomDepth ? d.bottomDepth.toFixed(2) : 0} м</span> / 
+          Ліска: <span style="color: #00ccff;">${d.lineLength ? d.lineLength.toFixed(2) : 0} м</span>
+        </div>`;
         html += `<div style="margin-bottom: 4px;">Наживка: <span style="color: #b066ff;">${d.bait}</span></div>`;
         html += `<div style="margin-bottom: 8px;">Фаза: <span style="color: #ffff00;">${d.phase}</span></div>`;
 

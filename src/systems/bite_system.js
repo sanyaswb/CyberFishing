@@ -115,11 +115,16 @@ class BiteSystem {
   getLiveChances(envData, playerGear) {
     let chances = [];
 
+    // 🎣 ФІКС: ФІЗИЧНА глибина гачка (він не може впасти глибше за дно)
+    const physicalHookDepth = Math.min(envData.hookDepth, envData.bottomDepth);
+
     for (const fish of this.#fishDatabase) {
       const dc = fish.depthConfig;
 
       if (playerGear.hookSize > fish.maxHookSize) continue;
-      if (envData.hookDepth < dc.minDepth || envData.hookDepth > dc.maxDepth)
+
+      // Перевіряємо, чи риба взагалі живе на цій фізичній глибині
+      if (physicalHookDepth < dc.minDepth || physicalHookDepth > dc.maxDepth)
         continue;
 
       const baitMult = fish.baitMultipliers[playerGear.baitId] || 0;
@@ -135,7 +140,8 @@ class BiteSystem {
       const timeMult = fish.timeMultipliers[envData.timePhase] || 1.0;
       const dayMult = fish.dayMultipliers[envData.dayOfWeek] || 1.0;
 
-      let t = (envData.hookDepth - dc.minDepth) / (dc.maxDepth - dc.minDepth);
+      // 🎣 ФІКС: Шанс глибини рахуємо від ФІЗИЧНОЇ глибини, де лежить наживка
+      let t = (physicalHookDepth - dc.minDepth) / (dc.maxDepth - dc.minDepth);
       t = Math.max(0, Math.min(1, t));
       const depthChanceMult = this.#lerp(1.0, dc.chanceMultAtMaxDepth, t);
 
@@ -147,8 +153,9 @@ class BiteSystem {
         : 1.0;
       const weatherMult = rainMult * fogMult;
 
+      // Штраф "Лежачий поплавок" дивиться на виставлену ліску!
       const overDepthPenalty =
-        envData.hookDepth > envData.bottomDepth
+        envData.lineLength > envData.bottomDepth
           ? this.#overDepthPenaltyMult || 0.5
           : 1.0;
 
@@ -175,12 +182,12 @@ class BiteSystem {
           bait: baitMult.toFixed(2),
           time: timeMult.toFixed(2),
           day: dayMult.toFixed(2),
-          depth: depthChanceMult.toFixed(2),
+          depth: depthChanceMult.toFixed(2), // ТЕПЕР ТУТ БУДЕ ЧЕСНА ЦИФРА
           weather: weatherMult.toFixed(2),
           zone: zoneMult.toFixed(2),
           chum: currentChumMult.toFixed(2),
           spam: spamMult.toFixed(2),
-          overDepth: overDepthPenalty.toFixed(2),
+          overDepth: overDepthPenalty.toFixed(2), // Покарання залишається!
         },
       });
     }

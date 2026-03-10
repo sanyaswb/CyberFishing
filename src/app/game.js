@@ -751,7 +751,10 @@ class Game {
 
     // 2. Створюємо envData (ОДИН РАЗ)
     const envData = {
-      hookDepth: this.#float.getCurrentHookDepth(), // ЗАВЖДИ чесна глибина
+      // ФІКС: Гачок фізично не може впасти глибше дна!
+      hookDepth: Math.min(this.#float.getCurrentHookDepth(), currentDepth),
+      // ДОДАНО: Зберігаємо виставлену довжину ліски (для штрафів і UI)
+      lineLength: this.#currentHookDepth,
       bottomDepth: currentDepth,
       timePhase: this.#currentPhase,
       dayOfWeek: new Date().getDay(),
@@ -1042,8 +1045,13 @@ class Game {
         this.#gameState === "biting" ||
         this.#gameState === "playing")
     ) {
-      // Оновлюємо глибину ще раз на випадок, якщо поплавок тонув під час цього кадру
-      envData.hookDepth = this.#float.getCurrentHookDepth();
+      // 1. Беремо свіжу сиру глибину з поплавка (скільки ліски розмотано)
+      const rawFloatDepth = this.#float.getCurrentHookDepth();
+
+      // 2. Правильно розподіляємо:
+      envData.lineLength = rawFloatDepth; // Ліска - це повна розмотка
+      envData.hookDepth = Math.min(rawFloatDepth, envData.bottomDepth); // Гачок - фізично зупиняється на дні
+
       const liveChances = this.#biteSystem.getLiveChances(envData, playerGear);
 
       const debugData = {
@@ -1051,8 +1059,9 @@ class Game {
         chumZones: this.#chumManager ? this.#chumManager.getZones() : [],
         floatX: Math.round(floatPos.x),
         floatY: Math.round(floatPos.y),
-        hookDepth: envData.hookDepth,
+        hookDepth: envData.hookDepth, // Відправляємо обрізану об дно глибину!
         bottomDepth: envData.bottomDepth,
+        lineLength: envData.lineLength, // Відправляємо повну ліску!
         bait: playerGear.baitId,
         phase: envData.timePhase,
         liveChances: liveChances,
