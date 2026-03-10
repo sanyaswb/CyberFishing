@@ -285,8 +285,6 @@ class Game {
   }
 
   #toggleChumAim() {
-    // ✅ ДОДАНО 'biting' у список дозволених станів!
-    // Тепер пульт дістається під час очікування, прицілювання та клювання.
     if (
       this.#gameState !== "scouting" &&
       this.#gameState !== "waiting" &&
@@ -741,31 +739,22 @@ class Game {
     );
     const currentDepth = currentCell ? currentCell.depth : 0;
 
-    const chumBounds = this.#locationMap.getCastableBoundsVirtual(
+    // Беремо межі карти (один раз!)
+    const bounds = this.#locationMap.getCastableBoundsVirtual(
       CONFIG.locations.cellSize,
     );
-    const vTop = chumBounds ? chumBounds.top : 0;
-    const virtualBottomY = chumBounds ? chumBounds.bottom : 1440;
+    const vTop = bounds ? bounds.top : 0;
+    const virtualBottomY = bounds ? bounds.bottom : 1440;
 
-    const rawChumBonus = this.#chumManager
-      ? this.#chumManager.getMultiplier(
+    // НОВИЙ ПІДХІД: Отримуємо і бонус, і цілі одним елегантним викликом
+    const chumData = this.#chumManager
+      ? this.#chumManager.getChumDataAt(
           floatPos.x,
           floatPos.y,
-          null,
           vTop,
           virtualBottomY,
         )
-      : 1.0;
-
-    let activeTargets = null;
-    if (rawChumBonus > 1.0 && this.#chumManager) {
-      activeTargets = this.#chumManager.getActiveChumTargets(
-        floatPos.x,
-        floatPos.y,
-        vTop,
-        virtualBottomY,
-      );
-    }
+      : { bonus: 1.0, targets: null };
 
     const envData = {
       hookDepth: this.#float.getCurrentHookDepth(),
@@ -773,8 +762,8 @@ class Game {
       timePhase: this.#currentPhase,
       dayOfWeek: new Date().getDay(),
       zoneMultiplier: 1.0,
-      chumBonus: rawChumBonus,
-      chumTargets: activeTargets,
+      chumBonus: chumData.bonus,
+      chumTargets: chumData.targets,
       isRaining: this.#isRaining,
       isFoggy: this.#isFoggy,
       castSpamMultiplier: this.#castManager.getBiteChanceMultiplier(),
@@ -1007,8 +996,8 @@ class Game {
       reelPower,
       currentFishMaxForceScaled,
       dt,
-      CONFIG.tension, // Сьомий аргумент (для кольорів та натягу)
-      CONFIG.hookMechanics, // Восьмий аргумент (для шансу сходу)
+      CONFIG.tension,
+      CONFIG.hookMechanics,
     );
 
     this.#staminaController.evaluate(
@@ -1380,7 +1369,6 @@ class Game {
     this.update(dt);
     this.draw();
 
-    // Оновлення UI перенесено сюди, щоб гарантовано працювати кожен кадр
     if (this.#uiManager) {
       this.#uiManager.updateNetButtonState(
         CONFIG,

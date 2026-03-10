@@ -238,7 +238,7 @@ class DebugOverlay {
                     </div>`;
 
           // ДОДАНО: b.chum для відображення прикормки
-          const chumColor = b.chum > 1.0 ? "#00ff80" : "#ddd"; // Зелений, якщо є бонус
+          const chumColor = parseFloat(b.chum) > 1.0 ? "#00ff80" : "#ddd"; // Зелений, якщо є бонус
 
           html += `<div style="color: #8a9bac; font-size: 11px; line-height: 1.4; display: grid; grid-template-columns: 1fr 1fr;">
                         <span>База: <span style="color:#ddd">${b.base}</span></span>

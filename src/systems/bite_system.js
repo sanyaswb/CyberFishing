@@ -67,7 +67,6 @@ class BiteSystem {
 
   evaluateBite(dt, envData, playerGear) {
     this.#timer += dt;
-
     if (this.#timer < this.#tickRate) return null;
     this.#timer -= this.#tickRate;
 
@@ -83,53 +82,33 @@ class BiteSystem {
       const baitMult = fish.baitMultipliers[playerGear.baitId] || 0;
       if (baitMult === 0) continue;
 
-      let t = (envData.hookDepth - dc.minDepth) / (dc.maxDepth - dc.minDepth);
-      t = Math.max(0, Math.min(1, t));
-
-      const depthChanceMult = this.#lerp(1.0, dc.chanceMultAtMaxDepth, t);
-
-      let finalChance = fish.baseChance;
-      finalChance *= baitMult;
+      let finalChance = fish.baseChance * baitMult;
       finalChance *= fish.timeMultipliers[envData.timePhase] || 1.0;
       finalChance *= fish.dayMultipliers[envData.dayOfWeek] || 1.0;
 
-      let currentZoneMult = envData.zoneMultiplier || 1.0;
-
-      if (envData.chumTargets && envData.chumBonus) {
+      let currentChumMult = 1.0;
+      if (envData.chumBonus > 1.0 && Array.isArray(envData.chumTargets)) {
         if (envData.chumTargets.includes(fish.id)) {
-          currentZoneMult *= envData.chumBonus;
+          currentChumMult = envData.chumBonus;
         }
       }
-      finalChance *= currentZoneMult;
+      finalChance *= currentChumMult;
 
-      if (envData.isRaining) {
+      if (envData.isRaining)
         finalChance *= fish.weatherMultipliers?.rain ?? 1.0;
-      }
-      if (envData.isFoggy) {
-        finalChance *= fish.weatherMultipliers?.fog ?? 1.0;
-      }
-
+      if (envData.isFoggy) finalChance *= fish.weatherMultipliers?.fog ?? 1.0;
       finalChance *= envData.castSpamMultiplier ?? 1.0;
-
-      if (envData.hookDepth > envData.bottomDepth) {
+      if (envData.hookDepth > envData.bottomDepth)
         finalChance *= this.#overDepthPenaltyMult;
-      }
 
-      if (Math.random() <= finalChance) {
-        possibleBites.push(fish);
-      }
+      if (Math.random() <= finalChance) possibleBites.push(fish);
     }
 
     if (possibleBites.length > 0) {
-      const randomIndex = Math.floor(Math.random() * possibleBites.length);
-      const selectedFishTemplate = possibleBites[randomIndex];
-
-      return this.#generateFishInstance(
-        selectedFishTemplate,
-        envData.hookDepth,
-      );
+      const selected =
+        possibleBites[Math.floor(Math.random() * possibleBites.length)];
+      return this.#generateFishInstance(selected, envData.hookDepth);
     }
-
     return null;
   }
 
@@ -138,7 +117,6 @@ class BiteSystem {
 
     for (const fish of this.#fishDatabase) {
       const dc = fish.depthConfig;
-
       if (playerGear.hookSize > fish.maxHookSize) continue;
       if (envData.hookDepth < dc.minDepth || envData.hookDepth > dc.maxDepth)
         continue;
@@ -146,46 +124,26 @@ class BiteSystem {
       const baitMult = fish.baitMultipliers[playerGear.baitId] || 0;
       if (baitMult === 0) continue;
 
-      let t = (envData.hookDepth - dc.minDepth) / (dc.maxDepth - dc.minDepth);
-      t = Math.max(0, Math.min(1, t));
-      const depthChanceMult = this.#lerp(1.0, dc.chanceMultAtMaxDepth, t);
-
-      const timeMult = fish.timeMultipliers[envData.timePhase] || 1.0;
-      const dayMult = fish.dayMultipliers[envData.dayOfWeek] || 1.0;
-      const zoneMult = envData.zoneMultiplier || 1.0;
-
-      let chumMult = 1.0;
-      if (envData.chumTargets && envData.chumBonus) {
+      // ПРИКОРМКА
+      let currentChumMult = 1.0;
+      if (envData.chumBonus > 1.0 && Array.isArray(envData.chumTargets)) {
         if (envData.chumTargets.includes(fish.id)) {
-          chumMult = envData.chumBonus;
+          currentChumMult = envData.chumBonus;
         }
       }
 
-      let rainMult = envData.isRaining
-        ? (fish.weatherMultipliers?.rain ?? 1.0)
-        : 1.0;
-      let fogMult = envData.isFoggy
-        ? (fish.weatherMultipliers?.fog ?? 1.0)
-        : 1.0;
-      const weatherMult = rainMult * fogMult;
+      const timeMult = fish.timeMultipliers[envData.timePhase] || 1.0;
+      const weatherMult =
+        (envData.isRaining ? (fish.weatherMultipliers?.rain ?? 1.0) : 1.0) *
+        (envData.isFoggy ? (fish.weatherMultipliers?.fog ?? 1.0) : 1.0);
 
-      const spamMult = envData.castSpamMultiplier ?? 1.0;
-      const overDepthMult =
-        envData.hookDepth > envData.bottomDepth
-          ? this.#overDepthPenaltyMult
-          : 1.0;
-
-      let finalChance =
+      const finalChance =
         fish.baseChance *
         baitMult *
         timeMult *
-        dayMult *
-        zoneMult *
-        chumMult *
-        depthChanceMult *
+        currentChumMult *
         weatherMult *
-        spamMult *
-        overDepthMult;
+        (envData.castSpamMultiplier ?? 1.0);
 
       chances.push({
         name: fish.name,
@@ -193,18 +151,11 @@ class BiteSystem {
         breakdown: {
           base: fish.baseChance.toFixed(3),
           bait: baitMult.toFixed(2),
-          time: timeMult.toFixed(2),
-          day: dayMult.toFixed(2),
-          zone: zoneMult.toFixed(2),
-          chum: chumMult.toFixed(2),
-          depth: depthChanceMult.toFixed(2),
-          weather: weatherMult.toFixed(2),
-          spam: spamMult.toFixed(2),
-          overDepth: overDepthMult.toFixed(2),
+          chum: currentChumMult.toFixed(2), // Це відобразиться в оверлеї
+          spam: (envData.castSpamMultiplier || 1.0).toFixed(2),
         },
       });
     }
-
     return chances;
   }
 }

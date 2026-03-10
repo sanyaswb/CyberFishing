@@ -306,23 +306,29 @@ class ChumManager {
   }
 
   getChumDataAt(floatX, floatY, vTop, vBottom) {
-    const bonus = this.getMultiplier(floatX, floatY, null, vTop, vBottom);
+    let bestBonus = 1.0;
+    let bestTargets = [];
 
-    if (bonus > 1.0) {
-      const activeZone = this.#zones.find((zone) => {
-        if (!zone.isDelivered) return false;
-        return zone.getMultiplierAt(floatX, floatY, null, vTop, vBottom) > 1.0;
-      });
+    for (const zone of this.#zones) {
+      if (!zone.isDelivered || zone.isExpired) continue;
 
-      if (activeZone) {
-        const baitConfig = this.#chumConfig.baits[activeZone.baitId];
-        return {
-          bonus: bonus,
-          targets: baitConfig.targetFishes || [],
-        };
+      const zoneMult = zone.getMultiplierAt(
+        floatX,
+        floatY,
+        null,
+        vTop,
+        vBottom,
+      );
+
+      if (zoneMult > bestBonus) {
+        bestBonus = zoneMult;
+        if (zone.baitConfig && Array.isArray(zone.baitConfig.targetFishes)) {
+          bestTargets = zone.baitConfig.targetFishes;
+        }
       }
     }
-    return { bonus: 1.0, targets: null };
+
+    return { bonus: bestBonus, targets: bestTargets };
   }
 
   getActiveChumTargets(floatX, floatY, virtualTopY, virtualBottomY) {
