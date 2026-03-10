@@ -144,12 +144,12 @@ class Game {
         const fish = new Fish(hookedFish.level, hookedFish.weight, hookedFish.resistance, hookedFish.physics); 
         
         this.#fishingSystem = new FishingSystem(rod, reel, fish);
-        this.#tensionMeter = new TensionMeter(CONFIG.rod.level, CONFIG.reel.level, hook, CONFIG);
+        this.#tensionMeter = new TensionMeter(CONFIG.rod.level, CONFIG.reel.level, hook, CONFIG.tension);
         
         this.#fishCondition = new FishCondition(hookedFish.level, hookedFish.weight, CONFIG.stamina.fish);
         
         const playerBasePower = rod.getPower() + reel.getPower();
-        this.#staminaController = new StaminaController(this.#fishCondition, fish, playerBasePower, CONFIG);
+        this.#staminaController = new StaminaController(this.#fishCondition, fish, playerBasePower, CONFIG.stamina.mechanics);
         
         console.log(`%c🎣 КЛЮНУВ: ${hookedFish.name}!`, 'color: #00ff00; font-size: 16px; font-weight: bold;');
         console.table({
@@ -675,7 +675,7 @@ class Game {
             return;
         }
 
-        const fishForceRaw = this.#fishingSystem.calculateFishForce(dt, floatPos, this.#bounds, CONFIG, checkWater);
+        const fishForceRaw = this.#fishingSystem.calculateFishForce(dt, floatPos, this.#bounds, CONFIG.stamina.mechanics, checkWater);
         const currentFishMaxForceScaled = Math.max(Math.abs(fishForceRaw.x), Math.abs(fishForceRaw.y)) * 0.01;
 
         const fishForce = fishForceRaw.clone().multiplyScalar(CONFIG.physics.fishForceMultiplier);
@@ -694,7 +694,7 @@ class Game {
         const maxOffsetDistance = Math.max(rodScreenX, this.#canvas.width - rodScreenX);
         const screenOffsetRatio = Math.min(1, Math.abs(floatScreenPosInitial.x - rodScreenX) / maxOffsetDistance);
 
-        const rawPlayerPower = this.#fishingSystem.calculatePlayerForce(new Vector2(0, 1), floatPos.x, floatPos.y, rodVirtualPos, screenOffsetRatio, CONFIG).y;
+        const rawPlayerPower = this.#fishingSystem.calculatePlayerForce(new Vector2(0, 1), floatPos.x, floatPos.y, rodVirtualPos, screenOffsetRatio, CONFIG.physics).y;
         const playerMaxPower = Math.abs(rawPlayerPower * CONFIG.physics.playerForceMultiplier);
         const fishPowerMag = Math.abs(fishForce.y); 
         const reelPower = this.#fishingSystem.getReelPower();
@@ -702,12 +702,12 @@ class Game {
         let playerForce = new Vector2(0, 0);
 
         if (inputState.isPulling) {
-            const playerForceRaw = this.#fishingSystem.calculatePlayerForce(inputState.pullDirection, floatPos.x, floatPos.y, rodVirtualPos, screenOffsetRatio, CONFIG);
+            const playerForceRaw = this.#fishingSystem.calculatePlayerForce(inputState.pullDirection, floatPos.x, floatPos.y, rodVirtualPos, screenOffsetRatio, CONFIG.physics);
             playerForce = playerForceRaw.clone().multiplyScalar(CONFIG.physics.playerForceMultiplier);
             this.#float.applyForce(playerForce);
         }
 
-        this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, currentFishMaxForceScaled, dt, CONFIG);
+        this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, currentFishMaxForceScaled, dt, CONFIG.hookMechanics);
 
         this.#staminaController.evaluate(this.#tensionMeter.getTension(), inputState.isPulling, dt, floatPos.x, dynamicBounds);
 
