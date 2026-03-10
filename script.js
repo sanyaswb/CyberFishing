@@ -1,3 +1,3 @@
-const game = new Game('gameCanvas');
+const game = new Game("gameCanvas");
 game.start();
 CacheManager.printStorageUsage();
