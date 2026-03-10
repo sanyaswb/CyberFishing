@@ -54,7 +54,7 @@ class Game {
     this.#uiManager.onNetClick = () => this.#handleNetClick();
     this.#uiManager.onContinueClick = () => this.#resetGame();
 
-    this.#chumManager = new ChumManager("test");
+    this.#chumManager = new ChumManager("test", CONFIG.chum);
     this.#chumUI = new ChumUI(() => this.#toggleChumAim());
     this.#isAimingChum = false;
 

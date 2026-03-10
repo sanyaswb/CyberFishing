@@ -3,10 +3,12 @@ class ChumZone {
     this.id = id;
     this.x = x;
     this.y = y;
+    this.baitId = baitConfig.id;
     this.baitConfig = baitConfig;
     this.deployRealTimeMs = deployRealTimeMs;
     this.isDelivered = isDelivered;
     this.isExpired = false;
+    this.currentBonus = 1.0;
 
     this.baseRadX = baitConfig.radiusX;
     this.baseRadYMax = baitConfig.radiusY.max;
@@ -45,7 +47,13 @@ class ChumZone {
 
   getMultiplierAt(targetX, targetY, targetFishId, virtualTopY, virtualBottomY) {
     if (this.isExpired || !this.isDelivered) return 1.0;
-    if (!this.baitConfig.targetFishes.includes(targetFishId)) return 1.0;
+
+    if (
+      targetFishId !== null &&
+      !this.baitConfig.targetFishes.includes(targetFishId)
+    ) {
+      return 1.0;
+    }
 
     const distRatio = Math.max(
       0,
@@ -78,6 +86,7 @@ class ChumZone {
 
 class ChumManager {
   #locationId;
+  #chumConfig;
   #zones = [];
   #boats = [];
   #storageKey;
@@ -85,8 +94,9 @@ class ChumManager {
   #memoryGrid = {};
   #boatEnergy = null;
 
-  constructor(locationId) {
+  constructor(locationId, chumConfig) {
     this.#locationId = locationId;
+    this.#chumConfig = chumConfig;
     this.#storageKey = `chum_active_${locationId}`;
     this.#locationMemoryKey = `chum_memory_${locationId}`;
     this.loadFromStorage();
@@ -94,9 +104,9 @@ class ChumManager {
 
   getBoatEnergy() {
     if (this.#boatEnergy === null) {
-      const config = CONFIG.chum.deliveryMethods.boat;
+      const config = this.#chumConfig.deliveryMethods.boat;
       const stats = config.statsByLevel[config.level] || config.statsByLevel[1];
-      this.#boatEnergy = stats.maxEnergy; // Заряджаємо на 100% при першому запуску
+      this.#boatEnergy = stats.maxEnergy;
     }
     return this.#boatEnergy;
   }
@@ -106,9 +116,8 @@ class ChumManager {
   }
 
   spawnIdleBoat(startX, startY) {
-    const boatConfig = CONFIG.chum.deliveryMethods.boat;
-    const currentEnergy = this.getBoatEnergy(); // Беремо залишок батареї
-    // Передаємо currentEnergy у кораблик!
+    const boatConfig = this.#chumConfig.deliveryMethods.boat;
+    const currentEnergy = this.getBoatEnergy();
     const boat = new BaitBoat(startX, startY, boatConfig, null, currentEnergy);
     this.#boats.push(boat);
     return boat;
@@ -119,17 +128,23 @@ class ChumManager {
       const savedZones = JSON.parse(
         localStorage.getItem(this.#storageKey) || "[]",
       );
-      this.#zones = savedZones.map((z) => {
-        const zone = new ChumZone(
-          z.id,
-          z.x,
-          z.y,
-          CONFIG.chum.baits[z.baitId],
-          z.deployRealTimeMs,
-          z.isDelivered,
-        );
-        return zone;
-      });
+      this.#zones = savedZones
+        .map((z) => {
+          const baitConfig = this.#chumConfig.baits[z.baitId];
+          if (!baitConfig) return null;
+
+          const zone = new ChumZone(
+            z.id,
+            z.x,
+            z.y,
+            baitConfig,
+            z.deployRealTimeMs,
+            z.isDelivered,
+          );
+          return zone;
+        })
+        .filter((z) => z !== null);
+
       this.#memoryGrid = JSON.parse(
         localStorage.getItem(this.#locationMemoryKey) || "{}",
       );
@@ -144,7 +159,7 @@ class ChumManager {
         id: z.id,
         x: z.x,
         y: z.y,
-        baitId: z.baitConfig.id,
+        baitId: z.baitId,
         deployRealTimeMs: z.deployRealTimeMs,
         isDelivered: z.isDelivered,
       }));
@@ -156,7 +171,7 @@ class ChumManager {
   }
 
   deployBait(targetX, targetY, baitId, method, activeBoat = null) {
-    const baitConfig = CONFIG.chum.baits[baitId];
+    const baitConfig = this.#chumConfig.baits[baitId];
     if (!baitConfig) return null;
 
     const isHand = method === "hand";
@@ -180,7 +195,6 @@ class ChumManager {
       this.#zones.push(newZone);
     }
 
-    // Якщо це кораблик, передаємо йому координати цілі
     if (!isHand && activeBoat) {
       activeBoat.setTarget(targetX, targetY, zoneId);
     }
@@ -259,7 +273,7 @@ class ChumManager {
     if (boat) {
       boat.isBaitDropped = true;
 
-      const isManual = CONFIG.chum.deliveryMethods.boat.manualControl;
+      const isManual = this.#chumConfig.deliveryMethods.boat.manualControl;
       if (!isManual) {
         boat.state = "returning";
       } else {
@@ -291,24 +305,20 @@ class ChumManager {
     return activeMultiplier + memoryBonus;
   }
 
-  // ОНОВЛЕНИЙ МЕТОД: Повертає бонус і список риб, враховуючи перспективу
   getChumDataAt(floatX, floatY, vTop, vBottom) {
-    // Використовуємо твій існуючий метод (передаємо null замість конкретної риби)
     const bonus = this.getMultiplier(floatX, floatY, null, vTop, vBottom);
 
     if (bonus > 1.0) {
-      // Шукаємо, яка саме зона дала нам цей бонус
       const activeZone = this.#zones.find((zone) => {
         if (!zone.isDelivered) return false;
-        // Перевіряємо точне перетинання з урахуванням овалу
         return zone.getMultiplierAt(floatX, floatY, null, vTop, vBottom) > 1.0;
       });
 
       if (activeZone) {
-        const baitConfig = CONFIG.chum.baits[activeZone.baitId];
+        const baitConfig = this.#chumConfig.baits[activeZone.baitId];
         return {
           bonus: bonus,
-          targets: baitConfig.targetFishes || [], // Віддаємо масив цільової риби!
+          targets: baitConfig.targetFishes || [],
         };
       }
     }
@@ -328,7 +338,6 @@ class ChumManager {
       for (const zone of this.#zones) {
         if (!zone.isDelivered) continue;
 
-        // Перевіряємо, чи саме ця зона дає бонус у цій точці
         if (
           zone.getMultiplierAt(
             floatX,
@@ -338,7 +347,7 @@ class ChumManager {
             virtualBottomY,
           ) > 1.0
         ) {
-          const baitConfig = CONFIG.chum.baits[zone.baitId];
+          const baitConfig = this.#chumConfig.baits[zone.baitId];
           if (baitConfig && baitConfig.targetFishes) {
             return baitConfig.targetFishes;
           }
@@ -424,7 +433,6 @@ class BaitBoat {
           );
         }
       }
-
       return;
     }
 
@@ -449,7 +457,6 @@ class BaitBoat {
       currentTarget.y - this.pos.y,
       currentTarget.x - this.pos.x,
     );
-
     let actualLookAhead = this.config.lookAheadCells * cellSize;
     let ignoreCollisions = false;
 
