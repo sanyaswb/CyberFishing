@@ -141,22 +141,16 @@ class Game {
         const reel = new Reel(CONFIG.reel.level, CONFIG.reel.basePower);
         const hook = new Hook(CONFIG.hook.level, CONFIG.hook.weight, CONFIG.hook.quality); 
         
-        // 1. Формуємо унікальний конфіг фізики саме для цієї риби
-        const fishSpecificConfig = { fish: hookedFish.physics };
-        
-        // 2. Створюємо рибу з її унікальною вагою, рівнем та опором!
-        const fish = new Fish(hookedFish.level, hookedFish.weight, hookedFish.resistance, fishSpecificConfig); 
+        const fish = new Fish(hookedFish.level, hookedFish.weight, hookedFish.resistance, hookedFish.physics); 
         
         this.#fishingSystem = new FishingSystem(rod, reel, fish);
         this.#tensionMeter = new TensionMeter(CONFIG.rod.level, CONFIG.reel.level, hook, CONFIG);
         
-        // 3. UI теж повинен знати про унікальну вагу
-        this.#fishCondition = new FishCondition(hookedFish.level, hookedFish.weight, CONFIG);
+        this.#fishCondition = new FishCondition(hookedFish.level, hookedFish.weight, CONFIG.stamina.fish);
         
         const playerBasePower = rod.getPower() + reel.getPower();
         this.#staminaController = new StaminaController(this.#fishCondition, fish, playerBasePower, CONFIG);
         
-        // 4. Виводимо паспорт згенерованої риби в консоль
         console.log(`%c🎣 КЛЮНУВ: ${hookedFish.name}!`, 'color: #00ff00; font-size: 16px; font-weight: bold;');
         console.table({
             "Згенерована Вага": hookedFish.weight.toFixed(3) + " кг",

@@ -2,7 +2,7 @@ class Fish {
     #level;
     #weight;
     #resistance;
-    #config;
+    #fishConfig;
     #powerDebuff;
     #behavior;
     #isLastDashTriggered = false;
@@ -10,39 +10,34 @@ class Fish {
     #masteryPowerMult = 1.0;
     #lastDebuffName = null;
     
-    // НОВІ ЗМІННІ ДЛЯ ДЕБАФІВ
     #originalBehaviors = null;
     #hasActiveDebuff = false;
 
-    constructor(level, weight, resistance, config) {
+    constructor(level, weight, resistance, fishConfig) {
         this.#level = level;
         this.#weight = weight;
         this.#resistance = resistance;
-        this.#config = config;
+        this.#fishConfig = fishConfig;
         this.#powerDebuff = 0;
-        this.#behavior = new FishBehavior(config);
-        
-        window.DEBUG_LIVE_FISH_POWER = this.getInitialPower();
+        this.#behavior = new FishBehavior(this.#fishConfig);
     }
 
     getWeight() { return this.#weight; }
     getInitialPower() { return (this.#level * this.#weight) + this.#resistance; }
+    
     getPower() { 
         const initial = this.getInitialPower();
         const current = Math.max(0, initial - this.#powerDebuff);
-        return current * this.#masteryPowerMult; // Застосовуємо другий дебаф
+        return current * this.#masteryPowerMult;
     }
 
     get activeDebuffName() { 
-        // Якщо є активний дебаф, повертаємо його ім'я, інакше 'Немає'
         return this.#hasActiveDebuff ? (this.#lastDebuffName || 'Невідомий') : 'Немає'; 
     }
     
     getMasteryMultiplier() { return this.#masteryPowerMult; }
 
-    // --- ЛОГІКА ДРУГОГО ДЕБАФУ (MASTERY) ---
     setMasteryMultiplier(currentMultiplier) {
-        // Оновлюється кожен кадр плавно, тому без console.log
         this.#masteryPowerMult = Number(currentMultiplier); 
     }
 
@@ -57,7 +52,6 @@ class Fish {
 
     applyPowerDebuff(amount) {
         this.#powerDebuff += amount;
-        window.DEBUG_LIVE_FISH_POWER = this.getInitialPower() - this.#powerDebuff;
     }
 
     getBehavior(dt) {
@@ -71,12 +65,10 @@ class Fish {
         }
     }
 
-    // --- СИСТЕМА ДЕБАФІВ ---
     applyRandomDebuff(debuffsCfg) {
-        const behaviors = this.#config.fish?.behaviors || this.#config.behaviors;
+        const behaviors = this.#fishConfig.behaviors;
         if (!behaviors) return;
 
-        // Зберігаємо оригінал при першому застосуванні
         if (!this.#originalBehaviors) {
             this.#originalBehaviors = JSON.parse(JSON.stringify(behaviors));
         }
@@ -106,7 +98,7 @@ class Fish {
 
     clearDebuff() {
         if (!this.#originalBehaviors || !this.#hasActiveDebuff) return;
-        const behaviors = this.#config.fish?.behaviors || this.#config.behaviors;
+        const behaviors = this.#fishConfig.behaviors;
         for (const key in this.#originalBehaviors) {
             if (behaviors[key]) Object.assign(behaviors[key], this.#originalBehaviors[key]);
         }
@@ -114,10 +106,8 @@ class Fish {
         console.log(`[DEBUFF] Стаміна 100%. Дебафи знято.`);
     }
 
-    // Старі методи LastDash
     tryTriggerLastDash(dt) {
-        const fishCfg = this.#config.fish || this.#config;
-        const triggerCfg = fishCfg.lastDashTrigger;
+        const triggerCfg = this.#fishConfig.lastDashTrigger;
         if (!triggerCfg) return;
         if (this.#isLastDashTriggered && (triggerCfg.isLocked ?? true)) return;
 
@@ -135,8 +125,7 @@ class Fish {
     }
 
     triggerLastDash() {
-        const fishCfg = this.#config.fish || this.#config;
-        const triggerCfg = fishCfg.lastDashTrigger;
+        const triggerCfg = this.#fishConfig.lastDashTrigger;
         if (!this.#isLastDashTriggered) {
             this.#powerDebuff *= 0.5; 
             this.#isLastDashTriggered = true;
@@ -158,8 +147,8 @@ class FishBehavior {
     #targetDirX;
     #isLocked;
 
-    constructor(config) {
-        this.#config = config.fish || config;
+    constructor(fishConfig) {
+        this.#config = fishConfig;
         this.#currentStateName = 'swim';
         this.#stateTimer = 0;
         this.#dirTimer = 0;
@@ -177,6 +166,8 @@ class FishBehavior {
         if (this.#isLocked) return; 
 
         const states = this.#config.behaviors;
+        if (!states) return;
+        
         const validKeys = Object.keys(states).filter(k => states[k].weight > 0);
         
         if (validKeys.length === 0) return;
@@ -272,8 +263,8 @@ class FishCondition {
     #currentExhaustion;
     #phase;
 
-    constructor(level, weight, config) {
-        this.#maxPoints = (level * weight * config.stamina.fish.baseStaminaMultiplier) + config.stamina.fish.flatBonus;
+    constructor(level, weight, staminaFishConfig) {
+        this.#maxPoints = (level * weight * staminaFishConfig.baseStaminaMultiplier) + staminaFishConfig.flatBonus;
         this.#currentStamina = this.#maxPoints;
         this.#currentExhaustion = this.#maxPoints;
         this.#phase = 'stamina';
@@ -287,7 +278,6 @@ class FishCondition {
     breakExhaustion() {
         if (this.#phase === 'exhaustion') {
             this.#phase = 'stamina';
-            // БАГ ВИПРАВЛЕНО: Миттєві 5% прибрано. Тепер стаміна починається з 0, що дає плавний перехід.
         }
     }
 
@@ -309,7 +299,6 @@ class FishCondition {
         this.#currentExhaustion = Math.max(0, this.#currentExhaustion - amount);
     }
 
-    // НОВИЙ МЕТОД: Карає гравця, відновлюючи Фазу 2
     applyPunishment(capPercent) {
         const cap = this.#maxPoints * capPercent;
         if (this.#currentExhaustion < cap) {
