@@ -100,8 +100,8 @@ class Game {
 
         this.#lastTime = performance.now();
         this.loop = this.loop.bind(this);
-        this.#castManager = new CastManager(CONFIG);
-        this.#biteSystem = new BiteSystem(CONFIG);
+        this.#castManager = new CastManager(); // Більше не потребує конфігу
+        this.#biteSystem = new BiteSystem(CONFIG.spawns, CONFIG.float); // Передаємо тільки потрібні частини
     }
 
     #castLine(virtualX, virtualY, bottomDepth) {
@@ -707,7 +707,16 @@ class Game {
             this.#float.applyForce(playerForce);
         }
 
-        this.#tensionMeter.update(inputState.isPulling, playerMaxPower, fishPowerMag, reelPower, currentFishMaxForceScaled, dt, CONFIG.hookMechanics);
+        this.#tensionMeter.update(
+            inputState.isPulling, 
+            playerMaxPower, 
+            fishPowerMag, 
+            reelPower, 
+            currentFishMaxForceScaled, 
+            dt, 
+            CONFIG.tension,       // Сьомий аргумент (для кольорів та натягу)
+            CONFIG.hookMechanics  // Восьмий аргумент (для шансу сходу)
+        );
 
         this.#staminaController.evaluate(this.#tensionMeter.getTension(), inputState.isPulling, dt, floatPos.x, dynamicBounds);
 

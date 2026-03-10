@@ -1,14 +1,16 @@
 class BiteSystem {
-    #config;
+    #biteConfig;
     #fishDatabase;
     #tickRate;
     #timer;
+    #overDepthPenaltyMult;
 
-    constructor(config) {
-        this.#config = config;
-        this.#fishDatabase = config.spawns.fishes;
-        this.#tickRate = config.spawns.tickRateMs;
+    constructor(biteConfig, floatConfig) {
+        this.#biteConfig = biteConfig;
+        this.#fishDatabase = biteConfig.fishes;
+        this.#tickRate = biteConfig.tickRateMs;
         this.#timer = 0;
+        this.#overDepthPenaltyMult = floatConfig.overDepthPenaltyMult || 0.5;
     }
 
     reset() {
@@ -75,12 +77,11 @@ class BiteSystem {
             finalChance *= baitMult;
             finalChance *= fish.timeMultipliers[envData.timePhase] || 1.0;
             finalChance *= fish.dayMultipliers[envData.dayOfWeek] || 1.0;
-            // Базовий множник зони (наприклад, якщо це просто "рибне місце" на карті)
+            
             let currentZoneMult = envData.zoneMultiplier || 1.0; 
             
-            // ДОДАНО: Перевірка прикормки ТІЛЬКИ для цільової риби
             if (envData.chumTargets && envData.chumBonus) {
-                if (envData.chumTargets.includes(fish.id)) { // <--- Строгий пошук точного ID
+                if (envData.chumTargets.includes(fish.id)) { 
                     currentZoneMult *= envData.chumBonus;
                 }
             }
@@ -96,7 +97,7 @@ class BiteSystem {
             finalChance *= (envData.castSpamMultiplier ?? 1.0);
 
             if (envData.hookDepth > envData.bottomDepth) {
-                finalChance *= (this.#config.float.overDepthPenaltyMult || 0.5);
+                finalChance *= this.#overDepthPenaltyMult;
             }
 
             if (Math.random() <= finalChance) {
@@ -146,7 +147,7 @@ class BiteSystem {
             const weatherMult = rainMult * fogMult;
             
             const spamMult = envData.castSpamMultiplier ?? 1.0;
-            const overDepthMult = envData.hookDepth > envData.bottomDepth ? (this.#config.float.overDepthPenaltyMult || 0.5) : 1.0;
+            const overDepthMult = envData.hookDepth > envData.bottomDepth ? this.#overDepthPenaltyMult : 1.0;
 
             let finalChance = fish.baseChance * baitMult * timeMult * dayMult * zoneMult * chumMult * depthChanceMult * weatherMult * spamMult * overDepthMult;
 
@@ -177,7 +178,7 @@ class CastManager {
     #timer;
     #lastCastTime;
 
-    constructor(config) {
+    constructor() {
         this.#penaltyLevel = 0;
         this.#timer = 0;
         this.#lastCastTime = 0;
