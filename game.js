@@ -227,7 +227,7 @@ class Game {
             return; 
         }
 
-        const method = CHUM_CONFIG.currentMethod || 'hand';
+        const method = CONFIG.chum.currentMethod || 'hand';
 
         this.#isAimingChum = !this.#isAimingChum;
 
@@ -297,7 +297,7 @@ class Game {
         }
 
         if (this.#chumUI && typeof this.#chumUI.setState === 'function') {
-            const isBoatMethod = (CHUM_CONFIG.currentMethod === 'boat');
+            const isBoatMethod = (CONFIG.chum.currentMethod === 'boat');
             const boats = this.#chumManager ? this.#chumManager.getBoats() : [];
             const activeBoat = boats.length > 0 ? boats[0] : null;
 
@@ -329,8 +329,8 @@ class Game {
             inputState.isPulling = false; 
             inputState.longPressPos = null;
 
-            const method = CHUM_CONFIG.currentMethod || 'hand';
-            const maxHandDist = CHUM_CONFIG.deliveryMethods.hand.maxDistanceVirtual;
+            const method = CONFIG.chum.currentMethod || 'hand';
+            const maxHandDist = CONFIG.chum.deliveryMethods.hand.maxDistanceVirtual;
 
             if (inputState.clickPos) {
                 const vPos = this.#projector.screenToVirtual(inputState.clickPos.x, inputState.clickPos.y);
@@ -363,8 +363,8 @@ class Game {
 
         // --- ДОДАНО: Перехоплення кліку для ручного керування КОРАБЛИКОМ ---
         if (!this.#isAimingChum) {
-            const method = CHUM_CONFIG.currentMethod || 'hand';
-            const isManual = CHUM_CONFIG.deliveryMethods.boat?.manualControl;
+            const method = CONFIG.chum.currentMethod || 'hand';
+            const isManual = CONFIG.chum.deliveryMethods.boat?.manualControl;
             const boats = this.#chumManager ? this.#chumManager.getBoats() : [];
             
             if (method === 'boat' && isManual && boats.length > 0) {
@@ -837,13 +837,13 @@ class Game {
 
         // Малюємо зону закидання ТІЛЬКИ якщо режим "hand" (руками)
         if (this.#isAimingChum && typeof this.#renderer.drawChumAiming === 'function') {
-            const method = CHUM_CONFIG.currentMethod || 'hand';
+            const method = CONFIG.chum.currentMethod || 'hand';
             
             if (method === 'hand') {
                 const rodScreenX = (CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== 'center') ? Number(CONFIG.ui.rod.x) : this.#canvas.width / 2;
                 const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
                 const rodVirtualPos = this.#projector.screenToVirtual(rodScreenX, rodScreenY);
-                this.#renderer.drawChumAiming(this.#projector, rodVirtualPos, CHUM_CONFIG.deliveryMethods.hand.maxDistanceVirtual);
+                this.#renderer.drawChumAiming(this.#projector, rodVirtualPos, CONFIG.chum.deliveryMethods.hand.maxDistanceVirtual);
             }
         }
 

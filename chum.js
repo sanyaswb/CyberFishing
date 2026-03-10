@@ -86,7 +86,7 @@ class ChumManager {
 
     getBoatEnergy() {
         if (this.#boatEnergy === null) {
-            const config = CHUM_CONFIG.deliveryMethods.boat;
+            const config = CONFIG.chum.deliveryMethods.boat;
             const stats = config.statsByLevel[config.level] || config.statsByLevel[1];
             this.#boatEnergy = stats.maxEnergy; // Заряджаємо на 100% при першому запуску
         }
@@ -98,7 +98,7 @@ class ChumManager {
     }
 
     spawnIdleBoat(startX, startY) {
-        const boatConfig = CHUM_CONFIG.deliveryMethods.boat;
+        const boatConfig = CONFIG.chum.deliveryMethods.boat;
         const currentEnergy = this.getBoatEnergy(); // Беремо залишок батареї
         // Передаємо currentEnergy у кораблик!
         const boat = new BaitBoat(startX, startY, boatConfig, null, currentEnergy);
@@ -110,7 +110,7 @@ class ChumManager {
         if (typeof localStorage !== 'undefined') {
             const savedZones = JSON.parse(localStorage.getItem(this.#storageKey) || '[]');
             this.#zones = savedZones.map(z => {
-                const zone = new ChumZone(z.id, z.x, z.y, CHUM_CONFIG.baits[z.baitId], z.deployRealTimeMs, z.isDelivered);
+                const zone = new ChumZone(z.id, z.x, z.y, CONFIG.chum.baits[z.baitId], z.deployRealTimeMs, z.isDelivered);
                 return zone;
             });
             this.#memoryGrid = JSON.parse(localStorage.getItem(this.#locationMemoryKey) || '{}');
@@ -132,7 +132,7 @@ class ChumManager {
     }
 
     deployBait(targetX, targetY, baitId, method, activeBoat = null) {
-        const baitConfig = CHUM_CONFIG.baits[baitId];
+        const baitConfig = CONFIG.chum.baits[baitId];
         if (!baitConfig) return null;
 
         const isHand = method === 'hand';
@@ -225,7 +225,7 @@ class ChumManager {
         if (boat) {
             boat.isBaitDropped = true; 
             
-            const isManual = CHUM_CONFIG.deliveryMethods.boat.manualControl;
+            const isManual = CONFIG.chum.deliveryMethods.boat.manualControl;
             if (!isManual) {
                 boat.state = 'returning';
             } else {
@@ -265,7 +265,7 @@ class ChumManager {
             });
 
             if (activeZone) {
-                const baitConfig = CHUM_CONFIG.baits[activeZone.baitId];
+                const baitConfig = CONFIG.chum.baits[activeZone.baitId];
                 return {
                     bonus: bonus,
                     targets: baitConfig.targetFishes || [] // Віддаємо масив цільової риби!
@@ -284,7 +284,7 @@ class ChumManager {
                 
                 // Перевіряємо, чи саме ця зона дає бонус у цій точці
                 if (zone.getMultiplierAt(floatX, floatY, null, virtualTopY, virtualBottomY) > 1.0) {
-                    const baitConfig = CHUM_CONFIG.baits[zone.baitId];
+                    const baitConfig = CONFIG.chum.baits[zone.baitId];
                     if (baitConfig && baitConfig.targetFishes) {
                         return baitConfig.targetFishes;
                     }
