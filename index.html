@@ -7,27 +7,31 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <title>Fishing Mechanic Prototype</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="src/ui/styles/style.css" />
   </head>
   <body>
     <canvas id="gameCanvas"></canvas>
-    <script src="config.js"></script>
+    <script src="src/config/config.js"></script>
 
-    <script src="core.js"></script>
-    <script src="tackle.js"></script>
-    <script src="world.js"></script>
-    <script src="fish.js"></script>
-    <script src="physics.js"></script>
-    <script src="bite_system.js"></script>
-    <script src="chum_system.js"></script>
+    <script src="src/core/core.js"></script>
+    <script src="src/world/world.js"></script>
 
-    <script src="ui.js"></script>
-    <script src="dev_tools.js"></script>
-    <script src="overlay.js"></script>
-    <script src="debug.js"></script>
-    <script src="renderer.js"></script>
+    <script src="src/entities/tackle.js"></script>
+    <script src="src/entities/fish.js"></script>
 
-    <script src="game.js"></script>
-    <script src="script.js"></script>
+    <script src="src/systems/physics_system.js"></script>
+    <script src="src/systems/bite_system.js"></script>
+    <script src="src/systems/chum_system.js"></script>
+
+    <script src="src/ui/ui.js"></script>
+
+    <script src="src/debug/dev_tools.js"></script>
+    <script src="src/debug/overlay.js"></script>
+    <script src="src/debug/debug.js"></script>
+
+    <script src="src/render/renderer.js"></script>
+
+    <script src="src/app/game.js"></script>
+    <script src="src/app/script.js"></script>
   </body>
 </html>

@@ -11,8 +11,7 @@ node_modules
 # Generated files
 backstop_data
 dist
+utils
 .cache
 .parcel-cache+
-local-bridge.js
 package-lock.json
-convert-images.js
