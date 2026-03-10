@@ -154,33 +154,42 @@ class FloatEntity {
       if (this.#sinkingDelayTimer > 0) {
         this.#sinkingDelayTimer -= dt;
       } else {
-        this.#sinkingTimer -= dt;
-        let progress =
-          1.0 - Math.max(0, this.#sinkingTimer / this.#sinkingTotalTime);
+        // Перевіряємо, чи риба зараз активно тримає гачок (жовтий або червоний)
+        const isFishHolding =
+          this.#isBiting && this.#currentColor !== this.#baseColor;
 
-        this.#currentHookDepth = this.#lerp(
-          0.1,
-          this.#targetHookDepth,
-          progress,
-        );
+        // Гачок продовжує падати ТІЛЬКИ якщо риба його не тримає (білий колір)
+        if (!isFishHolding) {
+          // ВАЖЛИВО: Таймер віднімається тільки тут! Він стоїть на паузі під час клювання.
+          this.#sinkingTimer -= dt;
 
-        if (!this.#isBiting) {
-          if (this.#isOverDepth) {
-            this.#currentAngle = this.#sinkingStartAngle;
-          } else {
-            this.#currentAngle = this.#lerp(
-              this.#sinkingStartAngle,
-              0,
-              progress,
-            );
+          let progress =
+            1.0 - Math.max(0, this.#sinkingTimer / this.#sinkingTotalTime);
+
+          this.#currentHookDepth = this.#lerp(
+            0.1,
+            this.#targetHookDepth,
+            progress,
+          );
+
+          if (!this.#isBiting) {
+            if (this.#isOverDepth) {
+              this.#currentAngle = this.#sinkingStartAngle;
+            } else {
+              this.#currentAngle = this.#lerp(
+                this.#sinkingStartAngle,
+                0,
+                progress,
+              );
+            }
           }
-        }
 
-        if (this.#sinkingTimer <= 0) {
-          this.#isSinking = false;
-          this.#currentHookDepth = this.#targetHookDepth;
-          if (!this.#isBiting && !this.#isOverDepth) {
-            this.#currentAngle = 0;
+          if (this.#sinkingTimer <= 0) {
+            this.#isSinking = false;
+            this.#currentHookDepth = this.#targetHookDepth;
+            if (!this.#isBiting && !this.#isOverDepth) {
+              this.#currentAngle = 0;
+            }
           }
         }
       }
@@ -378,7 +387,13 @@ class FloatEntity {
   stopBite() {
     this.#isBiting = false;
     this.#sequenceQueue = [];
-    this.#currentAngle = 0;
+
+    if (this.#isOverDepth) {
+      this.#currentAngle = this.#sinkingStartAngle;
+    } else {
+      this.#currentAngle = 0;
+    }
+
     this.#currentScaleY = 1.0;
     this.#currentColor = this.#baseColor;
     this.#biteMoveTimer = 0;
@@ -388,9 +403,22 @@ class FloatEntity {
     if (!this.#isBiting) return;
 
     if (this.#isOverDepth) {
+      this.#currentAngle = this.#sinkingStartAngle;
+      this.#currentScaleY = 1.0;
+      this.#biteMoveTimer = 0;
+
       this.#animTimer -= dt;
       if (this.#animTimer <= 0) {
-        this.stopBite();
+        if (this.#sequenceQueue.length > 0) {
+          this.#nextAnimStep();
+        } else {
+          if (this.#currentSequenceCount >= this.#targetSequenceCount) {
+            this.stopBite();
+          } else {
+            this.#currentSequenceCount++;
+            this.#rollBiteSequence();
+          }
+        }
       }
       return;
     }

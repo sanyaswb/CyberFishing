@@ -430,7 +430,6 @@ class Game {
       }
     }
 
-    // --- ДОДАНО 2: Перехоплення кліку для кидка прикормки ---
     if (this.#isAimingChum) {
       inputState.isPulling = false;
       inputState.longPressPos = null;
@@ -501,7 +500,6 @@ class Game {
       }
     }
 
-    // --- ДОДАНО: Перехоплення кліку для ручного керування КОРАБЛИКОМ ---
     if (!this.#isAimingChum) {
       const method = CONFIG.chum.currentMethod || "hand";
       const isManual = CONFIG.chum.deliveryMethods.boat?.manualControl;
@@ -510,14 +508,10 @@ class Game {
       if (method === "boat" && isManual && boats.length > 0) {
         const boat = boats[0];
 
-        // Якщо кораблик живий і слухається пульта (не дрейфує)
         if (boat.state !== "drifting") {
-          // 1. БЛОКУЄМО ВУДКУ: руки зайняті пультом!
-          // Скасовуємо спроби підсікати, тягнути або закидати по-новій
           inputState.isPulling = false;
           inputState.longPressPos = null;
 
-          // 2. КЕРУВАННЯ КОРАБЛИКОМ (реагуємо на кліки)
           if (inputState.clickPos) {
             const clickY = inputState.clickPos.y;
             const vPos = this.#projector.screenToVirtual(
@@ -539,7 +533,7 @@ class Game {
             } else if (cell && cell.isCastable && !cell.hasCollision) {
               boat.setTarget(vPos.x, vPos.y, boat.zoneId, false);
             }
-            inputState.clickPos = null; // Поглинаємо клік, щоб він не пішов далі
+            inputState.clickPos = null;
           }
         }
       }
@@ -739,14 +733,13 @@ class Game {
     );
     const currentDepth = currentCell ? currentCell.depth : 0;
 
-    // Беремо межі карти (один раз!)
     const bounds = this.#locationMap.getCastableBoundsVirtual(
       CONFIG.locations.cellSize,
     );
     const vTop = bounds ? bounds.top : 0;
     const virtualBottomY = bounds ? bounds.bottom : 1440;
 
-    // НОВИЙ ПІДХІД: Отримуємо і бонус, і цілі одним елегантним викликом
+    // 1. Отримуємо дані прикормки (ОДИН РАЗ)
     const chumData = this.#chumManager
       ? this.#chumManager.getChumDataAt(
           floatPos.x,
@@ -756,8 +749,9 @@ class Game {
         )
       : { bonus: 1.0, targets: null };
 
+    // 2. Створюємо envData (ОДИН РАЗ)
     const envData = {
-      hookDepth: this.#float.getCurrentHookDepth(),
+      hookDepth: this.#float.getCurrentHookDepth(), // ЗАВЖДИ чесна глибина
       bottomDepth: currentDepth,
       timePhase: this.#currentPhase,
       dayOfWeek: new Date().getDay(),
@@ -796,6 +790,7 @@ class Game {
         castableBounds ? castableBounds.bottom : 2560,
       ),
     };
+
     if (this.#gameState === "waiting") {
       this.#float.update(dynamicBounds, dt, dynamicEnv, checkWater);
 
@@ -815,54 +810,14 @@ class Game {
           weight: fixed.weight,
           resistance: fixed.resistance,
         };
-        console.log(
-          `%c[DEBUG] Рандом відключено. Згенеровано тестову рибу:`,
-          "color: #ffaa00; font-weight: bold;",
-          hookedFish,
-        );
       }
 
       if (hookedFish) {
         this.#gameState = "biting";
         this.#currentBitingFish = hookedFish;
         this.#float.startBite();
-        return;
       }
-
-      if (CONFIG.debug?.overlay) {
-        const liveChances = this.#biteSystem.getLiveChances(
-          envData,
-          playerGear,
-        );
-        const debugData = {
-          gameState: this.#gameState,
-          chumZones: this.#chumManager ? this.#chumManager.getZones() : [],
-          floatX: Math.round(floatPos.x),
-          floatY: Math.round(floatPos.y),
-          hookDepth: envData.hookDepth,
-          bottomDepth: envData.bottomDepth,
-          bait: playerGear.baitId,
-          phase: envData.timePhase,
-          liveChances: liveChances,
-          isRaining: this.#isRaining,
-          isFoggy: this.#isFoggy,
-          playerForceY: 0,
-          playerForceX: 0,
-          fishForceY: 0,
-          fishForceX: 0,
-          fishState: "N/A",
-          fishBasePower: 0,
-          pullMult: 1,
-          moveMult: 1,
-        };
-        document.dispatchEvent(
-          new CustomEvent("debug-live-update", { detail: debugData }),
-        );
-      }
-      return;
-    }
-
-    if (this.#gameState === "biting") {
+    } else if (this.#gameState === "biting") {
       this.#float.updateBite(dt, checkWater);
       this.#float.update(dynamicBounds, dt, dynamicEnv, checkWater);
 
@@ -871,10 +826,7 @@ class Game {
         this.#currentBitingFish = null;
         if (this.#biteSystem) this.#biteSystem.reset();
         if (this.#tensionMeter) this.#tensionMeter.reset();
-        return;
-      }
-
-      if (inputState.isPulling) {
+      } else if (inputState.isPulling) {
         const isGuaranteed = this.#float.isGuaranteedBite();
         const catchChance = isGuaranteed ? 0.99 : 0.01;
 
@@ -886,130 +838,214 @@ class Game {
           this.#gameState = "scouting";
           this.#currentBitingFish = null;
           if (this.#tensionMeter) this.#tensionMeter.reset();
-          if (CONFIG.debug?.overlay) {
-            document.dispatchEvent(
-              new CustomEvent("debug-live-update", {
-                detail: { gameState: "scouting" },
-              }),
-            );
-          }
         }
       }
-      return;
     }
 
-    if (this.#gameState !== "playing") return;
+    let finalFishForce = { x: 0, y: 0 };
+    let finalPlayerForce = { x: 0, y: 0 };
 
-    if (this.#tensionMeter.isBroken()) {
-      this.#gameState = "failed";
-      const reason = this.#tensionMeter.getBreakReason();
-      this.failReason = reason;
-      document.dispatchEvent(
-        new CustomEvent("fishingFailed", { detail: { reason: reason } }),
+    if (this.#gameState === "playing") {
+      if (this.#tensionMeter.isBroken()) {
+        this.#gameState = "failed";
+        const reason = this.#tensionMeter.getBreakReason();
+        this.failReason = reason;
+        document.dispatchEvent(
+          new CustomEvent("fishingFailed", { detail: { reason: reason } }),
+        );
+
+        if (CONFIG.debug?.overlay) {
+          document.dispatchEvent(
+            new CustomEvent("debug-live-update", {
+              detail: { gameState: "failed" },
+            }),
+          );
+        }
+        return;
+      }
+
+      const fishForceRaw = this.#fishingSystem.calculateFishForce(
+        dt,
+        floatPos,
+        this.#bounds,
+        CONFIG.stamina.mechanics,
+        checkWater,
+      );
+      const currentFishMaxForceScaled =
+        Math.max(Math.abs(fishForceRaw.x), Math.abs(fishForceRaw.y)) * 0.01;
+
+      const fishForce = fishForceRaw
+        .clone()
+        .multiplyScalar(CONFIG.physics.fishForceMultiplier);
+      this.#float.applyForce(fishForce);
+
+      finalFishForce = fishForce;
+
+      let rodScreenX = this.#canvas.width / 2;
+
+      if (CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== "center") {
+        rodScreenX = Number(CONFIG.ui.rod.x);
+      }
+
+      const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
+      const rodVirtualPos = this.#projector.screenToVirtual(
+        rodScreenX,
+        rodScreenY,
       );
 
-      if (CONFIG.debug?.overlay) {
-        document.dispatchEvent(
-          new CustomEvent("debug-live-update", {
-            detail: { gameState: "failed" },
-          }),
-        );
-      }
-      return;
-    }
+      const floatScreenPosInitial = this.#projector.virtualToScreen(
+        floatPos.x,
+        floatPos.y,
+      );
+      const maxOffsetDistance = Math.max(
+        rodScreenX,
+        this.#canvas.width - rodScreenX,
+      );
+      const screenOffsetRatio = Math.min(
+        1,
+        Math.abs(floatScreenPosInitial.x - rodScreenX) / maxOffsetDistance,
+      );
 
-    const fishForceRaw = this.#fishingSystem.calculateFishForce(
-      dt,
-      floatPos,
-      this.#bounds,
-      CONFIG.stamina.mechanics,
-      checkWater,
-    );
-    const currentFishMaxForceScaled =
-      Math.max(Math.abs(fishForceRaw.x), Math.abs(fishForceRaw.y)) * 0.01;
-
-    const fishForce = fishForceRaw
-      .clone()
-      .multiplyScalar(CONFIG.physics.fishForceMultiplier);
-    this.#float.applyForce(fishForce);
-
-    let rodScreenX = this.#canvas.width / 2;
-
-    if (CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== "center") {
-      rodScreenX = Number(CONFIG.ui.rod.x);
-    }
-
-    const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
-    const rodVirtualPos = this.#projector.screenToVirtual(
-      rodScreenX,
-      rodScreenY,
-    );
-
-    const floatScreenPosInitial = this.#projector.virtualToScreen(
-      floatPos.x,
-      floatPos.y,
-    );
-    const maxOffsetDistance = Math.max(
-      rodScreenX,
-      this.#canvas.width - rodScreenX,
-    );
-    const screenOffsetRatio = Math.min(
-      1,
-      Math.abs(floatScreenPosInitial.x - rodScreenX) / maxOffsetDistance,
-    );
-
-    const rawPlayerPower = this.#fishingSystem.calculatePlayerForce(
-      new Vector2(0, 1),
-      floatPos.x,
-      floatPos.y,
-      rodVirtualPos,
-      screenOffsetRatio,
-      CONFIG.physics,
-    ).y;
-    const playerMaxPower = Math.abs(
-      rawPlayerPower * CONFIG.physics.playerForceMultiplier,
-    );
-    const fishPowerMag = Math.abs(fishForce.y);
-    const reelPower = this.#fishingSystem.getReelPower();
-
-    let playerForce = new Vector2(0, 0);
-
-    if (inputState.isPulling) {
-      const playerForceRaw = this.#fishingSystem.calculatePlayerForce(
-        inputState.pullDirection,
+      const rawPlayerPower = this.#fishingSystem.calculatePlayerForce(
+        new Vector2(0, 1),
         floatPos.x,
         floatPos.y,
         rodVirtualPos,
         screenOffsetRatio,
         CONFIG.physics,
+      ).y;
+      const playerMaxPower = Math.abs(
+        rawPlayerPower * CONFIG.physics.playerForceMultiplier,
       );
-      playerForce = playerForceRaw
-        .clone()
-        .multiplyScalar(CONFIG.physics.playerForceMultiplier);
-      this.#float.applyForce(playerForce);
+      const fishPowerMag = Math.abs(fishForce.y);
+      const reelPower = this.#fishingSystem.getReelPower();
+
+      let playerForce = new Vector2(0, 0);
+
+      if (inputState.isPulling) {
+        const playerForceRaw = this.#fishingSystem.calculatePlayerForce(
+          inputState.pullDirection,
+          floatPos.x,
+          floatPos.y,
+          rodVirtualPos,
+          screenOffsetRatio,
+          CONFIG.physics,
+        );
+        playerForce = playerForceRaw
+          .clone()
+          .multiplyScalar(CONFIG.physics.playerForceMultiplier);
+        this.#float.applyForce(playerForce);
+      }
+
+      finalPlayerForce = playerForce;
+
+      this.#tensionMeter.update(
+        inputState.isPulling,
+        playerMaxPower,
+        fishPowerMag,
+        reelPower,
+        currentFishMaxForceScaled,
+        dt,
+        CONFIG.tension,
+        CONFIG.hookMechanics,
+      );
+
+      this.#staminaController.evaluate(
+        this.#tensionMeter.getTension(),
+        inputState.isPulling,
+        dt,
+        floatPos.x,
+        dynamicBounds,
+      );
+
+      this.#float.update(dynamicBounds, dt, dynamicEnv, checkWater);
+
+      const updatedFloatPos = this.#float.getPosition();
+      const updatedFloatScreenPos = this.#projector.virtualToScreen(
+        updatedFloatPos.x,
+        updatedFloatPos.y,
+      );
+
+      const castableBoundsVirtual = this.#locationMap.getCastableBoundsVirtual(
+        CONFIG.locations.cellSize,
+      );
+      const mapBottomScreenY = this.#projector.virtualToScreen(
+        0,
+        castableBoundsVirtual.bottom,
+      ).y;
+
+      const catchLineY = Math.min(mapBottomScreenY, this.#canvas.height);
+
+      if (this.#netCatchChance === null) {
+        if (CONFIG.net && CONFIG.net.active && this.#fishingSystem) {
+          const fW = this.#fishingSystem.getFishWeight();
+          const nW = CONFIG.net.maxWeight;
+          if (fW <= nW) {
+            this.#netCatchChance = 100;
+          } else {
+            const diffPercent = ((fW - nW) / nW) * 100;
+            let baseChance = 50;
+            for (const t of CONFIG.net.chances) {
+              if (diffPercent >= t.min && diffPercent <= t.max) {
+                baseChance = t.chance;
+                break;
+              }
+            }
+            const qualBonus = Math.round((CONFIG.net.quality - 1.0) * 10);
+            this.#netCatchChance = Math.min(100, baseChance + qualBonus);
+          }
+        } else {
+          this.#netCatchChance = 100;
+        }
+      }
+
+      let triggerLineY = catchLineY - this.#canvas.height * 0.1;
+
+      if (CONFIG.net && CONFIG.net.active) {
+        const netBonusPx = CONFIG.net.length * 10;
+        triggerLineY = catchLineY - netBonusPx;
+        this.#isNetReady =
+          updatedFloatScreenPos.y >= triggerLineY &&
+          updatedFloatScreenPos.y < catchLineY;
+      } else {
+        this.#isNetReady = false;
+      }
+
+      const catchLineOffset = CONFIG.locations.catchLineOffsetPx ?? 5;
+
+      if (
+        updatedFloatScreenPos.y >= triggerLineY &&
+        updatedFloatScreenPos.y < catchLineY - catchLineOffset
+      ) {
+        if (typeof this.#fishingSystem.tryTriggerFishLastDash === "function") {
+          this.#fishingSystem.tryTriggerFishLastDash(dt);
+        }
+      }
+
+      if (updatedFloatScreenPos.y >= catchLineY - catchLineOffset) {
+        this.#gameState = "victory";
+
+        if (CONFIG.debug?.overlay) {
+          document.dispatchEvent(
+            new CustomEvent("debug-live-update", {
+              detail: { gameState: "victory" },
+            }),
+          );
+        }
+        return;
+      }
     }
 
-    this.#tensionMeter.update(
-      inputState.isPulling,
-      playerMaxPower,
-      fishPowerMag,
-      reelPower,
-      currentFishMaxForceScaled,
-      dt,
-      CONFIG.tension,
-      CONFIG.hookMechanics,
-    );
-
-    this.#staminaController.evaluate(
-      this.#tensionMeter.getTension(),
-      inputState.isPulling,
-      dt,
-      floatPos.x,
-      dynamicBounds,
-    );
-
-    if (CONFIG.debug?.overlay) {
+    if (
+      CONFIG.debug?.overlay &&
+      (this.#gameState === "waiting" ||
+        this.#gameState === "biting" ||
+        this.#gameState === "playing")
+    ) {
+      // Оновлюємо глибину ще раз на випадок, якщо поплавок тонув під час цього кадру
+      envData.hookDepth = this.#float.getCurrentHookDepth();
       const liveChances = this.#biteSystem.getLiveChances(envData, playerGear);
+
       const debugData = {
         gameState: this.#gameState,
         chumZones: this.#chumManager ? this.#chumManager.getZones() : [],
@@ -1019,127 +1055,63 @@ class Game {
         bottomDepth: envData.bottomDepth,
         bait: playerGear.baitId,
         phase: envData.timePhase,
+        liveChances: liveChances,
         isRaining: this.#isRaining,
         isFoggy: this.#isFoggy,
-        liveChances: liveChances,
 
-        playerForceY: Math.abs(playerForce.y),
-        playerForceX: Math.abs(playerForce.x),
-        fishForceY: Math.abs(fishForce.y),
-        fishForceX: Math.abs(fishForce.x),
-        fishState: this.#fishingSystem.getCurrentState
-          ? this.#fishingSystem.getCurrentState()
-          : "unknown",
-        fishBasePower: this.#fishingSystem.getFishBasePower
-          ? this.#fishingSystem.getFishBasePower()
-          : 0,
-        fishInitialPower: this.#fishingSystem.getFishInitialPower
-          ? this.#fishingSystem.getFishInitialPower()
-          : 0,
-        pullMult: this.#fishingSystem.getPullMultiplier
-          ? this.#fishingSystem.getPullMultiplier()
-          : 1,
-        moveMult: this.#fishingSystem.getMoveMultiplier
-          ? this.#fishingSystem.getMoveMultiplier()
-          : 1,
+        // Використовуємо збережені змінні (якщо ми не граємо, вони будуть 0)
+        playerForceY: Math.abs(finalPlayerForce.y),
+        playerForceX: Math.abs(finalPlayerForce.x),
+        fishForceY: Math.abs(finalFishForce.y),
+        fishForceX: Math.abs(finalFishForce.x),
 
+        fishState:
+          this.#fishingSystem && this.#fishingSystem.getCurrentState
+            ? this.#fishingSystem.getCurrentState()
+            : "N/A",
+        fishBasePower:
+          this.#fishingSystem && this.#fishingSystem.getFishBasePower
+            ? this.#fishingSystem.getFishBasePower()
+            : 0,
+        fishInitialPower:
+          this.#fishingSystem && this.#fishingSystem.getFishInitialPower
+            ? this.#fishingSystem.getFishInitialPower()
+            : 0,
+        pullMult:
+          this.#fishingSystem && this.#fishingSystem.getPullMultiplier
+            ? this.#fishingSystem.getPullMultiplier()
+            : 1,
+        moveMult:
+          this.#fishingSystem && this.#fishingSystem.getMoveMultiplier
+            ? this.#fishingSystem.getMoveMultiplier()
+            : 1,
         hookedFish: this.#currentBitingFish,
-
-        activeDebuffName: this.#fishingSystem.getActiveDebuffName
-          ? this.#fishingSystem.getActiveDebuffName()
-          : "Немає",
-        masteryCurrentMult: this.#fishingSystem.getMasteryMultiplier
-          ? this.#fishingSystem.getMasteryMultiplier()
-          : 1.0,
-        masteryTimerMs: this.#staminaController.getMasteryTimer
-          ? this.#staminaController.getMasteryTimer()
-          : 0,
-        isMasteryActive: this.#staminaController.isMasteryActive
-          ? this.#staminaController.isMasteryActive()
-          : false,
-        exhaustionDurationMs: this.#staminaController.getExhaustionDurationMs
-          ? this.#staminaController.getExhaustionDurationMs()
-          : 1000,
+        activeDebuffName:
+          this.#fishingSystem && this.#fishingSystem.getActiveDebuffName
+            ? this.#fishingSystem.getActiveDebuffName()
+            : "Немає",
+        masteryCurrentMult:
+          this.#fishingSystem && this.#fishingSystem.getMasteryMultiplier
+            ? this.#fishingSystem.getMasteryMultiplier()
+            : 1.0,
+        masteryTimerMs:
+          this.#staminaController && this.#staminaController.getMasteryTimer
+            ? this.#staminaController.getMasteryTimer()
+            : 0,
+        isMasteryActive:
+          this.#staminaController && this.#staminaController.isMasteryActive
+            ? this.#staminaController.isMasteryActive()
+            : false,
+        exhaustionDurationMs:
+          this.#staminaController &&
+          this.#staminaController.getExhaustionDurationMs
+            ? this.#staminaController.getExhaustionDurationMs()
+            : 1000,
       };
+
       document.dispatchEvent(
         new CustomEvent("debug-live-update", { detail: debugData }),
       );
-    }
-
-    this.#float.update(dynamicBounds, dt, dynamicEnv, checkWater);
-
-    const updatedFloatPos = this.#float.getPosition();
-    const updatedFloatScreenPos = this.#projector.virtualToScreen(
-      updatedFloatPos.x,
-      updatedFloatPos.y,
-    );
-
-    const castableBoundsVirtual = this.#locationMap.getCastableBoundsVirtual(
-      CONFIG.locations.cellSize,
-    );
-    const mapBottomScreenY = this.#projector.virtualToScreen(
-      0,
-      castableBoundsVirtual.bottom,
-    ).y;
-
-    const catchLineY = Math.min(mapBottomScreenY, this.#canvas.height);
-
-    if (this.#netCatchChance === null) {
-      if (CONFIG.net && CONFIG.net.active && this.#fishingSystem) {
-        const fW = this.#fishingSystem.getFishWeight();
-        const nW = CONFIG.net.maxWeight;
-        if (fW <= nW) {
-          this.#netCatchChance = 100;
-        } else {
-          const diffPercent = ((fW - nW) / nW) * 100;
-          let baseChance = 50;
-          for (const t of CONFIG.net.chances) {
-            if (diffPercent >= t.min && diffPercent <= t.max) {
-              baseChance = t.chance;
-              break;
-            }
-          }
-          const qualBonus = Math.round((CONFIG.net.quality - 1.0) * 10);
-          this.#netCatchChance = Math.min(100, baseChance + qualBonus);
-        }
-      } else {
-        this.#netCatchChance = 100;
-      }
-    }
-
-    let triggerLineY = catchLineY - this.#canvas.height * 0.1;
-
-    if (CONFIG.net && CONFIG.net.active) {
-      const netBonusPx = CONFIG.net.length * 10;
-      triggerLineY = catchLineY - netBonusPx;
-      this.#isNetReady =
-        updatedFloatScreenPos.y >= triggerLineY &&
-        updatedFloatScreenPos.y < catchLineY;
-    } else {
-      this.#isNetReady = false;
-    }
-
-    const catchLineOffset = CONFIG.locations.catchLineOffsetPx ?? 5;
-
-    if (
-      updatedFloatScreenPos.y >= triggerLineY &&
-      updatedFloatScreenPos.y < catchLineY - catchLineOffset
-    ) {
-      if (typeof this.#fishingSystem.tryTriggerFishLastDash === "function") {
-        this.#fishingSystem.tryTriggerFishLastDash(dt);
-      }
-    }
-
-    if (updatedFloatScreenPos.y >= catchLineY - catchLineOffset) {
-      this.#gameState = "victory";
-
-      if (CONFIG.debug?.overlay) {
-        document.dispatchEvent(
-          new CustomEvent("debug-live-update", {
-            detail: { gameState: "victory" },
-          }),
-        );
-      }
     }
   }
 
