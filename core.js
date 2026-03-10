@@ -45,16 +45,16 @@ class InputManager {
     #lastPointerX;
     #panDeltaX;
     #clickPos;
-    #config;
+    #anchorX; // ЗМІНА ТУТ
     #keys = {};
     #isDoubleClick = false;
     #longPressPos = null;
     #lastClickTime = 0;
     #longPressTimeout = null;
 
-    constructor(canvas, config) {
+    constructor(canvas, anchorX = null) { // ЗМІНА ТУТ
         this.#canvas = canvas;
-        this.#config = config;
+        this.#anchorX = anchorX; // ЗМІНА ТУТ
         this.#isPulling = false;
         this.#pullDirection = new Vector2(0, 1);
         this.#isDragging = false;
@@ -66,6 +66,11 @@ class InputManager {
         this.#clickPos = null;
 
         this.#bindEvents();
+    }
+
+    // ДОДАНО НОВИЙ МЕТОД
+    setAnchorX(x) {
+        this.#anchorX = x;
     }
 
     #bindEvents() {
@@ -172,8 +177,9 @@ class InputManager {
             this.#pullDirection = new Vector2(keyX, 1).normalize();
         } else if (e && e.clientX !== undefined) {
             const rect = this.#canvas.getBoundingClientRect();
-            let anchorX = rect.width / 2;
-            if (this.#config.ui?.rod?.x && this.#config.ui.rod.x !== 'center') anchorX = Number(this.#config.ui.rod.x);
+            
+            // ЗМІНА ТУТ
+            let anchorX = this.#anchorX !== null ? this.#anchorX : rect.width / 2;
             
             const dx = e.clientX - rect.left - anchorX;
             const dy = rect.height / 2; 
@@ -207,41 +213,36 @@ class InputManager {
 }
 
 class EventLogger {
-    static async logBreakEvent(reason, tensionMeter) {
-        if (typeof CONFIG === 'undefined' || !CONFIG.logs?.events) {
-            return;
-        }
+    #endpoint;
+    #enabled;
 
-        const data = {
-            id: crypto.randomUUID ? crypto.randomUUID() : Date.now(),
+    constructor(endpoint, enabled = true) {
+        this.#endpoint = endpoint;
+        this.#enabled = enabled;
+    }
+
+    async logEvent(eventType, eventData) {
+        if (!this.#enabled || !this.#endpoint) return;
+
+        const payload = {
+            id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
             timestamp: new Date().toISOString(),
-            event: reason === 'rod' ? 'ROD_BROKEN' : reason === 'hook' ? 'FISH_ESCAPED' : 'LINE_BROKEN',
-            location: 'Lake Whisper (Mock)',
-            fish: 'Pike (Mock)',
-            gameplayStats: {
-                fishState: window.DEBUG_LIVE_FISH_STATE || 'unknown',
-                fishCurrentBasePower: window.DEBUG_LIVE_FISH_POWER || 0,
-                fishPullMultiplier: window.DEBUG_LIVE_FISH_PULL_MULT || 0,
-                breakTimerProgressPercent: +(tensionMeter.getLineBreakProgress() * 100).toFixed(1)
-            }
+            event: eventType,
+            ...eventData 
         };
 
-        if (CONFIG.logs.endpoint) {
-            try {
-                const response = await fetch(CONFIG.logs.endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-                
-                if (response.ok) {
-                    console.log(`[EventLogger] Event ${data.event} successfully sent to backend.`);
-                }
-            } catch (error) {
-                console.error('[EventLogger] Failed to send event to backend.', error);
+        try {
+            const response = await fetch(this.#endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            if (response.ok) {
+                console.log(`[EventLogger] Event ${eventType} successfully sent.`);
             }
+        } catch (error) {
+            console.error('[EventLogger] Failed to send event.', error);
         }
     }
 }
@@ -286,23 +287,21 @@ class CacheManager {
     static printStorageUsage() {
         let totalBytes = 0;
 
-        // Рахуємо всі ключі та їх значення в localStorage
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             const value = localStorage.getItem(key);
             
-            // Кожен символ в JS займає 2 байти
             totalBytes += (key.length + value.length) * 2;
         }
 
         const kb = (totalBytes / 1024).toFixed(2);
         const mb = (totalBytes / (1024 * 1024)).toFixed(3);
-        const limitMb = 5.0; // Стандартний ліміт браузерів
+        const limitMb = 5.0;
         const percentage = ((totalBytes / (limitMb * 1024 * 1024)) * 100).toFixed(2);
 
-        let color = '#00ff80'; // Зелений (все добре)
-        if (percentage > 70) color = '#ffaa00'; // Жовтий (увага)
-        if (percentage > 90) color = '#ff4444'; // Червоний (критично)
+        let color = '#00ff80';
+        if (percentage > 70) color = '#ffaa00';
+        if (percentage > 90) color = '#ff4444';
 
         console.log(`%c💾 [CacheManager] Використано: ${kb} KB (${mb} MB) з ~${limitMb} MB | Заповнено на ${percentage}%`, `color: ${color}; font-weight: bold; font-family: monospace;`);
     }
