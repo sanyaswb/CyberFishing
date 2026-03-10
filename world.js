@@ -92,7 +92,7 @@ class DynamicZone {
 }
 
 class LocationMap {
-    #globalConfig;
+    #locationsConfig;
     #config;
     #id;
     #grid;
@@ -108,16 +108,16 @@ class LocationMap {
     #lastDebugState = '';
     #lastProjector = null;
 
-    constructor(locationId, config) {
-        this.#globalConfig = config;
-        this.#config = JSON.parse(JSON.stringify(config.locations.map[locationId]));
+    constructor(locationId, locationsConfig) {
+        this.#locationsConfig = locationsConfig;
+        this.#config = JSON.parse(JSON.stringify(locationsConfig.map[locationId]));
         this.#id = locationId;
         this.#dynamicZones = [];
         this.#bgLoaded = false;
         
-        const baseRes = config.locations.baseResolution;
-        const actualCellSize = config.locations.cellSize;
-        const designCellSize = config.locations.designCellSize || actualCellSize;
+        const baseRes = locationsConfig.baseResolution;
+        const actualCellSize = locationsConfig.cellSize;
+        const designCellSize = locationsConfig.designCellSize || actualCellSize;
         
         this.#cols = Math.ceil(baseRes.width / actualCellSize);
         this.#rows = Math.ceil(baseRes.height / actualCellSize);
@@ -130,7 +130,6 @@ class LocationMap {
                 if (z.w !== undefined) z.w = Math.round(z.w * ratio);
                 if (z.h !== undefined) z.h = Math.round(z.h * ratio);
                 
-                // Масштабування складних зон
                 if (z.bounds) {
                     const bArr = Array.isArray(z.bounds) ? z.bounds : [z.bounds];
                     bArr.forEach(b => {
@@ -195,7 +194,7 @@ class LocationMap {
         const ctx = this.#debugCanvas.getContext('2d', { alpha: true });
         ctx.clearRect(0, 0, imgWidth, imgHeight); 
 
-        const locCfg = this.#globalConfig.locations;
+        const locCfg = this.#locationsConfig;
         
         const drawZones = (zones, color) => {
             if (!zones) return;
@@ -234,11 +233,12 @@ class LocationMap {
         }
     }
 
-    refreshConfig(globalConfig) {
-        this.#config = JSON.parse(JSON.stringify(globalConfig.locations.map[this.#id]));
+    refreshConfig(locationsConfig) {
+        this.#locationsConfig = locationsConfig;
+        this.#config = JSON.parse(JSON.stringify(locationsConfig.map[this.#id]));
         
-        const actualCellSize = globalConfig.locations.cellSize;
-        const designCellSize = globalConfig.locations.designCellSize || actualCellSize;
+        const actualCellSize = locationsConfig.cellSize;
+        const designCellSize = locationsConfig.designCellSize || actualCellSize;
         const ratio = designCellSize / actualCellSize;
 
         if (ratio !== 1) {
@@ -271,7 +271,7 @@ class LocationMap {
             }
         }
 
-        const baseRes = globalConfig.locations.baseResolution;
+        const baseRes = locationsConfig.baseResolution;
         this.#generateStaticDebugMap(actualCellSize, baseRes.width, baseRes.height);
         this.recalculateZones(null, actualCellSize);
     }
@@ -295,7 +295,7 @@ class LocationMap {
         const pos = projector.virtualToScreen(0, 0);
         const scale = projector.getScale();
         
-        const baseRes = this.#globalConfig.locations.baseResolution;
+        const baseRes = this.#locationsConfig.baseResolution;
         const w = baseRes.width * scale;
         const h = baseRes.height * scale;
 
@@ -352,7 +352,6 @@ class LocationMap {
 
         if (!this.#config.zones.castable) return;
 
-        // --- ОПТИМІЗАЦІЯ: Читаємо глибину тільки в зелених зонах ---
         for (const z of this.#config.zones.castable) {
             const startCol = z.adaptiveX ? 0 : z.x;
             const endCol = z.adaptiveX ? this.#cols : z.x + z.w;
@@ -361,7 +360,7 @@ class LocationMap {
 
             for (let i = startCol; i < endCol; i++) {
                 for (let j = startRow; j < endRow; j++) {
-                    if (!this.#isValid(i, j)) continue; // Запобіжник виходу за межі масиву
+                    if (!this.#isValid(i, j)) continue;
 
                     const px = Math.floor(i * cellSize + cellSize / 2);
                     const py = Math.floor(j * cellSize + cellSize / 2);
@@ -371,7 +370,7 @@ class LocationMap {
                     
                     const ratio = r / 255;
                     this.#grid[i][j].depth = maxD - (ratio * (maxD - minD));
-                    this.#grid[i][j].isWater = true; // Позначаємо, що тут обчислена вода
+                    this.#grid[i][j].isWater = true; 
                 }
             }
         }
@@ -399,7 +398,7 @@ class LocationMap {
             visibleEndCol = Math.min(this.#cols, Math.ceil(vRight / cellSize));
         }
 
-        const locCfg = this.#globalConfig.locations;
+        const locCfg = this.#locationsConfig;
 
         if (locCfg.enableCastable !== false) {
             for (const z of this.#config.zones.castable) {
@@ -450,7 +449,7 @@ class LocationMap {
     #isValid(x, y) { return x >= 0 && x < this.#cols && y >= 0 && y < this.#rows; }
 
     update(dt, gameTimeHours = null) {
-        const locCfg = this.#globalConfig.locations;
+        const locCfg = this.#locationsConfig;
         const currentDebugState = `${locCfg.debugGrid}_${locCfg.debugDepthText}_${locCfg.enableCastable}_${locCfg.enableCollisions}_${locCfg.enableSnags}`;
         
         if (this.#lastDebugState !== currentDebugState && this.#debugCanvas) {
@@ -491,7 +490,6 @@ class LocationMap {
             this.#bgOpacities.night = niA;
         }
 
-        // ОСЬ ВАЖЛИВИЙ РЯДОК: Оновлюємо динамічні зони
         for (const dz of this.#dynamicZones) { 
             dz.update(dt); 
         }
@@ -511,7 +509,8 @@ class LocationMap {
 }
 
 class ViewportProjector {
-    #config;
+    #locationsConfig;
+    #locationId;
     #virtualWidth;
     #virtualHeight;
     #canvasWidth;
@@ -523,13 +522,11 @@ class ViewportProjector {
     #maxScrollX;
     #isFirstUpdate;
 
-    // TODO: В майбутньому рядок 'test' треба буде зробити змінною (currentLocation)
-    #locationId = 'test'; 
-
-    constructor(config) {
-        this.#config = config;
-        this.#virtualWidth = config.locations.baseResolution.width;
-        this.#virtualHeight = config.locations.baseResolution.height;
+    constructor(locationsConfig, locationId) {
+        this.#locationsConfig = locationsConfig;
+        this.#locationId = locationId;
+        this.#virtualWidth = locationsConfig.baseResolution.width;
+        this.#virtualHeight = locationsConfig.baseResolution.height;
         
         this.#scale = 1;
         this.#offsetX = 0;
@@ -542,24 +539,20 @@ class ViewportProjector {
     }
 
     update(canvasWidth, canvasHeight) {
-        // Динамічно зчитуємо актуальні дані з конфігу (щоб DevTools працював миттєво)
-        const mapConfig = this.#config.locations.map[this.#locationId];
+        const mapConfig = this.#locationsConfig.map[this.#locationId];
         const safeZoneTop = mapConfig.safeZone.top;
         const safeZoneBottom = mapConfig.safeZone.bottom;
         const alignment = mapConfig.initialAlignment || { x: 'center', y: 'safeZone' };
 
-        // Прибрали жорстке блокування по розміру канвасу, математика тут дуже швидка
         this.#canvasWidth = canvasWidth;
         this.#canvasHeight = canvasHeight;
 
-        // 1. РОЗРАХУНОК МАСШТАБУ (Cover Effect)
         const safeZoneHeight = safeZoneBottom - safeZoneTop;
         const scaleForWidth = this.#canvasWidth / this.#virtualWidth;
         const scaleForSafeHeight = this.#canvasHeight / safeZoneHeight;
         
         this.#scale = Math.max(scaleForWidth, scaleForSafeHeight);
 
-        // 2. ВЕРТИКАЛЬНЕ ВИРІВНЮВАННЯ
         const scaledHeight = this.#virtualHeight * this.#scale;
         
         if (alignment.y === 'top') {
@@ -569,13 +562,11 @@ class ViewportProjector {
         } else if (alignment.y === 'center') {
             this.#offsetY = (this.#canvasHeight - scaledHeight) / 2;
         } else { 
-            // 'safeZone' - центрує рівно ігрову зелену зону
             const scaledSafeZoneTop = safeZoneTop * this.#scale;
             const scaledSafeZoneHeight = safeZoneHeight * this.#scale;
             this.#offsetY = ((this.#canvasHeight - scaledSafeZoneHeight) / 2) - scaledSafeZoneTop;
         }
 
-        // 3. ГОРИЗОНТАЛЬНИЙ СКРОЛ ТА ВИРІВНЮВАННЯ
         const scaledWidth = this.#virtualWidth * this.#scale;
         this.#maxScrollX = Math.max(0, scaledWidth - this.#canvasWidth);
 
@@ -583,7 +574,7 @@ class ViewportProjector {
             if (this.#isFirstUpdate) {
                 if (alignment.x === 'center') this.#cameraX = this.#maxScrollX / 2;
                 else if (alignment.x === 'right') this.#cameraX = this.#maxScrollX;
-                else this.#cameraX = 0; // left
+                else this.#cameraX = 0;
                 
                 this.#isFirstUpdate = false;
             } else {

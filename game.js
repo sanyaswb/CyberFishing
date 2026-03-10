@@ -42,7 +42,12 @@ class Game {
     constructor(canvasId) {
         this.#canvas = document.getElementById(canvasId);
         
-        this.#inputManager = new InputManager(this.#canvas, CONFIG);
+        let anchorX = null;
+        if (CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== 'center') {
+            anchorX = Number(CONFIG.ui.rod.x);
+        }
+        this.#inputManager = new InputManager(this.#canvas, anchorX);
+        
         this.#renderer = new Renderer(this.#canvas);
 
         this.#uiManager = new UIManager(CONFIG);
@@ -53,8 +58,8 @@ class Game {
         this.#chumUI = new ChumUI(() => this.#toggleChumAim());
         this.#isAimingChum = false;
         
-        this.#locationMap = new LocationMap('test', CONFIG);
-        this.#projector = new ViewportProjector(CONFIG);
+        this.#locationMap = new LocationMap('test', CONFIG.locations);
+        this.#projector = new ViewportProjector(CONFIG.locations, 'test');
 
         // --- ОНОВЛЕНИЙ СЛУХАЧ ДЛЯ DEVTOOLS ---
         document.addEventListener('config-updated', (e) => {
@@ -65,7 +70,7 @@ class Game {
                 }
                 // Миттєво оновлюємо зони, коли тягнемо повзунки в DevTools
                 if (this.#locationMap) {
-                    this.#locationMap.refreshConfig(CONFIG);
+                    this.#locationMap.refreshConfig(CONFIG.locations);
                 }
             }
         });
