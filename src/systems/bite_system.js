@@ -117,6 +117,7 @@ class BiteSystem {
 
     for (const fish of this.#fishDatabase) {
       const dc = fish.depthConfig;
+
       if (playerGear.hookSize > fish.maxHookSize) continue;
       if (envData.hookDepth < dc.minDepth || envData.hookDepth > dc.maxDepth)
         continue;
@@ -124,7 +125,6 @@ class BiteSystem {
       const baitMult = fish.baitMultipliers[playerGear.baitId] || 0;
       if (baitMult === 0) continue;
 
-      // ПРИКОРМКА
       let currentChumMult = 1.0;
       if (envData.chumBonus > 1.0 && Array.isArray(envData.chumTargets)) {
         if (envData.chumTargets.includes(fish.id)) {
@@ -133,17 +133,39 @@ class BiteSystem {
       }
 
       const timeMult = fish.timeMultipliers[envData.timePhase] || 1.0;
-      const weatherMult =
-        (envData.isRaining ? (fish.weatherMultipliers?.rain ?? 1.0) : 1.0) *
-        (envData.isFoggy ? (fish.weatherMultipliers?.fog ?? 1.0) : 1.0);
+      const dayMult = fish.dayMultipliers[envData.dayOfWeek] || 1.0;
+
+      let t = (envData.hookDepth - dc.minDepth) / (dc.maxDepth - dc.minDepth);
+      t = Math.max(0, Math.min(1, t));
+      const depthChanceMult = this.#lerp(1.0, dc.chanceMultAtMaxDepth, t);
+
+      const rainMult = envData.isRaining
+        ? (fish.weatherMultipliers?.rain ?? 1.0)
+        : 1.0;
+      const fogMult = envData.isFoggy
+        ? (fish.weatherMultipliers?.fog ?? 1.0)
+        : 1.0;
+      const weatherMult = rainMult * fogMult;
+
+      const overDepthPenalty =
+        envData.hookDepth > envData.bottomDepth
+          ? this.#overDepthPenaltyMult || 0.5
+          : 1.0;
+
+      const spamMult = envData.castSpamMultiplier ?? 1.0;
+      const zoneMult = envData.zoneMultiplier ?? 1.0;
 
       const finalChance =
         fish.baseChance *
         baitMult *
         timeMult *
+        dayMult *
         currentChumMult *
+        depthChanceMult *
         weatherMult *
-        (envData.castSpamMultiplier ?? 1.0);
+        zoneMult *
+        spamMult *
+        overDepthPenalty;
 
       chances.push({
         name: fish.name,
@@ -151,8 +173,14 @@ class BiteSystem {
         breakdown: {
           base: fish.baseChance.toFixed(3),
           bait: baitMult.toFixed(2),
-          chum: currentChumMult.toFixed(2), // Це відобразиться в оверлеї
-          spam: (envData.castSpamMultiplier || 1.0).toFixed(2),
+          time: timeMult.toFixed(2),
+          day: dayMult.toFixed(2),
+          depth: depthChanceMult.toFixed(2),
+          weather: weatherMult.toFixed(2),
+          zone: zoneMult.toFixed(2),
+          chum: currentChumMult.toFixed(2),
+          spam: spamMult.toFixed(2),
+          overDepth: overDepthPenalty.toFixed(2),
         },
       });
     }
