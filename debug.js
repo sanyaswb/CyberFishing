@@ -10,7 +10,6 @@ window.DEBUG_MODULES = {
     net: false,
 };
 
-// Замість setTimeout тепер слухаємо івент
 document.addEventListener('debug-fish-hooked', (e) => {
     const fish = e.detail; // Ось вона, наша згенерована унікальна риба!
     
@@ -354,7 +353,6 @@ document.addEventListener('debug-fish-hooked', (e) => {
     console.groupEnd();
 });
 
-// Логер підсаки (залишається незалежним)
 document.addEventListener('netCatchRoll', (e) => {
     if (!window.DEBUG_MODULES.net) return;
     const { chance, roll, success } = e.detail;
