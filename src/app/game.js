@@ -1155,17 +1155,17 @@ class Game {
   }
 
   draw() {
-    this.#renderer.clear(CONFIG);
+    this.#renderer.clear(CONFIG.canvas.backgroundColor);
 
     if (typeof this.#renderer.drawBackground === "function") {
-      this.#renderer.drawBackground(this.#locationMap, this.#projector, CONFIG);
+      this.#renderer.drawBackground(this.#locationMap, this.#projector);
     }
 
     if (CONFIG.locations && CONFIG.locations.debugVisuals) {
       this.#renderer.drawLocationDebug(
         this.#locationMap,
         this.#projector,
-        CONFIG,
+        CONFIG.locations,
       );
     }
 
@@ -1242,7 +1242,13 @@ class Game {
       const vPos = this.#float.getPosition();
       const sPos = this.#projector.virtualToScreen(vPos.x, vPos.y);
 
-      this.#renderer.drawCatchZone(this.#locationMap, this.#projector, CONFIG);
+      this.#renderer.drawCatchZone(
+        this.#locationMap,
+        this.#projector,
+        CONFIG.locations,
+        CONFIG.net,
+        CONFIG.ui.catchZone,
+      );
 
       let lineLengthRatio = 1.0;
       let lineDropOffset = 0;
@@ -1333,18 +1339,26 @@ class Game {
         currentTension,
         lineLengthRatio,
         lineDropOffset,
-        CONFIG,
+        CONFIG.ui.rod,
+        CONFIG.ui.line,
       );
 
-      this.#renderer.drawFloat(sPos, this.#float, CONFIG);
+      this.#renderer.drawFloat(sPos, this.#float, CONFIG.float);
 
       if (
         this.#gameState === "playing" &&
         this.#tensionMeter &&
         this.#fishCondition
       ) {
-        this.#renderer.drawTensionBar(this.#tensionMeter, CONFIG);
-        this.#renderer.drawFishCondition(this.#fishCondition, CONFIG);
+        this.#renderer.drawTensionBar(
+          this.#tensionMeter,
+          CONFIG.tension,
+          CONFIG.ui.indicators,
+        );
+        this.#renderer.drawFishCondition(
+          this.#fishCondition,
+          CONFIG.ui.indicators,
+        );
       }
     }
 

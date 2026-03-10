@@ -24,7 +24,6 @@ class Renderer {
     this.#ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
     this.#ctx.fill();
 
-    // Хрестик всередині
     this.#ctx.beginPath();
     this.#ctx.moveTo(marker.x - 8, marker.y - 8);
     this.#ctx.lineTo(marker.x + 8, marker.y + 8);
@@ -33,17 +32,16 @@ class Renderer {
     this.#ctx.stroke();
   }
 
-  clear(config) {
-    this.#ctx.fillStyle = config.canvas.backgroundColor || "#0f171e";
+  clear(canvasBgColor = "#0f171e") {
+    this.#ctx.fillStyle = canvasBgColor;
     this.#ctx.fillRect(0, 0, this.#canvas.width, this.#canvas.height);
   }
 
-  drawBackground(locationMap, projector, config) {
+  drawBackground(locationMap, projector) {
     locationMap.drawBackground(this.#ctx, projector);
   }
 
-  drawLocationDebug(locationMap, projector, config) {
-    // 1. Статична сітка... (залишається без змін)
+  drawLocationDebug(locationMap, projector, locationsConfig) {
     const debugCanvas = locationMap.getDebugCanvas();
     if (debugCanvas) {
       const pos = projector.virtualToScreen(0, 0);
@@ -52,21 +50,19 @@ class Renderer {
       const h = debugCanvas.height * scale;
 
       const prevAlpha = this.#ctx.globalAlpha;
-      this.#ctx.globalAlpha = config.locations.debugOpacity || 0.7;
+      this.#ctx.globalAlpha = locationsConfig.debugOpacity || 0.7;
       this.#ctx.drawImage(debugCanvas, pos.x, pos.y, w, h);
       this.#ctx.globalAlpha = prevAlpha;
     }
 
-    // 2. Динамічні зони
     const dynamicZones = locationMap.getDynamicZones();
-    const cellSize = config.locations.cellSize;
+    const cellSize = locationsConfig.cellSize;
     const pScale = projector.getScale();
 
     for (const dz of dynamicZones) {
-      // Малюємо ДОЗВОЛЕНУ ЗОНУ плавання (bounds) для дебагу
       if (dz.bounds) {
         const bArr = Array.isArray(dz.bounds) ? dz.bounds : [dz.bounds];
-        this.#ctx.fillStyle = "rgba(255, 100, 255, 0.1)"; // Ніжно-рожевий колір для басейну
+        this.#ctx.fillStyle = "rgba(255, 100, 255, 0.1)";
         this.#ctx.strokeStyle = "rgba(255, 100, 255, 0.4)";
         this.#ctx.lineWidth = 1;
 
@@ -79,7 +75,6 @@ class Renderer {
         }
       }
 
-      // Малюємо САМУ ЗГРАЮ РИБ (синій квадрат)
       const pos = projector.virtualToScreen(dz.x * cellSize, dz.y * cellSize);
       const w = dz.w * cellSize * pScale;
       const h = dz.h * cellSize * pScale;
@@ -92,11 +87,17 @@ class Renderer {
     }
   }
 
-  drawCatchZone(locationMap, projector, config) {
-    if (!config.locations.debugVisuals) return;
+  drawCatchZone(
+    locationMap,
+    projector,
+    locationsConfig,
+    netConfig,
+    catchZoneUIConfig,
+  ) {
+    if (!locationsConfig.debugVisuals) return;
 
     const bounds = locationMap.getCastableBoundsVirtual(
-      config.locations.cellSize,
+      locationsConfig.cellSize,
     );
     const virtualBottomY = bounds ? bounds.bottom : Infinity;
     const mapBottomScreenY = projector.virtualToScreen(0, virtualBottomY).y;
@@ -104,15 +105,13 @@ class Renderer {
     const catchLineY = Math.min(mapBottomScreenY, this.#canvas.height);
     const heightToDraw = this.#canvas.height - catchLineY;
 
-    // Зчитуємо стани прямо з конфігу локацій
-    const showCatch = config.locations.showCatchZone !== false;
-    const showNet = config.locations.showNetZone !== false;
+    const showCatch = locationsConfig.showCatchZone !== false;
+    const showNet = locationsConfig.showNetZone !== false;
 
-    // 1. МАЛЮЄМО СИНЮ ЗОНУ
     if (showCatch) {
       if (heightToDraw > 0) {
         this.#ctx.fillStyle =
-          config.ui?.catchZone?.color || "rgba(0, 150, 255, 0.3)";
+          catchZoneUIConfig?.color || "rgba(0, 150, 255, 0.3)";
         this.#ctx.fillRect(0, catchLineY, this.#canvas.width, heightToDraw);
       }
 
@@ -125,9 +124,8 @@ class Renderer {
       this.#ctx.stroke();
     }
 
-    // 2. МАЛЮЄМО ЗЕЛЕНУ ЗОНУ
-    if (showNet && config.net && config.net.active) {
-      const netBonusPx = config.net.length * 10;
+    if (showNet && netConfig && netConfig.active) {
+      const netBonusPx = netConfig.length * 10;
       const netLineY = catchLineY - netBonusPx;
 
       this.#ctx.strokeStyle = "rgba(0, 255, 128, 0.5)";
@@ -238,28 +236,22 @@ class Renderer {
       const fontSize = 40 * projector.getScale() * scale;
       this.#ctx.font = `${fontSize}px sans-serif`;
 
-      // Малюємо Кораблик
       this.#ctx.translate(screenPos.x, screenPos.y);
       this.#ctx.rotate(boat.angle + Math.PI);
       this.#ctx.fillText(boat.config.emoji, 0, 0);
       this.#ctx.rotate(-(boat.angle + Math.PI));
 
-      // Малюємо смужку Енергії
       const energyPct = boat.energy / boat.stats.maxEnergy;
       const barWidth = 40 * scale;
       const barHeight = 4 * scale;
-      const barY = -fontSize / 1.5; // Піднімаємо над корабликом
+      const barY = -fontSize / 1.5;
 
-      // Фон смужки (чорний)
       this.#ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
       this.#ctx.fillRect(-barWidth / 2, barY, barWidth, barHeight);
 
-      // Колір залежить від заряду
-      if (energyPct > 0.5)
-        this.#ctx.fillStyle = "#00ff80"; // Зелений
-      else if (energyPct > 0.2)
-        this.#ctx.fillStyle = "#ffaa00"; // Жовтий
-      else this.#ctx.fillStyle = "#ff4444"; // Червоний
+      if (energyPct > 0.5) this.#ctx.fillStyle = "#00ff80";
+      else if (energyPct > 0.2) this.#ctx.fillStyle = "#ffaa00";
+      else this.#ctx.fillStyle = "#ff4444";
 
       this.#ctx.fillRect(-barWidth / 2, barY, barWidth * energyPct, barHeight);
 
@@ -268,11 +260,11 @@ class Renderer {
     this.#ctx.restore();
   }
 
-  drawFloat(screenPos, floatEntity, config) {
+  drawFloat(screenPos, floatEntity, floatConfig) {
     const visualState = floatEntity.getVisualState();
     const pScale = visualState.perspectiveScale;
-    const width = config.float.width * pScale;
-    const length = config.float.length * pScale;
+    const width = floatConfig.width * pScale;
+    const length = floatConfig.length * pScale;
 
     this.#ctx.save();
     this.#ctx.translate(screenPos.x, screenPos.y);
@@ -299,33 +291,28 @@ class Renderer {
     tension,
     lineLengthRatio,
     lineDropOffset,
-    config,
+    uiRodConfig,
+    uiLineConfig,
   ) {
-    // 1. Відмальовуємо саму вудку
     const rodWidth = 3;
     const rodHeight = 200;
 
-    let rodBaseX = this.#resolveX(config.ui?.rod?.x, rodWidth);
-    const rodBaseY = this.#canvas.height - (config.ui?.rod?.yOffset || 0);
+    let rodBaseX = this.#resolveX(uiRodConfig?.x, rodWidth);
+    const rodBaseY = this.#canvas.height - (uiRodConfig?.yOffset || 0);
     const rodTopY = rodBaseY - rodHeight;
 
     this.#ctx.fillStyle = "#000000";
     this.#ctx.fillRect(rodBaseX - rodWidth / 2, rodTopY, rodWidth, rodHeight);
 
-    if (config.ui?.line?.visible === false) return;
+    if (uiLineConfig?.visible === false) return;
 
-    // 2. Динамічне занурення ліски (довжина + глибина тонення)
-    // Рахуємо так завжди, бо якщо lineLengthRatio = 1 і lineDropOffset = 0,
-    // то targetX/Y будуть ідеально дорівнювати floatPos.x/y
     let targetX = rodBaseX + (floatPos.x - rodBaseX) * lineLengthRatio;
     let targetY = rodTopY + (floatPos.y - rodTopY) * lineLengthRatio;
 
-    // Магія тонення: тягнемо візуальний кінчик ліски на дно
     targetY += lineDropOffset;
 
-    // 3. Динамічний колір та товщина від натягу
-    let lineColor = config.ui?.line?.color || "rgba(255, 255, 255, 0.3)";
-    let lineWidth = config.ui?.line?.width || 1;
+    let lineColor = uiLineConfig?.color || "rgba(255, 255, 255, 0.3)";
+    let lineWidth = uiLineConfig?.width || 1;
 
     if (gameState === "playing") {
       if (tension >= 100) {
@@ -340,13 +327,12 @@ class Renderer {
       }
     }
 
-    // 4. Малюємо саму ліску з плавним провисанням
     this.#ctx.save();
     this.#ctx.beginPath();
     this.#ctx.moveTo(rodBaseX, rodTopY);
 
-    const straightenThreshold = config.ui?.line?.straightenTension || 50;
-    const sagOffset = config.ui?.line?.sagOffset || 60;
+    const straightenThreshold = uiLineConfig?.straightenTension || 50;
+    const sagOffset = uiLineConfig?.sagOffset || 60;
 
     let straightFactor = 0;
     if (gameState === "playing") {
@@ -367,11 +353,11 @@ class Renderer {
     this.#ctx.restore();
   }
 
-  drawFishCondition(condition, config) {
+  drawFishCondition(condition, uiIndicatorsConfig) {
     const barWidth = 200;
     const barHeight = 10;
-    const barX = this.#resolveX(config.ui?.indicators?.x, barWidth);
-    const barY = config.ui?.indicators?.y || 40;
+    const barX = this.#resolveX(uiIndicatorsConfig?.x, barWidth);
+    const barY = uiIndicatorsConfig?.y || 40;
 
     this.#ctx.fillStyle = "#0b1520";
     this.#ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
@@ -412,19 +398,21 @@ class Renderer {
     this.#ctx.strokeRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
   }
 
-  drawTensionBar(tensionMeter, config) {
-    const barWidth = config.tension.barWidth;
-    const barHeight = config.tension.barHeight;
-    const barX = this.#resolveX(config.ui?.indicators?.x, barWidth);
-    const baseY = config.ui?.indicators?.y || 40;
-    const spacing = config.ui?.indicators?.spacing || 40;
+  drawTensionBar(tensionMeter, tensionConfig, uiIndicatorsConfig) {
+    const barWidth = tensionConfig.barWidth;
+    const barHeight = tensionConfig.barHeight;
+    const barX = this.#resolveX(uiIndicatorsConfig?.x, barWidth);
+    const baseY = uiIndicatorsConfig?.y || 40;
+    const spacing = uiIndicatorsConfig?.spacing || 40;
     const barY = baseY + spacing;
 
-    const padding = config.tension.borderPadding;
+    const padding = tensionConfig.borderPadding;
     const tension = tensionMeter.getTension();
-    const pulseIntensity = tensionMeter.getPulseIntensity(config);
+    const pulseIntensity = tensionMeter.getPulseIntensity({
+      tension: tensionConfig,
+    });
 
-    this.#ctx.fillStyle = config.tension.backgroundColor;
+    this.#ctx.fillStyle = tensionConfig.backgroundColor;
     this.#ctx.fillRect(
       barX - padding,
       barY - padding,
@@ -432,8 +420,8 @@ class Renderer {
       barHeight + padding * 2,
     );
 
-    this.#ctx.strokeStyle = config.tension.borderColor;
-    this.#ctx.lineWidth = config.tension.barBorderWidth;
+    this.#ctx.strokeStyle = tensionConfig.borderColor;
+    this.#ctx.lineWidth = tensionConfig.barBorderWidth;
     this.#ctx.strokeRect(
       barX - padding,
       barY - padding,
@@ -447,7 +435,7 @@ class Renderer {
     this.#ctx.fillStyle = fillColor;
     this.#ctx.fillRect(barX, barY, fillWidth, barHeight);
 
-    const glowIntensity = pulseIntensity * config.tension.glowIntensity;
+    const glowIntensity = pulseIntensity * tensionConfig.glowIntensity;
     this.#ctx.shadowColor = fillColor;
     this.#ctx.shadowBlur = 10 * glowIntensity;
     this.#ctx.strokeStyle = fillColor;
@@ -455,13 +443,13 @@ class Renderer {
     this.#ctx.strokeRect(barX, barY, fillWidth, barHeight);
     this.#ctx.shadowBlur = 0;
 
-    this.#ctx.fillStyle = config.tension.labelColor;
-    this.#ctx.font = config.tension.labelFont;
+    this.#ctx.fillStyle = tensionConfig.labelColor;
+    this.#ctx.font = tensionConfig.labelFont;
     this.#ctx.textAlign = "left";
     this.#ctx.fillText(
       `TENSION: ${Math.round(tension)}%`,
-      barX - config.tension.labelOffsetX,
-      barY + config.tension.labelOffsetY,
+      barX - tensionConfig.labelOffsetX,
+      barY + tensionConfig.labelOffsetY,
     );
 
     const statusLabel = tensionMeter.getCurrentStatusLabel();
@@ -471,23 +459,17 @@ class Renderer {
     this.#ctx.textAlign = "right";
     this.#ctx.fillText(
       statusLabel,
-      barX + barWidth + config.tension.labelOffsetX,
-      barY + config.tension.labelOffsetY,
+      barX + barWidth + tensionConfig.labelOffsetX,
+      barY + tensionConfig.labelOffsetY,
     );
 
-    if (tension >= config.tension.breakThreshold - 0.1) {
+    if (tension >= tensionConfig.breakThreshold - 0.1) {
       const breakProgress = tensionMeter.getLineBreakProgress();
-      this.#drawLineBreakWarning(
-        barX,
-        barY - 25,
-        barWidth,
-        breakProgress,
-        config,
-      );
+      this.#drawLineBreakWarning(barX, barY - 25, barWidth, breakProgress);
     }
   }
 
-  #drawLineBreakWarning(x, y, width, progress, config) {
+  #drawLineBreakWarning(x, y, width, progress) {
     this.#ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
     this.#ctx.fillRect(x, y, width * progress, 8);
     this.#ctx.strokeStyle = "#ff0000";
