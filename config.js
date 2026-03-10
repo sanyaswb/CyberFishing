@@ -510,7 +510,7 @@ const CHUM_CONFIG = {
         'carp_mix_basic': {
             id: 'carp_mix_basic',
             name: 'Базова коропова суміш',
-            targetFishes: ['carp', 'crucian'],
+            targetFishes: ['crucian_stalker'],
             radiusX: 150, 
             radiusY: { max: 110, min: 20 },
             maxBonus: 2.0, 

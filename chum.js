@@ -251,6 +251,49 @@ class ChumManager {
         return activeMultiplier + memoryBonus;
     }
 
+// ОНОВЛЕНИЙ МЕТОД: Повертає бонус і список риб, враховуючи перспективу
+    getChumDataAt(floatX, floatY, vTop, vBottom) {
+        // Використовуємо твій існуючий метод (передаємо null замість конкретної риби)
+        const bonus = this.getMultiplier(floatX, floatY, null, vTop, vBottom); 
+        
+        if (bonus > 1.0) {
+            // Шукаємо, яка саме зона дала нам цей бонус
+            const activeZone = this.#zones.find(zone => {
+                if (!zone.isDelivered) return false;
+                // Перевіряємо точне перетинання з урахуванням овалу
+                return zone.getMultiplierAt(floatX, floatY, null, vTop, vBottom) > 1.0; 
+            });
+
+            if (activeZone) {
+                const baitConfig = CHUM_CONFIG.baits[activeZone.baitId];
+                return {
+                    bonus: bonus,
+                    targets: baitConfig.targetFishes || [] // Віддаємо масив цільової риби!
+                };
+            }
+        }
+        return { bonus: 1.0, targets: null };
+    }
+
+    getActiveChumTargets(floatX, floatY, virtualTopY, virtualBottomY) {
+        const bonus = this.getMultiplier(floatX, floatY, null, virtualTopY, virtualBottomY);
+        
+        if (bonus > 1.0) {
+            for (const zone of this.#zones) {
+                if (!zone.isDelivered) continue;
+                
+                // Перевіряємо, чи саме ця зона дає бонус у цій точці
+                if (zone.getMultiplierAt(floatX, floatY, null, virtualTopY, virtualBottomY) > 1.0) {
+                    const baitConfig = CHUM_CONFIG.baits[zone.baitId];
+                    if (baitConfig && baitConfig.targetFishes) {
+                        return baitConfig.targetFishes;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     getZones() { return this.#zones; }
     getBoats() { return this.#boats; }
 }

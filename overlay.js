@@ -177,6 +177,10 @@ class DebugOverlay {
                         <span style="color: #fff; font-weight: bold;">${fish.name}</span>
                         <span style="color: #00ff80; font-weight: bold;">${fish.chance}</span>
                     </div>`;
+                    
+                    // ДОДАНО: b.chum для відображення прикормки
+                    const chumColor = b.chum > 1.0 ? '#00ff80' : '#ddd'; // Зелений, якщо є бонус
+
                     html += `<div style="color: #8a9bac; font-size: 11px; line-height: 1.4; display: grid; grid-template-columns: 1fr 1fr;">
                         <span>База: <span style="color:#ddd">${b.base}</span></span>
                         <span>Наживка: <span style="color:#ddd">x${b.bait}</span></span>
@@ -185,6 +189,7 @@ class DebugOverlay {
                         <span>Глибина: <span style="color:#ddd">x${b.depth}</span></span>
                         <span>Погода: <span style="color:#ddd">x${b.weather}</span></span>
                         <span>Зона: <span style="color:#ddd">x${b.zone}</span></span>
+                        <span>Прикормка: <span style="color:${chumColor}; font-weight: bold;">x${b.chum || '1.00'}</span></span>
                         <span>Спам: <span style="color:${b.spam < 1 ? '#ff4444' : '#ddd'}">x${b.spam}</span></span>
                         <span style="grid-column: span 2;">Лежачий поплавок: <span style="color:${b.overDepth < 1 ? '#ff4444' : '#ddd'}">x${b.overDepth}</span></span>
                     </div></div>`;
@@ -470,8 +475,22 @@ class DebugOverlay {
             
             d.chumZones.forEach((z, idx) => {
                 const cfg = z.baitConfig;
-                const activeColor = z.currentBonus > cfg.minBonus ? '#00ff80' : '#8a9bac';
-                const timeStr = z.isExpired ? 'ВИВІТРИЛАСЬ' : `${z.currentBonus.toFixed(2)}x (Бонус)`;
+                const currentBonus = z.currentBonus || 0;
+                
+                let timeStr = '';
+                let activeColor = '';
+
+                // Перевіряємо статус зони
+                if (!z.isDelivered) {
+                    timeStr = 'В ДОРОЗІ 🚤';
+                    activeColor = '#ffa500'; // Помаранчевий (очікуємо)
+                } else if (z.isExpired) {
+                    timeStr = 'ВИВІТРИЛАСЬ';
+                    activeColor = '#8a9bac'; // Сірий
+                } else {
+                    timeStr = `${currentBonus.toFixed(2)}x (Бонус)`;
+                    activeColor = currentBonus > cfg.minBonus ? '#00ff80' : '#8a9bac'; // Зелений або сірий
+                }
                 
                 html += `
                     <div style="margin-bottom: 4px; display: flex; justify-content: space-between; font-size: 12px;">

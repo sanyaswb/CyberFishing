@@ -47,13 +47,11 @@ class Game {
 
         this.#uiManager = new UIManager(CONFIG);
         this.#uiManager.onNetClick = () => this.#handleNetClick();
-
         this.#uiManager.onContinueClick = () => this.#resetGame();
 
         this.#chumManager = new ChumManager('test');
         this.#chumUI = new ChumUI(() => this.#toggleChumAim());
         this.#isAimingChum = false;
-        // -----------------------------------------------
         
         this.#locationMap = new LocationMap('test', CONFIG);
         this.#projector = new ViewportProjector(CONFIG);
@@ -215,7 +213,9 @@ class Game {
     }
 
     #toggleChumAim() {
-        if (this.#gameState !== 'scouting' && this.#gameState !== 'waiting') return;
+        // ✅ ДОДАНО 'biting' у список дозволених станів!
+        // Тепер пульт дістається під час очікування, прицілювання та клювання.
+        if (this.#gameState !== 'scouting' && this.#gameState !== 'waiting' && this.#gameState !== 'biting') return;
 
         if (this.#chumManager.getWaitingBoat()) {
             this.#chumManager.activateWaitingBoat();
@@ -301,9 +301,14 @@ class Game {
             const boats = this.#chumManager ? this.#chumManager.getBoats() : [];
             const activeBoat = boats.length > 0 ? boats[0] : null;
 
-            if (this.#chumManager && this.#chumManager.hasDriftingBoat()) {
+            if (this.#gameState === 'playing') { 
+                if (this.#isAimingChum) {
+                    this.#isAimingChum = false; 
+                }
+                this.#chumUI.setState('disabled'); 
+            } 
+            else if (this.#chumManager && this.#chumManager.hasDriftingBoat()) {
                 this.#chumUI.setState('empty');
-
             } else if (activeBoat && activeBoat.state === 'waiting' && !activeBoat.zoneId) {
                 this.#chumUI.setState('empty');    
             } else if (this.#chumManager && this.#chumManager.getWaitingBoat()) {
@@ -321,6 +326,9 @@ class Game {
 
         // --- ДОДАНО 2: Перехоплення кліку для кидка прикормки ---
         if (this.#isAimingChum) {
+            inputState.isPulling = false; 
+            inputState.longPressPos = null;
+
             const method = CHUM_CONFIG.currentMethod || 'hand';
             const maxHandDist = CHUM_CONFIG.deliveryMethods.hand.maxDistanceVirtual;
 
@@ -353,28 +361,39 @@ class Game {
             }
         }
 
-        if (!this.#isAimingChum && inputState.clickPos) {
+        // --- ДОДАНО: Перехоплення кліку для ручного керування КОРАБЛИКОМ ---
+        if (!this.#isAimingChum) {
             const method = CHUM_CONFIG.currentMethod || 'hand';
             const isManual = CHUM_CONFIG.deliveryMethods.boat?.manualControl;
             const boats = this.#chumManager ? this.#chumManager.getBoats() : [];
             
             if (method === 'boat' && isManual && boats.length > 0) {
                 const boat = boats[0];
-                const clickY = inputState.clickPos.y;
-                const vPos = this.#projector.screenToVirtual(inputState.clickPos.x, clickY);
-                const cell = this.#locationMap.getCellAtVirtualPos(vPos.x, vPos.y, CONFIG.locations.cellSize);
                 
-                const isBottomClick = clickY > this.#canvas.height * 0.85 || (cell && !cell.isCastable && clickY > this.#canvas.height * 0.7);
+                // Якщо кораблик живий і слухається пульта (не дрейфує)
+                if (boat.state !== 'drifting') {
+                    
+                    // 1. БЛОКУЄМО ВУДКУ: руки зайняті пультом!
+                    // Скасовуємо спроби підсікати, тягнути або закидати по-новій
+                    inputState.isPulling = false; 
+                    inputState.longPressPos = null;
 
-                if (isBottomClick) {
-                    boat.setTarget(boat.startPos.x, boat.startPos.y, null, true); 
-                    inputState.clickPos = null;
-                } 
-                else if (cell && cell.isCastable && !cell.hasCollision) {
-                    if (boat.state !== 'drifting') {
-                        boat.setTarget(vPos.x, vPos.y, boat.zoneId, false);
+                    // 2. КЕРУВАННЯ КОРАБЛИКОМ (реагуємо на кліки)
+                    if (inputState.clickPos) {
+                        const clickY = inputState.clickPos.y;
+                        const vPos = this.#projector.screenToVirtual(inputState.clickPos.x, clickY);
+                        const cell = this.#locationMap.getCellAtVirtualPos(vPos.x, vPos.y, CONFIG.locations.cellSize);
+                        
+                        const isBottomClick = clickY > this.#canvas.height * 0.85 || (cell && !cell.isCastable && clickY > this.#canvas.height * 0.7);
+
+                        if (isBottomClick) {
+                            boat.setTarget(boat.startPos.x, boat.startPos.y, null, true); 
+                        } 
+                        else if (cell && cell.isCastable && !cell.hasCollision) {
+                            boat.setTarget(vPos.x, vPos.y, boat.zoneId, false);
+                        }
+                        inputState.clickPos = null; // Поглинаємо клік, щоб він не пішов далі
                     }
-                    inputState.clickPos = null; 
                 }
             }
         }
@@ -524,18 +543,25 @@ class Game {
         const currentCell = this.#locationMap.getCellAtVirtualPos(floatPos.x, floatPos.y, CONFIG.locations.cellSize);
         const currentDepth = currentCell ? currentCell.depth : 0; 
         
-        // --- ДОДАНО 3: Отримуємо множник прикормки для конкретної точки (поки для 'carp' як заглушка) ---
         const chumBounds = this.#locationMap.getCastableBoundsVirtual(CONFIG.locations.cellSize);
         const vTop = chumBounds ? chumBounds.top : 0;
         const virtualBottomY = chumBounds ? chumBounds.bottom : 1440;
-        const chumMult = this.#chumManager ? this.#chumManager.getMultiplier(floatPos.x, floatPos.y, 'carp', vTop, virtualBottomY) : 1.0;
+        
+        const rawChumBonus = this.#chumManager ? this.#chumManager.getMultiplier(floatPos.x, floatPos.y, null, vTop, virtualBottomY) : 1.0;
+        
+        let activeTargets = null;
+        if (rawChumBonus > 1.0 && this.#chumManager) {
+            activeTargets = this.#chumManager.getActiveChumTargets(floatPos.x, floatPos.y, vTop, virtualBottomY);
+        }
 
         const envData = {
             hookDepth: this.#float.getCurrentHookDepth(),
             bottomDepth: currentDepth,
             timePhase: this.#currentPhase,
             dayOfWeek: new Date().getDay(),
-            zoneMultiplier: chumMult, // <--- ТЕПЕР ТУТ МНОЖНИК ПРИКОРМКИ
+            zoneMultiplier: 1.0,
+            chumBonus: rawChumBonus,
+            chumTargets: activeTargets,
             isRaining: this.#isRaining,
             isFoggy: this.#isFoggy,
             castSpamMultiplier: this.#castManager.getBiteChanceMultiplier()
@@ -558,7 +584,8 @@ class Game {
             bottom: Math.min(vBottomRight.y, castableBounds ? castableBounds.bottom : 2560)
         };
             if (this.#gameState === 'waiting') {
-            this.#float.update(dynamicBounds, dt, dynamicEnv, checkWater); 
+            this.#float.update(dynamicBounds, dt, dynamicEnv, checkWater);
+
             let hookedFish = this.#biteSystem.evaluateBite(dt, envData, playerGear);
             
             if (hookedFish && CONFIG.debug?.fixedCatch?.enabled) {

@@ -830,7 +830,8 @@ class ChumUI {
         this.button = document.createElement('button');
         this.button.innerText = 'Прикормка';
         
-        // Стилізація
+        this.currentState = 'idle';
+
         Object.assign(this.button.style, {
             position: 'absolute',
             bottom: '20px',
@@ -847,55 +848,89 @@ class ChumUI {
             zIndex: '100',
             boxShadow: '0 4px 6px rgba(0,0,0,0.5)',
             transition: 'all 0.2s ease',
-            touchAction: 'manipulation' // Покращує реакцію на мобільних
+            touchAction: 'none'
         });
 
-        this.button.addEventListener('click', onClickCallback);
+        if (typeof UIUtils !== 'undefined') {
+            UIUtils.makeSolid(this.button);
+        }
+
+        this.button.addEventListener('click', (e) => {
+            if (this.currentState === 'disabled' || this.currentState === 'empty' || this.currentState === 'moving') {
+                return;
+            }
+            
+            if (onClickCallback) onClickCallback(e);
+        });
+
         document.body.appendChild(this.button);
     }
 
-    // Новий універсальний метод керування станом кнопки
     setState(state) {
+        if (this.currentState === state) return;
+        this.currentState = state;
+
         switch(state) {
+            case 'disabled':
+                this.button.innerText = 'Прикормка';
+                this.button.style.backgroundColor = '#555555';
+                this.button.style.borderColor = '#444444';
+                this.button.style.color = '#aaaaaa';
+                this.button.style.opacity = '0.6';
+                this.button.style.cursor = 'not-allowed';
+                this.button.style.pointerEvents = 'auto';
+                break;
+                
             case 'empty':
                 this.button.innerText = 'Розряджено';
                 this.button.style.backgroundColor = '#2c3e50';
                 this.button.style.borderColor = '#34495e';
                 this.button.style.color = '#95a5a6';
                 this.button.style.opacity = '0.9';
-                this.button.style.pointerEvents = 'none';
+                this.button.style.cursor = 'not-allowed';
+                this.button.style.pointerEvents = 'auto';
                 break;
+                
             case 'aiming':
                 this.button.innerText = 'Відмінити ціль';
                 this.button.style.backgroundColor = '#ff4444';
                 this.button.style.borderColor = '#ff8888';
+                this.button.style.color = '#fff';
                 this.button.style.opacity = '1';
+                this.button.style.cursor = 'pointer';
                 this.button.style.pointerEvents = 'auto';
                 break;
+                
             case 'moving':
                 this.button.innerText = 'Пливе...';
-                this.button.style.backgroundColor = '#6c7a89'; // Сірий колір
+                this.button.style.backgroundColor = '#6c7a89';
                 this.button.style.borderColor = '#8a9bac';
-                this.button.style.opacity = '0.7'; // Напівпрозора
-                this.button.style.pointerEvents = 'none'; // БЛОКУЄМО КЛІКИ!
-                break;
-            case 'ready':
-                this.button.innerText = 'Активувати';
-                this.button.style.backgroundColor = '#00ff80'; // Зелений колір
-                this.button.style.borderColor = '#55ffaa';
-                this.button.style.opacity = '1';
+                this.button.style.color = '#fff';
+                this.button.style.opacity = '0.7';
+                this.button.style.cursor = 'wait';
                 this.button.style.pointerEvents = 'auto';
                 break;
-            default: // 'idle' (звичайний стан)
+                
+            case 'ready':
+                this.button.innerText = 'Активувати';
+                this.button.style.backgroundColor = '#00ff80';
+                this.button.style.borderColor = '#55ffaa';
+                this.button.style.color = '#000';
+                this.button.style.opacity = '1';
+                this.button.style.cursor = 'pointer';
+                this.button.style.pointerEvents = 'auto';
+                break;
+                
+            case 'idle':
+            default:
                 this.button.innerText = 'Прикормка';
                 this.button.style.backgroundColor = '#ffaa00';
                 this.button.style.borderColor = '#ffcc00';
+                this.button.style.color = '#000';
                 this.button.style.opacity = '1';
+                this.button.style.cursor = 'pointer';
                 this.button.style.pointerEvents = 'auto';
                 break;
         }
     }
-
-    hide() { this.button.style.display = 'none'; }
-    show() { this.button.style.display = 'block'; }
 }
