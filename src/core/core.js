@@ -48,6 +48,7 @@ class InputManager {
   #panDeltaY;
   #swipeDeltaY = 0;
   #holdToggleFlag = false;
+  #pumpFlag = false;
   #hasSwipedThisTouch = false;
   #clickPos;
   #anchorX;
@@ -188,6 +189,12 @@ class InputManager {
           this.#holdToggleFlag = true;
         }
       }
+
+      if (e.code === "KeyS") {
+        if (!e.repeat) {
+          this.#pumpFlag = true;
+        }
+      }
     });
 
     window.addEventListener("keyup", (e) => {
@@ -243,6 +250,7 @@ class InputManager {
       panDeltaY: this.#panDeltaY,
       swipeDeltaY: this.#swipeDeltaY,
       toggleHold: this.#holdToggleFlag,
+      pumpAction: this.#pumpFlag,
       clickPos: this.#clickPos,
       isDoubleClick: this.#isDoubleClick,
       longPressPos: this.#longPressPos,
@@ -253,6 +261,7 @@ class InputManager {
     this.#clickPos = null;
     this.#isDoubleClick = false;
     this.#holdToggleFlag = false;
+    this.#pumpFlag = false;
     this.#longPressPos = null;
 
     return state;

@@ -16,6 +16,8 @@ class FishingSystem {
   #holdRestoreTimers = [];
   #manualCooldownTimer = 0;
 
+  #hasUsedPumpThisHold = false;
+
   constructor(rod, reel, fish) {
     this.#rod = rod;
     this.#reel = reel;
@@ -40,7 +42,18 @@ class FishingSystem {
 
     this.#isHoldActive = true;
     this.#currentHoldCharges--;
+    this.#hasUsedPumpThisHold = false;
     return true;
+  }
+
+  // ДОДАНО: Спроба використати підтяжку
+  tryUsePump(pumpLevel) {
+    if (!this.#isHoldActive) return 0; // Працює тільки під час блокування
+    if (this.#hasUsedPumpThisHold) return 0; // Вже використано
+    if (!pumpLevel || pumpLevel <= 0) return 0; // Немає прокачки
+
+    this.#hasUsedPumpThisHold = true; // Блокуємо повторне використання
+    return pumpLevel * 10; // Кожен рівень = 10%
   }
 
   deactivateHold() {
@@ -324,6 +337,8 @@ class TensionMeter {
   #maxBreakTime;
   #hookPower;
   #hookCheckTimer;
+  #holdFloorTension = 0;
+  #isHoldCurrentlyActive = false;
 
   constructor(rodLevel, reelLevel, hook, tensionConfig) {
     this.#tension = 0;
@@ -361,6 +376,13 @@ class TensionMeter {
   ) {
     if (this.#isBroken) return;
 
+    if (isHoldActive && !this.#isHoldCurrentlyActive) {
+      this.#holdFloorTension = this.#targetTension;
+    } else if (!isHoldActive) {
+      this.#holdFloorTension = 0;
+    }
+    this.#isHoldCurrentlyActive = isHoldActive;
+
     const powerRatio = fishPowerMag / Math.max(0.001, playerMaxPower);
     const speedMultiplier = Math.pow(powerRatio, 2);
     const baseForce = playerMaxPower + fishPowerMag;
@@ -380,8 +402,16 @@ class TensionMeter {
       Math.min(100, this.#targetTension + tensionChange),
     );
 
-    if (isHoldActive && calculatedTarget < this.#targetTension) {
-      calculatedTarget = this.#targetTension;
+    if (isHoldActive) {
+      // ВИПРАВЛЕНО: Піднімаємо підлогу ТІЛЬКИ якщо натяг АКТИВНО зростає (tensionChange > 0)
+      if (tensionChange > 0 && calculatedTarget > this.#holdFloorTension) {
+        this.#holdFloorTension = calculatedTarget;
+      }
+
+      // Натяг НЕ МОЖЕ впасти нижче поточної підлоги
+      if (calculatedTarget < this.#holdFloorTension) {
+        calculatedTarget = this.#holdFloorTension;
+      }
     }
 
     this.#targetTension = calculatedTarget;
@@ -390,8 +420,8 @@ class TensionMeter {
       this.#tension +
       (this.#targetTension - this.#tension) * tensionConfig.smoothApproach;
 
-    if (isHoldActive && nextTension < this.#tension) {
-      nextTension = this.#tension;
+    if (isHoldActive && nextTension < this.#holdFloorTension) {
+      nextTension = this.#holdFloorTension;
     }
 
     this.#tension = nextTension;
@@ -622,6 +652,24 @@ class TensionMeter {
     }
 
     this.#currentColor = `rgb(${r}, ${g}, ${b})`;
+  }
+
+  // ДОДАНО: Механіка Підтяжки (опускаємо "підлогу" блокування)
+  applyPump(percentAmount) {
+    if (this.#isBroken || !this.#isHoldCurrentlyActive) return;
+
+    // Ми не чіпаємо сам натяг! Ми просто дозволяємо йому впасти нижче.
+    this.#holdFloorTension = Math.max(
+      0,
+      this.#holdFloorTension - percentAmount,
+    );
+
+    if (window.DEBUG_MODULES && window.DEBUG_MODULES.tension) {
+      console.log(
+        `%c[Натяг] Підлога знижена до ${this.#holdFloorTension.toFixed(1)}%`,
+        "color: #00ccff;",
+      );
+    }
   }
 
   getCurrentColor() {

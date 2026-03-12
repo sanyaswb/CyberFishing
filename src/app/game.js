@@ -901,6 +901,38 @@ class Game {
         }
       }
 
+      // ДОДАНО 3: МЕХАНІКА ПІДТЯЖКИ (PUMP - Клавіша S або Свайп Вниз)
+      let wantsToPump = false;
+
+      if (inputState.pumpAction) wantsToPump = true;
+
+      const swipeThreshold = CONFIG.reel?.hold?.swipeThresholdPx || 100;
+      if (
+        inputState.swipeDeltaY !== undefined &&
+        inputState.swipeDeltaY < -swipeThreshold
+      ) {
+        wantsToPump = true;
+        this.#inputManager.consumeSwipe();
+      }
+
+      if (wantsToPump) {
+        const pumpLevel = CONFIG.reel?.pumpLevel || 0;
+
+        const reductionAmount = this.#fishingSystem.tryUsePump(pumpLevel);
+
+        if (reductionAmount > 0) {
+          this.#tensionMeter.applyPump(reductionAmount);
+
+          if (window.DEBUG_MODULES && window.DEBUG_MODULES.forces) {
+            console.log(
+              `%c🎣 ПІДТЯЖКА! Натяг знижено на ${reductionAmount}%`,
+              "color: #00ccff; font-weight: bold;",
+            );
+          }
+        }
+      }
+      // =========================================================
+
       const fishForceRaw = this.#fishingSystem.calculateFishForce(
         dt,
         floatPos,
