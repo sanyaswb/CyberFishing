@@ -353,6 +353,108 @@ class Renderer {
     this.#ctx.restore();
   }
 
+  drawHoldCharges(holdState, canvasWidth, canvasHeight) {
+    if (!holdState || !holdState.hasHold || holdState.max <= 0) return;
+
+    const ctx = this.#ctx; // Припускаю, що твій контекст зберігається в this.#ctx
+    ctx.save();
+
+    const maxCharges = holdState.max;
+    const currentCharges = holdState.current;
+    const isActive = holdState.isActive;
+    const restoringTimers = holdState.restoring; // Масив таймерів, які ще не дійшли до нуля
+    const maxRestoreTime = holdState.restoreMaxTime;
+
+    // Налаштування вигляду кружечків
+    const radius = 8;
+    const gap = 12;
+    const totalWidth = radius * 2 * maxCharges + gap * (maxCharges - 1);
+
+    // Позиція: по центру по горизонталі, і десь на 75% висоти екрану (над кнопкою чи шкалами)
+    const startX = (canvasWidth - totalWidth) / 2 + radius;
+    const startY = canvasHeight * 0.75;
+
+    // Логіка підрахунку станів:
+    // 1. Активні (зараз використовується) - максимум 1
+    // 2. Доступні (можна використати)
+    // 3. Відновлюються (розбиті)
+
+    let availableToDraw = currentCharges;
+    let activeToDraw = isActive ? 1 : 0;
+    let restoringToDraw = restoringTimers.length;
+
+    for (let i = 0; i < maxCharges; i++) {
+      const cx = startX + i * (radius * 2 + gap);
+      const cy = startY;
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+
+      if (activeToDraw > 0) {
+        // --- СТАН: АКТИВНИЙ БЛОК (Пустий всередині, світиться) ---
+        ctx.strokeStyle = "#00ff80";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Малюємо легке світіння (неоновий ефект)
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = "#00ff80";
+        ctx.stroke();
+        ctx.shadowBlur = 0; // Скидаємо тінь
+
+        activeToDraw--;
+      } else if (availableToDraw > 0) {
+        // --- СТАН: ДОСТУПНИЙ БЛОК (Зафарбований зеленим) ---
+        ctx.fillStyle = "#00ff80";
+        ctx.fill();
+        ctx.strokeStyle = "#00cc66";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        availableToDraw--;
+      } else if (restoringToDraw > 0) {
+        // --- СТАН: ВІДНОВЛЮЄТЬСЯ (Розбитий) ---
+        // Малюємо пустий червоний контур
+        ctx.strokeStyle = "#ff0055";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Малюємо "заливку" знизу вверх залежно від таймера
+        const timer = restoringTimers[restoringToDraw - 1]; // Беремо таймер для цього кружечка
+        let progress = 1.0 - timer / maxRestoreTime; // Від 0 до 1
+        progress = Math.max(0, Math.min(1, progress));
+
+        if (progress > 0) {
+          ctx.save();
+          // Створюємо "маску" обрізки (щоб заливка не вилізла за краї круга)
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          ctx.clip();
+
+          // Малюємо прямокутник заливки знизу
+          const fillHeight = radius * 2 * progress;
+          const fillY = cy + radius - fillHeight;
+
+          ctx.fillStyle = "rgba(255, 0, 85, 0.5)"; // Напівпрозорий червоний
+          ctx.fillRect(cx - radius, fillY, radius * 2, fillHeight);
+          ctx.restore();
+        }
+
+        restoringToDraw--;
+      }
+    }
+
+    // Якщо блок активний, можна намалювати маленьку підказку
+    if (isActive) {
+      ctx.fillStyle = "#00ff80";
+      ctx.font = "bold 12px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText("УТРИМАННЯ", canvasWidth / 2, startY - 20);
+    }
+
+    ctx.restore();
+  }
+
   drawFishCondition(condition, uiIndicatorsConfig) {
     const barWidth = 200;
     const barHeight = 10;

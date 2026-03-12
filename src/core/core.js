@@ -43,9 +43,14 @@ class InputManager {
   #startX;
   #startY;
   #lastPointerX;
+  #lastPointerY;
   #panDeltaX;
+  #panDeltaY;
+  #swipeDeltaY = 0;
+  #holdToggleFlag = false;
+  #hasSwipedThisTouch = false;
   #clickPos;
-  #anchorX; // ЗМІНА ТУТ
+  #anchorX;
   #keys = {};
   #isDoubleClick = false;
   #longPressPos = null;
@@ -53,9 +58,8 @@ class InputManager {
   #longPressTimeout = null;
 
   constructor(canvas, anchorX = null) {
-    // ЗМІНА ТУТ
     this.#canvas = canvas;
-    this.#anchorX = anchorX; // ЗМІНА ТУТ
+    this.#anchorX = anchorX;
     this.#isPulling = false;
     this.#pullDirection = new Vector2(0, 1);
     this.#isDragging = false;
@@ -63,13 +67,14 @@ class InputManager {
     this.#startX = 0;
     this.#startY = 0;
     this.#lastPointerX = 0;
+    this.#lastPointerY = 0;
     this.#panDeltaX = 0;
+    this.#panDeltaY = 0;
     this.#clickPos = null;
 
     this.#bindEvents();
   }
 
-  // ДОДАНО НОВИЙ МЕТОД
   setAnchorX(x) {
     this.#anchorX = x;
   }
@@ -78,11 +83,13 @@ class InputManager {
     this.#canvas.addEventListener("pointerdown", (e) => {
       this.#isPointerDown = true;
       this.#isPulling = true;
-
       this.#isDragging = false;
       this.#startX = e.clientX;
       this.#startY = e.clientY;
       this.#lastPointerX = e.clientX;
+      this.#lastPointerY = e.clientY;
+      this.#swipeDeltaY = 0;
+      this.#hasSwipedThisTouch = false;
       this.#updateDirection(e);
 
       if (this.#longPressTimeout) clearTimeout(this.#longPressTimeout);
@@ -107,7 +114,14 @@ class InputManager {
 
       if (this.#isDragging) {
         this.#panDeltaX = this.#lastPointerX - e.clientX;
+        this.#panDeltaY = this.#lastPointerY - e.clientY;
+
+        if (!this.#hasSwipedThisTouch) {
+          this.#swipeDeltaY = this.#startY - e.clientY;
+        }
+
         this.#lastPointerX = e.clientX;
+        this.#lastPointerY = e.clientY;
       }
 
       this.#updateDirection(e);
@@ -146,12 +160,12 @@ class InputManager {
         this.#pullDirection = new Vector2(0, 1);
       }
       this.#isDragging = false;
+      this.#swipeDeltaY = 0;
     };
 
     window.addEventListener("pointerup", resetInput, { capture: true });
     window.addEventListener("pointercancel", resetInput, { capture: true });
     window.addEventListener("touchend", resetInput, { capture: true });
-
     window.addEventListener("blur", () => {
       this.#keys = {};
       this.#isPointerDown = false;
@@ -163,6 +177,16 @@ class InputManager {
       if (e.code === "Space") {
         this.#isPulling = true;
         e.preventDefault();
+      }
+
+      if (
+        e.key === "Shift" ||
+        e.code === "ShiftLeft" ||
+        e.code === "ShiftRight"
+      ) {
+        if (!e.repeat) {
+          this.#holdToggleFlag = true;
+        }
       }
     });
 
@@ -188,17 +212,18 @@ class InputManager {
       this.#pullDirection = new Vector2(keyX, 1).normalize();
     } else if (e && e.clientX !== undefined) {
       const rect = this.#canvas.getBoundingClientRect();
-
-      // ЗМІНА ТУТ
       let anchorX = this.#anchorX !== null ? this.#anchorX : rect.width / 2;
-
       const dx = e.clientX - rect.left - anchorX;
       const dy = rect.height / 2;
-
       const length = Math.hypot(dx, dy);
       if (length > 0)
         this.#pullDirection = new Vector2(dx / length, dy / length);
     }
+  }
+
+  consumeSwipe() {
+    this.#hasSwipedThisTouch = true;
+    this.#swipeDeltaY = 0;
   }
 
   getState() {
@@ -215,14 +240,19 @@ class InputManager {
       isPulling: this.#isPulling,
       pullDirection: this.#pullDirection,
       panDeltaX: this.#panDeltaX,
+      panDeltaY: this.#panDeltaY,
+      swipeDeltaY: this.#swipeDeltaY,
+      toggleHold: this.#holdToggleFlag,
       clickPos: this.#clickPos,
       isDoubleClick: this.#isDoubleClick,
       longPressPos: this.#longPressPos,
     };
 
     this.#panDeltaX = 0;
+    this.#panDeltaY = 0;
     this.#clickPos = null;
     this.#isDoubleClick = false;
+    this.#holdToggleFlag = false;
     this.#longPressPos = null;
 
     return state;

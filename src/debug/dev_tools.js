@@ -33,15 +33,11 @@ class DevTools {
 
   constructor(config) {
     this.#config = config;
-    // Створюємо екземпляр UI і передаємо йому колбек для відкриття/закриття
     this.#ui = new DevToolsUI(() => this.toggle(), this.#config);
   }
 
   toggle() {
     this.#isOpen = !this.#isOpen;
-    this.#ui.togglePanel(this.#isOpen); // Даємо команду UI висунути або сховати панель
-
-    // Якщо панель відкрили, генеруємо її вміст
     if (this.#isOpen) {
       this.#populatePanel();
     }
@@ -51,7 +47,6 @@ class DevTools {
     const body = this.#ui.body;
     body.innerHTML = "";
 
-    // 1. Збираємо секції
     const configKeys = Object.keys(this.#config).filter(
       (k) => !this.#excludeKeys.includes(k),
     );
@@ -61,7 +56,6 @@ class DevTools {
       ...configKeys,
     ];
 
-    // 2. Сортуємо їх
     allAvailableSections.sort((a, b) => {
       let indexA = this.#sectionOrder.indexOf(a);
       let indexB = this.#sectionOrder.indexOf(b);
@@ -70,7 +64,6 @@ class DevTools {
       return indexA - indexB;
     });
 
-    // 3. Будуємо дерево
     for (const key of allAvailableSections) {
       if (key === "OVERLAY MODULES") {
         if (typeof OVERLAY_MODULES !== "undefined") {
@@ -113,16 +106,13 @@ class DevTools {
     }
   }
 
-  // --- Обгортка для створення секцій з підтримкою CacheManager ---
   #createSectionWithCache(labelStr, parentElement) {
-    // Перевіряємо кеш на стан цієї папки
     let savedStates =
       typeof CacheManager !== "undefined"
         ? CacheManager.get("dev_tools_sections_state", {})
         : {};
     let isExpanded = savedStates[labelStr] || false;
 
-    // Викликаємо створення UI, передаючи поточний стан і колбек на його зміну
     return this.#ui.createSection(
       labelStr,
       parentElement,

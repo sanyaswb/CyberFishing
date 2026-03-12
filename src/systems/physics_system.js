@@ -9,11 +9,75 @@ class FishingSystem {
   #lastPullMult = 0;
   #lastMoveMult = 0;
 
+  #holdConfig = null;
+  #maxHoldCharges = 0;
+  #currentHoldCharges = 0;
+  #isHoldActive = false;
+  #holdRestoreTimers = [];
+  #manualCooldownTimer = 0;
+
   constructor(rod, reel, fish) {
     this.#rod = rod;
     this.#reel = reel;
     this.#buffs = new BuffManager();
     this.#fish = fish;
+
+    if (typeof this.#reel.getHoldStats === "function") {
+      this.#holdConfig = this.#reel.getHoldStats();
+    }
+
+    if (this.#holdConfig) {
+      this.#maxHoldCharges = this.#holdConfig.maxCharges;
+      this.#currentHoldCharges = this.#maxHoldCharges;
+    }
+  }
+
+  activateHold() {
+    if (!this.#holdConfig) return false;
+    if (this.#manualCooldownTimer > 0) return false;
+    if (this.#isHoldActive) return true;
+    if (this.#currentHoldCharges <= 0) return false;
+
+    this.#isHoldActive = true;
+    this.#currentHoldCharges--;
+    return true;
+  }
+
+  deactivateHold() {
+    if (this.#isHoldActive) {
+      this.#isHoldActive = false;
+      this.#currentHoldCharges++; // Повертаємо цілий блок
+      this.#manualCooldownTimer = this.#holdConfig.manualCooldownMs || 500;
+    }
+  }
+
+  isHoldActive() {
+    return this.#isHoldActive;
+  }
+
+  #breakHold() {
+    this.#isHoldActive = false;
+    // Запускаємо таймер відновлення (блок згорів)
+    const restoreTime = Math.max(500, this.#holdConfig.restoreTimeMs || 5000);
+    this.#holdRestoreTimers.push(restoreTime);
+  }
+
+  getHoldTensionMultiplier() {
+    if (this.#holdConfig && this.#holdConfig.tensionMultiplier !== undefined) {
+      return this.#holdConfig.tensionMultiplier;
+    }
+    return 1.0;
+  }
+
+  getHoldUIState() {
+    return {
+      hasHold: !!this.#holdConfig,
+      max: this.#maxHoldCharges,
+      current: this.#currentHoldCharges,
+      isActive: this.#isHoldActive,
+      restoring: [...this.#holdRestoreTimers],
+      restoreMaxTime: this.#holdConfig?.restoreTimeMs || 5000,
+    };
   }
 
   triggerFishLastDash() {
@@ -96,7 +160,6 @@ class FishingSystem {
     let force = new Vector2(0, 0);
     force.x = pullDir.x * inputDirection.y * effectivePower;
     force.y = pullDir.y * inputDirection.y * effectivePower;
-
     force.x +=
       inputDirection.x * totalPower * physicsConfig.playerSteeringMultiplier;
 
@@ -133,11 +196,89 @@ class FishingSystem {
     }
 
     const finalBehavior = this.#fish.getBehavior(0);
-
     this.#lastFishState = finalBehavior.name;
     this.#lastFishBasePower = basePower;
     this.#lastPullMult = finalBehavior.pullMult;
     this.#lastMoveMult = Math.abs(finalBehavior.moveX);
+
+    if (this.#holdConfig) {
+      if (this.#manualCooldownTimer > 0) this.#manualCooldownTimer -= dt;
+
+      for (let i = this.#holdRestoreTimers.length - 1; i >= 0; i--) {
+        this.#holdRestoreTimers[i] -= dt;
+        if (this.#holdRestoreTimers[i] <= 0) {
+          this.#holdRestoreTimers.splice(i, 1);
+          if (this.#currentHoldCharges < this.#maxHoldCharges) {
+            this.#currentHoldCharges++;
+          }
+        }
+      }
+
+      if (this.#isHoldActive) {
+        const fishPower = basePower * finalBehavior.pullMult;
+        const playerForceMult =
+          typeof CONFIG !== "undefined" && CONFIG.physics
+            ? CONFIG.physics.playerForceMultiplier
+            : 1;
+        const fishForceMult =
+          typeof CONFIG !== "undefined" && CONFIG.physics
+            ? CONFIG.physics.fishForceMultiplier
+            : 0.01;
+
+        const reelForce = this.#holdConfig.totalHoldForce * playerForceMult;
+        const fishForceScaled = fishPower * fishForceMult;
+
+        let breakChancePerSec = 0;
+        const stateName = finalBehavior.name;
+
+        if (stateName === "dash" || stateName === "lastDash") {
+          if (fishForceScaled > reelForce * 2) {
+            breakChancePerSec = 100.0;
+          } else if (fishForceScaled > reelForce) {
+            breakChancePerSec = 0.5;
+          }
+        } else {
+          if (fishForceScaled > reelForce) {
+            breakChancePerSec = 0.01;
+          }
+        }
+
+        if (breakChancePerSec > 0) {
+          const chanceThisFrame = breakChancePerSec * (dt / 1000);
+
+          if (Math.random() <= chanceThisFrame) {
+            this.#breakHold();
+
+            if (window.DEBUG_MODULES && window.DEBUG_MODULES.forces) {
+              console.log(
+                "%c====================================",
+                "color: #ff0055;",
+              );
+              console.log(
+                "💥 %cБЛОК ПРОБИТО!",
+                "color: #ff0055; font-size: 14px; font-weight: bold;",
+              );
+              console.log(
+                `%c🎣 Опір котушки (Scaled): ${reelForce.toFixed(4)}`,
+                "color: #00ff80;",
+              );
+              console.log(
+                `%c🦈 Сила удару риби (Scaled): ${fishForceScaled.toFixed(4)}`,
+                "color: #ff4444;",
+              );
+              console.log(
+                `%c📊 Стан: [${stateName.toUpperCase()}] | Базовий шанс: ${breakChancePerSec}%/сек`,
+                "color: #ffaa00;",
+              );
+              console.log(
+                "%c====================================",
+                "color: #ff0055;",
+              );
+            }
+          }
+        }
+      }
+    }
 
     let force = new Vector2(0, 0);
     force.y = -basePower * finalBehavior.pullMult;
@@ -159,6 +300,9 @@ class FishingSystem {
 
     force.x = finalBehavior.moveX * basePower + escapeForceX;
 
+    // ВАЖЛИВО: Ми повертаємо ПОВНУ силу риби (force),
+    // щоб game.js міг правильно розрахувати шалений натяг ліски.
+    // А саме блокування руху поплавка ми зробимо в game.js!
     return force;
   }
 }
@@ -213,6 +357,7 @@ class TensionMeter {
     dt,
     tensionConfig,
     hookMechanicsConfig,
+    isHoldActive = false,
   ) {
     if (this.#isBroken) return;
 
@@ -230,12 +375,26 @@ class TensionMeter {
 
     const tensionChange = forceBalance * tensionConfig.sensitivityMultiplier;
 
-    this.#targetTension = Math.max(
+    let calculatedTarget = Math.max(
       0,
       Math.min(100, this.#targetTension + tensionChange),
     );
-    this.#tension +=
+
+    if (isHoldActive && calculatedTarget < this.#targetTension) {
+      calculatedTarget = this.#targetTension;
+    }
+
+    this.#targetTension = calculatedTarget;
+
+    let nextTension =
+      this.#tension +
       (this.#targetTension - this.#tension) * tensionConfig.smoothApproach;
+
+    if (isHoldActive && nextTension < this.#tension) {
+      nextTension = this.#tension;
+    }
+
+    this.#tension = nextTension;
 
     if (this.#tension <= 0.1) {
       this.#slackTimer += dt;
@@ -250,6 +409,7 @@ class TensionMeter {
           this.#tension / tensionConfig.pulseTensionDivisor,
       ) * tensionConfig.pulseSpeedBaseMultiplier;
     if (this.#pulsePhase > Math.PI * 2) this.#pulsePhase -= Math.PI * 2;
+
     if (this.#tension >= tensionConfig.breakThreshold - 0.1) {
       this.#lineBreakTimer += dt;
       this.#evaluateBreakRisk();
@@ -259,6 +419,7 @@ class TensionMeter {
         this.#highestTierRolled = 0;
       }
     }
+
     this.#hookCheckTimer += dt;
     if (this.#hookCheckTimer >= hookMechanicsConfig.checkIntervalMs) {
       this.#hookCheckTimer = 0;

@@ -38,6 +38,7 @@ class Game {
   #chumUI;
   #isAimingChum = false;
   #activeBoat = null;
+  #holdUI;
 
   constructor(canvasId) {
     this.#canvas = document.getElementById(canvasId);
@@ -61,14 +62,12 @@ class Game {
     this.#locationMap = new LocationMap("test", CONFIG.locations);
     this.#projector = new ViewportProjector(CONFIG.locations, "test");
 
-    // --- ОНОВЛЕНИЙ СЛУХАЧ ДЛЯ DEVTOOLS ---
     document.addEventListener("config-updated", (e) => {
       if (e.detail && e.detail.path && e.detail.path[0] === "locations") {
         if (this.#projector) {
           this.#projector.update(0, 0);
           this.#projector.update(this.#canvas.width, this.#canvas.height);
         }
-        // Миттєво оновлюємо зони, коли тягнемо повзунки в DevTools
         if (this.#locationMap) {
           this.#locationMap.refreshConfig(CONFIG.locations);
         }
@@ -76,7 +75,8 @@ class Game {
     });
 
     this.#depthUI = new DepthSelectorUI();
-    this.#timeUI = new TimeDisplayUI(); // <--- ДОДАНО ОСЬ ЦЕ
+    this.#timeUI = new TimeDisplayUI();
+    this.#holdUI = new HoldChargesUI();
 
     this.#resizeCanvas();
     window.addEventListener("resize", () => this.#resizeCanvas());
@@ -163,7 +163,11 @@ class Game {
     this.#isNetReady = false;
 
     const rod = new Rod(CONFIG.rod.level, CONFIG.rod.basePower);
-    const reel = new Reel(CONFIG.reel.level, CONFIG.reel.basePower);
+    const reel = new Reel(
+      CONFIG.reel.level,
+      CONFIG.reel.basePower,
+      CONFIG.reel.hold,
+    );
     const hook = new Hook(
       CONFIG.hook.level,
       CONFIG.hook.weight,
@@ -739,7 +743,6 @@ class Game {
     const vTop = bounds ? bounds.top : 0;
     const virtualBottomY = bounds ? bounds.bottom : 1440;
 
-    // 1. Отримуємо дані прикормки (ОДИН РАЗ)
     const chumData = this.#chumManager
       ? this.#chumManager.getChumDataAt(
           floatPos.x,
@@ -749,11 +752,8 @@ class Game {
         )
       : { bonus: 1.0, targets: null };
 
-    // 2. Створюємо envData (ОДИН РАЗ)
     const envData = {
-      // ФІКС: Гачок фізично не може впасти глибше дна!
       hookDepth: Math.min(this.#float.getCurrentHookDepth(), currentDepth),
-      // ДОДАНО: Зберігаємо виставлену довжину ліски (для штрафів і UI)
       lineLength: this.#currentHookDepth,
       bottomDepth: currentDepth,
       timePhase: this.#currentPhase,
@@ -867,6 +867,40 @@ class Game {
         return;
       }
 
+      // ДОДАНО 1: ПЕРЕХОПЛЕННЯ УПРАВЛІННЯ ДЛЯ МЕХАНІКИ УТРИМАННЯ (TOGGLE)
+      let holdState = null;
+      if (
+        this.#fishingSystem &&
+        typeof this.#fishingSystem.getHoldUIState === "function"
+      ) {
+        holdState = this.#fishingSystem.getHoldUIState();
+      }
+
+      if (holdState && holdState.hasHold) {
+        let wantsToToggle = false;
+
+        if (inputState.toggleHold) {
+          wantsToToggle = true;
+        }
+
+        const swipeThreshold = CONFIG.reel?.hold?.swipeThresholdPx || 100;
+        if (
+          inputState.swipeDeltaY !== undefined &&
+          inputState.swipeDeltaY > swipeThreshold
+        ) {
+          wantsToToggle = true;
+          this.#inputManager.consumeSwipe();
+        }
+
+        if (wantsToToggle) {
+          if (this.#fishingSystem.isHoldActive()) {
+            this.#fishingSystem.deactivateHold();
+          } else {
+            this.#fishingSystem.activateHold();
+          }
+        }
+      }
+
       const fishForceRaw = this.#fishingSystem.calculateFishForce(
         dt,
         floatPos,
@@ -874,15 +908,41 @@ class Game {
         CONFIG.stamina.mechanics,
         checkWater,
       );
-      const currentFishMaxForceScaled =
-        Math.max(Math.abs(fishForceRaw.x), Math.abs(fishForceRaw.y)) * 0.01;
 
-      const fishForce = fishForceRaw
-        .clone()
-        .multiplyScalar(CONFIG.physics.fishForceMultiplier);
+      let effectiveFishForceY = fishForceRaw.y;
+      let tensionFishForce = fishForceRaw.clone();
+
+      const isHold =
+        typeof this.#fishingSystem.isHoldActive === "function"
+          ? this.#fishingSystem.isHoldActive()
+          : false;
+
+      if (isHold) {
+        if (effectiveFishForceY < 0) {
+          effectiveFishForceY = 0;
+
+          const tensionMult =
+            typeof this.#fishingSystem.getHoldTensionMultiplier === "function"
+              ? this.#fishingSystem.getHoldTensionMultiplier()
+              : 1.0;
+
+          tensionFishForce.y = fishForceRaw.y * tensionMult;
+        }
+      }
+
+      const currentFishMaxForceScaled =
+        Math.max(Math.abs(tensionFishForce.x), Math.abs(tensionFishForce.y)) *
+        0.01;
+
+      const fishForce = new Vector2(
+        fishForceRaw.x,
+        effectiveFishForceY,
+      ).multiplyScalar(CONFIG.physics.fishForceMultiplier);
       this.#float.applyForce(fishForce);
 
-      finalFishForce = fishForce;
+      finalFishForce = tensionFishForce
+        .clone()
+        .multiplyScalar(CONFIG.physics.fishForceMultiplier);
 
       let rodScreenX = this.#canvas.width / 2;
 
@@ -917,10 +977,15 @@ class Game {
         screenOffsetRatio,
         CONFIG.physics,
       ).y;
+
       const playerMaxPower = Math.abs(
         rawPlayerPower * CONFIG.physics.playerForceMultiplier,
       );
-      const fishPowerMag = Math.abs(fishForce.y);
+
+      const fishPowerMag =
+        Math.max(Math.abs(tensionFishForce.x), Math.abs(tensionFishForce.y)) *
+        CONFIG.physics.fishForceMultiplier;
+
       const reelPower = this.#fishingSystem.getReelPower();
 
       let playerForce = new Vector2(0, 0);
@@ -951,6 +1016,7 @@ class Game {
         dt,
         CONFIG.tension,
         CONFIG.hookMechanics,
+        isHold,
       );
 
       this.#staminaController.evaluate(
@@ -1040,17 +1106,25 @@ class Game {
     }
 
     if (
+      this.#gameState === "playing" &&
+      this.#fishingSystem &&
+      typeof this.#fishingSystem.getHoldUIState === "function"
+    ) {
+      this.#holdUI.update(this.#fishingSystem.getHoldUIState());
+    } else if (this.#holdUI) {
+      this.#holdUI.update(null);
+    }
+
+    if (
       CONFIG.debug?.overlay &&
       (this.#gameState === "waiting" ||
         this.#gameState === "biting" ||
         this.#gameState === "playing")
     ) {
-      // 1. Беремо свіжу сиру глибину з поплавка (скільки ліски розмотано)
       const rawFloatDepth = this.#float.getCurrentHookDepth();
 
-      // 2. Правильно розподіляємо:
-      envData.lineLength = rawFloatDepth; // Ліска - це повна розмотка
-      envData.hookDepth = Math.min(rawFloatDepth, envData.bottomDepth); // Гачок - фізично зупиняється на дні
+      envData.lineLength = rawFloatDepth;
+      envData.hookDepth = Math.min(rawFloatDepth, envData.bottomDepth);
 
       const liveChances = this.#biteSystem.getLiveChances(envData, playerGear);
 
@@ -1059,16 +1133,15 @@ class Game {
         chumZones: this.#chumManager ? this.#chumManager.getZones() : [],
         floatX: Math.round(floatPos.x),
         floatY: Math.round(floatPos.y),
-        hookDepth: envData.hookDepth, // Відправляємо обрізану об дно глибину!
+        hookDepth: envData.hookDepth,
         bottomDepth: envData.bottomDepth,
-        lineLength: envData.lineLength, // Відправляємо повну ліску!
+        lineLength: envData.lineLength,
         bait: playerGear.baitId,
         phase: envData.timePhase,
         liveChances: liveChances,
         isRaining: this.#isRaining,
         isFoggy: this.#isFoggy,
 
-        // Використовуємо збережені змінні (якщо ми не граємо, вони будуть 0)
         playerForceY: Math.abs(finalPlayerForce.y),
         playerForceX: Math.abs(finalPlayerForce.x),
         fishForceY: Math.abs(finalFishForce.y),

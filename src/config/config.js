@@ -197,10 +197,10 @@ const CONFIG = {
           },
           behaviors: {
             idle: {
-              pull: 0.8,
-              move: 0.3,
+              pull: 0.5,
+              move: 0.5,
               minTime: 500,
-              maxTime: 2000,
+              maxTime: 3000,
               weight: 20,
             },
             rest: {
@@ -342,7 +342,7 @@ const CONFIG = {
     timeScale: 240, // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
 
     fixedCatch: {
-      enabled: false,
+      enabled: true,
       fishId: "crucian_stalker", // Можна вписати 'perch_radioactive'
       level: 5,
       weight: 2.678,
@@ -411,7 +411,7 @@ const CONFIG = {
   sinker: {
     level: 1,
     quality: 10.0,
-    maxDepth: 9.0,
+    maxDepth: 10.0,
     weight: "light",
     weights: {
       light: { speedMult: 1.0, heightScale: 1.0 },
@@ -433,8 +433,38 @@ const CONFIG = {
   },
 
   reel: {
-    level: 4,
-    basePower: 1.0,
+    level: 4, // СТАРИЙ ПАРАМЕТР (залишається для старої логіки)
+    basePower: 1.0, // СТАРИЙ ПАРАМЕТР (залишається для старої логіки)
+
+    // НОВИЙ ПАРАМЕТР: Механіка утримання
+    hold: {
+      activeLevel: 1, // Поточний рівень утримання (0 - якщо механіка ще не куплена/вимкнена)
+      swipeThresholdPx: 100, // Відстань свайпу по Y для активації (універсальна)
+      manualCooldownMs: 500, // Кулдаун після ручної деактивації (універсальний)
+
+      // Характеристики кожного рівня утримання
+      levels: {
+        1: {
+          charges: 1, // Кількість блокувань (кружечків)
+          restoreTimeMs: 5000, // Час відновлення одного розбитого блоку
+          holdPower: 1, // Додаткова сила утримання для розрахунку шансу пробиття рибою
+          tensionMultiplier: 1.0, // Пропускає 100% сили риби в ліску
+        },
+        2: {
+          charges: 2,
+          restoreTimeMs: 4000,
+          holdPower: 2,
+          tensionMultiplier: 0.8, // Пропускає 80% сили риби в ліску
+        },
+        3: {
+          charges: 3,
+          restoreTimeMs: 3000,
+          holdPower: 3,
+          tensionMultiplier: 0.6, // Пропускає 60% сили риби в ліску
+        },
+        // Можеш додавати скільки завгодно рівнів...
+      },
+    },
   },
 
   net: {

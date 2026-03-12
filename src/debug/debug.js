@@ -1,6 +1,6 @@
 window.DEBUG_MODULES = {
   location: false,
-  forces: false,
+  forces: true,
   deviations: false,
   tension: false,
   stamina: false,
@@ -11,7 +11,7 @@ window.DEBUG_MODULES = {
 };
 
 document.addEventListener("debug-fish-hooked", (e) => {
-  const fish = e.detail; // Ось вона, наша згенерована унікальна риба!
+  const fish = e.detail;
 
   console.group(
     `%c🐟 Аналіз Балансу: ${fish.name} (${fish.weight.toFixed(3)} кг)`,
@@ -42,7 +42,6 @@ document.addEventListener("debug-fish-hooked", (e) => {
 
   const powerRatio = fishPullForce / Math.max(0.001, playerPullForceBase);
 
-  // СТАМІНА ТА ВИСНАЖЕННЯ (Теж перераховується під вагу!)
   const maxStamina =
     fish.level * fish.weight * CONFIG.stamina.fish.baseStaminaMultiplier +
     CONFIG.stamina.fish.flatBonus;
@@ -55,8 +54,6 @@ document.addEventListener("debug-fish-hooked", (e) => {
   const finalFishPullForce = finalFPower * CONFIG.physics.fishForceMultiplier;
   const totalForceY = playerPullForceBase + fishPullForce;
   const totalForceX = playerSteerForceBase + fishEscapeForce;
-
-  // --- ПОЧАТОК МОДУЛЬНОГО ВИВОДУ ---
 
   if (window.DEBUG_MODULES.location) {
     console.log("%c====================================", "color: #4a5b6c;");
@@ -134,6 +131,29 @@ document.addEventListener("debug-fish-hooked", (e) => {
       `%c⏱️ Корисний час тяги (Uptime): 1 / (1 + (1 / ${recoveryBonus.toFixed(1)})) = ${(pullUptime * 100).toFixed(1)}%`,
       "color: #00ff80;",
     );
+
+    // ДОДАНО: Розрахунок сили Утримання (Блоку)
+    // ==========================================
+    const holdLvl = CONFIG.reel?.hold?.activeLevel || 0;
+    if (holdLvl > 0) {
+      const holdStats = CONFIG.reel.hold.levels[holdLvl];
+      const totalHoldForceBase =
+        CONFIG.reel.level * CONFIG.reel.basePower + holdStats.holdPower;
+      const totalHoldForceScaled =
+        totalHoldForceBase * CONFIG.physics.playerForceMultiplier;
+
+      console.log(
+        `%c🛑 Сила Утримання (Базова): (${CONFIG.reel.level} * ${CONFIG.reel.basePower.toFixed(1)}) + ${holdStats.holdPower} = ${totalHoldForceBase.toFixed(1)}`,
+        "color: #ff0080; font-weight: bold;",
+      );
+      console.log(
+        `%c⚙️ Множимо на рушій: ${totalHoldForceBase.toFixed(1)} * ${CONFIG.physics.playerForceMultiplier} = ${totalHoldForceScaled.toFixed(3)}`,
+        "color: #ff0080;",
+      );
+    } else {
+      console.log(`%c🛑 Механіка Утримання: ВИМКНЕНО`, "color: #666666;");
+    }
+    // ==========================================
 
     const playerPercentY = (playerPullForceBase / totalForceY) * 100;
     const fishPercentY = (fishPullForce / totalForceY) * 100;
@@ -451,7 +471,7 @@ document.addEventListener("debug-fish-hooked", (e) => {
     if (!CONFIG.net || !CONFIG.net.active) {
       console.log("%cПідсака вимкнена (active: false)", "color: #8a9bac;");
     } else {
-      const fW = fish.weight; // ДИНАМІЧНА ВАГА!
+      const fW = fish.weight;
       const nW = CONFIG.net.maxWeight;
       let chance = 100;
       let diffStr = "Немає (100% успіх)";

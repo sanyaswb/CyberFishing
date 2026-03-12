@@ -26,8 +26,38 @@ class Rod extends Equipment {
 }
 
 class Reel extends Equipment {
-  constructor(level, power) {
-    super(level, power);
+  #holdConfig;
+
+  constructor(level, power, holdConfig = null) {
+    super(level, power); // Стара логіка відпрацьовує як і раніше!
+    this.#holdConfig = holdConfig;
+  }
+
+  // Метод для перевірки, чи взагалі доступна механіка утримання
+  hasHoldMechanic() {
+    return this.#holdConfig && this.#holdConfig.activeLevel > 0;
+  }
+
+  // Зручний геттер, який збирає всі потрібні дані для поточного рівня утримання
+  getHoldStats() {
+    if (!this.hasHoldMechanic()) return null;
+
+    const lvl = this.#holdConfig.activeLevel;
+    const stats = this.#holdConfig.levels[lvl];
+
+    if (!stats) return null;
+
+    return {
+      level: lvl,
+      swipeThreshold: this.#holdConfig.swipeThresholdPx,
+      manualCooldownMs: this.#holdConfig.manualCooldownMs,
+      maxCharges: stats.charges,
+      restoreTimeMs: stats.restoreTimeMs,
+      holdPower: stats.holdPower,
+      tensionMultiplier:
+        stats.tensionMultiplier !== undefined ? stats.tensionMultiplier : 1.0,
+      totalHoldForce: this.getPower() + stats.holdPower,
+    };
   }
 }
 

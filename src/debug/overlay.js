@@ -1,14 +1,14 @@
 const OVERLAY_MODULES = {
   echo: true, // 📡 ЕХОЛОТ (Глибина, Шанси кльову)
+  chancesDetail: false, // 🐟 ДЕТАЛЬНІ ШАНСИ КЛЬОВУ
   state: true, // 🧠 ПОВЕДІНКА (STATE)
-  chum: true, // 🧲 ПРИКОРМКА
+  chum: false, // 🧲 ПРИКОРМКА
   fishBase: true, // 🔥 ПОТОЧНА БАЗОВА СИЛА РИБИ
   fishStates: true, // 📊 СИЛА РИБИ ЗА СТАНАМИ (MAX Y та X)
-  worstCase: true, // 💀 НАЙГІРШИЙ СЦЕНАРІЙ (НИЖНІЙ КУТ)
+  worstCase: false, // 💀 НАЙГІРШИЙ СЦЕНАРІЙ (НИЖНІЙ КУТ)
   playerMax: true, // 📊 СИЛА ГРАВЦЯ (MAX Y & X)
   liveY: true, // ⚖️ LIVE: ТЯГА (Вісь Y)
   liveX: true, // ⚖️ LIVE: КЕРУВАННЯ (Вісь X)
-  chancesDetail: true, // 🐟 ДЕТАЛЬНІ ШАНСИ КЛЬОВУ
   debuffsLive: true, // ☠️ АКТИВНІ ДЕБАФИ ТА MASTERY
 };
 
@@ -182,7 +182,6 @@ class DebugOverlay {
     const d = this.#data;
     let html = "";
 
-    // --- БЛОК 1: ЕХОЛОТ ---
     if (
       OVERLAY_MODULES.echo &&
       (d.gameState === "scouting" ||
@@ -241,8 +240,7 @@ class DebugOverlay {
                         <span style="color: #00ff80; font-weight: bold;">${fish.chance}</span>
                     </div>`;
 
-          // ДОДАНО: b.chum для відображення прикормки
-          const chumColor = parseFloat(b.chum) > 1.0 ? "#00ff80" : "#ddd"; // Зелений, якщо є бонус
+          const chumColor = parseFloat(b.chum) > 1.0 ? "#00ff80" : "#ddd";
 
           html += `<div style="color: #8a9bac; font-size: 11px; line-height: 1.4; display: grid; grid-template-columns: 1fr 1fr;">
                         <span>База: <span style="color:#ddd">${b.base}</span></span>
@@ -263,11 +261,9 @@ class DebugOverlay {
       html += `<div style="margin-bottom: 12px;"></div>`;
     }
 
-    // --- БЛОК 2: БОРОТЬБА ---
     if (d.gameState === "playing" && d.hookedFish) {
-      // ДИНАМІЧНИЙ РОЗРАХУНОК: Беремо актуальні дані прямо з переданої риби та CONFIG
       const activeFishParams = d.hookedFish;
-      const fishPhysicsConfig = activeFishParams.physics || CONFIG.fish; // Фолбек на стару структуру, якщо щось пішло не так
+      const fishPhysicsConfig = activeFishParams.physics || CONFIG.fish;
       const behaviors = fishPhysicsConfig.behaviors || {};
 
       const initialFishBase =
@@ -413,16 +409,13 @@ class DebugOverlay {
                 `;
       }
 
-      // --- БЛОК 3: АКТИВНІ ДЕБАФИ ТА MASTERY ---
       if (OVERLAY_MODULES.debuffsLive) {
         html += `<div style="color: #ff00ff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">☠️ АКТИВНІ ДЕБАФИ</div>`;
 
-        // 1. Рандомний Дебаф (від збиття Фази 2)
         const debuffName = d.activeDebuffName || "Немає";
         let debuffDesc = '<span style="color: #8a9bac;">Фаза 2 ще ціла</span>';
 
         if (debuffName !== "Немає") {
-          // Дістаємо оригінальний шаблон риби та конфіг дебафів
           const fishTemplate =
             CONFIG.spawns.fishes.find((f) => f.id === d.hookedFish?.id) ||
             d.hookedFish;
@@ -432,7 +425,6 @@ class DebugOverlay {
           let stateName = "UNKNOWN";
           let calcStr = debuffName;
 
-          // Формуємо детальну математику залежно від дебафу
           if (debuffName === "swimPull" && b.swim) {
             stateName = "SWIM";
             const orig = b.swim.pull;
@@ -471,7 +463,6 @@ class DebugOverlay {
 
         html += `<div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;"><span>Рандом:</span> <span>${debuffDesc}</span></div>`;
 
-        // 2. Дебаф Підкорення (Mastery)
         const masteryRatio = CONFIG.stamina.mechanics.masteryTimeRatio ?? 0.5;
         const exhaustionTime = d.exhaustionDurationMs || 1000;
         const targetTimeMs = exhaustionTime * masteryRatio;
@@ -484,7 +475,6 @@ class DebugOverlay {
         if (currentTimer === 0 && currentMult === 1.0) {
           masteryHtml = `<span style="color: #8a9bac;">Тримайте по центру...</span>`;
         } else if (!d.isMasteryActive) {
-          // Етап 1: Утримання (підготовка)
           const percent = Math.min(100, (currentTimer / targetTimeMs) * 100);
           const timeSec = (currentTimer / 1000).toFixed(1);
           const targetSec = (targetTimeMs / 1000).toFixed(1);
@@ -493,12 +483,10 @@ class DebugOverlay {
                         <div style="color: #8a9bac; font-size: 11px; margin-top: 2px;">Час: ${timeSec} / ${targetSec} сек</div>
                     `;
         } else {
-          // Етап 2: Здавлювання (сила риби падає)
           const drainTimer = currentTimer - targetTimeMs;
           const percent = Math.min(100, (drainTimer / targetTimeMs) * 100);
           const powerLostPct = ((1.0 - currentMult) * 100).toFixed(1);
 
-          // Рахуємо абсолютну втрату від ЗАЛИШКОВОЇ бази (до застосування множника Mastery)
           const baseWithoutMastery =
             currentMult > 0 ? d.fishBasePower / currentMult : d.fishBasePower;
           const absoluteLoss = baseWithoutMastery - d.fishBasePower;
@@ -576,7 +564,6 @@ class DebugOverlay {
       }
     }
 
-    // --- БЛОК 4: ПРИКОРМКА ---
     if (OVERLAY_MODULES.chum && d.chumZones && d.chumZones.length > 0) {
       html += `<div style="color: #ffff00; margin-top: 12px; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">🧲 АКТИВНІ ПРИКОРМКИ</div>`;
 
@@ -587,16 +574,15 @@ class DebugOverlay {
         let timeStr = "";
         let activeColor = "";
 
-        // Перевіряємо статус зони
         if (!z.isDelivered) {
           timeStr = "В ДОРОЗІ 🚤";
-          activeColor = "#ffa500"; // Помаранчевий (очікуємо)
+          activeColor = "#ffa500";
         } else if (z.isExpired) {
           timeStr = "ВИВІТРИЛАСЬ";
-          activeColor = "#8a9bac"; // Сірий
+          activeColor = "#8a9bac";
         } else {
           timeStr = `${currentBonus.toFixed(2)}x (Бонус)`;
-          activeColor = currentBonus > cfg.minBonus ? "#00ff80" : "#8a9bac"; // Зелений або сірий
+          activeColor = currentBonus > cfg.minBonus ? "#00ff80" : "#8a9bac";
         }
 
         html += `
@@ -609,7 +595,6 @@ class DebugOverlay {
       html += `<div style="margin-bottom: 12px;"></div>`;
     }
 
-    // Оновлюємо контент лише якщо є що показати
     if (html !== "") {
       this.#content.innerHTML = html;
       this.#container.style.display = "block";
