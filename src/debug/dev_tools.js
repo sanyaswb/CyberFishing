@@ -3,7 +3,6 @@ class DevTools {
   #ui;
   #isOpen = false;
 
-  // --- ПОРЯДОК ГОЛОВНИХ СЕКЦІЙ ---
   #sectionOrder = [
     "debug",
     "OVERLAY MODULES",
@@ -38,6 +37,8 @@ class DevTools {
 
   toggle() {
     this.#isOpen = !this.#isOpen;
+    this.#ui.togglePanel(this.#isOpen);
+
     if (this.#isOpen) {
       this.#populatePanel();
     }
