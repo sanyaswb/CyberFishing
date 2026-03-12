@@ -917,15 +917,19 @@ class Game {
 
       if (wantsToPump) {
         const pumpLevel = CONFIG.reel?.pumpLevel || 0;
+        const powerPerLevel = CONFIG.reel?.pumpPowerPerLevel || 10;
 
-        const reductionAmount = this.#fishingSystem.tryUsePump(pumpLevel);
+        const reductionAmount = this.#fishingSystem.tryUsePump(
+          pumpLevel,
+          powerPerLevel,
+        );
 
         if (reductionAmount > 0) {
           this.#tensionMeter.applyPump(reductionAmount);
 
           if (window.DEBUG_MODULES && window.DEBUG_MODULES.forces) {
             console.log(
-              `%c🎣 ПІДТЯЖКА! Натяг знижено на ${reductionAmount}%`,
+              `%c🎣 ПІДТЯЖКА! Натяг знижено на ${reductionAmount}% (Рівень: ${pumpLevel} * Сила: ${powerPerLevel}%)`,
               "color: #00ccff; font-weight: bold;",
             );
           }

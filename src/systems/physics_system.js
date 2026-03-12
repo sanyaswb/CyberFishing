@@ -47,13 +47,14 @@ class FishingSystem {
   }
 
   // ДОДАНО: Спроба використати підтяжку
-  tryUsePump(pumpLevel) {
+  tryUsePump(pumpLevel, powerPerLevel = 10) {
     if (!this.#isHoldActive) return 0; // Працює тільки під час блокування
     if (this.#hasUsedPumpThisHold) return 0; // Вже використано
     if (!pumpLevel || pumpLevel <= 0) return 0; // Немає прокачки
 
     this.#hasUsedPumpThisHold = true; // Блокуємо повторне використання
-    return pumpLevel * 10; // Кожен рівень = 10%
+
+    return pumpLevel * powerPerLevel;
   }
 
   deactivateHold() {
@@ -339,6 +340,7 @@ class TensionMeter {
   #hookCheckTimer;
   #holdFloorTension = 0;
   #isHoldCurrentlyActive = false;
+  #pumpGraceTimer = 0;
 
   constructor(rodLevel, reelLevel, hook, tensionConfig) {
     this.#tension = 0;
@@ -402,13 +404,19 @@ class TensionMeter {
       Math.min(100, this.#targetTension + tensionChange),
     );
 
+    if (this.#pumpGraceTimer > 0) {
+      this.#pumpGraceTimer -= dt;
+    }
+
     if (isHoldActive) {
-      // ВИПРАВЛЕНО: Піднімаємо підлогу ТІЛЬКИ якщо натяг АКТИВНО зростає (tensionChange > 0)
-      if (tensionChange > 0 && calculatedTarget > this.#holdFloorTension) {
+      if (
+        tensionChange > 0 &&
+        calculatedTarget > this.#holdFloorTension &&
+        this.#pumpGraceTimer <= 0
+      ) {
         this.#holdFloorTension = calculatedTarget;
       }
 
-      // Натяг НЕ МОЖЕ впасти нижче поточної підлоги
       if (calculatedTarget < this.#holdFloorTension) {
         calculatedTarget = this.#holdFloorTension;
       }
@@ -658,11 +666,12 @@ class TensionMeter {
   applyPump(percentAmount) {
     if (this.#isBroken || !this.#isHoldCurrentlyActive) return;
 
-    // Ми не чіпаємо сам натяг! Ми просто дозволяємо йому впасти нижче.
     this.#holdFloorTension = Math.max(
       0,
       this.#holdFloorTension - percentAmount,
     );
+
+    this.#pumpGraceTimer = 500;
 
     if (window.DEBUG_MODULES && window.DEBUG_MODULES.tension) {
       console.log(

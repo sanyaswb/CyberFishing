@@ -436,6 +436,7 @@ const CONFIG = {
     level: 4, // СТАРИЙ ПАРАМЕТР (залишається для старої логіки)
     basePower: 1.0, // СТАРИЙ ПАРАМЕТР (залишається для старої логіки)
     pumpLevel: 5,
+    pumpPowerPerLevel: 10, // Скільки відсотків натягу знімає 1 рівень підтяжки
 
     // НОВИЙ ПАРАМЕТР: Механіка утримання
     hold: {
@@ -455,13 +456,13 @@ const CONFIG = {
           charges: 2,
           restoreTimeMs: 4000,
           holdPower: 2,
-          tensionMultiplier: 0.8, // Пропускає 80% сили риби в ліску
+          tensionMultiplier: 1.0, // Пропускає 80% сили риби в ліску
         },
         3: {
           charges: 3,
           restoreTimeMs: 3000,
           holdPower: 3,
-          tensionMultiplier: 0.6, // Пропускає 60% сили риби в ліску
+          tensionMultiplier: 1.0, // Пропускає 60% сили риби в ліску
         },
         // Можеш додавати скільки завгодно рівнів...
       },
