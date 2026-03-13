@@ -525,7 +525,14 @@ class Game {
 
     if (inputState.isDoubleClick) {
       if (this.#gameState === "waiting") {
-        if (this.#chumManager && this.#chumManager.isBoatMoving()) return;
+        // ВИПРАВЛЕНО: Використовуємо наш єдиний надійний метод перевірки
+        const hasActiveBoatInWater =
+          this.#chumManager && this.#chumManager.getBoats().length > 0;
+
+        if (hasActiveBoatInWater) {
+          console.log("Повернення в розвідку заблоковано: кораблик ще у воді!");
+          return;
+        }
 
         this.#gameState = "scouting";
         if (this.#tensionMeter) this.#tensionMeter.reset();
@@ -543,8 +550,12 @@ class Game {
     }
 
     if (inputState.longPressPos && this.#gameState === "waiting") {
-      if (this.#chumManager && this.#chumManager.isBoatMoving()) {
-        console.log("Закидання заблоковано: кораблик у русі!");
+      // ВИПРАВЛЕНО: Перевіряємо наявність БУДЬ-ЯКОГО активного човна в морі
+      const hasActiveBoatInWater =
+        this.#chumManager && this.#chumManager.getBoats().length > 0;
+
+      if (hasActiveBoatInWater) {
+        console.log("Закидання заблоковано: кораблик ще у воді!");
         return;
       }
 
@@ -583,27 +594,65 @@ class Game {
         }
       }
 
-      if (inputState.panDeltaX !== 0) {
-        const virtualDelta = inputState.panDeltaX / this.#projector.getScale();
-        this.#projector.pan(virtualDelta);
+      // ВИПРАВЛЕНО: Тепер ми можемо скролити камеру руками як по X, так і по Y
+      if (inputState.panDeltaX !== 0 || inputState.panDeltaY !== 0) {
+        const virtualDeltaX = inputState.panDeltaX / this.#projector.getScale();
+        const virtualDeltaY = inputState.panDeltaY / this.#projector.getScale();
+        this.#projector.pan(virtualDeltaX, virtualDeltaY);
       }
 
       if (inputState.clickPos) {
-        const vPos = this.#projector.screenToVirtual(
-          inputState.clickPos.x,
-          inputState.clickPos.y,
-        );
-        const cell = this.#locationMap.getCellAtVirtualPos(
-          vPos.x,
-          vPos.y,
-          CONFIG.locations.cellSize,
-        );
+        const activeBoats = this.#chumManager
+          ? this.#chumManager.getBoats()
+          : [];
+        const hasActiveBoatInWater = activeBoats.length > 0;
 
-        if (cell && cell.isCastable && !cell.hasCollision) {
-          if (this.#castManager.canCast()) {
-            this.#castManager.registerCast(performance.now());
-            this.#depthUI.hide();
-            this.#castLine(vPos.x, vPos.y, cell.depth);
+        if (hasActiveBoatInWater) {
+          const activeBoat = activeBoats[0];
+          const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
+
+          // ВИПРАВЛЕНО: Якщо кораблик у воді і ввімкнено ручне керування - направляємо його!
+          if (
+            isManual &&
+            activeBoat.state !== "returning" &&
+            activeBoat.state !== "drifting"
+          ) {
+            const vPos = this.#projector.screenToVirtual(
+              inputState.clickPos.x,
+              inputState.clickPos.y,
+            );
+
+            // Даємо кораблику нову координату.
+            // Його state автоматично стане "deploying" і він попливе туди.
+            activeBoat.setTarget(vPos.x, vPos.y);
+            console.log("Кораблик змінив курс!");
+          } else {
+            console.log("Дія заблокована: кораблик зайнятий або повертається!");
+          }
+        } else {
+          // Якщо кораблика немає в морі — закидаємо вудку як зазвичай
+          const vPos = this.#projector.screenToVirtual(
+            inputState.clickPos.x,
+            inputState.clickPos.y,
+          );
+          const cell = this.#locationMap.getCellAtVirtualPos(
+            vPos.x,
+            vPos.y,
+            CONFIG.locations.cellSize,
+          );
+
+          if (cell && cell.isCastable && !cell.hasCollision) {
+            if (this.#castManager.canCast()) {
+              this.#castManager.registerCast(performance.now());
+              this.#depthUI.hide();
+              this.#castLine(vPos.x, vPos.y, cell.depth);
+            } else {
+              this.#invalidCastMarker = {
+                x: inputState.clickPos.x,
+                y: inputState.clickPos.y,
+                timer: 500,
+              };
+            }
           } else {
             this.#invalidCastMarker = {
               x: inputState.clickPos.x,
@@ -611,12 +660,6 @@ class Game {
               timer: 500,
             };
           }
-        } else {
-          this.#invalidCastMarker = {
-            x: inputState.clickPos.x,
-            y: inputState.clickPos.y,
-            timer: 500,
-          };
         }
       }
 

@@ -148,23 +148,30 @@ class InputManager {
           e.type === "pointercancel");
 
       if (isPointerEvent) {
-        if (!this.#isDragging && this.#isPointerDown) {
+        if (this.#isPointerDown) {
           const now = Date.now();
-          if (now - this.#lastClickTime < 300) {
-            this.#isDoubleClick = true;
-          } else {
-            const clientX =
-              e.clientX || (e.changedTouches && e.changedTouches[0]?.clientX);
-            const clientY =
-              e.clientY || (e.changedTouches && e.changedTouches[0]?.clientY);
-            this.#clickPos = { x: clientX, y: clientY };
+
+          // ВАЖЛИВО: Реєструємо клік ТІЛЬКИ якщо гравець не рухав пальцем (не свайпав)
+          if (!this.#isDragging) {
+            if (now - this.#lastClickTime < 300) {
+              this.#isDoubleClick = true;
+            } else {
+              const clientX =
+                e.clientX || (e.changedTouches && e.changedTouches[0]?.clientX);
+              const clientY =
+                e.clientY || (e.changedTouches && e.changedTouches[0]?.clientY);
+
+              // Записуємо позицію кліку!
+              if (clientX !== undefined && clientY !== undefined) {
+                this.#clickPos = { x: clientX, y: clientY };
+              }
+            }
+            this.#lastClickTime = now;
           }
-          this.#lastClickTime = now;
         }
         this.#isPointerDown = false;
       }
 
-      // ЗМІНЕНО: Читаємо клавішу тяги з конфігу
       const pullKeys = CONFIG.input?.keys?.pull || ["Space"];
       this.#isPulling =
         this.#checkKeyHeld(pullKeys) || this.#isPointerDown === true;

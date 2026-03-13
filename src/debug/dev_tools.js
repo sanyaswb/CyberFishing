@@ -8,6 +8,7 @@ class DevTools {
     "OVERLAY MODULES",
     "CONSOLE MODULES",
     "locations",
+    "chum",
     "spawns",
     "rod",
     "reel",
@@ -167,13 +168,27 @@ class DevTools {
           this.#ui.createSwitcherRow(key, val, parentElement, (newVal) =>
             this.#updateConfigValue(currentPath, newVal),
           );
+        } else if (typeof val === "string") {
+          if (key === "currentMethod") {
+            this.#ui.createEnumToggleRow(
+              key,
+              ["hand", "boat"],
+              val,
+              parentElement,
+              (newVal) => this.#updateConfigValue(currentPath, newVal),
+            );
+          } else {
+            this.#ui.createInputRow(
+              key,
+              val,
+              parentElement,
+              "string",
+              (newVal) => this.#updateConfigValue(currentPath, newVal),
+            );
+          }
         } else {
-          this.#ui.createInputRow(
-            key,
-            val,
-            parentElement,
-            typeof val,
-            (newVal) => this.#updateConfigValue(currentPath, newVal),
+          this.#ui.createInputRow(key, val, parentElement, "number", (newVal) =>
+            this.#updateConfigValue(currentPath, newVal),
           );
         }
       }
@@ -309,6 +324,48 @@ class DevToolsUI {
     }
 
     row.appendChild(inputElement);
+    parentElement.appendChild(row);
+  }
+
+  // ДОДАНО: Спеціальний перемикач для текстових значень (Enum)
+  createEnumToggleRow(
+    key,
+    optionsArray,
+    currentValue,
+    parentElement,
+    onChangeCallback,
+  ) {
+    const row = document.createElement("div");
+    row.className = "devtools-row";
+
+    const label = document.createElement("div");
+    label.className = "devtools-label";
+    label.innerText = key;
+    row.appendChild(label);
+
+    const btn = document.createElement("button");
+    btn.className = "devtools-btn-enum";
+    btn.innerText = currentValue;
+    Object.assign(btn.style, {
+      background: "#3a3a50",
+      color: "#00ccff",
+      border: "1px solid #5a5a70",
+      borderRadius: "4px",
+      padding: "2px 8px",
+      cursor: "pointer",
+      fontWeight: "bold",
+      width: "80px",
+    });
+
+    btn.addEventListener("click", () => {
+      let currentIndex = optionsArray.indexOf(btn.innerText);
+      let nextIndex = (currentIndex + 1) % optionsArray.length;
+      let newVal = optionsArray[nextIndex];
+      btn.innerText = newVal;
+      onChangeCallback(newVal);
+    });
+
+    row.appendChild(btn);
     parentElement.appendChild(row);
   }
 

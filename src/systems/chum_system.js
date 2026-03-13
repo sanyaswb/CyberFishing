@@ -99,7 +99,8 @@ class ChumZone {
     const dist = Math.hypot(dx, dy);
 
     // Замінили baseRadX на baseRadius
-    return dist < Math.max(this.baseRadius, otherZone.baseRadius);
+    // return dist < Math.max(this.baseRadius, otherZone.baseRadius);
+    return dist < this.baseRadius + otherZone.baseRadius;
   }
 }
 
@@ -448,6 +449,8 @@ class BaitBoat {
 
     this.isBaitDropped = false;
     this.isFinished = false;
+
+    this.hasLeftShore = false;
   }
 
   setTarget(targetX, targetY, zoneId = null, isReturn = false) {
@@ -463,7 +466,9 @@ class BaitBoat {
     if (this.state === "idle" || this.isFinished) return;
 
     const drainMult = this.state === "waiting" ? 0.5 : 1.0;
+    const isManual = this.config.manualControl;
 
+    // --- ВИТРАТА ЕНЕРГІЇ ---
     if (this.state !== "drifting") {
       this.energy -= this.stats.energyDrainPerSec * drainMult * (dt / 1000);
       if (this.energy <= 0) {
@@ -472,25 +477,21 @@ class BaitBoat {
       }
     }
 
+    // --- ДРЕЙФ ---
     if (this.state === "waiting" || this.state === "drifting") {
       if (env && env.current) {
         const boatDriftResistance = 0.8;
         const driftSpeed = env.current.speedPxPerSec * boatDriftResistance;
-
         const dx = env.current.direction.x * driftSpeed * (dt / 1000);
         const dy = env.current.direction.y * driftSpeed * (dt / 1000);
-
         let nextX = this.pos.x + dx;
         let nextY = this.pos.y + dy;
-
         if (checkWater) {
           if (!checkWater(nextX, this.pos.y)) nextX = this.pos.x;
           if (!checkWater(this.pos.x, nextY)) nextY = this.pos.y;
         }
-
         this.pos.x = nextX;
         this.pos.y = nextY;
-
         if (this.state === "drifting") {
           this.angle = Math.atan2(
             env.current.direction.y,
@@ -509,9 +510,15 @@ class BaitBoat {
     );
     const finishRadius = this.state === "returning" ? 30 : 15;
 
+    // --- ПРИБУТТЯ ДО ЦІЛІ ---
     if (distToTarget < finishRadius) {
       if (this.state === "deploying") {
-        this.state = "waiting";
+        if (!isManual) {
+          this.isBaitDropped = true;
+          this.state = "returning";
+        } else {
+          this.state = "waiting";
+        }
       } else if (this.state === "returning") {
         this.isFinished = true;
       }
@@ -522,46 +529,39 @@ class BaitBoat {
       currentTarget.y - this.pos.y,
       currentTarget.x - this.pos.x,
     );
-    let actualLookAhead = this.config.lookAheadCells * cellSize;
-    let ignoreCollisions = false;
 
-    if (distToTarget < actualLookAhead * 1.5) {
-      actualLookAhead = 0;
-      ignoreCollisions = true;
-    }
+    // --- ШТУЧНИЙ ІНТЕЛЕКТ (Вуса, тільки для Авто) ---
+    if (!isManual) {
+      let actualLookAhead = this.config.lookAheadCells * cellSize;
+      if (distToTarget > actualLookAhead * 1.5) {
+        const anglesToCheck = [
+          0,
+          -Math.PI / 4,
+          Math.PI / 4,
+          -Math.PI / 2,
+          Math.PI / 2,
+        ];
+        let clearAngle = null;
+        let isPathBlocked = false;
 
-    if (actualLookAhead > 0) {
-      const anglesToCheck = [
-        0,
-        -Math.PI / 4,
-        Math.PI / 4,
-        -Math.PI / 2,
-        Math.PI / 2,
-      ];
-      let clearAngle = null;
-      let isPathBlocked = false;
+        for (const offset of anglesToCheck) {
+          const checkAngle = this.angle + offset;
+          const px = this.pos.x + Math.cos(checkAngle) * actualLookAhead;
+          const py = this.pos.y + Math.sin(checkAngle) * actualLookAhead;
 
-      for (const offset of anglesToCheck) {
-        const checkAngle = this.angle + offset;
-        const px = this.pos.x + Math.cos(checkAngle) * actualLookAhead;
-        const py = this.pos.y + Math.sin(checkAngle) * actualLookAhead;
-
-        if (checkWater && checkWater(px, py)) {
-          if (clearAngle === null) clearAngle = checkAngle;
-        } else {
-          if (offset === 0) isPathBlocked = true;
+          if (checkWater && checkWater(px, py)) {
+            if (clearAngle === null) clearAngle = checkAngle;
+          } else {
+            if (offset === 0) isPathBlocked = true;
+          }
         }
-      }
-
-      if (isPathBlocked) {
-        if (clearAngle !== null) {
+        if (isPathBlocked && clearAngle !== null) {
           desiredAngle = clearAngle;
-        } else {
-          desiredAngle = this.angle + Math.PI;
         }
       }
     }
 
+    // --- ПЛАВНИЙ ПОВОРОТ ---
     let angleDiff = desiredAngle - this.angle;
     while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
     while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
@@ -569,22 +569,62 @@ class BaitBoat {
     const maxTurn = this.config.turnSpeedRad * (dt / 1000);
     this.angle += Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), maxTurn);
 
-    this.velocity.x = Math.cos(this.angle) * this.stats.speedPxPerSec;
-    this.velocity.y = Math.sin(this.angle) * this.stats.speedPxPerSec;
+    // --- ЄДИНА ЛОГІКА ВИХОДУ З ТУПИКА (РЕВЕРС) ---
+    // Рахуємо, скільки місця нам треба для безпечного розвороту
+    const turnRadius = this.stats.speedPxPerSec / this.config.turnSpeedRad;
+    const clearanceDist = Math.max(30, turnRadius * 0.8); // Сенсор дивиться вперед на ~40-50px
+
+    const clearX = this.pos.x + Math.cos(this.angle) * clearanceDist;
+    const clearY = this.pos.y + Math.sin(this.angle) * clearanceDist;
+
+    let isForwardClear = true;
+    if (checkWater) {
+      isForwardClear = checkWater(clearX, clearY);
+    }
+
+    let currentSpeed = this.stats.speedPxPerSec;
+
+    // Якщо попереду стіна (не вистачає місця для радіуса)
+    if (!isForwardClear) {
+      // Якщо нам треба повернути (кут до цілі більше ніж ~11 градусів), здаємо назад!
+      if (Math.abs(angleDiff) > 0.2) {
+        currentSpeed = -this.stats.speedPxPerSec * 0.6; // Реверс на 60% швидкості
+      }
+      // Якщо ми дивимось прямо в стіну, і це ручний режим - зупиняємось, щоб не буксувати
+      else if (isManual) {
+        this.state = "waiting";
+        return;
+      }
+    }
+
+    // --- РУХ І ФІЗИЧНІ ЗІТКНЕННЯ ---
+    this.velocity.x = Math.cos(this.angle) * currentSpeed;
+    this.velocity.y = Math.sin(this.angle) * currentSpeed;
 
     const nextX = this.pos.x + this.velocity.x * (dt / 1000);
     const nextY = this.pos.y + this.velocity.y * (dt / 1000);
 
-    let canMove = true;
-    if (checkWater && !ignoreCollisions) {
-      canMove = checkWater(nextX, nextY);
-    }
-
-    if (canMove) {
+    // Фінальна перевірка: чи не вріжемося ми, рухаючись туди (навіть задом)
+    if (checkWater && !checkWater(nextX, nextY)) {
+      if (isManual) {
+        this.state = "waiting"; // Затиснуті з усіх боків у ручному - стоїмо
+      }
+      // В авто-режимі просто ігноруємо рух (стоїмо), але кут продовжує крутитися!
+    } else {
+      // Якщо вільна вода - застосовуємо координати
       this.pos.x = nextX;
       this.pos.y = nextY;
-    } else {
-      this.angle += Math.PI / 2;
+    }
+
+    // 1. Фіксуємо, що кораблик відплив від берега хоча б на 50 пікселів
+    if (!this.hasLeftShore && this.startPos.y - this.pos.y > 50) {
+      this.hasLeftShore = true;
+    }
+
+    // 2. Якщо кораблик вже плавав, і тепер підійшов близько до берега (на відстань 30 пікселів до стартової лінії Y)
+    if (this.hasLeftShore && this.pos.y >= this.startPos.y - 30) {
+      console.log("Кораблик повернувся в руки гравцеві!");
+      this.isFinished = true; // Кораблик зникає, кнопка прикормки знову активна
     }
   }
 }

@@ -69,7 +69,7 @@ const CONFIG = {
         safeZone: { top: 0, bottom: 1440 },
         depthBounds: { min: 0.1, max: 15.0 },
 
-        perspectiveSquash: { top: 0.15, bottom: 0.75 },
+        perspectiveSquash: { top: 0.1, bottom: 0.4 },
         chumCastDistance: 300,
 
         weather: {
