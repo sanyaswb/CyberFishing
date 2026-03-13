@@ -56,6 +56,7 @@ const CONFIG = {
     designCellSize: 40,
     cellSize: 40,
     catchLineOffsetPx: 5,
+    lockZoneXToScreen: true,
 
     map: {
       test: {

@@ -359,6 +359,22 @@ class Game {
     this.#projector.update(this.#canvas.width, this.#canvas.height);
     this.#locationMap.update(dt, this.#gameTimeHours);
 
+    // === АВТОМАТИЧНА КАМЕРА (ТІЛЬКИ ПО Y) ===
+    if (
+      this.#gameState === "waiting" ||
+      this.#gameState === "biting" ||
+      this.#gameState === "playing"
+    ) {
+      const floatVPos = this.#float.getPosition();
+      this.#projector.focusOnVirtualPos(floatVPos.y, dt, 0.05);
+    } else if (this.#gameState === "scouting") {
+      const mapBoundsForCamera = this.#locationMap.getCastableBoundsVirtual(
+        CONFIG.locations.cellSize,
+      );
+      const safeY = mapBoundsForCamera ? mapBoundsForCamera.bottom - 200 : 1200;
+      this.#projector.focusOnVirtualPos(safeY, dt, 0.03);
+    }
+
     const inputState = this.#inputManager.getState();
 
     const checkWater = (vx, vy) => {
@@ -745,17 +761,22 @@ class Game {
       this.#canvas.height,
     );
 
+    // 1. Базові межі по осі X (на всю карту)
+    let boundLeft = castableBounds ? castableBounds.left : 0;
+    let boundRight = castableBounds ? castableBounds.right : 2560;
+
+    // 2. Якщо увімкнено фіксацію по X - обрізаємо межі до країв поточного екрана (камери)
+    if (CONFIG.locations.lockZoneXToScreen) {
+      boundLeft = Math.max(vTopLeft.x, boundLeft);
+      boundRight = Math.min(vBottomRight.x, boundRight);
+    }
+
     const dynamicBounds = {
-      left: Math.max(vTopLeft.x, castableBounds ? castableBounds.left : 0),
-      right: Math.min(
-        vBottomRight.x,
-        castableBounds ? castableBounds.right : 2560,
-      ),
-      top: Math.max(vTopLeft.y, castableBounds ? castableBounds.top : 0),
-      bottom: Math.min(
-        vBottomRight.y,
-        castableBounds ? castableBounds.bottom : 2560,
-      ),
+      left: boundLeft,
+      right: boundRight,
+      // ВАЖЛИВО: Осі Y ЗАВЖДИ фіксуються по віртуальній карті (щоб не читерили вікном)
+      top: castableBounds ? castableBounds.top : 0,
+      bottom: castableBounds ? castableBounds.bottom : 1440,
     };
 
     if (this.#gameState === "waiting") {
@@ -950,10 +971,18 @@ class Game {
         rodScreenX = Number(CONFIG.ui.rod.x);
       }
 
-      const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
-      const rodVirtualPos = this.#projector.screenToVirtual(
-        rodScreenX,
-        rodScreenY,
+      // СТАЛО:
+      // Отримуємо віртуальний берег
+      const mapBoundsForRod = this.#locationMap.getCastableBoundsVirtual(
+        CONFIG.locations.cellSize,
+      );
+      const shoreVirtualY = mapBoundsForRod ? mapBoundsForRod.bottom : 1440;
+
+      // Жорстко фіксуємо точку тяги рибака на віртуальному березі,
+      // незалежно від того, якого розміру вікно браузера!
+      const rodVirtualPos = new Vector2(
+        this.#projector.screenToVirtual(rodScreenX, 0).x,
+        shoreVirtualY,
       );
 
       const floatScreenPosInitial = this.#projector.virtualToScreen(
