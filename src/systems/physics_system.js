@@ -873,12 +873,30 @@ class StaminaController {
       }
 
       if (this.#condition.currentStamina >= this.#condition.maxPoints) {
-        this.#condition.applyPunishment(
-          this.#mechanicsConfig.punishmentCap || 0.8,
-        );
+        const punishmentCap = this.#mechanicsConfig.punishmentCap || 0.8;
+
+        this.#condition.applyPunishment(punishmentCap);
+
         if (this.#fish.hasActiveDebuff) {
           this.#fish.clearDebuff();
         }
+
+        const idealDps =
+          this.#mechanicsConfig.baseDepletionRate * this.#playerBasePower;
+        const idealTimeSec = this.#condition.maxPoints / Math.max(1, idealDps);
+        const exhaustionDurationSec =
+          idealTimeSec * this.#fish.getInitialPower();
+        const maxPowerDropPerSec = this.#mechanicsConfig.basePowerDropPerSec;
+
+        this.#fish.setPowerDebuffByExhaustionRatio(
+          punishmentCap,
+          maxPowerDropPerSec,
+          exhaustionDurationSec,
+        );
+
+        console.log(
+          `[STAMINA] Риба відновила сили! Виснаження ${punishmentCap * 100}%, сила синхронізована.`,
+        );
       }
     }
   }

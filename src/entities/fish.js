@@ -66,6 +66,16 @@ class Fish {
     this.#powerDebuff += amount;
   }
 
+  setPowerDebuffByExhaustionRatio(
+    exhaustionRatio,
+    maxPowerDropPerSec,
+    maxDurationSec,
+  ) {
+    const maxPossibleDebuff = maxPowerDropPerSec * maxDurationSec;
+
+    this.#powerDebuff = maxPossibleDebuff * (1.0 - exhaustionRatio);
+  }
+
   getBehavior(dt) {
     this.#behavior.update(dt);
     return this.#behavior.getStateData();
