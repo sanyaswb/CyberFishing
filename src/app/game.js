@@ -55,7 +55,28 @@ class Game {
     this.#uiManager.onNetClick = () => this.#handleNetClick();
     this.#uiManager.onContinueClick = () => this.#resetGame();
 
-    this.#chumManager = new ChumManager("test", CONFIG.chum);
+    // --- ОНОВЛЕНА ІНІЦІАЛІЗАЦІЯ CHUM MANAGER ---
+
+    // 1. Визначаємо ID поточної локації
+    // (поки що жорстко задаємо "test", але потім сюди можна передавати вибрану гравцем локацію)
+    const currentLocationId = "test";
+
+    // 2. Дістаємо налаштування локації з конфігу
+    const locationConfig = CONFIG.locations.map[currentLocationId];
+
+    // 3. Беремо налаштування перспективи (з фолбеком на стандартні значення, якщо їх раптом немає в конфігу)
+    const perspectiveSquash = locationConfig?.perspectiveSquash || {
+      top: 0.15,
+      bottom: 0.75,
+    };
+
+    // 4. Створюємо менеджер, передаючи йому ці дані
+    this.#chumManager = new ChumManager(
+      currentLocationId,
+      CONFIG.chum,
+      perspectiveSquash,
+    );
+
     this.#chumUI = new ChumUI(() => this.#toggleChumAim());
     this.#isAimingChum = false;
 
@@ -1303,10 +1324,28 @@ class Game {
           rodScreenX,
           rodScreenY,
         );
+
+        // --- НОВЕ: Отримуємо межі карти та перспективу ---
+        const mapBounds = this.#locationMap.getCastableBoundsVirtual(
+          CONFIG.locations.cellSize,
+        );
+        const vTop = mapBounds ? mapBounds.top : 0;
+        const vBottom = mapBounds ? mapBounds.bottom : 1440;
+
+        // Беремо перспективу поточної локації (зараз "test")
+        const squash = CONFIG.locations.map["test"].perspectiveSquash || {
+          top: 0.15,
+          bottom: 0.75,
+        };
+
+        // Передаємо нові параметри у рендерер
         this.#renderer.drawChumAiming(
           this.#projector,
           rodVirtualPos,
           CONFIG.chum.deliveryMethods.hand.maxDistanceVirtual,
+          squash,
+          vTop,
+          vBottom,
         );
       }
     }

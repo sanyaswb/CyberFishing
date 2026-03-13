@@ -1,5 +1,13 @@
 class ChumZone {
-  constructor(id, x, y, baitConfig, deployRealTimeMs, isDelivered = false) {
+  constructor(
+    id,
+    x,
+    y,
+    baitConfig,
+    deployRealTimeMs,
+    locationSquash,
+    isDelivered = false,
+  ) {
     this.id = id;
     this.x = x;
     this.y = y;
@@ -10,11 +18,15 @@ class ChumZone {
     this.isExpired = false;
     this.currentBonus = 1.0;
 
-    this.baseRadX = baitConfig.radiusX;
-    this.baseRadYMax = baitConfig.radiusY.max;
-    this.baseRadYMin = baitConfig.radiusY.min;
+    // Читаємо єдиний радіус
+    this.baseRadius = baitConfig.radius || 150;
+
+    // Беремо перспективу з локації (або дефолтні значення для безпеки)
+    this.squashTop = locationSquash?.top ?? 0.15;
+    this.squashBottom = locationSquash?.bottom ?? 0.75;
   }
 
+  // ОСЬ ВІН, НАШ ЗАГУБЛЕНИЙ МЕТОД:
   updateState(realTimeNow, timeScale) {
     if (!this.isDelivered) return 0;
 
@@ -55,18 +67,23 @@ class ChumZone {
       return 1.0;
     }
 
+    // Рахуємо позицію по Y від 0 до 1
     const distRatio = Math.max(
       0,
       Math.min(1.0, (this.y - virtualTopY) / (virtualBottomY - virtualTopY)),
     );
-    const currentRadY =
-      this.baseRadYMin + (this.baseRadYMax - this.baseRadYMin) * distRatio;
+
+    // ДИНАМІЧНИЙ РАДІУС
+    const currentRadX = this.baseRadius;
+    const currentScaleY =
+      this.squashTop + (this.squashBottom - this.squashTop) * distRatio;
+    const currentRadY = this.baseRadius * currentScaleY;
 
     const dx = targetX - this.x;
     const dy = targetY - this.y;
 
     const isInside =
-      (dx * dx) / (this.baseRadX * this.baseRadX) +
+      (dx * dx) / (currentRadX * currentRadX) +
         (dy * dy) / (currentRadY * currentRadY) <=
       1;
 
@@ -80,7 +97,8 @@ class ChumZone {
     const dx = this.x - otherZone.x;
     const dy = this.y - otherZone.y;
     const dist = Math.hypot(dx, dy);
-    return dist < Math.max(this.baseRadX, otherZone.baseRadX);
+    // Використовуємо baseRadius
+    return dist < Math.max(this.baseRadius, otherZone.baseRadius);
   }
 }
 
@@ -93,13 +111,15 @@ class ChumManager {
   #locationMemoryKey;
   #memoryGrid = {};
   #boatEnergy = null;
+  #locationSquash;
 
-  constructor(locationId, chumConfig) {
+  constructor(locationId, chumConfig, locationSquash) {
     this.#locationId = locationId;
     this.#chumConfig = chumConfig;
     this.#storageKey = `chum_active_${locationId}`;
     this.#locationMemoryKey = `chum_memory_${locationId}`;
     this.loadFromStorage();
+    this.#locationSquash = locationSquash || { top: 0.15, bottom: 0.75 };
   }
 
   getBoatEnergy() {
@@ -133,13 +153,15 @@ class ChumManager {
           const baitConfig = this.#chumConfig.baits[z.baitId];
           if (!baitConfig) return null;
 
+          // --- ВИПРАВЛЕНО ТУТ ---
           const zone = new ChumZone(
             z.id,
             z.x,
             z.y,
             baitConfig,
             z.deployRealTimeMs,
-            z.isDelivered,
+            this.#locationSquash, // Додаємо перспективу сюди (6-й аргумент)
+            z.isDelivered, // Зсуваємо статус на 7-ме місце
           );
           return zone;
         })
@@ -177,13 +199,15 @@ class ChumManager {
     const isHand = method === "hand";
     const zoneId = Date.now().toString() + Math.floor(Math.random() * 1000);
 
+    // --- ВИПРАВЛЕНО: рівно 7 аргументів у правильному порядку ---
     const newZone = new ChumZone(
-      zoneId,
-      targetX,
-      targetY,
-      baitConfig,
-      Date.now(),
-      isHand,
+      zoneId, // 1. id
+      targetX, // 2. x
+      targetY, // 3. y
+      baitConfig, // 4. baitConfig
+      Date.now(), // 5. deployRealTimeMs
+      this.#locationSquash, // 6. locationSquash
+      isHand, // 7. isDelivered
     );
 
     const overlappingIndex = this.#zones.findIndex((z) =>

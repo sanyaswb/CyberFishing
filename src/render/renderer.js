@@ -159,16 +159,25 @@ class Renderer {
 
       if (opacity <= 0) continue;
 
+      // Рахуємо позицію по Y (від 0.0 на горизонті до 1.0 біля берега)
       const distRatio = Math.max(
         0,
         Math.min(1.0, (zone.y - virtualTopY) / (virtualBottomY - virtualTopY)),
       );
-      const currentRadY =
-        zone.baseRadYMin + (zone.baseRadYMax - zone.baseRadYMin) * distRatio;
 
+      // --- НОВА ЛОГІКА РОЗРАХУНКУ РАДІУСІВ ---
+      // Розраховуємо поточний коефіцієнт стиснення Y
+      const currentScaleY =
+        zone.squashTop + (zone.squashBottom - zone.squashTop) * distRatio;
+
+      // Конвертуємо координати в екранні
       const centerScreen = projector.virtualToScreen(zone.x, zone.y);
-      const rxScreen = zone.baseRadX * projector.getScale();
-      const ryScreen = currentRadY * projector.getScale();
+
+      // Екранний X-радіус (повний розмір з урахуванням зуму камери)
+      const rxScreen = zone.baseRadius * projector.getScale();
+
+      // Екранний Y-радіус (сплюснутий через перспективу + зум камери)
+      const ryScreen = zone.baseRadius * currentScaleY * projector.getScale();
 
       this.#ctx.save();
       this.#ctx.beginPath();
@@ -192,16 +201,50 @@ class Renderer {
     }
   }
 
-  drawChumAiming(projector, rodVirtualPos, maxDistanceVirtual) {
+  drawChumAiming(
+    projector,
+    rodVirtualPos,
+    maxDistanceVirtual,
+    locationSquash,
+    virtualTopY,
+    virtualBottomY,
+  ) {
     const centerScreen = projector.virtualToScreen(
       rodVirtualPos.x,
       rodVirtualPos.y,
     );
-    const radiusScreen = maxDistanceVirtual * projector.getScale();
+
+    // 1. Рахуємо позицію по Y (від 0.0 до 1.0)
+    const distRatio = Math.max(
+      0,
+      Math.min(
+        1.0,
+        (rodVirtualPos.y - virtualTopY) / (virtualBottomY - virtualTopY),
+      ),
+    );
+
+    // 2. Розраховуємо коефіцієнт стиснення Y на основі позиції вудилища
+    const currentScaleY =
+      locationSquash.top +
+      (locationSquash.bottom - locationSquash.top) * distRatio;
+
+    // 3. Розраховуємо екранні радіуси
+    const rxScreen = maxDistanceVirtual * projector.getScale();
+    const ryScreen = maxDistanceVirtual * currentScaleY * projector.getScale();
 
     this.#ctx.save();
     this.#ctx.beginPath();
-    this.#ctx.arc(centerScreen.x, centerScreen.y, radiusScreen, 0, Math.PI * 2);
+    // Використовуємо ellipse замість arc
+    this.#ctx.ellipse(
+      centerScreen.x,
+      centerScreen.y,
+      rxScreen,
+      ryScreen,
+      0,
+      0,
+      Math.PI * 2,
+    );
+
     this.#ctx.strokeStyle = "rgba(255, 170, 0, 0.4)";
     this.#ctx.lineWidth = 2;
     this.#ctx.setLineDash([10, 10]);

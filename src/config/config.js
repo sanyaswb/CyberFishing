@@ -73,6 +73,8 @@ const CONFIG = {
         safeZone: { top: 0, bottom: 1440 },
         depthBounds: { min: 0.1, max: 15.0 },
 
+        perspectiveSquash: { top: 0.15, bottom: 0.75 },
+
         weather: {
           updateIntervalMs: 10000,
           chances: {
@@ -513,8 +515,9 @@ const CONFIG = {
         id: "carp_mix_basic",
         name: "Базова коропова суміш",
         targetFishes: ["crucian_stalker"],
-        radiusX: 150,
-        radiusY: { max: 110, min: 20 },
+
+        radius: 150,
+
         maxBonus: 2.0,
         minBonus: 1.2,
         rampUpTimeMs: 3600000,
