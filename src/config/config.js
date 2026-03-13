@@ -492,7 +492,7 @@ const CONFIG = {
       hand: {
         type: "hand",
         flightTimeMs: 3000,
-        maxDistanceVirtual: 800,
+        maxDistanceVirtual: 700,
       },
       boat: {
         type: "boat",

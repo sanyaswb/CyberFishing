@@ -204,54 +204,39 @@ class Renderer {
   drawChumAiming(
     projector,
     rodVirtualPos,
-    maxDistanceVirtual,
+    maxDistanceVirtual, // <-- Це значення з вашого CONFIG.chum
     locationSquash,
     virtualTopY,
     virtualBottomY,
   ) {
-    const centerScreen = projector.virtualToScreen(
+    // Отримуємо екранну позицію вудилища
+    const rodScreen = projector.virtualToScreen(
       rodVirtualPos.x,
       rodVirtualPos.y,
     );
 
-    // 1. Рахуємо позицію по Y (від 0.0 до 1.0)
-    const distRatio = Math.max(
-      0,
-      Math.min(
-        1.0,
-        (rodVirtualPos.y - virtualTopY) / (virtualBottomY - virtualTopY),
-      ),
-    );
+    // ДИНАМІЧНА ВІДСТАНЬ:
+    // Беремо віртуальну дистанцію з конфігу (напр. 800) і переводимо в екранні пікселі
+    const distancePx = maxDistanceVirtual * projector.getScale();
 
-    // 2. Розраховуємо коефіцієнт стиснення Y на основі позиції вудилища
-    const currentScaleY =
-      locationSquash.top +
-      (locationSquash.bottom - locationSquash.top) * distRatio;
-
-    // 3. Розраховуємо екранні радіуси
-    const rxScreen = maxDistanceVirtual * projector.getScale();
-    const ryScreen = maxDistanceVirtual * currentScaleY * projector.getScale();
+    const lineScreenY = rodScreen.y - distancePx;
 
     this.#ctx.save();
     this.#ctx.beginPath();
-    // Використовуємо ellipse замість arc
-    this.#ctx.ellipse(
-      centerScreen.x,
-      centerScreen.y,
-      rxScreen,
-      ryScreen,
-      0,
-      0,
-      Math.PI * 2,
-    );
 
-    this.#ctx.strokeStyle = "rgba(255, 170, 0, 0.4)";
+    // Малюємо лінію від лівого краю екрана до правого
+    this.#ctx.moveTo(0, lineScreenY);
+    this.#ctx.lineTo(this.#canvas.width, lineScreenY);
+
+    this.#ctx.strokeStyle = "rgba(255, 170, 0, 0.8)";
     this.#ctx.lineWidth = 2;
-    this.#ctx.setLineDash([10, 10]);
+    this.#ctx.setLineDash([15, 10]);
     this.#ctx.stroke();
 
+    // Легка напівпрозора заливка від лінії до берега
     this.#ctx.fillStyle = "rgba(255, 170, 0, 0.05)";
-    this.#ctx.fill();
+    this.#ctx.fillRect(0, lineScreenY, this.#canvas.width, distancePx);
+
     this.#ctx.restore();
   }
 

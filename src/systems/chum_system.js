@@ -120,6 +120,40 @@ class ChumManager {
     this.#locationMemoryKey = `chum_memory_${locationId}`;
     this.loadFromStorage();
     this.#locationSquash = locationSquash || { top: 0.15, bottom: 0.75 };
+    document.addEventListener("config-updated", (e) =>
+      this.#onConfigUpdate(e.detail),
+    );
+  }
+
+  // Метод для оновлення існуючих зон у реальному часі
+  #onConfigUpdate({ path, value }) {
+    // 1. Якщо змінилася перспектива (perspectiveSquash)
+    if (path.includes("perspectiveSquash")) {
+      const prop = path[path.length - 1]; // Отримуємо "top" або "bottom"
+
+      if (prop === "top" || prop === "bottom") {
+        // Оновлюємо збережене значення в менеджері
+        this.#locationSquash[prop] = value;
+
+        // Проходимося по ВСІХ закинутих зонах і оновлюємо їх
+        for (const zone of this.#zones) {
+          if (prop === "top") zone.squashTop = value;
+          if (prop === "bottom") zone.squashBottom = value;
+        }
+      }
+    }
+
+    // 2. БОНУС: Якщо ви зміните 'radius' прикормки в DevTools,
+    // він теж миттєво оновиться на екрані!
+    if (path.includes("baits") && path.includes("radius")) {
+      const baitId = path[path.indexOf("baits") - 1]; // Отримуємо ID прикормки (напр. carp_mix_basic)
+
+      for (const zone of this.#zones) {
+        if (zone.baitId === baitId) {
+          zone.baseRadius = value;
+        }
+      }
+    }
   }
 
   getBoatEnergy() {
