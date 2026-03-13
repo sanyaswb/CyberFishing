@@ -691,7 +691,10 @@ class ViewportProjector {
 
     const targetPixelY = vY * this.#scale;
 
-    let desiredCameraY = targetPixelY - this.#canvasHeight * 0.7;
+    // ЗМІНЕНО: Читаємо фокус камери з конфігу (за замовчуванням 0.7)
+    const focusRatio = this.#locationsConfig.cameraFocusY ?? 0.7;
+
+    let desiredCameraY = targetPixelY - this.#canvasHeight * focusRatio;
 
     desiredCameraY = Math.max(0, Math.min(desiredCameraY, this.#maxScrollY));
 

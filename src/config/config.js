@@ -4,6 +4,21 @@ const CONFIG = {
     backgroundColor: "#0f171e", // Цей колір потрібен класу Renderer
   },
 
+  input: {
+    pointerThreshold: 10,
+    dragRadius: 200,
+    swipeResistanceY: 200,
+
+    // Можна використовувати e.code (KeyW, Space, ShiftLeft) або e.key (Shift)
+    keys: {
+      pull: ["Space"], // Кнопка тяги (Пробіл)
+      hold: ["ShiftLeft", "ShiftRight", "Shift", "KeyW", "ArrowUp"], // Кнопка утримання / блокування
+      pump: ["KeyS", "ArrowDown"], // Кнопка підтяжки (можеш додати сюди W, або залишити тільки S)
+      left: ["KeyA", "ArrowLeft"], // Відведення вудки вліво
+      right: ["KeyD", "ArrowRight"], // Відведення вудки вправо
+    },
+  },
+
   ui: {
     draggableButtons: true,
     dragHoldTimeMs: 1000,
@@ -57,6 +72,7 @@ const CONFIG = {
     cellSize: 40,
     catchLineOffsetPx: 5,
     lockZoneXToScreen: true,
+    cameraFocusY: 0.7, // Позиція камери для поплавка на екрані (0.5 = центр, 0.7 = нижня третина)
 
     map: {
       test: {
@@ -358,11 +374,6 @@ const CONFIG = {
     events: false,
     maxEntries: 50,
     endpoint: "http://localhost:3000/api/events", // ОСЬ ЦЕЙ РЯДОК З'ЄДНУЄ ГРУ З БЕКЕНДОМ
-  },
-
-  input: {
-    pointerThreshold: 10, // Dead zone (so that random micro-movements don't jerk the rod)
-    dragRadius: 200, // Swipe distance in pixels for maximum steering
   },
 
   float: {

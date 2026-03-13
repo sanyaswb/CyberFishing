@@ -80,6 +80,16 @@ class InputManager {
     this.#anchorX = x;
   }
 
+  #isKeyMatch(e, actionArray) {
+    if (!actionArray) return false;
+    return actionArray.includes(e.code) || actionArray.includes(e.key);
+  }
+
+  #checkKeyHeld(actionArray) {
+    if (!actionArray) return false;
+    return actionArray.some((key) => this.#keys[key] === true);
+  }
+
   #bindEvents() {
     this.#canvas.addEventListener("pointerdown", (e) => {
       this.#isPointerDown = true;
@@ -154,8 +164,10 @@ class InputManager {
         this.#isPointerDown = false;
       }
 
+      // ЗМІНЕНО: Читаємо клавішу тяги з конфігу
+      const pullKeys = CONFIG.input?.keys?.pull || ["Space"];
       this.#isPulling =
-        this.#keys["Space"] === true || this.#isPointerDown === true;
+        this.#checkKeyHeld(pullKeys) || this.#isPointerDown === true;
 
       if (!this.#isPulling) {
         this.#pullDirection = new Vector2(0, 1);
@@ -173,36 +185,44 @@ class InputManager {
       resetInput();
     });
 
+    // === КЛАВІАТУРА ===
     window.addEventListener("keydown", (e) => {
       this.#keys[e.code] = true;
-      if (e.code === "Space") {
+      this.#keys[e.key] = true;
+
+      const keys = CONFIG.input?.keys || {};
+
+      // 1. Тяга
+      if (this.#isKeyMatch(e, keys.pull)) {
         this.#isPulling = true;
-        e.preventDefault();
+        if (e.code === "Space" || e.key === " ") e.preventDefault();
       }
 
-      if (
-        e.key === "Shift" ||
-        e.code === "ShiftLeft" ||
-        e.code === "ShiftRight"
-      ) {
-        if (!e.repeat) {
-          this.#holdToggleFlag = true;
-        }
+      // 2. Блокування
+      if (this.#isKeyMatch(e, keys.hold)) {
+        if (!e.repeat) this.#holdToggleFlag = true;
       }
 
-      if (e.code === "KeyS") {
-        if (!e.repeat) {
-          this.#pumpFlag = true;
-        }
+      // 3. Підтяжка
+      if (this.#isKeyMatch(e, keys.pump)) {
+        if (!e.repeat) this.#pumpFlag = true;
       }
     });
 
     window.addEventListener("keyup", (e) => {
       this.#keys[e.code] = false;
-      if (e.code === "Space") {
-        this.#isPulling = this.#isPointerDown;
-        if (!this.#isPulling) {
-          this.#pullDirection = new Vector2(0, 1);
+      this.#keys[e.key] = false;
+
+      const keys = CONFIG.input?.keys || {};
+
+      // Якщо відпустили кнопку тяги
+      if (this.#isKeyMatch(e, keys.pull)) {
+        // Перевіряємо, чи не затиснута інша кнопка тяги
+        if (!this.#checkKeyHeld(keys.pull)) {
+          this.#isPulling = this.#isPointerDown;
+          if (!this.#isPulling) {
+            this.#pullDirection = new Vector2(0, 1);
+          }
         }
       }
     });
@@ -212,28 +232,25 @@ class InputManager {
 
   #updateDirection(e) {
     let keyX = 0;
-    if (this.#keys["KeyA"] || this.#keys["ArrowLeft"]) keyX = -1;
-    if (this.#keys["KeyD"] || this.#keys["ArrowRight"]) keyX = 1;
+    const keys = CONFIG.input?.keys || {};
+
+    // ЗМІНЕНО: Читаємо стрілки з конфігу
+    if (this.#checkKeyHeld(keys.left)) keyX = -1;
+    if (this.#checkKeyHeld(keys.right)) keyX = 1;
 
     if (keyX !== 0) {
-      // Керування клавіатурою залишається без змін
       this.#pullDirection = new Vector2(keyX, 1).normalize();
     } else if (e && e.clientX !== undefined) {
-      // === НОВА ЛОГІКА СЕНСОРУ ===
       if (this.#isDragging) {
-        // Якщо гравець веде палець (свайпає), рахуємо різницю від точки першого дотику
         const dx = e.clientX - this.#startX;
-
-        // dy = 200 - це наша "чутливість" керування.
-        // Якщо свайпнути на 200px вбік, тяга відхилиться приблизно на 45 градусів.
-        const dy = 200;
+        // ЗМІНЕНО: Читаємо чутливість із конфігу (за замовчуванням 200)
+        const dy = CONFIG.input?.swipeResistanceY ?? 200;
 
         const length = Math.hypot(dx, dy);
         if (length > 0) {
           this.#pullDirection = new Vector2(dx / length, dy / length);
         }
       } else {
-        // Якщо гравець просто клікнув або тримає палець на місці (без свайпу) — тягнемо ідеально до центру
         this.#pullDirection = new Vector2(0, 1);
       }
     }
@@ -245,12 +262,10 @@ class InputManager {
   }
 
   getState() {
-    if (
-      this.#keys["KeyA"] ||
-      this.#keys["KeyD"] ||
-      this.#keys["ArrowLeft"] ||
-      this.#keys["ArrowRight"]
-    ) {
+    const keys = CONFIG.input?.keys || {};
+
+    // ЗМІНЕНО: Читаємо клавіші руху з конфігу
+    if (this.#checkKeyHeld(keys.left) || this.#checkKeyHeld(keys.right)) {
       this.#updateDirection();
     }
 
