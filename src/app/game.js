@@ -14,7 +14,6 @@ class Game {
   #locationMap;
   #projector;
   #invalidCastMarker;
-  #netCatchChance = null;
   #isNetReady = false;
   failReason = null;
   #gameTimeHours = 0;
@@ -39,6 +38,7 @@ class Game {
   #isAimingChum = false;
   #activeBoat = null;
   #holdUI;
+  #net;
 
   constructor(canvasId) {
     this.#canvas = document.getElementById(canvasId);
@@ -47,30 +47,21 @@ class Game {
     if (CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== "center") {
       anchorX = Number(CONFIG.ui.rod.x);
     }
+
     this.#inputManager = new InputManager(this.#canvas, anchorX);
-
     this.#renderer = new Renderer(this.#canvas);
-
+    this.#net = new Net(CONFIG.net);
     this.#uiManager = new UIManager(CONFIG);
     this.#uiManager.onNetClick = () => this.#handleNetClick();
     this.#uiManager.onContinueClick = () => this.#resetGame();
 
-    // --- ОНОВЛЕНА ІНІЦІАЛІЗАЦІЯ CHUM MANAGER ---
-
-    // 1. Визначаємо ID поточної локації
-    // (поки що жорстко задаємо "test", але потім сюди можна передавати вибрану гравцем локацію)
     const currentLocationId = "test";
-
-    // 2. Дістаємо налаштування локації з конфігу
     const locationConfig = CONFIG.locations.map[currentLocationId];
-
-    // 3. Беремо налаштування перспективи (з фолбеком на стандартні значення, якщо їх раптом немає в конфігу)
     const perspectiveSquash = locationConfig?.perspectiveSquash || {
       top: 0.15,
       bottom: 0.75,
     };
 
-    // 4. Створюємо менеджер, передаючи йому ці дані
     this.#chumManager = new ChumManager(
       currentLocationId,
       CONFIG.chum,
@@ -79,7 +70,6 @@ class Game {
 
     this.#chumUI = new ChumUI(() => this.#toggleChumAim());
     this.#isAimingChum = false;
-
     this.#locationMap = new LocationMap("test", CONFIG.locations);
     this.#projector = new ViewportProjector(CONFIG.locations, "test");
 
@@ -98,7 +88,6 @@ class Game {
     this.#depthUI = new DepthSelectorUI();
     this.#timeUI = new TimeDisplayUI();
     this.#holdUI = new HoldChargesUI();
-
     this.#resizeCanvas();
     window.addEventListener("resize", () => this.#resizeCanvas());
 
@@ -180,7 +169,6 @@ class Game {
 
   #hookFish(hookedFish) {
     this.#gameState = "playing";
-    this.#netCatchChance = null;
     this.#isNetReady = false;
 
     const rod = new Rod(CONFIG.rod.level, CONFIG.rod.basePower);
@@ -261,13 +249,20 @@ class Game {
   #handleNetClick() {
     if (!this.#isNetReady || this.#gameState !== "playing") return;
 
-    const roll = Math.random() * 100;
-    const isSuccess = roll <= this.#netCatchChance;
+    // --- НОВЕ: Отримуємо вагу та рахуємо шанс прямо тут ---
+    const fishWeight = this.#fishingSystem
+      ? this.#fishingSystem.getFishWeight()
+      : 0;
+    const catchChance = this.#net.calculateCatchChance(fishWeight);
 
+    const roll = Math.random() * 100;
+    const isSuccess = roll <= catchChance;
+
+    // Відправляємо подію з новим розрахованим шансом
     document.dispatchEvent(
       new CustomEvent("netCatchRoll", {
         detail: {
-          chance: this.#netCatchChance,
+          chance: catchChance, // Замінили this.#netCatchChance на catchChance
           roll: roll,
           success: isSuccess,
         },
@@ -294,7 +289,6 @@ class Game {
     this.#gameState = "scouting";
     this.failReason = null;
     this.#currentBitingFish = null;
-    this.#netCatchChance = null;
     this.#isNetReady = false;
 
     if (this.#tensionMeter) this.#tensionMeter.reset();
@@ -392,27 +386,15 @@ class Game {
         CONFIG.locations.cellSize,
       );
       if (bounds) {
-        const mapBottomScreenY = this.#projector.virtualToScreen(
-          0,
-          bounds.bottom,
-        ).y;
-        const catchLineY = Math.min(mapBottomScreenY, this.#canvas.height);
-
-        let triggerLineY = catchLineY - this.#canvas.height * 0.1;
-
-        if (CONFIG.net && CONFIG.net.active) {
-          triggerLineY = catchLineY - CONFIG.net.length * 10;
-        }
+        const virtualBottomY = bounds.bottom;
+        // Беремо лінію спрацьовування з нашого нового класу Net
+        const triggerVirtualY = this.#net.getTriggerVirtualY(virtualBottomY);
 
         const boats = this.#chumManager.getBoats();
         for (const boat of boats) {
           if (boat.state === "drifting") {
-            const boatScreenY = this.#projector.virtualToScreen(
-              boat.pos.x,
-              boat.pos.y,
-            ).y;
-
-            if (boatScreenY >= triggerLineY) {
+            // Тепер просто перевіряємо віртуальну координату кораблика
+            if (boat.pos.y >= triggerVirtualY) {
               boat.isFinished = true;
             }
           }
@@ -460,7 +442,10 @@ class Game {
       inputState.longPressPos = null;
 
       const method = CONFIG.chum.currentMethod || "hand";
-      const maxHandDist = CONFIG.chum.deliveryMethods.hand.maxDistanceVirtual;
+
+      // --- ЗМІНЕНО ТУТ: Читаємо дистанцію з локації ---
+      const locationConfig = CONFIG.locations.map["test"];
+      const maxHandDist = locationConfig.chumCastDistance || 800;
 
       if (inputState.clickPos) {
         const vPos = this.#projector.screenToVirtual(
@@ -473,19 +458,14 @@ class Game {
           CONFIG.locations.cellSize,
         );
 
-        const rodScreenX =
-          CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== "center"
-            ? Number(CONFIG.ui.rod.x)
-            : this.#canvas.width / 2;
-        const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
-        const rodVirtualPos = this.#projector.screenToVirtual(
-          rodScreenX,
-          rodScreenY,
+        // --- НОВЕ: Рахуємо лінію заборони у віртуальному світі ---
+        const mapBounds = this.#locationMap.getCastableBoundsVirtual(
+          CONFIG.locations.cellSize,
         );
-        const distToClick = Math.hypot(
-          vPos.x - rodVirtualPos.x,
-          vPos.y - rodVirtualPos.y,
-        );
+        const virtualBottomY = mapBounds ? mapBounds.bottom : 1440;
+
+        // Це точна координата Y, вище якої кидати не можна
+        const throwLineVirtualY = virtualBottomY - maxHandDist;
 
         if (cell && cell.isCastable && !cell.hasCollision) {
           if (method === "boat" && this.#activeBoat) {
@@ -498,7 +478,9 @@ class Game {
             );
             this.#activeBoat = null;
             this.#isAimingChum = false;
-          } else if (method === "hand" && distToClick <= maxHandDist) {
+
+            // --- ЗМІНЕНО ТУТ: Перевіряємо, чи клік знаходиться НИЖЧЕ нашої лінії (Y більший або дорівнює) ---
+          } else if (method === "hand" && vPos.y >= throwLineVirtualY) {
             this.#chumManager.deployBait(
               vPos.x,
               vPos.y,
@@ -522,45 +504,6 @@ class Game {
           };
         }
         return;
-      }
-    }
-
-    if (!this.#isAimingChum) {
-      const method = CONFIG.chum.currentMethod || "hand";
-      const isManual = CONFIG.chum.deliveryMethods.boat?.manualControl;
-      const boats = this.#chumManager ? this.#chumManager.getBoats() : [];
-
-      if (method === "boat" && isManual && boats.length > 0) {
-        const boat = boats[0];
-
-        if (boat.state !== "drifting") {
-          inputState.isPulling = false;
-          inputState.longPressPos = null;
-
-          if (inputState.clickPos) {
-            const clickY = inputState.clickPos.y;
-            const vPos = this.#projector.screenToVirtual(
-              inputState.clickPos.x,
-              clickY,
-            );
-            const cell = this.#locationMap.getCellAtVirtualPos(
-              vPos.x,
-              vPos.y,
-              CONFIG.locations.cellSize,
-            );
-
-            const isBottomClick =
-              clickY > this.#canvas.height * 0.85 ||
-              (cell && !cell.isCastable && clickY > this.#canvas.height * 0.7);
-
-            if (isBottomClick) {
-              boat.setTarget(boat.startPos.x, boat.startPos.y, null, true);
-            } else if (cell && cell.isCastable && !cell.hasCollision) {
-              boat.setTarget(vPos.x, vPos.y, boat.zoneId, false);
-            }
-            inputState.clickPos = null;
-          }
-        }
       }
     }
 
@@ -1087,68 +1030,40 @@ class Game {
       this.#float.update(dynamicBounds, dt, dynamicEnv, checkWater);
 
       const updatedFloatPos = this.#float.getPosition();
-      const updatedFloatScreenPos = this.#projector.virtualToScreen(
-        updatedFloatPos.x,
-        updatedFloatPos.y,
-      );
 
       const castableBoundsVirtual = this.#locationMap.getCastableBoundsVirtual(
         CONFIG.locations.cellSize,
       );
-      const mapBottomScreenY = this.#projector.virtualToScreen(
-        0,
-        castableBoundsVirtual.bottom,
-      ).y;
+      const virtualBottomY = castableBoundsVirtual
+        ? castableBoundsVirtual.bottom
+        : 1440;
 
-      const catchLineY = Math.min(mapBottomScreenY, this.#canvas.height);
+      // --- 1. ОНОВЛЕННЯ ПІДСАКИ ЧЕРЕЗ КЛАС NET ---
+      this.#isNetReady = this.#net.isFloatInZone(
+        updatedFloatPos.y,
+        virtualBottomY,
+      );
 
-      if (this.#netCatchChance === null) {
-        if (CONFIG.net && CONFIG.net.active && this.#fishingSystem) {
-          const fW = this.#fishingSystem.getFishWeight();
-          const nW = CONFIG.net.maxWeight;
-          if (fW <= nW) {
-            this.#netCatchChance = 100;
-          } else {
-            const diffPercent = ((fW - nW) / nW) * 100;
-            let baseChance = 50;
-            for (const t of CONFIG.net.chances) {
-              if (diffPercent >= t.min && diffPercent <= t.max) {
-                baseChance = t.chance;
-                break;
-              }
-            }
-            const qualBonus = Math.round((CONFIG.net.quality - 1.0) * 10);
-            this.#netCatchChance = Math.min(100, baseChance + qualBonus);
-          }
-        } else {
-          this.#netCatchChance = 100;
-        }
-      }
+      // --- 2. ЛОГІКА РИВКА ТА АВТОВИЛОВУ (У віртуальних координатах) ---
+      const triggerVirtualY = this.#net.getTriggerVirtualY(virtualBottomY);
 
-      let triggerLineY = catchLineY - this.#canvas.height * 0.1;
+      // Конвертуємо піксельний відступ берега у віртуальний
+      const catchLineOffsetPx = CONFIG.locations.catchLineOffsetPx ?? 5;
+      const virtualCatchOffset = catchLineOffsetPx / this.#projector.getScale();
+      const autoCatchVirtualY = virtualBottomY - virtualCatchOffset;
 
-      if (CONFIG.net && CONFIG.net.active) {
-        const netBonusPx = CONFIG.net.length * 10;
-        triggerLineY = catchLineY - netBonusPx;
-        this.#isNetReady =
-          updatedFloatScreenPos.y >= triggerLineY &&
-          updatedFloatScreenPos.y < catchLineY;
-      } else {
-        this.#isNetReady = false;
-      }
-
-      const catchLineOffset = CONFIG.locations.catchLineOffsetPx ?? 5;
-
+      // Ривок риби біля підсаки
       if (
-        updatedFloatScreenPos.y >= triggerLineY &&
-        updatedFloatScreenPos.y < catchLineY - catchLineOffset
+        updatedFloatPos.y >= triggerVirtualY &&
+        updatedFloatPos.y < autoCatchVirtualY
       ) {
         if (typeof this.#fishingSystem.tryTriggerFishLastDash === "function") {
           this.#fishingSystem.tryTriggerFishLastDash(dt);
         }
       }
 
-      if (updatedFloatScreenPos.y >= catchLineY - catchLineOffset) {
+      // Гарантований вилов, якщо риба дотягнута прямо до ніг (за межу підсаки)
+      if (updatedFloatPos.y >= autoCatchVirtualY) {
         this.#gameState = "victory";
 
         if (CONFIG.debug?.overlay) {
@@ -1257,6 +1172,12 @@ class Game {
   draw() {
     this.#renderer.clear(CONFIG.canvas.backgroundColor);
 
+    const mapBounds = this.#locationMap.getCastableBoundsVirtual(
+      CONFIG.locations.cellSize,
+    );
+    const virtualBottomY = mapBounds ? mapBounds.bottom : 1440;
+    const vTop = mapBounds ? mapBounds.top : 0;
+
     if (typeof this.#renderer.drawBackground === "function") {
       this.#renderer.drawBackground(this.#locationMap, this.#projector);
     }
@@ -1273,41 +1194,28 @@ class Game {
       this.#renderer.drawInvalidCastMarker(this.#invalidCastMarker);
     }
 
-    // --- ДОДАНО 4: Відмальовка зон прикормки ---
     if (
       CONFIG.locations.showChumZones !== false &&
       this.#chumManager &&
       typeof this.#renderer.drawChumZones === "function"
     ) {
-      const mapBounds = this.#locationMap.getCastableBoundsVirtual(
-        CONFIG.locations.cellSize,
-      );
-      const vTop = mapBounds ? mapBounds.top : 0;
-      const vBottom = mapBounds ? mapBounds.bottom : 1440;
       this.#renderer.drawChumZones(
         this.#chumManager,
         this.#projector,
         vTop,
-        vBottom,
+        virtualBottomY,
       );
     }
 
-    // --- ДОДАНО 5: Відмальовка Корабликів ---
     if (this.#chumManager && typeof this.#renderer.drawBoats === "function") {
-      const mapBounds = this.#locationMap.getCastableBoundsVirtual(
-        CONFIG.locations.cellSize,
-      );
-      const vTop = mapBounds ? mapBounds.top : 0;
-      const vBottom = mapBounds ? mapBounds.bottom : 1440;
       this.#renderer.drawBoats(
         this.#chumManager,
         this.#projector,
         vTop,
-        vBottom,
+        virtualBottomY,
       );
     }
 
-    // Малюємо зону закидання ТІЛЬКИ якщо режим "hand" (руками)
     if (
       this.#isAimingChum &&
       typeof this.#renderer.drawChumAiming === "function"
@@ -1315,37 +1223,13 @@ class Game {
       const method = CONFIG.chum.currentMethod || "hand";
 
       if (method === "hand") {
-        const rodScreenX =
-          CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== "center"
-            ? Number(CONFIG.ui.rod.x)
-            : this.#canvas.width / 2;
-        const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
-        const rodVirtualPos = this.#projector.screenToVirtual(
-          rodScreenX,
-          rodScreenY,
-        );
+        const locationConfig = CONFIG.locations.map["test"];
+        const maxHandDist = locationConfig?.chumCastDistance || 800;
 
-        // --- НОВЕ: Отримуємо межі карти та перспективу ---
-        const mapBounds = this.#locationMap.getCastableBoundsVirtual(
-          CONFIG.locations.cellSize,
-        );
-        const vTop = mapBounds ? mapBounds.top : 0;
-        const vBottom = mapBounds ? mapBounds.bottom : 1440;
-
-        // Беремо перспективу поточної локації (зараз "test")
-        const squash = CONFIG.locations.map["test"].perspectiveSquash || {
-          top: 0.15,
-          bottom: 0.75,
-        };
-
-        // Передаємо нові параметри у рендерер
         this.#renderer.drawChumAiming(
           this.#projector,
-          rodVirtualPos,
-          CONFIG.chum.deliveryMethods.hand.maxDistanceVirtual,
-          squash,
-          vTop,
-          vBottom,
+          virtualBottomY,
+          maxHandDist,
         );
       }
     }
@@ -1361,10 +1245,10 @@ class Game {
       const sPos = this.#projector.virtualToScreen(vPos.x, vPos.y);
 
       this.#renderer.drawCatchZone(
-        this.#locationMap,
         this.#projector,
+        this.#net,
+        virtualBottomY,
         CONFIG.locations,
-        CONFIG.net,
         CONFIG.ui.catchZone,
       );
 
@@ -1423,11 +1307,6 @@ class Game {
 
       this.#lastGameState = this.#gameState;
 
-      // --- ДОДАНО: КОМПЛЕКСНИЙ ЗАПОБІЖНИК ВІД ВИХОДУ НА БЕРЕГ ---
-      const bounds = this.#locationMap.getCastableBoundsVirtual(
-        CONFIG.locations.cellSize,
-      );
-      const virtualBottomY = bounds ? bounds.bottom : Infinity;
       const mapBottomScreenY = this.#projector.virtualToScreen(
         0,
         virtualBottomY,

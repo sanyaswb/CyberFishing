@@ -97,7 +97,8 @@ class ChumZone {
     const dx = this.x - otherZone.x;
     const dy = this.y - otherZone.y;
     const dist = Math.hypot(dx, dy);
-    // Використовуємо baseRadius
+
+    // Замінили baseRadX на baseRadius
     return dist < Math.max(this.baseRadius, otherZone.baseRadius);
   }
 }

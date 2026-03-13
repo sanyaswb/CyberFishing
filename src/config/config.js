@@ -74,6 +74,7 @@ const CONFIG = {
         depthBounds: { min: 0.1, max: 15.0 },
 
         perspectiveSquash: { top: 0.15, bottom: 0.75 },
+        chumCastDistance: 300,
 
         weather: {
           updateIntervalMs: 10000,
@@ -473,7 +474,7 @@ const CONFIG = {
 
   net: {
     active: true,
-    length: 15.0, // 150px How long the net pull lasts in seconds
+    length: 15.0, // Це "виліт" підсаки у віртуальних одиницях (буде 150px)
     maxWeight: 3.0,
     quality: 1.0,
     type: "all",
@@ -492,7 +493,6 @@ const CONFIG = {
       hand: {
         type: "hand",
         flightTimeMs: 3000,
-        maxDistanceVirtual: 700,
       },
       boat: {
         type: "boat",

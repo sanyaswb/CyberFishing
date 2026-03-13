@@ -88,34 +88,32 @@ class Renderer {
   }
 
   drawCatchZone(
-    locationMap,
     projector,
+    netSystem,
+    virtualBottomY,
     locationsConfig,
-    netConfig,
     catchZoneUIConfig,
   ) {
     if (!locationsConfig.debugVisuals) return;
 
-    const bounds = locationMap.getCastableBoundsVirtual(
-      locationsConfig.cellSize,
-    );
-    const virtualBottomY = bounds ? bounds.bottom : Infinity;
-    const mapBottomScreenY = projector.virtualToScreen(0, virtualBottomY).y;
-
-    const catchLineY = Math.min(mapBottomScreenY, this.#canvas.height);
-    const heightToDraw = this.#canvas.height - catchLineY;
+    const catchLineOffsetPx = locationsConfig.catchLineOffsetPx ?? 5;
+    const virtualCatchOffset = catchLineOffsetPx / projector.getScale();
+    const virtualCatchY = virtualBottomY - virtualCatchOffset;
+    const catchScreenY = projector.virtualToScreen(0, virtualCatchY).y;
 
     const showCatch = locationsConfig.showCatchZone !== false;
     const showNet = locationsConfig.showNetZone !== false;
 
     if (showCatch) {
+      const heightToDraw = this.#canvas.height - catchScreenY;
+
       if (heightToDraw > 0) {
         this.#ctx.fillStyle =
           catchZoneUIConfig?.color || "rgba(0, 150, 255, 0.3)";
-        this.#ctx.fillRect(0, catchLineY, this.#canvas.width, heightToDraw);
+        this.#ctx.fillRect(0, catchScreenY, this.#canvas.width, heightToDraw);
       }
 
-      const lineDrawY = Math.min(catchLineY, this.#canvas.height - 2);
+      const lineDrawY = Math.min(catchScreenY, this.#canvas.height - 2);
       this.#ctx.strokeStyle = "rgba(0, 200, 255, 0.8)";
       this.#ctx.lineWidth = 2;
       this.#ctx.beginPath();
@@ -124,21 +122,29 @@ class Renderer {
       this.#ctx.stroke();
     }
 
-    if (showNet && netConfig && netConfig.active) {
-      const netBonusPx = netConfig.length * 10;
-      const netLineY = catchLineY - netBonusPx;
+    if (showNet && netSystem && netSystem.isActive) {
+      const virtualTriggerY = netSystem.getTriggerVirtualY(virtualBottomY);
+      const triggerScreenY = projector.virtualToScreen(0, virtualTriggerY).y;
+      const netZoneHeight = catchScreenY - triggerScreenY;
 
       this.#ctx.strokeStyle = "rgba(0, 255, 128, 0.5)";
       this.#ctx.lineWidth = 1;
       this.#ctx.setLineDash([10, 10]);
       this.#ctx.beginPath();
-      this.#ctx.moveTo(0, netLineY);
-      this.#ctx.lineTo(this.#canvas.width, netLineY);
+      this.#ctx.moveTo(0, triggerScreenY);
+      this.#ctx.lineTo(this.#canvas.width, triggerScreenY);
       this.#ctx.stroke();
       this.#ctx.setLineDash([]);
 
-      this.#ctx.fillStyle = "rgba(0, 255, 128, 0.05)";
-      this.#ctx.fillRect(0, netLineY, this.#canvas.width, netBonusPx);
+      if (netZoneHeight > 0) {
+        this.#ctx.fillStyle = "rgba(0, 255, 128, 0.05)";
+        this.#ctx.fillRect(
+          0,
+          triggerScreenY,
+          this.#canvas.width,
+          netZoneHeight,
+        );
+      }
     }
   }
 
@@ -201,30 +207,22 @@ class Renderer {
     }
   }
 
-  drawChumAiming(
-    projector,
-    rodVirtualPos,
-    maxDistanceVirtual, // <-- Це значення з вашого CONFIG.chum
-    locationSquash,
-    virtualTopY,
-    virtualBottomY,
-  ) {
-    // Отримуємо екранну позицію вудилища
-    const rodScreen = projector.virtualToScreen(
-      rodVirtualPos.x,
-      rodVirtualPos.y,
-    );
+  drawChumAiming(projector, virtualBottomY, maxDistanceVirtual) {
+    // 1. Рахуємо координату лінії у віртуальному світі
+    const virtualLineY = virtualBottomY - maxDistanceVirtual;
 
-    // ДИНАМІЧНА ВІДСТАНЬ:
-    // Беремо віртуальну дистанцію з конфігу (напр. 800) і переводимо в екранні пікселі
-    const distancePx = maxDistanceVirtual * projector.getScale();
+    // 2. Переводимо цю координату в екранні пікселі
+    const screenPos = projector.virtualToScreen(0, virtualLineY);
+    const lineScreenY = screenPos.y;
 
-    const lineScreenY = rodScreen.y - distancePx;
+    // 3. Знаходимо екранну координату берега для заливки
+    const screenBottomPos = projector.virtualToScreen(0, virtualBottomY);
+    const fillHeight = screenBottomPos.y - lineScreenY;
 
     this.#ctx.save();
     this.#ctx.beginPath();
 
-    // Малюємо лінію від лівого краю екрана до правого
+    // Малюємо пунктирну лінію
     this.#ctx.moveTo(0, lineScreenY);
     this.#ctx.lineTo(this.#canvas.width, lineScreenY);
 
@@ -233,9 +231,11 @@ class Renderer {
     this.#ctx.setLineDash([15, 10]);
     this.#ctx.stroke();
 
-    // Легка напівпрозора заливка від лінії до берега
-    this.#ctx.fillStyle = "rgba(255, 170, 0, 0.05)";
-    this.#ctx.fillRect(0, lineScreenY, this.#canvas.width, distancePx);
+    // Робимо заливку
+    if (fillHeight > 0) {
+      this.#ctx.fillStyle = "rgba(255, 170, 0, 0.05)";
+      this.#ctx.fillRect(0, lineScreenY, this.#canvas.width, fillHeight);
+    }
 
     this.#ctx.restore();
   }

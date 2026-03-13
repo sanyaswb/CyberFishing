@@ -77,6 +77,63 @@ class Hook {
   }
 }
 
+class Net {
+  #config;
+
+  constructor(config) {
+    this.#config = config || { active: false };
+  }
+
+  get isActive() {
+    return this.#config.active;
+  }
+
+  // Переводимо стару логіку "length * 10" у віртуальну дистанцію.
+  // Наприклад, length 15 = 150 віртуальних пікселів від берега.
+  get virtualReach() {
+    return (this.#config.length || 0) * 10;
+  }
+
+  // Отримуємо віртуальну Y-координату, де починається зона підсаки
+  getTriggerVirtualY(virtualBottomY) {
+    // Якщо підсаки немає, базова зона вилову (наприклад, 50 віртуальних пікселів біля самого берега)
+    const baseReach = 50;
+    const reach = this.isActive ? this.virtualReach : baseReach;
+    return virtualBottomY - reach;
+  }
+
+  // Перевірка, чи знаходиться поплавець/риба у зоні дії підсаки
+  isFloatInZone(floatVirtualY, virtualBottomY) {
+    if (!this.isActive) return false;
+    const triggerY = this.getTriggerVirtualY(virtualBottomY);
+    return floatVirtualY >= triggerY && floatVirtualY < virtualBottomY;
+  }
+
+  // Розрахунок шансу успішного вилову риби
+  calculateCatchChance(fishWeight) {
+    if (!this.isActive) return 100; // Якщо механіка підсаки вимкнена
+
+    const maxWeight = this.#config.maxWeight || 0;
+    if (fishWeight <= maxWeight) return 100;
+
+    // Якщо риба важча за ліміт підсаки:
+    const diffPercent = ((fishWeight - maxWeight) / maxWeight) * 100;
+    let baseChance = 50;
+
+    if (this.#config.chances) {
+      for (const t of this.#config.chances) {
+        if (diffPercent >= t.min && diffPercent <= t.max) {
+          baseChance = t.chance;
+          break;
+        }
+      }
+    }
+
+    const qualBonus = Math.round(((this.#config.quality || 1.0) - 1.0) * 10);
+    return Math.min(100, Math.max(0, baseChance + qualBonus));
+  }
+}
+
 class FloatEntity {
   #position;
   #velocity;
