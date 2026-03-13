@@ -216,15 +216,26 @@ class InputManager {
     if (this.#keys["KeyD"] || this.#keys["ArrowRight"]) keyX = 1;
 
     if (keyX !== 0) {
+      // Керування клавіатурою залишається без змін
       this.#pullDirection = new Vector2(keyX, 1).normalize();
     } else if (e && e.clientX !== undefined) {
-      const rect = this.#canvas.getBoundingClientRect();
-      let anchorX = this.#anchorX !== null ? this.#anchorX : rect.width / 2;
-      const dx = e.clientX - rect.left - anchorX;
-      const dy = rect.height / 2;
-      const length = Math.hypot(dx, dy);
-      if (length > 0)
-        this.#pullDirection = new Vector2(dx / length, dy / length);
+      // === НОВА ЛОГІКА СЕНСОРУ ===
+      if (this.#isDragging) {
+        // Якщо гравець веде палець (свайпає), рахуємо різницю від точки першого дотику
+        const dx = e.clientX - this.#startX;
+
+        // dy = 200 - це наша "чутливість" керування.
+        // Якщо свайпнути на 200px вбік, тяга відхилиться приблизно на 45 градусів.
+        const dy = 200;
+
+        const length = Math.hypot(dx, dy);
+        if (length > 0) {
+          this.#pullDirection = new Vector2(dx / length, dy / length);
+        }
+      } else {
+        // Якщо гравець просто клікнув або тримає палець на місці (без свайпу) — тягнемо ідеально до центру
+        this.#pullDirection = new Vector2(0, 1);
+      }
     }
   }
 
