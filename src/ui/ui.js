@@ -378,11 +378,11 @@ class UIManager {
       position: "absolute",
       bottom: "20px",
       right: "20px",
-      padding: "15px 30px",
+      padding: "12px 24px",
       borderRadius: "8px",
       fontFamily: "monospace",
       fontWeight: "bold",
-      fontSize: "18px",
+      fontSize: "16px",
       zIndex: "9999",
       display: "none",
       touchAction: "none",
@@ -699,15 +699,14 @@ class TimeDisplayUI {
 class ChumUI {
   constructor(onClickCallback) {
     this.button = document.createElement("button");
-    this.button.innerText = "Прикормка";
+    this.button.innerText = "🍞";
 
     this.currentState = "idle";
 
     Object.assign(this.button.style, {
       position: "absolute",
       bottom: "20px",
-      left: "50%",
-      transform: "translateX(-50%)",
+      right: "150px",
       padding: "12px 24px",
       fontSize: "16px",
       fontWeight: "bold",
@@ -747,7 +746,7 @@ class ChumUI {
 
     switch (state) {
       case "disabled":
-        this.button.innerText = "Прикормка";
+        this.button.innerText = "🍞";
         this.button.style.backgroundColor = "#555555";
         this.button.style.borderColor = "#444444";
         this.button.style.color = "#aaaaaa";
@@ -757,7 +756,7 @@ class ChumUI {
         break;
 
       case "empty":
-        this.button.innerText = "Розряджено";
+        this.button.innerText = "🔘";
         this.button.style.backgroundColor = "#2c3e50";
         this.button.style.borderColor = "#34495e";
         this.button.style.color = "#95a5a6";
@@ -767,7 +766,7 @@ class ChumUI {
         break;
 
       case "aiming":
-        this.button.innerText = "Відмінити ціль";
+        this.button.innerText = "🚫";
         this.button.style.backgroundColor = "#ff4444";
         this.button.style.borderColor = "#ff8888";
         this.button.style.color = "#fff";
@@ -777,7 +776,7 @@ class ChumUI {
         break;
 
       case "moving":
-        this.button.innerText = "Пливе...";
+        this.button.innerText = "⏩";
         this.button.style.backgroundColor = "#6c7a89";
         this.button.style.borderColor = "#8a9bac";
         this.button.style.color = "#fff";
@@ -787,7 +786,7 @@ class ChumUI {
         break;
 
       case "ready":
-        this.button.innerText = "Активувати";
+        this.button.innerText = "✅";
         this.button.style.backgroundColor = "#00ff80";
         this.button.style.borderColor = "#55ffaa";
         this.button.style.color = "#000";
@@ -798,7 +797,7 @@ class ChumUI {
 
       case "idle":
       default:
-        this.button.innerText = "Прикормка";
+        this.button.innerText = "🍞";
         this.button.style.backgroundColor = "#ffaa00";
         this.button.style.borderColor = "#ffcc00";
         this.button.style.color = "#000";

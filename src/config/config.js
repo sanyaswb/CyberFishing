@@ -19,38 +19,17 @@ const CONFIG = {
     },
   },
 
-  ui: {
-    draggableButtons: true,
-    dragHoldTimeMs: 1000,
+  debug: {
+    overlay: true,
+    initialTime: 17.5, // Початковий час. 17.5 = 17:30. Якщо поставити null, гра візьме реальний час.
+    timeScale: 240, // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
 
-    rod: {
-      x: "center",
-      yOffset: 0,
-    },
-
-    indicators: {
-      x: "center",
-      y: 40,
-      spacing: 40,
-    },
-
-    catchZone: {
-      color: "rgba(0, 150, 255, 0.5)",
-    },
-
-    line: {
-      visible: true,
-      color: "rgba(255, 255, 255, 0.3)",
-      width: 1,
-      straightenTension: 30, // Відсоток натягу (0-100), при якому ліска стає ідеально рівною
-      sagOffset: 60, // Наскільки сильно провисає ліска у пікселях
-      shrinkPercent: 70, // На скільки відсотків зменшити довжину лінії
-      shrinkEasePower: 4, // Чим вище, тим крутіше крива зменшення довжини (1 = лінійно, >1 = більш різко ближче до 100% натягу)
-      sinkDropPx: 120, // На скільки пікселів опускається ліска при повному зануренні поплавця (для візуального ефекту)
-      snapDurationMs: 300,
-      snapDepthMaxMultiplier: 2.0,
-      distanceDelayMinMs: 1500,
-      distanceDelayMaxMs: 5000,
+    fixedCatch: {
+      enabled: true,
+      fishId: "crucian_stalker", // Можна вписати 'perch_radioactive'
+      level: 5,
+      weight: 2.678,
+      resistance: 2.5,
     },
   },
 
@@ -356,20 +335,6 @@ const CONFIG = {
     ],
   },
 
-  debug: {
-    overlay: true,
-    initialTime: 17.5, // Початковий час. 17.5 = 17:30. Якщо поставити null, гра візьме реальний час.
-    timeScale: 240, // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
-
-    fixedCatch: {
-      enabled: true,
-      fishId: "crucian_stalker", // Можна вписати 'perch_radioactive'
-      level: 5,
-      weight: 2.678,
-      resistance: 2.5,
-    },
-  },
-
   logs: {
     events: false,
     maxEntries: 50,
@@ -654,6 +619,41 @@ const CONFIG = {
       // 66-100%: Orange to Red
       high: { start: [255, 128, 0], end: [255, 0, 0] },
       breakpoints: { low: 33, mid: 66 },
+    },
+  },
+
+  ui: {
+    draggableButtons: true,
+    dragHoldTimeMs: 1000,
+
+    rod: {
+      x: "center",
+      yOffset: 0,
+    },
+
+    indicators: {
+      x: "center",
+      y: 40,
+      spacing: 40,
+    },
+
+    catchZone: {
+      color: "rgba(0, 150, 255, 0.5)",
+    },
+
+    line: {
+      visible: true,
+      color: "rgba(255, 255, 255, 0.3)",
+      width: 1,
+      straightenTension: 30, // Відсоток натягу (0-100), при якому ліска стає ідеально рівною
+      sagOffset: 60, // Наскільки сильно провисає ліска у пікселях
+      shrinkPercent: 70, // На скільки відсотків зменшити довжину лінії
+      shrinkEasePower: 4, // Чим вище, тим крутіше крива зменшення довжини (1 = лінійно, >1 = більш різко ближче до 100% натягу)
+      sinkDropPx: 120, // На скільки пікселів опускається ліска при повному зануренні поплавця (для візуального ефекту)
+      snapDurationMs: 300,
+      snapDepthMaxMultiplier: 2.0,
+      distanceDelayMinMs: 1500,
+      distanceDelayMaxMs: 5000,
     },
   },
 

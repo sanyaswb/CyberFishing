@@ -29,6 +29,7 @@ canvas {
   box-shadow: 10px 0 20px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(5px);
 }
+
 .devtools-panel.open {
   left: 0;
 }
@@ -47,6 +48,7 @@ canvas {
   font-size: 18px;
   color: #00ff80;
 }
+
 .devtools-close {
   background: none;
   border: none;
@@ -56,6 +58,7 @@ canvas {
   font-weight: bold;
   padding: 0 5px;
 }
+
 .devtools-body {
   flex: 1;
   padding: 15px;
@@ -64,12 +67,15 @@ canvas {
   flex-direction: column;
   gap: 10px;
 }
+
 .devtools-body::-webkit-scrollbar {
   width: 6px;
 }
+
 .devtools-body::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .devtools-body::-webkit-scrollbar-thumb {
   background: #00ccff;
   border-radius: 3px;
@@ -78,6 +84,7 @@ canvas {
 .devtools-section {
   margin-top: 5px;
 }
+
 .devtools-section-title {
   font-size: 14px;
   color: #00ccff;
@@ -93,10 +100,12 @@ canvas {
   display: flex;
   gap: 8px;
 }
+
 .devtools-section-title:hover {
   background: rgba(0, 204, 255, 0.2);
   color: #fff;
 }
+
 .devtools-section-content {
   padding-left: 15px;
   border-left: 2px solid #00ccff;
@@ -112,6 +121,7 @@ canvas {
   padding: 4px 0;
   border-bottom: 1px dashed #2a3b4c;
 }
+
 .devtools-label {
   font-size: 13px;
   color: #ccc;
@@ -127,9 +137,11 @@ canvas {
   text-align: right;
   font-family: monospace;
 }
+
 .devtools-input-num {
   width: 70px;
 }
+
 .devtools-input-text {
   width: 110px;
 }
@@ -140,11 +152,13 @@ canvas {
   width: 36px;
   height: 18px;
 }
+
 .switch input {
   opacity: 0;
   width: 0;
   height: 0;
 }
+
 .slider {
   position: absolute;
   cursor: pointer;
@@ -156,6 +170,7 @@ canvas {
   transition: 0.2s;
   border-radius: 18px;
 }
+
 .slider:before {
   position: absolute;
   content: "";
@@ -167,9 +182,11 @@ canvas {
   transition: 0.2s;
   border-radius: 50%;
 }
+
 input:checked + .slider {
   background-color: #00ff80;
 }
+
 input:checked + .slider:before {
   transform: translateX(18px);
 }
