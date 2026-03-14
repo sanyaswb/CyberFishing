@@ -1,159 +1,182 @@
-class Game {
-  #canvas;
-  #inputManager;
-  #renderer;
-  #uiManager;
-  #fishingSystem;
-  #float;
-  #lastTime;
-  #bounds;
-  #tensionMeter;
-  #gameState;
-  #fishCondition;
-  #staminaController;
-  #locationMap;
-  #projector;
-  #invalidCastMarker;
-  #isNetReady = false;
-  failReason = null;
-  #gameTimeHours = 0;
-  #castManager;
-  #biteSystem;
+class EnvironmentSystem {
+  #config;
+  #gameTimeHours;
+  #lastHour = -1;
+  #currentPhase = "day";
   #isRaining = false;
   #isFoggy = false;
   #weatherTimer = 0;
-  #currentBitingFish = null;
-  #currentHookDepth = 1.0;
-  #depthUI;
-  #timeUI;
   #windState = { direction: 0, rainMult: 1.0, timer: 0 };
-  #lastHour = -1;
-  #currentPhase = "day";
-  #castStartTime = 0;
-  #castDistanceRatio = 0;
-  #lastGameState = null;
-  #playStartTime = 0;
-  #chumManager;
-  #chumUI;
-  #isAimingChum = false;
-  #activeBoat = null;
-  #holdUI;
-  #net;
 
-  constructor(canvasId) {
-    this.#canvas = document.getElementById(canvasId);
-    const rodX = CONFIG.ui?.rod?.x;
-    const anchorX = rodX && rodX !== "center" ? Number(rodX) : null;
+  constructor(config, initialTime = 12) {
+    this.#config = config;
+    this.#gameTimeHours = initialTime;
+  }
 
-    this.#inputManager = new InputManager(this.#canvas, anchorX);
-    this.#renderer = new Renderer(this.#canvas);
-    this.#net = new Net(CONFIG.net);
-    this.#uiManager = new UIManager(CONFIG);
-    this.#uiManager.onNetClick = () => this.#handleNetClick();
-    this.#uiManager.onContinueClick = () => this.#resetGame();
-
-    const locId = "test";
-    const locCfg = CONFIG.locations.map[locId];
-    const squash = locCfg?.perspectiveSquash || { top: 0.15, bottom: 0.75 };
-
-    this.#chumManager = new ChumManager(locId, CONFIG.chum, squash);
-    this.#chumUI = new ChumUI(() => this.#handleChumClick());
-    this.#locationMap = new LocationMap(locId, CONFIG.locations);
-    this.#projector = new ViewportProjector(CONFIG.locations, locId);
-
-    this.#initEvents();
-    this.#depthUI = new DepthSelectorUI();
-    this.#timeUI = new TimeDisplayUI();
-    this.#holdUI = new HoldChargesUI();
-    this.#resizeCanvas();
-    window.addEventListener("resize", () => this.#resizeCanvas());
-
-    const initX = CONFIG.float.initialX ?? this.#canvas.width / 2;
-    const initY = CONFIG.float.initialY ?? this.#canvas.height / 2;
-    this.#float = new FloatEntity(initX, initY, CONFIG.float);
-
+  update(dt, timeScale) {
     this.#gameTimeHours =
-      CONFIG.debug?.initialTime ??
-      new Date().getHours() + new Date().getMinutes() / 60;
-    this.#gameState = "scouting";
-    this.#bounds = {
-      left: 0,
-      right: CONFIG.locations.baseResolution.width,
-      top: 0,
-      bottom: CONFIG.locations.baseResolution.height,
-    };
-    this.#lastTime = performance.now();
-    this.loop = this.loop.bind(this);
-    this.#castManager = new CastManager();
-    this.#biteSystem = new BiteSystem(CONFIG.spawns, CONFIG.float);
-  }
+      (this.#gameTimeHours + (dt / 3600000) * timeScale) % 24;
+    const hour = Math.floor(this.#gameTimeHours);
 
-  #initEvents() {
-    document.addEventListener("config-updated", (e) => {
-      if (e.detail?.path?.[0] === "locations") {
-        this.#projector?.update(0, 0);
-        this.#projector?.update(this.#canvas.width, this.#canvas.height);
-        this.#locationMap?.refreshConfig(CONFIG.locations);
-      }
-    });
-  }
-
-  #castLine(virtualX, virtualY, bottomDepth) {
-    const isOverDepth = this.#currentHookDepth > bottomDepth;
-
-    let rodScreenX = this.#canvas.width / 2;
-    if (CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== "center") {
-      rodScreenX = Number(CONFIG.ui.rod.x);
+    if (hour !== this.#lastHour) {
+      this.#lastHour = hour;
+      this.#updatePhase(hour);
     }
-    const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
-    const rodVirtualPos = this.#projector.screenToVirtual(
-      rodScreenX,
-      rodScreenY,
-    );
-
-    const castableBounds = this.#locationMap.getCastableBoundsVirtual(
-      CONFIG.locations.cellSize,
-    );
-    const maxDistX = Math.max(
-      Math.abs(castableBounds.left - rodVirtualPos.x),
-      Math.abs(castableBounds.right - rodVirtualPos.x),
-    );
-    const maxDistY = Math.max(
-      Math.abs(castableBounds.top - rodVirtualPos.y),
-      Math.abs(castableBounds.bottom - rodVirtualPos.y),
-    );
-    const maxPossibleDist = Math.hypot(maxDistX, maxDistY);
-
-    const currentDist = Math.hypot(
-      virtualX - rodVirtualPos.x,
-      virtualY - rodVirtualPos.y,
-    );
-    const distanceRatio = Math.max(
-      0,
-      Math.min(1, currentDist / maxPossibleDist),
-    );
-
-    this.#float.cast(
-      virtualX,
-      virtualY,
-      this.#currentHookDepth,
-      isOverDepth,
-      CONFIG.sinker,
-      distanceRatio,
-    );
-
-    this.#gameState = "waiting";
-    this.#biteSystem.reset();
-    this.failReason = null;
-
-    this.#castStartTime = performance.now();
-    this.#castDistanceRatio = distanceRatio;
+    this.#updateWeather(dt);
   }
 
-  #hookFish(hookedFish) {
-    this.#gameState = "playing";
-    this.#isNetReady = false;
+  #updatePhase(hour) {
+    const phases = CONFIG.spawns.timePhases;
+    for (const [phase, times] of Object.entries(phases)) {
+      const inRange =
+        times.startHour < times.endHour
+          ? hour >= times.startHour && hour < times.endHour
+          : hour >= times.startHour || hour < times.endHour;
+      if (inRange) this.#currentPhase = phase;
+    }
+  }
 
+  #updateWeather(dt) {
+    const { weather, environment } = this.#config;
+    this.#weatherTimer -= dt;
+    if (this.#weatherTimer <= 0) {
+      this.#isRaining = Math.random() < weather.chances.rain;
+      this.#isFoggy = Math.random() < weather.chances.fog;
+      this.#weatherTimer = weather.updateIntervalMs;
+
+      // --- ВІДНОВЛЕНО: Перевірка наявності rainMultiplier ---
+      const rainMultConfig = environment.wind?.rainMultiplier;
+      this.#windState.rainMult =
+        this.#isRaining && rainMultConfig
+          ? rainMultConfig[0] +
+            Math.random() * (rainMultConfig[1] - rainMultConfig[0])
+          : 1.0;
+    }
+
+    this.#windState.timer -= dt;
+    if (this.#windState.timer <= 0) {
+      const { changesPerDay } = environment.wind;
+      this.#windState.timer =
+        86400000 /
+        (changesPerDay[0] +
+          Math.random() * (changesPerDay[1] - changesPerDay[0]));
+      this.#windState.direction = [-1, 0, 1][Math.floor(Math.random() * 3)];
+    }
+  }
+
+  getSnapshot() {
+    return {
+      time: this.#gameTimeHours,
+      phase: this.#currentPhase,
+      isRaining: this.#isRaining,
+      isFoggy: this.#isFoggy,
+      wind: { ...this.#windState },
+    };
+  }
+
+  getPhysicsEnv() {
+    const base = this.#config.environment;
+    const env = { current: base.current, wind: null };
+    if (base.wind && this.#windState.direction !== 0) {
+      const m = this.#windState.rainMult;
+      env.wind = {
+        direction: this.#windState.direction,
+        breezeAngleRange: base.wind.breezeAngleRange.map((v) => v * m),
+        gustAngleRange: base.wind.gustAngleRange.map((v) => v * m),
+        gustFluctuationMs: base.wind.gustFluctuationMs,
+        gustChancePerSec: base.wind.gustChancePerSec * m,
+        gustDurationMs: base.wind.gustDurationMs,
+      };
+    }
+    return env;
+  }
+}
+
+class GameState {
+  constructor(game, data = {}) {
+    this.game = game;
+    this.data = data;
+  }
+  enter() {}
+  exit() {}
+  handleInput(input) {}
+  update(dt, bounds, envData) {}
+  draw(renderer, bounds) {}
+}
+
+class ScoutingState extends GameState {
+  enter() {
+    this.game.systems.ui.updateNetButtonState(CONFIG, false);
+  }
+
+  exit() {
+    this.game.depthUI.hide();
+  }
+
+  handleInput(input) {
+    if (input.panDeltaX || input.panDeltaY) {
+      const scale = this.game.systems.projector.getScale();
+      this.game.systems.projector.pan(
+        input.panDeltaX / scale,
+        input.panDeltaY / scale,
+      );
+    }
+
+    if (input.clickPos) {
+      const vPos = this.game.systems.projector.screenToVirtual(
+        input.clickPos.x,
+        input.clickPos.y,
+      );
+      const cell = this.game.checkWater(vPos.x, vPos.y);
+
+      if (cell && this.game.canPlayerCast()) {
+        if (this.game.castManager.canCast()) {
+          this.game.castManager.registerCast(performance.now());
+          this.game.castLine(vPos.x, vPos.y, cell.depth);
+        } else {
+          this.game.markInvalidCast(input.clickPos);
+        }
+      } else if (!cell) {
+        this.game.markInvalidCast(input.clickPos);
+      }
+    }
+  }
+
+  update(dt, bounds) {
+    this.game.systems.projector.focusOnVirtualPos(
+      bounds.bottom - 200,
+      dt,
+      0.03,
+    );
+    const maxDepth = CONFIG.sinker.maxDepth || 8.0;
+
+    if (!this.game.depthUI.isActive) {
+      this.game.depthUI.show(
+        maxDepth,
+        this.game.currentHookDepth,
+        (d) => (this.game.currentHookDepth = d),
+      );
+    } else {
+      // --- ВІДНОВЛЕНО: Оновлення максимуму для активного UI ---
+      if (typeof this.game.depthUI.updateMax === "function") {
+        this.game.depthUI.updateMax(maxDepth);
+      }
+    }
+  }
+}
+
+class PlayingState extends GameState {
+  #fishingSystem;
+  #tensionMeter;
+  #fishCondition;
+  #staminaController;
+  #isNetReady = false;
+  #startTime = 0;
+  #forces = { pX: 0, pY: 0, fX: 0, fY: 0 };
+
+  enter() {
+    this.#startTime = performance.now();
+    const fishData = this.data.fish;
     const rod = new Rod(CONFIG.rod.level, CONFIG.rod.basePower);
     const reel = new Reel(
       CONFIG.reel.level,
@@ -165,12 +188,11 @@ class Game {
       CONFIG.hook.weight,
       CONFIG.hook.quality,
     );
-
     const fish = new Fish(
-      hookedFish.level,
-      hookedFish.weight,
-      hookedFish.resistance,
-      hookedFish.physics,
+      fishData.level,
+      fishData.weight,
+      fishData.resistance,
+      fishData.physics,
     );
 
     this.#fishingSystem = new FishingSystem(rod, reel, fish);
@@ -180,173 +202,835 @@ class Game {
       hook,
       CONFIG.tension,
     );
-
     this.#fishCondition = new FishCondition(
-      hookedFish.level,
-      hookedFish.weight,
+      fishData.level,
+      fishData.weight,
       CONFIG.stamina.fish,
     );
-
-    const playerBasePower = rod.getPower() + reel.getPower();
     this.#staminaController = new StaminaController(
       this.#fishCondition,
       fish,
-      playerBasePower,
+      rod.getPower() + reel.getPower(),
       CONFIG.stamina.mechanics,
     );
 
+    // --- ПОВЕРНУТО: Дебаг-логи та подія ---
     console.log(
-      `%c🎣 КЛЮНУВ: ${hookedFish.name}!`,
+      `%c🎣 КЛЮНУВ: ${fishData.name}!`,
       "color: #00ff00; font-size: 16px; font-weight: bold;",
     );
     console.table({
-      "Згенерована Вага": hookedFish.weight.toFixed(3) + " кг",
-      "Рівень (Складність)": hookedFish.level,
-      "Базовий Опір": hookedFish.resistance.toFixed(2),
+      "Згенерована Вага": fishData.weight.toFixed(3) + " кг",
+      "Рівень (Складність)": fishData.level,
+      "Базовий Опір": fishData.resistance.toFixed(2),
     });
 
     document.dispatchEvent(
-      new CustomEvent("debug-fish-hooked", { detail: hookedFish }),
+      new CustomEvent("debug-fish-hooked", { detail: fishData }),
     );
   }
 
-  #resizeCanvas() {
-    this.#canvas.width = window.innerWidth;
-    this.#canvas.height = window.innerHeight;
+  handleNetClick() {
+    if (!this.#isNetReady) return;
 
-    if (
-      this.#projector &&
-      this.#projector.update(this.#canvas.width, this.#canvas.height)
-    ) {
-      this.#locationMap.recalculateZones(
-        this.#projector,
-        CONFIG.locations.cellSize,
-      );
-    }
-  }
-
-  start() {
-    requestAnimationFrame(this.loop);
-  }
-
-  #handleNetClick() {
-    if (!this.#isNetReady || this.#gameState !== "playing") return;
-
-    // --- НОВЕ: Отримуємо вагу та рахуємо шанс прямо тут ---
-    const fishWeight = this.#fishingSystem
-      ? this.#fishingSystem.getFishWeight()
-      : 0;
-    const catchChance = this.#net.calculateCatchChance(fishWeight);
-
+    const fishWeight = this.#fishingSystem.getFishWeight();
+    const chance = this.game.net.calculateCatchChance(fishWeight);
     const roll = Math.random() * 100;
-    const isSuccess = roll <= catchChance;
+    const success = roll <= chance;
 
-    // Відправляємо подію з новим розрахованим шансом
+    // --- ПОВЕРНУТО: Відправка події з результатами шансу ---
     document.dispatchEvent(
       new CustomEvent("netCatchRoll", {
         detail: {
-          chance: catchChance, // Замінили this.#netCatchChance на catchChance
+          chance: chance,
           roll: roll,
-          success: isSuccess,
+          success: success,
         },
       }),
     );
 
-    if (isSuccess) {
-      this.#gameState = "victory";
-    } else {
-      this.#gameState = "failed";
-      this.failReason = "net_escape";
+    this.game.setState(success ? "victory" : "failed", {
+      reason: success ? null : "net_escape",
+    });
+  }
+
+  handleInput(input) {
+    const isHold = this.#fishingSystem.isHoldActive();
+    const swipeThreshold = CONFIG.reel?.hold?.swipeThresholdPx || 100;
+
+    if (this.#fishingSystem.getHoldUIState()?.hasHold) {
+      if (input.toggleHold || input.swipeDeltaY > swipeThreshold) {
+        isHold
+          ? this.#fishingSystem.deactivateHold()
+          : this.#fishingSystem.activateHold();
+        if (input.swipeDeltaY) this.game.systems.input.consumeSwipe();
+      }
     }
 
-    if (CONFIG.debug?.overlay) {
-      document.dispatchEvent(
-        new CustomEvent("debug-live-update", {
-          detail: { gameState: this.#gameState },
-        }),
+    if (input.pumpAction || input.swipeDeltaY < -swipeThreshold) {
+      const red = this.#fishingSystem.tryUsePump(
+        CONFIG.reel?.pumpLevel || 0,
+        CONFIG.reel?.pumpPowerPerLevel || 10,
       );
+      if (red > 0) this.#tensionMeter.applyPump(red);
+      if (input.swipeDeltaY) this.game.systems.input.consumeSwipe();
     }
   }
 
-  #resetGame() {
-    this.#gameState = "scouting";
-    this.failReason = null;
-    this.#currentBitingFish = null;
-    this.#isNetReady = false;
+  update(dt, bounds, envData) {
+    if (this.#tensionMeter.isBroken()) {
+      this.game.setState("failed", {
+        reason: this.#tensionMeter.getBreakReason(),
+      });
+      return;
+    }
 
-    if (this.#tensionMeter) this.#tensionMeter.reset();
-    if (this.#biteSystem) this.#biteSystem.reset();
-    this.#float.stopBite();
-    if (CONFIG.debug?.overlay) {
-      document.dispatchEvent(
-        new CustomEvent("debug-live-update", {
-          detail: { gameState: "scouting" },
-        }),
+    const floatPos = this.game.float.getPosition();
+    this.game.systems.projector.focusOnVirtualPos(floatPos.y, dt, 0.05);
+
+    const fishForceRaw = this.#fishingSystem.calculateFishForce(
+      dt,
+      floatPos,
+      bounds,
+      CONFIG.stamina.mechanics,
+      (vx, vy) => this.game.checkWater(vx, vy),
+    );
+    let tFishY = fishForceRaw.y;
+    const activeHold = this.#fishingSystem.isHoldActive();
+
+    if (activeHold && tFishY < 0) {
+      tFishY = 0;
+      fishForceRaw.y *= this.#fishingSystem.getHoldTensionMultiplier?.() || 1.0;
+    }
+
+    this.game.float.applyForce(
+      new Vector2(fishForceRaw.x, tFishY).multiplyScalar(
+        CONFIG.physics.fishForceMultiplier,
+      ),
+    );
+
+    const input = this.game.systems.input.getState();
+    const rodPos = this.game.getRodVirtualPos(bounds);
+    const screenOffset = this.game.getScreenOffsetRatio(floatPos);
+
+    let pF = new Vector2(0, 0);
+    if (input.isPulling) {
+      pF = this.#fishingSystem.calculatePlayerForce(
+        input.pullDirection,
+        floatPos.x,
+        floatPos.y,
+        rodPos,
+        screenOffset,
+        CONFIG.physics,
+      );
+      this.game.float.applyForce(
+        pF.clone().multiplyScalar(CONFIG.physics.playerForceMultiplier),
       );
     }
-  }
 
-  #toggleChumAim() {
+    this.#forces = {
+      pX: pF.x,
+      pY: pF.y,
+      fX: fishForceRaw.x,
+      fY: fishForceRaw.y,
+    };
+
+    const pMax = Math.abs(
+      this.#fishingSystem.calculatePlayerForce(
+        { x: 0, y: 1 },
+        floatPos.x,
+        floatPos.y,
+        rodPos,
+        screenOffset,
+        CONFIG.physics,
+      ).y * CONFIG.physics.playerForceMultiplier,
+    );
+    const fMag =
+      Math.max(Math.abs(fishForceRaw.x), Math.abs(fishForceRaw.y)) *
+      CONFIG.physics.fishForceMultiplier;
+
+    this.#tensionMeter.update(
+      input.isPulling,
+      pMax,
+      fMag,
+      this.#fishingSystem.getReelPower(),
+      fMag * 0.01,
+      dt,
+      CONFIG.tension,
+      CONFIG.hookMechanics,
+      activeHold,
+    );
+    this.#staminaController.evaluate(
+      this.#tensionMeter.getTension(),
+      input.isPulling,
+      dt,
+      floatPos.x,
+      bounds,
+    );
+    this.game.float.update(bounds, dt, envData.env, (vx, vy) =>
+      this.game.checkWater(vx, vy),
+    );
+
+    this.#isNetReady = this.game.net.isFloatInZone(floatPos.y, bounds.bottom);
+    this.game.systems.ui.updateNetButtonState(CONFIG, this.#isNetReady);
+
+    const autoY =
+      bounds.bottom -
+      (CONFIG.locations.catchLineOffsetPx || 5) /
+        this.game.systems.projector.getScale();
     if (
-      this.#gameState !== "scouting" &&
-      this.#gameState !== "waiting" &&
-      this.#gameState !== "biting"
-    )
-      return;
+      floatPos.y >= this.game.net.getTriggerVirtualY(bounds.bottom) &&
+      floatPos.y < autoY
+    ) {
+      this.#fishingSystem.tryTriggerFishLastDash?.(dt);
+    }
+    if (floatPos.y >= autoY) this.game.setState("victory");
+    this.game.holdUI.update(this.#fishingSystem.getHoldUIState());
+  }
 
-    if (this.#chumManager.getWaitingBoat()) {
-      this.#chumManager.activateWaitingBoat();
-      return;
+  exit() {
+    this.game.holdUI.update(null); // Ховаємо кружечки утримання
+    this.game.systems.ui.hideNetButton(); // Ховаємо кнопку підсаки
+  }
+
+  draw(renderer, bounds) {
+    this.game.drawFishingElements(
+      renderer,
+      bounds.bottom,
+      "playing",
+      this.#tensionMeter,
+      this.#fishCondition,
+      this.#startTime,
+    );
+  }
+
+  getDebugData() {
+    const fs = this.#fishingSystem;
+    const sc = this.#staminaController;
+    const floatPos = this.game.float.getPosition();
+    const rodPos = this.game.getRodVirtualPos(this.game.getDynamicBounds());
+    const screenOffset = this.game.getScreenOffsetRatio(floatPos);
+
+    // Розраховуємо МАКСИМАЛЬНО МОЖЛИВУ силу гравця для оверлею
+    const maxP = this.#fishingSystem.calculatePlayerForce(
+      { x: 0, y: 1 },
+      floatPos.x,
+      floatPos.y,
+      rodPos,
+      screenOffset,
+      CONFIG.physics,
+    );
+    const steerP =
+      (CONFIG.rod.level * CONFIG.rod.basePower +
+        CONFIG.reel.level * CONFIG.reel.basePower) *
+      CONFIG.physics.playerSteeringMultiplier *
+      CONFIG.physics.playerForceMultiplier;
+
+    return {
+      playerForceY: Math.abs(this.#forces.pY || 0),
+      playerForceX: Math.abs(this.#forces.pX || 0),
+      fishForceY: Math.abs(this.#forces.fY || 0),
+      fishForceX: Math.abs(this.#forces.fX || 0),
+
+      // ДОДАНО: Максимальні ліміти для блоку "СИЛА ГРАВЦЯ"
+      playerMaxPowerY: Math.abs(maxP.y * CONFIG.physics.playerForceMultiplier),
+      playerMaxPowerX: steerP,
+
+      fishState: fs?.getCurrentState?.() || "idle",
+      fishBasePower: fs?.getFishBasePower?.() || 0,
+      fishInitialPower: fs?.getFishInitialPower?.() || 0,
+      pullMult: fs?.getPullMultiplier?.() || 0,
+      moveMult: fs?.getMoveMultiplier?.() || 0,
+      activeDebuffName: fs?.getActiveDebuffName?.() || "Немає",
+
+      masteryCurrentMult: fs?.getMasteryMultiplier?.() || 1.0,
+      masteryTimerMs: sc?.getMasteryTimer?.() || 0,
+      isMasteryActive: sc?.isMasteryActive?.() || false,
+      exhaustionDurationMs: sc?.getExhaustionDurationMs?.() || 1000,
+
+      hookedFish: this.data.fish,
+    };
+  }
+}
+
+class WaitingState extends GameState {
+  enter() {
+    this.game.systems.bite.reset();
+  }
+
+  handleInput(input) {
+    if (input.isDoubleClick && this.game.canPlayerCast())
+      this.game.setState("scouting");
+
+    if (input.longPressPos && this.game.canPlayerCast()) {
+      const vPos = this.game.systems.projector.screenToVirtual(
+        input.longPressPos.x,
+        input.longPressPos.y,
+      );
+      const cell = this.game.checkWater(vPos.x, vPos.y);
+      if (cell) {
+        this.game.castManager.registerCast(performance.now());
+        this.game.castLine(vPos.x, vPos.y, cell.depth);
+      } else {
+        // --- ВІДНОВЛЕНО: Маркер неправильного кліку ---
+        this.game.invalidCastMarker = {
+          x: input.longPressPos.x,
+          y: input.longPressPos.y,
+          timer: 500,
+        };
+      }
+    }
+  }
+
+  update(dt, bounds, envData) {
+    const pos = this.game.float.getPosition();
+    this.game.systems.projector.focusOnVirtualPos(pos.y, dt, 0.05);
+    this.game.float.update(bounds, dt, envData.env, (vx, vy) =>
+      this.game.checkWater(vx, vy),
+    );
+
+    let hooked = this.game.systems.bite.evaluateBite(dt, envData.biteEnv, {
+      hookSize: CONFIG.hook.level,
+      baitId: "oil_worm",
+    });
+
+    // --- ВІДНОВЛЕНА ЛОГІКА FIXED CATCH ---
+    if (hooked && CONFIG.debug?.fixedCatch?.enabled) {
+      const fixed = CONFIG.debug.fixedCatch;
+      const template =
+        CONFIG.spawns.fishes.find((f) => f.id === fixed.fishId) ||
+        CONFIG.spawns.fishes[0];
+
+      hooked = {
+        id: template.id,
+        name: template.name + " (TEST)",
+        physics: template.physics,
+        level: fixed.level,
+        weight: fixed.weight,
+        resistance: fixed.resistance,
+      };
     }
 
-    if (this.#chumManager.isBoatMoving()) {
-      console.log("Кораблик в русі, зачекайте!");
-      return;
+    if (hooked) {
+      this.game.float.startBite();
+      this.game.setState("biting", { fish: hooked });
     }
+  }
 
-    const method = CONFIG.chum.currentMethod || "hand";
+  draw(renderer, bounds) {
+    this.game.drawFishingElements(
+      renderer,
+      bounds.bottom,
+      "waiting",
+      null,
+      null,
+      this.game.castStartTime,
+    );
+  }
+}
 
-    this.#isAimingChum = !this.#isAimingChum;
+class BitingState extends GameState {
+  handleInput(input) {
+    if (input.isPulling) {
+      if (!this.game.canPlayerCast()) return;
+      const success =
+        Math.random() <= (this.game.float.isGuaranteedBite() ? 0.99 : 0.01);
+      if (success) {
+        this.game.float.hook();
+        this.game.setState("playing", { fish: this.data.fish });
+      } else {
+        this.game.float.stopBite();
+        this.game.setState("scouting");
+      }
+    }
+  }
 
-    if (this.#isAimingChum && method === "boat") {
-      const rodScreenX =
-        CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== "center"
-          ? Number(CONFIG.ui.rod.x)
-          : this.#canvas.width / 2;
-      const rodVirtualPos = this.#projector.screenToVirtual(rodScreenX, 0);
+  update(dt, bounds, envData) {
+    this.game.float.updateBite(dt, (vx, vy) => this.game.checkWater(vx, vy));
+    this.game.float.update(bounds, dt, envData.env, (vx, vy) =>
+      this.game.checkWater(vx, vy),
+    );
+    if (!this.game.float.isBiting()) this.game.setState("waiting");
+  }
 
-      const mapBounds = this.#locationMap.getCastableBoundsVirtual(
+  draw(renderer, bounds) {
+    this.game.drawFishingElements(
+      renderer,
+      bounds.bottom,
+      "biting",
+      null,
+      null,
+      this.game.castStartTime,
+    );
+  }
+}
+
+class FailedState extends GameState {
+  enter() {
+    this.game.systems.ui.updateContinueButtonState(true);
+  }
+  exit() {
+    this.game.systems.ui.updateContinueButtonState(false);
+  }
+  draw(renderer, bounds) {
+    // --- ВІДНОВЛЕНО: Малюємо вудку та зону підсаки на фоні ---
+    this.game.drawFishingElements(
+      renderer,
+      bounds.bottom,
+      "failed",
+      null,
+      null,
+      0,
+    );
+
+    // Малюємо сам попап
+    renderer.drawGameOver(
+      window.innerWidth,
+      window.innerHeight,
+      this.data.reason,
+    );
+  }
+}
+
+class VictoryState extends GameState {
+  enter() {
+    this.game.systems.ui.updateContinueButtonState(true);
+  }
+  exit() {
+    this.game.systems.ui.updateContinueButtonState(false);
+  }
+  draw(renderer, bounds) {
+    // --- ВІДНОВЛЕНО: Малюємо вудку та зону підсаки на фоні ---
+    this.game.drawFishingElements(
+      renderer,
+      bounds.bottom,
+      "victory",
+      null,
+      null,
+      0,
+    );
+
+    // Малюємо сам попап
+    renderer.drawVictory(window.innerWidth, window.innerHeight);
+  }
+}
+
+class Game {
+  #systems = {};
+  #state = null;
+  #gameStateName = "scouting";
+  #canvas;
+  #float;
+  #net;
+  #castManager;
+  #depthUI;
+  #timeUI;
+  #holdUI;
+  #chumUI;
+
+  invalidCastMarker = null;
+  isAimingChum = false;
+  activeBoat = null;
+  castStartTime = 0;
+  castDistanceRatio = 0;
+  currentHookDepth = 1.0;
+  lastTime = 0;
+
+  constructor(canvasId) {
+    this.#canvas = document.getElementById(canvasId);
+
+    this.#canvas.width = window.innerWidth;
+    this.#canvas.height = window.innerHeight;
+
+    const locId = "test";
+    const locCfg = CONFIG.locations.map[locId];
+
+    this.#systems = {
+      renderer: new Renderer(this.#canvas),
+      projector: new ViewportProjector(CONFIG.locations, locId),
+      map: new LocationMap(locId, CONFIG.locations),
+      env: new EnvironmentSystem(locCfg, CONFIG.debug?.initialTime ?? 12),
+      input: new InputManager(this.#canvas, Number(CONFIG.ui?.rod?.x) || null),
+      ui: new UIManager(CONFIG),
+      chum: new ChumManager(locId, CONFIG.chum, locCfg.perspectiveSquash),
+      bite: new BiteSystem(CONFIG.spawns, CONFIG.float),
+    };
+
+    this.#chumUI = new ChumUI(() => this.handleChumClick());
+    this.#net = new Net(CONFIG.net);
+    this.#castManager = new CastManager();
+    this.#depthUI = new DepthSelectorUI();
+    this.#timeUI = new TimeDisplayUI();
+    this.#holdUI = new HoldChargesUI();
+    this.#float = new FloatEntity(0, 0, CONFIG.float);
+
+    this.#initEvents();
+    this.setState("scouting");
+    this.start();
+  }
+
+  #initEvents() {
+    window.addEventListener("resize", () => {
+      this.#canvas.width = window.innerWidth;
+      this.#canvas.height = window.innerHeight;
+      this.#systems.projector.update(this.#canvas.width, this.#canvas.height);
+      this.#systems.map.recalculateZones(
+        this.#systems.projector,
         CONFIG.locations.cellSize,
       );
-      const startY = mapBounds ? mapBounds.bottom - 5 : 1440;
-      const startX = Math.max(
-        mapBounds ? mapBounds.left : 0,
-        Math.min(mapBounds ? mapBounds.right : 2560, rodVirtualPos.x),
-      );
+    });
 
-      this.#activeBoat = this.#chumManager.spawnIdleBoat(startX, startY);
-    } else if (!this.#isAimingChum && this.#activeBoat) {
-      if (this.#activeBoat.state === "idle") {
-        this.#chumManager.removeBoat(this.#activeBoat);
+    this.#systems.ui.onNetClick = () => {
+      if (this.#state && typeof this.#state.handleNetClick === "function") {
+        this.#state.handleNetClick();
       }
-      this.#activeBoat = null;
+    };
+
+    this.#systems.ui.onContinueClick = () => this.setState("scouting");
+    window.dispatchEvent(new Event("resize"));
+
+    // --- ВІДНОВЛЕНО: Слухач оновлень конфігу з DevTools ---
+    document.addEventListener("config-updated", (e) => {
+      if (e.detail && e.detail.path && e.detail.path[0] === "locations") {
+        if (this.#systems.projector) {
+          this.#systems.projector.update(0, 0);
+          this.#systems.projector.update(
+            this.#canvas.width,
+            this.#canvas.height,
+          );
+        }
+        if (
+          this.#systems.map &&
+          typeof this.#systems.map.refreshConfig === "function"
+        ) {
+          // ВАЖЛИВО: Кажемо карті перечитати зони колізій і сітку!
+          this.#systems.map.refreshConfig(CONFIG.locations);
+        }
+      }
+    });
+  }
+
+  setState(name, data = {}) {
+    if (this.#state) this.#state.exit();
+    this.#gameStateName = name;
+
+    const states = {
+      scouting: ScoutingState,
+      waiting: WaitingState,
+      biting: BitingState,
+      playing: PlayingState,
+      failed: FailedState, // <-- Просто посилаємось на твій клас
+      victory: VictoryState, // <-- Просто посилаємось на твій клас
+      failed: class extends GameState {
+        enter() {
+          this.game.systems.ui.updateContinueButtonState(true);
+        }
+        exit() {
+          this.game.systems.ui.updateContinueButtonState(false);
+        }
+        draw(r) {
+          r.drawGameOver(
+            window.innerWidth,
+            window.innerHeight,
+            this.data.reason,
+          );
+        }
+      },
+      victory: class extends GameState {
+        enter() {
+          this.game.systems.ui.updateContinueButtonState(true);
+        }
+        exit() {
+          this.game.systems.ui.updateContinueButtonState(false);
+        }
+        draw(r) {
+          r.drawVictory(window.innerWidth, window.innerHeight);
+        }
+      },
+    };
+
+    this.#state = new states[name](this, data);
+    this.#state.enter();
+  }
+
+  update(dt) {
+    const timeScale = CONFIG.debug?.timeScale || 1;
+    const input = this.#systems.input.getState();
+    const bounds = this.getDynamicBounds();
+
+    this.#systems.env.update(dt, timeScale);
+    this.#systems.projector.update(this.#canvas.width, this.#canvas.height);
+    this.#systems.map.update(dt, this.#systems.env.getSnapshot().time);
+    this.#systems.chum.update(Date.now(), timeScale);
+    this.#systems.chum.updateBoats(
+      dt,
+      (vx, vy) => this.checkWater(vx, vy),
+      CONFIG.locations.cellSize,
+      { current: CONFIG.locations.map["test"].environment.current },
+    );
+
+    this.#castManager.update(dt);
+    this.#timeUI.update(this.#systems.env.getSnapshot().time);
+    this.updateChumUI();
+
+    if (this.isAimingChum) {
+      this.handleChumAiming(input, bounds);
+    } else {
+      this.handleGlobalBoatControl(input);
+      this.#state.handleInput(input);
+      this.#state.update(dt, bounds, {
+        env: this.#systems.env.getPhysicsEnv(),
+        biteEnv: this.getEnvDataForBite(bounds),
+      });
+    }
+
+    if (this.invalidCastMarker) {
+      this.invalidCastMarker.timer -= dt;
+      if (this.invalidCastMarker.timer <= 0) this.invalidCastMarker = null;
+    }
+
+    this.#sendDebug();
+  }
+
+  draw() {
+    const r = this.#systems.renderer;
+    const b = this.getDynamicBounds();
+
+    r.clear(CONFIG.canvas.backgroundColor);
+
+    // 1. Малюємо фон
+    r.drawBackground(this.#systems.map, this.#systems.projector);
+
+    // --- ВІДНОВЛЕНО: Малювання дебаг-зон (сітка, колізії, глибина) ---
+    if (CONFIG.locations?.debugVisuals) {
+      if (typeof r.drawLocationDebug === "function") {
+        r.drawLocationDebug(
+          this.#systems.map,
+          this.#systems.projector,
+          CONFIG.locations,
+        );
+      }
+    }
+
+    // --- ВІДНОВЛЕНО: Перевірка конфігу для зон прикормки ---
+    if (CONFIG.locations?.showChumZones !== false) {
+      r.drawChumZones(
+        this.#systems.chum,
+        this.#systems.projector,
+        b.top,
+        b.bottom,
+      );
+    }
+
+    if (this.#systems.chum && typeof r.drawBoatWaypoints === "function") {
+      r.drawBoatWaypoints(this.#systems.chum, this.#systems.projector);
+    }
+
+    if (this.#systems.chum && typeof r.drawBoats === "function") {
+      r.drawBoats(this.#systems.chum, this.#systems.projector, b.top, b.bottom);
+    }
+
+    if (this.isAimingChum && CONFIG.chum.currentMethod === "hand") {
+      r.drawChumAiming(
+        this.#systems.projector,
+        b.bottom,
+        CONFIG.locations.map["test"]?.chumCastDistance || 800,
+      );
+    }
+
+    if (this.invalidCastMarker) {
+      r.drawInvalidCastMarker(this.invalidCastMarker);
+    }
+
+    // 2. Малюємо елементи поточного стану (вудка, поплавець, UI виважування)
+    this.#state.draw(r, b);
+  }
+
+  castLine(vx, vy, depth) {
+    const rodPos = this.getRodVirtualPos(this.getDynamicBounds());
+    const dist = Math.hypot(vx - rodPos.x, vy - rodPos.y);
+    const maxDist = 2000;
+
+    this.castDistanceRatio = Math.min(1, dist / maxDist);
+    this.castStartTime = performance.now();
+    this.#float.cast(
+      vx,
+      vy,
+      this.currentHookDepth,
+      this.currentHookDepth > depth,
+      CONFIG.sinker,
+      this.castDistanceRatio,
+    );
+    this.setState("waiting");
+  }
+
+  drawFishingElements(renderer, vBot, state, tMeter, fCond, startTime) {
+    const sPos = this.#systems.projector.virtualToScreen(
+      this.#float.getPosition().x,
+      this.#float.getPosition().y,
+    );
+    const elapsed = performance.now() - startTime;
+
+    let ratio = 1.0,
+      drop = 0;
+    const lineCfg = CONFIG.ui.line; // Беремо налаштування з конфігу
+
+    if (state === "waiting" || state === "biting") {
+      // Використовуємо твої затримки з конфігу (1500 - 5000 мс)
+      const minDelay = lineCfg.distanceDelayMinMs ?? 1500;
+      const maxDelay = lineCfg.distanceDelayMaxMs ?? 5000;
+      const distanceDelay =
+        minDelay + this.castDistanceRatio * (maxDelay - minDelay);
+
+      const duration =
+        (this.currentHookDepth / (CONFIG.sinker.sinkRate || 1)) * 1000 +
+        distanceDelay;
+      const prog = duration > 0 ? Math.min(1, elapsed / duration) : 1;
+
+      const easePower = lineCfg.shrinkEasePower ?? 4;
+      const ease = 1 - Math.pow(1 - prog, easePower);
+
+      ratio = 1.0 - ease * (1.0 - lineCfg.shrinkPercent / 100);
+      drop = ease * (lineCfg.sinkDropPx || 120);
+    } else if (state === "playing") {
+      // Використовуємо твій snapDurationMs (300 мс) та множники глибини
+      const baseSnap = lineCfg.snapDurationMs ?? 300;
+      const depthRatio = Math.min(1, this.currentHookDepth / 10.0);
+      const snapDuration =
+        baseSnap *
+        (1.0 + depthRatio * ((lineCfg.snapDepthMaxMultiplier ?? 2.0) - 1.0));
+
+      const prog = snapDuration > 0 ? Math.min(1, elapsed / snapDuration) : 1;
+      const ease = 1 - Math.pow(1 - prog, 3);
+      const startR = lineCfg.shrinkPercent / 100;
+
+      ratio = startR + ease * (1.0 - startR);
+      drop = (lineCfg.sinkDropPx || 120) * (1 - ease);
+    }
+
+    renderer.drawCatchZone(
+      this.#systems.projector,
+      this.#net,
+      vBot,
+      CONFIG.locations,
+      CONFIG.ui.catchZone,
+    );
+    renderer.drawRodLine(
+      sPos,
+      state,
+      tMeter?.getTension() || 0,
+      ratio,
+      drop,
+      CONFIG.ui.rod,
+      lineCfg,
+    );
+    renderer.drawFloat(sPos, this.#float, CONFIG.float);
+
+    if (state === "playing" && tMeter && fCond) {
+      renderer.drawTensionBar(tMeter, CONFIG.tension, CONFIG.ui.indicators);
+      renderer.drawFishCondition(fCond, CONFIG.ui.indicators);
     }
   }
 
-  #handleChumClick() {
+  canPlayerCast() {
+    const boat = this.#systems.chum.getBoats()[0];
+    if (!boat) return true;
+    if (boat.state === "drifting" || boat.state === "returning") return true;
+    return (
+      !CONFIG.chum.deliveryMethods.boat.manualControl &&
+      boat.remainingSections <= 0
+    );
+  }
+
+  getDynamicBounds() {
+    const b = this.#systems.map.getCastableBoundsVirtual(
+      CONFIG.locations.cellSize,
+    );
+    const vTL = this.#systems.projector.screenToVirtual(0, 0);
+    const vBR = this.#systems.projector.screenToVirtual(
+      this.#canvas.width,
+      this.#canvas.height,
+    );
+
+    return {
+      left: CONFIG.locations.lockZoneXToScreen
+        ? Math.max(vTL.x, b.left)
+        : b.left,
+      right: CONFIG.locations.lockZoneXToScreen
+        ? Math.min(vBR.x, b.right)
+        : b.right,
+      top: b.top,
+      bottom: b.bottom,
+    };
+  }
+
+  getRodVirtualPos(bounds) {
+    const rodX =
+      CONFIG.ui.rod.x === "center"
+        ? this.#canvas.width / 2
+        : Number(CONFIG.ui.rod.x);
+    return new Vector2(
+      this.#systems.projector.screenToVirtual(rodX, 0).x,
+      bounds.bottom,
+    );
+  }
+
+  getScreenOffsetRatio(floatPos) {
+    const sPos = this.#systems.projector.virtualToScreen(
+      floatPos.x,
+      floatPos.y,
+    );
+    const rodX =
+      CONFIG.ui.rod.x === "center"
+        ? this.#canvas.width / 2
+        : Number(CONFIG.ui.rod.x);
+    return Math.min(1, Math.abs(sPos.x - rodX) / (this.#canvas.width / 2));
+  }
+
+  checkWater(vx, vy) {
+    const cell = this.#systems.map.getCellAtVirtualPos(
+      vx,
+      vy,
+      CONFIG.locations.cellSize,
+    );
+    return cell && cell.isCastable && !cell.hasCollision ? cell : null;
+  }
+
+  getEnvDataForBite(bounds) {
+    const pos = this.#float.getPosition();
+    const env = this.#systems.env.getSnapshot();
+    const cell = this.checkWater(pos.x, pos.y);
+    const chum = this.#systems.chum.getChumDataAt(
+      pos.x,
+      pos.y,
+      bounds.top,
+      bounds.bottom,
+    );
+
+    return {
+      hookDepth: Math.min(this.#float.getCurrentHookDepth(), cell?.depth || 0),
+      bottomDepth: cell?.depth || 0,
+      timePhase: env.phase,
+      chumBonus: chum.bonus,
+      chumTargets: chum.targets,
+      isRaining: env.isRaining,
+      isFoggy: env.isFoggy,
+      castSpamMultiplier: this.#castManager.getBiteChanceMultiplier(),
+    };
+  }
+
+  handleChumClick() {
     const method = CONFIG.chum.currentMethod;
 
     if (method === "hand") {
-      if (this.#chumManager.handUses > 0) {
-        this.#toggleChumAim();
-      } else {
-        console.log("Прикормка для руки закінчилась!");
+      if (this.#systems.chum.handUses > 0) {
+        this.toggleChumAim();
       }
     } else if (method === "boat") {
-      const boats = this.#chumManager.getBoats();
+      const boats = this.#systems.chum.getBoats();
 
       if (boats.length === 0) {
-        this.#toggleChumAim();
+        this.toggleChumAim();
       } else {
         const activeBoat = boats[0];
         const isManual = CONFIG.chum.deliveryMethods.boat.manualControl;
@@ -356,942 +1040,304 @@ class Game {
           activeBoat.state === "waiting" &&
           activeBoat.remainingSections > 0
         ) {
-          // Скидаємо прикормку під корабликом
-          this.#chumManager.deployBait(
+          this.#systems.chum.deployBait(
             activeBoat.pos.x,
             activeBoat.pos.y,
             "carp_mix_basic",
             "boat",
           );
           activeBoat.remainingSections--;
-          console.log(
-            `Прикормку скинуто! Залишилось секцій: ${activeBoat.remainingSections}`,
-          );
         }
       }
     }
   }
 
-  update(dt) {
-    const timeScale = CONFIG.debug?.timeScale || 1;
-    this.#updateWorldTime(dt, timeScale);
-    this.#updateSystems(dt, timeScale);
+  toggleChumAim() {
+    this.isAimingChum = !this.isAimingChum;
 
-    const inputState = this.#inputManager.getState();
-    const dynamicEnv = this.#calculateEnvironment(dt);
-    const bounds = this.#getDynamicBounds();
-
-    this.#handleCamera(dt);
-    this.#handleChumLogic(dt, timeScale, inputState);
-
-    if (this.#isAimingChum) {
-      this.#handleChumAiming(inputState, bounds);
-      return;
-    }
-
-    this.#handleGlobalBoatControl(inputState);
-    this.#handleStateLogic(dt, inputState, dynamicEnv, bounds);
-    this.#updateUserInterface();
-    this.#syncDebugOverlay(bounds);
-  }
-
-  #updateWorldTime(dt, timeScale) {
-    this.#gameTimeHours =
-      (this.#gameTimeHours + (dt / 3600000) * timeScale) % 24;
-    const currentHour = Math.floor(this.#gameTimeHours);
-
-    if (currentHour !== this.#lastHour) {
-      this.#lastHour = currentHour;
-      for (const [phase, times] of Object.entries(CONFIG.spawns.timePhases)) {
-        const inRange =
-          times.startHour < times.endHour
-            ? currentHour >= times.startHour && currentHour < times.endHour
-            : currentHour >= times.startHour || currentHour < times.endHour;
-        if (inRange) this.#currentPhase = phase;
+    if (this.isAimingChum && CONFIG.chum.currentMethod === "boat") {
+      const rodPos = this.getRodVirtualPos(this.getDynamicBounds());
+      this.activeBoat = this.#systems.chum.spawnIdleBoat(
+        rodPos.x,
+        this.getDynamicBounds().bottom - 5,
+      );
+    } else if (!this.isAimingChum && this.activeBoat) {
+      if (this.activeBoat.state === "idle") {
+        this.#systems.chum.removeBoat(this.activeBoat);
       }
+      this.activeBoat = null;
     }
   }
 
-  #updateSystems(dt, timeScale) {
-    this.#timeUI.update(this.#gameTimeHours);
-    this.#projector.update(this.#canvas.width, this.#canvas.height);
-    this.#locationMap.update(dt, this.#gameTimeHours);
-    this.#castManager.update(dt);
-    if (this.#invalidCastMarker) {
-      this.#invalidCastMarker.timer -= dt;
-      if (this.#invalidCastMarker.timer <= 0) this.#invalidCastMarker = null;
-    }
-  }
+  updateChumUI() {
+    if (!this.#chumUI) return;
 
-  #handleCamera(dt) {
-    const isFishing = ["waiting", "biting", "playing"].includes(
-      this.#gameState,
-    );
-    if (isFishing) {
-      this.#projector.focusOnVirtualPos(this.#float.getPosition().y, dt, 0.05);
-    } else if (this.#gameState === "scouting") {
-      const bounds = this.#locationMap.getCastableBoundsVirtual(
-        CONFIG.locations.cellSize,
-      );
-      this.#projector.focusOnVirtualPos(
-        bounds ? bounds.bottom - 200 : 1200,
-        dt,
-        0.03,
-      );
-    }
-  }
-
-  #calculateEnvironment(dt) {
-    const windCfg = CONFIG.locations.map.test.environment.wind;
-    const weatherCfg = CONFIG.locations.map.test.weather;
-
-    this.#windState.timer -= dt;
-    if (this.#windState.timer <= 0) {
-      this.#windState.timer =
-        86400000 /
-        (windCfg.changesPerDay[0] +
-          Math.random() *
-            (windCfg.changesPerDay[1] - windCfg.changesPerDay[0]));
-      this.#windState.direction = [-1, 0, 1][Math.floor(Math.random() * 3)];
-    }
-
-    this.#weatherTimer -= dt;
-    if (this.#weatherTimer <= 0) {
-      this.#isRaining = Math.random() < weatherCfg.chances.rain;
-      this.#isFoggy = Math.random() < weatherCfg.chances.fog;
-      this.#weatherTimer = weatherCfg.updateIntervalMs;
-      this.#windState.rainMult = this.#isRaining
-        ? windCfg.rainMultiplier[0] +
-          Math.random() *
-            (windCfg.rainMultiplier[1] - windCfg.rainMultiplier[0])
-        : 1.0;
-    }
-
-    const baseEnv = CONFIG.locations.map.test.environment;
-    if (!baseEnv) return null;
-
-    const env = { current: baseEnv.current, wind: null };
-    if (baseEnv.wind && this.#windState.direction !== 0) {
-      const m = this.#windState.rainMult;
-      env.wind = {
-        direction: this.#windState.direction,
-        breezeAngleRange: baseEnv.wind.breezeAngleRange.map((v) => v * m),
-        gustAngleRange: baseEnv.wind.gustAngleRange.map((v) => v * m),
-        gustFluctuationMs: baseEnv.wind.gustFluctuationMs,
-        gustChancePerSec: baseEnv.wind.gustChancePerSec * m,
-        gustDurationMs: baseEnv.wind.gustDurationMs,
-      };
-    }
-    return env;
-  }
-
-  #handleChumLogic(dt, timeScale, inputState) {
-    if (!this.#chumManager) return;
-
-    const env = CONFIG.locations.map.test.environment;
-    const boatEnv = env ? { current: env.current } : null;
-
-    this.#chumManager.update(Date.now(), timeScale);
-    this.#chumManager.updateBoats(
-      dt,
-      (vx, vy) => this.#checkWater(vx, vy),
-      CONFIG.locations.cellSize,
-      boatEnv,
-    );
-
-    const bounds = this.#locationMap.getCastableBoundsVirtual(
-      CONFIG.locations.cellSize,
-    );
-    if (bounds) {
-      const triggerY = this.#net.getTriggerVirtualY(bounds.bottom);
-      this.#chumManager.getBoats().forEach((boat) => {
-        if (boat.state === "drifting" && boat.pos.y >= triggerY)
-          boat.isFinished = true;
-      });
-    }
-
-    this.#updateChumUI();
-  }
-
-  #updateChumUI() {
     const method = CONFIG.chum.currentMethod;
-    const boats = this.#chumManager.getBoats();
-    const activeBoat = boats[0] || null;
     const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
+    const boats = this.#systems.chum.getBoats();
+    const activeBoat = boats.length > 0 ? boats[0] : null;
 
-    if (this.#gameState === "playing") {
-      this.#isAimingChum = false;
+    if (this.#gameStateName === "playing") {
+      this.isAimingChum = false;
       this.#chumUI.setState("disabled", method, 0, isManual);
       return;
     }
 
     if (method === "hand") {
-      const uses = this.#chumManager.handUses;
-      const state =
-        uses <= 0 ? "empty" : this.#isAimingChum ? "aiming" : "idle";
-      this.#chumUI.setState(state, method, uses, isManual);
+      const uses = this.#systems.chum.handUses;
+      if (uses <= 0) {
+        this.#chumUI.setState("empty", method, 0, isManual);
+      } else if (this.isAimingChum) {
+        this.#chumUI.setState("aiming", method, uses, isManual);
+      } else {
+        this.#chumUI.setState("idle", method, uses, isManual);
+      }
     } else if (method === "boat") {
       if (!activeBoat) {
         this.#chumUI.setState(
-          this.#isAimingChum ? "aiming" : "idle",
+          this.isAimingChum ? "aiming" : "idle",
           "boat",
           1,
           isManual,
         );
       } else {
         const sections = activeBoat.remainingSections || 0;
-        let state = "idle";
-        if (
-          activeBoat.state === "drifting" ||
-          this.#chumManager.getBoatEnergy() <= 0
-        )
-          state = "empty";
-        else if (["deploying", "returning"].includes(activeBoat.state))
-          state = "moving";
-        else if (activeBoat.state === "waiting")
-          state = sections > 0 ? "ready" : "empty";
-        this.#chumUI.setState(state, "boat", sections, isManual);
+        const hasEnergy = this.#systems.chum.getBoatEnergy() > 0;
+
+        if (activeBoat.state === "drifting" || !hasEnergy) {
+          this.#chumUI.setState("empty", "boat", 0, isManual);
+        } else if (
+          activeBoat.state === "deploying" ||
+          activeBoat.state === "returning"
+        ) {
+          this.#chumUI.setState("moving", "boat", sections, isManual);
+        } else if (activeBoat.state === "waiting") {
+          this.#chumUI.setState(
+            sections > 0 ? "ready" : "empty",
+            "boat",
+            sections,
+            isManual,
+          );
+        }
       }
     }
   }
 
-  #handleChumAiming(inputState, bounds) {
-    inputState.isPulling = false;
-    inputState.longPressPos = null;
-
-    if (!inputState.clickPos) return;
+  handleChumAiming(input, bounds) {
+    if (!input.clickPos) return;
 
     const method = CONFIG.chum.currentMethod || "hand";
-    const locCfg = CONFIG.locations.map["test"];
-    const maxHandDist = locCfg.chumCastDistance || 800;
-    const vPos = this.#projector.screenToVirtual(
-      inputState.clickPos.x,
-      inputState.clickPos.y,
+    const vPos = this.#systems.projector.screenToVirtual(
+      input.clickPos.x,
+      input.clickPos.y,
     );
+    const cell = this.checkWater(vPos.x, vPos.y);
 
-    if (this.#checkWater(vPos.x, vPos.y)) {
-      if (method === "boat" && this.#activeBoat) {
-        this.#chumManager.deployBait(
-          vPos.x,
-          vPos.y,
-          "carp_mix_basic",
-          method,
-          this.#activeBoat,
-        );
-        if (!CONFIG.chum?.deliveryMethods?.boat?.manualControl)
-          this.#activeBoat.remainingSections--;
-        this.#activeBoat = null;
-        this.#isAimingChum = false;
-      } else if (method === "hand") {
-        const throwLineY = bounds.bottom - maxHandDist;
-        if (vPos.y >= throwLineY && this.#chumManager.useHandBait()) {
-          this.#chumManager.deployBait(
+    if (!cell) {
+      this.markInvalidCast(input.clickPos);
+      input.clickPos = null; // Не забуваємо обнулити клік
+      return;
+    }
+
+    if (method === "hand") {
+      const maxDist = CONFIG.locations.map["test"]?.chumCastDistance || 800;
+      const throwLineY = bounds.bottom - maxDist;
+
+      if (vPos.y >= throwLineY) {
+        if (this.#systems.chum.useHandBait()) {
+          this.#systems.chum.deployBait(
             vPos.x,
             vPos.y,
             "carp_mix_basic",
             "hand",
           );
-          this.#toggleChumAim();
+          this.toggleChumAim(); // Скинули - вимикаємо приціл (стара логіка)
         } else {
-          this.#markInvalidCast(inputState.clickPos);
+          console.log("Прикормка в руці закінчилась!");
+          this.isAimingChum = false; // Просто вимикаємо приціл
         }
+      } else {
+        console.log("Задалеко для кидка рукою!");
+        this.markInvalidCast(input.clickPos);
       }
-    } else {
-      this.#markInvalidCast(inputState.clickPos);
+    } else if (method === "boat" && this.activeBoat) {
+      const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
+
+      // Відправляємо кораблик (або скидаємо корм, якщо логіка в chumManager)
+      this.#systems.chum.deployBait(
+        vPos.x,
+        vPos.y,
+        "carp_mix_basic",
+        "boat",
+        this.activeBoat,
+      );
+
+      // Віднімаємо секцію при спавні ТІЛЬКИ в авто-режимі! (Як в старому коді)
+      if (!isManual) {
+        this.activeBoat.remainingSections--;
+      }
+
+      this.activeBoat = null;
+      this.isAimingChum = false;
     }
+
+    input.clickPos = null;
   }
 
-  #handleGlobalBoatControl(inputState) {
+  handleGlobalBoatControl(input) {
     if (
-      !inputState.clickPos ||
-      this.#isAimingChum ||
-      this.#gameState === "playing"
+      !input.clickPos ||
+      this.isAimingChum ||
+      this.#gameStateName === "playing"
     )
       return;
 
-    const boats = this.#chumManager?.getBoats() || [];
+    const boats = this.#systems.chum.getBoats();
     if (boats.length === 0) return;
 
-    const boat = boats[0];
-    const vPos = this.#projector.screenToVirtual(
-      inputState.clickPos.x,
-      inputState.clickPos.y,
+    const activeBoat = boats[0];
+    const vPos = this.#systems.projector.screenToVirtual(
+      input.clickPos.x,
+      input.clickPos.y,
     );
-    const dist = Math.hypot(boat.pos.x - vPos.x, boat.pos.y - vPos.y);
+    let clickHandled = false;
 
-    if (dist < 40) {
-      const bounds = this.#locationMap.getCastableBoundsVirtual(
-        CONFIG.locations.cellSize,
-      );
-      if (boat.pos.y > (bounds ? bounds.bottom : 1440) - 200) {
-        this.#chumManager.removeBoat(boat);
+    const distToBoat = Math.hypot(
+      activeBoat.pos.x - vPos.x,
+      activeBoat.pos.y - vPos.y,
+    );
+    const mapBounds = this.getDynamicBounds();
+
+    if (distToBoat < 40) {
+      if (activeBoat.pos.y > mapBounds.bottom - 200) {
+        this.#systems.chum.removeBoat(activeBoat);
+        console.log("Кораблик забрано в інвентар!");
+      } else {
+        console.log("Кораблик занадто далеко, підпливіть ближче до берега!");
       }
-      inputState.clickPos = null;
-      return;
-    }
-
-    if (boat.state !== "drifting") {
+      clickHandled = true;
+    } else if (activeBoat.state !== "drifting") {
       const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
-      if (isManual && boat.state !== "returning") {
-        boat.setTarget(vPos.x, vPos.y);
-        inputState.clickPos = null;
-      } else if (
-        !isManual &&
-        boat.remainingSections > 0 &&
-        boat.state !== "returning"
-      ) {
-        this.#chumManager.deployBait(
-          vPos.x,
-          vPos.y,
-          "carp_mix_basic",
-          "boat",
-          boat,
-        );
-        boat.remainingSections--;
-        inputState.clickPos = null;
-      }
-    }
-  }
 
-  #handleStateLogic(dt, input, env, bounds) {
-    switch (this.#gameState) {
-      case "scouting":
-        this.#updateScouting(dt, input);
-        break;
-      case "waiting":
-        this.#updateWaiting(dt, input, env, bounds);
-        break;
-      case "biting":
-        this.#updateBiting(dt, input, env, bounds);
-        break;
-      case "playing":
-        this.#updatePlaying(dt, input, env, bounds);
-        break;
-    }
-  }
-
-  #updateScouting(dt, input) {
-    const maxDepth = CONFIG.sinker.maxDepth || 8.0;
-    if (!this.#depthUI.isActive) {
-      this.#depthUI.show(
-        maxDepth,
-        this.#currentHookDepth,
-        (d) => (this.#currentHookDepth = d),
-      );
-    } else {
-      this.#depthUI.updateMax?.(maxDepth);
-    }
-
-    if (input.panDeltaX !== 0 || input.panDeltaY !== 0) {
-      const scale = this.#projector.getScale();
-      this.#projector.pan(input.panDeltaX / scale, input.panDeltaY / scale);
-    }
-
-    if (input.clickPos) {
-      const boat = this.#chumManager?.getBoats()[0];
-      const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
-      const canCast =
-        !boat ||
-        boat.state === "drifting" ||
-        (!isManual && boat.remainingSections <= 0) ||
-        boat.state === "returning";
-
-      if (canCast) {
-        const vPos = this.#projector.screenToVirtual(
-          input.clickPos.x,
-          input.clickPos.y,
-        );
-        const cell = this.#getCell(vPos.x, vPos.y);
+      if (isManual) {
+        if (activeBoat.state !== "returning") {
+          activeBoat.setTarget(vPos.x, vPos.y);
+          clickHandled = true;
+        }
+      } else {
         if (
-          cell?.isCastable &&
-          !cell.hasCollision &&
-          this.#castManager.canCast()
+          activeBoat.remainingSections > 0 &&
+          activeBoat.state !== "returning"
         ) {
-          this.#castManager.registerCast(performance.now());
-          this.#depthUI.hide();
-          this.#castLine(vPos.x, vPos.y, cell.depth);
-        } else {
-          this.#markInvalidCast(input.clickPos);
+          this.#systems.chum.deployBait(
+            vPos.x,
+            vPos.y,
+            "carp_mix_basic",
+            "boat",
+            activeBoat,
+          );
+          activeBoat.remainingSections--;
+          clickHandled = true;
         }
       }
     }
-  }
 
-  #updateWaiting(dt, input, env, bounds) {
-    if (input.isDoubleClick) {
-      if (!this.#chumManager || this.#chumManager.getBoats().length === 0) {
-        this.#gameState = "scouting";
-        this.#tensionMeter?.reset();
-        this.#biteSystem?.reset();
-      }
-      return;
-    }
-
-    if (input.longPressPos) {
-      const vPos = this.#projector.screenToVirtual(
-        input.longPressPos.x,
-        input.longPressPos.y,
-      );
-      const cell = this.#getCell(vPos.x, vPos.y);
-      if (
-        cell?.isCastable &&
-        !cell.hasCollision &&
-        (!this.#chumManager || this.#chumManager.getBoats().length === 0)
-      ) {
-        this.#castManager.registerCast(performance.now());
-        this.#castLine(vPos.x, vPos.y, cell.depth);
-      } else {
-        this.#markInvalidCast(input.longPressPos);
-      }
-    }
-
-    this.#float.update(bounds, dt, env, (vx, vy) => this.#checkWater(vx, vy));
-    const envData = this.#getEnvData(bounds);
-    const hookedFish = this.#biteSystem.evaluateBite(dt, envData, {
-      hookSize: CONFIG.hook.level,
-      baitId: "oil_worm",
-    });
-
-    if (hookedFish) {
-      this.#gameState = "biting";
-      this.#currentBitingFish = this.#applyDebugCatch(hookedFish);
-      this.#float.startBite();
+    // --- БРОНЕБІЙНИЙ ЗАХИСТ ВІД ВИПАДКОВИХ КЛІКІВ ---
+    if (clickHandled) {
+      input.clickPos = null;
+    } else if (!this.canPlayerCast()) {
+      // Клік був повз кораблик, АЛЕ пульт керування все ще в руках (наприклад, не всі точки задані).
+      // "З'їдаємо" клік, щоб він гарантовано не провалився у стейти.
+      console.log("Дія заблокована: спочатку задайте всі точки маршруту!");
+      input.clickPos = null;
     }
   }
 
-  #updateBiting(dt, input, env, bounds) {
-    this.#float.updateBite(dt, (vx, vy) => this.#checkWater(vx, vy));
-    this.#float.update(bounds, dt, env, (vx, vy) => this.#checkWater(vx, vy));
-
-    if (!this.#float.isBiting()) {
-      this.#gameState = "waiting";
-      this.#currentBitingFish = null;
-      this.#biteSystem.reset();
-    } else if (input.isPulling) {
-      if (this.#chumManager?.getBoats().length > 0) {
-        input.isPulling = false;
-      } else {
-        if (Math.random() <= (this.#float.isGuaranteedBite() ? 0.99 : 0.01)) {
-          this.#float.hook();
-          this.#hookFish(this.#currentBitingFish);
-        } else {
-          this.#float.stopBite();
-          this.#gameState = "scouting";
-          this.#currentBitingFish = null;
-        }
-      }
-    }
+  markInvalidCast(p) {
+    this.invalidCastMarker = { x: p.x, y: p.y, timer: 500 };
   }
 
-  #updatePlaying(dt, input, env, bounds) {
-    if (this.#tensionMeter.isBroken()) {
-      this.failReason = this.#tensionMeter.getBreakReason();
-      this.#gameState = "failed";
-      document.dispatchEvent(
-        new CustomEvent("fishingFailed", {
-          detail: { reason: this.failReason },
-        }),
-      );
-      return;
-    }
-
-    this.#handleReelMechanics(input);
-
-    const floatPos = this.#float.getPosition();
-    const fishForceRaw = this.#fishingSystem.calculateFishForce(
-      dt,
-      floatPos,
-      this.#bounds,
-      CONFIG.stamina.mechanics,
-      (vx, vy) => this.#checkWater(vx, vy),
-    );
-
-    let tensionFishY = fishForceRaw.y;
-    const isHold = this.#fishingSystem.isHoldActive?.() || false;
-    if (isHold && tensionFishY < 0) {
-      tensionFishY = 0;
-      fishForceRaw.y *= this.#fishingSystem.getHoldTensionMultiplier?.() || 1.0;
-    }
-
-    this.#float.applyForce(
-      new Vector2(fishForceRaw.x, tensionFishY).multiplyScalar(
-        CONFIG.physics.fishForceMultiplier,
-      ),
-    );
-
-    const rodPos = this.#getRodVirtualPos();
-    const screenOffset = Math.min(
-      1,
-      Math.abs(
-        this.#projector.virtualToScreen(floatPos.x, floatPos.y).x -
-          (CONFIG.ui?.rod?.x === "center"
-            ? this.#canvas.width / 2
-            : Number(CONFIG.ui.rod.x)),
-      ) /
-        (this.#canvas.width / 2),
-    );
-
-    if (input.isPulling) {
-      const pForce = this.#fishingSystem.calculatePlayerForce(
-        input.pullDirection,
-        floatPos.x,
-        floatPos.y,
-        rodPos,
-        screenOffset,
-        CONFIG.physics,
-      );
-      this.#float.applyForce(
-        pForce.multiplyScalar(CONFIG.physics.playerForceMultiplier),
-      );
-    }
-
-    const playerMaxPower = Math.abs(
-      this.#fishingSystem.calculatePlayerForce(
-        new Vector2(0, 1),
-        floatPos.x,
-        floatPos.y,
-        rodPos,
-        screenOffset,
-        CONFIG.physics,
-      ).y * CONFIG.physics.playerForceMultiplier,
-    );
-    const fishPowerMag =
-      Math.max(Math.abs(fishForceRaw.x), Math.abs(fishForceRaw.y)) *
-      CONFIG.physics.fishForceMultiplier;
-
-    this.#tensionMeter.update(
-      input.isPulling,
-      playerMaxPower,
-      fishPowerMag,
-      this.#fishingSystem.getReelPower(),
-      fishPowerMag * 0.01,
-      dt,
-      CONFIG.tension,
-      CONFIG.hookMechanics,
-      isHold,
-    );
-    this.#staminaController.evaluate(
-      this.#tensionMeter.getTension(),
-      input.isPulling,
-      dt,
-      floatPos.x,
-      bounds,
-    );
-    this.#float.update(bounds, dt, env, (vx, vy) => this.#checkWater(vx, vy));
-
-    this.#checkVictory(this.#float.getPosition(), bounds.bottom, dt);
-  }
-
-  #handleReelMechanics(input) {
-    const holdState = this.#fishingSystem.getHoldUIState?.();
-    const swipeThreshold = CONFIG.reel?.hold?.swipeThresholdPx || 100;
-
-    if (holdState?.hasHold) {
-      const toggle =
-        input.toggleHold ||
-        (input.swipeDeltaY !== undefined && input.swipeDeltaY > swipeThreshold);
-      if (toggle) {
-        this.#fishingSystem.isHoldActive()
-          ? this.#fishingSystem.deactivateHold()
-          : this.#fishingSystem.activateHold();
-        if (input.swipeDeltaY !== undefined) this.#inputManager.consumeSwipe();
-      }
-    }
-
-    const pump =
-      input.pumpAction ||
-      (input.swipeDeltaY !== undefined && input.swipeDeltaY < -swipeThreshold);
-    if (pump) {
-      const reduction = this.#fishingSystem.tryUsePump(
-        CONFIG.reel?.pumpLevel || 0,
-        CONFIG.reel?.pumpPowerPerLevel || 10,
-      );
-      if (reduction > 0) {
-        this.#tensionMeter.applyPump(reduction);
-        if (input.swipeDeltaY !== undefined) this.#inputManager.consumeSwipe();
-      }
-    }
-  }
-
-  #checkVictory(pos, bottomY, dt) {
-    this.#isNetReady = this.#net.isFloatInZone(pos.y, bottomY);
-    const triggerY = this.#net.getTriggerVirtualY(bottomY);
-    const autoCatchY =
-      bottomY -
-      (CONFIG.locations.catchLineOffsetPx ?? 5) / this.#projector.getScale();
-
-    if (pos.y >= triggerY && pos.y < autoCatchY) {
-      this.#fishingSystem.tryTriggerFishLastDash?.(dt);
-    }
-
-    if (pos.y >= autoCatchY) {
-      this.#gameState = "victory";
-    }
-  }
-
-  #updateUserInterface() {
-    if (this.#gameState === "playing") {
-      this.#holdUI.update(this.#fishingSystem.getHoldUIState?.());
-    } else {
-      this.#holdUI.update(null);
-      if (this.#gameState !== "scouting" && this.#depthUI.isActive)
-        this.#depthUI.hide();
-    }
-  }
-
-  #getEnvData(bounds) {
-    const pos = this.#float.getPosition();
-    const cell = this.#getCell(pos.x, pos.y);
-    const depth = cell ? cell.depth : 0;
-    const vTop = bounds ? bounds.top : 0;
-    const vBot = bounds ? bounds.bottom : 1440;
-    const chum = this.#chumManager
-      ? this.#chumManager.getChumDataAt(pos.x, pos.y, vTop, vBot)
-      : { bonus: 1.0, targets: null };
-
-    return {
-      hookDepth: Math.min(this.#float.getCurrentHookDepth(), depth),
-      lineLength: this.#currentHookDepth,
-      bottomDepth: depth,
-      timePhase: this.#currentPhase,
-      dayOfWeek: new Date().getDay(),
-      zoneMultiplier: 1.0,
-      chumBonus: chum.bonus,
-      chumTargets: chum.targets,
-      isRaining: this.#isRaining,
-      isFoggy: this.#isFoggy,
-      castSpamMultiplier: this.#castManager.getBiteChanceMultiplier(),
-    };
-  }
-
-  #getDynamicBounds() {
-    const cb = this.#locationMap.getCastableBoundsVirtual(
-      CONFIG.locations.cellSize,
-    );
-    const vTL = this.#projector.screenToVirtual(0, 0);
-    const vBR = this.#projector.screenToVirtual(
-      this.#canvas.width,
-      this.#canvas.height,
-    );
-
-    let L = cb ? cb.left : 0;
-    let R = cb ? cb.right : 2560;
-
-    if (CONFIG.locations.lockZoneXToScreen) {
-      L = Math.max(vTL.x, L);
-      R = Math.min(vBR.x, R);
-    }
-
-    return {
-      left: L,
-      right: R,
-      top: cb ? cb.top : 0,
-      bottom: cb ? cb.bottom : 1440,
-    };
-  }
-
-  #getRodVirtualPos() {
-    const rodX =
-      CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== "center"
-        ? Number(CONFIG.ui.rod.x)
-        : this.#canvas.width / 2;
-    const bounds = this.#locationMap.getCastableBoundsVirtual(
-      CONFIG.locations.cellSize,
-    );
-    return new Vector2(
-      this.#projector.screenToVirtual(rodX, 0).x,
-      bounds ? bounds.bottom : 1440,
-    );
-  }
-
-  #checkWater(vx, vy) {
-    const cell = this.#getCell(vx, vy);
-    return !!(cell && cell.isCastable && !cell.hasCollision);
-  }
-
-  #getCell(vx, vy) {
-    return this.#locationMap.getCellAtVirtualPos(
-      vx,
-      vy,
-      CONFIG.locations.cellSize,
-    );
-  }
-
-  #markInvalidCast(pos) {
-    this.#invalidCastMarker = { x: pos.x, y: pos.y, timer: 500 };
-  }
-
-  #applyDebugCatch(fish) {
-    if (!CONFIG.debug?.fixedCatch?.enabled) return fish;
-    const fixed = CONFIG.debug.fixedCatch;
-    const template =
-      CONFIG.spawns.fishes.find((f) => f.id === fixed.fishId) ||
-      CONFIG.spawns.fishes[0];
-    return {
-      id: template.id,
-      name: template.name + " (TEST)",
-      physics: template.physics,
-      ...fixed,
-    };
-  }
-
-  #syncDebugOverlay(bounds) {
+  #sendDebug() {
     if (!CONFIG.debug?.overlay) return;
 
-    const env = this.#getEnvData(bounds);
+    const env = this.#systems.env.getSnapshot();
+    const b = this.getDynamicBounds();
     const pos = this.#float.getPosition();
-    const fs = this.#fishingSystem;
+    const ed = this.getEnvDataForBite(b);
 
-    document.dispatchEvent(
-      new CustomEvent("debug-live-update", {
-        detail: {
-          gameState: this.#gameState,
-          floatX: Math.round(pos.x),
-          floatY: Math.round(pos.y),
-          hookDepth: env.hookDepth,
-          bottomDepth: env.bottomDepth,
-          lineLength: env.lineLength, // Додано
-          bait: "oil_worm",
-          phase: this.#currentPhase,
-          liveChances: this.#biteSystem.getLiveChances(env, {
-            hookSize: CONFIG.hook.level,
-            baitId: "oil_worm",
-          }),
-          isRaining: this.#isRaining, // Додано
-          isFoggy: this.#isFoggy, // Додано
-          fishState: fs?.getCurrentState?.() || "N/A",
-          activeDebuff: fs?.getActiveDebuffName?.() || "Немає",
-          isMastery: this.#staminaController?.isMasteryActive?.() || false,
-        },
+    if (
+      this.#systems.chum &&
+      typeof this.#systems.chum.getBonusAt === "function"
+    ) {
+      const chumData = this.#systems.chum.getBonusAt(pos.x);
+      ed.chumBonus = chumData.bonus || 1.0;
+      ed.chumTargets = chumData.targets || [];
+    } else {
+      ed.chumBonus = 1.0;
+      ed.chumTargets = [];
+    }
+
+    const currentBait = CONFIG.player?.currentBait || "oil_worm";
+
+    let detail = {
+      gameState: this.#gameStateName,
+      floatX: Math.round(pos.x),
+      floatY: Math.round(pos.y),
+      hookDepth: ed.hookDepth,
+      bottomDepth: ed.bottomDepth,
+      lineLength: this.currentHookDepth,
+      bait: currentBait,
+      phase: env.phase,
+      isRaining: env.isRaining,
+      isFoggy: env.isFoggy,
+      liveChances: this.#systems.bite.getLiveChances(ed, {
+        hookSize: CONFIG.hook.level,
+        baitId: currentBait,
       }),
-    );
+      chumZones: this.#systems.chum?.getActiveZones
+        ? this.#systems.chum.getActiveZones()
+        : [],
+    };
+
+    if (this.#state && typeof this.#state.getDebugData === "function") {
+      Object.assign(detail, this.#state.getDebugData());
+    }
+
+    document.dispatchEvent(new CustomEvent("debug-live-update", { detail }));
   }
 
-  draw() {
-    this.#renderer.clear(CONFIG.canvas.backgroundColor);
-
-    const mapBounds = this.#locationMap.getCastableBoundsVirtual(
-      CONFIG.locations.cellSize,
-    );
-    const virtualBottomY = mapBounds ? mapBounds.bottom : 1440;
-    const vTop = mapBounds ? mapBounds.top : 0;
-
-    if (typeof this.#renderer.drawBackground === "function") {
-      this.#renderer.drawBackground(this.#locationMap, this.#projector);
-    }
-
-    if (CONFIG.locations && CONFIG.locations.debugVisuals) {
-      this.#renderer.drawLocationDebug(
-        this.#locationMap,
-        this.#projector,
-        CONFIG.locations,
-      );
-    }
-
-    if (this.#invalidCastMarker) {
-      this.#renderer.drawInvalidCastMarker(this.#invalidCastMarker);
-    }
-
-    if (
-      CONFIG.locations.showChumZones !== false &&
-      this.#chumManager &&
-      typeof this.#renderer.drawChumZones === "function"
-    ) {
-      this.#renderer.drawChumZones(
-        this.#chumManager,
-        this.#projector,
-        vTop,
-        virtualBottomY,
-      );
-    }
-
-    if (
-      this.#chumManager &&
-      typeof this.#renderer.drawBoatWaypoints === "function"
-    ) {
-      this.#renderer.drawBoatWaypoints(this.#chumManager, this.#projector);
-    }
-
-    if (this.#chumManager && typeof this.#renderer.drawBoats === "function") {
-      this.#renderer.drawBoats(
-        this.#chumManager,
-        this.#projector,
-        vTop,
-        virtualBottomY,
-      );
-    }
-
-    if (
-      this.#isAimingChum &&
-      typeof this.#renderer.drawChumAiming === "function"
-    ) {
-      const method = CONFIG.chum.currentMethod || "hand";
-
-      if (method === "hand") {
-        const locationConfig = CONFIG.locations.map["test"];
-        const maxHandDist = locationConfig?.chumCastDistance || 800;
-
-        this.#renderer.drawChumAiming(
-          this.#projector,
-          virtualBottomY,
-          maxHandDist,
-        );
-      }
-    }
-
-    if (
-      this.#gameState === "waiting" ||
-      this.#gameState === "biting" ||
-      this.#gameState === "playing" ||
-      this.#gameState === "failed" ||
-      this.#gameState === "victory"
-    ) {
-      const vPos = this.#float.getPosition();
-      const sPos = this.#projector.virtualToScreen(vPos.x, vPos.y);
-
-      this.#renderer.drawCatchZone(
-        this.#projector,
-        this.#net,
-        virtualBottomY,
-        CONFIG.locations,
-        CONFIG.ui.catchZone,
-      );
-
-      let lineLengthRatio = 1.0;
-      let lineDropOffset = 0;
-
-      if (this.#gameState === "waiting" || this.#gameState === "biting") {
-        const targetDepth = this.#currentHookDepth || 1.0;
-        const sinkRate = CONFIG.sinker?.sinkRate || 1.0;
-        const baseSinkTimeMs = (targetDepth / sinkRate) * 1000;
-
-        const minDelay = CONFIG.ui?.line?.distanceDelayMinMs ?? 500;
-        const maxDelay = CONFIG.ui?.line?.distanceDelayMaxMs ?? 2000;
-        const distanceDelayMs =
-          minDelay + this.#castDistanceRatio * (maxDelay - minDelay);
-
-        const durationMs = baseSinkTimeMs + distanceDelayMs;
-
-        const elapsed = performance.now() - this.#castStartTime;
-        let progress = durationMs > 0 ? Math.min(1, elapsed / durationMs) : 1;
-
-        const easePower = CONFIG.ui?.line?.shrinkEasePower ?? 3;
-        let easeOutProgress = progress;
-        if (easePower > 1) {
-          easeOutProgress = 1 - Math.pow(1 - progress, easePower);
-        }
-
-        const targetPercent = (CONFIG.ui?.line?.shrinkPercent ?? 60) / 100;
-        lineLengthRatio = 1.0 - easeOutProgress * (1.0 - targetPercent);
-
-        lineDropOffset = easeOutProgress * (CONFIG.ui?.line?.sinkDropPx ?? 40);
-      } else if (this.#gameState === "playing") {
-        if (this.#lastGameState !== "playing") {
-          this.#playStartTime = performance.now();
-        }
-
-        const elapsed = performance.now() - this.#playStartTime;
-        const baseSnapDuration = CONFIG.ui?.line?.snapDurationMs ?? 500;
-        const maxMult = CONFIG.ui?.line?.snapDepthMaxMultiplier ?? 2.0;
-        const currentDepth = this.#currentHookDepth || 0;
-
-        const depthRatio = Math.min(1, currentDepth / 10.0);
-        const dynamicMult = 1.0 + depthRatio * (maxMult - 1.0);
-        const snapDuration = baseSnapDuration * dynamicMult;
-
-        let progress =
-          snapDuration > 0 ? Math.min(1, elapsed / snapDuration) : 1;
-        const easeProgress = 1 - Math.pow(1 - progress, 3);
-        const targetPercent = (CONFIG.ui?.line?.shrinkPercent ?? 60) / 100;
-
-        lineLengthRatio = targetPercent + easeProgress * (1.0 - targetPercent);
-
-        const maxDrop = CONFIG.ui?.line?.sinkDropPx ?? 40;
-        lineDropOffset = maxDrop * (1 - easeProgress);
-      }
-
-      this.#lastGameState = this.#gameState;
-
-      const mapBottomScreenY = this.#projector.virtualToScreen(
-        0,
-        virtualBottomY,
-      ).y;
-
-      const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
-      const rodTopY = rodScreenY - 200;
-
-      const distY = sPos.y - rodTopY;
-
-      if (distY < 0) {
-        const minRatio = (mapBottomScreenY - rodTopY) / distY;
-        lineLengthRatio = Math.max(lineLengthRatio, minRatio);
-      }
-
-      const targetYAfterShrink = rodTopY + distY * lineLengthRatio;
-      const maxAllowedDrop = Math.max(0, mapBottomScreenY - targetYAfterShrink);
-
-      lineDropOffset = Math.min(lineDropOffset, maxAllowedDrop);
-
-      const currentTension = this.#tensionMeter
-        ? this.#tensionMeter.getTension()
-        : 0;
-      this.#renderer.drawRodLine(
-        sPos,
-        this.#gameState,
-        currentTension,
-        lineLengthRatio,
-        lineDropOffset,
-        CONFIG.ui.rod,
-        CONFIG.ui.line,
-      );
-
-      this.#renderer.drawFloat(sPos, this.#float, CONFIG.float);
-
-      if (
-        this.#gameState === "playing" &&
-        this.#tensionMeter &&
-        this.#fishCondition
-      ) {
-        this.#renderer.drawTensionBar(
-          this.#tensionMeter,
-          CONFIG.tension,
-          CONFIG.ui.indicators,
-        );
-        this.#renderer.drawFishCondition(
-          this.#fishCondition,
-          CONFIG.ui.indicators,
-        );
-      }
-    }
-
-    if (this.#gameState === "failed") {
-      this.#renderer.drawGameOver(
-        this.#canvas.width,
-        this.#canvas.height,
-        this.failReason || this.#tensionMeter.getBreakReason(),
-      );
-    } else if (this.#gameState === "victory") {
-      this.#renderer.drawVictory(this.#canvas.width, this.#canvas.height);
-    }
+  start() {
+    const loop = (t) => {
+      this.update(t - (this.lastTime || t));
+      this.draw();
+      this.lastTime = t;
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
   }
 
-  loop(timestamp) {
-    const dt = timestamp - this.#lastTime;
-    this.#lastTime = timestamp;
-
-    this.update(dt);
-    this.draw();
-
-    if (this.#uiManager) {
-      this.#uiManager.updateNetButtonState(
-        CONFIG,
-        this.#isNetReady && this.#gameState === "playing",
-      );
-      this.#uiManager.updateContinueButtonState(
-        this.#gameState === "failed" || this.#gameState === "victory",
-      );
-    }
-
-    requestAnimationFrame(this.loop);
+  get gameStateName() {
+    return this.#gameStateName;
+  }
+  get systems() {
+    return this.#systems;
+  }
+  get float() {
+    return this.#float;
+  }
+  get castManager() {
+    return this.#castManager;
+  }
+  get depthUI() {
+    return this.#depthUI;
+  }
+  get holdUI() {
+    return this.#holdUI;
+  }
+  get net() {
+    return this.#net;
   }
 }
+
+const game = new Game("gameCanvas");
+CacheManager.printStorageUsage();

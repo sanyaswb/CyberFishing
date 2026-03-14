@@ -317,6 +317,14 @@ class UIManager {
     new DevTools(this.#config);
   }
 
+  hideNetButton() {
+    if (this.#netBtn) {
+      this.#netBtn.style.display = "none";
+      // Важливо скинути стан, щоб анімація появи спрацювала наступного разу
+      this.#netBtn.style.transform = "scale(0)";
+    }
+  }
+
   #initFullscreenBtn() {
     this.#fullscreenBtn = document.createElement("button");
     this.#fullscreenBtn.innerHTML = "⛶";
@@ -412,7 +420,7 @@ class UIManager {
     this.#isNetReady = isReady;
 
     if (!config.net || !config.net.active) {
-      this.#netBtn.style.display = "none";
+      this.hideNetButton(); // Перевикористовуємо новий метод
       return;
     }
 
@@ -426,11 +434,12 @@ class UIManager {
 
     if (isAppearing) {
       this.#netBtn.style.transform = "scale(0)";
-      setTimeout(() => {
+      // requestAnimationFrame надійніший за setTimeout(..., 10) для CSS анімацій
+      requestAnimationFrame(() => {
         this.#netBtn.style.transition =
           "transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s, box-shadow 0.2s";
         this.#netBtn.style.transform = "scale(1)";
-      }, 10);
+      });
     }
 
     if (isReady) {

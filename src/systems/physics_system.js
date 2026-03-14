@@ -4,6 +4,10 @@ class FishingSystem {
   #buffs;
   #fish;
 
+  #playerForceResult = new Vector2(0, 0);
+  #fishForceResult = new Vector2(0, 0);
+  #pullDirScratch = new Vector2(0, 0);
+
   #lastFishState = "unknown";
   #lastFishBasePower = 0;
   #lastPullMult = 0;
@@ -15,7 +19,6 @@ class FishingSystem {
   #isHoldActive = false;
   #holdRestoreTimers = [];
   #manualCooldownTimer = 0;
-
   #hasUsedPumpThisHold = false;
 
   constructor(rod, reel, fish) {
@@ -46,7 +49,6 @@ class FishingSystem {
     return true;
   }
 
-  // ДОДАНО: Спроба використати підтяжку
   tryUsePump(pumpLevel, powerPerLevel = 10) {
     if (!this.#isHoldActive) return 0; // Працює тільки під час блокування
     if (this.#hasUsedPumpThisHold) return 0; // Вже використано
@@ -166,18 +168,23 @@ class FishingSystem {
 
     const effectivePower = totalPower * penaltyMultiplier;
 
-    const pullDir = new Vector2(
-      rodVirtualPos.x - floatX,
-      rodVirtualPos.y - floatY,
-    ).normalize();
+    // Оновлюємо існуючий вектор замість створення нового
+    this.#pullDirScratch
+      .set(rodVirtualPos.x - floatX, rodVirtualPos.y - floatY)
+      .normalize();
 
-    let force = new Vector2(0, 0);
-    force.x = pullDir.x * inputDirection.y * effectivePower;
-    force.y = pullDir.y * inputDirection.y * effectivePower;
-    force.x +=
+    // Скидаємо та розраховуємо результат у #playerForceResult
+    this.#playerForceResult.set(0, 0);
+    this.#playerForceResult.x =
+      this.#pullDirScratch.x * inputDirection.y * effectivePower;
+    this.#playerForceResult.y =
+      this.#pullDirScratch.y * inputDirection.y * effectivePower;
+
+    // Додаємо steering (кермування)
+    this.#playerForceResult.x +=
       inputDirection.x * totalPower * physicsConfig.playerSteeringMultiplier;
 
-    return force;
+    return this.#playerForceResult;
   }
 
   calculateFishForce(dt, floatPos, bounds, staminaMechanicsConfig, checkWater) {
@@ -185,6 +192,7 @@ class FishingSystem {
     const floatY = floatPos.y;
     const centerX = (bounds.left + bounds.right) / 2;
     const halfWidth = (bounds.right - bounds.left) / 2;
+
     let rawPenalty = Math.abs(floatX - centerX) / (halfWidth || 1);
     let spatialPenalty = Math.max(
       0,
@@ -203,11 +211,8 @@ class FishingSystem {
       floatX >= bounds.right - 5 ||
       (checkWater && !checkWater(floatX + 10, floatY));
 
-    if (isAtLeftWall && behavior.moveX < 0) {
-      this.#fish.reactToWall(-1);
-    } else if (isAtRightWall && behavior.moveX > 0) {
-      this.#fish.reactToWall(1);
-    }
+    if (isAtLeftWall && behavior.moveX < 0) this.#fish.reactToWall(-1);
+    else if (isAtRightWall && behavior.moveX > 0) this.#fish.reactToWall(1);
 
     const finalBehavior = this.#fish.getBehavior(0);
     this.#lastFishState = finalBehavior.name;
@@ -294,8 +299,8 @@ class FishingSystem {
       }
     }
 
-    let force = new Vector2(0, 0);
-    force.y = -basePower * finalBehavior.pullMult;
+    this.#fishForceResult.set(0, 0);
+    this.#fishForceResult.y = -basePower * finalBehavior.pullMult;
 
     const pushDirection = Math.sign(floatX - centerX);
     let escapeForceX = 0;
@@ -312,12 +317,9 @@ class FishingSystem {
         basePower;
     }
 
-    force.x = finalBehavior.moveX * basePower + escapeForceX;
+    this.#fishForceResult.x = finalBehavior.moveX * basePower + escapeForceX;
 
-    // ВАЖЛИВО: Ми повертаємо ПОВНУ силу риби (force),
-    // щоб game.js міг правильно розрахувати шалений натяг ліски.
-    // А саме блокування руху поплавка ми зробимо в game.js!
-    return force;
+    return this.#fishForceResult;
   }
 }
 

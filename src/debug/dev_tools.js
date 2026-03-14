@@ -327,7 +327,6 @@ class DevToolsUI {
     parentElement.appendChild(row);
   }
 
-  // ДОДАНО: Спеціальний перемикач для текстових значень (Enum)
   createEnumToggleRow(
     key,
     optionsArray,
