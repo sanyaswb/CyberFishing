@@ -460,7 +460,7 @@ class BaitBoat {
 
     this.hasLeftShore = false;
 
-    // ДОДАНО: Секції прикормки
+    // Секції прикормки
     this.remainingSections = config.sections || 1;
     this.hasLeftShore = false;
 
@@ -483,7 +483,7 @@ class BaitBoat {
     this.state = isReturn ? "returning" : "deploying";
   }
 
-  // ДОДАНО: Повертає масив усіх активних точок, куди зараз прямує кораблик
+  // Повертає масив усіх активних точок, куди зараз прямує кораблик
   getVisualWaypoints() {
     const points = [];
 
@@ -634,7 +634,7 @@ class BaitBoat {
     // --- ЄДИНА ЛОГІКА ВИХОДУ З ТУПИКА (РЕВЕРС) ---
     // Рахуємо, скільки місця нам треба для безпечного розвороту
     const turnRadius = this.stats.speedPxPerSec / this.config.turnSpeedRad;
-    const clearanceDist = Math.max(30, turnRadius * 0.8); // Сенсор дивиться вперед на ~40-50px
+    const clearanceDist = Math.max(30, turnRadius * 0.8);
 
     const clearX = this.pos.x + Math.cos(this.angle) * clearanceDist;
     const clearY = this.pos.y + Math.sin(this.angle) * clearanceDist;
@@ -657,6 +657,16 @@ class BaitBoat {
         this.state = "waiting";
         return;
       }
+    } else {
+      // --- ВИПРАВЛЕННЯ: АНТИ-ОРБІТА ---
+      // Застосовуємо тільки якщо шлях вільний і ми рухаємось вперед
+      const currentTurnRadius =
+        this.stats.speedPxPerSec / this.config.turnSpeedRad;
+
+      // Якщо ціль ближче, ніж 1.5 радіуса повороту, І ми дивимось повз неї (більше ніж на ~28 градусів)
+      if (distToTarget < currentTurnRadius * 1.5 && Math.abs(angleDiff) > 0.5) {
+        currentSpeed = this.stats.speedPxPerSec * 0.2; // Гальмуємо до 20%
+      }
     }
 
     // --- РУХ І ФІЗИЧНІ ЗІТКНЕННЯ ---
@@ -678,18 +688,18 @@ class BaitBoat {
       this.pos.y = nextY;
     }
 
-    // 1. Фіксуємо, що кораблик відплив від берега хоча б на 50 пікселів
+    // Фіксуємо, що кораблик відплив від берега хоча б на 50 пікселів
     if (!this.hasLeftShore && this.startPos.y - this.pos.y > 50) {
       this.hasLeftShore = true;
     }
 
-    // ВИПРАВЛЕНО 90 градусів: Замість перевірки колізії чекаємо просто коли він перетне лінію
+    // Чекаємо просто коли він перетне лінію берега для паркування
     if (this.hasLeftShore && this.pos.y >= this.startPos.y - 30) {
       if (!isManual) {
         console.log("Авто-режим: Кораблик пришвартувався автоматично!");
         this.isFinished = true; // Зникає
       } else {
-        // У ручному режимі він просто стоїть і чекає, поки гравець по ньому клікне
+        // У ручному режимі він просто стоїть і чекає
         this.state = "waiting";
       }
     }
