@@ -483,6 +483,23 @@ class BaitBoat {
     this.state = isReturn ? "returning" : "deploying";
   }
 
+  // ДОДАНО: Повертає масив усіх активних точок, куди зараз прямує кораблик
+  getVisualWaypoints() {
+    const points = [];
+
+    // 1. Поточна ціль (якщо він пливе туди від гравця, а не повертається на базу)
+    if (this.state === "deploying" && this.target) {
+      points.push({ x: this.target.x, y: this.target.y });
+    }
+
+    // 2. Всі інші точки в черзі (для авто-режиму)
+    for (const wp of this.waypoints) {
+      points.push({ x: wp.x, y: wp.y });
+    }
+
+    return points;
+  }
+
   update(dt, checkWater, cellSize, env) {
     if (this.state === "idle" || this.isFinished) return;
 

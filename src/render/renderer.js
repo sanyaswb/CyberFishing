@@ -234,6 +234,46 @@ class Renderer {
     this.#ctx.restore();
   }
 
+  drawBoatWaypoints(chumManager, projector) {
+    if (!chumManager) return;
+
+    const boats = chumManager.getBoats();
+    if (boats.length === 0) return;
+
+    for (const boat of boats) {
+      const waypoints = boat.getVisualWaypoints();
+
+      for (let i = 0; i < waypoints.length; i++) {
+        const wp = waypoints[i];
+        const screenPos = projector.virtualToScreen(wp.x, wp.y);
+
+        this.#ctx.save();
+
+        // Малюємо зовнішнє напівпрозоре кільце
+        this.#ctx.beginPath();
+        this.#ctx.arc(screenPos.x, screenPos.y, 8, 0, Math.PI * 2);
+        this.#ctx.strokeStyle = "rgba(255, 170, 0, 0.6)"; // Оранжевий колір
+        this.#ctx.lineWidth = 2;
+        this.#ctx.stroke();
+
+        // Малюємо внутрішній яскравий кружечок
+        this.#ctx.beginPath();
+        this.#ctx.arc(screenPos.x, screenPos.y, 3, 0, Math.PI * 2);
+        this.#ctx.fillStyle = "#ffaa00";
+        this.#ctx.fill();
+
+        // ВИПРАВЛЕНО: Малюємо цифру ТІЛЬКИ якщо це автоматичний режим
+        if (!boat.config.manualControl) {
+          this.#ctx.fillStyle = "#ffffff";
+          this.#ctx.font = "bold 10px Arial";
+          this.#ctx.fillText(i + 1, screenPos.x + 10, screenPos.y + 4);
+        }
+
+        this.#ctx.restore();
+      }
+    }
+  }
+
   drawBoats(chumManager, projector, virtualTopY, virtualBottomY) {
     const boats = chumManager.getBoats();
     if (!boats || boats.length === 0) return;

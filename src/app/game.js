@@ -551,7 +551,13 @@ class Game {
               method,
               this.#activeBoat,
             );
-            this.#activeBoat.remainingSections--;
+
+            // ВИПРАВЛЕНО: Віднімаємо секцію при спавні ТІЛЬКИ в авто-режимі!
+            const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
+            if (!isManual) {
+              this.#activeBoat.remainingSections--;
+            }
+
             this.#activeBoat = null;
             this.#isAimingChum = false;
           } else if (method === "hand" && vPos.y >= throwLineVirtualY) {
@@ -1448,6 +1454,13 @@ class Game {
         vTop,
         virtualBottomY,
       );
+    }
+
+    if (
+      this.#chumManager &&
+      typeof this.#renderer.drawBoatWaypoints === "function"
+    ) {
+      this.#renderer.drawBoatWaypoints(this.#chumManager, this.#projector);
     }
 
     if (this.#chumManager && typeof this.#renderer.drawBoats === "function") {
