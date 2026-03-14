@@ -645,6 +645,9 @@ class BaitBoat {
     }
 
     let currentSpeed = this.stats.speedPxPerSec;
+    if (distToTarget < turnRadius) {
+      currentSpeed = currentSpeed / 2;
+    }
 
     // Якщо попереду стіна (не вистачає місця для радіуса)
     if (!isForwardClear) {
