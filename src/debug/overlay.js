@@ -1,611 +1,253 @@
+/**
+ * Глобальні налаштування відображення блоків
+ */
 const OVERLAY_MODULES = {
-  echo: true, // 📡 ЕХОЛОТ (Глибина, Шанси кльову)
-  chancesDetail: false, // 🐟 ДЕТАЛЬНІ ШАНСИ КЛЬОВУ
-  state: true, // 🧠 ПОВЕДІНКА (STATE)
-  chum: false, // 🧲 ПРИКОРМКА
-  fishBase: true, // 🔥 ПОТОЧНА БАЗОВА СИЛА РИБИ
-  fishStates: true, // 📊 СИЛА РИБИ ЗА СТАНАМИ (MAX Y та X)
-  worstCase: false, // 💀 НАЙГІРШИЙ СЦЕНАРІЙ (НИЖНІЙ КУТ)
-  playerMax: true, // 📊 СИЛА ГРАВЦЯ (MAX Y & X)
-  liveY: true, // ⚖️ LIVE: ТЯГА (Вісь Y)
-  liveX: true, // ⚖️ LIVE: КЕРУВАННЯ (Вісь X)
-  debuffsLive: true, // ☠️ АКТИВНІ ДЕБАФИ ТА MASTERY
+  echo: true,
+  chancesDetail: false,
+  state: true,
+  chum: true,
+  fishBase: true,
+  fishStates: true,
+  worstCase: false,
+  playerMax: true,
+  liveY: true,
+  liveX: true,
+  debuffsLive: true,
 };
+
+/**
+ * Базовий клас модуля
+ */
+class OverlayModule {
+  constructor(configKey) {
+    this.configKey = configKey;
+  }
+  isActive(data) {
+    return OVERLAY_MODULES[this.configKey] && this.shouldRender(data);
+  }
+  shouldRender(data) {
+    return true;
+  }
+  render(data) {
+    return "";
+  }
+
+  formatHeader(title, color = "#00ccff") {
+    return `<div style="color: ${color}; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">${title}</div>`;
+  }
+
+  getStateColor(state) {
+    const colors = {
+      dash: "#ff4444",
+      lastdash: "#ff00ff",
+      panic: "#ff0055",
+      megadash: "#ff2222",
+      surrender: "#888888",
+      swim: "#ffaa00",
+      rest: "#00ff80",
+      idle: "#00ccff",
+    };
+    return colors[state?.toLowerCase()] || "#8a9bac";
+  }
+}
+
+/**
+ * 🧠 МОДУЛЬ ПОВЕДІНКИ РИБИ
+ */
+class FishBehaviorModule extends OverlayModule {
+  constructor() {
+    super("state");
+  }
+  shouldRender(d) {
+    return d.gameState === "playing" && d.hookedFish;
+  }
+
+  render(d) {
+    const stateColor = this.getStateColor(d.fishState);
+    let html = this.formatHeader(
+      `🧠 ПОВЕДІНКА (${d.hookedFish.name || "Риба"})`,
+    );
+    html += `<div style="margin-bottom: 4px;">Стан: <span style="color: ${stateColor}; text-transform: uppercase; font-weight: bold;">${d.fishState || "---"}</span></div>`;
+    html += `<div style="margin-bottom: 4px;">Множник Тяги (Y): <span style="color: ${stateColor};">x${(d.pullMult || 0).toFixed(2)}</span></div>`;
+    html += `<div style="margin-bottom: 12px;">Множник Втечі (X): <span style="color: ${stateColor};">x${(d.moveMult || 0).toFixed(2)}</span></div>`;
+    return html;
+  }
+}
+
+/**
+ * 📡 МОДУЛЬ ЕХОЛОТА
+ */
+class EchoModule extends OverlayModule {
+  constructor() {
+    super("echo");
+  }
+  shouldRender(d) {
+    return ["scouting", "waiting", "biting"].includes(d.gameState);
+  }
+
+  render(d) {
+    let html = this.formatHeader("📡 ЕХОЛОТ", "#00ff80");
+    html += `<div style="margin-bottom: 4px;">Стан: <span style="color: #00ccff; text-transform: uppercase;">${d.gameState}</span></div>`;
+
+    if (d.gameState !== "scouting") {
+      html += `<div style="margin-bottom: 4px;">
+        Гачок: <span style="color: #ffaa00;">${(d.hookDepth || 0).toFixed(2)} м</span> / 
+        Дно: <span style="color: #ffaa00;">${(d.bottomDepth || 0).toFixed(2)} м</span> / 
+        Ліска: <span style="color: #00ccff;">${(d.lineLength || 0).toFixed(2)} м</span>
+      </div>`;
+      const weather = d.isRaining
+        ? "🌧️ Дощ"
+        : d.isFoggy
+          ? "🌫️ Туман"
+          : "☀️ Ясно";
+      html += `<div style="margin-bottom: 4px;">Погода: <span style="color: #00ccff;">${weather}</span> | Фаза: <span style="color: #ffff00;">${d.phase}</span></div>`;
+
+      if (d.liveChances?.length > 0) {
+        html += `<div style="color: #8a9bac; font-size: 11px; margin-top: 5px;">Шанси:</div>`;
+        d.liveChances.forEach((f) => {
+          html += `<div style="display: flex; justify-content: space-between; font-size: 12px;">
+            <span>${f.name}</span><span style="color: #00ff80;">${f.chance}</span>
+          </div>`;
+        });
+      }
+    }
+    return html + `<div style="margin-bottom: 12px;"></div>`;
+  }
+}
+
+/**
+ * 📊 МОДУЛЬ СИЛИ (Y та X)
+ */
+class LiveForcesModule extends OverlayModule {
+  constructor() {
+    super("liveY");
+  }
+  shouldRender(d) {
+    return d.gameState === "playing";
+  }
+  render(d) {
+    const pY = d.playerForceY || 0,
+      fY = d.fishForceY || 0;
+    const pX = d.playerForceX || 0,
+      fX = d.fishForceX || 0;
+
+    let html = this.formatHeader("⚖️ LIVE FORCES");
+    html += `<div style="font-size: 12px;">Y: <span style="color:#00ff80">P:${pY.toFixed(2)}</span> vs <span style="color:#ff4444">F:${fY.toFixed(2)}</span></div>`;
+    html += `<div style="font-size: 12px; margin-bottom: 10px;">X: <span style="color:#00ff80">P:${pX.toFixed(2)}</span> vs <span style="color:#ff4444">F:${fX.toFixed(2)}</span></div>`;
+    return html;
+  }
+}
 
 class DebugOverlay {
   #container;
   #content;
-  #intervalId;
   #data = {};
   #userScale = 1.0;
+  #modules = [];
 
   constructor() {
+    this.#initModules();
     this.#initDOM();
     this.#initListener();
-    this.#start();
+    this.#startTick();
+  }
+
+  #initModules() {
+    this.#modules = [
+      new EchoModule(),
+      new FishBehaviorModule(),
+      new LiveForcesModule(),
+    ];
   }
 
   #initDOM() {
     this.#container = document.createElement("div");
-    this.#container.style.cssText =
-      "position: absolute; bottom: 10px; left: 10px; background: rgba(11, 21, 32, 0.95); color: #ffffff; padding: 15px 15px 50px 15px; font-family: monospace; font-size: 14px; border: 1px solid #4a5b6c; border-radius: 8px; z-index: 10000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.6); min-width: 280px; transform-origin: bottom left; touch-action: none; pointer-events: all;";
-
-    UIUtils.makeSolid(this.#container);
+    Object.assign(this.#container.style, {
+      position: "absolute",
+      bottom: "10px",
+      left: "10px",
+      background: "rgba(11, 21, 32, 0.95)",
+      color: "#ffffff",
+      padding: "15px 15px 50px 15px",
+      fontFamily: "monospace",
+      fontSize: "14px",
+      border: "1px solid #4a5b6c",
+      borderRadius: "8px",
+      zIndex: "10000",
+      display: "none",
+      minWidth: "280px",
+      transformOrigin: "bottom left",
+    });
 
     this.#content = document.createElement("div");
-    this.#content.style.pointerEvents = "none";
     this.#container.appendChild(this.#content);
 
-    const controlsDiv = document.createElement("div");
-    controlsDiv.style.cssText =
-      "position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; z-index: 10001; pointer-events: all;";
+    const controls = document.createElement("div");
+    controls.style.cssText =
+      "position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px;";
 
-    const btnMinus = document.createElement("button");
-    btnMinus.innerHTML = "-";
-    this.#styleZoomBtn(btnMinus);
+    const bMin = this.#createBtn("-", () => this.#changeScale(-0.1));
+    const bPlus = this.#createBtn("+", () => this.#changeScale(0.1));
 
-    const btnPlus = document.createElement("button");
-    btnPlus.innerHTML = "+";
-    this.#styleZoomBtn(btnPlus);
-
-    const handleZoom = (e, delta) => {
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      this.#userScale = Math.max(0.3, Math.min(3.0, this.#userScale + delta));
-      this.#forceScaleUpdate();
-    };
-
-    [
-      { btn: btnMinus, d: -0.1 },
-      { btn: btnPlus, d: 0.1 },
-    ].forEach(({ btn, d }) => {
-      btn.addEventListener("pointerdown", (e) => handleZoom(e, d), {
-        capture: true,
-        passive: false,
-      });
-      btn.addEventListener("touchstart", (e) => handleZoom(e, d), {
-        capture: true,
-        passive: false,
-      });
-
-      ["pointerup", "touchend", "click", "mousedown", "mouseup"].forEach(
-        (evt) => {
-          btn.addEventListener(
-            evt,
-            (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              e.stopImmediatePropagation();
-            },
-            { capture: true },
-          );
-        },
-      );
-    });
-
-    controlsDiv.appendChild(btnMinus);
-    controlsDiv.appendChild(btnPlus);
-    this.#container.appendChild(controlsDiv);
+    controls.append(bMin, bPlus);
+    this.#container.appendChild(controls);
     document.body.appendChild(this.#container);
-
-    if (
-      typeof UIDraggableButton !== "undefined" &&
-      typeof CONFIG !== "undefined"
-    ) {
-      new UIDraggableButton(this.#container, null, CONFIG, {
-        id: "debug_overlay",
-        noTransform: true,
-      });
-    }
   }
 
-  #styleZoomBtn(btn) {
-    Object.assign(btn.style, {
-      width: "32px",
-      height: "32px",
-      backgroundColor: "rgba(0, 204, 255, 0.1)",
+  #createBtn(t, act) {
+    const b = document.createElement("button");
+    b.innerHTML = t;
+    Object.assign(b.style, {
+      width: "30px",
+      height: "30px",
+      cursor: "pointer",
+      background: "#1a2a3a",
       color: "#00ccff",
       border: "1px solid #00ccff",
-      borderRadius: "6px",
-      fontFamily: "monospace",
-      fontWeight: "bold",
-      fontSize: "20px",
-      cursor: "pointer",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      touchAction: "none",
     });
+    b.onclick = (e) => {
+      e.stopPropagation();
+      act();
+    };
+    return b;
+  }
 
-    btn.addEventListener(
-      "mouseenter",
-      () => (btn.style.backgroundColor = "rgba(0, 204, 255, 0.3)"),
-    );
-    btn.addEventListener(
-      "mouseleave",
-      () => (btn.style.backgroundColor = "rgba(0, 204, 255, 0.1)"),
-    );
+  #changeScale(s) {
+    this.#userScale = Math.max(0.3, Math.min(3, this.#userScale + s));
+    this.#applyScale();
+  }
+
+  #applyScale() {
+    this.#container.style.transform = `scale(${this.#userScale})`;
   }
 
   #initListener() {
     document.addEventListener("debug-live-update", (e) => {
       this.#data = e.detail;
-      if (this.#container.style.display === "none") {
+      if (this.#container.style.display === "none")
         this.#container.style.display = "block";
-      }
     });
   }
 
-  #getStateColor(state) {
-    switch (state.toLowerCase()) {
-      case "dash":
-        return "#ff4444";
-      case "lastdash":
-        return "#ff00ff";
-      case "panic":
-        return "#ff0055";
-      case "megadash":
-        return "#ff2222";
-      case "surrender":
-        return "#888888";
-      case "swim":
-        return "#ffaa00";
-      case "rest":
-        return "#00ff80";
-      case "idle":
-        return "#00ccff";
-      default:
-        return "#8a9bac";
-    }
-  }
-
-  #forceScaleUpdate() {
-    this.#container.style.transform = "none";
-    const rect = this.#container.getBoundingClientRect();
-    const availableW = window.innerWidth - 20;
-    const availableH = window.innerHeight - 20;
-
-    const scaleX = availableW / rect.width;
-    const scaleY = availableH / rect.height;
-
-    const finalScale = Math.min(1, scaleX, scaleY) * this.#userScale;
-    this.#container.style.transform = `scale(${finalScale})`;
-  }
-
   #update() {
-    if (typeof CONFIG === "undefined" || !CONFIG.debug?.overlay) {
+    if (!CONFIG?.debug?.overlay) {
       this.#container.style.display = "none";
       return;
     }
 
-    const d = this.#data;
-    let html = "";
+    const html = this.#modules
+      .filter((m) => m.isActive(this.#data))
+      .map((m) => m.render(this.#data))
+      .join("");
 
-    if (
-      OVERLAY_MODULES.echo &&
-      (d.gameState === "scouting" ||
-        d.gameState === "waiting" ||
-        d.gameState === "biting")
-    ) {
-      html += `<div style="color: #00ff80; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">📡 ЕХОЛОТ</div>`;
-      html += `<div style="margin-bottom: 4px;">Стан: <span style="color: #00ccff; text-transform: uppercase;">${d.gameState}</span></div>`;
-
-      if (d.gameState === "waiting" || d.gameState === "biting") {
-        html += `<div style="margin-bottom: 4px;">
-          Гачок: <span style="color: #ffaa00;">${d.hookDepth ? d.hookDepth.toFixed(2) : 0} м</span> / 
-          Дно: <span style="color: #ffaa00;">${d.bottomDepth ? d.bottomDepth.toFixed(2) : 0} м</span> / 
-          Ліска: <span style="color: #00ccff;">${d.lineLength ? d.lineLength.toFixed(2) : 0} м</span>
-        </div>`;
-        html += `<div style="margin-bottom: 4px;">Наживка: <span style="color: #b066ff;">${d.bait}</span></div>`;
-        html += `<div style="margin-bottom: 8px;">Фаза: <span style="color: #ffff00;">${d.phase}</span></div>`;
-
-        let weatherStr = "";
-        if (d.isRaining) weatherStr += "🌧️ Дощ ";
-        if (d.isFoggy) weatherStr += "🌫️ Туман";
-        if (!d.isRaining && !d.isFoggy) weatherStr = "☀️ Ясно";
-
-        html += `<div style="margin-bottom: 8px;">Погода: <span style="color: #00ccff;">${weatherStr}</span></div>`;
-
-        html += `<div style="color: #8a9bac; font-size: 12px; margin-bottom: 4px;">Шанси кльову:</div>`;
-        if (d.liveChances && d.liveChances.length > 0) {
-          d.liveChances.forEach((fish) => {
-            html += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                            <span>${fish.name}</span>
-                            <span style="color: #00ff80; font-weight: bold;">${fish.chance}</span>
-                        </div>`;
-          });
-        } else {
-          html += `<div style="color: #ff4444; font-weight: bold; margin-bottom: 2px;">Тут риби немає!</div>`;
-        }
-      } else {
-        html += `<div style="color: #8a9bac; margin-bottom: 4px;">Закиньте вудку для аналізу...</div>`;
-      }
-      html += `<div style="margin-bottom: 12px;"></div>`;
-    }
-
-    if (
-      OVERLAY_MODULES.chancesDetail &&
-      (d.gameState === "scouting" ||
-        d.gameState === "waiting" ||
-        d.gameState === "biting")
-    ) {
-      html += `<div style="color: #b066ff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">🧮 РОЗРАХУНОК ШАНСІВ</div>`;
-      if (d.liveChances && d.liveChances.length > 0) {
-        d.liveChances.forEach((fish) => {
-          const b = fish.breakdown;
-          html += `<div style="margin-bottom: 8px; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 4px; border-left: 3px solid #b066ff;">`;
-          html += `<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                        <span style="color: #fff; font-weight: bold;">${fish.name}</span>
-                        <span style="color: #00ff80; font-weight: bold;">${fish.chance}</span>
-                    </div>`;
-
-          const chumColor = parseFloat(b.chum) > 1.0 ? "#00ff80" : "#ddd";
-
-          html += `<div style="color: #8a9bac; font-size: 11px; line-height: 1.4; display: grid; grid-template-columns: 1fr 1fr;">
-                        <span>База: <span style="color:#ddd">${b.base}</span></span>
-                        <span>Наживка: <span style="color:#ddd">x${b.bait}</span></span>
-                        <span>Час: <span style="color:#ddd">x${b.time}</span></span>
-                        <span>День: <span style="color:#ddd">x${b.day}</span></span>
-                        <span>Глибина: <span style="color:#ddd">x${b.depth}</span></span>
-                        <span>Погода: <span style="color:#ddd">x${b.weather}</span></span>
-                        <span>Зона: <span style="color:#ddd">x${b.zone}</span></span>
-                        <span>Прикормка: <span style="color:${chumColor}; font-weight: bold;">x${b.chum || "1.00"}</span></span>
-                        <span>Спам: <span style="color:${b.spam < 1 ? "#ff4444" : "#ddd"}">x${b.spam}</span></span>
-                        <span style="grid-column: span 2;">Лежачий поплавок: <span style="color:${b.overDepth < 1 ? "#ff4444" : "#ddd"}">x${b.overDepth}</span></span>
-                    </div></div>`;
-        });
-      } else {
-        html += `<div style="color: #ff4444; font-weight: bold; margin-bottom: 2px;">Немає риби для цих умов</div>`;
-      }
-      html += `<div style="margin-bottom: 12px;"></div>`;
-    }
-
-    if (d.gameState === "playing" && d.hookedFish) {
-      const activeFishParams = d.hookedFish;
-      const fishPhysicsConfig = activeFishParams.physics || CONFIG.fish;
-      const behaviors = fishPhysicsConfig.behaviors || {};
-
-      const initialFishBase =
-        d.fishInitialPower ||
-        activeFishParams.level * activeFishParams.weight +
-          activeFishParams.resistance;
-      const currentFishBase = d.fishBasePower || initialFishBase;
-      const lostFishBase = initialFishBase - currentFishBase;
-
-      const currentState = d.fishState || "---";
-      const currentPullMult = d.pullMult || 0;
-      const currentMoveMult = d.moveMult || 0;
-      const stateColor = this.#getStateColor(currentState);
-
-      const playerPullForce = d.playerForceY || 0;
-      const currentFishPullForce = d.fishForceY || 0;
-      const playerSteerForce = d.playerForceX || 0;
-      const currentFishEscapeForce = d.fishForceX || 0;
-
-      const totalPullForce = playerPullForce + currentFishPullForce;
-      const playerPctY =
-        totalPullForce > 0 ? (playerPullForce / totalPullForce) * 100 : 0;
-      const fishPctY =
-        totalPullForce > 0 ? (currentFishPullForce / totalPullForce) * 100 : 0;
-
-      const totalSteerForce = playerSteerForce + currentFishEscapeForce;
-      const playerPctX =
-        totalSteerForce > 0 ? (playerSteerForce / totalSteerForce) * 100 : 0;
-      const fishPctX =
-        totalSteerForce > 0
-          ? (currentFishEscapeForce / totalSteerForce) * 100
-          : 0;
-
-      let maxPull = 0,
-        minPull = Infinity,
-        maxMove = 0;
-      const behaviorKeys = Object.keys(behaviors);
-
-      if (behaviorKeys.length > 0) {
-        behaviorKeys.forEach((k) => {
-          if (behaviors[k].pull > maxPull) maxPull = behaviors[k].pull;
-          if (behaviors[k].pull < minPull) minPull = behaviors[k].pull;
-          const edgeMult =
-            behaviors[k].edgePowerMultiplier ??
-            fishPhysicsConfig.edgePowerMultiplier ??
-            1.0;
-          const effectiveMove = Math.abs(behaviors[k].move || 0) * edgeMult;
-          if (effectiveMove > maxMove) maxMove = effectiveMove;
-        });
-      } else {
-        minPull = 0;
-      }
-
-      const getFishStateForceCompact = (stateName) => {
-        if (!behaviors[stateName]) return "";
-        const edgeMult =
-          behaviors[stateName].edgePowerMultiplier ??
-          fishPhysicsConfig.edgePowerMultiplier ??
-          1.0;
-        const yForce =
-          currentFishBase *
-          behaviors[stateName].pull *
-          CONFIG.physics.fishForceMultiplier;
-        const xForce =
-          currentFishBase *
-          Math.abs(behaviors[stateName].move || 0) *
-          edgeMult *
-          CONFIG.physics.fishForceMultiplier;
-        return `
-                    <div style="margin-bottom: 2px; display: flex; justify-content: space-between;">
-                        <span style="color: ${this.#getStateColor(stateName)}; font-weight: bold;">${stateName.toUpperCase()}</span>
-                        <span style="color: #e6e6e6;">Y: <span style="color: ${this.#getStateColor(stateName)}; font-weight: bold;">${yForce.toFixed(3)}</span> | X: <span style="color: ${this.#getStateColor(stateName)}; font-weight: bold;">${xForce.toFixed(3)}</span></span>
-                    </div>
-                `;
-      };
-
-      const maxPossibleForceY =
-        currentFishBase * maxPull * CONFIG.physics.fishForceMultiplier;
-      const worstFishX =
-        currentFishBase * maxMove * CONFIG.physics.fishForceMultiplier;
-
-      let dynamicStatesHtml = "";
-      behaviorKeys.forEach((k) => {
-        dynamicStatesHtml += getFishStateForceCompact(k);
-      });
-
-      const rPower = CONFIG.rod.level * CONFIG.rod.basePower;
-      const rlPower = CONFIG.reel.level * CONFIG.reel.basePower;
-      const pPower = rPower + rlPower;
-
-      const maxPenalty = CONFIG.physics.edgePullPenalty || 0.0;
-      const rodComp = CONFIG.rod.compensation || 0.0;
-      const worstPenaltyMult = Math.max(0.1, 1.0 - maxPenalty * (1 - rodComp));
-      const worstEffectivePower = pPower * worstPenaltyMult;
-
-      const screenW = window.innerWidth;
-      const rodScreenX =
-        CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== "center"
-          ? Number(CONFIG.ui.rod.x)
-          : screenW / 2;
-      const maxOffsetDistance = Math.max(rodScreenX, screenW - rodScreenX);
-      const worstDistanceY = 50;
-      const worstPullDirLength = Math.hypot(maxOffsetDistance, worstDistanceY);
-      const worstPullDirY = worstDistanceY / worstPullDirLength;
-
-      const worstPlayerY =
-        worstEffectivePower *
-        worstPullDirY *
-        CONFIG.physics.playerForceMultiplier;
-      const playerSteerForceBase =
-        pPower *
-        CONFIG.physics.playerSteeringMultiplier *
-        CONFIG.physics.playerForceMultiplier;
-      const playerSteerForceMin =
-        worstEffectivePower *
-        CONFIG.physics.playerSteeringMultiplier *
-        CONFIG.physics.playerForceMultiplier;
-      const bestPlayerY = pPower * CONFIG.physics.playerForceMultiplier;
-
-      if (OVERLAY_MODULES.state) {
-        html += `
-                    <div style="color: #00ccff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">🧠 ПОВЕДІНКА (${activeFishParams.name || "Риба"})</div>
-                    <div style="margin-bottom: 4px;">Стан: <span style="color: ${stateColor}; text-transform: uppercase; font-weight: bold;">${currentState}</span></div>
-                    <div style="margin-bottom: 4px;">Множник Тяги (Y): <span style="color: ${stateColor};">x${currentPullMult.toFixed(2)}</span></div>
-                    <div style="margin-bottom: 12px;">Множник Втечі (X): <span style="color: ${stateColor};">x${currentMoveMult.toFixed(2)}</span></div>
-                `;
-      }
-
-      if (OVERLAY_MODULES.fishBase) {
-        html += `
-                    <div style="color: #ffaa00; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">🔥 ПОТОЧНА БАЗОВА СИЛА РИБИ</div>
-                    <div style="margin-bottom: 4px;">Початкова база: <span style="color: #8a9bac;">${initialFishBase.toFixed(2)}</span></div>
-                    <div style="margin-bottom: 4px;">Втрачено (Виснаження): <span style="color: #ff4444; font-weight: bold;">-${lostFishBase.toFixed(2)}</span></div>
-                    <div style="margin-bottom: 12px; font-size: 16px;">Поточна: <span style="color: #00ff80; font-weight: bold;">${currentFishBase.toFixed(2)}</span></div>
-                `;
-      }
-
-      if (OVERLAY_MODULES.fishStates) {
-        html += `
-                    <div style="color: #ffaa00; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">📊 СИЛА РИБИ ЗА СТАНАМИ</div>
-                    ${dynamicStatesHtml}
-                    <div style="margin-bottom: 12px;"></div>
-                `;
-      }
-
-      if (OVERLAY_MODULES.debuffsLive) {
-        html += `<div style="color: #ff00ff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">☠️ АКТИВНІ ДЕБАФИ</div>`;
-
-        const debuffName = d.activeDebuffName || "Немає";
-        let debuffDesc = '<span style="color: #8a9bac;">Фаза 2 ще ціла</span>';
-
-        if (debuffName !== "Немає") {
-          const fishTemplate =
-            CONFIG.spawns.fishes.find((f) => f.id === d.hookedFish?.id) ||
-            d.hookedFish;
-          const b = fishTemplate?.physics?.behaviors || {};
-          const c = CONFIG.stamina.mechanics.debuffs || {};
-
-          let stateName = "UNKNOWN";
-          let calcStr = debuffName;
-
-          if (debuffName === "swimPull" && b.swim) {
-            stateName = "SWIM";
-            const orig = b.swim.pull;
-            const diff = orig * (1 - c.swimPullMult);
-            calcStr = `Тяга: ${orig.toFixed(2)} - ${diff.toFixed(2)} (-${Math.round((1 - c.swimPullMult) * 100)}%)`;
-          } else if (debuffName === "dashMaxTime" && b.dash) {
-            stateName = "DASH";
-            const orig = b.dash.maxTime;
-            const diff = orig * (1 - c.dashMaxTimeMult);
-            calcStr = `Час: ${orig}ms - ${diff}ms (-${Math.round((1 - c.dashMaxTimeMult) * 100)}%)`;
-          } else if (debuffName === "idleMaxTime" && b.idle) {
-            stateName = "IDLE";
-            const orig = b.idle.maxTime;
-            const diff = orig * (c.idleMaxTimeMult - 1);
-            calcStr = `Час: ${orig}ms + ${diff}ms (+${Math.round((c.idleMaxTimeMult - 1) * 100)}%)`;
-          } else if (debuffName === "dashPull" && b.dash) {
-            stateName = "DASH";
-            const orig = b.dash.pull;
-            const diff = orig * (1 - c.dashPullMult);
-            calcStr = `Тяга: ${orig.toFixed(2)} - ${diff.toFixed(2)} (-${Math.round((1 - c.dashPullMult) * 100)}%)`;
-          } else if (debuffName === "restWeight" && b.rest) {
-            stateName = "REST";
-            const orig = b.rest.weight;
-            const diff = c.restWeightAdd;
-            calcStr = `Шанс (Вага): ${orig} + ${diff}`;
-          } else if (debuffName === "restMaxTime" && b.rest) {
-            stateName = "REST";
-            const orig = b.rest.maxTime;
-            const diff = orig * (c.restMaxTimeMult - 1);
-            calcStr = `Час: ${orig}ms + ${diff}ms (+${Math.round((c.restMaxTimeMult - 1) * 100)}%)`;
-          }
-
-          const sColor = this.#getStateColor(stateName);
-          debuffDesc = `<span style="color: ${sColor}; font-weight: bold;">[${stateName}]</span> <span style="color: #ffaa00; font-size: 11px;">${calcStr}</span>`;
-        }
-
-        html += `<div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;"><span>Рандом:</span> <span>${debuffDesc}</span></div>`;
-
-        const masteryRatio = CONFIG.stamina.mechanics.masteryTimeRatio ?? 0.5;
-        const exhaustionTime = d.exhaustionDurationMs || 1000;
-        const targetTimeMs = exhaustionTime * masteryRatio;
-
-        const currentTimer = d.masteryTimerMs || 0;
-        const currentMult = d.masteryCurrentMult || 1.0;
-
-        let masteryHtml = "";
-
-        if (currentTimer === 0 && currentMult === 1.0) {
-          masteryHtml = `<span style="color: #8a9bac;">Тримайте по центру...</span>`;
-        } else if (!d.isMasteryActive) {
-          const percent = Math.min(100, (currentTimer / targetTimeMs) * 100);
-          const timeSec = (currentTimer / 1000).toFixed(1);
-          const targetSec = (targetTimeMs / 1000).toFixed(1);
-          masteryHtml = `
-                        <div style="color: #00ccff; font-size: 11px; font-weight: bold;">[ФАЗА 1] Утримання: ${percent.toFixed(0)}%</div>
-                        <div style="color: #8a9bac; font-size: 11px; margin-top: 2px;">Час: ${timeSec} / ${targetSec} сек</div>
-                    `;
-        } else {
-          const drainTimer = currentTimer - targetTimeMs;
-          const percent = Math.min(100, (drainTimer / targetTimeMs) * 100);
-          const powerLostPct = ((1.0 - currentMult) * 100).toFixed(1);
-
-          const baseWithoutMastery =
-            currentMult > 0 ? d.fishBasePower / currentMult : d.fishBasePower;
-          const absoluteLoss = baseWithoutMastery - d.fishBasePower;
-
-          const timeSec = (drainTimer / 1000).toFixed(1);
-          const targetSec = (targetTimeMs / 1000).toFixed(1);
-
-          masteryHtml = `
-                        <div style="color: #ff4444; font-size: 11px; font-weight: bold;">[ФАЗА 2] Здавлювання: ${percent.toFixed(0)}%</div>
-                        <div style="color: #8a9bac; font-size: 11px; margin-top: 2px;">Час: ${timeSec} / ${targetSec} сек</div>
-                        <div style="color: #00ff80; font-weight: bold; margin-top: 6px; font-size: 11px;">
-                            ВПАЛА НА: -${powerLostPct}% <br>
-                            <span style="color: #ffaa00;">(-${absoluteLoss.toFixed(2)} од. від поточної)</span>
-                        </div>
-                    `;
-        }
-
-        html += `<div style="margin-bottom: 2px;"><span>Майстерність:</span></div>`;
-        html += `<div style="background: rgba(0,0,0,0.3); padding: 6px; border-radius: 4px; border-left: 3px solid #ff00ff;">${masteryHtml}</div>`;
-        html += `<div style="margin-bottom: 12px;"></div>`;
-      }
-
-      if (OVERLAY_MODULES.worstCase) {
-        html += `
-                    <div style="color: #ff4444; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">💀 НАЙГІРШІ УМОВИ (КУТ)</div>
-                    <div style="color: #8a9bac; font-size: 12px; margin-bottom: 4px;">Максимальна тяга X:</div>
-                    <div style="margin-bottom: 2px; display: flex; justify-content: space-between;">
-                        <span>Риба:</span> <span style="color: #ff4444; font-weight: bold;">${worstFishX.toFixed(3)}</span>
-                    </div>
-                    <div style="margin-bottom: 8px; display: flex; justify-content: space-between;">
-                        <span>Гравець:</span> <span style="color: #ffaa00; font-weight: bold;">${playerSteerForceMin.toFixed(3)}</span>
-                    </div>
-                    <div style="color: #8a9bac; font-size: 12px; margin-bottom: 4px;">Максимальна тяга Y:</div>
-                    <div style="margin-bottom: 2px; display: flex; justify-content: space-between;">
-                        <span>Риба:</span> <span style="color: #ff4444; font-weight: bold;">${maxPossibleForceY.toFixed(3)}</span>
-                    </div>
-                    <div style="margin-bottom: 12px; display: flex; justify-content: space-between;">
-                        <span>Гравець:</span> <span style="color: #ffaa00; font-weight: bold;">${worstPlayerY.toFixed(3)}</span>
-                    </div>
-                `;
-      }
-
-      if (OVERLAY_MODULES.playerMax) {
-        html += `
-                    <div style="color: #00ff80; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">📊 СИЛА ГРАВЦЯ</div>
-                    <div style="margin-bottom: 2px; display: flex; justify-content: space-between;"><span>ТЯГА МІН:</span> <span style="color: #ffaa00; font-weight: bold;">${worstPlayerY.toFixed(3)}</span></div>
-                    <div style="margin-bottom: 6px; display: flex; justify-content: space-between;"><span>ТЯГА МАКС:</span> <span style="color: #00ff80; font-weight: bold;">${bestPlayerY.toFixed(3)}</span></div>
-                    <div style="margin-bottom: 2px; display: flex; justify-content: space-between;"><span>КЕРМО МІН:</span> <span style="color: #ffaa00; font-weight: bold;">${playerSteerForceMin.toFixed(3)}</span></div>
-                    <div style="margin-bottom: 12px; display: flex; justify-content: space-between;"><span>КЕРМО МАКС:</span> <span style="color: #00ff80; font-weight: bold;">${playerSteerForceBase.toFixed(3)}</span></div>
-                `;
-      }
-
-      if (OVERLAY_MODULES.liveY) {
-        const leaderTextY =
-          fishPctY > playerPctY
-            ? `<span style="color: #ff4444;">🚨 Риба тягне сильніше на ${(fishPctY - playerPctY).toFixed(1)}%</span>`
-            : `<span style="color: #00ff80;">💪 Гравець тягне сильніше на ${(playerPctY - fishPctY).toFixed(1)}%</span>`;
-        html += `
-                    <div style="color: #00ccff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">⚖️ LIVE: ТЯГА (Y)</div>
-                    <div style="margin-bottom: 4px;">Гравець: <span style="color: #00ff80;">${playerPullForce.toFixed(3)}</span> | Риба: <span style="color: #ff4444;">${currentFishPullForce.toFixed(3)}</span></div>
-                    <div style="font-weight: bold; font-size: 13px; margin-bottom: 12px;">${leaderTextY}</div>
-                `;
-      }
-
-      if (OVERLAY_MODULES.liveX) {
-        const leaderTextX =
-          fishPctX > playerPctX
-            ? `<span style="color: #ff4444;">🚨 Риба втікає (Домінує на ${(fishPctX - playerPctX).toFixed(1)}%)</span>`
-            : `<span style="color: #00ff80;">✅ Керування стабільне</span>`;
-        html += `
-                    <div style="color: #00ccff; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">⚖️ LIVE: КЕРУВАННЯ (X)</div>
-                    <div style="margin-bottom: 4px;">Гравець: <span style="color: #00ff80;">${playerSteerForce.toFixed(3)}</span> | Риба: <span style="color: #ff4444;">${currentFishEscapeForce.toFixed(3)}</span></div>
-                    <div style="font-weight: bold; font-size: 13px;">${leaderTextX}</div>
-                `;
-      }
-    }
-
-    if (OVERLAY_MODULES.chum && d.chumZones && d.chumZones.length > 0) {
-      html += `<div style="color: #ffff00; margin-top: 12px; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px;">🧲 АКТИВНІ ПРИКОРМКИ</div>`;
-
-      d.chumZones.forEach((z, idx) => {
-        const cfg = z.baitConfig;
-        const currentBonus = z.currentBonus || 0;
-
-        let timeStr = "";
-        let activeColor = "";
-
-        if (!z.isDelivered) {
-          timeStr = "В ДОРОЗІ 🚤";
-          activeColor = "#ffa500";
-        } else if (z.isExpired) {
-          timeStr = "ВИВІТРИЛАСЬ";
-          activeColor = "#8a9bac";
-        } else {
-          timeStr = `${currentBonus.toFixed(2)}x (Бонус)`;
-          activeColor = currentBonus > cfg.minBonus ? "#00ff80" : "#8a9bac";
-        }
-
-        html += `
-                    <div style="margin-bottom: 4px; display: flex; justify-content: space-between; font-size: 12px;">
-                        <span>Зона ${idx + 1} (${cfg.name}):</span>
-                        <span style="color: ${activeColor}; font-weight: bold;">${timeStr}</span>
-                    </div>
-                `;
-      });
-      html += `<div style="margin-bottom: 12px;"></div>`;
-    }
-
-    if (html !== "") {
+    if (html) {
       this.#content.innerHTML = html;
-      this.#container.style.display = "block";
-      this.#forceScaleUpdate();
-    } else {
-      this.#container.style.display = "none";
+      this.#applyScale();
     }
   }
 
-  #start() {
-    this.#intervalId = setInterval(() => this.#update(), 100);
+  #startTick() {
+    setInterval(() => this.#update(), 100);
   }
 }
 
