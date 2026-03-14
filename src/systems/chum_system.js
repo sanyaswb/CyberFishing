@@ -99,8 +99,8 @@ class ChumZone {
     const dist = Math.hypot(dx, dy);
 
     // Замінили baseRadX на baseRadius
-    // return dist < Math.max(this.baseRadius, otherZone.baseRadius);
-    return dist < this.baseRadius + otherZone.baseRadius;
+    return dist < Math.max(this.baseRadius, otherZone.baseRadius);
+    // return dist < this.baseRadius + otherZone.baseRadius;
   }
 }
 
@@ -120,8 +120,13 @@ class ChumManager {
     this.#chumConfig = chumConfig;
     this.#storageKey = `chum_active_${locationId}`;
     this.#locationMemoryKey = `chum_memory_${locationId}`;
-    this.loadFromStorage();
+
+    // 1. СПОЧАТКУ зберігаємо перспективу з конфігу
     this.#locationSquash = locationSquash || { top: 0.15, bottom: 0.75 };
+
+    // 2. І ТІЛЬКИ ПОТІМ завантажуємо зони (тепер вони отримають правильні дані)
+    this.loadFromStorage();
+
     document.addEventListener("config-updated", (e) =>
       this.#onConfigUpdate(e.detail),
     );
@@ -180,37 +185,31 @@ class ChumManager {
   }
 
   loadFromStorage() {
-    if (typeof localStorage !== "undefined") {
-      const savedZones = JSON.parse(
-        localStorage.getItem(this.#storageKey) || "[]",
-      );
-      this.#zones = savedZones
-        .map((z) => {
-          const baitConfig = this.#chumConfig.baits[z.baitId];
-          if (!baitConfig) return null;
+    const savedZones = CacheManager.get(this.#storageKey, []);
 
-          // --- ВИПРАВЛЕНО ТУТ ---
-          const zone = new ChumZone(
-            z.id,
-            z.x,
-            z.y,
-            baitConfig,
-            z.deployRealTimeMs,
-            this.#locationSquash, // Додаємо перспективу сюди (6-й аргумент)
-            z.isDelivered, // Зсуваємо статус на 7-ме місце
-          );
-          return zone;
-        })
-        .filter((z) => z !== null);
+    this.#zones = savedZones
+      .map((z) => {
+        const baitConfig = this.#chumConfig.baits[z.baitId];
+        if (!baitConfig) return null;
 
-      this.#memoryGrid = JSON.parse(
-        localStorage.getItem(this.#locationMemoryKey) || "{}",
-      );
-    }
+        return new ChumZone(
+          z.id,
+          z.x,
+          z.y,
+          baitConfig,
+          z.deployRealTimeMs,
+          this.#locationSquash,
+          z.isDelivered,
+        );
+      })
+      .filter((z) => z !== null);
+
+    this.#memoryGrid = CacheManager.get(this.#locationMemoryKey, {});
   }
 
   saveToStorage() {
-    if (typeof localStorage === "undefined") return;
+    if (typeof CacheManager === "undefined") return;
+
     const zonesToSave = this.#zones
       .filter((z) => !z.isExpired)
       .map((z) => ({
@@ -221,11 +220,9 @@ class ChumManager {
         deployRealTimeMs: z.deployRealTimeMs,
         isDelivered: z.isDelivered,
       }));
-    localStorage.setItem(this.#storageKey, JSON.stringify(zonesToSave));
-    localStorage.setItem(
-      this.#locationMemoryKey,
-      JSON.stringify(this.#memoryGrid),
-    );
+
+    CacheManager.set(this.#storageKey, zonesToSave);
+    CacheManager.set(this.#locationMemoryKey, this.#memoryGrid);
   }
 
   deployBait(targetX, targetY, baitId, method, activeBoat = null) {
