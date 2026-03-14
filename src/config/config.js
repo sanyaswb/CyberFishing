@@ -464,16 +464,18 @@ const CONFIG = {
   },
 
   chum: {
-    currentMethod: "hand", // Перемикач: 'hand' (руками) або 'boat' (кораблик)
+    currentMethod: "boat", // Перемикач: 'hand' (руками) або 'boat' (кораблик)
 
     deliveryMethods: {
       hand: {
         type: "hand",
         flightTimeMs: 3000,
+        maxUses: 7,
       },
       boat: {
         type: "boat",
         manualControl: true,
+        sections: 3,
         level: 1, // Поточний рівень кораблика
         statsByLevel: {
           1: { speedPxPerSec: 150, maxEnergy: 60, energyDrainPerSec: 1 }, // Енергії вистачить на 60 сек плавання

@@ -699,9 +699,10 @@ class TimeDisplayUI {
 class ChumUI {
   constructor(onClickCallback) {
     this.button = document.createElement("button");
-    this.button.innerText = "🍞";
+    this.button.innerText = "🍞(7)";
 
     this.currentState = "idle";
+    this.currentMethod = "hand";
 
     Object.assign(this.button.style, {
       position: "absolute",
@@ -733,77 +734,79 @@ class ChumUI {
       ) {
         return;
       }
-
       if (onClickCallback) onClickCallback(e);
     });
 
     document.body.appendChild(this.button);
   }
 
-  setState(state) {
-    if (this.currentState === state) return;
+  // ДОДАНО: Приймаємо method і count
+  setState(state, method = "hand", count = 0) {
     this.currentState = state;
+    this.currentMethod = method;
+
+    // Форматування тексту на кнопці
+    let text = "";
+    if (state === "empty") {
+      text = "🔘";
+    } else if (state === "moving") {
+      text = "⏩";
+    } else if (state === "aiming") {
+      text = "🚫";
+    } else if (state === "ready") {
+      // Стан ready - це коли кораблик доплив і готовий скинути прикормку (малюємо хліб)
+      text = `🍞(${count})`;
+    } else {
+      // Стан idle - базовий
+      if (method === "boat") text = `🚤(${count})`;
+      else text = `🍞(${count})`;
+    }
+
+    this.button.innerText = text;
 
     switch (state) {
       case "disabled":
-        this.button.innerText = "🍞";
         this.button.style.backgroundColor = "#555555";
         this.button.style.borderColor = "#444444";
         this.button.style.color = "#aaaaaa";
         this.button.style.opacity = "0.6";
         this.button.style.cursor = "not-allowed";
-        this.button.style.pointerEvents = "auto";
         break;
-
       case "empty":
-        this.button.innerText = "🔘";
         this.button.style.backgroundColor = "#2c3e50";
         this.button.style.borderColor = "#34495e";
         this.button.style.color = "#95a5a6";
         this.button.style.opacity = "0.9";
         this.button.style.cursor = "not-allowed";
-        this.button.style.pointerEvents = "auto";
         break;
-
       case "aiming":
-        this.button.innerText = "🚫";
         this.button.style.backgroundColor = "#ff4444";
         this.button.style.borderColor = "#ff8888";
         this.button.style.color = "#fff";
         this.button.style.opacity = "1";
         this.button.style.cursor = "pointer";
-        this.button.style.pointerEvents = "auto";
         break;
-
       case "moving":
-        this.button.innerText = "⏩";
         this.button.style.backgroundColor = "#6c7a89";
         this.button.style.borderColor = "#8a9bac";
         this.button.style.color = "#fff";
         this.button.style.opacity = "0.7";
         this.button.style.cursor = "wait";
-        this.button.style.pointerEvents = "auto";
         break;
-
       case "ready":
-        this.button.innerText = "✅";
         this.button.style.backgroundColor = "#00ff80";
         this.button.style.borderColor = "#55ffaa";
         this.button.style.color = "#000";
         this.button.style.opacity = "1";
         this.button.style.cursor = "pointer";
-        this.button.style.pointerEvents = "auto";
         break;
-
       case "idle":
       default:
-        this.button.innerText = "🍞";
         this.button.style.backgroundColor = "#ffaa00";
         this.button.style.borderColor = "#ffcc00";
         this.button.style.color = "#000";
         this.button.style.opacity = "1";
         this.button.style.cursor = "pointer";
-        this.button.style.pointerEvents = "auto";
         break;
     }
   }

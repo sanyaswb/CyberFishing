@@ -120,6 +120,7 @@ class ChumManager {
     this.#chumConfig = chumConfig;
     this.#storageKey = `chum_active_${locationId}`;
     this.#locationMemoryKey = `chum_memory_${locationId}`;
+    this.handUses = chumConfig.deliveryMethods.hand.maxUses || 7;
 
     // 1. СПОЧАТКУ зберігаємо перспективу з конфігу
     this.#locationSquash = locationSquash || { top: 0.15, bottom: 0.75 };
@@ -130,6 +131,14 @@ class ChumManager {
     document.addEventListener("config-updated", (e) =>
       this.#onConfigUpdate(e.detail),
     );
+  }
+
+  useHandBait() {
+    if (this.handUses > 0) {
+      this.handUses--;
+      return true;
+    }
+    return false;
   }
 
   // Метод для оновлення існуючих зон у реальному часі
@@ -229,18 +238,20 @@ class ChumManager {
     const baitConfig = this.#chumConfig.baits[baitId];
     if (!baitConfig) return null;
 
-    const isHand = method === "hand";
     const zoneId = Date.now().toString() + Math.floor(Math.random() * 1000);
 
-    // --- ВИПРАВЛЕНО: рівно 7 аргументів у правильному порядку ---
+    // ВИПРАВЛЕНО: Зона "доставлена" одразу, якщо кораблика немає в аргументах
+    // (це означає, що ми кинули рукою АБО натиснули кнопку скидання на вже приплившому кораблику)
+    const isDeliveredNow = activeBoat === null;
+
     const newZone = new ChumZone(
-      zoneId, // 1. id
-      targetX, // 2. x
-      targetY, // 3. y
-      baitConfig, // 4. baitConfig
-      Date.now(), // 5. deployRealTimeMs
-      this.#locationSquash, // 6. locationSquash
-      isHand, // 7. isDelivered
+      zoneId,
+      targetX,
+      targetY,
+      baitConfig,
+      Date.now(),
+      this.#locationSquash,
+      isDeliveredNow, // <--- Передаємо правильний статус
     );
 
     const overlappingIndex = this.#zones.findIndex((z) =>
@@ -252,7 +263,7 @@ class ChumManager {
       this.#zones.push(newZone);
     }
 
-    if (!isHand && activeBoat) {
+    if (activeBoat) {
       activeBoat.setTarget(targetX, targetY, zoneId);
     }
 
@@ -448,6 +459,10 @@ class BaitBoat {
     this.isFinished = false;
 
     this.hasLeftShore = false;
+
+    // ДОДАНО: Секції прикормки
+    this.remainingSections = config.sections || 1;
+    this.hasLeftShore = false;
   }
 
   setTarget(targetX, targetY, zoneId = null, isReturn = false) {
@@ -618,10 +633,15 @@ class BaitBoat {
       this.hasLeftShore = true;
     }
 
-    // 2. Якщо кораблик вже плавав, і тепер підійшов близько до берега (на відстань 30 пікселів до стартової лінії Y)
+    // ВИПРАВЛЕНО 90 градусів: Замість перевірки колізії чекаємо просто коли він перетне лінію
     if (this.hasLeftShore && this.pos.y >= this.startPos.y - 30) {
-      console.log("Кораблик повернувся в руки гравцеві!");
-      this.isFinished = true; // Кораблик зникає, кнопка прикормки знову активна
+      if (!isManual) {
+        console.log("Авто-режим: Кораблик пришвартувався автоматично!");
+        this.isFinished = true; // Зникає
+      } else {
+        // У ручному режимі він просто стоїть і чекає, поки гравець по ньому клікне
+        this.state = "waiting";
+      }
     }
   }
 }

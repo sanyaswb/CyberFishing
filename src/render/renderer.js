@@ -165,24 +165,18 @@ class Renderer {
 
       if (opacity <= 0) continue;
 
-      // Рахуємо позицію по Y (від 0.0 на горизонті до 1.0 біля берега)
       const distRatio = Math.max(
         0,
         Math.min(1.0, (zone.y - virtualTopY) / (virtualBottomY - virtualTopY)),
       );
 
-      // --- НОВА ЛОГІКА РОЗРАХУНКУ РАДІУСІВ ---
-      // Розраховуємо поточний коефіцієнт стиснення Y
       const currentScaleY =
         zone.squashTop + (zone.squashBottom - zone.squashTop) * distRatio;
 
-      // Конвертуємо координати в екранні
       const centerScreen = projector.virtualToScreen(zone.x, zone.y);
 
-      // Екранний X-радіус (повний розмір з урахуванням зуму камери)
       const rxScreen = zone.baseRadius * projector.getScale();
 
-      // Екранний Y-радіус (сплюснутий через перспективу + зум камери)
       const ryScreen = zone.baseRadius * currentScaleY * projector.getScale();
 
       this.#ctx.save();
