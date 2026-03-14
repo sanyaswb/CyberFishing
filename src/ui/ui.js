@@ -741,7 +741,9 @@ class ChumUI {
   }
 
   // ДОДАНО: Приймаємо method і count
-  setState(state, method = "hand", count = 0) {
+  setState(state, method = "hand", count = 0, isManual = false) {
+    if (this.currentState === state && this.button.innerText.includes(count))
+      return;
     this.currentState = state;
     this.currentMethod = method;
 
@@ -750,14 +752,17 @@ class ChumUI {
     if (state === "empty") {
       text = "🔘";
     } else if (state === "moving") {
-      text = "⏩";
+      // ВИПРАВЛЕНО: Якщо це ручний кораблик - просто показуємо рух без цифр
+      if (method === "boat" && isManual) {
+        text = "⏩";
+      } else {
+        text = `⏩(${count})`; // Для авто-режиму залишаємо цифру (чергу)
+      }
     } else if (state === "aiming") {
       text = "🚫";
     } else if (state === "ready") {
-      // Стан ready - це коли кораблик доплив і готовий скинути прикормку (малюємо хліб)
       text = `🍞(${count})`;
     } else {
-      // Стан idle - базовий
       if (method === "boat") text = `🚤(${count})`;
       else text = `🍞(${count})`;
     }

@@ -457,63 +457,55 @@ class Game {
       }
     }
 
+    // Оновлення UI
     if (this.#chumUI && typeof this.#chumUI.setState === "function") {
       const method = CONFIG.chum.currentMethod;
       const boats = this.#chumManager ? this.#chumManager.getBoats() : [];
       const activeBoat = boats.length > 0 ? boats[0] : null;
 
-      // 1. Гравець виважує рибу - повністю блокуємо прикормку
+      const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
+
       if (this.#gameState === "playing") {
         if (this.#isAimingChum) {
           this.#isAimingChum = false;
         }
-        this.#chumUI.setState("disabled", method, 0);
-      }
-      // 2. Логіка для РУКИ
-      else if (method === "hand") {
+        this.#chumUI.setState("disabled", method, 0, isManual);
+      } else if (method === "hand") {
         const uses = this.#chumManager ? this.#chumManager.handUses : 0;
 
         if (uses <= 0) {
-          this.#chumUI.setState("empty", method, 0);
+          this.#chumUI.setState("empty", method, 0, isManual);
         } else if (this.#isAimingChum) {
-          this.#chumUI.setState("aiming", method, uses);
+          this.#chumUI.setState("aiming", method, uses, isManual);
         } else {
-          this.#chumUI.setState("idle", method, uses);
+          this.#chumUI.setState("idle", method, uses, isManual);
         }
-      }
-      // 3. Логіка для КОРАБЛИКА
-      else if (method === "boat") {
+      } else if (method === "boat") {
         if (!activeBoat) {
-          // Кораблика ще немає на воді (готовий до запуску)
           this.#chumUI.setState(
             this.#isAimingChum ? "aiming" : "idle",
             "boat",
             1,
+            isManual,
           );
         } else {
-          // Кораблик плаває
           const sections = activeBoat.remainingSections || 0;
 
           if (
             activeBoat.state === "drifting" ||
             this.#chumManager.getBoatEnergy() <= 0
           ) {
-            // Розрядився
-            this.#chumUI.setState("empty", "boat", 0);
+            this.#chumUI.setState("empty", "boat", 0, isManual);
           } else if (
             activeBoat.state === "deploying" ||
             activeBoat.state === "returning"
           ) {
-            // У русі
-            this.#chumUI.setState("moving", "boat", sections);
+            this.#chumUI.setState("moving", "boat", sections, isManual);
           } else if (activeBoat.state === "waiting") {
-            // Зупинився (доплив до точки в ручному режимі)
             if (sections > 0) {
-              // Є що скидати -> показуємо зелену кнопку (ready)
-              this.#chumUI.setState("ready", "boat", sections);
+              this.#chumUI.setState("ready", "boat", sections, isManual);
             } else {
-              // Все скинув, пустий
-              this.#chumUI.setState("empty", "boat", 0);
+              this.#chumUI.setState("empty", "boat", 0, isManual);
             }
           }
         }
@@ -559,6 +551,7 @@ class Game {
               method,
               this.#activeBoat,
             );
+            this.#activeBoat.remainingSections--;
             this.#activeBoat = null;
             this.#isAimingChum = false;
           } else if (method === "hand" && vPos.y >= throwLineVirtualY) {
@@ -633,24 +626,48 @@ class Game {
           clickHandledByBoat = true;
         }
 
-        // 2. Чи вказуємо ми йому новий маршрут? (Тільки в ручному режимі)
+        // 2. Чи вказуємо ми йому новий маршрут або додаємо в чергу?
         if (!clickHandledByBoat) {
-          const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
-          if (
-            isManual &&
-            activeBoat.state !== "returning" &&
-            activeBoat.state !== "drifting"
-          ) {
-            activeBoat.setTarget(vPos.x, vPos.y);
-            console.log("Кораблик змінив курс!");
-            clickHandledByBoat = true;
-          } else if (!isManual) {
-            // В авторежимі кліки по воді під час плавання блокуються
-            clickHandledByBoat = true;
+          if (activeBoat.state === "drifting") {
+            clickHandledByBoat = false;
+          } else {
+            const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
+
+            if (isManual) {
+              if (activeBoat.state !== "returning") {
+                activeBoat.setTarget(vPos.x, vPos.y);
+                console.log("Кораблик змінив курс!");
+                clickHandledByBoat = true;
+              } else {
+                clickHandledByBoat = true;
+              }
+            } else {
+              // АВТОМАТИЧНИЙ РЕЖИМ (ЧЕРГА МАРШРУТІВ)
+              if (
+                activeBoat.remainingSections > 0 &&
+                activeBoat.state !== "returning"
+              ) {
+                this.#chumManager.deployBait(
+                  vPos.x,
+                  vPos.y,
+                  "carp_mix_basic",
+                  "boat",
+                  activeBoat,
+                );
+                activeBoat.remainingSections--;
+                console.log(
+                  `Точку додано в чергу! Залишилось секцій: ${activeBoat.remainingSections}`,
+                );
+                clickHandledByBoat = true;
+              } else {
+                // ВАЖЛИВО: Якщо секцій 0 або він вже повертається - пропускаємо клік повз кораблик!
+                clickHandledByBoat = false;
+              }
+            }
           }
         }
 
-        // Якщо клік пішов на кораблик - обнуляємо його, щоб вудка не реагувала!
+        // Обнуляємо клік, ТІЛЬКИ якщо він був призначений для кораблика
         if (clickHandledByBoat) {
           inputState.clickPos = null;
         }
@@ -734,15 +751,44 @@ class Game {
         this.#projector.pan(virtualDeltaX, virtualDeltaY);
       }
 
-      // Оскільки кліки по кораблику обнуляють clickPos вище, сюди дійдуть
       // тільки "чисті" кліки по воді для закидання вудки!
       if (inputState.clickPos) {
         const activeBoats = this.#chumManager
           ? this.#chumManager.getBoats()
           : [];
-        if (activeBoats.length > 0) {
-          console.log("Закидання скасовано: кораблик ще у воді!");
+        const activeBoat = activeBoats.length > 0 ? activeBoats[0] : null;
+
+        // ПЕРЕВІРКА: Чи вільні руки для закидання вудки?
+        let canCast = true;
+
+        if (activeBoat) {
+          if (activeBoat.state === "drifting") {
+            canCast = true; // Можна кидати, якщо сіла батарея
+          } else {
+            const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
+
+            if (isManual) {
+              canCast = false; // У ручному режимі пульт ЗАВЖДИ в руках
+            } else {
+              // В АВТОРЕЖИМІ: можна кидати, якщо всі секції задані АБО він повертається
+              if (
+                activeBoat.remainingSections > 0 &&
+                activeBoat.state !== "returning"
+              ) {
+                canCast = false; // Треба доклікати всі точки черги
+              } else {
+                canCast = true; // Черга заповнена! Кидаємо вудку!
+              }
+            }
+          }
+        }
+
+        if (!canCast) {
+          console.log(
+            "Закидання скасовано: спочатку задайте всі точки маршруту!",
+          );
         } else {
+          // Якщо пульт сховано — спокійно закидаємо вудку
           const vPos = this.#projector.screenToVirtual(
             inputState.clickPos.x,
             inputState.clickPos.y,

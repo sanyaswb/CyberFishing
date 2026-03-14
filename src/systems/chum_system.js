@@ -463,14 +463,23 @@ class BaitBoat {
     // ДОДАНО: Секції прикормки
     this.remainingSections = config.sections || 1;
     this.hasLeftShore = false;
+
+    this.waypoints = [];
   }
 
   setTarget(targetX, targetY, zoneId = null, isReturn = false) {
+    if (this.state === "drifting") return;
+    const isManual = this.config.manualControl;
+
+    // Якщо це АВТОРЕЖИМ і кораблик вже пливе скидати прикормку - додаємо в чергу!
+    if (!isManual && !isReturn && this.state === "deploying") {
+      this.waypoints.push({ x: targetX, y: targetY, zoneId: zoneId });
+      return;
+    }
+
+    // Інакше - це або перша ціль, або ручний режим (зміна курсу), або повернення додому
     this.target = new Vector2(targetX, targetY);
     if (zoneId !== null) this.zoneId = zoneId;
-
-    if (this.state === "drifting") return;
-
     this.state = isReturn ? "returning" : "deploying";
   }
 
@@ -526,15 +535,39 @@ class BaitBoat {
     if (distToTarget < finishRadius) {
       if (this.state === "deploying") {
         if (!isManual) {
-          this.isBaitDropped = true;
-          this.state = "returning";
+          // АВТОРЕЖИМ
+          if (this.zoneId !== null) {
+            this.isBaitDropped = true; // Сигнал менеджеру скинути пляму на воду
+          }
+
+          // Чекаємо мить, поки менеджер обробить скидання і обнулить zoneId
+          if (this.zoneId === null) {
+            this.isBaitDropped = false; // Скидаємо прапорець
+
+            if (this.waypoints.length > 0) {
+              // Беремо наступну точку з черги!
+              const nextWp = this.waypoints.shift();
+              this.target = new Vector2(nextWp.x, nextWp.y);
+              this.zoneId = nextWp.zoneId;
+              console.log(
+                `Авто-режим: Пливу до наступної точки! В черзі: ${this.waypoints.length}`,
+              );
+            } else {
+              // Черга порожня - пливемо на базу
+              this.state = "returning";
+              console.log(
+                "Авто-режим: Всі прикормки скинуто, повертаюсь на базу!",
+              );
+            }
+          }
         } else {
+          // РУЧНИЙ РЕЖИМ
           this.state = "waiting";
         }
       } else if (this.state === "returning") {
         this.isFinished = true;
       }
-      return;
+      return; // Виходимо, щоб не розраховувати рух у цьому кадрі
     }
 
     let desiredAngle = Math.atan2(
