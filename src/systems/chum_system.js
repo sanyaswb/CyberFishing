@@ -440,27 +440,28 @@ class ChumManager {
 }
 
 class BaitBoat {
+  #sensorRays = [];
+
   constructor(startX, startY, config, zoneId = null, initialEnergy = null) {
     this.startPos = new Vector2(startX, startY);
     this.pos = new Vector2(startX, startY);
     this.target = null;
-
     this.config = config;
     this.stats = config.statsByLevel[config.level] || config.statsByLevel[1];
-
     this.zoneId = zoneId;
     this.velocity = new Vector2(0, 0);
     this.angle = -Math.PI / 2;
-
     this.energy = initialEnergy !== null ? initialEnergy : this.stats.maxEnergy;
     this.state = "idle";
-
     this.isBaitDropped = false;
     this.isFinished = false;
     this.hasLeftShore = false;
-
     this.remainingSections = config.sections || 1;
     this.waypoints = [];
+  }
+
+  get sensorRays() {
+    return this.#sensorRays;
   }
 
   setTarget(targetX, targetY, zoneId = null, isReturn = false) {
@@ -573,32 +574,73 @@ class BaitBoat {
   }
 
   #scanEnvironment(checkWater, cellSize) {
-    let isForwardBlocked = false;
-    let clearAngle = null;
-    const look = this.config.lookAheadCells * cellSize;
-    const anglesToCheck = [
+    const currentSpeed = Math.sqrt(
+      this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y,
+    );
+    const maxSpeed = this.stats.speedPxPerSec;
+    const speedRatio = Math.min(1.0, currentSpeed / maxSpeed);
+
+    const baseLook = 2 * cellSize;
+    const lookDist = baseLook + speedRatio * 3 * cellSize;
+
+    const maxSpread = Math.PI / 2;
+    const minSpread = Math.PI / 6;
+    const currentSpread = maxSpread - (maxSpread - minSpread) * speedRatio;
+
+    const angles = [
       0,
-      -Math.PI / 4,
-      Math.PI / 4,
-      -Math.PI / 2,
-      Math.PI / 2,
+      -currentSpread * 0.5,
+      currentSpread * 0.5,
+      -currentSpread,
+      currentSpread,
     ];
 
-    for (const offset of anglesToCheck) {
-      const checkAngle = this.angle + offset;
-      const p1x = this.pos.x + Math.cos(checkAngle) * (look * 0.5);
-      const p1y = this.pos.y + Math.sin(checkAngle) * (look * 0.5);
-      const p2x = this.pos.x + Math.cos(checkAngle) * look;
-      const p2y = this.pos.y + Math.sin(checkAngle) * look;
+    const turnSpeed = this.config.turnSpeedRad || 3.0;
+    const turnRadius = maxSpeed / turnSpeed;
+    const safetyRadius = Math.max(cellSize, turnRadius * 0.9);
 
-      if (checkWater(p1x, p1y) && checkWater(p2x, p2y)) {
+    let isForwardBlocked = false;
+    let clearAngle = null;
+    let isTrapped = false;
+
+    this.#sensorRays = [];
+
+    for (let i = 0; i < angles.length; i++) {
+      const offset = angles[i];
+      const checkAngle = this.angle + offset;
+
+      const farX = this.pos.x + Math.cos(checkAngle) * lookDist;
+      const farY = this.pos.y + Math.sin(checkAngle) * lookDist;
+
+      const closeX = this.pos.x + Math.cos(checkAngle) * safetyRadius;
+      const closeY = this.pos.y + Math.sin(checkAngle) * safetyRadius;
+
+      const isFarClear = checkWater(farX, farY);
+      const isCloseClear = checkWater(closeX, closeY);
+
+      this.#sensorRays.push({
+        startX: this.pos.x,
+        startY: this.pos.y,
+        endX: farX,
+        endY: farY,
+        isBlocked: !(isFarClear && isCloseClear),
+      });
+
+      if (isFarClear && isCloseClear) {
         if (clearAngle === null) clearAngle = checkAngle;
       } else {
-        if (offset === 0) isForwardBlocked = true;
+        if (i === 0) isForwardBlocked = true;
+        if (!isCloseClear && Math.abs(offset) <= currentSpread * 0.5) {
+          isTrapped = true;
+        }
       }
     }
-    // ДОДАНО: повертаємо lookDist (довжину вусів)
-    return { isForwardBlocked, clearAngle, lookDist: look };
+
+    const backX = this.pos.x - Math.cos(this.angle) * safetyRadius;
+    const backY = this.pos.y - Math.sin(this.angle) * safetyRadius;
+    const canReverse = checkWater(backX, backY);
+
+    return { isForwardBlocked, clearAngle, lookDist, isTrapped, canReverse };
   }
 
   #checkArrival({ dist }, { isForwardBlocked }, isManual) {

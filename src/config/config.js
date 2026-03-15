@@ -37,7 +37,7 @@ const CONFIG = {
     debugVisuals: true, // Головний вимикач (якщо false - взагалі нічого не малюється)
     debugZones: true, // Показувати кольорові квадрати (зелені, червоні)
     debugGrid: true, // Показувати лінії сітки
-    debugDepthText: true, // Показувати цифри глибини
+    debugDepthText: false, // Показувати цифри глибини
     enableCastable: true, // Зони, де можна закидати вудку
     enableCollisions: true, // Колізії з землею (червоні зони) - забороняють закидати.
     enableSnags: true, // Динамічні зони (наприклад, косяк риби)

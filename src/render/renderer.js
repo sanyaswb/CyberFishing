@@ -7,6 +7,32 @@ class Renderer {
     this.#ctx = canvas.getContext("2d", { alpha: false });
   }
 
+  renderSensors(boat, projector) {
+    const rays = boat.sensorRays;
+    if (!rays || rays.length === 0) return;
+
+    this.#ctx.save();
+    this.#ctx.lineWidth = 2;
+
+    for (let i = 0; i < rays.length; i++) {
+      const ray = rays[i];
+
+      const startScreen = projector.virtualToScreen(ray.startX, ray.startY);
+      const endScreen = projector.virtualToScreen(ray.endX, ray.endY);
+
+      this.#ctx.strokeStyle = ray.isBlocked
+        ? "rgba(255, 0, 0, 0.6)"
+        : "rgba(0, 255, 0, 0.6)";
+
+      this.#ctx.beginPath();
+      this.#ctx.moveTo(startScreen.x, startScreen.y);
+      this.#ctx.lineTo(endScreen.x, endScreen.y);
+      this.#ctx.stroke();
+    }
+
+    this.#ctx.restore();
+  }
+
   #resolveX(configValue, elementWidth = 0) {
     if (configValue === "center") {
       return (this.#canvas.width - elementWidth) / 2;

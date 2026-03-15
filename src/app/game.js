@@ -828,6 +828,13 @@ class Game {
 
     if (this.#systems.chum && typeof r.drawBoats === "function") {
       r.drawBoats(this.#systems.chum, this.#systems.projector, b.top, b.bottom);
+
+      const boats = this.#systems.chum.getBoats();
+      for (let i = 0; i < boats.length; i++) {
+        if (typeof r.renderSensors === "function") {
+          r.renderSensors(boats[i], this.#systems.projector);
+        }
+      }
     }
 
     if (this.isAimingChum && CONFIG.chum.currentMethod === "hand") {
