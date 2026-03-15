@@ -457,13 +457,9 @@ class BaitBoat {
 
     this.isBaitDropped = false;
     this.isFinished = false;
-
     this.hasLeftShore = false;
 
-    // Секції прикормки
     this.remainingSections = config.sections || 1;
-    this.hasLeftShore = false;
-
     this.waypoints = [];
   }
 
@@ -471,238 +467,359 @@ class BaitBoat {
     if (this.state === "drifting") return;
     const isManual = this.config.manualControl;
 
-    // Якщо це АВТОРЕЖИМ і кораблик вже пливе скидати прикормку - додаємо в чергу!
     if (!isManual && !isReturn && this.state === "deploying") {
       this.waypoints.push({ x: targetX, y: targetY, zoneId: zoneId });
       return;
     }
 
-    // Інакше - це або перша ціль, або ручний режим (зміна курсу), або повернення додому
     this.target = new Vector2(targetX, targetY);
     if (zoneId !== null) this.zoneId = zoneId;
     this.state = isReturn ? "returning" : "deploying";
   }
 
-  // Повертає масив усіх активних точок, куди зараз прямує кораблик
   getVisualWaypoints() {
     const points = [];
-
-    // 1. Поточна ціль (якщо він пливе туди від гравця, а не повертається на базу)
     if (this.state === "deploying" && this.target) {
       points.push({ x: this.target.x, y: this.target.y });
     }
-
-    // 2. Всі інші точки в черзі (для авто-режиму)
     for (const wp of this.waypoints) {
       points.push({ x: wp.x, y: wp.y });
     }
-
     return points;
   }
 
+  // ГОЛОВНИЙ ЦИКЛ (Читається як інструкція)
   update(dt, checkWater, cellSize, env) {
     if (this.state === "idle" || this.isFinished) return;
 
-    const drainMult = this.state === "waiting" ? 0.5 : 1.0;
+    const dtSec = dt * 0.001;
     const isManual = this.config.manualControl;
 
-    // --- ВИТРАТА ЕНЕРГІЇ ---
+    this.#updateEnergy(dtSec);
+
+    if (this.state === "waiting" || this.state === "drifting") {
+      this.#applyDrift(dtSec, checkWater, env);
+      return;
+    }
+
+    const targetInfo = this.#calculateTargetInfo();
+    const obstacles = !isManual
+      ? this.#scanEnvironment(checkWater, cellSize)
+      : { isForwardBlocked: false, clearAngle: null, lookDist: 0 };
+
+    // 1. Перевірка прибуття або екстреного скидання
+    if (this.#checkArrival(targetInfo, obstacles, isManual)) {
+      return; // Якщо прибули, перериваємо логіку руху в цьому кадрі
+    }
+
+    // 2. Розрахунок векторів кермування (ШІ або Ручне)
+    const steering = this.#calculateSteering(targetInfo, obstacles, isManual);
+
+    // 3. Застосування фізики (інерція, швидкість, обертання)
+    this.#applyPhysics(steering, dtSec);
+
+    // 4. Рух та ковзання по колізіях
+    this.#moveAndCollide(dtSec, checkWater, isManual);
+
+    // 5. Перевірка повернення на берег
+    this.#checkShoreParking(isManual);
+  }
+
+  // ПРИВАТНІ МЕТОДИ (Інкапсульована логіка)
+  #updateEnergy(dtSec) {
+    const drainMult = this.state === "waiting" ? 0.5 : 1;
     if (this.state !== "drifting") {
-      this.energy -= this.stats.energyDrainPerSec * drainMult * (dt / 1000);
+      this.energy -= this.stats.energyDrainPerSec * drainMult * dtSec;
       if (this.energy <= 0) {
         this.energy = 0;
         this.state = "drifting";
       }
     }
+  }
 
-    // --- ДРЕЙФ ---
-    if (this.state === "waiting" || this.state === "drifting") {
-      if (env && env.current) {
-        const boatDriftResistance = 0.8;
-        const driftSpeed = env.current.speedPxPerSec * boatDriftResistance;
-        const dx = env.current.direction.x * driftSpeed * (dt / 1000);
-        const dy = env.current.direction.y * driftSpeed * (dt / 1000);
-        let nextX = this.pos.x + dx;
-        let nextY = this.pos.y + dy;
-        if (checkWater) {
-          if (!checkWater(nextX, this.pos.y)) nextX = this.pos.x;
-          if (!checkWater(this.pos.x, nextY)) nextY = this.pos.y;
-        }
-        this.pos.x = nextX;
-        this.pos.y = nextY;
-        if (this.state === "drifting") {
-          this.angle = Math.atan2(
-            env.current.direction.y,
-            env.current.direction.x,
-          );
-        }
-      }
-      return;
+  #applyDrift(dtSec, checkWater, env) {
+    if (!env || !env.current) return;
+
+    const driftSpeed = env.current.speedPxPerSec * 0.8;
+    const dx = env.current.direction.x * driftSpeed * dtSec;
+    const dy = env.current.direction.y * driftSpeed * dtSec;
+
+    if (checkWater) {
+      if (checkWater(this.pos.x + dx, this.pos.y)) this.pos.x += dx;
+      if (checkWater(this.pos.x, this.pos.y + dy)) this.pos.y += dy;
+    } else {
+      this.pos.x += dx;
+      this.pos.y += dy;
     }
 
-    const currentTarget =
-      this.state === "deploying" ? this.target : this.startPos;
-    const distToTarget = Math.hypot(
-      currentTarget.x - this.pos.x,
-      currentTarget.y - this.pos.y,
-    );
-    const finishRadius = this.state === "returning" ? 30 : 15;
+    if (this.state === "drifting") {
+      const targetAngle = Math.atan2(
+        env.current.direction.y,
+        env.current.direction.x,
+      );
+      let angleDiff = targetAngle - this.angle;
+      while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+      while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+      this.angle += Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), dtSec);
+    }
+  }
 
-    // --- ПРИБУТТЯ ДО ЦІЛІ ---
-    if (distToTarget < finishRadius) {
+  #calculateTargetInfo() {
+    const target = this.state === "deploying" ? this.target : this.startPos;
+    const dx = target.x - this.pos.x;
+    const dy = target.y - this.pos.y;
+    const distSq = dx * dx + dy * dy;
+    return { dx, dy, distSq, dist: Math.sqrt(distSq) || 1 };
+  }
+
+  #scanEnvironment(checkWater, cellSize) {
+    let isForwardBlocked = false;
+    let clearAngle = null;
+    const look = this.config.lookAheadCells * cellSize;
+    const anglesToCheck = [
+      0,
+      -Math.PI / 4,
+      Math.PI / 4,
+      -Math.PI / 2,
+      Math.PI / 2,
+    ];
+
+    for (const offset of anglesToCheck) {
+      const checkAngle = this.angle + offset;
+      const p1x = this.pos.x + Math.cos(checkAngle) * (look * 0.5);
+      const p1y = this.pos.y + Math.sin(checkAngle) * (look * 0.5);
+      const p2x = this.pos.x + Math.cos(checkAngle) * look;
+      const p2y = this.pos.y + Math.sin(checkAngle) * look;
+
+      if (checkWater(p1x, p1y) && checkWater(p2x, p2y)) {
+        if (clearAngle === null) clearAngle = checkAngle;
+      } else {
+        if (offset === 0) isForwardBlocked = true;
+      }
+    }
+    // ДОДАНО: повертаємо lookDist (довжину вусів)
+    return { isForwardBlocked, clearAngle, lookDist: look };
+  }
+
+  #checkArrival({ dist }, { isForwardBlocked }, isManual) {
+    const radiusReturn = this.config.finishRadiusReturning || 30;
+    const radiusTarget = this.config.finishRadiusTarget || 5;
+    const finishRadius =
+      this.state === "returning" ? radiusReturn : radiusTarget;
+
+    const isSmartDrop =
+      !isManual && this.state === "deploying" && dist < 45 && isForwardBlocked;
+
+    if (dist < finishRadius || isSmartDrop) {
       if (this.state === "deploying") {
         if (!isManual) {
-          // АВТОРЕЖИМ
-          if (this.zoneId !== null) {
-            this.isBaitDropped = true; // Сигнал менеджеру скинути пляму на воду
-          }
-
-          // Чекаємо мить, поки менеджер обробить скидання і обнулить zoneId
+          if (this.zoneId !== null) this.isBaitDropped = true;
           if (this.zoneId === null) {
-            this.isBaitDropped = false; // Скидаємо прапорець
-
-            if (this.waypoints.length > 0) {
-              // Беремо наступну точку з черги!
-              const nextWp = this.waypoints.shift();
-              this.target = new Vector2(nextWp.x, nextWp.y);
-              this.zoneId = nextWp.zoneId;
-              console.log(
-                `Авто-режим: Пливу до наступної точки! В черзі: ${this.waypoints.length}`,
-              );
-            } else {
-              // Черга порожня - пливемо на базу
-              this.state = "returning";
-              console.log(
-                "Авто-режим: Всі прикормки скинуто, повертаюсь на базу!",
-              );
-            }
+            this.isBaitDropped = false;
+            this.#processNextWaypoint();
           }
         } else {
-          // РУЧНИЙ РЕЖИМ
           this.state = "waiting";
         }
       } else if (this.state === "returning") {
         this.isFinished = true;
       }
-      return; // Виходимо, щоб не розраховувати рух у цьому кадрі
+      return true; // Логіку руху перервано (ми прибули)
+    }
+    return false; // Продовжуємо рух
+  }
+
+  #processNextWaypoint() {
+    if (this.waypoints.length > 0) {
+      let closestIdx = 0;
+      let minSq = Infinity;
+
+      for (let i = 0; i < this.waypoints.length; i++) {
+        const wpx = this.waypoints[i].x - this.pos.x;
+        const wpy = this.waypoints[i].y - this.pos.y;
+        const dSqSq = wpx * wpx + wpy * wpy;
+        if (dSqSq < minSq) {
+          minSq = dSqSq;
+          closestIdx = i;
+        }
+      }
+
+      const wp = this.waypoints.splice(closestIdx, 1)[0];
+      this.target.x = wp.x;
+      this.target.y = wp.y;
+      this.zoneId = wp.zoneId;
+    } else {
+      this.state = "returning";
+    }
+  }
+
+  #calculateSteering(
+    { dx, dy, dist },
+    { isForwardBlocked, clearAngle, lookDist },
+    isManual,
+  ) {
+    let steerX = 0;
+    let steerY = 0;
+    const slowRadius = this.config.slowRadius || 80;
+    const arrivalRatio = dist < slowRadius ? dist / slowRadius : 1.0;
+
+    // 1. SEEK (Прагнення до цілі)
+    steerX += (dx / dist) * arrivalRatio;
+    steerY += (dy / dist) * arrivalRatio;
+
+    const isParking = this.state === "returning" && dist < lookDist * 1.5;
+
+    // 2. AVOIDANCE (ШІ обхід перешкод)
+    if (!isManual && isForwardBlocked && !isParking) {
+      steerX *= 0.1; // Глушимо тягу вперед
+      steerY *= 0.1;
+
+      if (clearAngle !== null) {
+        steerX += Math.cos(clearAngle) * 4;
+        steerY += Math.sin(clearAngle) * 4;
+      } else {
+        steerX -= Math.cos(this.angle) * 4;
+        steerY -= Math.sin(this.angle) * 4;
+      }
     }
 
-    let desiredAngle = Math.atan2(
-      currentTarget.y - this.pos.y,
-      currentTarget.x - this.pos.x,
+    // 3. РОЗРАХУНОК ГАЛЬМА (Більше не віднімаємо від steerX!)
+    let currentBrake = 0;
+    if (dist < slowRadius) {
+      const maxBrake = this.config.brakeForce || 0.4;
+      currentBrake =
+        !isManual && isForwardBlocked && !isParking
+          ? 0
+          : maxBrake * (1.0 - arrivalRatio);
+    }
+
+    // Повертаємо вектор напрямку ТА силу гальма окремо
+    return { x: steerX, y: steerY, brake: currentBrake };
+  }
+
+  #applyPhysics(steering, dtSec) {
+    const accel = this.config.acceleration || 400;
+
+    const steeringMag = Math.sqrt(
+      steering.x * steering.x + steering.y * steering.y,
     );
 
-    // --- ШТУЧНИЙ ІНТЕЛЕКТ (Вуса, тільки для Авто) ---
-    if (!isManual) {
-      let actualLookAhead = this.config.lookAheadCells * cellSize;
-      if (distToTarget > actualLookAhead * 1.5) {
-        const anglesToCheck = [
-          0,
-          -Math.PI / 4,
-          Math.PI / 4,
-          -Math.PI / 2,
-          Math.PI / 2,
-        ];
-        let clearAngle = null;
-        let isPathBlocked = false;
+    // 1. РОЗВОРОТ (Спочатку крутимо кермо!)
+    // Якщо ШІ дає команду кудись пливти, ми спочатку розвертаємо туди ніс
+    if (steeringMag > 0.01) {
+      const desiredAngle = Math.atan2(steering.y, steering.x);
+      let angleDiff = desiredAngle - this.angle;
+      while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+      while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
 
-        for (const offset of anglesToCheck) {
-          const checkAngle = this.angle + offset;
-          const px = this.pos.x + Math.cos(checkAngle) * actualLookAhead;
-          const py = this.pos.y + Math.sin(checkAngle) * actualLookAhead;
+      const maxTurn = (this.config.turnSpeedRad || 3.0) * dtSec;
+      this.angle +=
+        Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), maxTurn);
+    }
 
-          if (checkWater && checkWater(px, py)) {
-            if (clearAngle === null) clearAngle = checkAngle;
-          } else {
-            if (offset === 0) isPathBlocked = true;
-          }
-        }
-        if (isPathBlocked && clearAngle !== null) {
-          desiredAngle = clearAngle;
-        }
+    // 2. ВЕКТОР ТЯГИ (Пропелер штовхає ТІЛЬКИ туди, куди дивиться ніс)
+    if (steeringMag > 0.01) {
+      const dirX = steering.x / steeringMag;
+      const dirY = steering.y / steeringMag;
+
+      const noseX = Math.cos(this.angle);
+      const noseY = Math.sin(this.angle);
+
+      // Dot product: перевіряємо, наскільки напрямок ШІ співпадає з носом (від -1 до 1)
+      const alignment = dirX * noseX + dirY * noseY;
+
+      // ---> АНТИ-ВИХОР (Anti-Orbit Protection) <---
+      // Отримуємо дистанцію з вектора (ми знаємо, що steeringMag падає біля цілі)
+      const isVeryClose = steeringMag < 0.5; // Ми в центрі slowRadius
+      const isOvershot = alignment < 0.5; // Ніс дивиться повз ціль або назад
+
+      if (alignment > 0) {
+        // Якщо ми промазали, але знаходимося дуже близько до цілі - глушимо мотор на 80%,
+        // щоб катер не літав колами, а дав носу час розвернутися на місці.
+        const thrustMultiplier = isVeryClose && isOvershot ? 0.2 : 1.0;
+
+        const forwardThrust = alignment * accel * dtSec * thrustMultiplier;
+        this.velocity.x += noseX * forwardThrust;
+        this.velocity.y += noseY * forwardThrust;
       }
     }
 
-    // --- ПЛАВНИЙ ПОВОРОТ ---
-    let angleDiff = desiredAngle - this.angle;
-    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+    // 3. ЕФЕКТ КІЛЯ (Вбиваємо бокове ковзання - імітація кіля у воді)
+    const noseX = Math.cos(this.angle);
+    const noseY = Math.sin(this.angle);
+    const rightX = -noseY; // Вектор правого борту
+    const rightY = noseX;
 
-    const maxTurn = this.config.turnSpeedRad * (dt / 1000);
-    this.angle += Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), maxTurn);
+    // Розкладаємо поточну швидкість на "вперед/назад" і "вправо/вліво"
+    const forwardSpeed = this.velocity.x * noseX + this.velocity.y * noseY;
+    let lateralSpeed = this.velocity.x * rightX + this.velocity.y * rightY;
 
-    // --- ЄДИНА ЛОГІКА ВИХОДУ З ТУПИКА (РЕВЕРС) ---
-    // Рахуємо, скільки місця нам треба для безпечного розвороту
-    const turnRadius = this.stats.speedPxPerSec / this.config.turnSpeedRad;
-    const clearanceDist = Math.max(30, turnRadius * 0.8);
+    // Тертя води об борти зрізає 50% бокової швидкості щокадру
+    lateralSpeed *= 0.5;
 
-    const clearX = this.pos.x + Math.cos(this.angle) * clearanceDist;
-    const clearY = this.pos.y + Math.sin(this.angle) * clearanceDist;
+    // Збираємо швидкість назад докупи
+    this.velocity.x = noseX * forwardSpeed + rightX * lateralSpeed;
+    this.velocity.y = noseY * forwardSpeed + rightY * lateralSpeed;
 
-    let isForwardClear = true;
+    // 4. ГАЛЬМА І ТЕРТЯ
+    if (steering.brake > 0) {
+      const brakeFriction = Math.max(0, 1.0 - steering.brake * dtSec * 5);
+      this.velocity.x *= brakeFriction;
+      this.velocity.y *= brakeFriction;
+    }
+
+    // Природний опір води (швидкість падає, якщо відпустити газ)
+    this.velocity.x *= 0.98;
+    this.velocity.y *= 0.98;
+
+    // 5. ОБМЕЖЕННЯ ШВИДКОСТІ
+    const maxSpeed = this.stats.speedPxPerSec;
+    const vSq =
+      this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y;
+    if (vSq > maxSpeed * maxSpeed) {
+      const v = Math.sqrt(vSq);
+      this.velocity.x = (this.velocity.x / v) * maxSpeed;
+      this.velocity.y = (this.velocity.y / v) * maxSpeed;
+    }
+  }
+
+  #moveAndCollide(dtSec, checkWater, isManual) {
+    const nextX = this.pos.x + this.velocity.x * dtSec;
+    const nextY = this.pos.y + this.velocity.y * dtSec;
+
     if (checkWater) {
-      isForwardClear = checkWater(clearX, clearY);
-    }
+      const canMoveX = checkWater(nextX, this.pos.y);
+      const canMoveY = checkWater(this.pos.x, nextY);
 
-    let currentSpeed = this.stats.speedPxPerSec;
-    if (distToTarget < turnRadius) {
-      currentSpeed = currentSpeed / 2;
-    }
+      if (canMoveX) this.pos.x = nextX;
+      else this.velocity.x *= -0.3; // Відскік
 
-    // Якщо попереду стіна (не вистачає місця для радіуса)
-    if (!isForwardClear) {
-      // Якщо нам треба повернути (кут до цілі більше ніж ~11 градусів), здаємо назад!
-      if (Math.abs(angleDiff) > 0.2) {
-        currentSpeed = -this.stats.speedPxPerSec * 0.6; // Реверс на 60% швидкості
-      }
-      // Якщо ми дивимось прямо в стіну, і це ручний режим - зупиняємось, щоб не буксувати
-      else if (isManual) {
+      if (canMoveY) this.pos.y = nextY;
+      else this.velocity.y *= -0.3; // Відскік
+
+      // Якщо вперлися глухо в ручному режимі
+      if (!canMoveX && !canMoveY && isManual) {
         this.state = "waiting";
-        return;
       }
     } else {
-      // --- ВИПРАВЛЕННЯ: АНТИ-ОРБІТА ---
-      // Застосовуємо тільки якщо шлях вільний і ми рухаємось вперед
-      const currentTurnRadius =
-        this.stats.speedPxPerSec / this.config.turnSpeedRad;
-
-      // Якщо ціль ближче, ніж 1.5 радіуса повороту, І ми дивимось повз неї (більше ніж на ~28 градусів)
-      if (distToTarget < currentTurnRadius * 1.5 && Math.abs(angleDiff) > 0.5) {
-        currentSpeed = this.stats.speedPxPerSec * 0.2; // Гальмуємо до 20%
-      }
-    }
-
-    // --- РУХ І ФІЗИЧНІ ЗІТКНЕННЯ ---
-    this.velocity.x = Math.cos(this.angle) * currentSpeed;
-    this.velocity.y = Math.sin(this.angle) * currentSpeed;
-
-    const nextX = this.pos.x + this.velocity.x * (dt / 1000);
-    const nextY = this.pos.y + this.velocity.y * (dt / 1000);
-
-    // Фінальна перевірка: чи не вріжемося ми, рухаючись туди (навіть задом)
-    if (checkWater && !checkWater(nextX, nextY)) {
-      if (isManual) {
-        this.state = "waiting"; // Затиснуті з усіх боків у ручному - стоїмо
-      }
-      // В авто-режимі просто ігноруємо рух (стоїмо), але кут продовжує крутитися!
-    } else {
-      // Якщо вільна вода - застосовуємо координати
       this.pos.x = nextX;
       this.pos.y = nextY;
     }
+  }
 
-    // Фіксуємо, що кораблик відплив від берега хоча б на 50 пікселів
+  #checkShoreParking(isManual) {
     if (!this.hasLeftShore && this.startPos.y - this.pos.y > 50) {
       this.hasLeftShore = true;
     }
 
-    // Чекаємо просто коли він перетне лінію берега для паркування
-    if (this.hasLeftShore && this.pos.y >= this.startPos.y - 30) {
+    if (
+      this.hasLeftShore &&
+      this.state === "returning" &&
+      this.pos.y >= this.startPos.y - 30
+    ) {
       if (!isManual) {
-        console.log("Авто-режим: Кораблик пришвартувався автоматично!");
-        this.isFinished = true; // Зникає
+        this.isFinished = true;
       } else {
-        // У ручному режимі він просто стоїть і чекає
         this.state = "waiting";
       }
     }

@@ -34,7 +34,7 @@ const CONFIG = {
   },
 
   locations: {
-    debugVisuals: false, // Головний вимикач (якщо false - взагалі нічого не малюється)
+    debugVisuals: true, // Головний вимикач (якщо false - взагалі нічого не малюється)
     debugZones: true, // Показувати кольорові квадрати (зелені, червоні)
     debugGrid: true, // Показувати лінії сітки
     debugDepthText: true, // Показувати цифри глибини
@@ -474,16 +474,21 @@ const CONFIG = {
       },
       boat: {
         type: "boat",
-        manualControl: true,
+        manualControl: false,
         sections: 3,
-        level: 1, // Поточний рівень кораблика
+        level: 3, // Поточний рівень кораблика
         statsByLevel: {
           1: { speedPxPerSec: 150, maxEnergy: 60, energyDrainPerSec: 1 }, // Енергії вистачить на 60 сек плавання
           2: { speedPxPerSec: 200, maxEnergy: 90, energyDrainPerSec: 1 },
           3: { speedPxPerSec: 250, maxEnergy: 120, energyDrainPerSec: 1 },
         },
-        turnSpeedRad: 3.0,
+        turnSpeedRad: 3.0, // Як швидко кораблик може змінювати напрямок (в радіанах в секунду)
         lookAheadCells: 3, // На скільки клітин дивиться вперед для вибору напрямку
+        acceleration: 800,
+        slowRadius: 150, // Радіус початку гальмування
+        brakeForce: 0.5, // Сила гальмування
+        finishRadiusTarget: 5, // Наскільки точно підпливати до цілі скидання
+        finishRadiusReturning: 30, // Наскільки близько підпливати до берега при поверненні
         perspectiveScaleRange: [0.5, 1.0],
         emoji: "🚤",
       },

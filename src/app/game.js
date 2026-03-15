@@ -873,10 +873,9 @@ class Game {
 
     let ratio = 1.0,
       drop = 0;
-    const lineCfg = CONFIG.ui.line; // Беремо налаштування з конфігу
+    const lineCfg = CONFIG.ui.line;
 
     if (state === "waiting" || state === "biting") {
-      // Використовуємо твої затримки з конфігу (1500 - 5000 мс)
       const minDelay = lineCfg.distanceDelayMinMs ?? 1500;
       const maxDelay = lineCfg.distanceDelayMaxMs ?? 5000;
       const distanceDelay =
@@ -893,7 +892,6 @@ class Game {
       ratio = 1.0 - ease * (1.0 - lineCfg.shrinkPercent / 100);
       drop = ease * (lineCfg.sinkDropPx || 120);
     } else if (state === "playing") {
-      // Використовуємо твій snapDurationMs (300 мс) та множники глибини
       const baseSnap = lineCfg.snapDurationMs ?? 300;
       const depthRatio = Math.min(1, this.currentHookDepth / 10.0);
       const snapDuration =
@@ -908,6 +906,28 @@ class Game {
       drop = (lineCfg.sinkDropPx || 120) * (1 - ease);
     }
 
+    // --- ВІДНОВЛЕНО: Захист від провисання волосіні під берег (зелену зону) ---
+    // 1. Знаходимо екранну координату низу зеленої зони (берега)
+    const mapBottomScreenY = this.#systems.projector.virtualToScreen(0, vBot).y;
+
+    // 2. Знаходимо екранну координату кінчика вудки
+    const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
+    const rodTopY = rodScreenY - 200; // Висота кінчика вудки (200px)
+
+    const distY = sPos.y - rodTopY;
+
+    // 3. Захищаємо ratio (стиснення), якщо поплавець знаходиться вище за вудку на екрані
+    if (distY < 0) {
+      const minRatio = (mapBottomScreenY - rodTopY) / distY;
+      ratio = Math.max(ratio, minRatio);
+    }
+
+    // 4. Жорстко обмежуємо drop (провисання), щоб волосінь не провалилася нижче mapBottomScreenY
+    const targetYAfterShrink = rodTopY + distY * ratio;
+    const maxAllowedDrop = Math.max(0, mapBottomScreenY - targetYAfterShrink);
+    drop = Math.min(drop, maxAllowedDrop);
+    // ------------------------------------------------------------------------
+
     renderer.drawCatchZone(
       this.#systems.projector,
       this.#net,
@@ -915,6 +935,7 @@ class Game {
       CONFIG.locations,
       CONFIG.ui.catchZone,
     );
+
     renderer.drawRodLine(
       sPos,
       state,
@@ -924,6 +945,7 @@ class Game {
       CONFIG.ui.rod,
       lineCfg,
     );
+
     renderer.drawFloat(sPos, this.#float, CONFIG.float);
 
     if (state === "playing" && tMeter && fCond) {
