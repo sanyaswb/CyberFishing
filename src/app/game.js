@@ -1248,23 +1248,19 @@ class Game {
     if (boats.length === 0) return;
 
     const activeBoat = boats[0];
-    let vPos = this.#systems.projector.screenToVirtual(
+    const vPos = this.#systems.projector.screenToVirtual(
       input.clickPos.x,
       input.clickPos.y,
     );
     let clickHandled = false;
 
-    const mapBounds = this.getDynamicBounds();
-
-    // ДОДАНО: Обрізаємо координати кліку, щоб точка завжди була в межах екрану і зеленої зони
-    vPos.x = Math.max(mapBounds.left, Math.min(mapBounds.right, vPos.x));
-    vPos.y = Math.max(mapBounds.top, Math.min(mapBounds.bottom, vPos.y));
-
     const distToBoat = Math.hypot(
       activeBoat.pos.x - vPos.x,
       activeBoat.pos.y - vPos.y,
     );
+    const mapBounds = this.getDynamicBounds();
 
+    // 1. Перевіряємо, чи клікаємо ми ПО САМОМУ КОРАБЛИКУ, щоб його забрати
     if (distToBoat < 40) {
       if (activeBoat.pos.y > mapBounds.bottom - 200) {
         this.#systems.chum.removeBoat(activeBoat);
@@ -1273,35 +1269,50 @@ class Game {
         console.log("Кораблик занадто далеко, підпливіть ближче до берега!");
       }
       clickHandled = true;
-    } else if (activeBoat.state !== "drifting") {
-      const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
+    }
+    // 2. Якщо клікаємо кудись на карту, щоб задати ціль
+    else if (activeBoat.state !== "drifting") {
+      // ДОДАНО: Перевіряємо, чи є вода (не колізія) у точці кліку!
+      const cell = this.checkWater(vPos.x, vPos.y);
 
-      if (isManual) {
-        if (activeBoat.state !== "returning") {
-          activeBoat.setTarget(vPos.x, vPos.y);
-          clickHandled = true;
-        }
+      if (!cell) {
+        // Якщо це земля/перешкода - малюємо хрестик і блокуємо дію
+        this.markInvalidCast(input.clickPos);
+        clickHandled = true; // Поглинаємо клік, щоб вудка не закинулась
       } else {
-        if (
-          activeBoat.remainingSections > 0 &&
-          activeBoat.state !== "returning"
-        ) {
-          this.#systems.chum.deployBait(
-            vPos.x,
-            vPos.y,
-            "carp_mix_basic",
-            "boat",
-            activeBoat,
-          );
-          activeBoat.remainingSections--;
-          clickHandled = true;
+        // Якщо це чиста вода - дозволяємо кораблику прийняти координати
+        const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
+
+        if (isManual) {
+          if (activeBoat.state !== "returning") {
+            activeBoat.setTarget(vPos.x, vPos.y);
+            clickHandled = true;
+          }
+        } else {
+          if (
+            activeBoat.remainingSections > 0 &&
+            activeBoat.state !== "returning"
+          ) {
+            this.#systems.chum.deployBait(
+              vPos.x,
+              vPos.y,
+              "carp_mix_basic",
+              "boat",
+              activeBoat,
+            );
+            activeBoat.remainingSections--;
+            clickHandled = true;
+          }
         }
       }
     }
 
+    // --- БРОНЕБІЙНИЙ ЗАХИСТ ВІД ВИПАДКОВИХ КЛІКІВ ---
     if (clickHandled) {
       input.clickPos = null;
     } else if (!this.canPlayerCast()) {
+      // Клік був повз кораблик, АЛЕ пульт керування все ще в руках (наприклад, не всі точки задані).
+      // "З'їдаємо" клік, щоб він гарантовано не провалився у стейти.
       console.log("Дія заблокована: спочатку задайте всі точки маршруту!");
       input.clickPos = null;
     }

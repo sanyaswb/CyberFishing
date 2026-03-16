@@ -482,8 +482,7 @@ const CONFIG = {
           2: { speedPxPerSec: 200, maxEnergy: 90, energyDrainPerSec: 1 },
           3: { speedPxPerSec: 250, maxEnergy: 120, energyDrainPerSec: 1 },
         },
-        turnSpeedRad: 3.0, // Як швидко кораблик може змінювати напрямок (в радіанах в секунду)
-        lookAheadCells: 3, // На скільки клітин дивиться вперед для вибору напрямку
+        rudderStrength: 2.5, // Як швидко кораблик може змінювати напрямок (в радіанах в секунду)
         acceleration: 800,
         slowRadius: 150, // Радіус початку гальмування
         brakeForce: 0.5, // Сила гальмування
