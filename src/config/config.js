@@ -487,7 +487,11 @@ const CONFIG = {
           2: { speedPxPerSec: 200, maxEnergy: 90, energyDrainPerSec: 1 },
           3: { speedPxPerSec: 250, maxEnergy: 120, energyDrainPerSec: 1 },
         },
-        rudderStrength: 2.5, // Як швидко кораблик може змінювати напрямок (в радіанах в секунду)
+
+        sensorRangeFactor: 1.5, // Множник дальності (1.0 — стандарт, 2.0 — бачить вдвічі далі)
+        turnSpeedRad: 2.5, // Як швидко кораблик може змінювати напрямок (в радіанах в секунду)
+        avoidancePersistenceMs: 300, // Гістерезис: час (мс) руху в безпечному напрямку після очищення шляху
+        avoidanceThrustMultiplier: 0.5,
         acceleration: 800,
         slowRadius: 150, // Радіус початку гальмування
         brakeForce: 0.5, // Сила гальмування

@@ -473,6 +473,7 @@ class BaitBoat {
     this.avoidanceTimer = 0;
     this.avoidanceTargetAngle = 0;
     this.engineThrottle = 1.0;
+    this.persistenceTimer = 0;
   }
 
   // Знайди і заміни гетер
@@ -511,6 +512,7 @@ class BaitBoat {
     if (this.state === "idle" || this.isFinished) return;
 
     const dtSec = dt * 0.001;
+    this.persistenceTimer = Math.max(0, this.persistenceTimer - dtSec);
     const isManual = this.config.manualControl;
 
     this.#updateEnergy(dtSec);
@@ -623,28 +625,15 @@ class BaitBoat {
     return { dx, dy, distSq, dist: Math.sqrt(distSq) || 1 };
   }
 
-  // Додати як новий метод у клас
-  #syncRayPositions() {
-    if (!this.#lastScanData.lookDist) return;
-    const { lookDist, angles } = this.#lastScanData;
-
-    for (let i = 0; i < 3; i++) {
-      const ray = this.#sensorRays[i];
-      const checkAngle = this.angle + angles[i];
-
-      ray.startX = this.pos.x;
-      ray.startY = this.pos.y;
-      ray.endX = this.pos.x + Math.cos(checkAngle) * lookDist;
-      ray.endY = this.pos.y + Math.sin(checkAngle) * lookDist;
-    }
-  }
-
   #scanEnvironment(checkPhysics, checkSensor, cellSize) {
     const speedRatio = Math.min(
       1.0,
       Math.hypot(this.velocity.x, this.velocity.y) / this.stats.speedPxPerSec,
     );
-    const lookDist = cellSize * 1.5 + speedRatio * cellSize * 2.0;
+    const rangeFactor = this.config.sensorRangeFactor || 1.5;
+
+    // Розраховуємо дистанцію: базова дальність + динамічний бонус від швидкості
+    const lookDist = cellSize * rangeFactor + speedRatio * cellSize * 2.0;
     const currentSpread = Math.PI / 2 - (Math.PI / 3) * speedRatio;
 
     const angles = [0, -currentSpread, currentSpread];
@@ -790,18 +779,43 @@ class BaitBoat {
     let steerY = (dy / dist) * arrivalRatio;
     let hazardBrake = 0;
 
-    if (!isManual && !isBlindZone && this.avoidanceState === "none") {
-      const repulsion = 1.8;
-      if (sensors.obstacleWeights[1]) {
-        steerX += Math.cos(this.angle + Math.PI / 2) * repulsion;
-        steerY += Math.sin(this.angle + Math.PI / 2) * repulsion;
-      }
-      if (sensors.obstacleWeights[2]) {
-        steerX += Math.cos(this.angle - Math.PI / 2) * repulsion;
-        steerY += Math.sin(this.angle - Math.PI / 2) * repulsion;
-      }
+    // 2. AVOIDANCE (Оновлено: використання persistenceTimer та параметрів конфігу)
+    const isForwardBlocked = sensors.isForwardBlocked;
+    const isParking = this.state === "returning";
 
-      if (sensors.isForwardBlocked && isGoingTowardsWall) hazardBrake = 0.6;
+    // Визначаємо вільний кут для об'їзду (якщо один з боків вільний)
+    const turnDir = sensors.obstacleWeights[1] ? 1 : -1;
+    const clearAngle =
+      sensors.obstacleWeights[1] && sensors.obstacleWeights[2]
+        ? null
+        : this.angle + (Math.PI / 2) * turnDir;
+
+    // Читаємо налаштування з CONFIG
+    const persistenceTime = (this.config.avoidancePersistenceMs || 300) / 1000;
+    const thrustMult = this.config.avoidanceThrustMultiplier || 0.1;
+
+    // Активуємо таймер, якщо бачимо перешкоду
+    if (isForwardBlocked) {
+      this.persistenceTimer = persistenceTime;
+    }
+
+    // Кораблик вважає, що він у режимі "об'їзду", поки бачить стіну АБО поки не вичерпано таймер
+    const inAvoidanceMode =
+      (isForwardBlocked || this.persistenceTimer > 0) && !isParking;
+
+    if (!isManual && inAvoidanceMode && this.avoidanceState === "none") {
+      // Використовуємо динамічну тягу з конфігу замість жорсткого 0.1
+      steerX *= thrustMult;
+      steerY *= thrustMult;
+
+      if (clearAngle !== null) {
+        steerX += Math.cos(clearAngle) * 4;
+        steerY += Math.sin(clearAngle) * 4;
+      } else {
+        // Якщо шлях зовсім заблокований - здаємо назад
+        steerX -= Math.cos(this.angle) * 4;
+        steerY -= Math.sin(this.angle) * 4;
+      }
     }
 
     const targetBrake =
