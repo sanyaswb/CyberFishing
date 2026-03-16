@@ -299,11 +299,11 @@ class ChumManager {
     if (needsSave) this.saveToStorage();
   }
 
-  updateBoats(dt, checkWater, cellSize, env) {
+  updateBoats(dt, checkPhysics, checkSensor, cellSize, env) {
     let needsSave = false;
     for (let i = this.#boats.length - 1; i >= 0; i--) {
       const boat = this.#boats[i];
-      boat.update(dt, checkWater, cellSize, env);
+      boat.update(dt, checkPhysics, checkSensor, cellSize, env);
       this.#boatEnergy = boat.energy;
 
       if (boat.isBaitDropped && boat.zoneId) {
@@ -466,8 +466,19 @@ class BaitBoat {
 
   setTarget(targetX, targetY, zoneId = null, isReturn = false) {
     if (this.state === "drifting") return;
+
+    // ГОРДІСТЬ КОРАБЛИКА: Він не пливе туди, де немає води або меж карти
+    const mapW = this.config.mapWidth || 2560;
+    const mapH = this.config.mapHeight || 1440;
+    const isOutOfBounds =
+      targetX < 0 || targetX > mapW || targetY < 0 || targetY > mapH;
+
+    // Якщо точка за межами - просто ігноруємо команду
+    if (isOutOfBounds) return;
+
     const isManual = this.config.manualControl;
 
+    // Якщо ми вже в дорозі - додаємо в чергу (авторежим)
     if (!isManual && !isReturn && this.state === "deploying") {
       this.waypoints.push({ x: targetX, y: targetY, zoneId: zoneId });
       return;
@@ -490,7 +501,7 @@ class BaitBoat {
   }
 
   // ГОЛОВНИЙ ЦИКЛ (Читається як інструкція)
-  update(dt, checkWater, cellSize, env) {
+  update(dt, checkPhysics, checkSensor, cellSize, env) {
     if (this.state === "idle" || this.isFinished) return;
 
     const dtSec = dt * 0.001;
@@ -499,30 +510,33 @@ class BaitBoat {
     this.#updateEnergy(dtSec);
 
     if (this.state === "waiting" || this.state === "drifting") {
-      this.#applyDrift(dtSec, checkWater, env);
+      this.#applyDrift(dtSec, checkPhysics, env);
       return;
     }
 
     const targetInfo = this.#calculateTargetInfo();
     const obstacles = !isManual
-      ? this.#scanEnvironment(checkWater, cellSize)
-      : { isForwardBlocked: false, clearAngle: null, lookDist: 0 };
+      ? this.#scanEnvironment(checkPhysics, checkSensor, cellSize)
+      : {
+          isForwardBlocked: false,
+          clearAngle: null,
+          lookDist: 0,
+          obstacleWeights: [false, false, false, false, false],
+          isBumperHit: false,
+        };
 
-    // 1. Перевірка прибуття або екстреного скидання
     if (this.#checkArrival(targetInfo, obstacles, isManual)) {
-      return; // Якщо прибули, перериваємо логіку руху в цьому кадрі
+      return;
     }
 
-    // 2. Розрахунок векторів кермування (ШІ або Ручне)
-    const steering = this.#calculateSteering(targetInfo, obstacles, isManual);
-
-    // 3. Застосування фізики (інерція, швидкість, обертання)
+    const steering = this.#calculateSteering(
+      targetInfo,
+      obstacles,
+      isManual,
+      dtSec,
+    );
     this.#applyPhysics(steering, dtSec);
-
-    // 4. Рух та ковзання по колізіях
-    this.#moveAndCollide(dtSec, checkWater, isManual);
-
-    // 5. Перевірка повернення на берег
+    this.#moveAndCollide(dtSec, checkPhysics, isManual);
     this.#checkShoreParking(isManual);
   }
 
@@ -573,16 +587,131 @@ class BaitBoat {
     return { dx, dy, distSq, dist: Math.sqrt(distSq) || 1 };
   }
 
-  #scanEnvironment(checkWater, cellSize) {
-    const currentSpeed = Math.sqrt(
-      this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y,
+  #setAvoidance(newState, time, angle, reason) {
+    if (this.avoidanceState !== newState) {
+      console.log(
+        `[BaitBoat] Avoidance: ${this.avoidanceState || "undefined"} -> ${newState} | Reason: ${reason}`,
+      );
+      this.avoidanceState = newState;
+    }
+    this.avoidanceTimer = time;
+    this.avoidanceTargetAngle = angle;
+  }
+
+  #calculateSteering({ dx, dy, dist }, sensors, isManual, dtSec) {
+    let steerX = 0;
+    let steerY = 0;
+    let hazardBrake = 0;
+
+    const slowRadius = this.config.slowRadius || 150;
+    const arrivalRatio = dist < slowRadius ? dist / slowRadius : 1.0;
+
+    const isDocking = dist < sensors.lookDist * 1.2;
+    const distToStart = Math.hypot(
+      this.pos.x - this.startPos.x,
+      this.pos.y - this.startPos.y,
     );
+    const isLaunching =
+      this.state === "deploying" && distToStart < sensors.lookDist * 1.5;
+    const isBlindZone = isDocking || isLaunching;
+
+    if (!this.avoidanceState) {
+      this.#setAvoidance("none", 0, 0, "Initialization");
+    }
+
+    if (this.avoidanceTimer > 0) {
+      this.avoidanceTimer -= dtSec;
+      if (this.avoidanceTimer <= 0) {
+        if (this.avoidanceState === "reversing") {
+          const turnDir = sensors.obstacleWeights[1] ? 1 : -1;
+          this.#setAvoidance(
+            "evading",
+            0.6,
+            this.angle + (Math.PI / 2) * turnDir,
+            "Reversing finished, evading",
+          );
+        } else {
+          this.#setAvoidance("none", 0, 0, "Timer expired");
+        }
+      }
+    }
+
+    if (!isManual && !isBlindZone) {
+      const currentSpeed = Math.hypot(this.velocity.x, this.velocity.y);
+      const targetAlignment =
+        (dx / dist) * Math.cos(this.angle) + (dy / dist) * Math.sin(this.angle);
+      const isGoingTowardsWall = targetAlignment > -0.2;
+      const isStuck =
+        currentSpeed < 10 && sensors.isForwardBlocked && isGoingTowardsWall;
+
+      if ((sensors.isBumperHit || isStuck) && this.avoidanceState === "none") {
+        const trigger = sensors.isBumperHit
+          ? "Bumper hit"
+          : "Stuck (low speed)";
+        this.#setAvoidance("reversing", 1.2, this.angle, trigger);
+      } else if (
+        this.avoidanceState === "none" &&
+        sensors.isForwardBlocked &&
+        isGoingTowardsWall
+      ) {
+        const turnDir = sensors.obstacleWeights[1] ? 1 : -1;
+        this.#setAvoidance(
+          "evading",
+          0.5,
+          this.angle + (Math.PI / 2) * turnDir,
+          "Forward blocked",
+        );
+      }
+
+      if (this.avoidanceState === "reversing") {
+        return {
+          x: -Math.cos(this.avoidanceTargetAngle),
+          y: -Math.sin(this.avoidanceTargetAngle),
+          brake: 0,
+        };
+      }
+      if (this.avoidanceState === "evading") {
+        return {
+          x: Math.cos(this.avoidanceTargetAngle),
+          y: Math.sin(this.avoidanceTargetAngle),
+          brake: 0.3,
+        };
+      }
+    }
+
+    steerX = (dx / dist) * arrivalRatio;
+    steerY = (dy / dist) * arrivalRatio;
+
+    if (!isManual && !isBlindZone && this.avoidanceState === "none") {
+      const repulsion = 1.8;
+      if (sensors.obstacleWeights[1] || sensors.obstacleWeights[3]) {
+        steerX += Math.cos(this.angle + Math.PI / 2) * repulsion;
+        steerY += Math.sin(this.angle + Math.PI / 2) * repulsion;
+      }
+      if (sensors.obstacleWeights[2] || sensors.obstacleWeights[4]) {
+        steerX += Math.cos(this.angle - Math.PI / 2) * repulsion;
+        steerY += Math.sin(this.angle - Math.PI / 2) * repulsion;
+      }
+
+      const targetAlignment =
+        (dx / dist) * Math.cos(this.angle) + (dy / dist) * Math.sin(this.angle);
+      if (sensors.isForwardBlocked && targetAlignment > -0.2) hazardBrake = 0.6;
+    }
+
+    let targetBrake = 0;
+    if (dist < slowRadius && this.avoidanceState === "none") {
+      targetBrake = (this.config.brakeForce || 0.5) * (1.0 - arrivalRatio);
+    }
+
+    return { x: steerX, y: steerY, brake: Math.max(targetBrake, hazardBrake) };
+  }
+
+  #scanEnvironment(checkPhysics, checkSensor, cellSize) {
+    const currentSpeed = Math.hypot(this.velocity.x, this.velocity.y);
     const maxSpeed = this.stats.speedPxPerSec;
     const speedRatio = Math.min(1.0, currentSpeed / maxSpeed);
 
-    const baseLook = 2 * cellSize;
-    const lookDist = baseLook + speedRatio * 3 * cellSize;
-
+    const lookDist = cellSize * 1.5 + speedRatio * cellSize * 2.5;
     const maxSpread = Math.PI / 2;
     const minSpread = Math.PI / 6;
     const currentSpread = maxSpread - (maxSpread - minSpread) * speedRatio;
@@ -595,80 +724,130 @@ class BaitBoat {
       currentSpread,
     ];
 
-    const turnSpeed = this.config.turnSpeedRad || 3.0;
-    const turnRadius = maxSpeed / turnSpeed;
-    const safetyRadius = Math.max(cellSize, turnRadius * 0.9);
-
-    let isForwardBlocked = false;
-    let clearAngle = null;
-    let isTrapped = false;
-
     this.#sensorRays = [];
+    let obstacleWeights = [false, false, false, false, false];
+    let clearAngle = null;
+    let isForwardBlocked = false;
 
     for (let i = 0; i < angles.length; i++) {
       const offset = angles[i];
       const checkAngle = this.angle + offset;
+      let isRayBlocked = false;
 
-      const farX = this.pos.x + Math.cos(checkAngle) * lookDist;
-      const farY = this.pos.y + Math.sin(checkAngle) * lookDist;
+      const testSteps = [0.3, 0.6, 1.0];
 
-      const closeX = this.pos.x + Math.cos(checkAngle) * safetyRadius;
-      const closeY = this.pos.y + Math.sin(checkAngle) * safetyRadius;
+      for (const step of testSteps) {
+        const px = this.pos.x + Math.cos(checkAngle) * lookDist * step;
+        const py = this.pos.y + Math.sin(checkAngle) * lookDist * step;
 
-      const isFarClear = checkWater(farX, farY);
-      const isCloseClear = checkWater(closeX, closeY);
+        const isCollision = checkSensor ? checkSensor(px, py) : false;
+
+        if (isCollision) {
+          isRayBlocked = true;
+          break;
+        }
+      }
+
+      obstacleWeights[i] = isRayBlocked;
 
       this.#sensorRays.push({
         startX: this.pos.x,
         startY: this.pos.y,
-        endX: farX,
-        endY: farY,
-        isBlocked: !(isFarClear && isCloseClear),
+        endX: this.pos.x + Math.cos(checkAngle) * lookDist,
+        endY: this.pos.y + Math.sin(checkAngle) * lookDist,
+        isBlocked: isRayBlocked,
       });
 
-      if (isFarClear && isCloseClear) {
-        if (clearAngle === null) clearAngle = checkAngle;
-      } else {
-        if (i === 0) isForwardBlocked = true;
-        if (!isCloseClear && Math.abs(offset) <= currentSpread * 0.5) {
-          isTrapped = true;
-        }
-      }
+      if (!isRayBlocked && clearAngle === null) clearAngle = checkAngle;
+      if (isRayBlocked && i === 0) isForwardBlocked = true;
     }
 
-    const backX = this.pos.x - Math.cos(this.angle) * safetyRadius;
-    const backY = this.pos.y - Math.sin(this.angle) * safetyRadius;
-    const canReverse = checkWater(backX, backY);
+    const bumperX = this.pos.x + Math.cos(this.angle) * (cellSize * 0.6);
+    const bumperY = this.pos.y + Math.sin(this.angle) * (cellSize * 0.6);
+    const bumperCell = checkPhysics ? checkPhysics(bumperX, bumperY) : null;
+    const isBumperHit = !bumperCell;
 
-    return { isForwardBlocked, clearAngle, lookDist, isTrapped, canReverse };
+    return {
+      isForwardBlocked,
+      clearAngle,
+      lookDist,
+      isBumperHit,
+      obstacleWeights,
+    };
+  }
+
+  #moveAndCollide(dtSec, checkWater, isManual) {
+    const moveX = this.velocity.x * dtSec;
+    const moveY = this.velocity.y * dtSec;
+    const nextX = this.pos.x + moveX;
+    const nextY = this.pos.y + moveY;
+
+    if (checkWater) {
+      const cellX = checkWater(nextX, this.pos.y);
+      const cellY = checkWater(this.pos.x, nextY);
+
+      if (cellX !== null) {
+        this.pos.x = nextX;
+      } else {
+        this.velocity.x = 0;
+        // Відштовхуємось проти реального вектору руху!
+        const pushDir = moveX !== 0 ? Math.sign(moveX) : Math.cos(this.angle);
+        this.pos.x -= pushDir * 2;
+      }
+
+      if (cellY !== null) {
+        this.pos.y = nextY;
+      } else {
+        this.velocity.y = 0;
+        const pushDir = moveY !== 0 ? Math.sign(moveY) : Math.sin(this.angle);
+        this.pos.y -= pushDir * 2;
+      }
+
+      if (cellX === null && cellY === null && isManual) {
+        this.state = "waiting";
+      }
+    } else {
+      this.pos.x = nextX;
+      this.pos.y = nextY;
+    }
   }
 
   #checkArrival({ dist }, { isForwardBlocked }, isManual) {
     const radiusReturn = this.config.finishRadiusReturning || 30;
-    const radiusTarget = this.config.finishRadiusTarget || 5;
+    const radiusTarget = this.config.finishRadiusTarget || 10; // Трохи збільшили допуск
     const finishRadius =
       this.state === "returning" ? radiusReturn : radiusTarget;
 
+    // "РОЗУМНЕ ПРИБУТТЯ":
+    // Якщо ми в радіусі 45 пікселів і бачимо стіну (не можемо пройти далі),
+    // вважаємо, що ми на місці. Це фіксить застрягання на "точках біля берега".
     const isSmartDrop =
       !isManual && this.state === "deploying" && dist < 45 && isForwardBlocked;
 
     if (dist < finishRadius || isSmartDrop) {
       if (this.state === "deploying") {
         if (!isManual) {
-          if (this.zoneId !== null) this.isBaitDropped = true;
-          if (this.zoneId === null) {
-            this.isBaitDropped = false;
+          // Якщо це точка зони - скидаємо прикормку
+          if (this.zoneId !== null) {
+            this.isBaitDropped = true;
+          }
+
+          // Переходимо до наступної цілі або вертаємось додому
+          if (this.waypoints.length > 0 || this.zoneId === null) {
+            this.isBaitDropped = false; // Скидаємо прапорець для наступної точки
             this.#processNextWaypoint();
           }
         } else {
+          // В ручному режимі просто чекаємо на наступну команду
           this.state = "waiting";
         }
       } else if (this.state === "returning") {
         this.isFinished = true;
       }
-      return true; // Логіку руху перервано (ми прибули)
+      return true; // Ми прибули, рух зупинено
     }
-    return false; // Продовжуємо рух
+
+    return false; // Ще пливемо
   }
 
   #processNextWaypoint() {
@@ -695,61 +874,24 @@ class BaitBoat {
     }
   }
 
-  #calculateSteering(
-    { dx, dy, dist },
-    { isForwardBlocked, clearAngle, lookDist },
-    isManual,
-  ) {
-    let steerX = 0;
-    let steerY = 0;
-    const slowRadius = this.config.slowRadius || 80;
-    const arrivalRatio = dist < slowRadius ? dist / slowRadius : 1.0;
-
-    // 1. SEEK (Прагнення до цілі)
-    steerX += (dx / dist) * arrivalRatio;
-    steerY += (dy / dist) * arrivalRatio;
-
-    const isParking = this.state === "returning" && dist < lookDist * 1.5;
-
-    // 2. AVOIDANCE (ШІ обхід перешкод)
-    if (!isManual && isForwardBlocked && !isParking) {
-      steerX *= 0.1; // Глушимо тягу вперед
-      steerY *= 0.1;
-
-      if (clearAngle !== null) {
-        steerX += Math.cos(clearAngle) * 4;
-        steerY += Math.sin(clearAngle) * 4;
-      } else {
-        steerX -= Math.cos(this.angle) * 4;
-        steerY -= Math.sin(this.angle) * 4;
-      }
-    }
-
-    // 3. РОЗРАХУНОК ГАЛЬМА (Більше не віднімаємо від steerX!)
-    let currentBrake = 0;
-    if (dist < slowRadius) {
-      const maxBrake = this.config.brakeForce || 0.4;
-      currentBrake =
-        !isManual && isForwardBlocked && !isParking
-          ? 0
-          : maxBrake * (1.0 - arrivalRatio);
-    }
-
-    // Повертаємо вектор напрямку ТА силу гальма окремо
-    return { x: steerX, y: steerY, brake: currentBrake };
-  }
-
   #applyPhysics(steering, dtSec) {
     const accel = this.config.acceleration || 400;
+    const isReversing = this.avoidanceState === "reversing";
 
     const steeringMag = Math.sqrt(
       steering.x * steering.x + steering.y * steering.y,
     );
 
-    // 1. РОЗВОРОТ (Спочатку крутимо кермо!)
-    // Якщо ШІ дає команду кудись пливти, ми спочатку розвертаємо туди ніс
+    const noseX = Math.cos(this.angle);
+    const noseY = Math.sin(this.angle);
+
     if (steeringMag > 0.01) {
-      const desiredAngle = Math.atan2(steering.y, steering.x);
+      let desiredAngle = Math.atan2(steering.y, steering.x);
+
+      if (isReversing) {
+        desiredAngle += Math.PI;
+      }
+
       let angleDiff = desiredAngle - this.angle;
       while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
       while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
@@ -759,93 +901,53 @@ class BaitBoat {
         Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), maxTurn);
     }
 
-    // 2. ВЕКТОР ТЯГИ (Пропелер штовхає ТІЛЬКИ туди, куди дивиться ніс)
     if (steeringMag > 0.01) {
-      const dirX = steering.x / steeringMag;
-      const dirY = steering.y / steeringMag;
+      if (isReversing) {
+        const reverseThrust = accel * dtSec * 0.8;
+        this.velocity.x -= noseX * reverseThrust;
+        this.velocity.y -= noseY * reverseThrust;
+      } else {
+        const dirX = steering.x / steeringMag;
+        const dirY = steering.y / steeringMag;
+        const alignment = dirX * noseX + dirY * noseY;
 
-      const noseX = Math.cos(this.angle);
-      const noseY = Math.sin(this.angle);
+        if (alignment > 0) {
+          const isVeryClose = steeringMag < 0.5;
+          const isOvershot = alignment < 0.7;
+          const thrustMultiplier = isVeryClose && isOvershot ? 0.1 : 1.0;
 
-      // Dot product: перевіряємо, наскільки напрямок ШІ співпадає з носом (від -1 до 1)
-      const alignment = dirX * noseX + dirY * noseY;
-
-      // ---> АНТИ-ВИХОР (Anti-Orbit Protection) <---
-      // Отримуємо дистанцію з вектора (ми знаємо, що steeringMag падає біля цілі)
-      const isVeryClose = steeringMag < 0.5; // Ми в центрі slowRadius
-      const isOvershot = alignment < 0.5; // Ніс дивиться повз ціль або назад
-
-      if (alignment > 0) {
-        // Якщо ми промазали, але знаходимося дуже близько до цілі - глушимо мотор на 80%,
-        // щоб катер не літав колами, а дав носу час розвернутися на місці.
-        const thrustMultiplier = isVeryClose && isOvershot ? 0.2 : 1.0;
-
-        const forwardThrust = alignment * accel * dtSec * thrustMultiplier;
-        this.velocity.x += noseX * forwardThrust;
-        this.velocity.y += noseY * forwardThrust;
+          const forwardThrust = alignment * accel * dtSec * thrustMultiplier;
+          this.velocity.x += noseX * forwardThrust;
+          this.velocity.y += noseY * forwardThrust;
+        }
       }
     }
 
-    // 3. ЕФЕКТ КІЛЯ (Вбиваємо бокове ковзання - імітація кіля у воді)
-    const noseX = Math.cos(this.angle);
-    const noseY = Math.sin(this.angle);
-    const rightX = -noseY; // Вектор правого борту
+    const rightX = -noseY;
     const rightY = noseX;
 
-    // Розкладаємо поточну швидкість на "вперед/назад" і "вправо/вліво"
     const forwardSpeed = this.velocity.x * noseX + this.velocity.y * noseY;
     let lateralSpeed = this.velocity.x * rightX + this.velocity.y * rightY;
 
-    // Тертя води об борти зрізає 50% бокової швидкості щокадру
-    lateralSpeed *= 0.5;
+    lateralSpeed *= 0.1;
 
-    // Збираємо швидкість назад докупи
     this.velocity.x = noseX * forwardSpeed + rightX * lateralSpeed;
     this.velocity.y = noseY * forwardSpeed + rightY * lateralSpeed;
 
-    // 4. ГАЛЬМА І ТЕРТЯ
     if (steering.brake > 0) {
-      const brakeFriction = Math.max(0, 1.0 - steering.brake * dtSec * 5);
+      const brakeFriction = Math.max(0, 1.0 - steering.brake * dtSec * 7);
       this.velocity.x *= brakeFriction;
       this.velocity.y *= brakeFriction;
     }
 
-    // Природний опір води (швидкість падає, якщо відпустити газ)
-    this.velocity.x *= 0.98;
-    this.velocity.y *= 0.98;
+    this.velocity.x *= 0.97;
+    this.velocity.y *= 0.97;
 
-    // 5. ОБМЕЖЕННЯ ШВИДКОСТІ
     const maxSpeed = this.stats.speedPxPerSec;
-    const vSq =
-      this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y;
-    if (vSq > maxSpeed * maxSpeed) {
-      const v = Math.sqrt(vSq);
-      this.velocity.x = (this.velocity.x / v) * maxSpeed;
-      this.velocity.y = (this.velocity.y / v) * maxSpeed;
-    }
-  }
-
-  #moveAndCollide(dtSec, checkWater, isManual) {
-    const nextX = this.pos.x + this.velocity.x * dtSec;
-    const nextY = this.pos.y + this.velocity.y * dtSec;
-
-    if (checkWater) {
-      const canMoveX = checkWater(nextX, this.pos.y);
-      const canMoveY = checkWater(this.pos.x, nextY);
-
-      if (canMoveX) this.pos.x = nextX;
-      else this.velocity.x *= -0.3; // Відскік
-
-      if (canMoveY) this.pos.y = nextY;
-      else this.velocity.y *= -0.3; // Відскік
-
-      // Якщо вперлися глухо в ручному режимі
-      if (!canMoveX && !canMoveY && isManual) {
-        this.state = "waiting";
-      }
-    } else {
-      this.pos.x = nextX;
-      this.pos.y = nextY;
+    const vMag = Math.hypot(this.velocity.x, this.velocity.y);
+    if (vMag > maxSpeed) {
+      this.velocity.x = (this.velocity.x / vMag) * maxSpeed;
+      this.velocity.y = (this.velocity.y / vMag) * maxSpeed;
     }
   }
 

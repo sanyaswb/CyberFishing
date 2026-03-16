@@ -543,18 +543,23 @@ class LocationMap {
   getGrid() {
     return this.#grid;
   }
+
   getCols() {
     return this.#cols;
   }
+
   getRows() {
     return this.#rows;
   }
+
   getDynamicZones() {
     return this.#dynamicZones;
   }
+
   getDebugCanvas() {
     return this.#debugCanvas;
   }
+
   getCellAtVirtualPos(vX, vY, cellSize) {
     const c = Math.floor(vX / cellSize);
     const r = Math.floor(vY / cellSize);

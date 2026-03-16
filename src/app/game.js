@@ -114,7 +114,12 @@ class ScoutingState extends GameState {
   }
 
   handleInput(input) {
-    if (input.panDeltaX || input.panDeltaY) {
+    // ДОДАНО: Перевіряємо, чи є зараз на воді активний кораблик, який пливе
+    const isBoatMoving = this.game.systems.chum.isBoatMoving();
+
+    // ЗМІНЕНО: Додана умова !isBoatMoving
+    // Якщо кораблик рухається, ми ігноруємо свайпи екрану (panDelta)
+    if (!isBoatMoving && (input.panDeltaX || input.panDeltaY)) {
       const scale = this.game.systems.projector.getScale();
       this.game.systems.projector.pan(
         input.panDeltaX / scale,
@@ -157,7 +162,6 @@ class ScoutingState extends GameState {
         (d) => (this.game.currentHookDepth = d),
       );
     } else {
-      // --- ВІДНОВЛЕНО: Оновлення максимуму для активного UI ---
       if (typeof this.game.depthUI.updateMax === "function") {
         this.game.depthUI.updateMax(maxDepth);
       }
@@ -762,9 +766,28 @@ class Game {
     this.#systems.projector.update(this.#canvas.width, this.#canvas.height);
     this.#systems.map.update(dt, this.#systems.env.getSnapshot().time);
     this.#systems.chum.update(Date.now(), timeScale);
+
     this.#systems.chum.updateBoats(
       dt,
-      (vx, vy) => this.checkWater(vx, vy),
+      (vx, vy) => {
+        if (
+          vx < bounds.left ||
+          vx > bounds.right ||
+          vy < bounds.top ||
+          vy > bounds.bottom
+        ) {
+          return null;
+        }
+        return this.checkWater(vx, vy);
+      },
+      (vx, vy) => {
+        const cell = this.#systems.map.getCellAtVirtualPos(
+          vx,
+          vy,
+          CONFIG.locations.cellSize,
+        );
+        return cell ? cell.hasCollision : false;
+      },
       CONFIG.locations.cellSize,
       { current: CONFIG.locations.map["test"].environment.current },
     );
@@ -1225,17 +1248,22 @@ class Game {
     if (boats.length === 0) return;
 
     const activeBoat = boats[0];
-    const vPos = this.#systems.projector.screenToVirtual(
+    let vPos = this.#systems.projector.screenToVirtual(
       input.clickPos.x,
       input.clickPos.y,
     );
     let clickHandled = false;
 
+    const mapBounds = this.getDynamicBounds();
+
+    // ДОДАНО: Обрізаємо координати кліку, щоб точка завжди була в межах екрану і зеленої зони
+    vPos.x = Math.max(mapBounds.left, Math.min(mapBounds.right, vPos.x));
+    vPos.y = Math.max(mapBounds.top, Math.min(mapBounds.bottom, vPos.y));
+
     const distToBoat = Math.hypot(
       activeBoat.pos.x - vPos.x,
       activeBoat.pos.y - vPos.y,
     );
-    const mapBounds = this.getDynamicBounds();
 
     if (distToBoat < 40) {
       if (activeBoat.pos.y > mapBounds.bottom - 200) {
@@ -1271,12 +1299,9 @@ class Game {
       }
     }
 
-    // --- БРОНЕБІЙНИЙ ЗАХИСТ ВІД ВИПАДКОВИХ КЛІКІВ ---
     if (clickHandled) {
       input.clickPos = null;
     } else if (!this.canPlayerCast()) {
-      // Клік був повз кораблик, АЛЕ пульт керування все ще в руках (наприклад, не всі точки задані).
-      // "З'їдаємо" клік, щоб він гарантовано не провалився у стейти.
       console.log("Дія заблокована: спочатку задайте всі точки маршруту!");
       input.clickPos = null;
     }
