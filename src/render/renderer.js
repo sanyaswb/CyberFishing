@@ -7,7 +7,11 @@ class Renderer {
     this.#ctx = canvas.getContext("2d", { alpha: false });
   }
 
+  // src/render/renderer.js
   renderSensors(boat, projector) {
+    // 1. Перевірка конфігу: якщо вимкнено — не малюємо
+    if (!boat.config.showSensors) return;
+
     const rays = boat.sensorRays;
     if (!rays || rays.length === 0) return;
 
@@ -17,6 +21,7 @@ class Renderer {
     for (let i = 0; i < rays.length; i++) {
       const ray = rays[i];
 
+      // Малюємо актуальні координати, які тепер оновлюються щокадру
       const startScreen = projector.virtualToScreen(ray.startX, ray.startY);
       const endScreen = projector.virtualToScreen(ray.endX, ray.endY);
 

@@ -477,8 +477,9 @@ const CONFIG = {
         maxUses: 7,
       },
       boat: {
-        type: "boat",
+        showSensors: false,
         manualControl: false,
+        type: "boat",
         sections: 3,
         level: 3, // Поточний рівень кораблика
         statsByLevel: {
@@ -492,7 +493,6 @@ const CONFIG = {
         brakeForce: 0.5, // Сила гальмування
         finishRadiusTarget: 5, // Наскільки точно підпливати до цілі скидання
         finishRadiusReturning: 30, // Наскільки близько підпливати до берега при поверненні
-        // perspectiveScaleRange: [0.5, 1.0],
         emoji: "🚤",
       },
     },

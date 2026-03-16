@@ -450,6 +450,7 @@ class BaitBoat {
   #sensorTimer = 0;
   #sensorInterval = 0.15;
   #cachedSensors = null;
+  #lastScanData = { lookDist: 0, angles: [0, 0, 0] };
 
   constructor(startX, startY, config, zoneId = null, initialEnergy = null) {
     this.startPos = new Vector2(startX, startY);
@@ -474,7 +475,9 @@ class BaitBoat {
     this.engineThrottle = 1.0;
   }
 
+  // Знайди і заміни гетер
   get sensorRays() {
+    if (this.config.showSensors === false) return [];
     return this.#sensorRays;
   }
 
@@ -512,13 +515,8 @@ class BaitBoat {
 
     this.#updateEnergy(dtSec);
 
-    if (this.state === "waiting" || this.state === "drifting") {
-      this.#applyDrift(dtSec, checkPhysics, env);
-      return;
-    }
-
-    const targetInfo = this.#calculateTargetInfo();
-
+    // --- ОНОВЛЕННЯ СЕНСОРІВ (раз на 150мс) ---
+    // Тепер це працює ЗАВЖДИ, навіть при дрейфі, тому вуса не "зависають"
     this.#sensorTimer -= dtSec;
     if (this.#sensorTimer <= 0 || !this.#cachedSensors) {
       this.#cachedSensors = this.#scanEnvironment(
@@ -528,6 +526,14 @@ class BaitBoat {
       );
       this.#sensorTimer = this.#sensorInterval;
     }
+
+    // Перевірка на дрейф/очікування тепер ПІСЛЯ оновлення сенсорів
+    if (this.state === "waiting" || this.state === "drifting") {
+      this.#applyDrift(dtSec, checkPhysics, env);
+      return;
+    }
+
+    const targetInfo = this.#calculateTargetInfo();
 
     // 1. ТЕПЕР РУЧНИЙ РЕЖИМ ТАКОЖ БАЧИТЬ СЕНСОРИ
     const obstacles = this.#cachedSensors;
@@ -617,6 +623,22 @@ class BaitBoat {
     return { dx, dy, distSq, dist: Math.sqrt(distSq) || 1 };
   }
 
+  // Додати як новий метод у клас
+  #syncRayPositions() {
+    if (!this.#lastScanData.lookDist) return;
+    const { lookDist, angles } = this.#lastScanData;
+
+    for (let i = 0; i < 3; i++) {
+      const ray = this.#sensorRays[i];
+      const checkAngle = this.angle + angles[i];
+
+      ray.startX = this.pos.x;
+      ray.startY = this.pos.y;
+      ray.endX = this.pos.x + Math.cos(checkAngle) * lookDist;
+      ray.endY = this.pos.y + Math.sin(checkAngle) * lookDist;
+    }
+  }
+
   #scanEnvironment(checkPhysics, checkSensor, cellSize) {
     const speedRatio = Math.min(
       1.0,
@@ -626,6 +648,7 @@ class BaitBoat {
     const currentSpread = Math.PI / 2 - (Math.PI / 3) * speedRatio;
 
     const angles = [0, -currentSpread, currentSpread];
+    this.#lastScanData = { lookDist, angles };
     const obstacleWeights = [false, false, false];
     let isForwardBlocked = false;
 
