@@ -69,7 +69,12 @@ const CONFIG = {
         safeZone: { top: 0, bottom: 1440 },
         depthBounds: { min: 0.1, max: 15.0 },
 
-        perspectiveSquash: { top: 0.1, bottom: 0.4 },
+        // НОВА МАТЕМАТИЧНА ПЕРСПЕКТИВА (в градусах)
+        perspective: {
+          angleTop: 0, // Кут погляду на найдальшу точку води (близько до горизонту)
+          angleBottom: 30, // Кут погляду під ноги (на найближчу лінію води)
+        },
+
         chumCastDistance: 300,
 
         weather: {
@@ -351,7 +356,6 @@ const CONFIG = {
 
     sinkingDelayMs: 500,
     sinkingDurationMs: 4000,
-    perspectiveScaleRange: [1.3, 0.7],
 
     biteSequence: {
       maxSequences: [1, 5],
@@ -488,7 +492,7 @@ const CONFIG = {
         brakeForce: 0.5, // Сила гальмування
         finishRadiusTarget: 5, // Наскільки точно підпливати до цілі скидання
         finishRadiusReturning: 30, // Наскільки близько підпливати до берега при поверненні
-        perspectiveScaleRange: [0.5, 1.0],
+        // perspectiveScaleRange: [0.5, 1.0],
         emoji: "🚤",
       },
     },

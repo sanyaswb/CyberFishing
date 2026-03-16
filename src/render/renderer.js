@@ -174,7 +174,8 @@ class Renderer {
     }
   }
 
-  drawChumZones(chumManager, projector, virtualTopY, virtualBottomY) {
+  drawChumZones(chumManager, projector) {
+    // Видалено virtualTopY, virtualBottomY
     const zones = chumManager.getZones();
 
     for (const zone of zones) {
@@ -191,19 +192,17 @@ class Renderer {
 
       if (opacity <= 0) continue;
 
-      const distRatio = Math.max(
-        0,
-        Math.min(1.0, (zone.y - virtualTopY) / (virtualBottomY - virtualTopY)),
-      );
-
-      const currentScaleY =
-        zone.squashTop + (zone.squashBottom - zone.squashTop) * distRatio;
+      // --- ЄДИНА МАТЕМАТИЧНА ПЕРСПЕКТИВА ---
+      const perspective = projector.getPerspective(zone.y);
 
       const centerScreen = projector.virtualToScreen(zone.x, zone.y);
 
-      const rxScreen = zone.baseRadius * projector.getScale();
+      // Радіус по X масштабується рівномірно (об'єкт зменшується вдалині)
+      const rxScreen =
+        zone.baseRadius * perspective.scale * projector.getScale();
 
-      const ryScreen = zone.baseRadius * currentScaleY * projector.getScale();
+      // Радіус по Y додатково сплющується через кут зору (squashY)
+      const ryScreen = rxScreen * perspective.squashY;
 
       this.#ctx.save();
       this.#ctx.beginPath();
@@ -273,26 +272,38 @@ class Renderer {
         const wp = waypoints[i];
         const screenPos = projector.virtualToScreen(wp.x, wp.y);
 
+        // --- ДОДАЄМО ПЕРСПЕКТИВУ ---
+        const perspective = projector.getPerspective(wp.y);
+        const scale = perspective.scale; // Використовуємо загальний масштаб
+
         this.#ctx.save();
 
-        // Малюємо зовнішнє напівпрозоре кільце
+        // Малюємо зовнішнє напівпрозоре кільце (масштабуємо радіус)
         this.#ctx.beginPath();
-        this.#ctx.arc(screenPos.x, screenPos.y, 8, 0, Math.PI * 2);
-        this.#ctx.strokeStyle = "rgba(255, 170, 0, 0.6)"; // Оранжевий колір
-        this.#ctx.lineWidth = 2;
+        this.#ctx.arc(screenPos.x, screenPos.y, 8 * scale, 0, Math.PI * 2);
+        this.#ctx.strokeStyle = "rgba(255, 170, 0, 0.6)";
+        this.#ctx.lineWidth = Math.max(1, 2 * scale); // Товщина лінії теж трохи зменшується
         this.#ctx.stroke();
 
-        // Малюємо внутрішній яскравий кружечок
+        // Малюємо внутрішній яскравий кружечок (масштабуємо радіус)
         this.#ctx.beginPath();
-        this.#ctx.arc(screenPos.x, screenPos.y, 3, 0, Math.PI * 2);
+        this.#ctx.arc(screenPos.x, screenPos.y, 3 * scale, 0, Math.PI * 2);
         this.#ctx.fillStyle = "#ffaa00";
         this.#ctx.fill();
 
-        // ВИПРАВЛЕНО: Малюємо цифру ТІЛЬКИ якщо це автоматичний режим
+        // Малюємо цифру ТІЛЬКИ якщо це автоматичний режим
         if (!boat.config.manualControl) {
           this.#ctx.fillStyle = "#ffffff";
-          this.#ctx.font = "bold 10px Arial";
-          this.#ctx.fillText(i + 1, screenPos.x + 10, screenPos.y + 4);
+          // Масштабуємо розмір шрифту
+          const fontSize = Math.max(6, 10 * scale); // Мінімум 6px, щоб можна було прочитати
+          this.#ctx.font = `bold ${fontSize}px Arial`;
+
+          // Відступи для тексту теж масштабуємо
+          this.#ctx.fillText(
+            i + 1,
+            screenPos.x + 10 * scale,
+            screenPos.y + 4 * scale,
+          );
         }
 
         this.#ctx.restore();
@@ -300,7 +311,8 @@ class Renderer {
     }
   }
 
-  drawBoats(chumManager, projector, virtualTopY, virtualBottomY) {
+  drawBoats(chumManager, projector) {
+    // Видалено virtualTopY, virtualBottomY
     const boats = chumManager.getBoats();
     if (!boats || boats.length === 0) return;
 
@@ -311,15 +323,10 @@ class Renderer {
     for (const boat of boats) {
       const screenPos = projector.virtualToScreen(boat.pos.x, boat.pos.y);
 
-      const distRatio = Math.max(
-        0,
-        Math.min(
-          1.0,
-          (boat.pos.y - virtualTopY) / (virtualBottomY - virtualTopY),
-        ),
-      );
-      const scaleRange = boat.config.perspectiveScaleRange || [0.5, 1.0];
-      const scale = scaleRange[0] + (scaleRange[1] - scaleRange[0]) * distRatio;
+      // --- ЄДИНА МАТЕМАТИЧНА ПЕРСПЕКТИВА ---
+      const perspective = projector.getPerspective(boat.pos.y);
+      // Для кораблика беремо тільки scale, бо він "стоїть" на воді, а не лежить плошмя
+      const scale = perspective.scale;
 
       const fontSize = 40 * projector.getScale() * scale;
       this.#ctx.font = `${fontSize}px sans-serif`;
@@ -348,9 +355,13 @@ class Renderer {
     this.#ctx.restore();
   }
 
-  drawFloat(screenPos, floatEntity, floatConfig) {
+  drawFloat(screenPos, floatEntity, floatConfig, projector) {
     const visualState = floatEntity.getVisualState();
-    const pScale = visualState.perspectiveScale;
+
+    // --- ЄДИНА МАТЕМАТИЧНА ПЕРСПЕКТИВА ---
+    const perspective = projector.getPerspective(floatEntity.getPosition().y);
+    const pScale = perspective.scale; // Поплавок просто пропорційно зменшується
+
     const width = floatConfig.width * pScale;
     const length = floatConfig.length * pScale;
 

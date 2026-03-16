@@ -690,6 +690,39 @@ class ViewportProjector {
     }
   }
 
+  // --- НОВИЙ МЕТОД: Математична перспектива ---
+  getPerspective(virtualY) {
+    const mapConfig = this.#locationsConfig.map[this.#locationId];
+    // Беремо кути з конфігурації (або дефолтні значення 5 і 60)
+    const pConfig = mapConfig.perspective || { angleTop: 5, angleBottom: 60 };
+
+    const topY = mapConfig.safeZone.top;
+    const bottomY = mapConfig.safeZone.bottom;
+
+    // 1. Знаходимо відсоток віддаленості (0.0 на горизонті, 1.0 біля берега)
+    const distRatio = Math.max(
+      0,
+      Math.min(1.0, (virtualY - topY) / (bottomY - topY)),
+    );
+
+    // 2. Визначаємо поточний кут погляду в градусах та радіанах
+    const currentAngleDeg =
+      pConfig.angleTop + (pConfig.angleBottom - pConfig.angleTop) * distRatio;
+    const currentAngleRad = (currentAngleDeg * Math.PI) / 180;
+    const bottomAngleRad = (pConfig.angleBottom * Math.PI) / 180;
+
+    // 3. Сплющення (Squash) по Y.
+    // Синус кута: 90° = 1 (без сплющення), 5° = 0.087 (дуже сплюснуто)
+    const squashY = Math.sin(currentAngleRad);
+
+    // 4. Масштаб (Scale).
+    // Відношення тангенсів дає ідеальне оптичне зменшення віддалених об'єктів.
+    // Біля берега (bottomAngleRad) масштаб буде рівно 1.0.
+    const scale = Math.tan(currentAngleRad) / Math.tan(bottomAngleRad);
+
+    return { scale, squashY };
+  }
+
   // ДОДАНО: Метод для плавного слідування за об'єктом ТІЛЬКИ по осі Y
   focusOnVirtualPos(vY, dt, lerpSpeed = 0.05) {
     if (this.#maxScrollY <= 0) return;

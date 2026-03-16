@@ -840,8 +840,7 @@ class Game {
       r.drawChumZones(
         this.#systems.chum,
         this.#systems.projector,
-        b.top,
-        b.bottom,
+        // ВИДАЛЕНО: b.top, b.bottom
       );
     }
 
@@ -850,7 +849,7 @@ class Game {
     }
 
     if (this.#systems.chum && typeof r.drawBoats === "function") {
-      r.drawBoats(this.#systems.chum, this.#systems.projector, b.top, b.bottom);
+      r.drawBoats(this.#systems.chum, this.#systems.projector); // ВИДАЛЕНО: b.top, b.bottom
 
       const boats = this.#systems.chum.getBoats();
       for (let i = 0; i < boats.length; i++) {
@@ -936,7 +935,7 @@ class Game {
       drop = (lineCfg.sinkDropPx || 120) * (1 - ease);
     }
 
-    // --- ВІДНОВЛЕНО: Захист від провисання волосіні під берег (зелену зону) ---
+    // --- Захист від провисання волосіні під берег (зелену зону) ---
     // 1. Знаходимо екранну координату низу зеленої зони (берега)
     const mapBottomScreenY = this.#systems.projector.virtualToScreen(0, vBot).y;
 
@@ -976,7 +975,13 @@ class Game {
       lineCfg,
     );
 
-    renderer.drawFloat(sPos, this.#float, CONFIG.float);
+    // --- ОНОВЛЕНО: Додано this.#systems.projector четвертим аргументом ---
+    renderer.drawFloat(
+      sPos,
+      this.#float,
+      CONFIG.float,
+      this.#systems.projector,
+    );
 
     if (state === "playing" && tMeter && fCond) {
       renderer.drawTensionBar(tMeter, CONFIG.tension, CONFIG.ui.indicators);
