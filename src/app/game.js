@@ -1118,7 +1118,7 @@ class Game {
           ) {
             state = "moving"; // ⏩ (рухається)
           } else if (activeBoat.state === "waiting") {
-            state = count > 0 ? "ready" : "moving"; // 🍞 (зупинився)
+            state = count > 0 ? "ready" : "empty"; // 🍞 (зупинився)
           }
         } else {
           // АВТО-РЕЖИМ
@@ -1187,8 +1187,12 @@ class Game {
               "carp_mix_basic",
             );
             activeBoat.remainingSections--;
-            if (activeBoat.remainingSections <= 0)
-              activeBoat.state = "returning";
+            if (activeBoat.remainingSections <= 0) {
+              const hasAI = CONFIG.chum.deliveryMethods.boat.hasAutoReturn;
+              if (hasAI) {
+                activeBoat.state = "returning";
+              }
+            }
           }
         } else {
           // Логіка АВТО-режиму: клік по 🍞 вмикає приціл для додавання точок у чергу!
