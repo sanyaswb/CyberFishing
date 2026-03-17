@@ -1,13 +1,5 @@
 class ChumZone {
-  constructor(
-    id,
-    x,
-    y,
-    baitConfig,
-    deployRealTimeMs,
-    locationSquash,
-    isDelivered = false,
-  ) {
+  constructor(id, x, y, baitConfig, deployRealTimeMs, isDelivered = false) {
     this.id = id;
     this.x = x;
     this.y = y;
@@ -20,14 +12,10 @@ class ChumZone {
 
     // Читаємо єдиний радіус
     this.baseRadius = baitConfig.radius || 150;
-
-    // Беремо перспективу з локації (або дефолтні значення для безпеки)
-    this.squashTop = locationSquash?.top ?? 0.15;
-    this.squashBottom = locationSquash?.bottom ?? 0.75;
   }
 
-  // ОСЬ ВІН, НАШ ЗАГУБЛЕНИЙ МЕТОД:
   updateState(realTimeNow, timeScale) {
+    // ... (Цей метод залишається без змін, він працює ідеально)
     if (!this.isDelivered) return 0;
 
     const realElapsedMs = realTimeNow - this.deployRealTimeMs;
@@ -57,7 +45,8 @@ class ChumZone {
     }
   }
 
-  getMultiplierAt(targetX, targetY, targetFishId, virtualTopY, virtualBottomY) {
+  // ЗАМІНА: Замість top/bottom отримуємо проектор
+  getMultiplierAt(targetX, targetY, targetFishId, projector) {
     if (this.isExpired || !this.isDelivered) return 1.0;
 
     if (
@@ -67,17 +56,13 @@ class ChumZone {
       return 1.0;
     }
 
-    // Рахуємо позицію по Y від 0 до 1
-    const distRatio = Math.max(
-      0,
-      Math.min(1.0, (this.y - virtualTopY) / (virtualBottomY - virtualTopY)),
-    );
+    // 1. Отримуємо нову тригонометричну перспективу
+    const perspective = projector.getPerspective(this.y);
 
-    // ДИНАМІЧНИЙ РАДІУС
-    const currentRadX = this.baseRadius;
-    const currentScaleY =
-      this.squashTop + (this.squashBottom - this.squashTop) * distRatio;
-    const currentRadY = this.baseRadius * currentScaleY;
+    // 2. ДИНАМІЧНИЙ РАДІУС (Точна копія логіки з рендерера)
+    // Масштабуємо фізичний радіус вдалині та сплющуємо його
+    const currentRadX = this.baseRadius * perspective.scale;
+    const currentRadY = currentRadX * perspective.squashY;
 
     const dx = targetX - this.x;
     const dy = targetY - this.y;
@@ -93,19 +78,25 @@ class ChumZone {
     return 1.0;
   }
 
-  checkOverlap(otherZone) {
+  // ЗАМІНА: Тепер враховує перспективу при накладанні
+  checkOverlap(otherZone, projector) {
+    const perspective = projector.getPerspective(this.y);
+
     const dx = this.x - otherZone.x;
-    const dy = this.y - otherZone.y;
+    // Нормалізуємо Y через новий squashY, перетворюючи еліпс назад у коло для перевірки
+    const dy = (this.y - otherZone.y) / perspective.squashY;
+
     const dist = Math.hypot(dx, dy);
 
-    // Замінили baseRadX на baseRadius
-    return dist < Math.max(this.baseRadius, otherZone.baseRadius);
-    // return dist < this.baseRadius + otherZone.baseRadius;
+    // Масштаб впливає на те, наскільки великою зона здається фізично
+    const effectiveRadius =
+      Math.max(this.baseRadius, otherZone.baseRadius) * perspective.scale;
+
+    return dist < effectiveRadius * 0.6;
   }
 }
 
 class ChumManager {
-  #locationId;
   #chumConfig;
   #zones = [];
   #boats = [];
@@ -113,19 +104,15 @@ class ChumManager {
   #locationMemoryKey;
   #memoryGrid = {};
   #boatEnergy = null;
-  #locationSquash;
+  #projector;
 
-  constructor(locationId, chumConfig, locationSquash) {
-    this.#locationId = locationId;
+  constructor(locationId, chumConfig, projector) {
     this.#chumConfig = chumConfig;
+    this.#projector = projector;
     this.#storageKey = `chum_active_${locationId}`;
     this.#locationMemoryKey = `chum_memory_${locationId}`;
     this.handUses = chumConfig.deliveryMethods.hand.maxUses || 7;
 
-    // 1. СПОЧАТКУ зберігаємо перспективу з конфігу
-    this.#locationSquash = locationSquash || { top: 0.15, bottom: 0.75 };
-
-    // 2. І ТІЛЬКИ ПОТІМ завантажуємо зони (тепер вони отримають правильні дані)
     this.loadFromStorage();
 
     document.addEventListener("config-updated", (e) =>
@@ -143,27 +130,9 @@ class ChumManager {
 
   // Метод для оновлення існуючих зон у реальному часі
   #onConfigUpdate({ path, value }) {
-    // 1. Якщо змінилася перспектива (perspectiveSquash)
-    if (path.includes("perspectiveSquash")) {
-      const prop = path[path.length - 1]; // Отримуємо "top" або "bottom"
-
-      if (prop === "top" || prop === "bottom") {
-        // Оновлюємо збережене значення в менеджері
-        this.#locationSquash[prop] = value;
-
-        // Проходимося по ВСІХ закинутих зонах і оновлюємо їх
-        for (const zone of this.#zones) {
-          if (prop === "top") zone.squashTop = value;
-          if (prop === "bottom") zone.squashBottom = value;
-        }
-      }
-    }
-
-    // 2. БОНУС: Якщо ви зміните 'radius' прикормки в DevTools,
-    // він теж миттєво оновиться на екрані!
+    // 2. Якщо ви зміните 'radius' прикормки в DevTools, він теж миттєво оновиться на екрані!
     if (path.includes("baits") && path.includes("radius")) {
-      const baitId = path[path.indexOf("baits") - 1]; // Отримуємо ID прикормки (напр. carp_mix_basic)
-
+      const baitId = path[path.indexOf("baits") - 1];
       for (const zone of this.#zones) {
         if (zone.baitId === baitId) {
           zone.baseRadius = value;
@@ -201,13 +170,13 @@ class ChumManager {
         const baitConfig = this.#chumConfig.baits[z.baitId];
         if (!baitConfig) return null;
 
+        // ЗМІНА: Прибрано this.#locationSquash
         return new ChumZone(
           z.id,
           z.x,
           z.y,
           baitConfig,
           z.deployRealTimeMs,
-          this.#locationSquash,
           z.isDelivered,
         );
       })
@@ -234,14 +203,11 @@ class ChumManager {
     CacheManager.set(this.#locationMemoryKey, this.#memoryGrid);
   }
 
-  deployBait(targetX, targetY, baitId, method, activeBoat = null) {
+  deployBait(targetX, targetY, baitId, activeBoat = null) {
     const baitConfig = this.#chumConfig.baits[baitId];
     if (!baitConfig) return null;
 
-    const zoneId = Date.now().toString() + Math.floor(Math.random() * 1000);
-
-    // ВИПРАВЛЕНО: Зона "доставлена" одразу, якщо кораблика немає в аргументах
-    // (це означає, що ми кинули рукою АБО натиснули кнопку скидання на вже приплившому кораблику)
+    const zoneId = `zone_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     const isDeliveredNow = activeBoat === null;
 
     const newZone = new ChumZone(
@@ -250,13 +216,13 @@ class ChumManager {
       targetY,
       baitConfig,
       Date.now(),
-      this.#locationSquash,
-      isDeliveredNow, // <--- Передаємо правильний статус
+      isDeliveredNow,
     );
 
-    const overlappingIndex = this.#zones.findIndex((z) =>
-      z.checkOverlap(newZone),
+    const overlappingIndex = this.#zones.findIndex(
+      (z) => z.isDelivered && z.checkOverlap(newZone, this.#projector),
     );
+
     if (overlappingIndex !== -1) {
       this.#zones[overlappingIndex] = newZone;
     } else {
@@ -308,14 +274,15 @@ class ChumManager {
 
       if (boat.isBaitDropped && boat.zoneId) {
         const zone = this.#zones.find((z) => z.id === boat.zoneId);
-        if (zone && !zone.isDelivered) {
+        if (zone) {
           zone.x = boat.pos.x;
           zone.y = boat.pos.y;
-
           zone.isDelivered = true;
           zone.deployRealTimeMs = Date.now();
           needsSave = true;
         }
+
+        boat.isBaitDropped = false;
         boat.zoneId = null;
       }
 
@@ -350,7 +317,7 @@ class ChumManager {
     }
   }
 
-  getMultiplier(floatX, floatY, fishId, virtualTopY, virtualBottomY) {
+  getMultiplier(floatX, floatY, fishId) {
     let activeMultiplier = 1.0;
 
     for (const zone of this.#zones) {
@@ -358,8 +325,7 @@ class ChumManager {
         floatX,
         floatY,
         fishId,
-        virtualTopY,
-        virtualBottomY,
+        this.#projector,
       );
       if (zoneMult > activeMultiplier) {
         activeMultiplier = zoneMult;
@@ -373,7 +339,7 @@ class ChumManager {
     return activeMultiplier + memoryBonus;
   }
 
-  getChumDataAt(floatX, floatY, vTop, vBottom) {
+  getChumDataAt(floatX, floatY) {
     let bestBonus = 1.0;
     let bestTargets = [];
 
@@ -384,8 +350,7 @@ class ChumManager {
         floatX,
         floatY,
         null,
-        vTop,
-        vBottom,
+        this.#projector,
       );
 
       if (zoneMult > bestBonus) {
@@ -399,28 +364,14 @@ class ChumManager {
     return { bonus: bestBonus, targets: bestTargets };
   }
 
-  getActiveChumTargets(floatX, floatY, virtualTopY, virtualBottomY) {
-    const bonus = this.getMultiplier(
-      floatX,
-      floatY,
-      null,
-      virtualTopY,
-      virtualBottomY,
-    );
+  getActiveChumTargets(floatX, floatY) {
+    const bonus = this.getMultiplier(floatX, floatY, null);
 
     if (bonus > 1.0) {
       for (const zone of this.#zones) {
         if (!zone.isDelivered) continue;
 
-        if (
-          zone.getMultiplierAt(
-            floatX,
-            floatY,
-            null,
-            virtualTopY,
-            virtualBottomY,
-          ) > 1.0
-        ) {
+        if (zone.getMultiplierAt(floatX, floatY, null, this.#projector) > 1.0) {
           const baitConfig = this.#chumConfig.baits[zone.baitId];
           if (baitConfig && baitConfig.targetFishes) {
             return baitConfig.targetFishes;
@@ -517,8 +468,6 @@ class BaitBoat {
 
     this.#updateEnergy(dtSec);
 
-    // --- ОНОВЛЕННЯ СЕНСОРІВ (раз на 150мс) ---
-    // Тепер це працює ЗАВЖДИ, навіть при дрейфі, тому вуса не "зависають"
     this.#sensorTimer -= dtSec;
     if (this.#sensorTimer <= 0 || !this.#cachedSensors) {
       this.#cachedSensors = this.#scanEnvironment(
@@ -529,24 +478,22 @@ class BaitBoat {
       this.#sensorTimer = this.#sensorInterval;
     }
 
-    // Перевірка на дрейф/очікування тепер ПІСЛЯ оновлення сенсорів
     if (this.state === "waiting" || this.state === "drifting") {
       this.#applyDrift(dtSec, checkPhysics, env);
+      this.#syncRayPositions();
       return;
     }
 
-    const targetInfo = this.#calculateTargetInfo();
+    this.#syncRayPositions();
 
-    // 1. ТЕПЕР РУЧНИЙ РЕЖИМ ТАКОЖ БАЧИТЬ СЕНСОРИ
+    const targetInfo = this.#calculateTargetInfo();
     const obstacles = this.#cachedSensors;
 
-    // 2. Плавне вимкнення двигуна при зіткненні (тільки ручний режим)
     if (isManual) {
       const targetAlignment =
         (targetInfo.dx / targetInfo.dist) * Math.cos(this.angle) +
         (targetInfo.dy / targetInfo.dist) * Math.sin(this.angle);
 
-      // Глушимо двигун ТІЛЬКИ якщо ми вперлися і намагаємося плисти прямо в стіну
       if (
         obstacles.isBumperHit &&
         targetAlignment > -0.2 &&
@@ -562,7 +509,6 @@ class BaitBoat {
           return;
         }
       } else {
-        // Якщо ми розвертаємось або від'їжджаємо - відновлюємо потужність
         this.engineThrottle = Math.min(1.0, this.engineThrottle + dtSec * 2.0);
       }
     } else {
@@ -580,6 +526,21 @@ class BaitBoat {
     this.#applyPhysics(steering, dtSec);
     this.#moveAndCollide(dtSec, checkPhysics, isManual);
     this.#checkShoreParking(isManual);
+  }
+
+  #syncRayPositions() {
+    if (!this.#lastScanData.lookDist) return;
+    const { lookDist, angles } = this.#lastScanData;
+
+    for (let i = 0; i < 3; i++) {
+      const ray = this.#sensorRays[i];
+      const checkAngle = this.angle + angles[i];
+
+      ray.startX = this.pos.x;
+      ray.startY = this.pos.y;
+      ray.endX = this.pos.x + Math.cos(checkAngle) * lookDist;
+      ray.endY = this.pos.y + Math.sin(checkAngle) * lookDist;
+    }
   }
 
   #updateEnergy(dtSec) {
@@ -859,20 +820,41 @@ class BaitBoat {
   }
 
   #checkArrival({ dist }, { isForwardBlocked }, isManual) {
-    const finishRadius =
-      this.state === "returning"
-        ? this.config.finishRadiusReturning || 30
-        : this.config.finishRadiusTarget || 10;
+    const cfg = this.config;
+    const targetRad = cfg.finishRadiusTarget || 10;
+    const finishRad =
+      this.state === "returning" ? cfg.finishRadiusReturning || 30 : targetRad;
+
+    const speed = Math.hypot(this.velocity.x, this.velocity.y);
+
+    // АВТОМАТИЧНИЙ ЗАХИСТ:
+    // 1. Влучили в радіус
+    // 2. АБО майже зупинилися дуже близько (інерція не дає допливти 2 пікселі)
+    // 3. АБО вперлися в берег поруч з ціллю (Smart Drop)
+    const isCloseEnough = dist < finishRad;
+    const isStalled = speed < 15 && dist < finishRad * 2.5;
     const isSmartDrop =
       !isManual && this.state === "deploying" && dist < 45 && isForwardBlocked;
 
-    if (dist < finishRadius || isSmartDrop) {
+    if (isCloseEnough || isStalled || isSmartDrop) {
       if (this.state === "deploying") {
         if (!isManual) {
-          if (this.zoneId !== null) this.isBaitDropped = true;
-          if (this.waypoints.length > 0 || this.zoneId === null) {
-            this.isBaitDropped = false;
+          // Сигнал менеджеру
+          if (this.zoneId && !this.isBaitDropped) {
+            this.isBaitDropped = true;
+            return true;
+          }
+
+          // Чекаємо підтвердження (Handshake)
+          if (this.isBaitDropped) return true;
+
+          // Йдемо далі
+          if (this.waypoints.length > 0) {
             this.#processNextWaypoint();
+            return true;
+          } else {
+            this.zoneId = null;
+            this.state = "returning";
           }
         } else {
           this.state = "waiting";

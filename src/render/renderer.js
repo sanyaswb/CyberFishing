@@ -179,8 +179,8 @@ class Renderer {
     }
   }
 
+  // Renderer.js -> drawChumZones
   drawChumZones(chumManager, projector) {
-    // Видалено virtualTopY, virtualBottomY
     const zones = chumManager.getZones();
 
     for (const zone of zones) {
@@ -188,25 +188,20 @@ class Renderer {
 
       const cfg = zone.baitConfig;
 
-      let opacity = 0;
-      if (zone.currentBonus > cfg.minBonus) {
+      // ВІЗУАЛЬНЕ ВИПРАВЛЕННЯ:
+      // Зона видима на 100%, поки діє бонус, і починає згасати тільки до minBonus
+      let opacity = 1.0;
+      if (zone.currentBonus < cfg.maxBonus) {
         opacity =
-          (zone.currentBonus - cfg.minBonus) /
-          Math.max(0.01, cfg.maxBonus - cfg.minBonus);
+          0.3 +
+          (0.7 * (zone.currentBonus - cfg.minBonus)) /
+            Math.max(0.01, cfg.maxBonus - cfg.minBonus);
       }
 
-      if (opacity <= 0) continue;
-
-      // --- ЄДИНА МАТЕМАТИЧНА ПЕРСПЕКТИВА ---
       const perspective = projector.getPerspective(zone.y);
-
       const centerScreen = projector.virtualToScreen(zone.x, zone.y);
-
-      // Радіус по X масштабується рівномірно (об'єкт зменшується вдалині)
       const rxScreen =
         zone.baseRadius * perspective.scale * projector.getScale();
-
-      // Радіус по Y додатково сплющується через кут зору (squashY)
       const ryScreen = rxScreen * perspective.squashY;
 
       this.#ctx.save();
@@ -221,10 +216,9 @@ class Renderer {
         Math.PI * 2,
       );
 
-      this.#ctx.fillStyle = `rgba(200, 255, 100, ${opacity * 0.25})`;
+      this.#ctx.fillStyle = `rgba(200, 255, 100, ${opacity * 0.2})`; // Трохи приглушили
       this.#ctx.fill();
-
-      this.#ctx.strokeStyle = `rgba(200, 255, 100, ${opacity * 0.6})`;
+      this.#ctx.strokeStyle = `rgba(200, 255, 100, ${opacity * 0.5})`;
       this.#ctx.lineWidth = 2;
       this.#ctx.stroke();
       this.#ctx.restore();

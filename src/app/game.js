@@ -649,14 +649,16 @@ class Game {
     const locId = "test";
     const locCfg = CONFIG.locations.map[locId];
 
+    const projectorInstance = new ViewportProjector(CONFIG.locations, locId);
+
     this.#systems = {
       renderer: new Renderer(this.#canvas),
-      projector: new ViewportProjector(CONFIG.locations, locId),
+      projector: projectorInstance,
       map: new LocationMap(locId, CONFIG.locations),
       env: new EnvironmentSystem(locCfg, CONFIG.debug?.initialTime ?? 12),
       input: new InputManager(this.#canvas, Number(CONFIG.ui?.rod?.x) || null),
       ui: new UIManager(CONFIG),
-      chum: new ChumManager(locId, CONFIG.chum, locCfg.perspectiveSquash),
+      chum: new ChumManager(locId, CONFIG.chum, projectorInstance),
       bite: new BiteSystem(CONFIG.spawns, CONFIG.float),
     };
 
@@ -1097,13 +1099,22 @@ class Game {
           activeBoat.state === "waiting" &&
           activeBoat.remainingSections > 0
         ) {
+          // Миттєве скидання прикормки під кораблик (без передачі самого кораблика)
           this.#systems.chum.deployBait(
             activeBoat.pos.x,
             activeBoat.pos.y,
             "carp_mix_basic",
-            "boat",
           );
+
           activeBoat.remainingSections--;
+
+          // АВТО-ПОВЕРНЕННЯ: Якщо заряди закінчились, відправляємо додому
+          if (activeBoat.remainingSections <= 0) {
+            activeBoat.state = "returning";
+            console.log(
+              "Останню прикормку скинуто. Кораблик повертається на базу.",
+            );
+          }
         }
       }
     }
@@ -1113,10 +1124,12 @@ class Game {
     this.isAimingChum = !this.isAimingChum;
 
     if (this.isAimingChum && CONFIG.chum.currentMethod === "boat") {
-      const rodPos = this.getRodVirtualPos(this.getDynamicBounds());
+      const bounds = this.getDynamicBounds();
+      const rodPos = this.getRodVirtualPos(bounds);
+
       this.activeBoat = this.#systems.chum.spawnIdleBoat(
         rodPos.x,
-        this.getDynamicBounds().bottom - 5,
+        bounds.bottom - 5,
       );
     } else if (!this.isAimingChum && this.activeBoat) {
       if (this.activeBoat.state === "idle") {
@@ -1192,7 +1205,7 @@ class Game {
 
     if (!cell) {
       this.markInvalidCast(input.clickPos);
-      input.clickPos = null; // Не забуваємо обнулити клік
+      input.clickPos = null;
       return;
     }
 
@@ -1202,40 +1215,34 @@ class Game {
 
       if (vPos.y >= throwLineY) {
         if (this.#systems.chum.useHandBait()) {
-          this.#systems.chum.deployBait(
-            vPos.x,
-            vPos.y,
-            "carp_mix_basic",
-            "hand",
-          );
-          this.toggleChumAim(); // Скинули - вимикаємо приціл (стара логіка)
+          this.#systems.chum.deployBait(vPos.x, vPos.y, "carp_mix_basic");
+          this.toggleChumAim();
         } else {
-          console.log("Прикормка в руці закінчилась!");
-          this.isAimingChum = false; // Просто вимикаємо приціл
+          this.isAimingChum = false;
         }
       } else {
-        console.log("Задалеко для кидка рукою!");
         this.markInvalidCast(input.clickPos);
       }
     } else if (method === "boat" && this.activeBoat) {
       const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
 
-      // Відправляємо кораблик (або скидаємо корм, якщо логіка в chumManager)
       this.#systems.chum.deployBait(
         vPos.x,
         vPos.y,
         "carp_mix_basic",
-        "boat",
         this.activeBoat,
       );
 
-      // Віднімаємо секцію при спавні ТІЛЬКИ в авто-режимі! (Як в старому коді)
       if (!isManual) {
         this.activeBoat.remainingSections--;
+        if (this.activeBoat.remainingSections <= 0) {
+          this.activeBoat = null;
+          this.isAimingChum = false;
+        }
+      } else {
+        this.activeBoat = null;
+        this.isAimingChum = false;
       }
-
-      this.activeBoat = null;
-      this.isAimingChum = false;
     }
 
     input.clickPos = null;
@@ -1302,7 +1309,6 @@ class Game {
               vPos.x,
               vPos.y,
               "carp_mix_basic",
-              "boat",
               activeBoat,
             );
             activeBoat.remainingSections--;
