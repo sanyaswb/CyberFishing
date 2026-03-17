@@ -1195,10 +1195,20 @@ class Game {
             }
           }
         } else {
-          // Логіка АВТО-режиму: клік по 🍞 вмикає приціл для додавання точок у чергу!
+          // Логіка АВТО-режиму: клік по 🍞 вмикає приціл для ДОДАВАННЯ точки
           if (activeBoat.state === "deploying" || activeBoat.state === "idle") {
-            if (activeBoat.remainingSections > 0) {
-              this.toggleChumAim();
+            // Рахуємо, скільки точок вже задано (поточна ціль + черга)
+            const reservedTargets =
+              (activeBoat.zoneId ? 1 : 0) +
+              (activeBoat.waypoints ? activeBoat.waypoints.length : 0);
+            const freeSlots = activeBoat.remainingSections - reservedTargets;
+
+            if (freeSlots > 0) {
+              this.toggleChumAim(); // Дозволяємо цілитися (кнопка стане 🚫)
+            } else {
+              console.log(
+                "Маршрут вже повністю заповнений! Чекайте на скидання.",
+              );
             }
           }
         }
@@ -1267,11 +1277,10 @@ class Game {
         this.activeBoat,
       );
 
-      if (!isManual) {
-        this.isAimingChum = false;
-      } else {
+      this.isAimingChum = false;
+
+      if (isManual) {
         this.activeBoat = null;
-        this.isAimingChum = false;
       }
     }
 
@@ -1329,21 +1338,26 @@ class Game {
           }
         } else {
           // АВТО-РЕЖИМ: Додавання точок "на льоту"
+
+          // РАХУЄМО ВІЛЬНІ СЛОТИ:
+          const reservedTargets =
+            (activeBoat.zoneId ? 1 : 0) +
+            (activeBoat.waypoints ? activeBoat.waypoints.length : 0);
+          const freeSlots = activeBoat.remainingSections - reservedTargets;
+
           if (
-            activeBoat.remainingSections > 0 &&
+            freeSlots > 0 && // Перевіряємо саме freeSlots!
             activeBoat.state !== "returning"
           ) {
             this.#systems.chum.deployBait(
               vPos.x,
               vPos.y,
               "carp_mix_basic",
-              activeBoat, // Передаємо човен, щоб зона чекала доставки
+              activeBoat,
             );
-
-            // ВИДАЛЕНО: activeBoat.remainingSections--;
-            // Тепер мінус відпрацює тільки у BaitBoat.#checkArrival, коли він туди допливе!
-
             clickHandled = true;
+          } else if (activeBoat.state !== "returning") {
+            console.log("Всі прикормки вже розплановані!");
           }
         }
       }
