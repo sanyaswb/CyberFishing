@@ -99,9 +99,9 @@ class GameState {
   }
   enter() {}
   exit() {}
-  handleInput(input) {}
-  update(dt, bounds, envData) {}
-  draw(renderer, bounds) {}
+  handleInput() {}
+  update() {}
+  draw() {}
 }
 
 class ScoutingState extends GameState {
@@ -153,6 +153,14 @@ class ScoutingState extends GameState {
       dt,
       0.03,
     );
+
+    if (!this.game.canPlayerCast()) {
+      if (this.game.depthUI.isActive) {
+        this.game.depthUI.hide();
+      }
+      return;
+    }
+
     const maxDepth = CONFIG.sinker.maxDepth || 8.0;
 
     if (!this.game.depthUI.isActive) {
@@ -1157,7 +1165,7 @@ class Game {
   // 2. Оновлений handleChumClick (Клік по кнопці UI)
   handleChumClick() {
     const method = CONFIG.chum.currentMethod;
-
+    console.log("--- DEBUG 2: handleChumClick викликано! Метод:", method);
     if (method === "hand") {
       if (this.#systems.chum.handUses > 0) this.toggleChumAim();
     } else if (method === "boat") {
@@ -1219,6 +1227,12 @@ class Game {
   // 3. toggleChumAim (Залишається без змін, він правильний)
   toggleChumAim() {
     this.isAimingChum = !this.isAimingChum;
+    this._uiClickLockTime = Date.now();
+
+    // ДОДАНО: Миттєво ховаємо шкалу глибини при увімкненні прицілу
+    if (this.isAimingChum) {
+      this.#depthUI.hide();
+    }
 
     if (this.isAimingChum && CONFIG.chum.currentMethod === "boat") {
       const bounds = this.getDynamicBounds();
@@ -1239,6 +1253,10 @@ class Game {
   // 4. Оновлений handleChumAiming (Клік по воді)
   handleChumAiming(input, bounds) {
     if (!input.clickPos) return;
+
+    if (this._uiClickLockTime && Date.now() - this._uiClickLockTime < 200) {
+      input.clickPos = null;
+    }
 
     const method = CONFIG.chum.currentMethod || "hand";
     const vPos = this.#systems.projector.screenToVirtual(
