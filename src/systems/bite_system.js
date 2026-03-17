@@ -1,5 +1,4 @@
 class BiteSystem {
-  #biteConfig;
   #fishDatabase;
   #tickRate;
   #timer;
@@ -7,7 +6,6 @@ class BiteSystem {
   #possibleBitesBuffer;
 
   constructor(biteConfig, floatConfig) {
-    this.#biteConfig = biteConfig;
     this.#fishDatabase = biteConfig.fishes;
     this.#tickRate = biteConfig.tickRateMs;
     this.#timer = 0;
@@ -25,9 +23,9 @@ class BiteSystem {
 
   #calculateFishChance(fish, envData, playerGear, isLiveQuery = false) {
     const dc = fish.depthConfig;
-    const hookDepth = isLiveQuery
-      ? Math.min(envData.hookDepth, envData.bottomDepth)
-      : envData.hookDepth;
+
+    // Оскільки envData.hookDepth вже обрізаний по дну в game.js, ми просто беремо його
+    const hookDepth = envData.hookDepth;
 
     if (playerGear.hookSize > fish.maxHookSize) return 0;
     if (hookDepth < dc.minDepth || hookDepth > dc.maxDepth) return 0;
@@ -36,8 +34,11 @@ class BiteSystem {
     if (baitMult === 0) return 0;
 
     let chance = fish.baseChance * baitMult;
+
+    // Застосовуємо час, день та ЗОНУ!
     chance *= fish.timeMultipliers[envData.timePhase] || 1.0;
     chance *= fish.dayMultipliers[envData.dayOfWeek] || 1.0;
+    chance *= envData.zoneBonus || 1.0;
 
     if (envData.chumBonus > 1.0 && envData.chumTargets?.includes(fish.id)) {
       chance *= envData.chumBonus;
@@ -48,8 +49,8 @@ class BiteSystem {
 
     chance *= envData.castSpamMultiplier ?? 1.0;
 
-    const depthRef = isLiveQuery ? envData.lineLength : envData.hookDepth;
-    if (depthRef > envData.bottomDepth) {
+    // ВИПРАВЛЕНО: Завжди дивимось на випущену ліску, щоб знати, чи лежить поплавок
+    if (envData.lineLength > envData.bottomDepth) {
       chance *= this.#overDepthPenaltyMult;
     }
 
@@ -148,7 +149,9 @@ class BiteSystem {
 
   #getBreakdown(fish, envData, playerGear) {
     const dc = fish.depthConfig;
-    const hookDepth = Math.min(envData.hookDepth, envData.bottomDepth);
+
+    // Беремо реальну глибину гачка (яка вже обрізана по дну в game.js)
+    const hookDepth = envData.hookDepth;
     let t = Math.max(
       0,
       Math.min(1, (hookDepth - dc.minDepth) / (dc.maxDepth - dc.minDepth)),
@@ -168,10 +171,16 @@ class BiteSystem {
         : 1.0
       ).toFixed(2),
       spam: (envData.castSpamMultiplier ?? 1.0).toFixed(2),
+
+      // ПЕРЕВІРКА НА ЛЕЖАЧИЙ ПОПЛАВОК (по випущеній лісці)
       overDepth: (envData.lineLength > envData.bottomDepth
         ? this.#overDepthPenaltyMult
         : 1.0
       ).toFixed(2),
+
+      // НОВІ ПАРАМЕТРИ
+      day: (fish.dayMultipliers[envData.dayOfWeek] || 1.0).toFixed(2),
+      zone: (envData.zoneBonus || 1.0).toFixed(2),
     };
   }
 }

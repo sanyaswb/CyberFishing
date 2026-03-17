@@ -805,7 +805,7 @@ class Game {
       this.#state.handleInput(input);
       this.#state.update(dt, bounds, {
         env: this.#systems.env.getPhysicsEnv(),
-        biteEnv: this.getEnvDataForBite(bounds),
+        biteEnv: this.getEnvDataForBite(),
       });
     }
 
@@ -1055,21 +1055,27 @@ class Game {
     return cell && cell.isCastable && !cell.hasCollision ? cell : null;
   }
 
-  getEnvDataForBite(bounds) {
+  getEnvDataForBite() {
     const pos = this.#float.getPosition();
     const env = this.#systems.env.getSnapshot();
     const cell = this.checkWater(pos.x, pos.y);
-    const chum = this.#systems.chum.getChumDataAt(
-      pos.x,
-      pos.y,
-      bounds.top,
-      bounds.bottom,
-    );
+    const chum = this.#systems.chum.getChumDataAt(pos.x, pos.y);
+    const bottomDepth = cell?.depth || 0;
 
     return {
-      hookDepth: Math.min(this.#float.getCurrentHookDepth(), cell?.depth || 0),
-      bottomDepth: cell?.depth || 0,
+      // 1. ПОВЕРНУЛИ Math.min, щоб гачок фізично зупинявся на дні
+      hookDepth: Math.min(this.#float.getCurrentHookDepth(), bottomDepth),
+      bottomDepth: bottomDepth,
+
+      // 2. ДОДАЛИ lineLength! Саме вона каже системі, що ліски випущено більше, ніж глибина дна (Лежачий поплавок)
+      lineLength: this.currentHookDepth,
+
       timePhase: env.phase,
+
+      // 3. ДОДАЛИ день тижня та бонус зони
+      dayOfWeek: new Date().getDay(),
+      zoneBonus: cell?.multiplier || cell?.bonus || 1.0,
+
       chumBonus: chum.bonus,
       chumTargets: chum.targets,
       isRaining: env.isRaining,
@@ -1337,15 +1343,14 @@ class Game {
     if (!CONFIG.debug?.overlay) return;
 
     const env = this.#systems.env.getSnapshot();
-    const b = this.getDynamicBounds();
     const pos = this.#float.getPosition();
-    const ed = this.getEnvDataForBite(b);
+    const ed = this.getEnvDataForBite();
 
     if (
       this.#systems.chum &&
-      typeof this.#systems.chum.getBonusAt === "function"
+      typeof this.#systems.chum.getChumDataAt === "function"
     ) {
-      const chumData = this.#systems.chum.getBonusAt(pos.x);
+      const chumData = this.#systems.chum.getChumDataAt(pos.x, pos.y);
       ed.chumBonus = chumData.bonus || 1.0;
       ed.chumTargets = chumData.targets || [];
     } else {
@@ -1370,8 +1375,8 @@ class Game {
         hookSize: CONFIG.hook.level,
         baitId: currentBait,
       }),
-      chumZones: this.#systems.chum?.getActiveZones
-        ? this.#systems.chum.getActiveZones()
+      chumZones: this.#systems.chum?.getZones
+        ? this.#systems.chum.getZones()
         : [],
     };
 
