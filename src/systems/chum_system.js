@@ -827,10 +827,6 @@ class BaitBoat {
 
     const speed = Math.hypot(this.velocity.x, this.velocity.y);
 
-    // АВТОМАТИЧНИЙ ЗАХИСТ:
-    // 1. Влучили в радіус
-    // 2. АБО майже зупинилися дуже близько (інерція не дає допливти 2 пікселі)
-    // 3. АБО вперлися в берег поруч з ціллю (Smart Drop)
     const isCloseEnough = dist < finishRad;
     const isStalled = speed < 15 && dist < finishRad * 2.5;
     const isSmartDrop =
@@ -839,16 +835,14 @@ class BaitBoat {
     if (isCloseEnough || isStalled || isSmartDrop) {
       if (this.state === "deploying") {
         if (!isManual) {
-          // Сигнал менеджеру
           if (this.zoneId && !this.isBaitDropped) {
             this.isBaitDropped = true;
+            this.remainingSections--;
             return true;
           }
 
-          // Чекаємо підтвердження (Handshake)
           if (this.isBaitDropped) return true;
 
-          // Йдемо далі
           if (this.waypoints.length > 0) {
             this.#processNextWaypoint();
             return true;

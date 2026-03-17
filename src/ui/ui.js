@@ -761,12 +761,7 @@ class ChumUI {
     if (state === "empty") {
       text = "🔘";
     } else if (state === "moving") {
-      // ВИПРАВЛЕНО: Якщо це ручний кораблик - просто показуємо рух без цифр
-      if (method === "boat" && isManual) {
-        text = "⏩";
-      } else {
-        text = `⏩(${count})`; // Для авто-режиму залишаємо цифру (чергу)
-      }
+      text = "⏩";
     } else if (state === "aiming") {
       text = "🚫";
     } else if (state === "ready") {

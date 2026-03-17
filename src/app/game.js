@@ -1084,13 +1084,82 @@ class Game {
     };
   }
 
+  // 1. Оновлений updateChumUI
+  updateChumUI() {
+    const method = CONFIG.chum.currentMethod;
+    const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
+    let state = "idle";
+    let count = 0;
+
+    if (method === "hand") {
+      count = this.#systems.chum.handUses;
+      if (count <= 0) state = "empty";
+      else if (this.isAimingChum) state = "aiming";
+      else state = "idle";
+    } else if (method === "boat") {
+      const boats = this.#systems.chum.getBoats();
+      const activeBoat = boats.length > 0 ? boats[0] : null;
+
+      if (!activeBoat) {
+        count = CONFIG.chum.deliveryMethods.boat.sections;
+        state = this.isAimingChum ? "aiming" : "idle";
+      } else {
+        count = activeBoat.remainingSections;
+
+        if (activeBoat.state === "idle") {
+          state = this.isAimingChum ? "aiming" : "idle";
+        } else if (activeBoat.state === "drifting") {
+          state = "empty";
+        } else if (isManual) {
+          // РУЧНИЙ РЕЖИМ
+          if (
+            activeBoat.state === "deploying" ||
+            activeBoat.state === "returning"
+          ) {
+            state = "moving"; // ⏩ (рухається)
+          } else if (activeBoat.state === "waiting") {
+            state = count > 0 ? "ready" : "moving"; // 🍞 (зупинився)
+          }
+        } else {
+          // АВТО-РЕЖИМ
+          if (activeBoat.state === "returning") {
+            state = "moving"; // ⏩ ТІЛЬКИ коли повертається на базу!
+          } else if (
+            activeBoat.state === "deploying" ||
+            activeBoat.state === "waiting"
+          ) {
+            state = this.isAimingChum ? "aiming" : "ready"; // 🚫 або 🍞(count) поки виконує місію
+          }
+        }
+      }
+    }
+
+    this.#chumUI.setState(state, method, count, isManual);
+
+    // АВТО-ВИМКНЕННЯ ПРИЦІЛУ
+    if (this.isAimingChum && method === "boat") {
+      const boats = this.#systems.chum.getBoats();
+      const activeBoat = boats.length > 0 ? boats[0] : null;
+      if (activeBoat) {
+        if (!isManual && activeBoat.state === "returning") {
+          this.isAimingChum = false; // Вимикаємо приціл, якщо авто-кораблик поплив додому
+        } else if (
+          isManual &&
+          activeBoat.state !== "idle" &&
+          activeBoat.state !== "waiting"
+        ) {
+          this.isAimingChum = false; // Вимикаємо приціл для ручного під час руху
+        }
+      }
+    }
+  }
+
+  // 2. Оновлений handleChumClick (Клік по кнопці UI)
   handleChumClick() {
     const method = CONFIG.chum.currentMethod;
 
     if (method === "hand") {
-      if (this.#systems.chum.handUses > 0) {
-        this.toggleChumAim();
-      }
+      if (this.#systems.chum.handUses > 0) this.toggleChumAim();
     } else if (method === "boat") {
       const boats = this.#systems.chum.getBoats();
 
@@ -1100,32 +1169,40 @@ class Game {
         const activeBoat = boats[0];
         const isManual = CONFIG.chum.deliveryMethods.boat.manualControl;
 
-        if (
-          isManual &&
-          activeBoat.state === "waiting" &&
-          activeBoat.remainingSections > 0
-        ) {
-          // Миттєве скидання прикормки під кораблик (без передачі самого кораблика)
-          this.#systems.chum.deployBait(
-            activeBoat.pos.x,
-            activeBoat.pos.y,
-            "carp_mix_basic",
-          );
+        // Якщо приціл увімкнено (кнопка 🚫) — натискання скасовує його
+        if (this.isAimingChum) {
+          this.toggleChumAim();
+          return;
+        }
 
-          activeBoat.remainingSections--;
-
-          // АВТО-ПОВЕРНЕННЯ: Якщо заряди закінчились, відправляємо додому
-          if (activeBoat.remainingSections <= 0) {
-            activeBoat.state = "returning";
-            console.log(
-              "Останню прикормку скинуто. Кораблик повертається на базу.",
+        if (isManual) {
+          // Логіка ручного скидання
+          if (
+            activeBoat.state === "waiting" &&
+            activeBoat.remainingSections > 0
+          ) {
+            this.#systems.chum.deployBait(
+              activeBoat.pos.x,
+              activeBoat.pos.y,
+              "carp_mix_basic",
             );
+            activeBoat.remainingSections--;
+            if (activeBoat.remainingSections <= 0)
+              activeBoat.state = "returning";
+          }
+        } else {
+          // Логіка АВТО-режиму: клік по 🍞 вмикає приціл для додавання точок у чергу!
+          if (activeBoat.state === "deploying" || activeBoat.state === "idle") {
+            if (activeBoat.remainingSections > 0) {
+              this.toggleChumAim();
+            }
           }
         }
       }
     }
   }
 
+  // 3. toggleChumAim (Залишається без змін, він правильний)
   toggleChumAim() {
     this.isAimingChum = !this.isAimingChum;
 
@@ -1145,60 +1222,7 @@ class Game {
     }
   }
 
-  updateChumUI() {
-    if (!this.#chumUI) return;
-
-    const method = CONFIG.chum.currentMethod;
-    const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
-    const boats = this.#systems.chum.getBoats();
-    const activeBoat = boats.length > 0 ? boats[0] : null;
-
-    if (this.#gameStateName === "playing") {
-      this.isAimingChum = false;
-      this.#chumUI.setState("disabled", method, 0, isManual);
-      return;
-    }
-
-    if (method === "hand") {
-      const uses = this.#systems.chum.handUses;
-      if (uses <= 0) {
-        this.#chumUI.setState("empty", method, 0, isManual);
-      } else if (this.isAimingChum) {
-        this.#chumUI.setState("aiming", method, uses, isManual);
-      } else {
-        this.#chumUI.setState("idle", method, uses, isManual);
-      }
-    } else if (method === "boat") {
-      if (!activeBoat) {
-        this.#chumUI.setState(
-          this.isAimingChum ? "aiming" : "idle",
-          "boat",
-          1,
-          isManual,
-        );
-      } else {
-        const sections = activeBoat.remainingSections || 0;
-        const hasEnergy = this.#systems.chum.getBoatEnergy() > 0;
-
-        if (activeBoat.state === "drifting" || !hasEnergy) {
-          this.#chumUI.setState("empty", "boat", 0, isManual);
-        } else if (
-          activeBoat.state === "deploying" ||
-          activeBoat.state === "returning"
-        ) {
-          this.#chumUI.setState("moving", "boat", sections, isManual);
-        } else if (activeBoat.state === "waiting") {
-          this.#chumUI.setState(
-            sections > 0 ? "ready" : "empty",
-            "boat",
-            sections,
-            isManual,
-          );
-        }
-      }
-    }
-  }
-
+  // 4. Оновлений handleChumAiming (Клік по воді)
   handleChumAiming(input, bounds) {
     if (!input.clickPos) return;
 
@@ -1240,11 +1264,7 @@ class Game {
       );
 
       if (!isManual) {
-        this.activeBoat.remainingSections--;
-        if (this.activeBoat.remainingSections <= 0) {
-          this.activeBoat = null;
-          this.isAimingChum = false;
-        }
+        this.isAimingChum = false;
       } else {
         this.activeBoat = null;
         this.isAimingChum = false;
@@ -1290,15 +1310,12 @@ class Game {
     }
     // 2. Якщо клікаємо кудись на карту, щоб задати ціль
     else if (activeBoat.state !== "drifting") {
-      // ДОДАНО: Перевіряємо, чи є вода (не колізія) у точці кліку!
       const cell = this.checkWater(vPos.x, vPos.y);
 
       if (!cell) {
-        // Якщо це земля/перешкода - малюємо хрестик і блокуємо дію
         this.markInvalidCast(input.clickPos);
-        clickHandled = true; // Поглинаємо клік, щоб вудка не закинулась
+        clickHandled = true;
       } else {
-        // Якщо це чиста вода - дозволяємо кораблику прийняти координати
         const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
 
         if (isManual) {
@@ -1307,6 +1324,7 @@ class Game {
             clickHandled = true;
           }
         } else {
+          // АВТО-РЕЖИМ: Додавання точок "на льоту"
           if (
             activeBoat.remainingSections > 0 &&
             activeBoat.state !== "returning"
@@ -1315,21 +1333,21 @@ class Game {
               vPos.x,
               vPos.y,
               "carp_mix_basic",
-              activeBoat,
+              activeBoat, // Передаємо човен, щоб зона чекала доставки
             );
-            activeBoat.remainingSections--;
+
+            // ВИДАЛЕНО: activeBoat.remainingSections--;
+            // Тепер мінус відпрацює тільки у BaitBoat.#checkArrival, коли він туди допливе!
+
             clickHandled = true;
           }
         }
       }
     }
 
-    // --- БРОНЕБІЙНИЙ ЗАХИСТ ВІД ВИПАДКОВИХ КЛІКІВ ---
     if (clickHandled) {
       input.clickPos = null;
     } else if (!this.canPlayerCast()) {
-      // Клік був повз кораблик, АЛЕ пульт керування все ще в руках (наприклад, не всі точки задані).
-      // "З'їдаємо" клік, щоб він гарантовано не провалився у стейти.
       console.log("Дія заблокована: спочатку задайте всі точки маршруту!");
       input.clickPos = null;
     }
