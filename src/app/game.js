@@ -1092,7 +1092,6 @@ class Game {
     };
   }
 
-  // 1. Оновлений updateChumUI
   updateChumUI() {
     const method = CONFIG.chum.currentMethod;
     const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
@@ -1162,7 +1161,6 @@ class Game {
     }
   }
 
-  // 2. Оновлений handleChumClick (Клік по кнопці UI)
   handleChumClick() {
     const method = CONFIG.chum.currentMethod;
     console.log("--- DEBUG 2: handleChumClick викликано! Метод:", method);
@@ -1224,7 +1222,6 @@ class Game {
     }
   }
 
-  // 3. toggleChumAim (Залишається без змін, він правильний)
   toggleChumAim() {
     this.isAimingChum = !this.isAimingChum;
     this._uiClickLockTime = Date.now();
@@ -1250,7 +1247,6 @@ class Game {
     }
   }
 
-  // 4. Оновлений handleChumAiming (Клік по воді)
   handleChumAiming(input, bounds) {
     if (!input.clickPos) return;
 

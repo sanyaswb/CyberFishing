@@ -425,6 +425,7 @@ class BaitBoat {
     this.avoidanceTargetAngle = 0;
     this.engineThrottle = 1.0;
     this.persistenceTimer = 0;
+    this.maneuverTimer = 0;
   }
 
   // Знайди і заміни гетер
@@ -464,6 +465,7 @@ class BaitBoat {
 
     const dtSec = dt * 0.001;
     this.persistenceTimer = Math.max(0, this.persistenceTimer - dtSec);
+    this.maneuverTimer = Math.max(0, this.maneuverTimer - dtSec);
     const isManual = this.config.manualControl;
 
     this.#updateEnergy(dtSec);
@@ -652,9 +654,11 @@ class BaitBoat {
 
     if (this.avoidanceTimer > 0) {
       this.avoidanceTimer -= dtSec;
+      const maneuverTime = this.config.maneuver?.maneuverTimeSec || 1.5;
 
       if (this.avoidanceTimer <= 0) {
         if (this.avoidanceState === "reversing") {
+          this.maneuverTimer = maneuverTime;
           if (!isManual) {
             const turnDir = sensors.obstacleWeights[1] ? 1 : -1;
             this.#setAvoidance(
@@ -663,7 +667,6 @@ class BaitBoat {
               this.angle + (Math.PI / 2) * turnDir,
             );
           } else {
-            // В ручному режимі після реверсу відразу віддаємо керування гравцю
             this.#setAvoidance("none", 0, 0);
           }
         } else {
@@ -674,6 +677,7 @@ class BaitBoat {
         !sensors.isForwardBlocked
       ) {
         if (this.avoidanceTimer <= 0.5) {
+          this.maneuverTimer = 1.5;
           if (!isManual) {
             const turnDir = sensors.obstacleWeights[1] ? 1 : -1;
             this.#setAvoidance(
@@ -682,7 +686,6 @@ class BaitBoat {
               this.angle + (Math.PI / 2) * turnDir,
             );
           } else {
-            // В ручному режимі перериваємо реверс, якщо вже достатньо місця
             this.#setAvoidance("none", 0, 0);
           }
         }
@@ -695,20 +698,20 @@ class BaitBoat {
 
     // ЛОГІКА УХИЛЯННЯ/РЕВЕРСУ ДЛЯ ОБОХ РЕЖИМІВ
     if (this.avoidanceState === "none") {
+      const reverseTime = this.config.maneuver?.reverseTimeSec || 1.2; // <--- ДОДАНО
+
       if (isManual) {
-        // РУЧНИЙ РЕЖИМ: Реверс спрацьовує ТІЛЬКИ якщо ми вперлися, але ціль ззаду (гравець хоче розвернутися)
         if (sensors.isBumperHit && !isGoingTowardsWall) {
-          this.#setAvoidance("reversing", 1.2, this.angle);
+          this.#setAvoidance("reversing", reverseTime, this.angle); // <--- ЗМІНЕНО
         }
       } else {
-        // АВТОПІЛОТ: Повний набір уникнення перешкод
         if (!isBlindZone) {
           const isStuck =
             Math.hypot(this.velocity.x, this.velocity.y) < 10 &&
             sensors.isForwardBlocked &&
             isGoingTowardsWall;
           if (sensors.isBumperHit || isStuck) {
-            this.#setAvoidance("reversing", 1.2, this.angle);
+            this.#setAvoidance("reversing", reverseTime, this.angle); // <--- ЗМІНЕНО
           } else if (sensors.isForwardBlocked && isGoingTowardsWall) {
             const turnDir = sensors.obstacleWeights[1] ? 1 : -1;
             this.#setAvoidance(
@@ -906,7 +909,8 @@ class BaitBoat {
         Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), maxTurn);
 
       if (isReversing) {
-        const reverseThrust = accel * dtSec * 0.8;
+        const reverseMult = this.config.maneuver?.reverseThrustMult || 0.8;
+        const reverseThrust = accel * dtSec * reverseMult; // <--- ЗМІНЕНО
         this.velocity.x -= noseX * reverseThrust;
         this.velocity.y -= noseY * reverseThrust;
       } else {
@@ -914,11 +918,16 @@ class BaitBoat {
           (steering.x / steeringMag) * noseX +
           (steering.y / steeringMag) * noseY;
 
-        // АНТИ-ГЛУХТІННЯ: Навіть якщо ціль ззаду, даємо 30% тяги для плавного розвороту
         const alignFactor = Math.max(0.3, alignment);
+
+        const maneuverThrust = this.config.maneuver?.maneuverThrustMult || 0.3;
+        const maneuverPenalty = this.maneuverTimer > 0 ? maneuverThrust : 1.0; // <--- ЗМІНЕНО
+
         const thrustMultiplier =
           steeringMag < 0.5 && alignment < 0.7 ? 0.1 : 1.0;
-        const forwardThrust = alignFactor * accel * dtSec * thrustMultiplier;
+
+        const forwardThrust =
+          alignFactor * accel * dtSec * thrustMultiplier * maneuverPenalty;
 
         this.velocity.x += noseX * forwardThrust;
         this.velocity.y += noseY * forwardThrust;
@@ -930,7 +939,6 @@ class BaitBoat {
     const forwardSpeed = this.velocity.x * noseX + this.velocity.y * noseY;
     let lateralSpeed = this.velocity.x * rightX + this.velocity.y * rightY;
 
-    // Зменшуємо бокове ковзання, робимо човен трохи стабільнішим
     lateralSpeed *= 0.05;
 
     this.velocity.x = noseX * forwardSpeed + rightX * lateralSpeed;
@@ -945,7 +953,12 @@ class BaitBoat {
     this.velocity.x *= 0.97;
     this.velocity.y *= 0.97;
 
-    const maxSpeed = this.stats.speedPxPerSec;
+    const maneuverSpeed = this.config.maneuver?.maneuverSpeedMult || 0.4;
+    const maxSpeed =
+      this.maneuverTimer > 0
+        ? this.stats.speedPxPerSec * maneuverSpeed // <--- ЗМІНЕНО
+        : this.stats.speedPxPerSec;
+
     const vMag = Math.hypot(this.velocity.x, this.velocity.y);
     if (vMag > maxSpeed) {
       this.velocity.x = (this.velocity.x / vMag) * maxSpeed;
