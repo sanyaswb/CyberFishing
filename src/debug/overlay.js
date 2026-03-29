@@ -59,14 +59,21 @@ class EchoModule extends OverlayModule {
 
   render(d) {
     let html = this.formatHeader("📡 ЕХОЛОТ", "#00ff80");
-    html += `<div style="margin-bottom: 4px;">Стан: <span style="color: #00ccff; text-transform: uppercase;">${d.gameState}</span></div>`;
+    const stateText = d.isBoatSonar ? "СКАНУВАННЯ (КОРАБЛИК)" : d.gameState;
 
-    if (d.gameState !== "scouting") {
-      html += `<div style="margin-bottom: 4px;">
-        Гачок: <span style="color: #ffaa00;">${d.hookDepth ? d.hookDepth.toFixed(2) : 0} м</span> / 
+    html += `<div style="margin-bottom: 4px;">Стан: <span style="color: #00ccff; text-transform: uppercase;">${stateText}</span></div>`;
+
+    if (d.gameState !== "scouting" || d.isBoatSonar) {
+      html += `<div style="margin-bottom: 4px;">`;
+      if (d.isBoatSonar) {
+        html += `Дно під корабликом: <span style="color: #ffaa00;">${d.bottomDepth ? d.bottomDepth.toFixed(2) : 0} м</span>`;
+      } else {
+        html += `Гачок: <span style="color: #ffaa00;">${d.hookDepth ? d.hookDepth.toFixed(2) : 0} м</span> / 
         Дно: <span style="color: #ffaa00;">${d.bottomDepth ? d.bottomDepth.toFixed(2) : 0} м</span> / 
-        Ліска: <span style="color: #00ccff;">${d.lineLength ? d.lineLength.toFixed(2) : 0} м</span>
-      </div>`;
+        Ліска: <span style="color: #00ccff;">${d.lineLength ? d.lineLength.toFixed(2) : 0} м</span>`;
+      }
+      html += `</div>`;
+
       html += `<div style="margin-bottom: 4px;">Наживка: <span style="color: #b066ff;">${d.bait || "---"}</span></div>`;
       html += `<div style="margin-bottom: 8px;">Фаза: <span style="color: #ffff00;">${d.phase || "---"}</span></div>`;
 

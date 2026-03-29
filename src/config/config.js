@@ -477,6 +477,7 @@ const CONFIG = {
         maxUses: 7,
       },
       boat: {
+        hasSonar: true,
         showSensors: false,
         manualControl: false,
         type: "boat",

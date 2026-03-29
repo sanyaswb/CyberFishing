@@ -1430,6 +1430,37 @@ class Game {
         : [],
     };
 
+    const boats = this.#systems.chum?.getBoats() || [];
+    const activeBoat = boats[0];
+    const boatHasSonar = CONFIG.chum?.deliveryMethods?.boat?.hasSonar;
+
+    if (activeBoat && boatHasSonar && this.#gameStateName === "scouting") {
+      const boatCell = this.checkWater(activeBoat.pos.x, activeBoat.pos.y);
+      const boatChum = this.#systems.chum.getChumDataAt(
+        activeBoat.pos.x,
+        activeBoat.pos.y,
+      );
+
+      detail.isBoatSonar = true;
+      detail.floatX = Math.round(activeBoat.pos.x);
+      detail.floatY = Math.round(activeBoat.pos.y);
+      detail.bottomDepth = boatCell?.depth || 0;
+
+      const boatEd = {
+        ...ed,
+        bottomDepth: detail.bottomDepth,
+        hookDepth: detail.bottomDepth,
+        zoneBonus: boatCell?.multiplier || boatCell?.bonus || 1.0,
+        chumBonus: boatChum.bonus || 1.0,
+        chumTargets: boatChum.targets || [],
+      };
+
+      detail.liveChances = this.#systems.bite.getLiveChances(boatEd, {
+        hookSize: CONFIG.hook.level,
+        baitId: currentBait,
+      });
+    }
+
     if (this.#state && typeof this.#state.getDebugData === "function") {
       Object.assign(detail, this.#state.getDebugData());
     }
