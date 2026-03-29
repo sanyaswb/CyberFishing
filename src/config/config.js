@@ -591,6 +591,7 @@ const CONFIG = {
     playerForceMultiplier: 0.017,
     playerSteeringMultiplier: 1.5, // Mechanical advantage of rod for X-axis steering
     edgePullPenalty: 0.5, // 0.5 означає, що на краю екрана гравець втратить 50% сили
+    distanceXMultiplier: [0.3, 1.0],
   },
 
   tension: {

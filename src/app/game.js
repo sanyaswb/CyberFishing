@@ -226,7 +226,6 @@ class PlayingState extends GameState {
       CONFIG.stamina.mechanics,
     );
 
-    // --- ПОВЕРНУТО: Дебаг-логи та подія ---
     console.log(
       `%c🎣 КЛЮНУВ: ${fishData.name}!`,
       "color: #00ff00; font-size: 16px; font-weight: bold;",
@@ -250,7 +249,6 @@ class PlayingState extends GameState {
     const roll = Math.random() * 100;
     const success = roll <= chance;
 
-    // --- ПОВЕРНУТО: Відправка події з результатами шансу ---
     document.dispatchEvent(
       new CustomEvent("netCatchRoll", {
         detail: {
@@ -334,6 +332,7 @@ class PlayingState extends GameState {
         rodPos,
         screenOffset,
         CONFIG.physics,
+        bounds,
       );
       this.game.float.applyForce(
         pF.clone().multiplyScalar(CONFIG.physics.playerForceMultiplier),
@@ -355,6 +354,7 @@ class PlayingState extends GameState {
         rodPos,
         screenOffset,
         CONFIG.physics,
+        bounds,
       ).y * CONFIG.physics.playerForceMultiplier,
     );
     const fMag =
@@ -401,8 +401,8 @@ class PlayingState extends GameState {
   }
 
   exit() {
-    this.game.holdUI.update(null); // Ховаємо кружечки утримання
-    this.game.systems.ui.hideNetButton(); // Ховаємо кнопку підсаки
+    this.game.holdUI.update(null);
+    this.game.systems.ui.hideNetButton();
   }
 
   draw(renderer, bounds) {
@@ -420,10 +420,10 @@ class PlayingState extends GameState {
     const fs = this.#fishingSystem;
     const sc = this.#staminaController;
     const floatPos = this.game.float.getPosition();
-    const rodPos = this.game.getRodVirtualPos(this.game.getDynamicBounds());
+    const bounds = this.game.getDynamicBounds();
+    const rodPos = this.game.getRodVirtualPos(bounds);
     const screenOffset = this.game.getScreenOffsetRatio(floatPos);
 
-    // Розраховуємо МАКСИМАЛЬНО МОЖЛИВУ силу гравця для оверлею
     const maxP = this.#fishingSystem.calculatePlayerForce(
       { x: 0, y: 1 },
       floatPos.x,
@@ -431,12 +431,22 @@ class PlayingState extends GameState {
       rodPos,
       screenOffset,
       CONFIG.physics,
+      bounds,
     );
+
+    const xRange = CONFIG.physics?.distanceXMultiplier || [1.0, 1.0];
+    const distRatio = Math.max(
+      0,
+      Math.min(1.0, (floatPos.y - bounds.top) / (bounds.bottom - bounds.top)),
+    );
+    const depthScaleX = xRange[0] + distRatio * (xRange[1] - xRange[0]);
+
     const steerP =
       (CONFIG.rod.level * CONFIG.rod.basePower +
         CONFIG.reel.level * CONFIG.reel.basePower) *
       CONFIG.physics.playerSteeringMultiplier *
-      CONFIG.physics.playerForceMultiplier;
+      CONFIG.physics.playerForceMultiplier *
+      depthScaleX;
 
     return {
       playerForceY: Math.abs(this.#forces.pY || 0),
@@ -444,7 +454,6 @@ class PlayingState extends GameState {
       fishForceY: Math.abs(this.#forces.fY || 0),
       fishForceX: Math.abs(this.#forces.fX || 0),
 
-      // ДОДАНО: Максимальні ліміти для блоку "СИЛА ГРАВЦЯ"
       playerMaxPowerY: Math.abs(maxP.y * CONFIG.physics.playerForceMultiplier),
       playerMaxPowerX: steerP,
 

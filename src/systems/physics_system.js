@@ -157,6 +157,7 @@ class FishingSystem {
     rodVirtualPos,
     screenOffsetRatio,
     physicsConfig,
+    bounds,
   ) {
     const basePower = this.#rod.getPower() + this.#reel.getPower();
     const totalPower = basePower * this.#buffs.getTotalMultiplier();
@@ -168,21 +169,28 @@ class FishingSystem {
 
     const effectivePower = totalPower * penaltyMultiplier;
 
-    // Оновлюємо існуючий вектор замість створення нового
     this.#pullDirScratch
       .set(rodVirtualPos.x - floatX, rodVirtualPos.y - floatY)
       .normalize();
 
-    // Скидаємо та розраховуємо результат у #playerForceResult
     this.#playerForceResult.set(0, 0);
     this.#playerForceResult.x =
       this.#pullDirScratch.x * inputDirection.y * effectivePower;
     this.#playerForceResult.y =
       this.#pullDirScratch.y * inputDirection.y * effectivePower;
 
-    // Додаємо steering (кермування)
+    const distRatio = Math.max(
+      0,
+      Math.min(1.0, (floatY - bounds.top) / (bounds.bottom - bounds.top)),
+    );
+    const xRange = physicsConfig.distanceXMultiplier || [1.0, 1.0];
+    const depthScaleX = xRange[0] + distRatio * (xRange[1] - xRange[0]);
+
     this.#playerForceResult.x +=
-      inputDirection.x * totalPower * physicsConfig.playerSteeringMultiplier;
+      inputDirection.x *
+      totalPower *
+      physicsConfig.playerSteeringMultiplier *
+      depthScaleX;
 
     return this.#playerForceResult;
   }
@@ -318,6 +326,18 @@ class FishingSystem {
     }
 
     this.#fishForceResult.x = finalBehavior.moveX * basePower + escapeForceX;
+
+    const distRatio = Math.max(
+      0,
+      Math.min(1.0, (floatY - bounds.top) / (bounds.bottom - bounds.top)),
+    );
+    const xRange =
+      typeof CONFIG !== "undefined" && CONFIG.physics?.distanceXMultiplier
+        ? CONFIG.physics.distanceXMultiplier
+        : [1.0, 1.0];
+    const depthScaleX = xRange[0] + distRatio * (xRange[1] - xRange[0]);
+
+    this.#fishForceResult.x *= depthScaleX;
 
     return this.#fishForceResult;
   }
