@@ -14,14 +14,39 @@ class Equipment {
 
 class Rod extends Equipment {
   #compensation;
+  #type;
+  #maxDistance;
+  #hasReel;
 
-  constructor(level, power, compensation = 0) {
+  constructor(
+    level,
+    power,
+    compensation = 0,
+    type = "float_match",
+    maxDistance = Infinity,
+    hasReel = true,
+  ) {
     super(level, power);
     this.#compensation = compensation;
+    this.#type = type;
+    this.#maxDistance = maxDistance;
+    this.#hasReel = hasReel;
   }
 
   getCompensation() {
     return this.#compensation;
+  }
+
+  getType() {
+    return this.#type;
+  }
+
+  getMaxDistance() {
+    return this.#maxDistance;
+  }
+
+  hasReel() {
+    return this.#hasReel;
   }
 }
 

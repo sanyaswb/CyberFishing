@@ -1,7 +1,7 @@
 const CONFIG = {
   canvas: {
     id: "gameCanvas",
-    backgroundColor: "#0f171e", // Цей колір потрібен класу Renderer
+    backgroundColor: "#0f171e",
   },
 
   input: {
@@ -411,9 +411,13 @@ const CONFIG = {
   },
 
   rod: {
+    name: "Іржава Лозина",
+    type: "float_pole",
     level: 5,
     basePower: 1.0,
     compensation: 0.8,
+    maxDistance: 400,
+    hasReel: false,
   },
 
   reel: {

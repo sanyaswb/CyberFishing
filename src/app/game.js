@@ -114,11 +114,8 @@ class ScoutingState extends GameState {
   }
 
   handleInput(input) {
-    // ДОДАНО: Перевіряємо, чи є зараз на воді активний кораблик, який пливе
     const isBoatMoving = this.game.systems.chum.isBoatMoving();
 
-    // ЗМІНЕНО: Додана умова !isBoatMoving
-    // Якщо кораблик рухається, ми ігноруємо свайпи екрану (panDelta)
     if (!isBoatMoving && (input.panDeltaX || input.panDeltaY)) {
       const scale = this.game.systems.projector.getScale();
       this.game.systems.projector.pan(
@@ -134,7 +131,17 @@ class ScoutingState extends GameState {
       );
       const cell = this.game.checkWater(vPos.x, vPos.y);
 
+      const bounds = this.game.getDynamicBounds();
+      const rodPos = this.game.getRodVirtualPos(bounds);
+      const castDist = Math.hypot(vPos.x - rodPos.x, vPos.y - rodPos.y);
+      const maxDist = CONFIG.rod?.maxDistance ?? Infinity;
+
       if (cell && this.game.canPlayerCast()) {
+        if (castDist > maxDist) {
+          this.game.markInvalidCast(input.clickPos);
+          return;
+        }
+
         if (this.game.castManager.canCast()) {
           this.game.castManager.registerCast(performance.now());
           this.game.castLine(vPos.x, vPos.y, cell.depth);
@@ -186,15 +193,29 @@ class PlayingState extends GameState {
   #startTime = 0;
   #forces = { pX: 0, pY: 0, fX: 0, fY: 0 };
 
+  // ДОДАНО: Зберігаємо поточну снасть для правильного виведення в Debug оверлей
+  #rod;
+  #reel;
+
   enter() {
     this.#startTime = performance.now();
     const fishData = this.data.fish;
-    const rod = new Rod(CONFIG.rod.level, CONFIG.rod.basePower);
-    const reel = new Reel(
-      CONFIG.reel.level,
-      CONFIG.reel.basePower,
-      CONFIG.reel.hold,
+
+    // 1. Створюємо вудку з усіма новими параметрами конфігу
+    this.#rod = new Rod(
+      CONFIG.rod.level,
+      CONFIG.rod.basePower,
+      CONFIG.rod.compensation,
+      CONFIG.rod.type,
+      CONFIG.rod.maxDistance,
+      CONFIG.rod.hasReel !== false, // Якщо параметр не вказано, вважаємо, що котушка є (true)
     );
+
+    // 2. ЛОГІКА КОТУШКИ: Якщо вудка махова (false), створюємо "пустишку"
+    this.#reel = this.#rod.hasReel()
+      ? new Reel(CONFIG.reel.level, CONFIG.reel.basePower, CONFIG.reel.hold)
+      : new Reel(0, 0, null); // 0 сили, 0 рівня, немає механіки Hold
+
     const hook = new Hook(
       CONFIG.hook.level,
       CONFIG.hook.weight,
@@ -207,22 +228,25 @@ class PlayingState extends GameState {
       fishData.physics,
     );
 
-    this.#fishingSystem = new FishingSystem(rod, reel, fish);
+    this.#fishingSystem = new FishingSystem(this.#rod, this.#reel, fish);
+
     this.#tensionMeter = new TensionMeter(
       CONFIG.rod.level,
-      CONFIG.reel.level,
+      this.#rod.hasReel() ? CONFIG.reel.level : 0, // Махова вудка не отримує бонус міцності ліски від котушки
       hook,
       CONFIG.tension,
     );
+
     this.#fishCondition = new FishCondition(
       fishData.level,
       fishData.weight,
       CONFIG.stamina.fish,
     );
+
     this.#staminaController = new StaminaController(
       this.#fishCondition,
       fish,
-      rod.getPower() + reel.getPower(),
+      this.#rod.getPower() + this.#reel.getPower(),
       CONFIG.stamina.mechanics,
     );
 
@@ -231,6 +255,8 @@ class PlayingState extends GameState {
       "color: #00ff00; font-size: 16px; font-weight: bold;",
     );
     console.table({
+      "Тип Вудки": this.#rod.getType(),
+      "Наявність Котушки": this.#rod.hasReel() ? "Є" : "Немає (Махова)",
       "Згенерована Вага": fishData.weight.toFixed(3) + " кг",
       "Рівень (Складність)": fishData.level,
       "Базовий Опір": fishData.resistance.toFixed(2),
@@ -268,6 +294,8 @@ class PlayingState extends GameState {
     const isHold = this.#fishingSystem.isHoldActive();
     const swipeThreshold = CONFIG.reel?.hold?.swipeThresholdPx || 100;
 
+    // Механіки Hold та Pump автоматично блокуються системою,
+    // оскільки dummy котушка повертає hasHold: false
     if (this.#fishingSystem.getHoldUIState()?.hasHold) {
       if (input.toggleHold || input.swipeDeltaY > swipeThreshold) {
         isHold
@@ -441,9 +469,9 @@ class PlayingState extends GameState {
     );
     const depthScaleX = xRange[0] + distRatio * (xRange[1] - xRange[0]);
 
+    // ВИПРАВЛЕНО: Тепер беремо реальну силу котушки з інстансу this.#reel
     const steerP =
-      (CONFIG.rod.level * CONFIG.rod.basePower +
-        CONFIG.reel.level * CONFIG.reel.basePower) *
+      (this.#rod.getPower() + this.#reel.getPower()) *
       CONFIG.physics.playerSteeringMultiplier *
       CONFIG.physics.playerForceMultiplier *
       depthScaleX;
