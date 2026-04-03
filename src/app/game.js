@@ -574,21 +574,20 @@ class WaitingState extends GameState {
 }
 
 class BitingState extends GameState {
-  #feederAudioTemplate; // Шаблон для клонування звуку
+  #feederAudioTemplate;
   #lastStepId = -1;
   #ringQueue = [];
   #stepTimeElapsed = 0;
 
-  enter(data) {
-    if (super.enter) super.enter(data);
-    this.data = data;
+  enter() {
+    if (super.enter) super.enter();
+
     this.#lastStepId = -1;
     this.#ringQueue = [];
     this.#stepTimeElapsed = 0;
 
     const eq = CONFIG.player?.equipment;
     if (eq?.rod?.type === "feeder" && CONFIG.ui?.audio?.feederBite) {
-      // Створюємо шаблон. З нього ми будемо робити копії для накладання звуку
       this.#feederAudioTemplate = new Audio(CONFIG.ui.audio.feederBite);
     } else {
       this.#feederAudioTemplate = null;
@@ -596,9 +595,6 @@ class BitingState extends GameState {
   }
 
   exit() {
-    // Ми очищаємо чергу, щоб нові звуки не запускалися,
-    // АЛЕ ті звуки, що вже грають, ми не обриваємо (не робимо pause).
-    // Вони плавно дограють до кінця, що імітує підсікання вудилища.
     this.#ringQueue = [];
   }
 
@@ -631,14 +627,11 @@ class BitingState extends GameState {
     }
 
     if (this.#feederAudioTemplate) {
-      // Отримуємо жорсткі дані прямо з фізики поплавця
       const stepInfo = this.game.float.getBiteStepInfo?.();
 
-      // Якщо почалася нова ітерація клювання (новий фізичний ривок)
       if (stepInfo && stepInfo.id !== this.#lastStepId) {
         this.#lastStepId = stepInfo.id;
 
-        // Ми реагуємо тільки на реальні ривки, а не на тихі паузи між ними
         if (stepInfo.isAction) {
           this.#scheduleRings(stepInfo);
         }
@@ -659,21 +652,17 @@ class BitingState extends GameState {
     };
 
     if (!stepInfo.isGuaranteed) {
-      // НЕГАРАНТОВАНА (Жовта): Грає 1 раз на 1 ітерацію, гучність 0.4
       this.#ringQueue.push({
         startAt: 0,
         volume: cfg.volumeNormal,
       });
     } else {
-      // ГАРАНТОВАНА (Червона): Б'ємо анімацію на кілька дзвонів
       const minRings = cfg.guaranteedRings[0];
       const maxRings = cfg.guaranteedRings[1];
       const ringCount = Math.floor(
         minRings + Math.random() * (maxRings - minRings + 1),
       );
 
-      // Чим довша ітерація, тим більша затримка між ударами.
-      // Чим коротша - тим частіше накладатимуться звуки!
       const interval = stepInfo.duration / ringCount;
 
       for (let i = 0; i < ringCount; i++) {
@@ -690,7 +679,6 @@ class BitingState extends GameState {
 
     this.#stepTimeElapsed += dt;
 
-    // Перевіряємо, чи не настав час для одного АБО ДЕКІЛЬКОХ звуків у черзі
     while (
       this.#ringQueue.length > 0 &&
       this.#stepTimeElapsed >= this.#ringQueue[0].startAt
@@ -701,12 +689,9 @@ class BitingState extends GameState {
   }
 
   #playSound(volume) {
-    // Робимо клон аудіофайлу! Це дозволяє кільком звукам грати ОДНОЧАСНО і накладатися.
     const soundClone = this.#feederAudioTemplate.cloneNode();
     soundClone.volume = volume;
     soundClone.play().catch(() => {});
-
-    // Після закінчення програвання браузер сам видалить цей клон з пам'яті
   }
 
   draw(renderer, bounds) {
