@@ -206,6 +206,8 @@ class FloatEntity {
   #windTimer = 0;
   #windFluctuationTimer = 0;
 
+  #stepId = 0;
+
   constructor(x, y, floatConfig) {
     this.#position = new Vector2(x, y);
     this.#velocity = new Vector2(0, 0);
@@ -464,11 +466,38 @@ class FloatEntity {
   isGuaranteedBite() {
     return this.#isGuaranteed;
   }
+
   isHooked() {
     return this.#isHooked;
   }
+
   isBiting() {
     return this.#isBiting;
+  }
+
+  getBiteStepInfo() {
+    if (!this.#isBiting) return null;
+
+    // Шукаємо, чи залишилися ще фізичні рухи в черзі (щоб визначити абсолютний кінець)
+    const hasMoreActions = this.#sequenceQueue.some(
+      (s) => s.angle !== 0 || s.scaleY !== 1.0 || s.startMove,
+    );
+    const isLastIter = this.#currentSequenceCount >= this.#targetSequenceCount;
+    const isLastAction = isLastIter && !hasMoreActions;
+
+    // Чи цей крок є фізичним рухом, чи просто паузою між ітераціями
+    const isAction =
+      this.#targetAnimState?.angle !== 0 ||
+      this.#targetAnimState?.scaleY !== 1.0 ||
+      this.#biteMoveTimer > 0;
+
+    return {
+      id: this.#stepId,
+      isGuaranteed: this.#isGuaranteed,
+      duration: this.#animDuration,
+      isAction: isAction,
+      isLastAction: isLastAction,
+    };
   }
 
   hook() {
@@ -752,6 +781,8 @@ class FloatEntity {
       this.#currentBiteMoveVelocity.y = anim.moveVelY;
       this.#biteMoveTimer = anim.moveTime;
     }
+
+    this.#stepId++;
   }
 
   #easeInOutQuad(t) {

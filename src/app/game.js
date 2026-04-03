@@ -574,31 +574,32 @@ class WaitingState extends GameState {
 }
 
 class BitingState extends GameState {
-  #feederAudio;
-  #lastAudioPhase = "none";
-  #nextRingTime = 0;
+  #feederAudioTemplate; // Шаблон для клонування звуку
+  #lastStepId = -1;
+  #ringQueue = [];
+  #stepTimeElapsed = 0;
 
-  enter() {
-    if (super.enter) super.enter();
-
-    this.#lastAudioPhase = "none";
-    this.#nextRingTime = 0;
+  enter(data) {
+    if (super.enter) super.enter(data);
+    this.data = data;
+    this.#lastStepId = -1;
+    this.#ringQueue = [];
+    this.#stepTimeElapsed = 0;
 
     const eq = CONFIG.player?.equipment;
     if (eq?.rod?.type === "feeder" && CONFIG.ui?.audio?.feederBite) {
-      this.#feederAudio = new Audio(CONFIG.ui.audio.feederBite);
-      this.#feederAudio.loop = false;
+      // Створюємо шаблон. З нього ми будемо робити копії для накладання звуку
+      this.#feederAudioTemplate = new Audio(CONFIG.ui.audio.feederBite);
     } else {
-      this.#feederAudio = null;
+      this.#feederAudioTemplate = null;
     }
   }
 
   exit() {
-    if (this.#feederAudio) {
-      this.#feederAudio.pause();
-      this.#feederAudio.currentTime = 0;
-      this.#feederAudio = null;
-    }
+    // Ми очищаємо чергу, щоб нові звуки не запускалися,
+    // АЛЕ ті звуки, що вже грають, ми не обриваємо (не робимо pause).
+    // Вони плавно дограють до кінця, що імітує підсікання вудилища.
+    this.#ringQueue = [];
   }
 
   handleInput(input) {
@@ -624,46 +625,88 @@ class BitingState extends GameState {
       this.game.checkWater(vx, vy),
     );
 
-    const isBiting = this.game.float.isBiting();
-
-    if (!isBiting) {
+    if (!this.game.float.isBiting()) {
       this.game.setState("waiting");
       return;
     }
 
-    if (this.#feederAudio) {
-      const visualState = this.game.float.getVisualState();
-      let currentPhase = "none";
+    if (this.#feederAudioTemplate) {
+      // Отримуємо жорсткі дані прямо з фізики поплавця
+      const stepInfo = this.game.float.getBiteStepInfo?.();
 
-      if (visualState.color === "#ff0000") currentPhase = "red";
-      else if (visualState.color === "#ffff00") currentPhase = "yellow";
+      // Якщо почалася нова ітерація клювання (новий фізичний ривок)
+      if (stepInfo && stepInfo.id !== this.#lastStepId) {
+        this.#lastStepId = stepInfo.id;
 
-      if (this.#lastAudioPhase !== currentPhase) {
-        this.#feederAudio.pause();
-        this.#lastAudioPhase = currentPhase;
+        // Ми реагуємо тільки на реальні ривки, а не на тихі паузи між ними
+        if (stepInfo.isAction) {
+          this.#scheduleRings(stepInfo);
+        }
       }
 
-      const now = performance.now();
+      this.#processRingQueue(dt);
+    }
+  }
 
-      if (currentPhase === "red") {
-        if (this.#feederAudio.paused) {
-          this.#feederAudio.currentTime = 0;
-          this.#feederAudio.volume = 1.0;
-          this.#feederAudio.loop = true;
-          this.#feederAudio.play().catch(() => {});
-        }
-      } else if (currentPhase === "yellow") {
-        if (now > this.#nextRingTime) {
-          this.#feederAudio.pause();
-          this.#feederAudio.currentTime = 0;
-          this.#feederAudio.volume = 0.4;
-          this.#feederAudio.loop = false;
-          this.#feederAudio.play().catch(() => {});
+  #scheduleRings(stepInfo) {
+    this.#ringQueue = [];
+    this.#stepTimeElapsed = 0;
 
-          this.#nextRingTime = now + 800 + Math.random() * 1200;
-        }
+    const cfg = CONFIG.ui?.audio?.feederConfig || {
+      volumeNormal: 0.4,
+      volumeGuaranteed: 1.0,
+      guaranteedRings: [2, 3],
+    };
+
+    if (!stepInfo.isGuaranteed) {
+      // НЕГАРАНТОВАНА (Жовта): Грає 1 раз на 1 ітерацію, гучність 0.4
+      this.#ringQueue.push({
+        startAt: 0,
+        volume: cfg.volumeNormal,
+      });
+    } else {
+      // ГАРАНТОВАНА (Червона): Б'ємо анімацію на кілька дзвонів
+      const minRings = cfg.guaranteedRings[0];
+      const maxRings = cfg.guaranteedRings[1];
+      const ringCount = Math.floor(
+        minRings + Math.random() * (maxRings - minRings + 1),
+      );
+
+      // Чим довша ітерація, тим більша затримка між ударами.
+      // Чим коротша - тим частіше накладатимуться звуки!
+      const interval = stepInfo.duration / ringCount;
+
+      for (let i = 0; i < ringCount; i++) {
+        this.#ringQueue.push({
+          startAt: i * interval,
+          volume: cfg.volumeGuaranteed,
+        });
       }
     }
+  }
+
+  #processRingQueue(dt) {
+    if (this.#ringQueue.length === 0) return;
+
+    this.#stepTimeElapsed += dt;
+
+    // Перевіряємо, чи не настав час для одного АБО ДЕКІЛЬКОХ звуків у черзі
+    while (
+      this.#ringQueue.length > 0 &&
+      this.#stepTimeElapsed >= this.#ringQueue[0].startAt
+    ) {
+      const currentRing = this.#ringQueue.shift();
+      this.#playSound(currentRing.volume);
+    }
+  }
+
+  #playSound(volume) {
+    // Робимо клон аудіофайлу! Це дозволяє кільком звукам грати ОДНОЧАСНО і накладатися.
+    const soundClone = this.#feederAudioTemplate.cloneNode();
+    soundClone.volume = volume;
+    soundClone.play().catch(() => {});
+
+    // Після закінчення програвання браузер сам видалить цей клон з пам'яті
   }
 
   draw(renderer, bounds) {
