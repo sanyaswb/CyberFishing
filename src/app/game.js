@@ -132,7 +132,9 @@ class ScoutingState extends GameState {
       const cell = this.game.checkWater(vPos.x, vPos.y);
       const bounds = this.game.getDynamicBounds();
 
-      let maxDist = CONFIG.player?.equipment?.rod?.maxDistance ?? Infinity;
+      let rawDist = CONFIG.player?.equipment?.rod?.maxDistance;
+      let maxDist = rawDist === "max" || rawDist == null ? Infinity : rawDist;
+
       if (maxDist !== Infinity) {
         maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
       }
@@ -194,16 +196,19 @@ class ScoutingState extends GameState {
 
   draw(renderer, bounds) {
     if (!this.game.isAimingChum) {
-      let maxDist = CONFIG.player?.equipment?.rod?.maxDistance ?? Infinity;
+      if (CONFIG.locations?.showAimingZone !== false) {
+        let rawDist = CONFIG.player?.equipment?.rod?.maxDistance;
+        let maxDist = rawDist === "max" || rawDist == null ? Infinity : rawDist;
 
-      if (maxDist !== Infinity) {
-        maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
-        renderer.drawAimingZone(
-          this.game.systems.projector,
-          bounds.bottom,
-          maxDist,
-          "rod",
-        );
+        if (maxDist !== Infinity) {
+          maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
+          renderer.drawAimingZone(
+            this.game.systems.projector,
+            bounds.bottom,
+            maxDist,
+            "rod",
+          );
+        }
       }
     }
   }
@@ -1022,12 +1027,14 @@ class Game {
     }
 
     if (this.isAimingChum && CONFIG.chum.currentMethod === "hand") {
-      r.drawAimingZone(
-        this.#systems.projector,
-        b.bottom,
-        CONFIG.locations.map["test"]?.chumCastDistance || 800,
-        "chum",
-      );
+      if (CONFIG.locations?.showAimingZone !== false) {
+        r.drawAimingZone(
+          this.#systems.projector,
+          b.bottom,
+          CONFIG.locations.map["test"]?.chumCastDistance || 800,
+          "chum",
+        );
+      }
     }
 
     if (this.invalidCastMarker) {

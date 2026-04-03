@@ -41,7 +41,7 @@ const CONFIG = {
         level: 4,
         basePower: 1.5,
         compensation: 0.6,
-        maxDistance: 700,
+        maxDistance: 400,
         hasReel: true,
       },
       reel: {
@@ -98,6 +98,7 @@ const CONFIG = {
     showChumZones: true,
     showCatchZone: true, // Відображення синьої зони
     showNetZone: true, // Відображення зеленої зони
+    showAimingZone: true, // Відображення зони закидання
 
     debugOpacity: 1.0,
     baseResolution: { width: 2560, height: 1440 },
