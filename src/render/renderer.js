@@ -224,33 +224,74 @@ class Renderer {
     }
   }
 
-  drawChumAiming(projector, virtualBottomY, maxDistanceVirtual) {
-    // 1. Рахуємо координату лінії у віртуальному світі
-    const virtualLineY = virtualBottomY - maxDistanceVirtual;
+  // drawChumAiming(projector, virtualBottomY, maxDistanceVirtual) {
+  //   // 1. Рахуємо координату лінії у віртуальному світі
+  //   const virtualLineY = virtualBottomY - maxDistanceVirtual;
 
-    // 2. Переводимо цю координату в екранні пікселі
+  //   // 2. Переводимо цю координату в екранні пікселі
+  //   const screenPos = projector.virtualToScreen(0, virtualLineY);
+  //   const lineScreenY = screenPos.y;
+
+  //   // 3. Знаходимо екранну координату берега для заливки
+  //   const screenBottomPos = projector.virtualToScreen(0, virtualBottomY);
+  //   const fillHeight = screenBottomPos.y - lineScreenY;
+
+  //   this.#ctx.save();
+  //   this.#ctx.beginPath();
+
+  //   // Малюємо пунктирну лінію
+  //   this.#ctx.moveTo(0, lineScreenY);
+  //   this.#ctx.lineTo(this.#canvas.width, lineScreenY);
+
+  //   this.#ctx.strokeStyle = "rgba(255, 170, 0, 0.8)";
+  //   this.#ctx.lineWidth = 2;
+  //   this.#ctx.setLineDash([15, 10]);
+  //   this.#ctx.stroke();
+
+  //   // Робимо заливку
+  //   if (fillHeight > 0) {
+  //     this.#ctx.fillStyle = "rgba(255, 170, 0, 0.05)";
+  //     this.#ctx.fillRect(0, lineScreenY, this.#canvas.width, fillHeight);
+  //   }
+
+  //   this.#ctx.restore();
+  // }
+
+  drawAimingZone(projector, virtualBottomY, maxDist, type = "chum") {
+    if (maxDist === Infinity) return;
+
+    // Рахуємо координату лінії у віртуальному світі
+    const virtualLineY = virtualBottomY - maxDist;
+
+    // Переводимо у екранні пікселі
     const screenPos = projector.virtualToScreen(0, virtualLineY);
     const lineScreenY = screenPos.y;
 
-    // 3. Знаходимо екранну координату берега для заливки
+    // Знаходимо екранну координату берега для заливки
     const screenBottomPos = projector.virtualToScreen(0, virtualBottomY);
     const fillHeight = screenBottomPos.y - lineScreenY;
 
     this.#ctx.save();
     this.#ctx.beginPath();
 
-    // Малюємо пунктирну лінію
+    // Малюємо пунктирну лінію через увесь екран
     this.#ctx.moveTo(0, lineScreenY);
     this.#ctx.lineTo(this.#canvas.width, lineScreenY);
 
-    this.#ctx.strokeStyle = "rgba(255, 170, 0, 0.8)";
+    if (type === "chum") {
+      this.#ctx.strokeStyle = "rgba(255, 170, 0, 0.8)";
+      this.#ctx.fillStyle = "rgba(255, 170, 0, 0.05)";
+    } else {
+      this.#ctx.strokeStyle = "rgba(0, 204, 255, 0.6)";
+      this.#ctx.fillStyle = "rgba(0, 204, 255, 0.05)";
+    }
+
     this.#ctx.lineWidth = 2;
     this.#ctx.setLineDash([15, 10]);
     this.#ctx.stroke();
 
     // Робимо заливку
     if (fillHeight > 0) {
-      this.#ctx.fillStyle = "rgba(255, 170, 0, 0.05)";
       this.#ctx.fillRect(0, lineScreenY, this.#canvas.width, fillHeight);
     }
 

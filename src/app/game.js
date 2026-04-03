@@ -130,14 +130,21 @@ class ScoutingState extends GameState {
         input.clickPos.y,
       );
       const cell = this.game.checkWater(vPos.x, vPos.y);
-
       const bounds = this.game.getDynamicBounds();
-      const rodPos = this.game.getRodVirtualPos(bounds);
-      const castDist = Math.hypot(vPos.x - rodPos.x, vPos.y - rodPos.y);
-      const maxDist = CONFIG.player?.equipment?.rod?.maxDistance ?? Infinity;
+
+      let maxDist = CONFIG.player?.equipment?.rod?.maxDistance ?? Infinity;
+      if (maxDist !== Infinity) {
+        maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
+      }
+
+      let isInside = true;
+      if (maxDist !== Infinity) {
+        const virtualLineY = bounds.bottom - maxDist;
+        isInside = vPos.y >= virtualLineY;
+      }
 
       if (cell && this.game.canPlayerCast()) {
-        if (castDist > maxDist) {
+        if (!isInside) {
           this.game.markInvalidCast(input.clickPos);
           return;
         }
@@ -181,6 +188,22 @@ class ScoutingState extends GameState {
     } else {
       if (typeof this.game.depthUI.updateMax === "function") {
         this.game.depthUI.updateMax(maxDepth);
+      }
+    }
+  }
+
+  draw(renderer, bounds) {
+    if (!this.game.isAimingChum) {
+      let maxDist = CONFIG.player?.equipment?.rod?.maxDistance ?? Infinity;
+
+      if (maxDist !== Infinity) {
+        maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
+        renderer.drawAimingZone(
+          this.game.systems.projector,
+          bounds.bottom,
+          maxDist,
+          "rod",
+        );
       }
     }
   }
@@ -999,10 +1022,11 @@ class Game {
     }
 
     if (this.isAimingChum && CONFIG.chum.currentMethod === "hand") {
-      r.drawChumAiming(
+      r.drawAimingZone(
         this.#systems.projector,
         b.bottom,
         CONFIG.locations.map["test"]?.chumCastDistance || 800,
+        "chum",
       );
     }
 
@@ -1014,18 +1038,27 @@ class Game {
     this.#state.draw(r, b);
   }
 
-  castLine(vx, vy, depth) {
+  castLine(vx, vy, cellDepth) {
     const rodPos = this.getRodVirtualPos(this.getDynamicBounds());
     const dist = Math.hypot(vx - rodPos.x, vy - rodPos.y);
     const maxDist = 2000;
 
     this.castDistanceRatio = Math.min(1, dist / maxDist);
     this.castStartTime = performance.now();
+
+    const eq = CONFIG.player?.equipment;
+    const isFeeder = eq?.rod?.type === "feeder";
+
+    // Якщо це фідер, жорстко встановлюємо глибину гачка на глибину дна
+    if (isFeeder) {
+      this.currentHookDepth = cellDepth;
+    }
+
     this.#float.cast(
       vx,
       vy,
       this.currentHookDepth,
-      this.currentHookDepth > depth,
+      this.currentHookDepth > cellDepth,
       CONFIG.sinker,
       this.castDistanceRatio,
     );
@@ -1413,7 +1446,7 @@ class Game {
 
     if (method === "hand") {
       const maxDist = CONFIG.locations.map["test"]?.chumCastDistance || 800;
-      const throwLineY = bounds.bottom - maxDist;
+      const throwLineY = bounds.bottom - maxDist; // ПРОСТА ПЕРЕВІРКА ПО Y
 
       if (vPos.y >= throwLineY) {
         if (this.#systems.chum.useHandBait()) {
