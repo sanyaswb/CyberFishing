@@ -18,9 +18,17 @@ document.addEventListener("debug-fish-hooked", (e) => {
     "color: #00ff80; font-size: 16px; font-weight: bold;",
   );
 
+  // --- ОНОВЛЕНО: Читаємо екіпірування з нового конфігу ---
+  const eq = CONFIG.player?.equipment || {};
+  const rod = eq.rod || { level: 1, basePower: 1, compensation: 0 };
+  const hasReel = rod.hasReel !== false;
+  const reel = hasReel
+    ? eq.reel || { level: 0, basePower: 0 }
+    : { level: 0, basePower: 0, hold: null };
+
   // Базові параметри гравця (статичні)
-  const rPower = CONFIG.rod.level * CONFIG.rod.basePower;
-  const rlPower = CONFIG.reel.level * CONFIG.reel.basePower;
+  const rPower = rod.level * rod.basePower;
+  const rlPower = reel.level * reel.basePower;
   const pPower = rPower + rlPower;
 
   // БАЗОВІ ПАРАМЕТРИ РИБИ (ДИНАМІЧНІ!)
@@ -89,8 +97,8 @@ document.addEventListener("debug-fish-hooked", (e) => {
       "%c--- ДЕТАЛЬНИЙ РОЗРАХУНОК СИЛ ---",
       "color: #00ccff; font-weight: bold;",
     );
-    const rodStr = `(${CONFIG.rod.level} * ${CONFIG.rod.basePower.toFixed(1)})`;
-    const reelStr = `(${CONFIG.reel.level} * ${CONFIG.reel.basePower.toFixed(1)})`;
+    const rodStr = `(${rod.level} * ${rod.basePower.toFixed(1)})`;
+    const reelStr = `(${reel.level} * ${reel.basePower.toFixed(1)})`;
     console.log(
       `%c🎣 Гравець: ${rodStr} + ${reelStr} = ${pPower.toFixed(1)} (Базова сила гравця)`,
       "color: #e6e6e6;",
@@ -132,18 +140,17 @@ document.addEventListener("debug-fish-hooked", (e) => {
       "color: #00ff80;",
     );
 
-    // ДОДАНО: Розрахунок сили Утримання (Блоку)
     // ==========================================
-    const holdLvl = CONFIG.reel?.hold?.activeLevel || 0;
-    if (holdLvl > 0) {
-      const holdStats = CONFIG.reel.hold.levels[holdLvl];
+    const holdLvl = reel.hold?.activeLevel || 0;
+    if (holdLvl > 0 && reel.hold?.levels) {
+      const holdStats = reel.hold.levels[holdLvl];
       const totalHoldForceBase =
-        CONFIG.reel.level * CONFIG.reel.basePower + holdStats.holdPower;
+        reel.level * reel.basePower + holdStats.holdPower;
       const totalHoldForceScaled =
         totalHoldForceBase * CONFIG.physics.playerForceMultiplier;
 
       console.log(
-        `%c🛑 Сила Утримання (Базова): (${CONFIG.reel.level} * ${CONFIG.reel.basePower.toFixed(1)}) + ${holdStats.holdPower} = ${totalHoldForceBase.toFixed(1)}`,
+        `%c🛑 Сила Утримання (Базова): (${reel.level} * ${reel.basePower.toFixed(1)}) + ${holdStats.holdPower} = ${totalHoldForceBase.toFixed(1)}`,
         "color: #ff0080; font-weight: bold;",
       );
       console.log(
@@ -230,7 +237,7 @@ document.addEventListener("debug-fish-hooked", (e) => {
       "color: #ffaa00; font-size: 14px; font-weight: bold;",
     );
 
-    const rodComp = CONFIG.rod.compensation || 0;
+    const rodComp = rod.compensation || 0;
     const maxPenalty = CONFIG.physics.edgePullPenalty || 0.0;
     console.log(
       `%cВудочка компенсує: ${rodComp * 100}% штрафу. Глобальний макс. штраф: ${maxPenalty * 100}%`,
@@ -363,17 +370,15 @@ document.addEventListener("debug-fish-hooked", (e) => {
       "color: #00ffff; font-size: 14px; font-weight: bold;",
     );
 
-    // --- 1. АНАЛІЗ БОРОТЬБИ ЗІ СТАМІНОЮ ТА MASTERY ---
     const activePullDps = maxDps * 0.5;
     const restRegenEps = CONFIG.stamina.mechanics.baseRegenRate * 0.6;
     const netDps = activePullDps * pullUptime - restRegenEps * (1 - pullUptime);
     const phase1RealTime = netDps > 0 ? maxStamina / netDps : Infinity;
     const phase2RealTime = exhaustionTime / pullUptime;
 
-    // ДОДАНО: Розрахунок змінних Mastery перед таблицею!
     const masteryRatio = CONFIG.stamina.mechanics.masteryTimeRatio ?? 0.5;
     const masteryHoldSec = exhaustionTime * masteryRatio;
-    const totalMasterySec = masteryHoldSec * 2; // Утримання + Здавлювання
+    const totalMasterySec = masteryHoldSec * 2;
 
     if (netDps <= 0) {
       console.log(
@@ -410,7 +415,6 @@ document.addEventListener("debug-fish-hooked", (e) => {
       },
     });
 
-    // --- 2. ПРОГНОЗ ФІЗИЧНОГО ВИТЯГУВАННЯ (СПРОЩЕНО) ---
     const debuffsCfg = CONFIG.stamina.mechanics.debuffs || {};
     const masteryPowerMult =
       CONFIG.stamina.mechanics.masteryPowerMultiplier ?? 0.2;
@@ -421,7 +425,6 @@ document.addEventListener("debug-fish-hooked", (e) => {
     const isExhaustedPossible = playerPullForceBase > finalFishPullForce;
     const isMasteredPossible = playerPullForceBase > masteredFishPullForce;
 
-    // Аналіз рятівних дебафів (які впливають на фізичну силу тяги)
     const swimForce = finalFishPullForce * (debuffsCfg.swimPullMult ?? 1.0);
     const dashForce = finalFishPullForce * (debuffsCfg.dashPullMult ?? 1.0);
 

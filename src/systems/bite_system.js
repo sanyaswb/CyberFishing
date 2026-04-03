@@ -23,19 +23,25 @@ class BiteSystem {
 
   #calculateFishChance(fish, envData, playerGear, isLiveQuery = false) {
     const dc = fish.depthConfig;
-
-    // Оскільки envData.hookDepth вже обрізаний по дну в game.js, ми просто беремо його
     const hookDepth = envData.hookDepth;
 
     if (playerGear.hookSize > fish.maxHookSize) return 0;
     if (hookDepth < dc.minDepth || hookDepth > dc.maxDepth) return 0;
 
-    const baitMult = fish.baitMultipliers[playerGear.baitId] || 0;
-    if (baitMult === 0) return 0;
+    const baitsToTest = Array.isArray(playerGear.baits)
+      ? playerGear.baits
+      : [playerGear.baitId];
 
-    let chance = fish.baseChance * baitMult;
+    let maxBaitMult = 0;
+    for (let i = 0; i < baitsToTest.length; i++) {
+      const mult = fish.baitMultipliers[baitsToTest[i]] || 0;
+      if (mult > maxBaitMult) maxBaitMult = mult;
+    }
 
-    // Застосовуємо час, день та ЗОНУ!
+    if (maxBaitMult === 0) return 0;
+
+    let chance = fish.baseChance * maxBaitMult;
+
     chance *= fish.timeMultipliers[envData.timePhase] || 1.0;
     chance *= fish.dayMultipliers[envData.dayOfWeek] || 1.0;
     chance *= envData.zoneBonus || 1.0;
@@ -49,7 +55,6 @@ class BiteSystem {
 
     chance *= envData.castSpamMultiplier ?? 1.0;
 
-    // ВИПРАВЛЕНО: Завжди дивимось на випущену ліску, щоб знати, чи лежить поплавок
     if (envData.lineLength > envData.bottomDepth) {
       chance *= this.#overDepthPenaltyMult;
     }
@@ -149,17 +154,24 @@ class BiteSystem {
 
   #getBreakdown(fish, envData, playerGear) {
     const dc = fish.depthConfig;
-
-    // Беремо реальну глибину гачка (яка вже обрізана по дну в game.js)
     const hookDepth = envData.hookDepth;
     let t = Math.max(
       0,
       Math.min(1, (hookDepth - dc.minDepth) / (dc.maxDepth - dc.minDepth)),
     );
 
+    const baitsToTest = Array.isArray(playerGear.baits)
+      ? playerGear.baits
+      : [playerGear.baitId];
+    let maxBaitMult = 0;
+    for (let i = 0; i < baitsToTest.length; i++) {
+      const mult = fish.baitMultipliers[baitsToTest[i]] || 0;
+      if (mult > maxBaitMult) maxBaitMult = mult;
+    }
+
     return {
       base: fish.baseChance.toFixed(3),
-      bait: (fish.baitMultipliers[playerGear.baitId] || 0).toFixed(2),
+      bait: maxBaitMult.toFixed(2),
       time: (fish.timeMultipliers[envData.timePhase] || 1.0).toFixed(2),
       depth: this.#lerp(1.0, dc.chanceMultAtMaxDepth, t).toFixed(2),
       weather: (
@@ -171,14 +183,10 @@ class BiteSystem {
         : 1.0
       ).toFixed(2),
       spam: (envData.castSpamMultiplier ?? 1.0).toFixed(2),
-
-      // ПЕРЕВІРКА НА ЛЕЖАЧИЙ ПОПЛАВОК (по випущеній лісці)
       overDepth: (envData.lineLength > envData.bottomDepth
         ? this.#overDepthPenaltyMult
         : 1.0
       ).toFixed(2),
-
-      // НОВІ ПАРАМЕТРИ
       day: (fish.dayMultipliers[envData.dayOfWeek] || 1.0).toFixed(2),
       zone: (envData.zoneBonus || 1.0).toFixed(2),
     };

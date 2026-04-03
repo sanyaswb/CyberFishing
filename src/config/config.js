@@ -33,6 +33,60 @@ const CONFIG = {
     },
   },
 
+  player: {
+    equipment: {
+      rod: {
+        name: "Річковий Мародер",
+        type: "feeder",
+        level: 4,
+        basePower: 1.5,
+        compensation: 0.6,
+        maxDistance: 700,
+        hasReel: true,
+      },
+      reel: {
+        level: 4,
+        basePower: 1.0,
+        pumpLevel: 5,
+        pumpPowerPerLevel: 10,
+        hold: {
+          activeLevel: 3,
+          swipeThresholdPx: 100,
+          manualCooldownMs: 500,
+          levels: {
+            1: {
+              charges: 1,
+              restoreTimeMs: 5000,
+              holdPower: 1,
+              tensionMultiplier: 1.0,
+            },
+            2: {
+              charges: 2,
+              restoreTimeMs: 4000,
+              holdPower: 2,
+              tensionMultiplier: 1.0,
+            },
+            3: {
+              charges: 3,
+              restoreTimeMs: 3000,
+              holdPower: 3,
+              tensionMultiplier: 1.0,
+            },
+          },
+        },
+      },
+      hook: {
+        level: 5,
+        weight: 4,
+        quality: 1,
+      },
+      baits: ["oil_worm", "bread"],
+      feeder: {
+        chumId: "carp_mix_basic",
+      },
+    },
+  },
+
   locations: {
     debugVisuals: true, // Головний вимикач (якщо false - взагалі нічого не малюється)
     debugZones: true, // Показувати кольорові квадрати (зелені, червоні)
@@ -410,52 +464,58 @@ const CONFIG = {
     direction: { x: 1, y: 0.2 },
   },
 
-  rod: {
-    name: "Іржава Лозина",
-    type: "float_pole",
-    level: 5,
-    basePower: 1.0,
-    compensation: 0.8,
-    maxDistance: 400,
-    hasReel: false,
-  },
+  // rod: {
+  //   name: "Іржава Лозина",
+  //   type: "float_pole",
+  //   level: 5,
+  //   basePower: 1.0,
+  //   compensation: 0.8,
+  //   maxDistance: 400,
+  //   hasReel: false,
+  // },
 
-  reel: {
-    level: 4, // СТАРИЙ ПАРАМЕТР (залишається для старої логіки)
-    basePower: 1.0, // СТАРИЙ ПАРАМЕТР (залишається для старої логіки)
-    pumpLevel: 5,
-    pumpPowerPerLevel: 10, // Скільки відсотків натягу знімає 1 рівень підтяжки
+  // reel: {
+  //   level: 4, // СТАРИЙ ПАРАМЕТР (залишається для старої логіки)
+  //   basePower: 1.0, // СТАРИЙ ПАРАМЕТР (залишається для старої логіки)
+  //   pumpLevel: 5,
+  //   pumpPowerPerLevel: 10, // Скільки відсотків натягу знімає 1 рівень підтяжки
 
-    // НОВИЙ ПАРАМЕТР: Механіка утримання
-    hold: {
-      activeLevel: 3, // Поточний рівень утримання (0 - якщо механіка ще не куплена/вимкнена)
-      swipeThresholdPx: 100, // Відстань свайпу по Y для активації (універсальна)
-      manualCooldownMs: 500, // Кулдаун після ручної деактивації (універсальний)
+  //   // НОВИЙ ПАРАМЕТР: Механіка утримання
+  //   hold: {
+  //     activeLevel: 3, // Поточний рівень утримання (0 - якщо механіка ще не куплена/вимкнена)
+  //     swipeThresholdPx: 100, // Відстань свайпу по Y для активації (універсальна)
+  //     manualCooldownMs: 500, // Кулдаун після ручної деактивації (універсальний)
 
-      // Характеристики кожного рівня утримання
-      levels: {
-        1: {
-          charges: 1, // Кількість блокувань (кружечків)
-          restoreTimeMs: 5000, // Час відновлення одного розбитого блоку
-          holdPower: 1, // Додаткова сила утримання для розрахунку шансу пробиття рибою
-          tensionMultiplier: 1.0, // Пропускає 100% сили риби в ліску
-        },
-        2: {
-          charges: 2,
-          restoreTimeMs: 4000,
-          holdPower: 2,
-          tensionMultiplier: 1.0, // Пропускає 80% сили риби в ліску
-        },
-        3: {
-          charges: 3,
-          restoreTimeMs: 3000,
-          holdPower: 3,
-          tensionMultiplier: 1.0, // Пропускає 60% сили риби в ліску
-        },
-        // Можеш додавати скільки завгодно рівнів...
-      },
-    },
-  },
+  //     // Характеристики кожного рівня утримання
+  //     levels: {
+  //       1: {
+  //         charges: 1, // Кількість блокувань (кружечків)
+  //         restoreTimeMs: 5000, // Час відновлення одного розбитого блоку
+  //         holdPower: 1, // Додаткова сила утримання для розрахунку шансу пробиття рибою
+  //         tensionMultiplier: 1.0, // Пропускає 100% сили риби в ліску
+  //       },
+  //       2: {
+  //         charges: 2,
+  //         restoreTimeMs: 4000,
+  //         holdPower: 2,
+  //         tensionMultiplier: 1.0, // Пропускає 80% сили риби в ліску
+  //       },
+  //       3: {
+  //         charges: 3,
+  //         restoreTimeMs: 3000,
+  //         holdPower: 3,
+  //         tensionMultiplier: 1.0, // Пропускає 60% сили риби в ліску
+  //       },
+  //       // Можеш додавати скільки завгодно рівнів...
+  //     },
+  //   },
+  // },
+
+  // hook: {
+  //   level: 5,
+  //   weight: 4, // Affects how much tension increases per unit of player input
+  //   quality: 1, // Аналог resistance у риби
+  // },
 
   net: {
     active: true,
@@ -534,12 +594,6 @@ const CONFIG = {
         minBonusDurationHours: 24,
       },
     },
-  },
-
-  hook: {
-    level: 5,
-    weight: 4, // Affects how much tension increases per unit of player input
-    quality: 1, // Аналог resistance у риби
   },
 
   hookMechanics: {
@@ -657,6 +711,10 @@ const CONFIG = {
   ui: {
     draggableButtons: true,
     dragHoldTimeMs: 1000,
+
+    audio: {
+      feederBite: "assets/audio/bell_ring.mp3",
+    },
 
     rod: {
       x: "center",

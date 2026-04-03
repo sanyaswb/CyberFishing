@@ -74,7 +74,11 @@ class EchoModule extends OverlayModule {
       }
       html += `</div>`;
 
-      html += `<div style="margin-bottom: 4px;">Наживка: <span style="color: #b066ff;">${d.bait || "---"}</span></div>`;
+      const baitsText = Array.isArray(d.baits)
+        ? d.baits.join(", ")
+        : d.bait || "---";
+      html += `<div style="margin-bottom: 4px;">Наживка: <span style="color: #b066ff;">${baitsText}</span></div>`;
+
       html += `<div style="margin-bottom: 8px;">Фаза: <span style="color: #ffff00;">${d.phase || "---"}</span></div>`;
 
       let weather = d.isRaining
@@ -403,14 +407,19 @@ class WorstCaseModule extends OverlayModule {
     const worstFishX =
       currentFishBase * maxMove * CONFIG.physics.fishForceMultiplier;
 
-    const pPower =
-      CONFIG.rod.level * CONFIG.rod.basePower +
-      CONFIG.reel.level * CONFIG.reel.basePower;
+    const eq = CONFIG.player?.equipment;
+    const rodPower = (eq?.rod?.level || 1) * (eq?.rod?.basePower || 1);
+    const reelPower =
+      eq?.rod?.hasReel !== false
+        ? (eq?.reel?.level || 0) * (eq?.reel?.basePower || 0)
+        : 0;
+    const pPower = rodPower + reelPower;
+
     const worstPenaltyMult = Math.max(
       0.1,
       1.0 -
         (CONFIG.physics.edgePullPenalty || 0) *
-          (1 - (CONFIG.rod.compensation || 0)),
+          (1 - (eq?.rod?.compensation || 0)),
     );
     const worstEffectivePower = pPower * worstPenaltyMult;
 

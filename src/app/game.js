@@ -134,7 +134,7 @@ class ScoutingState extends GameState {
       const bounds = this.game.getDynamicBounds();
       const rodPos = this.game.getRodVirtualPos(bounds);
       const castDist = Math.hypot(vPos.x - rodPos.x, vPos.y - rodPos.y);
-      const maxDist = CONFIG.rod?.maxDistance ?? Infinity;
+      const maxDist = CONFIG.player?.equipment?.rod?.maxDistance ?? Infinity;
 
       if (cell && this.game.canPlayerCast()) {
         if (castDist > maxDist) {
@@ -161,7 +161,9 @@ class ScoutingState extends GameState {
       0.03,
     );
 
-    if (!this.game.canPlayerCast()) {
+    const isFeeder = CONFIG.player?.equipment?.rod?.type === "feeder";
+
+    if (!this.game.canPlayerCast() || isFeeder) {
       if (this.game.depthUI.isActive) {
         this.game.depthUI.hide();
       }
@@ -192,35 +194,29 @@ class PlayingState extends GameState {
   #isNetReady = false;
   #startTime = 0;
   #forces = { pX: 0, pY: 0, fX: 0, fY: 0 };
-
-  // ДОДАНО: Зберігаємо поточну снасть для правильного виведення в Debug оверлей
   #rod;
   #reel;
 
   enter() {
     this.#startTime = performance.now();
     const fishData = this.data.fish;
+    const eq = CONFIG.player?.equipment;
 
-    // 1. Створюємо вудку з усіма новими параметрами конфігу
     this.#rod = new Rod(
-      CONFIG.rod.level,
-      CONFIG.rod.basePower,
-      CONFIG.rod.compensation,
-      CONFIG.rod.type,
-      CONFIG.rod.maxDistance,
-      CONFIG.rod.hasReel !== false, // Якщо параметр не вказано, вважаємо, що котушка є (true)
+      eq.rod.level,
+      eq.rod.basePower,
+      eq.rod.compensation,
+      eq.rod.type,
+      eq.rod.maxDistance,
+      eq.rod.hasReel !== false,
     );
 
-    // 2. ЛОГІКА КОТУШКИ: Якщо вудка махова (false), створюємо "пустишку"
     this.#reel = this.#rod.hasReel()
-      ? new Reel(CONFIG.reel.level, CONFIG.reel.basePower, CONFIG.reel.hold)
-      : new Reel(0, 0, null); // 0 сили, 0 рівня, немає механіки Hold
+      ? new Reel(eq.reel.level, eq.reel.basePower, eq.reel.hold)
+      : new Reel(0, 0, null);
 
-    const hook = new Hook(
-      CONFIG.hook.level,
-      CONFIG.hook.weight,
-      CONFIG.hook.quality,
-    );
+    const hook = new Hook(eq.hook.level, eq.hook.weight, eq.hook.quality);
+
     const fish = new Fish(
       fishData.level,
       fishData.weight,
@@ -231,8 +227,8 @@ class PlayingState extends GameState {
     this.#fishingSystem = new FishingSystem(this.#rod, this.#reel, fish);
 
     this.#tensionMeter = new TensionMeter(
-      CONFIG.rod.level,
-      this.#rod.hasReel() ? CONFIG.reel.level : 0, // Махова вудка не отримує бонус міцності ліски від котушки
+      eq.rod.level,
+      this.#rod.hasReel() ? eq.reel.level : 0,
       hook,
       CONFIG.tension,
     );
@@ -292,10 +288,9 @@ class PlayingState extends GameState {
 
   handleInput(input) {
     const isHold = this.#fishingSystem.isHoldActive();
-    const swipeThreshold = CONFIG.reel?.hold?.swipeThresholdPx || 100;
+    const eq = CONFIG.player?.equipment;
+    const swipeThreshold = eq?.reel?.hold?.swipeThresholdPx || 100;
 
-    // Механіки Hold та Pump автоматично блокуються системою,
-    // оскільки dummy котушка повертає hasHold: false
     if (this.#fishingSystem.getHoldUIState()?.hasHold) {
       if (input.toggleHold || input.swipeDeltaY > swipeThreshold) {
         isHold
@@ -307,8 +302,8 @@ class PlayingState extends GameState {
 
     if (input.pumpAction || input.swipeDeltaY < -swipeThreshold) {
       const red = this.#fishingSystem.tryUsePump(
-        CONFIG.reel?.pumpLevel || 0,
-        CONFIG.reel?.pumpPowerPerLevel || 10,
+        eq?.reel?.pumpLevel || 0,
+        eq?.reel?.pumpPowerPerLevel || 10,
       );
       if (red > 0) this.#tensionMeter.applyPump(red);
       if (input.swipeDeltaY) this.game.systems.input.consumeSwipe();
@@ -469,7 +464,6 @@ class PlayingState extends GameState {
     );
     const depthScaleX = xRange[0] + distRatio * (xRange[1] - xRange[0]);
 
-    // ВИПРАВЛЕНО: Тепер беремо реальну силу котушки з інстансу this.#reel
     const steerP =
       (this.#rod.getPower() + this.#reel.getPower()) *
       CONFIG.physics.playerSteeringMultiplier *
@@ -538,12 +532,13 @@ class WaitingState extends GameState {
       this.game.checkWater(vx, vy),
     );
 
+    const eq = CONFIG.player?.equipment;
+
     let hooked = this.game.systems.bite.evaluateBite(dt, envData.biteEnv, {
-      hookSize: CONFIG.hook.level,
-      baitId: "oil_worm",
+      hookSize: eq?.hook?.level || 1,
+      baits: eq?.baits || ["oil_worm"],
     });
 
-    // --- ВІДНОВЛЕНА ЛОГІКА FIXED CATCH ---
     if (hooked && CONFIG.debug?.fixedCatch?.enabled) {
       const fixed = CONFIG.debug.fixedCatch;
       const template =
@@ -579,11 +574,40 @@ class WaitingState extends GameState {
 }
 
 class BitingState extends GameState {
+  #feederAudio;
+  #lastAudioPhase = "none";
+  #nextRingTime = 0;
+
+  enter() {
+    if (super.enter) super.enter();
+
+    this.#lastAudioPhase = "none";
+    this.#nextRingTime = 0;
+
+    const eq = CONFIG.player?.equipment;
+    if (eq?.rod?.type === "feeder" && CONFIG.ui?.audio?.feederBite) {
+      this.#feederAudio = new Audio(CONFIG.ui.audio.feederBite);
+      this.#feederAudio.loop = false;
+    } else {
+      this.#feederAudio = null;
+    }
+  }
+
+  exit() {
+    if (this.#feederAudio) {
+      this.#feederAudio.pause();
+      this.#feederAudio.currentTime = 0;
+      this.#feederAudio = null;
+    }
+  }
+
   handleInput(input) {
     if (input.isPulling) {
       if (!this.game.canPlayerCast()) return;
-      const success =
-        Math.random() <= (this.game.float.isGuaranteedBite() ? 0.99 : 0.01);
+
+      const isGuaranteed = this.game.float.isGuaranteedBite();
+      const success = Math.random() <= (isGuaranteed ? 0.99 : 0.01);
+
       if (success) {
         this.game.float.hook();
         this.game.setState("playing", { fish: this.data.fish });
@@ -599,7 +623,47 @@ class BitingState extends GameState {
     this.game.float.update(bounds, dt, envData.env, (vx, vy) =>
       this.game.checkWater(vx, vy),
     );
-    if (!this.game.float.isBiting()) this.game.setState("waiting");
+
+    const isBiting = this.game.float.isBiting();
+
+    if (!isBiting) {
+      this.game.setState("waiting");
+      return;
+    }
+
+    if (this.#feederAudio) {
+      const visualState = this.game.float.getVisualState();
+      let currentPhase = "none";
+
+      if (visualState.color === "#ff0000") currentPhase = "red";
+      else if (visualState.color === "#ffff00") currentPhase = "yellow";
+
+      if (this.#lastAudioPhase !== currentPhase) {
+        this.#feederAudio.pause();
+        this.#lastAudioPhase = currentPhase;
+      }
+
+      const now = performance.now();
+
+      if (currentPhase === "red") {
+        if (this.#feederAudio.paused) {
+          this.#feederAudio.currentTime = 0;
+          this.#feederAudio.volume = 1.0;
+          this.#feederAudio.loop = true;
+          this.#feederAudio.play().catch(() => {});
+        }
+      } else if (currentPhase === "yellow") {
+        if (now > this.#nextRingTime) {
+          this.#feederAudio.pause();
+          this.#feederAudio.currentTime = 0;
+          this.#feederAudio.volume = 0.4;
+          this.#feederAudio.loop = false;
+          this.#feederAudio.play().catch(() => {});
+
+          this.#nextRingTime = now + 800 + Math.random() * 1200;
+        }
+      }
+    }
   }
 
   draw(renderer, bounds) {
@@ -1022,7 +1086,6 @@ class Game {
       lineCfg,
     );
 
-    // --- ОНОВЛЕНО: Додано this.#systems.projector четвертим аргументом ---
     renderer.drawFloat(
       sPos,
       this.#float,
@@ -1107,22 +1170,38 @@ class Game {
     const chum = this.#systems.chum.getChumDataAt(pos.x, pos.y);
     const bottomDepth = cell?.depth || 0;
 
+    let feederBonus = 1.0;
+    let feederTargets = [];
+    const eq = CONFIG.player?.equipment;
+    const isFeeder = eq?.rod?.type === "feeder";
+
+    if (isFeeder && eq?.feeder?.chumId) {
+      const chumCfg = CONFIG.chum.baits[eq.feeder.chumId];
+      const elapsedMs = performance.now() - this.castStartTime;
+
+      // Оскільки в конфігу немає durationMs, беремо 5 реальних хвилин (300000 мс) за замовчуванням
+      // Пізніше можеш додати feederDurationMs прямо в налаштування кожної прикормки
+      const duration = chumCfg.feederDurationMs || 300000;
+
+      if (chumCfg && elapsedMs < duration) {
+        const progress = elapsedMs / duration;
+        feederBonus = chumCfg.maxBonus - (chumCfg.maxBonus - 1.0) * progress;
+        feederTargets = chumCfg.targetFishes || []; // Читаємо правильний ключ з конфігу!
+      }
+    }
+
     return {
-      // 1. ПОВЕРНУЛИ Math.min, щоб гачок фізично зупинявся на дні
       hookDepth: Math.min(this.#float.getCurrentHookDepth(), bottomDepth),
       bottomDepth: bottomDepth,
 
-      // 2. ДОДАЛИ lineLength! Саме вона каже системі, що ліски випущено більше, ніж глибина дна (Лежачий поплавок)
-      lineLength: this.currentHookDepth,
+      // Для фідера ліска завжди натягнута по дну (немає штрафу за провисання)
+      lineLength: isFeeder ? bottomDepth : this.currentHookDepth,
 
       timePhase: env.phase,
-
-      // 3. ДОДАЛИ день тижня та бонус зони
       dayOfWeek: new Date().getDay(),
       zoneBonus: cell?.multiplier || cell?.bonus || 1.0,
-
-      chumBonus: chum.bonus,
-      chumTargets: chum.targets,
+      chumBonus: Math.max(chum.bonus || 1.0, feederBonus),
+      chumTargets: [...new Set([...(chum.targets || []), ...feederTargets])],
       isRaining: env.isRaining,
       isFoggy: env.isFoggy,
       castSpamMultiplier: this.#castManager.getBiteChanceMultiplier(),
@@ -1433,19 +1512,9 @@ class Game {
     const pos = this.#float.getPosition();
     const ed = this.getEnvDataForBite();
 
-    if (
-      this.#systems.chum &&
-      typeof this.#systems.chum.getChumDataAt === "function"
-    ) {
-      const chumData = this.#systems.chum.getChumDataAt(pos.x, pos.y);
-      ed.chumBonus = chumData.bonus || 1.0;
-      ed.chumTargets = chumData.targets || [];
-    } else {
-      ed.chumBonus = 1.0;
-      ed.chumTargets = [];
-    }
-
-    const currentBait = CONFIG.player?.currentBait || "oil_worm";
+    // Тепер ми просто беремо дані з ed, оскільки getEnvDataForBite
+    // вже враховує і пляму на воді, і годівницю фідера
+    const currentBaits = CONFIG.player?.equipment?.baits || ["oil_worm"];
 
     let detail = {
       gameState: this.#gameStateName,
@@ -1453,14 +1522,14 @@ class Game {
       floatY: Math.round(pos.y),
       hookDepth: ed.hookDepth,
       bottomDepth: ed.bottomDepth,
-      lineLength: this.currentHookDepth,
-      bait: currentBait,
+      lineLength: ed.lineLength, // Беремо з ed, бо там вже враховано лежить фідер на дні чи ні
+      baits: currentBaits, // Передаємо масив для EchoModule
       phase: env.phase,
       isRaining: env.isRaining,
       isFoggy: env.isFoggy,
       liveChances: this.#systems.bite.getLiveChances(ed, {
-        hookSize: CONFIG.hook.level,
-        baitId: currentBait,
+        hookSize: CONFIG.player?.equipment?.hook?.level || 1,
+        baits: currentBaits, // Передаємо масив наживок
       }),
       chumZones: this.#systems.chum?.getZones
         ? this.#systems.chum.getZones()
@@ -1493,8 +1562,8 @@ class Game {
       };
 
       detail.liveChances = this.#systems.bite.getLiveChances(boatEd, {
-        hookSize: CONFIG.hook.level,
-        baitId: currentBait,
+        hookSize: CONFIG.player?.equipment?.hook?.level || 1,
+        baits: currentBaits, // Передаємо масив наживок
       });
     }
 

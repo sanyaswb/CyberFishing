@@ -179,7 +179,6 @@ class Renderer {
     }
   }
 
-  // Renderer.js -> drawChumZones
   drawChumZones(chumManager, projector) {
     const zones = chumManager.getZones();
 
@@ -356,16 +355,16 @@ class Renderer {
 
   drawFloat(screenPos, floatEntity, floatConfig, projector) {
     const visualState = floatEntity.getVisualState();
-
-    // --- ЄДИНА МАТЕМАТИЧНА ПЕРСПЕКТИВА ---
     const perspective = projector.getPerspective(floatEntity.getPosition().y);
-    const pScale = perspective.scale; // Поплавок просто пропорційно зменшується
+    const pScale = perspective.scale;
 
     const width = floatConfig.width * pScale;
     const length = floatConfig.length * pScale;
 
     this.#ctx.save();
     this.#ctx.translate(screenPos.x, screenPos.y);
+
+    const isFeeder = CONFIG.player?.equipment?.rod?.type === "feeder";
 
     if (floatEntity.isHooked()) {
       this.#ctx.fillStyle = visualState.color;
@@ -374,11 +373,23 @@ class Renderer {
       return;
     }
 
-    this.#ctx.rotate((visualState.angle * Math.PI) / 180);
-    this.#ctx.fillStyle = visualState.color;
+    if (isFeeder) {
+      this.#ctx.beginPath();
+      this.#ctx.ellipse(0, 0, 6 * pScale, 3 * pScale, 0, 0, Math.PI * 2);
+      this.#ctx.fillStyle = visualState.color;
 
-    const currentLength = length * visualState.scaleY;
-    this.#ctx.fillRect(-width / 2, -currentLength, width, currentLength);
+      if (visualState.color !== "#ffffff" && visualState.color !== "#00ff80") {
+        this.#ctx.shadowColor = visualState.color;
+        this.#ctx.shadowBlur = 8 * pScale;
+      }
+
+      this.#ctx.fill();
+    } else {
+      this.#ctx.rotate((visualState.angle * Math.PI) / 180);
+      this.#ctx.fillStyle = visualState.color;
+      const currentLength = length * visualState.scaleY;
+      this.#ctx.fillRect(-width / 2, -currentLength, width, currentLength);
+    }
 
     this.#ctx.restore();
   }
