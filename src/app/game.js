@@ -665,7 +665,7 @@ class WaitingState extends GameState {
     }
 
     if (hooked) {
-      this.game.float.startBite(effectiveInput.isPulling);
+      this.game.float.startBite(effectiveInput.isPulling, hooked.biteSequence);
       this.game.setState("biting", { fish: hooked });
     }
   }

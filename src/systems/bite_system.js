@@ -68,7 +68,8 @@ class BiteSystem {
     return chance;
   }
 
-  #generateFishInstance(fish, currentDepth) {
+  #generateFishInstance(fish, currentDepth, playerGear) {
+    // <-- ДОДАНО playerGear
     const { depthConfig: dc, weightConfig: wc } = fish;
 
     let t = Math.max(
@@ -93,6 +94,24 @@ class BiteSystem {
       (genWeight - dc.minWeightAtMinDepth) /
       (dc.maxWeightAtMaxDepth - dc.minWeightAtMinDepth);
 
+    // --- ДОДАНО: Логіка вибору профілю клювання ---
+    const baitsToTest = Array.isArray(playerGear.baits)
+      ? playerGear.baits
+      : [playerGear.baitId];
+    const baitId = baitsToTest[0] || "oil_worm";
+
+    // Перевіряємо тип наживки через глобальний CONFIG
+    const baitType = CONFIG.baitsData?.[baitId]?.type || "float";
+    const isActiveLure = ["spinner", "wobbler", "jig"].includes(baitType);
+
+    let chosenBiteSequence = null;
+    if (fish.biteMechanics) {
+      // Якщо наживка активна (спінінг) - беремо .active, інакше .passive
+      chosenBiteSequence = isActiveLure
+        ? fish.biteMechanics.active
+        : fish.biteMechanics.passive;
+    }
+
     return {
       id: fish.id,
       name: fish.name,
@@ -100,6 +119,7 @@ class BiteSystem {
       level: Math.max(1, Math.round(weightRatio * wc.maxLevel)),
       resistance: this.#lerp(wc.baseResistance, wc.maxResistance, weightRatio),
       physics: fish.physics,
+      biteSequence: chosenBiteSequence, // <-- РИБА ТЕПЕР НЕСЕ СВОЄ КЛЮВАННЯ!
     };
   }
 
@@ -129,7 +149,12 @@ class BiteSystem {
         this.#possibleBitesBuffer[
           Math.floor(Math.random() * this.#possibleBitesBuffer.length)
         ];
-      return this.#generateFishInstance(selected, envData.hookDepth);
+      // <-- ЗМІНЕНО: тепер передаємо playerGear сюди
+      return this.#generateFishInstance(
+        selected,
+        envData.hookDepth,
+        playerGear,
+      );
     }
 
     return null;

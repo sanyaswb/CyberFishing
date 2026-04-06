@@ -245,6 +245,65 @@ const CONFIG = {
             },
           },
         },
+
+        biteMechanics: {
+          // --- Клювання на Поплавок та Фідер (ТВОЇ СТАРІ ЦИФРИ) ---
+          passive: {
+            maxSequences: [1, 5],
+            sequenceIntervalMs: [1555, 5333],
+
+            chanceGuaranteed: 0.5,
+            chanceNormal: 0.5,
+            normalIters: [1, 10],
+            guaranteedIters: [1, 3],
+            intervalMs: [300, 800],
+            animDurationMs: [300, 800],
+
+            movementChance: 0.5,
+            movementSpeedPx: [2, 8],
+            movementDurationMs: [1000, 2500],
+
+            animations: {
+              bob: { heightPercent: [-5, 5] },
+              sink: { heightPercent: [-50, -10] },
+              rise: { heightPercent: [10, 30] },
+              tilt: { angle: [-25, 25] },
+              slide: {},
+            },
+
+            guaranteedModifiers: {
+              bobAmpAdd: 10,
+              sinkHeightPercent: [-100, -80],
+              riseHeightPercent: [30, 70],
+              holdDurationMs: [1000, 2500],
+              tiltAngle: [85, 90],
+              movementSpeedMult: [4.0, 3.0],
+              movementDurationMult: [2.0, 2.0],
+            },
+          },
+
+          // --- Клювання на Спінінгові приманки (Воблер, Блешня, Джиг) ---
+          active: {
+            chanceGuaranteed: 0.6,
+            chanceNormal: 0.4,
+            maxSequences: [1, 2],
+            sequenceIntervalMs: [200, 400],
+            intervalMs: [200, 400],
+            animDurationMs: [100, 200],
+            movementChance: 1.0,
+            movementDurationMs: [100, 250],
+            movementSpeedPx: [40, 80],
+            guaranteedIters: [1, 1],
+            normalIters: [1, 2],
+            animations: {
+              slide: {}, // Тільки різкі ривки
+            },
+            guaranteedModifiers: {
+              movementSpeedMult: [1.5, 2.5],
+              movementDurationMult: [1.0, 1.5],
+            },
+          },
+        },
       },
       {
         id: "perch_radioactive",
@@ -412,7 +471,7 @@ const CONFIG = {
 
   // НОВИЙ БЛОК: Дані про всі типи наживок у грі
   baitsData: {
-    // Старі наживки для поплавка/фідера
+    // Наживки для поплавка/фідера
     oil_worm: {
       type: "float",
     },
@@ -420,62 +479,42 @@ const CONFIG = {
       type: "float",
     },
 
-    // Нові приманки для спінінгу
+    // Приманки для спінінгу (БЕЗ biteSequence, він тепер у рибі)
     test_spinner: {
       type: "spinner",
-      mode: 1, // 1 = тоне без тяги, спливає при тязі
-      waterFriction: 0.2, // Опір води (віднімається від reelPower)
-      sinkSpeed: 1.5, // Швидкість тонення (м/с)
-      riseSpeed: 2.0, // Швидкість підйому до поверхні під час скручування
-      maxDepth: 3.0, // Максимальна глибина занурення (для блешні)
+      mode: 1,
+      waterFriction: 0.2,
+      sinkSpeed: 1.5,
+      riseSpeed: 2.0,
+      maxDepth: 3.0,
       quality: 8.0,
       currentCompensation: [0.1, 1.0],
     },
 
     test_wobbler_suspend: {
       type: "wobbler",
-      mode: 2, // 2 = суспендер (зависає в заданому діапазоні)
+      mode: 2,
       waterFriction: 0.4,
       sinkSpeed: 1.0,
       riseSpeed: 1.0,
-      maxDepth: 6.5, // Межа, нижче якої не опуститься
-      targetMinDepth: 2.0, // Верхня межа "коридору" зависання
-      targetMaxDepth: 4.5, // Нижня межа "коридору" зависання
+      maxDepth: 6.5,
+      targetMinDepth: 2.0,
+      targetMaxDepth: 4.5,
       quality: 8.0,
       currentCompensation: [0.1, 1.0],
     },
 
     test_wobbler_sinking: {
       type: "wobbler",
-      mode: 3, // 3 = тоне при тязі, спливає без тяги
+      mode: 3,
       waterFriction: 0.3,
-      sinkSpeed: 2.0, // Швидкість заглиблення ПІД ЧАС скручування
-      riseSpeed: 1.5, // Швидкість спливання, коли гравець НЕ крутить котушку
-      targetMinDepth: 1.0, // Верхня межа "коридору" зависання
-      targetMaxDepth: 3.5, // Нижня межа "коридору" зависання
+      sinkSpeed: 2.0,
+      riseSpeed: 1.5,
+      targetMinDepth: 1.0,
+      targetMaxDepth: 3.5,
       maxDepth: 5.0,
       quality: 8.0,
       currentCompensation: [0.1, 1.0],
-      biteSequence: {
-        chanceGuaranteed: 0.6,
-        chanceNormal: 0.4,
-        maxSequences: [1, 2],
-        sequenceIntervalMs: [200, 400],
-        intervalMs: [200, 400],
-        animDurationMs: [100, 200],
-        movementChance: 1.0,
-        movementDurationMs: [100, 250],
-        movementSpeedPx: [40, 80],
-        guaranteedIters: [1, 1],
-        normalIters: [1, 2],
-        animations: {
-          slide: {},
-        },
-        guaranteedModifiers: {
-          movementSpeedMult: [1.5, 2.5],
-          movementDurationMult: [1.0, 1.5],
-        },
-      },
     },
 
     test_jig: {
@@ -484,7 +523,8 @@ const CONFIG = {
       waterFriction: 0.15,
       sinkSpeed: 3.0,
       riseSpeed: 2.5,
-      // maxDepth для джигу береться автоматично з налаштувань грузила (sinker) у BaitFactory
+      quality: 7.0,
+      currentCompensation: [0.1, 0.9],
     },
   },
 
@@ -500,21 +540,19 @@ const CONFIG = {
     sinkingDelayMs: 500,
     sinkingDurationMs: 4000,
 
+    // Фоллбек-логіка клювання (якщо у риби не прописано biteMechanics)
     biteSequence: {
       maxSequences: [1, 5],
       sequenceIntervalMs: [1555, 5333],
-
       chanceGuaranteed: 0.5,
       chanceNormal: 0.5,
       normalIters: [1, 10],
       guaranteedIters: [1, 3],
       intervalMs: [300, 800],
       animDurationMs: [300, 800],
-
       movementChance: 0.5,
       movementSpeedPx: [2, 8],
       movementDurationMs: [1000, 2500],
-
       animations: {
         bob: { heightPercent: [-5, 5] },
         sink: { heightPercent: [-50, -10] },
@@ -522,7 +560,6 @@ const CONFIG = {
         tilt: { angle: [-25, 25] },
         slide: {},
       },
-
       guaranteedModifiers: {
         bobAmpAdd: 10,
         sinkHeightPercent: [-100, -80],

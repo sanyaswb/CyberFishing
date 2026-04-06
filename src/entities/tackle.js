@@ -220,15 +220,19 @@ class WaterEntity {
   getPosition() {
     return this._position;
   }
+
   getCurrentHookDepth() {
     return this._currentHookDepth;
   }
+
   applyForce(force) {
     this._velocity.add(force);
   }
+
   setPosition(x, y) {
     this._position.set(x, y);
   }
+
   setHookDepth(depth) {
     this._currentHookDepth = depth;
   }
@@ -418,11 +422,11 @@ class WaterEntity {
     this._biteMoveTimer = 0;
   }
 
-  startBite(isPulling = false) {
+  startBite(isPulling = false, fishBiteSequence = null) {
     this._isBiting = true;
     this._isHooked = false;
 
-    const baseSeq = this._config.biteSequence || CONFIG.float.biteSequence;
+    const baseSeq = fishBiteSequence || CONFIG.float.biteSequence;
     const seqCfg = { ...baseSeq };
 
     const isSpinningLure = ["spinner", "wobbler", "jig"].includes(
