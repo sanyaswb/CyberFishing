@@ -224,39 +224,6 @@ class Renderer {
     }
   }
 
-  // drawChumAiming(projector, virtualBottomY, maxDistanceVirtual) {
-  //   // 1. Рахуємо координату лінії у віртуальному світі
-  //   const virtualLineY = virtualBottomY - maxDistanceVirtual;
-
-  //   // 2. Переводимо цю координату в екранні пікселі
-  //   const screenPos = projector.virtualToScreen(0, virtualLineY);
-  //   const lineScreenY = screenPos.y;
-
-  //   // 3. Знаходимо екранну координату берега для заливки
-  //   const screenBottomPos = projector.virtualToScreen(0, virtualBottomY);
-  //   const fillHeight = screenBottomPos.y - lineScreenY;
-
-  //   this.#ctx.save();
-  //   this.#ctx.beginPath();
-
-  //   // Малюємо пунктирну лінію
-  //   this.#ctx.moveTo(0, lineScreenY);
-  //   this.#ctx.lineTo(this.#canvas.width, lineScreenY);
-
-  //   this.#ctx.strokeStyle = "rgba(255, 170, 0, 0.8)";
-  //   this.#ctx.lineWidth = 2;
-  //   this.#ctx.setLineDash([15, 10]);
-  //   this.#ctx.stroke();
-
-  //   // Робимо заливку
-  //   if (fillHeight > 0) {
-  //     this.#ctx.fillStyle = "rgba(255, 170, 0, 0.05)";
-  //     this.#ctx.fillRect(0, lineScreenY, this.#canvas.width, fillHeight);
-  //   }
-
-  //   this.#ctx.restore();
-  // }
-
   drawAimingZone(projector, virtualBottomY, maxDist, type = "chum") {
     if (maxDist === Infinity) return;
 
@@ -405,7 +372,9 @@ class Renderer {
     this.#ctx.save();
     this.#ctx.translate(screenPos.x, screenPos.y);
 
-    const isFeeder = CONFIG.player?.equipment?.rod?.type === "feeder";
+    const rodType = CONFIG.player?.equipment?.rod?.type;
+    const isFeeder = rodType === "feeder";
+    const isSpinning = rodType === "spinning"; // ДОДАНО: перевірка на спінінг
 
     if (floatEntity.isHooked()) {
       this.#ctx.fillStyle = visualState.color;
@@ -414,20 +383,27 @@ class Renderer {
       return;
     }
 
-    if (isFeeder) {
+    this.#ctx.fillStyle = visualState.color;
+
+    // Світіння при клюванні (жовтий/червоний колір) - виносимо, щоб працювало і для фідера, і для спінінгу
+    if (visualState.color !== "#ffffff" && visualState.color !== "#00ff80") {
+      this.#ctx.shadowColor = visualState.color;
+      this.#ctx.shadowBlur = 8 * pScale;
+    }
+
+    if (isSpinning) {
+      // МАЛЮЄМО СПІНІНГ: маленька кругла крапочка (наприклад, радіус 2.5)
+      this.#ctx.beginPath();
+      this.#ctx.arc(0, 0, 2.5 * pScale, 0, Math.PI * 2);
+      this.#ctx.fill();
+    } else if (isFeeder) {
+      // МАЛЮЄМО ФІДЕР: еліпс
       this.#ctx.beginPath();
       this.#ctx.ellipse(0, 0, 6 * pScale, 3 * pScale, 0, 0, Math.PI * 2);
-      this.#ctx.fillStyle = visualState.color;
-
-      if (visualState.color !== "#ffffff" && visualState.color !== "#00ff80") {
-        this.#ctx.shadowColor = visualState.color;
-        this.#ctx.shadowBlur = 8 * pScale;
-      }
-
       this.#ctx.fill();
     } else {
+      // МАЛЮЄМО ПОПЛАВОК: прямокутник під кутом
       this.#ctx.rotate((visualState.angle * Math.PI) / 180);
-      this.#ctx.fillStyle = visualState.color;
       const currentLength = length * visualState.scaleY;
       this.#ctx.fillRect(-width / 2, -currentLength, width, currentLength);
     }

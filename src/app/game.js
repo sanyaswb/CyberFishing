@@ -170,16 +170,30 @@ class ScoutingState extends GameState {
       0.03,
     );
 
-    const isFeeder = CONFIG.player?.equipment?.rod?.type === "feeder";
+    const eq = CONFIG.player?.equipment;
+    const rodType = eq?.rod?.type;
+    const baitId = eq?.baits?.[0];
+    const baitCfg = CONFIG.baitsData?.[baitId];
+    const baitType = baitCfg?.type;
 
-    if (!this.game.canPlayerCast() || isFeeder) {
+    const isFeeder = rodType === "feeder";
+    const isSpinning = rodType === "spinning";
+    const isJig = baitType === "jig";
+
+    const canSelectDepth = !isFeeder && (!isSpinning || isJig);
+
+    if (!this.game.canPlayerCast() || !canSelectDepth) {
       if (this.game.depthUI.isActive) {
         this.game.depthUI.hide();
+      }
+      if (isSpinning && !isJig) {
+        this.game.currentHookDepth = 0.1;
       }
       return;
     }
 
-    const maxDepth = CONFIG.sinker.maxDepth || 8.0;
+    const maxDepth =
+      (isSpinning ? baitCfg?.maxDepth : CONFIG.sinker?.maxDepth) || 8.0;
 
     if (!this.game.depthUI.isActive) {
       this.game.depthUI.show(
@@ -225,9 +239,13 @@ class PlayingState extends GameState {
   #rod;
   #reel;
 
-  enter() {
+  enter(data) {
     this.#startTime = performance.now();
+
+    // ЗМІНЕНО ТУТ: читаємо fish безпосередньо з data, як ми робили в BitingState
+    this.data = data || {};
     const fishData = this.data.fish;
+
     const eq = CONFIG.player?.equipment;
 
     this.#rod = new Rod(
@@ -423,6 +441,7 @@ class PlayingState extends GameState {
       CONFIG.hookMechanics,
       activeHold,
     );
+
     this.#staminaController.evaluate(
       this.#tensionMeter.getTension(),
       input.isPulling,
@@ -430,8 +449,25 @@ class PlayingState extends GameState {
       floatPos.x,
       bounds,
     );
-    this.game.float.update(bounds, dt, envData.env, (vx, vy) =>
-      this.game.checkWater(vx, vy),
+
+    // ВІДНОВЛЕНО БЛОК НАПРЯМКУ ТЯГИ!
+    let pullDirection = null;
+    if (input.isPulling) {
+      pullDirection = new Vector2(
+        rodPos.x - floatPos.x,
+        rodPos.y - floatPos.y,
+      ).normalize();
+    }
+
+    // ВІДНОВЛЕНО ПЕРЕДАЧУ ВСІХ ПАРАМЕТРІВ!
+    this.game.float.update(
+      bounds,
+      dt,
+      envData.env,
+      (vx, vy) => this.game.checkWater(vx, vy),
+      input,
+      this.#fishingSystem.getReelPower(),
+      pullDirection,
     );
 
     this.#isNetReady = this.game.net.isFloatInZone(floatPos.y, bounds.bottom);
@@ -441,12 +477,14 @@ class PlayingState extends GameState {
       bounds.bottom -
       (CONFIG.locations.catchLineOffsetPx || 5) /
         this.game.systems.projector.getScale();
+
     if (
       floatPos.y >= this.game.net.getTriggerVirtualY(bounds.bottom) &&
       floatPos.y < autoY
     ) {
       this.#fishingSystem.tryTriggerFishLastDash?.(dt);
     }
+
     if (floatPos.y >= autoY) this.game.setState("victory");
     this.game.holdUI.update(this.#fishingSystem.getHoldUIState());
   }
@@ -530,20 +568,23 @@ class WaitingState extends GameState {
   }
 
   handleInput(input) {
-    if (input.isDoubleClick && this.game.canPlayerCast())
+    if (input.isDoubleClick && this.game.canPlayerCast()) {
       this.game.setState("scouting");
+    }
 
-    if (input.longPressPos && this.game.canPlayerCast()) {
+    const isSpinning = CONFIG.player?.equipment?.rod?.type === "spinning";
+
+    if (!isSpinning && input.longPressPos && this.game.canPlayerCast()) {
       const vPos = this.game.systems.projector.screenToVirtual(
         input.longPressPos.x,
         input.longPressPos.y,
       );
       const cell = this.game.checkWater(vPos.x, vPos.y);
+
       if (cell) {
         this.game.castManager.registerCast(performance.now());
         this.game.castLine(vPos.x, vPos.y, cell.depth);
       } else {
-        // --- ВІДНОВЛЕНО: Маркер неправильного кліку ---
         this.game.invalidCastMarker = {
           x: input.longPressPos.x,
           y: input.longPressPos.y,
@@ -556,15 +597,55 @@ class WaitingState extends GameState {
   update(dt, bounds, envData) {
     const pos = this.game.float.getPosition();
     this.game.systems.projector.focusOnVirtualPos(pos.y, dt, 0.05);
-    this.game.float.update(bounds, dt, envData.env, (vx, vy) =>
-      this.game.checkWater(vx, vy),
+
+    const input = this.game.systems.input.getState();
+    const eq = CONFIG.player?.equipment;
+    const reelPower = eq?.rod?.hasReel ? eq?.reel?.basePower || 0 : 0;
+
+    // 1. ДІЗНАЄМОСЯ ТИП ВУДКИ
+    const isSpinning = eq?.rod?.type === "spinning";
+
+    // 2. БЛОКУЄМО ТЯГУ ДЛЯ ФІДЕРА/ПОПЛАВКА
+    // Створюємо "безпечний" інпут. Якщо це не спінінг, наживка ніколи не дізнається, що ти затиснув екран.
+    const effectiveInput = {
+      ...input,
+      isPulling: isSpinning ? input.isPulling : false,
+    };
+
+    let pullDirection = null;
+    if (effectiveInput.isPulling) {
+      const rodPos = this.game.getRodVirtualPos(bounds);
+      pullDirection = new Vector2(
+        rodPos.x - pos.x,
+        rodPos.y - pos.y,
+      ).normalize();
+    }
+
+    this.game.float.update(
+      bounds,
+      dt,
+      envData.env,
+      (vx, vy) => this.game.checkWater(vx, vy),
+      effectiveInput, // Передаємо наш безпечний інпут
+      reelPower,
+      pullDirection,
     );
 
-    const eq = CONFIG.player?.equipment;
+    const updatedPos = this.game.float.getPosition();
+    const shoreY =
+      bounds.bottom -
+      (CONFIG.locations.catchLineOffsetPx || 5) /
+        this.game.systems.projector.getScale();
+
+    if (updatedPos.y >= shoreY) {
+      this.game.setState("scouting");
+      return;
+    }
 
     let hooked = this.game.systems.bite.evaluateBite(dt, envData.biteEnv, {
       hookSize: eq?.hook?.level || 1,
       baits: eq?.baits || ["oil_worm"],
+      isPulling: effectiveInput.isPulling, // ЗМІНЕНО: щоб хижак не клював на фідер під час перекидання
     });
 
     if (hooked && CONFIG.debug?.fixedCatch?.enabled) {
@@ -584,7 +665,7 @@ class WaitingState extends GameState {
     }
 
     if (hooked) {
-      this.game.float.startBite();
+      this.game.float.startBite(effectiveInput.isPulling);
       this.game.setState("biting", { fish: hooked });
     }
   }
@@ -607,8 +688,10 @@ class BitingState extends GameState {
   #ringQueue = [];
   #stepTimeElapsed = 0;
 
-  enter() {
+  enter(data) {
     if (super.enter) super.enter();
+
+    this.fish = data.fish;
 
     this.#lastStepId = -1;
     this.#ringQueue = [];
@@ -626,8 +709,12 @@ class BitingState extends GameState {
     this.#ringQueue = [];
   }
 
+  // Цей метод обробляє лише РУЧНЕ підсікання (для поплавка/фідера)
   handleInput(input) {
-    if (input.isPulling) {
+    const eq = CONFIG.player?.equipment;
+    const isSpinning = eq?.rod?.type === "spinning";
+
+    if (input.isPulling && !isSpinning) {
       if (!this.game.canPlayerCast()) return;
 
       const isGuaranteed = this.game.float.isGuaranteedBite();
@@ -635,7 +722,13 @@ class BitingState extends GameState {
 
       if (success) {
         this.game.float.hook();
-        this.game.setState("playing", { fish: this.data.fish });
+        if (
+          this.game.systems.bite &&
+          typeof this.game.systems.bite.hookFish === "function"
+        ) {
+          this.game.systems.bite.hookFish();
+        }
+        this.game.setState("playing", { fish: this.fish });
       } else {
         this.game.float.stopBite();
         this.game.setState("scouting");
@@ -645,26 +738,74 @@ class BitingState extends GameState {
 
   update(dt, bounds, envData) {
     this.game.float.updateBite(dt, (vx, vy) => this.game.checkWater(vx, vy));
-    this.game.float.update(bounds, dt, envData.env, (vx, vy) =>
-      this.game.checkWater(vx, vy),
+
+    const input = this.game.systems.input.getState();
+    const pos = this.game.float.getPosition();
+    this.game.systems.projector.focusOnVirtualPos(pos.y, dt, 0.05);
+
+    const eq = CONFIG.player?.equipment;
+    const isSpinning = eq?.rod?.type === "spinning";
+    const reelPower = eq?.rod?.hasReel ? eq?.reel?.basePower || 0 : 0;
+
+    let pullDirection = null;
+    if (input.isPulling) {
+      const rodPos = this.game.getRodVirtualPos(bounds);
+      pullDirection = new Vector2(
+        rodPos.x - pos.x,
+        rodPos.y - pos.y,
+      ).normalize();
+    }
+
+    // Передаємо всі параметри, щоб спінінг міг плисти під час клювання
+    this.game.float.update(
+      bounds,
+      dt,
+      envData.env,
+      (vx, vy) => this.game.checkWater(vx, vy),
+      input,
+      reelPower,
+      pullDirection,
     );
+
+    // Логіка АВТОПІДСІКАННЯ для спінінга
+    const stepInfo = this.game.float.getBiteStepInfo?.();
+    if (isSpinning && stepInfo && stepInfo.isGuaranteed && input.isPulling) {
+      this.game.float.hook();
+      if (
+        this.game.systems.bite &&
+        typeof this.game.systems.bite.hookFish === "function"
+      ) {
+        this.game.systems.bite.hookFish();
+      }
+      this.game.setState("playing", { fish: this.fish });
+      return;
+    }
 
     if (!this.game.float.isBiting()) {
       this.game.setState("waiting");
       return;
     }
 
-    if (this.#feederAudioTemplate) {
-      const stepInfo = this.game.float.getBiteStepInfo?.();
+    // Захист: якщо під час клювання блешня виїхала на берег
+    const updatedPos = this.game.float.getPosition();
+    const shoreY =
+      bounds.bottom -
+      (CONFIG.locations.catchLineOffsetPx || 5) /
+        this.game.systems.projector.getScale();
+    if (updatedPos.y >= shoreY) {
+      this.game.float.stopBite();
+      this.game.setState("scouting");
+      return;
+    }
 
-      if (stepInfo && stepInfo.id !== this.#lastStepId) {
+    // Аудіо фідера
+    if (this.#feederAudioTemplate && stepInfo) {
+      if (stepInfo.id !== this.#lastStepId) {
         this.#lastStepId = stepInfo.id;
-
         if (stepInfo.isAction) {
           this.#scheduleRings(stepInfo);
         }
       }
-
       this.#processRingQueue(dt);
     }
   }
@@ -833,7 +974,23 @@ class Game {
     this.#depthUI = new DepthSelectorUI();
     this.#timeUI = new TimeDisplayUI();
     this.#holdUI = new HoldChargesUI();
-    this.#float = new FloatEntity(0, 0, CONFIG.float);
+
+    const eq = CONFIG.player?.equipment;
+    const baitId = eq?.baits?.[0] || "oil_worm";
+    let baitCfg = CONFIG.baitsData?.[baitId] || CONFIG.float;
+
+    // ДОДАНО: Якщо це поплавок, зливаємо його з базовим CONFIG.float
+    if (!baitCfg.type || baitCfg.type === "float") {
+      baitCfg = { ...CONFIG.float, ...baitCfg };
+    }
+
+    this.#float = BaitFactory.create(
+      baitCfg.type || "float",
+      0,
+      0,
+      baitCfg,
+      eq,
+    );
 
     this.#initEvents();
     this.setState("scouting");
@@ -890,38 +1047,12 @@ class Game {
       waiting: WaitingState,
       biting: BitingState,
       playing: PlayingState,
-      failed: FailedState, // <-- Просто посилаємось на твій клас
-      victory: VictoryState, // <-- Просто посилаємось на твій клас
-      failed: class extends GameState {
-        enter() {
-          this.game.systems.ui.updateContinueButtonState(true);
-        }
-        exit() {
-          this.game.systems.ui.updateContinueButtonState(false);
-        }
-        draw(r) {
-          r.drawGameOver(
-            window.innerWidth,
-            window.innerHeight,
-            this.data.reason,
-          );
-        }
-      },
-      victory: class extends GameState {
-        enter() {
-          this.game.systems.ui.updateContinueButtonState(true);
-        }
-        exit() {
-          this.game.systems.ui.updateContinueButtonState(false);
-        }
-        draw(r) {
-          r.drawVictory(window.innerWidth, window.innerHeight);
-        }
-      },
+      failed: FailedState,
+      victory: VictoryState,
     };
 
     this.#state = new states[name](this, data);
-    this.#state.enter();
+    this.#state.enter(data);
   }
 
   update(dt) {
@@ -988,10 +1119,8 @@ class Game {
 
     r.clear(CONFIG.canvas.backgroundColor);
 
-    // 1. Малюємо фон
     r.drawBackground(this.#systems.map, this.#systems.projector);
 
-    // --- ВІДНОВЛЕНО: Малювання дебаг-зон (сітка, колізії, глибина) ---
     if (CONFIG.locations?.debugVisuals) {
       if (typeof r.drawLocationDebug === "function") {
         r.drawLocationDebug(
@@ -1002,7 +1131,6 @@ class Game {
       }
     }
 
-    // --- ВІДНОВЛЕНО: Перевірка конфігу для зон прикормки ---
     if (CONFIG.locations?.showChumZones !== false) {
       r.drawChumZones(
         this.#systems.chum,
@@ -1041,7 +1169,6 @@ class Game {
       r.drawInvalidCastMarker(this.invalidCastMarker);
     }
 
-    // 2. Малюємо елементи поточного стану (вудка, поплавець, UI виважування)
     this.#state.draw(r, b);
   }
 
@@ -1056,19 +1183,41 @@ class Game {
     const eq = CONFIG.player?.equipment;
     const isFeeder = eq?.rod?.type === "feeder";
 
-    // Якщо це фідер, жорстко встановлюємо глибину гачка на глибину дна
     if (isFeeder) {
       this.currentHookDepth = cellDepth;
     }
 
-    this.#float.cast(
+    const baitId = eq?.baits?.[0] || "oil_worm";
+    let baitCfg = CONFIG.baitsData?.[baitId] || CONFIG.float;
+
+    // ДОДАНО: Те саме об'єднання для закидання
+    if (!baitCfg.type || baitCfg.type === "float") {
+      baitCfg = { ...CONFIG.float, ...baitCfg };
+    }
+
+    this.#float = BaitFactory.create(
+      baitCfg.type || "float",
       vx,
       vy,
-      this.currentHookDepth,
-      this.currentHookDepth > cellDepth,
-      CONFIG.sinker,
-      this.castDistanceRatio,
+      baitCfg,
+      eq,
     );
+
+    if (typeof this.#float.cast === "function") {
+      this.#float.cast(
+        vx,
+        vy,
+        this.currentHookDepth,
+        this.currentHookDepth > cellDepth,
+        CONFIG.sinker,
+        this.castDistanceRatio,
+      );
+    } else {
+      this.#float.setPosition(vx, vy);
+      this.#float.setHookDepth(0.1);
+      this.#float.stopBite?.();
+    }
+
     this.setState("waiting");
   }
 
@@ -1099,6 +1248,14 @@ class Game {
 
       ratio = 1.0 - ease * (1.0 - lineCfg.shrinkPercent / 100);
       drop = ease * (lineCfg.sinkDropPx || 120);
+
+      const input = this.#systems.input.getState();
+
+      if (input.isPulling) {
+        // Забрав перевірку на isSpinning
+        ratio = 1.0;
+        drop = 0;
+      }
     } else if (state === "playing") {
       const baseSnap = lineCfg.snapDurationMs ?? 300;
       const depthRatio = Math.min(1, this.currentHookDepth / 10.0);

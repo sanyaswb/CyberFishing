@@ -25,65 +25,11 @@ const CONFIG = {
     timeScale: 240, // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
 
     fixedCatch: {
-      enabled: true,
+      enabled: false,
       fishId: "crucian_stalker", // Можна вписати 'perch_radioactive'
       level: 5,
       weight: 2.678,
       resistance: 2.5,
-    },
-  },
-
-  player: {
-    equipment: {
-      rod: {
-        name: "Річковий Мародер",
-        type: "feeder",
-        level: 4,
-        basePower: 1.5,
-        compensation: 0.6,
-        maxDistance: 400,
-        hasReel: true,
-      },
-      reel: {
-        level: 4,
-        basePower: 1.0,
-        pumpLevel: 5,
-        pumpPowerPerLevel: 10,
-        hold: {
-          activeLevel: 3,
-          swipeThresholdPx: 100,
-          manualCooldownMs: 500,
-          levels: {
-            1: {
-              charges: 1,
-              restoreTimeMs: 5000,
-              holdPower: 1,
-              tensionMultiplier: 1.0,
-            },
-            2: {
-              charges: 2,
-              restoreTimeMs: 4000,
-              holdPower: 2,
-              tensionMultiplier: 1.0,
-            },
-            3: {
-              charges: 3,
-              restoreTimeMs: 3000,
-              holdPower: 3,
-              tensionMultiplier: 1.0,
-            },
-          },
-        },
-      },
-      hook: {
-        level: 5,
-        weight: 4,
-        quality: 1,
-      },
-      baits: ["oil_worm", "bread"],
-      feeder: {
-        chumId: "carp_mix_basic",
-      },
     },
   },
 
@@ -157,11 +103,7 @@ const CONFIG = {
         },
 
         zones: {
-          castable: [
-            { x: 9, y: 12, w: 39, h: 1 },
-            { x: 9, y: 13, w: 55, h: 1 },
-            { x: 0, y: 14, w: 64, h: 15 },
-          ],
+          castable: [{ x: 0, y: 12, w: 64, h: 17 }],
           collisions: [{ x: 12, y: 22, w: 3, h: 2 }],
           snags: [{ x: 50, y: 13, w: 14, h: 8 }],
           dynamic: [
@@ -230,7 +172,14 @@ const CONFIG = {
           maxResistance: 2.5,
         },
 
-        baitMultipliers: { oil_worm: 2.0, bread: 0.5 },
+        baitMultipliers: {
+          oil_worm: 2.0,
+          bread: 0.5,
+          test_spinner: 1.5, // <-- нова наживка (спіннер)
+          test_wobbler_sinking: 3.0, // <-- нова наживка (воблер)
+          test_jig: 0.1, // <-- ця риба майже не клює на джиг
+        },
+
         timeMultipliers: { morning: 1.5, day: 0.8, evening: 1.2, night: 0.2 },
         dayMultipliers: {
           1: 1.0,
@@ -401,12 +350,151 @@ const CONFIG = {
     endpoint: "http://localhost:3000/api/events", // ОСЬ ЦЕЙ РЯДОК З'ЄДНУЄ ГРУ З БЕКЕНДОМ
   },
 
+  player: {
+    equipment: {
+      rod: {
+        name: "Тест",
+        type: "spinning", // Змінено на спінінг для тестування нових механік
+        level: 4,
+        basePower: 1.5,
+        compensation: 0.6,
+        maxDistance: 600,
+        hasReel: true,
+      },
+
+      reel: {
+        level: 4,
+        basePower: 1.0,
+        pumpLevel: 5,
+        pumpPowerPerLevel: 10,
+        hold: {
+          activeLevel: 3,
+          swipeThresholdPx: 100,
+          manualCooldownMs: 500,
+          levels: {
+            1: {
+              charges: 1,
+              restoreTimeMs: 5000,
+              holdPower: 1,
+              tensionMultiplier: 1.0,
+            },
+            2: {
+              charges: 2,
+              restoreTimeMs: 4000,
+              holdPower: 2,
+              tensionMultiplier: 1.0,
+            },
+            3: {
+              charges: 3,
+              restoreTimeMs: 3000,
+              holdPower: 3,
+              tensionMultiplier: 1.0,
+            },
+          },
+        },
+      },
+
+      hook: {
+        level: 5,
+        weight: 4,
+        quality: 1,
+      },
+
+      baits: ["test_wobbler_sinking"],
+      // baits: ["oil_worm"],
+      // baits: ["oil_worm, bread"],
+
+      feeder: {
+        chumId: "carp_mix_basic",
+      },
+    },
+  },
+
+  // НОВИЙ БЛОК: Дані про всі типи наживок у грі
+  baitsData: {
+    // Старі наживки для поплавка/фідера
+    oil_worm: {
+      type: "float",
+    },
+    bread: {
+      type: "float",
+    },
+
+    // Нові приманки для спінінгу
+    test_spinner: {
+      type: "spinner",
+      mode: 1, // 1 = тоне без тяги, спливає при тязі
+      waterFriction: 0.2, // Опір води (віднімається від reelPower)
+      sinkSpeed: 1.5, // Швидкість тонення (м/с)
+      riseSpeed: 2.0, // Швидкість підйому до поверхні під час скручування
+      maxDepth: 3.0, // Максимальна глибина занурення (для блешні)
+      quality: 8.0,
+      currentCompensation: [0.1, 1.0],
+    },
+
+    test_wobbler_suspend: {
+      type: "wobbler",
+      mode: 2, // 2 = суспендер (зависає в заданому діапазоні)
+      waterFriction: 0.4,
+      sinkSpeed: 1.0,
+      riseSpeed: 1.0,
+      maxDepth: 6.5, // Межа, нижче якої не опуститься
+      targetMinDepth: 2.0, // Верхня межа "коридору" зависання
+      targetMaxDepth: 4.5, // Нижня межа "коридору" зависання
+      quality: 8.0,
+      currentCompensation: [0.1, 1.0],
+    },
+
+    test_wobbler_sinking: {
+      type: "wobbler",
+      mode: 3, // 3 = тоне при тязі, спливає без тяги
+      waterFriction: 0.3,
+      sinkSpeed: 2.0, // Швидкість заглиблення ПІД ЧАС скручування
+      riseSpeed: 1.5, // Швидкість спливання, коли гравець НЕ крутить котушку
+      targetMinDepth: 1.0, // Верхня межа "коридору" зависання
+      targetMaxDepth: 3.5, // Нижня межа "коридору" зависання
+      maxDepth: 5.0,
+      quality: 8.0,
+      currentCompensation: [0.1, 1.0],
+      biteSequence: {
+        chanceGuaranteed: 0.6,
+        chanceNormal: 0.4,
+        maxSequences: [1, 2],
+        sequenceIntervalMs: [200, 400],
+        intervalMs: [200, 400],
+        animDurationMs: [100, 200],
+        movementChance: 1.0,
+        movementDurationMs: [100, 250],
+        movementSpeedPx: [40, 80],
+        guaranteedIters: [1, 1],
+        normalIters: [1, 2],
+        animations: {
+          slide: {},
+        },
+        guaranteedModifiers: {
+          movementSpeedMult: [1.5, 2.5],
+          movementDurationMult: [1.0, 1.5],
+        },
+      },
+    },
+
+    test_jig: {
+      type: "jig",
+      mode: 1,
+      waterFriction: 0.15,
+      sinkSpeed: 3.0,
+      riseSpeed: 2.5,
+      // maxDepth для джигу береться автоматично з налаштувань грузила (sinker) у BaitFactory
+    },
+  },
+
   float: {
     width: 3,
     length: 15,
     type: "day",
     level: 1,
     quality: 10.0,
+    windCompensation: [0.1, 1.0],
     overDepthPenaltyMult: 0.5,
 
     sinkingDelayMs: 500,
@@ -456,7 +544,8 @@ const CONFIG = {
   sinker: {
     level: 1,
     quality: 10.0,
-    maxDepth: 10.0,
+    maxDepth: 10.0, // Цей параметр буде використовуватися для поплавка та джигу, якщо у них не вказано власний maxDepth
+    currentCompensation: [0.1, 1.0], // Як сильно грузило компенсує силу течії (0.1 = 10%, 1.0 = 100%)
     weight: "light",
     weights: {
       light: { speedMult: 1.0, heightScale: 1.0 },
@@ -604,6 +693,9 @@ const CONFIG = {
     playerSteeringMultiplier: 1.5, // Mechanical advantage of rod for X-axis steering
     edgePullPenalty: 0.5, // 0.5 означає, що на краю екрана гравець втратить 50% сили
     distanceXMultiplier: [0.3, 1.0],
+
+    lureRetrieveMultiplier: 50,
+    idleSpinningBiteChance: 0.005,
   },
 
   tension: {
