@@ -200,6 +200,8 @@ class WaterEntity {
   _sinkerConfig = null;
   _sinkingStartAngle = 90;
 
+  _activeBiteSequence = null;
+
   constructor(x, y, config, maxDepth) {
     this._position = new Vector2(x, y);
     this._velocity = new Vector2(0, 0);
@@ -426,6 +428,7 @@ class WaterEntity {
     this._isBiting = true;
     this._isHooked = false;
 
+    // 1. БЕРЕМО КОНФІГ ВІД РИБИ
     const baseSeq = fishBiteSequence || CONFIG.float.biteSequence;
     const seqCfg = { ...baseSeq };
 
@@ -437,11 +440,16 @@ class WaterEntity {
       seqCfg.chanceGuaranteed = CONFIG.physics?.idleSpinningBiteChance ?? 0.005;
     }
 
+    // 2. ЗАПАМ'ЯТОВУЄМО КОНФІГ ДЛЯ НАСТУПНИХ ІТЕРАЦІЙ
+    this._activeBiteSequence = seqCfg;
+
     this._currentSequenceCount = 1;
     this._targetSequenceCount = Math.floor(
       this._getRandom(seqCfg.maxSequences),
     );
-    this._rollBiteSequence(seqCfg);
+
+    // Більше не передаємо seqCfg сюди, метод візьме його з this._activeBiteSequence
+    this._rollBiteSequence();
   }
 
   stopBite() {
@@ -511,14 +519,16 @@ class WaterEntity {
         this.stopBite();
       } else {
         this._currentSequenceCount++;
-        this._rollBiteSequence(
-          this._config.biteSequence || CONFIG.float.biteSequence,
-        );
+        // 3. ВИПРАВЛЕНО: більше не читаємо з this._config, просто викликаємо метод
+        this._rollBiteSequence();
       }
     }
   }
 
-  _rollBiteSequence(seqCfg) {
+  _rollBiteSequence() {
+    // 4. ЧИТАЄМО ЗБЕРЕЖЕНИЙ КОНФІГ
+    const seqCfg = this._activeBiteSequence;
+
     const isRed = Math.random() <= seqCfg.chanceGuaranteed;
     const color = isRed ? "#ff0000" : "#ffff00";
     const range = isRed ? seqCfg.guaranteedIters : seqCfg.normalIters;
@@ -534,8 +544,9 @@ class WaterEntity {
         isGuaranteed: false,
       });
     }
+
     for (let i = 0; i < iters; i++) {
-      const steps = this._generateRandomAnim(isRed, seqCfg);
+      const steps = this._generateRandomAnim(isRed, seqCfg); // Передаємо seqCfg сюди
       steps.forEach((s) => {
         s.color = color;
         s.isGuaranteed = isRed;
@@ -554,14 +565,16 @@ class WaterEntity {
   }
 
   _generateRandomAnim(isRed, seqCfg) {
-    const animsCfg = seqCfg.animations || { slide: {} };
-    const types = Object.keys(animsCfg);
-    const chosen =
-      types.length > 0
-        ? types[Math.floor(Math.random() * types.length)]
-        : "slide";
-    const cfg = animsCfg[chosen] || {};
+    const animsCfg = seqCfg.animations || {};
     const mods = seqCfg.guaranteedModifiers || {};
+
+    const availableTypes = Object.keys(animsCfg);
+    const chosen =
+      availableTypes.length > 0
+        ? availableTypes[Math.floor(Math.random() * availableTypes.length)]
+        : "slide";
+
+    const cfg = animsCfg[chosen] || {};
 
     let targetAngle = 0;
     let targetScaleY = 1.0;
@@ -618,7 +631,10 @@ class WaterEntity {
       const dirAngle = Math.random() * Math.PI * 2;
       moveVelX = Math.cos(dirAngle) * speed;
       moveVelY = Math.sin(dirAngle) * speed;
-      duration = Math.max(100, moveTime - holdDuration);
+
+      if (chosen === "slide") {
+        duration = Math.max(100, moveTime - holdDuration);
+      }
     }
 
     if (targetAngle !== 0) {

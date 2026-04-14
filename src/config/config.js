@@ -399,6 +399,65 @@ const CONFIG = {
             },
           },
         },
+
+        biteMechanics: {
+          // --- Клювання на Поплавок та Фідер (ТВОЇ СТАРІ ЦИФРИ) ---
+          passive: {
+            maxSequences: [1, 5],
+            sequenceIntervalMs: [1555, 5333],
+
+            chanceGuaranteed: 0.5,
+            chanceNormal: 0.5,
+            normalIters: [1, 10],
+            guaranteedIters: [1, 3],
+            intervalMs: [300, 800],
+            animDurationMs: [300, 800],
+
+            movementChance: 0.5,
+            movementSpeedPx: [2, 8],
+            movementDurationMs: [1000, 2500],
+
+            animations: {
+              bob: { heightPercent: [-5, 5] },
+              sink: { heightPercent: [-50, -10] },
+              rise: { heightPercent: [10, 30] },
+              tilt: { angle: [-25, 25] },
+              slide: {},
+            },
+
+            guaranteedModifiers: {
+              bobAmpAdd: 10,
+              sinkHeightPercent: [-100, -80],
+              riseHeightPercent: [30, 70],
+              holdDurationMs: [1000, 2500],
+              tiltAngle: [85, 90],
+              movementSpeedMult: [4.0, 3.0],
+              movementDurationMult: [2.0, 2.0],
+            },
+          },
+
+          // --- Клювання на Спінінгові приманки (Воблер, Блешня, Джиг) ---
+          active: {
+            chanceGuaranteed: 0.6,
+            chanceNormal: 0.4,
+            maxSequences: [1, 2],
+            sequenceIntervalMs: [200, 400],
+            intervalMs: [200, 400],
+            animDurationMs: [100, 200],
+            movementChance: 1.0,
+            movementDurationMs: [100, 250],
+            movementSpeedPx: [40, 80],
+            guaranteedIters: [1, 1],
+            normalIters: [1, 2],
+            animations: {
+              slide: {}, // Тільки різкі ривки
+            },
+            guaranteedModifiers: {
+              movementSpeedMult: [1.5, 2.5],
+              movementDurationMult: [1.0, 1.5],
+            },
+          },
+        },
       },
     ],
   },
@@ -413,7 +472,7 @@ const CONFIG = {
     equipment: {
       rod: {
         name: "Тест",
-        type: "spinning", // Змінено на спінінг для тестування нових механік
+        type: "float", // Змінено на спінінг для тестування нових механік
         level: 4,
         basePower: 1.5,
         compensation: 0.6,
@@ -459,8 +518,8 @@ const CONFIG = {
         quality: 1,
       },
 
-      baits: ["test_wobbler_sinking"],
-      // baits: ["oil_worm"],
+      // baits: ["test_wobbler_sinking"],
+      baits: ["oil_worm"],
       // baits: ["oil_worm, bread"],
 
       feeder: {
@@ -541,35 +600,35 @@ const CONFIG = {
     sinkingDurationMs: 4000,
 
     // Фоллбек-логіка клювання (якщо у риби не прописано biteMechanics)
-    biteSequence: {
-      maxSequences: [1, 5],
-      sequenceIntervalMs: [1555, 5333],
-      chanceGuaranteed: 0.5,
-      chanceNormal: 0.5,
-      normalIters: [1, 10],
-      guaranteedIters: [1, 3],
-      intervalMs: [300, 800],
-      animDurationMs: [300, 800],
-      movementChance: 0.5,
-      movementSpeedPx: [2, 8],
-      movementDurationMs: [1000, 2500],
-      animations: {
-        bob: { heightPercent: [-5, 5] },
-        sink: { heightPercent: [-50, -10] },
-        rise: { heightPercent: [10, 30] },
-        tilt: { angle: [-25, 25] },
-        slide: {},
-      },
-      guaranteedModifiers: {
-        bobAmpAdd: 10,
-        sinkHeightPercent: [-100, -80],
-        riseHeightPercent: [30, 70],
-        holdDurationMs: [1000, 2500],
-        tiltAngle: [85, 90],
-        movementSpeedMult: [4.0, 3.0],
-        movementDurationMult: [2.0, 2.0],
-      },
-    },
+    // biteSequence: {
+    //   maxSequences: [1, 5],
+    //   sequenceIntervalMs: [1555, 5333],
+    //   chanceGuaranteed: 0.5,
+    //   chanceNormal: 0.5,
+    //   normalIters: [1, 10],
+    //   guaranteedIters: [1, 3],
+    //   intervalMs: [300, 800],
+    //   animDurationMs: [300, 800],
+    //   movementChance: 0.5,
+    //   movementSpeedPx: [2, 8],
+    //   movementDurationMs: [1000, 2500],
+    //   animations: {
+    //     bob: { heightPercent: [-5, 5] },
+    //     sink: { heightPercent: [-50, -10] },
+    //     rise: { heightPercent: [10, 30] },
+    //     tilt: { angle: [-25, 25] },
+    //     slide: {},
+    //   },
+    //   guaranteedModifiers: {
+    //     bobAmpAdd: 10,
+    //     sinkHeightPercent: [-100, -80],
+    //     riseHeightPercent: [30, 70],
+    //     holdDurationMs: [1000, 2500],
+    //     tiltAngle: [85, 90],
+    //     movementSpeedMult: [4.0, 3.0],
+    //     movementDurationMult: [2.0, 2.0],
+    //   },
+    // },
   },
 
   feederConfig: {
