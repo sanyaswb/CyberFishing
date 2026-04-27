@@ -1,17 +1,68 @@
 const ITEM_DB = {
   rods: {
+    // 1. СПІНІНГ (для блишень, воблерів, джигу)
     rod_test_spin: {
       id: "rod_test_spin",
       name: "Тестовий Спінінг",
-      type: "spinning",
+      type: "spinning", // Для UI фільтрів
       icon: "🎣",
-      displayStats: { Рівень: 4, Потужність: 1.5, Дальність: "600м" },
+      displayStats: {
+        Рівень: 4,
+        Потужність: 1.5,
+        Дальність: "600м",
+        Тип: "Спінінг",
+      },
       engineStats: {
+        type: "spinning", // КРИТИЧНО ДЛЯ ФІЗИКИ
         level: 4,
         basePower: 1.5,
         compensation: 0.6,
         maxDistance: 600,
         hasReel: true,
+      },
+    },
+
+    // 2. ФІДЕР (донка, прикормка лягає на дно)
+    rod_test_feeder: {
+      id: "rod_test_feeder",
+      name: "Тестовий Фідер",
+      type: "feeder", // Для UI фільтрів
+      icon: "🎋",
+      displayStats: {
+        Рівень: 4,
+        Потужність: 1.5,
+        Дальність: "600м",
+        Тип: "Фідер",
+      },
+      engineStats: {
+        type: "feeder", // КРИТИЧНО ДЛЯ ФІЗИКИ
+        level: 4,
+        basePower: 1.5,
+        compensation: 0.4,
+        maxDistance: 600,
+        hasReel: true,
+      },
+    },
+
+    // 3. ПОПЛАВКОВА ВУДКА (класика)
+    rod_test_float: {
+      id: "rod_test_float",
+      name: "Бамбукова Вудка",
+      type: "float", // Для UI фільтрів
+      icon: "🎍",
+      displayStats: {
+        Рівень: 1,
+        Потужність: 1.0,
+        Дальність: "450м",
+        Тип: "Поплавкова",
+      },
+      engineStats: {
+        type: "float", // КРИТИЧНО ДЛЯ ФІЗИКИ
+        level: 1,
+        basePower: 1.0,
+        compensation: 0.2,
+        maxDistance: 450,
+        hasReel: false, // Махова вудка (без котушки)
       },
     },
   },
@@ -246,16 +297,24 @@ const ITEM_DB = {
   deliveryMethods: {
     hand: {
       id: "hand",
+      name: "Ручне закидання",
+      icon: "🖐️",
       type: "chum_delivery",
+      displayStats: { Дальність: "Ближня", Використання: "Рогатка/Руки" },
       engineStats: {
         type: "hand",
         flightTimeMs: 3000,
         maxUses: 7,
       },
     },
+
     boat_lvl3: {
       id: "boat_lvl3",
+      name: "Кораблик (Рівень 3)",
+      icon: "🚤",
       type: "chum_delivery",
+
+      displayStats: { Швидкість: "Висока", Сонар: "Встановлено", Бункери: 3 },
       engineStats: {
         hasSonar: true,
         showSensors: false,
@@ -268,6 +327,7 @@ const ITEM_DB = {
           2: { speedPxPerSec: 200, maxEnergy: 90, energyDrainPerSec: 1 },
           3: { speedPxPerSec: 250, maxEnergy: 120, energyDrainPerSec: 1 },
         },
+
         maneuver: {
           reverseTimeSec: 0.8,
           reverseThrustMult: 0.8,
@@ -275,6 +335,7 @@ const ITEM_DB = {
           maneuverThrustMult: 0.3,
           maneuverSpeedMult: 0.4,
         },
+
         sensorRangeFactor: 1.5,
         turnSpeedRad: 2.5,
         avoidancePersistenceMs: 300,
@@ -384,6 +445,7 @@ const CONFIG = {
             direction: { x: 1, y: 0.1 }, // Вектор (зносить вправо і трохи вниз)
           },
           wind: {
+            // Вітер впливає на поплавок і легкі снасті
             changesPerDay: [4, 12],
             breezeAngleRange: [10, 15],
             gustAngleRange: [15, 40],
@@ -776,12 +838,16 @@ const CONFIG = {
     },
     inventory: [
       { instanceId: "uuid-1", itemId: "rod_test_spin" },
+      { instanceId: "uuid-1-feeder", itemId: "rod_test_feeder" },
+      { instanceId: "uuid-1-float", itemId: "rod_test_float" },
       { instanceId: "uuid-2", itemId: "reel_test" },
       { instanceId: "uuid-3", itemId: "hook_basic", quantity: 10 },
       { instanceId: "uuid-4", itemId: "oil_worm", quantity: 50 },
       { instanceId: "uuid-5", itemId: "test_wobbler_sinking" },
       { instanceId: "uuid-6", itemId: "net_basic" },
       { instanceId: "uuid-7", itemId: "carp_mix_basic", quantity: 5 },
+      { instanceId: "uuid-boat", itemId: "boat_lvl3" },
+      { instanceId: "uuid-hand", itemId: "hand" },
     ],
   },
 

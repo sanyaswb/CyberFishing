@@ -173,7 +173,10 @@ class ScoutingState extends GameState {
     const eq = this.game.systems.inventory.getEquipped();
     const rodType = eq?.rod?.type;
     const baitId = eq?.baits?.[0];
-    const baitCfg = CONFIG.baitsData?.[baitId];
+
+    // 1. ВАЖЛИВО: Читаємо наживку з ITEM_DB, а не з неіснуючого CONFIG.baitsData
+    const baitItem = ITEM_DB.baits[baitId];
+    const baitCfg = baitItem ? baitItem.engineStats : null;
     const baitType = baitCfg?.type;
 
     const isFeeder = rodType === "feeder";
@@ -192,8 +195,10 @@ class ScoutingState extends GameState {
       return;
     }
 
+    // 2. ВАЖЛИВО: Беремо глибину з екіпірованого грузила (з фоллбеком на дефолт)
+    const activeSinker = eq?.sinker || CONFIG.sinker;
     const maxDepth =
-      (isSpinning ? baitCfg?.maxDepth : CONFIG.sinker?.maxDepth) || 8.0;
+      (isSpinning ? baitCfg?.maxDepth : activeSinker?.maxDepth) || 8.0;
 
     if (!this.game.depthUI.isActive) {
       this.game.depthUI.show(
@@ -572,7 +577,9 @@ class WaitingState extends GameState {
       this.game.setState("scouting");
     }
 
-    const isSpinning = CONFIG.player?.equipment?.rod?.type === "spinning";
+    // ЗМІНЕНО: Беремо екіпірування з менеджера!
+    const eq = this.game.systems.inventory.getEquipped();
+    const isSpinning = eq?.rod?.type === "spinning";
 
     if (!isSpinning && input.longPressPos && this.game.canPlayerCast()) {
       const vPos = this.game.systems.projector.screenToVirtual(
@@ -1193,6 +1200,7 @@ class Game {
     this.castDistanceRatio = Math.min(1, dist / maxDist);
     this.castStartTime = performance.now();
 
+    // 1. Отримуємо екіпірування з InventoryManager
     const eq = this.#systems.inventory.getEquipped();
     const isFeeder = eq?.rod?.type === "feeder";
 
@@ -1201,9 +1209,12 @@ class Game {
     }
 
     const baitId = eq?.baits?.[0] || "oil_worm";
-    let baitCfg = CONFIG.baitsData?.[baitId] || CONFIG.float;
 
-    // ДОДАНО: Те саме об'єднання для закидання
+    // 2. ВАЖЛИВО: Читаємо наживку з ITEM_DB замість старого CONFIG.baitsData
+    const baitItem = ITEM_DB.baits[baitId];
+    let baitCfg = baitItem ? baitItem.engineStats : CONFIG.float;
+
+    // 3. Об'єднання для закидання (якщо це звичайна наживка, додаємо фізику поплавця)
     if (!baitCfg.type || baitCfg.type === "float") {
       baitCfg = { ...CONFIG.float, ...baitCfg };
     }
@@ -1222,7 +1233,7 @@ class Game {
         vy,
         this.currentHookDepth,
         this.currentHookDepth > cellDepth,
-        CONFIG.sinker,
+        eq?.sinker || CONFIG.sinker, // 4. Беремо грузило з активного інвентарю
         this.castDistanceRatio,
       );
     } else {

@@ -943,11 +943,7 @@ class InventoryUI {
   #isOpen = false;
 
   #equipmentSlots = [
-    {
-      id: "rod",
-      name: "Вудилище",
-      type: ["spinning", "float_match", "feeder"],
-    },
+    { id: "rod", name: "Вудилище", type: ["spinning", "float", "feeder"] },
     { id: "reel", name: "Котушка", type: ["spinning_reel"] },
     { id: "float", name: "Поплавок", type: ["float_tackle"] },
     { id: "hook", name: "Гачок", type: ["hook"] },
@@ -999,6 +995,16 @@ class InventoryUI {
 
     topBar.append(this.powerLabel, closeBtn);
 
+    this.warningBox = document.createElement("div");
+    this.warningBox.style.cssText = `
+    color: #ff4444; background: rgba(255, 0, 0, 0.1); 
+    border: 1px solid #ff4444; border-radius: 5px;
+    padding: 10px; margin-bottom: 15px; text-align: center;
+    font-weight: bold; display: none;
+  `;
+    this.#container.appendChild(topBar);
+    this.#container.appendChild(this.warningBox);
+
     const mainArea = document.createElement("div");
     mainArea.className = "inv-main-area";
 
@@ -1024,6 +1030,19 @@ class InventoryUI {
     document.body.appendChild(this.tooltip);
   }
 
+  showWarning(message) {
+    this.warningBox.innerText = message;
+    this.warningBox.style.display = "block";
+
+    // Скидаємо попередній таймер, якщо є
+    if (this.warningTimeout) clearTimeout(this.warningTimeout);
+
+    // Ховаємо через 5 секунд
+    this.warningTimeout = setTimeout(() => {
+      this.warningBox.style.display = "none";
+    }, 5000);
+  }
+
   toggle() {
     this.#isOpen = !this.#isOpen;
     this.#container.classList.toggle("active", this.#isOpen);
@@ -1039,34 +1058,230 @@ class InventoryUI {
 
   #renderEquipment() {
     this.leftPanel.innerHTML = "";
-    const equipped = this.#inventoryManager.getEquipped();
 
-    this.#equipmentSlots.forEach((slotDef) => {
-      const slotDiv = document.createElement("div");
-      slotDiv.className = "inv-slot";
+    // Перемикаємо панель у Flexbox, щоб групи йшли одна під одною
+    this.leftPanel.style.display = "flex";
+    this.leftPanel.style.flexDirection = "column";
+    this.leftPanel.style.gap = "15px";
 
-      let item = equipped[slotDef.id];
+    const eq = this.#inventoryManager.getEquipped();
+    const rod = eq.rod;
+    const rodType = rod?.type;
 
-      if (slotDef.id === "baits" && equipped.baits?.length > 0) {
-        item = this.#inventoryManager._hydrateItem(equipped.baits[0], "baits");
-      } else if (slotDef.id === "feeder" && equipped.feeder?.chumId) {
-        item = this.#inventoryManager._hydrateItem(
-          equipped.feeder.chumId,
-          "chums",
+    // === ГРУПА 1: ВУДИЛИЩЕ (Завжди зверху) ===
+    const rodGroup = this.#createGroupContainer("Основне");
+    rodGroup.appendChild(
+      this.#createSlotDOM(
+        { id: "rod", name: "Вудилище", type: ["spinning", "float", "feeder"] },
+        rod,
+      ),
+    );
+    this.leftPanel.appendChild(rodGroup);
+
+    // === ГРУПА 2: ОСНАЩЕННЯ (З'являється лише якщо є вудка) ===
+    if (rod) {
+      const tackleGroup = this.#createGroupContainer("Оснащення");
+
+      // Котушка (Зникає, якщо махова вудка)
+      if (rod.hasReel !== false) {
+        tackleGroup.appendChild(
+          this.#createSlotDOM(
+            { id: "reel", name: "Котушка", type: ["spinning_reel"] },
+            eq.reel,
+          ),
         );
       }
 
-      if (item) {
-        slotDiv.classList.add("equipped");
-        slotDiv.innerHTML = item.icon || "📦";
-        this.#addTooltip(slotDiv, item, slotDef.id, true);
-      } else {
-        slotDiv.innerHTML = `<span style="font-size: 10px; color: #555;">✖</span>`;
-        slotDiv.title = slotDef.name;
+      // Динамічні слоти залежно від типу вудки
+      if (rodType === "spinning") {
+        // Спінінг: Лише приманка (блешня, воблер, джиг)
+        let baitItem =
+          eq.baits?.length > 0
+            ? this.#inventoryManager._hydrateItem(eq.baits[0], "baits")
+            : null;
+        tackleGroup.appendChild(
+          this.#createSlotDOM(
+            {
+              id: "baits",
+              name: "Приманка",
+              type: ["spinner", "wobbler", "jig"],
+            },
+            baitItem,
+          ),
+        );
+      } else if (rodType === "float" || rodType === "float_match") {
+        // Поплавкова: Поплавок, Грузило, Гачок, Наживка
+        tackleGroup.appendChild(
+          this.#createSlotDOM(
+            { id: "float", name: "Поплавок", type: ["float_tackle"] },
+            eq.float,
+          ),
+        );
+        tackleGroup.appendChild(
+          this.#createSlotDOM(
+            { id: "sinker", name: "Грузило", type: ["sinker"] },
+            eq.sinker,
+          ),
+        );
+        tackleGroup.appendChild(
+          this.#createSlotDOM(
+            { id: "hook", name: "Гачок", type: ["hook"] },
+            eq.hook,
+          ),
+        );
+
+        let baitItem =
+          eq.baits?.length > 0
+            ? this.#inventoryManager._hydrateItem(eq.baits[0], "baits")
+            : null;
+        tackleGroup.appendChild(
+          this.#createSlotDOM(
+            { id: "baits", name: "Наживка", type: ["float"] },
+            baitItem,
+          ),
+        );
+      } else if (rodType === "feeder") {
+        // Фідер: Гачок, Наживка + Ланцюжок з годівницею та прикормкою
+        tackleGroup.appendChild(
+          this.#createSlotDOM(
+            { id: "hook", name: "Гачок", type: ["hook"] },
+            eq.hook,
+          ),
+        );
+
+        let baitItem =
+          eq.baits?.length > 0
+            ? this.#inventoryManager._hydrateItem(eq.baits[0], "baits")
+            : null;
+        tackleGroup.appendChild(
+          this.#createSlotDOM(
+            { id: "baits", name: "Наживка", type: ["float"] },
+            baitItem,
+          ),
+        );
+
+        // Створюємо "ланцюжок" 🔗 для фідера
+        const chainDiv = document.createElement("div");
+        chainDiv.style.cssText =
+          "display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 8px;";
+
+        // Використовуємо слот sinker як "Годівницю"
+        chainDiv.appendChild(
+          this.#createSlotDOM(
+            {
+              id: "sinker",
+              name: "Годівниця",
+              type: ["sinker", "feeder_basket"],
+            },
+            eq.sinker,
+          ),
+        );
+
+        const linkIcon = document.createElement("span");
+        linkIcon.innerText = "🔗";
+        chainDiv.appendChild(linkIcon);
+
+        let chumItem = eq.feeder?.chumId
+          ? this.#inventoryManager._hydrateItem(eq.feeder.chumId, "chums")
+          : null;
+        chainDiv.appendChild(
+          this.#createSlotDOM(
+            { id: "feeder", name: "Прикормка (Фідер)", type: ["chum_mix"] },
+            chumItem,
+          ),
+        );
+
+        tackleGroup.appendChild(chainDiv);
       }
 
-      this.leftPanel.appendChild(slotDiv);
-    });
+      this.leftPanel.appendChild(tackleGroup);
+    }
+
+    // === ГРУПА 3: НЕЗАЛЕЖНЕ СПОРЯДЖЕННЯ (Підсака, Кораблик) ===
+    const indGroup = this.#createGroupContainer("Додатково");
+
+    indGroup.appendChild(
+      this.#createSlotDOM(
+        { id: "net", name: "Підсака", type: ["net"] },
+        eq.net,
+      ),
+    );
+
+    // Кораблик та його прикормка (через ланцюжок 🔗)
+    const boatChain = document.createElement("div");
+    boatChain.style.cssText =
+      "display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 8px;";
+
+    // Слот доставки (Кораблик/Рогатка)
+    let deliveryItem = eq.feeder?.deliveryMethodId
+      ? this.#inventoryManager._hydrateItem(
+          eq.feeder.deliveryMethodId,
+          "deliveryMethods",
+        )
+      : null;
+    boatChain.appendChild(
+      this.#createSlotDOM(
+        { id: "delivery", name: "Доставка", type: ["chum_delivery"] },
+        deliveryItem,
+      ),
+    );
+
+    // Якщо кораблик встановлено - показуємо слот для його прикормки
+    if (deliveryItem && deliveryItem.type === "boat") {
+      const linkIcon = document.createElement("span");
+      linkIcon.innerText = "🔗";
+      boatChain.appendChild(linkIcon);
+
+      // (Тимчасово використовуємо chumId, але в майбутньому сюди краще додати boatChumId)
+      let boatChumItem = eq.feeder?.chumId
+        ? this.#inventoryManager._hydrateItem(eq.feeder.chumId, "chums")
+        : null;
+      boatChain.appendChild(
+        this.#createSlotDOM(
+          { id: "feeder", name: "Прикормка (Кораблик)", type: ["chum_mix"] },
+          boatChumItem,
+        ),
+      );
+    }
+
+    indGroup.appendChild(boatChain);
+    this.leftPanel.appendChild(indGroup);
+  }
+
+  // --- ДОПОМІЖНИЙ МЕТОД: Створює контейнер для групи слотів ---
+  #createGroupContainer(titleText) {
+    const group = document.createElement("div");
+    group.style.cssText =
+      "display: flex; flex-wrap: wrap; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);";
+
+    const title = document.createElement("div");
+    title.innerText = titleText;
+    title.style.cssText =
+      "width: 100%; font-size: 12px; color: #888; text-transform: uppercase; margin-bottom: -5px;";
+
+    group.appendChild(title);
+    return group;
+  }
+
+  // --- ДОПОМІЖНИЙ МЕТОД: Створює саму ячейку (Slot) ---
+  #createSlotDOM(slotDef, item) {
+    const slotDiv = document.createElement("div");
+    slotDiv.className = "inv-slot";
+
+    if (item) {
+      slotDiv.classList.add("equipped");
+      slotDiv.innerHTML = item.icon || "📦";
+      this.#addTooltip(slotDiv, item, slotDef.id, true);
+    } else {
+      slotDiv.innerHTML = `<span style="font-size: 10px; color: #555;">✖</span>`;
+      slotDiv.title = slotDef.name;
+
+      // Якщо гравець клікає на порожній слот, показуємо підказку!
+      slotDiv.addEventListener("click", () => {
+        this.showWarning(`Оберіть ${slotDef.name} у правій панелі`);
+      });
+    }
+    return slotDiv;
   }
 
   #renderFilters() {
@@ -1172,16 +1387,30 @@ class InventoryUI {
       if (isEquipped) {
         if (slotId === "baits") this.#inventoryManager.unequipBait();
         else if (slotId === "feeder") this.#inventoryManager.unequipFeeder();
+        else if (slotId === "delivery")
+          this.#inventoryManager.unequipDelivery(); // ДОДАНО
         else this.#inventoryManager.unequipItem(slotId);
       } else {
+        const validation = this.#inventoryManager.validateEquip(item);
+
+        if (!validation.isValid) {
+          this.showWarning(validation.reason);
+          return;
+        }
+
+        if (this.warningBox) this.warningBox.style.display = "none";
+
         const targetSlot = this.#equipmentSlots.find((s) =>
           s.type.includes(item.type),
         );
+
         if (targetSlot) {
           if (targetSlot.id === "baits")
             this.#inventoryManager.equipBait(item.id);
           else if (targetSlot.id === "feeder")
             this.#inventoryManager.equipFeeder(item.id);
+          else if (targetSlot.id === "delivery")
+            this.#inventoryManager.equipDelivery(item.id); // ДОДАНО
           else this.#inventoryManager.equipItem(targetSlot.id, item.id);
         }
       }
