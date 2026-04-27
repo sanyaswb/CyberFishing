@@ -1,3 +1,295 @@
+const ITEM_DB = {
+  rods: {
+    rod_test_spin: {
+      id: "rod_test_spin",
+      name: "Тестовий Спінінг",
+      type: "spinning",
+      icon: "🎣",
+      displayStats: { Рівень: 4, Потужність: 1.5, Дальність: "600м" },
+      engineStats: {
+        level: 4,
+        basePower: 1.5,
+        compensation: 0.6,
+        maxDistance: 600,
+        hasReel: true,
+      },
+    },
+  },
+
+  reels: {
+    reel_test: {
+      id: "reel_test",
+      name: "Тестова Котушка",
+      type: "spinning_reel",
+      icon: "⚙️",
+      displayStats: { level: 4, power: 1.0, holdCharges: 3 },
+      engineStats: {
+        basePower: 1.0,
+        pumpLevel: 5,
+        pumpPowerPerLevel: 10,
+        hold: {
+          activeLevel: 3,
+          swipeThresholdPx: 100,
+          manualCooldownMs: 500,
+          levels: {
+            1: {
+              charges: 1,
+              restoreTimeMs: 5000,
+              holdPower: 1,
+              tensionMultiplier: 1.0,
+            },
+            2: {
+              charges: 2,
+              restoreTimeMs: 4000,
+              holdPower: 2,
+              tensionMultiplier: 1.0,
+            },
+            3: {
+              charges: 3,
+              restoreTimeMs: 3000,
+              holdPower: 3,
+              tensionMultiplier: 1.0,
+            },
+          },
+        },
+      },
+    },
+  },
+
+  hooks: {
+    hook_basic: {
+      id: "hook_basic",
+      name: "Базовий гачок",
+      type: "hook",
+      icon: "🪝",
+      displayStats: { level: 5, weight: "4g" },
+      engineStats: { weight: 4, quality: 1 },
+    },
+  },
+
+  baits: {
+    oil_worm: {
+      id: "oil_worm",
+      name: "Масляний черв'як",
+      type: "float",
+      icon: "🪱",
+      displayStats: { type: "Наживка" },
+      engineStats: { type: "float" },
+    },
+
+    bread: {
+      id: "bread",
+      name: "Хліб",
+      type: "float",
+      icon: "🍞",
+      displayStats: { type: "Наживка" },
+      engineStats: { type: "float" },
+    },
+
+    test_spinner: {
+      id: "test_spinner",
+      name: "Блешня (Тест)",
+      type: "spinner",
+      icon: "🥄",
+      displayStats: { sinkSpeed: 1.5, maxDepth: "3.0м" },
+      engineStats: {
+        mode: 1,
+        waterFriction: 0.2,
+        sinkSpeed: 1.5,
+        riseSpeed: 2.0,
+        maxDepth: 3.0,
+        quality: 8.0,
+        currentCompensation: [0.1, 1.0],
+      },
+    },
+
+    test_wobbler_suspend: {
+      id: "test_wobbler_suspend",
+      name: "Воблер Suspend",
+      type: "wobbler",
+      icon: "🐟",
+      displayStats: { targetDepth: "2.0 - 4.5м" },
+      engineStats: {
+        mode: 2,
+        waterFriction: 0.4,
+        sinkSpeed: 1.0,
+        riseSpeed: 1.0,
+        targetMinDepth: 2.0,
+        targetMaxDepth: 4.5,
+        maxDepth: 6.5,
+        quality: 8.0,
+        currentCompensation: [0.1, 1.0],
+      },
+    },
+
+    test_wobbler_sinking: {
+      id: "test_wobbler_sinking",
+      name: "Воблер Sinking",
+      type: "wobbler",
+      icon: "🐟",
+      displayStats: { targetDepth: "1.0 - 3.5м" },
+      engineStats: {
+        mode: 3,
+        waterFriction: 0.3,
+        sinkSpeed: 2.0,
+        riseSpeed: 1.5,
+        targetMinDepth: 1.0,
+        targetMaxDepth: 3.5,
+        maxDepth: 5.0,
+        quality: 8.0,
+        currentCompensation: [0.1, 1.0],
+      },
+    },
+
+    test_jig: {
+      id: "test_jig",
+      name: "Джиг",
+      type: "jig",
+      icon: "🪨",
+      displayStats: { sinkSpeed: 3.0 },
+      engineStats: {
+        mode: 1,
+        waterFriction: 0.15,
+        sinkSpeed: 3.0,
+        riseSpeed: 2.5,
+        quality: 7.0,
+        currentCompensation: [0.1, 0.9],
+      },
+    },
+  },
+
+  floats: {
+    float_day: {
+      id: "float_day",
+      name: "Денний поплавок",
+      type: "float_tackle",
+      icon: "🥢",
+      displayStats: { level: 1 },
+      engineStats: {
+        width: 3,
+        length: 15,
+        type: "day",
+        quality: 10.0,
+        windCompensation: [0.1, 1.0],
+        overDepthPenaltyMult: 0.5,
+        sinkingDelayMs: 500,
+        sinkingDurationMs: 4000,
+      },
+    },
+  },
+
+  sinkers: {
+    sinker_light: {
+      id: "sinker_light",
+      name: "Легкий грузик",
+      type: "sinker",
+      icon: "🪨",
+      displayStats: { weight: "Light", maxDepth: "10.0м" },
+      engineStats: {
+        level: 1,
+        quality: 10.0,
+        maxDepth: 10.0,
+        currentCompensation: [0.1, 1.0],
+        weight: "light",
+        weights: {
+          light: { speedMult: 1.0, heightScale: 1.0 },
+          medium: { speedMult: 1.5, heightScale: 0.85 },
+          heavy: { speedMult: 2.0, heightScale: 0.7 },
+        },
+      },
+    },
+  },
+
+  nets: {
+    net_basic: {
+      id: "net_basic",
+      name: "Базова підсака",
+      type: "net",
+      icon: "🕸️",
+      displayStats: { maxWeight: "3.0кг" },
+      engineStats: {
+        active: true,
+        length: 15.0,
+        maxWeight: 3.0,
+        quality: 1.0,
+        type: "all",
+        chances: [
+          { min: 0, max: 39, chance: 80 },
+          { min: 40, max: 79, chance: 70 },
+          { min: 80, max: 99, chance: 60 },
+          { min: 100, max: Infinity, chance: 50 },
+        ],
+      },
+    },
+  },
+
+  chums: {
+    carp_mix_basic: {
+      id: "carp_mix_basic",
+      name: "Базова коропова суміш",
+      type: "chum_mix",
+      icon: "🍞",
+      displayStats: { duration: "24h" },
+      engineStats: {
+        targetFishes: ["crucian_stalker"],
+        radius: 150,
+        maxBonus: 2.0,
+        minBonus: 1.2,
+        rampUpTimeMs: 3600000,
+        peakDurationMs: 7200000,
+        totalBonusTimeMs: 14400000,
+        minBonusDurationHours: 24,
+      },
+    },
+  },
+
+  deliveryMethods: {
+    hand: {
+      id: "hand",
+      type: "chum_delivery",
+      engineStats: {
+        type: "hand",
+        flightTimeMs: 3000,
+        maxUses: 7,
+      },
+    },
+    boat_lvl3: {
+      id: "boat_lvl3",
+      type: "chum_delivery",
+      engineStats: {
+        hasSonar: true,
+        showSensors: false,
+        manualControl: false,
+        type: "boat",
+        sections: 3,
+        level: 3,
+        statsByLevel: {
+          1: { speedPxPerSec: 150, maxEnergy: 60, energyDrainPerSec: 1 },
+          2: { speedPxPerSec: 200, maxEnergy: 90, energyDrainPerSec: 1 },
+          3: { speedPxPerSec: 250, maxEnergy: 120, energyDrainPerSec: 1 },
+        },
+        maneuver: {
+          reverseTimeSec: 0.8,
+          reverseThrustMult: 0.8,
+          maneuverTimeSec: 1.5,
+          maneuverThrustMult: 0.3,
+          maneuverSpeedMult: 0.4,
+        },
+        sensorRangeFactor: 1.5,
+        turnSpeedRad: 2.5,
+        avoidancePersistenceMs: 300,
+        avoidanceThrustMultiplier: 0.5,
+        acceleration: 800,
+        slowRadius: 150,
+        brakeForce: 0.5,
+        finishRadiusTarget: 5,
+        finishRadiusReturning: 30,
+        emoji: "🚤",
+      },
+    },
+  },
+};
+
 const CONFIG = {
   canvas: {
     id: "gameCanvas",
@@ -470,270 +762,50 @@ const CONFIG = {
 
   player: {
     equipment: {
-      rod: {
-        name: "Тест",
-        type: "float", // Змінено на спінінг для тестування нових механік
-        level: 4,
-        basePower: 1.5,
-        compensation: 0.6,
-        maxDistance: 600,
-        hasReel: true,
-      },
-
-      reel: {
-        level: 4,
-        basePower: 1.0,
-        pumpLevel: 5,
-        pumpPowerPerLevel: 10,
-        hold: {
-          activeLevel: 3,
-          swipeThresholdPx: 100,
-          manualCooldownMs: 500,
-          levels: {
-            1: {
-              charges: 1,
-              restoreTimeMs: 5000,
-              holdPower: 1,
-              tensionMultiplier: 1.0,
-            },
-            2: {
-              charges: 2,
-              restoreTimeMs: 4000,
-              holdPower: 2,
-              tensionMultiplier: 1.0,
-            },
-            3: {
-              charges: 3,
-              restoreTimeMs: 3000,
-              holdPower: 3,
-              tensionMultiplier: 1.0,
-            },
-          },
-        },
-      },
-
-      hook: {
-        level: 5,
-        weight: 4,
-        quality: 1,
-      },
-
-      // baits: ["test_wobbler_sinking"],
+      rodId: "rod_test_spin",
+      reelId: "reel_test",
+      hookId: "hook_basic",
+      floatId: null,
+      sinkerId: null,
       baits: ["oil_worm"],
-      // baits: ["oil_worm, bread"],
-
+      netId: "net_basic",
       feeder: {
         chumId: "carp_mix_basic",
+        deliveryMethodId: "boat_lvl3",
       },
     },
-  },
-
-  // НОВИЙ БЛОК: Дані про всі типи наживок у грі
-  baitsData: {
-    // Наживки для поплавка/фідера
-    oil_worm: {
-      type: "float",
-    },
-    bread: {
-      type: "float",
-    },
-
-    // Приманки для спінінгу (БЕЗ biteSequence, він тепер у рибі)
-    test_spinner: {
-      type: "spinner",
-      mode: 1,
-      waterFriction: 0.2,
-      sinkSpeed: 1.5,
-      riseSpeed: 2.0,
-      maxDepth: 3.0,
-      quality: 8.0,
-      currentCompensation: [0.1, 1.0],
-    },
-
-    test_wobbler_suspend: {
-      type: "wobbler",
-      mode: 2,
-      waterFriction: 0.4,
-      sinkSpeed: 1.0,
-      riseSpeed: 1.0,
-      maxDepth: 6.5,
-      targetMinDepth: 2.0,
-      targetMaxDepth: 4.5,
-      quality: 8.0,
-      currentCompensation: [0.1, 1.0],
-    },
-
-    test_wobbler_sinking: {
-      type: "wobbler",
-      mode: 3,
-      waterFriction: 0.3,
-      sinkSpeed: 2.0,
-      riseSpeed: 1.5,
-      targetMinDepth: 1.0,
-      targetMaxDepth: 3.5,
-      maxDepth: 5.0,
-      quality: 8.0,
-      currentCompensation: [0.1, 1.0],
-    },
-
-    test_jig: {
-      type: "jig",
-      mode: 1,
-      waterFriction: 0.15,
-      sinkSpeed: 3.0,
-      riseSpeed: 2.5,
-      quality: 7.0,
-      currentCompensation: [0.1, 0.9],
-    },
-  },
-
-  float: {
-    width: 3,
-    length: 15,
-    type: "day",
-    level: 1,
-    quality: 10.0,
-    windCompensation: [0.1, 1.0],
-    overDepthPenaltyMult: 0.5,
-
-    sinkingDelayMs: 500,
-    sinkingDurationMs: 4000,
-
-    // Фоллбек-логіка клювання (якщо у риби не прописано biteMechanics)
-    // biteSequence: {
-    //   maxSequences: [1, 5],
-    //   sequenceIntervalMs: [1555, 5333],
-    //   chanceGuaranteed: 0.5,
-    //   chanceNormal: 0.5,
-    //   normalIters: [1, 10],
-    //   guaranteedIters: [1, 3],
-    //   intervalMs: [300, 800],
-    //   animDurationMs: [300, 800],
-    //   movementChance: 0.5,
-    //   movementSpeedPx: [2, 8],
-    //   movementDurationMs: [1000, 2500],
-    //   animations: {
-    //     bob: { heightPercent: [-5, 5] },
-    //     sink: { heightPercent: [-50, -10] },
-    //     rise: { heightPercent: [10, 30] },
-    //     tilt: { angle: [-25, 25] },
-    //     slide: {},
-    //   },
-    //   guaranteedModifiers: {
-    //     bobAmpAdd: 10,
-    //     sinkHeightPercent: [-100, -80],
-    //     riseHeightPercent: [30, 70],
-    //     holdDurationMs: [1000, 2500],
-    //     tiltAngle: [85, 90],
-    //     movementSpeedMult: [4.0, 3.0],
-    //     movementDurationMult: [2.0, 2.0],
-    //   },
-    // },
+    inventory: [
+      { instanceId: "uuid-1", itemId: "rod_test_spin" },
+      { instanceId: "uuid-2", itemId: "reel_test" },
+      { instanceId: "uuid-3", itemId: "hook_basic", quantity: 10 },
+      { instanceId: "uuid-4", itemId: "oil_worm", quantity: 50 },
+      { instanceId: "uuid-5", itemId: "test_wobbler_sinking" },
+      { instanceId: "uuid-6", itemId: "net_basic" },
+      { instanceId: "uuid-7", itemId: "carp_mix_basic", quantity: 5 },
+    ],
   },
 
   feederConfig: {
     volumeNormal: 0.4,
     volumeGuaranteed: 1.0,
-    guaranteedRings: [2, 3], // Скільки разів продзвенить за одну червону ітерацію
-  },
-
-  sinker: {
-    level: 1,
-    quality: 10.0,
-    maxDepth: 10.0, // Цей параметр буде використовуватися для поплавка та джигу, якщо у них не вказано власний maxDepth
-    currentCompensation: [0.1, 1.0], // Як сильно грузило компенсує силу течії (0.1 = 10%, 1.0 = 100%)
-    weight: "light",
-    weights: {
-      light: { speedMult: 1.0, heightScale: 1.0 },
-      medium: { speedMult: 1.5, heightScale: 0.85 },
-      heavy: { speedMult: 2.0, heightScale: 0.7 },
-    },
-  },
-
-  wind: {
-    active: true,
-    speedPxPerSec: 15,
-    direction: { x: 1, y: 0.2 },
-  },
-
-  net: {
-    active: true,
-    length: 15.0, // Це "виліт" підсаки у віртуальних одиницях (буде 150px)
-    maxWeight: 3.0,
-    quality: 1.0,
-    type: "all",
-    chances: [
-      { min: 0, max: 39, chance: 80 },
-      { min: 40, max: 79, chance: 70 },
-      { min: 80, max: 99, chance: 60 },
-      { min: 100, max: Infinity, chance: 50 },
-    ],
+    guaranteedRings: [2, 3],
   },
 
   chum: {
-    currentMethod: "boat", // Перемикач: 'hand' (руками) або 'boat' (кораблик)
-
+    currentMethod: "boat",
     deliveryMethods: {
-      hand: {
-        type: "hand",
-        flightTimeMs: 3000,
-        maxUses: 7,
-      },
-      boat: {
-        hasSonar: true,
-        showSensors: false,
-        manualControl: false,
-        type: "boat",
-        sections: 3,
-        level: 3, // Поточний рівень кораблика
-        statsByLevel: {
-          1: { speedPxPerSec: 150, maxEnergy: 60, energyDrainPerSec: 1 }, // Енергії вистачить на 60 сек плавання
-          2: { speedPxPerSec: 200, maxEnergy: 90, energyDrainPerSec: 1 },
-          3: { speedPxPerSec: 250, maxEnergy: 120, energyDrainPerSec: 1 },
-        },
-
-        // Якщо він від'їжджає занадто мало — збільш reverseTimeSec.
-        // Якщо він дуже повільно від'їжджає — збільш reverseThrustMult до 1.0.
-        // Якщо розворот все ще занадто широкий — зменш maneuverSpeedMult до 0.2 або збільш час маневру maneuverTimeSec.
-
-        maneuver: {
-          reverseTimeSec: 0.8, // Скільки секунд кораблик здає назад
-          reverseThrustMult: 0.8, // Сила заднього ходу (0.8 = 80% від прискорення)
-          maneuverTimeSec: 1.5, // Тривалість "зниженої передачі" після реверсу
-          maneuverThrustMult: 0.3, // Тяга під час розвороту (0.3 = 30% потужності)
-          maneuverSpeedMult: 0.4, // Максимальна швидкість під час розвороту (0.4 = 40%)
-        },
-
-        sensorRangeFactor: 1.5, // Множник дальності (1.0 — стандарт, 2.0 — бачить вдвічі далі)
-        turnSpeedRad: 2.5, // Як швидко кораблик може змінювати напрямок (в радіанах в секунду)
-        avoidancePersistenceMs: 300, // Гістерезис: час (мс) руху в безпечному напрямку після очищення шляху
-        avoidanceThrustMultiplier: 0.5,
-        acceleration: 800,
-        slowRadius: 150, // Радіус початку гальмування
-        brakeForce: 0.5, // Сила гальмування
-        finishRadiusTarget: 5, // Наскільки точно підпливати до цілі скидання
-        finishRadiusReturning: 30, // Наскільки близько підпливати до берега при поверненні
-        emoji: "🚤",
-      },
+      hand: ITEM_DB.deliveryMethods.hand.engineStats,
+      boat: ITEM_DB.deliveryMethods.boat_lvl3.engineStats,
     },
-
     baits: {
-      carp_mix_basic: {
-        id: "carp_mix_basic",
-        name: "Базова коропова суміш",
-        targetFishes: ["crucian_stalker"],
-
-        radius: 150,
-
-        maxBonus: 2.0,
-        minBonus: 1.2,
-        rampUpTimeMs: 3600000,
-        peakDurationMs: 7200000,
-        totalBonusTimeMs: 14400000,
-        minBonusDurationHours: 24,
-      },
+      carp_mix_basic: ITEM_DB.chums.carp_mix_basic.engineStats,
     },
   },
+
+  // ОСЬ ТУТ ЦИМ МОСТАМ МІСЦЕ:
+  float: ITEM_DB.floats.float_day.engineStats,
+  sinker: ITEM_DB.sinkers.sinker_light.engineStats,
+  net: ITEM_DB.nets.net_basic.engineStats,
 
   hookMechanics: {
     safeTensionThreshold: 50, // Поріг для сильної риби
@@ -892,5 +964,11 @@ const CONFIG = {
   colors: {
     background: "#0f171e",
     bodyBackground: "#1a1a1a",
+  },
+
+  wind: {
+    active: true,
+    speedPxPerSec: 15,
+    direction: { x: 1, y: 0.2 },
   },
 };

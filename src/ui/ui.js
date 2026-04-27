@@ -753,7 +753,6 @@ class ChumUI {
     document.body.appendChild(this.button);
   }
 
-  // ДОДАНО: Приймаємо method і count
   setState(state, method = "hand", count = 0, isManual = false) {
     if (this.currentState === state && this.button.innerText.includes(count))
       return;
@@ -935,5 +934,279 @@ class HoldChargesUI {
         restoringCount--;
       }
     }
+  }
+}
+
+class InventoryUI {
+  #container;
+  #inventoryManager;
+  #isOpen = false;
+
+  #equipmentSlots = [
+    {
+      id: "rod",
+      name: "Вудилище",
+      type: ["spinning", "float_match", "feeder"],
+    },
+    { id: "reel", name: "Котушка", type: ["spinning_reel"] },
+    { id: "float", name: "Поплавок", type: ["float_tackle"] },
+    { id: "hook", name: "Гачок", type: ["hook"] },
+    {
+      id: "baits",
+      name: "Наживка",
+      type: ["float", "spinner", "wobbler", "jig"],
+    },
+    { id: "sinker", name: "Грузило", type: ["sinker"] },
+    { id: "net", name: "Підсака", type: ["net"] },
+    { id: "feeder", name: "Прикормка", type: ["chum_mix"] },
+  ];
+
+  #activeFilters = new Set();
+
+  constructor(inventoryManager) {
+    this.#inventoryManager = inventoryManager;
+    this.#initBackpackButton();
+    this.#initModal();
+  }
+
+  #initBackpackButton() {
+    this.backpackBtn = document.createElement("button");
+    this.backpackBtn.innerHTML = "🎒";
+    this.backpackBtn.className = "inv-backpack-btn"; // Використовуємо CSS клас
+
+    if (typeof UIUtils !== "undefined") {
+      UIUtils.makeSolid(this.backpackBtn);
+    }
+
+    this.backpackBtn.addEventListener("click", () => this.toggle());
+    document.body.appendChild(this.backpackBtn);
+  }
+
+  #initModal() {
+    this.#container = document.createElement("div");
+    this.#container.className = "inv-modal";
+
+    const topBar = document.createElement("div");
+    topBar.className = "inv-top-bar";
+
+    this.powerLabel = document.createElement("div");
+    this.powerLabel.innerHTML = `💪 Загальна сила: <span id="inv-total-power" style="color: #00ff80;">0</span> / 1000`;
+
+    const closeBtn = document.createElement("button");
+    closeBtn.innerText = "❌ Закрити";
+    closeBtn.className = "inv-close-btn";
+    closeBtn.onclick = () => this.toggle();
+
+    topBar.append(this.powerLabel, closeBtn);
+
+    const mainArea = document.createElement("div");
+    mainArea.className = "inv-main-area";
+
+    this.leftPanel = document.createElement("div");
+    this.leftPanel.className = "inv-left-panel";
+
+    const rightWrapper = document.createElement("div");
+    rightWrapper.className = "inv-right-panel";
+
+    this.filterContainer = document.createElement("div");
+    this.filterContainer.className = "inv-filters";
+
+    this.inventoryGrid = document.createElement("div");
+    this.inventoryGrid.className = "inv-grid";
+
+    rightWrapper.append(this.filterContainer, this.inventoryGrid);
+    mainArea.append(this.leftPanel, rightWrapper);
+    this.#container.append(topBar, mainArea);
+    document.body.appendChild(this.#container);
+
+    this.tooltip = document.createElement("div");
+    this.tooltip.className = "inv-tooltip";
+    document.body.appendChild(this.tooltip);
+  }
+
+  toggle() {
+    this.#isOpen = !this.#isOpen;
+    this.#container.classList.toggle("active", this.#isOpen);
+    if (this.#isOpen) this.refreshUI();
+  }
+
+  refreshUI() {
+    this.#renderEquipment();
+    this.#renderFilters();
+    this.#renderInventory();
+    this.#updateTotalPower();
+  }
+
+  #renderEquipment() {
+    this.leftPanel.innerHTML = "";
+    const equipped = this.#inventoryManager.getEquipped();
+
+    this.#equipmentSlots.forEach((slotDef) => {
+      const slotDiv = document.createElement("div");
+      slotDiv.className = "inv-slot";
+
+      let item = equipped[slotDef.id];
+
+      if (slotDef.id === "baits" && equipped.baits?.length > 0) {
+        item = this.#inventoryManager._hydrateItem(equipped.baits[0], "baits");
+      } else if (slotDef.id === "feeder" && equipped.feeder?.chumId) {
+        item = this.#inventoryManager._hydrateItem(
+          equipped.feeder.chumId,
+          "chums",
+        );
+      }
+
+      if (item) {
+        slotDiv.classList.add("equipped");
+        slotDiv.innerHTML = item.icon || "📦";
+        this.#addTooltip(slotDiv, item, slotDef.id, true);
+      } else {
+        slotDiv.innerHTML = `<span style="font-size: 10px; color: #555;">✖</span>`;
+        slotDiv.title = slotDef.name;
+      }
+
+      this.leftPanel.appendChild(slotDiv);
+    });
+  }
+
+  #renderFilters() {
+    this.filterContainer.innerHTML = "";
+    const items = this.#inventoryManager.getInventoryItems();
+
+    const types = new Set(
+      items
+        .map((i) => {
+          const fullItem = this.#inventoryManager._hydrateItem(
+            i.itemId,
+            this.#getCategoryByType(i.itemId),
+          );
+          return fullItem ? fullItem.type : null;
+        })
+        .filter(Boolean),
+    );
+
+    this.filterContainer.appendChild(
+      this.#createFilterBtn("All", "🎛️ Усі", this.#activeFilters.size === 0),
+    );
+
+    types.forEach((type) => {
+      const isActive = this.#activeFilters.has(type);
+      this.filterContainer.appendChild(
+        this.#createFilterBtn(type, type, isActive),
+      );
+    });
+  }
+
+  #createFilterBtn(type, label, isActive) {
+    const btn = document.createElement("button");
+    btn.className = `inv-filter-btn ${isActive ? "active" : ""}`;
+    btn.innerText = label;
+    btn.onclick = () => {
+      if (type === "All") {
+        this.#activeFilters.clear();
+      } else {
+        this.#activeFilters.has(type)
+          ? this.#activeFilters.delete(type)
+          : this.#activeFilters.add(type);
+      }
+      this.refreshUI();
+    };
+    return btn;
+  }
+
+  #renderInventory() {
+    this.inventoryGrid.innerHTML = "";
+    const items = this.#inventoryManager.getInventoryItems();
+
+    items.forEach((invItem) => {
+      const category = this.#getCategoryByType(invItem.itemId);
+      const item = this.#inventoryManager._hydrateItem(
+        invItem.itemId,
+        category,
+      );
+      if (!item) return;
+
+      if (this.#activeFilters.size > 0 && !this.#activeFilters.has(item.type))
+        return;
+
+      const slotDiv = document.createElement("div");
+      slotDiv.className = "inv-slot inventory";
+      slotDiv.innerHTML = item.icon || "📦";
+
+      if (invItem.quantity > 1) {
+        const qty = document.createElement("span");
+        qty.className = "qty";
+        qty.innerText = invItem.quantity;
+        slotDiv.appendChild(qty);
+      }
+
+      this.#addTooltip(slotDiv, item, null, false, invItem.instanceId);
+      this.inventoryGrid.appendChild(slotDiv);
+    });
+  }
+
+  #addTooltip(element, item, slotId, isEquipped, instanceId = null) {
+    element.addEventListener("mouseenter", () => {
+      let html = `<div style="font-size: 16px; font-weight: bold; margin-bottom: 5px; color: #00ccff;">${item.icon} ${item.name}</div>`;
+      for (let [key, val] of Object.entries(item)) {
+        if (["id", "name", "icon", "type"].includes(key)) continue;
+        if (typeof val !== "object") {
+          // Стало (використовуємо клас inv-tooltip-stat):
+          html += `<div class="inv-tooltip-stat"><b>${key}:</b> ${val}</div>`;
+        }
+      }
+
+      this.tooltip.innerHTML = html;
+      this.tooltip.style.display = "block";
+
+      const rect = element.getBoundingClientRect();
+      this.tooltip.style.left = `${rect.right + 10}px`;
+      this.tooltip.style.top = `${rect.top}px`;
+    });
+
+    element.addEventListener("mouseleave", () => {
+      this.tooltip.style.display = "none";
+    });
+
+    element.addEventListener("click", () => {
+      if (isEquipped) {
+        if (slotId === "baits") this.#inventoryManager.unequipBait();
+        else if (slotId === "feeder") this.#inventoryManager.unequipFeeder();
+        else this.#inventoryManager.unequipItem(slotId);
+      } else {
+        const targetSlot = this.#equipmentSlots.find((s) =>
+          s.type.includes(item.type),
+        );
+        if (targetSlot) {
+          if (targetSlot.id === "baits")
+            this.#inventoryManager.equipBait(item.id);
+          else if (targetSlot.id === "feeder")
+            this.#inventoryManager.equipFeeder(item.id);
+          else this.#inventoryManager.equipItem(targetSlot.id, item.id);
+        }
+      }
+      this.refreshUI();
+    });
+  }
+
+  #updateTotalPower() {
+    const eq = this.#inventoryManager.getEquipped();
+    let power = 0;
+    if (eq.rod) power += eq.rod.basePower * eq.rod.level || 0;
+    if (eq.reel) power += eq.reel.basePower * eq.reel.level || 0;
+
+    const powerEl = document.getElementById("inv-total-power");
+    if (powerEl) powerEl.innerText = power.toFixed(1);
+  }
+
+  #getCategoryByType(itemId) {
+    if (itemId.includes("rod")) return "rods";
+    if (itemId.includes("reel")) return "reels";
+    if (itemId.includes("hook")) return "hooks";
+    if (itemId.includes("net")) return "nets";
+    if (itemId.includes("sinker")) return "sinkers";
+    if (itemId.includes("mix")) return "chums";
+    if (itemId.includes("float")) return "floats";
+    return "baits";
   }
 }

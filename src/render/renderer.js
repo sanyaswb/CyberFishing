@@ -372,9 +372,10 @@ class Renderer {
     this.#ctx.save();
     this.#ctx.translate(screenPos.x, screenPos.y);
 
-    const rodType = CONFIG.player?.equipment?.rod?.type;
+    const eq = window.game?.systems?.inventory?.getEquipped();
+    const rodType = eq?.rod?.type;
     const isFeeder = rodType === "feeder";
-    const isSpinning = rodType === "spinning"; // ДОДАНО: перевірка на спінінг
+    const isSpinning = rodType === "spinning";
 
     if (floatEntity.isHooked()) {
       this.#ctx.fillStyle = visualState.color;

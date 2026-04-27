@@ -170,7 +170,7 @@ class ScoutingState extends GameState {
       0.03,
     );
 
-    const eq = CONFIG.player?.equipment;
+    const eq = this.game.systems.inventory.getEquipped();
     const rodType = eq?.rod?.type;
     const baitId = eq?.baits?.[0];
     const baitCfg = CONFIG.baitsData?.[baitId];
@@ -246,7 +246,7 @@ class PlayingState extends GameState {
     this.data = data || {};
     const fishData = this.data.fish;
 
-    const eq = CONFIG.player?.equipment;
+    const eq = this.game.systems.inventory.getEquipped();
 
     this.#rod = new Rod(
       eq.rod.level,
@@ -334,7 +334,7 @@ class PlayingState extends GameState {
 
   handleInput(input) {
     const isHold = this.#fishingSystem.isHoldActive();
-    const eq = CONFIG.player?.equipment;
+    const eq = this.game.systems.inventory.getEquipped();
     const swipeThreshold = eq?.reel?.hold?.swipeThresholdPx || 100;
 
     if (this.#fishingSystem.getHoldUIState()?.hasHold) {
@@ -599,7 +599,7 @@ class WaitingState extends GameState {
     this.game.systems.projector.focusOnVirtualPos(pos.y, dt, 0.05);
 
     const input = this.game.systems.input.getState();
-    const eq = CONFIG.player?.equipment;
+    const eq = this.game.systems.inventory.getEquipped();
     const reelPower = eq?.rod?.hasReel ? eq?.reel?.basePower || 0 : 0;
 
     // 1. ДІЗНАЄМОСЯ ТИП ВУДКИ
@@ -697,7 +697,7 @@ class BitingState extends GameState {
     this.#ringQueue = [];
     this.#stepTimeElapsed = 0;
 
-    const eq = CONFIG.player?.equipment;
+    const eq = this.game.systems.inventory.getEquipped();
     if (eq?.rod?.type === "feeder" && CONFIG.ui?.audio?.feederBite) {
       this.#feederAudioTemplate = new Audio(CONFIG.ui.audio.feederBite);
     } else {
@@ -711,7 +711,7 @@ class BitingState extends GameState {
 
   // Цей метод обробляє лише РУЧНЕ підсікання (для поплавка/фідера)
   handleInput(input) {
-    const eq = CONFIG.player?.equipment;
+    const eq = this.game.systems.inventory.getEquipped();
     const isSpinning = eq?.rod?.type === "spinning";
 
     if (input.isPulling && !isSpinning) {
@@ -743,7 +743,7 @@ class BitingState extends GameState {
     const pos = this.game.float.getPosition();
     this.game.systems.projector.focusOnVirtualPos(pos.y, dt, 0.05);
 
-    const eq = CONFIG.player?.equipment;
+    const eq = this.game.systems.inventory.getEquipped();
     const isSpinning = eq?.rod?.type === "spinning";
     const reelPower = eq?.rod?.hasReel ? eq?.reel?.basePower || 0 : 0;
 
@@ -966,7 +966,20 @@ class Game {
       ui: new UIManager(CONFIG),
       chum: new ChumManager(locId, CONFIG.chum, projectorInstance),
       bite: new BiteSystem(CONFIG.spawns, CONFIG.float),
+
+      inventory: new InventoryManager(ITEM_DB, CONFIG.player),
     };
+
+    this.#systems.inventoryUI = new InventoryUI(this.#systems.inventory);
+
+    // Слухаємо подію зміни інвентарю
+    document.addEventListener("inventory-changed", () => {
+      console.log("Інвентар оновлено! Треба перемалювати вудку.");
+      // Якщо ми в стані scouting, можна викликати this.setState("scouting"), щоб оновити снасті
+      if (this.#gameStateName === "scouting") {
+        this.setState("scouting");
+      }
+    });
 
     this.#chumUI = new ChumUI(() => this.handleChumClick());
     this.#net = new Net(CONFIG.net);
@@ -975,7 +988,7 @@ class Game {
     this.#timeUI = new TimeDisplayUI();
     this.#holdUI = new HoldChargesUI();
 
-    const eq = CONFIG.player?.equipment;
+    const eq = this.#systems.inventory.getEquipped();
     const baitId = eq?.baits?.[0] || "oil_worm";
     let baitCfg = CONFIG.baitsData?.[baitId] || CONFIG.float;
 
@@ -1180,7 +1193,7 @@ class Game {
     this.castDistanceRatio = Math.min(1, dist / maxDist);
     this.castStartTime = performance.now();
 
-    const eq = CONFIG.player?.equipment;
+    const eq = this.#systems.inventory.getEquipped();
     const isFeeder = eq?.rod?.type === "feeder";
 
     if (isFeeder) {
@@ -1397,7 +1410,7 @@ class Game {
 
     let feederBonus = 1.0;
     let feederTargets = [];
-    const eq = CONFIG.player?.equipment;
+    const eq = this.#systems.inventory.getEquipped();
     const isFeeder = eq?.rod?.type === "feeder";
 
     if (isFeeder && eq?.feeder?.chumId) {
