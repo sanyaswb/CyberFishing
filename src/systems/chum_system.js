@@ -111,7 +111,7 @@ class ChumManager {
     this.#projector = projector;
     this.#storageKey = `chum_active_${locationId}`;
     this.#locationMemoryKey = `chum_memory_${locationId}`;
-    this.handUses = chumConfig.deliveryMethods.hand.maxUses || 7;
+    this.handUses = chumConfig.deliveryMethods?.hand?.maxUses || 7;
 
     this.loadFromStorage();
 
@@ -121,11 +121,7 @@ class ChumManager {
   }
 
   useHandBait() {
-    if (this.handUses > 0) {
-      this.handUses--;
-      return true;
-    }
-    return false;
+    return true;
   }
 
   // Метод для оновлення існуючих зон у реальному часі
@@ -154,10 +150,10 @@ class ChumManager {
     return this.#boats.some((b) => b.state === "drifting");
   }
 
-  spawnIdleBoat(startX, startY) {
-    const boatConfig = this.#chumConfig.deliveryMethods.boat;
-    const currentEnergy = this.getBoatEnergy();
-    const boat = new BaitBoat(startX, startY, boatConfig, null, currentEnergy);
+  spawnIdleBoat(startX, startY, boatItem = {}) {
+    // Енергія та характеристики тепер беруться з екіпірованого предмета (boatItem)
+    const currentEnergy = boatItem.maxEnergy || 100;
+    const boat = new BaitBoat(startX, startY, boatItem, null, currentEnergy);
     this.#boats.push(boat);
     return boat;
   }
@@ -308,7 +304,9 @@ class ChumManager {
     if (boat) {
       boat.isBaitDropped = true;
 
-      const isManual = this.#chumConfig.deliveryMethods.boat.manualControl;
+      // Беремо налаштування ручного контролю з конфігу самого кораблика
+      const isManual = boat.config?.manualControl ?? true;
+
       if (!isManual) {
         boat.state = "returning";
       } else {

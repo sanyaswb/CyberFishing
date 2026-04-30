@@ -106,7 +106,9 @@ class GameState {
 
 class ScoutingState extends GameState {
   enter() {
-    this.game.systems.ui.updateNetButtonState(CONFIG, false);
+    const eq = this.game.systems.inventory.getEquipped();
+    const hasNet = !!eq.net;
+    this.game.systems.ui.updateNetButtonState(hasNet, false);
   }
 
   exit() {
@@ -131,8 +133,9 @@ class ScoutingState extends GameState {
       );
       const cell = this.game.checkWater(vPos.x, vPos.y);
       const bounds = this.game.getDynamicBounds();
+      const eq = this.game.systems.inventory.getEquipped();
 
-      let rawDist = CONFIG.player?.equipment?.rod?.maxDistance;
+      let rawDist = eq.rod?.maxDistance;
       let maxDist = rawDist === "max" || rawDist == null ? Infinity : rawDist;
 
       if (maxDist !== Infinity) {
@@ -172,12 +175,9 @@ class ScoutingState extends GameState {
 
     const eq = this.game.systems.inventory.getEquipped();
     const rodType = eq?.rod?.type;
-    const baitId = eq?.baits?.[0];
 
-    // 1. ВАЖЛИВО: Читаємо наживку з ITEM_DB, а не з неіснуючого CONFIG.baitsData
-    const baitItem = ITEM_DB.baits[baitId];
-    const baitCfg = baitItem ? baitItem.engineStats : null;
-    const baitType = baitCfg?.type;
+    const bait = eq?.baits?.[0];
+    const baitType = bait?.type;
 
     const isFeeder = rodType === "feeder";
     const isSpinning = rodType === "spinning";
@@ -195,10 +195,9 @@ class ScoutingState extends GameState {
       return;
     }
 
-    // 2. ВАЖЛИВО: Беремо глибину з екіпірованого грузила (з фоллбеком на дефолт)
-    const activeSinker = eq?.sinker || CONFIG.sinker;
+    const activeSinker = eq?.sinker;
     const maxDepth =
-      (isSpinning ? baitCfg?.maxDepth : activeSinker?.maxDepth) || 8.0;
+      (isSpinning ? bait?.maxDepth : activeSinker?.maxDepth) || 8.0;
 
     if (!this.game.depthUI.isActive) {
       this.game.depthUI.show(
@@ -216,7 +215,8 @@ class ScoutingState extends GameState {
   draw(renderer, bounds) {
     if (!this.game.isAimingChum) {
       if (CONFIG.locations?.showAimingZone !== false) {
-        let rawDist = CONFIG.player?.equipment?.rod?.maxDistance;
+        const eq = this.game.systems.inventory.getEquipped();
+        let rawDist = eq.rod?.maxDistance;
         let maxDist = rawDist === "max" || rawDist == null ? Infinity : rawDist;
 
         if (maxDist !== Infinity) {
@@ -243,30 +243,40 @@ class PlayingState extends GameState {
   #forces = { pX: 0, pY: 0, fX: 0, fY: 0 };
   #rod;
   #reel;
+  #hasEquippedNet = false;
 
   enter(data) {
     this.#startTime = performance.now();
-
-    // ЗМІНЕНО ТУТ: читаємо fish безпосередньо з data, як ми робили в BitingState
     this.data = data || {};
     const fishData = this.data.fish;
 
     const eq = this.game.systems.inventory.getEquipped();
+    this.#hasEquippedNet = !!eq.net;
 
+    // 1. ВИПРАВЛЕНО: Безпечне читання параметрів вудки з фоллбеками
     this.#rod = new Rod(
-      eq.rod.level,
-      eq.rod.basePower,
-      eq.rod.compensation,
-      eq.rod.type,
-      eq.rod.maxDistance,
-      eq.rod.hasReel !== false,
+      eq.rod?.level || 1,
+      eq.rod?.basePower || 1.0,
+      eq.rod?.compensation || 0,
+      eq.rod?.type || "float",
+      eq.rod?.maxDistance || 100,
+      eq.rod?.hasReel !== false,
     );
 
-    this.#reel = this.#rod.hasReel()
-      ? new Reel(eq.reel.level, eq.reel.basePower, eq.reel.hold)
+    // 2. ВИПРАВЛЕНО: Безпечне створення котушки, якщо вона екіпірована
+    this.#reel = eq.reel
+      ? new Reel(
+          eq.reel.level || 1,
+          eq.reel.basePower || 1.0,
+          eq.reel.hold || null,
+        )
       : new Reel(0, 0, null);
 
-    const hook = new Hook(eq.hook.level, eq.hook.weight, eq.hook.quality);
+    // 3. ВИПРАВЛЕНО: Безпечне читання гачка
+    const hookLevel = eq.hook?.level || 1;
+    const hookWeight = eq.hook?.weight || 1;
+    const hookQuality = eq.hook?.quality || 1.0;
+    const hook = new Hook(hookLevel, hookWeight, hookQuality);
 
     const fish = new Fish(
       fishData.level,
@@ -277,9 +287,10 @@ class PlayingState extends GameState {
 
     this.#fishingSystem = new FishingSystem(this.#rod, this.#reel, fish);
 
+    // Передаємо потужності в TensionMeter
     this.#tensionMeter = new TensionMeter(
-      eq.rod.level,
-      this.#rod.hasReel() ? eq.reel.level : 0,
+      eq.rod?.level || 1,
+      eq.reel?.level || 0, // Якщо котушки немає, її рівень 0
       hook,
       CONFIG.tension,
     );
@@ -324,23 +335,21 @@ class PlayingState extends GameState {
 
     document.dispatchEvent(
       new CustomEvent("netCatchRoll", {
-        detail: {
-          chance: chance,
-          roll: roll,
-          success: success,
-        },
+        detail: { chance: chance, roll: roll, success: success },
       }),
     );
 
     this.game.setState(success ? "victory" : "failed", {
       reason: success ? null : "net_escape",
+      fish: this.data.fish,
     });
   }
 
   handleInput(input) {
     const isHold = this.#fishingSystem.isHoldActive();
     const eq = this.game.systems.inventory.getEquipped();
-    const swipeThreshold = eq?.reel?.hold?.swipeThresholdPx || 100;
+    // 4. ВИПРАВЛЕНО: Безпечне читання параметрів котушки
+    const swipeThreshold = eq.reel?.hold?.swipeThresholdPx || 100;
 
     if (this.#fishingSystem.getHoldUIState()?.hasHold) {
       if (input.toggleHold || input.swipeDeltaY > swipeThreshold) {
@@ -353,8 +362,8 @@ class PlayingState extends GameState {
 
     if (input.pumpAction || input.swipeDeltaY < -swipeThreshold) {
       const red = this.#fishingSystem.tryUsePump(
-        eq?.reel?.pumpLevel || 0,
-        eq?.reel?.pumpPowerPerLevel || 10,
+        eq.reel?.pumpLevel || 0,
+        eq.reel?.pumpPowerPerLevel || 10,
       );
       if (red > 0) this.#tensionMeter.applyPump(red);
       if (input.swipeDeltaY) this.game.systems.input.consumeSwipe();
@@ -431,6 +440,7 @@ class PlayingState extends GameState {
         bounds,
       ).y * CONFIG.physics.playerForceMultiplier,
     );
+
     const fMag =
       Math.max(Math.abs(fishForceRaw.x), Math.abs(fishForceRaw.y)) *
       CONFIG.physics.fishForceMultiplier;
@@ -455,7 +465,6 @@ class PlayingState extends GameState {
       bounds,
     );
 
-    // ВІДНОВЛЕНО БЛОК НАПРЯМКУ ТЯГИ!
     let pullDirection = null;
     if (input.isPulling) {
       pullDirection = new Vector2(
@@ -464,7 +473,6 @@ class PlayingState extends GameState {
       ).normalize();
     }
 
-    // ВІДНОВЛЕНО ПЕРЕДАЧУ ВСІХ ПАРАМЕТРІВ!
     this.game.float.update(
       bounds,
       dt,
@@ -476,7 +484,10 @@ class PlayingState extends GameState {
     );
 
     this.#isNetReady = this.game.net.isFloatInZone(floatPos.y, bounds.bottom);
-    this.game.systems.ui.updateNetButtonState(CONFIG, this.#isNetReady);
+    this.game.systems.ui.updateNetButtonState(
+      this.#hasEquippedNet,
+      this.#isNetReady,
+    );
 
     const autoY =
       bounds.bottom -
@@ -490,7 +501,9 @@ class PlayingState extends GameState {
       this.#fishingSystem.tryTriggerFishLastDash?.(dt);
     }
 
-    if (floatPos.y >= autoY) this.game.setState("victory");
+    if (floatPos.y >= autoY) {
+      this.game.setState("victory", { fish: this.data.fish });
+    }
     this.game.holdUI.update(this.#fishingSystem.getHoldUIState());
   }
 
@@ -577,7 +590,6 @@ class WaitingState extends GameState {
       this.game.setState("scouting");
     }
 
-    // ЗМІНЕНО: Беремо екіпірування з менеджера!
     const eq = this.game.systems.inventory.getEquipped();
     const isSpinning = eq?.rod?.type === "spinning";
 
@@ -591,6 +603,10 @@ class WaitingState extends GameState {
       if (cell) {
         this.game.castManager.registerCast(performance.now());
         this.game.castLine(vPos.x, vPos.y, cell.depth);
+
+        if (eq?.rod?.type === "feeder" && eq?.feederChum) {
+          this.game.systems.inventory.consumeItem(eq.feederChum.instanceId, 1);
+        }
       } else {
         this.game.invalidCastMarker = {
           x: input.longPressPos.x,
@@ -607,13 +623,10 @@ class WaitingState extends GameState {
 
     const input = this.game.systems.input.getState();
     const eq = this.game.systems.inventory.getEquipped();
-    const reelPower = eq?.rod?.hasReel ? eq?.reel?.basePower || 0 : 0;
 
-    // 1. ДІЗНАЄМОСЯ ТИП ВУДКИ
+    const reelPower = eq?.reel ? eq.reel.basePower || 0 : 0;
     const isSpinning = eq?.rod?.type === "spinning";
 
-    // 2. БЛОКУЄМО ТЯГУ ДЛЯ ФІДЕРА/ПОПЛАВКА
-    // Створюємо "безпечний" інпут. Якщо це не спінінг, наживка ніколи не дізнається, що ти затиснув екран.
     const effectiveInput = {
       ...input,
       isPulling: isSpinning ? input.isPulling : false,
@@ -633,7 +646,7 @@ class WaitingState extends GameState {
       dt,
       envData.env,
       (vx, vy) => this.game.checkWater(vx, vy),
-      effectiveInput, // Передаємо наш безпечний інпут
+      effectiveInput,
       reelPower,
       pullDirection,
     );
@@ -649,10 +662,12 @@ class WaitingState extends GameState {
       return;
     }
 
+    const baitIds = (eq?.baits || []).map((b) => b?.id).filter(Boolean);
+
     let hooked = this.game.systems.bite.evaluateBite(dt, envData.biteEnv, {
       hookSize: eq?.hook?.level || 1,
-      baits: eq?.baits || ["oil_worm"],
-      isPulling: effectiveInput.isPulling, // ЗМІНЕНО: щоб хижак не клював на фідер під час перекидання
+      baits: baitIds,
+      isPulling: effectiveInput.isPulling,
     });
 
     if (hooked && CONFIG.debug?.fixedCatch?.enabled) {
@@ -672,6 +687,14 @@ class WaitingState extends GameState {
     }
 
     if (hooked) {
+      const usedBait = (eq?.baits || []).find(
+        (b) => b !== null && b !== undefined,
+      );
+
+      if (usedBait) {
+        this.game.systems.inventory.consumeItem(usedBait.instanceId, 1);
+      }
+
       this.game.float.startBite(effectiveInput.isPulling, hooked.biteSequence);
       this.game.setState("biting", { fish: hooked });
     }
@@ -716,7 +739,6 @@ class BitingState extends GameState {
     this.#ringQueue = [];
   }
 
-  // Цей метод обробляє лише РУЧНЕ підсікання (для поплавка/фідера)
   handleInput(input) {
     const eq = this.game.systems.inventory.getEquipped();
     const isSpinning = eq?.rod?.type === "spinning";
@@ -752,7 +774,9 @@ class BitingState extends GameState {
 
     const eq = this.game.systems.inventory.getEquipped();
     const isSpinning = eq?.rod?.type === "spinning";
-    const reelPower = eq?.rod?.hasReel ? eq?.reel?.basePower || 0 : 0;
+
+    // ЗМІНЕНО: Більш безпечна перевірка потужності котушки
+    const reelPower = eq?.reel ? eq.reel.basePower || 0 : 0;
 
     let pullDirection = null;
     if (input.isPulling) {
@@ -821,7 +845,7 @@ class BitingState extends GameState {
     this.#ringQueue = [];
     this.#stepTimeElapsed = 0;
 
-    const cfg = CONFIG.ui?.audio?.feederConfig || {
+    const cfg = CONFIG.feederConfig || {
       volumeNormal: 0.4,
       volumeGuaranteed: 1.0,
       guaranteedRings: [2, 3],
@@ -886,11 +910,12 @@ class FailedState extends GameState {
   enter() {
     this.game.systems.ui.updateContinueButtonState(true);
   }
+
   exit() {
     this.game.systems.ui.updateContinueButtonState(false);
   }
+
   draw(renderer, bounds) {
-    // --- ВІДНОВЛЕНО: Малюємо вудку та зону підсаки на фоні ---
     this.game.drawFishingElements(
       renderer,
       bounds.bottom,
@@ -900,7 +925,6 @@ class FailedState extends GameState {
       0,
     );
 
-    // Малюємо сам попап
     renderer.drawGameOver(
       window.innerWidth,
       window.innerHeight,
@@ -910,14 +934,16 @@ class FailedState extends GameState {
 }
 
 class VictoryState extends GameState {
-  enter() {
+  enter(data) {
+    this.data = data || {};
     this.game.systems.ui.updateContinueButtonState(true);
   }
+
   exit() {
     this.game.systems.ui.updateContinueButtonState(false);
   }
+
   draw(renderer, bounds) {
-    // --- ВІДНОВЛЕНО: Малюємо вудку та зону підсаки на фоні ---
     this.game.drawFishingElements(
       renderer,
       bounds.bottom,
@@ -927,7 +953,6 @@ class VictoryState extends GameState {
       0,
     );
 
-    // Малюємо сам попап
     renderer.drawVictory(window.innerWidth, window.innerHeight);
   }
 }
@@ -955,7 +980,6 @@ class Game {
 
   constructor(canvasId) {
     this.#canvas = document.getElementById(canvasId);
-
     this.#canvas.width = window.innerWidth;
     this.#canvas.height = window.innerHeight;
 
@@ -963,6 +987,9 @@ class Game {
     const locCfg = CONFIG.locations.map[locId];
 
     const projectorInstance = new ViewportProjector(CONFIG.locations, locId);
+
+    const inventoryManager = new InventoryManager(ITEM_DB, CONFIG.player);
+    const eq = inventoryManager.getEquipped();
 
     this.#systems = {
       renderer: new Renderer(this.#canvas),
@@ -972,49 +999,68 @@ class Game {
       input: new InputManager(this.#canvas, Number(CONFIG.ui?.rod?.x) || null),
       ui: new UIManager(CONFIG),
       chum: new ChumManager(locId, CONFIG.chum, projectorInstance),
-      bite: new BiteSystem(CONFIG.spawns, CONFIG.float),
-
-      inventory: new InventoryManager(ITEM_DB, CONFIG.player),
+      bite: new BiteSystem(CONFIG.spawns, {}),
+      inventory: inventoryManager,
     };
 
     this.#systems.inventoryUI = new InventoryUI(this.#systems.inventory);
 
-    // Слухаємо подію зміни інвентарю
+    this.#net = new Net(eq.net || { active: false, maxWeight: 0, length: 10 });
+
     document.addEventListener("inventory-changed", () => {
-      console.log("Інвентар оновлено! Треба перемалювати вудку.");
-      // Якщо ми в стані scouting, можна викликати this.setState("scouting"), щоб оновити снасті
+      const newEq = this.#systems.inventory.getEquipped();
+
+      if (typeof this.#net.updateConfig === "function") {
+        this.#net.updateConfig(
+          newEq.net || { active: false, maxWeight: 0, length: 10 },
+        );
+      } else {
+        this.#net = new Net(
+          newEq.net || { active: false, maxWeight: 0, length: 10 },
+        );
+      }
+
+      this.#rebuildFloat();
+
       if (this.#gameStateName === "scouting") {
         this.setState("scouting");
       }
     });
 
     this.#chumUI = new ChumUI(() => this.handleChumClick());
-    this.#net = new Net(CONFIG.net);
     this.#castManager = new CastManager();
     this.#depthUI = new DepthSelectorUI();
     this.#timeUI = new TimeDisplayUI();
     this.#holdUI = new HoldChargesUI();
 
-    const eq = this.#systems.inventory.getEquipped();
-    const baitId = eq?.baits?.[0] || "oil_worm";
-    let baitCfg = CONFIG.baitsData?.[baitId] || CONFIG.float;
-
-    // ДОДАНО: Якщо це поплавок, зливаємо його з базовим CONFIG.float
-    if (!baitCfg.type || baitCfg.type === "float") {
-      baitCfg = { ...CONFIG.float, ...baitCfg };
-    }
-
-    this.#float = BaitFactory.create(
-      baitCfg.type || "float",
-      0,
-      0,
-      baitCfg,
-      eq,
-    );
+    this.#rebuildFloat();
 
     this.#initEvents();
     this.setState("scouting");
     this.start();
+  }
+
+  #rebuildFloat() {
+    const eq = this.#systems.inventory.getEquipped();
+
+    let physicsType = "float";
+    let physicsConfig = {};
+
+    if (
+      eq.baits?.[0] &&
+      ["spinner", "wobbler", "jig"].includes(eq.baits[0].type)
+    ) {
+      physicsType = eq.baits[0].type;
+      physicsConfig = { ...eq.baits[0] };
+    } else if (eq.float) {
+      physicsType = "float";
+      physicsConfig = { ...eq.float };
+    } else if (eq.sinker) {
+      physicsType = "float";
+      physicsConfig = { ...eq.sinker };
+    }
+
+    this.#float = BaitFactory.create(physicsType, 0, 0, physicsConfig, eq);
   }
 
   #initEvents() {
@@ -1152,11 +1198,7 @@ class Game {
     }
 
     if (CONFIG.locations?.showChumZones !== false) {
-      r.drawChumZones(
-        this.#systems.chum,
-        this.#systems.projector,
-        // ВИДАЛЕНО: b.top, b.bottom
-      );
+      r.drawChumZones(this.#systems.chum, this.#systems.projector);
     }
 
     if (this.#systems.chum && typeof r.drawBoatWaypoints === "function") {
@@ -1164,7 +1206,7 @@ class Game {
     }
 
     if (this.#systems.chum && typeof r.drawBoats === "function") {
-      r.drawBoats(this.#systems.chum, this.#systems.projector); // ВИДАЛЕНО: b.top, b.bottom
+      r.drawBoats(this.#systems.chum, this.#systems.projector);
 
       const boats = this.#systems.chum.getBoats();
       for (let i = 0; i < boats.length; i++) {
@@ -1200,7 +1242,6 @@ class Game {
     this.castDistanceRatio = Math.min(1, dist / maxDist);
     this.castStartTime = performance.now();
 
-    // 1. Отримуємо екіпірування з InventoryManager
     const eq = this.#systems.inventory.getEquipped();
     const isFeeder = eq?.rod?.type === "feeder";
 
@@ -1208,24 +1249,24 @@ class Game {
       this.currentHookDepth = cellDepth;
     }
 
-    const baitId = eq?.baits?.[0] || "oil_worm";
+    let physicsType = "float";
+    let physicsConfig = {};
 
-    // 2. ВАЖЛИВО: Читаємо наживку з ITEM_DB замість старого CONFIG.baitsData
-    const baitItem = ITEM_DB.baits[baitId];
-    let baitCfg = baitItem ? baitItem.engineStats : CONFIG.float;
-
-    // 3. Об'єднання для закидання (якщо це звичайна наживка, додаємо фізику поплавця)
-    if (!baitCfg.type || baitCfg.type === "float") {
-      baitCfg = { ...CONFIG.float, ...baitCfg };
+    if (
+      eq.baits?.[0] &&
+      ["spinner", "wobbler", "jig"].includes(eq.baits[0].type)
+    ) {
+      physicsType = eq.baits[0].type;
+      physicsConfig = { ...eq.baits[0] };
+    } else if (eq.float) {
+      physicsType = "float";
+      physicsConfig = { ...eq.float };
+    } else if (eq.sinker) {
+      physicsType = "float";
+      physicsConfig = { ...eq.sinker };
     }
 
-    this.#float = BaitFactory.create(
-      baitCfg.type || "float",
-      vx,
-      vy,
-      baitCfg,
-      eq,
-    );
+    this.#float = BaitFactory.create(physicsType, vx, vy, physicsConfig, eq);
 
     if (typeof this.#float.cast === "function") {
       this.#float.cast(
@@ -1233,13 +1274,15 @@ class Game {
         vy,
         this.currentHookDepth,
         this.currentHookDepth > cellDepth,
-        eq?.sinker || CONFIG.sinker, // 4. Беремо грузило з активного інвентарю
+        eq?.sinker || { weight: 1, maxDepth: 10 },
         this.castDistanceRatio,
       );
     } else {
       this.#float.setPosition(vx, vy);
       this.#float.setHookDepth(0.1);
-      this.#float.stopBite?.();
+      if (typeof this.#float.stopBite === "function") {
+        this.#float.stopBite();
+      }
     }
 
     this.setState("waiting");
@@ -1256,15 +1299,21 @@ class Game {
       drop = 0;
     const lineCfg = CONFIG.ui.line;
 
+    const eq = this.#systems.inventory.getEquipped();
+
     if (state === "waiting" || state === "biting") {
       const minDelay = lineCfg.distanceDelayMinMs ?? 1500;
       const maxDelay = lineCfg.distanceDelayMaxMs ?? 5000;
       const distanceDelay =
         minDelay + this.castDistanceRatio * (maxDelay - minDelay);
 
+      const activeItem =
+        (eq.rod?.type === "spinning" ? eq.baits?.[0] : eq.sinker) || {};
+      const sinkRate =
+        activeItem.sinkSpeed || activeItem.engineStats?.sinkSpeed || 1;
+
       const duration =
-        (this.currentHookDepth / (CONFIG.sinker.sinkRate || 1)) * 1000 +
-        distanceDelay;
+        (this.currentHookDepth / sinkRate) * 1000 + distanceDelay;
       const prog = duration > 0 ? Math.min(1, elapsed / duration) : 1;
 
       const easePower = lineCfg.shrinkEasePower ?? 4;
@@ -1276,7 +1325,6 @@ class Game {
       const input = this.#systems.input.getState();
 
       if (input.isPulling) {
-        // Забрав перевірку на isSpinning
         ratio = 1.0;
         drop = 0;
       }
@@ -1295,27 +1343,20 @@ class Game {
       drop = (lineCfg.sinkDropPx || 120) * (1 - ease);
     }
 
-    // --- Захист від провисання волосіні під берег (зелену зону) ---
-    // 1. Знаходимо екранну координату низу зеленої зони (берега)
     const mapBottomScreenY = this.#systems.projector.virtualToScreen(0, vBot).y;
-
-    // 2. Знаходимо екранну координату кінчика вудки
     const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
-    const rodTopY = rodScreenY - 200; // Висота кінчика вудки (200px)
+    const rodTopY = rodScreenY - 200;
 
     const distY = sPos.y - rodTopY;
 
-    // 3. Захищаємо ratio (стиснення), якщо поплавець знаходиться вище за вудку на екрані
     if (distY < 0) {
       const minRatio = (mapBottomScreenY - rodTopY) / distY;
       ratio = Math.max(ratio, minRatio);
     }
 
-    // 4. Жорстко обмежуємо drop (провисання), щоб волосінь не провалилася нижче mapBottomScreenY
     const targetYAfterShrink = rodTopY + distY * ratio;
     const maxAllowedDrop = Math.max(0, mapBottomScreenY - targetYAfterShrink);
     drop = Math.min(drop, maxAllowedDrop);
-    // ------------------------------------------------------------------------
 
     renderer.drawCatchZone(
       this.#systems.projector,
@@ -1338,7 +1379,7 @@ class Game {
     renderer.drawFloat(
       sPos,
       this.#float,
-      CONFIG.float,
+      eq.float || {},
       this.#systems.projector,
     );
 
@@ -1349,13 +1390,20 @@ class Game {
   }
 
   canPlayerCast() {
+    const eq = this.#systems.inventory.getEquipped();
+
+    if (!eq || !eq.rod) {
+      return false;
+    }
+
     const boat = this.#systems.chum.getBoats()[0];
     if (!boat) return true;
     if (boat.state === "drifting" || boat.state === "returning") return true;
-    return (
-      !CONFIG.chum.deliveryMethods.boat.manualControl &&
-      boat.remainingSections <= 0
-    );
+
+    const boatItem = eq.delivery || {};
+    const isManual = boatItem.manualControl ?? true;
+
+    return !isManual && boat.remainingSections <= 0;
   }
 
   getDynamicBounds() {
@@ -1424,18 +1472,16 @@ class Game {
     const eq = this.#systems.inventory.getEquipped();
     const isFeeder = eq?.rod?.type === "feeder";
 
-    if (isFeeder && eq?.feeder?.chumId) {
-      const chumCfg = CONFIG.chum.baits[eq.feeder.chumId];
+    if (isFeeder && eq?.feederChum) {
+      const chumCfg = eq.feederChum;
       const elapsedMs = performance.now() - this.castStartTime;
 
-      // Оскільки в конфігу немає durationMs, беремо 5 реальних хвилин (300000 мс) за замовчуванням
-      // Пізніше можеш додати feederDurationMs прямо в налаштування кожної прикормки
       const duration = chumCfg.feederDurationMs || 300000;
 
-      if (chumCfg && elapsedMs < duration) {
+      if (elapsedMs < duration) {
         const progress = elapsedMs / duration;
         feederBonus = chumCfg.maxBonus - (chumCfg.maxBonus - 1.0) * progress;
-        feederTargets = chumCfg.targetFishes || []; // Читаємо правильний ключ з конфігу!
+        feederTargets = chumCfg.targetFishes || [];
       }
     }
 
@@ -1443,7 +1489,6 @@ class Game {
       hookDepth: Math.min(this.#float.getCurrentHookDepth(), bottomDepth),
       bottomDepth: bottomDepth,
 
-      // Для фідера ліска завжди натягнута по дну (немає штрафу за провисання)
       lineLength: isFeeder ? bottomDepth : this.currentHookDepth,
 
       timePhase: env.phase,
@@ -1458,8 +1503,12 @@ class Game {
   }
 
   updateChumUI() {
-    const method = CONFIG.chum.currentMethod;
-    const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
+    const eq = this.#systems.inventory.getEquipped();
+    const method = eq.delivery ? "boat" : "hand";
+    const boatItem = eq.delivery || {};
+    const isManual = boatItem.manualControl ?? true;
+    const sections = boatItem.sections ?? 1;
+
     let state = "idle";
     let count = 0;
 
@@ -1473,7 +1522,7 @@ class Game {
       const activeBoat = boats.length > 0 ? boats[0] : null;
 
       if (!activeBoat) {
-        count = CONFIG.chum.deliveryMethods.boat.sections;
+        count = sections;
         state = this.isAimingChum ? "aiming" : "idle";
       } else {
         count = activeBoat.remainingSections;
@@ -1483,24 +1532,22 @@ class Game {
         } else if (activeBoat.state === "drifting") {
           state = "empty";
         } else if (isManual) {
-          // РУЧНИЙ РЕЖИМ
           if (
             activeBoat.state === "deploying" ||
             activeBoat.state === "returning"
           ) {
-            state = "moving"; // ⏩ (рухається)
+            state = "moving";
           } else if (activeBoat.state === "waiting") {
-            state = count > 0 ? "ready" : "empty"; // 🍞 (зупинився)
+            state = count > 0 ? "ready" : "empty";
           }
         } else {
-          // АВТО-РЕЖИМ
           if (activeBoat.state === "returning") {
-            state = "moving"; // ⏩ ТІЛЬКИ коли повертається на базу!
+            state = "moving";
           } else if (
             activeBoat.state === "deploying" ||
             activeBoat.state === "waiting"
           ) {
-            state = this.isAimingChum ? "aiming" : "ready"; // 🚫 або 🍞(count) поки виконує місію
+            state = this.isAimingChum ? "aiming" : "ready";
           }
         }
       }
@@ -1508,78 +1555,78 @@ class Game {
 
     this.#chumUI.setState(state, method, count, isManual);
 
-    // АВТО-ВИМКНЕННЯ ПРИЦІЛУ
     if (this.isAimingChum && method === "boat") {
       const boats = this.#systems.chum.getBoats();
       const activeBoat = boats.length > 0 ? boats[0] : null;
       if (activeBoat) {
         if (!isManual && activeBoat.state === "returning") {
-          this.isAimingChum = false; // Вимикаємо приціл, якщо авто-кораблик поплив додому
+          this.isAimingChum = false;
         } else if (
           isManual &&
           activeBoat.state !== "idle" &&
           activeBoat.state !== "waiting"
         ) {
-          this.isAimingChum = false; // Вимикаємо приціл для ручного під час руху
+          this.isAimingChum = false;
         }
       }
     }
   }
 
   handleChumClick() {
-    const method = CONFIG.chum.currentMethod;
-    console.log("--- DEBUG 2: handleChumClick викликано! Метод:", method);
+    const eq = this.#systems.inventory.getEquipped();
+    const method = eq.delivery ? "boat" : "hand";
+
     if (method === "hand") {
-      if (this.#systems.chum.handUses > 0) this.toggleChumAim();
+      if (this.#systems.chum.handUses > 0 && eq.deliveryChum) {
+        this.toggleChumAim();
+      }
     } else if (method === "boat") {
       const boats = this.#systems.chum.getBoats();
 
       if (boats.length === 0) {
-        this.toggleChumAim();
+        if (eq.deliveryChum) {
+          this.toggleChumAim();
+        }
       } else {
         const activeBoat = boats[0];
-        const isManual = CONFIG.chum.deliveryMethods.boat.manualControl;
+        const boatItem = eq.delivery || {};
+        const isManual = boatItem.manualControl ?? true;
 
-        // Якщо приціл увімкнено (кнопка 🚫) — натискання скасовує його
         if (this.isAimingChum) {
           this.toggleChumAim();
           return;
         }
 
         if (isManual) {
-          // Логіка ручного скидання
           if (
             activeBoat.state === "waiting" &&
             activeBoat.remainingSections > 0
           ) {
-            this.#systems.chum.deployBait(
-              activeBoat.pos.x,
-              activeBoat.pos.y,
-              "carp_mix_basic",
-            );
-            activeBoat.remainingSections--;
-            if (activeBoat.remainingSections <= 0) {
-              const hasAI = CONFIG.chum.deliveryMethods.boat.hasAutoReturn;
-              if (hasAI) {
-                activeBoat.state = "returning";
+            const chumId = eq.deliveryChum?.id;
+            if (chumId) {
+              this.#systems.chum.deployBait(
+                activeBoat.pos.x,
+                activeBoat.pos.y,
+                chumId,
+              );
+              activeBoat.remainingSections--;
+              if (activeBoat.remainingSections <= 0) {
+                const hasAI = boatItem.hasAutoReturn ?? false;
+                if (hasAI) {
+                  activeBoat.state = "returning";
+                }
               }
             }
           }
         } else {
-          // Логіка АВТО-режиму: клік по 🍞 вмикає приціл для ДОДАВАННЯ точки
           if (activeBoat.state === "deploying" || activeBoat.state === "idle") {
-            // Рахуємо, скільки точок вже задано (поточна ціль + черга)
             const reservedTargets =
               (activeBoat.zoneId ? 1 : 0) +
               (activeBoat.waypoints ? activeBoat.waypoints.length : 0);
             const freeSlots = activeBoat.remainingSections - reservedTargets;
 
-            if (freeSlots > 0) {
-              this.toggleChumAim(); // Дозволяємо цілитися (кнопка стане 🚫)
-            } else {
-              console.log(
-                "Маршрут вже повністю заповнений! Чекайте на скидання.",
-              );
+            if (freeSlots > 0 && eq.deliveryChum) {
+              this.toggleChumAim();
             }
           }
         }
@@ -1591,19 +1638,27 @@ class Game {
     this.isAimingChum = !this.isAimingChum;
     this._uiClickLockTime = Date.now();
 
-    // ДОДАНО: Миттєво ховаємо шкалу глибини при увімкненні прицілу
     if (this.isAimingChum) {
       this.#depthUI.hide();
     }
 
-    if (this.isAimingChum && CONFIG.chum.currentMethod === "boat") {
+    const eq = this.#systems.inventory.getEquipped();
+    const method = eq.delivery ? "boat" : "hand";
+
+    if (this.isAimingChum && method === "boat") {
       const bounds = this.getDynamicBounds();
       const rodPos = this.getRodVirtualPos(bounds);
 
       this.activeBoat = this.#systems.chum.spawnIdleBoat(
         rodPos.x,
         bounds.bottom - 5,
+        eq.delivery, // <--- Передаємо актуальний кораблик
       );
+
+      if (this.activeBoat) {
+        const boatItem = eq.delivery || {};
+        this.activeBoat.remainingSections = boatItem.sections ?? 1;
+      }
     } else if (!this.isAimingChum && this.activeBoat) {
       if (this.activeBoat.state === "idle") {
         this.#systems.chum.removeBoat(this.activeBoat);
@@ -1619,14 +1674,17 @@ class Game {
       input.clickPos = null;
     }
 
-    const method = CONFIG.chum.currentMethod || "hand";
+    const eq = this.#systems.inventory.getEquipped();
+    const method = eq.delivery ? "boat" : "hand";
+    const chumToDrop = eq.deliveryChum;
+
     const vPos = this.#systems.projector.screenToVirtual(
       input.clickPos.x,
       input.clickPos.y,
     );
     const cell = this.checkWater(vPos.x, vPos.y);
 
-    if (!cell) {
+    if (!cell || !chumToDrop) {
       this.markInvalidCast(input.clickPos);
       input.clickPos = null;
       return;
@@ -1634,11 +1692,12 @@ class Game {
 
     if (method === "hand") {
       const maxDist = CONFIG.locations.map["test"]?.chumCastDistance || 800;
-      const throwLineY = bounds.bottom - maxDist; // ПРОСТА ПЕРЕВІРКА ПО Y
+      const throwLineY = bounds.bottom - maxDist;
 
       if (vPos.y >= throwLineY) {
         if (this.#systems.chum.useHandBait()) {
-          this.#systems.chum.deployBait(vPos.x, vPos.y, "carp_mix_basic");
+          this.#systems.chum.deployBait(vPos.x, vPos.y, chumToDrop.id);
+          this.#systems.inventory.consumeItem(chumToDrop.instanceId, 1);
           this.toggleChumAim();
         } else {
           this.isAimingChum = false;
@@ -1647,14 +1706,16 @@ class Game {
         this.markInvalidCast(input.clickPos);
       }
     } else if (method === "boat" && this.activeBoat) {
-      const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
+      const boatItem = eq.delivery || {};
+      const isManual = boatItem.manualControl ?? true;
 
       this.#systems.chum.deployBait(
         vPos.x,
         vPos.y,
-        "carp_mix_basic",
+        chumToDrop.id,
         this.activeBoat,
       );
+      this.#systems.inventory.consumeItem(chumToDrop.instanceId, 1);
 
       this.isAimingChum = false;
 
@@ -1690,25 +1751,21 @@ class Game {
     );
     const mapBounds = this.getDynamicBounds();
 
-    // 1. Перевіряємо, чи клікаємо ми ПО САМОМУ КОРАБЛИКУ, щоб його забрати
     if (distToBoat < 40) {
       if (activeBoat.pos.y > mapBounds.bottom - 200) {
         this.#systems.chum.removeBoat(activeBoat);
-        console.log("Кораблик забрано в інвентар!");
-      } else {
-        console.log("Кораблик занадто далеко, підпливіть ближче до берега!");
       }
       clickHandled = true;
-    }
-    // 2. Якщо клікаємо кудись на карту, щоб задати ціль
-    else if (activeBoat.state !== "drifting") {
+    } else if (activeBoat.state !== "drifting") {
       const cell = this.checkWater(vPos.x, vPos.y);
 
       if (!cell) {
         this.markInvalidCast(input.clickPos);
         clickHandled = true;
       } else {
-        const isManual = CONFIG.chum?.deliveryMethods?.boat?.manualControl;
+        const eq = this.#systems.inventory.getEquipped();
+        const boatItem = eq.delivery || {};
+        const isManual = boatItem.manualControl ?? true;
 
         if (isManual) {
           if (activeBoat.state !== "returning") {
@@ -1716,27 +1773,24 @@ class Game {
             clickHandled = true;
           }
         } else {
-          // АВТО-РЕЖИМ: Додавання точок "на льоту"
-
-          // РАХУЄМО ВІЛЬНІ СЛОТИ:
           const reservedTargets =
             (activeBoat.zoneId ? 1 : 0) +
             (activeBoat.waypoints ? activeBoat.waypoints.length : 0);
           const freeSlots = activeBoat.remainingSections - reservedTargets;
 
-          if (
-            freeSlots > 0 && // Перевіряємо саме freeSlots!
-            activeBoat.state !== "returning"
-          ) {
-            this.#systems.chum.deployBait(
-              vPos.x,
-              vPos.y,
-              "carp_mix_basic",
-              activeBoat,
-            );
-            clickHandled = true;
-          } else if (activeBoat.state !== "returning") {
-            console.log("Всі прикормки вже розплановані!");
+          if (freeSlots > 0 && activeBoat.state !== "returning") {
+            const chumToDrop = eq.deliveryChum;
+
+            if (chumToDrop) {
+              this.#systems.chum.deployBait(
+                vPos.x,
+                vPos.y,
+                chumToDrop.id,
+                activeBoat,
+              );
+              this.#systems.inventory.consumeItem(chumToDrop.instanceId, 1);
+              clickHandled = true;
+            }
           }
         }
       }
@@ -1745,7 +1799,6 @@ class Game {
     if (clickHandled) {
       input.clickPos = null;
     } else if (!this.canPlayerCast()) {
-      console.log("Дія заблокована: спочатку задайте всі точки маршруту!");
       input.clickPos = null;
     }
   }
@@ -1761,9 +1814,9 @@ class Game {
     const pos = this.#float.getPosition();
     const ed = this.getEnvDataForBite();
 
-    // Тепер ми просто беремо дані з ed, оскільки getEnvDataForBite
-    // вже враховує і пляму на воді, і годівницю фідера
-    const currentBaits = CONFIG.player?.equipment?.baits || ["oil_worm"];
+    const eq = this.#systems.inventory.getEquipped();
+    const currentBaits = (eq?.baits || []).map((b) => b?.id).filter(Boolean);
+    const currentHookSize = eq?.hook?.level || 1;
 
     let detail = {
       gameState: this.#gameStateName,
@@ -1771,14 +1824,14 @@ class Game {
       floatY: Math.round(pos.y),
       hookDepth: ed.hookDepth,
       bottomDepth: ed.bottomDepth,
-      lineLength: ed.lineLength, // Беремо з ed, бо там вже враховано лежить фідер на дні чи ні
-      baits: currentBaits, // Передаємо масив для EchoModule
+      lineLength: ed.lineLength,
+      baits: currentBaits,
       phase: env.phase,
       isRaining: env.isRaining,
       isFoggy: env.isFoggy,
       liveChances: this.#systems.bite.getLiveChances(ed, {
-        hookSize: CONFIG.player?.equipment?.hook?.level || 1,
-        baits: currentBaits, // Передаємо масив наживок
+        hookSize: currentHookSize,
+        baits: currentBaits,
       }),
       chumZones: this.#systems.chum?.getZones
         ? this.#systems.chum.getZones()
@@ -1787,7 +1840,8 @@ class Game {
 
     const boats = this.#systems.chum?.getBoats() || [];
     const activeBoat = boats[0];
-    const boatHasSonar = CONFIG.chum?.deliveryMethods?.boat?.hasSonar;
+    const boatItem = eq.delivery || {};
+    const boatHasSonar = boatItem.hasSonar ?? false;
 
     if (activeBoat && boatHasSonar && this.#gameStateName === "scouting") {
       const boatCell = this.checkWater(activeBoat.pos.x, activeBoat.pos.y);
@@ -1811,8 +1865,8 @@ class Game {
       };
 
       detail.liveChances = this.#systems.bite.getLiveChances(boatEd, {
-        hookSize: CONFIG.player?.equipment?.hook?.level || 1,
-        baits: currentBaits, // Передаємо масив наживок
+        hookSize: currentHookSize,
+        baits: currentBaits,
       });
     }
 
@@ -1857,4 +1911,6 @@ class Game {
 }
 
 const game = new Game("gameCanvas");
-CacheManager.printStorageUsage();
+if (typeof CacheManager !== "undefined" && CacheManager.printStorageUsage) {
+  CacheManager.printStorageUsage();
+}

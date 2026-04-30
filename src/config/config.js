@@ -1,3 +1,62 @@
+const SLOT_CONFIG = {
+  rod: {
+    type: "single",
+    dependencies: ["reel", "float", "sinker", "hooks", "feederChum", "baits"],
+    acceptTypes: ["spinning", "float", "feeder"],
+  },
+  reel: { type: "single", dependencies: [], acceptTypes: ["spinning_reel"] },
+  float: {
+    type: "single",
+    dependencies: [],
+    acceptTypes: ["float_tackle", "day", "night"],
+  },
+  sinker: {
+    type: "single",
+    dependencies: [],
+    acceptTypes: ["sinker", "feeder_rig"],
+  },
+  hooks: { type: "array", dependencies: ["baits"], acceptTypes: ["hook"] },
+  feederChum: { type: "single", dependencies: [], acceptTypes: ["chum_mix"] },
+  net: { type: "single", dependencies: [], acceptTypes: ["net"] },
+  delivery: {
+    type: "single",
+    dependencies: ["deliveryChum"],
+    acceptTypes: ["chum_delivery", "boat"],
+  },
+  deliveryChum: { type: "single", dependencies: [], acceptTypes: ["chum_mix"] },
+  baits: {
+    type: "array",
+    dependencies: [],
+    acceptTypes: ["bait", "spinner", "wobbler", "jig"],
+  },
+};
+
+const UI_LAYOUT_CONFIG = [
+  {
+    groupName: "Основне",
+    slots: [{ id: "rod", label: "Вудилище" }],
+  },
+  {
+    groupName: "Оснащення",
+    slots: [
+      { id: "reel", label: "Котушка" },
+      { id: "float", label: "Поплавок" },
+      { id: "sinker", label: "Оснастка" },
+      { id: "hooks", label: "Гачок", dynamicCount: true },
+      { id: "baits", label: "Наживка", dynamicCount: true },
+      { id: "feederChum", label: "Прикормка" },
+    ],
+  },
+  {
+    groupName: "Додатково",
+    slots: [
+      { id: "net", label: "Підсака" },
+      { id: "delivery", label: "Доставка" },
+      { id: "deliveryChum", label: "Вантаж" },
+    ],
+  },
+];
+
 const ITEM_DB = {
   rods: {
     // 1. СПІНІНГ (для блишень, воблерів, джигу)
@@ -19,6 +78,7 @@ const ITEM_DB = {
         compensation: 0.6,
         maxDistance: 600,
         hasReel: true,
+        capabilities: ["reel", "lure"],
       },
     },
 
@@ -41,6 +101,7 @@ const ITEM_DB = {
         compensation: 0.4,
         maxDistance: 600,
         hasReel: true,
+        capabilities: ["reel", "feeder_rig"],
       },
     },
 
@@ -63,6 +124,7 @@ const ITEM_DB = {
         compensation: 0.2,
         maxDistance: 450,
         hasReel: false, // Махова вудка (без котушки)
+        capabilities: ["float", "sinker", "hook"],
       },
     },
   },
@@ -78,6 +140,7 @@ const ITEM_DB = {
         basePower: 1.0,
         pumpLevel: 5,
         pumpPowerPerLevel: 10,
+        requiresTag: "reel",
         hold: {
           activeLevel: 3,
           swipeThresholdPx: 100,
@@ -114,27 +177,46 @@ const ITEM_DB = {
       type: "hook",
       icon: "🪝",
       displayStats: { level: 5, weight: "4g" },
-      engineStats: { weight: 4, quality: 1 },
+      engineStats: {
+        weight: 4,
+        quality: 1,
+        requiresTag: "hook",
+        capabilities: ["bait"], // ДОДАНО: тепер гачок дозволяє чіпляти наживку!
+      },
     },
   },
 
   baits: {
+    feeder_spring_basic: {
+      id: "feeder_spring_basic",
+      name: "Базова пружина",
+      type: "feeder_rig", // Тип для UI та фільтрів
+      icon: "🪤",
+      displayStats: { Гачки: 2, Прикормка: "Є" },
+      engineStats: {
+        requiresTag: "feeder_rig",
+        capabilities: ["bait", "chum_mix"], // Пружина ДОЗВОЛЯЄ чіпляти на себе наживку і кашу!
+        hooksCount: 2,
+        hasChumSlot: true,
+      },
+    },
+
     oil_worm: {
       id: "oil_worm",
       name: "Масляний черв'як",
-      type: "float",
+      type: "bait", // Змінюємо тут на bait!
       icon: "🪱",
       displayStats: { type: "Наживка" },
-      engineStats: { type: "float" },
+      engineStats: { type: "bait", requiresTag: "bait" }, // І тут чудово
     },
 
     bread: {
       id: "bread",
       name: "Хліб",
-      type: "float",
+      type: "bait", // Змінюємо тут
       icon: "🍞",
       displayStats: { type: "Наживка" },
-      engineStats: { type: "float" },
+      engineStats: { type: "bait", requiresTag: "bait" },
     },
 
     test_spinner: {
@@ -151,6 +233,7 @@ const ITEM_DB = {
         maxDepth: 3.0,
         quality: 8.0,
         currentCompensation: [0.1, 1.0],
+        requiresTag: "lure",
       },
     },
 
@@ -170,6 +253,7 @@ const ITEM_DB = {
         maxDepth: 6.5,
         quality: 8.0,
         currentCompensation: [0.1, 1.0],
+        requiresTag: "lure",
       },
     },
 
@@ -189,6 +273,7 @@ const ITEM_DB = {
         maxDepth: 5.0,
         quality: 8.0,
         currentCompensation: [0.1, 1.0],
+        requiresTag: "lure",
       },
     },
 
@@ -205,6 +290,7 @@ const ITEM_DB = {
         riseSpeed: 2.5,
         quality: 7.0,
         currentCompensation: [0.1, 0.9],
+        requiresTag: "lure",
       },
     },
   },
@@ -225,6 +311,7 @@ const ITEM_DB = {
         overDepthPenaltyMult: 0.5,
         sinkingDelayMs: 500,
         sinkingDurationMs: 4000,
+        requiresTag: "float",
       },
     },
   },
@@ -247,6 +334,7 @@ const ITEM_DB = {
           medium: { speedMult: 1.5, heightScale: 0.85 },
           heavy: { speedMult: 2.0, heightScale: 0.7 },
         },
+        requiresTag: "sinker",
       },
     },
   },
@@ -282,6 +370,7 @@ const ITEM_DB = {
       icon: "🍞",
       displayStats: { duration: "24h" },
       engineStats: {
+        requiresTag: "chum_mix",
         targetFishes: ["crucian_stalker"],
         radius: 150,
         maxBonus: 2.0,
@@ -295,19 +384,6 @@ const ITEM_DB = {
   },
 
   deliveryMethods: {
-    hand: {
-      id: "hand",
-      name: "Ручне закидання",
-      icon: "🖐️",
-      type: "chum_delivery",
-      displayStats: { Дальність: "Ближня", Використання: "Рогатка/Руки" },
-      engineStats: {
-        type: "hand",
-        flightTimeMs: 3000,
-        maxUses: 7,
-      },
-    },
-
     boat_lvl3: {
       id: "boat_lvl3",
       name: "Кораблик (Рівень 3)",
@@ -320,6 +396,7 @@ const ITEM_DB = {
         showSensors: false,
         manualControl: false,
         type: "boat",
+        capabilities: ["chum_mix"],
         sections: 3,
         level: 3,
         statsByLevel: {
@@ -824,30 +901,36 @@ const CONFIG = {
 
   player: {
     equipment: {
-      rodId: "rod_test_spin",
-      reelId: "reel_test",
-      hookId: "hook_basic",
+      rodId: null,
+      reelId: null,
       floatId: null,
       sinkerId: null,
-      baits: ["oil_worm"],
-      netId: "net_basic",
-      feeder: {
-        chumId: "carp_mix_basic",
-        deliveryMethodId: "boat_lvl3",
-      },
+      hooks: [],
+      baits: [],
+      netId: null,
+      feederChumId: null,
+      deliveryId: null,
+      deliveryChumId: null,
     },
+
     inventory: [
-      { instanceId: "uuid-1", itemId: "rod_test_spin" },
-      { instanceId: "uuid-1-feeder", itemId: "rod_test_feeder" },
-      { instanceId: "uuid-1-float", itemId: "rod_test_float" },
-      { instanceId: "uuid-2", itemId: "reel_test" },
-      { instanceId: "uuid-3", itemId: "hook_basic", quantity: 10 },
-      { instanceId: "uuid-4", itemId: "oil_worm", quantity: 50 },
-      { instanceId: "uuid-5", itemId: "test_wobbler_sinking" },
-      { instanceId: "uuid-6", itemId: "net_basic" },
-      { instanceId: "uuid-7", itemId: "carp_mix_basic", quantity: 5 },
+      { instanceId: "uuid-rod-spin", itemId: "rod_test_spin" },
+      { instanceId: "uuid-rod-feeder", itemId: "rod_test_feeder" },
+      { instanceId: "uuid-rod-float", itemId: "rod_test_float" },
+      { instanceId: "uuid-reel", itemId: "reel_test" },
+      { instanceId: "uuid-float", itemId: "float_day" },
+      { instanceId: "uuid-sinker", itemId: "sinker_light", quantity: 15 },
+      { instanceId: "uuid-spring", itemId: "feeder_spring_basic" },
+      { instanceId: "uuid-hook", itemId: "hook_basic", quantity: 10 },
+      { instanceId: "uuid-worm", itemId: "oil_worm", quantity: 50 },
+      { instanceId: "uuid-bread", itemId: "bread", quantity: 20 },
+      { instanceId: "uuid-spinner", itemId: "test_spinner" },
+      { instanceId: "uuid-wob-susp", itemId: "test_wobbler_suspend" },
+      { instanceId: "uuid-wob-sink", itemId: "test_wobbler_sinking" },
+      { instanceId: "uuid-jig", itemId: "test_jig" },
+      { instanceId: "uuid-net", itemId: "net_basic" },
+      { instanceId: "uuid-chum", itemId: "carp_mix_basic", quantity: 15 },
       { instanceId: "uuid-boat", itemId: "boat_lvl3" },
-      { instanceId: "uuid-hand", itemId: "hand" },
     ],
   },
 
@@ -857,32 +940,16 @@ const CONFIG = {
     guaranteedRings: [2, 3],
   },
 
-  chum: {
-    currentMethod: "boat",
-    deliveryMethods: {
-      hand: ITEM_DB.deliveryMethods.hand.engineStats,
-      boat: ITEM_DB.deliveryMethods.boat_lvl3.engineStats,
-    },
-    baits: {
-      carp_mix_basic: ITEM_DB.chums.carp_mix_basic.engineStats,
-    },
-  },
-
-  // ОСЬ ТУТ ЦИМ МОСТАМ МІСЦЕ:
-  float: ITEM_DB.floats.float_day.engineStats,
-  sinker: ITEM_DB.sinkers.sinker_light.engineStats,
-  net: ITEM_DB.nets.net_basic.engineStats,
-
   hookMechanics: {
-    safeTensionThreshold: 50, // Поріг для сильної риби
-    safeTensionThresholdWeakFish: 90, // Поріг для слабкої риби (НОВЕ)
+    safeTensionThreshold: 50,
+    safeTensionThresholdWeakFish: 90,
     baseEscapeChance: 0.01,
     chancePer10Tension: 0.01,
     fishDominanceMultiplier: 1.5,
     extremeDominanceBonus: 0.5,
     checkIntervalMs: 1000,
-    slackLinePenaltyTimeMs: 10000, // Час провисання до штрафу (10 сек) (НОВЕ)
-    slackLineEscapeChance: 0.1, // Шанс сходу при провисанні (1%) (НОВЕ)
+    slackLinePenaltyTimeMs: 10000,
+    slackLineEscapeChance: 0.1,
   },
 
   stamina: {
@@ -1038,3 +1105,5 @@ const CONFIG = {
     direction: { x: 1, y: 0.2 },
   },
 };
+
+export { SLOT_CONFIG, UI_LAYOUT_CONFIG, ITEM_DB, CONFIG };

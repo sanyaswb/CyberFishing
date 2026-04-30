@@ -938,317 +938,161 @@ class HoldChargesUI {
 }
 
 class InventoryUI {
-  #container;
   #inventoryManager;
   #isOpen = false;
-
-  #equipmentSlots = [
-    { id: "rod", name: "Вудилище", type: ["spinning", "float", "feeder"] },
-    { id: "reel", name: "Котушка", type: ["spinning_reel"] },
-    { id: "float", name: "Поплавок", type: ["float_tackle"] },
-    { id: "hook", name: "Гачок", type: ["hook"] },
-    {
-      id: "baits",
-      name: "Наживка",
-      type: ["float", "spinner", "wobbler", "jig"],
-    },
-    { id: "sinker", name: "Грузило", type: ["sinker"] },
-    { id: "net", name: "Підсака", type: ["net"] },
-    { id: "feeder", name: "Прикормка", type: ["chum_mix"] },
-  ];
-
   #activeFilters = new Set();
+  #warningTimeout;
+
+  #containerNode;
+  #powerValueNode;
+  #warningBoxNode;
+  #leftPanelNode;
+  #filterContainerNode;
+  #inventoryGridNode;
+  #tooltipNode;
 
   constructor(inventoryManager) {
     this.#inventoryManager = inventoryManager;
     this.#initBackpackButton();
     this.#initModal();
+    this.#setupEventListeners();
   }
 
   #initBackpackButton() {
-    this.backpackBtn = document.createElement("button");
-    this.backpackBtn.innerHTML = "🎒";
-    this.backpackBtn.className = "inv-backpack-btn"; // Використовуємо CSS клас
-
+    const btn = document.createElement("button");
+    btn.innerHTML = "🎒";
+    btn.className = "inv-backpack-btn";
     if (typeof UIUtils !== "undefined") {
-      UIUtils.makeSolid(this.backpackBtn);
+      UIUtils.makeSolid(btn);
     }
-
-    this.backpackBtn.addEventListener("click", () => this.toggle());
-    document.body.appendChild(this.backpackBtn);
+    btn.addEventListener("click", () => this.toggle());
+    document.body.appendChild(btn);
   }
 
   #initModal() {
-    this.#container = document.createElement("div");
-    this.#container.className = "inv-modal";
+    this.#containerNode = document.createElement("div");
+    this.#containerNode.className = "inv-modal";
 
     const topBar = document.createElement("div");
     topBar.className = "inv-top-bar";
 
-    this.powerLabel = document.createElement("div");
-    this.powerLabel.innerHTML = `💪 Загальна сила: <span id="inv-total-power" style="color: #00ff80;">0</span> / 1000`;
+    const powerLabelWrapper = document.createElement("div");
+    powerLabelWrapper.innerHTML = `💪 Загальна сила: <span style="color: #00ff80;">0</span> / 1000`;
+    this.#powerValueNode = powerLabelWrapper.querySelector("span");
 
     const closeBtn = document.createElement("button");
     closeBtn.innerText = "❌ Закрити";
     closeBtn.className = "inv-close-btn";
     closeBtn.onclick = () => this.toggle();
 
-    topBar.append(this.powerLabel, closeBtn);
+    topBar.append(powerLabelWrapper, closeBtn);
 
-    this.warningBox = document.createElement("div");
-    this.warningBox.style.cssText = `
-    color: #ff4444; background: rgba(255, 0, 0, 0.1); 
-    border: 1px solid #ff4444; border-radius: 5px;
-    padding: 10px; margin-bottom: 15px; text-align: center;
-    font-weight: bold; display: none;
-  `;
-    this.#container.appendChild(topBar);
-    this.#container.appendChild(this.warningBox);
+    this.#warningBoxNode = document.createElement("div");
+    this.#warningBoxNode.style.cssText =
+      "color: #ff4444; background: rgba(255, 0, 0, 0.1); border: 1px solid #ff4444; border-radius: 5px; padding: 10px; margin-bottom: 15px; text-align: center; font-weight: bold; display: none;";
 
     const mainArea = document.createElement("div");
     mainArea.className = "inv-main-area";
 
-    this.leftPanel = document.createElement("div");
-    this.leftPanel.className = "inv-left-panel";
+    this.#leftPanelNode = document.createElement("div");
+    this.#leftPanelNode.className = "inv-left-panel";
+    this.#leftPanelNode.style.cssText =
+      "display: flex; flex-direction: column; gap: 15px;";
 
-    const rightWrapper = document.createElement("div");
-    rightWrapper.className = "inv-right-panel";
+    const rightWrapperNode = document.createElement("div");
+    rightWrapperNode.className = "inv-right-panel";
 
-    this.filterContainer = document.createElement("div");
-    this.filterContainer.className = "inv-filters";
+    this.#filterContainerNode = document.createElement("div");
+    this.#filterContainerNode.className = "inv-filters";
 
-    this.inventoryGrid = document.createElement("div");
-    this.inventoryGrid.className = "inv-grid";
+    this.#inventoryGridNode = document.createElement("div");
+    this.#inventoryGridNode.className = "inv-grid";
 
-    rightWrapper.append(this.filterContainer, this.inventoryGrid);
-    mainArea.append(this.leftPanel, rightWrapper);
-    this.#container.append(topBar, mainArea);
-    document.body.appendChild(this.#container);
+    rightWrapperNode.append(this.#filterContainerNode, this.#inventoryGridNode);
+    mainArea.append(this.#leftPanelNode, rightWrapperNode);
+    this.#containerNode.append(topBar, this.#warningBoxNode, mainArea);
+    document.body.appendChild(this.#containerNode);
 
-    this.tooltip = document.createElement("div");
-    this.tooltip.className = "inv-tooltip";
-    document.body.appendChild(this.tooltip);
+    this.#tooltipNode = document.createElement("div");
+    this.#tooltipNode.className = "inv-tooltip";
+    document.body.appendChild(this.#tooltipNode);
   }
 
-  showWarning(message) {
-    this.warningBox.innerText = message;
-    this.warningBox.style.display = "block";
-
-    // Скидаємо попередній таймер, якщо є
-    if (this.warningTimeout) clearTimeout(this.warningTimeout);
-
-    // Ховаємо через 5 секунд
-    this.warningTimeout = setTimeout(() => {
-      this.warningBox.style.display = "none";
-    }, 5000);
+  #setupEventListeners() {
+    document.addEventListener("inventory-changed", () => {
+      if (this.#isOpen) this.refreshUI();
+    });
   }
 
   toggle() {
     this.#isOpen = !this.#isOpen;
-    this.#container.classList.toggle("active", this.#isOpen);
+    this.#containerNode.classList.toggle("active", this.#isOpen);
     if (this.#isOpen) this.refreshUI();
   }
 
+  showWarning(message) {
+    this.#warningBoxNode.innerText = message;
+    this.#warningBoxNode.style.display = "block";
+    if (this.#warningTimeout) clearTimeout(this.#warningTimeout);
+    this.#warningTimeout = setTimeout(() => {
+      this.#warningBoxNode.style.display = "none";
+    }, 5000);
+  }
+
   refreshUI() {
+    this.#powerValueNode.innerText = this.#inventoryManager
+      .getTotalPower()
+      .toFixed(1);
     this.#renderEquipment();
     this.#renderFilters();
     this.#renderInventory();
-    this.#updateTotalPower();
   }
 
   #renderEquipment() {
-    this.leftPanel.innerHTML = "";
+    const fragment = document.createDocumentFragment();
+    const equipped = this.#inventoryManager.getEquipped();
 
-    // Перемикаємо панель у Flexbox, щоб групи йшли одна під одною
-    this.leftPanel.style.display = "flex";
-    this.leftPanel.style.flexDirection = "column";
-    this.leftPanel.style.gap = "15px";
+    UI_LAYOUT_CONFIG.forEach((groupConfig) => {
+      const groupNode = this.#createGroupContainer(groupConfig.groupName);
+      let hasSlots = false;
 
-    const eq = this.#inventoryManager.getEquipped();
-    const rod = eq.rod;
-    const rodType = rod?.type;
+      groupConfig.slots.forEach((slotConfig) => {
+        if (slotConfig.dynamicCount) {
+          const itemsArr = equipped[slotConfig.id] || [];
+          const maxSlots =
+            equipped.sinker?.hooksCount ||
+            equipped.sinker?.engineStats?.hooksCount ||
+            1;
 
-    // === ГРУПА 1: ВУДИЛИЩЕ (Завжди зверху) ===
-    const rodGroup = this.#createGroupContainer("Основне");
-    rodGroup.appendChild(
-      this.#createSlotDOM(
-        { id: "rod", name: "Вудилище", type: ["spinning", "float", "feeder"] },
-        rod,
-      ),
-    );
-    this.leftPanel.appendChild(rodGroup);
+          for (let i = 0; i < maxSlots; i++) {
+            groupNode.appendChild(
+              this.#createSlotDOM(
+                `${slotConfig.id}_${i}`,
+                `${slotConfig.label} ${i + 1}`,
+                itemsArr[i],
+              ),
+            );
+            hasSlots = true;
+          }
+        } else {
+          groupNode.appendChild(
+            this.#createSlotDOM(
+              slotConfig.id,
+              slotConfig.label,
+              equipped[slotConfig.id],
+            ),
+          );
+          hasSlots = true;
+        }
+      });
 
-    // === ГРУПА 2: ОСНАЩЕННЯ (З'являється лише якщо є вудка) ===
-    if (rod) {
-      const tackleGroup = this.#createGroupContainer("Оснащення");
+      if (hasSlots) fragment.appendChild(groupNode);
+    });
 
-      // Котушка (Зникає, якщо махова вудка)
-      if (rod.hasReel !== false) {
-        tackleGroup.appendChild(
-          this.#createSlotDOM(
-            { id: "reel", name: "Котушка", type: ["spinning_reel"] },
-            eq.reel,
-          ),
-        );
-      }
-
-      // Динамічні слоти залежно від типу вудки
-      if (rodType === "spinning") {
-        // Спінінг: Лише приманка (блешня, воблер, джиг)
-        let baitItem =
-          eq.baits?.length > 0
-            ? this.#inventoryManager._hydrateItem(eq.baits[0], "baits")
-            : null;
-        tackleGroup.appendChild(
-          this.#createSlotDOM(
-            {
-              id: "baits",
-              name: "Приманка",
-              type: ["spinner", "wobbler", "jig"],
-            },
-            baitItem,
-          ),
-        );
-      } else if (rodType === "float" || rodType === "float_match") {
-        // Поплавкова: Поплавок, Грузило, Гачок, Наживка
-        tackleGroup.appendChild(
-          this.#createSlotDOM(
-            { id: "float", name: "Поплавок", type: ["float_tackle"] },
-            eq.float,
-          ),
-        );
-        tackleGroup.appendChild(
-          this.#createSlotDOM(
-            { id: "sinker", name: "Грузило", type: ["sinker"] },
-            eq.sinker,
-          ),
-        );
-        tackleGroup.appendChild(
-          this.#createSlotDOM(
-            { id: "hook", name: "Гачок", type: ["hook"] },
-            eq.hook,
-          ),
-        );
-
-        let baitItem =
-          eq.baits?.length > 0
-            ? this.#inventoryManager._hydrateItem(eq.baits[0], "baits")
-            : null;
-        tackleGroup.appendChild(
-          this.#createSlotDOM(
-            { id: "baits", name: "Наживка", type: ["float"] },
-            baitItem,
-          ),
-        );
-      } else if (rodType === "feeder") {
-        // Фідер: Гачок, Наживка + Ланцюжок з годівницею та прикормкою
-        tackleGroup.appendChild(
-          this.#createSlotDOM(
-            { id: "hook", name: "Гачок", type: ["hook"] },
-            eq.hook,
-          ),
-        );
-
-        let baitItem =
-          eq.baits?.length > 0
-            ? this.#inventoryManager._hydrateItem(eq.baits[0], "baits")
-            : null;
-        tackleGroup.appendChild(
-          this.#createSlotDOM(
-            { id: "baits", name: "Наживка", type: ["float"] },
-            baitItem,
-          ),
-        );
-
-        // Створюємо "ланцюжок" 🔗 для фідера
-        const chainDiv = document.createElement("div");
-        chainDiv.style.cssText =
-          "display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 8px;";
-
-        // Використовуємо слот sinker як "Годівницю"
-        chainDiv.appendChild(
-          this.#createSlotDOM(
-            {
-              id: "sinker",
-              name: "Годівниця",
-              type: ["sinker", "feeder_basket"],
-            },
-            eq.sinker,
-          ),
-        );
-
-        const linkIcon = document.createElement("span");
-        linkIcon.innerText = "🔗";
-        chainDiv.appendChild(linkIcon);
-
-        let chumItem = eq.feeder?.chumId
-          ? this.#inventoryManager._hydrateItem(eq.feeder.chumId, "chums")
-          : null;
-        chainDiv.appendChild(
-          this.#createSlotDOM(
-            { id: "feeder", name: "Прикормка (Фідер)", type: ["chum_mix"] },
-            chumItem,
-          ),
-        );
-
-        tackleGroup.appendChild(chainDiv);
-      }
-
-      this.leftPanel.appendChild(tackleGroup);
-    }
-
-    // === ГРУПА 3: НЕЗАЛЕЖНЕ СПОРЯДЖЕННЯ (Підсака, Кораблик) ===
-    const indGroup = this.#createGroupContainer("Додатково");
-
-    indGroup.appendChild(
-      this.#createSlotDOM(
-        { id: "net", name: "Підсака", type: ["net"] },
-        eq.net,
-      ),
-    );
-
-    // Кораблик та його прикормка (через ланцюжок 🔗)
-    const boatChain = document.createElement("div");
-    boatChain.style.cssText =
-      "display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 8px;";
-
-    // Слот доставки (Кораблик/Рогатка)
-    let deliveryItem = eq.feeder?.deliveryMethodId
-      ? this.#inventoryManager._hydrateItem(
-          eq.feeder.deliveryMethodId,
-          "deliveryMethods",
-        )
-      : null;
-    boatChain.appendChild(
-      this.#createSlotDOM(
-        { id: "delivery", name: "Доставка", type: ["chum_delivery"] },
-        deliveryItem,
-      ),
-    );
-
-    // Якщо кораблик встановлено - показуємо слот для його прикормки
-    if (deliveryItem && deliveryItem.type === "boat") {
-      const linkIcon = document.createElement("span");
-      linkIcon.innerText = "🔗";
-      boatChain.appendChild(linkIcon);
-
-      // (Тимчасово використовуємо chumId, але в майбутньому сюди краще додати boatChumId)
-      let boatChumItem = eq.feeder?.chumId
-        ? this.#inventoryManager._hydrateItem(eq.feeder.chumId, "chums")
-        : null;
-      boatChain.appendChild(
-        this.#createSlotDOM(
-          { id: "feeder", name: "Прикормка (Кораблик)", type: ["chum_mix"] },
-          boatChumItem,
-        ),
-      );
-    }
-
-    indGroup.appendChild(boatChain);
-    this.leftPanel.appendChild(indGroup);
+    this.#leftPanelNode.innerHTML = "";
+    this.#leftPanelNode.appendChild(fragment);
   }
 
-  // --- ДОПОМІЖНИЙ МЕТОД: Створює контейнер для групи слотів ---
   #createGroupContainer(titleText) {
     const group = document.createElement("div");
     group.style.cssText =
@@ -1263,53 +1107,101 @@ class InventoryUI {
     return group;
   }
 
-  // --- ДОПОМІЖНИЙ МЕТОД: Створює саму ячейку (Slot) ---
-  #createSlotDOM(slotDef, item) {
+  #createSlotDOM(slotId, label, item, isInventory = false, instanceId = null) {
     const slotDiv = document.createElement("div");
-    slotDiv.className = "inv-slot";
+    slotDiv.className = `inv-slot ${isInventory ? "inventory" : ""}`;
 
     if (item) {
-      slotDiv.classList.add("equipped");
+      if (!isInventory) slotDiv.classList.add("equipped");
       slotDiv.innerHTML = item.icon || "📦";
-      this.#addTooltip(slotDiv, item, slotDef.id, true);
+
+      if (isInventory && item.quantity > 1) {
+        slotDiv.innerHTML += `<span class="qty">${item.quantity}</span>`;
+      }
+
+      this.#addTooltip(
+        slotDiv,
+        item,
+        slotId,
+        !isInventory,
+        instanceId || item.instanceId,
+      );
     } else {
       slotDiv.innerHTML = `<span style="font-size: 10px; color: #555;">✖</span>`;
-      slotDiv.title = slotDef.name;
-
-      // Якщо гравець клікає на порожній слот, показуємо підказку!
-      slotDiv.addEventListener("click", () => {
-        this.showWarning(`Оберіть ${slotDef.name} у правій панелі`);
-      });
+      slotDiv.title = label;
+      slotDiv.addEventListener("click", () =>
+        this.showWarning(`Оберіть ${label} у правій панелі`),
+      );
     }
+
     return slotDiv;
   }
 
+  #addTooltip(element, item, slotId, isEquipped, instanceId) {
+    element.addEventListener("mouseenter", () => {
+      let html = `<div style="font-size: 16px; font-weight: bold; margin-bottom: 5px; color: #00ccff;">${item.icon} ${item.name}</div>`;
+      for (const [key, val] of Object.entries(item)) {
+        if (
+          ["id", "name", "icon", "type", "instanceId", "quantity"].includes(key)
+        )
+          continue;
+        if (typeof val !== "object") {
+          html += `<div class="inv-tooltip-stat"><b>${key}:</b> ${val}</div>`;
+        }
+      }
+
+      this.#tooltipNode.innerHTML = html;
+      this.#tooltipNode.style.display = "block";
+
+      const rect = element.getBoundingClientRect();
+      this.#tooltipNode.style.left = `${rect.right + 10}px`;
+      this.#tooltipNode.style.top = `${rect.top}px`;
+    });
+
+    element.addEventListener("mouseleave", () => {
+      this.#tooltipNode.style.display = "none";
+    });
+
+    element.addEventListener("click", () => {
+      if (this.#warningBoxNode.style.display === "block") {
+        this.#warningBoxNode.style.display = "none";
+      }
+
+      if (isEquipped && slotId) {
+        this.#inventoryManager.unequipItem(slotId);
+      } else if (!isEquipped && instanceId) {
+        const result = this.#inventoryManager.autoEquipItem(instanceId);
+        if (!result.success) this.showWarning(result.reason);
+      }
+    });
+  }
+
   #renderFilters() {
-    this.filterContainer.innerHTML = "";
+    const fragment = document.createDocumentFragment();
     const items = this.#inventoryManager.getInventoryItems();
 
     const types = new Set(
       items
         .map((i) => {
-          const fullItem = this.#inventoryManager._hydrateItem(
-            i.itemId,
-            this.#getCategoryByType(i.itemId),
+          const fullItem = this.#inventoryManager._hydrateInstance(
+            i.instanceId,
           );
           return fullItem ? fullItem.type : null;
         })
         .filter(Boolean),
     );
 
-    this.filterContainer.appendChild(
+    fragment.appendChild(
       this.#createFilterBtn("All", "🎛️ Усі", this.#activeFilters.size === 0),
     );
 
     types.forEach((type) => {
       const isActive = this.#activeFilters.has(type);
-      this.filterContainer.appendChild(
-        this.#createFilterBtn(type, type, isActive),
-      );
+      fragment.appendChild(this.#createFilterBtn(type, type, isActive));
     });
+
+    this.#filterContainerNode.innerHTML = "";
+    this.#filterContainerNode.appendChild(fragment);
   }
 
   #createFilterBtn(type, label, isActive) {
@@ -1320,9 +1212,11 @@ class InventoryUI {
       if (type === "All") {
         this.#activeFilters.clear();
       } else {
-        this.#activeFilters.has(type)
-          ? this.#activeFilters.delete(type)
-          : this.#activeFilters.add(type);
+        if (this.#activeFilters.has(type)) {
+          this.#activeFilters.delete(type);
+        } else {
+          this.#activeFilters.add(type);
+        }
       }
       this.refreshUI();
     };
@@ -1330,112 +1224,27 @@ class InventoryUI {
   }
 
   #renderInventory() {
-    this.inventoryGrid.innerHTML = "";
+    const fragment = document.createDocumentFragment();
     const items = this.#inventoryManager.getInventoryItems();
 
     items.forEach((invItem) => {
-      const category = this.#getCategoryByType(invItem.itemId);
-      const item = this.#inventoryManager._hydrateItem(
-        invItem.itemId,
-        category,
+      const itemData = this.#inventoryManager._hydrateInstance(
+        invItem.instanceId,
       );
-      if (!item) return;
+      if (!itemData) return;
 
-      if (this.#activeFilters.size > 0 && !this.#activeFilters.has(item.type))
+      if (
+        this.#activeFilters.size > 0 &&
+        !this.#activeFilters.has(itemData.type)
+      )
         return;
 
-      const slotDiv = document.createElement("div");
-      slotDiv.className = "inv-slot inventory";
-      slotDiv.innerHTML = item.icon || "📦";
-
-      if (invItem.quantity > 1) {
-        const qty = document.createElement("span");
-        qty.className = "qty";
-        qty.innerText = invItem.quantity;
-        slotDiv.appendChild(qty);
-      }
-
-      this.#addTooltip(slotDiv, item, null, false, invItem.instanceId);
-      this.inventoryGrid.appendChild(slotDiv);
-    });
-  }
-
-  #addTooltip(element, item, slotId, isEquipped, instanceId = null) {
-    element.addEventListener("mouseenter", () => {
-      let html = `<div style="font-size: 16px; font-weight: bold; margin-bottom: 5px; color: #00ccff;">${item.icon} ${item.name}</div>`;
-      for (let [key, val] of Object.entries(item)) {
-        if (["id", "name", "icon", "type"].includes(key)) continue;
-        if (typeof val !== "object") {
-          // Стало (використовуємо клас inv-tooltip-stat):
-          html += `<div class="inv-tooltip-stat"><b>${key}:</b> ${val}</div>`;
-        }
-      }
-
-      this.tooltip.innerHTML = html;
-      this.tooltip.style.display = "block";
-
-      const rect = element.getBoundingClientRect();
-      this.tooltip.style.left = `${rect.right + 10}px`;
-      this.tooltip.style.top = `${rect.top}px`;
+      fragment.appendChild(
+        this.#createSlotDOM(null, null, itemData, true, invItem.instanceId),
+      );
     });
 
-    element.addEventListener("mouseleave", () => {
-      this.tooltip.style.display = "none";
-    });
-
-    element.addEventListener("click", () => {
-      if (isEquipped) {
-        if (slotId === "baits") this.#inventoryManager.unequipBait();
-        else if (slotId === "feeder") this.#inventoryManager.unequipFeeder();
-        else if (slotId === "delivery")
-          this.#inventoryManager.unequipDelivery(); // ДОДАНО
-        else this.#inventoryManager.unequipItem(slotId);
-      } else {
-        const validation = this.#inventoryManager.validateEquip(item);
-
-        if (!validation.isValid) {
-          this.showWarning(validation.reason);
-          return;
-        }
-
-        if (this.warningBox) this.warningBox.style.display = "none";
-
-        const targetSlot = this.#equipmentSlots.find((s) =>
-          s.type.includes(item.type),
-        );
-
-        if (targetSlot) {
-          if (targetSlot.id === "baits")
-            this.#inventoryManager.equipBait(item.id);
-          else if (targetSlot.id === "feeder")
-            this.#inventoryManager.equipFeeder(item.id);
-          else if (targetSlot.id === "delivery")
-            this.#inventoryManager.equipDelivery(item.id); // ДОДАНО
-          else this.#inventoryManager.equipItem(targetSlot.id, item.id);
-        }
-      }
-      this.refreshUI();
-    });
-  }
-
-  #updateTotalPower() {
-    const eq = this.#inventoryManager.getEquipped();
-    let power = 0;
-    if (eq.rod) power += eq.rod.basePower * eq.rod.level || 0;
-    if (eq.reel) power += eq.reel.basePower * eq.reel.level || 0;
-
-    const powerEl = document.getElementById("inv-total-power");
-    if (powerEl) powerEl.innerText = power.toFixed(1);
-  }
-
-  #getCategoryByType(itemId) {
-    if (itemId.includes("rod")) return "rods";
-    if (itemId.includes("reel")) return "reels";
-    if (itemId.includes("hook")) return "hooks";
-    if (itemId.includes("net")) return "nets";
-    if (itemId.includes("sinker")) return "sinkers";
-    if (itemId.includes("mix")) return "chums";
-    if (itemId.includes("float")) return "floats";
-    return "baits";
+    this.#inventoryGridNode.innerHTML = "";
+    this.#inventoryGridNode.appendChild(fragment);
   }
 }

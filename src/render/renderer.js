@@ -366,9 +366,6 @@ class Renderer {
     const perspective = projector.getPerspective(floatEntity.getPosition().y);
     const pScale = perspective.scale;
 
-    const width = floatConfig.width * pScale;
-    const length = floatConfig.length * pScale;
-
     this.#ctx.save();
     this.#ctx.translate(screenPos.x, screenPos.y);
 
@@ -386,27 +383,39 @@ class Renderer {
 
     this.#ctx.fillStyle = visualState.color;
 
-    // Світіння при клюванні (жовтий/червоний колір) - виносимо, щоб працювало і для фідера, і для спінінгу
     if (visualState.color !== "#ffffff" && visualState.color !== "#00ff80") {
       this.#ctx.shadowColor = visualState.color;
       this.#ctx.shadowBlur = 8 * pScale;
     }
 
     if (isSpinning) {
-      // МАЛЮЄМО СПІНІНГ: маленька кругла крапочка (наприклад, радіус 2.5)
-      this.#ctx.beginPath();
-      this.#ctx.arc(0, 0, 2.5 * pScale, 0, Math.PI * 2);
-      this.#ctx.fill();
+      if (eq?.baits?.[0]) {
+        this.#ctx.beginPath();
+        this.#ctx.arc(0, 0, 2.5 * pScale, 0, Math.PI * 2);
+        this.#ctx.fill();
+      }
     } else if (isFeeder) {
-      // МАЛЮЄМО ФІДЕР: еліпс
-      this.#ctx.beginPath();
-      this.#ctx.ellipse(0, 0, 6 * pScale, 3 * pScale, 0, 0, Math.PI * 2);
-      this.#ctx.fill();
+      if (eq?.sinker) {
+        this.#ctx.beginPath();
+        this.#ctx.ellipse(0, 0, 6 * pScale, 3 * pScale, 0, 0, Math.PI * 2);
+        this.#ctx.fill();
+      }
     } else {
-      // МАЛЮЄМО ПОПЛАВОК: прямокутник під кутом
-      this.#ctx.rotate((visualState.angle * Math.PI) / 180);
-      const currentLength = length * visualState.scaleY;
-      this.#ctx.fillRect(-width / 2, -currentLength, width, currentLength);
+      if (eq?.float) {
+        const floatWidth =
+          (eq.float.engineStats?.width || floatConfig.width || 3) * pScale;
+        const floatLength =
+          (eq.float.engineStats?.length || floatConfig.length || 15) * pScale;
+
+        this.#ctx.rotate((visualState.angle * Math.PI) / 180);
+        const currentLength = floatLength * visualState.scaleY;
+        this.#ctx.fillRect(
+          -floatWidth / 2,
+          -currentLength,
+          floatWidth,
+          currentLength,
+        );
+      }
     }
 
     this.#ctx.restore();
