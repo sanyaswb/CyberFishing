@@ -664,10 +664,13 @@ class WaitingState extends GameState {
     }
 
     const baitIds = (eq?.baits || []).map((b) => b?.id).filter(Boolean);
+    const baitTypes = (eq?.baits || []).map((b) => b?.type).filter(Boolean); // ДОДАНО: типи приманок
 
     let hooked = this.game.systems.bite.evaluateBite(dt, envData.biteEnv, {
-      hookSize: eq?.hook?.level || 1,
+      // ВИПРАВЛЕНО: Читаємо перший гачок з масиву (або беремо рівень блешні)
+      hookSize: eq?.hooks?.[0]?.level || eq?.baits?.[0]?.level || 1,
       baits: baitIds,
+      baitTypes: baitTypes, // Передаємо типи для визначення анімації клювання
       isPulling: effectiveInput.isPulling,
     });
 

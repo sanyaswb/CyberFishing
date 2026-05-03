@@ -100,13 +100,15 @@ class BiteSystem {
       : [playerGear.baitId];
     const baitId = baitsToTest[0] || "oil_worm";
 
-    // Перевіряємо тип наживки через глобальний CONFIG
-    const baitType = CONFIG.baitsData?.[baitId]?.type || "float";
-    const isActiveLure = ["spinner", "wobbler", "jig"].includes(baitType);
+    // --- ВИПРАВЛЕНО: Логіка вибору профілю клювання ---
+    // Беремо типи прямо з переданих даних гравця
+    const baitTypes = playerGear.baitTypes || ["float"];
+    const isActiveLure = baitTypes.some((type) =>
+      ["spinner", "wobbler", "jig"].includes(type),
+    );
 
     let chosenBiteSequence = null;
     if (fish.biteMechanics) {
-      // Якщо наживка активна (спінінг) - беремо .active, інакше .passive
       chosenBiteSequence = isActiveLure
         ? fish.biteMechanics.active
         : fish.biteMechanics.passive;
@@ -119,7 +121,7 @@ class BiteSystem {
       level: Math.max(1, Math.round(weightRatio * wc.maxLevel)),
       resistance: this.#lerp(wc.baseResistance, wc.maxResistance, weightRatio),
       physics: fish.physics,
-      biteSequence: chosenBiteSequence, // <-- РИБА ТЕПЕР НЕСЕ СВОЄ КЛЮВАННЯ!
+      biteSequence: chosenBiteSequence,
     };
   }
 

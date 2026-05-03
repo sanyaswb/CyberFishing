@@ -863,7 +863,8 @@ class FeederEntity extends WaterEntity {
 
   getChumBonus(elapsedMs, chumConfig) {
     if (!chumConfig) return { bonus: 1.0, targets: [] };
-    const duration = chumConfig.feederDurationMs || 300000;
+
+    const duration = chumConfig.totalBonusTimeMs || 300000;
 
     if (elapsedMs < duration) {
       const progress = elapsedMs / duration;
