@@ -969,6 +969,7 @@ class Game {
   #timeUI;
   #holdUI;
   #chumUI;
+  #hasEquippedNet = false;
 
   invalidCastMarker = null;
   isAimingChum = false;
@@ -998,7 +999,7 @@ class Game {
       env: new EnvironmentSystem(locCfg, CONFIG.debug?.initialTime ?? 12),
       input: new InputManager(this.#canvas, Number(CONFIG.ui?.rod?.x) || null),
       ui: new UIManager(CONFIG),
-      chum: new ChumManager(locId, CONFIG.chum, projectorInstance),
+      chum: new ChumManager(locId, CONFIG.chum || {}, projectorInstance),
       bite: new BiteSystem(CONFIG.spawns, {}),
       inventory: inventoryManager,
     };
@@ -1007,23 +1008,27 @@ class Game {
 
     this.#net = new Net(eq.net || { active: false, maxWeight: 0, length: 10 });
 
-    document.addEventListener("inventory-changed", () => {
-      const newEq = this.#systems.inventory.getEquipped();
+    document.addEventListener("inventory-changed", (e) => {
+      const newEq = e.detail.equipment;
 
-      if (typeof this.#net.updateConfig === "function") {
-        this.#net.updateConfig(
-          newEq.net || { active: false, maxWeight: 0, length: 10 },
-        );
+      const netConfig = newEq.net
+        ? { ...newEq.net, ...(newEq.net.engineStats || {}) }
+        : { active: false, maxWeight: 0, length: 10, chances: [] };
+
+      if (this.#net && typeof this.#net.updateConfig === "function") {
+        this.#net.updateConfig(netConfig);
       } else {
-        this.#net = new Net(
-          newEq.net || { active: false, maxWeight: 0, length: 10 },
-        );
+        this.#net = new Net(netConfig);
       }
 
-      this.#rebuildFloat();
+      this.#hasEquippedNet = !!newEq.net;
 
-      if (this.#gameStateName === "scouting") {
-        this.setState("scouting");
+      if (
+        this.systems &&
+        this.systems.ui &&
+        typeof this.systems.ui.updateNetButtonState === "function"
+      ) {
+        this.systems.ui.updateNetButtonState(this.#hasEquippedNet, false);
       }
     });
 
@@ -1235,51 +1240,81 @@ class Game {
   }
 
   castLine(vx, vy, cellDepth) {
+    const eq = this.#systems.inventory.getEquipped();
+
+    // 1. ПЕРЕВІРКА ОБОВ'ЯЗКОВОГО СПОРЯДЖЕННЯ
+    if (!eq.rod) {
+      console.warn("❌ Відсутнє вудилище!");
+      return;
+    }
+
+    // Перевіряємо, чи потрібна котушка (для pole/махових — ні)
+    const needsReel =
+      eq.rod.hasReel ?? eq.rod.engineStats?.hasReel ?? eq.rod.type !== "pole";
+    if (needsReel && !eq.reel) {
+      console.warn("❌ Для цього вудилища необхідна котушка!");
+      return;
+    }
+
+    // 2. ПІДГОТОВКА ПАРАМЕТРІВ ЗАКИДАННЯ
     const rodPos = this.getRodVirtualPos(this.getDynamicBounds());
     const dist = Math.hypot(vx - rodPos.x, vy - rodPos.y);
-    const maxDist = 2000;
+    const maxDist = eq.rod.maxDistance || 2000;
 
     this.castDistanceRatio = Math.min(1, dist / maxDist);
     this.castStartTime = performance.now();
 
-    const eq = this.#systems.inventory.getEquipped();
-    const isFeeder = eq?.rod?.type === "feeder";
-
+    const isFeeder = eq.rod.type === "feeder";
     if (isFeeder) {
       this.currentHookDepth = cellDepth;
     }
 
+    // 3. ВИЗНАЧЕННЯ ТИПУ ФІЗИКИ ТА КОНФІГУ
     let physicsType = "float";
     let physicsConfig = {};
 
-    if (
-      eq.baits?.[0] &&
-      ["spinner", "wobbler", "jig"].includes(eq.baits[0].type)
-    ) {
-      physicsType = eq.baits[0].type;
-      physicsConfig = { ...eq.baits[0] };
-    } else if (eq.float) {
+    // Пріоритет 1: Спінінгові приманки
+    if (eq.baits?.[0] && eq.baits[0].type === "lure") {
+      const baitStats = eq.baits[0].engineStats || eq.baits[0];
+      physicsType = baitStats.type || "spinner";
+      physicsConfig = { ...baitStats };
+    }
+    // Пріоритет 2: Поплавок
+    else if (eq.float) {
       physicsType = "float";
-      physicsConfig = { ...eq.float };
-    } else if (eq.sinker) {
+      // Зливаємо властивості, щоб підтримати і вкладений engineStats, і "сплющений" об'єкт
+      physicsConfig = { ...eq.float.engineStats, ...eq.float };
+    }
+    // Пріоритет 3: Грузило/Фідер (якщо немає поплавка)
+    else if (eq.sinker) {
       physicsType = "float";
-      physicsConfig = { ...eq.sinker };
+      physicsConfig = { ...eq.sinker.engineStats, ...eq.sinker };
     }
 
+    // 4. СТВОРЕННЯ ОБ'ЄКТА ПРИМАНКИ
     this.#float = BaitFactory.create(physicsType, vx, vy, physicsConfig, eq);
 
+    // 5. ЗАПУСК ФІЗИКИ
     if (typeof this.#float.cast === "function") {
+      // Передаємо sinkerConfig. Якщо його немає — передаємо пустий об'єкт,
+      // щоб FloatEntity.cast використав свої внутрішні дефолти і не крашнувся.
+      const sinkerCfg = eq.sinker
+        ? { ...eq.sinker.engineStats, ...eq.sinker }
+        : null;
+
       this.#float.cast(
         vx,
         vy,
         this.currentHookDepth,
         this.currentHookDepth > cellDepth,
-        eq?.sinker || { weight: 1, maxDepth: 10 },
+        sinkerCfg, // Передаємо null або об'єкт, FloatEntity має це обробити
         this.castDistanceRatio,
       );
     } else {
       this.#float.setPosition(vx, vy);
-      this.#float.setHookDepth(0.1);
+      if (typeof this.#float.setHookDepth === "function") {
+        this.#float.setHookDepth(0.1);
+      }
       if (typeof this.#float.stopBite === "function") {
         this.#float.stopBite();
       }
@@ -1288,7 +1323,17 @@ class Game {
     this.setState("waiting");
   }
 
-  drawFishingElements(renderer, vBot, state, tMeter, fCond, startTime) {
+  drawFishingElements(
+    renderer,
+    bottom, // Це наш віртуальний низ (vBot)
+    state,
+    tMeter, // Перейменував для зручності, щоб збігалося з кодом нижче
+    fCond, // Перейменував
+    startTime,
+  ) {
+    // 1. Отримуємо екіпірування ОДИН раз
+    const eq = this.#systems.inventory.getEquipped();
+
     const sPos = this.#systems.projector.virtualToScreen(
       this.#float.getPosition().x,
       this.#float.getPosition().y,
@@ -1299,8 +1344,7 @@ class Game {
       drop = 0;
     const lineCfg = CONFIG.ui.line;
 
-    const eq = this.#systems.inventory.getEquipped();
-
+    // Логіка розрахунку натягу ліски (Ratio/Drop)
     if (state === "waiting" || state === "biting") {
       const minDelay = lineCfg.distanceDelayMinMs ?? 1500;
       const maxDelay = lineCfg.distanceDelayMaxMs ?? 5000;
@@ -1323,7 +1367,6 @@ class Game {
       drop = ease * (lineCfg.sinkDropPx || 120);
 
       const input = this.#systems.input.getState();
-
       if (input.isPulling) {
         ratio = 1.0;
         drop = 0;
@@ -1343,10 +1386,13 @@ class Game {
       drop = (lineCfg.sinkDropPx || 120) * (1 - ease);
     }
 
-    const mapBottomScreenY = this.#systems.projector.virtualToScreen(0, vBot).y;
+    // Розрахунок обмежень для ліски (щоб не провалилася крізь землю)
+    const mapBottomScreenY = this.#systems.projector.virtualToScreen(
+      0,
+      bottom,
+    ).y;
     const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
     const rodTopY = rodScreenY - 200;
-
     const distY = sPos.y - rodTopY;
 
     if (distY < 0) {
@@ -1358,10 +1404,12 @@ class Game {
     const maxAllowedDrop = Math.max(0, mapBottomScreenY - targetYAfterShrink);
     drop = Math.min(drop, maxAllowedDrop);
 
+    // --- МАЛЮВАННЯ ---
+
     renderer.drawCatchZone(
       this.#systems.projector,
       this.#net,
-      vBot,
+      bottom,
       CONFIG.locations,
       CONFIG.ui.catchZone,
     );
@@ -1376,11 +1424,13 @@ class Game {
       lineCfg,
     );
 
+    // ОСЬ ТУТ МИ ПЕРЕДАЄМО eq ПРАВИЛЬНО
     renderer.drawFloat(
       sPos,
       this.#float,
       eq.float || {},
       this.#systems.projector,
+      eq,
     );
 
     if (state === "playing" && tMeter && fCond) {

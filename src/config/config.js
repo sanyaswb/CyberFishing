@@ -2,9 +2,13 @@ const SLOT_CONFIG = {
   rod: {
     type: "single",
     dependencies: ["reel", "float", "sinker", "hooks", "feederChum", "baits"],
-    acceptTypes: ["spinning", "float", "feeder"],
+    acceptTypes: ["spinning", "float", "feeder", "pole"],
   },
-  reel: { type: "single", dependencies: [], acceptTypes: ["spinning_reel"] },
+  reel: {
+    type: "single",
+    dependencies: [],
+    acceptTypes: ["spinning_reel"],
+  },
   float: {
     type: "single",
     dependencies: [],
@@ -15,19 +19,35 @@ const SLOT_CONFIG = {
     dependencies: [],
     acceptTypes: ["sinker", "feeder_rig"],
   },
-  hooks: { type: "array", dependencies: ["baits"], acceptTypes: ["hook"] },
-  feederChum: { type: "single", dependencies: [], acceptTypes: ["chum_mix"] },
-  net: { type: "single", dependencies: [], acceptTypes: ["net"] },
+  hooks: {
+    type: "array",
+    dependencies: ["baits"],
+    acceptTypes: ["hook"],
+  },
+  feederChum: {
+    type: "single",
+    dependencies: [],
+    acceptTypes: ["chum_mix"],
+  },
+  net: {
+    type: "single",
+    dependencies: [],
+    acceptTypes: ["net"],
+  },
   delivery: {
     type: "single",
     dependencies: ["deliveryChum"],
-    acceptTypes: ["chum_delivery", "boat"],
+    acceptTypes: ["boat", "chum_delivery"],
   },
-  deliveryChum: { type: "single", dependencies: [], acceptTypes: ["chum_mix"] },
+  deliveryChum: {
+    type: "single",
+    dependencies: [],
+    acceptTypes: ["chum_mix"],
+  },
   baits: {
     type: "array",
     dependencies: [],
-    acceptTypes: ["bait", "spinner", "wobbler", "jig"],
+    acceptTypes: ["bait", "lure", "spinner", "wobbler", "jig"],
   },
 };
 
@@ -109,7 +129,7 @@ const ITEM_DB = {
     rod_test_float: {
       id: "rod_test_float",
       name: "Бамбукова Вудка",
-      type: "float", // Для UI фільтрів
+      type: "float",
       icon: "🎍",
       displayStats: {
         Рівень: 1,
@@ -118,12 +138,12 @@ const ITEM_DB = {
         Тип: "Поплавкова",
       },
       engineStats: {
-        type: "float", // КРИТИЧНО ДЛЯ ФІЗИКИ
+        type: "float",
         level: 1,
         basePower: 1.0,
         compensation: 0.2,
         maxDistance: 450,
-        hasReel: false, // Махова вудка (без котушки)
+        hasReel: false,
         capabilities: ["float", "sinker", "hook"],
       },
     },
@@ -222,10 +242,11 @@ const ITEM_DB = {
     test_spinner: {
       id: "test_spinner",
       name: "Блешня (Тест)",
-      type: "spinner",
+      type: "lure",
       icon: "🥄",
       displayStats: { sinkSpeed: 1.5, maxDepth: "3.0м" },
       engineStats: {
+        type: "spinner",
         mode: 1,
         waterFriction: 0.2,
         sinkSpeed: 1.5,
@@ -240,10 +261,11 @@ const ITEM_DB = {
     test_wobbler_suspend: {
       id: "test_wobbler_suspend",
       name: "Воблер Suspend",
-      type: "wobbler",
+      type: "lure",
       icon: "🐟",
       displayStats: { targetDepth: "2.0 - 4.5м" },
       engineStats: {
+        type: "wobbler",
         mode: 2,
         waterFriction: 0.4,
         sinkSpeed: 1.0,
@@ -260,10 +282,11 @@ const ITEM_DB = {
     test_wobbler_sinking: {
       id: "test_wobbler_sinking",
       name: "Воблер Sinking",
-      type: "wobbler",
+      type: "lure",
       icon: "🐟",
       displayStats: { targetDepth: "1.0 - 3.5м" },
       engineStats: {
+        type: "wobbler",
         mode: 3,
         waterFriction: 0.3,
         sinkSpeed: 2.0,
@@ -284,6 +307,7 @@ const ITEM_DB = {
       icon: "🪨",
       displayStats: { sinkSpeed: 3.0 },
       engineStats: {
+        type: "jig",
         mode: 1,
         waterFriction: 0.15,
         sinkSpeed: 3.0,
@@ -343,7 +367,7 @@ const ITEM_DB = {
     net_basic: {
       id: "net_basic",
       name: "Базова підсака",
-      type: "net",
+      type: "net", // Залишається як є
       icon: "🕸️",
       displayStats: { maxWeight: "3.0кг" },
       engineStats: {
@@ -351,7 +375,7 @@ const ITEM_DB = {
         length: 15.0,
         maxWeight: 3.0,
         quality: 1.0,
-        type: "all",
+        catchType: "all", // ЗМІНЕНО: type -> catchType
         chances: [
           { min: 0, max: 39, chance: 80 },
           { min: 40, max: 79, chance: 70 },
@@ -388,7 +412,7 @@ const ITEM_DB = {
       id: "boat_lvl3",
       name: "Кораблик (Рівень 3)",
       icon: "🚤",
-      type: "chum_delivery",
+      type: "boat",
 
       displayStats: { Швидкість: "Висока", Сонар: "Встановлено", Бункери: 3 },
       engineStats: {
@@ -995,6 +1019,8 @@ const CONFIG = {
     edgePullPenalty: 0.5, // 0.5 означає, що на краю екрана гравець втратить 50% сили
     distanceXMultiplier: [0.3, 1.0],
 
+    defaultDepthNoSinker: 0.1,
+
     lureRetrieveMultiplier: 50,
     idleSpinningBiteChance: 0.005,
   },
@@ -1105,5 +1131,3 @@ const CONFIG = {
     direction: { x: 1, y: 0.2 },
   },
 };
-
-export { SLOT_CONFIG, UI_LAYOUT_CONFIG, ITEM_DB, CONFIG };

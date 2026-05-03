@@ -414,13 +414,13 @@ class UIManager {
     document.body.appendChild(this.#netBtn);
   }
 
-  updateNetButtonState(config, isReady) {
+  updateNetButtonState(hasNet, isReady) {
     if (!this.#netBtn) return;
 
     this.#isNetReady = isReady;
 
-    if (!config.net || !config.net.active) {
-      this.hideNetButton(); // Перевикористовуємо новий метод
+    if (!hasNet) {
+      this.hideNetButton();
       return;
     }
 
@@ -434,7 +434,6 @@ class UIManager {
 
     if (isAppearing) {
       this.#netBtn.style.transform = "scale(0)";
-      // requestAnimationFrame надійніший за setTimeout(..., 10) для CSS анімацій
       requestAnimationFrame(() => {
         this.#netBtn.style.transition =
           "transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s, box-shadow 0.2s";
@@ -1048,42 +1047,144 @@ class InventoryUI {
     this.#renderInventory();
   }
 
+  #getAvailableSlots(equipped) {
+    const groups = [];
+
+    // ГРУПА 1: Основна вудка (Відображається завжди)
+    const rodGroup = { groupName: "Вудлище", slots: [] };
+    rodGroup.slots.push({ id: "rod", label: "Вудлище", type: "rod" });
+
+    const rod = equipped.rod;
+    if (rod) {
+      const hasReelProp = rod.hasReel ?? rod.engineStats?.hasReel;
+      const canHaveReel = hasReelProp ?? rod.type !== "pole";
+
+      if (canHaveReel) {
+        rodGroup.slots.push({ id: "reel", label: "Котушка", type: "reel" });
+      }
+    }
+    groups.push(rodGroup);
+
+    // ГРУПА 2: Оснастка (Малюється ТІЛЬКИ якщо є вудка)
+    if (rod) {
+      const rigGroup = { groupName: "Оснастка", slots: [] };
+
+      if (rod.type === "spinning") {
+        rigGroup.slots.push({ id: "baits_0", label: "Приманка", type: "lure" });
+      } else if (rod.type === "float" || rod.type === "pole") {
+        rigGroup.slots.push({ id: "float", label: "Поплавок", type: "float" });
+        rigGroup.slots.push({ id: "sinker", label: "Грузило", type: "sinker" });
+
+        const maxHooks = rod.maxHooks || 1;
+        for (let i = 0; i < maxHooks; i++) {
+          rigGroup.slots.push({
+            id: `hooks_${i}`,
+            label: `Гачок ${i + 1}`,
+            type: "hook",
+          });
+          if (equipped.hooks && equipped.hooks[i]) {
+            rigGroup.slots.push({
+              id: `baits_${i}`,
+              label: `Наживка ${i + 1}`,
+              type: "bait",
+            });
+          }
+        }
+      } else if (rod.type === "feeder") {
+        rigGroup.slots.push({
+          id: "sinker",
+          label: "Годівниця/Грузило",
+          type: "sinker",
+        });
+
+        if (equipped.sinker && equipped.sinker.hasFeederCage) {
+          rigGroup.slots.push({
+            id: "feederChum",
+            label: "Прикормка",
+            type: "chum",
+          });
+        }
+
+        const maxHooks =
+          equipped.sinker?.hooksCount ||
+          equipped.sinker?.engineStats?.hooksCount ||
+          rod.maxHooks ||
+          1;
+        for (let i = 0; i < maxHooks; i++) {
+          rigGroup.slots.push({
+            id: `hooks_${i}`,
+            label: `Гачок ${i + 1}`,
+            type: "hook",
+          });
+          if (equipped.hooks && equipped.hooks[i]) {
+            rigGroup.slots.push({
+              id: `baits_${i}`,
+              label: `Наживка ${i + 1}`,
+              type: "bait",
+            });
+          }
+        }
+      }
+
+      if (rigGroup.slots.length > 0) {
+        groups.push(rigGroup);
+      }
+    }
+
+    // ГРУПА 3: Додаткове обладнання (МАЛЮЄТЬСЯ ЗАВЖДИ, незалежно від вудки)
+    const extraGroup = { groupName: "Додатково", slots: [] };
+    extraGroup.slots.push({ id: "net", label: "Підсака", type: "net" });
+    extraGroup.slots.push({
+      id: "delivery",
+      label: "Кораблик",
+      type: "delivery",
+    });
+
+    if (equipped.delivery) {
+      extraGroup.slots.push({
+        id: "deliveryChum",
+        label: "Прикормка (Кораблик)",
+        type: "chum",
+      });
+    }
+    groups.push(extraGroup);
+
+    return groups;
+  }
+
   #renderEquipment() {
     const fragment = document.createDocumentFragment();
     const equipped = this.#inventoryManager.getEquipped();
 
-    UI_LAYOUT_CONFIG.forEach((groupConfig) => {
+    // Отримуємо динамічну структуру замість статичної UI_LAYOUT_CONFIG
+    const dynamicLayout = this.#getAvailableSlots(equipped);
+
+    dynamicLayout.forEach((groupConfig) => {
       const groupNode = this.#createGroupContainer(groupConfig.groupName);
       let hasSlots = false;
 
       groupConfig.slots.forEach((slotConfig) => {
-        if (slotConfig.dynamicCount) {
-          const itemsArr = equipped[slotConfig.id] || [];
-          const maxSlots =
-            equipped.sinker?.hooksCount ||
-            equipped.sinker?.engineStats?.hooksCount ||
-            1;
-
-          for (let i = 0; i < maxSlots; i++) {
-            groupNode.appendChild(
-              this.#createSlotDOM(
-                `${slotConfig.id}_${i}`,
-                `${slotConfig.label} ${i + 1}`,
-                itemsArr[i],
-              ),
-            );
-            hasSlots = true;
+        // Логіка для масивів (наприклад baits_0, hooks_1)
+        let item = null;
+        if (slotConfig.id.includes("_")) {
+          const [baseId, indexStr] = slotConfig.id.split("_");
+          const index = parseInt(indexStr, 10);
+          if (equipped[baseId] && Array.isArray(equipped[baseId])) {
+            item = equipped[baseId][index];
           }
         } else {
-          groupNode.appendChild(
-            this.#createSlotDOM(
-              slotConfig.id,
-              slotConfig.label,
-              equipped[slotConfig.id],
-            ),
-          );
-          hasSlots = true;
+          item = equipped[slotConfig.id];
         }
+
+        groupNode.appendChild(
+          this.#createSlotDOM(
+            slotConfig.id,
+            slotConfig.label,
+            item,
+            false, // isInventory = false
+          ),
+        );
+        hasSlots = true;
       });
 
       if (hasSlots) fragment.appendChild(groupNode);

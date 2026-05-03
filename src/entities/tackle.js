@@ -818,13 +818,25 @@ class FloatEntity extends WaterEntity {
     this._isBiting = false;
     this.stopBite();
 
-    this._targetHookDepth = targetDepth;
+    // 1. ЗАХИСТ ТА ЛОГІКА ЗА ЗАМОВЧУВАННЯМ
+    const hasSinker = !!sinkerConfig;
+
+    // Якщо грузила немає — ставимо 1 метр, інакше використовуємо передану глибину
+    this._targetHookDepth = hasSinker
+      ? targetDepth
+      : CONFIG.physics.defaultDepthNoSinker;
     this._currentHookDepth = 0.1;
-    this._isOverDepth = isOverDepth;
+    this._isOverDepth = hasSinker ? isOverDepth : false;
     this._sinkerConfig = sinkerConfig;
 
-    const weightCfg = sinkerConfig.weights[sinkerConfig.weight];
-    this._sinkerHeightScale = weightCfg.heightScale;
+    // 2. БЕЗПЕЧНЕ ОТРИМАННЯ ПАРАМЕТРІВ ВАГИ
+    const engine = sinkerConfig?.engineStats || sinkerConfig || {};
+    const weightCfg =
+      engine.weights && engine.weight ? engine.weights[engine.weight] : engine;
+
+    // Фоллбеки для швидкості занурення та візуальної шкали
+    const speedMult = weightCfg.speedMult || 1.0;
+    this._sinkerHeightScale = weightCfg.heightScale || 1.0;
 
     const pRange = this._config.perspectiveScaleRange || [1.3, 0.7];
     this._perspectiveScale =
@@ -833,12 +845,16 @@ class FloatEntity extends WaterEntity {
     this._isSinking = true;
     this._sinkingDelayTimer = this._config.sinkingDelayMs || 500;
 
-    const maxDepth = sinkerConfig.maxDepth || 8.0;
-    const depthRatio = Math.max(0.1, Math.min(1.0, targetDepth / maxDepth));
+    // 3. РОЗРАХУНОК ЧАСУ ЗАНУРЕННЯ
+    const maxDepth = engine.maxDepth || 8.0;
+    const depthRatio = Math.max(
+      0.1,
+      Math.min(1.0, this._targetHookDepth / maxDepth),
+    );
     const baseSinkingTime =
       (this._config.sinkingDurationMs || 4000) * depthRatio;
 
-    this._sinkingTotalTime = baseSinkingTime / weightCfg.speedMult;
+    this._sinkingTotalTime = baseSinkingTime / speedMult;
     this._sinkingTimer = this._sinkingTotalTime;
 
     this._sinkingStartAngle = Math.random() < 0.5 ? 90 : -90;

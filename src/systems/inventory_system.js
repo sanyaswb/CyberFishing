@@ -75,7 +75,7 @@ class Inventory {
   }
 }
 
-class Equipment {
+class InventoryEquipment {
   #slots;
   #config;
 
@@ -243,7 +243,7 @@ class InventoryManager {
 
     this.#db = new ItemDatabase(itemDB);
     this.#inventory = new Inventory(cachedInventory);
-    this.#equipment = new Equipment(SLOT_CONFIG, cachedEquipment);
+    this.#equipment = new InventoryEquipment(SLOT_CONFIG, cachedEquipment);
   }
 
   getTotalPower() {
@@ -289,8 +289,13 @@ class InventoryManager {
     const eq = this.getEquipped();
 
     if (baseSlot === "baits" || baseSlot === "hooks") {
+      // ВИПРАВЛЕНО: Додано перевірку на базову кількість гачків вудки
       const maxHooks =
-        eq.sinker?.hooksCount || eq.sinker?.engineStats?.hooksCount || 1;
+        eq.sinker?.hooksCount ||
+        eq.sinker?.engineStats?.hooksCount ||
+        eq.rod?.maxHooks ||
+        1;
+
       const currentArr = eq[baseSlot] || [];
       for (let i = 0; i < maxHooks; i++) {
         if (!currentArr[i]) return `${baseSlot}_${i}`;
@@ -334,6 +339,23 @@ class InventoryManager {
     if (!this.#inventory.getInstance(instanceId)) return false;
 
     const itemData = this._hydrateInstance(instanceId);
+
+    // КАСКАД: Якщо вдягаємо нову вудку, і її тип відрізняється від поточної — скидаємо стару оснастку
+    if (slotPath === "rod") {
+      const currentRod = this.getEquipped().rod;
+      if (currentRod && currentRod.type !== itemData.type) {
+        ["reel", "line", "float", "sinker", "feederChum"].forEach((s) =>
+          this.#equipment.unequip(s),
+        );
+
+        const eq = this.getEquipped();
+        if (eq.hooks)
+          eq.hooks.forEach((_, i) => this.#equipment.unequip(`hooks_${i}`));
+        if (eq.baits)
+          eq.baits.forEach((_, i) => this.#equipment.unequip(`baits_${i}`));
+      }
+    }
+
     if (slotPath === "delivery" && itemData?.type !== "boat") {
       this.#equipment.unequip("deliveryChum");
     }
@@ -345,6 +367,43 @@ class InventoryManager {
 
   unequipItem(slotPath) {
     this.#equipment.unequip(slotPath);
+
+    // КАСКАДНЕ ЗНЯТТЯ (Щоб не залишалося прихованих "привидів" у слотах)
+    if (slotPath === "rod") {
+      // Знімаємо все, що висіло на вудці
+      ["reel", "line", "float", "sinker", "feederChum"].forEach((s) =>
+        this.#equipment.unequip(s),
+      );
+
+      const eq = this.getEquipped();
+      if (eq.hooks)
+        eq.hooks.forEach((_, i) => this.#equipment.unequip(`hooks_${i}`));
+      if (eq.baits)
+        eq.baits.forEach((_, i) => this.#equipment.unequip(`baits_${i}`));
+    } else if (slotPath === "sinker") {
+      // Знімаємо прикормку
+      this.#equipment.unequip("feederChum");
+
+      // Відрізаємо зайві гачки, якщо базова вудка підтримує менше
+      const eq = this.getEquipped();
+      const baseRodHooks = eq.rod?.maxHooks || 1;
+      if (eq.hooks) {
+        eq.hooks.forEach((_, i) => {
+          if (i >= baseRodHooks) {
+            this.#equipment.unequip(`hooks_${i}`);
+            this.#equipment.unequip(`baits_${i}`);
+          }
+        });
+      }
+    } else if (slotPath.startsWith("hooks_")) {
+      // Знімаємо наживку саме з ЦЬОГО гачка
+      const index = slotPath.split("_")[1];
+      this.#equipment.unequip(`baits_${index}`);
+    } else if (slotPath === "delivery") {
+      // Знімаємо прикормку з кораблика
+      this.#equipment.unequip("deliveryChum");
+    }
+
     this.#saveAndNotify();
   }
 
@@ -398,5 +457,3 @@ class InventoryManager {
     );
   }
 }
-
-export { InventoryManager };

@@ -361,7 +361,7 @@ class Renderer {
     this.#ctx.restore();
   }
 
-  drawFloat(screenPos, floatEntity, floatConfig, projector) {
+  drawFloat(screenPos, floatEntity, floatConfig, projector, equipped = {}) {
     const visualState = floatEntity.getVisualState();
     const perspective = projector.getPerspective(floatEntity.getPosition().y);
     const pScale = perspective.scale;
@@ -369,8 +369,8 @@ class Renderer {
     this.#ctx.save();
     this.#ctx.translate(screenPos.x, screenPos.y);
 
-    const eq = window.game?.systems?.inventory?.getEquipped();
-    const rodType = eq?.rod?.type;
+    const eq = equipped;
+    const rodType = eq.rod?.type || "float";
     const isFeeder = rodType === "feeder";
     const isSpinning = rodType === "spinning";
 
@@ -389,26 +389,37 @@ class Renderer {
     }
 
     if (isSpinning) {
-      if (eq?.baits?.[0]) {
+      if (eq.baits?.[0]) {
         this.#ctx.beginPath();
         this.#ctx.arc(0, 0, 2.5 * pScale, 0, Math.PI * 2);
         this.#ctx.fill();
       }
     } else if (isFeeder) {
-      if (eq?.sinker) {
+      if (eq.sinker) {
         this.#ctx.beginPath();
         this.#ctx.ellipse(0, 0, 6 * pScale, 3 * pScale, 0, 0, Math.PI * 2);
         this.#ctx.fill();
       }
     } else {
-      if (eq?.float) {
-        const floatWidth =
-          (eq.float.engineStats?.width || floatConfig.width || 3) * pScale;
-        const floatLength =
-          (eq.float.engineStats?.length || floatConfig.length || 15) * pScale;
+      if (eq.float) {
+        const w =
+          eq.float.width ||
+          eq.float.engineStats?.width ||
+          floatConfig.width ||
+          3;
+        const l =
+          eq.float.length ||
+          eq.float.engineStats?.length ||
+          floatConfig.length ||
+          15;
 
-        this.#ctx.rotate((visualState.angle * Math.PI) / 180);
-        const currentLength = floatLength * visualState.scaleY;
+        const floatWidth = w * pScale;
+        const floatLength = l * pScale;
+        const scaleY = visualState.scaleY ?? 1;
+
+        this.#ctx.rotate(((visualState.angle || 0) * Math.PI) / 180);
+        const currentLength = floatLength * scaleY;
+
         this.#ctx.fillRect(
           -floatWidth / 2,
           -currentLength,
