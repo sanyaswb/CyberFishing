@@ -949,6 +949,7 @@ class InventoryUI {
   #filterContainerNode;
   #inventoryGridNode;
   #tooltipNode;
+  #selectedInstanceId = null;
 
   constructor(inventoryManager) {
     this.#inventoryManager = inventoryManager;
@@ -1097,11 +1098,21 @@ class InventoryUI {
           type: "sinker",
         });
 
-        if (equipped.sinker && equipped.sinker.hasFeederCage) {
+        // --- ВИПРАВЛЕНО: Читаємо capabilities або hasChumSlot ---
+        const sinkerCaps =
+          equipped.sinker?.capabilities ||
+          equipped.sinker?.engineStats?.capabilities ||
+          [];
+        const hasChumSlot =
+          sinkerCaps.includes("chum_mix") ||
+          equipped.sinker?.hasChumSlot ||
+          equipped.sinker?.engineStats?.hasChumSlot;
+
+        if (hasChumSlot) {
           rigGroup.slots.push({
             id: "feederChum",
             label: "Прикормка",
-            type: "chum",
+            type: "chum_mix",
           });
         }
 
@@ -1212,6 +1223,11 @@ class InventoryUI {
     const slotDiv = document.createElement("div");
     slotDiv.className = `inv-slot ${isInventory ? "inventory" : ""}`;
 
+    // Якщо це предмет в інвентарі і він зараз виділений
+    if (isInventory && instanceId === this.#selectedInstanceId) {
+      slotDiv.classList.add("selected");
+    }
+
     if (item) {
       if (!isInventory) slotDiv.classList.add("equipped");
       slotDiv.innerHTML = item.icon || "📦";
@@ -1230,9 +1246,37 @@ class InventoryUI {
     } else {
       slotDiv.innerHTML = `<span style="font-size: 10px; color: #555;">✖</span>`;
       slotDiv.title = label;
-      slotDiv.addEventListener("click", () =>
-        this.showWarning(`Оберіть ${label} у правій панелі`),
-      );
+
+      // ЛОГІКА ПІДСВІЧУВАННЯ СУМІСНИХ СЛОТІВ
+      let isTarget = false;
+      if (this.#selectedInstanceId) {
+        const selectedItem = this.#inventoryManager._hydrateInstance(
+          this.#selectedInstanceId,
+        );
+        if (selectedItem) {
+          const baseSlot = slotId.split("_")[0]; // Для baits_0 беремо baits
+          const config = SLOT_CONFIG[baseSlot];
+          if (
+            config &&
+            config.acceptTypes &&
+            config.acceptTypes.includes(selectedItem.type)
+          ) {
+            isTarget = true;
+            slotDiv.classList.add("highlight-target");
+          }
+        }
+      }
+
+      slotDiv.addEventListener("click", () => {
+        if (isTarget) {
+          // Якщо слот підсвічений, споряджаємо туди предмет
+          this.#inventoryManager.equipItem(slotId, this.#selectedInstanceId);
+          this.#selectedInstanceId = null; // Знімаємо виділення
+          this.refreshUI();
+        } else {
+          this.showWarning(`Оберіть ${label} у правій панелі`);
+        }
+      });
     }
 
     return slotDiv;
@@ -1263,16 +1307,26 @@ class InventoryUI {
       this.#tooltipNode.style.display = "none";
     });
 
+    // ОНОВЛЕНА ЛОГІКА КЛІКУ
     element.addEventListener("click", () => {
       if (this.#warningBoxNode.style.display === "block") {
         this.#warningBoxNode.style.display = "none";
       }
 
       if (isEquipped && slotId) {
+        // Знімаємо предмет
         this.#inventoryManager.unequipItem(slotId);
       } else if (!isEquipped && instanceId) {
-        const result = this.#inventoryManager.autoEquipItem(instanceId);
-        if (!result.success) this.showWarning(result.reason);
+        if (this.#selectedInstanceId === instanceId) {
+          // КЛІК 2: АВТОСПОРАДЖЕННЯ (якщо натиснули вдруге на те ж саме)
+          const result = this.#inventoryManager.autoEquipItem(instanceId);
+          if (!result.success) this.showWarning(result.reason);
+          this.#selectedInstanceId = null;
+        } else {
+          // КЛІК 1: ВИДІЛЕННЯ ПРЕДМЕТА
+          this.#selectedInstanceId = instanceId;
+        }
+        this.refreshUI();
       }
     });
   }

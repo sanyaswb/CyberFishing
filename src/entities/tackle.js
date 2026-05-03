@@ -252,9 +252,21 @@ class WaterEntity {
       this._config.type,
     );
 
+    let bottomDepth = this._maxDepth;
+    if (checkWater) {
+      const cell = checkWater(this._position.x, this._position.y);
+      if (cell) bottomDepth = cell.depth;
+    }
+
     if (!this._isHooked) {
       if (!this._isBiting || isSpinningLure) {
-        this._processMechanics(dt, input, reelPower, pullDirection);
+        this._processMechanics(
+          dt,
+          input,
+          reelPower,
+          pullDirection,
+          bottomDepth,
+        );
       }
     }
 
@@ -703,26 +715,27 @@ class WaterEntity {
 }
 
 class SpinnerEntity extends WaterEntity {
-  _processMechanics(dt, input, reelPower, pullDirection) {
+  _processMechanics(dt, input, reelPower, pullDirection, bottomDepth) {
     const dtSec = dt / 1000;
+
     if (input.isPulling && pullDirection) {
       const multiplier = CONFIG.physics?.lureRetrieveMultiplier ?? 150;
       const targetSpeedPxPerSec =
         Math.max(0, reelPower - this._lureResistance) * multiplier;
 
-      // Ідеальна формула: компенсуємо частоту кадрів та інерцію
       const force = targetSpeedPxPerSec * dtSec * (1 - this._velocityDamping);
 
       this.applyForce(
         new Vector2(pullDirection.x * force, pullDirection.y * force),
       );
+
       this._currentHookDepth = Math.max(
         0,
         this._currentHookDepth - this._config.riseSpeed * dtSec,
       );
     } else {
       this._currentHookDepth = Math.min(
-        this._maxDepth,
+        bottomDepth,
         this._currentHookDepth + this._config.sinkSpeed * dtSec,
       );
     }
@@ -804,13 +817,12 @@ class JigEntity extends WaterEntity {
   }
 }
 
-class FloatEntity extends WaterEntity {
+class FeederEntity extends WaterEntity {
   _sinkingTimer = 0;
   _isSinking = false;
   _sinkingTotalTime = 0;
-  _sinkingDelayTimer = 0;
+  _sinkingStartAngle = 90;
 
-  // КРИТИЧНО ВАЖЛИВО: Цей метод має залишитися тут!
   cast(x, y, targetDepth, isOverDepth, sinkerConfig, distanceRatio) {
     this._position.set(x, y);
     this._velocity.set(0, 0);
@@ -818,23 +830,77 @@ class FloatEntity extends WaterEntity {
     this._isBiting = false;
     this.stopBite();
 
-    // 1. ЗАХИСТ ТА ЛОГІКА ЗА ЗАМОВЧУВАННЯМ
+    this._targetHookDepth = targetDepth;
+    this._currentHookDepth = 0.1;
+    this._sinkerConfig = sinkerConfig;
+
+    const speedMult = sinkerConfig?.speedMult || 1.5;
+    this._isSinking = true;
+    this._sinkingTotalTime = (targetDepth / speedMult) * 1000;
+    this._sinkingTimer = this._sinkingTotalTime;
+
+    this._sinkingStartAngle = Math.random() < 0.5 ? 90 : -90;
+    this._currentAngle = this._sinkingStartAngle;
+    this._currentScaleY = 1.0;
+  }
+
+  _processMechanics(dt, input, reelPower, pullDirection) {
+    if (!this._isSinking) return;
+
+    this._sinkingTimer -= dt;
+    let progress =
+      1.0 - Math.max(0, this._sinkingTimer / this._sinkingTotalTime);
+
+    this._currentHookDepth = this._lerp(0.1, this._targetHookDepth, progress);
+    this._currentAngle = this._lerp(this._sinkingStartAngle, 0, progress);
+
+    if (this._sinkingTimer <= 0) {
+      this._isSinking = false;
+      this._currentHookDepth = this._targetHookDepth;
+      this._currentAngle = 0;
+    }
+  }
+
+  getChumBonus(elapsedMs, chumConfig) {
+    if (!chumConfig) return { bonus: 1.0, targets: [] };
+    const duration = chumConfig.feederDurationMs || 300000;
+
+    if (elapsedMs < duration) {
+      const progress = elapsedMs / duration;
+      const bonus =
+        chumConfig.maxBonus - (chumConfig.maxBonus - 1.0) * progress;
+      return { bonus, targets: chumConfig.targetFishes || [] };
+    }
+    return { bonus: 1.0, targets: [] };
+  }
+}
+
+class FloatEntity extends WaterEntity {
+  _sinkingTimer = 0;
+  _isSinking = false;
+  _sinkingTotalTime = 0;
+  _sinkingDelayTimer = 0;
+
+  cast(x, y, targetDepth, isOverDepth, sinkerConfig, distanceRatio) {
+    this._position.set(x, y);
+    this._velocity.set(0, 0);
+    this._isHooked = false;
+    this._isBiting = false;
+    this.stopBite();
+
     const hasSinker = !!sinkerConfig;
 
-    // Якщо грузила немає — ставимо 1 метр, інакше використовуємо передану глибину
     this._targetHookDepth = hasSinker
       ? targetDepth
-      : CONFIG.physics.defaultDepthNoSinker;
+      : (CONFIG.physics?.defaultDepthNoSinker ?? 0.1);
     this._currentHookDepth = 0.1;
     this._isOverDepth = hasSinker ? isOverDepth : false;
     this._sinkerConfig = sinkerConfig;
 
-    // 2. БЕЗПЕЧНЕ ОТРИМАННЯ ПАРАМЕТРІВ ВАГИ
     const engine = sinkerConfig?.engineStats || sinkerConfig || {};
     const weightCfg =
       engine.weights && engine.weight ? engine.weights[engine.weight] : engine;
 
-    // Фоллбеки для швидкості занурення та візуальної шкали
     const speedMult = weightCfg.speedMult || 1.0;
     this._sinkerHeightScale = weightCfg.heightScale || 1.0;
 
@@ -845,7 +911,6 @@ class FloatEntity extends WaterEntity {
     this._isSinking = true;
     this._sinkingDelayTimer = this._config.sinkingDelayMs || 500;
 
-    // 3. РОЗРАХУНОК ЧАСУ ЗАНУРЕННЯ
     const maxDepth = engine.maxDepth || 8.0;
     const depthRatio = Math.max(
       0.1,
@@ -862,7 +927,6 @@ class FloatEntity extends WaterEntity {
     this._currentScaleY = 1.0;
   }
 
-  // Твоя нова, ідеально чиста логіка
   _processMechanics(dt, input, reelPower, pullDirection) {
     if (!this._isSinking) return;
 
@@ -914,6 +978,8 @@ class BaitFactory {
           config,
           equipment?.sinker?.maxDepth || config.maxDepth,
         );
+      case "feeder":
+        return new FeederEntity(x, y, config, config.maxDepth);
       case "float":
       default:
         return new FloatEntity(x, y, config, config.maxDepth);

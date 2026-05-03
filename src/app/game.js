@@ -175,34 +175,29 @@ class ScoutingState extends GameState {
 
     const eq = this.game.systems.inventory.getEquipped();
     const rodType = eq?.rod?.type;
-
     const bait = eq?.baits?.[0];
-    const baitType = bait?.type;
-
     const isFeeder = rodType === "feeder";
     const isSpinning = rodType === "spinning";
-    const isJig = baitType === "jig";
+    const isJig = bait?.type === "jig";
+    const hasSinker = !!eq?.sinker;
 
-    const canSelectDepth = !isFeeder && (!isSpinning || isJig);
+    const canSelectDepth =
+      !isFeeder && ((isSpinning && isJig) || (!isSpinning && hasSinker));
 
     if (!this.game.canPlayerCast() || !canSelectDepth) {
       if (this.game.depthUI.isActive) {
         this.game.depthUI.hide();
       }
-      if (isSpinning && !isJig) {
-        this.game.currentHookDepth = 0.1;
-      }
+      this.game.currentHookDepth = CONFIG.physics?.defaultDepthNoSinker ?? 0.1;
       return;
     }
 
-    const activeSinker = eq?.sinker;
-    const maxDepth =
-      (isSpinning ? bait?.maxDepth : activeSinker?.maxDepth) || 8.0;
+    const maxDepth = this.game.getMaxHookDepth();
 
     if (!this.game.depthUI.isActive) {
       this.game.depthUI.show(
         maxDepth,
-        this.game.currentHookDepth,
+        Math.min(this.game.currentHookDepth, maxDepth),
         (d) => (this.game.currentHookDepth = d),
       );
     } else {
@@ -252,6 +247,12 @@ class PlayingState extends GameState {
 
     const eq = this.game.systems.inventory.getEquipped();
     this.#hasEquippedNet = !!eq.net;
+
+    // --- ДОДАНО: Витрачаємо наживку при УСПІШНОМУ підсіканні ---
+    const usedBait = (eq?.baits || []).find((b) => b && b.type === "bait");
+    if (usedBait) {
+      this.game.systems.inventory.consumeItem(usedBait.instanceId, 1);
+    }
 
     // 1. ВИПРАВЛЕНО: Безпечне читання параметрів вудки з фоллбеками
     this.#rod = new Rod(
@@ -691,10 +692,6 @@ class WaitingState extends GameState {
         (b) => b !== null && b !== undefined,
       );
 
-      if (usedBait) {
-        this.game.systems.inventory.consumeItem(usedBait.instanceId, 1);
-      }
-
       this.game.float.startBite(effectiveInput.isPulling, hooked.biteSequence);
       this.game.setState("biting", { fish: hooked });
     }
@@ -830,14 +827,43 @@ class BitingState extends GameState {
     }
 
     // Аудіо фідера
-    if (this.#feederAudioTemplate && stepInfo) {
+    if (stepInfo) {
       if (stepInfo.id !== this.#lastStepId) {
         this.#lastStepId = stepInfo.id;
+
         if (stepInfo.isAction) {
-          this.#scheduleRings(stepInfo);
+          const usedBait = (eq?.baits || []).find(
+            (b) => b && b.type === "bait",
+          );
+          if (usedBait) {
+            const lossChance = stepInfo.isGuaranteed
+              ? (CONFIG.physics.baitLossChance?.guaranteed ?? 0.5)
+              : (CONFIG.physics.baitLossChance?.normal ?? 0.15);
+
+            if (Math.random() <= lossChance) {
+              this.game.systems.inventory.consumeItem(usedBait.instanceId, 1);
+              this.game.float.stopBite();
+
+              if (this.game.systems.inventoryUI) {
+                this.game.systems.inventoryUI.showWarning(
+                  "Риба безкарно з'їла наживку і втекла!",
+                );
+              }
+
+              this.game.setState("scouting");
+              return;
+            }
+          }
+
+          if (this.#feederAudioTemplate) {
+            this.#scheduleRings(stepInfo);
+          }
         }
       }
-      this.#processRingQueue(dt);
+
+      if (this.#feederAudioTemplate) {
+        this.#processRingQueue(dt);
+      }
     }
   }
 
@@ -907,8 +933,37 @@ class BitingState extends GameState {
 }
 
 class FailedState extends GameState {
-  enter() {
+  enter(data) {
+    if (super.enter) super.enter();
     this.game.systems.ui.updateContinueButtonState(true);
+
+    const eq = this.game.systems.inventory.getEquipped();
+    const reason = data?.reason;
+
+    if (reason === "rod" || reason === "line" || reason === "hook") {
+      if (eq.hooks) {
+        eq.hooks.forEach((h) => {
+          if (h) this.game.systems.inventory.removeItem(h.instanceId);
+        });
+      }
+      if (eq.baits) {
+        eq.baits.forEach((b) => {
+          if (b) this.game.systems.inventory.removeItem(b.instanceId);
+        });
+      }
+    }
+
+    if (reason === "rod" || reason === "line") {
+      if (eq.float) this.game.systems.inventory.removeItem(eq.float.instanceId);
+      if (eq.sinker)
+        this.game.systems.inventory.removeItem(eq.sinker.instanceId);
+      if (eq.feederChum)
+        this.game.systems.inventory.removeItem(eq.feederChum.instanceId);
+    }
+
+    if (reason === "rod") {
+      if (eq.rod) this.game.systems.inventory.removeItem(eq.rod.instanceId);
+    }
   }
 
   exit() {
@@ -992,6 +1047,28 @@ class Game {
     const inventoryManager = new InventoryManager(ITEM_DB, CONFIG.player);
     const eq = inventoryManager.getEquipped();
 
+    // --- ДОДАНО: Формуємо міст між новим інвентарем та старою системою прикормки ---
+    const chumConfigObj = {
+      baits: {},
+      deliveryMethods: {},
+    };
+
+    // Розгортаємо прикормки (витягуємо дані з engineStats у корінь об'єкта)
+    if (typeof ITEM_DB !== "undefined" && ITEM_DB.chums) {
+      for (const [key, item] of Object.entries(ITEM_DB.chums)) {
+        chumConfigObj.baits[key] = { ...item, ...(item.engineStats || {}) };
+      }
+    }
+
+    // Додаємо фоллбек для кораблика (щоб метод getBoatEnergy не крашився)
+    if (typeof ITEM_DB !== "undefined" && ITEM_DB.deliveryMethods) {
+      const firstBoatKey = Object.keys(ITEM_DB.deliveryMethods)[0];
+      if (firstBoatKey) {
+        const b = ITEM_DB.deliveryMethods[firstBoatKey];
+        chumConfigObj.deliveryMethods.boat = { ...b, ...(b.engineStats || {}) };
+      }
+    }
+
     this.#systems = {
       renderer: new Renderer(this.#canvas),
       projector: projectorInstance,
@@ -999,7 +1076,10 @@ class Game {
       env: new EnvironmentSystem(locCfg, CONFIG.debug?.initialTime ?? 12),
       input: new InputManager(this.#canvas, Number(CONFIG.ui?.rod?.x) || null),
       ui: new UIManager(CONFIG),
-      chum: new ChumManager(locId, CONFIG.chum || {}, projectorInstance),
+
+      // ВИПРАВЛЕНО: Передаємо наш новий зібраний об'єкт замість порожнього CONFIG.chum
+      chum: new ChumManager(locId, chumConfigObj, projectorInstance),
+
       bite: new BiteSystem(CONFIG.spawns, {}),
       inventory: inventoryManager,
     };
@@ -1029,6 +1109,10 @@ class Game {
         typeof this.systems.ui.updateNetButtonState === "function"
       ) {
         this.systems.ui.updateNetButtonState(this.#hasEquippedNet, false);
+      }
+
+      if (this.#depthUI && typeof this.#depthUI.updateMax === "function") {
+        this.#depthUI.updateMax(this.getMaxHookDepth());
       }
     });
 
@@ -1221,7 +1305,11 @@ class Game {
       }
     }
 
-    if (this.isAimingChum && CONFIG.chum.currentMethod === "hand") {
+    // --- ВИПРАВЛЕНО: Беремо метод доставки з інвентарю ---
+    const eq = this.#systems.inventory.getEquipped();
+    const method = eq.delivery ? "boat" : "hand";
+
+    if (this.isAimingChum && method === "hand") {
       if (CONFIG.locations?.showAimingZone !== false) {
         r.drawAimingZone(
           this.#systems.projector,
@@ -1273,21 +1361,21 @@ class Game {
     let physicsType = "float";
     let physicsConfig = {};
 
-    // Пріоритет 1: Спінінгові приманки
-    if (eq.baits?.[0] && eq.baits[0].type === "lure") {
+    // Пріоритет 1: Спінінгові приманки (перевіряємо просто по типу вудки)
+    if (eq.rod.type === "spinning" && eq.baits?.[0]) {
       const baitStats = eq.baits[0].engineStats || eq.baits[0];
-      physicsType = baitStats.type || "spinner";
+      // Беремо конкретний тип приманки (wobbler, spinner, jig)
+      physicsType = baitStats.type || eq.baits[0].type || "spinner";
       physicsConfig = { ...baitStats };
     }
     // Пріоритет 2: Поплавок
     else if (eq.float) {
       physicsType = "float";
-      // Зливаємо властивості, щоб підтримати і вкладений engineStats, і "сплющений" об'єкт
       physicsConfig = { ...eq.float.engineStats, ...eq.float };
     }
-    // Пріоритет 3: Грузило/Фідер (якщо немає поплавка)
+    // Пріоритет 3: Грузило/Фідер
     else if (eq.sinker) {
-      physicsType = "float";
+      physicsType = eq.rod.type === "feeder" ? "feeder" : "float";
       physicsConfig = { ...eq.sinker.engineStats, ...eq.sinker };
     }
 
@@ -1478,6 +1566,20 @@ class Game {
     };
   }
 
+  getMaxHookDepth() {
+    const eq = this.#systems.inventory.getEquipped();
+
+    if (eq.rod?.type === "spinning" && eq.baits?.[0]?.type === "jig") {
+      return eq.baits[0].engineStats?.maxDepth ?? eq.baits[0].maxDepth ?? 8.0;
+    }
+
+    if (eq.sinker) {
+      return eq.sinker.engineStats?.maxDepth ?? eq.sinker.maxDepth ?? 10.0;
+    }
+
+    return CONFIG.physics?.defaultDepthNoSinker ?? 0.1;
+  }
+
   getRodVirtualPos(bounds) {
     const rodX =
       CONFIG.ui.rod.x === "center"
@@ -1522,30 +1624,22 @@ class Game {
     const eq = this.#systems.inventory.getEquipped();
     const isFeeder = eq?.rod?.type === "feeder";
 
-    if (isFeeder && eq?.feederChum) {
-      const chumCfg = eq.feederChum;
+    if (this.#float instanceof FeederEntity && eq?.feederChum) {
       const elapsedMs = performance.now() - this.castStartTime;
-
-      const duration = chumCfg.feederDurationMs || 300000;
-
-      if (elapsedMs < duration) {
-        const progress = elapsedMs / duration;
-        feederBonus = chumCfg.maxBonus - (chumCfg.maxBonus - 1.0) * progress;
-        feederTargets = chumCfg.targetFishes || [];
-      }
+      const chumData = this.#float.getChumBonus(elapsedMs, eq.feederChum);
+      feederBonus = chumData.bonus;
+      feederTargets = chumData.targets;
     }
 
     return {
       hookDepth: Math.min(this.#float.getCurrentHookDepth(), bottomDepth),
       bottomDepth: bottomDepth,
-
-      lineLength: isFeeder ? bottomDepth : this.currentHookDepth,
-
+      lineLength: isFeeder ? bottomDepth : this.currentHookDepth || 0.1,
       timePhase: env.phase,
       dayOfWeek: new Date().getDay(),
       zoneBonus: cell?.multiplier || cell?.bonus || 1.0,
-      chumBonus: Math.max(chum.bonus || 1.0, feederBonus),
-      chumTargets: [...new Set([...(chum.targets || []), ...feederTargets])],
+      chumBonus: Math.max(chum?.bonus || 1.0, feederBonus),
+      chumTargets: [...new Set([...(chum?.targets || []), ...feederTargets])],
       isRaining: env.isRaining,
       isFoggy: env.isFoggy,
       castSpamMultiplier: this.#castManager.getBiteChanceMultiplier(),
@@ -1562,8 +1656,24 @@ class Game {
     let state = "idle";
     let count = 0;
 
+    // Шукаємо доступну прикормку для відображення кількості (навіть якщо не в слоті)
+    let availableChum = eq.deliveryChum;
+    if (!availableChum) {
+      const items = this.#systems.inventory.getInventoryItems();
+      for (const item of items) {
+        const hydrated = this.#systems.inventory._hydrateInstance(
+          item.instanceId,
+        );
+        if (hydrated && hydrated.type === "chum_mix") {
+          availableChum = hydrated;
+          break;
+        }
+      }
+    }
+
     if (method === "hand") {
-      count = this.#systems.chum.handUses;
+      count = availableChum ? availableChum.quantity || 1 : 0;
+
       if (count <= 0) state = "empty";
       else if (this.isAimingChum) state = "aiming";
       else state = "idle";
@@ -1573,7 +1683,9 @@ class Game {
 
       if (!activeBoat) {
         count = sections;
-        state = this.isAimingChum ? "aiming" : "idle";
+        // Якщо прикормки взагалі немає, блокуємо кнопку кораблика
+        if (!availableChum) state = "empty";
+        else state = this.isAimingChum ? "aiming" : "idle";
       } else {
         count = activeBoat.remainingSections;
 
@@ -1588,7 +1700,7 @@ class Game {
           ) {
             state = "moving";
           } else if (activeBoat.state === "waiting") {
-            state = count > 0 ? "ready" : "empty";
+            state = count > 0 && availableChum ? "ready" : "empty";
           }
         } else {
           if (activeBoat.state === "returning") {
@@ -1597,7 +1709,11 @@ class Game {
             activeBoat.state === "deploying" ||
             activeBoat.state === "waiting"
           ) {
-            state = this.isAimingChum ? "aiming" : "ready";
+            state = this.isAimingChum
+              ? "aiming"
+              : availableChum
+                ? "ready"
+                : "empty";
           }
         }
       }
@@ -1626,16 +1742,57 @@ class Game {
     const eq = this.#systems.inventory.getEquipped();
     const method = eq.delivery ? "boat" : "hand";
 
+    // Автопошук прикормки: якщо в слоті пусто, шукаємо першу-ліпшу в інвентарі
+    let activeChum = eq.deliveryChum;
+    if (!activeChum) {
+      const items = this.#systems.inventory.getInventoryItems();
+      for (const item of items) {
+        const hydrated = this.#systems.inventory._hydrateInstance(
+          item.instanceId,
+        );
+        if (hydrated && hydrated.type === "chum_mix") {
+          activeChum = hydrated;
+          break;
+        }
+      }
+    }
+
     if (method === "hand") {
-      if (this.#systems.chum.handUses > 0 && eq.deliveryChum) {
+      if (activeChum) {
+        // Секретний UX-трюк: автоматично екіпіруємо знайдену прикормку,
+        // щоб логіка прицілювання (handleChumAiming) працювала без змін
+        if (!eq.deliveryChum) {
+          this.#systems.inventory.equipItem(
+            "deliveryChum",
+            activeChum.instanceId,
+          );
+        }
         this.toggleChumAim();
+      } else {
+        if (this.#systems.inventoryUI) {
+          this.#systems.inventoryUI.showWarning(
+            "У вас немає прикормки в інвентарі!",
+          );
+        }
       }
     } else if (method === "boat") {
       const boats = this.#systems.chum.getBoats();
 
       if (boats.length === 0) {
-        if (eq.deliveryChum) {
+        if (activeChum) {
+          if (!eq.deliveryChum) {
+            this.#systems.inventory.equipItem(
+              "deliveryChum",
+              activeChum.instanceId,
+            );
+          }
           this.toggleChumAim();
+        } else {
+          if (this.#systems.inventoryUI) {
+            this.#systems.inventoryUI.showWarning(
+              "У вас немає прикормки в інвентарі для завантаження кораблика!",
+            );
+          }
         }
       } else {
         const activeBoat = boats[0];
@@ -1652,7 +1809,8 @@ class Game {
             activeBoat.state === "waiting" &&
             activeBoat.remainingSections > 0
           ) {
-            const chumId = eq.deliveryChum?.id;
+            // Тут використовуємо eq.deliveryChum, бо вище ми вже гарантували екіпірування
+            const chumId = eq.deliveryChum?.id || activeChum?.id;
             if (chumId) {
               this.#systems.chum.deployBait(
                 activeBoat.pos.x,
@@ -1675,7 +1833,13 @@ class Game {
               (activeBoat.waypoints ? activeBoat.waypoints.length : 0);
             const freeSlots = activeBoat.remainingSections - reservedTargets;
 
-            if (freeSlots > 0 && eq.deliveryChum) {
+            if (freeSlots > 0 && activeChum) {
+              if (!eq.deliveryChum) {
+                this.#systems.inventory.equipItem(
+                  "deliveryChum",
+                  activeChum.instanceId,
+                );
+              }
               this.toggleChumAim();
             }
           }

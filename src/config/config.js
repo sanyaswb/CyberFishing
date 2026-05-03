@@ -210,12 +210,12 @@ const ITEM_DB = {
     feeder_spring_basic: {
       id: "feeder_spring_basic",
       name: "Базова пружина",
-      type: "feeder_rig", // Тип для UI та фільтрів
+      type: "sinker",
       icon: "🪤",
       displayStats: { Гачки: 2, Прикормка: "Є" },
       engineStats: {
         requiresTag: "feeder_rig",
-        capabilities: ["bait", "chum_mix"], // Пружина ДОЗВОЛЯЄ чіпляти на себе наживку і кашу!
+        capabilities: ["hook", "bait", "chum_mix"],
         hooksCount: 2,
         hasChumSlot: true,
       },
@@ -244,14 +244,13 @@ const ITEM_DB = {
       name: "Блешня (Тест)",
       type: "lure",
       icon: "🥄",
-      displayStats: { sinkSpeed: 1.5, maxDepth: "3.0м" },
+      displayStats: { sinkSpeed: 1.5 },
       engineStats: {
         type: "spinner",
         mode: 1,
         waterFriction: 0.2,
         sinkSpeed: 1.5,
         riseSpeed: 2.0,
-        maxDepth: 3.0,
         quality: 8.0,
         currentCompensation: [0.1, 1.0],
         requiresTag: "lure",
@@ -1023,6 +1022,12 @@ const CONFIG = {
 
     lureRetrieveMultiplier: 50,
     idleSpinningBiteChance: 0.005,
+
+    // --- ДОДАНО: Шанси втрати наживки під час клювання ---
+    baitLossChance: {
+      normal: 0.15, // 15% для жовтої (негарантованої) ітерації
+      guaranteed: 0.5, // 50% для червоної (гарантованої) ітерації
+    },
   },
 
   tension: {
