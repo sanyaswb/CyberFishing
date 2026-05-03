@@ -36,14 +36,20 @@ const SLOT_CONFIG = {
   },
   delivery: {
     type: "single",
-    dependencies: ["deliveryChum"],
+    dependencies: ["deliveryChums"], // Змінено на множину
     acceptTypes: ["boat", "chum_delivery"],
   },
-  deliveryChum: {
-    type: "single",
+  deliveryChums: {
+    // Змінено на масив
+    type: "array",
     dependencies: [],
     acceptTypes: ["chum_mix"],
   },
+  // deliveryChum: {
+  //   type: "single",
+  //   dependencies: [],
+  //   acceptTypes: ["chum_mix"],
+  // },
   baits: {
     type: "array",
     dependencies: [],
@@ -76,6 +82,65 @@ const UI_LAYOUT_CONFIG = [
     ],
   },
 ];
+
+const INVENTORY_CATEGORIES = [
+  { id: "all", label: "🗃️ Усе", acceptTypes: "ALL" },
+  {
+    id: "rods",
+    label: "🎣 Вудилища",
+    acceptTypes: ["spinning", "feeder", "float", "pole"],
+  },
+  { id: "reels", label: "⚙️ Котушки", acceptTypes: ["spinning_reel"] },
+  {
+    id: "tackle",
+    label: "🪢 Оснастка",
+    acceptTypes: [
+      "float_tackle",
+      "day",
+      "night",
+      "sinker",
+      "feeder_rig",
+      "hook",
+      "lure",
+      "spinner",
+      "wobbler",
+      "jig",
+    ],
+  },
+  { id: "baits", label: "🪱 Наживки", acceptTypes: ["bait"] },
+  { id: "chum", label: "🍞 Прикормки", acceptTypes: ["chum_mix"] },
+  { id: "boats", label: "🚤 Кораблики", acceptTypes: ["boat"] },
+  { id: "nets", label: "🕸️ Підсаки", acceptTypes: ["net"] },
+];
+
+const SUBFILTER_MAPPING = {
+  // Вудилища
+  spinning: "Спінінги",
+  feeder: "Фідери",
+  float: "Поплавкові вудки",
+  pole: "Махові",
+
+  // Котушки
+  spinning_reel: "Котушки",
+
+  // Оснастка
+  float_tackle: "Поплавки",
+  day: "Поплавки",
+  night: "Поплавки",
+  hook: "Гачки",
+  sinker: "Грузила",
+  feeder_rig: "Фідерні снасті",
+  lure: "Спінінгові приманки",
+  spinner: "Спінінгові приманки",
+  wobbler: "Спінінгові приманки",
+  jig: "Спінінгові приманки",
+
+  // Інше
+  bait: "Наживки",
+  chum_mix: "Прикормки",
+  boat: "Кораблики",
+  net: "Підсаки",
+};
 
 const ITEM_DB = {
   rods: {
@@ -210,7 +275,7 @@ const ITEM_DB = {
     feeder_spring_basic: {
       id: "feeder_spring_basic",
       name: "Базова пружина",
-      type: "sinker",
+      type: "feeder_rig", // <--- ВИПРАВЛЕНО З "sinker"
       icon: "🪤",
       displayStats: { Гачки: 2, Прикормка: "Є" },
       engineStats: {
@@ -933,7 +998,7 @@ const CONFIG = {
       netId: null,
       feederChumId: null,
       deliveryId: null,
-      deliveryChumId: null,
+      deliveryChums: [],
     },
 
     inventory: [
@@ -1025,8 +1090,8 @@ const CONFIG = {
 
     // --- ДОДАНО: Шанси втрати наживки під час клювання ---
     baitLossChance: {
-      normal: 0.15, // 15% для жовтої (негарантованої) ітерації
-      guaranteed: 0.5, // 50% для червоної (гарантованої) ітерації
+      normal: 0.01, // 1% для жовтої (негарантованої) ітерації
+      guaranteed: 0.1, // 10% для червоної (гарантованої) ітерації
     },
   },
 

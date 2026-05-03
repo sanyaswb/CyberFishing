@@ -309,7 +309,16 @@ class InventoryManager {
       const hasFeederSlot = sinkerCaps.includes("chum_mix");
 
       if (hasFeederSlot && !eq.feederChum) return "feederChum";
-      return "deliveryChum";
+
+      if (eq.delivery) {
+        const sections =
+          eq.delivery.sections || eq.delivery.engineStats?.sections || 1;
+        const arr = eq.deliveryChums || [];
+        for (let i = 0; i < sections; i++) {
+          if (!arr[i]) return `deliveryChums_${i}`;
+        }
+      }
+      return null;
     }
 
     return baseSlot;
@@ -400,8 +409,13 @@ class InventoryManager {
       const index = slotPath.split("_")[1];
       this.#equipment.unequip(`baits_${index}`);
     } else if (slotPath === "delivery") {
-      // Знімаємо прикормку з кораблика
-      this.#equipment.unequip("deliveryChum");
+      // Знімаємо всю прикормку з усіх бункерів кораблика
+      const eq = this.getEquipped();
+      const sections =
+        eq.delivery?.sections || eq.delivery?.engineStats?.sections || 1;
+      for (let i = 0; i < sections; i++) {
+        this.#equipment.unequip(`deliveryChums_${i}`);
+      }
     }
 
     this.#saveAndNotify();
@@ -422,7 +436,9 @@ class InventoryManager {
       feederChum: this._hydrateInstance(raw.feederChumId),
       net: this._hydrateInstance(raw.netId),
       delivery: this._hydrateInstance(raw.deliveryId),
-      deliveryChum: this._hydrateInstance(raw.deliveryChumId),
+      deliveryChums: (raw.deliveryChums || []).map((id) =>
+        this._hydrateInstance(id),
+      ),
       baits: (raw.baits || []).map((id) => this._hydrateInstance(id)),
     };
   }

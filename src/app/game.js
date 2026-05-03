@@ -775,7 +775,6 @@ class BitingState extends GameState {
     const eq = this.game.systems.inventory.getEquipped();
     const isSpinning = eq?.rod?.type === "spinning";
 
-    // ЗМІНЕНО: Більш безпечна перевірка потужності котушки
     const reelPower = eq?.reel ? eq.reel.basePower || 0 : 0;
 
     let pullDirection = null;
@@ -787,7 +786,6 @@ class BitingState extends GameState {
       ).normalize();
     }
 
-    // Передаємо всі параметри, щоб спінінг міг плисти під час клювання
     this.game.float.update(
       bounds,
       dt,
@@ -798,7 +796,6 @@ class BitingState extends GameState {
       pullDirection,
     );
 
-    // Логіка АВТОПІДСІКАННЯ для спінінга
     const stepInfo = this.game.float.getBiteStepInfo?.();
     if (isSpinning && stepInfo && stepInfo.isGuaranteed && input.isPulling) {
       this.game.float.hook();
@@ -812,12 +809,12 @@ class BitingState extends GameState {
       return;
     }
 
+    // --- ЗМІНЕНО: Якщо риба втратила інтерес (не встигли підсікти) ---
     if (!this.game.float.isBiting()) {
       this.game.setState("waiting");
       return;
     }
 
-    // Захист: якщо під час клювання блешня виїхала на берег
     const updatedPos = this.game.float.getPosition();
     const shoreY =
       bounds.bottom -
@@ -829,31 +826,39 @@ class BitingState extends GameState {
       return;
     }
 
-    // Аудіо фідера
+    // --- ЗМІНЕНО: Механіка ТАЄМНОЇ втрати наживки ---
     if (stepInfo) {
       if (stepInfo.id !== this.#lastStepId) {
         this.#lastStepId = stepInfo.id;
 
         if (stepInfo.isAction) {
-          const usedBait = (eq?.baits || []).find(
-            (b) => b && b.type === "bait",
-          );
-          if (usedBait) {
+          // Шукаємо, в якому саме слоті лежить наживка, яку зараз їдять
+          let consumedSlot = null;
+          let consumedBaitId = null;
+          if (eq.baits) {
+            for (let i = 0; i < eq.baits.length; i++) {
+              if (eq.baits[i] && eq.baits[i].type === "bait") {
+                consumedSlot = `baits_${i}`;
+                consumedBaitId = eq.baits[i].instanceId;
+                break;
+              }
+            }
+          }
+
+          if (consumedBaitId) {
             const lossChance = stepInfo.isGuaranteed
               ? (CONFIG.physics.baitLossChance?.guaranteed ?? 0.5)
               : (CONFIG.physics.baitLossChance?.normal ?? 0.15);
 
             if (Math.random() <= lossChance) {
-              this.game.systems.inventory.consumeItem(usedBait.instanceId, 1);
+              // 1. ЗНІМАЄМО з гачка (щоб гравець не знав, поки не витягне, а шанс кльову став 0%)
+              this.game.systems.inventory.unequipItem(consumedSlot);
+              // 2. Видаляємо 1 штуку з рюкзака фізично
+              this.game.systems.inventory.consumeItem(consumedBaitId, 1);
+
+              // 3. Тихо повертаємо у стан очікування (поплавок просто завмирає)
               this.game.float.stopBite();
-
-              if (this.game.systems.inventoryUI) {
-                this.game.systems.inventoryUI.showWarning(
-                  "Риба безкарно з'їла наживку і втекла!",
-                );
-              }
-
-              this.game.setState("scouting");
+              this.game.setState("waiting");
               return;
             }
           }
@@ -1654,29 +1659,24 @@ class Game {
     const method = eq.delivery ? "boat" : "hand";
     const boatItem = eq.delivery || {};
     const isManual = boatItem.manualControl ?? true;
-    const sections = boatItem.sections ?? 1;
+    const sections = boatItem.sections ?? boatItem.engineStats?.sections ?? 1;
 
     let state = "idle";
     let count = 0;
 
-    // Шукаємо доступну прикормку для відображення кількості (навіть якщо не в слоті)
-    let availableChum = eq.deliveryChum;
-    if (!availableChum) {
+    if (method === "hand") {
+      let activeChum = null;
       const items = this.#systems.inventory.getInventoryItems();
       for (const item of items) {
         const hydrated = this.#systems.inventory._hydrateInstance(
           item.instanceId,
         );
         if (hydrated && hydrated.type === "chum_mix") {
-          availableChum = hydrated;
+          activeChum = hydrated;
           break;
         }
       }
-    }
-
-    if (method === "hand") {
-      count = availableChum ? availableChum.quantity || 1 : 0;
-
+      count = activeChum ? activeChum.quantity || 1 : 0;
       if (count <= 0) state = "empty";
       else if (this.isAimingChum) state = "aiming";
       else state = "idle";
@@ -1685,9 +1685,9 @@ class Game {
       const activeBoat = boats.length > 0 ? boats[0] : null;
 
       if (!activeBoat) {
+        const loadedCount = (eq.deliveryChums || []).filter(Boolean).length;
         count = sections;
-        // Якщо прикормки взагалі немає, блокуємо кнопку кораблика
-        if (!availableChum) state = "empty";
+        if (loadedCount === 0) state = "empty";
         else state = this.isAimingChum ? "aiming" : "idle";
       } else {
         count = activeBoat.remainingSections;
@@ -1703,7 +1703,7 @@ class Game {
           ) {
             state = "moving";
           } else if (activeBoat.state === "waiting") {
-            state = count > 0 && availableChum ? "ready" : "empty";
+            state = count > 0 ? "ready" : "empty";
           }
         } else {
           if (activeBoat.state === "returning") {
@@ -1712,11 +1712,7 @@ class Game {
             activeBoat.state === "deploying" ||
             activeBoat.state === "waiting"
           ) {
-            state = this.isAimingChum
-              ? "aiming"
-              : availableChum
-                ? "ready"
-                : "empty";
+            state = this.isAimingChum ? "aiming" : "moving";
           }
         }
       }
@@ -1745,9 +1741,8 @@ class Game {
     const eq = this.#systems.inventory.getEquipped();
     const method = eq.delivery ? "boat" : "hand";
 
-    // Автопошук прикормки: якщо в слоті пусто, шукаємо першу-ліпшу в інвентарі
-    let activeChum = eq.deliveryChum;
-    if (!activeChum) {
+    if (method === "hand") {
+      let activeChum = null;
       const items = this.#systems.inventory.getInventoryItems();
       for (const item of items) {
         const hydrated = this.#systems.inventory._hydrateInstance(
@@ -1758,18 +1753,8 @@ class Game {
           break;
         }
       }
-    }
 
-    if (method === "hand") {
       if (activeChum) {
-        // Секретний UX-трюк: автоматично екіпіруємо знайдену прикормку,
-        // щоб логіка прицілювання (handleChumAiming) працювала без змін
-        if (!eq.deliveryChum) {
-          this.#systems.inventory.equipItem(
-            "deliveryChum",
-            activeChum.instanceId,
-          );
-        }
         this.toggleChumAim();
       } else {
         if (this.#systems.inventoryUI) {
@@ -1782,18 +1767,13 @@ class Game {
       const boats = this.#systems.chum.getBoats();
 
       if (boats.length === 0) {
-        if (activeChum) {
-          if (!eq.deliveryChum) {
-            this.#systems.inventory.equipItem(
-              "deliveryChum",
-              activeChum.instanceId,
-            );
-          }
+        const loadedCount = (eq.deliveryChums || []).filter(Boolean).length;
+        if (loadedCount > 0) {
           this.toggleChumAim();
         } else {
           if (this.#systems.inventoryUI) {
             this.#systems.inventoryUI.showWarning(
-              "У вас немає прикормки в інвентарі для завантаження кораблика!",
+              "Завантажте прикормку в бункери кораблика через інвентар!",
             );
           }
         }
@@ -1812,38 +1792,29 @@ class Game {
             activeBoat.state === "waiting" &&
             activeBoat.remainingSections > 0
           ) {
-            // Тут використовуємо eq.deliveryChum, бо вище ми вже гарантували екіпірування
-            const chumId = eq.deliveryChum?.id || activeChum?.id;
-            if (chumId) {
+            const sections =
+              boatItem.sections ?? boatItem.engineStats?.sections ?? 1;
+            const dropIndex = sections - activeBoat.remainingSections;
+            const chumToDrop = activeBoat._loadedChums[dropIndex];
+
+            if (chumToDrop) {
               this.#systems.chum.deployBait(
                 activeBoat.pos.x,
                 activeBoat.pos.y,
-                chumId,
+                chumToDrop.id,
               );
-              activeBoat.remainingSections--;
-              if (activeBoat.remainingSections <= 0) {
-                const hasAI = boatItem.hasAutoReturn ?? false;
-                if (hasAI) {
-                  activeBoat.state = "returning";
-                }
-              }
+              this.#systems.inventory.unequipItem(`deliveryChums_${dropIndex}`);
+              this.#systems.inventory.consumeItem(chumToDrop.instanceId, 1);
             }
-          }
-        } else {
-          if (activeBoat.state === "deploying" || activeBoat.state === "idle") {
-            const reservedTargets =
-              (activeBoat.zoneId ? 1 : 0) +
-              (activeBoat.waypoints ? activeBoat.waypoints.length : 0);
-            const freeSlots = activeBoat.remainingSections - reservedTargets;
-
-            if (freeSlots > 0 && activeChum) {
-              if (!eq.deliveryChum) {
-                this.#systems.inventory.equipItem(
-                  "deliveryChum",
-                  activeChum.instanceId,
-                );
+            activeBoat.remainingSections--;
+            if (activeBoat.remainingSections <= 0) {
+              const hasAI =
+                boatItem.hasAutoReturn ??
+                boatItem.engineStats?.hasAutoReturn ??
+                false;
+              if (hasAI) {
+                activeBoat.state = "returning";
               }
-              this.toggleChumAim();
             }
           }
         }
@@ -1869,12 +1840,15 @@ class Game {
       this.activeBoat = this.#systems.chum.spawnIdleBoat(
         rodPos.x,
         bounds.bottom - 5,
-        eq.delivery, // <--- Передаємо актуальний кораблик
+        eq.delivery,
       );
 
       if (this.activeBoat) {
         const boatItem = eq.delivery || {};
-        this.activeBoat.remainingSections = boatItem.sections ?? 1;
+        this.activeBoat.remainingSections =
+          boatItem.sections ?? boatItem.engineStats?.sections ?? 1;
+        // Кораблик запам'ятовує, що в нього поклали в інвентарі
+        this.activeBoat._loadedChums = [...(eq.deliveryChums || [])];
       }
     } else if (!this.isAimingChum && this.activeBoat) {
       if (this.activeBoat.state === "idle") {
@@ -1893,7 +1867,6 @@ class Game {
 
     const eq = this.#systems.inventory.getEquipped();
     const method = eq.delivery ? "boat" : "hand";
-    const chumToDrop = eq.deliveryChum;
 
     const vPos = this.#systems.projector.screenToVirtual(
       input.clickPos.x,
@@ -1901,30 +1874,41 @@ class Game {
     );
     const cell = this.checkWater(vPos.x, vPos.y);
 
-    if (!cell || !chumToDrop) {
-      this.markInvalidCast(input.clickPos);
-      input.clickPos = null;
-      return;
-    }
-
     if (method === "hand") {
-      const maxDist = CONFIG.locations.map["test"]?.chumCastDistance || 800;
-      const throwLineY = bounds.bottom - maxDist;
-
-      if (vPos.y >= throwLineY) {
-        if (this.#systems.chum.useHandBait()) {
-          this.#systems.chum.deployBait(vPos.x, vPos.y, chumToDrop.id);
-          this.#systems.inventory.consumeItem(chumToDrop.instanceId, 1);
-          this.toggleChumAim();
-        } else {
-          this.isAimingChum = false;
+      let activeChum = null;
+      const items = this.#systems.inventory.getInventoryItems();
+      for (const item of items) {
+        const hydrated = this.#systems.inventory._hydrateInstance(
+          item.instanceId,
+        );
+        if (hydrated && hydrated.type === "chum_mix") {
+          activeChum = hydrated;
+          break;
         }
-      } else {
-        this.markInvalidCast(input.clickPos);
       }
-    } else if (method === "boat" && this.activeBoat) {
-      const boatItem = eq.delivery || {};
-      const isManual = boatItem.manualControl ?? true;
+
+      if (!cell || !activeChum) {
+        this.markInvalidCast(input.clickPos);
+        input.clickPos = null;
+        return;
+      }
+
+      this.#systems.chum.deployBait(vPos.x, vPos.y, activeChum.id);
+      this.#systems.inventory.consumeItem(activeChum.instanceId, 1);
+      this.toggleChumAim();
+    } else if (method === "boat") {
+      const reservedTargets =
+        (this.activeBoat.zoneId ? 1 : 0) +
+        (this.activeBoat.waypoints ? this.activeBoat.waypoints.length : 0);
+      const chumToDrop = this.activeBoat._loadedChums
+        ? this.activeBoat._loadedChums[reservedTargets]
+        : null;
+
+      if (!cell || !chumToDrop) {
+        this.markInvalidCast(input.clickPos);
+        input.clickPos = null;
+        return;
+      }
 
       this.#systems.chum.deployBait(
         vPos.x,
@@ -1932,16 +1916,16 @@ class Game {
         chumToDrop.id,
         this.activeBoat,
       );
+
+      this.#systems.inventory.unequipItem(`deliveryChums_${reservedTargets}`);
       this.#systems.inventory.consumeItem(chumToDrop.instanceId, 1);
 
-      this.isAimingChum = false;
-
-      if (isManual) {
-        this.activeBoat = null;
+      const sections =
+        eq.delivery?.sections ?? eq.delivery?.engineStats?.sections ?? 1;
+      if (reservedTargets + 1 >= sections) {
+        this.toggleChumAim();
       }
     }
-
-    input.clickPos = null;
   }
 
   handleGlobalBoatControl(input) {

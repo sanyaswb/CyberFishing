@@ -939,14 +939,18 @@ class HoldChargesUI {
 class InventoryUI {
   #inventoryManager;
   #isOpen = false;
-  #activeFilters = new Set();
   #warningTimeout;
+
+  #activeCategory = "all";
+  #activeSubFilters = new Set();
+  #isFunnelOpen = false;
 
   #containerNode;
   #powerValueNode;
   #warningBoxNode;
   #leftPanelNode;
-  #filterContainerNode;
+  #categoryContainerNode;
+  #subFilterContainerNode;
   #inventoryGridNode;
   #tooltipNode;
   #selectedInstanceId = null;
@@ -1002,13 +1006,21 @@ class InventoryUI {
     const rightWrapperNode = document.createElement("div");
     rightWrapperNode.className = "inv-right-panel";
 
-    this.#filterContainerNode = document.createElement("div");
-    this.#filterContainerNode.className = "inv-filters";
+    // --- НОВА СТРУКТУРА ДОМ-ВУЗЛІВ ---
+    this.#categoryContainerNode = document.createElement("div");
+    this.#categoryContainerNode.className = "inv-categories";
+
+    this.#subFilterContainerNode = document.createElement("div");
+    this.#subFilterContainerNode.className = "inv-subfilters";
 
     this.#inventoryGridNode = document.createElement("div");
     this.#inventoryGridNode.className = "inv-grid";
 
-    rightWrapperNode.append(this.#filterContainerNode, this.#inventoryGridNode);
+    rightWrapperNode.append(
+      this.#categoryContainerNode,
+      this.#subFilterContainerNode,
+      this.#inventoryGridNode,
+    );
     mainArea.append(this.#leftPanelNode, rightWrapperNode);
     this.#containerNode.append(topBar, this.#warningBoxNode, mainArea);
     document.body.appendChild(this.#containerNode);
@@ -1044,14 +1056,13 @@ class InventoryUI {
       .getTotalPower()
       .toFixed(1);
     this.#renderEquipment();
-    this.#renderFilters();
+    this.#renderCategories();
     this.#renderInventory();
   }
 
   #getAvailableSlots(equipped) {
     const groups = [];
 
-    // ГРУПА 1: Основна вудка (Відображається завжди)
     const rodGroup = { groupName: "Вудлище", slots: [] };
     rodGroup.slots.push({ id: "rod", label: "Вудлище", type: "rod" });
 
@@ -1066,7 +1077,6 @@ class InventoryUI {
     }
     groups.push(rodGroup);
 
-    // ГРУПА 2: Оснастка (Малюється ТІЛЬКИ якщо є вудка)
     if (rod) {
       const rigGroup = { groupName: "Оснастка", slots: [] };
 
@@ -1098,7 +1108,6 @@ class InventoryUI {
           type: "sinker",
         });
 
-        // --- ВИПРАВЛЕНО: Читаємо capabilities або hasChumSlot ---
         const sinkerCaps =
           equipped.sinker?.capabilities ||
           equipped.sinker?.engineStats?.capabilities ||
@@ -1142,7 +1151,6 @@ class InventoryUI {
       }
     }
 
-    // ГРУПА 3: Додаткове обладнання (МАЛЮЄТЬСЯ ЗАВЖДИ, незалежно від вудки)
     const extraGroup = { groupName: "Додатково", slots: [] };
     extraGroup.slots.push({ id: "net", label: "Підсака", type: "net" });
     extraGroup.slots.push({
@@ -1151,12 +1159,19 @@ class InventoryUI {
       type: "delivery",
     });
 
+    // --- ДОДАНО: Динамічні слоти для бункерів кораблика ---
     if (equipped.delivery) {
-      extraGroup.slots.push({
-        id: "deliveryChum",
-        label: "Прикормка (Кораблик)",
-        type: "chum",
-      });
+      const sections =
+        equipped.delivery.sections ||
+        equipped.delivery.engineStats?.sections ||
+        1;
+      for (let i = 0; i < sections; i++) {
+        extraGroup.slots.push({
+          id: `deliveryChums_${i}`,
+          label: `Бункер ${i + 1}`,
+          type: "chum_mix",
+        });
+      }
     }
     groups.push(extraGroup);
 
@@ -1166,8 +1181,6 @@ class InventoryUI {
   #renderEquipment() {
     const fragment = document.createDocumentFragment();
     const equipped = this.#inventoryManager.getEquipped();
-
-    // Отримуємо динамічну структуру замість статичної UI_LAYOUT_CONFIG
     const dynamicLayout = this.#getAvailableSlots(equipped);
 
     dynamicLayout.forEach((groupConfig) => {
@@ -1175,7 +1188,6 @@ class InventoryUI {
       let hasSlots = false;
 
       groupConfig.slots.forEach((slotConfig) => {
-        // Логіка для масивів (наприклад baits_0, hooks_1)
         let item = null;
         if (slotConfig.id.includes("_")) {
           const [baseId, indexStr] = slotConfig.id.split("_");
@@ -1188,12 +1200,7 @@ class InventoryUI {
         }
 
         groupNode.appendChild(
-          this.#createSlotDOM(
-            slotConfig.id,
-            slotConfig.label,
-            item,
-            false, // isInventory = false
-          ),
+          this.#createSlotDOM(slotConfig.id, slotConfig.label, item, false),
         );
         hasSlots = true;
       });
@@ -1223,7 +1230,6 @@ class InventoryUI {
     const slotDiv = document.createElement("div");
     slotDiv.className = `inv-slot ${isInventory ? "inventory" : ""}`;
 
-    // Якщо це предмет в інвентарі і він зараз виділений
     if (isInventory && instanceId === this.#selectedInstanceId) {
       slotDiv.classList.add("selected");
     }
@@ -1247,14 +1253,13 @@ class InventoryUI {
       slotDiv.innerHTML = `<span style="font-size: 10px; color: #555;">✖</span>`;
       slotDiv.title = label;
 
-      // ЛОГІКА ПІДСВІЧУВАННЯ СУМІСНИХ СЛОТІВ
       let isTarget = false;
       if (this.#selectedInstanceId) {
         const selectedItem = this.#inventoryManager._hydrateInstance(
           this.#selectedInstanceId,
         );
         if (selectedItem) {
-          const baseSlot = slotId.split("_")[0]; // Для baits_0 беремо baits
+          const baseSlot = slotId.split("_")[0];
           const config = SLOT_CONFIG[baseSlot];
           if (
             config &&
@@ -1269,9 +1274,8 @@ class InventoryUI {
 
       slotDiv.addEventListener("click", () => {
         if (isTarget) {
-          // Якщо слот підсвічений, споряджаємо туди предмет
           this.#inventoryManager.equipItem(slotId, this.#selectedInstanceId);
-          this.#selectedInstanceId = null; // Знімаємо виділення
+          this.#selectedInstanceId = null;
           this.refreshUI();
         } else {
           this.showWarning(`Оберіть ${label} у правій панелі`);
@@ -1307,23 +1311,19 @@ class InventoryUI {
       this.#tooltipNode.style.display = "none";
     });
 
-    // ОНОВЛЕНА ЛОГІКА КЛІКУ
     element.addEventListener("click", () => {
       if (this.#warningBoxNode.style.display === "block") {
         this.#warningBoxNode.style.display = "none";
       }
 
       if (isEquipped && slotId) {
-        // Знімаємо предмет
         this.#inventoryManager.unequipItem(slotId);
       } else if (!isEquipped && instanceId) {
         if (this.#selectedInstanceId === instanceId) {
-          // КЛІК 2: АВТОСПОРАДЖЕННЯ (якщо натиснули вдруге на те ж саме)
           const result = this.#inventoryManager.autoEquipItem(instanceId);
           if (!result.success) this.showWarning(result.reason);
           this.#selectedInstanceId = null;
         } else {
-          // КЛІК 1: ВИДІЛЕННЯ ПРЕДМЕТА
           this.#selectedInstanceId = instanceId;
         }
         this.refreshUI();
@@ -1331,56 +1331,60 @@ class InventoryUI {
     });
   }
 
-  #renderFilters() {
+  #renderCategories() {
     const fragment = document.createDocumentFragment();
-    const items = this.#inventoryManager.getInventoryItems();
 
-    const types = new Set(
-      items
-        .map((i) => {
-          const fullItem = this.#inventoryManager._hydrateInstance(
-            i.instanceId,
-          );
-          return fullItem ? fullItem.type : null;
-        })
-        .filter(Boolean),
-    );
+    // Кнопка Лійки
+    const funnelBtn = document.createElement("button");
+    funnelBtn.className = `inv-funnel-btn ${this.#isFunnelOpen ? "active" : ""}`;
+    funnelBtn.innerHTML = "🔽";
+    funnelBtn.onclick = () => {
+      this.#isFunnelOpen = !this.#isFunnelOpen;
+      this.#renderSubFilters();
+    };
+    fragment.appendChild(funnelBtn);
 
-    fragment.appendChild(
-      this.#createFilterBtn("All", "🎛️ Усі", this.#activeFilters.size === 0),
-    );
-
-    types.forEach((type) => {
-      const isActive = this.#activeFilters.has(type);
-      fragment.appendChild(this.#createFilterBtn(type, type, isActive));
+    // Основні категорії
+    INVENTORY_CATEGORIES.forEach((cat) => {
+      const btn = document.createElement("button");
+      btn.className = `inv-category-btn ${this.#activeCategory === cat.id ? "active" : ""}`;
+      btn.innerText = cat.label;
+      btn.onclick = () => {
+        this.#activeCategory = cat.id;
+        this.#activeSubFilters.clear();
+        this.refreshUI();
+      };
+      fragment.appendChild(btn);
     });
 
-    this.#filterContainerNode.innerHTML = "";
-    this.#filterContainerNode.appendChild(fragment);
+    this.#categoryContainerNode.innerHTML = "";
+    this.#categoryContainerNode.appendChild(fragment);
+
+    this.#renderSubFilters();
   }
 
-  #createFilterBtn(type, label, isActive) {
-    const btn = document.createElement("button");
-    btn.className = `inv-filter-btn ${isActive ? "active" : ""}`;
-    btn.innerText = label;
-    btn.onclick = () => {
-      if (type === "All") {
-        this.#activeFilters.clear();
-      } else {
-        if (this.#activeFilters.has(type)) {
-          this.#activeFilters.delete(type);
-        } else {
-          this.#activeFilters.add(type);
-        }
-      }
-      this.refreshUI();
-    };
-    return btn;
-  }
+  #renderSubFilters() {
+    if (!this.#isFunnelOpen) {
+      this.#subFilterContainerNode.classList.remove("active");
+      this.#categoryContainerNode
+        .querySelector(".inv-funnel-btn")
+        .classList.remove("active");
+      return;
+    }
 
-  #renderInventory() {
-    const fragment = document.createDocumentFragment();
+    this.#subFilterContainerNode.classList.add("active");
+    this.#categoryContainerNode
+      .querySelector(".inv-funnel-btn")
+      .classList.add("active");
+    this.#subFilterContainerNode.innerHTML = "";
+
     const items = this.#inventoryManager.getInventoryItems();
+    const catConfig = INVENTORY_CATEGORIES.find(
+      (c) => c.id === this.#activeCategory,
+    );
+
+    // Збираємо унікальні ЛЕЙБЛИ (групи), які реально є в інвентарі у цій категорії
+    const availableGroups = new Set();
 
     items.forEach((invItem) => {
       const itemData = this.#inventoryManager._hydrateInstance(
@@ -1388,14 +1392,119 @@ class InventoryUI {
       );
       if (!itemData) return;
 
+      // Якщо це категорія "Усе" (ALL) або тип предмета підходить поточній категорії
       if (
-        this.#activeFilters.size > 0 &&
-        !this.#activeFilters.has(itemData.type)
+        catConfig.acceptTypes === "ALL" ||
+        catConfig.acceptTypes.includes(itemData.type)
+      ) {
+        const groupLabel = SUBFILTER_MAPPING[itemData.type] || itemData.type;
+        availableGroups.add(groupLabel);
+      }
+    });
+
+    if (availableGroups.size === 0) {
+      this.#subFilterContainerNode.innerHTML =
+        "<span style='color: #888; font-size: 12px;'>Немає предметів для сортування</span>";
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    // Сортуємо групи за алфавітом для красивого відображення
+    Array.from(availableGroups)
+      .sort()
+      .forEach((groupLabel) => {
+        const labelNode = document.createElement("label");
+        labelNode.className = "inv-subfilter-label";
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = this.#activeSubFilters.has(groupLabel);
+        cb.onchange = (e) => {
+          if (e.target.checked) {
+            this.#activeSubFilters.add(groupLabel);
+          } else {
+            this.#activeSubFilters.delete(groupLabel);
+          }
+          this.#renderInventory();
+        };
+
+        labelNode.appendChild(cb);
+        labelNode.appendChild(document.createTextNode(groupLabel));
+        fragment.appendChild(labelNode);
+      });
+
+    this.#subFilterContainerNode.appendChild(fragment);
+  }
+
+  #renderInventory() {
+    const fragment = document.createDocumentFragment();
+    const items = this.#inventoryManager.getInventoryItems();
+    const catConfig = INVENTORY_CATEGORIES.find(
+      (c) => c.id === this.#activeCategory,
+    );
+
+    const equippedItems = this.#inventoryManager.getEquipped();
+    const equippedCounts = {};
+
+    const countItem = (item) => {
+      if (item && item.instanceId) {
+        equippedCounts[item.instanceId] =
+          (equippedCounts[item.instanceId] || 0) + 1;
+      }
+    };
+
+    countItem(equippedItems.rod);
+    countItem(equippedItems.reel);
+    countItem(equippedItems.float);
+    countItem(equippedItems.sinker);
+    countItem(equippedItems.feederChum);
+    countItem(equippedItems.net);
+    countItem(equippedItems.delivery);
+    if (equippedItems.deliveryChums)
+      equippedItems.deliveryChums.forEach(countItem);
+    if (equippedItems.hooks) equippedItems.hooks.forEach(countItem);
+    if (equippedItems.baits) equippedItems.baits.forEach(countItem);
+
+    items.forEach((invItem) => {
+      const itemData = this.#inventoryManager._hydrateInstance(
+        invItem.instanceId,
+      );
+      if (!itemData) return;
+
+      // 1. Фільтр за вкладкою
+      if (
+        catConfig.acceptTypes !== "ALL" &&
+        !catConfig.acceptTypes.includes(itemData.type)
       )
         return;
 
+      // 2. Фільтр за лійкою
+      const groupLabel = SUBFILTER_MAPPING[itemData.type] || itemData.type;
+      if (
+        this.#activeSubFilters.size > 0 &&
+        !this.#activeSubFilters.has(groupLabel)
+      )
+        return;
+
+      // --- НОВОВВЕДЕННЯ: Віднімаємо одягнене ---
+      const eqCount = equippedCounts[invItem.instanceId] || 0;
+      const remainingQty = itemData.quantity - eqCount;
+
+      // Якщо предмет повністю одягнений на персонажа (не залишилося в рюкзаку) - ховаємо його!
+      if (remainingQty <= 0) return;
+
+      // Створюємо копію предмета, щоб відобразити правильну (зменшену) кількість
+      const displayItemData = { ...itemData, quantity: remainingQty };
+
       fragment.appendChild(
-        this.#createSlotDOM(null, null, itemData, true, invItem.instanceId),
+        this.#createSlotDOM(
+          null,
+          null,
+          displayItemData,
+          true,
+          invItem.instanceId,
+        ),
       );
     });
 
