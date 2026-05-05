@@ -85,6 +85,7 @@ const UI_LAYOUT_CONFIG = [
 
 const INVENTORY_CATEGORIES = [
   { id: "all", label: "🗃️ Усе", acceptTypes: "ALL" },
+  { id: "builds", label: "📦 Збірки", acceptTypes: ["build_box"] },
   {
     id: "rods",
     label: "🎣 Вудилища",
@@ -114,16 +115,11 @@ const INVENTORY_CATEGORIES = [
 ];
 
 const SUBFILTER_MAPPING = {
-  // Вудилища
   spinning: "Спінінги",
   feeder: "Фідери",
   float: "Поплавкові вудки",
   pole: "Махові",
-
-  // Котушки
   spinning_reel: "Котушки",
-
-  // Оснастка
   float_tackle: "Поплавки",
   day: "Поплавки",
   night: "Поплавки",
@@ -134,8 +130,6 @@ const SUBFILTER_MAPPING = {
   spinner: "Спінінгові приманки",
   wobbler: "Спінінгові приманки",
   jig: "Спінінгові приманки",
-
-  // Інше
   bait: "Наживки",
   chum_mix: "Прикормки",
   boat: "Кораблики",
@@ -512,6 +506,17 @@ const ITEM_DB = {
         finishRadiusReturning: 30,
         emoji: "🚤",
       },
+    },
+  },
+
+  misc: {
+    sys_build_box: {
+      id: "sys_build_box",
+      name: "Ящик збірки",
+      type: "build_box",
+      icon: "🧰",
+      displayStats: {},
+      engineStats: { type: "build_box" },
     },
   },
 };

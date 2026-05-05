@@ -43,6 +43,10 @@ class Inventory {
     initialItems.forEach((item) => this.#items.set(item.instanceId, item));
   }
 
+  addItem(itemData) {
+    this.#items.set(itemData.instanceId, itemData);
+  }
+
   getInstance(instanceId) {
     return this.#items.get(instanceId) || null;
   }
@@ -245,6 +249,144 @@ class InventoryManager {
     this.#db = new ItemDatabase(itemDB);
     this.#inventory = new Inventory(cachedInventory);
     this.#equipment = new InventoryEquipment(SLOT_CONFIG, cachedEquipment);
+  }
+
+  saveBuild(buildName) {
+    const buildId = "build_" + Date.now();
+    const raw = this.#equipment.getRawState();
+
+    const toUnequip = [];
+    if (raw.feederChumId) toUnequip.push("feederChum");
+    if (raw.deliveryChums)
+      raw.deliveryChums.forEach((_, i) => toUnequip.push(`deliveryChums_${i}`));
+    if (raw.baits) raw.baits.forEach((_, i) => toUnequip.push(`baits_${i}`));
+    toUnequip.forEach((slot) => this.unequipItem(slot));
+
+    const newRaw = this.#equipment.getRawState();
+
+    const eqCounts = {};
+    const countId = (id) => {
+      if (id) eqCounts[id] = (eqCounts[id] || 0) + 1;
+    };
+
+    countId(newRaw.rodId);
+    countId(newRaw.reelId);
+    countId(newRaw.floatId);
+    countId(newRaw.sinkerId);
+    countId(newRaw.netId);
+    countId(newRaw.deliveryId);
+    if (newRaw.hooks) newRaw.hooks.forEach(countId);
+
+    // --- ДОДАНО: Захист від дублювання збірок ---
+    for (const id of Object.keys(eqCounts)) {
+      const item = this.#inventory.getInstance(id);
+      if (item && item.buildId) {
+        const box = this.#inventory.getInstance(item.buildId);
+        const boxName = box ? box.buildName : "Невідомий ящик";
+        const itemName = this.#db.getItemData(item.itemId)?.name || "Предмет";
+        return {
+          success: false,
+          reason: `Річ "${itemName}" вже знаходиться в ящику "${boxName}"!`,
+        };
+      }
+    }
+
+    let count = 0;
+
+    // 3. Проходимо по всьому одягненому і за необхідності розділяємо стаки
+    for (const [id, equippedQty] of Object.entries(eqCounts)) {
+      const item = this.#inventory.getInstance(id);
+      if (item) {
+        // Якщо в рюкзаку їх більше, ніж ми реально одягнули (наприклад, 15 > 1)
+        if ((item.quantity || 1) > equippedQty) {
+          const leftoverQty = item.quantity - equippedQty;
+
+          // Залишаємо поточний ID для збірки (зменшуємо кількість)
+          item.quantity = equippedQty;
+          item.buildId = buildId;
+
+          // Створюємо НОВИЙ предмет для решти, яка падає в рюкзак
+          const leftoverId =
+            "uuid_leftover_" +
+            Date.now() +
+            "_" +
+            Math.floor(Math.random() * 10000);
+          const leftoverItem = {
+            ...item,
+            instanceId: leftoverId,
+            quantity: leftoverQty,
+          };
+          delete leftoverItem.buildId;
+          this.#inventory.addItem(leftoverItem);
+        } else {
+          // Якщо одягнено весь стак (або предмет в одному екземплярі)
+          item.buildId = buildId;
+        }
+        count++;
+      }
+    }
+
+    if (count === 0)
+      return { success: false, reason: "Немає спорядження для збереження!" };
+
+    // 4. Створюємо сам системний ящик
+    this.#inventory.addItem({
+      instanceId: buildId,
+      itemId: "sys_build_box",
+      quantity: 1,
+      buildName: buildName,
+      type: "build_box",
+    });
+
+    this.#saveAndNotify();
+    return { success: true };
+  }
+
+  disassembleBuild(buildId) {
+    const items = this.#inventory.getAll();
+    items.forEach((item) => {
+      if (item.buildId === buildId) {
+        delete item.buildId;
+      }
+    });
+    this.removeItem(buildId);
+    this.#saveAndNotify();
+  }
+
+  equipBuild(buildId) {
+    const slotsToClear = [
+      "rod",
+      "reel",
+      "float",
+      "sinker",
+      "net",
+      "delivery",
+      "feederChum",
+    ];
+    slotsToClear.forEach((s) => this.unequipItem(s));
+
+    const eq = this.getEquipped();
+    if (eq.hooks) eq.hooks.forEach((_, i) => this.unequipItem(`hooks_${i}`));
+    if (eq.baits) eq.baits.forEach((_, i) => this.unequipItem(`baits_${i}`));
+    if (eq.deliveryChums)
+      eq.deliveryChums.forEach((_, i) =>
+        this.unequipItem(`deliveryChums_${i}`),
+      );
+
+    const items = this.#inventory.getAll().filter((i) => i.buildId === buildId);
+
+    items.forEach((item) => {
+      const itemData = this._hydrateInstance(item.instanceId);
+
+      // Якщо в ящику лежить 2 гачки одного типу, екіпіруємо їх двічі у вільні слоти!
+      const qtyToEquip = itemData.quantity || 1;
+      for (let q = 0; q < qtyToEquip; q++) {
+        const slotPath = this.#findTargetSlotPath(itemData);
+        if (slotPath) this.#equipment.equip(slotPath, item.instanceId);
+      }
+    });
+
+    this.#saveAndNotify();
   }
 
   setLock(locked) {
@@ -464,11 +606,55 @@ class InventoryManager {
     const baseItem = this.#db.getItemData(invItem.itemId);
     if (!baseItem) return null;
 
-    return {
+    const hydrated = {
       ...baseItem,
       instanceId: invItem.instanceId,
       quantity: invItem.quantity || 1,
+      buildId: invItem.buildId,
     };
+
+    if (hydrated.type === "build_box") {
+      hydrated.name = invItem.buildName || "Без назви (Старий ящик)";
+
+      const contents = this.#inventory
+        .getAll()
+        .filter((i) => i.buildId === instanceId);
+      hydrated.quantity = contents.reduce(
+        (sum, c) => sum + (c.quantity || 1),
+        0,
+      );
+
+      const grouped = {};
+      contents.forEach((c) => {
+        const cBase = this.#db.getItemData(c.itemId);
+        if (cBase) {
+          let cat = "Інше";
+          if (["spinning", "feeder", "float", "pole"].includes(cBase.type))
+            cat = "Вудилище";
+          else if (cBase.type === "spinning_reel") cat = "Котушка";
+          else if (["float_tackle", "day", "night"].includes(cBase.type))
+            cat = "Поплавок";
+          else if (["sinker", "feeder_rig"].includes(cBase.type))
+            cat = "Грузило/Годівниця";
+          else if (cBase.type === "hook") cat = "Гачок";
+          else if (["lure", "spinner", "wobbler", "jig"].includes(cBase.type))
+            cat = "Приманка";
+          else if (cBase.type === "net") cat = "Підсака";
+          else if (cBase.type === "boat") cat = "Кораблик";
+
+          if (!grouped[cat]) grouped[cat] = [];
+          grouped[cat].push(
+            cBase.name + (c.quantity > 1 ? ` (x${c.quantity})` : ""),
+          );
+        }
+      });
+
+      for (const [catName, itemsArr] of Object.entries(grouped)) {
+        hydrated[catName] = itemsArr.join(", ");
+      }
+    }
+
+    return hydrated;
   }
 
   #saveAndNotify() {
