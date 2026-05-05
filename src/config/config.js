@@ -696,6 +696,7 @@ const CONFIG = {
           bread: 0.5,
           test_spinner: 1.5, // <-- нова наживка (спіннер)
           test_wobbler_sinking: 3.0, // <-- нова наживка (воблер)
+          test_wobbler_suspend: 2.0, // <-- нова наживка (воблер)
           test_jig: 0.1, // <-- ця риба майже не клює на джиг
         },
 

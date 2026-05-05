@@ -234,6 +234,7 @@ class InventoryManager {
   #db;
   #inventory;
   #equipment;
+  #isLocked = false;
 
   constructor(itemDB, playerConfig) {
     const cachedInventory =
@@ -244,6 +245,14 @@ class InventoryManager {
     this.#db = new ItemDatabase(itemDB);
     this.#inventory = new Inventory(cachedInventory);
     this.#equipment = new InventoryEquipment(SLOT_CONFIG, cachedEquipment);
+  }
+
+  setLock(locked) {
+    this.#isLocked = locked;
+  }
+
+  get isLocked() {
+    return this.#isLocked;
   }
 
   getTotalPower() {

@@ -663,14 +663,21 @@ class WaitingState extends GameState {
       return;
     }
 
-    const baitIds = (eq?.baits || []).map((b) => b?.id).filter(Boolean);
-    const baitTypes = (eq?.baits || []).map((b) => b?.type).filter(Boolean); // ДОДАНО: типи приманок
+    const activeBaits = (eq?.baits || []).filter(
+      (b) =>
+        b &&
+        !(this.game.eatenBaits || []).some(
+          (eb) => eb.instanceId === b.instanceId,
+        ),
+    );
+
+    const baitIds = activeBaits.map((b) => b.id);
+    const baitTypes = activeBaits.map((b) => b.type);
 
     let hooked = this.game.systems.bite.evaluateBite(dt, envData.biteEnv, {
-      // ВИПРАВЛЕНО: Читаємо перший гачок з масиву (або беремо рівень блешні)
       hookSize: eq?.hooks?.[0]?.level || eq?.baits?.[0]?.level || 1,
       baits: baitIds,
-      baitTypes: baitTypes, // Передаємо типи для визначення анімації клювання
+      baitTypes: baitTypes,
       isPulling: effectiveInput.isPulling,
     });
 
@@ -680,6 +687,16 @@ class WaitingState extends GameState {
         CONFIG.spawns.fishes.find((f) => f.id === fixed.fishId) ||
         CONFIG.spawns.fishes[0];
 
+      const isActiveLure = baitTypes.some((type) =>
+        ["spinner", "wobbler", "jig"].includes(type),
+      );
+
+      const chosenSequence = template.biteMechanics
+        ? isActiveLure
+          ? template.biteMechanics.active
+          : template.biteMechanics.passive
+        : null;
+
       hooked = {
         id: template.id,
         name: template.name + " (TEST)",
@@ -687,6 +704,7 @@ class WaitingState extends GameState {
         level: fixed.level,
         weight: fixed.weight,
         resistance: fixed.resistance,
+        biteSequence: chosenSequence,
       };
     }
 
@@ -1033,6 +1051,7 @@ class Game {
   #holdUI;
   #chumUI;
   #hasEquippedNet = false;
+  eatenBaits = [];
 
   invalidCastMarker = null;
   isAimingChum = false;
@@ -1204,6 +1223,10 @@ class Game {
   setState(name, data = {}) {
     if (this.#state) this.#state.exit();
     this.#gameStateName = name;
+
+    if (this.#systems.inventory) {
+      this.#systems.inventory.setLock(name !== "scouting");
+    }
 
     const states = {
       scouting: ScoutingState,

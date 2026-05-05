@@ -1273,6 +1273,14 @@ class InventoryUI {
       }
 
       slotDiv.addEventListener("click", () => {
+        // --- ДОДАНО: Блокування зміни спорядження ---
+        if (this.#inventoryManager.isLocked) {
+          this.showWarning(
+            "Витягніть снасть з води, щоб змінити екіпірування!",
+          );
+          return;
+        }
+
         if (isTarget) {
           this.#inventoryManager.equipItem(slotId, this.#selectedInstanceId);
           this.#selectedInstanceId = null;
@@ -1312,6 +1320,12 @@ class InventoryUI {
     });
 
     element.addEventListener("click", () => {
+      // --- ДОДАНО: Блокування зміни спорядження ---
+      if (this.#inventoryManager.isLocked) {
+        this.showWarning("Витягніть снасть з води, щоб змінити екіпірування!");
+        return;
+      }
+
       if (this.#warningBoxNode.style.display === "block") {
         this.#warningBoxNode.style.display = "none";
       }
