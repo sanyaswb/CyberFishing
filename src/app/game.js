@@ -322,7 +322,9 @@ class PlayingState extends GameState {
     });
 
     document.dispatchEvent(
-      new CustomEvent("debug-fish-hooked", { detail: fishData }),
+      new CustomEvent("debug-fish-hooked", {
+        detail: { fish: fishData, eq: eq },
+      }),
     );
   }
 
@@ -577,6 +579,7 @@ class PlayingState extends GameState {
       exhaustionDurationMs: sc?.getExhaustionDurationMs?.() || 1000,
 
       hookedFish: this.data.fish,
+      eq: this.game.systems.inventory.getEquipped(), // <-- ДОДАНО
     };
   }
 }

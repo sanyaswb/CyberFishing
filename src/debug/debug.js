@@ -11,15 +11,16 @@ window.DEBUG_MODULES = {
 };
 
 document.addEventListener("debug-fish-hooked", (e) => {
-  const fish = e.detail;
+  // --- ВИПРАВЛЕНО: Розпаковуємо рибу та екіпірування з події ---
+  const fish = e.detail.fish;
+  const eq = e.detail.eq || {};
 
   console.group(
     `%c🐟 Аналіз Балансу: ${fish.name} (${fish.weight.toFixed(3)} кг)`,
     "color: #00ff80; font-size: 16px; font-weight: bold;",
   );
 
-  // --- ОНОВЛЕНО: Читаємо екіпірування з нового конфігу ---
-  const eq = CONFIG.player?.equipment || {};
+  // Видалено читання з CONFIG, використовуємо eq з події
   const rod = eq.rod || { level: 1, basePower: 1, compensation: 0 };
   const hasReel = rod.hasReel !== false;
   const reel = hasReel

@@ -407,11 +407,12 @@ class WorstCaseModule extends OverlayModule {
     const worstFishX =
       currentFishBase * maxMove * CONFIG.physics.fishForceMultiplier;
 
-    const eq = CONFIG.player?.equipment;
-    const rodPower = (eq?.rod?.level || 1) * (eq?.rod?.basePower || 1);
+    // --- ВИПРАВЛЕНО: Беремо екіпірування з даних стану (d.eq), а не з CONFIG ---
+    const eq = d.eq || {};
+    const rodPower = (eq.rod?.level || 1) * (eq.rod?.basePower || 1);
     const reelPower =
-      eq?.rod?.hasReel !== false
-        ? (eq?.reel?.level || 0) * (eq?.reel?.basePower || 0)
+      eq.rod?.hasReel !== false
+        ? (eq.reel?.level || 0) * (eq.reel?.basePower || 0)
         : 0;
     const pPower = rodPower + reelPower;
 
