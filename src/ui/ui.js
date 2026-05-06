@@ -967,6 +967,39 @@ class InventoryUI {
     this.#setupEventListeners();
   }
 
+  #enableHorizontalDrag(element) {
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    element.style.cursor = "grab";
+
+    element.addEventListener("mousedown", (e) => {
+      isDown = true;
+      element.style.cursor = "grabbing";
+      startX = e.pageX - element.offsetLeft;
+      scrollLeft = element.scrollLeft;
+    });
+
+    element.addEventListener("mouseleave", () => {
+      isDown = false;
+      element.style.cursor = "grab";
+    });
+
+    element.addEventListener("mouseup", () => {
+      isDown = false;
+      element.style.cursor = "grab";
+    });
+
+    element.addEventListener("mousemove", (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - element.offsetLeft;
+      const walk = (x - startX) * 2; // Швидкість прокрутки (x2)
+      element.scrollLeft = scrollLeft - walk;
+    });
+  }
+
   #initBackpackButton() {
     const btn = document.createElement("button");
     btn.innerHTML = "🎒";
@@ -1038,9 +1071,11 @@ class InventoryUI {
 
     this.#categoryContainerNode = document.createElement("div");
     this.#categoryContainerNode.className = "inv-categories";
+    this.#enableHorizontalDrag(this.#categoryContainerNode);
 
     this.#subFilterContainerNode = document.createElement("div");
     this.#subFilterContainerNode.className = "inv-subfilters";
+    this.#enableHorizontalDrag(this.#subFilterContainerNode);
 
     this.#inventoryGridNode = document.createElement("div");
     this.#inventoryGridNode.className = "inv-grid";

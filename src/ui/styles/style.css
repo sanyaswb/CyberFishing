@@ -394,8 +394,10 @@ input:checked + .slider:before {
   padding-bottom: 5px;
 }
 
-.inv-categories::-webkit-scrollbar {
-  height: 4px;
+/* Приховуємо системну смугу прокрутки для категорій та фільтрів */
+.inv-categories::-webkit-scrollbar,
+.inv-subfilters::-webkit-scrollbar {
+  display: none; /* Для Chrome, Safari, Edge */
 }
 .inv-categories::-webkit-scrollbar-thumb {
   background: #4a5b6c;
@@ -470,4 +472,82 @@ input:checked + .slider:before {
 .inv-subfilter-label input {
   cursor: pointer;
   accent-color: #00ff80;
+}
+
+/* =========================================
+   ГЛОБАЛЬНИЙ ФІКС ОБРІЗАННЯ ВМІСТУ (FLEXBOX)
+   ========================================= */
+.inv-main-area,
+.inv-right-panel,
+.inv-left-panel,
+.inv-categories,
+.inv-subfilters {
+  min-width: 0; /* ВАЖЛИВО! Саме це дозволяє блокам не вилазити за екран */
+}
+
+/* =========================================
+   ПРИХОВУВАННЯ ПОВЗУНКА ТА СВАЙП ДЛЯ КАТЕГОРІЙ
+   ========================================= */
+.inv-categories::-webkit-scrollbar,
+.inv-subfilters::-webkit-scrollbar {
+  display: none; /* Для Chrome, Safari, Edge */
+}
+
+.inv-categories,
+.inv-subfilters {
+  scrollbar-width: none; /* Для Firefox */
+  -ms-overflow-style: none; /* Для IE */
+  user-select: none; /* Забороняємо виділення тексту ТІЛЬКИ на кнопках категорій */
+  overflow-x: auto; /* Вмикаємо сам горизонтальний скрол/свайп */
+}
+
+/* =========================================
+   АДАПТИВНІСТЬ ДЛЯ МОБІЛЬНИХ (Responsive)
+   ========================================= */
+@media (max-width: 768px) {
+  /* Зменшуємо загальні відступи модального вікна */
+  .inv-modal {
+    padding: 10px;
+  }
+
+  /* Шапка: ставимо силу і кнопку закриття одна під одною */
+  .inv-top-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .inv-close-btn {
+    width: 100%;
+    padding: 12px;
+  }
+
+  /* ГОЛОВНА МАГІЯ: ставимо праву панель під лівою */
+  .inv-main-area {
+    flex-direction: column;
+    overflow-y: auto !important; /* Вмикаємо загальний скрол для всього вікна */
+  }
+
+  /* Вимикаємо локальні скроли, щоб можна було гортати сторінку пальцем як єдине ціле */
+  .inv-left-panel,
+  .inv-right-panel,
+  .inv-grid {
+    flex: none !important;
+    overflow-y: visible !important;
+    height: auto;
+  }
+
+  /* Блок кнопок збереження збірки: дозволяємо перенесення на новий рядок */
+  .inv-main-area > div:first-child > div:first-child {
+    flex-wrap: wrap;
+  }
+
+  .inv-main-area > div:first-child > div:first-child button {
+    flex: 1; /* Кнопки розтягуються, щоб було зручно натискати пальцем */
+  }
+
+  /* Центруємо комірки предметів у рюкзаку, якщо залишається пусте місце збоку */
+  .inv-grid {
+    justify-content: center;
+  }
 }
