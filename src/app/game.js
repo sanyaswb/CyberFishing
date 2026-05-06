@@ -127,14 +127,50 @@ class ScoutingState extends GameState {
     }
 
     if (input.clickPos) {
+      // --- ДОДАЙ ЦІ 3 РЯДКИ ДЛЯ ДЕБАГУ ---
+      console.log("=== КЛІК ЗЛОВЛЕНО В SCOUTING STATE ===");
+      console.log("isAimingChum дорівнює:", this.game.isAimingChum);
+      console.log("Координати кліку:", input.clickPos);
+      // ----------------------------------
+
       const vPos = this.game.systems.projector.screenToVirtual(
         input.clickPos.x,
         input.clickPos.y,
       );
       const cell = this.game.checkWater(vPos.x, vPos.y);
       const bounds = this.game.getDynamicBounds();
-      const eq = this.game.systems.inventory.getEquipped();
 
+      // === 1. ЛОГІКА ДЛЯ РУЧНОГО ЗАКИДАННЯ ПРИКОРМКИ ===
+      if (this.game.isAimingChum) {
+        const locId = "test"; // Замініть на змінну поточної локації, якщо вона у вас динамічна
+        const chumDist = CONFIG.locations.map[locId].chumCastDistance || 300;
+
+        // Вираховуємо лінію горизонту для прикормки (все що вище - недоступно)
+        const virtualLineY = bounds.bottom - chumDist;
+
+        // Перевіряємо: чи клік у воді (зелена зона) І чи не далі за дозволену помаранчеву лінію
+        if (cell && vPos.y >= virtualLineY) {
+          this.game.isAimingChum = false;
+
+          // ВАЖЛИВО: Заміни 'handleChumDeploy' на ту назву методу,
+          // яку ти використовуєш у своєму класі Game для кидка прикормки
+          if (typeof this.game.handleChumDeploy === "function") {
+            this.game.handleChumDeploy(vPos.x, vPos.y);
+          } else if (typeof this.game.deployHandChum === "function") {
+            this.game.deployHandChum(vPos.x, vPos.y);
+          } else {
+            console.error("Метод кидка прикормки не знайдено в класі Game!");
+          }
+        } else {
+          // Якщо клікнув занадто далеко або на берег — показуємо хрестик і скидаємо приціл
+          this.game.markInvalidCast(input.clickPos);
+          this.game.isAimingChum = false;
+        }
+        return; // Обов'язковий вихід, щоб гравець випадково не закинув вудку
+      }
+
+      // === 2. ЛОГІКА ДЛЯ ЗАКИДАННЯ ВУДКИ ===
+      const eq = this.game.systems.inventory.getEquipped();
       let rawDist = eq.rod?.maxDistance;
       let maxDist = rawDist === "max" || rawDist == null ? Infinity : rawDist;
 
@@ -209,6 +245,7 @@ class ScoutingState extends GameState {
 
   draw(renderer, bounds) {
     if (!this.game.isAimingChum) {
+      // Відмальовка дозволеної зони для ВУДКИ
       if (CONFIG.locations?.showAimingZone !== false) {
         const eq = this.game.systems.inventory.getEquipped();
         let rawDist = eq.rod?.maxDistance;
@@ -223,6 +260,19 @@ class ScoutingState extends GameState {
             "rod",
           );
         }
+      }
+    } else {
+      // Відмальовка дозволеної зони для ПРИКОРМКИ
+      if (CONFIG.locations?.showAimingZone !== false) {
+        const locId = "test"; // Замініть на змінну поточної локації, якщо вона у вас динамічна
+        const chumDist = CONFIG.locations.map[locId].chumCastDistance || 300;
+
+        renderer.drawAimingZone(
+          this.game.systems.projector,
+          bounds.bottom,
+          chumDist,
+          "chum",
+        );
       }
     }
   }
@@ -1949,7 +1999,6 @@ class Game {
         const boatItem = eq.delivery || {};
         this.activeBoat.remainingSections =
           boatItem.sections ?? boatItem.engineStats?.sections ?? 1;
-        // Кораблик запам'ятовує, що в нього поклали в інвентарі
         this.activeBoat._loadedChums = [...(eq.deliveryChums || [])];
       }
     } else if (!this.isAimingChum && this.activeBoat) {
@@ -1965,6 +2014,7 @@ class Game {
 
     if (this._uiClickLockTime && Date.now() - this._uiClickLockTime < 200) {
       input.clickPos = null;
+      return; // Додано return, щоб заблокований клік точно не йшов далі
     }
 
     const eq = this.#systems.inventory.getEquipped();
@@ -1992,8 +2042,30 @@ class Game {
       if (!cell || !activeChum) {
         this.markInvalidCast(input.clickPos);
         input.clickPos = null;
+        this.toggleChumAim(); // Знімаємо приціл при помилці
         return;
       }
+
+      // === МАТЕМАТИЧНЕ ОБМЕЖЕННЯ ДАЛЬНОСТІ ===
+      const locId = "test"; // Якщо локація динамічна, зміни на змінну
+      const chumDist = CONFIG.locations.map[locId].chumCastDistance || 300;
+      const virtualLineY = bounds.bottom - chumDist;
+
+      // Якщо клікнули вище дозволеної лінії (далі в озеро)
+      if (vPos.y < virtualLineY) {
+        this.markInvalidCast(input.clickPos);
+        input.clickPos = null;
+        this.toggleChumAim(); // Скидаємо режим прицілювання
+
+        // Можна також додати попередження в UI
+        if (this.#systems.inventoryUI) {
+          this.#systems.inventoryUI.showWarning(
+            "Занадто далеко для ручного закидання!",
+          );
+        }
+        return;
+      }
+      // ==========================================
 
       this.#systems.chum.deployBait(vPos.x, vPos.y, activeChum.id);
       this.#systems.inventory.consumeItem(activeChum.instanceId, 1);
