@@ -551,3 +551,33 @@ input:checked + .slider:before {
     justify-content: center;
   }
 }
+
+/* Підсвітка обраного порожнього слота зліва */
+.inv-slot.highlight-active-empty {
+  border-color: #00ff80;
+  box-shadow: inset 0 0 10px rgba(0, 255, 128, 0.3);
+  background: rgba(0, 255, 128, 0.1);
+}
+
+/* Підсвітка сумісних предметів у рюкзаку (справа) */
+.inv-slot.highlight-compatible {
+  border-color: #00ff80;
+  box-shadow: 0 0 15px rgba(0, 255, 128, 0.5);
+  animation: pulse-compatible 1.5s infinite;
+  z-index: 1;
+}
+
+@keyframes pulse-compatible {
+  0% {
+    border-color: rgba(0, 255, 128, 0.4);
+    box-shadow: 0 0 5px rgba(0, 255, 128, 0.2);
+  }
+  50% {
+    border-color: rgba(0, 255, 128, 1);
+    box-shadow: 0 0 15px rgba(0, 255, 128, 0.6);
+  }
+  100% {
+    border-color: rgba(0, 255, 128, 0.4);
+    box-shadow: 0 0 5px rgba(0, 255, 128, 0.2);
+  }
+}

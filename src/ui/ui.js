@@ -970,6 +970,8 @@ class InventoryUI {
   #saveInputNode;
   #saveBtnNode;
 
+  #highlightedSlotId = null;
+
   constructor(inventoryManager) {
     this.#inventoryManager = inventoryManager;
     this.#initBackpackButton();
@@ -1123,7 +1125,8 @@ class InventoryUI {
     this.#isOpen = !this.#isOpen;
     this.#containerNode.classList.toggle("active", this.#isOpen);
     if (this.#isOpen) {
-      this.#viewingBuildId = null; // Скидаємо перегляд ящика
+      this.#viewingBuildId = null;
+      this.#highlightedSlotId = null; // <-- ДОДАНО
       this.refreshUI();
     }
   }
@@ -1418,7 +1421,8 @@ class InventoryUI {
         );
         if (selectedItem) {
           const baseSlot = slotId.split("_")[0];
-          const config = SLOT_CONFIG[baseSlot];
+          const config =
+            typeof SLOT_CONFIG !== "undefined" ? SLOT_CONFIG[baseSlot] : null;
           if (
             config &&
             config.acceptTypes &&
@@ -1430,8 +1434,13 @@ class InventoryUI {
         }
       }
 
+      // --- ДОДАНО: Візуальне виділення активного пустого слота ---
+      if (this.#highlightedSlotId === slotId) {
+        slotDiv.classList.add("highlight-active-empty");
+      }
+      // -----------------------------------------------------------
+
       slotDiv.addEventListener("click", () => {
-        // Блокування
         if (this.#inventoryManager.isLocked) {
           this.showWarning(
             "Витягніть снасть з води, щоб змінити екіпірування!",
@@ -1440,11 +1449,31 @@ class InventoryUI {
         }
 
         if (isTarget) {
+          // Залишаємо нашу недавню перевірку EquipmentValidator
+          const selectedItem = this.#inventoryManager._hydrateInstance(
+            this.#selectedInstanceId,
+          );
+          const validation = this.#inventoryManager.validateEquip(selectedItem);
+
+          if (!validation.isValid) {
+            this.showWarning(validation.reason);
+            return;
+          }
+
           this.#inventoryManager.equipItem(slotId, this.#selectedInstanceId);
           this.#selectedInstanceId = null;
+          this.#highlightedSlotId = null; // Скидаємо підсвітку після екіпірування
           this.refreshUI();
         } else if (!this.#viewingBuildId) {
-          this.showWarning(`Оберіть ${label} у правій панелі`);
+          // --- ДОДАНО: Логіка перемикання підсвітки сумісних речей ---
+          if (this.#highlightedSlotId === slotId) {
+            this.#highlightedSlotId = null; // Якщо клікнули повторно - вимикаємо
+          } else {
+            this.#highlightedSlotId = slotId; // Вмикаємо пошук для цього слота
+            this.#selectedInstanceId = null; // Скидаємо виділений предмет у рюкзаку, якщо був
+          }
+          this.refreshUI();
+          // ---------------------------------------------------------
         }
       });
     }
@@ -1509,6 +1538,7 @@ class InventoryUI {
       }
 
       if (isEquipped && slotId) {
+        this.#highlightedSlotId = null;
         this.#inventoryManager.unequipItem(slotId);
       } else if (!isEquipped && instanceId) {
         if (this.#selectedInstanceId === instanceId) {
@@ -1586,6 +1616,7 @@ class InventoryUI {
       btn.onclick = () => {
         this.#activeCategory = cat.id;
         this.#activeSubFilters.clear();
+        this.#highlightedSlotId = null;
         this.refreshUI();
       };
       fragment.appendChild(btn);
@@ -1774,15 +1805,38 @@ class InventoryUI {
         if (remainingQty <= 0 && itemData.type !== "build_box") return;
 
         const displayItemData = { ...itemData, quantity: remainingQty };
-        fragment.appendChild(
-          this.#createSlotDOM(
-            null,
-            null,
-            displayItemData,
-            true,
-            invItem.instanceId,
-          ),
+
+        // 1. Створюємо DOM-елемент слота
+        const slotDom = this.#createSlotDOM(
+          null,
+          null,
+          displayItemData,
+          true,
+          invItem.instanceId,
         );
+
+        // 2. ДОДАНО: Перевіряємо, чи є зараз активний пустий слот для підсвітки
+        if (this.#highlightedSlotId) {
+          const baseSlot = this.#highlightedSlotId.split("_")[0];
+          const config =
+            typeof SLOT_CONFIG !== "undefined" ? SLOT_CONFIG[baseSlot] : null;
+
+          // Спочатку груба перевірка за типом слота
+          if (
+            config &&
+            config.acceptTypes &&
+            config.acceptTypes.includes(itemData.type)
+          ) {
+            // Потім глибока перевірка валідатором (на наявність вудки/гачка)
+            const validation = this.#inventoryManager.validateEquip(itemData);
+            if (validation.isValid) {
+              slotDom.classList.add("highlight-compatible");
+            }
+          }
+        }
+
+        // 3. Тепер додаємо готовий слот (з підсвіткою або без) у фрагмент
+        fragment.appendChild(slotDom);
       });
     }
 
