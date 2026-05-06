@@ -1538,14 +1538,22 @@ class InventoryUI {
       }
 
       if (isEquipped && slotId) {
+        // Скидаємо підсвітку пустого слота, якщо вирішили просто зняти річ
         this.#highlightedSlotId = null;
         this.#inventoryManager.unequipItem(slotId);
       } else if (!isEquipped && instanceId) {
+        // Подвійний клік по предмету в рюкзаку (Авто-екіпірування)
         if (this.#selectedInstanceId === instanceId) {
           const result = this.#inventoryManager.autoEquipItem(instanceId);
-          if (!result.success) this.showWarning(result.reason);
+          if (!result.success) {
+            this.showWarning(result.reason);
+          } else {
+            // --- ДОДАНО: Скидаємо підсвітку після успішного спорядження ---
+            this.#highlightedSlotId = null;
+          }
           this.#selectedInstanceId = null;
         } else {
+          // Перший клік - просто виділяємо предмет
           this.#selectedInstanceId = instanceId;
         }
         this.refreshUI();
