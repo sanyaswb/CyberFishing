@@ -28,8 +28,12 @@ document.addEventListener("debug-fish-hooked", (e) => {
     : { level: 0, basePower: 0, hold: null };
 
   // Базові параметри гравця (статичні)
-  const rPower = rod.level * rod.basePower;
-  const rlPower = reel.level * reel.basePower;
+
+  // const rPower = rod.level * rod.basePower;
+  // const rlPower = reel.level * reel.basePower;
+  const rPower = rod.level + rod.basePower;
+  const rlPower = reel.level + reel.basePower;
+
   const pPower = rPower + rlPower;
 
   // БАЗОВІ ПАРАМЕТРИ РИБИ (ДИНАМІЧНІ!)

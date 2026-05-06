@@ -8,7 +8,11 @@ class Equipment {
   }
 
   getPower() {
-    return this.#level * this.#basePower;
+    // --- СТАРИЙ ВАРІАНТ (Множення) ---
+    // return this.#level * this.#basePower;
+
+    // --- НОВИЙ ВАРІАНТ (Додавання) ---
+    return this.#level + this.#basePower;
   }
 }
 

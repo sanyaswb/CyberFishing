@@ -784,6 +784,7 @@ class StaminaController {
   #fish;
   #masteryTimer = 0;
   #isMasteryActive = false;
+  #isFullyRecovered = false;
 
   constructor(condition, fish, playerBasePower, mechanicsConfig) {
     this.#condition = condition;
@@ -930,30 +931,37 @@ class StaminaController {
       }
 
       if (this.#condition.currentStamina >= this.#condition.maxPoints) {
-        const punishmentCap = this.#mechanicsConfig.punishmentCap || 0.8;
+        if (!this.#isFullyRecovered) {
+          this.#isFullyRecovered = true;
 
-        this.#condition.applyPunishment(punishmentCap);
+          const punishmentCap = this.#mechanicsConfig.punishmentCap || 0.8;
 
-        if (this.#fish.hasActiveDebuff) {
-          this.#fish.clearDebuff();
+          this.#condition.applyPunishment(punishmentCap);
+
+          if (this.#fish.hasActiveDebuff) {
+            this.#fish.clearDebuff();
+          }
+
+          const idealDps =
+            this.#mechanicsConfig.baseDepletionRate * this.#playerBasePower;
+          const idealTimeSec =
+            this.#condition.maxPoints / Math.max(1, idealDps);
+          const exhaustionDurationSec =
+            idealTimeSec * this.#fish.getInitialPower();
+          const maxPowerDropPerSec = this.#mechanicsConfig.basePowerDropPerSec;
+
+          this.#fish.setPowerDebuffByExhaustionRatio(
+            punishmentCap,
+            maxPowerDropPerSec,
+            exhaustionDurationSec,
+          );
+
+          console.log(
+            `[STAMINA] Риба відновила сили! Виснаження ${punishmentCap * 100}%, сила синхронізована.`,
+          );
         }
-
-        const idealDps =
-          this.#mechanicsConfig.baseDepletionRate * this.#playerBasePower;
-        const idealTimeSec = this.#condition.maxPoints / Math.max(1, idealDps);
-        const exhaustionDurationSec =
-          idealTimeSec * this.#fish.getInitialPower();
-        const maxPowerDropPerSec = this.#mechanicsConfig.basePowerDropPerSec;
-
-        this.#fish.setPowerDebuffByExhaustionRatio(
-          punishmentCap,
-          maxPowerDropPerSec,
-          exhaustionDurationSec,
-        );
-
-        console.log(
-          `[STAMINA] Риба відновила сили! Виснаження ${punishmentCap * 100}%, сила синхронізована.`,
-        );
+      } else {
+        this.#isFullyRecovered = false;
       }
     }
   }
