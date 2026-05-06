@@ -385,8 +385,8 @@ class UIManager {
     Object.assign(this.#netBtn.style, {
       position: "absolute",
       bottom: "20px",
-      right: "20px",
-      padding: "12px 24px",
+      right: "100px",
+      padding: "12px",
       borderRadius: "8px",
       fontFamily: "monospace",
       fontWeight: "bold",
@@ -707,7 +707,7 @@ class TimeDisplayUI {
 class ChumUI {
   constructor(onClickCallback) {
     this.button = document.createElement("button");
-    this.button.innerText = "🍞(7)";
+    this.button.innerText = "🍞";
 
     this.currentState = "idle";
     this.currentMethod = "hand";
@@ -715,12 +715,12 @@ class ChumUI {
     Object.assign(this.button.style, {
       position: "absolute",
       bottom: "20px",
-      right: "150px",
-      padding: "12px 24px",
+      right: "190px",
+      padding: "12px",
       fontSize: "16px",
       fontWeight: "bold",
       backgroundColor: "#ffaa00",
-      color: "#1a1a1a",
+      color: "#ffd000",
       border: "2px solid #ffcc00",
       borderRadius: "8px",
       cursor: "pointer",
@@ -753,12 +753,7 @@ class ChumUI {
   }
 
   setState(state, method = "hand", count = 0, isManual = false) {
-    if (this.currentState === state && this.button.innerText.includes(count))
-      return;
-    this.currentState = state;
-    this.currentMethod = method;
-
-    // Форматування тексту на кнопці
+    // 1. Форматуємо потрібний текст залежно від стану та методу
     let text = "";
     if (state === "empty") {
       text = "🔘";
@@ -766,15 +761,30 @@ class ChumUI {
       text = "⏩";
     } else if (state === "aiming") {
       text = "🚫";
-    } else if (state === "ready") {
-      text = `🍞(${count})`;
     } else {
-      if (method === "boat") text = `🚤(${count})`;
-      else text = `🍞(${count})`;
+      // Якщо кораблик - показуємо ТІЛЬКИ емодзі. Якщо рука - емодзі + кількість.
+      if (method === "boat") {
+        text = "🚤";
+      } else {
+        text = `🍞(${count})`;
+      }
     }
 
+    // 2. Перевіряємо, чи потрібно взагалі оновлювати кнопку (оптимізація)
+    if (
+      this.currentState === state &&
+      this.currentMethod === method &&
+      this.button.innerText === text
+    ) {
+      return;
+    }
+
+    // 3. Зберігаємо нові стани та оновлюємо текст
+    this.currentState = state;
+    this.currentMethod = method;
     this.button.innerText = text;
 
+    // 4. Оновлюємо стилі
     switch (state) {
       case "disabled":
         this.button.style.backgroundColor = "#555555";
@@ -813,9 +823,9 @@ class ChumUI {
         break;
       case "idle":
       default:
-        this.button.style.backgroundColor = "#ffaa00";
+        this.button.style.backgroundColor = "#0000007e";
         this.button.style.borderColor = "#ffcc00";
-        this.button.style.color = "#000";
+        this.button.style.color = "#ffcc00";
         this.button.style.opacity = "1";
         this.button.style.cursor = "pointer";
         break;

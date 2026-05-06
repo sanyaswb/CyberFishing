@@ -713,22 +713,22 @@ const CONFIG = {
 
         baitMultipliers: {
           oil_worm: 2.0,
-          bread: 0.5,
-          test_spinner: 1.5, // <-- нова наживка (спіннер)
-          test_wobbler_sinking: 3.0, // <-- нова наживка (воблер)
-          test_wobbler_suspend: 2.0, // <-- нова наживка (воблер)
-          test_jig: 0.1, // <-- ця риба майже не клює на джиг
+          bread: 1.0,
+          test_spinner: 1.0,
+          test_wobbler_sinking: 1.0,
+          test_wobbler_suspend: 1.0,
+          test_jig: 1.0,
         },
 
-        timeMultipliers: { morning: 1.5, day: 0.8, evening: 1.2, night: 0.2 },
+        timeMultipliers: { morning: 1.5, day: 1.0, evening: 3.2, night: 0.5 },
         dayMultipliers: {
           1: 1.0,
           2: 1.0,
           3: 1.0,
           4: 1.0,
           5: 1.0,
-          6: 1.2,
-          0: 1.2,
+          6: 5.0,
+          0: 5.0,
         },
 
         physics: {
@@ -749,28 +749,28 @@ const CONFIG = {
               move: 0.5,
               minTime: 500,
               maxTime: 3000,
-              weight: 20,
+              weight: 10,
             },
             rest: {
               pull: 0.2,
               move: 0.1,
               minTime: 500,
               maxTime: 2500,
-              weight: 10,
+              weight: 20,
             },
             swim: {
               pull: 1.0,
               move: 1.0,
               minTime: 2000,
               maxTime: 4000,
-              weight: 50,
+              weight: 40,
             },
             dash: {
               pull: 1.5,
               move: 1.5,
               minTime: 1000,
               maxTime: 2200,
-              weight: 20,
+              weight: 30,
             },
             lastDash: {
               pull: 1.5,
@@ -804,11 +804,11 @@ const CONFIG = {
             movementDurationMs: [1000, 2500],
 
             animations: {
-              bob: { heightPercent: [-5, 5] },
-              sink: { heightPercent: [-50, -10] },
-              rise: { heightPercent: [10, 30] },
+              bob: { heightPercent: [-5, 5] }, // Легке коливання поплавка
+              sink: { heightPercent: [-50, -10] }, // Різке занурення (клювання)
+              rise: { heightPercent: [10, 30] }, // Різке підняття (клювання)
               tilt: { angle: [-25, 25] },
-              slide: {},
+              slide: {}, // Різкі ривки в сторони
             },
 
             guaranteedModifiers: {

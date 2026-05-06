@@ -1938,21 +1938,25 @@ class Game {
             activeBoat.state === "waiting" &&
             activeBoat.remainingSections > 0
           ) {
-            const sections =
-              boatItem.sections ?? boatItem.engineStats?.sections ?? 1;
-            const dropIndex = sections - activeBoat.remainingSections;
-            const chumToDrop = activeBoat._loadedChums[dropIndex];
+            // Рахуємо індекс скидання для нашого "ущільненого" масиву
+            const loadedCount = activeBoat._loadedChums.length;
+            const dropIndex = loadedCount - activeBoat.remainingSections;
+            const chumData = activeBoat._loadedChums[dropIndex];
 
-            if (chumToDrop) {
+            if (chumData) {
               this.#systems.chum.deployBait(
                 activeBoat.pos.x,
                 activeBoat.pos.y,
-                chumToDrop.id,
+                chumData.item.id,
               );
-              this.#systems.inventory.unequipItem(`deliveryChums_${dropIndex}`);
-              this.#systems.inventory.consumeItem(chumToDrop.instanceId, 1);
+              this.#systems.inventory.unequipItem(
+                `deliveryChums_${chumData.slotIndex}`,
+              );
+              this.#systems.inventory.consumeItem(chumData.item.instanceId, 1);
             }
+
             activeBoat.remainingSections--;
+
             if (activeBoat.remainingSections <= 0) {
               const hasAI =
                 boatItem.hasAutoReturn ??
@@ -1990,10 +1994,19 @@ class Game {
       );
 
       if (this.activeBoat) {
-        const boatItem = eq.delivery || {};
-        this.activeBoat.remainingSections =
-          boatItem.sections ?? boatItem.engineStats?.sections ?? 1;
-        this.activeBoat._loadedChums = [...(eq.deliveryChums || [])];
+        // --- МАГІЯ ТУТ: Рахуємо тільки РЕАЛЬНО завантажені бункери ---
+        const loadedChums = [];
+        const chumsArr = eq.deliveryChums || [];
+        for (let i = 0; i < chumsArr.length; i++) {
+          if (chumsArr[i]) {
+            // Зберігаємо предмет і його оригінальний слот, щоб правильно списати
+            loadedChums.push({ slotIndex: i, item: chumsArr[i] });
+          }
+        }
+
+        this.activeBoat._loadedChums = loadedChums;
+        this.activeBoat.remainingSections = loadedChums.length;
+        // -------------------------------------------------------------
       }
     } else if (!this.isAimingChum && this.activeBoat) {
       if (this.activeBoat.state === "idle") {
@@ -2008,7 +2021,7 @@ class Game {
 
     if (this._uiClickLockTime && Date.now() - this._uiClickLockTime < 200) {
       input.clickPos = null;
-      return; // Додано return, щоб заблокований клік точно не йшов далі
+      return;
     }
 
     const eq = this.#systems.inventory.getEquipped();
@@ -2036,22 +2049,18 @@ class Game {
       if (!cell || !activeChum) {
         this.markInvalidCast(input.clickPos);
         input.clickPos = null;
-        this.toggleChumAim(); // Знімаємо приціл при помилці
+        this.toggleChumAim();
         return;
       }
 
-      // === МАТЕМАТИЧНЕ ОБМЕЖЕННЯ ДАЛЬНОСТІ ===
-      const locId = "test"; // Якщо локація динамічна, зміни на змінну
+      const locId = "test";
       const chumDist = CONFIG.locations.map[locId].chumCastDistance || 300;
       const virtualLineY = bounds.bottom - chumDist;
 
-      // Якщо клікнули вище дозволеної лінії (далі в озеро)
       if (vPos.y < virtualLineY) {
         this.markInvalidCast(input.clickPos);
         input.clickPos = null;
-        this.toggleChumAim(); // Скидаємо режим прицілювання
-
-        // Можна також додати попередження в UI
+        this.toggleChumAim();
         if (this.#systems.inventoryUI) {
           this.#systems.inventoryUI.showWarning(
             "Занадто далеко для ручного закидання!",
@@ -2059,7 +2068,6 @@ class Game {
         }
         return;
       }
-      // ==========================================
 
       this.#systems.chum.deployBait(vPos.x, vPos.y, activeChum.id);
       this.#systems.inventory.consumeItem(activeChum.instanceId, 1);
@@ -2068,9 +2076,12 @@ class Game {
       const reservedTargets =
         (this.activeBoat.zoneId ? 1 : 0) +
         (this.activeBoat.waypoints ? this.activeBoat.waypoints.length : 0);
-      const chumToDrop = this.activeBoat._loadedChums
+
+      // Читаємо наші відфільтровані дані
+      const chumData = this.activeBoat._loadedChums
         ? this.activeBoat._loadedChums[reservedTargets]
         : null;
+      const chumToDrop = chumData ? chumData.item : null;
 
       if (!cell || !chumToDrop) {
         this.markInvalidCast(input.clickPos);
@@ -2085,12 +2096,15 @@ class Game {
         this.activeBoat,
       );
 
-      this.#systems.inventory.unequipItem(`deliveryChums_${reservedTargets}`);
+      // Списуємо прикормку саме з того слота, в якому вона лежала
+      this.#systems.inventory.unequipItem(
+        `deliveryChums_${chumData.slotIndex}`,
+      );
       this.#systems.inventory.consumeItem(chumToDrop.instanceId, 1);
 
-      const sections =
-        eq.delivery?.sections ?? eq.delivery?.engineStats?.sections ?? 1;
-      if (reservedTargets + 1 >= sections) {
+      // Виходимо з прицілювання, спираючись на кількість ЗАВАНТАЖЕНОЇ прикормки
+      const loadedCount = this.activeBoat._loadedChums.length;
+      if (reservedTargets + 1 >= loadedCount) {
         this.toggleChumAim();
       }
     }
