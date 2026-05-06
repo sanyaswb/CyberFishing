@@ -995,9 +995,18 @@ class InventoryUI {
       if (!isDown) return;
       e.preventDefault();
       const x = e.pageX - element.offsetLeft;
-      const walk = (x - startX) * 2; // Швидкість прокрутки (x2)
+      const walk = (x - startX) * 2;
       element.scrollLeft = scrollLeft - walk;
     });
+
+    element.addEventListener(
+      "wheel",
+      (e) => {
+        e.preventDefault();
+        element.scrollLeft += e.deltaY;
+      },
+      { passive: false },
+    );
   }
 
   #initBackpackButton() {

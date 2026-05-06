@@ -127,12 +127,6 @@ class ScoutingState extends GameState {
     }
 
     if (input.clickPos) {
-      // --- ДОДАЙ ЦІ 3 РЯДКИ ДЛЯ ДЕБАГУ ---
-      console.log("=== КЛІК ЗЛОВЛЕНО В SCOUTING STATE ===");
-      console.log("isAimingChum дорівнює:", this.game.isAimingChum);
-      console.log("Координати кліку:", input.clickPos);
-      // ----------------------------------
-
       const vPos = this.game.systems.projector.screenToVirtual(
         input.clickPos.x,
         input.clickPos.y,
