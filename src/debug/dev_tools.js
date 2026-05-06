@@ -3,26 +3,10 @@ class DevTools {
   #ui;
   #isOpen = false;
 
-  #sectionOrder = [
-    "debug",
-    "OVERLAY MODULES",
-    "CONSOLE MODULES",
-    "locations",
-    "chum",
-    "spawns",
-    "rod",
-    "reel",
-    "hook",
-    "tension",
-    "stamina",
-    "physics",
-    "net",
-    "ui",
-  ];
-
   #excludeKeys = [
     "id",
     "name",
+    "icon", // ДОДАНО: ігноруємо емодзі, щоб не створювати для них зайвих полів
     "bgUrls",
     "depthUrl",
     "endpoint",
@@ -49,61 +33,63 @@ class DevTools {
     const body = this.#ui.body;
     body.innerHTML = "";
 
-    const configKeys = Object.keys(this.#config).filter(
-      (k) => !this.#excludeKeys.includes(k),
-    );
-    const allAvailableSections = [
-      "OVERLAY MODULES",
-      "CONSOLE MODULES",
-      ...configKeys,
-    ];
+    // 1. OVERLAY MODULES
+    if (typeof OVERLAY_MODULES !== "undefined") {
+      const content = this.#createSectionWithCache(
+        "OVERLAY MODULES (На Екрані)",
+        body,
+      );
+      for (const k in OVERLAY_MODULES) {
+        this.#ui.createSwitcherRow(
+          k,
+          OVERLAY_MODULES[k],
+          content,
+          (v) => (OVERLAY_MODULES[k] = v),
+        );
+      }
+    }
 
-    allAvailableSections.sort((a, b) => {
-      let indexA = this.#sectionOrder.indexOf(a);
-      let indexB = this.#sectionOrder.indexOf(b);
-      if (indexA === -1) indexA = 999;
-      if (indexB === -1) indexB = 999;
-      return indexA - indexB;
-    });
+    // 2. CONSOLE MODULES
+    if (typeof window !== "undefined" && window.DEBUG_MODULES) {
+      const content = this.#createSectionWithCache(
+        "CONSOLE MODULES (Логи F12)",
+        body,
+      );
+      for (const k in window.DEBUG_MODULES) {
+        this.#ui.createSwitcherRow(
+          k,
+          window.DEBUG_MODULES[k],
+          content,
+          (v) => (window.DEBUG_MODULES[k] = v),
+        );
+      }
+    }
 
-    for (const key of allAvailableSections) {
-      if (key === "OVERLAY MODULES") {
-        if (typeof OVERLAY_MODULES !== "undefined") {
-          const content = this.#createSectionWithCache(
-            "OVERLAY MODULES (На Екрані)",
-            body,
-          );
-          for (const k in OVERLAY_MODULES) {
-            this.#ui.createSwitcherRow(
-              k,
-              OVERLAY_MODULES[k],
-              content,
-              (v) => (OVERLAY_MODULES[k] = v),
-            );
-          }
-        }
-      } else if (key === "CONSOLE MODULES") {
-        const debugMods =
-          typeof window !== "undefined" && window.DEBUG_MODULES
-            ? window.DEBUG_MODULES
-            : null;
-        if (debugMods) {
-          const content = this.#createSectionWithCache(
-            "CONSOLE MODULES (Логи F12)",
-            body,
-          );
-          for (const k in debugMods) {
-            this.#ui.createSwitcherRow(
-              k,
-              debugMods[k],
-              content,
-              (v) => (debugMods[k] = v),
-            );
-          }
-        }
-      } else {
-        const content = this.#createSectionWithCache(key, body);
-        this.#buildTree(this.#config[key], content, [key]);
+    // 3. ITEM_DB (БАЗА ПРЕДМЕТІВ)
+    if (typeof ITEM_DB !== "undefined") {
+      const dbContent = this.#createSectionWithCache(
+        "📦 БАЗА ПРЕДМЕТІВ (ITEM_DB)",
+        body,
+      );
+      for (const key of Object.keys(ITEM_DB)) {
+        if (this.#excludeKeys.includes(key)) continue;
+        const sectionContent = this.#createSectionWithCache(key, dbContent);
+        // Шлях тепер починається з "ITEM_DB"
+        this.#buildTree(ITEM_DB[key], sectionContent, ["ITEM_DB", key]);
+      }
+    }
+
+    // 4. CONFIG (НАЛАШТУВАННЯ ГРИ)
+    if (typeof CONFIG !== "undefined") {
+      const configContent = this.#createSectionWithCache(
+        "⚙️ НАЛАШТУВАННЯ (CONFIG)",
+        body,
+      );
+      for (const key of Object.keys(CONFIG)) {
+        if (this.#excludeKeys.includes(key)) continue;
+        const sectionContent = this.#createSectionWithCache(key, configContent);
+        // Шлях тепер починається з "CONFIG"
+        this.#buildTree(CONFIG[key], sectionContent, ["CONFIG", key]);
       }
     }
   }
@@ -196,13 +182,18 @@ class DevTools {
   }
 
   #updateConfigValue(path, newValue) {
-    let target = this.#config;
-    for (let i = 0; i < path.length - 1; i++) {
+    // ДИНАМІЧНИЙ ВИБІР КОРЕНЯ: Визначаємо, що саме редагуємо - ITEM_DB чи CONFIG
+    let target = path[0] === "ITEM_DB" ? ITEM_DB : CONFIG;
+
+    // Проходимо по всьому шляху, пропускаючи нульовий індекс (назва кореня)
+    for (let i = 1; i < path.length - 1; i++) {
       target = target[path[i]];
     }
-    target[path[path.length - 1]] = newValue;
-    console.log(`[DevTools] Оновлено CONFIG.${path.join(".")} =`, newValue);
 
+    target[path[path.length - 1]] = newValue;
+    console.log(`[DevTools] Оновлено ${path.join(".")} =`, newValue);
+
+    // Відправляємо подію з повним шляхом (наприклад: ["ITEM_DB", "rods", "rod_test_spin", "engineStats", "basePower"])
     document.dispatchEvent(
       new CustomEvent("config-updated", {
         detail: { path: path, value: newValue },

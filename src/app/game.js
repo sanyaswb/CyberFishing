@@ -239,6 +239,7 @@ class PlayingState extends GameState {
   #rod;
   #reel;
   #hasEquippedNet = false;
+  #onConfigUpdateBind;
 
   enter(data) {
     this.#startTime = performance.now();
@@ -248,13 +249,11 @@ class PlayingState extends GameState {
     const eq = this.game.systems.inventory.getEquipped();
     this.#hasEquippedNet = !!eq.net;
 
-    // --- ДОДАНО: Витрачаємо наживку при УСПІШНОМУ підсіканні ---
     const usedBait = (eq?.baits || []).find((b) => b && b.type === "bait");
     if (usedBait) {
       this.game.systems.inventory.consumeItem(usedBait.instanceId, 1);
     }
 
-    // 1. ВИПРАВЛЕНО: Безпечне читання параметрів вудки з фоллбеками
     this.#rod = new Rod(
       eq.rod?.level || 1,
       eq.rod?.basePower || 1.0,
@@ -264,7 +263,6 @@ class PlayingState extends GameState {
       eq.rod?.hasReel !== false,
     );
 
-    // 2. ВИПРАВЛЕНО: Безпечне створення котушки, якщо вона екіпірована
     this.#reel = eq.reel
       ? new Reel(
           eq.reel.level || 1,
@@ -273,10 +271,11 @@ class PlayingState extends GameState {
         )
       : new Reel(0, 0, null);
 
-    // 3. ВИПРАВЛЕНО: Безпечне читання гачка
-    const hookLevel = eq.hook?.level || 1;
-    const hookWeight = eq.hook?.weight || 1;
-    const hookQuality = eq.hook?.quality || 1.0;
+    // --- ВИПРАВЛЕНО БАГ З ЧИТАННЯМ ГАЧКА ---
+    const activeHook = eq.hooks?.[0] || {};
+    const hookLevel = activeHook.level || 1;
+    const hookWeight = activeHook.weight || 1;
+    const hookQuality = activeHook.quality || 1.0;
     const hook = new Hook(hookLevel, hookWeight, hookQuality);
 
     const fish = new Fish(
@@ -288,10 +287,9 @@ class PlayingState extends GameState {
 
     this.#fishingSystem = new FishingSystem(this.#rod, this.#reel, fish);
 
-    // Передаємо потужності в TensionMeter
     this.#tensionMeter = new TensionMeter(
       eq.rod?.level || 1,
-      eq.reel?.level || 0, // Якщо котушки немає, її рівень 0
+      eq.reel?.level || 0,
       hook,
       CONFIG.tension,
     );
@@ -326,50 +324,54 @@ class PlayingState extends GameState {
         detail: { fish: fishData, eq: eq },
       }),
     );
+
+    // --- ДОДАНО: Слухаємо DevTools під час виважування ---
+    this.#onConfigUpdateBind = () => this.#syncEquipment();
+    document.addEventListener("config-updated", this.#onConfigUpdateBind);
   }
 
-  handleNetClick() {
-    if (!this.#isNetReady) return;
+  #syncEquipment() {
+    const eq = this.game.systems.inventory.getEquipped();
 
-    const fishWeight = this.#fishingSystem.getFishWeight();
-    const chance = this.game.net.calculateCatchChance(fishWeight);
-    const roll = Math.random() * 100;
-    const success = roll <= chance;
-
-    document.dispatchEvent(
-      new CustomEvent("netCatchRoll", {
-        detail: { chance: chance, roll: roll, success: success },
-      }),
+    this.#rod = new Rod(
+      eq.rod?.level || 1,
+      eq.rod?.basePower || 1.0,
+      eq.rod?.compensation || 0,
+      eq.rod?.type || "float",
+      eq.rod?.maxDistance || 100,
+      eq.rod?.hasReel !== false,
     );
 
-    this.game.setState(success ? "victory" : "failed", {
-      reason: success ? null : "net_escape",
-      fish: this.data.fish,
-    });
-  }
+    this.#reel = eq.reel
+      ? new Reel(
+          eq.reel.level || 1,
+          eq.reel.basePower || 1.0,
+          eq.reel.hold || null,
+        )
+      : new Reel(0, 0, null);
 
-  handleInput(input) {
-    const isHold = this.#fishingSystem.isHoldActive();
-    const eq = this.game.systems.inventory.getEquipped();
-    // 4. ВИПРАВЛЕНО: Безпечне читання параметрів котушки
-    const swipeThreshold = eq.reel?.hold?.swipeThresholdPx || 100;
+    const activeHook = eq.hooks?.[0] || {};
+    const hookLevel = activeHook.level || 1;
+    const hookWeight = activeHook.weight || 1;
+    const hookQuality = activeHook.quality || 1.0;
+    const hook = new Hook(hookLevel, hookWeight, hookQuality);
 
-    if (this.#fishingSystem.getHoldUIState()?.hasHold) {
-      if (input.toggleHold || input.swipeDeltaY > swipeThreshold) {
-        isHold
-          ? this.#fishingSystem.deactivateHold()
-          : this.#fishingSystem.activateHold();
-        if (input.swipeDeltaY) this.game.systems.input.consumeSwipe();
-      }
-    }
+    this.#fishingSystem.updateEquipment(this.#rod, this.#reel);
+    this.#tensionMeter.updateEquipment(
+      eq.rod?.level || 1,
+      eq.reel?.level || 0,
+      hook,
+      CONFIG.tension,
+    );
+    this.#staminaController.updatePlayerPower(
+      this.#rod.getPower() + this.#reel.getPower(),
+    );
 
-    if (input.pumpAction || input.swipeDeltaY < -swipeThreshold) {
-      const red = this.#fishingSystem.tryUsePump(
-        eq.reel?.pumpLevel || 0,
-        eq.reel?.pumpPowerPerLevel || 10,
+    if (window.DEBUG_MODULES && window.DEBUG_MODULES.forces) {
+      console.log(
+        "%c🔄 [DevTools] Характеристики снастей оновлено в реальному часі!",
+        "color: #00ccff; font-weight: bold;",
       );
-      if (red > 0) this.#tensionMeter.applyPump(red);
-      if (input.swipeDeltaY) this.game.systems.input.consumeSwipe();
     }
   }
 
@@ -510,9 +512,49 @@ class PlayingState extends GameState {
     this.game.holdUI.update(this.#fishingSystem.getHoldUIState());
   }
 
-  exit() {
-    this.game.holdUI.update(null);
-    this.game.systems.ui.hideNetButton();
+  handleNetClick() {
+    if (!this.#isNetReady) return;
+
+    const fishWeight = this.#fishingSystem.getFishWeight();
+    const chance = this.game.net.calculateCatchChance(fishWeight);
+    const roll = Math.random() * 100;
+    const success = roll <= chance;
+
+    document.dispatchEvent(
+      new CustomEvent("netCatchRoll", {
+        detail: { chance: chance, roll: roll, success: success },
+      }),
+    );
+
+    this.game.setState(success ? "victory" : "failed", {
+      reason: success ? null : "net_escape",
+      fish: this.data.fish,
+    });
+  }
+
+  handleInput(input) {
+    const isHold = this.#fishingSystem.isHoldActive();
+    const eq = this.game.systems.inventory.getEquipped();
+    // 4. ВИПРАВЛЕНО: Безпечне читання параметрів котушки
+    const swipeThreshold = eq.reel?.hold?.swipeThresholdPx || 100;
+
+    if (this.#fishingSystem.getHoldUIState()?.hasHold) {
+      if (input.toggleHold || input.swipeDeltaY > swipeThreshold) {
+        isHold
+          ? this.#fishingSystem.deactivateHold()
+          : this.#fishingSystem.activateHold();
+        if (input.swipeDeltaY) this.game.systems.input.consumeSwipe();
+      }
+    }
+
+    if (input.pumpAction || input.swipeDeltaY < -swipeThreshold) {
+      const red = this.#fishingSystem.tryUsePump(
+        eq.reel?.pumpLevel || 0,
+        eq.reel?.pumpPowerPerLevel || 10,
+      );
+      if (red > 0) this.#tensionMeter.applyPump(red);
+      if (input.swipeDeltaY) this.game.systems.input.consumeSwipe();
+    }
   }
 
   draw(renderer, bounds) {
@@ -581,6 +623,14 @@ class PlayingState extends GameState {
       hookedFish: this.data.fish,
       eq: this.game.systems.inventory.getEquipped(), // <-- ДОДАНО
     };
+  }
+
+  exit() {
+    this.game.holdUI.update(null);
+    this.game.systems.ui.hideNetButton();
+    if (this.#onConfigUpdateBind) {
+      document.removeEventListener("config-updated", this.#onConfigUpdateBind);
+    }
   }
 }
 

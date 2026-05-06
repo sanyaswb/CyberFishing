@@ -45,11 +45,6 @@ const SLOT_CONFIG = {
     dependencies: [],
     acceptTypes: ["chum_mix"],
   },
-  // deliveryChum: {
-  //   type: "single",
-  //   dependencies: [],
-  //   acceptTypes: ["chum_mix"],
-  // },
   baits: {
     type: "array",
     dependencies: [],
@@ -269,7 +264,7 @@ const ITEM_DB = {
     feeder_spring_basic: {
       id: "feeder_spring_basic",
       name: "Базова пружина",
-      type: "feeder_rig", // <--- ВИПРАВЛЕНО З "sinker"
+      type: "feeder_rig",
       icon: "🪤",
       displayStats: { Гачки: 2, Прикормка: "Є" },
       engineStats: {
@@ -283,16 +278,16 @@ const ITEM_DB = {
     oil_worm: {
       id: "oil_worm",
       name: "Масляний черв'як",
-      type: "bait", // Змінюємо тут на bait!
+      type: "bait",
       icon: "🪱",
       displayStats: { type: "Наживка" },
-      engineStats: { type: "bait", requiresTag: "bait" }, // І тут чудово
+      engineStats: { type: "bait", requiresTag: "bait" },
     },
 
     bread: {
       id: "bread",
       name: "Хліб",
-      type: "bait", // Змінюємо тут
+      type: "bait",
       icon: "🍞",
       displayStats: { type: "Наживка" },
       engineStats: { type: "bait", requiresTag: "bait" },
@@ -321,7 +316,13 @@ const ITEM_DB = {
       name: "Воблер Suspend",
       type: "lure",
       icon: "🐟",
-      displayStats: { targetDepth: "2.0 - 4.5м" },
+      displayStats: {
+        Тип: "воблер",
+        Якість: 8,
+        Глибина: "2.0 - 4.5м",
+        Режим: "Suspend",
+        Компенсація: "0.1, 1.0",
+      },
       engineStats: {
         type: "wobbler",
         mode: 2,
@@ -342,7 +343,13 @@ const ITEM_DB = {
       name: "Воблер Sinking",
       type: "lure",
       icon: "🐟",
-      displayStats: { targetDepth: "1.0 - 3.5м" },
+      displayStats: {
+        Тип: "воблер",
+        Якість: 8,
+        Глибина: "1.0 - 3.5м",
+        Режим: "Sinking",
+        Компенсація: "0.1, 1.0",
+      },
       engineStats: {
         type: "wobbler",
         mode: 3,
@@ -383,7 +390,15 @@ const ITEM_DB = {
       name: "Денний поплавок",
       type: "float_tackle",
       icon: "🥢",
-      displayStats: { level: 1 },
+      displayStats: {
+        Рівень: 1,
+        Тип: "Денний",
+        Якість: 10,
+        Компенсація: "0.1, 1.0",
+        Ширина: "3мм",
+        Довжина: "15см",
+      },
+
       engineStats: {
         width: 3,
         length: 15,

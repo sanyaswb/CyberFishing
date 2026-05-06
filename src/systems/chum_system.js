@@ -128,9 +128,10 @@ class ChumManager {
 
   // Метод для оновлення існуючих зон у реальному часі
   #onConfigUpdate({ path, value }) {
-    // 2. Якщо ви зміните 'radius' прикормки в DevTools, він теж миттєво оновиться на екрані!
-    if (path.includes("baits") && path.includes("radius")) {
-      const baitId = path[path.indexOf("baits") - 1];
+    // Тепер ми шукаємо в "chums", а не в "baits", оскільки в ITEM_DB це категорія "chums"
+    if (path.includes("chums") && path.includes("radius")) {
+      // +1 бере назву самої прикормки (наприклад: 'carp_mix_basic')
+      const baitId = path[path.indexOf("chums") + 1];
       for (const zone of this.#zones) {
         if (zone.baitId === baitId) {
           zone.baseRadius = value;

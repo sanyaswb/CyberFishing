@@ -37,6 +37,28 @@ class FishingSystem {
     }
   }
 
+  updateEquipment(rod, reel) {
+    this.#rod = rod;
+    this.#reel = reel;
+
+    if (typeof this.#reel.getHoldStats === "function") {
+      this.#holdConfig = this.#reel.getHoldStats();
+    }
+
+    if (this.#holdConfig) {
+      this.#maxHoldCharges = this.#holdConfig.maxCharges;
+      // Не даємо зарядам перевищити новий максимум
+      this.#currentHoldCharges = Math.min(
+        this.#currentHoldCharges,
+        this.#maxHoldCharges,
+      );
+    } else {
+      this.#maxHoldCharges = 0;
+      this.#currentHoldCharges = 0;
+      this.#isHoldActive = false;
+    }
+  }
+
   activateHold() {
     if (!this.#holdConfig) return false;
     if (this.#manualCooldownTimer > 0) return false;
@@ -385,6 +407,14 @@ class TensionMeter {
     this.#hookPower = hook.getPower();
     this.#hookCheckTimer = 0;
     this.#slackTimer = 0;
+  }
+
+  updateEquipment(rodLevel, reelLevel, hook, tensionConfig) {
+    this.#equipmentLevelSum = rodLevel + reelLevel;
+    this.#maxBreakTime =
+      tensionConfig.baseBreakTime +
+      this.#equipmentLevelSum * tensionConfig.timePerEquipmentLevel;
+    this.#hookPower = hook.getPower();
   }
 
   update(
@@ -762,9 +792,14 @@ class StaminaController {
     this.#mechanicsConfig = mechanicsConfig;
   }
 
+  updatePlayerPower(newPower) {
+    this.#playerBasePower = newPower;
+  }
+
   getMasteryTimer() {
     return this.#masteryTimer;
   }
+
   isMasteryActive() {
     return this.#isMasteryActive;
   }
