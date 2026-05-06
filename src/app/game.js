@@ -969,29 +969,55 @@ class FailedState extends GameState {
     const eq = this.game.systems.inventory.getEquipped();
     const reason = data?.reason;
 
-    if (reason === "rod" || reason === "line" || reason === "hook") {
-      if (eq.hooks) {
-        eq.hooks.forEach((h) => {
-          if (h) this.game.systems.inventory.removeItem(h.instanceId);
-        });
-      }
+    // 1. Втрата наживки: відбувається ЗАВЖДИ (риба з'їла/збила), незалежно від причини сходу
+    if (
+      reason === "rod" ||
+      reason === "line" ||
+      reason === "hook" ||
+      reason === "net_escape"
+    ) {
       if (eq.baits) {
-        eq.baits.forEach((b) => {
-          if (b) this.game.systems.inventory.removeItem(b.instanceId);
+        eq.baits.forEach((b, index) => {
+          if (b) {
+            this.game.systems.inventory.consumeItem(b.instanceId, 1);
+            this.game.systems.inventory.unequipItem(`baits_${index}`);
+          }
         });
       }
     }
 
+    // 2. Втрата оснастки (гачки, поплавок, грузило, прикормка): ТІЛЬКИ при обриві ліски або поломці вудки
     if (reason === "rod" || reason === "line") {
-      if (eq.float) this.game.systems.inventory.removeItem(eq.float.instanceId);
-      if (eq.sinker)
-        this.game.systems.inventory.removeItem(eq.sinker.instanceId);
-      if (eq.feederChum)
-        this.game.systems.inventory.removeItem(eq.feederChum.instanceId);
+      if (eq.hooks) {
+        eq.hooks.forEach((h, index) => {
+          if (h) {
+            this.game.systems.inventory.consumeItem(h.instanceId, 1);
+            this.game.systems.inventory.unequipItem(`hooks_${index}`);
+          }
+        });
+      }
+
+      if (eq.float) {
+        this.game.systems.inventory.consumeItem(eq.float.instanceId, 1);
+        this.game.systems.inventory.unequipItem("float");
+      }
+      if (eq.sinker) {
+        this.game.systems.inventory.consumeItem(eq.sinker.instanceId, 1);
+        this.game.systems.inventory.unequipItem("sinker");
+      }
+      if (eq.feederChum) {
+        this.game.systems.inventory.consumeItem(eq.feederChum.instanceId, 1);
+        this.game.systems.inventory.unequipItem("feederChum");
+      }
     }
 
+    // 3. Втрата самої вудки: ТІЛЬКИ якщо вона не витримала
     if (reason === "rod") {
-      if (eq.rod) this.game.systems.inventory.removeItem(eq.rod.instanceId);
+      if (eq.rod) {
+        this.game.systems.inventory.consumeItem(eq.rod.instanceId, 1);
+        // Каскадне зняття автоматично поверне котушку в рюкзак
+        this.game.systems.inventory.unequipItem("rod");
+      }
     }
   }
 

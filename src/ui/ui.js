@@ -957,8 +957,8 @@ class InventoryUI {
   #tooltipNode;
   #selectedInstanceId = null;
 
-  #saveInputNode; // <-- ДОДАНО
-  #saveBtnNode; // <-- ДОДАНО
+  #saveInputNode;
+  #saveBtnNode;
 
   constructor(inventoryManager) {
     this.#inventoryManager = inventoryManager;
