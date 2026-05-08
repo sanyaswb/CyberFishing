@@ -1483,9 +1483,10 @@ class InventoryUI {
 
   #addTooltip(element, item, slotId, isEquipped, instanceId) {
     element.addEventListener("mouseenter", () => {
+      if (!window.matchMedia("(hover: hover)").matches) return;
+
       let html = `<div style="font-size: 16px; font-weight: bold; margin-bottom: 5px; color: #00ccff;">${item.icon} ${item.name}</div>`;
       for (const [key, val] of Object.entries(item)) {
-        // Розширений список ігнорування службових полів
         if (
           [
             "id",
@@ -1520,7 +1521,6 @@ class InventoryUI {
     });
 
     element.addEventListener("click", () => {
-      // Блокування
       if (this.#inventoryManager.isLocked) {
         this.showWarning("Витягніть снасть з води, щоб змінити екіпірування!");
         return;
@@ -1530,7 +1530,6 @@ class InventoryUI {
         this.#warningBoxNode.style.display = "none";
       }
 
-      // Якщо клікнули на ящик — відкриваємо його
       if (item.type === "build_box") {
         this.#viewingBuildId = item.instanceId;
         this.refreshUI();
@@ -1538,22 +1537,18 @@ class InventoryUI {
       }
 
       if (isEquipped && slotId) {
-        // Скидаємо підсвітку пустого слота, якщо вирішили просто зняти річ
         this.#highlightedSlotId = null;
         this.#inventoryManager.unequipItem(slotId);
       } else if (!isEquipped && instanceId) {
-        // Подвійний клік по предмету в рюкзаку (Авто-екіпірування)
         if (this.#selectedInstanceId === instanceId) {
           const result = this.#inventoryManager.autoEquipItem(instanceId);
           if (!result.success) {
             this.showWarning(result.reason);
           } else {
-            // --- ДОДАНО: Скидаємо підсвітку після успішного спорядження ---
             this.#highlightedSlotId = null;
           }
           this.#selectedInstanceId = null;
         } else {
-          // Перший клік - просто виділяємо предмет
           this.#selectedInstanceId = instanceId;
         }
         this.refreshUI();
