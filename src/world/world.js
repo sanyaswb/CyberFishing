@@ -204,7 +204,10 @@ class LocationMap {
       );
     }
 
-    if (this.#config.zones.dynamic) {
+    if (
+      this.#locationsConfig.enableDynamicZones !== false &&
+      this.#config.zones.dynamic
+    ) {
       for (const dzConfig of this.#config.zones.dynamic) {
         this.#dynamicZones.push(new DynamicZone(dzConfig, this.#rng));
       }
@@ -214,6 +217,11 @@ class LocationMap {
   #generateStaticDebugMap(cellSize, imgWidth, imgHeight) {
     if (!this.#debugCanvas) {
       this.#debugCanvas = document.createElement("canvas");
+    }
+    if (
+      this.#debugCanvas.width !== imgWidth ||
+      this.#debugCanvas.height !== imgHeight
+    ) {
       this.#debugCanvas.width = imgWidth;
       this.#debugCanvas.height = imgHeight;
     }
@@ -233,12 +241,14 @@ class LocationMap {
       }
     };
 
-    if (locCfg.enableCastable !== false)
-      drawZones(this.#config.zones.castable, "rgba(0, 255, 0, 0.15)");
-    if (locCfg.enableSnags !== false)
-      drawZones(this.#config.zones.snags, "rgba(255, 255, 0, 0.3)");
-    if (locCfg.enableCollisions !== false)
-      drawZones(this.#config.zones.collisions, "rgba(255, 0, 0, 0.4)");
+    if (locCfg.debugZones !== false) {
+      if (locCfg.enableCastable !== false)
+        drawZones(this.#config.zones.castable, "rgba(0, 255, 0, 0.15)");
+      if (locCfg.enableSnags !== false)
+        drawZones(this.#config.zones.snags, "rgba(255, 255, 0, 0.3)");
+      if (locCfg.enableCollisions !== false)
+        drawZones(this.#config.zones.collisions, "rgba(255, 0, 0, 0.4)");
+    }
 
     ctx.font = "10px monospace";
     ctx.textAlign = "center";
@@ -302,13 +312,28 @@ class LocationMap {
     }
 
     this.#dynamicZones = [];
-    if (this.#config.zones.dynamic) {
+    if (
+      this.#locationsConfig.enableDynamicZones !== false &&
+      this.#config.zones.dynamic
+    ) {
       for (const dzConfig of this.#config.zones.dynamic) {
         this.#dynamicZones.push(new DynamicZone(dzConfig, this.#rng));
       }
     }
 
     const baseRes = locationsConfig.baseResolution;
+    this.#cols = Math.ceil(baseRes.width / actualCellSize);
+    this.#rows = Math.ceil(baseRes.height / actualCellSize);
+    this.#buildGrid(actualCellSize);
+
+    if (
+      this.#config.depthUrl &&
+      this.#depthImage?.complete &&
+      this.#depthImage.naturalWidth > 0
+    ) {
+      this.#processDepthMap(actualCellSize, baseRes.width, baseRes.height);
+    }
+
     this.#generateStaticDebugMap(actualCellSize, baseRes.width, baseRes.height);
     this.recalculateZones(null, actualCellSize);
   }
@@ -504,7 +529,7 @@ class LocationMap {
 
   update(dt, gameTimeHours = null) {
     const locCfg = this.#locationsConfig;
-    const currentDebugState = `${locCfg.debugGrid}_${locCfg.debugDepthText}_${locCfg.enableCastable}_${locCfg.enableCollisions}_${locCfg.enableSnags}`;
+    const currentDebugState = `${locCfg.debugGrid}_${locCfg.debugDepthText}_${locCfg.debugZones}_${locCfg.enableCastable}_${locCfg.enableCollisions}_${locCfg.enableSnags}_${locCfg.enableDynamicZones}`;
 
     if (this.#lastDebugState !== currentDebugState && this.#debugCanvas) {
       this.#lastDebugState = currentDebugState;
@@ -551,8 +576,10 @@ class LocationMap {
       this.#bgOpacities.night = niA;
     }
 
-    for (const dz of this.#dynamicZones) {
-      dz.update(dt);
+    if (locCfg.enableDynamicZones !== false) {
+      for (const dz of this.#dynamicZones) {
+        dz.update(dt);
+      }
     }
   }
 
@@ -569,6 +596,7 @@ class LocationMap {
   }
 
   getDynamicZones() {
+    if (this.#locationsConfig.enableDynamicZones === false) return [];
     return this.#dynamicZones;
   }
 

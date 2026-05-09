@@ -26,6 +26,10 @@ class GameViewportFacade {
     this.#world.refreshViewport(recalculateMap);
   }
 
+  refreshLocationConfig(locationsConfig) {
+    this.#world.refreshLocationConfig(locationsConfig);
+  }
+
   applyPan(input, stateName, isAimingChum) {
     if (!input.panDeltaX && !input.panDeltaY) return;
     if (stateName !== "scouting" && !isAimingChum) return;
@@ -567,13 +571,17 @@ class GameApplication {
     this.#refreshViewport();
 
     this.#debugFacade.subscribeConfigUpdated((e) => {
-      if (e.detail && e.detail.path && e.detail.path[0] === "locations") {
-        this.#refreshViewport(false);
-        if (this.#map && typeof this.#map.refreshConfig === "function") {
-          this.#map.refreshConfig(this.#config.locations);
-        }
+      if (this.#isLocationsConfigUpdate(e)) {
+        this.#viewportFacade.refreshLocationConfig(this.#config.locations);
       }
     });
+  }
+
+  #isLocationsConfigUpdate(event) {
+    const path = event?.detail?.path;
+    if (!Array.isArray(path) || path.length === 0) return false;
+    const rootIndex = path[0] === "CONFIG" ? 1 : 0;
+    return path[rootIndex] === "locations";
   }
 
   #refreshViewport(recalculateMap = true) {

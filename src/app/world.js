@@ -195,6 +195,14 @@ class GameWorld {
     this.#locationConfig = locationConfig;
   }
 
+  refreshLocationConfig(locationConfig) {
+    this.#locationConfig = locationConfig;
+    if (typeof this.#map.refreshConfig === "function") {
+      this.#map.refreshConfig(locationConfig);
+    }
+    this.refreshViewport(true);
+  }
+
   refreshViewport(recalculateMap = true) {
     this.#projector.update(
       this.#canvasMetrics.width,

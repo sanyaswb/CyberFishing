@@ -589,6 +589,7 @@ const CONFIG = {
     enableCastable: true, // Зони, де можна закидати вудку
     enableCollisions: true, // Колізії з землею (червоні зони) - забороняють закидати.
     enableSnags: true, // Динамічні зони (наприклад, косяк риби)
+    enableDynamicZones: true,
     showChumZones: true,
     showCatchZone: true, // Відображення синьої зони
     showNetZone: true, // Відображення зеленої зони
@@ -652,7 +653,7 @@ const CONFIG = {
         },
 
         zones: {
-          castable: [{ x: 0, y: 12, w: 64, h: 17 }],
+          castable: [{ x: 0, y: 13, w: 64, h: 17 }],
           collisions: [{ x: 12, y: 22, w: 3, h: 2 }],
           snags: [{ x: 50, y: 13, w: 14, h: 8 }],
           dynamic: [
@@ -660,18 +661,14 @@ const CONFIG = {
               id: "fish_school_1",
               type: "buff",
               multiplier: 1.5,
-              x: 10,
+              x: 22,
               y: 15,
               w: 1,
               h: 1,
               moving: true,
               speedX: 1.2,
               speedY: 0.8,
-              bounds: [
-                { x: 9, y: 12, w: 39, h: 1 },
-                { x: 9, y: 13, w: 55, h: 1 },
-                { x: 0, y: 14, w: 64, h: 15 },
-              ],
+              bounds: [{ x: 0, y: 13, w: 64, h: 17 }],
             },
           ],
         },
