@@ -27,9 +27,30 @@
 ├── package.json
 ├── README.md
 ├── src
+│  ├── .tmp.drivedownload
+│  ├── .tmp.driveupload
 │  ├── app
+│  │  ├── adapters.js
+│  │  ├── application.js
+│  │  ├── bite.js
+│  │  ├── bootstrap.js
+│  │  ├── chum.js
+│  │  ├── context.js
+│  │  ├── core
+│  │  │  ├── event_bus.js
+│  │  │  ├── event_lifecycle.js
+│  │  │  ├── game_clock.js
+│  │  │  └── game_loop.js
+│  │  ├── debug.js
+│  │  ├── fishing.js
 │  │  ├── game.js
-│  │  └── script.js
+│  │  ├── inventory.js
+│  │  ├── render.js
+│  │  ├── rules.js
+│  │  ├── script.js
+│  │  ├── states.js
+│  │  ├── utils.js
+│  │  └── world.js
 │  ├── config
 │  │  └── config.js
 │  ├── core
@@ -54,7 +75,6 @@
 │  │  └── ui.js
 │  └── world
 │    └── world.js
-├── structure.tree
 └── utils
   ├── convert-images.js
   └── local-bridge.js
