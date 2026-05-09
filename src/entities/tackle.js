@@ -237,6 +237,39 @@ class WaterEntity {
       : this._random() < probability;
   }
 
+  _applyRetrieveForce(dt, pullDirection, power, multiplier, waterFriction = 0) {
+    if (!pullDirection) return;
+    const dtSec = dt / 1000;
+    const targetSpeedPxPerSec =
+      Math.max(0, power - waterFriction) * multiplier;
+    const force = targetSpeedPxPerSec * dtSec * (1 - this._velocityDamping);
+
+    this.applyForce(
+      this._forceScratch.set(
+        pullDirection.x * force,
+        pullDirection.y * force,
+      ),
+    );
+  }
+
+  _applyPassiveRetrieve(dt, pullDirection) {
+    const physics = CONFIG.physics || {};
+    this._applyRetrieveForce(
+      dt,
+      pullDirection,
+      physics.passiveRetrievePower ?? 1.0,
+      physics.passiveRetrieveMultiplier ?? 35,
+      physics.passiveRetrieveWaterFriction ?? 0.35,
+    );
+
+    const dtSec = dt / 1000;
+    this._currentHookDepth = Math.max(
+      0,
+      this._currentHookDepth -
+        (physics.passiveRetrieveDepthRiseSpeed ?? 0.15) * dtSec,
+    );
+  }
+
   getPosition() {
     return this._position;
   }
@@ -743,17 +776,12 @@ class SpinnerEntity extends WaterEntity {
     const dtSec = dt / 1000;
 
     if (input.isPulling && pullDirection) {
-      const multiplier = CONFIG.physics?.lureRetrieveMultiplier ?? 150;
-      const targetSpeedPxPerSec =
-        Math.max(0, reelPower - this._lureResistance) * multiplier;
-
-      const force = targetSpeedPxPerSec * dtSec * (1 - this._velocityDamping);
-
-      this.applyForce(
-        this._forceScratch.set(
-          pullDirection.x * force,
-          pullDirection.y * force,
-        ),
+      this._applyRetrieveForce(
+        dt,
+        pullDirection,
+        reelPower,
+        CONFIG.physics?.lureRetrieveMultiplier ?? 150,
+        this._lureResistance,
       );
 
       this._currentHookDepth = Math.max(
@@ -774,16 +802,12 @@ class WobblerEntity extends WaterEntity {
     const dtSec = dt / 1000;
 
     if (input.isPulling && pullDirection) {
-      const multiplier = CONFIG.physics?.lureRetrieveMultiplier ?? 150;
-      const targetSpeedPxPerSec =
-        Math.max(0, reelPower - this._lureResistance) * multiplier;
-      const force = targetSpeedPxPerSec * dtSec * (1 - this._velocityDamping);
-
-      this.applyForce(
-        this._forceScratch.set(
-          pullDirection.x * force,
-          pullDirection.y * force,
-        ),
+      this._applyRetrieveForce(
+        dt,
+        pullDirection,
+        reelPower,
+        CONFIG.physics?.lureRetrieveMultiplier ?? 150,
+        this._lureResistance,
       );
 
       const topDepth = this._config.targetMinDepth ?? 0;
@@ -825,17 +849,12 @@ class JigEntity extends WaterEntity {
   _processMechanics(dt, input, reelPower, pullDirection) {
     const dtSec = dt / 1000;
     if (input.isPulling && pullDirection) {
-      const multiplier = CONFIG.physics?.lureRetrieveMultiplier ?? 150;
-      const targetSpeedPxPerSec =
-        Math.max(0, reelPower - this._lureResistance) * multiplier;
-
-      const force = targetSpeedPxPerSec * dtSec * (1 - this._velocityDamping);
-
-      this.applyForce(
-        this._forceScratch.set(
-          pullDirection.x * force,
-          pullDirection.y * force,
-        ),
+      this._applyRetrieveForce(
+        dt,
+        pullDirection,
+        reelPower,
+        CONFIG.physics?.lureRetrieveMultiplier ?? 150,
+        this._lureResistance,
       );
       this._currentHookDepth = Math.max(
         0,
@@ -878,6 +897,11 @@ class FeederEntity extends WaterEntity {
   }
 
   _processMechanics(dt, input, reelPower, pullDirection) {
+    if (input.isPulling && pullDirection) {
+      this._applyPassiveRetrieve(dt, pullDirection);
+      return;
+    }
+
     if (!this._isSinking) return;
 
     this._sinkingTimer -= dt;
@@ -962,6 +986,11 @@ class FloatEntity extends WaterEntity {
   }
 
   _processMechanics(dt, input, reelPower, pullDirection) {
+    if (input.isPulling && pullDirection) {
+      this._applyPassiveRetrieve(dt, pullDirection);
+      return;
+    }
+
     if (!this._isSinking) return;
 
     if (this._sinkingDelayTimer > 0) {

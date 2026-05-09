@@ -71,6 +71,11 @@ class FishingRenderService {
   #getCurrentHookDepth;
   #scratch;
   #scratch2;
+  #lineLengthRatio = 1;
+  #lineDropOffset = 0;
+  #lineStraightFactor = 0;
+  #lineLastNow = 0;
+  #lineCastStartTime = null;
 
   constructor({
     inventory,
@@ -116,9 +121,18 @@ class FishingRenderService {
       this.#scratch,
     );
     const elapsed = this.#clock.now - startTime;
-    let ratio = 1.0;
-    let drop = 0;
+    let targetRatio = 1.0;
+    let targetDrop = 0;
     const lineCfg = this.#config.ui.line;
+    const inputState = this.#getInputState();
+
+    if (state === "waiting" && this.#lineCastStartTime !== startTime) {
+      this.#lineCastStartTime = startTime;
+      this.#lineLengthRatio = 1;
+      this.#lineDropOffset = 0;
+      this.#lineStraightFactor = 0;
+      this.#lineLastNow = this.#clock.now;
+    }
 
     if (state === "waiting" || state === "biting") {
       const minDelay = lineCfg.distanceDelayMinMs ?? 1500;
@@ -132,11 +146,11 @@ class FishingRenderService {
         (this.#getCurrentHookDepth() / sinkRate) * 1000 + distanceDelay;
       const prog = duration > 0 ? Math.min(1, elapsed / duration) : 1;
       const ease = 1 - Math.pow(1 - prog, lineCfg.shrinkEasePower ?? 4);
-      ratio = 1.0 - ease * (1.0 - lineCfg.shrinkPercent / 100);
-      drop = ease * (lineCfg.sinkDropPx || 120);
-      if (this.#getInputState().isPulling) {
-        ratio = 1.0;
-        drop = 0;
+      targetRatio = 1.0 - ease * (1.0 - lineCfg.shrinkPercent / 100);
+      targetDrop = ease * (lineCfg.sinkDropPx || 120);
+      if (inputState.isPulling) {
+        targetRatio = 1.0;
+        targetDrop = 0;
       }
     } else if (state === "playing") {
       const baseSnap = lineCfg.snapDurationMs ?? 300;
@@ -147,9 +161,60 @@ class FishingRenderService {
       const prog = snapDuration > 0 ? Math.min(1, elapsed / snapDuration) : 1;
       const ease = 1 - Math.pow(1 - prog, 3);
       const startR = lineCfg.shrinkPercent / 100;
-      ratio = startR + ease * (1.0 - startR);
-      drop = (lineCfg.sinkDropPx || 120) * (1 - ease);
+      targetRatio = startR + ease * (1.0 - startR);
+      targetDrop = (lineCfg.sinkDropPx || 120) * (1 - ease);
     }
+
+    const now = this.#clock.now;
+    const dtSec =
+      this.#lineLastNow > 0
+        ? Math.min(0.1, Math.max(0, (now - this.#lineLastNow) / 1000))
+        : 0;
+    this.#lineLastNow = now;
+    const ratioSpeed =
+      targetRatio > this.#lineLengthRatio
+        ? (lineCfg.pullExtendSpeed ?? 12)
+        : (lineCfg.pullReleaseSpeed ?? 4);
+    const dropSpeed =
+      targetDrop < this.#lineDropOffset
+        ? (lineCfg.pullStraightenSpeed ?? 14)
+        : (lineCfg.pullSlackSpeed ?? 5);
+    this.#lineLengthRatio = this.#approachExp(
+      this.#lineLengthRatio,
+      targetRatio,
+      ratioSpeed,
+      dtSec,
+    );
+    this.#lineDropOffset = this.#approachExp(
+      this.#lineDropOffset,
+      targetDrop,
+      dropSpeed,
+      dtSec,
+    );
+
+    const straightenThreshold = lineCfg.straightenTension || 50;
+    const targetStraightFactor =
+      state === "playing"
+        ? Math.min(
+            1,
+            Math.max(0, (tMeter?.getTension() || 0) / straightenThreshold),
+          )
+        : inputState.isPulling
+          ? 1
+          : 0;
+    const straightSpeed =
+      targetStraightFactor > this.#lineStraightFactor
+        ? (lineCfg.pullStraightenSpeed ?? 14)
+        : (lineCfg.pullSlackSpeed ?? 5);
+    this.#lineStraightFactor = this.#approachExp(
+      this.#lineStraightFactor,
+      targetStraightFactor,
+      straightSpeed,
+      dtSec,
+    );
+
+    let ratio = this.#lineLengthRatio;
+    let drop = this.#lineDropOffset;
 
     const mapBottomScreenY = this.#projector.virtualToScreen(
       0,
@@ -181,6 +246,7 @@ class FishingRenderService {
       this.#config.ui.rod,
       lineCfg,
       this.#clock.now,
+      this.#lineStraightFactor,
     );
     renderer.drawFloat(sPos, floatEntity, eq.float || {}, this.#projector, eq);
     if (state === "playing" && tMeter && fCond) {
@@ -191,5 +257,11 @@ class FishingRenderService {
       );
       renderer.drawFishCondition(fCond, this.#config.ui.indicators);
     }
+  }
+
+  #approachExp(current, target, speed, dtSec) {
+    if (dtSec <= 0) return current;
+    const alpha = 1 - Math.exp(-Math.max(0, speed) * dtSec);
+    return current + (target - current) * alpha;
   }
 }

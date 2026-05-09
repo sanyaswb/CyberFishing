@@ -472,6 +472,7 @@ class GameApplication {
       getFloatPosition: () => this.#float?.getPosition?.() || { x: 0, y: 0 },
       getBiteEnv: () => this.getEnvDataForBite(),
       getEquipment: () => this.#inventory?.getEquipped?.() || {},
+      getInputState: () => this.#lastInputState,
       getGameStateName: () => this.gameStateName,
       getLiveChances: (biteEnv, options) => {
         const bite = this.#bite;

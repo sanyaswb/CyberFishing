@@ -546,6 +546,7 @@ const CONFIG = {
     pointerThreshold: 10,
     dragRadius: 200,
     swipeResistanceY: 200,
+    longPressMs: 950,
 
     // Можна використовувати e.code (KeyW, Space, ShiftLeft) або e.key (Shift)
     keys: {
@@ -1134,6 +1135,10 @@ const CONFIG = {
     guaranteedBiteCooldownMs: [2000, 15000],
 
     lureRetrieveMultiplier: 50,
+    passiveRetrievePower: 1.0,
+    passiveRetrieveMultiplier: 35,
+    passiveRetrieveWaterFriction: 0.35,
+    passiveRetrieveDepthRiseSpeed: 0.15,
     idleSpinningBiteChance: 0.005,
 
     // --- ДОДАНО: Шанси втрати наживки під час клювання ---
@@ -1251,15 +1256,20 @@ const CONFIG = {
       visible: true,
       color: "rgba(255, 255, 255, 0.3)",
       width: 1,
-      straightenTension: 30, // Відсоток натягу (0-100), при якому ліска стає ідеально рівною
+      straightenTension: 1, // Відсоток натягу (0-100), при якому ліска стає ідеально рівною
       sagOffset: 60, // Наскільки сильно провисає ліска у пікселях
       shrinkPercent: 70, // На скільки відсотків зменшити довжину лінії
       shrinkEasePower: 4, // Чим вище, тим крутіше крива зменшення довжини (1 = лінійно, >1 = більш різко ближче до 100% натягу)
-      sinkDropPx: 120, // На скільки пікселів опускається ліска при повному зануренні поплавця (для візуального ефекту)
+      sinkDropPx: 110, // На скільки пікселів опускається ліска при повному зануренні поплавця (для візуального ефекту)
       snapDurationMs: 300,
       snapDepthMaxMultiplier: 2.0,
       distanceDelayMinMs: 1500,
       distanceDelayMaxMs: 5000,
+      passivePullBiteChanceMultiplier: 0.005,
+      pullExtendSpeed: 12,
+      pullReleaseSpeed: 4,
+      pullStraightenSpeed: 14,
+      pullSlackSpeed: 5,
     },
   },
 

@@ -547,7 +547,7 @@ class WaitingState extends GameState {
   }
 
   handleInput(input) {
-    if (input.isDoubleClick && this.deps.canPlayerCast()) {
+    if (input.isDoubleClick) {
       this.deps.commands.setState("scouting");
     }
 
@@ -599,7 +599,7 @@ class WaitingState extends GameState {
     const isSpinning = this.deps.rules.equipment.isSpinning(eq);
 
     const effectiveInput = this.#effectiveInput;
-    effectiveInput.isPulling = isSpinning ? input.isPulling : false;
+    effectiveInput.isPulling = input.isPulling;
     effectiveInput.pullDirection = input.pullDirection;
 
     let pullDirection = null;
@@ -626,7 +626,7 @@ class WaitingState extends GameState {
       (this.deps.config.locations.catchLineOffsetPx || 5) /
         this.deps.projector.getScale();
 
-    if (updatedPos.y >= shoreY) {
+    if (isSpinning && updatedPos.y >= shoreY) {
       this.deps.commands.setState("scouting");
       return;
     }
@@ -762,13 +762,33 @@ class BitingState extends GameState {
     const eq = this.deps.inventory.getEquipped();
     const isSpinning = this.deps.rules.equipment.isSpinning(eq);
 
-    if (input.isPulling && !isSpinning) {
+    if (input.isDoubleClick) {
+      this.deps.float.stopBite();
+      this.deps.commands.setState("scouting");
+      return;
+    }
+
+    if (!isSpinning && input.longPressPos && this.deps.canPlayerCast()) {
+      this.#recastPassiveTackle(input.longPressPos, eq);
+      return;
+    }
+
+    const isPassiveStrikeInput = input.isPulling || input.clickPos;
+    if (isPassiveStrikeInput && !isSpinning) {
       if (!this.deps.canPlayerCast()) return;
 
       const isGuaranteed = this.deps.float.isGuaranteedBite();
-      const success = this.deps.rng.chance(isGuaranteed ? 0.99 : 0.01);
+      if (!isGuaranteed) {
+        input.clickPos = null;
+        this.deps.float.stopBite();
+        this.deps.commands.setState("waiting");
+        return;
+      }
+
+      const success = this.deps.rng.chance(0.99);
 
       if (success) {
+        input.clickPos = null;
         this.deps.float.hook();
         if (
           this.deps.biteSystem &&
@@ -778,10 +798,41 @@ class BitingState extends GameState {
         }
         this.deps.commands.setState("playing", { fish: this.fish });
       } else {
+        input.clickPos = null;
         this.deps.float.stopBite();
-        this.deps.commands.setState("scouting");
+        this.deps.commands.setState("waiting");
       }
     }
+  }
+
+  #recastPassiveTackle(screenPos, eq) {
+    const vPos = this.deps.projector.screenToVirtual(screenPos.x, screenPos.y);
+    const cell = this.deps.world.checkWater(vPos.x, vPos.y);
+    const bounds = this.deps.world.getDynamicBounds();
+    let maxDist = this.deps.rules.equipment.getMaxCastDistance(eq);
+    if (maxDist !== Infinity) {
+      maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
+    }
+
+    let isInside = true;
+    if (maxDist !== Infinity) {
+      isInside = vPos.y >= bounds.bottom - maxDist;
+    }
+
+    this.deps.float.stopBite();
+    if (cell && isInside) {
+      this.deps.castManager.registerCast(this.deps.clock.now);
+      this.deps.commands.castLine(vPos.x, vPos.y, cell.depth);
+      this.deps.fishing.consumeFeederChumIfNeeded(eq);
+      return;
+    }
+
+    this.deps.commands.setInvalidCastMarker({
+      x: screenPos.x,
+      y: screenPos.y,
+      timer: 500,
+    });
+    this.deps.commands.setState("waiting");
   }
 
   update(dt, bounds, envData) {
@@ -839,7 +890,7 @@ class BitingState extends GameState {
       bounds.bottom -
       (this.deps.config.locations.catchLineOffsetPx || 5) /
         this.deps.projector.getScale();
-    if (updatedPos.y >= shoreY) {
+    if (isSpinning && updatedPos.y >= shoreY) {
       this.deps.float.stopBite();
       this.deps.commands.setState("scouting");
       return;

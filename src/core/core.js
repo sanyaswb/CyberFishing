@@ -76,6 +76,7 @@ class InputManager {
   #keys = {};
   #isDoubleClick = false;
   #longPressPos = null;
+  #hasLongPressed = false;
   #lastClickTime = 0;
   #longPressTimeout = null;
   #eventCleanups = [];
@@ -146,14 +147,16 @@ class InputManager {
       this.#lastPointerY = e.clientY;
       this.#swipeDeltaY = 0;
       this.#hasSwipedThisTouch = false;
+      this.#hasLongPressed = false;
       this.#updateDirection(e);
 
       if (this.#longPressTimeout) clearTimeout(this.#longPressTimeout);
       this.#longPressTimeout = setTimeout(() => {
         if (!this.#isDragging) {
           this.#longPressPos = { x: e.clientX, y: e.clientY };
+          this.#hasLongPressed = true;
         }
-      }, 500);
+      }, CONFIG.input?.longPressMs ?? 650);
     });
 
     this.#addEventListener(this.#canvas, "pointermove", (e) => {
@@ -197,7 +200,7 @@ class InputManager {
           const now = Date.now();
 
           // ВАЖЛИВО: Реєструємо клік ТІЛЬКИ якщо гравець не рухав пальцем (не свайпав)
-          if (!this.#isDragging) {
+          if (!this.#isDragging && !this.#hasLongPressed) {
             if (now - this.#lastClickTime < 300) {
               this.#isDoubleClick = true;
             } else {

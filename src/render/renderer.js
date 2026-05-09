@@ -594,6 +594,7 @@
     uiRodConfig,
     uiLineConfig,
     nowMs = 0,
+    lineStraightFactor = null,
   ) {
     const rodWidth = 3;
     const rodHeight = 200;
@@ -635,8 +636,11 @@
     const straightenThreshold = uiLineConfig?.straightenTension || 50;
     const sagOffset = uiLineConfig?.sagOffset || 60;
 
-    let straightFactor = 0;
-    if (gameState === "playing") {
+    let straightFactor =
+      lineStraightFactor === null || lineStraightFactor === undefined
+        ? 0
+        : Math.min(1, Math.max(0, lineStraightFactor));
+    if (lineStraightFactor === null && gameState === "playing") {
       straightFactor = Math.min(1, Math.max(0, tension / straightenThreshold));
     }
 

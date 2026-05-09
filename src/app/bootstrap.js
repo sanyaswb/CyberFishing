@@ -68,7 +68,7 @@ class GameCompositionRoot {
         rng,
         now: () => clock.realNow,
       }),
-      bite: new BiteSystem(this.#config.spawns, this.#config.physics, rng),
+      bite: new BiteSystem(this.#config.spawns, this.#config, rng),
       inventory,
     };
     systems.inventoryUI = new InventoryUI(systems.inventory);

@@ -1,6 +1,7 @@
 class DebugService {
   #config;
   #currentBaits = [];
+  #currentBaitTypes = [];
   constructor(config) {
     this.#config = config;
   }
@@ -16,11 +17,15 @@ class DebugService {
     const pos = context.getFloatPosition();
     const ed = context.getBiteEnv();
     const eq = context.getEquipment();
+    const input = context.getInputState?.() || {};
     const currentBaits = this.#currentBaits;
+    const currentBaitTypes = this.#currentBaitTypes;
     currentBaits.length = 0;
+    currentBaitTypes.length = 0;
     const equippedBaits = eq?.baits || [];
     for (let i = 0; i < equippedBaits.length; i++) {
       if (equippedBaits[i]?.id) currentBaits.push(equippedBaits[i].id);
+      if (equippedBaits[i]?.type) currentBaitTypes.push(equippedBaits[i].type);
     }
     const currentHookSize = eq?.hooks?.[0]?.level || eq?.baits?.[0]?.level || 1;
     const detail = {
@@ -37,6 +42,8 @@ class DebugService {
       liveChances: context.getLiveChances(ed, {
         hookSize: currentHookSize,
         baits: currentBaits,
+        baitTypes: currentBaitTypes,
+        isPulling: input.isPulling,
       }),
       chumZones: context.getChumZones(),
     };
@@ -64,6 +71,8 @@ class DebugService {
       detail.liveChances = context.getLiveChances(boatEd, {
         hookSize: currentHookSize,
         baits: currentBaits,
+        baitTypes: currentBaitTypes,
+        isPulling: false,
       });
     }
 

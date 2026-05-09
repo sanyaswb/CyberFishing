@@ -3,19 +3,26 @@ class BiteSystem {
   #tickRate;
   #timer;
   #overDepthPenaltyMult;
+  #passivePullBiteChanceMultiplier;
+  #lineConfig;
   #guaranteedBiteCooldownRange;
   #guaranteedBiteCooldownRemaining = 0;
   #possibleBitesBuffer;
   #possibleBiteChancesBuffer;
   #rng;
 
-  constructor(biteConfig, floatConfig, rng = null) {
+  constructor(biteConfig, runtimeConfig, rng = null) {
+    const physicsConfig = runtimeConfig?.physics || runtimeConfig || {};
+    const lineConfig = runtimeConfig?.ui?.line || runtimeConfig?.line || {};
     this.#fishDatabase = biteConfig.fishes;
     this.#tickRate = biteConfig.tickRateMs;
     this.#timer = 0;
-    this.#overDepthPenaltyMult = floatConfig?.overDepthPenaltyMult || 0.5;
+    this.#overDepthPenaltyMult = physicsConfig?.overDepthPenaltyMult || 0.5;
+    this.#lineConfig = lineConfig;
+    this.#passivePullBiteChanceMultiplier =
+      lineConfig?.passivePullBiteChanceMultiplier ?? 1.0;
     this.#guaranteedBiteCooldownRange =
-      floatConfig?.guaranteedBiteCooldownMs || [2000, 15000];
+      physicsConfig?.guaranteedBiteCooldownMs || [2000, 15000];
     this.#possibleBitesBuffer = [];
     this.#possibleBiteChancesBuffer = [];
     this.#rng = rng || { next: () => Math.random() };
@@ -48,6 +55,17 @@ class BiteSystem {
       maxDepthMultiplier,
       this.#getDepthRatio(hookDepth, depthConfig),
     );
+  }
+
+  #hasActiveLureType(baitTypes) {
+    const types = Array.isArray(baitTypes) ? baitTypes : [];
+    for (let i = 0; i < types.length; i++) {
+      const type = types[i];
+      if (type === "spinner" || type === "wobbler" || type === "jig") {
+        return true;
+      }
+    }
+    return false;
   }
 
   #resolveFishLevel(genWeight, weightRatio, weightConfig) {
@@ -176,6 +194,15 @@ class BiteSystem {
       chance *= this.#overDepthPenaltyMult;
     }
 
+    if (
+      playerGear.isPulling &&
+      !this.#hasActiveLureType(playerGear.baitTypes)
+    ) {
+      chance *=
+        this.#lineConfig?.passivePullBiteChanceMultiplier ??
+        this.#passivePullBiteChanceMultiplier;
+    }
+
     chance *= this.#getDepthChanceMultiplier(hookDepth, dc);
 
     return chance;
@@ -216,14 +243,7 @@ class BiteSystem {
     // --- ВИПРАВЛЕНО: Логіка вибору профілю клювання ---
     // Беремо типи прямо з переданих даних гравця
     const baitTypes = playerGear.baitTypes || ["float"];
-    let isActiveLure = false;
-    for (let i = 0; i < baitTypes.length; i++) {
-      const type = baitTypes[i];
-      if (type === "spinner" || type === "wobbler" || type === "jig") {
-        isActiveLure = true;
-        break;
-      }
-    }
+    const isActiveLure = this.#hasActiveLureType(baitTypes);
 
     let chosenBiteSequence = null;
     if (fish.biteMechanics) {
