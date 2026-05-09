@@ -719,6 +719,8 @@ class BitingState extends GameState {
   #ringQueue = [];
   #ringHead = 0;
   #stepTimeElapsed = 0;
+  #normalRingAccumulator = 0;
+  #guaranteedRingAccumulator = 0;
   #pullDirection = new Vector2(0, 0);
 
   enter(data) {
@@ -730,6 +732,8 @@ class BitingState extends GameState {
     this.#ringQueue.length = 0;
     this.#ringHead = 0;
     this.#stepTimeElapsed = 0;
+    this.#normalRingAccumulator = 0;
+    this.#guaranteedRingAccumulator = 0;
 
     const eq = this.deps.inventory.getEquipped();
     if (
@@ -751,6 +755,7 @@ class BitingState extends GameState {
   exit() {
     this.#ringQueue.length = 0;
     this.#ringHead = 0;
+    this.#stepTimeElapsed = 0;
   }
 
   handleInput(input) {
@@ -878,24 +883,91 @@ class BitingState extends GameState {
     const cfg = this.deps.config.feederConfig || {
       volumeNormal: 0.4,
       volumeGuaranteed: 1.0,
+      normalRings: [1, 1],
       guaranteedRings: [2, 3],
     };
 
     if (!stepInfo.isGuaranteed) {
-      this.#ringQueue.push({ startAt: 0, volume: cfg.volumeNormal });
-    } else {
-      const minRings = cfg.guaranteedRings[0];
-      const maxRings = cfg.guaranteedRings[1];
-      const ringCount = this.deps.rng.int(minRings, maxRings);
-      const interval = stepInfo.duration / ringCount;
+      const ringCount = this.#resolveRingCount(
+        cfg.normalRings,
+        [1, 1],
+        "normal",
+      );
+      this.#queueRings(ringCount, stepInfo.duration, cfg.volumeNormal);
+      return;
+    }
 
-      for (let i = 0; i < ringCount; i++) {
-        this.#ringQueue.push({
-          startAt: i * interval,
-          volume: cfg.volumeGuaranteed,
-        });
+    const ringCount = this.#resolveRingCount(
+      cfg.guaranteedRings,
+      [2, 3],
+      "guaranteed",
+    );
+    this.#queueRings(ringCount, stepInfo.duration, cfg.volumeGuaranteed);
+  }
+
+  #queueRings(ringCount, duration, volume) {
+    if (ringCount <= 0) return;
+
+    const interval = duration / ringCount;
+    for (let i = 0; i < ringCount; i++) {
+      this.#ringQueue.push({
+        startAt: i * interval,
+        volume,
+      });
+    }
+  }
+
+  #resolveRingCount(value, fallback, mode) {
+    const range = this.#normalizeRingRange(value, fallback);
+    const min = range[0];
+    const max = range[1];
+
+    if (min >= 1 && max >= 1 && Number.isInteger(min) && Number.isInteger(max))
+      return this.deps.rng.int(min, max);
+
+    const rate = min === max ? min : this.deps.rng.range(min, max);
+    if (rate <= 0) return 0;
+
+    const whole = Math.floor(rate);
+    const fraction = rate - whole;
+    let count = whole;
+
+    if (fraction > 0) {
+      if (mode === "guaranteed") {
+        this.#guaranteedRingAccumulator += fraction;
+        const extra = Math.floor(this.#guaranteedRingAccumulator);
+        this.#guaranteedRingAccumulator -= extra;
+        count += extra;
+      } else {
+        this.#normalRingAccumulator += fraction;
+        const extra = Math.floor(this.#normalRingAccumulator);
+        this.#normalRingAccumulator -= extra;
+        count += extra;
       }
     }
+
+    return count;
+  }
+
+  #normalizeRingRange(value, fallback) {
+    const source = Array.isArray(value) ? value : [value, value];
+    const fallbackSource = Array.isArray(fallback)
+      ? fallback
+      : [fallback, fallback];
+    let min = Number(source[0]);
+    let max = Number(source[1] ?? source[0]);
+
+    if (!Number.isFinite(min)) min = Number(fallbackSource[0]) || 0;
+    if (!Number.isFinite(max)) {
+      max = Number(fallbackSource[1] ?? fallbackSource[0]) || min;
+    }
+    if (max < min) {
+      const tmp = min;
+      min = max;
+      max = tmp;
+    }
+
+    return [Math.max(0, min), Math.max(0, max)];
   }
 
   #processRingQueue(dt) {

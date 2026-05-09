@@ -708,13 +708,13 @@ const CONFIG = {
         },
 
         depthConfig: {
-          minDepth: 1.0,
-          maxDepth: 10.0,
+          minDepth: 0.5,
+          maxDepth: 11.0,
           minWeightAtMinDepth: 0.5,
           maxWeightAtMinDepth: 0.8,
-          minWeightAtMaxDepth: 1.123,
-          maxWeightAtMaxDepth: 4.678,
-          chanceMultAtMaxDepth: 0.4,
+          minWeightAtMaxDepth: 0.751,
+          maxWeightAtMaxDepth: 5.0,
+          chanceMultAtMaxDepth: 0.2,
         },
 
         weightConfig: {
@@ -722,6 +722,14 @@ const CONFIG = {
           maxLevel: 6,
           baseResistance: 0.8,
           maxResistance: 2.5,
+          levelWeightRanges: [
+            { level: 1, min: 0.05, max: 0.25 },
+            { level: 2, min: 0.251, max: 0.75 },
+            { level: 3, min: 0.751, max: 1.5 },
+            { level: 4, min: 1.501, max: 2.5 },
+            { level: 5, min: 2.501, max: 3.5 },
+            { level: 6, min: 3.501, max: 5.0 },
+          ],
         },
 
         baitMultipliers: {
@@ -729,15 +737,15 @@ const CONFIG = {
           bread: 1.0,
         },
 
-        timeMultipliers: { morning: 1.5, day: 1.0, evening: 3.2, night: 0.5 },
+        timeMultipliers: { morning: 1.0, day: 1.0, evening: 1.1, night: 0.5 },
         dayMultipliers: {
           1: 1.0,
           2: 1.0,
           3: 1.0,
           4: 1.0,
           5: 1.0,
-          6: 5.0,
-          0: 5.0,
+          6: 1.0,
+          0: 1.0,
         },
 
         physics: {
@@ -752,6 +760,7 @@ const CONFIG = {
             chance: 0.5,
             checkIntervalMs: 1000,
           },
+
           behaviors: {
             idle: {
               pull: 0.5,
@@ -832,37 +841,37 @@ const CONFIG = {
           },
 
           // --- Клювання на Спінінгові приманки (Воблер, Блешня, Джиг) ---
-          active: {
-            chanceGuaranteed: 0.6,
-            chanceNormal: 0.4,
-            maxSequences: [1, 2],
-            sequenceIntervalMs: [200, 400],
-            intervalMs: [200, 400],
-            animDurationMs: [100, 200],
-            movementChance: 1.0,
-            movementDurationMs: [100, 250],
-            movementSpeedPx: [40, 80],
-            guaranteedIters: [1, 1],
-            normalIters: [1, 2],
-            animations: {
-              slide: {}, // Тільки різкі ривки
-            },
-            guaranteedModifiers: {
-              movementSpeedMult: [1.5, 2.5],
-              movementDurationMult: [1.0, 1.5],
-            },
-          },
+          // active: {
+          //   chanceGuaranteed: 0.6,
+          //   chanceNormal: 0.4,
+          //   maxSequences: [1, 2],
+          //   sequenceIntervalMs: [200, 400],
+          //   intervalMs: [200, 400],
+          //   animDurationMs: [100, 200],
+          //   movementChance: 1.0,
+          //   movementDurationMs: [100, 250],
+          //   movementSpeedPx: [40, 80],
+          //   guaranteedIters: [1, 1],
+          //   normalIters: [1, 2],
+          //   animations: {
+          //     slide: {}, // Тільки різкі ривки
+          //   },
+          //   guaranteedModifiers: {
+          //     movementSpeedMult: [1.5, 2.5],
+          //     movementDurationMult: [1.0, 1.5],
+          //   },
+          // },
         },
       },
       {
         id: "perch_radioactive",
         name: "Окунь-радіоактивний",
-        baseChance: 0.05,
-        maxHookSize: 9,
+        baseChance: 0.02,
+        maxHookSize: 4,
 
         weatherMultipliers: {
-          rain: 1.1,
-          fog: 1.0,
+          rain: 2.0,
+          fog: 2.5,
         },
 
         depthConfig: {
@@ -871,7 +880,7 @@ const CONFIG = {
           minWeightAtMinDepth: 0.125,
           maxWeightAtMinDepth: 0.8,
           minWeightAtMaxDepth: 1.123,
-          maxWeightAtMaxDepth: 1.678,
+          maxWeightAtMaxDepth: 2.678,
           chanceMultAtMaxDepth: 0.4,
         },
 
@@ -889,7 +898,8 @@ const CONFIG = {
           test_wobbler_suspend: 1.0,
           test_jig: 1.0,
         },
-        timeMultipliers: { morning: 1.5, day: 0.8, evening: 1.2, night: 0.2 },
+
+        timeMultipliers: { morning: 1.5, day: 0.8, evening: 1.2, night: 0.3 },
         dayMultipliers: {
           1: 1.0,
           2: 1.0,
@@ -1061,6 +1071,7 @@ const CONFIG = {
   feederConfig: {
     volumeNormal: 0.1,
     volumeGuaranteed: 0.3,
+    normalRings: [0.5, 0.5],
     guaranteedRings: [2, 3],
   },
 

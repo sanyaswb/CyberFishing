@@ -50,6 +50,50 @@ class BiteSystem {
     );
   }
 
+  #resolveFishLevel(genWeight, weightRatio, weightConfig) {
+    const maxLevel = Math.max(1, Math.round(weightConfig.maxLevel || 1));
+    let level = Math.max(1, Math.round(weightRatio * maxLevel));
+    const ranges = weightConfig.levelWeightRanges;
+
+    if (!Array.isArray(ranges) || ranges.length === 0) return level;
+
+    let firstRange = null;
+    let lastRange = null;
+
+    for (let i = 0; i < ranges.length; i++) {
+      const range = ranges[i];
+      if (!range) continue;
+
+      const rangeLevel = Number(range.level);
+      const rangeMin = Number(range.min);
+      const rangeMax = Number(range.max);
+
+      if (
+        !Number.isFinite(rangeLevel) ||
+        !Number.isFinite(rangeMin) ||
+        !Number.isFinite(rangeMax)
+      ) {
+        continue;
+      }
+
+      const normalized = {
+        level: Math.max(1, Math.round(rangeLevel)),
+        min: Math.min(rangeMin, rangeMax),
+        max: Math.max(rangeMin, rangeMax),
+      };
+
+      if (!firstRange) firstRange = normalized;
+      lastRange = normalized;
+
+      if (genWeight >= normalized.min && genWeight <= normalized.max) {
+        return normalized.level;
+      }
+    }
+
+    if (!firstRange) return level;
+    return genWeight < firstRange.min ? firstRange.level : lastRange.level;
+  }
+
   #next() {
     return this.#rng.next();
   }
@@ -188,7 +232,7 @@ class BiteSystem {
         : fish.biteMechanics.passive;
     }
 
-    const level = Math.max(1, Math.round(weightRatio * wc.maxLevel));
+    const level = this.#resolveFishLevel(genWeight, weightRatio, wc);
     const maxLevel = wc.maxLevel || level;
     const uniqueLevel = fish.visual?.uniqueLevel;
     const isUnique =
