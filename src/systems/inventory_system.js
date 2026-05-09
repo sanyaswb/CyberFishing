@@ -40,7 +40,10 @@ class Inventory {
 
   constructor(initialItems = []) {
     this.#items = new Map();
-    initialItems.forEach((item) => this.#items.set(item.instanceId, item));
+    for (let i = 0; i < initialItems.length; i++) {
+      const item = initialItems[i];
+      this.#items.set(item.instanceId, item);
+    }
   }
 
   addItem(itemData) {
@@ -76,6 +79,40 @@ class Inventory {
       if (item.itemId === itemId) return true;
     }
     return false;
+  }
+}
+
+class InventoryEventBridge {
+  #target;
+  #listeners = new Map();
+
+  constructor(target = typeof document !== "undefined" ? document : null) {
+    this.#target = target;
+  }
+
+  on(type, handler) {
+    let handlers = this.#listeners.get(type);
+    if (!handlers) {
+      handlers = new Set();
+      this.#listeners.set(type, handlers);
+    }
+    handlers.add(handler);
+    return () => handlers.delete(handler);
+  }
+
+  emit(type, detail) {
+    const handlers = this.#listeners.get(type);
+    if (handlers) {
+      for (const handler of handlers) {
+        handler(detail);
+      }
+    }
+
+    this.#target?.dispatchEvent(new CustomEvent(type, { detail }));
+  }
+
+  clear() {
+    this.#listeners.clear();
   }
 }
 
@@ -228,19 +265,25 @@ class EquipmentValidator {
       if (!part) continue;
       const partCaps =
         part.capabilities || part.engineStats?.capabilities || [];
-      partCaps.forEach((c) => caps.add(c));
+      for (let i = 0; i < partCaps.length; i++) {
+        caps.add(partCaps[i]);
+      }
     }
     return caps;
   }
 }
 
 class InventoryManager {
+  static #fallbackId = 0;
+
   #db;
   #inventory;
   #equipment;
+  #events;
   #isLocked = false;
+  #equippedCache = null;
 
-  constructor(itemDB, playerConfig) {
+  constructor(itemDB, playerConfig, events = new InventoryEventBridge()) {
     const cachedInventory =
       CacheManager.get("player_inventory") || playerConfig.inventory || [];
     const cachedEquipment =
@@ -249,6 +292,7 @@ class InventoryManager {
     this.#db = new ItemDatabase(itemDB);
     this.#inventory = new Inventory(cachedInventory);
     this.#equipment = new InventoryEquipment(SLOT_CONFIG, cachedEquipment);
+    this.#events = events;
 
     this.#setupDebugTools();
   }
@@ -257,16 +301,35 @@ class InventoryManager {
     TestBuildProvider.injectDebugBuild(this.#inventory);
   }
 
+  #makeId(prefix) {
+    const cryptoObj = globalThis.crypto;
+    if (cryptoObj?.randomUUID) {
+      return `${prefix}_${cryptoObj.randomUUID()}`;
+    }
+
+    InventoryManager.#fallbackId++;
+    return `${prefix}_${Date.now()}_${InventoryManager.#fallbackId}`;
+  }
+
   saveBuild(buildName) {
-    const buildId = "build_" + Date.now();
+    const buildId = this.#makeId("build");
     const raw = this.#equipment.getRawState();
 
     const toUnequip = [];
     if (raw.feederChumId) toUnequip.push("feederChum");
-    if (raw.deliveryChums)
-      raw.deliveryChums.forEach((_, i) => toUnequip.push(`deliveryChums_${i}`));
-    if (raw.baits) raw.baits.forEach((_, i) => toUnequip.push(`baits_${i}`));
-    toUnequip.forEach((slot) => this.unequipItem(slot));
+    if (raw.deliveryChums) {
+      for (let i = 0; i < raw.deliveryChums.length; i++) {
+        toUnequip.push(`deliveryChums_${i}`);
+      }
+    }
+    if (raw.baits) {
+      for (let i = 0; i < raw.baits.length; i++) {
+        toUnequip.push(`baits_${i}`);
+      }
+    }
+    for (let i = 0; i < toUnequip.length; i++) {
+      this.unequipItem(toUnequip[i]);
+    }
 
     const newRaw = this.#equipment.getRawState();
 
@@ -281,7 +344,11 @@ class InventoryManager {
     countId(newRaw.sinkerId);
     countId(newRaw.netId);
     countId(newRaw.deliveryId);
-    if (newRaw.hooks) newRaw.hooks.forEach(countId);
+    if (newRaw.hooks) {
+      for (let i = 0; i < newRaw.hooks.length; i++) {
+        countId(newRaw.hooks[i]);
+      }
+    }
 
     for (const id of Object.keys(eqCounts)) {
       const item = this.#inventory.getInstance(id);
@@ -307,11 +374,7 @@ class InventoryManager {
           item.quantity = equippedQty;
           item.buildId = buildId;
 
-          const leftoverId =
-            "uuid_leftover_" +
-            Date.now() +
-            "_" +
-            Math.floor(Math.random() * 10000);
+          const leftoverId = this.#makeId("uuid_leftover");
           const leftoverItem = {
             ...item,
             instanceId: leftoverId,
@@ -343,11 +406,12 @@ class InventoryManager {
 
   disassembleBuild(buildId) {
     const items = this.#inventory.getAll();
-    items.forEach((item) => {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
       if (item.buildId === buildId) {
         delete item.buildId;
       }
-    });
+    }
     this.removeItem(buildId);
     this.#saveAndNotify();
   }
@@ -362,19 +426,32 @@ class InventoryManager {
       "delivery",
       "feederChum",
     ];
-    slotsToClear.forEach((s) => this.unequipItem(s));
+    for (let i = 0; i < slotsToClear.length; i++) {
+      this.unequipItem(slotsToClear[i]);
+    }
 
     const eq = this.getEquipped();
-    if (eq.hooks) eq.hooks.forEach((_, i) => this.unequipItem(`hooks_${i}`));
-    if (eq.baits) eq.baits.forEach((_, i) => this.unequipItem(`baits_${i}`));
-    if (eq.deliveryChums)
-      eq.deliveryChums.forEach((_, i) =>
-        this.unequipItem(`deliveryChums_${i}`),
-      );
+    if (eq.hooks) {
+      for (let i = 0; i < eq.hooks.length; i++) {
+        this.unequipItem(`hooks_${i}`);
+      }
+    }
+    if (eq.baits) {
+      for (let i = 0; i < eq.baits.length; i++) {
+        this.unequipItem(`baits_${i}`);
+      }
+    }
+    if (eq.deliveryChums) {
+      for (let i = 0; i < eq.deliveryChums.length; i++) {
+        this.unequipItem(`deliveryChums_${i}`);
+      }
+    }
 
-    const items = this.#inventory.getAll().filter((i) => i.buildId === buildId);
+    const items = this.#inventory.getAll();
 
-    items.forEach((item) => {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.buildId !== buildId) continue;
       const itemData = this._hydrateInstance(item.instanceId);
 
       // Якщо в ящику лежить 2 гачки одного типу, екіпіруємо їх двічі у вільні слоти!
@@ -383,7 +460,7 @@ class InventoryManager {
         const slotPath = this.#findTargetSlotPath(itemData);
         if (slotPath) this.#equipment.equip(slotPath, item.instanceId);
       }
-    });
+    }
 
     this.#saveAndNotify();
   }
@@ -477,6 +554,7 @@ class InventoryManager {
   consumeItem(instanceId, amount = 1) {
     const success = this.#inventory.consume(instanceId, amount);
     if (success) {
+      this.#equippedCache = null;
       const slot = this.#equipment.findSlotByInstanceId(instanceId);
       if (slot && !this.#inventory.getInstance(instanceId)) {
         this.#equipment.unequip(slot);
@@ -486,8 +564,25 @@ class InventoryManager {
     return success;
   }
 
+  consumeEquipped(slotPath, amount = 1, unequipAfterConsume = true) {
+    const item = this.#getEquippedItemAtSlot(slotPath);
+    if (!item?.instanceId) return false;
+
+    const success = this.#inventory.consume(item.instanceId, amount);
+    if (!success) return false;
+
+    this.#equippedCache = null;
+    if (unequipAfterConsume || !this.#inventory.getInstance(item.instanceId)) {
+      this.#equipment.unequip(slotPath);
+    }
+
+    this.#saveAndNotify();
+    return true;
+  }
+
   removeItem(instanceId) {
     if (this.#inventory.remove(instanceId)) {
+      this.#equippedCache = null;
       const slot = this.#equipment.findSlotByInstanceId(instanceId);
       if (slot) this.#equipment.unequip(slot);
       this.#saveAndNotify();
@@ -503,15 +598,29 @@ class InventoryManager {
     if (slotPath === "rod") {
       const currentRod = this.getEquipped().rod;
       if (currentRod && currentRod.type !== itemData.type) {
-        ["reel", "line", "float", "sinker", "feederChum"].forEach((s) =>
-          this.#equipment.unequip(s),
-        );
+        const slotsToUnequip = [
+          "reel",
+          "line",
+          "float",
+          "sinker",
+          "feederChum",
+        ];
+        for (let i = 0; i < slotsToUnequip.length; i++) {
+          this.#equipment.unequip(slotsToUnequip[i]);
+        }
 
+        this.#equippedCache = null;
         const eq = this.getEquipped();
-        if (eq.hooks)
-          eq.hooks.forEach((_, i) => this.#equipment.unequip(`hooks_${i}`));
-        if (eq.baits)
-          eq.baits.forEach((_, i) => this.#equipment.unequip(`baits_${i}`));
+        if (eq.hooks) {
+          for (let i = 0; i < eq.hooks.length; i++) {
+            this.#equipment.unequip(`hooks_${i}`);
+          }
+        }
+        if (eq.baits) {
+          for (let i = 0; i < eq.baits.length; i++) {
+            this.#equipment.unequip(`baits_${i}`);
+          }
+        }
       }
     }
 
@@ -520,25 +629,36 @@ class InventoryManager {
     }
 
     const success = this.#equipment.equip(slotPath, instanceId);
-    if (success) this.#saveAndNotify();
+    if (success) {
+      this.#equippedCache = null;
+      this.#saveAndNotify();
+    }
     return success;
   }
 
   unequipItem(slotPath) {
     this.#equipment.unequip(slotPath);
+    this.#equippedCache = null;
 
     // КАСКАДНЕ ЗНЯТТЯ (Щоб не залишалося прихованих "привидів" у слотах)
     if (slotPath === "rod") {
       // Знімаємо все, що висіло на вудці
-      ["reel", "line", "float", "sinker", "feederChum"].forEach((s) =>
-        this.#equipment.unequip(s),
-      );
+      const slotsToUnequip = ["reel", "line", "float", "sinker", "feederChum"];
+      for (let i = 0; i < slotsToUnequip.length; i++) {
+        this.#equipment.unequip(slotsToUnequip[i]);
+      }
 
       const eq = this.getEquipped();
-      if (eq.hooks)
-        eq.hooks.forEach((_, i) => this.#equipment.unequip(`hooks_${i}`));
-      if (eq.baits)
-        eq.baits.forEach((_, i) => this.#equipment.unequip(`baits_${i}`));
+      if (eq.hooks) {
+        for (let i = 0; i < eq.hooks.length; i++) {
+          this.#equipment.unequip(`hooks_${i}`);
+        }
+      }
+      if (eq.baits) {
+        for (let i = 0; i < eq.baits.length; i++) {
+          this.#equipment.unequip(`baits_${i}`);
+        }
+      }
     } else if (slotPath === "sinker") {
       // Знімаємо прикормку
       this.#equipment.unequip("feederChum");
@@ -547,12 +667,12 @@ class InventoryManager {
       const eq = this.getEquipped();
       const baseRodHooks = eq.rod?.maxHooks || 1;
       if (eq.hooks) {
-        eq.hooks.forEach((_, i) => {
+        for (let i = 0; i < eq.hooks.length; i++) {
           if (i >= baseRodHooks) {
             this.#equipment.unequip(`hooks_${i}`);
             this.#equipment.unequip(`baits_${i}`);
           }
-        });
+        }
       }
     } else if (slotPath.startsWith("hooks_")) {
       // Знімаємо наживку саме з ЦЬОГО гачка
@@ -575,26 +695,80 @@ class InventoryManager {
     return EquipmentValidator.validate(itemData, this.getEquipped());
   }
 
+  #hydrateSlotArray(rawItems) {
+    const source = rawItems || [];
+    const hydrated = new Array(source.length);
+    for (let i = 0; i < source.length; i++) {
+      hydrated[i] = this._hydrateInstance(source[i]);
+    }
+    return hydrated;
+  }
+
   getEquipped() {
+    if (this.#equippedCache) return this.#equippedCache;
+
     const raw = this.#equipment.getRawState();
-    return {
+    this.#equippedCache = {
       rod: this._hydrateInstance(raw.rodId),
       reel: this._hydrateInstance(raw.reelId),
       float: this._hydrateInstance(raw.floatId),
       sinker: this._hydrateInstance(raw.sinkerId),
-      hooks: (raw.hooks || []).map((id) => this._hydrateInstance(id)),
+      hooks: this.#hydrateSlotArray(raw.hooks),
       feederChum: this._hydrateInstance(raw.feederChumId),
       net: this._hydrateInstance(raw.netId),
       delivery: this._hydrateInstance(raw.deliveryId),
-      deliveryChums: (raw.deliveryChums || []).map((id) =>
-        this._hydrateInstance(id),
-      ),
-      baits: (raw.baits || []).map((id) => this._hydrateInstance(id)),
+      deliveryChums: this.#hydrateSlotArray(raw.deliveryChums),
+      baits: this.#hydrateSlotArray(raw.baits),
     };
+    return this.#equippedCache;
   }
 
   getInventoryItems() {
     return this.#inventory.getAll();
+  }
+
+  hydrateInstance(instanceId) {
+    return this._hydrateInstance(instanceId);
+  }
+
+  findFirstItemByType(type) {
+    const items = this.#inventory.getAll();
+    for (let i = 0; i < items.length; i++) {
+      const hydrated = this._hydrateInstance(items[i].instanceId);
+      if (hydrated && hydrated.type === type) return hydrated;
+    }
+    return null;
+  }
+
+  findItemsByType(type, out = []) {
+    out.length = 0;
+    const items = this.#inventory.getAll();
+    for (let i = 0; i < items.length; i++) {
+      const hydrated = this._hydrateInstance(items[i].instanceId);
+      if (hydrated && hydrated.type === type) out.push(hydrated);
+    }
+    return out;
+  }
+
+  onInventoryChanged(handler) {
+    return this.#events.on("inventory-changed", handler);
+  }
+
+  dispose() {
+    this.#events.clear();
+  }
+
+  #getEquippedItemAtSlot(slotPath) {
+    const parts = slotPath.split("_");
+    const baseSlot = parts[0];
+    const index = parts.length > 1 ? parseInt(parts[1], 10) : null;
+    const eq = this.getEquipped();
+    const slotValue = eq[baseSlot];
+
+    if (Array.isArray(slotValue)) {
+      return index === null ? null : slotValue[index];
+    }
+    return slotValue || null;
   }
 
   _hydrateInstance(instanceId) {
@@ -615,16 +789,20 @@ class InventoryManager {
     if (hydrated.type === "build_box") {
       hydrated.name = invItem.buildName || "Без назви (Старий ящик)";
 
-      const contents = this.#inventory
-        .getAll()
-        .filter((i) => i.buildId === instanceId);
-      hydrated.quantity = contents.reduce(
-        (sum, c) => sum + (c.quantity || 1),
-        0,
-      );
+      const contents = [];
+      const inventoryItems = this.#inventory.getAll();
+      let totalQuantity = 0;
+      for (let i = 0; i < inventoryItems.length; i++) {
+        const item = inventoryItems[i];
+        if (item.buildId !== instanceId) continue;
+        contents.push(item);
+        totalQuantity += item.quantity || 1;
+      }
+      hydrated.quantity = totalQuantity;
 
       const grouped = {};
-      contents.forEach((c) => {
+      for (let i = 0; i < contents.length; i++) {
+        const c = contents[i];
         const cBase = this.#db.getItemData(c.itemId);
         if (cBase) {
           let cat = "Інше";
@@ -646,7 +824,7 @@ class InventoryManager {
             cBase.name + (c.quantity > 1 ? ` (x${c.quantity})` : ""),
           );
         }
-      });
+      }
 
       for (const [catName, itemsArr] of Object.entries(grouped)) {
         hydrated[catName] = itemsArr.join(", ");
@@ -657,13 +835,10 @@ class InventoryManager {
   }
 
   #saveAndNotify() {
+    this.#equippedCache = null;
     CacheManager.set("player_inventory", this.#inventory.getAll());
     CacheManager.set("player_equipment", this.#equipment.getRawState());
 
-    document.dispatchEvent(
-      new CustomEvent("inventory-changed", {
-        detail: { equipment: this.getEquipped() },
-      }),
-    );
+    this.#events.emit("inventory-changed", { equipment: this.getEquipped() });
   }
 }

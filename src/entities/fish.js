@@ -12,14 +12,28 @@ class Fish {
 
   #originalBehaviors = null;
   #hasActiveDebuff = false;
+  #rng;
 
-  constructor(level, weight, resistance, fishConfig) {
+  constructor(level, weight, resistance, fishConfig, rng = null) {
     this.#level = level;
     this.#weight = weight;
     this.#resistance = resistance;
     this.#fishConfig = fishConfig;
+    this.#rng = rng || { next: () => Math.random() };
     this.#powerDebuff = 0;
-    this.#behavior = new FishBehavior(this.#fishConfig);
+    this.#behavior = new FishBehavior(this.#fishConfig, this.#rng);
+  }
+
+  #chance(probability) {
+    return typeof this.#rng.chance === "function"
+      ? this.#rng.chance(probability)
+      : this.#rng.next() < probability;
+  }
+
+  #int(min, max) {
+    return typeof this.#rng.int === "function"
+      ? this.#rng.int(min, max)
+      : Math.floor(min + this.#rng.next() * (max - min + 1));
   }
 
   getWeight() {
@@ -106,7 +120,7 @@ class Fish {
       "restWeight",
       "restMaxTime",
     ];
-    const debuffType = types[Math.floor(Math.random() * types.length)];
+    const debuffType = types[this.#int(0, types.length - 1)];
     this.#lastDebuffName = debuffType;
     console.log(`[DEBUFF] Фаза 2 виснажена! Дебаф: ${debuffType}`);
 
@@ -167,7 +181,7 @@ class Fish {
       const targetState = triggerCfg.targetState || "lastDash";
 
       if (currentBehavior.name === targetState) return;
-      if (Math.random() <= (triggerCfg.chance ?? 0.05)) this.triggerLastDash();
+      if (this.#chance(triggerCfg.chance ?? 0.05)) this.triggerLastDash();
     }
   }
 
@@ -196,9 +210,11 @@ class FishBehavior {
   #currentDirX;
   #targetDirX;
   #isLocked;
+  #rng;
 
-  constructor(fishConfig) {
+  constructor(fishConfig, rng = null) {
     this.#config = fishConfig;
+    this.#rng = rng || { next: () => Math.random() };
     this.#currentStateName = "swim";
     this.#stateTimer = 0;
     this.#dirTimer = 0;
@@ -212,13 +228,22 @@ class FishBehavior {
     this.#pickNextState();
   }
 
+  #range(min, max) {
+    return typeof this.#rng.range === "function"
+      ? this.#rng.range(min, max)
+      : min + this.#rng.next() * (max - min);
+  }
+
   #pickNextState() {
     if (this.#isLocked) return;
 
     const states = this.#config.behaviors;
     if (!states) return;
 
-    const validKeys = Object.keys(states).filter((k) => states[k].weight > 0);
+    const validKeys = [];
+    for (const key of Object.keys(states)) {
+      if (states[key].weight > 0) validKeys.push(key);
+    }
 
     if (validKeys.length === 0) return;
 
@@ -227,7 +252,7 @@ class FishBehavior {
       totalWeight += states[k].weight;
     }
 
-    let r = Math.random() * totalWeight;
+    let r = this.#range(0, totalWeight);
     let selectedKey = validKeys[0];
 
     for (let k of validKeys) {
@@ -242,8 +267,7 @@ class FishBehavior {
     const state = states[this.#currentStateName];
     this.#targetPull = state.pull;
     this.#targetMove = state.move;
-    this.#stateTimer =
-      state.minTime + Math.random() * (state.maxTime - state.minTime);
+    this.#stateTimer = this.#range(state.minTime, state.maxTime);
   }
 
   forceState(stateName, isLocked = false) {
@@ -257,8 +281,7 @@ class FishBehavior {
     this.#targetPull = state.pull;
     this.#targetMove = state.move;
     this.#isLocked = isLocked;
-    this.#stateTimer =
-      state.minTime + Math.random() * (state.maxTime - state.minTime);
+    this.#stateTimer = this.#range(state.minTime, state.maxTime);
     this.#dirTimer = 0;
   }
 
@@ -285,12 +308,12 @@ class FishBehavior {
 
     this.#dirTimer -= dt;
     if (this.#dirTimer <= 0) {
-      this.#targetDirX = Math.random() * 2 - 1;
+      this.#targetDirX = this.#range(-1, 1);
       const minMs =
         stateConfig.dirChangeMinMs ?? this.#config.dirChangeMinMs ?? 500;
       const maxMs =
         stateConfig.dirChangeMaxMs ?? this.#config.dirChangeMaxMs ?? 2000;
-      this.#dirTimer = minMs + Math.random() * (maxMs - minMs);
+      this.#dirTimer = this.#range(minMs, maxMs);
     }
 
     const agility = stateConfig.agility ?? this.#config.agility ?? 1.0;

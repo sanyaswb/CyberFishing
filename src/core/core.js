@@ -78,6 +78,8 @@ class InputManager {
   #longPressPos = null;
   #lastClickTime = 0;
   #longPressTimeout = null;
+  #eventCleanups = [];
+  #stateSnapshot;
 
   constructor(canvas, anchorX = null) {
     this.#canvas = canvas;
@@ -93,6 +95,18 @@ class InputManager {
     this.#panDeltaX = 0;
     this.#panDeltaY = 0;
     this.#clickPos = null;
+    this.#stateSnapshot = {
+      isPulling: false,
+      pullDirection: this.#pullDirection,
+      panDeltaX: 0,
+      panDeltaY: 0,
+      swipeDeltaY: 0,
+      toggleHold: false,
+      pumpAction: false,
+      clickPos: null,
+      isDoubleClick: false,
+      longPressPos: null,
+    };
 
     this.#bindEvents();
   }
@@ -108,11 +122,21 @@ class InputManager {
 
   #checkKeyHeld(actionArray) {
     if (!actionArray) return false;
-    return actionArray.some((key) => this.#keys[key] === true);
+    for (let i = 0; i < actionArray.length; i++) {
+      if (this.#keys[actionArray[i]] === true) return true;
+    }
+    return false;
+  }
+
+  #addEventListener(target, type, handler, options) {
+    target.addEventListener(type, handler, options);
+    this.#eventCleanups.push(() =>
+      target.removeEventListener(type, handler, options),
+    );
   }
 
   #bindEvents() {
-    this.#canvas.addEventListener("pointerdown", (e) => {
+    this.#addEventListener(this.#canvas, "pointerdown", (e) => {
       this.#isPointerDown = true;
       this.#isPulling = true;
       this.#isDragging = false;
@@ -132,7 +156,7 @@ class InputManager {
       }, 500);
     });
 
-    this.#canvas.addEventListener("pointermove", (e) => {
+    this.#addEventListener(this.#canvas, "pointermove", (e) => {
       if (!this.#isPointerDown) return;
 
       const dist = Math.hypot(
@@ -198,23 +222,25 @@ class InputManager {
         this.#checkKeyHeld(pullKeys) || this.#isPointerDown === true;
 
       if (!this.#isPulling) {
-        this.#pullDirection = new Vector2(0, 1);
+        this.#pullDirection.set(0, 1);
       }
       this.#isDragging = false;
       this.#swipeDeltaY = 0;
     };
 
-    window.addEventListener("pointerup", resetInput, { capture: true });
-    window.addEventListener("pointercancel", resetInput, { capture: true });
-    window.addEventListener("touchend", resetInput, { capture: true });
-    window.addEventListener("blur", () => {
+    this.#addEventListener(window, "pointerup", resetInput, { capture: true });
+    this.#addEventListener(window, "pointercancel", resetInput, {
+      capture: true,
+    });
+    this.#addEventListener(window, "touchend", resetInput, { capture: true });
+    this.#addEventListener(window, "blur", () => {
       this.#keys = {};
       this.#isPointerDown = false;
       resetInput();
     });
 
     // === КЛАВІАТУРА ===
-    window.addEventListener("keydown", (e) => {
+    this.#addEventListener(window, "keydown", (e) => {
       this.#keys[e.code] = true;
       this.#keys[e.key] = true;
 
@@ -237,7 +263,7 @@ class InputManager {
       }
     });
 
-    window.addEventListener("keyup", (e) => {
+    this.#addEventListener(window, "keyup", (e) => {
       this.#keys[e.code] = false;
       this.#keys[e.key] = false;
 
@@ -249,13 +275,15 @@ class InputManager {
         if (!this.#checkKeyHeld(keys.pull)) {
           this.#isPulling = this.#isPointerDown;
           if (!this.#isPulling) {
-            this.#pullDirection = new Vector2(0, 1);
+            this.#pullDirection.set(0, 1);
           }
         }
       }
     });
 
-    this.#canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+    this.#addEventListener(this.#canvas, "contextmenu", (e) =>
+      e.preventDefault(),
+    );
   }
 
   #updateDirection(e) {
@@ -267,7 +295,7 @@ class InputManager {
     if (this.#checkKeyHeld(keys.right)) keyX = 1;
 
     if (keyX !== 0) {
-      this.#pullDirection = new Vector2(keyX, 1).normalize();
+      this.#pullDirection.set(keyX, 1).normalize();
     } else if (e && e.clientX !== undefined) {
       if (this.#isDragging) {
         const dx = e.clientX - this.#startX;
@@ -276,10 +304,10 @@ class InputManager {
 
         const length = Math.hypot(dx, dy);
         if (length > 0) {
-          this.#pullDirection = new Vector2(dx / length, dy / length);
+          this.#pullDirection.set(dx / length, dy / length);
         }
       } else {
-        this.#pullDirection = new Vector2(0, 1);
+        this.#pullDirection.set(0, 1);
       }
     }
   }
@@ -297,18 +325,17 @@ class InputManager {
       this.#updateDirection();
     }
 
-    const state = {
-      isPulling: this.#isPulling,
-      pullDirection: this.#pullDirection,
-      panDeltaX: this.#panDeltaX,
-      panDeltaY: this.#panDeltaY,
-      swipeDeltaY: this.#swipeDeltaY,
-      toggleHold: this.#holdToggleFlag,
-      pumpAction: this.#pumpFlag,
-      clickPos: this.#clickPos,
-      isDoubleClick: this.#isDoubleClick,
-      longPressPos: this.#longPressPos,
-    };
+    const state = this.#stateSnapshot;
+    state.isPulling = this.#isPulling;
+    state.pullDirection = this.#pullDirection;
+    state.panDeltaX = this.#panDeltaX;
+    state.panDeltaY = this.#panDeltaY;
+    state.swipeDeltaY = this.#swipeDeltaY;
+    state.toggleHold = this.#holdToggleFlag;
+    state.pumpAction = this.#pumpFlag;
+    state.clickPos = this.#clickPos;
+    state.isDoubleClick = this.#isDoubleClick;
+    state.longPressPos = this.#longPressPos;
 
     this.#panDeltaX = 0;
     this.#panDeltaY = 0;
@@ -319,6 +346,17 @@ class InputManager {
     this.#longPressPos = null;
 
     return state;
+  }
+
+  dispose() {
+    if (this.#longPressTimeout) {
+      clearTimeout(this.#longPressTimeout);
+      this.#longPressTimeout = null;
+    }
+    for (let i = this.#eventCleanups.length - 1; i >= 0; i--) {
+      this.#eventCleanups[i]();
+    }
+    this.#eventCleanups.length = 0;
   }
 }
 

@@ -12,7 +12,10 @@ class GridCell {
 }
 
 class DynamicZone {
-  constructor(config) {
+  #rng;
+
+  constructor(config, rng = null) {
+    this.#rng = rng || { next: () => Math.random() };
     this.id = config.id;
     this.type = config.type;
     this.multiplier = config.multiplier;
@@ -30,6 +33,12 @@ class DynamicZone {
     this.dirTimer = 0;
   }
 
+  #range(min, max) {
+    return typeof this.#rng.range === "function"
+      ? this.#rng.range(min, max)
+      : min + this.#rng.next() * (max - min);
+  }
+
   update(dt) {
     if (!this.moving) return;
 
@@ -37,11 +46,11 @@ class DynamicZone {
 
     this.dirTimer -= dt;
     if (this.dirTimer <= 0) {
-      const randomAngle = Math.random() * Math.PI * 2;
+      const randomAngle = this.#range(0, Math.PI * 2);
       this.speedX = Math.cos(randomAngle) * this.currentSpeed;
       this.speedY = Math.sin(randomAngle) * this.currentSpeed;
 
-      this.dirTimer = 2000 + Math.random() * 3000;
+      this.dirTimer = this.#range(2000, 5000);
     }
 
     // Запобіжник: якщо зона вилетіла, повертаємо її в стартову точку
@@ -109,9 +118,12 @@ class LocationMap {
   #bgLoaded = false;
   #lastDebugState = "";
   #lastProjector = null;
+  #castableBounds = { left: 0, right: 0, top: 0, bottom: 0 };
+  #rng;
 
-  constructor(locationId, locationsConfig) {
+  constructor(locationId, locationsConfig, rng = null) {
     this.#locationsConfig = locationsConfig;
+    this.#rng = rng || { next: () => Math.random() };
     this.#config = JSON.parse(JSON.stringify(locationsConfig.map[locationId]));
     this.#id = locationId;
     this.#dynamicZones = [];
@@ -194,7 +206,7 @@ class LocationMap {
 
     if (this.#config.zones.dynamic) {
       for (const dzConfig of this.#config.zones.dynamic) {
-        this.#dynamicZones.push(new DynamicZone(dzConfig));
+        this.#dynamicZones.push(new DynamicZone(dzConfig, this.#rng));
       }
     }
   }
@@ -292,7 +304,7 @@ class LocationMap {
     this.#dynamicZones = [];
     if (this.#config.zones.dynamic) {
       for (const dzConfig of this.#config.zones.dynamic) {
-        this.#dynamicZones.push(new DynamicZone(dzConfig));
+        this.#dynamicZones.push(new DynamicZone(dzConfig, this.#rng));
       }
     }
 
@@ -314,7 +326,11 @@ class LocationMap {
       maxX = Math.max(maxX, (z.x + z.w) * cellSize);
       maxY = Math.max(maxY, (z.y + z.h) * cellSize);
     }
-    return { left: minX, right: maxX, top: minY, bottom: maxY };
+    this.#castableBounds.left = minX;
+    this.#castableBounds.right = maxX;
+    this.#castableBounds.top = minY;
+    this.#castableBounds.bottom = maxY;
+    return this.#castableBounds;
   }
 
   drawBackground(ctx, projector) {
@@ -566,6 +582,10 @@ class LocationMap {
     if (this.#isValid(c, r)) return this.#grid[c][r];
     return null;
   }
+
+  get currentLocationId() {
+    return this.#id;
+  }
 }
 
 class ViewportProjector {
@@ -743,18 +763,16 @@ class ViewportProjector {
     this.#offsetY = -this.#cameraY;
   }
 
-  screenToVirtual(screenX, screenY) {
-    return new Vector2(
-      (screenX - this.#offsetX) / this.#scale,
-      (screenY - this.#offsetY) / this.#scale,
-    );
+  screenToVirtual(screenX, screenY, out = null) {
+    const x = (screenX - this.#offsetX) / this.#scale;
+    const y = (screenY - this.#offsetY) / this.#scale;
+    return out ? out.set(x, y) : new Vector2(x, y);
   }
 
-  virtualToScreen(vX, vY) {
-    return new Vector2(
-      vX * this.#scale + this.#offsetX,
-      vY * this.#scale + this.#offsetY,
-    );
+  virtualToScreen(vX, vY, out = null) {
+    const x = vX * this.#scale + this.#offsetX;
+    const y = vY * this.#scale + this.#offsetY;
+    return out ? out.set(x, y) : new Vector2(x, y);
   }
 
   getScale() {
@@ -762,6 +780,9 @@ class ViewportProjector {
   }
   getCanvasWidth() {
     return this.#canvasWidth;
+  }
+  getCanvasHeight() {
+    return this.#canvasHeight;
   }
   getMaxScrollX() {
     return this.#maxScrollX;

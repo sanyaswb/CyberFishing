@@ -105,10 +105,15 @@ class ChumManager {
   #memoryGrid = {};
   #boatEnergy = null;
   #projector;
+  #onConfigUpdateBind;
+  #rng;
+  #now;
 
-  constructor(locationId, chumConfig, projector) {
+  constructor(locationId, chumConfig, projector, services = {}) {
     this.#chumConfig = chumConfig;
     this.#projector = projector;
+    this.#rng = services.rng || { next: () => Math.random() };
+    this.#now = services.now || (() => Date.now());
     this.#storageKey = `chum_active_${locationId}`;
     this.#locationMemoryKey = `chum_memory_${locationId}`;
 
@@ -117,9 +122,8 @@ class ChumManager {
 
     this.loadFromStorage();
 
-    document.addEventListener("config-updated", (e) =>
-      this.#onConfigUpdate(e.detail),
-    );
+    this.#onConfigUpdateBind = (e) => this.#onConfigUpdate(e.detail);
+    document.addEventListener("config-updated", this.#onConfigUpdateBind);
   }
 
   useHandBait() {
@@ -150,7 +154,10 @@ class ChumManager {
   }
 
   hasDriftingBoat() {
-    return this.#boats.some((b) => b.state === "drifting");
+    for (let i = 0; i < this.#boats.length; i++) {
+      if (this.#boats[i].state === "drifting") return true;
+    }
+    return false;
   }
 
   spawnIdleBoat(startX, startY, boatItem = {}) {
@@ -164,22 +171,24 @@ class ChumManager {
   loadFromStorage() {
     const savedZones = CacheManager.get(this.#storageKey, []);
 
-    this.#zones = savedZones
-      .map((z) => {
-        const baitConfig = this.#chumConfig.baits[z.baitId];
-        if (!baitConfig) return null;
+    this.#zones.length = 0;
+    for (let i = 0; i < savedZones.length; i++) {
+      const z = savedZones[i];
+      const baitConfig = this.#chumConfig.baits[z.baitId];
+      if (!baitConfig) continue;
 
-        // ЗМІНА: Прибрано this.#locationSquash
-        return new ChumZone(
+      // ЗМІНА: Прибрано this.#locationSquash
+      this.#zones.push(
+        new ChumZone(
           z.id,
           z.x,
           z.y,
           baitConfig,
           z.deployRealTimeMs,
           z.isDelivered,
-        );
-      })
-      .filter((z) => z !== null);
+        ),
+      );
+    }
 
     this.#memoryGrid = CacheManager.get(this.#locationMemoryKey, {});
   }
@@ -187,16 +196,19 @@ class ChumManager {
   saveToStorage() {
     if (typeof CacheManager === "undefined") return;
 
-    const zonesToSave = this.#zones
-      .filter((z) => !z.isExpired)
-      .map((z) => ({
+    const zonesToSave = [];
+    for (let i = 0; i < this.#zones.length; i++) {
+      const z = this.#zones[i];
+      if (z.isExpired) continue;
+      zonesToSave.push({
         id: z.id,
         x: z.x,
         y: z.y,
         baitId: z.baitId,
         deployRealTimeMs: z.deployRealTimeMs,
         isDelivered: z.isDelivered,
-      }));
+      });
+    }
 
     CacheManager.set(this.#storageKey, zonesToSave);
     CacheManager.set(this.#locationMemoryKey, this.#memoryGrid);
@@ -206,7 +218,12 @@ class ChumManager {
     const baitConfig = this.#chumConfig.baits[baitId];
     if (!baitConfig) return null;
 
-    const zoneId = `zone_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    const now = this.#now();
+    const randomIdPart =
+      typeof this.#rng.int === "function"
+        ? this.#rng.int(0, 999)
+        : Math.floor(this.#rng.next() * 1000);
+    const zoneId = `zone_${Math.floor(now)}_${randomIdPart}`;
     const isDeliveredNow = activeBoat === null;
 
     const newZone = new ChumZone(
@@ -214,7 +231,7 @@ class ChumManager {
       targetX,
       targetY,
       baitConfig,
-      Date.now(),
+      now,
       isDeliveredNow,
     );
 
@@ -277,7 +294,7 @@ class ChumManager {
           zone.x = boat.pos.x;
           zone.y = boat.pos.y;
           zone.isDelivered = true;
-          zone.deployRealTimeMs = Date.now();
+          zone.deployRealTimeMs = this.#now();
           needsSave = true;
         }
 
@@ -293,9 +310,18 @@ class ChumManager {
   }
 
   isBoatMoving() {
-    return this.#boats.some(
-      (b) => b.state === "deploying" || b.state === "returning",
-    );
+    for (let i = 0; i < this.#boats.length; i++) {
+      const state = this.#boats[i].state;
+      if (state === "deploying" || state === "returning") return true;
+    }
+    return false;
+  }
+
+  dispose() {
+    if (this.#onConfigUpdateBind) {
+      document.removeEventListener("config-updated", this.#onConfigUpdateBind);
+      this.#onConfigUpdateBind = null;
+    }
   }
 
   getWaitingBoat() {
@@ -647,7 +673,7 @@ class BaitBoat {
   }
 
   #calculateSteering({ dx, dy, dist }, sensors, isManual, dtSec) {
-    const slowRadius = this.config.slowRadius || 150;
+    const slowRadius = Math.max(1, this.config.slowRadius || 150);
     const t = Math.min(dist / slowRadius, 1.0);
     const arrivalRatio = t * t;
 

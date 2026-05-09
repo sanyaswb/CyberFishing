@@ -15,3 +15,5 @@ utils
 .cache
 .parcel-cache+
 package-lock.json
+.tmp.drivedownload
+.tmp.driveupload

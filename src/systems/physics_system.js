@@ -3,6 +3,7 @@ class FishingSystem {
   #reel;
   #buffs;
   #fish;
+  #rng;
 
   #playerForceResult = new Vector2(0, 0);
   #fishForceResult = new Vector2(0, 0);
@@ -21,11 +22,12 @@ class FishingSystem {
   #manualCooldownTimer = 0;
   #hasUsedPumpThisHold = false;
 
-  constructor(rod, reel, fish) {
+  constructor(rod, reel, fish, rng = null) {
     this.#rod = rod;
     this.#reel = reel;
     this.#buffs = new BuffManager();
     this.#fish = fish;
+    this.#rng = rng || { next: () => Math.random() };
 
     if (typeof this.#reel.getHoldStats === "function") {
       this.#holdConfig = this.#reel.getHoldStats();
@@ -35,6 +37,12 @@ class FishingSystem {
       this.#maxHoldCharges = this.#holdConfig.maxCharges;
       this.#currentHoldCharges = this.#maxHoldCharges;
     }
+  }
+
+  #chance(probability) {
+    return typeof this.#rng.chance === "function"
+      ? this.#rng.chance(probability)
+      : this.#rng.next() < probability;
   }
 
   updateEquipment(rod, reel) {
@@ -201,9 +209,10 @@ class FishingSystem {
     this.#playerForceResult.y =
       this.#pullDirScratch.y * inputDirection.y * effectivePower;
 
+    const boundsHeight = Math.max(1, bounds.bottom - bounds.top);
     const distRatio = Math.max(
       0,
-      Math.min(1.0, (floatY - bounds.top) / (bounds.bottom - bounds.top)),
+      Math.min(1.0, (floatY - bounds.top) / boundsHeight),
     );
     const xRange = physicsConfig.distanceXMultiplier || [1.0, 1.0];
     const depthScaleX = xRange[0] + distRatio * (xRange[1] - xRange[0]);
@@ -218,16 +227,21 @@ class FishingSystem {
   }
 
   calculateFishForce(dt, floatPos, bounds, staminaMechanicsConfig, checkWater) {
+    this.#buffs.update(dt);
+
     const floatX = floatPos.x;
     const floatY = floatPos.y;
     const centerX = (bounds.left + bounds.right) / 2;
     const halfWidth = (bounds.right - bounds.left) / 2;
 
     let rawPenalty = Math.abs(floatX - centerX) / (halfWidth || 1);
+    const sweetSpotDenom = Math.max(
+      0.001,
+      1 - staminaMechanicsConfig.centerSweetSpot,
+    );
     let spatialPenalty = Math.max(
       0,
-      (rawPenalty - staminaMechanicsConfig.centerSweetSpot) /
-        (1 - staminaMechanicsConfig.centerSweetSpot),
+      (rawPenalty - staminaMechanicsConfig.centerSweetSpot) / sweetSpotDenom,
     );
     spatialPenalty = Math.min(1, spatialPenalty);
 
@@ -295,7 +309,7 @@ class FishingSystem {
         if (breakChancePerSec > 0) {
           const chanceThisFrame = breakChancePerSec * (dt / 1000);
 
-          if (Math.random() <= chanceThisFrame) {
+          if (this.#chance(chanceThisFrame)) {
             this.#breakHold();
 
             if (window.DEBUG_MODULES && window.DEBUG_MODULES.forces) {
@@ -349,9 +363,10 @@ class FishingSystem {
 
     this.#fishForceResult.x = finalBehavior.moveX * basePower + escapeForceX;
 
+    const boundsHeight = Math.max(1, bounds.bottom - bounds.top);
     const distRatio = Math.max(
       0,
-      Math.min(1.0, (floatY - bounds.top) / (bounds.bottom - bounds.top)),
+      Math.min(1.0, (floatY - bounds.top) / boundsHeight),
     );
     const xRange =
       typeof CONFIG !== "undefined" && CONFIG.physics?.distanceXMultiplier
@@ -385,8 +400,9 @@ class TensionMeter {
   #holdFloorTension = 0;
   #isHoldCurrentlyActive = false;
   #pumpGraceTimer = 0;
+  #rng;
 
-  constructor(rodLevel, reelLevel, hook, tensionConfig) {
+  constructor(rodLevel, reelLevel, hook, tensionConfig, rng = null) {
     this.#tension = 0;
     this.#targetTension = 0;
     this.#pulsePhase = 0;
@@ -407,6 +423,13 @@ class TensionMeter {
     this.#hookPower = hook.getPower();
     this.#hookCheckTimer = 0;
     this.#slackTimer = 0;
+    this.#rng = rng || { next: () => Math.random() };
+  }
+
+  #chance(probability) {
+    return typeof this.#rng.chance === "function"
+      ? this.#rng.chance(probability)
+      : this.#rng.next() < probability;
   }
 
   updateEquipment(rodLevel, reelLevel, hook, tensionConfig) {
@@ -579,7 +602,7 @@ class TensionMeter {
       }
     }
 
-    if (chance > 0 && Math.random() <= chance) {
+    if (chance > 0 && this.#chance(chance)) {
       if (typeof GodMode !== "undefined" && GodMode.noHookEscape) {
         if (isDebugTension)
           console.log(
@@ -654,8 +677,8 @@ class TensionMeter {
       rodBreakChance = 0.5;
     }
 
-    if (Math.random() <= breakChance) {
-      let reason = Math.random() <= rodBreakChance ? "rod" : "line";
+    if (this.#chance(breakChance)) {
+      let reason = this.#chance(rodBreakChance) ? "rod" : "line";
 
       // ВТРУЧАННЯ GOD MODE:
       if (
@@ -1006,12 +1029,23 @@ class BuffManager {
   }
 
   addBuff(multiplier, duration) {
-    this.#activeBuffs.push({ multiplier, expires: Date.now() + duration });
+    this.#activeBuffs.push({ multiplier, remainingMs: duration });
+  }
+
+  update(dt) {
+    for (let i = this.#activeBuffs.length - 1; i >= 0; i--) {
+      this.#activeBuffs[i].remainingMs -= dt;
+      if (this.#activeBuffs[i].remainingMs <= 0) {
+        this.#activeBuffs.splice(i, 1);
+      }
+    }
   }
 
   getTotalMultiplier() {
-    const now = Date.now();
-    this.#activeBuffs = this.#activeBuffs.filter((b) => b.expires > now);
-    return this.#activeBuffs.reduce((acc, curr) => acc * curr.multiplier, 1.0);
+    let multiplier = 1.0;
+    for (let i = 0; i < this.#activeBuffs.length; i++) {
+      multiplier *= this.#activeBuffs[i].multiplier;
+    }
+    return multiplier;
   }
 }

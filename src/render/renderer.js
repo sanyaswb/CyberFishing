@@ -1,6 +1,8 @@
 class Renderer {
   #canvas;
   #ctx;
+  #screenA = new Vector2(0, 0);
+  #screenB = new Vector2(0, 0);
 
   constructor(canvas) {
     this.#canvas = canvas;
@@ -22,8 +24,16 @@ class Renderer {
       const ray = rays[i];
 
       // Малюємо актуальні координати, які тепер оновлюються щокадру
-      const startScreen = projector.virtualToScreen(ray.startX, ray.startY);
-      const endScreen = projector.virtualToScreen(ray.endX, ray.endY);
+      const startScreen = projector.virtualToScreen(
+        ray.startX,
+        ray.startY,
+        this.#screenA,
+      );
+      const endScreen = projector.virtualToScreen(
+        ray.endX,
+        ray.endY,
+        this.#screenB,
+      );
 
       this.#ctx.strokeStyle = ray.isBlocked
         ? "rgba(255, 0, 0, 0.6)"
@@ -75,7 +85,7 @@ class Renderer {
   drawLocationDebug(locationMap, projector, locationsConfig) {
     const debugCanvas = locationMap.getDebugCanvas();
     if (debugCanvas) {
-      const pos = projector.virtualToScreen(0, 0);
+      const pos = projector.virtualToScreen(0, 0, this.#screenA);
       const scale = projector.getScale();
       const w = debugCanvas.width * scale;
       const h = debugCanvas.height * scale;
@@ -99,14 +109,18 @@ class Renderer {
 
         for (const b of bArr) {
           if (b.x !== undefined && !isNaN(b.x)) {
-            const bPos = projector.virtualToScreen(b.x, b.y);
+            const bPos = projector.virtualToScreen(b.x, b.y, this.#screenA);
             this.#ctx.fillRect(bPos.x, bPos.y, b.w * pScale, b.h * pScale);
             this.#ctx.strokeRect(bPos.x, bPos.y, b.w * pScale, b.h * pScale);
           }
         }
       }
 
-      const pos = projector.virtualToScreen(dz.x * cellSize, dz.y * cellSize);
+      const pos = projector.virtualToScreen(
+        dz.x * cellSize,
+        dz.y * cellSize,
+        this.#screenA,
+      );
       const w = dz.w * cellSize * pScale;
       const h = dz.h * cellSize * pScale;
 
@@ -130,7 +144,11 @@ class Renderer {
     const catchLineOffsetPx = locationsConfig.catchLineOffsetPx ?? 5;
     const virtualCatchOffset = catchLineOffsetPx / projector.getScale();
     const virtualCatchY = virtualBottomY - virtualCatchOffset;
-    const catchScreenY = projector.virtualToScreen(0, virtualCatchY).y;
+    const catchScreenY = projector.virtualToScreen(
+      0,
+      virtualCatchY,
+      this.#screenA,
+    ).y;
 
     const showCatch = locationsConfig.showCatchZone !== false;
     const showNet = locationsConfig.showNetZone !== false;
@@ -155,7 +173,11 @@ class Renderer {
 
     if (showNet && netSystem && netSystem.isActive) {
       const virtualTriggerY = netSystem.getTriggerVirtualY(virtualBottomY);
-      const triggerScreenY = projector.virtualToScreen(0, virtualTriggerY).y;
+      const triggerScreenY = projector.virtualToScreen(
+        0,
+        virtualTriggerY,
+        this.#screenB,
+      ).y;
       const netZoneHeight = catchScreenY - triggerScreenY;
 
       this.#ctx.strokeStyle = "rgba(0, 255, 128, 0.5)";
@@ -198,7 +220,11 @@ class Renderer {
       }
 
       const perspective = projector.getPerspective(zone.y);
-      const centerScreen = projector.virtualToScreen(zone.x, zone.y);
+      const centerScreen = projector.virtualToScreen(
+        zone.x,
+        zone.y,
+        this.#screenA,
+      );
       const rxScreen =
         zone.baseRadius * perspective.scale * projector.getScale();
       const ryScreen = rxScreen * perspective.squashY;
@@ -231,11 +257,15 @@ class Renderer {
     const virtualLineY = virtualBottomY - maxDist;
 
     // Переводимо у екранні пікселі
-    const screenPos = projector.virtualToScreen(0, virtualLineY);
+    const screenPos = projector.virtualToScreen(0, virtualLineY, this.#screenA);
     const lineScreenY = screenPos.y;
 
     // Знаходимо екранну координату берега для заливки
-    const screenBottomPos = projector.virtualToScreen(0, virtualBottomY);
+    const screenBottomPos = projector.virtualToScreen(
+      0,
+      virtualBottomY,
+      this.#screenB,
+    );
     const fillHeight = screenBottomPos.y - lineScreenY;
 
     this.#ctx.save();
@@ -276,7 +306,7 @@ class Renderer {
 
       for (let i = 0; i < waypoints.length; i++) {
         const wp = waypoints[i];
-        const screenPos = projector.virtualToScreen(wp.x, wp.y);
+        const screenPos = projector.virtualToScreen(wp.x, wp.y, this.#screenA);
 
         // --- ДОДАЄМО ПЕРСПЕКТИВУ ---
         const perspective = projector.getPerspective(wp.y);
@@ -327,7 +357,11 @@ class Renderer {
     this.#ctx.textBaseline = "middle";
 
     for (const boat of boats) {
-      const screenPos = projector.virtualToScreen(boat.pos.x, boat.pos.y);
+      const screenPos = projector.virtualToScreen(
+        boat.pos.x,
+        boat.pos.y,
+        this.#screenA,
+      );
 
       // --- ЄДИНА МАТЕМАТИЧНА ПЕРСПЕКТИВА ---
       const perspective = projector.getPerspective(boat.pos.y);
@@ -440,6 +474,7 @@ class Renderer {
     lineDropOffset,
     uiRodConfig,
     uiLineConfig,
+    nowMs = 0,
   ) {
     const rodWidth = 3;
     const rodHeight = 200;
@@ -463,7 +498,7 @@ class Renderer {
 
     if (gameState === "playing") {
       if (tension >= 100) {
-        const isRed = Math.floor(performance.now() / 80) % 2 === 0;
+        const isRed = Math.floor(nowMs / 80) % 2 === 0;
         lineColor = isRed ? "rgba(255, 0, 0, 0.9)" : "rgba(255, 255, 255, 0.9)";
         lineWidth = Math.max(lineWidth, 2);
       } else if (tension >= 90) {

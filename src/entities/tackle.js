@@ -193,6 +193,7 @@ class WaterEntity {
   _startAnimState = null;
   _targetAnimState = null;
   _currentBiteMoveVelocity;
+  _forceScratch;
   _biteMoveTimer = 0;
   _stepId = 0;
   _isOverDepth = false;
@@ -205,12 +206,15 @@ class WaterEntity {
   _sinkingStartAngle = 90;
 
   _activeBiteSequence = null;
+  _rng;
 
-  constructor(x, y, config, maxDepth) {
+  constructor(x, y, config, maxDepth, rng = null) {
     this._position = new Vector2(x, y);
     this._velocity = new Vector2(0, 0);
     this._currentBiteMoveVelocity = new Vector2(0, 0);
+    this._forceScratch = new Vector2(0, 0);
     this._config = config;
+    this._rng = rng || { next: () => Math.random() };
     this._maxDepth = maxDepth || config.maxDepth || 8.0;
     this._currentHookDepth = 0.1;
     this._targetHookDepth = 0.1;
@@ -221,6 +225,16 @@ class WaterEntity {
 
     this._baseColor = config.type === "day" ? "#ffffff" : "#00ff80";
     this._currentColor = this._baseColor;
+  }
+
+  _random() {
+    return this._rng.next();
+  }
+
+  _chance(probability) {
+    return typeof this._rng.chance === "function"
+      ? this._rng.chance(probability)
+      : this._random() < probability;
   }
 
   getPosition() {
@@ -334,7 +348,7 @@ class WaterEntity {
             this._windFluctuationTimer =
               this._getRandom(environment.wind.gustFluctuationMs) * 3;
           }
-          if (Math.random() < environment.wind.gustChancePerSec * (dt / 1000)) {
+          if (this._chance(environment.wind.gustChancePerSec * (dt / 1000))) {
             this._windTimer = this._getRandom(environment.wind.gustDurationMs);
             this._windFluctuationTimer = 0;
           }
@@ -414,9 +428,14 @@ class WaterEntity {
 
   getBiteStepInfo() {
     if (!this._isBiting) return null;
-    const hasMoreActions = this._sequenceQueue.some(
-      (s) => s.angle !== 0 || s.scaleY !== 1.0 || s.startMove,
-    );
+    let hasMoreActions = false;
+    for (let i = 0; i < this._sequenceQueue.length; i++) {
+      const step = this._sequenceQueue[i];
+      if (step.angle !== 0 || step.scaleY !== 1.0 || step.startMove) {
+        hasMoreActions = true;
+        break;
+      }
+    }
     const isLastIter = this._currentSequenceCount >= this._targetSequenceCount;
     const isLastAction = isLastIter && !hasMoreActions;
     const isAction =
@@ -545,7 +564,7 @@ class WaterEntity {
     // 4. ЧИТАЄМО ЗБЕРЕЖЕНИЙ КОНФІГ
     const seqCfg = this._activeBiteSequence;
 
-    const isRed = Math.random() <= seqCfg.chanceGuaranteed;
+    const isRed = this._chance(seqCfg.chanceGuaranteed);
     const color = isRed ? "#ff0000" : "#ffff00";
     const range = isRed ? seqCfg.guaranteedIters : seqCfg.normalIters;
     const iters = Math.floor(this._getRandom(range));
@@ -563,11 +582,12 @@ class WaterEntity {
 
     for (let i = 0; i < iters; i++) {
       const steps = this._generateRandomAnim(isRed, seqCfg); // Передаємо seqCfg сюди
-      steps.forEach((s) => {
+      for (let j = 0; j < steps.length; j++) {
+        const s = steps[j];
         s.color = color;
         s.isGuaranteed = isRed;
         this._sequenceQueue.push(s);
-      });
+      }
       this._sequenceQueue.push({
         duration: this._getRandom(seqCfg.intervalMs),
         angle: 0,
@@ -587,7 +607,7 @@ class WaterEntity {
     const availableTypes = Object.keys(animsCfg);
     const chosen =
       availableTypes.length > 0
-        ? availableTypes[Math.floor(Math.random() * availableTypes.length)]
+        ? availableTypes[Math.floor(this._random() * availableTypes.length)]
         : "slide";
 
     const cfg = animsCfg[chosen] || {};
@@ -634,7 +654,7 @@ class WaterEntity {
     let moveTime = 0;
     let startMove = false;
 
-    if (chosen === "slide" || Math.random() <= (seqCfg.movementChance || 0)) {
+    if (chosen === "slide" || this._chance(seqCfg.movementChance || 0)) {
       startMove = true;
       moveTime = this._getRandom(seqCfg.movementDurationMs || [100, 200]);
       let speed = this._getRandom(seqCfg.movementSpeedPx || [10, 20]);
@@ -644,7 +664,7 @@ class WaterEntity {
         moveTime *= this._getRandom(mods.movementDurationMult || [1, 1]);
       }
 
-      const dirAngle = Math.random() * Math.PI * 2;
+      const dirAngle = this._random() * Math.PI * 2;
       moveVelX = Math.cos(dirAngle) * speed;
       moveVelY = Math.sin(dirAngle) * speed;
 
@@ -657,7 +677,7 @@ class WaterEntity {
       if (startMove && moveVelX !== 0) {
         targetAngle = Math.abs(targetAngle) * (moveVelX > 0 ? -1 : 1);
       } else {
-        if (Math.random() < 0.5) targetAngle = -targetAngle;
+        if (this._chance(0.5)) targetAngle = -targetAngle;
       }
     }
 
@@ -714,7 +734,7 @@ class WaterEntity {
     return (1 - amt) * start + amt * end;
   }
   _getRandom(arr) {
-    return arr[0] + Math.random() * (arr[1] - arr[0]);
+    return arr[0] + this._random() * (arr[1] - arr[0]);
   }
 }
 
@@ -730,7 +750,10 @@ class SpinnerEntity extends WaterEntity {
       const force = targetSpeedPxPerSec * dtSec * (1 - this._velocityDamping);
 
       this.applyForce(
-        new Vector2(pullDirection.x * force, pullDirection.y * force),
+        this._forceScratch.set(
+          pullDirection.x * force,
+          pullDirection.y * force,
+        ),
       );
 
       this._currentHookDepth = Math.max(
@@ -757,7 +780,10 @@ class WobblerEntity extends WaterEntity {
       const force = targetSpeedPxPerSec * dtSec * (1 - this._velocityDamping);
 
       this.applyForce(
-        new Vector2(pullDirection.x * force, pullDirection.y * force),
+        this._forceScratch.set(
+          pullDirection.x * force,
+          pullDirection.y * force,
+        ),
       );
 
       const topDepth = this._config.targetMinDepth ?? 0;
@@ -806,7 +832,10 @@ class JigEntity extends WaterEntity {
       const force = targetSpeedPxPerSec * dtSec * (1 - this._velocityDamping);
 
       this.applyForce(
-        new Vector2(pullDirection.x * force, pullDirection.y * force),
+        this._forceScratch.set(
+          pullDirection.x * force,
+          pullDirection.y * force,
+        ),
       );
       this._currentHookDepth = Math.max(
         0,
@@ -843,7 +872,7 @@ class FeederEntity extends WaterEntity {
     this._sinkingTotalTime = (targetDepth / speedMult) * 1000;
     this._sinkingTimer = this._sinkingTotalTime;
 
-    this._sinkingStartAngle = Math.random() < 0.5 ? 90 : -90;
+    this._sinkingStartAngle = this._chance(0.5) ? 90 : -90;
     this._currentAngle = this._sinkingStartAngle;
     this._currentScaleY = 1.0;
   }
@@ -927,7 +956,7 @@ class FloatEntity extends WaterEntity {
     this._sinkingTotalTime = baseSinkingTime / speedMult;
     this._sinkingTimer = this._sinkingTotalTime;
 
-    this._sinkingStartAngle = Math.random() < 0.5 ? 90 : -90;
+    this._sinkingStartAngle = this._chance(0.5) ? 90 : -90;
     this._currentAngle = this._sinkingStartAngle;
     this._currentScaleY = 1.0;
   }
@@ -970,24 +999,25 @@ class FloatEntity extends WaterEntity {
 }
 
 class BaitFactory {
-  static create(type, x, y, config, equipment) {
+  static create(type, x, y, config, equipment, rng = null) {
     switch (type) {
       case "spinner":
-        return new SpinnerEntity(x, y, config, config.maxDepth);
+        return new SpinnerEntity(x, y, config, config.maxDepth, rng);
       case "wobbler":
-        return new WobblerEntity(x, y, config, config.maxDepth);
+        return new WobblerEntity(x, y, config, config.maxDepth, rng);
       case "jig":
         return new JigEntity(
           x,
           y,
           config,
           equipment?.sinker?.maxDepth || config.maxDepth,
+          rng,
         );
       case "feeder":
-        return new FeederEntity(x, y, config, config.maxDepth);
+        return new FeederEntity(x, y, config, config.maxDepth, rng);
       case "float":
       default:
-        return new FloatEntity(x, y, config, config.maxDepth);
+        return new FloatEntity(x, y, config, config.maxDepth, rng);
     }
   }
 }

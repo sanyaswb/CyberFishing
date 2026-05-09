@@ -1,5 +1,338 @@
+class GameClock {
+  #lastFrameTime = 0;
+  #realTimeOffset = Date.now() - performance.now();
+  #maxDeltaMs;
+
+  constructor(maxDeltaMs = 100) {
+    this.#maxDeltaMs = maxDeltaMs;
+    this.now = 0;
+    this.delta = 0;
+    this.total = 0;
+    this.realNow = Date.now();
+  }
+
+  tick(frameTime) {
+    if (!this.#lastFrameTime) {
+      this.#lastFrameTime = frameTime;
+      this.now = frameTime;
+      this.realNow = this.#realTimeOffset + frameTime;
+      return 0;
+    }
+
+    this.delta = Math.min(this.#maxDeltaMs, frameTime - this.#lastFrameTime);
+    this.#lastFrameTime = frameTime;
+    this.now = frameTime;
+    this.total += this.delta;
+    this.realNow = this.#realTimeOffset + frameTime;
+    return this.delta;
+  }
+
+  reset(frameTime = performance.now()) {
+    this.#lastFrameTime = frameTime;
+    this.now = frameTime;
+    this.delta = 0;
+    this.total = 0;
+    this.realNow = this.#realTimeOffset + frameTime;
+  }
+}
+
+class GameLoop {
+  #clock;
+  #onUpdate;
+  #onDraw;
+  #isRunning = false;
+  #rafId = 0;
+
+  constructor(clock, onUpdate, onDraw) {
+    this.#clock = clock;
+    this.#onUpdate = onUpdate;
+    this.#onDraw = onDraw;
+  }
+
+  start() {
+    if (this.#isRunning) return;
+    this.#isRunning = true;
+    this.#clock.reset();
+
+    const loop = (frameTime) => {
+      if (!this.#isRunning) return;
+      const dt = this.#clock.tick(frameTime);
+      this.#onUpdate(dt);
+      this.#onDraw();
+      this.#rafId = requestAnimationFrame(loop);
+    };
+
+    this.#rafId = requestAnimationFrame(loop);
+  }
+
+  stop() {
+    if (!this.#isRunning) return;
+    this.#isRunning = false;
+    if (this.#rafId) {
+      cancelAnimationFrame(this.#rafId);
+      this.#rafId = 0;
+    }
+  }
+
+  get isRunning() {
+    return this.#isRunning;
+  }
+}
+
+class EventLifecycle {
+  #cleanups = [];
+
+  add(target, type, handler, options) {
+    target.addEventListener(type, handler, options);
+    let active = true;
+    const cleanup = () => {
+      if (!active) return;
+      active = false;
+      target.removeEventListener(type, handler, options);
+    };
+    this.#cleanups.push(cleanup);
+    return cleanup;
+  }
+
+  dispose() {
+    for (let i = this.#cleanups.length - 1; i >= 0; i--) {
+      this.#cleanups[i]();
+    }
+    this.#cleanups.length = 0;
+  }
+}
+
+class EventBus {
+  #listeners = new Map();
+
+  on(type, handler) {
+    let handlers = this.#listeners.get(type);
+    if (!handlers) {
+      handlers = new Set();
+      this.#listeners.set(type, handlers);
+    }
+    handlers.add(handler);
+    return () => handlers.delete(handler);
+  }
+
+  emit(type, payload) {
+    const handlers = this.#listeners.get(type);
+    if (!handlers) return;
+
+    for (const handler of handlers) {
+      handler(payload);
+    }
+  }
+
+  clear() {
+    this.#listeners.clear();
+  }
+}
+
+class DebugEventBridge {
+  #bus = new EventBus();
+  #target;
+  #isEnabled;
+
+  constructor(target, isEnabled) {
+    this.#target = target;
+    this.#isEnabled = isEnabled;
+  }
+
+  on(type, handler) {
+    return this.#bus.on(type, handler);
+  }
+
+  emit(type, detail) {
+    if (!this.#isEnabled()) return;
+    this.#bus.emit(type, detail);
+    this.#target.dispatchEvent(new CustomEvent(type, { detail }));
+  }
+
+  clear() {
+    this.#bus.clear();
+  }
+}
+
+class SeededRng {
+  #state;
+
+  constructor(seed = 0x9e3779b9) {
+    this.#state = this.#normalizeSeed(seed);
+  }
+
+  #normalizeSeed(seed) {
+    if (typeof seed === "number" && Number.isFinite(seed)) {
+      return seed >>> 0 || 0x9e3779b9;
+    }
+
+    const value = String(seed ?? "cyber-fishing");
+    let hash = 2166136261;
+    for (let i = 0; i < value.length; i++) {
+      hash ^= value.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0 || 0x9e3779b9;
+  }
+
+  next() {
+    this.#state = Math.imul(1664525, this.#state) + 1013904223;
+    return (this.#state >>> 0) / 4294967296;
+  }
+
+  range(min, max) {
+    return min + this.next() * (max - min);
+  }
+
+  int(min, max) {
+    return Math.floor(this.range(min, max + 1));
+  }
+
+  chance(probability) {
+    return this.next() < probability;
+  }
+
+  pick(items) {
+    return items[this.int(0, items.length - 1)];
+  }
+}
+
+class LocationManager {
+  #locationsConfig;
+  #currentId;
+
+  constructor(locationsConfig, initialId = null) {
+    this.#locationsConfig = locationsConfig;
+    this.#currentId =
+      initialId ||
+      locationsConfig.currentLocationId ||
+      Object.keys(locationsConfig.map || {})[0];
+  }
+
+  get id() {
+    return this.#currentId;
+  }
+
+  get config() {
+    return this.#locationsConfig.map[this.#currentId];
+  }
+
+  get currentEnvironment() {
+    return this.config?.environment || null;
+  }
+
+  get chumCastDistance() {
+    return this.config?.chumCastDistance || 300;
+  }
+}
+
+class DevFlags {
+  static cheat(flag) {
+    return typeof GodMode !== "undefined" && GodMode[flag] === true;
+  }
+
+  static debugEvents() {
+    return !!(
+      CONFIG.debug?.overlay ||
+      CONFIG.debug?.events ||
+      CONFIG.logs?.events ||
+      window.DEBUG_MODULES
+    );
+  }
+}
+
+class BufferedAudioPlayer {
+  #src;
+  #context = null;
+  #buffer = null;
+  #loadPromise = null;
+  #fallbackPool = null;
+  #fallbackCursor = 0;
+
+  constructor(src, fallbackPoolSize = 4) {
+    this.#src = src;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+    if (AudioContextClass) {
+      this.#context = new AudioContextClass();
+      this.#loadPromise = this.#load();
+    } else {
+      this.#fallbackPool = [];
+      for (let i = 0; i < fallbackPoolSize; i++) {
+        this.#fallbackPool.push(new Audio(src));
+      }
+    }
+  }
+
+  get src() {
+    return this.#src;
+  }
+
+  async #load() {
+    const response = await fetch(this.#src);
+    const data = await response.arrayBuffer();
+    this.#buffer = await this.#context.decodeAudioData(data);
+    return this.#buffer;
+  }
+
+  warm() {
+    return this.#loadPromise || Promise.resolve();
+  }
+
+  play(volume = 1) {
+    if (this.#fallbackPool) {
+      const sound = this.#fallbackPool[this.#fallbackCursor];
+      this.#fallbackCursor =
+        (this.#fallbackCursor + 1) % this.#fallbackPool.length;
+      sound.pause();
+      sound.currentTime = 0;
+      sound.volume = volume;
+      sound.play().catch(() => {});
+      return;
+    }
+
+    if (!this.#buffer) {
+      this.#loadPromise?.then(() => this.play(volume)).catch(() => {});
+      return;
+    }
+
+    if (this.#context.state === "suspended") {
+      this.#context.resume().catch(() => {});
+    }
+
+    const source = this.#context.createBufferSource();
+    const gain = this.#context.createGain();
+    gain.gain.value = volume;
+    source.buffer = this.#buffer;
+    source.connect(gain);
+    gain.connect(this.#context.destination);
+    source.start(0);
+    source.onended = () => {
+      source.disconnect();
+      gain.disconnect();
+    };
+  }
+
+  dispose() {
+    if (this.#fallbackPool) {
+      for (let i = 0; i < this.#fallbackPool.length; i++) {
+        const sound = this.#fallbackPool[i];
+        sound.pause();
+        sound.removeAttribute("src");
+        sound.load();
+      }
+      this.#fallbackPool.length = 0;
+    }
+
+    if (this.#context && this.#context.state !== "closed") {
+      this.#context.close().catch(() => {});
+    }
+  }
+}
+
 class EnvironmentSystem {
   #config;
+  #spawnConfig;
   #gameTimeHours;
   #lastHour = -1;
   #currentPhase = "day";
@@ -7,10 +340,38 @@ class EnvironmentSystem {
   #isFoggy = false;
   #weatherTimer = 0;
   #windState = { direction: 0, rainMult: 1.0, timer: 0 };
+  #snapshot = {
+    time: 0,
+    phase: "day",
+    isRaining: false,
+    isFoggy: false,
+    wind: { direction: 0, rainMult: 1.0, timer: 0 },
+  };
+  #physicsEnv = {
+    current: null,
+    wind: null,
+  };
+  #physicsWind = {
+    direction: 0,
+    breezeAngleRange: [0, 0],
+    gustAngleRange: [0, 0],
+    gustFluctuationMs: null,
+    gustChancePerSec: 0,
+    gustDurationMs: null,
+  };
+  #rng;
 
-  constructor(config, initialTime = 12) {
+  constructor(
+    config,
+    initialTime = 12,
+    rng = new SeededRng(),
+    spawnConfig = CONFIG.spawns,
+  ) {
     this.#config = config;
+    this.#spawnConfig = spawnConfig;
+    this.#rng = rng;
     this.#gameTimeHours = initialTime;
+    this.#syncSnapshot();
   }
 
   update(dt, timeScale) {
@@ -23,10 +384,21 @@ class EnvironmentSystem {
       this.#updatePhase(hour);
     }
     this.#updateWeather(dt);
+    this.#syncSnapshot();
+  }
+
+  #syncSnapshot() {
+    this.#snapshot.time = this.#gameTimeHours;
+    this.#snapshot.phase = this.#currentPhase;
+    this.#snapshot.isRaining = this.#isRaining;
+    this.#snapshot.isFoggy = this.#isFoggy;
+    this.#snapshot.wind.direction = this.#windState.direction;
+    this.#snapshot.wind.rainMult = this.#windState.rainMult;
+    this.#snapshot.wind.timer = this.#windState.timer;
   }
 
   #updatePhase(hour) {
-    const phases = CONFIG.spawns.timePhases;
+    const phases = this.#spawnConfig.timePhases;
     for (const [phase, times] of Object.entries(phases)) {
       const inRange =
         times.startHour < times.endHour
@@ -40,8 +412,8 @@ class EnvironmentSystem {
     const { weather, environment } = this.#config;
     this.#weatherTimer -= dt;
     if (this.#weatherTimer <= 0) {
-      this.#isRaining = Math.random() < weather.chances.rain;
-      this.#isFoggy = Math.random() < weather.chances.fog;
+      this.#isRaining = this.#rng.chance(weather.chances.rain);
+      this.#isFoggy = this.#rng.chance(weather.chances.fog);
       this.#weatherTimer = weather.updateIntervalMs;
 
       // --- ВІДНОВЛЕНО: Перевірка наявності rainMultiplier ---
@@ -49,7 +421,7 @@ class EnvironmentSystem {
       this.#windState.rainMult =
         this.#isRaining && rainMultConfig
           ? rainMultConfig[0] +
-            Math.random() * (rainMultConfig[1] - rainMultConfig[0])
+            this.#rng.range(0, rainMultConfig[1] - rainMultConfig[0])
           : 1.0;
     }
 
@@ -59,36 +431,767 @@ class EnvironmentSystem {
       this.#windState.timer =
         86400000 /
         (changesPerDay[0] +
-          Math.random() * (changesPerDay[1] - changesPerDay[0]));
-      this.#windState.direction = [-1, 0, 1][Math.floor(Math.random() * 3)];
+          this.#rng.range(0, changesPerDay[1] - changesPerDay[0]));
+      this.#windState.direction = this.#rng.pick([-1, 0, 1]);
     }
   }
 
   getSnapshot() {
-    return {
-      time: this.#gameTimeHours,
-      phase: this.#currentPhase,
-      isRaining: this.#isRaining,
-      isFoggy: this.#isFoggy,
-      wind: { ...this.#windState },
-    };
+    return this.#snapshot;
   }
 
   getPhysicsEnv() {
     const base = this.#config.environment;
-    const env = { current: base.current, wind: null };
+    const env = this.#physicsEnv;
+    env.current = base.current;
+    env.wind = null;
+
     if (base.wind && this.#windState.direction !== 0) {
       const m = this.#windState.rainMult;
-      env.wind = {
-        direction: this.#windState.direction,
-        breezeAngleRange: base.wind.breezeAngleRange.map((v) => v * m),
-        gustAngleRange: base.wind.gustAngleRange.map((v) => v * m),
-        gustFluctuationMs: base.wind.gustFluctuationMs,
-        gustChancePerSec: base.wind.gustChancePerSec * m,
-        gustDurationMs: base.wind.gustDurationMs,
-      };
+      const wind = this.#physicsWind;
+      wind.direction = this.#windState.direction;
+      wind.breezeAngleRange[0] = base.wind.breezeAngleRange[0] * m;
+      wind.breezeAngleRange[1] = base.wind.breezeAngleRange[1] * m;
+      wind.gustAngleRange[0] = base.wind.gustAngleRange[0] * m;
+      wind.gustAngleRange[1] = base.wind.gustAngleRange[1] * m;
+      wind.gustFluctuationMs = base.wind.gustFluctuationMs;
+      wind.gustChancePerSec = base.wind.gustChancePerSec * m;
+      wind.gustDurationMs = base.wind.gustDurationMs;
+      env.wind = wind;
     }
     return env;
+  }
+}
+
+class GameWorld {
+  #systems;
+  #location;
+  #canvas;
+  #clock;
+  #config;
+  #bounds = { left: 0, right: 0, top: 0, bottom: 0 };
+  #virtualTopLeft = new Vector2(0, 0);
+  #virtualBottomRight = new Vector2(0, 0);
+
+  constructor({ systems, location, canvas, clock, config }) {
+    this.#systems = systems;
+    this.#location = location;
+    this.#canvas = canvas;
+    this.#clock = clock;
+    this.#config = config;
+  }
+
+  refreshViewport(recalculateMap = true) {
+    const locations = this.#config.locations;
+    this.#systems.projector.update(this.#canvas.width, this.#canvas.height);
+    if (recalculateMap) {
+      this.#systems.map.recalculateZones(
+        this.#systems.projector,
+        locations.cellSize,
+      );
+    }
+  }
+
+  getDynamicBounds() {
+    const locations = this.#config.locations;
+    const mapBounds = this.#systems.map.getCastableBoundsVirtual(
+      locations.cellSize,
+    );
+    const vTL = this.#systems.projector.screenToVirtual(
+      0,
+      0,
+      this.#virtualTopLeft,
+    );
+    const vBR = this.#systems.projector.screenToVirtual(
+      this.#canvas.width,
+      this.#canvas.height,
+      this.#virtualBottomRight,
+    );
+
+    this.#bounds.left = locations.lockZoneXToScreen
+      ? Math.max(vTL.x, mapBounds.left)
+      : mapBounds.left;
+    this.#bounds.right = locations.lockZoneXToScreen
+      ? Math.min(vBR.x, mapBounds.right)
+      : mapBounds.right;
+    this.#bounds.top = mapBounds.top;
+    this.#bounds.bottom = mapBounds.bottom;
+
+    return this.#bounds;
+  }
+
+  checkWater(vx, vy) {
+    const locations = this.#config.locations;
+    const cell = this.#systems.map.getCellAtVirtualPos(
+      vx,
+      vy,
+      locations.cellSize,
+    );
+    return cell && cell.isCastable && !cell.hasCollision ? cell : null;
+  }
+
+  update(dt, timeScale, bounds) {
+    const locations = this.#config.locations;
+
+    this.#systems.env.update(dt, timeScale);
+    const envSnapshot = this.#systems.env.getSnapshot();
+    this.#systems.map.update(dt, envSnapshot.time);
+    this.#systems.chum.update(this.#clock.realNow, timeScale);
+
+    this.#systems.chum.updateBoats(
+      dt,
+      (vx, vy) => {
+        if (
+          vx < bounds.left ||
+          vx > bounds.right ||
+          vy < bounds.top ||
+          vy > bounds.bottom
+        ) {
+          return null;
+        }
+        return this.checkWater(vx, vy);
+      },
+      (vx, vy) => {
+        const cell = this.#systems.map.getCellAtVirtualPos(
+          vx,
+          vy,
+          locations.cellSize,
+        );
+        return cell ? cell.hasCollision : false;
+      },
+      locations.cellSize,
+      { current: this.#location.currentEnvironment?.current },
+    );
+
+    return envSnapshot;
+  }
+}
+
+class RenderSystem {
+  #systems;
+  #config;
+
+  constructor(systems, config) {
+    this.#systems = systems;
+    this.#config = config;
+  }
+
+  drawWorld(invalidCastMarker, debugEnabled) {
+    const r = this.#systems.renderer;
+    const locations = this.#config.locations;
+
+    r.clear(this.#config.canvas.backgroundColor);
+    r.drawBackground(this.#systems.map, this.#systems.projector);
+
+    if (debugEnabled && locations?.debugVisuals) {
+      r.drawLocationDebug?.(
+        this.#systems.map,
+        this.#systems.projector,
+        locations,
+      );
+    }
+
+    if (locations?.showChumZones !== false) {
+      r.drawChumZones(this.#systems.chum, this.#systems.projector);
+    }
+
+    if (this.#systems.chum) {
+      r.drawBoatWaypoints?.(this.#systems.chum, this.#systems.projector);
+      r.drawBoats?.(this.#systems.chum, this.#systems.projector);
+
+      const boats = this.#systems.chum.getBoats();
+      for (let i = 0; i < boats.length; i++) {
+        r.renderSensors?.(boats[i], this.#systems.projector);
+      }
+    }
+
+    if (invalidCastMarker) {
+      r.drawInvalidCastMarker(invalidCastMarker);
+    }
+
+    return r;
+  }
+}
+
+class FishingController {
+  #inventory;
+
+  constructor(inventory) {
+    this.#inventory = inventory;
+  }
+
+  consumeFirstBaitForFight(eq) {
+    if (DevFlags.cheat("infiniteResources")) return false;
+
+    const baits = eq?.baits || [];
+    for (let i = 0; i < baits.length; i++) {
+      if (baits[i]?.type === "bait") {
+        return this.#inventory.consumeEquipped(`baits_${i}`, 1, false);
+      }
+    }
+    return false;
+  }
+
+  consumeFeederChumIfNeeded(eq) {
+    if (DevFlags.cheat("infiniteResources")) return false;
+    if (eq?.rod?.type !== "feeder" || !eq?.feederChum) return false;
+    return this.#inventory.consumeEquipped("feederChum", 1, false);
+  }
+
+  consumeHandChum(chum) {
+    if (DevFlags.cheat("infiniteResources")) return false;
+    if (!chum?.instanceId) return false;
+    return this.#inventory.consumeItem(chum.instanceId, 1);
+  }
+
+  consumeDeliveryChum(slotIndex) {
+    if (DevFlags.cheat("infiniteResources")) return false;
+    if (!Number.isInteger(slotIndex) || slotIndex < 0) return false;
+    return this.#inventory.consumeEquipped(`deliveryChums_${slotIndex}`, 1);
+  }
+
+  collectAvailableBaits(eq, eatenBaits, outIds, outTypes) {
+    outIds.length = 0;
+    outTypes.length = 0;
+
+    const baits = eq?.baits || [];
+    const eaten = eatenBaits || [];
+    for (let i = 0; i < baits.length; i++) {
+      const bait = baits[i];
+      if (!bait) continue;
+
+      let isEaten = false;
+      for (let j = 0; j < eaten.length; j++) {
+        if (eaten[j].instanceId === bait.instanceId) {
+          isEaten = true;
+          break;
+        }
+      }
+
+      if (!isEaten) {
+        outIds.push(bait.id);
+        outTypes.push(bait.type);
+      }
+    }
+  }
+
+  hasActiveLureType(types) {
+    for (let i = 0; i < types.length; i++) {
+      const type = types[i];
+      if (type === "spinner" || type === "wobbler" || type === "jig") {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  applyFailureEquipmentLoss(reason, eq) {
+    if (DevFlags.cheat("noEquipmentLoss")) {
+      console.log(
+        "%c[GOD MODE] ðŸ›¡ï¸ Ð¡Ð½Ð°ÑÑ‚Ñ– Ñ‚Ð° Ð½Ð°Ð¶Ð¸Ð²ÐºÑƒ Ð²Ñ€ÑÑ‚Ð¾Ð²Ð°Ð½Ð¾ Ð²Ñ–Ð´ Ð²Ñ‚Ñ€Ð°Ñ‚Ð¸!",
+        "color: #00ff00;",
+      );
+      return;
+    }
+
+    if (
+      reason === "rod" ||
+      reason === "line" ||
+      reason === "hook" ||
+      reason === "net_escape"
+    ) {
+      this.#consumeEquippedArray(eq?.baits, "baits");
+    }
+
+    if (reason === "rod" || reason === "line") {
+      this.#consumeEquippedArray(eq?.hooks, "hooks");
+      if (eq?.float) this.#inventory.consumeEquipped("float", 1);
+      if (eq?.sinker) this.#inventory.consumeEquipped("sinker", 1);
+      if (eq?.feederChum) this.#inventory.consumeEquipped("feederChum", 1);
+    }
+
+    if (reason === "rod" && eq?.rod) {
+      this.#inventory.consumeEquipped("rod", 1);
+    }
+  }
+
+  #consumeEquippedArray(items, slotName) {
+    if (!items) return;
+    for (let index = 0; index < items.length; index++) {
+      if (items[index]) {
+        this.#inventory.consumeEquipped(`${slotName}_${index}`, 1);
+      }
+    }
+  }
+
+  tryConsumeBaitDuringBite(eq, stepInfo, rng, physicsConfig) {
+    if (!stepInfo?.isAction) return false;
+
+    let consumedSlot = null;
+    let consumedBaitId = null;
+    const baits = eq?.baits || [];
+    for (let i = 0; i < baits.length; i++) {
+      if (baits[i] && baits[i].type === "bait") {
+        consumedSlot = `baits_${i}`;
+        consumedBaitId = baits[i].instanceId;
+        break;
+      }
+    }
+
+    if (!consumedBaitId) return false;
+
+    const lossChance = stepInfo.isGuaranteed
+      ? (physicsConfig.baitLossChance?.guaranteed ?? 0.5)
+      : (physicsConfig.baitLossChance?.normal ?? 0.15);
+
+    if (!rng.chance(lossChance)) return false;
+
+    if (DevFlags.cheat("noEquipmentLoss")) {
+      console.log(
+        "%c[GOD MODE] ðŸ›¡ï¸ Ð Ð¸Ð±Ð° Ð½Ð°Ð¼Ð°Ð³Ð°Ð»Ð°ÑÑŒ Ð²ÐºÑ€Ð°ÑÑ‚Ð¸ Ð½Ð°Ð¶Ð¸Ð²ÐºÑƒ, Ð°Ð»Ðµ Ð‘Ð¾Ð³ Ð½Ðµ Ð´Ð¾Ð·Ð²Ð¾Ð»Ð¸Ð²!",
+        "color: #00ff00;",
+      );
+    } else {
+      this.#inventory.consumeEquipped(consumedSlot, 1);
+    }
+
+    return true;
+  }
+}
+
+class ChumController {
+  #systems;
+  #fishing;
+  #location;
+  #clock;
+  #depthUI;
+  #getDynamicBounds;
+  #getRodVirtualPos;
+  #checkWater;
+  #markInvalidCast;
+  #canPlayerCast;
+  #getGameStateName;
+  #ui;
+  #activeHandChum = null;
+  #isAiming = false;
+  #activeBoat = null;
+  #uiClickLockTime = 0;
+
+  constructor({
+    systems,
+    fishing,
+    location,
+    clock,
+    depthUI,
+    getDynamicBounds,
+    getRodVirtualPos,
+    checkWater,
+    markInvalidCast,
+    canPlayerCast,
+    getGameStateName,
+  }) {
+    this.#systems = systems;
+    this.#fishing = fishing;
+    this.#location = location;
+    this.#clock = clock;
+    this.#depthUI = depthUI;
+    this.#getDynamicBounds = getDynamicBounds;
+    this.#getRodVirtualPos = getRodVirtualPos;
+    this.#checkWater = checkWater;
+    this.#markInvalidCast = markInvalidCast;
+    this.#canPlayerCast = canPlayerCast;
+    this.#getGameStateName = getGameStateName;
+    this.#ui = new ChumUI(() => this.handleClick());
+    this.refreshActiveHandChum();
+  }
+
+  get ui() {
+    return this.#ui;
+  }
+
+  get isAiming() {
+    return this.#isAiming;
+  }
+
+  get activeBoat() {
+    return this.#activeBoat;
+  }
+
+  set activeBoat(boat) {
+    this.#activeBoat = boat;
+  }
+
+  refreshActiveHandChum() {
+    this.#activeHandChum =
+      this.#systems.inventory.findFirstItemByType("chum_mix");
+  }
+
+  updateUI() {
+    const eq = this.#systems.inventory.getEquipped();
+    const method = eq.delivery ? "boat" : "hand";
+    const boatItem = eq.delivery || {};
+    const isManual = boatItem.manualControl ?? true;
+    const sections = boatItem.sections ?? boatItem.engineStats?.sections ?? 1;
+
+    let state = "idle";
+    let count = 0;
+
+    if (method === "hand") {
+      const activeChum = this.#activeHandChum;
+      count = activeChum ? activeChum.quantity || 1 : 0;
+      if (count <= 0) state = "empty";
+      else if (this.#isAiming) state = "aiming";
+      else state = "idle";
+    } else if (method === "boat") {
+      const boats = this.#systems.chum.getBoats();
+      const activeBoat = boats.length > 0 ? boats[0] : null;
+
+      if (!activeBoat) {
+        const loadedCount = this.#countLoadedChums(eq.deliveryChums);
+        count = sections;
+        state =
+          loadedCount === 0 ? "empty" : this.#isAiming ? "aiming" : "idle";
+      } else {
+        count = activeBoat.remainingSections;
+
+        if (activeBoat.state === "idle") {
+          state = this.#isAiming ? "aiming" : "idle";
+        } else if (activeBoat.state === "drifting") {
+          state = "empty";
+        } else if (isManual) {
+          if (
+            activeBoat.state === "deploying" ||
+            activeBoat.state === "returning"
+          ) {
+            state = "moving";
+          } else if (activeBoat.state === "waiting") {
+            state = count > 0 ? "ready" : "empty";
+          }
+        } else if (activeBoat.state === "returning") {
+          state = "moving";
+        } else if (
+          activeBoat.state === "deploying" ||
+          activeBoat.state === "waiting"
+        ) {
+          state = this.#isAiming ? "aiming" : "moving";
+        }
+      }
+    }
+
+    this.#ui.setState(state, method, count, isManual);
+    this.#syncAimingWithBoatState(method, isManual);
+  }
+
+  handleClick() {
+    const eq = this.#systems.inventory.getEquipped();
+    const method = eq.delivery ? "boat" : "hand";
+
+    if (method === "hand") {
+      if (this.#activeHandChum) {
+        this.toggleAim();
+      } else {
+        this.#warn(
+          "Ð£ Ð²Ð°Ñ Ð½ÐµÐ¼Ð°Ñ” Ð¿Ñ€Ð¸ÐºÐ¾Ñ€Ð¼ÐºÐ¸ Ð² Ñ–Ð½Ð²ÐµÐ½Ñ‚Ð°Ñ€Ñ–!",
+        );
+      }
+      return;
+    }
+
+    if (method !== "boat") return;
+
+    const boats = this.#systems.chum.getBoats();
+    if (boats.length === 0) {
+      if (this.#countLoadedChums(eq.deliveryChums) > 0) {
+        this.toggleAim();
+      } else {
+        this.#warn(
+          "Ð—Ð°Ð²Ð°Ð½Ñ‚Ð°Ð¶Ñ‚Ðµ Ð¿Ñ€Ð¸ÐºÐ¾Ñ€Ð¼ÐºÑƒ Ð² Ð±ÑƒÐ½ÐºÐµÑ€Ð¸ ÐºÐ¾Ñ€Ð°Ð±Ð»Ð¸ÐºÐ° Ñ‡ÐµÑ€ÐµÐ· Ñ–Ð½Ð²ÐµÐ½Ñ‚Ð°Ñ€!",
+        );
+      }
+      return;
+    }
+
+    const activeBoat = boats[0];
+    const boatItem = eq.delivery || {};
+    const isManual = boatItem.manualControl ?? true;
+
+    if (this.#isAiming) {
+      this.toggleAim();
+      return;
+    }
+
+    if (
+      isManual &&
+      activeBoat.state === "waiting" &&
+      activeBoat.remainingSections > 0
+    ) {
+      this.#dropManualBoatChum(activeBoat, boatItem);
+    }
+  }
+
+  toggleAim() {
+    this.#isAiming = !this.#isAiming;
+    this.#uiClickLockTime = this.#clock.now;
+
+    if (this.#isAiming) {
+      this.#depthUI.hide();
+    }
+
+    const eq = this.#systems.inventory.getEquipped();
+    const method = eq.delivery ? "boat" : "hand";
+
+    if (this.#isAiming && method === "boat") {
+      const bounds = this.#getDynamicBounds();
+      const rodPos = this.#getRodVirtualPos(bounds);
+
+      this.#activeBoat = this.#systems.chum.spawnIdleBoat(
+        rodPos.x,
+        bounds.bottom - 5,
+        eq.delivery,
+      );
+
+      if (this.#activeBoat) {
+        this.#activeBoat._loadedChums = this.#getLoadedChums(eq.deliveryChums);
+        this.#activeBoat.remainingSections =
+          this.#activeBoat._loadedChums.length;
+      }
+    } else if (!this.#isAiming && this.#activeBoat) {
+      if (this.#activeBoat.state === "idle") {
+        this.#systems.chum.removeBoat(this.#activeBoat);
+      }
+      this.#activeBoat = null;
+    }
+  }
+
+  setAiming(value) {
+    if (this.#isAiming !== !!value) {
+      this.toggleAim();
+    }
+  }
+
+  handleAiming(input, bounds) {
+    if (!input.clickPos) return;
+
+    if (
+      this.#uiClickLockTime &&
+      this.#clock.now - this.#uiClickLockTime < 200
+    ) {
+      input.clickPos = null;
+      return;
+    }
+
+    const eq = this.#systems.inventory.getEquipped();
+    const method = eq.delivery ? "boat" : "hand";
+    const vPos = this.#systems.projector.screenToVirtual(
+      input.clickPos.x,
+      input.clickPos.y,
+    );
+    const cell = this.#checkWater(vPos.x, vPos.y);
+
+    if (method === "hand") {
+      this.#handleHandAiming(input, bounds, vPos, cell);
+    } else if (method === "boat") {
+      this.#handleBoatAiming(input, vPos, cell);
+    }
+  }
+
+  handleGlobalBoatControl(input) {
+    if (
+      !input.clickPos ||
+      this.#isAiming ||
+      this.#getGameStateName() === "playing"
+    ) {
+      return;
+    }
+
+    const boats = this.#systems.chum.getBoats();
+    if (boats.length === 0) return;
+
+    const activeBoat = boats[0];
+    const vPos = this.#systems.projector.screenToVirtual(
+      input.clickPos.x,
+      input.clickPos.y,
+    );
+    let clickHandled = false;
+
+    const distToBoat = Math.hypot(
+      activeBoat.pos.x - vPos.x,
+      activeBoat.pos.y - vPos.y,
+    );
+    const mapBounds = this.#getDynamicBounds();
+
+    if (distToBoat < 40) {
+      if (activeBoat.pos.y > mapBounds.bottom - 200) {
+        this.#systems.chum.removeBoat(activeBoat);
+      }
+      clickHandled = true;
+    } else if (activeBoat.state !== "drifting") {
+      clickHandled = this.#handleBoatMapClick(activeBoat, vPos, input.clickPos);
+    }
+
+    if (clickHandled || !this.#canPlayerCast()) {
+      input.clickPos = null;
+    }
+  }
+
+  #handleHandAiming(input, bounds, vPos, cell) {
+    const activeChum = this.#activeHandChum;
+
+    if (!cell || !activeChum) {
+      this.#markInvalidCast(input.clickPos);
+      input.clickPos = null;
+      this.toggleAim();
+      return;
+    }
+
+    const virtualLineY = bounds.bottom - this.#location.chumCastDistance;
+    if (vPos.y < virtualLineY) {
+      this.#markInvalidCast(input.clickPos);
+      input.clickPos = null;
+      this.toggleAim();
+      this.#warn(
+        "Ð—Ð°Ð½Ð°Ð´Ñ‚Ð¾ Ð´Ð°Ð»ÐµÐºÐ¾ Ð´Ð»Ñ Ñ€ÑƒÑ‡Ð½Ð¾Ð³Ð¾ Ð·Ð°ÐºÐ¸Ð´Ð°Ð½Ð½Ñ!",
+      );
+      return;
+    }
+
+    this.#systems.chum.deployBait(vPos.x, vPos.y, activeChum.id);
+    this.#fishing.consumeHandChum(activeChum);
+    this.toggleAim();
+  }
+
+  #handleBoatAiming(input, vPos, cell) {
+    const activeBoat = this.#activeBoat;
+    if (!activeBoat) {
+      this.#markInvalidCast(input.clickPos);
+      input.clickPos = null;
+      return;
+    }
+
+    const reservedTargets = this.#getReservedTargets(activeBoat);
+    const chumData = activeBoat._loadedChums
+      ? activeBoat._loadedChums[reservedTargets]
+      : null;
+    const chumToDrop = chumData ? chumData.item : null;
+
+    if (!cell || !chumToDrop) {
+      this.#markInvalidCast(input.clickPos);
+      input.clickPos = null;
+      return;
+    }
+
+    this.#systems.chum.deployBait(vPos.x, vPos.y, chumToDrop.id, activeBoat);
+    this.#fishing.consumeDeliveryChum(chumData.slotIndex);
+
+    const loadedCount = activeBoat._loadedChums.length;
+    if (reservedTargets + 1 >= loadedCount) {
+      this.toggleAim();
+    }
+  }
+
+  #handleBoatMapClick(activeBoat, vPos, clickPos) {
+    const cell = this.#checkWater(vPos.x, vPos.y);
+    if (!cell) {
+      this.#markInvalidCast(clickPos);
+      return true;
+    }
+
+    const eq = this.#systems.inventory.getEquipped();
+    const boatItem = eq.delivery || {};
+    const isManual = boatItem.manualControl ?? true;
+
+    if (isManual) {
+      if (activeBoat.state !== "returning") {
+        activeBoat.setTarget(vPos.x, vPos.y);
+        return true;
+      }
+      return false;
+    }
+
+    const reservedTargets = this.#getReservedTargets(activeBoat);
+    const freeSlots = activeBoat.remainingSections - reservedTargets;
+    if (freeSlots <= 0 || activeBoat.state === "returning") return false;
+
+    const chumData = activeBoat._loadedChums
+      ? activeBoat._loadedChums[reservedTargets]
+      : null;
+    const chumToDrop = chumData ? chumData.item : null;
+    if (!chumToDrop) return false;
+
+    this.#systems.chum.deployBait(vPos.x, vPos.y, chumToDrop.id, activeBoat);
+    this.#fishing.consumeDeliveryChum(chumData.slotIndex);
+    return true;
+  }
+
+  #dropManualBoatChum(activeBoat, boatItem) {
+    const loadedCount = activeBoat._loadedChums.length;
+    const dropIndex = loadedCount - activeBoat.remainingSections;
+    const chumData = activeBoat._loadedChums[dropIndex];
+
+    if (chumData) {
+      this.#systems.chum.deployBait(
+        activeBoat.pos.x,
+        activeBoat.pos.y,
+        chumData.item.id,
+      );
+      this.#fishing.consumeDeliveryChum(chumData.slotIndex);
+    }
+
+    activeBoat.remainingSections--;
+
+    if (activeBoat.remainingSections <= 0) {
+      const hasAI =
+        boatItem.hasAutoReturn ?? boatItem.engineStats?.hasAutoReturn ?? false;
+      if (hasAI) {
+        activeBoat.state = "returning";
+      }
+    }
+  }
+
+  #syncAimingWithBoatState(method, isManual) {
+    if (!this.#isAiming || method !== "boat") return;
+
+    const boats = this.#systems.chum.getBoats();
+    const activeBoat = boats.length > 0 ? boats[0] : null;
+    if (!activeBoat) return;
+
+    if (!isManual && activeBoat.state === "returning") {
+      this.#isAiming = false;
+    } else if (
+      isManual &&
+      activeBoat.state !== "idle" &&
+      activeBoat.state !== "waiting"
+    ) {
+      this.#isAiming = false;
+    }
+  }
+
+  #getLoadedChums(deliveryChums) {
+    const loadedChums = [];
+    const chumsArr = deliveryChums || [];
+    for (let i = 0; i < chumsArr.length; i++) {
+      if (chumsArr[i]) {
+        loadedChums.push({ slotIndex: i, item: chumsArr[i] });
+      }
+    }
+    return loadedChums;
+  }
+
+  #countLoadedChums(deliveryChums) {
+    let loadedCount = 0;
+    const chumsArr = deliveryChums || [];
+    for (let i = 0; i < chumsArr.length; i++) {
+      if (chumsArr[i]) loadedCount++;
+    }
+    return loadedCount;
+  }
+
+  #getReservedTargets(boat) {
+    return (boat.zoneId ? 1 : 0) + (boat.waypoints ? boat.waypoints.length : 0);
+  }
+
+  #warn(message) {
+    this.#systems.inventoryUI?.showWarning(message);
   }
 }
 
@@ -102,6 +1205,7 @@ class GameState {
   handleInput() {}
   update() {}
   draw() {}
+  dispose() {}
 }
 
 class ScoutingState extends GameState {
@@ -125,8 +1229,7 @@ class ScoutingState extends GameState {
       const bounds = this.game.getDynamicBounds();
 
       // --- ВТРУЧАННЯ GOD MODE ---
-      let canCastAnywhere =
-        typeof GodMode !== "undefined" && GodMode.infiniteCasting;
+      let canCastAnywhere = DevFlags.cheat("infiniteCasting");
 
       if (canCastAnywhere) {
         // Якщо чіт увімкнено, ми "підробляємо" дані, якщо їх немає
@@ -219,8 +1322,7 @@ class ScoutingState extends GameState {
       // МАЛЮЄМО ЗОНУ ТІЛЬКИ ЯКЩО ПРИКОРМКА В РУЦІ
       if (method === "hand" && CONFIG.locations?.showAimingZone !== false) {
         // Беремо динамічний ID локації або використовуємо "test" як запобіжник
-        const locId = this.game.systems.map?.currentLocationId || "test";
-        const chumDist = CONFIG.locations.map[locId]?.chumCastDistance || 300;
+        const chumDist = this.game.chumCastDistance;
 
         renderer.drawAimingZone(
           this.game.systems.projector,
@@ -245,23 +1347,21 @@ class PlayingState extends GameState {
   #reel;
   #hasEquippedNet = false;
   #onConfigUpdateBind;
+  #removeConfigUpdateListener = null;
+  #fishForceApplied = new Vector2(0, 0);
+  #playerForce = new Vector2(0, 0);
+  #playerForceApplied = new Vector2(0, 0);
+  #pullDirection = new Vector2(0, 0);
 
   enter(data) {
-    this.#startTime = performance.now();
+    this.#startTime = this.game.clock.now;
     this.data = data || {};
     const fishData = this.data.fish;
 
     const eq = this.game.systems.inventory.getEquipped();
     this.#hasEquippedNet = !!eq.net;
 
-    const usedBait = (eq?.baits || []).find((b) => b && b.type === "bait");
-    if (usedBait) {
-      const isInfinite =
-        typeof GodMode !== "undefined" && GodMode.infiniteResources;
-      if (!isInfinite) {
-        this.game.systems.inventory.consumeItem(usedBait.instanceId, 1);
-      }
-    }
+    this.game.fishing.consumeFirstBaitForFight(eq);
 
     this.#rod = new Rod(
       eq.rod?.level || 1,
@@ -292,15 +1392,22 @@ class PlayingState extends GameState {
       fishData.weight,
       fishData.resistance,
       fishData.physics,
+      this.game.rng,
     );
 
-    this.#fishingSystem = new FishingSystem(this.#rod, this.#reel, fish);
+    this.#fishingSystem = new FishingSystem(
+      this.#rod,
+      this.#reel,
+      fish,
+      this.game.rng,
+    );
 
     this.#tensionMeter = new TensionMeter(
       eq.rod?.level || 1,
       eq.reel?.level || 0,
       hook,
       CONFIG.tension,
+      this.game.rng,
     );
 
     this.#fishCondition = new FishCondition(
@@ -316,27 +1423,33 @@ class PlayingState extends GameState {
       CONFIG.stamina.mechanics,
     );
 
-    console.log(
-      `%c🎣 КЛЮНУВ: ${fishData.name}!`,
-      "color: #00ff00; font-size: 16px; font-weight: bold;",
-    );
-    console.table({
-      "Тип Вудки": this.#rod.getType(),
-      "Наявність Котушки": this.#rod.hasReel() ? "Є" : "Немає (Махова)",
-      "Згенерована Вага": fishData.weight.toFixed(3) + " кг",
-      "Рівень (Складність)": fishData.level,
-      "Базовий Опір": fishData.resistance.toFixed(2),
-    });
+    if (this.game.isDebugEnabled()) {
+      console.log(
+        `%c🎣 КЛЮНУВ: ${fishData.name}!`,
+        "color: #00ff00; font-size: 16px; font-weight: bold;",
+      );
+      console.table({
+        "Тип Вудки": this.#rod.getType(),
+        "Наявність Котушки": this.#rod.hasReel() ? "Є" : "Немає (Махова)",
+        "Згенерована Вага": fishData.weight.toFixed(3) + " кг",
+        "Рівень (Складність)": fishData.level,
+        "Базовий Опір": fishData.resistance.toFixed(2),
+      });
 
-    document.dispatchEvent(
-      new CustomEvent("debug-fish-hooked", {
-        detail: { fish: fishData, eq: eq },
-      }),
-    );
+      this.game.emitDebugEvent("debug-fish-hooked", {
+        fish: fishData,
+        eq: eq,
+      });
+    }
 
     // --- ДОДАНО: Слухаємо DevTools під час виважування ---
     this.#onConfigUpdateBind = () => this.#syncEquipment();
-    document.addEventListener("config-updated", this.#onConfigUpdateBind);
+    this.#removeConfigUpdateListener?.();
+    this.#removeConfigUpdateListener = this.game.addLifecycleListener(
+      document,
+      "config-updated",
+      this.#onConfigUpdateBind,
+    );
   }
 
   #syncEquipment() {
@@ -411,37 +1524,38 @@ class PlayingState extends GameState {
     }
 
     this.game.float.applyForce(
-      new Vector2(fishForceRaw.x, tFishY).multiplyScalar(
-        CONFIG.physics.fishForceMultiplier,
-      ),
+      this.#fishForceApplied
+        .set(fishForceRaw.x, tFishY)
+        .multiplyScalar(CONFIG.physics.fishForceMultiplier),
     );
 
     const input = this.game.systems.input.getState();
     const rodPos = this.game.getRodVirtualPos(bounds);
     const screenOffset = this.game.getScreenOffsetRatio(floatPos);
 
-    let pF = new Vector2(0, 0);
+    const pF = this.#playerForce.set(0, 0);
     if (input.isPulling) {
-      pF = this.#fishingSystem.calculatePlayerForce(
-        input.pullDirection,
-        floatPos.x,
-        floatPos.y,
-        rodPos,
-        screenOffset,
-        CONFIG.physics,
-        bounds,
+      pF.copy(
+        this.#fishingSystem.calculatePlayerForce(
+          input.pullDirection,
+          floatPos.x,
+          floatPos.y,
+          rodPos,
+          screenOffset,
+          CONFIG.physics,
+          bounds,
+        ),
       );
-      this.game.float.applyForce(
-        pF.clone().multiplyScalar(CONFIG.physics.playerForceMultiplier),
-      );
+      this.#playerForceApplied
+        .copy(pF)
+        .multiplyScalar(CONFIG.physics.playerForceMultiplier);
+      this.game.float.applyForce(this.#playerForceApplied);
     }
 
-    this.#forces = {
-      pX: pF.x,
-      pY: pF.y,
-      fX: fishForceRaw.x,
-      fY: fishForceRaw.y,
-    };
+    this.#forces.pX = pF.x;
+    this.#forces.pY = pF.y;
+    this.#forces.fX = fishForceRaw.x;
+    this.#forces.fY = fishForceRaw.y;
 
     const pMax = Math.abs(
       this.#fishingSystem.calculatePlayerForce(
@@ -481,10 +1595,9 @@ class PlayingState extends GameState {
 
     let pullDirection = null;
     if (input.isPulling) {
-      pullDirection = new Vector2(
-        rodPos.x - floatPos.x,
-        rodPos.y - floatPos.y,
-      ).normalize();
+      pullDirection = this.#pullDirection
+        .set(rodPos.x - floatPos.x, rodPos.y - floatPos.y)
+        .normalize();
     }
 
     this.game.float.update(
@@ -526,14 +1639,14 @@ class PlayingState extends GameState {
 
     const fishWeight = this.#fishingSystem.getFishWeight();
     const chance = this.game.net.calculateCatchChance(fishWeight);
-    const roll = Math.random() * 100;
+    const roll = this.game.rng.range(0, 100);
     const success = roll <= chance;
 
-    document.dispatchEvent(
-      new CustomEvent("netCatchRoll", {
-        detail: { chance: chance, roll: roll, success: success },
-      }),
-    );
+    this.game.emitDebugEvent("netCatchRoll", {
+      chance: chance,
+      roll: roll,
+      success: success,
+    });
 
     this.game.setState(success ? "victory" : "failed", {
       reason: success ? null : "net_escape",
@@ -596,9 +1709,10 @@ class PlayingState extends GameState {
     );
 
     const xRange = CONFIG.physics?.distanceXMultiplier || [1.0, 1.0];
+    const boundsHeight = Math.max(1, bounds.bottom - bounds.top);
     const distRatio = Math.max(
       0,
-      Math.min(1.0, (floatPos.y - bounds.top) / (bounds.bottom - bounds.top)),
+      Math.min(1.0, (floatPos.y - bounds.top) / boundsHeight),
     );
     const depthScaleX = xRange[0] + distRatio * (xRange[1] - xRange[0]);
 
@@ -637,13 +1751,17 @@ class PlayingState extends GameState {
   exit() {
     this.game.holdUI.update(null);
     this.game.systems.ui.hideNetButton();
-    if (this.#onConfigUpdateBind) {
-      document.removeEventListener("config-updated", this.#onConfigUpdateBind);
-    }
+    this.#removeConfigUpdateListener?.();
+    this.#removeConfigUpdateListener = null;
   }
 }
 
 class WaitingState extends GameState {
+  #effectiveInput = { isPulling: false, pullDirection: null };
+  #pullDirection = new Vector2(0, 0);
+  #baitIds = [];
+  #baitTypes = [];
+
   enter() {
     this.game.systems.bite.reset();
   }
@@ -682,19 +1800,10 @@ class WaitingState extends GameState {
 
       // ЗМІНЕНО: тепер перевіряємо і воду (cell), і дальність (isInside)
       if (cell && isInside) {
-        this.game.castManager.registerCast(performance.now());
+        this.game.castManager.registerCast(this.game.clock.now);
         this.game.castLine(vPos.x, vPos.y, cell.depth);
 
-        if (eq?.rod?.type === "feeder" && eq?.feederChum) {
-          const isInfinite =
-            typeof GodMode !== "undefined" && GodMode.infiniteResources;
-          if (!isInfinite) {
-            this.game.systems.inventory.consumeItem(
-              eq.feederChum.instanceId,
-              1,
-            );
-          }
-        }
+        this.game.fishing.consumeFeederChumIfNeeded(eq);
       } else {
         // Якщо клікнув на берег АБО занадто далеко — малюємо червоний хрестик
         this.game.invalidCastMarker = {
@@ -716,18 +1825,16 @@ class WaitingState extends GameState {
     const reelPower = eq?.reel ? eq.reel.basePower || 0 : 0;
     const isSpinning = eq?.rod?.type === "spinning";
 
-    const effectiveInput = {
-      ...input,
-      isPulling: isSpinning ? input.isPulling : false,
-    };
+    const effectiveInput = this.#effectiveInput;
+    effectiveInput.isPulling = isSpinning ? input.isPulling : false;
+    effectiveInput.pullDirection = input.pullDirection;
 
     let pullDirection = null;
     if (effectiveInput.isPulling) {
       const rodPos = this.game.getRodVirtualPos(bounds);
-      pullDirection = new Vector2(
-        rodPos.x - pos.x,
-        rodPos.y - pos.y,
-      ).normalize();
+      pullDirection = this.#pullDirection
+        .set(rodPos.x - pos.x, rodPos.y - pos.y)
+        .normalize();
     }
 
     this.game.float.update(
@@ -751,16 +1858,17 @@ class WaitingState extends GameState {
       return;
     }
 
-    const activeBaits = (eq?.baits || []).filter(
-      (b) =>
-        b &&
-        !(this.game.eatenBaits || []).some(
-          (eb) => eb.instanceId === b.instanceId,
-        ),
-    );
+    const baitIds = this.#baitIds;
+    const baitTypes = this.#baitTypes;
+    baitIds.length = 0;
+    baitTypes.length = 0;
 
-    const baitIds = activeBaits.map((b) => b.id);
-    const baitTypes = activeBaits.map((b) => b.type);
+    this.game.fishing.collectAvailableBaits(
+      eq,
+      this.game.eatenBaits,
+      baitIds,
+      baitTypes,
+    );
 
     let hooked = this.game.systems.bite.evaluateBite(dt, envData.biteEnv, {
       hookSize: eq?.hooks?.[0]?.level || eq?.baits?.[0]?.level || 1,
@@ -775,9 +1883,7 @@ class WaitingState extends GameState {
         CONFIG.spawns.fishes.find((f) => f.id === fixed.fishId) ||
         CONFIG.spawns.fishes[0];
 
-      const isActiveLure = baitTypes.some((type) =>
-        ["spinner", "wobbler", "jig"].includes(type),
-      );
+      const isActiveLure = this.game.fishing.hasActiveLureType(baitTypes);
 
       const chosenSequence = template.biteMechanics
         ? isActiveLure
@@ -797,10 +1903,6 @@ class WaitingState extends GameState {
     }
 
     if (hooked) {
-      const usedBait = (eq?.baits || []).find(
-        (b) => b !== null && b !== undefined,
-      );
-
       this.game.float.startBite(effectiveInput.isPulling, hooked.biteSequence);
       this.game.setState("biting", { fish: hooked });
     }
@@ -819,10 +1921,12 @@ class WaitingState extends GameState {
 }
 
 class BitingState extends GameState {
-  #feederAudioTemplate;
+  #feederAudioPlayer;
   #lastStepId = -1;
   #ringQueue = [];
+  #ringHead = 0;
   #stepTimeElapsed = 0;
+  #pullDirection = new Vector2(0, 0);
 
   enter(data) {
     if (super.enter) super.enter();
@@ -830,19 +1934,27 @@ class BitingState extends GameState {
     this.fish = data.fish;
 
     this.#lastStepId = -1;
-    this.#ringQueue = [];
+    this.#ringQueue.length = 0;
+    this.#ringHead = 0;
     this.#stepTimeElapsed = 0;
 
     const eq = this.game.systems.inventory.getEquipped();
     if (eq?.rod?.type === "feeder" && CONFIG.ui?.audio?.feederBite) {
-      this.#feederAudioTemplate = new Audio(CONFIG.ui.audio.feederBite);
+      const src = CONFIG.ui.audio.feederBite;
+      if (!this.#feederAudioPlayer || this.#feederAudioPlayer.src !== src) {
+        this.#feederAudioPlayer?.dispose();
+        this.#feederAudioPlayer = new BufferedAudioPlayer(src);
+      }
+      this.#feederAudioPlayer.warm().catch(() => {});
     } else {
-      this.#feederAudioTemplate = null;
+      this.#feederAudioPlayer?.dispose();
+      this.#feederAudioPlayer = null;
     }
   }
 
   exit() {
-    this.#ringQueue = [];
+    this.#ringQueue.length = 0;
+    this.#ringHead = 0;
   }
 
   handleInput(input) {
@@ -853,7 +1965,7 @@ class BitingState extends GameState {
       if (!this.game.canPlayerCast()) return;
 
       const isGuaranteed = this.game.float.isGuaranteedBite();
-      const success = Math.random() <= (isGuaranteed ? 0.99 : 0.01);
+      const success = this.game.rng.chance(isGuaranteed ? 0.99 : 0.01);
 
       if (success) {
         this.game.float.hook();
@@ -886,10 +1998,9 @@ class BitingState extends GameState {
     let pullDirection = null;
     if (input.isPulling) {
       const rodPos = this.game.getRodVirtualPos(bounds);
-      pullDirection = new Vector2(
-        rodPos.x - pos.x,
-        rodPos.y - pos.y,
-      ).normalize();
+      pullDirection = this.#pullDirection
+        .set(rodPos.x - pos.x, rodPos.y - pos.y)
+        .normalize();
     }
 
     this.game.float.update(
@@ -938,60 +2049,34 @@ class BitingState extends GameState {
         this.#lastStepId = stepInfo.id;
 
         if (stepInfo.isAction) {
-          // Шукаємо, в якому саме слоті лежить наживка, яку зараз їдять
-          let consumedSlot = null;
-          let consumedBaitId = null;
-          if (eq.baits) {
-            for (let i = 0; i < eq.baits.length; i++) {
-              if (eq.baits[i] && eq.baits[i].type === "bait") {
-                consumedSlot = `baits_${i}`;
-                consumedBaitId = eq.baits[i].instanceId;
-                break;
-              }
-            }
+          if (
+            this.game.fishing.tryConsumeBaitDuringBite(
+              eq,
+              stepInfo,
+              this.game.rng,
+              CONFIG.physics,
+            )
+          ) {
+            this.game.float.stopBite();
+            this.game.setState("waiting");
+            return;
           }
 
-          if (consumedBaitId) {
-            const lossChance = stepInfo.isGuaranteed
-              ? (CONFIG.physics.baitLossChance?.guaranteed ?? 0.5)
-              : (CONFIG.physics.baitLossChance?.normal ?? 0.15);
-
-            if (Math.random() <= lossChance) {
-              // === ВТРУЧАННЯ GOD MODE: Перевіряємо, чи ввімкнено захист від втрат ===
-              if (typeof GodMode !== "undefined" && GodMode.noEquipmentLoss) {
-                console.log(
-                  "%c[GOD MODE] 🛡️ Риба намагалась вкрасти наживку, але Бог не дозволив!",
-                  "color: #00ff00;",
-                );
-              } else {
-                // 1. ЗНІМАЄМО з гачка (щоб гравець не знав, поки не витягне)
-                this.game.systems.inventory.unequipItem(consumedSlot);
-                // 2. Видаляємо 1 штуку з рюкзака фізично
-                this.game.systems.inventory.consumeItem(consumedBaitId, 1);
-              }
-
-              // 3. Незалежно від того, вкрала риба наживку чи ні (God Mode),
-              // вона все одно лякається і клювання припиняється.
-              this.game.float.stopBite();
-              this.game.setState("waiting");
-              return;
-            }
-          }
-
-          if (this.#feederAudioTemplate) {
+          if (this.#feederAudioPlayer) {
             this.#scheduleRings(stepInfo);
           }
         }
       }
 
-      if (this.#feederAudioTemplate) {
+      if (this.#feederAudioPlayer) {
         this.#processRingQueue(dt);
       }
     }
   }
 
   #scheduleRings(stepInfo) {
-    this.#ringQueue = [];
+    this.#ringQueue.length = 0;
+    this.#ringHead = 0;
     this.#stepTimeElapsed = 0;
 
     const cfg = CONFIG.feederConfig || {
@@ -1008,9 +2093,7 @@ class BitingState extends GameState {
     } else {
       const minRings = cfg.guaranteedRings[0];
       const maxRings = cfg.guaranteedRings[1];
-      const ringCount = Math.floor(
-        minRings + Math.random() * (maxRings - minRings + 1),
-      );
+      const ringCount = this.game.rng.int(minRings, maxRings);
 
       const interval = stepInfo.duration / ringCount;
 
@@ -1024,23 +2107,31 @@ class BitingState extends GameState {
   }
 
   #processRingQueue(dt) {
-    if (this.#ringQueue.length === 0) return;
+    if (this.#ringHead >= this.#ringQueue.length) return;
 
     this.#stepTimeElapsed += dt;
 
     while (
-      this.#ringQueue.length > 0 &&
-      this.#stepTimeElapsed >= this.#ringQueue[0].startAt
+      this.#ringHead < this.#ringQueue.length &&
+      this.#stepTimeElapsed >= this.#ringQueue[this.#ringHead].startAt
     ) {
-      const currentRing = this.#ringQueue.shift();
+      const currentRing = this.#ringQueue[this.#ringHead++];
       this.#playSound(currentRing.volume);
+    }
+
+    if (this.#ringHead >= this.#ringQueue.length) {
+      this.#ringQueue.length = 0;
+      this.#ringHead = 0;
     }
   }
 
   #playSound(volume) {
-    const soundClone = this.#feederAudioTemplate.cloneNode();
-    soundClone.volume = volume;
-    soundClone.play().catch(() => {});
+    this.#feederAudioPlayer?.play(volume);
+  }
+
+  dispose() {
+    this.#feederAudioPlayer?.dispose();
+    this.#feederAudioPlayer = null;
   }
 
   draw(renderer, bounds) {
@@ -1063,64 +2154,7 @@ class FailedState extends GameState {
     const eq = this.game.systems.inventory.getEquipped();
     const reason = data?.reason;
 
-    if (typeof GodMode !== "undefined" && GodMode.noEquipmentLoss) {
-      console.log(
-        "%c[GOD MODE] 🛡️ Снасті та наживку врятовано від втрати!",
-        "color: #00ff00;",
-      );
-      return;
-    }
-
-    // 1. Втрата наживки: відбувається ЗАВЖДИ... (далі йде твій старий код)
-    if (
-      reason === "rod" ||
-      reason === "line" ||
-      reason === "hook" ||
-      reason === "net_escape"
-    ) {
-      if (eq.baits) {
-        eq.baits.forEach((b, index) => {
-          if (b) {
-            this.game.systems.inventory.consumeItem(b.instanceId, 1);
-            this.game.systems.inventory.unequipItem(`baits_${index}`);
-          }
-        });
-      }
-    }
-
-    // 2. Втрата оснастки (гачки, поплавок, грузило, прикормка): ТІЛЬКИ при обриві ліски або поломці вудки
-    if (reason === "rod" || reason === "line") {
-      if (eq.hooks) {
-        eq.hooks.forEach((h, index) => {
-          if (h) {
-            this.game.systems.inventory.consumeItem(h.instanceId, 1);
-            this.game.systems.inventory.unequipItem(`hooks_${index}`);
-          }
-        });
-      }
-
-      if (eq.float) {
-        this.game.systems.inventory.consumeItem(eq.float.instanceId, 1);
-        this.game.systems.inventory.unequipItem("float");
-      }
-      if (eq.sinker) {
-        this.game.systems.inventory.consumeItem(eq.sinker.instanceId, 1);
-        this.game.systems.inventory.unequipItem("sinker");
-      }
-      if (eq.feederChum) {
-        this.game.systems.inventory.consumeItem(eq.feederChum.instanceId, 1);
-        this.game.systems.inventory.unequipItem("feederChum");
-      }
-    }
-
-    // 3. Втрата самої вудки: ТІЛЬКИ якщо вона не витримала
-    if (reason === "rod") {
-      if (eq.rod) {
-        this.game.systems.inventory.consumeItem(eq.rod.instanceId, 1);
-        // Каскадне зняття автоматично поверне котушку в рюкзак
-        this.game.systems.inventory.unequipItem("rod");
-      }
-    }
+    this.game.fishing.applyFailureEquipmentLoss(reason, eq);
   }
 
   exit() {
@@ -1180,13 +2214,42 @@ class Game {
   #depthUI;
   #timeUI;
   #holdUI;
-  #chumUI;
   #hasEquippedNet = false;
+  #location;
+  #rng;
+  #debugEvents = new DebugEventBridge(document, () => DevFlags.debugEvents());
+  #clock = new GameClock();
+  #listeners = new EventLifecycle();
+  #loop;
+  #world;
+  #renderSystem;
+  #fishingController;
+  #chumController;
+  #stateInstances = {};
+  #pendingState = null;
+  #isTransitioning = false;
+  #dayOfWeek = new Date().getDay();
+  #rodVirtualPos = new Vector2(0, 0);
+  #screenScratch = new Vector2(0, 0);
+  #screenScratch2 = new Vector2(0, 0);
+  #stateUpdateContext = { env: null, biteEnv: null };
+  #biteEnvData = {
+    hookDepth: 0,
+    bottomDepth: 0,
+    lineLength: 0,
+    timePhase: "day",
+    dayOfWeek: 0,
+    zoneBonus: 1,
+    chumBonus: 1,
+    chumTargets: [],
+    isRaining: false,
+    isFoggy: false,
+    castSpamMultiplier: 1,
+  };
+  #debugCurrentBaits = [];
   eatenBaits = [];
 
   invalidCastMarker = null;
-  isAimingChum = false;
-  activeBoat = null;
   castStartTime = 0;
   castDistanceRatio = 0;
   currentHookDepth = 1.0;
@@ -1196,9 +2259,23 @@ class Game {
     this.#canvas = document.getElementById(canvasId);
     this.#canvas.width = window.innerWidth;
     this.#canvas.height = window.innerHeight;
+    this.#loop = new GameLoop(
+      this.#clock,
+      (dt) => {
+        this.update(dt);
+        this.lastTime = this.#clock.now;
+      },
+      () => this.draw(),
+    );
 
-    const locId = "test";
-    const locCfg = CONFIG.locations.map[locId];
+    this.#location = new LocationManager(
+      CONFIG.locations,
+      CONFIG.player?.locationId,
+    );
+    this.#rng = new SeededRng(CONFIG.debug?.seed ?? CONFIG.rng?.seed);
+
+    const locId = this.#location.id;
+    const locCfg = this.#location.config;
 
     const projectorInstance = new ViewportProjector(CONFIG.locations, locId);
 
@@ -1230,61 +2307,93 @@ class Game {
     this.#systems = {
       renderer: new Renderer(this.#canvas),
       projector: projectorInstance,
-      map: new LocationMap(locId, CONFIG.locations),
-      env: new EnvironmentSystem(locCfg, CONFIG.debug?.initialTime ?? 12),
+      map: new LocationMap(locId, CONFIG.locations, this.#rng),
+      env: new EnvironmentSystem(
+        locCfg,
+        CONFIG.debug?.initialTime ?? 12,
+        this.#rng,
+        CONFIG.spawns,
+      ),
       input: new InputManager(this.#canvas, Number(CONFIG.ui?.rod?.x) || null),
       ui: new UIManager(CONFIG),
 
       // ВИПРАВЛЕНО: Передаємо наш новий зібраний об'єкт замість порожнього CONFIG.chum
-      chum: new ChumManager(locId, chumConfigObj, projectorInstance),
+      chum: new ChumManager(locId, chumConfigObj, projectorInstance, {
+        rng: this.#rng,
+        now: () => this.#clock.realNow,
+      }),
 
-      bite: new BiteSystem(CONFIG.spawns, {}),
+      bite: new BiteSystem(CONFIG.spawns, {}, this.#rng),
       inventory: inventoryManager,
     };
 
     this.#systems.inventoryUI = new InventoryUI(this.#systems.inventory);
+    this.#world = new GameWorld({
+      systems: this.#systems,
+      location: this.#location,
+      canvas: this.#canvas,
+      clock: this.#clock,
+      config: CONFIG,
+    });
+    this.#renderSystem = new RenderSystem(this.#systems, CONFIG);
+    this.#fishingController = new FishingController(this.#systems.inventory);
 
     this.#net = new Net(eq.net || { active: false, maxWeight: 0, length: 10 });
 
-    document.addEventListener("inventory-changed", (e) => {
-      const newEq = e.detail.equipment;
+    this.#systems.inventory.onInventoryChanged((detail) =>
+      this.#handleInventoryChanged(detail.equipment),
+    );
 
-      const netConfig = newEq.net
-        ? { ...newEq.net, ...(newEq.net.engineStats || {}) }
-        : { active: false, maxWeight: 0, length: 10, chances: [] };
-
-      if (this.#net && typeof this.#net.updateConfig === "function") {
-        this.#net.updateConfig(netConfig);
-      } else {
-        this.#net = new Net(netConfig);
-      }
-
-      this.#hasEquippedNet = !!newEq.net;
-
-      if (
-        this.systems &&
-        this.systems.ui &&
-        typeof this.systems.ui.updateNetButtonState === "function"
-      ) {
-        this.systems.ui.updateNetButtonState(this.#hasEquippedNet, false);
-      }
-
-      if (this.#depthUI && typeof this.#depthUI.updateMax === "function") {
-        this.#depthUI.updateMax(this.getMaxHookDepth());
-      }
-    });
-
-    this.#chumUI = new ChumUI(() => this.handleChumClick());
     this.#castManager = new CastManager();
     this.#depthUI = new DepthSelectorUI();
     this.#timeUI = new TimeDisplayUI();
     this.#holdUI = new HoldChargesUI();
+    this.#chumController = new ChumController({
+      systems: this.#systems,
+      fishing: this.#fishingController,
+      location: this.#location,
+      clock: this.#clock,
+      depthUI: this.#depthUI,
+      getDynamicBounds: () => this.getDynamicBounds(),
+      getRodVirtualPos: (bounds) => this.getRodVirtualPos(bounds),
+      checkWater: (vx, vy) => this.checkWater(vx, vy),
+      markInvalidCast: (p) => this.markInvalidCast(p),
+      canPlayerCast: () => this.canPlayerCast(),
+      getGameStateName: () => this.#gameStateName,
+    });
 
     this.#rebuildFloat();
 
     this.#initEvents();
     this.setState("scouting");
     this.start();
+  }
+
+  #handleInventoryChanged(newEq) {
+    const netConfig = newEq.net
+      ? { ...newEq.net, ...(newEq.net.engineStats || {}) }
+      : { active: false, maxWeight: 0, length: 10, chances: [] };
+
+    if (this.#net && typeof this.#net.updateConfig === "function") {
+      this.#net.updateConfig(netConfig);
+    } else {
+      this.#net = new Net(netConfig);
+    }
+
+    this.#hasEquippedNet = !!newEq.net;
+    this.#chumController?.refreshActiveHandChum();
+
+    if (
+      this.systems &&
+      this.systems.ui &&
+      typeof this.systems.ui.updateNetButtonState === "function"
+    ) {
+      this.systems.ui.updateNetButtonState(this.#hasEquippedNet, false);
+    }
+
+    if (this.#depthUI && typeof this.#depthUI.updateMax === "function") {
+      this.#depthUI.updateMax(this.getMaxHookDepth());
+    }
   }
 
   #rebuildFloat() {
@@ -1307,18 +2416,21 @@ class Game {
       physicsConfig = { ...eq.sinker };
     }
 
-    this.#float = BaitFactory.create(physicsType, 0, 0, physicsConfig, eq);
+    this.#float = BaitFactory.create(
+      physicsType,
+      0,
+      0,
+      physicsConfig,
+      eq,
+      this.#rng,
+    );
   }
 
   #initEvents() {
-    window.addEventListener("resize", () => {
+    this.#listeners.add(window, "resize", () => {
       this.#canvas.width = window.innerWidth;
       this.#canvas.height = window.innerHeight;
-      this.#systems.projector.update(this.#canvas.width, this.#canvas.height);
-      this.#systems.map.recalculateZones(
-        this.#systems.projector,
-        CONFIG.locations.cellSize,
-      );
+      this.#refreshViewport();
     });
 
     this.#systems.ui.onNetClick = () => {
@@ -1328,18 +2440,12 @@ class Game {
     };
 
     this.#systems.ui.onContinueClick = () => this.setState("scouting");
-    window.dispatchEvent(new Event("resize"));
+    this.#refreshViewport();
 
     // --- ВІДНОВЛЕНО: Слухач оновлень конфігу з DevTools ---
-    document.addEventListener("config-updated", (e) => {
+    this.#listeners.add(document, "config-updated", (e) => {
       if (e.detail && e.detail.path && e.detail.path[0] === "locations") {
-        if (this.#systems.projector) {
-          this.#systems.projector.update(0, 0);
-          this.#systems.projector.update(
-            this.#canvas.width,
-            this.#canvas.height,
-          );
-        }
+        this.#refreshViewport(false);
         if (
           this.#systems.map &&
           typeof this.#systems.map.refreshConfig === "function"
@@ -1351,13 +2457,40 @@ class Game {
     });
   }
 
-  setState(name, data = {}) {
-    if (this.#state) this.#state.exit();
-    this.#gameStateName = name;
+  #refreshViewport(recalculateMap = true) {
+    this.#world.refreshViewport(recalculateMap);
+  }
 
-    if (this.#systems.inventory) {
-      this.#systems.inventory.setLock(name !== "scouting");
+  setState(name, data = {}) {
+    if (this.#isTransitioning) {
+      this.#pendingState = { name, data };
+      return;
     }
+
+    this.#isTransitioning = true;
+    let next = { name, data };
+
+    try {
+      while (next) {
+        this.#pendingState = null;
+        if (this.#state) this.#state.exit();
+        this.#gameStateName = next.name;
+
+        if (this.#systems.inventory) {
+          this.#systems.inventory.setLock(next.name !== "scouting");
+        }
+
+        this.#state = this.#getStateInstance(next.name);
+        this.#state.enter(next.data);
+        next = this.#pendingState;
+      }
+    } finally {
+      this.#isTransitioning = false;
+    }
+  }
+
+  #getStateInstance(name) {
+    if (this.#stateInstances[name]) return this.#stateInstances[name];
 
     const states = {
       scouting: ScoutingState,
@@ -1368,8 +2501,12 @@ class Game {
       victory: VictoryState,
     };
 
-    this.#state = new states[name](this, data);
-    this.#state.enter(data);
+    const StateClass = states[name];
+    if (!StateClass) throw new Error(`Unknown game state: ${name}`);
+
+    const state = new StateClass(this);
+    this.#stateInstances[name] = state;
+    return state;
   }
 
   update(dt) {
@@ -1377,38 +2514,9 @@ class Game {
     const input = this.#systems.input.getState();
     const bounds = this.getDynamicBounds();
 
-    this.#systems.env.update(dt, timeScale);
-    this.#systems.projector.update(this.#canvas.width, this.#canvas.height);
-    this.#systems.map.update(dt, this.#systems.env.getSnapshot().time);
-    this.#systems.chum.update(Date.now(), timeScale);
-
-    this.#systems.chum.updateBoats(
-      dt,
-      (vx, vy) => {
-        if (
-          vx < bounds.left ||
-          vx > bounds.right ||
-          vy < bounds.top ||
-          vy > bounds.bottom
-        ) {
-          return null;
-        }
-        return this.checkWater(vx, vy);
-      },
-      (vx, vy) => {
-        const cell = this.#systems.map.getCellAtVirtualPos(
-          vx,
-          vy,
-          CONFIG.locations.cellSize,
-        );
-        return cell ? cell.hasCollision : false;
-      },
-      CONFIG.locations.cellSize,
-      { current: CONFIG.locations.map["test"].environment.current },
-    );
-
+    const envSnapshot = this.#world.update(dt, timeScale, bounds);
     this.#castManager.update(dt);
-    this.#timeUI.update(this.#systems.env.getSnapshot().time);
+    this.#timeUI.update(envSnapshot.time);
     this.updateChumUI();
 
     if (this.isAimingChum) {
@@ -1416,10 +2524,10 @@ class Game {
     } else {
       this.handleGlobalBoatControl(input);
       this.#state.handleInput(input);
-      this.#state.update(dt, bounds, {
-        env: this.#systems.env.getPhysicsEnv(),
-        biteEnv: this.getEnvDataForBite(),
-      });
+      const context = this.#stateUpdateContext;
+      context.env = this.#systems.env.getPhysicsEnv();
+      context.biteEnv = this.getEnvDataForBite();
+      this.#state.update(dt, bounds, context);
     }
 
     if (this.invalidCastMarker) {
@@ -1431,47 +2539,11 @@ class Game {
   }
 
   draw() {
-    const r = this.#systems.renderer;
     const b = this.getDynamicBounds();
-
-    r.clear(CONFIG.canvas.backgroundColor);
-
-    r.drawBackground(this.#systems.map, this.#systems.projector);
-
-    if (CONFIG.locations?.debugVisuals) {
-      if (typeof r.drawLocationDebug === "function") {
-        r.drawLocationDebug(
-          this.#systems.map,
-          this.#systems.projector,
-          CONFIG.locations,
-        );
-      }
-    }
-
-    if (CONFIG.locations?.showChumZones !== false) {
-      r.drawChumZones(this.#systems.chum, this.#systems.projector);
-    }
-
-    if (this.#systems.chum) {
-      if (typeof r.drawBoatWaypoints === "function") {
-        r.drawBoatWaypoints(this.#systems.chum, this.#systems.projector);
-      }
-
-      if (typeof r.drawBoats === "function") {
-        r.drawBoats(this.#systems.chum, this.#systems.projector);
-
-        const boats = this.#systems.chum.getBoats();
-        for (let i = 0; i < boats.length; i++) {
-          if (typeof r.renderSensors === "function") {
-            r.renderSensors(boats[i], this.#systems.projector);
-          }
-        }
-      }
-    }
-
-    if (this.invalidCastMarker) {
-      r.drawInvalidCastMarker(this.invalidCastMarker);
-    }
+    const r = this.#renderSystem.drawWorld(
+      this.invalidCastMarker,
+      this.isDebugEnabled(),
+    );
 
     this.#state.draw(r, b);
   }
@@ -1496,10 +2568,10 @@ class Game {
     // 2. ПІДГОТОВКА ПАРАМЕТРІВ ЗАКИДАННЯ
     const rodPos = this.getRodVirtualPos(this.getDynamicBounds());
     const dist = Math.hypot(vx - rodPos.x, vy - rodPos.y);
-    const maxDist = eq.rod.maxDistance || 2000;
+    const maxDist = Math.max(1, Number(eq.rod.maxDistance) || 2000);
 
     this.castDistanceRatio = Math.min(1, dist / maxDist);
-    this.castStartTime = performance.now();
+    this.castStartTime = this.#clock.now;
 
     const isFeeder = eq.rod.type === "feeder";
     if (isFeeder) {
@@ -1529,7 +2601,14 @@ class Game {
     }
 
     // 4. СТВОРЕННЯ ОБ'ЄКТА ПРИМАНКИ
-    this.#float = BaitFactory.create(physicsType, vx, vy, physicsConfig, eq);
+    this.#float = BaitFactory.create(
+      physicsType,
+      vx,
+      vy,
+      physicsConfig,
+      eq,
+      this.#rng,
+    );
 
     // 5. ЗАПУСК ФІЗИКИ
     if (typeof this.#float.cast === "function") {
@@ -1571,11 +2650,13 @@ class Game {
     // 1. Отримуємо екіпірування ОДИН раз
     const eq = this.#systems.inventory.getEquipped();
 
+    const floatPos = this.#float.getPosition();
     const sPos = this.#systems.projector.virtualToScreen(
-      this.#float.getPosition().x,
-      this.#float.getPosition().y,
+      floatPos.x,
+      floatPos.y,
+      this.#screenScratch,
     );
-    const elapsed = performance.now() - startTime;
+    const elapsed = this.#clock.now - startTime;
 
     let ratio = 1.0,
       drop = 0;
@@ -1627,6 +2708,7 @@ class Game {
     const mapBottomScreenY = this.#systems.projector.virtualToScreen(
       0,
       bottom,
+      this.#screenScratch2,
     ).y;
     const rodScreenY = this.#canvas.height - (CONFIG.ui?.rod?.yOffset || 0);
     const rodTopY = rodScreenY - 200;
@@ -1659,6 +2741,7 @@ class Game {
       drop,
       CONFIG.ui.rod,
       lineCfg,
+      this.#clock.now,
     );
 
     // ОСЬ ТУТ МИ ПЕРЕДАЄМО eq ПРАВИЛЬНО
@@ -1694,25 +2777,7 @@ class Game {
   }
 
   getDynamicBounds() {
-    const b = this.#systems.map.getCastableBoundsVirtual(
-      CONFIG.locations.cellSize,
-    );
-    const vTL = this.#systems.projector.screenToVirtual(0, 0);
-    const vBR = this.#systems.projector.screenToVirtual(
-      this.#canvas.width,
-      this.#canvas.height,
-    );
-
-    return {
-      left: CONFIG.locations.lockZoneXToScreen
-        ? Math.max(vTL.x, b.left)
-        : b.left,
-      right: CONFIG.locations.lockZoneXToScreen
-        ? Math.min(vBR.x, b.right)
-        : b.right,
-      top: b.top,
-      bottom: b.bottom,
-    };
+    return this.#world.getDynamicBounds();
   }
 
   getMaxHookDepth() {
@@ -1734,31 +2799,27 @@ class Game {
       CONFIG.ui.rod.x === "center"
         ? this.#canvas.width / 2
         : Number(CONFIG.ui.rod.x);
-    return new Vector2(
-      this.#systems.projector.screenToVirtual(rodX, 0).x,
-      bounds.bottom,
-    );
+    this.#systems.projector.screenToVirtual(rodX, 0, this.#rodVirtualPos);
+    this.#rodVirtualPos.y = bounds.bottom;
+    return this.#rodVirtualPos;
   }
 
   getScreenOffsetRatio(floatPos) {
     const sPos = this.#systems.projector.virtualToScreen(
       floatPos.x,
       floatPos.y,
+      this.#screenScratch2,
     );
     const rodX =
       CONFIG.ui.rod.x === "center"
         ? this.#canvas.width / 2
         : Number(CONFIG.ui.rod.x);
-    return Math.min(1, Math.abs(sPos.x - rodX) / (this.#canvas.width / 2));
+    const halfWidth = Math.max(1, this.#canvas.width / 2);
+    return Math.min(1, Math.abs(sPos.x - rodX) / halfWidth);
   }
 
   checkWater(vx, vy) {
-    const cell = this.#systems.map.getCellAtVirtualPos(
-      vx,
-      vy,
-      CONFIG.locations.cellSize,
-    );
-    return cell && cell.isCastable && !cell.hasCollision ? cell : null;
+    return this.#world.checkWater(vx, vy);
   }
 
   getEnvDataForBite() {
@@ -1773,437 +2834,86 @@ class Game {
     const eq = this.#systems.inventory.getEquipped();
     const isFeeder = eq?.rod?.type === "feeder";
 
-    if (this.#float instanceof FeederEntity && eq?.feederChum) {
-      const elapsedMs = performance.now() - this.castStartTime;
+    if (typeof this.#float.getChumBonus === "function" && eq?.feederChum) {
+      const elapsedMs = this.#clock.now - this.castStartTime;
       const chumData = this.#float.getChumBonus(elapsedMs, eq.feederChum);
       feederBonus = chumData.bonus;
       feederTargets = chumData.targets;
     }
 
-    return {
-      hookDepth: Math.min(this.#float.getCurrentHookDepth(), bottomDepth),
-      bottomDepth: bottomDepth,
-      lineLength: isFeeder ? bottomDepth : this.currentHookDepth || 0.1,
-      timePhase: env.phase,
-      dayOfWeek: new Date().getDay(),
-      zoneBonus: cell?.multiplier || cell?.bonus || 1.0,
-      chumBonus: Math.max(chum?.bonus || 1.0, feederBonus),
-      chumTargets: [...new Set([...(chum?.targets || []), ...feederTargets])],
-      isRaining: env.isRaining,
-      isFoggy: env.isFoggy,
-      castSpamMultiplier: this.#castManager.getBiteChanceMultiplier(),
-    };
+    const biteEnv = this.#biteEnvData;
+    biteEnv.hookDepth = Math.min(
+      this.#float.getCurrentHookDepth(),
+      bottomDepth,
+    );
+    biteEnv.bottomDepth = bottomDepth;
+    biteEnv.lineLength = isFeeder ? bottomDepth : this.currentHookDepth || 0.1;
+    biteEnv.timePhase = env.phase;
+    biteEnv.dayOfWeek = this.#dayOfWeek;
+    biteEnv.zoneBonus = cell?.multiplier || cell?.bonus || 1.0;
+    biteEnv.chumBonus = Math.max(chum?.bonus || 1.0, feederBonus);
+    biteEnv.isRaining = env.isRaining;
+    biteEnv.isFoggy = env.isFoggy;
+    biteEnv.castSpamMultiplier = this.#castManager.getBiteChanceMultiplier();
+
+    const targets = biteEnv.chumTargets;
+    targets.length = 0;
+    this.#appendUniqueTargets(targets, chum?.targets);
+    this.#appendUniqueTargets(targets, feederTargets);
+
+    return biteEnv;
+  }
+
+  #appendUniqueTargets(out, source) {
+    if (!source) return;
+    for (let i = 0; i < source.length; i++) {
+      const target = source[i];
+      let exists = false;
+      for (let j = 0; j < out.length; j++) {
+        if (out[j] === target) {
+          exists = true;
+          break;
+        }
+      }
+      if (!exists) out.push(target);
+    }
   }
 
   updateChumUI() {
-    const eq = this.#systems.inventory.getEquipped();
-    const method = eq.delivery ? "boat" : "hand";
-    const boatItem = eq.delivery || {};
-    const isManual = boatItem.manualControl ?? true;
-    const sections = boatItem.sections ?? boatItem.engineStats?.sections ?? 1;
-
-    let state = "idle";
-    let count = 0;
-
-    if (method === "hand") {
-      let activeChum = null;
-      const items = this.#systems.inventory.getInventoryItems();
-      for (const item of items) {
-        const hydrated = this.#systems.inventory._hydrateInstance(
-          item.instanceId,
-        );
-        if (hydrated && hydrated.type === "chum_mix") {
-          activeChum = hydrated;
-          break;
-        }
-      }
-      count = activeChum ? activeChum.quantity || 1 : 0;
-      if (count <= 0) state = "empty";
-      else if (this.isAimingChum) state = "aiming";
-      else state = "idle";
-    } else if (method === "boat") {
-      const boats = this.#systems.chum.getBoats();
-      const activeBoat = boats.length > 0 ? boats[0] : null;
-
-      if (!activeBoat) {
-        const loadedCount = (eq.deliveryChums || []).filter(Boolean).length;
-        count = sections;
-        if (loadedCount === 0) state = "empty";
-        else state = this.isAimingChum ? "aiming" : "idle";
-      } else {
-        count = activeBoat.remainingSections;
-
-        if (activeBoat.state === "idle") {
-          state = this.isAimingChum ? "aiming" : "idle";
-        } else if (activeBoat.state === "drifting") {
-          state = "empty";
-        } else if (isManual) {
-          if (
-            activeBoat.state === "deploying" ||
-            activeBoat.state === "returning"
-          ) {
-            state = "moving";
-          } else if (activeBoat.state === "waiting") {
-            state = count > 0 ? "ready" : "empty";
-          }
-        } else {
-          if (activeBoat.state === "returning") {
-            state = "moving";
-          } else if (
-            activeBoat.state === "deploying" ||
-            activeBoat.state === "waiting"
-          ) {
-            state = this.isAimingChum ? "aiming" : "moving";
-          }
-        }
-      }
-    }
-
-    this.#chumUI.setState(state, method, count, isManual);
-
-    if (this.isAimingChum && method === "boat") {
-      const boats = this.#systems.chum.getBoats();
-      const activeBoat = boats.length > 0 ? boats[0] : null;
-      if (activeBoat) {
-        if (!isManual && activeBoat.state === "returning") {
-          this.isAimingChum = false;
-        } else if (
-          isManual &&
-          activeBoat.state !== "idle" &&
-          activeBoat.state !== "waiting"
-        ) {
-          this.isAimingChum = false;
-        }
-      }
-    }
+    this.#chumController.updateUI();
   }
 
   handleChumClick() {
-    const eq = this.#systems.inventory.getEquipped();
-    const method = eq.delivery ? "boat" : "hand";
-
-    if (method === "hand") {
-      let activeChum = null;
-      const items = this.#systems.inventory.getInventoryItems();
-      for (const item of items) {
-        const hydrated = this.#systems.inventory._hydrateInstance(
-          item.instanceId,
-        );
-        if (hydrated && hydrated.type === "chum_mix") {
-          activeChum = hydrated;
-          break;
-        }
-      }
-
-      if (activeChum) {
-        this.toggleChumAim();
-      } else {
-        if (this.#systems.inventoryUI) {
-          this.#systems.inventoryUI.showWarning(
-            "У вас немає прикормки в інвентарі!",
-          );
-        }
-      }
-    } else if (method === "boat") {
-      const boats = this.#systems.chum.getBoats();
-
-      if (boats.length === 0) {
-        const loadedCount = (eq.deliveryChums || []).filter(Boolean).length;
-        if (loadedCount > 0) {
-          this.toggleChumAim();
-        } else {
-          if (this.#systems.inventoryUI) {
-            this.#systems.inventoryUI.showWarning(
-              "Завантажте прикормку в бункери кораблика через інвентар!",
-            );
-          }
-        }
-      } else {
-        const activeBoat = boats[0];
-        const boatItem = eq.delivery || {};
-        const isManual = boatItem.manualControl ?? true;
-
-        if (this.isAimingChum) {
-          this.toggleChumAim();
-          return;
-        }
-
-        if (isManual) {
-          if (
-            activeBoat.state === "waiting" &&
-            activeBoat.remainingSections > 0
-          ) {
-            // Рахуємо індекс скидання для нашого "ущільненого" масиву
-            const loadedCount = activeBoat._loadedChums.length;
-            const dropIndex = loadedCount - activeBoat.remainingSections;
-            const chumData = activeBoat._loadedChums[dropIndex];
-
-            if (chumData) {
-              this.#systems.chum.deployBait(
-                activeBoat.pos.x,
-                activeBoat.pos.y,
-                chumData.item.id,
-              );
-
-              // === ВТРУЧАННЯ GOD MODE ===
-              const isInfinite =
-                typeof GodMode !== "undefined" && GodMode.infiniteResources;
-              if (!isInfinite) {
-                this.#systems.inventory.unequipItem(
-                  `deliveryChums_${chumData.slotIndex}`,
-                );
-                this.#systems.inventory.consumeItem(
-                  chumData.item.instanceId,
-                  1,
-                );
-              }
-            }
-
-            activeBoat.remainingSections--;
-
-            if (activeBoat.remainingSections <= 0) {
-              const hasAI =
-                boatItem.hasAutoReturn ??
-                boatItem.engineStats?.hasAutoReturn ??
-                false;
-              if (hasAI) {
-                activeBoat.state = "returning";
-              }
-            }
-          }
-        }
-      }
-    }
+    this.#chumController.handleClick();
   }
 
   toggleChumAim() {
-    this.isAimingChum = !this.isAimingChum;
-    this._uiClickLockTime = Date.now();
-
-    if (this.isAimingChum) {
-      this.#depthUI.hide();
-    }
-
-    const eq = this.#systems.inventory.getEquipped();
-    const method = eq.delivery ? "boat" : "hand";
-
-    if (this.isAimingChum && method === "boat") {
-      const bounds = this.getDynamicBounds();
-      const rodPos = this.getRodVirtualPos(bounds);
-
-      this.activeBoat = this.#systems.chum.spawnIdleBoat(
-        rodPos.x,
-        bounds.bottom - 5,
-        eq.delivery,
-      );
-
-      if (this.activeBoat) {
-        // --- МАГІЯ ТУТ: Рахуємо тільки РЕАЛЬНО завантажені бункери ---
-        const loadedChums = [];
-        const chumsArr = eq.deliveryChums || [];
-        for (let i = 0; i < chumsArr.length; i++) {
-          if (chumsArr[i]) {
-            // Зберігаємо предмет і його оригінальний слот, щоб правильно списати
-            loadedChums.push({ slotIndex: i, item: chumsArr[i] });
-          }
-        }
-
-        this.activeBoat._loadedChums = loadedChums;
-        this.activeBoat.remainingSections = loadedChums.length;
-        // -------------------------------------------------------------
-      }
-    } else if (!this.isAimingChum && this.activeBoat) {
-      if (this.activeBoat.state === "idle") {
-        this.#systems.chum.removeBoat(this.activeBoat);
-      }
-      this.activeBoat = null;
-    }
+    this.#chumController.toggleAim();
   }
 
   handleChumAiming(input, bounds) {
-    if (!input.clickPos) return;
-
-    if (this._uiClickLockTime && Date.now() - this._uiClickLockTime < 200) {
-      input.clickPos = null;
-      return;
-    }
-
-    const eq = this.#systems.inventory.getEquipped();
-    const method = eq.delivery ? "boat" : "hand";
-
-    const vPos = this.#systems.projector.screenToVirtual(
-      input.clickPos.x,
-      input.clickPos.y,
-    );
-    const cell = this.checkWater(vPos.x, vPos.y);
-
-    if (method === "hand") {
-      let activeChum = null;
-      const items = this.#systems.inventory.getInventoryItems();
-      for (const item of items) {
-        const hydrated = this.#systems.inventory._hydrateInstance(
-          item.instanceId,
-        );
-        if (hydrated && hydrated.type === "chum_mix") {
-          activeChum = hydrated;
-          break;
-        }
-      }
-
-      if (!cell || !activeChum) {
-        this.markInvalidCast(input.clickPos);
-        input.clickPos = null;
-        this.toggleChumAim();
-        return;
-      }
-
-      const locId = "test";
-      const chumDist = CONFIG.locations.map[locId].chumCastDistance || 300;
-      const virtualLineY = bounds.bottom - chumDist;
-
-      if (vPos.y < virtualLineY) {
-        this.markInvalidCast(input.clickPos);
-        input.clickPos = null;
-        this.toggleChumAim();
-        if (this.#systems.inventoryUI) {
-          this.#systems.inventoryUI.showWarning(
-            "Занадто далеко для ручного закидання!",
-          );
-        }
-        return;
-      }
-
-      this.#systems.chum.deployBait(vPos.x, vPos.y, activeChum.id);
-      // === ВТРУЧАННЯ GOD MODE: Нескінченна прикормка з руки ===
-      const isInfinite =
-        typeof GodMode !== "undefined" && GodMode.infiniteResources;
-      if (!isInfinite) {
-        this.#systems.inventory.consumeItem(activeChum.instanceId, 1);
-      }
-      this.toggleChumAim();
-    } else if (method === "boat") {
-      const reservedTargets =
-        (this.activeBoat.zoneId ? 1 : 0) +
-        (this.activeBoat.waypoints ? this.activeBoat.waypoints.length : 0);
-
-      // Читаємо наші відфільтровані дані
-      const chumData = this.activeBoat._loadedChums
-        ? this.activeBoat._loadedChums[reservedTargets]
-        : null;
-      const chumToDrop = chumData ? chumData.item : null;
-
-      if (!cell || !chumToDrop) {
-        this.markInvalidCast(input.clickPos);
-        input.clickPos = null;
-        return;
-      }
-
-      this.#systems.chum.deployBait(
-        vPos.x,
-        vPos.y,
-        chumToDrop.id,
-        this.activeBoat,
-      );
-
-      // Списуємо прикормку саме з того слота, в якому вона лежала
-      // === ВТРУЧАННЯ GOD MODE: Зберігаємо прикормку в кораблику ===
-      const isInfinite =
-        typeof GodMode !== "undefined" && GodMode.infiniteResources;
-      if (!isInfinite) {
-        // Списуємо прикормку саме з того слота, в якому вона лежала
-        this.#systems.inventory.unequipItem(
-          `deliveryChums_${chumData.slotIndex}`,
-        );
-        this.#systems.inventory.consumeItem(chumToDrop.instanceId, 1);
-      }
-
-      // Виходимо з прицілювання, спираючись на кількість ЗАВАНТАЖЕНОЇ прикормки
-      const loadedCount = this.activeBoat._loadedChums.length;
-      if (reservedTargets + 1 >= loadedCount) {
-        this.toggleChumAim();
-      }
-    }
+    this.#chumController.handleAiming(input, bounds);
   }
 
   handleGlobalBoatControl(input) {
-    if (
-      !input.clickPos ||
-      this.isAimingChum ||
-      this.#gameStateName === "playing"
-    )
-      return;
+    this.#chumController.handleGlobalBoatControl(input);
+  }
 
-    const boats = this.#systems.chum.getBoats();
-    if (boats.length === 0) return;
+  get isAimingChum() {
+    return this.#chumController?.isAiming || false;
+  }
 
-    const activeBoat = boats[0];
-    const vPos = this.#systems.projector.screenToVirtual(
-      input.clickPos.x,
-      input.clickPos.y,
-    );
-    let clickHandled = false;
+  set isAimingChum(value) {
+    this.#chumController?.setAiming(value);
+  }
 
-    const distToBoat = Math.hypot(
-      activeBoat.pos.x - vPos.x,
-      activeBoat.pos.y - vPos.y,
-    );
-    const mapBounds = this.getDynamicBounds();
+  get activeBoat() {
+    return this.#chumController?.activeBoat || null;
+  }
 
-    if (distToBoat < 40) {
-      if (activeBoat.pos.y > mapBounds.bottom - 200) {
-        this.#systems.chum.removeBoat(activeBoat);
-      }
-      clickHandled = true;
-    } else if (activeBoat.state !== "drifting") {
-      const cell = this.checkWater(vPos.x, vPos.y);
-
-      if (!cell) {
-        this.markInvalidCast(input.clickPos);
-        clickHandled = true;
-      } else {
-        const eq = this.#systems.inventory.getEquipped();
-        const boatItem = eq.delivery || {};
-        const isManual = boatItem.manualControl ?? true;
-
-        if (isManual) {
-          if (activeBoat.state !== "returning") {
-            activeBoat.setTarget(vPos.x, vPos.y);
-            clickHandled = true;
-          }
-        } else {
-          const reservedTargets =
-            (activeBoat.zoneId ? 1 : 0) +
-            (activeBoat.waypoints ? activeBoat.waypoints.length : 0);
-          const freeSlots = activeBoat.remainingSections - reservedTargets;
-
-          if (freeSlots > 0 && activeBoat.state !== "returning") {
-            const chumToDrop = eq.deliveryChum;
-
-            if (chumToDrop) {
-              this.#systems.chum.deployBait(
-                vPos.x,
-                vPos.y,
-                chumToDrop.id,
-                activeBoat,
-              );
-
-              // === ВТРУЧАННЯ GOD MODE ===
-              const isInfinite =
-                typeof GodMode !== "undefined" && GodMode.infiniteResources;
-              if (!isInfinite) {
-                this.#systems.inventory.consumeItem(chumToDrop.instanceId, 1);
-              }
-              clickHandled = true;
-            }
-          }
-        }
-      }
-    }
-
-    if (clickHandled) {
-      input.clickPos = null;
-    } else if (!this.canPlayerCast()) {
-      input.clickPos = null;
+  set activeBoat(boat) {
+    if (this.#chumController) {
+      this.#chumController.activeBoat = boat;
     }
   }
 
@@ -2219,7 +2929,12 @@ class Game {
     const ed = this.getEnvDataForBite();
 
     const eq = this.#systems.inventory.getEquipped();
-    const currentBaits = (eq?.baits || []).map((b) => b?.id).filter(Boolean);
+    const currentBaits = this.#debugCurrentBaits;
+    currentBaits.length = 0;
+    const equippedBaits = eq?.baits || [];
+    for (let i = 0; i < equippedBaits.length; i++) {
+      if (equippedBaits[i]?.id) currentBaits.push(equippedBaits[i].id);
+    }
     const currentHookSize = eq?.hook?.level || 1;
 
     let detail = {
@@ -2278,21 +2993,58 @@ class Game {
       Object.assign(detail, this.#state.getDebugData());
     }
 
-    document.dispatchEvent(new CustomEvent("debug-live-update", { detail }));
+    this.emitDebugEvent("debug-live-update", detail);
   }
 
   start() {
-    const loop = (t) => {
-      this.update(t - (this.lastTime || t));
-      this.draw();
-      this.lastTime = t;
-      requestAnimationFrame(loop);
-    };
-    requestAnimationFrame(loop);
+    this.#loop.start();
+  }
+
+  stop() {
+    this.#loop.stop();
+  }
+
+  dispose() {
+    this.stop();
+    if (this.#state) this.#state.exit();
+
+    for (const state of Object.values(this.#stateInstances)) {
+      state.dispose?.();
+    }
+
+    this.#systems.input?.dispose?.();
+    this.#systems.chum?.dispose?.();
+    this.#systems.inventory?.dispose?.();
+    this.#listeners.dispose();
+    this.#debugEvents.clear();
   }
 
   get gameStateName() {
     return this.#gameStateName;
+  }
+  get clock() {
+    return this.#clock;
+  }
+  get rng() {
+    return this.#rng;
+  }
+  get locationId() {
+    return this.#location.id;
+  }
+  get chumCastDistance() {
+    return this.#location.chumCastDistance;
+  }
+  isDebugEnabled() {
+    return DevFlags.debugEvents();
+  }
+  addLifecycleListener(target, type, handler, options) {
+    return this.#listeners.add(target, type, handler, options);
+  }
+  emitDebugEvent(type, detail) {
+    this.#debugEvents.emit(type, detail);
+  }
+  onDebugEvent(type, handler) {
+    return this.#debugEvents.on(type, handler);
   }
   get systems() {
     return this.#systems;
@@ -2302,6 +3054,9 @@ class Game {
   }
   get castManager() {
     return this.#castManager;
+  }
+  get fishing() {
+    return this.#fishingController;
   }
   get depthUI() {
     return this.#depthUI;

@@ -4,13 +4,15 @@ class BiteSystem {
   #timer;
   #overDepthPenaltyMult;
   #possibleBitesBuffer;
+  #rng;
 
-  constructor(biteConfig, floatConfig) {
+  constructor(biteConfig, floatConfig, rng = null) {
     this.#fishDatabase = biteConfig.fishes;
     this.#tickRate = biteConfig.tickRateMs;
     this.#timer = 0;
     this.#overDepthPenaltyMult = floatConfig.overDepthPenaltyMult || 0.5;
     this.#possibleBitesBuffer = [];
+    this.#rng = rng || { next: () => Math.random() };
   }
 
   reset() {
@@ -19,6 +21,22 @@ class BiteSystem {
 
   #lerp(start, end, t) {
     return start * (1 - t) + end * t;
+  }
+
+  #next() {
+    return this.#rng.next();
+  }
+
+  #chance(probability) {
+    return typeof this.#rng.chance === "function"
+      ? this.#rng.chance(probability)
+      : this.#next() < probability;
+  }
+
+  #int(min, max) {
+    return typeof this.#rng.int === "function"
+      ? this.#rng.int(min, max)
+      : Math.floor(min + this.#next() * (max - min + 1));
   }
 
   #calculateFishChance(fish, envData, playerGear, isLiveQuery = false) {
@@ -89,7 +107,7 @@ class BiteSystem {
     );
 
     const genWeight =
-      curMinW + (curMaxW - curMinW) * Math.pow(Math.random(), wc.rarityCurve);
+      curMinW + (curMaxW - curMinW) * Math.pow(this.#next(), wc.rarityCurve);
     const weightRatio =
       (genWeight - dc.minWeightAtMinDepth) /
       (dc.maxWeightAtMaxDepth - dc.minWeightAtMinDepth);
@@ -103,9 +121,14 @@ class BiteSystem {
     // --- ВИПРАВЛЕНО: Логіка вибору профілю клювання ---
     // Беремо типи прямо з переданих даних гравця
     const baitTypes = playerGear.baitTypes || ["float"];
-    const isActiveLure = baitTypes.some((type) =>
-      ["spinner", "wobbler", "jig"].includes(type),
-    );
+    let isActiveLure = false;
+    for (let i = 0; i < baitTypes.length; i++) {
+      const type = baitTypes[i];
+      if (type === "spinner" || type === "wobbler" || type === "jig") {
+        isActiveLure = true;
+        break;
+      }
+    }
 
     let chosenBiteSequence = null;
     if (fish.biteMechanics) {
@@ -141,7 +164,7 @@ class BiteSystem {
         false,
       );
 
-      if (chance > 0 && Math.random() <= chance) {
+      if (chance > 0 && this.#chance(chance)) {
         this.#possibleBitesBuffer.push(fish);
       }
     }
@@ -149,7 +172,7 @@ class BiteSystem {
     if (this.#possibleBitesBuffer.length > 0) {
       const selected =
         this.#possibleBitesBuffer[
-          Math.floor(Math.random() * this.#possibleBitesBuffer.length)
+          this.#int(0, this.#possibleBitesBuffer.length - 1)
         ];
       // <-- ЗМІНЕНО: тепер передаємо playerGear сюди
       return this.#generateFishInstance(
