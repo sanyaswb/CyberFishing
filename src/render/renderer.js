@@ -953,7 +953,7 @@
     const baseStats = [
       { label: `${Number(fish?.weight || 0).toFixed(3)} kg`, color },
       {
-        label: fish?.isTrophy ? "✓ Trophy" : "○ Not trophy",
+        label: fish?.isTrophy ? "✓ Trophy" : "❌ Not trophy",
         color: fish?.isTrophy ? color : [145, 150, 160],
       },
       { label: `Anomaly: ${anomaly}`, color },

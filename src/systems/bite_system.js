@@ -40,9 +40,7 @@ class BiteSystem {
   }
 
   #getDepthChanceMultiplier(hookDepth, depthConfig) {
-    const maxDepthMultiplier = Number.isFinite(
-      depthConfig.chanceMultAtMaxDepth,
-    )
+    const maxDepthMultiplier = Number.isFinite(depthConfig.chanceMultAtMaxDepth)
       ? depthConfig.chanceMultAtMaxDepth
       : 1.0;
     return this.#lerp(
