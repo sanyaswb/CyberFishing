@@ -558,6 +558,16 @@ const CONFIG = {
   },
 
   debug: {
+    godMode: {
+      enabled: false, // Гoловний рубильник (якщо false, інші ігноруються)
+      infiniteResources: true, // 1. Нескінченна наживка/снасті
+      noEquipmentLoss: true,
+      noHookEscape: true, // 2. Риба ніколи не зривається з гачка
+      noLineBreak: true, // 3. Ліска не рветься при 100% натягу
+      noRodBreak: true, // 4. Вудка ніколи не ламається
+      infiniteCasting: true,
+    },
+
     overlay: true,
     initialTime: 17.5, // Початковий час. 17.5 = 17:30. Якщо поставити null, гра візьме реальний час.
     timeScale: 240, // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
@@ -1111,12 +1121,13 @@ const CONFIG = {
 
     // --- ДОДАНО: Шанси втрати наживки під час клювання ---
     baitLossChance: {
-      normal: 0.01, // 1% для жовтої (негарантованої) ітерації
-      guaranteed: 0.1, // 10% для червоної (гарантованої) ітерації
+      normal: 0.0, // 1% для жовтої (негарантованої) ітерації
+      guaranteed: 0.0, // 10% для червоної (гарантованої) ітерації
     },
   },
 
   tension: {
+    powerRatioExponent: 2.0,
     sensitivityMultiplier: 1.5, // How much player input affects tension
     smoothApproach: 0.15,
     reelRecoveryMultiplier: 0.2,

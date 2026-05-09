@@ -438,7 +438,12 @@ class TensionMeter {
     this.#isHoldCurrentlyActive = isHoldActive;
 
     const powerRatio = fishPowerMag / Math.max(0.001, playerMaxPower);
-    const speedMultiplier = Math.pow(powerRatio, 2);
+    const exponent =
+      tensionConfig.powerRatioExponent !== undefined
+        ? tensionConfig.powerRatioExponent
+        : 2.0;
+    const speedMultiplier = Math.pow(powerRatio, exponent);
+
     const baseForce = playerMaxPower + fishPowerMag;
 
     let forceBalance = baseForce * speedMultiplier;
@@ -575,6 +580,15 @@ class TensionMeter {
     }
 
     if (chance > 0 && Math.random() <= chance) {
+      if (typeof GodMode !== "undefined" && GodMode.noHookEscape) {
+        if (isDebugTension)
+          console.log(
+            "%c[GOD MODE] 🛡️ Риба мала зірватися, але God Mode її втримав!",
+            "color: #00ff00;",
+          );
+        return; // Просто перериваємо функцію, риба залишається на гачку!
+      }
+
       this.#isBroken = true;
       this.#breakReason = "hook";
 
@@ -641,12 +655,29 @@ class TensionMeter {
     }
 
     if (Math.random() <= breakChance) {
-      this.#isBroken = true;
-      if (Math.random() <= rodBreakChance) {
-        this.#breakReason = "rod";
-      } else {
-        this.#breakReason = "line";
+      let reason = Math.random() <= rodBreakChance ? "rod" : "line";
+
+      // ВТРУЧАННЯ GOD MODE:
+      if (
+        reason === "rod" &&
+        typeof GodMode !== "undefined" &&
+        GodMode.noRodBreak
+      ) {
+        console.log("%c[GOD MODE] 🛡️ Вудка мала зламатися!", "color: #00ff00;");
+        return; // Рятуємо вудку
       }
+      if (
+        reason === "line" &&
+        typeof GodMode !== "undefined" &&
+        GodMode.noLineBreak
+      ) {
+        console.log("%c[GOD MODE] 🛡️ Ліска мала порватися!", "color: #00ff00;");
+        return; // Рятуємо ліску
+      }
+
+      // Старий код:
+      this.#isBroken = true;
+      this.#breakReason = reason;
     }
   }
 

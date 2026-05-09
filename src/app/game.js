@@ -116,81 +116,37 @@ class ScoutingState extends GameState {
   }
 
   handleInput(input) {
-    const isBoatMoving = this.game.systems.chum.isBoatMoving();
-
-    if (!isBoatMoving && (input.panDeltaX || input.panDeltaY)) {
-      const scale = this.game.systems.projector.getScale();
-      this.game.systems.projector.pan(
-        input.panDeltaX / scale,
-        input.panDeltaY / scale,
-      );
-    }
-
     if (input.clickPos) {
       const vPos = this.game.systems.projector.screenToVirtual(
         input.clickPos.x,
         input.clickPos.y,
       );
-      const cell = this.game.checkWater(vPos.x, vPos.y);
+      let cell = this.game.checkWater(vPos.x, vPos.y);
       const bounds = this.game.getDynamicBounds();
 
-      // === 1. ЛОГІКА ДЛЯ РУЧНОГО ЗАКИДАННЯ ПРИКОРМКИ ===
-      if (this.game.isAimingChum) {
-        const locId = "test"; // Замініть на змінну поточної локації, якщо вона у вас динамічна
-        const chumDist = CONFIG.locations.map[locId].chumCastDistance || 300;
+      // --- ВТРУЧАННЯ GOD MODE ---
+      let canCastAnywhere =
+        typeof GodMode !== "undefined" && GodMode.infiniteCasting;
 
-        // Вираховуємо лінію горизонту для прикормки (все що вище - недоступно)
-        const virtualLineY = bounds.bottom - chumDist;
-
-        // Перевіряємо: чи клік у воді (зелена зона) І чи не далі за дозволену помаранчеву лінію
-        if (cell && vPos.y >= virtualLineY) {
-          this.game.isAimingChum = false;
-
-          // ВАЖЛИВО: Заміни 'handleChumDeploy' на ту назву методу,
-          // яку ти використовуєш у своєму класі Game для кидка прикормки
-          if (typeof this.game.handleChumDeploy === "function") {
-            this.game.handleChumDeploy(vPos.x, vPos.y);
-          } else if (typeof this.game.deployHandChum === "function") {
-            this.game.deployHandChum(vPos.x, vPos.y);
-          } else {
-            console.error("Метод кидка прикормки не знайдено в класі Game!");
-          }
-        } else {
-          // Якщо клікнув занадто далеко або на берег — показуємо хрестик і скидаємо приціл
-          this.game.markInvalidCast(input.clickPos);
-          this.game.isAimingChum = false;
-        }
-        return; // Обов'язковий вихід, щоб гравець випадково не закинув вудку
+      if (canCastAnywhere) {
+        // Якщо чіт увімкнено, ми "підробляємо" дані, якщо їх немає
+        if (!cell) cell = { depth: 2.0 }; // Дефолтна глибина для суходолу
       }
+      // --------------------------
 
-      // === 2. ЛОГІКА ДЛЯ ЗАКИДАННЯ ВУДКИ ===
-      const eq = this.game.systems.inventory.getEquipped();
-      let rawDist = eq.rod?.maxDistance;
-      let maxDist = rawDist === "max" || rawDist == null ? Infinity : rawDist;
-
-      if (maxDist !== Infinity) {
-        maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
-      }
-
+      // Розрахунок відстані (тепер з урахуванням God Mode)
       let isInside = true;
-      if (maxDist !== Infinity) {
-        const virtualLineY = bounds.bottom - maxDist;
-        isInside = vPos.y >= virtualLineY;
+      if (!canCastAnywhere) {
+        const eq = this.game.systems.inventory.getEquipped();
+        let maxDist = eq.rod?.maxDistance || Infinity;
+        if (maxDist !== Infinity) {
+          isInside = vPos.y >= bounds.bottom - maxDist;
+        }
       }
 
-      if (cell && this.game.canPlayerCast()) {
-        if (!isInside) {
-          this.game.markInvalidCast(input.clickPos);
-          return;
-        }
-
-        if (this.game.castManager.canCast()) {
-          this.game.castManager.registerCast(performance.now());
-          this.game.castLine(vPos.x, vPos.y, cell.depth);
-        } else {
-          this.game.markInvalidCast(input.clickPos);
-        }
-      } else if (!cell) {
+      if ((cell && isInside) || canCastAnywhere) {
+        this.game.castLine(vPos.x, vPos.y, cell.depth);
+      } else {
         this.game.markInvalidCast(input.clickPos);
       }
     }
@@ -295,7 +251,11 @@ class PlayingState extends GameState {
 
     const usedBait = (eq?.baits || []).find((b) => b && b.type === "bait");
     if (usedBait) {
-      this.game.systems.inventory.consumeItem(usedBait.instanceId, 1);
+      const isInfinite =
+        typeof GodMode !== "undefined" && GodMode.infiniteResources;
+      if (!isInfinite) {
+        this.game.systems.inventory.consumeItem(usedBait.instanceId, 1);
+      }
     }
 
     this.#rod = new Rod(
@@ -696,16 +656,42 @@ class WaitingState extends GameState {
         input.longPressPos.x,
         input.longPressPos.y,
       );
-      const cell = this.game.checkWater(vPos.x, vPos.y);
 
-      if (cell) {
+      const cell = this.game.checkWater(vPos.x, vPos.y);
+      const bounds = this.game.getDynamicBounds(); // ДОДАНО: отримуємо межі екрану
+
+      // === ДОДАНО: Перевірка максимальної дальності ===
+      let rawDist = eq.rod?.maxDistance;
+      let maxDist = rawDist === "max" || rawDist == null ? Infinity : rawDist;
+
+      if (maxDist !== Infinity) {
+        maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
+      }
+
+      let isInside = true;
+      if (maxDist !== Infinity) {
+        const virtualLineY = bounds.bottom - maxDist;
+        isInside = vPos.y >= virtualLineY;
+      }
+      // ================================================
+
+      // ЗМІНЕНО: тепер перевіряємо і воду (cell), і дальність (isInside)
+      if (cell && isInside) {
         this.game.castManager.registerCast(performance.now());
         this.game.castLine(vPos.x, vPos.y, cell.depth);
 
         if (eq?.rod?.type === "feeder" && eq?.feederChum) {
-          this.game.systems.inventory.consumeItem(eq.feederChum.instanceId, 1);
+          const isInfinite =
+            typeof GodMode !== "undefined" && GodMode.infiniteResources;
+          if (!isInfinite) {
+            this.game.systems.inventory.consumeItem(
+              eq.feederChum.instanceId,
+              1,
+            );
+          }
         }
       } else {
+        // Якщо клікнув на берег АБО занадто далеко — малюємо червоний хрестик
         this.game.invalidCastMarker = {
           x: input.longPressPos.x,
           y: input.longPressPos.y,
@@ -966,12 +952,21 @@ class BitingState extends GameState {
               : (CONFIG.physics.baitLossChance?.normal ?? 0.15);
 
             if (Math.random() <= lossChance) {
-              // 1. ЗНІМАЄМО з гачка (щоб гравець не знав, поки не витягне, а шанс кльову став 0%)
-              this.game.systems.inventory.unequipItem(consumedSlot);
-              // 2. Видаляємо 1 штуку з рюкзака фізично
-              this.game.systems.inventory.consumeItem(consumedBaitId, 1);
+              // === ВТРУЧАННЯ GOD MODE: Перевіряємо, чи ввімкнено захист від втрат ===
+              if (typeof GodMode !== "undefined" && GodMode.noEquipmentLoss) {
+                console.log(
+                  "%c[GOD MODE] 🛡️ Риба намагалась вкрасти наживку, але Бог не дозволив!",
+                  "color: #00ff00;",
+                );
+              } else {
+                // 1. ЗНІМАЄМО з гачка (щоб гравець не знав, поки не витягне)
+                this.game.systems.inventory.unequipItem(consumedSlot);
+                // 2. Видаляємо 1 штуку з рюкзака фізично
+                this.game.systems.inventory.consumeItem(consumedBaitId, 1);
+              }
 
-              // 3. Тихо повертаємо у стан очікування (поплавок просто завмирає)
+              // 3. Незалежно від того, вкрала риба наживку чи ні (God Mode),
+              // вона все одно лякається і клювання припиняється.
               this.game.float.stopBite();
               this.game.setState("waiting");
               return;
@@ -1063,7 +1058,15 @@ class FailedState extends GameState {
     const eq = this.game.systems.inventory.getEquipped();
     const reason = data?.reason;
 
-    // 1. Втрата наживки: відбувається ЗАВЖДИ (риба з'їла/збила), незалежно від причини сходу
+    if (typeof GodMode !== "undefined" && GodMode.noEquipmentLoss) {
+      console.log(
+        "%c[GOD MODE] 🛡️ Снасті та наживку врятовано від втрати!",
+        "color: #00ff00;",
+      );
+      return;
+    }
+
+    // 1. Втрата наживки: відбувається ЗАВЖДИ... (далі йде твій старий код)
     if (
       reason === "rod" ||
       reason === "line" ||
@@ -1949,10 +1952,19 @@ class Game {
                 activeBoat.pos.y,
                 chumData.item.id,
               );
-              this.#systems.inventory.unequipItem(
-                `deliveryChums_${chumData.slotIndex}`,
-              );
-              this.#systems.inventory.consumeItem(chumData.item.instanceId, 1);
+
+              // === ВТРУЧАННЯ GOD MODE ===
+              const isInfinite =
+                typeof GodMode !== "undefined" && GodMode.infiniteResources;
+              if (!isInfinite) {
+                this.#systems.inventory.unequipItem(
+                  `deliveryChums_${chumData.slotIndex}`,
+                );
+                this.#systems.inventory.consumeItem(
+                  chumData.item.instanceId,
+                  1,
+                );
+              }
             }
 
             activeBoat.remainingSections--;
@@ -2070,7 +2082,12 @@ class Game {
       }
 
       this.#systems.chum.deployBait(vPos.x, vPos.y, activeChum.id);
-      this.#systems.inventory.consumeItem(activeChum.instanceId, 1);
+      // === ВТРУЧАННЯ GOD MODE: Нескінченна прикормка з руки ===
+      const isInfinite =
+        typeof GodMode !== "undefined" && GodMode.infiniteResources;
+      if (!isInfinite) {
+        this.#systems.inventory.consumeItem(activeChum.instanceId, 1);
+      }
       this.toggleChumAim();
     } else if (method === "boat") {
       const reservedTargets =
@@ -2097,10 +2114,16 @@ class Game {
       );
 
       // Списуємо прикормку саме з того слота, в якому вона лежала
-      this.#systems.inventory.unequipItem(
-        `deliveryChums_${chumData.slotIndex}`,
-      );
-      this.#systems.inventory.consumeItem(chumToDrop.instanceId, 1);
+      // === ВТРУЧАННЯ GOD MODE: Зберігаємо прикормку в кораблику ===
+      const isInfinite =
+        typeof GodMode !== "undefined" && GodMode.infiniteResources;
+      if (!isInfinite) {
+        // Списуємо прикормку саме з того слота, в якому вона лежала
+        this.#systems.inventory.unequipItem(
+          `deliveryChums_${chumData.slotIndex}`,
+        );
+        this.#systems.inventory.consumeItem(chumToDrop.instanceId, 1);
+      }
 
       // Виходимо з прицілювання, спираючись на кількість ЗАВАНТАЖЕНОЇ прикормки
       const loadedCount = this.activeBoat._loadedChums.length;
@@ -2171,7 +2194,13 @@ class Game {
                 chumToDrop.id,
                 activeBoat,
               );
-              this.#systems.inventory.consumeItem(chumToDrop.instanceId, 1);
+
+              // === ВТРУЧАННЯ GOD MODE ===
+              const isInfinite =
+                typeof GodMode !== "undefined" && GodMode.infiniteResources;
+              if (!isInfinite) {
+                this.#systems.inventory.consumeItem(chumToDrop.instanceId, 1);
+              }
               clickHandled = true;
             }
           }

@@ -573,3 +573,83 @@ document.addEventListener("netCatchRoll", (e) => {
     );
   }
 });
+
+class GodMode {
+  // Головний перемикач
+  static get isActive() {
+    return typeof CONFIG !== "undefined" && CONFIG.debug?.godMode?.enabled;
+  }
+
+  // 1. Нескінченні ресурси
+  static get infiniteResources() {
+    return this.isActive && CONFIG.debug.godMode.infiniteResources;
+  }
+
+  // 2. Немає зривів з гачка
+  static get noHookEscape() {
+    return this.isActive && CONFIG.debug.godMode.noHookEscape;
+  }
+
+  // 3. Немає обриву ліски
+  static get noLineBreak() {
+    return this.isActive && CONFIG.debug.godMode.noLineBreak;
+  }
+
+  // 4. Немає поломки вудки
+  static get noRodBreak() {
+    return this.isActive && CONFIG.debug.godMode.noRodBreak;
+  }
+
+  static get infiniteCasting() {
+    return this.isActive && CONFIG.debug.godMode.infiniteCasting;
+  }
+
+  static get noEquipmentLoss() {
+    return this.isActive && CONFIG.debug.godMode.noEquipmentLoss;
+  }
+}
+
+class TestBuildProvider {
+  static injectDebugBuild(inventory) {
+    const boxInstanceId = "debug_build_box_001";
+
+    if (inventory.getInstance(boxInstanceId)) return;
+
+    inventory.addItem({
+      instanceId: boxInstanceId,
+      itemId: "sys_build_box",
+      quantity: 1,
+      buildName: "Тестовий Набір (Dev)",
+      type: "build_box",
+    });
+
+    const debugItems = [
+      {
+        instanceId: "debug_rod_001",
+        itemId: "rod_test_float",
+        quantity: 1,
+        buildId: boxInstanceId,
+      },
+      {
+        instanceId: "debug_reel_001",
+        itemId: "float_day",
+        quantity: 1,
+        buildId: boxInstanceId,
+      },
+      {
+        instanceId: "debug_hook_001",
+        itemId: "sinker_light",
+        quantity: 1,
+        buildId: boxInstanceId,
+      },
+      {
+        instanceId: "debug_chum_001",
+        itemId: "hook_basic",
+        quantity: 1,
+        buildId: boxInstanceId,
+      },
+    ];
+
+    debugItems.forEach((item) => inventory.addItem(item));
+  }
+}

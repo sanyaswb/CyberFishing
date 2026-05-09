@@ -249,6 +249,12 @@ class InventoryManager {
     this.#db = new ItemDatabase(itemDB);
     this.#inventory = new Inventory(cachedInventory);
     this.#equipment = new InventoryEquipment(SLOT_CONFIG, cachedEquipment);
+
+    this.#setupDebugTools();
+  }
+
+  #setupDebugTools() {
+    TestBuildProvider.injectDebugBuild(this.#inventory);
   }
 
   saveBuild(buildName) {
@@ -277,7 +283,6 @@ class InventoryManager {
     countId(newRaw.deliveryId);
     if (newRaw.hooks) newRaw.hooks.forEach(countId);
 
-    // --- ДОДАНО: Захист від дублювання збірок ---
     for (const id of Object.keys(eqCounts)) {
       const item = this.#inventory.getInstance(id);
       if (item && item.buildId) {
@@ -293,19 +298,15 @@ class InventoryManager {
 
     let count = 0;
 
-    // 3. Проходимо по всьому одягненому і за необхідності розділяємо стаки
     for (const [id, equippedQty] of Object.entries(eqCounts)) {
       const item = this.#inventory.getInstance(id);
       if (item) {
-        // Якщо в рюкзаку їх більше, ніж ми реально одягнули (наприклад, 15 > 1)
         if ((item.quantity || 1) > equippedQty) {
           const leftoverQty = item.quantity - equippedQty;
 
-          // Залишаємо поточний ID для збірки (зменшуємо кількість)
           item.quantity = equippedQty;
           item.buildId = buildId;
 
-          // Створюємо НОВИЙ предмет для решти, яка падає в рюкзак
           const leftoverId =
             "uuid_leftover_" +
             Date.now() +
@@ -319,7 +320,6 @@ class InventoryManager {
           delete leftoverItem.buildId;
           this.#inventory.addItem(leftoverItem);
         } else {
-          // Якщо одягнено весь стак (або предмет в одному екземплярі)
           item.buildId = buildId;
         }
         count++;
@@ -329,7 +329,6 @@ class InventoryManager {
     if (count === 0)
       return { success: false, reason: "Немає спорядження для збереження!" };
 
-    // 4. Створюємо сам системний ящик
     this.#inventory.addItem({
       instanceId: buildId,
       itemId: "sys_build_box",
