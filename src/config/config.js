@@ -710,10 +710,10 @@ const CONFIG = {
         depthConfig: {
           minDepth: 1.0,
           maxDepth: 10.0,
-          minWeightAtMinDepth: 0.125,
+          minWeightAtMinDepth: 0.5,
           maxWeightAtMinDepth: 0.8,
           minWeightAtMaxDepth: 1.123,
-          maxWeightAtMaxDepth: 2.678,
+          maxWeightAtMaxDepth: 4.678,
           chanceMultAtMaxDepth: 0.4,
         },
 
@@ -727,10 +727,6 @@ const CONFIG = {
         baitMultipliers: {
           oil_worm: 2.0,
           bread: 1.0,
-          test_spinner: 1.0,
-          test_wobbler_sinking: 1.0,
-          test_wobbler_suspend: 1.0,
-          test_jig: 1.0,
         },
 
         timeMultipliers: { morning: 1.5, day: 1.0, evening: 3.2, night: 0.5 },
@@ -805,15 +801,15 @@ const CONFIG = {
             maxSequences: [1, 5],
             sequenceIntervalMs: [1555, 5333],
 
-            chanceGuaranteed: 0.5,
-            chanceNormal: 0.5,
-            normalIters: [1, 10],
+            chanceGuaranteed: 0.4,
+            chanceNormal: 0.6,
+            normalIters: [1, 6],
             guaranteedIters: [1, 3],
-            intervalMs: [300, 800],
+            intervalMs: [400, 1100],
             animDurationMs: [300, 800],
 
-            movementChance: 0.5,
-            movementSpeedPx: [2, 8],
+            movementChance: 0.4,
+            movementSpeedPx: [2, 4],
             movementDurationMs: [1000, 2500],
 
             animations: {
@@ -886,7 +882,13 @@ const CONFIG = {
           maxResistance: 1.5,
         },
 
-        baitMultipliers: { oil_worm: 2.0, bread: 0.5 },
+        baitMultipliers: {
+          oil_worm: 2.0,
+          test_spinner: 1.0,
+          test_wobbler_sinking: 1.0,
+          test_wobbler_suspend: 1.0,
+          test_jig: 1.0,
+        },
         timeMultipliers: { morning: 1.5, day: 0.8, evening: 1.2, night: 0.2 },
         dayMultipliers: {
           1: 1.0,
@@ -1057,8 +1059,8 @@ const CONFIG = {
   },
 
   feederConfig: {
-    volumeNormal: 0.4,
-    volumeGuaranteed: 1.0,
+    volumeNormal: 0.1,
+    volumeGuaranteed: 0.3,
     guaranteedRings: [2, 3],
   },
 

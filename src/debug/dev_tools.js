@@ -191,6 +191,7 @@ class DevTools {
     }
 
     target[path[path.length - 1]] = newValue;
+    this.#syncItemDbStatAliases(path, newValue);
     console.log(`[DevTools] Оновлено ${path.join(".")} =`, newValue);
 
     // Відправляємо подію з повним шляхом (наприклад: ["ITEM_DB", "rods", "rod_test_spin", "engineStats", "basePower"])
@@ -199,6 +200,87 @@ class DevTools {
         detail: { path: path, value: newValue },
       }),
     );
+  }
+
+  #syncItemDbStatAliases(path, newValue) {
+    if (path[0] !== "ITEM_DB" || path.length < 5) return;
+
+    const category = path[1];
+    const itemId = path[2];
+    const group = path[3];
+    const field = path[4];
+    const item = ITEM_DB?.[category]?.[itemId];
+    if (!item || typeof item !== "object") return;
+
+    if (group === "displayStats") {
+      const engineKey = this.#resolveDisplayStatEngineKey(
+        item,
+        category,
+        field,
+        newValue,
+      );
+      if (!engineKey) return;
+      item.engineStats = item.engineStats || {};
+      item.engineStats[engineKey] = newValue;
+      return;
+    }
+
+    if (group === "engineStats") {
+      const displayKey = this.#resolveEngineStatDisplayKey(item, field);
+      if (!displayKey) return;
+      item.displayStats[displayKey] = newValue;
+    }
+  }
+
+  #resolveDisplayStatEngineKey(item, category, field, value) {
+    const key = String(field).toLowerCase();
+    if (key === "level") return "level";
+    if (key === "power" || key === "basepower" || key === "strength") {
+      return "basePower";
+    }
+    if (key === "maxdistance" || key === "distance") return "maxDistance";
+
+    if (category !== "rods") return null;
+    const keys = Object.keys(item.displayStats || {});
+    const index = keys.indexOf(field);
+    if (index === 0 && Number.isFinite(Number(value))) return "level";
+    if (index === 1 && Number.isFinite(Number(value))) return "basePower";
+    return null;
+  }
+
+  #resolveEngineStatDisplayKey(item, field) {
+    const displayStats = item.displayStats;
+    if (!displayStats || typeof displayStats !== "object") return null;
+
+    for (const key of Object.keys(displayStats)) {
+      const engineKey = this.#resolveDisplayStatEngineKey(
+        item,
+        "rods",
+        key,
+        displayStats[key],
+      );
+      if (engineKey === field) return key;
+    }
+
+    if (
+      field === "level" &&
+      Object.prototype.hasOwnProperty.call(displayStats, "level")
+    ) {
+      return "level";
+    }
+    if (
+      field === "basePower" &&
+      Object.prototype.hasOwnProperty.call(displayStats, "power")
+    ) {
+      return "power";
+    }
+    if (
+      field === "maxDistance" &&
+      Object.prototype.hasOwnProperty.call(displayStats, "distance")
+    ) {
+      return "distance";
+    }
+    return null;
   }
 }
 

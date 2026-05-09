@@ -585,10 +585,24 @@ class GameApplication {
     this.#refreshViewport();
 
     this.#debugFacade.subscribeConfigUpdated((e) => {
+      if (this.#isItemDatabaseUpdate(e)) {
+        this.#handleItemDatabaseUpdate();
+      }
       if (this.#isLocationsConfigUpdate(e)) {
         this.#viewportFacade.refreshLocationConfig(this.#config.locations);
       }
     });
+  }
+
+  #isItemDatabaseUpdate(event) {
+    const path = event?.detail?.path;
+    return Array.isArray(path) && path[0] === "ITEM_DB";
+  }
+
+  #handleItemDatabaseUpdate() {
+    this.#inventory?.refreshItemData?.();
+    const eq = this.#inventory?.getEquipped?.();
+    if (eq) this.#fightService?.syncEquipment(eq);
   }
 
   #isLocationsConfigUpdate(event) {

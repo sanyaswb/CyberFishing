@@ -9,11 +9,16 @@ class ItemDatabase {
   }
 
   #buildCategoryMap() {
+    this.#categoryMap.clear();
     for (const [category, items] of Object.entries(this.#db)) {
       for (const itemId of Object.keys(items)) {
         this.#categoryMap.set(itemId, category);
       }
     }
+  }
+
+  refresh() {
+    this.#buildCategoryMap();
   }
 
   getItemData(itemId) {
@@ -768,6 +773,15 @@ class InventoryManager {
 
   onInventoryChanged(handler) {
     return this.#events.on("inventory-changed", handler);
+  }
+
+  refreshItemData() {
+    this.#db.refresh();
+    this.#equippedCache = null;
+    this.#events.emit("inventory-changed", {
+      equipment: this.getEquipped(),
+      source: "item-db-updated",
+    });
   }
 
   dispose() {
