@@ -213,9 +213,14 @@ class ScoutingState extends GameState {
       }
     } else {
       // Відмальовка дозволеної зони для ПРИКОРМКИ
-      if (CONFIG.locations?.showAimingZone !== false) {
-        const locId = "test"; // Замініть на змінну поточної локації, якщо вона у вас динамічна
-        const chumDist = CONFIG.locations.map[locId].chumCastDistance || 300;
+      const eq = this.game.systems.inventory.getEquipped();
+      const method = eq.delivery ? "boat" : "hand";
+
+      // МАЛЮЄМО ЗОНУ ТІЛЬКИ ЯКЩО ПРИКОРМКА В РУЦІ
+      if (method === "hand" && CONFIG.locations?.showAimingZone !== false) {
+        // Беремо динамічний ID локації або використовуємо "test" як запобіжник
+        const locId = this.game.systems.map?.currentLocationId || "test";
+        const chumDist = CONFIG.locations.map[locId]?.chumCastDistance || 300;
 
         renderer.drawAimingZone(
           this.game.systems.projector,
@@ -1447,33 +1452,20 @@ class Game {
       r.drawChumZones(this.#systems.chum, this.#systems.projector);
     }
 
-    if (this.#systems.chum && typeof r.drawBoatWaypoints === "function") {
-      r.drawBoatWaypoints(this.#systems.chum, this.#systems.projector);
-    }
-
-    if (this.#systems.chum && typeof r.drawBoats === "function") {
-      r.drawBoats(this.#systems.chum, this.#systems.projector);
-
-      const boats = this.#systems.chum.getBoats();
-      for (let i = 0; i < boats.length; i++) {
-        if (typeof r.renderSensors === "function") {
-          r.renderSensors(boats[i], this.#systems.projector);
-        }
+    if (this.#systems.chum) {
+      if (typeof r.drawBoatWaypoints === "function") {
+        r.drawBoatWaypoints(this.#systems.chum, this.#systems.projector);
       }
-    }
 
-    // --- ВИПРАВЛЕНО: Беремо метод доставки з інвентарю ---
-    const eq = this.#systems.inventory.getEquipped();
-    const method = eq.delivery ? "boat" : "hand";
+      if (typeof r.drawBoats === "function") {
+        r.drawBoats(this.#systems.chum, this.#systems.projector);
 
-    if (this.isAimingChum && method === "hand") {
-      if (CONFIG.locations?.showAimingZone !== false) {
-        r.drawAimingZone(
-          this.#systems.projector,
-          b.bottom,
-          CONFIG.locations.map["test"]?.chumCastDistance || 800,
-          "chum",
-        );
+        const boats = this.#systems.chum.getBoats();
+        for (let i = 0; i < boats.length; i++) {
+          if (typeof r.renderSensors === "function") {
+            r.renderSensors(boats[i], this.#systems.projector);
+          }
+        }
       }
     }
 
