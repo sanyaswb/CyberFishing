@@ -187,6 +187,21 @@ class InventoryEquipment {
     return null;
   }
 
+  replaceInstance(oldInstanceId, newInstanceId) {
+    if (!oldInstanceId || !newInstanceId || oldInstanceId === newInstanceId)
+      return;
+
+    for (const [slot, value] of this.#slots.entries()) {
+      if (Array.isArray(value)) {
+        for (let i = 0; i < value.length; i++) {
+          if (value[i] === oldInstanceId) value[i] = newInstanceId;
+        }
+      } else if (value === oldInstanceId) {
+        this.#slots.set(slot, newInstanceId);
+      }
+    }
+  }
+
   getRawState() {
     const state = {};
     for (const [slotName, settings] of Object.entries(this.#config)) {
@@ -410,9 +425,10 @@ class InventoryManager {
       const item = items[i];
       if (item.buildId === buildId) {
         delete item.buildId;
+        this.#mergeIntoAvailableStack(item);
       }
     }
-    this.removeItem(buildId);
+    this.#inventory.remove(buildId);
     this.#saveAndNotify();
   }
 
@@ -771,6 +787,69 @@ class InventoryManager {
     return slotValue || null;
   }
 
+  #getEquippedInstanceCounts() {
+    const raw = this.#equipment.getRawState();
+    const counts = {};
+    const countId = (id) => {
+      if (id) counts[id] = (counts[id] || 0) + 1;
+    };
+
+    countId(raw.rodId);
+    countId(raw.reelId);
+    countId(raw.floatId);
+    countId(raw.sinkerId);
+    countId(raw.feederChumId);
+    countId(raw.netId);
+    countId(raw.deliveryId);
+
+    const countArray = (arr) => {
+      if (!arr) return;
+      for (let i = 0; i < arr.length; i++) countId(arr[i]);
+    };
+
+    countArray(raw.hooks);
+    countArray(raw.baits);
+    countArray(raw.deliveryChums);
+    return counts;
+  }
+
+  #mergeIntoAvailableStack(sourceItem) {
+    if (!sourceItem || sourceItem.itemId === "sys_build_box") return;
+
+    const targetItem = this.#findMergeTarget(sourceItem);
+    if (!targetItem) {
+      sourceItem.quantity = sourceItem.quantity || 1;
+      return;
+    }
+
+    targetItem.quantity = (targetItem.quantity || 1) + (sourceItem.quantity || 1);
+    this.#equipment.replaceInstance(sourceItem.instanceId, targetItem.instanceId);
+    this.#inventory.remove(sourceItem.instanceId);
+  }
+
+  #findMergeTarget(sourceItem) {
+    const items = this.#inventory.getAll();
+    for (let i = 0; i < items.length; i++) {
+      const candidate = items[i];
+      if (candidate === sourceItem) continue;
+      if (candidate.buildId) continue;
+      if (candidate.itemId !== sourceItem.itemId) continue;
+      if (!this.#canStackItems(sourceItem, candidate)) continue;
+      return candidate;
+    }
+    return null;
+  }
+
+  #canStackItems(a, b) {
+    const ignored = new Set(["instanceId", "quantity", "buildId"]);
+    const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+    for (const key of keys) {
+      if (ignored.has(key)) continue;
+      if (JSON.stringify(a[key]) !== JSON.stringify(b[key])) return false;
+    }
+    return true;
+  }
+
   _hydrateInstance(instanceId) {
     if (!instanceId) return null;
     const invItem = this.#inventory.getInstance(instanceId);
@@ -792,11 +871,18 @@ class InventoryManager {
       const contents = [];
       const inventoryItems = this.#inventory.getAll();
       let totalQuantity = 0;
+      const equippedCounts = this.#getEquippedInstanceCounts();
       for (let i = 0; i < inventoryItems.length; i++) {
         const item = inventoryItems[i];
         if (item.buildId !== instanceId) continue;
-        contents.push(item);
-        totalQuantity += item.quantity || 1;
+        const equippedQuantity = equippedCounts[item.instanceId] || 0;
+        const remainingQuantity = Math.max(
+          0,
+          (item.quantity || 1) - equippedQuantity,
+        );
+        if (remainingQuantity <= 0) continue;
+        contents.push({ ...item, quantity: remainingQuantity });
+        totalQuantity += remainingQuantity;
       }
       hydrated.quantity = totalQuantity;
 

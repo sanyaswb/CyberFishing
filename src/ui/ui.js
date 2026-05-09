@@ -1131,6 +1131,10 @@ class InventoryUI {
     }
   }
 
+  open() {
+    if (!this.#isOpen) this.toggle();
+  }
+
   showWarning(message) {
     this.#warningBoxNode.innerText = message;
     this.#warningBoxNode.style.display = "block";

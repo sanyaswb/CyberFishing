@@ -171,13 +171,14 @@ class GameFishingFacade {
       equipment: this.#inventory.getEquipped(),
       currentHookDepth: this.#getCurrentHookDepth(),
     });
-    if (!result.success) return;
+    if (!result.success) return result;
 
     this.#setFloat(result.floatEntity);
     this.#setCastDistanceRatio(result.castDistanceRatio);
     this.#setCastStartTime(result.castStartTime);
     this.#setCurrentHookDepth(result.currentHookDepth);
     this.#setState(result.nextState);
+    return result;
   }
 
   drawFishingElements(renderer, bottom, state, tMeter, fCond, startTime) {
@@ -215,6 +216,7 @@ class GameApplication {
   #env;
   #input;
   #ui;
+  #inventoryUI;
   #chum;
   #bite;
   #inventory;
@@ -327,6 +329,7 @@ class GameApplication {
     this.#env = runtime.env;
     this.#input = runtime.input;
     this.#ui = runtime.ui;
+    this.#inventoryUI = runtime.inventoryUI;
     this.#chum = runtime.chum;
     this.#bite = runtime.bite;
     this.#inventory = runtime.inventory;
@@ -641,7 +644,11 @@ class GameApplication {
   }
 
   castLine(vx, vy, cellDepth) {
-    this.#fishingFacade.castLine(vx, vy, cellDepth);
+    const result = this.#fishingFacade.castLine(vx, vy, cellDepth);
+    if (result?.reason === "missing_rod") {
+      this.#showMissingRodInventoryWarning();
+    }
+    return result;
   }
 
   drawFishingElements(renderer, bottom, state, tMeter, fCond, startTime) {
@@ -723,6 +730,13 @@ class GameApplication {
 
   markInvalidCast(p) {
     this.invalidCastMarker = { x: p.x, y: p.y, timer: 500 };
+  }
+
+  #showMissingRodInventoryWarning() {
+    this.#inventoryUI?.open?.();
+    this.#inventoryUI?.showWarning?.(
+      "для закидання вудилища необхідно спочатку його екіпірувати",
+    );
   }
 
   start() {
