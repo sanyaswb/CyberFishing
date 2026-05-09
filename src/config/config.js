@@ -559,7 +559,7 @@ const CONFIG = {
 
   debug: {
     godMode: {
-      enabled: false, // Гoловний рубильник (якщо false, інші ігноруються)
+      enabled: true, // Гoловний рубильник (якщо false, інші ігноруються)
       infiniteResources: true, // 1. Нескінченна наживка/снасті
       noEquipmentLoss: true,
       noHookEscape: true, // 2. Риба ніколи не зривається з гачка
@@ -575,7 +575,7 @@ const CONFIG = {
     fixedCatch: {
       enabled: false,
       fishId: "crucian_stalker", // Можна вписати 'perch_radioactive'
-      level: 5,
+      level: 6,
       weight: 2.678,
       resistance: 2.5,
     },
@@ -695,6 +695,12 @@ const CONFIG = {
         name: "Карась-сталкер",
         baseChance: 0.02,
         maxHookSize: 6,
+        trophyWeightKg: 1.0,
+        visual: {
+          imagePattern:
+            "assets/fish/crucian_stalker/crucian_stalker--{level}.webp",
+          uniqueLevel: 6,
+        },
 
         weatherMultipliers: {
           rain: 1.5,
@@ -713,7 +719,7 @@ const CONFIG = {
 
         weightConfig: {
           rarityCurve: 3.5,
-          maxLevel: 5,
+          maxLevel: 6,
           baseResistance: 0.8,
           maxResistance: 2.5,
         },
@@ -1100,7 +1106,7 @@ const CONFIG = {
       },
 
       masteryTimeRatio: 0.5, // Час утримання: 50% (0.5) від часу, який був потрібен на повне виснаження
-      masteryPowerMultiplier: 0.2, // До якого відсотка ПЛАВНО впаде сила (0.2 = залишиться 20%)
+      masteryPowerMultiplier: 0.2, // До якого відсотка ПЛАВНО впаде сила (0.2 = залишиться 80%)
     },
   },
 
@@ -1202,6 +1208,30 @@ const CONFIG = {
 
     catchZone: {
       color: "rgba(0, 150, 255, 0.5)",
+    },
+
+    victory: {
+      panelWidth: 540,
+      panelMinHeight: 560,
+      viewportMargin: 24,
+      panelPadding: 24,
+      panelRadius: 8,
+      imageBoxSize: 260,
+      imageBorderWidth: 3,
+      statPillHeight: 42,
+      buttonWidth: 150,
+      buttonHeight: 42,
+      buttonGap: 14,
+      blurPx: 3,
+      uniqueGlowPulseMs: 1200,
+      levelColors: {
+        1: [145, 150, 160],
+        2: [0, 210, 120],
+        3: [0, 160, 255],
+        4: [170, 100, 255],
+        preUnique: [255, 70, 70],
+        unique: [255, 205, 55],
+      },
     },
 
     line: {

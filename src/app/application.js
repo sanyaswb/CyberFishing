@@ -745,9 +745,7 @@ class GameApplication {
 
   #showMissingRodInventoryWarning() {
     this.#inventoryUI?.open?.();
-    this.#inventoryUI?.showWarning?.(
-      "для закидання вудилища необхідно спочатку його екіпірувати",
-    );
+    this.#inventoryUI?.showWarning?.("Equip a rod before casting.");
   }
 
   start() {

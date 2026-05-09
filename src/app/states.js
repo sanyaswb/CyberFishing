@@ -47,6 +47,7 @@
  * @typedef {Object} ScoutingStateDeps
  * @property {InventoryManager} inventory
  * @property {UIManager} ui
+ * @property {ConfigProvider} config
  * @property {ViewportProjector} projector
  * @property {ConfigProvider} config
  * @property {DepthSelectorUI} depthUI
@@ -134,6 +135,7 @@
 /**
  * @typedef {Object} ResultStateDeps
  * @property {UIManager} ui
+ * @property {ConfigProvider} config
  * @property {FishingController} fishing
  * @property {InventoryManager} inventory
  * @property {() => { width: number, height: number }} getViewportSize
@@ -392,6 +394,7 @@ class StateDepsFactory {
     return Object.freeze({
       // Direct subsystem references — result states need very little
       ui: root.ui,
+      config: root.config,
       fishing: root.fishing,
       inventory: root.inventory,
       getViewportSize: root.getViewportSize,
@@ -657,15 +660,33 @@ class WaitingState extends GameState {
         template,
         baitTypes,
       );
+      const visual = template.visual || {};
+      const maxLevel = template.weightConfig?.maxLevel || fixed.level;
+      const uniqueLevel = visual.uniqueLevel;
+      const isUnique =
+        template.isUnique === true ||
+        template.unique === true ||
+        (Number.isFinite(uniqueLevel) && fixed.level >= uniqueLevel);
+      const imagePattern =
+        visual.imagePattern ||
+        `assets/fish/${template.id}/${template.id}--{level}.webp`;
 
       hooked = {
         id: template.id,
         name: template.name + " (TEST)",
         physics: template.physics,
         level: fixed.level,
+        maxLevel,
         weight: fixed.weight,
         resistance: fixed.resistance,
         biteSequence: chosenSequence,
+        imagePath: imagePattern.replace("{level}", fixed.level),
+        isUnique,
+        isTrophy:
+          template.trophyWeightKg !== undefined
+            ? fixed.weight >= template.trophyWeightKg
+            : false,
+        anomaly: template.anomaly || "none",
       };
     }
 
@@ -1125,11 +1146,27 @@ class VictoryState extends GameState {
 
   enter(data) {
     this.data = data || {};
-    this.deps.ui.updateContinueButtonState(true);
+    this.deps.ui.updateContinueButtonState(false);
   }
 
   exit() {
     this.deps.ui.updateContinueButtonState(false);
+  }
+
+  handleInput(input) {
+    if (!input?.clickPos) return;
+
+    const viewport = this.deps.getViewportSize();
+    const actions = this.#getVictoryActionRects(viewport);
+    const click = input.clickPos;
+    const isActionClick =
+      this.#isPointInside(click, actions.claim) ||
+      this.#isPointInside(click, actions.release);
+
+    if (!isActionClick) return;
+
+    input.clickPos = null;
+    this.deps.commands.setState("scouting");
   }
 
   draw(renderer, bounds) {
@@ -1143,6 +1180,98 @@ class VictoryState extends GameState {
     );
 
     const viewport = this.deps.getViewportSize();
-    renderer.drawVictory(viewport.width, viewport.height);
+    renderer.drawVictory(
+      viewport.width,
+      viewport.height,
+      this.data.fish,
+      this.deps.config.ui?.victory,
+    );
+  }
+
+  #getVictoryActionRects(viewport) {
+    const config = this.deps.config.ui?.victory || {};
+    const cfg = {
+      panelWidth: 540,
+      panelMinHeight: 560,
+      viewportMargin: 24,
+      panelPadding: 24,
+      imageBoxSize: 260,
+      statPillHeight: 42,
+      buttonWidth: 150,
+      buttonHeight: 42,
+      buttonGap: 14,
+      ...config,
+    };
+    const margin = Math.max(8, cfg.viewportMargin || 24);
+    const maxPanelW = Math.max(260, viewport.width - margin * 2);
+    const panelW = Math.min(cfg.panelWidth, maxPanelW);
+    const padding = Math.min(cfg.panelPadding, Math.max(14, panelW * 0.06));
+    const maxPanelH = Math.max(320, viewport.height - margin * 2);
+    const titleH = 46;
+    const gap = 16;
+    const statH = cfg.statPillHeight;
+    const buttonH = cfg.buttonHeight;
+    const extraStats = Array.isArray(this.data?.fish?.victoryStats)
+      ? this.data.fish.victoryStats
+      : [];
+    const statItemsLength = 3 + extraStats.length;
+    const statColumns = Math.min(3, Math.max(1, statItemsLength));
+    const statRows = Math.ceil(statItemsLength / statColumns);
+    const pillGap = 8;
+    const statBlockH = statRows * statH + (statRows - 1) * pillGap;
+    let imageSize = Math.min(
+      cfg.imageBoxSize,
+      panelW - padding * 2,
+      Math.max(140, maxPanelH * 0.46),
+    );
+    let contentH =
+      padding * 2 + titleH + gap + imageSize + gap + statBlockH + gap + buttonH;
+
+    if (contentH > maxPanelH) {
+      imageSize = Math.max(120, imageSize - (contentH - maxPanelH));
+      contentH =
+        padding * 2 +
+        titleH +
+        gap +
+        imageSize +
+        gap +
+        statBlockH +
+        gap +
+        buttonH;
+    }
+
+    const panelH = Math.min(
+      maxPanelH,
+      Math.max(contentH, Math.min(cfg.panelMinHeight, maxPanelH)),
+    );
+    const panelX = (viewport.width - panelW) / 2;
+    const panelY = (viewport.height - panelH) / 2;
+    const imageY = panelY + padding + titleH + gap;
+    const statsY = imageY + imageSize + gap;
+    const buttonsY = statsY + statBlockH + gap;
+    const buttonW = Math.min(
+      cfg.buttonWidth,
+      (panelW - padding * 2 - cfg.buttonGap) / 2,
+    );
+    const buttonsX = panelX + (panelW - buttonW * 2 - cfg.buttonGap) / 2;
+
+    return {
+      claim: { x: buttonsX, y: buttonsY, w: buttonW, h: buttonH },
+      release: {
+        x: buttonsX + buttonW + cfg.buttonGap,
+        y: buttonsY,
+        w: buttonW,
+        h: buttonH,
+      },
+    };
+  }
+
+  #isPointInside(point, rect) {
+    return (
+      point.x >= rect.x &&
+      point.x <= rect.x + rect.w &&
+      point.y >= rect.y &&
+      point.y <= rect.y + rect.h
+    );
   }
 }

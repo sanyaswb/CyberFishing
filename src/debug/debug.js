@@ -612,7 +612,7 @@ class GodMode {
 class TestBuildProvider {
   static injectDebugBuild(inventory) {
     const boxInstanceId = "debug_build_box_001";
-
+    const boxInstanceId2 = "debug_build_box_002";
     if (inventory.getInstance(boxInstanceId)) return;
 
     inventory.addItem({
@@ -620,6 +620,14 @@ class TestBuildProvider {
       itemId: "sys_build_box",
       quantity: 1,
       buildName: "Тестовий Набір (Dev)",
+      type: "build_box",
+    });
+
+    inventory.addItem({
+      instanceId: boxInstanceId2,
+      itemId: "sys_build_box",
+      quantity: 1,
+      buildName: "Тестовий Набір (Dev2)",
       type: "build_box",
     });
 
@@ -648,8 +656,58 @@ class TestBuildProvider {
         quantity: 1,
         buildId: boxInstanceId,
       },
+      {
+        instanceId: "debug_rod_002",
+        itemId: "rod_test_feeder",
+        quantity: 1,
+        buildId: boxInstanceId2,
+      },
+      {
+        instanceId: "debug_feeder_spring_001",
+        itemId: "feeder_spring_basic",
+        quantity: 1,
+        buildId: boxInstanceId2,
+      },
+      {
+        instanceId: "debug_hook_basic_002",
+        itemId: "hook_basic",
+        quantity: 1,
+        buildId: boxInstanceId2,
+      },
+      {
+        instanceId: "debug_reel_test_002",
+        itemId: "reel_test",
+        quantity: 1,
+        buildId: boxInstanceId2,
+      },
+      {
+        instanceId: "debug_carp_mix_basic_004",
+        itemId: "carp_mix_basic",
+        quantity: 1,
+        buildId: boxInstanceId2,
+      },
     ];
 
     debugItems.forEach((item) => inventory.addItem(item));
   }
 }
+
+// inventory: [
+//   { instanceId: "uuid-rod-spin", itemId: "rod_test_spin" },
+//   { instanceId: "uuid-rod-feeder", itemId: "rod_test_feeder" },
+//   { instanceId: "uuid-rod-float", itemId: "rod_test_float", quantity: 3 },
+//   { instanceId: "uuid-reel", itemId: "reel_test" },
+//   { instanceId: "uuid-float", itemId: "float_day" },
+//   { instanceId: "uuid-sinker", itemId: "sinker_light", quantity: 2 },
+//   { instanceId: "uuid-spring", itemId: "feeder_spring_basic" },
+//   { instanceId: "uuid-hook", itemId: "hook_basic", quantity: 2 },
+//   { instanceId: "uuid-worm", itemId: "oil_worm", quantity: 50 },
+//   { instanceId: "uuid-bread", itemId: "bread", quantity: 20 },
+//   { instanceId: "uuid-spinner", itemId: "test_spinner" },
+//   { instanceId: "uuid-wob-susp", itemId: "test_wobbler_suspend" },
+//   { instanceId: "uuid-wob-sink", itemId: "test_wobbler_sinking" },
+//   { instanceId: "uuid-jig", itemId: "test_jig" },
+//   { instanceId: "uuid-net", itemId: "net_basic" },
+//   { instanceId: "uuid-chum", itemId: "carp_mix_basic", quantity: 15 },
+//   { instanceId: "uuid-boat", itemId: "boat_lvl3" },
+// ],

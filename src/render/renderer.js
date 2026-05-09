@@ -1,17 +1,153 @@
-class Renderer {
+﻿class Renderer {
   #canvas;
   #ctx;
   #screenA = new Vector2(0, 0);
   #screenB = new Vector2(0, 0);
+  #imageCache = new Map();
 
   constructor(canvas) {
     this.#canvas = canvas;
     this.#ctx = canvas.getContext("2d", { alpha: false });
   }
 
-  // src/render/renderer.js
+  #rgba(rgb, alpha = 1) {
+    const source = Array.isArray(rgb) ? rgb : [255, 255, 255];
+    return `rgba(${source[0] || 0}, ${source[1] || 0}, ${source[2] || 0}, ${alpha})`;
+  }
+
+  #mixRgb(a, b, t) {
+    const ratio = Math.max(0, Math.min(1, t));
+    return [
+      Math.round(a[0] + (b[0] - a[0]) * ratio),
+      Math.round(a[1] + (b[1] - a[1]) * ratio),
+      Math.round(a[2] + (b[2] - a[2]) * ratio),
+    ];
+  }
+
+  #roundedRect(ctx, x, y, w, h, r) {
+    const radius = Math.max(0, Math.min(r, w / 2, h / 2));
+    ctx.beginPath();
+    if (typeof ctx.roundRect === "function") {
+      ctx.roundRect(x, y, w, h, radius);
+      return;
+    }
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + w - radius, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+    ctx.lineTo(x + w, y + h - radius);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+    ctx.lineTo(x + radius, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+  }
+
+  #getCachedImage(src) {
+    if (!src || typeof Image === "undefined") return null;
+    let entry = this.#imageCache.get(src);
+    if (!entry) {
+      const img = new Image();
+      entry = { img, loaded: false, failed: false };
+      img.onload = () => {
+        entry.loaded = true;
+      };
+      img.onerror = () => {
+        entry.failed = true;
+      };
+      img.src = src;
+      this.#imageCache.set(src, entry);
+    }
+    return entry.loaded && !entry.failed ? entry.img : null;
+  }
+
+  #drawImageCover(img, x, y, w, h) {
+    const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+    const sw = w / scale;
+    const sh = h / scale;
+    const sx = (img.naturalWidth - sw) / 2;
+    const sy = (img.naturalHeight - sh) / 2;
+    this.#ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+  }
+
+  #drawFittedText(text, x, y, maxWidth, baseFont, color, align = "center") {
+    const ctx = this.#ctx;
+    let size = baseFont.size;
+    const family = baseFont.family || "monospace";
+    const weight = baseFont.weight || "bold";
+    do {
+      ctx.font = `${weight} ${size}px ${family}`;
+      if (ctx.measureText(text).width <= maxWidth || size <= 10) break;
+      size -= 1;
+    } while (size > 10);
+    ctx.fillStyle = color;
+    ctx.textAlign = align;
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, x, y);
+  }
+
+  #getVictoryTheme(fish, config) {
+    const colors = config.levelColors || {};
+    const gray = colors[1] || [145, 150, 160];
+    const green = colors[2] || [0, 210, 120];
+    const blue = colors[3] || [0, 160, 255];
+    const purple = colors[4] || [170, 100, 255];
+    const red = colors.preUnique || [255, 70, 70];
+    const gold = colors.unique || [255, 205, 55];
+    const level = Math.max(1, Math.round(fish?.level || 1));
+    const maxLevel = Math.max(level, Math.round(fish?.maxLevel || level));
+
+    if (fish?.isUnique) return { color: gold, isUnique: true };
+    if (maxLevel > 2 && level === maxLevel - 1)
+      return { color: red, isUnique: false };
+    if (level <= 1) return { color: gray, isUnique: false };
+    if (level === 2) return { color: green, isUnique: false };
+    if (level === 3) return { color: blue, isUnique: false };
+    if (level === 4) return { color: purple, isUnique: false };
+
+    const span = Math.max(1, maxLevel - 5);
+    return {
+      color: this.#mixRgb(purple, red, (level - 4) / span),
+      isUnique: false,
+    };
+  }
+
+  #drawVictoryPill(x, y, w, h, label, color) {
+    const ctx = this.#ctx;
+    this.#roundedRect(ctx, x, y, w, h, 8);
+    ctx.fillStyle = "rgba(5, 10, 16, 0.48)";
+    ctx.fill();
+    ctx.strokeStyle = this.#rgba(color, 0.38);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    this.#drawFittedText(
+      label,
+      x + w / 2,
+      y + h / 2,
+      w - 14,
+      { size: 13, family: "sans-serif", weight: "bold" },
+      "#e8edf5",
+    );
+  }
+
+  #drawVictoryButton(x, y, w, h, label, color, filled = true) {
+    const ctx = this.#ctx;
+    this.#roundedRect(ctx, x, y, w, h, 8);
+    ctx.fillStyle = filled ? this.#rgba(color, 0.82) : "rgba(0, 0, 0, 0.28)";
+    ctx.fill();
+    ctx.strokeStyle = this.#rgba(color, 0.95);
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    this.#drawFittedText(
+      label,
+      x + w / 2,
+      y + h / 2,
+      w - 20,
+      { size: 15, family: "sans-serif", weight: "bold" },
+      filled ? "#061014" : "#e8edf5",
+    );
+  }
+
   renderSensors(boat, projector) {
-    // 1. Перевірка конфігу: якщо вимкнено — не малюємо
     if (!boat.config.showSensors) return;
 
     const rays = boat.sensorRays;
@@ -23,7 +159,6 @@ class Renderer {
     for (let i = 0; i < rays.length; i++) {
       const ray = rays[i];
 
-      // Малюємо актуальні координати, які тепер оновлюються щокадру
       const startScreen = projector.virtualToScreen(
         ray.startX,
         ray.startY,
@@ -209,8 +344,6 @@ class Renderer {
 
       const cfg = zone.baitConfig;
 
-      // ВІЗУАЛЬНЕ ВИПРАВЛЕННЯ:
-      // Зона видима на 100%, поки діє бонус, і починає згасати тільки до minBonus
       let opacity = 1.0;
       if (zone.currentBonus < cfg.maxBonus) {
         opacity =
@@ -241,7 +374,7 @@ class Renderer {
         Math.PI * 2,
       );
 
-      this.#ctx.fillStyle = `rgba(200, 255, 100, ${opacity * 0.2})`; // Трохи приглушили
+      this.#ctx.fillStyle = `rgba(200, 255, 100, ${opacity * 0.2})`;
       this.#ctx.fill();
       this.#ctx.strokeStyle = `rgba(200, 255, 100, ${opacity * 0.5})`;
       this.#ctx.lineWidth = 2;
@@ -253,14 +386,11 @@ class Renderer {
   drawAimingZone(projector, virtualBottomY, maxDist, type = "chum") {
     if (maxDist === Infinity) return;
 
-    // Рахуємо координату лінії у віртуальному світі
     const virtualLineY = virtualBottomY - maxDist;
 
-    // Переводимо у екранні пікселі
     const screenPos = projector.virtualToScreen(0, virtualLineY, this.#screenA);
     const lineScreenY = screenPos.y;
 
-    // Знаходимо екранну координату берега для заливки
     const screenBottomPos = projector.virtualToScreen(
       0,
       virtualBottomY,
@@ -271,7 +401,6 @@ class Renderer {
     this.#ctx.save();
     this.#ctx.beginPath();
 
-    // Малюємо пунктирну лінію через увесь екран
     this.#ctx.moveTo(0, lineScreenY);
     this.#ctx.lineTo(this.#canvas.width, lineScreenY);
 
@@ -287,7 +416,6 @@ class Renderer {
     this.#ctx.setLineDash([15, 10]);
     this.#ctx.stroke();
 
-    // Робимо заливку
     if (fillHeight > 0) {
       this.#ctx.fillRect(0, lineScreenY, this.#canvas.width, fillHeight);
     }
@@ -308,33 +436,27 @@ class Renderer {
         const wp = waypoints[i];
         const screenPos = projector.virtualToScreen(wp.x, wp.y, this.#screenA);
 
-        // --- ДОДАЄМО ПЕРСПЕКТИВУ ---
         const perspective = projector.getPerspective(wp.y);
-        const scale = perspective.scale; // Використовуємо загальний масштаб
+        const scale = perspective.scale;
 
         this.#ctx.save();
 
-        // Малюємо зовнішнє напівпрозоре кільце (масштабуємо радіус)
         this.#ctx.beginPath();
         this.#ctx.arc(screenPos.x, screenPos.y, 8 * scale, 0, Math.PI * 2);
         this.#ctx.strokeStyle = "rgba(255, 170, 0, 0.6)";
-        this.#ctx.lineWidth = Math.max(1, 2 * scale); // Товщина лінії теж трохи зменшується
+        this.#ctx.lineWidth = Math.max(1, 2 * scale);
         this.#ctx.stroke();
 
-        // Малюємо внутрішній яскравий кружечок (масштабуємо радіус)
         this.#ctx.beginPath();
         this.#ctx.arc(screenPos.x, screenPos.y, 3 * scale, 0, Math.PI * 2);
         this.#ctx.fillStyle = "#ffaa00";
         this.#ctx.fill();
 
-        // Малюємо цифру ТІЛЬКИ якщо це автоматичний режим
         if (!boat.config.manualControl) {
           this.#ctx.fillStyle = "#ffffff";
-          // Масштабуємо розмір шрифту
-          const fontSize = Math.max(6, 10 * scale); // Мінімум 6px, щоб можна було прочитати
+          const fontSize = Math.max(6, 10 * scale);
           this.#ctx.font = `bold ${fontSize}px Arial`;
 
-          // Відступи для тексту теж масштабуємо
           this.#ctx.fillText(
             i + 1,
             screenPos.x + 10 * scale,
@@ -348,7 +470,6 @@ class Renderer {
   }
 
   drawBoats(chumManager, projector) {
-    // Видалено virtualTopY, virtualBottomY
     const boats = chumManager.getBoats();
     if (!boats || boats.length === 0) return;
 
@@ -363,9 +484,7 @@ class Renderer {
         this.#screenA,
       );
 
-      // --- ЄДИНА МАТЕМАТИЧНА ПЕРСПЕКТИВА ---
       const perspective = projector.getPerspective(boat.pos.y);
-      // Для кораблика беремо тільки scale, бо він "стоїть" на воді, а не лежить плошмя
       const scale = perspective.scale;
 
       const fontSize = 40 * projector.getScale() * scale;
@@ -538,28 +657,21 @@ class Renderer {
   drawHoldCharges(holdState, canvasWidth, canvasHeight) {
     if (!holdState || !holdState.hasHold || holdState.max <= 0) return;
 
-    const ctx = this.#ctx; // Припускаю, що твій контекст зберігається в this.#ctx
+    const ctx = this.#ctx;
     ctx.save();
 
     const maxCharges = holdState.max;
     const currentCharges = holdState.current;
     const isActive = holdState.isActive;
-    const restoringTimers = holdState.restoring; // Масив таймерів, які ще не дійшли до нуля
+    const restoringTimers = holdState.restoring;
     const maxRestoreTime = holdState.restoreMaxTime;
 
-    // Налаштування вигляду кружечків
     const radius = 8;
     const gap = 12;
     const totalWidth = radius * 2 * maxCharges + gap * (maxCharges - 1);
 
-    // Позиція: по центру по горизонталі, і десь на 75% висоти екрану (над кнопкою чи шкалами)
     const startX = (canvasWidth - totalWidth) / 2 + radius;
     const startY = canvasHeight * 0.75;
-
-    // Логіка підрахунку станів:
-    // 1. Активні (зараз використовується) - максимум 1
-    // 2. Доступні (можна використати)
-    // 3. Відновлюються (розбиті)
 
     let availableToDraw = currentCharges;
     let activeToDraw = isActive ? 1 : 0;
@@ -573,20 +685,17 @@ class Renderer {
       ctx.arc(cx, cy, radius, 0, Math.PI * 2);
 
       if (activeToDraw > 0) {
-        // --- СТАН: АКТИВНИЙ БЛОК (Пустий всередині, світиться) ---
         ctx.strokeStyle = "#00ff80";
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Малюємо легке світіння (неоновий ефект)
         ctx.shadowBlur = 10;
         ctx.shadowColor = "#00ff80";
         ctx.stroke();
-        ctx.shadowBlur = 0; // Скидаємо тінь
+        ctx.shadowBlur = 0;
 
         activeToDraw--;
       } else if (availableToDraw > 0) {
-        // --- СТАН: ДОСТУПНИЙ БЛОК (Зафарбований зеленим) ---
         ctx.fillStyle = "#00ff80";
         ctx.fill();
         ctx.strokeStyle = "#00cc66";
@@ -595,29 +704,24 @@ class Renderer {
 
         availableToDraw--;
       } else if (restoringToDraw > 0) {
-        // --- СТАН: ВІДНОВЛЮЄТЬСЯ (Розбитий) ---
-        // Малюємо пустий червоний контур
         ctx.strokeStyle = "#ff0055";
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Малюємо "заливку" знизу вверх залежно від таймера
-        const timer = restoringTimers[restoringToDraw - 1]; // Беремо таймер для цього кружечка
-        let progress = 1.0 - timer / maxRestoreTime; // Від 0 до 1
+        const timer = restoringTimers[restoringToDraw - 1];
+        let progress = 1.0 - timer / maxRestoreTime;
         progress = Math.max(0, Math.min(1, progress));
 
         if (progress > 0) {
           ctx.save();
-          // Створюємо "маску" обрізки (щоб заливка не вилізла за краї круга)
           ctx.beginPath();
           ctx.arc(cx, cy, radius, 0, Math.PI * 2);
           ctx.clip();
 
-          // Малюємо прямокутник заливки знизу
           const fillHeight = radius * 2 * progress;
           const fillY = cy + radius - fillHeight;
 
-          ctx.fillStyle = "rgba(255, 0, 85, 0.5)"; // Напівпрозорий червоний
+          ctx.fillStyle = "rgba(255, 0, 85, 0.5)";
           ctx.fillRect(cx - radius, fillY, radius * 2, fillHeight);
           ctx.restore();
         }
@@ -626,12 +730,11 @@ class Renderer {
       }
     }
 
-    // Якщо блок активний, можна намалювати маленьку підказку
     if (isActive) {
       ctx.fillStyle = "#00ff80";
       ctx.font = "bold 12px Arial";
       ctx.textAlign = "center";
-      ctx.fillText("УТРИМАННЯ", canvasWidth / 2, startY - 20);
+      ctx.fillText("HOLD", canvasWidth / 2, startY - 20);
     }
 
     ctx.restore();
@@ -802,30 +905,234 @@ class Renderer {
     );
   }
 
-  drawVictory(canvasWidth, canvasHeight) {
-    this.#ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
-    this.#ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    this.#ctx.fillStyle = "#00ff80";
-    this.#ctx.font = "bold 48px monospace";
-    this.#ctx.textAlign = "center";
-    this.#ctx.fillText(
-      "FISH EXHAUSTED",
-      canvasWidth / 2,
-      canvasHeight / 2 - 40,
+  drawVictory(canvasWidth, canvasHeight, fish = {}, victoryConfig = {}) {
+    const defaults = {
+      panelWidth: 540,
+      panelMinHeight: 560,
+      viewportMargin: 24,
+      panelPadding: 24,
+      panelRadius: 8,
+      imageBoxSize: 260,
+      imageBorderWidth: 3,
+      statPillHeight: 42,
+      buttonWidth: 150,
+      buttonHeight: 42,
+      buttonGap: 14,
+      blurPx: 3,
+      uniqueGlowPulseMs: 1200,
+      levelColors: {
+        1: [145, 150, 160],
+        2: [0, 210, 120],
+        3: [0, 160, 255],
+        4: [170, 100, 255],
+        preUnique: [255, 70, 70],
+        unique: [255, 205, 55],
+      },
+    };
+    const cfg = {
+      ...defaults,
+      ...victoryConfig,
+      levelColors: {
+        ...defaults.levelColors,
+        ...(victoryConfig?.levelColors || {}),
+      },
+    };
+    const ctx = this.#ctx;
+    const theme = this.#getVictoryTheme(fish, cfg);
+    const color = theme.color;
+    const margin = Math.max(8, cfg.viewportMargin || 24);
+    const maxPanelW = Math.max(260, canvasWidth - margin * 2);
+    const panelW = Math.min(cfg.panelWidth, maxPanelW);
+    const padding = Math.min(cfg.panelPadding, Math.max(14, panelW * 0.06));
+    const maxPanelH = Math.max(320, canvasHeight - margin * 2);
+    const titleH = 46;
+    const gap = 16;
+    const statH = cfg.statPillHeight;
+    const buttonH = cfg.buttonHeight;
+    const anomaly = fish?.anomaly || "none";
+    const baseStats = [
+      { label: `${Number(fish?.weight || 0).toFixed(3)} kg`, color },
+      {
+        label: fish?.isTrophy ? "✓ Trophy" : "○ Not trophy",
+        color: fish?.isTrophy ? color : [145, 150, 160],
+      },
+      { label: `Anomaly: ${anomaly}`, color },
+    ];
+    const extraStats = Array.isArray(fish?.victoryStats)
+      ? fish.victoryStats
+      : [];
+    const statItems = baseStats.concat(
+      extraStats.map((stat) => ({
+        label: String(stat.label || stat.value || ""),
+        color: stat.color || color,
+      })),
     );
-    this.#ctx.fillStyle = "#8a9bac";
-    this.#ctx.font = "bold 20px monospace";
-    this.#ctx.fillText(
-      "You wore the fish out — well played!",
-      canvasWidth / 2,
-      canvasHeight / 2 + 10,
+    const statColumns = Math.min(3, Math.max(1, statItems.length));
+    const statRows = Math.ceil(statItems.length / statColumns);
+    const pillGap = 8;
+    const statBlockH = statRows * statH + (statRows - 1) * pillGap;
+    let imageSize = Math.min(
+      cfg.imageBoxSize,
+      panelW - padding * 2,
+      Math.max(140, maxPanelH * 0.46),
     );
-    this.#ctx.fillStyle = "#00ccff";
-    this.#ctx.font = "bold 14px monospace";
-    this.#ctx.fillText(
-      "Refresh page to try again",
-      canvasWidth / 2,
-      canvasHeight / 2 + 60,
+    let contentH =
+      padding * 2 + titleH + gap + imageSize + gap + statBlockH + gap + buttonH;
+    if (contentH > maxPanelH) {
+      imageSize = Math.max(120, imageSize - (contentH - maxPanelH));
+      contentH =
+        padding * 2 +
+        titleH +
+        gap +
+        imageSize +
+        gap +
+        statBlockH +
+        gap +
+        buttonH;
+    }
+    const panelH = Math.min(
+      maxPanelH,
+      Math.max(contentH, Math.min(cfg.panelMinHeight, maxPanelH)),
     );
+    const panelX = (canvasWidth - panelW) / 2;
+    const panelY = (canvasHeight - panelH) / 2;
+
+    ctx.save();
+    if (cfg.blurPx > 0) {
+      ctx.filter = `blur(${cfg.blurPx}px)`;
+      ctx.drawImage(this.#canvas, 0, 0, canvasWidth, canvasHeight);
+      ctx.filter = "none";
+    }
+    ctx.fillStyle = "rgba(0, 0, 0, 0.48)";
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    ctx.shadowColor = this.#rgba(color, 0.35);
+    ctx.shadowBlur = theme.isUnique ? 34 : 20;
+    this.#roundedRect(ctx, panelX, panelY, panelW, panelH, cfg.panelRadius);
+    ctx.fillStyle = this.#rgba(color, theme.isUnique ? 0.2 : 0.15);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = this.#rgba(color, 0.75);
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    const fishName = fish?.name || "Unknown fish";
+    this.#drawFittedText(
+      "Caught",
+      panelX + panelW / 2,
+      panelY + padding + 10,
+      panelW - padding * 2,
+      { size: 14, family: "sans-serif", weight: "bold" },
+      this.#rgba(color, 0.9),
+    );
+    this.#drawFittedText(
+      fishName,
+      panelX + panelW / 2,
+      panelY + padding + 34,
+      panelW - padding * 2,
+      { size: 24, family: "sans-serif", weight: "bold" },
+      "#ffffff",
+    );
+
+    const imageX = panelX + (panelW - imageSize) / 2;
+    const imageY = panelY + padding + titleH + gap;
+    const pulseNow =
+      typeof performance !== "undefined" ? performance.now() : Date.now();
+    const pulse =
+      0.5 +
+      Math.sin((pulseNow / Math.max(1, cfg.uniqueGlowPulseMs)) * Math.PI * 2) *
+        0.5;
+
+    ctx.fillStyle = "rgba(5, 10, 16, 0.75)";
+    ctx.fillRect(imageX, imageY, imageSize, imageSize);
+    const image = this.#getCachedImage(
+      fish?.imagePath ||
+        `assets/fish/${fish?.id || "unknown"}/${fish?.id || "unknown"}--${
+          fish?.level || 1
+        }.webp`,
+    );
+    if (image) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(imageX, imageY, imageSize, imageSize);
+      ctx.clip();
+      this.#drawImageCover(image, imageX, imageY, imageSize, imageSize);
+      ctx.restore();
+    } else {
+      this.#drawFittedText(
+        "loading...",
+        imageX + imageSize / 2,
+        imageY + imageSize / 2,
+        imageSize - 20,
+        { size: 14, family: "monospace", weight: "bold" },
+        this.#rgba(color, 0.85),
+      );
+    }
+
+    if (theme.isUnique) {
+      ctx.shadowColor = this.#rgba(color, 0.95);
+      ctx.shadowBlur = 14 + pulse * 18;
+    }
+    ctx.strokeStyle = this.#rgba(color, 1);
+    ctx.lineWidth = cfg.imageBorderWidth;
+    ctx.strokeRect(imageX, imageY, imageSize, imageSize);
+    ctx.shadowBlur = 0;
+
+    const badgeSize = Math.min(44, Math.max(34, imageSize * 0.17));
+    ctx.fillStyle = "rgba(22, 24, 28, 0.9)";
+    ctx.fillRect(imageX, imageY, badgeSize, badgeSize);
+    ctx.strokeStyle = this.#rgba(color, 0.9);
+    ctx.lineWidth = 1;
+    ctx.strokeRect(imageX, imageY, badgeSize, badgeSize);
+    this.#drawFittedText(
+      String(fish?.level || 1),
+      imageX + badgeSize / 2,
+      imageY + badgeSize / 2,
+      badgeSize - 8,
+      { size: 22, family: "monospace", weight: "bold" },
+      this.#rgba(color, 1),
+    );
+
+    const statsY = imageY + imageSize + gap;
+    const pillW =
+      (panelW - padding * 2 - pillGap * (statColumns - 1)) / statColumns;
+    for (let i = 0; i < statItems.length; i++) {
+      const col = i % statColumns;
+      const row = Math.floor(i / statColumns);
+      this.#drawVictoryPill(
+        panelX + padding + col * (pillW + pillGap),
+        statsY + row * (statH + pillGap),
+        pillW,
+        statH,
+        statItems[i].label,
+        statItems[i].color,
+      );
+    }
+
+    const buttonsY = statsY + statBlockH + gap;
+    const buttonW = Math.min(
+      cfg.buttonWidth,
+      (panelW - padding * 2 - cfg.buttonGap) / 2,
+    );
+    const buttonsX = panelX + (panelW - buttonW * 2 - cfg.buttonGap) / 2;
+    this.#drawVictoryButton(
+      buttonsX,
+      buttonsY,
+      buttonW,
+      buttonH,
+      "Claim",
+      color,
+      true,
+    );
+    this.#drawVictoryButton(
+      buttonsX + buttonW + cfg.buttonGap,
+      buttonsY,
+      buttonW,
+      buttonH,
+      "Release",
+      [145, 150, 160],
+      false,
+    );
+    ctx.restore();
   }
 }

@@ -190,15 +190,37 @@ class BiteSystem {
         : fish.biteMechanics.passive;
     }
 
+    const level = Math.max(1, Math.round(weightRatio * wc.maxLevel));
+    const maxLevel = wc.maxLevel || level;
+    const uniqueLevel = fish.visual?.uniqueLevel;
+    const isUnique =
+      fish.isUnique === true ||
+      fish.unique === true ||
+      (Number.isFinite(uniqueLevel) && level >= uniqueLevel);
+    const trophyWeight = fish.trophyWeightKg ?? fish.trophyWeight ?? null;
+
     return {
       id: fish.id,
       name: fish.name,
       weight: genWeight,
-      level: Math.max(1, Math.round(weightRatio * wc.maxLevel)),
+      level,
+      maxLevel,
       resistance: this.#lerp(wc.baseResistance, wc.maxResistance, weightRatio),
       physics: fish.physics,
       biteSequence: chosenBiteSequence,
+      imagePath: this.#resolveFishImagePath(fish, level),
+      isUnique,
+      isTrophy: trophyWeight !== null ? genWeight >= trophyWeight : false,
+      anomaly: fish.anomaly || "none",
     };
+  }
+
+  #resolveFishImagePath(fish, level) {
+    const pattern = fish.visual?.imagePattern;
+    if (typeof pattern === "string") {
+      return pattern.replace("{level}", level);
+    }
+    return `assets/fish/${fish.id}/${fish.id}--${level}.webp`;
   }
 
   evaluateBite(dt, envData, playerGear) {

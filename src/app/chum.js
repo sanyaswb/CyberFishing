@@ -240,10 +240,13 @@ class ChumController {
   }
 
   handleGlobalBoatControl(input) {
+    const stateName = this.#getGameStateName();
     if (
       !input.clickPos ||
       this.#isAiming ||
-      this.#getGameStateName() === "playing"
+      stateName === "playing" ||
+      stateName === "victory" ||
+      stateName === "failed"
     ) {
       return;
     }
