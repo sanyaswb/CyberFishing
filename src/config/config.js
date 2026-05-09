@@ -1112,6 +1112,7 @@ const CONFIG = {
     distanceXMultiplier: [0.3, 1.0],
 
     defaultDepthNoSinker: 0.1,
+    guaranteedBiteCooldownMs: [2000, 15000],
 
     lureRetrieveMultiplier: 50,
     idleSpinningBiteChance: 0.005,

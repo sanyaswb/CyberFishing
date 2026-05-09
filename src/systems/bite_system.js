@@ -3,15 +3,21 @@ class BiteSystem {
   #tickRate;
   #timer;
   #overDepthPenaltyMult;
+  #guaranteedBiteCooldownRange;
+  #guaranteedBiteCooldownRemaining = 0;
   #possibleBitesBuffer;
+  #possibleBiteChancesBuffer;
   #rng;
 
   constructor(biteConfig, floatConfig, rng = null) {
     this.#fishDatabase = biteConfig.fishes;
     this.#tickRate = biteConfig.tickRateMs;
     this.#timer = 0;
-    this.#overDepthPenaltyMult = floatConfig.overDepthPenaltyMult || 0.5;
+    this.#overDepthPenaltyMult = floatConfig?.overDepthPenaltyMult || 0.5;
+    this.#guaranteedBiteCooldownRange =
+      floatConfig?.guaranteedBiteCooldownMs || [2000, 15000];
     this.#possibleBitesBuffer = [];
+    this.#possibleBiteChancesBuffer = [];
     this.#rng = rng || { next: () => Math.random() };
   }
 
@@ -21,6 +27,29 @@ class BiteSystem {
 
   #lerp(start, end, t) {
     return start * (1 - t) + end * t;
+  }
+
+  #clamp01(value) {
+    return Math.max(0, Math.min(1, value));
+  }
+
+  #getDepthRatio(hookDepth, depthConfig) {
+    const range = depthConfig.maxDepth - depthConfig.minDepth;
+    if (!Number.isFinite(range) || range <= 0) return 0;
+    return this.#clamp01((hookDepth - depthConfig.minDepth) / range);
+  }
+
+  #getDepthChanceMultiplier(hookDepth, depthConfig) {
+    const maxDepthMultiplier = Number.isFinite(
+      depthConfig.chanceMultAtMaxDepth,
+    )
+      ? depthConfig.chanceMultAtMaxDepth
+      : 1.0;
+    return this.#lerp(
+      1.0,
+      maxDepthMultiplier,
+      this.#getDepthRatio(hookDepth, depthConfig),
+    );
   }
 
   #next() {
@@ -39,7 +68,35 @@ class BiteSystem {
       : Math.floor(min + this.#next() * (max - min + 1));
   }
 
-  #calculateFishChance(fish, envData, playerGear, isLiveQuery = false) {
+  #updateGuaranteedBiteCooldown(dt) {
+    if (this.#guaranteedBiteCooldownRemaining <= 0) return false;
+    this.#guaranteedBiteCooldownRemaining = Math.max(
+      0,
+      this.#guaranteedBiteCooldownRemaining - dt,
+    );
+    return this.#guaranteedBiteCooldownRemaining > 0;
+  }
+
+  #startGuaranteedBiteCooldown() {
+    const range = this.#guaranteedBiteCooldownRange;
+    const rawMin = Array.isArray(range) ? range[0] : 2000;
+    const rawMax = Array.isArray(range) ? range[1] : rawMin;
+    let min = Number.isFinite(rawMin) ? rawMin : 2000;
+    let max = Number.isFinite(rawMax) ? rawMax : min;
+
+    if (max < min) {
+      const swap = min;
+      min = max;
+      max = swap;
+    }
+
+    min = Math.max(0, Math.floor(min));
+    max = Math.max(min, Math.floor(max));
+    this.#guaranteedBiteCooldownRemaining =
+      min === max ? min : this.#int(min, max);
+  }
+
+  #calculateFishChance(fish, envData, playerGear) {
     const dc = fish.depthConfig;
     const hookDepth = envData.hookDepth;
 
@@ -77,11 +134,7 @@ class BiteSystem {
       chance *= this.#overDepthPenaltyMult;
     }
 
-    if (isLiveQuery) {
-      let t = (hookDepth - dc.minDepth) / (dc.maxDepth - dc.minDepth);
-      t = Math.max(0, Math.min(1, t));
-      chance *= this.#lerp(1.0, dc.chanceMultAtMaxDepth, t);
-    }
+    chance *= this.#getDepthChanceMultiplier(hookDepth, dc);
 
     return chance;
   }
@@ -149,31 +202,31 @@ class BiteSystem {
   }
 
   evaluateBite(dt, envData, playerGear) {
+    if (this.#updateGuaranteedBiteCooldown(dt)) return null;
+
     this.#timer += dt;
     if (this.#timer < this.#tickRate) return null;
     this.#timer -= this.#tickRate;
 
     this.#possibleBitesBuffer.length = 0;
+    this.#possibleBiteChancesBuffer.length = 0;
 
     for (let i = 0; i < this.#fishDatabase.length; i++) {
       const fish = this.#fishDatabase[i];
-      const chance = this.#calculateFishChance(
-        fish,
-        envData,
-        playerGear,
-        false,
-      );
+      const chance = this.#calculateFishChance(fish, envData, playerGear);
 
       if (chance > 0 && this.#chance(chance)) {
         this.#possibleBitesBuffer.push(fish);
+        this.#possibleBiteChancesBuffer.push(chance);
       }
     }
 
     if (this.#possibleBitesBuffer.length > 0) {
-      const selected =
-        this.#possibleBitesBuffer[
-          this.#int(0, this.#possibleBitesBuffer.length - 1)
-        ];
+      const selectedIndex = this.#int(0, this.#possibleBitesBuffer.length - 1);
+      const selected = this.#possibleBitesBuffer[selectedIndex];
+      if (this.#possibleBiteChancesBuffer[selectedIndex] >= 1.0) {
+        this.#startGuaranteedBiteCooldown();
+      }
       // <-- ЗМІНЕНО: тепер передаємо playerGear сюди
       return this.#generateFishInstance(
         selected,
@@ -189,7 +242,7 @@ class BiteSystem {
     const results = [];
     for (let i = 0; i < this.#fishDatabase.length; i++) {
       const fish = this.#fishDatabase[i];
-      const chance = this.#calculateFishChance(fish, envData, playerGear, true);
+      const chance = this.#calculateFishChance(fish, envData, playerGear);
 
       if (chance > 0) {
         results.push({
@@ -205,11 +258,6 @@ class BiteSystem {
   #getBreakdown(fish, envData, playerGear) {
     const dc = fish.depthConfig;
     const hookDepth = envData.hookDepth;
-    let t = Math.max(
-      0,
-      Math.min(1, (hookDepth - dc.minDepth) / (dc.maxDepth - dc.minDepth)),
-    );
-
     const baitsToTest = Array.isArray(playerGear.baits)
       ? playerGear.baits
       : [playerGear.baitId];
@@ -223,7 +271,7 @@ class BiteSystem {
       base: fish.baseChance.toFixed(3),
       bait: maxBaitMult.toFixed(2),
       time: (fish.timeMultipliers[envData.timePhase] || 1.0).toFixed(2),
-      depth: this.#lerp(1.0, dc.chanceMultAtMaxDepth, t).toFixed(2),
+      depth: this.#getDepthChanceMultiplier(hookDepth, dc).toFixed(2),
       weather: (
         (envData.isRaining ? (fish.weatherMultipliers?.rain ?? 1.0) : 1.0) *
         (envData.isFoggy ? (fish.weatherMultipliers?.fog ?? 1.0) : 1.0)
