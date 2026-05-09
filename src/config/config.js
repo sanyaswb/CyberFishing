@@ -589,7 +589,7 @@ const CONFIG = {
     enableCastable: true, // Зони, де можна закидати вудку
     enableCollisions: true, // Колізії з землею (червоні зони) - забороняють закидати.
     enableSnags: true, // Динамічні зони (наприклад, косяк риби)
-    enableDynamicZones: true,
+    enableDynamicZones: false, // Вимикає всі динамічні зони (косяки риби, рухомі перешкоди тощо)
     showChumZones: true,
     showCatchZone: true, // Відображення синьої зони
     showNetZone: true, // Відображення зеленої зони

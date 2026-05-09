@@ -251,6 +251,7 @@ class GameApplication {
   #debugFacade;
   #baitRules;
   #fishingFacade;
+  #removeInventoryChangedListener = null;
   // Reusable debug context object — allocated once, never recreated per frame.
   #debugContext;
   #dayOfWeek = new Date().getDay();
@@ -559,6 +560,16 @@ class GameApplication {
   }
 
   #initEvents() {
+    this.#removeInventoryChangedListener?.();
+    this.#removeInventoryChangedListener = this.#inventory.onInventoryChanged(
+      (detail) => {
+        this.#handleInventoryChanged(
+          detail?.equipment || this.#inventory.getEquipped(),
+        );
+      },
+    );
+    this.#handleInventoryChanged(this.#inventory.getEquipped());
+
     this.#listeners.add(this.#windowTarget, "resize", () => {
       this.#canvasMetrics.resizeToViewport();
       this.#refreshViewport();
@@ -750,6 +761,8 @@ class GameApplication {
   dispose() {
     this.stop();
     this.#stateMachine?.dispose();
+    this.#removeInventoryChangedListener?.();
+    this.#removeInventoryChangedListener = null;
 
     this.#input?.dispose?.();
     this.#chum?.dispose?.();
