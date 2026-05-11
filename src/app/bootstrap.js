@@ -255,6 +255,7 @@ class GameCompositionRoot {
       setState: appPorts.setState,
       castLine: appPorts.castLine,
       markInvalidCast: appPorts.markInvalidCast,
+      showMissingRodInventoryWarning: appPorts.showMissingRodInventoryWarning,
       setInvalidCastMarker: appPorts.setInvalidCastMarker,
       panViewport: appPorts.panViewport,
       drawFishingElements: appPorts.drawFishingElements,

@@ -394,6 +394,8 @@ class GameApplication {
       castLine: (vx, vy, depth, options) =>
         this.castLine(vx, vy, depth, options),
       markInvalidCast: (pos) => this.markInvalidCast(pos),
+      showMissingRodInventoryWarning: () =>
+        this.#showMissingRodInventoryWarning(),
       setInvalidCastMarker: (marker) => {
         this.invalidCastMarker = marker;
       },

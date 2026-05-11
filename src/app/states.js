@@ -19,6 +19,7 @@
  * @property {(pos: object) => void} markInvalidCast
  * @property {(marker: object|null) => void} setInvalidCastMarker
  * @property {(deltaX: number) => void} panViewport
+ * @property {() => void} showMissingRodInventoryWarning
  */
 
 /**
@@ -119,6 +120,7 @@
  * @property {ViewportProjector} projector
  * @property {UIManager} ui
  * @property {HoldChargesUI} holdUI
+ * @property {DepthSelectorUI} depthUI
  * @property {FightService} fight
  * @property {() => Net} netRef
  * @property {Net} net
@@ -269,6 +271,8 @@ class StateDepsFactory {
         markInvalidCast: this.#root.markInvalidCast,
         setInvalidCastMarker: this.#root.setInvalidCastMarker,
         panViewport: this.#root.panViewport,
+        showMissingRodInventoryWarning:
+          this.#root.showMissingRodInventoryWarning,
       },
       render: {
         drawFishingElements: this.#root.drawFishingElements,
@@ -379,6 +383,7 @@ class StateDepsFactory {
       projector: root.projector,
       ui: root.ui,
       holdUI: root.holdUI,
+      depthUI: root.depthUI,
       fight: root.fight,
       netRef: root.netRef,
       get net() {
@@ -431,6 +436,7 @@ class GameState {
 class ScoutingState extends GameState {
   #castAim;
   #pendingCast = null;
+  #missingRodWarnedForPress = false;
 
   /** @param {ScoutingStateDeps} deps */
   constructor(deps) {
@@ -449,6 +455,7 @@ class ScoutingState extends GameState {
     const hasNet = !!eq.net;
     this.deps.ui.updateNetButtonState(hasNet, false);
     this.#pendingCast = null;
+    this.#missingRodWarnedForPress = false;
     this.#castAim.reset();
   }
 
@@ -456,6 +463,7 @@ class ScoutingState extends GameState {
     this.deps.depthUI.hide();
     this.#castAim.reset();
     this.#pendingCast = null;
+    this.#missingRodWarnedForPress = false;
   }
 
   handleInput(input) {
@@ -497,7 +505,8 @@ class ScoutingState extends GameState {
     this.deps.projector.focusOnVirtualPos(bounds.bottom - 200, dt, 0.03);
 
     if (!this.deps.isAimingChum() && this.#usePowerCasting()) {
-      this.#updatePowerCasting(dt, bounds, context?.input);
+      const didCast = this.#updatePowerCasting(dt, bounds, context?.input);
+      if (didCast) return;
     }
 
     const eq = this.deps.inventory.getEquipped();
@@ -580,18 +589,33 @@ class ScoutingState extends GameState {
   }
 
   #updatePowerCasting(dt, bounds, input) {
+    if (!input?.pointerDown) {
+      this.#missingRodWarnedForPress = false;
+    }
+
+    const eq = this.deps.inventory.getEquipped();
+    if (input?.pointerDown && !eq?.rod) {
+      this.#castAim.reset();
+      this.#pendingCast = null;
+      if (!this.#missingRodWarnedForPress) {
+        this.deps.commands.showMissingRodInventoryWarning?.();
+        this.#missingRodWarnedForPress = true;
+      }
+      return false;
+    }
+
     if (this.#pendingCast) {
       this.#pendingCast.timer -= dt;
       if (this.#pendingCast.timer <= 0) {
         this.#commitPendingCast();
+        return true;
       }
-      return;
+      return false;
     }
 
     const release = this.#castAim.update(input, bounds, dt, { mode: "rod" });
-    if (!release) return;
+    if (!release) return false;
 
-    const eq = this.deps.inventory.getEquipped();
     const canCastAnywhere =
       this.deps.services.devFlags.isEnabled("infiniteCasting");
     const maxDistance = this.deps.rules.equipment.getMaxCastDistance(eq);
@@ -613,7 +637,7 @@ class ScoutingState extends GameState {
         x: release.screenX,
         y: release.screenY,
       });
-      return;
+      return false;
     }
 
     this.#pendingCast = {
@@ -625,6 +649,7 @@ class ScoutingState extends GameState {
       originVirtualY: target.originVirtualY,
       rodScreenX: target.rodScreenX,
     };
+    return false;
   }
 
   #commitPendingCast() {
@@ -1267,6 +1292,7 @@ class PlayingState extends GameState {
   enter(data) {
     this.#startTime = this.deps.clock.now;
     this.data = data || {};
+    this.deps.depthUI?.hide?.();
     const fishData = this.data.fish;
 
     const eq = this.deps.inventory.getEquipped();
