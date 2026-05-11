@@ -78,11 +78,13 @@
  * @property {object} float
  * @property {ConfigProvider} config
  * @property {GameClock} clock
+ * @property {SeededRng} rng
  * @property {CastManager} castManager
  * @property {Array} eatenBaits
  * @property {() => number} getCastStartTime
  * @property {() => boolean} canPlayerCast
  * @property {(marker: object|null) => void} setInvalidCastMarker
+ * @property {() => { width: number, height: number }} getViewportSize
  * @property {StateWorldQueries} world
  * @property {StateCommands} commands
  * @property {StateRenderCommands} render
@@ -330,12 +332,14 @@ class StateDepsFactory {
       },
       config: root.config,
       clock: root.clock,
+      rng: root.rng,
       castManager: root.castManager,
       eatenBaits: root.eatenBaits,
       // FIX: was a stale primitive; now a live getter function
       getCastStartTime: root.getCastStartTime,
       canPlayerCast: root.canPlayerCast,
       setInvalidCastMarker: root.setInvalidCastMarker,
+      getViewportSize: root.getViewportSize,
       ...this.#worldQueries(),
       ...this.#fishingCommands(),
     });
@@ -645,55 +649,51 @@ class WaitingState extends GameState {
   /** @param {WaitingStateDeps} deps */
   constructor(deps) {
     super(deps);
+    this.#recastAim = new CastPowerAim({
+      config: deps.config,
+      projector: deps.projector,
+      getViewportSize: deps.getViewportSize,
+      panViewport: deps.commands.panViewport,
+      rng: deps.rng,
+    });
   }
 
   #effectiveInput = { isPulling: false, pullDirection: null };
   #pullDirection = new Vector2(0, 0);
   #baitIds = [];
   #baitTypes = [];
+  #recastAim;
+  #isRecastAiming = false;
+  #pendingRecast = null;
 
   enter() {
     this.deps.biteSystem.reset();
+    this.#resetRecastAim();
+  }
+
+  exit() {
+    this.#resetRecastAim();
   }
 
   handleInput(input) {
     if (input.isDoubleClick) {
       this.deps.commands.setState("scouting");
+      this.#resetRecastAim();
+      return;
     }
 
     const eq = this.deps.inventory.getEquipped();
     const isSpinning = this.deps.rules.equipment.isSpinning(eq);
 
     if (!isSpinning && input.longPressPos && this.deps.canPlayerCast()) {
-      const vPos = this.deps.projector.screenToVirtual(
-        input.longPressPos.x,
-        input.longPressPos.y,
-      );
-
-      const cell = this.deps.world.checkWater(vPos.x, vPos.y);
-      const bounds = this.deps.world.getDynamicBounds();
-
-      let maxDist = this.deps.rules.equipment.getMaxCastDistance(eq);
-      if (maxDist !== Infinity) {
-        maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
+      if (this.#usePowerCasting()) {
+        this.#isRecastAiming = true;
+        input.longPressPos = null;
+        return;
       }
 
-      let isInside = true;
-      if (maxDist !== Infinity) {
-        const virtualLineY = bounds.bottom - maxDist;
-        isInside = vPos.y >= virtualLineY;
-      }
-
-      if (cell && isInside) {
-        this.deps.castManager.registerCast(this.deps.clock.now);
-        this.deps.commands.castLine(vPos.x, vPos.y, cell.depth);
-      } else {
-        this.deps.commands.setInvalidCastMarker({
-          x: input.longPressPos.x,
-          y: input.longPressPos.y,
-          timer: 500,
-        });
-      }
+      this.#legacyRecast(input.longPressPos, eq);
+      input.longPressPos = null;
     }
   }
 
@@ -703,12 +703,13 @@ class WaitingState extends GameState {
 
     const input = envData.input || this.deps.input.getState();
     const eq = this.deps.inventory.getEquipped();
+    this.#updatePowerRecast(dt, bounds, input, eq);
 
     const reelPower = eq?.reel ? eq.reel.basePower || 0 : 0;
     const isSpinning = this.deps.rules.equipment.isSpinning(eq);
 
     const effectiveInput = this.#effectiveInput;
-    effectiveInput.isPulling = input.isPulling;
+    effectiveInput.isPulling = this.#isRecastAiming ? false : input.isPulling;
     effectiveInput.pullDirection = input.pullDirection;
 
     let pullDirection = null;
@@ -814,6 +815,121 @@ class WaitingState extends GameState {
       null,
       this.deps.getCastStartTime(),
     );
+    const visual = this.#recastAim.getVisualState();
+    if (visual) {
+      renderer.drawCastPowerAim(
+        this.deps.projector,
+        bounds,
+        visual,
+        this.deps.config.casting,
+        this.deps.config.tension,
+        this.deps.clock.now,
+      );
+    }
+  }
+
+  #updatePowerRecast(dt, bounds, input, eq) {
+    if (this.#pendingRecast) {
+      this.#pendingRecast.timer -= dt;
+      if (this.#pendingRecast.timer <= 0) {
+        this.#commitPendingRecast();
+      }
+      return;
+    }
+
+    if (!this.#isRecastAiming) return;
+
+    const release = this.#recastAim.update(input, bounds, dt, { mode: "rod" });
+    if (!release) return;
+
+    const canCastAnywhere =
+      this.deps.services.devFlags.isEnabled("infiniteCasting");
+    const maxDistance = this.deps.rules.equipment.getMaxCastDistance(eq);
+    const accuracyPx =
+      Number(eq?.rod?.accuracy) ||
+      Number(eq?.rod?.engineStats?.accuracy) ||
+      this.deps.config.casting?.rodAccuracyFallbackPx ||
+      80;
+    const target = this.#recastAim.resolveTarget(release, {
+      bounds,
+      maxDistance,
+      accuracyPx,
+      canCastAnywhere,
+      checkWater: (vx, vy) => this.deps.world.checkWater(vx, vy),
+    });
+
+    this.#isRecastAiming = false;
+
+    if (!target?.success) {
+      this.deps.commands.setInvalidCastMarker({
+        x: release.screenX,
+        y: release.screenY,
+        timer: 500,
+      });
+      return;
+    }
+
+    this.#pendingRecast = {
+      timer: target.travelDelayMs,
+      x: target.x,
+      y: target.y,
+      depth: target.depth,
+      originVirtualX: target.originVirtualX,
+      originVirtualY: target.originVirtualY,
+      rodScreenX: target.rodScreenX,
+    };
+  }
+
+  #commitPendingRecast() {
+    const cast = this.#pendingRecast;
+    if (!cast) return;
+    this.#pendingRecast = null;
+    this.deps.castManager.registerCast(this.deps.clock.now);
+    this.deps.commands.castLine(cast.x, cast.y, cast.depth, {
+      rodVirtualPos: {
+        x: cast.originVirtualX,
+        y: cast.originVirtualY,
+      },
+      rodScreenX: cast.rodScreenX,
+    });
+  }
+
+  #legacyRecast(screenPos, eq) {
+    const vPos = this.deps.projector.screenToVirtual(screenPos.x, screenPos.y);
+    const cell = this.deps.world.checkWater(vPos.x, vPos.y);
+    const bounds = this.deps.world.getDynamicBounds();
+
+    let maxDist = this.deps.rules.equipment.getMaxCastDistance(eq);
+    if (maxDist !== Infinity) {
+      maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
+    }
+
+    let isInside = true;
+    if (maxDist !== Infinity) {
+      isInside = vPos.y >= bounds.bottom - maxDist;
+    }
+
+    if (cell && isInside) {
+      this.deps.castManager.registerCast(this.deps.clock.now);
+      this.deps.commands.castLine(vPos.x, vPos.y, cell.depth);
+      return;
+    }
+
+    this.deps.commands.setInvalidCastMarker({
+      x: screenPos.x,
+      y: screenPos.y,
+      timer: 500,
+    });
+  }
+
+  #resetRecastAim() {
+    this.#isRecastAiming = false;
+    this.#pendingRecast = null;
+    this.#recastAim?.reset();
+  }
+
+  #usePowerCasting() {
+    return this.deps.config.casting?.enabled !== false;
   }
 }
 
@@ -877,11 +993,6 @@ class BitingState extends GameState {
       return;
     }
 
-    if (!isSpinning && input.longPressPos && this.deps.canPlayerCast()) {
-      this.#recastPassiveTackle(input.longPressPos, eq);
-      return;
-    }
-
     const isPassiveStrikeInput = input.isPulling || input.clickPos;
     if (isPassiveStrikeInput && !isSpinning) {
       if (!this.deps.canPlayerCast()) return;
@@ -912,35 +1023,6 @@ class BitingState extends GameState {
         this.deps.commands.setState("waiting");
       }
     }
-  }
-
-  #recastPassiveTackle(screenPos, eq) {
-    const vPos = this.deps.projector.screenToVirtual(screenPos.x, screenPos.y);
-    const cell = this.deps.world.checkWater(vPos.x, vPos.y);
-    const bounds = this.deps.world.getDynamicBounds();
-    let maxDist = this.deps.rules.equipment.getMaxCastDistance(eq);
-    if (maxDist !== Infinity) {
-      maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
-    }
-
-    let isInside = true;
-    if (maxDist !== Infinity) {
-      isInside = vPos.y >= bounds.bottom - maxDist;
-    }
-
-    this.deps.float.stopBite();
-    if (cell && isInside) {
-      this.deps.castManager.registerCast(this.deps.clock.now);
-      this.deps.commands.castLine(vPos.x, vPos.y, cell.depth);
-      return;
-    }
-
-    this.deps.commands.setInvalidCastMarker({
-      x: screenPos.x,
-      y: screenPos.y,
-      timer: 500,
-    });
-    this.deps.commands.setState("waiting");
   }
 
   update(dt, bounds, envData) {
