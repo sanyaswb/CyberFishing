@@ -15,9 +15,10 @@
 /**
  * @typedef {Object} StateCommands
  * @property {(name: string, data?: object) => void} setState
- * @property {(vx: number, vy: number, depth: number) => void} castLine
+ * @property {(vx: number, vy: number, depth: number, options?: object) => void} castLine
  * @property {(pos: object) => void} markInvalidCast
  * @property {(marker: object|null) => void} setInvalidCastMarker
+ * @property {(deltaX: number) => void} panViewport
  */
 
 /**
@@ -51,9 +52,12 @@
  * @property {ViewportProjector} projector
  * @property {ConfigProvider} config
  * @property {DepthSelectorUI} depthUI
+ * @property {SeededRng} rng
+ * @property {GameClock} clock
  * @property {() => boolean} canPlayerCast
  * @property {() => number} getMaxHookDepth
  * @property {() => number} getChumCastDistance
+ * @property {() => { width: number, height: number }} getViewportSize
  * @property {() => boolean} isAimingChum
  * @property {{ get: () => number, set: (v: number) => void }} currentHookDepthRef
  * @property {StateWorldQueries} world
@@ -262,6 +266,7 @@ class StateDepsFactory {
         castLine: this.#root.castLine,
         markInvalidCast: this.#root.markInvalidCast,
         setInvalidCastMarker: this.#root.setInvalidCastMarker,
+        panViewport: this.#root.panViewport,
       },
       render: {
         drawFishingElements: this.#root.drawFishingElements,
@@ -295,8 +300,11 @@ class StateDepsFactory {
       projector: this.#root.projector,
       config: this.#root.config,
       depthUI: this.#root.depthUI,
+      rng: this.#root.rng,
+      clock: this.#root.clock,
       canPlayerCast: this.#root.canPlayerCast,
       getMaxHookDepth: this.#root.getMaxHookDepth,
+      getViewportSize: this.#root.getViewportSize,
       // Live getter — value can change at runtime
       getChumCastDistance: this.#root.getChumCastDistance,
       isAimingChum: this.#root.isAimingChum,
@@ -417,22 +425,38 @@ class GameState {
 }
 
 class ScoutingState extends GameState {
+  #castAim;
+  #pendingCast = null;
+
   /** @param {ScoutingStateDeps} deps */
   constructor(deps) {
     super(deps);
+    this.#castAim = new CastPowerAim({
+      config: deps.config,
+      projector: deps.projector,
+      getViewportSize: deps.getViewportSize,
+      panViewport: deps.commands.panViewport,
+      rng: deps.rng,
+    });
   }
 
   enter() {
     const eq = this.deps.inventory.getEquipped();
     const hasNet = !!eq.net;
     this.deps.ui.updateNetButtonState(hasNet, false);
+    this.#pendingCast = null;
+    this.#castAim.reset();
   }
 
   exit() {
     this.deps.depthUI.hide();
+    this.#castAim.reset();
+    this.#pendingCast = null;
   }
 
   handleInput(input) {
+    if (this.#usePowerCasting()) return;
+
     if (input.clickPos) {
       const vPos = this.deps.projector.screenToVirtual(
         input.clickPos.x,
@@ -465,8 +489,12 @@ class ScoutingState extends GameState {
     }
   }
 
-  update(dt, bounds) {
+  update(dt, bounds, context) {
     this.deps.projector.focusOnVirtualPos(bounds.bottom - 200, dt, 0.03);
+
+    if (!this.deps.isAimingChum() && this.#usePowerCasting()) {
+      this.#updatePowerCasting(dt, bounds, context?.input);
+    }
 
     const eq = this.deps.inventory.getEquipped();
     const canSelectDepth = this.deps.rules.equipment.canSelectDepth(eq);
@@ -497,6 +525,23 @@ class ScoutingState extends GameState {
   }
 
   draw(renderer, bounds) {
+    if (this.#usePowerCasting()) {
+      if (!this.deps.isAimingChum()) {
+        const visual = this.#castAim.getVisualState();
+        if (visual) {
+          renderer.drawCastPowerAim(
+            this.deps.projector,
+            bounds,
+            visual,
+            this.deps.config.casting,
+            this.deps.config.tension,
+            this.deps.clock.now,
+          );
+        }
+      }
+      return;
+    }
+
     if (!this.deps.isAimingChum()) {
       if (this.deps.config.locations?.showAimingZone !== false) {
         const eq = this.deps.inventory.getEquipped();
@@ -528,6 +573,71 @@ class ScoutingState extends GameState {
         );
       }
     }
+  }
+
+  #updatePowerCasting(dt, bounds, input) {
+    if (this.#pendingCast) {
+      this.#pendingCast.timer -= dt;
+      if (this.#pendingCast.timer <= 0) {
+        this.#commitPendingCast();
+      }
+      return;
+    }
+
+    const release = this.#castAim.update(input, bounds, dt, { mode: "rod" });
+    if (!release) return;
+
+    const eq = this.deps.inventory.getEquipped();
+    const canCastAnywhere =
+      this.deps.services.devFlags.isEnabled("infiniteCasting");
+    const maxDistance = this.deps.rules.equipment.getMaxCastDistance(eq);
+    const accuracyPx =
+      Number(eq?.rod?.accuracy) ||
+      Number(eq?.rod?.engineStats?.accuracy) ||
+      this.deps.config.casting?.rodAccuracyFallbackPx ||
+      80;
+    const target = this.#castAim.resolveTarget(release, {
+      bounds,
+      maxDistance,
+      accuracyPx,
+      canCastAnywhere,
+      checkWater: (vx, vy) => this.deps.world.checkWater(vx, vy),
+    });
+
+    if (!target?.success) {
+      this.deps.commands.markInvalidCast({
+        x: release.screenX,
+        y: release.screenY,
+      });
+      return;
+    }
+
+    this.#pendingCast = {
+      timer: target.travelDelayMs,
+      x: target.x,
+      y: target.y,
+      depth: target.depth,
+      originVirtualX: target.originVirtualX,
+      originVirtualY: target.originVirtualY,
+      rodScreenX: target.rodScreenX,
+    };
+  }
+
+  #commitPendingCast() {
+    const cast = this.#pendingCast;
+    if (!cast) return;
+    this.#pendingCast = null;
+    this.deps.commands.castLine(cast.x, cast.y, cast.depth, {
+      rodVirtualPos: {
+        x: cast.originVirtualX,
+        y: cast.originVirtualY,
+      },
+      rodScreenX: cast.rodScreenX,
+    });
+  }
+
+  #usePowerCasting() {
+    return this.deps.config.casting?.enabled !== false;
   }
 }
 

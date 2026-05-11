@@ -33,6 +33,13 @@ class GameViewportFacade {
   applyPan(input, stateName, isAimingChum) {
     if (!input.panDeltaX && !input.panDeltaY) return;
     if (stateName !== "scouting" && !isAimingChum) return;
+    if (
+      this.#config.casting?.enabled !== false &&
+      input.pointerDown &&
+      (stateName === "scouting" || isAimingChum)
+    ) {
+      return;
+    }
     this.#world.pan(input.panDeltaX, 0);
   }
 
@@ -44,12 +51,14 @@ class GameViewportFacade {
     return this.#biteEnvironmentService.checkWater(vx, vy);
   }
 
-  getRodVirtualPos(bounds) {
+  getRodVirtualPos(bounds, screenXOverride = null) {
     const rodConfig = this.#config.ui?.rod || {};
     const rodX =
-      rodConfig.x === "center"
-        ? this.#canvasMetrics.width / 2
-        : Number(rodConfig.x);
+      Number.isFinite(screenXOverride)
+        ? screenXOverride
+        : rodConfig.x === "center"
+          ? this.#canvasMetrics.width / 2
+          : Number(rodConfig.x);
     const screenX = Number.isFinite(rodX)
       ? rodX
       : this.#canvasMetrics.width / 2;
@@ -59,7 +68,7 @@ class GameViewportFacade {
     return this.#rodVirtualPos;
   }
 
-  getScreenOffsetRatio(floatPos) {
+  getScreenOffsetRatio(floatPos, screenXOverride = null) {
     const sPos = this.#projector.virtualToScreen(
       floatPos.x,
       floatPos.y,
@@ -67,9 +76,11 @@ class GameViewportFacade {
     );
     const rodConfig = this.#config.ui?.rod || {};
     const rodX =
-      rodConfig.x === "center"
-        ? this.#canvasMetrics.width / 2
-        : Number(rodConfig.x);
+      Number.isFinite(screenXOverride)
+        ? screenXOverride
+        : rodConfig.x === "center"
+          ? this.#canvasMetrics.width / 2
+          : Number(rodConfig.x);
     const screenX = Number.isFinite(rodX)
       ? rodX
       : this.#canvasMetrics.width / 2;
@@ -166,10 +177,11 @@ class GameFishingFacade {
     this.#setState = setState;
   }
 
-  castLine(vx, vy, cellDepth) {
+  castLine(vx, vy, cellDepth, options = {}) {
     const result = this.#castService.cast(vx, vy, cellDepth, {
       equipment: this.#inventory.getEquipped(),
       currentHookDepth: this.#getCurrentHookDepth(),
+      rodVirtualPos: options.rodVirtualPos || null,
     });
     if (!result.success) return result;
 
@@ -251,6 +263,7 @@ class GameApplication {
   #debugFacade;
   #baitRules;
   #fishingFacade;
+  #castRodScreenX = null;
   #removeInventoryChangedListener = null;
   // Reusable debug context object — allocated once, never recreated per frame.
   #debugContext;
@@ -268,6 +281,12 @@ class GameApplication {
     clickPos: null,
     isDoubleClick: false,
     longPressPos: null,
+    pointerDown: false,
+    pointerStart: { x: 0, y: 0 },
+    pointerCurrent: { x: 0, y: 0 },
+    pointerDelta: { x: 0, y: 0 },
+    pointerReleased: false,
+    pointerRelease: { x: 0, y: 0 },
   };
   #stateUpdateContext = { env: null, biteEnv: null, input: null };
   #biteEnvData = {
@@ -369,9 +388,11 @@ class GameApplication {
       checkWater: (vx, vy) => this.checkWater(vx, vy),
       getDynamicBounds: () => this.getDynamicBounds(),
       getRodVirtualPos: (bounds) => this.getRodVirtualPos(bounds),
+      getRodScreenX: () => this.#castRodScreenX,
       getScreenOffsetRatio: (pos) => this.getScreenOffsetRatio(pos),
       setState: (name, data) => this.setState(name, data),
-      castLine: (vx, vy, depth) => this.castLine(vx, vy, depth),
+      castLine: (vx, vy, depth, options) =>
+        this.castLine(vx, vy, depth, options),
       markInvalidCast: (pos) => this.markInvalidCast(pos),
       setInvalidCastMarker: (marker) => {
         this.invalidCastMarker = marker;
@@ -396,6 +417,7 @@ class GameApplication {
       emitDebugEvent: (type, detail) => this.emitDebugEvent(type, detail),
       subscribeConfigUpdated: (handler) => this.subscribeConfigUpdated(handler),
       getViewportSize: () => this.getViewportSize(),
+      panViewport: (deltaX) => this.#world.pan(deltaX, 0),
       getInputState: () => this.#lastInputState,
       getGameStateName: () =>
         this.#stateMachine?.currentName || this.#gameStateName,
@@ -622,6 +644,9 @@ class GameApplication {
     if (this.#shouldConsumeWetFeederChum(currentName, name)) {
       this.#consumeWetFeederChum();
     }
+    if (name === "scouting") {
+      this.#castRodScreenX = null;
+    }
     this.#stateMachine.setState(name, data);
   }
 
@@ -639,7 +664,7 @@ class GameApplication {
 
     const wasAimingChum = this.isAimingChum;
     if (wasAimingChum) {
-      this.handleChumAiming(input, bounds);
+      this.handleChumAiming(input, bounds, dt);
       this.#blockFishingInputDuringChumAim(input);
     } else {
       this.handleGlobalBoatControl(input);
@@ -713,12 +738,27 @@ class GameApplication {
 
   #drawChumAimingRange(renderer, bounds) {
     if (!this.isAimingChum) return;
-    if (this.gameStateName === "scouting") return;
-    if (this.#config.locations?.showAimingZone === false) return;
 
     const eq = this.#inventory.getEquipped();
     const method = eq.delivery ? "boat" : "hand";
     if (method !== "hand") return;
+
+    const visual = this.#chumController.getPowerAimVisualState?.();
+    if (visual && this.#config.casting?.enabled !== false) {
+      renderer.drawCastPowerAim(
+        this.#projector,
+        bounds,
+        visual,
+        this.#config.casting,
+        this.#config.tension,
+        this.#clock.now,
+      );
+      return;
+    }
+
+    if (this.gameStateName === "scouting") return;
+    if (this.#config.locations?.showAimingZone === false) return;
+    if (this.#config.casting?.enabled !== false) return;
 
     renderer.drawAimingZone(
       this.#projector,
@@ -728,7 +768,7 @@ class GameApplication {
     );
   }
 
-  castLine(vx, vy, cellDepth) {
+  castLine(vx, vy, cellDepth, options = {}) {
     const currentName = this.#stateMachine?.currentName || this.#gameStateName;
     if (
       currentName === "waiting" ||
@@ -738,7 +778,13 @@ class GameApplication {
       this.#consumeWetFeederChum();
     }
 
-    const result = this.#fishingFacade.castLine(vx, vy, cellDepth);
+    this.#castRodScreenX = Number.isFinite(options.rodScreenX)
+      ? options.rodScreenX
+      : null;
+    const result = this.#fishingFacade.castLine(vx, vy, cellDepth, options);
+    if (!result?.success) {
+      this.#castRodScreenX = null;
+    }
     if (result?.reason === "missing_rod") {
       this.#showMissingRodInventoryWarning();
     }
@@ -769,11 +815,14 @@ class GameApplication {
   }
 
   getRodVirtualPos(bounds) {
-    return this.#viewportFacade.getRodVirtualPos(bounds);
+    return this.#viewportFacade.getRodVirtualPos(bounds, this.#castRodScreenX);
   }
 
   getScreenOffsetRatio(floatPos) {
-    return this.#viewportFacade.getScreenOffsetRatio(floatPos);
+    return this.#viewportFacade.getScreenOffsetRatio(
+      floatPos,
+      this.#castRodScreenX,
+    );
   }
 
   checkWater(vx, vy) {
@@ -796,8 +845,8 @@ class GameApplication {
     this.#chumController.toggleAim();
   }
 
-  handleChumAiming(input, bounds) {
-    this.#chumController.handleAiming(input, bounds);
+  handleChumAiming(input, bounds, dt = 0) {
+    this.#chumController.handleAiming(input, bounds, dt);
   }
 
   handleGlobalBoatControl(input) {

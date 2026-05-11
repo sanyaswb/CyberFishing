@@ -6,6 +6,10 @@ class ChumController {
   #fishing;
   #location;
   #clock;
+  #config;
+  #rng;
+  #getViewportSize;
+  #panViewport;
   #depthUI;
   #getDynamicBounds;
   #getRodVirtualPos;
@@ -19,6 +23,8 @@ class ChumController {
   #activeBoat = null;
   #uiClickLockTime = 0;
   #boatLoadedChums = new WeakMap();
+  #handCastAim = null;
+  #pendingHandDrop = null;
 
   constructor({
     inventory,
@@ -28,6 +34,10 @@ class ChumController {
     fishing,
     location,
     clock,
+    config,
+    rng,
+    getViewportSize,
+    panViewport,
     depthUI,
     getDynamicBounds,
     getRodVirtualPos,
@@ -43,6 +53,10 @@ class ChumController {
     this.#fishing = fishing;
     this.#location = location;
     this.#clock = clock;
+    this.#config = config;
+    this.#rng = rng;
+    this.#getViewportSize = getViewportSize;
+    this.#panViewport = panViewport;
     this.#depthUI = depthUI;
     this.#getDynamicBounds = getDynamicBounds;
     this.#getRodVirtualPos = getRodVirtualPos;
@@ -50,6 +64,13 @@ class ChumController {
     this.#markInvalidCast = markInvalidCast;
     this.#canPlayerCast = canPlayerCast;
     this.#getGameStateName = getGameStateName;
+    this.#handCastAim = new CastPowerAim({
+      config,
+      projector,
+      getViewportSize,
+      panViewport,
+      rng,
+    });
     this.#ui = new ChumUI(() => this.handleClick());
     this.refreshActiveHandChum();
   }
@@ -176,6 +197,8 @@ class ChumController {
   toggleAim() {
     this.#isAiming = !this.#isAiming;
     this.#uiClickLockTime = this.#clock.now;
+    this.#handCastAim?.reset();
+    this.#pendingHandDrop = null;
 
     if (this.#isAiming) {
       this.#depthUI.hide();
@@ -213,9 +236,7 @@ class ChumController {
     }
   }
 
-  handleAiming(input, bounds) {
-    if (!input.clickPos) return;
-
+  handleAiming(input, bounds, dt = 0) {
     if (
       this.#uiClickLockTime &&
       this.#clock.now - this.#uiClickLockTime < 200
@@ -226,6 +247,14 @@ class ChumController {
 
     const eq = this.#inventory.getEquipped();
     const method = eq.delivery ? "boat" : "hand";
+
+    if (method === "hand" && this.#config.casting?.enabled !== false) {
+      this.#handleHandPowerAiming(input, bounds, dt);
+      return;
+    }
+
+    if (!input.clickPos) return;
+
     const vPos = this.#projector.screenToVirtual(
       input.clickPos.x,
       input.clickPos.y,
@@ -279,6 +308,61 @@ class ChumController {
     if (clickHandled || !this.#canPlayerCast()) {
       input.clickPos = null;
     }
+  }
+
+  getPowerAimVisualState() {
+    return this.#handCastAim?.getVisualState?.() || null;
+  }
+
+  #handleHandPowerAiming(input, bounds, dt) {
+    if (this.#pendingHandDrop) {
+      this.#pendingHandDrop.timer -= dt;
+      if (this.#pendingHandDrop.timer <= 0) {
+        const drop = this.#pendingHandDrop;
+        this.#pendingHandDrop = null;
+        this.#chum.deployBait(drop.x, drop.y, drop.chumId);
+        this.#fishing.consumeHandChum(drop.activeChum);
+        input.clickPos = null;
+        this.toggleAim();
+      }
+      return;
+    }
+
+    const release = this.#handCastAim.update(input, bounds, dt, {
+      mode: "chum",
+    });
+    if (!release) return;
+
+    const activeChum = this.#activeHandChum;
+    if (!activeChum) {
+      this.#markInvalidCast({ x: release.screenX, y: release.screenY });
+      this.toggleAim();
+      return;
+    }
+
+    const target = this.#handCastAim.resolveTarget(release, {
+      bounds,
+      maxDistance: this.#location.chumCastDistance,
+      accuracyPx:
+        this.#config.casting?.handChumAccuracyPx ??
+        this.#config.casting?.rodAccuracyFallbackPx ??
+        100,
+      checkWater: (vx, vy) => this.#checkWater(vx, vy),
+    });
+
+    if (!target?.success) {
+      this.#markInvalidCast({ x: release.screenX, y: release.screenY });
+      this.toggleAim();
+      return;
+    }
+
+    this.#pendingHandDrop = {
+      timer: target.travelDelayMs,
+      x: target.x,
+      y: target.y,
+      chumId: activeChum.id,
+      activeChum,
+    };
   }
 
   #handleHandAiming(input, bounds, vPos, cell) {

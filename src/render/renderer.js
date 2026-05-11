@@ -423,6 +423,132 @@
     this.#ctx.restore();
   }
 
+  drawCastPowerAim(projector, bounds, visual, castingConfig, tensionConfig, nowMs = 0) {
+    if (!visual?.active) return;
+    const lineCfg = castingConfig?.aimLine || {};
+    const barCfg = castingConfig?.powerBar || {};
+    const power = Math.max(0, Math.min(1, visual.power || 0));
+    const color = this.#ratioGradientColor(power * 100, tensionConfig?.colorGradient);
+    const lineColor =
+      visual.mode === "chum"
+        ? lineCfg.chumColor || "rgba(255, 180, 0, 0.9)"
+        : lineCfg.color || "rgba(0, 220, 255, 0.85)";
+
+    this.#drawCastAimLine(projector, bounds, visual.screenX, lineCfg, lineColor, nowMs);
+    this.#drawCastPowerBar(power, barCfg, color, visual.mode);
+  }
+
+  #drawCastAimLine(projector, bounds, screenX, lineCfg, color, nowMs) {
+    const topY = projector.virtualToScreen(0, bounds.top, this.#screenA).y;
+    const bottomY = projector.virtualToScreen(0, bounds.bottom, this.#screenB).y;
+    const y1 = Math.min(topY, bottomY);
+    const y2 = Math.max(topY, bottomY);
+    const dash = Array.isArray(lineCfg.dash) ? lineCfg.dash : [12, 10];
+    const dashSpeed = lineCfg.dashSpeedPxPerSecond ?? 42;
+    const dashCycle = Math.max(1, dash[0] + (dash[1] || 0));
+
+    this.#ctx.save();
+    this.#ctx.beginPath();
+    this.#ctx.moveTo(screenX, y1);
+    this.#ctx.lineTo(screenX, y2);
+    this.#ctx.strokeStyle = color;
+    this.#ctx.lineWidth = lineCfg.width || 2;
+    this.#ctx.setLineDash(dash);
+    this.#ctx.lineDashOffset = -(((nowMs / 1000) * dashSpeed) % dashCycle);
+    this.#ctx.shadowColor = color;
+    this.#ctx.shadowBlur = lineCfg.glowBlur || 0;
+    this.#ctx.stroke();
+    this.#ctx.restore();
+  }
+
+  #drawCastPowerBar(power, barCfg, fillColor, mode) {
+    const barWidth = barCfg.width || 300;
+    const barHeight = barCfg.height || 12;
+    const barX = this.#resolveX(barCfg.x || "center", barWidth);
+    const barY = barCfg.y || 18;
+    const padding = barCfg.borderPadding ?? 2;
+    const borderWidth = barCfg.borderWidth ?? 1;
+
+    this.#ctx.save();
+    this.#ctx.fillStyle = barCfg.backgroundColor || "#1a2b3c";
+    this.#ctx.fillRect(
+      barX - padding,
+      barY - padding,
+      barWidth + padding * 2,
+      barHeight + padding * 2,
+    );
+
+    this.#ctx.strokeStyle = barCfg.borderColor || "#4a5b6c";
+    this.#ctx.lineWidth = borderWidth;
+    this.#ctx.strokeRect(
+      barX - padding,
+      barY - padding,
+      barWidth + padding * 2,
+      barHeight + padding * 2,
+    );
+
+    const fillWidth = power * barWidth;
+    this.#ctx.fillStyle = fillColor;
+    this.#ctx.fillRect(barX, barY, fillWidth, barHeight);
+
+    this.#ctx.shadowColor = fillColor;
+    this.#ctx.shadowBlur = 10 * (barCfg.glowIntensity ?? 0.45);
+    this.#ctx.strokeStyle = fillColor;
+    this.#ctx.strokeRect(barX, barY, fillWidth, barHeight);
+    this.#ctx.shadowBlur = 0;
+
+    this.#ctx.fillStyle = barCfg.labelColor || "#8a9bac";
+    this.#ctx.font = barCfg.labelFont || "bold 11px monospace";
+    this.#ctx.textAlign = "left";
+    this.#ctx.fillText(
+      mode === "chum" ? "CHUM" : "CAST",
+      barX - (barCfg.labelOffsetX ?? 56),
+      barY + (barCfg.labelOffsetY ?? 12),
+    );
+    this.#ctx.textAlign = "right";
+    this.#ctx.fillText(
+      `${Math.round(power * 100)}%`,
+      barX + barWidth + (barCfg.labelOffsetX ?? 56),
+      barY + (barCfg.labelOffsetY ?? 12),
+    );
+    this.#ctx.restore();
+  }
+
+  #ratioGradientColor(value, gradient) {
+    if (!gradient) return "#00ccff";
+    const tension = Math.max(0, Math.min(100, value));
+    const lowPoint = gradient.breakpoints?.low ?? 33;
+    const midPoint = gradient.breakpoints?.mid ?? 66;
+
+    if (tension < lowPoint) {
+      return this.#interpolateRgb(
+        gradient.low?.start || [0, 0, 255],
+        gradient.low?.end || [255, 255, 0],
+        tension / lowPoint,
+      );
+    }
+    if (tension < midPoint) {
+      return this.#interpolateRgb(
+        gradient.mid?.start || [255, 255, 0],
+        gradient.mid?.end || [255, 128, 0],
+        (tension - lowPoint) / Math.max(1, midPoint - lowPoint),
+      );
+    }
+    return this.#interpolateRgb(
+      gradient.high?.start || [255, 128, 0],
+      gradient.high?.end || [255, 0, 0],
+      (tension - midPoint) / Math.max(1, 100 - midPoint),
+    );
+  }
+
+  #interpolateRgb(start, end, ratio) {
+    const t = Math.max(0, Math.min(1, ratio));
+    const r = Math.round(start[0] + (end[0] - start[0]) * t);
+    const g = Math.round(start[1] + (end[1] - start[1]) * t);
+    const b = Math.round(start[2] + (end[2] - start[2]) * t);
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
   drawBoatWaypoints(chumManager, projector) {
     if (!chumManager) return;
 
@@ -595,11 +721,14 @@
     uiLineConfig,
     nowMs = 0,
     lineStraightFactor = null,
+    rodScreenXOverride = null,
   ) {
     const rodWidth = 3;
     const rodHeight = 200;
 
-    let rodBaseX = this.#resolveX(uiRodConfig?.x, rodWidth);
+    let rodBaseX = Number.isFinite(rodScreenXOverride)
+      ? rodScreenXOverride
+      : this.#resolveX(uiRodConfig?.x, rodWidth);
     const rodBaseY = this.#canvas.height - (uiRodConfig?.yOffset || 0);
     const rodTopY = rodBaseY - rodHeight;
 

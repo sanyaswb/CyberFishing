@@ -182,7 +182,8 @@ class CastService {
     if (needsReel && !eq.reel)
       return { success: false, reason: "missing_reel" };
 
-    const rodPos = this.#getRodVirtualPos(this.#getDynamicBounds());
+    const rodPos =
+      context.rodVirtualPos || this.#getRodVirtualPos(this.#getDynamicBounds());
     const dist = Math.hypot(vx - rodPos.x, vy - rodPos.y);
     const maxDist = normalizeDistance(eq.rod?.maxDistance, 2000);
     const castDistanceRatio = Math.min(1, dist / maxDist);

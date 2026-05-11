@@ -151,6 +151,7 @@ const ITEM_DB = {
         basePower: 1.5,
         compensation: 0.6,
         maxDistance: 600,
+        accuracy: 70,
         hasReel: true,
         capabilities: ["reel", "lure"],
       },
@@ -174,6 +175,7 @@ const ITEM_DB = {
         basePower: 1.5,
         compensation: 0.4,
         maxDistance: 600,
+        accuracy: 85,
         hasReel: true,
         capabilities: ["reel", "feeder_rig"],
       },
@@ -197,6 +199,7 @@ const ITEM_DB = {
         basePower: 1.0,
         compensation: 0.2,
         maxDistance: 450,
+        accuracy: 60,
         hasReel: false,
         capabilities: ["float", "sinker", "hook"],
       },
@@ -556,6 +559,43 @@ const CONFIG = {
       pump: ["KeyS", "ArrowDown"], // Кнопка підтяжки (можеш додати сюди W, або залишити тільки S)
       left: ["KeyA", "ArrowLeft"], // Відведення вудки вліво
       right: ["KeyD", "ArrowRight"], // Відведення вудки вправо
+    },
+  },
+
+  casting: {
+    enabled: true,
+    powerSwipePx: 200,
+    edgeScrollCenterRatio: 0.7,
+    edgeScrollMaxPxPerSecond: 900,
+    edgeScrollEasePower: 1.6,
+    travelDelayMinMs: 180,
+    travelDelayMaxMs: 950,
+    accuracyAttempts: 12,
+    rodAccuracyFallbackPx: 80,
+    handChumAccuracyPx: 110,
+
+    aimLine: {
+      color: "rgba(0, 220, 255, 0.85)",
+      chumColor: "rgba(255, 180, 0, 0.9)",
+      width: 2,
+      dash: [12, 10],
+      dashSpeedPxPerSecond: 42,
+      glowBlur: 8,
+    },
+
+    powerBar: {
+      width: 300,
+      height: 12,
+      y: 18,
+      borderPadding: 2,
+      borderWidth: 1,
+      backgroundColor: "#1a2b3c",
+      borderColor: "#4a5b6c",
+      labelFont: "bold 11px monospace",
+      labelColor: "#8a9bac",
+      labelOffsetX: 56,
+      labelOffsetY: 12,
+      glowIntensity: 0.45,
     },
   },
 

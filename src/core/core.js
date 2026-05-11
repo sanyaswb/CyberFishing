@@ -65,6 +65,11 @@ class InputManager {
   #startY;
   #lastPointerX;
   #lastPointerY;
+  #currentPointerX;
+  #currentPointerY;
+  #releasePointerX;
+  #releasePointerY;
+  #hasPointerRelease = false;
   #panDeltaX;
   #panDeltaY;
   #swipeDeltaY = 0;
@@ -93,6 +98,10 @@ class InputManager {
     this.#startY = 0;
     this.#lastPointerX = 0;
     this.#lastPointerY = 0;
+    this.#currentPointerX = 0;
+    this.#currentPointerY = 0;
+    this.#releasePointerX = 0;
+    this.#releasePointerY = 0;
     this.#panDeltaX = 0;
     this.#panDeltaY = 0;
     this.#clickPos = null;
@@ -107,6 +116,12 @@ class InputManager {
       clickPos: null,
       isDoubleClick: false,
       longPressPos: null,
+      pointerDown: false,
+      pointerStart: { x: 0, y: 0 },
+      pointerCurrent: { x: 0, y: 0 },
+      pointerDelta: { x: 0, y: 0 },
+      pointerReleased: false,
+      pointerRelease: { x: 0, y: 0 },
     };
 
     this.#bindEvents();
@@ -145,6 +160,9 @@ class InputManager {
       this.#startY = e.clientY;
       this.#lastPointerX = e.clientX;
       this.#lastPointerY = e.clientY;
+      this.#currentPointerX = e.clientX;
+      this.#currentPointerY = e.clientY;
+      this.#hasPointerRelease = false;
       this.#swipeDeltaY = 0;
       this.#hasSwipedThisTouch = false;
       this.#hasLongPressed = false;
@@ -161,6 +179,9 @@ class InputManager {
 
     this.#addEventListener(this.#canvas, "pointermove", (e) => {
       if (!this.#isPointerDown) return;
+
+      this.#currentPointerX = e.clientX;
+      this.#currentPointerY = e.clientY;
 
       const dist = Math.hypot(
         e.clientX - this.#startX,
@@ -198,17 +219,24 @@ class InputManager {
       if (isPointerEvent) {
         if (this.#isPointerDown) {
           const now = Date.now();
+          const clientX =
+            e.clientX ?? (e.changedTouches && e.changedTouches[0]?.clientX);
+          const clientY =
+            e.clientY ?? (e.changedTouches && e.changedTouches[0]?.clientY);
+
+          if (clientX !== undefined && clientY !== undefined) {
+            this.#releasePointerX = clientX;
+            this.#releasePointerY = clientY;
+            this.#currentPointerX = clientX;
+            this.#currentPointerY = clientY;
+            this.#hasPointerRelease = true;
+          }
 
           // ВАЖЛИВО: Реєструємо клік ТІЛЬКИ якщо гравець не рухав пальцем (не свайпав)
           if (!this.#isDragging && !this.#hasLongPressed) {
             if (now - this.#lastClickTime < 300) {
               this.#isDoubleClick = true;
             } else {
-              const clientX =
-                e.clientX || (e.changedTouches && e.changedTouches[0]?.clientX);
-              const clientY =
-                e.clientY || (e.changedTouches && e.changedTouches[0]?.clientY);
-
               // Записуємо позицію кліку!
               if (clientX !== undefined && clientY !== undefined) {
                 this.#clickPos = { x: clientX, y: clientY };
@@ -339,6 +367,16 @@ class InputManager {
     state.clickPos = this.#clickPos;
     state.isDoubleClick = this.#isDoubleClick;
     state.longPressPos = this.#longPressPos;
+    state.pointerDown = this.#isPointerDown;
+    state.pointerStart.x = this.#startX;
+    state.pointerStart.y = this.#startY;
+    state.pointerCurrent.x = this.#currentPointerX;
+    state.pointerCurrent.y = this.#currentPointerY;
+    state.pointerDelta.x = this.#currentPointerX - this.#startX;
+    state.pointerDelta.y = this.#currentPointerY - this.#startY;
+    state.pointerReleased = this.#hasPointerRelease;
+    state.pointerRelease.x = this.#releasePointerX;
+    state.pointerRelease.y = this.#releasePointerY;
 
     this.#panDeltaX = 0;
     this.#panDeltaY = 0;
@@ -347,6 +385,7 @@ class InputManager {
     this.#holdToggleFlag = false;
     this.#pumpFlag = false;
     this.#longPressPos = null;
+    this.#hasPointerRelease = false;
 
     return state;
   }

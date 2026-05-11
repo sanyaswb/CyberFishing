@@ -236,6 +236,9 @@ class ConfigProvider {
   get debug() {
     return this.#config.debug || {};
   }
+  get casting() {
+    return this.#config.casting || {};
+  }
   get hookMechanics() {
     return this.#config.hookMechanics || {};
   }

@@ -67,6 +67,7 @@ class FishingRenderService {
   #baitRules;
   #getFloat;
   #getNet;
+  #getRodScreenX;
   #getCastDistanceRatio;
   #getCurrentHookDepth;
   #scratch;
@@ -88,6 +89,7 @@ class FishingRenderService {
     baitRules,
     getFloat,
     getNet,
+    getRodScreenX,
     getInputState,
     getCastDistanceRatio,
     getCurrentHookDepth,
@@ -105,6 +107,7 @@ class FishingRenderService {
     this.#baitRules = baitRules;
     this.#getFloat = getFloat;
     this.#getNet = getNet;
+    this.#getRodScreenX = getRodScreenX || (() => null);
     this.#getCastDistanceRatio = getCastDistanceRatio;
     this.#getCurrentHookDepth = getCurrentHookDepth;
     this.#scratch = scratch;
@@ -247,6 +250,7 @@ class FishingRenderService {
       lineCfg,
       this.#clock.now,
       this.#lineStraightFactor,
+      this.#getRodScreenX(),
     );
     renderer.drawFloat(sPos, floatEntity, eq.float || {}, this.#projector, eq);
     if (state === "playing" && tMeter && fCond) {
