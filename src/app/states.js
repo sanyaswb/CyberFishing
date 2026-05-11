@@ -577,7 +577,6 @@ class WaitingState extends GameState {
       if (cell && isInside) {
         this.deps.castManager.registerCast(this.deps.clock.now);
         this.deps.commands.castLine(vPos.x, vPos.y, cell.depth);
-        this.deps.fishing.consumeFeederChumIfNeeded(eq);
       } else {
         this.deps.commands.setInvalidCastMarker({
           x: input.longPressPos.x,
@@ -823,7 +822,6 @@ class BitingState extends GameState {
     if (cell && isInside) {
       this.deps.castManager.registerCast(this.deps.clock.now);
       this.deps.commands.castLine(vPos.x, vPos.y, cell.depth);
-      this.deps.fishing.consumeFeederChumIfNeeded(eq);
       return;
     }
 

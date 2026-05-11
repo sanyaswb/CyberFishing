@@ -190,6 +190,10 @@ class GameCompositionRoot {
       getCurrentHookDepth: appPorts.getCurrentHookDepth,
       getCastStartTime: appPorts.getCastStartTime,
       getDayOfWeek: appPorts.getDayOfWeek,
+      getTimeScale: () => config.debug?.timeScale || 1,
+      getGameStateName: appPorts.getGameStateName,
+      consumeExpiredFeederChum: (eq) =>
+        runtime.fishing.consumeExpiredFeederChum(eq),
       biteEnvData,
     });
 

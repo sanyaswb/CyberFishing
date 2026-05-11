@@ -475,6 +475,7 @@ const ITEM_DB = {
         rampUpTimeMs: 3600000,
         peakDurationMs: 7200000,
         totalBonusTimeMs: 14400000,
+        safeRecastWindowMs: 300000,
         minBonusDurationHours: 24,
       },
     },

@@ -18,10 +18,31 @@ class FishingController {
     return this.#equipment.consumeFirstBait(eq);
   }
 
-  consumeFeederChumIfNeeded(eq) {
-    if (this.#devFlags.isEnabled("infiniteResources")) return false;
+  consumeExpiredFeederChum(eq) {
+    return this.#consumeFeederChumLoad(eq);
+  }
+
+  consumeWetFeederChum(eq, elapsedMs = Infinity) {
+    if (this.#isWithinSafeRecastWindow(eq?.feederChum, elapsedMs)) {
+      return false;
+    }
+    return this.#consumeFeederChumLoad(eq);
+  }
+
+  #consumeFeederChumLoad(eq) {
     if (!this.#equipmentRules.isFeeder(eq) || !eq?.feederChum) return false;
-    return this.#equipment.consumeFeederChum(eq);
+    if (this.#devFlags.isEnabled("infiniteResources")) return false;
+    return this.#equipment.consumeFeederChum(eq, true);
+  }
+
+  #isWithinSafeRecastWindow(chum, elapsedMs) {
+    if (!chum || !Number.isFinite(elapsedMs)) return false;
+    const safeWindowMs =
+      chum.safeRecastWindowMs ??
+      chum.feederSafeRecastWindowMs ??
+      chum.recastGraceMs ??
+      0;
+    return safeWindowMs > 0 && elapsedMs <= safeWindowMs;
   }
 
   consumeHandChum(chum) {
@@ -86,7 +107,7 @@ class FishingController {
       this.#equipment.consumeAllHooks(eq);
       this.#equipment.consumeFloat(eq);
       this.#equipment.consumeSinker(eq);
-      this.#equipment.consumeFeederChum(eq);
+      this.#consumeFeederChumLoad(eq);
     }
 
     if (reason === "rod" && eq?.rod) {

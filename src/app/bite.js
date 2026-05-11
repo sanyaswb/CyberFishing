@@ -10,6 +10,9 @@ class BiteEnvironmentService {
   #getCurrentHookDepth;
   #getCastStartTime;
   #getDayOfWeek;
+  #getTimeScale;
+  #getGameStateName;
+  #consumeExpiredFeederChum;
   #biteEnvData;
 
   constructor({
@@ -24,6 +27,9 @@ class BiteEnvironmentService {
     getCurrentHookDepth,
     getCastStartTime,
     getDayOfWeek,
+    getTimeScale,
+    getGameStateName,
+    consumeExpiredFeederChum,
     biteEnvData,
   }) {
     this.#world = world;
@@ -37,6 +43,9 @@ class BiteEnvironmentService {
     this.#getCurrentHookDepth = getCurrentHookDepth;
     this.#getCastStartTime = getCastStartTime;
     this.#getDayOfWeek = getDayOfWeek;
+    this.#getTimeScale = getTimeScale;
+    this.#getGameStateName = getGameStateName;
+    this.#consumeExpiredFeederChum = consumeExpiredFeederChum;
     this.#biteEnvData = biteEnvData;
   }
 
@@ -60,12 +69,35 @@ class BiteEnvironmentService {
     let feederTargets = [];
     const eq = this.#inventory.getEquipped();
     const isFeeder = this.#equipmentRules.isFeeder(eq);
+    const isTackleInWater = this.#isTackleInWater();
 
-    if (typeof floatEntity.getChumBonus === "function" && eq?.feederChum) {
-      const elapsedMs = this.#clock.now - this.#getCastStartTime();
+    if (
+      isTackleInWater &&
+      typeof floatEntity.getChumBonus === "function" &&
+      eq?.feederChum
+    ) {
+      const timeScale = this.#getTimeScale?.() || 1;
+      const elapsedMs =
+        Math.max(0, this.#clock.now - this.#getCastStartTime()) * timeScale;
       const chumData = floatEntity.getChumBonus(elapsedMs, eq.feederChum);
-      feederBonus = chumData.bonus;
-      feederTargets = chumData.targets;
+      if (chumData.isExpired) {
+        this.#consumeExpiredFeederChum?.(eq);
+      } else {
+        feederBonus = chumData.bonus;
+        feederTargets = chumData.targets;
+      }
+    }
+
+    const zoneBonus = chum?.bonus || 1.0;
+    const zoneTargets = chum?.targets || [];
+    let selectedChumBonus = zoneBonus;
+    let selectedChumTargets = zoneTargets;
+
+    if (feederTargets.length > 0) {
+      if (zoneTargets.length === 0 || feederBonus > zoneBonus) {
+        selectedChumBonus = feederBonus;
+        selectedChumTargets = feederTargets;
+      }
     }
 
     const biteEnv = this.#biteEnvData;
@@ -80,16 +112,24 @@ class BiteEnvironmentService {
     biteEnv.timePhase = env.phase;
     biteEnv.dayOfWeek = this.#getDayOfWeek();
     biteEnv.zoneBonus = cell?.multiplier || cell?.bonus || 1.0;
-    biteEnv.chumBonus = Math.max(chum?.bonus || 1.0, feederBonus);
+    biteEnv.chumBonus = selectedChumBonus;
     biteEnv.isRaining = env.isRaining;
     biteEnv.isFoggy = env.isFoggy;
     biteEnv.castSpamMultiplier = this.#castManager.getBiteChanceMultiplier();
 
     const targets = biteEnv.chumTargets;
     targets.length = 0;
-    this.#appendUniqueTargets(targets, chum?.targets);
-    this.#appendUniqueTargets(targets, feederTargets);
+    this.#appendUniqueTargets(targets, selectedChumTargets);
     return biteEnv;
+  }
+
+  #isTackleInWater() {
+    const stateName = this.#getGameStateName?.();
+    return (
+      stateName === "waiting" ||
+      stateName === "biting" ||
+      stateName === "playing"
+    );
   }
 
   #appendUniqueTargets(out, source) {

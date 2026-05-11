@@ -618,6 +618,10 @@ class GameApplication {
   }
 
   setState(name, data = {}) {
+    const currentName = this.#stateMachine?.currentName || this.#gameStateName;
+    if (this.#shouldConsumeWetFeederChum(currentName, name)) {
+      this.#consumeWetFeederChum();
+    }
     this.#stateMachine.setState(name, data);
   }
 
@@ -633,17 +637,20 @@ class GameApplication {
     this.#timeUI.update(envSnapshot.time);
     this.updateChumUI();
 
-    if (this.isAimingChum) {
+    const wasAimingChum = this.isAimingChum;
+    if (wasAimingChum) {
       this.handleChumAiming(input, bounds);
+      this.#blockFishingInputDuringChumAim(input);
     } else {
       this.handleGlobalBoatControl(input);
       this.#stateMachine.handleInput(input);
-      const context = this.#stateUpdateContext;
-      context.input = input;
-      context.env = this.#env.getPhysicsEnv();
-      context.biteEnv = this.getEnvDataForBite();
-      this.#stateMachine.update(dt, bounds, context);
     }
+
+    const context = this.#stateUpdateContext;
+    context.input = input;
+    context.env = this.#env.getPhysicsEnv();
+    context.biteEnv = this.getEnvDataForBite();
+    this.#stateMachine.update(dt, bounds, context);
 
     if (this.invalidCastMarker) {
       this.invalidCastMarker.timer -= dt;
@@ -659,6 +666,40 @@ class GameApplication {
     this.#viewportFacade.applyPan(input, stateName, this.isAimingChum);
   }
 
+  #blockFishingInputDuringChumAim(input) {
+    input.isPulling = false;
+    input.pullDirection = null;
+    input.longPressPos = null;
+    input.clickPos = null;
+    input.isDoubleClick = false;
+  }
+
+  #shouldConsumeWetFeederChum(currentName, nextName) {
+    if (
+      currentName !== "waiting" &&
+      currentName !== "biting" &&
+      currentName !== "playing"
+    ) {
+      return false;
+    }
+    return (
+      nextName === "scouting" ||
+      nextName === "victory" ||
+      nextName === "failed"
+    );
+  }
+
+  #consumeWetFeederChum() {
+    const eq = this.#inventory?.getEquipped?.();
+    const elapsedMs = this.#getFeederChumElapsedMs();
+    this.#fishingController?.consumeWetFeederChum?.(eq, elapsedMs);
+  }
+
+  #getFeederChumElapsedMs() {
+    const timeScale = this.#config.debug?.timeScale || 1;
+    return Math.max(0, this.#clock.now - this.castStartTime) * timeScale;
+  }
+
   draw() {
     const b = this.getDynamicBounds();
     const r = this.#renderSystem.drawWorld(
@@ -667,9 +708,36 @@ class GameApplication {
     );
 
     this.#stateMachine.draw(r, b);
+    this.#drawChumAimingRange(r, b);
+  }
+
+  #drawChumAimingRange(renderer, bounds) {
+    if (!this.isAimingChum) return;
+    if (this.gameStateName === "scouting") return;
+    if (this.#config.locations?.showAimingZone === false) return;
+
+    const eq = this.#inventory.getEquipped();
+    const method = eq.delivery ? "boat" : "hand";
+    if (method !== "hand") return;
+
+    renderer.drawAimingZone(
+      this.#projector,
+      bounds.bottom,
+      this.chumCastDistance,
+      "chum",
+    );
   }
 
   castLine(vx, vy, cellDepth) {
+    const currentName = this.#stateMachine?.currentName || this.#gameStateName;
+    if (
+      currentName === "waiting" ||
+      currentName === "biting" ||
+      currentName === "playing"
+    ) {
+      this.#consumeWetFeederChum();
+    }
+
     const result = this.#fishingFacade.castLine(vx, vy, cellDepth);
     if (result?.reason === "missing_rod") {
       this.#showMissingRodInventoryWarning();

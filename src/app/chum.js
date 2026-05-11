@@ -302,6 +302,7 @@ class ChumController {
 
     this.#chum.deployBait(vPos.x, vPos.y, activeChum.id);
     this.#fishing.consumeHandChum(activeChum);
+    input.clickPos = null;
     this.toggleAim();
   }
 
@@ -326,6 +327,7 @@ class ChumController {
 
     this.#chum.deployBait(vPos.x, vPos.y, chumToDrop.id, activeBoat);
     this.#fishing.consumeDeliveryChum(chumData.slotIndex);
+    input.clickPos = null;
 
     const loadedCount = loadedChums.length;
     if (reservedTargets + 1 >= loadedCount) {

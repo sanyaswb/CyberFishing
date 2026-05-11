@@ -921,15 +921,35 @@ class FeederEntity extends WaterEntity {
   getChumBonus(elapsedMs, chumConfig) {
     if (!chumConfig) return { bonus: 1.0, targets: [] };
 
-    const duration = chumConfig.totalBonusTimeMs || 300000;
+    const rampUpTime = Math.max(0, chumConfig.rampUpTimeMs || 0);
+    const peakDuration = Math.max(0, chumConfig.peakDurationMs || 0);
+    const totalTime = Math.max(
+      1,
+      chumConfig.totalBonusTimeMs || rampUpTime + peakDuration || 300000,
+    );
+    const peakStartTime = Math.min(rampUpTime, totalTime);
+    const peakEndTime = Math.min(peakStartTime + peakDuration, totalTime);
+    const maxBonus = Math.max(1.0, chumConfig.maxBonus ?? 1.0);
+    const targets = chumConfig.targetFishes || [];
 
-    if (elapsedMs < duration) {
-      const progress = elapsedMs / duration;
-      const bonus =
-        chumConfig.maxBonus - (chumConfig.maxBonus - 1.0) * progress;
-      return { bonus, targets: chumConfig.targetFishes || [] };
+    if (elapsedMs >= totalTime) {
+      return { bonus: 1.0, targets: [], isExpired: true };
     }
-    return { bonus: 1.0, targets: [] };
+
+    if (peakStartTime > 0 && elapsedMs < peakStartTime) {
+      const progress = elapsedMs / peakStartTime;
+      const bonus = 1.0 + (maxBonus - 1.0) * progress;
+      return { bonus, targets };
+    }
+
+    if (elapsedMs < peakEndTime) {
+      return { bonus: maxBonus, targets };
+    }
+
+    const decayDuration = Math.max(1, totalTime - peakEndTime);
+    const decayProgress = (elapsedMs - peakEndTime) / decayDuration;
+    const bonus = maxBonus - (maxBonus - 1.0) * decayProgress;
+    return { bonus: Math.max(1.0, bonus), targets };
   }
 }
 

@@ -61,9 +61,13 @@ class EquipmentService {
     return this.#inventory.consumeEquipped("rod", 1);
   }
 
-  consumeFeederChum(eq = this.getEquipped()) {
+  consumeFeederChum(eq = this.getEquipped(), unequipAfterConsume = false) {
     if (!eq?.feederChum) return false;
-    return this.#inventory.consumeEquipped("feederChum", 1, false);
+    return this.#inventory.consumeEquipped(
+      "feederChum",
+      1,
+      unequipAfterConsume,
+    );
   }
 
   consumeDeliveryChum(slotIndex) {
