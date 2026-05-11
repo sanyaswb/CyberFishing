@@ -1141,6 +1141,26 @@ const CONFIG = {
     passiveRetrieveWaterFriction: 0.35,
     passiveRetrieveDepthRiseSpeed: 0.15,
     idleSpinningBiteChance: 0.005,
+    floatMotion: {
+      enabled: true,
+      minSpeedPxPerSec: 2,
+      speedForMaxTiltPxPerSec: 120,
+      maxAngleDeg: 24,
+      sinkingStartAngleDeg: 90,
+      minStandUpDurationMs: 400,
+      responseSpeed: 12,
+      settleSpeed: 7,
+      pullTiltMultiplier: 1.2,
+      pullImpulseOvershootDeg: 0,
+      pullImpulseResponseSpeed: 32,
+      pullImpulseDecaySpeed: 8,
+      pullImpulseLateralDeadZone: 0.02,
+      pullImpulseDepthDeadZone: 0.02,
+      pullImpulseDepthScaleDrop: 0.45,
+      lateralInfluence: 1.0,
+      verticalInfluence: 0.35,
+      verticalTiltSign: 1,
+    },
 
     // --- ДОДАНО: Шанси втрати наживки під час клювання ---
     baitLossChance: {
