@@ -249,6 +249,7 @@ class GameCompositionRoot {
       canPlayerCast: appPorts.canPlayerCast,
       getMaxHookDepth: appPorts.getMaxHookDepth,
       checkWater: appPorts.checkWater,
+      getBiteEnv: appPorts.getBiteEnv,
       getDynamicBounds: appPorts.getDynamicBounds,
       getRodVirtualPos: appPorts.getRodVirtualPos,
       getScreenOffsetRatio: appPorts.getScreenOffsetRatio,

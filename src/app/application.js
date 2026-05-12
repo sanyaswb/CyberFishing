@@ -386,6 +386,7 @@ class GameApplication {
       canPlayerCast: () => this.canPlayerCast(),
       getMaxHookDepth: () => this.getMaxHookDepth(),
       checkWater: (vx, vy) => this.checkWater(vx, vy),
+      getBiteEnv: () => this.getEnvDataForBite(),
       getDynamicBounds: () => this.getDynamicBounds(),
       getRodVirtualPos: (bounds) => this.getRodVirtualPos(bounds),
       getRodScreenX: () => this.#castRodScreenX,

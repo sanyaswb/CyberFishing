@@ -679,7 +679,7 @@ const CONFIG = {
           angleBottom: 30, // Кут погляду під ноги (на найближчу лінію води)
         },
 
-        chumCastDistance: 300,
+        chumCastDistance: 680,
 
         weather: {
           updateIntervalMs: 10000,

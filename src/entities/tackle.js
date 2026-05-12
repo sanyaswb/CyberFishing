@@ -284,6 +284,18 @@ class WaterEntity {
     return this._currentHookDepth;
   }
 
+  getEffectiveHookDepth(bottomDepth) {
+    return Math.min(this._currentHookDepth, Math.max(0, bottomDepth || 0));
+  }
+
+  getEffectiveLineLength(bottomDepth) {
+    return this.getEffectiveHookDepth(bottomDepth);
+  }
+
+  isBottomLocked() {
+    return false;
+  }
+
   applyForce(force) {
     this._velocity.add(force);
   }
@@ -334,9 +346,13 @@ class WaterEntity {
     if (this._isBiting) {
       this.updateBite(dt, checkWater);
     }
+
+    this._afterPhysicsUpdate(checkWater);
   }
 
   _processMechanics(dt, input, reelPower, pullDirection) {}
+
+  _afterPhysicsUpdate(checkWater) {}
 
   _applyPhysics(boundsRect, checkWater, dt, environment) {
     let driftDx = 0;
@@ -983,6 +999,34 @@ class FeederEntity extends WaterEntity {
       this._currentHookDepth = this._targetHookDepth;
       this._currentAngle = 0;
     }
+  }
+
+  isBottomLocked() {
+    return !this._isSinking;
+  }
+
+  getEffectiveHookDepth(bottomDepth) {
+    const depth = Math.max(0, bottomDepth || 0);
+    return this.isBottomLocked()
+      ? depth
+      : Math.min(this._currentHookDepth, depth);
+  }
+
+  getEffectiveLineLength(bottomDepth) {
+    return this.getEffectiveHookDepth(bottomDepth);
+  }
+
+  _afterPhysicsUpdate(checkWater) {
+    if (this._isSinking || !checkWater) return;
+    const cell = checkWater(this._position.x, this._position.y);
+    if (!cell) return;
+    this._syncToBottomDepth(cell.depth);
+  }
+
+  _syncToBottomDepth(bottomDepth) {
+    const depth = Math.max(0, bottomDepth || 0);
+    this._targetHookDepth = depth;
+    this._currentHookDepth = depth;
   }
 
   getChumBonus(elapsedMs, chumConfig) {

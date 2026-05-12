@@ -100,14 +100,20 @@ class BiteEnvironmentService {
       }
     }
 
+    const hookDepth =
+      typeof floatEntity.getEffectiveHookDepth === "function"
+        ? floatEntity.getEffectiveHookDepth(bottomDepth)
+        : Math.min(floatEntity.getCurrentHookDepth(), bottomDepth);
+    const lineLength =
+      typeof floatEntity.getEffectiveLineLength === "function"
+        ? floatEntity.getEffectiveLineLength(bottomDepth)
+        : hookDepth;
+
     const biteEnv = this.#biteEnvData;
-    biteEnv.hookDepth = Math.min(
-      floatEntity.getCurrentHookDepth(),
-      bottomDepth,
-    );
+    biteEnv.hookDepth = hookDepth;
     biteEnv.bottomDepth = bottomDepth;
     biteEnv.lineLength = isFeeder
-      ? bottomDepth
+      ? lineLength
       : this.#getCurrentHookDepth() || 0.1;
     biteEnv.timePhase = env.phase;
     biteEnv.dayOfWeek = this.#getDayOfWeek();

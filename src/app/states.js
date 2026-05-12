@@ -7,6 +7,7 @@
 /**
  * @typedef {Object} StateWorldQueries
  * @property {(vx: number, vy: number) => object|null} checkWater
+ * @property {() => object} getBiteEnv
  * @property {() => object} getDynamicBounds
  * @property {(bounds: object) => Vector2} getRodVirtualPos
  * @property {(pos: object) => number} getScreenOffsetRatio
@@ -255,6 +256,7 @@ class StateDepsFactory {
     return {
       world: {
         checkWater: this.#root.checkWater,
+        getBiteEnv: this.#root.getBiteEnv,
         getDynamicBounds: this.#root.getDynamicBounds,
         getRodVirtualPos: this.#root.getRodVirtualPos,
         getScreenOffsetRatio: this.#root.getScreenOffsetRatio,
@@ -835,7 +837,12 @@ class WaitingState extends GameState {
       baitTypes,
     );
 
-    let hooked = this.deps.biteSystem.evaluateBite(dt, envData.biteEnv, {
+    const biteEnv =
+      typeof this.deps.world.getBiteEnv === "function"
+        ? this.deps.world.getBiteEnv()
+        : envData.biteEnv;
+
+    let hooked = this.deps.biteSystem.evaluateBite(dt, biteEnv, {
       hookSize: eq?.hooks?.[0]?.level || eq?.baits?.[0]?.level || 1,
       baits: baitIds,
       baitTypes: baitTypes,
