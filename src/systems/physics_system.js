@@ -844,6 +844,7 @@ class StaminaController {
   #masteryTimer = 0;
   #isMasteryActive = false;
   #isFullyRecovered = false;
+  #hasLostStamina = false;
 
   constructor(condition, fish, playerBasePower, mechanicsConfig) {
     this.#condition = condition;
@@ -939,14 +940,20 @@ class StaminaController {
           this.#condition.applyExhaustionDamage(
             this.#condition.currentExhaustion,
           );
-          this.#fish.applyPowerDebuff(debuff * ratio);
+          this.#fish.applyPowerDebuff(
+            debuff * ratio,
+            this.#mechanicsConfig.minBasePowerRatio ?? 0.2,
+          );
 
           if (!this.#fish.hasActiveDebuff) {
             this.#fish.applyRandomDebuff(this.#mechanicsConfig.debuffs);
           }
         } else {
           this.#condition.applyExhaustionDamage(damage);
-          this.#fish.applyPowerDebuff(debuff);
+          this.#fish.applyPowerDebuff(
+            debuff,
+            this.#mechanicsConfig.minBasePowerRatio ?? 0.2,
+          );
         }
       }
       return;
@@ -989,7 +996,14 @@ class StaminaController {
         this.#condition.applyStaminaDamage(damage);
       }
 
-      if (this.#condition.currentStamina >= this.#condition.maxPoints) {
+      if (this.#condition.currentStamina < this.#condition.maxPoints) {
+        this.#hasLostStamina = true;
+      }
+
+      if (
+        this.#hasLostStamina &&
+        this.#condition.currentStamina >= this.#condition.maxPoints
+      ) {
         if (!this.#isFullyRecovered) {
           this.#isFullyRecovered = true;
 
@@ -1013,6 +1027,7 @@ class StaminaController {
             punishmentCap,
             maxPowerDropPerSec,
             exhaustionDurationSec,
+            this.#mechanicsConfig.minBasePowerRatio ?? 0.2,
           );
 
           console.log(

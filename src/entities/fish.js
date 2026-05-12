@@ -76,18 +76,36 @@ class Fish {
     return this.#hasActiveDebuff;
   }
 
-  applyPowerDebuff(amount) {
-    this.#powerDebuff += amount;
+  applyPowerDebuff(amount, minBasePowerRatio = 0) {
+    this.#powerDebuff = this.#clampPowerDebuff(
+      this.#powerDebuff + amount,
+      minBasePowerRatio,
+    );
   }
 
   setPowerDebuffByExhaustionRatio(
     exhaustionRatio,
     maxPowerDropPerSec,
     maxDurationSec,
+    minBasePowerRatio = 0.2,
   ) {
+    const ratio = Math.max(0, Math.min(1, Number(exhaustionRatio) || 0));
     const maxPossibleDebuff = maxPowerDropPerSec * maxDurationSec;
 
-    this.#powerDebuff = maxPossibleDebuff * (1.0 - exhaustionRatio);
+    this.#powerDebuff = this.#clampPowerDebuff(
+      maxPossibleDebuff * (1.0 - ratio),
+      minBasePowerRatio,
+    );
+  }
+
+  #clampPowerDebuff(value, minBasePowerRatio) {
+    const initial = this.getInitialPower();
+    const minRatio = Math.max(
+      0,
+      Math.min(1, Number(minBasePowerRatio) || 0),
+    );
+    const maxAllowedDebuff = initial * (1.0 - minRatio);
+    return Math.max(0, Math.min(maxAllowedDebuff, Number(value) || 0));
   }
 
   getBehavior(dt) {

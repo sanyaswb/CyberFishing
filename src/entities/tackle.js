@@ -969,7 +969,11 @@ class FeederEntity extends WaterEntity {
     this._currentHookDepth = 0.1;
     this._sinkerConfig = sinkerConfig;
 
-    const speedMult = sinkerConfig?.speedMult || 1.5;
+    const engine = sinkerConfig?.engineStats || sinkerConfig || {};
+    const weightCfg =
+      engine.weights && engine.weight ? engine.weights[engine.weight] : engine;
+    const speedMult = weightCfg.speedMult || engine.speedMult || 1.5;
+    this._sinkerHeightScale = weightCfg.heightScale || engine.heightScale || 1.0;
     this._isSinking = true;
     this._sinkingTotalTime = (targetDepth / speedMult) * 1000;
     this._sinkingTimer = this._sinkingTotalTime;

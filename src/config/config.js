@@ -275,6 +275,8 @@ const ITEM_DB = {
         capabilities: ["hook", "bait", "chum_mix"],
         hooksCount: 2,
         hasChumSlot: true,
+        quality: 7.0,
+        currentCompensation: [0.1, 1.0], // Додано компенсацію для фідерної снасті
       },
     },
 
@@ -591,7 +593,7 @@ const CONFIG = {
     powerBar: {
       width: 300,
       height: 12,
-      y: 18,
+      y: 42,
       borderPadding: 2,
       borderWidth: 1,
       backgroundColor: "#1a2b3c",
@@ -770,7 +772,7 @@ const CONFIG = {
         depthConfig: {
           minDepth: 0.5,
           maxDepth: 11.0,
-          minWeightAtMinDepth: 0.5,
+          minWeightAtMinDepth: 0.05,
           maxWeightAtMinDepth: 0.8,
           minWeightAtMaxDepth: 0.751,
           maxWeightAtMaxDepth: 5.0,
@@ -1300,7 +1302,11 @@ const CONFIG = {
     indicators: {
       x: "center",
       y: 40,
-      spacing: 40,
+      spacing: 56,
+      conditionWidth: 220,
+      conditionHeight: 10,
+      conditionGap: 22,
+      conditionLabelOffsetY: 9,
     },
 
     catchZone: {

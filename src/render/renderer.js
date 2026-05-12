@@ -892,48 +892,69 @@
   }
 
   drawFishCondition(condition, uiIndicatorsConfig) {
-    const barWidth = 200;
-    const barHeight = 10;
+    const barWidth = uiIndicatorsConfig?.conditionWidth || 220;
+    const barHeight = uiIndicatorsConfig?.conditionHeight || 10;
     const barX = this.#resolveX(uiIndicatorsConfig?.x, barWidth);
     const barY = uiIndicatorsConfig?.y || 40;
+    const gap = uiIndicatorsConfig?.conditionGap || 22;
+    const labelOffsetY = uiIndicatorsConfig?.conditionLabelOffsetY || 9;
+    const maxPoints = Math.max(0.001, condition.maxPoints || 0);
+    const staminaRatio = Math.max(
+      0,
+      Math.min(1, condition.currentStamina / maxPoints),
+    );
+    const exhaustionRatio = Math.max(
+      0,
+      Math.min(1, condition.currentExhaustion / maxPoints),
+    );
 
+    this.#drawConditionBar({
+      x: barX,
+      y: barY,
+      width: barWidth,
+      height: barHeight,
+      ratio: staminaRatio,
+      color: "#ffcc00",
+      label: `STAMINA: ${Math.round(condition.currentStamina)}/${Math.round(condition.maxPoints)}`,
+      labelOffsetY,
+      isActive: condition.phase === "stamina",
+    });
+
+    this.#drawConditionBar({
+      x: barX,
+      y: barY + gap,
+      width: barWidth,
+      height: barHeight,
+      ratio: exhaustionRatio,
+      color: "#ff4444",
+      label: `EXHAUSTION: ${Math.round(condition.currentExhaustion)}/${Math.round(condition.maxPoints)}`,
+      labelOffsetY,
+      isActive: condition.phase === "exhaustion",
+    });
+  }
+
+  #drawConditionBar({
+    x,
+    y,
+    width,
+    height,
+    ratio,
+    color,
+    label,
+    labelOffsetY,
+    isActive,
+  }) {
     this.#ctx.fillStyle = "#0b1520";
-    this.#ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
-
-    if (condition.phase === "stamina") {
-      const ratio = Math.max(
-        0,
-        Math.min(1, condition.currentStamina / condition.maxPoints),
-      );
-      this.#ctx.fillStyle = "#ffcc00";
-      this.#ctx.fillRect(barX, barY, barWidth * ratio, barHeight);
-      this.#ctx.fillStyle = "#ffffff";
-      this.#ctx.font = "12px monospace";
-      this.#ctx.textAlign = "center";
-      this.#ctx.fillText(
-        `STAMINA: ${Math.round(condition.currentStamina)}/${Math.round(condition.maxPoints)}`,
-        barX + barWidth / 2,
-        barY + barHeight + 12,
-      );
-    } else {
-      const ratio = Math.max(
-        0,
-        Math.min(1, condition.currentExhaustion / condition.maxPoints),
-      );
-      this.#ctx.fillStyle = "#ff4444";
-      this.#ctx.fillRect(barX, barY, barWidth * ratio, barHeight);
-      this.#ctx.fillStyle = "#ffffff";
-      this.#ctx.font = "12px monospace";
-      this.#ctx.textAlign = "center";
-      this.#ctx.fillText(
-        `EXHAUSTING... ${Math.round(condition.currentExhaustion)}/${Math.round(condition.maxPoints)}`,
-        barX + barWidth / 2,
-        barY + barHeight + 12,
-      );
-    }
-
-    this.#ctx.strokeStyle = "#333";
-    this.#ctx.strokeRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
+    this.#ctx.fillRect(x - 1, y - 1, width + 2, height + 2);
+    this.#ctx.fillStyle = color;
+    this.#ctx.fillRect(x, y, width * ratio, height);
+    this.#ctx.strokeStyle = isActive ? color : "#333";
+    this.#ctx.lineWidth = isActive ? 2 : 1;
+    this.#ctx.strokeRect(x - 1, y - 1, width + 2, height + 2);
+    this.#ctx.fillStyle = isActive ? "#ffffff" : "#8a9bac";
+    this.#ctx.font = "11px monospace";
+    this.#ctx.textAlign = "center";
+    this.#ctx.fillText(label, x + width / 2, y + height + labelOffsetY);
   }
 
   drawTensionBar(tensionMeter, tensionConfig, uiIndicatorsConfig) {
