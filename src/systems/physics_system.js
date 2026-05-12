@@ -312,7 +312,10 @@ class FishingSystem {
           if (this.#chance(chanceThisFrame)) {
             this.#breakHold();
 
-            if (window.DEBUG_MODULES && window.DEBUG_MODULES.forces) {
+            if (
+              typeof window !== "undefined" &&
+              window.DEBUG_VERBOSE_PHYSICS === true
+            ) {
               console.log(
                 "%c====================================",
                 "color: #ff0055;",
@@ -563,8 +566,7 @@ class TensionMeter {
       : hookMechanicsConfig.safeTensionThresholdWeakFish;
 
     const isDebugTension =
-      typeof window.DEBUG_MODULES !== "undefined" &&
-      window.DEBUG_MODULES.tension;
+      typeof window !== "undefined" && window.DEBUG_VERBOSE_PHYSICS === true;
 
     if (this.#slackTimer >= hookMechanicsConfig.slackLinePenaltyTimeMs) {
       chance = hookMechanicsConfig.slackLineEscapeChance;
@@ -779,7 +781,10 @@ class TensionMeter {
 
     this.#pumpGraceTimer = 500;
 
-    if (window.DEBUG_MODULES && window.DEBUG_MODULES.tension) {
+    if (
+      typeof window !== "undefined" &&
+      window.DEBUG_VERBOSE_PHYSICS === true
+    ) {
       console.log(
         `%c[Натяг] Підлога знижена до ${this.#holdFloorTension.toFixed(1)}%`,
         "color: #00ccff;",

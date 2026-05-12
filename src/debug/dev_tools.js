@@ -60,7 +60,14 @@ class DevTools {
           k,
           window.DEBUG_MODULES[k],
           content,
-          (v) => (window.DEBUG_MODULES[k] = v),
+          (v) => {
+            window.DEBUG_MODULES[k] = v;
+            document.dispatchEvent(
+              new CustomEvent("debug-module-toggled", {
+                detail: { module: k, enabled: v },
+              }),
+            );
+          },
         );
       }
     }

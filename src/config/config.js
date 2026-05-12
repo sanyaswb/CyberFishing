@@ -1155,7 +1155,7 @@ const CONFIG = {
     mechanics: {
       // Phase 1: Stamina
       slackThreshold: 25,
-      optimalMax: 50, // Player fatigue threshold (0 damage to stamina)
+      optimalMax: 100, // Player fatigue threshold (0 damage to stamina)
       baseDepletionRate: 45,
       baseRegenRate: 30,
       centerSweetSpot: 0.2,
@@ -1166,7 +1166,7 @@ const CONFIG = {
       basePowerDropPerSec: 0.1, // How much fish base power drops per 1 sec of exhaustion (0.1 base = 0.001 final)
       minBasePowerRatio: 0.2, // Fish cannot lose more than 80% of initial strength
 
-      regenMultiplierPhase1: 2.5, // Бонус швидкості відновлення, поки риба не виснажена повністю
+      regenMultiplierPhase1: 0.5, // Бонус швидкості відновлення, поки риба не виснажена повністю
       punishmentCap: 0.8, // До якого відсотка (80%) відновлюється Фаза 2, якщо Фаза 1 досягла 100%
 
       debuffs: {

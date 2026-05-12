@@ -7,9 +7,18 @@ class DebugService {
   }
 
   update(context) {
-    if (!this.#config.debug?.overlay) return;
+    if (!this.#config.debug?.overlay && !this.#hasEnabledConsoleModules())
+      return;
     if (!context || typeof context.emitDebugEvent !== "function") return;
     context.emitDebugEvent("debug-live-update", this.#buildPayload(context));
+  }
+
+  #hasEnabledConsoleModules() {
+    if (typeof window === "undefined" || !window.DEBUG_MODULES) return false;
+    for (const key of Object.keys(window.DEBUG_MODULES)) {
+      if (window.DEBUG_MODULES[key]) return true;
+    }
+    return false;
   }
 
   #buildPayload(context) {
@@ -39,6 +48,7 @@ class DebugService {
       phase: env.phase,
       isRaining: env.isRaining,
       isFoggy: env.isFoggy,
+      equipment: eq,
       liveChances: context.getLiveChances(ed, {
         hookSize: currentHookSize,
         baits: currentBaits,
