@@ -542,6 +542,7 @@ class ScoutingState extends GameState {
       if (!this.deps.isAimingChum()) {
         const visual = this.#castAim.getVisualState();
         if (visual) {
+          this.#drawAccuracyPreview(renderer, bounds, this.#castAim, visual);
           renderer.drawCastPowerAim(
             this.deps.projector,
             bounds,
@@ -616,6 +617,13 @@ class ScoutingState extends GameState {
     const release = this.#castAim.update(input, bounds, dt, { mode: "rod" });
     if (!release) return false;
 
+    if (this.#isCancelledRelease(release)) {
+      this.#castAim.reset();
+      this.#pendingCast = null;
+      this.deps.commands.setState("scouting");
+      return true;
+    }
+
     const canCastAnywhere =
       this.deps.services.devFlags.isEnabled("infiniteCasting");
     const maxDistance = this.deps.rules.equipment.getMaxCastDistance(eq);
@@ -624,10 +632,14 @@ class ScoutingState extends GameState {
       Number(eq?.rod?.engineStats?.accuracy) ||
       this.deps.config.casting?.rodAccuracyFallbackPx ||
       80;
+    const accuracyPercent = this.#getRodAccuracyPercent(eq);
+    const accuracyMultiplier = this.#getRodAccuracyMultiplier(eq);
     const target = this.#castAim.resolveTarget(release, {
       bounds,
       maxDistance,
       accuracyPx,
+      accuracyPercent,
+      accuracyMultiplier,
       canCastAnywhere,
       checkWater: (vx, vy) => this.deps.world.checkWater(vx, vy),
     });
@@ -667,6 +679,51 @@ class ScoutingState extends GameState {
 
   #usePowerCasting() {
     return this.deps.config.casting?.enabled !== false;
+  }
+
+  #isCancelledRelease(release) {
+    const threshold = this.deps.config.casting?.cancelPowerThreshold ?? 0;
+    return release.power <= threshold;
+  }
+
+  #drawAccuracyPreview(renderer, bounds, aim, visual) {
+    if (!this.deps.config.debug?.casting?.showAccuracyArea) return;
+    const eq = this.deps.inventory.getEquipped();
+    const maxDistance = this.deps.rules.equipment.getMaxCastDistance(eq);
+    const accuracyPx =
+      Number(eq?.rod?.accuracy) ||
+      Number(eq?.rod?.engineStats?.accuracy) ||
+      this.deps.config.casting?.rodAccuracyFallbackPx ||
+      80;
+    const preview = aim.getAccuracyPreview(
+      bounds,
+      maxDistance,
+      accuracyPx,
+      this.#getRodAccuracyPercent(eq),
+      this.#getRodAccuracyMultiplier(eq),
+    );
+    renderer.drawCastAccuracyPreview?.(
+      preview,
+      this.deps.config.debug?.casting,
+    );
+  }
+
+  #getRodAccuracyPercent(eq) {
+    return (
+      Number(eq?.rod?.accuracyPercent) ||
+      Number(eq?.rod?.engineStats?.accuracyPercent) ||
+      this.deps.config.casting?.accuracyDistancePercent ||
+      null
+    );
+  }
+
+  #getRodAccuracyMultiplier(eq) {
+    return (
+      Number(eq?.rod?.accuracyMultiplier) ||
+      Number(eq?.rod?.engineStats?.accuracyMultiplier) ||
+      this.deps.config.casting?.accuracyDistanceMultiplier ||
+      1
+    );
   }
 }
 
@@ -842,6 +899,7 @@ class WaitingState extends GameState {
     );
     const visual = this.#recastAim.getVisualState();
     if (visual) {
+      this.#drawRecastAccuracyPreview(renderer, bounds);
       renderer.drawCastPowerAim(
         this.deps.projector,
         bounds,
@@ -867,6 +925,12 @@ class WaitingState extends GameState {
     const release = this.#recastAim.update(input, bounds, dt, { mode: "rod" });
     if (!release) return;
 
+    if (this.#isCancelledRelease(release)) {
+      this.#resetRecastAim();
+      this.deps.commands.setState("scouting");
+      return;
+    }
+
     const canCastAnywhere =
       this.deps.services.devFlags.isEnabled("infiniteCasting");
     const maxDistance = this.deps.rules.equipment.getMaxCastDistance(eq);
@@ -875,10 +939,14 @@ class WaitingState extends GameState {
       Number(eq?.rod?.engineStats?.accuracy) ||
       this.deps.config.casting?.rodAccuracyFallbackPx ||
       80;
+    const accuracyPercent = this.#getRodAccuracyPercent(eq);
+    const accuracyMultiplier = this.#getRodAccuracyMultiplier(eq);
     const target = this.#recastAim.resolveTarget(release, {
       bounds,
       maxDistance,
       accuracyPx,
+      accuracyPercent,
+      accuracyMultiplier,
       canCastAnywhere,
       checkWater: (vx, vy) => this.deps.world.checkWater(vx, vy),
     });
@@ -955,6 +1023,51 @@ class WaitingState extends GameState {
 
   #usePowerCasting() {
     return this.deps.config.casting?.enabled !== false;
+  }
+
+  #isCancelledRelease(release) {
+    const threshold = this.deps.config.casting?.cancelPowerThreshold ?? 0;
+    return release.power <= threshold;
+  }
+
+  #drawRecastAccuracyPreview(renderer, bounds) {
+    if (!this.deps.config.debug?.casting?.showAccuracyArea) return;
+    const eq = this.deps.inventory.getEquipped();
+    const maxDistance = this.deps.rules.equipment.getMaxCastDistance(eq);
+    const accuracyPx =
+      Number(eq?.rod?.accuracy) ||
+      Number(eq?.rod?.engineStats?.accuracy) ||
+      this.deps.config.casting?.rodAccuracyFallbackPx ||
+      80;
+    const preview = this.#recastAim.getAccuracyPreview(
+      bounds,
+      maxDistance,
+      accuracyPx,
+      this.#getRodAccuracyPercent(eq),
+      this.#getRodAccuracyMultiplier(eq),
+    );
+    renderer.drawCastAccuracyPreview?.(
+      preview,
+      this.deps.config.debug?.casting,
+    );
+  }
+
+  #getRodAccuracyPercent(eq) {
+    return (
+      Number(eq?.rod?.accuracyPercent) ||
+      Number(eq?.rod?.engineStats?.accuracyPercent) ||
+      this.deps.config.casting?.accuracyDistancePercent ||
+      null
+    );
+  }
+
+  #getRodAccuracyMultiplier(eq) {
+    return (
+      Number(eq?.rod?.accuracyMultiplier) ||
+      Number(eq?.rod?.engineStats?.accuracyMultiplier) ||
+      this.deps.config.casting?.accuracyDistanceMultiplier ||
+      1
+    );
   }
 }
 

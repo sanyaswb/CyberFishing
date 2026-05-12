@@ -438,6 +438,24 @@
     this.#drawCastPowerBar(power, barCfg, color, visual.mode);
   }
 
+  drawCastAccuracyPreview(preview, debugConfig) {
+    const radiusX = preview?.radiusX ?? preview?.radiusPx ?? 0;
+    const radiusY = preview?.radiusY ?? preview?.radiusPx ?? 0;
+    if (!preview?.active || radiusX <= 0 || radiusY <= 0) return;
+    this.#ctx.save();
+    this.#ctx.beginPath();
+    this.#ctx.ellipse(preview.x, preview.y, radiusX, radiusY, 0, 0, Math.PI * 2);
+    this.#ctx.fillStyle =
+      debugConfig?.accuracyAreaFill || "rgba(255, 255, 255, 0.08)";
+    this.#ctx.strokeStyle =
+      debugConfig?.accuracyAreaStroke || "rgba(255, 255, 255, 0.55)";
+    this.#ctx.lineWidth = debugConfig?.accuracyAreaLineWidth || 1;
+    this.#ctx.setLineDash(debugConfig?.accuracyAreaDash || [6, 6]);
+    this.#ctx.fill();
+    this.#ctx.stroke();
+    this.#ctx.restore();
+  }
+
   #drawCastAimLine(projector, bounds, screenX, lineCfg, color, nowMs) {
     const topY = projector.virtualToScreen(0, bounds.top, this.#screenA).y;
     const bottomY = projector.virtualToScreen(0, bounds.bottom, this.#screenB).y;

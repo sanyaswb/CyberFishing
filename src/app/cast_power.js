@@ -65,6 +65,9 @@ class CastPowerAim {
 
       this.#screenX = this.#clampScreenX(input.pointerCurrent.x);
       this.#screenY = input.pointerCurrent.y;
+      if (this.#screenY < this.#startY) {
+        this.#startY = this.#screenY;
+      }
       this.#power = this.#calculatePower(this.#screenY);
       this.#applyEdgeScroll(this.#screenX, dt);
       this.#updateVisual(mode);
@@ -74,6 +77,9 @@ class CastPowerAim {
     if (this.#active && input?.pointerReleased) {
       this.#screenX = this.#clampScreenX(input.pointerRelease.x);
       this.#screenY = input.pointerRelease.y;
+      if (this.#screenY < this.#startY) {
+        this.#startY = this.#screenY;
+      }
       this.#power = this.#calculatePower(this.#screenY);
 
       this.#release.active = true;
@@ -99,50 +105,82 @@ class CastPowerAim {
     return this.#visual.active ? this.#visual : null;
   }
 
+  getAccuracyPreview(
+    bounds,
+    maxDistance,
+    accuracyPx,
+    accuracyPercent = null,
+    accuracyMultiplier = null,
+  ) {
+    if (!this.#visual.active) return null;
+    const resolvedMaxDistance = this.#resolveMaxDistance(maxDistance, bounds);
+    const distance =
+      resolvedMaxDistance * Math.max(0, Math.min(1, this.#visual.power));
+    const baseRadiusPx =
+      this.#resolveAccuracyDiameter(
+        accuracyPx,
+        accuracyPercent,
+        distance,
+        accuracyMultiplier,
+      ) / 2;
+    const area = this.#getAccuracyAreaScreen(
+      bounds,
+      maxDistance,
+      this.#visual.power,
+      this.#visual.screenX,
+      baseRadiusPx,
+    );
+    return {
+      active: true,
+      x: area.x,
+      y: area.y,
+      radiusPx: baseRadiusPx,
+      radiusX: area.radiusX,
+      radiusY: area.radiusY,
+      mode: this.#visual.mode,
+    };
+  }
+
   resolveTarget(release, options) {
     if (!release?.active) return null;
 
     const bounds = options.bounds;
     const checkWater = options.checkWater;
     const canCastAnywhere = options.canCastAnywhere === true;
-    const accuracyPx = Math.max(0, Number(options.accuracyPx) || 0);
     const maxDistance = this.#resolveMaxDistance(options.maxDistance, bounds);
     const distance = maxDistance * Math.max(0, Math.min(1, release.power));
+    const accuracyPx = this.#resolveAccuracyDiameter(
+      options.accuracyPx,
+      options.accuracyPercent,
+      distance,
+      options.accuracyMultiplier,
+    );
     const origin = this.#projector.screenToVirtual(
       release.screenX,
       0,
       this.#scratchA,
     );
+    const originX = origin.x;
 
-    const radiusPx = accuracyPx / 2;
-    const mapTopScreenY = this.#projector.virtualToScreen(
-      0,
-      bounds.top,
-      this.#scratchB,
-    ).y;
-    const mapBottomScreenY = this.#projector.virtualToScreen(
-      0,
-      bounds.bottom,
-      this.#scratchC,
-    ).y;
-    const targetTopY = Math.max(bounds.top, bounds.bottom - distance);
-    const targetTopScreenY = this.#projector.virtualToScreen(
-      0,
-      targetTopY,
-      this.#scratchB,
-    ).y;
-
-    const minCenterY = mapTopScreenY + radiusPx;
-    const maxCenterY = mapBottomScreenY - radiusPx;
-    const centerY =
-      maxCenterY >= minCenterY
-        ? this.#clamp(targetTopScreenY + radiusPx, minCenterY, maxCenterY)
-        : (mapTopScreenY + mapBottomScreenY) / 2;
-    const centerX = release.screenX;
+    const baseRadiusPx = accuracyPx / 2;
+    const area = this.#getAccuracyAreaScreen(
+      bounds,
+      maxDistance,
+      release.power,
+      release.screenX,
+      baseRadiusPx,
+    );
+    const centerX = area.x;
+    const centerY = area.y;
 
     const attempts = Math.max(1, this.#cfg().accuracyAttempts ?? 10);
     for (let i = 0; i < attempts; i++) {
-      const sample = this.#sampleAccuracy(centerX, centerY, radiusPx);
+      const sample = this.#sampleAccuracy(
+        centerX,
+        centerY,
+        area.radiusX,
+        area.radiusY,
+      );
       const virtualPos = this.#projector.screenToVirtual(
         sample.x,
         sample.y,
@@ -154,7 +192,7 @@ class CastPowerAim {
           virtualPos,
           cell,
           bounds,
-          originX: origin.x,
+          originX,
           screenX: release.screenX,
           power: release.power,
           distance,
@@ -175,7 +213,7 @@ class CastPowerAim {
         virtualPos: centerVirtual,
         cell: centerCell,
         bounds,
-        originX: origin.x,
+        originX,
         screenX: release.screenX,
         power: release.power,
         distance,
@@ -203,7 +241,8 @@ class CastPowerAim {
     maxDistance,
     canCastAnywhere,
   }) {
-    const ratio = maxDistance > 0 ? Math.max(0, Math.min(1, distance / maxDistance)) : 0;
+    const ratio =
+      maxDistance > 0 ? Math.max(0, Math.min(1, distance / maxDistance)) : 0;
     return {
       success: true,
       x: virtualPos.x,
@@ -259,13 +298,13 @@ class CastPowerAim {
     this.#panViewport(delta);
   }
 
-  #sampleAccuracy(centerX, centerY, radiusPx) {
-    if (radiusPx <= 0) return { x: centerX, y: centerY };
+  #sampleAccuracy(centerX, centerY, radiusX, radiusY) {
+    if (radiusX <= 0 || radiusY <= 0) return { x: centerX, y: centerY };
     const angle = this.#next() * Math.PI * 2;
-    const radius = Math.sqrt(this.#next()) * radiusPx;
+    const radius = Math.sqrt(this.#next());
     return {
-      x: centerX + Math.cos(angle) * radius,
-      y: centerY + Math.sin(angle) * radius,
+      x: centerX + Math.cos(angle) * radius * radiusX,
+      y: centerY + Math.sin(angle) * radius * radiusY,
     };
   }
 
@@ -273,6 +312,100 @@ class CastPowerAim {
     let resolved = Number(maxDistance);
     if (!Number.isFinite(resolved)) resolved = bounds.bottom - bounds.top;
     return Math.max(0, Math.min(resolved, bounds.bottom - bounds.top));
+  }
+
+  #getAccuracyAreaScreen(bounds, maxDistance, power, screenX, baseRadiusPx) {
+    const resolvedMaxDistance = this.#resolveMaxDistance(maxDistance, bounds);
+    const distance = resolvedMaxDistance * Math.max(0, Math.min(1, power));
+    const mapTopScreenY = this.#projector.virtualToScreen(
+      0,
+      bounds.top,
+      this.#scratchB,
+    ).y;
+    const mapBottomScreenY = this.#projector.virtualToScreen(
+      0,
+      bounds.bottom,
+      this.#scratchC,
+    ).y;
+    const targetTopY = Math.max(bounds.top, bounds.bottom - distance);
+    const targetTopScreenY = this.#projector.virtualToScreen(
+      0,
+      targetTopY,
+      this.#scratchB,
+    ).y;
+
+    const initialRadii = this.#getPerspectiveRadii(targetTopY, baseRadiusPx);
+    let minCenterY = mapTopScreenY + initialRadii.radiusY;
+    let maxCenterY = mapBottomScreenY - initialRadii.radiusY;
+    let centerY =
+      maxCenterY >= minCenterY
+        ? this.#clamp(
+            targetTopScreenY + initialRadii.radiusY,
+            minCenterY,
+            maxCenterY,
+          )
+        : (mapTopScreenY + mapBottomScreenY) / 2;
+
+    const centerVirtual = this.#projector.screenToVirtual(
+      screenX,
+      centerY,
+      this.#scratchA,
+    );
+    const radii = this.#getPerspectiveRadii(centerVirtual.y, baseRadiusPx);
+    minCenterY = mapTopScreenY + radii.radiusY;
+    maxCenterY = mapBottomScreenY - radii.radiusY;
+    centerY =
+      maxCenterY >= minCenterY
+        ? this.#clamp(targetTopScreenY + radii.radiusY, minCenterY, maxCenterY)
+        : (mapTopScreenY + mapBottomScreenY) / 2;
+
+    return {
+      x: screenX,
+      y: centerY,
+      radiusX: radii.radiusX,
+      radiusY: radii.radiusY,
+    };
+  }
+
+  #getPerspectiveRadii(virtualY, baseRadiusPx) {
+    const perspective = this.#projector.getPerspective?.(virtualY) || {
+      scale: 1,
+      squashY: 1,
+    };
+    const scale = Math.max(0, Number(perspective.scale) || 0);
+    const squashY = Math.max(0, Number(perspective.squashY) || 0);
+    const radiusX = baseRadiusPx * scale * this.#projector.getScale();
+    return {
+      radiusX,
+      radiusY: radiusX * squashY,
+    };
+  }
+
+  #resolveAccuracyDiameter(
+    fallbackPx,
+    percentValue,
+    distance,
+    multiplierValue,
+  ) {
+    const percent = this.#normalizePercent(
+      percentValue ?? this.#cfg().accuracyDistancePercent,
+    );
+    const multiplier = this.#normalizeMultiplier(
+      multiplierValue ?? this.#cfg().accuracyDistanceMultiplier,
+    );
+    if (percent !== null) return Math.max(0, distance * percent * multiplier);
+    return Math.max(0, Number(fallbackPx) || 0);
+  }
+
+  #normalizeMultiplier(value) {
+    const raw = Number(value);
+    return Number.isFinite(raw) && raw > 0 ? raw : 1;
+  }
+
+  #normalizePercent(value) {
+    const raw = Number(value);
+    if (!Number.isFinite(raw) || raw <= 0) return null;
+    return raw > 1 ? raw / 100 : raw;
   }
 
   #travelDelayMs(ratio) {

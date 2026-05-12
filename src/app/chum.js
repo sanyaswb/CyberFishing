@@ -314,6 +314,22 @@ class ChumController {
     return this.#handCastAim?.getVisualState?.() || null;
   }
 
+  getPowerAimAccuracyPreview(bounds) {
+    return this.#handCastAim?.getAccuracyPreview?.(
+      bounds,
+      this.#location.chumCastDistance,
+      this.#config.casting?.handChumAccuracyPx ??
+        this.#config.casting?.rodAccuracyFallbackPx ??
+        100,
+      this.#config.casting?.handChumAccuracyDistancePercent ??
+        this.#config.casting?.accuracyDistancePercent ??
+        null,
+      this.#config.casting?.handChumAccuracyDistanceMultiplier ??
+        this.#config.casting?.accuracyDistanceMultiplier ??
+        1,
+    );
+  }
+
   #handleHandPowerAiming(input, bounds, dt) {
     if (this.#pendingHandDrop) {
       this.#pendingHandDrop.timer -= dt;
@@ -333,6 +349,12 @@ class ChumController {
     });
     if (!release) return;
 
+    if (this.#isCancelledRelease(release)) {
+      this.#handCastAim.reset();
+      this.toggleAim();
+      return;
+    }
+
     const activeChum = this.#activeHandChum;
     if (!activeChum) {
       this.#markInvalidCast({ x: release.screenX, y: release.screenY });
@@ -347,6 +369,14 @@ class ChumController {
         this.#config.casting?.handChumAccuracyPx ??
         this.#config.casting?.rodAccuracyFallbackPx ??
         100,
+      accuracyPercent:
+        this.#config.casting?.handChumAccuracyDistancePercent ??
+        this.#config.casting?.accuracyDistancePercent ??
+        null,
+      accuracyMultiplier:
+        this.#config.casting?.handChumAccuracyDistanceMultiplier ??
+        this.#config.casting?.accuracyDistanceMultiplier ??
+        1,
       checkWater: (vx, vy) => this.#checkWater(vx, vy),
     });
 
@@ -363,6 +393,11 @@ class ChumController {
       chumId: activeChum.id,
       activeChum,
     };
+  }
+
+  #isCancelledRelease(release) {
+    const threshold = this.#config.casting?.cancelPowerThreshold ?? 0;
+    return release.power <= threshold;
   }
 
   #handleHandAiming(input, bounds, vPos, cell) {

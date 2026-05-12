@@ -565,12 +565,17 @@ const CONFIG = {
   casting: {
     enabled: true,
     powerSwipePx: 200,
+    cancelPowerThreshold: 0,
     edgeScrollCenterRatio: 0.7,
     edgeScrollMaxPxPerSecond: 900,
     edgeScrollEasePower: 1.6,
     travelDelayMinMs: 180,
     travelDelayMaxMs: 950,
     accuracyAttempts: 12,
+    accuracyDistancePercent: 0.6,
+    handChumAccuracyDistancePercent: 0.6,
+    accuracyDistanceMultiplier: 2.5,
+    handChumAccuracyDistanceMultiplier: 2.5,
     rodAccuracyFallbackPx: 80,
     handChumAccuracyPx: 110,
 
@@ -600,6 +605,13 @@ const CONFIG = {
   },
 
   debug: {
+    casting: {
+      showChumDistanceLine: true,
+      showAccuracyArea: true,
+      accuracyAreaFill: "rgba(255, 255, 255, 0.08)",
+      accuracyAreaStroke: "rgba(255, 255, 255, 0.55)",
+    },
+
     godMode: {
       enabled: true, // Гoловний рубильник (якщо false, інші ігноруються)
       infiniteResources: true, // 1. Нескінченна наживка/снасті
@@ -716,6 +728,12 @@ const CONFIG = {
         },
       },
     },
+  },
+
+  wind: {
+    active: true,
+    speedPxPerSec: 15,
+    direction: { x: 1, y: 0.2 },
   },
 
   spawns: {
@@ -1337,11 +1355,5 @@ const CONFIG = {
   colors: {
     background: "#0f171e",
     bodyBackground: "#1a1a1a",
-  },
-
-  wind: {
-    active: true,
-    speedPxPerSec: 15,
-    direction: { x: 1, y: 0.2 },
   },
 };

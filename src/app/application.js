@@ -747,6 +747,20 @@ class GameApplication {
 
     const visual = this.#chumController.getPowerAimVisualState?.();
     if (visual && this.#config.casting?.enabled !== false) {
+      if (this.#config.debug?.casting?.showChumDistanceLine) {
+        renderer.drawAimingZone(
+          this.#projector,
+          bounds.bottom,
+          this.chumCastDistance,
+          "chum",
+        );
+      }
+      if (this.#config.debug?.casting?.showAccuracyArea) {
+        renderer.drawCastAccuracyPreview?.(
+          this.#chumController.getPowerAimAccuracyPreview?.(bounds),
+          this.#config.debug?.casting,
+        );
+      }
       renderer.drawCastPowerAim(
         this.#projector,
         bounds,
