@@ -30,76 +30,33 @@ class FishForceSystem {
     buffs,
   }) {
     const physics = this.#config.physics || {};
-    const fishPhysics = this.#fish.getPhysicsConfig?.() || {};
     const pixelsPerMeter = Math.max(1, Number(physics.pixelsPerMeter) || 50);
     const behavior = this.#fish.getBehavior(dtMs);
-
-    const behaviorPowerRatio = Math.max(
-      0,
-      Number(behavior.powerRatio ?? behavior.pullMult) || 1,
-    );
-    const behaviorSpeedRatio = this.#clamp01(
-      behavior.speedRatio ?? Math.abs(behavior.moveX || 0),
-    );
+    const fishPhysics = this.#fish.getPhysicsConfig?.() || {};
 
     const staminaRatio = fishCondition?.maxPoints
       ? this.#clamp01(fishCondition.currentStamina / fishCondition.maxPoints)
       : 1;
     const exhaustionProgress = fishCondition?.maxPoints
-      ? this.#clamp01(
-          1 - fishCondition.currentExhaustion / fishCondition.maxPoints,
-        )
+      ? this.#clamp01(1 - fishCondition.currentExhaustion / fishCondition.maxPoints)
       : 0;
+
+    const moveDir = this.#scratchA.set(
+      Number(behavior.moveX) || 0,
+      -(Number(behavior.powerRatio ?? behavior.pullMult) || 1),
+    );
+    if (moveDir.length() <= 0.001) moveDir.set(0, -1);
+    moveDir.normalize();
 
     const awayDir = this.#scratchB
       .set(fishPosition.x - rodTipPosition.x, fishPosition.y - rodTipPosition.y)
       .normalize();
-    if (awayDir.length() <= 0.001) awayDir.set(0, -1);
 
-    const lateralSign = Math.sign(Number(behavior.moveX) || 0) || 1;
-    const lateralDir = this.#scratchC.set(-awayDir.y, awayDir.x).normalize();
-    lateralDir.multiplyScalar(lateralSign);
-
-    const awayIntent = this.#clamp01(
-      (fishPhysics.awayIntentBase ?? physics.fishAwayIntentBase ?? 0.25) +
-        behaviorPowerRatio *
-          (fishPhysics.awayIntentPowerScale ??
-            physics.fishAwayIntentPowerScale ??
-            0.45),
-    );
-    const lateralIntent =
-      Math.abs(Number(behavior.moveX) || 0) *
-      (fishPhysics.lateralIntentMultiplier ??
-        physics.fishLateralIntentMultiplier ??
-        0.9);
-
-    const moveDir = this.#scratchA.set(
-      awayDir.x * awayIntent + lateralDir.x * lateralIntent,
-      awayDir.y * awayIntent + lateralDir.y * lateralIntent,
-    );
-    if (moveDir.length() <= 0.001) moveDir.set(awayDir.x, awayDir.y);
-    moveDir.normalize();
-
-    const currentVelocity = this.#getCurrentVelocityPxPerSec(
-      env,
-      physics,
-      fishPhysics,
-    );
+    const currentVelocity = this.#getCurrentVelocityPxPerSec(env, physics);
     const relativeVelocityX = (fishVelocity?.x || 0) - currentVelocity.x;
     const relativeVelocityY = (fishVelocity?.y || 0) - currentVelocity.y;
     const relativeSpeedMps =
       Math.hypot(relativeVelocityX, relativeVelocityY) / pixelsPerMeter;
-
-    const velocityLength = Math.hypot(relativeVelocityX, relativeVelocityY);
-    const velocityDirX =
-      velocityLength > 0.001 ? relativeVelocityX / velocityLength : moveDir.x;
-    const velocityDirY =
-      velocityLength > 0.001 ? relativeVelocityY / velocityLength : moveDir.y;
-    const opposition = velocityDirX * awayDir.x + velocityDirY * awayDir.y;
-    const directionMultiplier = this.#directionMultiplier(
-      opposition,
-      physics.directionForce,
-    );
 
     const staticForceKg =
       this.#fish.getCurrentStaticPowerKg?.() ||
@@ -107,73 +64,30 @@ class FishForceSystem {
       this.#fish.getPower?.() ||
       1;
 
-    const fishWeightKg = Math.max(0.001, Number(this.#fish.getWeight?.()) || 1);
-    const baseSpeedPxPerSec =
-      this.#fish.getBaseSpeedPxPerSec?.(pixelsPerMeter) || 100;
-    const baseSpeedMps = baseSpeedPxPerSec / pixelsPerMeter;
+    const velocityLength = Math.hypot(relativeVelocityX, relativeVelocityY);
+    const velocityDirX = velocityLength > 0.001 ? relativeVelocityX / velocityLength : moveDir.x;
+    const velocityDirY = velocityLength > 0.001 ? relativeVelocityY / velocityLength : moveDir.y;
+    const opposition = velocityDirX * awayDir.x + velocityDirY * awayDir.y;
+    const directionMultiplier = this.#directionMultiplier(opposition, physics.directionForce);
 
-    // Stamina is only activity efficiency. It must not turn the fish into a dead object.
-    const staminaActivityMultiplier = this.#lerp(
-      fishPhysics.minStaminaActivityMultiplier ??
-        physics.fishMinStaminaActivityMultiplier ??
-        0.8,
-      1,
-      staminaRatio,
-    );
+    const dynamicForceKg =
+      this.#fish.getWeight() *
+      relativeSpeedMps *
+      (fishPhysics.speedForceMultiplier ?? 0.35) *
+      (fishPhysics.waterResistanceMultiplier ?? 1.0) *
+      (physics.waterResistanceKgPerKgPerMps ?? 1.0) *
+      directionMultiplier;
 
-    // Exhaustion slows active movement, while real kg weakening comes from Fish powerDebuff.
-    const exhaustionSpeedMultiplier = this.#lerp(
+    const behaviorPowerRatio = Math.max(0, Number(behavior.powerRatio ?? behavior.pullMult) || 1);
+    const minPowerRatio = fishPhysics.minPowerRatio ?? 0.25;
+    const exhaustionPowerMultiplier = this.#lerp(
       1,
-      fishPhysics.exhaustedSpeedRatio ?? physics.fishExhaustedSpeedRatio ?? 0.6,
+      Math.max(0, minPowerRatio),
       exhaustionProgress,
     );
-
-    const behaviorTargetSpeedPxPerSec =
-      baseSpeedPxPerSec *
-      behaviorSpeedRatio *
-      staminaActivityMultiplier *
-      exhaustionSpeedMultiplier;
-
-    const stateMovementForceMultiplier =
-      fishPhysics.stateMovementForceMultiplier ??
-      physics.fishStateMovementForceMultiplier ??
-      0.35;
-    const velocityForceMultiplier =
-      fishPhysics.velocityForceMultiplier ??
-      physics.fishVelocityForceMultiplier ??
-      1.0;
-    const speedForceMultiplier = fishPhysics.speedForceMultiplier ?? 0.35;
-    const waterResistanceMultiplier =
-      (fishPhysics.waterResistanceMultiplier ?? 1.0) *
-      (physics.waterResistanceKgPerKgPerMps ?? 0.08);
-
-    // This is the missing layer: states must create active kg pressure, not only velocity.
-    // rest/idle/swim/dash now produce different force even before the velocity catches up.
-    const stateMovementForceKg =
-      staticForceKg *
-      behaviorSpeedRatio *
-      Math.max(0.1, behaviorPowerRatio) *
-      stateMovementForceMultiplier *
-      directionMultiplier;
-
-    const velocityDynamicForceKg =
-      fishWeightKg *
-      relativeSpeedMps *
-      speedForceMultiplier *
-      waterResistanceMultiplier *
-      velocityForceMultiplier *
-      directionMultiplier;
-
-    const dynamicFishForceKg = Math.max(
-      0,
-      stateMovementForceKg + velocityDynamicForceKg,
-    );
-
-    const minPowerRatio = fishPhysics.minPowerRatio ?? 0.25;
-    const behaviorStaticForceKg = staticForceKg * behaviorPowerRatio;
     const totalFishForceKg = Math.max(
       staticForceKg * minPowerRatio,
-      behaviorStaticForceKg + dynamicFishForceKg,
+      (staticForceKg * behaviorPowerRatio + dynamicForceKg) * exhaustionPowerMultiplier,
     );
 
     const playerData = this.calculatePlayerForce({
@@ -189,17 +103,32 @@ class FishForceSystem {
       dragRatio,
     });
 
-    const awayFromPlayerRatio = Math.max(
-      0,
-      moveDir.x * awayDir.x + moveDir.y * awayDir.y,
-    );
+    const awayFromPlayerRatio = Math.max(0, moveDir.x * awayDir.x + moveDir.y * awayDir.y);
     const minEscape = physics.drag?.yEscapeSpeedAtFullDrag ?? 0.02;
     const escapeSpeedMultiplier =
-      1 -
-      playerData.effectiveDragRatio * awayFromPlayerRatio * (1 - minEscape);
+      1 - playerData.effectiveDragRatio * awayFromPlayerRatio * (1 - minEscape);
+
+    const baseSpeedPxPerSec = this.#fish.getBaseSpeedPxPerSec?.(pixelsPerMeter) || 100;
+    const behaviorSpeedRatio = this.#clamp01(behavior.speedRatio ?? Math.abs(behavior.moveX || 0));
+
+    // Stamina is activity fuel, not a hard speed brake. Exhaustion is the real weakening layer.
+    const staminaActivityMultiplier = this.#lerp(
+      fishPhysics.minStaminaActivityMultiplier ?? 0.75,
+      1,
+      staminaRatio,
+    );
+    const exhaustionSpeedMultiplier = this.#lerp(
+      1,
+      fishPhysics.exhaustedSpeedRatio ?? 0.25,
+      exhaustionProgress,
+    );
 
     const speedPxPerSec =
-      behaviorTargetSpeedPxPerSec * Math.max(minEscape, escapeSpeedMultiplier);
+      baseSpeedPxPerSec *
+      behaviorSpeedRatio *
+      staminaActivityMultiplier *
+      exhaustionSpeedMultiplier *
+      Math.max(minEscape, escapeSpeedMultiplier);
 
     this.#targetVelocity.set(moveDir.x * speedPxPerSec, moveDir.y * speedPxPerSec);
 
@@ -209,23 +138,27 @@ class FishForceSystem {
       fishInitialPower: this.#fish.getInitialPower?.() || staticForceKg,
       pullMult: behaviorPowerRatio,
       moveMult: behaviorSpeedRatio,
-      behaviorStaticForceKg,
-      stateMovementForceKg,
-      velocityDynamicForceKg,
       staticFishForceKg: staticForceKg,
-      dynamicFishForceKg,
+      dynamicFishForceKg: dynamicForceKg,
       totalFishForceKg,
       fishSpeedPxPerSec: speedPxPerSec,
-      behaviorTargetSpeedPxPerSec,
       staminaRatio,
       staminaActivityMultiplier,
       exhaustionProgress,
+      exhaustionPowerMultiplier,
       exhaustionSpeedMultiplier,
       opposition,
       directionResistanceMultiplier: directionMultiplier,
       awayFromPlayerRatio,
       dragRatio: this.#clamp01(dragRatio),
       effectiveDragRatio: playerData.effectiveDragRatio,
+      dragLimitKg: playerData.dragLimitKg,
+      dragHoldRatio: playerData.dragHoldRatio,
+      canDragHoldFish: playerData.canDragHoldFish,
+      canWinDistance: playerData.canWinDistance,
+      shouldSlipDrag: playerData.shouldSlipDrag,
+      staminaPressureRatio: playerData.staminaPressureRatio,
+      pullCapacityKg: playerData.pullCapacityKg,
       restrainRatio: playerData.restrainRatio,
       transferRatio: playerData.transferRatio,
       anglePenalty: playerData.anglePenalty,
@@ -234,17 +167,13 @@ class FishForceSystem {
       currentVelocityX: currentVelocity.x,
       currentVelocityY: currentVelocity.y,
       relativeSpeedMps,
-      baseSpeedMps,
     };
 
     return {
       behavior,
       targetVelocity: this.#targetVelocity,
       staticFishForceKg: staticForceKg,
-      behaviorStaticForceKg,
-      stateMovementForceKg,
-      velocityDynamicForceKg,
-      dynamicFishForceKg,
+      dynamicFishForceKg: dynamicForceKg,
       totalFishForceKg,
       opposition,
       awayFromPlayerRatio,
@@ -282,10 +211,7 @@ class FishForceSystem {
       .set(fishPosition.x - rodTipPosition.x, fishPosition.y - rodTipPosition.y)
       .normalize();
     const idealDir = { x: 0, y: -1 };
-    const dot = Math.max(
-      -1,
-      Math.min(1, lineDir.x * idealDir.x + lineDir.y * idealDir.y),
-    );
+    const dot = Math.max(-1, Math.min(1, lineDir.x * idealDir.x + lineDir.y * idealDir.y));
     const angleDeg = (Math.acos(dot) * 180) / Math.PI;
     const angleCfg = physics.rodAnglePenalty || {};
     const noPenalty = angleCfg.noPenaltyAngleDeg ?? 15;
@@ -294,50 +220,68 @@ class FishForceSystem {
       (angleDeg - noPenalty) / Math.max(1, maxPenaltyAngle - noPenalty),
     );
     const maxPenaltyMult = angleCfg.maxPenaltyMultiplier ?? 0.65;
-    const anglePenalty =
-      angleCfg.enabled === false
-        ? 1
-        : this.#lerp(1.0, maxPenaltyMult, angleStressRatio);
+    const anglePenalty = angleCfg.enabled === false
+      ? 1
+      : this.#lerp(1.0, maxPenaltyMult, angleStressRatio);
 
     const hasReel = !!reel?.hasReel?.();
     const isRecoverOnly = hasReel && !!input?.retrieve && !input?.pointerDown;
     const isPlayerPulling = !!input?.isPulling && !isRecoverOnly;
 
     const fallbackRodKg =
-      Number(rod?.getEffectiveMaxLoadKg?.()) || Number(rod?.getMaxLoadKg?.()) || 0;
+      Number(rod?.getEffectiveMaxLoadKg?.()) ||
+      Number(rod?.getMaxLoadKg?.()) ||
+      0;
     const fallbackReelKg = hasReel
-      ? Number(reel?.getEffectiveMaxLoadKg?.()) ||
-        Number(reel?.getMaxLoadKg?.()) ||
-        fallbackRodKg
+      ? Number(reel?.getEffectiveMaxLoadKg?.()) || Number(reel?.getMaxLoadKg?.()) || fallbackRodKg
       : fallbackRodKg;
     const baseForceKg = Math.max(
       0,
-      Number(playerMaxLoadKg) ||
-        (hasReel ? (fallbackRodKg + fallbackReelKg) / 2 : fallbackRodKg),
+      Number(playerMaxLoadKg) || (hasReel ? (fallbackRodKg + fallbackReelKg) / 2 : fallbackRodKg),
     );
-    const maxPlayerForceKg =
-      baseForceKg * anglePenalty * (buffs?.getTotalMultiplier?.() || 1);
+    const maxPlayerForceKg = baseForceKg * anglePenalty * (buffs?.getTotalMultiplier?.() || 1);
 
-    const restrainRatio = this.#clamp01(
-      maxPlayerForceKg / Math.max(0.001, totalFishForceKg || 0),
-    );
+    const fishForceKg = Math.max(0.001, Number(totalFishForceKg) || 0.001);
     const clampedDrag = this.#clamp01(dragRatio);
-    const transferRatio = hasReel ? clampedDrag * restrainRatio : restrainRatio;
-    const effectiveDragRatio = hasReel ? clampedDrag * restrainRatio : restrainRatio;
-    const effectivePullKg = isPlayerPulling ? maxPlayerForceKg * transferRatio : 0;
-    const netPullKg = isPlayerPulling
-      ? Math.max(0, effectivePullKg - Math.max(0, totalFishForceKg || 0))
+    const dragLimitKg = hasReel
+      ? this.#calculateDragLimitKg(reel, clampedDrag)
+      : Infinity;
+
+    // Фрикціон — це ліміт у кг, а не множник сили.
+    // Якщо dragLimitKg < fishForceKg, котушка здає ліску й гравець не виграє дистанцію.
+    const dragHoldRatio = hasReel
+      ? this.#clamp01(dragLimitKg / fishForceKg)
+      : 1;
+    const tackleRestrainRatio = this.#clamp01(maxPlayerForceKg / fishForceKg);
+    const canDragHoldFish = !hasReel || dragLimitKg >= fishForceKg;
+    const pullCapacityKg = hasReel
+      ? Math.min(maxPlayerForceKg, dragLimitKg)
+      : maxPlayerForceKg;
+    const canWinDistance = isPlayerPulling && canDragHoldFish && pullCapacityKg > fishForceKg;
+    const netPullKg = canWinDistance ? pullCapacityKg - fishForceKg : 0;
+
+    // Цей тиск використовується для stamina: drag 0% => 0, drag нижче сили риби => слабкий тиск,
+    // drag >= сили риби => повний тиск, якщо гравець тягне.
+    const staminaPressureRatio = isPlayerPulling
+      ? (hasReel ? dragHoldRatio : tackleRestrainRatio)
       : 0;
 
     this.#playerVector.set(basePullDir.x * netPullKg, basePullDir.y * netPullKg);
 
     return {
       forceKg: maxPlayerForceKg,
-      effectivePullKg,
+      pullCapacityKg,
+      effectivePullKg: isPlayerPulling ? pullCapacityKg : 0,
       netPullKg,
-      transferRatio,
-      restrainRatio,
-      effectiveDragRatio,
+      transferRatio: hasReel ? dragHoldRatio : tackleRestrainRatio,
+      restrainRatio: tackleRestrainRatio,
+      dragHoldRatio,
+      effectiveDragRatio: hasReel ? dragHoldRatio : tackleRestrainRatio,
+      dragLimitKg: Number.isFinite(dragLimitKg) ? dragLimitKg : 0,
+      canDragHoldFish,
+      canWinDistance,
+      shouldSlipDrag: hasReel && dragLimitKg < fishForceKg,
+      staminaPressureRatio,
       vector: this.#playerVector,
       pullDir: basePullDir,
       anglePenalty,
@@ -347,27 +291,36 @@ class FishForceSystem {
     };
   }
 
+  #calculateDragLimitKg(reel, dragRatio) {
+    const range = reel?.getDragRangeKg?.() || {};
+    const minKg = Math.max(0, Number(range.min) || 0);
+    const maxFromRange = Number(range.max);
+    const fallbackMax =
+      Number(reel?.getEffectiveMaxLoadKg?.()) ||
+      Number(reel?.getMaxLoadKg?.()) ||
+      minKg;
+    const maxKg = Math.max(minKg, Number.isFinite(maxFromRange) ? maxFromRange : fallbackMax);
+    return minKg + (maxKg - minKg) * this.#clamp01(dragRatio);
+  }
+
   getDebugData() {
     return this.#debug;
   }
 
-  #getCurrentVelocityPxPerSec(env, physics, fishPhysics) {
-    const current = env?.current;
+  #getCurrentVelocityPxPerSec(env, physics) {
+    const current = env?.current || env?.waterCurrent || null;
     if (!current) return { x: 0, y: 0 };
 
     const speed =
       Number(current.speedPxPerSec) ||
       Number(current.speed) ||
-      Number(current.power) ||
+      Number(current.magnitude) ||
       0;
     const dir = current.direction || current.dir || current.vector || { x: 0, y: 0 };
     const dx = Number(dir.x) || 0;
     const dy = Number(dir.y) || 0;
     const len = Math.hypot(dx, dy) || 1;
-    const influence =
-      (physics.currentResistanceMultiplier ?? 1.0) *
-      (fishPhysics.currentInfluenceMultiplier ?? 1.0);
-
+    const influence = physics.currentResistanceMultiplier ?? 1.0;
     return {
       x: (dx / len) * speed * influence,
       y: (dy / len) * speed * influence,

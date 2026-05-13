@@ -87,7 +87,12 @@ class FightPhysicsSystem {
     // After natural/fish movement, the reel may give line. At drag 0%, it gives all
     // demanded excess while line remains, so no tension/constraint is created.
     lineSystem.updateDistance(floatEntity.getPosition(), rodTipPosition);
-    const releasedMeters = lineSystem.releaseForDistance(forceData.effectiveDragRatio ?? dragSystem.value);
+    const releasedMeters = lineSystem.releaseForDistance({
+      dragRatio: dragSystem.value,
+      shouldSlip: forceData.player.shouldSlipDrag,
+      slipReleaseRatio: forceData.player.shouldSlipDrag ? 1 : 0,
+      creepReleaseRatio: physics.drag?.creepReleaseRatio ?? 0,
+    });
 
     const constrained = lineSystem.constrainPosition(
       floatEntity.getPosition(),
@@ -106,14 +111,6 @@ class FightPhysicsSystem {
       hasReel,
       isPullMode,
       physics,
-      constrained,
-    });
-
-    const staminaPressureRatio = this.#calculateStaminaPressureRatio({
-      forceData,
-      lineState: lineStateBeforeRecover,
-      hasReel,
-      isPullMode,
       constrained,
     });
 
@@ -145,7 +142,14 @@ class FightPhysicsSystem {
       lineRecoveredThisFrameMeters: recoveredMeters,
       playerForceKg: forceData.player.forceKg,
       effectivePullKg: forceData.player.effectivePullKg,
+      pullCapacityKg: forceData.player.pullCapacityKg,
       netPullKg: forceData.player.netPullKg,
+      dragLimitKg: forceData.player.dragLimitKg,
+      dragHoldRatio: forceData.player.dragHoldRatio,
+      canDragHoldFish: forceData.player.canDragHoldFish,
+      canWinDistance: forceData.player.canWinDistance,
+      shouldSlipDrag: forceData.player.shouldSlipDrag,
+      staminaPressureRatio: forceData.player.staminaPressureRatio,
       playerForceY: Math.abs(forceData.player.vector.y),
       playerForceX: Math.abs(forceData.player.vector.x),
       fishForceY: Math.abs(forceData.totalFishForceKg * (forceData.targetVelocity.y < 0 ? -1 : 1)),
@@ -158,8 +162,6 @@ class FightPhysicsSystem {
       fightMode: isPullMode ? "pull" : isRecoverMode ? "recover" : "free",
       retrieveActive: isRecoverMode,
       playerPulling: forceData.player.isPulling,
-      staminaPressureRatio,
-      hasEffectiveStaminaPressure: staminaPressureRatio > 0.01,
       calculatedTensionKg: tensionKg,
     };
     stressSystem.setDebugData(this.#debug);
@@ -174,13 +176,7 @@ class FightPhysicsSystem {
       },
       pMax: this.#debug.playerMaxPowerY,
       fMag: forceData.totalFishForceKg,
-      staminaPressureRatio,
-      isLineFullyExtended: lineState.isLineFullyExtended,
-      forceData: {
-        ...forceData,
-        staminaPressureRatio,
-        isLineFullyExtended: lineState.isLineFullyExtended,
-      },
+      forceData,
     };
   }
 
@@ -188,58 +184,34 @@ class FightPhysicsSystem {
     return this.#debug;
   }
 
-  #calculateStaminaPressureRatio({
-    forceData,
-    lineState,
-    hasReel,
-    isPullMode,
-    constrained,
-  }) {
-    if (!isPullMode) return 0;
-
-    const lineLocked = !!lineState?.isFullyExtended || !!constrained;
-    const transferRatio = Math.max(
-      0,
-      Math.min(1, Number(forceData?.player?.transferRatio) || 0),
-    );
-
-    // З котушкою і drag = 0% тяга гравця не передається рибі,
-    // доки є вільна ліска. Якщо ліска закінчилась, сама довжина
-    // ліски стає жорстким обмеженням і знову створює реальний тиск.
-    if (hasReel) {
-      return lineLocked ? 1 : transferRatio;
-    }
-
-    // Без котушки немає вільної здачі ліски фрикціоном, тому тиск
-    // залежить від здатності снасті реально стримувати рибу.
-    return lineLocked ? Math.max(transferRatio, 1) : transferRatio;
-  }
-
   #calculateTensionKg({ forceData, lineState, dragRatio, hasReel, isPullMode, physics, constrained }) {
-    const clampedDrag = Math.max(0, Math.min(1, Number(dragRatio) || 0));
-    const isFullyExtended = !!lineState.isFullyExtended;
-    const dragPower = physics.drag?.tensionGrowthPower ?? 1.6;
-
-    let lineConstraintRatio = 0;
-    if (isFullyExtended || constrained) {
-      lineConstraintRatio = 1;
-    } else if (hasReel) {
-      lineConstraintRatio = Math.pow(clampedDrag, dragPower);
-    } else {
-      lineConstraintRatio = lineState.lineExtensionRatio;
-    }
-
-    const fishOppositionBonus = forceData.opposition > 0
-      ? 1 + Math.max(0, forceData.opposition) * 0.35
-      : 1;
-    const fishComponentKg =
-      (forceData.staticFishForceKg + forceData.dynamicFishForceKg * fishOppositionBonus) *
-      lineConstraintRatio;
-
-    const pullComponentKg = isPullMode
-      ? forceData.player.effectivePullKg * (hasReel ? clampedDrag : 1)
+    const fishForceKg = Math.max(0, Number(forceData.totalFishForceKg) || 0);
+    const pullCapacityKg = isPullMode
+      ? Math.max(0, Number(forceData.player.pullCapacityKg) || 0)
       : 0;
 
-    return Math.max(0, fishComponentKg + pullComponentKg);
+    // Line tension is the currently resisted load, not fish + player added together.
+    // Example: fish pulls 5kg, drag limit is 10kg => tension is 5kg, not 15kg.
+    const rawDemandKg = Math.max(fishForceKg, pullCapacityKg);
+
+    if (!hasReel) {
+      const lineConstraintRatio = lineState.isFullyExtended || constrained
+        ? 1
+        : Math.max(lineState.lineExtensionRatio || 0, isPullMode ? 1 : 0);
+      return rawDemandKg * lineConstraintRatio;
+    }
+
+    const dragLimitKg = Math.max(0, Number(forceData.player.dragLimitKg) || 0);
+    const reelCanGiveLine = (lineState.remainingMeters || 0) > 0.001;
+
+    // While the reel can give line, drag is a hard kg limiter:
+    // drag 10% of 10kg => tension cannot exceed 1kg; all excess force spools line.
+    if (reelCanGiveLine && !lineState.isFullyExtended && !constrained) {
+      return Math.min(rawDemandKg, dragLimitKg);
+    }
+
+    // If the line is fully out, the reel can no longer compensate. Now the rig takes
+    // the actual demand and can break even with low drag.
+    return rawDemandKg;
   }
 }

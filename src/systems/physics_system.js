@@ -909,10 +909,12 @@ class StaminaController {
     const angleStressRatio = this.#clamp01(args.angleStressRatio);
     const staminaPressureRatio = this.#clamp01(args.staminaPressureRatio);
     const isLineFullyExtended = !!args.isLineFullyExtended;
-    const effectivePressureRatio = playerPowerIsPulling
-      ? Math.max(staminaPressureRatio, isLineFullyExtended ? 1 : 0)
-      : 0;
-    const hasEffectivePressure = effectivePressureRatio > 0.01 && tension > 0.25;
+    const effectivePressureRatio = Math.max(
+      staminaPressureRatio,
+      playerPowerIsPulling && isLineFullyExtended ? 1 : 0,
+    );
+    const hasEffectivePressure =
+      playerPowerIsPulling && effectivePressureRatio > 0.001;
 
     if (this.#condition.phase === "exhaustion") {
       if (
@@ -981,7 +983,7 @@ class StaminaController {
         const pointsPerSec =
           this.#condition.maxPoints / effectiveExhaustionDurationSec;
 
-        const damage = pointsPerSec * timeScale;
+        const damage = pointsPerSec * timeScale * effectivePressureRatio;
 
         // Важливо:
         // multiplier прискорює не тільки червону шкалу,
@@ -990,6 +992,7 @@ class StaminaController {
         const debuff =
           this.#mechanicsConfig.basePowerDropPerSec *
           exhaustionMultiplier *
+          effectivePressureRatio *
           timeScale;
 
         if (this.#condition.currentExhaustion <= damage) {
@@ -1051,13 +1054,11 @@ class StaminaController {
           1 - tension / this.#mechanicsConfig.optimalMax,
         );
 
-        const pressureMultiplier = Math.max(0.05, effectivePressureRatio);
-
         const damage =
           this.#mechanicsConfig.baseDepletionRate *
           efficiency *
           Math.max(0.001, this.#playerBasePower) *
-          pressureMultiplier *
+          effectivePressureRatio *
           timeScale *
           (1 - angleStressRatio);
 

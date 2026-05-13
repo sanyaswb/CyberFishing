@@ -643,15 +643,15 @@ const CONFIG = {
 
   locations: {
     debugVisuals: true, // Головний вимикач (якщо false - взагалі нічого не малюється)
-    debugZones: false, // Показувати кольорові квадрати (зелені, червоні)
-    debugGrid: false, // Показувати лінії сітки
+    debugZones: true, // Показувати кольорові квадрати (зелені, червоні)
+    debugGrid: true, // Показувати лінії сітки
     debugDepthText: false, // Показувати цифри глибини
     enableCastable: true, // Зони, де можна закидати вудку
     enableCollisions: true, // Колізії з землею (червоні зони) - забороняють закидати.
     enableSnags: true, // Динамічні зони (наприклад, косяк риби)
     enableDynamicZones: false, // Вимикає всі динамічні зони (косяки риби, рухомі перешкоди тощо)
     showChumZones: true,
-    showCatchZone: false, // Відображення синьої зони
+    showCatchZone: true, // Відображення синьої зони
     showNetZone: true, // Відображення зеленої зони
     showAimingZone: true, // Відображення зони закидання
 
@@ -759,7 +759,7 @@ const CONFIG = {
       {
         id: "crucian_stalker",
         name: "Карась-сталкер",
-        baseChance: 1.02,
+        baseChance: 0.02,
         maxHookSize: 6,
         trophyWeightKg: 1.0,
         visual: {
@@ -815,7 +815,8 @@ const CONFIG = {
         },
 
         physics: {
-          basePower: 1.1,
+          basePower: 1.0,
+          levelPowerMultiplier: [1.1, 1.3, 1.5, 1.7, 1.9, 2.5],
           baseStamina: 1000,
           baseSpeedMetersPerSec: 2.0,
           speedForceMultiplier: 0.35,
@@ -1188,7 +1189,7 @@ const CONFIG = {
       // 0.5 = у 2 рази повільніше
       // 1.0 = стандартно
       // 2.0 = у 2 рази швидше
-      exhaustionDepletionMultiplier: 0.1,
+      exhaustionDepletionMultiplier: 0.5,
 
       // Керує тим, як швидко реально падає сила/опір риби в кг під час exhaustion.
       basePowerDropPerSec: 0.01,
@@ -1219,17 +1220,6 @@ const CONFIG = {
     maxDtMs: 50,
     waterResistanceKgPerKgPerMps: 0.08,
     currentResistanceMultiplier: 1.0,
-
-    // Active fish-state force tuning. These values make idle/rest/swim/dash
-    // visibly change kg tension without returning to old level/basePower physics.
-    fishStateMovementForceMultiplier: 0.35,
-    fishVelocityForceMultiplier: 1.0,
-    fishAwayIntentBase: 0.25,
-    fishAwayIntentPowerScale: 0.45,
-    fishLateralIntentMultiplier: 0.9,
-    fishMinStaminaActivityMultiplier: 0.8,
-    fishExhaustedSpeedRatio: 0.6,
-
     forceKgToPxPerSec2: 75,
     rodAnglePenalty: {
       enabled: true,
@@ -1251,6 +1241,10 @@ const CONFIG = {
       yEscapeSpeedAtFullDrag: 0.02,
       tensionGrowthPower: 1.6,
       autoRetrieveEnabled: true,
+
+      // Коли фрикціон тримає силу риби, котушка не повинна автоматично здавати ліску.
+      // 0 = без мікро-прослизання; 0.02 можна поставити, якщо хочеш легкий creep.
+      creepReleaseRatio: 0,
 
       // Фрикціон тепер змінюється жестом так само, як сила закидання:
       // вертикальне протягування пальця/миші заповнює шкалу плавно, без кроків.

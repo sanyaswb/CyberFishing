@@ -600,10 +600,8 @@ class FightService {
       playerPowerIsPulling: input.isPulling && !isRetrieveOnly,
       dt,
       angleStressRatio: fightDebug.angleStressRatio || 0,
-      staminaPressureRatio:
-        forceData.staminaPressureRatio ?? fightDebug.staminaPressureRatio ?? 0,
-      isLineFullyExtended:
-        forceData.isLineFullyExtended ?? fightDebug.isLineFullyExtended ?? false,
+      staminaPressureRatio: fightDebug.staminaPressureRatio || 0,
+      isLineFullyExtended: !!fightDebug.isLineFullyExtended,
     });
     const resolution = this.#catchResolver.resolveAutoCatch({
       floatEntity,

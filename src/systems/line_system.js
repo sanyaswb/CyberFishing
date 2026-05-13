@@ -84,7 +84,7 @@ class LineSystem {
     return this.getState();
   }
 
-  releaseForDistance(dragRatio) {
+  releaseForDistance(control = 0) {
     this.#lastReleasedMeters = 0;
     if (!this.#hasReel || this.#remainingMeters <= 0) {
       this.#refreshState();
@@ -97,13 +97,30 @@ class LineSystem {
       return 0;
     }
 
-    const cfg = this.#config.drag || {};
-    const minReleaseAtFullDrag = cfg.yEscapeSpeedAtFullDrag ?? 0.02;
-    const clampedDrag = this.#clamp01(dragRatio);
+    let releaseRatio = 0;
+    if (typeof control === "object" && control !== null) {
+      const dragRatio = this.#clamp01(control.dragRatio);
+      const shouldSlip = !!control.shouldSlip;
+      const slipReleaseRatio = this.#clamp01(
+        control.slipReleaseRatio ?? (shouldSlip ? 1 : 0),
+      );
+      const creepRatio = this.#clamp01(control.creepReleaseRatio ?? 0);
 
-    // drag 0% => reel gives all demanded line; drag 100% => reel gives only a tiny slip.
-    const releaseRatio = 1 - clampedDrag * (1 - minReleaseAtFullDrag);
-    const released = Math.min(this.#remainingMeters, excess * releaseRatio);
+      // Якщо сила риби вища за поточний ліміт фрикціону — котушка здає ліску,
+      // щоб натяг не перевищував dragLimitKg. Якщо фрикціон тримає рибу — ліска не здається.
+      releaseRatio = shouldSlip ? slipReleaseRatio : creepRatio;
+
+      // Абсолютно відкритий фрикціон завжди здає всю потрібну ліску.
+      if (dragRatio <= 0.0001) releaseRatio = 1;
+    } else {
+      // Backward compatibility for older calls that only pass dragRatio.
+      const cfg = this.#config.drag || {};
+      const minReleaseAtFullDrag = cfg.yEscapeSpeedAtFullDrag ?? 0.02;
+      const clampedDrag = this.#clamp01(control);
+      releaseRatio = 1 - clampedDrag * (1 - minReleaseAtFullDrag);
+    }
+
+    const released = Math.min(this.#remainingMeters, excess * this.#clamp01(releaseRatio));
     this.#releasedMeters += released;
     this.#lastReleasedMeters = released;
     this.#refreshState();
