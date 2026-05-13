@@ -1452,7 +1452,11 @@ class InventoryUI {
             targetRejectionReason = validation.isValid
               ? null
               : validation.reason;
-            if (isTarget) slotDiv.classList.add("highlight-target");
+            if (isTarget) {
+              slotDiv.classList.add("highlight-target");
+            } else {
+              slotDiv.classList.add("highlight-rejected");
+            }
           }
         }
       }
@@ -1530,6 +1534,7 @@ class InventoryUI {
             "buildName",
             "displayStats",
             "engineStats",
+            "requiresTag",
           ].includes(key)
         )
           continue;
@@ -1538,6 +1543,7 @@ class InventoryUI {
           html += `<div class="inv-tooltip-stat" style="color: #aaa;"><b>${key}:</b> <span style="color: #fff;">${val}</span></div>`;
         }
       }
+      html += this.#buildCompatibilityTooltip(item);
 
       this.#tooltipNode.innerHTML = html;
       this.#tooltipNode.style.display = "block";
@@ -1587,6 +1593,55 @@ class InventoryUI {
         this.refreshUI();
       }
     });
+  }
+
+  #buildCompatibilityTooltip(item) {
+    const compatibility = this.#inventoryManager.getCompatibilityInfo(item);
+    if (!compatibility?.hasCompatibility) return "";
+
+    const requiredLabel = this.#getRequiredTagLabel(compatibility.requiredTag);
+    const rodLabel = this.#getRodTypeLabel(
+      compatibility.rodType,
+      compatibility.rodHasReel,
+    );
+    const statusClass = compatibility.isCompatible
+      ? "compatible"
+      : "incompatible";
+    const statusText = compatibility.isCompatible ? "Сумісно" : "Не сумісно";
+
+    return `
+      <div class="inv-tooltip-section">
+        <div class="inv-tooltip-section-title">Сумісність</div>
+        <div class="inv-tooltip-stat"><b>Для вудки:</b> <span>${requiredLabel}</span></div>
+        <div class="inv-tooltip-stat"><b>Поточна:</b> <span>${rodLabel}</span></div>
+        <div class="inv-tooltip-compat ${statusClass}">${statusText}</div>
+      </div>
+    `;
+  }
+
+  #getRequiredTagLabel(tag) {
+    const labels = {
+      bait: "Гачок або фідерна оснастка",
+      chum_mix: "Фідер / підгодовування",
+      feeder_rig: "Фідер",
+      float: "Поплавкова: болонська або махова",
+      hook: "Поплавкова / фідерна",
+      lure: "Спінінг",
+      reel: "Вудка з котушкою",
+      sinker: "Поплавкова / донна",
+    };
+    return labels[tag] || tag || "Не вказано";
+  }
+
+  #getRodTypeLabel(type, hasReel) {
+    const labels = {
+      feeder: "Фідер",
+      spinning: "Спінінг",
+    };
+    if (type === "float" || type === "pole") {
+      return hasReel ? "Болонська" : "Махова";
+    }
+    return labels[type] || "Не споряджена";
   }
 
   #renderBuildControls() {
@@ -1870,6 +1925,8 @@ class InventoryUI {
             );
             if (validation.isValid) {
               slotDom.classList.add("highlight-compatible");
+            } else {
+              slotDom.classList.add("highlight-rejected");
             }
           }
         }

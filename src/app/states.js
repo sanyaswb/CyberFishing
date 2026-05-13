@@ -275,6 +275,8 @@ class StateDepsFactory {
         panViewport: this.#root.panViewport,
         showMissingRodInventoryWarning:
           this.#root.showMissingRodInventoryWarning,
+        showMissingReelInventoryWarning:
+          this.#root.showMissingReelInventoryWarning,
       },
       render: {
         drawFishingElements: this.#root.drawFishingElements,
@@ -439,6 +441,7 @@ class ScoutingState extends GameState {
   #castAim;
   #pendingCast = null;
   #missingRodWarnedForPress = false;
+  #missingReelWarnedForPress = false;
   #isUiDimmed = false;
 
   /** @param {ScoutingStateDeps} deps */
@@ -459,6 +462,7 @@ class ScoutingState extends GameState {
     this.deps.ui.updateNetButtonState(hasNet, false);
     this.#pendingCast = null;
     this.#missingRodWarnedForPress = false;
+    this.#missingReelWarnedForPress = false;
     this.#castAim.reset();
     this.#setUiDimmed(false);
   }
@@ -468,6 +472,7 @@ class ScoutingState extends GameState {
     this.#castAim.reset();
     this.#pendingCast = null;
     this.#missingRodWarnedForPress = false;
+    this.#missingReelWarnedForPress = false;
     this.#setUiDimmed(false);
   }
 
@@ -475,6 +480,16 @@ class ScoutingState extends GameState {
     if (this.#usePowerCasting()) return;
 
     if (input.clickPos) {
+      const eq = this.deps.inventory.getEquipped();
+      if (!this.#canStartRodCast(eq)) {
+        if (!eq?.rod) {
+          this.deps.commands.showMissingRodInventoryWarning?.();
+        } else {
+          this.deps.commands.showMissingReelInventoryWarning?.();
+        }
+        return;
+      }
+
       const vPos = this.deps.projector.screenToVirtual(
         input.clickPos.x,
         input.clickPos.y,
@@ -491,7 +506,6 @@ class ScoutingState extends GameState {
 
       let isInside = true;
       if (!canCastAnywhere) {
-        const eq = this.deps.inventory.getEquipped();
         const maxDist = this.deps.rules.equipment.getMaxCastDistance(eq);
         if (maxDist !== Infinity) {
           isInside = vPos.y >= bounds.bottom - maxDist;
@@ -508,7 +522,6 @@ class ScoutingState extends GameState {
 
   update(dt, bounds, context) {
     this.deps.projector.focusOnVirtualPos(bounds.bottom - 200, dt, 0.03);
-    this.#setUiDimmed(!!context?.input?.pointerDown);
 
     if (!this.deps.isAimingChum() && this.#usePowerCasting()) {
       const didCast = this.#updatePowerCasting(dt, bounds, context?.input);
@@ -598,20 +611,31 @@ class ScoutingState extends GameState {
   #updatePowerCasting(dt, bounds, input) {
     if (!input?.pointerDown) {
       this.#missingRodWarnedForPress = false;
+      this.#missingReelWarnedForPress = false;
     }
 
     const eq = this.deps.inventory.getEquipped();
-    if (input?.pointerDown && !eq?.rod) {
+    if (input?.pointerDown && !this.#canStartRodCast(eq)) {
       this.#castAim.reset();
       this.#pendingCast = null;
-      if (!this.#missingRodWarnedForPress) {
+      this.#setUiDimmed(false);
+      if (!eq?.rod && !this.#missingRodWarnedForPress) {
         this.deps.commands.showMissingRodInventoryWarning?.();
         this.#missingRodWarnedForPress = true;
+      } else if (
+        eq?.rod &&
+        this.deps.rules.equipment.requiresReel(eq) &&
+        !eq?.reel &&
+        !this.#missingReelWarnedForPress
+      ) {
+        this.deps.commands.showMissingReelInventoryWarning?.();
+        this.#missingReelWarnedForPress = true;
       }
       return false;
     }
 
     if (this.#pendingCast) {
+      this.#setUiDimmed(false);
       this.#pendingCast.timer -= dt;
       if (this.#pendingCast.timer <= 0) {
         this.#commitPendingCast();
@@ -621,7 +645,9 @@ class ScoutingState extends GameState {
     }
 
     const release = this.#castAim.update(input, bounds, dt, { mode: "rod" });
+    this.#setUiDimmed(!!this.#castAim.getVisualState());
     if (!release) return false;
+    this.#setUiDimmed(false);
 
     if (this.#isCancelledRelease(release)) {
       this.#castAim.reset();
@@ -685,6 +711,11 @@ class ScoutingState extends GameState {
 
   #usePowerCasting() {
     return this.deps.config.casting?.enabled !== false;
+  }
+
+  #canStartRodCast(eq) {
+    if (!eq?.rod) return false;
+    return !this.deps.rules.equipment.requiresReel(eq) || !!eq.reel;
   }
 
   #isCancelledRelease(release) {

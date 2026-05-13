@@ -617,7 +617,7 @@ const CONFIG = {
     },
 
     godMode: {
-      enabled: true, // Гoловний рубильник (якщо false, інші ігноруються)
+      enabled: false, // Гoловний рубильник (якщо false, інші ігноруються)
       infiniteResources: true, // 1. Нескінченна наживка/снасті
       noEquipmentLoss: true,
       noHookEscape: true, // 2. Риба ніколи не зривається з гачка

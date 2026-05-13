@@ -261,6 +261,7 @@ class GameApplication {
   #fightService;
   #viewportFacade;
   #debugFacade;
+  #equipmentRules;
   #baitRules;
   #fishingFacade;
   #castRodScreenX = null;
@@ -358,6 +359,7 @@ class GameApplication {
     this.#fishingController = runtime.fishing;
     this.#net = runtime.net;
     this.#castManager = runtime.castManager;
+    this.#equipmentRules = runtime.equipmentRules;
     this.#baitRules = runtime.baitRules;
     this.#depthUI = runtime.depthUI;
     this.#timeUI = runtime.timeUI;
@@ -397,6 +399,8 @@ class GameApplication {
       markInvalidCast: (pos) => this.markInvalidCast(pos),
       showMissingRodInventoryWarning: () =>
         this.#showMissingRodInventoryWarning(),
+      showMissingReelInventoryWarning: () =>
+        this.#showMissingReelInventoryWarning(),
       setInvalidCastMarker: (marker) => {
         this.invalidCastMarker = marker;
       },
@@ -804,6 +808,8 @@ class GameApplication {
     }
     if (result?.reason === "missing_rod") {
       this.#showMissingRodInventoryWarning();
+    } else if (result?.reason === "missing_reel") {
+      this.#showMissingReelInventoryWarning();
     }
     return result;
   }
@@ -894,7 +900,16 @@ class GameApplication {
 
   #showMissingRodInventoryWarning() {
     this.#inventoryUI?.open?.();
-    this.#inventoryUI?.showWarning?.("Equip a rod before casting.");
+    this.#inventoryUI?.showWarning?.("Спочатку споряди вудку для закидання.");
+  }
+
+  #showMissingReelInventoryWarning() {
+    const eq = this.#inventory?.getEquipped?.();
+    const rodName = this.#equipmentRules?.getRodDisplayName?.(eq) || "Ця";
+    this.#inventoryUI?.open?.();
+    this.#inventoryUI?.showWarning?.(
+      `${rodName}: потрібна котушка з ліскою для закидання.`,
+    );
   }
 
   start() {

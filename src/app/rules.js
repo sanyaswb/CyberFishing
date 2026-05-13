@@ -8,6 +8,28 @@ class EquipmentRules {
     return equipment?.rod?.type === "feeder";
   }
 
+  getRodKind(equipment) {
+    const rod = equipment?.rod;
+    if (!rod) return "none";
+    if (rod.type === "spinning") return "spinning";
+    if (rod.type === "feeder") return "feeder";
+    if (rod.type === "float" || rod.type === "pole") {
+      return this.requiresReel(equipment) ? "bolognese" : "pole";
+    }
+    return rod.type || "unknown";
+  }
+
+  getRodDisplayName(equipment) {
+    const labels = {
+      bolognese: "Болонська",
+      feeder: "Фідер",
+      none: "Не споряджена",
+      pole: "Махова",
+      spinning: "Спінінг",
+    };
+    return labels[this.getRodKind(equipment)] || "Невідомий тип";
+  }
+
   requiresReel(equipment) {
     const rod = equipment?.rod;
     if (!rod) return false;
@@ -160,12 +182,16 @@ class BoatRules {
 }
 
 class PlayerCastRules {
-  constructor(boatRules = new BoatRules()) {
+  constructor(boatRules = new BoatRules(), equipmentRules = new EquipmentRules()) {
     this.boatRules = boatRules;
+    this.equipmentRules = equipmentRules;
   }
 
   canPlayerCast(equipment, activeBoat) {
     if (!equipment?.rod) return false;
+    if (this.equipmentRules.requiresReel(equipment) && !equipment.reel) {
+      return false;
+    }
     return this.boatRules.canPlayerCastWithBoat(
       activeBoat,
       equipment?.delivery || {},

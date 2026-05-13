@@ -13,17 +13,13 @@ canvas {
 }
 
 body.scouting-pointer-hold .ui-fade-target,
-body.scouting-pointer-hold .inv-backpack-btn,
-body.scouting-pointer-hold .inv-modal,
-body.scouting-pointer-hold #ds-container {
+body.scouting-pointer-hold .inv-backpack-btn {
   opacity: 0.18 !important;
   transition: opacity 180ms ease-out !important;
 }
 
 body.scouting-pointer-release .ui-fade-target,
-body.scouting-pointer-release .inv-backpack-btn,
-body.scouting-pointer-release .inv-modal,
-body.scouting-pointer-release #ds-container {
+body.scouting-pointer-release .inv-backpack-btn {
   opacity: 1 !important;
   transition: none !important;
 }
@@ -373,6 +369,34 @@ input:checked + .slider:before {
   color: #73c2fb; /* Можна окремо виділити назву параметра (напр. синім) */
 }
 
+.inv-tooltip-section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(115, 194, 251, 0.35);
+}
+
+.inv-tooltip-section-title {
+  margin-bottom: 4px;
+  color: #73c2fb;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.inv-tooltip-compat {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.inv-tooltip-compat.compatible {
+  color: #00ff80;
+}
+
+.inv-tooltip-compat.incompatible {
+  color: #ff5555;
+}
+
 .inv-slot.selected {
   border-color: #00ff80;
   box-shadow: 0 0 15px rgba(0, 255, 128, 0.5);
@@ -386,6 +410,13 @@ input:checked + .slider:before {
   box-shadow: inset 0 0 10px rgba(255, 170, 0, 0.5);
   cursor: pointer;
   animation: pulse-border 1.5s infinite;
+}
+
+.inv-slot.highlight-rejected {
+  border-color: #ff4444;
+  background: rgba(255, 68, 68, 0.12);
+  box-shadow: inset 0 0 10px rgba(255, 68, 68, 0.5);
+  cursor: not-allowed;
 }
 
 @keyframes pulse-border {

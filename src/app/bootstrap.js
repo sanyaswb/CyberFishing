@@ -78,7 +78,7 @@ class GameCompositionRoot {
     const biteRules = new BiteRules(baitRules);
     const chumRules = new ChumRules();
     const boatRules = new BoatRules();
-    const playerCastRules = new PlayerCastRules(boatRules);
+    const playerCastRules = new PlayerCastRules(boatRules, equipmentRules);
     const world = new GameWorld({
       map: systems.map,
       env: systems.env,
@@ -257,6 +257,7 @@ class GameCompositionRoot {
       castLine: appPorts.castLine,
       markInvalidCast: appPorts.markInvalidCast,
       showMissingRodInventoryWarning: appPorts.showMissingRodInventoryWarning,
+      showMissingReelInventoryWarning: appPorts.showMissingReelInventoryWarning,
       setInvalidCastMarker: appPorts.setInvalidCastMarker,
       panViewport: appPorts.panViewport,
       drawFishingElements: appPorts.drawFishingElements,

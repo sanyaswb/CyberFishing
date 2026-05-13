@@ -271,6 +271,33 @@ class EquipmentValidator {
     return { isValid: true };
   }
 
+  static getCompatibilityInfo(itemData, equippedHydrated) {
+    const reqTag = itemData?.requiresTag || itemData?.engineStats?.requiresTag;
+    if (!reqTag) {
+      return {
+        hasCompatibility: false,
+        isCompatible: true,
+        requiredTag: null,
+        rodType: equippedHydrated?.rod?.type || null,
+        rodHasReel: EquipmentValidator.#rodRequiresReel(equippedHydrated?.rod),
+      };
+    }
+
+    const availableCaps = this.#getAvailableCapabilities(equippedHydrated || {});
+    return {
+      hasCompatibility: true,
+      isCompatible: availableCaps.has(reqTag),
+      requiredTag: reqTag,
+      rodType: equippedHydrated?.rod?.type || null,
+      rodHasReel: EquipmentValidator.#rodRequiresReel(equippedHydrated?.rod),
+    };
+  }
+
+  static #rodRequiresReel(rod) {
+    if (!rod) return null;
+    return rod.hasReel ?? rod.engineStats?.hasReel ?? rod.type !== "pole";
+  }
+
   static #getAvailableCapabilities(equippedHydrated) {
     const caps = new Set();
     const parts = [
@@ -762,6 +789,10 @@ class InventoryManager {
 
   validateEquip(itemData) {
     return EquipmentValidator.validate(itemData, this.getEquipped());
+  }
+
+  getCompatibilityInfo(itemData) {
+    return EquipmentValidator.getCompatibilityInfo(itemData, this.getEquipped());
   }
 
   validateEquipToSlot(slotPath, itemData) {
