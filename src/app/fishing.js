@@ -60,11 +60,13 @@ class FishingController {
     outIds.length = 0;
     outTypes.length = 0;
 
+    const hooks = eq?.hooks || [];
     const baits = eq?.baits || [];
     const eaten = eatenBaits || [];
     for (let i = 0; i < baits.length; i++) {
+      const hook = hooks[i];
       const bait = baits[i];
-      if (!bait) continue;
+      if (!hook || !bait) continue;
 
       let isEaten = false;
       for (let j = 0; j < eaten.length; j++) {
@@ -119,9 +121,10 @@ class FishingController {
     if (!stepInfo?.isAction) return false;
 
     let consumedBaitId = null;
+    const hooks = eq?.hooks || [];
     const baits = eq?.baits || [];
     for (let i = 0; i < baits.length; i++) {
-      if (baits[i] && baits[i].type === "bait") {
+      if (hooks[i] && baits[i] && baits[i].type === "bait") {
         consumedBaitId = baits[i].instanceId;
         break;
       }

@@ -11,7 +11,10 @@ node_modules
 # Generated files
 backstop_data
 dist
-utils
+utils/*
+!utils/
+!utils/dev-server.js
+!utils/check-js.js
 .cache
 .parcel-cache+
 package-lock.json

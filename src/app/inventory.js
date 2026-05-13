@@ -18,9 +18,10 @@ class EquipmentService {
   }
 
   consumeFirstBait(eq = this.getEquipped()) {
+    const hooks = eq?.hooks || [];
     const baits = eq?.baits || [];
     for (let i = 0; i < baits.length; i++) {
-      if (baits[i]?.type === "bait") {
+      if (hooks[i] && baits[i]?.type === "bait") {
         return this.#inventory.consumeEquipped(`baits_${i}`, 1, false);
       }
     }

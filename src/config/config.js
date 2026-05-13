@@ -567,6 +567,8 @@ const CONFIG = {
   casting: {
     enabled: true,
     powerSwipePx: 200,
+    powerDeadzoneRatio: 0.25,
+    powerAnchorReturnPxPerSecond: 1200,
     cancelPowerThreshold: 0,
     edgeScrollCenterRatio: 0.7,
     edgeScrollMaxPxPerSecond: 900,

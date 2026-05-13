@@ -1,6 +1,10 @@
 {
   "name": "name",
   "source": "index.html",
+  "scripts": {
+    "dev": "node utils/dev-server.js",
+    "check:js": "node utils/check-js.js"
+  },
   "dependencies": {
     "glob": "^13.0.6",
     "qrcode-terminal": "^0.12.0"

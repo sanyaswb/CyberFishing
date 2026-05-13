@@ -439,6 +439,7 @@ class ScoutingState extends GameState {
   #castAim;
   #pendingCast = null;
   #missingRodWarnedForPress = false;
+  #isUiDimmed = false;
 
   /** @param {ScoutingStateDeps} deps */
   constructor(deps) {
@@ -459,6 +460,7 @@ class ScoutingState extends GameState {
     this.#pendingCast = null;
     this.#missingRodWarnedForPress = false;
     this.#castAim.reset();
+    this.#setUiDimmed(false);
   }
 
   exit() {
@@ -466,6 +468,7 @@ class ScoutingState extends GameState {
     this.#castAim.reset();
     this.#pendingCast = null;
     this.#missingRodWarnedForPress = false;
+    this.#setUiDimmed(false);
   }
 
   handleInput(input) {
@@ -505,6 +508,7 @@ class ScoutingState extends GameState {
 
   update(dt, bounds, context) {
     this.deps.projector.focusOnVirtualPos(bounds.bottom - 200, dt, 0.03);
+    this.#setUiDimmed(!!context?.input?.pointerDown);
 
     if (!this.deps.isAimingChum() && this.#usePowerCasting()) {
       const didCast = this.#updatePowerCasting(dt, bounds, context?.input);
@@ -686,6 +690,23 @@ class ScoutingState extends GameState {
   #isCancelledRelease(release) {
     const threshold = this.deps.config.casting?.cancelPowerThreshold ?? 0;
     return release.power <= threshold;
+  }
+
+  #setUiDimmed(isDimmed) {
+    if (this.#isUiDimmed === isDimmed) return;
+
+    this.#isUiDimmed = isDimmed;
+    document.body.classList.toggle("scouting-pointer-hold", isDimmed);
+
+    if (isDimmed) {
+      document.body.classList.remove("scouting-pointer-release");
+      return;
+    }
+
+    document.body.classList.add("scouting-pointer-release");
+    requestAnimationFrame(() => {
+      document.body.classList.remove("scouting-pointer-release");
+    });
   }
 
   #drawAccuracyPreview(renderer, bounds, aim, visual) {

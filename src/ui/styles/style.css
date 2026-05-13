@@ -12,6 +12,22 @@ canvas {
   background-color: #0f171e;
 }
 
+body.scouting-pointer-hold .ui-fade-target,
+body.scouting-pointer-hold .inv-backpack-btn,
+body.scouting-pointer-hold .inv-modal,
+body.scouting-pointer-hold #ds-container {
+  opacity: 0.18 !important;
+  transition: opacity 180ms ease-out !important;
+}
+
+body.scouting-pointer-release .ui-fade-target,
+body.scouting-pointer-release .inv-backpack-btn,
+body.scouting-pointer-release .inv-modal,
+body.scouting-pointer-release #ds-container {
+  opacity: 1 !important;
+  transition: none !important;
+}
+
 .devtools-panel {
   position: fixed;
   top: 0;

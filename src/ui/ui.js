@@ -327,6 +327,7 @@ class UIManager {
 
   #initFullscreenBtn() {
     this.#fullscreenBtn = document.createElement("button");
+    this.#fullscreenBtn.className = "ui-fade-target";
     this.#fullscreenBtn.innerHTML = "⛶";
 
     Object.assign(this.#fullscreenBtn.style, {
@@ -380,6 +381,7 @@ class UIManager {
 
   #initNetBtn() {
     this.#netBtn = document.createElement("button");
+    this.#netBtn.className = "ui-fade-target";
     this.#netBtn.innerHTML = "🕸️";
 
     Object.assign(this.#netBtn.style, {
@@ -456,6 +458,7 @@ class UIManager {
 
   #initContinueBtn() {
     this.#continueBtn = document.createElement("button");
+    this.#continueBtn.className = "ui-fade-target";
     this.#continueBtn.innerHTML = "ПРОДОВЖИТИ";
 
     Object.assign(this.#continueBtn.style, {
@@ -707,6 +710,7 @@ class TimeDisplayUI {
 class ChumUI {
   constructor(onClickCallback) {
     this.button = document.createElement("button");
+    this.button.className = "ui-fade-target";
     this.button.innerText = "🍞";
 
     this.currentState = "idle";
@@ -1144,7 +1148,14 @@ class InventoryUI {
     }, 5000);
   }
 
+  #hideTooltip() {
+    if (!this.#tooltipNode) return;
+    this.#tooltipNode.style.display = "none";
+    this.#tooltipNode.innerHTML = "";
+  }
+
   refreshUI() {
+    this.#hideTooltip();
     this.#powerValueNode.innerText = this.#inventoryManager
       .getTotalPower()
       .toFixed(1);
@@ -1419,6 +1430,7 @@ class InventoryUI {
       slotDiv.title = label;
 
       let isTarget = false;
+      let targetRejectionReason = null;
       if (this.#selectedInstanceId && !this.#viewingBuildId) {
         const selectedItem = this.#inventoryManager._hydrateInstance(
           this.#selectedInstanceId,
@@ -1432,8 +1444,15 @@ class InventoryUI {
             config.acceptTypes &&
             config.acceptTypes.includes(selectedItem.type)
           ) {
-            isTarget = true;
-            slotDiv.classList.add("highlight-target");
+            const validation = this.#inventoryManager.validateEquipToSlot(
+              slotId,
+              selectedItem,
+            );
+            isTarget = validation.isValid;
+            targetRejectionReason = validation.isValid
+              ? null
+              : validation.reason;
+            if (isTarget) slotDiv.classList.add("highlight-target");
           }
         }
       }
@@ -1452,12 +1471,20 @@ class InventoryUI {
           return;
         }
 
+        if (targetRejectionReason) {
+          this.showWarning(targetRejectionReason);
+          return;
+        }
+
         if (isTarget) {
           // Залишаємо нашу недавню перевірку EquipmentValidator
           const selectedItem = this.#inventoryManager._hydrateInstance(
             this.#selectedInstanceId,
           );
-          const validation = this.#inventoryManager.validateEquip(selectedItem);
+          const validation = this.#inventoryManager.validateEquipToSlot(
+            slotId,
+            selectedItem,
+          );
 
           if (!validation.isValid) {
             this.showWarning(validation.reason);
@@ -1525,6 +1552,8 @@ class InventoryUI {
     });
 
     element.addEventListener("click", () => {
+      this.#hideTooltip();
+
       if (this.#inventoryManager.isLocked) {
         this.showWarning("Витягніть снасть з води, щоб змінити екіпірування!");
         return;
@@ -1835,7 +1864,10 @@ class InventoryUI {
             config.acceptTypes.includes(itemData.type)
           ) {
             // Потім глибока перевірка валідатором (на наявність вудки/гачка)
-            const validation = this.#inventoryManager.validateEquip(itemData);
+            const validation = this.#inventoryManager.validateEquipToSlot(
+              this.#highlightedSlotId,
+              itemData,
+            );
             if (validation.isValid) {
               slotDom.classList.add("highlight-compatible");
             }

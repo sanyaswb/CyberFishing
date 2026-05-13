@@ -7,6 +7,7 @@ class CastPowerAim {
   #active = false;
   #startX = 0;
   #startY = 0;
+  #initialStartY = 0;
   #screenX = 0;
   #screenY = 0;
   #power = 0;
@@ -58,6 +59,7 @@ class CastPowerAim {
       if (!this.#active) {
         this.#startX = input.pointerStart.x;
         this.#startY = input.pointerStart.y;
+        this.#initialStartY = input.pointerStart.y;
         this.#screenX = this.#clampScreenX(input.pointerStart.x);
         this.#screenY = input.pointerStart.y;
         this.#active = true;
@@ -65,9 +67,7 @@ class CastPowerAim {
 
       this.#screenX = this.#clampScreenX(input.pointerCurrent.x);
       this.#screenY = input.pointerCurrent.y;
-      if (this.#screenY < this.#startY) {
-        this.#startY = this.#screenY;
-      }
+      this.#updateStartY(this.#screenY, dt);
       this.#power = this.#calculatePower(this.#screenY);
       this.#applyEdgeScroll(this.#screenX, dt);
       this.#updateVisual(mode);
@@ -77,9 +77,7 @@ class CastPowerAim {
     if (this.#active && input?.pointerReleased) {
       this.#screenX = this.#clampScreenX(input.pointerRelease.x);
       this.#screenY = input.pointerRelease.y;
-      if (this.#screenY < this.#startY) {
-        this.#startY = this.#screenY;
-      }
+      this.#updateStartY(this.#screenY, 0);
       this.#power = this.#calculatePower(this.#screenY);
 
       this.#release.active = true;
@@ -266,7 +264,44 @@ class CastPowerAim {
 
   #calculatePower(screenY) {
     const swipePx = Math.max(1, this.#cfg().powerSwipePx ?? 200);
-    return this.#clamp((screenY - this.#startY) / swipePx, 0, 1);
+    const deadzonePx = this.#resolvePowerDeadzonePx(swipePx);
+    const dragPx = screenY - this.#startY;
+    if (dragPx <= deadzonePx) return 0;
+    return this.#clamp((dragPx - deadzonePx) / swipePx, 0, 1);
+  }
+
+  #updateStartY(screenY, dt) {
+    if (screenY < this.#startY) {
+      this.#startY = screenY;
+      return;
+    }
+
+    if (this.#startY >= this.#initialStartY) return;
+
+    const swipePx = Math.max(1, this.#cfg().powerSwipePx ?? 200);
+    const deadzonePx = this.#resolvePowerDeadzonePx(swipePx);
+    const fullPowerY = this.#startY + deadzonePx + swipePx;
+    if (screenY <= fullPowerY) return;
+
+    const overshootPx = screenY - fullPowerY;
+    const targetY = Math.min(this.#initialStartY, this.#startY + overshootPx);
+    const speed = Math.max(
+      0,
+      Number(this.#cfg().powerAnchorReturnPxPerSecond) || swipePx * 6,
+    );
+    const dtSec = Math.min(0.1, Math.max(0, dt / 1000));
+    const maxStep = dtSec > 0 ? speed * dtSec : targetY - this.#startY;
+    this.#startY = Math.min(targetY, this.#startY + maxStep);
+  }
+
+  #resolvePowerDeadzonePx(swipePx) {
+    const cfg = this.#cfg();
+    const explicitPx = Number(cfg.powerDeadzonePx);
+    if (Number.isFinite(explicitPx) && explicitPx >= 0) return explicitPx;
+
+    const ratio = Number(cfg.powerDeadzoneRatio ?? 0);
+    if (!Number.isFinite(ratio) || ratio <= 0) return 0;
+    return swipePx * this.#clamp(ratio, 0, 1);
   }
 
   #applyEdgeScroll(screenX, dt) {

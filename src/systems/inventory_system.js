@@ -511,6 +511,13 @@ class InventoryManager {
       return { success: false, reason: validation.reason };
 
     const targetSlotPath = this.#findTargetSlotPath(itemData);
+    if (!targetSlotPath && itemData.type === "bait") {
+      return {
+        success: false,
+        reason: "Немає вільного гачка для наживки.",
+      };
+    }
+
     if (!targetSlotPath)
       return {
         success: false,
@@ -536,7 +543,7 @@ class InventoryManager {
 
     const eq = this.getEquipped();
 
-    if (baseSlot === "baits" || baseSlot === "hooks") {
+    if (baseSlot === "hooks") {
       // ВИПРАВЛЕНО: Додано перевірку на базову кількість гачків вудки
       const maxHooks =
         eq.sinker?.hooksCount ||
@@ -549,6 +556,28 @@ class InventoryManager {
         if (!currentArr[i]) return `${baseSlot}_${i}`;
       }
       return `${baseSlot}_0`;
+    }
+
+    if (baseSlot === "baits") {
+      const maxHooks =
+        eq.sinker?.hooksCount ||
+        eq.sinker?.engineStats?.hooksCount ||
+        eq.rod?.maxHooks ||
+        1;
+      const baits = eq.baits || [];
+
+      if (itemData.type === "bait") {
+        const hooks = eq.hooks || [];
+        for (let i = 0; i < maxHooks; i++) {
+          if (hooks[i] && !baits[i]) return `baits_${i}`;
+        }
+        return null;
+      }
+
+      for (let i = 0; i < maxHooks; i++) {
+        if (!baits[i]) return `baits_${i}`;
+      }
+      return "baits_0";
     }
 
     if (itemData.type === "chum_mix") {
@@ -614,6 +643,8 @@ class InventoryManager {
     if (!this.#inventory.getInstance(instanceId)) return false;
 
     const itemData = this._hydrateInstance(instanceId);
+    const slotValidation = this.validateEquipToSlot(slotPath, itemData);
+    if (!slotValidation.isValid) return false;
 
     // КАСКАД: Якщо вдягаємо нову вудку, і її тип відрізняється від поточної — скидаємо стару оснастку
     if (slotPath === "rod") {
@@ -658,6 +689,7 @@ class InventoryManager {
   }
 
   unequipItem(slotPath) {
+    const equippedBefore = this.getEquipped();
     this.#equipment.unequip(slotPath);
     this.#equippedCache = null;
 
@@ -683,6 +715,22 @@ class InventoryManager {
     } else if (slotPath === "sinker") {
       // Знімаємо прикормку
       this.#equipment.unequip("feederChum");
+
+      const removedHooksCount =
+        equippedBefore.sinker?.hooksCount ||
+        equippedBefore.sinker?.engineStats?.hooksCount ||
+        0;
+      if (removedHooksCount > 0) {
+        const oldHooks = equippedBefore.hooks || [];
+        const oldBaits = equippedBefore.baits || [];
+        const maxSlots = Math.max(oldHooks.length, oldBaits.length);
+        for (let i = 0; i < maxSlots; i++) {
+          this.#equipment.unequip(`hooks_${i}`);
+          this.#equipment.unequip(`baits_${i}`);
+        }
+        this.#saveAndNotify();
+        return;
+      }
 
       // Відрізаємо зайві гачки, якщо базова вудка підтримує менше
       const eq = this.getEquipped();
@@ -714,6 +762,40 @@ class InventoryManager {
 
   validateEquip(itemData) {
     return EquipmentValidator.validate(itemData, this.getEquipped());
+  }
+
+  validateEquipToSlot(slotPath, itemData) {
+    const validation = this.validateEquip(itemData);
+    if (!validation.isValid) return validation;
+
+    if (itemData?.type !== "bait") return { isValid: true };
+
+    const parsed = this.#parseIndexedSlot(slotPath);
+    if (!parsed || parsed.group !== "baits") {
+      return {
+        isValid: false,
+        reason: "Наживку можна спорядити тільки у слот наживки.",
+      };
+    }
+
+    const hookInSameSlot = this.getEquipped().hooks?.[parsed.index];
+    if (!hookInSameSlot) {
+      return {
+        isValid: false,
+        reason: "Спочатку споряди гачок у цей слот.",
+      };
+    }
+
+    return { isValid: true };
+  }
+
+  #parseIndexedSlot(slotPath) {
+    const match = /^(hooks|baits|deliveryChums)_(\d+)$/.exec(slotPath || "");
+    if (!match) return null;
+    return {
+      group: match[1],
+      index: Number(match[2]),
+    };
   }
 
   #hydrateSlotArray(rawItems) {
