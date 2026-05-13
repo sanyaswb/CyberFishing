@@ -113,6 +113,9 @@ class InputManager {
       swipeDeltaY: 0,
       toggleHold: false,
       pumpAction: false,
+      dragIncrease: false,
+      dragDecrease: false,
+      retrieve: false,
       clickPos: null,
       isDoubleClick: false,
       longPressPos: null,
@@ -292,6 +295,14 @@ class InputManager {
       if (this.#isKeyMatch(e, keys.pump)) {
         if (!e.repeat) this.#pumpFlag = true;
       }
+
+      if (
+        this.#isKeyMatch(e, keys.dragIncrease) ||
+        this.#isKeyMatch(e, keys.dragDecrease) ||
+        this.#isKeyMatch(e, keys.retrieve)
+      ) {
+        e.preventDefault();
+      }
     });
 
     this.#addEventListener(window, "keyup", (e) => {
@@ -364,6 +375,9 @@ class InputManager {
     state.swipeDeltaY = this.#swipeDeltaY;
     state.toggleHold = this.#holdToggleFlag;
     state.pumpAction = this.#pumpFlag;
+    state.dragIncrease = this.#checkKeyHeld(keys.dragIncrease);
+    state.dragDecrease = this.#checkKeyHeld(keys.dragDecrease);
+    state.retrieve = this.#checkKeyHeld(keys.retrieve);
     state.clickPos = this.#clickPos;
     state.isDoubleClick = this.#isDoubleClick;
     state.longPressPos = this.#longPressPos;

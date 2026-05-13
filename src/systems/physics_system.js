@@ -854,7 +854,7 @@ class StaminaController {
   }
 
   updatePlayerPower(newPower) {
-    this.#playerBasePower = newPower;
+    this.#playerBasePower = Math.max(0, Number(newPower) || 0);
   }
 
   getMasteryTimer() {
@@ -867,41 +867,86 @@ class StaminaController {
 
   getExhaustionDurationMs() {
     if (!this.#fish) return 1000;
+
     const idealDps =
-      this.#mechanicsConfig.baseDepletionRate * this.#playerBasePower;
+      this.#mechanicsConfig.baseDepletionRate *
+      Math.max(0.001, this.#playerBasePower);
+
     const idealTimeSec = this.#condition.maxPoints / Math.max(1, idealDps);
-    return idealTimeSec * this.#fish.getInitialPower() * 1000;
+
+    const multiplier = Math.max(
+      0.001,
+      Number(this.#mechanicsConfig.exhaustionDepletionMultiplier) || 1.0,
+    );
+
+    return (idealTimeSec * this.#fish.getInitialPower() * 1000) / multiplier;
   }
 
-  evaluate(tension, playerPowerIsPulling, dt, floatX, bounds) {
+  evaluate(
+    arg1,
+    playerPowerIsPullingLegacy,
+    dtLegacy,
+    floatXLegacy,
+    boundsLegacy,
+  ) {
+    const args =
+      typeof arg1 === "object" && arg1 !== null
+        ? arg1
+        : {
+            tension: arg1,
+            playerPowerIsPulling: playerPowerIsPullingLegacy,
+            dt: dtLegacy,
+            angleStressRatio: this.#legacyAngleStress(
+              floatXLegacy,
+              boundsLegacy,
+            ),
+          };
+
+    const tension = Math.max(0, Number(args.tension) || 0);
+    const playerPowerIsPulling = !!args.playerPowerIsPulling;
+    const dt = Math.max(0, Number(args.dt) || 0);
     const timeScale = dt / 1000;
-    const centerX = (bounds.left + bounds.right) / 2;
-    const halfWidth = (bounds.right - bounds.left) / 2;
-    let rawPenalty = Math.abs(floatX - centerX) / (halfWidth || 1);
-    let spatialPenalty = Math.max(
-      0,
-      (rawPenalty - this.#mechanicsConfig.centerSweetSpot) /
-        (1 - this.#mechanicsConfig.centerSweetSpot),
-    );
-    spatialPenalty = Math.min(1, spatialPenalty);
+    const angleStressRatio = this.#clamp01(args.angleStressRatio);
+    const staminaPressureRatio = this.#clamp01(args.staminaPressureRatio);
+    const isLineFullyExtended = !!args.isLineFullyExtended;
+    const effectivePressureRatio = playerPowerIsPulling
+      ? Math.max(staminaPressureRatio, isLineFullyExtended ? 1 : 0)
+      : 0;
+    const hasEffectivePressure = effectivePressureRatio > 0.01 && tension > 0.25;
 
     if (this.#condition.phase === "exhaustion") {
       if (
-        spatialPenalty > 0 ||
+        angleStressRatio > 0 ||
         tension > this.#mechanicsConfig.exhaustionOptimalMax
       ) {
         this.#condition.breakExhaustion();
         return;
       }
-      if (!playerPowerIsPulling) return;
+
+      if (!hasEffectivePressure) return;
+
+      const exhaustionMultiplier = Math.max(
+        0.001,
+        Number(this.#mechanicsConfig.exhaustionDepletionMultiplier) || 1.0,
+      );
 
       const idealDps =
-        this.#mechanicsConfig.baseDepletionRate * this.#playerBasePower;
-      const idealTimeSec = this.#condition.maxPoints / Math.max(1, idealDps);
-      const exhaustionDurationSec = idealTimeSec * this.#fish.getInitialPower();
-      const exhaustionDurationMs = exhaustionDurationSec * 1000;
+        this.#mechanicsConfig.baseDepletionRate *
+        Math.max(0.001, this.#playerBasePower);
 
-      if (this.#condition.currentExhaustion <= 0 && spatialPenalty === 0) {
+      const idealTimeSec = this.#condition.maxPoints / Math.max(1, idealDps);
+
+      const exhaustionDurationSec = Math.max(
+        0.001,
+        idealTimeSec * this.#fish.getInitialPower(),
+      );
+
+      const effectiveExhaustionDurationSec =
+        exhaustionDurationSec / exhaustionMultiplier;
+
+      const exhaustionDurationMs = effectiveExhaustionDurationSec * 1000;
+
+      if (this.#condition.currentExhaustion <= 0 && angleStressRatio === 0) {
         const masteryRatio = this.#mechanicsConfig.masteryTimeRatio ?? 0.5;
         const targetPhaseTimeMs = exhaustionDurationMs * masteryRatio;
 
@@ -911,19 +956,21 @@ class StaminaController {
           this.#isMasteryActive = true;
 
           const drainElapsed = this.#masteryTimer - targetPhaseTimeMs;
-          const drainProgress = Math.min(1, drainElapsed / targetPhaseTimeMs);
+          const drainProgress = Math.min(
+            1,
+            drainElapsed / Math.max(1, targetPhaseTimeMs),
+          );
 
           const maxDebuffDrop =
             this.#mechanicsConfig.masteryPowerMultiplier ?? 0.2;
 
-          const currentMult = 1.0 - maxDebuffDrop * drainProgress;
-
-          this.#fish.setMasteryMultiplier(currentMult);
+          this.#fish.setMasteryMultiplier(1.0 - maxDebuffDrop * drainProgress);
         } else {
           this.#fish.setMasteryMultiplier(1.0);
         }
       } else {
         this.#masteryTimer = 0;
+
         if (this.#isMasteryActive) {
           this.#isMasteryActive = false;
           this.#fish.clearMasteryDebuff();
@@ -931,15 +978,28 @@ class StaminaController {
       }
 
       if (this.#condition.currentExhaustion > 0) {
-        const pointsPerSec = this.#condition.maxPoints / exhaustionDurationSec;
+        const pointsPerSec =
+          this.#condition.maxPoints / effectiveExhaustionDurationSec;
+
         const damage = pointsPerSec * timeScale;
-        const debuff = this.#mechanicsConfig.basePowerDropPerSec * timeScale;
+
+        // Важливо:
+        // multiplier прискорює не тільки червону шкалу,
+        // а й реальне падіння опору риби в кг,
+        // щоб EXHAUSTION не був просто візуальною шкалою.
+        const debuff =
+          this.#mechanicsConfig.basePowerDropPerSec *
+          exhaustionMultiplier *
+          timeScale;
 
         if (this.#condition.currentExhaustion <= damage) {
-          const ratio = this.#condition.currentExhaustion / damage;
+          const ratio =
+            this.#condition.currentExhaustion / Math.max(0.001, damage);
+
           this.#condition.applyExhaustionDamage(
             this.#condition.currentExhaustion,
           );
+
           this.#fish.applyPowerDebuff(
             debuff * ratio,
             this.#mechanicsConfig.minBasePowerRatio ?? 0.2,
@@ -950,12 +1010,14 @@ class StaminaController {
           }
         } else {
           this.#condition.applyExhaustionDamage(damage);
+
           this.#fish.applyPowerDebuff(
             debuff,
             this.#mechanicsConfig.minBasePowerRatio ?? 0.2,
           );
         }
       }
+
       return;
     }
 
@@ -965,17 +1027,18 @@ class StaminaController {
           ? this.#mechanicsConfig.regenMultiplierPhase1 || 1.5
           : 1.0;
 
-      if (spatialPenalty > 0) {
+      if (angleStressRatio > 0) {
         this.#condition.applyStaminaRegen(
           this.#mechanicsConfig.edgeRegenRate *
-            spatialPenalty *
+            angleStressRatio *
             timeScale *
             regenMult,
         );
       }
 
-      if (!playerPowerIsPulling) {
+      if (!hasEffectivePressure) {
         const regenFactor = Math.max(0, 1 - tension / 100);
+
         this.#condition.applyStaminaRegen(
           this.#mechanicsConfig.baseRegenRate *
             regenFactor *
@@ -987,12 +1050,17 @@ class StaminaController {
           0,
           1 - tension / this.#mechanicsConfig.optimalMax,
         );
+
+        const pressureMultiplier = Math.max(0.05, effectivePressureRatio);
+
         const damage =
           this.#mechanicsConfig.baseDepletionRate *
           efficiency *
-          this.#playerBasePower *
+          Math.max(0.001, this.#playerBasePower) *
+          pressureMultiplier *
           timeScale *
-          (1 - spatialPenalty);
+          (1 - angleStressRatio);
+
         this.#condition.applyStaminaDamage(damage);
       }
 
@@ -1015,13 +1083,24 @@ class StaminaController {
             this.#fish.clearDebuff();
           }
 
+          const exhaustionMultiplier = Math.max(
+            0.001,
+            Number(this.#mechanicsConfig.exhaustionDepletionMultiplier) || 1.0,
+          );
+
           const idealDps =
-            this.#mechanicsConfig.baseDepletionRate * this.#playerBasePower;
+            this.#mechanicsConfig.baseDepletionRate *
+            Math.max(0.001, this.#playerBasePower);
+
           const idealTimeSec =
             this.#condition.maxPoints / Math.max(1, idealDps);
+
           const exhaustionDurationSec =
-            idealTimeSec * this.#fish.getInitialPower();
-          const maxPowerDropPerSec = this.#mechanicsConfig.basePowerDropPerSec;
+            (idealTimeSec * this.#fish.getInitialPower()) /
+            exhaustionMultiplier;
+
+          const maxPowerDropPerSec =
+            this.#mechanicsConfig.basePowerDropPerSec * exhaustionMultiplier;
 
           this.#fish.setPowerDebuffByExhaustionRatio(
             punishmentCap,
@@ -1038,6 +1117,22 @@ class StaminaController {
         this.#isFullyRecovered = false;
       }
     }
+  }
+
+  #legacyAngleStress(floatX, bounds) {
+    if (!bounds) return 0;
+    const centerX = (bounds.left + bounds.right) / 2;
+    const halfWidth = (bounds.right - bounds.left) / 2;
+    const rawPenalty =
+      Math.abs((Number(floatX) || centerX) - centerX) / (halfWidth || 1);
+    return this.#clamp01(
+      (rawPenalty - this.#mechanicsConfig.centerSweetSpot) /
+        (1 - this.#mechanicsConfig.centerSweetSpot),
+    );
+  }
+
+  #clamp01(value) {
+    return Math.max(0, Math.min(1, Number(value) || 0));
   }
 }
 

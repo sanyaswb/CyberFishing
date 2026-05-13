@@ -39,8 +39,50 @@ class Fish {
   getWeight() {
     return this.#weight;
   }
+
+  getPhysicsConfig() {
+    return this.#fishConfig || {};
+  }
+
+  getLevelMultiplier() {
+    const table = this.#fishConfig.levelPowerMultiplier;
+    if (Array.isArray(table) && table.length > 0) {
+      return table[Math.max(0, Math.min(table.length - 1, this.#level - 1))];
+    }
+    return 1 + (Math.max(1, this.#level) - 1) * 0.15;
+  }
+
   getInitialPower() {
+    if (this.#fishConfig?.basePower) {
+      return this.#weight * this.getLevelMultiplier() * this.#fishConfig.basePower;
+    }
     return this.#level * this.#weight + this.#resistance;
+  }
+
+  getStaticPowerKg() {
+    const basePower = this.#fishConfig?.basePower ?? 1.0;
+    return this.#weight * this.getLevelMultiplier() * basePower;
+  }
+
+  getCurrentStaticPowerKg() {
+    const base = this.getStaticPowerKg();
+    const initial = Math.max(0.001, this.getInitialPower());
+    const currentRatio = this.getPower() / initial;
+    const minRatio = this.#fishConfig?.minPowerRatio ?? 0.25;
+    return base * Math.max(minRatio, currentRatio);
+  }
+
+  getBaseSpeedPxPerSec(pixelsPerMeter = 50) {
+    if (Number.isFinite(Number(this.#fishConfig?.baseSpeedMetersPerSec))) {
+      return this.#fishConfig.baseSpeedMetersPerSec * pixelsPerMeter;
+    }
+    if (Number.isFinite(Number(this.#fishConfig?.baseSpeedPxPerSec))) {
+      return this.#fishConfig.baseSpeedPxPerSec;
+    }
+    if (Number.isFinite(Number(this.#fishConfig?.baseSpeed))) {
+      return this.#fishConfig.baseSpeed;
+    }
+    return 100;
   }
 
   getPower() {
@@ -144,7 +186,10 @@ class Fish {
 
     switch (debuffType) {
       case "swimPull":
-        if (behaviors.swim) behaviors.swim.pull *= debuffsCfg.swimPullMult;
+        if (behaviors.swim) {
+          if (behaviors.swim.powerRatio !== undefined) behaviors.swim.powerRatio *= debuffsCfg.swimPullMult;
+          if (behaviors.swim.pull !== undefined) behaviors.swim.pull *= debuffsCfg.swimPullMult;
+        }
         break;
       case "dashMaxTime":
         if (behaviors.dash)
@@ -155,7 +200,10 @@ class Fish {
           behaviors.idle.maxTime *= debuffsCfg.idleMaxTimeMult;
         break;
       case "dashPull":
-        if (behaviors.dash) behaviors.dash.pull *= debuffsCfg.dashPullMult;
+        if (behaviors.dash) {
+          if (behaviors.dash.powerRatio !== undefined) behaviors.dash.powerRatio *= debuffsCfg.dashPullMult;
+          if (behaviors.dash.pull !== undefined) behaviors.dash.pull *= debuffsCfg.dashPullMult;
+        }
         break;
       case "restWeight":
         if (behaviors.rest) {
@@ -283,8 +331,8 @@ class FishBehavior {
 
     this.#currentStateName = selectedKey;
     const state = states[this.#currentStateName];
-    this.#targetPull = state.pull;
-    this.#targetMove = state.move;
+    this.#targetPull = Math.max(0, Number(state.powerRatio ?? state.pull ?? 1) || 0);
+    this.#targetMove = this.#clamp01(state.speedRatio ?? state.move ?? 0);
     this.#stateTimer = this.#range(state.minTime, state.maxTime);
   }
 
@@ -296,8 +344,8 @@ class FishBehavior {
     }
 
     this.#currentStateName = stateName;
-    this.#targetPull = state.pull;
-    this.#targetMove = state.move;
+    this.#targetPull = Math.max(0, Number(state.powerRatio ?? state.pull ?? 1) || 0);
+    this.#targetMove = this.#clamp01(state.speedRatio ?? state.move ?? 0);
     this.#isLocked = isLocked;
     this.#stateTimer = this.#range(state.minTime, state.maxTime);
     this.#dirTimer = 0;
@@ -342,12 +390,19 @@ class FishBehavior {
     this.#currentDirX += (this.#targetDirX - this.#currentDirX) * t;
   }
 
+  #clamp01(value) {
+    return Math.max(0, Math.min(1, Number(value) || 0));
+  }
+
   getStateData() {
     const stateConfig = this.#config.behaviors[this.#currentStateName];
     return {
       name: this.#currentStateName,
       pullMult: this.#currentPull,
-      moveX: this.#currentMove * this.#currentDirX,
+      powerRatio: this.#currentPull,
+      speedRatio: this.#clamp01(Math.abs(this.#currentMove)),
+      moveX: this.#clamp01(Math.abs(this.#currentMove)) * this.#currentDirX,
+      agility: stateConfig.agility ?? this.#config.agility ?? 1.0,
       edgePowerMultiplier:
         stateConfig.edgePowerMultiplier ??
         this.#config.edgePowerMultiplier ??
@@ -362,10 +417,21 @@ class FishCondition {
   #currentExhaustion;
   #phase;
 
-  constructor(level, weight, staminaFishConfig) {
-    this.#maxPoints =
-      level * weight * staminaFishConfig.baseStaminaMultiplier +
-      staminaFishConfig.flatBonus;
+  constructor(level, weight, staminaFishConfig, fishPhysics = null) {
+    if (fishPhysics?.baseStamina) {
+      const basePower = fishPhysics.basePower ?? 1.0;
+      const levelMultiplier = 1 + (Math.max(1, level) - 1) * 0.15;
+      const weightMultiplier = fishPhysics.staminaWeightMultiplier ?? 0;
+      this.#maxPoints =
+        fishPhysics.baseStamina *
+        basePower *
+        levelMultiplier *
+        (1 + Math.max(0, weightMultiplier) * Math.max(0, weight - 1));
+    } else {
+      this.#maxPoints =
+        level * weight * staminaFishConfig.baseStaminaMultiplier +
+        staminaFishConfig.flatBonus;
+    }
     this.#currentStamina = this.#maxPoints;
     this.#currentExhaustion = this.#maxPoints;
     this.#phase = "stamina";

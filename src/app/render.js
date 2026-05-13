@@ -259,6 +259,14 @@ class FishingRenderService {
         this.#config.tension,
         this.#config.ui.indicators,
       );
+      if (typeof renderer.drawDragBar === "function") {
+        renderer.drawDragBar(
+          tMeter.getDragRatio?.() || 0,
+          this.#config.physics?.drag,
+          this.#config.tension,
+          this.#config.ui.indicators,
+        );
+      }
       renderer.drawFishCondition(fCond, this.#config.ui.indicators);
     }
   }

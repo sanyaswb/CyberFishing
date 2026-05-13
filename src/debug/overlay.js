@@ -10,6 +10,7 @@ const OVERLAY_MODULES = {
   liveY: true,
   liveX: true,
   debuffsLive: true,
+  fightPhysics: true,
 };
 
 class OverlayModule {
@@ -266,6 +267,27 @@ class PlayerMaxModule extends OverlayModule {
   }
 }
 
+class FightPhysicsModule extends OverlayModule {
+  constructor() {
+    super("fightPhysics");
+  }
+
+  shouldRender(d) {
+    return d.gameState === "playing";
+  }
+
+  render(d) {
+    let html = this.formatHeader("FIGHT PHYSICS", "#73c2fb");
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Tension:</span><span style="color:#ffaa00; font-weight:bold;">${(d.tensionKg || 0).toFixed(2)} / ${(d.maxTackleLoadKg || 0).toFixed(2)} kg</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Drag:</span><span style="color:#00ccff; font-weight:bold;">${(d.dragPercent || 0).toFixed(0)}%</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Line:</span><span style="color:#00ff80;">${(d.lineReleasedMeters || 0).toFixed(1)}m / ${(d.lineTotalLengthMeters || 0).toFixed(1)}m</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Remaining:</span><span style="color:#8a9bac;">${(d.lineRemainingMeters || 0).toFixed(1)}m</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Full line:</span><span style="color:${d.isLineFullyExtended ? "#ff4444" : "#00ff80"}; font-weight:bold;">${d.isLineFullyExtended ? "YES" : "NO"}</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:12px;"><span>Angle penalty:</span><span style="color:#ffaa00;">x${(d.anglePenalty || 1).toFixed(2)} (${(d.angleDeg || 0).toFixed(0)}deg)</span></div>`;
+    return html;
+  }
+}
+
 class LiveForcesModule extends OverlayModule {
   constructor() {
     super("liveY");
@@ -395,10 +417,10 @@ class WorstCaseModule extends OverlayModule {
     let maxPull = 0,
       maxMove = 0;
     Object.values(behaviors).forEach((b) => {
-      if (b.pull > maxPull) maxPull = b.pull;
-      const edgeM =
-        b.edgePowerMultiplier ?? activeFish.physics?.edgePowerMultiplier ?? 1.0;
-      const effMove = Math.abs(b.move || 0) * edgeM;
+      const powerRatio = b.powerRatio ?? b.pull ?? 0;
+      const speedRatio = b.speedRatio ?? b.move ?? 0;
+      if (powerRatio > maxPull) maxPull = powerRatio;
+      const effMove = Math.abs(speedRatio);
       if (effMove > maxMove) maxMove = effMove;
     });
 
@@ -416,21 +438,12 @@ class WorstCaseModule extends OverlayModule {
         : 0;
     const pPower = rodPower + reelPower;
 
-    const worstPenaltyMult = Math.max(
-      0.1,
-      1.0 -
-        (CONFIG.physics.edgePullPenalty || 0) *
-          (1 - (eq?.rod?.compensation || 0)),
-    );
+    const angleCfg = CONFIG.physics.rodAnglePenalty || {};
+    const worstPenaltyMult =
+      angleCfg.enabled === false ? 1.0 : angleCfg.maxPenaltyMultiplier ?? 0.65;
     const worstEffectivePower = pPower * worstPenaltyMult;
-
-    const screenW = window.innerWidth;
-    const rodX =
-      CONFIG.ui?.rod?.x && CONFIG.ui.rod.x !== "center"
-        ? Number(CONFIG.ui.rod.x)
-        : screenW / 2;
-    const maxDistX = Math.max(rodX, screenW - rodX);
-    const worstPullDirY = 50 / Math.hypot(maxDistX, 50);
+    const worstAngleDeg = angleCfg.maxPenaltyAngleDeg ?? 75;
+    const worstPullDirY = Math.cos((worstAngleDeg * Math.PI) / 180);
 
     const worstPlayerY =
       worstEffectivePower *
@@ -477,6 +490,7 @@ class DebugOverlay {
       new FishPowerModule(),
       new FishStatesModule(),
       new DebuffsModule(),
+      new FightPhysicsModule(),
       new PlayerMaxModule(),
       new LiveForcesModule(),
       new ChumOverlayModule(),

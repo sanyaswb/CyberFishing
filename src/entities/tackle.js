@@ -21,6 +21,10 @@ class Rod extends Equipment {
   #type;
   #maxDistance;
   #hasReel;
+  #lengthMeters;
+  #maxLoadKg;
+  #durability;
+  #durabilityMaxLoadLossPerPercent;
 
   constructor(
     level,
@@ -29,12 +33,18 @@ class Rod extends Equipment {
     type = "float_match",
     maxDistance = Infinity,
     hasReel = true,
+    options = {},
   ) {
     super(level, power);
     this.#compensation = compensation;
     this.#type = type;
     this.#maxDistance = maxDistance;
     this.#hasReel = hasReel;
+    this.#lengthMeters = Rod.#numberOrDefault(options.lengthMeters, 2.0);
+    this.#maxLoadKg = Rod.#numberOrDefault(options.maxLoadKg, 8.0);
+    this.#durability = Rod.#numberOrDefault(options.durability, 100);
+    this.#durabilityMaxLoadLossPerPercent =
+      Rod.#numberOrDefault(options.durabilityMaxLoadLossPerPercent, 0.001);
   }
 
   getCompensation() {
@@ -52,19 +62,75 @@ class Rod extends Equipment {
   hasReel() {
     return this.#hasReel;
   }
+
+  getLengthMeters() {
+    return this.#lengthMeters;
+  }
+
+  getMaxLoadKg() {
+    return this.#maxLoadKg;
+  }
+
+  getDurabilityMaxLoadLossPerPercent() {
+    return this.#durabilityMaxLoadLossPerPercent;
+  }
+
+  getEffectiveMaxLoadKg() {
+    const loss =
+      (100 - Math.max(0, Math.min(100, this.#durability))) *
+      this.#durabilityMaxLoadLossPerPercent;
+    return this.#maxLoadKg * Math.max(0.1, 1 - loss);
+  }
+
+  static #numberOrDefault(value, fallback) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
 }
 
 class Reel extends Equipment {
   #holdConfig;
+  #maxLoadKg;
+  #lineCapacityMeters;
+  #retrieveSpeedMetersPerSec;
+  #dragMinKg;
+  #dragMaxKg;
+  #dragChangeSpeedPerSec;
+  #durability;
+  #durabilityMaxLoadLossPerPercent;
+  #lineStats;
 
-  constructor(level, power, holdConfig = null) {
+  constructor(level, power, options = {}) {
     super(level, power); // Стара логіка відпрацьовує як і раніше!
-    this.#holdConfig = holdConfig;
+    this.#holdConfig = null;
+    this.#maxLoadKg = Reel.#numberOrDefault(options.maxLoadKg, 10);
+    this.#lineCapacityMeters = Reel.#numberOrDefault(
+      options.lineCapacityMeters,
+      50,
+    );
+    this.#retrieveSpeedMetersPerSec =
+      Reel.#numberOrDefault(options.retrieveSpeedMetersPerSec, 0.8);
+    this.#dragMinKg = Reel.#numberOrDefault(options.dragMinKg, 0);
+    this.#dragMaxKg = Reel.#numberOrDefault(
+      options.dragMaxKg,
+      this.#maxLoadKg,
+    );
+    this.#dragChangeSpeedPerSec =
+      Reel.#numberOrDefault(options.dragChangeSpeedPerSec, 1.5);
+    this.#durability = Reel.#numberOrDefault(options.durability, 100);
+    this.#durabilityMaxLoadLossPerPercent =
+      Reel.#numberOrDefault(options.durabilityMaxLoadLossPerPercent, 0.001);
+    this.#lineStats = options.line || {
+      lengthMeters: this.#lineCapacityMeters,
+      maxLoadKg: this.#maxLoadKg,
+      durability: this.#durability,
+      durabilityMaxLoadLossPerPercent: this.#durabilityMaxLoadLossPerPercent,
+    };
   }
 
   // Метод для перевірки, чи взагалі доступна механіка утримання
   hasHoldMechanic() {
-    return this.#holdConfig && this.#holdConfig.activeLevel > 0;
+    return false;
   }
 
   // Зручний геттер, який збирає всі потрібні дані для поточного рівня утримання
@@ -87,6 +153,46 @@ class Reel extends Equipment {
         stats.tensionMultiplier !== undefined ? stats.tensionMultiplier : 1.0,
       totalHoldForce: this.getPower() + stats.holdPower,
     };
+  }
+
+  hasReel() {
+    return this.getPower() > 0 || this.#lineCapacityMeters > 0;
+  }
+
+  getMaxLoadKg() {
+    return this.#maxLoadKg;
+  }
+
+  getEffectiveMaxLoadKg() {
+    const loss =
+      (100 - Math.max(0, Math.min(100, this.#durability))) *
+      this.#durabilityMaxLoadLossPerPercent;
+    return this.#maxLoadKg * Math.max(0.1, 1 - loss);
+  }
+
+  getLineCapacityMeters() {
+    return this.#lineCapacityMeters;
+  }
+
+  getRetrieveSpeedMetersPerSec() {
+    return this.#retrieveSpeedMetersPerSec;
+  }
+
+  getDragChangeSpeedPerSec() {
+    return this.#dragChangeSpeedPerSec;
+  }
+
+  getDragRangeKg() {
+    return { min: this.#dragMinKg, max: this.#dragMaxKg };
+  }
+
+  getLineStats() {
+    return this.#lineStats;
+  }
+
+  static #numberOrDefault(value, fallback) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
   }
 }
 
@@ -245,10 +351,11 @@ class WaterEntity {
 
   _applyRetrieveForce(dt, pullDirection, power, multiplier, waterFriction = 0) {
     if (!pullDirection) return;
-    const dtSec = dt / 1000;
+    const dtSec = this._getClampedDtSec(dt);
     const targetSpeedPxPerSec =
       Math.max(0, power - waterFriction) * multiplier;
-    const force = targetSpeedPxPerSec * dtSec * (1 - this._velocityDamping);
+    const damping = this._getVelocityDamping(dtSec);
+    const force = targetSpeedPxPerSec * (1 - damping);
 
     this.applyForce(
       this._forceScratch.set(
@@ -268,7 +375,7 @@ class WaterEntity {
       physics.passiveRetrieveWaterFriction ?? 0.35,
     );
 
-    const dtSec = dt / 1000;
+    const dtSec = this._getClampedDtSec(dt);
     this._currentHookDepth = Math.max(
       0,
       this._currentHookDepth -
@@ -278,6 +385,14 @@ class WaterEntity {
 
   getPosition() {
     return this._position;
+  }
+
+  getVelocity() {
+    return this._velocity;
+  }
+
+  setVelocity(x, y) {
+    this._velocity.set(x, y);
   }
 
   getCurrentHookDepth() {
@@ -354,7 +469,21 @@ class WaterEntity {
 
   _afterPhysicsUpdate(checkWater) {}
 
+  _getClampedDtSec(dt) {
+    const physics = typeof CONFIG !== "undefined" ? CONFIG.physics || {} : {};
+    const maxDtMs = physics.maxDtMs ?? 50;
+    return Math.min(Math.max(0, Number(dt) || 0), maxDtMs) / 1000;
+  }
+
+  _getVelocityDamping(dtSec) {
+    const dampingPerSecond =
+      this._config.velocityDampingPerSecond ??
+      -Math.log(Math.max(0.001, Math.min(0.999, this._velocityDamping))) * 60;
+    return Math.exp(-Math.max(0, dampingPerSecond) * dtSec);
+  }
+
   _applyPhysics(boundsRect, checkWater, dt, environment) {
+    const dtSec = this._getClampedDtSec(dt);
     let driftDx = 0;
     let driftDy = 0;
 
@@ -366,8 +495,8 @@ class WaterEntity {
         const comp = this._lerp(compRange[0], compRange[1], (qual - 1) / 9);
 
         const driftSpeed = environment.current.speedPxPerSec * (1 - comp);
-        driftDx = environment.current.direction.x * driftSpeed * (dt / 1000);
-        driftDy = environment.current.direction.y * driftSpeed * (dt / 1000);
+        driftDx = environment.current.direction.x * driftSpeed * dtSec;
+        driftDy = environment.current.direction.y * driftSpeed * dtSec;
       }
 
       const isActivelyPulling =
@@ -405,7 +534,7 @@ class WaterEntity {
             this._windFluctuationTimer =
               this._getRandom(environment.wind.gustFluctuationMs) * 3;
           }
-          if (this._chance(environment.wind.gustChancePerSec * (dt / 1000))) {
+          if (this._chance(environment.wind.gustChancePerSec * dtSec)) {
             this._windTimer = this._getRandom(environment.wind.gustDurationMs);
             this._windFluctuationTimer = 0;
           }
@@ -432,15 +561,15 @@ class WaterEntity {
     );
 
     if (this._isBiting && !isSpinningLure) {
-      this._velocity.multiplyScalar(this._velocityDamping);
+      this._velocity.multiplyScalar(this._getVelocityDamping(dtSec));
       this._updateMotionTilt(dt, 0, 0);
       return;
     }
 
     const prevX = this._position.x;
     const prevY = this._position.y;
-    let nextX = this._position.x + this._velocity.x + driftDx;
-    let nextY = this._position.y + this._velocity.y + driftDy;
+    let nextX = this._position.x + this._velocity.x * dtSec + driftDx;
+    let nextY = this._position.y + this._velocity.y * dtSec + driftDy;
 
     if (checkWater) {
       if (!checkWater(nextX, this._position.y)) {
@@ -464,7 +593,7 @@ class WaterEntity {
       this._position.y - prevY,
     );
 
-    this._velocity.multiplyScalar(this._velocityDamping);
+    this._velocity.multiplyScalar(this._getVelocityDamping(dtSec));
   }
 
   _updateMotionTilt(dt, moveX, moveY) {

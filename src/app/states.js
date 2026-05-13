@@ -1538,7 +1538,7 @@ class PlayingState extends GameState {
     this.deps.ui.updateNetButtonState(this.#hasEquippedNet, this.#isNetReady);
 
     if (updatedPos.y >= bounds.bottom) return;
-    this.deps.holdUI.update(this.deps.fight.getHoldUiState());
+    this.deps.holdUI.update(null);
   }
 
   handleNetClick() {

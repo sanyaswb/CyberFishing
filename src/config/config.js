@@ -152,6 +152,10 @@ const ITEM_DB = {
         compensation: 0.6,
         maxDistance: 600,
         accuracy: 70,
+        lengthMeters: 2.4,
+        maxLoadKg: 12,
+        durability: 100,
+        durabilityMaxLoadLossPerPercent: 0.001,
         hasReel: true,
         capabilities: ["reel", "lure"],
       },
@@ -176,6 +180,10 @@ const ITEM_DB = {
         compensation: 0.4,
         maxDistance: 600,
         accuracy: 85,
+        lengthMeters: 3.6,
+        maxLoadKg: 14,
+        durability: 100,
+        durabilityMaxLoadLossPerPercent: 0.001,
         hasReel: true,
         capabilities: ["reel", "feeder_rig"],
       },
@@ -200,6 +208,10 @@ const ITEM_DB = {
         compensation: 0.2,
         maxDistance: 450,
         accuracy: 60,
+        lengthMeters: 2.0,
+        maxLoadKg: 8,
+        durability: 100,
+        durabilityMaxLoadLossPerPercent: 0.001,
         hasReel: false,
         capabilities: ["float", "sinker", "hook"],
       },
@@ -212,37 +224,24 @@ const ITEM_DB = {
       name: "Тестова Котушка",
       type: "spinning_reel",
       icon: "⚙️",
-      displayStats: { level: 4, power: 1.0, holdCharges: 3 },
+      displayStats: { level: 4, power: 1.0, drag: "0-10kg", line: "50m" },
       engineStats: {
         basePower: 1.0,
-        pumpLevel: 5,
-        pumpPowerPerLevel: 10,
-        requiresTag: "reel",
-        hold: {
-          activeLevel: 3,
-          swipeThresholdPx: 100,
-          manualCooldownMs: 500,
-          levels: {
-            1: {
-              charges: 1,
-              restoreTimeMs: 5000,
-              holdPower: 1,
-              tensionMultiplier: 1.0,
-            },
-            2: {
-              charges: 2,
-              restoreTimeMs: 4000,
-              holdPower: 2,
-              tensionMultiplier: 1.0,
-            },
-            3: {
-              charges: 3,
-              restoreTimeMs: 3000,
-              holdPower: 3,
-              tensionMultiplier: 1.0,
-            },
-          },
+        maxLoadKg: 10,
+        lineCapacityMeters: 50,
+        retrieveSpeedMetersPerSec: 0.8,
+        dragMinKg: 0,
+        dragMaxKg: 10,
+        dragChangeSpeedPerSec: 0.35,
+        durability: 100,
+        durabilityMaxLoadLossPerPercent: 0.001,
+        line: {
+          lengthMeters: 50,
+          maxLoadKg: 12,
+          durability: 100,
+          durabilityMaxLoadLossPerPercent: 0.001,
         },
+        requiresTag: "reel",
       },
     },
   },
@@ -556,9 +555,12 @@ const CONFIG = {
 
     // Можна використовувати e.code (KeyW, Space, ShiftLeft) або e.key (Shift)
     keys: {
+      retrieve: ["Space"],
+      dragIncrease: ["KeyW", "ArrowUp"],
+      dragDecrease: ["KeyS", "ArrowDown"],
       pull: ["Space"], // Кнопка тяги (Пробіл)
-      hold: ["ShiftLeft", "ShiftRight", "Shift", "KeyW", "ArrowUp"], // Кнопка утримання / блокування
-      pump: ["KeyS", "ArrowDown"], // Кнопка підтяжки (можеш додати сюди W, або залишити тільки S)
+      hold: [],
+      pump: [],
       left: ["KeyA", "ArrowLeft"], // Відведення вудки вліво
       right: ["KeyD", "ArrowRight"], // Відведення вудки вправо
     },
@@ -641,15 +643,15 @@ const CONFIG = {
 
   locations: {
     debugVisuals: true, // Головний вимикач (якщо false - взагалі нічого не малюється)
-    debugZones: true, // Показувати кольорові квадрати (зелені, червоні)
-    debugGrid: true, // Показувати лінії сітки
+    debugZones: false, // Показувати кольорові квадрати (зелені, червоні)
+    debugGrid: false, // Показувати лінії сітки
     debugDepthText: false, // Показувати цифри глибини
     enableCastable: true, // Зони, де можна закидати вудку
     enableCollisions: true, // Колізії з землею (червоні зони) - забороняють закидати.
     enableSnags: true, // Динамічні зони (наприклад, косяк риби)
     enableDynamicZones: false, // Вимикає всі динамічні зони (косяки риби, рухомі перешкоди тощо)
     showChumZones: true,
-    showCatchZone: true, // Відображення синьої зони
+    showCatchZone: false, // Відображення синьої зони
     showNetZone: true, // Відображення зеленої зони
     showAimingZone: true, // Відображення зони закидання
 
@@ -757,7 +759,7 @@ const CONFIG = {
       {
         id: "crucian_stalker",
         name: "Карась-сталкер",
-        baseChance: 0.02,
+        baseChance: 1.02,
         maxHookSize: 6,
         trophyWeightKg: 1.0,
         visual: {
@@ -813,6 +815,13 @@ const CONFIG = {
         },
 
         physics: {
+          basePower: 1.1,
+          baseStamina: 1000,
+          baseSpeedMetersPerSec: 2.0,
+          speedForceMultiplier: 0.35,
+          waterResistanceMultiplier: 1.0,
+          currentInfluenceMultiplier: 1.0,
+          minPowerRatio: 0.25,
           agility: 1.0,
           edgePowerMultiplier: 1.0,
           bounceCooldownMs: 2000,
@@ -827,36 +836,36 @@ const CONFIG = {
 
           behaviors: {
             idle: {
-              pull: 0.5,
-              move: 0.5,
+              powerRatio: 0.5,
+              speedRatio: 0.5,
               minTime: 500,
               maxTime: 3000,
               weight: 10,
             },
             rest: {
-              pull: 0.2,
-              move: 0.1,
+              powerRatio: 0.2,
+              speedRatio: 0.1,
               minTime: 500,
               maxTime: 2500,
               weight: 20,
             },
             swim: {
-              pull: 1.0,
-              move: 1.0,
+              powerRatio: 1.0,
+              speedRatio: 1.0,
               minTime: 2000,
               maxTime: 4000,
               weight: 40,
             },
             dash: {
-              pull: 1.5,
-              move: 1.5,
+              powerRatio: 1.5,
+              speedRatio: 1.0,
               minTime: 1000,
               maxTime: 2200,
               weight: 30,
             },
             lastDash: {
-              pull: 1.5,
-              move: 2.5,
+              powerRatio: 1.5,
+              speedRatio: 1.0,
               minTime: 1000,
               maxTime: 3000,
               weight: 0,
@@ -975,6 +984,13 @@ const CONFIG = {
         },
 
         physics: {
+          basePower: 1.0,
+          baseStamina: 900,
+          baseSpeedMetersPerSec: 2.2,
+          speedForceMultiplier: 0.35,
+          waterResistanceMultiplier: 1.0,
+          currentInfluenceMultiplier: 1.0,
+          minPowerRatio: 0.25,
           agility: 1.3,
           edgePowerMultiplier: 1.0,
           bounceCooldownMs: 2000,
@@ -988,36 +1004,36 @@ const CONFIG = {
           },
           behaviors: {
             idle: {
-              pull: 0.8,
-              move: 0.8,
+              powerRatio: 0.8,
+              speedRatio: 0.8,
               minTime: 500,
               maxTime: 2000,
               weight: 10,
             },
             rest: {
-              pull: 0.5,
-              move: 0.5,
+              powerRatio: 0.5,
+              speedRatio: 0.5,
               minTime: 500,
               maxTime: 2500,
               weight: 5,
             },
             swim: {
-              pull: 1.0,
-              move: 1.5,
+              powerRatio: 1.0,
+              speedRatio: 1.0,
               minTime: 2000,
               maxTime: 4000,
               weight: 55,
             },
             dash: {
-              pull: 2.0,
-              move: 2.2,
+              powerRatio: 2.0,
+              speedRatio: 1.0,
               minTime: 500,
               maxTime: 1200,
               weight: 30,
             },
             lastDash: {
-              pull: 1.5,
-              move: 2.5,
+              powerRatio: 1.5,
+              speedRatio: 1.0,
               minTime: 500,
               maxTime: 1500,
               weight: 0,
@@ -1158,20 +1174,30 @@ const CONFIG = {
     },
     mechanics: {
       // Phase 1: Stamina
-      slackThreshold: 25,
-      optimalMax: 100, // Player fatigue threshold (0 damage to stamina)
+      baseStaminaMultiplier: 50,
+      flatBonus: 500,
+
       baseDepletionRate: 45,
-      baseRegenRate: 30,
-      centerSweetSpot: 0.2,
-      edgeRegenRate: 150,
+      baseRegenRate: 20,
+      edgeRegenRate: 30,
+      optimalMax: 100,
+      exhaustionOptimalMax: 85,
 
-      // Phase 2: Exhaustion (When stamina = 0)
-      exhaustionOptimalMax: 85, // Expanded tension limit for second phase
-      basePowerDropPerSec: 0.1, // How much fish base power drops per 1 sec of exhaustion (0.1 base = 0.001 final)
-      minBasePowerRatio: 0.2, // Fish cannot lose more than 80% of initial strength
+      // НОВЕ:
+      // Керує швидкістю падіння червоної шкали EXHAUSTION.
+      // 0.5 = у 2 рази повільніше
+      // 1.0 = стандартно
+      // 2.0 = у 2 рази швидше
+      exhaustionDepletionMultiplier: 0.1,
 
-      regenMultiplierPhase1: 0.5, // Бонус швидкості відновлення, поки риба не виснажена повністю
-      punishmentCap: 0.8, // До якого відсотка (80%) відновлюється Фаза 2, якщо Фаза 1 досягла 100%
+      // Керує тим, як швидко реально падає сила/опір риби в кг під час exhaustion.
+      basePowerDropPerSec: 0.01,
+
+      minBasePowerRatio: 0.2,
+      masteryTimeRatio: 0.5,
+      masteryPowerMultiplier: 0.2,
+      regenMultiplierPhase1: 1.5,
+      punishmentCap: 0.8,
 
       debuffs: {
         swimPullMult: 0.75, // Зменшує тягу на 25%
@@ -1188,6 +1214,59 @@ const CONFIG = {
   },
 
   physics: {
+    pixelsPerMeter: 50,
+    fixedDtMs: 16.666,
+    maxDtMs: 50,
+    waterResistanceKgPerKgPerMps: 0.08,
+    currentResistanceMultiplier: 1.0,
+
+    // Active fish-state force tuning. These values make idle/rest/swim/dash
+    // visibly change kg tension without returning to old level/basePower physics.
+    fishStateMovementForceMultiplier: 0.35,
+    fishVelocityForceMultiplier: 1.0,
+    fishAwayIntentBase: 0.25,
+    fishAwayIntentPowerScale: 0.45,
+    fishLateralIntentMultiplier: 0.9,
+    fishMinStaminaActivityMultiplier: 0.8,
+    fishExhaustedSpeedRatio: 0.6,
+
+    forceKgToPxPerSec2: 75,
+    rodAnglePenalty: {
+      enabled: true,
+      noPenaltyAngleDeg: 15,
+      maxPenaltyAngleDeg: 75,
+      maxPenaltyMultiplier: 0.65,
+    },
+    line: {
+      defaultMaxLoadKg: 12,
+      durabilityMaxLoadLossPerPercent: 0.001,
+      noReelExtraLengthMeters: 1.8,
+      noReelRodLengthMultiplier: 2.0,
+      fullExtensionTensionMultiplier: 1.0,
+      slackTensionMultiplier: 0.0,
+    },
+    drag: {
+      minRatio: 0,
+      maxRatio: 1,
+      yEscapeSpeedAtFullDrag: 0.02,
+      tensionGrowthPower: 1.6,
+      autoRetrieveEnabled: true,
+
+      // Фрикціон тепер змінюється жестом так само, як сила закидання:
+      // вертикальне протягування пальця/миші заповнює шкалу плавно, без кроків.
+      pointerControlEnabled: true,
+      powerSwipePx: 200,
+      powerDeadzoneRatio: 0.25,
+      powerAnchorReturnPxPerSecond: 1200,
+
+      // Залишається для клавіш W/S або ArrowUp/ArrowDown.
+      changeSpeedPerSec: 0.35,
+    },
+    directionForce: {
+      sameDirectionMultiplier: 0.4,
+      sideDirectionMultiplier: 1.0,
+      oppositeDirectionMultiplier: 1.8,
+    },
     fishForceMultiplier: 0.01,
     playerForceMultiplier: 0.017,
     playerSteeringMultiplier: 1.5, // Mechanical advantage of rod for X-axis steering
@@ -1232,6 +1311,8 @@ const CONFIG = {
   },
 
   tension: {
+    kgSmoothPerSecond: 18,
+    overloadGraceMs: 120,
     powerRatioExponent: 2.0,
     sensitivityMultiplier: 1.5, // How much player input affects tension
     smoothApproach: 0.15,

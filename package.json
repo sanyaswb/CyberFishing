@@ -3,7 +3,9 @@
   "source": "index.html",
   "scripts": {
     "dev": "node utils/dev-server.js",
-    "check:js": "node utils/check-js.js"
+    "check:js": "node utils/check-js.js",
+    "check:physics": "node utils/fps-physics-check.js",
+    "check:fight": "node utils/fight-systems-check.js"
   },
   "dependencies": {
     "glob": "^13.0.6",

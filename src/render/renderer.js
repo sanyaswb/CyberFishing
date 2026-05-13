@@ -957,6 +957,64 @@
     this.#ctx.fillText(label, x + width / 2, y + height + labelOffsetY);
   }
 
+  drawDragBar(dragRatio, dragConfig, tensionConfig, uiIndicatorsConfig) {
+    const width = tensionConfig?.barWidth || 300;
+    const height = Math.max(8, Math.round((tensionConfig?.barHeight || 20) * 0.65));
+    const x = this.#resolveX(uiIndicatorsConfig?.x, width);
+    const baseY = uiIndicatorsConfig?.y || 40;
+    const spacing = uiIndicatorsConfig?.spacing || 40;
+    const y = baseY + spacing + (tensionConfig?.barHeight || 20) + 14;
+    this.#drawSimpleRatioBar({
+      ratio: dragRatio,
+      x,
+      y,
+      width,
+      height,
+      label: "DRAG",
+      color: dragConfig?.barColor || "#73c2fb",
+      backgroundColor: tensionConfig?.backgroundColor || "#1a2b3c",
+      borderColor: tensionConfig?.borderColor || "#4a5b6c",
+      labelColor: tensionConfig?.labelColor || "#8a9bac",
+      labelFont: tensionConfig?.labelFont || "bold 12px monospace",
+      labelOffsetX: tensionConfig?.labelOffsetX || 60,
+      labelOffsetY: Math.max(10, Math.round(height * 0.85)),
+    });
+  }
+
+  #drawSimpleRatioBar({
+    ratio,
+    x,
+    y,
+    width,
+    height,
+    label,
+    color,
+    backgroundColor,
+    borderColor,
+    labelColor,
+    labelFont,
+    labelOffsetX,
+    labelOffsetY,
+  }) {
+    const clampedRatio = Math.max(0, Math.min(1, Number(ratio) || 0));
+    const padding = 2;
+    this.#ctx.save();
+    this.#ctx.fillStyle = backgroundColor;
+    this.#ctx.fillRect(x - padding, y - padding, width + padding * 2, height + padding * 2);
+    this.#ctx.strokeStyle = borderColor;
+    this.#ctx.lineWidth = 1;
+    this.#ctx.strokeRect(x - padding, y - padding, width + padding * 2, height + padding * 2);
+    this.#ctx.fillStyle = color;
+    this.#ctx.fillRect(x, y, width * clampedRatio, height);
+    this.#ctx.fillStyle = labelColor;
+    this.#ctx.font = labelFont;
+    this.#ctx.textAlign = "left";
+    this.#ctx.fillText(label, x - labelOffsetX, y + labelOffsetY);
+    this.#ctx.textAlign = "right";
+    this.#ctx.fillText(`${Math.round(clampedRatio * 100)}%`, x + width + labelOffsetX, y + labelOffsetY);
+    this.#ctx.restore();
+  }
+
   drawTensionBar(tensionMeter, tensionConfig, uiIndicatorsConfig) {
     const barWidth = tensionConfig.barWidth;
     const barHeight = tensionConfig.barHeight;
@@ -967,9 +1025,7 @@
 
     const padding = tensionConfig.borderPadding;
     const tension = tensionMeter.getTension();
-    const pulseIntensity = tensionMeter.getPulseIntensity({
-      tension: tensionConfig,
-    });
+    const pulseIntensity = tensionMeter.getPulseIntensity(tensionConfig);
 
     this.#ctx.fillStyle = tensionConfig.backgroundColor;
     this.#ctx.fillRect(
@@ -1005,8 +1061,12 @@
     this.#ctx.fillStyle = tensionConfig.labelColor;
     this.#ctx.font = tensionConfig.labelFont;
     this.#ctx.textAlign = "left";
+    const tensionKg = tensionMeter.getTensionKg?.();
+    const tensionLabel = Number.isFinite(tensionKg)
+      ? `TENSION: ${Math.round(tension)}% (${tensionKg.toFixed(1)}kg)`
+      : `TENSION: ${Math.round(tension)}%`;
     this.#ctx.fillText(
-      `TENSION: ${Math.round(tension)}%`,
+      tensionLabel,
       barX - tensionConfig.labelOffsetX,
       barY + tensionConfig.labelOffsetY,
     );
