@@ -404,6 +404,8 @@ class GameApplication {
         this.#showMissingRodInventoryWarning(),
       showMissingReelInventoryWarning: () =>
         this.#showMissingReelInventoryWarning(),
+      showMissingLineInventoryWarning: () =>
+        this.#showMissingLineInventoryWarning(),
       setInvalidCastMarker: (marker) => {
         this.invalidCastMarker = marker;
       },
@@ -621,6 +623,12 @@ class GameApplication {
       if (this.#isItemDatabaseUpdate(e)) {
         this.#handleItemDatabaseUpdate();
       }
+      if (this.#isFishDatabaseUpdate(e)) {
+        this.#handleFishDatabaseUpdate();
+      }
+      if (this.#isMapDatabaseUpdate(e)) {
+        this.#handleMapDatabaseUpdate();
+      }
       if (this.#isLocationsConfigUpdate(e)) {
         this.#viewportFacade.refreshLocationConfig(this.#config.locations);
       }
@@ -636,6 +644,25 @@ class GameApplication {
     this.#inventory?.refreshItemData?.();
     const eq = this.#inventory?.getEquipped?.();
     if (eq) this.#fightService?.syncEquipment(eq);
+  }
+
+  #isFishDatabaseUpdate(event) {
+    const path = event?.detail?.path;
+    return Array.isArray(path) && path[0] === "FISH_DB";
+  }
+
+  #handleFishDatabaseUpdate() {
+    if (typeof FISH_DB === "undefined") return;
+    this.#bite?.setFishDatabase?.(FISH_DB);
+  }
+
+  #isMapDatabaseUpdate(event) {
+    const path = event?.detail?.path;
+    return Array.isArray(path) && path[0] === "MAP_DB";
+  }
+
+  #handleMapDatabaseUpdate() {
+    this.#viewportFacade.refreshLocationConfig(this.#config.locations);
   }
 
   #isLocationsConfigUpdate(event) {
@@ -776,6 +803,7 @@ class GameApplication {
         this.#config.casting,
         this.#config.tension,
         this.#clock.now,
+        this.chumCastDistance,
       );
       return;
     }
@@ -911,8 +939,13 @@ class GameApplication {
     const rodName = this.#equipmentRules?.getRodDisplayName?.(eq) || "Ця";
     this.#inventoryUI?.open?.();
     this.#inventoryUI?.showWarning?.(
-      `${rodName}: потрібна котушка з ліскою для закидання.`,
+      `${rodName}: потрібна котушка для закидання.`,
     );
+  }
+
+  #showMissingLineInventoryWarning() {
+    this.#inventoryUI?.open?.();
+    this.#inventoryUI?.showWarning?.("Спочатку споряди ліску для закидання.");
   }
 
   start() {

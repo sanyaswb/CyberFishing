@@ -46,7 +46,11 @@ function printLocationMapDebug() {
   const safeBottom = Number(map.safeZone?.bottom) || baseRes.height;
   const safeHeight = Math.max(0, safeBottom - safeTop);
   const safeCells = safeHeight / cellSize;
-  const castableBounds = getZoneBounds(map.zones?.castable || [], cellSize, baseRes);
+  const castableBounds = getZoneBounds(
+    map.zones?.castable || [],
+    cellSize,
+    baseRes,
+  );
   const accuracyPercent = normalizeDebugPercent(
     CONFIG.casting?.accuracyDistancePercent,
   );
@@ -105,7 +109,9 @@ function printLocationMapDebug() {
       },
       {
         label: "castable bottom",
-        y: castableBounds ? castableBounds.y + castableBounds.height : safeBottom,
+        y: castableBounds
+          ? castableBounds.y + castableBounds.height
+          : safeBottom,
       },
       { label: "safe bottom", y: safeBottom },
     ]),
@@ -249,7 +255,9 @@ function getEquipmentPower(item) {
   const durability = Number(item.durability ?? 100);
   const lossPerPercent = Number(item.durabilityMaxLoadLossPerPercent ?? 0.001);
   if (!Number.isFinite(maxLoad) || maxLoad <= 0) return 0;
-  return maxLoad * Math.max(0.1, 1 - Math.max(0, 100 - durability) * lossPerPercent);
+  return (
+    maxLoad * Math.max(0.1, 1 - Math.max(0, 100 - durability) * lossPerPercent)
+  );
 }
 
 function getHookPower(hook) {
@@ -276,7 +284,11 @@ function renderLocationModule(ctx) {
     return;
   }
 
-  const castableBounds = getZoneBounds(map.zones?.castable || [], cellSize, baseRes);
+  const castableBounds = getZoneBounds(
+    map.zones?.castable || [],
+    cellSize,
+    baseRes,
+  );
   const safeTop = Number(map.safeZone?.top) || 0;
   const safeBottom = Number(map.safeZone?.bottom) || baseRes.height;
 
@@ -309,7 +321,7 @@ function renderForcesModule(ctx) {
   const reel = rod.hasReel === false ? null : eq.reel || {};
 
   console.table({
-    "Fish": fish ? `${fish.name || fish.id} / ${fmt(fish.weight, 3)} kg` : "n/a",
+    Fish: fish ? `${fish.name || fish.id} / ${fmt(fish.weight, 3)} kg` : "n/a",
     "Fish state": live.fishState || "n/a",
     "Rod max load kg": fmt(getEquipmentPower(rod), 3),
     "Reel max load kg": fmt(getEquipmentPower(reel), 3),
@@ -349,7 +361,9 @@ function renderDeviationsModule(ctx) {
     "Player total force": Number.isFinite(playerY + playerX)
       ? fmt(Math.hypot(playerY, playerX), 3)
       : "n/a",
-    "Live data source": live.gameState ? `debug-live-update (${live.gameState})` : "none",
+    "Live data source": live.gameState
+      ? `debug-live-update (${live.gameState})`
+      : "none",
   });
 }
 
@@ -357,7 +371,8 @@ function renderTensionModule(ctx) {
   const live = ctx.live || {};
   const config = CONFIG.tension || {};
   const maxTackleLoadKg = Number(live.maxTackleLoadKg ?? live.playerMaxPowerY);
-  const fishForceKg = Number(live.totalFishForceKg) ||
+  const fishForceKg =
+    Number(live.totalFishForceKg) ||
     Math.hypot(Number(live.fishForceY) || 0, Number(live.fishForceX) || 0);
   const dragLimitKg = Number(live.dragLimitKg) || 0;
   const tensionKg = Number(live.tensionKg) || 0;
@@ -374,7 +389,8 @@ function renderTensionModule(ctx) {
     "Tension / max load": fmt(tensionRatio, 3),
     "Kg smoothing / sec": fmt(config.kgSmoothPerSecond, 3),
     "Break threshold %": fmt(config.breakThreshold, 2),
-    "Formula source": "FightPhysicsSystem.calculateTensionKg + TackleStressSystem",
+    "Formula source":
+      "FightPhysicsSystem.calculateTensionKg + TackleStressSystem",
   });
 }
 
@@ -421,9 +437,9 @@ function renderCatchTimeModule(ctx) {
   const masteryRatio = CONFIG.stamina?.mechanics?.masteryTimeRatio ?? 0.5;
 
   console.table({
-    "Fish": fish ? fish.name || fish.id : "n/a",
+    Fish: fish ? fish.name || fish.id : "n/a",
     "Weight kg": fish ? fmt(fish.weight, 3) : "n/a",
-    "Level": fish?.level ?? "n/a",
+    Level: fish?.level ?? "n/a",
     "Ideal exhaustion duration": fmtMs(durationMs),
     "Mastery starts after": Number.isFinite(durationMs)
       ? fmtMs(durationMs * masteryRatio)
@@ -467,7 +483,7 @@ function renderNetModule(ctx) {
     "Equipped net": net.name || net.id || "none",
     "Net active": net.active === true,
     "Net level": net.level ?? "n/a",
-    "Fish": fish ? fish.name || fish.id : "n/a",
+    Fish: fish ? fish.name || fish.id : "n/a",
     "Fish weight": fish ? `${fmt(fish.weight, 3)} kg` : "n/a",
     "Last net roll": ctx.lastNetRoll
       ? `${ctx.lastNetRoll.roll.toFixed(1)} / ${ctx.lastNetRoll.chance}%`
@@ -643,6 +659,22 @@ class GodMode {
   static get noEquipmentLoss() {
     return this.isActive && CONFIG.debug.godMode.noEquipmentLoss;
   }
+
+  static get fixedBiteChanceEnabled() {
+    return this.isActive && CONFIG.debug.godMode.fixedBiteChanceEnabled;
+  }
+
+  static get fixedBiteChancePercent() {
+    if (!this.fixedBiteChanceEnabled) return null;
+    const value = Number(CONFIG.debug.godMode.fixedBiteChancePercent);
+    return Math.max(0, Math.min(100, Number.isFinite(value) ? value : 100));
+  }
+
+  static get biteSequenceMode() {
+    if (!this.isActive) return "default";
+    const mode = String(CONFIG.debug.godMode.biteSequenceMode || "default").toLowerCase();
+    return mode === "guaranteed" || mode === "normal" ? mode : "default";
+  }
 }
 
 class TestBuildProvider {
@@ -675,6 +707,12 @@ class TestBuildProvider {
         buildId: boxInstanceId,
       },
       {
+        instanceId: "debug_line_001",
+        itemId: "line_test_13m",
+        quantity: 1,
+        buildId: boxInstanceId,
+      },
+      {
         instanceId: "debug_reel_001",
         itemId: "float_day",
         quantity: 1,
@@ -699,6 +737,12 @@ class TestBuildProvider {
         buildId: boxInstanceId2,
       },
       {
+        instanceId: "debug_line_002",
+        itemId: "line_test_13m",
+        quantity: 1,
+        buildId: boxInstanceId2,
+      },
+      {
         instanceId: "debug_feeder_spring_001",
         itemId: "feeder_spring_basic",
         quantity: 1,
@@ -706,6 +750,12 @@ class TestBuildProvider {
       },
       {
         instanceId: "debug_hook_basic_002",
+        itemId: "hook_basic",
+        quantity: 1,
+        buildId: boxInstanceId2,
+      },
+      {
+        instanceId: "debug_hook_basic_003",
         itemId: "hook_basic",
         quantity: 1,
         buildId: boxInstanceId2,

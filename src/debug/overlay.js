@@ -277,7 +277,7 @@ class FightPhysicsModule extends OverlayModule {
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Tension:</span><span style="color:#ffaa00; font-weight:bold;">${(d.tensionKg || 0).toFixed(2)} / ${(d.maxTackleLoadKg || 0).toFixed(2)} kg</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Drag:</span><span style="color:#00ccff; font-weight:bold;">${(d.dragPercent || 0).toFixed(0)}% / ${(d.dragLimitKg || 0).toFixed(2)}kg</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Line:</span><span style="color:#00ff80;">${(d.lineReleasedMeters || 0).toFixed(1)}m / ${(d.lineTotalLengthMeters || 0).toFixed(1)}m</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Remaining:</span><span style="color:#8a9bac;">${(d.lineRemainingMeters || 0).toFixed(1)}m</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Max remaining:</span><span style="color:#8a9bac;">${(d.lineRemainingMeters || 0).toFixed(1)}m</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Full line:</span><span style="color:${d.isLineFullyExtended ? "#ff4444" : "#00ff80"}; font-weight:bold;">${d.isLineFullyExtended ? "YES" : "NO"}</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:12px;"><span>Angle penalty:</span><span style="color:#ffaa00;">x${(d.anglePenalty || 1).toFixed(2)} (${(d.angleDeg || 0).toFixed(0)}deg)</span></div>`;
     return html;
@@ -349,6 +349,19 @@ class ChancesDetailModule extends OverlayModule {
 
   render(d) {
     let html = this.formatHeader("🧮 РОЗРАХУНОК ШАНСІВ", "#b066ff");
+    const godMode = typeof CONFIG !== "undefined" ? CONFIG.debug?.godMode : null;
+    if (godMode?.enabled) {
+      const biteMode = godMode.biteSequenceMode || "default";
+      if (godMode.fixedBiteChanceEnabled) {
+        const fixedPercent = Math.max(
+          0,
+          Math.min(100, Number(godMode.fixedBiteChancePercent) || 0),
+        );
+        html += `<div style="margin-bottom:6px; color:#00ff80; font-size:11px;">GOD Bite Chance: ${fixedPercent.toFixed(0)}% · Mode: ${biteMode}</div>`;
+      } else if (biteMode !== "default") {
+        html += `<div style="margin-bottom:6px; color:#00ff80; font-size:11px;">GOD Bite Mode: ${biteMode}</div>`;
+      }
+    }
     d.liveChances.forEach((fish) => {
       const b = fish.breakdown || {};
       const chumColor = parseFloat(b.chum) > 1.0 ? "#00ff80" : "#ddd";

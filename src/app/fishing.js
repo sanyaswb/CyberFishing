@@ -120,6 +120,10 @@ class FishingController {
     if (reason === "reel" && eq?.reel) {
       this.#equipment.consumeReel(eq);
     }
+
+    if (reason === "line" && eq?.line) {
+      this.#equipment.consumeLine(eq);
+    }
   }
 
   tryConsumeBaitDuringBite(eq, stepInfo, rng, physicsConfig) {
@@ -193,8 +197,11 @@ class CastService {
     const rodPos =
       context.rodVirtualPos || this.#getRodVirtualPos(this.#getDynamicBounds());
     const dist = Math.hypot(vx - rodPos.x, vy - rodPos.y);
-    const maxDist = normalizeDistance(eq.rod?.maxDistance, 2000);
-    const castDistanceRatio = Math.min(1, dist / maxDist);
+    const maxDist = this.#equipmentRules.getEffectiveCastDistance(eq, 2000);
+    if (maxDist <= 0 || dist > maxDist + 0.001) {
+      return { success: false, reason: "cast_distance_exceeded" };
+    }
+    const castDistanceRatio = Math.min(1, dist / Math.max(1, maxDist));
     const castStartTime = this.#clock.now;
 
     let currentHookDepth = context.currentHookDepth;
@@ -254,9 +261,11 @@ class CastService {
 }
 
 class FightSessionFactory {
-  constructor({ config, rng }) {
+  constructor({ config, rng, castDistanceCalculator = null }) {
     this.config = config;
     this.rng = rng;
+    this.castDistanceCalculator =
+      castDistanceCalculator || new CastDistanceCalculator(config || {});
   }
 
   create(fishData, equipment) {
@@ -265,7 +274,7 @@ class FightSessionFactory {
       equipment.rod?.basePower || 1.0,
       equipment.rod?.compensation || 0,
       equipment.rod?.type || "float",
-      normalizeDistance(equipment.rod?.maxDistance, 100),
+      this.castDistanceCalculator.getMaxCastDistancePx(equipment, 100),
       equipment.rod?.hasReel !== false,
       {
         lengthMeters: equipment.rod?.lengthMeters,
@@ -289,7 +298,6 @@ class FightSessionFactory {
             durability: equipment.reel.durability,
             durabilityMaxLoadLossPerPercent:
               equipment.reel.durabilityMaxLoadLossPerPercent,
-            line: equipment.reel.line,
           },
         )
       : new Reel(0, 0, { lineCapacityMeters: 0 });
@@ -310,6 +318,8 @@ class FightSessionFactory {
       rod,
       reel,
       config: this.config.physics,
+      lineStats: equipment.line,
+      castDistanceCalculator: this.castDistanceCalculator,
     });
     const dragSystem = new DragSystem(this.config.physics?.drag, reel);
     const fishForceSystem = new FishForceSystem({
@@ -357,7 +367,7 @@ class FightSessionFactory {
       equipment.rod?.basePower || 1.0,
       equipment.rod?.compensation || 0,
       equipment.rod?.type || "float",
-      normalizeDistance(equipment.rod?.maxDistance, 100),
+      this.castDistanceCalculator.getMaxCastDistancePx(equipment, 100),
       equipment.rod?.hasReel !== false,
       {
         lengthMeters: equipment.rod?.lengthMeters,
@@ -381,7 +391,6 @@ class FightSessionFactory {
             durability: equipment.reel.durability,
             durabilityMaxLoadLossPerPercent:
               equipment.reel.durabilityMaxLoadLossPerPercent,
-            line: equipment.reel.line,
           },
         )
       : new Reel(0, 0, { lineCapacityMeters: 0 });
@@ -395,6 +404,8 @@ class FightSessionFactory {
       rod,
       reel,
       config: this.config.physics,
+      lineStats: equipment.line,
+      castDistanceCalculator: this.castDistanceCalculator,
     });
     return { rod, reel, hook, lineSystem };
   }

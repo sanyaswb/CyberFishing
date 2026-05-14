@@ -1171,6 +1171,7 @@ class InventoryUI {
 
     checkConflict(equippedItems.rod);
     checkConflict(equippedItems.reel);
+    checkConflict(equippedItems.line);
     checkConflict(equippedItems.float);
     checkConflict(equippedItems.sinker);
     checkConflict(equippedItems.net);
@@ -1238,6 +1239,9 @@ class InventoryUI {
       const canHaveReel = hasReelProp ?? rod.type !== "pole";
       if (canHaveReel)
         rodGroup.slots.push({ id: "reel", label: "Котушка", type: "reel" });
+      const canHaveLine = !canHaveReel || !!equipped.reel;
+      if (canHaveLine)
+        rodGroup.slots.push({ id: "line", label: "Ліска", type: "line" });
     }
     groups.push(rodGroup);
 
@@ -1539,6 +1543,7 @@ class InventoryUI {
             "level",
             "basePower",
             "compensation",
+            "maxDistance",
             "durabilityMaxLoadLossPerPercent",
             "hasReel",
             "capabilities",
@@ -1635,6 +1640,7 @@ class InventoryUI {
       float: "Поплавкова: болонська або махова",
       hook: "Поплавкова / фідерна",
       lure: "Спінінг",
+      line: "Ліска потрібної довжини",
       reel: "Вудка з котушкою",
       sinker: "Поплавкова / донна",
     };
@@ -1821,6 +1827,7 @@ class InventoryUI {
 
     countItem(equippedItems.rod);
     countItem(equippedItems.reel);
+    countItem(equippedItems.line);
     countItem(equippedItems.float);
     countItem(equippedItems.sinker);
     countItem(equippedItems.feederChum);

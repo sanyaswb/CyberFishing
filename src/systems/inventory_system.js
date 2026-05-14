@@ -242,6 +242,9 @@ class EquipmentValidator {
   static validate(itemData, equippedHydrated) {
     if (!itemData) return { isValid: false, reason: "Помилка даних предмета" };
     if (this.VALID_BASE_TYPES.has(itemData.type)) return { isValid: true };
+    if (itemData.type === "fishing_line") {
+      return this.validateFishingLine(itemData, equippedHydrated);
+    }
 
     const reqTag = itemData.requiresTag || itemData.engineStats?.requiresTag;
     if (!reqTag) return { isValid: true };
@@ -271,7 +274,86 @@ class EquipmentValidator {
     return { isValid: true };
   }
 
+  static validateFishingLine(itemData, equippedHydrated) {
+    const rod = equippedHydrated?.rod;
+    if (!rod) {
+      return {
+        isValid: false,
+        reason: "Спочатку екіпіруйте вудку для ліски.",
+      };
+    }
+
+    const rodNeedsReel = this.#rodRequiresReel(rod);
+    if (rodNeedsReel && !equippedHydrated?.reel) {
+      return {
+        isValid: false,
+        reason: "Для цієї вудки спочатку екіпіруйте котушку.",
+      };
+    }
+
+    const lineLength = this.#numberOrDefault(
+      itemData.lengthMeters ?? itemData.engineStats?.lengthMeters,
+      0,
+    );
+    const minLength = this.getMinimumLineLengthMeters(rod);
+    if (lineLength < minLength) {
+      return {
+        isValid: false,
+        reason: `Ліска закоротка: потрібно мінімум ${this.#formatMeters(minLength)}м для цієї вудки.`,
+      };
+    }
+
+    const reelCapacity = this.#numberOrDefault(
+      equippedHydrated?.reel?.lineCapacityMeters ??
+        equippedHydrated?.reel?.engineStats?.lineCapacityMeters,
+      Infinity,
+    );
+    if (rodNeedsReel && Number.isFinite(reelCapacity) && lineLength > reelCapacity) {
+      return {
+        isValid: false,
+        reason: `Ліска не вміщується на котушку: максимум ${this.#formatMeters(reelCapacity)}м.`,
+      };
+    }
+
+    return { isValid: true };
+  }
+
+  static getMinimumLineLengthMeters(rod) {
+    const rodLength = this.#numberOrDefault(
+      rod?.lengthMeters ?? rod?.engineStats?.lengthMeters,
+      0,
+    );
+    const multiplier =
+      typeof CONFIG !== "undefined"
+        ? Number(CONFIG.physics?.line?.rodLengthReserveMultiplier ?? 2)
+        : 2;
+    return Math.max(0, rodLength * (Number.isFinite(multiplier) ? multiplier : 2));
+  }
+
+  static #numberOrDefault(value, fallback) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  static #formatMeters(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "0";
+    return Number.isInteger(number) ? String(number) : number.toFixed(1);
+  }
+
   static getCompatibilityInfo(itemData, equippedHydrated) {
+    if (itemData?.type === "fishing_line") {
+      const validation = this.validateFishingLine(itemData, equippedHydrated);
+      return {
+        hasCompatibility: true,
+        isCompatible: validation.isValid,
+        requiredTag: "line",
+        reason: validation.reason || null,
+        rodType: equippedHydrated?.rod?.type || null,
+        rodHasReel: EquipmentValidator.#rodRequiresReel(equippedHydrated?.rod),
+      };
+    }
+
     const reqTag = itemData?.requiresTag || itemData?.engineStats?.requiresTag;
     if (!reqTag) {
       return {
@@ -303,6 +385,7 @@ class EquipmentValidator {
     const parts = [
       equippedHydrated.rod,
       equippedHydrated.reel,
+      equippedHydrated.line,
       equippedHydrated.float,
       equippedHydrated.sinker,
       ...(equippedHydrated.hooks || []),
@@ -327,10 +410,16 @@ class InventoryManager {
   #inventory;
   #equipment;
   #events;
+  #castDistanceCalculator;
   #isLocked = false;
   #equippedCache = null;
 
-  constructor(itemDB, playerConfig, events = new InventoryEventBridge()) {
+  constructor(
+    itemDB,
+    playerConfig,
+    events = new InventoryEventBridge(),
+    castDistanceCalculator = null,
+  ) {
     const cachedInventory =
       CacheManager.get("player_inventory") || playerConfig.inventory || [];
     const cachedEquipment =
@@ -339,7 +428,10 @@ class InventoryManager {
     this.#db = new ItemDatabase(itemDB);
     this.#inventory = new Inventory(cachedInventory);
     this.#equipment = new InventoryEquipment(SLOT_CONFIG, cachedEquipment);
-    this.#events = events;
+    this.#events = events || new InventoryEventBridge();
+    this.#castDistanceCalculator =
+      castDistanceCalculator ||
+      new CastDistanceCalculator(typeof CONFIG !== "undefined" ? CONFIG : {});
 
     this.#setupDebugTools();
   }
@@ -387,6 +479,7 @@ class InventoryManager {
 
     countId(newRaw.rodId);
     countId(newRaw.reelId);
+    countId(newRaw.lineId);
     countId(newRaw.floatId);
     countId(newRaw.sinkerId);
     countId(newRaw.netId);
@@ -468,6 +561,7 @@ class InventoryManager {
     const slotsToClear = [
       "rod",
       "reel",
+      "line",
       "float",
       "sinker",
       "net",
@@ -510,6 +604,7 @@ class InventoryManager {
       }
     }
 
+    this.#enforceEquippedLineCompatibility();
     this.#saveAndNotify();
   }
 
@@ -550,20 +645,12 @@ class InventoryManager {
 
     pushPositive(effectiveLoad(eq.rod, 0));
 
-    const rodHasReel = eq.rod?.hasReel ?? eq.rod?.engineStats?.hasReel ?? eq.rod?.type !== "float";
+    const rodHasReel =
+      eq.rod?.hasReel ?? eq.rod?.engineStats?.hasReel ?? eq.rod?.type !== "float";
     if (rodHasReel && eq.reel) {
       pushPositive(effectiveLoad(eq.reel, 0));
-      const line = eq.reel.line || eq.reel.engineStats?.line;
-      if (line) {
-        pushPositive(effectiveLoad(line, 0));
-      }
-    } else {
-      const defaultLineKg =
-        typeof CONFIG !== "undefined"
-          ? CONFIG.physics?.line?.defaultMaxLoadKg
-          : 0;
-      pushPositive(defaultLineKg);
     }
+    pushPositive(effectiveLoad(eq.line, 0));
 
     if (values.length === 0) return 0;
     return Math.min(...values);
@@ -750,6 +837,7 @@ class InventoryManager {
     const success = this.#equipment.equip(slotPath, instanceId);
     if (success) {
       this.#equippedCache = null;
+      this.#enforceEquippedLineCompatibility();
       this.#saveAndNotify();
     }
     return success;
@@ -839,6 +927,29 @@ class InventoryManager {
     const validation = this.validateEquip(itemData);
     if (!validation.isValid) return validation;
 
+    const baseSlot = (slotPath || "").split("_")[0];
+    const slotConfig = typeof SLOT_CONFIG !== "undefined" ? SLOT_CONFIG[baseSlot] : null;
+    if (
+      slotConfig?.acceptTypes &&
+      itemData?.type &&
+      !slotConfig.acceptTypes.includes(itemData.type)
+    ) {
+      return {
+        isValid: false,
+        reason: `Предмет не підходить для слота: ${baseSlot}`,
+      };
+    }
+
+    if (itemData?.type === "fishing_line") {
+      if (baseSlot !== "line") {
+        return {
+          isValid: false,
+          reason: "Ліску можна спорядити тільки у слот ліски.",
+        };
+      }
+      return EquipmentValidator.validateFishingLine(itemData, this.getEquipped());
+    }
+
     if (itemData?.type !== "bait") return { isValid: true };
 
     const parsed = this.#parseIndexedSlot(slotPath);
@@ -885,6 +996,7 @@ class InventoryManager {
     this.#equippedCache = {
       rod: this._hydrateInstance(raw.rodId),
       reel: this._hydrateInstance(raw.reelId),
+      line: this._hydrateInstance(raw.lineId),
       float: this._hydrateInstance(raw.floatId),
       sinker: this._hydrateInstance(raw.sinkerId),
       hooks: this.#hydrateSlotArray(raw.hooks),
@@ -894,6 +1006,7 @@ class InventoryManager {
       deliveryChums: this.#hydrateSlotArray(raw.deliveryChums),
       baits: this.#hydrateSlotArray(raw.baits),
     };
+    this.#applyEquippedCastDistanceStats(this.#equippedCache);
     return this.#equippedCache;
   }
 
@@ -941,6 +1054,29 @@ class InventoryManager {
     this.#events.clear();
   }
 
+  #enforceEquippedLineCompatibility() {
+    const raw = this.#equipment.getRawState();
+    if (!raw.lineId) return false;
+
+    const line = this._hydrateInstance(raw.lineId);
+    if (!line) {
+      this.#equipment.unequip("line");
+      this.#equippedCache = null;
+      return true;
+    }
+
+    const equipment = {
+      rod: this._hydrateInstance(raw.rodId),
+      reel: this._hydrateInstance(raw.reelId),
+    };
+    const validation = EquipmentValidator.validateFishingLine(line, equipment);
+    if (validation.isValid) return false;
+
+    this.#equipment.unequip("line");
+    this.#equippedCache = null;
+    return true;
+  }
+
   #getEquippedItemAtSlot(slotPath) {
     const parts = slotPath.split("_");
     const baseSlot = parts[0];
@@ -963,6 +1099,7 @@ class InventoryManager {
 
     countId(raw.rodId);
     countId(raw.reelId);
+    countId(raw.lineId);
     countId(raw.floatId);
     countId(raw.sinkerId);
     countId(raw.feederChumId);
@@ -1017,6 +1154,67 @@ class InventoryManager {
     return true;
   }
 
+  #applyStandaloneCastDistanceStats(item) {
+    if (!this.#isRodItem(item)) return;
+    const requiredLine = EquipmentValidator.getMinimumLineLengthMeters(item);
+    item["Мін. ліска"] = `${this.#formatMeters(requiredLine)}м`;
+  }
+
+  #applyEquippedCastDistanceStats(equipment) {
+    if (!equipment?.rod) return;
+    this.#writeCastDistanceStats(equipment.rod, equipment);
+  }
+
+  #writeCastDistanceStats(rodItem, equipment) {
+    const previewPower = this.#getInventoryPreviewPowerCoefficient();
+    const info = this.#castDistanceCalculator.describe(equipment, previewPower);
+    const requiredLine = EquipmentValidator.getMinimumLineLengthMeters(rodItem);
+    rodItem["Мін. ліска"] = `${this.#formatMeters(requiredLine)}м`;
+
+    if (!equipment?.line) {
+      delete rodItem.maxDistance;
+      rodItem["Ліска"] = "Не споряджена";
+      delete rodItem["Довжина ліски"];
+      delete rodItem["Сила заброса"];
+      delete rodItem["Довжина заброса"];
+      rodItem["Масштаб"] = `${info.pixelsPerMeter}px = 1м`;
+      return;
+    }
+
+    const lineMeters = this.#formatMeters(info.lineLengthMeters);
+    const castMeters = this.#formatMeters(info.effectiveDistanceMeters);
+    const castPx = Math.round(info.effectiveDistancePx);
+    rodItem.maxDistance = Math.round(info.maxDistancePx);
+    rodItem["Довжина ліски"] = `${lineMeters}м`;
+    rodItem["Сила заброса"] = previewPower.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+    rodItem["Довжина заброса"] = `${castMeters}м (${castPx}px)`;
+    rodItem["Масштаб"] = `${info.pixelsPerMeter}px = 1м`;
+    delete rodItem["Ліска"];
+  }
+
+  #getInventoryPreviewPowerCoefficient() {
+    const castingConfig =
+      typeof CONFIG !== "undefined" ? CONFIG.casting || {} : {};
+    const value =
+      castingConfig.inventoryPreviewPowerCoefficient ??
+      castingConfig.powerCoefficient ??
+      castingConfig.castPowerCoefficient ??
+      1;
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return 1;
+    return Math.max(0, Math.min(1, parsed));
+  }
+
+  #isRodItem(item) {
+    return ["spinning", "feeder", "float", "pole"].includes(item?.type);
+  }
+
+  #formatMeters(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "0";
+    return Number.isInteger(number) ? String(number) : number.toFixed(1);
+  }
+
   _hydrateInstance(instanceId) {
     if (!instanceId) return null;
     const invItem = this.#inventory.getInstance(instanceId);
@@ -1031,6 +1229,7 @@ class InventoryManager {
       quantity: invItem.quantity || 1,
       buildId: invItem.buildId,
     };
+    this.#applyStandaloneCastDistanceStats(hydrated);
 
     if (hydrated.type === "build_box") {
       hydrated.name = invItem.buildName || "Без назви (Старий ящик)";
@@ -1062,6 +1261,7 @@ class InventoryManager {
           if (["spinning", "feeder", "float", "pole"].includes(cBase.type))
             cat = "Вудилище";
           else if (cBase.type === "spinning_reel") cat = "Котушка";
+          else if (cBase.type === "fishing_line") cat = "Ліска";
           else if (["float_tackle", "day", "night"].includes(cBase.type))
             cat = "Поплавок";
           else if (["sinker", "feeder_rig"].includes(cBase.type))

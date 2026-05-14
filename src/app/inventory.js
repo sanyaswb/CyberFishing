@@ -67,6 +67,11 @@ class EquipmentService {
     return this.#inventory.consumeEquipped("reel", 1);
   }
 
+  consumeLine(eq = this.getEquipped()) {
+    if (!eq?.line) return false;
+    return this.#inventory.consumeEquipped("line", 1);
+  }
+
   consumeFeederChum(eq = this.getEquipped(), unequipAfterConsume = false) {
     if (!eq?.feederChum) return false;
     return this.#inventory.consumeEquipped(

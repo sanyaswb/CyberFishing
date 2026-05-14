@@ -442,6 +442,7 @@ class ScoutingState extends GameState {
   #pendingCast = null;
   #missingRodWarnedForPress = false;
   #missingReelWarnedForPress = false;
+  #missingLineWarnedForPress = false;
   #isUiDimmed = false;
 
   /** @param {ScoutingStateDeps} deps */
@@ -463,6 +464,7 @@ class ScoutingState extends GameState {
     this.#pendingCast = null;
     this.#missingRodWarnedForPress = false;
     this.#missingReelWarnedForPress = false;
+    this.#missingLineWarnedForPress = false;
     this.#castAim.reset();
     this.#setUiDimmed(false);
   }
@@ -473,6 +475,7 @@ class ScoutingState extends GameState {
     this.#pendingCast = null;
     this.#missingRodWarnedForPress = false;
     this.#missingReelWarnedForPress = false;
+    this.#missingLineWarnedForPress = false;
     this.#setUiDimmed(false);
   }
 
@@ -484,8 +487,13 @@ class ScoutingState extends GameState {
       if (!this.#canStartRodCast(eq)) {
         if (!eq?.rod) {
           this.deps.commands.showMissingRodInventoryWarning?.();
-        } else {
+        } else if (
+          this.deps.rules.equipment.requiresReel(eq) &&
+          !eq?.reel
+        ) {
           this.deps.commands.showMissingReelInventoryWarning?.();
+        } else {
+          this.deps.commands.showMissingLineInventoryWarning?.();
         }
         return;
       }
@@ -506,10 +514,13 @@ class ScoutingState extends GameState {
 
       let isInside = true;
       if (!canCastAnywhere) {
-        const maxDist = this.deps.rules.equipment.getMaxCastDistance(eq);
-        if (maxDist !== Infinity) {
-          isInside = vPos.y >= bounds.bottom - maxDist;
-        }
+        isInside = this.deps.rules.cast.canCastAt(
+          vPos.x,
+          vPos.y,
+          eq,
+          bounds,
+          this.deps.world.getRodVirtualPos(bounds),
+        );
       }
 
       if ((cell && isInside) || canCastAnywhere) {
@@ -561,6 +572,9 @@ class ScoutingState extends GameState {
       if (!this.deps.isAimingChum()) {
         const visual = this.#castAim.getVisualState();
         if (visual) {
+          const eq = this.deps.inventory.getEquipped();
+          const maxDistance =
+            this.deps.rules.equipment.getEffectiveCastDistance(eq);
           this.#drawAccuracyPreview(renderer, bounds, this.#castAim, visual);
           renderer.drawCastPowerAim(
             this.deps.projector,
@@ -569,6 +583,7 @@ class ScoutingState extends GameState {
             this.deps.config.casting,
             this.deps.config.tension,
             this.deps.clock.now,
+            maxDistance,
           );
         }
       }
@@ -578,7 +593,7 @@ class ScoutingState extends GameState {
     if (!this.deps.isAimingChum()) {
       if (this.deps.config.locations?.showAimingZone !== false) {
         const eq = this.deps.inventory.getEquipped();
-        let maxDist = this.deps.rules.equipment.getMaxCastDistance(eq);
+        let maxDist = this.deps.rules.equipment.getEffectiveCastDistance(eq);
 
         if (maxDist !== Infinity) {
           maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
@@ -612,6 +627,7 @@ class ScoutingState extends GameState {
     if (!input?.pointerDown) {
       this.#missingRodWarnedForPress = false;
       this.#missingReelWarnedForPress = false;
+      this.#missingLineWarnedForPress = false;
     }
 
     const eq = this.deps.inventory.getEquipped();
@@ -630,6 +646,13 @@ class ScoutingState extends GameState {
       ) {
         this.deps.commands.showMissingReelInventoryWarning?.();
         this.#missingReelWarnedForPress = true;
+      } else if (
+        eq?.rod &&
+        !this.deps.rules.equipment.hasEquippedLine(eq) &&
+        !this.#missingLineWarnedForPress
+      ) {
+        this.deps.commands.showMissingLineInventoryWarning?.();
+        this.#missingLineWarnedForPress = true;
       }
       return false;
     }
@@ -658,7 +681,7 @@ class ScoutingState extends GameState {
 
     const canCastAnywhere =
       this.deps.services.devFlags.isEnabled("infiniteCasting");
-    const maxDistance = this.deps.rules.equipment.getMaxCastDistance(eq);
+    const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
     const accuracyPx =
       Number(eq?.rod?.accuracy) ||
       Number(eq?.rod?.engineStats?.accuracy) ||
@@ -715,7 +738,8 @@ class ScoutingState extends GameState {
 
   #canStartRodCast(eq) {
     if (!eq?.rod) return false;
-    return !this.deps.rules.equipment.requiresReel(eq) || !!eq.reel;
+    if (this.deps.rules.equipment.requiresReel(eq) && !eq.reel) return false;
+    return this.deps.rules.equipment.hasEquippedLine(eq);
   }
 
   #isCancelledRelease(release) {
@@ -743,7 +767,7 @@ class ScoutingState extends GameState {
   #drawAccuracyPreview(renderer, bounds, aim, visual) {
     if (!this.deps.config.debug?.casting?.showAccuracyArea) return;
     const eq = this.deps.inventory.getEquipped();
-    const maxDistance = this.deps.rules.equipment.getMaxCastDistance(eq);
+    const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
     const accuracyPx =
       Number(eq?.rod?.accuracy) ||
       Number(eq?.rod?.engineStats?.accuracy) ||
@@ -967,6 +991,7 @@ class WaitingState extends GameState {
     );
     const visual = this.#recastAim.getVisualState();
     if (visual) {
+      const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
       this.#drawRecastAccuracyPreview(renderer, bounds);
       renderer.drawCastPowerAim(
         this.deps.projector,
@@ -975,6 +1000,7 @@ class WaitingState extends GameState {
         this.deps.config.casting,
         this.deps.config.tension,
         this.deps.clock.now,
+        maxDistance,
       );
     }
   }
@@ -1001,7 +1027,7 @@ class WaitingState extends GameState {
 
     const canCastAnywhere =
       this.deps.services.devFlags.isEnabled("infiniteCasting");
-    const maxDistance = this.deps.rules.equipment.getMaxCastDistance(eq);
+    const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
     const accuracyPx =
       Number(eq?.rod?.accuracy) ||
       Number(eq?.rod?.engineStats?.accuracy) ||
@@ -1060,15 +1086,13 @@ class WaitingState extends GameState {
     const cell = this.deps.world.checkWater(vPos.x, vPos.y);
     const bounds = this.deps.world.getDynamicBounds();
 
-    let maxDist = this.deps.rules.equipment.getMaxCastDistance(eq);
-    if (maxDist !== Infinity) {
-      maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
-    }
-
-    let isInside = true;
-    if (maxDist !== Infinity) {
-      isInside = vPos.y >= bounds.bottom - maxDist;
-    }
+    const isInside = this.deps.rules.cast.canCastAt(
+      vPos.x,
+      vPos.y,
+      eq,
+      bounds,
+      this.deps.world.getRodVirtualPos(bounds),
+    );
 
     if (cell && isInside) {
       this.deps.castManager.registerCast(this.deps.clock.now);
@@ -1101,7 +1125,7 @@ class WaitingState extends GameState {
   #drawRecastAccuracyPreview(renderer, bounds) {
     if (!this.deps.config.debug?.casting?.showAccuracyArea) return;
     const eq = this.deps.inventory.getEquipped();
-    const maxDistance = this.deps.rules.equipment.getMaxCastDistance(eq);
+    const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
     const accuracyPx =
       Number(eq?.rod?.accuracy) ||
       Number(eq?.rod?.engineStats?.accuracy) ||

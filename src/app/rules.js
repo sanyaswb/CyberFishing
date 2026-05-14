@@ -1,5 +1,14 @@
 /** @typedef {{ getEquipped: () => object }} IEquipmentQueries */
 class EquipmentRules {
+  #castDistanceCalculator;
+  #config;
+
+  constructor(castDistanceCalculator = null, config = null) {
+    this.#config = config || (typeof CONFIG !== "undefined" ? CONFIG : {});
+    this.#castDistanceCalculator =
+      castDistanceCalculator || new CastDistanceCalculator(this.#config);
+  }
+
   isSpinning(equipment) {
     return equipment?.rod?.type === "spinning";
   }
@@ -36,6 +45,10 @@ class EquipmentRules {
     return rod.hasReel ?? rod.engineStats?.hasReel ?? rod.type !== "pole";
   }
 
+  hasEquippedLine(equipment) {
+    return (Number(equipment?.line?.lengthMeters) || 0) > 0;
+  }
+
   canSelectDepth(equipment) {
     if (!equipment?.rod) return false;
     if (this.isFeeder(equipment)) return false;
@@ -47,7 +60,49 @@ class EquipmentRules {
   }
 
   getMaxCastDistance(equipment, fallback = Infinity) {
-    return normalizeDistance(equipment?.rod?.maxDistance, fallback);
+    const distance = this.#castDistanceCalculator.getMaxCastDistancePx(
+      equipment,
+      fallback,
+    );
+    return normalizeDistance(distance, fallback);
+  }
+
+  getEffectiveCastDistance(
+    equipment,
+    fallback = Infinity,
+    castPowerCoefficient = null,
+  ) {
+    const power =
+      castPowerCoefficient === null || castPowerCoefficient === undefined
+        ? this.getCastPowerCoefficient()
+        : castPowerCoefficient;
+    const distance = this.#castDistanceCalculator.getEffectiveCastDistancePx(
+      equipment,
+      power,
+    );
+    return normalizeDistance(distance, fallback);
+  }
+
+  getCastPowerCoefficient(fallback = 1) {
+    const castingConfig = this.#config?.casting || {};
+    const value =
+      castingConfig.powerCoefficient ??
+      castingConfig.castPowerCoefficient ??
+      castingConfig.inventoryPreviewPowerCoefficient ??
+      fallback;
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return this.#clamp01(fallback);
+    return this.#clamp01(parsed);
+  }
+
+  getCastDistanceInfo(equipment, castPowerCoefficient = 1) {
+    return this.#castDistanceCalculator.describe(equipment, castPowerCoefficient);
+  }
+
+  #clamp01(value) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return 0;
+    return Math.max(0, Math.min(1, parsed));
   }
 
   getMaxHookDepth(equipment, config) {
@@ -96,7 +151,7 @@ class CastRules {
   }
 
   canCastAt(vx, vy, equipment, bounds, rodPos) {
-    const maxDistance = this.equipmentRules.getMaxCastDistance(equipment);
+    const maxDistance = this.equipmentRules.getEffectiveCastDistance(equipment);
     if (maxDistance === Infinity) return true;
     const maxInsideBounds = Math.min(maxDistance, bounds.bottom - bounds.top);
     const castLineY = bounds.bottom - maxInsideBounds;
@@ -190,6 +245,9 @@ class PlayerCastRules {
   canPlayerCast(equipment, activeBoat) {
     if (!equipment?.rod) return false;
     if (this.equipmentRules.requiresReel(equipment) && !equipment.reel) {
+      return false;
+    }
+    if (!this.equipmentRules.hasEquippedLine(equipment)) {
       return false;
     }
     return this.boatRules.canPlayerCastWithBoat(

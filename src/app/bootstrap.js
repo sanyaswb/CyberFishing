@@ -37,7 +37,13 @@ class GameCompositionRoot {
     const locId = location.id;
     const locCfg = location.config;
     const projector = new ViewportProjector(this.#config.locations, locId);
-    const inventory = new InventoryManager(ITEM_DB, this.#config.player);
+    const castDistanceCalculator = new CastDistanceCalculator(this.#config);
+    const inventory = new InventoryManager(
+      ITEM_DB,
+      this.#config.player,
+      undefined,
+      castDistanceCalculator,
+    );
     const eq = inventory.getEquipped();
     const chumConfigObj = { baits: {}, deliveryMethods: {} };
     if (typeof ITEM_DB !== "undefined" && ITEM_DB.chums) {
@@ -72,7 +78,7 @@ class GameCompositionRoot {
       inventory,
     };
     systems.inventoryUI = new InventoryUI(systems.inventory);
-    const equipmentRules = new EquipmentRules();
+    const equipmentRules = new EquipmentRules(castDistanceCalculator, this.#config);
     const baitRules = new BaitRules();
     const castRules = new CastRules(equipmentRules);
     const biteRules = new BiteRules(baitRules);
@@ -136,6 +142,7 @@ class GameCompositionRoot {
       devFlags,
       audio,
       canvasMetrics,
+      castDistanceCalculator,
       equipmentRules,
       baitRules,
       castRules,
@@ -173,7 +180,11 @@ class GameCompositionRoot {
     const fightService = new FightService({
       config,
       rng,
-      fightSessionFactory: new FightSessionFactory({ config, rng }),
+      fightSessionFactory: new FightSessionFactory({
+        config,
+        rng,
+        castDistanceCalculator: runtime.castDistanceCalculator,
+      }),
     });
 
     const debugService = new DebugService(config);

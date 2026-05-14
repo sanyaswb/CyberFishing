@@ -702,13 +702,23 @@ class WaterEntity {
     this._biteMoveTimer = 0;
   }
 
+  _applyGodModeBiteSequence(seqCfg) {
+    if (typeof GodMode === "undefined") return seqCfg;
+    const mode = GodMode.biteSequenceMode;
+    if (mode !== "guaranteed" && mode !== "normal") return seqCfg;
+
+    seqCfg.chanceGuaranteed = mode === "guaranteed" ? 1.0 : 0.0;
+    seqCfg.chanceNormal = mode === "guaranteed" ? 0.0 : 1.0;
+    return seqCfg;
+  }
+
   startBite(isPulling = false, fishBiteSequence = null) {
     this._isBiting = true;
     this._isHooked = false;
 
     // 1. БЕРЕМО КОНФІГ ВІД РИБИ
     const baseSeq = fishBiteSequence || CONFIG.float.biteSequence;
-    const seqCfg = { ...baseSeq };
+    const seqCfg = this._applyGodModeBiteSequence({ ...baseSeq });
 
     const isSpinningLure = ["spinner", "wobbler", "jig"].includes(
       this._config.type,
@@ -717,6 +727,8 @@ class WaterEntity {
     if (isSpinningLure && !isPulling) {
       seqCfg.chanceGuaranteed = CONFIG.physics?.idleSpinningBiteChance ?? 0.005;
     }
+
+    this._applyGodModeBiteSequence(seqCfg);
 
     // 2. ЗАПАМ'ЯТОВУЄМО КОНФІГ ДЛЯ НАСТУПНИХ ІТЕРАЦІЙ
     this._activeBiteSequence = seqCfg;

@@ -86,7 +86,40 @@ class DevTools {
       }
     }
 
-    // 4. CONFIG (НАЛАШТУВАННЯ ГРИ)
+    // 4. FISH_DB (БАЗА РИБИ)
+    if (typeof FISH_DB !== "undefined") {
+      const fishDbContent = this.#createSectionWithCache(
+        "🐟 БАЗА РИБИ (FISH_DB)",
+        body,
+      );
+      FISH_DB.forEach((fish, index) => {
+        const fishLabel = fish?.id || fish?.name || `Fish [${index}]`;
+        const sectionContent = this.#createSectionWithCache(
+          fishLabel,
+          fishDbContent,
+        );
+        this.#buildTree(fish, sectionContent, ["FISH_DB", index]);
+      });
+    }
+
+    // 5. MAP_DB (БАЗА ЛОКАЦІЙ)
+    if (typeof MAP_DB !== "undefined") {
+      const mapDbContent = this.#createSectionWithCache(
+        "🗺️ БАЗА ЛОКАЦІЙ (MAP_DB)",
+        body,
+      );
+      for (const key of Object.keys(MAP_DB)) {
+        const location = MAP_DB[key];
+        const locationLabel = location?.id || location?.name || key;
+        const sectionContent = this.#createSectionWithCache(
+          locationLabel,
+          mapDbContent,
+        );
+        this.#buildTree(location, sectionContent, ["MAP_DB", key]);
+      }
+    }
+
+    // 6. CONFIG (НАЛАШТУВАННЯ ГРИ)
     if (typeof CONFIG !== "undefined") {
       const configContent = this.#createSectionWithCache(
         "⚙️ НАЛАШТУВАННЯ (CONFIG)",
@@ -99,6 +132,17 @@ class DevTools {
         this.#buildTree(CONFIG[key], sectionContent, ["CONFIG", key]);
       }
     }
+  }
+
+  #shouldSkipKey(path, key) {
+    if (this.#excludeKeys.includes(key)) return true;
+
+    const isConfigLocationsMap =
+      path[0] === "CONFIG" && path[1] === "locations" && key === "map";
+    const isConfigSpawnsFishes =
+      path[0] === "CONFIG" && path[1] === "spawns" && key === "fishes";
+
+    return isConfigLocationsMap || isConfigSpawnsFishes;
   }
 
   #createSectionWithCache(labelStr, parentElement) {
@@ -124,7 +168,7 @@ class DevTools {
 
   #buildTree(obj, parentElement, path) {
     for (const key in obj) {
-      if (this.#excludeKeys.includes(key)) continue;
+      if (this.#shouldSkipKey(path, key)) continue;
 
       const val = obj[key];
       const currentPath = [...path, key];
@@ -189,8 +233,10 @@ class DevTools {
   }
 
   #updateConfigValue(path, newValue) {
-    // ДИНАМІЧНИЙ ВИБІР КОРЕНЯ: Визначаємо, що саме редагуємо - ITEM_DB чи CONFIG
-    let target = path[0] === "ITEM_DB" ? ITEM_DB : CONFIG;
+    const root = this.#resolveEditableRoot(path[0]);
+    if (!root) return;
+
+    let target = root;
 
     // Проходимо по всьому шляху, пропускаючи нульовий індекс (назва кореня)
     for (let i = 1; i < path.length - 1; i++) {
@@ -207,6 +253,14 @@ class DevTools {
         detail: { path: path, value: newValue },
       }),
     );
+  }
+
+  #resolveEditableRoot(rootName) {
+    if (rootName === "ITEM_DB" && typeof ITEM_DB !== "undefined") return ITEM_DB;
+    if (rootName === "FISH_DB" && typeof FISH_DB !== "undefined") return FISH_DB;
+    if (rootName === "MAP_DB" && typeof MAP_DB !== "undefined") return MAP_DB;
+    if (rootName === "CONFIG" && typeof CONFIG !== "undefined") return CONFIG;
+    return null;
   }
 
   #syncItemDbStatAliases(path, newValue) {

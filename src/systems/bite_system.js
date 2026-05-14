@@ -5,6 +5,7 @@ class BiteSystem {
   #overDepthPenaltyMult;
   #passivePullBiteChanceMultiplier;
   #lineConfig;
+  #runtimeConfig;
   #guaranteedBiteCooldownRange;
   #guaranteedBiteCooldownRemaining = 0;
   #possibleBitesBuffer;
@@ -14,8 +15,9 @@ class BiteSystem {
   constructor(biteConfig, runtimeConfig, rng = null) {
     const physicsConfig = runtimeConfig?.physics || runtimeConfig || {};
     const lineConfig = runtimeConfig?.ui?.line || runtimeConfig?.line || {};
-    this.#fishDatabase = biteConfig.fishes;
-    this.#tickRate = biteConfig.tickRateMs;
+    this.#runtimeConfig = runtimeConfig || {};
+    this.#fishDatabase = this.#resolveFishDatabase(biteConfig);
+    this.#tickRate = biteConfig?.tickRateMs ?? 1000;
     this.#timer = 0;
     this.#overDepthPenaltyMult = physicsConfig?.overDepthPenaltyMult || 0.5;
     this.#lineConfig = lineConfig;
@@ -28,8 +30,18 @@ class BiteSystem {
     this.#rng = rng || { next: () => Math.random() };
   }
 
+  setFishDatabase(fishDatabase) {
+    this.#fishDatabase = this.#resolveFishDatabase(fishDatabase);
+  }
+
   reset() {
     this.#timer = 0;
+  }
+
+  #resolveFishDatabase(source) {
+    if (Array.isArray(source)) return source;
+    if (Array.isArray(source?.fishes)) return source.fishes;
+    return [];
   }
 
   #lerp(start, end, t) {
@@ -37,7 +49,41 @@ class BiteSystem {
   }
 
   #clamp01(value) {
-    return Math.max(0, Math.min(1, value));
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return 0;
+    return Math.max(0, Math.min(1, parsed));
+  }
+
+  #getGodModeConfig() {
+    const godMode = this.#runtimeConfig?.debug?.godMode || null;
+    return godMode?.enabled ? godMode : null;
+  }
+
+  #clampChance(chance) {
+    return this.#clamp01(chance);
+  }
+
+  #applyGodModeChanceOverride(chance) {
+    const godMode = this.#getGodModeConfig();
+    if (!godMode?.fixedBiteChanceEnabled) return this.#clampChance(chance);
+
+    const percent = Number(godMode.fixedBiteChancePercent);
+    const normalized = Number.isFinite(percent) ? percent / 100 : 1;
+    return this.#clampChance(normalized);
+  }
+
+  #applyGodModeBiteSequence(sequence) {
+    if (!sequence) return sequence;
+
+    const godMode = this.#getGodModeConfig();
+    const mode = String(godMode?.biteSequenceMode || "default").toLowerCase();
+    if (mode !== "guaranteed" && mode !== "normal") return sequence;
+
+    return {
+      ...sequence,
+      chanceGuaranteed: mode === "guaranteed" ? 1.0 : 0.0,
+      chanceNormal: mode === "guaranteed" ? 0.0 : 1.0,
+    };
   }
 
   #getDepthRatio(hookDepth, depthConfig) {
@@ -222,7 +268,7 @@ class BiteSystem {
 
     chance *= this.#getDepthChanceMultiplier(hookDepth, dc);
 
-    return chance;
+    return this.#applyGodModeChanceOverride(chance);
   }
 
   #generateFishInstance(fish, currentDepth, playerGear) {
@@ -267,6 +313,7 @@ class BiteSystem {
       chosenBiteSequence = isActiveLure
         ? fish.biteMechanics.active
         : fish.biteMechanics.passive;
+      chosenBiteSequence = this.#applyGodModeBiteSequence(chosenBiteSequence);
     }
 
     const level = this.#resolveFishLevel(genWeight, weightRatio, wc);
@@ -349,6 +396,7 @@ class BiteSystem {
         results.push({
           name: fish.name,
           chance: (chance * 100).toFixed(2) + "%",
+          chanceValue: chance,
           breakdown: this.#getBreakdown(fish, envData, playerGear),
         });
       }

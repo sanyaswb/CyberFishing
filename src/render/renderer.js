@@ -423,7 +423,15 @@
     this.#ctx.restore();
   }
 
-  drawCastPowerAim(projector, bounds, visual, castingConfig, tensionConfig, nowMs = 0) {
+  drawCastPowerAim(
+    projector,
+    bounds,
+    visual,
+    castingConfig,
+    tensionConfig,
+    nowMs = 0,
+    maxDistancePx = null,
+  ) {
     if (!visual?.active) return;
     const lineCfg = castingConfig?.aimLine || {};
     const barCfg = castingConfig?.powerBar || {};
@@ -434,7 +442,16 @@
         ? lineCfg.chumColor || "rgba(255, 180, 0, 0.9)"
         : lineCfg.color || "rgba(0, 220, 255, 0.85)";
 
-    this.#drawCastAimLine(projector, bounds, visual.screenX, lineCfg, lineColor, nowMs);
+    this.#drawCastAimLine(
+      projector,
+      bounds,
+      visual.screenX,
+      lineCfg,
+      lineColor,
+      nowMs,
+      maxDistancePx,
+      power,
+    );
     this.#drawCastPowerBar(power, barCfg, color, visual.mode);
   }
 
@@ -456,19 +473,46 @@
     this.#ctx.restore();
   }
 
-  #drawCastAimLine(projector, bounds, screenX, lineCfg, color, nowMs) {
-    const topY = projector.virtualToScreen(0, bounds.top, this.#screenA).y;
-    const bottomY = projector.virtualToScreen(0, bounds.bottom, this.#screenB).y;
-    const y1 = Math.min(topY, bottomY);
-    const y2 = Math.max(topY, bottomY);
+  #drawCastAimLine(
+    projector,
+    bounds,
+    screenX,
+    lineCfg,
+    color,
+    nowMs,
+    maxDistancePx,
+    power,
+  ) {
+    const mapHeightPx = Math.max(0, bounds.bottom - bounds.top);
+    let resolvedMaxDistancePx = Number(maxDistancePx);
+    if (!Number.isFinite(resolvedMaxDistancePx)) {
+      resolvedMaxDistancePx = mapHeightPx;
+    }
+
+    const distancePx = Math.max(
+      0,
+      Math.min(resolvedMaxDistancePx, mapHeightPx) *
+        Math.max(0, Math.min(1, power || 0)),
+    );
+    const bottomScreenY = projector.virtualToScreen(
+      0,
+      bounds.bottom,
+      this.#screenB,
+    ).y;
+    const targetVirtualY = Math.max(bounds.top, bounds.bottom - distancePx);
+    const targetScreenY = projector.virtualToScreen(
+      0,
+      targetVirtualY,
+      this.#screenA,
+    ).y;
     const dash = Array.isArray(lineCfg.dash) ? lineCfg.dash : [12, 10];
     const dashSpeed = lineCfg.dashSpeedPxPerSecond ?? 42;
     const dashCycle = Math.max(1, dash[0] + (dash[1] || 0));
 
     this.#ctx.save();
     this.#ctx.beginPath();
-    this.#ctx.moveTo(screenX, y1);
-    this.#ctx.lineTo(screenX, y2);
+    this.#ctx.moveTo(screenX, bottomScreenY);
+    this.#ctx.lineTo(screenX, targetScreenY);
     this.#ctx.strokeStyle = color;
     this.#ctx.lineWidth = lineCfg.width || 2;
     this.#ctx.setLineDash(dash);

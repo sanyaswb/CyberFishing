@@ -184,6 +184,16 @@ class CastPowerAim {
         sample.y,
         this.#scratchB,
       );
+      if (
+        !this.#isWithinCastDistance(
+          virtualPos,
+          originX,
+          bounds.bottom,
+          distance,
+        )
+      ) {
+        continue;
+      }
       const cell = checkWater?.(virtualPos.x, virtualPos.y);
       if (cell || canCastAnywhere) {
         return this.#targetResult({
@@ -206,7 +216,14 @@ class CastPowerAim {
       this.#scratchB,
     );
     const centerCell = checkWater?.(centerVirtual.x, centerVirtual.y);
-    if (centerCell || canCastAnywhere) {
+    if (
+      this.#isWithinCastDistance(
+        centerVirtual,
+        originX,
+        bounds.bottom,
+        distance,
+      ) && (centerCell || canCastAnywhere)
+    ) {
       return this.#targetResult({
         virtualPos: centerVirtual,
         cell: centerCell,
@@ -226,6 +243,14 @@ class CastPowerAim {
       screenY: centerY,
       power: release.power,
     };
+  }
+
+  #isWithinCastDistance(virtualPos, originX, originY, distance) {
+    const maxDistance = Math.max(0, Number(distance) || 0);
+    if (maxDistance <= 0) return false;
+    const dx = virtualPos.x - originX;
+    const dy = virtualPos.y - originY;
+    return Math.hypot(dx, dy) <= maxDistance + 0.001;
   }
 
   #targetResult({

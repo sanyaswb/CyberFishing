@@ -2,6 +2,8 @@ class LineSystem {
   #config;
   #pixelsPerMeter;
   #hasReel;
+  #baseReachMeters;
+  #reelLineMeters;
   #totalLengthMeters;
   #releasedMeters;
   #remainingMeters;
@@ -14,44 +16,48 @@ class LineSystem {
   #initialized = false;
   #lastReleasedMeters = 0;
   #lastRecoveredMeters = 0;
+  #distanceCalculator;
 
-  constructor({ rod, reel, config, lineStats = null }) {
+  constructor({
+    rod,
+    reel,
+    config,
+    lineStats = null,
+    castDistanceCalculator = null,
+  }) {
     this.#config = config || {};
-    this.#pixelsPerMeter = Math.max(
-      1,
-      Number(this.#config.pixelsPerMeter) || 50,
-    );
+    this.#distanceCalculator =
+      castDistanceCalculator || new CastDistanceCalculator(this.#config);
+    this.#pixelsPerMeter = this.#distanceCalculator.pixelsPerMeter;
     this.#hasReel = !!reel?.hasReel?.();
 
-    const reelLineStats = this.#hasReel ? reel?.getLineStats?.() || null : null;
-    const effectiveLineStats = lineStats || reelLineStats || null;
-    const rodLength = Number(rod?.getLengthMeters?.()) || 2;
-    const noReelLine = this.#config.line || {};
-    const fallbackLength =
-      rodLength * (noReelLine.noReelRodLengthMultiplier ?? 2.0) +
-      (noReelLine.noReelExtraLengthMeters ?? 1.8);
+    const effectiveLineStats = lineStats || null;
+    const lineConfig = this.#config.line || {};
+    const reachModel = this.#distanceCalculator.getLineReachModel({
+      rod,
+      reel,
+      hasReel: this.#hasReel,
+      lineStats: effectiveLineStats,
+    });
 
-    this.#totalLengthMeters = this.#hasReel
-      ? this.#numberOrDefault(
-          effectiveLineStats?.lengthMeters,
-          this.#numberOrDefault(reel?.getLineCapacityMeters?.(), 50),
-        )
-      : this.#numberOrDefault(effectiveLineStats?.lengthMeters, fallbackLength);
+    this.#baseReachMeters = reachModel.baseReachMeters;
+    this.#reelLineMeters = reachModel.reserveMeters;
+    this.#totalLengthMeters = reachModel.maxReachMeters;
 
-    // With a reel, line starts at the current fish distance and can be released/recovered.
-    // Without a reel, all fixed line length is available from the start.
-    this.#releasedMeters = this.#hasReel ? 0 : this.#totalLengthMeters;
+    // Reel rigs start from the rod base reach and can release the rest of the
+    // equipped line. Pole rigs have fixed line and cannot actively spool/recover.
+    this.#releasedMeters = this.#hasReel
+      ? Math.min(this.#totalLengthMeters, this.#baseReachMeters)
+      : this.#totalLengthMeters;
     this.#remainingMeters = Math.max(
       0,
-      this.#totalLengthMeters - this.#releasedMeters,
+      this.#totalLengthMeters - this.#baseReachMeters,
     );
     this.#distanceMeters = 0;
 
-    // IMPORTANT: Rod does not own line max-load. For now, if there is no separate line
-    // item, use reel.line stats or a config fallback for no-reel rigs.
     this.#lineMaxLoadKg = this.#numberOrDefault(
       effectiveLineStats?.maxLoadKg,
-      this.#numberOrDefault(noReelLine.defaultMaxLoadKg, 8),
+      this.#numberOrDefault(lineConfig.defaultMaxLoadKg, 8),
     );
     this.#lineDurability = this.#numberOrDefault(
       effectiveLineStats?.durability,
@@ -59,7 +65,7 @@ class LineSystem {
     );
     this.#durabilityLossPerPercent = this.#numberOrDefault(
       effectiveLineStats?.durabilityMaxLoadLossPerPercent,
-      noReelLine.durabilityMaxLoadLossPerPercent ?? 0.001,
+      lineConfig.durabilityMaxLoadLossPerPercent ?? 0.001,
     );
   }
 
@@ -74,7 +80,7 @@ class LineSystem {
       if (this.#hasReel) {
         this.#releasedMeters = Math.min(
           this.#totalLengthMeters,
-          Math.max(0.1, this.#distanceMeters),
+          Math.max(this.#baseReachMeters, this.#distanceMeters),
         );
       }
       this.#initialized = true;
@@ -86,7 +92,11 @@ class LineSystem {
 
   releaseForDistance(control = 0) {
     this.#lastReleasedMeters = 0;
-    if (!this.#hasReel || this.#remainingMeters <= 0) {
+    const availableToRelease = Math.max(
+      0,
+      this.#totalLengthMeters - this.#releasedMeters,
+    );
+    if (!this.#hasReel || availableToRelease <= 0) {
       this.#refreshState();
       return 0;
     }
@@ -106,21 +116,19 @@ class LineSystem {
       );
       const creepRatio = this.#clamp01(control.creepReleaseRatio ?? 0);
 
-      // Якщо сила риби вища за поточний ліміт фрикціону — котушка здає ліску,
-      // щоб натяг не перевищував dragLimitKg. Якщо фрикціон тримає рибу — ліска не здається.
       releaseRatio = shouldSlip ? slipReleaseRatio : creepRatio;
-
-      // Абсолютно відкритий фрикціон завжди здає всю потрібну ліску.
       if (dragRatio <= 0.0001) releaseRatio = 1;
     } else {
-      // Backward compatibility for older calls that only pass dragRatio.
       const cfg = this.#config.drag || {};
       const minReleaseAtFullDrag = cfg.yEscapeSpeedAtFullDrag ?? 0.02;
       const clampedDrag = this.#clamp01(control);
       releaseRatio = 1 - clampedDrag * (1 - minReleaseAtFullDrag);
     }
 
-    const released = Math.min(this.#remainingMeters, excess * this.#clamp01(releaseRatio));
+    const released = Math.min(
+      availableToRelease,
+      excess * this.#clamp01(releaseRatio),
+    );
     this.#releasedMeters += released;
     this.#lastReleasedMeters = released;
     this.#refreshState();
@@ -146,9 +154,8 @@ class LineSystem {
     const efficiency = this.#clamp01(1 - (Number(tensionKg) || 0) / limit);
     const amount = speed * efficiency * Math.max(0, Number(dtSec) || 0);
 
-    // Recover is NOT a winch. It only picks up already won slack and never pulls
-    // released length below the current fish distance.
     const nextReleased = Math.max(
+      Math.min(this.#baseReachMeters, this.#totalLengthMeters),
       this.#distanceMeters,
       this.#releasedMeters - amount,
     );
@@ -160,7 +167,6 @@ class LineSystem {
     return recovered;
   }
 
-  // Backward-compatible name used by older callers. Semantically this is slack recovery.
   applyRetrieve(args) {
     return this.recoverSlack({
       hasReel: args?.hasReel,
@@ -205,6 +211,8 @@ class LineSystem {
   getState() {
     return {
       hasReel: this.#hasReel,
+      baseReachMeters: this.#baseReachMeters,
+      reelLineMeters: this.#reelLineMeters,
       totalLengthMeters: this.#totalLengthMeters,
       releasedMeters: this.#releasedMeters,
       remainingMeters: this.#remainingMeters,
@@ -219,23 +227,29 @@ class LineSystem {
   }
 
   #refreshState() {
+    const minReleased = this.#hasReel
+      ? Math.min(this.#baseReachMeters, this.#totalLengthMeters)
+      : 0;
     this.#releasedMeters = Math.max(
-      0,
+      minReleased,
       Math.min(this.#totalLengthMeters, this.#releasedMeters),
     );
+
+    // User-facing reserve: total real line minus the mandatory rod rig length.
+    // It does not shrink when the fish is farther away; it represents the maximum
+    // usable reserve over the fixed rod-length segment.
     this.#remainingMeters = Math.max(
       0,
-      this.#totalLengthMeters - this.#releasedMeters,
+      this.#totalLengthMeters - this.#baseReachMeters,
     );
     this.#lineExtensionRatio =
       this.#releasedMeters > 0
         ? this.#clamp01(this.#distanceMeters / this.#releasedMeters)
         : 1;
+
     const isAtReleasedLimit =
       this.#distanceMeters >= this.#releasedMeters * 0.995;
-    this.#isFullyExtended = this.#hasReel
-      ? this.#remainingMeters <= 0.001 && isAtReleasedLimit
-      : isAtReleasedLimit;
+    this.#isFullyExtended = this.#remainingMeters <= 0.001 && isAtReleasedLimit;
   }
 
   #numberOrDefault(value, fallback) {
