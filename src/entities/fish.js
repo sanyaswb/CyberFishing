@@ -45,11 +45,26 @@ class Fish {
   }
 
   getLevelMultiplier() {
-    const table = this.#fishConfig.levelPowerMultiplier;
-    if (Array.isArray(table) && table.length > 0) {
-      return table[Math.max(0, Math.min(table.length - 1, this.#level - 1))];
+    // New fight physics rule: fish force is not multiplied by the numeric level.
+    // Level only selects an explicit basePower multiplier from config.
+    const tables = [
+      this.#fishConfig.levelBasePowerByLevel,
+      this.#fishConfig.levelPowerMultiplier,
+      this.#fishConfig.levelBasePowerMultiplier,
+    ];
+
+    for (const table of tables) {
+      if (Array.isArray(table) && table.length > 0) {
+        return Number(table[Math.max(0, Math.min(table.length - 1, this.#level - 1))]) || 1;
+      }
     }
-    return 1 + (Math.max(1, this.#level) - 1) * 0.15;
+
+    const perLevel = this.#fishConfig.basePowerByLevel;
+    if (perLevel && typeof perLevel === "object") {
+      return Number(perLevel[this.#level]) || 1;
+    }
+
+    return 1;
   }
 
   getInitialPower() {

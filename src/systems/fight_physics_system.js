@@ -186,13 +186,12 @@ class FightPhysicsSystem {
 
   #calculateTensionKg({ forceData, lineState, dragRatio, hasReel, isPullMode, physics, constrained }) {
     const fishForceKg = Math.max(0, Number(forceData.totalFishForceKg) || 0);
-    const pullCapacityKg = isPullMode
-      ? Math.max(0, Number(forceData.player.pullCapacityKg) || 0)
-      : 0;
 
-    // Line tension is the currently resisted load, not fish + player added together.
-    // Example: fish pulls 5kg, drag limit is 10kg => tension is 5kg, not 15kg.
-    const rawDemandKg = Math.max(fishForceKg, pullCapacityKg);
+    // Tension is the resisted load from the fish side.
+    // Player pull decides whether we can win distance, but it must NOT inflate tension
+    // to the full drag limit. Example: fish pulls 0.12kg and drag is 10kg => tension
+    // is about 0.12kg, not 10kg.
+    const rawDemandKg = fishForceKg;
 
     if (!hasReel) {
       const lineConstraintRatio = lineState.isFullyExtended || constrained
@@ -202,7 +201,16 @@ class FightPhysicsSystem {
     }
 
     const dragLimitKg = Math.max(0, Number(forceData.player.dragLimitKg) || 0);
+    const clampedDrag = Math.max(0, Math.min(1, Number(dragRatio) || 0));
+    const isDragLocked = clampedDrag >= 0.999;
     const reelCanGiveLine = (lineState.remainingMeters || 0) > 0.001;
+
+    // 100% drag means the reel is locked for gameplay purposes.
+    // The line no longer slips by drag, so the rig takes the actual fish load.
+    // If that load is above reel/line/tackle capacity, TackleStressSystem breaks it.
+    if (isDragLocked) {
+      return rawDemandKg;
+    }
 
     // While the reel can give line, drag is a hard kg limiter:
     // drag 10% of 10kg => tension cannot exceed 1kg; all excess force spools line.
@@ -211,7 +219,7 @@ class FightPhysicsSystem {
     }
 
     // If the line is fully out, the reel can no longer compensate. Now the rig takes
-    // the actual demand and can break even with low drag.
+    // the actual fish load and can break even with low drag.
     return rawDemandKg;
   }
 }

@@ -789,12 +789,12 @@ const CONFIG = {
           baseResistance: 0.8,
           maxResistance: 2.5,
           levelWeightRanges: [
-            { level: 1, min: 0.05, max: 0.25 },
-            { level: 2, min: 0.251, max: 0.75 },
-            { level: 3, min: 0.751, max: 1.5 },
-            { level: 4, min: 1.501, max: 2.5 },
-            { level: 5, min: 2.501, max: 3.5 },
-            { level: 6, min: 3.501, max: 5.0 },
+            { level: 1, min: 0.05, max: 0.25, basePower: 1.1 },
+            { level: 2, min: 0.251, max: 0.75, basePower: 1.3 },
+            { level: 3, min: 0.751, max: 1.5, basePower: 1.5 },
+            { level: 4, min: 1.501, max: 2.5, basePower: 1.7 },
+            { level: 5, min: 2.501, max: 3.5, basePower: 1.9 },
+            { level: 6, min: 3.501, max: 5.0, basePower: 2.5 },
           ],
         },
 
@@ -815,7 +815,15 @@ const CONFIG = {
         },
 
         physics: {
+          // Global fish force coefficient.
+          // Static force kg = weightKg * basePower * levelBasePowerByLevel[level - 1].
           basePower: 1.0,
+
+          // Explicit per-level basePower coefficients. The numeric level itself is NOT
+          // multiplied into force anymore. Level only selects this coefficient.
+          levelBasePowerByLevel: [1.1, 1.3, 1.5, 1.7, 1.9, 2.5],
+
+          // Backward-compatible alias used by older code paths.
           levelPowerMultiplier: [1.1, 1.3, 1.5, 1.7, 1.9, 2.5],
           baseStamina: 1000,
           baseSpeedMetersPerSec: 2.0,

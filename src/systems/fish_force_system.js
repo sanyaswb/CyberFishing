@@ -253,7 +253,8 @@ class FishForceSystem {
       ? this.#clamp01(dragLimitKg / fishForceKg)
       : 1;
     const tackleRestrainRatio = this.#clamp01(maxPlayerForceKg / fishForceKg);
-    const canDragHoldFish = !hasReel || dragLimitKg >= fishForceKg;
+    const isDragLocked = hasReel && clampedDrag >= 0.999;
+    const canDragHoldFish = !hasReel || isDragLocked || dragLimitKg >= fishForceKg;
     const pullCapacityKg = hasReel
       ? Math.min(maxPlayerForceKg, dragLimitKg)
       : maxPlayerForceKg;
@@ -280,7 +281,7 @@ class FishForceSystem {
       dragLimitKg: Number.isFinite(dragLimitKg) ? dragLimitKg : 0,
       canDragHoldFish,
       canWinDistance,
-      shouldSlipDrag: hasReel && dragLimitKg < fishForceKg,
+      shouldSlipDrag: hasReel && !isDragLocked && dragLimitKg < fishForceKg,
       staminaPressureRatio,
       vector: this.#playerVector,
       pullDir: basePullDir,
