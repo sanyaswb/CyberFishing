@@ -643,15 +643,15 @@ const CONFIG = {
 
   locations: {
     debugVisuals: true, // Головний вимикач (якщо false - взагалі нічого не малюється)
-    debugZones: true, // Показувати кольорові квадрати (зелені, червоні)
-    debugGrid: true, // Показувати лінії сітки
+    debugZones: false, // Показувати кольорові квадрати (зелені, червоні)
+    debugGrid: false, // Показувати лінії сітки
     debugDepthText: false, // Показувати цифри глибини
     enableCastable: true, // Зони, де можна закидати вудку
     enableCollisions: true, // Колізії з землею (червоні зони) - забороняють закидати.
     enableSnags: true, // Динамічні зони (наприклад, косяк риби)
     enableDynamicZones: false, // Вимикає всі динамічні зони (косяки риби, рухомі перешкоди тощо)
     showChumZones: true,
-    showCatchZone: true, // Відображення синьої зони
+    showCatchZone: false, // Відображення синьої зони
     showNetZone: true, // Відображення зеленої зони
     showAimingZone: true, // Відображення зони закидання
 
@@ -759,7 +759,7 @@ const CONFIG = {
       {
         id: "crucian_stalker",
         name: "Карась-сталкер",
-        baseChance: 0.02,
+        baseChance: 1.0,
         maxHookSize: 6,
         trophyWeightKg: 1.0,
         visual: {
