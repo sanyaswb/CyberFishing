@@ -182,21 +182,16 @@ class FishStatesModule extends OverlayModule {
     let html = this.formatHeader("📊 СИЛА РИБИ ЗА СТАНАМИ");
     const behaviors = d.hookedFish.physics.behaviors;
     const basePower = d.fishBasePower || 0;
-    const forceMult = CONFIG.physics.fishForceMultiplier || 1;
 
     for (const [name, cfg] of Object.entries(behaviors)) {
       const color = this.getStateColor(name);
-      const edgeMult =
-        cfg.edgePowerMultiplier ??
-        d.hookedFish.physics.edgePowerMultiplier ??
-        1.0;
-
-      const yForce = basePower * cfg.pull * forceMult;
-      const xForce = basePower * Math.abs(cfg.move || 0) * edgeMult * forceMult;
+      const powerRatio = Number(cfg.powerRatio ?? cfg.pull ?? 1) || 1;
+      const speedRatio = Number(cfg.speedRatio ?? cfg.move ?? 0) || 0;
+      const stateForceKg = basePower * powerRatio;
 
       html += `<div style="margin-bottom: 2px; display: flex; justify-content: space-between; font-size: 12px;">
                 <span style="color: ${color}; font-weight: bold;">${name.toUpperCase()}</span>
-                <span style="color: #e6e6e6;">Y: <span style="color: ${color}; font-weight: bold;">${yForce.toFixed(3)}</span> | X: <span style="color: ${color}; font-weight: bold;">${xForce.toFixed(3)}</span></span>
+                <span style="color: #e6e6e6;">kg: <span style="color: ${color}; font-weight: bold;">${stateForceKg.toFixed(3)}</span> | speed: <span style="color: ${color}; font-weight: bold;">${speedRatio.toFixed(2)}</span></span>
               </div>`;
     }
     return html + `<div style="margin-bottom: 12px;"></div>`;
@@ -261,8 +256,9 @@ class PlayerMaxModule extends OverlayModule {
 
   render(d) {
     let html = this.formatHeader("📊 СИЛА ГРАВЦЯ", "#00ff80");
-    html += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>ТЯГА МАКС:</span> <span style="color: #00ff80; font-weight: bold;">${(d.playerMaxPowerY || 0).toFixed(3)}</span></div>`;
-    html += `<div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><span>КЕРМО МАКС:</span> <span style="color: #00ff80; font-weight: bold;">${(d.playerMaxPowerX || 0).toFixed(3)}</span></div>`;
+    html += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>ЛІМІТ СНАСТІ:</span> <span style="color: #00ff80; font-weight: bold;">${(d.maxTackleLoadKg || d.playerMaxPowerY || 0).toFixed(3)} кг</span></div>`;
+    html += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>ПОТОЧНИЙ PULL:</span> <span style="color: #00ff80; font-weight: bold;">${(d.netPullKg || 0).toFixed(3)} кг</span></div>`;
+    html += `<div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><span>ФРИКЦІОН:</span> <span style="color: #00ccff; font-weight: bold;">${(d.dragLimitKg || 0).toFixed(3)} кг</span></div>`;
     return html;
   }
 }
@@ -279,7 +275,7 @@ class FightPhysicsModule extends OverlayModule {
   render(d) {
     let html = this.formatHeader("FIGHT PHYSICS", "#73c2fb");
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Tension:</span><span style="color:#ffaa00; font-weight:bold;">${(d.tensionKg || 0).toFixed(2)} / ${(d.maxTackleLoadKg || 0).toFixed(2)} kg</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Drag:</span><span style="color:#00ccff; font-weight:bold;">${(d.dragPercent || 0).toFixed(0)}%</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Drag:</span><span style="color:#00ccff; font-weight:bold;">${(d.dragPercent || 0).toFixed(0)}% / ${(d.dragLimitKg || 0).toFixed(2)}kg</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Line:</span><span style="color:#00ff80;">${(d.lineReleasedMeters || 0).toFixed(1)}m / ${(d.lineTotalLengthMeters || 0).toFixed(1)}m</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Remaining:</span><span style="color:#8a9bac;">${(d.lineRemainingMeters || 0).toFixed(1)}m</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Full line:</span><span style="color:${d.isLineFullyExtended ? "#ff4444" : "#00ff80"}; font-weight:bold;">${d.isLineFullyExtended ? "YES" : "NO"}</span></div>`;
@@ -424,35 +420,40 @@ class WorstCaseModule extends OverlayModule {
       if (effMove > maxMove) maxMove = effMove;
     });
 
-    const maxPossibleForceY =
-      currentFishBase * maxPull * CONFIG.physics.fishForceMultiplier;
-    const worstFishX =
-      currentFishBase * maxMove * CONFIG.physics.fishForceMultiplier;
+    const maxPossibleForceY = currentFishBase * maxPull;
+    const worstFishX = currentFishBase * maxMove;
 
-    // --- ВИПРАВЛЕНО: Беремо екіпірування з даних стану (d.eq), а не з CONFIG ---
-    const eq = d.eq || {};
-    const rodPower = (eq.rod?.level || 1) * (eq.rod?.basePower || 1);
-    const reelPower =
-      eq.rod?.hasReel !== false
-        ? (eq.reel?.level || 0) * (eq.reel?.basePower || 0)
-        : 0;
-    const pPower = rodPower + reelPower;
+    const eq = d.equipment || d.eq || {};
+    const effectiveLoad = (item, fallback = 0) => {
+      const maxLoad = Number(item?.maxLoadKg ?? fallback);
+      const durability = Number(item?.durability ?? 100);
+      const lossPerPercent = Number(item?.durabilityMaxLoadLossPerPercent ?? 0.001);
+      if (!Number.isFinite(maxLoad) || maxLoad <= 0) return fallback;
+      return maxLoad * Math.max(0.1, 1 - Math.max(0, 100 - durability) * lossPerPercent);
+    };
+    const loads = [];
+    const pushLoad = (value) => {
+      const n = Number(value);
+      if (Number.isFinite(n) && n > 0) loads.push(n);
+    };
+    pushLoad(effectiveLoad(eq.rod, 0));
+    const hasReel = eq.rod?.hasReel !== false && !!eq.reel;
+    if (hasReel) {
+      pushLoad(effectiveLoad(eq.reel, 0));
+      pushLoad(effectiveLoad(eq.reel?.line, 0));
+    } else {
+      pushLoad(CONFIG.physics?.line?.defaultMaxLoadKg || 0);
+    }
+    const pPower = loads.length ? Math.min(...loads) : 0;
 
     const angleCfg = CONFIG.physics.rodAnglePenalty || {};
     const worstPenaltyMult =
       angleCfg.enabled === false ? 1.0 : angleCfg.maxPenaltyMultiplier ?? 0.65;
-    const worstEffectivePower = pPower * worstPenaltyMult;
-    const worstAngleDeg = angleCfg.maxPenaltyAngleDeg ?? 75;
-    const worstPullDirY = Math.cos((worstAngleDeg * Math.PI) / 180);
-
-    const worstPlayerY =
-      worstEffectivePower *
-      worstPullDirY *
-      CONFIG.physics.playerForceMultiplier;
+    const worstPlayerY = pPower * worstPenaltyMult;
     const playerSteerMin =
-      worstEffectivePower *
-      CONFIG.physics.playerSteeringMultiplier *
-      CONFIG.physics.playerForceMultiplier;
+      pPower *
+      worstPenaltyMult *
+      (CONFIG.physics.playerSteeringMultiplier ?? 1.5);
 
     let html = this.formatHeader("💀 НАЙГІРШІ УМОВИ (КУТ)", "#ff4444");
     html += `<div style="color: #8a9bac; font-size: 12px; margin-bottom: 4px;">Максимальна тяга X:</div>

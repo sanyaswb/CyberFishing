@@ -522,11 +522,51 @@ class InventoryManager {
   }
 
   getTotalPower() {
+    return this.getMaxTackleLoadKg();
+  }
+
+  getMaxTackleLoadKg() {
     const eq = this.getEquipped();
-    let power = 0;
-    if (eq.rod) power += (eq.rod.basePower || 0) * (eq.rod.level || 1);
-    if (eq.reel) power += (eq.reel.basePower || 0) * (eq.reel.level || 1);
-    return power;
+    const values = [];
+
+    const pushPositive = (value) => {
+      const n = Number(value);
+      if (Number.isFinite(n) && n > 0) values.push(n);
+    };
+
+    const effectiveLoad = (item, fallback = 0) => {
+      if (!item) return fallback;
+      const maxLoadKg = Number(item.maxLoadKg ?? item.engineStats?.maxLoadKg ?? fallback);
+      const durability = Number(item.durability ?? item.engineStats?.durability ?? 100);
+      const lossPerPercent = Number(
+        item.durabilityMaxLoadLossPerPercent ??
+          item.engineStats?.durabilityMaxLoadLossPerPercent ??
+          0.001,
+      );
+      if (!Number.isFinite(maxLoadKg) || maxLoadKg <= 0) return fallback;
+      const lostPercent = Math.max(0, 100 - (Number.isFinite(durability) ? durability : 100));
+      return maxLoadKg * Math.max(0.1, 1 - lostPercent * lossPerPercent);
+    };
+
+    pushPositive(effectiveLoad(eq.rod, 0));
+
+    const rodHasReel = eq.rod?.hasReel ?? eq.rod?.engineStats?.hasReel ?? eq.rod?.type !== "float";
+    if (rodHasReel && eq.reel) {
+      pushPositive(effectiveLoad(eq.reel, 0));
+      const line = eq.reel.line || eq.reel.engineStats?.line;
+      if (line) {
+        pushPositive(effectiveLoad(line, 0));
+      }
+    } else {
+      const defaultLineKg =
+        typeof CONFIG !== "undefined"
+          ? CONFIG.physics?.line?.defaultMaxLoadKg
+          : 0;
+      pushPositive(defaultLineKg);
+    }
+
+    if (values.length === 0) return 0;
+    return Math.min(...values);
   }
 
   autoEquipItem(instanceId) {

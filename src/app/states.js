@@ -921,11 +921,20 @@ class WaitingState extends GameState {
       const imagePattern =
         visual.imagePattern ||
         `assets/fish/${template.id}/${template.id}--{level}.webp`;
+      const fixedLevelRange = template.weightConfig?.levelWeightRanges?.find(
+        (range) => Number(range?.level) === Number(fixed.level),
+      );
+      const fixedLevelBasePower = Number.isFinite(Number(fixedLevelRange?.basePower))
+        ? Number(fixedLevelRange.basePower)
+        : 1;
 
       hooked = {
         id: template.id,
         name: template.name + " (TEST)",
-        physics: template.physics,
+        physics: {
+          ...(template.physics || {}),
+          levelBasePower: fixedLevelBasePower,
+        },
         level: fixed.level,
         maxLevel,
         weight: fixed.weight,

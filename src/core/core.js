@@ -361,10 +361,17 @@ class InputManager {
 
   getState() {
     const keys = CONFIG.input?.keys || {};
+    const keyboardPulling = this.#checkKeyHeld(keys.pull);
+
+    // Space/інша pull-клавіша має гарантовано працювати кожен кадр,
+    // навіть якщо keydown був перехоплений браузером або фокус змінився.
+    this.#isPulling = keyboardPulling || this.#isPointerDown === true;
 
     // ЗМІНЕНО: Читаємо клавіші руху з конфігу
     if (this.#checkKeyHeld(keys.left) || this.#checkKeyHeld(keys.right)) {
       this.#updateDirection();
+    } else if (keyboardPulling && !this.#isPointerDown) {
+      this.#pullDirection.set(0, 1);
     }
 
     const state = this.#stateSnapshot;
@@ -377,7 +384,10 @@ class InputManager {
     state.pumpAction = this.#pumpFlag;
     state.dragIncrease = this.#checkKeyHeld(keys.dragIncrease);
     state.dragDecrease = this.#checkKeyHeld(keys.dragDecrease);
-    state.retrieve = this.#checkKeyHeld(keys.retrieve);
+
+    // retrieve/recover не має бути активним у той самий кадр, що й pull.
+    // На PC: Space = pull, відпускання Space = автоматичний recover.
+    state.retrieve = !state.isPulling && this.#checkKeyHeld(keys.retrieve);
     state.clickPos = this.#clickPos;
     state.isDoubleClick = this.#isDoubleClick;
     state.longPressPos = this.#longPressPos;

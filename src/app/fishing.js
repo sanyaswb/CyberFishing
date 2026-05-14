@@ -593,7 +593,10 @@ class FightService {
     });
     this.#forces = forceData.forces;
     const isRetrieveOnly =
-      this.#reel?.hasReel?.() && input.retrieve && !input.pointerDown;
+      this.#reel?.hasReel?.() &&
+      input.retrieve &&
+      !input.isPulling &&
+      !input.pointerDown;
     const fightDebug = this.#tensionMeter.getDebugData?.() || {};
     this.#staminaController.evaluate({
       tension: this.#tensionMeter.getTension(),
@@ -685,17 +688,14 @@ class FightService {
     const depthScaleX = xRange[0] + distRatio * (xRange[1] - xRange[0]);
     const steerP =
       (this.#tensionMeter?.getEffectiveMaxTackleLoadKg?.() || 0) *
-      this.#config.physics.playerSteeringMultiplier *
-      this.#config.physics.playerForceMultiplier *
+      (this.#config.physics.playerSteeringMultiplier ?? 1.5) *
       depthScaleX;
     return {
       playerForceY: Math.abs(this.#forces.pY || 0),
       playerForceX: Math.abs(this.#forces.pX || 0),
       fishForceY: Math.abs(this.#forces.fY || 0),
       fishForceX: Math.abs(this.#forces.fX || 0),
-      playerMaxPowerY: Math.abs(
-        maxP.y * this.#config.physics.playerForceMultiplier,
-      ),
+      playerMaxPowerY: Math.abs(maxP.y || 0),
       playerMaxPowerX: steerP,
       fishState: fs?.getCurrentState?.() || "idle",
       fishBasePower: fs?.getFishBasePower?.() || 0,

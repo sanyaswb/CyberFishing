@@ -1062,9 +1062,12 @@
     this.#ctx.font = tensionConfig.labelFont;
     this.#ctx.textAlign = "left";
     const tensionKg = tensionMeter.getTensionKg?.();
-    const tensionLabel = Number.isFinite(tensionKg)
-      ? `TENSION: ${Math.round(tension)}% (${tensionKg.toFixed(1)}kg)`
-      : `TENSION: ${Math.round(tension)}%`;
+    const maxLoadKg = tensionMeter.getEffectiveMaxTackleLoadKg?.();
+    const tensionLabel = Number.isFinite(tensionKg) && Number.isFinite(maxLoadKg)
+      ? `TENSION: ${Math.round(tension)}% (${tensionKg.toFixed(1)}/${maxLoadKg.toFixed(1)}kg)`
+      : Number.isFinite(tensionKg)
+        ? `TENSION: ${Math.round(tension)}% (${tensionKg.toFixed(1)}kg)`
+        : `TENSION: ${Math.round(tension)}%`;
     this.#ctx.fillText(
       tensionLabel,
       barX - tensionConfig.labelOffsetX,

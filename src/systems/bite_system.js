@@ -112,6 +112,23 @@ class BiteSystem {
     return genWeight < firstRange.min ? firstRange.level : lastRange.level;
   }
 
+  #resolveLevelBasePower(weightConfig, level) {
+    const ranges = weightConfig?.levelWeightRanges;
+    if (!Array.isArray(ranges)) return 1;
+
+    const match = ranges.find((range) => Number(range?.level) === Number(level));
+    return Number.isFinite(Number(match?.basePower))
+      ? Math.max(0, Number(match.basePower))
+      : 1;
+  }
+
+  #buildFishPhysics(fishPhysics, weightConfig, level) {
+    return {
+      ...(fishPhysics || {}),
+      levelBasePower: this.#resolveLevelBasePower(weightConfig, level),
+    };
+  }
+
   #next() {
     return this.#rng.next();
   }
@@ -268,7 +285,7 @@ class BiteSystem {
       level,
       maxLevel,
       resistance: this.#lerp(wc.baseResistance, wc.maxResistance, weightRatio),
-      physics: fish.physics,
+      physics: this.#buildFishPhysics(fish.physics, wc, level),
       biteSequence: chosenBiteSequence,
       imagePath: this.#resolveFishImagePath(fish, level),
       isUnique,

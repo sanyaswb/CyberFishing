@@ -49,6 +49,7 @@ class DebugService {
       isRaining: env.isRaining,
       isFoggy: env.isFoggy,
       equipment: eq,
+      eq,
       liveChances: context.getLiveChances(ed, {
         hookSize: currentHookSize,
         baits: currentBaits,

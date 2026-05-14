@@ -245,9 +245,11 @@ function fmtMs(value) {
 
 function getEquipmentPower(item) {
   if (!item) return 0;
-  const level = Number(item.level) || 0;
-  const basePower = Number(item.basePower) || 0;
-  return level + basePower;
+  const maxLoad = Number(item.maxLoadKg);
+  const durability = Number(item.durability ?? 100);
+  const lossPerPercent = Number(item.durabilityMaxLoadLossPerPercent ?? 0.001);
+  if (!Number.isFinite(maxLoad) || maxLoad <= 0) return 0;
+  return maxLoad * Math.max(0.1, 1 - Math.max(0, 100 - durability) * lossPerPercent);
 }
 
 function getHookPower(hook) {
@@ -309,8 +311,8 @@ function renderForcesModule(ctx) {
   console.table({
     "Fish": fish ? `${fish.name || fish.id} / ${fmt(fish.weight, 3)} kg` : "n/a",
     "Fish state": live.fishState || "n/a",
-    "Rod power": fmt(getEquipmentPower(rod), 3),
-    "Reel power": fmt(getEquipmentPower(reel), 3),
+    "Rod max load kg": fmt(getEquipmentPower(rod), 3),
+    "Reel max load kg": fmt(getEquipmentPower(reel), 3),
     "Player force Y live": fmt(live.playerForceY, 3),
     "Player max Y live": fmt(live.playerMaxPowerY, 3),
     "Player force X live": fmt(live.playerForceX, 3),
@@ -354,26 +356,25 @@ function renderDeviationsModule(ctx) {
 function renderTensionModule(ctx) {
   const live = ctx.live || {};
   const config = CONFIG.tension || {};
-  const playerMaxPower = Number(live.playerMaxPowerY);
-  const fishPower = Math.hypot(
-    Number(live.fishForceY) || 0,
-    Number(live.fishForceX) || 0,
-  );
-  const powerRatio = Number.isFinite(playerMaxPower)
-    ? fishPower / Math.max(0.001, playerMaxPower)
+  const maxTackleLoadKg = Number(live.maxTackleLoadKg ?? live.playerMaxPowerY);
+  const fishForceKg = Number(live.totalFishForceKg) ||
+    Math.hypot(Number(live.fishForceY) || 0, Number(live.fishForceX) || 0);
+  const dragLimitKg = Number(live.dragLimitKg) || 0;
+  const tensionKg = Number(live.tensionKg) || 0;
+  const tensionRatio = Number.isFinite(maxTackleLoadKg)
+    ? tensionKg / Math.max(0.001, maxTackleLoadKg)
     : NaN;
-  const exponent = config.powerRatioExponent ?? 2.0;
 
   console.table({
-    "Current tension": fmt(live.tension, 2),
-    "Player max Y": fmt(playerMaxPower, 3),
-    "Fish force magnitude": fmt(fishPower, 3),
-    "Power ratio": fmt(powerRatio, 3),
-    "Speed multiplier": fmt(Math.pow(powerRatio, exponent), 3),
-    "Sensitivity": fmt(config.sensitivityMultiplier, 4),
-    "Smooth approach": fmt(config.smoothApproach, 4),
-    "Break threshold": fmt(config.breakThreshold, 2),
-    "Formula source": "TensionMeter.update",
+    "Current tension kg": fmt(tensionKg, 3),
+    "Current tension %": fmt(live.tension ?? live.tensionPercent, 2),
+    "Max tackle load kg": fmt(maxTackleLoadKg, 3),
+    "Fish force kg": fmt(fishForceKg, 3),
+    "Drag limit kg": fmt(dragLimitKg, 3),
+    "Tension / max load": fmt(tensionRatio, 3),
+    "Kg smoothing / sec": fmt(config.kgSmoothPerSecond, 3),
+    "Break threshold %": fmt(config.breakThreshold, 2),
+    "Formula source": "FightPhysicsSystem.calculateTensionKg + TackleStressSystem",
   });
 }
 

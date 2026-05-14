@@ -45,23 +45,38 @@ class Fish {
   }
 
   getLevelMultiplier() {
-    // New fight physics rule: fish force is not multiplied by the numeric level.
-    // Level only selects an explicit basePower multiplier from config.
-    const tables = [
-      this.#fishConfig.levelBasePowerByLevel,
-      this.#fishConfig.levelPowerMultiplier,
-      this.#fishConfig.levelBasePowerMultiplier,
-    ];
+    // Numeric level is NOT multiplied into fish force anymore.
+    // The level only selects a configured per-level basePower coefficient.
+    if (Number.isFinite(Number(this.#fishConfig?.levelBasePower))) {
+      return Math.max(0, Number(this.#fishConfig.levelBasePower));
+    }
 
-    for (const table of tables) {
-      if (Array.isArray(table) && table.length > 0) {
-        return Number(table[Math.max(0, Math.min(table.length - 1, this.#level - 1))]) || 1;
+    const ranges = this.#fishConfig?.levelWeightRanges;
+    if (Array.isArray(ranges)) {
+      const match = ranges.find((range) => Number(range?.level) === this.#level);
+      if (Number.isFinite(Number(match?.basePower))) {
+        return Math.max(0, Number(match.basePower));
       }
     }
 
-    const perLevel = this.#fishConfig.basePowerByLevel;
+    // Backward-compatible fallbacks for old configs only. Do not add these arrays
+    // to new configs; prefer weightConfig.levelWeightRanges[].basePower.
+    const legacyTables = [
+      this.#fishConfig?.levelBasePowerByLevel,
+      this.#fishConfig?.levelPowerMultiplier,
+      this.#fishConfig?.levelBasePowerMultiplier,
+    ];
+
+    for (const table of legacyTables) {
+      if (Array.isArray(table) && table.length > 0) {
+        const index = Math.max(0, Math.min(table.length - 1, this.#level - 1));
+        return Math.max(0, Number(table[index]) || 1);
+      }
+    }
+
+    const perLevel = this.#fishConfig?.basePowerByLevel;
     if (perLevel && typeof perLevel === "object") {
-      return Number(perLevel[this.#level]) || 1;
+      return Math.max(0, Number(perLevel[this.#level]) || 1);
     }
 
     return 1;
@@ -71,7 +86,9 @@ class Fish {
     if (this.#fishConfig?.basePower) {
       return this.#weight * this.getLevelMultiplier() * this.#fishConfig.basePower;
     }
-    return this.#level * this.#weight + this.#resistance;
+
+    // Legacy fallback without numeric level multiplication.
+    return this.#weight * Math.max(0.001, Number(this.#resistance) || 1);
   }
 
   getStaticPowerKg() {
@@ -434,17 +451,20 @@ class FishCondition {
 
   constructor(level, weight, staminaFishConfig, fishPhysics = null) {
     if (fishPhysics?.baseStamina) {
-      const basePower = fishPhysics.basePower ?? 1.0;
-      const levelMultiplier = 1 + (Math.max(1, level) - 1) * 0.15;
+      const speciesBasePower = fishPhysics.basePower ?? 1.0;
+      const levelBasePower = Number.isFinite(Number(fishPhysics.levelBasePower))
+        ? Number(fishPhysics.levelBasePower)
+        : 1.0;
       const weightMultiplier = fishPhysics.staminaWeightMultiplier ?? 0;
       this.#maxPoints =
         fishPhysics.baseStamina *
-        basePower *
-        levelMultiplier *
+        speciesBasePower *
+        levelBasePower *
         (1 + Math.max(0, weightMultiplier) * Math.max(0, weight - 1));
     } else {
+      // Legacy fallback without numeric level multiplication.
       this.#maxPoints =
-        level * weight * staminaFishConfig.baseStaminaMultiplier +
+        weight * staminaFishConfig.baseStaminaMultiplier +
         staminaFishConfig.flatBonus;
     }
     this.#currentStamina = this.#maxPoints;

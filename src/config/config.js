@@ -140,10 +140,10 @@ const ITEM_DB = {
       type: "spinning", // Для UI фільтрів
       icon: "🎣",
       displayStats: {
-        Рівень: 4,
-        Потужність: 1.5,
-        Дальність: "600м",
-        Тип: "Спінінг",
+        "Макс. навантаження": "12кг",
+        "Довжина": "2.4м",
+        "Дальність": "600м",
+        "Тип": "Спінінг",
       },
       engineStats: {
         type: "spinning", // КРИТИЧНО ДЛЯ ФІЗИКИ
@@ -168,10 +168,10 @@ const ITEM_DB = {
       type: "feeder", // Для UI фільтрів
       icon: "🎋",
       displayStats: {
-        Рівень: 4,
-        Потужність: 1.5,
-        Дальність: "600м",
-        Тип: "Фідер",
+        "Макс. навантаження": "14кг",
+        "Довжина": "3.6м",
+        "Дальність": "600м",
+        "Тип": "Фідер",
       },
       engineStats: {
         type: "feeder", // КРИТИЧНО ДЛЯ ФІЗИКИ
@@ -196,10 +196,10 @@ const ITEM_DB = {
       type: "float",
       icon: "🎍",
       displayStats: {
-        Рівень: 1,
-        Потужність: 1.0,
-        Дальність: "450м",
-        Тип: "Поплавкова",
+        "Макс. навантаження": "8кг",
+        "Довжина": "2.0м",
+        "Ліска без котушки": "5.8м",
+        "Тип": "Поплавкова",
       },
       engineStats: {
         type: "float",
@@ -224,7 +224,12 @@ const ITEM_DB = {
       name: "Тестова Котушка",
       type: "spinning_reel",
       icon: "⚙️",
-      displayStats: { level: 4, power: 1.0, drag: "0-10kg", line: "50m" },
+      displayStats: {
+        "Макс. навантаження": "10кг",
+        "Фрикціон": "0-10кг",
+        "Ліска": "50м / 12кг",
+        "Підмотка": "0.8м/с",
+      },
       engineStats: {
         basePower: 1.0,
         maxLoadKg: 10,
@@ -555,14 +560,23 @@ const CONFIG = {
 
     // Можна використовувати e.code (KeyW, Space, ShiftLeft) або e.key (Shift)
     keys: {
-      retrieve: ["Space"],
+      // PULL / ВИВАЖУВАННЯ. Space має бути тільки тягою.
+      // Якщо Space одночасно є retrieve, компʼютерне керування конфліктує.
+      pull: ["Space"],
+
+      // RECOVER / ПІДМОТКА СЛАБИНИ.
+      // У fight-фізиці recover автоматично спрацьовує, коли гравець відпускає pull.
+      // Shift залишено як ручний recover без конфлікту з пробілом.
+      retrieve: ["ShiftLeft", "ShiftRight"],
+
       dragIncrease: ["KeyW", "ArrowUp"],
       dragDecrease: ["KeyS", "ArrowDown"],
-      pull: ["Space"], // Кнопка тяги (Пробіл)
-      hold: [],
-      pump: [],
       left: ["KeyA", "ArrowLeft"], // Відведення вудки вліво
       right: ["KeyD", "ArrowRight"], // Відведення вудки вправо
+
+      // Стара hold/pump механіка вимкнена.
+      hold: [],
+      pump: [],
     },
   },
 
@@ -815,16 +829,10 @@ const CONFIG = {
         },
 
         physics: {
-          // Global fish force coefficient.
-          // Static force kg = weightKg * basePower * levelBasePowerByLevel[level - 1].
+          // Global fish species force coefficient.
+          // Static force kg = weightKg * physics.basePower * weightConfig.levelWeightRanges[level].basePower.
+          // Numeric level itself is NOT multiplied into force.
           basePower: 1.0,
-
-          // Explicit per-level basePower coefficients. The numeric level itself is NOT
-          // multiplied into force anymore. Level only selects this coefficient.
-          levelBasePowerByLevel: [1.1, 1.3, 1.5, 1.7, 1.9, 2.5],
-
-          // Backward-compatible alias used by older code paths.
-          levelPowerMultiplier: [1.1, 1.3, 1.5, 1.7, 1.9, 2.5],
           baseStamina: 1000,
           baseSpeedMetersPerSec: 2.0,
           speedForceMultiplier: 0.35,

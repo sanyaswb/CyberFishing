@@ -1044,7 +1044,7 @@ class InventoryUI {
     topBar.className = "inv-top-bar";
 
     const powerLabelWrapper = document.createElement("div");
-    powerLabelWrapper.innerHTML = `💪 Загальна сила: <span style="color: #00ff80;">0</span> / 1000`;
+    powerLabelWrapper.innerHTML = `🧱 Макс. навантаження снасті: <span style="color: #00ff80;">0.0</span> кг`;
     this.#powerValueNode = powerLabelWrapper.querySelector("span");
 
     const closeBtn = document.createElement("button");
@@ -1535,6 +1535,14 @@ class InventoryUI {
             "displayStats",
             "engineStats",
             "requiresTag",
+            // Internal legacy/physics fields that should not be presented as user-facing stats.
+            "level",
+            "basePower",
+            "compensation",
+            "durabilityMaxLoadLossPerPercent",
+            "hasReel",
+            "capabilities",
+            "line",
           ].includes(key)
         )
           continue;

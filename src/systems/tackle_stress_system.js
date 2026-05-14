@@ -60,9 +60,18 @@ class TackleStressSystem {
   }
 
   getEffectiveMaxTackleLoadKg() {
-    const rodMax = this.getEffectiveRodMaxLoadKg();
-    const lineMax = this.getEffectiveLineSystemMaxLoadKg();
-    return (rodMax + lineMax) / 2;
+    const values = [
+      this.getEffectiveRodMaxLoadKg(),
+      this.getEffectiveLineSystemMaxLoadKg(),
+    ]
+      .map((value) => Number(value))
+      .filter((value) => Number.isFinite(value) && value > 0);
+
+    if (values.length === 0) return 1;
+
+    // The weakest available tackle part defines the safe player/tackle load.
+    // Example: rod 10kg + reel/line system 2kg => max load is 2kg.
+    return Math.min(...values);
   }
 
   getEffectiveRodMaxLoadKg() {

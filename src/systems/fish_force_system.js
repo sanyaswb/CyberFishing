@@ -233,11 +233,19 @@ class FishForceSystem {
       Number(rod?.getMaxLoadKg?.()) ||
       0;
     const fallbackReelKg = hasReel
-      ? Number(reel?.getEffectiveMaxLoadKg?.()) || Number(reel?.getMaxLoadKg?.()) || fallbackRodKg
-      : fallbackRodKg;
+      ? Number(reel?.getEffectiveMaxLoadKg?.()) || Number(reel?.getMaxLoadKg?.()) || 0
+      : 0;
+    const fallbackValues = [fallbackRodKg];
+    if (hasReel && fallbackReelKg > 0) fallbackValues.push(fallbackReelKg);
+
+    const fallbackWeakestKg = fallbackValues
+      .filter((value) => Number.isFinite(value) && value > 0)
+      .reduce((min, value) => Math.min(min, value), Infinity);
+
     const baseForceKg = Math.max(
       0,
-      Number(playerMaxLoadKg) || (hasReel ? (fallbackRodKg + fallbackReelKg) / 2 : fallbackRodKg),
+      Number(playerMaxLoadKg) ||
+        (Number.isFinite(fallbackWeakestKg) ? fallbackWeakestKg : fallbackRodKg),
     );
     const maxPlayerForceKg = baseForceKg * anglePenalty * (buffs?.getTotalMultiplier?.() || 1);
 
