@@ -591,6 +591,7 @@ class GameApplication {
       physicsConfig,
       eq,
       this.#rng,
+      this.#debugEvents,
     );
   }
 
@@ -803,7 +804,6 @@ class GameApplication {
         this.#config.casting,
         this.#config.tension,
         this.#clock.now,
-        this.chumCastDistance,
       );
       return;
     }

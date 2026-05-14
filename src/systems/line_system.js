@@ -7,6 +7,7 @@ class LineSystem {
   #totalLengthMeters;
   #releasedMeters;
   #remainingMeters;
+  #maxRemainingMeters;
   #distanceMeters;
   #lineMaxLoadKg;
   #lineDurability;
@@ -43,6 +44,9 @@ class LineSystem {
     this.#baseReachMeters = reachModel.baseReachMeters;
     this.#reelLineMeters = reachModel.reserveMeters;
     this.#totalLengthMeters = reachModel.maxReachMeters;
+    this.#maxRemainingMeters = this.#hasReel
+      ? Math.max(0, this.#totalLengthMeters - this.#baseReachMeters)
+      : 0;
 
     // Reel rigs start from the rod base reach and can release the rest of the
     // equipped line. Pole rigs have fixed line and cannot actively spool/recover.
@@ -51,7 +55,7 @@ class LineSystem {
       : this.#totalLengthMeters;
     this.#remainingMeters = Math.max(
       0,
-      this.#totalLengthMeters - this.#baseReachMeters,
+      this.#totalLengthMeters - this.#releasedMeters,
     );
     this.#distanceMeters = 0;
 
@@ -216,6 +220,7 @@ class LineSystem {
       totalLengthMeters: this.#totalLengthMeters,
       releasedMeters: this.#releasedMeters,
       remainingMeters: this.#remainingMeters,
+      maxRemainingMeters: this.#maxRemainingMeters,
       distanceMeters: this.#distanceMeters,
       slackMeters: Math.max(0, this.#releasedMeters - this.#distanceMeters),
       isFullyExtended: this.#isFullyExtended,
@@ -235,12 +240,11 @@ class LineSystem {
       Math.min(this.#totalLengthMeters, this.#releasedMeters),
     );
 
-    // User-facing reserve: total real line minus the mandatory rod rig length.
-    // It does not shrink when the fish is farther away; it represents the maximum
-    // usable reserve over the fixed rod-length segment.
+    // User-facing reserve: meters still available to release right now.
+    // Max reserve is tracked separately as totalLine - baseReachMeters.
     this.#remainingMeters = Math.max(
       0,
-      this.#totalLengthMeters - this.#baseReachMeters,
+      this.#totalLengthMeters - this.#releasedMeters,
     );
     this.#lineExtensionRatio =
       this.#releasedMeters > 0

@@ -319,14 +319,16 @@ class WaterEntity {
 
   _activeBiteSequence = null;
   _rng;
+  _debugEvents;
 
-  constructor(x, y, config, maxDepth, rng = null) {
+  constructor(x, y, config, maxDepth, rng = null, debugEvents = null) {
     this._position = new Vector2(x, y);
     this._velocity = new Vector2(0, 0);
     this._currentBiteMoveVelocity = new Vector2(0, 0);
     this._forceScratch = new Vector2(0, 0);
     this._config = config;
     this._rng = rng || { next: () => Math.random() };
+    this._debugEvents = debugEvents || null;
     this._maxDepth = maxDepth || config.maxDepth || 8.0;
     this._currentHookDepth = 0.1;
     this._targetHookDepth = 0.1;
@@ -344,9 +346,26 @@ class WaterEntity {
   }
 
   _chance(probability) {
-    return typeof this._rng.chance === "function"
-      ? this._rng.chance(probability)
-      : this._random() < probability;
+    return this._rollChance(probability).success;
+  }
+
+  _rollChance(probability) {
+    const normalized = Math.max(0, Math.min(1, Number(probability) || 0));
+    const roll = this._random();
+    return {
+      probability: normalized,
+      roll,
+      success: roll < normalized,
+    };
+  }
+
+  _formatPercent(value) {
+    return `${(Math.max(0, Math.min(1, Number(value) || 0)) * 100).toFixed(2)}%`;
+  }
+
+  _emitDebugEvent(type, detail) {
+    if (!this._debugEvents || typeof this._debugEvents.emit !== "function") return;
+    this._debugEvents.emit(type, detail);
   }
 
   _applyRetrieveForce(dt, pullDirection, power, multiplier, waterFriction = 0) {
@@ -738,6 +757,25 @@ class WaterEntity {
       this._getRandom(seqCfg.maxSequences),
     );
 
+    this._emitDebugEvent("debug-bite-sequence", {
+      mode: "BITING",
+      event: "START",
+      isPulling,
+      isSpinningLure,
+      sequence: {
+        chanceGuaranteed: seqCfg.chanceGuaranteed,
+        chanceGuaranteedPercent: this._formatPercent(seqCfg.chanceGuaranteed),
+        chanceNormal: seqCfg.chanceNormal,
+        chanceNormalPercent: this._formatPercent(seqCfg.chanceNormal),
+        maxSequences: seqCfg.maxSequences,
+        targetSequenceCount: this._targetSequenceCount,
+        guaranteedIters: seqCfg.guaranteedIters,
+        normalIters: seqCfg.normalIters,
+        intervalMs: seqCfg.intervalMs,
+        sequenceIntervalMs: seqCfg.sequenceIntervalMs,
+      },
+    });
+
     // Більше не передаємо seqCfg сюди, метод візьме його з this._activeBiteSequence
     this._rollBiteSequence();
   }
@@ -821,14 +859,19 @@ class WaterEntity {
     // 4. ЧИТАЄМО ЗБЕРЕЖЕНИЙ КОНФІГ
     const seqCfg = this._activeBiteSequence;
 
-    const isRed = this._chance(seqCfg.chanceGuaranteed);
+    const rollResult = this._rollChance(seqCfg.chanceGuaranteed);
+    const isRed = rollResult.success;
     const color = isRed ? "#ff0000" : "#ffff00";
     const range = isRed ? seqCfg.guaranteedIters : seqCfg.normalIters;
     const iters = Math.floor(this._getRandom(range));
+    const sequenceType = isRed ? "guaranteed" : "normal";
+    const debugIterations = [];
+    let sequenceIntervalMs = 0;
 
     if (this._currentSequenceCount > 1) {
+      sequenceIntervalMs = this._getRandom(seqCfg.sequenceIntervalMs);
       this._sequenceQueue.push({
-        duration: this._getRandom(seqCfg.sequenceIntervalMs),
+        duration: sequenceIntervalMs,
         angle: 0,
         scaleY: 1.0,
         startMove: false,
@@ -845,15 +888,40 @@ class WaterEntity {
         s.isGuaranteed = isRed;
         this._sequenceQueue.push(s);
       }
+      const intervalMs = this._getRandom(seqCfg.intervalMs);
       this._sequenceQueue.push({
-        duration: this._getRandom(seqCfg.intervalMs),
+        duration: intervalMs,
         angle: 0,
         scaleY: 1.0,
         startMove: false,
         color: color,
         isGuaranteed: isRed,
       });
+      debugIterations.push({
+        index: i + 1,
+        result: "успішно",
+        stepCount: steps.length,
+        fallbackMs: intervalMs,
+      });
     }
+
+    this._emitDebugEvent("debug-bite-sequence", {
+      mode: "BITING",
+      event: "SEQUENCE_ROLL",
+      sequenceIndex: this._currentSequenceCount,
+      sequenceCount: this._targetSequenceCount,
+      chanceGuaranteed: seqCfg.chanceGuaranteed,
+      chanceGuaranteedPercent: this._formatPercent(seqCfg.chanceGuaranteed),
+      chanceNormal: seqCfg.chanceNormal,
+      chanceNormalPercent: this._formatPercent(seqCfg.chanceNormal),
+      roll: rollResult.roll,
+      rollPercent: this._formatPercent(rollResult.roll),
+      selectedType: sequenceType,
+      generatedIterations: iters,
+      sequenceIntervalMs,
+      iterations: debugIterations,
+    });
+
     this._nextAnimStep();
   }
 
@@ -1417,12 +1485,12 @@ class FloatEntity extends WaterEntity {
 }
 
 class BaitFactory {
-  static create(type, x, y, config, equipment, rng = null) {
+  static create(type, x, y, config, equipment, rng = null, debugEvents = null) {
     switch (type) {
       case "spinner":
-        return new SpinnerEntity(x, y, config, config.maxDepth, rng);
+        return new SpinnerEntity(x, y, config, config.maxDepth, rng, debugEvents);
       case "wobbler":
-        return new WobblerEntity(x, y, config, config.maxDepth, rng);
+        return new WobblerEntity(x, y, config, config.maxDepth, rng, debugEvents);
       case "jig":
         return new JigEntity(
           x,
@@ -1430,12 +1498,13 @@ class BaitFactory {
           config,
           equipment?.sinker?.maxDepth || config.maxDepth,
           rng,
+          debugEvents,
         );
       case "feeder":
-        return new FeederEntity(x, y, config, config.maxDepth, rng);
+        return new FeederEntity(x, y, config, config.maxDepth, rng, debugEvents);
       case "float":
       default:
-        return new FloatEntity(x, y, config, config.maxDepth, rng);
+        return new FloatEntity(x, y, config, config.maxDepth, rng, debugEvents);
     }
   }
 }

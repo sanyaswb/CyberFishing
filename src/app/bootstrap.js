@@ -74,11 +74,11 @@ class GameCompositionRoot {
         rng,
         now: () => clock.realNow,
       }),
-      bite: new BiteSystem(this.#config.spawns, this.#config, rng),
+      bite: new BiteSystem(this.#config.spawns, this.#config, rng, debugEvents),
       inventory,
     };
     systems.inventoryUI = new InventoryUI(systems.inventory);
-    const equipmentRules = new EquipmentRules(castDistanceCalculator, this.#config);
+    const equipmentRules = new EquipmentRules(castDistanceCalculator);
     const baitRules = new BaitRules();
     const castRules = new CastRules(equipmentRules);
     const biteRules = new BiteRules(baitRules);
@@ -110,6 +110,7 @@ class GameCompositionRoot {
       devFlags,
       equipmentRules,
       baitRules,
+      debugEvents,
     });
     const net = new Net(eq.net || { active: false, maxWeight: 0, length: 10 });
     const castManager = new CastManager();
@@ -175,6 +176,7 @@ class GameCompositionRoot {
       baitRules: runtime.baitRules,
       getRodVirtualPos: appPorts.getRodVirtualPos,
       getDynamicBounds: appPorts.getDynamicBounds,
+      debugEvents,
     });
 
     const fightService = new FightService({

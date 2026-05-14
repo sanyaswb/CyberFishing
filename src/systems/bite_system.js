@@ -8,11 +8,14 @@ class BiteSystem {
   #runtimeConfig;
   #guaranteedBiteCooldownRange;
   #guaranteedBiteCooldownRemaining = 0;
+  #cooldownDebugTimer = 0;
   #possibleBitesBuffer;
   #possibleBiteChancesBuffer;
   #rng;
+  #debugEvents;
+  #tickIndex = 0;
 
-  constructor(biteConfig, runtimeConfig, rng = null) {
+  constructor(biteConfig, runtimeConfig, rng = null, debugEvents = null) {
     const physicsConfig = runtimeConfig?.physics || runtimeConfig || {};
     const lineConfig = runtimeConfig?.ui?.line || runtimeConfig?.line || {};
     this.#runtimeConfig = runtimeConfig || {};
@@ -28,6 +31,7 @@ class BiteSystem {
     this.#possibleBitesBuffer = [];
     this.#possibleBiteChancesBuffer = [];
     this.#rng = rng || { next: () => Math.random() };
+    this.#debugEvents = debugEvents || null;
   }
 
   setFishDatabase(fishDatabase) {
@@ -36,6 +40,8 @@ class BiteSystem {
 
   reset() {
     this.#timer = 0;
+    this.#cooldownDebugTimer = 0;
+    this.#tickIndex = 0;
   }
 
   #resolveFishDatabase(source) {
@@ -162,7 +168,9 @@ class BiteSystem {
     const ranges = weightConfig?.levelWeightRanges;
     if (!Array.isArray(ranges)) return 1;
 
-    const match = ranges.find((range) => Number(range?.level) === Number(level));
+    const match = ranges.find(
+      (range) => Number(range?.level) === Number(level),
+    );
     return Number.isFinite(Number(match?.basePower))
       ? Math.max(0, Number(match.basePower))
       : 1;
@@ -180,9 +188,38 @@ class BiteSystem {
   }
 
   #chance(probability) {
-    return typeof this.#rng.chance === "function"
-      ? this.#rng.chance(probability)
-      : this.#next() < probability;
+    return this.#rollChance(probability).success;
+  }
+
+  #rollChance(probability) {
+    const normalized = this.#clamp01(probability);
+    const roll = this.#next();
+    return {
+      probability: normalized,
+      roll,
+      success: roll < normalized,
+    };
+  }
+
+  #formatPercent(value) {
+    return `${(this.#clamp01(value) * 100).toFixed(2)}%`;
+  }
+
+  #emitDebugEvent(type, detail) {
+    if (!this.#debugEvents || typeof this.#debugEvents.emit !== "function")
+      return;
+    this.#debugEvents.emit(type, detail);
+  }
+
+  #buildGodModeDebug() {
+    const godMode = this.#getGodModeConfig();
+    if (!godMode) return null;
+    return {
+      enabled: true,
+      fixedBiteChanceEnabled: godMode.fixedBiteChanceEnabled === true,
+      fixedBiteChancePercent: godMode.fixedBiteChancePercent,
+      biteSequenceMode: godMode.biteSequenceMode || "default",
+    };
   }
 
   #int(min, max) {
@@ -217,6 +254,7 @@ class BiteSystem {
     max = Math.max(min, Math.floor(max));
     this.#guaranteedBiteCooldownRemaining =
       min === max ? min : this.#int(min, max);
+    return this.#guaranteedBiteCooldownRemaining;
   }
 
   #calculateFishChance(fish, envData, playerGear) {
@@ -350,31 +388,107 @@ class BiteSystem {
   }
 
   evaluateBite(dt, envData, playerGear) {
-    if (this.#updateGuaranteedBiteCooldown(dt)) return null;
+    const cooldownBeforeMs = this.#guaranteedBiteCooldownRemaining;
+    if (this.#updateGuaranteedBiteCooldown(dt)) {
+      this.#cooldownDebugTimer += dt;
+      if (this.#cooldownDebugTimer >= this.#tickRate) {
+        this.#cooldownDebugTimer -= this.#tickRate;
+        this.#tickIndex++;
+        this.#emitDebugEvent("debug-bite-tick", {
+          mode: "WAITING",
+          tickIndex: this.#tickIndex,
+          tickRateMs: this.#tickRate,
+          result: "COOLDOWN",
+          checkedFishCount: 0,
+          cooldown: {
+            active: true,
+            beforeMs: cooldownBeforeMs,
+            afterMs: this.#guaranteedBiteCooldownRemaining,
+            reason: "guaranteed_bite_cooldown",
+          },
+          godMode: this.#buildGodModeDebug(),
+        });
+      }
+      return null;
+    }
+    this.#cooldownDebugTimer = 0;
 
     this.#timer += dt;
     if (this.#timer < this.#tickRate) return null;
     this.#timer -= this.#tickRate;
+    this.#tickIndex++;
 
     this.#possibleBitesBuffer.length = 0;
     this.#possibleBiteChancesBuffer.length = 0;
 
+    const fishRolls = [];
+
     for (let i = 0; i < this.#fishDatabase.length; i++) {
       const fish = this.#fishDatabase[i];
       const chance = this.#calculateFishChance(fish, envData, playerGear);
+      const rollResult = chance > 0 ? this.#rollChance(chance) : null;
+      const success = rollResult ? rollResult.success : false;
 
-      if (chance > 0 && this.#chance(chance)) {
+      fishRolls.push({
+        id: fish.id,
+        name: fish.name,
+        chance,
+        chancePercent: this.#formatPercent(chance),
+        roll: rollResult ? rollResult.roll : null,
+        rollPercent: rollResult ? this.#formatPercent(rollResult.roll) : "—",
+        result: success ? "КЛЮНУЛО" : "НЕ КЛЮНУЛО",
+        skipped: chance <= 0,
+      });
+
+      if (success) {
         this.#possibleBitesBuffer.push(fish);
         this.#possibleBiteChancesBuffer.push(chance);
       }
     }
 
+    let selected = null;
+    let selectedChance = 0;
+    let selectedIndex = -1;
+    let cooldownStartedMs = 0;
+
     if (this.#possibleBitesBuffer.length > 0) {
-      const selectedIndex = this.#int(0, this.#possibleBitesBuffer.length - 1);
-      const selected = this.#possibleBitesBuffer[selectedIndex];
-      if (this.#possibleBiteChancesBuffer[selectedIndex] >= 1.0) {
-        this.#startGuaranteedBiteCooldown();
+      selectedIndex = this.#int(0, this.#possibleBitesBuffer.length - 1);
+      selected = this.#possibleBitesBuffer[selectedIndex];
+      selectedChance = this.#possibleBiteChancesBuffer[selectedIndex];
+      if (selectedChance >= 1.0) {
+        cooldownStartedMs = this.#startGuaranteedBiteCooldown();
       }
+    }
+
+    this.#emitDebugEvent("debug-bite-tick", {
+      mode: "WAITING",
+      tickIndex: this.#tickIndex,
+      tickRateMs: this.#tickRate,
+      result: selected ? "КЛЮНУЛО" : "НЕ КЛЮНУЛО",
+      checkedFishCount: this.#fishDatabase.length,
+      fishRolls,
+      bitesCount: this.#possibleBitesBuffer.length,
+      selectedFish: selected
+        ? {
+            id: selected.id,
+            name: selected.name,
+            index: selectedIndex,
+            chance: selectedChance,
+            chancePercent: this.#formatPercent(selectedChance),
+          }
+        : null,
+      cooldown: {
+        active: cooldownStartedMs > 0,
+        startedMs: cooldownStartedMs,
+        reason:
+          cooldownStartedMs > 0
+            ? "100% bite selected → cooldown started"
+            : null,
+      },
+      godMode: this.#buildGodModeDebug(),
+    });
+
+    if (selected) {
       // <-- ЗМІНЕНО: тепер передаємо playerGear сюди
       return this.#generateFishInstance(
         selected,

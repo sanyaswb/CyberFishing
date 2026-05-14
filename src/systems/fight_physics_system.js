@@ -133,6 +133,8 @@ class FightPhysicsSystem {
       ...dragSystem.getDebugData(),
       lineReleasedMeters: lineState.releasedMeters,
       lineRemainingMeters: lineState.remainingMeters,
+      lineMaxRemainingMeters: lineState.maxRemainingMeters,
+      lineBaseReachMeters: lineState.baseReachMeters,
       lineTotalLengthMeters: lineState.totalLengthMeters,
       lineSlackMeters: lineState.slackMeters,
       isLineFullyExtended: lineState.isFullyExtended,

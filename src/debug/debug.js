@@ -1,4 +1,5 @@
 window.DEBUG_MODULES = {
+  biteTicks: true,
   location: false,
   forces: false,
   deviations: false,
@@ -492,7 +493,151 @@ function renderNetModule(ctx) {
   });
 }
 
+function renderBiteTicksModule() {
+  const config = typeof CONFIG !== "undefined" ? CONFIG : {};
+  const tickRate = config.spawns?.tickRateMs ?? "n/a";
+  const cooldown = config.physics?.guaranteedBiteCooldownMs || [];
+  const godMode = config.debug?.godMode || {};
+  console.table({
+    "Logger status": "enabled",
+    "Waiting tick rate": `${tickRate} ms`,
+    "Guaranteed cooldown min": cooldown[0] != null ? fmtMs(cooldown[0]) : "n/a",
+    "Guaranteed cooldown max": cooldown[1] != null ? fmtMs(cooldown[1]) : "n/a",
+    "GOD fixed chance": godMode.fixedBiteChanceEnabled
+      ? `${godMode.fixedBiteChancePercent}%`
+      : "off",
+    "GOD bite sequence mode": godMode.biteSequenceMode || "default",
+    "Event source": "BiteSystem + WaterEntity.startBite/_rollBiteSequence",
+  });
+}
+
+function printBiteTickLog(detail = {}) {
+  if (!window.DEBUG_MODULES?.biteTicks) return;
+
+  const tick = detail.tickIndex ?? "?";
+  const result = detail.result || "n/a";
+  const cooldown = detail.cooldown || {};
+  const title =
+    cooldown.active && result === "COOLDOWN"
+      ? `[BITE:WAITING] #${tick} cooldown active — next checks paused`
+      : `[BITE:WAITING] #${tick} ${result}`;
+
+  console.groupCollapsed(`%c${title}`, "color: #00d1ff; font-weight: bold;");
+  console.table({
+    "Режим": detail.mode || "WAITING",
+    "Тік": tick,
+    "Період перевірки": fmtMs(detail.tickRateMs),
+    "Перевірено риб": detail.checkedFishCount ?? 0,
+    "Результат": result,
+    "Клюнуло кандидатів": detail.bitesCount ?? 0,
+    "Обрана риба": detail.selectedFish
+      ? `${detail.selectedFish.name || detail.selectedFish.id} (${detail.selectedFish.chancePercent})`
+      : "none",
+    "GOD fixed chance": detail.godMode?.fixedBiteChanceEnabled
+      ? `${detail.godMode.fixedBiteChancePercent}%`
+      : "off",
+    "GOD sequence mode": detail.godMode?.biteSequenceMode || "default",
+  });
+
+  if (Array.isArray(detail.fishRolls) && detail.fishRolls.length > 0) {
+    console.table(
+      detail.fishRolls.map((fish, index) => ({
+        "#": index + 1,
+        "Риба": fish.name || fish.id,
+        "Шанс": fish.chancePercent,
+        "Випав шанс / roll": fish.rollPercent,
+        "Результат": fish.skipped ? "skip: chance 0%" : fish.result,
+      })),
+    );
+  }
+
+  if (cooldown.active) {
+    console.table({
+      "Колдаун запущено/активний": true,
+      "Причина": cooldown.reason || "n/a",
+      "Стартовий час": cooldown.startedMs ? fmtMs(cooldown.startedMs) : "n/a",
+      "Було залишку": cooldown.beforeMs ? fmtMs(cooldown.beforeMs) : "n/a",
+      "Стало залишку": cooldown.afterMs ? fmtMs(cooldown.afterMs) : "n/a",
+    });
+  } else {
+    console.info("Колдаун після покльовки: не запущено.");
+  }
+
+  console.groupEnd();
+}
+
+function printBiteSequenceLog(detail = {}) {
+  if (!window.DEBUG_MODULES?.biteTicks) return;
+
+  if (detail.event === "START") {
+    const seq = detail.sequence || {};
+    console.groupCollapsed(
+      "%c[BITE:BITING] start sequence",
+      "color: #ffcc00; font-weight: bold;",
+    );
+    console.table({
+      "Режим": detail.mode || "BITING",
+      "Подія": "START",
+      "Pulling під час покльовки": detail.isPulling === true,
+      "Активна приманка": detail.isSpinningLure === true,
+      "Guaranteed chance": seq.chanceGuaranteedPercent || "n/a",
+      "Normal chance": seq.chanceNormalPercent || "n/a",
+      "Max sequences config": Array.isArray(seq.maxSequences)
+        ? `${seq.maxSequences[0]}..${seq.maxSequences[1]}`
+        : seq.maxSequences,
+      "Згенеровано sequences": seq.targetSequenceCount ?? "n/a",
+      "Guaranteed iters": Array.isArray(seq.guaranteedIters)
+        ? `${seq.guaranteedIters[0]}..${seq.guaranteedIters[1]}`
+        : seq.guaranteedIters,
+      "Normal iters": Array.isArray(seq.normalIters)
+        ? `${seq.normalIters[0]}..${seq.normalIters[1]}`
+        : seq.normalIters,
+      "Fallback між ітераціями": Array.isArray(seq.intervalMs)
+        ? `${fmtMs(seq.intervalMs[0])}..${fmtMs(seq.intervalMs[1])}`
+        : fmtMs(seq.intervalMs),
+      "Fallback між sequences": Array.isArray(seq.sequenceIntervalMs)
+        ? `${fmtMs(seq.sequenceIntervalMs[0])}..${fmtMs(seq.sequenceIntervalMs[1])}`
+        : fmtMs(seq.sequenceIntervalMs),
+    });
+    console.groupEnd();
+    return;
+  }
+
+  console.groupCollapsed(
+    `%c[BITE:BITING] sequence ${detail.sequenceIndex}/${detail.sequenceCount} → ${detail.selectedType}`,
+    "color: #ffcc00; font-weight: bold;",
+  );
+  console.table({
+    "Режим": detail.mode || "BITING",
+    "Подія": detail.event || "SEQUENCE_ROLL",
+    "Фактичний шанс guaranteed": detail.chanceGuaranteedPercent,
+    "Фактичний шанс normal": detail.chanceNormalPercent,
+    "Шанс який випав / roll": detail.rollPercent,
+    "Обраний тип": detail.selectedType,
+    "Згенеровано ітерацій": detail.generatedIterations,
+    "Fallback між sequences": detail.sequenceIntervalMs
+      ? fmtMs(detail.sequenceIntervalMs)
+      : "не запускався",
+  });
+
+  if (Array.isArray(detail.iterations) && detail.iterations.length > 0) {
+    console.table(
+      detail.iterations.map((iter) => ({
+        "Ітерація": iter.index,
+        "Результат": iter.result,
+        "Animation steps": iter.stepCount,
+        "Fallback між ітерацією": fmtMs(iter.fallbackMs),
+      })),
+    );
+  }
+  console.groupEnd();
+}
+
 const DEBUG_CONSOLE_MODULES = {
+  biteTicks: {
+    title: "Bite Tick Logger",
+    render: renderBiteTicksModule,
+  },
   location: {
     title: "Location",
     render: renderLocationModule,
@@ -619,6 +764,14 @@ document.addEventListener("config-updated", (e) => {
 document.addEventListener("debug-fish-hooked", (e) => {
   DebugConsole.setFightData(e.detail);
   DebugConsole.printEnabled({ reason: "fish hooked" });
+});
+
+document.addEventListener("debug-bite-tick", (e) => {
+  printBiteTickLog(e.detail);
+});
+
+document.addEventListener("debug-bite-sequence", (e) => {
+  printBiteSequenceLog(e.detail);
 });
 
 document.addEventListener("netCatchRoll", (e) => {

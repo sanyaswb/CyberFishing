@@ -4,13 +4,15 @@ class FishingController {
   #devFlags;
   #equipmentRules;
   #baitRules;
+  #debugEvents;
 
-  constructor({ inventory, equipment, devFlags, equipmentRules, baitRules }) {
+  constructor({ inventory, equipment, devFlags, equipmentRules, baitRules, debugEvents = null }) {
     this.#inventory = inventory;
     this.#equipment = equipment;
     this.#devFlags = devFlags;
     this.#equipmentRules = equipmentRules;
     this.#baitRules = baitRules;
+    this.#debugEvents = debugEvents;
   }
 
   consumeFirstBaitForFight(eq) {
@@ -168,6 +170,7 @@ class CastService {
   #baitRules;
   #getRodVirtualPos;
   #getDynamicBounds;
+  #debugEvents;
 
   constructor({
     config,
@@ -177,6 +180,7 @@ class CastService {
     baitRules,
     getRodVirtualPos,
     getDynamicBounds,
+    debugEvents = null,
   }) {
     this.#config = config;
     this.#rng = rng;
@@ -185,6 +189,7 @@ class CastService {
     this.#baitRules = baitRules;
     this.#getRodVirtualPos = getRodVirtualPos;
     this.#getDynamicBounds = getDynamicBounds;
+    this.#debugEvents = debugEvents;
   }
 
   cast(vx, vy, cellDepth, context) {
@@ -197,11 +202,8 @@ class CastService {
     const rodPos =
       context.rodVirtualPos || this.#getRodVirtualPos(this.#getDynamicBounds());
     const dist = Math.hypot(vx - rodPos.x, vy - rodPos.y);
-    const maxDist = this.#equipmentRules.getEffectiveCastDistance(eq, 2000);
-    if (maxDist <= 0 || dist > maxDist + 0.001) {
-      return { success: false, reason: "cast_distance_exceeded" };
-    }
-    const castDistanceRatio = Math.min(1, dist / Math.max(1, maxDist));
+    const maxDist = this.#equipmentRules.getMaxCastDistance(eq, 2000);
+    const castDistanceRatio = Math.min(1, dist / maxDist);
     const castStartTime = this.#clock.now;
 
     let currentHookDepth = context.currentHookDepth;
@@ -228,6 +230,7 @@ class CastService {
       physicsConfig,
       eq,
       this.#rng,
+      this.#debugEvents,
     );
 
     if (typeof floatEntity.cast === "function") {

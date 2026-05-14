@@ -248,9 +248,10 @@ const CONFIG = {
       fixedBiteChanceEnabled: true, // Якщо true, шанс клювання буде завжди fixedBiteChancePercent, ігноруючи інші механіки.
       fixedBiteChancePercent: 100,
 
-      // "default" — брати biteMechanics риби; "guaranteed" — тільки гарантовані;
+      // "default" — брати biteMechanics риби;
+      // "guaranteed" — тільки гарантовані;
       // "normal" — тільки не гарантовані.
-      biteSequenceMode: "default",
+      biteSequenceMode: "guaranteed",
     },
 
     overlay: true,
@@ -477,7 +478,7 @@ const CONFIG = {
     distanceXMultiplier: [0.3, 1.0],
 
     defaultDepthNoSinker: 0.1,
-    guaranteedBiteCooldownMs: [2000, 15000],
+    guaranteedBiteCooldownMs: [0, 0], // Мінімальний час між клюваннями однієї риби. 0 = без кулдауну.
 
     lureRetrieveMultiplier: 50,
     passiveRetrievePower: 1.0,
