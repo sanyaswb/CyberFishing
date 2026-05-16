@@ -254,19 +254,20 @@ class FishingRenderService {
     );
     renderer.drawFloat(sPos, floatEntity, eq.float || {}, this.#projector, eq);
     if (state === "playing" && tMeter && fCond) {
-      renderer.drawTensionBar(
-        tMeter,
-        this.#config.tension,
-        this.#config.ui.indicators,
-      );
-      if (typeof renderer.drawDragBar === "function") {
-        renderer.drawDragBar(
-          tMeter.getDragRatio?.() || 0,
-          this.#config.physics?.drag,
+      const fightDebug = tMeter.getDebugData?.() || {};
+      if (typeof renderer.drawRodPullBar === "function") {
+        renderer.drawRodPullBar(
+          fightDebug,
           this.#config.tension,
           this.#config.ui.indicators,
         );
       }
+      renderer.drawTensionBar(
+        tMeter,
+        this.#config.tension,
+        this.#config.ui.indicators,
+        fightDebug,
+      );
       renderer.drawFishCondition(fCond, this.#config.ui.indicators);
     }
   }

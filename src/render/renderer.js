@@ -1025,6 +1025,45 @@
     });
   }
 
+  drawRodPullBar(fightDebug, tensionConfig, uiIndicatorsConfig) {
+    const width = tensionConfig?.barWidth || 300;
+    const height = Math.max(8, Math.round((tensionConfig?.barHeight || 20) * 0.72));
+    const x = this.#resolveX(uiIndicatorsConfig?.x, width);
+    const baseY = uiIndicatorsConfig?.y || 40;
+    const spacing = uiIndicatorsConfig?.spacing || 40;
+    const y = baseY + spacing;
+    const ratio = Math.max(0, Math.min(1, Number(fightDebug?.rodPullRatio) || 0));
+    const used = Number(fightDebug?.rodPullDistanceMeters) || 0;
+    const available = Number(fightDebug?.rodPullAvailableDistanceMeters) || 0;
+    const forceKg = Number(fightDebug?.rodPullForceKg) || 0;
+    const reason = fightDebug?.rodPullBlockedReason || "none";
+    const label =
+      reason && reason !== "none"
+        ? `ROD: ${used.toFixed(1)}/${available.toFixed(1)}m ${reason}`
+        : `ROD: ${used.toFixed(1)}/${available.toFixed(1)}m ${forceKg.toFixed(1)}kg`;
+    const color =
+      reason === "drag_slipping" || reason === "max_tension_reached"
+        ? "#ffc857"
+        : reason === "slack_too_high" || reason === "hard_line_limit"
+          ? "#ff5d73"
+          : "#68e39f";
+    this.#drawSimpleRatioBar({
+      ratio,
+      x,
+      y,
+      width,
+      height,
+      label,
+      color,
+      backgroundColor: tensionConfig?.backgroundColor || "#1a2b3c",
+      borderColor: tensionConfig?.borderColor || "#4a5b6c",
+      labelColor: tensionConfig?.labelColor || "#8a9bac",
+      labelFont: tensionConfig?.labelFont || "bold 12px monospace",
+      labelOffsetX: tensionConfig?.labelOffsetX || 60,
+      labelOffsetY: Math.max(10, Math.round(height * 0.85)),
+    });
+  }
+
   #drawSimpleRatioBar({
     ratio,
     x,
@@ -1059,17 +1098,20 @@
     this.#ctx.restore();
   }
 
-  drawTensionBar(tensionMeter, tensionConfig, uiIndicatorsConfig) {
+  drawTensionBar(tensionMeter, tensionConfig, uiIndicatorsConfig, fightDebug = null) {
     const barWidth = tensionConfig.barWidth;
     const barHeight = tensionConfig.barHeight;
     const barX = this.#resolveX(uiIndicatorsConfig?.x, barWidth);
     const baseY = uiIndicatorsConfig?.y || 40;
     const spacing = uiIndicatorsConfig?.spacing || 40;
-    const barY = baseY + spacing;
+    const rodBarHeight = Math.max(8, Math.round((tensionConfig?.barHeight || 20) * 0.72));
+    const barY = baseY + spacing + rodBarHeight + 22;
 
     const padding = tensionConfig.borderPadding;
     const tension = tensionMeter.getTension();
     const pulseIntensity = tensionMeter.getPulseIntensity(tensionConfig);
+    const tensionKg = tensionMeter.getTensionKg?.();
+    const maxLoadKg = tensionMeter.getEffectiveMaxTackleLoadKg?.();
 
     this.#ctx.fillStyle = tensionConfig.backgroundColor;
     this.#ctx.fillRect(
@@ -1102,11 +1144,22 @@
     this.#ctx.strokeRect(barX, barY, fillWidth, barHeight);
     this.#ctx.shadowBlur = 0;
 
+    const dragLimitKg = Number(fightDebug?.dragLimitKg);
+    const maxLoadForMarker = Number(maxLoadKg);
+    if (Number.isFinite(dragLimitKg) && Number.isFinite(maxLoadForMarker) && maxLoadForMarker > 0) {
+      const markerRatio = Math.max(0, Math.min(1, dragLimitKg / maxLoadForMarker));
+      const markerX = barX + barWidth * markerRatio;
+      this.#ctx.strokeStyle = "#73c2fb";
+      this.#ctx.lineWidth = 2;
+      this.#ctx.beginPath();
+      this.#ctx.moveTo(markerX, barY - 4);
+      this.#ctx.lineTo(markerX, barY + barHeight + 4);
+      this.#ctx.stroke();
+    }
+
     this.#ctx.fillStyle = tensionConfig.labelColor;
     this.#ctx.font = tensionConfig.labelFont;
     this.#ctx.textAlign = "left";
-    const tensionKg = tensionMeter.getTensionKg?.();
-    const maxLoadKg = tensionMeter.getEffectiveMaxTackleLoadKg?.();
     const tensionLabel = Number.isFinite(tensionKg) && Number.isFinite(maxLoadKg)
       ? `TENSION: ${Math.round(tension)}% (${tensionKg.toFixed(1)}/${maxLoadKg.toFixed(1)}kg)`
       : Number.isFinite(tensionKg)

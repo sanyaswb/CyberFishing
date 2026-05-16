@@ -158,6 +158,7 @@ const CONFIG = {
     dragRadius: 200,
     swipeResistanceY: 200,
     dragControlActivationPx: 30,
+    pullHoldMinMs: 120,
     longPressMs: 950,
 
     // Можна використовувати e.code (KeyW, Space, ShiftLeft) або e.key (Shift)
@@ -467,6 +468,32 @@ const CONFIG = {
 
       // Залишається для клавіш W/S або ArrowUp/ArrowDown.
       changeSpeedPerSec: 0.35,
+    },
+    rodPull: {
+      enabled: true,
+      distanceMultiplierByRodLength: 1.0,
+      chargePerSecond: 0.65,
+      releaseDecayPerSecond: 2.5,
+      resetOnRelease: true,
+      minEffectivePullKg: 0.01,
+      freezeWhenDragSlips: true,
+      slackReducesNextPullDistance: true,
+      minPullDistanceMeters: 0.001,
+      finalLandingDistanceMeters: 0.5,
+      minChargeSpeedMultiplier: 0.12,
+      loadChargePower: 1.0,
+    },
+    reel: {
+      autoRecoverSlack: true,
+    },
+    catchZone: {
+      landingDistanceMeters: 1.0,
+      rollIntervalMs: 1000,
+      guaranteedWeightRatio: 0.2,
+      maxLoadWeightRatio: 1.0,
+      chanceAtGuaranteedRatio: 1.0,
+      chanceAtMaxLoadRatio: 0.01,
+      overweightChance: 0.0,
     },
     castingPower: {
       fallbackCoefficient: 0.5,

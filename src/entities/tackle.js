@@ -218,6 +218,10 @@ class Net {
     return (this.#config.length || 0) * 10;
   }
 
+  getMaxWeight() {
+    return Math.max(0, Number(this.#config.maxWeight) || 0);
+  }
+
   // Отримуємо віртуальну Y-координату, де починається зона підсаки
   getTriggerVirtualY(virtualBottomY) {
     // Якщо підсаки немає, базова зона вилову (наприклад, 50 віртуальних пікселів біля самого берега)
@@ -237,7 +241,8 @@ class Net {
   calculateCatchChance(fishWeight) {
     if (!this.isActive) return 100; // Якщо механіка підсаки вимкнена
 
-    const maxWeight = this.#config.maxWeight || 0;
+    const maxWeight = this.getMaxWeight();
+    if (maxWeight <= 0) return 0;
     if (fishWeight <= maxWeight) return 100;
 
     // Якщо риба важча за ліміт підсаки:
