@@ -153,6 +153,9 @@ class FishForceSystem {
       dragRatio: this.#clamp01(dragRatio),
       effectiveDragRatio: playerData.effectiveDragRatio,
       dragLimitKg: playerData.dragLimitKg,
+      effectiveDragLimitKg: playerData.effectiveDragLimitKg,
+      dragLocked: playerData.dragLocked,
+      hasReel: playerData.hasReel,
       dragHoldRatio: playerData.dragHoldRatio,
       canDragHoldFish: playerData.canDragHoldFish,
       canWinDistance: playerData.canWinDistance,
@@ -251,20 +254,23 @@ class FishForceSystem {
 
     const fishForceKg = Math.max(0.001, Number(totalFishForceKg) || 0.001);
     const clampedDrag = this.#clamp01(dragRatio);
-    const dragLimitKg = hasReel
+    const rawDragLimitKg = hasReel
       ? this.#calculateDragLimitKg(reel, clampedDrag)
       : Infinity;
+    const effectiveDragLimitKg = hasReel
+      ? rawDragLimitKg
+      : maxPlayerForceKg;
 
     // Фрикціон — це ліміт у кг, а не множник сили.
     // Якщо dragLimitKg < fishForceKg, котушка здає ліску й гравець не виграє дистанцію.
     const dragHoldRatio = hasReel
-      ? this.#clamp01(dragLimitKg / fishForceKg)
+      ? this.#clamp01(effectiveDragLimitKg / fishForceKg)
       : 1;
     const tackleRestrainRatio = this.#clamp01(maxPlayerForceKg / fishForceKg);
-    const isDragLocked = hasReel && clampedDrag >= 0.999;
-    const canDragHoldFish = !hasReel || isDragLocked || dragLimitKg >= fishForceKg;
+    const isDragLocked = !hasReel || clampedDrag >= 0.999;
+    const canDragHoldFish = !hasReel || isDragLocked || effectiveDragLimitKg >= fishForceKg;
     const pullCapacityKg = hasReel
-      ? Math.min(maxPlayerForceKg, dragLimitKg)
+      ? Math.min(maxPlayerForceKg, effectiveDragLimitKg)
       : maxPlayerForceKg;
     const canWinDistance = isPlayerPulling && canDragHoldFish && pullCapacityKg > fishForceKg;
     const netPullKg = canWinDistance ? pullCapacityKg - fishForceKg : 0;
@@ -286,10 +292,13 @@ class FishForceSystem {
       restrainRatio: tackleRestrainRatio,
       dragHoldRatio,
       effectiveDragRatio: hasReel ? dragHoldRatio : tackleRestrainRatio,
-      dragLimitKg: Number.isFinite(dragLimitKg) ? dragLimitKg : 0,
+      dragLimitKg: Number.isFinite(rawDragLimitKg) ? rawDragLimitKg : effectiveDragLimitKg,
+      effectiveDragLimitKg,
+      dragLocked: isDragLocked,
+      hasReel,
       canDragHoldFish,
       canWinDistance,
-      shouldSlipDrag: hasReel && !isDragLocked && dragLimitKg < fishForceKg,
+      shouldSlipDrag: hasReel && !isDragLocked && effectiveDragLimitKg < fishForceKg,
       staminaPressureRatio,
       vector: this.#playerVector,
       pullDir: basePullDir,

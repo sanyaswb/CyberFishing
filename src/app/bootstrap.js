@@ -114,7 +114,10 @@ class GameCompositionRoot {
       baitRules,
       debugEvents,
     });
-    const net = new Net(eq.net || { active: false, maxWeight: 0, length: 10 });
+    const net = new Net(
+      eq.net || { active: false, maxWeight: 0, length: 10 },
+      this.#config.physics,
+    );
     const castManager = new CastManager();
     const depthUI = new DepthSelectorUI();
     const timeUI = new TimeDisplayUI();

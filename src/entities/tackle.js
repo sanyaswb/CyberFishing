@@ -203,8 +203,14 @@ class Hook {
 
 class Net {
   #config;
+  #converter;
 
-  constructor(config) {
+  constructor(config, physicsConfig = null) {
+    this.#converter = this.#createConverter(physicsConfig);
+    this.updateConfig(config);
+  }
+
+  updateConfig(config) {
     this.#config = config || { active: false };
   }
 
@@ -214,8 +220,22 @@ class Net {
 
   // Переводимо стару логіку "length * 10" у віртуальну дистанцію.
   // Наприклад, length 15 = 150 віртуальних пікселів від берега.
+  // Current model: length is meters; virtual reach is pixels via DistanceUnitConverter.
+  getReachMeters() {
+    const reachMeters = Number(
+      this.#config.lengthMeters ??
+        this.#config.reachMeters ??
+        this.#config.length,
+    );
+    return Number.isFinite(reachMeters) ? Math.max(0, reachMeters) : 0;
+  }
+
+  getReachPixels() {
+    return this.#converter.metersToPixels(this.getReachMeters());
+  }
+
   get virtualReach() {
-    return (this.#config.length || 0) * 10;
+    return this.getReachPixels();
   }
 
   getMaxWeight() {
@@ -260,6 +280,28 @@ class Net {
 
     const qualBonus = Math.round(((this.#config.quality || 1.0) - 1.0) * 10);
     return Math.min(100, Math.max(0, baseChance + qualBonus));
+  }
+
+  #createConverter(physicsConfig) {
+    const resolvedPhysics =
+      physicsConfig ||
+      (typeof CONFIG !== "undefined" ? CONFIG.physics : null) ||
+      {};
+
+    if (typeof DistanceUnitConverter !== "undefined") {
+      return new DistanceUnitConverter(resolvedPhysics);
+    }
+
+    const pixelsPerMeter = Math.max(
+      1,
+      Number(resolvedPhysics.pixelsPerMeter) || 50,
+    );
+    return {
+      metersToPixels: (meters) => {
+        const value = Number(meters);
+        return Number.isFinite(value) ? value * pixelsPerMeter : 0;
+      },
+    };
   }
 }
 

@@ -30,22 +30,163 @@ class FightPhysicsSystem {
     buffs,
   }) {
     const physics = this.#config.physics || {};
-    const dtSec = Math.min(
+    const dtSec = this.#getDtSec(dtMs, physics);
+    const pullInput = this.#updateInput({ input, pullInputMapper, dragSystem, dtSec });
+    const hasReel = !!reel?.hasReel?.();
+    const isPullMode = !!pullInput.pullHeld;
+    const isRecoverMode = hasReel && !isPullMode;
+    const maxTackleLoadKg = stressSystem.getEffectiveMaxTackleLoadKg?.() || 0;
+    const motion = this.#updateFishMotion({
+      dtMs,
+      dtSec,
+      floatEntity,
+      bounds,
+      input,
+      env,
+      checkWater,
+      rodTipPosition,
+      rod,
+      reel,
+      fishForceSystem,
+      lineSystem,
+      dragSystem,
+      fishCondition,
+      buffs,
+      playerMaxLoadKg: maxTackleLoadKg,
+    });
+    const forceData = motion.forceData;
+    const dragContext = this.#resolveDragContext({
+      hasReel,
+      dragSystem,
+      forceData,
+      maxTackleLoadKg,
+    });
+
+    const rodPullFrame = this.#updateRodPull({
+      dtSec,
+      pullInput,
+      floatEntity,
+      rodTipPosition,
+      rod,
+      lineSystem,
+      rodPullSystem,
+      forceData,
+      dragContext,
+      physics,
+      bounds,
+      checkWater,
+    });
+    const tensionPreview = this.#calculateTension({
+      tensionSystem,
+      forceData,
+      rodPullResult: rodPullFrame.rodPullResult,
+      dragContext,
+      lineState: rodPullFrame.lineStateAfterPull,
+      hardLineLimit: rodPullFrame.hardLineLimitBeforeRelease,
+    });
+    const recoveredMeters = this.#recoverSlack({
+      dtSec,
+      reelSystem,
+      lineSystem,
+      reel,
+      stressSystem,
+      isRecoverMode,
+    });
+    const lineLimit = this.#resolveLineLimit({
+      floatEntity,
+      rodTipPosition,
+      lineSystem,
+      dragSystem,
+      tensionResult: tensionPreview,
+      physics,
+      velocity: motion.velocity,
+      hardLineLimitBeforeRelease: rodPullFrame.hardLineLimitBeforeRelease,
+    });
+    const tensionResult = this.#updateTension({
+      tensionSystem,
+      stressSystem,
+      forceData,
+      rodPullResult: rodPullFrame.rodPullResult,
+      dragContext,
+      lineState: lineLimit.lineState,
+      hardLineLimit: lineLimit.hardLineLimit,
+      dtSec,
+    });
+    const rodPullDisplay = rodPullSystem.updateReleaseRecovery({
+      slackMeters: lineLimit.finalSlackMeters,
+    });
+
+    this.#debug = this.#buildDebugSnapshot({
+      forceData,
+      dragSystem,
+      lineState: lineLimit.lineState,
+      finalSlackMeters: lineLimit.finalSlackMeters,
+      initialSlackMeters: rodPullFrame.slackMeters,
+      releaseResult: lineLimit.releaseResult,
+      recoveredMeters,
+      hardLineLimit: lineLimit.hardLineLimit,
+      constraintResult: lineLimit.constraintResult,
+      rodPullDisplay,
+      rodPullResult: rodPullFrame.rodPullResult,
+      rodPullMoveMeters: rodPullFrame.rodPullMoveMeters,
+      tensionResult,
+      stressSystem,
+      physics,
+      isPullMode,
+      isRecoverMode,
+      dragContext,
+    });
+    stressSystem.setDebugData(this.#debug);
+
+    return {
+      consumedSwipe: false,
+      forces: {
+        pX: 0,
+        pY: rodPullFrame.rodPullResult.forceKg,
+        fX: forceData.targetVelocity.x,
+        fY: forceData.targetVelocity.y,
+      },
+      pMax: this.#debug.playerMaxPowerY,
+      fMag: forceData.totalFishForceKg,
+      forceData,
+    };
+  }
+
+  #getDtSec(dtMs, physics) {
+    return Math.min(
       Math.max(0, Number(dtMs) || 0),
       physics.maxDtMs ?? 50,
     ) / 1000;
+  }
 
+  #updateInput({ input, pullInputMapper, dragSystem, dtSec }) {
     const pullInput = pullInputMapper?.update(input) || {
       pullHeld: !!input?.isPulling,
       pullStartedThisFrame: !!input?.isPulling,
       pullReleasedThisFrame: false,
     };
     dragSystem.update(input, dtSec);
+    return pullInput;
+  }
 
-    const hasReel = !!reel?.hasReel?.();
-    const isPullMode = !!pullInput.pullHeld;
-    const isRecoverMode = hasReel && !isPullMode;
-
+  #updateFishMotion({
+    dtMs,
+    dtSec,
+    floatEntity,
+    bounds,
+    input,
+    env,
+    checkWater,
+    rodTipPosition,
+    rod,
+    reel,
+    fishForceSystem,
+    lineSystem,
+    dragSystem,
+    fishCondition,
+    buffs,
+    playerMaxLoadKg,
+  }) {
     const fishPosition = floatEntity.getPosition();
     const fishVelocity = floatEntity.getVelocity?.() || this.#velocityScratch.set(0, 0);
     lineSystem.updateDistance(fishPosition, rodTipPosition);
@@ -60,7 +201,7 @@ class FightPhysicsSystem {
       input,
       rod,
       reel,
-      playerMaxLoadKg: stressSystem.getEffectiveMaxTackleLoadKg?.(),
+      playerMaxLoadKg,
       env,
       buffs,
     });
@@ -81,6 +222,44 @@ class FightPhysicsSystem {
       forceData.player.pullDir,
     );
 
+    return { forceData, velocity };
+  }
+
+  #resolveDragContext({ hasReel, dragSystem, forceData, maxTackleLoadKg }) {
+    const clampedDrag = Math.max(0, Math.min(1, Number(dragSystem.value) || 0));
+    const player = forceData?.player || {};
+    const fallbackDragLimitKg = hasReel
+      ? Number(player.dragLimitKg) || 0
+      : maxTackleLoadKg;
+    const effectiveDragLimitKg = Number.isFinite(Number(player.effectiveDragLimitKg))
+      ? Number(player.effectiveDragLimitKg)
+      : fallbackDragLimitKg;
+    const dragLocked = typeof player.dragLocked === "boolean"
+      ? player.dragLocked
+      : (!hasReel || clampedDrag >= 0.999);
+
+    return {
+      clampedDrag,
+      maxTackleLoadKg,
+      effectiveDragLimitKg,
+      dragLocked,
+    };
+  }
+
+  #updateRodPull({
+    dtSec,
+    pullInput,
+    floatEntity,
+    rodTipPosition,
+    rod,
+    lineSystem,
+    rodPullSystem,
+    forceData,
+    dragContext,
+    physics,
+    bounds,
+    checkWater,
+  }) {
     const lineStateBeforePull = lineSystem.updateDistance(
       floatEntity.getPosition(),
       rodTipPosition,
@@ -89,54 +268,103 @@ class FightPhysicsSystem {
       releasedMeters: lineStateBeforePull.releasedMeters,
       fishDistanceMeters: lineStateBeforePull.distanceMeters,
     });
-    const clampedDrag = Math.max(0, Math.min(1, Number(dragSystem.value) || 0));
-    const dragLocked = hasReel && clampedDrag >= 0.999;
     const rodPullResult = rodPullSystem.update({
       dtSec,
       inputState: pullInput,
       rod,
       slackMeters,
       fishForceKg: forceData.totalFishForceKg,
-      dragLimitKg: forceData.player.dragLimitKg,
-      maxTackleLoadKg: stressSystem.getEffectiveMaxTackleLoadKg?.() || 0,
-      dragLocked,
+      dragLimitKg: dragContext.effectiveDragLimitKg,
+      maxTackleLoadKg: dragContext.maxTackleLoadKg,
+      dragLocked: dragContext.dragLocked,
       hardLineLimit: lineStateBeforePull.isFullyExtended,
       fishDistanceMeters: lineStateBeforePull.distanceMeters,
     });
-
     const rodPullMoveMeters = this.#applyRodPullMovement({
       floatEntity,
       rodTipPosition,
       deltaMeters: rodPullResult.canMoveFish ? rodPullResult.deltaMeters : 0,
       pixelsPerMeter: physics.pixelsPerMeter || 50,
+      bounds,
+      checkWater,
     });
-
     const lineStateAfterPull = lineSystem.updateDistance(
       floatEntity.getPosition(),
       rodTipPosition,
     );
-    const hardLineLimitBeforeRelease = !!lineStateAfterPull.isFullyExtended;
-    const lineHasReserveBeforeRelease = (lineStateAfterPull.remainingMeters || 0) > 0.001;
-    const tensionResult = tensionSystem.calculate({
-      fishForceKg: forceData.totalFishForceKg,
-      rodPullForceKg: rodPullResult.forceKg,
-      dragLimitKg: forceData.player.dragLimitKg,
-      hardLineLimit: hardLineLimitBeforeRelease,
-      lineHasReserve: lineHasReserveBeforeRelease,
-      dragLocked,
+
+    return {
+      lineStateBeforePull,
+      lineStateAfterPull,
+      slackMeters,
+      rodPullResult,
+      rodPullMoveMeters,
+      hardLineLimitBeforeRelease: !!lineStateAfterPull.isFullyExtended,
+    };
+  }
+
+  #updateTension({
+    tensionSystem,
+    stressSystem,
+    forceData,
+    rodPullResult,
+    dragContext,
+    lineState,
+    hardLineLimit,
+    dtSec,
+  }) {
+    const tensionResult = this.#calculateTension({
+      tensionSystem,
+      forceData,
+      rodPullResult,
+      dragContext,
+      lineState,
+      hardLineLimit,
     });
 
     stressSystem.updateTarget(tensionResult.tensionKg, dtSec, this.#config.tension || {});
+    return tensionResult;
+  }
 
-    // Recover mode: reel only takes up slack after rod-pull release. It never moves fish.
-    const recoveredMeters = reelSystem.recoverSlack({
+  #calculateTension({
+    tensionSystem,
+    forceData,
+    rodPullResult,
+    dragContext,
+    lineState,
+    hardLineLimit,
+  }) {
+    const lineHasReserve = (lineState.remainingMeters || 0) > 0.001;
+    return tensionSystem.calculate({
+      fishForceKg: forceData.totalFishForceKg,
+      rodPullForceKg: rodPullResult.forceKg,
+      dragLimitKg: dragContext.effectiveDragLimitKg,
+      hardLineLimit: !!hardLineLimit,
+      lineHasReserve,
+      dragLocked: dragContext.dragLocked,
+    });
+  }
+
+  #recoverSlack({ dtSec, reelSystem, lineSystem, reel, stressSystem, isRecoverMode }) {
+    return reelSystem.recoverSlack({
       dtSec,
       lineSystem,
       reel,
       tensionKg: stressSystem.getTensionKg(),
       inputRecover: isRecoverMode,
     });
+  }
 
+  #resolveLineLimit({
+    floatEntity,
+    rodTipPosition,
+    lineSystem,
+    dragSystem,
+    tensionResult,
+    physics,
+    velocity,
+    hardLineLimitBeforeRelease,
+  }) {
     lineSystem.updateDistance(floatEntity.getPosition(), rodTipPosition);
     const releaseResult = lineSystem.releaseForDistance({
       dragRatio: dragSystem.value,
@@ -144,7 +372,6 @@ class FightPhysicsSystem {
       slipReleaseRatio: tensionResult.shouldSlipDrag ? 1 : 0,
       creepReleaseRatio: physics.drag?.creepReleaseRatio ?? 0,
     });
-
     const constraintResult = lineSystem.constrainPosition(
       floatEntity.getPosition(),
       floatEntity.getVelocity?.() || velocity,
@@ -159,17 +386,42 @@ class FightPhysicsSystem {
       !!releaseResult.hardLimitReached ||
       !!constraintResult.hardLimit ||
       !!lineStateBeforeRecover.isFullyExtended;
-
     const lineState = lineSystem.updateDistance(floatEntity.getPosition(), rodTipPosition);
     const finalSlackMeters = this.#slackCalculator.calculate({
       releasedMeters: lineState.releasedMeters,
       fishDistanceMeters: lineState.distanceMeters,
     });
-    const rodPullDisplay = rodPullSystem.updateReleaseRecovery({
-      slackMeters: finalSlackMeters,
-    });
 
-    this.#debug = {
+    return {
+      releaseResult,
+      constraintResult,
+      lineState,
+      hardLineLimit,
+      finalSlackMeters,
+    };
+  }
+
+  #buildDebugSnapshot({
+    forceData,
+    dragSystem,
+    lineState,
+    finalSlackMeters,
+    initialSlackMeters,
+    releaseResult,
+    recoveredMeters,
+    hardLineLimit,
+    constraintResult,
+    rodPullDisplay,
+    rodPullResult,
+    rodPullMoveMeters,
+    tensionResult,
+    stressSystem,
+    physics,
+    isPullMode,
+    isRecoverMode,
+    dragContext,
+  }) {
+    return {
       ...forceData.debug,
       ...dragSystem.getDebugData(),
       lineReleasedMeters: lineState.releasedMeters,
@@ -182,7 +434,7 @@ class FightPhysicsSystem {
       lineExtensionRatio: lineState.lineExtensionRatio,
       lineDistanceMeters: lineState.distanceMeters,
       slackMeters: finalSlackMeters,
-      slackPenaltyMeters: slackMeters,
+      slackPenaltyMeters: initialSlackMeters,
       lineReleasedThisFrameMeters: releaseResult.releasedMeters,
       lineDemandedThisFrameMeters: releaseResult.demandedMeters,
       lineUnsatisfiedThisFrameMeters: releaseResult.unsatisfiedMeters,
@@ -213,7 +465,9 @@ class FightPhysicsSystem {
       effectivePullKg: forceData.player.effectivePullKg,
       pullCapacityKg: forceData.player.pullCapacityKg,
       netPullKg: forceData.player.netPullKg,
-      dragLimitKg: forceData.player.dragLimitKg,
+      dragLimitKg: dragContext.effectiveDragLimitKg,
+      rawDragLimitKg: forceData.player.dragLimitKg,
+      dragLocked: dragContext.dragLocked,
       dragHoldRatio: forceData.player.dragHoldRatio,
       canDragHoldFish: forceData.player.canDragHoldFish,
       canWinDistance: forceData.player.canWinDistance,
@@ -235,23 +489,16 @@ class FightPhysicsSystem {
       fishForceKg: forceData.totalFishForceKg,
       calculatedTensionKg: tensionResult.tensionKg,
     };
-    stressSystem.setDebugData(this.#debug);
-
-    return {
-      consumedSwipe: false,
-      forces: {
-        pX: 0,
-        pY: rodPullResult.forceKg,
-        fX: forceData.targetVelocity.x,
-        fY: forceData.targetVelocity.y,
-      },
-      pMax: this.#debug.playerMaxPowerY,
-      fMag: forceData.totalFishForceKg,
-      forceData,
-    };
   }
 
-  #applyRodPullMovement({ floatEntity, rodTipPosition, deltaMeters, pixelsPerMeter }) {
+  #applyRodPullMovement({
+    floatEntity,
+    rodTipPosition,
+    deltaMeters,
+    pixelsPerMeter,
+    bounds,
+    checkWater,
+  }) {
     const meters = Math.max(0, Number(deltaMeters) || 0);
     if (meters <= 0) return 0;
 
@@ -261,10 +508,36 @@ class FightPhysicsSystem {
     const distancePx = Math.hypot(dx, dy);
     if (distancePx <= 0.001) return 0;
 
-    const movePx = Math.min(distancePx, meters * Math.max(1, Number(pixelsPerMeter) || 50));
-    position.x += (dx / distancePx) * movePx;
-    position.y += (dy / distancePx) * movePx;
-    return movePx / Math.max(1, Number(pixelsPerMeter) || 50);
+    const scale = Math.max(1, Number(pixelsPerMeter) || 50);
+    const movePx = Math.min(distancePx, meters * scale);
+    const next = this.#clampToBounds(
+      {
+        x: position.x + (dx / distancePx) * movePx,
+        y: position.y + (dy / distancePx) * movePx,
+      },
+      bounds,
+    );
+
+    if (typeof checkWater === "function" && !checkWater(next.x, next.y)) {
+      return 0;
+    }
+
+    const appliedPx = Math.hypot(next.x - position.x, next.y - position.y);
+    position.x = next.x;
+    position.y = next.y;
+    return appliedPx / scale;
+  }
+
+  #clampToBounds(point, bounds) {
+    if (!bounds) return point;
+    const minX = Number.isFinite(Number(bounds.left)) ? Number(bounds.left) : -Infinity;
+    const maxX = Number.isFinite(Number(bounds.right)) ? Number(bounds.right) : Infinity;
+    const minY = Number.isFinite(Number(bounds.top)) ? Number(bounds.top) : -Infinity;
+    const maxY = Number.isFinite(Number(bounds.bottom)) ? Number(bounds.bottom) : Infinity;
+    return {
+      x: Math.max(minX, Math.min(maxX, point.x)),
+      y: Math.max(minY, Math.min(maxY, point.y)),
+    };
   }
 
   getDebugData() {

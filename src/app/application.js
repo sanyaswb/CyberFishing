@@ -549,7 +549,7 @@ class GameApplication {
     if (this.#net && typeof this.#net.updateConfig === "function") {
       this.#net.updateConfig(netConfig);
     } else {
-      this.#net = new Net(netConfig);
+      this.#net = new Net(netConfig, this.#config.physics);
     }
 
     this.#hasEquippedNet = !!newEq.net;

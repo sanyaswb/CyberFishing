@@ -465,7 +465,7 @@ const ITEM_DB = {
       },
       engineStats: {
         active: true,
-        length: 15.0,
+        length: 3.0,
         maxWeight: 3.0,
         quality: 1.0,
         catchType: "all", // ЗМІНЕНО: type -> catchType
