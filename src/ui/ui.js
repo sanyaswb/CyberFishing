@@ -1524,39 +1524,54 @@ class InventoryUI {
     element.addEventListener("mouseenter", () => {
       if (!window.matchMedia("(hover: hover)").matches) return;
 
-      let html = `<div style="font-size: 16px; font-weight: bold; margin-bottom: 5px; color: #00ccff;">${item.icon} ${item.name}</div>`;
-      for (const [key, val] of Object.entries(item)) {
-        if (
-          [
-            "id",
-            "name",
-            "icon",
-            "type",
-            "instanceId",
-            "quantity",
-            "buildId",
-            "buildName",
-            "displayStats",
-            "engineStats",
-            "requiresTag",
-            // Internal legacy/physics fields that should not be presented as user-facing stats.
-            "level",
-            "basePower",
-            "compensation",
-            "maxDistance",
-            "durabilityMaxLoadLossPerPercent",
-            "hasReel",
-            "capabilities",
-            "line",
-          ].includes(key)
-        )
-          continue;
+      const currentItem =
+        isEquipped || !instanceId
+          ? item
+          : this.#inventoryManager.hydrateInstance(instanceId) || item;
+
+      let html = `<div style="font-size: 16px; font-weight: bold; margin-bottom: 5px; color: #00ccff;">${currentItem.icon} ${currentItem.name}</div>`;
+      const renderedLabels = new Set();
+      const displayStats = currentItem.displayStats || {};
+      for (const [label, value] of Object.entries(displayStats)) {
+        if (value === undefined || value === null) continue;
+        renderedLabels.add(label);
+        html += `<div class="inv-tooltip-stat" style="color: #aaa;"><b>${label}:</b> <span style="color: #fff;">${value}</span></div>`;
+      }
+
+      const internalKeys = new Set([
+        "id",
+        "name",
+        "icon",
+        "type",
+        "instanceId",
+        "quantity",
+        "buildId",
+        "buildName",
+        "displayStats",
+        "engineStats",
+        "requiresTag",
+        "level",
+        "basePower",
+        "compensation",
+        "maxDistance",
+        "durabilityMaxLoadLossPerPercent",
+        "hasReel",
+        "capabilities",
+        "line",
+      ]);
+
+      for (const key of Object.keys(currentItem.engineStats || {})) {
+        internalKeys.add(key);
+      }
+
+      for (const [key, val] of Object.entries(currentItem)) {
+        if (internalKeys.has(key) || renderedLabels.has(key)) continue;
 
         if (typeof val !== "object" && typeof val !== "function") {
           html += `<div class="inv-tooltip-stat" style="color: #aaa;"><b>${key}:</b> <span style="color: #fff;">${val}</span></div>`;
         }
       }
-      html += this.#buildCompatibilityTooltip(item);
+      html += this.#buildCompatibilityTooltip(currentItem);
 
       this.#tooltipNode.innerHTML = html;
       this.#tooltipNode.style.display = "block";

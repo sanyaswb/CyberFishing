@@ -87,14 +87,14 @@ class FightPhysicsSystem {
     // After natural/fish movement, the reel may give line. At drag 0%, it gives all
     // demanded excess while line remains, so no tension/constraint is created.
     lineSystem.updateDistance(floatEntity.getPosition(), rodTipPosition);
-    const releasedMeters = lineSystem.releaseForDistance({
+    const releaseResult = lineSystem.releaseForDistance({
       dragRatio: dragSystem.value,
       shouldSlip: forceData.player.shouldSlipDrag,
       slipReleaseRatio: forceData.player.shouldSlipDrag ? 1 : 0,
       creepReleaseRatio: physics.drag?.creepReleaseRatio ?? 0,
     });
 
-    const constrained = lineSystem.constrainPosition(
+    const constraintResult = lineSystem.constrainPosition(
       floatEntity.getPosition(),
       floatEntity.getVelocity?.() || velocity,
       rodTipPosition,
@@ -103,6 +103,10 @@ class FightPhysicsSystem {
       floatEntity.getPosition(),
       rodTipPosition,
     );
+    const hardLineLimit =
+      !!releaseResult.hardLimitReached ||
+      !!constraintResult.hardLimit ||
+      !!lineStateBeforeRecover.isFullyExtended;
 
     const tensionKg = this.#calculateTensionKg({
       forceData,
@@ -111,7 +115,7 @@ class FightPhysicsSystem {
       hasReel,
       isPullMode,
       physics,
-      constrained,
+      hardLineLimit,
     });
 
     stressSystem.updateTarget(tensionKg, dtSec, this.#config.tension || {});
@@ -140,8 +144,13 @@ class FightPhysicsSystem {
       isLineFullyExtended: lineState.isFullyExtended,
       lineExtensionRatio: lineState.lineExtensionRatio,
       lineDistanceMeters: lineState.distanceMeters,
-      lineReleasedThisFrameMeters: releasedMeters,
+      lineReleasedThisFrameMeters: releaseResult.releasedMeters,
+      lineDemandedThisFrameMeters: releaseResult.demandedMeters,
+      lineUnsatisfiedThisFrameMeters: releaseResult.unsatisfiedMeters,
+      reelSlip: releaseResult.didSlip,
       lineRecoveredThisFrameMeters: recoveredMeters,
+      hardLineLimit,
+      constraintCorrectionPx: constraintResult.correctionPx,
       playerForceKg: forceData.player.forceKg,
       effectivePullKg: forceData.player.effectivePullKg,
       pullCapacityKg: forceData.player.pullCapacityKg,
@@ -160,10 +169,12 @@ class FightPhysicsSystem {
       playerMaxPowerX:
         (stressSystem.getEffectiveMaxTackleLoadKg?.() || 0) *
         (physics.playerSteeringMultiplier ?? 1.5),
-      lineConstrained: constrained,
+      lineConstrained: constraintResult.constrained,
       fightMode: isPullMode ? "pull" : isRecoverMode ? "recover" : "free",
       retrieveActive: isRecoverMode,
       playerPulling: forceData.player.isPulling,
+      currentTensionKg: stressSystem.getTensionKg(),
+      fishForceKg: forceData.totalFishForceKg,
       calculatedTensionKg: tensionKg,
     };
     stressSystem.setDebugData(this.#debug);
@@ -186,7 +197,7 @@ class FightPhysicsSystem {
     return this.#debug;
   }
 
-  #calculateTensionKg({ forceData, lineState, dragRatio, hasReel, isPullMode, physics, constrained }) {
+  #calculateTensionKg({ forceData, lineState, dragRatio, hasReel, isPullMode, physics, hardLineLimit }) {
     const fishForceKg = Math.max(0, Number(forceData.totalFishForceKg) || 0);
 
     // Tension is the resisted load from the fish side.
@@ -196,7 +207,7 @@ class FightPhysicsSystem {
     const rawDemandKg = fishForceKg;
 
     if (!hasReel) {
-      const lineConstraintRatio = lineState.isFullyExtended || constrained
+      const lineConstraintRatio = hardLineLimit
         ? 1
         : Math.max(lineState.lineExtensionRatio || 0, isPullMode ? 1 : 0);
       return rawDemandKg * lineConstraintRatio;
@@ -216,7 +227,7 @@ class FightPhysicsSystem {
 
     // While the reel can give line, drag is a hard kg limiter:
     // drag 10% of 10kg => tension cannot exceed 1kg; all excess force spools line.
-    if (reelCanGiveLine && !lineState.isFullyExtended && !constrained) {
+    if (reelCanGiveLine && !hardLineLimit) {
       return Math.min(rawDemandKg, dragLimitKg);
     }
 

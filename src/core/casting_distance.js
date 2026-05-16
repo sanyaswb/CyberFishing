@@ -50,14 +50,16 @@ class CastDistanceCalculator {
     return this.#converter.pixelsToMeters(pixels);
   }
 
-  getRodBaseReachMeters(rod) {
+  getRodBaseReachMeters(rod, hasReel = true) {
     const rodLength = this.#numberOrDefault(
       this.#readNumber(rod, "lengthMeters", "getLengthMeters"),
       2.0,
     );
+    const multiplierKey = hasReel
+      ? "rodLengthReserveMultiplier"
+      : "noReelRodLengthMultiplier";
     const multiplier = this.#numberOrDefault(
-      this.#lineConfig.rodLengthReserveMultiplier ??
-        this.#lineConfig.noReelRodLengthMultiplier,
+      this.#lineConfig[multiplierKey],
       2.0,
     );
     return Math.max(0, rodLength * multiplier);
@@ -69,13 +71,7 @@ class CastDistanceCalculator {
 
   getEquippedLineStats(equipment) {
     if (!equipment) return null;
-    return (
-      equipment.line ||
-      equipment.lineStats ||
-      equipment.reel?.line ||
-      equipment.reel?.engineStats?.line ||
-      null
-    );
+    return equipment.line || null;
   }
 
   getMaxCastDistanceMeters(equipment, fallbackMeters = null) {
@@ -102,8 +98,47 @@ class CastDistanceCalculator {
   }
 
   getEffectiveCastDistancePx(equipment, castPowerCoefficient = 1) {
-    const power = this.#clamp01(castPowerCoefficient);
+    const power =
+      castPowerCoefficient === null || castPowerCoefficient === undefined
+        ? this.getBuildCastPowerCoefficient(equipment)
+        : this.#clamp01(castPowerCoefficient);
     return this.getMaxCastDistancePx(equipment, 0) * power;
+  }
+
+  getBuildCastPowerCoefficient(equipment, fallback = null) {
+    const castingPowerConfig =
+      this.#config.physics?.castingPower || this.#config.castingPower || {};
+    const fallbackCoefficient = this.#numberOrDefault(
+      fallback ??
+        castingPowerConfig.fallbackCoefficient ??
+        this.#config.casting?.inventoryPreviewPowerCoefficient ??
+        this.#config.casting?.powerCoefficient ??
+        this.#config.casting?.castPowerCoefficient,
+      1,
+    );
+
+    const rod = equipment?.rod || null;
+    if (!rod) return this.#clampCastPower(fallbackCoefficient);
+
+    const rodLengthMeters = this.#numberOrDefault(
+      this.#readNumber(rod, "lengthMeters", "getLengthMeters"),
+      0,
+    );
+    const rodLengthCoefficient =
+      this.#numberOrDefault(
+        castingPowerConfig.rodLengthCoefficientPerMeter,
+        0,
+      ) * rodLengthMeters;
+
+    const reel = equipment?.reel || null;
+    const bearingCount = this.#isReelAvailable(reel)
+      ? this.#numberOrDefault(this.#readNumber(reel, "bearingCount"), 0)
+      : 0;
+    const reelCoefficient =
+      this.#numberOrDefault(castingPowerConfig.reelBearingCoefficient, 0) *
+      bearingCount;
+
+    return this.#clampCastPower(rodLengthCoefficient + reelCoefficient);
   }
 
   getLineReachModel({ rod, reel, hasReel = null, lineStats = null }) {
@@ -112,7 +147,7 @@ class CastDistanceCalculator {
         ? this.#isReelAvailable(reel)
         : !!hasReel;
     const effectiveLineStats = lineStats || null;
-    const baseReachMeters = this.getRodBaseReachMeters(rod);
+    const baseReachMeters = this.getRodBaseReachMeters(rod, resolvedHasReel);
     const lineMeters = this.getLineMeters(effectiveLineStats);
     const reserveMeters = Math.max(0, lineMeters - baseReachMeters);
 
@@ -128,13 +163,19 @@ class CastDistanceCalculator {
     };
   }
 
-  describe(equipment, castPowerCoefficient = 1) {
+  describe(equipment, castPowerCoefficient = null) {
     const lineStats = this.getEquippedLineStats(equipment);
     const maxDistanceMeters = this.getMaxCastDistanceMeters(equipment, 0);
     const maxDistancePx = this.metersToPixels(maxDistanceMeters);
-    const power = this.#clamp01(castPowerCoefficient);
+    const power =
+      castPowerCoefficient === null || castPowerCoefficient === undefined
+        ? this.getBuildCastPowerCoefficient(equipment)
+        : this.#clamp01(castPowerCoefficient);
     const effectiveDistancePx = maxDistancePx * power;
-    const baseReachMeters = this.getRodBaseReachMeters(equipment?.rod);
+    const baseReachMeters = this.getRodBaseReachMeters(
+      equipment?.rod,
+      this.#isReelAvailable(equipment?.reel),
+    );
     return {
       pixelsPerMeter: this.pixelsPerMeter,
       lineLengthMeters: this.getLineMeters(lineStats),
@@ -175,5 +216,15 @@ class CastDistanceCalculator {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return 0;
     return Math.max(0, Math.min(1, parsed));
+  }
+
+  #clampCastPower(value) {
+    const castingPowerConfig =
+      this.#config.physics?.castingPower || this.#config.castingPower || {};
+    const min = this.#numberOrDefault(castingPowerConfig.minCoefficient, 0);
+    const max = this.#numberOrDefault(castingPowerConfig.maxCoefficient, 1);
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return this.#clamp01(0);
+    return Math.max(min, Math.min(max, parsed));
   }
 }

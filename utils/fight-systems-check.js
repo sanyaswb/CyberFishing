@@ -66,10 +66,51 @@ approx(
   "reel cast distance uses equipped line length",
 );
 approx(
+  castDistanceCalculator.getMaxCastDistancePx(
+    {
+      rod: { type: "spinning", lengthMeters: 2, hasReel: true },
+      reel: {
+        basePower: 1,
+        lineCapacityMeters: 20,
+        line: { lengthMeters: 99 },
+        engineStats: { line: { lengthMeters: 99 } },
+      },
+      line: null,
+    },
+    0,
+  ),
+  0,
+  0.001,
+  "reel legacy line is ignored without equipped line item",
+);
+approx(
   castDistanceCalculator.getEffectiveCastDistancePx(sampleBologneseEquipment, 0.5),
   325,
   0.001,
   "cast power coefficient scales final distance",
+);
+approx(
+  castDistanceCalculator.getBuildCastPowerCoefficient({
+    rod: { lengthMeters: 2 },
+    reel: { bearingCount: 3, basePower: 1, lineCapacityMeters: 20 },
+    line: { lengthMeters: 13 },
+  }),
+  0.5,
+  0.001,
+  "build cast power uses rod length and reel bearings",
+);
+approx(
+  castDistanceCalculator.getEffectiveCastDistancePx(
+    {
+      rod: { lengthMeters: 2 },
+      reel: { bearingCount: 4, basePower: 1, lineCapacityMeters: 20 },
+      line: { lengthMeters: 13 },
+    },
+    null,
+  ),
+  390,
+  0.001,
+  "better reel bearing increases effective cast distance",
 );
 const strongRod = new Rod(1, 5, 0, "float_pole", Infinity, false, {
   lengthMeters: 2,
@@ -89,12 +130,79 @@ const noReelLine = new LineSystem({
 });
 approx(noReelLine.getState().totalLengthMeters, 13, 0.001, "pole line length uses equipped line");
 
+const feederReserveLine = new LineSystem({
+  rod: new Rod(1, 5, 0, "feeder", Infinity, true, {
+    lengthMeters: 3.6,
+    maxLoadKg: 24,
+  }),
+  reel: new Reel(1, 1, {
+    maxLoadKg: 10,
+    lineCapacityMeters: 20,
+  }),
+  config: physicsConfig,
+  lineStats: { lengthMeters: 13, maxLoadKg: 12, durability: 100 },
+});
+approx(
+  feederReserveLine.getState().baseReachMeters,
+  3.6,
+  0.001,
+  "base rig length equals rod length",
+);
+approx(
+  feederReserveLine.getState().maxRemainingMeters,
+  9.4,
+  0.001,
+  "line reserve subtracts rod length from line length",
+);
+
+const poleReserveLine = new LineSystem({
+  rod: new Rod(1, 5, 0, "pole", Infinity, false, {
+    lengthMeters: 3.6,
+    maxLoadKg: 24,
+  }),
+  reel: noReel,
+  config: physicsConfig,
+  lineStats: { lengthMeters: 7.2, maxLoadKg: 12, durability: 100 },
+});
+approx(
+  castDistanceCalculator.getRodBaseReachMeters(
+    { type: "pole", lengthMeters: 3.6, hasReel: false },
+    false,
+  ),
+  7.2,
+  0.001,
+  "no-reel rod base rig length keeps rod length multiplier",
+);
+approx(
+  poleReserveLine.getState().releasedMeters,
+  7.2,
+  0.001,
+  "no-reel rod uses fixed equipped line length",
+);
+
 const reel = new Reel(1, 1, {
   maxLoadKg: 10,
   lineCapacityMeters: 50,
   retrieveSpeedMetersPerSec: 0.8,
   dragChangeSpeedPerSec: 1.5,
 });
+
+const pointerDrag = new DragSystem(physicsConfig.drag, reel);
+pointerDrag.setValue(0.5);
+pointerDrag.update({
+  pointerDown: true,
+  dragControlActive: false,
+  pointerStart: { x: 0, y: 100 },
+  pointerCurrent: { x: 0, y: 300 },
+}, 0.016);
+approx(pointerDrag.value, 0.5, 0.001, "pointer pull does not change drag without drag-control action");
+pointerDrag.update({
+  pointerDown: true,
+  dragControlActive: true,
+  pointerStart: { x: 0, y: 100 },
+  pointerCurrent: { x: 0, y: 300 },
+}, 0.016);
+assert(pointerDrag.value > 0.5, "drag-control action changes drag from pointer gesture");
 
 const reelLineStats = {
   lengthMeters: 50,
@@ -110,9 +218,18 @@ const freeLine = new LineSystem({
 });
 freeLine.updateDistance({ x: 50, y: 0 }, { x: 0, y: 0 });
 freeLine.updateDistance({ x: 500, y: 0 }, { x: 0, y: 0 });
-freeLine.releaseForDistance(0);
+const freeLineRelease = freeLine.releaseForDistance(0);
+assert(freeLineRelease.didSlip, "drag 0 reports reel slip");
+assert(!freeLineRelease.hardLimitReached, "drag 0 with spare line does not report hard line limit");
 assert(freeLine.getState().releasedMeters >= 9.99, "drag 0 releases line for fish distance");
 assert(!freeLine.getState().isFullyExtended, "drag 0 keeps line from full extension while spare line remains");
+
+const microConstraint = freeLine.constrainPosition(
+  { x: freeLine.getState().releasedMeters * physicsConfig.pixelsPerMeter + 0.1, y: 0 },
+  { x: 1, y: 0 },
+  { x: 0, y: 0 },
+);
+assert(!microConstraint.constrained, "line constraint tolerance ignores sub-pixel drift");
 
 const lockedLine = new LineSystem({
   rod: strongRod,
@@ -137,7 +254,8 @@ const exhaustedLine = new LineSystem({
 });
 exhaustedLine.updateDistance({ x: 50, y: 0 }, { x: 0, y: 0 });
 exhaustedLine.updateDistance({ x: 550, y: 0 }, { x: 0, y: 0 });
-exhaustedLine.releaseForDistance(0);
+const exhaustedRelease = exhaustedLine.releaseForDistance(0);
+assert(exhaustedRelease.hardLimitReached, "exhausted reel line reports hard line limit");
 assert(exhaustedLine.getState().isFullyExtended, "line is fully extended when spool line is exhausted");
 
 const stress = new TackleStressSystem({

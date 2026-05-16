@@ -38,11 +38,13 @@ class GameCompositionRoot {
     const locCfg = location.config;
     const projector = new ViewportProjector(this.#config.locations, locId);
     const castDistanceCalculator = new CastDistanceCalculator(this.#config);
+    const lineRules = new LineCompatibilityRules(this.#config.physics?.line);
     const inventory = new InventoryManager(
       ITEM_DB,
       this.#config.player,
       undefined,
       castDistanceCalculator,
+      lineRules,
     );
     const eq = inventory.getEquipped();
     const chumConfigObj = { baits: {}, deliveryMethods: {} };

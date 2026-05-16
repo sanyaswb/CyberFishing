@@ -157,6 +157,7 @@ const CONFIG = {
     pointerThreshold: 10,
     dragRadius: 200,
     swipeResistanceY: 200,
+    dragControlActivationPx: 30,
     longPressMs: 950,
 
     // Можна використовувати e.code (KeyW, Space, ShiftLeft) або e.key (Shift)
@@ -429,7 +430,7 @@ const CONFIG = {
     maxDtMs: 50,
     waterResistanceKgPerKgPerMps: 0.08,
     currentResistanceMultiplier: 1.0,
-    forceKgToPxPerSec2: 75,
+    forceKgToPxPerSec2: 200,
     rodAnglePenalty: {
       enabled: true,
       noPenaltyAngleDeg: 15,
@@ -439,11 +440,12 @@ const CONFIG = {
     line: {
       defaultMaxLoadKg: 12,
       durabilityMaxLoadLossPerPercent: 0.001,
-      rodLengthReserveMultiplier: 2.0,
+      rodLengthReserveMultiplier: 1.0,
       noReelExtraLengthMeters: 0,
       noReelRodLengthMultiplier: 2.0,
       fullExtensionTensionMultiplier: 1.0,
       slackTensionMultiplier: 0.0,
+      constraintTolerancePx: 0.5,
     },
     drag: {
       minRatio: 0,
@@ -465,6 +467,16 @@ const CONFIG = {
 
       // Залишається для клавіш W/S або ArrowUp/ArrowDown.
       changeSpeedPerSec: 0.35,
+    },
+    castingPower: {
+      fallbackCoefficient: 0.5,
+      minCoefficient: 0,
+      maxCoefficient: 1,
+      rodLengthCoefficientPerMeter: 0.1,
+      reelBearingCoefficient: 0.1,
+    },
+    fightMotion: {
+      velocityDampingPerSecond: 4.0,
     },
     directionForce: {
       sameDirectionMultiplier: 0.4,

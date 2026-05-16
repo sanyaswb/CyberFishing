@@ -17,9 +17,18 @@ const ITEM_DB = {
       type: "spinning", // Для UI фільтрів
       icon: "🎣",
       displayStats: {
-        "Макс. навантаження": "1кг",
-        Довжина: "2.4м",
-        Тип: "Спінінг",
+        maxLoadKg: "Макс. навантаження: кг.",
+        lengthMeters: "Довжина: м.",
+        type: {
+          label: "Тип",
+          map: {
+            spinning: "Спінінг",
+            feeder: "Фідер",
+            float: "Махова поплавкова",
+            pole: "Махова",
+          },
+        },
+        durability: "Стан: %",
       },
       engineStats: {
         type: "spinning", // КРИТИЧНО ДЛЯ ФІЗИКИ
@@ -43,9 +52,18 @@ const ITEM_DB = {
       type: "feeder", // Для UI фільтрів
       icon: "🎋",
       displayStats: {
-        "Макс. навантаження": "5кг",
-        Довжина: "3.6м",
-        Тип: "Фідер",
+        maxLoadKg: "Макс. навантаження: кг.",
+        lengthMeters: "Довжина: м.",
+        type: {
+          label: "Тип",
+          map: {
+            spinning: "Спінінг",
+            feeder: "Фідер",
+            float: "Махова поплавкова",
+            pole: "Махова",
+          },
+        },
+        durability: "Стан: %",
       },
       engineStats: {
         type: "feeder", // КРИТИЧНО ДЛЯ ФІЗИКИ
@@ -69,9 +87,18 @@ const ITEM_DB = {
       type: "float",
       icon: "🎍",
       displayStats: {
-        "Макс. навантаження": "1кг",
-        Довжина: "2.0м",
-        Тип: "Махова поплавкова",
+        maxLoadKg: "Макс. навантаження: кг.",
+        lengthMeters: "Довжина: м.",
+        type: {
+          label: "Тип",
+          map: {
+            spinning: "Спінінг",
+            feeder: "Фідер",
+            float: "Махова поплавкова",
+            pole: "Махова",
+          },
+        },
+        durability: "Стан: %",
       },
       engineStats: {
         type: "float",
@@ -96,15 +123,22 @@ const ITEM_DB = {
       type: "spinning_reel",
       icon: "⚙️",
       displayStats: {
-        "Макс. навантаження": "2кг",
-        Ємність: "20м",
-        Фрикціон: "0-2кг",
-        Підмотка: "0.8м/с",
+        maxLoadKg: "Макс. навантаження: кг.",
+        lineCapacityMeters: "Ємність: м.",
+        dragMaxKg: {
+          label: "Фрикціон",
+          range: ["dragMinKg", "dragMaxKg"],
+          suffix: "кг.",
+        },
+        retrieveSpeedMetersPerSec: "Підмотка: м/с",
+        bearingCount: "Підшипники:",
+        durability: "Стан: %",
       },
       engineStats: {
         basePower: 1.0,
         maxLoadKg: 2,
         lineCapacityMeters: 20,
+        bearingCount: 3,
         retrieveSpeedMetersPerSec: 0.8,
         dragMinKg: 0,
         dragMaxKg: 2,
@@ -123,9 +157,9 @@ const ITEM_DB = {
       type: "fishing_line",
       icon: "🧵",
       displayStats: {
-        Довжина: "13м",
-        "Макс. навантаження": "2кг",
-        Стан: "100%",
+        lengthMeters: "Довжина: м.",
+        maxLoadKg: "Макс. навантаження: кг.",
+        durability: "Стан: %",
       },
       engineStats: {
         type: "fishing_line",
@@ -142,9 +176,9 @@ const ITEM_DB = {
       type: "fishing_line",
       icon: "🧵",
       displayStats: {
-        Довжина: "4м",
-        "Макс. навантаження": "1кг",
-        Стан: "100%",
+        lengthMeters: "Довжина: м.",
+        maxLoadKg: "Макс. навантаження: кг.",
+        durability: "Стан: %",
       },
       engineStats: {
         type: "fishing_line",
@@ -162,7 +196,10 @@ const ITEM_DB = {
       name: "Базовий гачок",
       type: "hook",
       icon: "🪝",
-      displayStats: { level: 4, weight: "4kg" },
+      displayStats: {
+        weight: "Вага: кг",
+        quality: "Якість:",
+      },
       engineStats: {
         weight: 4,
         quality: 1,
@@ -178,7 +215,15 @@ const ITEM_DB = {
       name: "Базова пружина",
       type: "feeder_rig",
       icon: "🪤",
-      displayStats: { Гачки: 2, Прикормка: "Є" },
+      displayStats: {
+        hooksCount: "Гачки:",
+        hasChumSlot: {
+          label: "Прикормка",
+          map: { true: "Є", false: "Немає" },
+        },
+        quality: "Якість:",
+        currentCompensation: "Компенсація:",
+      },
       engineStats: {
         requiresTag: "feeder_rig",
         capabilities: ["hook", "bait", "chum_mix"],
@@ -194,7 +239,12 @@ const ITEM_DB = {
       name: "Масляний черв'як",
       type: "bait",
       icon: "🪱",
-      displayStats: { type: "Наживка" },
+      displayStats: {
+        type: {
+          label: "Тип",
+          map: { bait: "Наживка" },
+        },
+      },
       engineStats: { type: "bait", requiresTag: "bait" },
     },
 
@@ -203,7 +253,12 @@ const ITEM_DB = {
       name: "Хліб",
       type: "bait",
       icon: "🍞",
-      displayStats: { type: "Наживка" },
+      displayStats: {
+        type: {
+          label: "Тип",
+          map: { bait: "Наживка" },
+        },
+      },
       engineStats: { type: "bait", requiresTag: "bait" },
     },
 
@@ -212,7 +267,16 @@ const ITEM_DB = {
       name: "Блешня (Тест)",
       type: "lure",
       icon: "🥄",
-      displayStats: { sinkSpeed: 1.5 },
+      displayStats: {
+        type: {
+          label: "Тип",
+          map: { spinner: "Блешня" },
+        },
+        quality: "Якість:",
+        sinkSpeed: "Занурення: м/с",
+        riseSpeed: "Підйом: м/с",
+        currentCompensation: "Компенсація:",
+      },
       engineStats: {
         type: "spinner",
         mode: 1,
@@ -231,11 +295,21 @@ const ITEM_DB = {
       type: "lure",
       icon: "🐟",
       displayStats: {
-        Тип: "воблер",
-        Якість: 8,
-        Глибина: "2.0 - 4.5м",
-        Режим: "Suspend",
-        Компенсація: "0.1, 1.0",
+        type: {
+          label: "Тип",
+          map: { wobbler: "Воблер" },
+        },
+        quality: "Якість:",
+        targetMaxDepth: {
+          label: "Глибина",
+          range: ["targetMinDepth", "targetMaxDepth"],
+          suffix: "м",
+        },
+        mode: {
+          label: "Режим",
+          map: { 2: "Suspend", 3: "Sinking" },
+        },
+        currentCompensation: "Компенсація:",
       },
       engineStats: {
         type: "wobbler",
@@ -258,11 +332,21 @@ const ITEM_DB = {
       type: "lure",
       icon: "🐟",
       displayStats: {
-        Тип: "воблер",
-        Якість: 8,
-        Глибина: "1.0 - 3.5м",
-        Режим: "Sinking",
-        Компенсація: "0.1, 1.0",
+        type: {
+          label: "Тип",
+          map: { wobbler: "Воблер" },
+        },
+        quality: "Якість:",
+        targetMaxDepth: {
+          label: "Глибина",
+          range: ["targetMinDepth", "targetMaxDepth"],
+          suffix: "м",
+        },
+        mode: {
+          label: "Режим",
+          map: { 2: "Suspend", 3: "Sinking" },
+        },
+        currentCompensation: "Компенсація:",
       },
       engineStats: {
         type: "wobbler",
@@ -284,7 +368,16 @@ const ITEM_DB = {
       name: "Джиг",
       type: "jig",
       icon: "🪨",
-      displayStats: { sinkSpeed: 3.0 },
+      displayStats: {
+        type: {
+          label: "Тип",
+          map: { jig: "Джиг" },
+        },
+        quality: "Якість:",
+        sinkSpeed: "Занурення: м/с",
+        riseSpeed: "Підйом: м/с",
+        currentCompensation: "Компенсація:",
+      },
       engineStats: {
         type: "jig",
         mode: 1,
@@ -305,12 +398,14 @@ const ITEM_DB = {
       type: "float_tackle",
       icon: "🥢",
       displayStats: {
-        Рівень: 1,
-        Тип: "Денний",
-        Якість: 10,
-        Компенсація: "0.1, 1.0",
-        Ширина: "3мм",
-        Довжина: "15см",
+        type: {
+          label: "Тип",
+          map: { day: "Денний", night: "Нічний" },
+        },
+        quality: "Якість:",
+        windCompensation: "Компенсація:",
+        width: "Ширина: мм",
+        length: "Довжина: см",
       },
 
       engineStats: {
@@ -333,7 +428,14 @@ const ITEM_DB = {
       name: "Легкий грузик",
       type: "sinker",
       icon: "🪨",
-      displayStats: { weight: "Light", maxDepth: "10.0м" },
+      displayStats: {
+        weight: {
+          label: "Вага",
+          map: { light: "Легкий", medium: "Середній", heavy: "Важкий" },
+        },
+        maxDepth: "Макс. глибина: м",
+        quality: "Якість:",
+      },
       engineStats: {
         level: 1,
         quality: 10.0,
@@ -356,7 +458,11 @@ const ITEM_DB = {
       name: "Базова підсака",
       type: "net", // Залишається як є
       icon: "🕸️",
-      displayStats: { maxWeight: "3.0кг" },
+      displayStats: {
+        maxWeight: "Макс. вага: кг",
+        length: "Довжина: м",
+        quality: "Якість:",
+      },
       engineStats: {
         active: true,
         length: 15.0,
@@ -379,7 +485,11 @@ const ITEM_DB = {
       name: "Базова коропова суміш",
       type: "chum_mix",
       icon: "🍞",
-      displayStats: { duration: "24h" },
+      displayStats: {
+        minBonusDurationHours: "Мін. тривалість: год",
+        radius: "Радіус: px",
+        maxBonus: "Макс. бонус:",
+      },
       engineStats: {
         requiresTag: "chum_mix",
         targetFishes: ["crucian_stalker"],
@@ -402,7 +512,19 @@ const ITEM_DB = {
       icon: "🚤",
       type: "boat",
 
-      displayStats: { Швидкість: "Висока", Сонар: "Встановлено", Бункери: 3 },
+      displayStats: {
+        speedPxPerSec: {
+          label: "Швидкість",
+          byLevel: "statsByLevel",
+          stat: "speedPxPerSec",
+          suffix: "px/с",
+        },
+        hasSonar: {
+          label: "Сонар",
+          map: { true: "Встановлено", false: "Немає" },
+        },
+        sections: "Бункери:",
+      },
       engineStats: {
         hasSonar: true,
         showSensors: false,

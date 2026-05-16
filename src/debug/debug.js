@@ -524,11 +524,11 @@ function printBiteTickLog(detail = {}) {
 
   console.groupCollapsed(`%c${title}`, "color: #00d1ff; font-weight: bold;");
   console.table({
-    "Режим": detail.mode || "WAITING",
-    "Тік": tick,
+    Режим: detail.mode || "WAITING",
+    Тік: tick,
     "Період перевірки": fmtMs(detail.tickRateMs),
     "Перевірено риб": detail.checkedFishCount ?? 0,
-    "Результат": result,
+    Результат: result,
     "Клюнуло кандидатів": detail.bitesCount ?? 0,
     "Обрана риба": detail.selectedFish
       ? `${detail.selectedFish.name || detail.selectedFish.id} (${detail.selectedFish.chancePercent})`
@@ -543,10 +543,10 @@ function printBiteTickLog(detail = {}) {
     console.table(
       detail.fishRolls.map((fish, index) => ({
         "#": index + 1,
-        "Риба": fish.name || fish.id,
-        "Шанс": fish.chancePercent,
+        Риба: fish.name || fish.id,
+        Шанс: fish.chancePercent,
         "Випав шанс / roll": fish.rollPercent,
-        "Результат": fish.skipped ? "skip: chance 0%" : fish.result,
+        Результат: fish.skipped ? "skip: chance 0%" : fish.result,
       })),
     );
   }
@@ -554,7 +554,7 @@ function printBiteTickLog(detail = {}) {
   if (cooldown.active) {
     console.table({
       "Колдаун запущено/активний": true,
-      "Причина": cooldown.reason || "n/a",
+      Причина: cooldown.reason || "n/a",
       "Стартовий час": cooldown.startedMs ? fmtMs(cooldown.startedMs) : "n/a",
       "Було залишку": cooldown.beforeMs ? fmtMs(cooldown.beforeMs) : "n/a",
       "Стало залишку": cooldown.afterMs ? fmtMs(cooldown.afterMs) : "n/a",
@@ -576,8 +576,8 @@ function printBiteSequenceLog(detail = {}) {
       "color: #ffcc00; font-weight: bold;",
     );
     console.table({
-      "Режим": detail.mode || "BITING",
-      "Подія": "START",
+      Режим: detail.mode || "BITING",
+      Подія: "START",
       "Pulling під час покльовки": detail.isPulling === true,
       "Активна приманка": detail.isSpinningLure === true,
       "Guaranteed chance": seq.chanceGuaranteedPercent || "n/a",
@@ -608,8 +608,8 @@ function printBiteSequenceLog(detail = {}) {
     "color: #ffcc00; font-weight: bold;",
   );
   console.table({
-    "Режим": detail.mode || "BITING",
-    "Подія": detail.event || "SEQUENCE_ROLL",
+    Режим: detail.mode || "BITING",
+    Подія: detail.event || "SEQUENCE_ROLL",
     "Фактичний шанс guaranteed": detail.chanceGuaranteedPercent,
     "Фактичний шанс normal": detail.chanceNormalPercent,
     "Шанс який випав / roll": detail.rollPercent,
@@ -623,8 +623,8 @@ function printBiteSequenceLog(detail = {}) {
   if (Array.isArray(detail.iterations) && detail.iterations.length > 0) {
     console.table(
       detail.iterations.map((iter) => ({
-        "Ітерація": iter.index,
-        "Результат": iter.result,
+        Ітерація: iter.index,
+        Результат: iter.result,
         "Animation steps": iter.stepCount,
         "Fallback між ітерацією": fmtMs(iter.fallbackMs),
       })),
@@ -825,7 +825,9 @@ class GodMode {
 
   static get biteSequenceMode() {
     if (!this.isActive) return "default";
-    const mode = String(CONFIG.debug.godMode.biteSequenceMode || "default").toLowerCase();
+    const mode = String(
+      CONFIG.debug.godMode.biteSequenceMode || "default",
+    ).toLowerCase();
     return mode === "guaranteed" || mode === "normal" ? mode : "default";
   }
 }
@@ -903,12 +905,6 @@ class TestBuildProvider {
       },
       {
         instanceId: "debug_hook_basic_002",
-        itemId: "hook_basic",
-        quantity: 1,
-        buildId: boxInstanceId2,
-      },
-      {
-        instanceId: "debug_hook_basic_003",
         itemId: "hook_basic",
         quantity: 1,
         buildId: boxInstanceId2,

@@ -17,6 +17,20 @@ class LineSystem {
   #initialized = false;
   #lastReleasedMeters = 0;
   #lastRecoveredMeters = 0;
+  #lastReleaseResult = {
+    releasedMeters: 0,
+    demandedMeters: 0,
+    satisfiedMeters: 0,
+    unsatisfiedMeters: 0,
+    didSlip: false,
+    hasReserveAfterRelease: false,
+    hardLimitReached: false,
+  };
+  #lastConstraintResult = {
+    constrained: false,
+    correctionPx: 0,
+    hardLimit: false,
+  };
   #distanceCalculator;
 
   constructor({
@@ -102,13 +116,25 @@ class LineSystem {
     );
     if (!this.#hasReel || availableToRelease <= 0) {
       this.#refreshState();
-      return 0;
+      const demandedMeters = Math.max(
+        0,
+        this.#distanceMeters - this.#releasedMeters,
+      );
+      return this.#setReleaseResult({
+        demandedMeters,
+        unsatisfiedMeters: demandedMeters,
+        hardLimitReached:
+          demandedMeters > 0.000001 &&
+          this.#remainingMeters <= 0.001,
+      });
     }
 
     const excess = this.#distanceMeters - this.#releasedMeters;
     if (excess <= 0) {
       this.#refreshState();
-      return 0;
+      return this.#setReleaseResult({
+        hasReserveAfterRelease: this.#remainingMeters > 0.001,
+      });
     }
 
     let releaseRatio = 0;
@@ -136,7 +162,17 @@ class LineSystem {
     this.#releasedMeters += released;
     this.#lastReleasedMeters = released;
     this.#refreshState();
-    return released;
+
+    const unsatisfied = Math.max(0, excess - released);
+    return this.#setReleaseResult({
+      releasedMeters: released,
+      demandedMeters: excess,
+      satisfiedMeters: released,
+      unsatisfiedMeters: unsatisfied,
+      didSlip: released > 0.000001,
+      hasReserveAfterRelease: this.#remainingMeters > 0.001,
+      hardLimitReached: unsatisfied > 0.000001 && this.#remainingMeters <= 0.001,
+    });
   }
 
   recoverSlack({ hasReel, inputRecover, reel, tensionKg, dtSec }) {
@@ -183,12 +219,15 @@ class LineSystem {
 
   constrainPosition(position, velocity, rodTipPosition) {
     const maxDistancePx = this.#releasedMeters * this.#pixelsPerMeter;
-    if (maxDistancePx <= 0) return false;
+    if (maxDistancePx <= 0) return this.#setConstraintResult();
 
     const dx = position.x - rodTipPosition.x;
     const dy = position.y - rodTipPosition.y;
     const distancePx = Math.hypot(dx, dy);
-    if (distancePx <= maxDistancePx || distancePx <= 0) return false;
+    const tolerancePx = this.#constraintTolerancePx();
+    if (distancePx <= maxDistancePx + tolerancePx || distancePx <= 0) {
+      return this.#setConstraintResult();
+    }
 
     const nx = dx / distancePx;
     const ny = dy / distancePx;
@@ -202,7 +241,11 @@ class LineSystem {
     }
 
     this.updateDistance(position, rodTipPosition);
-    return true;
+    return this.#setConstraintResult({
+      constrained: true,
+      correctionPx: distancePx - maxDistancePx,
+      hardLimit: this.#remainingMeters <= 0.001,
+    });
   }
 
   getEffectiveLineMaxLoadKg() {
@@ -228,6 +271,8 @@ class LineSystem {
       effectiveLineMaxLoadKg: this.getEffectiveLineMaxLoadKg(),
       lastReleasedMeters: this.#lastReleasedMeters,
       lastRecoveredMeters: this.#lastRecoveredMeters,
+      lastReleaseResult: this.#lastReleaseResult,
+      lastConstraintResult: this.#lastConstraintResult,
     };
   }
 
@@ -259,6 +304,31 @@ class LineSystem {
   #numberOrDefault(value, fallback) {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  #constraintTolerancePx() {
+    const explicit = Number(this.#config.line?.constraintTolerancePx);
+    if (Number.isFinite(explicit) && explicit >= 0) return explicit;
+    return 0.5;
+  }
+
+  #setReleaseResult(result = {}) {
+    this.#lastReleaseResult.releasedMeters = result.releasedMeters ?? 0;
+    this.#lastReleaseResult.demandedMeters = result.demandedMeters ?? 0;
+    this.#lastReleaseResult.satisfiedMeters = result.satisfiedMeters ?? 0;
+    this.#lastReleaseResult.unsatisfiedMeters = result.unsatisfiedMeters ?? 0;
+    this.#lastReleaseResult.didSlip = !!result.didSlip;
+    this.#lastReleaseResult.hasReserveAfterRelease =
+      result.hasReserveAfterRelease ?? this.#remainingMeters > 0.001;
+    this.#lastReleaseResult.hardLimitReached = !!result.hardLimitReached;
+    return this.#lastReleaseResult;
+  }
+
+  #setConstraintResult(result = {}) {
+    this.#lastConstraintResult.constrained = !!result.constrained;
+    this.#lastConstraintResult.correctionPx = result.correctionPx ?? 0;
+    this.#lastConstraintResult.hardLimit = !!result.hardLimit;
+    return this.#lastConstraintResult;
   }
 
   #clamp01(value) {

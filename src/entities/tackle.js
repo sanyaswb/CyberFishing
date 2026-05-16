@@ -98,7 +98,6 @@ class Reel extends Equipment {
   #dragChangeSpeedPerSec;
   #durability;
   #durabilityMaxLoadLossPerPercent;
-  #lineStats;
 
   constructor(level, power, options = {}) {
     super(level, power); // Стара логіка відпрацьовує як і раніше!
@@ -120,12 +119,6 @@ class Reel extends Equipment {
     this.#durability = Reel.#numberOrDefault(options.durability, 100);
     this.#durabilityMaxLoadLossPerPercent =
       Reel.#numberOrDefault(options.durabilityMaxLoadLossPerPercent, 0.001);
-    this.#lineStats = options.line || {
-      lengthMeters: this.#lineCapacityMeters,
-      maxLoadKg: this.#maxLoadKg,
-      durability: this.#durability,
-      durabilityMaxLoadLossPerPercent: this.#durabilityMaxLoadLossPerPercent,
-    };
   }
 
   // Метод для перевірки, чи взагалі доступна механіка утримання
@@ -184,10 +177,6 @@ class Reel extends Equipment {
 
   getDragRangeKg() {
     return { min: this.#dragMinKg, max: this.#dragMaxKg };
-  }
-
-  getLineStats() {
-    return this.#lineStats;
   }
 
   static #numberOrDefault(value, fallback) {
@@ -497,6 +486,7 @@ class WaterEntity {
   _getVelocityDamping(dtSec) {
     const dampingPerSecond =
       this._config.velocityDampingPerSecond ??
+      CONFIG.physics?.fightMotion?.velocityDampingPerSecond ??
       -Math.log(Math.max(0.001, Math.min(0.999, this._velocityDamping))) * 60;
     return Math.exp(-Math.max(0, dampingPerSecond) * dtSec);
   }

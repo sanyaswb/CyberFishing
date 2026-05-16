@@ -1,3 +1,141 @@
+class DisplayStatsResolver {
+  static resolve(item) {
+    const schema = item?.displayStats || {};
+    const engineStats = item?.engineStats || {};
+    const resolved = {};
+
+    for (const [key, descriptor] of Object.entries(schema)) {
+      const value = this.#resolveValue(key, descriptor, item, engineStats);
+      const stat = this.#buildStat(key, descriptor, value);
+      if (!stat) continue;
+      resolved[stat.label] = stat.value;
+    }
+
+    return resolved;
+  }
+
+  static #resolveValue(key, descriptor, item, engineStats) {
+    if (descriptor && typeof descriptor === "object") {
+      if (descriptor.byLevel) {
+        const table = this.#readPath(descriptor.byLevel, item, engineStats);
+        const level = this.#readPath(
+          descriptor.levelKey || "level",
+          item,
+          engineStats,
+        );
+        return table?.[level]?.[descriptor.stat];
+      }
+
+      if (descriptor.range) {
+        const from = this.#readPath(descriptor.range[0], item, engineStats);
+        const to = this.#readPath(descriptor.range[1], item, engineStats);
+        if (from === undefined || to === undefined) return undefined;
+        return `${this.#formatScalar(from)}-${this.#formatScalar(to)}`;
+      }
+
+      const valueKey = descriptor.key || key;
+      return this.#readPath(valueKey, item, engineStats);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(engineStats, key)) {
+      return engineStats[key];
+    }
+
+    if (Object.prototype.hasOwnProperty.call(item || {}, key)) {
+      return item[key];
+    }
+
+    if (typeof descriptor === "string" && descriptor.includes(":")) {
+      return undefined;
+    }
+
+    return descriptor;
+  }
+
+  static #buildStat(key, descriptor, value) {
+    if (value === undefined || value === null) return null;
+
+    if (descriptor && typeof descriptor === "object") {
+      const label = descriptor.label || key;
+      const mappedValue =
+        descriptor.map && Object.prototype.hasOwnProperty.call(descriptor.map, value)
+          ? descriptor.map[value]
+          : value;
+      const formatted = this.#formatScalar(mappedValue, descriptor.decimals);
+      return {
+        label,
+        value: this.#joinSuffix(formatted, descriptor.suffix || ""),
+      };
+    }
+
+    if (typeof descriptor === "string") {
+      const parsed = this.#parseTextDescriptor(key, descriptor, value);
+      return {
+        label: parsed.label,
+        value: this.#joinSuffix(this.#formatScalar(value), parsed.suffix),
+      };
+    }
+
+    return {
+      label: key,
+      value: this.#formatScalar(value),
+    };
+  }
+
+  static #parseTextDescriptor(key, descriptor, value) {
+    if (descriptor.includes(":")) {
+      const separatorIndex = descriptor.indexOf(":");
+      return {
+        label: descriptor.slice(0, separatorIndex).trim() || key,
+        suffix: descriptor.slice(separatorIndex + 1).trim(),
+      };
+    }
+
+    return {
+      label: key,
+      suffix: "",
+    };
+  }
+
+  static #readPath(path, item, engineStats) {
+    if (!path) return undefined;
+    if (Object.prototype.hasOwnProperty.call(engineStats, path)) {
+      return engineStats[path];
+    }
+    if (Object.prototype.hasOwnProperty.call(item || {}, path)) {
+      return item[path];
+    }
+
+    const parts = String(path).split(".");
+    let current = { ...item, engineStats };
+    for (let i = 0; i < parts.length; i++) {
+      if (!current || typeof current !== "object") return undefined;
+      current = current[parts[i]];
+    }
+    return current;
+  }
+
+  static #formatScalar(value, decimals) {
+    if (typeof value === "number") {
+      if (Number.isInteger(value)) return String(value);
+      const precision = Number.isInteger(decimals) ? decimals : 2;
+      return value
+        .toFixed(precision)
+        .replace(/0+$/, "")
+        .replace(/\.$/, "");
+    }
+    if (Array.isArray(value)) return value.join(", ");
+    return String(value);
+  }
+
+  static #joinSuffix(value, suffix) {
+    const normalized = String(suffix || "").trim();
+    if (!normalized) return value;
+    const glue = normalized.startsWith("%") ? "" : " ";
+    return `${value}${glue}${normalized}`;
+  }
+}
+
 class ItemDatabase {
   #db;
   #categoryMap;
@@ -29,13 +167,16 @@ class ItemDatabase {
     const item = this.#db[category][itemId];
     if (!item) return null;
 
+    const engineStats = item.engineStats || {};
+
     return {
       id: item.id,
       name: item.name,
       icon: item.icon,
-      type: item.engineStats?.type || item.type,
-      ...item.displayStats,
-      ...item.engineStats,
+      type: engineStats.type || item.type,
+      displayStats: DisplayStatsResolver.resolve(item),
+      engineStats,
+      ...engineStats,
     };
   }
 }
@@ -229,6 +370,93 @@ class InventoryEquipment {
   }
 }
 
+class LineCompatibilityRules {
+  #lineConfig;
+
+  constructor(lineConfig = {}) {
+    this.#lineConfig = lineConfig || {};
+  }
+
+  validateLine(lineItem, equippedHydrated) {
+    const rod = equippedHydrated?.rod;
+    if (!rod) {
+      return {
+        isValid: false,
+        reason: "Спочатку екіпіруйте вудку для ліски.",
+      };
+    }
+
+    const rodNeedsReel = this.rodRequiresReel(rod);
+    if (rodNeedsReel && !equippedHydrated?.reel) {
+      return {
+        isValid: false,
+        reason: "Для цієї вудки спочатку екіпіруйте котушку.",
+      };
+    }
+
+    const lineLength = this.#numberOrDefault(
+      lineItem.lengthMeters ?? lineItem.engineStats?.lengthMeters,
+      0,
+    );
+    const minLength = this.getMinimumLineLengthMeters(rod);
+    if (lineLength < minLength) {
+      return {
+        isValid: false,
+        reason: `Ліска закоротка: потрібно мінімум ${this.#formatMeters(minLength)}м для цієї вудки.`,
+      };
+    }
+
+    const reelCapacity = this.#numberOrDefault(
+      equippedHydrated?.reel?.lineCapacityMeters ??
+        equippedHydrated?.reel?.engineStats?.lineCapacityMeters,
+      Infinity,
+    );
+    if (
+      rodNeedsReel &&
+      Number.isFinite(reelCapacity) &&
+      lineLength > reelCapacity
+    ) {
+      return {
+        isValid: false,
+        reason: `Ліска не вміщається на котушку: максимум ${this.#formatMeters(reelCapacity)}м.`,
+      };
+    }
+
+    return { isValid: true };
+  }
+
+  getMinimumLineLengthMeters(rod) {
+    const rodLength = this.#numberOrDefault(
+      rod?.lengthMeters ?? rod?.engineStats?.lengthMeters,
+      0,
+    );
+    const multiplierKey = this.rodRequiresReel(rod)
+      ? "rodLengthReserveMultiplier"
+      : "noReelRodLengthMultiplier";
+    const multiplier = this.#numberOrDefault(
+      this.#lineConfig[multiplierKey],
+      1,
+    );
+    return Math.max(0, rodLength * multiplier);
+  }
+
+  rodRequiresReel(rod) {
+    if (!rod) return null;
+    return rod.hasReel ?? rod.engineStats?.hasReel ?? rod.type !== "pole";
+  }
+
+  #numberOrDefault(value, fallback) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  #formatMeters(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "0";
+    return Number.isInteger(number) ? String(number) : number.toFixed(1);
+  }
+}
+
 class EquipmentValidator {
   static VALID_BASE_TYPES = new Set([
     "spinning",
@@ -323,11 +551,7 @@ class EquipmentValidator {
       rod?.lengthMeters ?? rod?.engineStats?.lengthMeters,
       0,
     );
-    const multiplier =
-      typeof CONFIG !== "undefined"
-        ? Number(CONFIG.physics?.line?.rodLengthReserveMultiplier ?? 2)
-        : 2;
-    return Math.max(0, rodLength * (Number.isFinite(multiplier) ? multiplier : 2));
+    return Math.max(0, rodLength);
   }
 
   static #numberOrDefault(value, fallback) {
@@ -411,6 +635,7 @@ class InventoryManager {
   #equipment;
   #events;
   #castDistanceCalculator;
+  #lineRules;
   #isLocked = false;
   #equippedCache = null;
 
@@ -419,6 +644,7 @@ class InventoryManager {
     playerConfig,
     events = new InventoryEventBridge(),
     castDistanceCalculator = null,
+    lineRules = null,
   ) {
     const cachedInventory =
       CacheManager.get("player_inventory") || playerConfig.inventory || [];
@@ -430,8 +656,8 @@ class InventoryManager {
     this.#equipment = new InventoryEquipment(SLOT_CONFIG, cachedEquipment);
     this.#events = events || new InventoryEventBridge();
     this.#castDistanceCalculator =
-      castDistanceCalculator ||
-      new CastDistanceCalculator(typeof CONFIG !== "undefined" ? CONFIG : {});
+      castDistanceCalculator || new CastDistanceCalculator();
+    this.#lineRules = lineRules || new LineCompatibilityRules();
 
     this.#setupDebugTools();
   }
@@ -916,11 +1142,26 @@ class InventoryManager {
   }
 
   validateEquip(itemData) {
+    if (itemData?.type === "fishing_line") {
+      return this.#lineRules.validateLine(itemData, this.getEquipped());
+    }
     return EquipmentValidator.validate(itemData, this.getEquipped());
   }
 
   getCompatibilityInfo(itemData) {
-    return EquipmentValidator.getCompatibilityInfo(itemData, this.getEquipped());
+    const equipment = this.getEquipped();
+    if (itemData?.type === "fishing_line") {
+      const validation = this.#lineRules.validateLine(itemData, equipment);
+      return {
+        hasCompatibility: true,
+        isCompatible: validation.isValid,
+        requiredTag: "line",
+        reason: validation.reason || null,
+        rodType: equipment?.rod?.type || null,
+        rodHasReel: this.#lineRules.rodRequiresReel(equipment?.rod),
+      };
+    }
+    return EquipmentValidator.getCompatibilityInfo(itemData, equipment);
   }
 
   validateEquipToSlot(slotPath, itemData) {
@@ -947,7 +1188,7 @@ class InventoryManager {
           reason: "Ліску можна спорядити тільки у слот ліски.",
         };
       }
-      return EquipmentValidator.validateFishingLine(itemData, this.getEquipped());
+      return this.#lineRules.validateLine(itemData, this.getEquipped());
     }
 
     if (itemData?.type !== "bait") return { isValid: true };
@@ -1069,7 +1310,7 @@ class InventoryManager {
       rod: this._hydrateInstance(raw.rodId),
       reel: this._hydrateInstance(raw.reelId),
     };
-    const validation = EquipmentValidator.validateFishingLine(line, equipment);
+    const validation = this.#lineRules.validateLine(line, equipment);
     if (validation.isValid) return false;
 
     this.#equipment.unequip("line");
@@ -1156,7 +1397,7 @@ class InventoryManager {
 
   #applyStandaloneCastDistanceStats(item) {
     if (!this.#isRodItem(item)) return;
-    const requiredLine = EquipmentValidator.getMinimumLineLengthMeters(item);
+    const requiredLine = this.#lineRules.getMinimumLineLengthMeters(item);
     item["Мін. ліска"] = `${this.#formatMeters(requiredLine)}м`;
   }
 
@@ -1166,10 +1407,11 @@ class InventoryManager {
   }
 
   #writeCastDistanceStats(rodItem, equipment) {
-    const previewPower = this.#getInventoryPreviewPowerCoefficient();
+    const previewPower = this.#getBuildCastPowerCoefficient(equipment);
     const info = this.#castDistanceCalculator.describe(equipment, previewPower);
-    const requiredLine = EquipmentValidator.getMinimumLineLengthMeters(rodItem);
+    const requiredLine = this.#lineRules.getMinimumLineLengthMeters(rodItem);
     rodItem["Мін. ліска"] = `${this.#formatMeters(requiredLine)}м`;
+    rodItem["Сила закидання"] = this.#formatCoefficient(previewPower);
 
     if (!equipment?.line) {
       delete rodItem.maxDistance;
@@ -1177,6 +1419,7 @@ class InventoryManager {
       delete rodItem["Довжина ліски"];
       delete rodItem["Сила заброса"];
       delete rodItem["Довжина заброса"];
+      delete rodItem["Макс. дальність закидання"];
       rodItem["Масштаб"] = `${info.pixelsPerMeter}px = 1м`;
       return;
     }
@@ -1186,23 +1429,15 @@ class InventoryManager {
     const castPx = Math.round(info.effectiveDistancePx);
     rodItem.maxDistance = Math.round(info.maxDistancePx);
     rodItem["Довжина ліски"] = `${lineMeters}м`;
-    rodItem["Сила заброса"] = previewPower.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
-    rodItem["Довжина заброса"] = `${castMeters}м (${castPx}px)`;
+    delete rodItem["Сила заброса"];
+    delete rodItem["Довжина заброса"];
+    rodItem["Макс. дальність закидання"] = `${castMeters}м (${castPx}px)`;
     rodItem["Масштаб"] = `${info.pixelsPerMeter}px = 1м`;
     delete rodItem["Ліска"];
   }
 
-  #getInventoryPreviewPowerCoefficient() {
-    const castingConfig =
-      typeof CONFIG !== "undefined" ? CONFIG.casting || {} : {};
-    const value =
-      castingConfig.inventoryPreviewPowerCoefficient ??
-      castingConfig.powerCoefficient ??
-      castingConfig.castPowerCoefficient ??
-      1;
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return 1;
-    return Math.max(0, Math.min(1, parsed));
+  #getBuildCastPowerCoefficient(equipment) {
+    return this.#castDistanceCalculator.getBuildCastPowerCoefficient(equipment);
   }
 
   #isRodItem(item) {
@@ -1213,6 +1448,12 @@ class InventoryManager {
     const number = Number(value);
     if (!Number.isFinite(number)) return "0";
     return Number.isInteger(number) ? String(number) : number.toFixed(1);
+  }
+
+  #formatCoefficient(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "0";
+    return number.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
   }
 
   _hydrateInstance(instanceId) {

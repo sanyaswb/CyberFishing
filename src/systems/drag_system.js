@@ -86,7 +86,7 @@ class DragSystem {
       return;
     }
 
-    if (!input?.pointerDown) {
+    if (!input?.dragControlActive) {
       this.#resetGesture();
       return;
     }

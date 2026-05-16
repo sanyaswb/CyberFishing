@@ -74,7 +74,7 @@ class EquipmentRules {
   ) {
     const power =
       castPowerCoefficient === null || castPowerCoefficient === undefined
-        ? this.getCastPowerCoefficient()
+        ? this.getCastPowerCoefficient(equipment)
         : castPowerCoefficient;
     const distance = this.#castDistanceCalculator.getEffectiveCastDistancePx(
       equipment,
@@ -83,19 +83,22 @@ class EquipmentRules {
     return normalizeDistance(distance, fallback);
   }
 
-  getCastPowerCoefficient(fallback = 1) {
+  getCastPowerCoefficient(equipment = null, fallback = null) {
     const castingConfig = this.#config?.casting || {};
-    const value =
+    const fallbackValue =
+      fallback ??
+      this.#config?.physics?.castingPower?.fallbackCoefficient ??
+      castingConfig.inventoryPreviewPowerCoefficient ??
       castingConfig.powerCoefficient ??
       castingConfig.castPowerCoefficient ??
-      castingConfig.inventoryPreviewPowerCoefficient ??
       fallback;
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return this.#clamp01(fallback);
-    return this.#clamp01(parsed);
+    return this.#castDistanceCalculator.getBuildCastPowerCoefficient(
+      equipment,
+      fallbackValue,
+    );
   }
 
-  getCastDistanceInfo(equipment, castPowerCoefficient = 1) {
+  getCastDistanceInfo(equipment, castPowerCoefficient = null) {
     return this.#castDistanceCalculator.describe(equipment, castPowerCoefficient);
   }
 
