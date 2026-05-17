@@ -155,7 +155,6 @@ class FishForceSystem {
       dragHoldRatio: playerData.dragHoldRatio,
       canDragHoldFish: playerData.canDragHoldFish,
       movementAuthority: playerData.movementAuthority,
-      canWinDistance: playerData.canWinDistance,
       legacyCanWinDistance: playerData.legacyCanWinDistance,
       shouldSlipDrag: playerData.shouldSlipDrag,
       staminaPressureRatio: playerData.staminaPressureRatio,

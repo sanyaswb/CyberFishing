@@ -113,9 +113,6 @@ class PlayerForceSystem {
       forceContext,
 
       // Active player movement is owned by RodPullSystem.
-      effectivePullKg: 0,
-      netPullKg: 0,
-      canWinDistance: false,
       vector: this.#playerVector,
       pullDir: basePullDir,
 
