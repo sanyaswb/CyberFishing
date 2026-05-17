@@ -89,7 +89,10 @@ class FightPhysicsSystem {
       reelSystem,
       lineSystem,
       reel,
-      tensionKg: tensionPreview.tensionKg,
+      tensionKg: this.#resolveReelRecoveryLoad({
+        tensionResult: tensionPreview,
+        dragContext,
+      }),
       isRecoverMode,
     });
     rodPullSystem.recoverStroke?.({ recoveredMeters });
@@ -355,6 +358,15 @@ class FightPhysicsSystem {
       tensionKg,
       inputRecover: isRecoverMode,
     });
+  }
+
+  #resolveReelRecoveryLoad({ tensionResult, dragContext }) {
+    const rawLoadKg = Math.max(0, Number(tensionResult?.rawTensionKg) || 0);
+    const dragLimitKg = Math.max(0, Number(dragContext?.effectiveDragLimitKg) || 0);
+    if (!dragContext?.dragLocked && rawLoadKg > dragLimitKg + 0.001) {
+      return Infinity;
+    }
+    return rawLoadKg;
   }
 
   #resolveLineLimit({

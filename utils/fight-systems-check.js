@@ -259,6 +259,36 @@ const exhaustedRelease = exhaustedLine.releaseForDistance(0);
 assert(exhaustedRelease.hardLimitReached, "exhausted reel line reports hard line limit");
 assert(exhaustedLine.getState().isFullyExtended, "line is fully extended when spool line is exhausted");
 
+const recoveryRod = new Rod(1, 5, 0, "feeder", Infinity, true, {
+  lengthMeters: 2,
+  maxLoadKg: 12,
+});
+const recoveryLine = new LineSystem({
+  rod: recoveryRod,
+  reel,
+  config: physicsConfig,
+  lineStats: { lengthMeters: 13, maxLoadKg: 12, durability: 100 },
+});
+recoveryLine.updateDistance({ x: 500, y: 0 }, { x: 0, y: 0 });
+recoveryLine.releaseForDistance(0);
+recoveryLine.updateDistance({ x: 400, y: 0 }, { x: 0, y: 0 });
+const recoveredUnderLoad = recoveryLine.recoverSlack({
+  hasReel: true,
+  inputRecover: true,
+  reel,
+  tensionKg: 2,
+  dtSec: 1,
+});
+assert(recoveredUnderLoad > 0, "reel recovers won line when load is below reel and line limit");
+const blockedRecovery = recoveryLine.recoverSlack({
+  hasReel: true,
+  inputRecover: true,
+  reel,
+  tensionKg: 12,
+  dtSec: 1,
+});
+approx(blockedRecovery, 0, 0.001, "reel cannot recover slack when load reaches tackle recovery limit");
+
 const stress = new TackleStressSystem({
   rod: strongRod,
   reel,

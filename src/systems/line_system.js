@@ -185,12 +185,14 @@ class LineSystem {
     );
     if (speed <= 0) return 0;
 
-    const limit = Math.max(
+    const reelLimit = Math.max(
       0.001,
       Number(reel.getEffectiveMaxLoadKg?.()) ||
         Number(reel.getMaxLoadKg?.()) ||
         1,
     );
+    const lineLimit = Math.max(0.001, Number(this.getEffectiveLineMaxLoadKg()) || reelLimit);
+    const limit = Math.min(reelLimit, lineLimit);
     const efficiency = this.#clamp01(1 - (Number(tensionKg) || 0) / limit);
     const amount = speed * efficiency * Math.max(0, Number(dtSec) || 0);
 
