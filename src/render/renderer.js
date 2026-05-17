@@ -1051,9 +1051,9 @@
     const value = `${unrecovered.toFixed(1)}м / ${capacity.toFixed(1)}м`;
 
     this.#ctx.save();
-    this.#ctx.fillStyle = "rgba(124, 132, 142, 0.35)";
+    this.#ctx.fillStyle = "rgba(58, 126, 210, 0.26)";
     this.#ctx.fillRect(layout.x, layout.strokeY, layout.width, layout.strokeHeight);
-    this.#ctx.fillStyle = "#a9b0b8";
+    this.#ctx.fillStyle = "#4aa3ff";
     this.#ctx.fillRect(layout.x, layout.strokeY, layout.width * ratio, layout.strokeHeight);
 
     this.#ctx.fillStyle = tensionConfig?.labelColor || "#8a9bac";

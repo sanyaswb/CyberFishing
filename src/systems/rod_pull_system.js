@@ -97,6 +97,12 @@ class RodPullSystem {
     return this.#result;
   }
 
+  syncStrokeToSlack({ slackMeters }) {
+    this.#strokeState.clampToSlack(slackMeters);
+    this.#syncStrokeSnapshot();
+    return this.#result;
+  }
+
   getState() {
     return this.#result;
   }

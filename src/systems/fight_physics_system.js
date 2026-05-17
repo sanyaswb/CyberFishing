@@ -103,6 +103,7 @@ class FightPhysicsSystem {
       velocity: motion.velocity,
       hardLineLimitBeforeRelease: rodPullFrame.hardLineLimitBeforeRelease,
     });
+    rodPullSystem.syncStrokeToSlack?.({ slackMeters: lineLimit.finalSlackMeters });
     const tensionResult = this.#updateTension({
       tensionSystem,
       stressSystem,
@@ -342,6 +343,7 @@ class FightPhysicsSystem {
       hardLineLimit: !!hardLineLimit,
       lineHasReserve,
       dragLocked: dragContext.dragLocked,
+      slackMeters: lineState.slackMeters,
     });
   }
 

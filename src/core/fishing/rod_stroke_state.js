@@ -40,6 +40,14 @@ class RodStrokeState {
     return previous - this.#unrecoveredMeters;
   }
 
+  clampToSlack(slackMeters) {
+    const safeSlack = Math.max(0, Number(slackMeters) || 0);
+    const previous = this.#unrecoveredMeters;
+    this.#unrecoveredMeters = Math.min(this.#unrecoveredMeters, safeSlack);
+    this.#syncSnapshot();
+    return previous - this.#unrecoveredMeters;
+  }
+
   reset() {
     this.#capacityMeters = 0;
     this.#usedMeters = 0;
