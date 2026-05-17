@@ -62,6 +62,8 @@ class InputManager {
   #isDragging;
   #isPointerDown;
   #isDragControlActive;
+  #pointerAction;
+  #pointerDownAtMs;
   #startX;
   #startY;
   #lastPointerX;
@@ -96,6 +98,8 @@ class InputManager {
     this.#isDragging = false;
     this.#isPointerDown = false;
     this.#isDragControlActive = false;
+    this.#pointerAction = "idle";
+    this.#pointerDownAtMs = 0;
     this.#startX = 0;
     this.#startY = 0;
     this.#lastPointerX = 0;
@@ -123,6 +127,7 @@ class InputManager {
       longPressPos: null,
       pointerDown: false,
       dragControlActive: false,
+      pointerAction: "idle",
       pointerStart: { x: 0, y: 0 },
       pointerCurrent: { x: 0, y: 0 },
       pointerDelta: { x: 0, y: 0 },
@@ -160,9 +165,11 @@ class InputManager {
   #bindEvents() {
     this.#addEventListener(this.#canvas, "pointerdown", (e) => {
       this.#isPointerDown = true;
-      this.#isPulling = true;
+      this.#isPulling = false;
       this.#isDragging = false;
       this.#isDragControlActive = false;
+      this.#pointerAction = "pending";
+      this.#pointerDownAtMs = Date.now();
       this.#startX = e.clientX;
       this.#startY = e.clientY;
       this.#lastPointerX = e.clientX;
@@ -212,6 +219,7 @@ class InputManager {
       }
 
       this.#updateDragControlState();
+      this.#updatePointerPullState(Date.now());
       this.#updateDirection(e);
     });
 
@@ -227,6 +235,10 @@ class InputManager {
       if (isPointerEvent) {
         if (this.#isPointerDown) {
           const now = Date.now();
+          const holdMs = Math.max(0, Number(CONFIG.input?.pullHoldMinMs) || 0);
+          const elapsedMs = Math.max(0, now - Number(this.#pointerDownAtMs || now));
+          const pointerWasClickCandidate =
+            this.#pointerAction === "pending" && elapsedMs < holdMs;
           const clientX =
             e.clientX ?? (e.changedTouches && e.changedTouches[0]?.clientX);
           const clientY =
@@ -240,8 +252,9 @@ class InputManager {
             this.#hasPointerRelease = true;
           }
 
-          // ВАЖЛИВО: Реєструємо клік ТІЛЬКИ якщо гравець не рухав пальцем (не свайпав)
-          if (!this.#isDragging && !this.#hasLongPressed) {
+          // ВАЖЛИВО: Реєструємо клік ТІЛЬКИ якщо це був короткий pending-click,
+          // а не long-hold виважування або drag-control жест.
+          if (pointerWasClickCandidate && !this.#isDragging && !this.#hasLongPressed) {
             if (now - this.#lastClickTime < 300) {
               this.#isDoubleClick = true;
             } else {
@@ -255,12 +268,15 @@ class InputManager {
         }
         this.#isPointerDown = false;
         this.#isDragControlActive = false;
+        this.#pointerAction = "idle";
+        this.#pointerDownAtMs = 0;
       }
 
       const pullKeys = CONFIG.input?.keys?.pull || ["Space"];
+      this.#updatePointerPullState(Date.now());
       this.#isPulling =
         this.#checkKeyHeld(pullKeys) ||
-        (this.#isPointerDown === true && !this.#isDragControlActive);
+        this.#pointerAction === "pull";
 
       if (!this.#isPulling) {
         this.#pullDirection.set(0, 1);
@@ -278,6 +294,8 @@ class InputManager {
       this.#keys = {};
       this.#isPointerDown = false;
       this.#isDragControlActive = false;
+      this.#pointerAction = "idle";
+      this.#pointerDownAtMs = 0;
       resetInput();
     });
 
@@ -323,8 +341,8 @@ class InputManager {
       if (this.#isKeyMatch(e, keys.pull)) {
         // Перевіряємо, чи не затиснута інша кнопка тяги
         if (!this.#checkKeyHeld(keys.pull)) {
-          this.#isPulling =
-            this.#isPointerDown && !this.#isDragControlActive;
+          this.#updatePointerPullState(Date.now());
+          this.#isPulling = this.#pointerAction === "pull";
           if (!this.#isPulling) {
             this.#pullDirection.set(0, 1);
           }
@@ -375,6 +393,38 @@ class InputManager {
 
     if (Math.abs(dy) >= threshold && Math.abs(dy) >= Math.abs(dx)) {
       this.#isDragControlActive = true;
+      this.#pointerAction = "drag_control";
+      this.#isPulling = false;
+    }
+  }
+
+  #updatePointerPullState(now = Date.now()) {
+    if (!this.#isPointerDown) {
+      if (this.#pointerAction !== "idle") {
+        this.#pointerAction = "idle";
+      }
+      return;
+    }
+
+    if (this.#isDragControlActive || this.#pointerAction === "drag_control") {
+      this.#pointerAction = "drag_control";
+      this.#isPulling = false;
+      return;
+    }
+
+    if (this.#pointerAction === "pull") {
+      this.#isPulling = true;
+      return;
+    }
+
+    if (this.#pointerAction !== "pending") return;
+
+    const holdMs = Math.max(0, Number(CONFIG.input?.pullHoldMinMs) || 0);
+    const elapsedMs = Math.max(0, Number(now) - Number(this.#pointerDownAtMs || now));
+    if (elapsedMs >= holdMs) {
+      this.#pointerAction = "pull";
+      this.#isPulling = true;
+    } else {
       this.#isPulling = false;
     }
   }
@@ -389,10 +439,9 @@ class InputManager {
     const keyboardPulling = this.#checkKeyHeld(keys.pull);
 
     // Space/інша pull-клавіша має гарантовано працювати кожен кадр,
-    // навіть якщо keydown був перехоплений браузером або фокус змінився.
-    this.#isPulling =
-      keyboardPulling ||
-      (this.#isPointerDown === true && !this.#isDragControlActive);
+    // pointer-pull стартує тільки після pullHoldMinMs, якщо жест не став drag-control.
+    this.#updatePointerPullState(Date.now());
+    this.#isPulling = keyboardPulling || this.#pointerAction === "pull";
 
     // ЗМІНЕНО: Читаємо клавіші руху з конфігу
     if (this.#checkKeyHeld(keys.left) || this.#checkKeyHeld(keys.right)) {
@@ -420,6 +469,7 @@ class InputManager {
     state.longPressPos = this.#longPressPos;
     state.pointerDown = this.#isPointerDown;
     state.dragControlActive = this.#isDragControlActive;
+    state.pointerAction = this.#pointerAction;
     state.pointerStart.x = this.#startX;
     state.pointerStart.y = this.#startY;
     state.pointerCurrent.x = this.#currentPointerX;

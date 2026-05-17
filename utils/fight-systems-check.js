@@ -12,6 +12,7 @@ const FILES = [
   "src/entities/fish.js",
   "src/systems/drag_system.js",
   "src/systems/line_system.js",
+  "src/systems/player_force_system.js",
   "src/systems/fish_force_system.js",
   "src/systems/tackle_stress_system.js",
 ];

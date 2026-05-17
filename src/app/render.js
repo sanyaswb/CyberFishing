@@ -255,8 +255,8 @@ class FishingRenderService {
     renderer.drawFloat(sPos, floatEntity, eq.float || {}, this.#projector, eq);
     if (state === "playing" && tMeter && fCond) {
       const fightDebug = tMeter.getDebugData?.() || {};
-      if (typeof renderer.drawRodPullBar === "function") {
-        renderer.drawRodPullBar(
+      if (typeof renderer.drawRodStrokeBar === "function") {
+        renderer.drawRodStrokeBar(
           fightDebug,
           this.#config.tension,
           this.#config.ui.indicators,

@@ -1,16 +1,6 @@
 window.DEBUG_MODULES = {
-  biteTicks: true,
-  location: false,
-  forces: false,
-  deviations: false,
-  tension: false,
-  rodPull: false,
-  stamina: false,
-  exhaustion: false,
-  catchTime: false,
-  prediction: false,
-  net: false,
-  map: false,
+  ...((typeof CONFIG !== "undefined" && CONFIG.debug?.consoleModules) || {}),
+  ...(window.DEBUG_MODULES || {}),
 };
 
 function getActiveLocationDebugData() {
@@ -400,21 +390,19 @@ function renderRodPullModule(ctx) {
   const live = ctx.live || {};
   console.table({
     "Rod pull active": live.rodPullActive === true,
-    "Pull ratio": `${fmt((Number(live.rodPullRatio) || 0) * 100, 1)}%`,
-    "Pull force kg": fmt(live.rodPullForceKg, 3),
+    "Active pull force kg": fmt(live.activeRodPullForceKg ?? live.rodPullForceKg, 3),
     "Fish force kg": fmt(live.fishForceKg ?? live.totalFishForceKg, 3),
     "Max tackle load kg": fmt(live.maxTackleLoadKg, 3),
     "Drag limit kg": fmt(live.dragLimitKg, 3),
     "Available extra kg": fmt(live.availableExtraForceKg, 3),
     "Charge speed multiplier": fmt(live.rodPullChargeSpeedMultiplier, 3),
     "Charge per second": fmt(live.rodPullChargePerSecond, 3),
-    "Rod stroke used": `${fmt(live.rodPullDistanceMeters, 2)} / ${fmt(live.rodPullAvailableDistanceMeters, 2)} m`,
-    "Rod stroke base": fmt(live.rodPullMaxDistanceMeters, 2),
+    "Rod stroke ratio": `${fmt((Number(live.rodStrokeRatio) || 0) * 100, 1)}%`,
+    "Rod stroke used": `${fmt(live.rodStrokeUsedMeters, 2)} / ${fmt(live.rodStrokeCapacityMeters, 2)} m`,
+    "Rod stroke unrecovered": fmt(live.rodStrokeUnrecoveredMeters, 2),
     "Slack meters": fmt(live.slackMeters ?? live.lineSlackMeters, 2),
     "Slack penalty": fmt(live.slackPenaltyMeters, 2),
     "Reel recovering slack": live.reelRecoveringSlack === true,
-    "Rod bar recovering": live.rodPullReleaseRecovering === true,
-    "Rod bar recovery ratio": fmt(live.rodPullReleaseRecoveryRatio, 3),
     "Hard line limit": live.hardLineLimit === true,
     "Result": live.rodPullCanMoveFish ? "MOVING_FISH" : "NO_PULL",
     "Blocked reason": live.rodPullBlockedReason || "none",
@@ -684,8 +672,8 @@ const DEBUG_CONSOLE_MODULES = {
     title: "Tension",
     render: renderTensionModule,
   },
-  rodPull: {
-    title: "Rod Pull",
+  rodStroke: {
+    title: "Rod Stroke",
     render: renderRodPullModule,
   },
   stamina: {

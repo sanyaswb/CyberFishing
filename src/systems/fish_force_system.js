@@ -3,16 +3,14 @@ class FishForceSystem {
   #config;
   #scratchA = new Vector2(0, 0);
   #scratchB = new Vector2(0, 0);
-  #scratchC = new Vector2(0, 0);
   #targetVelocity = new Vector2(0, 0);
-  #playerVector = new Vector2(0, 0);
-  #playerPullDir = new Vector2(0, 0);
-  #lineDir = new Vector2(0, 0);
+  #playerForceSystem;
   #debug = {};
 
   constructor({ fish, config }) {
     this.#fish = fish;
     this.#config = config || {};
+    this.#playerForceSystem = new PlayerForceSystem();
   }
 
   calculate({
@@ -110,8 +108,6 @@ class FishForceSystem {
 
     const baseSpeedPxPerSec = this.#fish.getBaseSpeedPxPerSec?.(pixelsPerMeter) || 100;
     const behaviorSpeedRatio = this.#clamp01(behavior.speedRatio ?? Math.abs(behavior.moveX || 0));
-
-    // Stamina is activity fuel, not a hard speed brake. Exhaustion is the real weakening layer.
     const staminaActivityMultiplier = this.#lerp(
       fishPhysics.minStaminaActivityMultiplier ?? 0.75,
       1,
@@ -158,10 +154,14 @@ class FishForceSystem {
       hasReel: playerData.hasReel,
       dragHoldRatio: playerData.dragHoldRatio,
       canDragHoldFish: playerData.canDragHoldFish,
+      movementAuthority: playerData.movementAuthority,
       canWinDistance: playerData.canWinDistance,
+      legacyCanWinDistance: playerData.legacyCanWinDistance,
       shouldSlipDrag: playerData.shouldSlipDrag,
       staminaPressureRatio: playerData.staminaPressureRatio,
       pullCapacityKg: playerData.pullCapacityKg,
+      legacyNetPullKg: playerData.legacyNetPullKg,
+      legacyEffectivePullKg: playerData.legacyEffectivePullKg,
       restrainRatio: playerData.restrainRatio,
       transferRatio: playerData.transferRatio,
       anglePenalty: playerData.anglePenalty,
@@ -199,126 +199,18 @@ class FishForceSystem {
     playerMaxLoadKg,
     dragRatio,
   }) {
-    const basePullDir = this.#playerPullDir
-      .set(rodTipPosition.x - fishPosition.x, rodTipPosition.y - fishPosition.y)
-      .normalize();
-
-    const inputDir = input?.pullDirection;
-    const steerX = Number(inputDir?.x) || 0;
-    if (Math.abs(steerX) > 0.001) {
-      basePullDir.x += steerX * (physics.inputSteeringBlend ?? 0.35);
-      basePullDir.normalize();
-    }
-
-    const lineDir = this.#lineDir
-      .set(fishPosition.x - rodTipPosition.x, fishPosition.y - rodTipPosition.y)
-      .normalize();
-    const idealDir = { x: 0, y: -1 };
-    const dot = Math.max(-1, Math.min(1, lineDir.x * idealDir.x + lineDir.y * idealDir.y));
-    const angleDeg = (Math.acos(dot) * 180) / Math.PI;
-    const angleCfg = physics.rodAnglePenalty || {};
-    const noPenalty = angleCfg.noPenaltyAngleDeg ?? 15;
-    const maxPenaltyAngle = angleCfg.maxPenaltyAngleDeg ?? 75;
-    const angleStressRatio = this.#clamp01(
-      (angleDeg - noPenalty) / Math.max(1, maxPenaltyAngle - noPenalty),
-    );
-    const maxPenaltyMult = angleCfg.maxPenaltyMultiplier ?? 0.65;
-    const anglePenalty = angleCfg.enabled === false
-      ? 1
-      : this.#lerp(1.0, maxPenaltyMult, angleStressRatio);
-
-    const hasReel = !!reel?.hasReel?.();
-    const isRecoverOnly = hasReel && !!input?.retrieve && !input?.pointerDown;
-    const isPlayerPulling = !!input?.isPulling && !isRecoverOnly;
-
-    const fallbackRodKg =
-      Number(rod?.getEffectiveMaxLoadKg?.()) ||
-      Number(rod?.getMaxLoadKg?.()) ||
-      0;
-    const fallbackReelKg = hasReel
-      ? Number(reel?.getEffectiveMaxLoadKg?.()) || Number(reel?.getMaxLoadKg?.()) || 0
-      : 0;
-    const fallbackValues = [fallbackRodKg];
-    if (hasReel && fallbackReelKg > 0) fallbackValues.push(fallbackReelKg);
-
-    const fallbackWeakestKg = fallbackValues
-      .filter((value) => Number.isFinite(value) && value > 0)
-      .reduce((min, value) => Math.min(min, value), Infinity);
-
-    const baseForceKg = Math.max(
-      0,
-      Number(playerMaxLoadKg) ||
-        (Number.isFinite(fallbackWeakestKg) ? fallbackWeakestKg : fallbackRodKg),
-    );
-    const maxPlayerForceKg = baseForceKg * anglePenalty * (buffs?.getTotalMultiplier?.() || 1);
-
-    const fishForceKg = Math.max(0.001, Number(totalFishForceKg) || 0.001);
-    const clampedDrag = this.#clamp01(dragRatio);
-    const rawDragLimitKg = hasReel
-      ? this.#calculateDragLimitKg(reel, clampedDrag)
-      : Infinity;
-    const effectiveDragLimitKg = hasReel
-      ? rawDragLimitKg
-      : maxPlayerForceKg;
-
-    // Фрикціон — це ліміт у кг, а не множник сили.
-    // Якщо dragLimitKg < fishForceKg, котушка здає ліску й гравець не виграє дистанцію.
-    const dragHoldRatio = hasReel
-      ? this.#clamp01(effectiveDragLimitKg / fishForceKg)
-      : 1;
-    const tackleRestrainRatio = this.#clamp01(maxPlayerForceKg / fishForceKg);
-    const isDragLocked = !hasReel || clampedDrag >= 0.999;
-    const canDragHoldFish = !hasReel || isDragLocked || effectiveDragLimitKg >= fishForceKg;
-    const pullCapacityKg = hasReel
-      ? Math.min(maxPlayerForceKg, effectiveDragLimitKg)
-      : maxPlayerForceKg;
-    const canWinDistance = isPlayerPulling && canDragHoldFish && pullCapacityKg > fishForceKg;
-    const netPullKg = canWinDistance ? pullCapacityKg - fishForceKg : 0;
-
-    // Цей тиск використовується для stamina: drag 0% => 0, drag нижче сили риби => слабкий тиск,
-    // drag >= сили риби => повний тиск, якщо гравець тягне.
-    const staminaPressureRatio = isPlayerPulling
-      ? (hasReel ? dragHoldRatio : tackleRestrainRatio)
-      : 0;
-
-    this.#playerVector.set(basePullDir.x * netPullKg, basePullDir.y * netPullKg);
-
-    return {
-      forceKg: maxPlayerForceKg,
-      pullCapacityKg,
-      effectivePullKg: isPlayerPulling ? pullCapacityKg : 0,
-      netPullKg,
-      transferRatio: hasReel ? dragHoldRatio : tackleRestrainRatio,
-      restrainRatio: tackleRestrainRatio,
-      dragHoldRatio,
-      effectiveDragRatio: hasReel ? dragHoldRatio : tackleRestrainRatio,
-      dragLimitKg: Number.isFinite(rawDragLimitKg) ? rawDragLimitKg : effectiveDragLimitKg,
-      effectiveDragLimitKg,
-      dragLocked: isDragLocked,
-      hasReel,
-      canDragHoldFish,
-      canWinDistance,
-      shouldSlipDrag: hasReel && !isDragLocked && effectiveDragLimitKg < fishForceKg,
-      staminaPressureRatio,
-      vector: this.#playerVector,
-      pullDir: basePullDir,
-      anglePenalty,
-      angleStressRatio,
-      angleDeg,
-      isPulling: isPlayerPulling,
-    };
-  }
-
-  #calculateDragLimitKg(reel, dragRatio) {
-    const range = reel?.getDragRangeKg?.() || {};
-    const minKg = Math.max(0, Number(range.min) || 0);
-    const maxFromRange = Number(range.max);
-    const fallbackMax =
-      Number(reel?.getEffectiveMaxLoadKg?.()) ||
-      Number(reel?.getMaxLoadKg?.()) ||
-      minKg;
-    const maxKg = Math.max(minKg, Number.isFinite(maxFromRange) ? maxFromRange : fallbackMax);
-    return minKg + (maxKg - minKg) * this.#clamp01(dragRatio);
+    return this.#playerForceSystem.calculate({
+      fishPosition,
+      rodTipPosition,
+      input,
+      rod,
+      reel,
+      buffs,
+      physics,
+      totalFishForceKg,
+      playerMaxLoadKg,
+      dragRatio,
+    });
   }
 
   getDebugData() {

@@ -89,9 +89,10 @@ class FightPhysicsSystem {
       reelSystem,
       lineSystem,
       reel,
-      stressSystem,
+      tensionKg: tensionPreview.tensionKg,
       isRecoverMode,
     });
+    rodPullSystem.recoverStroke?.({ recoveredMeters });
     const lineLimit = this.#resolveLineLimit({
       floatEntity,
       rodTipPosition,
@@ -112,9 +113,7 @@ class FightPhysicsSystem {
       hardLineLimit: lineLimit.hardLineLimit,
       dtSec,
     });
-    const rodPullDisplay = rodPullSystem.updateReleaseRecovery({
-      slackMeters: lineLimit.finalSlackMeters,
-    });
+    const rodPullDisplay = rodPullSystem.getState();
 
     this.#debug = this.#buildDebugSnapshot({
       forceData,
@@ -288,6 +287,7 @@ class FightPhysicsSystem {
       bounds,
       checkWater,
     });
+    rodPullSystem.recordAppliedStroke?.({ movedMeters: rodPullMoveMeters });
     const lineStateAfterPull = lineSystem.updateDistance(
       floatEntity.getPosition(),
       rodTipPosition,
@@ -345,12 +345,12 @@ class FightPhysicsSystem {
     });
   }
 
-  #recoverSlack({ dtSec, reelSystem, lineSystem, reel, stressSystem, isRecoverMode }) {
+  #recoverSlack({ dtSec, reelSystem, lineSystem, reel, tensionKg, isRecoverMode }) {
     return reelSystem.recoverSlack({
       dtSec,
       lineSystem,
       reel,
-      tensionKg: stressSystem.getTensionKg(),
+      tensionKg,
       inputRecover: isRecoverMode,
     });
   }
@@ -457,24 +457,33 @@ class FightPhysicsSystem {
       rodPullReleaseRecoveryRatio: rodPullDisplay.releaseRecoveryRatio,
       rodPullChargeSpeedMultiplier: rodPullDisplay.chargeSpeedMultiplier,
       rodPullChargePerSecond: rodPullDisplay.chargePerSecond,
+      activeRodPullForceKg: rodPullResult.forceKg,
+      rodStrokeCapacityMeters: rodPullDisplay.rodStrokeCapacityMeters,
+      rodStrokeUsedMeters: rodPullDisplay.rodStrokeUsedMeters,
+      rodStrokeUnrecoveredMeters: rodPullDisplay.rodStrokeUnrecoveredMeters,
+      rodStrokeRatio: rodPullDisplay.rodStrokeRatio,
       availableExtraForceKg: rodPullDisplay.availableExtraForceKg,
       reelRecoveringSlack: recoveredMeters > 0,
       tensionMode: tensionResult.mode,
       rawTensionKg: tensionResult.rawTensionKg,
+      movementAuthority: forceData.player.movementAuthority,
       playerForceKg: forceData.player.forceKg,
-      effectivePullKg: forceData.player.effectivePullKg,
+      effectivePullKg: rodPullResult.forceKg,
       pullCapacityKg: forceData.player.pullCapacityKg,
-      netPullKg: forceData.player.netPullKg,
+      netPullKg: rodPullResult.forceKg,
+      legacyEffectivePullKg: forceData.player.legacyEffectivePullKg,
+      legacyNetPullKg: forceData.player.legacyNetPullKg,
       dragLimitKg: dragContext.effectiveDragLimitKg,
       rawDragLimitKg: forceData.player.dragLimitKg,
       dragLocked: dragContext.dragLocked,
       dragHoldRatio: forceData.player.dragHoldRatio,
       canDragHoldFish: forceData.player.canDragHoldFish,
-      canWinDistance: forceData.player.canWinDistance,
+      canWinDistance: rodPullResult.canMoveFish,
+      legacyCanWinDistance: forceData.player.legacyCanWinDistance,
       shouldSlipDrag: forceData.player.shouldSlipDrag,
       staminaPressureRatio: forceData.player.staminaPressureRatio,
-      playerForceY: Math.abs(forceData.player.vector.y),
-      playerForceX: Math.abs(forceData.player.vector.x),
+      playerForceY: Math.abs(rodPullResult.forceKg),
+      playerForceX: 0,
       fishForceY: Math.abs(forceData.totalFishForceKg * (forceData.targetVelocity.y < 0 ? -1 : 1)),
       fishForceX: Math.abs(forceData.totalFishForceKg * (forceData.targetVelocity.x ? Math.sign(forceData.targetVelocity.x) : 0)),
       playerMaxPowerY: stressSystem.getEffectiveMaxTackleLoadKg?.() || 0,

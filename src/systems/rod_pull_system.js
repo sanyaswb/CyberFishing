@@ -1,10 +1,13 @@
 class RodPullSystem {
   #calculator;
   #state = new RodPullState();
-  #releaseRecoveryActive = false;
-  #releaseRecoveryStartSlackMeters = 0;
-  #releaseRecoveryStartRatio = 0;
-  #releaseRecoveryStartDistanceMeters = 0;
+  #strokeState = new RodStrokeState();
+  #strokeSnapshot = {
+    rodStrokeCapacityMeters: 0,
+    rodStrokeUsedMeters: 0,
+    rodStrokeUnrecoveredMeters: 0,
+    rodStrokeRatio: 0,
+  };
   #result = {
     active: false,
     ratio: 0,
@@ -21,6 +24,10 @@ class RodPullSystem {
     releasedThisFrame: false,
     releaseRecovering: false,
     releaseRecoveryRatio: 0,
+    rodStrokeCapacityMeters: 0,
+    rodStrokeUsedMeters: 0,
+    rodStrokeUnrecoveredMeters: 0,
+    rodStrokeRatio: 0,
   };
 
   constructor(config = {}) {
@@ -40,12 +47,9 @@ class RodPullSystem {
     fishDistanceMeters,
   }) {
     if (inputState?.pullStartedThisFrame) {
-      this.#clearReleaseRecovery();
       this.#state.reset();
     }
 
-    const previousRatio = this.#state.ratio;
-    const previousDistanceMeters = this.#state.distanceMeters;
     this.#result = this.#calculator.calculateNextState({
       dtSec,
       input: inputState,
@@ -60,23 +64,36 @@ class RodPullSystem {
       fishDistanceMeters,
     });
 
-    if (inputState?.pullReleasedThisFrame && previousRatio > 0) {
-      this.#startReleaseRecovery({
-        slackMeters,
-        ratio: previousRatio,
-        distanceMeters: previousDistanceMeters,
-      });
-      this.#applyReleaseRecoveryDisplay(slackMeters);
+    const strokeSnapshot = this.#strokeState.writeSnapshot(this.#strokeSnapshot);
+    if (
+      inputState?.pullStartedThisFrame ||
+      (this.#result.active && strokeSnapshot.rodStrokeCapacityMeters <= 0)
+    ) {
+      this.#strokeState.startCycle(this.#result.maxDistanceMeters);
     }
 
+    this.#syncStrokeSnapshot();
     this.#copyResultToState(this.#result);
     return this.#result;
   }
 
   updateReleaseRecovery({ slackMeters }) {
-    if (!this.#releaseRecoveryActive) return this.#result;
-    this.#applyReleaseRecoveryDisplay(slackMeters);
-    this.#copyResultToState(this.#result);
+    if (Math.max(0, Number(slackMeters) || 0) <= 0.001) {
+      this.#strokeState.recover(Infinity);
+    }
+    this.#syncStrokeSnapshot();
+    return this.#result;
+  }
+
+  recordAppliedStroke({ movedMeters }) {
+    this.#strokeState.addPullDistance(movedMeters);
+    this.#syncStrokeSnapshot();
+    return this.#result;
+  }
+
+  recoverStroke({ recoveredMeters }) {
+    this.#strokeState.recover(recoveredMeters);
+    this.#syncStrokeSnapshot();
     return this.#result;
   }
 
@@ -102,8 +119,12 @@ class RodPullSystem {
       releasedThisFrame: false,
       releaseRecovering: false,
       releaseRecoveryRatio: 0,
+      rodStrokeCapacityMeters: 0,
+      rodStrokeUsedMeters: 0,
+      rodStrokeUnrecoveredMeters: 0,
+      rodStrokeRatio: 0,
     };
-    this.#clearReleaseRecovery();
+    this.#strokeState.reset();
   }
 
   #copyResultToState(result) {
@@ -124,56 +145,14 @@ class RodPullSystem {
     this.#state.releaseRecoveryRatio = result.releaseRecoveryRatio;
   }
 
-  #startReleaseRecovery({ slackMeters, ratio, distanceMeters }) {
-    const startSlack = Math.max(0, Number(slackMeters) || 0);
-    if (startSlack <= 0.001) {
-      this.#clearReleaseRecovery();
-      return;
-    }
-
-    this.#releaseRecoveryActive = true;
-    this.#releaseRecoveryStartSlackMeters = startSlack;
-    this.#releaseRecoveryStartRatio = Math.max(0, Math.min(1, Number(ratio) || 0));
-    this.#releaseRecoveryStartDistanceMeters = Math.max(0, Number(distanceMeters) || 0);
-  }
-
-  #applyReleaseRecoveryDisplay(slackMeters) {
-    const currentSlack = Math.max(0, Number(slackMeters) || 0);
-    if (!this.#releaseRecoveryActive || currentSlack <= 0.001) {
-      this.#clearReleaseRecovery();
-      this.#result.ratio = 0;
-      this.#result.distanceMeters = 0;
-      this.#result.forceKg = 0;
-      this.#result.deltaMeters = 0;
-      this.#result.canMoveFish = false;
-      this.#result.releaseRecovering = false;
-      this.#result.releaseRecoveryRatio = 0;
-      if (!this.#result.active) this.#result.blockedReason = "none";
-      return;
-    }
-
-    const recoveryRatio = Math.max(
-      0,
-      Math.min(1, currentSlack / Math.max(0.001, this.#releaseRecoveryStartSlackMeters)),
-    );
-    this.#result.active = false;
-    this.#result.ratio = this.#releaseRecoveryStartRatio * recoveryRatio;
-    this.#result.distanceMeters =
-      this.#releaseRecoveryStartDistanceMeters * recoveryRatio;
-    this.#result.forceKg = 0;
-    this.#result.totalTensionKg = 0;
-    this.#result.deltaMeters = 0;
-    this.#result.canMoveFish = false;
-    this.#result.blockedReason = "recovering_slack";
-    this.#result.releaseRecovering = true;
-    this.#result.releaseRecoveryRatio = recoveryRatio;
-  }
-
-  #clearReleaseRecovery() {
-    this.#releaseRecoveryActive = false;
-    this.#releaseRecoveryStartSlackMeters = 0;
-    this.#releaseRecoveryStartRatio = 0;
-    this.#releaseRecoveryStartDistanceMeters = 0;
+  #syncStrokeSnapshot() {
+    const snapshot = this.#strokeState.writeSnapshot(this.#strokeSnapshot);
+    this.#result.rodStrokeCapacityMeters = snapshot.rodStrokeCapacityMeters;
+    this.#result.rodStrokeUsedMeters = snapshot.rodStrokeUsedMeters;
+    this.#result.rodStrokeUnrecoveredMeters = snapshot.rodStrokeUnrecoveredMeters;
+    this.#result.rodStrokeRatio = snapshot.rodStrokeRatio;
+    this.#result.releaseRecovering = snapshot.rodStrokeUnrecoveredMeters > 0 && !this.#result.active;
+    this.#result.releaseRecoveryRatio = snapshot.rodStrokeRatio;
   }
 
   #rodLengthMeters(rod) {

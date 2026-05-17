@@ -1057,7 +1057,12 @@ class InventoryManager {
     }
 
     if (slotPath === "delivery" && itemData?.type !== "boat") {
-      this.#equipment.unequip("deliveryChum");
+      const eq = this.getEquipped();
+      const sections =
+        eq.delivery?.sections || eq.delivery?.engineStats?.sections || 1;
+      for (let i = 0; i < sections; i++) {
+        this.#equipment.unequip(`deliveryChums_${i}`);
+      }
     }
 
     const success = this.#equipment.equip(slotPath, instanceId);

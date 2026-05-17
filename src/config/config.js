@@ -87,7 +87,7 @@ const UI_LAYOUT_CONFIG = [
     slots: [
       { id: "net", label: "Підсака" },
       { id: "delivery", label: "Доставка" },
-      { id: "deliveryChum", label: "Вантаж" },
+      { id: "deliveryChums", label: "Вантаж" },
     ],
   },
 ];
@@ -185,12 +185,12 @@ const CONFIG = {
 
   casting: {
     enabled: true,
-    powerSwipePx: 200,
+    powerSwipePx: 90,
     powerDeadzoneRatio: 0.25,
     inventoryPreviewPowerCoefficient: 0.5,
     powerAnchorReturnPxPerSecond: 1200,
     cancelPowerThreshold: 0,
-    edgeScrollCenterRatio: 0.7,
+    edgeScrollCenterRatio: 0.3,
     edgeScrollMaxPxPerSecond: 900,
     edgeScrollEasePower: 1.6,
     travelDelayMinMs: 180,
@@ -229,6 +229,21 @@ const CONFIG = {
   },
 
   debug: {
+    consoleModules: {
+      biteTicks: true,
+      location: false,
+      forces: false,
+      deviations: false,
+      tension: false,
+      rodStroke: false,
+      stamina: false,
+      exhaustion: false,
+      catchTime: false,
+      prediction: false,
+      net: false,
+      map: false,
+    },
+
     casting: {
       showChumDistanceLine: true,
       showAccuracyArea: true,
@@ -469,16 +484,14 @@ const CONFIG = {
       // Залишається для клавіш W/S або ArrowUp/ArrowDown.
       changeSpeedPerSec: 0.35,
     },
-    rodPull: {
+    rodStroke: {
       enabled: true,
       distanceMultiplierByRodLength: 1.0,
-      chargePerSecond: 0.65,
-      releaseDecayPerSecond: 2.5,
-      resetOnRelease: true,
+      strokeChargePerSecond: 0.65,
       minEffectivePullKg: 0.01,
       freezeWhenDragSlips: true,
       slackReducesNextPullDistance: true,
-      minPullDistanceMeters: 0.001,
+      minStrokeMeters: 0.001,
       finalLandingDistanceMeters: 0.5,
       minChargeSpeedMultiplier: 0.12,
       loadChargePower: 1.0,

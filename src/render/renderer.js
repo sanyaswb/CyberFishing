@@ -1025,43 +1025,56 @@
     });
   }
 
-  drawRodPullBar(fightDebug, tensionConfig, uiIndicatorsConfig) {
+  #getFightBarLayout(tensionConfig, uiIndicatorsConfig) {
     const width = tensionConfig?.barWidth || 300;
-    const height = Math.max(8, Math.round((tensionConfig?.barHeight || 20) * 0.72));
     const x = this.#resolveX(uiIndicatorsConfig?.x, width);
     const baseY = uiIndicatorsConfig?.y || 40;
     const spacing = uiIndicatorsConfig?.spacing || 40;
-    const y = baseY + spacing;
-    const ratio = Math.max(0, Math.min(1, Number(fightDebug?.rodPullRatio) || 0));
-    const used = Number(fightDebug?.rodPullDistanceMeters) || 0;
-    const available = Number(fightDebug?.rodPullAvailableDistanceMeters) || 0;
-    const forceKg = Number(fightDebug?.rodPullForceKg) || 0;
-    const reason = fightDebug?.rodPullBlockedReason || "none";
-    const label =
-      reason && reason !== "none"
-        ? `ROD: ${used.toFixed(1)}/${available.toFixed(1)}m ${reason}`
-        : `ROD: ${used.toFixed(1)}/${available.toFixed(1)}m ${forceKg.toFixed(1)}kg`;
-    const color =
-      reason === "drag_slipping" || reason === "max_tension_reached"
-        ? "#ffc857"
-        : reason === "slack_too_high" || reason === "hard_line_limit"
-          ? "#ff5d73"
-          : "#68e39f";
-    this.#drawSimpleRatioBar({
-      ratio,
+    const strokeHeight = 3;
+    const strokeY = baseY + spacing;
+    return {
       x,
-      y,
       width,
-      height,
-      label,
-      color,
-      backgroundColor: tensionConfig?.backgroundColor || "#1a2b3c",
-      borderColor: tensionConfig?.borderColor || "#4a5b6c",
-      labelColor: tensionConfig?.labelColor || "#8a9bac",
-      labelFont: tensionConfig?.labelFont || "bold 12px monospace",
+      strokeHeight,
+      strokeY,
+      tensionY: strokeY + strokeHeight + 2,
       labelOffsetX: tensionConfig?.labelOffsetX || 60,
-      labelOffsetY: Math.max(10, Math.round(height * 0.85)),
-    });
+    };
+  }
+
+  drawRodStrokeBar(fightDebug, tensionConfig, uiIndicatorsConfig) {
+    const layout = this.#getFightBarLayout(tensionConfig, uiIndicatorsConfig);
+    const ratio = Math.max(0, Math.min(1, Number(fightDebug?.rodStrokeRatio) || 0));
+    const unrecovered = Number(fightDebug?.rodStrokeUnrecoveredMeters) || 0;
+    const capacity = Number(fightDebug?.rodStrokeCapacityMeters) || 0;
+    const label = "Хід вудки";
+    const value = `${unrecovered.toFixed(1)}м / ${capacity.toFixed(1)}м`;
+
+    this.#ctx.save();
+    this.#ctx.fillStyle = "rgba(124, 132, 142, 0.35)";
+    this.#ctx.fillRect(layout.x, layout.strokeY, layout.width, layout.strokeHeight);
+    this.#ctx.fillStyle = "#a9b0b8";
+    this.#ctx.fillRect(layout.x, layout.strokeY, layout.width * ratio, layout.strokeHeight);
+
+    this.#ctx.fillStyle = tensionConfig?.labelColor || "#8a9bac";
+    this.#ctx.font = tensionConfig?.labelFont || "bold 12px monospace";
+    this.#ctx.textAlign = "left";
+    this.#ctx.fillText(
+      label,
+      layout.x - layout.labelOffsetX,
+      layout.strokeY + layout.strokeHeight + 3,
+    );
+    this.#ctx.textAlign = "right";
+    this.#ctx.fillText(
+      value,
+      layout.x + layout.width + layout.labelOffsetX,
+      layout.strokeY + layout.strokeHeight + 3,
+    );
+    this.#ctx.restore();
+  }
+
+  drawRodPullBar(fightDebug, tensionConfig, uiIndicatorsConfig) {
+    this.drawRodStrokeBar(fightDebug, tensionConfig, uiIndicatorsConfig);
   }
 
   #drawSimpleRatioBar({
@@ -1099,13 +1112,11 @@
   }
 
   drawTensionBar(tensionMeter, tensionConfig, uiIndicatorsConfig, fightDebug = null) {
-    const barWidth = tensionConfig.barWidth;
+    const layout = this.#getFightBarLayout(tensionConfig, uiIndicatorsConfig);
+    const barWidth = layout.width;
     const barHeight = tensionConfig.barHeight;
-    const barX = this.#resolveX(uiIndicatorsConfig?.x, barWidth);
-    const baseY = uiIndicatorsConfig?.y || 40;
-    const spacing = uiIndicatorsConfig?.spacing || 40;
-    const rodBarHeight = Math.max(8, Math.round((tensionConfig?.barHeight || 20) * 0.72));
-    const barY = baseY + spacing + rodBarHeight + 22;
+    const barX = layout.x;
+    const barY = layout.tensionY;
 
     const padding = tensionConfig.borderPadding;
     const tension = tensionMeter.getTension();
@@ -1161,10 +1172,10 @@
     this.#ctx.font = tensionConfig.labelFont;
     this.#ctx.textAlign = "left";
     const tensionLabel = Number.isFinite(tensionKg) && Number.isFinite(maxLoadKg)
-      ? `TENSION: ${Math.round(tension)}% (${tensionKg.toFixed(1)}/${maxLoadKg.toFixed(1)}kg)`
+      ? `Натяг: ${tensionKg.toFixed(1)}/${maxLoadKg.toFixed(1)}кг`
       : Number.isFinite(tensionKg)
-        ? `TENSION: ${Math.round(tension)}% (${tensionKg.toFixed(1)}kg)`
-        : `TENSION: ${Math.round(tension)}%`;
+        ? `Натяг: ${tensionKg.toFixed(1)}кг`
+        : `Натяг: ${Math.round(tension)}%`;
     this.#ctx.fillText(
       tensionLabel,
       barX - tensionConfig.labelOffsetX,

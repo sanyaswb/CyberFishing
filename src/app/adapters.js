@@ -28,11 +28,18 @@ class DevFlagsProvider {
 
   isDebugEnabled() {
     const debugModules = this.#debugModulesSource?.();
+    const consoleModules = {
+      ...(this.#config.debug?.consoleModules || {}),
+      ...(debugModules || {}),
+    };
+    const hasActiveConsoleModule = Object.keys(consoleModules).some(
+      (key) => consoleModules[key] === true,
+    );
     return !!(
       this.#config.debug?.overlay ||
       this.#config.debug?.events ||
       this.#config.logs?.events ||
-      debugModules
+      hasActiveConsoleModule
     );
   }
 }

@@ -330,7 +330,9 @@ class FightSessionFactory {
       config: this.config,
     });
     const pullInputMapper = new PullInputMapper();
-    const rodPullSystem = new RodPullSystem(this.config.physics?.rodPull);
+    const rodPullSystem = new RodPullSystem(
+      this.config.physics?.rodStroke || this.config.physics?.rodPull,
+    );
     const reelSystem = new ReelSystem(this.config.physics?.reel);
     const tensionSystem = new TensionSystem();
     const tensionMeter = new TackleStressSystem({

@@ -14,9 +14,12 @@ class DebugService {
   }
 
   #hasEnabledConsoleModules() {
-    if (typeof window === "undefined" || !window.DEBUG_MODULES) return false;
-    for (const key of Object.keys(window.DEBUG_MODULES)) {
-      if (window.DEBUG_MODULES[key]) return true;
+    const modules = {
+      ...(this.#config.debug?.consoleModules || {}),
+      ...((typeof window !== "undefined" && window.DEBUG_MODULES) || {}),
+    };
+    for (const key of Object.keys(modules)) {
+      if (modules[key]) return true;
     }
     return false;
   }

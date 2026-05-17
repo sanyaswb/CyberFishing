@@ -78,7 +78,10 @@ class RodPullCalculator {
     });
     const releasedThisFrame = !!input?.pullReleasedThisFrame;
     const held = !!input?.pullHeld;
-    const minDistance = Math.max(0, Number(this.#config.minPullDistanceMeters) || 0.001);
+    const minDistance = Math.max(
+      0,
+      Number(this.#config.minStrokeMeters ?? this.#config.minPullDistanceMeters) || 0.001,
+    );
 
     if (releasedThisFrame || !held || this.#config.enabled === false) {
       return this.#buildResult({
@@ -136,7 +139,10 @@ class RodPullCalculator {
     const chargedRatio = Math.min(
       1,
       prevRatio +
-        Math.max(0, Number(this.#config.chargePerSecond) || 0.65) *
+        Math.max(
+          0,
+          Number(this.#config.strokeChargePerSecond ?? this.#config.chargePerSecond) || 0.65,
+        ) *
           chargeMultiplier *
           dt,
     );
@@ -175,7 +181,10 @@ class RodPullCalculator {
       blockedReason,
       chargeSpeedMultiplier: chargeMultiplier,
       chargePerSecond:
-        Math.max(0, Number(this.#config.chargePerSecond) || 0.65) *
+        Math.max(
+          0,
+          Number(this.#config.strokeChargePerSecond ?? this.#config.chargePerSecond) || 0.65,
+        ) *
         chargeMultiplier,
     });
   }
