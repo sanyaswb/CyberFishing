@@ -11,6 +11,7 @@ class CastPowerAim {
   #screenX = 0;
   #screenY = 0;
   #power = 0;
+  #keyboardActive = false;
   #release = {
     active: false,
     screenX: 0,
@@ -40,6 +41,7 @@ class CastPowerAim {
 
   reset() {
     this.#active = false;
+    this.#keyboardActive = false;
     this.#power = 0;
     this.#release.active = false;
     this.#visual.active = false;
@@ -89,6 +91,35 @@ class CastPowerAim {
       this.#release.mode = mode;
 
       this.#active = false;
+      this.#keyboardActive = false;
+      this.#visual.active = false;
+      return this.#release;
+    }
+
+    const keyboardHeld = !!input?.isPulling;
+    if (keyboardHeld) {
+      if (!this.#active || !this.#keyboardActive) {
+        this.#startKeyboardAim();
+      }
+
+      this.#keyboardActive = true;
+      this.#applyKeyboardControls(input, dt);
+      this.#applyEdgeScroll(this.#screenX, dt);
+      this.#updateVisual(mode);
+      return null;
+    }
+
+    if (this.#active && this.#keyboardActive) {
+      this.#release.active = true;
+      this.#release.screenX = this.#screenX;
+      this.#release.screenY = this.#screenY;
+      this.#release.startX = this.#startX;
+      this.#release.startY = this.#startY;
+      this.#release.power = this.#power;
+      this.#release.mode = mode;
+
+      this.#active = false;
+      this.#keyboardActive = false;
       this.#visual.active = false;
       return this.#release;
     }
@@ -285,6 +316,50 @@ class CastPowerAim {
     this.#visual.screenX = this.#screenX;
     this.#visual.power = this.#power;
     this.#visual.mode = mode;
+  }
+
+  #startKeyboardAim() {
+    const viewport = this.#getViewportSize?.() || {};
+    const width = Math.max(1, viewport.width || 1);
+    const height = Math.max(1, viewport.height || 1);
+    this.#startX = width / 2;
+    this.#startY = height / 2;
+    this.#initialStartY = this.#startY;
+    this.#screenX = this.#clampScreenX(this.#startX);
+    this.#screenY = this.#startY;
+    this.#power = this.#clamp(Number(this.#cfg().keyboardInitialPower) || 0, 0, 1);
+    this.#active = true;
+  }
+
+  #applyKeyboardControls(input, dt) {
+    const dtSec = Math.min(0.1, Math.max(0, (Number(dt) || 0) / 1000));
+    const powerDirection =
+      (input?.castPowerIncrease || input?.dragIncrease ? 1 : 0) -
+      (input?.castPowerDecrease || input?.dragDecrease ? 1 : 0);
+    const powerSpeed = Math.max(
+      0,
+      Number(this.#cfg().keyboardPowerChangePerSecond) || 0.75,
+    );
+    if (powerDirection !== 0) {
+      this.#power = this.#clamp(
+        this.#power + powerDirection * powerSpeed * dtSec,
+        0,
+        1,
+      );
+    }
+
+    const aimDirection =
+      (input?.aimRight ? 1 : 0) -
+      (input?.aimLeft ? 1 : 0);
+    const aimSpeed = Math.max(
+      0,
+      Number(this.#cfg().keyboardAimSpeedPxPerSecond) || 420,
+    );
+    if (aimDirection !== 0) {
+      this.#screenX = this.#clampScreenX(
+        this.#screenX + aimDirection * aimSpeed * dtSec,
+      );
+    }
   }
 
   #calculatePower(screenY) {

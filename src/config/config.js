@@ -189,6 +189,9 @@ const CONFIG = {
     powerDeadzoneRatio: 0.25,
     inventoryPreviewPowerCoefficient: 0.5,
     powerAnchorReturnPxPerSecond: 1200,
+    keyboardInitialPower: 0,
+    keyboardPowerChangePerSecond: 0.75,
+    keyboardAimSpeedPxPerSecond: 420,
     cancelPowerThreshold: 0,
     edgeScrollCenterRatio: 0.3,
     edgeScrollMaxPxPerSecond: 900,
@@ -206,6 +209,7 @@ const CONFIG = {
     aimLine: {
       color: "rgba(0, 220, 255, 0.85)",
       chumColor: "rgba(255, 180, 0, 0.9)",
+      fullDistance: true,
       width: 2,
       dash: [12, 10],
       dashSpeedPxPerSecond: 42,

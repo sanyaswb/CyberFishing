@@ -281,6 +281,10 @@ class GameApplication {
     pumpAction: false,
     dragIncrease: false,
     dragDecrease: false,
+    castPowerIncrease: false,
+    castPowerDecrease: false,
+    aimLeft: false,
+    aimRight: false,
     retrieve: false,
     clickPos: null,
     isDoubleClick: false,
@@ -804,6 +808,7 @@ class GameApplication {
         this.#config.casting,
         this.#config.tension,
         this.#clock.now,
+        this.chumCastDistance,
       );
       return;
     }

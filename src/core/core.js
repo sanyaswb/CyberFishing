@@ -128,6 +128,10 @@ class InputManager {
       pumpAction: false,
       dragIncrease: false,
       dragDecrease: false,
+      castPowerIncrease: false,
+      castPowerDecrease: false,
+      aimLeft: false,
+      aimRight: false,
       retrieve: false,
       clickPos: null,
       isDoubleClick: false,
@@ -330,6 +334,8 @@ class InputManager {
       }
 
       if (
+        this.#isKeyMatch(e, keys.left) ||
+        this.#isKeyMatch(e, keys.right) ||
         this.#isKeyMatch(e, keys.dragIncrease) ||
         this.#isKeyMatch(e, keys.dragDecrease) ||
         this.#isKeyMatch(e, keys.retrieve)
@@ -467,6 +473,10 @@ class InputManager {
     state.pumpAction = this.#pumpFlag;
     state.dragIncrease = this.#checkKeyHeld(keys.dragIncrease);
     state.dragDecrease = this.#checkKeyHeld(keys.dragDecrease);
+    state.castPowerIncrease = state.dragIncrease;
+    state.castPowerDecrease = state.dragDecrease;
+    state.aimLeft = this.#checkKeyHeld(keys.left);
+    state.aimRight = this.#checkKeyHeld(keys.right);
 
     // retrieve/recover не має бути активним у той самий кадр, що й pull.
     // На PC: Space = pull, відпускання Space = автоматичний recover.

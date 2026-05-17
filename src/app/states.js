@@ -624,14 +624,16 @@ class ScoutingState extends GameState {
   }
 
   #updatePowerCasting(dt, bounds, input) {
-    if (!input?.pointerDown) {
+    const wantsRodAim = !!(input?.pointerDown || input?.isPulling);
+
+    if (!wantsRodAim) {
       this.#missingRodWarnedForPress = false;
       this.#missingReelWarnedForPress = false;
       this.#missingLineWarnedForPress = false;
     }
 
     const eq = this.deps.inventory.getEquipped();
-    if (input?.pointerDown && !this.#canStartRodCast(eq)) {
+    if (wantsRodAim && !this.#canStartRodCast(eq)) {
       this.#castAim.reset();
       this.#pendingCast = null;
       this.#setUiDimmed(false);

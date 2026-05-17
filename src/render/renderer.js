@@ -489,10 +489,12 @@
       resolvedMaxDistancePx = mapHeightPx;
     }
 
+    const linePower =
+      lineCfg.fullDistance === false ? Math.max(0, Math.min(1, power || 0)) : 1;
     const distancePx = Math.max(
       0,
       Math.min(resolvedMaxDistancePx, mapHeightPx) *
-        Math.max(0, Math.min(1, power || 0)),
+        linePower,
     );
     const bottomScreenY = projector.virtualToScreen(
       0,
