@@ -44,6 +44,7 @@ class PlayerForceSystem {
       : this.#lerp(1.0, maxPenaltyMult, angleStressRatio);
 
     const hasReel = !!reel?.hasReel?.();
+    const reelHasDrag = hasReel && reel?.hasDrag?.() !== false;
     const isRecoverOnly = hasReel && !!input?.retrieve && !input?.pointerDown;
     const isPlayerPulling = !!input?.isPulling && !isRecoverOnly;
     const maxPlayerForceKg = this.#calculateMaxPlayerForceKg({
@@ -57,22 +58,22 @@ class PlayerForceSystem {
 
     const fishForceKg = Math.max(0.001, Number(totalFishForceKg) || 0.001);
     const clampedDrag = this.#clamp01(dragRatio);
-    const rawDragLimitKg = hasReel
+    const rawDragLimitKg = reelHasDrag
       ? this.#calculateDragLimitKg(reel, clampedDrag)
-      : Infinity;
-    const effectiveDragLimitKg = hasReel ? rawDragLimitKg : maxPlayerForceKg;
-    const dragHoldRatio = hasReel
+      : maxPlayerForceKg;
+    const effectiveDragLimitKg = reelHasDrag ? rawDragLimitKg : maxPlayerForceKg;
+    const dragHoldRatio = reelHasDrag
       ? this.#clamp01(effectiveDragLimitKg / fishForceKg)
       : 1;
     const tackleRestrainRatio = this.#clamp01(maxPlayerForceKg / fishForceKg);
-    const isDragLocked = !hasReel || clampedDrag >= 0.999;
-    const canDragHoldFish = !hasReel || isDragLocked || effectiveDragLimitKg >= fishForceKg;
-    const pullCapacityKg = hasReel
+    const isDragLocked = !reelHasDrag;
+    const canDragHoldFish = !reelHasDrag || effectiveDragLimitKg >= fishForceKg;
+    const pullCapacityKg = reelHasDrag
       ? Math.min(maxPlayerForceKg, effectiveDragLimitKg)
       : maxPlayerForceKg;
 
-    const transferRatio = hasReel ? dragHoldRatio : tackleRestrainRatio;
-    const shouldSlipDrag = hasReel && !isDragLocked && effectiveDragLimitKg < fishForceKg;
+    const transferRatio = reelHasDrag ? dragHoldRatio : tackleRestrainRatio;
+    const shouldSlipDrag = reelHasDrag && effectiveDragLimitKg < fishForceKg;
     const staminaPressureRatio = isPlayerPulling
       ? (hasReel ? dragHoldRatio : tackleRestrainRatio)
       : 0;

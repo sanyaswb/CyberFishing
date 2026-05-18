@@ -137,6 +137,10 @@ class TackleStressSystem {
     return this.#breakInfo || { reason: this.#breakReason };
   }
 
+  getBreakTargetReason() {
+    return this.#breakReason || this.#selectBreakReason();
+  }
+
   getPulseIntensity(tensionConfig) {
     this.#pulsePhase +=
       Math.max(

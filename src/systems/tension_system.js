@@ -14,12 +14,12 @@ class TensionSystem {
     const dragLimit = Math.max(0, Number(dragLimitKg) || 0);
     const canSlip = !dragLocked && !!lineHasReserve && rawTension > dragLimit;
 
-    if (hardLineLimit || dragLocked) {
-      return this.#result(rawTension, false, rawTension, "raw");
-    }
-
     if (canSlip) {
       return this.#result(dragLimit, true, rawTension, "drag_limit");
+    }
+
+    if (hardLineLimit || dragLocked) {
+      return this.#result(rawTension, false, rawTension, "raw");
     }
 
     return this.#result(rawTension, false, rawTension, "raw");

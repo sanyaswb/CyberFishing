@@ -1197,11 +1197,15 @@
 
     if (tension >= tensionConfig.breakThreshold - 0.1) {
       const breakProgress = tensionMeter.getLineBreakProgress();
-      this.#drawLineBreakWarning(barX, barY - 25, barWidth, breakProgress);
+      const breakReason =
+        tensionMeter.getBreakTargetReason?.() ||
+        tensionMeter.getBreakReason?.() ||
+        "line";
+      this.#drawBreakWarning(barX, barY - 25, barWidth, breakProgress, breakReason);
     }
   }
 
-  #drawLineBreakWarning(x, y, width, progress) {
+  #drawBreakWarning(x, y, width, progress, reason = "line") {
     this.#ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
     this.#ctx.fillRect(x, y, width * progress, 8);
     this.#ctx.strokeStyle = "#ff0000";
@@ -1210,7 +1214,14 @@
     this.#ctx.fillStyle = "#ff0000";
     this.#ctx.font = "bold 10px monospace";
     this.#ctx.textAlign = "center";
-    this.#ctx.fillText("LINE BREAK", x + width / 2, y + 18);
+    const label = this.#breakWarningLabel(reason);
+    this.#ctx.fillText(label, x + width / 2, y + 18);
+  }
+
+  #breakWarningLabel(reason) {
+    if (reason === "rod") return "ROD BREAK";
+    if (reason === "leader") return "LEADER BREAK";
+    return "LINE BREAK";
   }
 
   drawGameOver(canvasWidth, canvasHeight, reason) {
@@ -1224,7 +1235,11 @@
     if (reason === "rod") {
       title = "ROD BROKEN";
       titleColor = "#ff0000";
-      desc = "Your equipment could not handle the stress.";
+      desc = "Your rod could not handle the stress.";
+    } else if (reason === "leader") {
+      title = "LEADER SNAPPED";
+      titleColor = "#ff6644";
+      desc = "The leader was the weakest part of the rig.";
     } else if (reason === "hook" || reason === "net_escape") {
       title = "FISH ESCAPED";
       titleColor = "#ffaa00";

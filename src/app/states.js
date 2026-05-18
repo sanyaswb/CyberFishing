@@ -1706,12 +1706,13 @@ class FailedState extends GameState {
 
   enter(data) {
     if (super.enter) super.enter();
+    this.data = data || {};
     this.deps.ui.updateContinueButtonState(true);
 
     const eq = this.deps.inventory.getEquipped();
-    const reason = data?.reason;
+    const reason = this.data?.reason;
 
-    this.deps.fishing.applyFailureEquipmentLoss(reason, eq, data?.failure || data || {});
+    this.deps.fishing.applyFailureEquipmentLoss(reason, eq, this.data?.failure || this.data || {});
   }
 
   exit() {

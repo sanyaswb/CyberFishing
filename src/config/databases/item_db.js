@@ -231,6 +231,27 @@ const ITEM_DB = {
         durabilityMaxLoadLossPerPercent: 0.001,
       },
     },
+
+    line_test_4m: {
+      id: "line_test_4m",
+      name: "Коротка ліска 4м",
+      type: "fishing_line",
+      icon: "🧵",
+      displayStats: {
+        lengthMeters: "Довжина: м.",
+        diameterMm: "Товщина: мм",
+        maxLoadKg: "Макс. навантаження: кг.",
+        durability: "Стан: %",
+      },
+      engineStats: {
+        type: "fishing_line",
+        lengthMeters: 4,
+        diameterMm: 0.16,
+        maxLoadKg: 1,
+        durability: 100,
+        durabilityMaxLoadLossPerPercent: 0.001,
+      },
+    },
   },
 
   leaders: {

@@ -190,6 +190,50 @@ const reel = new Reel(1, 1, {
   dragChangeSpeedPerSec: 1.5,
 });
 
+const dragLimitedReel = new Reel(1, 1, {
+  maxLoadKg: 10,
+  lineCapacityMeters: 50,
+  dragMinKg: 0,
+  dragMaxKg: 2,
+  hasDrag: true,
+});
+const dragLimitedPlayer = new PlayerForceSystem().calculate({
+  fishPosition: { x: 0, y: -100 },
+  rodTipPosition: { x: 0, y: 0 },
+  input: { isPulling: true, pointerDown: true },
+  rod: strongRod,
+  reel: dragLimitedReel,
+  buffs: null,
+  physics: physicsConfig,
+  totalFishForceKg: 5,
+  playerMaxLoadKg: 20,
+  dragRatio: 1,
+});
+assert(dragLimitedPlayer.dragLocked === false, "max drag setting still leaves friction active");
+approx(dragLimitedPlayer.effectiveDragLimitKg, 2, 0.001, "drag max limits effective pull regardless of line strength");
+assert(dragLimitedPlayer.shouldSlipDrag, "drag slips above reel drag max even at 100% setting");
+approx(dragLimitedPlayer.pullCapacityKg, 2, 0.001, "player pull capacity is clamped by active drag max");
+
+const noDragReel = new Reel(1, 1, {
+  maxLoadKg: 10,
+  lineCapacityMeters: 50,
+  hasDrag: false,
+});
+const noDragPlayer = new PlayerForceSystem().calculate({
+  fishPosition: { x: 0, y: -100 },
+  rodTipPosition: { x: 0, y: 0 },
+  input: { isPulling: true, pointerDown: true },
+  rod: strongRod,
+  reel: noDragReel,
+  buffs: null,
+  physics: physicsConfig,
+  totalFishForceKg: 5,
+  playerMaxLoadKg: 20,
+  dragRatio: 0.5,
+});
+assert(noDragPlayer.dragLocked, "reel without drag behaves as locked direct tackle load");
+approx(noDragPlayer.pullCapacityKg, 20, 0.001, "no-drag reel does not clamp pull by drag limit");
+
 const pointerDrag = new DragSystem(physicsConfig.drag, reel);
 pointerDrag.setValue(0.5);
 pointerDrag.update({
@@ -313,6 +357,23 @@ const leaderStress = new TackleStressSystem({
 approx(leaderStress.getEffectiveMaxTackleLoadKg(), 6, 0.001, "leader lowers breakable tackle load");
 leaderStress.updateTarget(30, 1, { kgSmoothPerSecond: 999, overloadGraceMs: 0 });
 assert(leaderStress.getBreakReason() === "leader", "leader breaks when it is weaker than main line");
+
+const weakRodStress = new TackleStressSystem({
+  rod: new Rod(1, 5, 0, "float", Infinity, true, {
+    lengthMeters: 3.6,
+    maxLoadKg: 6,
+    durability: 100,
+  }),
+  reel: new Reel(1, 1, { maxLoadKg: 4, lineCapacityMeters: 50, dragMaxKg: 4 }),
+  lineSystem: {
+    getEffectiveLineMaxLoadKg() { return 20; },
+    calculateBreakLossMeters() { return 0; },
+  },
+  rng: { next: () => 0.5 },
+});
+assert(weakRodStress.getBreakTargetReason() === "rod", "UI break target predicts rod when rod is weakest breakable part");
+weakRodStress.updateTarget(15, 1, { kgSmoothPerSecond: 999, overloadGraceMs: 0 });
+assert(weakRodStress.getBreakReason() === "rod", "rod breaks when rod is weaker than 20kg line and reel is ignored as break target");
 
 const fish = new Fish(1, 2, 1, CONFIG.spawns.fishes[0].physics, { next: () => 0.5, range: (a, b) => (a + b) / 2 });
 const fishForce = new FishForceSystem({ fish, config: CONFIG });
