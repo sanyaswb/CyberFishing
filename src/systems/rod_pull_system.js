@@ -28,6 +28,9 @@ class RodPullSystem {
     rodStrokeUsedMeters: 0,
     rodStrokeUnrecoveredMeters: 0,
     rodStrokeRatio: 0,
+    lineHasReserve: true,
+    canReleaseLine: true,
+    spoolEmpty: false,
   };
 
   constructor(config = {}) {
@@ -44,6 +47,7 @@ class RodPullSystem {
     maxTackleLoadKg,
     dragLocked,
     hardLineLimit,
+    lineHasReserve = true,
     fishDistanceMeters,
   }) {
     if (inputState?.pullStartedThisFrame) {
@@ -61,6 +65,7 @@ class RodPullSystem {
       maxTackleLoadKg,
       dragLocked,
       hardLineLimit,
+      lineHasReserve,
       fishDistanceMeters,
     });
 
@@ -129,6 +134,9 @@ class RodPullSystem {
       rodStrokeUsedMeters: 0,
       rodStrokeUnrecoveredMeters: 0,
       rodStrokeRatio: 0,
+      lineHasReserve: true,
+      canReleaseLine: true,
+      spoolEmpty: false,
     };
     this.#strokeState.reset();
   }
@@ -149,6 +157,9 @@ class RodPullSystem {
     this.#state.releasedThisFrame = result.releasedThisFrame;
     this.#state.releaseRecovering = result.releaseRecovering;
     this.#state.releaseRecoveryRatio = result.releaseRecoveryRatio;
+    this.#state.lineHasReserve = result.lineHasReserve;
+    this.#state.canReleaseLine = result.canReleaseLine;
+    this.#state.spoolEmpty = result.spoolEmpty;
   }
 
   #syncStrokeSnapshot() {

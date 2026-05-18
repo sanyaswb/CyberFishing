@@ -68,6 +68,7 @@ class RodPullCalculator {
     maxTackleLoadKg,
     dragLocked,
     hardLineLimit,
+    lineHasReserve = true,
     fishDistanceMeters,
   }) {
     const maxDistanceMeters = this.calculateMaxDistance({ rodLengthMeters });
@@ -93,11 +94,13 @@ class RodPullCalculator {
       });
     }
 
+    const lineCanRelease = this.#lineHasReserve(lineHasReserve);
+    const riskyNoReservePull = !lineCanRelease && !dragLocked;
     const forceLimit = this.calculateForceLimit({
       fishForceKg,
       dragLimitKg,
       maxTackleLoadKg,
-      dragLocked: dragLocked || hardLineLimit,
+      dragLocked: dragLocked || hardLineLimit || riskyNoReservePull,
     });
     const prevDistance = Math.max(0, Number(previousState?.distanceMeters) || 0);
     const prevRatio = Math.max(0, Math.min(1, Number(previousState?.ratio) || 0));
@@ -113,7 +116,7 @@ class RodPullCalculator {
       });
     }
 
-    if (!hardLineLimit && forceLimit.dragSlipping && this.#config.freezeWhenDragSlips !== false) {
+    if (lineCanRelease && !hardLineLimit && forceLimit.dragSlipping && this.#config.freezeWhenDragSlips !== false) {
       return this.#buildResult({
         active: true,
         ratio: prevRatio,
@@ -124,6 +127,9 @@ class RodPullCalculator {
         totalTensionKg: Math.max(0, Number(dragLimitKg) || 0),
         blockedReason: forceLimit.blockedReason,
         dragSlipping: true,
+        lineHasReserve: lineCanRelease,
+        canReleaseLine: lineCanRelease,
+        spoolEmpty: !lineCanRelease,
       });
     }
 
@@ -135,6 +141,7 @@ class RodPullCalculator {
       availableExtraForceKg: forceLimit.availableExtraForceKg,
       dragLocked,
       hardLineLimit,
+      lineHasReserve: lineCanRelease,
     });
     const chargedRatio = Math.min(
       1,
@@ -146,7 +153,7 @@ class RodPullCalculator {
           chargeMultiplier *
           dt,
     );
-    const forceRatioLimit = dragLocked || hardLineLimit || maxLoad <= 0
+    const forceRatioLimit = dragLocked || hardLineLimit || !lineCanRelease || maxLoad <= 0
       ? 1
       : this.#clamp01(forceLimit.availableExtraForceKg / Math.max(0.001, maxLoad));
     const nextRatio = Math.min(chargedRatio, forceRatioLimit);
@@ -154,7 +161,7 @@ class RodPullCalculator {
     const distanceMeters = Math.min(availableDistanceMeters, unclampedDistance);
     const deltaMeters = Math.max(0, distanceMeters - prevDistance);
     const rawForceKg = maxLoad * nextRatio;
-    const forceKg = dragLocked || hardLineLimit
+    const forceKg = dragLocked || hardLineLimit || !lineCanRelease
       ? rawForceKg
       : Math.min(rawForceKg, forceLimit.availableExtraForceKg);
     const totalTensionKg = Math.max(0, Number(fishForceKg) || 0) + forceKg;
@@ -186,6 +193,9 @@ class RodPullCalculator {
           Number(this.#config.strokeChargePerSecond ?? this.#config.chargePerSecond) || 0.65,
         ) *
         chargeMultiplier,
+      lineHasReserve: lineCanRelease,
+      canReleaseLine: lineCanRelease,
+      spoolEmpty: !lineCanRelease,
     });
   }
 
@@ -208,6 +218,9 @@ class RodPullCalculator {
       releaseRecoveryRatio: Math.max(0, Math.min(1, Number(data.releaseRecoveryRatio) || 0)),
       chargeSpeedMultiplier: Math.max(0, Number(data.chargeSpeedMultiplier) || 0),
       chargePerSecond: Math.max(0, Number(data.chargePerSecond) || 0),
+      lineHasReserve: data.lineHasReserve !== false,
+      canReleaseLine: data.canReleaseLine !== false,
+      spoolEmpty: !!data.spoolEmpty,
     };
     return result;
   }
@@ -218,11 +231,12 @@ class RodPullCalculator {
     availableExtraForceKg,
     dragLocked,
     hardLineLimit,
+    lineHasReserve = true,
   }) {
     const maxLoad = Math.max(0.001, Number(maxTackleLoadKg) || 0.001);
     const fishForce = Math.max(0, Number(fishForceKg) || 0);
     const stressHeadroomRatio = this.#clamp01(maxLoad / Math.max(maxLoad, fishForce + maxLoad));
-    const forceHeadroomRatio = dragLocked || hardLineLimit
+    const forceHeadroomRatio = dragLocked || hardLineLimit || !this.#lineHasReserve(lineHasReserve)
       ? 1
       : this.#clamp01((Number(availableExtraForceKg) || 0) / maxLoad);
     const loadRatio = Math.min(stressHeadroomRatio, forceHeadroomRatio);
@@ -232,6 +246,10 @@ class RodPullCalculator {
     );
     const power = Math.max(0.01, Number(this.#config.loadChargePower) || 1);
     return minMultiplier + (1 - minMultiplier) * Math.pow(loadRatio, power);
+  }
+
+  #lineHasReserve(value) {
+    return value !== false;
   }
 
   #clamp01(value) {

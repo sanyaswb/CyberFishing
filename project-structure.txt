@@ -2,6 +2,14 @@
 ├── assets
 │  ├── audio
 │  │  └── bell_ring.mp3
+│  ├── fish
+│  │  └── crucian_stalker
+│  │    ├── crucian_stalker--1.webp
+│  │    ├── crucian_stalker--2.webp
+│  │    ├── crucian_stalker--3.webp
+│  │    ├── crucian_stalker--4.webp
+│  │    ├── crucian_stalker--5.webp
+│  │    └── crucian_stalker--6.webp
 │  └── locations
 │    └── test
 │      ├── bg_test--day.webp
@@ -34,6 +42,7 @@
 │  │  ├── application.js
 │  │  ├── bite.js
 │  │  ├── bootstrap.js
+│  │  ├── cast_power.js
 │  │  ├── chum.js
 │  │  ├── context.js
 │  │  ├── core
@@ -52,9 +61,19 @@
 │  │  ├── utils.js
 │  │  └── world.js
 │  ├── config
-│  │  └── config.js
+│  │  ├── config.js
+│  │  └── databases
+│  │    ├── fish_db.js
+│  │    ├── item_db.js
+│  │    └── map_db.js
 │  ├── core
-│  │  └── core.js
+│  │  ├── casting_distance.js
+│  │  ├── core.js
+│  │  └── fishing
+│  │    ├── rod_pull_calculator.js
+│  │    ├── rod_pull_state.js
+│  │    ├── rod_stroke_state.js
+│  │    └── slack_calculator.js
 │  ├── debug
 │  │  ├── debug.js
 │  │  ├── dev_tools.js
@@ -62,13 +81,24 @@
 │  ├── entities
 │  │  ├── fish.js
 │  │  └── tackle.js
+│  ├── input
+│  │  └── pull_input_mapper.js
 │  ├── render
 │  │  └── renderer.js
 │  ├── systems
 │  │  ├── bite_system.js
 │  │  ├── chum_system.js
+│  │  ├── drag_system.js
+│  │  ├── fight_physics_system.js
+│  │  ├── fish_force_system.js
 │  │  ├── inventory_system.js
-│  │  └── physics_system.js
+│  │  ├── line_system.js
+│  │  ├── player_force_system.js
+│  │  ├── reel_system.js
+│  │  ├── rod_pull_system.js
+│  │  ├── stamina_system.js
+│  │  ├── tackle_stress_system.js
+│  │  └── tension_system.js
 │  ├── ui
 │  │  ├── styles
 │  │  │  └── style.css
@@ -76,5 +106,12 @@
 │  └── world
 │    └── world.js
 └── utils
+  ├── cast-power-check.js
+  ├── catch-resolution-check.js
+  ├── check-js.js
   ├── convert-images.js
-  └── local-bridge.js
+  ├── dev-server.js
+  ├── fight-systems-check.js
+  ├── fps-physics-check.js
+  ├── local-bridge.js
+  └── rod-pull-systems-check.js

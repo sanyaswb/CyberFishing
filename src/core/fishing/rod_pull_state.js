@@ -14,6 +14,9 @@ class RodPullState {
   releasedThisFrame = false;
   releaseRecovering = false;
   releaseRecoveryRatio = 0;
+  lineHasReserve = true;
+  canReleaseLine = true;
+  spoolEmpty = false;
 
   reset() {
     this.active = false;
@@ -31,5 +34,8 @@ class RodPullState {
     this.releasedThisFrame = false;
     this.releaseRecovering = false;
     this.releaseRecoveryRatio = 0;
+    this.lineHasReserve = true;
+    this.canReleaseLine = true;
+    this.spoolEmpty = false;
   }
 }

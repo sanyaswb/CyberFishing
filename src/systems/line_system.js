@@ -265,6 +265,8 @@ class LineSystem {
       totalLengthMeters: this.#totalLengthMeters,
       releasedMeters: this.#releasedMeters,
       remainingMeters: this.#remainingMeters,
+      canReleaseLine: this.#remainingMeters > 0.001,
+      spoolEmpty: this.#remainingMeters <= 0.001,
       maxRemainingMeters: this.#maxRemainingMeters,
       distanceMeters: this.#distanceMeters,
       slackMeters: Math.max(0, this.#releasedMeters - this.#distanceMeters),

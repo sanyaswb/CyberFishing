@@ -281,6 +281,7 @@ class FightPhysicsSystem {
       maxTackleLoadKg: dragContext.maxTackleLoadKg,
       dragLocked: dragContext.dragLocked,
       hardLineLimit: lineStateBeforePull.isFullyExtended,
+      lineHasReserve: this.#lineHasReserve(lineStateBeforePull),
       fishDistanceMeters: lineStateBeforePull.distanceMeters,
     });
     const rodPullMoveMeters = this.#applyRodPullMovement({
@@ -338,7 +339,7 @@ class FightPhysicsSystem {
     lineState,
     hardLineLimit,
   }) {
-    const lineHasReserve = (lineState.remainingMeters || 0) > 0.001;
+    const lineHasReserve = this.#lineHasReserve(lineState);
     return tensionSystem.calculate({
       fishForceKg: forceData.totalFishForceKg,
       rodPullForceKg: rodPullResult.forceKg,
@@ -440,6 +441,8 @@ class FightPhysicsSystem {
       ...dragSystem.getDebugData(),
       lineReleasedMeters: lineState.releasedMeters,
       lineRemainingMeters: lineState.remainingMeters,
+      lineCanRelease: this.#lineHasReserve(lineState),
+      lineSpoolEmpty: !this.#lineHasReserve(lineState),
       lineMaxRemainingMeters: lineState.maxRemainingMeters,
       lineBaseReachMeters: lineState.baseReachMeters,
       lineTotalLengthMeters: lineState.totalLengthMeters,
@@ -514,6 +517,11 @@ class FightPhysicsSystem {
       fishForceKg: forceData.totalFishForceKg,
       calculatedTensionKg: tensionResult.tensionKg,
     };
+  }
+
+  #lineHasReserve(lineState) {
+    if (typeof lineState?.canReleaseLine === "boolean") return lineState.canReleaseLine;
+    return (Number(lineState?.remainingMeters) || 0) > 0.001;
   }
 
   #applyRodPullMovement({
