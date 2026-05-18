@@ -120,15 +120,22 @@ class CastDistanceCalculator {
     const rod = equipment?.rod || null;
     if (!rod) return this.#clampCastPower(fallbackCoefficient);
 
+    const explicitRodCoefficient = this.#readNumber(
+      rod,
+      "castPowerCoefficient",
+      "getCastPowerCoefficient",
+    );
     const rodLengthMeters = this.#numberOrDefault(
       this.#readNumber(rod, "lengthMeters", "getLengthMeters"),
       0,
     );
     const rodLengthCoefficient =
-      this.#numberOrDefault(
-        castingPowerConfig.rodLengthCoefficientPerMeter,
-        0,
-      ) * rodLengthMeters;
+      Number.isFinite(explicitRodCoefficient)
+        ? explicitRodCoefficient
+        : this.#numberOrDefault(
+            castingPowerConfig.rodLengthCoefficientPerMeter,
+            0,
+          ) * rodLengthMeters;
 
     const reel = equipment?.reel || null;
     const bearingCount = this.#isReelAvailable(reel)

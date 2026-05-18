@@ -1659,7 +1659,7 @@ class FailedState extends GameState {
     const eq = this.deps.inventory.getEquipped();
     const reason = data?.reason;
 
-    this.deps.fishing.applyFailureEquipmentLoss(reason, eq);
+    this.deps.fishing.applyFailureEquipmentLoss(reason, eq, data?.failure || data || {});
   }
 
   exit() {

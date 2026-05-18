@@ -22,6 +22,7 @@ class Rod extends Equipment {
   #maxDistance;
   #hasReel;
   #lengthMeters;
+  #castPowerCoefficient;
   #maxLoadKg;
   #durability;
   #durabilityMaxLoadLossPerPercent;
@@ -41,6 +42,9 @@ class Rod extends Equipment {
     this.#maxDistance = maxDistance;
     this.#hasReel = hasReel;
     this.#lengthMeters = Rod.#numberOrDefault(options.lengthMeters, 2.0);
+    this.#castPowerCoefficient = Rod.#nullableNumber(
+      options.castPowerCoefficient,
+    );
     this.#maxLoadKg = Rod.#numberOrDefault(options.maxLoadKg, 8.0);
     this.#durability = Rod.#numberOrDefault(options.durability, 100);
     this.#durabilityMaxLoadLossPerPercent =
@@ -67,6 +71,10 @@ class Rod extends Equipment {
     return this.#lengthMeters;
   }
 
+  getCastPowerCoefficient() {
+    return this.#castPowerCoefficient;
+  }
+
   getMaxLoadKg() {
     return this.#maxLoadKg;
   }
@@ -86,6 +94,11 @@ class Rod extends Equipment {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
   }
+
+  static #nullableNumber(value) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
 }
 
 class Reel extends Equipment {
@@ -96,6 +109,7 @@ class Reel extends Equipment {
   #dragMinKg;
   #dragMaxKg;
   #dragChangeSpeedPerSec;
+  #hasDrag;
   #durability;
   #durabilityMaxLoadLossPerPercent;
 
@@ -116,6 +130,12 @@ class Reel extends Equipment {
     );
     this.#dragChangeSpeedPerSec =
       Reel.#numberOrDefault(options.dragChangeSpeedPerSec, 1.5);
+    this.#hasDrag = options.hasDrag !== false;
+    if (!this.#hasDrag) {
+      this.#dragMinKg = 0;
+      this.#dragMaxKg = 0;
+      this.#dragChangeSpeedPerSec = 0;
+    }
     this.#durability = Reel.#numberOrDefault(options.durability, 100);
     this.#durabilityMaxLoadLossPerPercent =
       Reel.#numberOrDefault(options.durabilityMaxLoadLossPerPercent, 0.001);
@@ -173,6 +193,10 @@ class Reel extends Equipment {
 
   getDragChangeSpeedPerSec() {
     return this.#dragChangeSpeedPerSec;
+  }
+
+  hasDrag() {
+    return this.#hasDrag;
   }
 
   getDragRangeKg() {

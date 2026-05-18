@@ -2,6 +2,7 @@ class TackleStressSystem {
   #rod;
   #reel;
   #lineSystem;
+  #leader;
   #config;
   #rng;
   #currentTensionKg = 0;
@@ -14,20 +15,22 @@ class TackleStressSystem {
   #currentStatusColor = "#4a5b6c";
   #isBroken = false;
   #breakReason = null;
+  #breakInfo = null;
   #overloadTimerMs = 0;
   #lastBreakProgress = 0;
   #debug = {};
 
-  constructor({ rod, reel, lineSystem, config, rng = null }) {
+  constructor({ rod, reel, lineSystem, leader = null, config, rng = null }) {
     this.#config = config || {};
     this.#rng = rng || { next: () => Math.random() };
-    this.updateEquipment({ rod, reel, lineSystem });
+    this.updateEquipment({ rod, reel, lineSystem, leader });
   }
 
-  updateEquipment({ rod, reel, lineSystem }) {
+  updateEquipment({ rod, reel, lineSystem, leader = null }) {
     this.#rod = rod;
     this.#reel = reel;
     this.#lineSystem = lineSystem;
+    this.#leader = leader;
     this.#refreshRatios();
   }
 
@@ -53,9 +56,14 @@ class TackleStressSystem {
       tensionKg: this.#currentTensionKg,
       targetTensionKg: this.#targetTensionKg,
       maxTackleLoadKg: this.getEffectiveMaxTackleLoadKg(),
+      rodMaxLoadKg: this.getEffectiveRodMaxLoadKg(),
+      lineMaxLoadKg: this.getEffectiveLineSystemMaxLoadKg(),
+      leaderMaxLoadKg: this.getEffectiveLeaderMaxLoadKg(),
+      reelMaxLoadKg: this.getEffectiveReelMaxLoadKg(),
       tensionRatio: this.#tensionRatio,
       tensionPercent: this.#tensionPercent,
       overloadProgress: this.#lastBreakProgress,
+      breakInfo: this.#breakInfo,
     };
   }
 
@@ -63,14 +71,15 @@ class TackleStressSystem {
     const values = [
       this.getEffectiveRodMaxLoadKg(),
       this.getEffectiveLineSystemMaxLoadKg(),
+      this.getEffectiveLeaderMaxLoadKg(),
     ]
       .map((value) => Number(value))
       .filter((value) => Number.isFinite(value) && value > 0);
 
     if (values.length === 0) return 1;
 
-    // The weakest available tackle part defines the safe player/tackle load.
-    // Example: rod 10kg + reel/line system 2kg => max load is 2kg.
+    // Reel load is deliberately not a breakable limit. A weak reel loses drag
+    // authority; the breakable failure still belongs to rod, main line or leader.
     return Math.min(...values);
   }
 
@@ -79,11 +88,17 @@ class TackleStressSystem {
   }
 
   getEffectiveLineSystemMaxLoadKg() {
-    const lineMax = this.#lineSystem?.getEffectiveLineMaxLoadKg?.() || 8;
-    const reelMax = this.#reel?.hasReel?.()
-      ? this.#reel.getEffectiveMaxLoadKg?.() || lineMax
-      : lineMax;
-    return this.#reel?.hasReel?.() ? Math.min(lineMax, reelMax) : lineMax;
+    return this.#lineSystem?.getEffectiveLineMaxLoadKg?.() || 8;
+  }
+
+  getEffectiveLeaderMaxLoadKg() {
+    if (!this.#leader) return Infinity;
+    return TackleStressSystem.effectiveItemMaxLoadKg(this.#leader, Infinity);
+  }
+
+  getEffectiveReelMaxLoadKg() {
+    if (!this.#reel?.hasReel?.()) return Infinity;
+    return this.#reel.getEffectiveMaxLoadKg?.() || this.#reel.getMaxLoadKg?.() || Infinity;
   }
 
   getTension() {
@@ -118,6 +133,10 @@ class TackleStressSystem {
     return this.#breakReason;
   }
 
+  getBreakInfo() {
+    return this.#breakInfo || { reason: this.#breakReason };
+  }
+
   getPulseIntensity(tensionConfig) {
     this.#pulsePhase +=
       Math.max(
@@ -142,6 +161,7 @@ class TackleStressSystem {
     this.#targetTensionKg = 0;
     this.#isBroken = false;
     this.#breakReason = null;
+    this.#breakInfo = null;
     this.#overloadTimerMs = 0;
     this.#lastBreakProgress = 0;
     this.#refreshRatios();
@@ -168,34 +188,40 @@ class TackleStressSystem {
     if (this.#lastBreakProgress >= 1) {
       this.#isBroken = true;
       this.#breakReason = this.#selectBreakReason();
+      this.#breakInfo = this.#createBreakInfo(this.#breakReason);
     }
   }
 
   #selectBreakReason() {
-    const rodMax = Math.max(0.001, this.getEffectiveRodMaxLoadKg());
-    const lineMax = Math.max(0.001, this.getEffectiveLineSystemMaxLoadKg());
-    const weights = [
-      { reason: "rod", weight: 1 / rodMax },
-      { reason: "line", weight: 1 / lineMax },
-    ];
+    const candidates = [
+      { reason: "rod", maxLoadKg: this.getEffectiveRodMaxLoadKg() },
+      { reason: "line", maxLoadKg: this.getEffectiveLineSystemMaxLoadKg() },
+      { reason: "leader", maxLoadKg: this.getEffectiveLeaderMaxLoadKg() },
+    ]
+      .filter((item) => Number.isFinite(item.maxLoadKg) && item.maxLoadKg > 0)
+      .sort((a, b) => a.maxLoadKg - b.maxLoadKg);
 
-    const reelMax = this.#reel?.hasReel?.()
-      ? this.#reel.getEffectiveMaxLoadKg?.() || Infinity
-      : Infinity;
-    if (Number.isFinite(reelMax) && this.#currentTensionKg > reelMax) {
-      weights.push({ reason: "reel", weight: 1 / Math.max(0.001, reelMax) });
+    return candidates[0]?.reason || "line";
+  }
+
+  #createBreakInfo(reason) {
+    const info = {
+      reason,
+      tensionKg: this.#currentTensionKg,
+      rodMaxLoadKg: this.getEffectiveRodMaxLoadKg(),
+      lineMaxLoadKg: this.getEffectiveLineSystemMaxLoadKg(),
+      leaderMaxLoadKg: this.getEffectiveLeaderMaxLoadKg(),
+      reelMaxLoadKg: this.getEffectiveReelMaxLoadKg(),
+      lineLossMeters: 0,
+    };
+
+    if (reason === "line") {
+      info.lineLossMeters = this.#lineSystem?.calculateBreakLossMeters?.({
+        rng: this.#rng,
+      }) || 0;
     }
 
-    const total = weights.reduce((sum, item) => sum + item.weight, 0);
-    let roll =
-      (typeof this.#rng.range === "function"
-        ? this.#rng.range(0, total)
-        : this.#rng.next() * total) || 0;
-    for (const item of weights) {
-      if (roll <= item.weight) return item.reason;
-      roll -= item.weight;
-    }
-    return "line";
+    return info;
   }
 
   #updateVisualStates(tensionConfig) {
@@ -216,6 +242,20 @@ class TackleStressSystem {
       this.#tensionPercent,
       tensionConfig?.colorGradient,
     );
+  }
+
+  static effectiveItemMaxLoadKg(item, fallback = 0) {
+    if (!item) return fallback;
+    const maxLoadKg = Number(item.maxLoadKg ?? item.engineStats?.maxLoadKg ?? fallback);
+    const durability = Number(item.durability ?? item.engineStats?.durability ?? 100);
+    const lossPerPercent = Number(
+      item.durabilityMaxLoadLossPerPercent ??
+        item.engineStats?.durabilityMaxLoadLossPerPercent ??
+        0.001,
+    );
+    if (!Number.isFinite(maxLoadKg) || maxLoadKg <= 0) return fallback;
+    const lostPercent = Math.max(0, 100 - (Number.isFinite(durability) ? durability : 100));
+    return maxLoadKg * Math.max(0.1, 1 - lostPercent * lossPerPercent);
   }
 
   static ratioGradientColor(value, gradient) {

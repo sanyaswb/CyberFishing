@@ -19,6 +19,7 @@ const ITEM_DB = {
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
+        castPowerCoefficient: "Сила закидання:",
         type: {
           label: "Тип",
           map: {
@@ -37,6 +38,7 @@ const ITEM_DB = {
         compensation: 0.6,
         accuracy: 70,
         lengthMeters: 2.4,
+        castPowerCoefficient: 0.54,
         maxLoadKg: 1,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
@@ -54,6 +56,7 @@ const ITEM_DB = {
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
+        castPowerCoefficient: "Сила закидання:",
         type: {
           label: "Тип",
           map: {
@@ -72,6 +75,7 @@ const ITEM_DB = {
         compensation: 0.4,
         accuracy: 85,
         lengthMeters: 3.6,
+        castPowerCoefficient: 0.66,
         maxLoadKg: 5,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
@@ -89,6 +93,7 @@ const ITEM_DB = {
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
+        castPowerCoefficient: "Сила закидання:",
         type: {
           label: "Тип",
           map: {
@@ -107,6 +112,7 @@ const ITEM_DB = {
         compensation: 0.2,
         accuracy: 60,
         lengthMeters: 2.0,
+        castPowerCoefficient: 1.0,
         maxLoadKg: 1,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
@@ -148,6 +154,39 @@ const ITEM_DB = {
         requiresTag: "reel",
       },
     },
+
+    reel_bolognese_nodrag: {
+      id: "reel_bolognese_nodrag",
+      name: "Інерційна котушка без фрикціону",
+      type: "spinning_reel",
+      icon: "⚙️",
+      displayStats: {
+        maxLoadKg: "Макс. навантаження: кг.",
+        lineCapacityMeters: "Ємність: м.",
+        dragMaxKg: "Фрикціон: кг.",
+        retrieveSpeedMetersPerSec: "Підмотка: м/с",
+        bearingCount: "Підшипники:",
+        hasDrag: {
+          label: "Фрикціон",
+          map: { true: "Є", false: "Немає" },
+        },
+        durability: "Стан: %",
+      },
+      engineStats: {
+        basePower: 0.6,
+        maxLoadKg: 1.5,
+        lineCapacityMeters: 18,
+        bearingCount: 1,
+        retrieveSpeedMetersPerSec: 0.55,
+        hasDrag: false,
+        dragMinKg: 0,
+        dragMaxKg: 0,
+        dragChangeSpeedPerSec: 0,
+        durability: 100,
+        durabilityMaxLoadLossPerPercent: 0.001,
+        requiresTag: "reel",
+      },
+    },
   },
 
   lines: {
@@ -158,12 +197,14 @@ const ITEM_DB = {
       icon: "🧵",
       displayStats: {
         lengthMeters: "Довжина: м.",
+        diameterMm: "Товщина: мм",
         maxLoadKg: "Макс. навантаження: кг.",
         durability: "Стан: %",
       },
       engineStats: {
         type: "fishing_line",
         lengthMeters: 13,
+        diameterMm: 0.22,
         maxLoadKg: 2,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
@@ -177,15 +218,39 @@ const ITEM_DB = {
       icon: "🧵",
       displayStats: {
         lengthMeters: "Довжина: м.",
+        diameterMm: "Товщина: мм",
         maxLoadKg: "Макс. навантаження: кг.",
         durability: "Стан: %",
       },
       engineStats: {
         type: "fishing_line",
         lengthMeters: 4,
+        diameterMm: 0.16,
         maxLoadKg: 1,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
+      },
+    },
+  },
+
+  leaders: {
+    leader_test_025: {
+      id: "leader_test_025",
+      name: "Тестовий поводок 0.25мм",
+      type: "leader_line",
+      icon: "🪢",
+      displayStats: {
+        diameterMm: "Товщина: мм",
+        maxLoadKg: "Макс. навантаження: кг.",
+        durability: "Стан: %",
+      },
+      engineStats: {
+        type: "leader_line",
+        diameterMm: 0.25,
+        maxLoadKg: 1.2,
+        durability: 100,
+        durabilityMaxLoadLossPerPercent: 0.001,
+        requiresTag: "line",
       },
     },
   },

@@ -72,6 +72,15 @@ class EquipmentService {
     return this.#inventory.consumeEquipped("line", 1);
   }
 
+  consumeLeader(eq = this.getEquipped()) {
+    if (!eq?.leader) return false;
+    return this.#inventory.consumeEquipped("leader", 1);
+  }
+
+  breakEquippedLine(lossMeters) {
+    return this.#inventory.breakEquippedLine?.(lossMeters) || false;
+  }
+
   consumeFeederChum(eq = this.getEquipped(), unequipAfterConsume = false) {
     if (!eq?.feederChum) return false;
     return this.#inventory.consumeEquipped(

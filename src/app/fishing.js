@@ -89,7 +89,7 @@ class FishingController {
     return this.#baitRules.hasActiveLureType(types);
   }
 
-  applyFailureEquipmentLoss(reason, eq) {
+  applyFailureEquipmentLoss(reason, eq, failure = {}) {
     if (this.#devFlags.isEnabled("noEquipmentLoss")) {
       console.log(
         "%c[GOD MODE] 🛡️ Снасті та наживку врятовано від втрати!",
@@ -101,11 +101,16 @@ class FishingController {
     if (
       reason === "rod" ||
       reason === "line" ||
+      reason === "leader" ||
       reason === "reel" ||
       reason === "hook" ||
       reason === "net_escape"
     ) {
       this.#equipment.consumeAllBaits(eq);
+    }
+
+    if (reason === "leader") {
+      this.#equipment.consumeAllHooks(eq);
     }
 
     if (reason === "rod" || reason === "line" || reason === "reel") {
@@ -119,12 +124,15 @@ class FishingController {
       this.#equipment.consumeRod(eq);
     }
 
-    if (reason === "reel" && eq?.reel) {
-      this.#equipment.consumeReel(eq);
+    if (reason === "leader" && eq?.leader) {
+      this.#equipment.consumeLeader(eq);
     }
 
     if (reason === "line" && eq?.line) {
-      this.#equipment.consumeLine(eq);
+      const lineLossMeters = Math.max(0, Number(failure?.lineLossMeters) || 0);
+      if (!this.#equipment.breakEquippedLine(lineLossMeters)) {
+        this.#equipment.consumeLine(eq);
+      }
     }
   }
 
@@ -281,6 +289,7 @@ class FightSessionFactory {
       equipment.rod?.hasReel !== false,
       {
         lengthMeters: equipment.rod?.lengthMeters,
+        castPowerCoefficient: equipment.rod?.castPowerCoefficient,
         maxLoadKg: equipment.rod?.maxLoadKg,
         durability: equipment.rod?.durability,
         durabilityMaxLoadLossPerPercent:
@@ -298,6 +307,7 @@ class FightSessionFactory {
             dragMinKg: equipment.reel.dragMinKg,
             dragMaxKg: equipment.reel.dragMaxKg,
             dragChangeSpeedPerSec: equipment.reel.dragChangeSpeedPerSec,
+            hasDrag: equipment.reel.hasDrag,
             durability: equipment.reel.durability,
             durabilityMaxLoadLossPerPercent:
               equipment.reel.durabilityMaxLoadLossPerPercent,
@@ -339,6 +349,7 @@ class FightSessionFactory {
       rod,
       reel,
       lineSystem,
+      leader: equipment.leader,
       config: this.config.tension,
       rng: this.rng,
     });
@@ -384,6 +395,7 @@ class FightSessionFactory {
       equipment.rod?.hasReel !== false,
       {
         lengthMeters: equipment.rod?.lengthMeters,
+        castPowerCoefficient: equipment.rod?.castPowerCoefficient,
         maxLoadKg: equipment.rod?.maxLoadKg,
         durability: equipment.rod?.durability,
         durabilityMaxLoadLossPerPercent:
@@ -401,6 +413,7 @@ class FightSessionFactory {
             dragMinKg: equipment.reel.dragMinKg,
             dragMaxKg: equipment.reel.dragMaxKg,
             dragChangeSpeedPerSec: equipment.reel.dragChangeSpeedPerSec,
+            hasDrag: equipment.reel.hasDrag,
             durability: equipment.reel.durability,
             durabilityMaxLoadLossPerPercent:
               equipment.reel.durabilityMaxLoadLossPerPercent,
@@ -663,6 +676,7 @@ class FightService {
       rod: this.#rod,
       reel: this.#reel,
       lineSystem: this.#lineSystem,
+      leader: equipment.leader,
     });
     this.#fishingSystem = this.#createDebugFishingAdapter();
     this.#staminaController.updatePlayerPower(
@@ -676,7 +690,10 @@ class FightService {
       return {
         transition: {
           name: "failed",
-          data: { reason: this.#tensionMeter.getBreakReason() },
+          data: {
+            reason: this.#tensionMeter.getBreakReason(),
+            failure: this.#tensionMeter.getBreakInfo?.(),
+          },
         },
       };
     }

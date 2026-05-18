@@ -257,6 +257,24 @@ class LineSystem {
     return this.#lineMaxLoadKg * Math.max(0.1, 1 - durabilityLoss);
   }
 
+  calculateBreakLossMeters({ rng = null } = {}) {
+    const released = Math.max(0, Number(this.#releasedMeters) || 0);
+    if (released <= 0) return 0;
+
+    const preserved = this.#randomRange(rng, 0, released);
+    return Math.max(0, released - preserved);
+  }
+
+  #randomRange(rng, min, max) {
+    if (rng && typeof rng.range === "function") {
+      const value = Number(rng.range(min, max));
+      if (Number.isFinite(value)) return Math.max(min, Math.min(max, value));
+    }
+
+    const roll = rng && typeof rng.next === "function" ? rng.next() : Math.random();
+    return min + Math.max(0, Math.min(1, Number(roll) || 0)) * (max - min);
+  }
+
   getState() {
     return {
       hasReel: this.#hasReel,

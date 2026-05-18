@@ -295,31 +295,22 @@ const stress = new TackleStressSystem({
   lineSystem: freeLine,
   rng: { next: () => 0.9 },
 });
-approx(stress.getEffectiveMaxTackleLoadKg(), 10, 0.001, "max tackle load is weakest tackle part");
+approx(stress.getEffectiveMaxTackleLoadKg(), 12, 0.001, "max tackle load ignores reel and uses weakest breakable part");
 stress.updateTarget(25, 1, { kgSmoothPerSecond: 999, overloadGraceMs: 0 });
 assert(stress.isBroken(), "overload break is deterministic");
+assert(stress.getBreakReason() === "line", "line breaks when line is the weakest breakable part");
+assert(stress.getBreakInfo().lineLossMeters >= 0, "line break records lost line length");
 
-let rodBreaks = 0;
-let lineBreaks = 0;
-let seed = 12345;
-function nextDeterministicRandom() {
-  seed = (seed * 48271) % 2147483647;
-  return seed / 2147483647;
-}
-for (let i = 1; i <= 6000; i++) {
-  const seq = nextDeterministicRandom();
-  const trialStress = new TackleStressSystem({
-    rod: strongRod,
-    reel: noReel,
-    lineSystem: noReelLine,
-    rng: { next: () => seq },
-  });
-  trialStress.updateTarget(30, 1, { kgSmoothPerSecond: 999, overloadGraceMs: 0 });
-  if (trialStress.getBreakReason() === "rod") rodBreaks++;
-  if (trialStress.getBreakReason() === "line") lineBreaks++;
-}
-const rodBreakRatio = rodBreaks / (rodBreaks + lineBreaks);
-assert(rodBreakRatio > 0.30 && rodBreakRatio < 0.36, "rod 24kg + line 12kg break ratio is near 33%");
+const leaderStress = new TackleStressSystem({
+  rod: strongRod,
+  reel: noReel,
+  lineSystem: noReelLine,
+  leader: { maxLoadKg: 6, durability: 100 },
+  rng: { next: () => 0.5 },
+});
+approx(leaderStress.getEffectiveMaxTackleLoadKg(), 6, 0.001, "leader lowers breakable tackle load");
+leaderStress.updateTarget(30, 1, { kgSmoothPerSecond: 999, overloadGraceMs: 0 });
+assert(leaderStress.getBreakReason() === "leader", "leader breaks when it is weaker than main line");
 
 const fish = new Fish(1, 2, 1, CONFIG.spawns.fishes[0].physics, { next: () => 0.5, range: (a, b) => (a + b) / 2 });
 const fishForce = new FishForceSystem({ fish, config: CONFIG });

@@ -19,8 +19,13 @@ const SLOT_CONFIG = {
   },
   line: {
     type: "single",
-    dependencies: [],
+    dependencies: ["leader"],
     acceptTypes: ["fishing_line"],
+  },
+  leader: {
+    type: "single",
+    dependencies: ["hooks", "baits"],
+    acceptTypes: ["leader_line"],
   },
   float: {
     type: "single",
@@ -75,6 +80,7 @@ const UI_LAYOUT_CONFIG = [
     slots: [
       { id: "reel", label: "Котушка" },
       { id: "line", label: "Ліска" },
+      { id: "leader", label: "Поводок" },
       { id: "float", label: "Поплавок" },
       { id: "sinker", label: "Оснастка" },
       { id: "hooks", label: "Гачок", dynamicCount: true },
@@ -101,7 +107,7 @@ const INVENTORY_CATEGORIES = [
     acceptTypes: ["spinning", "feeder", "float", "pole"],
   },
   { id: "reels", label: "⚙️ Котушки", acceptTypes: ["spinning_reel"] },
-  { id: "lines", label: "🧵 Ліски", acceptTypes: ["fishing_line"] },
+  { id: "lines", label: "🧵 Ліски", acceptTypes: ["fishing_line", "leader_line"] },
   {
     id: "tackle",
     label: "🪢 Оснастка",
@@ -131,6 +137,7 @@ const SUBFILTER_MAPPING = {
   pole: "Махові",
   spinning_reel: "Котушки",
   fishing_line: "Ліски",
+  leader_line: "Поводки",
   float_tackle: "Поплавки",
   day: "Поплавки",
   night: "Поплавки",
@@ -361,8 +368,10 @@ const CONFIG = {
       { instanceId: "uuid-rod-feeder", itemId: "rod_test_feeder" },
       { instanceId: "uuid-rod-float", itemId: "rod_test_float", quantity: 3 },
       { instanceId: "uuid-reel", itemId: "reel_test" },
+      { instanceId: "uuid-reel-nodrag", itemId: "reel_bolognese_nodrag" },
       { instanceId: "uuid-line", itemId: "line_test_13m" },
       { instanceId: "uuid-line-short", itemId: "line_test_4m" },
+      { instanceId: "uuid-leader", itemId: "leader_test_025" },
       { instanceId: "uuid-float", itemId: "float_day" },
       { instanceId: "uuid-sinker", itemId: "sinker_light", quantity: 2 },
       { instanceId: "uuid-spring", itemId: "feeder_spring_basic" },
