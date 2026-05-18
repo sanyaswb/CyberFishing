@@ -195,8 +195,11 @@ class InputManager {
 
       if (this.#longPressTimeout) clearTimeout(this.#longPressTimeout);
       this.#longPressTimeout = setTimeout(() => {
-        if (!this.#isDragging) {
-          this.#longPressPos = { x: e.clientX, y: e.clientY };
+        if (this.#canTriggerLongPress()) {
+          this.#longPressPos = {
+            x: this.#currentPointerX,
+            y: this.#currentPointerY,
+          };
           this.#hasLongPressed = true;
         }
       }, CONFIG.input?.longPressMs ?? 650);
@@ -214,7 +217,9 @@ class InputManager {
       );
       if (dist > 5) {
         this.#isDragging = true;
-        if (this.#longPressTimeout) clearTimeout(this.#longPressTimeout);
+        if (dist > this.#getLongPressMoveTolerancePx()) {
+          this.#clearLongPressTimeout();
+        }
       }
 
       if (this.#isDragging) {
@@ -230,6 +235,7 @@ class InputManager {
       }
 
       this.#updateDragControlState();
+      if (this.#isDragControlActive) this.#clearLongPressTimeout();
       this.#updatePointerPullState(Date.now());
       this.#updateDirection(e);
     });
@@ -409,6 +415,29 @@ class InputManager {
       this.#pointerAction = PointerAction.DRAG_CONTROL;
       this.#isPulling = false;
     }
+  }
+
+  #getLongPressMoveTolerancePx() {
+    return Math.max(
+      5,
+      Number(CONFIG.input?.longPressMoveTolerancePx) ||
+        Number(CONFIG.input?.dragControlActivationPx) ||
+        30,
+    );
+  }
+
+  #canTriggerLongPress() {
+    if (!this.#isPointerDown || this.#isDragControlActive) return false;
+
+    const dx = this.#currentPointerX - this.#startX;
+    const dy = this.#currentPointerY - this.#startY;
+    return Math.hypot(dx, dy) <= this.#getLongPressMoveTolerancePx();
+  }
+
+  #clearLongPressTimeout() {
+    if (!this.#longPressTimeout) return;
+    clearTimeout(this.#longPressTimeout);
+    this.#longPressTimeout = null;
   }
 
   #updatePointerPullState(now = Date.now()) {

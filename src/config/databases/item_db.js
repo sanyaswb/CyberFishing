@@ -211,9 +211,9 @@ const ITEM_DB = {
       },
     },
 
-    line_test_4m: {
-      id: "line_test_4m",
-      name: "Коротка ліска 4м",
+    line_test_3m: {
+      id: "line_test_3m",
+      name: "Коротка ліска 3м",
       type: "fishing_line",
       icon: "🧵",
       displayStats: {
@@ -224,7 +224,7 @@ const ITEM_DB = {
       },
       engineStats: {
         type: "fishing_line",
-        lengthMeters: 4,
+        lengthMeters: 3,
         diameterMm: 0.16,
         maxLoadKg: 1,
         durability: 100,

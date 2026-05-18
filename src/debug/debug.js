@@ -390,7 +390,10 @@ function renderRodPullModule(ctx) {
   const live = ctx.live || {};
   console.table({
     "Rod pull active": live.rodPullActive === true,
-    "Active pull force kg": fmt(live.activeRodPullForceKg ?? live.rodPullForceKg, 3),
+    "Active pull force kg": fmt(
+      live.activeRodPullForceKg ?? live.rodPullForceKg,
+      3,
+    ),
     "Fish force kg": fmt(live.fishForceKg ?? live.totalFishForceKg, 3),
     "Max tackle load kg": fmt(live.maxTackleLoadKg, 3),
     "Drag limit kg": fmt(live.dragLimitKg, 3),
@@ -404,7 +407,7 @@ function renderRodPullModule(ctx) {
     "Slack penalty": fmt(live.slackPenaltyMeters, 2),
     "Reel recovering slack": live.reelRecoveringSlack === true,
     "Hard line limit": live.hardLineLimit === true,
-    "Result": live.rodPullCanMoveFish ? "MOVING_FISH" : "NO_PULL",
+    Result: live.rodPullCanMoveFish ? "MOVING_FISH" : "NO_PULL",
     "Blocked reason": live.rodPullBlockedReason || "none",
   });
 }
@@ -881,7 +884,7 @@ class TestBuildProvider {
       },
       {
         instanceId: "debug_line_001",
-        itemId: "line_test_13m",
+        itemId: "line_test_3m",
         quantity: 1,
         buildId: boxInstanceId,
       },
@@ -930,12 +933,6 @@ class TestBuildProvider {
       {
         instanceId: "debug_reel_test_002",
         itemId: "reel_test",
-        quantity: 1,
-        buildId: boxInstanceId2,
-      },
-      {
-        instanceId: "debug_carp_mix_basic_004",
-        itemId: "carp_mix_basic",
         quantity: 1,
         buildId: boxInstanceId2,
       },

@@ -470,7 +470,14 @@ const CONFIG = {
       defaultMaxLoadKg: 12,
       durabilityMaxLoadLossPerPercent: 0.001,
       rodLengthReserveMultiplier: 1.0,
-      noReelExtraLengthMeters: 0,
+
+      // Махова вудка: мінімум — приблизно довжина вудки,
+      // максимум — довжина вудки + запас для монтажу/вузлів.
+      noReelMinRodLengthMultiplier: 1.0,
+      noReelExtraLengthMeters: 1.0,
+
+      // Legacy fallback. Залишено для старих build/config, але нова логіка
+      // використовує noReelMinRodLengthMultiplier + noReelExtraLengthMeters.
       noReelRodLengthMultiplier: 2.0,
       fullExtensionTensionMultiplier: 1.0,
       slackTensionMultiplier: 0.0,
@@ -509,11 +516,42 @@ const CONFIG = {
       minChargeSpeedMultiplier: 0.12,
       loadChargePower: 1.0,
     },
+    fishRetrieve: {
+      enabled: true,
+      staticResistanceByWeightKg: 0.8,
+      minStaticResistanceKg: 0.03,
+      waterLinearDragKgPerKgPerMps: 0.8,
+      waterQuadraticDragKgPerKgPerMps2: 2.5,
+      baseTerminalSpeedMps: 1.4,
+      lightFishTerminalSpeedBonus: 0.4,
+      heavyFishTerminalSpeedPenalty: 0.25,
+      maxUsefulPullByWeightMultiplier: 8.0,
+      minUsefulPullKg: 0.6,
+      maxUsefulPullKg: 3.0,
+      balanceEpsilonKg: 0.01,
+      blockedMovementConvertsSurplusToTension: true,
+    },
+    poleIdleRetrieve: {
+      speedMetersPerSecond: 1.2,
+      waterFrictionMultiplier: 0.15,
+    },
     reel: {
       autoRecoverSlack: true,
     },
     catchZone: {
+      // Legacy/global fallback для старого коду та снастей з котушкою.
       landingDistanceMeters: 1.0,
+
+      reel: {
+        landingDistanceMeters: 1.0,
+      },
+
+      pole: {
+        landingDistanceByRodLength: 1.0,
+        minLandingDistanceMeters: 1.2,
+        maxLandingDistanceMeters: 3.0,
+      },
+
       rollIntervalMs: 1000,
       guaranteedWeightRatio: 0.2,
       maxLoadWeightRatio: 1.0,

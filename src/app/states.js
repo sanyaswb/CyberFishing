@@ -818,13 +818,21 @@ class WaitingState extends GameState {
       panViewport: deps.commands.panViewport,
       rng: deps.rng,
     });
+    this.#landingPolicyResolver = new LandingPolicyResolver();
+    this.#idleRetrievePolicyResolver = new IdleRetrievePolicyResolver();
   }
 
-  #effectiveInput = { isPulling: false, pullDirection: null };
+  #effectiveInput = {
+    isPulling: false,
+    pullDirection: null,
+    idleRetrieveParams: null,
+  };
   #pullDirection = new Vector2(0, 0);
   #baitIds = [];
   #baitTypes = [];
   #recastAim;
+  #landingPolicyResolver;
+  #idleRetrievePolicyResolver;
   #isRecastAiming = false;
   #pendingRecast = null;
 
@@ -845,9 +853,8 @@ class WaitingState extends GameState {
     }
 
     const eq = this.deps.inventory.getEquipped();
-    const isSpinning = this.deps.rules.equipment.isSpinning(eq);
 
-    if (!isSpinning && input.longPressPos && this.deps.canPlayerCast()) {
+    if (input.longPressPos && this.deps.canPlayerCast()) {
       if (this.#usePowerCasting()) {
         this.#isRecastAiming = true;
         input.longPressPos = null;
@@ -873,6 +880,9 @@ class WaitingState extends GameState {
     const effectiveInput = this.#effectiveInput;
     effectiveInput.isPulling = this.#isRecastAiming ? false : input.isPulling;
     effectiveInput.pullDirection = input.pullDirection;
+    effectiveInput.idleRetrieveParams = effectiveInput.isPulling
+      ? this.#getIdleRetrieveParams(eq)
+      : null;
 
     let pullDirection = null;
     if (effectiveInput.isPulling) {
@@ -893,12 +903,8 @@ class WaitingState extends GameState {
     );
 
     const updatedPos = this.deps.float.getPosition();
-    const shoreY =
-      bounds.bottom -
-      (this.deps.config.locations.catchLineOffsetPx || 5) /
-        this.deps.projector.getScale();
 
-    if (isSpinning && updatedPos.y >= shoreY) {
+    if (this.#isEmptyTackleLandingComplete(updatedPos, bounds, eq, isSpinning)) {
       this.deps.commands.setState("scouting");
       return;
     }
@@ -993,6 +999,7 @@ class WaitingState extends GameState {
     );
     const visual = this.#recastAim.getVisualState();
     if (visual) {
+      const eq = this.deps.inventory.getEquipped();
       const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
       this.#drawRecastAccuracyPreview(renderer, bounds);
       renderer.drawCastPowerAim(
@@ -1122,6 +1129,51 @@ class WaitingState extends GameState {
   #isCancelledRelease(release) {
     const threshold = this.deps.config.casting?.cancelPowerThreshold ?? 0;
     return release.power <= threshold;
+  }
+
+  #isEmptyTackleLandingComplete(position, bounds, eq, isSpinning) {
+    const landingDistanceMeters = this.#getLandingDistanceMeters(eq);
+    if (landingDistanceMeters <= 0) return false;
+
+    const rodPos = this.deps.world.getRodVirtualPos(bounds);
+    const pixelsPerMeter =
+      Math.max(1, Number(this.deps.config.physics?.pixelsPerMeter) || 50);
+    const distanceMeters =
+      Math.hypot(position.x - rodPos.x, position.y - rodPos.y) / pixelsPerMeter;
+
+    if (distanceMeters <= landingDistanceMeters + 0.001) return true;
+
+    if (!isSpinning) return false;
+
+    const shoreY =
+      bounds.bottom -
+      (this.deps.config.locations.catchLineOffsetPx || 5) /
+        this.deps.projector.getScale();
+    return position.y >= shoreY;
+  }
+
+  #getLandingDistanceMeters(eq) {
+    const policy = this.#landingPolicyResolver.resolve({
+      rod: eq?.rod,
+      reel: eq?.reel,
+    });
+    return policy.getLandingDistanceMeters({
+      rod: eq?.rod,
+      reel: eq?.reel,
+      config: this.deps.config,
+    });
+  }
+
+  #getIdleRetrieveParams(eq) {
+    const policy = this.#idleRetrievePolicyResolver.resolve({
+      rod: eq?.rod,
+      reel: eq?.reel,
+    });
+    return policy.getRetrieveParams({
+      rod: eq?.rod,
+      reel: eq?.reel,
+      config: this.deps.config,
+    });
   }
 
   #drawRecastAccuracyPreview(renderer, bounds) {

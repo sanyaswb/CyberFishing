@@ -55,12 +55,17 @@ class CastDistanceCalculator {
       this.#readNumber(rod, "lengthMeters", "getLengthMeters"),
       2.0,
     );
-    const multiplierKey = hasReel
-      ? "rodLengthReserveMultiplier"
-      : "noReelRodLengthMultiplier";
+    if (hasReel) {
+      const multiplier = this.#numberOrDefault(
+        this.#lineConfig.rodLengthReserveMultiplier,
+        1.0,
+      );
+      return Math.max(0, rodLength * multiplier);
+    }
+
     const multiplier = this.#numberOrDefault(
-      this.#lineConfig[multiplierKey],
-      2.0,
+      this.#lineConfig.noReelMinRodLengthMultiplier,
+      1.0,
     );
     return Math.max(0, rodLength * multiplier);
   }

@@ -277,13 +277,15 @@ class FightPhysicsModule extends OverlayModule {
     const lineRemaining = Math.max(0, Number(d.lineRemainingMeters) || 0);
     const lineMaxRemaining = Math.max(0, Number(d.lineMaxRemainingMeters) || 0);
     const lineReserveColor = lineRemaining <= 0.001 ? "#ff4444" : "#8a9bac";
+    const rodStrokeUsed = Math.max(0, Number(d.rodStrokeUnrecoveredMeters) || 0);
+    const rodStrokeCapacity = Math.max(0, Number(d.rodStrokeCapacityMeters) || 0);
 
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Натяг:</span><span style="color:#ffaa00; font-weight:bold;">${(d.tensionKg || 0).toFixed(2)} / ${(d.maxTackleLoadKg || 0).toFixed(2)} кг</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Фрикціон:</span><span style="color:#00ccff; font-weight:bold;">${(d.dragPercent || 0).toFixed(0)}% / ${(d.dragLimitKg || 0).toFixed(2)} кг</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Випущено ліски:</span><span style="color:#00ff80;">${(d.lineReleasedMeters || 0).toFixed(1)}м / ${(d.lineTotalLengthMeters || 0).toFixed(1)}м</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Залишок ліски:</span><span style="color:${lineReserveColor}; font-weight:bold;">${lineRemaining.toFixed(1)}м / ${lineMaxRemaining.toFixed(1)}м</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Дистанція до риби:</span><span style="color:#8a9bac;">${(d.lineDistanceMeters || 0).toFixed(1)}м</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Провисання:</span><span style="color:#8a9bac;">${(d.lineSlackMeters || 0).toFixed(1)}м</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Хід вудки:</span><span style="color:#8a9bac;">${rodStrokeUsed.toFixed(1)}м / ${rodStrokeCapacity.toFixed(1)}м</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Ліска на межі:</span><span style="color:${d.isLineFullyExtended ? "#ff4444" : "#00ff80"}; font-weight:bold;">${d.isLineFullyExtended ? "ТАК" : "НІ"}</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:12px;"><span>Штраф кута:</span><span style="color:#ffaa00;">x${(d.anglePenalty || 1).toFixed(2)} (${(d.angleDeg || 0).toFixed(0)}°)</span></div>`;
     return html;

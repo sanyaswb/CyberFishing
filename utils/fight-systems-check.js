@@ -8,6 +8,8 @@ const FILES = [
   "src/core/casting_distance.js",
   "src/config/databases/fish_db.js",
   "src/config/config.js",
+  "src/core/fishing/fish_retrieve_result.js",
+  "src/core/fishing/fish_pull_resistance_model.js",
   "src/entities/tackle.js",
   "src/entities/fish.js",
   "src/systems/drag_system.js",
@@ -170,9 +172,9 @@ approx(
     { type: "pole", lengthMeters: 3.6, hasReel: false },
     false,
   ),
-  7.2,
+  3.6,
   0.001,
-  "no-reel rod base rig length keeps rod length multiplier",
+  "no-reel rod base rig length uses minimum pole line length",
 );
 approx(
   poleReserveLine.getState().releasedMeters,

@@ -453,11 +453,17 @@ class LineCompatibilityRules {
       rod?.lengthMeters ?? rod?.engineStats?.lengthMeters,
       0,
     );
-    const multiplierKey = this.rodRequiresReel(rod)
-      ? "rodLengthReserveMultiplier"
-      : "noReelRodLengthMultiplier";
+
+    if (this.rodRequiresReel(rod)) {
+      const multiplier = this.#numberOrDefault(
+        this.#lineConfig.rodLengthReserveMultiplier,
+        1,
+      );
+      return Math.max(0, rodLength * multiplier);
+    }
+
     const multiplier = this.#numberOrDefault(
-      this.#lineConfig[multiplierKey],
+      this.#lineConfig.noReelMinRodLengthMultiplier,
       1,
     );
     return Math.max(0, rodLength * multiplier);
@@ -469,11 +475,11 @@ class LineCompatibilityRules {
       rod?.lengthMeters ?? rod?.engineStats?.lengthMeters,
       0,
     );
-    const multiplier = this.#numberOrDefault(
-      this.#lineConfig.noReelRodLengthMultiplier,
-      2,
+    const extraMeters = this.#numberOrDefault(
+      this.#lineConfig.noReelExtraLengthMeters,
+      1,
     );
-    return Math.max(0, rodLength * multiplier);
+    return Math.max(0, rodLength + extraMeters);
   }
 
   rodRequiresReel(rod) {

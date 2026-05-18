@@ -130,6 +130,7 @@ class FishForceSystem {
 
     this.#debug = {
       fishState: behavior.name,
+      fishWeightKg: this.#fish.getWeight(),
       fishBasePower: staticForceKg,
       fishInitialPower: this.#fish.getInitialPower?.() || staticForceKg,
       pullMult: behaviorPowerRatio,
@@ -174,6 +175,8 @@ class FishForceSystem {
     return {
       behavior,
       targetVelocity: this.#targetVelocity,
+      fishWeightKg: this.#fish.getWeight(),
+      fishPhysicsConfig: fishPhysics,
       staticFishForceKg: staticForceKg,
       dynamicFishForceKg: dynamicForceKg,
       totalFishForceKg,

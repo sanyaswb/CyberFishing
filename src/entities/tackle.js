@@ -444,15 +444,43 @@ class WaterEntity {
     );
   }
 
-  _applyPassiveRetrieve(dt, pullDirection) {
-    const physics = CONFIG.physics || {};
-    this._applyRetrieveForce(
-      dt,
-      pullDirection,
-      physics.passiveRetrievePower ?? 1.0,
-      physics.passiveRetrieveMultiplier ?? 35,
-      physics.passiveRetrieveWaterFriction ?? 0.35,
+  _applyRetrieveSpeed(dt, pullDirection, targetSpeedPxPerSec, waterFrictionMultiplier = 0) {
+    if (!pullDirection) return;
+    const dtSec = this._getClampedDtSec(dt);
+    const targetSpeed =
+      Math.max(0, Number(targetSpeedPxPerSec) || 0) *
+      Math.max(0, 1 - (Number(waterFrictionMultiplier) || 0));
+    const damping = this._getVelocityDamping(dtSec);
+    const force = targetSpeed * (1 - damping);
+
+    this.applyForce(
+      this._forceScratch.set(
+        pullDirection.x * force,
+        pullDirection.y * force,
+      ),
     );
+  }
+
+  _applyPassiveRetrieve(dt, pullDirection, retrieveParams = null) {
+    const physics = CONFIG.physics || {};
+    if (Number.isFinite(Number(retrieveParams?.targetSpeedPxPerSec))) {
+      this._applyRetrieveSpeed(
+        dt,
+        pullDirection,
+        retrieveParams.targetSpeedPxPerSec,
+        retrieveParams.waterFrictionMultiplier,
+      );
+    } else {
+      this._applyRetrieveForce(
+        dt,
+        pullDirection,
+        retrieveParams?.power ?? physics.passiveRetrievePower ?? 1.0,
+        retrieveParams?.multiplier ?? physics.passiveRetrieveMultiplier ?? 35,
+        retrieveParams?.waterFriction ??
+          physics.passiveRetrieveWaterFriction ??
+          0.35,
+      );
+    }
 
     const dtSec = this._getClampedDtSec(dt);
     this._currentHookDepth = Math.max(
@@ -1255,7 +1283,7 @@ class FeederEntity extends WaterEntity {
 
   _processMechanics(dt, input, reelPower, pullDirection) {
     if (input.isPulling && pullDirection) {
-      this._applyPassiveRetrieve(dt, pullDirection);
+      this._applyPassiveRetrieve(dt, pullDirection, input.idleRetrieveParams);
       return;
     }
 
@@ -1406,7 +1434,7 @@ class FloatEntity extends WaterEntity {
 
     if (isPulling) {
       this._advanceSinkingVisual(dt);
-      this._applyPassiveRetrieve(dt, pullDirection);
+      this._applyPassiveRetrieve(dt, pullDirection, input.idleRetrieveParams);
       this._syncSinkingAngleToDepth();
       return;
     }

@@ -498,6 +498,11 @@ class FishingForceService {
 
 class CatchResolutionService {
   #landingRollTimerMs = 0;
+  #landingPolicyResolver;
+
+  constructor({ landingPolicyResolver = null } = {}) {
+    this.#landingPolicyResolver = landingPolicyResolver || new LandingPolicyResolver();
+  }
 
   reset() {
     this.#landingRollTimerMs = 0;
@@ -510,12 +515,19 @@ class CatchResolutionService {
     dtMs,
     rng,
     config,
+    rod = null,
+    reel = null,
   }) {
     const cfg = config?.physics?.catchZone || {};
-    const landingDistanceMeters = Math.max(
-      0,
-      Number(cfg.landingDistanceMeters) || 1,
-    );
+    const landingPolicy = this.#landingPolicyResolver.resolve({ rod, reel });
+    const landingDistanceMeters = landingPolicy.getLandingDistanceMeters({
+      rod,
+      reel,
+      config,
+      lineDistanceMeters,
+      fishData,
+      maxTackleLoadKg,
+    });
     const distanceMeters = Math.max(0, Number(lineDistanceMeters) || Infinity);
     if (distanceMeters > landingDistanceMeters) {
       this.#landingRollTimerMs = 0;
@@ -539,6 +551,8 @@ class CatchResolutionService {
       chance,
       roll,
       success,
+      landingDistanceMeters,
+      landingPolicy: landingPolicy.constructor?.name || "LandingPolicy",
       transition: success
         ? { name: "victory", data: { fish: fishData } }
         : null,
@@ -744,6 +758,8 @@ class FightService {
       dtMs: dt,
       rng: this.#rng,
       config: this.#config,
+      rod: this.#rod,
+      reel: this.#reel,
     });
     if (resolution.transition) return { transition: resolution.transition };
     return {};

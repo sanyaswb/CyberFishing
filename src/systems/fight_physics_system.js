@@ -1,11 +1,16 @@
 class FightPhysicsSystem {
   #config;
   #velocityScratch = new Vector2(0, 0);
+  #waterProbePoint = { x: 0, y: 0 };
   #slackCalculator = new SlackCalculator();
+  #fishRetrieveSystem;
   #debug = {};
 
   constructor(config) {
     this.#config = config || {};
+    this.#fishRetrieveSystem = new FishRetrieveSystem(
+      this.#config.physics?.fishRetrieve || {},
+    );
   }
 
   step({
@@ -70,6 +75,7 @@ class FightPhysicsSystem {
       rod,
       lineSystem,
       rodPullSystem,
+      fishRetrieveSystem: this.#fishRetrieveSystem,
       forceData,
       dragContext,
       physics,
@@ -80,6 +86,7 @@ class FightPhysicsSystem {
       tensionSystem,
       forceData,
       rodPullResult: rodPullFrame.rodPullResult,
+      fishRetrieveResult: rodPullFrame.fishRetrieveResult,
       dragContext,
       lineState: rodPullFrame.lineStateAfterPull,
       hardLineLimit: rodPullFrame.hardLineLimitBeforeRelease,
@@ -112,6 +119,7 @@ class FightPhysicsSystem {
       stressSystem,
       forceData,
       rodPullResult: rodPullFrame.rodPullResult,
+      fishRetrieveResult: rodPullFrame.fishRetrieveResult,
       dragContext,
       lineState: lineLimit.lineState,
       hardLineLimit: lineLimit.hardLineLimit,
@@ -132,6 +140,7 @@ class FightPhysicsSystem {
       rodPullDisplay,
       rodPullResult: rodPullFrame.rodPullResult,
       rodPullMoveMeters: rodPullFrame.rodPullMoveMeters,
+      fishRetrieveResult: rodPullFrame.fishRetrieveResult,
       tensionResult,
       stressSystem,
       physics,
@@ -257,6 +266,7 @@ class FightPhysicsSystem {
     rod,
     lineSystem,
     rodPullSystem,
+    fishRetrieveSystem,
     forceData,
     dragContext,
     physics,
@@ -284,14 +294,45 @@ class FightPhysicsSystem {
       lineHasReserve: this.#lineHasReserve(lineStateBeforePull),
       fishDistanceMeters: lineStateBeforePull.distanceMeters,
     });
+    const retrievePreview = fishRetrieveSystem.calculate({
+      dtSec,
+      rodPullResult,
+      forceData,
+      movementBlocked: !!lineStateBeforePull.isFullyExtended,
+    });
+    const remainingStrokeMeters = Math.max(
+      0,
+      (Number(rodPullResult.maxDistanceMeters) || 0) -
+        (Number(rodPullResult.rodStrokeUsedMeters) || 0),
+    );
+    const hasUsefulDemand =
+      rodPullResult.active &&
+      rodPullResult.forceKg > (physics.rodStroke?.minEffectivePullKg ?? 0.01);
+    const desiredMoveMeters = hasUsefulDemand
+      ? Math.min(remainingStrokeMeters, retrievePreview.desiredMoveMeters)
+      : 0;
     const rodPullMoveMeters = this.#applyRodPullMovement({
       floatEntity,
       rodTipPosition,
-      deltaMeters: rodPullResult.canMoveFish ? rodPullResult.deltaMeters : 0,
+      deltaMeters: desiredMoveMeters,
       pixelsPerMeter: physics.pixelsPerMeter || 50,
       bounds,
       checkWater,
     });
+    const movementBlocked =
+      desiredMoveMeters > rodPullMoveMeters + 0.001 ||
+      !!lineStateBeforePull.isFullyExtended;
+    const fishRetrieveResult = fishRetrieveSystem
+      .calculate({
+        dtSec,
+        rodPullResult,
+        forceData,
+        movementBlocked,
+      })
+      .withAppliedMovement({
+        appliedMoveMeters: rodPullMoveMeters,
+        movementBlocked,
+      });
     rodPullSystem.recordAppliedStroke?.({ movedMeters: rodPullMoveMeters });
     const lineStateAfterPull = lineSystem.updateDistance(
       floatEntity.getPosition(),
@@ -303,6 +344,7 @@ class FightPhysicsSystem {
       lineStateAfterPull,
       slackMeters,
       rodPullResult,
+      fishRetrieveResult,
       rodPullMoveMeters,
       hardLineLimitBeforeRelease: !!lineStateAfterPull.isFullyExtended,
     };
@@ -313,6 +355,7 @@ class FightPhysicsSystem {
     stressSystem,
     forceData,
     rodPullResult,
+    fishRetrieveResult,
     dragContext,
     lineState,
     hardLineLimit,
@@ -322,6 +365,7 @@ class FightPhysicsSystem {
       tensionSystem,
       forceData,
       rodPullResult,
+      fishRetrieveResult,
       dragContext,
       lineState,
       hardLineLimit,
@@ -335,14 +379,15 @@ class FightPhysicsSystem {
     tensionSystem,
     forceData,
     rodPullResult,
+    fishRetrieveResult,
     dragContext,
     lineState,
     hardLineLimit,
   }) {
     const lineHasReserve = this.#lineHasReserve(lineState);
     return tensionSystem.calculate({
-      fishForceKg: forceData.totalFishForceKg,
-      rodPullForceKg: rodPullResult.forceKg,
+      fishForceKg: fishRetrieveResult?.lineTensionKg ?? forceData.totalFishForceKg,
+      rodPullForceKg: fishRetrieveResult ? 0 : rodPullResult.forceKg,
       dragLimitKg: dragContext.effectiveDragLimitKg,
       hardLineLimit: !!hardLineLimit,
       lineHasReserve,
@@ -429,6 +474,7 @@ class FightPhysicsSystem {
     rodPullDisplay,
     rodPullResult,
     rodPullMoveMeters,
+    fishRetrieveResult,
     tensionResult,
     stressSystem,
     physics,
@@ -462,6 +508,21 @@ class FightPhysicsSystem {
       rodPullActive: rodPullDisplay.active,
       rodPullRatio: rodPullDisplay.ratio,
       rodPullForceKg: rodPullResult.forceKg,
+      playerDemandForceKg: fishRetrieveResult?.playerDemandForceKg ?? rodPullResult.forceKg,
+      fishActiveForceAwayKg: fishRetrieveResult?.fishActiveForceAwayKg,
+      fishStaticResistanceKg: fishRetrieveResult?.fishStaticResistanceKg,
+      fishOppositionKg: fishRetrieveResult?.fishOppositionKg,
+      fishRetrieveWaterDragKg: fishRetrieveResult?.waterDragKg,
+      fishRetrieveUsefulPullForceKg: fishRetrieveResult?.usefulPullForceKg,
+      fishRetrieveSpeedMps: fishRetrieveResult?.retrieveSpeedMetersPerSecond,
+      fishRetrieveTerminalSpeedMps: fishRetrieveResult?.terminalRetrieveSpeedMetersPerSecond,
+      fishRetrieveTerminalReached: fishRetrieveResult?.terminalSpeedReached,
+      fishRetrieveSurplusForceKg: fishRetrieveResult?.surplusForceKg,
+      fishRetrieveLineTensionKg: fishRetrieveResult?.lineTensionKg,
+      fishRetrieveBalanceState: fishRetrieveResult?.balanceState,
+      fishRetrieveMovementBlocked: fishRetrieveResult?.movementBlocked,
+      fishRetrieveDesiredMoveMeters: fishRetrieveResult?.desiredMoveMeters,
+      fishRetrieveAppliedMoveMeters: fishRetrieveResult?.appliedMoveMeters,
       rodPullDistanceMeters: rodPullDisplay.distanceMeters,
       rodPullMaxDistanceMeters: rodPullDisplay.maxDistanceMeters,
       rodPullAvailableDistanceMeters: rodPullDisplay.availableDistanceMeters,
@@ -552,13 +613,49 @@ class FightPhysicsSystem {
     );
 
     if (typeof checkWater === "function" && !checkWater(next.x, next.y)) {
-      return 0;
+      const waterEdgePoint = this.#findLastWaterPoint({
+        from: position,
+        to: next,
+        checkWater,
+      });
+      if (!waterEdgePoint) return 0;
+      next.x = waterEdgePoint.x;
+      next.y = waterEdgePoint.y;
     }
 
     const appliedPx = Math.hypot(next.x - position.x, next.y - position.y);
     position.x = next.x;
     position.y = next.y;
     return appliedPx / scale;
+  }
+
+  #findLastWaterPoint({ from, to, checkWater }) {
+    if (!checkWater(from.x, from.y)) return null;
+
+    let low = 0;
+    let high = 1;
+    let found = false;
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+
+    for (let i = 0; i < 8; i++) {
+      const t = (low + high) * 0.5;
+      const x = from.x + dx * t;
+      const y = from.y + dy * t;
+
+      if (checkWater(x, y)) {
+        low = t;
+        found = true;
+      } else {
+        high = t;
+      }
+    }
+
+    if (!found || low <= 0.0001) return null;
+
+    this.#waterProbePoint.x = from.x + dx * low;
+    this.#waterProbePoint.y = from.y + dy * low;
+    return this.#waterProbePoint;
   }
 
   #clampToBounds(point, bounds) {
