@@ -515,6 +515,9 @@ const CONFIG = {
       finalLandingDistanceMeters: 0.5,
       minChargeSpeedMultiplier: 0.12,
       loadChargePower: 1.0,
+      // Max stable hold demand. 100% tension is reserved for guaranteed break/failure,
+      // so normal hold must not use the full breakable tackle load by itself.
+      controlledPullLimitRatio: 0.85,
     },
     fishRetrieve: {
       enabled: true,
@@ -619,7 +622,8 @@ const CONFIG = {
 
   tension: {
     kgSmoothPerSecond: 18,
-    overloadGraceMs: 120,
+    // 100% tension is the deterministic failure threshold.
+    overloadGraceMs: 0,
     powerRatioExponent: 2.0,
     sensitivityMultiplier: 1.5, // How much player input affects tension
     smoothApproach: 0.15,

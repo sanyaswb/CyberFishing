@@ -51,7 +51,11 @@ class FishPullResistanceModel {
       : Math.min(demand, maxUsefulPull, forceNeededForSpeed);
     const terminalReached =
       terminalSpeed > 0 && retrieveSpeed >= terminalSpeed - 0.001;
-    const freeLineTension = Math.max(fishOpposition, usefulPull);
+    // Tension is a gameplay stress read-model: fish opposition that already exists
+    // plus the player's current pull contribution. Movement still uses demand vs
+    // opposition, but the tension bar must react immediately when the player starts
+    // holding, even before demand exceeds fish opposition.
+    const freeLineTension = fishOpposition + usefulPull;
     const surplusForce = Math.max(0, demand - usefulPull);
     const blocked = !!movementBlocked;
     const lineTension = blocked && cfg.blockedMovementConvertsSurplusToTension !== false

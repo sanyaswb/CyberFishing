@@ -40,12 +40,17 @@ class RodStrokeState {
     return previous - this.#unrecoveredMeters;
   }
 
-  clampToSlack(slackMeters) {
-    const safeSlack = Math.max(0, Number(slackMeters) || 0);
+  clampToPumpCredit(pumpCreditMeters) {
+    const safePumpCredit = Math.max(0, Number(pumpCreditMeters) || 0);
     const previous = this.#unrecoveredMeters;
-    this.#unrecoveredMeters = Math.min(this.#unrecoveredMeters, safeSlack);
+    this.#unrecoveredMeters = Math.min(this.#unrecoveredMeters, safePumpCredit);
     this.#syncSnapshot();
     return previous - this.#unrecoveredMeters;
+  }
+
+  // Deprecated compatibility alias. This is pump credit, not physical loose line.
+  clampToSlack(slackMeters) {
+    return this.clampToPumpCredit(slackMeters);
   }
 
   reset() {

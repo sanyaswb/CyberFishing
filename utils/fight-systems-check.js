@@ -344,6 +344,24 @@ const stress = new TackleStressSystem({
 approx(stress.getEffectiveMaxTackleLoadKg(), 12, 0.001, "max tackle load ignores reel and uses weakest breakable part");
 stress.updateTarget(25, 1, { kgSmoothPerSecond: 999, overloadGraceMs: 0 });
 assert(stress.isBroken(), "overload break is deterministic");
+const exactLimitRod = new Rod(1, 5, 0, "float", Infinity, true, {
+  lengthMeters: 2,
+  maxLoadKg: 1,
+});
+const exactLimitLine = new LineSystem({
+  rod: exactLimitRod,
+  reel: noReel,
+  config: physicsConfig,
+  lineStats: { lengthMeters: 3, maxLoadKg: 1, durability: 100 },
+});
+const exactLimitStress = new TackleStressSystem({
+  rod: exactLimitRod,
+  lineSystem: exactLimitLine,
+  config: {},
+});
+exactLimitStress.updateTarget(1, 1, { kgSmoothPerSecond: 999, overloadGraceMs: 0 });
+assert(exactLimitStress.isBroken(), "100% tension is a deterministic failure threshold");
+
 assert(stress.getBreakReason() === "line", "line breaks when line is the weakest breakable part");
 assert(stress.getBreakInfo().lineLossMeters >= 0, "line break records lost line length");
 

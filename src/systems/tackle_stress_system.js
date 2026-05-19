@@ -179,13 +179,16 @@ class TackleStressSystem {
 
   #evaluateBreak(dtSec, tensionConfig) {
     const maxLoad = this.getEffectiveMaxTackleLoadKg();
-    if (this.#currentTensionKg <= maxLoad) {
+    const epsilon = Math.max(0, tensionConfig?.breakEpsilonKg ?? 0.0001);
+    const currentAtFailure = this.#currentTensionKg >= maxLoad - epsilon;
+    const targetAtFailure = this.#targetTensionKg >= maxLoad - epsilon;
+    if (!currentAtFailure && !targetAtFailure) {
       this.#overloadTimerMs = 0;
       this.#lastBreakProgress = 0;
       return;
     }
 
-    const graceMs = Math.max(0, tensionConfig?.overloadGraceMs ?? 120);
+    const graceMs = Math.max(0, tensionConfig?.overloadGraceMs ?? 0);
     this.#overloadTimerMs += Math.max(0, dtSec || 0) * 1000;
     this.#lastBreakProgress =
       graceMs <= 0 ? 1 : Math.min(1, this.#overloadTimerMs / graceMs);

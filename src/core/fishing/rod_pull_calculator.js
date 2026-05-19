@@ -40,16 +40,17 @@ class RodPullCalculator {
   }) {
     const fishForce = Math.max(0, Number(fishForceKg) || 0);
     const maxLoad = Math.max(0, Number(maxTackleLoadKg) || 0);
+    const controlledLoad = this.#controlledPullLimitKg(maxLoad);
     if (dragLocked) {
       return {
-        availableExtraForceKg: maxLoad,
+        availableExtraForceKg: controlledLoad,
         dragSlipping: false,
         blockedReason: "none",
       };
     }
 
     const dragLimit = Math.max(0, Number(dragLimitKg) || 0);
-    const availableExtra = Math.max(0, Math.min(maxLoad, dragLimit - fishForce));
+    const availableExtra = Math.max(0, Math.min(controlledLoad, dragLimit - fishForce));
     return {
       availableExtraForceKg: availableExtra,
       dragSlipping: fishForce > dragLimit,
@@ -153,14 +154,16 @@ class RodPullCalculator {
           chargeMultiplier *
           dt,
     );
-    const forceRatioLimit = dragLocked || hardLineLimit || !lineCanRelease || maxLoad <= 0
+    const controlledLoadForRatio = this.#controlledPullLimitKg(maxLoad);
+    const forceRatioLimit = dragLocked || hardLineLimit || !lineCanRelease || controlledLoadForRatio <= 0
       ? 1
-      : this.#clamp01(forceLimit.availableExtraForceKg / Math.max(0.001, maxLoad));
+      : this.#clamp01(forceLimit.availableExtraForceKg / Math.max(0.001, controlledLoadForRatio));
     const nextRatio = Math.min(chargedRatio, forceRatioLimit);
     const unclampedDistance = nextRatio * availableDistanceMeters;
     const distanceMeters = Math.min(availableDistanceMeters, unclampedDistance);
     const deltaMeters = Math.max(0, distanceMeters - prevDistance);
-    const rawForceKg = maxLoad * nextRatio;
+    const controlledLoad = this.#controlledPullLimitKg(maxLoad);
+    const rawForceKg = controlledLoad * nextRatio;
     const forceKg = dragLocked || hardLineLimit || !lineCanRelease
       ? rawForceKg
       : Math.min(rawForceKg, forceLimit.availableExtraForceKg);
@@ -250,6 +253,15 @@ class RodPullCalculator {
 
   #lineHasReserve(value) {
     return value !== false;
+  }
+
+  #controlledPullLimitKg(maxTackleLoadKg) {
+    const maxLoad = Math.max(0, Number(maxTackleLoadKg) || 0);
+    const ratio = Number(this.#config.controlledPullLimitRatio);
+    const safeRatio = Number.isFinite(ratio) && ratio > 0
+      ? Math.min(1, ratio)
+      : 0.85;
+    return maxLoad * safeRatio;
   }
 
   #clamp01(value) {

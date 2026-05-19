@@ -41,6 +41,7 @@ class RodPullSystem {
     dtSec,
     inputState,
     rod,
+    pumpCreditMeters,
     slackMeters,
     fishForceKg,
     dragLimitKg,
@@ -82,8 +83,9 @@ class RodPullSystem {
     return this.#result;
   }
 
-  updateReleaseRecovery({ slackMeters }) {
-    if (Math.max(0, Number(slackMeters) || 0) <= 0.001) {
+  updateReleaseRecovery({ pumpCreditMeters, slackMeters }) {
+    const recoverableLineMeters = pumpCreditMeters ?? slackMeters;
+    if (Math.max(0, Number(recoverableLineMeters) || 0) <= 0.001) {
       this.#strokeState.recover(Infinity);
     }
     this.#syncStrokeSnapshot();
@@ -102,10 +104,16 @@ class RodPullSystem {
     return this.#result;
   }
 
-  syncStrokeToSlack({ slackMeters }) {
-    this.#strokeState.clampToSlack(slackMeters);
+  syncStrokeToPumpCredit({ pumpCreditMeters }) {
+    this.#strokeState.clampToPumpCredit(pumpCreditMeters);
     this.#syncStrokeSnapshot();
     return this.#result;
+  }
+
+  // Deprecated compatibility alias. This accepts the old name, but the value is
+  // pump credit / recoverable line, not real loose line.
+  syncStrokeToSlack({ slackMeters }) {
+    return this.syncStrokeToPumpCredit({ pumpCreditMeters: slackMeters });
   }
 
   getState() {

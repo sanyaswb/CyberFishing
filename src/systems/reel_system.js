@@ -5,7 +5,7 @@ class ReelSystem {
     this.#config = config || {};
   }
 
-  recoverSlack({
+  recoverLineCredit({
     dtSec,
     lineSystem,
     reel,
@@ -14,12 +14,19 @@ class ReelSystem {
   }) {
     if (this.#config.autoRecoverSlack === false) return 0;
     if (!lineSystem || !reel?.hasReel?.()) return 0;
-    return lineSystem.recoverSlack({
+    const recover = lineSystem.recoverLineCredit || lineSystem.recoverSlack;
+    return recover.call(lineSystem, {
       hasReel: true,
       inputRecover,
       reel,
       tensionKg,
       dtSec,
     });
+  }
+
+  recoverSlack(args) {
+    // Deprecated compatibility alias. Reels recover pump credit / released line,
+    // not physical loose line.
+    return this.recoverLineCredit(args || {});
   }
 }

@@ -17,7 +17,8 @@ class FishRetrieveSystem {
       0;
     const staticResistanceKg = this.#resolveStaticResistance(forceData);
     const totalForceKg = Math.max(0, Number(forceData?.totalFishForceKg) || 0);
-    const activeAwayKg = Math.max(0, totalForceKg - staticResistanceKg);
+    const awayFromPlayerRatio = this.#resolveAwayFromPlayerRatio(forceData);
+    const activeAwayKg = Math.max(0, totalForceKg - staticResistanceKg) * awayFromPlayerRatio;
 
     return this.#model.calculate({
       dtSec,
@@ -35,5 +36,15 @@ class FishRetrieveSystem {
     if (Number.isFinite(explicit) && explicit >= 0) return explicit;
     const debugValue = Number(forceData?.debug?.staticFishForceKg);
     return Number.isFinite(debugValue) && debugValue >= 0 ? debugValue : 0;
+  }
+
+  #resolveAwayFromPlayerRatio(forceData) {
+    const direct = Number(forceData?.awayFromPlayerRatio);
+    if (Number.isFinite(direct)) return Math.max(0, Math.min(1, direct));
+
+    const debugValue = Number(forceData?.debug?.awayFromPlayerRatio);
+    return Number.isFinite(debugValue)
+      ? Math.max(0, Math.min(1, debugValue))
+      : 1;
   }
 }

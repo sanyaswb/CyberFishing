@@ -175,7 +175,7 @@ class LineSystem {
     });
   }
 
-  recoverSlack({ hasReel, inputRecover, reel, tensionKg, dtSec }) {
+  recoverLineCredit({ hasReel, inputRecover, reel, tensionKg, dtSec }) {
     this.#lastRecoveredMeters = 0;
     if (!hasReel || !inputRecover || !reel) return 0;
 
@@ -209,8 +209,14 @@ class LineSystem {
     return recovered;
   }
 
+  recoverSlack(args) {
+    // Deprecated compatibility alias. This recovers pump credit / released line,
+    // not physical loose line.
+    return this.recoverLineCredit(args || {});
+  }
+
   applyRetrieve(args) {
-    return this.recoverSlack({
+    return this.recoverLineCredit({
       hasReel: args?.hasReel,
       inputRecover: args?.inputRecover ?? args?.inputRetrieve,
       reel: args?.reel,
@@ -287,6 +293,10 @@ class LineSystem {
       spoolEmpty: this.#remainingMeters <= 0.001,
       maxRemainingMeters: this.#maxRemainingMeters,
       distanceMeters: this.#distanceMeters,
+      recoverableLineMeters: Math.max(0, this.#releasedMeters - this.#distanceMeters),
+      actualSlackMeters: 0,
+      // Deprecated compatibility alias. In the current fight loop this value is
+      // pump credit / recoverable line, not physical loose line.
       slackMeters: Math.max(0, this.#releasedMeters - this.#distanceMeters),
       isFullyExtended: this.#isFullyExtended,
       lineExtensionRatio: this.#lineExtensionRatio,

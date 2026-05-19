@@ -1173,10 +1173,11 @@
     this.#ctx.fillStyle = tensionConfig.labelColor;
     this.#ctx.font = tensionConfig.labelFont;
     this.#ctx.textAlign = "left";
+    const kgPrecision = Number.isFinite(maxLoadKg) && maxLoadKg <= 3 ? 2 : 1;
     const tensionLabel = Number.isFinite(tensionKg) && Number.isFinite(maxLoadKg)
-      ? `Натяг: ${tensionKg.toFixed(1)}/${maxLoadKg.toFixed(1)}кг`
+      ? `Натяг: ${tensionKg.toFixed(kgPrecision)}/${maxLoadKg.toFixed(kgPrecision)}кг`
       : Number.isFinite(tensionKg)
-        ? `Натяг: ${tensionKg.toFixed(1)}кг`
+        ? `Натяг: ${tensionKg.toFixed(kgPrecision)}кг`
         : `Натяг: ${Math.round(tension)}%`;
     this.#ctx.fillText(
       tensionLabel,

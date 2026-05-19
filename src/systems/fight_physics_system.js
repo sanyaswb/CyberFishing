@@ -2,7 +2,8 @@ class FightPhysicsSystem {
   #config;
   #velocityScratch = new Vector2(0, 0);
   #waterProbePoint = { x: 0, y: 0 };
-  #slackCalculator = new SlackCalculator();
+  #pumpCreditCalculator = new PumpCreditCalculator();
+  #looseLineCalculator = new LooseLineCalculator();
   #fishRetrieveSystem;
   #debug = {};
 
@@ -91,7 +92,7 @@ class FightPhysicsSystem {
       lineState: rodPullFrame.lineStateAfterPull,
       hardLineLimit: rodPullFrame.hardLineLimitBeforeRelease,
     });
-    const recoveredMeters = this.#recoverSlack({
+    const recoveredMeters = this.#recoverLineCredit({
       dtSec,
       reelSystem,
       lineSystem,
@@ -113,7 +114,7 @@ class FightPhysicsSystem {
       velocity: motion.velocity,
       hardLineLimitBeforeRelease: rodPullFrame.hardLineLimitBeforeRelease,
     });
-    rodPullSystem.syncStrokeToSlack?.({ slackMeters: lineLimit.finalSlackMeters });
+    rodPullSystem.syncStrokeToPumpCredit?.({ pumpCreditMeters: lineLimit.finalPumpCreditMeters });
     const tensionResult = this.#updateTension({
       tensionSystem,
       stressSystem,
@@ -131,8 +132,9 @@ class FightPhysicsSystem {
       forceData,
       dragSystem,
       lineState: lineLimit.lineState,
-      finalSlackMeters: lineLimit.finalSlackMeters,
-      initialSlackMeters: rodPullFrame.slackMeters,
+      finalPumpCreditMeters: lineLimit.finalPumpCreditMeters,
+      initialPumpCreditMeters: rodPullFrame.pumpCreditMeters,
+      actualSlackMeters: lineLimit.actualSlackMeters,
       releaseResult: lineLimit.releaseResult,
       recoveredMeters,
       hardLineLimit: lineLimit.hardLineLimit,
@@ -277,7 +279,7 @@ class FightPhysicsSystem {
       floatEntity.getPosition(),
       rodTipPosition,
     );
-    const slackMeters = this.#slackCalculator.calculate({
+    const pumpCreditMeters = this.#pumpCreditCalculator.calculateRecoverableLineMeters({
       releasedMeters: lineStateBeforePull.releasedMeters,
       fishDistanceMeters: lineStateBeforePull.distanceMeters,
     });
@@ -285,7 +287,7 @@ class FightPhysicsSystem {
       dtSec,
       inputState: pullInput,
       rod,
-      slackMeters,
+      pumpCreditMeters,
       fishForceKg: forceData.totalFishForceKg,
       dragLimitKg: dragContext.effectiveDragLimitKg,
       maxTackleLoadKg: dragContext.maxTackleLoadKg,
@@ -342,7 +344,7 @@ class FightPhysicsSystem {
     return {
       lineStateBeforePull,
       lineStateAfterPull,
-      slackMeters,
+      pumpCreditMeters,
       rodPullResult,
       fishRetrieveResult,
       rodPullMoveMeters,
@@ -392,12 +394,12 @@ class FightPhysicsSystem {
       hardLineLimit: !!hardLineLimit,
       lineHasReserve,
       dragLocked: dragContext.dragLocked,
-      slackMeters: lineState.slackMeters,
     });
   }
 
-  #recoverSlack({ dtSec, reelSystem, lineSystem, reel, tensionKg, isRecoverMode }) {
-    return reelSystem.recoverSlack({
+  #recoverLineCredit({ dtSec, reelSystem, lineSystem, reel, tensionKg, isRecoverMode }) {
+    const recover = reelSystem.recoverLineCredit || reelSystem.recoverSlack;
+    return recover.call(reelSystem, {
       dtSec,
       lineSystem,
       reel,
@@ -447,9 +449,16 @@ class FightPhysicsSystem {
       !!constraintResult.hardLimit ||
       !!lineStateBeforeRecover.isFullyExtended;
     const lineState = lineSystem.updateDistance(floatEntity.getPosition(), rodTipPosition);
-    const finalSlackMeters = this.#slackCalculator.calculate({
+    const finalPumpCreditMeters = this.#pumpCreditCalculator.calculateRecoverableLineMeters({
       releasedMeters: lineState.releasedMeters,
       fishDistanceMeters: lineState.distanceMeters,
+    });
+    const actualSlackMeters = this.#looseLineCalculator.calculateActualSlackMeters({
+      releasedMeters: lineState.releasedMeters,
+      fishDistanceMeters: lineState.distanceMeters,
+      fishMovingTowardPlayer: false,
+      playerPulling: false,
+      reelRecovering: false,
     });
 
     return {
@@ -457,7 +466,8 @@ class FightPhysicsSystem {
       constraintResult,
       lineState,
       hardLineLimit,
-      finalSlackMeters,
+      finalPumpCreditMeters,
+      actualSlackMeters,
     };
   }
 
@@ -465,8 +475,9 @@ class FightPhysicsSystem {
     forceData,
     dragSystem,
     lineState,
-    finalSlackMeters,
-    initialSlackMeters,
+    finalPumpCreditMeters,
+    initialPumpCreditMeters,
+    actualSlackMeters,
     releaseResult,
     recoveredMeters,
     hardLineLimit,
@@ -492,12 +503,17 @@ class FightPhysicsSystem {
       lineMaxRemainingMeters: lineState.maxRemainingMeters,
       lineBaseReachMeters: lineState.baseReachMeters,
       lineTotalLengthMeters: lineState.totalLengthMeters,
-      lineSlackMeters: lineState.slackMeters,
+      lineRecoverableMeters: lineState.recoverableLineMeters,
+      lineSlackMeters: lineState.recoverableLineMeters,
       isLineFullyExtended: lineState.isFullyExtended,
       lineExtensionRatio: lineState.lineExtensionRatio,
       lineDistanceMeters: lineState.distanceMeters,
-      slackMeters: finalSlackMeters,
-      slackPenaltyMeters: initialSlackMeters,
+      pumpCreditMeters: finalPumpCreditMeters,
+      pumpCreditPenaltyMeters: initialPumpCreditMeters,
+      actualSlackMeters,
+      // Deprecated debug aliases: these values are pump credit, not real loose line.
+      slackMeters: finalPumpCreditMeters,
+      slackPenaltyMeters: initialPumpCreditMeters,
       lineReleasedThisFrameMeters: releaseResult.releasedMeters,
       lineDemandedThisFrameMeters: releaseResult.demandedMeters,
       lineUnsatisfiedThisFrameMeters: releaseResult.unsatisfiedMeters,

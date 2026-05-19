@@ -6,7 +6,6 @@ class TensionSystem {
     hardLineLimit,
     lineHasReserve,
     dragLocked,
-    slackMeters,
   }) {
     const fishForce = Math.max(0, Number(fishForceKg) || 0);
     const pullForce = Math.max(0, Number(rodPullForceKg) || 0);
