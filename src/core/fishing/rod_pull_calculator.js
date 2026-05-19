@@ -5,12 +5,13 @@ class RodPullCalculator {
     this.#config = config || {};
   }
 
-  calculateAvailableDistance({ rodLengthMeters, slackMeters, fishDistanceMeters }) {
+  calculateAvailableDistance({ rodLengthMeters, pumpCreditMeters, slackMeters, fishDistanceMeters }) {
     const maxDistanceMeters = this.calculateMaxDistance({ rodLengthMeters });
-    const slackPenalty = this.#config.slackReducesNextPullDistance === false
+    const creditValue = pumpCreditMeters ?? slackMeters;
+    const pumpCreditPenalty = this.#config.pumpCreditReducesNextPullDistance === false || this.#config.slackReducesNextPullDistance === false
       ? 0
-      : Math.max(0, Number(slackMeters) || 0);
-    const available = Math.max(0, maxDistanceMeters - slackPenalty);
+      : Math.max(0, Number(creditValue) || 0);
+    const available = Math.max(0, maxDistanceMeters - pumpCreditPenalty);
     const distanceToFish = Math.max(0, Number(fishDistanceMeters) || 0);
     const finalLandingDistance = Math.max(
       0,
@@ -32,29 +33,16 @@ class RodPullCalculator {
     return Math.max(0, (Number(rodLengthMeters) || 0) * (Number.isFinite(multiplier) ? multiplier : 1));
   }
 
-  calculateForceLimit({
-    fishForceKg,
-    dragLimitKg,
-    maxTackleLoadKg,
-    dragLocked,
-  }) {
-    const fishForce = Math.max(0, Number(fishForceKg) || 0);
+  // New-model contract: RodPullCalculator owns only player demand + rod stroke.
+  // Drag slip and final line tension are resolved later by FishRetrieveSystem + TensionSystem.
+  calculateForceLimit({ maxTackleLoadKg } = {}) {
     const maxLoad = Math.max(0, Number(maxTackleLoadKg) || 0);
     const controlledLoad = this.#controlledPullLimitKg(maxLoad);
-    if (dragLocked) {
-      return {
-        availableExtraForceKg: controlledLoad,
-        dragSlipping: false,
-        blockedReason: "none",
-      };
-    }
-
-    const dragLimit = Math.max(0, Number(dragLimitKg) || 0);
-    const availableExtra = Math.max(0, Math.min(controlledLoad, dragLimit - fishForce));
     return {
-      availableExtraForceKg: availableExtra,
-      dragSlipping: fishForce > dragLimit,
-      blockedReason: fishForce > dragLimit ? "drag_slipping" : "none",
+      availableExtraForceKg: controlledLoad,
+      controlledPullLimitKg: controlledLoad,
+      dragSlipping: false,
+      blockedReason: "none",
     };
   }
 
@@ -63,11 +51,9 @@ class RodPullCalculator {
     input,
     previousState,
     rodLengthMeters,
+    pumpCreditMeters,
     slackMeters,
-    fishForceKg,
-    dragLimitKg,
     maxTackleLoadKg,
-    dragLocked,
     hardLineLimit,
     lineHasReserve = true,
     fishDistanceMeters,
@@ -75,6 +61,7 @@ class RodPullCalculator {
     const maxDistanceMeters = this.calculateMaxDistance({ rodLengthMeters });
     const availableDistanceMeters = this.calculateAvailableDistance({
       rodLengthMeters,
+      pumpCreditMeters,
       slackMeters,
       fishDistanceMeters,
     });
@@ -92,17 +79,14 @@ class RodPullCalculator {
         maxDistanceMeters,
         availableDistanceMeters,
         blockedReason: held ? "disabled" : "none",
+        lineHasReserve: this.#lineHasReserve(lineHasReserve),
+        canReleaseLine: this.#lineHasReserve(lineHasReserve),
+        spoolEmpty: !this.#lineHasReserve(lineHasReserve),
       });
     }
 
     const lineCanRelease = this.#lineHasReserve(lineHasReserve);
-    const riskyNoReservePull = !lineCanRelease && !dragLocked;
-    const forceLimit = this.calculateForceLimit({
-      fishForceKg,
-      dragLimitKg,
-      maxTackleLoadKg,
-      dragLocked: dragLocked || hardLineLimit || riskyNoReservePull,
-    });
+    const forceLimit = this.calculateForceLimit({ maxTackleLoadKg });
     const prevDistance = Math.max(0, Number(previousState?.distanceMeters) || 0);
     const prevRatio = Math.max(0, Math.min(1, Number(previousState?.ratio) || 0));
 
@@ -112,22 +96,7 @@ class RodPullCalculator {
         maxDistanceMeters,
         availableDistanceMeters,
         availableExtraForceKg: forceLimit.availableExtraForceKg,
-        totalTensionKg: Math.max(0, Number(fishForceKg) || 0),
-        blockedReason: "slack_too_high",
-      });
-    }
-
-    if (lineCanRelease && !hardLineLimit && forceLimit.dragSlipping && this.#config.freezeWhenDragSlips !== false) {
-      return this.#buildResult({
-        active: true,
-        ratio: prevRatio,
-        distanceMeters: prevDistance,
-        maxDistanceMeters,
-        availableDistanceMeters,
-        availableExtraForceKg: forceLimit.availableExtraForceKg,
-        totalTensionKg: Math.max(0, Number(dragLimitKg) || 0),
-        blockedReason: forceLimit.blockedReason,
-        dragSlipping: true,
+        blockedReason: "pump_credit_too_high",
         lineHasReserve: lineCanRelease,
         canReleaseLine: lineCanRelease,
         spoolEmpty: !lineCanRelease,
@@ -135,43 +104,20 @@ class RodPullCalculator {
     }
 
     const dt = Math.max(0, Number(dtSec) || 0);
-    const maxLoad = Math.max(0, Number(maxTackleLoadKg) || 0);
-    const chargeMultiplier = this.#calculateChargeSpeedMultiplier({
-      fishForceKg,
-      maxTackleLoadKg: maxLoad,
-      availableExtraForceKg: forceLimit.availableExtraForceKg,
-      dragLocked,
-      hardLineLimit,
-      lineHasReserve: lineCanRelease,
-    });
-    const chargedRatio = Math.min(
-      1,
-      prevRatio +
-        Math.max(
-          0,
-          Number(this.#config.strokeChargePerSecond ?? this.#config.chargePerSecond) || 0.65,
-        ) *
-          chargeMultiplier *
-          dt,
+    const chargePerSecond = Math.max(
+      0,
+      Number(this.#config.strokeChargePerSecond ?? this.#config.chargePerSecond) || 0.65,
     );
-    const controlledLoadForRatio = this.#controlledPullLimitKg(maxLoad);
-    const forceRatioLimit = dragLocked || hardLineLimit || !lineCanRelease || controlledLoadForRatio <= 0
-      ? 1
-      : this.#clamp01(forceLimit.availableExtraForceKg / Math.max(0.001, controlledLoadForRatio));
-    const nextRatio = Math.min(chargedRatio, forceRatioLimit);
-    const unclampedDistance = nextRatio * availableDistanceMeters;
-    const distanceMeters = Math.min(availableDistanceMeters, unclampedDistance);
+    const chargedRatio = Math.min(1, prevRatio + chargePerSecond * dt);
+    const nextRatio = chargedRatio;
+    const distanceMeters = Math.min(availableDistanceMeters, nextRatio * availableDistanceMeters);
     const deltaMeters = Math.max(0, distanceMeters - prevDistance);
-    const controlledLoad = this.#controlledPullLimitKg(maxLoad);
-    const rawForceKg = controlledLoad * nextRatio;
-    const forceKg = dragLocked || hardLineLimit || !lineCanRelease
-      ? rawForceKg
-      : Math.min(rawForceKg, forceLimit.availableExtraForceKg);
-    const totalTensionKg = Math.max(0, Number(fishForceKg) || 0) + forceKg;
+    const controlledLoad = this.#controlledPullLimitKg(maxTackleLoadKg);
+    const forceKg = controlledLoad * nextRatio;
     let blockedReason = "none";
 
-    if (!dragLocked && chargedRatio >= forceRatioLimit && forceRatioLimit < 1) {
-      blockedReason = "max_tension_reached";
+    if (hardLineLimit) {
+      blockedReason = "hard_line_limit";
     }
     if (nextRatio >= 1 || distanceMeters >= availableDistanceMeters - minDistance) {
       blockedReason = "max_distance_reached";
@@ -185,17 +131,12 @@ class RodPullCalculator {
       availableDistanceMeters,
       forceKg,
       availableExtraForceKg: forceLimit.availableExtraForceKg,
-      totalTensionKg,
+      totalTensionKg: forceKg,
       deltaMeters,
       canMoveFish: deltaMeters >= minDistance && forceKg > (Number(this.#config.minEffectivePullKg) || 0.01),
       blockedReason,
-      chargeSpeedMultiplier: chargeMultiplier,
-      chargePerSecond:
-        Math.max(
-          0,
-          Number(this.#config.strokeChargePerSecond ?? this.#config.chargePerSecond) || 0.65,
-        ) *
-        chargeMultiplier,
+      chargeSpeedMultiplier: 1,
+      chargePerSecond,
       lineHasReserve: lineCanRelease,
       canReleaseLine: lineCanRelease,
       spoolEmpty: !lineCanRelease,
@@ -215,7 +156,7 @@ class RodPullCalculator {
       deltaMeters: Math.max(0, Number(data.deltaMeters) || 0),
       canMoveFish: !!data.canMoveFish,
       blockedReason: data.blockedReason || "none",
-      dragSlipping: !!data.dragSlipping,
+      dragSlipping: false,
       releasedThisFrame: !!data.releasedThisFrame,
       releaseRecovering: !!data.releaseRecovering,
       releaseRecoveryRatio: Math.max(0, Math.min(1, Number(data.releaseRecoveryRatio) || 0)),
@@ -226,29 +167,6 @@ class RodPullCalculator {
       spoolEmpty: !!data.spoolEmpty,
     };
     return result;
-  }
-
-  #calculateChargeSpeedMultiplier({
-    fishForceKg,
-    maxTackleLoadKg,
-    availableExtraForceKg,
-    dragLocked,
-    hardLineLimit,
-    lineHasReserve = true,
-  }) {
-    const maxLoad = Math.max(0.001, Number(maxTackleLoadKg) || 0.001);
-    const fishForce = Math.max(0, Number(fishForceKg) || 0);
-    const stressHeadroomRatio = this.#clamp01(maxLoad / Math.max(maxLoad, fishForce + maxLoad));
-    const forceHeadroomRatio = dragLocked || hardLineLimit || !this.#lineHasReserve(lineHasReserve)
-      ? 1
-      : this.#clamp01((Number(availableExtraForceKg) || 0) / maxLoad);
-    const loadRatio = Math.min(stressHeadroomRatio, forceHeadroomRatio);
-    const minMultiplier = Math.max(
-      0,
-      Math.min(1, Number(this.#config.minChargeSpeedMultiplier) || 0.12),
-    );
-    const power = Math.max(0.01, Number(this.#config.loadChargePower) || 1);
-    return minMultiplier + (1 - minMultiplier) * Math.pow(loadRatio, power);
   }
 
   #lineHasReserve(value) {
@@ -262,9 +180,5 @@ class RodPullCalculator {
       ? Math.min(1, ratio)
       : 0.85;
     return maxLoad * safeRatio;
-  }
-
-  #clamp01(value) {
-    return Math.max(0, Math.min(1, Number(value) || 0));
   }
 }

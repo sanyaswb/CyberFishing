@@ -257,7 +257,7 @@ class PlayerMaxModule extends OverlayModule {
   render(d) {
     let html = this.formatHeader("📊 СИЛА ГРАВЦЯ", "#00ff80");
     html += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>ЛІМІТ СНАСТІ:</span> <span style="color: #00ff80; font-weight: bold;">${(d.maxTackleLoadKg || d.playerMaxPowerY || 0).toFixed(3)} кг</span></div>`;
-    html += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>ПОТОЧНИЙ PULL:</span> <span style="color: #00ff80; font-weight: bold;">${(d.netPullKg || 0).toFixed(3)} кг</span></div>`;
+    html += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>КОРИСНИЙ PULL:</span> <span style="color: #00ff80; font-weight: bold;">${(d.netPullKg || 0).toFixed(3)} кг</span></div>`;
     html += `<div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><span>ФРИКЦІОН:</span> <span style="color: #00ccff; font-weight: bold;">${(d.dragLimitKg || 0).toFixed(3)} кг</span></div>`;
     return html;
   }

@@ -15,27 +15,28 @@ class FishRetrieveSystem {
       Number(forceData?.fishWeightKg) ||
       Number(forceData?.debug?.fishWeightKg) ||
       0;
-    const staticResistanceKg = this.#resolveStaticResistance(forceData);
+    const bodyStaticResistanceKg = this.#resolveBodyStaticResistance(forceData);
     const totalForceKg = Math.max(0, Number(forceData?.totalFishForceKg) || 0);
     const awayFromPlayerRatio = this.#resolveAwayFromPlayerRatio(forceData);
-    const activeAwayKg = Math.max(0, totalForceKg - staticResistanceKg) * awayFromPlayerRatio;
+    const activeAwayKg = totalForceKg * awayFromPlayerRatio;
 
     return this.#model.calculate({
       dtSec,
       playerDemandForceKg: rodPullResult?.forceKg,
       fishWeightKg,
       fishActiveForceAwayKg: activeAwayKg,
-      fishStaticResistanceKg: staticResistanceKg,
+      bodyStaticResistanceKg,
       fishConfig: forceData?.fishPhysicsConfig,
       movementBlocked,
     });
   }
 
-  #resolveStaticResistance(forceData) {
-    const explicit = Number(forceData?.staticFishForceKg);
-    if (Number.isFinite(explicit) && explicit >= 0) return explicit;
-    const debugValue = Number(forceData?.debug?.staticFishForceKg);
-    return Number.isFinite(debugValue) && debugValue >= 0 ? debugValue : 0;
+  #resolveBodyStaticResistance(forceData) {
+    const direct = Number(forceData?.bodyStaticResistanceKg);
+    if (Number.isFinite(direct) && direct >= 0) return direct;
+
+    const debugValue = Number(forceData?.debug?.bodyStaticResistanceKg);
+    return Number.isFinite(debugValue) && debugValue >= 0 ? debugValue : undefined;
   }
 
   #resolveAwayFromPlayerRatio(forceData) {

@@ -10,7 +10,7 @@ class FishPullResistanceModel {
     playerDemandForceKg,
     fishWeightKg,
     fishActiveForceAwayKg,
-    fishStaticResistanceKg,
+    bodyStaticResistanceKg,
     fishConfig,
     movementBlocked,
   } = {}) {
@@ -20,7 +20,7 @@ class FishPullResistanceModel {
     const modifiers = fishConfig?.pullResistance || {};
     const staticResistance = this.#resolveStaticResistance({
       weight,
-      fishStaticResistanceKg,
+      bodyStaticResistanceKg,
       multiplier: modifiers.staticMultiplier,
     });
     const activeAway = this.#positive(fishActiveForceAwayKg);
@@ -63,9 +63,9 @@ class FishPullResistanceModel {
       : freeLineTension;
 
     return new FishRetrieveResult({
-      enabled: cfg.enabled !== false,
       playerDemandForceKg: demand,
       fishActiveForceAwayKg: activeAway,
+      bodyStaticResistanceKg: staticResistance,
       fishStaticResistanceKg: staticResistance,
       fishOppositionKg: fishOpposition,
       waterDragKg: waterDrag,
@@ -82,8 +82,8 @@ class FishPullResistanceModel {
     });
   }
 
-  #resolveStaticResistance({ weight, fishStaticResistanceKg, multiplier }) {
-    const explicit = Number(fishStaticResistanceKg);
+  #resolveStaticResistance({ weight, bodyStaticResistanceKg, multiplier }) {
+    const explicit = Number(bodyStaticResistanceKg);
     if (Number.isFinite(explicit) && explicit >= 0) return explicit;
 
     const cfg = this.#config || {};

@@ -2,7 +2,8 @@ class FishRetrieveResult {
   constructor(data = {}) {
     this.playerDemandForceKg = this.#positive(data.playerDemandForceKg);
     this.fishActiveForceAwayKg = this.#positive(data.fishActiveForceAwayKg);
-    this.fishStaticResistanceKg = this.#positive(data.fishStaticResistanceKg);
+    this.bodyStaticResistanceKg = this.#positive(data.bodyStaticResistanceKg ?? data.fishStaticResistanceKg);
+    this.fishStaticResistanceKg = this.bodyStaticResistanceKg;
     this.fishOppositionKg = this.#positive(data.fishOppositionKg);
     this.waterDragKg = this.#positive(data.waterDragKg);
     this.usefulPullForceKg = this.#positive(data.usefulPullForceKg);
@@ -19,7 +20,6 @@ class FishRetrieveResult {
     this.appliedMoveMeters = this.#positive(data.appliedMoveMeters);
     this.movementBlocked = !!data.movementBlocked;
     this.balanceState = data.balanceState || "idle";
-    this.enabled = data.enabled !== false;
   }
 
   withAppliedMovement({ appliedMoveMeters, movementBlocked } = {}) {

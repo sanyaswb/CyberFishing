@@ -388,8 +388,8 @@ class FightPhysicsSystem {
   }) {
     const lineHasReserve = this.#lineHasReserve(lineState);
     return tensionSystem.calculate({
-      fishForceKg: fishRetrieveResult?.lineTensionKg ?? forceData.totalFishForceKg,
-      rodPullForceKg: fishRetrieveResult ? 0 : rodPullResult.forceKg,
+      fishForceKg: fishRetrieveResult.lineTensionKg,
+      rodPullForceKg: 0,
       dragLimitKg: dragContext.effectiveDragLimitKg,
       hardLineLimit: !!hardLineLimit,
       lineHasReserve,
@@ -526,6 +526,7 @@ class FightPhysicsSystem {
       rodPullForceKg: rodPullResult.forceKg,
       playerDemandForceKg: fishRetrieveResult?.playerDemandForceKg ?? rodPullResult.forceKg,
       fishActiveForceAwayKg: fishRetrieveResult?.fishActiveForceAwayKg,
+      bodyStaticResistanceKg: fishRetrieveResult?.bodyStaticResistanceKg,
       fishStaticResistanceKg: fishRetrieveResult?.fishStaticResistanceKg,
       fishOppositionKg: fishRetrieveResult?.fishOppositionKg,
       fishRetrieveWaterDragKg: fishRetrieveResult?.waterDragKg,
@@ -565,8 +566,8 @@ class FightPhysicsSystem {
       activeEffectivePullKg: rodPullResult.forceKg,
       activeNetPullKg: rodPullResult.forceKg,
       pullCapacityKg: forceData.player.pullCapacityKg,
-      effectivePullKg: forceData.player.legacyEffectivePullKg,
-      netPullKg: forceData.player.legacyNetPullKg,
+      effectivePullKg: fishRetrieveResult?.usefulPullForceKg ?? 0,
+      netPullKg: fishRetrieveResult?.usefulPullForceKg ?? 0,
       legacyEffectivePullKg: forceData.player.legacyEffectivePullKg,
       legacyNetPullKg: forceData.player.legacyNetPullKg,
       dragLimitKg: dragContext.effectiveDragLimitKg,
