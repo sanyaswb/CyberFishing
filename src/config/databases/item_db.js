@@ -52,7 +52,7 @@ const ITEM_DB = {
       id: "rod_test_feeder",
       name: "Тестовий Фідер",
       type: "feeder", // Для UI фільтрів
-      icon: "🎋",
+      icon: "🎣",
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
@@ -89,7 +89,7 @@ const ITEM_DB = {
       id: "rod_test_float",
       name: "Бамбукова Вудка",
       type: "float",
-      icon: "🎍",
+      icon: "🎣",
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
@@ -111,7 +111,7 @@ const ITEM_DB = {
         basePower: 1.0,
         compensation: 0.2,
         accuracy: 60,
-        lengthMeters: 2.0,
+        lengthMeters: 12.0,
         castPowerCoefficient: 1.0,
         maxLoadKg: 1,
         durability: 100,
@@ -190,9 +190,9 @@ const ITEM_DB = {
   },
 
   lines: {
-    line_test_13m: {
-      id: "line_test_13m",
-      name: "Тестова ліска 13м",
+    line_test_25m: {
+      id: "line_test_25m",
+      name: "Тестова ліска 25м",
       type: "fishing_line",
       icon: "🧵",
       displayStats: {
@@ -203,17 +203,17 @@ const ITEM_DB = {
       },
       engineStats: {
         type: "fishing_line",
-        lengthMeters: 13,
+        lengthMeters: 25,
         diameterMm: 0.22,
-        maxLoadKg: 2,
+        maxLoadKg: 1,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
       },
     },
 
-    line_test_3m: {
-      id: "line_test_3m",
-      name: "Коротка ліска 3м",
+    line_test_10m: {
+      id: "line_test_10m",
+      name: "Коротка ліска 10м",
       type: "fishing_line",
       icon: "🧵",
       displayStats: {
@@ -224,7 +224,7 @@ const ITEM_DB = {
       },
       engineStats: {
         type: "fishing_line",
-        lengthMeters: 3,
+        lengthMeters: 10,
         diameterMm: 0.16,
         maxLoadKg: 1,
         durability: 100,
@@ -232,9 +232,9 @@ const ITEM_DB = {
       },
     },
 
-    line_test_4m: {
-      id: "line_test_4m",
-      name: "Коротка ліска 4м",
+    line_test_50m: {
+      id: "line_test_50m",
+      name: "Довга ліска 50м",
       type: "fishing_line",
       icon: "🧵",
       displayStats: {
@@ -245,7 +245,7 @@ const ITEM_DB = {
       },
       engineStats: {
         type: "fishing_line",
-        lengthMeters: 4,
+        lengthMeters: 50,
         diameterMm: 0.16,
         maxLoadKg: 1,
         durability: 100,

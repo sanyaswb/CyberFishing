@@ -1,12 +1,9 @@
 class Fish {
   #level;
   #weight;
-  #resistance;
   #fishConfig;
   #powerDebuff;
   #behavior;
-  #isLastDashTriggered = false;
-  #lastDashTimer = 0;
   #masteryPowerMult = 1.0;
   #lastDebuffName = null;
 
@@ -14,20 +11,13 @@ class Fish {
   #hasActiveDebuff = false;
   #rng;
 
-  constructor(level, weight, resistance, fishConfig, rng = null) {
+  constructor(level, weight, fishConfig, rng = null) {
     this.#level = level;
     this.#weight = weight;
-    this.#resistance = resistance;
     this.#fishConfig = fishConfig;
     this.#rng = rng || { next: () => Math.random() };
     this.#powerDebuff = 0;
     this.#behavior = new FishBehavior(this.#fishConfig, this.#rng);
-  }
-
-  #chance(probability) {
-    return typeof this.#rng.chance === "function"
-      ? this.#rng.chance(probability)
-      : this.#rng.next() < probability;
   }
 
   #int(min, max) {
@@ -38,6 +28,18 @@ class Fish {
 
   getWeight() {
     return this.#weight;
+  }
+
+  updateRuntimeStats({ level, weight, physics } = {}) {
+    if (Number.isFinite(Number(level))) {
+      this.#level = Math.max(1, Math.round(Number(level)));
+    }
+    if (Number.isFinite(Number(weight))) {
+      this.#weight = Math.max(0, Number(weight));
+    }
+    if (physics && typeof physics === "object") {
+      this.#fishConfig = physics;
+    }
   }
 
   getPhysicsConfig() {
@@ -51,44 +53,14 @@ class Fish {
       return Math.max(0, Number(this.#fishConfig.levelBasePower));
     }
 
-    const ranges = this.#fishConfig?.levelWeightRanges;
-    if (Array.isArray(ranges)) {
-      const match = ranges.find((range) => Number(range?.level) === this.#level);
-      if (Number.isFinite(Number(match?.basePower))) {
-        return Math.max(0, Number(match.basePower));
-      }
-    }
-
-    // Backward-compatible fallbacks for old configs only. Do not add these arrays
-    // to new configs; prefer weightConfig.levelWeightRanges[].basePower.
-    const legacyTables = [
-      this.#fishConfig?.levelBasePowerByLevel,
-      this.#fishConfig?.levelPowerMultiplier,
-      this.#fishConfig?.levelBasePowerMultiplier,
-    ];
-
-    for (const table of legacyTables) {
-      if (Array.isArray(table) && table.length > 0) {
-        const index = Math.max(0, Math.min(table.length - 1, this.#level - 1));
-        return Math.max(0, Number(table[index]) || 1);
-      }
-    }
-
-    const perLevel = this.#fishConfig?.basePowerByLevel;
-    if (perLevel && typeof perLevel === "object") {
-      return Math.max(0, Number(perLevel[this.#level]) || 1);
-    }
-
     return 1;
   }
 
   getInitialPower() {
-    if (this.#fishConfig?.basePower) {
-      return this.#weight * this.getLevelMultiplier() * this.#fishConfig.basePower;
-    }
-
-    // Legacy fallback without numeric level multiplication.
-    return this.#weight * Math.max(0.001, Number(this.#resistance) || 1);
+    const basePower = Number.isFinite(Number(this.#fishConfig?.basePower))
+      ? Number(this.#fishConfig.basePower)
+      : 1.0;
+    return this.#weight * this.getLevelMultiplier() * Math.max(0, basePower);
   }
 
   getStaticPowerKg() {
@@ -107,12 +79,6 @@ class Fish {
   getBaseSpeedPxPerSec(pixelsPerMeter = 50) {
     if (Number.isFinite(Number(this.#fishConfig?.baseSpeedMetersPerSec))) {
       return this.#fishConfig.baseSpeedMetersPerSec * pixelsPerMeter;
-    }
-    if (Number.isFinite(Number(this.#fishConfig?.baseSpeedPxPerSec))) {
-      return this.#fishConfig.baseSpeedPxPerSec;
-    }
-    if (Number.isFinite(Number(this.#fishConfig?.baseSpeed))) {
-      return this.#fishConfig.baseSpeed;
     }
     return 100;
   }
@@ -220,7 +186,6 @@ class Fish {
       case "swimPull":
         if (behaviors.swim) {
           if (behaviors.swim.powerRatio !== undefined) behaviors.swim.powerRatio *= debuffsCfg.swimPullMult;
-          if (behaviors.swim.pull !== undefined) behaviors.swim.pull *= debuffsCfg.swimPullMult;
         }
         break;
       case "dashMaxTime":
@@ -234,7 +199,6 @@ class Fish {
       case "dashPull":
         if (behaviors.dash) {
           if (behaviors.dash.powerRatio !== undefined) behaviors.dash.powerRatio *= debuffsCfg.dashPullMult;
-          if (behaviors.dash.pull !== undefined) behaviors.dash.pull *= debuffsCfg.dashPullMult;
         }
         break;
       case "restWeight":
@@ -265,35 +229,6 @@ class Fish {
     console.log(`[DEBUFF] Стаміна 100%. Дебафи знято.`);
   }
 
-  tryTriggerLastDash(dt) {
-    const triggerCfg = this.#fishConfig.lastDashTrigger;
-    if (!triggerCfg) return;
-    if (this.#isLastDashTriggered && (triggerCfg.isLocked ?? true)) return;
-
-    this.#lastDashTimer += dt;
-    const interval = triggerCfg.checkIntervalMs ?? 1000;
-
-    if (this.#lastDashTimer >= interval) {
-      this.#lastDashTimer = 0;
-      const currentBehavior = this.#behavior.getStateData();
-      const targetState = triggerCfg.targetState || "lastDash";
-
-      if (currentBehavior.name === targetState) return;
-      if (this.#chance(triggerCfg.chance ?? 0.05)) this.triggerLastDash();
-    }
-  }
-
-  triggerLastDash() {
-    const triggerCfg = this.#fishConfig.lastDashTrigger;
-    if (!this.#isLastDashTriggered) {
-      this.#powerDebuff *= 0.5;
-      this.#isLastDashTriggered = true;
-    }
-    this.#behavior.forceState(
-      triggerCfg?.targetState || "lastDash",
-      triggerCfg?.isLocked ?? false,
-    );
-  }
 }
 
 class FishBehavior {
@@ -363,8 +298,8 @@ class FishBehavior {
 
     this.#currentStateName = selectedKey;
     const state = states[this.#currentStateName];
-    this.#targetPull = Math.max(0, Number(state.powerRatio ?? state.pull ?? 1) || 0);
-    this.#targetMove = this.#clamp01(state.speedRatio ?? state.move ?? 0);
+    this.#targetPull = Math.max(0, Number(state.powerRatio ?? 1) || 0);
+    this.#targetMove = this.#clamp01(state.speedRatio ?? 0);
     this.#stateTimer = this.#range(state.minTime, state.maxTime);
   }
 
@@ -376,8 +311,8 @@ class FishBehavior {
     }
 
     this.#currentStateName = stateName;
-    this.#targetPull = Math.max(0, Number(state.powerRatio ?? state.pull ?? 1) || 0);
-    this.#targetMove = this.#clamp01(state.speedRatio ?? state.move ?? 0);
+    this.#targetPull = Math.max(0, Number(state.powerRatio ?? 1) || 0);
+    this.#targetMove = this.#clamp01(state.speedRatio ?? 0);
     this.#isLocked = isLocked;
     this.#stateTimer = this.#range(state.minTime, state.maxTime);
     this.#dirTimer = 0;
@@ -435,10 +370,6 @@ class FishBehavior {
       speedRatio: this.#clamp01(Math.abs(this.#currentMove)),
       moveX: this.#clamp01(Math.abs(this.#currentMove)) * this.#currentDirX,
       agility: stateConfig.agility ?? this.#config.agility ?? 1.0,
-      edgePowerMultiplier:
-        stateConfig.edgePowerMultiplier ??
-        this.#config.edgePowerMultiplier ??
-        1.0,
     };
   }
 }

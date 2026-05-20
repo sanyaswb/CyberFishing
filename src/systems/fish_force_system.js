@@ -39,9 +39,13 @@ class FishForceSystem {
       ? this.#clamp01(1 - fishCondition.currentExhaustion / fishCondition.maxPoints)
       : 0;
 
+    const behaviorPullValue = this.#numberOrDefault(
+      behavior.powerRatio ?? behavior.pullMult,
+      1,
+    );
     const moveDir = this.#scratchA.set(
       Number(behavior.moveX) || 0,
-      -(Number(behavior.powerRatio ?? behavior.pullMult) || 1),
+      -behaviorPullValue,
     );
     if (moveDir.length() <= 0.001) moveDir.set(0, -1);
     moveDir.normalize();
@@ -56,27 +60,33 @@ class FishForceSystem {
     const relativeSpeedMps =
       Math.hypot(relativeVelocityX, relativeVelocityY) / pixelsPerMeter;
 
-    const staticForceKg =
-      this.#fish.getCurrentStaticPowerKg?.() ||
-      this.#fish.getStaticPowerKg?.() ||
-      this.#fish.getPower?.() ||
-      1;
+    const staticForceKg = this.#firstFiniteNumber(
+      this.#fish.getCurrentStaticPowerKg?.(),
+      this.#fish.getStaticPowerKg?.(),
+      this.#fish.getPower?.(),
+      1,
+    );
 
     const velocityLength = Math.hypot(relativeVelocityX, relativeVelocityY);
     const velocityDirX = velocityLength > 0.001 ? relativeVelocityX / velocityLength : moveDir.x;
     const velocityDirY = velocityLength > 0.001 ? relativeVelocityY / velocityLength : moveDir.y;
     const opposition = velocityDirX * awayDir.x + velocityDirY * awayDir.y;
-    const directionMultiplier = this.#directionMultiplier(opposition, physics.directionForce);
+    const directionMultiplier = this.#directionMultiplier(
+      opposition,
+      fishPhysics.directionForce || physics.directionForce,
+    );
 
     const dynamicForceKg =
       this.#fish.getWeight() *
       relativeSpeedMps *
       (fishPhysics.speedForceMultiplier ?? 0.35) *
       (fishPhysics.waterResistanceMultiplier ?? 1.0) *
-      (physics.waterResistanceKgPerKgPerMps ?? 1.0) *
+      (fishPhysics.waterResistanceKgPerKgPerMps ??
+        physics.waterResistanceKgPerKgPerMps ??
+        1.0) *
       directionMultiplier;
 
-    const behaviorPowerRatio = Math.max(0, Number(behavior.powerRatio ?? behavior.pullMult) || 1);
+    const behaviorPowerRatio = Math.max(0, behaviorPullValue);
     const minPowerRatio = fishPhysics.minPowerRatio ?? 0.25;
     const exhaustionPowerMultiplier = this.#lerp(
       1,
@@ -251,6 +261,17 @@ class FishForceSystem {
 
   #lerp(a, b, t) {
     return a + (b - a) * this.#clamp01(t);
+  }
+
+  #numberOrDefault(value, fallback) {
+    return Number.isFinite(Number(value)) ? Number(value) : fallback;
+  }
+
+  #firstFiniteNumber(...values) {
+    for (const value of values) {
+      if (Number.isFinite(Number(value))) return Math.max(0, Number(value));
+    }
+    return 0;
   }
 
   #clamp01(value) {

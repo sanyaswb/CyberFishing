@@ -295,7 +295,6 @@ const CONFIG = {
       fishId: "crucian_stalker", // Можна вписати 'perch_radioactive'
       level: 6,
       weight: 2.678,
-      resistance: 2.5,
     },
   },
 
@@ -511,7 +510,7 @@ const CONFIG = {
     rodStroke: {
       enabled: true,
       distanceMultiplierByRodLength: 1.0,
-      strokeChargePerSecond: 0.65,
+      strokeChargePerSecond: 1.2,
       minEffectivePullKg: 0.01,
       pumpCreditReducesNextPullDistance: true,
       minStrokeMeters: 0.001,
@@ -523,18 +522,11 @@ const CONFIG = {
       controlledPullLimitRatio: 0.85,
     },
     fishRetrieve: {
-      staticResistanceByWeightKg: 0.8,
-      minStaticResistanceKg: 0.03,
-      waterLinearDragKgPerKgPerMps: 0.8,
-      waterQuadraticDragKgPerKgPerMps2: 2.5,
-      baseTerminalSpeedMps: 1.4,
-      lightFishTerminalSpeedBonus: 0.4,
-      heavyFishTerminalSpeedPenalty: 0.25,
-      maxUsefulPullByWeightMultiplier: 3.0,
-      minUsefulPullKg: 0.2,
-      maxUsefulPullKg: 3.0,
-      balanceEpsilonKg: 0.01,
-      blockedMovementConvertsSurplusToTension: true,
+      maxPullSpeedMetersPerSecond: 1.2,
+      staticBodyResistanceKgPerKg: 0.1,
+      waterDragKgPerKgPerMps2: 0.4,
+      pullAccelerationMetersPerSecond2: 6.0,
+      accelerationResistanceKgPerKgPerMps2: 0.08,
     },
     poleIdleRetrieve: {
       speedMetersPerSecond: 1.2,
@@ -553,16 +545,16 @@ const CONFIG = {
 
       pole: {
         landingDistanceByRodLength: 1.0,
-        minLandingDistanceMeters: 1.2,
-        maxLandingDistanceMeters: 3.0,
+        minLandingDistanceMeters: 1.0,
+        maxLandingDistanceMeters: 2.0,
       },
 
       rollIntervalMs: 1000,
       guaranteedWeightRatio: 0.2,
       maxLoadWeightRatio: 1.0,
       chanceAtGuaranteedRatio: 1.0,
-      chanceAtMaxLoadRatio: 0.01,
-      overweightChance: 0.0,
+      chanceAtMaxLoadRatio: 1.0,
+      overweightChance: 1.0,
     },
     castingPower: {
       fallbackCoefficient: 0.5,

@@ -404,7 +404,10 @@ function renderRodPullModule(ctx) {
     "Rod stroke used": `${fmt(live.rodStrokeUsedMeters, 2)} / ${fmt(live.rodStrokeCapacityMeters, 2)} m`,
     "Rod stroke unrecovered": fmt(live.rodStrokeUnrecoveredMeters, 2),
     "Pump credit meters": fmt(live.pumpCreditMeters ?? live.slackMeters, 2),
-    "Pump credit penalty": fmt(live.pumpCreditPenaltyMeters ?? live.slackPenaltyMeters, 2),
+    "Pump credit penalty": fmt(
+      live.pumpCreditPenaltyMeters ?? live.slackPenaltyMeters,
+      2,
+    ),
     "Actual loose line": fmt(live.actualSlackMeters, 2),
     "Reel recovering line credit": live.reelRecoveringSlack === true,
     "Hard line limit": live.hardLineLimit === true,
@@ -885,7 +888,7 @@ class TestBuildProvider {
       },
       {
         instanceId: "debug_line_001",
-        itemId: "line_test_3m",
+        itemId: "line_test_25m",
         quantity: 1,
         buildId: boxInstanceId,
       },
@@ -915,7 +918,7 @@ class TestBuildProvider {
       },
       {
         instanceId: "debug_line_002",
-        itemId: "line_test_13m",
+        itemId: "line_test_10m",
         quantity: 1,
         buildId: boxInstanceId2,
       },

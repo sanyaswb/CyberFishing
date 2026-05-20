@@ -393,7 +393,7 @@ assert(weakRodStress.getBreakTargetReason() === "rod", "UI break target predicts
 weakRodStress.updateTarget(15, 1, { kgSmoothPerSecond: 999, overloadGraceMs: 0 });
 assert(weakRodStress.getBreakReason() === "rod", "rod breaks when rod is weaker than 20kg line and reel is ignored as break target");
 
-const fish = new Fish(1, 2, 1, CONFIG.spawns.fishes[0].physics, { next: () => 0.5, range: (a, b) => (a + b) / 2 });
+const fish = new Fish(1, 2, CONFIG.spawns.fishes[0].physics, { next: () => 0.5, range: (a, b) => (a + b) / 2 });
 const fishForce = new FishForceSystem({ fish, config: CONFIG });
 const forceData = fishForce.calculate({
   dtMs: 16.666,

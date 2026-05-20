@@ -296,7 +296,7 @@ class FightPhysicsSystem {
       lineHasReserve: this.#lineHasReserve(lineStateBeforePull),
       fishDistanceMeters: lineStateBeforePull.distanceMeters,
     });
-    const retrievePreview = fishRetrieveSystem.calculate({
+    const fishRetrieveFrame = fishRetrieveSystem.calculate({
       dtSec,
       rodPullResult,
       forceData,
@@ -307,11 +307,11 @@ class FightPhysicsSystem {
       (Number(rodPullResult.maxDistanceMeters) || 0) -
         (Number(rodPullResult.rodStrokeUsedMeters) || 0),
     );
-    const hasUsefulDemand =
+    const hasPullMovement =
       rodPullResult.active &&
-      rodPullResult.forceKg > (physics.rodStroke?.minEffectivePullKg ?? 0.01);
-    const desiredMoveMeters = hasUsefulDemand
-      ? Math.min(remainingStrokeMeters, retrievePreview.desiredMoveMeters)
+      fishRetrieveFrame.actualFishPullSpeedMetersPerSecond > 0.001;
+    const desiredMoveMeters = hasPullMovement
+      ? Math.min(remainingStrokeMeters, fishRetrieveFrame.desiredMoveMeters)
       : 0;
     const rodPullMoveMeters = this.#applyRodPullMovement({
       floatEntity,
@@ -324,13 +324,7 @@ class FightPhysicsSystem {
     const movementBlocked =
       desiredMoveMeters > rodPullMoveMeters + 0.001 ||
       !!lineStateBeforePull.isFullyExtended;
-    const fishRetrieveResult = fishRetrieveSystem
-      .calculate({
-        dtSec,
-        rodPullResult,
-        forceData,
-        movementBlocked,
-      })
+    const fishRetrieveResult = fishRetrieveFrame
       .withAppliedMovement({
         appliedMoveMeters: rodPullMoveMeters,
         movementBlocked,
@@ -524,14 +518,29 @@ class FightPhysicsSystem {
       rodPullActive: rodPullDisplay.active,
       rodPullRatio: rodPullDisplay.ratio,
       rodPullForceKg: rodPullResult.forceKg,
-      playerDemandForceKg: fishRetrieveResult?.playerDemandForceKg ?? rodPullResult.forceKg,
+      playerDemandForceKg: rodPullResult.forceKg,
+      fishRetrieveHoldRatio: fishRetrieveResult?.holdRatio,
+      desiredPullSpeedMps: fishRetrieveResult?.desiredPullSpeedMetersPerSecond,
+      actualPullSpeedMps: fishRetrieveResult?.actualPullSpeedMetersPerSecond,
+      actualFishPullSpeedMps:
+        fishRetrieveResult?.actualFishPullSpeedMetersPerSecond,
       fishActiveForceAwayKg: fishRetrieveResult?.fishActiveForceAwayKg,
+      activeAwayForceKg: fishRetrieveResult?.activeAwayForceKg,
+      bodyResistanceKg: fishRetrieveResult?.bodyResistanceKg,
       bodyStaticResistanceKg: fishRetrieveResult?.bodyStaticResistanceKg,
       fishStaticResistanceKg: fishRetrieveResult?.fishStaticResistanceKg,
       fishOppositionKg: fishRetrieveResult?.fishOppositionKg,
+      passiveRetrieveTensionKg:
+        fishRetrieveResult?.passiveRetrieveTensionKg,
       fishRetrieveWaterDragKg: fishRetrieveResult?.waterDragKg,
+      fishRetrieveAccelerationLoadKg:
+        fishRetrieveResult?.accelerationLoadKg,
+      fishRetrievePositiveAccelerationMps2:
+        fishRetrieveResult?.positiveAccelerationMetersPerSecond2,
       fishRetrieveUsefulPullForceKg: fishRetrieveResult?.usefulPullForceKg,
       fishRetrieveSpeedMps: fishRetrieveResult?.retrieveSpeedMetersPerSecond,
+      fishRetrieveMovementControlRatio:
+        fishRetrieveResult?.movementControlRatio,
       fishRetrieveTerminalSpeedMps: fishRetrieveResult?.terminalRetrieveSpeedMetersPerSecond,
       fishRetrieveTerminalReached: fishRetrieveResult?.terminalSpeedReached,
       fishRetrieveSurplusForceKg: fishRetrieveResult?.surplusForceKg,
@@ -563,8 +572,8 @@ class FightPhysicsSystem {
       rawTensionKg: tensionResult.rawTensionKg,
       movementAuthority: forceData.player.movementAuthority,
       playerForceKg: forceData.player.forceKg,
-      activeEffectivePullKg: rodPullResult.forceKg,
-      activeNetPullKg: rodPullResult.forceKg,
+      activeEffectivePullKg: fishRetrieveResult?.passiveRetrieveTensionKg ?? 0,
+      activeNetPullKg: fishRetrieveResult?.passiveRetrieveTensionKg ?? 0,
       pullCapacityKg: forceData.player.pullCapacityKg,
       effectivePullKg: fishRetrieveResult?.usefulPullForceKg ?? 0,
       netPullKg: fishRetrieveResult?.usefulPullForceKg ?? 0,

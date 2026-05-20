@@ -2,6 +2,8 @@ class DevTools {
   #config;
   #ui;
   #isOpen = false;
+  #liveData = null;
+  #activeFishKey = "";
 
   #excludeKeys = [
     "id",
@@ -18,6 +20,13 @@ class DevTools {
   constructor(config) {
     this.#config = config;
     this.#ui = new DevToolsUI(() => this.toggle(), this.#config);
+    document.addEventListener("debug-live-update", (event) => {
+      this.#liveData = event.detail || null;
+      const nextFishKey = this.#getActiveFishKey();
+      if (this.#isOpen && nextFishKey !== this.#activeFishKey) {
+        this.#populatePanel();
+      }
+    });
   }
 
   toggle() {
@@ -32,6 +41,7 @@ class DevTools {
   #populatePanel() {
     const body = this.#ui.body;
     body.innerHTML = "";
+    this.#activeFishKey = this.#getActiveFishKey();
 
     // 1. OVERLAY MODULES
     if (typeof OVERLAY_MODULES !== "undefined") {
@@ -132,10 +142,221 @@ class DevTools {
         this.#buildTree(CONFIG[key], sectionContent, ["CONFIG", key]);
       }
     }
+
+    this.#renderActiveFishSection(body);
+  }
+
+  #renderActiveFishSection(body) {
+    const hookedFish = this.#liveData?.hookedFish;
+    if (!hookedFish) return;
+
+    const fishLabel = hookedFish.id || hookedFish.name || "hookedFish";
+    const activeFishContent = this.#createSectionWithCache(
+      `ACTIVE FISH (${fishLabel})`,
+      body,
+    );
+    this.#renderActiveFishRuntimeControls(hookedFish, activeFishContent);
+    this.#buildTree(hookedFish, activeFishContent, ["HOOKED_FISH"]);
+  }
+
+  #renderActiveFishRuntimeControls(hookedFish, parentElement) {
+    this.#ensureActiveFishRuntimePhysics(hookedFish);
+
+    const levelContent = this.#createSectionWithCache(
+      "level runtime",
+      parentElement,
+    );
+    this.#ui.createInputRow(
+      "weight",
+      Number(hookedFish.weight) || 0,
+      levelContent,
+      "number",
+      (newValue) =>
+        this.#updateConfigValue(["HOOKED_FISH", "weight"], newValue),
+    );
+    this.#ui.createInputRow(
+      "level",
+      Number(hookedFish.level) || 0,
+      levelContent,
+      "number",
+      (newValue) => this.#updateConfigValue(["HOOKED_FISH", "level"], newValue),
+    );
+
+    hookedFish.physics = hookedFish.physics || {};
+    this.#ui.createInputRow(
+      "levelBasePower",
+      Number(hookedFish.physics.levelBasePower) || 0,
+      levelContent,
+      "number",
+      (newValue) =>
+        this.#updateConfigValue(
+          ["HOOKED_FISH", "physics", "levelBasePower"],
+          newValue,
+        ),
+    );
+    this.#ui.createInputRow(
+      "levelBaseSpeedMetersPerSec",
+      Number(hookedFish.physics.baseSpeedMetersPerSec) || 0,
+      levelContent,
+      "number",
+      (newValue) =>
+        this.#updateConfigValue(
+          ["HOOKED_FISH", "physics", "baseSpeedMetersPerSec"],
+          newValue,
+        ),
+    );
+
+    this.#renderActiveFishRetrieveControls(hookedFish, parentElement);
+    this.#renderActiveFishForceControls(hookedFish, parentElement);
+  }
+
+  #renderActiveFishRetrieveControls(hookedFish, parentElement) {
+    const fishRetrieve = hookedFish.physics?.fishRetrieve;
+    if (!fishRetrieve) return;
+
+    const content = this.#createSectionWithCache(
+      "fishRetrieve runtime",
+      parentElement,
+    );
+    const fields = [
+      "maxPullSpeedMetersPerSecond",
+      "staticBodyResistanceKgPerKg",
+      "waterDragKgPerKgPerMps2",
+      "pullAccelerationMetersPerSecond2",
+      "accelerationResistanceKgPerKgPerMps2",
+    ];
+
+    for (const field of fields) {
+      this.#ui.createInputRow(
+        field,
+        Number(fishRetrieve[field]) || 0,
+        content,
+        "number",
+        (newValue) =>
+          this.#updateConfigValue(
+            ["HOOKED_FISH", "physics", "fishRetrieve", field],
+            newValue,
+          ),
+      );
+    }
+  }
+
+  #renderActiveFishForceControls(hookedFish, parentElement) {
+    const physics = hookedFish.physics;
+    if (!physics) return;
+
+    const content = this.#createSectionWithCache(
+      "fish force runtime",
+      parentElement,
+    );
+    const fields = [
+      "basePower",
+      "baseSpeedMetersPerSec",
+      "speedForceMultiplier",
+      "waterResistanceMultiplier",
+      "waterResistanceKgPerKgPerMps",
+      "minPowerRatio",
+      "minStaminaActivityMultiplier",
+      "exhaustedSpeedRatio",
+      "agility",
+    ];
+
+    for (const field of fields) {
+      this.#ui.createInputRow(
+        field,
+        Number(physics[field]) || 0,
+        content,
+        "number",
+        (newValue) =>
+          this.#updateConfigValue(["HOOKED_FISH", "physics", field], newValue),
+      );
+    }
+
+    const directionForce = physics.directionForce;
+    if (!directionForce) return;
+
+    const directionContent = this.#createSectionWithCache(
+      "directionForce runtime",
+      content,
+    );
+    for (const field of [
+      "sameDirectionMultiplier",
+      "sideDirectionMultiplier",
+      "oppositeDirectionMultiplier",
+    ]) {
+      this.#ui.createInputRow(
+        field,
+        Number(directionForce[field]) || 0,
+        directionContent,
+        "number",
+        (newValue) =>
+          this.#updateConfigValue(
+            ["HOOKED_FISH", "physics", "directionForce", field],
+            newValue,
+          ),
+      );
+    }
+  }
+
+  #ensureActiveFishRuntimePhysics(hookedFish) {
+    hookedFish.physics = hookedFish.physics || {};
+    const physics = hookedFish.physics;
+    const globalPhysics = this.#config?.physics || {};
+
+    physics.fishRetrieve = this.#withDefaultNumbers(
+      physics.fishRetrieve,
+      globalPhysics.fishRetrieve,
+      [
+        "maxPullSpeedMetersPerSecond",
+        "staticBodyResistanceKgPerKg",
+        "waterDragKgPerKgPerMps2",
+        "pullAccelerationMetersPerSecond2",
+        "accelerationResistanceKgPerKgPerMps2",
+      ],
+    );
+    physics.directionForce = this.#withDefaultNumbers(
+      physics.directionForce,
+      globalPhysics.directionForce,
+      [
+        "sameDirectionMultiplier",
+        "sideDirectionMultiplier",
+        "oppositeDirectionMultiplier",
+      ],
+    );
+    this.#applyDefaultNumber(
+      physics,
+      "waterResistanceKgPerKgPerMps",
+      globalPhysics.waterResistanceKgPerKgPerMps,
+    );
+    this.#applyDefaultNumber(physics, "minStaminaActivityMultiplier", 0.75);
+    this.#applyDefaultNumber(physics, "exhaustedSpeedRatio", 0.25);
+  }
+
+  #getActiveFishKey() {
+    const fish = this.#liveData?.hookedFish;
+    if (!fish) return "";
+    return `${fish.id || fish.name || "hookedFish"}:${fish.level ?? ""}:${fish.weight ?? ""}`;
   }
 
   #shouldSkipKey(path, key) {
     if (this.#excludeKeys.includes(key)) return true;
+    if (
+      path[0] === "HOOKED_FISH" &&
+      (key === "weight" ||
+        key === "level" ||
+        key === "maxLevel" ||
+        key === "resistance" ||
+        key === "biteSequence")
+    ) {
+      return true;
+    }
+    if (
+      path[0] === "HOOKED_FISH" &&
+      path[1] === "physics" &&
+      (key === "fishRetrieve" || key === "directionForce")
+    ) {
+      return true;
+    }
 
     const isConfigLocationsMap =
       path[0] === "CONFIG" && path[1] === "locations" && key === "map";
@@ -244,6 +465,11 @@ class DevTools {
     }
 
     target[path[path.length - 1]] = newValue;
+    this.#syncHookedFishLevelBalance(path);
+    if (path[0] === "HOOKED_FISH") {
+      this.#emitHookedFishUpdated(path, newValue, root);
+      return;
+    }
     this.#syncItemDbStatAliases(path, newValue);
     console.log(`[DevTools] Оновлено ${path.join(".")} =`, newValue);
 
@@ -258,9 +484,112 @@ class DevTools {
   #resolveEditableRoot(rootName) {
     if (rootName === "ITEM_DB" && typeof ITEM_DB !== "undefined") return ITEM_DB;
     if (rootName === "FISH_DB" && typeof FISH_DB !== "undefined") return FISH_DB;
+    if (rootName === "HOOKED_FISH") return this.#liveData?.hookedFish || null;
     if (rootName === "MAP_DB" && typeof MAP_DB !== "undefined") return MAP_DB;
     if (rootName === "CONFIG" && typeof CONFIG !== "undefined") return CONFIG;
     return null;
+  }
+
+  #emitHookedFishUpdated(path, value, fish) {
+    console.log(`[DevTools] Оновлено ${path.join(".")} =`, value);
+    document.dispatchEvent(
+      new CustomEvent("debug-hooked-fish-updated", {
+        detail: { path, value, fish },
+      }),
+    );
+  }
+
+  #syncHookedFishLevelBalance(path) {
+    if (path[0] !== "HOOKED_FISH") return;
+
+    const changedKey = path[path.length - 1];
+    if (changedKey !== "weight" && changedKey !== "level") return;
+
+    const fish = this.#liveData?.hookedFish;
+    if (!fish) return;
+
+    const template = this.#findFishTemplate(fish);
+    const ranges = template?.weightConfig?.levelWeightRanges;
+    if (!Array.isArray(ranges) || ranges.length === 0) return;
+
+    const range = changedKey === "weight"
+      ? this.#findLevelRangeByWeight(ranges, fish.weight)
+      : this.#findLevelRangeByLevel(ranges, fish.level);
+    if (!range) return;
+
+    fish.level = Math.max(1, Math.round(Number(range.level) || fish.level || 1));
+    fish.physics = fish.physics || {};
+    this.#applyFiniteNumber(fish.physics, "levelBasePower", range.basePower);
+    this.#applyFiniteNumber(
+      fish.physics,
+      "baseSpeedMetersPerSec",
+      this.#firstFiniteNumber(
+        range.baseSpeedMetersPerSec,
+        range.speedMetersPerSec,
+        range.speed,
+      ),
+    );
+  }
+
+  #findFishTemplate(fish) {
+    if (typeof FISH_DB === "undefined" || !Array.isArray(FISH_DB)) return null;
+    return FISH_DB.find((candidate) => candidate?.id === fish?.id) || null;
+  }
+
+  #findLevelRangeByLevel(ranges, level) {
+    const targetLevel = Math.round(Number(level) || 1);
+    return ranges.find((range) => Math.round(Number(range?.level) || 0) === targetLevel) || null;
+  }
+
+  #findLevelRangeByWeight(ranges, weight) {
+    const value = Number(weight);
+    if (!Number.isFinite(value)) return null;
+
+    let firstRange = null;
+    let lastRange = null;
+    for (const range of ranges) {
+      const min = Number(range?.min);
+      const max = Number(range?.max);
+      if (!Number.isFinite(min) || !Number.isFinite(max)) continue;
+
+      const normalized = {
+        range,
+        min: Math.min(min, max),
+        max: Math.max(min, max),
+      };
+      if (!firstRange) firstRange = normalized;
+      lastRange = normalized;
+      if (value >= normalized.min && value <= normalized.max) return range;
+    }
+
+    if (!firstRange) return null;
+    return value < firstRange.min ? firstRange.range : lastRange.range;
+  }
+
+  #applyFiniteNumber(target, key, value) {
+    if (!Number.isFinite(Number(value))) return;
+    target[key] = Math.max(0, Number(value));
+  }
+
+  #withDefaultNumbers(target, defaults, keys) {
+    const result = target && typeof target === "object" ? target : {};
+    for (const key of keys) {
+      this.#applyDefaultNumber(result, key, defaults?.[key]);
+    }
+    return result;
+  }
+
+  #applyDefaultNumber(target, key, value) {
+    if (Number.isFinite(Number(target?.[key]))) return;
+    if (!Number.isFinite(Number(value))) return;
+    target[key] = Math.max(0, Number(value));
+  }
+
+  #firstFiniteNumber(...values) {
+    for (const value of values) {
+      if (Number.isFinite(Number(value))) return Number(value);
+    }
+    return NaN;
   }
 
   #syncItemDbStatAliases(path, newValue) {

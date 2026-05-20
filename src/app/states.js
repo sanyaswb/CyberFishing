@@ -970,7 +970,6 @@ class WaitingState extends GameState {
         level: fixed.level,
         maxLevel,
         weight: fixed.weight,
-        resistance: fixed.resistance,
         biteSequence: chosenSequence,
         imagePath: imagePattern.replace("{level}", fixed.level),
         isUnique,
@@ -1580,7 +1579,6 @@ class PlayingState extends GameState {
             : "Немає (Махова)",
         "Згенерована Вага": fishData.weight.toFixed(3) + " кг",
         "Рівень (Складність)": fishData.level,
-        "Базовий Опір": fishData.resistance.toFixed(2),
       });
 
       this.deps.services.debug.emit("debug-fish-hooked", {

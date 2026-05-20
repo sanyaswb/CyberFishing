@@ -32,26 +32,24 @@ const FISH_DB = [
     },
 
     weightConfig: {
-      rarityCurve: 3.5,
+      rarityCurve: 1.0,
       maxLevel: 6,
-      baseResistance: 0.8,
-      maxResistance: 2.5,
       levelWeightRanges: [
-        { level: 1, min: 0.05, max: 0.25, basePower: 1.1 },
-        { level: 2, min: 0.251, max: 0.75, basePower: 1.3 },
-        { level: 3, min: 0.751, max: 1.5, basePower: 1.5 },
-        { level: 4, min: 1.501, max: 2.5, basePower: 1.7 },
-        { level: 5, min: 2.501, max: 3.5, basePower: 1.9 },
-        { level: 6, min: 3.501, max: 5.0, basePower: 2.5 },
+        { level: 1, min: 0.05, max: 0.25, basePower: 0.1 },
+        { level: 2, min: 0.251, max: 0.75, basePower: 0.1 },
+        { level: 3, min: 0.751, max: 1.5, basePower: 0.1 },
+        { level: 4, min: 1.501, max: 2.5, basePower: 0.1 },
+        { level: 5, min: 2.501, max: 3.5, basePower: 0.1 },
+        { level: 6, min: 3.501, max: 5.0, basePower: 0.1 },
       ],
     },
 
     baitMultipliers: {
-      oil_worm: 2.0,
+      oil_worm: 1.0,
       bread: 1.0,
     },
 
-    timeMultipliers: { morning: 1.0, day: 1.0, evening: 1.1, night: 0.5 },
+    timeMultipliers: { morning: 1.0, day: 1.0, evening: 1.0, night: 1.0 },
     dayMultipliers: {
       1: 1.0,
       2: 1.0,
@@ -63,67 +61,45 @@ const FISH_DB = [
     },
 
     physics: {
-      // Global fish species force coefficient.
-      // Static force kg = weightKg * physics.basePower * weightConfig.levelWeightRanges[level].basePower.
-      // Numeric level itself is NOT multiplied into force.
       basePower: 1.0,
       baseStamina: 1000,
       baseSpeedMetersPerSec: 2.0,
       speedForceMultiplier: 0.35,
       waterResistanceMultiplier: 1.0,
-      currentInfluenceMultiplier: 1.0,
       minPowerRatio: 0.25,
       agility: 1.0,
-      edgePowerMultiplier: 1.0,
       bounceCooldownMs: 2000,
       dirChangeMinMs: 500,
       dirChangeMaxMs: 1500,
-      lastDashTrigger: {
-        targetState: "lastDash",
-        isLocked: false,
-        chance: 0.5,
-        checkIntervalMs: 1000,
-      },
 
       behaviors: {
         idle: {
-          powerRatio: 0.5,
-          speedRatio: 0.5,
+          powerRatio: 1.0,
+          speedRatio: 1.0,
           minTime: 500,
           maxTime: 3000,
-          weight: 10,
+          weight: 25,
         },
         rest: {
-          powerRatio: 0.2,
-          speedRatio: 0.1,
+          powerRatio: 1.0,
+          speedRatio: 1.0,
           minTime: 500,
           maxTime: 2500,
-          weight: 20,
+          weight: 25,
         },
         swim: {
           powerRatio: 1.0,
           speedRatio: 1.0,
           minTime: 2000,
           maxTime: 4000,
-          weight: 40,
+          weight: 25,
         },
         dash: {
-          powerRatio: 1.5,
+          powerRatio: 1.0,
           speedRatio: 1.0,
           minTime: 1000,
           maxTime: 2200,
-          weight: 30,
-        },
-        lastDash: {
-          powerRatio: 1.5,
-          speedRatio: 1.0,
-          minTime: 1000,
-          maxTime: 3000,
-          weight: 0,
-          dirChangeMinMs: 500,
-          dirChangeMaxMs: 1000,
-          agility: 1.5,
-          edgePowerMultiplier: 1.2,
+          weight: 25,
         },
       },
     },
@@ -163,28 +139,6 @@ const FISH_DB = [
           movementDurationMult: [2.0, 2.0],
         },
       },
-
-      // --- Клювання на Спінінгові приманки (Воблер, Блешня, Джиг) ---
-      // active: {
-      //   chanceGuaranteed: 0.6,
-      //   chanceNormal: 0.4,
-      //   maxSequences: [1, 2],
-      //   sequenceIntervalMs: [200, 400],
-      //   intervalMs: [200, 400],
-      //   animDurationMs: [100, 200],
-      //   movementChance: 1.0,
-      //   movementDurationMs: [100, 250],
-      //   movementSpeedPx: [40, 80],
-      //   guaranteedIters: [1, 1],
-      //   normalIters: [1, 2],
-      //   animations: {
-      //     slide: {}, // Тільки різкі ривки
-      //   },
-      //   guaranteedModifiers: {
-      //     movementSpeedMult: [1.5, 2.5],
-      //     movementDurationMult: [1.0, 1.5],
-      //   },
-      // },
     },
   },
   {
@@ -211,8 +165,6 @@ const FISH_DB = [
     weightConfig: {
       rarityCurve: 3.5,
       maxLevel: 5,
-      baseResistance: 0.8,
-      maxResistance: 1.5,
     },
 
     baitMultipliers: {
@@ -240,19 +192,11 @@ const FISH_DB = [
       baseSpeedMetersPerSec: 2.2,
       speedForceMultiplier: 0.35,
       waterResistanceMultiplier: 1.0,
-      currentInfluenceMultiplier: 1.0,
       minPowerRatio: 0.25,
       agility: 1.3,
-      edgePowerMultiplier: 1.0,
       bounceCooldownMs: 2000,
       dirChangeMinMs: 500,
       dirChangeMaxMs: 1500,
-      lastDashTrigger: {
-        targetState: "lastDash",
-        isLocked: false,
-        chance: 0.5,
-        checkIntervalMs: 1000,
-      },
       behaviors: {
         idle: {
           powerRatio: 0.8,
@@ -281,17 +225,6 @@ const FISH_DB = [
           minTime: 500,
           maxTime: 1200,
           weight: 30,
-        },
-        lastDash: {
-          powerRatio: 1.5,
-          speedRatio: 1.0,
-          minTime: 500,
-          maxTime: 1500,
-          weight: 0,
-          dirChangeMinMs: 500,
-          dirChangeMaxMs: 1000,
-          agility: 1.5,
-          edgePowerMultiplier: 1.2,
         },
       },
     },

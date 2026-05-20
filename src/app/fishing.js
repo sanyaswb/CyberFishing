@@ -323,7 +323,6 @@ class FightSessionFactory {
     const fish = new Fish(
       fishData.level,
       fishData.weight,
-      fishData.resistance,
       fishData.physics,
       this.rng,
     );
@@ -696,6 +695,16 @@ class FightService {
     this.#staminaController.updatePlayerPower(
       this.#tensionMeter.getEffectiveMaxTackleLoadKg(),
     );
+  }
+
+  syncFishRuntime(fishData) {
+    if (!this.#fish || !fishData) return;
+    this.#fish.updateRuntimeStats?.({
+      level: fishData.level,
+      weight: fishData.weight,
+      physics: fishData.physics,
+    });
+    this.#fishingSystem = this.#createDebugFishingAdapter();
   }
 
   /** @returns {FightUpdateResult} */

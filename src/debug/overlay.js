@@ -185,8 +185,8 @@ class FishStatesModule extends OverlayModule {
 
     for (const [name, cfg] of Object.entries(behaviors)) {
       const color = this.getStateColor(name);
-      const powerRatio = Number(cfg.powerRatio ?? cfg.pull ?? 1) || 1;
-      const speedRatio = Number(cfg.speedRatio ?? cfg.move ?? 0) || 0;
+      const powerRatio = Number(cfg.powerRatio ?? 1) || 1;
+      const speedRatio = Number(cfg.speedRatio ?? 0) || 0;
       const stateForceKg = basePower * powerRatio;
 
       html += `<div style="margin-bottom: 2px; display: flex; justify-content: space-between; font-size: 12px;">
@@ -434,8 +434,8 @@ class WorstCaseModule extends OverlayModule {
     let maxPull = 0,
       maxMove = 0;
     Object.values(behaviors).forEach((b) => {
-      const powerRatio = b.powerRatio ?? b.pull ?? 0;
-      const speedRatio = b.speedRatio ?? b.move ?? 0;
+      const powerRatio = b.powerRatio ?? 0;
+      const speedRatio = b.speedRatio ?? 0;
       if (powerRatio > maxPull) maxPull = powerRatio;
       const effMove = Math.abs(speedRatio);
       if (effMove > maxMove) maxMove = effMove;

@@ -369,7 +369,6 @@ class BiteSystem {
       weight: genWeight,
       level,
       maxLevel,
-      resistance: this.#lerp(wc.baseResistance, wc.maxResistance, weightRatio),
       physics: this.#buildFishPhysics(fish.physics, wc, level),
       biteSequence: chosenBiteSequence,
       imagePath: this.#resolveFishImagePath(fish, level),

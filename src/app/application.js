@@ -124,6 +124,14 @@ class GameDebugFacade {
     return this.#listeners.add(this.#documentTarget, "config-updated", handler);
   }
 
+  subscribeHookedFishRuntimeUpdated(handler) {
+    return this.#listeners.add(
+      this.#documentTarget,
+      "debug-hooked-fish-updated",
+      handler,
+    );
+  }
+
   clear() {
     this.#debugEvents.clear();
   }
@@ -638,6 +646,9 @@ class GameApplication {
         this.#viewportFacade.refreshLocationConfig(this.#config.locations);
       }
     });
+    this.#debugFacade.subscribeHookedFishRuntimeUpdated((e) => {
+      this.#handleHookedFishRuntimeUpdate(e);
+    });
   }
 
   #isItemDatabaseUpdate(event) {
@@ -659,6 +670,12 @@ class GameApplication {
   #handleFishDatabaseUpdate() {
     if (typeof FISH_DB === "undefined") return;
     this.#bite?.setFishDatabase?.(FISH_DB);
+  }
+
+  #handleHookedFishRuntimeUpdate(event) {
+    const fish = event?.detail?.fish;
+    if (!fish) return;
+    this.#fightService?.syncFishRuntime?.(fish);
   }
 
   #isMapDatabaseUpdate(event) {
