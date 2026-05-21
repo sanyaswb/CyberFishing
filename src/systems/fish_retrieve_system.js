@@ -11,6 +11,8 @@ class FishRetrieveSystem {
     rodPullResult,
     forceData,
     movementBlocked = false,
+    actualSlackMeters = 0,
+    lineTaut = true,
   } = {}) {
     const holdRatio = this.#resolveHoldRatio(rodPullResult);
     if (!rodPullResult?.active && holdRatio <= 0) {
@@ -26,6 +28,8 @@ class FishRetrieveSystem {
       awayFromPlayerRatio: this.#resolveAwayFromPlayerRatio(forceData),
       fishConfig: forceData?.fishPhysicsConfig,
       movementBlocked,
+      actualSlackMeters,
+      lineTaut,
     });
     this.#pullSpeedMetersPerSecond = result.actualPullSpeedMetersPerSecond;
     return result;

@@ -372,8 +372,8 @@ const CONFIG = {
       { instanceId: "uuid-rod-float", itemId: "rod_test_float", quantity: 3 },
       { instanceId: "uuid-reel", itemId: "reel_test" },
       { instanceId: "uuid-reel-nodrag", itemId: "reel_bolognese_nodrag" },
-      { instanceId: "uuid-line", itemId: "line_test_13m" },
-      { instanceId: "uuid-line-short", itemId: "line_test_4m" },
+      { instanceId: "uuid-line", itemId: "line_test_25m" },
+      { instanceId: "uuid-line-short", itemId: "line_test_25m" },
       { instanceId: "uuid-leader", itemId: "leader_test_025" },
       { instanceId: "uuid-float", itemId: "float_day" },
       { instanceId: "uuid-sinker", itemId: "sinker_light", quantity: 2 },
@@ -522,11 +522,32 @@ const CONFIG = {
       controlledPullLimitRatio: 0.85,
     },
     fishRetrieve: {
+      // Порядок балансування:
+      // 1) tautBodyResistanceKgPerKg — базовий статичний натяг від 1кг риби у воді,
+      //    коли риба на гачку, ліска натягнута і немає actual loose line.
+      //    Це НЕ вага риби на суші: 1кг риба у воді може давати лише 0.10–0.25кг базового натягу.
+      tautBodyResistanceKgPerKg: 0.15,
+
+      // 2) activeAwayForceMultiplier — глобальний множник активної сили риби,
+      //    коли її поведінка тягне від гравця. Крути після того, як “камінь у воді” вже збалансований.
+      activeAwayForceMultiplier: 1.0,
+
+      // 3) maxPullSpeedMetersPerSecond — максимальна швидкість, з якою гравець
+      //    намагається вести рибу до берега при full hold. Це темп виважування, не кг сили.
       maxPullSpeedMetersPerSecond: 1.2,
-      staticBodyResistanceKgPerKg: 0.1,
-      waterDragKgPerKgPerMps2: 0.4,
-      pullAccelerationMetersPerSecond2: 6.0,
-      accelerationResistanceKgPerKgPerMps2: 0.08,
+
+      // 4) waterDragKgPerKgAtFullSpeed — додатковий натяг від води для 1кг риби
+      //    на full speed. Усередині drag плавно росте як speedRatio², але баланситься
+      //    цим зрозумілим значенням, а не фізичними м/с².
+      waterDragKgPerKgAtFullSpeed: 0.85,
+
+      // 5) pullAccelerationMetersPerSecond2 — як швидко actual pull speed доходить
+      //    до бажаної швидкості hold. Менше = плавніше, більше = різкіший старт.
+      pullAccelerationMetersPerSecond2: 5.0,
+
+      // 6) startAccelerationLoadKgPerKg — короткий spike натягу для 1кг риби
+      //    при різкому старті full hold. Крути останнім, коли швидкість і drag вже підібрані.
+      startAccelerationLoadKgPerKg: 0.15,
     },
     poleIdleRetrieve: {
       speedMetersPerSecond: 1.2,
@@ -553,8 +574,8 @@ const CONFIG = {
       guaranteedWeightRatio: 0.2,
       maxLoadWeightRatio: 1.0,
       chanceAtGuaranteedRatio: 1.0,
-      chanceAtMaxLoadRatio: 1.0,
-      overweightChance: 1.0,
+      chanceAtMaxLoadRatio: 0.01,
+      overweightChance: 0,
     },
     castingPower: {
       fallbackCoefficient: 0.5,

@@ -527,16 +527,23 @@ class FightPhysicsSystem {
       fishActiveForceAwayKg: fishRetrieveResult?.fishActiveForceAwayKg,
       activeAwayForceKg: fishRetrieveResult?.activeAwayForceKg,
       bodyResistanceKg: fishRetrieveResult?.bodyResistanceKg,
+      tautBodyResistanceKg: fishRetrieveResult?.tautBodyResistanceKg,
       bodyStaticResistanceKg: fishRetrieveResult?.bodyStaticResistanceKg,
       fishStaticResistanceKg: fishRetrieveResult?.fishStaticResistanceKg,
       fishOppositionKg: fishRetrieveResult?.fishOppositionKg,
+      fishRetrievePullSpeedRatio: fishRetrieveResult?.pullSpeedRatio,
       passiveRetrieveTensionKg:
         fishRetrieveResult?.passiveRetrieveTensionKg,
       fishRetrieveWaterDragKg: fishRetrieveResult?.waterDragKg,
+      fishRetrieveWaterDragKgPerKgAtFullSpeed:
+        fishRetrieveResult?.waterDragKgPerKgAtFullSpeed,
       fishRetrieveAccelerationLoadKg:
         fishRetrieveResult?.accelerationLoadKg,
       fishRetrievePositiveAccelerationMps2:
         fishRetrieveResult?.positiveAccelerationMetersPerSecond2,
+      fishRetrieveAccelerationRatio: fishRetrieveResult?.accelerationRatio,
+      fishRetrieveStartAccelerationLoadKgPerKg:
+        fishRetrieveResult?.startAccelerationLoadKgPerKg,
       fishRetrieveUsefulPullForceKg: fishRetrieveResult?.usefulPullForceKg,
       fishRetrieveSpeedMps: fishRetrieveResult?.retrieveSpeedMetersPerSecond,
       fishRetrieveMovementControlRatio:

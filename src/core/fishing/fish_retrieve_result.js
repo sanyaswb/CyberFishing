@@ -11,12 +11,21 @@ class FishRetrieveResult {
       data.actualFishPullSpeedMetersPerSecond,
     );
     this.bodyResistanceKg = this.#positive(
-      data.bodyResistanceKg ?? data.bodyStaticResistanceKg,
+      data.bodyResistanceKg ?? data.tautBodyResistanceKg ?? data.bodyStaticResistanceKg,
     );
+    this.tautBodyResistanceKg = this.bodyResistanceKg;
     this.bodyStaticResistanceKg = this.bodyResistanceKg;
     this.fishStaticResistanceKg = this.bodyResistanceKg;
     this.waterDragKg = this.#positive(data.waterDragKg);
+    this.waterDragKgPerKgAtFullSpeed = this.#positive(
+      data.waterDragKgPerKgAtFullSpeed,
+    );
+    this.pullSpeedRatio = this.#ratio(data.pullSpeedRatio);
     this.accelerationLoadKg = this.#positive(data.accelerationLoadKg);
+    this.accelerationRatio = this.#ratio(data.accelerationRatio);
+    this.startAccelerationLoadKgPerKg = this.#positive(
+      data.startAccelerationLoadKgPerKg,
+    );
     this.positiveAccelerationMetersPerSecond2 = this.#positive(
       data.positiveAccelerationMetersPerSecond2,
     );
@@ -47,6 +56,8 @@ class FishRetrieveResult {
     );
     this.terminalSpeedReached = !!data.terminalSpeedReached;
     this.surplusForceKg = this.#positive(data.surplusForceKg);
+    this.actualSlackMeters = this.#positive(data.actualSlackMeters);
+    this.lineTaut = data.lineTaut !== false;
   }
 
   withAppliedMovement({ appliedMoveMeters, movementBlocked } = {}) {

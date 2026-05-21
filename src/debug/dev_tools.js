@@ -218,12 +218,15 @@ class DevTools {
       "fishRetrieve runtime",
       parentElement,
     );
+    // Same order as CONFIG.physics.fishRetrieve: static baseline first,
+    // active fish next, then player speed, water drag and acceleration spike.
     const fields = [
+      "tautBodyResistanceKgPerKg",
+      "activeAwayForceMultiplier",
       "maxPullSpeedMetersPerSecond",
-      "staticBodyResistanceKgPerKg",
-      "waterDragKgPerKgPerMps2",
+      "waterDragKgPerKgAtFullSpeed",
       "pullAccelerationMetersPerSecond2",
-      "accelerationResistanceKgPerKgPerMps2",
+      "startAccelerationLoadKgPerKg",
     ];
 
     for (const field of fields) {
@@ -307,11 +310,12 @@ class DevTools {
       physics.fishRetrieve,
       globalPhysics.fishRetrieve,
       [
+        "tautBodyResistanceKgPerKg",
+        "activeAwayForceMultiplier",
         "maxPullSpeedMetersPerSecond",
-        "staticBodyResistanceKgPerKg",
-        "waterDragKgPerKgPerMps2",
+        "waterDragKgPerKgAtFullSpeed",
         "pullAccelerationMetersPerSecond2",
-        "accelerationResistanceKgPerKgPerMps2",
+        "startAccelerationLoadKgPerKg",
       ],
     );
     physics.directionForce = this.#withDefaultNumbers(
