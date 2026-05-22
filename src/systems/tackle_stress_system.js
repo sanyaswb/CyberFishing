@@ -18,11 +18,14 @@ class TackleStressSystem {
   #breakInfo = null;
   #overloadTimerMs = 0;
   #lastBreakProgress = 0;
+  #preventedBreakReason = null;
   #debug = {};
+  #devFlags;
 
-  constructor({ rod, reel, lineSystem, leader = null, config, rng = null }) {
+  constructor({ rod, reel, lineSystem, leader = null, config, rng = null, devFlags = null }) {
     this.#config = config || {};
     this.#rng = rng || { next: () => Math.random() };
+    this.#devFlags = devFlags;
     this.updateEquipment({ rod, reel, lineSystem, leader });
   }
 
@@ -63,6 +66,8 @@ class TackleStressSystem {
       tensionRatio: this.#tensionRatio,
       tensionPercent: this.#tensionPercent,
       overloadProgress: this.#lastBreakProgress,
+      breakPrevented: this.#preventedBreakReason !== null,
+      preventedBreakReason: this.#preventedBreakReason,
       breakInfo: this.#breakInfo,
     };
   }
@@ -168,6 +173,7 @@ class TackleStressSystem {
     this.#breakInfo = null;
     this.#overloadTimerMs = 0;
     this.#lastBreakProgress = 0;
+    this.#preventedBreakReason = null;
     this.#refreshRatios();
   }
 
@@ -185,6 +191,7 @@ class TackleStressSystem {
     if (!currentAtFailure && !targetAtFailure) {
       this.#overloadTimerMs = 0;
       this.#lastBreakProgress = 0;
+      this.#preventedBreakReason = null;
       return;
     }
 
@@ -193,10 +200,25 @@ class TackleStressSystem {
     this.#lastBreakProgress =
       graceMs <= 0 ? 1 : Math.min(1, this.#overloadTimerMs / graceMs);
     if (this.#lastBreakProgress >= 1) {
+      const breakReason = this.#selectBreakReason();
+      if (this.#isBreakPrevented(breakReason)) {
+        this.#preventedBreakReason = breakReason;
+        this.#overloadTimerMs = 0;
+        this.#lastBreakProgress = 0;
+        return;
+      }
       this.#isBroken = true;
-      this.#breakReason = this.#selectBreakReason();
+      this.#breakReason = breakReason;
       this.#breakInfo = this.#createBreakInfo(this.#breakReason);
     }
+  }
+
+  #isBreakPrevented(reason) {
+    if (reason === "rod") return this.#devFlags?.isEnabled?.("noRodBreak") === true;
+    if (reason === "line" || reason === "leader") {
+      return this.#devFlags?.isEnabled?.("noLineBreak") === true;
+    }
+    return false;
   }
 
   #selectBreakReason() {

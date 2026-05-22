@@ -1,10 +1,10 @@
 const OVERLAY_MODULES = {
   echo: false,
   chancesDetail: false,
-  state: false,
+  state: true,
   chum: false,
   fishBase: false,
-  fishStates: false,
+  fishStates: true,
   worstCase: false,
   playerMax: false,
   liveY: false,
@@ -257,8 +257,11 @@ class PlayerMaxModule extends OverlayModule {
   render(d) {
     let html = this.formatHeader("📊 СИЛА ГРАВЦЯ", "#00ff80");
     html += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>ЛІМІТ СНАСТІ:</span> <span style="color: #00ff80; font-weight: bold;">${(d.maxTackleLoadKg || d.playerMaxPowerY || 0).toFixed(3)} кг</span></div>`;
-    html += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>PULL SPEED:</span> <span style="color: #00ff80; font-weight: bold;">${(d.actualPullSpeedMps || 0).toFixed(2)} м/с</span></div>`;
-    html += `<div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><span>ФРИКЦІОН:</span> <span style="color: #00ccff; font-weight: bold;">${(d.dragLimitKg || 0).toFixed(3)} кг</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Player pressure:</span><span style="color:#00ff80;">${(d.playerPullPressureKg || 0).toFixed(3)}kg -> ${(d.effectivePlayerPressureKg || 0).toFixed(3)}kg</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Retrieve speed:</span><span style="color:#00ff80;">${(d.actualFishPullSpeedMps || 0).toFixed(2)}m/s</span></div>`;
+    if (d.dragSupported) {
+      html += `<div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><span>ФРИКЦІОН:</span> <span style="color: #00ccff; font-weight: bold;">${(d.dragLimitKg || 0).toFixed(3)} кг</span></div>`;
+    }
     return html;
   }
 }
@@ -287,17 +290,21 @@ class FightPhysicsModule extends OverlayModule {
     );
 
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Натяг:</span><span style="color:#ffaa00; font-weight:bold;">${(d.tensionKg || 0).toFixed(2)} / ${(d.maxTackleLoadKg || 0).toFixed(2)} кг</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Фрикціон:</span><span style="color:#00ccff; font-weight:bold;">${(d.dragPercent || 0).toFixed(0)}% / ${(d.dragLimitKg || 0).toFixed(2)} кг</span></div>`;
+    if (d.dragSupported) {
+      html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Фрикціон:</span><span style="color:#00ccff; font-weight:bold;">${(d.dragPercent || 0).toFixed(0)}% / ${(d.dragLimitKg || 0).toFixed(2)} кг</span></div>`;
+    }
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Випущено ліски:</span><span style="color:#00ff80;">${(d.lineReleasedMeters || 0).toFixed(1)}м / ${(d.lineTotalLengthMeters || 0).toFixed(1)}м</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Залишок ліски:</span><span style="color:${lineReserveColor}; font-weight:bold;">${lineRemaining.toFixed(1)}м / ${lineMaxRemaining.toFixed(1)}м</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Запас ліски:</span><span style="color:${d.lineCanRelease ? "#00ff80" : "#ff4444"}; font-weight:bold;">${d.lineCanRelease ? "Є" : "НЕМАЄ"}</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Фізична межа ліски:</span><span style="color:${d.isLineFullyExtended ? "#ff4444" : "#00ff80"}; font-weight:bold;">${d.isLineFullyExtended ? "ТАК" : "НІ"}</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Дистанція до риби:</span><span style="color:#8a9bac;">${(d.lineDistanceMeters || 0).toFixed(1)}м</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Хід вудки:</span><span style="color:#8a9bac;">${rodStrokeUsed.toFixed(1)}м / ${rodStrokeCapacity.toFixed(1)}м</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Pull speed:</span><span style="color:#00ff80;">${(d.actualPullSpeedMps || 0).toFixed(2)}м/с → ${(d.actualFishPullSpeedMps || 0).toFixed(2)}м/с</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Player pressure:</span><span style="color:#00ff80;">${(d.playerPullPressureKg || 0).toFixed(3)}kg -> ${(d.effectivePlayerPressureKg || 0).toFixed(3)}kg</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Retrieve speed:</span><span style="color:#00ff80;">${(d.actualFishPullSpeedMps || 0).toFixed(2)}m/s</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Статичний опір:</span><span style="color:#8a9bac;">${(d.tautBodyResistanceKg || 0).toFixed(3)}кг</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Активна риба:</span><span style="color:#ff8888;">${(d.activeAwayForceKg || 0).toFixed(3)}кг</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Опір води:</span><span style="color:#73c2fb;">${(d.fishRetrieveWaterDragKg || 0).toFixed(3)}кг</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Стартовий spike:</span><span style="color:#ffaa00;">${(d.fishRetrieveAccelerationLoadKg || 0).toFixed(3)}кг</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Ліска на межі:</span><span style="color:${d.isLineFullyExtended ? "#ff4444" : "#00ff80"}; font-weight:bold;">${d.isLineFullyExtended ? "ТАК" : "НІ"}</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:12px;"><span>Штраф кута:</span><span style="color:#ffaa00;">x${(d.anglePenalty || 1).toFixed(2)} (${(d.angleDeg || 0).toFixed(0)}°)</span></div>`;
     return html;
   }

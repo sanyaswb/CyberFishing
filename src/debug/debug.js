@@ -394,6 +394,9 @@ function renderRodPullModule(ctx) {
       live.activeRodPullForceKg ?? live.rodPullForceKg,
       3,
     ),
+    "Player pressure kg": fmt(live.playerPullPressureKg, 3),
+    "Effective pressure kg": fmt(live.effectivePlayerPressureKg, 3),
+    "Pressure transfer": fmt(live.pressureTransferRatio, 3),
     "Fish force kg": fmt(live.fishForceKg ?? live.totalFishForceKg, 3),
     "Max tackle load kg": fmt(live.maxTackleLoadKg, 3),
     "Drag limit kg": fmt(live.dragLimitKg, 3),
@@ -828,6 +831,10 @@ class GodMode {
 
   static get noRodBreak() {
     return this.isActive && CONFIG.debug.godMode.noRodBreak;
+  }
+
+  static get noFishStaminaLoss() {
+    return this.isActive && CONFIG.debug.godMode.noFishStaminaLoss;
   }
 
   static get infiniteCasting() {

@@ -31,6 +31,7 @@ class FishForceSystem {
     const pixelsPerMeter = Math.max(1, Number(physics.pixelsPerMeter) || 50);
     const behavior = this.#fish.getBehavior(dtMs);
     const fishPhysics = this.#fish.getPhysicsConfig?.() || {};
+    const lastDashDebug = this.#fish.getLastDashDebugData?.() || {};
 
     const staminaRatio = fishCondition?.maxPoints
       ? this.#clamp01(fishCondition.currentStamina / fishCondition.maxPoints)
@@ -116,8 +117,15 @@ class FishForceSystem {
     const escapeSpeedMultiplier =
       1 - playerData.effectiveDragRatio * awayFromPlayerRatio * (1 - minEscape);
 
-    const baseSpeedPxPerSec = this.#fish.getBaseSpeedPxPerSec?.(pixelsPerMeter) || 100;
-    const behaviorSpeedRatio = this.#clamp01(behavior.speedRatio ?? Math.abs(behavior.moveX || 0));
+    const maxSpeedPxPerSec = this.#firstFiniteNumber(
+      this.#fish.getMaxSpeedPxPerSec?.(pixelsPerMeter),
+      this.#fish.getBaseSpeedPxPerSec?.(pixelsPerMeter),
+      100,
+    );
+    const behaviorSpeedRatio = Math.max(
+      0,
+      Number(behavior.speedRatio ?? Math.abs(behavior.moveX || 0)) || 0,
+    );
     const staminaActivityMultiplier = this.#lerp(
       fishPhysics.minStaminaActivityMultiplier ?? 0.75,
       1,
@@ -130,7 +138,7 @@ class FishForceSystem {
     );
 
     const speedPxPerSec =
-      baseSpeedPxPerSec *
+      maxSpeedPxPerSec *
       behaviorSpeedRatio *
       staminaActivityMultiplier *
       exhaustionSpeedMultiplier *
@@ -149,6 +157,7 @@ class FishForceSystem {
       dynamicFishForceKg: dynamicForceKg,
       totalFishForceKg,
       fishSpeedPxPerSec: speedPxPerSec,
+      fishMaxSpeedPxPerSec: maxSpeedPxPerSec,
       staminaRatio,
       staminaActivityMultiplier,
       exhaustionProgress,
@@ -180,6 +189,9 @@ class FishForceSystem {
       currentVelocityX: currentVelocity.x,
       currentVelocityY: currentVelocity.y,
       relativeSpeedMps,
+      lastDash: lastDashDebug,
+      lastDashActive: behavior.name === (lastDashDebug.stateName || "lastDash"),
+      lastDashInZone: !!lastDashDebug.inZone,
     };
 
     return {
@@ -227,6 +239,10 @@ class FishForceSystem {
 
   getDebugData() {
     return this.#debug;
+  }
+
+  evaluateLastDashTrigger(context = {}) {
+    return this.#fish.evaluateLastDashTrigger?.(context) || {};
   }
 
   #getCurrentVelocityPxPerSec(env, physics) {

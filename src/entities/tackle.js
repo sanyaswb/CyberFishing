@@ -595,18 +595,18 @@ class WaterEntity {
     let driftDx = 0;
     let driftDy = 0;
 
+    if (environment?.current) {
+      const activeCfg = this._sinkerConfig || this._config;
+      const compRange = activeCfg.currentCompensation || [0.1, 0.99];
+      const qual = Math.max(1, Math.min(10, activeCfg.quality || 1));
+      const comp = this._lerp(compRange[0], compRange[1], (qual - 1) / 9);
+
+      const driftSpeed = environment.current.speedPxPerSec * (1 - comp);
+      driftDx = environment.current.direction.x * driftSpeed * dtSec;
+      driftDy = environment.current.direction.y * driftSpeed * dtSec;
+    }
+
     if (!this._isHooked && environment) {
-      if (environment.current) {
-        const activeCfg = this._sinkerConfig || this._config;
-        const compRange = activeCfg.currentCompensation || [0.1, 0.99];
-        const qual = Math.max(1, Math.min(10, activeCfg.quality || 1));
-        const comp = this._lerp(compRange[0], compRange[1], (qual - 1) / 9);
-
-        const driftSpeed = environment.current.speedPxPerSec * (1 - comp);
-        driftDx = environment.current.direction.x * driftSpeed * dtSec;
-        driftDy = environment.current.direction.y * driftSpeed * dtSec;
-      }
-
       const isActivelyPulling =
         this._isBiting &&
         (Math.abs(this._currentAngle) > 0.5 ||

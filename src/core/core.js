@@ -95,6 +95,7 @@ class InputManager {
   #lastClickTime = 0;
   #longPressTimeout = null;
   #eventCleanups = [];
+  #dragControlEnabled = true;
   #stateSnapshot;
 
   constructor(canvas, anchorX = null) {
@@ -138,6 +139,7 @@ class InputManager {
       longPressPos: null,
       pointerDown: false,
       dragControlActive: false,
+      dragControlEnabled: true,
       pointerAction: PointerAction.IDLE,
       pointerStart: { x: 0, y: 0 },
       pointerCurrent: { x: 0, y: 0 },
@@ -151,6 +153,16 @@ class InputManager {
 
   setAnchorX(x) {
     this.#anchorX = x;
+  }
+
+  setDragControlEnabled(enabled) {
+    this.#dragControlEnabled = enabled !== false;
+    if (!this.#dragControlEnabled) {
+      this.#isDragControlActive = false;
+      if (this.#pointerAction === PointerAction.DRAG_CONTROL) {
+        this.#pointerAction = this.#isPointerDown ? PointerAction.PENDING : PointerAction.IDLE;
+      }
+    }
   }
 
   #isKeyMatch(e, actionArray) {
@@ -401,7 +413,9 @@ class InputManager {
   }
 
   #updateDragControlState() {
+    if (!this.#dragControlEnabled) return;
     if (!this.#isPointerDown || this.#isDragControlActive) return;
+    if (this.#pointerAction === PointerAction.PULL) return;
 
     const dx = this.#currentPointerX - this.#startX;
     const dy = this.#currentPointerY - this.#startY;
@@ -514,7 +528,8 @@ class InputManager {
     state.isDoubleClick = this.#isDoubleClick;
     state.longPressPos = this.#longPressPos;
     state.pointerDown = this.#isPointerDown;
-    state.dragControlActive = this.#isDragControlActive;
+    state.dragControlActive = this.#dragControlEnabled && this.#isDragControlActive;
+    state.dragControlEnabled = this.#dragControlEnabled;
     state.pointerAction = this.#pointerAction;
     state.pointerStart.x = this.#startX;
     state.pointerStart.y = this.#startY;

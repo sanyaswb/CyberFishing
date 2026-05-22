@@ -1,11 +1,19 @@
 class FishRetrieveResult {
   constructor(data = {}) {
     this.holdRatio = this.#ratio(data.holdRatio);
+    this.playerPullPressureKg = this.#positive(data.playerPullPressureKg);
+    this.effectivePlayerPressureKg = this.#positive(
+      data.effectivePlayerPressureKg,
+    );
+    this.pressureTransferRatio = this.#ratio(data.pressureTransferRatio);
     this.desiredPullSpeedMetersPerSecond = this.#positive(
       data.desiredPullSpeedMetersPerSecond,
     );
     this.actualPullSpeedMetersPerSecond = this.#positive(
       data.actualPullSpeedMetersPerSecond,
+    );
+    this.pullIntentSpeedMetersPerSecond = this.#positive(
+      data.pullIntentSpeedMetersPerSecond ?? data.actualPullSpeedMetersPerSecond,
     );
     this.actualFishPullSpeedMetersPerSecond = this.#positive(
       data.actualFishPullSpeedMetersPerSecond,
@@ -17,10 +25,15 @@ class FishRetrieveResult {
     this.bodyStaticResistanceKg = this.bodyResistanceKg;
     this.fishStaticResistanceKg = this.bodyResistanceKg;
     this.waterDragKg = this.#positive(data.waterDragKg);
-    this.waterDragKgPerKgAtFullSpeed = this.#positive(
-      data.waterDragKgPerKgAtFullSpeed,
+    this.waterDragKgPerKgAtReferenceSpeed = this.#positive(
+      data.waterDragKgPerKgAtReferenceSpeed,
     );
+    this.waterDragCapacityKg = this.#positive(data.waterDragCapacityKg);
     this.pullSpeedRatio = this.#ratio(data.pullSpeedRatio);
+    this.intentPullSpeedRatio = this.#ratio(data.intentPullSpeedRatio);
+    this.movementAuthorityLoadKg = this.#positive(data.movementAuthorityLoadKg);
+    this.potentialWaterDragKg = this.#positive(data.potentialWaterDragKg);
+    this.potentialAccelerationLoadKg = this.#positive(data.potentialAccelerationLoadKg);
     this.accelerationLoadKg = this.#positive(data.accelerationLoadKg);
     this.accelerationRatio = this.#ratio(data.accelerationRatio);
     this.startAccelerationLoadKgPerKg = this.#positive(
@@ -56,6 +69,7 @@ class FishRetrieveResult {
     );
     this.terminalSpeedReached = !!data.terminalSpeedReached;
     this.surplusForceKg = this.#positive(data.surplusForceKg);
+    this.blockedSurplusForceKg = this.#positive(data.blockedSurplusForceKg);
     this.actualSlackMeters = this.#positive(data.actualSlackMeters);
     this.lineTaut = data.lineTaut !== false;
   }

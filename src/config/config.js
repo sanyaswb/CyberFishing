@@ -1,4 +1,4 @@
-const SLOT_CONFIG = {
+﻿const SLOT_CONFIG = {
   rod: {
     type: "single",
     dependencies: [
@@ -183,8 +183,8 @@ const CONFIG = {
       // Shift залишено як ручний recover без конфлікту з пробілом.
       retrieve: ["ShiftLeft", "ShiftRight"],
 
-      dragIncrease: ["KeyW", "ArrowUp"],
-      dragDecrease: ["KeyS", "ArrowDown"],
+      dragIncrease: ["KeyS", "ArrowDown"],
+      dragDecrease: ["KeyW", "ArrowUp"],
       left: ["KeyA", "ArrowLeft"], // Відведення вудки вліво
       right: ["KeyD", "ArrowRight"], // Відведення вудки вправо
 
@@ -273,6 +273,7 @@ const CONFIG = {
       noHookEscape: true, // 2. Риба ніколи не зривається з гачка
       noLineBreak: true, // 3. Ліска не рветься при 100% натягу
       noRodBreak: true, // 4. Вудка ніколи не ламається
+      noFishStaminaLoss: false, // 5. Стаміна риби не витрачається і завжди тримається на 100%
       infiniteCasting: true,
 
       // Bite debug controls. Працюють тільки коли enabled: true.
@@ -291,10 +292,9 @@ const CONFIG = {
     timeScale: 240, // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
 
     fixedCatch: {
-      enabled: false,
+      enabled: true,
       fishId: "crucian_stalker", // Можна вписати 'perch_radioactive'
-      level: 6,
-      weight: 2.678,
+      weight: 0.8,
     },
   },
 
@@ -309,6 +309,7 @@ const CONFIG = {
     enableDynamicZones: false, // Вимикає всі динамічні зони (косяки риби, рухомі перешкоди тощо)
     showChumZones: true,
     showCatchZone: false, // Відображення синьої зони
+    showLastDashZone: false, // Відображення фіолетової lastDash trigger zone
     showNetZone: true, // Відображення зеленої зони
     showAimingZone: true, // Відображення зони закидання
 
@@ -420,7 +421,7 @@ const CONFIG = {
       baseStaminaMultiplier: 50,
       flatBonus: 500,
 
-      baseDepletionRate: 45,
+      baseDepletionRate: 100,
       baseRegenRate: 20,
       edgeRegenRate: 30,
       optimalMax: 100,
@@ -431,10 +432,10 @@ const CONFIG = {
       // 0.5 = у 2 рази повільніше
       // 1.0 = стандартно
       // 2.0 = у 2 рази швидше
-      exhaustionDepletionMultiplier: 0.5,
+      exhaustionDepletionMultiplier: 0.05,
 
       // Керує тим, як швидко реально падає сила/опір риби в кг під час exhaustion.
-      basePowerDropPerSec: 0.01,
+      basePowerDropPerSec: 0.1,
 
       minBasePowerRatio: 0.2,
       masteryTimeRatio: 0.5,
@@ -460,9 +461,8 @@ const CONFIG = {
     pixelsPerMeter: 50,
     fixedDtMs: 16.666,
     maxDtMs: 50,
-    waterResistanceKgPerKgPerMps: 0.08,
+    waterResistanceKgPerKgPerMps: 2.2, //** */
     currentResistanceMultiplier: 1.0,
-    forceKgToPxPerSec2: 200,
     rodAnglePenalty: {
       enabled: true,
       noPenaltyAngleDeg: 15,
@@ -509,44 +509,23 @@ const CONFIG = {
     },
     rodStroke: {
       enabled: true,
-      distanceMultiplierByRodLength: 1.0,
-      strokeChargePerSecond: 1.2,
-      minEffectivePullKg: 0.01,
       pumpCreditReducesNextPullDistance: true,
+      distanceMultiplierByRodLength: 1.0,
+      strokeChargePerSecond: 1.0,
+      minEffectivePullKg: 0.01,
       minStrokeMeters: 0.001,
       finalLandingDistanceMeters: 0.5,
-      minChargeSpeedMultiplier: 0.12,
-      loadChargePower: 1.0,
-      // Max stable hold demand. 100% tension is reserved for guaranteed break/failure,
-      // so normal hold must not use the full breakable tackle load by itself.
-      controlledPullLimitRatio: 0.85,
+      controlledPullLimitRatio: 1.0,
     },
     fishRetrieve: {
-      // Порядок балансування:
-      // 1) tautBodyResistanceKgPerKg — базовий статичний натяг від 1кг риби у воді,
-      //    коли риба на гачку, ліска натягнута і немає actual loose line.
-      //    Це НЕ вага риби на суші: 1кг риба у воді може давати лише 0.10–0.25кг базового натягу.
       tautBodyResistanceKgPerKg: 0.15,
-
-      // 2) activeAwayForceMultiplier — глобальний множник активної сили риби,
-      //    коли її поведінка тягне від гравця. Крути після того, як “камінь у воді” вже збалансований.
       activeAwayForceMultiplier: 1.0,
-
-      // 3) maxPullSpeedMetersPerSecond — максимальна швидкість, з якою гравець
-      //    намагається вести рибу до берега при full hold. Це темп виважування, не кг сили.
-      maxPullSpeedMetersPerSecond: 1.2,
-
-      // 4) waterDragKgPerKgAtFullSpeed — додатковий натяг від води для 1кг риби
-      //    на full speed. Усередині drag плавно росте як speedRatio², але баланситься
-      //    цим зрозумілим значенням, а не фізичними м/с².
-      waterDragKgPerKgAtFullSpeed: 0.85,
-
-      // 5) pullAccelerationMetersPerSecond2 — як швидко actual pull speed доходить
-      //    до бажаної швидкості hold. Менше = плавніше, більше = різкіший старт.
+      referencePullSpeedMetersPerSecond: 1.0,
+      waterDragKgPerKgAtReferenceSpeed: 0.85,
+      playerPressureTransferReferenceWeightKg: 0.5,
+      minPlayerPressureTransferRatio: 0.05,
+      blockedPlayerPressureTransferRatio: 1.0,
       pullAccelerationMetersPerSecond2: 5.0,
-
-      // 6) startAccelerationLoadKgPerKg — короткий spike натягу для 1кг риби
-      //    при різкому старті full hold. Крути останнім, коли швидкість і drag вже підібрані.
       startAccelerationLoadKgPerKg: 0.15,
     },
     poleIdleRetrieve: {
@@ -571,11 +550,11 @@ const CONFIG = {
       },
 
       rollIntervalMs: 1000,
-      guaranteedWeightRatio: 0.2,
-      maxLoadWeightRatio: 1.0,
-      chanceAtGuaranteedRatio: 1.0,
-      chanceAtMaxLoadRatio: 0.01,
-      overweightChance: 0,
+      guaranteedWeightRatio: 0.2, // Dont change its test value for debugging purposes
+      maxLoadWeightRatio: 1, // Dont change its test value for debugging purposes
+      chanceAtGuaranteedRatio: 1, // Dont change its test value for debugging purposes
+      chanceAtMaxLoadRatio: 1.0, // Dont change its test value for debugging purposes
+      overweightChance: 1, // Dont change its test value for debugging purposes
     },
     castingPower: {
       fallbackCoefficient: 0.5,
@@ -636,7 +615,7 @@ const CONFIG = {
   },
 
   tension: {
-    kgSmoothPerSecond: 18,
+    kgSmoothPerSecond: 2.5,
     // 100% tension is the deterministic failure threshold.
     overloadGraceMs: 0,
     powerRatioExponent: 2.0,
@@ -720,6 +699,10 @@ const CONFIG = {
 
     catchZone: {
       color: "rgba(0, 150, 255, 0.5)",
+      strokeColor: "rgba(0, 200, 255, 0.85)",
+      lastDashFillColor: "rgba(170, 80, 255, 0.12)",
+      lastDashStrokeColor: "rgba(190, 90, 255, 0.9)",
+      lastDashDash: [9, 7],
     },
 
     victory: {

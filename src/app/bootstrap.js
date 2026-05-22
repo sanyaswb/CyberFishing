@@ -187,9 +187,11 @@ class GameCompositionRoot {
     const fightService = new FightService({
       config,
       rng,
+      devFlags,
       fightSessionFactory: new FightSessionFactory({
         config,
         rng,
+        devFlags,
         castDistanceCalculator: runtime.castDistanceCalculator,
       }),
     });

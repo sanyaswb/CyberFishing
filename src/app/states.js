@@ -602,6 +602,7 @@ class ScoutingState extends GameState {
             bounds.bottom,
             maxDist,
             "rod",
+            this.deps.config.locations,
           );
         }
       }
@@ -618,6 +619,7 @@ class ScoutingState extends GameState {
           bounds.bottom,
           this.deps.getChumCastDistance(),
           "chum",
+          this.deps.config.locations,
         );
       }
     }
@@ -944,17 +946,19 @@ class WaitingState extends GameState {
         baitTypes,
       );
       const visual = template.visual || {};
-      const maxLevel = template.weightConfig?.maxLevel || fixed.level;
+      const weightConfig = template.weightConfig || {};
+      const fixedLevel = this.#resolveFixedCatchLevel(fixed.weight, weightConfig);
+      const maxLevel = weightConfig.maxLevel || fixedLevel;
       const uniqueLevel = visual.uniqueLevel;
       const isUnique =
         template.isUnique === true ||
         template.unique === true ||
-        (Number.isFinite(uniqueLevel) && fixed.level >= uniqueLevel);
+        (Number.isFinite(uniqueLevel) && fixedLevel >= uniqueLevel);
       const imagePattern =
         visual.imagePattern ||
         `assets/fish/${template.id}/${template.id}--{level}.webp`;
       const fixedLevelRange = template.weightConfig?.levelWeightRanges?.find(
-        (range) => Number(range?.level) === Number(fixed.level),
+        (range) => Number(range?.level) === Number(fixedLevel),
       );
       const fixedLevelBasePower = Number.isFinite(Number(fixedLevelRange?.basePower))
         ? Number(fixedLevelRange.basePower)
@@ -967,11 +971,11 @@ class WaitingState extends GameState {
           ...(template.physics || {}),
           levelBasePower: fixedLevelBasePower,
         },
-        level: fixed.level,
+        level: fixedLevel,
         maxLevel,
         weight: fixed.weight,
         biteSequence: chosenSequence,
-        imagePath: imagePattern.replace("{level}", fixed.level),
+        imagePath: imagePattern.replace("{level}", fixedLevel),
         isUnique,
         isTrophy:
           template.trophyWeightKg !== undefined
@@ -985,6 +989,44 @@ class WaitingState extends GameState {
       this.deps.float.startBite(effectiveInput.isPulling, hooked.biteSequence);
       this.deps.commands.setState("biting", { fish: hooked });
     }
+  }
+
+  #resolveFixedCatchLevel(weight, weightConfig) {
+    const ranges = weightConfig?.levelWeightRanges;
+    const maxLevel = Math.max(1, Math.round(Number(weightConfig?.maxLevel) || 1));
+    const value = Number(weight);
+    if (!Array.isArray(ranges) || ranges.length === 0 || !Number.isFinite(value)) {
+      return maxLevel;
+    }
+
+    let firstRange = null;
+    let lastRange = null;
+    for (const range of ranges) {
+      const min = Number(range?.min);
+      const max = Number(range?.max);
+      const level = Number(range?.level);
+      if (
+        !Number.isFinite(min) ||
+        !Number.isFinite(max) ||
+        !Number.isFinite(level)
+      ) {
+        continue;
+      }
+
+      const normalized = {
+        level: Math.max(1, Math.round(level)),
+        min: Math.min(min, max),
+        max: Math.max(min, max),
+      };
+      if (!firstRange) firstRange = normalized;
+      lastRange = normalized;
+      if (value >= normalized.min && value <= normalized.max) {
+        return normalized.level;
+      }
+    }
+
+    if (!firstRange) return maxLevel;
+    return value < firstRange.min ? firstRange.level : lastRange.level;
   }
 
   draw(renderer, bounds) {

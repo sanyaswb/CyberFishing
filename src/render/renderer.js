@@ -273,6 +273,7 @@
     virtualBottomY,
     locationsConfig,
     catchZoneUIConfig,
+    zoneContext = null,
   ) {
     if (!locationsConfig.debugVisuals) return;
 
@@ -286,24 +287,76 @@
     ).y;
 
     const showCatch = locationsConfig.showCatchZone !== false;
+    const showLastDash = locationsConfig.showLastDashZone === true;
     const showNet = locationsConfig.showNetZone !== false;
+    const landingDistanceMeters = Math.max(
+      0,
+      Number(zoneContext?.landingDistanceMeters) || 0,
+    );
+    const lastDashDistanceMeters = Math.max(
+      0,
+      Number(zoneContext?.lastDashTriggerDistanceMeters) || 0,
+    );
+    const pixelsPerMeter = Math.max(
+      1,
+      Number(zoneContext?.pixelsPerMeter) || 50,
+    );
+    const hasLandingCircle =
+      landingDistanceMeters > 0 &&
+      Number.isFinite(Number(zoneContext?.rodVirtualX)) &&
+      Number.isFinite(Number(zoneContext?.rodVirtualY));
+
+    if (showLastDash && hasLandingCircle && lastDashDistanceMeters > 0) {
+      this.#withCastableClip(projector, locationsConfig, () => {
+        this.#drawDistanceZoneEllipse(projector, {
+          centerVirtualX: zoneContext.rodVirtualX,
+          centerVirtualY: zoneContext.rodVirtualY,
+          radiusMeters: lastDashDistanceMeters,
+          pixelsPerMeter,
+          fillColor:
+            catchZoneUIConfig?.lastDashFillColor || "rgba(170, 80, 255, 0.12)",
+          strokeColor:
+            catchZoneUIConfig?.lastDashStrokeColor || "rgba(190, 90, 255, 0.9)",
+          lineWidth: 2,
+          dash: catchZoneUIConfig?.lastDashDash || [9, 7],
+        });
+      });
+    }
 
     if (showCatch) {
-      const heightToDraw = this.#canvas.height - catchScreenY;
+      if (hasLandingCircle) {
+        this.#withCastableClip(projector, locationsConfig, () => {
+          this.#drawDistanceZoneEllipse(projector, {
+            centerVirtualX: zoneContext.rodVirtualX,
+            centerVirtualY: zoneContext.rodVirtualY,
+            radiusMeters: landingDistanceMeters,
+            pixelsPerMeter,
+            fillColor: catchZoneUIConfig?.color || "rgba(0, 150, 255, 0.3)",
+            strokeColor:
+              catchZoneUIConfig?.strokeColor || "rgba(0, 200, 255, 0.8)",
+            lineWidth: 2,
+          });
+        });
+      } else {
+        this.#withCastableClip(projector, locationsConfig, () => {
+          const heightToDraw = this.#canvas.height - catchScreenY;
 
-      if (heightToDraw > 0) {
-        this.#ctx.fillStyle =
-          catchZoneUIConfig?.color || "rgba(0, 150, 255, 0.3)";
-        this.#ctx.fillRect(0, catchScreenY, this.#canvas.width, heightToDraw);
+          if (heightToDraw > 0) {
+            this.#ctx.fillStyle =
+              catchZoneUIConfig?.color || "rgba(0, 150, 255, 0.3)";
+            this.#ctx.fillRect(0, catchScreenY, this.#canvas.width, heightToDraw);
+          }
+
+          const lineDrawY = Math.min(catchScreenY, this.#canvas.height - 2);
+          this.#ctx.strokeStyle =
+            catchZoneUIConfig?.strokeColor || "rgba(0, 200, 255, 0.8)";
+          this.#ctx.lineWidth = 2;
+          this.#ctx.beginPath();
+          this.#ctx.moveTo(0, lineDrawY);
+          this.#ctx.lineTo(this.#canvas.width, lineDrawY);
+          this.#ctx.stroke();
+        });
       }
-
-      const lineDrawY = Math.min(catchScreenY, this.#canvas.height - 2);
-      this.#ctx.strokeStyle = "rgba(0, 200, 255, 0.8)";
-      this.#ctx.lineWidth = 2;
-      this.#ctx.beginPath();
-      this.#ctx.moveTo(0, lineDrawY);
-      this.#ctx.lineTo(this.#canvas.width, lineDrawY);
-      this.#ctx.stroke();
     }
 
     if (showNet && netSystem && netSystem.isActive) {
@@ -336,54 +389,171 @@
     }
   }
 
-  drawChumZones(chumManager, projector) {
-    const zones = chumManager.getZones();
+  #drawDistanceZoneEllipse(
+    projector,
+    {
+      centerVirtualX,
+      centerVirtualY,
+      radiusMeters,
+      pixelsPerMeter,
+      fillColor,
+      strokeColor,
+      lineWidth = 2,
+      dash = null,
+    },
+  ) {
+    const center = projector.virtualToScreen(
+      centerVirtualX,
+      centerVirtualY,
+      this.#screenA,
+    );
+    const perspective = projector.getPerspective?.(centerVirtualY) || {
+      scale: 1,
+      squashY: 1,
+    };
+    const radiusX =
+      Math.max(0, Number(radiusMeters) || 0) *
+      Math.max(1, Number(pixelsPerMeter) || 50) *
+      Math.max(0, Number(perspective.scale) || 0) *
+      projector.getScale();
+    const radiusY = radiusX * Math.max(0, Number(perspective.squashY) || 0);
+    if (radiusX <= 0 || radiusY <= 0) return;
 
-    for (const zone of zones) {
-      if (!zone.isDelivered || zone.isExpired) continue;
-
-      const cfg = zone.baitConfig;
-
-      let opacity = 1.0;
-      if (zone.currentBonus < cfg.maxBonus) {
-        opacity =
-          0.3 +
-          (0.7 * (zone.currentBonus - cfg.minBonus)) /
-            Math.max(0.01, cfg.maxBonus - cfg.minBonus);
-      }
-
-      const perspective = projector.getPerspective(zone.y);
-      const centerScreen = projector.virtualToScreen(
-        zone.x,
-        zone.y,
-        this.#screenA,
-      );
-      const rxScreen =
-        zone.baseRadius * perspective.scale * projector.getScale();
-      const ryScreen = rxScreen * perspective.squashY;
-
-      this.#ctx.save();
-      this.#ctx.beginPath();
-      this.#ctx.ellipse(
-        centerScreen.x,
-        centerScreen.y,
-        rxScreen,
-        ryScreen,
-        0,
-        0,
-        Math.PI * 2,
-      );
-
-      this.#ctx.fillStyle = `rgba(200, 255, 100, ${opacity * 0.2})`;
+    this.#ctx.save();
+    if (Array.isArray(dash)) this.#ctx.setLineDash(dash);
+    this.#ctx.beginPath();
+    this.#ctx.ellipse(center.x, center.y, radiusX, radiusY, 0, 0, Math.PI * 2);
+    if (fillColor) {
+      this.#ctx.fillStyle = fillColor;
       this.#ctx.fill();
-      this.#ctx.strokeStyle = `rgba(200, 255, 100, ${opacity * 0.5})`;
-      this.#ctx.lineWidth = 2;
-      this.#ctx.stroke();
-      this.#ctx.restore();
     }
+    if (strokeColor) {
+      this.#ctx.strokeStyle = strokeColor;
+      this.#ctx.lineWidth = lineWidth;
+      this.#ctx.stroke();
+    }
+    this.#ctx.restore();
   }
 
-  drawAimingZone(projector, virtualBottomY, maxDist, type = "chum") {
+  #withCastableClip(projector, locationsConfig, drawFn) {
+    if (!locationsConfig) {
+      drawFn();
+      return;
+    }
+
+    const zones = this.#getCastableZones(locationsConfig);
+    if (!zones.length) {
+      drawFn();
+      return;
+    }
+
+    this.#ctx.save();
+    this.#ctx.beginPath();
+    for (const zone of zones) {
+      const rect = this.#getCastableZoneScreenRect(
+        projector,
+        zone,
+        locationsConfig.cellSize,
+      );
+      if (!rect || rect.width <= 0 || rect.height <= 0) continue;
+      this.#ctx.rect(rect.x, rect.y, rect.width, rect.height);
+    }
+    this.#ctx.clip();
+    drawFn();
+    this.#ctx.restore();
+  }
+
+  #getCastableZones(locationsConfig) {
+    const maps = locationsConfig.map || {};
+    const locationId = locationsConfig.currentLocationId || Object.keys(maps)[0];
+    return maps[locationId]?.zones?.castable || [];
+  }
+
+  #getCastableZoneScreenRect(projector, zone, cellSize = 40) {
+    const size = Math.max(1, Number(cellSize) || 40);
+    let left = Number(zone.x) * size;
+    let right = (Number(zone.x) + Number(zone.w)) * size;
+
+    if (zone.adaptiveX) {
+      left = projector.screenToVirtual(0, 0, this.#screenA).x;
+      right = projector.screenToVirtual(this.#canvas.width, 0, this.#screenB).x;
+    }
+
+    const top = Number(zone.y) * size;
+    const bottom = (Number(zone.y) + Number(zone.h)) * size;
+    if (![left, right, top, bottom].every(Number.isFinite)) return null;
+
+    const screenA = projector.virtualToScreen(left, top, this.#screenA);
+    const x1 = screenA.x;
+    const y1 = screenA.y;
+    const screenB = projector.virtualToScreen(right, bottom, this.#screenB);
+    const x2 = screenB.x;
+    const y2 = screenB.y;
+
+    return {
+      x: Math.min(x1, x2),
+      y: Math.min(y1, y2),
+      width: Math.abs(x2 - x1),
+      height: Math.abs(y2 - y1),
+    };
+  }
+
+  drawChumZones(chumManager, projector, locationsConfig = null) {
+    const zones = chumManager.getZones();
+
+    this.#withCastableClip(projector, locationsConfig, () => {
+      for (const zone of zones) {
+        if (!zone.isDelivered || zone.isExpired) continue;
+
+        const cfg = zone.baitConfig;
+
+        let opacity = 1.0;
+        if (zone.currentBonus < cfg.maxBonus) {
+          opacity =
+            0.3 +
+            (0.7 * (zone.currentBonus - cfg.minBonus)) /
+              Math.max(0.01, cfg.maxBonus - cfg.minBonus);
+        }
+
+        const perspective = projector.getPerspective(zone.y);
+        const centerScreen = projector.virtualToScreen(
+          zone.x,
+          zone.y,
+          this.#screenA,
+        );
+        const rxScreen =
+          zone.baseRadius * perspective.scale * projector.getScale();
+        const ryScreen = rxScreen * perspective.squashY;
+
+        this.#ctx.save();
+        this.#ctx.beginPath();
+        this.#ctx.ellipse(
+          centerScreen.x,
+          centerScreen.y,
+          rxScreen,
+          ryScreen,
+          0,
+          0,
+          Math.PI * 2,
+        );
+
+        this.#ctx.fillStyle = `rgba(200, 255, 100, ${opacity * 0.2})`;
+        this.#ctx.fill();
+        this.#ctx.strokeStyle = `rgba(200, 255, 100, ${opacity * 0.5})`;
+        this.#ctx.lineWidth = 2;
+        this.#ctx.stroke();
+        this.#ctx.restore();
+      }
+    });
+  }
+
+  drawAimingZone(
+    projector,
+    virtualBottomY,
+    maxDist,
+    type = "chum",
+    locationsConfig = null,
+  ) {
     if (maxDist === Infinity) return;
 
     const virtualLineY = virtualBottomY - maxDist;
@@ -398,29 +568,31 @@
     );
     const fillHeight = screenBottomPos.y - lineScreenY;
 
-    this.#ctx.save();
-    this.#ctx.beginPath();
+    this.#withCastableClip(projector, locationsConfig, () => {
+      this.#ctx.save();
+      this.#ctx.beginPath();
 
-    this.#ctx.moveTo(0, lineScreenY);
-    this.#ctx.lineTo(this.#canvas.width, lineScreenY);
+      this.#ctx.moveTo(0, lineScreenY);
+      this.#ctx.lineTo(this.#canvas.width, lineScreenY);
 
-    if (type === "chum") {
-      this.#ctx.strokeStyle = "rgba(255, 170, 0, 0.8)";
-      this.#ctx.fillStyle = "rgba(255, 170, 0, 0.05)";
-    } else {
-      this.#ctx.strokeStyle = "rgba(0, 204, 255, 0.6)";
-      this.#ctx.fillStyle = "rgba(0, 204, 255, 0.05)";
-    }
+      if (type === "chum") {
+        this.#ctx.strokeStyle = "rgba(255, 170, 0, 0.8)";
+        this.#ctx.fillStyle = "rgba(255, 170, 0, 0.05)";
+      } else {
+        this.#ctx.strokeStyle = "rgba(0, 204, 255, 0.6)";
+        this.#ctx.fillStyle = "rgba(0, 204, 255, 0.05)";
+      }
 
-    this.#ctx.lineWidth = 2;
-    this.#ctx.setLineDash([15, 10]);
-    this.#ctx.stroke();
+      this.#ctx.lineWidth = 2;
+      this.#ctx.setLineDash([15, 10]);
+      this.#ctx.stroke();
 
-    if (fillHeight > 0) {
-      this.#ctx.fillRect(0, lineScreenY, this.#canvas.width, fillHeight);
-    }
+      if (fillHeight > 0) {
+        this.#ctx.fillRect(0, lineScreenY, this.#canvas.width, fillHeight);
+      }
 
-    this.#ctx.restore();
+      this.#ctx.restore();
+    });
   }
 
   drawCastPowerAim(
@@ -1159,7 +1331,13 @@
 
     const dragLimitKg = Number(fightDebug?.dragLimitKg);
     const maxLoadForMarker = Number(maxLoadKg);
-    if (Number.isFinite(dragLimitKg) && Number.isFinite(maxLoadForMarker) && maxLoadForMarker > 0) {
+    const shouldDrawDragMarker = fightDebug?.dragSupported === true;
+    if (
+      shouldDrawDragMarker &&
+      Number.isFinite(dragLimitKg) &&
+      Number.isFinite(maxLoadForMarker) &&
+      maxLoadForMarker > 0
+    ) {
       const markerRatio = Math.max(0, Math.min(1, dragLimitKg / maxLoadForMarker));
       const markerX = barX + barWidth * markerRatio;
       this.#ctx.strokeStyle = "#73c2fb";

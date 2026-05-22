@@ -1,3 +1,42 @@
+class DevToolsParameterTooltipProvider {
+  #descriptionsByKey = {};
+  #readyPromise;
+
+  constructor({ url = "src/debug/dev_tool_parameter_descriptions.json" } = {}) {
+    this.#readyPromise = this.#load(url);
+  }
+
+  get ready() {
+    return this.#readyPromise;
+  }
+
+  getTooltip(labelText) {
+    const description = this.#descriptionsByKey[String(labelText)];
+    if (!description) return "";
+    return `${description.key} = ${description.ua}:\n${description.description}`;
+  }
+
+  async #load(url) {
+    if (typeof fetch !== "function") return;
+
+    try {
+      const response = await fetch(url, { cache: "no-cache" });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const descriptions = await response.json();
+      this.#descriptionsByKey = Object.fromEntries(
+        (Array.isArray(descriptions) ? descriptions : [])
+          .filter((item) => item?.key)
+          .map((item) => [item.key, item]),
+      );
+    } catch (error) {
+      console.warn("[DevTools] Tooltip descriptions failed to load:", error);
+    }
+  }
+}
+
 class DevTools {
   #config;
   #ui;
@@ -19,7 +58,15 @@ class DevTools {
 
   constructor(config) {
     this.#config = config;
-    this.#ui = new DevToolsUI(() => this.toggle(), this.#config);
+    const tooltipProvider = new DevToolsParameterTooltipProvider();
+    this.#ui = new DevToolsUI(
+      () => this.toggle(),
+      this.#config,
+      tooltipProvider,
+    );
+    tooltipProvider.ready.then(() => {
+      if (this.#isOpen) this.#populatePanel();
+    });
     document.addEventListener("debug-live-update", (event) => {
       this.#liveData = event.detail || null;
       const nextFishKey = this.#getActiveFishKey();
@@ -66,19 +113,14 @@ class DevTools {
         body,
       );
       for (const k in window.DEBUG_MODULES) {
-        this.#ui.createSwitcherRow(
-          k,
-          window.DEBUG_MODULES[k],
-          content,
-          (v) => {
-            window.DEBUG_MODULES[k] = v;
-            document.dispatchEvent(
-              new CustomEvent("debug-module-toggled", {
-                detail: { module: k, enabled: v },
-              }),
-            );
-          },
-        );
+        this.#ui.createSwitcherRow(k, window.DEBUG_MODULES[k], content, (v) => {
+          window.DEBUG_MODULES[k] = v;
+          document.dispatchEvent(
+            new CustomEvent("debug-module-toggled", {
+              detail: { module: k, enabled: v },
+            }),
+          );
+        });
       }
     }
 
@@ -195,13 +237,16 @@ class DevTools {
         ),
     );
     this.#ui.createInputRow(
-      "levelBaseSpeedMetersPerSec",
-      Number(hookedFish.physics.baseSpeedMetersPerSec) || 0,
+      "levelMaxSpeedMetersPerSec",
+      Number(
+        hookedFish.physics.maxSpeedMetersPerSec ??
+          hookedFish.physics.baseSpeedMetersPerSec,
+      ) || 0,
       levelContent,
       "number",
       (newValue) =>
         this.#updateConfigValue(
-          ["HOOKED_FISH", "physics", "baseSpeedMetersPerSec"],
+          ["HOOKED_FISH", "physics", "maxSpeedMetersPerSec"],
           newValue,
         ),
     );
@@ -219,12 +264,15 @@ class DevTools {
       parentElement,
     );
     // Same order as CONFIG.physics.fishRetrieve: static baseline first,
-    // active fish next, then player speed, water drag and acceleration spike.
+    // active fish next, then player pressure transfer, water drag and acceleration.
     const fields = [
       "tautBodyResistanceKgPerKg",
       "activeAwayForceMultiplier",
-      "maxPullSpeedMetersPerSecond",
-      "waterDragKgPerKgAtFullSpeed",
+      "referencePullSpeedMetersPerSecond",
+      "waterDragKgPerKgAtReferenceSpeed",
+      "playerPressureTransferReferenceWeightKg",
+      "minPlayerPressureTransferRatio",
+      "blockedPlayerPressureTransferRatio",
       "pullAccelerationMetersPerSecond2",
       "startAccelerationLoadKgPerKg",
     ];
@@ -254,7 +302,7 @@ class DevTools {
     );
     const fields = [
       "basePower",
-      "baseSpeedMetersPerSec",
+      "maxSpeedMetersPerSec",
       "speedForceMultiplier",
       "waterResistanceMultiplier",
       "waterResistanceKgPerKgPerMps",
@@ -312,8 +360,11 @@ class DevTools {
       [
         "tautBodyResistanceKgPerKg",
         "activeAwayForceMultiplier",
-        "maxPullSpeedMetersPerSecond",
-        "waterDragKgPerKgAtFullSpeed",
+        "referencePullSpeedMetersPerSecond",
+        "waterDragKgPerKgAtReferenceSpeed",
+        "playerPressureTransferReferenceWeightKg",
+        "minPlayerPressureTransferRatio",
+        "blockedPlayerPressureTransferRatio",
         "pullAccelerationMetersPerSecond2",
         "startAccelerationLoadKgPerKg",
       ],
@@ -486,8 +537,10 @@ class DevTools {
   }
 
   #resolveEditableRoot(rootName) {
-    if (rootName === "ITEM_DB" && typeof ITEM_DB !== "undefined") return ITEM_DB;
-    if (rootName === "FISH_DB" && typeof FISH_DB !== "undefined") return FISH_DB;
+    if (rootName === "ITEM_DB" && typeof ITEM_DB !== "undefined")
+      return ITEM_DB;
+    if (rootName === "FISH_DB" && typeof FISH_DB !== "undefined")
+      return FISH_DB;
     if (rootName === "HOOKED_FISH") return this.#liveData?.hookedFish || null;
     if (rootName === "MAP_DB" && typeof MAP_DB !== "undefined") return MAP_DB;
     if (rootName === "CONFIG" && typeof CONFIG !== "undefined") return CONFIG;
@@ -516,17 +569,21 @@ class DevTools {
     const ranges = template?.weightConfig?.levelWeightRanges;
     if (!Array.isArray(ranges) || ranges.length === 0) return;
 
-    const range = changedKey === "weight"
-      ? this.#findLevelRangeByWeight(ranges, fish.weight)
-      : this.#findLevelRangeByLevel(ranges, fish.level);
+    const range =
+      changedKey === "weight"
+        ? this.#findLevelRangeByWeight(ranges, fish.weight)
+        : this.#findLevelRangeByLevel(ranges, fish.level);
     if (!range) return;
 
-    fish.level = Math.max(1, Math.round(Number(range.level) || fish.level || 1));
+    fish.level = Math.max(
+      1,
+      Math.round(Number(range.level) || fish.level || 1),
+    );
     fish.physics = fish.physics || {};
     this.#applyFiniteNumber(fish.physics, "levelBasePower", range.basePower);
     this.#applyFiniteNumber(
       fish.physics,
-      "baseSpeedMetersPerSec",
+      "maxSpeedMetersPerSec",
       this.#firstFiniteNumber(
         range.baseSpeedMetersPerSec,
         range.speedMetersPerSec,
@@ -542,7 +599,11 @@ class DevTools {
 
   #findLevelRangeByLevel(ranges, level) {
     const targetLevel = Math.round(Number(level) || 1);
-    return ranges.find((range) => Math.round(Number(range?.level) || 0) === targetLevel) || null;
+    return (
+      ranges.find(
+        (range) => Math.round(Number(range?.level) || 0) === targetLevel,
+      ) || null
+    );
   }
 
   #findLevelRangeByWeight(ranges, weight) {
@@ -683,9 +744,11 @@ class DevToolsUI {
   #body;
   #btn;
   #onToggleCallback;
+  #tooltipProvider;
 
-  constructor(onToggleCallback, config) {
+  constructor(onToggleCallback, config, tooltipProvider = null) {
     this.#onToggleCallback = onToggleCallback;
+    this.#tooltipProvider = tooltipProvider;
     this.#initStyles();
     this.#initBtn(config);
     this.#initPanel();
@@ -733,9 +796,7 @@ class DevToolsUI {
     const row = document.createElement("div");
     row.className = "devtools-row";
 
-    const label = document.createElement("div");
-    label.className = "devtools-label";
-    label.innerText = labelStr;
+    const label = this.#createLabelElement(labelStr);
     row.appendChild(label);
 
     const inputElement = document.createElement("label");
@@ -760,9 +821,7 @@ class DevToolsUI {
     const row = document.createElement("div");
     row.className = "devtools-row";
 
-    const label = document.createElement("div");
-    label.className = "devtools-label";
-    label.innerText = key;
+    const label = this.#createLabelElement(key);
     row.appendChild(label);
 
     let inputElement;
@@ -804,9 +863,7 @@ class DevToolsUI {
     const row = document.createElement("div");
     row.className = "devtools-row";
 
-    const label = document.createElement("div");
-    label.className = "devtools-label";
-    label.innerText = key;
+    const label = this.#createLabelElement(key);
     row.appendChild(label);
 
     const btn = document.createElement("button");
@@ -833,6 +890,26 @@ class DevToolsUI {
 
     row.appendChild(btn);
     parentElement.appendChild(row);
+  }
+
+  #createLabelElement(rawLabel) {
+    const labelText = String(rawLabel);
+    const label = document.createElement("div");
+    label.className = "devtools-label";
+    label.innerText = this.#formatLabelText(labelText);
+    const tooltip = this.#getParameterTooltip(labelText);
+    if (tooltip || labelText.length > 15) {
+      label.title = tooltip || labelText;
+    }
+    return label;
+  }
+
+  #formatLabelText(labelText) {
+    return labelText.length > 15 ? `${labelText.slice(0, 15)}...` : labelText;
+  }
+
+  #getParameterTooltip(labelText) {
+    return this.#tooltipProvider?.getTooltip(labelText) || "";
   }
 
   #initStyles() {

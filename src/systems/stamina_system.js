@@ -27,6 +27,16 @@ class StaminaController {
     return this.#isMasteryActive;
   }
 
+  restoreFullStamina() {
+    this.#condition.restoreFull?.();
+    this.#masteryTimer = 0;
+    this.#isMasteryActive = false;
+    this.#isFullyRecovered = false;
+    this.#hasLostStamina = false;
+    this.#fish.clearDebuff?.();
+    this.#fish.setMasteryMultiplier?.(1.0);
+  }
+
   getExhaustionDurationMs() {
     if (!this.#fish) return 1000;
 

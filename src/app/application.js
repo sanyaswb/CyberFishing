@@ -711,6 +711,7 @@ class GameApplication {
 
   update(dt) {
     const timeScale = this.#config.debug?.timeScale || 1;
+    this.#syncDragControlAvailability();
     const input = this.#input.getState();
     this.#lastInputState = input;
     this.#applyViewportPan(input);
@@ -743,6 +744,14 @@ class GameApplication {
 
     // Reuse the pre-built debug context object — no per-frame allocation.
     this.#debugService.update(this.#debugContext);
+  }
+
+
+  #syncDragControlAvailability() {
+    const eq = this.#inventory?.getEquipped?.() || {};
+    const rodAllowsReel = eq.rod?.hasReel !== false && eq.rod?.engineStats?.hasReel !== false;
+    const reelHasDrag = !!eq.reel && eq.reel.hasDrag !== false && eq.reel.engineStats?.hasDrag !== false;
+    this.#input?.setDragControlEnabled?.(rodAllowsReel && reelHasDrag);
   }
 
   #applyViewportPan(input) {
@@ -810,6 +819,7 @@ class GameApplication {
           bounds.bottom,
           this.chumCastDistance,
           "chum",
+          this.#config.locations,
         );
       }
       if (this.#config.debug?.casting?.showAccuracyArea) {
@@ -839,6 +849,7 @@ class GameApplication {
       bounds.bottom,
       this.chumCastDistance,
       "chum",
+      this.#config.locations,
     );
   }
 

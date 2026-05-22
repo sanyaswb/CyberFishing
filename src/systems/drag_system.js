@@ -4,6 +4,7 @@ class DragSystem {
   #changeSpeed = 1.5;
   #config;
   #gestureActive = false;
+  #dragSupported = false;
   #gestureStartY = 0;
   #gestureStartValue = 0;
 
@@ -13,6 +14,7 @@ class DragSystem {
   }
 
   updateEquipment(reel) {
+    this.#dragSupported = !!reel?.hasReel?.() && reel?.hasDrag?.() !== false;
     const reelSpeed =
       reel?.getDragChangeSpeedPerSec?.() ??
       reel?.dragChangeSpeedPerSec ??
@@ -26,6 +28,13 @@ class DragSystem {
   }
 
   update(input, dtSec) {
+    if (!this.#dragSupported) {
+      this.#resetGesture();
+      this.#targetValue = this.#clamp(this.#targetValue);
+      this.#value = this.#targetValue;
+      return this.#value;
+    }
+
     this.#updateFromPointer(input, dtSec);
     this.#updateFromKeyboard(input, dtSec);
 
@@ -59,8 +68,13 @@ class DragSystem {
     return this.#targetValue;
   }
 
+  isSupported() {
+    return this.#dragSupported;
+  }
+
   getDebugData() {
     return {
+      dragSupported: this.#dragSupported,
       dragRatio: this.#value,
       dragPercent: this.#value * 100,
       dragGestureActive: this.#gestureActive,

@@ -4,6 +4,7 @@ class FightPhysicsSystem {
   #waterProbePoint = { x: 0, y: 0 };
   #pumpCreditCalculator = new PumpCreditCalculator();
   #looseLineCalculator = new LooseLineCalculator();
+  #landingPolicyResolver = new LandingPolicyResolver();
   #fishRetrieveSystem;
   #debug = {};
 
@@ -39,6 +40,7 @@ class FightPhysicsSystem {
     const dtSec = this.#getDtSec(dtMs, physics);
     const pullInput = this.#updateInput({ input, pullInputMapper, dragSystem, dtSec });
     const hasReel = !!reel?.hasReel?.();
+    const dragSupported = hasReel && reel?.hasDrag?.() !== false;
     const isPullMode = !!pullInput.pullHeld;
     const isRecoverMode = hasReel && !isPullMode;
     const maxTackleLoadKg = stressSystem.getEffectiveMaxTackleLoadKg?.() || 0;
@@ -63,6 +65,7 @@ class FightPhysicsSystem {
     const forceData = motion.forceData;
     const dragContext = this.#resolveDragContext({
       hasReel,
+      dragSupported,
       dragSystem,
       forceData,
       maxTackleLoadKg,
@@ -203,7 +206,19 @@ class FightPhysicsSystem {
   }) {
     const fishPosition = floatEntity.getPosition();
     const fishVelocity = floatEntity.getVelocity?.() || this.#velocityScratch.set(0, 0);
-    lineSystem.updateDistance(fishPosition, rodTipPosition);
+    const lineState = lineSystem.updateDistance(fishPosition, rodTipPosition);
+    const landingPolicy = this.#landingPolicyResolver.resolve({ rod, reel });
+    const landingDistanceMeters = landingPolicy.getLandingDistanceMeters({
+      rod,
+      reel,
+      config: this.#config,
+      lineDistanceMeters: lineState.distanceMeters,
+    });
+    fishForceSystem.evaluateLastDashTrigger?.({
+      dtMs,
+      lineDistanceMeters: lineState.distanceMeters,
+      landingDistanceMeters,
+    });
 
     const forceData = fishForceSystem.calculate({
       dtMs,
@@ -239,10 +254,10 @@ class FightPhysicsSystem {
     return { forceData, velocity };
   }
 
-  #resolveDragContext({ hasReel, dragSystem, forceData, maxTackleLoadKg }) {
+  #resolveDragContext({ hasReel, dragSupported, dragSystem, forceData, maxTackleLoadKg }) {
     const clampedDrag = Math.max(0, Math.min(1, Number(dragSystem.value) || 0));
     const player = forceData?.player || {};
-    const fallbackDragLimitKg = hasReel
+    const fallbackDragLimitKg = dragSupported
       ? Number(player.dragLimitKg) || 0
       : maxTackleLoadKg;
     const effectiveDragLimitKg = Number.isFinite(Number(player.effectiveDragLimitKg))
@@ -250,13 +265,15 @@ class FightPhysicsSystem {
       : fallbackDragLimitKg;
     const dragLocked = typeof player.dragLocked === "boolean"
       ? player.dragLocked
-      : (!hasReel || clampedDrag >= 0.999);
+      : (!dragSupported);
 
     return {
       clampedDrag,
       maxTackleLoadKg,
       effectiveDragLimitKg,
       dragLocked,
+      hasReel,
+      dragSupported,
     };
   }
 
@@ -490,10 +507,13 @@ class FightPhysicsSystem {
     return {
       ...forceData.debug,
       ...dragSystem.getDebugData(),
+      dragSupported: !!dragContext.dragSupported,
       lineReleasedMeters: lineState.releasedMeters,
       lineRemainingMeters: lineState.remainingMeters,
       lineCanRelease: this.#lineHasReserve(lineState),
       lineSpoolEmpty: !this.#lineHasReserve(lineState),
+      lineReserveEmpty: !this.#lineHasReserve(lineState),
+      physicalLineLimit: !!lineState.isFullyExtended,
       lineMaxRemainingMeters: lineState.maxRemainingMeters,
       lineBaseReachMeters: lineState.baseReachMeters,
       lineTotalLengthMeters: lineState.totalLengthMeters,
@@ -519,9 +539,13 @@ class FightPhysicsSystem {
       rodPullRatio: rodPullDisplay.ratio,
       rodPullForceKg: rodPullResult.forceKg,
       playerDemandForceKg: rodPullResult.forceKg,
+      playerPullPressureKg: fishRetrieveResult?.playerPullPressureKg,
+      effectivePlayerPressureKg: fishRetrieveResult?.effectivePlayerPressureKg,
+      pressureTransferRatio: fishRetrieveResult?.pressureTransferRatio,
       fishRetrieveHoldRatio: fishRetrieveResult?.holdRatio,
       desiredPullSpeedMps: fishRetrieveResult?.desiredPullSpeedMetersPerSecond,
       actualPullSpeedMps: fishRetrieveResult?.actualPullSpeedMetersPerSecond,
+      pullIntentSpeedMps: fishRetrieveResult?.pullIntentSpeedMetersPerSecond,
       actualFishPullSpeedMps:
         fishRetrieveResult?.actualFishPullSpeedMetersPerSecond,
       fishActiveForceAwayKg: fishRetrieveResult?.fishActiveForceAwayKg,
@@ -532,11 +556,17 @@ class FightPhysicsSystem {
       fishStaticResistanceKg: fishRetrieveResult?.fishStaticResistanceKg,
       fishOppositionKg: fishRetrieveResult?.fishOppositionKg,
       fishRetrievePullSpeedRatio: fishRetrieveResult?.pullSpeedRatio,
+      fishRetrieveIntentPullSpeedRatio: fishRetrieveResult?.intentPullSpeedRatio,
+      fishRetrieveMovementAuthorityLoadKg: fishRetrieveResult?.movementAuthorityLoadKg,
+      fishRetrievePotentialWaterDragKg: fishRetrieveResult?.potentialWaterDragKg,
+      fishRetrievePotentialAccelerationLoadKg: fishRetrieveResult?.potentialAccelerationLoadKg,
       passiveRetrieveTensionKg:
         fishRetrieveResult?.passiveRetrieveTensionKg,
       fishRetrieveWaterDragKg: fishRetrieveResult?.waterDragKg,
-      fishRetrieveWaterDragKgPerKgAtFullSpeed:
-        fishRetrieveResult?.waterDragKgPerKgAtFullSpeed,
+      fishRetrieveWaterDragCapacityKg:
+        fishRetrieveResult?.waterDragCapacityKg,
+      fishRetrieveWaterDragKgPerKgAtReferenceSpeed:
+        fishRetrieveResult?.waterDragKgPerKgAtReferenceSpeed,
       fishRetrieveAccelerationLoadKg:
         fishRetrieveResult?.accelerationLoadKg,
       fishRetrievePositiveAccelerationMps2:
@@ -551,6 +581,8 @@ class FightPhysicsSystem {
       fishRetrieveTerminalSpeedMps: fishRetrieveResult?.terminalRetrieveSpeedMetersPerSecond,
       fishRetrieveTerminalReached: fishRetrieveResult?.terminalSpeedReached,
       fishRetrieveSurplusForceKg: fishRetrieveResult?.surplusForceKg,
+      fishRetrieveBlockedSurplusForceKg:
+        fishRetrieveResult?.blockedSurplusForceKg,
       fishRetrieveLineTensionKg: fishRetrieveResult?.lineTensionKg,
       fishRetrieveBalanceState: fishRetrieveResult?.balanceState,
       fishRetrieveMovementBlocked: fishRetrieveResult?.movementBlocked,

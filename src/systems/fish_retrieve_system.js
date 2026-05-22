@@ -1,6 +1,6 @@
 class FishRetrieveSystem {
   #model;
-  #pullSpeedMetersPerSecond = 0;
+  #fishPullSpeedMetersPerSecond = 0;
 
   constructor(config = {}) {
     this.#model = new FishPullResistanceModel(config || {});
@@ -16,13 +16,14 @@ class FishRetrieveSystem {
   } = {}) {
     const holdRatio = this.#resolveHoldRatio(rodPullResult);
     if (!rodPullResult?.active && holdRatio <= 0) {
-      this.#pullSpeedMetersPerSecond = 0;
+      this.#fishPullSpeedMetersPerSecond = 0;
     }
 
     const result = this.#model.calculate({
       dtSec,
       holdRatio,
-      previousPullSpeedMetersPerSecond: this.#pullSpeedMetersPerSecond,
+      previousFishPullSpeedMetersPerSecond: this.#fishPullSpeedMetersPerSecond,
+      playerPullPressureKg: this.#resolvePlayerPullPressure(rodPullResult),
       fishWeightKg: this.#resolveFishWeight(forceData),
       totalFishForceKg: Math.max(0, Number(forceData?.totalFishForceKg) || 0),
       awayFromPlayerRatio: this.#resolveAwayFromPlayerRatio(forceData),
@@ -31,12 +32,12 @@ class FishRetrieveSystem {
       actualSlackMeters,
       lineTaut,
     });
-    this.#pullSpeedMetersPerSecond = result.actualPullSpeedMetersPerSecond;
+    this.#fishPullSpeedMetersPerSecond = result.actualFishPullSpeedMetersPerSecond;
     return result;
   }
 
   reset() {
-    this.#pullSpeedMetersPerSecond = 0;
+    this.#fishPullSpeedMetersPerSecond = 0;
   }
 
   #resolveHoldRatio(rodPullResult) {
@@ -57,6 +58,11 @@ class FishRetrieveSystem {
         Number(forceData?.debug?.fishWeightKg) ||
         0,
     );
+  }
+
+  #resolvePlayerPullPressure(rodPullResult) {
+    if (!rodPullResult?.active) return 0;
+    return Math.max(0, Number(rodPullResult.forceKg) || 0);
   }
 
   #resolveAwayFromPlayerRatio(forceData) {

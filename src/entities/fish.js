@@ -76,11 +76,19 @@ class Fish {
     return base * Math.max(minRatio, currentRatio);
   }
 
-  getBaseSpeedPxPerSec(pixelsPerMeter = 50) {
-    if (Number.isFinite(Number(this.#fishConfig?.baseSpeedMetersPerSec))) {
-      return this.#fishConfig.baseSpeedMetersPerSec * pixelsPerMeter;
-    }
+  getMaxSpeedPxPerSec(pixelsPerMeter = 50) {
+    const maxSpeed = Number(this.#fishConfig?.maxSpeedMetersPerSec);
+    if (Number.isFinite(maxSpeed)) return maxSpeed * pixelsPerMeter;
+
+    // Deprecated compatibility fallback for older fish configs.
+    const legacyBaseSpeed = Number(this.#fishConfig?.baseSpeedMetersPerSec);
+    if (Number.isFinite(legacyBaseSpeed)) return legacyBaseSpeed * pixelsPerMeter;
     return 100;
+  }
+
+  getBaseSpeedPxPerSec(pixelsPerMeter = 50) {
+    // Deprecated alias: the value is now treated as species max speed.
+    return this.getMaxSpeedPxPerSec(pixelsPerMeter);
   }
 
   getPower() {
@@ -151,6 +159,14 @@ class Fish {
   getBehavior(dt) {
     this.#behavior.update(dt);
     return this.#behavior.getStateData();
+  }
+
+  evaluateLastDashTrigger(context = {}) {
+    return this.#behavior.evaluateLastDashTrigger(context);
+  }
+
+  getLastDashDebugData() {
+    return this.#behavior.getLastDashDebugData();
   }
 
   reactToWall(wallSide) {
@@ -243,6 +259,9 @@ class FishBehavior {
   #currentDirX;
   #targetDirX;
   #isLocked;
+  #lastDashCheckTimer;
+  #holdSpecialStateUntilLeave;
+  #lastDashDebug;
   #rng;
 
   constructor(fishConfig, rng = null) {
@@ -258,6 +277,9 @@ class FishBehavior {
     this.#currentDirX = 0;
     this.#targetDirX = 0;
     this.#isLocked = false;
+    this.#lastDashCheckTimer = 0;
+    this.#holdSpecialStateUntilLeave = null;
+    this.#lastDashDebug = {};
     this.#pickNextState();
   }
 
@@ -299,7 +321,7 @@ class FishBehavior {
     this.#currentStateName = selectedKey;
     const state = states[this.#currentStateName];
     this.#targetPull = Math.max(0, Number(state.powerRatio ?? 1) || 0);
-    this.#targetMove = this.#clamp01(state.speedRatio ?? 0);
+    this.#targetMove = this.#clampNonNegative(state.speedRatio ?? 0);
     this.#stateTimer = this.#range(state.minTime, state.maxTime);
   }
 
@@ -312,10 +334,119 @@ class FishBehavior {
 
     this.#currentStateName = stateName;
     this.#targetPull = Math.max(0, Number(state.powerRatio ?? 1) || 0);
-    this.#targetMove = this.#clamp01(state.speedRatio ?? 0);
+    this.#targetMove = this.#clampNonNegative(state.speedRatio ?? 0);
     this.#isLocked = isLocked;
     this.#stateTimer = this.#range(state.minTime, state.maxTime);
     this.#dirTimer = 0;
+  }
+
+  evaluateLastDashTrigger(context = {}) {
+    const trigger = this.#config.lastDashTrigger || {};
+    const stateName = trigger.targetState || "lastDash";
+    const state = this.#config.behaviors?.[stateName];
+    const stateEnabled = state?.enabled !== false;
+    const triggerEnabled = trigger.enabled === true;
+    const hasState = !!state;
+    const dtMs = Math.max(0, Number(context.dtMs) || 0);
+    const landingDistanceMeters = Math.max(
+      0,
+      Number(context.landingDistanceMeters) || 0,
+    );
+    const lineDistanceMeters = Math.max(
+      0,
+      Number(context.lineDistanceMeters) || Infinity,
+    );
+    const triggerDistanceMeters = this.#resolveLastDashTriggerDistance(
+      trigger,
+      landingDistanceMeters,
+    );
+    const inZone =
+      hasState &&
+      triggerEnabled &&
+      stateEnabled &&
+      triggerDistanceMeters > 0 &&
+      lineDistanceMeters <= triggerDistanceMeters;
+
+    if (!inZone) {
+      if (this.#holdSpecialStateUntilLeave === stateName) {
+        this.#holdSpecialStateUntilLeave = null;
+        this.#isLocked = false;
+        this.#stateTimer = 0;
+      }
+      this.#lastDashDebug = {
+        enabled: triggerEnabled && hasState && stateEnabled,
+        stateName,
+        inZone: false,
+        lineDistanceMeters,
+        triggerDistanceMeters,
+        active: this.#currentStateName === stateName,
+      };
+      return this.#lastDashDebug;
+    }
+
+    const stayUntilLeaveZone =
+      trigger.stayUntilLeaveZone === true ||
+      trigger.holdUntilLeaveZone === true ||
+      trigger.escapeUntilLeaveZone === true;
+
+    if (this.#currentStateName === stateName) {
+      if (stayUntilLeaveZone) {
+        this.#holdSpecialStateUntilLeave = stateName;
+        this.#isLocked = true;
+        this.#stateTimer = Math.max(this.#stateTimer, dtMs + 1);
+      }
+      this.#lastDashDebug = {
+        enabled: true,
+        stateName,
+        inZone: true,
+        active: true,
+        holdingUntilLeave: this.#holdSpecialStateUntilLeave === stateName,
+        lineDistanceMeters,
+        triggerDistanceMeters,
+      };
+      return this.#lastDashDebug;
+    }
+
+    this.#lastDashCheckTimer -= dtMs;
+    if (this.#lastDashCheckTimer > 0) {
+      this.#lastDashDebug = {
+        enabled: true,
+        stateName,
+        inZone: true,
+        active: false,
+        waitingMs: this.#lastDashCheckTimer,
+        lineDistanceMeters,
+        triggerDistanceMeters,
+      };
+      return this.#lastDashDebug;
+    }
+
+    const intervalMs = Math.max(1, Number(trigger.checkIntervalMs) || 1000);
+    this.#lastDashCheckTimer = intervalMs;
+    const chance = this.#resolveChance(trigger.chance);
+    const roll = this.#random();
+    const triggered = roll < chance;
+    if (triggered) {
+      this.forceState(stateName, stayUntilLeaveZone || trigger.isLocked === true);
+      if (stayUntilLeaveZone) {
+        this.#holdSpecialStateUntilLeave = stateName;
+        this.#stateTimer = Math.max(this.#stateTimer, dtMs + 1);
+      }
+    }
+
+    this.#lastDashDebug = {
+      enabled: true,
+      stateName,
+      inZone: true,
+      active: triggered,
+      triggered,
+      chance,
+      roll,
+      holdingUntilLeave: this.#holdSpecialStateUntilLeave === stateName,
+      lineDistanceMeters,
+      triggerDistanceMeters,
+    };
+    return this.#lastDashDebug;
   }
 
   reactToWall(wallSide) {
@@ -333,7 +464,11 @@ class FishBehavior {
   update(dt) {
     this.#stateTimer -= dt;
     if (this.#stateTimer <= 0) {
-      if (this.#isLocked) this.#isLocked = false;
+      if (this.#holdSpecialStateUntilLeave === this.#currentStateName) {
+        this.#stateTimer = Math.max(1, dt);
+      } else if (this.#isLocked) {
+        this.#isLocked = false;
+      }
       this.#pickNextState();
     }
 
@@ -361,14 +496,51 @@ class FishBehavior {
     return Math.max(0, Math.min(1, Number(value) || 0));
   }
 
+  #clampNonNegative(value) {
+    return Math.max(0, Number(value) || 0);
+  }
+
+  #resolveLastDashTriggerDistance(trigger, landingDistanceMeters) {
+    const absolute = Number(trigger.distanceMeters ?? trigger.triggerDistanceMeters);
+    if (Number.isFinite(absolute)) return Math.max(0, absolute);
+
+    const multiplier = Math.max(
+      0,
+      Number(
+        trigger.catchZoneMultiplier ??
+          trigger.triggerZoneMultiplier ??
+          trigger.landingDistanceMultiplier,
+      ) || 1.1,
+    );
+    const extra = Math.max(
+      0,
+      Number(trigger.extraDistanceMeters ?? trigger.triggerExtraDistanceMeters) || 0,
+    );
+    return Math.max(0, landingDistanceMeters * multiplier + extra);
+  }
+
+  #resolveChance(value) {
+    const numeric = Math.max(0, Number(value) || 0);
+    return numeric > 1 ? Math.min(1, numeric / 100) : Math.min(1, numeric);
+  }
+
+  #random() {
+    return typeof this.#rng.next === "function" ? this.#rng.next() : Math.random();
+  }
+
+  getLastDashDebugData() {
+    return this.#lastDashDebug || {};
+  }
+
   getStateData() {
     const stateConfig = this.#config.behaviors[this.#currentStateName];
+    const speedRatio = this.#clampNonNegative(Math.abs(this.#currentMove));
     return {
       name: this.#currentStateName,
       pullMult: this.#currentPull,
       powerRatio: this.#currentPull,
-      speedRatio: this.#clamp01(Math.abs(this.#currentMove)),
-      moveX: this.#clamp01(Math.abs(this.#currentMove)) * this.#currentDirX,
+      speedRatio,
+      moveX: speedRatio * this.#currentDirX,
       agility: stateConfig.agility ?? this.#config.agility ?? 1.0,
     };
   }
@@ -414,6 +586,12 @@ class FishCondition {
   }
   get currentExhaustion() {
     return this.#currentExhaustion;
+  }
+
+  restoreFull() {
+    this.#currentStamina = this.#maxPoints;
+    this.#currentExhaustion = this.#maxPoints;
+    this.#phase = "stamina";
   }
 
   breakExhaustion() {

@@ -272,9 +272,10 @@ class CastService {
 }
 
 class FightSessionFactory {
-  constructor({ config, rng, castDistanceCalculator = null }) {
+  constructor({ config, rng, castDistanceCalculator = null, devFlags = null }) {
     this.config = config;
     this.rng = rng;
+    this.devFlags = devFlags;
     this.castDistanceCalculator =
       castDistanceCalculator || new CastDistanceCalculator(config || {});
   }
@@ -351,6 +352,7 @@ class FightSessionFactory {
       leader: equipment.leader,
       config: this.config.tension,
       rng: this.rng,
+      devFlags: this.devFlags,
     });
     const fightPhysicsSystem = new FightPhysicsSystem(this.config);
     const fishCondition = new FishCondition(
@@ -618,6 +620,7 @@ class CatchResolutionService {
 class FightService {
   #config;
   #rng;
+  #devFlags;
   #upDirection = { x: 0, y: 1 };
   #forces = { pX: 0, pY: 0, fX: 0, fY: 0 };
   #forceService;
@@ -643,14 +646,16 @@ class FightService {
   constructor({
     config,
     rng,
+    devFlags = null,
     fightSessionFactory = null,
     forceService = null,
     catchResolver = null,
   }) {
     this.#config = config;
     this.#rng = rng;
+    this.#devFlags = devFlags;
     this.#fightSessionFactory =
-      fightSessionFactory || new FightSessionFactory({ config, rng });
+      fightSessionFactory || new FightSessionFactory({ config, rng, devFlags });
     this.#forceService = forceService || new FishingForceService(config);
     this.#catchResolver = catchResolver || new CatchResolutionService();
   }
@@ -720,6 +725,7 @@ class FightService {
         },
       };
     }
+    this.#syncGodModeStamina();
     const {
       floatEntity,
       bounds,
@@ -752,14 +758,18 @@ class FightService {
       !input.isPulling &&
       !input.pointerDown;
     const fightDebug = this.#tensionMeter.getDebugData?.() || {};
-    this.#staminaController.evaluate({
-      tension: this.#tensionMeter.getTension(),
-      playerPowerIsPulling: input.isPulling && !isRetrieveOnly,
-      dt,
-      angleStressRatio: fightDebug.angleStressRatio || 0,
-      staminaPressureRatio: fightDebug.staminaPressureRatio || 0,
-      isLineFullyExtended: !!fightDebug.isLineFullyExtended,
-    });
+    if (this.#isFishStaminaLocked()) {
+      this.#syncGodModeStamina();
+    } else {
+      this.#staminaController.evaluate({
+        tension: this.#tensionMeter.getTension(),
+        playerPowerIsPulling: input.isPulling && !isRetrieveOnly,
+        dt,
+        angleStressRatio: fightDebug.angleStressRatio || 0,
+        staminaPressureRatio: fightDebug.staminaPressureRatio || 0,
+        isLineFullyExtended: !!fightDebug.isLineFullyExtended,
+      });
+    }
     const resolution = this.#catchResolver.resolveAutoCatch({
       fishData,
       lineDistanceMeters: fightDebug.lineDistanceMeters,
@@ -772,6 +782,17 @@ class FightService {
     });
     if (resolution.transition) return { transition: resolution.transition };
     return {};
+  }
+
+  #syncGodModeStamina() {
+    if (!this.#isFishStaminaLocked()) return;
+    this.#staminaController?.restoreFullStamina?.();
+  }
+
+  #isFishStaminaLocked() {
+    if (this.#devFlags?.isEnabled?.("noFishStaminaLoss")) return true;
+    const godMode = this.#config?.debug?.godMode;
+    return godMode?.enabled === true && godMode.noFishStaminaLoss === true;
   }
 
   handlePlayerInput(input, equipment) {
