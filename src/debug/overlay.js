@@ -259,6 +259,7 @@ class PlayerMaxModule extends OverlayModule {
     html += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>ЛІМІТ СНАСТІ:</span> <span style="color: #00ff80; font-weight: bold;">${(d.maxTackleLoadKg || d.playerMaxPowerY || 0).toFixed(3)} кг</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Player pressure:</span><span style="color:#00ff80;">${(d.playerPullPressureKg || 0).toFixed(3)}kg -> ${(d.effectivePlayerPressureKg || 0).toFixed(3)}kg</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Retrieve speed:</span><span style="color:#00ff80;">${(d.actualFishPullSpeedMps || 0).toFixed(2)}m/s</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Інерція риби:</span><span style="color:${d.fishPullInertiaActive ? "#ffaa00" : "#8a9bac"}; font-weight:bold;">${d.fishPullInertiaActive ? "ТАК" : "НІ"}</span></div>`;
     if (d.dragSupported) {
       html += `<div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><span>ФРИКЦІОН:</span> <span style="color: #00ccff; font-weight: bold;">${(d.dragLimitKg || 0).toFixed(3)} кг</span></div>`;
     }
@@ -301,6 +302,7 @@ class FightPhysicsModule extends OverlayModule {
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Хід вудки:</span><span style="color:#8a9bac;">${rodStrokeUsed.toFixed(1)}м / ${rodStrokeCapacity.toFixed(1)}м</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Player pressure:</span><span style="color:#00ff80;">${(d.playerPullPressureKg || 0).toFixed(3)}kg -> ${(d.effectivePlayerPressureKg || 0).toFixed(3)}kg</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Retrieve speed:</span><span style="color:#00ff80;">${(d.actualFishPullSpeedMps || 0).toFixed(2)}m/s</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Інерція риби:</span><span style="color:${d.fishPullInertiaActive ? "#ffaa00" : "#8a9bac"}; font-weight:bold;">${d.fishPullInertiaActive ? "ТАК" : "НІ"}</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Статичний опір:</span><span style="color:#8a9bac;">${(d.tautBodyResistanceKg || 0).toFixed(3)}кг</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Активна риба:</span><span style="color:#ff8888;">${(d.activeAwayForceKg || 0).toFixed(3)}кг</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Опір води:</span><span style="color:#73c2fb;">${(d.fishRetrieveWaterDragKg || 0).toFixed(3)}кг</span></div>`;

@@ -69,8 +69,9 @@ class FishPullResistanceModel {
       waterDragCapacity,
       referencePullSpeed,
     });
+    const previousFishPullSpeed = this.#positive(previousFishPullSpeedMetersPerSecond);
     const actualFishPullSpeed = this.#approachSpeed({
-      current: this.#positive(previousFishPullSpeedMetersPerSecond),
+      current: previousFishPullSpeed,
       target: targetFishPullSpeed,
       dtSec: dt,
       retrieveConfig,
@@ -88,7 +89,7 @@ class FishPullResistanceModel {
         ? Math.max(
             0,
             (actualFishPullSpeed -
-              this.#positive(previousFishPullSpeedMetersPerSecond)) /
+              previousFishPullSpeed) /
               dt,
           )
         : 0;
@@ -142,6 +143,12 @@ class FishPullResistanceModel {
       actualPullSpeedMetersPerSecond: actualFishPullSpeed,
       pullIntentSpeedMetersPerSecond: 0,
       actualFishPullSpeedMetersPerSecond: actualFishPullSpeed,
+      fishPullInertiaActive:
+        targetFishPullSpeed <= 0.001 && actualFishPullSpeed > 0.001,
+      targetFishPullSpeedMetersPerSecond: targetFishPullSpeed,
+      pullInertiaDecelerationMetersPerSecond2: this.#pullInertiaDeceleration(
+        retrieveConfig,
+      ),
       pullSpeedRatio,
       intentPullSpeedRatio: 0,
       movementAuthorityLoadKg: playerPullPressure,
@@ -187,14 +194,28 @@ class FishPullResistanceModel {
   }
 
   #approachSpeed({ current, target, dtSec, retrieveConfig }) {
-    const acceleration = this.#positive(
+    if (dtSec <= 0) return this.#positive(current);
+
+    const speedUpAcceleration = this.#positive(
       this.#setting(retrieveConfig, "pullAccelerationMetersPerSecond2", 4.0),
     );
-    if (acceleration <= 0 || dtSec <= 0) return this.#positive(target);
+    const slowDownAcceleration = this.#pullInertiaDeceleration(retrieveConfig);
+    const acceleration = target > current ? speedUpAcceleration : slowDownAcceleration;
+    if (acceleration <= 0) return this.#positive(target);
 
     const maxDelta = acceleration * dtSec;
     if (target > current) return Math.min(target, current + maxDelta);
     return Math.max(target, current - maxDelta);
+  }
+
+  #pullInertiaDeceleration(retrieveConfig) {
+    return this.#positive(
+      this.#setting(
+        retrieveConfig,
+        "pullInertiaDecelerationMetersPerSecond2",
+        this.#setting(retrieveConfig, "pullAccelerationMetersPerSecond2", 4.0),
+      ),
+    );
   }
 
   #resolveBalanceState({ playerPullPressure, fishOpposition, surplusPull }) {

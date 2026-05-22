@@ -526,6 +526,7 @@ const CONFIG = {
       minPlayerPressureTransferRatio: 0.05,
       blockedPlayerPressureTransferRatio: 1.0,
       pullAccelerationMetersPerSecond2: 5.0,
+      pullInertiaDecelerationMetersPerSecond2: 1.6,
       startAccelerationLoadKgPerKg: 0.15,
     },
     poleIdleRetrieve: {
@@ -553,8 +554,8 @@ const CONFIG = {
       guaranteedWeightRatio: 0.2, // Dont change its test value for debugging purposes
       maxLoadWeightRatio: 1, // Dont change its test value for debugging purposes
       chanceAtGuaranteedRatio: 1, // Dont change its test value for debugging purposes
-      chanceAtMaxLoadRatio: 1.0, // Dont change its test value for debugging purposes
-      overweightChance: 1, // Dont change its test value for debugging purposes
+      chanceAtMaxLoadRatio: 0.01, // Low chance at max tackle load; keeps auto-landing risky near the limit.
+      overweightChance: 0, // Fish heavier than tackle should not auto-land.
     },
     castingPower: {
       fallbackCoefficient: 0.5,

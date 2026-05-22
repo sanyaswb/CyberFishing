@@ -274,6 +274,7 @@ class DevTools {
       "minPlayerPressureTransferRatio",
       "blockedPlayerPressureTransferRatio",
       "pullAccelerationMetersPerSecond2",
+      "pullInertiaDecelerationMetersPerSecond2",
       "startAccelerationLoadKgPerKg",
     ];
 

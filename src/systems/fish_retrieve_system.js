@@ -15,7 +15,8 @@ class FishRetrieveSystem {
     lineTaut = true,
   } = {}) {
     const holdRatio = this.#resolveHoldRatio(rodPullResult);
-    if (!rodPullResult?.active && holdRatio <= 0) {
+    const fishWeightKg = this.#resolveFishWeight(forceData);
+    if (fishWeightKg <= 0) {
       this.#fishPullSpeedMetersPerSecond = 0;
     }
 
@@ -24,7 +25,7 @@ class FishRetrieveSystem {
       holdRatio,
       previousFishPullSpeedMetersPerSecond: this.#fishPullSpeedMetersPerSecond,
       playerPullPressureKg: this.#resolvePlayerPullPressure(rodPullResult),
-      fishWeightKg: this.#resolveFishWeight(forceData),
+      fishWeightKg,
       totalFishForceKg: Math.max(0, Number(forceData?.totalFishForceKg) || 0),
       awayFromPlayerRatio: this.#resolveAwayFromPlayerRatio(forceData),
       fishConfig: forceData?.fishPhysicsConfig,

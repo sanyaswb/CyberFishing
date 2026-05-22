@@ -324,11 +324,13 @@ class FightPhysicsSystem {
       (Number(rodPullResult.maxDistanceMeters) || 0) -
         (Number(rodPullResult.rodStrokeUsedMeters) || 0),
     );
-    const hasPullMovement =
-      rodPullResult.active &&
-      fishRetrieveFrame.actualFishPullSpeedMetersPerSecond > 0.001;
-    const desiredMoveMeters = hasPullMovement
-      ? Math.min(remainingStrokeMeters, fishRetrieveFrame.desiredMoveMeters)
+    const hasRetrieveMovement =
+      fishRetrieveFrame.actualFishPullSpeedMetersPerSecond > 0.001 &&
+      (rodPullResult.active || fishRetrieveFrame.fishPullInertiaActive);
+    const desiredMoveMeters = hasRetrieveMovement
+      ? rodPullResult.active
+        ? Math.min(remainingStrokeMeters, fishRetrieveFrame.desiredMoveMeters)
+        : fishRetrieveFrame.desiredMoveMeters
       : 0;
     const rodPullMoveMeters = this.#applyRodPullMovement({
       floatEntity,
@@ -346,7 +348,9 @@ class FightPhysicsSystem {
         appliedMoveMeters: rodPullMoveMeters,
         movementBlocked,
       });
-    rodPullSystem.recordAppliedStroke?.({ movedMeters: rodPullMoveMeters });
+    if (rodPullResult.active) {
+      rodPullSystem.recordAppliedStroke?.({ movedMeters: rodPullMoveMeters });
+    }
     const lineStateAfterPull = lineSystem.updateDistance(
       floatEntity.getPosition(),
       rodTipPosition,
@@ -548,6 +552,11 @@ class FightPhysicsSystem {
       pullIntentSpeedMps: fishRetrieveResult?.pullIntentSpeedMetersPerSecond,
       actualFishPullSpeedMps:
         fishRetrieveResult?.actualFishPullSpeedMetersPerSecond,
+      fishPullInertiaActive: fishRetrieveResult?.fishPullInertiaActive,
+      targetFishPullSpeedMps:
+        fishRetrieveResult?.targetFishPullSpeedMetersPerSecond,
+      pullInertiaDecelerationMps2:
+        fishRetrieveResult?.pullInertiaDecelerationMetersPerSecond2,
       fishActiveForceAwayKg: fishRetrieveResult?.fishActiveForceAwayKg,
       activeAwayForceKg: fishRetrieveResult?.activeAwayForceKg,
       bodyResistanceKg: fishRetrieveResult?.bodyResistanceKg,

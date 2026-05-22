@@ -18,6 +18,14 @@ class FishRetrieveResult {
     this.actualFishPullSpeedMetersPerSecond = this.#positive(
       data.actualFishPullSpeedMetersPerSecond,
     );
+    this.fishPullInertiaActive = !!data.fishPullInertiaActive;
+    this.targetFishPullSpeedMetersPerSecond = this.#positive(
+      data.targetFishPullSpeedMetersPerSecond ??
+        data.desiredPullSpeedMetersPerSecond,
+    );
+    this.pullInertiaDecelerationMetersPerSecond2 = this.#positive(
+      data.pullInertiaDecelerationMetersPerSecond2,
+    );
     this.bodyResistanceKg = this.#positive(
       data.bodyResistanceKg ?? data.tautBodyResistanceKg ?? data.bodyStaticResistanceKg,
     );
