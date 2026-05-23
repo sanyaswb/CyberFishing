@@ -616,11 +616,11 @@ zoneRenderer.drawCatchZone(
   },
 );
 const zoneEllipses = renderCalls.filter((call) => call.type === "ellipse");
-assert(zoneEllipses.length === 2, "catch and lastDash zones render as perspective ellipses");
+assert(zoneEllipses.length === 2, "catch and lastDash zones render from actual line-distance radii");
 approx(zoneEllipses[0].radiusX, 55, 0.001, "lastDash zone uses trigger distance radius");
-approx(zoneEllipses[0].radiusY, 27.5, 0.001, "lastDash zone uses location perspective squash");
+approx(zoneEllipses[0].radiusY, 55, 0.001, "lastDash zone vertical radius matches actual catch distance");
 approx(zoneEllipses[1].radiusX, 50, 0.001, "catch zone uses landing distance radius");
-approx(zoneEllipses[1].radiusY, 25, 0.001, "catch zone uses location perspective squash");
+approx(zoneEllipses[1].radiusY, 50, 0.001, "catch zone vertical radius matches actual catch distance");
 assert(
   renderCalls.some((call) => call.type === "setLineDash" && call.value?.[0] === 9),
   "lastDash zone renders with dashed boundary",

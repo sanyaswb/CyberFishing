@@ -11,6 +11,8 @@ class ReelSystem {
     reel,
     tensionKg,
     inputRecover = true,
+    loadLimitKg = null,
+    maxRecoverMeters = null,
   }) {
     if (this.#config.autoRecoverSlack === false) return 0;
     if (!lineSystem || !reel?.hasReel?.()) return 0;
@@ -21,6 +23,8 @@ class ReelSystem {
       reel,
       tensionKg,
       dtSec,
+      loadLimitKg,
+      maxRecoverMeters,
     });
   }
 

@@ -585,7 +585,6 @@ class WaterEntity {
   _getVelocityDamping(dtSec) {
     const dampingPerSecond =
       this._config.velocityDampingPerSecond ??
-      CONFIG.physics?.fightMotion?.velocityDampingPerSecond ??
       -Math.log(Math.max(0.001, Math.min(0.999, this._velocityDamping))) * 60;
     return Math.exp(-Math.max(0, dampingPerSecond) * dtSec);
   }

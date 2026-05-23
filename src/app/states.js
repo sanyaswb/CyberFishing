@@ -1793,18 +1793,19 @@ class VictoryState extends GameState {
   }
 
   handleInput(input) {
-    if (!input?.clickPos) return;
+    const actionPoint = this.#getActionPoint(input);
+    if (!actionPoint) return;
 
     const viewport = this.deps.getViewportSize();
     const actions = this.#getVictoryActionRects(viewport);
-    const click = input.clickPos;
     const isActionClick =
-      this.#isPointInside(click, actions.claim) ||
-      this.#isPointInside(click, actions.release);
+      this.#isPointInside(actionPoint, actions.claim) ||
+      this.#isPointInside(actionPoint, actions.release);
 
     if (!isActionClick) return;
 
     input.clickPos = null;
+    input.pointerReleased = false;
     this.deps.commands.setState("scouting");
   }
 
@@ -1912,5 +1913,19 @@ class VictoryState extends GameState {
       point.y >= rect.y &&
       point.y <= rect.y + rect.h
     );
+  }
+
+  #getActionPoint(input) {
+    if (input?.clickPos) return input.clickPos;
+    if (!input?.pointerReleased) return null;
+
+    const point = input.pointerRelease || input.pointerCurrent;
+    if (
+      Number.isFinite(Number(point?.x)) &&
+      Number.isFinite(Number(point?.y))
+    ) {
+      return point;
+    }
+    return null;
   }
 }

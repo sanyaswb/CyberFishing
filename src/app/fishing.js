@@ -498,23 +498,18 @@ class FishingForceService {
 }
 
 class CatchResolutionService {
-  #landingRollTimerMs = 0;
   #landingPolicyResolver;
 
   constructor({ landingPolicyResolver = null } = {}) {
     this.#landingPolicyResolver = landingPolicyResolver || new LandingPolicyResolver();
   }
 
-  reset() {
-    this.#landingRollTimerMs = 0;
-  }
+  reset() {}
 
   resolveAutoCatch({
     fishData,
     lineDistanceMeters,
     maxTackleLoadKg,
-    dtMs,
-    rng,
     config,
     rod = null,
     reel = null,
@@ -530,27 +525,15 @@ class CatchResolutionService {
       maxTackleLoadKg,
     });
     const distanceMeters = Math.max(0, Number(lineDistanceMeters) || Infinity);
-    if (distanceMeters > landingDistanceMeters) {
-      this.#landingRollTimerMs = 0;
-      return {};
-    }
+    if (distanceMeters > landingDistanceMeters) return {};
 
-    this.#landingRollTimerMs += Math.max(0, Number(dtMs) || 0);
-    const intervalMs = Math.max(1, Number(cfg.rollIntervalMs) || 1000);
-    if (this.#landingRollTimerMs < intervalMs) return { inLandingZone: true };
-    this.#landingRollTimerMs = 0;
-
-    const chance = this.#calculateLandingChance({
+    const success = this.#canLandByWeight({
       fishWeightKg: fishData?.weight,
       maxTackleLoadKg,
       config: cfg,
     });
-    const roll = rng?.range?.(0, 100) ?? Math.random() * 100;
-    const success = chance > 0 && roll < chance * 100;
     return {
       inLandingZone: true,
-      chance,
-      roll,
       success,
       landingDistanceMeters,
       landingPolicy: landingPolicy.constructor?.name || "LandingPolicy",
@@ -560,12 +543,8 @@ class CatchResolutionService {
     };
   }
 
-  getLandingRollProgress(config) {
-    const intervalMs = Math.max(
-      1,
-      Number(config?.physics?.catchZone?.rollIntervalMs) || 1000,
-    );
-    return Math.min(1, this.#landingRollTimerMs / intervalMs);
+  getLandingRollProgress(_config) {
+    return 1;
   }
 
   resolveNetAttempt(net, fishWeight, rng, fishData) {
@@ -583,37 +562,13 @@ class CatchResolutionService {
     };
   }
 
-  #calculateLandingChance({ fishWeightKg, maxTackleLoadKg, config }) {
+  #canLandByWeight({ fishWeightKg, maxTackleLoadKg, config }) {
     const fishWeight = Math.max(0, Number(fishWeightKg) || 0);
     const maxLoad = Math.max(0, Number(maxTackleLoadKg) || 0);
-    if (maxLoad <= 0) return 0;
+    if (maxLoad <= 0) return false;
 
-    const ratio = fishWeight / maxLoad;
-    const guaranteedRatio = Math.max(
-      0,
-      Number(config.guaranteedWeightRatio) || 0.2,
-    );
-    const maxRatio = Math.max(
-      guaranteedRatio,
-      Number(config.maxLoadWeightRatio) || 1.0,
-    );
-    const chanceAtGuaranteed = Math.max(
-      0,
-      Math.min(1, Number(config.chanceAtGuaranteedRatio) || 1.0),
-    );
-    const chanceAtMax = Math.max(
-      0,
-      Math.min(1, Number(config.chanceAtMaxLoadRatio) || 0.01),
-    );
-
-    if (ratio > maxRatio) {
-      return Math.max(0, Math.min(1, Number(config.overweightChance) || 0));
-    }
-    if (ratio <= guaranteedRatio) return chanceAtGuaranteed;
-
-    const t =
-      (ratio - guaranteedRatio) / Math.max(0.001, maxRatio - guaranteedRatio);
-    return chanceAtGuaranteed + (chanceAtMax - chanceAtGuaranteed) * t;
+    const maxRatio = Math.max(0, Number(config.maxLoadWeightRatio) || 1.0);
+    return fishWeight <= maxLoad * maxRatio + 0.0001;
   }
 }
 

@@ -866,27 +866,26 @@ class GodMode {
 
 class TestBuildProvider {
   static injectDebugBuild(inventory) {
+    this.#injectConfiguredInventory(inventory);
+
     const boxInstanceId = "debug_build_box_001";
     const boxInstanceId2 = "debug_build_box_002";
-    if (inventory.getInstance(boxInstanceId)) return;
-
-    inventory.addItem({
-      instanceId: boxInstanceId,
-      itemId: "sys_build_box",
-      quantity: 1,
-      buildName: "Test Build (Dev)",
-      type: "build_box",
-    });
-
-    inventory.addItem({
-      instanceId: boxInstanceId2,
-      itemId: "sys_build_box",
-      quantity: 1,
-      buildName: "Test Build (Dev2)",
-      type: "build_box",
-    });
 
     const debugItems = [
+      {
+        instanceId: boxInstanceId,
+        itemId: "sys_build_box",
+        quantity: 1,
+        buildName: "Test Build (Dev)",
+        type: "build_box",
+      },
+      {
+        instanceId: boxInstanceId2,
+        itemId: "sys_build_box",
+        quantity: 1,
+        buildName: "Test Build (Dev2)",
+        type: "build_box",
+      },
       {
         instanceId: "debug_rod_001",
         itemId: "rod_test_float",
@@ -949,6 +948,32 @@ class TestBuildProvider {
       },
     ];
 
-    debugItems.forEach((item) => inventory.addItem(item));
+    debugItems.forEach((item) => this.#addMissingInventoryItem(inventory, item));
+  }
+
+  static #injectConfiguredInventory(inventory) {
+    const configuredInventory =
+      (typeof CONFIG !== "undefined" && CONFIG.player?.inventory) || [];
+    configuredInventory.forEach((item) => {
+      this.#syncConfiguredInventoryItem(inventory, item);
+    });
+  }
+
+  static #syncConfiguredInventoryItem(inventory, item) {
+    if (!item?.instanceId) return;
+    const existing = inventory.getInstance(item.instanceId);
+    if (!existing) {
+      inventory.addItem({ ...item });
+      return;
+    }
+
+    if (existing.itemId !== item.itemId || existing.buildId !== item.buildId) {
+      inventory.addItem({ ...existing, ...item });
+    }
+  }
+
+  static #addMissingInventoryItem(inventory, item) {
+    if (!item?.instanceId || inventory.getInstance(item.instanceId)) return;
+    inventory.addItem({ ...item });
   }
 }

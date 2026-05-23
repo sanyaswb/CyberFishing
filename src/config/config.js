@@ -463,6 +463,22 @@ const CONFIG = {
     maxDtMs: 50,
     waterResistanceKgPerKgPerMps: 2.2, //** */
     currentResistanceMultiplier: 1.0,
+
+    fishForceMultiplier: 0.01,
+    playerForceMultiplier: 0.017,
+    playerSteeringMultiplier: 1.5, // Mechanical advantage of rod for X-axis steering
+    edgePullPenalty: 0.5, // 0.5 означає, що на краю екрана гравець втратить 50% сили
+    distanceXMultiplier: [0.3, 1.0],
+
+    defaultDepthNoSinker: 0.1,
+    guaranteedBiteCooldownMs: [0, 0], // Мінімальний час між клюваннями однієї риби. 0 = без кулдауну.
+
+    lureRetrieveMultiplier: 50,
+    passiveRetrievePower: 1.0,
+    passiveRetrieveMultiplier: 35,
+    passiveRetrieveWaterFriction: 0.35,
+    passiveRetrieveDepthRiseSpeed: 0.15,
+    idleSpinningBiteChance: 0.005,
     rodAnglePenalty: {
       enabled: true,
       noPenaltyAngleDeg: 15,
@@ -509,13 +525,13 @@ const CONFIG = {
     },
     rodStroke: {
       enabled: true,
-      pumpCreditReducesNextPullDistance: true,
-      distanceMultiplierByRodLength: 1.0,
+      pumpCreditReducesNextPullDistance: false,
+      distanceMultiplierByRodLength: 0.5,
       strokeChargePerSecond: 1.0,
       minEffectivePullKg: 0.01,
       minStrokeMeters: 0.001,
       finalLandingDistanceMeters: 0.5,
-      controlledPullLimitRatio: 1.0,
+      controlledPullLimitRatio: 0.6,
     },
     fishRetrieve: {
       tautBodyResistanceKgPerKg: 0.15,
@@ -525,9 +541,6 @@ const CONFIG = {
       playerPressureTransferReferenceWeightKg: 0.5,
       minPlayerPressureTransferRatio: 0.05,
       blockedPlayerPressureTransferRatio: 1.0,
-      pullAccelerationMetersPerSecond2: 5.0,
-      pullInertiaDecelerationMetersPerSecond2: 1.6,
-      startAccelerationLoadKgPerKg: 0.15,
     },
     poleIdleRetrieve: {
       speedMetersPerSecond: 1.2,
@@ -535,6 +548,8 @@ const CONFIG = {
     },
     reel: {
       autoRecoverSlack: true,
+      holdRecoverAfterFullStrokeMs: 1500,
+      holdRecoverStrokeRatio: 1.0,
     },
     catchZone: {
       // Legacy/global fallback для старого коду та снастей з котушкою.
@@ -550,12 +565,7 @@ const CONFIG = {
         maxLandingDistanceMeters: 2.0,
       },
 
-      rollIntervalMs: 1000,
-      guaranteedWeightRatio: 0.2, // Dont change its test value for debugging purposes
       maxLoadWeightRatio: 1, // Dont change its test value for debugging purposes
-      chanceAtGuaranteedRatio: 1, // Dont change its test value for debugging purposes
-      chanceAtMaxLoadRatio: 0.01, // Low chance at max tackle load; keeps auto-landing risky near the limit.
-      overweightChance: 0, // Fish heavier than tackle should not auto-land.
     },
     castingPower: {
       fallbackCoefficient: 0.5,
@@ -564,29 +574,11 @@ const CONFIG = {
       rodLengthCoefficientPerMeter: 0.1,
       reelBearingCoefficient: 0.1,
     },
-    fightMotion: {
-      velocityDampingPerSecond: 4.0,
-    },
     directionForce: {
       sameDirectionMultiplier: 0.4,
       sideDirectionMultiplier: 1.0,
       oppositeDirectionMultiplier: 1.8,
     },
-    fishForceMultiplier: 0.01,
-    playerForceMultiplier: 0.017,
-    playerSteeringMultiplier: 1.5, // Mechanical advantage of rod for X-axis steering
-    edgePullPenalty: 0.5, // 0.5 означає, що на краю екрана гравець втратить 50% сили
-    distanceXMultiplier: [0.3, 1.0],
-
-    defaultDepthNoSinker: 0.1,
-    guaranteedBiteCooldownMs: [0, 0], // Мінімальний час між клюваннями однієї риби. 0 = без кулдауну.
-
-    lureRetrieveMultiplier: 50,
-    passiveRetrievePower: 1.0,
-    passiveRetrieveMultiplier: 35,
-    passiveRetrieveWaterFriction: 0.35,
-    passiveRetrieveDepthRiseSpeed: 0.15,
-    idleSpinningBiteChance: 0.005,
     floatMotion: {
       enabled: true,
       minSpeedPxPerSec: 2,
@@ -607,7 +599,6 @@ const CONFIG = {
       verticalInfluence: 0.35,
       verticalTiltSign: 1,
     },
-
     // --- ДОДАНО: Шанси втрати наживки під час клювання ---
     baitLossChance: {
       normal: 0.0, // 1% для жовтої (негарантованої) ітерації

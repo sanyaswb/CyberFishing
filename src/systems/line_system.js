@@ -175,7 +175,15 @@ class LineSystem {
     });
   }
 
-  recoverLineCredit({ hasReel, inputRecover, reel, tensionKg, dtSec }) {
+  recoverLineCredit({
+    hasReel,
+    inputRecover,
+    reel,
+    tensionKg,
+    dtSec,
+    loadLimitKg = null,
+    maxRecoverMeters = null,
+  }) {
     this.#lastRecoveredMeters = 0;
     if (!hasReel || !inputRecover || !reel) return 0;
 
@@ -192,9 +200,22 @@ class LineSystem {
         1,
     );
     const lineLimit = Math.max(0.001, Number(this.getEffectiveLineMaxLoadKg()) || reelLimit);
-    const limit = Math.min(reelLimit, lineLimit);
+    const configuredLoadLimit = Number(loadLimitKg);
+    const limit = Number.isFinite(configuredLoadLimit) && configuredLoadLimit > 0
+      ? Math.max(0.001, configuredLoadLimit)
+      : Math.min(reelLimit, lineLimit);
     const efficiency = this.#clamp01(1 - (Number(tensionKg) || 0) / limit);
-    const amount = speed * efficiency * Math.max(0, Number(dtSec) || 0);
+    const rawAmount = speed * efficiency * Math.max(0, Number(dtSec) || 0);
+    const configuredMaxRecover = Number(maxRecoverMeters);
+    const hasMaxRecover =
+      maxRecoverMeters !== null &&
+      maxRecoverMeters !== undefined &&
+      Number.isFinite(configuredMaxRecover) &&
+      configuredMaxRecover >= 0;
+    const amount =
+      hasMaxRecover
+        ? Math.min(rawAmount, configuredMaxRecover)
+        : rawAmount;
 
     const nextReleased = Math.max(
       Math.min(this.#baseReachMeters, this.#totalLengthMeters),
@@ -222,6 +243,8 @@ class LineSystem {
       reel: args?.reel,
       tensionKg: args?.tensionKg,
       dtSec: args?.dtSec,
+      loadLimitKg: args?.loadLimitKg,
+      maxRecoverMeters: args?.maxRecoverMeters,
     });
   }
 

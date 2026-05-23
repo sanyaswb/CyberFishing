@@ -407,16 +407,11 @@
       centerVirtualY,
       this.#screenA,
     );
-    const perspective = projector.getPerspective?.(centerVirtualY) || {
-      scale: 1,
-      squashY: 1,
-    };
     const radiusX =
       Math.max(0, Number(radiusMeters) || 0) *
       Math.max(1, Number(pixelsPerMeter) || 50) *
-      Math.max(0, Number(perspective.scale) || 0) *
       projector.getScale();
-    const radiusY = radiusX * Math.max(0, Number(perspective.squashY) || 0);
+    const radiusY = radiusX;
     if (radiusX <= 0 || radiusY <= 0) return;
 
     this.#ctx.save();

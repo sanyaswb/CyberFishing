@@ -36,6 +36,7 @@ class RodStrokeState {
 
     const previous = this.#unrecoveredMeters;
     this.#unrecoveredMeters = Math.max(0, this.#unrecoveredMeters - safeMeters);
+    this.#usedMeters = Math.min(this.#usedMeters, this.#unrecoveredMeters);
     this.#syncSnapshot();
     return previous - this.#unrecoveredMeters;
   }
@@ -44,6 +45,7 @@ class RodStrokeState {
     const safePumpCredit = Math.max(0, Number(pumpCreditMeters) || 0);
     const previous = this.#unrecoveredMeters;
     this.#unrecoveredMeters = Math.min(this.#unrecoveredMeters, safePumpCredit);
+    this.#usedMeters = Math.min(this.#usedMeters, this.#unrecoveredMeters);
     this.#syncSnapshot();
     return previous - this.#unrecoveredMeters;
   }

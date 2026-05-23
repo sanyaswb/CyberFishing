@@ -8,12 +8,14 @@ class FishPullResistanceModel {
   calculate({
     dtSec,
     holdRatio,
-    previousFishPullSpeedMetersPerSecond,
     playerPullPressureKg,
     fishWeightKg,
     totalFishForceKg,
     awayFromPlayerRatio,
     fishConfig,
+    fishCondition,
+    lineDistanceMeters,
+    landingDistanceMeters,
     movementBlocked,
     actualSlackMeters = 0,
     lineTaut = true,
@@ -32,8 +34,13 @@ class FishPullResistanceModel {
     const isLineTaut =
       lineTaut !== false &&
       looseLineMeters <= this.#looseLineToleranceMeters(retrieveConfig);
+    const landingLift = this.#resolveLandingLift({
+      lineDistanceMeters,
+      landingDistanceMeters,
+      fishCondition,
+    });
 
-    const tautBodyResistance = isLineTaut
+    const waterBodyResistance = isLineTaut
       ? weight *
         this.#positive(
           this.#setting(
@@ -44,13 +51,18 @@ class FishPullResistanceModel {
         ) *
         this.#positive(modifiers.staticMultiplier ?? 1)
       : 0;
+    const tautBodyResistance = landingLift.inZone
+      ? this.#lerp(waterBodyResistance, weight, landingLift.ratio)
+      : waterBodyResistance;
     const activeAwayForce =
-      this.#positive(totalFishForceKg) *
-      this.#clamp01(awayFromPlayerRatio) *
-      this.#positive(
-        modifiers.activeAwayMultiplier ??
-          this.#setting(retrieveConfig, "activeAwayForceMultiplier", 1),
-      );
+      landingLift.disableActiveForces
+        ? 0
+        : this.#positive(totalFishForceKg) *
+          this.#clamp01(awayFromPlayerRatio) *
+          this.#positive(
+            modifiers.activeAwayMultiplier ??
+              this.#setting(retrieveConfig, "activeAwayForceMultiplier", 1),
+          );
     const fishOpposition = tautBodyResistance + activeAwayForce;
     const surplusPull = isLineTaut
       ? Math.max(0, playerPullPressure - fishOpposition)
@@ -64,51 +76,27 @@ class FishPullResistanceModel {
       weight *
       waterDragKgPerKgAtReferenceSpeed *
       this.#positive(modifiers.waterDragMultiplier ?? 1);
-    const targetFishPullSpeed = this.#calculatePullSpeedFromSurplus({
+    const unrestrictedTargetFishPullSpeed = this.#calculatePullSpeedFromSurplus({
       surplusPull,
       waterDragCapacity,
       referencePullSpeed,
     });
-    const previousFishPullSpeed = this.#positive(previousFishPullSpeedMetersPerSecond);
-    const actualFishPullSpeed = this.#approachSpeed({
-      current: previousFishPullSpeed,
-      target: targetFishPullSpeed,
-      dtSec: dt,
-      retrieveConfig,
-    });
+    const targetFishPullSpeed = movementBlocked
+      ? 0
+      : unrestrictedTargetFishPullSpeed;
+    const actualFishPullSpeed = targetFishPullSpeed;
     const pullSpeedRatio =
       referencePullSpeed > 0 ? Math.max(0, actualFishPullSpeed / referencePullSpeed) : 0;
-    const waterDrag =
-      weight *
-      waterDragKgPerKgAtReferenceSpeed *
-      this.#positive(modifiers.waterDragMultiplier ?? 1) *
-      pullSpeedRatio *
-      pullSpeedRatio;
-    const positiveAcceleration =
-      dt > 0
-        ? Math.max(
-            0,
-            (actualFishPullSpeed -
-              previousFishPullSpeed) /
-              dt,
-          )
-        : 0;
-    const accelerationLimit = this.#positive(
-      this.#setting(retrieveConfig, "pullAccelerationMetersPerSecond2", 4.0),
-    );
-    const accelerationRatio =
-      accelerationLimit > 0
-        ? this.#clamp01(positiveAcceleration / accelerationLimit)
-        : positiveAcceleration > 0
-          ? 1
-          : 0;
-    const accelerationLoad =
-      weight *
-      this.#positive(
-        this.#setting(retrieveConfig, "startAccelerationLoadKgPerKg", 0.12),
-      ) *
-      this.#positive(modifiers.accelerationMultiplier ?? 1) *
-      accelerationRatio;
+    const waterDrag = landingLift.inZone
+      ? 0
+      : weight *
+        waterDragKgPerKgAtReferenceSpeed *
+        this.#positive(modifiers.waterDragMultiplier ?? 1) *
+        pullSpeedRatio *
+        pullSpeedRatio;
+    const positiveAcceleration = 0;
+    const accelerationRatio = 0;
+    const accelerationLoad = 0;
     const pressureTransferRatio = this.#calculatePressureTransferRatio({
       weight,
       fishOpposition,
@@ -116,7 +104,7 @@ class FishPullResistanceModel {
       movementBlocked,
       retrieveConfig,
     });
-    const effectivePlayerPressure = isLineTaut
+    const effectivePlayerPressure = isLineTaut && !landingLift.disablePlayerPressureLoad
       ? playerPullPressure * pressureTransferRatio
       : 0;
     const blockedSurplusForce =
@@ -143,18 +131,17 @@ class FishPullResistanceModel {
       actualPullSpeedMetersPerSecond: actualFishPullSpeed,
       pullIntentSpeedMetersPerSecond: 0,
       actualFishPullSpeedMetersPerSecond: actualFishPullSpeed,
-      fishPullInertiaActive:
-        targetFishPullSpeed <= 0.001 && actualFishPullSpeed > 0.001,
       targetFishPullSpeedMetersPerSecond: targetFishPullSpeed,
-      pullInertiaDecelerationMetersPerSecond2: this.#pullInertiaDeceleration(
-        retrieveConfig,
-      ),
       pullSpeedRatio,
       intentPullSpeedRatio: 0,
       movementAuthorityLoadKg: playerPullPressure,
       potentialWaterDragKg: waterDragCapacity,
       potentialAccelerationLoadKg: accelerationLoad,
       bodyResistanceKg: tautBodyResistance,
+      landingLiftRatio: landingLift.ratio,
+      landingLiftLoadKg: Math.max(0, tautBodyResistance - waterBodyResistance),
+      landingZoneActive: landingLift.inZone,
+      landingFullyExhausted: landingLift.fullyExhausted,
       tautBodyResistanceKg: tautBodyResistance,
       bodyStaticResistanceKg: tautBodyResistance,
       fishStaticResistanceKg: tautBodyResistance,
@@ -163,9 +150,6 @@ class FishPullResistanceModel {
       waterDragKgPerKgAtReferenceSpeed,
       accelerationLoadKg: accelerationLoad,
       accelerationRatio,
-      startAccelerationLoadKgPerKg: this.#positive(
-        this.#setting(retrieveConfig, "startAccelerationLoadKgPerKg", 0.12),
-      ),
       positiveAccelerationMetersPerSecond2: positiveAcceleration,
       activeAwayForceKg: activeAwayForce,
       fishActiveForceAwayKg: activeAwayForce,
@@ -191,31 +175,6 @@ class FishPullResistanceModel {
         surplusPull,
       }),
     });
-  }
-
-  #approachSpeed({ current, target, dtSec, retrieveConfig }) {
-    if (dtSec <= 0) return this.#positive(current);
-
-    const speedUpAcceleration = this.#positive(
-      this.#setting(retrieveConfig, "pullAccelerationMetersPerSecond2", 4.0),
-    );
-    const slowDownAcceleration = this.#pullInertiaDeceleration(retrieveConfig);
-    const acceleration = target > current ? speedUpAcceleration : slowDownAcceleration;
-    if (acceleration <= 0) return this.#positive(target);
-
-    const maxDelta = acceleration * dtSec;
-    if (target > current) return Math.min(target, current + maxDelta);
-    return Math.max(target, current - maxDelta);
-  }
-
-  #pullInertiaDeceleration(retrieveConfig) {
-    return this.#positive(
-      this.#setting(
-        retrieveConfig,
-        "pullInertiaDecelerationMetersPerSecond2",
-        this.#setting(retrieveConfig, "pullAccelerationMetersPerSecond2", 4.0),
-      ),
-    );
   }
 
   #resolveBalanceState({ playerPullPressure, fishOpposition, surplusPull }) {
@@ -290,6 +249,40 @@ class FishPullResistanceModel {
     return this.#clamp01(Math.max(minTransfer, weightTransfer, loadTransfer));
   }
 
+  #resolveLandingLift({ lineDistanceMeters, landingDistanceMeters, fishCondition }) {
+    const landingDistance = this.#positive(landingDistanceMeters);
+    const lineDistance = this.#positive(lineDistanceMeters);
+    if (landingDistance <= 0 || lineDistance > landingDistance) {
+      return {
+        inZone: false,
+        ratio: 0,
+        fullyExhausted: false,
+        disableActiveForces: false,
+        disableAccelerationLoad: false,
+        disablePlayerPressureLoad: false,
+      };
+    }
+
+    const ratio = this.#clamp01(1 - lineDistance / Math.max(0.001, landingDistance));
+    const fullyExhausted = this.#isFullyExhausted(fishCondition);
+    return {
+      inZone: true,
+      ratio,
+      fullyExhausted,
+      disableActiveForces: fullyExhausted,
+      disableAccelerationLoad: fullyExhausted,
+      disablePlayerPressureLoad: fullyExhausted,
+    };
+  }
+
+  #isFullyExhausted(fishCondition) {
+    if (!fishCondition?.maxPoints) return false;
+    return (
+      fishCondition.phase === "exhaustion" &&
+      Number(fishCondition.currentExhaustion) <= 0.001
+    );
+  }
+
   #looseLineToleranceMeters(retrieveConfig) {
     return this.#positive(
       this.#setting(retrieveConfig, "looseLineTautToleranceMeters", 0.02),
@@ -308,6 +301,10 @@ class FishPullResistanceModel {
 
   #positive(value) {
     return Math.max(0, Number(value) || 0);
+  }
+
+  #lerp(a, b, t) {
+    return a + (b - a) * this.#clamp01(t);
   }
 
   #clamp01(value) {

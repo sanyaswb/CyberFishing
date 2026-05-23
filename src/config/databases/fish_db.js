@@ -76,7 +76,7 @@ const FISH_DB = [
         targetState: "lastDash",
         chance: 0.5,
         checkIntervalMs: 1000,
-        catchZoneMultiplier: 1.1,
+        catchZoneMultiplier: 1.5,
         stayUntilLeaveZone: false,
       },
 

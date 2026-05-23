@@ -142,7 +142,7 @@ const ITEM_DB = {
       },
       engineStats: {
         basePower: 1.0,
-        maxLoadKg: 2,
+        maxLoadKg: 1,
         lineCapacityMeters: 20,
         bearingCount: 3,
         retrieveSpeedMetersPerSec: 0.8,

@@ -63,6 +63,7 @@ class RodPullSystem {
       pumpCreditMeters,
       slackMeters,
       maxTackleLoadKg,
+      dragLimitKg,
       dragLocked,
       hardLineLimit,
       lineHasReserve,

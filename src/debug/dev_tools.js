@@ -273,9 +273,6 @@ class DevTools {
       "playerPressureTransferReferenceWeightKg",
       "minPlayerPressureTransferRatio",
       "blockedPlayerPressureTransferRatio",
-      "pullAccelerationMetersPerSecond2",
-      "pullInertiaDecelerationMetersPerSecond2",
-      "startAccelerationLoadKgPerKg",
     ];
 
     for (const field of fields) {
@@ -366,8 +363,6 @@ class DevTools {
         "playerPressureTransferReferenceWeightKg",
         "minPlayerPressureTransferRatio",
         "blockedPlayerPressureTransferRatio",
-        "pullAccelerationMetersPerSecond2",
-        "startAccelerationLoadKgPerKg",
       ],
     );
     physics.directionForce = this.#withDefaultNumbers(
