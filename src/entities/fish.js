@@ -286,8 +286,7 @@ class Fish {
   getLevelMultiplier() {
     // Numeric level is NOT multiplied into fish force anymore.
     // The level only selects a configured per-level basePower coefficient.
-    const levelBasePower = this.#fishConfig?.forceProfile?.levelBasePower ??
-      this.#fishConfig?.levelBasePower;
+    const levelBasePower = this.#fishConfig?.forceProfile?.levelBasePower;
     if (Number.isFinite(Number(levelBasePower))) {
       return Math.max(0, Number(levelBasePower));
     }
@@ -296,8 +295,7 @@ class Fish {
   }
 
   getInitialPower() {
-    const basePowerValue = this.#fishConfig?.forceProfile?.basePower ??
-      this.#fishConfig?.basePower;
+    const basePowerValue = this.#fishConfig?.forceProfile?.basePower;
     const basePower = Number.isFinite(Number(basePowerValue))
       ? Number(basePowerValue)
       : 1.0;
@@ -305,9 +303,7 @@ class Fish {
   }
 
   getStaticPowerKg() {
-    const basePower = this.#fishConfig?.forceProfile?.basePower ??
-      this.#fishConfig?.basePower ??
-      1.0;
+    const basePower = this.#fishConfig?.forceProfile?.basePower ?? 1.0;
     return this.#weight * this.getLevelMultiplier() * basePower;
   }
 
@@ -315,22 +311,13 @@ class Fish {
     const base = this.getStaticPowerKg();
     const initial = Math.max(0.001, this.getInitialPower());
     const currentRatio = this.getPower() / initial;
-    const minRatio = this.#fishConfig?.forceProfile?.minPowerRatio ??
-      this.#fishConfig?.minPowerRatio ??
-      0.25;
+    const minRatio = this.#fishConfig?.forceProfile?.minPowerRatio ?? 0.25;
     return base * Math.max(minRatio, currentRatio);
   }
 
   getMaxSpeedPxPerSec(pixelsPerMeter = 50) {
-    const maxSpeed = Number(
-      this.#fishConfig?.movementProfile?.maxSpeedMetersPerSec ??
-        this.#fishConfig?.maxSpeedMetersPerSec,
-    );
+    const maxSpeed = Number(this.#fishConfig?.movementProfile?.maxSpeedMetersPerSec);
     if (Number.isFinite(maxSpeed)) return maxSpeed * pixelsPerMeter;
-
-    // Deprecated compatibility fallback for older fish configs.
-    const legacyBaseSpeed = Number(this.#fishConfig?.baseSpeedMetersPerSec);
-    if (Number.isFinite(legacyBaseSpeed)) return legacyBaseSpeed * pixelsPerMeter;
     return 100;
   }
 
@@ -423,8 +410,12 @@ class Fish {
     }
   }
 
+  #getBehaviorMap() {
+    return this.#fishConfig?.behaviorProfile?.behaviors || this.#fishConfig?.behaviors || null;
+  }
+
   applyRandomDebuff(debuffsCfg) {
-    const behaviors = this.#fishConfig.behaviors;
+    const behaviors = this.#getBehaviorMap();
     if (!behaviors) return;
 
     if (!this.#originalBehaviors) {
@@ -484,7 +475,7 @@ class Fish {
 
   clearDebuff() {
     if (!this.#originalBehaviors || !this.#hasActiveDebuff) return;
-    const behaviors = this.#fishConfig.behaviors;
+    const behaviors = this.#getBehaviorMap();
     for (const key in this.#originalBehaviors) {
       if (behaviors[key])
         Object.assign(behaviors[key], this.#originalBehaviors[key]);
@@ -513,7 +504,11 @@ class FishBehavior {
   #rng;
 
   constructor(fishConfig, rng = null) {
-    this.#config = fishConfig;
+    const behaviorMap = fishConfig?.behaviorProfile?.behaviors || fishConfig?.behaviors || {};
+    this.#config = {
+      ...fishConfig,
+      behaviors: behaviorMap,
+    };
     this.#rng = rng || { next: () => Math.random() };
     this.#currentStateName = "swim";
     this.#stateTimer = 0;
@@ -802,19 +797,17 @@ class FishCondition {
 
   constructor(level, weight, staminaFishConfig, fishPhysics = null) {
     const physics = FishPhysicsProfile.toRuntimeConfig(fishPhysics || {});
-    if (physics?.baseStamina) {
-      const speciesBasePower = physics.forceProfile?.basePower ?? physics.basePower ?? 1.0;
+    const staminaProfile = physics.staminaProfile || {};
+    if (Number.isFinite(Number(staminaProfile.baseStamina))) {
+      const speciesBasePower = physics.forceProfile?.basePower ?? 1.0;
       const levelBasePower = Number.isFinite(
-        Number(physics.forceProfile?.levelBasePower ?? physics.levelBasePower),
+        Number(physics.forceProfile?.levelBasePower),
       )
-        ? Number(physics.forceProfile?.levelBasePower ?? physics.levelBasePower)
+        ? Number(physics.forceProfile.levelBasePower)
         : 1.0;
-      const weightMultiplier =
-        physics.staminaProfile?.staminaWeightMultiplier ??
-        physics.staminaWeightMultiplier ??
-        0;
+      const weightMultiplier = staminaProfile.staminaWeightMultiplier ?? 0;
       this.#maxPoints =
-        physics.baseStamina *
+        staminaProfile.baseStamina *
         speciesBasePower *
         levelBasePower *
         (1 + Math.max(0, weightMultiplier) * Math.max(0, weight - 1));

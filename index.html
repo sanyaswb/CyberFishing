@@ -11,6 +11,8 @@
   </head>
   <body>
     <canvas id="gameCanvas"></canvas>
+    <div id="gameVersionBadge" class="game-version-badge" aria-label="Поточна версія гри"></div>
+    <script src="src/config/project_version.js"></script>
     <script src="src/config/databases/item_db.js"></script>
     <script src="src/config/databases/fish_db.js"></script>
     <script src="src/config/databases/map_db.js"></script>
@@ -20,9 +22,11 @@
     <script src="src/config/physics/tackle_physics_config.js"></script>
     <script src="src/config/physics/tension_physics_config.js"></script>
     <script src="src/config/physics/physics_formula_map.js"></script>
+    <script src="src/config/physics/physics_units_and_naming.js"></script>
     <script src="src/config/physics/physics_config_adapter.js"></script>
     <script src="src/config/physics/physics_config.js"></script>
     <script src="src/config/config.js"></script>
+    <script src="src/config/validation/config_schema_validator.js"></script>
 
     <script src="src/input/pull_input_mapper.js"></script>
 
@@ -36,6 +40,11 @@
     <script src="src/core/fishing/retrieve_policy.js"></script>
     <script src="src/core/fishing/fish_retrieve_result.js"></script>
     <script src="src/core/fishing/fish_retrieve_physics_settings.js"></script>
+    <script src="src/core/fishing/fish_motion_load_calculator.js"></script>
+    <script src="src/core/fishing/fish_retrieve_resistance_calculator.js"></script>
+    <script src="src/core/fishing/pull_water_drag_calculator.js"></script>
+    <script src="src/core/fishing/player_pressure_transfer_calculator.js"></script>
+    <script src="src/core/fishing/line_tension_calculator.js"></script>
     <script src="src/core/fishing/fish_pull_resistance_model.js"></script>
     <script src="src/core/line/line_allocation_policy.js"></script>
     <script src="src/core/line/line_inventory_controller.js"></script>
@@ -54,12 +63,14 @@
     <script src="src/systems/reel_system.js"></script>
     <script src="src/systems/tension_system.js"></script>
     <script src="src/systems/tackle_stress_system.js"></script>
+    <script src="src/systems/fight_physics_pipeline.js"></script>
     <script src="src/systems/fight_physics_system.js"></script>
     <script src="src/systems/bite_system.js"></script>
     <script src="src/systems/chum_system.js"></script>
     <script src="src/systems/inventory_system.js"></script>
 
     <script src="src/ui/ui.js"></script>
+    <script src="src/ui/version_badge.js"></script>
 
     <script src="src/debug/dev_tools.js"></script>
     <script src="src/debug/overlay.js"></script>

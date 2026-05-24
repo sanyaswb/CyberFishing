@@ -628,3 +628,20 @@ input:checked + .slider:before {
     box-shadow: 0 0 5px rgba(0, 255, 128, 0.2);
   }
 }
+
+.game-version-badge {
+  position: fixed;
+  left: 10px;
+  bottom: 8px;
+  z-index: 9800;
+  padding: 4px 7px;
+  border: 1px solid rgba(0, 204, 255, 0.35);
+  border-radius: 6px;
+  background: rgba(15, 23, 30, 0.65);
+  color: rgba(210, 245, 255, 0.82);
+  font-family: monospace;
+  font-size: 11px;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}

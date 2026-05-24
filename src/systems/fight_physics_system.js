@@ -6,6 +6,7 @@ class FightPhysicsSystem {
   #pumpCreditCalculator = new PumpCreditCalculator();
   #looseLineCalculator = new LooseLineCalculator();
   #landingPolicyResolver = new LandingPolicyResolver();
+  #pipeline = new FightPhysicsPipeline();
   #fishRetrieveSystem;
   #holdReelRecoverTimerMs = 0;
   #holdReelRecoverState = {
@@ -48,15 +49,25 @@ class FightPhysicsSystem {
     fishCondition,
     buffs,
   }) {
-    const physics = this.#getRuntimePhysicsConfig();
-    const dtSec = this.#getDtSec(dtMs, physics);
-    const pullInput = this.#updateInput({ input, pullInputMapper, dragSystem, dtSec });
+    const pipelineFrame = this.#pipeline.startFrame();
+    const physics = pipelineFrame.run(
+      "read_runtime_config",
+      () => this.#getRuntimePhysicsConfig(),
+    );
+    const dtSec = pipelineFrame.run(
+      "resolve_delta_time",
+      () => this.#getDtSec(dtMs, physics),
+    );
+    const pullInput = pipelineFrame.run(
+      "read_input",
+      () => this.#updateInput({ input, pullInputMapper, dragSystem, dtSec }),
+    );
     const hasReel = !!reel?.hasReel?.();
     const dragSupported = hasReel && reel?.hasDrag?.() !== false;
     const isPullMode = !!pullInput.pullHeld;
     const isRecoverMode = hasReel && !isPullMode;
     const maxTackleLoadKg = stressSystem.getEffectiveMaxTackleLoadKg?.() || 0;
-    const motion = this.#updateFishMotion({
+    const motion = pipelineFrame.run("update_fish_motion", () => this.#updateFishMotion({
       dtMs,
       dtSec,
       floatEntity,
@@ -73,17 +84,21 @@ class FightPhysicsSystem {
       fishCondition,
       buffs,
       playerMaxLoadKg: maxTackleLoadKg,
-    });
+    }));
     const forceData = motion.forceData;
-    const dragContext = this.#resolveDragContext({
+    const dragContext = pipelineFrame.run("resolve_drag_context", () =>
+      this.#resolveDragContext({
       hasReel,
       dragSupported,
       dragSystem,
       forceData,
       maxTackleLoadKg,
-    });
+    }),
+    );
 
-    const rodPullFrame = this.#updateRodPull({
+    const rodPullFrame = pipelineFrame.run(
+      "resolve_rod_pull_and_retrieve",
+      () => this.#updateRodPull({
       dtSec,
       pullInput,
       floatEntity,
@@ -101,8 +116,11 @@ class FightPhysicsSystem {
       holdReelRecover: this.#holdReelRecoverState,
       isRecoverMode,
       reel,
-    });
-    const tensionPreview = this.#calculateTension({
+    }),
+    );
+    const tensionPreview = pipelineFrame.run(
+      "preview_tension",
+      () => this.#calculateTension({
       tensionSystem,
       forceData,
       rodPullResult: rodPullFrame.rodPullResult,
@@ -110,8 +128,10 @@ class FightPhysicsSystem {
       dragContext,
       lineState: rodPullFrame.lineStateAfterPull,
       hardLineLimit: rodPullFrame.hardLineLimitBeforeRelease,
-    });
-    const holdReelRecover = this.#updateHoldReelRecovery({
+    }),
+    );
+    const recoverFrame = pipelineFrame.run("recover_line", () => {
+      const holdReelRecover = this.#updateHoldReelRecovery({
       dtMs,
       isPullMode,
       hasReel,
@@ -121,7 +141,7 @@ class FightPhysicsSystem {
       dragContext,
       physics,
     });
-    const recoveredMeters = this.#recoverLineCredit({
+      const recoveredMeters = this.#recoverLineCredit({
       dtSec,
       reelSystem,
       lineSystem,
@@ -136,10 +156,16 @@ class FightPhysicsSystem {
         ? rodPullFrame.holdReelRecoverMoveMeters
         : null,
     });
+      return { holdReelRecover, recoveredMeters };
+    });
+    const holdReelRecover = recoverFrame.holdReelRecover;
+    const recoveredMeters = recoverFrame.recoveredMeters;
     if (!holdReelRecover.active) {
       rodPullSystem.recoverStroke?.({ recoveredMeters });
     }
-    const lineLimit = this.#resolveLineLimit({
+    const lineLimit = pipelineFrame.run(
+      "resolve_line_constraint",
+      () => this.#resolveLineLimit({
       floatEntity,
       rodTipPosition,
       lineSystem,
@@ -148,13 +174,16 @@ class FightPhysicsSystem {
       physics,
       velocity: motion.velocity,
       hardLineLimitBeforeRelease: rodPullFrame.hardLineLimitBeforeRelease,
-    });
+    }),
+    );
     if (!holdReelRecover.active) {
       rodPullSystem.syncStrokeToPumpCredit?.({
         pumpCreditMeters: lineLimit.finalPumpCreditMeters,
       });
     }
-    const tensionResult = this.#updateTension({
+    const tensionResult = pipelineFrame.run(
+      "update_final_tension",
+      () => this.#updateTension({
       tensionSystem,
       stressSystem,
       forceData,
@@ -164,10 +193,13 @@ class FightPhysicsSystem {
       lineState: lineLimit.lineState,
       hardLineLimit: lineLimit.hardLineLimit,
       dtSec,
-    });
+    }),
+    );
     const rodPullDisplay = rodPullSystem.getState();
 
-    this.#debug = this.#buildDebugSnapshot({
+    this.#debug = pipelineFrame.run(
+      "write_debug_snapshot",
+      () => this.#buildDebugSnapshot({
       forceData,
       dragSystem,
       lineState: lineLimit.lineState,
@@ -190,7 +222,9 @@ class FightPhysicsSystem {
       isRecoverMode,
       holdReelRecover,
       dragContext,
-    });
+    }),
+    );
+    this.#debug.fightPipeline = pipelineFrame.toDebugData();
     stressSystem.setDebugData(this.#debug);
 
     return {

@@ -5,6 +5,7 @@ class FishForceSystem {
   #scratchB = new Vector2(0, 0);
   #targetVelocity = new Vector2(0, 0);
   #playerForceSystem;
+  #motionLoadCalculator = new FishMotionLoadCalculator();
   #physicsConfig;
   #debug = {};
 
@@ -67,10 +68,6 @@ class FishForceSystem {
       .normalize();
 
     const currentVelocity = this.#getCurrentVelocityPxPerSec(env, physics);
-    const relativeVelocityX = (fishVelocity?.x || 0) - currentVelocity.x;
-    const relativeVelocityY = (fishVelocity?.y || 0) - currentVelocity.y;
-    const relativeSpeedMps =
-      Math.hypot(relativeVelocityX, relativeVelocityY) / pixelsPerMeter;
 
     const staticForceKg = this.#firstFiniteNumber(
       this.#fish.getCurrentStaticPowerKg?.(),
@@ -79,35 +76,29 @@ class FishForceSystem {
       1,
     );
 
-    const velocityLength = Math.hypot(relativeVelocityX, relativeVelocityY);
-    const velocityDirX = velocityLength > 0.001 ? relativeVelocityX / velocityLength : moveDir.x;
-    const velocityDirY = velocityLength > 0.001 ? relativeVelocityY / velocityLength : moveDir.y;
-    const opposition = velocityDirX * awayDir.x + velocityDirY * awayDir.y;
-    const directionMultiplier = this.#directionMultiplier(
-      opposition,
-      this.#physicsConfig?.getDirectionMultiplierConfig?.(),
-    );
-    const dynamicLoadEnabled =
-      this.#physicsConfig?.isFishMotionDynamicLoadEnabled?.() !== false;
+    const motionLoad = this.#motionLoadCalculator.calculate({
+      fishWeightKg: this.#fish.getWeight(),
+      fishVelocity,
+      currentVelocity,
+      pixelsPerMeter,
+      fishPhysicsConfig: fishPhysics,
+      fishPosition,
+      rodTipPosition,
+      fallbackDirection: moveDir,
+      physicsConfig: this.#physicsConfig,
+    });
+    const relativeVelocityX = motionLoad.relativeVelocityX;
+    const relativeVelocityY = motionLoad.relativeVelocityY;
+    const relativeSpeedMps = motionLoad.relativeSpeedMps;
+    const opposition = motionLoad.opposition;
+    const directionMultiplier = motionLoad.directionMultiplier;
+    const dynamicLoadEnabled = motionLoad.dynamicLoadEnabled;
     const fishMotionSpeedLoadKgPerKgPerMps =
-      this.#physicsConfig?.getFishMotionSpeedLoadKgPerKgPerMps?.() ?? 1.0;
-
-    const dynamicForceKg = dynamicLoadEnabled
-      ? this.#fish.getWeight() *
-        relativeSpeedMps *
-        (fishPhysics.resistanceProfile?.speedForceMultiplier ??
-          fishPhysics.speedForceMultiplier ??
-          0.35) *
-        (fishPhysics.resistanceProfile?.waterResistanceMultiplier ??
-          fishPhysics.waterResistanceMultiplier ??
-          1.0) *
-        fishMotionSpeedLoadKgPerKgPerMps *
-        directionMultiplier
-      : 0;
+      motionLoad.fishMotionSpeedLoadKgPerKgPerMps;
+    const dynamicForceKg = motionLoad.dynamicForceKg;
 
     const behaviorPowerRatio = Math.max(0, behaviorPullValue);
-    const configuredMinPowerRatio =
-      fishPhysics.forceProfile?.minPowerRatio ?? fishPhysics.minPowerRatio;
+    const configuredMinPowerRatio = fishPhysics.forceProfile?.minPowerRatio;
     const minPowerRatio = Number.isFinite(Number(configuredMinPowerRatio))
       ? Number(configuredMinPowerRatio)
       : this.#physicsConfig?.getMinPowerRatioFallback?.() ?? 0.25;
@@ -151,17 +142,13 @@ class FishForceSystem {
       Number(behavior.speedRatio ?? Math.abs(behavior.moveX || 0)) || 0,
     );
     const staminaActivityMultiplier = this.#lerp(
-      fishPhysics.staminaProfile?.minStaminaActivityMultiplier ??
-        fishPhysics.minStaminaActivityMultiplier ??
-        0.75,
+      fishPhysics.staminaProfile?.minStaminaActivityMultiplier ?? 0.75,
       1,
       staminaRatio,
     );
     const exhaustionSpeedMultiplier = this.#lerp(
       1,
-      fishPhysics.staminaProfile?.exhaustedSpeedRatio ??
-        fishPhysics.exhaustedSpeedRatio ??
-        0.25,
+      fishPhysics.staminaProfile?.exhaustedSpeedRatio ?? 0.25,
       exhaustionProgress,
     );
 
@@ -185,6 +172,8 @@ class FishForceSystem {
       dynamicFishForceKg: dynamicForceKg,
       dynamicLoadEnabled,
       fishMotionSpeedLoadKgPerKgPerMps,
+      fishSpeedForceMultiplier: motionLoad.speedForceMultiplier,
+      fishWaterResistanceMultiplier: motionLoad.waterResistanceMultiplier,
       totalFishForceKg,
       fishSpeedPxPerSec: speedPxPerSec,
       fishMaxSpeedPxPerSec: maxSpeedPxPerSec,
@@ -233,6 +222,8 @@ class FishForceSystem {
       dynamicFishForceKg: dynamicForceKg,
       dynamicLoadEnabled,
       fishMotionSpeedLoadKgPerKgPerMps,
+      fishSpeedForceMultiplier: motionLoad.speedForceMultiplier,
+      fishWaterResistanceMultiplier: motionLoad.waterResistanceMultiplier,
       totalFishForceKg,
       opposition,
       awayFromPlayerRatio,
@@ -298,16 +289,6 @@ class FishForceSystem {
       x: (dx / len) * speed * influence,
       y: (dy / len) * speed * influence,
     };
-  }
-
-  #directionMultiplier(opposition, config = {}) {
-    const same = config.sameDirection ?? 0.4;
-    const side = config.sideDirection ?? 1.0;
-    const opposite = config.oppositeDirection ?? 1.8;
-    if (opposition < 0) {
-      return same + (side - same) * (opposition + 1);
-    }
-    return side + (opposite - side) * opposition;
   }
 
   #lerp(a, b, t) {

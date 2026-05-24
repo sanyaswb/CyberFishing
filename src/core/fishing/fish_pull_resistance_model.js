@@ -1,5 +1,8 @@
 class FishPullResistanceModel {
   #configSource;
+  #retrieveResistanceCalculator = new FishRetrieveResistanceCalculator();
+  #waterDragCalculator = new PullWaterDragCalculator();
+  #pressureTransferCalculator = new PlayerPressureTransferCalculator();
 
   constructor(configSource = {}) {
     this.#configSource = configSource || {};
@@ -43,40 +46,23 @@ class FishPullResistanceModel {
       fishCondition,
     });
 
-    const waterBodyResistance = isLineTaut
-      ? weight *
-        this.#positive(
-          this.#setting(
-            retrieveConfig,
-            "tautBodyResistanceKgPerKg",
-            this.#setting(
-              retrieveConfig,
-              "staticBodyResistanceKgPerKg",
-              0.1,
-              globalRetrieveConfig,
-            ),
-            globalRetrieveConfig,
-          ),
-        ) *
-        this.#positive(modifiers.staticMultiplier ?? 1)
-      : 0;
-    const tautBodyResistance = landingLift.inZone
-      ? this.#lerp(waterBodyResistance, weight, landingLift.ratio)
-      : waterBodyResistance;
-    const activeAwayForce = landingLift.disableActiveForces
-      ? 0
-      : this.#positive(totalFishForceKg) *
-        this.#clamp01(awayFromPlayerRatio) *
-        this.#positive(
-          modifiers.activeAwayMultiplier ??
-            this.#setting(
-              retrieveConfig,
-              "activeAwayForceMultiplier",
-              1,
-              globalRetrieveConfig,
-            ),
-        );
-    const fishOpposition = tautBodyResistance + activeAwayForce;
+    const settingReader = (overrideConfig, key, defaultValue, globalConfig) =>
+      this.#setting(overrideConfig, key, defaultValue, globalConfig);
+    const resistance = this.#retrieveResistanceCalculator.calculate({
+      fishWeightKg: weight,
+      totalFishForceKg,
+      awayFromPlayerRatio,
+      isLineTaut,
+      landingLift,
+      retrieveConfig,
+      globalRetrieveConfig,
+      modifiers,
+      settingReader,
+    });
+    const waterBodyResistance = resistance.waterBodyResistanceKg;
+    const tautBodyResistance = resistance.tautBodyResistanceKg;
+    const activeAwayForce = resistance.activeAwayForceKg;
+    const fishOpposition = resistance.fishOppositionKg;
     const surplusPull = isLineTaut
       ? Math.max(0, playerPullPressure - fishOpposition)
       : 0;
@@ -85,49 +71,36 @@ class FishPullResistanceModel {
         retrieveConfig,
         globalRetrieveConfig,
       });
-    const waterDragCapacity =
-      weight *
-      waterDragKgPerKgAtReferenceSpeed *
-      this.#positive(modifiers.waterDragMultiplier ?? 1);
-    const unrestrictedTargetFishPullSpeed = this.#calculatePullSpeedFromSurplus({
-      surplusPull,
-      waterDragCapacity,
-      referencePullSpeed,
+    const waterDragFrame = this.#waterDragCalculator.calculate({
+      fishWeightKg: weight,
+      surplusPullKg: movementBlocked ? 0 : surplusPull,
+      referencePullSpeedMetersPerSecond: referencePullSpeed,
+      waterDragKgPerKgAtReferenceSpeed,
+      waterDragMultiplier: modifiers.waterDragMultiplier ?? 1,
+      landingLift,
     });
-    const targetFishPullSpeed = movementBlocked
-      ? 0
-      : unrestrictedTargetFishPullSpeed;
+    const waterDragCapacity = waterDragFrame.waterDragCapacityKg;
+    const targetFishPullSpeed = waterDragFrame.targetFishPullSpeedMetersPerSecond;
     const actualFishPullSpeed = targetFishPullSpeed;
-    const pullSpeedRatio =
-      referencePullSpeed > 0
-        ? Math.max(0, actualFishPullSpeed / referencePullSpeed)
-        : 0;
-    const waterDrag = landingLift.inZone
-      ? 0
-      : weight *
-        waterDragKgPerKgAtReferenceSpeed *
-        this.#positive(modifiers.waterDragMultiplier ?? 1) *
-        pullSpeedRatio *
-        pullSpeedRatio;
+    const pullSpeedRatio = waterDragFrame.pullSpeedRatio;
+    const waterDrag = waterDragFrame.waterDragKg;
     const positiveAcceleration = 0;
     const accelerationRatio = 0;
     const accelerationLoad = 0;
-    const pressureTransferRatio = this.#calculatePressureTransferRatio({
-      weight,
-      fishOpposition,
-      playerPullPressure,
+    const pressureTransfer = this.#pressureTransferCalculator.calculate({
+      fishWeightKg: weight,
+      fishOppositionKg: fishOpposition,
+      playerPullPressureKg: playerPullPressure,
       movementBlocked,
+      isLineTaut,
+      landingLift,
       retrieveConfig,
       globalRetrieveConfig,
+      settingReader,
     });
-    const effectivePlayerPressure =
-      isLineTaut && !landingLift.disablePlayerPressureLoad
-        ? playerPullPressure * pressureTransferRatio
-        : 0;
-    const blockedSurplusForce =
-      movementBlocked && isLineTaut
-        ? Math.max(0, playerPullPressure - effectivePlayerPressure)
-        : 0;
+    const pressureTransferRatio = pressureTransfer.pressureTransferRatio;
+    const effectivePlayerPressure = pressureTransfer.effectivePlayerPressureKg;
+    const blockedSurplusForce = pressureTransfer.blockedSurplusForceKg;
     const passiveRetrieveTension =
       tautBodyResistance +
       effectivePlayerPressure +
@@ -213,30 +186,37 @@ class FishPullResistanceModel {
   }
 
   #resolvePullResistanceModifiers(fishConfig) {
-    const legacy = fishConfig?.pullResistance || {};
     const profile = fishConfig?.retrieveProfile || {};
-    const modifiers = { ...legacy };
+    const legacy = fishConfig?.pullResistance || {};
+    const modifiers = {};
 
+    // New structured retrieveProfile is the primary read model.
+    // Legacy pullResistance stays as a fallback only while compatibility aliases exist.
     this.#applyOptionalNumber(
       modifiers,
       "staticMultiplier",
       profile.staticMultiplier,
       profile.passiveBodyResistanceMultiplier,
+      legacy.staticMultiplier,
+      legacy.passiveBodyResistanceMultiplier,
     );
     this.#applyOptionalNumber(
       modifiers,
       "activeAwayMultiplier",
       profile.activeAwayMultiplier,
+      legacy.activeAwayMultiplier,
     );
     this.#applyOptionalNumber(
       modifiers,
       "waterDragMultiplier",
       profile.waterDragMultiplier,
+      legacy.waterDragMultiplier,
     );
     this.#applyOptionalNumber(
       modifiers,
       "referencePullSpeedMultiplier",
       profile.referencePullSpeedMultiplier,
+      legacy.referencePullSpeedMultiplier,
     );
 
     return modifiers;
@@ -296,58 +276,6 @@ class FishPullResistanceModel {
     );
     if (Number.isFinite(Number(direct))) return this.#positive(direct);
     return 0.85;
-  }
-
-  #calculatePullSpeedFromSurplus({
-    surplusPull,
-    waterDragCapacity,
-    referencePullSpeed,
-  }) {
-    if (surplusPull <= 0.001 || referencePullSpeed <= 0) return 0;
-    const capacity = Math.max(0.001, waterDragCapacity);
-    return referencePullSpeed * Math.sqrt(surplusPull / capacity);
-  }
-
-  #calculatePressureTransferRatio({
-    weight,
-    fishOpposition,
-    playerPullPressure,
-    movementBlocked,
-    retrieveConfig,
-    globalRetrieveConfig,
-  }) {
-    if (playerPullPressure <= 0.001) return 0;
-    if (movementBlocked) {
-      return this.#clamp01(
-        this.#setting(
-          retrieveConfig,
-          "blockedPlayerPressureTransferRatio",
-          1,
-          globalRetrieveConfig,
-        ),
-      );
-    }
-
-    const referenceWeight = Math.max(
-      0.001,
-      this.#setting(
-        retrieveConfig,
-        "playerPressureTransferReferenceWeightKg",
-        0.5,
-        globalRetrieveConfig,
-      ),
-    );
-    const minTransfer = this.#clamp01(
-      this.#setting(
-        retrieveConfig,
-        "minPlayerPressureTransferRatio",
-        0.05,
-        globalRetrieveConfig,
-      ),
-    );
-    const weightTransfer = weight / (weight + referenceWeight);
-    const loadTransfer = fishOpposition / playerPullPressure;
-    return this.#clamp01(Math.max(minTransfer, weightTransfer, loadTransfer));
   }
 
   #resolveLandingLift({ lineDistanceMeters, landingDistanceMeters, fishCondition }) {
@@ -445,9 +373,6 @@ class FishPullResistanceModel {
     return Math.max(0, Number(value) || 0);
   }
 
-  #lerp(a, b, t) {
-    return a + (b - a) * this.#clamp01(t);
-  }
 
   #clamp01(value) {
     return Math.max(0, Math.min(1, Number(value) || 0));
