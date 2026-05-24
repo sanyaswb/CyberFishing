@@ -633,12 +633,16 @@ class FightPhysicsSystem {
     });
 
     this.#holdReelRecoverTimerMs = eligible
-      ? this.#holdReelRecoverTimerMs + Math.max(0, Number(dtMs) || 0)
+      ? Math.min(
+          delayMs,
+          this.#holdReelRecoverTimerMs + Math.max(0, Number(dtMs) || 0),
+        )
       : 0;
 
+    const active = eligible && this.#holdReelRecoverTimerMs >= delayMs;
     this.#holdReelRecoverState = {
       eligible,
-      active: eligible && this.#holdReelRecoverTimerMs >= delayMs,
+      active,
       timerMs: this.#holdReelRecoverTimerMs,
       delayMs,
       reelLoadReserveRatio,
