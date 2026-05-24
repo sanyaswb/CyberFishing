@@ -2,6 +2,11 @@ class PlayerForceSystem {
   #playerVector = new Vector2(0, 0);
   #playerPullDir = new Vector2(0, 0);
   #lineDir = new Vector2(0, 0);
+  #physicsConfig;
+
+  constructor({ physicsConfig = null } = {}) {
+    this.#physicsConfig = physicsConfig;
+  }
 
   calculate({
     fishPosition,
@@ -14,7 +19,9 @@ class PlayerForceSystem {
     totalFishForceKg,
     playerMaxLoadKg,
     dragRatio,
+    physicsConfig = null,
   }) {
+    const config = physicsConfig || this.#physicsConfig;
     const basePullDir = this.#playerPullDir
       .set(rodTipPosition.x - fishPosition.x, rodTipPosition.y - fishPosition.y)
       .normalize();
@@ -22,7 +29,9 @@ class PlayerForceSystem {
     const inputDir = input?.pullDirection;
     const steerX = Number(inputDir?.x) || 0;
     if (Math.abs(steerX) > 0.001) {
-      basePullDir.x += steerX * (physics.inputSteeringBlend ?? 0.35);
+      const inputSteeringBlend =
+        config?.getInputSteeringBlend?.() ?? 0.35;
+      basePullDir.x += steerX * inputSteeringBlend;
       basePullDir.normalize();
     }
 
@@ -32,7 +41,7 @@ class PlayerForceSystem {
     const idealDir = { x: 0, y: -1 };
     const dot = Math.max(-1, Math.min(1, lineDir.x * idealDir.x + lineDir.y * idealDir.y));
     const angleDeg = (Math.acos(dot) * 180) / Math.PI;
-    const angleCfg = physics.rodAnglePenalty || {};
+    const angleCfg = config?.getRodAnglePenaltyConfig?.() || {};
     const noPenalty = angleCfg.noPenaltyAngleDeg ?? 15;
     const maxPenaltyAngle = angleCfg.maxPenaltyAngleDeg ?? 75;
     const angleStressRatio = this.#clamp01(

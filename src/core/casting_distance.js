@@ -5,7 +5,10 @@ class DistanceUnitConverter {
     const physicsConfig = config?.physics || config || {};
     this.#pixelsPerMeter = Math.max(
       1,
-      Number(physicsConfig.pixelsPerMeter) || 50,
+      Number(
+        physicsConfig.simulation?.pixelsPerMeter ??
+          physicsConfig.pixelsPerMeter,
+      ) || 50,
     );
   }
 
@@ -28,14 +31,20 @@ class DistanceUnitConverter {
 
 class CastDistanceCalculator {
   #config;
+  #physicsConfig;
   #converter;
   #lineConfig;
 
   constructor(config = {}) {
     this.#config = config || {};
-    const physicsConfig = this.#config.physics || this.#config || {};
+    this.#physicsConfig = this.#resolvePhysicsConfigAdapter(this.#config);
+    const physicsConfig =
+      this.#physicsConfig?.getLineSystemConfig?.() ||
+      this.#config ||
+      {};
     this.#converter = new DistanceUnitConverter(physicsConfig);
-    this.#lineConfig = physicsConfig.line || {};
+    this.#lineConfig =
+      this.#physicsConfig?.getLineConfig?.() || physicsConfig.line || {};
   }
 
   get pixelsPerMeter() {
@@ -111,8 +120,7 @@ class CastDistanceCalculator {
   }
 
   getBuildCastPowerCoefficient(equipment, fallback = null) {
-    const castingPowerConfig =
-      this.#config.physics?.castingPower || this.#config.castingPower || {};
+    const castingPowerConfig = this.#getCastingPowerConfig();
     const fallbackCoefficient = this.#numberOrDefault(
       fallback ??
         castingPowerConfig.fallbackCoefficient ??
@@ -231,12 +239,31 @@ class CastDistanceCalculator {
   }
 
   #clampCastPower(value) {
-    const castingPowerConfig =
-      this.#config.physics?.castingPower || this.#config.castingPower || {};
+    const castingPowerConfig = this.#getCastingPowerConfig();
     const min = this.#numberOrDefault(castingPowerConfig.minCoefficient, 0);
     const max = this.#numberOrDefault(castingPowerConfig.maxCoefficient, 1);
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return this.#clamp01(0);
     return Math.max(min, Math.min(max, parsed));
+  }
+
+  #getCastingPowerConfig() {
+    return (
+      this.#physicsConfig?.getCastingPowerConfig?.() ||
+      this.#config.castingPower ||
+      {}
+    );
+  }
+
+  #resolvePhysicsConfigAdapter(config) {
+    if (config?.fightPhysicsConfig) return config.fightPhysicsConfig;
+    const candidate = config?.physics || config;
+    if (
+      typeof FightPhysicsConfigAdapter !== "undefined" &&
+      (candidate?.simulation || candidate?.tackle || candidate?.fight)
+    ) {
+      return new FightPhysicsConfigAdapter(config);
+    }
+    return null;
   }
 }

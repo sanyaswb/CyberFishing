@@ -520,7 +520,10 @@ function renderNetModule(ctx) {
 function renderBiteTicksModule() {
   const config = typeof CONFIG !== "undefined" ? CONFIG : {};
   const tickRate = config.spawns?.tickRateMs ?? "n/a";
-  const cooldown = config.physics?.guaranteedBiteCooldownMs || [];
+  const cooldown =
+    config.fightPhysicsConfig?.getLureRetrieveConfig?.()
+      ?.guaranteedBiteCooldownMs ||
+    [];
   const godMode = config.debug?.godMode || {};
   console.table({
     "Logger status": "enabled",

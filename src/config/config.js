@@ -244,6 +244,31 @@ const CONFIG = {
   },
 
   debug: {
+    overlay: true,
+    initialTime: null, // Початковий час. 17.5 = 17:30. Якщо поставити null, гра візьме реальний час.
+    timeScale: 240, // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
+
+    godMode: {
+      enabled: true, // Гoловний рубильник (якщо false, інші ігноруються)
+      infiniteResources: true, // 1. Нескінченна наживка/снасті
+      noEquipmentLoss: true,
+      noHookEscape: true, // 2. Риба ніколи не зривається з гачка
+      noLineBreak: true, // 3. Ліска не рветься при 100% натягу
+      noRodBreak: true, // 4. Вудка ніколи не ламається
+      noFishStaminaLoss: true, // 5. Стаміна риби не витрачається і завжди тримається на 100%
+      infiniteCasting: true,
+
+      // Bite debug controls. Працюють тільки коли enabled: true.
+      // fixedBiteChancePercent обрізається до діапазону 0..100.
+      fixedBiteChanceEnabled: true, // Якщо true, шанс клювання буде завжди fixedBiteChancePercent, ігноруючи інші механіки.
+      fixedBiteChancePercent: 100,
+
+      // "default" — брати biteMechanics риби;
+      // "guaranteed" — тільки гарантовані;
+      // "normal" — тільки не гарантовані.
+      biteSequenceMode: "guaranteed",
+    },
+
     consoleModules: {
       biteTicks: true,
       location: false,
@@ -265,31 +290,6 @@ const CONFIG = {
       accuracyAreaFill: "rgba(255, 255, 255, 0.08)",
       accuracyAreaStroke: "rgba(255, 255, 255, 0.55)",
     },
-
-    godMode: {
-      enabled: true, // Гoловний рубильник (якщо false, інші ігноруються)
-      infiniteResources: true, // 1. Нескінченна наживка/снасті
-      noEquipmentLoss: true,
-      noHookEscape: true, // 2. Риба ніколи не зривається з гачка
-      noLineBreak: true, // 3. Ліска не рветься при 100% натягу
-      noRodBreak: true, // 4. Вудка ніколи не ламається
-      noFishStaminaLoss: false, // 5. Стаміна риби не витрачається і завжди тримається на 100%
-      infiniteCasting: true,
-
-      // Bite debug controls. Працюють тільки коли enabled: true.
-      // fixedBiteChancePercent обрізається до діапазону 0..100.
-      fixedBiteChanceEnabled: true, // Якщо true, шанс клювання буде завжди fixedBiteChancePercent, ігноруючи інші механіки.
-      fixedBiteChancePercent: 100,
-
-      // "default" — брати biteMechanics риби;
-      // "guaranteed" — тільки гарантовані;
-      // "normal" — тільки не гарантовані.
-      biteSequenceMode: "guaranteed",
-    },
-
-    overlay: true,
-    initialTime: 17.5, // Початковий час. 17.5 = 17:30. Якщо поставити null, гра візьме реальний час.
-    timeScale: 240, // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
 
     fixedCatch: {
       enabled: true,
@@ -457,154 +457,7 @@ const CONFIG = {
     },
   },
 
-  physics: {
-    pixelsPerMeter: 50,
-    fixedDtMs: 16.666,
-    maxDtMs: 50,
-    waterResistanceKgPerKgPerMps: 2.2, //** */
-    currentResistanceMultiplier: 1.0,
-
-    fishForceMultiplier: 0.01,
-    playerForceMultiplier: 0.017,
-    playerSteeringMultiplier: 1.5, // Mechanical advantage of rod for X-axis steering
-    edgePullPenalty: 0.5, // 0.5 означає, що на краю екрана гравець втратить 50% сили
-    distanceXMultiplier: [0.3, 1.0],
-
-    defaultDepthNoSinker: 0.1,
-    guaranteedBiteCooldownMs: [0, 0], // Мінімальний час між клюваннями однієї риби. 0 = без кулдауну.
-
-    lureRetrieveMultiplier: 50,
-    passiveRetrievePower: 1.0,
-    passiveRetrieveMultiplier: 35,
-    passiveRetrieveWaterFriction: 0.35,
-    passiveRetrieveDepthRiseSpeed: 0.15,
-    idleSpinningBiteChance: 0.005,
-    rodAnglePenalty: {
-      enabled: true,
-      noPenaltyAngleDeg: 15,
-      maxPenaltyAngleDeg: 75,
-      maxPenaltyMultiplier: 0.65,
-    },
-    line: {
-      defaultMaxLoadKg: 12,
-      durabilityMaxLoadLossPerPercent: 0.001,
-      rodLengthReserveMultiplier: 1.0,
-
-      // Махова вудка: мінімум — приблизно довжина вудки,
-      // максимум — довжина вудки + запас для монтажу/вузлів.
-      noReelMinRodLengthMultiplier: 1.0,
-      noReelExtraLengthMeters: 1.0,
-
-      // Legacy fallback. Залишено для старих build/config, але нова логіка
-      // використовує noReelMinRodLengthMultiplier + noReelExtraLengthMeters.
-      noReelRodLengthMultiplier: 2.0,
-      fullExtensionTensionMultiplier: 1.0,
-      slackTensionMultiplier: 0.0,
-      constraintTolerancePx: 0.5,
-    },
-    drag: {
-      minRatio: 0,
-      maxRatio: 1,
-      yEscapeSpeedAtFullDrag: 0.02,
-      tensionGrowthPower: 1.6,
-      autoRetrieveEnabled: true,
-
-      // Коли фрикціон тримає силу риби, котушка не повинна автоматично здавати ліску.
-      // 0 = без мікро-прослизання; 0.02 можна поставити, якщо хочеш легкий creep.
-      creepReleaseRatio: 0,
-
-      // Фрикціон тепер змінюється жестом так само, як сила закидання:
-      // вертикальне протягування пальця/миші заповнює шкалу плавно, без кроків.
-      pointerControlEnabled: true,
-      powerSwipePx: 200,
-      powerDeadzoneRatio: 0.25,
-      powerAnchorReturnPxPerSecond: 1200,
-
-      // Залишається для клавіш W/S або ArrowUp/ArrowDown.
-      changeSpeedPerSec: 0.35,
-    },
-    rodStroke: {
-      enabled: true,
-      pumpCreditReducesNextPullDistance: false,
-      distanceMultiplierByRodLength: 0.5,
-      strokeChargePerSecond: 1.0,
-      minEffectivePullKg: 0.01,
-      minStrokeMeters: 0.001,
-      finalLandingDistanceMeters: 0.5,
-      controlledPullLimitRatio: 0.6,
-    },
-    fishRetrieve: {
-      tautBodyResistanceKgPerKg: 0.15,
-      activeAwayForceMultiplier: 1.0,
-      referencePullSpeedMetersPerSecond: 1.0,
-      waterDragKgPerKgAtReferenceSpeed: 0.85,
-      playerPressureTransferReferenceWeightKg: 0.5,
-      minPlayerPressureTransferRatio: 0.05,
-      blockedPlayerPressureTransferRatio: 1.0,
-    },
-    poleIdleRetrieve: {
-      speedMetersPerSecond: 1.2,
-      waterFrictionMultiplier: 0.15,
-    },
-    reel: {
-      autoRecoverSlack: true,
-      holdRecoverAfterFullStrokeMs: 1500,
-      holdRecoverStrokeRatio: 1.0,
-    },
-    catchZone: {
-      // Legacy/global fallback для старого коду та снастей з котушкою.
-      landingDistanceMeters: 1.0,
-
-      reel: {
-        landingDistanceMeters: 1.0,
-      },
-
-      pole: {
-        landingDistanceByRodLength: 1.0,
-        minLandingDistanceMeters: 1.0,
-        maxLandingDistanceMeters: 2.0,
-      },
-
-      maxLoadWeightRatio: 1, // Dont change its test value for debugging purposes
-    },
-    castingPower: {
-      fallbackCoefficient: 0.5,
-      minCoefficient: 0,
-      maxCoefficient: 1,
-      rodLengthCoefficientPerMeter: 0.1,
-      reelBearingCoefficient: 0.1,
-    },
-    directionForce: {
-      sameDirectionMultiplier: 0.4,
-      sideDirectionMultiplier: 1.0,
-      oppositeDirectionMultiplier: 1.8,
-    },
-    floatMotion: {
-      enabled: true,
-      minSpeedPxPerSec: 2,
-      speedForMaxTiltPxPerSec: 120,
-      maxAngleDeg: 24,
-      sinkingStartAngleDeg: 90,
-      minStandUpDurationMs: 400,
-      responseSpeed: 12,
-      settleSpeed: 7,
-      pullTiltMultiplier: 1.2,
-      pullImpulseOvershootDeg: 0,
-      pullImpulseResponseSpeed: 32,
-      pullImpulseDecaySpeed: 8,
-      pullImpulseLateralDeadZone: 0.02,
-      pullImpulseDepthDeadZone: 0.02,
-      pullImpulseDepthScaleDrop: 0.45,
-      lateralInfluence: 1.0,
-      verticalInfluence: 0.35,
-      verticalTiltSign: 1,
-    },
-    // --- ДОДАНО: Шанси втрати наживки під час клювання ---
-    baitLossChance: {
-      normal: 0.0, // 1% для жовтої (негарантованої) ітерації
-      guaranteed: 0.0, // 10% для червоної (гарантованої) ітерації
-    },
-  },
+  physics: typeof PHYSICS_CONFIG !== "undefined" ? PHYSICS_CONFIG : {},
 
   tension: {
     kgSmoothPerSecond: 2.5,
@@ -747,3 +600,11 @@ const CONFIG = {
     bodyBackground: "#1a1a1a",
   },
 };
+
+if (typeof FightPhysicsConfigAdapter !== "undefined") {
+  Object.defineProperty(CONFIG, "fightPhysicsConfig", {
+    value: new FightPhysicsConfigAdapter(CONFIG),
+    enumerable: false,
+    configurable: true,
+  });
+}

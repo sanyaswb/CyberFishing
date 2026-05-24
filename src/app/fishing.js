@@ -276,11 +276,17 @@ class FightSessionFactory {
     this.config = config;
     this.rng = rng;
     this.devFlags = devFlags;
+    this.physicsConfig =
+      config?.fightPhysicsConfig ||
+      (typeof FightPhysicsConfigAdapter !== "undefined"
+        ? new FightPhysicsConfigAdapter(config)
+        : null);
     this.castDistanceCalculator =
       castDistanceCalculator || new CastDistanceCalculator(config || {});
   }
 
   create(fishData, equipment) {
+    const lineSystemConfig = this.#getLineSystemConfig();
     const rod = new Rod(
       equipment.rod?.level || 1,
       equipment.rod?.basePower || 1.0,
@@ -330,27 +336,32 @@ class FightSessionFactory {
     const lineSystem = new LineSystem({
       rod,
       reel,
-      config: this.config.physics,
+      config: lineSystemConfig,
       lineStats: equipment.line,
       castDistanceCalculator: this.castDistanceCalculator,
     });
-    const dragSystem = new DragSystem(this.config.physics?.drag, reel);
+    const dragSystem = new DragSystem(
+      this.physicsConfig?.getReelDragConfig?.() || {},
+      reel,
+    );
     const fishForceSystem = new FishForceSystem({
       fish,
       config: this.config,
     });
     const pullInputMapper = new PullInputMapper();
     const rodPullSystem = new RodPullSystem(
-      this.config.physics?.rodStroke || this.config.physics?.rodPull,
+      this.physicsConfig?.getRodPullConfig?.() || {},
     );
-    const reelSystem = new ReelSystem(this.config.physics?.reel);
+    const reelSystem = new ReelSystem(
+      this.physicsConfig?.getReelConfig?.() || {},
+    );
     const tensionSystem = new TensionSystem();
     const tensionMeter = new TackleStressSystem({
       rod,
       reel,
       lineSystem,
       leader: equipment.leader,
-      config: this.config.tension,
+      config: this.physicsConfig?.getTensionConfig?.() || this.config.tension,
       rng: this.rng,
       devFlags: this.devFlags,
     });
@@ -387,6 +398,7 @@ class FightSessionFactory {
   }
 
   createEquipment(equipment) {
+    const lineSystemConfig = this.#getLineSystemConfig();
     const rod = new Rod(
       equipment.rod?.level || 1,
       equipment.rod?.basePower || 1.0,
@@ -430,11 +442,15 @@ class FightSessionFactory {
     const lineSystem = new LineSystem({
       rod,
       reel,
-      config: this.config.physics,
+      config: lineSystemConfig,
       lineStats: equipment.line,
       castDistanceCalculator: this.castDistanceCalculator,
     });
     return { rod, reel, hook, lineSystem };
+  }
+
+  #getLineSystemConfig() {
+    return this.physicsConfig?.getLineSystemConfig?.() || {};
   }
 }
 
@@ -514,7 +530,12 @@ class CatchResolutionService {
     rod = null,
     reel = null,
   }) {
-    const cfg = config?.physics?.catchZone || {};
+    const physicsConfig =
+      config?.fightPhysicsConfig ||
+      (typeof FightPhysicsConfigAdapter !== "undefined"
+        ? new FightPhysicsConfigAdapter(config)
+        : null);
+    const cfg = physicsConfig?.getCatchZoneConfig?.() || {};
     const landingPolicy = this.#landingPolicyResolver.resolve({ rod, reel });
     const landingDistanceMeters = landingPolicy.getLandingDistanceMeters({
       rod,
@@ -574,6 +595,7 @@ class CatchResolutionService {
 
 class FightService {
   #config;
+  #physicsConfig;
   #rng;
   #devFlags;
   #upDirection = { x: 0, y: 1 };
@@ -607,6 +629,11 @@ class FightService {
     catchResolver = null,
   }) {
     this.#config = config;
+    this.#physicsConfig =
+      config?.fightPhysicsConfig ||
+      (typeof FightPhysicsConfigAdapter !== "undefined"
+        ? new FightPhysicsConfigAdapter(config)
+        : null);
     this.#rng = rng;
     this.#devFlags = devFlags;
     this.#fightSessionFactory =
@@ -805,10 +832,10 @@ class FightService {
       floatPos.y,
       rodPos,
       screenOffset,
-      this.#config.physics,
+      this.#getDebugPhysicsConfig(),
       bounds,
     );
-    const xRange = this.#config.physics?.distanceXMultiplier || [1.0, 1.0];
+    const xRange = this.#physicsConfig?.getDistanceXMultiplier?.() || [1.0, 1.0];
     const boundsHeight = Math.max(1, bounds.bottom - bounds.top);
     const distRatio = Math.max(
       0,
@@ -817,7 +844,10 @@ class FightService {
     const depthScaleX = xRange[0] + distRatio * (xRange[1] - xRange[0]);
     const steerP =
       (this.#tensionMeter?.getEffectiveMaxTackleLoadKg?.() || 0) *
-      (this.#config.physics.playerSteeringMultiplier ?? 1.5) *
+      (
+        this.#physicsConfig?.getPlayerSteeringMultiplier?.() ??
+        1.5
+      ) *
       depthScaleX;
     return {
       playerForceY: Math.abs(this.#forces.pY || 0),
@@ -852,6 +882,10 @@ class FightService {
 
   get tensionMeter() {
     return this.#tensionMeter;
+  }
+
+  #getDebugPhysicsConfig() {
+    return this.#physicsConfig?.getLineSystemConfig?.() || {};
   }
 
   get fishCondition() {

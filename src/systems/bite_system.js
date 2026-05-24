@@ -16,7 +16,7 @@ class BiteSystem {
   #tickIndex = 0;
 
   constructor(biteConfig, runtimeConfig, rng = null, debugEvents = null) {
-    const physicsConfig = runtimeConfig?.physics || runtimeConfig || {};
+    const physicsConfig = this.#resolvePhysicsConfig(runtimeConfig);
     const lineConfig = runtimeConfig?.ui?.line || runtimeConfig?.line || {};
     this.#runtimeConfig = runtimeConfig || {};
     this.#fishDatabase = this.#resolveFishDatabase(biteConfig);
@@ -27,7 +27,8 @@ class BiteSystem {
     this.#passivePullBiteChanceMultiplier =
       lineConfig?.passivePullBiteChanceMultiplier ?? 1.0;
     this.#guaranteedBiteCooldownRange =
-      physicsConfig?.guaranteedBiteCooldownMs || [2000, 15000];
+      physicsConfig?.getLureRetrieveConfig?.()?.guaranteedBiteCooldownMs ||
+      [2000, 15000];
     this.#possibleBitesBuffer = [];
     this.#possibleBiteChancesBuffer = [];
     this.#rng = rng || { next: () => Math.random() };
@@ -36,6 +37,14 @@ class BiteSystem {
 
   setFishDatabase(fishDatabase) {
     this.#fishDatabase = this.#resolveFishDatabase(fishDatabase);
+  }
+
+  #resolvePhysicsConfig(runtimeConfig) {
+    if (runtimeConfig?.fightPhysicsConfig) return runtimeConfig.fightPhysicsConfig;
+    if (typeof FightPhysicsConfigAdapter !== "undefined") {
+      return new FightPhysicsConfigAdapter(runtimeConfig);
+    }
+    return null;
   }
 
   reset() {

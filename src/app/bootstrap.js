@@ -37,8 +37,15 @@ class GameCompositionRoot {
     const locId = location.id;
     const locCfg = location.config;
     const projector = new ViewportProjector(this.#config.locations, locId);
+    const physicsConfig =
+      this.#config.fightPhysicsConfig ||
+      (typeof FightPhysicsConfigAdapter !== "undefined"
+        ? new FightPhysicsConfigAdapter(this.#config)
+        : null);
     const castDistanceCalculator = new CastDistanceCalculator(this.#config);
-    const lineRules = new LineCompatibilityRules(this.#config.physics?.line);
+    const lineRules = new LineCompatibilityRules(
+      physicsConfig?.getLineConfig?.() || {},
+    );
     const inventory = new InventoryManager(
       ITEM_DB,
       this.#config.player,
@@ -116,7 +123,7 @@ class GameCompositionRoot {
     });
     const net = new Net(
       eq.net || { active: false, maxWeight: 0, length: 10 },
-      this.#config.physics,
+      physicsConfig?.getDistanceConfig?.() || {},
     );
     const castManager = new CastManager();
     const depthUI = new DepthSelectorUI();

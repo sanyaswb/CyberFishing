@@ -6,22 +6,23 @@ class RetrievePolicy {
 
 class PassiveLureRetrievePolicy extends RetrievePolicy {
   getRetrieveParams({ config } = {}) {
-    const physics = config?.physics || {};
+    const physics = resolveFightPhysicsConfig(config);
+    const passive = physics?.getPassiveRetrieveConfig?.() || {};
     return {
-      power: physics.passiveRetrievePower ?? 1.0,
-      multiplier: physics.passiveRetrieveMultiplier ?? 35,
-      waterFriction: physics.passiveRetrieveWaterFriction ?? 0.35,
+      power: passive.power ?? 1.0,
+      multiplier: passive.multiplier ?? 35,
+      waterFriction: passive.waterFriction ?? 0.35,
     };
   }
 }
 
 class PoleIdleRetrievePolicy extends RetrievePolicy {
   getRetrieveParams({ config } = {}) {
-    const physics = config?.physics || {};
-    const pole = physics.poleIdleRetrieve || {};
+    const physics = resolveFightPhysicsConfig(config);
+    const pole = physics?.getPoleIdleRetrieveConfig?.() || {};
     const pixelsPerMeter = Math.max(
       1,
-      Number(physics.pixelsPerMeter) || 50,
+      Number(physics?.getPixelsPerMeter?.()) || 50,
     );
     const speedMetersPerSecond = Math.max(
       0,
@@ -35,6 +36,14 @@ class PoleIdleRetrievePolicy extends RetrievePolicy {
       ),
     };
   }
+}
+
+function resolveFightPhysicsConfig(config) {
+  if (config?.fightPhysicsConfig) return config.fightPhysicsConfig;
+  if (typeof FightPhysicsConfigAdapter !== "undefined") {
+    return new FightPhysicsConfigAdapter(config);
+  }
+  return null;
 }
 
 class IdleRetrievePolicyResolver {

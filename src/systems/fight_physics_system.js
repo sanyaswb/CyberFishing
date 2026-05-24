@@ -1,5 +1,6 @@
 class FightPhysicsSystem {
   #config;
+  #physicsConfig;
   #velocityScratch = new Vector2(0, 0);
   #waterProbePoint = { x: 0, y: 0 };
   #pumpCreditCalculator = new PumpCreditCalculator();
@@ -22,9 +23,8 @@ class FightPhysicsSystem {
 
   constructor(config) {
     this.#config = config || {};
-    this.#fishRetrieveSystem = new FishRetrieveSystem(
-      this.#config.physics?.fishRetrieve || {},
-    );
+    this.#physicsConfig = this.#resolvePhysicsConfigAdapter(this.#config);
+    this.#fishRetrieveSystem = new FishRetrieveSystem(this.#physicsConfig);
   }
 
   step({
@@ -48,7 +48,7 @@ class FightPhysicsSystem {
     fishCondition,
     buffs,
   }) {
-    const physics = this.#config.physics || {};
+    const physics = this.#getRuntimePhysicsConfig();
     const dtSec = this.#getDtSec(dtMs, physics);
     const pullInput = this.#updateInput({ input, pullInputMapper, dragSystem, dtSec });
     const hasReel = !!reel?.hasReel?.();
@@ -210,7 +210,7 @@ class FightPhysicsSystem {
   #getDtSec(dtMs, physics) {
     return Math.min(
       Math.max(0, Number(dtMs) || 0),
-      physics.maxDtMs ?? 50,
+      this.#physicsConfig?.getMaxDtMs?.() ?? 50,
     ) / 1000;
   }
 
@@ -399,7 +399,9 @@ class FightPhysicsSystem {
       floatEntity,
       rodTipPosition,
       deltaMeters: desiredMoveMeters,
-      pixelsPerMeter: physics.pixelsPerMeter || 50,
+      pixelsPerMeter:
+        this.#physicsConfig?.getPixelsPerMeter?.() ||
+        50,
       bounds,
       checkWater,
     });
@@ -559,7 +561,7 @@ class FightPhysicsSystem {
     dragContext,
     physics,
   }) {
-    const reelConfig = physics?.reel || {};
+    const reelConfig = this.#physicsConfig?.getReelConfig?.() || {};
     const configuredDelayMs = Number(reelConfig.holdRecoverAfterFullStrokeMs);
     const delayMs = Number.isFinite(configuredDelayMs)
       ? Math.max(0, configuredDelayMs)
@@ -573,7 +575,11 @@ class FightPhysicsSystem {
     );
     const strokeToleranceMeters = Number.isFinite(configuredStrokeToleranceMeters)
       ? Math.max(0, configuredStrokeToleranceMeters)
-      : Math.max(0.001, Number(physics?.rodStroke?.minStrokeMeters) || 0.001);
+      : Math.max(
+          0.001,
+          Number(this.#physicsConfig?.getRodPullConfig?.()?.minStrokeMeters) ||
+            0.001,
+        );
     const rawLoadKg = Math.max(0, Number(tensionPreview?.rawTensionKg) || 0);
     const reelMaxLoadKg = Math.max(
       0,
@@ -691,7 +697,9 @@ class FightPhysicsSystem {
       dragRatio: dragSystem.value,
       shouldSlip: tensionResult.shouldSlipDrag,
       slipReleaseRatio: tensionResult.shouldSlipDrag ? 1 : 0,
-      creepReleaseRatio: physics.drag?.creepReleaseRatio ?? 0,
+      creepReleaseRatio:
+        this.#physicsConfig?.getReelDragConfig?.()?.creepReleaseRatio ??
+        0,
     });
     const constraintResult = lineSystem.constrainPosition(
       floatEntity.getPosition(),
@@ -900,7 +908,10 @@ class FightPhysicsSystem {
       playerMaxPowerY: stressSystem.getEffectiveMaxTackleLoadKg?.() || 0,
       playerMaxPowerX:
         (stressSystem.getEffectiveMaxTackleLoadKg?.() || 0) *
-        (physics.playerSteeringMultiplier ?? 1.5),
+        (
+          this.#physicsConfig?.getPlayerSteeringMultiplier?.() ??
+          1.5
+        ),
       lineConstrained: constraintResult.constrained,
       fightMode: isPullMode ? "pull" : isRecoverMode ? "recover" : "free",
       retrieveActive: isRecoverMode,
@@ -1003,6 +1014,18 @@ class FightPhysicsSystem {
 
   getDebugData() {
     return this.#debug;
+  }
+
+  #resolvePhysicsConfigAdapter(config) {
+    if (config?.fightPhysicsConfig) return config.fightPhysicsConfig;
+    if (typeof FightPhysicsConfigAdapter !== "undefined") {
+      return new FightPhysicsConfigAdapter(config);
+    }
+    return null;
+  }
+
+  #getRuntimePhysicsConfig() {
+    return this.#config.physics || {};
   }
 
 }

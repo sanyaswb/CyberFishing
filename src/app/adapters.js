@@ -217,13 +217,22 @@ class CanvasMetricsProvider {
 
 class ConfigProvider {
   #config;
+  #fightPhysicsConfig;
 
   constructor(config) {
     this.#config = config;
+    this.#fightPhysicsConfig =
+      config?.fightPhysicsConfig ||
+      (typeof FightPhysicsConfigAdapter !== "undefined"
+        ? new FightPhysicsConfigAdapter(config)
+        : null);
   }
 
   get physics() {
     return this.#config.physics || {};
+  }
+  get fightPhysicsConfig() {
+    return this.#fightPhysicsConfig;
   }
   get tension() {
     return this.#config.tension || {};

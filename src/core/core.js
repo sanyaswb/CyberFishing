@@ -421,7 +421,10 @@ class InputManager {
     const dy = this.#currentPointerY - this.#startY;
     const threshold =
       Number(CONFIG.input?.dragControlActivationPx) ||
-      Number(CONFIG.physics?.drag?.pointerActivationPx) ||
+      Number(
+        CONFIG.fightPhysicsConfig?.getReelDragConfig?.()
+          ?.pointerActivationPx,
+      ) ||
       30;
 
     if (Math.abs(dy) >= threshold && Math.abs(dy) >= Math.abs(dx)) {

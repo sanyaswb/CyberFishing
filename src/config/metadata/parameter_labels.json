@@ -1,0 +1,446 @@
+{
+  "physics.simulation.pixelsPerMeter": {
+    "label": "Масштаб симуляції",
+    "description": "Скільки пікселів відповідає одному метру. Впливає на всі конвертації px ↔ м: дистанцію ліски, зони, швидкості та закид."
+  },
+  "physics.simulation.fixedDtMs": {
+    "label": "Фіксований крок фізики",
+    "description": "Базовий крок оновлення фізики в мілісекундах для стабільної симуляції."
+  },
+  "physics.simulation.maxDtMs": {
+    "label": "Максимальний крок фізики",
+    "description": "Верхня межа dt, щоб при лагах фізика не отримувала занадто великий стрибок часу."
+  },
+  "physics.environment.water.currentInfluenceMultiplier": {
+    "label": "Множник впливу течії",
+    "description": "Множить швидкість течії при розрахунку відносної швидкості риби у воді. Більше значення = течія сильніше впливає на динамічне навантаження."
+  },
+  "physics.environment.water.fishMotionLoad.speedLoadKgPerKgPerMps": {
+    "label": "Динамічне навантаження руху риби у воді",
+    "description": "Глобальна база для сили від руху риби крізь воду. Формула шару: вага риби * відносна швидкість м/с * цей параметр * множники виду * множник напрямку."
+  },
+  "physics.fight.fishForce.dynamicLoadFromMotion.enabled": {
+    "label": "Увімкнути навантаження від руху риби",
+    "description": "Вмикає або вимикає додаткову динамічну силу від руху риби у воді. Якщо вимкнено, dynamicFishForceKg має бути 0."
+  },
+  "physics.fight.fishForce.dynamicLoadFromMotion.directionMultiplier.sameDirection": {
+    "label": "Множник руху до гравця",
+    "description": "Множник динамічного навантаження, коли риба рухається у напрямку гравця. Менше значення = рух до гравця створює менше опору."
+  },
+  "physics.fight.fishForce.dynamicLoadFromMotion.directionMultiplier.sideDirection": {
+    "label": "Множник бокового руху",
+    "description": "Множник динамічного навантаження, коли риба рухається приблизно поперек лінії до гравця."
+  },
+  "physics.fight.fishForce.dynamicLoadFromMotion.directionMultiplier.oppositeDirection": {
+    "label": "Множник руху від гравця",
+    "description": "Множник динамічного навантаження, коли риба рухається від гравця. Більше значення = втеча риби сильніше навантажує снасть."
+  },
+  "physics.fight.fishForce.exhaustion.minPowerRatioFallback": {
+    "label": "Мінімальна частка сили риби за замовчуванням",
+    "description": "Fallback для видів риби без власного minPowerRatio. Не дає силі риби впасти нижче заданої частки від базової сили."
+  },
+  "physics.fight.playerControl.steering.xAxisMultiplier": {
+    "label": "Множник бокового контролю вудкою",
+    "description": "Множить максимальну силу керування по X для debug/read-model і бокового контролю. Більше значення = вудка сильніше контролює бік."
+  },
+  "physics.fight.playerControl.steering.inputSteeringBlend": {
+    "label": "Змішування input-напрямку",
+    "description": "Наскільки сильно горизонтальний input гравця змішується з базовим напрямком тяги до кінчика вудки."
+  },
+  "physics.fight.playerControl.steering.edgePullPenalty": {
+    "label": "Штраф тяги біля краю",
+    "description": "Legacy/балансний параметр для втрати контролю на краях. Перевірити фактичне використання перед балансуванням."
+  },
+  "physics.fight.playerControl.steering.distanceXMultiplier": {
+    "label": "Множник X-контролю за дистанцією",
+    "description": "Діапазон множника бокового контролю залежно від відносної вертикальної дистанції/глибини у debug/read-model."
+  },
+  "physics.fight.playerControl.rodAnglePenalty.enabled": {
+    "label": "Увімкнути штраф кута вудки",
+    "description": "Вмикає зниження ефективної сили гравця при поганому куті між вудкою/ліскою та оптимальним напрямком."
+  },
+  "physics.fight.playerControl.rodAnglePenalty.noPenaltyAngleDeg": {
+    "label": "Кут без штрафу",
+    "description": "До цього кута відхилення штраф до сили гравця не застосовується."
+  },
+  "physics.fight.playerControl.rodAnglePenalty.maxPenaltyAngleDeg": {
+    "label": "Кут максимального штрафу",
+    "description": "На цьому куті штраф досягає максимуму. Між noPenaltyAngleDeg і цим значенням штраф росте плавно."
+  },
+  "physics.fight.playerControl.rodAnglePenalty.maxPenaltyMultiplier": {
+    "label": "Мінімальна ефективність при штрафі кута",
+    "description": "Яка частина сили гравця лишається при максимальному штрафі. 0.65 = 65% сили."
+  },
+  "physics.fight.rodPull.enabled": {
+    "label": "Увімкнути підтягування вудкою",
+    "description": "Вмикає або вимикає активний hold/rod pull для руху риби до гравця."
+  },
+  "physics.fight.rodPull.pumpCreditReducesNextPullDistance": {
+    "label": "Попередній хід зменшує наступний",
+    "description": "Якщо true, невідновлений хід вудки зменшує доступну дистанцію наступного підтягування."
+  },
+  "physics.fight.rodPull.distanceMultiplierByRodLength": {
+    "label": "Дистанція ходу від довжини вудки",
+    "description": "Скільки метрів активного ходу дає довжина вудки. 0.5 означає, що 3.6 м вудка дає 1.8 м ходу."
+  },
+  "physics.fight.rodPull.strokeChargePerSecond": {
+    "label": "Швидкість набору ходу",
+    "description": "Як швидко hold набирає силу/хід. 1.0 означає повний хід приблизно за одну секунду."
+  },
+  "physics.fight.rodPull.minEffectivePullKg": {
+    "label": "Мінімальна ефективна тяга",
+    "description": "Мінімальний player pressure, після якого pull вважається достатнім для ефективного руху риби."
+  },
+  "physics.fight.rodPull.minStrokeMeters": {
+    "label": "Мінімальний корисний хід",
+    "description": "Мінімальний рух у метрах, нижче якого система не вважає, що риба реально зрушила."
+  },
+  "physics.fight.rodPull.finalLandingDistanceMeters": {
+    "label": "Останній дотяг біля берега",
+    "description": "Дозволяє останній дотяг, коли риба вже дуже близько до landing zone."
+  },
+  "physics.fight.rodPull.controlledPullLimitRatio": {
+    "label": "Ліміт контрольованої тяги",
+    "description": "Максимальний player pressure як частка від міцності снасті. 0.6 на снасті 2 кг дає максимум 1.2 кг контрольованого тиску."
+  },
+  "physics.fight.fishRetrieve.passiveBodyResistance.tautBodyResistanceKgPerKg": {
+    "label": "Пасивний опір тіла риби",
+    "description": "Пасивне навантаження від ваги риби на натягнутій лісці. Формула: fishWeightKg * value."
+  },
+  "physics.fight.fishRetrieve.activeFishResistance.activeAwayForceMultiplier": {
+    "label": "Активний опір риби від гравця",
+    "description": "Множить силу риби, коли її активний напрямок спрямований від гравця."
+  },
+  "physics.fight.fishRetrieve.waterDragWhilePulling.referencePullSpeedMetersPerSecond": {
+    "label": "Референсна швидкість підтягування",
+    "description": "Базова швидкість для формули water drag. Це еталонна точка, відносно якої рахується швидкість підтягування."
+  },
+  "physics.fight.fishRetrieve.waterDragWhilePulling.dragKgPerKgAtReferenceSpeed": {
+    "label": "Опір води при підтягуванні",
+    "description": "Визначає, наскільки повільно риба протягується через воду при надлишковій силі гравця. Більше значення = менша retrieve speed."
+  },
+  "physics.fight.fishRetrieve.playerPressureTransfer.referenceWeightKg": {
+    "label": "Референсна вага передачі тиску",
+    "description": "Вага, через яку рахується частка player pressure, що переходить у реальний tension. Більше значення = легка риба бере менше тиску."
+  },
+  "physics.fight.fishRetrieve.playerPressureTransfer.minTransferRatio": {
+    "label": "Мінімальна передача тиску",
+    "description": "Мінімальна частина player pressure, яка завжди переходить у tension навіть на легкій рибі."
+  },
+  "physics.fight.fishRetrieve.playerPressureTransfer.blockedTransferRatio": {
+    "label": "Передача тиску при блокуванні",
+    "description": "Скільки player pressure переходить у tension, якщо рух риби заблокований берегом, межею ліски або водною колізією."
+  },
+  "physics.fight.landing.catchZone.reel.landingDistanceMeters": {
+    "label": "Landing distance для снасті з котушкою",
+    "description": "Дистанція від гравця/берега, в якій риба зі снастю з котушкою може бути зарахована як спіймана."
+  },
+  "physics.fight.landing.catchZone.pole.landingDistanceByRodLength": {
+    "label": "Landing distance махової від довжини вудки",
+    "description": "Множник довжини махової вудки для розрахунку зони підйому/зарахування риби."
+  },
+  "physics.fight.landing.catchZone.pole.minLandingDistanceMeters": {
+    "label": "Мінімальна landing distance махової",
+    "description": "Нижня межа landing zone для махової вудки."
+  },
+  "physics.fight.landing.catchZone.pole.maxLandingDistanceMeters": {
+    "label": "Максимальна landing distance махової",
+    "description": "Верхня межа landing zone для махової вудки."
+  },
+  "physics.fight.landing.catchZone.maxLoadWeightRatio": {
+    "label": "Максимальна вага для авто-зарахування",
+    "description": "Визначає, яку частку від допустимого навантаження снасті може мати риба для deterministic landing."
+  },
+  "physics.tackle.line.defaultMaxLoadKg": {
+    "label": "Стандартна міцність ліски",
+    "description": "Fallback-міцність ліски, якщо конкретна ліска не має власного maxLoadKg."
+  },
+  "physics.tackle.line.durabilityMaxLoadLossPerPercent": {
+    "label": "Втрати міцності від зносу",
+    "description": "Скільки maxLoadKg втрачається за кожен відсоток зносу/втрати durability."
+  },
+  "physics.tackle.line.rodLengthReserveMultiplier": {
+    "label": "Резерв ліски від довжини вудки",
+    "description": "Скільки довжини вудки резервується як базовий rig reach для снасті з котушкою."
+  },
+  "physics.tackle.line.noReelMinRodLengthMultiplier": {
+    "label": "Мінімальна ліска для махової",
+    "description": "Мінімальна довжина ліски без котушки як множник довжини вудки."
+  },
+  "physics.tackle.line.noReelExtraLengthMeters": {
+    "label": "Додаткова довжина ліски махової",
+    "description": "Додатковий запас ліски без котушки для монтажу/вузлів понад мінімальну довжину."
+  },
+  "physics.tackle.line.noReelRodLengthMultiplier": {
+    "label": "Legacy множник ліски махової",
+    "description": "Старий fallback для довжини ліски без котушки. Нова логіка використовує noReelMinRodLengthMultiplier + noReelExtraLengthMeters."
+  },
+  "physics.tackle.line.fullExtensionTensionMultiplier": {
+    "label": "Множник натягу на повному розтягненні",
+    "description": "Множить tension, коли ліска фізично повністю витягнута."
+  },
+  "physics.tackle.line.slackTensionMultiplier": {
+    "label": "Множник натягу на слабині",
+    "description": "Множить tension, коли лінія має слабину. 0 означає, що слабина не дає натягу."
+  },
+  "physics.tackle.line.constraintTolerancePx": {
+    "label": "Допуск constraint ліски",
+    "description": "Піксельний допуск перед тим, як система вважає, що риба досягла фізичної межі ліски."
+  },
+  "physics.tackle.reelDrag.minRatio": {
+    "label": "Мінімальний відсоток фрикціону",
+    "description": "Нижня межа drag ratio."
+  },
+  "physics.tackle.reelDrag.maxRatio": {
+    "label": "Максимальний відсоток фрикціону",
+    "description": "Верхня межа drag ratio."
+  },
+  "physics.tackle.reelDrag.yEscapeSpeedAtFullDrag": {
+    "label": "Мінімальна втеча при повному фрикціоні",
+    "description": "Мінімальна частка швидкості втечі риби, яка лишається навіть при повністю затягнутому фрикціоні."
+  },
+  "physics.tackle.reelDrag.tensionGrowthPower": {
+    "label": "Крива росту tension від фрикціону",
+    "description": "Експонента/крива, що визначає нелінійність росту tension від drag ratio."
+  },
+  "physics.tackle.reelDrag.autoRetrieveEnabled": {
+    "label": "Автоматична підмотка котушки",
+    "description": "Дозволяє котушці автоматично відновлювати виграну/слабку ліску за умовами ReelSystem."
+  },
+  "physics.tackle.reelDrag.creepReleaseRatio": {
+    "label": "Мікро-прослизання фрикціону",
+    "description": "Частка повільного здавання ліски, коли фрикціон майже тримає навантаження. 0 = без creep."
+  },
+  "physics.tackle.reelDrag.pointerControl.enabled": {
+    "label": "Керування фрикціоном pointer-жестом",
+    "description": "Вмикає зміну фрикціону вертикальним свайпом/drag-control."
+  },
+  "physics.tackle.reelDrag.pointerControl.powerSwipePx": {
+    "label": "Довжина свайпу для фрикціону",
+    "description": "Скільки пікселів свайпу потрібно для повної зміни drag ratio."
+  },
+  "physics.tackle.reelDrag.pointerControl.powerDeadzoneRatio": {
+    "label": "Deadzone свайпу фрикціону",
+    "description": "Мертва зона жесту керування фрикціоном як частка від powerSwipePx."
+  },
+  "physics.tackle.reelDrag.pointerControl.powerAnchorReturnPxPerSecond": {
+    "label": "Повернення anchor фрикціону",
+    "description": "Швидкість повернення anchor точки керування фрикціоном у пікселях за секунду."
+  },
+  "physics.tackle.reelDrag.keyboardControl.changeSpeedPerSec": {
+    "label": "Швидкість зміни фрикціону з клавіатури",
+    "description": "На скільки drag ratio змінюється за секунду при клавішах керування фрикціоном."
+  },
+  "physics.tackle.reel.autoRecoverSlack": {
+    "label": "Автовідновлення слабини котушкою",
+    "description": "Дозволяє котушці автоматично підбирати слабину, коли навантаження дозволяє."
+  },
+  "physics.tackle.reel.holdRecoverAfterFullStrokeMs": {
+    "label": "Затримка hold-підмотки",
+    "description": "Скільки мілісекунд треба утримувати повний stroke, перш ніж котушка допоможе підмотувати під час hold."
+  },
+  "physics.tackle.reel.holdRecoverStrokeRatio": {
+    "label": "Поріг stroke для hold-підмотки",
+    "description": "Яка частка ходу вудки має бути заповнена, щоб hold-assisted reel recovery став доступним."
+  },
+  "physics.tension.kgSmoothPerSecond": {
+    "label": "Швидкість згладжування tension",
+    "description": "Наскільки швидко поточний натяг у кг наближається до target tension."
+  },
+  "physics.tension.overloadGraceMs": {
+    "label": "Затримка перед поломкою",
+    "description": "Скільки мілісекунд снасть може бути у перевантаженні перед deterministic break. 0 = миттєво."
+  },
+  "physics.tension.powerRatioExponent": {
+    "label": "Експонента шкали натягу",
+    "description": "Крива перетворення відносного навантаження в UI/відчуття tension. Перевірити фактичне використання перед балансуванням."
+  },
+  "physics.tension.sensitivityMultiplier": {
+    "label": "Чутливість натягу",
+    "description": "Множник чутливості tension до input/навантаження. Перевірити фактичне використання перед балансуванням."
+  },
+  "physics.tension.smoothApproach": {
+    "label": "Legacy згладжування натягу",
+    "description": "Старий параметр плавного наближення tension. Може дублювати kgSmoothPerSecond."
+  },
+  "physics.tension.reelRecoveryMultiplier": {
+    "label": "Множник відновлення натягу котушкою",
+    "description": "Впливає на те, як котушка зменшує або стабілізує tension під час recovery. Перевірити фактичне використання."
+  },
+  "physics.tension.breaking.thresholdPercent": {
+    "label": "Поріг поломки у відсотках",
+    "description": "Відсоток tension, на якому починається або відбувається поломка. 100 = поломка при досягненні maxLoad."
+  },
+  "physics.tension.breaking.baseBreakTimeMs": {
+    "label": "Базовий час поломки",
+    "description": "Базовий час до поломки у мілісекундах для старої/сумісної break-моделі."
+  },
+  "physics.tension.breaking.timePerEquipmentLevelMs": {
+    "label": "Додатковий час поломки за рівень",
+    "description": "Скільки мілісекунд додається до часу поломки за рівень спорядження у старій/сумісній break-моделі."
+  },
+  "physics.retrieve.passive.power": {
+    "label": "Сила пасивної підмотки",
+    "description": "Базова сила пасивної retrieve-механіки для оснастки без активної риби."
+  },
+  "physics.retrieve.passive.multiplier": {
+    "label": "Множник пасивної підмотки",
+    "description": "Множить швидкість/силу пасивного retrieve для поплавка/оснастки."
+  },
+  "physics.retrieve.passive.waterFriction": {
+    "label": "Тертя води пасивної підмотки",
+    "description": "Зменшує ефективність пасивного retrieve через воду."
+  },
+  "physics.retrieve.passive.depthRiseSpeed": {
+    "label": "Швидкість підйому глибини",
+    "description": "Швидкість, з якою гачок/оснастка піднімається при пасивному retrieve."
+  },
+  "physics.retrieve.lure.multiplier": {
+    "label": "Множник retrieve приманки",
+    "description": "Швидкість активної проводки спінінгової приманки."
+  },
+  "physics.retrieve.lure.idleSpinningBiteChance": {
+    "label": "Шанс клювання на нерухому спінінгову приманку",
+    "description": "Базовий шанс bite, коли спінінгова приманка не проводиться активно."
+  },
+  "physics.retrieve.lure.defaultDepthNoSinker": {
+    "label": "Глибина без грузила",
+    "description": "Fallback-глибина гачка/приманки без грузила."
+  },
+  "physics.retrieve.lure.guaranteedBiteCooldownMs": {
+    "label": "Кулдаун гарантованого клювання",
+    "description": "Мінімальний/максимальний cooldown для гарантованих bite-подій на active retrieve."
+  },
+  "physics.retrieve.poleIdle.speedMetersPerSecond": {
+    "label": "Швидкість idle-підтягування махової",
+    "description": "Швидкість підтягування порожньої оснастки маховою вудкою без риби."
+  },
+  "physics.retrieve.poleIdle.waterFrictionMultiplier": {
+    "label": "Тертя води idle-підтягування махової",
+    "description": "Зменшує швидкість idle-підтягування махової через опір води."
+  },
+  "physics.retrieve.biteFallback.baitLossChance.normal": {
+    "label": "Шанс втрати наживки при звичайному клюванні",
+    "description": "Ймовірність втратити наживку при normal bite fallback."
+  },
+  "physics.retrieve.biteFallback.baitLossChance.guaranteed": {
+    "label": "Шанс втрати наживки при гарантованому клюванні",
+    "description": "Ймовірність втратити наживку при guaranteed bite fallback."
+  },
+  "physics.castingPower.fallbackCoefficient": {
+    "label": "Fallback коефіцієнт закидання",
+    "description": "Базовий коефіцієнт сили/дальності закидання, якщо спорядження не дає власних значень."
+  },
+  "physics.castingPower.minCoefficient": {
+    "label": "Мінімальний коефіцієнт закидання",
+    "description": "Нижня межа ефективного коефіцієнта дальності закидання."
+  },
+  "physics.castingPower.maxCoefficient": {
+    "label": "Максимальний коефіцієнт закидання",
+    "description": "Верхня межа ефективного коефіцієнта дальності закидання."
+  },
+  "physics.castingPower.rodLengthCoefficientPerMeter": {
+    "label": "Бонус закидання від довжини вудки",
+    "description": "Скільки коефіцієнта дальності додає кожен метр довжини вудки."
+  },
+  "physics.castingPower.reelBearingCoefficient": {
+    "label": "Бонус закидання від підшипників котушки",
+    "description": "Скільки коефіцієнта дальності додають підшипники/якість котушки."
+  },
+  "physics.floatMotion.enabled": {
+    "label": "Увімкнути motion поплавка",
+    "description": "Вмикає нахил/реакцію поплавка на рух, занурення і pull impulse."
+  },
+  "physics.floatMotion.minSpeedPxPerSec": {
+    "label": "Мінімальна швидкість нахилу поплавка",
+    "description": "Нижній поріг швидкості, після якого motion-нахил поплавка стає помітним."
+  },
+  "physics.floatMotion.speedForMaxTiltPxPerSec": {
+    "label": "Швидкість максимального нахилу поплавка",
+    "description": "Швидкість, на якій поплавок досягає maxAngleDeg."
+  },
+  "physics.floatMotion.maxAngleDeg": {
+    "label": "Максимальний кут нахилу поплавка",
+    "description": "Найбільший кут нахилу поплавка від motion."
+  },
+  "physics.floatMotion.sinkingStartAngleDeg": {
+    "label": "Кут початку занурення",
+    "description": "Кут, з якого візуально починається стан занурення/переходу поплавка."
+  },
+  "physics.floatMotion.minStandUpDurationMs": {
+    "label": "Мінімальний час вирівнювання поплавка",
+    "description": "Мінімальна тривалість повернення поплавка до вертикального стану."
+  },
+  "physics.floatMotion.responseSpeed": {
+    "label": "Швидкість реакції поплавка",
+    "description": "Наскільки швидко поплавок реагує на зміну цільового нахилу."
+  },
+  "physics.floatMotion.settleSpeed": {
+    "label": "Швидкість заспокоєння поплавка",
+    "description": "Наскільки швидко поплавок стабілізується після руху/імпульсу."
+  },
+  "physics.floatMotion.pullTiltMultiplier": {
+    "label": "Множник нахилу від pull",
+    "description": "Множить нахил поплавка під час активного підтягування."
+  },
+  "physics.floatMotion.pullImpulseOvershootDeg": {
+    "label": "Overshoot імпульсу pull",
+    "description": "Додатковий кутовий overshoot при різкому pull-імпульсі."
+  },
+  "physics.floatMotion.pullImpulseResponseSpeed": {
+    "label": "Швидкість реакції pull-імпульсу",
+    "description": "Як швидко поплавок набирає імпульсний нахил від pull."
+  },
+  "physics.floatMotion.pullImpulseDecaySpeed": {
+    "label": "Згасання pull-імпульсу",
+    "description": "Як швидко згасає додатковий pull-імпульс поплавка."
+  },
+  "physics.floatMotion.pullImpulseLateralDeadZone": {
+    "label": "Deadzone бокового pull-імпульсу",
+    "description": "Мертва зона бокового компонента pull-імпульсу."
+  },
+  "physics.floatMotion.pullImpulseDepthDeadZone": {
+    "label": "Deadzone глибинного pull-імпульсу",
+    "description": "Мертва зона вертикального/глибинного компонента pull-імпульсу."
+  },
+  "physics.floatMotion.pullImpulseDepthScaleDrop": {
+    "label": "Зменшення pull-імпульсу за глибиною",
+    "description": "Наскільки глибина зменшує видимий pull-імпульс поплавка."
+  },
+  "physics.floatMotion.lateralInfluence": {
+    "label": "Боковий вплив на нахил поплавка",
+    "description": "Вага бокового руху у формуванні нахилу поплавка."
+  },
+  "physics.floatMotion.verticalInfluence": {
+    "label": "Вертикальний вплив на нахил поплавка",
+    "description": "Вага вертикального руху у формуванні нахилу поплавка."
+  },
+  "physics.floatMotion.verticalTiltSign": {
+    "label": "Знак вертикального нахилу",
+    "description": "Напрямок, у який вертикальний рух нахиляє поплавок."
+  },
+  "FISH_DB.physics.forceProfile.basePower": {
+    "label": "Базова сила виду риби",
+    "description": "Майбутній структурований шлях для сили виду. Сумісний зі старим physics.basePower через FishPhysicsProfile."
+  },
+  "FISH_DB.physics.forceProfile.minPowerRatio": {
+    "label": "Мінімальна частка сили виду",
+    "description": "Майбутній структурований шлях для мінімальної сили виснаженої риби. Сумісний зі старим physics.minPowerRatio."
+  },
+  "FISH_DB.physics.movementProfile.maxSpeedMetersPerSec": {
+    "label": "Максимальна швидкість виду",
+    "description": "Майбутній структурований шлях для швидкості риби. Сумісний зі старим physics.maxSpeedMetersPerSec."
+  },
+  "FISH_DB.physics.resistanceProfile.speedForceMultiplier": {
+    "label": "Множник сили від швидкості виду",
+    "description": "Майбутній структурований шлях для speedForceMultiplier. Впливає на dynamicFishForceKg."
+  },
+  "FISH_DB.physics.resistanceProfile.waterResistanceMultiplier": {
+    "label": "Множник водного опору виду",
+    "description": "Майбутній структурований шлях для waterResistanceMultiplier. Впливає на dynamicFishForceKg."
+  },
+  "FISH_DB.physics.retrieveProfile.waterDragMultiplier": {
+    "label": "Множник drag при підтягуванні виду",
+    "description": "Майбутній структурований шлях для видового множника опору при підтягуванні. Сумісний із pullResistance.waterDragMultiplier."
+  }
+}

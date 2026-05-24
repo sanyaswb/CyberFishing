@@ -85,9 +85,12 @@ class EquipmentRules {
 
   getCastPowerCoefficient(equipment = null, fallback = null) {
     const castingConfig = this.#config?.casting || {};
+    const castingPowerConfig =
+      this.#config?.fightPhysicsConfig?.getCastingPowerConfig?.() ||
+      {};
     const fallbackValue =
       fallback ??
-      this.#config?.physics?.castingPower?.fallbackCoefficient ??
+      castingPowerConfig.fallbackCoefficient ??
       castingConfig.inventoryPreviewPowerCoefficient ??
       castingConfig.powerCoefficient ??
       castingConfig.castPowerCoefficient ??
@@ -120,7 +123,11 @@ class EquipmentRules {
         10.0
       );
     }
-    return config.physics?.defaultDepthNoSinker ?? 0.1;
+    return (
+      config.fightPhysicsConfig?.getLureRetrieveConfig?.()
+        ?.defaultDepthNoSinker ??
+      0.1
+    );
   }
 }
 

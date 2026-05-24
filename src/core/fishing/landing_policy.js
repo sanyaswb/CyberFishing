@@ -11,7 +11,9 @@ class LandingPolicy {
 
 class ReelLandingPolicy extends LandingPolicy {
   getLandingDistanceMeters({ config } = {}) {
-    const catchZone = config?.physics?.catchZone || config?.catchZone || {};
+    const catchZone =
+      resolveFightPhysicsConfig(config)?.getCatchZoneConfig?.() ||
+      {};
     return Math.max(
       0,
       Number(catchZone.reel?.landingDistanceMeters ?? catchZone.landingDistanceMeters) || 1,
@@ -21,7 +23,9 @@ class ReelLandingPolicy extends LandingPolicy {
 
 class PoleLandingPolicy extends LandingPolicy {
   getLandingDistanceMeters({ rod, config } = {}) {
-    const catchZone = config?.physics?.catchZone || config?.catchZone || {};
+    const catchZone =
+      resolveFightPhysicsConfig(config)?.getCatchZoneConfig?.() ||
+      {};
     const poleConfig = catchZone.pole || {};
     const rodLengthMeters = this.#getRodLengthMeters(rod);
     const multiplier = Math.max(
@@ -56,6 +60,14 @@ class PoleLandingPolicy extends LandingPolicy {
       rod?.engineStats?.lengthMeters;
     return Math.max(0, Number(value) || 0);
   }
+}
+
+function resolveFightPhysicsConfig(config) {
+  if (config?.fightPhysicsConfig) return config.fightPhysicsConfig;
+  if (typeof FightPhysicsConfigAdapter !== "undefined") {
+    return new FightPhysicsConfigAdapter(config);
+  }
+  return null;
 }
 
 class LandingPolicyResolver {

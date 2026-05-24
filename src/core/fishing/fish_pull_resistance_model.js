@@ -1,8 +1,8 @@
 class FishPullResistanceModel {
-  #config;
+  #configSource;
 
-  constructor(config = {}) {
-    this.#config = config || {};
+  constructor(configSource = {}) {
+    this.#configSource = configSource || {};
   }
 
   calculate({
@@ -22,18 +22,21 @@ class FishPullResistanceModel {
   } = {}) {
     const dt = Math.max(0, Number(dtSec) || 0);
     const weight = Math.max(0, Number(fishWeightKg) || 0);
+    const globalRetrieveConfig = this.#resolveRetrieveConfig();
     const retrieveConfig = fishConfig?.fishRetrieve || {};
-    const modifiers = fishConfig?.pullResistance || {};
+    const modifiers = this.#resolvePullResistanceModifiers(fishConfig);
     const clampedHold = this.#clamp01(holdRatio);
     const playerPullPressure = this.#positive(playerPullPressureKg);
-    const referencePullSpeed = this.#referencePullSpeed(
+    const referencePullSpeed = this.#referencePullSpeed({
       modifiers,
       retrieveConfig,
-    );
+      globalRetrieveConfig,
+    });
     const looseLineMeters = this.#positive(actualSlackMeters);
     const isLineTaut =
       lineTaut !== false &&
-      looseLineMeters <= this.#looseLineToleranceMeters(retrieveConfig);
+      looseLineMeters <=
+        this.#looseLineToleranceMeters({ retrieveConfig, globalRetrieveConfig });
     const landingLift = this.#resolveLandingLift({
       lineDistanceMeters,
       landingDistanceMeters,
@@ -46,7 +49,13 @@ class FishPullResistanceModel {
           this.#setting(
             retrieveConfig,
             "tautBodyResistanceKgPerKg",
-            this.#setting(retrieveConfig, "staticBodyResistanceKgPerKg", 0.1),
+            this.#setting(
+              retrieveConfig,
+              "staticBodyResistanceKgPerKg",
+              0.1,
+              globalRetrieveConfig,
+            ),
+            globalRetrieveConfig,
           ),
         ) *
         this.#positive(modifiers.staticMultiplier ?? 1)
@@ -54,15 +63,19 @@ class FishPullResistanceModel {
     const tautBodyResistance = landingLift.inZone
       ? this.#lerp(waterBodyResistance, weight, landingLift.ratio)
       : waterBodyResistance;
-    const activeAwayForce =
-      landingLift.disableActiveForces
-        ? 0
-        : this.#positive(totalFishForceKg) *
-          this.#clamp01(awayFromPlayerRatio) *
-          this.#positive(
-            modifiers.activeAwayMultiplier ??
-              this.#setting(retrieveConfig, "activeAwayForceMultiplier", 1),
-          );
+    const activeAwayForce = landingLift.disableActiveForces
+      ? 0
+      : this.#positive(totalFishForceKg) *
+        this.#clamp01(awayFromPlayerRatio) *
+        this.#positive(
+          modifiers.activeAwayMultiplier ??
+            this.#setting(
+              retrieveConfig,
+              "activeAwayForceMultiplier",
+              1,
+              globalRetrieveConfig,
+            ),
+        );
     const fishOpposition = tautBodyResistance + activeAwayForce;
     const surplusPull = isLineTaut
       ? Math.max(0, playerPullPressure - fishOpposition)
@@ -70,7 +83,7 @@ class FishPullResistanceModel {
     const waterDragKgPerKgAtReferenceSpeed =
       this.#resolveWaterDragAtReferenceSpeed({
         retrieveConfig,
-        referencePullSpeed,
+        globalRetrieveConfig,
       });
     const waterDragCapacity =
       weight *
@@ -86,7 +99,9 @@ class FishPullResistanceModel {
       : unrestrictedTargetFishPullSpeed;
     const actualFishPullSpeed = targetFishPullSpeed;
     const pullSpeedRatio =
-      referencePullSpeed > 0 ? Math.max(0, actualFishPullSpeed / referencePullSpeed) : 0;
+      referencePullSpeed > 0
+        ? Math.max(0, actualFishPullSpeed / referencePullSpeed)
+        : 0;
     const waterDrag = landingLift.inZone
       ? 0
       : weight *
@@ -103,10 +118,12 @@ class FishPullResistanceModel {
       playerPullPressure,
       movementBlocked,
       retrieveConfig,
+      globalRetrieveConfig,
     });
-    const effectivePlayerPressure = isLineTaut && !landingLift.disablePlayerPressureLoad
-      ? playerPullPressure * pressureTransferRatio
-      : 0;
+    const effectivePlayerPressure =
+      isLineTaut && !landingLift.disablePlayerPressureLoad
+        ? playerPullPressure * pressureTransferRatio
+        : 0;
     const blockedSurplusForce =
       movementBlocked && isLineTaut
         ? Math.max(0, playerPullPressure - effectivePlayerPressure)
@@ -173,13 +190,83 @@ class FishPullResistanceModel {
         playerPullPressure,
         fishOpposition,
         surplusPull,
+        retrieveConfig,
+        globalRetrieveConfig,
       }),
     });
   }
 
-  #resolveBalanceState({ playerPullPressure, fishOpposition, surplusPull }) {
+  #resolveRetrieveConfig() {
+    const source =
+      typeof this.#configSource === "function"
+        ? this.#configSource()
+        : this.#configSource;
+
+    const settings = source?.getFishRetrieveSettings?.() ?? source;
+    const config = settings?.getFishRetrieveConfig?.() ?? settings;
+
+    if (config?.toLegacyConfig) return config.toLegacyConfig();
+    if (typeof FishRetrievePhysicsSettings !== "undefined") {
+      return FishRetrievePhysicsSettings.from(config || {}).toLegacyConfig();
+    }
+    return config || {};
+  }
+
+  #resolvePullResistanceModifiers(fishConfig) {
+    const legacy = fishConfig?.pullResistance || {};
+    const profile = fishConfig?.retrieveProfile || {};
+    const modifiers = { ...legacy };
+
+    this.#applyOptionalNumber(
+      modifiers,
+      "staticMultiplier",
+      profile.staticMultiplier,
+      profile.passiveBodyResistanceMultiplier,
+    );
+    this.#applyOptionalNumber(
+      modifiers,
+      "activeAwayMultiplier",
+      profile.activeAwayMultiplier,
+    );
+    this.#applyOptionalNumber(
+      modifiers,
+      "waterDragMultiplier",
+      profile.waterDragMultiplier,
+    );
+    this.#applyOptionalNumber(
+      modifiers,
+      "referencePullSpeedMultiplier",
+      profile.referencePullSpeedMultiplier,
+    );
+
+    return modifiers;
+  }
+
+  #applyOptionalNumber(target, key, ...values) {
+    if (Number.isFinite(Number(target[key]))) return;
+    for (const value of values) {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) {
+        target[key] = parsed;
+        return;
+      }
+    }
+  }
+
+  #resolveBalanceState({
+    playerPullPressure,
+    fishOpposition,
+    surplusPull,
+    retrieveConfig,
+    globalRetrieveConfig,
+  }) {
     if (playerPullPressure <= 0.001 && fishOpposition <= 0.001) return "idle";
-    const epsilon = Math.max(0.001, Number(this.#config.balanceEpsilonKg) || 0.001);
+    const epsilon = Math.max(
+      0.001,
+      Number(
+        this.#setting(retrieveConfig, "balanceEpsilonKg", 0.001, globalRetrieveConfig),
+      ) || 0.001,
+    );
     if (Math.abs(playerPullPressure - fishOpposition) <= epsilon) {
       return "balanced";
     }
@@ -187,23 +274,25 @@ class FishPullResistanceModel {
     return "retrieving";
   }
 
-  #referencePullSpeed(modifiers, retrieveConfig) {
+  #referencePullSpeed({ modifiers, retrieveConfig, globalRetrieveConfig }) {
     return (
       this.#positive(
         this.#setting(
           retrieveConfig,
           "referencePullSpeedMetersPerSecond",
           1.2,
+          globalRetrieveConfig,
         ),
       ) * this.#positive(modifiers.referencePullSpeedMultiplier ?? 1)
     );
   }
 
-  #resolveWaterDragAtReferenceSpeed({ retrieveConfig, referencePullSpeed }) {
+  #resolveWaterDragAtReferenceSpeed({ retrieveConfig, globalRetrieveConfig }) {
     const direct = this.#setting(
       retrieveConfig,
       "waterDragKgPerKgAtReferenceSpeed",
       NaN,
+      globalRetrieveConfig,
     );
     if (Number.isFinite(Number(direct))) return this.#positive(direct);
     return 0.85;
@@ -225,11 +314,17 @@ class FishPullResistanceModel {
     playerPullPressure,
     movementBlocked,
     retrieveConfig,
+    globalRetrieveConfig,
   }) {
     if (playerPullPressure <= 0.001) return 0;
     if (movementBlocked) {
       return this.#clamp01(
-        this.#setting(retrieveConfig, "blockedPlayerPressureTransferRatio", 1),
+        this.#setting(
+          retrieveConfig,
+          "blockedPlayerPressureTransferRatio",
+          1,
+          globalRetrieveConfig,
+        ),
       );
     }
 
@@ -239,10 +334,16 @@ class FishPullResistanceModel {
         retrieveConfig,
         "playerPressureTransferReferenceWeightKg",
         0.5,
+        globalRetrieveConfig,
       ),
     );
     const minTransfer = this.#clamp01(
-      this.#setting(retrieveConfig, "minPlayerPressureTransferRatio", 0.05),
+      this.#setting(
+        retrieveConfig,
+        "minPlayerPressureTransferRatio",
+        0.05,
+        globalRetrieveConfig,
+      ),
     );
     const weightTransfer = weight / (weight + referenceWeight);
     const loadTransfer = fishOpposition / playerPullPressure;
@@ -283,20 +384,61 @@ class FishPullResistanceModel {
     );
   }
 
-  #looseLineToleranceMeters(retrieveConfig) {
+  #looseLineToleranceMeters({ retrieveConfig, globalRetrieveConfig }) {
     return this.#positive(
-      this.#setting(retrieveConfig, "looseLineTautToleranceMeters", 0.02),
+      this.#setting(
+        retrieveConfig,
+        "looseLineTautToleranceMeters",
+        0.02,
+        globalRetrieveConfig,
+      ),
     );
   }
 
-  #setting(overrideConfig, key, defaultValue) {
-    if (Number.isFinite(Number(overrideConfig?.[key]))) {
-      return Number(overrideConfig[key]);
-    }
-    if (Number.isFinite(Number(this.#config?.[key]))) {
-      return Number(this.#config[key]);
-    }
+  #setting(overrideConfig, key, defaultValue, globalConfig = null) {
+    const override = this.#readSetting(overrideConfig, key);
+    if (Number.isFinite(override)) return override;
+
+    const global = this.#readSetting(globalConfig, key);
+    if (Number.isFinite(global)) return global;
+
     return defaultValue;
+  }
+
+  #readSetting(config, key) {
+    if (!config || typeof config !== "object") return NaN;
+    const direct = Number(config[key]);
+    if (Number.isFinite(direct)) return direct;
+
+    const nestedValue = this.#readNestedSetting(config, key);
+    const nestedNumber = Number(nestedValue);
+    return Number.isFinite(nestedNumber) ? nestedNumber : NaN;
+  }
+
+  #readNestedSetting(config, key) {
+    switch (key) {
+      case "tautBodyResistanceKgPerKg":
+      case "staticBodyResistanceKgPerKg":
+        return config.passiveBodyResistance?.tautBodyResistanceKgPerKg;
+      case "activeAwayForceMultiplier":
+        return config.activeFishResistance?.activeAwayForceMultiplier;
+      case "referencePullSpeedMetersPerSecond":
+        return config.waterDragWhilePulling?.referencePullSpeedMetersPerSecond;
+      case "waterDragKgPerKgAtReferenceSpeed":
+        return config.waterDragWhilePulling?.dragKgPerKgAtReferenceSpeed;
+      case "playerPressureTransferReferenceWeightKg":
+        return config.playerPressureTransfer?.referenceWeightKg;
+      case "minPlayerPressureTransferRatio":
+        return config.playerPressureTransfer?.minTransferRatio;
+      case "blockedPlayerPressureTransferRatio":
+        return config.playerPressureTransfer?.blockedTransferRatio;
+      case "looseLineTautToleranceMeters":
+        return config.lineState?.looseLineTautToleranceMeters;
+      case "balanceEpsilonKg":
+        return config.balance?.epsilonKg;
+      default:
+        return undefined;
+    }
   }
 
   #positive(value) {

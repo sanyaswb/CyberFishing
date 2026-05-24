@@ -547,7 +547,9 @@ class ScoutingState extends GameState {
         this.deps.depthUI.hide();
       }
       this.deps.currentHookDepthRef.set(
-        this.deps.config.physics?.defaultDepthNoSinker ?? 0.1,
+        this.deps.config.fightPhysicsConfig?.getLureRetrieveConfig?.()
+          ?.defaultDepthNoSinker ??
+          0.1,
       );
       return;
     }
@@ -1178,7 +1180,11 @@ class WaitingState extends GameState {
 
     const rodPos = this.deps.world.getRodVirtualPos(bounds);
     const pixelsPerMeter =
-      Math.max(1, Number(this.deps.config.physics?.pixelsPerMeter) || 50);
+      Math.max(
+        1,
+        Number(this.deps.config.fightPhysicsConfig?.getPixelsPerMeter?.()) ||
+          50,
+      );
     const distanceMeters =
       Math.hypot(position.x - rodPos.x, position.y - rodPos.y) / pixelsPerMeter;
 
@@ -1421,7 +1427,11 @@ class BitingState extends GameState {
               eq,
               stepInfo,
               this.deps.rng,
-              this.deps.config.physics,
+              {
+                baitLossChance:
+                  this.deps.config.fightPhysicsConfig
+                    ?.getBaitLossChanceConfig?.() || {},
+              },
             )
           ) {
             this.deps.float.stopBite();

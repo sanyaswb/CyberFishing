@@ -6,7 +6,7 @@
  *
  * Важливо: дальність закидання НЕ зберігається в ITEM_DB.
  * Її рахує CastDistanceCalculator з окремо спорядженої ліски
- * та CONFIG.physics.pixelsPerMeter.
+ * та CONFIG.physics.simulation.pixelsPerMeter.
  */
 const ITEM_DB = {
   rods: {
@@ -147,7 +147,7 @@ const ITEM_DB = {
         bearingCount: 3,
         retrieveSpeedMetersPerSec: 0.8,
         dragMinKg: 0,
-        dragMaxKg: 2,
+        dragMaxKg: 1,
         dragChangeSpeedPerSec: 0.35,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,

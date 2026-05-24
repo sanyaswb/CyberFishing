@@ -8,8 +8,16 @@ const FILES = [
   "src/core/casting_distance.js",
   "src/core/fishing/landing_policy.js",
   "src/config/databases/fish_db.js",
+  "src/config/physics/environment_physics_config.js",
+  "src/config/physics/retrieve_physics_config.js",
+  "src/config/physics/fight_physics_config.js",
+  "src/config/physics/tackle_physics_config.js",
+  "src/config/physics/tension_physics_config.js",
+  "src/config/physics/physics_config_adapter.js",
+  "src/config/physics/physics_config.js",
   "src/config/config.js",
   "src/core/fishing/fish_retrieve_result.js",
+  "src/core/fishing/fish_retrieve_physics_settings.js",
   "src/core/fishing/fish_pull_resistance_model.js",
   "src/entities/tackle.js",
   "src/entities/fish.js",
@@ -47,7 +55,9 @@ function approx(value, expected, tolerance, message) {
   assert(Math.abs(value - expected) <= tolerance, message + " (" + value + ")");
 }
 
-const physicsConfig = CONFIG.physics;
+const physicsAdapter = CONFIG.fightPhysicsConfig;
+const physicsConfig = physicsAdapter.getLineSystemConfig();
+const dragConfig = physicsAdapter.getReelDragConfig();
 const castDistanceCalculator = new CastDistanceCalculator(CONFIG);
 const samplePoleEquipment = {
   rod: { type: "pole", lengthMeters: 2, hasReel: false },
@@ -208,6 +218,7 @@ const dragLimitedPlayer = new PlayerForceSystem().calculate({
   reel: dragLimitedReel,
   buffs: null,
   physics: physicsConfig,
+  physicsConfig: physicsAdapter,
   totalFishForceKg: 5,
   playerMaxLoadKg: 20,
   dragRatio: 1,
@@ -230,6 +241,7 @@ const noDragPlayer = new PlayerForceSystem().calculate({
   reel: noDragReel,
   buffs: null,
   physics: physicsConfig,
+  physicsConfig: physicsAdapter,
   totalFishForceKg: 5,
   playerMaxLoadKg: 20,
   dragRatio: 0.5,
@@ -237,7 +249,7 @@ const noDragPlayer = new PlayerForceSystem().calculate({
 assert(noDragPlayer.dragLocked, "reel without drag behaves as locked direct tackle load");
 approx(noDragPlayer.pullCapacityKg, 20, 0.001, "no-drag reel does not clamp pull by drag limit");
 
-const pointerDrag = new DragSystem(physicsConfig.drag, reel);
+const pointerDrag = new DragSystem(dragConfig, reel);
 pointerDrag.setValue(0.5);
 pointerDrag.update({
   pointerDown: true,
@@ -424,6 +436,10 @@ assert(!godRodStress.isBroken(), "god mode noRodBreak prevents rod failure");
 
 const fish = new Fish(1, 2, {
   ...CONFIG.spawns.fishes[0].physics,
+  basePower: 1,
+  levelBasePower: 1,
+  minPowerRatio: 0.25,
+  agility: 1,
   maxSpeedMetersPerSec: 2,
   behaviors: {
     swim: { powerRatio: 1, speedRatio: 1, minTime: 1000, maxTime: 1000, weight: 1 },
@@ -469,7 +485,40 @@ const speedRatioData = speedRatioForce.calculate({
   buffs: null,
 });
 assert(speedRatioData.debug.moveMult > 1.9, "fish speedRatio can exceed 1 as a speed multiplier");
-assert(speedRatioData.debug.fishSpeedPxPerSec > (CONFIG.physics.pixelsPerMeter || 50) * 1.9, "speedRatio 2 doubles species max speed");
+assert(speedRatioData.debug.fishSpeedPxPerSec > physicsAdapter.getPixelsPerMeter() * 1.9, "speedRatio 2 doubles species max speed");
+
+const profiledFish = new Fish(1, 2, {
+  forceProfile: { basePower: 2, levelBasePower: 3, minPowerRatio: 0.2 },
+  movementProfile: { maxSpeedMetersPerSec: 1, minStaminaActivityMultiplier: 0.5 },
+  resistanceProfile: { speedForceMultiplier: 2, waterResistanceMultiplier: 3 },
+  behaviors: {
+    swim: { powerRatio: 0, speedRatio: 1, minTime: 1000, maxTime: 1000, weight: 1 },
+  },
+}, { next: () => 0.5, range: (a, b) => (a + b) / 2 });
+approx(profiledFish.getStaticPowerKg(), 12, 0.001, "FishPhysicsProfile reads structured force profile");
+const profiledForce = new FishForceSystem({ fish: profiledFish, config: CONFIG });
+const profiledData = profiledForce.calculate({
+  dtMs: 1000,
+  fishPosition: { x: 0, y: -100 },
+  fishVelocity: { x: 0, y: -physicsAdapter.getPixelsPerMeter() },
+  rodTipPosition: { x: 0, y: 0 },
+  fishCondition: { maxPoints: 100, currentStamina: 100, currentExhaustion: 100 },
+  dragRatio: 0,
+  input: { isPulling: false, retrieve: false, pointerDown: false },
+  rod: strongRod,
+  reel: noReel,
+  buffs: null,
+});
+approx(
+  profiledFish.getMaxSpeedPxPerSec(physicsAdapter.getPixelsPerMeter()),
+  physicsAdapter.getPixelsPerMeter(),
+  0.001,
+  "FishPhysicsProfile reads structured movement profile",
+);
+assert(
+  profiledData.debug.dynamicFishForceKg > 40,
+  "FishForceSystem reads structured resistance profile for dynamic force",
+);
 
 const zeroSpeedFish = new Fish(1, 1, {
   basePower: 1,

@@ -329,9 +329,9 @@ class FightPhysicsModule extends OverlayModule {
     }
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Player pressure:</span><span style="color:#00ff80;">${(d.playerPullPressureKg || 0).toFixed(3)}kg -> ${(d.effectivePlayerPressureKg || 0).toFixed(3)}kg</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Retrieve speed:</span><span style="color:#00ff80;">${(d.actualFishPullSpeedMps || 0).toFixed(2)}m/s</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Статичний опір:</span><span style="color:#8a9bac;">${(d.tautBodyResistanceKg || 0).toFixed(3)}кг</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Активна риба:</span><span style="color:#ff8888;">${(d.activeAwayForceKg || 0).toFixed(3)}кг</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Опір води:</span><span style="color:#73c2fb;">${(d.fishRetrieveWaterDragKg || 0).toFixed(3)}кг</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Пасивний опір тіла:</span><span style="color:#8a9bac;">${(d.tautBodyResistanceKg || 0).toFixed(3)}кг</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Активний опір від гравця:</span><span style="color:#ff8888;">${(d.activeAwayForceKg || 0).toFixed(3)}кг</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Опір води при підтягуванні:</span><span style="color:#73c2fb;">${(d.fishRetrieveWaterDragKg || 0).toFixed(3)}кг</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Стартовий spike:</span><span style="color:#ffaa00;">${(d.fishRetrieveAccelerationLoadKg || 0).toFixed(3)}кг</span></div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:12px;"><span>Штраф кута:</span><span style="color:#ffaa00;">x${(d.anglePenalty || 1).toFixed(2)} (${(d.angleDeg || 0).toFixed(0)}°)</span></div>`;
     return html;
@@ -515,11 +515,16 @@ class WorstCaseModule extends OverlayModule {
       pushLoad(effectiveLoad(eq.reel, 0));
       pushLoad(effectiveLoad(eq.reel?.line, 0));
     } else {
-      pushLoad(CONFIG.physics?.line?.defaultMaxLoadKg || 0);
+      pushLoad(
+        CONFIG.fightPhysicsConfig?.getLineConfig?.()?.defaultMaxLoadKg ??
+          0,
+      );
     }
     const pPower = loads.length ? Math.min(...loads) : 0;
 
-    const angleCfg = CONFIG.physics.rodAnglePenalty || {};
+    const angleCfg =
+      CONFIG.fightPhysicsConfig?.getRodAnglePenaltyConfig?.() ||
+      {};
     const worstPenaltyMult =
       angleCfg.enabled === false
         ? 1.0
@@ -528,7 +533,10 @@ class WorstCaseModule extends OverlayModule {
     const playerSteerMin =
       pPower *
       worstPenaltyMult *
-      (CONFIG.physics.playerSteeringMultiplier ?? 1.5);
+      (
+        CONFIG.fightPhysicsConfig?.getPlayerSteeringMultiplier?.() ??
+        1.5
+      );
 
     let html = this.formatHeader("💀 НАЙГІРШІ УМОВИ (КУТ)", "#ff4444");
     html += `<div style="color: #8a9bac; font-size: 12px; margin-bottom: 4px;">Максимальна тяга X:</div>

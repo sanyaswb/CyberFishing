@@ -1,3 +1,39 @@
+function getGlobalFightPhysicsConfig() {
+  if (typeof CONFIG === "undefined") return null;
+  if (CONFIG.fightPhysicsConfig) return CONFIG.fightPhysicsConfig;
+  if (typeof FightPhysicsConfigAdapter !== "undefined") {
+    return new FightPhysicsConfigAdapter(CONFIG);
+  }
+  return null;
+}
+
+function getGlobalRuntimePhysicsConfig() {
+  const physicsConfig = getGlobalFightPhysicsConfig();
+  return (
+    physicsConfig?.getDistanceConfig?.() ||
+    {}
+  );
+}
+
+function getGlobalPassiveRetrieveConfig() {
+  const physicsConfig = getGlobalFightPhysicsConfig();
+  return physicsConfig?.getPassiveRetrieveConfig?.() || {};
+}
+
+function getGlobalFloatMotionConfig() {
+  const physicsConfig = getGlobalFightPhysicsConfig();
+  return (
+    physicsConfig?.getFloatMotionConfig?.() ||
+    getGlobalRuntimePhysicsConfig().floatMotion ||
+    {}
+  );
+}
+
+function getGlobalLureRetrieveConfig() {
+  const physicsConfig = getGlobalFightPhysicsConfig();
+  return physicsConfig?.getLureRetrieveConfig?.() || {};
+}
+
 class Equipment {
   #level;
   #basePower;
@@ -309,7 +345,7 @@ class Net {
   #createConverter(physicsConfig) {
     const resolvedPhysics =
       physicsConfig ||
-      (typeof CONFIG !== "undefined" ? CONFIG.physics : null) ||
+      getGlobalRuntimePhysicsConfig() ||
       {};
 
     if (typeof DistanceUnitConverter !== "undefined") {
@@ -462,7 +498,7 @@ class WaterEntity {
   }
 
   _applyPassiveRetrieve(dt, pullDirection, retrieveParams = null) {
-    const physics = CONFIG.physics || {};
+    const passiveRetrieve = getGlobalPassiveRetrieveConfig();
     if (Number.isFinite(Number(retrieveParams?.targetSpeedPxPerSec))) {
       this._applyRetrieveSpeed(
         dt,
@@ -474,10 +510,10 @@ class WaterEntity {
       this._applyRetrieveForce(
         dt,
         pullDirection,
-        retrieveParams?.power ?? physics.passiveRetrievePower ?? 1.0,
-        retrieveParams?.multiplier ?? physics.passiveRetrieveMultiplier ?? 35,
+        retrieveParams?.power ?? passiveRetrieve.power ?? 1.0,
+        retrieveParams?.multiplier ?? passiveRetrieve.multiplier ?? 35,
         retrieveParams?.waterFriction ??
-          physics.passiveRetrieveWaterFriction ??
+          passiveRetrieve.waterFriction ??
           0.35,
       );
     }
@@ -486,7 +522,7 @@ class WaterEntity {
     this._currentHookDepth = Math.max(
       0,
       this._currentHookDepth -
-        (physics.passiveRetrieveDepthRiseSpeed ?? 0.15) * dtSec,
+        (passiveRetrieve.depthRiseSpeed ?? 0.15) * dtSec,
     );
   }
 
@@ -577,8 +613,7 @@ class WaterEntity {
   _afterPhysicsUpdate(checkWater) {}
 
   _getClampedDtSec(dt) {
-    const physics = typeof CONFIG !== "undefined" ? CONFIG.physics || {} : {};
-    const maxDtMs = physics.maxDtMs ?? 50;
+    const maxDtMs = getGlobalFightPhysicsConfig()?.getMaxDtMs?.() ?? 50;
     return Math.min(Math.max(0, Number(dt) || 0), maxDtMs) / 1000;
   }
 
@@ -706,7 +741,7 @@ class WaterEntity {
   _updateMotionTilt(dt, moveX, moveY) {
     if (!this._motionTiltEnabled) return;
 
-    const cfg = CONFIG.physics?.floatMotion || {};
+    const cfg = getGlobalFloatMotionConfig();
     if (cfg.enabled === false) {
       this._motionTiltAngle = 0;
       return;
@@ -832,7 +867,8 @@ class WaterEntity {
     );
 
     if (isSpinningLure && !isPulling) {
-      seqCfg.chanceGuaranteed = CONFIG.physics?.idleSpinningBiteChance ?? 0.005;
+      seqCfg.chanceGuaranteed =
+        getGlobalLureRetrieveConfig().idleSpinningBiteChance ?? 0.005;
     }
 
     this._applyGodModeBiteSequence(seqCfg);
@@ -1160,7 +1196,7 @@ class SpinnerEntity extends WaterEntity {
         dt,
         pullDirection,
         reelPower,
-        CONFIG.physics?.lureRetrieveMultiplier ?? 150,
+        getGlobalLureRetrieveConfig().multiplier ?? 150,
         this._lureResistance,
       );
 
@@ -1186,7 +1222,7 @@ class WobblerEntity extends WaterEntity {
         dt,
         pullDirection,
         reelPower,
-        CONFIG.physics?.lureRetrieveMultiplier ?? 150,
+        getGlobalLureRetrieveConfig().multiplier ?? 150,
         this._lureResistance,
       );
 
@@ -1233,7 +1269,7 @@ class JigEntity extends WaterEntity {
         dt,
         pullDirection,
         reelPower,
-        CONFIG.physics?.lureRetrieveMultiplier ?? 150,
+        getGlobalLureRetrieveConfig().multiplier ?? 150,
         this._lureResistance,
       );
       this._currentHookDepth = Math.max(
@@ -1388,7 +1424,7 @@ class FloatEntity extends WaterEntity {
 
     this._targetHookDepth = hasSinker
       ? targetDepth
-      : (CONFIG.physics?.defaultDepthNoSinker ?? 0.1);
+      : (getGlobalLureRetrieveConfig().defaultDepthNoSinker ?? 0.1);
     this._currentHookDepth = 0.1;
     this._isOverDepth = hasSinker ? isOverDepth : false;
     this._sinkerConfig = sinkerConfig;
@@ -1417,7 +1453,7 @@ class FloatEntity extends WaterEntity {
 
     this._sinkingTotalTime = baseSinkingTime / speedMult;
 
-    const startAngle = CONFIG.physics?.floatMotion?.sinkingStartAngleDeg ?? 90;
+    const startAngle = getGlobalFloatMotionConfig().sinkingStartAngleDeg ?? 90;
     this._sinkingStartAngle = this._chance(0.5) ? startAngle : -startAngle;
     this._currentAngle = this._sinkingStartAngle;
     this._currentScaleY = 1.0;
@@ -1519,7 +1555,7 @@ class FloatEntity extends WaterEntity {
           );
 
     const minDuration =
-      CONFIG.physics?.floatMotion?.minStandUpDurationMs ?? 400;
+      getGlobalFloatMotionConfig().minStandUpDurationMs ?? 400;
     if (minDuration <= 0) return depthProgress;
 
     const timeProgress = Math.max(
@@ -1530,7 +1566,7 @@ class FloatEntity extends WaterEntity {
   }
 
   _updatePullImpulseTilt(dt, pullDirection, isPulling) {
-    const cfg = CONFIG.physics?.floatMotion || {};
+    const cfg = getGlobalFloatMotionConfig();
     if (cfg.enabled === false) {
       this._pullImpulseAngle = 0;
       return;
@@ -1565,7 +1601,7 @@ class FloatEntity extends WaterEntity {
   }
 
   _getPullImpulseSign(pullDirection) {
-    const cfg = CONFIG.physics?.floatMotion || {};
+    const cfg = getGlobalFloatMotionConfig();
     const pullX = pullDirection?.x || 0;
     const deadZone = cfg.pullImpulseLateralDeadZone ?? 0.02;
     return Math.abs(pullX) > deadZone ? -Math.sign(pullX) : 0;

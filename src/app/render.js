@@ -303,7 +303,9 @@ class FishingRenderService {
       rodVirtualY: bottom,
       landingDistanceMeters,
       lastDashTriggerDistanceMeters: lastDash.triggerDistanceMeters,
-      pixelsPerMeter: this.#config.physics?.pixelsPerMeter || 50,
+      pixelsPerMeter:
+        this.#config.fightPhysicsConfig?.getPixelsPerMeter?.() ||
+        50,
     };
   }
 }

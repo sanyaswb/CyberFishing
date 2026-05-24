@@ -2,8 +2,13 @@ class DevToolsParameterTooltipProvider {
   #descriptionsByKey = {};
   #readyPromise;
 
-  constructor({ url = "src/debug/dev_tool_parameter_descriptions.json" } = {}) {
-    this.#readyPromise = this.#load(url);
+  constructor({
+    urls = [
+      "src/debug/dev_tool_parameter_descriptions.json",
+      "src/config/metadata/parameter_labels.json",
+    ],
+  } = {}) {
+    this.#readyPromise = this.#load(urls);
   }
 
   get ready() {
@@ -13,26 +18,67 @@ class DevToolsParameterTooltipProvider {
   getTooltip(labelText) {
     const description = this.#descriptionsByKey[String(labelText)];
     if (!description) return "";
+
+    if (description.path) {
+      return `${description.path} = ${description.label}:\n${description.description}`;
+    }
+
     return `${description.key} = ${description.ua}:\n${description.description}`;
   }
 
-  async #load(url) {
+  async #load(urls) {
     if (typeof fetch !== "function") return;
 
+    const targetUrls = Array.isArray(urls) ? urls : [urls];
+    const responses = await Promise.allSettled(
+      targetUrls.map((url) => this.#loadOne(url)),
+    );
+
+    for (const response of responses) {
+      if (response.status === "fulfilled") {
+        this.#ingestDescriptions(response.value);
+      }
+    }
+  }
+
+  async #loadOne(url) {
     try {
       const response = await fetch(url, { cache: "no-cache" });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-
-      const descriptions = await response.json();
-      this.#descriptionsByKey = Object.fromEntries(
-        (Array.isArray(descriptions) ? descriptions : [])
-          .filter((item) => item?.key)
-          .map((item) => [item.key, item]),
-      );
+      return await response.json();
     } catch (error) {
-      console.warn("[DevTools] Tooltip descriptions failed to load:", error);
+      console.warn("[DevTools] Tooltip descriptions failed to load:", url, error);
+      return null;
+    }
+  }
+
+  #ingestDescriptions(descriptions) {
+    if (!descriptions) return;
+
+    if (Array.isArray(descriptions)) {
+      for (const item of descriptions) {
+        if (!item?.key) continue;
+        this.#descriptionsByKey[item.key] = item;
+      }
+      return;
+    }
+
+    for (const [path, item] of Object.entries(descriptions)) {
+      if (!item?.label) continue;
+
+      const normalized = {
+        path,
+        label: item.label,
+        description: item.description || "",
+      };
+      this.#descriptionsByKey[path] = normalized;
+
+      const leafKey = path.split(".").pop();
+      if (leafKey && !this.#descriptionsByKey[leafKey]) {
+        this.#descriptionsByKey[leafKey] = normalized;
+      }
     }
   }
 }
@@ -263,8 +309,8 @@ class DevTools {
       "fishRetrieve runtime",
       parentElement,
     );
-    // Same order as CONFIG.physics.fishRetrieve: static baseline first,
-    // active fish next, then player pressure transfer, water drag and acceleration.
+    // Same order as adapter fish retrieve contract: static baseline first,
+    // active fish next, then player pressure transfer and water drag.
     const fields = [
       "tautBodyResistanceKgPerKg",
       "activeAwayForceMultiplier",
@@ -303,7 +349,6 @@ class DevTools {
       "maxSpeedMetersPerSec",
       "speedForceMultiplier",
       "waterResistanceMultiplier",
-      "waterResistanceKgPerKgPerMps",
       "minPowerRatio",
       "minStaminaActivityMultiplier",
       "exhaustedSpeedRatio",
@@ -321,40 +366,21 @@ class DevTools {
       );
     }
 
-    const directionForce = physics.directionForce;
-    if (!directionForce) return;
-
-    const directionContent = this.#createSectionWithCache(
-      "directionForce runtime",
-      content,
-    );
-    for (const field of [
-      "sameDirectionMultiplier",
-      "sideDirectionMultiplier",
-      "oppositeDirectionMultiplier",
-    ]) {
-      this.#ui.createInputRow(
-        field,
-        Number(directionForce[field]) || 0,
-        directionContent,
-        "number",
-        (newValue) =>
-          this.#updateConfigValue(
-            ["HOOKED_FISH", "physics", "directionForce", field],
-            newValue,
-          ),
-      );
-    }
   }
 
   #ensureActiveFishRuntimePhysics(hookedFish) {
     hookedFish.physics = hookedFish.physics || {};
     const physics = hookedFish.physics;
-    const globalPhysics = this.#config?.physics || {};
+    const physicsConfig =
+      this.#config?.fightPhysicsConfig ||
+      (typeof FightPhysicsConfigAdapter !== "undefined"
+        ? new FightPhysicsConfigAdapter(this.#config)
+        : null);
+    const globalFishRetrieve = physicsConfig?.getFishRetrieveConfig?.() || {};
 
     physics.fishRetrieve = this.#withDefaultNumbers(
       physics.fishRetrieve,
-      globalPhysics.fishRetrieve,
+      globalFishRetrieve,
       [
         "tautBodyResistanceKgPerKg",
         "activeAwayForceMultiplier",
@@ -364,20 +390,6 @@ class DevTools {
         "minPlayerPressureTransferRatio",
         "blockedPlayerPressureTransferRatio",
       ],
-    );
-    physics.directionForce = this.#withDefaultNumbers(
-      physics.directionForce,
-      globalPhysics.directionForce,
-      [
-        "sameDirectionMultiplier",
-        "sideDirectionMultiplier",
-        "oppositeDirectionMultiplier",
-      ],
-    );
-    this.#applyDefaultNumber(
-      physics,
-      "waterResistanceKgPerKgPerMps",
-      globalPhysics.waterResistanceKgPerKgPerMps,
     );
     this.#applyDefaultNumber(physics, "minStaminaActivityMultiplier", 0.75);
     this.#applyDefaultNumber(physics, "exhaustedSpeedRatio", 0.25);
@@ -404,7 +416,7 @@ class DevTools {
     if (
       path[0] === "HOOKED_FISH" &&
       path[1] === "physics" &&
-      (key === "fishRetrieve" || key === "directionForce")
+      key === "fishRetrieve"
     ) {
       return true;
     }

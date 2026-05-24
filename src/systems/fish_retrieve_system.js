@@ -1,8 +1,10 @@
 class FishRetrieveSystem {
+  #configSource;
   #model;
 
-  constructor(config = {}) {
-    this.#model = new FishPullResistanceModel(config || {});
+  constructor(configSource = {}) {
+    this.#configSource = configSource || {};
+    this.#model = new FishPullResistanceModel(() => this.#resolveRetrieveConfig());
   }
 
   calculate({
@@ -37,6 +39,13 @@ class FishRetrieveSystem {
   }
 
   reset() {
+  }
+
+  #resolveRetrieveConfig() {
+    const source = this.#configSource;
+    if (source?.getFishRetrieveSettings) return source.getFishRetrieveSettings();
+    if (source?.getFishRetrieveConfig) return source.getFishRetrieveConfig();
+    return source || {};
   }
 
   #resolveHoldRatio(rodPullResult) {
