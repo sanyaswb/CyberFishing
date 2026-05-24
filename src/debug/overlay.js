@@ -283,10 +283,8 @@ class FightPhysicsModule extends OverlayModule {
   }
 
   render(d) {
-    let html = this.formatHeader("FIGHT PHYSICS", "#73c2fb");
     const lineRemaining = Math.max(0, Number(d.lineRemainingMeters) || 0);
     const lineMaxRemaining = Math.max(0, Number(d.lineMaxRemainingMeters) || 0);
-    const lineReserveColor = lineRemaining <= 0.001 ? "#ff4444" : "#8a9bac";
     const rodStrokeUsed = Math.max(
       0,
       Number(d.rodStrokeUnrecoveredMeters) || 0,
@@ -296,52 +294,212 @@ class FightPhysicsModule extends OverlayModule {
       Number(d.rodStrokeCapacityMeters) || 0,
     );
 
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Натяг:</span><span style="color:#ffaa00; font-weight:bold;">${(d.tensionKg || 0).toFixed(2)} / ${(d.maxTackleLoadKg || 0).toFixed(2)} кг</span></div>`;
+    let html = this.formatHeader("FIGHT PHYSICS PIPELINE", "#73c2fb");
+    html += this.#renderFishToTackleSection(d);
+    html += this.#renderPlayerToFishSection(d);
+    html += this.#renderPullWaterSection(d);
+    html += this.#renderFinalTensionSection({
+      ...d,
+      lineRemaining,
+      lineMaxRemaining,
+      rodStrokeUsed,
+      rodStrokeCapacity,
+    });
+    return html + `<div style="margin-bottom: 12px;"></div>`;
+  }
+
+  #renderFishToTackleSection(d) {
+    const dynamicState = d.dynamicLoadEnabled === false ? "вимкнено" : "увімкнено";
+    return this.#section("🐟 РИБА → СНАСТЬ", [
+      this.#row("Вага риби", this.#kg(d.fishWeightKg, 3)),
+      this.#row("Базова сила", this.#kg(d.staticFishForceKg, 3), "#ffaa00"),
+      this.#row("Швидкість відн. води", this.#mps(d.relativeSpeedMps, 2)),
+      this.#row(
+        `Динамічне навантаження (${dynamicState})`,
+        this.#kg(d.dynamicFishForceKg, 3),
+        d.dynamicLoadEnabled === false ? "#8a9bac" : "#73c2fb",
+      ),
+      this.#row(
+        "Множник напрямку",
+        `x${this.#num(d.directionResistanceMultiplier, 2)}`,
+      ),
+      this.#row(
+        "Water motion load",
+        this.#kgPerKgMps(d.fishMotionSpeedLoadKgPerKgPerMps),
+      ),
+      this.#row("Підсумкова сила риби", this.#kg(d.totalFishForceKg, 3), "#ff8888"),
+    ]);
+  }
+
+  #renderPlayerToFishSection(d) {
+    return this.#section("🎣 ГРАВЕЦЬ → РИБА", [
+      this.#row(
+        "Player pressure",
+        `${this.#kg(d.playerPullPressureKg, 3)} → ${this.#kg(d.effectivePlayerPressureKg, 3)}`,
+        "#00ff80",
+      ),
+      this.#row("Передача тиску", this.#percent(d.pressureTransferRatio, 1)),
+      this.#row("Пасивний опір тіла", this.#kg(d.tautBodyResistanceKg, 3)),
+      this.#row("Активний опір від риби", this.#kg(d.activeAwayForceKg, 3), "#ff8888"),
+      this.#row("Сумарний опір риби", this.#kg(d.fishOppositionKg, 3), "#ffaa00"),
+      this.#row("Надлишкова сила", this.#kg(d.fishRetrieveSurplusForceKg, 3), "#00ff80"),
+      this.#row("Контроль руху", this.#percent(d.fishRetrieveMovementControlRatio, 1)),
+      this.#row("Стан балансу", d.fishRetrieveBalanceState || "---", "#8a9bac"),
+    ]);
+  }
+
+  #renderPullWaterSection(d) {
+    const blocked = d.fishRetrieveMovementBlocked ? "ТАК" : "НІ";
+    const blockedColor = d.fishRetrieveMovementBlocked ? "#ff4444" : "#00ff80";
+    return this.#section("🌊 ВОДА ПРИ ПІДТЯГУВАННІ", [
+      this.#row("Drag capacity", this.#kg(d.fishRetrieveWaterDragCapacityKg, 3), "#73c2fb"),
+      this.#row("Drag на поточній швидкості", this.#kg(d.fishRetrieveWaterDragKg, 3), "#73c2fb"),
+      this.#row(
+        "Drag per kg @ ref speed",
+        this.#kgPerKg(d.fishRetrieveWaterDragKgPerKgAtReferenceSpeed),
+      ),
+      this.#row(
+        "Retrieve speed",
+        `${this.#mps(d.actualFishPullSpeedMps, 2)} / target ${this.#mps(d.targetFishPullSpeedMps, 2)}`,
+        "#00ff80",
+      ),
+      this.#row("Desired move", this.#meters(d.fishRetrieveDesiredMoveMeters, 3)),
+      this.#row("Applied move", this.#meters(d.fishRetrieveAppliedMoveMeters, 3), "#00ff80"),
+      this.#row("Рух заблоковано", blocked, blockedColor),
+    ]);
+  }
+
+  #renderFinalTensionSection(d) {
+    const lineReserveColor = d.lineRemaining <= 0.001 ? "#ff4444" : "#00ff80";
+    const rows = [
+      this.#row(
+        "Натяг",
+        `${this.#kg(d.tensionKg ?? d.calculatedTensionKg, 2)} / ${this.#kg(d.maxTackleLoadKg, 2)}`,
+        "#ffaa00",
+      ),
+      this.#row("Raw tension", this.#kg(d.rawTensionKg, 3)),
+      this.#row("Retrieve line tension", this.#kg(d.fishRetrieveLineTensionKg, 3)),
+      this.#row("Passive retrieve tension", this.#kg(d.passiveRetrieveTensionKg, 3)),
+      d.dragSupported
+        ? this.#row(
+            "Фрикціон",
+            `${this.#percent((Number(d.dragPercent) || 0) / 100, 0)} / ${this.#kg(d.dragLimitKg, 2)}`,
+            "#00ccff",
+          )
+        : "",
+      this.#row("Tension mode", d.tensionMode || "---", "#8a9bac"),
+      this.#row("Фізична межа ліски", d.isLineFullyExtended ? "ТАК" : "НІ", d.isLineFullyExtended ? "#ff4444" : "#00ff80"),
+      this.#row("Запас ліски", d.lineCanRelease ? "Є" : "НЕМАЄ", d.lineCanRelease ? "#00ff80" : "#ff4444"),
+      this.#row(
+        "Залишок ліски",
+        `${this.#meters(d.lineRemaining, 1)} / ${this.#meters(d.lineMaxRemaining, 1)}`,
+        lineReserveColor,
+      ),
+      this.#row(
+        "Випущено ліски",
+        `${this.#meters(d.lineReleasedMeters, 1)} / ${this.#meters(d.lineTotalLengthMeters, 1)}`,
+      ),
+      this.#row("Дистанція до риби", this.#meters(d.lineDistanceMeters, 1)),
+      this.#row(
+        "Хід вудки",
+        `${this.#meters(d.rodStrokeUsed, 1)} / ${this.#meters(d.rodStrokeCapacity, 1)}`,
+      ),
+      this.#row(
+        "Штраф кута",
+        `x${this.#num(d.anglePenalty || 1, 2)} (${this.#num(d.angleDeg, 0)}°)`,
+        "#ffaa00",
+      ),
+    ];
+
     if (d.dragSupported) {
-      html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Фрикціон:</span><span style="color:#00ccff; font-weight:bold;">${(d.dragPercent || 0).toFixed(0)}% / ${(d.dragLimitKg || 0).toFixed(2)} кг</span></div>`;
+      rows.push(...this.#holdReelRecoverRows(d));
     }
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Випущено ліски:</span><span style="color:#00ff80;">${(d.lineReleasedMeters || 0).toFixed(1)}м / ${(d.lineTotalLengthMeters || 0).toFixed(1)}м</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Залишок ліски:</span><span style="color:${lineReserveColor}; font-weight:bold;">${lineRemaining.toFixed(1)}м / ${lineMaxRemaining.toFixed(1)}м</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Запас ліски:</span><span style="color:${d.lineCanRelease ? "#00ff80" : "#ff4444"}; font-weight:bold;">${d.lineCanRelease ? "Є" : "НЕМАЄ"}</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Фізична межа ліски:</span><span style="color:${d.isLineFullyExtended ? "#ff4444" : "#00ff80"}; font-weight:bold;">${d.isLineFullyExtended ? "ТАК" : "НІ"}</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Дистанція до риби:</span><span style="color:#8a9bac;">${(d.lineDistanceMeters || 0).toFixed(1)}м</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Хід вудки:</span><span style="color:#8a9bac;">${rodStrokeUsed.toFixed(1)}м / ${rodStrokeCapacity.toFixed(1)}м</span></div>`;
-    if (d.dragSupported) {
-      const reelRecoverReasonLabels = {
-        ready: "готово",
-        disabled: "вимкнено",
-        no_reel: "нема котушки",
-        not_holding: "hold не утримується",
-        rod_pull_inactive: "хід не активний",
-        stroke_not_full: "хід не повний",
-        drag_slipping: "фрикціон здає",
-        no_reel_load_reserve: "нема запасу котушки",
-        zero_recover_speed: "швидкість 0",
-        not_checked: "не перевірено",
-      };
-      const reelRecoverReason =
-        reelRecoverReasonLabels[d.holdReelRecoverBlockedReason] ||
-        d.holdReelRecoverBlockedReason ||
-        "not_checked";
-      const reelRecoverColor = d.holdReelRecoverActive
-        ? "#00ff80"
-        : d.holdReelRecoverEligible
-          ? "#ffaa00"
-          : "#8a9bac";
-      html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Підмотка hold:</span><span style="color:${reelRecoverColor}; font-weight:bold;">${d.holdReelRecoverActive ? "ТАК" : d.holdReelRecoverEligible ? "ЧЕКАЄ" : "НІ"}</span></div>`;
-      html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Причина підмотки:</span><span style="color:#8a9bac;">${reelRecoverReason}</span></div>`;
-      html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Таймер підмотки:</span><span style="color:#8a9bac;">${((d.holdReelRecoverTimerMs || 0) / 1000).toFixed(1)}с / ${((d.holdReelRecoverDelayMs || 0) / 1000).toFixed(1)}с</span></div>`;
-      html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Швидк. підмотки:</span><span style="color:#00ff80;">${(d.holdReelRecoverSpeedMps || 0).toFixed(2)}м/с</span></div>`;
-      html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>До скручування:</span><span style="color:#8a9bac;">${(d.pumpCreditMeters || 0).toFixed(1)}м</span></div>`;
-    }
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Player pressure:</span><span style="color:#00ff80;">${(d.playerPullPressureKg || 0).toFixed(3)}kg -> ${(d.effectivePlayerPressureKg || 0).toFixed(3)}kg</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Retrieve speed:</span><span style="color:#00ff80;">${(d.actualFishPullSpeedMps || 0).toFixed(2)}m/s</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Пасивний опір тіла:</span><span style="color:#8a9bac;">${(d.tautBodyResistanceKg || 0).toFixed(3)}кг</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Активний опір від гравця:</span><span style="color:#ff8888;">${(d.activeAwayForceKg || 0).toFixed(3)}кг</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Опір води при підтягуванні:</span><span style="color:#73c2fb;">${(d.fishRetrieveWaterDragKg || 0).toFixed(3)}кг</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Стартовий spike:</span><span style="color:#ffaa00;">${(d.fishRetrieveAccelerationLoadKg || 0).toFixed(3)}кг</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:12px;"><span>Штраф кута:</span><span style="color:#ffaa00;">x${(d.anglePenalty || 1).toFixed(2)} (${(d.angleDeg || 0).toFixed(0)}°)</span></div>`;
-    return html;
+
+    return this.#section("⚖️ ФІНАЛЬНИЙ НАТЯГ", rows);
+  }
+
+  #holdReelRecoverRows(d) {
+    const labels = {
+      ready: "готово",
+      disabled: "вимкнено",
+      no_reel: "нема котушки",
+      not_holding: "hold не утримується",
+      rod_pull_inactive: "хід не активний",
+      stroke_not_full: "хід не повний",
+      drag_slipping: "фрикціон здає",
+      no_reel_load_reserve: "нема запасу котушки",
+      zero_recover_speed: "швидкість 0",
+      not_checked: "не перевірено",
+    };
+    const reason = labels[d.holdReelRecoverBlockedReason] || d.holdReelRecoverBlockedReason || "not_checked";
+    const state = d.holdReelRecoverActive
+      ? "ТАК"
+      : d.holdReelRecoverEligible
+        ? "ЧЕКАЄ"
+        : "НІ";
+    const color = d.holdReelRecoverActive
+      ? "#00ff80"
+      : d.holdReelRecoverEligible
+        ? "#ffaa00"
+        : "#8a9bac";
+
+    return [
+      this.#row("Підмотка hold", state, color),
+      this.#row("Причина підмотки", reason),
+      this.#row(
+        "Таймер підмотки",
+        `${this.#seconds(d.holdReelRecoverTimerMs)} / ${this.#seconds(d.holdReelRecoverDelayMs)}`,
+      ),
+      this.#row("Швидк. підмотки", this.#mps(d.holdReelRecoverSpeedMps, 2), "#00ff80"),
+      this.#row("До скручування", this.#meters(d.pumpCreditMeters, 1)),
+    ];
+  }
+
+  #section(title, rows) {
+    const body = rows.filter(Boolean).join("");
+    return `<div style="margin-bottom:10px; background:rgba(0,0,0,0.22); border-left:3px solid #73c2fb; padding:6px; border-radius:4px;">
+      <div style="color:#73c2fb; font-weight:bold; margin-bottom:5px; font-size:12px; text-transform:uppercase;">${title}</div>
+      ${body}
+    </div>`;
+  }
+
+  #row(label, value, color = "#8a9bac") {
+    return `<div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:2px; font-size:12px;">
+      <span>${label}:</span><span style="color:${color}; font-weight:bold; text-align:right;">${value}</span>
+    </div>`;
+  }
+
+  #kg(value, digits = 3) {
+    return `${this.#num(value, digits)}кг`;
+  }
+
+  #kgPerKg(value) {
+    return `${this.#num(value, 3)}кг/кг`;
+  }
+
+  #kgPerKgMps(value) {
+    return `${this.#num(value, 3)}кг/кг/м·с⁻¹`;
+  }
+
+  #meters(value, digits = 2) {
+    return `${this.#num(value, digits)}м`;
+  }
+
+  #mps(value, digits = 2) {
+    return `${this.#num(value, digits)}м/с`;
+  }
+
+  #seconds(valueMs) {
+    return `${this.#num((Number(valueMs) || 0) / 1000, 1)}с`;
+  }
+
+  #percent(value, digits = 1) {
+    return `${this.#num((Number(value) || 0) * 100, digits)}%`;
+  }
+
+  #num(value, digits = 2) {
+    const parsed = Number(value);
+    return (Number.isFinite(parsed) ? parsed : 0).toFixed(digits);
   }
 }
 
