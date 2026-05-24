@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.18.0 — scaling configs
+
+- Split `FISH_DB` into fish category files while preserving the public `FISH_DB` global.
+- Added reusable fish physics presets and profile factory helpers.
+- Added runtime config override store, export/import/reset support and immutable `BASE_CONFIG`.
+- Routed DevTools CONFIG edits through runtime overrides instead of mutating the base config.
+- Replaced vague passive retrieve naming with `passiveRetrievePowerRatio`.
+- Removed `Infinity` from item config in favor of explicit open-ended ranges.
+- Added fish DB structure and config override checks.
+
 ## v0.17.5 — architecture cleanup
 
 - Split fight physics math into dedicated calculator classes.

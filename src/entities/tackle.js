@@ -331,7 +331,9 @@ class Net {
 
     if (this.#config.chances) {
       for (const t of this.#config.chances) {
-        if (diffPercent >= t.min && diffPercent <= t.max) {
+        const maxBoundary = Number(t.max);
+        const isOpenEnded = t.openEnded === true || t.max === null;
+        if (diffPercent >= t.min && (isOpenEnded || diffPercent <= maxBoundary)) {
           baseChance = t.chance;
           break;
         }
@@ -510,7 +512,10 @@ class WaterEntity {
       this._applyRetrieveForce(
         dt,
         pullDirection,
-        retrieveParams?.power ?? passiveRetrieve.power ?? 1.0,
+        retrieveParams?.power ??
+          passiveRetrieve.passiveRetrievePowerRatio ??
+          passiveRetrieve.power ??
+          1.0,
         retrieveParams?.multiplier ?? passiveRetrieve.multiplier ?? 35,
         retrieveParams?.waterFriction ??
           passiveRetrieve.waterFriction ??

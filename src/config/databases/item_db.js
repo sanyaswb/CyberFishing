@@ -559,7 +559,7 @@ const ITEM_DB = {
           { min: 0, max: 39, chance: 80 },
           { min: 40, max: 79, chance: 70 },
           { min: 80, max: 99, chance: 60 },
-          { min: 100, max: Infinity, chance: 50 },
+          { min: 100, max: null, openEnded: true, chance: 50 },
         ],
       },
     },

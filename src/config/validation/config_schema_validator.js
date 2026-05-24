@@ -53,7 +53,9 @@ class ConfigSchemaValidator {
     this.warnings = [];
 
     this.#validateProjectVersion();
+    this.#validateImmutableBaseConfig();
     this.#validatePhysicsConfig();
+    this.#validateFishCategories();
     this.#validateFishDb();
     this.#validateItemDb();
     this.#validateMapDb();
@@ -68,6 +70,44 @@ class ConfigSchemaValidator {
         mapCount: Object.keys(this.mapDb || {}).length,
       },
     });
+  }
+
+
+  #validateImmutableBaseConfig() {
+    if (typeof BASE_CONFIG === "undefined") {
+      this.#error("BASE_CONFIG", "missing immutable base config snapshot");
+      return;
+    }
+    if (!Object.isFrozen(BASE_CONFIG)) {
+      this.#error("BASE_CONFIG", "base config must be frozen");
+    }
+    if (BASE_CONFIG.physics && !Object.isFrozen(BASE_CONFIG.physics)) {
+      this.#error("BASE_CONFIG.physics", "base physics config must be deeply frozen");
+    }
+    if (typeof CONFIG_OVERRIDE_STORE === "undefined" || !CONFIG_OVERRIDE_STORE) {
+      this.#error("CONFIG_OVERRIDE_STORE", "missing runtime override store");
+    }
+  }
+
+  #validateFishCategories() {
+    if (typeof FISH_CATEGORIES === "undefined") {
+      this.#error("FISH_CATEGORIES", "missing fish category registry");
+      return;
+    }
+    const seen = new Set();
+    for (const [categoryName, fishList] of Object.entries(FISH_CATEGORIES)) {
+      if (!Array.isArray(fishList)) {
+        this.#error(`FISH_CATEGORIES.${categoryName}`, "category must be an array");
+        continue;
+      }
+      for (const fish of fishList) {
+        if (!fish?.id) continue;
+        if (seen.has(fish.id)) {
+          this.#error(`FISH_CATEGORIES.${categoryName}.${fish.id}`, "duplicate fish id across categories");
+        }
+        seen.add(fish.id);
+      }
+    }
   }
 
   #validateProjectVersion() {
@@ -258,10 +298,6 @@ class ConfigSchemaValidator {
   #validateFiniteNumberLeaves(object, basePath) {
     for (const { path, value } of this.#collectLeaves(object, basePath)) {
       if (typeof value !== "number") continue;
-      if (this.#isAllowedOpenEndedNumber(path, value)) {
-        this.#warn(path, "uses Infinity as an open-ended range boundary");
-        continue;
-      }
       this.#requireFiniteNumber(path, value);
     }
   }
@@ -281,12 +317,14 @@ class ConfigSchemaValidator {
         const suffix = key === "min" ? "" : key.slice(3);
         const maxEntry = localKeys.get((suffix ? `max${suffix}` : "max").toLowerCase());
         if (maxEntry) {
-          this.#requireMinLessOrEqualMax(
-            `${basePath}.${key}`,
-            value,
-            `${basePath}.${maxEntry.key}`,
-            maxEntry.value,
-          );
+          if (!(maxEntry.value === null && object.openEnded === true)) {
+            this.#requireMinLessOrEqualMax(
+              `${basePath}.${key}`,
+              value,
+              `${basePath}.${maxEntry.key}`,
+              maxEntry.value,
+            );
+          }
         }
       }
       if (value && typeof value === "object") {
@@ -336,8 +374,8 @@ class ConfigSchemaValidator {
     }
   }
 
-  #isAllowedOpenEndedNumber(path, value) {
-    return value === Infinity && /(\.|\])max$/u.test(path);
+  #isAllowedOpenEndedNumber(_path, _value) {
+    return false;
   }
 
   #countItemRecords(itemDb) {

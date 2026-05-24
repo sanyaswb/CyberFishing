@@ -115,7 +115,16 @@ class FightPhysicsConfigAdapter {
   getPassiveRetrieveConfig() {
     const config = this.#physics().retrieve?.passive || {};
     return {
-      power: this.#number(config.power, 1),
+      passiveRetrievePowerRatio: this.#number(
+        config.passiveRetrievePowerRatio,
+        config.power,
+        1,
+      ),
+      power: this.#number(
+        config.passiveRetrievePowerRatio,
+        config.power,
+        1,
+      ),
       multiplier: this.#number(config.multiplier, 35),
       waterFriction: this.#number(config.waterFriction, 0.35),
       depthRiseSpeed: this.#number(config.depthRiseSpeed, 0.15),

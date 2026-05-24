@@ -86,3 +86,10 @@ Run:
 ```bash
 node utils/validate-config.js
 ```
+
+
+## v0.18.0 cleanup
+
+- `physics.retrieve.passive.power` was renamed to `physics.retrieve.passive.passiveRetrievePowerRatio`.
+- Open-ended item ranges use `max: null` and `openEnded: true` instead of `Infinity`.
+- `validate-config.js` should pass with zero errors and zero warnings before a patch is delivered.

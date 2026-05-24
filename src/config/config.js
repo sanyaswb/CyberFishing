@@ -608,3 +608,17 @@ if (typeof FightPhysicsConfigAdapter !== "undefined") {
     configurable: true,
   });
 }
+
+const CONFIG_RUNTIME_CONTEXT =
+  typeof createRuntimeConfigContext !== "undefined"
+    ? createRuntimeConfigContext(CONFIG)
+    : null;
+
+const BASE_CONFIG = CONFIG_RUNTIME_CONTEXT?.baseConfig || CONFIG;
+const CONFIG_OVERRIDE_STORE = CONFIG_RUNTIME_CONTEXT?.overrideStore || null;
+const RESOLVED_CONFIG_PROVIDER =
+  CONFIG_RUNTIME_CONTEXT?.resolvedProvider || null;
+
+if (typeof window !== "undefined") {
+  window.CYBER_FISHING_CONFIG_RUNTIME = CONFIG_RUNTIME_CONTEXT;
+}

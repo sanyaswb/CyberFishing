@@ -20,7 +20,7 @@ const FISH_RETRIEVE_PHYSICS_CONFIG = {
 };
 
 const PASSIVE_RETRIEVE_PHYSICS_CONFIG = {
-  power: 1.0,
+  passiveRetrievePowerRatio: 1.0,
   multiplier: 35,
   waterFriction: 0.35,
   depthRiseSpeed: 0.15,

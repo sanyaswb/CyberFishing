@@ -89,6 +89,7 @@ class DevTools {
   #isOpen = false;
   #liveData = null;
   #activeFishKey = "";
+  #configRuntime = null;
 
   #excludeKeys = [
     "id",
@@ -104,6 +105,10 @@ class DevTools {
 
   constructor(config) {
     this.#config = config;
+    this.#configRuntime =
+      typeof CONFIG_RUNTIME_CONTEXT !== "undefined"
+        ? CONFIG_RUNTIME_CONTEXT
+        : null;
     const tooltipProvider = new DevToolsParameterTooltipProvider();
     this.#ui = new DevToolsUI(
       () => this.toggle(),
@@ -135,6 +140,8 @@ class DevTools {
     const body = this.#ui.body;
     body.innerHTML = "";
     this.#activeFishKey = this.#getActiveFishKey();
+
+    this.#renderRuntimeOverrideControls(body);
 
     // 1. OVERLAY MODULES
     if (typeof OVERLAY_MODULES !== "undefined") {
@@ -548,6 +555,14 @@ class DevTools {
     );
   }
 
+  #formatDevToolsKey(key, path) {
+    if (path?.[0] !== "CONFIG" || !this.#configRuntime?.overrideStore) return key;
+    const overridePath = path.slice(1).join(".");
+    return this.#configRuntime.overrideStore.has(overridePath)
+      ? `${key} *`
+      : key;
+  }
+
   #buildTree(obj, parentElement, path) {
     for (const key in obj) {
       if (this.#shouldSkipKey(path, key)) continue;
@@ -558,7 +573,7 @@ class DevTools {
       if (Array.isArray(val)) {
         if (val.length > 0 && typeof val[0] === "number") {
           this.#ui.createInputRow(
-            key,
+            this.#formatDevToolsKey(key, currentPath),
             val.join(", "),
             parentElement,
             "array",
@@ -598,7 +613,7 @@ class DevTools {
             );
           } else {
             this.#ui.createInputRow(
-              key,
+              this.#formatDevToolsKey(key, currentPath),
               val,
               parentElement,
               "string",
@@ -606,8 +621,12 @@ class DevTools {
             );
           }
         } else {
-          this.#ui.createInputRow(key, val, parentElement, "number", (newVal) =>
-            this.#updateConfigValue(currentPath, newVal),
+          this.#ui.createInputRow(
+            this.#formatDevToolsKey(key, currentPath),
+            val,
+            parentElement,
+            "number",
+            (newVal) => this.#updateConfigValue(currentPath, newVal),
           );
         }
       }
@@ -618,14 +637,17 @@ class DevTools {
     const root = this.#resolveEditableRoot(path[0]);
     if (!root) return;
 
-    let target = root;
-
-    // Проходимо по всьому шляху, пропускаючи нульовий індекс (назва кореня)
-    for (let i = 1; i < path.length - 1; i++) {
-      target = target[path[i]];
+    if (path[0] === "CONFIG" && this.#configRuntime) {
+      this.#configRuntime.set(path, newValue);
+      this.#refreshFightPhysicsAdapter();
+    } else {
+      let target = root;
+      for (let i = 1; i < path.length - 1; i++) {
+        target = target[path[i]];
+      }
+      target[path[path.length - 1]] = newValue;
     }
 
-    target[path[path.length - 1]] = newValue;
     this.#syncHookedFishProfileAliases(path, newValue, root);
     this.#syncHookedFishLevelBalance(path);
     if (path[0] === "HOOKED_FISH") {
@@ -635,12 +657,68 @@ class DevTools {
     this.#syncItemDbStatAliases(path, newValue);
     console.log(`[DevTools] Оновлено ${path.join(".")} =`, newValue);
 
-    // Відправляємо подію з повним шляхом (наприклад: ["ITEM_DB", "rods", "rod_test_spin", "engineStats", "basePower"])
     document.dispatchEvent(
       new CustomEvent("config-updated", {
-        detail: { path: path, value: newValue },
+        detail: {
+          path,
+          value: newValue,
+          override: path[0] === "CONFIG",
+        },
       }),
     );
+  }
+
+  #refreshFightPhysicsAdapter() {
+    if (typeof CONFIG === "undefined" || typeof FightPhysicsConfigAdapter === "undefined") return;
+    Object.defineProperty(CONFIG, "fightPhysicsConfig", {
+      value: new FightPhysicsConfigAdapter(CONFIG),
+      enumerable: false,
+      configurable: true,
+    });
+  }
+
+  #renderRuntimeOverrideControls(parentElement) {
+    const content = this.#createSectionWithCache(
+      "🧩 RUNTIME OVERRIDES",
+      parentElement,
+    );
+
+    const count = this.#configRuntime?.overrideStore?.entries?.().length || 0;
+    this.#ui.createInfoRow("active overrides", String(count), content);
+    this.#ui.createButtonRow("Reset all overrides", content, () => {
+      this.#configRuntime?.resetAll?.();
+      this.#refreshFightPhysicsAdapter();
+      document.dispatchEvent(
+        new CustomEvent("config-updated", {
+          detail: { path: ["CONFIG"], value: CONFIG, resetAll: true },
+        }),
+      );
+      this.#populatePanel();
+    });
+    this.#ui.createButtonRow("Export overrides", content, () => {
+      const json = JSON.stringify(this.#configRuntime?.exportOverrides?.() || {}, null, 2);
+      console.log("[DevTools] Runtime overrides export:", json);
+      if (navigator?.clipboard?.writeText) {
+        navigator.clipboard.writeText(json).catch(() => {});
+      }
+      window.prompt?.("Copy runtime overrides JSON", json);
+    });
+    this.#ui.createButtonRow("Import overrides", content, () => {
+      const json = window.prompt?.("Paste runtime overrides JSON", "{}");
+      if (!json) return;
+      try {
+        this.#configRuntime?.importOverrides?.(JSON.parse(json));
+        this.#refreshFightPhysicsAdapter();
+        document.dispatchEvent(
+          new CustomEvent("config-updated", {
+            detail: { path: ["CONFIG"], value: CONFIG, importOverrides: true },
+          }),
+        );
+        this.#populatePanel();
+      } catch (error) {
+        console.warn("[DevTools] Failed to import runtime overrides", error);
+      }
+    });
   }
 
   #resolveEditableRoot(rootName) {
@@ -967,6 +1045,28 @@ class DevToolsUI {
     parentElement.appendChild(section);
 
     return content;
+  }
+
+  createInfoRow(labelStr, value, parentElement) {
+    const row = document.createElement("div");
+    row.className = "devtools-row";
+    row.appendChild(this.#createLabelElement(labelStr));
+    const valueEl = document.createElement("div");
+    valueEl.className = "devtools-value";
+    valueEl.innerText = value;
+    row.appendChild(valueEl);
+    parentElement.appendChild(row);
+  }
+
+  createButtonRow(labelStr, parentElement, onClickCallback) {
+    const row = document.createElement("div");
+    row.className = "devtools-row";
+    const btn = document.createElement("button");
+    btn.className = "devtools-action-btn";
+    btn.innerText = labelStr;
+    btn.addEventListener("click", onClickCallback);
+    row.appendChild(btn);
+    parentElement.appendChild(row);
   }
 
   createSwitcherRow(labelStr, initialValue, parentElement, onChangeCallback) {

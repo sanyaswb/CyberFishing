@@ -9,7 +9,7 @@ class PassiveLureRetrievePolicy extends RetrievePolicy {
     const physics = resolveFightPhysicsConfig(config);
     const passive = physics?.getPassiveRetrieveConfig?.() || {};
     return {
-      power: passive.power ?? 1.0,
+      power: passive.passiveRetrievePowerRatio ?? passive.power ?? 1.0,
       multiplier: passive.multiplier ?? 35,
       waterFriction: passive.waterFriction ?? 0.35,
     };

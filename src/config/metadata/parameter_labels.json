@@ -279,7 +279,7 @@
     "label": "Додатковий час поломки за рівень",
     "description": "Скільки мілісекунд додається до часу поломки за рівень спорядження у старій/сумісній break-моделі."
   },
-  "physics.retrieve.passive.power": {
+  "physics.retrieve.passive.passiveRetrievePowerRatio": {
     "label": "Сила пасивної підмотки",
     "description": "Базова сила пасивної retrieve-механіки для оснастки без активної риби."
   },
