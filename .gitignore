@@ -11,14 +11,13 @@ node_modules
 # Generated files
 backstop_data
 dist
-utils/*
-!utils/
-!utils/dev-server.js
-!utils/check-js.js
-!utils/fps-physics-check.js
-!utils/fight-systems-check.js
 .cache
 .parcel-cache+
 package-lock.json
 .tmp.drivedownload
 .tmp.driveupload
+
+# Ignore only generated utility artifacts, not source utility scripts
+utils/generated/
+utils/tmp/
+utils/*.log
