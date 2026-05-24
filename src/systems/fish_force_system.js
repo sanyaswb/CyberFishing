@@ -37,11 +37,11 @@ class FishForceSystem {
       Number(this.#physicsConfig?.getPixelsPerMeter?.()) || 50,
     );
     const behavior = this.#fish.getBehavior(dtMs);
-    const fishPhysics = this.#fish.getPhysicsConfig?.() || {};
-    const fishProfile = this.#fish.getPhysicsProfile?.() ||
-      (typeof FishPhysicsProfile !== "undefined"
-        ? FishPhysicsProfile.from(fishPhysics)
-        : null);
+    const rawFishPhysics = this.#fish.getPhysicsConfig?.() || {};
+    const fishPhysics =
+      typeof FishPhysicsProfile !== "undefined"
+        ? FishPhysicsProfile.toRuntimeConfig(rawFishPhysics)
+        : rawFishPhysics;
     const lastDashDebug = this.#fish.getLastDashDebugData?.() || {};
 
     const staminaRatio = fishCondition?.maxPoints
@@ -95,10 +95,10 @@ class FishForceSystem {
     const dynamicForceKg = dynamicLoadEnabled
       ? this.#fish.getWeight() *
         relativeSpeedMps *
-        (fishProfile?.getSpeedForceMultiplier?.(0.35) ??
+        (fishPhysics.resistanceProfile?.speedForceMultiplier ??
           fishPhysics.speedForceMultiplier ??
           0.35) *
-        (fishProfile?.getWaterResistanceMultiplier?.(1.0) ??
+        (fishPhysics.resistanceProfile?.waterResistanceMultiplier ??
           fishPhysics.waterResistanceMultiplier ??
           1.0) *
         fishMotionSpeedLoadKgPerKgPerMps *
@@ -106,13 +106,11 @@ class FishForceSystem {
       : 0;
 
     const behaviorPowerRatio = Math.max(0, behaviorPullValue);
-    const minPowerRatio =
-      fishProfile?.getMinPowerRatio?.(
-        this.#physicsConfig?.getMinPowerRatioFallback?.() ?? 0.25,
-      ) ??
-      (Number.isFinite(Number(fishPhysics.minPowerRatio))
-        ? Number(fishPhysics.minPowerRatio)
-        : this.#physicsConfig?.getMinPowerRatioFallback?.() ?? 0.25);
+    const configuredMinPowerRatio =
+      fishPhysics.forceProfile?.minPowerRatio ?? fishPhysics.minPowerRatio;
+    const minPowerRatio = Number.isFinite(Number(configuredMinPowerRatio))
+      ? Number(configuredMinPowerRatio)
+      : this.#physicsConfig?.getMinPowerRatioFallback?.() ?? 0.25;
     const exhaustionPowerMultiplier = this.#lerp(
       1,
       Math.max(0, minPowerRatio),
@@ -153,7 +151,7 @@ class FishForceSystem {
       Number(behavior.speedRatio ?? Math.abs(behavior.moveX || 0)) || 0,
     );
     const staminaActivityMultiplier = this.#lerp(
-      fishProfile?.getMinStaminaActivityMultiplier?.(0.75) ??
+      fishPhysics.staminaProfile?.minStaminaActivityMultiplier ??
         fishPhysics.minStaminaActivityMultiplier ??
         0.75,
       1,
@@ -161,7 +159,7 @@ class FishForceSystem {
     );
     const exhaustionSpeedMultiplier = this.#lerp(
       1,
-      fishProfile?.getExhaustedSpeedRatio?.(0.25) ??
+      fishPhysics.staminaProfile?.exhaustedSpeedRatio ??
         fishPhysics.exhaustedSpeedRatio ??
         0.25,
       exhaustionProgress,

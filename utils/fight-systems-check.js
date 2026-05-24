@@ -69,6 +69,34 @@ const sampleBologneseEquipment = {
   reel: { basePower: 1, lineCapacityMeters: 20 },
   line: { lengthMeters: 13, maxLoadKg: 2 },
 };
+
+const forbiddenFlatFishPhysicsKeys = [
+  "basePower",
+  "baseStamina",
+  "maxSpeedMetersPerSec",
+  "speedForceMultiplier",
+  "waterResistanceMultiplier",
+  "minPowerRatio",
+  "agility",
+  "bounceCooldownMs",
+  "dirChangeMinMs",
+  "dirChangeMaxMs",
+  "lastDashTrigger",
+  "behaviors",
+  "pullResistance",
+];
+for (const fish of FISH_DB) {
+  const physics = fish.physics || {};
+  assert(!!physics.forceProfile, fish.id + " uses forceProfile");
+  assert(!!physics.staminaProfile, fish.id + " uses staminaProfile");
+  assert(!!physics.movementProfile, fish.id + " uses movementProfile");
+  assert(!!physics.resistanceProfile, fish.id + " uses resistanceProfile");
+  assert(!!physics.retrieveProfile, fish.id + " uses retrieveProfile");
+  assert(!!physics.behaviorProfile?.behaviors, fish.id + " uses behaviorProfile.behaviors");
+  for (const key of forbiddenFlatFishPhysicsKeys) {
+    assert(!(key in physics), fish.id + " does not keep flat physics." + key);
+  }
+}
 approx(
   castDistanceCalculator.getMaxCastDistancePx(samplePoleEquipment, 0),
   650,

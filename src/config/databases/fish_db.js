@@ -61,65 +61,85 @@ const FISH_DB = [
     },
 
     physics: {
-      basePower: 0,
-      baseStamina: 1000,
-      maxSpeedMetersPerSec: 0,
-      speedForceMultiplier: 0,
-      waterResistanceMultiplier: 0,
-      minPowerRatio: 0,
-      agility: 0,
-      bounceCooldownMs: 2000,
-      dirChangeMinMs: 500,
-      dirChangeMaxMs: 1500,
-      lastDashTrigger: {
-        enabled: true,
-        targetState: "lastDash",
-        chance: 0.5,
-        checkIntervalMs: 1000,
-        catchZoneMultiplier: 1.5,
-        stayUntilLeaveZone: false,
+      forceProfile: {
+        basePower: 0,
+        minPowerRatio: 0,
       },
 
-      behaviors: {
-        idle: {
-          powerRatio: 0,
-          speedRatio: 0,
-          minTime: 500,
-          maxTime: 3000,
-          weight: 25,
-        },
-        rest: {
-          powerRatio: 0,
-          speedRatio: 0,
-          minTime: 500,
-          maxTime: 2500,
-          weight: 25,
-        },
-        swim: {
-          powerRatio: 0,
-          speedRatio: 0,
-          minTime: 2000,
-          maxTime: 4000,
-          weight: 25,
-        },
-        dash: {
-          powerRatio: 0,
-          speedRatio: 0,
-          minTime: 1000,
-          maxTime: 2200,
-          weight: 25,
-        },
-        lastDash: {
+      staminaProfile: {
+        baseStamina: 1000,
+      },
+
+      movementProfile: {
+        maxSpeedMetersPerSec: 0,
+        agility: 0,
+        bounceCooldownMs: 2000,
+        dirChangeMinMs: 500,
+        dirChangeMaxMs: 1500,
+        lastDashTrigger: {
           enabled: true,
-          powerRatio: 0,
-          speedRatio: 0,
-          minTime: 1000,
-          maxTime: 3000,
-          weight: 0,
-          dirChangeMinMs: 500,
-          dirChangeMaxMs: 1000,
-          agility: 1,
+          targetState: "lastDash",
+          chance: 0.5,
+          checkIntervalMs: 1000,
+          catchZoneMultiplier: 1.5,
+          stayUntilLeaveZone: false,
         },
+      },
+
+      resistanceProfile: {
+        speedForceMultiplier: 0,
+        waterResistanceMultiplier: 0,
+      },
+
+      retrieveProfile: {
+        passiveBodyResistanceMultiplier: 1.0,
+        activeAwayMultiplier: 1.0,
+        waterDragMultiplier: 1.0,
+        referencePullSpeedMultiplier: 1.0,
+      },
+
+      behaviorProfile: {
+        behaviors: {
+          idle: {
+            powerRatio: 0,
+            speedRatio: 0,
+            minTime: 500,
+            maxTime: 3000,
+            weight: 25,
+          },
+          rest: {
+            powerRatio: 0,
+            speedRatio: 0,
+            minTime: 500,
+            maxTime: 2500,
+            weight: 25,
+          },
+          swim: {
+            powerRatio: 0,
+            speedRatio: 0,
+            minTime: 2000,
+            maxTime: 4000,
+            weight: 25,
+          },
+          dash: {
+            powerRatio: 0,
+            speedRatio: 0,
+            minTime: 1000,
+            maxTime: 2200,
+            weight: 25,
+          },
+          lastDash: {
+            enabled: true,
+            powerRatio: 0,
+            speedRatio: 0,
+            minTime: 1000,
+            maxTime: 3000,
+            weight: 0,
+            dirChangeMinMs: 500,
+            dirChangeMaxMs: 1000,
+            agility: 1,
+          },
+        }
       },
     },
 
@@ -206,64 +226,85 @@ const FISH_DB = [
     },
 
     physics: {
-      basePower: 1.0,
-      baseStamina: 900,
-      maxSpeedMetersPerSec: 2.2,
-      speedForceMultiplier: 0.35,
-      waterResistanceMultiplier: 1.0,
-      minPowerRatio: 0.25,
-      agility: 1.3,
-      bounceCooldownMs: 2000,
-      dirChangeMinMs: 500,
-      dirChangeMaxMs: 1500,
-      lastDashTrigger: {
-        enabled: true,
-        targetState: "lastDash",
-        chance: 0.5,
-        checkIntervalMs: 1000,
-        catchZoneMultiplier: 1.1,
-        stayUntilLeaveZone: false,
+      forceProfile: {
+        basePower: 1.0,
+        minPowerRatio: 0.25,
       },
-      behaviors: {
-        idle: {
-          powerRatio: 0.8,
-          speedRatio: 0.8,
-          minTime: 500,
-          maxTime: 2000,
-          weight: 10,
-        },
-        rest: {
-          powerRatio: 0.5,
-          speedRatio: 0.5,
-          minTime: 500,
-          maxTime: 2500,
-          weight: 5,
-        },
-        swim: {
-          powerRatio: 1.0,
-          speedRatio: 1.0,
-          minTime: 2000,
-          maxTime: 4000,
-          weight: 55,
-        },
-        dash: {
-          powerRatio: 2.0,
-          speedRatio: 1.0,
-          minTime: 500,
-          maxTime: 1200,
-          weight: 30,
-        },
-        lastDash: {
+
+      staminaProfile: {
+        baseStamina: 900,
+      },
+
+      movementProfile: {
+        maxSpeedMetersPerSec: 2.2,
+        agility: 1.3,
+        bounceCooldownMs: 2000,
+        dirChangeMinMs: 500,
+        dirChangeMaxMs: 1500,
+        lastDashTrigger: {
           enabled: true,
-          powerRatio: 2.2,
-          speedRatio: 1.2,
-          minTime: 1000,
-          maxTime: 3000,
-          weight: 0,
-          dirChangeMinMs: 500,
-          dirChangeMaxMs: 1000,
-          agility: 1.5,
+          targetState: "lastDash",
+          chance: 0.5,
+          checkIntervalMs: 1000,
+          catchZoneMultiplier: 1.1,
+          stayUntilLeaveZone: false,
         },
+      },
+
+      resistanceProfile: {
+        speedForceMultiplier: 0.35,
+        waterResistanceMultiplier: 1.0,
+      },
+
+      retrieveProfile: {
+        passiveBodyResistanceMultiplier: 1.0,
+        activeAwayMultiplier: 1.0,
+        waterDragMultiplier: 1.0,
+        referencePullSpeedMultiplier: 1.0,
+      },
+
+      behaviorProfile: {
+        behaviors: {
+          idle: {
+            powerRatio: 0.8,
+            speedRatio: 0.8,
+            minTime: 500,
+            maxTime: 2000,
+            weight: 10,
+          },
+          rest: {
+            powerRatio: 0.5,
+            speedRatio: 0.5,
+            minTime: 500,
+            maxTime: 2500,
+            weight: 5,
+          },
+          swim: {
+            powerRatio: 1.0,
+            speedRatio: 1.0,
+            minTime: 2000,
+            maxTime: 4000,
+            weight: 55,
+          },
+          dash: {
+            powerRatio: 2.0,
+            speedRatio: 1.0,
+            minTime: 500,
+            maxTime: 1200,
+            weight: 30,
+          },
+          lastDash: {
+            enabled: true,
+            powerRatio: 2.2,
+            speedRatio: 1.2,
+            minTime: 1000,
+            maxTime: 3000,
+            weight: 0,
+            dirChangeMinMs: 500,
+            dirChangeMaxMs: 1000,
+            agility: 1.5,
+          },
+        }
       },
     },
 

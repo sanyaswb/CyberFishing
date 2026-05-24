@@ -175,12 +175,19 @@ class FishStatesModule extends OverlayModule {
   }
 
   shouldRender(d) {
-    return d.gameState === "playing" && d.hookedFish?.physics?.behaviors;
+    return (
+      d.gameState === "playing" &&
+      (d.hookedFish?.physics?.behaviors ||
+        d.hookedFish?.physics?.behaviorProfile?.behaviors)
+    );
   }
 
   render(d) {
     let html = this.formatHeader("📊 СИЛА РИБИ ЗА СТАНАМИ");
-    const behaviors = d.hookedFish.physics.behaviors;
+    const behaviors =
+      d.hookedFish.physics.behaviors ||
+      d.hookedFish.physics.behaviorProfile?.behaviors ||
+      {};
     const basePower = d.fishBasePower || 0;
 
     for (const [name, cfg] of Object.entries(behaviors)) {

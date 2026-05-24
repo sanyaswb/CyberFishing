@@ -419,28 +419,84 @@
     "label": "Знак вертикального нахилу",
     "description": "Напрямок, у який вертикальний рух нахиляє поплавок."
   },
-  "FISH_DB.physics.forceProfile.basePower": {
+  "fish.physics.forceProfile.basePower": {
     "label": "Базова сила виду риби",
-    "description": "Майбутній структурований шлях для сили виду. Сумісний зі старим physics.basePower через FishPhysicsProfile."
+    "description": "Структурований профіль сили. Разом із вагою риби та levelBasePower формує staticFishForceKg."
   },
-  "FISH_DB.physics.forceProfile.minPowerRatio": {
+  "fish.physics.forceProfile.minPowerRatio": {
     "label": "Мінімальна частка сили виду",
-    "description": "Майбутній структурований шлях для мінімальної сили виснаженої риби. Сумісний зі старим physics.minPowerRatio."
+    "description": "Нижня межа сили риби відносно базової сили виду. Не дає виснаженій рибі впасти нижче заданої частки."
   },
-  "FISH_DB.physics.movementProfile.maxSpeedMetersPerSec": {
+  "fish.physics.forceProfile.levelBasePower": {
+    "label": "Множник сили рівня риби",
+    "description": "Runtime-множник із weightConfig.levelWeightRanges для конкретного рівня/ваги спійманої риби."
+  },
+  "fish.physics.staminaProfile.baseStamina": {
+    "label": "Базова стаміна виду риби",
+    "description": "Базовий запас stamina/exhaustion для виду риби. Більше значення = довше виснаження."
+  },
+  "fish.physics.staminaProfile.staminaWeightMultiplier": {
+    "label": "Множник стаміни від ваги",
+    "description": "Додає запас stamina/exhaustion для риб важчих за 1 кг. Формула шару: baseStamina * (1 + multiplier * max(0, weight - 1))."
+  },
+  "fish.physics.staminaProfile.minStaminaActivityMultiplier": {
+    "label": "Мінімальна активність від стаміни",
+    "description": "Нижня межа множника швидкості від поточної stamina. Впливає на рух риби у FishForceSystem."
+  },
+  "fish.physics.staminaProfile.exhaustedSpeedRatio": {
+    "label": "Швидкість виснаженої риби",
+    "description": "Множник швидкості, до якого риба наближається при виснаженні exhaustion."
+  },
+  "fish.physics.movementProfile.maxSpeedMetersPerSec": {
     "label": "Максимальна швидкість виду",
-    "description": "Майбутній структурований шлях для швидкості риби. Сумісний зі старим physics.maxSpeedMetersPerSec."
+    "description": "Базова швидкість виду риби в м/с. behavior.speedRatio множиться на це значення."
   },
-  "FISH_DB.physics.resistanceProfile.speedForceMultiplier": {
-    "label": "Множник сили від швидкості виду",
-    "description": "Майбутній структурований шлях для speedForceMultiplier. Впливає на dynamicFishForceKg."
+  "fish.physics.movementProfile.agility": {
+    "label": "Спритність виду риби",
+    "description": "Швидкість згладженого переходу до нового стану сили, швидкості та напрямку."
   },
-  "FISH_DB.physics.resistanceProfile.waterResistanceMultiplier": {
-    "label": "Множник водного опору виду",
-    "description": "Майбутній структурований шлях для waterResistanceMultiplier. Впливає на dynamicFishForceKg."
+  "fish.physics.movementProfile.bounceCooldownMs": {
+    "label": "Кулдаун відскоку від межі",
+    "description": "Скільки мілісекунд риба тримає напрямок після реакції на край/стіну."
   },
-  "FISH_DB.physics.retrieveProfile.waterDragMultiplier": {
-    "label": "Множник drag при підтягуванні виду",
-    "description": "Майбутній структурований шлях для видового множника опору при підтягуванні. Сумісний із pullResistance.waterDragMultiplier."
+  "fish.physics.movementProfile.dirChangeMinMs": {
+    "label": "Мінімальний час зміни напрямку",
+    "description": "Нижня межа випадкового інтервалу зміни бокового напрямку риби."
+  },
+  "fish.physics.movementProfile.dirChangeMaxMs": {
+    "label": "Максимальний час зміни напрямку",
+    "description": "Верхня межа випадкового інтервалу зміни бокового напрямку риби."
+  },
+  "fish.physics.movementProfile.lastDashTrigger": {
+    "label": "Тригер останнього ривка",
+    "description": "Поведінкова умова, яка може примусово включити lastDash біля landing/catch зони."
+  },
+  "fish.physics.resistanceProfile.speedForceMultiplier": {
+    "label": "Множник навантаження від швидкості виду",
+    "description": "Видовий множник dynamicFishForceKg від руху риби у воді. Формула шару включає вагу, relativeSpeedMps, глобальний speedLoad і direction multiplier."
+  },
+  "fish.physics.resistanceProfile.waterResistanceMultiplier": {
+    "label": "Множник водного навантаження виду",
+    "description": "Видовий множник динамічного навантаження від руху риби у воді."
+  },
+  "fish.physics.retrieveProfile.passiveBodyResistanceMultiplier": {
+    "label": "Множник пасивного опору тіла виду",
+    "description": "Видовий множник passiveBodyResistance при підтягуванні. Множиться на глобальний tautBodyResistanceKgPerKg."
+  },
+  "fish.physics.retrieveProfile.activeAwayMultiplier": {
+    "label": "Множник активного опору виду",
+    "description": "Видовий множник активного опору, коли риба тягне від гравця під час підтягування."
+  },
+  "fish.physics.retrieveProfile.waterDragMultiplier": {
+    "label": "Множник water drag виду",
+    "description": "Видовий множник опору води при протягуванні риби. Множиться на fishWeightKg і глобальний dragKgPerKgAtReferenceSpeed."
+  },
+  "fish.physics.retrieveProfile.referencePullSpeedMultiplier": {
+    "label": "Множник референсної швидкості виду",
+    "description": "Видовий множник referencePullSpeedMetersPerSecond. Більше значення = цей вид легше набирає швидкість підтягування за тієї самої надлишкової сили."
+  },
+  "fish.physics.behaviorProfile.behaviors": {
+    "label": "Профіль станів поведінки риби",
+    "description": "Набір станів idle/rest/swim/dash/lastDash. Кожен стан визначає powerRatio, speedRatio, тривалість і вагу вибору."
   }
 }

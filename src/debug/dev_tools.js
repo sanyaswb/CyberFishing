@@ -271,28 +271,39 @@ class DevTools {
     );
 
     hookedFish.physics = hookedFish.physics || {};
+    hookedFish.physics.forceProfile = hookedFish.physics.forceProfile || {};
+    hookedFish.physics.movementProfile = hookedFish.physics.movementProfile || {};
     this.#ui.createInputRow(
       "levelBasePower",
-      Number(hookedFish.physics.levelBasePower) || 0,
+      Number(
+        hookedFish.physics.forceProfile.levelBasePower ??
+          hookedFish.physics.levelBasePower,
+      ) || 0,
       levelContent,
       "number",
       (newValue) =>
         this.#updateConfigValue(
-          ["HOOKED_FISH", "physics", "levelBasePower"],
+          ["HOOKED_FISH", "physics", "forceProfile", "levelBasePower"],
           newValue,
         ),
     );
     this.#ui.createInputRow(
       "levelMaxSpeedMetersPerSec",
       Number(
-        hookedFish.physics.maxSpeedMetersPerSec ??
+        hookedFish.physics.movementProfile.maxSpeedMetersPerSec ??
+          hookedFish.physics.maxSpeedMetersPerSec ??
           hookedFish.physics.baseSpeedMetersPerSec,
       ) || 0,
       levelContent,
       "number",
       (newValue) =>
         this.#updateConfigValue(
-          ["HOOKED_FISH", "physics", "maxSpeedMetersPerSec"],
+          [
+            "HOOKED_FISH",
+            "physics",
+            "movementProfile",
+            "maxSpeedMetersPerSec",
+          ],
           newValue,
         ),
     );
@@ -302,34 +313,29 @@ class DevTools {
   }
 
   #renderActiveFishRetrieveControls(hookedFish, parentElement) {
-    const fishRetrieve = hookedFish.physics?.fishRetrieve;
-    if (!fishRetrieve) return;
+    const retrieveProfile = hookedFish.physics?.retrieveProfile;
+    if (!retrieveProfile) return;
 
     const content = this.#createSectionWithCache(
-      "fishRetrieve runtime",
+      "fish retrieve profile runtime",
       parentElement,
     );
-    // Same order as adapter fish retrieve contract: static baseline first,
-    // active fish next, then player pressure transfer and water drag.
     const fields = [
-      "tautBodyResistanceKgPerKg",
-      "activeAwayForceMultiplier",
-      "referencePullSpeedMetersPerSecond",
-      "waterDragKgPerKgAtReferenceSpeed",
-      "playerPressureTransferReferenceWeightKg",
-      "minPlayerPressureTransferRatio",
-      "blockedPlayerPressureTransferRatio",
+      "passiveBodyResistanceMultiplier",
+      "activeAwayMultiplier",
+      "waterDragMultiplier",
+      "referencePullSpeedMultiplier",
     ];
 
     for (const field of fields) {
       this.#ui.createInputRow(
         field,
-        Number(fishRetrieve[field]) || 0,
+        Number(retrieveProfile[field]) || 0,
         content,
         "number",
         (newValue) =>
           this.#updateConfigValue(
-            ["HOOKED_FISH", "physics", "fishRetrieve", field],
+            ["HOOKED_FISH", "physics", "retrieveProfile", field],
             newValue,
           ),
       );
@@ -340,59 +346,134 @@ class DevTools {
     const physics = hookedFish.physics;
     if (!physics) return;
 
-    const content = this.#createSectionWithCache(
-      "fish force runtime",
+    this.#renderProfileNumberControls({
+      title: "fish force profile runtime",
+      profile: physics.forceProfile,
+      profilePath: "forceProfile",
+      fields: ["basePower", "minPowerRatio"],
       parentElement,
-    );
-    const fields = [
-      "basePower",
-      "maxSpeedMetersPerSec",
-      "speedForceMultiplier",
-      "waterResistanceMultiplier",
-      "minPowerRatio",
-      "minStaminaActivityMultiplier",
-      "exhaustedSpeedRatio",
-      "agility",
-    ];
+    });
+    this.#renderProfileNumberControls({
+      title: "fish movement profile runtime",
+      profile: physics.movementProfile,
+      profilePath: "movementProfile",
+      fields: [
+        "maxSpeedMetersPerSec",
+        "agility",
+        "bounceCooldownMs",
+        "dirChangeMinMs",
+        "dirChangeMaxMs",
+      ],
+      parentElement,
+    });
+    this.#renderProfileNumberControls({
+      title: "fish resistance profile runtime",
+      profile: physics.resistanceProfile,
+      profilePath: "resistanceProfile",
+      fields: ["speedForceMultiplier", "waterResistanceMultiplier"],
+      parentElement,
+    });
+    this.#renderProfileNumberControls({
+      title: "fish stamina profile runtime",
+      profile: physics.staminaProfile,
+      profilePath: "staminaProfile",
+      fields: [
+        "baseStamina",
+        "staminaWeightMultiplier",
+        "minStaminaActivityMultiplier",
+        "exhaustedSpeedRatio",
+      ],
+      parentElement,
+    });
+  }
 
+  #renderProfileNumberControls({
+    title,
+    profile,
+    profilePath,
+    fields,
+    parentElement,
+  }) {
+    if (!profile) return;
+
+    const content = this.#createSectionWithCache(title, parentElement);
     for (const field of fields) {
       this.#ui.createInputRow(
         field,
-        Number(physics[field]) || 0,
+        Number(profile[field]) || 0,
         content,
         "number",
         (newValue) =>
-          this.#updateConfigValue(["HOOKED_FISH", "physics", field], newValue),
+          this.#updateConfigValue(
+            ["HOOKED_FISH", "physics", profilePath, field],
+            newValue,
+          ),
       );
     }
-
   }
 
   #ensureActiveFishRuntimePhysics(hookedFish) {
-    hookedFish.physics = hookedFish.physics || {};
+    hookedFish.physics =
+      typeof FishPhysicsProfile !== "undefined"
+        ? FishPhysicsProfile.toRuntimeConfig(hookedFish.physics || {})
+        : hookedFish.physics || {};
     const physics = hookedFish.physics;
-    const physicsConfig =
-      this.#config?.fightPhysicsConfig ||
-      (typeof FightPhysicsConfigAdapter !== "undefined"
-        ? new FightPhysicsConfigAdapter(this.#config)
-        : null);
-    const globalFishRetrieve = physicsConfig?.getFishRetrieveConfig?.() || {};
 
-    physics.fishRetrieve = this.#withDefaultNumbers(
-      physics.fishRetrieve,
-      globalFishRetrieve,
-      [
-        "tautBodyResistanceKgPerKg",
-        "activeAwayForceMultiplier",
-        "referencePullSpeedMetersPerSecond",
-        "waterDragKgPerKgAtReferenceSpeed",
-        "playerPressureTransferReferenceWeightKg",
-        "minPlayerPressureTransferRatio",
-        "blockedPlayerPressureTransferRatio",
-      ],
+    physics.forceProfile = physics.forceProfile || {};
+    physics.movementProfile = physics.movementProfile || {};
+    physics.resistanceProfile = physics.resistanceProfile || {};
+    physics.staminaProfile = physics.staminaProfile || {};
+    physics.retrieveProfile = physics.retrieveProfile || {};
+
+    this.#applyDefaultNumber(physics.forceProfile, "basePower", physics.basePower ?? 1);
+    this.#applyDefaultNumber(
+      physics.forceProfile,
+      "minPowerRatio",
+      physics.minPowerRatio ?? 0.25,
     );
-    this.#applyDefaultNumber(physics, "minStaminaActivityMultiplier", 0.75);
-    this.#applyDefaultNumber(physics, "exhaustedSpeedRatio", 0.25);
+    this.#applyDefaultNumber(
+      physics.movementProfile,
+      "maxSpeedMetersPerSec",
+      physics.maxSpeedMetersPerSec ?? physics.baseSpeedMetersPerSec ?? 0,
+    );
+    this.#applyDefaultNumber(physics.movementProfile, "agility", physics.agility ?? 1);
+    this.#applyDefaultNumber(
+      physics.resistanceProfile,
+      "speedForceMultiplier",
+      physics.speedForceMultiplier ?? 0.35,
+    );
+    this.#applyDefaultNumber(
+      physics.resistanceProfile,
+      "waterResistanceMultiplier",
+      physics.waterResistanceMultiplier ?? 1,
+    );
+    this.#applyDefaultNumber(
+      physics.staminaProfile,
+      "baseStamina",
+      physics.baseStamina ?? 0,
+    );
+    this.#applyDefaultNumber(
+      physics.staminaProfile,
+      "minStaminaActivityMultiplier",
+      physics.minStaminaActivityMultiplier ?? 0.75,
+    );
+    this.#applyDefaultNumber(
+      physics.staminaProfile,
+      "exhaustedSpeedRatio",
+      physics.exhaustedSpeedRatio ?? 0.25,
+    );
+    this.#applyDefaultNumber(
+      physics.retrieveProfile,
+      "passiveBodyResistanceMultiplier",
+      1,
+    );
+    this.#applyDefaultNumber(physics.retrieveProfile, "activeAwayMultiplier", 1);
+    this.#applyDefaultNumber(physics.retrieveProfile, "waterDragMultiplier", 1);
+    this.#applyDefaultNumber(
+      physics.retrieveProfile,
+      "referencePullSpeedMultiplier",
+      1,
+    );
   }
 
   #getActiveFishKey() {
@@ -413,12 +494,29 @@ class DevTools {
     ) {
       return true;
     }
-    if (
-      path[0] === "HOOKED_FISH" &&
-      path[1] === "physics" &&
-      key === "fishRetrieve"
-    ) {
-      return true;
+    if (path[0] === "HOOKED_FISH" && path[1] === "physics") {
+      const compatibilityKeys = new Set([
+        "basePower",
+        "baseStamina",
+        "levelBasePower",
+        "staminaWeightMultiplier",
+        "minStaminaActivityMultiplier",
+        "exhaustedSpeedRatio",
+        "maxSpeedMetersPerSec",
+        "baseSpeedMetersPerSec",
+        "agility",
+        "bounceCooldownMs",
+        "dirChangeMinMs",
+        "dirChangeMaxMs",
+        "lastDashTrigger",
+        "speedForceMultiplier",
+        "waterResistanceMultiplier",
+        "minPowerRatio",
+        "behaviors",
+        "pullResistance",
+        "fishRetrieve",
+      ]);
+      if (compatibilityKeys.has(key)) return true;
     }
 
     const isConfigLocationsMap =
@@ -528,6 +626,7 @@ class DevTools {
     }
 
     target[path[path.length - 1]] = newValue;
+    this.#syncHookedFishProfileAliases(path, newValue, root);
     this.#syncHookedFishLevelBalance(path);
     if (path[0] === "HOOKED_FISH") {
       this.#emitHookedFishUpdated(path, newValue, root);
@@ -564,6 +663,67 @@ class DevTools {
     );
   }
 
+
+  #syncHookedFishProfileAliases(path, newValue, fish) {
+    if (path[0] !== "HOOKED_FISH" || path[1] !== "physics" || !fish?.physics) {
+      return;
+    }
+
+    const profileName = path[2];
+    const field = path[3];
+    if (!profileName || !field) return;
+
+    const aliasByProfile = {
+      forceProfile: {
+        basePower: "basePower",
+        minPowerRatio: "minPowerRatio",
+        levelBasePower: "levelBasePower",
+      },
+      staminaProfile: {
+        baseStamina: "baseStamina",
+        staminaWeightMultiplier: "staminaWeightMultiplier",
+        minStaminaActivityMultiplier: "minStaminaActivityMultiplier",
+        exhaustedSpeedRatio: "exhaustedSpeedRatio",
+      },
+      movementProfile: {
+        maxSpeedMetersPerSec: "maxSpeedMetersPerSec",
+        agility: "agility",
+        bounceCooldownMs: "bounceCooldownMs",
+        dirChangeMinMs: "dirChangeMinMs",
+        dirChangeMaxMs: "dirChangeMaxMs",
+        lastDashTrigger: "lastDashTrigger",
+      },
+      resistanceProfile: {
+        speedForceMultiplier: "speedForceMultiplier",
+        waterResistanceMultiplier: "waterResistanceMultiplier",
+      },
+    };
+
+    const alias = aliasByProfile[profileName]?.[field];
+    if (alias) {
+      fish.physics[alias] = newValue;
+      if (alias === "maxSpeedMetersPerSec") {
+        fish.physics.baseSpeedMetersPerSec = newValue;
+      }
+    }
+
+    if (profileName === "retrieveProfile") {
+      fish.physics.pullResistance = fish.physics.pullResistance || {};
+      const retrieveAliasByField = {
+        passiveBodyResistanceMultiplier: [
+          "passiveBodyResistanceMultiplier",
+          "staticMultiplier",
+        ],
+        activeAwayMultiplier: ["activeAwayMultiplier"],
+        waterDragMultiplier: ["waterDragMultiplier"],
+        referencePullSpeedMultiplier: ["referencePullSpeedMultiplier"],
+      };
+      for (const key of retrieveAliasByField[field] || []) {
+        fish.physics.pullResistance[key] = newValue;
+      }
+    }
+  }
+
   #syncHookedFishLevelBalance(path) {
     if (path[0] !== "HOOKED_FISH") return;
 
@@ -588,16 +748,25 @@ class DevTools {
       Math.round(Number(range.level) || fish.level || 1),
     );
     fish.physics = fish.physics || {};
-    this.#applyFiniteNumber(fish.physics, "levelBasePower", range.basePower);
+    fish.physics.forceProfile = fish.physics.forceProfile || {};
+    fish.physics.movementProfile = fish.physics.movementProfile || {};
     this.#applyFiniteNumber(
-      fish.physics,
-      "maxSpeedMetersPerSec",
-      this.#firstFiniteNumber(
-        range.baseSpeedMetersPerSec,
-        range.speedMetersPerSec,
-        range.speed,
-      ),
+      fish.physics.forceProfile,
+      "levelBasePower",
+      range.basePower,
     );
+    this.#applyFiniteNumber(fish.physics, "levelBasePower", range.basePower);
+    const levelSpeed = this.#firstFiniteNumber(
+      range.baseSpeedMetersPerSec,
+      range.speedMetersPerSec,
+      range.speed,
+    );
+    this.#applyFiniteNumber(
+      fish.physics.movementProfile,
+      "maxSpeedMetersPerSec",
+      levelSpeed,
+    );
+    this.#applyFiniteNumber(fish.physics, "maxSpeedMetersPerSec", levelSpeed);
   }
 
   #findFishTemplate(fish) {

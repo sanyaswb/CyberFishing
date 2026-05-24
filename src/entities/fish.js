@@ -1,109 +1,236 @@
 class FishPhysicsProfile {
-  constructor(config = {}) {
-    this.config = config || {};
+  #raw;
+
+  constructor(raw = {}) {
+    this.#raw = raw && typeof raw === "object" ? raw : {};
   }
 
-  static from(config = {}) {
-    return config instanceof FishPhysicsProfile
-      ? config
-      : new FishPhysicsProfile(config || {});
+  static from(raw = {}) {
+    return new FishPhysicsProfile(raw);
   }
 
-  getBasePower(defaultValue = 1.0) {
-    return this.#firstNumber(
-      this.config.forceProfile?.basePower,
-      this.config.basePower,
-      defaultValue,
+  static toRuntimeConfig(raw = {}, overrides = {}) {
+    return FishPhysicsProfile.from(raw).toRuntimeConfig(overrides);
+  }
+
+  toRuntimeConfig(overrides = {}) {
+    const raw = this.#raw;
+    const forceProfile = this.#object(raw.forceProfile);
+    const staminaProfile = this.#object(raw.staminaProfile);
+    const movementProfile = this.#object(raw.movementProfile);
+    const resistanceProfile = this.#object(raw.resistanceProfile);
+    const retrieveProfile = this.#object(raw.retrieveProfile);
+    const behaviorProfile = this.#object(raw.behaviorProfile);
+    const pullResistance = this.#object(raw.pullResistance);
+
+    const normalizedForceProfile = {
+      ...forceProfile,
+      basePower: this.#firstFiniteNumber(
+        raw.basePower,
+        forceProfile.basePower,
+        1.0,
+      ),
+      minPowerRatio: this.#firstFiniteNumber(
+        raw.minPowerRatio,
+        forceProfile.minPowerRatio,
+        0.25,
+      ),
+    };
+
+    const levelBasePower = this.#firstFiniteNumber(
+      overrides.levelBasePower,
+      raw.levelBasePower,
+      forceProfile.levelBasePower,
+      NaN,
     );
-  }
-
-  getLevelBasePower(defaultValue = 1.0) {
-    return this.#firstNumber(
-      this.config.forceProfile?.levelBasePower,
-      this.config.levelBasePower,
-      defaultValue,
-    );
-  }
-
-  getMinPowerRatio(defaultValue = 0.25) {
-    return this.#firstNumber(
-      this.config.forceProfile?.minPowerRatio,
-      this.config.minPowerRatio,
-      defaultValue,
-    );
-  }
-
-  getBaseStamina(defaultValue = NaN) {
-    return this.#firstNumber(
-      this.config.forceProfile?.baseStamina,
-      this.config.baseStamina,
-      defaultValue,
-    );
-  }
-
-  getStaminaWeightMultiplier(defaultValue = 0) {
-    return this.#firstNumber(
-      this.config.forceProfile?.staminaWeightMultiplier,
-      this.config.staminaWeightMultiplier,
-      defaultValue,
-    );
-  }
-
-  getMaxSpeedMetersPerSec(defaultValue = NaN) {
-    return this.#firstNumber(
-      this.config.movementProfile?.maxSpeedMetersPerSec,
-      this.config.maxSpeedMetersPerSec,
-      this.config.baseSpeedMetersPerSec,
-      defaultValue,
-    );
-  }
-
-  getSpeedForceMultiplier(defaultValue = 0.35) {
-    return this.#firstNumber(
-      this.config.resistanceProfile?.speedForceMultiplier,
-      this.config.speedForceMultiplier,
-      defaultValue,
-    );
-  }
-
-  getWaterResistanceMultiplier(defaultValue = 1.0) {
-    return this.#firstNumber(
-      this.config.resistanceProfile?.waterResistanceMultiplier,
-      this.config.waterResistanceMultiplier,
-      defaultValue,
-    );
-  }
-
-  getMinStaminaActivityMultiplier(defaultValue = 0.75) {
-    return this.#firstNumber(
-      this.config.movementProfile?.minStaminaActivityMultiplier,
-      this.config.minStaminaActivityMultiplier,
-      defaultValue,
-    );
-  }
-
-  getExhaustedSpeedRatio(defaultValue = 0.25) {
-    return this.#firstNumber(
-      this.config.movementProfile?.exhaustedSpeedRatio,
-      this.config.exhaustedSpeedRatio,
-      defaultValue,
-    );
-  }
-
-  getAgility(defaultValue = 1.0) {
-    return this.#firstNumber(
-      this.config.movementProfile?.agility,
-      this.config.agility,
-      defaultValue,
-    );
-  }
-
-  #firstNumber(...values) {
-    for (const value of values) {
-      const parsed = Number(value);
-      if (Number.isFinite(parsed)) return parsed;
+    if (Number.isFinite(levelBasePower)) {
+      normalizedForceProfile.levelBasePower = Math.max(0, levelBasePower);
     }
-    return 0;
+
+    const normalizedStaminaProfile = {
+      ...staminaProfile,
+      baseStamina: this.#firstFiniteNumber(
+        raw.baseStamina,
+        staminaProfile.baseStamina,
+        NaN,
+      ),
+    };
+    this.#copyFiniteAlias(
+      normalizedStaminaProfile,
+      "staminaWeightMultiplier",
+      raw.staminaWeightMultiplier,
+      staminaProfile.staminaWeightMultiplier,
+    );
+    this.#copyFiniteAlias(
+      normalizedStaminaProfile,
+      "minStaminaActivityMultiplier",
+      raw.minStaminaActivityMultiplier,
+      staminaProfile.minStaminaActivityMultiplier,
+    );
+    this.#copyFiniteAlias(
+      normalizedStaminaProfile,
+      "exhaustedSpeedRatio",
+      raw.exhaustedSpeedRatio,
+      staminaProfile.exhaustedSpeedRatio,
+    );
+
+    const normalizedMovementProfile = {
+      ...movementProfile,
+      maxSpeedMetersPerSec: this.#firstFiniteNumber(
+        raw.maxSpeedMetersPerSec,
+        raw.baseSpeedMetersPerSec,
+        movementProfile.maxSpeedMetersPerSec,
+        2.0,
+      ),
+      agility: this.#firstFiniteNumber(raw.agility, movementProfile.agility, 1.0),
+      bounceCooldownMs: this.#firstFiniteNumber(
+        raw.bounceCooldownMs,
+        movementProfile.bounceCooldownMs,
+        NaN,
+      ),
+      dirChangeMinMs: this.#firstFiniteNumber(
+        raw.dirChangeMinMs,
+        movementProfile.dirChangeMinMs,
+        NaN,
+      ),
+      dirChangeMaxMs: this.#firstFiniteNumber(
+        raw.dirChangeMaxMs,
+        movementProfile.dirChangeMaxMs,
+        NaN,
+      ),
+      lastDashTrigger:
+        raw.lastDashTrigger ||
+        movementProfile.lastDashTrigger ||
+        behaviorProfile.lastDashTrigger,
+    };
+
+    const normalizedResistanceProfile = {
+      ...resistanceProfile,
+      speedForceMultiplier: this.#firstFiniteNumber(
+        raw.speedForceMultiplier,
+        resistanceProfile.speedForceMultiplier,
+        0.35,
+      ),
+      waterResistanceMultiplier: this.#firstFiniteNumber(
+        raw.waterResistanceMultiplier,
+        resistanceProfile.waterResistanceMultiplier,
+        1.0,
+      ),
+    };
+
+    const normalizedRetrieveProfile = {
+      ...retrieveProfile,
+      passiveBodyResistanceMultiplier: this.#firstFiniteNumber(
+        pullResistance.staticMultiplier,
+        pullResistance.passiveBodyResistanceMultiplier,
+        retrieveProfile.passiveBodyResistanceMultiplier,
+        1.0,
+      ),
+      activeAwayMultiplier: this.#firstFiniteNumber(
+        pullResistance.activeAwayMultiplier,
+        retrieveProfile.activeAwayMultiplier,
+        1.0,
+      ),
+      waterDragMultiplier: this.#firstFiniteNumber(
+        pullResistance.waterDragMultiplier,
+        retrieveProfile.waterDragMultiplier,
+        1.0,
+      ),
+      referencePullSpeedMultiplier: this.#firstFiniteNumber(
+        pullResistance.referencePullSpeedMultiplier,
+        retrieveProfile.referencePullSpeedMultiplier,
+        1.0,
+      ),
+    };
+
+    const behaviors = this.#resolveBehaviors(raw, behaviorProfile);
+    const normalizedBehaviorProfile = {
+      ...behaviorProfile,
+      behaviors,
+    };
+
+    const result = {
+      ...raw,
+      forceProfile: normalizedForceProfile,
+      staminaProfile: normalizedStaminaProfile,
+      movementProfile: normalizedMovementProfile,
+      resistanceProfile: normalizedResistanceProfile,
+      retrieveProfile: normalizedRetrieveProfile,
+      behaviorProfile: normalizedBehaviorProfile,
+
+      // Temporary compatibility aliases. Remove after all systems read profiles directly.
+      basePower: normalizedForceProfile.basePower,
+      minPowerRatio: normalizedForceProfile.minPowerRatio,
+      levelBasePower: normalizedForceProfile.levelBasePower,
+      baseStamina: normalizedStaminaProfile.baseStamina,
+      staminaWeightMultiplier: normalizedStaminaProfile.staminaWeightMultiplier,
+      minStaminaActivityMultiplier:
+        normalizedStaminaProfile.minStaminaActivityMultiplier,
+      exhaustedSpeedRatio: normalizedStaminaProfile.exhaustedSpeedRatio,
+      maxSpeedMetersPerSec: normalizedMovementProfile.maxSpeedMetersPerSec,
+      baseSpeedMetersPerSec: normalizedMovementProfile.maxSpeedMetersPerSec,
+      agility: normalizedMovementProfile.agility,
+      bounceCooldownMs: normalizedMovementProfile.bounceCooldownMs,
+      dirChangeMinMs: normalizedMovementProfile.dirChangeMinMs,
+      dirChangeMaxMs: normalizedMovementProfile.dirChangeMaxMs,
+      lastDashTrigger: normalizedMovementProfile.lastDashTrigger,
+      speedForceMultiplier: normalizedResistanceProfile.speedForceMultiplier,
+      waterResistanceMultiplier:
+        normalizedResistanceProfile.waterResistanceMultiplier,
+      behaviors,
+      pullResistance: {
+        ...pullResistance,
+        staticMultiplier:
+          normalizedRetrieveProfile.passiveBodyResistanceMultiplier,
+        passiveBodyResistanceMultiplier:
+          normalizedRetrieveProfile.passiveBodyResistanceMultiplier,
+        activeAwayMultiplier: normalizedRetrieveProfile.activeAwayMultiplier,
+        waterDragMultiplier: normalizedRetrieveProfile.waterDragMultiplier,
+        referencePullSpeedMultiplier:
+          normalizedRetrieveProfile.referencePullSpeedMultiplier,
+      },
+    };
+
+    if (!Number.isFinite(Number(result.levelBasePower))) {
+      delete result.levelBasePower;
+    }
+    if (!Number.isFinite(Number(result.baseStamina))) {
+      delete result.baseStamina;
+    }
+    return result;
+  }
+
+  #resolveBehaviors(raw, behaviorProfile) {
+    if (raw.behaviors && typeof raw.behaviors === "object") return raw.behaviors;
+    if (
+      behaviorProfile.behaviors &&
+      typeof behaviorProfile.behaviors === "object"
+    ) {
+      return behaviorProfile.behaviors;
+    }
+
+    const directBehaviorProfileKeys = ["idle", "rest", "swim", "dash", "lastDash"];
+    const hasDirectStates = directBehaviorProfileKeys.some(
+      (key) => behaviorProfile[key] && typeof behaviorProfile[key] === "object",
+    );
+    return hasDirectStates ? behaviorProfile : {};
+  }
+
+  #copyFiniteAlias(target, key, ...values) {
+    const value = this.#firstFiniteNumber(...values, NaN);
+    if (Number.isFinite(value)) target[key] = value;
+  }
+
+  #object(value) {
+    return value && typeof value === "object" ? value : {};
+  }
+
+  #firstFiniteNumber(...values) {
+    for (const value of values) {
+      const number = Number(value);
+      if (Number.isFinite(number)) return number;
+    }
+    return NaN;
   }
 }
 
@@ -123,7 +250,7 @@ class Fish {
   constructor(level, weight, fishConfig, rng = null) {
     this.#level = level;
     this.#weight = weight;
-    this.#fishConfig = fishConfig;
+    this.#fishConfig = FishPhysicsProfile.toRuntimeConfig(fishConfig);
     this.#rng = rng || { next: () => Math.random() };
     this.#powerDebuff = 0;
     this.#behavior = new FishBehavior(this.#fishConfig, this.#rng);
@@ -147,7 +274,8 @@ class Fish {
       this.#weight = Math.max(0, Number(weight));
     }
     if (physics && typeof physics === "object") {
-      this.#fishConfig = physics;
+      this.#fishConfig = FishPhysicsProfile.toRuntimeConfig(physics);
+      this.#behavior = new FishBehavior(this.#fishConfig, this.#rng);
     }
   }
 
@@ -155,23 +283,31 @@ class Fish {
     return this.#fishConfig || {};
   }
 
-  getPhysicsProfile() {
-    return FishPhysicsProfile.from(this.#fishConfig);
-  }
-
   getLevelMultiplier() {
     // Numeric level is NOT multiplied into fish force anymore.
     // The level only selects a configured per-level basePower coefficient.
-    return Math.max(0, this.getPhysicsProfile().getLevelBasePower(1));
+    const levelBasePower = this.#fishConfig?.forceProfile?.levelBasePower ??
+      this.#fishConfig?.levelBasePower;
+    if (Number.isFinite(Number(levelBasePower))) {
+      return Math.max(0, Number(levelBasePower));
+    }
+
+    return 1;
   }
 
   getInitialPower() {
-    const basePower = this.getPhysicsProfile().getBasePower(1.0);
+    const basePowerValue = this.#fishConfig?.forceProfile?.basePower ??
+      this.#fishConfig?.basePower;
+    const basePower = Number.isFinite(Number(basePowerValue))
+      ? Number(basePowerValue)
+      : 1.0;
     return this.#weight * this.getLevelMultiplier() * Math.max(0, basePower);
   }
 
   getStaticPowerKg() {
-    const basePower = this.getPhysicsProfile().getBasePower(1.0);
+    const basePower = this.#fishConfig?.forceProfile?.basePower ??
+      this.#fishConfig?.basePower ??
+      1.0;
     return this.#weight * this.getLevelMultiplier() * basePower;
   }
 
@@ -179,13 +315,22 @@ class Fish {
     const base = this.getStaticPowerKg();
     const initial = Math.max(0.001, this.getInitialPower());
     const currentRatio = this.getPower() / initial;
-    const minRatio = this.getPhysicsProfile().getMinPowerRatio(0.25);
+    const minRatio = this.#fishConfig?.forceProfile?.minPowerRatio ??
+      this.#fishConfig?.minPowerRatio ??
+      0.25;
     return base * Math.max(minRatio, currentRatio);
   }
 
   getMaxSpeedPxPerSec(pixelsPerMeter = 50) {
-    const maxSpeed = this.getPhysicsProfile().getMaxSpeedMetersPerSec(NaN);
+    const maxSpeed = Number(
+      this.#fishConfig?.movementProfile?.maxSpeedMetersPerSec ??
+        this.#fishConfig?.maxSpeedMetersPerSec,
+    );
     if (Number.isFinite(maxSpeed)) return maxSpeed * pixelsPerMeter;
+
+    // Deprecated compatibility fallback for older fish configs.
+    const legacyBaseSpeed = Number(this.#fishConfig?.baseSpeedMetersPerSec);
+    if (Number.isFinite(legacyBaseSpeed)) return legacyBaseSpeed * pixelsPerMeter;
     return 100;
   }
 
@@ -644,7 +789,7 @@ class FishBehavior {
       powerRatio: this.#currentPull,
       speedRatio,
       moveX: speedRatio * this.#currentDirX,
-      agility: stateConfig.agility ?? FishPhysicsProfile.from(this.#config).getAgility(1.0),
+      agility: stateConfig.agility ?? this.#config.agility ?? 1.0,
     };
   }
 }
@@ -656,14 +801,20 @@ class FishCondition {
   #phase;
 
   constructor(level, weight, staminaFishConfig, fishPhysics = null) {
-    const profile = FishPhysicsProfile.from(fishPhysics);
-    const baseStamina = profile.getBaseStamina(NaN);
-    if (Number.isFinite(baseStamina)) {
-      const speciesBasePower = profile.getBasePower(1.0);
-      const levelBasePower = profile.getLevelBasePower(1.0);
-      const weightMultiplier = profile.getStaminaWeightMultiplier(0);
+    const physics = FishPhysicsProfile.toRuntimeConfig(fishPhysics || {});
+    if (physics?.baseStamina) {
+      const speciesBasePower = physics.forceProfile?.basePower ?? physics.basePower ?? 1.0;
+      const levelBasePower = Number.isFinite(
+        Number(physics.forceProfile?.levelBasePower ?? physics.levelBasePower),
+      )
+        ? Number(physics.forceProfile?.levelBasePower ?? physics.levelBasePower)
+        : 1.0;
+      const weightMultiplier =
+        physics.staminaProfile?.staminaWeightMultiplier ??
+        physics.staminaWeightMultiplier ??
+        0;
       this.#maxPoints =
-        baseStamina *
+        physics.baseStamina *
         speciesBasePower *
         levelBasePower *
         (1 + Math.max(0, weightMultiplier) * Math.max(0, weight - 1));

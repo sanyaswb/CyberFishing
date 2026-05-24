@@ -186,9 +186,16 @@ class BiteSystem {
   }
 
   #buildFishPhysics(fishPhysics, weightConfig, level) {
+    const levelBasePower = this.#resolveLevelBasePower(weightConfig, level);
+    if (typeof FishPhysicsProfile !== "undefined") {
+      return FishPhysicsProfile.toRuntimeConfig(fishPhysics || {}, {
+        levelBasePower,
+      });
+    }
+
     return {
       ...(fishPhysics || {}),
-      levelBasePower: this.#resolveLevelBasePower(weightConfig, level),
+      levelBasePower,
     };
   }
 
