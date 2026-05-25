@@ -1,5 +1,17 @@
 # CyberFishing changelog
 
+## v0.18.3 — overlay console formulas
+
+- Simplified overlay metric buttons: they now print formula details to the browser console instead of trying to control DevTools DOM focus.
+- Added console tables with influencing `CONFIG.*` and `HOOKED_FISH.*` paths plus current runtime values.
+- Kept the small overlay square buttons, but removed the fragile DevTools navigation behavior from the bridge.
+
+## v0.18.2 — clean overlay DevTools paths
+
+- Added stable `data-devtools-path` attributes to DevTools sections, rows and labels.
+- Updated overlay link navigation to focus exact DevTools paths first instead of relying on truncated labels.
+- Removed the need for the runtime `overlay_devtools_links_focus_patch.js` workaround.
+
 ## v0.18.1 — overlay DevTools links
 
 - Added small overlay link buttons before supported debug metric labels.

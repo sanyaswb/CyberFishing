@@ -148,6 +148,7 @@ class DevTools {
       const content = this.#createSectionWithCache(
         "OVERLAY MODULES (На Екрані)",
         body,
+        ["OVERLAY_MODULES"],
       );
       for (const k in OVERLAY_MODULES) {
         this.#ui.createSwitcherRow(
@@ -164,6 +165,7 @@ class DevTools {
       const content = this.#createSectionWithCache(
         "CONSOLE MODULES (Логи F12)",
         body,
+        ["DEBUG_MODULES"],
       );
       for (const k in window.DEBUG_MODULES) {
         this.#ui.createSwitcherRow(k, window.DEBUG_MODULES[k], content, (v) => {
@@ -182,10 +184,11 @@ class DevTools {
       const dbContent = this.#createSectionWithCache(
         "📦 БАЗА ПРЕДМЕТІВ (ITEM_DB)",
         body,
+        ["ITEM_DB"],
       );
       for (const key of Object.keys(ITEM_DB)) {
         if (this.#excludeKeys.includes(key)) continue;
-        const sectionContent = this.#createSectionWithCache(key, dbContent);
+        const sectionContent = this.#createSectionWithCache(key, dbContent, ["ITEM_DB", key]);
         // Шлях тепер починається з "ITEM_DB"
         this.#buildTree(ITEM_DB[key], sectionContent, ["ITEM_DB", key]);
       }
@@ -196,12 +199,14 @@ class DevTools {
       const fishDbContent = this.#createSectionWithCache(
         "🐟 БАЗА РИБИ (FISH_DB)",
         body,
+        ["FISH_DB"],
       );
       FISH_DB.forEach((fish, index) => {
         const fishLabel = fish?.id || fish?.name || `Fish [${index}]`;
         const sectionContent = this.#createSectionWithCache(
           fishLabel,
           fishDbContent,
+          ["FISH_DB", index],
         );
         this.#buildTree(fish, sectionContent, ["FISH_DB", index]);
       });
@@ -212,6 +217,7 @@ class DevTools {
       const mapDbContent = this.#createSectionWithCache(
         "🗺️ БАЗА ЛОКАЦІЙ (MAP_DB)",
         body,
+        ["MAP_DB"],
       );
       for (const key of Object.keys(MAP_DB)) {
         const location = MAP_DB[key];
@@ -219,6 +225,7 @@ class DevTools {
         const sectionContent = this.#createSectionWithCache(
           locationLabel,
           mapDbContent,
+          ["MAP_DB", key],
         );
         this.#buildTree(location, sectionContent, ["MAP_DB", key]);
       }
@@ -229,10 +236,11 @@ class DevTools {
       const configContent = this.#createSectionWithCache(
         "⚙️ НАЛАШТУВАННЯ (CONFIG)",
         body,
+        ["CONFIG"],
       );
       for (const key of Object.keys(CONFIG)) {
         if (this.#excludeKeys.includes(key)) continue;
-        const sectionContent = this.#createSectionWithCache(key, configContent);
+        const sectionContent = this.#createSectionWithCache(key, configContent, ["CONFIG", key]);
         // Шлях тепер починається з "CONFIG"
         this.#buildTree(CONFIG[key], sectionContent, ["CONFIG", key]);
       }
@@ -249,6 +257,7 @@ class DevTools {
     const activeFishContent = this.#createSectionWithCache(
       `ACTIVE FISH (${fishLabel})`,
       body,
+      ["HOOKED_FISH"],
     );
     this.#renderActiveFishRuntimeControls(hookedFish, activeFishContent);
     this.#buildTree(hookedFish, activeFishContent, ["HOOKED_FISH"]);
@@ -260,6 +269,7 @@ class DevTools {
     const levelContent = this.#createSectionWithCache(
       "level runtime",
       parentElement,
+      ["HOOKED_FISH"],
     );
     this.#ui.createInputRow(
       "weight",
@@ -268,6 +278,7 @@ class DevTools {
       "number",
       (newValue) =>
         this.#updateConfigValue(["HOOKED_FISH", "weight"], newValue),
+      ["HOOKED_FISH", "weight"],
     );
     this.#ui.createInputRow(
       "level",
@@ -275,6 +286,7 @@ class DevTools {
       levelContent,
       "number",
       (newValue) => this.#updateConfigValue(["HOOKED_FISH", "level"], newValue),
+      ["HOOKED_FISH", "level"],
     );
 
     hookedFish.physics = hookedFish.physics || {};
@@ -293,6 +305,7 @@ class DevTools {
           ["HOOKED_FISH", "physics", "forceProfile", "levelBasePower"],
           newValue,
         ),
+      ["HOOKED_FISH", "physics", "forceProfile", "levelBasePower"],
     );
     this.#ui.createInputRow(
       "levelMaxSpeedMetersPerSec",
@@ -313,6 +326,7 @@ class DevTools {
           ],
           newValue,
         ),
+      ["HOOKED_FISH", "physics", "movementProfile", "maxSpeedMetersPerSec"],
     );
 
     this.#renderActiveFishRetrieveControls(hookedFish, parentElement);
@@ -326,6 +340,7 @@ class DevTools {
     const content = this.#createSectionWithCache(
       "fish retrieve profile runtime",
       parentElement,
+      ["HOOKED_FISH", "physics", "retrieveProfile"],
     );
     const fields = [
       "passiveBodyResistanceMultiplier",
@@ -345,6 +360,7 @@ class DevTools {
             ["HOOKED_FISH", "physics", "retrieveProfile", field],
             newValue,
           ),
+        ["HOOKED_FISH", "physics", "retrieveProfile", field],
       );
     }
   }
@@ -403,7 +419,7 @@ class DevTools {
   }) {
     if (!profile) return;
 
-    const content = this.#createSectionWithCache(title, parentElement);
+    const content = this.#createSectionWithCache(title, parentElement, ["HOOKED_FISH", "physics", profilePath]);
     for (const field of fields) {
       this.#ui.createInputRow(
         field,
@@ -415,6 +431,7 @@ class DevTools {
             ["HOOKED_FISH", "physics", profilePath, field],
             newValue,
           ),
+        ["HOOKED_FISH", "physics", profilePath, field],
       );
     }
   }
@@ -534,7 +551,7 @@ class DevTools {
     return isConfigLocationsMap || isConfigSpawnsFishes;
   }
 
-  #createSectionWithCache(labelStr, parentElement) {
+  #createSectionWithCache(labelStr, parentElement, path = null) {
     let savedStates =
       typeof CacheManager !== "undefined"
         ? CacheManager.get("dev_tools_sections_state", {})
@@ -552,6 +569,7 @@ class DevTools {
           CacheManager.set("dev_tools_sections_state", savedStates);
         }
       },
+      path,
     );
   }
 
@@ -578,20 +596,22 @@ class DevTools {
             parentElement,
             "array",
             (newVal) => this.#updateConfigValue(currentPath, newVal),
+            currentPath,
           );
         } else if (val.length > 0 && typeof val[0] === "object") {
-          const content = this.#createSectionWithCache(key, parentElement);
+          const content = this.#createSectionWithCache(key, parentElement, currentPath);
           val.forEach((item, index) => {
             const itemLabel = item.id || item.type || `Item [${index}]`;
             const itemContent = this.#createSectionWithCache(
               itemLabel,
               content,
+              [...currentPath, index],
             );
             this.#buildTree(item, itemContent, [...currentPath, index]);
           });
         }
       } else if (val !== null && typeof val === "object") {
-        const content = this.#createSectionWithCache(key, parentElement);
+        const content = this.#createSectionWithCache(key, parentElement, currentPath);
         this.#buildTree(val, content, currentPath);
       } else if (
         typeof val === "number" ||
@@ -601,6 +621,7 @@ class DevTools {
         if (typeof val === "boolean") {
           this.#ui.createSwitcherRow(key, val, parentElement, (newVal) =>
             this.#updateConfigValue(currentPath, newVal),
+            currentPath,
           );
         } else if (typeof val === "string") {
           if (key === "currentMethod") {
@@ -610,6 +631,7 @@ class DevTools {
               val,
               parentElement,
               (newVal) => this.#updateConfigValue(currentPath, newVal),
+              currentPath,
             );
           } else {
             this.#ui.createInputRow(
@@ -618,6 +640,7 @@ class DevTools {
               parentElement,
               "string",
               (newVal) => this.#updateConfigValue(currentPath, newVal),
+              currentPath,
             );
           }
         } else {
@@ -627,6 +650,7 @@ class DevTools {
             parentElement,
             "number",
             (newVal) => this.#updateConfigValue(currentPath, newVal),
+            currentPath,
           );
         }
       }
@@ -681,6 +705,7 @@ class DevTools {
     const content = this.#createSectionWithCache(
       "🧩 RUNTIME OVERRIDES",
       parentElement,
+      ["CONFIG_OVERRIDES"],
     );
 
     const count = this.#configRuntime?.overrideStore?.entries?.().length || 0;
@@ -1021,16 +1046,19 @@ class DevToolsUI {
     }
   }
 
-  createSection(labelStr, parentElement, isExpanded, onToggle) {
+  createSection(labelStr, parentElement, isExpanded, onToggle, path = null) {
     const section = document.createElement("div");
     section.className = "devtools-section";
+    this.#assignDevToolsPath(section, path);
 
     const title = document.createElement("div");
     title.className = "devtools-section-title";
+    this.#assignDevToolsPath(title, path);
     title.innerHTML = `<span>${isExpanded ? "▼" : "▶"}</span> ${labelStr}`;
 
     const content = document.createElement("div");
     content.className = "devtools-section-content";
+    this.#assignDevToolsPath(content, path);
     content.style.display = isExpanded ? "block" : "none";
 
     title.addEventListener("click", () => {
@@ -1047,10 +1075,11 @@ class DevToolsUI {
     return content;
   }
 
-  createInfoRow(labelStr, value, parentElement) {
+  createInfoRow(labelStr, value, parentElement, path = null) {
     const row = document.createElement("div");
     row.className = "devtools-row";
-    row.appendChild(this.#createLabelElement(labelStr));
+    this.#assignDevToolsPath(row, path);
+    row.appendChild(this.#createLabelElement(labelStr, path));
     const valueEl = document.createElement("div");
     valueEl.className = "devtools-value";
     valueEl.innerText = value;
@@ -1069,11 +1098,12 @@ class DevToolsUI {
     parentElement.appendChild(row);
   }
 
-  createSwitcherRow(labelStr, initialValue, parentElement, onChangeCallback) {
+  createSwitcherRow(labelStr, initialValue, parentElement, onChangeCallback, path = null) {
     const row = document.createElement("div");
     row.className = "devtools-row";
+    this.#assignDevToolsPath(row, path);
 
-    const label = this.#createLabelElement(labelStr);
+    const label = this.#createLabelElement(labelStr, path);
     row.appendChild(label);
 
     const inputElement = document.createElement("label");
@@ -1094,11 +1124,12 @@ class DevToolsUI {
     parentElement.appendChild(row);
   }
 
-  createInputRow(key, val, parentElement, type, onChangeCallback) {
+  createInputRow(key, val, parentElement, type, onChangeCallback, path = null) {
     const row = document.createElement("div");
     row.className = "devtools-row";
+    this.#assignDevToolsPath(row, path);
 
-    const label = this.#createLabelElement(key);
+    const label = this.#createLabelElement(key, path);
     row.appendChild(label);
 
     let inputElement;
@@ -1136,11 +1167,13 @@ class DevToolsUI {
     currentValue,
     parentElement,
     onChangeCallback,
+    path = null,
   ) {
     const row = document.createElement("div");
     row.className = "devtools-row";
+    this.#assignDevToolsPath(row, path);
 
-    const label = this.#createLabelElement(key);
+    const label = this.#createLabelElement(key, path);
     row.appendChild(label);
 
     const btn = document.createElement("button");
@@ -1169,16 +1202,31 @@ class DevToolsUI {
     parentElement.appendChild(row);
   }
 
-  #createLabelElement(rawLabel) {
+  #createLabelElement(rawLabel, path = null) {
     const labelText = String(rawLabel);
+    const cleanLabelText = labelText.replace(/\s+\*$/u, "");
     const label = document.createElement("div");
     label.className = "devtools-label";
+    this.#assignDevToolsPath(label, path);
+    label.dataset.devtoolsKey = cleanLabelText;
     label.innerText = this.#formatLabelText(labelText);
-    const tooltip = this.#getParameterTooltip(labelText);
-    if (tooltip || labelText.length > 15) {
-      label.title = tooltip || labelText;
+    const tooltip = this.#getParameterTooltip(cleanLabelText);
+    const pathText = this.#normalizeDevToolsPath(path);
+    if (tooltip || pathText || labelText.length > 15) {
+      label.title = [pathText, tooltip || labelText].filter(Boolean).join("\n");
     }
     return label;
+  }
+
+  #assignDevToolsPath(element, path) {
+    const normalized = this.#normalizeDevToolsPath(path);
+    if (normalized) element.dataset.devtoolsPath = normalized;
+  }
+
+  #normalizeDevToolsPath(path) {
+    if (!path) return "";
+    if (Array.isArray(path)) return path.map(String).join(".");
+    return String(path);
   }
 
   #formatLabelText(labelText) {
