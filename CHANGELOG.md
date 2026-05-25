@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.18.1 — overlay DevTools links
+
+- Added small overlay link buttons before supported debug metric labels.
+- Buttons open DevTools and focus the related config/runtime parameter.
+- Metrics with multiple influencing parameters cycle through those paths on repeated clicks.
+- Focused DevTools rows pulse with a white highlight to guide the developer's eye.
+
 ## v0.18.0 — scaling configs
 
 - Split `FISH_DB` into fish category files while preserving the public `FISH_DB` global.
