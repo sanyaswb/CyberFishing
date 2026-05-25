@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.18.4 — overlay desktop click fix
+
+- Integrated the desktop hover/click fix directly into `overlay_devtools_links.js`.
+- Overlay metric buttons now inspect on `pointerdown`, so frequent overlay redraws cannot swallow the click.
+- Removed hover style changes that caused visual flicker under the mouse cursor.
+- Increased the button hit area to a stable 14x14 square without changing overlay layout.
+
 ## v0.18.3 — overlay console formulas
 
 - Simplified overlay metric buttons: they now print formula details to the browser console instead of trying to control DevTools DOM focus.

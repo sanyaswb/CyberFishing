@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.18.3";
+const CURRENT_PROJECT_VERSION = "0.18.4";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,7 +13,7 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "overlay-console-formulas",
+  codename: "overlay-desktop-click-fix",
   updatedAt: "2026-05-25",
   notes: Object.freeze([
     "Modular fish database categories",
@@ -21,7 +21,7 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
     "Runtime config override store for DevTools",
     "Immutable base CONFIG snapshot",
     "Overlay metric buttons print formulas and influencing runtime values to console",
-    "Removed fragile overlay-to-DevTools focus behavior",
+    "Desktop overlay metric buttons trigger on pointerdown to avoid redraw-hover click loss",
   ]),
 });
 

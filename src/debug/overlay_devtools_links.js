@@ -545,8 +545,18 @@ class OverlayMetricInfoBridge {
   handlePointerDown(event) {
     const button = event.target.closest?.(".overlay-metric-info-btn");
     if (!button) return;
+
     event.preventDefault();
     event.stopPropagation();
+    event.stopImmediatePropagation?.();
+
+    if (button.dataset.pointerHandled === "1") return;
+    button.dataset.pointerHandled = "1";
+    window.setTimeout(() => {
+      if (button.isConnected) delete button.dataset.pointerHandled;
+    }, 240);
+
+    this.inspectButton(button);
   }
 
   handleClick(event) {
@@ -555,14 +565,19 @@ class OverlayMetricInfoBridge {
 
     event.preventDefault();
     event.stopPropagation();
+    event.stopImmediatePropagation?.();
+  }
 
+  inspectButton(button) {
     const row = button.closest("div[style*='justify-content:space-between']");
     const label = button.dataset.metric || "metric";
     const value = row?.querySelector("span:last-child")?.textContent?.trim() || "";
     const entry = this.catalog.getEntry(label);
 
     button.classList.add("overlay-metric-info-btn-active");
-    window.setTimeout(() => button.classList.remove("overlay-metric-info-btn-active"), 220);
+    window.setTimeout(() => {
+      if (button.isConnected) button.classList.remove("overlay-metric-info-btn-active");
+    }, 180);
 
     this.inspector.inspect({ label, displayedValue: value, entry });
   }
@@ -576,11 +591,16 @@ class OverlayMetricInfoBridge {
         display: inline-flex;
         align-items: center;
         gap: 5px;
+        position: relative;
+        min-height: 16px;
+        line-height: 1.2;
       }
       .overlay-metric-info-btn {
-        width: 12px;
-        height: 12px;
-        min-width: 12px;
+        width: 14px;
+        height: 14px;
+        min-width: 14px;
+        flex: 0 0 14px;
+        box-sizing: border-box;
         padding: 0;
         border-radius: 4px;
         border: 1px solid rgba(115, 194, 251, 0.9);
@@ -589,9 +609,18 @@ class OverlayMetricInfoBridge {
         cursor: pointer;
         pointer-events: auto;
         touch-action: none;
+        transform: translateZ(0);
+        transition: none;
+        outline: none;
+        -webkit-tap-highlight-color: transparent;
       }
-      .overlay-metric-info-btn:hover,
-      .overlay-metric-info-btn-active {
+      .overlay-metric-info-btn:hover {
+        background: rgba(115, 194, 251, 0.12);
+        border-color: rgba(115, 194, 251, 0.9);
+        box-shadow: 0 0 5px rgba(115, 194, 251, 0.35);
+      }
+      .overlay-metric-info-btn-active,
+      .overlay-metric-info-btn:active {
         background: rgba(255, 255, 255, 0.85);
         border-color: #ffffff;
         box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
