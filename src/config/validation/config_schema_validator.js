@@ -210,6 +210,9 @@ class ConfigSchemaValidator {
     this.#requireFiniteNumber(`${fishPath}.physics.forceProfile.basePower`, physics.forceProfile?.basePower, { min: 0 });
     this.#requireFiniteNumber(`${fishPath}.physics.forceProfile.minPowerRatio`, physics.forceProfile?.minPowerRatio, { min: 0, max: 1 });
     this.#requireFiniteNumber(`${fishPath}.physics.staminaProfile.baseStamina`, physics.staminaProfile?.baseStamina, { min: 0 });
+    if (Object.prototype.hasOwnProperty.call(Object(physics.staminaProfile), "staminaBossMultiplier")) {
+      this.#requireFiniteNumber(`${fishPath}.physics.staminaProfile.staminaBossMultiplier`, physics.staminaProfile?.staminaBossMultiplier, { min: 0 });
+    }
     this.#requireFiniteNumber(`${fishPath}.physics.movementProfile.maxSpeedMetersPerSec`, physics.movementProfile?.maxSpeedMetersPerSec, { min: 0 });
     this.#requireFiniteNumber(`${fishPath}.physics.movementProfile.agility`, physics.movementProfile?.agility, { min: 0 });
     this.#requireFiniteNumber(`${fishPath}.physics.resistanceProfile.speedForceMultiplier`, physics.resistanceProfile?.speedForceMultiplier, { min: 0 });

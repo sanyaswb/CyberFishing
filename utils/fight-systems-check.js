@@ -749,6 +749,21 @@ const staminaCondition = new FishCondition(1, 0.5, CONFIG.stamina.fish, {
   levelBasePower: 1,
   baseStamina: 100,
 });
+approx(staminaCondition.maxPoints, 600, 0.001, "fish stamina scales from base stamina plus weight grams times level");
+const staminaLevelCondition = new FishCondition(3, 1.2, CONFIG.stamina.fish, {
+  basePower: 100,
+  levelBasePower: 100,
+  baseStamina: 500,
+});
+approx(staminaLevelCondition.maxPoints, 4100, 0.001, "fish stamina ignores force basePower and levelBasePower");
+const staminaBossCondition = new FishCondition(6, 3.8, CONFIG.stamina.fish, {
+  baseStamina: 500,
+  staminaBossMultiplier: 2,
+}, {
+  maxLevel: 6,
+  levelAverageWeightKg: 4.25,
+});
+approx(staminaBossCondition.maxPoints, 46600, 0.001, "last-level fish below level average applies boss stamina multiplier");
 const staminaController = new StaminaController(
   staminaCondition,
   staminaFish,

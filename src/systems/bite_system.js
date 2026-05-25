@@ -185,6 +185,29 @@ class BiteSystem {
       : 1;
   }
 
+  #resolveLevelAverageWeightKg(weightConfig, level, depthConfig = null) {
+    const ranges = weightConfig?.levelWeightRanges;
+    const match = Array.isArray(ranges)
+      ? ranges.find((range) => Number(range?.level) === Number(level))
+      : null;
+    const rangeMin = Number(match?.min);
+    const rangeMax = Number(match?.max);
+    if (Number.isFinite(rangeMin) && Number.isFinite(rangeMax)) {
+      return (Math.min(rangeMin, rangeMax) + Math.max(rangeMin, rangeMax)) / 2;
+    }
+
+    const maxLevel = Math.max(1, Math.round(Number(weightConfig?.maxLevel) || 1));
+    const currentLevel = Math.max(1, Math.round(Number(level) || 1));
+    const globalMin = Number(depthConfig?.minWeightAtMinDepth);
+    const globalMax = Number(depthConfig?.maxWeightAtMaxDepth);
+    if (!Number.isFinite(globalMin) || !Number.isFinite(globalMax)) return null;
+
+    const low = Math.min(globalMin, globalMax);
+    const high = Math.max(globalMin, globalMax);
+    const step = (high - low) / maxLevel;
+    return low + step * (currentLevel - 0.5);
+  }
+
   #buildFishPhysics(fishPhysics, weightConfig, level) {
     const levelBasePower = this.#resolveLevelBasePower(weightConfig, level);
     if (typeof FishPhysicsProfile !== "undefined") {
@@ -372,6 +395,7 @@ class BiteSystem {
 
     const level = this.#resolveFishLevel(genWeight, weightRatio, wc);
     const maxLevel = wc.maxLevel || level;
+    const levelAverageWeightKg = this.#resolveLevelAverageWeightKg(wc, level, dc);
     const uniqueLevel = fish.visual?.uniqueLevel;
     const isUnique =
       fish.isUnique === true ||
@@ -385,6 +409,7 @@ class BiteSystem {
       weight: genWeight,
       level,
       maxLevel,
+      levelAverageWeightKg,
       physics: this.#buildFishPhysics(fish.physics, wc, level),
       biteSequence: chosenBiteSequence,
       imagePath: this.#resolveFishImagePath(fish, level),

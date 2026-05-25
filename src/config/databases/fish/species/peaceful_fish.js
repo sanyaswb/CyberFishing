@@ -1,6 +1,6 @@
 /** Peaceful fish species for FISH_DB. */
 const PEACEFUL_FISH = [
-{
+  {
     id: "crucian_stalker",
     name: "Карась-сталкер",
     baseChance: 0.02,
@@ -20,7 +20,7 @@ const PEACEFUL_FISH = [
       minDepth: 0.5,
       maxDepth: 11.0,
       minWeightAtMinDepth: 0.05,
-      maxWeightAtMinDepth: 0.8,
+      maxWeightAtMinDepth: 0.3,
       minWeightAtMaxDepth: 0.751,
       maxWeightAtMaxDepth: 5.0,
       chanceMultAtMaxDepth: 0.2,
@@ -57,8 +57,8 @@ const PEACEFUL_FISH = [
 
     physics: {
       forceProfile: {
-        basePower: 0,
-        minPowerRatio: 0,
+        basePower: 0.5,
+        minPowerRatio: 0.1,
       },
 
       staminaProfile: {
@@ -66,8 +66,8 @@ const PEACEFUL_FISH = [
       },
 
       movementProfile: {
-        maxSpeedMetersPerSec: 0,
-        agility: 0,
+        maxSpeedMetersPerSec: 25,
+        agility: 0.2,
         bounceCooldownMs: 2000,
         dirChangeMinMs: 500,
         dirChangeMaxMs: 1500,
@@ -76,14 +76,14 @@ const PEACEFUL_FISH = [
           targetState: "lastDash",
           chance: 0.5,
           checkIntervalMs: 1000,
-          catchZoneMultiplier: 1.5,
+          catchZoneMultiplier: 3,
           stayUntilLeaveZone: false,
         },
       },
 
       resistanceProfile: {
-        speedForceMultiplier: 0,
-        waterResistanceMultiplier: 0,
+        speedForceMultiplier: 1,
+        waterResistanceMultiplier: 1,
       },
 
       retrieveProfile: {
@@ -96,37 +96,37 @@ const PEACEFUL_FISH = [
       behaviorProfile: {
         behaviors: {
           idle: {
-            powerRatio: 0,
-            speedRatio: 0,
+            powerRatio: 0.7,
+            speedRatio: 1,
             minTime: 500,
             maxTime: 3000,
             weight: 25,
           },
           rest: {
-            powerRatio: 0,
-            speedRatio: 0,
+            powerRatio: 0.3,
+            speedRatio: 0.5,
             minTime: 500,
             maxTime: 2500,
             weight: 25,
           },
           swim: {
-            powerRatio: 0,
-            speedRatio: 0,
+            powerRatio: 1,
+            speedRatio: 1,
             minTime: 2000,
             maxTime: 4000,
             weight: 25,
           },
           dash: {
-            powerRatio: 0,
-            speedRatio: 0,
+            powerRatio: 1.2,
+            speedRatio: 1.5,
             minTime: 1000,
             maxTime: 2200,
             weight: 25,
           },
           lastDash: {
             enabled: true,
-            powerRatio: 0,
-            speedRatio: 0,
+            powerRatio: 1.5,
+            speedRatio: 2,
             minTime: 1000,
             maxTime: 3000,
             weight: 0,
@@ -134,7 +134,7 @@ const PEACEFUL_FISH = [
             dirChangeMaxMs: 1000,
             agility: 1,
           },
-        }
+        },
       },
     },
 
@@ -174,5 +174,5 @@ const PEACEFUL_FISH = [
         },
       },
     },
-  }
+  },
 ];

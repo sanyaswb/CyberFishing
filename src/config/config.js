@@ -245,6 +245,7 @@ const CONFIG = {
 
   debug: {
     overlay: true,
+    overlayUpdateMs: 150,
     initialTime: null, // Початковий час. 17.5 = 17:30. Якщо поставити null, гра візьме реальний час.
     timeScale: 240, // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
 
@@ -413,8 +414,10 @@ const CONFIG = {
 
   stamina: {
     fish: {
+      baseStamina: 500,
       baseStaminaMultiplier: 50,
       flatBonus: 500,
+      staminaBossMultiplier: 1.0,
     },
     mechanics: {
       // Phase 1: Stamina

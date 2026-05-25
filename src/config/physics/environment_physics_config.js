@@ -3,7 +3,7 @@ const ENVIRONMENT_PHYSICS_CONFIG = {
     currentInfluenceMultiplier: 1.0,
 
     fishMotionLoad: {
-      speedLoadKgPerKgPerMps: 2.2,
+      speedLoadKgPerKgPerMps: 1.0,
     },
   },
 };

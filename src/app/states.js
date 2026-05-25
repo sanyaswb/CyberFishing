@@ -965,6 +965,10 @@ class WaitingState extends GameState {
       const fixedLevelBasePower = Number.isFinite(Number(fixedLevelRange?.basePower))
         ? Number(fixedLevelRange.basePower)
         : 1;
+      const levelAverageWeightKg = this.#resolveLevelAverageWeightKg(
+        weightConfig,
+        fixedLevel,
+      );
 
       hooked = {
         id: template.id,
@@ -975,6 +979,7 @@ class WaitingState extends GameState {
         },
         level: fixedLevel,
         maxLevel,
+        levelAverageWeightKg,
         weight: fixed.weight,
         biteSequence: chosenSequence,
         imagePath: imagePattern.replace("{level}", fixedLevel),
@@ -1029,6 +1034,19 @@ class WaitingState extends GameState {
 
     if (!firstRange) return maxLevel;
     return value < firstRange.min ? firstRange.level : lastRange.level;
+  }
+
+  #resolveLevelAverageWeightKg(weightConfig, level) {
+    const ranges = weightConfig?.levelWeightRanges;
+    const match = Array.isArray(ranges)
+      ? ranges.find((range) => Number(range?.level) === Number(level))
+      : null;
+    const rangeMin = Number(match?.min);
+    const rangeMax = Number(match?.max);
+    if (Number.isFinite(rangeMin) && Number.isFinite(rangeMax)) {
+      return (Math.min(rangeMin, rangeMax) + Math.max(rangeMin, rangeMax)) / 2;
+    }
+    return null;
   }
 
   draw(renderer, bounds) {

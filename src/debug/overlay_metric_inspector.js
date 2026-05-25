@@ -464,82 +464,29 @@ class OverlayMetricConsoleInspector {
   }
 }
 
-class OverlayMetricInfoBridge {
+class OverlayMetricInspector {
   constructor({
     catalog = new OverlayMetricFormulaCatalog(),
     inspector = new OverlayMetricConsoleInspector(),
   } = {}) {
     this.catalog = catalog;
     this.inspector = inspector;
-    this.decorateQueued = false;
+    this.content = null;
   }
 
   start() {
-    this.installStyles();
-    this.observeOverlayChanges();
+    this.content = document.querySelector(".debug-overlay-content");
+    if (!this.content) return;
+
     this.listenForDebugData();
-    document.addEventListener("pointerdown", (event) => this.handlePointerDown(event), true);
-    document.addEventListener("click", (event) => this.handleClick(event), true);
-    this.queueDecorate();
+    this.content.addEventListener("pointerdown", (event) => this.handlePointerDown(event), true);
+    this.content.addEventListener("click", (event) => this.handleClick(event), true);
   }
 
   listenForDebugData() {
     document.addEventListener("debug-live-update", (event) => {
       this.inspector.updateLiveData(event.detail || {});
     });
-  }
-
-  observeOverlayChanges() {
-    const observer = new MutationObserver(() => this.queueDecorate());
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-
-  queueDecorate() {
-    if (this.decorateQueued) return;
-    this.decorateQueued = true;
-    window.requestAnimationFrame(() => {
-      this.decorateQueued = false;
-      this.decorateRows();
-    });
-  }
-
-  decorateRows() {
-    const rows = [...document.querySelectorAll("div[style*='justify-content:space-between']")];
-    for (const row of rows) this.decorateRow(row);
-  }
-
-  decorateRow(row) {
-    if (row.querySelector(".overlay-metric-info-btn")) return;
-
-    const labelElement = row.querySelector("span:first-child");
-    if (!labelElement) return;
-
-    const label = this.extractLabel(labelElement.textContent);
-    const entry = this.catalog.getEntry(label);
-    if (!entry) return;
-
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "overlay-metric-info-btn";
-    button.textContent = "";
-    button.dataset.metric = this.catalog.normalizeLabel(label);
-    button.title = this.buildButtonTitle(label, entry);
-    button.setAttribute("aria-label", `Пояснити формулу для ${label}`);
-
-    labelElement.classList.add("overlay-metric-linked-label");
-    labelElement.prepend(button);
-  }
-
-  extractLabel(text) {
-    return String(text || "").replace(/[：:]+\s*$/u, "").trim();
-  }
-
-  buildButtonTitle(label, entry) {
-    return [
-      `Console info: ${label}`,
-      entry.formula || "Formula not documented",
-      ...(entry.paths || []),
-    ].join("\n");
   }
 
   handlePointerDown(event) {
@@ -569,9 +516,9 @@ class OverlayMetricInfoBridge {
   }
 
   inspectButton(button) {
-    const row = button.closest("div[style*='justify-content:space-between']");
-    const label = button.dataset.metric || "metric";
-    const value = row?.querySelector("span:last-child")?.textContent?.trim() || "";
+    const row = button.closest(".debug-overlay-row[data-overlay-metric]");
+    const label = button.dataset.metric || row?.dataset.overlayMetric || "metric";
+    const value = row?.querySelector(".debug-overlay-value")?.textContent?.trim() || "";
     const entry = this.catalog.getEntry(label);
 
     button.classList.add("overlay-metric-info-btn-active");
@@ -581,61 +528,14 @@ class OverlayMetricInfoBridge {
 
     this.inspector.inspect({ label, displayedValue: value, entry });
   }
-
-  installStyles() {
-    if (document.getElementById("overlay-metric-info-styles")) return;
-    const style = document.createElement("style");
-    style.id = "overlay-metric-info-styles";
-    style.textContent = `
-      .overlay-metric-linked-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        position: relative;
-        min-height: 16px;
-        line-height: 1.2;
-      }
-      .overlay-metric-info-btn {
-        width: 14px;
-        height: 14px;
-        min-width: 14px;
-        flex: 0 0 14px;
-        box-sizing: border-box;
-        padding: 0;
-        border-radius: 4px;
-        border: 1px solid rgba(115, 194, 251, 0.9);
-        background: rgba(115, 194, 251, 0.12);
-        box-shadow: 0 0 5px rgba(115, 194, 251, 0.35);
-        cursor: pointer;
-        pointer-events: auto;
-        touch-action: none;
-        transform: translateZ(0);
-        transition: none;
-        outline: none;
-        -webkit-tap-highlight-color: transparent;
-      }
-      .overlay-metric-info-btn:hover {
-        background: rgba(115, 194, 251, 0.12);
-        border-color: rgba(115, 194, 251, 0.9);
-        box-shadow: 0 0 5px rgba(115, 194, 251, 0.35);
-      }
-      .overlay-metric-info-btn-active,
-      .overlay-metric-info-btn:active {
-        background: rgba(255, 255, 255, 0.85);
-        border-color: #ffffff;
-        box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
-      }
-    `;
-    document.head.appendChild(style);
-  }
 }
 
-(function initOverlayMetricInfoBridge() {
+(function initOverlayMetricInspector() {
   if (typeof document === "undefined") return;
   const start = () => {
-    const bridge = new OverlayMetricInfoBridge();
-    bridge.start();
-    window.CYBER_FISHING_OVERLAY_METRIC_INFO = bridge;
+    const metricInspector = new OverlayMetricInspector();
+    metricInspector.start();
+    window.CYBER_FISHING_OVERLAY_METRIC_INFO = metricInspector;
   };
 
   if (document.readyState === "loading") {

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.18.4";
+const CURRENT_PROJECT_VERSION = "0.18.6";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,7 +13,7 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "overlay-desktop-click-fix",
+  codename: "stamina-weight-scaling",
   updatedAt: "2026-05-25",
   notes: Object.freeze([
     "Modular fish database categories",
@@ -22,6 +22,10 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
     "Immutable base CONFIG snapshot",
     "Overlay metric buttons print formulas and influencing runtime values to console",
     "Desktop overlay metric buttons trigger on pointerdown to avoid redraw-hover click loss",
+    "Debug overlay renders metric inspector buttons directly without DOM rescanning",
+    "Debug overlay HTML redraws are cached and update cadence is configurable",
+    "Fish stamina scales from base stamina plus fish weight in grams times fish level",
+    "Last-level under-average fish can receive a configurable boss stamina multiplier",
   ]),
 });
 

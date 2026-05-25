@@ -34,6 +34,33 @@ class OverlayModule {
     return `<div style="color: ${color}; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px; text-transform: uppercase; font-size: 13px;">${title}</div>`;
   }
 
+  metricRow(label, value, options = {}) {
+    const metricKey = options.metricKey || label;
+    const color = options.color || "#8a9bac";
+
+    return `<div class="debug-overlay-row" data-overlay-metric="${this.escapeAttr(metricKey)}">
+      <span class="debug-overlay-label">
+        <button
+          type="button"
+          class="overlay-metric-info-btn"
+          data-metric="${this.escapeAttr(metricKey)}"
+          title="Пояснити формулу"
+          aria-label="Пояснити формулу для ${this.escapeAttr(label)}"
+        ></button>
+        ${label}:
+      </span>
+      <span class="debug-overlay-value" style="color:${this.escapeAttr(color)};">${value}</span>
+    </div>`;
+  }
+
+  escapeAttr(value) {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
   getStateColor(state) {
     const colors = {
       dash: "#ff4444",
@@ -464,9 +491,7 @@ class FightPhysicsModule extends OverlayModule {
   }
 
   #row(label, value, color = "#8a9bac") {
-    return `<div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:2px; font-size:12px;">
-      <span>${label}:</span><span style="color:${color}; font-weight:bold; text-align:right;">${value}</span>
-    </div>`;
+    return this.metricRow(label, value, { color });
   }
 
   #kg(value, digits = 3) {
@@ -723,6 +748,7 @@ class DebugOverlay {
   #data = {};
   #userScale = 1.0;
   #modules = [];
+  #lastHtml = "";
 
   constructor() {
     this.#initModules();
@@ -748,6 +774,8 @@ class DebugOverlay {
 
   #initDOM() {
     this.#container = document.createElement("div");
+    this.#container.id = "debugOverlay";
+    this.#container.className = "debug-overlay";
     this.#container.style.cssText = `
       position: absolute; bottom: 10px; left: 10px; 
       background: rgba(11, 21, 32, 0.95); color: #ffffff; 
@@ -763,6 +791,7 @@ class DebugOverlay {
     }
 
     this.#content = document.createElement("div");
+    this.#content.className = "debug-overlay-content";
     this.#content.style.pointerEvents = "none";
     this.#container.appendChild(this.#content);
 
@@ -800,6 +829,7 @@ class DebugOverlay {
     controlsDiv.append(btnMinus, btnPlus);
     this.#container.appendChild(controlsDiv);
     document.body.appendChild(this.#container);
+    this.#installOverlayStyles();
 
     if (
       typeof UIDraggableButton !== "undefined" &&
@@ -840,6 +870,64 @@ class DebugOverlay {
     });
   }
 
+  #installOverlayStyles() {
+    if (document.getElementById("debug-overlay-styles")) return;
+
+    const style = document.createElement("style");
+    style.id = "debug-overlay-styles";
+    style.textContent = `
+      .debug-overlay-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 2px;
+        font-size: 12px;
+      }
+      .debug-overlay-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        min-height: 16px;
+        line-height: 1.2;
+      }
+      .debug-overlay-value {
+        font-weight: bold;
+        text-align: right;
+      }
+      .overlay-metric-info-btn {
+        width: 14px;
+        height: 14px;
+        min-width: 14px;
+        flex: 0 0 14px;
+        box-sizing: border-box;
+        padding: 0;
+        border-radius: 4px;
+        border: 1px solid rgba(115, 194, 251, 0.9);
+        background: rgba(115, 194, 251, 0.12);
+        box-shadow: 0 0 5px rgba(115, 194, 251, 0.35);
+        cursor: pointer;
+        pointer-events: auto;
+        touch-action: none;
+        transform: translateZ(0);
+        transition: none;
+        outline: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .overlay-metric-info-btn:hover {
+        background: rgba(115, 194, 251, 0.12);
+        border-color: rgba(115, 194, 251, 0.9);
+        box-shadow: 0 0 5px rgba(115, 194, 251, 0.35);
+      }
+      .overlay-metric-info-btn-active,
+      .overlay-metric-info-btn:active {
+        background: rgba(255, 255, 255, 0.85);
+        border-color: #ffffff;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   #forceScaleUpdate() {
     this.#container.style.transform = `scale(${this.#userScale})`;
   }
@@ -856,16 +944,26 @@ class DebugOverlay {
       .join("");
 
     if (html !== "") {
-      this.#content.innerHTML = html;
+      if (html !== this.#lastHtml) {
+        this.#content.innerHTML = html;
+        this.#lastHtml = html;
+      }
       this.#container.style.display = "block";
       this.#forceScaleUpdate();
     } else {
+      this.#lastHtml = "";
       this.#container.style.display = "none";
     }
   }
 
   #start() {
-    this.#intervalId = setInterval(() => this.#update(), 100);
+    const updateMs = Number(
+      typeof CONFIG !== "undefined" ? CONFIG.debug?.overlayUpdateMs : 150,
+    );
+    this.#intervalId = setInterval(
+      () => this.#update(),
+      Number.isFinite(updateMs) && updateMs > 0 ? updateMs : 150,
+    );
   }
 }
 

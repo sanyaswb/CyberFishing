@@ -371,6 +371,10 @@ class FightSessionFactory {
       fishData.weight,
       this.config.stamina.fish,
       fishData.physics,
+      {
+        maxLevel: fishData.maxLevel,
+        levelAverageWeightKg: fishData.levelAverageWeightKg,
+      },
     );
     const staminaController = new StaminaController(
       fishCondition,
