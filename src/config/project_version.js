@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.18.6";
+const CURRENT_PROJECT_VERSION = "0.18.7";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,7 +13,7 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "stamina-weight-scaling",
+  codename: "stamina-endurance-split",
   updatedAt: "2026-05-25",
   notes: Object.freeze([
     "Modular fish database categories",
@@ -26,6 +26,8 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
     "Debug overlay HTML redraws are cached and update cadence is configurable",
     "Fish stamina scales from base stamina plus fish weight in grams times fish level",
     "Last-level under-average fish can receive a configurable boss stamina multiplier",
+    "Fish stamina and endurance now have separate maxima",
+    "Stamina defaults to 10 percent of endurance via configurable ratio",
   ]),
 });
 

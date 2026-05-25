@@ -305,7 +305,7 @@ class FishPullResistanceModel {
   }
 
   #isFullyExhausted(fishCondition) {
-    if (!fishCondition?.maxPoints) return false;
+    if (!(fishCondition?.maxEndurance ?? fishCondition?.maxPoints)) return false;
     return (
       fishCondition.phase === "exhaustion" &&
       Number(fishCondition.currentExhaustion) <= 0.001

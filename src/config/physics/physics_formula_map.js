@@ -40,7 +40,7 @@ const PHYSICS_FORMULA_MAP = Object.freeze({
       "fish.behaviorProfile.behaviors[state].powerRatio",
       "dynamicFishForceKg",
       "fishCondition.currentExhaustion",
-      "fishCondition.maxPoints",
+      "fishCondition.maxEndurance",
     ]),
     outputs: Object.freeze([
       "staticFishForceKg",

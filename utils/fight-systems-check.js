@@ -749,13 +749,15 @@ const staminaCondition = new FishCondition(1, 0.5, CONFIG.stamina.fish, {
   levelBasePower: 1,
   baseStamina: 100,
 });
-approx(staminaCondition.maxPoints, 600, 0.001, "fish stamina scales from base stamina plus weight grams times level");
+approx(staminaCondition.maxEndurance, 600, 0.001, "fish endurance scales from base stamina plus weight grams times level");
+approx(staminaCondition.maxStamina, 60, 0.001, "fish stamina is 10 percent of endurance by default");
 const staminaLevelCondition = new FishCondition(3, 1.2, CONFIG.stamina.fish, {
   basePower: 100,
   levelBasePower: 100,
   baseStamina: 500,
 });
-approx(staminaLevelCondition.maxPoints, 4100, 0.001, "fish stamina ignores force basePower and levelBasePower");
+approx(staminaLevelCondition.maxEndurance, 4100, 0.001, "fish endurance ignores force basePower and levelBasePower");
+approx(staminaLevelCondition.maxStamina, 410, 0.001, "fish stamina derives from endurance ratio");
 const staminaBossCondition = new FishCondition(6, 3.8, CONFIG.stamina.fish, {
   baseStamina: 500,
   staminaBossMultiplier: 2,
@@ -763,7 +765,8 @@ const staminaBossCondition = new FishCondition(6, 3.8, CONFIG.stamina.fish, {
   maxLevel: 6,
   levelAverageWeightKg: 4.25,
 });
-approx(staminaBossCondition.maxPoints, 46600, 0.001, "last-level fish below level average applies boss stamina multiplier");
+approx(staminaBossCondition.maxEndurance, 46600, 0.001, "last-level fish below level average applies boss endurance multiplier");
+approx(staminaBossCondition.maxStamina, 4660, 0.001, "boss stamina stays derived from endurance ratio");
 const staminaController = new StaminaController(
   staminaCondition,
   staminaFish,
@@ -777,10 +780,10 @@ staminaController.evaluate({
   staminaPressureRatio: 1,
   isLineFullyExtended: true,
 });
-assert(staminaCondition.currentStamina < staminaCondition.maxPoints, "stamina controller can drain fish stamina");
+assert(staminaCondition.currentStamina < staminaCondition.maxStamina, "stamina controller can drain fish stamina");
 staminaController.restoreFullStamina();
-approx(staminaCondition.currentStamina, staminaCondition.maxPoints, 0.001, "god stamina lock restores stamina to 100%");
-approx(staminaCondition.currentExhaustion, staminaCondition.maxPoints, 0.001, "god stamina lock restores exhaustion reserve to 100%");
+approx(staminaCondition.currentStamina, staminaCondition.maxStamina, 0.001, "god stamina lock restores stamina to 100%");
+approx(staminaCondition.currentExhaustion, staminaCondition.maxEndurance, 0.001, "god stamina lock restores endurance reserve to 100%");
 assert(staminaCondition.phase === "stamina", "god stamina lock keeps fish in stamina phase");
 
 console.log("Fight systems check passed:");

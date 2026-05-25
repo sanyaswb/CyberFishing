@@ -43,7 +43,7 @@ class StaminaController {
     const idealDps =
       this.#mechanicsConfig.baseDepletionRate *
       Math.max(0.001, this.#playerBasePower);
-    const idealTimeSec = this.#condition.maxPoints / Math.max(1, idealDps);
+    const idealTimeSec = this.#maxEndurance() / Math.max(1, idealDps);
     const multiplier = Math.max(
       0.001,
       Number(this.#mechanicsConfig.exhaustionDepletionMultiplier) || 1.0,
@@ -134,7 +134,7 @@ class StaminaController {
     const idealDps =
       this.#mechanicsConfig.baseDepletionRate *
       Math.max(0.001, this.#playerBasePower);
-    const idealTimeSec = this.#condition.maxPoints / Math.max(1, idealDps);
+    const idealTimeSec = this.#maxEndurance() / Math.max(1, idealDps);
     const exhaustionDurationSec = Math.max(
       0.001,
       idealTimeSec * this.#fish.getInitialPower(),
@@ -190,7 +190,7 @@ class StaminaController {
     if (this.#condition.currentExhaustion <= 0) return;
 
     const pointsPerSec =
-      this.#condition.maxPoints / effectiveExhaustionDurationSec;
+      this.#maxEndurance() / effectiveExhaustionDurationSec;
     const damage = pointsPerSec * timeScale * effectivePressureRatio;
     const debuff =
       this.#mechanicsConfig.basePowerDropPerSec *
@@ -266,13 +266,13 @@ class StaminaController {
   }
 
   #applyRecoveryPunishment() {
-    if (this.#condition.currentStamina < this.#condition.maxPoints) {
+    if (this.#condition.currentStamina < this.#maxStamina()) {
       this.#hasLostStamina = true;
     }
 
     if (
       !this.#hasLostStamina ||
-      this.#condition.currentStamina < this.#condition.maxPoints
+      this.#condition.currentStamina < this.#maxStamina()
     ) {
       this.#isFullyRecovered = false;
       return;
@@ -295,7 +295,7 @@ class StaminaController {
     const idealDps =
       this.#mechanicsConfig.baseDepletionRate *
       Math.max(0.001, this.#playerBasePower);
-    const idealTimeSec = this.#condition.maxPoints / Math.max(1, idealDps);
+    const idealTimeSec = this.#maxEndurance() / Math.max(1, idealDps);
     const exhaustionDurationSec =
       (idealTimeSec * this.#fish.getInitialPower()) / exhaustionMultiplier;
     const maxPowerDropPerSec =
@@ -327,6 +327,16 @@ class StaminaController {
 
   #clamp01(value) {
     return Math.max(0, Math.min(1, Number(value) || 0));
+  }
+
+  #maxStamina() {
+    const value = Number(this.#condition.maxStamina ?? this.#condition.maxPoints);
+    return Number.isFinite(value) ? Math.max(0.001, value) : 0.001;
+  }
+
+  #maxEndurance() {
+    const value = Number(this.#condition.maxEndurance ?? this.#condition.maxPoints);
+    return Number.isFinite(value) ? Math.max(0.001, value) : 0.001;
   }
 }
 

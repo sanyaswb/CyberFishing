@@ -45,11 +45,21 @@ class FishForceSystem {
         : rawFishPhysics;
     const lastDashDebug = this.#fish.getLastDashDebugData?.() || {};
 
-    const staminaRatio = fishCondition?.maxPoints
-      ? this.#clamp01(fishCondition.currentStamina / fishCondition.maxPoints)
+    const maxStamina = this.#firstFiniteNumber(
+      fishCondition?.maxStamina,
+      fishCondition?.maxPoints,
+      0,
+    );
+    const maxEndurance = this.#firstFiniteNumber(
+      fishCondition?.maxEndurance,
+      fishCondition?.maxPoints,
+      0,
+    );
+    const staminaRatio = maxStamina
+      ? this.#clamp01(fishCondition.currentStamina / maxStamina)
       : 1;
-    const exhaustionProgress = fishCondition?.maxPoints
-      ? this.#clamp01(1 - fishCondition.currentExhaustion / fishCondition.maxPoints)
+    const exhaustionProgress = maxEndurance
+      ? this.#clamp01(1 - fishCondition.currentExhaustion / maxEndurance)
       : 0;
 
     const behaviorPullValue = this.#numberOrDefault(

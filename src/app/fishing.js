@@ -867,6 +867,8 @@ class FightService {
       lineBreakProgress: this.#tensionMeter?.getLineBreakProgress?.() || 0,
       ...(this.#tensionMeter?.getDebugData?.() || {}),
       fishConditionPhase: this.#fishCondition?.phase || "n/a",
+      fishConditionMaxStamina: this.#fishCondition?.maxStamina || 0,
+      fishConditionMaxEndurance: this.#fishCondition?.maxEndurance || 0,
       fishConditionMaxPoints: this.#fishCondition?.maxPoints || 0,
       currentStamina: this.#fishCondition?.currentStamina || 0,
       currentExhaustion: this.#fishCondition?.currentExhaustion || 0,

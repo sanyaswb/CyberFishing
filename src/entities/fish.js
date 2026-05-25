@@ -69,6 +69,12 @@ class FishPhysicsProfile {
     );
     this.#copyFiniteAlias(
       normalizedStaminaProfile,
+      "staminaRatioFromEndurance",
+      raw.staminaRatioFromEndurance,
+      staminaProfile.staminaRatioFromEndurance,
+    );
+    this.#copyFiniteAlias(
+      normalizedStaminaProfile,
       "minStaminaActivityMultiplier",
       raw.minStaminaActivityMultiplier,
       staminaProfile.minStaminaActivityMultiplier,
@@ -171,6 +177,8 @@ class FishPhysicsProfile {
       baseStamina: normalizedStaminaProfile.baseStamina,
       staminaWeightMultiplier: normalizedStaminaProfile.staminaWeightMultiplier,
       staminaBossMultiplier: normalizedStaminaProfile.staminaBossMultiplier,
+      staminaRatioFromEndurance:
+        normalizedStaminaProfile.staminaRatioFromEndurance,
       minStaminaActivityMultiplier:
         normalizedStaminaProfile.minStaminaActivityMultiplier,
       exhaustedSpeedRatio: normalizedStaminaProfile.exhaustedSpeedRatio,
@@ -797,13 +805,14 @@ class FishBehavior {
 }
 
 class FishCondition {
-  #maxPoints;
+  #maxStamina;
+  #maxEndurance;
   #currentStamina;
   #currentExhaustion;
   #phase;
 
   constructor(level, weight, staminaFishConfig, fishPhysics = null, options = {}) {
-    this.#maxPoints = new FishStaminaPointsCalculator().calculate({
+    this.#maxEndurance = new FishEndurancePointsCalculator().calculate({
       level,
       weightKg: weight,
       staminaFishConfig,
@@ -811,8 +820,13 @@ class FishCondition {
       maxLevel: options.maxLevel,
       levelAverageWeightKg: options.levelAverageWeightKg,
     });
-    this.#currentStamina = this.#maxPoints;
-    this.#currentExhaustion = this.#maxPoints;
+    this.#maxStamina = new FishStaminaPointsCalculator().calculate({
+      endurancePoints: this.#maxEndurance,
+      staminaFishConfig,
+      fishPhysics,
+    });
+    this.#currentStamina = this.#maxStamina;
+    this.#currentExhaustion = this.#maxEndurance;
     this.#phase = "stamina";
   }
 
@@ -820,7 +834,13 @@ class FishCondition {
     return this.#phase;
   }
   get maxPoints() {
-    return this.#maxPoints;
+    return this.#maxStamina;
+  }
+  get maxStamina() {
+    return this.#maxStamina;
+  }
+  get maxEndurance() {
+    return this.#maxEndurance;
   }
   get currentStamina() {
     return this.#currentStamina;
@@ -830,8 +850,8 @@ class FishCondition {
   }
 
   restoreFull() {
-    this.#currentStamina = this.#maxPoints;
-    this.#currentExhaustion = this.#maxPoints;
+    this.#currentStamina = this.#maxStamina;
+    this.#currentExhaustion = this.#maxEndurance;
     this.#phase = "stamina";
   }
 
@@ -852,7 +872,7 @@ class FishCondition {
   applyStaminaRegen(amount) {
     if (this.#phase !== "stamina") return;
     this.#currentStamina = Math.min(
-      this.#maxPoints,
+      this.#maxStamina,
       this.#currentStamina + amount,
     );
   }
@@ -863,7 +883,7 @@ class FishCondition {
   }
 
   applyPunishment(capPercent) {
-    const cap = this.#maxPoints * capPercent;
+    const cap = this.#maxEndurance * capPercent;
     if (this.#currentExhaustion < cap) {
       this.#currentExhaustion = cap;
       console.log(
@@ -873,7 +893,7 @@ class FishCondition {
   }
 }
 
-class FishStaminaPointsCalculator {
+class FishEndurancePointsCalculator {
   calculate({
     level,
     weightKg,
@@ -937,6 +957,28 @@ class FishStaminaPointsCalculator {
   #positiveLevel(value) {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? Math.max(1, Math.round(parsed)) : 1;
+  }
+
+  #positiveNumber(value) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
+  }
+}
+
+class FishStaminaPointsCalculator {
+  calculate({ endurancePoints, staminaFishConfig = {}, fishPhysics = null } = {}) {
+    const physics = FishPhysicsProfile.toRuntimeConfig(fishPhysics || {});
+    const staminaProfile = physics.staminaProfile || {};
+    const ratio = this.#resolveRatio(staminaProfile, staminaFishConfig);
+    return Math.max(0, this.#positiveNumber(endurancePoints) * ratio);
+  }
+
+  #resolveRatio(staminaProfile, staminaFishConfig) {
+    const profileRatio = Number(staminaProfile?.staminaRatioFromEndurance);
+    if (Number.isFinite(profileRatio)) return Math.max(0, profileRatio);
+
+    const configRatio = Number(staminaFishConfig?.staminaRatioFromEndurance);
+    return Number.isFinite(configRatio) ? Math.max(0, configRatio) : 0.1;
   }
 
   #positiveNumber(value) {

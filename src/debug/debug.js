@@ -428,7 +428,8 @@ function renderStaminaModule(ctx) {
     "Fish state": live.fishState || "n/a",
     "Current stamina": fmt(live.currentStamina, 3),
     "Current exhaustion": fmt(live.currentExhaustion, 3),
-    "Max points": fmt(live.fishConditionMaxPoints, 3),
+    "Max stamina": fmt(live.fishConditionMaxStamina, 3),
+    "Max endurance": fmt(live.fishConditionMaxEndurance, 3),
     "Base depletion rate": fmt(config.baseDepletionRate, 3),
     "Edge regen rate": fmt(config.edgeRegenRate, 3),
     "Regen multiplier phase 1": fmt(config.regenMultiplierPhase1, 3),
@@ -445,7 +446,7 @@ function renderExhaustionModule(ctx) {
   console.table({
     "Fish condition phase": live.fishConditionPhase || "n/a",
     "Current exhaustion": fmt(live.currentExhaustion, 3),
-    "Max points": fmt(live.fishConditionMaxPoints, 3),
+    "Max endurance": fmt(live.fishConditionMaxEndurance, 3),
     "Duration live": fmtMs(live.exhaustionDurationMs),
     "Optimal max tension": fmt(config.exhaustionOptimalMax, 2),
     "Base power drop per sec": fmt(config.basePowerDropPerSec, 4),

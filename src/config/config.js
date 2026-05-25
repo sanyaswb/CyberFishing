@@ -417,6 +417,7 @@ const CONFIG = {
       baseStamina: 500,
       baseStaminaMultiplier: 50,
       flatBonus: 500,
+      staminaRatioFromEndurance: 0.1,
       staminaBossMultiplier: 1.0,
     },
     mechanics: {

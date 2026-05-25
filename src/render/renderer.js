@@ -1111,14 +1111,21 @@
     const barY = uiIndicatorsConfig?.y || 40;
     const gap = uiIndicatorsConfig?.conditionGap || 22;
     const labelOffsetY = uiIndicatorsConfig?.conditionLabelOffsetY || 9;
-    const maxPoints = Math.max(0.001, condition.maxPoints || 0);
+    const maxStamina = Math.max(
+      0.001,
+      Number(condition.maxStamina ?? condition.maxPoints) || 0,
+    );
+    const maxEndurance = Math.max(
+      0.001,
+      Number(condition.maxEndurance ?? condition.maxPoints) || 0,
+    );
     const staminaRatio = Math.max(
       0,
-      Math.min(1, condition.currentStamina / maxPoints),
+      Math.min(1, condition.currentStamina / maxStamina),
     );
     const exhaustionRatio = Math.max(
       0,
-      Math.min(1, condition.currentExhaustion / maxPoints),
+      Math.min(1, condition.currentExhaustion / maxEndurance),
     );
 
     this.#drawConditionBar({
@@ -1128,7 +1135,7 @@
       height: barHeight,
       ratio: staminaRatio,
       color: "#ffcc00",
-      label: `STAMINA: ${Math.round(condition.currentStamina)}/${Math.round(condition.maxPoints)}`,
+      label: `STAMINA: ${Math.round(condition.currentStamina)}/${Math.round(maxStamina)}`,
       labelOffsetY,
       isActive: condition.phase === "stamina",
     });
@@ -1140,7 +1147,7 @@
       height: barHeight,
       ratio: exhaustionRatio,
       color: "#ff4444",
-      label: `EXHAUSTION: ${Math.round(condition.currentExhaustion)}/${Math.round(condition.maxPoints)}`,
+      label: `ENDURANCE: ${Math.round(condition.currentExhaustion)}/${Math.round(maxEndurance)}`,
       labelOffsetY,
       isActive: condition.phase === "exhaustion",
     });
