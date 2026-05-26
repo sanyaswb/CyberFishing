@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.19.3";
+const CURRENT_PROJECT_VERSION = "0.19.4";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,7 +13,7 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "crucian-simplified-fish-profile",
+  codename: "final-reelhold-simplified-model",
   updatedAt: "2026-05-26",
   notes: Object.freeze([
     "Modular fish database categories",
@@ -39,7 +39,9 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
     "Overlay metric inspector includes simplified fight formula entries",
     "Movable fish cap limits hold tension while excess player force becomes movement speed",
     "Crucian stalker fish profile uses only simplified force and movement fields",
-    "Fish config validation treats legacy resistance/retrieve/profile aliases as optional compatibility",
+    "Fish config validation rejects old resistance/retrieve/ratio fight fields",
+    "ReelHold remains separated from rodHold as safe post-stroke line recovery",
+    "Golden checks now cover the simplified examples and small-fish movable tension cap",
   ]),
 });
 

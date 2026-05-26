@@ -308,61 +308,19 @@ class DevTools {
       ["HOOKED_FISH", "physics", "forceProfile", "levelBasePower"],
     );
     this.#ui.createInputRow(
-      "levelMaxSpeedMetersPerSec",
-      Number(
-        hookedFish.physics.movementProfile.maxSpeedMetersPerSec ??
-          hookedFish.physics.maxSpeedMetersPerSec ??
-          hookedFish.physics.baseSpeedMetersPerSec,
-      ) || 0,
+      "baseSpeed",
+      Number(hookedFish.physics.movementProfile.baseSpeed) || 0,
       levelContent,
       "number",
       (newValue) =>
         this.#updateConfigValue(
-          [
-            "HOOKED_FISH",
-            "physics",
-            "movementProfile",
-            "maxSpeedMetersPerSec",
-          ],
+          ["HOOKED_FISH", "physics", "movementProfile", "baseSpeed"],
           newValue,
         ),
-      ["HOOKED_FISH", "physics", "movementProfile", "maxSpeedMetersPerSec"],
+      ["HOOKED_FISH", "physics", "movementProfile", "baseSpeed"],
     );
 
-    this.#renderActiveFishRetrieveControls(hookedFish, parentElement);
     this.#renderActiveFishForceControls(hookedFish, parentElement);
-  }
-
-  #renderActiveFishRetrieveControls(hookedFish, parentElement) {
-    const retrieveProfile = hookedFish.physics?.retrieveProfile;
-    if (!retrieveProfile) return;
-
-    const content = this.#createSectionWithCache(
-      "fish retrieve profile runtime",
-      parentElement,
-      ["HOOKED_FISH", "physics", "retrieveProfile"],
-    );
-    const fields = [
-      "passiveBodyResistanceMultiplier",
-      "activeAwayMultiplier",
-      "waterDragMultiplier",
-      "referencePullSpeedMultiplier",
-    ];
-
-    for (const field of fields) {
-      this.#ui.createInputRow(
-        field,
-        Number(retrieveProfile[field]) || 0,
-        content,
-        "number",
-        (newValue) =>
-          this.#updateConfigValue(
-            ["HOOKED_FISH", "physics", "retrieveProfile", field],
-            newValue,
-          ),
-        ["HOOKED_FISH", "physics", "retrieveProfile", field],
-      );
-    }
   }
 
   #renderActiveFishForceControls(hookedFish, parentElement) {
@@ -373,7 +331,7 @@ class DevTools {
       title: "fish force profile runtime",
       profile: physics.forceProfile,
       profilePath: "forceProfile",
-      fields: ["basePower", "minPowerRatio"],
+      fields: ["basePower"],
       parentElement,
     });
     this.#renderProfileNumberControls({
@@ -381,19 +339,12 @@ class DevTools {
       profile: physics.movementProfile,
       profilePath: "movementProfile",
       fields: [
-        "maxSpeedMetersPerSec",
+        "baseSpeed",
         "agility",
         "bounceCooldownMs",
         "dirChangeMinMs",
         "dirChangeMaxMs",
       ],
-      parentElement,
-    });
-    this.#renderProfileNumberControls({
-      title: "fish resistance profile runtime",
-      profile: physics.resistanceProfile,
-      profilePath: "resistanceProfile",
-      fields: ["speedForceMultiplier", "waterResistanceMultiplier"],
       parentElement,
     });
     this.#renderProfileNumberControls({
@@ -445,32 +396,11 @@ class DevTools {
 
     physics.forceProfile = physics.forceProfile || {};
     physics.movementProfile = physics.movementProfile || {};
-    physics.resistanceProfile = physics.resistanceProfile || {};
     physics.staminaProfile = physics.staminaProfile || {};
-    physics.retrieveProfile = physics.retrieveProfile || {};
 
     this.#applyDefaultNumber(physics.forceProfile, "basePower", physics.basePower ?? 1);
-    this.#applyDefaultNumber(
-      physics.forceProfile,
-      "minPowerRatio",
-      physics.minPowerRatio ?? 0.25,
-    );
-    this.#applyDefaultNumber(
-      physics.movementProfile,
-      "maxSpeedMetersPerSec",
-      physics.maxSpeedMetersPerSec ?? physics.baseSpeedMetersPerSec ?? 0,
-    );
+    this.#applyDefaultNumber(physics.movementProfile, "baseSpeed", physics.baseSpeed ?? 1);
     this.#applyDefaultNumber(physics.movementProfile, "agility", physics.agility ?? 1);
-    this.#applyDefaultNumber(
-      physics.resistanceProfile,
-      "speedForceMultiplier",
-      physics.speedForceMultiplier ?? 0.35,
-    );
-    this.#applyDefaultNumber(
-      physics.resistanceProfile,
-      "waterResistanceMultiplier",
-      physics.waterResistanceMultiplier ?? 1,
-    );
     this.#applyDefaultNumber(
       physics.staminaProfile,
       "baseStamina",
@@ -485,18 +415,6 @@ class DevTools {
       physics.staminaProfile,
       "exhaustedSpeedRatio",
       physics.exhaustedSpeedRatio ?? 0.25,
-    );
-    this.#applyDefaultNumber(
-      physics.retrieveProfile,
-      "passiveBodyResistanceMultiplier",
-      1,
-    );
-    this.#applyDefaultNumber(physics.retrieveProfile, "activeAwayMultiplier", 1);
-    this.#applyDefaultNumber(physics.retrieveProfile, "waterDragMultiplier", 1);
-    this.#applyDefaultNumber(
-      physics.retrieveProfile,
-      "referencePullSpeedMultiplier",
-      1,
     );
   }
 
@@ -526,16 +444,12 @@ class DevTools {
         "staminaWeightMultiplier",
         "minStaminaActivityMultiplier",
         "exhaustedSpeedRatio",
-        "maxSpeedMetersPerSec",
         "baseSpeedMetersPerSec",
         "agility",
         "bounceCooldownMs",
         "dirChangeMinMs",
         "dirChangeMaxMs",
         "lastDashTrigger",
-        "speedForceMultiplier",
-        "waterResistanceMultiplier",
-        "minPowerRatio",
         "behaviors",
         "pullResistance",
         "fishRetrieve",
@@ -779,7 +693,6 @@ class DevTools {
     const aliasByProfile = {
       forceProfile: {
         basePower: "basePower",
-        minPowerRatio: "minPowerRatio",
         levelBasePower: "levelBasePower",
       },
       staminaProfile: {
@@ -789,41 +702,18 @@ class DevTools {
         exhaustedSpeedRatio: "exhaustedSpeedRatio",
       },
       movementProfile: {
-        maxSpeedMetersPerSec: "maxSpeedMetersPerSec",
+        baseSpeed: "baseSpeed",
         agility: "agility",
         bounceCooldownMs: "bounceCooldownMs",
         dirChangeMinMs: "dirChangeMinMs",
         dirChangeMaxMs: "dirChangeMaxMs",
         lastDashTrigger: "lastDashTrigger",
       },
-      resistanceProfile: {
-        speedForceMultiplier: "speedForceMultiplier",
-        waterResistanceMultiplier: "waterResistanceMultiplier",
-      },
     };
 
     const alias = aliasByProfile[profileName]?.[field];
     if (alias) {
       fish.physics[alias] = newValue;
-      if (alias === "maxSpeedMetersPerSec") {
-        fish.physics.baseSpeedMetersPerSec = newValue;
-      }
-    }
-
-    if (profileName === "retrieveProfile") {
-      fish.physics.pullResistance = fish.physics.pullResistance || {};
-      const retrieveAliasByField = {
-        passiveBodyResistanceMultiplier: [
-          "passiveBodyResistanceMultiplier",
-          "staticMultiplier",
-        ],
-        activeAwayMultiplier: ["activeAwayMultiplier"],
-        waterDragMultiplier: ["waterDragMultiplier"],
-        referencePullSpeedMultiplier: ["referencePullSpeedMultiplier"],
-      };
-      for (const key of retrieveAliasByField[field] || []) {
-        fish.physics.pullResistance[key] = newValue;
-      }
     }
   }
 
@@ -860,16 +750,16 @@ class DevTools {
     );
     this.#applyFiniteNumber(fish.physics, "levelBasePower", range.basePower);
     const levelSpeed = this.#firstFiniteNumber(
-      range.baseSpeedMetersPerSec,
-      range.speedMetersPerSec,
+      range.baseSpeed,
+      range.speedMultiplier,
       range.speed,
     );
     this.#applyFiniteNumber(
       fish.physics.movementProfile,
-      "maxSpeedMetersPerSec",
+      "baseSpeed",
       levelSpeed,
     );
-    this.#applyFiniteNumber(fish.physics, "maxSpeedMetersPerSec", levelSpeed);
+    this.#applyFiniteNumber(fish.physics, "baseSpeed", levelSpeed);
   }
 
   #findFishTemplate(fish) {

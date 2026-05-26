@@ -255,7 +255,9 @@ class RodPullCalculator {
   }
 
   #resolveHoldChargePerSecond() {
-    const chargeTimeSeconds = Number(this.#config.rodHold?.chargeTimeSeconds);
+    const chargeTimeSeconds = Number(
+      this.#config.chargeTimeSeconds ?? this.#config.rodHold?.chargeTimeSeconds,
+    );
     if (Number.isFinite(chargeTimeSeconds) && chargeTimeSeconds > 0) {
       return 1 / chargeTimeSeconds;
     }

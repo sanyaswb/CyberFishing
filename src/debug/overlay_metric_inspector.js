@@ -1,471 +1,163 @@
 class OverlayMetricFormulaCatalog {
   constructor() {
     this.entriesByLabel = new Map(Object.entries({
-      "Вага риби": {
-        formula: "runtime value: hookedFish.weight",
-        description: "Фактична вага поточної підсіченої риби. Вона є базовим множником для більшості fight-розрахунків.",
-        paths: ["HOOKED_FISH.weight"],
-      },
-      "Базова сила": {
-        formula: "staticFishForceKg = fishWeightKg * levelBasePower * basePower",
-        description: "Базова сила риби до динамічного навантаження від руху та поведінкового powerRatio.",
-        paths: [
-          "HOOKED_FISH.weight",
-          "HOOKED_FISH.physics.forceProfile.basePower",
-          "HOOKED_FISH.physics.forceProfile.levelBasePower",
-          "HOOKED_FISH.physics.forceProfile.minPowerRatio",
-        ],
-      },
-      "Швидкість відн. води": {
-        formula: "relativeSpeedMps = length(fishVelocity - waterCurrentVelocity) / pixelsPerMeter",
-        description: "Швидкість риби відносно води/течії. Впливає на dynamicFishForceKg.",
-        paths: [
-          "CONFIG.physics.simulation.pixelsPerMeter",
-          "CONFIG.physics.environment.water.currentInfluenceMultiplier",
-        ],
-      },
-      "Динамічне навантаження": {
-        formula: "dynamicFishForceKg = fishWeightKg * relativeSpeedMps * speedForceMultiplier * waterResistanceMultiplier * speedLoadKgPerKgPerMps * directionMultiplier",
-        description: "Додаткове навантаження, яке виникає від руху риби у воді.",
-        paths: [
-          "CONFIG.physics.fight.fishForce.dynamicLoadFromMotion.enabled",
-          "CONFIG.physics.environment.water.fishMotionLoad.speedLoadKgPerKgPerMps",
-          "HOOKED_FISH.physics.resistanceProfile.speedForceMultiplier",
-          "HOOKED_FISH.physics.resistanceProfile.waterResistanceMultiplier",
-        ],
-      },
-      "Множник напрямку": {
-        formula: "directionMultiplier = interpolate(sameDirection, sideDirection, oppositeDirection) by fish movement direction vs player direction",
-        description: "Підсилює або послаблює dynamicFishForceKg залежно від того, куди рухається риба відносно гравця.",
-        paths: [
-          "CONFIG.physics.fight.fishForce.dynamicLoadFromMotion.directionMultiplier.sameDirection",
-          "CONFIG.physics.fight.fishForce.dynamicLoadFromMotion.directionMultiplier.sideDirection",
-          "CONFIG.physics.fight.fishForce.dynamicLoadFromMotion.directionMultiplier.oppositeDirection",
-        ],
-      },
-      "Water motion load": {
-        formula: "motionLoadPerSpeed = speedLoadKgPerKgPerMps",
-        description: "Глобальний коефіцієнт, скільки кг навантаження додає 1 кг риби на 1 м/с руху у воді.",
-        paths: ["CONFIG.physics.environment.water.fishMotionLoad.speedLoadKgPerKgPerMps"],
-      },
-      "Підсумкова сила риби": {
-        formula: "totalFishForceKg = max(staticForceKg * minPowerRatio, (staticForceKg * behaviorPowerRatio + dynamicFishForceKg) * exhaustionPowerMultiplier)",
-        description: "Фінальна сила риби, яка йде в fight/tension pipeline.",
-        paths: [
-          "HOOKED_FISH.physics.forceProfile.basePower",
-          "HOOKED_FISH.physics.forceProfile.minPowerRatio",
-          "CONFIG.physics.fight.fishForce.dynamicLoadFromMotion.enabled",
-          "CONFIG.physics.environment.water.fishMotionLoad.speedLoadKgPerKgPerMps",
-        ],
-      },
-      "Player pressure": {
-        formula: "effectivePlayerPressureKg = playerPullPressureKg * pressureTransferRatio",
-        description: "Сирий тиск гравця через вудку і частина цього тиску, яка реально переходить у tension.",
-        paths: [
-          "CONFIG.physics.fight.rodPull.controlledPullLimitRatio",
-          "CONFIG.physics.fight.fishRetrieve.playerPressureTransfer.referenceWeightKg",
-          "CONFIG.physics.fight.fishRetrieve.playerPressureTransfer.minTransferRatio",
-          "CONFIG.physics.fight.fishRetrieve.playerPressureTransfer.blockedTransferRatio",
-        ],
-      },
-      "Передача тиску": {
-        formula: "pressureTransferRatio = max(minTransferRatio, weightTransfer, loadTransfer); blocked => blockedTransferRatio",
-        description: "Скільки player pressure реально передається в навантаження ліски.",
-        paths: [
-          "CONFIG.physics.fight.fishRetrieve.playerPressureTransfer.referenceWeightKg",
-          "CONFIG.physics.fight.fishRetrieve.playerPressureTransfer.minTransferRatio",
-          "CONFIG.physics.fight.fishRetrieve.playerPressureTransfer.blockedTransferRatio",
-        ],
-      },
-      "Пасивний опір тіла": {
-        formula: "bodyResistanceKg = fishWeightKg * tautBodyResistanceKgPerKg * passiveBodyResistanceMultiplier",
-        description: "Пасивний опір тіла риби, який треба перебороти перед підтягуванням.",
-        paths: [
-          "CONFIG.physics.fight.fishRetrieve.passiveBodyResistance.tautBodyResistanceKgPerKg",
-          "HOOKED_FISH.physics.retrieveProfile.passiveBodyResistanceMultiplier",
-        ],
-      },
-      "Активний опір від риби": {
-        formula: "activeAwayForceKg = totalFishForceKg * awayFromPlayerRatio * activeAwayForceMultiplier * activeAwayMultiplier",
-        description: "Активний опір, коли риба реально тягне від гравця.",
-        paths: [
-          "CONFIG.physics.fight.fishRetrieve.activeFishResistance.activeAwayForceMultiplier",
-          "HOOKED_FISH.physics.retrieveProfile.activeAwayMultiplier",
-        ],
-      },
-      "Сумарний опір риби": {
-        formula: "fishOppositionKg = bodyResistanceKg + activeAwayForceKg",
-        description: "Сума пасивного опору тіла й активного опору риби проти підтягування.",
-        paths: [
-          "CONFIG.physics.fight.fishRetrieve.passiveBodyResistance.tautBodyResistanceKgPerKg",
-          "CONFIG.physics.fight.fishRetrieve.activeFishResistance.activeAwayForceMultiplier",
-          "HOOKED_FISH.physics.retrieveProfile.passiveBodyResistanceMultiplier",
-          "HOOKED_FISH.physics.retrieveProfile.activeAwayMultiplier",
-        ],
-      },
-      "Надлишкова сила": {
-        formula: "surplusPullKg = max(0, playerPullPressureKg - fishOppositionKg)",
-        description: "Сила, яка лишилася після подолання опору риби і може рухати рибу до гравця.",
-        paths: [
-          "CONFIG.physics.fight.rodPull.controlledPullLimitRatio",
-          "CONFIG.physics.fight.fishRetrieve.passiveBodyResistance.tautBodyResistanceKgPerKg",
-          "CONFIG.physics.fight.fishRetrieve.activeFishResistance.activeAwayForceMultiplier",
-        ],
-      },
-      "Контроль руху": {
-        formula: "movementControlRatio = appliedMoveMeters / desiredMoveMeters",
-        description: "Показує, наскільки бажаний рух підтягування реально застосувався після constraints.",
-        paths: [
-          "CONFIG.physics.fight.rodPull.controlledPullLimitRatio",
-          "CONFIG.physics.fight.fishRetrieve.playerPressureTransfer.blockedTransferRatio",
-        ],
-      },
-      "Drag capacity": {
-        formula: "waterDragCapacityKg = fishWeightKg * dragKgPerKgAtReferenceSpeed * waterDragMultiplier",
-        description: "Ємність водяного drag при підтягуванні. Більше значення = важче протягувати рибу через воду.",
-        paths: [
-          "CONFIG.physics.fight.fishRetrieve.waterDragWhilePulling.dragKgPerKgAtReferenceSpeed",
-          "HOOKED_FISH.physics.retrieveProfile.waterDragMultiplier",
-        ],
-      },
-      "Drag на поточній швидкості": {
-        formula: "waterDragKg = waterDragCapacityKg * (actualPullSpeedMps / referencePullSpeedMetersPerSecond)^2",
-        description: "Оцінка drag-навантаження на поточній швидкості підтягування.",
-        paths: [
-          "CONFIG.physics.fight.fishRetrieve.waterDragWhilePulling.dragKgPerKgAtReferenceSpeed",
-          "CONFIG.physics.fight.fishRetrieve.waterDragWhilePulling.referencePullSpeedMetersPerSecond",
-          "HOOKED_FISH.physics.retrieveProfile.waterDragMultiplier",
-        ],
-      },
-      "Drag per kg @ ref speed": {
-        formula: "globalPullDrag = dragKgPerKgAtReferenceSpeed",
-        description: "Глобальний коефіцієнт опору води при підтягуванні 1 кг риби на reference speed.",
-        paths: ["CONFIG.physics.fight.fishRetrieve.waterDragWhilePulling.dragKgPerKgAtReferenceSpeed"],
-      },
-      "Retrieve speed": {
-        formula: "targetPullSpeedMps = referencePullSpeedMetersPerSecond * sqrt(surplusPullKg / waterDragCapacityKg)",
-        description: "Швидкість підтягування риби через воду при наявній надлишковій силі.",
-        paths: [
-          "CONFIG.physics.fight.fishRetrieve.waterDragWhilePulling.referencePullSpeedMetersPerSecond",
-          "CONFIG.physics.fight.fishRetrieve.waterDragWhilePulling.dragKgPerKgAtReferenceSpeed",
-          "HOOKED_FISH.physics.retrieveProfile.referencePullSpeedMultiplier",
-        ],
-      },
-      "Desired move": {
-        formula: "desiredMoveMeters = targetPullSpeedMps * deltaTimeSeconds",
-        description: "Скільки метрів система хотіла підтягнути рибу за кадр.",
-        paths: [
-          "CONFIG.physics.fight.fishRetrieve.waterDragWhilePulling.referencePullSpeedMetersPerSecond",
-          "CONFIG.physics.fight.rodPull.minStrokeMeters",
-        ],
-      },
-      "Applied move": {
-        formula: "appliedMoveMeters = desiredMoveMeters after line/landing/constraint limits",
-        description: "Фактично застосований рух після обмежень ліски, позиції й landing-зони.",
-        paths: [
-          "CONFIG.physics.fight.fishRetrieve.waterDragWhilePulling.referencePullSpeedMetersPerSecond",
-          "CONFIG.physics.tackle.line.constraintTolerancePx",
-        ],
-      },
-      "Рух заблоковано": {
-        formula: "movementBlocked = appliedMoveMeters < desiredMoveMeters by tolerance or line/landing constraint blocks movement",
-        description: "Показує, що система хотіла рухати рибу, але constraint завадив.",
-        paths: [
-          "CONFIG.physics.tackle.line.constraintTolerancePx",
-          "CONFIG.physics.fight.landing.catchZone.maxLoadWeightRatio",
-        ],
-      },
-      "Натяг": {
-        formula: "tensionKg = smooth/clamped line tension from raw forces, drag limit and tackle max load",
-        description: "Фінальне навантаження на снасть після smoothing, drag і constraints.",
-        paths: [
-          "CONFIG.physics.tension.kgSmoothPerSecond",
-          "CONFIG.physics.tension.powerRatioExponent",
-          "CONFIG.physics.tension.sensitivityMultiplier",
-        ],
-      },
-      "Raw tension": {
-        formula: "rawTensionKg = pre-smoothing/pre-drag tension estimate from fight forces",
-        description: "Сирий tension до обмежень і згладжування.",
-        paths: [
-          "CONFIG.physics.tension.powerRatioExponent",
-          "CONFIG.physics.tension.sensitivityMultiplier",
-        ],
-      },
-      "Retrieve line tension": {
-        formula: "retrieveLineTensionKg = passive/active retrieve contribution to line tension",
-        description: "Частина tension, яка виникає через підтягування/підмотку.",
-        paths: [
-          "CONFIG.physics.retrieve.passive.passiveRetrievePowerRatio",
-          "CONFIG.physics.retrieve.passive.multiplier",
-          "CONFIG.physics.retrieve.passive.waterFriction",
-        ],
-      },
-      "Passive retrieve tension": {
-        formula: "passiveRetrieveTensionKg = passiveRetrievePowerRatio * passive retrieve model contribution",
-        description: "Пасивна частина tension від retrieve-моделі.",
-        paths: [
-          "CONFIG.physics.retrieve.passive.passiveRetrievePowerRatio",
-          "CONFIG.physics.retrieve.passive.multiplier",
-        ],
-      },
-      "Фрикціон": {
-        formula: "dragLimitKg = tackleMaxLoadKg * dragPercentCurve(minRatio, maxRatio, tensionGrowthPower)",
-        description: "Ліміт фрикціону, після якого котушка має віддавати ліску.",
-        paths: [
-          "CONFIG.physics.tackle.reelDrag.minRatio",
-          "CONFIG.physics.tackle.reelDrag.maxRatio",
-          "CONFIG.physics.tackle.reelDrag.tensionGrowthPower",
-        ],
-      },
-      "Tension mode": {
-        formula: "mode is selected by line extension, drag slipping, retrieve and fight state",
-        description: "Пояснює, який режим tension зараз домінує.",
-        paths: [
-          "CONFIG.physics.tension.smoothApproach",
-          "CONFIG.physics.tension.reelRecoveryMultiplier",
-        ],
-      },
-      "Фізична межа ліски": {
-        formula: "isLineFullyExtended = lineDistanceMeters >= availableLineMeters - tolerance",
-        description: "Чи досягла ліска фізичного максимуму довжини.",
-        paths: [
-          "CONFIG.physics.tackle.line.fullExtensionTensionMultiplier",
-          "CONFIG.physics.tackle.line.constraintTolerancePx",
-        ],
-      },
-      "Запас ліски": {
-        formula: "lineCanRelease = remainingLineMeters > tolerance and reel/rod policy allows release",
-        description: "Чи може снасть ще віддати ліску.",
-        paths: [
-          "CONFIG.physics.tackle.line.rodLengthReserveMultiplier",
-          "CONFIG.physics.tackle.line.noReelMinRodLengthMultiplier",
-          "CONFIG.physics.tackle.line.noReelExtraLengthMeters",
-        ],
-      },
-      "Залишок ліски": {
-        formula: "lineRemainingMeters = maxLineAvailableMeters - lineReleasedMeters",
-        description: "Скільки ліски ще може бути випущено.",
-        paths: [
-          "CONFIG.physics.tackle.line.rodLengthReserveMultiplier",
-          "CONFIG.physics.tackle.line.noReelExtraLengthMeters",
-        ],
-      },
-      "Випущено ліски": {
-        formula: "lineReleasedMeters is runtime line state constrained by reel/rod limits",
-        description: "Скільки ліски вже випущено зі снасті.",
-        paths: [
-          "CONFIG.physics.tackle.line.rodLengthReserveMultiplier",
-          "CONFIG.physics.tackle.line.noReelExtraLengthMeters",
-        ],
-      },
-      "Дистанція до риби": {
-        formula: "lineDistanceMeters = distance(player/rod anchor, fish position) / pixelsPerMeter",
-        description: "Фізична дистанція до риби в метрах.",
-        paths: ["CONFIG.physics.simulation.pixelsPerMeter"],
-      },
-      "Хід вудки": {
-        formula: "rodStrokeCapacityMeters = rodLengthMeters * distanceMultiplierByRodLength; stroke recovers by strokeChargePerSecond",
-        description: "Скільки pull-distance накопичено/використано ходом вудки.",
-        paths: [
-          "CONFIG.physics.fight.rodPull.distanceMultiplierByRodLength",
-          "CONFIG.physics.fight.rodPull.strokeChargePerSecond",
-          "CONFIG.physics.fight.rodPull.minStrokeMeters",
-        ],
-      },
-      "Штраф кута": {
-        formula: "anglePenalty = interpolate(1.0, maxPenaltyMultiplier) between noPenaltyAngleDeg and maxPenaltyAngleDeg",
-        description: "Зменшує ефективність гравця при поганому куті вудки.",
-        paths: [
-          "CONFIG.physics.fight.playerControl.rodAnglePenalty.enabled",
-          "CONFIG.physics.fight.playerControl.rodAnglePenalty.noPenaltyAngleDeg",
-          "CONFIG.physics.fight.playerControl.rodAnglePenalty.maxPenaltyAngleDeg",
-          "CONFIG.physics.fight.playerControl.rodAnglePenalty.maxPenaltyMultiplier",
-        ],
-      },
-      "Підмотка hold": {
-        formula: "holdRecoverActive depends on autoRecoverSlack, full stroke and holdRecoverAfterFullStrokeMs delay",
-        description: "Автоматичне відновлення slack/підмотка при утриманні після повного stroke.",
-        paths: [
-          "CONFIG.physics.tackle.reel.autoRecoverSlack",
-          "CONFIG.physics.tackle.reel.holdRecoverAfterFullStrokeMs",
-          "CONFIG.physics.tackle.reel.holdRecoverStrokeRatio",
-        ],
-      },
-      "Причина підмотки": {
-        formula: "blockedReason is selected by reel availability, hold state, drag slipping, stroke fullness and timers",
-        description: "Чому hold-підмотка активна або заблокована.",
-        paths: [
-          "CONFIG.physics.tackle.reel.autoRecoverSlack",
-          "CONFIG.physics.tackle.reel.holdRecoverAfterFullStrokeMs",
-        ],
-      },
-      "Таймер підмотки": {
-        formula: "holdRecoverTimerMs accumulates until holdRecoverAfterFullStrokeMs",
-        description: "Таймер очікування перед hold-підмоткою.",
-        paths: ["CONFIG.physics.tackle.reel.holdRecoverAfterFullStrokeMs"],
-      },
-      "Швидк. підмотки": {
-        formula: "holdRecoverSpeedMps depends on reel recovery policy and drag/reel settings",
-        description: "Швидкість відновлення ліски при hold-підмотці.",
-        paths: [
-          "CONFIG.physics.tackle.reel.autoRecoverSlack",
-          "CONFIG.physics.tackle.reelDrag.yEscapeSpeedAtFullDrag",
-        ],
-      },
-      "До скручування": {
-        formula: "pumpCreditMeters tracks unrecovered rod-pull distance before reel recovery",
-        description: "Скільки накопиченого pull-credit лишилось до відновлення/скручування.",
-        paths: [
-          "CONFIG.physics.fight.rodPull.distanceMultiplierByRodLength",
-          "CONFIG.physics.tackle.reel.holdRecoverStrokeRatio",
-        ],
-      },
-    }));
-    this.#installSimpleFightEntries();
-  }
-
-  #installSimpleFightEntries() {
-    const entries = {
       "Fish weight": {
-        formula: "fishWeightKg = hookedFish.weight",
-        description: "Actual hooked fish weight used by the simplified fight model.",
+        formula: "runtime value: hookedFish.weight",
+        description: "Фактична вага поточної підсіченої риби.",
         paths: ["HOOKED_FISH.weight"],
       },
       "Water weight / passive force": {
         formula: "fishPassiveKg = fishWeightKg * tautBodyResistancePerKg * fishBasePower",
-        description: "Passive force created by the fish body on a taut line.",
+        description: "Базова вага риби у воді на натягнутій лісці.",
         paths: [
+          "HOOKED_FISH.weight",
           "CONFIG.physics.water.tautBodyResistancePerKg",
           "HOOKED_FISH.physics.forceProfile.basePower",
         ],
       },
       "State force multiplier": {
-        formula: "fishStateForceMultiplier = current behavior forceMultiplier",
-        description: "Current fish behavior force multiplier. It affects tension and opposition.",
-        paths: ["HOOKED_FISH.physics.behaviorProfile.behaviors.*.forceMultiplier"],
+        formula: "fishActiveKg = fishPassiveKg * stateForceMultiplier * directionMultiplier",
+        description: "Множник сили поточного стану риби. Впливає на active fish force і tension.",
+        paths: ["HOOKED_FISH.physics.behaviorProfile.behaviors.<state>.forceMultiplier"],
       },
       "Direction multiplier": {
-        formula: "directionMultiplier = toward/side/away multiplier by fish movement direction",
-        description: "Direction force multiplier for toward-player, side or away movement.",
-        paths: ["CONFIG.physics.fight.directionForce"],
+        formula: "directionMultiplier = toward/side/away multiplier from fish direction vs player",
+        description: "Множник напрямку руху риби відносно гравця.",
+        paths: [
+          "CONFIG.physics.fight.directionForce.towardPlayerMultiplier",
+          "CONFIG.physics.fight.directionForce.sideMultiplier",
+          "CONFIG.physics.fight.directionForce.awayMultiplier",
+        ],
       },
       "Active fish force": {
-        formula: "fishActiveKg = fishPassiveKg * fishStateForceMultiplier * directionMultiplier",
-        description: "Active force added by current fish behavior and movement direction.",
+        formula: "fishActiveKg = fishPassiveKg * stateForceMultiplier * directionMultiplier",
+        description: "Активна сила риби від стану і напрямку.",
         paths: [
-          "HOOKED_FISH.physics.behaviorProfile.behaviors.*.forceMultiplier",
+          "HOOKED_FISH.physics.behaviorProfile.behaviors.<state>.forceMultiplier",
           "CONFIG.physics.fight.directionForce",
         ],
       },
       "Fish opposition": {
         formula: "fishOppositionKg = fishPassiveKg + fishActiveKg",
-        description: "Total force the player must exceed to move the fish toward the player.",
-        paths: ["CONFIG.physics.water.tautBodyResistancePerKg"],
+        description: "Сумарна сила риби, яку має перевищити rod hold.",
+        paths: ["CONFIG.physics.water.tautBodyResistancePerKg", "CONFIG.physics.fight.directionForce"],
       },
       "Rod hold": {
-        formula: "rodHoldKg += (rodHoldMaxKg / chargeTimeSeconds) * dt",
-        description: "Raw hold charged by the player before angle penalty.",
+        formula: "rodHoldKg charges from 0 to rodHoldMaxKg by rodHold.chargeTimeSeconds",
+        description: "Повна сила гравця проти риби. Не дорівнює tension.",
         paths: ["CONFIG.physics.fight.rodHold.chargeTimeSeconds"],
       },
       "Rod hold max": {
         formula: "rodHoldMaxKg = max(0, rodLimitKg - fishTensionKg)",
-        description: "Maximum hold available from rod reserve after fish tension is already present.",
-        paths: ["ITEM_DB.rods.*.engineStats.maxLoadKg"],
+        description: "Скільки hold-сили ще дозволяє вудка.",
+        paths: ["HOOKED_FISH.tackle.rod.maxLoadKg", "DEBUG_DATA.fishTensionKg"],
       },
       "Angle multiplier": {
         formula: "effectiveRodHoldKg = rodHoldKg * rodAngleMultiplier",
-        description: "Rod angle penalty applied to raw hold.",
+        description: "Кутовий штраф до сили гравця.",
         paths: ["CONFIG.physics.fight.rodHold.anglePenalty"],
       },
       "Effective rod hold": {
-        formula: "effectiveRodHoldKg = min(rodHoldKg, rodHoldMaxKg) * rodAngleMultiplier",
-        description: "Full player force working against fish movement.",
-        paths: ["CONFIG.physics.fight.rodHold"],
+        formula: "effectiveRodHoldKg = rodHoldKg * rodAngleMultiplier",
+        description: "Фактична hold-сила гравця проти риби після кутового штрафу.",
+        paths: ["CONFIG.physics.fight.rodHold.anglePenalty"],
       },
       "Hold tension ratio": {
-        formula: "playerHoldTensionKg = effectiveRodHoldKg * holdTensionRatio",
-        description: "Rod transfer ratio. It affects tension only, not player force against the fish.",
-        paths: ["ITEM_DB.rods.*.engineStats.holdTensionRatio"],
+        formula: "rawPlayerHoldTensionKg = effectiveRodHoldKg * holdTensionRatio",
+        description: "Яка частина hold-сили йде в tension. Менше значення = краща вудка.",
+        paths: ["HOOKED_FISH.tackle.rod.holdTensionRatio"],
       },
       "Movable tension cap": {
-        formula: "movableHoldTensionCapKg = fishPassiveKg * movableHoldTensionCapRatio",
-        description: "Maximum hold tension added while the fish can move toward the player.",
+        formula: "capKg = fishPassiveKg * movableHoldTensionCapRatio",
+        description: "Якщо риба може рухатися, hold не може додати в tension більше цього cap.",
         paths: ["CONFIG.physics.fight.tension.movableHoldTensionCapRatio"],
       },
       "Hold to tension": {
-        formula: "playerHoldTensionKg = min(rawHoldTensionKg, movableHoldTensionCapKg) when fish can move",
-        description: "Player hold contribution added to total tension after movable-fish capping.",
-        paths: [
-          "ITEM_DB.rods.*.engineStats.holdTensionRatio",
-          "CONFIG.physics.fight.tension.movableHoldTensionCapRatio",
-        ],
+        formula: "playerHoldTensionKg = fishCanMove ? min(rawHoldTension, capKg) : rawHoldTension",
+        description: "Частина hold-сили, яка реально навантажує снасть.",
+        paths: ["CONFIG.physics.fight.tension.movableHoldTensionCapRatio"],
       },
       "Net force": {
         formula: "netForceKg = effectiveRodHoldKg - fishOppositionKg",
-        description: "Positive means the player moves fish toward the player; negative means fish wins.",
-        paths: ["CONFIG.physics.fight.rodHold"],
+        description: "Чиста різниця сил. >0 перемагає гравець, <0 перемагає риба.",
+        paths: ["DEBUG_DATA.effectiveRodHoldKg", "DEBUG_DATA.fishOppositionKg"],
       },
       "Winner": {
         formula: "winner = sign(netForceKg)",
-        description: "Player wins when net force is positive; fish wins when it is negative.",
-        paths: [],
+        description: "Хто зараз рухає систему: player/fish/balanced.",
+        paths: ["DEBUG_DATA.netForceKg"],
       },
       "Water resistance": {
-        formula: "speedMps = sqrt(abs(netForceKg) / motionResistance) * speedMultiplier",
-        description: "Global movement resistance. Higher values slow movement for the same net force.",
+        formula: "speedMps = sqrt(abs(netForceKg) / waterMotionResistance) * waterSpeedMultiplier",
+        description: "Глобальний уповільнювач руху у воді.",
         paths: ["CONFIG.physics.water.motionResistance"],
       },
       "Speed multiplier": {
-        formula: "speedMps = sqrt(abs(netForceKg) / motionResistance) * speedMultiplier",
-        description: "Global game speed multiplier for simplified fight movement.",
+        formula: "speedMps = sqrt(abs(netForceKg) / motionResistance) * waterSpeedMultiplier",
+        description: "Ігровий множник швидкості після опору води.",
         paths: ["CONFIG.physics.water.speedMultiplier"],
       },
       "Speed m/s": {
-        formula: "speedMps = sqrt(abs(netForceKg) / motionResistance) * speedMultiplier",
-        description: "Final movement speed in meters per second.",
-        paths: ["CONFIG.physics.water.motionResistance", "CONFIG.physics.water.speedMultiplier"],
+        formula: "speedMps is calculated from netForceKg and water settings",
+        description: "Фінальна швидкість руху у метрах за секунду.",
+        paths: ["DEBUG_DATA.netForceKg", "CONFIG.physics.water.motionResistance", "CONFIG.physics.water.speedMultiplier"],
       },
       "Speed px/s": {
         formula: "speedPxPerSecond = speedMps * pixelsPerMeter",
-        description: "Final movement speed converted to pixels per second.",
+        description: "Canvas-швидкість руху.",
         paths: ["CONFIG.physics.simulation.pixelsPerMeter"],
       },
       "Fish tension": {
-        formula: "fishTensionKg = fishOppositionKg, or 0 when slack applies",
-        description: "Fish contribution to total tension.",
-        paths: ["CONFIG.physics.fight.tension.slackTensionKg"],
+        formula: "fishTensionKg = lineSlack ? 0 : fishOppositionKg",
+        description: "Натяг, який створює риба.",
+        paths: ["DEBUG_DATA.fishOppositionKg"],
       },
       "Player tension": {
-        formula: "playerHoldTensionKg = effectiveRodHoldKg * holdTensionRatio",
-        description: "Player hold contribution to total tension.",
-        paths: ["ITEM_DB.rods.*.engineStats.holdTensionRatio"],
+        formula: "playerHoldTensionKg = capped hold tension contribution",
+        description: "Натяг, який створює hold гравця.",
+        paths: ["DEBUG_DATA.playerHoldTensionKg"],
       },
       "Total tension": {
         formula: "totalTensionKg = fishTensionKg + playerHoldTensionKg",
-        description: "Total stress load applied to rod, line and hook.",
-        paths: [],
+        description: "Фінальне навантаження на снасть.",
+        paths: ["DEBUG_DATA.fishTensionKg", "DEBUG_DATA.playerHoldTensionKg"],
       },
       "Rod stress": {
         formula: "rodStressRatio = totalTensionKg / rodLimitKg",
-        description: "Rod load ratio from total tension.",
-        paths: ["ITEM_DB.rods.*.engineStats.maxLoadKg"],
+        description: "Відсоток навантаження на вудку.",
+        paths: ["DEBUG_DATA.totalTensionKg", "DEBUG_DATA.rodMaxLoadKg"],
       },
       "Line stress": {
         formula: "lineStressRatio = totalTensionKg / lineLimitKg",
-        description: "Line load ratio from total tension.",
-        paths: ["ITEM_DB.lines.*.engineStats.maxLoadKg"],
+        description: "Відсоток навантаження на ліску.",
+        paths: ["DEBUG_DATA.totalTensionKg", "DEBUG_DATA.lineMaxLoadKg"],
       },
       "Hook stress": {
         formula: "hookStressRatio = totalTensionKg / hookLimitKg",
-        description: "Hook load ratio from total tension. Open-ended when hook load is not configured.",
-        paths: ["ITEM_DB.hooks.*.engineStats.maxLoadKg"],
+        description: "Відсоток навантаження на гачок.",
+        paths: ["DEBUG_DATA.totalTensionKg", "DEBUG_DATA.hookMaxLoadKg"],
       },
-    };
-
-    for (const [label, entry] of Object.entries(entries)) {
-      this.entriesByLabel.set(label, entry);
-    }
+      "Reel hold active": {
+        formula: "reelHoldActive = rodStrokeIsFull && playerIsHolding && reelSafeMarginKg > 0",
+        description: "Підмотка катушкою після повного ходу вудки.",
+        paths: ["DEBUG_DATA.holdReelRecoverActive"],
+      },
+      "Reel safe margin": {
+        formula: "reelSafeMarginKg = reelHoldLimitKg - totalTensionKg",
+        description: "Запас катушки для безпечної підмотки.",
+        paths: ["DEBUG_DATA.holdReelRecoverReelMaxLoadKg", "DEBUG_DATA.totalTensionKg"],
+      },
+      "Reel retrieve speed": {
+        formula: "reelRetrieveSpeedMps = baseReelRetrieveSpeedMps * clamp01(reelSafeMarginKg / reelHoldLimitKg) * bearingBonus",
+        description: "Швидкість підмотки катушкою у reelHold.",
+        paths: ["DEBUG_DATA.holdReelRecoverSpeedMps"],
+      },
+      "Reel blocked reason": {
+        formula: "blocked reason explains why reelHold is not active",
+        description: "Причина, чому підмотка катушкою зараз не працює.",
+        paths: ["DEBUG_DATA.holdReelRecoverBlockedReason"],
+      },
+    }));
   }
 
   getEntry(label) {
@@ -499,10 +191,7 @@ class OverlayMetricConsoleInspector {
     const normalizedLabel = String(label || "").trim();
     const rows = entry.paths.map((path) => this.#buildParameterRow(path));
 
-    console.groupCollapsed(
-      `%c[Overlay metric] ${normalizedLabel}`,
-      "color:#73c2fb;font-weight:bold;",
-    );
+    console.groupCollapsed(`%c[Overlay metric] ${normalizedLabel}`, "color:#73c2fb;font-weight:bold;");
     console.log("Displayed value:", displayedValue || "n/a");
     console.log("Meaning:", entry.description || "n/a");
     console.log("Formula:", entry.formula || "n/a");
@@ -522,6 +211,7 @@ class OverlayMetricConsoleInspector {
   }
 
   #resolvePath(path) {
+    if (path.includes("<state>")) return { found: false, reason: "state-specific path" };
     const parts = String(path || "").split(".").filter(Boolean);
     const rootName = parts.shift();
     const root = this.#getRoot(rootName);
@@ -546,16 +236,11 @@ class OverlayMetricConsoleInspector {
 
   #getRoot(rootName) {
     switch (rootName) {
-      case "CONFIG":
-        return typeof CONFIG !== "undefined" ? CONFIG : undefined;
-      case "BASE_CONFIG":
-        return typeof BASE_CONFIG !== "undefined" ? BASE_CONFIG : undefined;
-      case "HOOKED_FISH":
-        return this.#liveData?.hookedFish || undefined;
-      case "DEBUG_DATA":
-        return this.#liveData;
-      default:
-        return undefined;
+      case "CONFIG": return typeof CONFIG !== "undefined" ? CONFIG : undefined;
+      case "BASE_CONFIG": return typeof BASE_CONFIG !== "undefined" ? BASE_CONFIG : undefined;
+      case "HOOKED_FISH": return this.#liveData?.hookedFish || undefined;
+      case "DEBUG_DATA": return this.#liveData;
+      default: return undefined;
     }
   }
 
@@ -572,32 +257,17 @@ class OverlayMetricConsoleInspector {
     if (typeof value === "boolean" || typeof value === "string") return value;
     if (value === null) return "null";
     if (value === undefined) return "undefined";
-    try {
-      return JSON.stringify(value);
-    } catch (_error) {
-      return String(value);
-    }
+    try { return JSON.stringify(value); } catch (_error) { return String(value); }
   }
 
   #buildSmallSnapshot() {
     const keys = [
-      "fishWeightKg",
-      "staticFishForceKg",
-      "dynamicFishForceKg",
-      "totalFishForceKg",
-      "playerPullPressureKg",
-      "effectivePlayerPressureKg",
-      "pressureTransferRatio",
-      "fishOppositionKg",
-      "fishRetrieveSurplusForceKg",
-      "fishRetrieveWaterDragCapacityKg",
-      "actualFishPullSpeedMps",
-      "targetFishPullSpeedMps",
-      "tensionKg",
-      "rawTensionKg",
-      "dragLimitKg",
+      "fishPassiveKg", "fishActiveKg", "fishOppositionKg", "fishTensionKg",
+      "rodPullForceKg", "effectiveRodHoldKg", "holdTensionRatio", "playerHoldTensionKg",
+      "movableHoldTensionCapKg", "totalTensionKg", "netForceKg", "simpleFightSpeedMps",
+      "rodStressRatio", "lineStressRatio", "hookStressRatio", "holdReelRecoverActive",
+      "holdReelRecoverBlockedReason", "holdReelRecoverSpeedMps",
     ];
-
     const snapshot = {};
     for (const key of keys) {
       if (Object.prototype.hasOwnProperty.call(Object(this.#liveData), key)) {
@@ -608,23 +278,18 @@ class OverlayMetricConsoleInspector {
   }
 }
 
-class OverlayMetricInspector {
-  constructor({
-    catalog = new OverlayMetricFormulaCatalog(),
-    inspector = new OverlayMetricConsoleInspector(),
-  } = {}) {
+class OverlayMetricInfoBridge {
+  constructor({ catalog = new OverlayMetricFormulaCatalog(), inspector = new OverlayMetricConsoleInspector() } = {}) {
     this.catalog = catalog;
     this.inspector = inspector;
-    this.content = null;
   }
 
   start() {
-    this.content = document.querySelector(".debug-overlay-content");
-    if (!this.content) return;
-
+    this.installStyles();
     this.listenForDebugData();
-    this.content.addEventListener("pointerdown", (event) => this.handlePointerDown(event), true);
-    this.content.addEventListener("click", (event) => this.handleClick(event), true);
+    const content = document.querySelector(".debug-overlay-content");
+    (content || document).addEventListener("pointerdown", (event) => this.handlePointerDown(event), true);
+    (content || document).addEventListener("click", (event) => this.handleClick(event), true);
   }
 
   listenForDebugData() {
@@ -636,52 +301,96 @@ class OverlayMetricInspector {
   handlePointerDown(event) {
     const button = event.target.closest?.(".overlay-metric-info-btn");
     if (!button) return;
-
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation?.();
-
-    if (button.dataset.pointerHandled === "1") return;
-    button.dataset.pointerHandled = "1";
-    window.setTimeout(() => {
-      if (button.isConnected) delete button.dataset.pointerHandled;
-    }, 240);
-
     this.inspectButton(button);
   }
 
   handleClick(event) {
     const button = event.target.closest?.(".overlay-metric-info-btn");
     if (!button) return;
-
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation?.();
   }
 
   inspectButton(button) {
-    const row = button.closest(".debug-overlay-row[data-overlay-metric]");
-    const label = button.dataset.metric || row?.dataset.overlayMetric || "metric";
+    const row = button.closest(".debug-overlay-row");
+    const label = button.dataset.metric || "metric";
     const value = row?.querySelector(".debug-overlay-value")?.textContent?.trim() || "";
     const entry = this.catalog.getEntry(label);
-
     button.classList.add("overlay-metric-info-btn-active");
     window.setTimeout(() => {
       if (button.isConnected) button.classList.remove("overlay-metric-info-btn-active");
     }, 180);
-
     this.inspector.inspect({ label, displayedValue: value, entry });
+  }
+
+  installStyles() {
+    if (document.getElementById("overlay-metric-info-styles")) return;
+    const style = document.createElement("style");
+    style.id = "overlay-metric-info-styles";
+    style.textContent = `
+      .debug-overlay-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 2px;
+      }
+      .debug-overlay-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        min-height: 16px;
+        line-height: 1.2;
+      }
+      .debug-overlay-value {
+        text-align: right;
+        white-space: nowrap;
+      }
+      .overlay-metric-info-btn {
+        width: 14px;
+        height: 14px;
+        min-width: 14px;
+        flex: 0 0 14px;
+        padding: 0;
+        border-radius: 4px;
+        border: 1px solid rgba(115, 194, 251, 0.9);
+        background: rgba(115, 194, 251, 0.12);
+        box-shadow: 0 0 5px rgba(115, 194, 251, 0.35);
+        cursor: pointer;
+        pointer-events: auto;
+        touch-action: none;
+        box-sizing: border-box;
+        transition: none;
+        outline: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .overlay-metric-info-btn:hover {
+        background: rgba(115, 194, 251, 0.12);
+        border-color: rgba(115, 194, 251, 0.9);
+        box-shadow: 0 0 5px rgba(115, 194, 251, 0.35);
+      }
+      .overlay-metric-info-btn-active,
+      .overlay-metric-info-btn:active {
+        background: rgba(255, 255, 255, 0.85);
+        border-color: #ffffff;
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+      }
+    `;
+    document.head.appendChild(style);
   }
 }
 
-(function initOverlayMetricInspector() {
+(function initOverlayMetricInfoBridge() {
   if (typeof document === "undefined") return;
   const start = () => {
-    const metricInspector = new OverlayMetricInspector();
-    metricInspector.start();
-    window.CYBER_FISHING_OVERLAY_METRIC_INFO = metricInspector;
+    const bridge = new OverlayMetricInfoBridge();
+    bridge.start();
+    window.CYBER_FISHING_OVERLAY_METRIC_INFO = bridge;
   };
-
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", start, { once: true });
   } else {

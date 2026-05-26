@@ -43,17 +43,17 @@ function assert(condition, message) {
 }
 
 const result = vm.runInContext(`(function () {
-  const path = "physics.fight.fishRetrieve.waterDragWhilePulling.dragKgPerKgAtReferenceSpeed";
+  const path = "physics.water.motionResistance";
   const base = RESOLVED_CONFIG_PROVIDER.getBase(path);
   CONFIG_RUNTIME_CONTEXT.set(path, 3.25);
-  const afterSet = CONFIG.physics.fight.fishRetrieve.waterDragWhilePulling.dragKgPerKgAtReferenceSpeed;
+  const afterSet = CONFIG.physics.water.motionResistance;
   const exported = CONFIG_RUNTIME_CONTEXT.exportOverrides();
   CONFIG_RUNTIME_CONTEXT.reset(path);
-  const afterReset = CONFIG.physics.fight.fishRetrieve.waterDragWhilePulling.dragKgPerKgAtReferenceSpeed;
+  const afterReset = CONFIG.physics.water.motionResistance;
   CONFIG_RUNTIME_CONTEXT.importOverrides(exported);
-  const afterImport = CONFIG.physics.fight.fishRetrieve.waterDragWhilePulling.dragKgPerKgAtReferenceSpeed;
+  const afterImport = CONFIG.physics.water.motionResistance;
   CONFIG_RUNTIME_CONTEXT.resetAll();
-  const afterResetAll = CONFIG.physics.fight.fishRetrieve.waterDragWhilePulling.dragKgPerKgAtReferenceSpeed;
+  const afterResetAll = CONFIG.physics.water.motionResistance;
   return {
     base,
     afterSet,

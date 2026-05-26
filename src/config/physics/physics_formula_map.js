@@ -1,146 +1,89 @@
-/**
- * Fishing fight physics formula map.
- *
- * This file is intentionally data-only: it explains which config/state values
- * feed each debug output. Runtime systems still own the calculations.
- */
 const PHYSICS_FORMULA_MAP = Object.freeze({
-  fishMotionLoad: Object.freeze({
-    title: "Fish Motion Load",
-    description:
-      "Навантаження, яке з'являється через рух риби відносно води/течії.",
-    formula:
-      "dynamicFishForceKg = fishWeightKg * relativeSpeedMps * speciesSpeedForceMultiplier * speciesWaterResistanceMultiplier * speedLoadKgPerKgPerMps * directionMultiplier",
+  fishPassiveForce: Object.freeze({
+    title: "Fish passive force / water weight",
+    formula: "fishPassiveKg = fishWeightKg * tautBodyResistancePerKg * fishBasePower",
     sources: Object.freeze([
       "fish.weightKg",
-      "runtime.relativeSpeedMps",
-      "fish.physics.resistanceProfile.speedForceMultiplier",
-      "fish.physics.resistanceProfile.waterResistanceMultiplier",
-      "physics.environment.water.fishMotionLoad.speedLoadKgPerKgPerMps",
-      "physics.fight.fishForce.dynamicLoadFromMotion.directionMultiplier",
-      "physics.fight.fishForce.dynamicLoadFromMotion.enabled",
-    ]),
-    outputs: Object.freeze([
-      "dynamicFishForceKg",
-      "directionResistanceMultiplier",
-      "totalFishForceKg",
-    ]),
-    debugGroup: "РИБА → СНАСТЬ",
-  }),
-
-  fishTotalForce: Object.freeze({
-    title: "Fish Total Force",
-    description:
-      "Підсумкова сила риби після поведінки, динамічного навантаження і виснаження.",
-    formula:
-      "totalFishForceKg = max(staticFishForceKg * minPowerRatio, (staticFishForceKg * behaviorPowerRatio + dynamicFishForceKg) * exhaustionPowerMultiplier)",
-    sources: Object.freeze([
+      "physics.water.tautBodyResistancePerKg",
       "fish.physics.forceProfile.basePower",
-      "fish.physics.forceProfile.minPowerRatio",
-      "fish.behaviorProfile.behaviors[state].powerRatio",
-      "dynamicFishForceKg",
-      "fishCondition.currentExhaustion",
-      "fishCondition.maxEndurance",
     ]),
-    outputs: Object.freeze([
-      "staticFishForceKg",
-      "totalFishForceKg",
-      "exhaustionPowerMultiplier",
-    ]),
-    debugGroup: "РИБА → СНАСТЬ",
+    outputs: Object.freeze(["fishPassiveKg"]),
   }),
 
-  playerPressure: Object.freeze({
-    title: "Player Pull Pressure",
-    description:
-      "Сирий тиск гравця від rod pull і частина, яка реально передається в натяг.",
-    formula:
-      "effectivePlayerPressureKg = playerPullPressureKg * pressureTransferRatio",
+  fishActiveForce: Object.freeze({
+    title: "Fish active force",
+    formula: "fishActiveKg = fishPassiveKg * stateForceMultiplier * directionMultiplier",
     sources: Object.freeze([
-      "rodPullResult.forceKg",
-      "physics.fight.fishRetrieve.playerPressureTransfer.referenceWeightKg",
-      "physics.fight.fishRetrieve.playerPressureTransfer.minTransferRatio",
-      "physics.fight.fishRetrieve.playerPressureTransfer.blockedTransferRatio",
-      "fishWeightKg",
+      "fishPassiveKg",
+      "fish.behaviorProfile.behaviors[state].forceMultiplier",
+      "physics.fight.directionForce",
+    ]),
+    outputs: Object.freeze(["fishActiveKg"]),
+  }),
+
+  fishOpposition: Object.freeze({
+    title: "Fish opposition",
+    formula: "fishOppositionKg = fishPassiveKg + fishActiveKg",
+    sources: Object.freeze(["fishPassiveKg", "fishActiveKg"]),
+    outputs: Object.freeze(["fishOppositionKg", "fishTensionKg"]),
+  }),
+
+  rodHold: Object.freeze({
+    title: "Rod hold",
+    formula: "rodHoldMaxKg = max(0, rodLimitKg - fishTensionKg); effectiveRodHoldKg = rodHoldKg * rodAngleMultiplier",
+    sources: Object.freeze([
+      "rod.maxLoadKg",
+      "fishTensionKg",
+      "physics.fight.rodHold.chargeTimeSeconds",
+      "physics.fight.rodHold.anglePenalty",
+    ]),
+    outputs: Object.freeze(["rodHoldMaxKg", "effectiveRodHoldKg"]),
+  }),
+
+  holdToTension: Object.freeze({
+    title: "Hold to tension",
+    formula: "playerHoldTensionKg = fishCanMove ? min(effectiveRodHoldKg * holdTensionRatio, fishPassiveKg * movableHoldTensionCapRatio) : effectiveRodHoldKg * holdTensionRatio",
+    sources: Object.freeze([
+      "effectiveRodHoldKg",
+      "rod.holdTensionRatio",
+      "fishPassiveKg",
+      "physics.fight.tension.movableHoldTensionCapRatio",
+      "fishCanMoveTowardPlayer",
+    ]),
+    outputs: Object.freeze(["playerHoldTensionKg"]),
+  }),
+
+  totalTension: Object.freeze({
+    title: "Total tension and equipment stress",
+    formula: "totalTensionKg = fishTensionKg + playerHoldTensionKg; stress = totalTensionKg / equipmentLimitKg",
+    sources: Object.freeze(["fishTensionKg", "playerHoldTensionKg", "rod/line/hook limits"]),
+    outputs: Object.freeze(["totalTensionKg", "rodStressRatio", "lineStressRatio", "hookStressRatio"]),
+  }),
+
+  movementSpeed: Object.freeze({
+    title: "Movement speed",
+    formula: "netForceKg = effectiveRodHoldKg - fishOppositionKg; speedMps = sqrt(abs(netForceKg) / motionResistance) * speedMultiplier",
+    sources: Object.freeze([
+      "effectiveRodHoldKg",
       "fishOppositionKg",
-      "movementBlocked",
+      "physics.water.motionResistance",
+      "physics.water.speedMultiplier",
+      "fish.physics.movementProfile.baseSpeed",
+      "fish.behaviorProfile.behaviors[state].speedMultiplier",
     ]),
-    outputs: Object.freeze([
-      "playerPullPressureKg",
-      "effectivePlayerPressureKg",
-      "pressureTransferRatio",
-    ]),
-    debugGroup: "ГРАВЕЦЬ → РИБА",
+    outputs: Object.freeze(["netForceKg", "winner", "speedMps", "speedPxPerSecond"]),
   }),
 
-  fishRetrieveOpposition: Object.freeze({
-    title: "Fish Retrieve Opposition",
-    description:
-      "Опір, який треба перебороти перед тим, як риба почне рухатися до гравця.",
-    formula:
-      "fishOppositionKg = bodyResistanceKg + activeAwayForceKg; surplusForceKg = max(0, playerPullPressureKg - fishOppositionKg)",
+  reelHold: Object.freeze({
+    title: "Reel hold",
+    formula: "reelHoldActive = rodStrokeIsFull && playerIsHolding && reelSafeMarginKg > 0; reelRetrieveSpeedMps = baseReelRetrieveSpeedMps * clamp01(reelSafeMarginKg / reelHoldLimitKg)",
     sources: Object.freeze([
-      "fish.weightKg",
-      "fish.physics.retrieveProfile.passiveBodyResistanceMultiplier",
-      "fish.physics.retrieveProfile.activeAwayMultiplier",
-      "physics.fight.fishRetrieve.passiveBodyResistance.tautBodyResistanceKgPerKg",
-      "physics.fight.fishRetrieve.activeFishResistance.activeAwayForceMultiplier",
-      "totalFishForceKg",
-      "awayFromPlayerRatio",
+      "rodStrokeRatio",
+      "playerHoldActive",
+      "reel.maxLoadKg",
+      "totalTensionKg",
+      "reel.retrieveSpeedMetersPerSec",
     ]),
-    outputs: Object.freeze([
-      "bodyResistanceKg",
-      "activeAwayForceKg",
-      "fishOppositionKg",
-      "surplusForceKg",
-    ]),
-    debugGroup: "ГРАВЕЦЬ → РИБА",
-  }),
-
-  pullWaterDrag: Object.freeze({
-    title: "Pull Water Drag",
-    description:
-      "Опір води при протягуванні риби до гравця. Визначає швидкість при наявній надлишковій силі.",
-    formula:
-      "waterDragCapacityKg = fishWeightKg * dragKgPerKgAtReferenceSpeed * fishWaterDragMultiplier; retrieveSpeedMps = referencePullSpeedMps * sqrt(surplusForceKg / waterDragCapacityKg)",
-    sources: Object.freeze([
-      "fish.weightKg",
-      "fish.physics.retrieveProfile.waterDragMultiplier",
-      "fish.physics.retrieveProfile.referencePullSpeedMultiplier",
-      "physics.fight.fishRetrieve.waterDragWhilePulling.dragKgPerKgAtReferenceSpeed",
-      "physics.fight.fishRetrieve.waterDragWhilePulling.referencePullSpeedMetersPerSecond",
-      "surplusForceKg",
-    ]),
-    outputs: Object.freeze([
-      "fishRetrieveWaterDragCapacityKg",
-      "fishRetrieveWaterDragKg",
-      "fishRetrieveSpeedMps",
-      "fishRetrieveAppliedMoveMeters",
-    ]),
-    debugGroup: "ВОДА ПРИ ПІДТЯГУВАННІ",
-  }),
-
-  finalLineTension: Object.freeze({
-    title: "Final Line Tension",
-    description:
-      "Фінальний натяг, який бачить снасть після passive retrieve tension, active fish force і обмежень фрикціону/ліски.",
-    formula:
-      "rawTensionKg = passiveRetrieveTensionKg + activeAwayForceKg; tensionKg = dragCanSlip ? dragLimitKg : rawTensionKg",
-    sources: Object.freeze([
-      "passiveRetrieveTensionKg",
-      "activeAwayForceKg",
-      "dragLimitKg",
-      "dragLocked",
-      "lineHasReserve",
-      "hardLineLimit",
-      "maxTackleLoadKg",
-    ]),
-    outputs: Object.freeze([
-      "rawTensionKg",
-      "tensionKg",
-      "shouldSlipDrag",
-      "tensionMode",
-    ]),
-    debugGroup: "ФІНАЛЬНИЙ НАТЯГ",
+    outputs: Object.freeze(["reelHoldActive", "reelSafeMarginKg", "reelRetrieveSpeedMps"]),
   }),
 });

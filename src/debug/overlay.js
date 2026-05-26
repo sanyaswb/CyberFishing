@@ -219,13 +219,13 @@ class FishStatesModule extends OverlayModule {
 
     for (const [name, cfg] of Object.entries(behaviors)) {
       const color = this.getStateColor(name);
-      const powerRatio = Number(cfg.powerRatio ?? 1) || 1;
-      const speedRatio = Number(cfg.speedRatio ?? 0) || 0;
-      const stateForceKg = basePower * powerRatio;
+      const forceMultiplier = Number(cfg.forceMultiplier ?? 1) || 1;
+      const speedMultiplier = Number(cfg.speedMultiplier ?? 0) || 0;
+      const stateForceKg = basePower * forceMultiplier;
 
       html += `<div style="margin-bottom: 2px; display: flex; justify-content: space-between; font-size: 12px;">
                 <span style="color: ${color}; font-weight: bold;">${name.toUpperCase()}</span>
-                <span style="color: #e6e6e6;">kg: <span style="color: ${color}; font-weight: bold;">${stateForceKg.toFixed(3)}</span> | speed: <span style="color: ${color}; font-weight: bold;">${speedRatio.toFixed(2)}</span></span>
+                <span style="color: #e6e6e6;">kg: <span style="color: ${color}; font-weight: bold;">${stateForceKg.toFixed(3)}</span> | speed: <span style="color: ${color}; font-weight: bold;">${speedMultiplier.toFixed(2)}</span></span>
               </div>`;
     }
     return html + `<div style="margin-bottom: 12px;"></div>`;
@@ -340,15 +340,17 @@ class FightPhysicsModule extends OverlayModule {
       this.#row("Active fish force", this.#kg(d.fishActiveKg, 3), "#ff8888"),
       this.#row("Fish opposition", this.#kg(d.fishOppositionKg, 3), "#ff8888"),
     ]);
-    html += this.#section("PLAYER", [
+    html += this.#section("ROD HOLD", [
       this.#row("Rod hold", this.#kg(d.rodPullForceKg, 3), "#00ff80"),
       this.#row("Rod hold max", this.#kg(d.rodHoldMaxKg, 3), "#ffaa00"),
+      this.#row("Rod stroke", `${this.#meters(d.rodStrokeUsed, 2)} / ${this.#meters(d.rodStrokeCapacity, 2)}`),
       this.#row("Angle multiplier", `x${this.#num(d.anglePenalty || 1, 2)}`),
       this.#row("Effective rod hold", this.#kg(d.effectiveRodHoldKg, 3), "#00ff80"),
       this.#row("Hold tension ratio", this.#percent(d.holdTensionRatio, 1)),
       this.#row("Movable tension cap", this.#kg(d.movableHoldTensionCapKg, 3), "#73c2fb"),
       this.#row("Hold to tension", this.#kg(d.playerHoldTensionKg, 3), "#00ff80"),
     ]);
+    html += this.#section("REEL HOLD", this.#reelHoldRows(d));
     html += this.#section("MOVEMENT", [
       this.#row("Net force", this.#kg(d.netForceKg, 3), this.#netForceColor(d.netForceKg)),
       this.#row("Winner", this.#winner(d.netForceKg), this.#netForceColor(d.netForceKg)),
@@ -366,6 +368,26 @@ class FightPhysicsModule extends OverlayModule {
       this.#row("Hook stress", this.#percent(d.hookStressRatio, 1), this.#stressColor(d.hookStressRatio)),
     ]);
     return html + `<div style="margin-bottom: 12px;"></div>`;
+  }
+
+
+  #reelHoldRows(d) {
+    const reelLimit = Number(d.holdReelRecoverReelMaxLoadKg) || 0;
+    const totalTension = Number(d.totalTensionKg ?? d.calculatedTensionKg) || 0;
+    const safeMarginKg = Math.max(0, reelLimit - totalTension);
+    const reason = d.holdReelRecoverBlockedReason || "not_checked";
+    const active = !!d.holdReelRecoverActive;
+    const eligible = !!d.holdReelRecoverEligible;
+    const state = active ? "YES" : eligible ? "WAIT" : "NO";
+    const color = active ? "#00ff80" : eligible ? "#ffaa00" : "#8a9bac";
+
+    return [
+      this.#row("Reel hold active", state, color),
+      this.#row("Reel safe margin", this.#kg(safeMarginKg, 3), safeMarginKg > 0 ? "#00ff80" : "#ff8888"),
+      this.#row("Reel hold limit", this.#kg(reelLimit, 3)),
+      this.#row("Reel retrieve speed", this.#mps(d.holdReelRecoverSpeedMps, 3), "#00ff80"),
+      this.#row("Reel blocked reason", reason, active ? "#00ff80" : "#8a9bac"),
+    ];
   }
 
   #winner(netForceKg) {

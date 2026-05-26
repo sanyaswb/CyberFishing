@@ -7,6 +7,9 @@ const FIGHT_PHYSICS_CONFIG = {
 
   rodHold: {
     chargeTimeSeconds: 0.35,
+    distanceMultiplierByRodLength: 0.5,
+    minStrokeMeters: 0.001,
+    finalLandingDistanceMeters: 0.5,
 
     anglePenalty: {
       enabled: true,
@@ -22,50 +25,10 @@ const FIGHT_PHYSICS_CONFIG = {
     movableHoldTensionCapRatio: 1.0,
   },
 
-  fishForce: {
-    dynamicLoadFromMotion: {
-      enabled: true,
-
-      directionMultiplier: {
-        sameDirection: 0.4,
-        sideDirection: 1.0,
-        oppositeDirection: 1.8,
-      },
-    },
-
-    exhaustion: {
-      minPowerRatioFallback: 0.25,
-    },
-  },
-
-  playerControl: {
-    steering: {
-      xAxisMultiplier: 1.5,
-      inputSteeringBlend: 0.35,
-      edgePullPenalty: 0.5,
-      distanceXMultiplier: [0.3, 1.0],
-    },
-
-    rodAnglePenalty: {
-      enabled: true,
-      noPenaltyAngleDeg: 15,
-      maxPenaltyAngleDeg: 75,
-      maxPenaltyMultiplier: 0.65,
-    },
-  },
-
-  rodPull: {
+  reelHold: {
     enabled: true,
-    pumpCreditReducesNextPullDistance: false,
-    distanceMultiplierByRodLength: 0.5,
-    strokeChargePerSecond: 1.0,
-    minEffectivePullKg: 0.01,
-    minStrokeMeters: 0.001,
-    finalLandingDistanceMeters: 0.5,
-    controlledPullLimitRatio: 0.6,
+    requireRodStrokeFull: true,
   },
-
-  fishRetrieve: FISH_RETRIEVE_PHYSICS_CONFIG,
 
   landing: {
     catchZone: {

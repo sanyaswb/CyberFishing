@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.19.4 - final reelHold simplified model
+
+- Kept reelHold as a separate post-stroke recovery channel instead of mixing it into rodHold force.
+- Removed old fish resistance/retrieve profile data from presets and predator species.
+- Cleaned the active fight config so the old pressure-transfer, retrieve water-drag and dynamic relative-speed force groups are no longer stored in global fight physics.
+- Updated FishPhysicsProfile runtime normalization to focus on forceProfile, staminaProfile, movementProfile and behaviorProfile only.
+- Reworked golden/fight/rod tests to cover the final simplified formulas and the small-fish movable tension cap.
+- Updated overlay metric formulas to describe the simplified model and reelHold breakdown.
+- Updated validation labels for rodHold/reelHold config leaves.
+
 ## v0.19.3 - crucian simplified fish profile
 
 - Cleaned `crucian_stalker` fish physics for the simplified fight model.

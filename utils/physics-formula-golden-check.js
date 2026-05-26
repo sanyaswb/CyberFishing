@@ -18,230 +18,128 @@ const FILES = [
   "src/config/physics/fight_physics_config.js",
   "src/config/physics/tackle_physics_config.js",
   "src/config/physics/tension_physics_config.js",
-  "src/config/physics/physics_formula_map.js",
   "src/config/physics/physics_config_adapter.js",
   "src/config/physics/physics_config.js",
   "src/config/runtime/config_override_store.js",
   "src/config/runtime/resolved_config_provider.js",
   "src/config/runtime/immutable_config.js",
   "src/config/config.js",
-  "src/core/fishing/fish_retrieve_result.js",
-  "src/core/fishing/fish_retrieve_physics_settings.js",
-  "src/core/fishing/fish_motion_load_calculator.js",
-  "src/core/fishing/fish_retrieve_resistance_calculator.js",
-  "src/core/fishing/pull_water_drag_calculator.js",
-  "src/core/fishing/player_pressure_transfer_calculator.js",
-  "src/core/fishing/line_tension_calculator.js",
   "src/core/fishing/simple_fight_force_calculator.js",
-  "src/core/fishing/fish_pull_resistance_model.js",
-  "src/entities/fish.js",
-  "src/systems/player_force_system.js",
-  "src/systems/fish_force_system.js",
+  "src/core/fishing/line_tension_calculator.js",
+  "src/core/fishing/fish_retrieve_result.js",
   "src/systems/tension_system.js",
   "src/systems/fight_physics_pipeline.js",
 ];
 
-const context = vm.createContext({
-  console,
-  Math,
-  Number,
-  setTimeout,
-  clearTimeout,
-  window: { innerWidth: 1280, innerHeight: 720 },
-});
-
+const context = vm.createContext({ console, Math, Number, Object, window: {} });
 for (const file of FILES) {
-  const source = fs.readFileSync(path.join(ROOT, file), "utf8");
-  vm.runInContext(source, context, { filename: file });
+  vm.runInContext(fs.readFileSync(path.join(ROOT, file), "utf8"), context, { filename: file });
 }
 
 vm.runInContext(`
 const checks = [];
-function assert(condition, message) {
-  if (!condition) throw new Error(message);
-  checks.push(message);
-}
-function approx(value, expected, tolerance, message) {
-  assert(Math.abs(value - expected) <= tolerance, message + " (actual " + value + ", expected " + expected + ")");
-}
-function clone(value) {
-  return JSON.parse(JSON.stringify(value));
-}
-function makeFormulaConfig({ dynamicLoadEnabled = true } = {}) {
-  const config = { physics: clone(CONFIG.physics) };
-  config.physics.simulation.pixelsPerMeter = 50;
-  config.physics.environment.water.fishMotionLoad.speedLoadKgPerKgPerMps = 2.2;
-  config.physics.environment.water.currentInfluenceMultiplier = 1.0;
-  config.physics.fight.fishForce.dynamicLoadFromMotion.enabled = dynamicLoadEnabled;
-  config.physics.fight.fishForce.dynamicLoadFromMotion.directionMultiplier = {
-    sameDirection: 0.4,
-    sideDirection: 1.0,
-    oppositeDirection: 1.8,
-  };
-  config.fightPhysicsConfig = new FightPhysicsConfigAdapter(config);
-  return config;
-}
-function makeFakeFish({ weightKg = 1, staticPowerKg = 1, speedMultiplier = 0.35, waterMultiplier = 1.0 } = {}) {
-  return {
-    getBehavior: () => ({
-      name: "swim",
-      powerRatio: 1,
-      speedRatio: 0,
-      moveX: 1,
-    }),
-    getPhysicsConfig: () => ({
-      forceProfile: {
-        basePower: staticPowerKg,
-        minPowerRatio: 0.25,
-      },
-      movementProfile: {
-        maxSpeedMetersPerSec: 0,
-        agility: 1,
-      },
-      resistanceProfile: {
-        speedForceMultiplier: speedMultiplier,
-        waterResistanceMultiplier: waterMultiplier,
-      },
-      retrieveProfile: {
-        passiveBodyResistanceMultiplier: 1,
-        activeAwayMultiplier: 1,
-        waterDragMultiplier: 1,
-      },
-      behaviorProfile: { behaviors: {} },
-    }),
-    getWeight: () => weightKg,
-    getStaticPowerKg: () => staticPowerKg,
-    getCurrentStaticPowerKg: () => staticPowerKg,
-    getInitialPower: () => staticPowerKg,
-    getMaxSpeedPxPerSec: () => 0,
-    getBaseSpeedPxPerSec: () => 0,
-    getLastDashDebugData: () => ({}),
-  };
-}
-function calculateFishForce({ config, fishVelocity }) {
-  const system = new FishForceSystem({ fish: makeFakeFish(), config });
-  return system.calculate({
-    dtMs: 16.666,
-    fishPosition: new Vector2(0, 0),
-    fishVelocity,
-    rodTipPosition: new Vector2(0, 100),
-    fishCondition: { currentStamina: 100, currentExhaustion: 100, maxPoints: 100 },
-    dragRatio: 1,
-    input: { isPulling: false, pointerDown: false },
-    rod: null,
-    reel: null,
-    playerMaxLoadKg: 2,
-    env: {},
-    buffs: null,
-  });
-}
+function assert(condition, message) { if (!condition) throw new Error(message); checks.push(message); }
+function approx(value, expected, tolerance, message) { assert(Math.abs(value - expected) <= tolerance, message + " (" + value + ")"); }
 
-assert(!!PHYSICS_FORMULA_MAP.fishMotionLoad, "formula map contains fish motion load block");
-assert(!!PHYSICS_FORMULA_MAP.pullWaterDrag, "formula map contains pull water drag block");
-assert(
-  PHYSICS_FORMULA_MAP.pullWaterDrag.outputs.includes("fishRetrieveSpeedMps"),
-  "formula map documents retrieve speed output",
-);
+const calc = new SimpleFightForceCalculator();
 
-const sideLoad = calculateFishForce({
-  config: makeFormulaConfig({ dynamicLoadEnabled: true }),
-  fishVelocity: new Vector2(50, 0),
+const example1 = calc.calculate({
+  fishWeightKg: 1,
+  fishBasePower: 1,
+  fishBaseSpeed: 1,
+  fishStateForceMultiplier: 1,
+  fishStateSpeedMultiplier: 1.2,
+  directionMultiplier: 2.5,
+  tautBodyResistancePerKg: 0.2,
+  rodLimitKg: 1,
+  rodHoldKg: 0.1,
+  rodAngleMultiplier: 1,
+  holdTensionRatio: 1,
+  movableHoldTensionCapRatio: 1,
+  fishCanMoveTowardPlayer: true,
+  waterMotionResistance: 1000,
+  waterSpeedMultiplier: 64,
 });
-approx(sideLoad.debug.relativeSpeedMps, 1, 0.0001, "relative fish speed is converted from px/s to m/s");
-approx(sideLoad.debug.directionResistanceMultiplier, 1, 0.0001, "side motion uses side direction multiplier");
-approx(sideLoad.dynamicFishForceKg, 0.77, 0.0001, "fish motion load golden formula before direction amplification");
+approx(example1.fishPassiveKg, 0.2, 0.0001, "example 1 passive force");
+approx(example1.fishActiveKg, 0.5, 0.0001, "example 1 active force");
+approx(example1.fishOppositionKg, 0.7, 0.0001, "example 1 opposition");
+approx(example1.totalTensionKg, 0.8, 0.0001, "example 1 total tension");
+approx(example1.awaySpeedMps, Math.sqrt(0.6 / 1000) * 64 * 1.2, 0.0001, "example 1 away speed");
+assert(example1.direction === "away", "example 1 fish wins");
 
-const oppositeLoad = calculateFishForce({
-  config: makeFormulaConfig({ dynamicLoadEnabled: true }),
-  fishVelocity: new Vector2(0, -50),
+const example2 = calc.calculate({
+  fishWeightKg: 2.5,
+  fishBasePower: 1.2,
+  fishBaseSpeed: 0.8,
+  fishStateForceMultiplier: 1,
+  fishStateSpeedMultiplier: 0.8,
+  directionMultiplier: 1,
+  tautBodyResistancePerKg: 0.2,
+  rodLimitKg: 3,
+  rodHoldKg: 1.6,
+  rodAngleMultiplier: 0.9,
+  holdTensionRatio: 0.5,
+  movableHoldTensionCapRatio: 1,
+  fishCanMoveTowardPlayer: true,
+  waterMotionResistance: 1000,
+  waterSpeedMultiplier: 64,
 });
-approx(oppositeLoad.debug.directionResistanceMultiplier, 1.8, 0.0001, "away motion uses opposite direction multiplier");
-approx(oppositeLoad.dynamicFishForceKg, 1.386, 0.0001, "fish motion load applies direction multiplier");
+approx(example2.fishPassiveKg, 0.6, 0.0001, "example 2 passive force");
+approx(example2.fishActiveKg, 0.6, 0.0001, "example 2 active force");
+approx(example2.effectiveRodHoldKg, 1.44, 0.0001, "example 2 angle penalty applies");
+approx(example2.playerHoldTensionKg, 0.6, 0.0001, "example 2 movable cap limits hold tension");
+approx(example2.totalTensionKg, 1.8, 0.0001, "example 2 total tension");
+approx(example2.towardPlayerSpeedMps, Math.sqrt(0.24 / 1000) * 64, 0.0001, "example 2 pull speed");
+assert(example2.direction === "toward_player", "example 2 player wins");
 
-const disabledLoad = calculateFishForce({
-  config: makeFormulaConfig({ dynamicLoadEnabled: false }),
-  fishVelocity: new Vector2(0, -50),
+const smallFish = calc.calculate({
+  fishWeightKg: 0.2,
+  fishBasePower: 1,
+  fishStateForceMultiplier: 1,
+  directionMultiplier: 2.5,
+  tautBodyResistancePerKg: 0.2,
+  rodLimitKg: 3,
+  rodHoldKg: 2,
+  holdTensionRatio: 1,
+  movableHoldTensionCapRatio: 1,
+  fishCanMoveTowardPlayer: true,
+  waterMotionResistance: 1000,
+  waterSpeedMultiplier: 64,
 });
-approx(disabledLoad.dynamicFishForceKg, 0, 0.0001, "disabled dynamic motion load forces dynamicFishForceKg to zero");
-assert(disabledLoad.debug.dynamicLoadEnabled === false, "disabled dynamic motion load is visible in debug");
+approx(smallFish.totalTensionKg, 0.18, 0.0001, "movable small fish does not overload line");
+assert(smallFish.towardPlayerSpeedMps > 2.7, "small fish excess hold becomes speed");
 
-const retrieveModel = new FishPullResistanceModel({
-  tautBodyResistanceKgPerKg: 0,
-  activeAwayForceMultiplier: 0,
-  referencePullSpeedMetersPerSecond: 1,
-  waterDragKgPerKgAtReferenceSpeed: 0.85,
-  playerPressureTransferReferenceWeightKg: 0.5,
-  minPlayerPressureTransferRatio: 0.05,
-  blockedPlayerPressureTransferRatio: 1,
+const blockedSmallFish = calc.calculate({
+  fishWeightKg: 0.2,
+  fishBasePower: 1,
+  fishStateForceMultiplier: 1,
+  directionMultiplier: 2.5,
+  tautBodyResistancePerKg: 0.2,
+  rodLimitKg: 3,
+  rodHoldKg: 2,
+  holdTensionRatio: 1,
+  movableHoldTensionCapRatio: 1,
+  fishCanMoveTowardPlayer: false,
 });
-const retrieve = retrieveModel.calculate({
-  dtSec: 1,
-  holdRatio: 1,
-  playerPullPressureKg: 0.85,
-  fishWeightKg: 4,
-  totalFishForceKg: 0,
-  awayFromPlayerRatio: 0,
-  fishConfig: {
-    retrieveProfile: {
-      passiveBodyResistanceMultiplier: 1,
-      activeAwayMultiplier: 1,
-      waterDragMultiplier: 1,
-      referencePullSpeedMultiplier: 1,
-    },
-  },
-  lineDistanceMeters: 10,
-  landingDistanceMeters: 1,
-  movementBlocked: false,
-  lineTaut: true,
-});
-approx(retrieve.waterDragCapacityKg, 3.4, 0.0001, "retrieve drag capacity scales by fish weight and global drag");
-approx(retrieve.retrieveSpeedMetersPerSecond, 0.5, 0.0001, "retrieve speed uses sqrt(surplus / waterDragCapacity)");
-approx(retrieve.waterDragKg, 0.85, 0.0001, "water drag at half reference speed follows speed squared");
+approx(blockedSmallFish.totalTensionKg, 2.14, 0.0001, "blocked small fish can overload line");
 
-const doubledDrag = retrieveModel.calculate({
-  dtSec: 1,
-  holdRatio: 1,
-  playerPullPressureKg: 0.85,
-  fishWeightKg: 4,
-  totalFishForceKg: 0,
-  awayFromPlayerRatio: 0,
-  fishConfig: {
-    retrieveProfile: { waterDragMultiplier: 2 },
-  },
-  lineDistanceMeters: 10,
-  landingDistanceMeters: 1,
-  movementBlocked: false,
-  lineTaut: true,
+const stress = new TensionSystem().calculate({
+  totalTensionKg: 5.44,
+  fishTensionKg: 3.84,
+  playerHoldTensionKg: 1.6,
+  rodLimitKg: 8,
+  lineLimitKg: 6,
+  hookLimitKg: 6,
+  dragLocked: true,
 });
-approx(doubledDrag.waterDragCapacityKg, 6.8, 0.0001, "species waterDragMultiplier scales retrieve drag capacity");
-approx(doubledDrag.retrieveSpeedMetersPerSecond, Math.sqrt(0.85 / 6.8), 0.0001, "species waterDragMultiplier slows retrieve speed through capacity");
-
+approx(stress.rodStressRatio, 0.68, 0.0001, "rod stress from total tension");
+approx(stress.lineStressRatio, 5.44 / 6, 0.0001, "line stress from total tension");
+approx(stress.hookStressRatio, 5.44 / 6, 0.0001, "hook stress from total tension");
 
 const pipelineFrame = new FightPhysicsPipeline().startFrame();
-for (const stepName of FightPhysicsPipeline.STEPS) {
-  pipelineFrame.run(stepName, () => null);
-}
-assert(
-  pipelineFrame.toDebugData().length === FightPhysicsPipeline.STEPS.length,
-  "fight physics pipeline records every explicit frame step",
-);
-assert(
-  pipelineFrame.toDebugData()[0].step === "read_runtime_config" &&
-    pipelineFrame.toDebugData().at(-1).step === "write_debug_snapshot",
-  "fight physics pipeline preserves documented step order",
-);
-
-const tension = new TensionSystem().calculate({
-  fishForceKg: 3,
-  rodPullForceKg: 0,
-  dragLimitKg: 2,
-  hardLineLimit: false,
-  lineHasReserve: true,
-  dragLocked: false,
-});
-approx(tension.rawTensionKg, 3, 0.0001, "tension raw value keeps full retrieve line tension");
-approx(tension.tensionKg, 2, 0.0001, "unlocked drag clamps final tension to drag limit when line has reserve");
-assert(tension.shouldSlipDrag, "tension reports slipping drag when clamped");
+for (const stepName of FightPhysicsPipeline.STEPS) pipelineFrame.run(stepName, () => null);
+assert(pipelineFrame.toDebugData()[0].step === "read_runtime_config", "pipeline starts with runtime config");
+assert(pipelineFrame.toDebugData().at(-1).step === "write_debug_snapshot", "pipeline ends with debug snapshot");
 
 console.log("physics-formula-golden-check passed:");
 for (const message of checks) console.log("- " + message);

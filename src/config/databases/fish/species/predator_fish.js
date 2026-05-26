@@ -48,7 +48,6 @@ const PREDATOR_FISH = [
     physics: {
       forceProfile: {
         basePower: 1.0,
-        minPowerRatio: 0.25,
       },
 
       staminaProfile: {
@@ -57,7 +56,6 @@ const PREDATOR_FISH = [
 
       movementProfile: {
         baseSpeed: 1.0,
-        maxSpeedMetersPerSec: 2.2,
         agility: 1.3,
         bounceCooldownMs: 2000,
         dirChangeMinMs: 500,
@@ -72,25 +70,11 @@ const PREDATOR_FISH = [
         },
       },
 
-      resistanceProfile: {
-        speedForceMultiplier: 0.35,
-        waterResistanceMultiplier: 1.0,
-      },
-
-      retrieveProfile: {
-        passiveBodyResistanceMultiplier: 1.0,
-        activeAwayMultiplier: 1.0,
-        waterDragMultiplier: 1.0,
-        referencePullSpeedMultiplier: 1.0,
-      },
-
       behaviorProfile: {
         behaviors: {
           idle: {
             forceMultiplier: 0.8,
             speedMultiplier: 0.8,
-            powerRatio: 0.8,
-            speedRatio: 0.8,
             minTime: 500,
             maxTime: 2000,
             weight: 10,
@@ -98,8 +82,6 @@ const PREDATOR_FISH = [
           rest: {
             forceMultiplier: 0.5,
             speedMultiplier: 0.5,
-            powerRatio: 0.5,
-            speedRatio: 0.5,
             minTime: 500,
             maxTime: 2500,
             weight: 5,
@@ -107,8 +89,6 @@ const PREDATOR_FISH = [
           swim: {
             forceMultiplier: 1.0,
             speedMultiplier: 1.0,
-            powerRatio: 1.0,
-            speedRatio: 1.0,
             minTime: 2000,
             maxTime: 4000,
             weight: 55,
@@ -116,8 +96,6 @@ const PREDATOR_FISH = [
           dash: {
             forceMultiplier: 2.0,
             speedMultiplier: 1.0,
-            powerRatio: 2.0,
-            speedRatio: 1.0,
             minTime: 500,
             maxTime: 1200,
             weight: 30,
@@ -126,8 +104,6 @@ const PREDATOR_FISH = [
             enabled: true,
             forceMultiplier: 2.2,
             speedMultiplier: 1.2,
-            powerRatio: 2.2,
-            speedRatio: 1.2,
             minTime: 1000,
             maxTime: 3000,
             weight: 0,

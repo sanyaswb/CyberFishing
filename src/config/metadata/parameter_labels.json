@@ -12,60 +12,60 @@
     "description": "Верхня межа dt, щоб при лагах фізика не отримувала занадто великий стрибок часу."
   },
   "physics.water.tautBodyResistancePerKg": {
-    "label": "Water passive resistance per kg",
-    "description": "Global kg resistance created by 1 kg of fish body on a taut line in the simplified fight model."
+    "label": "Вага риби у воді на кг",
+    "description": "Глобальний коефіцієнт: fishPassiveKg = fishWeightKg * tautBodyResistancePerKg * fishBasePower."
   },
   "physics.water.motionResistance": {
-    "label": "Water motion resistance",
-    "description": "Single global movement resistance used by the simplified net-force speed formula."
+    "label": "Опір руху води",
+    "description": "Єдиний глобальний уповільнювач руху: speed = sqrt(abs(netForceKg)/motionResistance) * speedMultiplier."
   },
   "physics.water.speedMultiplier": {
-    "label": "Water speed multiplier",
-    "description": "Gameplay multiplier that converts sqrt(force / resistance) into meters per second."
+    "label": "Множник швидкості води",
+    "description": "Ігровий масштаб швидкості після опору води."
   },
   "physics.fight.directionForce.towardPlayerMultiplier": {
-    "label": "Toward-player force multiplier",
-    "description": "Direction force multiplier when fish movement points toward the player."
+    "label": "Напрямок до гравця",
+    "description": "Множник активної сили, коли риба рухається до гравця."
   },
   "physics.fight.directionForce.sideMultiplier": {
-    "label": "Side force multiplier",
-    "description": "Direction force multiplier when fish movement is mostly sideways."
+    "label": "Напрямок боком",
+    "description": "Множник активної сили, коли риба рухається боком."
   },
   "physics.fight.directionForce.awayMultiplier": {
-    "label": "Away force multiplier",
-    "description": "Direction force multiplier when fish movement points away from the player."
+    "label": "Напрямок від гравця",
+    "description": "Множник активної сили, коли риба рухається від гравця."
   },
   "physics.fight.rodHold.chargeTimeSeconds": {
-    "label": "Rod hold charge time",
-    "description": "Seconds for hold force to charge from zero to the available maximum in the simplified model."
+    "label": "Час набору rod hold",
+    "description": "За скільки секунд hold набирається від 0 до rodHoldMax."
   },
   "physics.fight.rodHold.anglePenalty.enabled": {
-    "label": "Rod hold angle penalty enabled",
-    "description": "Enables angle penalty for rod hold force in the simplified model."
+    "label": "Кутовий штраф увімкнено",
+    "description": "Дозволяє зменшувати effectiveRodHoldKg при поганому куті вудки."
   },
   "physics.fight.rodHold.anglePenalty.noPenaltyAngleDeg": {
-    "label": "Rod hold no-penalty angle",
-    "description": "Angle below which hold force has no penalty."
+    "label": "Кут без штрафу",
+    "description": "До цього кута rodAngleMultiplier залишається 1.0."
   },
   "physics.fight.rodHold.anglePenalty.maxPenaltyAngleDeg": {
-    "label": "Rod hold max-penalty angle",
-    "description": "Angle at which hold force reaches the maximum penalty."
+    "label": "Кут максимального штрафу",
+    "description": "На цьому куті застосовується maxPenaltyMultiplier."
   },
   "physics.fight.rodHold.anglePenalty.maxPenaltyMultiplier": {
-    "label": "Rod hold max-penalty multiplier",
-    "description": "Remaining hold force multiplier at maximum angle penalty."
+    "label": "Максимальний множник штрафу",
+    "description": "0.9 означає -10% від hold-сили гравця."
   },
   "physics.fight.tension.smoothingPerSecond": {
-    "label": "Simplified tension smoothing",
-    "description": "Smoothing speed for total tension in the simplified fight model."
+    "label": "Згладжування tension",
+    "description": "Швидкість згладжування відображення/стану tension."
   },
   "physics.fight.tension.slackTensionKg": {
-    "label": "Slack tension",
-    "description": "Tension value used when line slack removes fish tension in the simplified model."
+    "label": "Tension при провисанні",
+    "description": "Натяг, коли ліска провисла."
   },
   "physics.fight.tension.movableHoldTensionCapRatio": {
-    "label": "Movable hold tension cap ratio",
-    "description": "Caps hold tension by fish passive force while the fish can move toward the player."
+    "label": "Cap hold tension рухомої риби",
+    "description": "Якщо риба може рухатися, hold додає в tension не більше fishPassiveKg * ratio."
   },
   "physics.environment.water.currentInfluenceMultiplier": {
     "label": "Множник впливу течії",
@@ -74,26 +74,6 @@
   "physics.environment.water.fishMotionLoad.speedLoadKgPerKgPerMps": {
     "label": "Динамічне навантаження руху риби у воді",
     "description": "Глобальна база для сили від руху риби крізь воду. Формула шару: вага риби * відносна швидкість м/с * цей параметр * множники виду * множник напрямку."
-  },
-  "physics.fight.fishForce.dynamicLoadFromMotion.enabled": {
-    "label": "Увімкнути навантаження від руху риби",
-    "description": "Вмикає або вимикає додаткову динамічну силу від руху риби у воді. Якщо вимкнено, dynamicFishForceKg має бути 0."
-  },
-  "physics.fight.fishForce.dynamicLoadFromMotion.directionMultiplier.sameDirection": {
-    "label": "Множник руху до гравця",
-    "description": "Множник динамічного навантаження, коли риба рухається у напрямку гравця. Менше значення = рух до гравця створює менше опору."
-  },
-  "physics.fight.fishForce.dynamicLoadFromMotion.directionMultiplier.sideDirection": {
-    "label": "Множник бокового руху",
-    "description": "Множник динамічного навантаження, коли риба рухається приблизно поперек лінії до гравця."
-  },
-  "physics.fight.fishForce.dynamicLoadFromMotion.directionMultiplier.oppositeDirection": {
-    "label": "Множник руху від гравця",
-    "description": "Множник динамічного навантаження, коли риба рухається від гравця. Більше значення = втеча риби сильніше навантажує снасть."
-  },
-  "physics.fight.fishForce.exhaustion.minPowerRatioFallback": {
-    "label": "Мінімальна частка сили риби за замовчуванням",
-    "description": "Fallback для видів риби без власного minPowerRatio. Не дає силі риби впасти нижче заданої частки від базової сили."
   },
   "physics.fight.playerControl.steering.xAxisMultiplier": {
     "label": "Множник бокового контролю вудкою",
@@ -158,34 +138,6 @@
   "physics.fight.rodPull.controlledPullLimitRatio": {
     "label": "Ліміт контрольованої тяги",
     "description": "Максимальний player pressure як частка від міцності снасті. 0.6 на снасті 2 кг дає максимум 1.2 кг контрольованого тиску."
-  },
-  "physics.fight.fishRetrieve.passiveBodyResistance.tautBodyResistanceKgPerKg": {
-    "label": "Пасивний опір тіла риби",
-    "description": "Пасивне навантаження від ваги риби на натягнутій лісці. Формула: fishWeightKg * value."
-  },
-  "physics.fight.fishRetrieve.activeFishResistance.activeAwayForceMultiplier": {
-    "label": "Активний опір риби від гравця",
-    "description": "Множить силу риби, коли її активний напрямок спрямований від гравця."
-  },
-  "physics.fight.fishRetrieve.waterDragWhilePulling.referencePullSpeedMetersPerSecond": {
-    "label": "Референсна швидкість підтягування",
-    "description": "Базова швидкість для формули water drag. Це еталонна точка, відносно якої рахується швидкість підтягування."
-  },
-  "physics.fight.fishRetrieve.waterDragWhilePulling.dragKgPerKgAtReferenceSpeed": {
-    "label": "Опір води при підтягуванні",
-    "description": "Визначає, наскільки повільно риба протягується через воду при надлишковій силі гравця. Більше значення = менша retrieve speed."
-  },
-  "physics.fight.fishRetrieve.playerPressureTransfer.referenceWeightKg": {
-    "label": "Референсна вага передачі тиску",
-    "description": "Вага, через яку рахується частка player pressure, що переходить у реальний tension. Більше значення = легка риба бере менше тиску."
-  },
-  "physics.fight.fishRetrieve.playerPressureTransfer.minTransferRatio": {
-    "label": "Мінімальна передача тиску",
-    "description": "Мінімальна частина player pressure, яка завжди переходить у tension навіть на легкій рибі."
-  },
-  "physics.fight.fishRetrieve.playerPressureTransfer.blockedTransferRatio": {
-    "label": "Передача тиску при блокуванні",
-    "description": "Скільки player pressure переходить у tension, якщо рух риби заблокований берегом, межею ліски або водною колізією."
   },
   "physics.fight.landing.catchZone.reel.landingDistanceMeters": {
     "label": "Landing distance для снасті з котушкою",
@@ -479,10 +431,6 @@
     "label": "Базова сила виду риби",
     "description": "Структурований профіль сили. Разом із вагою риби та levelBasePower формує staticFishForceKg."
   },
-  "fish.physics.forceProfile.minPowerRatio": {
-    "label": "Мінімальна частка сили виду",
-    "description": "Нижня межа сили риби відносно базової сили виду. Не дає виснаженій рибі впасти нижче заданої частки."
-  },
   "fish.physics.forceProfile.levelBasePower": {
     "label": "Множник сили рівня риби",
     "description": "Runtime-множник із weightConfig.levelWeightRanges для конкретного рівня/ваги спійманої риби."
@@ -502,10 +450,6 @@
   "fish.physics.staminaProfile.exhaustedSpeedRatio": {
     "label": "Швидкість виснаженої риби",
     "description": "Множник швидкості, до якого риба наближається при виснаженні exhaustion."
-  },
-  "fish.physics.movementProfile.maxSpeedMetersPerSec": {
-    "label": "Максимальна швидкість виду",
-    "description": "Базова швидкість виду риби в м/с. behavior.speedRatio множиться на це значення."
   },
   "fish.physics.movementProfile.agility": {
     "label": "Спритність виду риби",
@@ -527,32 +471,28 @@
     "label": "Тригер останнього ривка",
     "description": "Поведінкова умова, яка може примусово включити lastDash біля landing/catch зони."
   },
-  "fish.physics.resistanceProfile.speedForceMultiplier": {
-    "label": "Множник навантаження від швидкості виду",
-    "description": "Видовий множник dynamicFishForceKg від руху риби у воді. Формула шару включає вагу, relativeSpeedMps, глобальний speedLoad і direction multiplier."
-  },
-  "fish.physics.resistanceProfile.waterResistanceMultiplier": {
-    "label": "Множник водного навантаження виду",
-    "description": "Видовий множник динамічного навантаження від руху риби у воді."
-  },
-  "fish.physics.retrieveProfile.passiveBodyResistanceMultiplier": {
-    "label": "Множник пасивного опору тіла виду",
-    "description": "Видовий множник passiveBodyResistance при підтягуванні. Множиться на глобальний tautBodyResistanceKgPerKg."
-  },
-  "fish.physics.retrieveProfile.activeAwayMultiplier": {
-    "label": "Множник активного опору виду",
-    "description": "Видовий множник активного опору, коли риба тягне від гравця під час підтягування."
-  },
-  "fish.physics.retrieveProfile.waterDragMultiplier": {
-    "label": "Множник water drag виду",
-    "description": "Видовий множник опору води при протягуванні риби. Множиться на fishWeightKg і глобальний dragKgPerKgAtReferenceSpeed."
-  },
-  "fish.physics.retrieveProfile.referencePullSpeedMultiplier": {
-    "label": "Множник референсної швидкості виду",
-    "description": "Видовий множник referencePullSpeedMetersPerSecond. Більше значення = цей вид легше набирає швидкість підтягування за тієї самої надлишкової сили."
-  },
   "fish.physics.behaviorProfile.behaviors": {
     "label": "Профіль станів поведінки риби",
     "description": "Набір станів idle/rest/swim/dash/lastDash. Кожен стан визначає powerRatio, speedRatio, тривалість і вагу вибору."
+  },
+  "physics.fight.rodHold.distanceMultiplierByRodLength": {
+    "label": "Довжина ходу вудки",
+    "description": "Множник довжини вудки, який визначає максимальний rod stroke у метрах."
+  },
+  "physics.fight.rodHold.minStrokeMeters": {
+    "label": "Мінімальний хід вудки",
+    "description": "Мінімальна корисна дистанція руху rodHold у метрах."
+  },
+  "physics.fight.rodHold.finalLandingDistanceMeters": {
+    "label": "Фінальна дистанція виважування",
+    "description": "Дистанція, на якій риба біля берега все ще може бути підтягнута ходом вудки."
+  },
+  "physics.fight.reelHold.enabled": {
+    "label": "Reel hold увімкнено",
+    "description": "Дозволяє підмотку катушкою після повного ходу вудки, якщо tension безпечний."
+  },
+  "physics.fight.reelHold.requireRodStrokeFull": {
+    "label": "Reel hold після повного ходу",
+    "description": "Якщо true, катушка підмотує в hold-режимі тільки після використання повного rod stroke."
   }
 }

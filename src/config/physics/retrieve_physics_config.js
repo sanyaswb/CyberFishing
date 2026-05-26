@@ -1,24 +1,3 @@
-const FISH_RETRIEVE_PHYSICS_CONFIG = {
-  passiveBodyResistance: {
-    tautBodyResistanceKgPerKg: 0.2,
-  },
-
-  activeFishResistance: {
-    activeAwayForceMultiplier: 1.0,
-  },
-
-  waterDragWhilePulling: {
-    referencePullSpeedMetersPerSecond: 1.0,
-    dragKgPerKgAtReferenceSpeed: 1.0,
-  },
-
-  playerPressureTransfer: {
-    referenceWeightKg: 0.5,
-    minTransferRatio: 0.05,
-    blockedTransferRatio: 1.0,
-  },
-};
-
 const PASSIVE_RETRIEVE_PHYSICS_CONFIG = {
   passiveRetrievePowerRatio: 1.0,
   multiplier: 35,

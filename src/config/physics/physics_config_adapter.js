@@ -159,7 +159,28 @@ class FightPhysicsConfigAdapter {
   }
 
   getRodPullConfig() {
-    return this.#physics().fight?.rodPull || {};
+    const rodHold = this.#physics().fight?.rodHold || {};
+    const legacy = this.#physics().fight?.rodPull || {};
+    return {
+      ...legacy,
+      ...rodHold,
+      rodHold,
+      strokeChargePerSecond:
+        legacy.strokeChargePerSecond ??
+        (rodHold.chargeTimeSeconds > 0 ? 1 / rodHold.chargeTimeSeconds : undefined),
+      distanceMultiplierByRodLength:
+        rodHold.distanceMultiplierByRodLength ??
+        legacy.distanceMultiplierByRodLength ??
+        0.5,
+      minStrokeMeters:
+        rodHold.minStrokeMeters ??
+        legacy.minStrokeMeters ??
+        0.001,
+      finalLandingDistanceMeters:
+        rodHold.finalLandingDistanceMeters ??
+        legacy.finalLandingDistanceMeters ??
+        0.5,
+    };
   }
 
   getPassiveRetrieveConfig() {
@@ -310,7 +331,11 @@ class FightPhysicsConfigAdapter {
   }
 
   getRodAnglePenaltyConfig() {
-    return this.#physics().fight?.playerControl?.rodAnglePenalty || {};
+    return (
+      this.#physics().fight?.rodHold?.anglePenalty ||
+      this.#physics().fight?.playerControl?.rodAnglePenalty ||
+      {}
+    );
   }
 
   getPlayerSteeringMultiplier() {
