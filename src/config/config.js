@@ -467,11 +467,6 @@ const CONFIG = {
     kgSmoothPerSecond: 2.5,
     // 100% tension is the deterministic failure threshold.
     overloadGraceMs: 0,
-    powerRatioExponent: 2.0,
-    sensitivityMultiplier: 1.5, // How much player input affects tension
-    smoothApproach: 0.15,
-    reelRecoveryMultiplier: 0.2,
-
     // Pulse effect
     pulseSpeedBaseMultiplier: 0.05,
     pulseSpeedMax: 10,

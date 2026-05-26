@@ -71,10 +71,6 @@
     "label": "Множник впливу течії",
     "description": "Множить швидкість течії при розрахунку відносної швидкості риби у воді. Більше значення = течія сильніше впливає на динамічне навантаження."
   },
-  "physics.environment.water.fishMotionLoad.speedLoadKgPerKgPerMps": {
-    "label": "Динамічне навантаження руху риби у воді",
-    "description": "Глобальна база для сили від руху риби крізь воду. Формула шару: вага риби * відносна швидкість м/с * цей параметр * множники виду * множник напрямку."
-  },
   "physics.fight.playerControl.steering.xAxisMultiplier": {
     "label": "Множник бокового контролю вудкою",
     "description": "Множить максимальну силу керування по X для debug/read-model і бокового контролю. Більше значення = вудка сильніше контролює бік."
@@ -258,22 +254,6 @@
   "physics.tension.overloadGraceMs": {
     "label": "Затримка перед поломкою",
     "description": "Скільки мілісекунд снасть може бути у перевантаженні перед deterministic break. 0 = миттєво."
-  },
-  "physics.tension.powerRatioExponent": {
-    "label": "Експонента шкали натягу",
-    "description": "Крива перетворення відносного навантаження в UI/відчуття tension. Перевірити фактичне використання перед балансуванням."
-  },
-  "physics.tension.sensitivityMultiplier": {
-    "label": "Чутливість натягу",
-    "description": "Множник чутливості tension до input/навантаження. Перевірити фактичне використання перед балансуванням."
-  },
-  "physics.tension.smoothApproach": {
-    "label": "Legacy згладжування натягу",
-    "description": "Старий параметр плавного наближення tension. Може дублювати kgSmoothPerSecond."
-  },
-  "physics.tension.reelRecoveryMultiplier": {
-    "label": "Множник відновлення натягу котушкою",
-    "description": "Впливає на те, як котушка зменшує або стабілізує tension під час recovery. Перевірити фактичне використання."
   },
   "physics.tension.breaking.thresholdPercent": {
     "label": "Поріг поломки у відсотках",
@@ -473,7 +453,7 @@
   },
   "fish.physics.behaviorProfile.behaviors": {
     "label": "Профіль станів поведінки риби",
-    "description": "Набір станів idle/rest/swim/dash/lastDash. Кожен стан визначає powerRatio, speedRatio, тривалість і вагу вибору."
+    "description": "Набір станів idle/rest/swim/dash/lastDash. Кожен стан визначає forceMultiplier, speedMultiplier, тривалість і вагу вибору."
   },
   "physics.fight.rodHold.distanceMultiplierByRodLength": {
     "label": "Довжина ходу вудки",

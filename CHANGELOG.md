@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.19.5 - production simplified fight cleanup
+
+- Removed unused legacy fight helper files for pressure transfer, water-drag retrieve resistance and dynamic motion load.
+- Kept `physics.retrieve` only for lure/pole/bite gameplay, not fight tension.
+- Cleaned `FightPhysicsConfigAdapter`, `FishRetrieveResult`, overlay/debug rows and docs around the simplified model.
+- Updated formula documentation to describe passive fish force, active fish force, rodHold, movable tension cap, stress and reelHold.
+- Reduced active JavaScript file count and removed dead script tags from `index.html`.
+
 ## v0.19.4 - final reelHold simplified model
 
 - Kept reelHold as a separate post-stroke recovery channel instead of mixing it into rodHold force.

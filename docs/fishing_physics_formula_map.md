@@ -1,197 +1,122 @@
-# Fishing Physics Formula Map
+# CyberFishing simplified fight physics formula map
 
-Цей документ пояснює не “де лежить параметр”, а **який параметр на який debug output впливає**. Одиниця `Kg` у fight physics є gameplay load unit, прив'язаною до кг навантаження снасті, а не повною фізичною моделлю ньютонів.
+This document describes the production fight model used from `v0.19.5`.
+The old pressure-transfer / retrieve-water-drag / dynamic-relative-speed fight model is no longer the active model.
 
-## 1. РИБА → СНАСТЬ
-
-### Fish Motion Load
-
-Навантаження від руху риби у воді:
+## Core idea
 
 ```txt
-dynamicFishForceKg =
+fish = passive water weight + active state/direction force
+player = rodHold force
+movement = rodHold force - fish opposition
+tension = fish tension + capped player hold tension
+reelHold = safe line recovery after rod stroke is full, not extra fight force
+```
+
+## 1. Fish passive force
+
+```js
+fishPassiveKg =
   fishWeightKg
-  * relativeSpeedMps
-  * fish.physics.resistanceProfile.speedForceMultiplier
-  * fish.physics.resistanceProfile.waterResistanceMultiplier
-  * physics.environment.water.fishMotionLoad.speedLoadKgPerKgPerMps
-  * directionResistanceMultiplier
+  * physics.water.tautBodyResistancePerKg
+  * fish.physics.forceProfile.basePower;
 ```
 
-**Sources:**
+Meaning: the fish's effective water weight on a taut line.
 
-- `fish.weightKg`
-- `runtime.relativeSpeedMps`
-- `fish.physics.resistanceProfile.speedForceMultiplier`
-- `fish.physics.resistanceProfile.waterResistanceMultiplier`
-- `physics.environment.water.fishMotionLoad.speedLoadKgPerKgPerMps`
-- `physics.fight.fishForce.dynamicLoadFromMotion.directionMultiplier`
-- `physics.fight.fishForce.dynamicLoadFromMotion.enabled`
+## 2. Fish active force
 
-**Outputs:**
-
-- `dynamicFishForceKg`
-- `directionResistanceMultiplier`
-- `totalFishForceKg`
-
-### Fish Total Force
-
-Підсумкова сила риби:
-
-```txt
-totalFishForceKg = max(
-  staticFishForceKg * minPowerRatio,
-  (staticFishForceKg * behaviorPowerRatio + dynamicFishForceKg)
-    * exhaustionPowerMultiplier
-)
+```js
+fishActiveKg =
+  fishPassiveKg
+  * fishStateForceMultiplier
+  * directionMultiplier;
 ```
 
-**Sources:**
+`fishStateForceMultiplier` comes from the active behavior state.
+`directionMultiplier` comes from `physics.fight.directionForce`.
 
-- `fish.physics.forceProfile.basePower`
-- `fish.physics.forceProfile.minPowerRatio`
-- `fish.behaviorProfile.behaviors[state].powerRatio`
-- `dynamicFishForceKg`
-- `fishCondition.currentExhaustion`
-- `fishCondition.maxPoints`
+## 3. Fish opposition
 
-**Outputs:**
-
-- `staticFishForceKg`
-- `totalFishForceKg`
-- `exhaustionPowerMultiplier`
-
-## 2. ГРАВЕЦЬ → РИБА
-
-### Player Pull Pressure
-
-Передача тиску гравця в натяг:
-
-```txt
-effectivePlayerPressureKg =
-  playerPullPressureKg * pressureTransferRatio
+```js
+fishOppositionKg = fishPassiveKg + fishActiveKg;
+fishTensionKg = isLineSlack ? 0 : fishOppositionKg;
 ```
 
-`pressureTransferRatio` залежить від ваги риби, опору риби, blocked-state і глобальних параметрів transfer-моделі.
+Meaning: the force the player must exceed to move the fish toward the player.
 
-**Sources:**
+## 4. Rod hold
 
-- `rodPullResult.forceKg`
-- `fishWeightKg`
-- `fishOppositionKg`
-- `movementBlocked`
-- `physics.fight.fishRetrieve.playerPressureTransfer.referenceWeightKg`
-- `physics.fight.fishRetrieve.playerPressureTransfer.minTransferRatio`
-- `physics.fight.fishRetrieve.playerPressureTransfer.blockedTransferRatio`
-
-**Outputs:**
-
-- `playerPullPressureKg`
-- `effectivePlayerPressureKg`
-- `pressureTransferRatio`
-
-### Fish Retrieve Opposition
-
-Опір риби проти підтягування:
-
-```txt
-bodyResistanceKg =
-  fishWeightKg
-  * physics.fight.fishRetrieve.passiveBodyResistance.tautBodyResistanceKgPerKg
-  * fish.physics.retrieveProfile.passiveBodyResistanceMultiplier
-
-activeAwayForceKg =
-  totalFishForceKg
-  * awayFromPlayerRatio
-  * physics.fight.fishRetrieve.activeFishResistance.activeAwayForceMultiplier
-  * fish.physics.retrieveProfile.activeAwayMultiplier
-
-fishOppositionKg = bodyResistanceKg + activeAwayForceKg
-surplusForceKg = max(0, playerPullPressureKg - fishOppositionKg)
+```js
+rodHoldMaxKg = Math.max(0, rodLimitKg - fishTensionKg);
+effectiveRodHoldKg = min(rodHoldKg, rodHoldMaxKg) * rodAngleMultiplier;
 ```
 
-**Outputs:**
+Full `effectiveRodHoldKg` works against the fish. It is not clamped by the line.
+A weak line can still break if the player over-holds.
 
-- `bodyResistanceKg`
-- `activeAwayForceKg`
-- `fishOppositionKg`
-- `fishRetrieveSurplusForceKg`
+## 5. Hold contribution to tension
 
-## 3. ВОДА ПРИ ПІДТЯГУВАННІ
+```js
+rawPlayerHoldTensionKg = effectiveRodHoldKg * holdTensionRatio;
+movableHoldTensionCapKg = fishPassiveKg * movableHoldTensionCapRatio;
 
-### Pull Water Drag
-
-Це саме “опір води при підтягуванні”, а не динамічна сила риби від власного руху:
-
-```txt
-waterDragCapacityKg =
-  fishWeightKg
-  * physics.fight.fishRetrieve.waterDragWhilePulling.dragKgPerKgAtReferenceSpeed
-  * fish.physics.retrieveProfile.waterDragMultiplier
-
-retrieveSpeedMps =
-  referencePullSpeedMetersPerSecond
-  * fish.physics.retrieveProfile.referencePullSpeedMultiplier
-  * sqrt(surplusForceKg / waterDragCapacityKg)
+playerHoldTensionKg = fishCanMoveTowardPlayer
+  ? Math.min(rawPlayerHoldTensionKg, movableHoldTensionCapKg)
+  : rawPlayerHoldTensionKg;
 ```
 
-**Sources:**
+Meaning: when the fish can move, excess player force becomes speed instead of unlimited line tension.
+When movement is blocked, full raw hold tension loads the tackle.
 
-- `fish.weightKg`
-- `fish.physics.retrieveProfile.waterDragMultiplier`
-- `fish.physics.retrieveProfile.referencePullSpeedMultiplier`
-- `physics.fight.fishRetrieve.waterDragWhilePulling.dragKgPerKgAtReferenceSpeed`
-- `physics.fight.fishRetrieve.waterDragWhilePulling.referencePullSpeedMetersPerSecond`
-- `fishRetrieveSurplusForceKg`
+## 6. Total tension and stress
 
-**Outputs:**
-
-- `fishRetrieveWaterDragCapacityKg`
-- `fishRetrieveWaterDragKg`
-- `fishRetrieveSpeedMps`
-- `fishRetrieveDesiredMoveMeters`
-- `fishRetrieveAppliedMoveMeters`
-
-## 4. ФІНАЛЬНИЙ НАТЯГ
-
-```txt
-passiveRetrieveTensionKg =
-  tautBodyResistanceKg
-  + effectivePlayerPressureKg
-  + accelerationLoadKg
-  + blockedSurplusForceKg
-
-fishRetrieveLineTensionKg = passiveRetrieveTensionKg + activeAwayForceKg
-rawTensionKg = fishRetrieveLineTensionKg
-
-tensionKg =
-  dragCanSlip ? dragLimitKg : rawTensionKg
+```js
+totalTensionKg = fishTensionKg + playerHoldTensionKg;
+rodStressRatio = totalTensionKg / rodLimitKg;
+lineStressRatio = totalTensionKg / lineLimitKg;
+hookStressRatio = totalTensionKg / hookLimitKg;
 ```
 
-**Sources:**
+Meaning: each tackle component is evaluated independently from the same total tension.
 
-- `passiveRetrieveTensionKg`
-- `activeAwayForceKg`
-- `dragLimitKg`
-- `dragLocked`
-- `lineCanRelease`
-- `hardLineLimit`
-- `maxTackleLoadKg`
+## 7. Movement winner and speed
 
-**Outputs:**
+```js
+netForceKg = effectiveRodHoldKg - fishOppositionKg;
 
-- `rawTensionKg`
-- `tensionKg`
-- `shouldSlipDrag`
-- `tensionMode`
+if (netForceKg > 0) {
+  speedMps = Math.sqrt(netForceKg / physics.water.motionResistance)
+    * physics.water.speedMultiplier;
+  direction = "toward_player";
+}
 
-## Debug pipeline
-
-Overlay `FIGHT PHYSICS` має показувати ті самі причинні блоки:
-
-```txt
-РИБА → СНАСТЬ
-ГРАВЕЦЬ → РИБА
-ВОДА ПРИ ПІДТЯГУВАННІ
-ФІНАЛЬНИЙ НАТЯГ
+if (netForceKg < 0) {
+  speedMps = Math.sqrt(-netForceKg / physics.water.motionResistance)
+    * physics.water.speedMultiplier
+    * fish.physics.movementProfile.baseSpeed
+    * fishStateSpeedMultiplier;
+  direction = "away";
+}
 ```
+
+`stateSpeedMultiplier` affects movement speed only. It does not add tension.
+
+## 8. Reel hold
+
+```js
+reelSafeMarginKg = reelHoldLimitKg - totalTensionKg;
+
+reelHoldActive =
+  rodStrokeRatio >= 1.0
+  && playerHoldActive
+  && reelSafeMarginKg > 0
+  && !dragSlipping;
+
+reelRetrieveSpeedMps =
+  baseReelRetrieveSpeedMps
+  * clamp01(reelSafeMarginKg / reelHoldLimitKg)
+  * reelBearingBonusMultiplier;
+```
+
+Reel hold is safe post-stroke line recovery. It does not add to `netForceKg`.

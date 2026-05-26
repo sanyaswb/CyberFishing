@@ -291,8 +291,8 @@ class PlayerMaxModule extends OverlayModule {
   render(d) {
     let html = this.formatHeader("📊 СИЛА ГРАВЦЯ", "#00ff80");
     html += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>ЛІМІТ СНАСТІ:</span> <span style="color: #00ff80; font-weight: bold;">${(d.maxTackleLoadKg || d.playerMaxPowerY || 0).toFixed(3)} кг</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Player pressure:</span><span style="color:#00ff80;">${(d.playerPullPressureKg || 0).toFixed(3)}kg -> ${(d.effectivePlayerPressureKg || 0).toFixed(3)}kg</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Retrieve speed:</span><span style="color:#00ff80;">${(d.actualFishPullSpeedMps || 0).toFixed(2)}m/s</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Rod hold:</span><span style="color:#00ff80;">${(d.rodPullForceKg || 0).toFixed(3)}kg</span></div>`;
+    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Simple speed:</span><span style="color:#00ff80;">${(d.simpleFightSpeedMps || 0).toFixed(2)}m/s</span></div>`;
     if (d.dragSupported) {
       html += `<div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><span>ФРИКЦІОН:</span> <span style="color: #00ccff; font-weight: bold;">${(d.dragLimitKg || 0).toFixed(3)} кг</span></div>`;
     }
@@ -409,153 +409,6 @@ class FightPhysicsModule extends OverlayModule {
     if (value >= 1) return "#ff4444";
     if (value >= 0.8) return "#ffaa00";
     return "#00ff80";
-  }
-
-  #renderFishToTackleSection(d) {
-    const dynamicState = d.dynamicLoadEnabled === false ? "вимкнено" : "увімкнено";
-    return this.#section("🐟 РИБА → СНАСТЬ", [
-      this.#row("Вага риби", this.#kg(d.fishWeightKg, 3)),
-      this.#row("Базова сила", this.#kg(d.staticFishForceKg, 3), "#ffaa00"),
-      this.#row("Швидкість відн. води", this.#mps(d.relativeSpeedMps, 2)),
-      this.#row(
-        `Динамічне навантаження (${dynamicState})`,
-        this.#kg(d.dynamicFishForceKg, 3),
-        d.dynamicLoadEnabled === false ? "#8a9bac" : "#73c2fb",
-      ),
-      this.#row(
-        "Множник напрямку",
-        `x${this.#num(d.directionResistanceMultiplier, 2)}`,
-      ),
-      this.#row(
-        "Water motion load",
-        this.#kgPerKgMps(d.fishMotionSpeedLoadKgPerKgPerMps),
-      ),
-      this.#row("Підсумкова сила риби", this.#kg(d.totalFishForceKg, 3), "#ff8888"),
-    ]);
-  }
-
-  #renderPlayerToFishSection(d) {
-    return this.#section("🎣 ГРАВЕЦЬ → РИБА", [
-      this.#row(
-        "Player pressure",
-        `${this.#kg(d.playerPullPressureKg, 3)} → ${this.#kg(d.effectivePlayerPressureKg, 3)}`,
-        "#00ff80",
-      ),
-      this.#row("Передача тиску", this.#percent(d.pressureTransferRatio, 1)),
-      this.#row("Пасивний опір тіла", this.#kg(d.tautBodyResistanceKg, 3)),
-      this.#row("Активний опір від риби", this.#kg(d.activeAwayForceKg, 3), "#ff8888"),
-      this.#row("Сумарний опір риби", this.#kg(d.fishOppositionKg, 3), "#ffaa00"),
-      this.#row("Надлишкова сила", this.#kg(d.fishRetrieveSurplusForceKg, 3), "#00ff80"),
-      this.#row("Контроль руху", this.#percent(d.fishRetrieveMovementControlRatio, 1)),
-      this.#row("Стан балансу", d.fishRetrieveBalanceState || "---", "#8a9bac"),
-    ]);
-  }
-
-  #renderPullWaterSection(d) {
-    const blocked = d.fishRetrieveMovementBlocked ? "ТАК" : "НІ";
-    const blockedColor = d.fishRetrieveMovementBlocked ? "#ff4444" : "#00ff80";
-    return this.#section("🌊 ВОДА ПРИ ПІДТЯГУВАННІ", [
-      this.#row("Drag capacity", this.#kg(d.fishRetrieveWaterDragCapacityKg, 3), "#73c2fb"),
-      this.#row("Drag на поточній швидкості", this.#kg(d.fishRetrieveWaterDragKg, 3), "#73c2fb"),
-      this.#row(
-        "Drag per kg @ ref speed",
-        this.#kgPerKg(d.fishRetrieveWaterDragKgPerKgAtReferenceSpeed),
-      ),
-      this.#row(
-        "Retrieve speed",
-        `${this.#mps(d.actualFishPullSpeedMps, 2)} / target ${this.#mps(d.targetFishPullSpeedMps, 2)}`,
-        "#00ff80",
-      ),
-      this.#row("Desired move", this.#meters(d.fishRetrieveDesiredMoveMeters, 3)),
-      this.#row("Applied move", this.#meters(d.fishRetrieveAppliedMoveMeters, 3), "#00ff80"),
-      this.#row("Рух заблоковано", blocked, blockedColor),
-    ]);
-  }
-
-  #renderFinalTensionSection(d) {
-    const lineReserveColor = d.lineRemaining <= 0.001 ? "#ff4444" : "#00ff80";
-    const rows = [
-      this.#row(
-        "Натяг",
-        `${this.#kg(d.tensionKg ?? d.calculatedTensionKg, 2)} / ${this.#kg(d.maxTackleLoadKg, 2)}`,
-        "#ffaa00",
-      ),
-      this.#row("Raw tension", this.#kg(d.rawTensionKg, 3)),
-      this.#row("Retrieve line tension", this.#kg(d.fishRetrieveLineTensionKg, 3)),
-      this.#row("Passive retrieve tension", this.#kg(d.passiveRetrieveTensionKg, 3)),
-      d.dragSupported
-        ? this.#row(
-            "Фрикціон",
-            `${this.#percent((Number(d.dragPercent) || 0) / 100, 0)} / ${this.#kg(d.dragLimitKg, 2)}`,
-            "#00ccff",
-          )
-        : "",
-      this.#row("Tension mode", d.tensionMode || "---", "#8a9bac"),
-      this.#row("Фізична межа ліски", d.isLineFullyExtended ? "ТАК" : "НІ", d.isLineFullyExtended ? "#ff4444" : "#00ff80"),
-      this.#row("Запас ліски", d.lineCanRelease ? "Є" : "НЕМАЄ", d.lineCanRelease ? "#00ff80" : "#ff4444"),
-      this.#row(
-        "Залишок ліски",
-        `${this.#meters(d.lineRemaining, 1)} / ${this.#meters(d.lineMaxRemaining, 1)}`,
-        lineReserveColor,
-      ),
-      this.#row(
-        "Випущено ліски",
-        `${this.#meters(d.lineReleasedMeters, 1)} / ${this.#meters(d.lineTotalLengthMeters, 1)}`,
-      ),
-      this.#row("Дистанція до риби", this.#meters(d.lineDistanceMeters, 1)),
-      this.#row(
-        "Хід вудки",
-        `${this.#meters(d.rodStrokeUsed, 1)} / ${this.#meters(d.rodStrokeCapacity, 1)}`,
-      ),
-      this.#row(
-        "Штраф кута",
-        `x${this.#num(d.anglePenalty || 1, 2)} (${this.#num(d.angleDeg, 0)}°)`,
-        "#ffaa00",
-      ),
-    ];
-
-    if (d.dragSupported) {
-      rows.push(...this.#holdReelRecoverRows(d));
-    }
-
-    return this.#section("⚖️ ФІНАЛЬНИЙ НАТЯГ", rows);
-  }
-
-  #holdReelRecoverRows(d) {
-    const labels = {
-      ready: "готово",
-      disabled: "вимкнено",
-      no_reel: "нема котушки",
-      not_holding: "hold не утримується",
-      rod_pull_inactive: "хід не активний",
-      stroke_not_full: "хід не повний",
-      drag_slipping: "фрикціон здає",
-      no_reel_load_reserve: "нема запасу котушки",
-      zero_recover_speed: "швидкість 0",
-      not_checked: "не перевірено",
-    };
-    const reason = labels[d.holdReelRecoverBlockedReason] || d.holdReelRecoverBlockedReason || "not_checked";
-    const state = d.holdReelRecoverActive
-      ? "ТАК"
-      : d.holdReelRecoverEligible
-        ? "ЧЕКАЄ"
-        : "НІ";
-    const color = d.holdReelRecoverActive
-      ? "#00ff80"
-      : d.holdReelRecoverEligible
-        ? "#ffaa00"
-        : "#8a9bac";
-
-    return [
-      this.#row("Підмотка hold", state, color),
-      this.#row("Причина підмотки", reason),
-      this.#row(
-        "Таймер підмотки",
-        `${this.#seconds(d.holdReelRecoverTimerMs)} / ${this.#seconds(d.holdReelRecoverDelayMs)}`,
-      ),
-      this.#row("Швидк. підмотки", this.#mps(d.holdReelRecoverSpeedMps, 2), "#00ff80"),
-      this.#row("До скручування", this.#meters(d.pumpCreditMeters, 1)),
-    ];
   }
 
   #section(title, rows) {
@@ -741,16 +594,16 @@ class WorstCaseModule extends OverlayModule {
 
   render(d) {
     const activeFish = d.hookedFish;
-    const behaviors = activeFish.physics?.behaviors || {};
-    const currentFishBase = d.fishBasePower || 0;
+    const behaviors = activeFish.physics?.behaviorProfile?.behaviors || {};
+    const currentFishBase = d.fishPassiveKg || d.fishBasePower || 0;
 
     let maxPull = 0,
       maxMove = 0;
     Object.values(behaviors).forEach((b) => {
-      const powerRatio = b.powerRatio ?? 0;
-      const speedRatio = b.speedRatio ?? 0;
-      if (powerRatio > maxPull) maxPull = powerRatio;
-      const effMove = Math.abs(speedRatio);
+      const forceMultiplier = b.forceMultiplier ?? 0;
+      const speedMultiplier = b.speedMultiplier ?? 0;
+      if (forceMultiplier > maxPull) maxPull = forceMultiplier;
+      const effMove = Math.abs(speedMultiplier);
       if (effMove > maxMove) maxMove = effMove;
     });
 

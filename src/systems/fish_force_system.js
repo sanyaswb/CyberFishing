@@ -63,7 +63,7 @@ class FishForceSystem {
       : 0;
 
     const behaviorPullValue = this.#numberOrDefault(
-      behavior.powerRatio ?? behavior.pullMult,
+      behavior.forceMultiplier ?? behavior.pullMult,
       1,
     );
     const moveDir = this.#scratchA.set(
@@ -103,11 +103,11 @@ class FishForceSystem {
     const waterConfig = this.#physicsConfig?.getWaterConfig?.() || {};
     const behaviorPowerRatio = Math.max(
       0,
-      Number(behavior.forceMultiplier ?? behavior.powerRatio ?? behaviorPullValue) || 0,
+      Number(behavior.forceMultiplier ?? behaviorPullValue) || 0,
     );
     const behaviorSpeedRatio = Math.max(
       0,
-      Number(behavior.speedMultiplier ?? behavior.speedRatio ?? Math.abs(behavior.moveX || 0)) || 0,
+      Number(behavior.speedMultiplier ?? Math.abs(behavior.moveX || 0)) || 0,
     );
     const fishForceFrame = this.#forceCalculator.calculate({
       fishWeightKg: this.#fish.getWeight(),

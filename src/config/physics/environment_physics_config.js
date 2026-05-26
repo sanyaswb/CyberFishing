@@ -6,10 +6,8 @@ const WATER_PHYSICS_CONFIG = {
 
 const ENVIRONMENT_PHYSICS_CONFIG = {
   water: {
+    // Map/current influence on fish movement only.
+    // It does not create additional line tension in the simplified fight model.
     currentInfluenceMultiplier: 1.0,
-
-    fishMotionLoad: {
-      speedLoadKgPerKgPerMps: 1.0,
-    },
   },
 };

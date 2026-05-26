@@ -64,36 +64,29 @@ class FishRetrieveSystem {
     return new FishRetrieveResult({
       holdRatio: this.#resolveHoldRatio(rodPullResult),
       playerPullPressureKg: this.#resolvePlayerPullPressure(rodPullResult),
-      bodyResistanceKg: frame.fishPassiveKg,
-      activeAwayForceKg: frame.fishActiveKg,
-      fishOppositionKg: frame.fishOppositionKg,
-      usefulPullForceKg: frame.effectiveRodHoldKg,
-      lineTensionKg: frame.totalTensionKg,
-      desiredMoveMeters,
-      retrieveSpeedMetersPerSecond: frame.speedMps,
-      actualFishPullSpeedMetersPerSecond: frame.towardPlayerSpeedMps,
-      targetFishPullSpeedMetersPerSecond: frame.towardPlayerSpeedMps,
-      movementControlRatio,
-      movementBlocked,
-      balanceState,
-      actualSlackMeters,
-      lineTaut,
       fishPassiveKg: frame.fishPassiveKg,
       fishActiveKg: frame.fishActiveKg,
+      fishOppositionKg: frame.fishOppositionKg,
       fishTensionKg: frame.fishTensionKg,
       rodHoldMaxKg: frame.rodHoldMaxKg,
       effectiveRodHoldKg: frame.effectiveRodHoldKg,
-      playerHoldTensionKg: frame.playerHoldTensionKg,
       rawPlayerHoldTensionKg: frame.rawPlayerHoldTensionKg,
       movableHoldTensionCapKg: frame.movableHoldTensionCapKg,
       movableHoldTensionCapRatio: tension.movableHoldTensionCapRatio,
       movableHoldTensionCapApplied: frame.movableHoldTensionCapApplied,
       fishCanMoveTowardPlayer: true,
+      playerHoldTensionKg: frame.playerHoldTensionKg,
       totalTensionKg: frame.totalTensionKg,
       netForceKg: frame.netForceKg,
       speedMps: frame.speedMps,
       towardPlayerSpeedMps: frame.towardPlayerSpeedMps,
       awaySpeedMps: frame.awaySpeedMps,
+      desiredMoveMeters,
+      movementControlRatio,
+      movementBlocked,
+      balanceState,
+      actualSlackMeters,
+      lineTaut,
     });
   }
 
@@ -147,16 +140,6 @@ class FishRetrieveSystem {
   #resolvePlayerPullPressure(rodPullResult) {
     if (!rodPullResult?.active) return 0;
     return Math.max(0, Number(rodPullResult.forceKg) || 0);
-  }
-
-  #resolveAwayFromPlayerRatio(forceData) {
-    const direct = Number(forceData?.awayFromPlayerRatio);
-    if (Number.isFinite(direct)) return Math.max(0, Math.min(1, direct));
-
-    const debugValue = Number(forceData?.debug?.awayFromPlayerRatio);
-    return Number.isFinite(debugValue)
-      ? Math.max(0, Math.min(1, debugValue))
-      : 1;
   }
 
   #positive(value, fallback = 0) {

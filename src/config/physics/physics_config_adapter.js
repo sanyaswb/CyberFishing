@@ -15,20 +15,6 @@ class FightPhysicsConfigAdapter {
     return this.#number(this.#physics().simulation?.maxDtMs, 50);
   }
 
-  isFishMotionDynamicLoadEnabled() {
-    return (
-      this.#physics().fight?.fishForce?.dynamicLoadFromMotion?.enabled !== false
-    );
-  }
-
-  getFishMotionSpeedLoadKgPerKgPerMps() {
-    return this.#number(
-      this.#physics().environment?.water?.fishMotionLoad
-        ?.speedLoadKgPerKgPerMps,
-      1,
-    );
-  }
-
   getCurrentInfluenceMultiplier() {
     return this.#number(
       this.#physics().environment?.water?.currentInfluenceMultiplier,
@@ -37,7 +23,7 @@ class FightPhysicsConfigAdapter {
   }
 
   getWaterConfig() {
-    const water = this.#physics().water || this.#physics().environment?.water || {};
+    const water = this.#physics().water || {};
     return {
       tautBodyResistancePerKg: this.#number(
         water.tautBodyResistancePerKg,
@@ -62,6 +48,15 @@ class FightPhysicsConfigAdapter {
     const anglePenalty = config.anglePenalty || {};
     return {
       chargeTimeSeconds: this.#number(config.chargeTimeSeconds, 0.35),
+      distanceMultiplierByRodLength: this.#number(
+        config.distanceMultiplierByRodLength,
+        0.5,
+      ),
+      minStrokeMeters: this.#number(config.minStrokeMeters, 0.001),
+      finalLandingDistanceMeters: this.#number(
+        config.finalLandingDistanceMeters,
+        0.5,
+      ),
       anglePenalty: {
         enabled: anglePenalty.enabled !== false,
         noPenaltyAngleDeg: this.#number(anglePenalty.noPenaltyAngleDeg, 15),
@@ -86,103 +81,22 @@ class FightPhysicsConfigAdapter {
     };
   }
 
-  getDirectionMultiplierConfig() {
-    const config =
-      this.#physics().fight?.fishForce?.dynamicLoadFromMotion
-        ?.directionMultiplier || {};
-    return {
-      sameDirection: this.#number(config.sameDirection, 0.4),
-      sideDirection: this.#number(config.sideDirection, 1),
-      oppositeDirection: this.#number(config.oppositeDirection, 1.8),
-    };
-  }
-
-  getMinPowerRatioFallback() {
-    return this.#number(
-      this.#physics().fight?.fishForce?.exhaustion?.minPowerRatioFallback,
-      0.25,
-    );
-  }
-
-  getFishRetrieveSettings() {
-    const config = this.#physics().fight?.fishRetrieve || {};
-    if (typeof FishRetrievePhysicsSettings !== "undefined") {
-      return FishRetrievePhysicsSettings.from(config);
-    }
-
-    return config;
-  }
-
-  getFishRetrieveConfig() {
-    const settings = this.getFishRetrieveSettings();
-    if (settings?.toLegacyConfig) return settings.toLegacyConfig();
-
-    const config = settings || {};
-    return {
-      tautBodyResistanceKgPerKg: this.#number(
-        config.passiveBodyResistance?.tautBodyResistanceKgPerKg,
-        config.tautBodyResistanceKgPerKg,
-        config.staticBodyResistanceKgPerKg,
-        0,
-      ),
-      activeAwayForceMultiplier: this.#number(
-        config.activeFishResistance?.activeAwayForceMultiplier,
-        config.activeAwayForceMultiplier,
-        1,
-      ),
-      referencePullSpeedMetersPerSecond: this.#number(
-        config.waterDragWhilePulling?.referencePullSpeedMetersPerSecond,
-        config.referencePullSpeedMetersPerSecond,
-        1,
-      ),
-      waterDragKgPerKgAtReferenceSpeed: this.#number(
-        config.waterDragWhilePulling?.dragKgPerKgAtReferenceSpeed,
-        config.waterDragKgPerKgAtReferenceSpeed,
-        1,
-      ),
-      playerPressureTransferReferenceWeightKg: this.#number(
-        config.playerPressureTransfer?.referenceWeightKg,
-        config.playerPressureTransferReferenceWeightKg,
-        1,
-      ),
-      minPlayerPressureTransferRatio: this.#number(
-        config.playerPressureTransfer?.minTransferRatio,
-        config.minPlayerPressureTransferRatio,
-        0,
-      ),
-      blockedPlayerPressureTransferRatio: this.#number(
-        config.playerPressureTransfer?.blockedTransferRatio,
-        config.blockedPlayerPressureTransferRatio,
-        1,
-      ),
-    };
-  }
-
   getRodPullConfig() {
-    const rodHold = this.#physics().fight?.rodHold || {};
-    const legacy = this.#physics().fight?.rodPull || {};
+    const rodHold = this.getRodHoldConfig();
     return {
-      ...legacy,
       ...rodHold,
       rodHold,
       strokeChargePerSecond:
-        legacy.strokeChargePerSecond ??
-        (rodHold.chargeTimeSeconds > 0 ? 1 / rodHold.chargeTimeSeconds : undefined),
-      distanceMultiplierByRodLength:
-        rodHold.distanceMultiplierByRodLength ??
-        legacy.distanceMultiplierByRodLength ??
-        0.5,
-      minStrokeMeters:
-        rodHold.minStrokeMeters ??
-        legacy.minStrokeMeters ??
-        0.001,
-      finalLandingDistanceMeters:
-        rodHold.finalLandingDistanceMeters ??
-        legacy.finalLandingDistanceMeters ??
-        0.5,
+        rodHold.chargeTimeSeconds > 0
+          ? 1 / rodHold.chargeTimeSeconds
+          : undefined,
+      distanceMultiplierByRodLength: rodHold.distanceMultiplierByRodLength,
+      minStrokeMeters: rodHold.minStrokeMeters,
+      finalLandingDistanceMeters: rodHold.finalLandingDistanceMeters,
     };
   }
 
+  // Kept for non-fight retrieve gameplay: lure depth, idle pole retrieve and bite fallback.
   getPassiveRetrieveConfig() {
     const config = this.#physics().retrieve?.passive || {};
     return {
@@ -331,11 +245,7 @@ class FightPhysicsConfigAdapter {
   }
 
   getRodAnglePenaltyConfig() {
-    return (
-      this.#physics().fight?.rodHold?.anglePenalty ||
-      this.#physics().fight?.playerControl?.rodAnglePenalty ||
-      {}
-    );
+    return this.#physics().fight?.rodHold?.anglePenalty || {};
   }
 
   getPlayerSteeringMultiplier() {

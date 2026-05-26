@@ -186,13 +186,10 @@ class FishPhysicsProfile {
       if (!behavior || typeof behavior !== "object") continue;
       const forceMultiplier = this.#firstFiniteNumber(
         behavior.forceMultiplier,
-        behavior.powerRatio,
-        behavior.pullMult,
         1,
       );
       const speedMultiplier = this.#firstFiniteNumber(
         behavior.speedMultiplier,
-        behavior.speedRatio,
         Math.abs(Number(behavior.moveX) || 0),
         0,
       );
@@ -772,9 +769,6 @@ class FishBehavior {
       pullMult: this.#currentPull,
       forceMultiplier: this.#currentPull,
       speedMultiplier: speedRatio,
-      // Compatibility read aliases for older UI. Do not store these in FISH_DB.
-      powerRatio: this.#currentPull,
-      speedRatio,
       moveX: speedRatio * this.#currentDirX,
       agility: stateConfig.agility ?? this.#config.agility ?? 1.0,
     };

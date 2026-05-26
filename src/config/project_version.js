@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.19.4";
+const CURRENT_PROJECT_VERSION = "0.19.5";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,7 +13,7 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "final-reelhold-simplified-model",
+  codename: "production-simplified-fight-cleanup",
   updatedAt: "2026-05-26",
   notes: Object.freeze([
     "Modular fish database categories",
@@ -42,6 +42,8 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
     "Fish config validation rejects old resistance/retrieve/ratio fight fields",
     "ReelHold remains separated from rodHold as safe post-stroke line recovery",
     "Golden checks now cover the simplified examples and small-fish movable tension cap",
+    "Production cleanup removed unused legacy pressure-transfer and water-drag fight helpers",
+    "Docs now describe only the simplified passive/active fish force, rodHold and reelHold model",
   ]),
 });
 

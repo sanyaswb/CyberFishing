@@ -1,95 +1,47 @@
-# CyberFishing physics units and naming convention
+# Physics units and naming
 
-This document fixes the language used by physics configs, debug output and balancing tools.
-
-## Gameplay load unit
-
-Values ending with `Kg` are **gameplay load kilograms**. They are calibrated against rod, line and reel max-load values. They are not real-world Newton force values.
-
-Examples:
+## Units
 
 ```txt
-lineMaxLoadKg
-playerPullPressureKg
-waterDragCapacityKg
-totalFishForceKg
+Kg                  gameplay load/tension unit
+Meters              world distance
+MetersPerSecond     world speed
+Px                  canvas pixels
+Ratio               0..1 normalized ratio
+Multiplier          gameplay multiplier, usually 0+
+Ms                  milliseconds
+Seconds             seconds
 ```
 
-## Required suffixes
-
-Use explicit suffixes whenever a parameter stores a measurable value:
+## Simplified fight names
 
 ```txt
-...Px                     pixels
-...PxPerSec              pixels per second
-...Meters                world meters
-...MetersPerSecond       world meters per second
-...Kg                    gameplay load kilograms
-...Ratio                 usually 0..1
-...Percent               usually 0..100
-...Ms                    milliseconds
-...PerSecond             per-second rate
-...Deg                   degrees
+fishPassiveKg                 fish water weight on taut line
+fishActiveKg                  active state/direction fish force
+fishOppositionKg              passive + active fish force
+fishTensionKg                 fish contribution to line tension
+effectiveRodHoldKg            player force against fish after angle/rod limits
+holdTensionRatio              part of hold force that becomes line tension
+rawPlayerHoldTensionKg        hold tension before movable cap
+movableHoldTensionCapKg       max player hold tension while fish can move
+playerHoldTensionKg           final player contribution to tension
+totalTensionKg                fish tension + player hold tension
+rodStressRatio                total tension / rod limit
+lineStressRatio               total tension / line limit
+hookStressRatio               total tension / hook limit
+netForceKg                    effective rod hold - fish opposition
+speedMps                      movement speed in meters per second
 ```
 
-Good examples:
+## Avoid in fight physics
 
-```js
+```txt
+pressureTransfer
+waterDragCapacity
 referencePullSpeedMetersPerSecond
-landingDistanceMeters
-speedLoadKgPerKgPerMps
-looseLineTautToleranceMeters
-breakThresholdPercent
+dynamicFishForceKg from relative fish speed
+minPowerRatio
+maxSpeedMetersPerSec
+powerRatio
+speedRatio
 ```
-
-Avoid vague global names:
-
-```js
-force
-speed
-resistance
-distance
-multiplier
-```
-
-A nested `Multiplier` is acceptable when the parent path gives enough context:
-
-```js
-fish.physics.retrieveProfile.waterDragMultiplier
-physics.fight.fishRetrieve.activeFishResistance.activeAwayForceMultiplier
-```
-
-## Recommended domain terms
-
-Use these terms consistently:
-
-```txt
-motionLoad                 load produced by fish movement through water
-passiveBodyResistance      passive body resistance on a taut line
-activeAwayResistance       active fish force when it pulls away from player
-pullWaterDrag              water drag while player retrieves the fish
-playerPressure             raw pressure produced by rod/input/tackle
-pressureTransfer           how much player pressure becomes line tension
-lineTension                final load on tackle
-```
-
-## Validation rule
-
-Every numeric/boolean leaf under `CONFIG.physics` must have a label in:
-
-```txt
-src/config/metadata/parameter_labels.json
-```
-
-Run:
-
-```bash
-node utils/validate-config.js
-```
-
-
-## v0.18.0 cleanup
-
-- `physics.retrieve.passive.power` was renamed to `physics.retrieve.passive.passiveRetrievePowerRatio`.
-- Open-ended item ranges use `max: null` and `openEnded: true` instead of `Infinity`.
-- `validate-config.js` should pass with zero errors and zero warnings before a patch is delivered.

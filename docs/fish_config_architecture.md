@@ -1,6 +1,6 @@
 # Fish config architecture
 
-`FISH_DB` is now an aggregator, not a storage file for every species.
+`FISH_DB` is an aggregator, not a storage file for every species.
 
 ## Structure
 
@@ -27,21 +27,33 @@ Preferred physics creation:
 ```js
 physics: createFishPhysicsProfile(FISH_PROFILE_PRESETS.smallPeaceful, {
   forceProfile: { basePower: 0.8 },
-  movementProfile: { agility: 1.1 },
+  movementProfile: { baseSpeed: 1.1, agility: 1.1 },
 })
 ```
 
 Full explicit profiles are still valid when a fish does not fit a preset.
 
-## Required profiles
+## Required fight profiles
 
 Every fish must expose:
 
-- `forceProfile`
+- `forceProfile.basePower`
 - `staminaProfile`
-- `movementProfile`
-- `resistanceProfile`
-- `retrieveProfile`
+- `movementProfile.baseSpeed`
 - `behaviorProfile.behaviors`
 
-`FishPhysicsProfile` remains as a temporary runtime compatibility layer, but `FISH_DB.physics` must not store old flat aliases such as `basePower`, `speedForceMultiplier`, or `behaviors`.
+Each behavior state must use:
+
+- `forceMultiplier` for active force/tension;
+- `speedMultiplier` for movement speed only.
+
+Do not store old fight fields in `FISH_DB.physics`:
+
+- `resistanceProfile`
+- `retrieveProfile`
+- `minPowerRatio`
+- `maxSpeedMetersPerSec`
+- `speedForceMultiplier`
+- `waterResistanceMultiplier`
+- `powerRatio`
+- `speedRatio`
