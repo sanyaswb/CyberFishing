@@ -2,6 +2,7 @@ class TackleStressSystem {
   #rod;
   #reel;
   #lineSystem;
+  #hook;
   #leader;
   #config;
   #rng;
@@ -22,17 +23,18 @@ class TackleStressSystem {
   #debug = {};
   #devFlags;
 
-  constructor({ rod, reel, lineSystem, leader = null, config, rng = null, devFlags = null }) {
+  constructor({ rod, reel, lineSystem, hook = null, leader = null, config, rng = null, devFlags = null }) {
     this.#config = config || {};
     this.#rng = rng || { next: () => Math.random() };
     this.#devFlags = devFlags;
-    this.updateEquipment({ rod, reel, lineSystem, leader });
+    this.updateEquipment({ rod, reel, lineSystem, hook, leader });
   }
 
-  updateEquipment({ rod, reel, lineSystem, leader = null }) {
+  updateEquipment({ rod, reel, lineSystem, hook = null, leader = null }) {
     this.#rod = rod;
     this.#reel = reel;
     this.#lineSystem = lineSystem;
+    this.#hook = hook;
     this.#leader = leader;
     this.#refreshRatios();
   }
@@ -61,8 +63,12 @@ class TackleStressSystem {
       maxTackleLoadKg: this.getEffectiveMaxTackleLoadKg(),
       rodMaxLoadKg: this.getEffectiveRodMaxLoadKg(),
       lineMaxLoadKg: this.getEffectiveLineSystemMaxLoadKg(),
+      hookMaxLoadKg: this.getEffectiveHookMaxLoadKg(),
       leaderMaxLoadKg: this.getEffectiveLeaderMaxLoadKg(),
       reelMaxLoadKg: this.getEffectiveReelMaxLoadKg(),
+      rodStressRatio: this.#stressRatio(this.#currentTensionKg, this.getEffectiveRodMaxLoadKg()),
+      lineStressRatio: this.#stressRatio(this.#currentTensionKg, this.getEffectiveLineSystemMaxLoadKg()),
+      hookStressRatio: this.#stressRatio(this.#currentTensionKg, this.getEffectiveHookMaxLoadKg()),
       tensionRatio: this.#tensionRatio,
       tensionPercent: this.#tensionPercent,
       overloadProgress: this.#lastBreakProgress,
@@ -99,6 +105,15 @@ class TackleStressSystem {
   getEffectiveLeaderMaxLoadKg() {
     if (!this.#leader) return Infinity;
     return TackleStressSystem.effectiveItemMaxLoadKg(this.#leader, Infinity);
+  }
+
+  getEffectiveHookMaxLoadKg() {
+    if (!this.#hook) return Infinity;
+    return (
+      this.#hook.getEffectiveMaxLoadKg?.() ||
+      this.#hook.getMaxLoadKg?.() ||
+      TackleStressSystem.effectiveItemMaxLoadKg(this.#hook, Infinity)
+    );
   }
 
   getEffectiveReelMaxLoadKg() {
@@ -225,6 +240,7 @@ class TackleStressSystem {
     const candidates = [
       { reason: "rod", maxLoadKg: this.getEffectiveRodMaxLoadKg() },
       { reason: "line", maxLoadKg: this.getEffectiveLineSystemMaxLoadKg() },
+      { reason: "hook", maxLoadKg: this.getEffectiveHookMaxLoadKg() },
       { reason: "leader", maxLoadKg: this.getEffectiveLeaderMaxLoadKg() },
     ]
       .filter((item) => Number.isFinite(item.maxLoadKg) && item.maxLoadKg > 0)
@@ -239,6 +255,7 @@ class TackleStressSystem {
       tensionKg: this.#currentTensionKg,
       rodMaxLoadKg: this.getEffectiveRodMaxLoadKg(),
       lineMaxLoadKg: this.getEffectiveLineSystemMaxLoadKg(),
+      hookMaxLoadKg: this.getEffectiveHookMaxLoadKg(),
       leaderMaxLoadKg: this.getEffectiveLeaderMaxLoadKg(),
       reelMaxLoadKg: this.getEffectiveReelMaxLoadKg(),
       lineLossMeters: 0,
@@ -271,6 +288,12 @@ class TackleStressSystem {
       this.#tensionPercent,
       tensionConfig?.colorGradient,
     );
+  }
+
+  #stressRatio(tensionKg, limitKg) {
+    const limit = Number(limitKg);
+    if (!Number.isFinite(limit) || limit <= 0) return 0;
+    return Math.max(0, Number(tensionKg) || 0) / limit;
   }
 
   static effectiveItemMaxLoadKg(item, fallback = 0) {

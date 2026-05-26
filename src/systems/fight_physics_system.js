@@ -67,6 +67,8 @@ class FightPhysicsSystem {
     const isPullMode = !!pullInput.pullHeld;
     const isRecoverMode = hasReel && !isPullMode;
     const maxTackleLoadKg = stressSystem.getEffectiveMaxTackleLoadKg?.() || 0;
+    const rodLimitKg =
+      stressSystem.getEffectiveRodMaxLoadKg?.() || maxTackleLoadKg;
     const motion = pipelineFrame.run("update_fish_motion", () => this.#updateFishMotion({
       dtMs,
       dtSec,
@@ -93,6 +95,7 @@ class FightPhysicsSystem {
       dragSystem,
       forceData,
       maxTackleLoadKg,
+      rodLimitKg,
     }),
     );
 
@@ -116,6 +119,7 @@ class FightPhysicsSystem {
       holdReelRecover: this.#holdReelRecoverState,
       isRecoverMode,
       reel,
+      rodLimitKg,
     }),
     );
     const tensionPreview = pipelineFrame.run(
@@ -327,7 +331,7 @@ class FightPhysicsSystem {
     return { forceData, velocity };
   }
 
-  #resolveDragContext({ hasReel, dragSupported, dragSystem, forceData, maxTackleLoadKg }) {
+  #resolveDragContext({ hasReel, dragSupported, dragSystem, forceData, maxTackleLoadKg, rodLimitKg }) {
     const clampedDrag = Math.max(0, Math.min(1, Number(dragSystem.value) || 0));
     const player = forceData?.player || {};
     const fallbackDragLimitKg = dragSupported
@@ -343,6 +347,7 @@ class FightPhysicsSystem {
     return {
       clampedDrag,
       maxTackleLoadKg,
+      rodLimitKg,
       effectiveDragLimitKg,
       dragLocked,
       hasReel,
@@ -368,6 +373,7 @@ class FightPhysicsSystem {
     holdReelRecover,
     isRecoverMode,
     reel,
+    rodLimitKg,
   }) {
     const lineStateBeforePull = lineSystem.updateDistance(
       floatEntity.getPosition(),
@@ -383,6 +389,8 @@ class FightPhysicsSystem {
       rod,
       pumpCreditMeters,
       fishForceKg: forceData.totalFishForceKg,
+      fishTensionKg: forceData.fishTensionKg,
+      rodLimitKg,
       dragLimitKg: dragContext.effectiveDragLimitKg,
       maxTackleLoadKg: dragContext.maxTackleLoadKg,
       dragLocked: dragContext.dragLocked,
@@ -545,8 +553,14 @@ class FightPhysicsSystem {
   }) {
     const lineHasReserve = this.#lineHasReserve(lineState);
     return tensionSystem.calculate({
-      fishForceKg: fishRetrieveResult.lineTensionKg,
-      rodPullForceKg: 0,
+      totalTensionKg: fishRetrieveResult.totalTensionKg ?? fishRetrieveResult.lineTensionKg,
+      fishForceKg: fishRetrieveResult.fishTensionKg ?? forceData.fishTensionKg,
+      rodPullForceKg: fishRetrieveResult.playerHoldTensionKg ?? 0,
+      fishTensionKg: fishRetrieveResult.fishTensionKg ?? forceData.fishTensionKg,
+      playerHoldTensionKg: fishRetrieveResult.playerHoldTensionKg ?? 0,
+      rodLimitKg: stressSystem.getEffectiveRodMaxLoadKg?.(),
+      lineLimitKg: stressSystem.getEffectiveLineSystemMaxLoadKg?.(),
+      hookLimitKg: stressSystem.getEffectiveHookMaxLoadKg?.(),
       dragLimitKg: dragContext.effectiveDragLimitKg,
       hardLineLimit: !!hardLineLimit,
       lineHasReserve,
@@ -830,18 +844,24 @@ class FightPhysicsSystem {
       rodPullActive: rodPullDisplay.active,
       rodPullRatio: rodPullDisplay.ratio,
       rodPullForceKg: rodPullResult.forceKg,
+      rodLimitKg: rodPullResult.rodLimitKg,
+      rodHoldMaxKg: rodPullResult.rodHoldMaxKg,
+      effectiveRodHoldKg: fishRetrieveResult?.effectiveRodHoldKg ?? rodPullResult.effectiveForceKg,
+      holdTensionRatio: rodPullResult.holdTensionRatio,
+      playerHoldTensionKg: fishRetrieveResult?.playerHoldTensionKg ?? rodPullResult.playerHoldTensionKg,
+      rawPlayerHoldTensionKg: fishRetrieveResult?.rawPlayerHoldTensionKg ?? 0,
+      movableHoldTensionCapKg: fishRetrieveResult?.movableHoldTensionCapKg ?? 0,
+      movableHoldTensionCapRatio:
+        fishRetrieveResult?.movableHoldTensionCapRatio ?? 1,
+      movableHoldTensionCapApplied:
+        !!fishRetrieveResult?.movableHoldTensionCapApplied,
+      fishCanMoveTowardPlayer:
+        fishRetrieveResult?.fishCanMoveTowardPlayer !== false,
       playerDemandForceKg: rodPullResult.forceKg,
       playerPullPressureKg: fishRetrieveResult?.playerPullPressureKg,
-      effectivePlayerPressureKg: fishRetrieveResult?.effectivePlayerPressureKg,
-      pressureTransferRatio: fishRetrieveResult?.pressureTransferRatio,
       fishRetrieveHoldRatio: fishRetrieveResult?.holdRatio,
-      desiredPullSpeedMps: fishRetrieveResult?.desiredPullSpeedMetersPerSecond,
-      actualPullSpeedMps: fishRetrieveResult?.actualPullSpeedMetersPerSecond,
-      pullIntentSpeedMps: fishRetrieveResult?.pullIntentSpeedMetersPerSecond,
-      actualFishPullSpeedMps:
-        fishRetrieveResult?.actualFishPullSpeedMetersPerSecond,
-      targetFishPullSpeedMps:
-        fishRetrieveResult?.targetFishPullSpeedMetersPerSecond,
+      actualFishPullSpeedMps: fishRetrieveResult?.towardPlayerSpeedMps,
+      targetFishPullSpeedMps: fishRetrieveResult?.towardPlayerSpeedMps,
       fishActiveForceAwayKg: fishRetrieveResult?.fishActiveForceAwayKg,
       activeAwayForceKg: fishRetrieveResult?.activeAwayForceKg,
       bodyResistanceKg: fishRetrieveResult?.bodyResistanceKg,
@@ -853,33 +873,18 @@ class FightPhysicsSystem {
       bodyStaticResistanceKg: fishRetrieveResult?.bodyStaticResistanceKg,
       fishStaticResistanceKg: fishRetrieveResult?.fishStaticResistanceKg,
       fishOppositionKg: fishRetrieveResult?.fishOppositionKg,
-      fishRetrievePullSpeedRatio: fishRetrieveResult?.pullSpeedRatio,
-      fishRetrieveIntentPullSpeedRatio: fishRetrieveResult?.intentPullSpeedRatio,
-      fishRetrieveMovementAuthorityLoadKg: fishRetrieveResult?.movementAuthorityLoadKg,
-      fishRetrievePotentialWaterDragKg: fishRetrieveResult?.potentialWaterDragKg,
-      fishRetrievePotentialAccelerationLoadKg: fishRetrieveResult?.potentialAccelerationLoadKg,
-      passiveRetrieveTensionKg:
-        fishRetrieveResult?.passiveRetrieveTensionKg,
-      fishRetrieveWaterDragKg: fishRetrieveResult?.waterDragKg,
-      fishRetrieveWaterDragCapacityKg:
-        fishRetrieveResult?.waterDragCapacityKg,
-      fishRetrieveWaterDragKgPerKgAtReferenceSpeed:
-        fishRetrieveResult?.waterDragKgPerKgAtReferenceSpeed,
-      fishRetrieveAccelerationLoadKg:
-        fishRetrieveResult?.accelerationLoadKg,
-      fishRetrievePositiveAccelerationMps2:
-        fishRetrieveResult?.positiveAccelerationMetersPerSecond2,
-      fishRetrieveAccelerationRatio: fishRetrieveResult?.accelerationRatio,
+      fishTensionKg: fishRetrieveResult?.fishTensionKg ?? forceData.fishTensionKg,
+      fishPassiveKg: fishRetrieveResult?.fishPassiveKg ?? forceData.fishPassiveKg,
+      fishActiveKg: fishRetrieveResult?.fishActiveKg ?? forceData.fishActiveKg,
       fishRetrieveUsefulPullForceKg: fishRetrieveResult?.usefulPullForceKg,
-      fishRetrieveSpeedMps: fishRetrieveResult?.retrieveSpeedMetersPerSecond,
+      fishRetrieveSpeedMps: fishRetrieveResult?.speedMps,
+      simpleFightSpeedMps: fishRetrieveResult?.speedMps,
+      towardPlayerSpeedMps: fishRetrieveResult?.towardPlayerSpeedMps,
+      awaySpeedMps: fishRetrieveResult?.awaySpeedMps,
+      netForceKg: fishRetrieveResult?.netForceKg,
       fishRetrieveMovementControlRatio:
         fishRetrieveResult?.movementControlRatio,
-      fishRetrieveTerminalSpeedMps: fishRetrieveResult?.terminalRetrieveSpeedMetersPerSecond,
-      fishRetrieveTerminalReached: fishRetrieveResult?.terminalSpeedReached,
-      fishRetrieveSurplusForceKg: fishRetrieveResult?.surplusForceKg,
-      fishRetrieveBlockedSurplusForceKg:
-        fishRetrieveResult?.blockedSurplusForceKg,
-      fishRetrieveLineTensionKg: fishRetrieveResult?.lineTensionKg,
+      fishRetrieveLineTensionKg: fishRetrieveResult?.totalTensionKg,
       fishRetrieveBalanceState: fishRetrieveResult?.balanceState,
       fishRetrieveMovementBlocked: fishRetrieveResult?.movementBlocked,
       fishRetrieveDesiredMoveMeters: fishRetrieveResult?.desiredMoveMeters,
@@ -917,13 +922,22 @@ class FightPhysicsSystem {
         holdReelRecover?.blockedReason || "not_checked",
       tensionMode: tensionResult.mode,
       rawTensionKg: tensionResult.rawTensionKg,
+      fishTensionKg: tensionResult.fishTensionKg,
+      playerHoldTensionKg: tensionResult.playerHoldTensionKg,
+      totalTensionKg: tensionResult.totalTensionKg,
+      rodStressRatio: tensionResult.rodStressRatio,
+      lineStressRatio: tensionResult.lineStressRatio,
+      hookStressRatio: tensionResult.hookStressRatio,
+      rodMaxLoadKg: stressSystem.getEffectiveRodMaxLoadKg?.() || 0,
+      lineMaxLoadKg: stressSystem.getEffectiveLineSystemMaxLoadKg?.() || 0,
+      hookMaxLoadKg: stressSystem.getEffectiveHookMaxLoadKg?.() || 0,
       movementAuthority: forceData.player.movementAuthority,
       playerForceKg: forceData.player.forceKg,
-      activeEffectivePullKg: fishRetrieveResult?.passiveRetrieveTensionKg ?? 0,
-      activeNetPullKg: fishRetrieveResult?.passiveRetrieveTensionKg ?? 0,
+      activeEffectivePullKg: fishRetrieveResult?.effectiveRodHoldKg ?? 0,
+      activeNetPullKg: Math.max(0, Number(fishRetrieveResult?.netForceKg) || 0),
       pullCapacityKg: forceData.player.pullCapacityKg,
       effectivePullKg: fishRetrieveResult?.usefulPullForceKg ?? 0,
-      netPullKg: fishRetrieveResult?.usefulPullForceKg ?? 0,
+      netPullKg: fishRetrieveResult?.netForceKg ?? 0,
       legacyEffectivePullKg: forceData.player.legacyEffectivePullKg,
       legacyNetPullKg: forceData.player.legacyNetPullKg,
       dragLimitKg: dragContext.effectiveDragLimitKg,
@@ -953,6 +967,9 @@ class FightPhysicsSystem {
       currentTensionKg: stressSystem.getTensionKg(),
       fishForceKg: forceData.totalFishForceKg,
       calculatedTensionKg: tensionResult.tensionKg,
+      simpleFightSpeedPxPerSec:
+        (Number(fishRetrieveResult?.speedMps) || 0) *
+        (this.#physicsConfig?.getPixelsPerMeter?.() || 50),
     };
   }
 

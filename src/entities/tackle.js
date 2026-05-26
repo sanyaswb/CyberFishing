@@ -60,6 +60,7 @@ class Rod extends Equipment {
   #lengthMeters;
   #castPowerCoefficient;
   #maxLoadKg;
+  #holdTensionRatio;
   #durability;
   #durabilityMaxLoadLossPerPercent;
 
@@ -82,6 +83,7 @@ class Rod extends Equipment {
       options.castPowerCoefficient,
     );
     this.#maxLoadKg = Rod.#numberOrDefault(options.maxLoadKg, 8.0);
+    this.#holdTensionRatio = Rod.#numberOrDefault(options.holdTensionRatio, 1.0);
     this.#durability = Rod.#numberOrDefault(options.durability, 100);
     this.#durabilityMaxLoadLossPerPercent =
       Rod.#numberOrDefault(options.durabilityMaxLoadLossPerPercent, 0.001);
@@ -124,6 +126,10 @@ class Rod extends Equipment {
       (100 - Math.max(0, Math.min(100, this.#durability))) *
       this.#durabilityMaxLoadLossPerPercent;
     return this.#maxLoadKg * Math.max(0.1, 1 - loss);
+  }
+
+  getHoldTensionRatio() {
+    return Math.max(0, Math.min(1, this.#holdTensionRatio));
   }
 
   static #numberOrDefault(value, fallback) {
@@ -249,15 +255,39 @@ class Hook {
   #level;
   #weight;
   #quality;
+  #maxLoadKg;
+  #durability;
+  #durabilityMaxLoadLossPerPercent;
 
-  constructor(level, weight, quality) {
+  constructor(level, weight, quality, options = {}) {
     this.#level = level;
     this.#weight = weight;
     this.#quality = quality;
+    this.#maxLoadKg = Hook.#numberOrDefault(options.maxLoadKg, Infinity);
+    this.#durability = Hook.#numberOrDefault(options.durability, 100);
+    this.#durabilityMaxLoadLossPerPercent =
+      Hook.#numberOrDefault(options.durabilityMaxLoadLossPerPercent, 0.001);
   }
 
   getPower() {
     return (this.#level * this.#weight + this.#quality) * 0.01;
+  }
+
+  getMaxLoadKg() {
+    return this.#maxLoadKg;
+  }
+
+  getEffectiveMaxLoadKg() {
+    if (!Number.isFinite(this.#maxLoadKg)) return Infinity;
+    const loss =
+      (100 - Math.max(0, Math.min(100, this.#durability))) *
+      this.#durabilityMaxLoadLossPerPercent;
+    return this.#maxLoadKg * Math.max(0.1, 1 - loss);
+  }
+
+  static #numberOrDefault(value, fallback) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
   }
 }
 

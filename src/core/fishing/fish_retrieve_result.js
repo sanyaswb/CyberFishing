@@ -56,6 +56,31 @@ class FishRetrieveResult {
     );
     this.movementControlRatio = this.#ratio(data.movementControlRatio);
     this.lineTensionKg = this.#positive(data.lineTensionKg);
+    this.fishPassiveKg = this.#positive(data.fishPassiveKg ?? this.bodyResistanceKg);
+    this.fishActiveKg = this.#positive(data.fishActiveKg ?? this.activeAwayForceKg);
+    this.fishTensionKg = this.#positive(data.fishTensionKg);
+    this.rodHoldMaxKg = this.#positive(data.rodHoldMaxKg);
+    this.effectiveRodHoldKg = this.#positive(data.effectiveRodHoldKg);
+    this.rawPlayerHoldTensionKg = this.#positive(
+      data.rawPlayerHoldTensionKg ?? data.playerHoldTensionKg,
+    );
+    this.movableHoldTensionCapKg = this.#positive(
+      data.movableHoldTensionCapKg,
+    );
+    this.movableHoldTensionCapRatio = this.#positive(
+      data.movableHoldTensionCapRatio ?? 1,
+    );
+    this.movableHoldTensionCapApplied =
+      !!data.movableHoldTensionCapApplied;
+    this.fishCanMoveTowardPlayer = data.fishCanMoveTowardPlayer !== false;
+    this.playerHoldTensionKg = this.#positive(data.playerHoldTensionKg);
+    this.totalTensionKg = this.#positive(data.totalTensionKg ?? this.lineTensionKg);
+    this.netForceKg = Number.isFinite(Number(data.netForceKg))
+      ? Number(data.netForceKg)
+      : 0;
+    this.speedMps = this.#positive(data.speedMps);
+    this.towardPlayerSpeedMps = this.#positive(data.towardPlayerSpeedMps);
+    this.awaySpeedMps = this.#positive(data.awaySpeedMps);
     this.desiredMoveMeters = this.#positive(data.desiredMoveMeters);
     this.appliedMoveMeters = this.#positive(data.appliedMoveMeters);
     this.movementBlocked = !!data.movementBlocked;
@@ -80,29 +105,18 @@ class FishRetrieveResult {
   }
 
   withAppliedMovement({ appliedMoveMeters, movementBlocked } = {}) {
-    const isBlocked = !!movementBlocked;
-    if (isBlocked && !this.movementBlocked) {
-      const blockedPressureKg = Math.max(
-        0,
-        this.playerPullPressureKg - this.effectivePlayerPressureKg,
-      );
-      const effectivePlayerPressureKg =
-        this.effectivePlayerPressureKg + blockedPressureKg;
+    if (!!movementBlocked && this.movableHoldTensionCapApplied) {
+      const playerHoldTensionKg = this.rawPlayerHoldTensionKg;
+      const totalTensionKg = this.fishTensionKg + playerHoldTensionKg;
       return new FishRetrieveResult({
         ...this,
         appliedMoveMeters,
-        movementBlocked: true,
-        effectivePlayerPressureKg,
-        pressureTransferRatio:
-          this.playerPullPressureKg > 0.001
-            ? effectivePlayerPressureKg / this.playerPullPressureKg
-            : this.pressureTransferRatio,
-        passiveRetrieveTensionKg:
-          this.passiveRetrieveTensionKg + blockedPressureKg,
-        lineTensionKg: this.lineTensionKg + blockedPressureKg,
-        usefulPullForceKg: effectivePlayerPressureKg,
-        blockedSurplusForceKg:
-          this.blockedSurplusForceKg + blockedPressureKg,
+        movementBlocked,
+        fishCanMoveTowardPlayer: false,
+        movableHoldTensionCapApplied: false,
+        playerHoldTensionKg,
+        lineTensionKg: totalTensionKg,
+        totalTensionKg,
       });
     }
 

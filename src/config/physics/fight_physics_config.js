@@ -1,4 +1,27 @@
 const FIGHT_PHYSICS_CONFIG = {
+  directionForce: {
+    towardPlayerMultiplier: 0.0,
+    sideMultiplier: 1.0,
+    awayMultiplier: 2.5,
+  },
+
+  rodHold: {
+    chargeTimeSeconds: 0.35,
+
+    anglePenalty: {
+      enabled: true,
+      noPenaltyAngleDeg: 15,
+      maxPenaltyAngleDeg: 75,
+      maxPenaltyMultiplier: 0.9,
+    },
+  },
+
+  tension: {
+    smoothingPerSecond: 10.0,
+    slackTensionKg: 0.0,
+    movableHoldTensionCapRatio: 1.0,
+  },
+
   fishForce: {
     dynamicLoadFromMotion: {
       enabled: true,

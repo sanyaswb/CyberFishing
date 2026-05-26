@@ -1,5 +1,49 @@
 # CyberFishing changelog
 
+## v0.19.3 - crucian simplified fish profile
+
+- Cleaned `crucian_stalker` fish physics for the simplified fight model.
+- Removed legacy `minPowerRatio`, `maxSpeedMetersPerSec`, resistance, retrieve and behavior ratio aliases from the crucian profile.
+- Relaxed fish config validation so legacy resistance/retrieve profile fields remain optional compatibility data.
+
+## v0.19.2 - movable hold tension cap
+
+- Added `physics.fight.tension.movableHoldTensionCapRatio`.
+- Capped player hold tension by `fishPassiveKg * movableHoldTensionCapRatio` while the fish can move toward the player.
+- Kept full raw hold tension when movement is blocked, so constraints can still create line-break risk.
+- Exposed raw hold tension and movable cap values in fight debug/overlay formula data.
+
+## v0.19.1 - tension overlay breakdown
+
+- Added explicit tension breakdown fields for fish tension, player hold tension and total tension.
+- Added rod, line and hook stress ratios to tension/debug data.
+- Added hook max-load support with an open-ended fallback when hook load is not configured.
+- Reworked fight overlay into Fish, Player, Movement and Tension sections for the simplified model.
+- Updated overlay metric inspector entries for the simplified fight formulas.
+
+## v0.19.0 - simplified fight pipeline
+
+- Removed the old pressure-transfer retrieve model from the active fight pipeline.
+- Fish force now uses passive body resistance plus active state/direction force without relative-speed dynamic force.
+- Rod hold now charges from zero to `rodLimitKg - fishTensionKg`.
+- Effective rod hold works against fish movement while `holdTensionRatio` controls only the hold contribution to tension.
+- Final tension now comes from fish tension plus player hold tension.
+
+## v0.18.9 - simple fight force calculator
+
+- Added `SimpleFightForceCalculator` for the simplified fight force model.
+- Calculator now returns fish passive force, active force, opposition, rod hold max, hold tension, total tension, net force and movement speed.
+- Wired the calculator into browser script loading for the next fight pipeline step.
+
+## v0.18.8 — simplified fight configs
+
+- Added `physics.water` config for passive body resistance, motion resistance and speed multiplier.
+- Added `physics.fight.directionForce`, `physics.fight.rodHold` and `physics.fight.tension` config groups.
+- Added adapter read APIs for the new simplified fight config groups.
+- Added `holdTensionRatio` to rod `engineStats`.
+- Added fish profile `movementProfile.baseSpeed` plus behavior `forceMultiplier` and `speedMultiplier` aliases.
+- Updated config validation metadata for the new physics leaves.
+
 ## v0.18.7 — stamina endurance split
 
 - Split fish condition resources into separate `maxStamina` and `maxEndurance` values.

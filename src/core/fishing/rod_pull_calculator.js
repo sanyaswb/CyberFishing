@@ -36,11 +36,39 @@ class RodPullCalculator {
   // Drag slip and final line tension are resolved later by FishRetrieveSystem + TensionSystem.
   calculateForceLimit({
     maxTackleLoadKg,
+    rodLimitKg,
+    fishTensionKg,
+    rodHoldMaxKg,
     dragLimitKg,
     dragLocked,
     hardLineLimit,
     lineHasReserve,
   } = {}) {
+    const directHoldMax = Number(rodHoldMaxKg);
+    if (Number.isFinite(directHoldMax)) {
+      const holdMax = Math.max(0, directHoldMax);
+      return {
+        availableExtraForceKg: holdMax,
+        controlledPullLimitKg: holdMax,
+        rodHoldMaxKg: holdMax,
+        dragSlipping: false,
+        blockedReason: "none",
+      };
+    }
+
+    const rodLimit = Number(rodLimitKg);
+    if (Number.isFinite(rodLimit)) {
+      const fishTension = Math.max(0, Number(fishTensionKg) || 0);
+      const holdMax = Math.max(0, Math.max(0, rodLimit) - fishTension);
+      return {
+        availableExtraForceKg: holdMax,
+        controlledPullLimitKg: holdMax,
+        rodHoldMaxKg: holdMax,
+        dragSlipping: false,
+        blockedReason: "none",
+      };
+    }
+
     const maxLoad = Math.max(0, Number(maxTackleLoadKg) || 0);
     const controlledLoad = this.#controlledPullLimitKg(maxLoad);
     const dragLimit = Math.max(0, Number(dragLimitKg) || 0);
@@ -52,6 +80,7 @@ class RodPullCalculator {
     return {
       availableExtraForceKg: effectiveLoad,
       controlledPullLimitKg: effectiveLoad,
+      rodHoldMaxKg: effectiveLoad,
       dragSlipping: canSlipLine && dragLimit < controlledLoad,
       blockedReason: "none",
     };
@@ -65,6 +94,9 @@ class RodPullCalculator {
     pumpCreditMeters,
     slackMeters,
     maxTackleLoadKg,
+    rodLimitKg,
+    fishTensionKg,
+    holdTensionRatio = 1,
     dragLimitKg,
     dragLocked,
     hardLineLimit,
@@ -101,6 +133,8 @@ class RodPullCalculator {
     const lineCanRelease = this.#lineHasReserve(lineHasReserve);
     const forceLimit = this.calculateForceLimit({
       maxTackleLoadKg,
+      rodLimitKg,
+      fishTensionKg,
       dragLimitKg,
       dragLocked,
       hardLineLimit,
@@ -123,6 +157,10 @@ class RodPullCalculator {
         availableExtraForceKg: forceLimit.availableExtraForceKg,
         forceKg: preservedForceKg,
         totalTensionKg: preservedForceKg,
+        rodLimitKg,
+        fishTensionKg,
+        rodHoldMaxKg: forceLimit.rodHoldMaxKg,
+        holdTensionRatio,
         blockedReason: "pump_credit_too_high",
         lineHasReserve: lineCanRelease,
         canReleaseLine: lineCanRelease,
@@ -131,10 +169,7 @@ class RodPullCalculator {
     }
 
     const dt = Math.max(0, Number(dtSec) || 0);
-    const chargePerSecond = Math.max(
-      0,
-      Number(this.#config.strokeChargePerSecond ?? this.#config.chargePerSecond) || 0.65,
-    );
+    const chargePerSecond = this.#resolveHoldChargePerSecond();
     const chargedRatio = Math.min(1, prevRatio + chargePerSecond * dt);
     const nextRatio = chargedRatio;
     const distanceMeters = Math.min(availableDistanceMeters, nextRatio * availableDistanceMeters);
@@ -159,6 +194,10 @@ class RodPullCalculator {
       forceKg,
       availableExtraForceKg: forceLimit.availableExtraForceKg,
       totalTensionKg: forceKg,
+      rodLimitKg,
+      fishTensionKg,
+      rodHoldMaxKg: forceLimit.rodHoldMaxKg,
+      holdTensionRatio,
       deltaMeters,
       canMoveFish: deltaMeters >= minDistance && forceKg > (Number(this.#config.minEffectivePullKg) || 0.01),
       blockedReason,
@@ -179,6 +218,12 @@ class RodPullCalculator {
       maxDistanceMeters: Math.max(0, Number(data.maxDistanceMeters) || 0),
       availableDistanceMeters: Math.max(0, Number(data.availableDistanceMeters) || 0),
       availableExtraForceKg: Math.max(0, Number(data.availableExtraForceKg) || 0),
+      rodLimitKg: Math.max(0, Number(data.rodLimitKg) || 0),
+      fishTensionKg: Math.max(0, Number(data.fishTensionKg) || 0),
+      rodHoldMaxKg: Math.max(0, Number(data.rodHoldMaxKg) || 0),
+      effectiveForceKg: Math.max(0, Number(data.effectiveForceKg ?? data.forceKg) || 0),
+      holdTensionRatio: this.#ratioOrDefault(data.holdTensionRatio, 1),
+      playerHoldTensionKg: Math.max(0, Number(data.playerHoldTensionKg) || 0),
       totalTensionKg: Math.max(0, Number(data.totalTensionKg) || 0),
       deltaMeters: Math.max(0, Number(data.deltaMeters) || 0),
       canMoveFish: !!data.canMoveFish,
@@ -207,5 +252,23 @@ class RodPullCalculator {
       ? Math.min(1, ratio)
       : 0.85;
     return maxLoad * safeRatio;
+  }
+
+  #resolveHoldChargePerSecond() {
+    const chargeTimeSeconds = Number(this.#config.rodHold?.chargeTimeSeconds);
+    if (Number.isFinite(chargeTimeSeconds) && chargeTimeSeconds > 0) {
+      return 1 / chargeTimeSeconds;
+    }
+
+    return Math.max(
+      0,
+      Number(this.#config.strokeChargePerSecond ?? this.#config.chargePerSecond) || 0.65,
+    );
+  }
+
+  #ratioOrDefault(value, fallback) {
+    const number = Number(value);
+    if (Number.isFinite(number)) return Math.max(0, Math.min(1, number));
+    return Math.max(0, Math.min(1, Number(fallback) || 0));
   }
 }

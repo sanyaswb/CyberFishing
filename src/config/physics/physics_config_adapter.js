@@ -36,6 +36,56 @@ class FightPhysicsConfigAdapter {
     );
   }
 
+  getWaterConfig() {
+    const water = this.#physics().water || this.#physics().environment?.water || {};
+    return {
+      tautBodyResistancePerKg: this.#number(
+        water.tautBodyResistancePerKg,
+        0.2,
+      ),
+      motionResistance: this.#number(water.motionResistance, 1000),
+      speedMultiplier: this.#number(water.speedMultiplier, 64),
+    };
+  }
+
+  getDirectionForceConfig() {
+    const config = this.#physics().fight?.directionForce || {};
+    return {
+      towardPlayerMultiplier: this.#number(config.towardPlayerMultiplier, 0),
+      sideMultiplier: this.#number(config.sideMultiplier, 1),
+      awayMultiplier: this.#number(config.awayMultiplier, 2.5),
+    };
+  }
+
+  getRodHoldConfig() {
+    const config = this.#physics().fight?.rodHold || {};
+    const anglePenalty = config.anglePenalty || {};
+    return {
+      chargeTimeSeconds: this.#number(config.chargeTimeSeconds, 0.35),
+      anglePenalty: {
+        enabled: anglePenalty.enabled !== false,
+        noPenaltyAngleDeg: this.#number(anglePenalty.noPenaltyAngleDeg, 15),
+        maxPenaltyAngleDeg: this.#number(anglePenalty.maxPenaltyAngleDeg, 75),
+        maxPenaltyMultiplier: this.#number(
+          anglePenalty.maxPenaltyMultiplier,
+          0.9,
+        ),
+      },
+    };
+  }
+
+  getFightTensionConfig() {
+    const config = this.#physics().fight?.tension || {};
+    return {
+      smoothingPerSecond: this.#number(config.smoothingPerSecond, 10),
+      slackTensionKg: this.#number(config.slackTensionKg, 0),
+      movableHoldTensionCapRatio: this.#number(
+        config.movableHoldTensionCapRatio,
+        1,
+      ),
+    };
+  }
+
   getDirectionMultiplierConfig() {
     const config =
       this.#physics().fight?.fishForce?.dynamicLoadFromMotion

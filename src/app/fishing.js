@@ -298,6 +298,7 @@ class FightSessionFactory {
         lengthMeters: equipment.rod?.lengthMeters,
         castPowerCoefficient: equipment.rod?.castPowerCoefficient,
         maxLoadKg: equipment.rod?.maxLoadKg,
+        holdTensionRatio: equipment.rod?.holdTensionRatio,
         durability: equipment.rod?.durability,
         durabilityMaxLoadLossPerPercent:
           equipment.rod?.durabilityMaxLoadLossPerPercent,
@@ -326,6 +327,12 @@ class FightSessionFactory {
       activeHook.level || 1,
       activeHook.weight || 1,
       activeHook.quality || 1.0,
+      {
+        maxLoadKg: activeHook.maxLoadKg,
+        durability: activeHook.durability,
+        durabilityMaxLoadLossPerPercent:
+          activeHook.durabilityMaxLoadLossPerPercent,
+      },
     );
     const fish = new Fish(
       fishData.level,
@@ -350,7 +357,10 @@ class FightSessionFactory {
     });
     const pullInputMapper = new PullInputMapper();
     const rodPullSystem = new RodPullSystem(
-      this.physicsConfig?.getRodPullConfig?.() || {},
+      {
+        ...(this.physicsConfig?.getRodPullConfig?.() || {}),
+        rodHold: this.physicsConfig?.getRodHoldConfig?.() || {},
+      },
     );
     const reelSystem = new ReelSystem(
       this.physicsConfig?.getReelConfig?.() || {},
@@ -360,6 +370,7 @@ class FightSessionFactory {
       rod,
       reel,
       lineSystem,
+      hook,
       leader: equipment.leader,
       config: this.physicsConfig?.getTensionConfig?.() || this.config.tension,
       rng: this.rng,
@@ -414,6 +425,7 @@ class FightSessionFactory {
         lengthMeters: equipment.rod?.lengthMeters,
         castPowerCoefficient: equipment.rod?.castPowerCoefficient,
         maxLoadKg: equipment.rod?.maxLoadKg,
+        holdTensionRatio: equipment.rod?.holdTensionRatio,
         durability: equipment.rod?.durability,
         durabilityMaxLoadLossPerPercent:
           equipment.rod?.durabilityMaxLoadLossPerPercent,
@@ -442,6 +454,12 @@ class FightSessionFactory {
       activeHook.level || 1,
       activeHook.weight || 1,
       activeHook.quality || 1.0,
+      {
+        maxLoadKg: activeHook.maxLoadKg,
+        durability: activeHook.durability,
+        durabilityMaxLoadLossPerPercent:
+          activeHook.durabilityMaxLoadLossPerPercent,
+      },
     );
     const lineSystem = new LineSystem({
       rod,

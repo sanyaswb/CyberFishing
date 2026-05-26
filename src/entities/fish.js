@@ -88,6 +88,11 @@ class FishPhysicsProfile {
 
     const normalizedMovementProfile = {
       ...movementProfile,
+      baseSpeed: this.#firstFiniteNumber(
+        raw.baseSpeed,
+        movementProfile.baseSpeed,
+        1.0,
+      ),
       maxSpeedMetersPerSec: this.#firstFiniteNumber(
         raw.maxSpeedMetersPerSec,
         raw.baseSpeedMetersPerSec,
@@ -182,6 +187,7 @@ class FishPhysicsProfile {
       minStaminaActivityMultiplier:
         normalizedStaminaProfile.minStaminaActivityMultiplier,
       exhaustedSpeedRatio: normalizedStaminaProfile.exhaustedSpeedRatio,
+      baseSpeed: normalizedMovementProfile.baseSpeed,
       maxSpeedMetersPerSec: normalizedMovementProfile.maxSpeedMetersPerSec,
       baseSpeedMetersPerSec: normalizedMovementProfile.maxSpeedMetersPerSec,
       agility: normalizedMovementProfile.agility,
@@ -216,19 +222,56 @@ class FishPhysicsProfile {
   }
 
   #resolveBehaviors(raw, behaviorProfile) {
-    if (raw.behaviors && typeof raw.behaviors === "object") return raw.behaviors;
+    if (raw.behaviors && typeof raw.behaviors === "object") {
+      return this.#normalizeBehaviors(raw.behaviors);
+    }
     if (
       behaviorProfile.behaviors &&
       typeof behaviorProfile.behaviors === "object"
     ) {
-      return behaviorProfile.behaviors;
+      return this.#normalizeBehaviors(behaviorProfile.behaviors);
     }
 
     const directBehaviorProfileKeys = ["idle", "rest", "swim", "dash", "lastDash"];
     const hasDirectStates = directBehaviorProfileKeys.some(
       (key) => behaviorProfile[key] && typeof behaviorProfile[key] === "object",
     );
-    return hasDirectStates ? behaviorProfile : {};
+    return hasDirectStates ? this.#normalizeBehaviors(behaviorProfile) : {};
+  }
+
+  #normalizeBehaviors(behaviors) {
+    const normalized = {};
+    for (const [name, behavior] of Object.entries(behaviors || {})) {
+      if (!behavior || typeof behavior !== "object") continue;
+      const forceMultiplier = this.#firstFiniteNumber(
+        behavior.forceMultiplier,
+        behavior.powerRatio,
+        behavior.pullMult,
+        1,
+      );
+      const speedMultiplier = this.#firstFiniteNumber(
+        behavior.speedMultiplier,
+        behavior.speedRatio,
+        Math.abs(Number(behavior.moveX) || 0),
+        0,
+      );
+      normalized[name] = {
+        ...behavior,
+        forceMultiplier,
+        speedMultiplier,
+        powerRatio: this.#firstFiniteNumber(
+          behavior.powerRatio,
+          forceMultiplier,
+          1,
+        ),
+        speedRatio: this.#firstFiniteNumber(
+          behavior.speedRatio,
+          speedMultiplier,
+          0,
+        ),
+      };
+    }
+    return normalized;
   }
 
   #copyFiniteAlias(target, key, ...values) {

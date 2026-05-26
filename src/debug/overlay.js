@@ -321,18 +321,72 @@ class FightPhysicsModule extends OverlayModule {
       Number(d.rodStrokeCapacityMeters) || 0,
     );
 
-    let html = this.formatHeader("FIGHT PHYSICS PIPELINE", "#73c2fb");
-    html += this.#renderFishToTackleSection(d);
-    html += this.#renderPlayerToFishSection(d);
-    html += this.#renderPullWaterSection(d);
-    html += this.#renderFinalTensionSection({
+    return this.#renderSimpleFightSections({
       ...d,
       lineRemaining,
       lineMaxRemaining,
       rodStrokeUsed,
       rodStrokeCapacity,
     });
+  }
+
+  #renderSimpleFightSections(d) {
+    let html = this.formatHeader("FIGHT PHYSICS", "#73c2fb");
+    html += this.#section("FISH", [
+      this.#row("Fish weight", this.#kg(d.fishWeightKg, 3)),
+      this.#row("Water weight / passive force", this.#kg(d.fishPassiveKg, 3), "#ffaa00"),
+      this.#row("State force multiplier", `x${this.#num(d.fishStateForceMultiplier ?? d.pullMult, 2)}`),
+      this.#row("Direction multiplier", `x${this.#num(d.directionResistanceMultiplier, 2)}`),
+      this.#row("Active fish force", this.#kg(d.fishActiveKg, 3), "#ff8888"),
+      this.#row("Fish opposition", this.#kg(d.fishOppositionKg, 3), "#ff8888"),
+    ]);
+    html += this.#section("PLAYER", [
+      this.#row("Rod hold", this.#kg(d.rodPullForceKg, 3), "#00ff80"),
+      this.#row("Rod hold max", this.#kg(d.rodHoldMaxKg, 3), "#ffaa00"),
+      this.#row("Angle multiplier", `x${this.#num(d.anglePenalty || 1, 2)}`),
+      this.#row("Effective rod hold", this.#kg(d.effectiveRodHoldKg, 3), "#00ff80"),
+      this.#row("Hold tension ratio", this.#percent(d.holdTensionRatio, 1)),
+      this.#row("Movable tension cap", this.#kg(d.movableHoldTensionCapKg, 3), "#73c2fb"),
+      this.#row("Hold to tension", this.#kg(d.playerHoldTensionKg, 3), "#00ff80"),
+    ]);
+    html += this.#section("MOVEMENT", [
+      this.#row("Net force", this.#kg(d.netForceKg, 3), this.#netForceColor(d.netForceKg)),
+      this.#row("Winner", this.#winner(d.netForceKg), this.#netForceColor(d.netForceKg)),
+      this.#row("Water resistance", this.#num(d.waterMotionResistance, 1)),
+      this.#row("Speed multiplier", `x${this.#num(d.waterSpeedMultiplier, 2)}`),
+      this.#row("Speed m/s", this.#mps(d.simpleFightSpeedMps, 3), "#73c2fb"),
+      this.#row("Speed px/s", `${this.#num(d.simpleFightSpeedPxPerSec ?? d.fishSpeedPxPerSec, 1)}px/s`, "#73c2fb"),
+    ]);
+    html += this.#section("TENSION", [
+      this.#row("Fish tension", this.#kg(d.fishTensionKg, 3), "#ff8888"),
+      this.#row("Player tension", this.#kg(d.playerHoldTensionKg, 3), "#00ff80"),
+      this.#row("Total tension", this.#kg(d.totalTensionKg ?? d.calculatedTensionKg, 3), "#ffaa00"),
+      this.#row("Rod stress", this.#percent(d.rodStressRatio, 1), this.#stressColor(d.rodStressRatio)),
+      this.#row("Line stress", this.#percent(d.lineStressRatio, 1), this.#stressColor(d.lineStressRatio)),
+      this.#row("Hook stress", this.#percent(d.hookStressRatio, 1), this.#stressColor(d.hookStressRatio)),
+    ]);
     return html + `<div style="margin-bottom: 12px;"></div>`;
+  }
+
+  #winner(netForceKg) {
+    const force = Number(netForceKg) || 0;
+    if (force > 0.001) return "Player";
+    if (force < -0.001) return "Fish";
+    return "Balanced";
+  }
+
+  #netForceColor(netForceKg) {
+    const force = Number(netForceKg) || 0;
+    if (force > 0.001) return "#00ff80";
+    if (force < -0.001) return "#ff8888";
+    return "#ffaa00";
+  }
+
+  #stressColor(ratio) {
+    const value = Number(ratio) || 0;
+    if (value >= 1) return "#ff4444";
+    if (value >= 0.8) return "#ffaa00";
+    return "#00ff80";
   }
 
   #renderFishToTackleSection(d) {

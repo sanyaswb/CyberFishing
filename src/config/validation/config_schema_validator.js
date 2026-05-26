@@ -188,8 +188,6 @@ class ConfigSchemaValidator {
       "forceProfile",
       "staminaProfile",
       "movementProfile",
-      "resistanceProfile",
-      "retrieveProfile",
       "behaviorProfile",
     ];
     for (const profileName of requiredProfiles) {
@@ -208,7 +206,9 @@ class ConfigSchemaValidator {
     }
 
     this.#requireFiniteNumber(`${fishPath}.physics.forceProfile.basePower`, physics.forceProfile?.basePower, { min: 0 });
-    this.#requireFiniteNumber(`${fishPath}.physics.forceProfile.minPowerRatio`, physics.forceProfile?.minPowerRatio, { min: 0, max: 1 });
+    if (Object.prototype.hasOwnProperty.call(Object(physics.forceProfile), "minPowerRatio")) {
+      this.#requireFiniteNumber(`${fishPath}.physics.forceProfile.minPowerRatio`, physics.forceProfile?.minPowerRatio, { min: 0, max: 1 });
+    }
     this.#requireFiniteNumber(`${fishPath}.physics.staminaProfile.baseStamina`, physics.staminaProfile?.baseStamina, { min: 0 });
     if (Object.prototype.hasOwnProperty.call(Object(physics.staminaProfile), "staminaBossMultiplier")) {
       this.#requireFiniteNumber(`${fishPath}.physics.staminaProfile.staminaBossMultiplier`, physics.staminaProfile?.staminaBossMultiplier, { min: 0 });
@@ -216,14 +216,21 @@ class ConfigSchemaValidator {
     if (Object.prototype.hasOwnProperty.call(Object(physics.staminaProfile), "staminaRatioFromEndurance")) {
       this.#requireFiniteNumber(`${fishPath}.physics.staminaProfile.staminaRatioFromEndurance`, physics.staminaProfile?.staminaRatioFromEndurance, { min: 0 });
     }
-    this.#requireFiniteNumber(`${fishPath}.physics.movementProfile.maxSpeedMetersPerSec`, physics.movementProfile?.maxSpeedMetersPerSec, { min: 0 });
+    this.#requireFiniteNumber(`${fishPath}.physics.movementProfile.baseSpeed`, physics.movementProfile?.baseSpeed, { min: 0 });
+    if (Object.prototype.hasOwnProperty.call(Object(physics.movementProfile), "maxSpeedMetersPerSec")) {
+      this.#requireFiniteNumber(`${fishPath}.physics.movementProfile.maxSpeedMetersPerSec`, physics.movementProfile?.maxSpeedMetersPerSec, { min: 0 });
+    }
     this.#requireFiniteNumber(`${fishPath}.physics.movementProfile.agility`, physics.movementProfile?.agility, { min: 0 });
-    this.#requireFiniteNumber(`${fishPath}.physics.resistanceProfile.speedForceMultiplier`, physics.resistanceProfile?.speedForceMultiplier, { min: 0 });
-    this.#requireFiniteNumber(`${fishPath}.physics.resistanceProfile.waterResistanceMultiplier`, physics.resistanceProfile?.waterResistanceMultiplier, { min: 0 });
-    this.#requireFiniteNumber(`${fishPath}.physics.retrieveProfile.passiveBodyResistanceMultiplier`, physics.retrieveProfile?.passiveBodyResistanceMultiplier, { min: 0 });
-    this.#requireFiniteNumber(`${fishPath}.physics.retrieveProfile.activeAwayMultiplier`, physics.retrieveProfile?.activeAwayMultiplier, { min: 0 });
-    this.#requireFiniteNumber(`${fishPath}.physics.retrieveProfile.waterDragMultiplier`, physics.retrieveProfile?.waterDragMultiplier, { min: 0 });
-    this.#requireFiniteNumber(`${fishPath}.physics.retrieveProfile.referencePullSpeedMultiplier`, physics.retrieveProfile?.referencePullSpeedMultiplier, { min: 0 });
+    if (physics.resistanceProfile && typeof physics.resistanceProfile === "object") {
+      this.#requireFiniteNumber(`${fishPath}.physics.resistanceProfile.speedForceMultiplier`, physics.resistanceProfile.speedForceMultiplier, { min: 0 });
+      this.#requireFiniteNumber(`${fishPath}.physics.resistanceProfile.waterResistanceMultiplier`, physics.resistanceProfile.waterResistanceMultiplier, { min: 0 });
+    }
+    if (physics.retrieveProfile && typeof physics.retrieveProfile === "object") {
+      this.#requireFiniteNumber(`${fishPath}.physics.retrieveProfile.passiveBodyResistanceMultiplier`, physics.retrieveProfile.passiveBodyResistanceMultiplier, { min: 0 });
+      this.#requireFiniteNumber(`${fishPath}.physics.retrieveProfile.activeAwayMultiplier`, physics.retrieveProfile.activeAwayMultiplier, { min: 0 });
+      this.#requireFiniteNumber(`${fishPath}.physics.retrieveProfile.waterDragMultiplier`, physics.retrieveProfile.waterDragMultiplier, { min: 0 });
+      this.#requireFiniteNumber(`${fishPath}.physics.retrieveProfile.referencePullSpeedMultiplier`, physics.retrieveProfile.referencePullSpeedMultiplier, { min: 0 });
+    }
 
     const behaviors = physics.behaviorProfile?.behaviors;
     if (!behaviors || typeof behaviors !== "object") {
@@ -231,8 +238,14 @@ class ConfigSchemaValidator {
     } else {
       for (const [behaviorName, behavior] of Object.entries(behaviors)) {
         const path = `${fishPath}.physics.behaviorProfile.behaviors.${behaviorName}`;
-        this.#requireFiniteNumber(`${path}.powerRatio`, behavior.powerRatio, { min: 0 });
-        this.#requireFiniteNumber(`${path}.speedRatio`, behavior.speedRatio, { min: 0 });
+        this.#requireFiniteNumber(`${path}.forceMultiplier`, behavior.forceMultiplier, { min: 0 });
+        this.#requireFiniteNumber(`${path}.speedMultiplier`, behavior.speedMultiplier, { min: 0 });
+        if (Object.prototype.hasOwnProperty.call(Object(behavior), "powerRatio")) {
+          this.#requireFiniteNumber(`${path}.powerRatio`, behavior.powerRatio, { min: 0 });
+        }
+        if (Object.prototype.hasOwnProperty.call(Object(behavior), "speedRatio")) {
+          this.#requireFiniteNumber(`${path}.speedRatio`, behavior.speedRatio, { min: 0 });
+        }
         this.#requireFiniteNumber(`${path}.minTime`, behavior.minTime, { min: 0 });
         this.#requireFiniteNumber(`${path}.maxTime`, behavior.maxTime, { min: 0 });
         this.#requireFiniteNumber(`${path}.weight`, behavior.weight, { min: 0 });

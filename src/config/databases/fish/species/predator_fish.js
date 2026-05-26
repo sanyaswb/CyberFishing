@@ -56,6 +56,7 @@ const PREDATOR_FISH = [
       },
 
       movementProfile: {
+        baseSpeed: 1.0,
         maxSpeedMetersPerSec: 2.2,
         agility: 1.3,
         bounceCooldownMs: 2000,
@@ -86,6 +87,8 @@ const PREDATOR_FISH = [
       behaviorProfile: {
         behaviors: {
           idle: {
+            forceMultiplier: 0.8,
+            speedMultiplier: 0.8,
             powerRatio: 0.8,
             speedRatio: 0.8,
             minTime: 500,
@@ -93,6 +96,8 @@ const PREDATOR_FISH = [
             weight: 10,
           },
           rest: {
+            forceMultiplier: 0.5,
+            speedMultiplier: 0.5,
             powerRatio: 0.5,
             speedRatio: 0.5,
             minTime: 500,
@@ -100,6 +105,8 @@ const PREDATOR_FISH = [
             weight: 5,
           },
           swim: {
+            forceMultiplier: 1.0,
+            speedMultiplier: 1.0,
             powerRatio: 1.0,
             speedRatio: 1.0,
             minTime: 2000,
@@ -107,6 +114,8 @@ const PREDATOR_FISH = [
             weight: 55,
           },
           dash: {
+            forceMultiplier: 2.0,
+            speedMultiplier: 1.0,
             powerRatio: 2.0,
             speedRatio: 1.0,
             minTime: 500,
@@ -115,6 +124,8 @@ const PREDATOR_FISH = [
           },
           lastDash: {
             enabled: true,
+            forceMultiplier: 2.2,
+            speedMultiplier: 1.2,
             powerRatio: 2.2,
             speedRatio: 1.2,
             minTime: 1000,

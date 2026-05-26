@@ -41,13 +41,16 @@ class PlayerForceSystem {
     const idealDir = { x: 0, y: -1 };
     const dot = Math.max(-1, Math.min(1, lineDir.x * idealDir.x + lineDir.y * idealDir.y));
     const angleDeg = (Math.acos(dot) * 180) / Math.PI;
-    const angleCfg = config?.getRodAnglePenaltyConfig?.() || {};
+    const angleCfg =
+      config?.getRodHoldConfig?.()?.anglePenalty ||
+      config?.getRodAnglePenaltyConfig?.() ||
+      {};
     const noPenalty = angleCfg.noPenaltyAngleDeg ?? 15;
     const maxPenaltyAngle = angleCfg.maxPenaltyAngleDeg ?? 75;
     const angleStressRatio = this.#clamp01(
       (angleDeg - noPenalty) / Math.max(1, maxPenaltyAngle - noPenalty),
     );
-    const maxPenaltyMult = angleCfg.maxPenaltyMultiplier ?? 0.65;
+    const maxPenaltyMult = angleCfg.maxPenaltyMultiplier ?? 0.9;
     const anglePenalty = angleCfg.enabled === false
       ? 1
       : this.#lerp(1.0, maxPenaltyMult, angleStressRatio);

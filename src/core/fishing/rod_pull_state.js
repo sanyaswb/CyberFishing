@@ -6,6 +6,12 @@ class RodPullState {
   availableDistanceMeters = 0;
   forceKg = 0;
   availableExtraForceKg = 0;
+  rodLimitKg = 0;
+  fishTensionKg = 0;
+  rodHoldMaxKg = 0;
+  effectiveForceKg = 0;
+  holdTensionRatio = 1;
+  playerHoldTensionKg = 0;
   totalTensionKg = 0;
   deltaMeters = 0;
   canMoveFish = false;
@@ -26,6 +32,12 @@ class RodPullState {
     this.availableDistanceMeters = 0;
     this.forceKg = 0;
     this.availableExtraForceKg = 0;
+    this.rodLimitKg = 0;
+    this.fishTensionKg = 0;
+    this.rodHoldMaxKg = 0;
+    this.effectiveForceKg = 0;
+    this.holdTensionRatio = 1;
+    this.playerHoldTensionKg = 0;
     this.totalTensionKg = 0;
     this.deltaMeters = 0;
     this.canMoveFish = false;

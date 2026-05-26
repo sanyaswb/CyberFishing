@@ -16,6 +16,12 @@ class RodPullSystem {
     maxDistanceMeters: 0,
     availableDistanceMeters: 0,
     availableExtraForceKg: 0,
+    rodLimitKg: 0,
+    fishTensionKg: 0,
+    rodHoldMaxKg: 0,
+    effectiveForceKg: 0,
+    holdTensionRatio: 1,
+    playerHoldTensionKg: 0,
     totalTensionKg: 0,
     deltaMeters: 0,
     canMoveFish: false,
@@ -44,6 +50,8 @@ class RodPullSystem {
     pumpCreditMeters,
     slackMeters,
     fishForceKg,
+    fishTensionKg,
+    rodLimitKg,
     dragLimitKg,
     maxTackleLoadKg,
     dragLocked,
@@ -63,6 +71,9 @@ class RodPullSystem {
       pumpCreditMeters,
       slackMeters,
       maxTackleLoadKg,
+      rodLimitKg: this.#rodLimitKg(rod, rodLimitKg),
+      fishTensionKg: this.#fishTensionKg(fishTensionKg, fishForceKg),
+      holdTensionRatio: this.#holdTensionRatio(rod),
       dragLimitKg,
       dragLocked,
       hardLineLimit,
@@ -130,6 +141,12 @@ class RodPullSystem {
       maxDistanceMeters: 0,
       availableDistanceMeters: 0,
       availableExtraForceKg: 0,
+      rodLimitKg: 0,
+      fishTensionKg: 0,
+      rodHoldMaxKg: 0,
+      effectiveForceKg: 0,
+      holdTensionRatio: 1,
+      playerHoldTensionKg: 0,
       totalTensionKg: 0,
       deltaMeters: 0,
       canMoveFish: false,
@@ -157,6 +174,12 @@ class RodPullSystem {
     this.#state.availableDistanceMeters = result.availableDistanceMeters;
     this.#state.forceKg = result.forceKg;
     this.#state.availableExtraForceKg = result.availableExtraForceKg;
+    this.#state.rodLimitKg = result.rodLimitKg;
+    this.#state.fishTensionKg = result.fishTensionKg;
+    this.#state.rodHoldMaxKg = result.rodHoldMaxKg;
+    this.#state.effectiveForceKg = result.effectiveForceKg;
+    this.#state.holdTensionRatio = result.holdTensionRatio;
+    this.#state.playerHoldTensionKg = result.playerHoldTensionKg;
     this.#state.totalTensionKg = result.totalTensionKg;
     this.#state.deltaMeters = result.deltaMeters;
     this.#state.canMoveFish = result.canMoveFish;
@@ -186,6 +209,41 @@ class RodPullSystem {
       Number(rod?.getLengthMeters?.()) ||
       Number(rod?.engineStats?.lengthMeters) ||
       1
+    );
+  }
+
+  #rodLimitKg(rod, fallback) {
+    return (
+      Number(fallback) ||
+      Number(rod?.getEffectiveMaxLoadKg?.()) ||
+      Number(rod?.getMaxLoadKg?.()) ||
+      Number(rod?.engineStats?.maxLoadKg) ||
+      0
+    );
+  }
+
+  #fishTensionKg(fishTensionKg, fishForceKg) {
+    return Math.max(
+      0,
+      Number(fishTensionKg) ||
+        Number(fishForceKg) ||
+        0,
+    );
+  }
+
+  #holdTensionRatio(rod) {
+    const direct = Number(rod?.getHoldTensionRatio?.());
+    if (Number.isFinite(direct)) return Math.max(0, Math.min(1, direct));
+    const plain = Number(rod?.holdTensionRatio);
+    if (Number.isFinite(plain)) return Math.max(0, Math.min(1, plain));
+    const engine = Number(rod?.engineStats?.holdTensionRatio);
+    if (Number.isFinite(engine)) return Math.max(0, Math.min(1, engine));
+    return Math.max(
+      0,
+      Math.min(
+        1,
+        1,
+      ),
     );
   }
 }

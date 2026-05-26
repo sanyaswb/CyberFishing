@@ -322,6 +322,150 @@ class OverlayMetricFormulaCatalog {
         ],
       },
     }));
+    this.#installSimpleFightEntries();
+  }
+
+  #installSimpleFightEntries() {
+    const entries = {
+      "Fish weight": {
+        formula: "fishWeightKg = hookedFish.weight",
+        description: "Actual hooked fish weight used by the simplified fight model.",
+        paths: ["HOOKED_FISH.weight"],
+      },
+      "Water weight / passive force": {
+        formula: "fishPassiveKg = fishWeightKg * tautBodyResistancePerKg * fishBasePower",
+        description: "Passive force created by the fish body on a taut line.",
+        paths: [
+          "CONFIG.physics.water.tautBodyResistancePerKg",
+          "HOOKED_FISH.physics.forceProfile.basePower",
+        ],
+      },
+      "State force multiplier": {
+        formula: "fishStateForceMultiplier = current behavior forceMultiplier",
+        description: "Current fish behavior force multiplier. It affects tension and opposition.",
+        paths: ["HOOKED_FISH.physics.behaviorProfile.behaviors.*.forceMultiplier"],
+      },
+      "Direction multiplier": {
+        formula: "directionMultiplier = toward/side/away multiplier by fish movement direction",
+        description: "Direction force multiplier for toward-player, side or away movement.",
+        paths: ["CONFIG.physics.fight.directionForce"],
+      },
+      "Active fish force": {
+        formula: "fishActiveKg = fishPassiveKg * fishStateForceMultiplier * directionMultiplier",
+        description: "Active force added by current fish behavior and movement direction.",
+        paths: [
+          "HOOKED_FISH.physics.behaviorProfile.behaviors.*.forceMultiplier",
+          "CONFIG.physics.fight.directionForce",
+        ],
+      },
+      "Fish opposition": {
+        formula: "fishOppositionKg = fishPassiveKg + fishActiveKg",
+        description: "Total force the player must exceed to move the fish toward the player.",
+        paths: ["CONFIG.physics.water.tautBodyResistancePerKg"],
+      },
+      "Rod hold": {
+        formula: "rodHoldKg += (rodHoldMaxKg / chargeTimeSeconds) * dt",
+        description: "Raw hold charged by the player before angle penalty.",
+        paths: ["CONFIG.physics.fight.rodHold.chargeTimeSeconds"],
+      },
+      "Rod hold max": {
+        formula: "rodHoldMaxKg = max(0, rodLimitKg - fishTensionKg)",
+        description: "Maximum hold available from rod reserve after fish tension is already present.",
+        paths: ["ITEM_DB.rods.*.engineStats.maxLoadKg"],
+      },
+      "Angle multiplier": {
+        formula: "effectiveRodHoldKg = rodHoldKg * rodAngleMultiplier",
+        description: "Rod angle penalty applied to raw hold.",
+        paths: ["CONFIG.physics.fight.rodHold.anglePenalty"],
+      },
+      "Effective rod hold": {
+        formula: "effectiveRodHoldKg = min(rodHoldKg, rodHoldMaxKg) * rodAngleMultiplier",
+        description: "Full player force working against fish movement.",
+        paths: ["CONFIG.physics.fight.rodHold"],
+      },
+      "Hold tension ratio": {
+        formula: "playerHoldTensionKg = effectiveRodHoldKg * holdTensionRatio",
+        description: "Rod transfer ratio. It affects tension only, not player force against the fish.",
+        paths: ["ITEM_DB.rods.*.engineStats.holdTensionRatio"],
+      },
+      "Movable tension cap": {
+        formula: "movableHoldTensionCapKg = fishPassiveKg * movableHoldTensionCapRatio",
+        description: "Maximum hold tension added while the fish can move toward the player.",
+        paths: ["CONFIG.physics.fight.tension.movableHoldTensionCapRatio"],
+      },
+      "Hold to tension": {
+        formula: "playerHoldTensionKg = min(rawHoldTensionKg, movableHoldTensionCapKg) when fish can move",
+        description: "Player hold contribution added to total tension after movable-fish capping.",
+        paths: [
+          "ITEM_DB.rods.*.engineStats.holdTensionRatio",
+          "CONFIG.physics.fight.tension.movableHoldTensionCapRatio",
+        ],
+      },
+      "Net force": {
+        formula: "netForceKg = effectiveRodHoldKg - fishOppositionKg",
+        description: "Positive means the player moves fish toward the player; negative means fish wins.",
+        paths: ["CONFIG.physics.fight.rodHold"],
+      },
+      "Winner": {
+        formula: "winner = sign(netForceKg)",
+        description: "Player wins when net force is positive; fish wins when it is negative.",
+        paths: [],
+      },
+      "Water resistance": {
+        formula: "speedMps = sqrt(abs(netForceKg) / motionResistance) * speedMultiplier",
+        description: "Global movement resistance. Higher values slow movement for the same net force.",
+        paths: ["CONFIG.physics.water.motionResistance"],
+      },
+      "Speed multiplier": {
+        formula: "speedMps = sqrt(abs(netForceKg) / motionResistance) * speedMultiplier",
+        description: "Global game speed multiplier for simplified fight movement.",
+        paths: ["CONFIG.physics.water.speedMultiplier"],
+      },
+      "Speed m/s": {
+        formula: "speedMps = sqrt(abs(netForceKg) / motionResistance) * speedMultiplier",
+        description: "Final movement speed in meters per second.",
+        paths: ["CONFIG.physics.water.motionResistance", "CONFIG.physics.water.speedMultiplier"],
+      },
+      "Speed px/s": {
+        formula: "speedPxPerSecond = speedMps * pixelsPerMeter",
+        description: "Final movement speed converted to pixels per second.",
+        paths: ["CONFIG.physics.simulation.pixelsPerMeter"],
+      },
+      "Fish tension": {
+        formula: "fishTensionKg = fishOppositionKg, or 0 when slack applies",
+        description: "Fish contribution to total tension.",
+        paths: ["CONFIG.physics.fight.tension.slackTensionKg"],
+      },
+      "Player tension": {
+        formula: "playerHoldTensionKg = effectiveRodHoldKg * holdTensionRatio",
+        description: "Player hold contribution to total tension.",
+        paths: ["ITEM_DB.rods.*.engineStats.holdTensionRatio"],
+      },
+      "Total tension": {
+        formula: "totalTensionKg = fishTensionKg + playerHoldTensionKg",
+        description: "Total stress load applied to rod, line and hook.",
+        paths: [],
+      },
+      "Rod stress": {
+        formula: "rodStressRatio = totalTensionKg / rodLimitKg",
+        description: "Rod load ratio from total tension.",
+        paths: ["ITEM_DB.rods.*.engineStats.maxLoadKg"],
+      },
+      "Line stress": {
+        formula: "lineStressRatio = totalTensionKg / lineLimitKg",
+        description: "Line load ratio from total tension.",
+        paths: ["ITEM_DB.lines.*.engineStats.maxLoadKg"],
+      },
+      "Hook stress": {
+        formula: "hookStressRatio = totalTensionKg / hookLimitKg",
+        description: "Hook load ratio from total tension. Open-ended when hook load is not configured.",
+        paths: ["ITEM_DB.hooks.*.engineStats.maxLoadKg"],
+      },
+    };
+
+    for (const [label, entry] of Object.entries(entries)) {
+      this.entriesByLabel.set(label, entry);
+    }
   }
 
   getEntry(label) {

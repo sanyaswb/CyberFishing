@@ -38,6 +38,7 @@ const FILES = [
   "src/core/fishing/pull_water_drag_calculator.js",
   "src/core/fishing/player_pressure_transfer_calculator.js",
   "src/core/fishing/line_tension_calculator.js",
+  "src/core/fishing/simple_fight_force_calculator.js",
   "src/core/fishing/fish_pull_resistance_model.js",
   "src/systems/rod_pull_system.js",
   "src/systems/fish_retrieve_system.js",

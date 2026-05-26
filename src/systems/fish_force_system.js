@@ -5,7 +5,7 @@ class FishForceSystem {
   #scratchB = new Vector2(0, 0);
   #targetVelocity = new Vector2(0, 0);
   #playerForceSystem;
-  #motionLoadCalculator = new FishMotionLoadCalculator();
+  #forceCalculator = new SimpleFightForceCalculator();
   #physicsConfig;
   #debug = {};
 
@@ -78,49 +78,52 @@ class FishForceSystem {
       .normalize();
 
     const currentVelocity = this.#getCurrentVelocityPxPerSec(env, physics);
-
-    const staticForceKg = this.#firstFiniteNumber(
-      this.#fish.getCurrentStaticPowerKg?.(),
-      this.#fish.getStaticPowerKg?.(),
-      this.#fish.getPower?.(),
-      1,
-    );
-
-    const motionLoad = this.#motionLoadCalculator.calculate({
-      fishWeightKg: this.#fish.getWeight(),
-      fishVelocity,
-      currentVelocity,
-      pixelsPerMeter,
-      fishPhysicsConfig: fishPhysics,
-      fishPosition,
-      rodTipPosition,
-      fallbackDirection: moveDir,
-      physicsConfig: this.#physicsConfig,
+    const relativeVelocityX =
+      (Number(fishVelocity?.x) || 0) - (Number(currentVelocity?.x) || 0);
+    const relativeVelocityY =
+      (Number(fishVelocity?.y) || 0) - (Number(currentVelocity?.y) || 0);
+    const relativeSpeedMps =
+      Math.hypot(relativeVelocityX, relativeVelocityY) / pixelsPerMeter;
+    const opposition = this.#calculateOpposition({ moveDir, awayDir });
+    const directionInfo = this.#calculateDirectionInfo({
+      opposition,
+      directionConfig: this.#physicsConfig?.getDirectionForceConfig?.(),
     });
-    const relativeVelocityX = motionLoad.relativeVelocityX;
-    const relativeVelocityY = motionLoad.relativeVelocityY;
-    const relativeSpeedMps = motionLoad.relativeSpeedMps;
-    const opposition = motionLoad.opposition;
-    const directionMultiplier = motionLoad.directionMultiplier;
-    const dynamicLoadEnabled = motionLoad.dynamicLoadEnabled;
-    const fishMotionSpeedLoadKgPerKgPerMps =
-      motionLoad.fishMotionSpeedLoadKgPerKgPerMps;
-    const dynamicForceKg = motionLoad.dynamicForceKg;
-
-    const behaviorPowerRatio = Math.max(0, behaviorPullValue);
-    const configuredMinPowerRatio = fishPhysics.forceProfile?.minPowerRatio;
-    const minPowerRatio = Number.isFinite(Number(configuredMinPowerRatio))
-      ? Number(configuredMinPowerRatio)
-      : this.#physicsConfig?.getMinPowerRatioFallback?.() ?? 0.25;
-    const exhaustionPowerMultiplier = this.#lerp(
+    const directionMultiplier = directionInfo.multiplier;
+    const fishBasePower = this.#firstFiniteNumber(
+      fishPhysics.forceProfile?.basePower,
+      fishPhysics.basePower,
       1,
-      Math.max(0, minPowerRatio),
-      exhaustionProgress,
     );
-    const totalFishForceKg = Math.max(
-      staticForceKg * minPowerRatio,
-      (staticForceKg * behaviorPowerRatio + dynamicForceKg) * exhaustionPowerMultiplier,
+    const fishBaseSpeed = this.#firstFiniteNumber(
+      fishPhysics.movementProfile?.baseSpeed,
+      fishPhysics.baseSpeed,
+      1,
     );
+    const waterConfig = this.#physicsConfig?.getWaterConfig?.() || {};
+    const behaviorPowerRatio = Math.max(
+      0,
+      Number(behavior.forceMultiplier ?? behavior.powerRatio ?? behaviorPullValue) || 0,
+    );
+    const behaviorSpeedRatio = Math.max(
+      0,
+      Number(behavior.speedMultiplier ?? behavior.speedRatio ?? Math.abs(behavior.moveX || 0)) || 0,
+    );
+    const fishForceFrame = this.#forceCalculator.calculate({
+      fishWeightKg: this.#fish.getWeight(),
+      fishBasePower,
+      fishBaseSpeed,
+      fishStateForceMultiplier: behaviorPowerRatio,
+      fishStateSpeedMultiplier: behaviorSpeedRatio,
+      directionMultiplier,
+      tautBodyResistancePerKg: waterConfig.tautBodyResistancePerKg,
+      rodLimitKg: 0,
+      rodHoldKg: 0,
+      waterMotionResistance: waterConfig.motionResistance,
+      waterSpeedMultiplier: waterConfig.speedMultiplier,
+    });
+    const staticForceKg = fishForceFrame.fishPassiveKg;
+    const totalFishForceKg = fishForceFrame.fishOppositionKg;
 
     const playerData = this.calculatePlayerForce({
       fishPosition,
@@ -142,15 +145,6 @@ class FishForceSystem {
     const escapeSpeedMultiplier =
       1 - playerData.effectiveDragRatio * awayFromPlayerRatio * (1 - minEscape);
 
-    const maxSpeedPxPerSec = this.#firstFiniteNumber(
-      this.#fish.getMaxSpeedPxPerSec?.(pixelsPerMeter),
-      this.#fish.getBaseSpeedPxPerSec?.(pixelsPerMeter),
-      100,
-    );
-    const behaviorSpeedRatio = Math.max(
-      0,
-      Number(behavior.speedRatio ?? Math.abs(behavior.moveX || 0)) || 0,
-    );
     const staminaActivityMultiplier = this.#lerp(
       fishPhysics.staminaProfile?.minStaminaActivityMultiplier ?? 0.75,
       1,
@@ -163,10 +157,8 @@ class FishForceSystem {
     );
 
     const speedPxPerSec =
-      maxSpeedPxPerSec *
-      behaviorSpeedRatio *
-      staminaActivityMultiplier *
-      exhaustionSpeedMultiplier *
+      fishForceFrame.awaySpeedMps *
+      pixelsPerMeter *
       Math.max(minEscape, escapeSpeedMultiplier);
 
     this.#targetVelocity.set(moveDir.x * speedPxPerSec, moveDir.y * speedPxPerSec);
@@ -174,26 +166,26 @@ class FishForceSystem {
     this.#debug = {
       fishState: behavior.name,
       fishWeightKg: this.#fish.getWeight(),
-      fishBasePower: staticForceKg,
+      fishBasePower,
+      fishBaseSpeed,
       fishInitialPower: this.#fish.getInitialPower?.() || staticForceKg,
       pullMult: behaviorPowerRatio,
       moveMult: behaviorSpeedRatio,
       staticFishForceKg: staticForceKg,
-      dynamicFishForceKg: dynamicForceKg,
-      dynamicLoadEnabled,
-      fishMotionSpeedLoadKgPerKgPerMps,
-      fishSpeedForceMultiplier: motionLoad.speedForceMultiplier,
-      fishWaterResistanceMultiplier: motionLoad.waterResistanceMultiplier,
+      fishPassiveKg: fishForceFrame.fishPassiveKg,
+      fishActiveKg: fishForceFrame.fishActiveKg,
+      fishOppositionKg: fishForceFrame.fishOppositionKg,
+      fishTensionKg: fishForceFrame.fishTensionKg,
       totalFishForceKg,
       fishSpeedPxPerSec: speedPxPerSec,
-      fishMaxSpeedPxPerSec: maxSpeedPxPerSec,
+      fishSpeedMps: fishForceFrame.awaySpeedMps,
       staminaRatio,
       staminaActivityMultiplier,
       exhaustionProgress,
-      exhaustionPowerMultiplier,
       exhaustionSpeedMultiplier,
       opposition,
       directionResistanceMultiplier: directionMultiplier,
+      fishDirectionState: directionInfo.name,
       awayFromPlayerRatio,
       dragRatio: this.#clamp01(dragRatio),
       effectiveDragRatio: playerData.effectiveDragRatio,
@@ -229,11 +221,18 @@ class FishForceSystem {
       fishWeightKg: this.#fish.getWeight(),
       fishPhysicsConfig: fishPhysics,
       staticFishForceKg: staticForceKg,
-      dynamicFishForceKg: dynamicForceKg,
-      dynamicLoadEnabled,
-      fishMotionSpeedLoadKgPerKgPerMps,
-      fishSpeedForceMultiplier: motionLoad.speedForceMultiplier,
-      fishWaterResistanceMultiplier: motionLoad.waterResistanceMultiplier,
+      fishPassiveKg: fishForceFrame.fishPassiveKg,
+      fishActiveKg: fishForceFrame.fishActiveKg,
+      fishOppositionKg: fishForceFrame.fishOppositionKg,
+      fishTensionKg: fishForceFrame.fishTensionKg,
+      fishBasePower,
+      fishBaseSpeed,
+      fishStateForceMultiplier: behaviorPowerRatio,
+      fishStateSpeedMultiplier: behaviorSpeedRatio,
+      directionResistanceMultiplier: directionMultiplier,
+      fishDirectionState: directionInfo.name,
+      waterMotionResistance: waterConfig.motionResistance,
+      waterSpeedMultiplier: waterConfig.speedMultiplier,
       totalFishForceKg,
       opposition,
       awayFromPlayerRatio,
@@ -299,6 +298,36 @@ class FishForceSystem {
       x: (dx / len) * speed * influence,
       y: (dy / len) * speed * influence,
     };
+  }
+
+  #calculateOpposition({ moveDir, awayDir }) {
+    return Math.max(
+      -1,
+      Math.min(
+        1,
+        (Number(moveDir?.x) || 0) * (Number(awayDir?.x) || 0) +
+          (Number(moveDir?.y) || 0) * (Number(awayDir?.y) || 0),
+      ),
+    );
+  }
+
+  #calculateDirectionInfo({ opposition, directionConfig }) {
+    const config = directionConfig || {};
+    const towardPlayerMultiplier = this.#firstFiniteNumber(
+      config.towardPlayerMultiplier,
+      0,
+    );
+    const sideMultiplier = this.#firstFiniteNumber(config.sideMultiplier, 1);
+    const awayMultiplier = this.#firstFiniteNumber(config.awayMultiplier, 2.5);
+    const value = Number(opposition) || 0;
+
+    if (value <= -0.25) {
+      return { name: "toward_player", multiplier: towardPlayerMultiplier };
+    }
+    if (value >= 0.25) {
+      return { name: "away", multiplier: awayMultiplier };
+    }
+    return { name: "side", multiplier: sideMultiplier };
   }
 
   #lerp(a, b, t) {

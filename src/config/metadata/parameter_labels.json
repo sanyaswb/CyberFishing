@@ -11,6 +11,62 @@
     "label": "Максимальний крок фізики",
     "description": "Верхня межа dt, щоб при лагах фізика не отримувала занадто великий стрибок часу."
   },
+  "physics.water.tautBodyResistancePerKg": {
+    "label": "Water passive resistance per kg",
+    "description": "Global kg resistance created by 1 kg of fish body on a taut line in the simplified fight model."
+  },
+  "physics.water.motionResistance": {
+    "label": "Water motion resistance",
+    "description": "Single global movement resistance used by the simplified net-force speed formula."
+  },
+  "physics.water.speedMultiplier": {
+    "label": "Water speed multiplier",
+    "description": "Gameplay multiplier that converts sqrt(force / resistance) into meters per second."
+  },
+  "physics.fight.directionForce.towardPlayerMultiplier": {
+    "label": "Toward-player force multiplier",
+    "description": "Direction force multiplier when fish movement points toward the player."
+  },
+  "physics.fight.directionForce.sideMultiplier": {
+    "label": "Side force multiplier",
+    "description": "Direction force multiplier when fish movement is mostly sideways."
+  },
+  "physics.fight.directionForce.awayMultiplier": {
+    "label": "Away force multiplier",
+    "description": "Direction force multiplier when fish movement points away from the player."
+  },
+  "physics.fight.rodHold.chargeTimeSeconds": {
+    "label": "Rod hold charge time",
+    "description": "Seconds for hold force to charge from zero to the available maximum in the simplified model."
+  },
+  "physics.fight.rodHold.anglePenalty.enabled": {
+    "label": "Rod hold angle penalty enabled",
+    "description": "Enables angle penalty for rod hold force in the simplified model."
+  },
+  "physics.fight.rodHold.anglePenalty.noPenaltyAngleDeg": {
+    "label": "Rod hold no-penalty angle",
+    "description": "Angle below which hold force has no penalty."
+  },
+  "physics.fight.rodHold.anglePenalty.maxPenaltyAngleDeg": {
+    "label": "Rod hold max-penalty angle",
+    "description": "Angle at which hold force reaches the maximum penalty."
+  },
+  "physics.fight.rodHold.anglePenalty.maxPenaltyMultiplier": {
+    "label": "Rod hold max-penalty multiplier",
+    "description": "Remaining hold force multiplier at maximum angle penalty."
+  },
+  "physics.fight.tension.smoothingPerSecond": {
+    "label": "Simplified tension smoothing",
+    "description": "Smoothing speed for total tension in the simplified fight model."
+  },
+  "physics.fight.tension.slackTensionKg": {
+    "label": "Slack tension",
+    "description": "Tension value used when line slack removes fish tension in the simplified model."
+  },
+  "physics.fight.tension.movableHoldTensionCapRatio": {
+    "label": "Movable hold tension cap ratio",
+    "description": "Caps hold tension by fish passive force while the fish can move toward the player."
+  },
   "physics.environment.water.currentInfluenceMultiplier": {
     "label": "Множник впливу течії",
     "description": "Множить швидкість течії при розрахунку відносної швидкості риби у воді. Більше значення = течія сильніше впливає на динамічне навантаження."

@@ -58,7 +58,6 @@ const PEACEFUL_FISH = [
     physics: {
       forceProfile: {
         basePower: 0.5,
-        minPowerRatio: 0.1,
       },
 
       staminaProfile: {
@@ -66,7 +65,7 @@ const PEACEFUL_FISH = [
       },
 
       movementProfile: {
-        maxSpeedMetersPerSec: 25,
+        baseSpeed: 1.0,
         agility: 0.2,
         bounceCooldownMs: 2000,
         dirChangeMinMs: 500,
@@ -81,52 +80,40 @@ const PEACEFUL_FISH = [
         },
       },
 
-      resistanceProfile: {
-        speedForceMultiplier: 1,
-        waterResistanceMultiplier: 1,
-      },
-
-      retrieveProfile: {
-        passiveBodyResistanceMultiplier: 1.0,
-        activeAwayMultiplier: 1.0,
-        waterDragMultiplier: 1.0,
-        referencePullSpeedMultiplier: 1.0,
-      },
-
       behaviorProfile: {
         behaviors: {
           idle: {
-            powerRatio: 0.7,
-            speedRatio: 1,
+            forceMultiplier: 0.7,
+            speedMultiplier: 1,
             minTime: 500,
             maxTime: 3000,
             weight: 25,
           },
           rest: {
-            powerRatio: 0.3,
-            speedRatio: 0.5,
+            forceMultiplier: 0.3,
+            speedMultiplier: 0.5,
             minTime: 500,
             maxTime: 2500,
             weight: 25,
           },
           swim: {
-            powerRatio: 1,
-            speedRatio: 1,
+            forceMultiplier: 1,
+            speedMultiplier: 1,
             minTime: 2000,
             maxTime: 4000,
             weight: 25,
           },
           dash: {
-            powerRatio: 1.2,
-            speedRatio: 1.5,
+            forceMultiplier: 1.2,
+            speedMultiplier: 1.5,
             minTime: 1000,
             maxTime: 2200,
             weight: 25,
           },
           lastDash: {
             enabled: true,
-            powerRatio: 1.5,
-            speedRatio: 2,
+            forceMultiplier: 1.5,
+            speedMultiplier: 2,
             minTime: 1000,
             maxTime: 3000,
             weight: 0,
