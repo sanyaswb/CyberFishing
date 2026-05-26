@@ -126,6 +126,7 @@ class FightPhysicsSystem {
       "preview_tension",
       () => this.#calculateTension({
       tensionSystem,
+      stressSystem,
       forceData,
       rodPullResult: rodPullFrame.rodPullResult,
       fishRetrieveResult: rodPullFrame.fishRetrieveResult,
@@ -530,6 +531,7 @@ class FightPhysicsSystem {
   }) {
     const tensionResult = this.#calculateTension({
       tensionSystem,
+      stressSystem,
       forceData,
       rodPullResult,
       fishRetrieveResult,
@@ -544,6 +546,7 @@ class FightPhysicsSystem {
 
   #calculateTension({
     tensionSystem,
+    stressSystem,
     forceData,
     rodPullResult,
     fishRetrieveResult,

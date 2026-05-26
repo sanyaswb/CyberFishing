@@ -65,7 +65,7 @@ const PEACEFUL_FISH = [
       },
 
       movementProfile: {
-        baseSpeed: 1.0,
+        baseSpeed: 2.0,
         agility: 0.2,
         bounceCooldownMs: 2000,
         dirChangeMinMs: 500,

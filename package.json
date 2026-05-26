@@ -6,6 +6,7 @@
     "check:js": "node utils/check-js.js",
     "check:physics": "node utils/fps-physics-check.js",
     "check:fight": "node utils/fight-systems-check.js",
+    "check:game-cycle": "node utils/game-cycle-check.js",
     "check:rod-pull": "node utils/rod-pull-systems-check.js",
     "check:line": "node utils/inventory-line-systems-check.js",
     "check:casting": "node utils/cast-power-check.js",

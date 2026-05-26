@@ -126,6 +126,64 @@ approx(lineTension.rodStressRatio, 0.6, 0.0001, "rod stress is separate");
 approx(lineTension.lineStressRatio, 0.9, 0.0001, "line stress is separate");
 approx(lineTension.hookStressRatio, 0.9, 0.0001, "hook stress is separate");
 
+const dragSlipTension = new TensionSystem().calculate({
+  fishTensionKg: 1.2,
+  playerHoldTensionKg: 0.6,
+  totalTensionKg: 1.8,
+  rodLimitKg: 3,
+  lineLimitKg: 2,
+  hookLimitKg: 2,
+  dragLimitKg: 0.5,
+  lineHasReserve: true,
+  dragLocked: false,
+});
+approx(dragSlipTension.tensionKg, 0.5, 0.0001, "drag caps final tension when line can slip");
+approx(dragSlipTension.rawTotalTensionKg, 1.8, 0.0001, "drag keeps raw total tension for debug");
+approx(dragSlipTension.lineStressRatio, 0.25, 0.0001, "drag-capped line stress uses final tension");
+assert(dragSlipTension.shouldSlipDrag, "drag slip flag releases line");
+
+const rodPullWithOpenDrag = new RodPullCalculator({
+  chargeTimeSeconds: 0.35,
+  distanceMultiplierByRodLength: 0.5,
+}).calculateNextState({
+  dtSec: 1,
+  input: { pullHeld: true, pullStartedThisFrame: true },
+  previousState: {},
+  rodLengthMeters: 3,
+  pumpCreditMeters: 0,
+  maxTackleLoadKg: 3,
+  rodLimitKg: 3,
+  fishTensionKg: 0.5,
+  dragLimitKg: 0,
+  dragLocked: false,
+  hardLineLimit: false,
+  lineHasReserve: true,
+  fishDistanceMeters: 5,
+});
+approx(rodPullWithOpenDrag.forceKg, 0, 0.0001, "open drag prevents rod hold from pulling fish");
+approx(rodPullWithOpenDrag.rodHoldMaxKg, 2.5, 0.0001, "open drag keeps rod hold max visible from rod capacity");
+assert(rodPullWithOpenDrag.dragSlipping, "open drag marks rod pull as slipping");
+
+const rodPullAtHardLimit = new RodPullCalculator({
+  chargeTimeSeconds: 0.35,
+  distanceMultiplierByRodLength: 0.5,
+}).calculateNextState({
+  dtSec: 1,
+  input: { pullHeld: true, pullStartedThisFrame: true },
+  previousState: {},
+  rodLengthMeters: 3,
+  pumpCreditMeters: 0,
+  maxTackleLoadKg: 3,
+  rodLimitKg: 3,
+  fishTensionKg: 0.5,
+  dragLimitKg: 0,
+  dragLocked: false,
+  hardLineLimit: true,
+  lineHasReserve: true,
+  fishDistanceMeters: 5,
+});
+assert(rodPullAtHardLimit.forceKg > 0, "hard line limit bypasses drag slip and loads tackle");
+
 const pipelineFrame = new FightPhysicsPipeline().startFrame();
 for (const stepName of FightPhysicsPipeline.STEPS) pipelineFrame.run(stepName, () => null);
 assert(pipelineFrame.toDebugData().length === FightPhysicsPipeline.STEPS.length, "pipeline records explicit frame steps");
