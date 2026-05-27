@@ -73,6 +73,33 @@ powerRatio
 speedRatio
 ```
 
+
+## Fight movement authority
+
+From `v0.19.7`, hooked fish movement is authoritative from the simplified fight model:
+
+```txt
+Fish behavior state smoothing happens inside `Fish.getBehavior()`.
+FishForceSystem calculates target velocity from the simplified formulas.
+FightPhysicsSystem applies that target velocity directly through `WaterEntity.applyHookedFightMovement()`.
+WaterEntity generic velocity damping is not applied to hooked fight movement.
+```
+
+This keeps a single source of truth for speed:
+
+```txt
+physics.water.motionResistance
+physics.water.speedMultiplier
+fish.movementProfile.baseSpeed
+behavior.speedMultiplier
+reel drag escape multiplier
+```
+
+`movementProfile.agility` must only smooth transitions between behavior multipliers and directions.
+It must not continuously damp stable target speed.
+
+Reel drag is still the official fight speed/tension limiter: increasing drag reduces escape speed and increases tension risk.
+
 ## Reel hold rule
 
 `rodHold` moves the fish through force.

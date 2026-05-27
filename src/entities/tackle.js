@@ -601,6 +601,78 @@ class WaterEntity {
     this._currentHookDepth = depth;
   }
 
+
+  applyHookedFightMovement({
+    boundsRect,
+    dt,
+    environment,
+    checkWater,
+    input = {},
+    pullDirection = null,
+    targetVelocity = null,
+  } = {}) {
+    this._isPlayerPullingThisFrame = !!(input.isPulling && pullDirection);
+
+    const dtSec = this._getClampedDtSec(dt);
+    const targetVelocityX = Number(targetVelocity?.x) || 0;
+    const targetVelocityY = Number(targetVelocity?.y) || 0;
+    const drift = this._calculateEnvironmentDrift(dtSec, environment);
+
+    // Hooked fight movement is authoritative: the simplified fight model already
+    // applies water resistance, drag escape multiplier and state speed modifiers.
+    // Do not run the generic WaterEntity damping on this movement frame.
+    this._velocity.set(targetVelocityX, targetVelocityY);
+
+    this._resetPassiveWindMotion(dt);
+
+    const prevX = this._position.x;
+    const prevY = this._position.y;
+    let nextX = this._position.x + targetVelocityX * dtSec + drift.x;
+    let nextY = this._position.y + targetVelocityY * dtSec + drift.y;
+
+    if (checkWater) {
+      if (!checkWater(nextX, this._position.y)) {
+        this._velocity.x = 0;
+        nextX = this._position.x;
+      }
+      if (!checkWater(this._position.x, nextY)) {
+        this._velocity.y = 0;
+        nextY = this._position.y;
+      }
+    }
+
+    const bounds = boundsRect || {
+      left: -Infinity,
+      right: Infinity,
+      top: -Infinity,
+      bottom: Infinity,
+    };
+
+    this._position.set(
+      Math.max(bounds.left, Math.min(bounds.right, nextX)),
+      Math.max(bounds.top, Math.min(bounds.bottom, nextY)),
+    );
+
+    const movedX = this._position.x - prevX;
+    const movedY = this._position.y - prevY;
+    this._updateMotionTilt(dt, movedX, movedY);
+    this._afterPhysicsUpdate(checkWater);
+
+    if (this._isBiting && typeof this.updateBite === "function") {
+      this.updateBite(dt, checkWater);
+    }
+
+    return {
+      movedX,
+      movedY,
+      actualSpeedPxPerSec: dtSec > 0 ? Math.hypot(movedX, movedY) / dtSec : 0,
+      targetSpeedPxPerSec: Math.hypot(targetVelocityX, targetVelocityY),
+      driftX: drift.x,
+      driftY: drift.y,
+      dampingApplied: false,
+    };
+  }
+
   update(
     boundsRect,
     dt,
@@ -659,21 +731,38 @@ class WaterEntity {
     return Math.exp(-Math.max(0, dampingPerSecond) * dtSec);
   }
 
+
+  _calculateEnvironmentDrift(dtSec, environment) {
+    if (!environment?.current) return { x: 0, y: 0 };
+
+    const activeCfg = this._sinkerConfig || this._config;
+    const compRange = activeCfg.currentCompensation || [0.1, 0.99];
+    const qual = Math.max(1, Math.min(10, activeCfg.quality || 1));
+    const comp = this._lerp(compRange[0], compRange[1], (qual - 1) / 9);
+    const driftSpeed = environment.current.speedPxPerSec * (1 - comp);
+
+    return {
+      x: environment.current.direction.x * driftSpeed * dtSec,
+      y: environment.current.direction.y * driftSpeed * dtSec,
+    };
+  }
+
+  _resetPassiveWindMotion(dt) {
+    this._targetWindAngle = 0;
+    this._windTimer = 0;
+    this._windFluctuationTimer = 0;
+    this._windAngleOffset = this._lerp(
+      this._windAngleOffset,
+      this._targetWindAngle,
+      dt * 0.005,
+    );
+  }
+
   _applyPhysics(boundsRect, checkWater, dt, environment) {
     const dtSec = this._getClampedDtSec(dt);
-    let driftDx = 0;
-    let driftDy = 0;
-
-    if (environment?.current) {
-      const activeCfg = this._sinkerConfig || this._config;
-      const compRange = activeCfg.currentCompensation || [0.1, 0.99];
-      const qual = Math.max(1, Math.min(10, activeCfg.quality || 1));
-      const comp = this._lerp(compRange[0], compRange[1], (qual - 1) / 9);
-
-      const driftSpeed = environment.current.speedPxPerSec * (1 - comp);
-      driftDx = environment.current.direction.x * driftSpeed * dtSec;
-      driftDy = environment.current.direction.y * driftSpeed * dtSec;
-    }
+    const drift = this._calculateEnvironmentDrift(dtSec, environment);
+    const driftDx = drift.x;
+    const driftDy = drift.y;
 
     if (!this._isHooked && environment) {
       const isActivelyPulling =

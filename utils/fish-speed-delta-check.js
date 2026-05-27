@@ -320,6 +320,7 @@ class FishSpeedDeltaProbe {
     console.log(summary.comparison);
     console.log("[FishSpeedDelta] interpretation");
     console.log(summary.interpretation);
+    this.#assertAuthoritativeFightMovement(summary);
   }
 
   #warmupBehavior({ fight, cast, fishData, checkWater }) {
@@ -369,6 +370,7 @@ class FishSpeedDeltaProbe {
             velocityDamping: floatEntity?._velocityDamping ?? 0.85,
             dtSec,
           });
+    const fightMovementDampingApplied = !!debug.fightMovementDampingApplied;
     const minEscape =
       config.fightPhysicsConfig.getReelDragConfig?.().yEscapeSpeedAtFullDrag ??
       0.02;
@@ -404,8 +406,11 @@ class FishSpeedDeltaProbe {
       effectiveDragRatio: this.#round(debug.effectiveDragRatio, 3),
       dragEscapeMultiplier: this.#round(appliedEscapeMultiplier, 3),
       agility: this.#round(agility, 3),
-      velocityApproachPerFrame: this.#round(approach, 4),
-      velocityDampingPerFrame: this.#round(currentDamping, 4),
+      stateTransitionApproachPerFrame: this.#round(approach, 4),
+      genericVelocityDampingPerFrame: this.#round(currentDamping, 4),
+      fightMovementDampingApplied,
+      fightMovementTargetPxPerSec: this.#round(debug.fightMovementTargetSpeedPxPerSec, 3),
+      fightMovementActualPxPerSec: this.#round(debug.fightMovementActualSpeedPxPerSec, 3),
       lineReleasedThisFrameM: this.#round(debug.lineReleasedThisFrameMeters, 4),
       lineConstrained: !!debug.lineConstrained,
       lineDistanceM: this.#round(debug.lineDistanceMeters, 3),
@@ -439,13 +444,32 @@ class FishSpeedDeltaProbe {
         modelToActualRatio: last.modelToActualRatio,
       },
       interpretation: [
-        "overlayModelPxPerSec is formula/model speed, not coordinate delta speed",
-        "actualPxPerSec includes velocity approach smoothing from fish agility",
-        "actualPxPerSec also includes WaterEntity velocity damping after movement",
+        "overlayModelPxPerSec is the authoritative simplified fight model speed",
+        "actualPxPerSec should match overlayModelPxPerSec when drag is 0 and line is unconstrained",
+        "agility is still reported as state transition smoothing only; it must not damp stable fight movement",
+        "generic WaterEntity damping is still reported for diagnostics but must not apply to hooked fight movement",
         "dragEscapeMultiplier shows the drag/friction effect; at drag 0 it should stay 1",
         "lineReleasedThisFrameM and lineConstrained show whether line release/constraint changed real movement",
       ],
     };
+  }
+
+  #assertAuthoritativeFightMovement(summary) {
+    const comparison = summary.comparison;
+    const actual = Number(comparison.actualPxPerSec) || 0;
+    const model = Number(comparison.overlayModelPxPerSec) || 0;
+    const ratio = model > 0 ? actual / model : 1;
+
+    if (summary.assumptions.dragRatio !== 0) return;
+
+    if (Math.abs(1 - ratio) > 0.03) {
+      throw new Error(
+        "Expected actual fish speed to match simplified model speed at drag 0. " +
+          "actual=" + actual +
+          ", model=" + model +
+          ", ratio=" + ratio.toFixed(3),
+      );
+    }
   }
 
   #copyPosition(position) {

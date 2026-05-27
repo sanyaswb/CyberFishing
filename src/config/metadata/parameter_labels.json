@@ -155,6 +155,22 @@
     "label": "Максимальна вага для авто-зарахування",
     "description": "Визначає, яку частку від допустимого навантаження снасті може мати риба для deterministic landing."
   },
+  "physics.fight.landing.lift.enabled": {
+    "label": "Landing lift увімкнено",
+    "description": "Чи переноситься реальна вага риби в tension під час hold у landing zone."
+  },
+  "physics.fight.landing.lift.liftWeightTensionRatio": {
+    "label": "Коефіцієнт ваги підйому",
+    "description": "Яка частка реальної ваги риби поступово переходить у tension при hold у landing zone."
+  },
+  "physics.fight.landing.lift.liftTimeSeconds": {
+    "label": "Час набору підйому",
+    "description": "За скільки секунд hold у landing zone доводить lift tension до реальної ваги риби."
+  },
+  "physics.fight.landing.lift.releaseTimeSeconds": {
+    "label": "Час спаду підйому",
+    "description": "За скільки секунд lift tension спадає після відпускання hold або виходу з landing zone."
+  },
   "physics.tackle.line.defaultMaxLoadKg": {
     "label": "Стандартна міцність ліски",
     "description": "Fallback-міцність ліски, якщо конкретна ліска не має власного maxLoadKg."

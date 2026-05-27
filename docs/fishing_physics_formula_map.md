@@ -120,3 +120,17 @@ reelRetrieveSpeedMps =
 ```
 
 Reel hold is safe post-stroke line recovery. It does not add to `netForceKg`.
+
+
+## 9. Authoritative hooked movement
+
+After the formula in section 7 produces target speed, hooked fish movement is applied directly:
+
+```js
+targetVelocityPxPerSec = moveDirection * speedMps * pixelsPerMeter;
+position += targetVelocityPxPerSec * deltaTimeSeconds;
+```
+
+The generic `WaterEntity` velocity damping is skipped for hooked fight movement because the simplified fight model already includes water resistance and drag escape limiting.
+
+`movementProfile.agility` still smooths behavior state transitions, but it does not damp stable fight speed.

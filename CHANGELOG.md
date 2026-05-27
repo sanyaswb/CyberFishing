@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## git
+
+- Removed agility-based velocity approach from `FightPhysicsSystem`; agility now smooths fish behavior state transitions only.
+- Added `WaterEntity.applyHookedFightMovement()` so hooked fight movement uses the simplified model target velocity directly.
+- Bypassed generic WaterEntity velocity damping for hooked fight movement; `physics.water.motionResistance` and reel drag remain the official movement limiters.
+- Added fight movement debug fields for target speed, actual speed and damping state.
+- Updated `fish-speed-delta-check.js` so actual coordinate speed must match model speed at drag 0 when the line is unconstrained.
+
 ## v0.19.6 - fight diagnostics and landing fixes
 
 - Added landing lift tension so real fish weight transfers into tension only while holding in the landing zone.

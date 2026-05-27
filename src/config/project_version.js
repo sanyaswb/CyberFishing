@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.19.5";
+const CURRENT_PROJECT_VERSION = "0.19.7";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,8 +13,8 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "production-simplified-fight-cleanup",
-  updatedAt: "2026-05-26",
+  codename: "authoritative-fight-movement",
+  updatedAt: "2026-05-27",
   notes: Object.freeze([
     "Modular fish database categories",
     "Reusable fish physics profile presets",
@@ -44,6 +44,8 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
     "Golden checks now cover the simplified examples and small-fish movable tension cap",
     "Production cleanup removed unused legacy pressure-transfer and water-drag fight helpers",
     "Docs now describe only the simplified passive/active fish force, rodHold and reelHold model",
+    "Hooked fight movement now applies the simplified model speed directly without agility velocity damping",
+    "WaterEntity damping no longer re-applies to hooked fight movement; drag remains the official speed/tension limiter",
   ]),
 });
 

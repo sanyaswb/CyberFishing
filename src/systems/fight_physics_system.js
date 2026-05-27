@@ -321,23 +321,41 @@ class FightPhysicsSystem {
     });
     forceData.landingDistanceMeters = landingDistanceMeters;
 
+    let movementFrame = null;
+    if (typeof floatEntity.applyHookedFightMovement === "function") {
+      movementFrame = floatEntity.applyHookedFightMovement({
+        boundsRect: bounds,
+        dt: dtMs,
+        environment: env,
+        checkWater,
+        input,
+        pullDirection: forceData.player.pullDir,
+        targetVelocity: forceData.targetVelocity,
+      });
+    } else {
+      const fallbackVelocity = floatEntity.getVelocity?.() || fishVelocity;
+      fallbackVelocity.x = forceData.targetVelocity.x;
+      fallbackVelocity.y = forceData.targetVelocity.y;
+      floatEntity.update(
+        bounds,
+        dtMs,
+        env,
+        checkWater,
+        input,
+        0,
+        forceData.player.pullDir,
+      );
+      movementFrame = {
+        actualSpeedPxPerSec: Math.hypot(fallbackVelocity.x, fallbackVelocity.y),
+        targetSpeedPxPerSec: Math.hypot(forceData.targetVelocity.x, forceData.targetVelocity.y),
+        dampingApplied: true,
+        fallbackDampedUpdate: true,
+      };
+    }
+
+    forceData.fightMovementFrame = movementFrame;
     const velocity = floatEntity.getVelocity?.() || fishVelocity;
-    const agility = Math.max(0, forceData.behavior.agility ?? 1);
-    const approach = 1 - Math.exp(-Math.max(0.1, agility * 3) * dtSec);
-    velocity.x += (forceData.targetVelocity.x - velocity.x) * approach;
-    velocity.y += (forceData.targetVelocity.y - velocity.y) * approach;
-
-    floatEntity.update(
-      bounds,
-      dtMs,
-      env,
-      checkWater,
-      input,
-      0,
-      forceData.player.pullDir,
-    );
-
-    return { forceData, velocity };
+    return { forceData, velocity, movementFrame };
   }
 
   #resolveDragContext({ hasReel, dragSupported, dragSystem, forceData, maxTackleLoadKg, rodLimitKg }) {
@@ -1086,6 +1104,15 @@ class FightPhysicsSystem {
       simpleFightSpeedPxPerSec:
         (Number(fishRetrieveResult?.speedMps) || 0) *
         (this.#physicsConfig?.getPixelsPerMeter?.() || 50),
+      fightMovementTargetSpeedPxPerSec:
+        forceData.fightMovementFrame?.targetSpeedPxPerSec ??
+        Math.hypot(forceData.targetVelocity.x || 0, forceData.targetVelocity.y || 0),
+      fightMovementActualSpeedPxPerSec:
+        forceData.fightMovementFrame?.actualSpeedPxPerSec ?? 0,
+      fightMovementDampingApplied:
+        !!forceData.fightMovementFrame?.dampingApplied,
+      fightMovementFallbackDampedUpdate:
+        !!forceData.fightMovementFrame?.fallbackDampedUpdate,
     };
   }
 
