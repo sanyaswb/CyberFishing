@@ -271,7 +271,7 @@ const CONFIG = {
     },
 
     consoleModules: {
-      biteTicks: true,
+      biteTicks: false,
       location: false,
       forces: false,
       deviations: false,
@@ -280,6 +280,7 @@ const CONFIG = {
       stamina: false,
       exhaustion: false,
       catchTime: false,
+      catchResolution: false,
       prediction: false,
       net: false,
       map: false,

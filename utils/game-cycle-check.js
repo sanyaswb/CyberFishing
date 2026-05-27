@@ -29,6 +29,7 @@ const FILES = [
   "src/core/casting_distance.js",
   "src/core/fishing/landing_policy.js",
   "src/core/fishing/simple_fight_force_calculator.js",
+  "src/core/fishing/landing_lift_tension_calculator.js",
   "src/core/fishing/line_tension_calculator.js",
   "src/core/fishing/rod_pull_state.js",
   "src/core/fishing/rod_stroke_state.js",
@@ -334,6 +335,16 @@ assert(
     + (victory.transition?.name || "none")
     + "/"
     + (victory.transition?.data?.reason || "no_reason")
+    + ", lift="
+    + Number(victory.lastDebug?.landingLiftHoldKg || 0).toFixed(3)
+    + "/"
+    + Number(victory.lastDebug?.landingLiftMaxKg || 0).toFixed(3)
+    + ", liftActive="
+    + victory.lastDebug?.landingLiftActive
+    + ", liftInZone="
+    + victory.lastDebug?.landingLiftInZone
+    + ", totalTension="
+    + Number(victory.lastDebug?.totalTensionKg || 0).toFixed(3)
     + ")",
 );
 assert(victory.sawMovement, "easy fish physically moves toward player during hold");

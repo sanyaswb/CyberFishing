@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.19.6 - fight diagnostics and landing fixes
+
+- Added landing lift tension so real fish weight transfers into tension only while holding in the landing zone.
+- Added catch-resolution console diagnostics with landing reason, lift state, rod hold, tension and stress values.
+- Changed lastDash trigger checks to use a horizontal landing zone by default instead of radial distance.
+- Kept movable hold tension cap active when rod stroke is full; only real movement blockage disables the cap.
+- Removed the reelHold post-stroke delay and gated reelHold by full rod stroke plus safe drag/load reserve.
+- Added `check:fish-speed` with `fish-speed-delta-check.js` to compare actual coordinate speed against overlay model speed.
+- Stabilized the fish speed diagnostic by normalizing behavior multipliers, disabling lastDash and warming up behavior state before measuring.
+
 ## v0.19.5 - production simplified fight cleanup
 
 - Removed unused legacy fight helper files for pressure transfer, water-drag retrieve resistance and dynamic motion load.

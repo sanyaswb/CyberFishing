@@ -7,6 +7,8 @@
     "check:physics": "node utils/fps-physics-check.js",
     "check:fight": "node utils/fight-systems-check.js",
     "check:game-cycle": "node utils/game-cycle-check.js",
+    "check:catch-debug": "node utils/catch-resolution-debug-check.js",
+    "check:fish-speed": "node utils/fish-speed-delta-check.js",
     "check:rod-pull": "node utils/rod-pull-systems-check.js",
     "check:line": "node utils/inventory-line-systems-check.js",
     "check:casting": "node utils/cast-power-check.js",

@@ -581,20 +581,26 @@ class FishBehavior {
       0,
       Number(context.landingDistanceMeters) || 0,
     );
-    const lineDistanceMeters = Math.max(
-      0,
-      Number(context.lineDistanceMeters) || Infinity,
+    const lineDistanceMeters = this.#positiveOrInfinity(
+      context.lineDistanceMeters,
+    );
+    const horizontalDistanceMeters = this.#positiveOrInfinity(
+      context.horizontalDistanceMeters ?? context.verticalDistanceMeters,
     );
     const triggerDistanceMeters = this.#resolveLastDashTriggerDistance(
       trigger,
       landingDistanceMeters,
     );
+    const zoneShape = this.#resolveLastDashZoneShape(trigger);
+    const zoneDistanceMeters = zoneShape === "circle"
+      ? lineDistanceMeters
+      : horizontalDistanceMeters;
     const inZone =
       hasState &&
       triggerEnabled &&
       stateEnabled &&
       triggerDistanceMeters > 0 &&
-      lineDistanceMeters <= triggerDistanceMeters;
+      zoneDistanceMeters <= triggerDistanceMeters;
 
     if (!inZone) {
       if (this.#holdSpecialStateUntilLeave === stateName) {
@@ -607,6 +613,9 @@ class FishBehavior {
         stateName,
         inZone: false,
         lineDistanceMeters,
+        horizontalDistanceMeters,
+        zoneDistanceMeters,
+        zoneShape,
         triggerDistanceMeters,
         active: this.#currentStateName === stateName,
       };
@@ -631,6 +640,9 @@ class FishBehavior {
         active: true,
         holdingUntilLeave: this.#holdSpecialStateUntilLeave === stateName,
         lineDistanceMeters,
+        horizontalDistanceMeters,
+        zoneDistanceMeters,
+        zoneShape,
         triggerDistanceMeters,
       };
       return this.#lastDashDebug;
@@ -645,6 +657,9 @@ class FishBehavior {
         active: false,
         waitingMs: this.#lastDashCheckTimer,
         lineDistanceMeters,
+        horizontalDistanceMeters,
+        zoneDistanceMeters,
+        zoneShape,
         triggerDistanceMeters,
       };
       return this.#lastDashDebug;
@@ -673,6 +688,9 @@ class FishBehavior {
       roll,
       holdingUntilLeave: this.#holdSpecialStateUntilLeave === stateName,
       lineDistanceMeters,
+      horizontalDistanceMeters,
+      zoneDistanceMeters,
+      zoneShape,
       triggerDistanceMeters,
     };
     return this.#lastDashDebug;
@@ -746,6 +764,22 @@ class FishBehavior {
       Number(trigger.extraDistanceMeters ?? trigger.triggerExtraDistanceMeters) || 0,
     );
     return Math.max(0, landingDistanceMeters * multiplier + extra);
+  }
+
+  #resolveLastDashZoneShape(trigger) {
+    const value = String(
+      trigger.zoneShape ??
+        trigger.shape ??
+        trigger.zoneMode ??
+        "horizontal",
+    ).toLowerCase();
+    return value === "circle" || value === "radial" ? "circle" : "horizontal";
+  }
+
+  #positiveOrInfinity(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return Infinity;
+    return Math.max(0, number);
   }
 
   #resolveChance(value) {

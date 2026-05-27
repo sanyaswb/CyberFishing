@@ -31,6 +31,13 @@ const FIGHT_PHYSICS_CONFIG = {
   },
 
   landing: {
+    lift: {
+      enabled: true,
+      liftWeightTensionRatio: 1.0,
+      liftTimeSeconds: 0.35,
+      releaseTimeSeconds: 0.20,
+    },
+
     catchZone: {
       reel: {
         landingDistanceMeters: 1.0,

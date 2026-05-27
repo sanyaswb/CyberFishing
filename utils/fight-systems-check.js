@@ -26,6 +26,7 @@ const FILES = [
   "src/config/runtime/immutable_config.js",
   "src/config/config.js",
   "src/core/fishing/simple_fight_force_calculator.js",
+  "src/core/fishing/landing_lift_tension_calculator.js",
   "src/core/fishing/line_tension_calculator.js",
   "src/core/fishing/rod_pull_state.js",
   "src/core/fishing/rod_stroke_state.js",
@@ -112,6 +113,51 @@ const blockedFish = calc.calculate({
 });
 approx(blockedFish.playerHoldTensionKg, 2, 0.0001, "blocked fish receives full hold tension");
 
+const lastDashBehavior = new FishBehavior({
+  lastDashTrigger: {
+    enabled: true,
+    targetState: "lastDash",
+    chance: 1,
+    checkIntervalMs: 1,
+    catchZoneMultiplier: 3,
+  },
+  behaviorProfile: {
+    behaviors: {
+      swim: {
+        forceMultiplier: 1,
+        speedMultiplier: 1,
+        minTime: 1000,
+        maxTime: 1000,
+        weight: 1,
+      },
+      lastDash: {
+        enabled: true,
+        forceMultiplier: 1,
+        speedMultiplier: 1,
+        minTime: 1000,
+        maxTime: 1000,
+        weight: 0,
+      },
+    },
+  },
+}, { next: () => 0, range: (min) => min });
+const radialOnlyLastDash = lastDashBehavior.evaluateLastDashTrigger({
+  dtMs: 1000,
+  landingDistanceMeters: 1,
+  lineDistanceMeters: 0.5,
+  horizontalDistanceMeters: 5,
+});
+assert(!radialOnlyLastDash.inZone, "lastDash ignores radial/circular distance outside horizontal zone");
+assert(radialOnlyLastDash.zoneShape === "horizontal", "lastDash defaults to horizontal zone");
+const horizontalLastDash = lastDashBehavior.evaluateLastDashTrigger({
+  dtMs: 1000,
+  landingDistanceMeters: 1,
+  lineDistanceMeters: 10,
+  horizontalDistanceMeters: 2,
+});
+assert(horizontalLastDash.inZone, "lastDash triggers from horizontal distance band");
+assert(horizontalLastDash.active, "lastDash can activate inside horizontal zone");
+
 const lineTension = new TensionSystem().calculate({
   fishTensionKg: 1.2,
   playerHoldTensionKg: 0.6,
@@ -183,6 +229,60 @@ const rodPullAtHardLimit = new RodPullCalculator({
   fishDistanceMeters: 5,
 });
 assert(rodPullAtHardLimit.forceKg > 0, "hard line limit bypasses drag slip and loads tackle");
+
+const liftCalc = new LandingLiftTensionCalculator();
+const landingLiftConfig = {
+  enabled: true,
+  liftWeightTensionRatio: 1,
+  liftTimeSeconds: 0.35,
+  releaseTimeSeconds: 0.2,
+};
+const noHoldLandingLift = liftCalc.calculate({
+  previousLiftHoldKg: 0,
+  fishWeightKg: 1.1,
+  waterFightTensionKg: 0.3,
+  inLandingZone: true,
+  playerHoldActive: false,
+  dtSec: 0.35,
+  config: landingLiftConfig,
+});
+approx(noHoldLandingLift.liftHoldKg, 0, 0.0001, "landing zone without hold does not add real weight tension");
+approx(noHoldLandingLift.fishTensionKg, 0.3, 0.0001, "landing zone without hold keeps water fight tension");
+
+const halfLandingLift = liftCalc.calculate({
+  previousLiftHoldKg: 0,
+  fishWeightKg: 1.1,
+  waterFightTensionKg: 0.3,
+  inLandingZone: true,
+  playerHoldActive: true,
+  dtSec: 0.175,
+  config: landingLiftConfig,
+});
+approx(halfLandingLift.liftHoldKg, 0.55, 0.0001, "landing hold gradually transfers half real fish weight");
+approx(halfLandingLift.fishTensionKg, 0.55, 0.0001, "landing lift overrides lower water fight tension");
+
+const fullLandingLift = liftCalc.calculate({
+  previousLiftHoldKg: halfLandingLift.liftHoldKg,
+  fishWeightKg: 1.1,
+  waterFightTensionKg: 0.3,
+  inLandingZone: true,
+  playerHoldActive: true,
+  dtSec: 0.175,
+  config: landingLiftConfig,
+});
+approx(fullLandingLift.liftHoldKg, 1.1, 0.0001, "landing hold reaches full real fish weight");
+approx(fullLandingLift.totalTensionKg, 1.1, 0.0001, "landing lift total tension avoids double counting player hold");
+
+const releasedLandingLift = liftCalc.calculate({
+  previousLiftHoldKg: fullLandingLift.liftHoldKg,
+  fishWeightKg: 1.1,
+  waterFightTensionKg: 0.3,
+  inLandingZone: true,
+  playerHoldActive: false,
+  dtSec: 0.2,
+  config: landingLiftConfig,
+});
+approx(releasedLandingLift.liftHoldKg, 0, 0.0001, "landing lift releases when hold stops");
 
 const pipelineFrame = new FightPhysicsPipeline().startFrame();
 for (const stepName of FightPhysicsPipeline.STEPS) pipelineFrame.run(stepName, () => null);

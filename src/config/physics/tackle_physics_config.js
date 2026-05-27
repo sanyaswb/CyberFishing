@@ -33,7 +33,7 @@ const TACKLE_PHYSICS_CONFIG = {
 
   reel: {
     autoRecoverSlack: true,
-    holdRecoverAfterFullStrokeMs: 1500,
+    holdRecoverAfterFullStrokeMs: 0,
     holdRecoverStrokeRatio: 1.0,
   },
 };

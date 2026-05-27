@@ -77,7 +77,7 @@ const ITEM_DB = {
         accuracy: 85,
         lengthMeters: 3.6,
         castPowerCoefficient: 0.66,
-        maxLoadKg: 5,
+        maxLoadKg: 1,
         holdTensionRatio: 1.0,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,

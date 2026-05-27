@@ -308,18 +308,31 @@
 
     if (showLastDash && hasLandingCircle && lastDashDistanceMeters > 0) {
       this.#withCastableClip(projector, locationsConfig, () => {
-        this.#drawDistanceZoneEllipse(projector, {
-          centerVirtualX: zoneContext.rodVirtualX,
-          centerVirtualY: zoneContext.rodVirtualY,
-          radiusMeters: lastDashDistanceMeters,
-          pixelsPerMeter,
-          fillColor:
-            catchZoneUIConfig?.lastDashFillColor || "rgba(170, 80, 255, 0.12)",
-          strokeColor:
-            catchZoneUIConfig?.lastDashStrokeColor || "rgba(190, 90, 255, 0.9)",
-          lineWidth: 2,
-          dash: catchZoneUIConfig?.lastDashDash || [9, 7],
-        });
+        const virtualTriggerY =
+          zoneContext.rodVirtualY - lastDashDistanceMeters * pixelsPerMeter;
+        const triggerScreenY = projector.virtualToScreen(
+          0,
+          virtualTriggerY,
+          this.#screenB,
+        ).y;
+        const zoneTopY = Math.max(0, Math.min(triggerScreenY, catchScreenY));
+        const zoneHeight = Math.max(0, catchScreenY - zoneTopY);
+        if (zoneHeight > 0) {
+          this.#ctx.fillStyle =
+            catchZoneUIConfig?.lastDashFillColor ||
+            "rgba(170, 80, 255, 0.12)";
+          this.#ctx.fillRect(0, zoneTopY, this.#canvas.width, zoneHeight);
+        }
+
+        this.#ctx.strokeStyle =
+          catchZoneUIConfig?.lastDashStrokeColor || "rgba(190, 90, 255, 0.9)";
+        this.#ctx.lineWidth = 2;
+        this.#ctx.setLineDash(catchZoneUIConfig?.lastDashDash || [9, 7]);
+        this.#ctx.beginPath();
+        this.#ctx.moveTo(0, zoneTopY);
+        this.#ctx.lineTo(this.#canvas.width, zoneTopY);
+        this.#ctx.stroke();
+        this.#ctx.setLineDash([]);
       });
     }
 

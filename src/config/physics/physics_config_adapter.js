@@ -224,6 +224,19 @@ class FightPhysicsConfigAdapter {
     };
   }
 
+  getLandingLiftConfig() {
+    const config = this.#physics().fight?.landing?.lift || {};
+    return {
+      enabled: config.enabled !== false,
+      liftWeightTensionRatio: this.#number(
+        config.liftWeightTensionRatio,
+        1,
+      ),
+      liftTimeSeconds: this.#number(config.liftTimeSeconds, 0.35),
+      releaseTimeSeconds: this.#number(config.releaseTimeSeconds, 0.2),
+    };
+  }
+
   getTensionConfig() {
     const config = this.#physics().tension || {};
     const displayConfig = this.#root().tension || {};

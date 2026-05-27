@@ -551,6 +551,7 @@ class CatchResolutionService {
     config,
     rod = null,
     reel = null,
+    fightDebug = null,
   }) {
     const physicsConfig =
       config?.fightPhysicsConfig ||
@@ -567,22 +568,43 @@ class CatchResolutionService {
       fishData,
       maxTackleLoadKg,
     });
-    const distanceMeters = Math.max(0, Number(lineDistanceMeters) || Infinity);
+    const rawDistanceMeters = Number(lineDistanceMeters);
+    const distanceMeters = Number.isFinite(rawDistanceMeters)
+      ? Math.max(0, rawDistanceMeters)
+      : Infinity;
     if (distanceMeters > landingDistanceMeters) return {};
 
+    const landingReady = this.#isLandingLiftReady({
+      physicsConfig,
+      fightDebug,
+    });
     const success = this.#canLandByWeight({
       fishWeightKg: fishData?.weight,
       maxTackleLoadKg,
       config: cfg,
-    });
+    }) && landingReady;
+    const transition = success
+      ? { name: "victory", data: { fish: fishData } }
+      : null;
+    if (transition) {
+      this.#logAutoCatchVictory({
+        fishData,
+        distanceMeters,
+        landingDistanceMeters,
+        landingPolicy,
+        maxTackleLoadKg,
+        catchConfig: cfg,
+        landingReady,
+        fightDebug,
+      });
+    }
     return {
       inLandingZone: true,
+      landingReady,
       success,
       landingDistanceMeters,
       landingPolicy: landingPolicy.constructor?.name || "LandingPolicy",
-      transition: success
-        ? { name: "victory", data: { fish: fishData } }
-        : null,
+      transition,
     };
   }
 
@@ -612,6 +634,104 @@ class CatchResolutionService {
 
     const maxRatio = Math.max(0, Number(config.maxLoadWeightRatio) || 1.0);
     return fishWeight <= maxLoad * maxRatio + 0.0001;
+  }
+
+  #isLandingLiftReady({ physicsConfig, fightDebug }) {
+    const liftConfig = physicsConfig?.getLandingLiftConfig?.() || {};
+    if (liftConfig.enabled === false) return true;
+
+    const liftMaxKg = Math.max(0, Number(fightDebug?.landingLiftMaxKg) || 0);
+    const liftHoldKg = Math.max(0, Number(fightDebug?.landingLiftHoldKg) || 0);
+    const totalTensionKg = Math.max(0, Number(fightDebug?.totalTensionKg) || 0);
+    const currentTensionKg = Math.max(
+      0,
+      Number(fightDebug?.tensionKg) || 0,
+    );
+    if (liftMaxKg <= 0) return false;
+
+    return (
+      fightDebug?.landingLiftInZone === true &&
+      fightDebug?.landingLiftActive === true &&
+      liftHoldKg >= liftMaxKg - 0.001 &&
+      totalTensionKg >= liftMaxKg - 0.001 &&
+      currentTensionKg >= liftMaxKg - 0.001
+    );
+  }
+
+  #logAutoCatchVictory({
+    fishData,
+    distanceMeters,
+    landingDistanceMeters,
+    landingPolicy,
+    maxTackleLoadKg,
+    catchConfig,
+    landingReady,
+    fightDebug,
+  }) {
+    if (typeof console === "undefined") return;
+    if (typeof window === "undefined" || !window?.document) return;
+    if (window.DEBUG_MODULES?.catchResolution !== true) return;
+
+    const fishWeightKg = Math.max(0, Number(fishData?.weight) || 0);
+    const maxRatio = Math.max(
+      0,
+      Number(catchConfig?.maxLoadWeightRatio) || 1,
+    );
+    const maxAllowedWeightKg =
+      Math.max(0, Number(maxTackleLoadKg) || 0) * maxRatio;
+    const reason =
+      fightDebug?.landingLiftActive === true
+        ? "landing_lift_ready"
+        : "landing_lift_disabled_or_legacy";
+    const values = {
+      reason,
+      fishId: fishData?.id || fishData?.name || "unknown",
+      fishWeightKg,
+      maxTackleLoadKg: Number(maxTackleLoadKg) || 0,
+      maxAllowedWeightKg,
+      maxLoadWeightRatio: maxRatio,
+      lineDistanceMeters: distanceMeters,
+      landingDistanceMeters,
+      landingPolicy: landingPolicy?.constructor?.name || "LandingPolicy",
+      landingReady: !!landingReady,
+      landingLiftActive: !!fightDebug?.landingLiftActive,
+      landingLiftInZone: !!fightDebug?.landingLiftInZone,
+      landingLiftHoldKg: Number(fightDebug?.landingLiftHoldKg) || 0,
+      landingLiftMaxKg: Number(fightDebug?.landingLiftMaxKg) || 0,
+      landingLiftWaterTensionKg:
+        Number(fightDebug?.landingLiftWaterTensionKg) || 0,
+      landingLiftFishTensionKg:
+        Number(fightDebug?.landingLiftFishTensionKg) || 0,
+      tensionKg: Number(fightDebug?.tensionKg) || 0,
+      targetTensionKg: Number(fightDebug?.targetTensionKg) || 0,
+      totalTensionKg: Number(fightDebug?.totalTensionKg) || 0,
+      rawTensionKg: Number(fightDebug?.rawTensionKg) || 0,
+      fishTensionKg: Number(fightDebug?.fishTensionKg) || 0,
+      playerHoldTensionKg: Number(fightDebug?.playerHoldTensionKg) || 0,
+      rodHoldKg: Number(fightDebug?.activeRodPullForceKg) || 0,
+      rodHoldMaxKg: Number(fightDebug?.rodHoldMaxKg) || 0,
+      effectiveRodHoldKg: Number(fightDebug?.effectiveRodHoldKg) || 0,
+      holdTensionRatio: Number(fightDebug?.holdTensionRatio) || 0,
+      rodStrokeRatio: Number(fightDebug?.rodStrokeRatio) || 0,
+      rodPullBlockedReason: fightDebug?.rodPullBlockedReason || "none",
+      rodPullDragSlipping: !!fightDebug?.rodPullDragSlipping,
+      dragLimitKg: Number(fightDebug?.dragLimitKg) || 0,
+      dragLocked: !!fightDebug?.dragLocked,
+      reelSlip: !!fightDebug?.reelSlip,
+      rodStressRatio: Number(fightDebug?.rodStressRatio) || 0,
+      lineStressRatio: Number(fightDebug?.lineStressRatio) || 0,
+      hookStressRatio: Number(fightDebug?.hookStressRatio) || 0,
+      lineCanRelease: !!fightDebug?.lineCanRelease,
+      hardLineLimit: !!fightDebug?.hardLineLimit,
+    };
+
+    console.groupCollapsed?.("[CatchResolution] victory: " + reason);
+    if (typeof console.table === "function") {
+      console.table(values);
+    } else {
+      console.log(values);
+    }
+    console.groupEnd?.();
   }
 }
 
@@ -783,6 +903,7 @@ class FightService {
       config: this.#config,
       rod: this.#rod,
       reel: this.#reel,
+      fightDebug,
     });
     if (resolution.transition) return { transition: resolution.transition };
     return {};

@@ -12,6 +12,13 @@ const FILES = [
   "src/config/databases/fish/species/event_fish.js",
   "src/config/databases/fish/fish_categories.js",
   "src/config/databases/fish_db.js",
+  "src/config/physics/environment_physics_config.js",
+  "src/config/physics/retrieve_physics_config.js",
+  "src/config/physics/fight_physics_config.js",
+  "src/config/physics/tackle_physics_config.js",
+  "src/config/physics/tension_physics_config.js",
+  "src/config/physics/physics_config_adapter.js",
+  "src/config/physics/physics_config.js",
   "src/config/runtime/config_override_store.js",
   "src/config/runtime/resolved_config_provider.js",
   "src/config/runtime/immutable_config.js",
@@ -39,16 +46,64 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
   checks.push(message);
 }
+function fullLandingLift(weightKg) {
+  return {
+    landingLiftInZone: true,
+    landingLiftActive: true,
+    landingLiftHoldKg: weightKg,
+    landingLiftMaxKg: weightKg,
+    tensionKg: weightKg,
+    totalTensionKg: weightKg,
+  };
+}
 
 const resolver = new CatchResolutionService();
 const fish = { weight: 0.4 };
-const guaranteed = resolver.resolveAutoCatch({
+const notLifted = resolver.resolveAutoCatch({
   fishData: fish,
   lineDistanceMeters: 0.8,
   maxTackleLoadKg: 2,
   config: CONFIG,
 });
-assert(guaranteed.transition?.name === "victory", "fish inside landing zone lands deterministically when weight fits tackle");
+assert(notLifted.inLandingZone && !notLifted.transition, "fish inside landing zone does not land before landing lift is ready");
+
+resolver.reset();
+const guaranteed = resolver.resolveAutoCatch({
+  fishData: fish,
+  lineDistanceMeters: 0.8,
+  maxTackleLoadKg: 2,
+  config: CONFIG,
+  fightDebug: fullLandingLift(fish.weight),
+});
+assert(guaranteed.transition?.name === "victory", "fish lands after landing lift reaches real weight");
+
+resolver.reset();
+const lowTensionLift = resolver.resolveAutoCatch({
+  fishData: fish,
+  lineDistanceMeters: 0.8,
+  maxTackleLoadKg: 2,
+  config: CONFIG,
+  fightDebug: {
+    ...fullLandingLift(fish.weight),
+    tensionKg: fish.weight * 0.5,
+    totalTensionKg: fish.weight * 0.5,
+  },
+});
+assert(lowTensionLift.inLandingZone && !lowTensionLift.transition, "fish does not land when lift is charged but final tension cannot hold real weight");
+
+resolver.reset();
+const smoothedTensionLag = resolver.resolveAutoCatch({
+  fishData: fish,
+  lineDistanceMeters: 0.8,
+  maxTackleLoadKg: 2,
+  config: CONFIG,
+  fightDebug: {
+    ...fullLandingLift(fish.weight),
+    tensionKg: fish.weight * 0.5,
+    totalTensionKg: fish.weight,
+  },
+});
+assert(smoothedTensionLag.inLandingZone && !smoothedTensionLag.transition, "fish does not land before current tension reaches real weight");
 
 resolver.reset();
 const maxLoadSuccess = resolver.resolveAutoCatch({
@@ -56,8 +111,9 @@ const maxLoadSuccess = resolver.resolveAutoCatch({
   lineDistanceMeters: 0.8,
   maxTackleLoadKg: 2,
   config: CONFIG,
+  fightDebug: fullLandingLift(2),
 });
-assert(maxLoadSuccess.transition?.name === "victory", "fish at max load lands when maxLoadWeightRatio is 1");
+assert(maxLoadSuccess.transition?.name === "victory", "fish at max load lands when maxLoadWeightRatio is 1 and lift is ready");
 
 resolver.reset();
 const overweight = resolver.resolveAutoCatch({
@@ -65,6 +121,7 @@ const overweight = resolver.resolveAutoCatch({
   lineDistanceMeters: 0.8,
   maxTackleLoadKg: 2,
   config: CONFIG,
+  fightDebug: fullLandingLift(2.2),
 });
 assert(overweight.inLandingZone && !overweight.transition, "fish heavier than maxLoadWeightRatio cannot auto-land");
 
@@ -85,8 +142,9 @@ const poleZone = resolver.resolveAutoCatch({
   config: CONFIG,
   rod: { type: "float", lengthMeters: 2.0, hasReel: false },
   reel: null,
+  fightDebug: fullLandingLift(0.1),
 });
-assert(poleZone.inLandingZone && poleZone.transition?.name === "victory", "pole rod lands inside rod-length lifting zone");
+assert(poleZone.inLandingZone && poleZone.transition?.name === "victory", "pole rod lands after lift inside rod-length lifting zone");
 assert(poleZone.landingDistanceMeters === 2, "pole landing distance follows rod length");
 
 resolver.reset();
@@ -97,8 +155,9 @@ const poleClassZone = resolver.resolveAutoCatch({
   config: CONFIG,
   rod: new Rod(1, 1, 0, "float", Infinity, false, { lengthMeters: 2.0 }),
   reel: new Reel(0, 0, { lineCapacityMeters: 0 }),
+  fightDebug: fullLandingLift(0.1),
 });
-assert(poleClassZone.inLandingZone && poleClassZone.transition?.name === "victory", "pole Rod instance lands fish inside 2m lifting zone");
+assert(poleClassZone.inLandingZone && poleClassZone.transition?.name === "victory", "pole Rod instance lands fish after lift inside 2m lifting zone");
 assert(poleClassZone.landingDistanceMeters === 2, "pole Rod instance landing distance uses getLengthMeters");
 
 resolver.reset();

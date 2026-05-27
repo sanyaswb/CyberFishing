@@ -42,6 +42,7 @@ class FishRetrieveResult {
     this.appliedMoveMeters = this.#positive(data.appliedMoveMeters);
     this.movementControlRatio = this.#ratio(data.movementControlRatio);
     this.movementBlocked = !!data.movementBlocked;
+    this.tensionBlocked = !!data.tensionBlocked;
     this.balanceState = data.balanceState || "idle";
     this.actualSlackMeters = this.#positive(data.actualSlackMeters);
     this.lineTaut = data.lineTaut !== false;
@@ -54,14 +55,19 @@ class FishRetrieveResult {
     this.targetFishPullSpeedMetersPerSecond = this.towardPlayerSpeedMps;
   }
 
-  withAppliedMovement({ appliedMoveMeters, movementBlocked } = {}) {
-    if (!!movementBlocked && this.movableHoldTensionCapApplied) {
+  withAppliedMovement({
+    appliedMoveMeters,
+    movementBlocked,
+    tensionBlocked = movementBlocked,
+  } = {}) {
+    if (!!tensionBlocked && this.movableHoldTensionCapApplied) {
       const playerHoldTensionKg = this.rawPlayerHoldTensionKg;
       const totalTensionKg = this.fishTensionKg + playerHoldTensionKg;
       return new FishRetrieveResult({
         ...this,
         appliedMoveMeters,
         movementBlocked,
+        tensionBlocked,
         fishCanMoveTowardPlayer: false,
         movableHoldTensionCapApplied: false,
         playerHoldTensionKg,
@@ -73,6 +79,7 @@ class FishRetrieveResult {
       ...this,
       appliedMoveMeters,
       movementBlocked,
+      tensionBlocked,
     });
   }
 

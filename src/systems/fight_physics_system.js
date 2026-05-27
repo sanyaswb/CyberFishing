@@ -6,8 +6,10 @@ class FightPhysicsSystem {
   #pumpCreditCalculator = new PumpCreditCalculator();
   #looseLineCalculator = new LooseLineCalculator();
   #landingPolicyResolver = new LandingPolicyResolver();
+  #landingLiftCalculator = new LandingLiftTensionCalculator();
   #pipeline = new FightPhysicsPipeline();
   #fishRetrieveSystem;
+  #landingLiftHoldKg = 0;
   #holdReelRecoverTimerMs = 0;
   #holdReelRecoverState = {
     eligible: false,
@@ -198,6 +200,7 @@ class FightPhysicsSystem {
       lineState: lineLimit.lineState,
       hardLineLimit: lineLimit.hardLineLimit,
       dtSec,
+      pullInput,
     }),
     );
     const rodPullDisplay = rodPullSystem.getState();
@@ -220,6 +223,7 @@ class FightPhysicsSystem {
       rodPullMoveMeters: rodPullFrame.rodPullMoveMeters,
       holdReelRecoverMoveMeters: rodPullFrame.holdReelRecoverMoveMeters,
       fishRetrieveResult: rodPullFrame.fishRetrieveResult,
+      landingLiftResult: tensionResult.landingLift,
       tensionResult,
       stressSystem,
       physics,
@@ -294,6 +298,10 @@ class FightPhysicsSystem {
     fishForceSystem.evaluateLastDashTrigger?.({
       dtMs,
       lineDistanceMeters: lineState.distanceMeters,
+      horizontalDistanceMeters: this.#calculateHorizontalDistanceMeters({
+        fishPosition,
+        rodTipPosition,
+      }),
       landingDistanceMeters,
     });
 
@@ -354,6 +362,15 @@ class FightPhysicsSystem {
       hasReel,
       dragSupported,
     };
+  }
+
+  #calculateHorizontalDistanceMeters({ fishPosition, rodTipPosition }) {
+    const pixelsPerMeter =
+      this.#physicsConfig?.getPixelsPerMeter?.() ||
+      50;
+    const verticalPx =
+      (Number(rodTipPosition?.y) || 0) - (Number(fishPosition?.y) || 0);
+    return Math.max(0, verticalPx / Math.max(1, pixelsPerMeter));
   }
 
   #updateRodPull({
@@ -454,10 +471,13 @@ class FightPhysicsSystem {
         rodStrokeMovementBlocked &&
         !holdReelRecoverActive
       );
+    const tensionBlocked =
+      desiredMoveMeters > rodPullMoveMeters + 0.001;
     const fishRetrieveResult = fishRetrieveFrame
       .withAppliedMovement({
         appliedMoveMeters: rodPullMoveMeters,
         movementBlocked,
+        tensionBlocked,
       });
     if (rodPullResult.active) {
       rodPullSystem.recordAppliedStroke?.({
@@ -528,17 +548,31 @@ class FightPhysicsSystem {
     lineState,
     hardLineLimit,
     dtSec,
+    pullInput,
   }) {
-    const tensionResult = this.#calculateTension({
+    const landingLift = this.#updateLandingLift({
+      dtSec,
+      pullInput,
+      forceData,
+      rodPullResult,
+      fishRetrieveResult,
+      lineState,
+    });
+    const calculatedTension = this.#calculateTension({
       tensionSystem,
       stressSystem,
       forceData,
       rodPullResult,
       fishRetrieveResult,
+      landingLift,
       dragContext,
       lineState,
       hardLineLimit,
     });
+    const tensionResult = {
+      ...calculatedTension,
+      landingLift,
+    };
 
     stressSystem.updateTarget(tensionResult.tensionKg, dtSec, this.#config.tension || {});
     return tensionResult;
@@ -550,17 +584,33 @@ class FightPhysicsSystem {
     forceData,
     rodPullResult,
     fishRetrieveResult,
+    landingLift,
     dragContext,
     lineState,
     hardLineLimit,
   }) {
     const lineHasReserve = this.#lineHasReserve(lineState);
+    const baseFishTensionKg =
+      fishRetrieveResult.fishTensionKg ?? forceData.fishTensionKg;
+    const basePlayerHoldTensionKg = fishRetrieveResult.playerHoldTensionKg ?? 0;
+    const baseTotalTensionKg =
+      fishRetrieveResult.totalTensionKg ?? fishRetrieveResult.lineTensionKg;
+    const landingLiftActive = !!landingLift?.active;
+    const fishTensionKg = landingLiftActive
+      ? landingLift.fishTensionKg
+      : baseFishTensionKg;
+    const playerHoldTensionKg = landingLiftActive
+      ? 0
+      : basePlayerHoldTensionKg;
+    const totalTensionKg = landingLiftActive
+      ? landingLift.totalTensionKg
+      : baseTotalTensionKg;
     return tensionSystem.calculate({
-      totalTensionKg: fishRetrieveResult.totalTensionKg ?? fishRetrieveResult.lineTensionKg,
-      fishForceKg: fishRetrieveResult.fishTensionKg ?? forceData.fishTensionKg,
-      rodPullForceKg: fishRetrieveResult.playerHoldTensionKg ?? 0,
-      fishTensionKg: fishRetrieveResult.fishTensionKg ?? forceData.fishTensionKg,
-      playerHoldTensionKg: fishRetrieveResult.playerHoldTensionKg ?? 0,
+      totalTensionKg,
+      fishForceKg: fishTensionKg,
+      rodPullForceKg: playerHoldTensionKg,
+      fishTensionKg,
+      playerHoldTensionKg,
       rodLimitKg: stressSystem.getEffectiveRodMaxLoadKg?.(),
       lineLimitKg: stressSystem.getEffectiveLineSystemMaxLoadKg?.(),
       hookLimitKg: stressSystem.getEffectiveHookMaxLoadKg?.(),
@@ -568,7 +618,49 @@ class FightPhysicsSystem {
       hardLineLimit: !!hardLineLimit,
       lineHasReserve,
       dragLocked: dragContext.dragLocked,
+      landingLift,
     });
+  }
+
+  #updateLandingLift({
+    dtSec,
+    pullInput,
+    forceData,
+    rodPullResult,
+    fishRetrieveResult,
+    lineState,
+  }) {
+    const landingDistanceMeters = Number(forceData?.landingDistanceMeters) || 0;
+    const rawLineDistanceMeters = Number(lineState?.distanceMeters);
+    const lineDistanceMeters = Number.isFinite(rawLineDistanceMeters)
+      ? Math.max(0, rawLineDistanceMeters)
+      : Infinity;
+    const inLandingZone =
+      landingDistanceMeters > 0 &&
+      lineDistanceMeters <= landingDistanceMeters + 0.001;
+    const playerHoldActive = !!pullInput?.pullHeld;
+    const lift = this.#landingLiftCalculator.calculate({
+      previousLiftHoldKg: this.#landingLiftHoldKg,
+      fishWeightKg: this.#resolveFishWeightKg(forceData),
+      waterFightTensionKg:
+        fishRetrieveResult?.fishTensionKg ?? forceData?.fishTensionKg,
+      inLandingZone,
+      playerHoldActive,
+      dtSec,
+      config: this.#physicsConfig?.getLandingLiftConfig?.(),
+    });
+
+    this.#landingLiftHoldKg = lift.liftHoldKg;
+    return lift;
+  }
+
+  #resolveFishWeightKg(forceData) {
+    return Math.max(
+      0,
+      Number(forceData?.fishWeightKg) ||
+        Number(forceData?.debug?.fishWeightKg) ||
+        0,
+    );
   }
 
   #recoverLineCredit({
@@ -616,7 +708,7 @@ class FightPhysicsSystem {
     const configuredDelayMs = Number(reelConfig.holdRecoverAfterFullStrokeMs);
     const delayMs = Number.isFinite(configuredDelayMs)
       ? Math.max(0, configuredDelayMs)
-      : 3000;
+      : 0;
     const configuredStrokeRatio = Number(reelConfig.holdRecoverStrokeRatio);
     const requiredStrokeRatio = Number.isFinite(configuredStrokeRatio)
       ? Math.max(0, Math.min(1, configuredStrokeRatio))
@@ -667,8 +759,17 @@ class FightPhysicsSystem {
         strokeUnrecoveredMeters >= strokeCapacityMeters - strokeToleranceMeters
       ) ||
       rodPullResult?.blockedReason === "max_distance_reached";
+    const dragLimitKg = Math.max(
+      0,
+      Number(dragContext?.effectiveDragLimitKg) || 0,
+    );
+    const tensionBelowDragLimit =
+      !!dragContext?.dragLocked || rawLoadKg < dragLimitKg - 0.001;
+    const tensionBelowMaxLoad = reelLoadReserveRatio > 0.01;
     const dragCanHold =
-      !!dragContext?.dragLocked || tensionPreview?.shouldSlipDrag !== true;
+      tensionPreview?.shouldSlipDrag !== true &&
+      tensionBelowDragLimit &&
+      tensionBelowMaxLoad;
     const eligible =
       reelConfig.holdRecoverAfterFullStrokeMs !== false &&
       !!hasReel &&
@@ -676,7 +777,6 @@ class FightPhysicsSystem {
       !!rodPullResult?.active &&
       strokeFull &&
       dragCanHold &&
-      reelLoadReserveRatio > 0.001 &&
       recoverSpeedMetersPerSecond > 0.001;
     const blockedReason = this.#resolveHoldReelRecoverBlockedReason({
       reelConfig,
@@ -686,6 +786,8 @@ class FightPhysicsSystem {
       strokeFull,
       dragCanHold,
       reelLoadReserveRatio,
+      tensionBelowDragLimit,
+      tensionBelowMaxLoad,
       recoverSpeedMetersPerSecond,
     });
 
@@ -720,6 +822,8 @@ class FightPhysicsSystem {
     strokeFull,
     dragCanHold,
     reelLoadReserveRatio,
+    tensionBelowDragLimit,
+    tensionBelowMaxLoad,
     recoverSpeedMetersPerSecond,
   }) {
     if (reelConfig.holdRecoverAfterFullStrokeMs === false) return "disabled";
@@ -727,8 +831,12 @@ class FightPhysicsSystem {
     if (!isPullMode) return "not_holding";
     if (!rodPullResult?.active) return "rod_pull_inactive";
     if (!strokeFull) return "stroke_not_full";
-    if (!dragCanHold) return "drag_slipping";
-    if (reelLoadReserveRatio <= 0.001) return "no_reel_load_reserve";
+    if (!dragCanHold) {
+      if (!tensionBelowDragLimit) return "at_drag_limit";
+      if (!tensionBelowMaxLoad) return "near_max_load";
+      return "drag_slipping";
+    }
+    if (reelLoadReserveRatio <= 0.01) return "no_reel_load_reserve";
     if (recoverSpeedMetersPerSecond <= 0.001) return "zero_recover_speed";
     return "ready";
   }
@@ -805,6 +913,7 @@ class FightPhysicsSystem {
     rodPullMoveMeters,
     holdReelRecoverMoveMeters,
     fishRetrieveResult,
+    landingLiftResult,
     tensionResult,
     stressSystem,
     physics,
@@ -879,8 +988,23 @@ class FightPhysicsSystem {
       fishRetrieveLineTensionKg: fishRetrieveResult?.totalTensionKg,
       fishRetrieveBalanceState: fishRetrieveResult?.balanceState,
       fishRetrieveMovementBlocked: fishRetrieveResult?.movementBlocked,
+      fishRetrieveTensionBlocked: fishRetrieveResult?.tensionBlocked,
       fishRetrieveDesiredMoveMeters: fishRetrieveResult?.desiredMoveMeters,
       fishRetrieveAppliedMoveMeters: fishRetrieveResult?.appliedMoveMeters,
+      landingLiftEnabled: !!landingLiftResult?.enabled,
+      landingLiftInZone: !!landingLiftResult?.inLandingZone,
+      landingLiftPlayerHoldActive: !!landingLiftResult?.playerHoldActive,
+      landingLiftActive: !!landingLiftResult?.active,
+      landingLiftHoldKg: landingLiftResult?.liftHoldKg ?? 0,
+      landingLiftMaxKg: landingLiftResult?.liftMaxKg ?? 0,
+      landingLiftWaterTensionKg:
+        landingLiftResult?.waterFightTensionKg ?? 0,
+      landingLiftFishTensionKg: landingLiftResult?.fishTensionKg ?? 0,
+      landingLiftWeightTensionRatio:
+        landingLiftResult?.liftWeightTensionRatio ?? 0,
+      landingLiftTimeSeconds: landingLiftResult?.liftTimeSeconds ?? 0,
+      landingLiftReleaseTimeSeconds:
+        landingLiftResult?.releaseTimeSeconds ?? 0,
       rodPullDistanceMeters: rodPullDisplay.distanceMeters,
       rodPullMaxDistanceMeters: rodPullDisplay.maxDistanceMeters,
       rodPullAvailableDistanceMeters: rodPullDisplay.availableDistanceMeters,
