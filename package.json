@@ -12,7 +12,9 @@
     "check:rod-pull": "node utils/rod-pull-systems-check.js",
     "check:line": "node utils/inventory-line-systems-check.js",
     "check:casting": "node utils/cast-power-check.js",
-    "check:catch": "node utils/catch-resolution-check.js"
+    "check:catch": "node utils/catch-resolution-check.js",
+    "struct": "struct -i dist -i build -i coverage -o project-structure.txt",
+    "git:add": "npm run struct && git add ."
   },
   "dependencies": {
     "glob": "^13.0.6",

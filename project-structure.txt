@@ -30,12 +30,19 @@
 │    │  └── eventRoutes.js
 │    └── services
 │      └── eventService.js
+├── CHANGELOG.md
+├── docs
+│  ├── balance_simulator.md
+│  ├── fish_config_architecture.md
+│  ├── fishing_physics_formula_map.md
+│  ├── physics_units_and_naming.md
+│  ├── runtime_config_overrides.md
+│  └── simplified_fight_physics_model.md
 ├── index.html
 ├── package-lock.json
 ├── package.json
 ├── README.md
 ├── src
-│  ├── .tmp.drivedownload
 │  ├── .tmp.driveupload
 │  ├── app
 │  │  ├── adapters.js
@@ -62,21 +69,61 @@
 │  │  └── world.js
 │  ├── config
 │  │  ├── config.js
-│  │  └── databases
-│  │    ├── fish_db.js
-│  │    ├── item_db.js
-│  │    └── map_db.js
+│  │  ├── databases
+│  │  │  ├── fish
+│  │  │  │  ├── fish_categories.js
+│  │  │  │  ├── presets
+│  │  │  │  │  ├── fish_profile_factory.js
+│  │  │  │  │  └── fish_profile_presets.js
+│  │  │  │  └── species
+│  │  │  │    ├── event_fish.js
+│  │  │  │    ├── peaceful_fish.js
+│  │  │  │    ├── predator_fish.js
+│  │  │  │    └── rare_fish.js
+│  │  │  ├── fish_db.js
+│  │  │  ├── item_db.js
+│  │  │  └── map_db.js
+│  │  ├── metadata
+│  │  │  └── parameter_labels.json
+│  │  ├── physics
+│  │  │  ├── environment_physics_config.js
+│  │  │  ├── fight_physics_config.js
+│  │  │  ├── physics_config_adapter.js
+│  │  │  ├── physics_config.js
+│  │  │  ├── physics_formula_map.js
+│  │  │  ├── physics_units_and_naming.js
+│  │  │  ├── retrieve_physics_config.js
+│  │  │  ├── tackle_physics_config.js
+│  │  │  └── tension_physics_config.js
+│  │  ├── project_version.js
+│  │  ├── runtime
+│  │  │  ├── config_override_store.js
+│  │  │  ├── immutable_config.js
+│  │  │  └── resolved_config_provider.js
+│  │  └── validation
+│  │    └── config_schema_validator.js
 │  ├── core
 │  │  ├── casting_distance.js
 │  │  ├── core.js
-│  │  └── fishing
-│  │    ├── rod_pull_calculator.js
-│  │    ├── rod_pull_state.js
-│  │    ├── rod_stroke_state.js
-│  │    └── slack_calculator.js
+│  │  ├── fishing
+│  │  │  ├── fish_retrieve_result.js
+│  │  │  ├── landing_lift_tension_calculator.js
+│  │  │  ├── landing_policy.js
+│  │  │  ├── line_tension_calculator.js
+│  │  │  ├── retrieve_policy.js
+│  │  │  ├── rod_pull_calculator.js
+│  │  │  ├── rod_pull_state.js
+│  │  │  ├── rod_stroke_state.js
+│  │  │  ├── simple_fight_force_calculator.js
+│  │  │  └── slack_calculator.js
+│  │  └── line
+│  │    ├── line_allocation_policy.js
+│  │    └── line_inventory_controller.js
 │  ├── debug
 │  │  ├── debug.js
+│  │  ├── dev_tool_parameter_descriptions.json
 │  │  ├── dev_tools.js
+│  │  ├── overlay_metric_inspector.js
 │  │  └── overlay.js
 │  ├── entities
 │  │  ├── fish.js
@@ -89,8 +136,10 @@
 │  │  ├── bite_system.js
 │  │  ├── chum_system.js
 │  │  ├── drag_system.js
+│  │  ├── fight_physics_pipeline.js
 │  │  ├── fight_physics_system.js
 │  │  ├── fish_force_system.js
+│  │  ├── fish_retrieve_system.js
 │  │  ├── inventory_system.js
 │  │  ├── line_system.js
 │  │  ├── player_force_system.js
@@ -102,16 +151,28 @@
 │  ├── ui
 │  │  ├── styles
 │  │  │  └── style.css
-│  │  └── ui.js
+│  │  ├── ui.js
+│  │  └── version_badge.js
 │  └── world
 │    └── world.js
 └── utils
   ├── cast-power-check.js
   ├── catch-resolution-check.js
+  ├── catch-resolution-debug-check.js
   ├── check-js.js
+  ├── config-overrides-check.js
   ├── convert-images.js
   ├── dev-server.js
   ├── fight-systems-check.js
+  ├── fish-db-structure-check.js
+  ├── fish-speed-delta-check.js
   ├── fps-physics-check.js
+  ├── game-cycle-check.js
+  ├── inventory-line-systems-check.js
   ├── local-bridge.js
-  └── rod-pull-systems-check.js
+  ├── physics-formula-golden-check.js
+  ├── project-version-check.js
+  ├── rod-pull-systems-check.js
+  ├── set-project-version.js
+  ├── simulate-fish-fight.js
+  └── validate-config.js
