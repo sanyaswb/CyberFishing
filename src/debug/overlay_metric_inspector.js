@@ -68,9 +68,9 @@ class OverlayMetricFormulaCatalog {
         paths: ["HOOKED_FISH.tackle.rod.holdTensionRatio"],
       },
       "Movable tension cap": {
-        formula: "capKg = fishPassiveKg * movableHoldTensionCapRatio",
+        formula: "capKg = fishOppositionKg * movableHoldTensionCapRatio",
         description: "Якщо риба може рухатися, hold не може додати в tension більше цього cap.",
-        paths: ["CONFIG.physics.fight.tension.movableHoldTensionCapRatio"],
+        paths: ["DEBUG_DATA.fishOppositionKg", "CONFIG.physics.fight.tension.movableHoldTensionCapRatio"],
       },
       "Hold to tension": {
         formula: "playerHoldTensionKg = fishCanMove ? min(rawHoldTension, capKg) : rawHoldTension",

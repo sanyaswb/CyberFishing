@@ -347,6 +347,7 @@ class FightPhysicsModule extends OverlayModule {
       this.#row("Angle multiplier", `x${this.#num(d.anglePenalty || 1, 2)}`),
       this.#row("Effective rod hold", this.#kg(d.effectiveRodHoldKg, 3), "#00ff80"),
       this.#row("Hold tension ratio", this.#percent(d.holdTensionRatio, 1)),
+      this.#row("Raw hold tension", this.#kg(d.rawPlayerHoldTensionKg, 3), "#00ff80"),
       this.#row("Movable tension cap", this.#kg(d.movableHoldTensionCapKg, 3), "#73c2fb"),
       this.#row("Hold to tension", this.#kg(d.playerHoldTensionKg, 3), "#00ff80"),
     ]);

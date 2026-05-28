@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.19.10";
+const CURRENT_PROJECT_VERSION = "0.19.11";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,7 +13,7 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "fish-tension-separation",
+  codename: "opposition-hold-cap",
   updatedAt: "2026-05-28",
   notes: Object.freeze([
     "Modular fish database categories",
@@ -53,6 +53,7 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
     "PlayerForceSystem no longer exposes legacy drag read-model fields",
     "Drag debug now reports blocked force, excess force and final Y speed from DragForceCalculator",
     "Fish tension stays based on fish opposition while fishWonForceKg controls escape movement only",
+    "Movable hold tension cap now scales from current fish opposition",
   ]),
 });
 

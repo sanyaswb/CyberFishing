@@ -59,7 +59,7 @@ A weak line can still break if the player over-holds.
 
 ```js
 rawPlayerHoldTensionKg = effectiveRodHoldKg * holdTensionRatio;
-movableHoldTensionCapKg = fishPassiveKg * movableHoldTensionCapRatio;
+movableHoldTensionCapKg = fishOppositionKg * movableHoldTensionCapRatio;
 
 playerHoldTensionKg = fishCanMoveTowardPlayer
   ? Math.min(rawPlayerHoldTensionKg, movableHoldTensionCapKg)

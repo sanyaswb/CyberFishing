@@ -64,8 +64,8 @@
     "description": "Натяг, коли ліска провисла."
   },
   "physics.fight.tension.movableHoldTensionCapRatio": {
-    "label": "Cap hold tension рухомої риби",
-    "description": "Якщо риба може рухатися, hold додає в tension не більше fishPassiveKg * ratio."
+    "label": "Movable hold tension cap ratio",
+    "description": "Limits hold tension for movable fish based on current fish opposition, not passive water weight."
   },
   "physics.environment.water.currentInfluenceMultiplier": {
     "label": "Множник впливу течії",

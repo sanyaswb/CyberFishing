@@ -96,7 +96,8 @@ const smallFish = calc.calculate({
 });
 approx(smallFish.fishPassiveKg, 0.04, 0.0001, "small fish passive force is water weight");
 approx(smallFish.fishActiveKg, 0.1, 0.0001, "active force uses state and direction");
-approx(smallFish.playerHoldTensionKg, 0.04, 0.0001, "movable fish caps hold tension");
+approx(smallFish.movableHoldTensionCapKg, 0.14, 0.0001, "movable cap uses fish opposition");
+approx(smallFish.playerHoldTensionKg, 0.14, 0.0001, "movable fish caps hold tension by opposition");
 assert(smallFish.netForceKg > 0, "full rod hold still works against fish");
 assert(smallFish.speedMps > 0, "excess hold becomes speed");
 
@@ -113,6 +114,31 @@ const blockedFish = calc.calculate({
   fishCanMoveTowardPlayer: false,
 });
 approx(blockedFish.playerHoldTensionKg, 2, 0.0001, "blocked fish receives full hold tension");
+
+const oppositionCapNoClamp = calc.calculate({
+  fishWeightKg: 0.8,
+  fishBasePower: 0.5,
+  fishBaseSpeed: 2,
+  fishStateForceMultiplier: 1,
+  fishStateSpeedMultiplier: 1,
+  directionMultiplier: 2.5,
+  tautBodyResistancePerKg: 0.2,
+  rodLimitKg: 3,
+  rodHoldKg: 0.4,
+  rodAngleMultiplier: 1,
+  holdTensionRatio: 0.5,
+  movableHoldTensionCapRatio: 1,
+  fishCanMoveTowardPlayer: true,
+  waterMotionResistance: 1000,
+  waterSpeedMultiplier: 64,
+});
+approx(oppositionCapNoClamp.fishPassiveKg, 0.08, 0.0001, "opposition cap test passive force");
+approx(oppositionCapNoClamp.fishActiveKg, 0.2, 0.0001, "opposition cap test active force");
+approx(oppositionCapNoClamp.fishOppositionKg, 0.28, 0.0001, "opposition cap test opposition");
+approx(oppositionCapNoClamp.rawPlayerHoldTensionKg, 0.2, 0.0001, "opposition cap test raw hold tension");
+approx(oppositionCapNoClamp.movableHoldTensionCapKg, 0.28, 0.0001, "opposition cap scales from full fish opposition");
+approx(oppositionCapNoClamp.playerHoldTensionKg, 0.2, 0.0001, "opposition cap allows active fish to transfer hold tension");
+approx(oppositionCapNoClamp.totalTensionKg, 0.48, 0.0001, "opposition cap total tension keeps fish plus player tension");
 
 const lastDashBehavior = new FishBehavior({
   lastDashTrigger: {

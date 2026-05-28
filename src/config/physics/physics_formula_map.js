@@ -42,11 +42,11 @@ const PHYSICS_FORMULA_MAP = Object.freeze({
 
   holdToTension: Object.freeze({
     title: "Hold to tension",
-    formula: "playerHoldTensionKg = fishCanMove ? min(effectiveRodHoldKg * holdTensionRatio, fishPassiveKg * movableHoldTensionCapRatio) : effectiveRodHoldKg * holdTensionRatio",
+    formula: "playerHoldTensionKg = fishCanMove ? min(effectiveRodHoldKg * holdTensionRatio, fishOppositionKg * movableHoldTensionCapRatio) : effectiveRodHoldKg * holdTensionRatio",
     sources: Object.freeze([
       "effectiveRodHoldKg",
       "rod.holdTensionRatio",
-      "fishPassiveKg",
+      "fishOppositionKg",
       "physics.fight.tension.movableHoldTensionCapRatio",
       "fishCanMoveTowardPlayer",
     ]),

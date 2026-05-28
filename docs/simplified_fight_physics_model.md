@@ -100,6 +100,20 @@ It must not continuously damp stable target speed.
 
 Reel drag is still the official fight speed/tension limiter: increasing drag reduces escape speed and increases tension risk.
 
+## Movable hold tension cap
+
+When the fish can move toward the player, only a capped part of rod hold is converted to tackle tension:
+
+```txt
+rawPlayerHoldTensionKg = effectiveRodHoldKg * holdTensionRatio
+movableHoldTensionCapKg = fishOppositionKg * movableHoldTensionCapRatio
+playerHoldTensionKg = min(rawPlayerHoldTensionKg, movableHoldTensionCapKg)
+```
+
+The cap is based on current fish opposition, not passive water weight. This keeps small movable fish safe, but scales better with active fish states, movement direction and harder resistance.
+
+If the fish cannot move, the cap is disabled and `rawPlayerHoldTensionKg` goes fully into tension.
+
 ## Reel hold rule
 
 `rodHold` moves the fish through force.

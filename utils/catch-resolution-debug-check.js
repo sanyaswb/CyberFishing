@@ -198,7 +198,7 @@ function calculateExpected({ config, fishData }) {
   const maxWaterFishTensionKg =
     fishPassiveKg + fishPassiveKg * maxStateForceMultiplier * directionMultiplier;
   const maxMovablePlayerTensionKg =
-    fishPassiveKg * tension.movableHoldTensionCapRatio;
+    maxWaterFishTensionKg * tension.movableHoldTensionCapRatio;
   const maxWaterTotalTensionKg =
     maxWaterFishTensionKg + maxMovablePlayerTensionKg;
   const landingLiftMaxKg = fishData.weight * lift.liftWeightTensionRatio;

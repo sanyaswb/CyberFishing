@@ -88,8 +88,9 @@ const example2 = calc.calculate({
 approx(example2.fishPassiveKg, 0.6, 0.0001, "example 2 passive force");
 approx(example2.fishActiveKg, 0.6, 0.0001, "example 2 active force");
 approx(example2.effectiveRodHoldKg, 1.44, 0.0001, "example 2 angle penalty applies");
-approx(example2.playerHoldTensionKg, 0.6, 0.0001, "example 2 movable cap limits hold tension");
-approx(example2.totalTensionKg, 1.8, 0.0001, "example 2 total tension");
+approx(example2.movableHoldTensionCapKg, 1.2, 0.0001, "example 2 movable cap uses opposition");
+approx(example2.playerHoldTensionKg, 0.72, 0.0001, "example 2 hold tension stays below opposition cap");
+approx(example2.totalTensionKg, 1.92, 0.0001, "example 2 total tension");
 approx(example2.towardPlayerSpeedMps, Math.sqrt(0.24 / 1000) * 64, 0.0001, "example 2 pull speed");
 assert(example2.direction === "toward_player", "example 2 player wins");
 
@@ -107,7 +108,9 @@ const smallFish = calc.calculate({
   waterMotionResistance: 1000,
   waterSpeedMultiplier: 64,
 });
-approx(smallFish.totalTensionKg, 0.18, 0.0001, "movable small fish does not overload line");
+approx(smallFish.movableHoldTensionCapKg, 0.14, 0.0001, "movable small fish cap uses opposition");
+approx(smallFish.playerHoldTensionKg, 0.14, 0.0001, "movable small fish caps strong hold");
+approx(smallFish.totalTensionKg, 0.28, 0.0001, "movable small fish does not overload line");
 assert(smallFish.towardPlayerSpeedMps > 2.7, "small fish excess hold becomes speed");
 
 const blockedSmallFish = calc.calculate({
@@ -123,6 +126,28 @@ const blockedSmallFish = calc.calculate({
   fishCanMoveTowardPlayer: false,
 });
 approx(blockedSmallFish.totalTensionKg, 2.14, 0.0001, "blocked small fish can overload line");
+
+const activeOppositionCap = calc.calculate({
+  fishWeightKg: 0.8,
+  fishBasePower: 0.5,
+  fishBaseSpeed: 2,
+  fishStateForceMultiplier: 1,
+  fishStateSpeedMultiplier: 1,
+  directionMultiplier: 2.5,
+  tautBodyResistancePerKg: 0.2,
+  rodLimitKg: 3,
+  rodHoldKg: 0.4,
+  holdTensionRatio: 0.5,
+  movableHoldTensionCapRatio: 1,
+  fishCanMoveTowardPlayer: true,
+  waterMotionResistance: 1000,
+  waterSpeedMultiplier: 64,
+});
+approx(activeOppositionCap.fishOppositionKg, 0.28, 0.0001, "active opposition cap fish opposition");
+approx(activeOppositionCap.rawPlayerHoldTensionKg, 0.2, 0.0001, "active opposition cap raw hold tension");
+approx(activeOppositionCap.movableHoldTensionCapKg, 0.28, 0.0001, "active opposition cap uses fish opposition");
+approx(activeOppositionCap.playerHoldTensionKg, 0.2, 0.0001, "active opposition cap does not clamp below raw tension");
+approx(activeOppositionCap.totalTensionKg, 0.48, 0.0001, "active opposition cap total tension");
 
 const stress = new TensionSystem().calculate({
   totalTensionKg: 5.44,

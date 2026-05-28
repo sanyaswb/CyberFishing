@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.19.11 - opposition-based movable hold cap
+
+- Changed `movableHoldTensionCapKg` to scale from `fishOppositionKg` instead of passive fish water weight.
+- Kept `rawPlayerHoldTensionKg`, `effectiveRodHoldKg`, `netForceKg` and drag Y logic unchanged.
+- Added golden coverage for active opposition cap, small movable fish protection and blocked fish full hold tension.
+- Updated overlay/formula docs and parameter metadata for the new cap source.
+
 ## v0.19.10 - fish tension separation
 
 - Fixed fish tension so it stays based on `fishOppositionKg` instead of dropping to `dragBlockedForceKg` when player hold wins.
@@ -69,7 +76,7 @@
 ## v0.19.2 - movable hold tension cap
 
 - Added `physics.fight.tension.movableHoldTensionCapRatio`.
-- Capped player hold tension by `fishPassiveKg * movableHoldTensionCapRatio` while the fish can move toward the player.
+- Added movable player hold tension cap while the fish can move toward the player.
 - Kept full raw hold tension when movement is blocked, so constraints can still create line-break risk.
 - Exposed raw hold tension and movable cap values in fight debug/overlay formula data.
 

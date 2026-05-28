@@ -56,7 +56,7 @@ class SimpleFightForceCalculator {
     const playerHoldTensionKg = this.calculatePlayerHoldTensionKg({
       effectiveRodHoldKg,
       holdTensionRatio,
-      fishPassiveKg,
+      fishOppositionKg,
       movableHoldTensionCapRatio,
       fishCanMoveTowardPlayer: fishCanMoveTowardPlayer && netForceKg > 0,
     });
@@ -69,7 +69,7 @@ class SimpleFightForceCalculator {
       holdTensionRatio,
     });
     const movableHoldTensionCapKg = this.calculateMovableHoldTensionCapKg({
-      fishPassiveKg,
+      fishOppositionKg,
       movableHoldTensionCapRatio,
     });
     const speed = this.calculateSpeedMps({
@@ -150,7 +150,7 @@ class SimpleFightForceCalculator {
   calculatePlayerHoldTensionKg({
     effectiveRodHoldKg,
     holdTensionRatio = 1,
-    fishPassiveKg,
+    fishOppositionKg,
     movableHoldTensionCapRatio = 1,
     fishCanMoveTowardPlayer = false,
   } = {}) {
@@ -163,7 +163,7 @@ class SimpleFightForceCalculator {
     return Math.min(
       rawTension,
       this.calculateMovableHoldTensionCapKg({
-        fishPassiveKg,
+        fishOppositionKg,
         movableHoldTensionCapRatio,
       }),
     );
@@ -177,11 +177,13 @@ class SimpleFightForceCalculator {
   }
 
   calculateMovableHoldTensionCapKg({
-    fishPassiveKg,
+    fishOppositionKg,
     movableHoldTensionCapRatio = 1,
   } = {}) {
+    // Cap is based on current fish opposition, not passive water weight.
+    // This keeps small movable fish safe, but lets active fish transfer more tension.
     return (
-      this.#positive(fishPassiveKg) *
+      this.#positive(fishOppositionKg) *
       this.#positive(movableHoldTensionCapRatio, 1)
     );
   }

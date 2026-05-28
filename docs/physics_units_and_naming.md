@@ -23,7 +23,7 @@ fishTensionKg                 fish contribution to line tension
 effectiveRodHoldKg            player force against fish after angle/rod limits
 holdTensionRatio              part of hold force that becomes line tension
 rawPlayerHoldTensionKg        hold tension before movable cap
-movableHoldTensionCapKg       max player hold tension while fish can move
+movableHoldTensionCapKg       max player hold tension while fish can move, based on fishOppositionKg
 playerHoldTensionKg           final player contribution to tension
 totalTensionKg                fish tension + player hold tension
 rodStressRatio                total tension / rod limit
