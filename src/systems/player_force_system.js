@@ -165,14 +165,13 @@ class PlayerForceSystem {
 
   #calculateDragLimitKg(reel, dragRatio) {
     const range = reel?.getDragRangeKg?.() || {};
-    const minKg = Math.max(0, Number(range.min) || 0);
     const maxFromRange = Number(range.max);
     const fallbackMax =
       Number(reel?.getEffectiveMaxLoadKg?.()) ||
       Number(reel?.getMaxLoadKg?.()) ||
-      minKg;
-    const maxKg = Math.max(minKg, Number.isFinite(maxFromRange) ? maxFromRange : fallbackMax);
-    return minKg + (maxKg - minKg) * this.#clamp01(dragRatio);
+      0;
+    const maxKg = Math.max(0, Number.isFinite(maxFromRange) ? maxFromRange : fallbackMax);
+    return maxKg * this.#clamp01(dragRatio);
   }
 
   #lerp(a, b, t) {

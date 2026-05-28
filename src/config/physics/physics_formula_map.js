@@ -55,14 +55,14 @@ const PHYSICS_FORMULA_MAP = Object.freeze({
 
   totalTension: Object.freeze({
     title: "Total tension and equipment stress",
-    formula: "totalTensionKg = fishTensionKg + playerHoldTensionKg; stress = totalTensionKg / equipmentLimitKg",
+    formula: "totalTensionKg = dragBlockedForceKg + playerHoldTensionKg; stress = totalTensionKg / equipmentLimitKg",
     sources: Object.freeze(["fishTensionKg", "playerHoldTensionKg", "rod/line/hook limits"]),
     outputs: Object.freeze(["totalTensionKg", "rodStressRatio", "lineStressRatio", "hookStressRatio"]),
   }),
 
   movementSpeed: Object.freeze({
     title: "Movement speed",
-    formula: "netForceKg = effectiveRodHoldKg - fishOppositionKg; speedMps = sqrt(abs(netForceKg) / motionResistance) * speedMultiplier",
+    formula: "fishWonForceKg = max(0, fishOppositionKg - effectiveRodHoldKg); speedMps = sqrt(fishWonForceKg / motionResistance) * speedMultiplier",
     sources: Object.freeze([
       "effectiveRodHoldKg",
       "fishOppositionKg",
@@ -71,7 +71,20 @@ const PHYSICS_FORMULA_MAP = Object.freeze({
       "fish.physics.movementProfile.baseSpeed",
       "fish.behaviorProfile.behaviors[state].speedMultiplier",
     ]),
-    outputs: Object.freeze(["netForceKg", "winner", "speedMps", "speedPxPerSecond"]),
+    outputs: Object.freeze(["fishWonForceKg", "winner", "speedMps", "speedPxPerSecond"]),
+  }),
+
+  dragForce: Object.freeze({
+    title: "Drag force split",
+    formula: "fishWonYForceKg = fishWonForceKg * yAwayRatio; dragBlockedForceKg = lineCanSlip ? min(fishWonYForceKg, dragLimitKg) : fishWonYForceKg; excessYForceKg = dragCanBeExceeded ? max(0, fishWonYForceKg - dragLimitKg) : 0",
+    sources: Object.freeze([
+      "fishWonForceKg",
+      "yAwayRatio",
+      "reel.dragMaxKg",
+      "dragRatio",
+      "line reserve / extension state",
+    ]),
+    outputs: Object.freeze(["dragBlockedForceKg", "excessYForceKg", "shouldSlipDrag"]),
   }),
 
   reelHold: Object.freeze({

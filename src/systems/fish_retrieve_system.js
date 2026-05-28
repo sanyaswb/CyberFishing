@@ -1,6 +1,7 @@
 class FishRetrieveSystem {
   #configSource;
   #calculator = new SimpleFightForceCalculator();
+  #dragForceCalculator = new DragForceCalculator();
 
   constructor(configSource = {}) {
     this.#configSource = configSource || {};
@@ -16,6 +17,11 @@ class FishRetrieveSystem {
     movementBlocked = false,
     actualSlackMeters = 0,
     lineTaut = true,
+    dragRatio = 0,
+    dragLimitKg = 0,
+    dragLocked = false,
+    dragSupported = true,
+    lineHasReserve = true,
   } = {}) {
     const water = this.#resolveWaterConfig();
     const tension = this.#resolveTensionConfig();
@@ -45,6 +51,27 @@ class FishRetrieveSystem {
       waterMotionResistance: water.motionResistance,
       waterSpeedMultiplier: water.speedMultiplier,
     });
+    const pixelsPerMeter = this.#resolvePixelsPerMeter();
+    const dragFrame = this.#dragForceCalculator.calculate({
+      fishOppositionKg: frame.fishOppositionKg,
+      effectiveRodHoldKg: frame.effectiveRodHoldKg,
+      yAwayRatio: this.#ratio(forceData?.yAwayRatio, 1),
+      dragRatio,
+      dragLimitKg,
+      lineHasReserve,
+      dragLocked,
+      dragSupported,
+      targetXSpeedPxPerSec: forceData?.modelFishEscapeVelocityX,
+      targetYSpeedPxPerSec: forceData?.modelFishEscapeVelocityY,
+      waterMotionResistance: water.motionResistance,
+      waterSpeedMultiplier: water.speedMultiplier,
+      fishBaseSpeed: this.#positive(forceData?.fishBaseSpeed, 1),
+      fishStateSpeedMultiplier: this.#positive(
+        forceData?.fishStateSpeedMultiplier,
+        1,
+      ),
+      pixelsPerMeter,
+    });
     const dt = Math.max(0, Number(dtSec) || 0);
     const desiredMoveMeters = frame.towardPlayerSpeedMps * dt;
     const movementControlRatio =
@@ -57,9 +84,10 @@ class FishRetrieveSystem {
 
     rodPullResult.effectiveForceKg = frame.effectiveRodHoldKg;
     rodPullResult.playerHoldTensionKg = frame.playerHoldTensionKg;
-    rodPullResult.totalTensionKg = frame.totalTensionKg;
+    rodPullResult.totalTensionKg =
+      dragFrame.dragBlockedForceKg + frame.playerHoldTensionKg;
     rodPullResult.rodHoldMaxKg = frame.rodHoldMaxKg;
-    rodPullResult.fishTensionKg = frame.fishTensionKg;
+    rodPullResult.fishTensionKg = dragFrame.dragBlockedForceKg;
 
     return new FishRetrieveResult({
       holdRatio: this.#resolveHoldRatio(rodPullResult),
@@ -67,7 +95,7 @@ class FishRetrieveSystem {
       fishPassiveKg: frame.fishPassiveKg,
       fishActiveKg: frame.fishActiveKg,
       fishOppositionKg: frame.fishOppositionKg,
-      fishTensionKg: frame.fishTensionKg,
+      fishTensionKg: dragFrame.dragBlockedForceKg,
       rodHoldMaxKg: frame.rodHoldMaxKg,
       effectiveRodHoldKg: frame.effectiveRodHoldKg,
       rawPlayerHoldTensionKg: frame.rawPlayerHoldTensionKg,
@@ -76,8 +104,14 @@ class FishRetrieveSystem {
       movableHoldTensionCapApplied: frame.movableHoldTensionCapApplied,
       fishCanMoveTowardPlayer: true,
       playerHoldTensionKg: frame.playerHoldTensionKg,
-      totalTensionKg: frame.totalTensionKg,
+      totalTensionKg: dragFrame.dragBlockedForceKg + frame.playerHoldTensionKg,
       netForceKg: frame.netForceKg,
+      fishWonForceKg: dragFrame.fishWonForceKg,
+      fishWonYForceKg: dragFrame.fishWonYForceKg,
+      yAwayRatio: dragFrame.yAwayRatio,
+      dragBlockedForceKg: dragFrame.dragBlockedForceKg,
+      excessYForceKg: dragFrame.excessYForceKg,
+      shouldSlipDrag: dragFrame.shouldSlipDrag,
       speedMps: frame.speedMps,
       towardPlayerSpeedMps: frame.towardPlayerSpeedMps,
       awaySpeedMps: frame.awaySpeedMps,
@@ -115,6 +149,16 @@ class FishRetrieveSystem {
         1,
       ),
     };
+  }
+
+  #resolvePixelsPerMeter() {
+    const source = this.#configSource;
+    return Math.max(
+      1,
+      Number(source?.getPixelsPerMeter?.()) ||
+        Number(source?.pixelsPerMeter) ||
+        50,
+    );
   }
 
   #resolveHoldRatio(rodPullResult) {

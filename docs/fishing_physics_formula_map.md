@@ -69,30 +69,40 @@ playerHoldTensionKg = fishCanMoveTowardPlayer
 Meaning: when the fish can move, excess player force becomes speed instead of unlimited line tension.
 When movement is blocked, full raw hold tension loads the tackle.
 
-## 6. Total tension and stress
+## 6. Drag blocked force, total tension and stress
 
 ```js
-totalTensionKg = fishTensionKg + playerHoldTensionKg;
+fishWonForceKg = Math.max(0, fishOppositionKg - effectiveRodHoldKg);
+fishWonYForceKg = fishWonForceKg * yAwayRatio;
+
+dragBlockedForceKg = lineCanSlip
+  ? Math.min(fishWonYForceKg, dragLimitKg)
+  : fishWonYForceKg;
+
+totalTensionKg = dragBlockedForceKg + playerHoldTensionKg;
 rodStressRatio = totalTensionKg / rodLimitKg;
 lineStressRatio = totalTensionKg / lineLimitKg;
 hookStressRatio = totalTensionKg / hookLimitKg;
 ```
 
-Meaning: each tackle component is evaluated independently from the same total tension.
+Meaning: drag tension comes from the part of fish-won Y force that the reel actually blocks.
+`totalTensionKg` is for tackle stress only; it is not a speed source.
 
 ## 7. Movement winner and speed
 
 ```js
-netForceKg = effectiveRodHoldKg - fishOppositionKg;
+fishWonForceKg = Math.max(0, fishOppositionKg - effectiveRodHoldKg);
 
-if (netForceKg > 0) {
-  speedMps = Math.sqrt(netForceKg / physics.water.motionResistance)
+towardPlayerForceKg = Math.max(0, effectiveRodHoldKg - fishOppositionKg);
+
+if (towardPlayerForceKg > 0) {
+  speedMps = Math.sqrt(towardPlayerForceKg / physics.water.motionResistance)
     * physics.water.speedMultiplier;
   direction = "toward_player";
 }
 
-if (netForceKg < 0) {
-  speedMps = Math.sqrt(-netForceKg / physics.water.motionResistance)
+if (fishWonForceKg > 0) {
+  speedMps = Math.sqrt(fishWonForceKg / physics.water.motionResistance)
     * physics.water.speedMultiplier
     * fish.physics.movementProfile.baseSpeed
     * fishStateSpeedMultiplier;
@@ -101,6 +111,28 @@ if (netForceKg < 0) {
 ```
 
 `stateSpeedMultiplier` affects movement speed only. It does not add tension.
+Fish escape speed is based on clean fish-won force, never on `totalTensionKg`.
+
+## 7.1. Y drag escape
+
+```js
+dragLimitKg = reelDragMaxKg * dragRatio;
+fishWonYForceKg = fishWonForceKg * yAwayRatio;
+dragCanBeExceeded = dragRatio > 0 && dragLimitKg > 0;
+excessYForceKg = dragCanBeExceeded
+  ? Math.max(0, fishWonYForceKg - dragLimitKg)
+  : 0;
+
+dragSlowedYSpeedPx = targetYSpeedPx * (1 - dragRatio);
+excessYSpeedPx = speedFromForce(excessYForceKg) * Math.sign(targetYSpeedPx);
+
+finalXSpeedPx = targetXSpeedPx;
+finalYSpeedPx = lineCanSlip
+  ? dragSlowedYSpeedPx + excessYSpeedPx
+  : 0;
+```
+
+Implementation note: the zero-drag case has no excess force because an open drag blocks nothing and therefore cannot be exceeded.
 
 ## 8. Reel hold
 

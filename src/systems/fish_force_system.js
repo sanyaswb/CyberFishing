@@ -6,6 +6,7 @@ class FishForceSystem {
   #targetVelocity = new Vector2(0, 0);
   #playerForceSystem;
   #forceCalculator = new SimpleFightForceCalculator();
+  #dragForceCalculator = new DragForceCalculator();
   #physicsConfig;
   #debug = {};
 
@@ -29,6 +30,8 @@ class FishForceSystem {
     rod,
     reel,
     playerMaxLoadKg,
+    activeRodHoldKg = 0,
+    lineHasReserve = true,
     env,
     buffs,
   }) {
@@ -139,11 +142,11 @@ class FishForceSystem {
     });
 
     const awayFromPlayerRatio = Math.max(0, moveDir.x * awayDir.x + moveDir.y * awayDir.y);
-    const minEscape =
-      this.#physicsConfig?.getReelDragConfig?.()?.yEscapeSpeedAtFullDrag ??
-      0.02;
-    const escapeSpeedMultiplier =
-      1 - playerData.effectiveDragRatio * awayFromPlayerRatio * (1 - minEscape);
+    const yAwayRatio = this.#calculateYAwayRatio(moveDir);
+    const fishWonForceKg = Math.max(
+      0,
+      totalFishForceKg - Math.max(0, Number(activeRodHoldKg) || 0),
+    );
 
     const staminaActivityMultiplier = this.#lerp(
       fishPhysics.staminaProfile?.minStaminaActivityMultiplier ?? 0.75,
@@ -156,12 +159,38 @@ class FishForceSystem {
       exhaustionProgress,
     );
 
-    const speedPxPerSec =
-      fishForceFrame.awaySpeedMps *
-      pixelsPerMeter *
-      Math.max(minEscape, escapeSpeedMultiplier);
+    const speedPxPerSec = this.#dragForceCalculator.speedFromForceKg({
+      forceKg: fishWonForceKg,
+      waterMotionResistance: waterConfig.motionResistance,
+      waterSpeedMultiplier: waterConfig.speedMultiplier,
+      fishBaseSpeed,
+      fishStateSpeedMultiplier: behaviorSpeedRatio,
+      pixelsPerMeter,
+    });
+    const modelVelocityX = moveDir.x * speedPxPerSec;
+    const modelVelocityY = moveDir.y * speedPxPerSec;
+    const dragFrame = this.#dragForceCalculator.calculate({
+      fishOppositionKg: totalFishForceKg,
+      effectiveRodHoldKg: activeRodHoldKg,
+      yAwayRatio,
+      dragRatio: this.#clamp01(dragRatio),
+      dragLimitKg: playerData.effectiveDragLimitKg,
+      lineHasReserve,
+      dragLocked: playerData.dragLocked,
+      dragSupported: playerData.hasReel && !playerData.dragLocked,
+      targetXSpeedPxPerSec: modelVelocityX,
+      targetYSpeedPxPerSec: modelVelocityY,
+      waterMotionResistance: waterConfig.motionResistance,
+      waterSpeedMultiplier: waterConfig.speedMultiplier,
+      fishBaseSpeed,
+      fishStateSpeedMultiplier: behaviorSpeedRatio,
+      pixelsPerMeter,
+    });
 
-    this.#targetVelocity.set(moveDir.x * speedPxPerSec, moveDir.y * speedPxPerSec);
+    this.#targetVelocity.set(
+      dragFrame.finalXSpeedPxPerSec,
+      dragFrame.finalYSpeedPxPerSec,
+    );
 
     this.#debug = {
       fishState: behavior.name,
@@ -177,8 +206,19 @@ class FishForceSystem {
       fishOppositionKg: fishForceFrame.fishOppositionKg,
       fishTensionKg: fishForceFrame.fishTensionKg,
       totalFishForceKg,
-      fishSpeedPxPerSec: speedPxPerSec,
-      fishSpeedMps: fishForceFrame.awaySpeedMps,
+      fishSpeedPxPerSec: Math.hypot(this.#targetVelocity.x, this.#targetVelocity.y),
+      fishSpeedMps: Math.hypot(this.#targetVelocity.x, this.#targetVelocity.y) / pixelsPerMeter,
+      fishWonForceKg: dragFrame.fishWonForceKg,
+      fishWonYForceKg: dragFrame.fishWonYForceKg,
+      yAwayRatio: dragFrame.yAwayRatio,
+      activeRodHoldKgForEscape: Math.max(0, Number(activeRodHoldKg) || 0),
+      modelFishEscapeSpeedPxPerSec: speedPxPerSec,
+      modelFishEscapeVelocityX: modelVelocityX,
+      modelFishEscapeVelocityY: modelVelocityY,
+      dragBlockedForceKg: dragFrame.dragBlockedForceKg,
+      excessYForceKg: dragFrame.excessYForceKg,
+      dragSlowedYSpeedPxPerSec: dragFrame.dragSlowedYSpeedPxPerSec,
+      excessYSpeedPxPerSec: dragFrame.excessYSpeedPxPerSec,
       staminaRatio,
       staminaActivityMultiplier,
       exhaustionProgress,
@@ -235,6 +275,14 @@ class FishForceSystem {
       waterSpeedMultiplier: waterConfig.speedMultiplier,
       totalFishForceKg,
       opposition,
+      yAwayRatio,
+      fishWonForceKg: dragFrame.fishWonForceKg,
+      fishWonYForceKg: dragFrame.fishWonYForceKg,
+      dragBlockedForceKg: dragFrame.dragBlockedForceKg,
+      excessYForceKg: dragFrame.excessYForceKg,
+      modelFishEscapeSpeedPxPerSec: speedPxPerSec,
+      modelFishEscapeVelocityX: modelVelocityX,
+      modelFishEscapeVelocityY: modelVelocityY,
       awayFromPlayerRatio,
       effectiveDragRatio: playerData.effectiveDragRatio,
       linePullRatio: playerData.transferRatio,
@@ -328,6 +376,14 @@ class FishForceSystem {
       return { name: "away", multiplier: awayMultiplier };
     }
     return { name: "side", multiplier: sideMultiplier };
+  }
+
+  #calculateYAwayRatio(moveDir) {
+    const absX = Math.abs(Number(moveDir?.x) || 0);
+    const absY = Math.abs(Number(moveDir?.y) || 0);
+    const total = absX + absY;
+    if (total <= 0.000001) return 0;
+    return this.#clamp01(absY / total);
   }
 
   #lerp(a, b, t) {

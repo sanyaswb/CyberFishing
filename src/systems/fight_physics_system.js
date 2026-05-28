@@ -85,6 +85,7 @@ class FightPhysicsSystem {
       fishForceSystem,
       lineSystem,
       dragSystem,
+      rodPullSystem,
       fishCondition,
       buffs,
       playerMaxLoadKg: maxTackleLoadKg,
@@ -281,6 +282,7 @@ class FightPhysicsSystem {
     fishForceSystem,
     lineSystem,
     dragSystem,
+    rodPullSystem,
     fishCondition,
     buffs,
     playerMaxLoadKg,
@@ -288,6 +290,13 @@ class FightPhysicsSystem {
     const fishPosition = floatEntity.getPosition();
     const fishVelocity = floatEntity.getVelocity?.() || this.#velocityScratch.set(0, 0);
     const lineState = lineSystem.updateDistance(fishPosition, rodTipPosition);
+    const previousRodPullState = rodPullSystem?.getState?.() || {};
+    const activeRodHoldKg = input?.isPulling
+      ? Number(
+          previousRodPullState.effectiveForceKg ??
+            previousRodPullState.forceKg,
+        ) || 0
+      : 0;
     const landingPolicy = this.#landingPolicyResolver.resolve({ rod, reel });
     const landingDistanceMeters = landingPolicy.getLandingDistanceMeters({
       rod,
@@ -316,6 +325,8 @@ class FightPhysicsSystem {
       rod,
       reel,
       playerMaxLoadKg,
+      activeRodHoldKg,
+      lineHasReserve: this.#lineCanAbsorbEscape(lineState),
       env,
       buffs,
     });
@@ -455,6 +466,11 @@ class FightPhysicsSystem {
       landingDistanceMeters: forceData.landingDistanceMeters,
       movementBlocked:
         (rodStrokeMovementBlocked && !holdReelRecoverActive),
+      dragRatio: dragContext.clampedDrag,
+      dragLimitKg: dragContext.effectiveDragLimitKg,
+      dragLocked: dragContext.dragLocked,
+      dragSupported: dragContext.dragSupported,
+      lineHasReserve: this.#lineCanAbsorbEscape(lineStateBeforePull),
     });
     const rodStrokeMoveCapacityMeters =
       rodPullResult.active && !rodStrokeMovementBlocked
@@ -636,6 +652,9 @@ class FightPhysicsSystem {
       hardLineLimit: !!hardLineLimit,
       lineHasReserve,
       dragLocked: dragContext.dragLocked,
+      dragAlreadyResolved:
+        Number.isFinite(Number(fishRetrieveResult?.dragBlockedForceKg)),
+      shouldSlipDrag: !!fishRetrieveResult?.shouldSlipDrag,
       landingLift,
     });
   }
@@ -995,6 +1014,16 @@ class FightPhysicsSystem {
       fishTensionKg: fishRetrieveResult?.fishTensionKg ?? forceData.fishTensionKg,
       fishPassiveKg: fishRetrieveResult?.fishPassiveKg ?? forceData.fishPassiveKg,
       fishActiveKg: fishRetrieveResult?.fishActiveKg ?? forceData.fishActiveKg,
+      fishWonForceKg:
+        fishRetrieveResult?.fishWonForceKg ?? forceData.fishWonForceKg,
+      fishWonYForceKg:
+        fishRetrieveResult?.fishWonYForceKg ?? forceData.fishWonYForceKg,
+      yAwayRatio:
+        fishRetrieveResult?.yAwayRatio ?? forceData.yAwayRatio,
+      dragBlockedForceKg:
+        fishRetrieveResult?.dragBlockedForceKg ?? forceData.dragBlockedForceKg,
+      excessYForceKg:
+        fishRetrieveResult?.excessYForceKg ?? forceData.excessYForceKg,
       fishRetrieveUsefulPullForceKg: fishRetrieveResult?.effectiveRodHoldKg,
       fishRetrieveSpeedMps: fishRetrieveResult?.speedMps,
       simpleFightSpeedMps: fishRetrieveResult?.speedMps,
@@ -1081,7 +1110,8 @@ class FightPhysicsSystem {
       canDragHoldFish: forceData.player.canDragHoldFish,
       rodPullCanWinDistance: rodPullResult.canMoveFish,
       legacyCanWinDistance: forceData.player.legacyCanWinDistance,
-      shouldSlipDrag: forceData.player.shouldSlipDrag,
+      shouldSlipDrag:
+        fishRetrieveResult?.shouldSlipDrag ?? forceData.player.shouldSlipDrag,
       staminaPressureRatio: forceData.player.staminaPressureRatio,
       playerForceY: Math.abs(rodPullResult.forceKg),
       playerForceX: 0,
@@ -1119,6 +1149,10 @@ class FightPhysicsSystem {
   #lineHasReserve(lineState) {
     if (typeof lineState?.canReleaseLine === "boolean") return lineState.canReleaseLine;
     return (Number(lineState?.remainingMeters) || 0) > 0.001;
+  }
+
+  #lineCanAbsorbEscape(lineState) {
+    return this.#lineHasReserve(lineState) || !lineState?.isFullyExtended;
   }
 
   #applyRodPullMovement({

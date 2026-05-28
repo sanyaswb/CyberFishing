@@ -26,6 +26,7 @@ const FILES = [
   "src/config/runtime/immutable_config.js",
   "src/config/config.js",
   "src/core/fishing/simple_fight_force_calculator.js",
+  "src/core/fishing/drag_force_calculator.js",
   "src/core/fishing/landing_lift_tension_calculator.js",
   "src/core/fishing/line_tension_calculator.js",
   "src/core/fishing/rod_pull_state.js",
@@ -187,6 +188,81 @@ approx(dragSlipTension.tensionKg, 0.5, 0.0001, "drag caps final tension when lin
 approx(dragSlipTension.rawTotalTensionKg, 1.8, 0.0001, "drag keeps raw total tension for debug");
 approx(dragSlipTension.lineStressRatio, 0.25, 0.0001, "drag-capped line stress uses final tension");
 assert(dragSlipTension.shouldSlipDrag, "drag slip flag releases line");
+
+const dragForceCalculator = new DragForceCalculator();
+const openDragForce = dragForceCalculator.calculate({
+  fishOppositionKg: 0.28,
+  effectiveRodHoldKg: 0,
+  yAwayRatio: 1,
+  dragRatio: 0,
+  dragLimitKg: 0,
+  lineHasReserve: true,
+  dragLocked: false,
+  dragSupported: true,
+  targetYSpeedPxPerSec: -107.08,
+  waterMotionResistance: 1000,
+  waterSpeedMultiplier: 64,
+  fishBaseSpeed: 1,
+  fishStateSpeedMultiplier: 1,
+  pixelsPerMeter: 50,
+});
+approx(openDragForce.excessYForceKg, 0, 0.0001, "open drag has no excess force because it blocks nothing");
+approx(openDragForce.excessYSpeedPxPerSec, 0, 0.0001, "open drag does not double-count escape speed");
+approx(openDragForce.finalYSpeedPxPerSec, -107.08, 0.0001, "open drag keeps base fish-won Y speed");
+assert(!openDragForce.shouldSlipDrag, "open drag cannot be exceeded");
+
+const dragForce = dragForceCalculator.calculate({
+  fishOppositionKg: 0.78,
+  effectiveRodHoldKg: 0,
+  yAwayRatio: 1,
+  dragRatio: 0.5,
+  dragLimitKg: 0.5,
+  lineHasReserve: true,
+  dragLocked: false,
+  dragSupported: true,
+  targetYSpeedPxPerSec: -107.08,
+  waterMotionResistance: 1000,
+  waterSpeedMultiplier: 64,
+  fishBaseSpeed: 1,
+  fishStateSpeedMultiplier: 1,
+  pixelsPerMeter: 50,
+});
+approx(dragForce.fishWonForceKg, 0.78, 0.0001, "drag uses fish-won force as speed source");
+approx(dragForce.fishWonYForceKg, 0.78, 0.0001, "drag projects won force onto Y");
+approx(dragForce.dragBlockedForceKg, 0.5, 0.0001, "drag blocks only up to drag limit while line can slip");
+approx(dragForce.excessYForceKg, 0.28, 0.0001, "drag excess force remains available for escape speed");
+approx(dragForce.dragSlowedYSpeedPxPerSec, -53.54, 0.0001, "half drag halves base Y speed");
+const expectedExcessYSpeedPx = dragForceCalculator.speedFromForceKg({
+  forceKg: 0.28,
+  waterMotionResistance: 1000,
+  waterSpeedMultiplier: 64,
+  fishBaseSpeed: 1,
+  fishStateSpeedMultiplier: 1,
+  pixelsPerMeter: 50,
+});
+approx(
+  dragForce.finalYSpeedPxPerSec,
+  -53.54 - expectedExcessYSpeedPx,
+  0.0001,
+  "half drag combines slowed base Y speed with excess Y speed",
+);
+assert(dragForce.shouldSlipDrag, "fish-won Y excess marks drag slip");
+
+const resolvedDragTension = new TensionSystem().calculate({
+  fishTensionKg: dragForce.dragBlockedForceKg,
+  playerHoldTensionKg: 0.2,
+  totalTensionKg: dragForce.dragBlockedForceKg + 0.2,
+  rodLimitKg: 3,
+  lineLimitKg: 2,
+  hookLimitKg: 2,
+  dragLimitKg: 0.5,
+  lineHasReserve: true,
+  dragLocked: false,
+  dragAlreadyResolved: true,
+  shouldSlipDrag: dragForce.shouldSlipDrag,
+});
+approx(resolvedDragTension.tensionKg, 0.7, 0.0001, "resolved drag tension keeps blocked fish force plus player tension");
+assert(resolvedDragTension.shouldSlipDrag, "resolved drag tension keeps slip flag for line release");
 
 const rodPullWithOpenDrag = new RodPullCalculator({
   chargeTimeSeconds: 0.35,

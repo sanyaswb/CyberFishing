@@ -1,6 +1,15 @@
 # CyberFishing changelog
 
-## git
+## v0.19.8 - fish-won drag model
+
+- Added `DragForceCalculator` to share the fish-won-force drag split between escape speed and tension.
+- Changed fish escape speed to use `fishWonForceKg = max(0, fishOppositionKg - effectiveRodHoldKg)` instead of any total tension value.
+- Changed Y drag to split fish-won force into blocked drag force and excess escape force.
+- Changed resolved drag tension to preserve `dragBlockedForceKg + playerHoldTensionKg` instead of capping the whole total tension by drag.
+- Added debug/formula fields for fish-won force, fish-won Y force, blocked drag force and excess Y force.
+- Guarded open drag so 0% drag has no excess force/speed and cannot double-count fish-won speed.
+
+## v0.19.7 - authoritative fight movement
 
 - Removed agility-based velocity approach from `FightPhysicsSystem`; agility now smooths fish behavior state transitions only.
 - Added `WaterEntity.applyHookedFightMovement()` so hooked fight movement uses the simplified model target velocity directly.
@@ -64,42 +73,3 @@
 - Rod hold now charges from zero to `rodLimitKg - fishTensionKg`.
 - Effective rod hold works against fish movement while `holdTensionRatio` controls only the hold contribution to tension.
 - Final tension now comes from fish tension plus player hold tension.
-
-## v0.18.9 - simple fight force calculator
-
-- Added `SimpleFightForceCalculator` for the simplified fight force model.
-- Calculator now returns fish passive force, active force, opposition, rod hold max, hold tension, total tension, net force and movement speed.
-- Wired the calculator into browser script loading for the next fight pipeline step.
-
-## v0.18.8 — simplified fight configs
-
-- Added `physics.water` config for passive body resistance, motion resistance and speed multiplier.
-- Added `physics.fight.directionForce`, `physics.fight.rodHold` and `physics.fight.tension` config groups.
-- Added adapter read APIs for the new simplified fight config groups.
-- Added `holdTensionRatio` to rod `engineStats`.
-- Added fish profile `movementProfile.baseSpeed` plus behavior `forceMultiplier` and `speedMultiplier` aliases.
-- Updated config validation metadata for the new physics leaves.
-
-## v0.18.7 — stamina endurance split
-
-- Split fish condition resources into separate `maxStamina` and `maxEndurance` values.
-- Kept endurance on the weight/level formula and derived stamina as `endurance * staminaRatioFromEndurance`.
-- Added `CONFIG.stamina.fish.staminaRatioFromEndurance = 0.1`.
-- Updated fight force, stamina controller, renderer and debug console reads to use separate stamina/endurance maxima.
-
-## v0.18.6 — stamina weight scaling
-
-- Changed fish stamina to scale from `baseStamina + weightKg * 1000 * level`.
-- Removed stamina dependence on fish force `basePower` and `levelBasePower`.
-- Added `staminaBossMultiplier` support for last-level fish below their level average weight.
-- Passed level average weight into fight setup for generated and fixed debug catches.
-- Added fight-system checks for weight/level stamina scaling and boss stamina multiplier.
-
-## v0.18.5 — debug overlay simplification
-
-- Renamed `overlay_devtools_links.js` to `overlay_metric_inspector.js`.
-- Removed the unused `overlay_devtools_links_focus_patch.js` file.
-- Rendered fight-physics metric buttons directly from `overlay.js` instead of post-render DOM decoration.
-- Removed overlay metric `MutationObserver` and global inline-style DOM scans.
-- Added semantic debug overlay row/label/value classes and scoped metric button event handling.
-- Added overlay HTML caching and configurable `CONFIG.debug.overlayUpdateMs`.

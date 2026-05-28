@@ -34,6 +34,14 @@ class FishRetrieveResult {
     this.netForceKg = Number.isFinite(Number(data.netForceKg))
       ? Number(data.netForceKg)
       : 0;
+    this.fishWonForceKg = this.#positive(data.fishWonForceKg);
+    this.fishWonYForceKg = this.#positive(data.fishWonYForceKg);
+    this.yAwayRatio = this.#ratio(data.yAwayRatio ?? 1);
+    this.dragBlockedForceKg = this.#positive(
+      data.dragBlockedForceKg ?? data.fishTensionKg,
+    );
+    this.excessYForceKg = this.#positive(data.excessYForceKg);
+    this.shouldSlipDrag = !!data.shouldSlipDrag;
     this.speedMps = this.#positive(data.speedMps);
     this.towardPlayerSpeedMps = this.#positive(data.towardPlayerSpeedMps);
     this.awaySpeedMps = this.#positive(data.awaySpeedMps);

@@ -78,17 +78,17 @@ class OverlayMetricFormulaCatalog {
         paths: ["CONFIG.physics.fight.tension.movableHoldTensionCapRatio"],
       },
       "Net force": {
-        formula: "netForceKg = effectiveRodHoldKg - fishOppositionKg",
+        formula: "fishWonForceKg = max(0, fishOppositionKg - effectiveRodHoldKg)",
         description: "Чиста різниця сил. >0 перемагає гравець, <0 перемагає риба.",
         paths: ["DEBUG_DATA.effectiveRodHoldKg", "DEBUG_DATA.fishOppositionKg"],
       },
       "Winner": {
-        formula: "winner = sign(netForceKg)",
+        formula: "winner = sign(effectiveRodHoldKg - fishOppositionKg)",
         description: "Хто зараз рухає систему: player/fish/balanced.",
         paths: ["DEBUG_DATA.netForceKg"],
       },
       "Water resistance": {
-        formula: "speedMps = sqrt(abs(netForceKg) / waterMotionResistance) * waterSpeedMultiplier",
+        formula: "escapeSpeed = sqrt(fishWonForceKg / waterMotionResistance) * waterSpeedMultiplier",
         description: "Глобальний уповільнювач руху у воді.",
         paths: ["CONFIG.physics.water.motionResistance"],
       },

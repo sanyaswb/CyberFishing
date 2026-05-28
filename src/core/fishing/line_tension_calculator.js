@@ -15,6 +15,8 @@ class LineTensionCalculator {
     hardLineLimit,
     lineHasReserve,
     dragLocked,
+    dragAlreadyResolved = false,
+    shouldSlipDrag = false,
   } = {}) {
     const directTotal = Number(totalTensionKg);
     const fishForce = Math.max(0, Number(fishForceKg) || 0);
@@ -29,6 +31,20 @@ class LineTensionCalculator {
       ? playerHoldTensionKg
       : pullForce;
     const dragLimit = Math.max(0, Number(dragLimitKg) || 0);
+    if (dragAlreadyResolved) {
+      return this.#result({
+        tensionKg: rawTension,
+        rawTensionKg: rawTension,
+        fishTensionKg: resolvedFishTension,
+        playerHoldTensionKg: resolvedPlayerTension,
+        rodLimitKg,
+        lineLimitKg,
+        hookLimitKg,
+        shouldSlipDrag,
+        mode: shouldSlipDrag ? "drag_resolved_slip" : "drag_resolved",
+      });
+    }
+
     const canSlip = !dragLocked && !!lineHasReserve && rawTension > dragLimit;
 
     if (canSlip) {
