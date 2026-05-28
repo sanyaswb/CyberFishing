@@ -112,6 +112,7 @@ if (fishWonForceKg > 0) {
 
 `stateSpeedMultiplier` affects movement speed only. It does not add tension.
 Fish escape speed is based on clean fish-won force, never on `totalTensionKg`.
+`yAwayRatio` is the absolute normalized Y component of fish movement, so a 45 degree escape projects about 0.707 of fish-won force onto Y.
 
 ## 7.1. Y drag escape
 
@@ -133,6 +134,7 @@ finalYSpeedPx = lineCanSlip
 ```
 
 Implementation note: the zero-drag case has no excess force because an open drag blocks nothing and therefore cannot be exceeded.
+Debug note: `PlayerForceSystem` exposes drag limits only. Runtime drag effect is read from `dragRatio`, `dragLimitKg`, `fishWonYForceKg`, `dragBlockedForceKg`, `excessYForceKg` and `finalYSpeedPxPerSec`.
 
 ## 8. Reel hold
 

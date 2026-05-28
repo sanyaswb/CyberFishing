@@ -68,52 +68,18 @@ class PlayerForceSystem {
       buffs,
     });
 
-    const fishForceKg = Math.max(0.001, Number(totalFishForceKg) || 0.001);
     const clampedDrag = this.#clamp01(dragRatio);
     const rawDragLimitKg = reelHasDrag
       ? this.#calculateDragLimitKg(reel, clampedDrag)
       : maxPlayerForceKg;
     const effectiveDragLimitKg = reelHasDrag ? rawDragLimitKg : maxPlayerForceKg;
-    const dragHoldRatio = reelHasDrag
-      ? this.#clamp01(effectiveDragLimitKg / fishForceKg)
-      : 1;
-    const tackleRestrainRatio = this.#clamp01(maxPlayerForceKg / fishForceKg);
-    const isDragLocked = !reelHasDrag;
-    const canDragHoldFish = !reelHasDrag || effectiveDragLimitKg >= fishForceKg;
-    const pullCapacityKg = reelHasDrag
-      ? Math.min(maxPlayerForceKg, effectiveDragLimitKg)
-      : maxPlayerForceKg;
-
-    const transferRatio = reelHasDrag ? dragHoldRatio : tackleRestrainRatio;
-    const shouldSlipDrag = reelHasDrag && effectiveDragLimitKg < fishForceKg;
-    const staminaPressureRatio = isPlayerPulling
-      ? (hasReel ? dragHoldRatio : tackleRestrainRatio)
-      : 0;
-
-    // PlayerForceSystem більше не вирішує, чи рухати рибу до берега.
-    // Це є відповідальністю RodPullSystem. Старі поля лишаються тільки як
-    // compatibility/debug read-model, щоб не зламати overlay та старі checks.
-    const legacyCanWinDistance = isPlayerPulling && canDragHoldFish && pullCapacityKg > fishForceKg;
-    const legacyNetPullKg = legacyCanWinDistance ? pullCapacityKg - fishForceKg : 0;
-    const legacyEffectivePullKg = isPlayerPulling ? pullCapacityKg : 0;
 
     this.#playerVector.set(0, 0);
 
     const forceContext = {
-      movementAuthority: "rod_pull_system",
       maxTackleLoadKg: maxPlayerForceKg,
-      pullCapacityKg,
-      transferRatio,
-      restrainRatio: tackleRestrainRatio,
-      dragHoldRatio,
-      effectiveDragRatio: transferRatio,
       dragLimitKg: Number.isFinite(rawDragLimitKg) ? rawDragLimitKg : effectiveDragLimitKg,
       effectiveDragLimitKg,
-      dragLocked: isDragLocked,
-      hasReel,
-      canDragHoldFish,
-      shouldSlipDrag,
-      staminaPressureRatio,
       anglePenalty,
       angleStressRatio,
       angleDeg,
@@ -128,15 +94,6 @@ class PlayerForceSystem {
       // Active player movement is owned by RodPullSystem.
       vector: this.#playerVector,
       pullDir: basePullDir,
-
-      legacyReadModel: {
-        canWinDistance: legacyCanWinDistance,
-        netPullKg: legacyNetPullKg,
-        effectivePullKg: legacyEffectivePullKg,
-      },
-      legacyCanWinDistance,
-      legacyNetPullKg,
-      legacyEffectivePullKg,
     };
   }
 

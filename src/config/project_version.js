@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.19.8";
+const CURRENT_PROJECT_VERSION = "0.19.9";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,7 +13,7 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "fish-won-drag-model",
+  codename: "drag-debug-cleanup",
   updatedAt: "2026-05-28",
   notes: Object.freeze([
     "Modular fish database categories",
@@ -49,6 +49,9 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
     "Drag escape speed now uses fishWonForceKg instead of total tension",
     "Reel drag tension now comes from blocked fish-won Y force plus player hold tension",
     "Open drag has no excess force/speed because it blocks nothing",
+    "Y drag projection uses the normalized movement Y component",
+    "PlayerForceSystem no longer exposes legacy drag read-model fields",
+    "Drag debug now reports blocked force, excess force and final Y speed from DragForceCalculator",
   ]),
 });
 

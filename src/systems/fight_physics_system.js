@@ -378,9 +378,7 @@ class FightPhysicsSystem {
     const effectiveDragLimitKg = Number.isFinite(Number(player.effectiveDragLimitKg))
       ? Number(player.effectiveDragLimitKg)
       : fallbackDragLimitKg;
-    const dragLocked = typeof player.dragLocked === "boolean"
-      ? player.dragLocked
-      : (!dragSupported);
+    const dragLocked = !dragSupported;
 
     return {
       clampedDrag,
@@ -1094,25 +1092,27 @@ class FightPhysicsSystem {
       rodMaxLoadKg: stressSystem.getEffectiveRodMaxLoadKg?.() || 0,
       lineMaxLoadKg: stressSystem.getEffectiveLineSystemMaxLoadKg?.() || 0,
       hookMaxLoadKg: stressSystem.getEffectiveHookMaxLoadKg?.() || 0,
-      movementAuthority: forceData.player.movementAuthority,
       playerForceKg: forceData.player.forceKg,
       activeEffectivePullKg: fishRetrieveResult?.effectiveRodHoldKg ?? 0,
       activeNetPullKg: Math.max(0, Number(fishRetrieveResult?.netForceKg) || 0),
-      pullCapacityKg: forceData.player.pullCapacityKg,
       effectivePullKg: fishRetrieveResult?.usefulPullForceKg ?? 0,
       netPullKg: fishRetrieveResult?.netForceKg ?? 0,
-      legacyEffectivePullKg: forceData.player.legacyEffectivePullKg,
-      legacyNetPullKg: forceData.player.legacyNetPullKg,
       dragLimitKg: dragContext.effectiveDragLimitKg,
       rawDragLimitKg: forceData.player.dragLimitKg,
       dragLocked: dragContext.dragLocked,
-      dragHoldRatio: forceData.player.dragHoldRatio,
-      canDragHoldFish: forceData.player.canDragHoldFish,
       rodPullCanWinDistance: rodPullResult.canMoveFish,
-      legacyCanWinDistance: forceData.player.legacyCanWinDistance,
-      shouldSlipDrag:
-        fishRetrieveResult?.shouldSlipDrag ?? forceData.player.shouldSlipDrag,
-      staminaPressureRatio: forceData.player.staminaPressureRatio,
+      shouldSlipDrag: !!fishRetrieveResult?.shouldSlipDrag,
+      staminaPressureRatio:
+        isPullMode && Number(fishRetrieveResult?.fishWonYForceKg) > 0
+          ? Math.max(
+              0,
+              Math.min(
+                1,
+                (Number(fishRetrieveResult?.dragBlockedForceKg) || 0) /
+                  Number(fishRetrieveResult.fishWonYForceKg),
+              ),
+            )
+          : forceData.staminaPressureRatio ?? 0,
       playerForceY: Math.abs(rodPullResult.forceKg),
       playerForceX: 0,
       fishForceY: Math.abs(forceData.totalFishForceKg * (forceData.targetVelocity.y < 0 ? -1 : 1)),

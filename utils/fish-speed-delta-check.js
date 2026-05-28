@@ -372,15 +372,6 @@ class FishSpeedDeltaProbe {
             dtSec,
           });
     const fightMovementDampingApplied = !!debug.fightMovementDampingApplied;
-    const minEscape =
-      config.fightPhysicsConfig.getReelDragConfig?.().yEscapeSpeedAtFullDrag ??
-      0.02;
-    const escapeSpeedMultiplier =
-      1 -
-      (Number(debug.effectiveDragRatio) || 0) *
-        (Number(debug.awayFromPlayerRatio) || 0) *
-        (1 - minEscape);
-    const appliedEscapeMultiplier = Math.max(minEscape, escapeSpeedMultiplier);
     const ratio = actualPxPerSec > 0 ? modelPxPerSec / actualPxPerSec : 0;
 
     return {
@@ -404,8 +395,10 @@ class FishSpeedDeltaProbe {
       activeKg: this.#round(debug.fishActiveKg, 4),
       oppositionKg: this.#round(debug.fishOppositionKg, 4),
       dragRatio: this.#round(debug.dragRatio, 3),
-      effectiveDragRatio: this.#round(debug.effectiveDragRatio, 3),
-      dragEscapeMultiplier: this.#round(appliedEscapeMultiplier, 3),
+      fishWonYForceKg: this.#round(debug.fishWonYForceKg, 4),
+      dragBlockedForceKg: this.#round(debug.dragBlockedForceKg, 4),
+      excessYForceKg: this.#round(debug.excessYForceKg, 4),
+      finalYSpeedPxPerSec: this.#round(debug.finalYSpeedPxPerSec, 3),
       agility: this.#round(agility, 3),
       stateTransitionApproachPerFrame: this.#round(approach, 4),
       genericVelocityDampingPerFrame: this.#round(currentDamping, 4),
@@ -449,7 +442,7 @@ class FishSpeedDeltaProbe {
         "actualPxPerSec should match overlayModelPxPerSec when drag is 0 and line is unconstrained",
         "agility is still reported as state transition smoothing only; it must not damp stable fight movement",
         "generic WaterEntity damping is still reported for diagnostics but must not apply to hooked fight movement",
-        "dragEscapeMultiplier shows the drag/friction effect; at drag 0 it should stay 1",
+        "drag effect is reported as fishWonYForceKg, dragBlockedForceKg, excessYForceKg and finalYSpeedPxPerSec",
         "lineReleasedThisFrameM and lineConstrained show whether line release/constraint changed real movement",
       ],
     };

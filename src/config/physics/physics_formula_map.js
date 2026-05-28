@@ -76,7 +76,7 @@ const PHYSICS_FORMULA_MAP = Object.freeze({
 
   dragForce: Object.freeze({
     title: "Drag force split",
-    formula: "fishWonYForceKg = fishWonForceKg * yAwayRatio; dragBlockedForceKg = lineCanSlip ? min(fishWonYForceKg, dragLimitKg) : fishWonYForceKg; excessYForceKg = dragCanBeExceeded ? max(0, fishWonYForceKg - dragLimitKg) : 0",
+    formula: "fishWonYForceKg = fishWonForceKg * yAwayRatio; dragBlockedForceKg = lineCanSlip ? min(fishWonYForceKg, dragLimitKg) : fishWonYForceKg; excessYForceKg = dragCanBeExceeded ? max(0, fishWonYForceKg - dragLimitKg) : 0; finalYSpeedPxPerSec = dragSlowedYSpeedPxPerSec + excessYSpeedPxPerSec",
     sources: Object.freeze([
       "fishWonForceKg",
       "yAwayRatio",
@@ -84,7 +84,7 @@ const PHYSICS_FORMULA_MAP = Object.freeze({
       "dragRatio",
       "line reserve / extension state",
     ]),
-    outputs: Object.freeze(["dragBlockedForceKg", "excessYForceKg", "shouldSlipDrag"]),
+    outputs: Object.freeze(["dragBlockedForceKg", "excessYForceKg", "finalYSpeedPxPerSec", "shouldSlipDrag"]),
   }),
 
   reelHold: Object.freeze({

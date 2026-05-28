@@ -248,6 +248,29 @@ approx(
 );
 assert(dragForce.shouldSlipDrag, "fish-won Y excess marks drag slip");
 
+const diagonalDragForce = dragForceCalculator.calculate({
+  fishOppositionKg: 1,
+  effectiveRodHoldKg: 0,
+  yAwayRatio: Math.SQRT1_2,
+  dragRatio: 0.5,
+  dragLimitKg: 0.5,
+  lineHasReserve: true,
+  dragLocked: false,
+  dragSupported: true,
+  targetYSpeedPxPerSec: -75,
+  waterMotionResistance: 1000,
+  waterSpeedMultiplier: 64,
+  fishBaseSpeed: 1,
+  fishStateSpeedMultiplier: 1,
+  pixelsPerMeter: 50,
+});
+approx(
+  diagonalDragForce.fishWonYForceKg,
+  Math.SQRT1_2,
+  0.0001,
+  "45 degree drag projection uses normalized Y component",
+);
+
 const resolvedDragTension = new TensionSystem().calculate({
   fishTensionKg: dragForce.dragBlockedForceKg,
   playerHoldTensionKg: 0.2,

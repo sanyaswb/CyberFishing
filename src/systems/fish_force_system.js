@@ -140,6 +140,9 @@ class FishForceSystem {
       playerMaxLoadKg,
       dragRatio,
     });
+    const hasReel = !!reel?.hasReel?.();
+    const dragSupported = hasReel && reel?.hasDrag?.() !== false;
+    const dragLocked = !dragSupported;
 
     const awayFromPlayerRatio = Math.max(0, moveDir.x * awayDir.x + moveDir.y * awayDir.y);
     const yAwayRatio = this.#calculateYAwayRatio(moveDir);
@@ -176,8 +179,8 @@ class FishForceSystem {
       dragRatio: this.#clamp01(dragRatio),
       dragLimitKg: playerData.effectiveDragLimitKg,
       lineHasReserve,
-      dragLocked: playerData.dragLocked,
-      dragSupported: playerData.hasReel && !playerData.dragLocked,
+      dragLocked,
+      dragSupported,
       targetXSpeedPxPerSec: modelVelocityX,
       targetYSpeedPxPerSec: modelVelocityY,
       waterMotionResistance: waterConfig.motionResistance,
@@ -191,6 +194,10 @@ class FishForceSystem {
       dragFrame.finalXSpeedPxPerSec,
       dragFrame.finalYSpeedPxPerSec,
     );
+    const staminaPressureRatio =
+      playerData.isPulling && dragFrame.fishWonYForceKg > 0
+        ? this.#clamp01(dragFrame.dragBlockedForceKg / dragFrame.fishWonYForceKg)
+        : 0;
 
     this.#debug = {
       fishState: behavior.name,
@@ -215,10 +222,17 @@ class FishForceSystem {
       modelFishEscapeSpeedPxPerSec: speedPxPerSec,
       modelFishEscapeVelocityX: modelVelocityX,
       modelFishEscapeVelocityY: modelVelocityY,
+      targetXSpeedPxPerSec: dragFrame.targetXSpeedPxPerSec,
+      targetYSpeedPxPerSec: dragFrame.targetYSpeedPxPerSec,
+      finalXSpeedPxPerSec: dragFrame.finalXSpeedPxPerSec,
+      finalYSpeedPxPerSec: dragFrame.finalYSpeedPxPerSec,
       dragBlockedForceKg: dragFrame.dragBlockedForceKg,
       excessYForceKg: dragFrame.excessYForceKg,
       dragSlowedYSpeedPxPerSec: dragFrame.dragSlowedYSpeedPxPerSec,
       excessYSpeedPxPerSec: dragFrame.excessYSpeedPxPerSec,
+      dragCanBeExceeded: dragFrame.dragCanBeExceeded,
+      shouldSlipDrag: dragFrame.shouldSlipDrag,
+      staminaPressureRatio,
       staminaRatio,
       staminaActivityMultiplier,
       exhaustionProgress,
@@ -228,22 +242,10 @@ class FishForceSystem {
       fishDirectionState: directionInfo.name,
       awayFromPlayerRatio,
       dragRatio: this.#clamp01(dragRatio),
-      effectiveDragRatio: playerData.effectiveDragRatio,
       dragLimitKg: playerData.dragLimitKg,
       effectiveDragLimitKg: playerData.effectiveDragLimitKg,
-      dragLocked: playerData.dragLocked,
-      hasReel: playerData.hasReel,
-      dragHoldRatio: playerData.dragHoldRatio,
-      canDragHoldFish: playerData.canDragHoldFish,
-      movementAuthority: playerData.movementAuthority,
-      legacyCanWinDistance: playerData.legacyCanWinDistance,
-      shouldSlipDrag: playerData.shouldSlipDrag,
-      staminaPressureRatio: playerData.staminaPressureRatio,
-      pullCapacityKg: playerData.pullCapacityKg,
-      legacyNetPullKg: playerData.legacyNetPullKg,
-      legacyEffectivePullKg: playerData.legacyEffectivePullKg,
-      restrainRatio: playerData.restrainRatio,
-      transferRatio: playerData.transferRatio,
+      dragLocked,
+      hasReel,
       anglePenalty: playerData.anglePenalty,
       angleStressRatio: playerData.angleStressRatio,
       angleDeg: playerData.angleDeg,
@@ -280,12 +282,14 @@ class FishForceSystem {
       fishWonYForceKg: dragFrame.fishWonYForceKg,
       dragBlockedForceKg: dragFrame.dragBlockedForceKg,
       excessYForceKg: dragFrame.excessYForceKg,
+      finalXSpeedPxPerSec: dragFrame.finalXSpeedPxPerSec,
+      finalYSpeedPxPerSec: dragFrame.finalYSpeedPxPerSec,
+      shouldSlipDrag: dragFrame.shouldSlipDrag,
+      staminaPressureRatio,
       modelFishEscapeSpeedPxPerSec: speedPxPerSec,
       modelFishEscapeVelocityX: modelVelocityX,
       modelFishEscapeVelocityY: modelVelocityY,
       awayFromPlayerRatio,
-      effectiveDragRatio: playerData.effectiveDragRatio,
-      linePullRatio: playerData.transferRatio,
       player: playerData,
       debug: this.#debug,
     };
@@ -379,11 +383,7 @@ class FishForceSystem {
   }
 
   #calculateYAwayRatio(moveDir) {
-    const absX = Math.abs(Number(moveDir?.x) || 0);
-    const absY = Math.abs(Number(moveDir?.y) || 0);
-    const total = absX + absY;
-    if (total <= 0.000001) return 0;
-    return this.#clamp01(absY / total);
+    return this.#clamp01(Math.abs(Number(moveDir?.y) || 0));
   }
 
   #lerp(a, b, t) {
