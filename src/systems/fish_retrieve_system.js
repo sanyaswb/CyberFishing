@@ -84,10 +84,9 @@ class FishRetrieveSystem {
 
     rodPullResult.effectiveForceKg = frame.effectiveRodHoldKg;
     rodPullResult.playerHoldTensionKg = frame.playerHoldTensionKg;
-    rodPullResult.totalTensionKg =
-      dragFrame.dragBlockedForceKg + frame.playerHoldTensionKg;
+    rodPullResult.totalTensionKg = frame.totalTensionKg;
     rodPullResult.rodHoldMaxKg = frame.rodHoldMaxKg;
-    rodPullResult.fishTensionKg = dragFrame.dragBlockedForceKg;
+    rodPullResult.fishTensionKg = frame.fishTensionKg;
 
     return new FishRetrieveResult({
       holdRatio: this.#resolveHoldRatio(rodPullResult),
@@ -95,7 +94,7 @@ class FishRetrieveSystem {
       fishPassiveKg: frame.fishPassiveKg,
       fishActiveKg: frame.fishActiveKg,
       fishOppositionKg: frame.fishOppositionKg,
-      fishTensionKg: dragFrame.dragBlockedForceKg,
+      fishTensionKg: frame.fishTensionKg,
       rodHoldMaxKg: frame.rodHoldMaxKg,
       effectiveRodHoldKg: frame.effectiveRodHoldKg,
       rawPlayerHoldTensionKg: frame.rawPlayerHoldTensionKg,
@@ -104,7 +103,7 @@ class FishRetrieveSystem {
       movableHoldTensionCapApplied: frame.movableHoldTensionCapApplied,
       fishCanMoveTowardPlayer: true,
       playerHoldTensionKg: frame.playerHoldTensionKg,
-      totalTensionKg: dragFrame.dragBlockedForceKg + frame.playerHoldTensionKg,
+      totalTensionKg: frame.totalTensionKg,
       netForceKg: frame.netForceKg,
       fishWonForceKg: dragFrame.fishWonForceKg,
       fishWonYForceKg: dragFrame.fishWonYForceKg,

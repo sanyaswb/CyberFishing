@@ -272,9 +272,9 @@ approx(
 );
 
 const resolvedDragTension = new TensionSystem().calculate({
-  fishTensionKg: dragForce.dragBlockedForceKg,
+  fishTensionKg: 0.78,
   playerHoldTensionKg: 0.2,
-  totalTensionKg: dragForce.dragBlockedForceKg + 0.2,
+  totalTensionKg: 0.98,
   rodLimitKg: 3,
   lineLimitKg: 2,
   hookLimitKg: 2,
@@ -284,8 +284,50 @@ const resolvedDragTension = new TensionSystem().calculate({
   dragAlreadyResolved: true,
   shouldSlipDrag: dragForce.shouldSlipDrag,
 });
-approx(resolvedDragTension.tensionKg, 0.7, 0.0001, "resolved drag tension keeps blocked fish force plus player tension");
+approx(resolvedDragTension.tensionKg, 0.98, 0.0001, "resolved drag tension keeps fish opposition plus player tension");
 assert(resolvedDragTension.shouldSlipDrag, "resolved drag tension keeps slip flag for line release");
+
+const holdWinsRetrieve = new FishRetrieveSystem({
+  getWaterConfig: () => ({
+    tautBodyResistancePerKg: 0.2,
+    motionResistance: 1000,
+    speedMultiplier: 64,
+  }),
+  getFightTensionConfig: () => ({
+    movableHoldTensionCapRatio: 10,
+  }),
+  getPixelsPerMeter: () => 50,
+}).calculate({
+  dtSec: 1 / 30,
+  rodPullResult: {
+    active: true,
+    forceKg: 0.4,
+    rodLimitKg: 3,
+    holdTensionRatio: 0.5,
+    holdRatio: 1,
+  },
+  forceData: {
+    fishWeightKg: 0.8,
+    fishBasePower: 0.5,
+    fishBaseSpeed: 2,
+    fishStateForceMultiplier: 1,
+    fishStateSpeedMultiplier: 1,
+    directionResistanceMultiplier: 2.5,
+    yAwayRatio: 1,
+    player: { anglePenalty: 1 },
+    modelFishEscapeVelocityX: 0,
+    modelFishEscapeVelocityY: -107.08,
+  },
+  dragRatio: 0.5,
+  dragLimitKg: 0.5,
+  lineHasReserve: true,
+});
+approx(holdWinsRetrieve.fishOppositionKg, 0.28, 0.0001, "hold-wins case keeps fish opposition");
+approx(holdWinsRetrieve.fishWonForceKg, 0, 0.0001, "hold-wins case has no fish escape force");
+approx(holdWinsRetrieve.dragBlockedForceKg, 0, 0.0001, "hold-wins case has no drag-blocked escape force");
+approx(holdWinsRetrieve.fishTensionKg, 0.28, 0.0001, "hold-wins case keeps fish tension from opposition");
+approx(holdWinsRetrieve.playerHoldTensionKg, 0.2, 0.0001, "hold-wins case keeps player hold tension");
+approx(holdWinsRetrieve.totalTensionKg, 0.48, 0.0001, "hold-wins case total tension is fish plus player tension");
 
 const rodPullWithOpenDrag = new RodPullCalculator({
   chargeTimeSeconds: 0.35,

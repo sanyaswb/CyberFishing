@@ -55,7 +55,7 @@ const PHYSICS_FORMULA_MAP = Object.freeze({
 
   totalTension: Object.freeze({
     title: "Total tension and equipment stress",
-    formula: "totalTensionKg = dragBlockedForceKg + playerHoldTensionKg; stress = totalTensionKg / equipmentLimitKg",
+    formula: "fishTensionKg = lineSlack ? 0 : fishOppositionKg; totalTensionKg = fishTensionKg + playerHoldTensionKg; stress = totalTensionKg / equipmentLimitKg",
     sources: Object.freeze(["fishTensionKg", "playerHoldTensionKg", "rod/line/hook limits"]),
     outputs: Object.freeze(["totalTensionKg", "rodStressRatio", "lineStressRatio", "hookStressRatio"]),
   }),

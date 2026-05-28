@@ -72,20 +72,15 @@ When movement is blocked, full raw hold tension loads the tackle.
 ## 6. Drag blocked force, total tension and stress
 
 ```js
-fishWonForceKg = Math.max(0, fishOppositionKg - effectiveRodHoldKg);
-fishWonYForceKg = fishWonForceKg * yAwayRatio;
+fishTensionKg = lineSlack ? 0 : fishOppositionKg;
+totalTensionKg = fishTensionKg + playerHoldTensionKg;
 
-dragBlockedForceKg = lineCanSlip
-  ? Math.min(fishWonYForceKg, dragLimitKg)
-  : fishWonYForceKg;
-
-totalTensionKg = dragBlockedForceKg + playerHoldTensionKg;
 rodStressRatio = totalTensionKg / rodLimitKg;
 lineStressRatio = totalTensionKg / lineLimitKg;
 hookStressRatio = totalTensionKg / hookLimitKg;
 ```
 
-Meaning: drag tension comes from the part of fish-won Y force that the reel actually blocks.
+Meaning: fish-won force controls escape movement and drag slip, but it does not replace fish tension.
 `totalTensionKg` is for tackle stress only; it is not a speed source.
 
 ## 7. Movement winner and speed

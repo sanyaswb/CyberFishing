@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.19.10 - fish tension separation
+
+- Fixed fish tension so it stays based on `fishOppositionKg` instead of dropping to `dragBlockedForceKg` when player hold wins.
+- Kept `fishWonForceKg` as the escape-speed and drag-slip source only.
+- Added a regression check for the hold-wins case where fish escape force is zero but total tension remains fish opposition plus player hold tension.
+- Updated formula docs so `totalTensionKg = fishTensionKg + playerHoldTensionKg`.
+
 ## v0.19.9 - drag debug cleanup
 
 - Removed legacy drag read-model fields from `PlayerForceSystem` and fight debug output.
@@ -12,7 +19,7 @@
 - Added `DragForceCalculator` to share the fish-won-force drag split between escape speed and tension.
 - Changed fish escape speed to use `fishWonForceKg = max(0, fishOppositionKg - effectiveRodHoldKg)` instead of any total tension value.
 - Changed Y drag to split fish-won force into blocked drag force and excess escape force.
-- Changed resolved drag tension to preserve `dragBlockedForceKg + playerHoldTensionKg` instead of capping the whole total tension by drag.
+- Added resolved drag tension diagnostics for blocked drag force and player hold tension.
 - Added debug/formula fields for fish-won force, fish-won Y force, blocked drag force and excess Y force.
 - Guarded open drag so 0% drag has no excess force/speed and cannot double-count fish-won speed.
 - Changed Y drag projection to use the normalized movement Y component, so 45 degree movement contributes about 0.707 instead of 0.5.
