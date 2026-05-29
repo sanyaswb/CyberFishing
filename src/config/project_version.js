@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.19.11";
+const CURRENT_PROJECT_VERSION = "0.19.12";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,7 +13,7 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "opposition-hold-cap",
+  codename: "drag-threshold-y-model",
   updatedAt: "2026-05-28",
   notes: Object.freeze([
     "Modular fish database categories",
@@ -54,6 +54,8 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
     "Drag debug now reports blocked force, excess force and final Y speed from DragForceCalculator",
     "Fish tension stays based on fish opposition while fishWonForceKg controls escape movement only",
     "Movable hold tension cap now scales from current fish opposition",
+    "Reel drag is now a Y-force threshold: Y escape starts only from fish-won Y force above drag limit",
+    "Open drag blocks no Y force, while exhausted line reserve blocks all Y escape into tension",
   ]),
 });
 

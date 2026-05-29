@@ -41,6 +41,7 @@ class FishRetrieveResult {
       data.dragBlockedForceKg ?? data.fishTensionKg,
     );
     this.excessYForceKg = this.#positive(data.excessYForceKg);
+    this.yEscapeForceKg = this.#positive(data.yEscapeForceKg ?? data.excessYForceKg);
     this.shouldSlipDrag = !!data.shouldSlipDrag;
     this.speedMps = this.#positive(data.speedMps);
     this.towardPlayerSpeedMps = this.#positive(data.towardPlayerSpeedMps);

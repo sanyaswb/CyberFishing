@@ -114,22 +114,29 @@ Fish escape speed is based on clean fish-won force, never on `totalTensionKg`.
 ```js
 dragLimitKg = reelDragMaxKg * dragRatio;
 fishWonYForceKg = fishWonForceKg * yAwayRatio;
-dragCanBeExceeded = dragRatio > 0 && dragLimitKg > 0;
-excessYForceKg = dragCanBeExceeded
-  ? Math.max(0, fishWonYForceKg - dragLimitKg)
+activeDrag = dragRatio > 0 && dragLimitKg > 0;
+
+// Threshold drag model:
+// - open drag blocks nothing;
+// - active drag blocks Y escape up to its kg limit;
+// - only force above that kg limit becomes Y movement;
+// - if the line cannot slip, Y escape is blocked and all won Y force loads the line.
+dragBlockedForceKg = lineCanSlip
+  ? activeDrag ? Math.min(fishWonYForceKg, dragLimitKg) : 0
+  : fishWonYForceKg;
+
+yEscapeForceKg = lineCanSlip
+  ? activeDrag ? Math.max(0, fishWonYForceKg - dragLimitKg) : fishWonYForceKg
   : 0;
 
-dragSlowedYSpeedPx = targetYSpeedPx * (1 - dragRatio);
-excessYSpeedPx = speedFromForce(excessYForceKg) * Math.sign(targetYSpeedPx);
+excessYForceKg = yEscapeForceKg;
+excessYSpeedPx = speedFromForce(yEscapeForceKg) * Math.sign(targetYSpeedPx);
 
 finalXSpeedPx = targetXSpeedPx;
-finalYSpeedPx = lineCanSlip
-  ? dragSlowedYSpeedPx + excessYSpeedPx
-  : 0;
+finalYSpeedPx = lineCanSlip ? excessYSpeedPx : 0;
 ```
 
-Implementation note: the zero-drag case has no excess force because an open drag blocks nothing and therefore cannot be exceeded.
-Debug note: `PlayerForceSystem` exposes drag limits only. Runtime drag effect is read from `dragRatio`, `dragLimitKg`, `fishWonYForceKg`, `dragBlockedForceKg`, `excessYForceKg` and `finalYSpeedPxPerSec`.
+Debug note: runtime drag effect is read from `dragRatio`, `dragLimitKg`, `fishWonYForceKg`, `dragBlockedForceKg`, `yEscapeForceKg`, `excessYForceKg` and `finalYSpeedPxPerSec`. Active drag is a force threshold: Y movement starts only from fish-won Y force above the drag limit. Open drag blocks nothing, so the full fish-won Y force becomes escape speed.
 
 ## 8. Reel hold
 

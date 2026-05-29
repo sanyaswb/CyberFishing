@@ -1022,6 +1022,8 @@ class FightPhysicsSystem {
         fishRetrieveResult?.dragBlockedForceKg ?? forceData.dragBlockedForceKg,
       excessYForceKg:
         fishRetrieveResult?.excessYForceKg ?? forceData.excessYForceKg,
+      yEscapeForceKg:
+        fishRetrieveResult?.yEscapeForceKg ?? forceData.yEscapeForceKg,
       fishRetrieveUsefulPullForceKg: fishRetrieveResult?.effectiveRodHoldKg,
       fishRetrieveSpeedMps: fishRetrieveResult?.speedMps,
       simpleFightSpeedMps: fishRetrieveResult?.speedMps,

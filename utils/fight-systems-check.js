@@ -228,14 +228,44 @@ const openDragForce = dragForceCalculator.calculate({
   targetYSpeedPxPerSec: -107.08,
   waterMotionResistance: 1000,
   waterSpeedMultiplier: 64,
-  fishBaseSpeed: 1,
+  fishBaseSpeed: 2,
   fishStateSpeedMultiplier: 1,
   pixelsPerMeter: 50,
 });
-approx(openDragForce.excessYForceKg, 0, 0.0001, "open drag has no excess force because it blocks nothing");
-approx(openDragForce.excessYSpeedPxPerSec, 0, 0.0001, "open drag does not double-count escape speed");
-approx(openDragForce.finalYSpeedPxPerSec, -107.08, 0.0001, "open drag keeps base fish-won Y speed");
-assert(!openDragForce.shouldSlipDrag, "open drag cannot be exceeded");
+approx(openDragForce.dragBlockedForceKg, 0, 0.0001, "open drag blocks no Y force");
+approx(openDragForce.excessYForceKg, 0.28, 0.0001, "open drag lets the full fish-won Y force escape");
+approx(openDragForce.yEscapeForceKg, 0.28, 0.0001, "open drag reports the full Y escape force");
+const expectedOpenYSpeedPx = dragForceCalculator.speedFromForceKg({
+  forceKg: 0.28,
+  waterMotionResistance: 1000,
+  waterSpeedMultiplier: 64,
+  fishBaseSpeed: 2,
+  fishStateSpeedMultiplier: 1,
+  pixelsPerMeter: 50,
+});
+approx(openDragForce.finalYSpeedPxPerSec, -expectedOpenYSpeedPx, 0.0001, "open drag keeps base fish-won Y speed");
+assert(!openDragForce.shouldSlipDrag, "open drag has no threshold to exceed");
+
+const belowThresholdDragForce = dragForceCalculator.calculate({
+  fishOppositionKg: 0.28,
+  effectiveRodHoldKg: 0,
+  yAwayRatio: 1,
+  dragRatio: 0.3,
+  dragLimitKg: 0.3,
+  lineHasReserve: true,
+  dragLocked: false,
+  dragSupported: true,
+  targetYSpeedPxPerSec: -107.08,
+  waterMotionResistance: 1000,
+  waterSpeedMultiplier: 64,
+  fishBaseSpeed: 2,
+  fishStateSpeedMultiplier: 1,
+  pixelsPerMeter: 50,
+});
+approx(belowThresholdDragForce.dragBlockedForceKg, 0.28, 0.0001, "drag threshold blocks fish-won Y below the limit");
+approx(belowThresholdDragForce.excessYForceKg, 0, 0.0001, "drag threshold has no excess below the limit");
+approx(belowThresholdDragForce.finalYSpeedPxPerSec, 0, 0.0001, "drag threshold stops Y movement below the limit");
+assert(!belowThresholdDragForce.shouldSlipDrag, "drag threshold does not slip below the limit");
 
 const dragForce = dragForceCalculator.calculate({
   fishOppositionKg: 0.78,
@@ -249,30 +279,50 @@ const dragForce = dragForceCalculator.calculate({
   targetYSpeedPxPerSec: -107.08,
   waterMotionResistance: 1000,
   waterSpeedMultiplier: 64,
-  fishBaseSpeed: 1,
+  fishBaseSpeed: 2,
   fishStateSpeedMultiplier: 1,
   pixelsPerMeter: 50,
 });
 approx(dragForce.fishWonForceKg, 0.78, 0.0001, "drag uses fish-won force as speed source");
 approx(dragForce.fishWonYForceKg, 0.78, 0.0001, "drag projects won force onto Y");
 approx(dragForce.dragBlockedForceKg, 0.5, 0.0001, "drag blocks only up to drag limit while line can slip");
-approx(dragForce.excessYForceKg, 0.28, 0.0001, "drag excess force remains available for escape speed");
-approx(dragForce.dragSlowedYSpeedPxPerSec, -53.54, 0.0001, "half drag halves base Y speed");
+approx(dragForce.excessYForceKg, 0.28, 0.0001, "only force above drag limit remains available for Y escape speed");
+approx(dragForce.dragSlowedYSpeedPxPerSec, 0, 0.0001, "threshold drag does not keep a slowed base Y speed");
 const expectedExcessYSpeedPx = dragForceCalculator.speedFromForceKg({
   forceKg: 0.28,
   waterMotionResistance: 1000,
   waterSpeedMultiplier: 64,
-  fishBaseSpeed: 1,
+  fishBaseSpeed: 2,
   fishStateSpeedMultiplier: 1,
   pixelsPerMeter: 50,
 });
 approx(
   dragForce.finalYSpeedPxPerSec,
-  -53.54 - expectedExcessYSpeedPx,
+  -expectedExcessYSpeedPx,
   0.0001,
-  "half drag combines slowed base Y speed with excess Y speed",
+  "threshold drag converts only excess Y force into Y speed",
 );
 assert(dragForce.shouldSlipDrag, "fish-won Y excess marks drag slip");
+
+const noReserveDragForce = dragForceCalculator.calculate({
+  fishOppositionKg: 0.78,
+  effectiveRodHoldKg: 0,
+  yAwayRatio: 1,
+  dragRatio: 0.5,
+  dragLimitKg: 0.5,
+  lineHasReserve: false,
+  dragLocked: false,
+  dragSupported: true,
+  targetYSpeedPxPerSec: -107.08,
+  waterMotionResistance: 1000,
+  waterSpeedMultiplier: 64,
+  fishBaseSpeed: 2,
+  fishStateSpeedMultiplier: 1,
+  pixelsPerMeter: 50,
+});
+approx(noReserveDragForce.dragBlockedForceKg, 0.78, 0.0001, "no reserve transfers all fish-won Y force into line load");
+approx(noReserveDragForce.excessYForceKg, 0, 0.0001, "no reserve leaves no Y escape force");
+approx(noReserveDragForce.finalYSpeedPxPerSec, 0, 0.0001, "no reserve blocks Y escape");
 
 const diagonalDragForce = dragForceCalculator.calculate({
   fishOppositionKg: 1,

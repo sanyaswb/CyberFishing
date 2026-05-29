@@ -110,6 +110,7 @@ class FishRetrieveSystem {
       yAwayRatio: dragFrame.yAwayRatio,
       dragBlockedForceKg: dragFrame.dragBlockedForceKg,
       excessYForceKg: dragFrame.excessYForceKg,
+      yEscapeForceKg: dragFrame.yEscapeForceKg,
       shouldSlipDrag: dragFrame.shouldSlipDrag,
       speedMps: frame.speedMps,
       towardPlayerSpeedMps: frame.towardPlayerSpeedMps,

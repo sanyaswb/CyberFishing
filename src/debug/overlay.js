@@ -352,6 +352,7 @@ class FightPhysicsModule extends OverlayModule {
       this.#row("Hold to tension", this.#kg(d.playerHoldTensionKg, 3), "#00ff80"),
     ]);
     html += this.#section("REEL HOLD", this.#reelHoldRows(d));
+    html += this.#section("DRAG / Y ESCAPE", this.#dragRows(d));
     html += this.#section("MOVEMENT", [
       this.#row("Net force", this.#kg(d.netForceKg, 3), this.#netForceColor(d.netForceKg)),
       this.#row("Winner", this.#winner(d.netForceKg), this.#netForceColor(d.netForceKg)),
@@ -371,6 +372,26 @@ class FightPhysicsModule extends OverlayModule {
     return html + `<div style="margin-bottom: 12px;"></div>`;
   }
 
+
+  #dragRows(d) {
+    const dragRatio = Number(d.dragRatio) || 0;
+    const dragLimitKg = Number(d.effectiveDragLimitKg ?? d.dragLimitKg) || 0;
+    const fishWonYForceKg = Number(d.fishWonYForceKg) || 0;
+    const yEscapeForceKg = Number(d.yEscapeForceKg ?? d.excessYForceKg) || 0;
+    const finalYSpeed = Number(d.finalYSpeedPxPerSec) || 0;
+    const shouldSlip = !!d.shouldSlipDrag;
+    const canHoldY = fishWonYForceKg <= dragLimitKg + 0.000001 && dragRatio > 0;
+    return [
+      this.#row("Drag ratio", this.#percent(dragRatio, 1)),
+      this.#row("Drag limit", this.#kg(dragLimitKg, 3), "#00ccff"),
+      this.#row("Fish won Y force", this.#kg(fishWonYForceKg, 3), "#ff8888"),
+      this.#row("Drag blocked force", this.#kg(d.dragBlockedForceKg, 3), "#ffaa00"),
+      this.#row("Y escape force", this.#kg(yEscapeForceKg, 3), yEscapeForceKg > 0 ? "#ff8888" : "#00ff80"),
+      this.#row("Final X speed", `${this.#num(d.finalXSpeedPxPerSec, 1)}px/s`, "#73c2fb"),
+      this.#row("Final Y speed", `${this.#num(finalYSpeed, 1)}px/s`, finalYSpeed === 0 ? "#00ff80" : "#ff8888"),
+      this.#row("Drag state", shouldSlip ? "SLIPPING" : canHoldY ? "HOLDING_Y" : "OPEN/NO_Y", shouldSlip ? "#ff8888" : "#00ff80"),
+    ];
+  }
 
   #reelHoldRows(d) {
     const reelLimit = Number(d.holdReelRecoverReelMaxLoadKg) || 0;
