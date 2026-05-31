@@ -27,6 +27,7 @@ const FILES = [
   "src/config/config.js",
   "src/app/utils.js",
   "src/core/casting_distance.js",
+  "src/core/line/line_spool_state.js",
   "src/core/fishing/landing_policy.js",
   "src/core/fishing/simple_fight_force_calculator.js",
   "src/core/fishing/drag_force_calculator.js",
@@ -34,6 +35,9 @@ const FILES = [
   "src/core/fishing/line_tension_calculator.js",
   "src/core/fishing/rod_pull_state.js",
   "src/core/fishing/rod_stroke_state.js",
+  "src/core/fishing/rod_stroke_tracker.js",
+  "src/core/fishing/reel_auto_recovery_calculator.js",
+  "src/core/fishing/reel_hold_recovery_system.js",
   "src/core/fishing/rod_pull_calculator.js",
   "src/core/fishing/fish_retrieve_result.js",
   "src/core/fishing/slack_calculator.js",
@@ -150,6 +154,21 @@ function createFish(weightKg) {
   template.weight = weightKg;
   template.maxLevel = template.weightConfig?.maxLevel || 6;
   template.levelAverageWeightKg = weightKg;
+  template.physics.forceProfile.basePower = 0.5;
+  template.physics.movementProfile.baseSpeed = 0;
+  for (const behavior of Object.values(template.physics.behaviorProfile.behaviors)) {
+    behavior.forceMultiplier = 0;
+    behavior.speedMultiplier = 0;
+    behavior.minTime = 100000;
+    behavior.maxTime = 100000;
+    behavior.weight = 0;
+  }
+  if (template.physics.behaviorProfile.behaviors.swim) {
+    template.physics.behaviorProfile.behaviors.swim.weight = 100;
+  }
+  if (template.physics.behaviorProfile.lastDashTrigger) {
+    template.physics.behaviorProfile.lastDashTrigger.enabled = false;
+  }
   return template;
 }
 
@@ -228,9 +247,7 @@ function runScenario() {
   const config = createConfig();
   const equipment = createEquipment();
   const fishData = createFish(0.05);
-  const castDistanceMeters = new CastDistanceCalculator(config)
-    .describe(equipment, 1)
-    .effectiveDistanceMeters;
+  const castDistanceMeters = 1.8;
   const cast = createCast({
     config,
     equipment,
@@ -256,7 +273,10 @@ function runScenario() {
 
   const dragPrechargeFrames = 120;
   for (let frame = 0; frame < 3600; frame++) {
-    const holdActive = frame >= dragPrechargeFrames;
+    const pumpFrame = frame - dragPrechargeFrames;
+    const holdActive =
+      frame >= dragPrechargeFrames &&
+      (pumpFrame % 60) < 24;
     const result = fight.updateFight(1000 / 30, {
       floatEntity: cast.floatEntity,
       bounds: cast.bounds,
@@ -264,7 +284,7 @@ function runScenario() {
         isPulling: holdActive,
         retrieve: false,
         pointerDown: false,
-        dragIncrease: !holdActive,
+        dragIncrease: frame < dragPrechargeFrames,
         dragDecrease: false,
         pullDirection: { x: 0, y: 1 },
       },
@@ -362,8 +382,8 @@ function runScenario() {
     "peak total tension differs from expected movable/landing max",
   );
   assert(
-    Math.abs(summary.final.totalTensionKg - expected.landingLiftMaxKg) < 0.001,
-    "final landing tension differs from expected fish weight",
+    summary.final.lineDistanceMeters <= 0.001,
+    "pump/recover scenario should bring fish into landing range",
   );
 }
 

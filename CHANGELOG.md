@@ -1,5 +1,28 @@
 # CyberFishing changelog
 
+## v0.19.15 - reel hold stabilization
+
+- Added `ReelHoldRecoverySystem` to remaining regression harnesses.
+- Added parameter metadata for rod stroke capacity and reel hold timing thresholds.
+- Narrowed hard tension blocking so stroke-full movement blocks do not disable movable hold tension caps.
+- Updated the project version badge to match the delivered line / rod stroke patch.
+
+## v0.19.14 - spool-based line and Y stroke model
+
+- Added `LineSpoolState`, Y-only rod stroke tracking and tension-based reel auto recovery.
+- Changed reel line handling so the equipped line length is the full usable released-line limit.
+- Changed rod stroke to track won Y-distance instead of pump credit / recoverable line.
+- Kept pump credit as debug-only diagnostics and stopped it from resetting stroke.
+- Updated fight overlay and checks for line spool, rod stroke and auto recovery fields.
+
+## v0.19.13 - line and rod stroke visibility
+
+- Added `LINE` overlay rows for fish distance, released line, remaining line, recoverable line and per-frame release/recovery.
+- Added `ROD STROKE` overlay rows for stroke capacity, used/unrecovered stroke, pump credit and reset/sync reasons.
+- Added rod stroke diagnostics for reel recovery and pump-credit synchronization.
+- Added documentation for the line/stroke debug model.
+- Kept drag threshold Y logic and simplified fight force formulas unchanged.
+
 ## v0.19.12 - drag threshold Y model
 
 - Changed reel drag from percentage Y-speed slowdown to a force threshold.

@@ -10,8 +10,29 @@ const OVERLAY_MODULES = {
   liveY: false,
   liveX: false,
   debuffsLive: false,
-  fightPhysics: true,
+  fightPhysics: false,
+  fightFish: true,
+  fightRodHold: true,
+  fightReelHold: true,
+  fightDrag: true,
+  fightLine: true,
+  fightRodStroke: true,
+  fightAutoRecovery: true,
+  fightMovement: true,
+  fightTension: true,
 };
+
+const FIGHT_PHYSICS_SECTION_KEYS = [
+  "fightFish",
+  "fightRodHold",
+  "fightReelHold",
+  "fightDrag",
+  "fightLine",
+  "fightRodStroke",
+  "fightAutoRecovery",
+  "fightMovement",
+  "fightTension",
+];
 
 class OverlayModule {
   constructor(key) {
@@ -305,6 +326,14 @@ class FightPhysicsModule extends OverlayModule {
     super("fightPhysics");
   }
 
+  isActive(data) {
+    return (
+      this.shouldRender(data) &&
+      (OVERLAY_MODULES.fightPhysics ||
+        FIGHT_PHYSICS_SECTION_KEYS.some((key) => OVERLAY_MODULES[key]))
+    );
+  }
+
   shouldRender(d) {
     return d.gameState === "playing";
   }
@@ -332,46 +361,164 @@ class FightPhysicsModule extends OverlayModule {
 
   #renderSimpleFightSections(d) {
     let html = this.formatHeader("FIGHT PHYSICS", "#73c2fb");
-    html += this.#section("FISH", [
-      this.#row("Fish weight", this.#kg(d.fishWeightKg, 3)),
-      this.#row("Water weight / passive force", this.#kg(d.fishPassiveKg, 3), "#ffaa00"),
-      this.#row("State force multiplier", `x${this.#num(d.fishStateForceMultiplier ?? d.pullMult, 2)}`),
-      this.#row("Direction multiplier", `x${this.#num(d.directionResistanceMultiplier, 2)}`),
-      this.#row("Active fish force", this.#kg(d.fishActiveKg, 3), "#ff8888"),
-      this.#row("Fish opposition", this.#kg(d.fishOppositionKg, 3), "#ff8888"),
-    ]);
-    html += this.#section("ROD HOLD", [
-      this.#row("Rod hold", this.#kg(d.rodPullForceKg, 3), "#00ff80"),
-      this.#row("Rod hold max", this.#kg(d.rodHoldMaxKg, 3), "#ffaa00"),
-      this.#row("Rod stroke", `${this.#meters(d.rodStrokeUsed, 2)} / ${this.#meters(d.rodStrokeCapacity, 2)}`),
-      this.#row("Angle multiplier", `x${this.#num(d.anglePenalty || 1, 2)}`),
-      this.#row("Effective rod hold", this.#kg(d.effectiveRodHoldKg, 3), "#00ff80"),
-      this.#row("Hold tension ratio", this.#percent(d.holdTensionRatio, 1)),
-      this.#row("Raw hold tension", this.#kg(d.rawPlayerHoldTensionKg, 3), "#00ff80"),
-      this.#row("Movable tension cap", this.#kg(d.movableHoldTensionCapKg, 3), "#73c2fb"),
-      this.#row("Hold to tension", this.#kg(d.playerHoldTensionKg, 3), "#00ff80"),
-    ]);
-    html += this.#section("REEL HOLD", this.#reelHoldRows(d));
-    html += this.#section("DRAG / Y ESCAPE", this.#dragRows(d));
-    html += this.#section("MOVEMENT", [
-      this.#row("Net force", this.#kg(d.netForceKg, 3), this.#netForceColor(d.netForceKg)),
-      this.#row("Winner", this.#winner(d.netForceKg), this.#netForceColor(d.netForceKg)),
-      this.#row("Water resistance", this.#num(d.waterMotionResistance, 1)),
-      this.#row("Speed multiplier", `x${this.#num(d.waterSpeedMultiplier, 2)}`),
-      this.#row("Speed m/s", this.#mps(d.simpleFightSpeedMps, 3), "#73c2fb"),
-      this.#row("Speed px/s", `${this.#num(d.simpleFightSpeedPxPerSec ?? d.fishSpeedPxPerSec, 1)}px/s`, "#73c2fb"),
-    ]);
-    html += this.#section("TENSION", [
-      this.#row("Fish tension", this.#kg(d.fishTensionKg, 3), "#ff8888"),
-      this.#row("Player tension", this.#kg(d.playerHoldTensionKg, 3), "#00ff80"),
-      this.#row("Total tension", this.#kg(d.totalTensionKg ?? d.calculatedTensionKg, 3), "#ffaa00"),
-      this.#row("Rod stress", this.#percent(d.rodStressRatio, 1), this.#stressColor(d.rodStressRatio)),
-      this.#row("Line stress", this.#percent(d.lineStressRatio, 1), this.#stressColor(d.lineStressRatio)),
-      this.#row("Hook stress", this.#percent(d.hookStressRatio, 1), this.#stressColor(d.hookStressRatio)),
-    ]);
+    const sections = [
+      [
+        "fightFish",
+        "FISH",
+        [
+          this.#row("Fish weight", this.#kg(d.fishWeightKg, 3)),
+          this.#row("Water weight / passive force", this.#kg(d.fishPassiveKg, 3), "#ffaa00"),
+          this.#row("State force multiplier", `x${this.#num(d.fishStateForceMultiplier ?? d.pullMult, 2)}`),
+          this.#row("Direction multiplier", `x${this.#num(d.directionResistanceMultiplier, 2)}`),
+          this.#row("Active fish force", this.#kg(d.fishActiveKg, 3), "#ff8888"),
+          this.#row("Fish opposition", this.#kg(d.fishOppositionKg, 3), "#ff8888"),
+        ],
+      ],
+      [
+        "fightRodHold",
+        "ROD HOLD",
+        [
+          this.#row("Rod hold", this.#kg(d.rodPullForceKg, 3), "#00ff80"),
+          this.#row("Rod hold max", this.#kg(d.rodHoldMaxKg, 3), "#ffaa00"),
+          this.#row("Rod stroke", `${this.#meters(d.rodStrokeUsed, 2)} / ${this.#meters(d.rodStrokeCapacity, 2)}`),
+          this.#row("Angle multiplier", `x${this.#num(d.anglePenalty || 1, 2)}`),
+          this.#row("Effective rod hold", this.#kg(d.effectiveRodHoldKg, 3), "#00ff80"),
+          this.#row("Hold tension ratio", this.#percent(d.holdTensionRatio, 1)),
+          this.#row("Raw hold tension", this.#kg(d.rawPlayerHoldTensionKg, 3), "#00ff80"),
+          this.#row("Movable tension cap", this.#kg(d.movableHoldTensionCapKg, 3), "#73c2fb"),
+          this.#row("Hold to tension", this.#kg(d.playerHoldTensionKg, 3), "#00ff80"),
+        ],
+      ],
+      ["fightReelHold", "REEL HOLD", this.#reelHoldRows(d)],
+      ["fightDrag", "DRAG / Y ESCAPE", this.#dragRows(d)],
+      ["fightLine", "LINE", this.#lineRows(d)],
+      ["fightRodStroke", "ROD STROKE", this.#rodStrokeRows(d)],
+      ["fightAutoRecovery", "AUTO RECOVERY", this.#autoRecoveryRows(d)],
+      [
+        "fightMovement",
+        "MOVEMENT",
+        [
+          this.#row("Net force", this.#kg(d.netForceKg, 3), this.#netForceColor(d.netForceKg)),
+          this.#row("Winner", this.#winner(d.netForceKg), this.#netForceColor(d.netForceKg)),
+          this.#row("Water resistance", this.#num(d.waterMotionResistance, 1)),
+          this.#row("Speed multiplier", `x${this.#num(d.waterSpeedMultiplier, 2)}`),
+          this.#row("Speed m/s", this.#mps(d.simpleFightSpeedMps, 3), "#73c2fb"),
+          this.#row("Speed px/s", `${this.#num(d.simpleFightSpeedPxPerSec ?? d.fishSpeedPxPerSec, 1)}px/s`, "#73c2fb"),
+        ],
+      ],
+      [
+        "fightTension",
+        "TENSION",
+        [
+          this.#row("Fish tension", this.#kg(d.fishTensionKg, 3), "#ff8888"),
+          this.#row("Player tension", this.#kg(d.playerHoldTensionKg, 3), "#00ff80"),
+          this.#row("Total tension", this.#kg(d.totalTensionKg ?? d.calculatedTensionKg, 3), "#ffaa00"),
+          this.#row("Rod stress", this.#percent(d.rodStressRatio, 1), this.#stressColor(d.rodStressRatio)),
+          this.#row("Line stress", this.#percent(d.lineStressRatio, 1), this.#stressColor(d.lineStressRatio)),
+          this.#row("Hook stress", this.#percent(d.hookStressRatio, 1), this.#stressColor(d.hookStressRatio)),
+        ],
+      ],
+    ];
+
+    sections.forEach(([key, title, rows]) => {
+      if (this.#isSectionEnabled(key)) {
+        html += this.#section(title, rows);
+      }
+    });
+
     return html + `<div style="margin-bottom: 12px;"></div>`;
   }
 
+  #isSectionEnabled(key) {
+    return OVERLAY_MODULES.fightPhysics || OVERLAY_MODULES[key];
+  }
+
+
+  #lineRows(d) {
+    const line = d.lineDebug || {};
+    const total = line.totalLineMeters ?? d.lineTotalMeters ?? d.lineTotalLengthMeters;
+    const fishDistance = line.fishDistanceMeters ?? d.lineDistanceMeters;
+    const released = line.releasedLineMeters ?? d.lineReleasedMeters;
+    const remaining = line.remainingLineMeters ?? d.lineRemainingMeters;
+    const recoverable = line.recoverableLineMeters ?? d.lineRecoverableMeters ?? d.pumpCreditMeters;
+    const releasedFrame = line.lineReleasedThisFrameMeters ?? d.lineReleasedThisFrameMeters;
+    const recoveredFrame = line.lineRecoveredThisFrameMeters ?? d.lineRecoveredThisFrameMeters;
+    const lineHasReserve = line.lineHasReserve ?? d.lineCanRelease;
+    const spoolEmpty = line.spoolEmpty ?? d.lineSpoolEmpty;
+    const fullyExtended = line.fullyExtended ?? d.isLineFullyExtended;
+    const hardLimit = line.hardLineLimit ?? d.hardLineLimit;
+    const hardLimitMeters = line.hardLineLimitMeters ?? released;
+
+    return [
+      this.#row("Total line", this.#meters(total, 2), "#73c2fb"),
+      this.#row("Fish distance", this.#meters(fishDistance, 2), "#73c2fb"),
+      this.#row("Released line", this.#meters(released, 2), "#ffaa00"),
+      this.#row("Remaining line", this.#meters(remaining, 2), lineHasReserve ? "#00ff80" : "#ff8888"),
+      this.#row("Recoverable line", this.#meters(recoverable, 2), "#00ff80"),
+      this.#row("Last released", this.#meters(releasedFrame, 3), Number(releasedFrame) > 0 ? "#ff8888" : "#8a9bac"),
+      this.#row("Last recovered", this.#meters(recoveredFrame, 3), Number(recoveredFrame) > 0 ? "#00ff80" : "#8a9bac"),
+      this.#row("Line has reserve", lineHasReserve ? "YES" : "NO", lineHasReserve ? "#00ff80" : "#ff8888"),
+      this.#row("Spool empty", spoolEmpty ? "YES" : "NO", spoolEmpty ? "#ff8888" : "#00ff80"),
+      this.#row("Fully extended", fullyExtended ? "YES" : "NO", fullyExtended ? "#ff8888" : "#00ff80"),
+      this.#row("Hard line limit", hardLimit ? `${this.#meters(hardLimitMeters, 2)} / HIT` : this.#meters(hardLimitMeters, 2), hardLimit ? "#ff8888" : "#8a9bac"),
+    ];
+  }
+
+  #rodStrokeRows(d) {
+    const line = d.lineDebug || {};
+    const capacity = line.rodStrokeCapacityMeters ?? d.rodStrokeCapacityMeters;
+    const won = line.rodStrokeWonMeters ?? d.rodStrokeWonMeters;
+    const used = line.rodStrokeUsedMeters ?? d.rodStrokeUsedMeters ?? won;
+    const unrecovered = line.rodStrokeUnrecoveredMeters ?? d.rodStrokeUnrecoveredMeters;
+    const ratio = line.rodStrokeRatio ?? d.rodStrokeRatio;
+    const yGained = line.strokeYGainedMeters ?? d.strokeYGainedMeters;
+    const yLost = line.strokeYLostMeters ?? d.strokeYLostMeters;
+    const initialCredit = line.initialPumpCreditMeters ?? d.pumpCreditPenaltyMeters;
+    const finalCredit = line.finalPumpCreditMeters ?? d.pumpCreditMeters;
+    const releasedFrame = line.lineReleasedThisFrameMeters ?? d.lineReleasedThisFrameMeters;
+    const recoveredFrame = line.lineRecoveredThisFrameMeters ?? d.lineRecoveredThisFrameMeters;
+    const resetReason = line.strokeResetReason ?? d.strokeResetReason ?? "none";
+    const syncReason = line.strokeSyncReason ?? d.strokeSyncReason ?? "none";
+
+    return [
+      this.#row("Stroke capacity", this.#meters(capacity, 2), "#73c2fb"),
+      this.#row("Stroke won", this.#meters(won ?? used, 2), "#ffaa00"),
+      this.#row("Stroke unrecovered", this.#meters(unrecovered, 2), Number(unrecovered) > 0 ? "#ffaa00" : "#00ff80"),
+      this.#row("Stroke ratio", this.#percent(ratio, 1), this.#stressColor(ratio)),
+      this.#row("Y gained frame", this.#meters(yGained, 3), Number(yGained) > 0 ? "#00ff80" : "#8a9bac"),
+      this.#row("Y lost frame", this.#meters(yLost, 3), Number(yLost) > 0 ? "#ff8888" : "#8a9bac"),
+      this.#row("Initial pump credit", this.#meters(initialCredit, 2), "#8a9bac"),
+      this.#row("Final pump credit", this.#meters(finalCredit, 2), "#8a9bac"),
+      this.#row("Released this frame", this.#meters(releasedFrame, 3), Number(releasedFrame) > 0 ? "#ff8888" : "#8a9bac"),
+      this.#row("Recovered this frame", this.#meters(recoveredFrame, 3), Number(recoveredFrame) > 0 ? "#00ff80" : "#8a9bac"),
+      this.#row("Stroke reset reason", resetReason, resetReason === "none" ? "#8a9bac" : "#ffaa00"),
+      this.#row("Stroke sync reason", syncReason, syncReason === "none" ? "#8a9bac" : "#ffaa00"),
+    ];
+  }
+
+  #autoRecoveryRows(d) {
+    const line = d.lineDebug || {};
+    const active = line.autoRecoverActive ?? d.autoRecoverActive;
+    const reason = line.autoRecoverBlockedReason ?? d.autoRecoverBlockedReason ?? "not_checked";
+    const speed = line.autoRecoverSpeedMetersPerSec ?? d.autoRecoverSpeedMps;
+    const baseSpeed = line.autoRecoverBaseRetrieveSpeedMetersPerSec ?? d.autoRecoverBaseRetrieveSpeedMps;
+    const efficiency = line.autoRecoverReelEfficiency ?? d.autoRecoverReelEfficiency;
+    const loadRatio = line.autoRecoverReelLoadRatio ?? d.autoRecoverReelLoadRatio;
+    const recovered = line.autoRecoveredMeters ?? d.autoRecoveredMeters;
+    const tension = d.totalTensionKg ?? d.calculatedTensionKg;
+    const reelLimit = line.autoRecoverReelMaxLoadKg ?? d.autoRecoverReelMaxLoadKg ?? d.holdReelRecoverReelMaxLoadKg ?? d.reelMaxLoadKg;
+    return [
+      this.#row("Auto recover active", active ? "YES" : "NO", active ? "#00ff80" : "#8a9bac"),
+      this.#row("Reel retrieve speed", this.#mps(baseSpeed, 3), "#00ff80"),
+      this.#row("Tension", this.#kg(tension, 3), "#ffaa00"),
+      this.#row("Reel max load", this.#kg(reelLimit, 3), "#73c2fb"),
+      this.#row("Reel load", this.#percent(loadRatio, 1), this.#stressColor(loadRatio)),
+      this.#row("Reel efficiency", this.#percent(efficiency, 1), efficiency > 0 ? "#00ff80" : "#ff8888"),
+      this.#row("Actual recover speed", this.#mps(speed, 3), "#00ff80"),
+      this.#row("Recovered frame", this.#meters(recovered, 3), Number(recovered) > 0 ? "#00ff80" : "#8a9bac"),
+      this.#row("Recover blocked", reason, active ? "#00ff80" : "#8a9bac"),
+    ];
+  }
 
   #dragRows(d) {
     const dragRatio = Number(d.dragRatio) || 0;

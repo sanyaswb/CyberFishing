@@ -21,3 +21,5 @@ package-lock.json
 utils/generated/
 utils/tmp/
 utils/*.log
+
+FORCODEX.md

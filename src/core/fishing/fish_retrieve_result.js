@@ -67,16 +67,19 @@ class FishRetrieveResult {
   withAppliedMovement({
     appliedMoveMeters,
     movementBlocked,
-    tensionBlocked = movementBlocked,
+    tensionBlocked = false,
+    hardTensionBlocked = tensionBlocked,
+    disableMovableHoldCap = hardTensionBlocked,
   } = {}) {
-    if (!!tensionBlocked && this.movableHoldTensionCapApplied) {
+    const capDisabled = !!disableMovableHoldCap;
+    if (capDisabled && this.movableHoldTensionCapApplied) {
       const playerHoldTensionKg = this.rawPlayerHoldTensionKg;
       const totalTensionKg = this.fishTensionKg + playerHoldTensionKg;
       return new FishRetrieveResult({
         ...this,
         appliedMoveMeters,
         movementBlocked,
-        tensionBlocked,
+        tensionBlocked: true,
         fishCanMoveTowardPlayer: false,
         movableHoldTensionCapApplied: false,
         playerHoldTensionKg,
@@ -88,7 +91,7 @@ class FishRetrieveResult {
       ...this,
       appliedMoveMeters,
       movementBlocked,
-      tensionBlocked,
+      tensionBlocked: capDisabled,
     });
   }
 

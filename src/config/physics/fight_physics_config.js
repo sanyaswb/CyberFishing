@@ -19,6 +19,10 @@ const FIGHT_PHYSICS_CONFIG = {
     },
   },
 
+  rodStroke: {
+    capacityByRodLengthRatio: 0.5,
+  },
+
   tension: {
     smoothingPerSecond: 10.0,
     slackTensionKg: 0.0,
@@ -28,6 +32,9 @@ const FIGHT_PHYSICS_CONFIG = {
   reelHold: {
     enabled: true,
     requireRodStrokeFull: true,
+    delayMs: 0,
+    strokeRatio: 1.0,
+    strokeToleranceMeters: 0.001,
   },
 
   landing: {

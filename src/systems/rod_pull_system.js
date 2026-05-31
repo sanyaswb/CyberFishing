@@ -4,6 +4,7 @@ class RodPullSystem {
   #strokeState = new RodStrokeState();
   #strokeSnapshot = {
     rodStrokeCapacityMeters: 0,
+    rodStrokeWonMeters: 0,
     rodStrokeUsedMeters: 0,
     rodStrokeUnrecoveredMeters: 0,
     rodStrokeRatio: 0,
@@ -31,12 +32,19 @@ class RodPullSystem {
     releaseRecovering: false,
     releaseRecoveryRatio: 0,
     rodStrokeCapacityMeters: 0,
+    rodStrokeWonMeters: 0,
     rodStrokeUsedMeters: 0,
     rodStrokeUnrecoveredMeters: 0,
     rodStrokeRatio: 0,
     lineHasReserve: true,
     canReleaseLine: true,
     spoolEmpty: false,
+    strokeRecoveredMeters: 0,
+    strokeSyncedMeters: 0,
+    strokeYGainedMeters: 0,
+    strokeYLostMeters: 0,
+    strokeResetReason: "none",
+    strokeSyncReason: "none",
   };
 
   constructor(config = {}) {
@@ -58,9 +66,27 @@ class RodPullSystem {
     hardLineLimit,
     lineHasReserve = true,
     fishDistanceMeters,
+    yLostBeforePullMeters = 0,
   }) {
+    this.#clearStrokeFrameDiagnostics();
     if (inputState?.pullStartedThisFrame) {
       this.#state.reset();
+    }
+    const configuredCapacity = this.#calculator.calculateMaxDistance({
+      rodLengthMeters: this.#rodLengthMeters(rod),
+    });
+    const previousStrokeSnapshot = this.#strokeState.getSnapshot();
+    this.#strokeState.setCapacity(configuredCapacity);
+    let strokeResetReason = "none";
+    if (
+      configuredCapacity > 0 &&
+      previousStrokeSnapshot.rodStrokeCapacityMeters <= 0
+    ) {
+      strokeResetReason = "stroke_capacity_initialized";
+    }
+    let strokeYLostMeters = 0;
+    if (inputState?.pullHeld && yLostBeforePullMeters > 0) {
+      strokeYLostMeters = this.#strokeState.loseWonDistance(yLostBeforePullMeters);
     }
 
     this.#result = this.#calculator.calculateNextState({
@@ -81,13 +107,10 @@ class RodPullSystem {
       fishDistanceMeters,
     });
 
-    const strokeSnapshot = this.#strokeState.writeSnapshot(this.#strokeSnapshot);
-    if (
-      inputState?.pullStartedThisFrame ||
-      (this.#result.active && strokeSnapshot.rodStrokeCapacityMeters <= 0)
-    ) {
-      this.#strokeState.startCycle(this.#result.maxDistanceMeters);
-    }
+    this.#strokeState.setCapacity(this.#result.maxDistanceMeters);
+    this.#result.strokeYLostMeters = strokeYLostMeters;
+    this.#result.strokeYGainedMeters = 0;
+    this.#result.strokeResetReason = strokeResetReason;
 
     this.#syncStrokeSnapshot();
     this.#copyResultToState(this.#result);
@@ -95,28 +118,38 @@ class RodPullSystem {
   }
 
   updateReleaseRecovery({ pumpCreditMeters, slackMeters }) {
-    const recoverableLineMeters = pumpCreditMeters ?? slackMeters;
-    if (Math.max(0, Number(recoverableLineMeters) || 0) <= 0.001) {
-      this.#strokeState.recover(Infinity);
-    }
     this.#syncStrokeSnapshot();
     return this.#result;
   }
 
   recordAppliedStroke({ movedMeters }) {
-    this.#strokeState.addPullDistance(movedMeters);
+    return this.recordYMovement({ gainedMeters: movedMeters });
+  }
+
+  recordYMovement({ gainedMeters = 0, lostMeters = 0 } = {}) {
+    const lost = this.#strokeState.loseWonDistance(lostMeters);
+    const gained = this.#strokeState.addWonDistance(gainedMeters);
+    this.#result.strokeYLostMeters =
+      Math.max(0, Number(this.#result.strokeYLostMeters) || 0) + lost;
+    this.#result.strokeYGainedMeters =
+      Math.max(0, Number(this.#result.strokeYGainedMeters) || 0) + gained;
     this.#syncStrokeSnapshot();
     return this.#result;
   }
 
   recoverStroke({ recoveredMeters }) {
-    this.#strokeState.recover(recoveredMeters);
+    const recovered = this.#strokeState.recover(recoveredMeters);
+    this.#result.strokeRecoveredMeters = recovered;
+    this.#result.strokeResetReason = recovered > 0
+      ? "recovered_by_reel"
+      : "none";
     this.#syncStrokeSnapshot();
     return this.#result;
   }
 
   syncStrokeToPumpCredit({ pumpCreditMeters }) {
-    this.#strokeState.clampToPumpCredit(pumpCreditMeters);
+    this.#result.strokeSyncedMeters = 0;
+    this.#result.strokeSyncReason = "debug_only";
     this.#syncStrokeSnapshot();
     return this.#result;
   }
@@ -156,12 +189,19 @@ class RodPullSystem {
       releaseRecovering: false,
       releaseRecoveryRatio: 0,
       rodStrokeCapacityMeters: 0,
+      rodStrokeWonMeters: 0,
       rodStrokeUsedMeters: 0,
       rodStrokeUnrecoveredMeters: 0,
       rodStrokeRatio: 0,
       lineHasReserve: true,
       canReleaseLine: true,
       spoolEmpty: false,
+      strokeRecoveredMeters: 0,
+      strokeSyncedMeters: 0,
+      strokeYGainedMeters: 0,
+      strokeYLostMeters: 0,
+      strokeResetReason: "none",
+      strokeSyncReason: "none",
     };
     this.#strokeState.reset();
   }
@@ -188,19 +228,43 @@ class RodPullSystem {
     this.#state.releasedThisFrame = result.releasedThisFrame;
     this.#state.releaseRecovering = result.releaseRecovering;
     this.#state.releaseRecoveryRatio = result.releaseRecoveryRatio;
+    this.#state.rodStrokeWonMeters = result.rodStrokeWonMeters;
+    this.#state.rodStrokeUnrecoveredMeters =
+      result.rodStrokeUnrecoveredMeters;
+    this.#state.rodStrokeRatio = result.rodStrokeRatio;
     this.#state.lineHasReserve = result.lineHasReserve;
     this.#state.canReleaseLine = result.canReleaseLine;
     this.#state.spoolEmpty = result.spoolEmpty;
+    this.#state.strokeRecoveredMeters = result.strokeRecoveredMeters;
+    this.#state.strokeSyncedMeters = result.strokeSyncedMeters;
+    this.#state.strokeResetReason = result.strokeResetReason;
+    this.#state.strokeSyncReason = result.strokeSyncReason;
   }
 
   #syncStrokeSnapshot() {
     const snapshot = this.#strokeState.writeSnapshot(this.#strokeSnapshot);
     this.#result.rodStrokeCapacityMeters = snapshot.rodStrokeCapacityMeters;
+    this.#result.rodStrokeWonMeters = snapshot.rodStrokeWonMeters;
     this.#result.rodStrokeUsedMeters = snapshot.rodStrokeUsedMeters;
     this.#result.rodStrokeUnrecoveredMeters = snapshot.rodStrokeUnrecoveredMeters;
     this.#result.rodStrokeRatio = snapshot.rodStrokeRatio;
     this.#result.releaseRecovering = snapshot.rodStrokeUnrecoveredMeters > 0 && !this.#result.active;
     this.#result.releaseRecoveryRatio = snapshot.rodStrokeRatio;
+    this.#result.strokeRecoveredMeters = Math.max(0, Number(this.#result.strokeRecoveredMeters) || 0);
+    this.#result.strokeSyncedMeters = Math.max(0, Number(this.#result.strokeSyncedMeters) || 0);
+    this.#result.strokeYGainedMeters = Math.max(0, Number(this.#result.strokeYGainedMeters) || 0);
+    this.#result.strokeYLostMeters = Math.max(0, Number(this.#result.strokeYLostMeters) || 0);
+    this.#result.strokeResetReason = this.#result.strokeResetReason || "none";
+    this.#result.strokeSyncReason = this.#result.strokeSyncReason || "none";
+  }
+
+  #clearStrokeFrameDiagnostics() {
+    this.#result.strokeRecoveredMeters = 0;
+    this.#result.strokeSyncedMeters = 0;
+    this.#result.strokeYGainedMeters = 0;
+    this.#result.strokeYLostMeters = 0;
+    this.#result.strokeResetReason = "none";
+    this.#result.strokeSyncReason = "none";
   }
 
   #rodLengthMeters(rod) {

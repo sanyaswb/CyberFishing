@@ -8,6 +8,7 @@ class LineSystem {
   #releasedMeters;
   #remainingMeters;
   #maxRemainingMeters;
+  #spoolState;
   #distanceMeters;
   #lineMaxLoadKg;
   #lineDurability;
@@ -55,22 +56,17 @@ class LineSystem {
       lineStats: effectiveLineStats,
     });
 
-    this.#baseReachMeters = reachModel.baseReachMeters;
-    this.#reelLineMeters = reachModel.reserveMeters;
+    this.#baseReachMeters = this.#hasReel ? 0 : reachModel.baseReachMeters;
+    this.#reelLineMeters = reachModel.lineLengthMeters;
     this.#totalLengthMeters = reachModel.maxReachMeters;
-    this.#maxRemainingMeters = this.#hasReel
-      ? Math.max(0, this.#totalLengthMeters - this.#baseReachMeters)
-      : 0;
+    this.#maxRemainingMeters = this.#hasReel ? this.#totalLengthMeters : 0;
 
-    // Reel rigs start from the rod base reach and can release the rest of the
-    // equipped line. Pole rigs have fixed line and cannot actively spool/recover.
-    this.#releasedMeters = this.#hasReel
-      ? Math.min(this.#totalLengthMeters, this.#baseReachMeters)
-      : this.#totalLengthMeters;
-    this.#remainingMeters = Math.max(
-      0,
-      this.#totalLengthMeters - this.#releasedMeters,
-    );
+    this.#spoolState = new LineSpoolState({
+      totalLineMeters: this.#totalLengthMeters,
+      releasedLineMeters: this.#hasReel ? 0 : this.#totalLengthMeters,
+    });
+    this.#releasedMeters = this.#spoolState.releasedLineMeters;
+    this.#remainingMeters = this.#spoolState.remainingLineMeters;
     this.#distanceMeters = 0;
 
     this.#lineMaxLoadKg = this.#numberOrDefault(
@@ -96,10 +92,10 @@ class LineSystem {
 
     if (!this.#initialized) {
       if (this.#hasReel) {
-        this.#releasedMeters = Math.min(
+        this.#spoolState.setReleasedLineMeters(Math.min(
           this.#totalLengthMeters,
-          Math.max(this.#baseReachMeters, this.#distanceMeters),
-        );
+          this.#distanceMeters,
+        ));
       }
       this.#initialized = true;
     }
@@ -110,10 +106,7 @@ class LineSystem {
 
   releaseForDistance(control = 0) {
     this.#lastReleasedMeters = 0;
-    const availableToRelease = Math.max(
-      0,
-      this.#totalLengthMeters - this.#releasedMeters,
-    );
+    const availableToRelease = this.#spoolState.remainingLineMeters;
     if (!this.#hasReel || availableToRelease <= 0) {
       this.#refreshState();
       const demandedMeters = Math.max(
@@ -155,11 +148,9 @@ class LineSystem {
       releaseRatio = 1 - clampedDrag * (1 - minReleaseAtFullDrag);
     }
 
-    const released = Math.min(
-      availableToRelease,
-      excess * this.#clamp01(releaseRatio),
+    const released = this.#spoolState.release(
+      Math.min(availableToRelease, excess * this.#clamp01(releaseRatio)),
     );
-    this.#releasedMeters += released;
     this.#lastReleasedMeters = released;
     this.#refreshState();
 
@@ -217,14 +208,26 @@ class LineSystem {
         ? Math.min(rawAmount, configuredMaxRecover)
         : rawAmount;
 
-    const nextReleased = Math.max(
-      Math.min(this.#baseReachMeters, this.#totalLengthMeters),
-      this.#distanceMeters,
-      this.#releasedMeters - amount,
-    );
-    const recovered = Math.max(0, this.#releasedMeters - nextReleased);
+    const recovered = this.#spoolState.recover(amount, this.#distanceMeters);
+    this.#lastRecoveredMeters = recovered;
+    this.#refreshState();
+    return recovered;
+  }
 
-    this.#releasedMeters = nextReleased;
+  recoverReleasedLine({ meters, minReleasedMeters = null } = {}) {
+    this.#lastRecoveredMeters = 0;
+    if (!this.#hasReel) {
+      this.#refreshState();
+      return 0;
+    }
+
+    const minimum = minReleasedMeters === null || minReleasedMeters === undefined
+      ? this.#distanceMeters
+      : Math.max(0, Number(minReleasedMeters) || 0);
+    const recovered = this.#spoolState.recover(
+      Math.max(0, Number(meters) || 0),
+      minimum,
+    );
     this.#lastRecoveredMeters = recovered;
     this.#refreshState();
     return recovered;
@@ -309,6 +312,7 @@ class LineSystem {
       hasReel: this.#hasReel,
       baseReachMeters: this.#baseReachMeters,
       reelLineMeters: this.#reelLineMeters,
+      totalLineMeters: this.#totalLengthMeters,
       totalLengthMeters: this.#totalLengthMeters,
       releasedMeters: this.#releasedMeters,
       remainingMeters: this.#remainingMeters,
@@ -332,20 +336,12 @@ class LineSystem {
   }
 
   #refreshState() {
-    const minReleased = this.#hasReel
-      ? Math.min(this.#baseReachMeters, this.#totalLengthMeters)
-      : 0;
-    this.#releasedMeters = Math.max(
-      minReleased,
-      Math.min(this.#totalLengthMeters, this.#releasedMeters),
-    );
+    if (!this.#hasReel) {
+      this.#spoolState.setReleasedLineMeters(this.#totalLengthMeters);
+    }
+    this.#releasedMeters = this.#spoolState.releasedLineMeters;
 
-    // User-facing reserve: meters still available to release right now.
-    // Max reserve is tracked separately as totalLine - baseReachMeters.
-    this.#remainingMeters = Math.max(
-      0,
-      this.#totalLengthMeters - this.#releasedMeters,
-    );
+    this.#remainingMeters = this.#spoolState.remainingLineMeters;
     this.#lineExtensionRatio =
       this.#releasedMeters > 0
         ? this.#clamp01(this.#distanceMeters / this.#releasedMeters)

@@ -69,6 +69,18 @@ class FightPhysicsConfigAdapter {
     };
   }
 
+  getRodStrokeConfig() {
+    const stroke = this.#physics().fight?.rodStroke || {};
+    const hold = this.getRodHoldConfig();
+    return {
+      capacityByRodLengthRatio: this.#number(
+        stroke.capacityByRodLengthRatio,
+        hold.distanceMultiplierByRodLength,
+        0.5,
+      ),
+    };
+  }
+
   getFightTensionConfig() {
     const config = this.#physics().fight?.tension || {};
     return {
@@ -83,14 +95,17 @@ class FightPhysicsConfigAdapter {
 
   getRodPullConfig() {
     const rodHold = this.getRodHoldConfig();
+    const rodStroke = this.getRodStrokeConfig();
     return {
       ...rodHold,
       rodHold,
+      rodStroke,
       strokeChargePerSecond:
         rodHold.chargeTimeSeconds > 0
           ? 1 / rodHold.chargeTimeSeconds
           : undefined,
-      distanceMultiplierByRodLength: rodHold.distanceMultiplierByRodLength,
+      capacityByRodLengthRatio: rodStroke.capacityByRodLengthRatio,
+      distanceMultiplierByRodLength: rodStroke.capacityByRodLengthRatio,
       minStrokeMeters: rodHold.minStrokeMeters,
       finalLandingDistanceMeters: rodHold.finalLandingDistanceMeters,
     };
@@ -190,6 +205,33 @@ class FightPhysicsConfigAdapter {
 
   getReelConfig() {
     return this.#physics().tackle?.reel || {};
+  }
+
+  getReelHoldConfig() {
+    const fight = this.#physics().fight?.reelHold || {};
+    const reel = this.#physics().tackle?.reel || {};
+    return {
+      enabled:
+        fight.enabled !== false &&
+        reel.holdRecoverAfterFullStrokeMs !== false,
+      requireRodStrokeFull: fight.requireRodStrokeFull !== false,
+      delayMs: this.#number(
+        fight.delayMs,
+        reel.holdRecoverAfterFullStrokeMs,
+        0,
+      ),
+      strokeRatio: this.#number(
+        fight.strokeRatio,
+        reel.holdRecoverStrokeRatio,
+        1,
+      ),
+      strokeToleranceMeters: this.#number(
+        fight.strokeToleranceMeters,
+        reel.holdRecoverStrokeToleranceMeters,
+        this.getRodHoldConfig().minStrokeMeters,
+        0.001,
+      ),
+    };
   }
 
   getCatchZoneConfig() {

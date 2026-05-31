@@ -5,12 +5,13 @@ class FightPhysicsSystem {
   #waterProbePoint = { x: 0, y: 0 };
   #pumpCreditCalculator = new PumpCreditCalculator();
   #looseLineCalculator = new LooseLineCalculator();
+  #rodStrokeTracker = new RodStrokeTracker();
+  #reelHoldRecoverySystem = new ReelHoldRecoverySystem();
   #landingPolicyResolver = new LandingPolicyResolver();
   #landingLiftCalculator = new LandingLiftTensionCalculator();
   #pipeline = new FightPhysicsPipeline();
   #fishRetrieveSystem;
   #landingLiftHoldKg = 0;
-  #holdReelRecoverTimerMs = 0;
   #holdReelRecoverState = {
     eligible: false,
     active: false,
@@ -139,6 +140,10 @@ class FightPhysicsSystem {
     }),
     );
     const recoverFrame = pipelineFrame.run("recover_line", () => {
+      const recoveryLoad = this.#resolveReelRecoveryLoad({
+        tensionResult: tensionPreview,
+        dragContext,
+      });
       const holdReelRecover = this.#updateHoldReelRecovery({
       dtMs,
       isPullMode,
@@ -148,29 +153,46 @@ class FightPhysicsSystem {
       tensionPreview,
       dragContext,
       physics,
+      lineState: rodPullFrame.lineStateAfterPull,
     });
-      const recoveredMeters = this.#recoverLineCredit({
+      const autoRecovery = this.#recoverRodStrokeCredit({
       dtSec,
       reelSystem,
       lineSystem,
       reel,
-      tensionKg: this.#resolveReelRecoveryLoad({
-        tensionResult: tensionPreview,
-        dragContext,
-      }),
-      isRecoverMode: isRecoverMode || holdReelRecover.active,
-      loadLimitKg: holdReelRecover.active ? holdReelRecover.reelMaxLoadKg : null,
-      maxRecoverMeters: holdReelRecover.active
-        ? rodPullFrame.holdReelRecoverMoveMeters
-        : null,
+      tensionKg: recoveryLoad.tensionKg,
+      blockedReason: recoveryLoad.blockedReason,
+      playerHoldActive: isPullMode,
+      strokeWonMeters:
+        rodPullFrame.rodPullResult.rodStrokeWonMeters ??
+        rodPullFrame.rodPullResult.rodStrokeUnrecoveredMeters,
+      fishDistanceMeters: rodPullFrame.lineStateAfterPull.distanceMeters,
     });
-      return { holdReelRecover, recoveredMeters };
+      const holdRecoveredMeters = holdReelRecover.active
+        ? this.#recoverLineCredit({
+            dtSec,
+            reelSystem,
+            lineSystem,
+            reel,
+            tensionKg: recoveryLoad.tensionKg,
+            isRecoverMode: true,
+            loadLimitKg: holdReelRecover.reelMaxLoadKg,
+            maxRecoverMeters: holdReelRecover.maxMoveMeters,
+          })
+        : 0;
+      return {
+        holdReelRecover,
+        autoRecovery,
+        recoveredMeters: autoRecovery.recoveredMeters + holdRecoveredMeters,
+        autoRecoveredMeters: autoRecovery.recoveredMeters,
+        holdRecoveredMeters,
+      };
     });
     const holdReelRecover = recoverFrame.holdReelRecover;
     const recoveredMeters = recoverFrame.recoveredMeters;
-    if (!holdReelRecover.active) {
-      rodPullSystem.recoverStroke?.({ recoveredMeters });
-    }
+    rodPullSystem.recoverStroke?.({
+      recoveredMeters: recoverFrame.autoRecoveredMeters,
+    });
     const lineLimit = pipelineFrame.run(
       "resolve_line_constraint",
       () => this.#resolveLineLimit({
@@ -184,11 +206,6 @@ class FightPhysicsSystem {
       hardLineLimitBeforeRelease: rodPullFrame.hardLineLimitBeforeRelease,
     }),
     );
-    if (!holdReelRecover.active) {
-      rodPullSystem.syncStrokeToPumpCredit?.({
-        pumpCreditMeters: lineLimit.finalPumpCreditMeters,
-      });
-    }
     const tensionResult = pipelineFrame.run(
       "update_final_tension",
       () => this.#updateTension({
@@ -217,12 +234,18 @@ class FightPhysicsSystem {
       actualSlackMeters: lineLimit.actualSlackMeters,
       releaseResult: lineLimit.releaseResult,
       recoveredMeters,
+      autoRecovery: recoverFrame.autoRecovery,
+      autoRecoveredMeters: recoverFrame.autoRecoveredMeters,
+      holdRecoveredMeters: recoverFrame.holdRecoveredMeters,
       hardLineLimit: lineLimit.hardLineLimit,
       constraintResult: lineLimit.constraintResult,
       rodPullDisplay,
       rodPullResult: rodPullFrame.rodPullResult,
       rodPullMoveMeters: rodPullFrame.rodPullMoveMeters,
       holdReelRecoverMoveMeters: rodPullFrame.holdReelRecoverMoveMeters,
+      rodPullMovementBlockReason: rodPullFrame.rodPullMovementBlockReason,
+      reelHoldMovementBlockReason: rodPullFrame.reelHoldMovementBlockReason,
+      hardTensionBlocked: rodPullFrame.hardTensionBlocked,
       fishRetrieveResult: rodPullFrame.fishRetrieveResult,
       landingLiftResult: tensionResult.landingLift,
       tensionResult,
@@ -288,6 +311,7 @@ class FightPhysicsSystem {
     playerMaxLoadKg,
   }) {
     const fishPosition = floatEntity.getPosition();
+    const previousFishY = Number(fishPosition.y) || 0;
     const fishVelocity = floatEntity.getVelocity?.() || this.#velocityScratch.set(0, 0);
     const lineState = lineSystem.updateDistance(fishPosition, rodTipPosition);
     const previousRodPullState = rodPullSystem?.getState?.() || {};
@@ -365,6 +389,24 @@ class FightPhysicsSystem {
     }
 
     forceData.fightMovementFrame = movementFrame;
+    const currentFishY = Number(floatEntity.getPosition()?.y) || previousFishY;
+    const towardPlayerYSign = this.#rodStrokeTracker.resolveTowardPlayerYSign({
+      fishY: previousFishY,
+      rodTipY: rodTipPosition?.y,
+    });
+    forceData.fightYMovementFrame = {
+      ...this.#rodStrokeTracker.calculate({
+        previousFishY,
+        currentFishY,
+        pixelsPerMeter:
+          this.#physicsConfig?.getPixelsPerMeter?.() ||
+          50,
+        towardPlayerYSign,
+      }),
+      previousFishY,
+      currentFishY,
+      towardPlayerYSign,
+    };
     const velocity = floatEntity.getVelocity?.() || fishVelocity;
     return { forceData, velocity, movementFrame };
   }
@@ -433,6 +475,10 @@ class FightPhysicsSystem {
       inputState: pullInput,
       rod,
       pumpCreditMeters,
+      yLostBeforePullMeters:
+        pullInput?.pullHeld
+          ? forceData?.fightYMovementFrame?.yAwayMeters
+          : 0,
       fishForceKg: forceData.totalFishForceKg,
       fishTensionKg: forceData.fishTensionKg,
       rodLimitKg,
@@ -446,15 +492,16 @@ class FightPhysicsSystem {
     const remainingStrokeMeters = Math.max(
       0,
       (Number(rodPullResult.maxDistanceMeters) || 0) -
-        (Number(rodPullResult.rodStrokeUsedMeters) || 0),
+        (Number(
+          rodPullResult.rodStrokeWonMeters ??
+            rodPullResult.rodStrokeUsedMeters,
+        ) || 0),
     );
     const rodStrokeMovementBlocked = this.#isRodStrokeMovementBlocked(
       rodPullResult,
       remainingStrokeMeters,
     );
-    const holdReelRecoverActive =
-      !!holdReelRecover?.active &&
-      !!dragContext.hasReel;
+    const holdReelRecoverActive = !!holdReelRecover?.active;
     const fishRetrieveFrame = fishRetrieveSystem.calculate({
       dtSec,
       rodPullResult,
@@ -472,7 +519,12 @@ class FightPhysicsSystem {
     });
     const rodStrokeMoveCapacityMeters =
       rodPullResult.active && !rodStrokeMovementBlocked
-        ? remainingStrokeMeters
+        ? this.#calculateAllowedPullMoveMeters({
+            requestedMoveMeters: fishRetrieveFrame.desiredMoveMeters,
+            remainingStrokeMeters,
+            fishPosition: floatEntity.getPosition(),
+            rodTipPosition,
+          })
         : 0;
     const holdReelRecoverMoveMeters = this.#calculateHoldReelRecoverMoveMeters({
       dtSec,
@@ -480,40 +532,70 @@ class FightPhysicsSystem {
       holdReelRecover,
       holdReelRecoverActive,
     });
-    const requestedMoveMeters = holdReelRecoverActive
-      ? holdReelRecoverMoveMeters
-      : Math.min(
-          fishRetrieveFrame.desiredMoveMeters,
-          rodStrokeMoveCapacityMeters,
-        );
-    const desiredMoveMeters = requestedMoveMeters;
-    const rodPullMoveMeters = this.#applyRodPullMovement({
+    const requestedRodMoveMeters = Math.min(
+      fishRetrieveFrame.desiredMoveMeters,
+      rodStrokeMoveCapacityMeters,
+    );
+    const desiredRodMoveMeters = requestedRodMoveMeters;
+    const pullStartY = Number(floatEntity.getPosition()?.y) || 0;
+    const rodPullMovement = this.#applyRodPullMovement({
       floatEntity,
       rodTipPosition,
-      deltaMeters: desiredMoveMeters,
+      deltaMeters: desiredRodMoveMeters,
       pixelsPerMeter:
         this.#physicsConfig?.getPixelsPerMeter?.() ||
         50,
       bounds,
       checkWater,
     });
+    const rodPullMoveMeters = rodPullMovement.meters;
+    const pullEndY = Number(floatEntity.getPosition()?.y) || pullStartY;
+    const pullYFrame = this.#rodStrokeTracker.calculate({
+      previousFishY: pullStartY,
+      currentFishY: pullEndY,
+      pixelsPerMeter:
+        this.#physicsConfig?.getPixelsPerMeter?.() ||
+        50,
+      towardPlayerYSign: this.#rodStrokeTracker.resolveTowardPlayerYSign({
+        fishY: pullStartY,
+        rodTipY: rodTipPosition?.y,
+      }),
+    });
+    const reelHoldDesiredMoveMeters = Math.min(
+      Math.max(0, fishRetrieveFrame.desiredMoveMeters - rodPullMoveMeters),
+      holdReelRecoverMoveMeters,
+    );
+    const reelHoldMovement = this.#applyRodPullMovement({
+      floatEntity,
+      rodTipPosition,
+      deltaMeters: reelHoldDesiredMoveMeters,
+      pixelsPerMeter:
+        this.#physicsConfig?.getPixelsPerMeter?.() ||
+        50,
+      bounds,
+      checkWater,
+    });
+    const reelHoldMoveMeters = reelHoldMovement.meters;
+    const totalAppliedMoveMeters = rodPullMoveMeters + reelHoldMoveMeters;
     const movementBlocked =
-      desiredMoveMeters > rodPullMoveMeters + 0.001 ||
+      fishRetrieveFrame.desiredMoveMeters > totalAppliedMoveMeters + 0.001 ||
       (
         rodStrokeMovementBlocked &&
         !holdReelRecoverActive
       );
-    const tensionBlocked =
-      desiredMoveMeters > rodPullMoveMeters + 0.001;
+    const hardTensionBlocked =
+      !!lineStateBeforePull.isFullyExtended ||
+      rodPullMovement.hardBlocked ||
+      reelHoldMovement.hardBlocked;
     const fishRetrieveResult = fishRetrieveFrame
       .withAppliedMovement({
-        appliedMoveMeters: rodPullMoveMeters,
+        appliedMoveMeters: totalAppliedMoveMeters,
         movementBlocked,
-        tensionBlocked,
+        hardTensionBlocked,
       });
     if (rodPullResult.active) {
-      rodPullSystem.recordAppliedStroke?.({
-        movedMeters: Math.min(rodPullMoveMeters, rodStrokeMoveCapacityMeters),
+      rodPullSystem.recordYMovement?.({
+        gainedMeters: pullYFrame.yTowardMeters,
       });
     }
     const lineStateAfterPull = lineSystem.updateDistance(
@@ -528,8 +610,12 @@ class FightPhysicsSystem {
       rodPullResult,
       fishRetrieveResult,
       rodPullMoveMeters,
+      reelHoldMoveMeters,
+      rodPullMovementBlockReason: rodPullMovement.blockedReason,
+      reelHoldMovementBlockReason: reelHoldMovement.blockedReason,
+      hardTensionBlocked,
       holdReelRecoverMoveMeters: holdReelRecoverActive
-        ? rodPullMoveMeters
+        ? reelHoldMoveMeters
         : 0,
       hardLineLimitBeforeRelease: !!lineStateAfterPull.isFullyExtended,
     };
@@ -559,7 +645,12 @@ class FightPhysicsSystem {
   #isRodStrokeMovementBlocked(rodPullResult, remainingStrokeMeters = null) {
     if (!rodPullResult?.active) return false;
     const reason = rodPullResult.blockedReason;
-    if (reason === "pump_credit_too_high") return true;
+    if (
+      reason === "stroke_capacity_unavailable" ||
+      reason === "pump_credit_too_high"
+    ) {
+      return true;
+    }
     if (reason === "max_distance_reached") {
       if (remainingStrokeMeters !== null) {
         return Math.max(0, Number(remainingStrokeMeters) || 0) <= 0.001;
@@ -720,13 +811,55 @@ class FightPhysicsSystem {
     });
   }
 
+  #recoverRodStrokeCredit({
+    dtSec,
+    reelSystem,
+    lineSystem,
+    reel,
+    tensionKg,
+    blockedReason,
+    playerHoldActive,
+    strokeWonMeters,
+    fishDistanceMeters,
+  }) {
+    if (!reelSystem?.recoverRodStrokeCredit) {
+      return {
+        active: false,
+        blockedReason: "missing_reel_recovery",
+        reelLoadRatio: 1,
+        reelEfficiency: 0,
+        recoverSpeedMetersPerSec: 0,
+        desiredRecoverMeters: 0,
+        maxRecoverByLineMeters: 0,
+        recoveredMeters: 0,
+      };
+    }
+
+    return reelSystem.recoverRodStrokeCredit({
+      dtSec,
+      lineSystem,
+      reel,
+      tensionKg,
+      blockedReason,
+      playerHoldActive,
+      strokeWonMeters,
+      fishDistanceMeters,
+    });
+  }
+
   #resolveReelRecoveryLoad({ tensionResult, dragContext }) {
     const rawLoadKg = Math.max(0, Number(tensionResult?.rawTensionKg) || 0);
     const dragLimitKg = Math.max(0, Number(dragContext?.effectiveDragLimitKg) || 0);
     if (!dragContext?.dragLocked && rawLoadKg > dragLimitKg + 0.001) {
-      return Infinity;
+      return {
+        tensionKg: rawLoadKg,
+        blockedReason: "raw_load_above_drag_limit",
+      };
     }
-    return rawLoadKg;
+    return {
+      tensionKg: rawLoadKg,
+      blockedReason: null,
+    };
   }
 
   #updateHoldReelRecovery({
@@ -738,142 +871,44 @@ class FightPhysicsSystem {
     tensionPreview,
     dragContext,
     physics,
+    lineState,
   }) {
-    const reelConfig = this.#physicsConfig?.getReelConfig?.() || {};
-    const configuredDelayMs = Number(reelConfig.holdRecoverAfterFullStrokeMs);
-    const delayMs = Number.isFinite(configuredDelayMs)
-      ? Math.max(0, configuredDelayMs)
-      : 0;
-    const configuredStrokeRatio = Number(reelConfig.holdRecoverStrokeRatio);
-    const requiredStrokeRatio = Number.isFinite(configuredStrokeRatio)
-      ? Math.max(0, Math.min(1, configuredStrokeRatio))
-      : 1;
-    const configuredStrokeToleranceMeters = Number(
-      reelConfig.holdRecoverStrokeToleranceMeters,
-    );
-    const strokeToleranceMeters = Number.isFinite(configuredStrokeToleranceMeters)
-      ? Math.max(0, configuredStrokeToleranceMeters)
-      : Math.max(
-          0.001,
-          Number(this.#physicsConfig?.getRodPullConfig?.()?.minStrokeMeters) ||
-            0.001,
-        );
-    const rawLoadKg = Math.max(0, Number(tensionPreview?.rawTensionKg) || 0);
-    const reelMaxLoadKg = Math.max(
+    const reelHoldConfig =
+      this.#physicsConfig?.getReelHoldConfig?.() ||
+      this.#physicsConfig?.getReelConfig?.() ||
+      {};
+    const lineRecoverableMeters = Math.max(
       0,
-      Number(reel?.getEffectiveMaxLoadKg?.()) ||
-        Number(reel?.getMaxLoadKg?.()) ||
-        0,
+      Number(lineState?.recoverableLineMeters) ||
+        (
+          (Number(lineState?.releasedMeters) || 0) -
+          (Number(lineState?.distanceMeters) || 0)
+        ),
     );
-    const reelLoadReserveRatio =
-      reelMaxLoadKg > 0
-        ? Math.max(0, Math.min(1, (reelMaxLoadKg - rawLoadKg) / reelMaxLoadKg))
-        : 0;
-    const reelRetrieveSpeedMetersPerSecond = Math.max(
-      0,
-      Number(reel?.getRetrieveSpeedMetersPerSec?.()) || 0,
-    );
-    const recoverSpeedMetersPerSecond =
-      reelRetrieveSpeedMetersPerSecond * reelLoadReserveRatio;
-    const strokeRatio = Math.max(
-      0,
-      Math.min(1, Number(rodPullResult?.rodStrokeRatio) || 0),
-    );
-    const strokeCapacityMeters = Math.max(
-      0,
-      Number(rodPullResult?.rodStrokeCapacityMeters) || 0,
-    );
-    const strokeUnrecoveredMeters = Math.max(
-      0,
-      Number(rodPullResult?.rodStrokeUnrecoveredMeters) || 0,
-    );
-    const strokeFull =
-      strokeRatio >= requiredStrokeRatio ||
-      (
-        strokeCapacityMeters > 0 &&
-        strokeUnrecoveredMeters >= strokeCapacityMeters - strokeToleranceMeters
-      ) ||
-      rodPullResult?.blockedReason === "max_distance_reached";
-    const dragLimitKg = Math.max(
-      0,
-      Number(dragContext?.effectiveDragLimitKg) || 0,
-    );
-    const tensionBelowDragLimit =
-      !!dragContext?.dragLocked || rawLoadKg < dragLimitKg - 0.001;
-    const tensionBelowMaxLoad = reelLoadReserveRatio > 0.01;
-    const dragCanHold =
-      tensionPreview?.shouldSlipDrag !== true &&
-      tensionBelowDragLimit &&
-      tensionBelowMaxLoad;
-    const eligible =
-      reelConfig.holdRecoverAfterFullStrokeMs !== false &&
-      !!hasReel &&
-      !!isPullMode &&
-      !!rodPullResult?.active &&
-      strokeFull &&
-      dragCanHold &&
-      recoverSpeedMetersPerSecond > 0.001;
-    const blockedReason = this.#resolveHoldReelRecoverBlockedReason({
-      reelConfig,
+
+    this.#holdReelRecoverState = this.#reelHoldRecoverySystem.update({
+      dtMs,
+      config: reelHoldConfig,
       hasReel,
-      isPullMode,
-      rodPullResult,
-      strokeFull,
-      dragCanHold,
-      reelLoadReserveRatio,
-      tensionBelowDragLimit,
-      tensionBelowMaxLoad,
-      recoverSpeedMetersPerSecond,
+      playerHoldActive: isPullMode,
+      rodPullActive: rodPullResult?.active,
+      strokeRatio: rodPullResult?.rodStrokeRatio,
+      strokeCapacityMeters: rodPullResult?.rodStrokeCapacityMeters,
+      strokeUnrecoveredMeters: rodPullResult?.rodStrokeUnrecoveredMeters,
+      rodPullBlockedReason: rodPullResult?.blockedReason,
+      rawTensionKg: tensionPreview?.rawTensionKg,
+      dragLimitKg: dragContext?.effectiveDragLimitKg,
+      dragLocked: dragContext?.dragLocked,
+      shouldSlipDrag: tensionPreview?.shouldSlipDrag,
+      reelMaxLoadKg:
+        reel?.getEffectiveMaxLoadKg?.() ??
+        reel?.getMaxLoadKg?.() ??
+        0,
+      retrieveSpeedMetersPerSecond: reel?.getRetrieveSpeedMetersPerSec?.() ?? 0,
+      lineRecoverableMeters,
+      physics,
     });
-
-    this.#holdReelRecoverTimerMs = eligible
-      ? Math.min(
-          delayMs,
-          this.#holdReelRecoverTimerMs + Math.max(0, Number(dtMs) || 0),
-        )
-      : 0;
-
-    const active = eligible && this.#holdReelRecoverTimerMs >= delayMs;
-    this.#holdReelRecoverState = {
-      eligible,
-      active,
-      timerMs: this.#holdReelRecoverTimerMs,
-      delayMs,
-      reelLoadReserveRatio,
-      reelMaxLoadKg,
-      recoverSpeedMetersPerSecond,
-      maxMoveMeters: recoverSpeedMetersPerSecond *
-        (Math.max(0, Number(dtMs) || 0) / 1000),
-      blockedReason,
-    };
     return this.#holdReelRecoverState;
-  }
-
-  #resolveHoldReelRecoverBlockedReason({
-    reelConfig,
-    hasReel,
-    isPullMode,
-    rodPullResult,
-    strokeFull,
-    dragCanHold,
-    reelLoadReserveRatio,
-    tensionBelowDragLimit,
-    tensionBelowMaxLoad,
-    recoverSpeedMetersPerSecond,
-  }) {
-    if (reelConfig.holdRecoverAfterFullStrokeMs === false) return "disabled";
-    if (!hasReel) return "no_reel";
-    if (!isPullMode) return "not_holding";
-    if (!rodPullResult?.active) return "rod_pull_inactive";
-    if (!strokeFull) return "stroke_not_full";
-    if (!dragCanHold) {
-      if (!tensionBelowDragLimit) return "at_drag_limit";
-      if (!tensionBelowMaxLoad) return "near_max_load";
-      return "drag_slipping";
-    }
-    if (reelLoadReserveRatio <= 0.01) return "no_reel_load_reserve";
-    if (recoverSpeedMetersPerSecond <= 0.001) return "zero_recover_speed";
-    return "ready";
   }
 
   #resolveLineLimit({
@@ -941,12 +976,18 @@ class FightPhysicsSystem {
     actualSlackMeters,
     releaseResult,
     recoveredMeters,
+    autoRecovery,
+    autoRecoveredMeters,
+    holdRecoveredMeters,
     hardLineLimit,
     constraintResult,
     rodPullDisplay,
     rodPullResult,
     rodPullMoveMeters,
     holdReelRecoverMoveMeters,
+    rodPullMovementBlockReason,
+    reelHoldMovementBlockReason,
+    hardTensionBlocked,
     fishRetrieveResult,
     landingLiftResult,
     tensionResult,
@@ -957,15 +998,62 @@ class FightPhysicsSystem {
     holdReelRecover,
     dragContext,
   }) {
+    const lineHasReserve = this.#lineHasReserve(lineState);
+    const lineDebug = {
+      totalLineMeters: Math.max(0, Number(lineState.totalLineMeters ?? lineState.totalLengthMeters) || 0),
+      fishDistanceMeters: Math.max(0, Number(lineState.distanceMeters) || 0),
+      releasedLineMeters: Math.max(0, Number(lineState.releasedMeters) || 0),
+      remainingLineMeters: Math.max(0, Number(lineState.remainingMeters) || 0),
+      recoverableLineMeters: Math.max(0, Number(lineState.recoverableLineMeters) || 0),
+      initialPumpCreditMeters: Math.max(0, Number(initialPumpCreditMeters) || 0),
+      finalPumpCreditMeters: Math.max(0, Number(finalPumpCreditMeters) || 0),
+      lineReleasedThisFrameMeters: Math.max(0, Number(releaseResult.releasedMeters) || 0),
+      lineRecoveredThisFrameMeters: Math.max(0, Number(recoveredMeters) || 0),
+      lineDemandedThisFrameMeters: Math.max(0, Number(releaseResult.demandedMeters) || 0),
+      lineUnsatisfiedThisFrameMeters: Math.max(0, Number(releaseResult.unsatisfiedMeters) || 0),
+      lineHasReserve,
+      spoolEmpty: !lineHasReserve,
+      fullyExtended: !!lineState.isFullyExtended,
+      hardLineLimit: !!hardLineLimit,
+      hardLineLimitMeters: Math.max(0, Number(lineState.releasedMeters) || 0),
+      rodStrokeCapacityMeters: Math.max(0, Number(rodPullDisplay.rodStrokeCapacityMeters) || 0),
+      rodStrokeWonMeters: Math.max(0, Number(rodPullDisplay.rodStrokeWonMeters) || 0),
+      rodStrokeUsedMeters: Math.max(0, Number(rodPullDisplay.rodStrokeUsedMeters) || 0),
+      rodStrokeUnrecoveredMeters: Math.max(0, Number(rodPullDisplay.rodStrokeUnrecoveredMeters) || 0),
+      rodStrokeRatio: Math.max(0, Math.min(1, Number(rodPullDisplay.rodStrokeRatio) || 0)),
+      strokeRecoveredMeters: Math.max(0, Number(rodPullDisplay.strokeRecoveredMeters) || 0),
+      strokeSyncedMeters: Math.max(0, Number(rodPullDisplay.strokeSyncedMeters) || 0),
+      strokeYGainedMeters: Math.max(0, Number(rodPullDisplay.strokeYGainedMeters) || 0),
+      strokeYLostMeters: Math.max(0, Number(rodPullDisplay.strokeYLostMeters) || 0),
+      autoRecoverActive: !!autoRecovery?.active,
+      autoRecoverBlockedReason: autoRecovery?.blockedReason || "not_checked",
+      autoRecoverSpeedMetersPerSec:
+        Math.max(0, Number(autoRecovery?.recoverSpeedMetersPerSec) || 0),
+      autoRecoverBaseRetrieveSpeedMetersPerSec:
+        Math.max(0, Number(autoRecovery?.retrieveSpeedMetersPerSec) || 0),
+      autoRecoverReelMaxLoadKg:
+        Math.max(0, Number(autoRecovery?.reelMaxLoadKg) || 0),
+      autoRecoverReelEfficiency:
+        Math.max(0, Math.min(1, Number(autoRecovery?.reelEfficiency) || 0)),
+      autoRecoverReelLoadRatio:
+        Math.max(0, Math.min(1, Number(autoRecovery?.reelLoadRatio) || 0)),
+      autoRecoveredMeters: Math.max(0, Number(autoRecoveredMeters) || 0),
+      holdRecoveredMeters: Math.max(0, Number(holdRecoveredMeters) || 0),
+      strokeResetReason: rodPullDisplay.strokeResetReason || "none",
+      strokeSyncReason: rodPullDisplay.strokeSyncReason || "none",
+    };
+
     return {
       ...forceData.debug,
       ...dragSystem.getDebugData(),
       dragSupported: !!dragContext.dragSupported,
+      lineDebug,
+      lineTotalMeters: lineState.totalLineMeters ?? lineState.totalLengthMeters,
       lineReleasedMeters: lineState.releasedMeters,
       lineRemainingMeters: lineState.remainingMeters,
-      lineCanRelease: this.#lineHasReserve(lineState),
-      lineSpoolEmpty: !this.#lineHasReserve(lineState),
-      lineReserveEmpty: !this.#lineHasReserve(lineState),
+      lineCanRelease: lineHasReserve,
+      lineSpoolEmpty: !lineHasReserve,
+      lineReserveEmpty: !lineHasReserve,
       physicalLineLimit: !!lineState.isFullyExtended,
       lineMaxRemainingMeters: lineState.maxRemainingMeters,
       lineBaseReachMeters: lineState.baseReachMeters,
@@ -1057,6 +1145,7 @@ class FightPhysicsSystem {
       rodPullAvailableDistanceMeters: rodPullDisplay.availableDistanceMeters,
       rodPullDeltaMeters: rodPullResult.deltaMeters,
       rodPullMoveMeters,
+      rodPullMovementBlockReason: rodPullMovementBlockReason || "none",
       rodPullCanMoveFish: rodPullResult.canMoveFish,
       rodPullBlockedReason: rodPullDisplay.blockedReason,
       rodPullDragSlipping: rodPullDisplay.dragSlipping,
@@ -1066,11 +1155,30 @@ class FightPhysicsSystem {
       rodPullChargePerSecond: rodPullDisplay.chargePerSecond,
       activeRodPullForceKg: rodPullResult.forceKg,
       rodStrokeCapacityMeters: rodPullDisplay.rodStrokeCapacityMeters,
+      rodStrokeWonMeters: rodPullDisplay.rodStrokeWonMeters,
       rodStrokeUsedMeters: rodPullDisplay.rodStrokeUsedMeters,
       rodStrokeUnrecoveredMeters: rodPullDisplay.rodStrokeUnrecoveredMeters,
       rodStrokeRatio: rodPullDisplay.rodStrokeRatio,
+      strokeRecoveredMeters: rodPullDisplay.strokeRecoveredMeters ?? 0,
+      strokeSyncedMeters: rodPullDisplay.strokeSyncedMeters ?? 0,
+      strokeYGainedMeters: rodPullDisplay.strokeYGainedMeters ?? 0,
+      strokeYLostMeters: rodPullDisplay.strokeYLostMeters ?? 0,
+      strokeResetReason: rodPullDisplay.strokeResetReason || "none",
+      strokeSyncReason: rodPullDisplay.strokeSyncReason || "none",
       availableExtraForceKg: rodPullDisplay.availableExtraForceKg,
       reelRecoveringSlack: recoveredMeters > 0,
+      autoRecoverActive: !!autoRecovery?.active,
+      autoRecoverBlockedReason: autoRecovery?.blockedReason || "not_checked",
+      autoRecoverSpeedMps: autoRecovery?.recoverSpeedMetersPerSec ?? 0,
+      autoRecoverBaseRetrieveSpeedMps:
+        autoRecovery?.retrieveSpeedMetersPerSec ?? 0,
+      autoRecoverReelMaxLoadKg: autoRecovery?.reelMaxLoadKg ?? 0,
+      autoRecoverReelEfficiency: autoRecovery?.reelEfficiency ?? 0,
+      autoRecoverReelLoadRatio: autoRecovery?.reelLoadRatio ?? 0,
+      autoRecoverDesiredMeters: autoRecovery?.desiredRecoverMeters ?? 0,
+      autoRecoverMaxByLineMeters: autoRecovery?.maxRecoverByLineMeters ?? 0,
+      autoRecoveredMeters: autoRecoveredMeters ?? 0,
+      holdRecoveredMeters: holdRecoveredMeters ?? 0,
       holdReelRecoverEligible: !!holdReelRecover?.eligible,
       holdReelRecoverActive: !!holdReelRecover?.active,
       holdReelRecoverTimerMs: holdReelRecover?.timerMs ?? 0,
@@ -1081,6 +1189,8 @@ class FightPhysicsSystem {
       holdReelRecoverSpeedMps:
         holdReelRecover?.recoverSpeedMetersPerSecond ?? 0,
       holdReelRecoverMoveMeters: holdReelRecoverMoveMeters ?? 0,
+      reelHoldMovementBlockReason: reelHoldMovementBlockReason || "none",
+      hardTensionBlocked: !!hardTensionBlocked,
       holdReelRecoverBlockedReason:
         holdReelRecover?.blockedReason || "not_checked",
       tensionMode: tensionResult.mode,
@@ -1157,6 +1267,26 @@ class FightPhysicsSystem {
     return this.#lineHasReserve(lineState) || !lineState?.isFullyExtended;
   }
 
+  #calculateAllowedPullMoveMeters({
+    requestedMoveMeters,
+    remainingStrokeMeters,
+    fishPosition,
+    rodTipPosition,
+  }) {
+    const requested = Math.max(0, Number(requestedMoveMeters) || 0);
+    const remainingStroke = Math.max(0, Number(remainingStrokeMeters) || 0);
+    if (requested <= 0 || remainingStroke <= 0) return 0;
+
+    const dx = (Number(rodTipPosition?.x) || 0) - (Number(fishPosition?.x) || 0);
+    const dy = (Number(rodTipPosition?.y) || 0) - (Number(fishPosition?.y) || 0);
+    const distance = Math.hypot(dx, dy);
+    if (distance <= 0.001) return 0;
+
+    const yRatio = Math.abs(dy) / distance;
+    if (yRatio <= 0.000001) return requested;
+    return Math.min(requested, remainingStroke / yRatio);
+  }
+
   #applyRodPullMovement({
     floatEntity,
     rodTipPosition,
@@ -1166,23 +1296,30 @@ class FightPhysicsSystem {
     checkWater,
   }) {
     const meters = Math.max(0, Number(deltaMeters) || 0);
-    if (meters <= 0) return 0;
+    if (meters <= 0) return this.#movementResult();
 
     const position = floatEntity.getPosition();
     const dx = rodTipPosition.x - position.x;
     const dy = rodTipPosition.y - position.y;
     const distancePx = Math.hypot(dx, dy);
-    if (distancePx <= 0.001) return 0;
+    if (distancePx <= 0.001) {
+      return this.#movementResult({ blockedReason: "target_reached" });
+    }
 
     const scale = Math.max(1, Number(pixelsPerMeter) || 50);
     const movePx = Math.min(distancePx, meters * scale);
+    const rawNext = {
+      x: position.x + (dx / distancePx) * movePx,
+      y: position.y + (dy / distancePx) * movePx,
+    };
     const next = this.#clampToBounds(
-      {
-        x: position.x + (dx / distancePx) * movePx,
-        y: position.y + (dy / distancePx) * movePx,
-      },
+      rawNext,
       bounds,
     );
+    let hardBlocked =
+      Math.abs(next.x - rawNext.x) > 0.001 ||
+      Math.abs(next.y - rawNext.y) > 0.001;
+    let blockedReason = hardBlocked ? "bounds_blocked" : "none";
 
     if (typeof checkWater === "function" && !checkWater(next.x, next.y)) {
       const waterEdgePoint = this.#findLastWaterPoint({
@@ -1190,7 +1327,11 @@ class FightPhysicsSystem {
         to: next,
         checkWater,
       });
-      if (!waterEdgePoint) return 0;
+      hardBlocked = true;
+      blockedReason = "water_blocked";
+      if (!waterEdgePoint) {
+        return this.#movementResult({ blockedReason, hardBlocked });
+      }
       next.x = waterEdgePoint.x;
       next.y = waterEdgePoint.y;
     }
@@ -1198,7 +1339,23 @@ class FightPhysicsSystem {
     const appliedPx = Math.hypot(next.x - position.x, next.y - position.y);
     position.x = next.x;
     position.y = next.y;
-    return appliedPx / scale;
+    return this.#movementResult({
+      meters: appliedPx / scale,
+      blockedReason,
+      hardBlocked,
+    });
+  }
+
+  #movementResult({
+    meters = 0,
+    blockedReason = "none",
+    hardBlocked = false,
+  } = {}) {
+    return {
+      meters: Math.max(0, Number(meters) || 0),
+      blockedReason,
+      hardBlocked: !!hardBlocked,
+    };
   }
 
   #findLastWaterPoint({ from, to, checkWater }) {

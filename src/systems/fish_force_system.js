@@ -145,7 +145,7 @@ class FishForceSystem {
     const dragLocked = !dragSupported;
 
     const awayFromPlayerRatio = Math.max(0, moveDir.x * awayDir.x + moveDir.y * awayDir.y);
-    const yAwayRatio = this.#calculateYAwayRatio(moveDir);
+    const yAwayRatio = this.#calculateYAwayRatio({ moveDir, awayDir });
     const fishWonForceKg = Math.max(
       0,
       totalFishForceKg - Math.max(0, Number(activeRodHoldKg) || 0),
@@ -384,8 +384,10 @@ class FishForceSystem {
     return { name: "side", multiplier: sideMultiplier };
   }
 
-  #calculateYAwayRatio(moveDir) {
-    return this.#clamp01(Math.abs(Number(moveDir?.y) || 0));
+  #calculateYAwayRatio({ moveDir, awayDir }) {
+    const awayYSign = Math.sign(Number(awayDir?.y) || 0);
+    if (awayYSign === 0) return 0;
+    return this.#clamp01((Number(moveDir?.y) || 0) * awayYSign);
   }
 
   #lerp(a, b, t) {

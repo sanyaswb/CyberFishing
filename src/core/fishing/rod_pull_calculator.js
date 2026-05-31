@@ -5,13 +5,9 @@ class RodPullCalculator {
     this.#config = config || {};
   }
 
-  calculateAvailableDistance({ rodLengthMeters, pumpCreditMeters, slackMeters, fishDistanceMeters }) {
+  calculateStrokeCapacity({ rodLengthMeters, fishDistanceMeters } = {}) {
     const maxDistanceMeters = this.calculateMaxDistance({ rodLengthMeters });
-    const creditValue = pumpCreditMeters ?? slackMeters;
-    const pumpCreditPenalty = this.#config.pumpCreditReducesNextPullDistance === false || this.#config.slackReducesNextPullDistance === false
-      ? 0
-      : Math.max(0, Number(creditValue) || 0);
-    const available = Math.max(0, maxDistanceMeters - pumpCreditPenalty);
+    const available = maxDistanceMeters;
     const distanceToFish = Math.max(0, Number(fishDistanceMeters) || 0);
     const finalLandingDistance = Math.max(
       0,
@@ -27,9 +23,21 @@ class RodPullCalculator {
     return available;
   }
 
+  calculateAvailableDistance(args = {}) {
+    // Deprecated compatibility alias. Pump credit/slack no longer reduce rod stroke.
+    return this.calculateStrokeCapacity(args);
+  }
+
   calculateMaxDistance({ rodLengthMeters }) {
-    const multiplier = Number(this.#config.distanceMultiplierByRodLength);
-    return Math.max(0, (Number(rodLengthMeters) || 0) * (Number.isFinite(multiplier) ? multiplier : 1));
+    const multiplier = Number(
+      this.#config.capacityByRodLengthRatio ??
+        this.#config.distanceMultiplierByRodLength,
+    );
+    return Math.max(
+      0,
+      (Number(rodLengthMeters) || 0) *
+        (Number.isFinite(multiplier) ? multiplier : 0.5),
+    );
   }
 
   // New-model contract: RodPullCalculator owns only player demand + rod stroke.
@@ -110,10 +118,8 @@ class RodPullCalculator {
     fishDistanceMeters,
   }) {
     const maxDistanceMeters = this.calculateMaxDistance({ rodLengthMeters });
-    const availableDistanceMeters = this.calculateAvailableDistance({
+    const availableDistanceMeters = this.calculateStrokeCapacity({
       rodLengthMeters,
-      pumpCreditMeters,
-      slackMeters,
       fishDistanceMeters,
     });
     const releasedThisFrame = !!input?.pullReleasedThisFrame;
@@ -168,7 +174,7 @@ class RodPullCalculator {
         rodHoldMaxKg: forceLimit.rodHoldMaxKg,
         holdTensionRatio,
         dragSlipping: forceLimit.dragSlipping,
-        blockedReason: "pump_credit_too_high",
+        blockedReason: "stroke_capacity_unavailable",
         lineHasReserve: lineCanRelease,
         canReleaseLine: lineCanRelease,
         spoolEmpty: !lineCanRelease,

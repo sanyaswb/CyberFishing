@@ -25,8 +25,12 @@ const FILES = [
   "src/config/runtime/immutable_config.js",
   "src/config/config.js",
   "src/input/pull_input_mapper.js",
+  "src/core/line/line_spool_state.js",
   "src/core/fishing/rod_pull_state.js",
   "src/core/fishing/rod_stroke_state.js",
+  "src/core/fishing/rod_stroke_tracker.js",
+  "src/core/fishing/reel_auto_recovery_calculator.js",
+  "src/core/fishing/reel_hold_recovery_system.js",
   "src/core/fishing/slack_calculator.js",
   "src/core/fishing/rod_pull_calculator.js",
   "src/core/fishing/retrieve_policy.js",
@@ -75,15 +79,46 @@ const retrievePolicyResolver = new IdleRetrievePolicyResolver();
 const poleIdleParams = retrievePolicyResolver.resolve({ rod: { hasReel: false }, reel: null }).getRetrieveParams({ config: CONFIG });
 approx(poleIdleParams.targetSpeedPxPerSec, poleIdleRetrieveConfig.speedMetersPerSecond * pixelsPerMeter, 0.001, "pole idle retrieve keeps dedicated policy");
 
-const calculator = new RodPullCalculator({ ...rodPullConfig, distanceMultiplierByRodLength: 1 });
-approx(calculator.calculateAvailableDistance({ rodLengthMeters: 3.6, slackMeters: 0 }), 3.6, 0.001, "full rod stroke equals rod length when multiplier is 1");
-approx(calculator.calculateAvailableDistance({ rodLengthMeters: 3.6, slackMeters: 2 }), 1.6, 0.001, "pump credit reduces next rod stroke when enabled");
+const spool = new LineSpoolState({ totalLineMeters: 20 });
+approx(spool.release(25), 20, 0.001, "line spool releases the full 20m without rod-length subtraction");
+approx(spool.releasedLineMeters, 20, 0.001, "line spool total usable line equals equipped line length");
+approx(spool.remainingLineMeters, 0, 0.001, "line spool reserve reaches zero only after full line release");
+approx(spool.recover(5, 18), 2, 0.001, "line spool recovery cannot shorten line below fish distance");
+
+const strokeTracker = new RodStrokeTracker();
+let yFrame = strokeTracker.calculate({ previousFishY: 100, currentFishY: 115, pixelsPerMeter: 50, towardPlayerYSign: 1 });
+approx(yFrame.yTowardMeters, 0.3, 0.001, "Y-only tracker counts toward-player Y gain");
+approx(yFrame.yAwayMeters, 0, 0.001, "Y-only tracker ignores away loss during Y gain");
+yFrame = strokeTracker.calculate({ previousFishY: 115, currentFishY: 102.5, pixelsPerMeter: 50, towardPlayerYSign: 1 });
+approx(yFrame.yTowardMeters, 0, 0.001, "Y-only tracker reports no gain during Y escape");
+approx(yFrame.yAwayMeters, 0.25, 0.001, "Y-only tracker counts Y escape as stroke loss");
+
+const strokeState = new RodStrokeState();
+strokeState.setCapacity(1.8);
+approx(strokeState.addWonDistance(1), 1, 0.001, "rod stroke stores won Y distance");
+approx(strokeState.loseWonDistance(0), 0, 0.001, "zero Y side movement does not reduce stroke");
+approx(strokeState.wonMeters, 1, 0.001, "side movement leaves stroke won unchanged");
+approx(strokeState.loseWonDistance(0.25), 0.25, 0.001, "Y escape reduces won stroke during hold");
+approx(strokeState.wonMeters, 0.75, 0.001, "rod stroke keeps remaining won distance after Y escape");
+
+const calculator = new RodPullCalculator({
+  ...rodPullConfig,
+  capacityByRodLengthRatio: 1,
+  distanceMultiplierByRodLength: 1,
+});
+approx(calculator.calculateStrokeCapacity({ rodLengthMeters: 3.6 }), 3.6, 0.001, "full rod stroke equals rod length when multiplier is 1");
+approx(calculator.calculateAvailableDistance({ rodLengthMeters: 3.6, slackMeters: 2 }), 3.6, 0.001, "deprecated pump credit API no longer reduces rod stroke availability");
 
 const forceLimit = calculator.calculateForceLimit({ rodLimitKg: 3, fishTensionKg: 1.1 });
 approx(forceLimit.rodHoldMaxKg, 1.9, 0.001, "rodHoldMax = rodLimit - fishTension");
 approx(forceLimit.controlledPullLimitKg, 1.9, 0.001, "rod hold force is not clamped by line limit here");
 
-const rodPullSystem = new RodPullSystem({ ...rodPullConfig, distanceMultiplierByRodLength: 1, chargeTimeSeconds: 0.5 });
+const rodPullSystem = new RodPullSystem({
+  ...rodPullConfig,
+  capacityByRodLengthRatio: 1,
+  distanceMultiplierByRodLength: 1,
+  chargeTimeSeconds: 0.5,
+});
 const rod = { lengthMeters: 3.6, engineStats: { maxLoadKg: 3, holdTensionRatio: 0.5 } };
 const first = rodPullSystem.update({
   dtSec: 0.25,
@@ -98,6 +133,196 @@ const first = rodPullSystem.update({
 approx(first.rodHoldMaxKg, 1.9, 0.001, "RodPullSystem exposes rodHoldMax");
 approx(first.forceKg, 0.95, 0.001, "rod hold charges by chargeTimeSeconds");
 approx(first.holdTensionRatio, 0.5, 0.001, "rod hold reads holdTensionRatio from rod");
+assert(first.strokeResetReason === "stroke_capacity_initialized", "rod stroke initializes capacity without clearing won distance");
+
+const strokeApplied = rodPullSystem.recordAppliedStroke({ movedMeters: 0.5 });
+approx(strokeApplied.rodStrokeUnrecoveredMeters, 0.5, 0.001, "rod stroke tracks unrecovered pull distance");
+const strokeRecovered = rodPullSystem.recoverStroke({ recoveredMeters: 0.2 });
+approx(strokeRecovered.strokeRecoveredMeters, 0.2, 0.001, "rod stroke exposes recovered meters");
+assert(strokeRecovered.strokeResetReason === "recovered_by_reel", "rod stroke exposes reel recovery reason");
+const strokeSynced = rodPullSystem.syncStrokeToPumpCredit({ pumpCreditMeters: 0.1 });
+approx(strokeSynced.strokeSyncedMeters, 0, 0.001, "pump credit sync no longer changes rod stroke");
+assert(strokeSynced.strokeSyncReason === "debug_only", "pump credit sync is diagnostic only");
+
+const autoRecover = new ReelAutoRecoveryCalculator().calculate({
+  hasReel: true,
+  playerHoldActive: false,
+  strokeWonMeters: 1,
+  totalTensionKg: 0.5,
+  reelMaxLoadKg: 1,
+  retrieveSpeedMetersPerSec: 0.8,
+  releasedLineMeters: 8,
+  fishDistanceMeters: 7,
+  dtSec: 1,
+});
+approx(autoRecover.recoverSpeedMetersPerSec, 0.4, 0.001, "auto recovery speed scales from reel tension load");
+approx(autoRecover.recoveredMeters, 0.4, 0.001, "auto recovery recovers by scaled retrieve speed");
+const blockedAutoRecover = new ReelAutoRecoveryCalculator().calculate({
+  hasReel: true,
+  playerHoldActive: false,
+  strokeWonMeters: 1,
+  totalTensionKg: 1,
+  reelMaxLoadKg: 1,
+  retrieveSpeedMetersPerSec: 0.8,
+  releasedLineMeters: 8,
+  fishDistanceMeters: 7,
+  dtSec: 1,
+});
+approx(blockedAutoRecover.recoverSpeedMetersPerSec, 0, 0.001, "auto recovery stops at reel max load");
+assert(blockedAutoRecover.blockedReason === "tension_at_or_above_reel_load", "auto recovery reports reel load block");
+const noTeleportAutoRecover = new ReelAutoRecoveryCalculator().calculate({
+  hasReel: true,
+  playerHoldActive: false,
+  strokeWonMeters: 1,
+  totalTensionKg: 0,
+  reelMaxLoadKg: 1,
+  retrieveSpeedMetersPerSec: 0.8,
+  releasedLineMeters: 7.1,
+  fishDistanceMeters: 7,
+  dtSec: 1,
+});
+approx(noTeleportAutoRecover.recoveredMeters, 0.1, 0.001, "auto recovery cannot recover below fish distance");
+const lineTautAutoRecover = new ReelAutoRecoveryCalculator().calculate({
+  hasReel: true,
+  playerHoldActive: false,
+  strokeWonMeters: 1,
+  totalTensionKg: 0,
+  reelMaxLoadKg: 1,
+  retrieveSpeedMetersPerSec: 0.8,
+  releasedLineMeters: 7,
+  fishDistanceMeters: 7,
+  dtSec: 1,
+});
+assert(lineTautAutoRecover.blockedReason === "line_taut", "taut geometric line blocks auto recovery without reducing stroke");
+approx(lineTautAutoRecover.recoveredMeters, 0, 0.001, "taut geometric line recovers no released line");
+
+const autoRecoveryStrokeState = new RodStrokeState();
+autoRecoveryStrokeState.setCapacity(1.8);
+autoRecoveryStrokeState.addWonDistance(1);
+const autoRecoveryLineSystem = {
+  releasedMeters: 8,
+  getState() {
+    return {
+      releasedMeters: this.releasedMeters,
+      distanceMeters: 7,
+    };
+  },
+  recoverReleasedLine({ meters, minReleasedMeters }) {
+    const recovered = Math.min(
+      Math.max(0, Number(meters) || 0),
+      Math.max(0, this.releasedMeters - minReleasedMeters),
+    );
+    this.releasedMeters -= recovered;
+    return recovered;
+  },
+};
+const autoRecoveryReelSystem = new ReelSystem();
+const autoRecoveryResult = autoRecoveryReelSystem.recoverRodStrokeCredit({
+  dtSec: 1,
+  lineSystem: autoRecoveryLineSystem,
+  reel: {
+    hasReel: () => true,
+    getEffectiveMaxLoadKg: () => 1,
+    getRetrieveSpeedMetersPerSec: () => 0.8,
+  },
+  tensionKg: 0,
+  playerHoldActive: false,
+  strokeWonMeters: autoRecoveryStrokeState.wonMeters,
+  fishDistanceMeters: 7,
+});
+autoRecoveryStrokeState.recoverWonDistance(autoRecoveryResult.recoveredMeters);
+approx(autoRecoveryResult.recoveredMeters, 0.8, 0.001, "auto recovery recovers released line through spool channel");
+approx(autoRecoveryLineSystem.releasedMeters, 7.2, 0.001, "auto recovery decreases released line");
+approx(autoRecoveryStrokeState.wonMeters, 0.2, 0.001, "auto recovery decreases rod stroke by the same meters");
+
+const reelHold = new ReelHoldRecoverySystem().update({
+  dtMs: 1000,
+  config: { enabled: true, requireRodStrokeFull: true, delayMs: 0, strokeRatio: 1 },
+  hasReel: true,
+  playerHoldActive: true,
+  rodPullActive: true,
+  strokeRatio: 1,
+  strokeCapacityMeters: 1.8,
+  strokeUnrecoveredMeters: 1.8,
+  rawTensionKg: 0.5,
+  dragLimitKg: 1,
+  dragLocked: false,
+  shouldSlipDrag: false,
+  reelMaxLoadKg: 1,
+  retrieveSpeedMetersPerSecond: 0.8,
+  lineRecoverableMeters: 1,
+});
+assert(reelHold.active, "reel hold activates only as an explicit post-stroke mode");
+approx(reelHold.recoverSpeedMetersPerSecond, 0.4, 0.001, "reel hold speed scales from reel load reserve");
+approx(reelHold.maxMoveMeters, 0.4, 0.001, "reel hold exposes max movement for the frame");
+const blockedReelHold = new ReelHoldRecoverySystem().update({
+  dtMs: 1000,
+  config: { enabled: true, requireRodStrokeFull: true, delayMs: 0, strokeRatio: 1 },
+  hasReel: true,
+  playerHoldActive: true,
+  rodPullActive: true,
+  strokeRatio: 1,
+  strokeCapacityMeters: 1.8,
+  strokeUnrecoveredMeters: 1.8,
+  rawTensionKg: 0.5,
+  dragLimitKg: 1,
+  dragLocked: false,
+  shouldSlipDrag: false,
+  reelMaxLoadKg: 1,
+  retrieveSpeedMetersPerSecond: 0.8,
+  lineRecoverableMeters: 0,
+});
+assert(!blockedReelHold.active, "reel hold does not move fish without recoverable line");
+assert(blockedReelHold.blockedReason === "no_recoverable_line", "reel hold reports missing recoverable line");
+const reelHoldStrokeState = new RodStrokeState();
+reelHoldStrokeState.setCapacity(1.8);
+reelHoldStrokeState.addWonDistance(1);
+const strokeBeforeReelHold = reelHoldStrokeState.wonMeters;
+const reelHoldLineSystem = {
+  recoveredMeters: 0,
+  recoverLineCredit({ maxRecoverMeters }) {
+    this.recoveredMeters = Math.max(0, Number(maxRecoverMeters) || 0);
+    return this.recoveredMeters;
+  },
+};
+const reelHoldRecoveredMeters = new ReelSystem().recoverLineCredit({
+  dtSec: 1,
+  lineSystem: reelHoldLineSystem,
+  reel: {
+    hasReel: () => true,
+    getEffectiveMaxLoadKg: () => 1,
+    getRetrieveSpeedMetersPerSec: () => 0.8,
+  },
+  tensionKg: 0,
+  inputRecover: true,
+  maxRecoverMeters: 0.25,
+});
+approx(reelHoldRecoveredMeters, 0.25, 0.001, "reel hold recovers released line through line channel");
+approx(reelHoldStrokeState.wonMeters, strokeBeforeReelHold, 0.001, "reel hold does not mutate rod stroke");
+
+const cappedHoldResult = new FishRetrieveResult({
+  fishTensionKg: 0.035,
+  playerHoldTensionKg: 0.035,
+  rawPlayerHoldTensionKg: 1,
+  totalTensionKg: 0.07,
+  movableHoldTensionCapApplied: true,
+  fishCanMoveTowardPlayer: true,
+});
+const strokeFullMovementBlock = cappedHoldResult.withAppliedMovement({
+  appliedMoveMeters: 0,
+  movementBlocked: true,
+});
+approx(strokeFullMovementBlock.playerHoldTensionKg, 0.035, 0.001, "stroke-full movement block keeps movable hold cap");
+approx(strokeFullMovementBlock.totalTensionKg, 0.07, 0.001, "stroke-full movement block does not promote raw hold tension");
+assert(strokeFullMovementBlock.movableHoldTensionCapApplied, "stroke-full movement block keeps cap applied");
+assert(!strokeFullMovementBlock.tensionBlocked, "stroke-full movement block is not a hard tension block");
+const hardBlockedHold = cappedHoldResult.withAppliedMovement({
+  appliedMoveMeters: 0,
+  movementBlocked: true,
+  hardTensionBlocked: true,
+});
+approx(hardBlockedHold.playerHoldTensionKg, 1, 0.001, "hard tension block promotes raw hold tension");
+assert(!hardBlockedHold.movableHoldTensionCapApplied, "hard tension block disables movable hold cap");
 
 const simple = new FishRetrieveSystem(physicsAdapter).calculate({
   dtSec: 1,

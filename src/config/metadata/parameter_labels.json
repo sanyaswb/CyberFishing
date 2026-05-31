@@ -490,5 +490,21 @@
   "physics.fight.reelHold.requireRodStrokeFull": {
     "label": "Reel hold після повного ходу",
     "description": "Якщо true, катушка підмотує в hold-режимі тільки після використання повного rod stroke."
+  },
+  "physics.fight.rodStroke.capacityByRodLengthRatio": {
+    "label": "Rod stroke capacity ratio",
+    "description": "Rod length multiplier that defines maximum rod stroke in meters. For example, 0.5 means half of rod length."
+  },
+  "physics.fight.reelHold.delayMs": {
+    "label": "Reel hold delay",
+    "description": "Delay before reel hold activation after all reel hold conditions are satisfied."
+  },
+  "physics.fight.reelHold.strokeRatio": {
+    "label": "Reel hold stroke ratio",
+    "description": "Minimum used rod stroke ratio required before reel hold can activate."
+  },
+  "physics.fight.reelHold.strokeToleranceMeters": {
+    "label": "Reel hold stroke tolerance",
+    "description": "Meter tolerance used to decide that rod stroke is effectively full."
   }
 }

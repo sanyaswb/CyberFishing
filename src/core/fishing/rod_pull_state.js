@@ -20,6 +20,9 @@ class RodPullState {
   releasedThisFrame = false;
   releaseRecovering = false;
   releaseRecoveryRatio = 0;
+  rodStrokeWonMeters = 0;
+  rodStrokeUnrecoveredMeters = 0;
+  rodStrokeRatio = 0;
   lineHasReserve = true;
   canReleaseLine = true;
   spoolEmpty = false;
@@ -46,6 +49,9 @@ class RodPullState {
     this.releasedThisFrame = false;
     this.releaseRecovering = false;
     this.releaseRecoveryRatio = 0;
+    this.rodStrokeWonMeters = 0;
+    this.rodStrokeUnrecoveredMeters = 0;
+    this.rodStrokeRatio = 0;
     this.lineHasReserve = true;
     this.canReleaseLine = true;
     this.spoolEmpty = false;
