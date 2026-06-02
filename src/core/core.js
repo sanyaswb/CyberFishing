@@ -81,10 +81,13 @@ class InputManager {
   #releasePointerX;
   #releasePointerY;
   #hasPointerRelease = false;
+  #rodControlPointerActive = false;
   #rodControlAnchorX = 0;
   #rodControlCurrentX = 0;
   #rodControlDirectionX = 0;
   #rodControlInputRatio = 0;
+  #keyboardRodControlRatio = 0;
+  #lastKeyboardRodControlUpdateMs = 0;
   #panDeltaX;
   #panDeltaY;
   #swipeDeltaY = 0;
@@ -212,10 +215,12 @@ class InputManager {
       this.#currentPointerX = e.clientX;
       this.#currentPointerY = e.clientY;
       this.#hasPointerRelease = false;
+      this.#rodControlPointerActive = false;
       this.#rodControlAnchorX = e.clientX;
       this.#rodControlCurrentX = e.clientX;
       this.#rodControlDirectionX = 0;
       this.#rodControlInputRatio = 0;
+      this.#lastKeyboardRodControlUpdateMs = Date.now();
       this.#swipeDeltaY = 0;
       this.#hasSwipedThisTouch = false;
       this.#hasLongPressed = false;
@@ -316,6 +321,7 @@ class InputManager {
         this.#isDragControlActive = false;
         this.#pointerAction = PointerAction.IDLE;
         this.#pointerDownAtMs = 0;
+        this.#rodControlPointerActive = false;
         this.#rodControlDirectionX = 0;
         this.#rodControlInputRatio = 0;
       }
@@ -344,6 +350,7 @@ class InputManager {
       this.#isDragControlActive = false;
       this.#pointerAction = PointerAction.IDLE;
       this.#pointerDownAtMs = 0;
+      this.#rodControlPointerActive = false;
       this.#rodControlDirectionX = 0;
       this.#rodControlInputRatio = 0;
       resetInput();
@@ -408,16 +415,7 @@ class InputManager {
   }
 
   #updateDirection(e) {
-    let keyX = 0;
-    const keys = CONFIG.input?.keys || {};
-
-    // ЗМІНЕНО: Читаємо стрілки з конфігу
-    if (this.#checkKeyHeld(keys.left)) keyX = -1;
-    if (this.#checkKeyHeld(keys.right)) keyX = 1;
-
-    if (keyX !== 0) {
-      this.#pullDirection.set(keyX, 1).normalize();
-    } else if (e && e.clientX !== undefined) {
+    if (e && e.clientX !== undefined) {
       if (this.#isDragging) {
         const dx = e.clientX - this.#startX;
         // ЗМІНЕНО: Читаємо чутливість із конфігу (за замовчуванням 200)
@@ -437,7 +435,7 @@ class InputManager {
     if (!this.#dragControlEnabled) return;
     if (!this.#isPointerDown || this.#isDragControlActive) return;
     if (this.#pointerAction === PointerAction.PULL) return;
-    if (this.#pointerAction === PointerAction.ROD_CONTROL_X) return;
+    if (this.#rodControlPointerActive) return;
 
     const dx = this.#currentPointerX - this.#startX;
     const dy = this.#currentPointerY - this.#startY;
@@ -467,7 +465,7 @@ class InputManager {
 
   #canTriggerLongPress() {
     if (!this.#isPointerDown || this.#isDragControlActive) return false;
-    if (this.#pointerAction === PointerAction.ROD_CONTROL_X) return false;
+    if (this.#rodControlPointerActive) return false;
 
     const dx = this.#currentPointerX - this.#startX;
     const dy = this.#currentPointerY - this.#startY;
@@ -494,11 +492,6 @@ class InputManager {
       return;
     }
 
-    if (this.#pointerAction === PointerAction.ROD_CONTROL_X) {
-      this.#isPulling = false;
-      return;
-    }
-
     if (this.#pointerAction === PointerAction.PULL) {
       this.#isPulling = true;
       return;
@@ -519,7 +512,6 @@ class InputManager {
   #updateRodControlPointerState() {
     if (!this.#isPointerDown) return;
     if (this.#pointerAction === PointerAction.DRAG_CONTROL) return;
-    if (this.#pointerAction === PointerAction.PULL) return;
 
     const dx = this.#currentPointerX - this.#startX;
     const dy = this.#currentPointerY - this.#startY;
@@ -532,27 +524,55 @@ class InputManager {
       Number(config.horizontalDominanceRatio) || 1.15,
     );
 
-    if (this.#pointerAction === PointerAction.PENDING) {
+    if (!this.#rodControlPointerActive) {
       if (absX < minLock && absY < minLock) return;
       if (absX >= absY * dominance) {
-        this.#pointerAction = PointerAction.ROD_CONTROL_X;
-        this.#isPulling = false;
+        this.#rodControlPointerActive = true;
         this.#isDragControlActive = false;
         this.#clearLongPressTimeout();
       }
     }
 
-    if (this.#pointerAction !== PointerAction.ROD_CONTROL_X) return;
+    if (!this.#rodControlPointerActive) return;
 
     this.#rodControlCurrentX = this.#currentPointerX;
     const anchorX = Number(this.#rodControlAnchorX) || this.#startX;
     const controlDx = this.#rodControlCurrentX - anchorX;
     const fullPowerDistance = this.#getRodControlFullPowerDistancePx(config);
-    this.#rodControlDirectionX = Math.sign(controlDx);
+    this.#rodControlDirectionX = this.#resolveRodControlPointerDirection(
+      controlDx,
+      config,
+    );
+    const deadZone = Math.max(0, Number(config.directionDeadZonePx) || 12);
     this.#rodControlInputRatio = Math.max(
       0,
-      Math.min(1, Math.abs(controlDx) / fullPowerDistance),
+      Math.min(
+        1,
+        Math.abs(controlDx) < deadZone
+          ? 0
+          : Math.abs(controlDx) / fullPowerDistance,
+      ),
     );
+  }
+
+  #resolveRodControlPointerDirection(deltaX, config) {
+    const value = Number(deltaX) || 0;
+    const abs = Math.abs(value);
+    const deadZone = Math.max(0, Number(config.directionDeadZonePx) || 12);
+    const switchDeadZone = Math.max(
+      deadZone,
+      Number(config.directionSwitchDeadZonePx) || 24,
+    );
+    const nextDirection = Math.sign(value);
+    if (abs < deadZone) return this.#rodControlDirectionX || 0;
+    if (
+      this.#rodControlDirectionX !== 0 &&
+      nextDirection !== this.#rodControlDirectionX &&
+      abs < switchDeadZone
+    ) {
+      return this.#rodControlDirectionX;
+    }
+    return nextDirection;
   }
 
   #getRodControlInputConfig() {
@@ -587,29 +607,27 @@ class InputManager {
   getState() {
     const keys = CONFIG.input?.keys || {};
     const keyboardPulling = this.#checkKeyHeld(keys.pull);
-    const keyboardRodControlX =
-      this.#checkKeyHeld(keys.left) || this.#checkKeyHeld(keys.right);
     let keyboardRodDirectionX = 0;
     if (this.#checkKeyHeld(keys.left)) keyboardRodDirectionX -= 1;
     if (this.#checkKeyHeld(keys.right)) keyboardRodDirectionX += 1;
+    const keyboardRodControlX = keyboardRodDirectionX !== 0;
+    const keyboardRodRatio = this.#updateKeyboardRodControlRatio(
+      keyboardRodControlX,
+    );
 
     // Space/інша pull-клавіша має гарантовано працювати кожен кадр,
     // pointer-pull стартує тільки після pullHoldMinMs, якщо жест не став drag-control.
     this.#updatePointerPullState(Date.now());
     this.#isPulling =
-      !keyboardRodControlX &&
-      (keyboardPulling || this.#pointerAction === PointerAction.PULL);
+      keyboardPulling || this.#pointerAction === PointerAction.PULL;
 
-    // ЗМІНЕНО: Читаємо клавіші руху з конфігу
-    if (this.#checkKeyHeld(keys.left) || this.#checkKeyHeld(keys.right)) {
-      this.#updateDirection();
-    } else if (keyboardPulling && !this.#isPointerDown) {
+    if (keyboardPulling && !this.#isPointerDown) {
       this.#pullDirection.set(0, 1);
     }
 
     const state = this.#stateSnapshot;
     const rodControlActive =
-      keyboardRodControlX || this.#pointerAction === PointerAction.ROD_CONTROL_X;
+      keyboardRodControlX || this.#rodControlPointerActive;
     state.isPulling = this.#isPulling;
     state.pullDirection = this.#pullDirection;
     state.panDeltaX = this.#panDeltaX;
@@ -650,7 +668,7 @@ class InputManager {
       ? Math.sign(keyboardRodDirectionX)
       : this.#rodControlDirectionX;
     state.rodControlInputRatio = keyboardRodControlX
-      ? 1
+      ? keyboardRodRatio
       : this.#rodControlInputRatio;
     state.rodControlAnchorX = this.#rodControlAnchorX;
     state.rodControlCurrentX = this.#rodControlCurrentX;
@@ -665,6 +683,29 @@ class InputManager {
     this.#hasPointerRelease = false;
 
     return state;
+  }
+
+  #updateKeyboardRodControlRatio(active) {
+    const now = Date.now();
+    const previous = this.#lastKeyboardRodControlUpdateMs || now;
+    const dtSec = Math.max(0, now - previous) / 1000;
+    this.#lastKeyboardRodControlUpdateMs = now;
+    const config = this.#getRodControlInputConfig();
+    const upSeconds = Math.max(
+      0.001,
+      Number(config.keyboardRampUpSeconds) || 0.25,
+    );
+    const downSeconds = Math.max(
+      0.001,
+      Number(config.keyboardRampDownSeconds) || 0.18,
+    );
+    const rate = active ? 1 / upSeconds : 1 / downSeconds;
+    const direction = active ? 1 : -1;
+    this.#keyboardRodControlRatio = Math.max(
+      0,
+      Math.min(1, this.#keyboardRodControlRatio + direction * rate * dtSec),
+    );
+    return this.#keyboardRodControlRatio;
   }
 
   dispose() {

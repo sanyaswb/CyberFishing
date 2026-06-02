@@ -1266,14 +1266,19 @@
   }
 
   #drawRodControlBar(fightDebug, tensionConfig, layout) {
-    const ratio = Math.max(0, Math.min(1, Number(fightDebug?.rodControlRatio) || 0));
-    const used = Number(fightDebug?.rodControlUsedMeters) || 0;
-    const capacity = Number(fightDebug?.rodControlCapacityMeters) || 0;
-    const direction = Math.sign(Number(fightDebug?.rodControlDirectionX) || 0);
+    const ratio = Math.max(
+      0,
+      Math.min(1, Number(fightDebug?.rodControlDeliveredForceRatio) || 0),
+    );
+    const direction = Math.sign(
+      Number(fightDebug?.rodControlInputDirectionX) ||
+        Number(fightDebug?.rodControlDirectionX) ||
+        0,
+    );
     const active = !!fightDebug?.rodControlActive;
     const label = "Контроль вудки";
     const directionLabel = direction < 0 ? "L" : direction > 0 ? "R" : "-";
-    const value = `${directionLabel} ${used.toFixed(1)}м / ${capacity.toFixed(1)}м`;
+    const value = `${directionLabel} ${(ratio * 100).toFixed(0)}%`;
     const fillColor = active ? "#00d4ff" : "#5c7d99";
 
     this.#ctx.save();

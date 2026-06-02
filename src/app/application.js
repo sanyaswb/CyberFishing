@@ -5,6 +5,7 @@ class GameViewportFacade {
   #config;
   #biteEnvironmentService;
   #rodVirtualPos = new Vector2(0, 0);
+  #baseRodVirtualPos = new Vector2(0, 0);
   #screenScratch = new Vector2(0, 0);
   #playableScratch = new Vector2(0, 0);
   #viewportSize = { width: 0, height: 0 };
@@ -61,6 +62,14 @@ class GameViewportFacade {
     return this.#rodVirtualPos;
   }
 
+  getBaseRodVirtualPos(bounds, screenXOverride = null) {
+    const screenX = this.#resolveBaseRodScreenX(screenXOverride);
+
+    this.#projector.screenToVirtual(screenX, 0, this.#baseRodVirtualPos);
+    this.#baseRodVirtualPos.y = bounds.bottom;
+    return this.#baseRodVirtualPos;
+  }
+
   getScreenOffsetRatio(floatPos, screenXOverride = null) {
     const sPos = this.#projector.virtualToScreen(
       floatPos.x,
@@ -85,13 +94,17 @@ class GameViewportFacade {
             rodControlDirectionX: 0,
             rodControlInputRatio: 0,
           };
-    this.#rodVisualOffsetSystem.update({
+    const offsetX = this.#rodVisualOffsetSystem.update({
       dtSec: Math.max(0, Number(dtMs) || 0) / 1000,
       inputState: activeInput,
       fightDebug,
       config: rodControlConfig,
       canvasWidth: this.#canvasMetrics.width,
     });
+    if (fightDebug) {
+      fightDebug.rodVisualOffsetX = offsetX;
+      fightDebug.rodVisualClamped = this.#rodVisualOffsetSystem.isClamped();
+    }
   }
 
   getRodScreenX(screenXOverride = null, bounds = null) {
@@ -468,6 +481,7 @@ class GameApplication {
       getBiteEnv: () => this.getEnvDataForBite(),
       getDynamicBounds: () => this.getDynamicBounds(),
       getRodVirtualPos: (bounds) => this.getRodVirtualPos(bounds),
+      getBaseRodVirtualPos: (bounds) => this.getBaseRodVirtualPos(bounds),
       getRodScreenX: () => this.getRodScreenX(),
       getScreenOffsetRatio: (pos) => this.getScreenOffsetRatio(pos),
       setState: (name, data) => this.setState(name, data),
@@ -969,6 +983,13 @@ class GameApplication {
 
   getRodVirtualPos(bounds) {
     return this.#viewportFacade.getRodVirtualPos(bounds, this.#castRodScreenX);
+  }
+
+  getBaseRodVirtualPos(bounds) {
+    return this.#viewportFacade.getBaseRodVirtualPos(
+      bounds,
+      this.#castRodScreenX,
+    );
   }
 
   getRodScreenX(bounds = null) {

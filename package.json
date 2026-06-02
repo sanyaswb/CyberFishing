@@ -10,6 +10,7 @@
     "check:catch-debug": "node utils/catch-resolution-debug-check.js",
     "check:fish-speed": "node utils/fish-speed-delta-check.js",
     "check:rod-pull": "node utils/rod-pull-systems-check.js",
+    "check:rod-control-ux": "node utils/rod-control-ux-check.js",
     "check:line": "node utils/inventory-line-systems-check.js",
     "check:casting": "node utils/cast-power-check.js",
     "check:catch": "node utils/catch-resolution-check.js",

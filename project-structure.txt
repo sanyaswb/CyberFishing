@@ -255,6 +255,7 @@
   ├── local-bridge.js
   ├── physics-formula-golden-check.js
   ├── project-version-check.js
+  ├── rod-control-ux-check.js
   ├── rod-pull-systems-check.js
   ├── set-project-version.js
   ├── simulate-fish-fight.js

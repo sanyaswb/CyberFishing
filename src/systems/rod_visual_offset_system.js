@@ -1,5 +1,6 @@
 class RodVisualOffsetSystem {
   #offsetPx = 0;
+  #clamped = false;
 
   update({
     dtSec,
@@ -11,6 +12,7 @@ class RodVisualOffsetSystem {
     const cfg = config || {};
     if (cfg.enabled === false) {
       this.#offsetPx = this.#approach(this.#offsetPx, 0, 12, dtSec);
+      this.#clamped = false;
       return this.#offsetPx;
     }
 
@@ -19,7 +21,8 @@ class RodVisualOffsetSystem {
       !!fightDebug?.rodControlActive ||
       !!inputState?.rodControlActive;
     const direction = Math.sign(
-      Number(fightDebug?.rodControlDirectionX) ||
+      Number(fightDebug?.rodControlInputDirectionX) ||
+        Number(fightDebug?.rodControlDirectionX) ||
         Number(inputState?.rodControlDirectionX) ||
         0,
     );
@@ -38,7 +41,7 @@ class RodVisualOffsetSystem {
       width * Math.max(0, Number(visualCfg.maxOffsetScreenRatio) || 0.08),
     );
     const target = active && direction !== 0
-      ? direction * maxOffset * this.#easeOutCubic(ratio)
+      ? direction * maxOffset * ratio
       : 0;
     const speed = active
       ? Number(visualCfg.moveSmoothing) || 14
@@ -74,15 +77,23 @@ class RodVisualOffsetSystem {
     const resolvedBase = Number.isFinite(Number(baseX))
       ? Number(baseX)
       : width / 2;
-    return Math.max(minX, Math.min(maxX, resolvedBase + this.#offsetPx));
+    const rawX = resolvedBase + this.#offsetPx;
+    const clampedX = Math.max(minX, Math.min(maxX, rawX));
+    this.#clamped = Math.abs(clampedX - rawX) > 0.001;
+    return clampedX;
   }
 
   getOffsetPx() {
     return this.#offsetPx;
   }
 
+  isClamped() {
+    return this.#clamped;
+  }
+
   reset() {
     this.#offsetPx = 0;
+    this.#clamped = false;
   }
 
   #approach(current, target, speed, dtSec) {
@@ -90,10 +101,5 @@ class RodVisualOffsetSystem {
     if (dt <= 0) return current;
     const alpha = 1 - Math.exp(-Math.max(0, Number(speed) || 0) * dt);
     return current + (target - current) * alpha;
-  }
-
-  #easeOutCubic(value) {
-    const t = Math.max(0, Math.min(1, Number(value) || 0));
-    return 1 - Math.pow(1 - t, 3);
   }
 }

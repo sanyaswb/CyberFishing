@@ -1,5 +1,23 @@
 # CyberFishing changelog
 
+## v0.19.21.1 - Rod Control UX stabilization
+
+- Rod Control can now work in parallel with Rod Hold.
+- Rod Control HUD now shows delivered lateral force instead of alignment progress.
+- Added explicit input power, angle efficiency, direction factor and delivered force metrics.
+- Fixed stable target X for Rod Control alignment logic.
+- Fixed the force reserve path so Rod Control gives no force without load reserve.
+- Tightened drag/friction separation while Rod Control is active.
+- Expanded Rod Control debug overlay metrics.
+- Added Rod Control UX regression checks.
+
+## v0.19.21 - Rod Control alignment model
+
+- Reworked Rod Control X from lateral stroke meters to fish-to-rod X alignment progress.
+- Added toward-rod direction checks so wrong-side A/D or swipe input is blocked without moving fish.
+- Scaled lateral force, fish movement and rod visual offset by input power and line angle.
+- Updated the Rod Control HUD bar, fight overlay metrics and focused checks for the alignment model.
+
 ## v0.19.20 - Rod Control X
 
 - Added Rod Control X as a separate horizontal fight action with pointer/keyboard action lock.

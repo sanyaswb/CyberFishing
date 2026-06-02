@@ -27,22 +27,28 @@ const FIGHT_PHYSICS_CONFIG = {
     enabled: true,
 
     input: {
-      minLockDistancePx: 8,
-      screenWidthRatioForFullPower: 0.3,
-      fallbackFullPowerPx: 50,
-      horizontalDominanceRatio: 1.15,
+      minLockDistancePx: 10,
+      screenWidthRatioForFullPower: 0.2,
+      fallbackFullPowerPx: 90,
+      horizontalDominanceRatio: 1.25,
+      directionDeadZonePx: 12,
+      directionSwitchDeadZonePx: 24,
+      keyboardRampUpSeconds: 0.25,
+      keyboardRampDownSeconds: 0.18,
     },
 
-    stroke: {
-      capacityByRodLengthRatio: 1.0,
-      recoveryRateMetersPerSecond: 0.65,
-      minRatioToApply: 0.02,
+    alignment: {
+      minInitialOffsetPx: 12,
+      alignedThresholdPx: 8,
+      maxEffectiveAngleDeg: 45,
+      allowAwayDirection: false,
+      awayDirectionMultiplier: 0,
     },
 
     force: {
-      maxForceKg: 0.45,
-      sideMovePxPerSecond: 120,
-      fishWeightResistanceMultiplier: 0.15,
+      maxForceKg: 0.22,
+      sideMovePxPerSecond: 50,
+      fishWeightResistanceMultiplier: 0.35,
     },
 
     tension: {
@@ -52,10 +58,10 @@ const FIGHT_PHYSICS_CONFIG = {
     },
 
     rodVisual: {
-      maxOffsetScreenRatio: 0.08,
-      fallbackMaxOffsetPx: 80,
-      moveSmoothing: 6,
-      returnSmoothing: 4,
+      maxOffsetScreenRatio: 0.05,
+      fallbackMaxOffsetPx: 55,
+      moveSmoothing: 7,
+      returnSmoothing: 5,
       edgePaddingPx: 16,
       clampToPlayableZone: true,
     },

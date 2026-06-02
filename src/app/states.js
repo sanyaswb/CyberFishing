@@ -1633,6 +1633,7 @@ class PlayingState extends GameState {
     fightContext.net = this.deps.net;
     fightContext.fishData = fishData;
     fightContext.getRodVirtualPos = this.#getRodVirtualPos;
+    fightContext.getBaseRodVirtualPos = this.#getBaseRodVirtualPos;
     fightContext.getScreenOffsetRatio = this.#getScreenOffsetRatio;
     fightContext.checkWater = this.#checkWater;
 
@@ -1761,6 +1762,9 @@ class PlayingState extends GameState {
   }
 
   #getRodVirtualPos = (frameBounds) =>
+    this.deps.world.getRodVirtualPos(frameBounds);
+  #getBaseRodVirtualPos = (frameBounds) =>
+    this.deps.world.getBaseRodVirtualPos?.(frameBounds) ||
     this.deps.world.getRodVirtualPos(frameBounds);
   #getScreenOffsetRatio = (pos) => this.deps.world.getScreenOffsetRatio(pos);
   #checkWater = (vx, vy) => this.deps.world.checkWater(vx, vy);

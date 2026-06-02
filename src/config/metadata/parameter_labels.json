@@ -151,17 +151,41 @@
     "label": "Rod Control horizontal dominance",
     "description": "How much horizontal movement must dominate vertical movement to lock Rod Control X."
   },
-  "physics.fight.rodControl.stroke.capacityByRodLengthRatio": {
-    "label": "Rod Control stroke capacity",
-    "description": "Rod length multiplier that defines available lateral control stroke in meters."
+  "physics.fight.rodControl.input.directionDeadZonePx": {
+    "label": "Rod Control direction dead zone",
+    "description": "Horizontal pointer movement ignored before Rod Control X chooses a direction."
   },
-  "physics.fight.rodControl.stroke.recoveryRateMetersPerSecond": {
-    "label": "Rod Control recovery speed",
-    "description": "How quickly the lateral control stroke recovers after release."
+  "physics.fight.rodControl.input.directionSwitchDeadZonePx": {
+    "label": "Rod Control switch dead zone",
+    "description": "Extra pointer travel needed before an active Rod Control X gesture can switch direction."
   },
-  "physics.fight.rodControl.stroke.minRatioToApply": {
-    "label": "Rod Control minimum input",
-    "description": "Minimum input ratio required before lateral control applies movement."
+  "physics.fight.rodControl.input.keyboardRampUpSeconds": {
+    "label": "Rod Control keyboard ramp up",
+    "description": "Seconds for A/D Rod Control X input to reach full power."
+  },
+  "physics.fight.rodControl.input.keyboardRampDownSeconds": {
+    "label": "Rod Control keyboard ramp down",
+    "description": "Seconds for A/D Rod Control X input to return to zero after release."
+  },
+  "physics.fight.rodControl.alignment.minInitialOffsetPx": {
+    "label": "Rod Control minimum initial offset",
+    "description": "Minimum fish-to-rod X offset required when Rod Control X starts."
+  },
+  "physics.fight.rodControl.alignment.alignedThresholdPx": {
+    "label": "Rod Control aligned threshold",
+    "description": "Fish-to-rod X distance treated as fully aligned."
+  },
+  "physics.fight.rodControl.alignment.maxEffectiveAngleDeg": {
+    "label": "Rod Control max effective angle",
+    "description": "Line angle that gives Rod Control X full angle power."
+  },
+  "physics.fight.rodControl.alignment.allowAwayDirection": {
+    "label": "Rod Control allow away direction",
+    "description": "Allows Rod Control X input away from the rod alignment direction."
+  },
+  "physics.fight.rodControl.alignment.awayDirectionMultiplier": {
+    "label": "Rod Control away direction multiplier",
+    "description": "Delivered force multiplier when Rod Control X is allowed away from rod alignment."
   },
   "physics.fight.rodControl.force.maxForceKg": {
     "label": "Rod Control max force",

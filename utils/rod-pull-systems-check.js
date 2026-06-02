@@ -413,10 +413,11 @@ const lateralControl = new RodLateralControlSystem();
 const lateralConfig = {
   enabled: true,
   pixelsPerMeter: 50,
-  stroke: {
-    capacity: 1,
-    recoveryRateMetersPerSecond: 0.5,
-    minRatioToApply: 0.02,
+  alignment: {
+    minInitialOffsetPx: 12,
+    alignedThresholdPx: 8,
+    maxEffectiveAngleDeg: 45,
+    allowAwayDirection: false,
   },
   force: {
     maxForceKg: 0.4,
@@ -436,7 +437,8 @@ const lateralFrame = lateralControl.update({
     rodControlDirectionX: 1,
     rodControlInputRatio: 1,
   },
-  rod: { lengthMeters: 2 },
+  fishPosition: { x: -100, y: 100 },
+  rodTipPosition: { x: 0, y: 0 },
   rodLimitKg: 3,
   maxTackleLoadKg: 3,
   fishTensionKg: 0.5,
@@ -445,16 +447,29 @@ const lateralFrame = lateralControl.update({
   config: lateralConfig,
 });
 assert(lateralFrame.canApply, "Rod Control X applies with active horizontal input");
+approx(lateralFrame.towardRodDirectionX, 1, 0.001, "Rod Control X resolves direction toward rod alignment");
 approx(lateralFrame.tensionMultiplier, 2.5, 0.001, "Rod Control X uses opposite-direction tension multiplier");
 approx(lateralFrame.forceKg, 0.4, 0.001, "Rod Control X force follows configured max force");
-approx(lateralFrame.desiredMoveMeters, 1, 0.001, "Rod Control X movement is capped by stroke capacity");
-const lateralApplied = lateralControl.recordAppliedMovement({ movedMeters: 0.4, movedPx: 20 });
-approx(lateralApplied.usedMeters, 0.4, 0.001, "Rod Control X consumes applied lateral movement");
-approx(lateralApplied.ratio, 0.4, 0.001, "Rod Control X reports stroke ratio from used movement");
-const lateralRecovered = lateralControl.update({
+approx(lateralFrame.alignmentProgress, 0, 0.001, "Rod Control X starts with zero alignment progress");
+approx(lateralFrame.desiredMoveMeters, 1, 0.001, "Rod Control X movement follows angle-based side speed");
+assert(lateralFrame.desiredMovePx > 0, "Rod Control X emits lateral pixel movement");
+const lateralApplied = lateralControl.recordAppliedMovement({
+  movedMeters: 0.5,
+  movedPx: 25,
+  currentFishX: -50,
+  rodX: 0,
+});
+approx(lateralApplied.alignmentProgress, 0.5, 0.001, "Rod Control X reports alignment progress from offset reduction");
+
+const lateralWrongDirection = new RodLateralControlSystem().update({
   dtSec: 1,
-  inputState: { rodControlActive: false },
-  rod: { lengthMeters: 2 },
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: -1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: -100, y: 100 },
+  rodTipPosition: { x: 0, y: 0 },
   rodLimitKg: 3,
   maxTackleLoadKg: 3,
   fishTensionKg: 0,
@@ -462,8 +477,28 @@ const lateralRecovered = lateralControl.update({
   fishWeightKg: 0,
   config: lateralConfig,
 });
-approx(lateralRecovered.recoveredMeters, 0.4, 0.001, "Rod Control X recovers used stroke after release");
-approx(lateralRecovered.usedMeters, 0, 0.001, "Rod Control X returns to zero used stroke after recovery");
+assert(!lateralWrongDirection.canApply, "Rod Control X blocks input away from rod alignment");
+assert(lateralWrongDirection.blockedReason === "wrong_direction", "Rod Control X reports wrong-direction block reason");
+
+const lateralAligned = new RodLateralControlSystem().update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: -4, y: 100 },
+  rodTipPosition: { x: 0, y: 0 },
+  rodLimitKg: 3,
+  maxTackleLoadKg: 3,
+  fishTensionKg: 0,
+  fishVelocityX: 0,
+  fishWeightKg: 0,
+  config: lateralConfig,
+});
+assert(!lateralAligned.canApply, "Rod Control X stops when fish is aligned with rod X");
+assert(lateralAligned.blockedReason === "aligned", "Rod Control X reports aligned block reason");
+approx(lateralAligned.alignmentProgress, 1, 0.001, "Rod Control X treats threshold offset as full alignment");
 
 console.log("rod-pull-systems-check passed:");
 for (const message of checks) console.log("- " + message);

@@ -39,6 +39,7 @@ class FightPhysicsSystem {
     env,
     checkWater,
     rodTipPosition,
+    rodControlTargetPosition,
     rod,
     reel,
     fishForceSystem,
@@ -139,10 +140,12 @@ class FightPhysicsSystem {
       rodControlSystem,
       forceData,
       dragContext,
+      stressSystem,
       bounds,
       checkWater,
       maxTackleLoadKg,
       rodLimitKg,
+      rodControlTargetPosition,
     }),
     );
     const lineStateAfterControl =
@@ -697,10 +700,12 @@ class FightPhysicsSystem {
     rodControlSystem,
     forceData,
     dragContext,
+    stressSystem,
     bounds,
     checkWater,
     maxTackleLoadKg,
     rodLimitKg,
+    rodControlTargetPosition,
   }) {
     if (!rodControlSystem?.update) {
       return {
@@ -716,12 +721,22 @@ class FightPhysicsSystem {
     }
 
     const config = this.#physicsConfig?.getRodControlConfig?.() || {};
+    const fishPosition = floatEntity.getPosition();
     const rodControlResult = rodControlSystem.update({
       dtSec,
       inputState: input,
+      fishPosition,
+      rodTipPosition,
+      rodControlTargetPosition,
       rod,
       rodLimitKg,
       maxTackleLoadKg,
+      currentTensionKg: Math.max(
+        0,
+        Number(stressSystem?.getTensionKg?.()) ||
+          Number(forceData?.fishTensionKg) ||
+          0,
+      ),
       fishTensionKg: forceData?.fishTensionKg,
       fishVelocityX: forceData?.targetVelocity?.x,
       fishWeightKg: forceData?.fishWeightKg,
@@ -731,6 +746,7 @@ class FightPhysicsSystem {
       floatEntity,
       directionX: rodControlResult.directionX,
       deltaMeters: rodControlResult.desiredMoveMeters,
+      targetX: rodControlResult.targetRodX,
       pixelsPerMeter:
         this.#physicsConfig?.getPixelsPerMeter?.() ||
         50,
@@ -740,6 +756,7 @@ class FightPhysicsSystem {
     rodControlSystem.recordAppliedMovement?.({
       movedMeters: movement.meters,
       movedPx: movement.px,
+      currentFishX: floatEntity.getPosition()?.x,
     });
     const updatedResult = rodControlSystem.getState?.() || rodControlResult;
     const lineStateAfterControl = lineSystem.updateDistance(
@@ -755,25 +772,36 @@ class FightPhysicsSystem {
     };
   }
 
-  #emptyRodControlResult(blockedReason = "inactive") {
+  #emptyRodControlResult(blockedReason = "no_input") {
     return {
       active: false,
       canApply: false,
       directionX: 0,
+      inputDirectionX: 0,
+      towardRodDirectionX: 0,
       inputRatio: 0,
       forceKg: 0,
+      targetRodX: 0,
+      directionFactor: 0,
+      geometricTransferRatio: 0,
+      loadReserveKg: 0,
+      loadReserveRatio: 0,
+      forceLimitKg: 0,
+      currentTensionKg: 0,
+      deliveredForceRatio: 0,
       playerTensionKg: 0,
       tensionMultiplier: 0,
       desiredMoveMeters: 0,
+      desiredMovePx: 0,
       appliedMoveMeters: 0,
       appliedMovePx: 0,
-      capacityMeters: 0,
-      usedMeters: 0,
-      remainingMeters: 0,
-      ratio: 0,
-      depleted: false,
-      recovering: false,
-      recoveredMeters: 0,
+      initialOffsetX: 0,
+      currentOffsetX: 0,
+      alignmentProgress: 0,
+      aligned: false,
+      alignedThresholdPx: 0,
+      lineAngleDeg: 0,
+      angleRatio: 0,
       blockedReason,
       visualRatio: 0,
     };
@@ -1320,18 +1348,30 @@ class FightPhysicsSystem {
       rodControlActive: !!rodControlResult?.active,
       rodControlCanApply: !!rodControlResult?.canApply,
       rodControlDirectionX: rodControlResult?.directionX ?? 0,
+      rodControlInputDirectionX: rodControlResult?.inputDirectionX ?? 0,
+      rodControlTowardRodDirectionX: rodControlResult?.towardRodDirectionX ?? 0,
       rodControlInputRatio: rodControlResult?.inputRatio ?? 0,
-      rodControlRatio: rodControlResult?.ratio ?? 0,
-      rodControlUsedMeters: rodControlResult?.usedMeters ?? 0,
-      rodControlCapacityMeters: rodControlResult?.capacityMeters ?? 0,
-      rodControlRemainingMeters: rodControlResult?.remainingMeters ?? 0,
-      rodControlRecoveredMeters: rodControlResult?.recoveredMeters ?? 0,
-      rodControlDepleted: !!rodControlResult?.depleted,
-      rodControlRecovering: !!rodControlResult?.recovering,
+      rodControlTargetRodX: rodControlResult?.targetRodX ?? 0,
+      rodControlInitialOffsetX: rodControlResult?.initialOffsetX ?? 0,
+      rodControlCurrentOffsetX: rodControlResult?.currentOffsetX ?? 0,
+      rodControlAlignmentProgress: rodControlResult?.alignmentProgress ?? 0,
+      rodControlAligned: !!rodControlResult?.aligned,
+      rodControlAlignedThresholdPx: rodControlResult?.alignedThresholdPx ?? 0,
+      rodControlLineAngleDeg: rodControlResult?.lineAngleDeg ?? 0,
+      rodControlAngleRatio: rodControlResult?.angleRatio ?? 0,
+      rodControlDirectionFactor: rodControlResult?.directionFactor ?? 0,
+      rodControlGeometricTransferRatio:
+        rodControlResult?.geometricTransferRatio ?? 0,
+      rodControlLoadReserveKg: rodControlResult?.loadReserveKg ?? 0,
+      rodControlLoadReserveRatio: rodControlResult?.loadReserveRatio ?? 0,
+      rodControlForceLimitKg: rodControlResult?.forceLimitKg ?? 0,
+      rodControlDeliveredForceRatio:
+        rodControlResult?.deliveredForceRatio ?? 0,
       rodControlForceKg: rodControlResult?.forceKg ?? 0,
       rodControlPlayerTensionKg: rodControlResult?.playerTensionKg ?? 0,
       rodControlTensionMultiplier: rodControlResult?.tensionMultiplier ?? 0,
       rodControlDesiredMoveMeters: rodControlResult?.desiredMoveMeters ?? 0,
+      rodControlDesiredMovePx: rodControlResult?.desiredMovePx ?? 0,
       rodControlMoveMeters: appliedRodControlMoveMeters,
       rodControlMovePx: appliedRodControlMovePx,
       rodControlAppliedSpeedMps,
@@ -1539,6 +1579,7 @@ class FightPhysicsSystem {
     floatEntity,
     directionX,
     deltaMeters,
+    targetX,
     pixelsPerMeter,
     bounds,
     checkWater,
@@ -1552,8 +1593,20 @@ class FightPhysicsSystem {
     const position = floatEntity.getPosition();
     const scale = Math.max(1, Number(pixelsPerMeter) || 50);
     const movePx = meters * scale;
+    const resolvedTargetX = Number(targetX);
+    let rawX = position.x + direction * movePx;
+    if (Number.isFinite(resolvedTargetX)) {
+      const beforeOffset = position.x - resolvedTargetX;
+      const afterOffset = rawX - resolvedTargetX;
+      if (
+        Math.sign(beforeOffset) !== 0 &&
+        Math.sign(afterOffset) !== Math.sign(beforeOffset)
+      ) {
+        rawX = resolvedTargetX;
+      }
+    }
     const rawNext = {
-      x: position.x + direction * movePx,
+      x: rawX,
       y: position.y,
     };
     const next = this.#clampToBounds(rawNext, bounds);
