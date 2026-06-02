@@ -93,7 +93,9 @@ class DevTools {
   #isOpen = false;
   #liveData = null;
   #activeFishKey = "";
+  #activeFishShapeKey = "";
   #configRuntime = null;
+  #activeFishVisibilityPolicy;
 
   #excludeKeys = [
     "id",
@@ -113,6 +115,10 @@ class DevTools {
       typeof CONFIG_RUNTIME_CONTEXT !== "undefined"
         ? CONFIG_RUNTIME_CONTEXT
         : null;
+    this.#activeFishVisibilityPolicy =
+      typeof ActiveFishDevToolsVisibilityPolicy !== "undefined"
+        ? new ActiveFishDevToolsVisibilityPolicy()
+        : null;
     const tooltipProvider = new DevToolsParameterTooltipProvider();
     this.#ui = new DevToolsUI(
       () => this.toggle(),
@@ -125,7 +131,12 @@ class DevTools {
     document.addEventListener("debug-live-update", (event) => {
       this.#liveData = event.detail || null;
       const nextFishKey = this.#getActiveFishKey();
-      if (this.#isOpen && nextFishKey !== this.#activeFishKey) {
+      const nextFishShapeKey = this.#getActiveFishShapeKey();
+      if (
+        this.#isOpen &&
+        (nextFishKey !== this.#activeFishKey ||
+          nextFishShapeKey !== this.#activeFishShapeKey)
+      ) {
         this.#populatePanel();
       }
     });
@@ -144,6 +155,7 @@ class DevTools {
     const body = this.#ui.body;
     body.innerHTML = "";
     this.#activeFishKey = this.#getActiveFishKey();
+    this.#activeFishShapeKey = this.#getActiveFishShapeKey();
 
     this.#renderRuntimeOverrideControls(body);
 
@@ -160,7 +172,7 @@ class DevTools {
       overlaySettings?.keys?.() || Object.keys(overlayModules || {});
     if (overlayModules && overlayKeys.length > 0) {
       const content = this.#createSectionWithCache(
-        "OVERLAY MODULES (В реальному часі)",
+        "OVERLAY MODULES (В live time)",
         body,
         ["OVERLAY_MODULES"],
       );
@@ -171,25 +183,6 @@ class DevTools {
         this.#ui.createSwitcherRow(k, enabled, content, (v) => {
           if (overlaySettings?.setEnabled) overlaySettings.setEnabled(k, v);
           else overlayModules[k] = v;
-        });
-      }
-    }
-
-    // 2. CONSOLE MODULES
-    if (typeof window !== "undefined" && window.DEBUG_MODULES) {
-      const content = this.#createSectionWithCache(
-        "CONSOLE MODULES (Логи F12)",
-        body,
-        ["DEBUG_MODULES"],
-      );
-      for (const k in window.DEBUG_MODULES) {
-        this.#ui.createSwitcherRow(k, window.DEBUG_MODULES[k], content, (v) => {
-          window.DEBUG_MODULES[k] = v;
-          document.dispatchEvent(
-            new CustomEvent("debug-module-toggled", {
-              detail: { module: k, enabled: v },
-            }),
-          );
         });
       }
     }
@@ -288,186 +281,63 @@ class DevTools {
     const hookedFish = this.#liveData?.hookedFish;
     if (!hookedFish) return;
 
-    const fishLabel = hookedFish.id || hookedFish.name || "hookedFish";
+    const fish = this.#activeFishVisibilityPolicy?.normalizeHookedFish
+      ? this.#activeFishVisibilityPolicy.normalizeHookedFish(hookedFish)
+      : hookedFish;
+    const fishLabel = fish.id || fish.name || "hookedFish";
     const activeFishContent = this.#createSectionWithCache(
       `ACTIVE FISH (${fishLabel})`,
       body,
       ["HOOKED_FISH"],
     );
-    this.#renderActiveFishRuntimeControls(hookedFish, activeFishContent);
-    this.#buildTree(hookedFish, activeFishContent, ["HOOKED_FISH"]);
-  }
 
-  #renderActiveFishRuntimeControls(hookedFish, parentElement) {
-    this.#ensureActiveFishRuntimePhysics(hookedFish);
-
-    const levelContent = this.#createSectionWithCache(
-      "level runtime",
-      parentElement,
+    const fishRuntimeContent = this.#createSectionWithCache(
+      this.#activeFishVisibilityPolicy?.fishRuntimeRootTitle ||
+        "🐟 Fish runtime parameters (HOOKED_FISH)",
+      activeFishContent,
       ["HOOKED_FISH"],
     );
-    this.#ui.createInputRow(
-      "weight",
-      Number(hookedFish.weight) || 0,
-      levelContent,
-      "number",
-      (newValue) =>
-        this.#updateConfigValue(["HOOKED_FISH", "weight"], newValue),
-      ["HOOKED_FISH", "weight"],
-    );
-    this.#ui.createInputRow(
-      "level",
-      Number(hookedFish.level) || 0,
-      levelContent,
-      "number",
-      (newValue) => this.#updateConfigValue(["HOOKED_FISH", "level"], newValue),
-      ["HOOKED_FISH", "level"],
-    );
+    this.#buildTree(fish, fishRuntimeContent, ["HOOKED_FISH"], {
+      visibilityPolicy: this.#activeFishVisibilityPolicy,
+      applyHookedFishLegacySkips: false,
+    });
 
-    hookedFish.physics = hookedFish.physics || {};
-    hookedFish.physics.forceProfile = hookedFish.physics.forceProfile || {};
-    hookedFish.physics.movementProfile =
-      hookedFish.physics.movementProfile || {};
-    this.#ui.createInputRow(
-      "levelBasePower",
-      Number(
-        hookedFish.physics.forceProfile.levelBasePower ??
-          hookedFish.physics.levelBasePower,
-      ) || 0,
-      levelContent,
-      "number",
-      (newValue) =>
-        this.#updateConfigValue(
-          ["HOOKED_FISH", "physics", "forceProfile", "levelBasePower"],
-          newValue,
-        ),
-      ["HOOKED_FISH", "physics", "forceProfile", "levelBasePower"],
-    );
-    this.#ui.createInputRow(
-      "baseSpeed",
-      Number(hookedFish.physics.movementProfile.baseSpeed) || 0,
-      levelContent,
-      "number",
-      (newValue) =>
-        this.#updateConfigValue(
-          ["HOOKED_FISH", "physics", "movementProfile", "baseSpeed"],
-          newValue,
-        ),
-      ["HOOKED_FISH", "physics", "movementProfile", "baseSpeed"],
-    );
-
-    this.#renderActiveFishForceControls(hookedFish, parentElement);
+    this.#renderActiveFishGlobalConfigShortcuts(activeFishContent);
   }
 
-  #renderActiveFishForceControls(hookedFish, parentElement) {
-    const physics = hookedFish.physics;
-    if (!physics) return;
+  #renderActiveFishGlobalConfigShortcuts(parentElement) {
+    const shortcuts =
+      this.#activeFishVisibilityPolicy?.getGlobalConfigShortcuts?.() || [];
+    if (!shortcuts.length || typeof CONFIG === "undefined") return;
 
-    this.#renderProfileNumberControls({
-      title: "fish force profile runtime",
-      profile: physics.forceProfile,
-      profilePath: "forceProfile",
-      fields: ["basePower"],
+    const globalContent = this.#createSectionWithCache(
+      this.#activeFishVisibilityPolicy?.globalConfigRootTitle ||
+        "🌐 Global fight config shortcuts (CONFIG)",
       parentElement,
-    });
-    this.#renderProfileNumberControls({
-      title: "fish movement profile runtime",
-      profile: physics.movementProfile,
-      profilePath: "movementProfile",
-      fields: [
-        "baseSpeed",
-        "agility",
-        "bounceCooldownMs",
-        "dirChangeMinMs",
-        "dirChangeMaxMs",
-      ],
-      parentElement,
-    });
-    this.#renderProfileNumberControls({
-      title: "fish stamina profile runtime",
-      profile: physics.staminaProfile,
-      profilePath: "staminaProfile",
-      fields: [
-        "baseStamina",
-        "staminaWeightMultiplier",
-        "minStaminaActivityMultiplier",
-        "exhaustedSpeedRatio",
-      ],
-      parentElement,
-    });
-  }
+      ["CONFIG"],
+    );
 
-  #renderProfileNumberControls({
-    title,
-    profile,
-    profilePath,
-    fields,
-    parentElement,
-  }) {
-    if (!profile) return;
-
-    const content = this.#createSectionWithCache(title, parentElement, [
-      "HOOKED_FISH",
-      "physics",
-      profilePath,
-    ]);
-    for (const field of fields) {
-      this.#ui.createInputRow(
-        field,
-        Number(profile[field]) || 0,
-        content,
-        "number",
-        (newValue) =>
-          this.#updateConfigValue(
-            ["HOOKED_FISH", "physics", profilePath, field],
-            newValue,
-          ),
-        ["HOOKED_FISH", "physics", profilePath, field],
+    for (const shortcut of shortcuts) {
+      const value = this.#readPath(shortcut.path);
+      if (!value || typeof value !== "object") continue;
+      const content = this.#createSectionWithCache(
+        shortcut.title || shortcut.path.join("."),
+        globalContent,
+        shortcut.path,
       );
+      this.#buildTree(value, content, shortcut.path);
     }
   }
 
-  #ensureActiveFishRuntimePhysics(hookedFish) {
-    hookedFish.physics =
-      typeof FishPhysicsProfile !== "undefined"
-        ? FishPhysicsProfile.toRuntimeConfig(hookedFish.physics || {})
-        : hookedFish.physics || {};
-    const physics = hookedFish.physics;
-
-    physics.forceProfile = physics.forceProfile || {};
-    physics.movementProfile = physics.movementProfile || {};
-    physics.staminaProfile = physics.staminaProfile || {};
-
-    this.#applyDefaultNumber(
-      physics.forceProfile,
-      "basePower",
-      physics.basePower ?? 1,
-    );
-    this.#applyDefaultNumber(
-      physics.movementProfile,
-      "baseSpeed",
-      physics.baseSpeed ?? 1,
-    );
-    this.#applyDefaultNumber(
-      physics.movementProfile,
-      "agility",
-      physics.agility ?? 1,
-    );
-    this.#applyDefaultNumber(
-      physics.staminaProfile,
-      "baseStamina",
-      physics.baseStamina ?? 0,
-    );
-    this.#applyDefaultNumber(
-      physics.staminaProfile,
-      "minStaminaActivityMultiplier",
-      physics.minStaminaActivityMultiplier ?? 0.75,
-    );
-    this.#applyDefaultNumber(
-      physics.staminaProfile,
-      "exhaustedSpeedRatio",
-      physics.exhaustedSpeedRatio ?? 0.25,
-    );
+  #readPath(path) {
+    const root = this.#resolveEditableRoot(path?.[0]);
+    if (!root) return undefined;
+    let current = root;
+    for (let i = 1; i < path.length; i++) {
+      if (current == null) return undefined;
+      current = current[path[i]];
+    }
+    return current;
   }
 
   #getActiveFishKey() {
@@ -476,40 +346,80 @@ class DevTools {
     return `${fish.id || fish.name || "hookedFish"}:${fish.level ?? ""}:${fish.weight ?? ""}`;
   }
 
-  #shouldSkipKey(path, key) {
-    if (this.#excludeKeys.includes(key)) return true;
+  #getActiveFishShapeKey() {
+    const fish = this.#liveData?.hookedFish;
+    if (!fish) return "";
+    const paths = [];
+    this.#collectVisibleScalarPaths(fish, ["HOOKED_FISH"], paths, {
+      visibilityPolicy: this.#activeFishVisibilityPolicy,
+      applyHookedFishLegacySkips: false,
+    });
+    return paths.join("|");
+  }
+
+  #collectVisibleScalarPaths(obj, path, output, options = {}) {
+    if (!obj || typeof obj !== "object") return;
+
+    for (const key in obj) {
+      if (this.#shouldSkipKey(path, key, options)) continue;
+
+      const value = obj[key];
+      const currentPath = [...path, key];
+      if (options.visibilityPolicy?.isVisible?.(currentPath, value) === false) {
+        continue;
+      }
+
+      if (value && typeof value === "object") {
+        this.#collectVisibleScalarPaths(value, currentPath, output, options);
+        continue;
+      }
+
+      if (
+        typeof value === "number" ||
+        typeof value === "boolean" ||
+        typeof value === "string"
+      ) {
+        output.push(currentPath.join("."));
+      }
+    }
+  }
+
+  #shouldSkipKey(path, key, options = {}) {
+    if (!options.visibilityPolicy && this.#excludeKeys.includes(key)) return true;
     if (path[0] === "CONFIG" && path.length === 1 && key === "debug") {
       return true;
     }
-    if (
-      path[0] === "HOOKED_FISH" &&
-      (key === "weight" ||
-        key === "level" ||
-        key === "maxLevel" ||
-        key === "resistance" ||
-        key === "biteSequence")
-    ) {
-      return true;
-    }
-    if (path[0] === "HOOKED_FISH" && path[1] === "physics") {
-      const compatibilityKeys = new Set([
-        "basePower",
-        "baseStamina",
-        "levelBasePower",
-        "staminaWeightMultiplier",
-        "minStaminaActivityMultiplier",
-        "exhaustedSpeedRatio",
-        "baseSpeedMetersPerSec",
-        "agility",
-        "bounceCooldownMs",
-        "dirChangeMinMs",
-        "dirChangeMaxMs",
-        "lastDashTrigger",
-        "behaviors",
-        "pullResistance",
-        "fishRetrieve",
-      ]);
-      if (compatibilityKeys.has(key)) return true;
+    if (options.applyHookedFishLegacySkips !== false) {
+      if (
+        path[0] === "HOOKED_FISH" &&
+        (key === "weight" ||
+          key === "level" ||
+          key === "maxLevel" ||
+          key === "resistance" ||
+          key === "biteSequence")
+      ) {
+        return true;
+      }
+      if (path[0] === "HOOKED_FISH" && path[1] === "physics") {
+        const compatibilityKeys = new Set([
+          "basePower",
+          "baseStamina",
+          "levelBasePower",
+          "staminaWeightMultiplier",
+          "minStaminaActivityMultiplier",
+          "exhaustedSpeedRatio",
+          "baseSpeedMetersPerSec",
+          "agility",
+          "bounceCooldownMs",
+          "dirChangeMinMs",
+          "dirChangeMaxMs",
+          "lastDashTrigger",
+          "behaviors",
+          "pullResistance",
+          "fishRetrieve",
+        ]);
+        if (compatibilityKeys.has(key)) return true;
+      }
     }
 
     const isConfigLocationsMap =
@@ -551,12 +461,15 @@ class DevTools {
       : key;
   }
 
-  #buildTree(obj, parentElement, path) {
+  #buildTree(obj, parentElement, path, options = {}) {
     for (const key in obj) {
-      if (this.#shouldSkipKey(path, key)) continue;
+      if (this.#shouldSkipKey(path, key, options)) continue;
 
       const val = obj[key];
       const currentPath = [...path, key];
+      if (options.visibilityPolicy?.isVisible?.(currentPath, val) === false) {
+        continue;
+      }
 
       if (Array.isArray(val)) {
         if (val.length > 0 && typeof val[0] === "number") {
@@ -581,7 +494,7 @@ class DevTools {
               content,
               [...currentPath, index],
             );
-            this.#buildTree(item, itemContent, [...currentPath, index]);
+            this.#buildTree(item, itemContent, [...currentPath, index], options);
           });
         }
       } else if (val !== null && typeof val === "object") {
@@ -590,7 +503,7 @@ class DevTools {
           parentElement,
           currentPath,
         );
-        this.#buildTree(val, content, currentPath);
+        this.#buildTree(val, content, currentPath, options);
       } else if (
         typeof val === "number" ||
         typeof val === "boolean" ||
@@ -653,6 +566,7 @@ class DevTools {
       target[path[path.length - 1]] = newValue;
     }
 
+    this.#syncDebugConsoleModule(path, newValue);
     this.#syncHookedFishProfileAliases(path, newValue, root);
     this.#syncHookedFishLevelBalance(path);
     if (path[0] === "HOOKED_FISH") {
@@ -669,6 +583,29 @@ class DevTools {
           value: newValue,
           override: path[0] === "CONFIG",
         },
+      }),
+    );
+  }
+
+  #syncDebugConsoleModule(path, newValue) {
+    if (
+      path[0] !== "CONFIG" ||
+      path[1] !== "debug" ||
+      path[2] !== "consoleModules" ||
+      path.length !== 4
+    ) {
+      return;
+    }
+
+    const moduleKey = path[3];
+    if (typeof window !== "undefined") {
+      window.DEBUG_MODULES = window.DEBUG_MODULES || {};
+      window.DEBUG_MODULES[moduleKey] = newValue === true;
+    }
+
+    document.dispatchEvent(
+      new CustomEvent("debug-module-toggled", {
+        detail: { module: moduleKey, enabled: newValue === true },
       }),
     );
   }
@@ -876,20 +813,6 @@ class DevTools {
   }
 
   #applyFiniteNumber(target, key, value) {
-    if (!Number.isFinite(Number(value))) return;
-    target[key] = Math.max(0, Number(value));
-  }
-
-  #withDefaultNumbers(target, defaults, keys) {
-    const result = target && typeof target === "object" ? target : {};
-    for (const key of keys) {
-      this.#applyDefaultNumber(result, key, defaults?.[key]);
-    }
-    return result;
-  }
-
-  #applyDefaultNumber(target, key, value) {
-    if (Number.isFinite(Number(target?.[key]))) return;
     if (!Number.isFinite(Number(value))) return;
     target[key] = Math.max(0, Number(value));
   }

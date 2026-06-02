@@ -200,6 +200,7 @@
 │  │  │    ├── overlay_value_formatter.js
 │  │  │    └── worst_case_force_debug_selector.js
 │  │  └── services
+│  │    ├── active_fish_dev_tools_schema.js
 │  │    ├── debug_data_selectors.js
 │  │    ├── debug_formatters.js
 │  │    └── location_debug_data_provider.js
