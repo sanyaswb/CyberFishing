@@ -28,6 +28,7 @@ const FILES = [
   "src/core/line/line_spool_state.js",
   "src/core/fishing/rod_pull_state.js",
   "src/core/fishing/rod_stroke_state.js",
+  "src/core/fishing/rod_axis_stroke_state.js",
   "src/core/fishing/rod_stroke_tracker.js",
   "src/core/fishing/reel_auto_recovery_calculator.js",
   "src/core/fishing/reel_hold_recovery_system.js",
@@ -41,6 +42,7 @@ const FILES = [
   "src/core/fishing/landing_lift_tension_calculator.js",
   "src/core/fishing/line_tension_calculator.js",
   "src/systems/rod_pull_system.js",
+  "src/systems/rod_lateral_control_system.js",
   "src/systems/fish_retrieve_system.js",
   "src/systems/reel_system.js",
   "src/systems/tension_system.js",
@@ -406,6 +408,62 @@ approx(simple.fishPassiveKg, 0.6, 0.001, "FishRetrieveSystem uses simplified pas
 approx(simple.fishOppositionKg, 1.2, 0.001, "FishRetrieveSystem uses passive + active force");
 approx(simple.playerHoldTensionKg, 0.6, 0.001, "hold tension ratio passes through simplified model");
 assert(simple.towardPlayerSpeedMps === 0, "equal hold and opposition stays balanced");
+
+const lateralControl = new RodLateralControlSystem();
+const lateralConfig = {
+  enabled: true,
+  pixelsPerMeter: 50,
+  stroke: {
+    capacity: 1,
+    recoveryRateMetersPerSecond: 0.5,
+    minRatioToApply: 0.02,
+  },
+  force: {
+    maxForceKg: 0.4,
+    sideMovePxPerSecond: 50,
+    fishWeightResistanceMultiplier: 0,
+  },
+  tension: {
+    sameDirectionMultiplier: 0,
+    sideMultiplier: 1,
+    oppositeDirectionMultiplier: 2.5,
+  },
+};
+const lateralFrame = lateralControl.update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  rod: { lengthMeters: 2 },
+  rodLimitKg: 3,
+  maxTackleLoadKg: 3,
+  fishTensionKg: 0.5,
+  fishVelocityX: -20,
+  fishWeightKg: 0,
+  config: lateralConfig,
+});
+assert(lateralFrame.canApply, "Rod Control X applies with active horizontal input");
+approx(lateralFrame.tensionMultiplier, 2.5, 0.001, "Rod Control X uses opposite-direction tension multiplier");
+approx(lateralFrame.forceKg, 0.4, 0.001, "Rod Control X force follows configured max force");
+approx(lateralFrame.desiredMoveMeters, 1, 0.001, "Rod Control X movement is capped by stroke capacity");
+const lateralApplied = lateralControl.recordAppliedMovement({ movedMeters: 0.4, movedPx: 20 });
+approx(lateralApplied.usedMeters, 0.4, 0.001, "Rod Control X consumes applied lateral movement");
+approx(lateralApplied.ratio, 0.4, 0.001, "Rod Control X reports stroke ratio from used movement");
+const lateralRecovered = lateralControl.update({
+  dtSec: 1,
+  inputState: { rodControlActive: false },
+  rod: { lengthMeters: 2 },
+  rodLimitKg: 3,
+  maxTackleLoadKg: 3,
+  fishTensionKg: 0,
+  fishVelocityX: 0,
+  fishWeightKg: 0,
+  config: lateralConfig,
+});
+approx(lateralRecovered.recoveredMeters, 0.4, 0.001, "Rod Control X recovers used stroke after release");
+approx(lateralRecovered.usedMeters, 0, 0.001, "Rod Control X returns to zero used stroke after recovery");
 
 console.log("rod-pull-systems-check passed:");
 for (const message of checks) console.log("- " + message);

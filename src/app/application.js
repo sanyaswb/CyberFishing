@@ -6,7 +6,9 @@ class GameViewportFacade {
   #biteEnvironmentService;
   #rodVirtualPos = new Vector2(0, 0);
   #screenScratch = new Vector2(0, 0);
+  #playableScratch = new Vector2(0, 0);
   #viewportSize = { width: 0, height: 0 };
+  #rodVisualOffsetSystem = new RodVisualOffsetSystem();
 
   constructor({
     world,
@@ -52,16 +54,7 @@ class GameViewportFacade {
   }
 
   getRodVirtualPos(bounds, screenXOverride = null) {
-    const rodConfig = this.#config.ui?.rod || {};
-    const rodX =
-      Number.isFinite(screenXOverride)
-        ? screenXOverride
-        : rodConfig.x === "center"
-          ? this.#canvasMetrics.width / 2
-          : Number(rodConfig.x);
-    const screenX = Number.isFinite(rodX)
-      ? rodX
-      : this.#canvasMetrics.width / 2;
+    const screenX = this.getRodScreenX(screenXOverride, bounds);
 
     this.#projector.screenToVirtual(screenX, 0, this.#rodVirtualPos);
     this.#rodVirtualPos.y = bounds.bottom;
@@ -74,6 +67,49 @@ class GameViewportFacade {
       floatPos.y,
       this.#screenScratch,
     );
+    const screenX = this.getRodScreenX(screenXOverride, null);
+    const halfWidth = Math.max(1, this.#canvasMetrics.width / 2);
+    return Math.min(1, Math.abs(sPos.x - screenX) / halfWidth);
+  }
+
+  updateRodVisualOffset({ dtMs, input, fightDebug, bounds, stateName } = {}) {
+    const rodControlConfig = this.#config.fightPhysicsConfig?.getRodControlConfig?.() ||
+      this.#config.physics?.fight?.rodControl ||
+      {};
+    const activeInput =
+      stateName === "playing"
+        ? input
+        : {
+            ...input,
+            rodControlActive: false,
+            rodControlDirectionX: 0,
+            rodControlInputRatio: 0,
+          };
+    this.#rodVisualOffsetSystem.update({
+      dtSec: Math.max(0, Number(dtMs) || 0) / 1000,
+      inputState: activeInput,
+      fightDebug,
+      config: rodControlConfig,
+      canvasWidth: this.#canvasMetrics.width,
+    });
+  }
+
+  getRodScreenX(screenXOverride = null, bounds = null) {
+    const baseX = this.#resolveBaseRodScreenX(screenXOverride);
+    const playable = this.#resolvePlayableScreenBounds(bounds);
+    const rodControlConfig = this.#config.fightPhysicsConfig?.getRodControlConfig?.() ||
+      this.#config.physics?.fight?.rodControl ||
+      {};
+    return this.#rodVisualOffsetSystem.resolveScreenX({
+      baseX,
+      canvasWidth: this.#canvasMetrics.width,
+      playableLeft: playable.left,
+      playableRight: playable.right,
+      config: rodControlConfig,
+    });
+  }
+
+  #resolveBaseRodScreenX(screenXOverride = null) {
     const rodConfig = this.#config.ui?.rod || {};
     const rodX =
       Number.isFinite(screenXOverride)
@@ -81,11 +117,32 @@ class GameViewportFacade {
         : rodConfig.x === "center"
           ? this.#canvasMetrics.width / 2
           : Number(rodConfig.x);
-    const screenX = Number.isFinite(rodX)
+    return Number.isFinite(rodX)
       ? rodX
       : this.#canvasMetrics.width / 2;
-    const halfWidth = Math.max(1, this.#canvasMetrics.width / 2);
-    return Math.min(1, Math.abs(sPos.x - screenX) / halfWidth);
+  }
+
+  #resolvePlayableScreenBounds(bounds) {
+    if (!bounds) return { left: null, right: null };
+    const left = Number(bounds.left);
+    const right = Number(bounds.right);
+    if (!Number.isFinite(left) || !Number.isFinite(right)) {
+      return { left: null, right: null };
+    }
+    const leftScreen = this.#projector.virtualToScreen(
+      left,
+      Number(bounds.bottom) || 0,
+      this.#playableScratch,
+    ).x;
+    const rightScreen = this.#projector.virtualToScreen(
+      right,
+      Number(bounds.bottom) || 0,
+      this.#playableScratch,
+    ).x;
+    return {
+      left: Math.min(leftScreen, rightScreen),
+      right: Math.max(leftScreen, rightScreen),
+    };
   }
 
   getViewportSize() {
@@ -303,6 +360,11 @@ class GameApplication {
     pointerDelta: { x: 0, y: 0 },
     pointerReleased: false,
     pointerRelease: { x: 0, y: 0 },
+    rodControlActive: false,
+    rodControlDirectionX: 0,
+    rodControlInputRatio: 0,
+    rodControlAnchorX: 0,
+    rodControlCurrentX: 0,
   };
   #stateUpdateContext = { env: null, biteEnv: null, input: null };
   #biteEnvData = {
@@ -406,7 +468,7 @@ class GameApplication {
       getBiteEnv: () => this.getEnvDataForBite(),
       getDynamicBounds: () => this.getDynamicBounds(),
       getRodVirtualPos: (bounds) => this.getRodVirtualPos(bounds),
-      getRodScreenX: () => this.#castRodScreenX,
+      getRodScreenX: () => this.getRodScreenX(),
       getScreenOffsetRatio: (pos) => this.getScreenOffsetRatio(pos),
       setState: (name, data) => this.setState(name, data),
       castLine: (vx, vy, depth, options) =>
@@ -739,6 +801,7 @@ class GameApplication {
     context.env = this.#env.getPhysicsEnv();
     context.biteEnv = this.getEnvDataForBite();
     this.#stateMachine.update(dt, bounds, context);
+    this.#updateRodVisualOffset(dt, input, bounds);
 
     if (this.invalidCastMarker) {
       this.invalidCastMarker.timer -= dt;
@@ -908,11 +971,30 @@ class GameApplication {
     return this.#viewportFacade.getRodVirtualPos(bounds, this.#castRodScreenX);
   }
 
+  getRodScreenX(bounds = null) {
+    return this.#viewportFacade.getRodScreenX(
+      this.#castRodScreenX,
+      bounds || this.getDynamicBounds(),
+    );
+  }
+
   getScreenOffsetRatio(floatPos) {
     return this.#viewportFacade.getScreenOffsetRatio(
       floatPos,
       this.#castRodScreenX,
     );
+  }
+
+  #updateRodVisualOffset(dt, input, bounds) {
+    const stateName = this.#stateMachine?.currentName || this.#gameStateName;
+    const fightDebug = this.#fightService?.tensionMeter?.getDebugData?.() || {};
+    this.#viewportFacade.updateRodVisualOffset({
+      dtMs: dt,
+      input,
+      fightDebug,
+      bounds,
+      stateName,
+    });
   }
 
   checkWater(vx, vy) {

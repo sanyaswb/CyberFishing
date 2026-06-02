@@ -120,6 +120,7 @@
 │  │  │  ├── reel_auto_recovery_calculator.js
 │  │  │  ├── reel_hold_recovery_system.js
 │  │  │  ├── retrieve_policy.js
+│  │  │  ├── rod_axis_stroke_state.js
 │  │  │  ├── rod_pull_calculator.js
 │  │  │  ├── rod_pull_state.js
 │  │  │  ├── rod_stroke_state.js
@@ -181,6 +182,7 @@
 │  │  │  │  │  ├── fight_movement_section.js
 │  │  │  │  │  ├── fight_physics_overlay_module.js
 │  │  │  │  │  ├── fight_reel_hold_section.js
+│  │  │  │  │  ├── fight_rod_control_section.js
 │  │  │  │  │  ├── fight_rod_hold_section.js
 │  │  │  │  │  ├── fight_rod_stroke_section.js
 │  │  │  │  │  ├── fight_section_base.js
@@ -223,7 +225,9 @@
 │  │  ├── line_system.js
 │  │  ├── player_force_system.js
 │  │  ├── reel_system.js
+│  │  ├── rod_lateral_control_system.js
 │  │  ├── rod_pull_system.js
+│  │  ├── rod_visual_offset_system.js
 │  │  ├── stamina_system.js
 │  │  ├── tackle_stress_system.js
 │  │  └── tension_system.js

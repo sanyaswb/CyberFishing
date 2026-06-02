@@ -60,6 +60,7 @@ const PointerAction = Object.freeze({
   PENDING: "pending",
   PULL: "pull",
   DRAG_CONTROL: "drag_control",
+  ROD_CONTROL_X: "rod_control_x",
 });
 
 class InputManager {
@@ -80,6 +81,10 @@ class InputManager {
   #releasePointerX;
   #releasePointerY;
   #hasPointerRelease = false;
+  #rodControlAnchorX = 0;
+  #rodControlCurrentX = 0;
+  #rodControlDirectionX = 0;
+  #rodControlInputRatio = 0;
   #panDeltaX;
   #panDeltaY;
   #swipeDeltaY = 0;
@@ -116,6 +121,8 @@ class InputManager {
     this.#currentPointerY = 0;
     this.#releasePointerX = 0;
     this.#releasePointerY = 0;
+    this.#rodControlAnchorX = 0;
+    this.#rodControlCurrentX = 0;
     this.#panDeltaX = 0;
     this.#panDeltaY = 0;
     this.#clickPos = null;
@@ -146,6 +153,11 @@ class InputManager {
       pointerDelta: { x: 0, y: 0 },
       pointerReleased: false,
       pointerRelease: { x: 0, y: 0 },
+      rodControlActive: false,
+      rodControlDirectionX: 0,
+      rodControlInputRatio: 0,
+      rodControlAnchorX: 0,
+      rodControlCurrentX: 0,
     };
 
     this.#bindEvents();
@@ -200,6 +212,10 @@ class InputManager {
       this.#currentPointerX = e.clientX;
       this.#currentPointerY = e.clientY;
       this.#hasPointerRelease = false;
+      this.#rodControlAnchorX = e.clientX;
+      this.#rodControlCurrentX = e.clientX;
+      this.#rodControlDirectionX = 0;
+      this.#rodControlInputRatio = 0;
       this.#swipeDeltaY = 0;
       this.#hasSwipedThisTouch = false;
       this.#hasLongPressed = false;
@@ -246,6 +262,7 @@ class InputManager {
         this.#lastPointerY = e.clientY;
       }
 
+      this.#updateRodControlPointerState();
       this.#updateDragControlState();
       if (this.#isDragControlActive) this.#clearLongPressTimeout();
       this.#updatePointerPullState(Date.now());
@@ -299,6 +316,8 @@ class InputManager {
         this.#isDragControlActive = false;
         this.#pointerAction = PointerAction.IDLE;
         this.#pointerDownAtMs = 0;
+        this.#rodControlDirectionX = 0;
+        this.#rodControlInputRatio = 0;
       }
 
       const pullKeys = CONFIG.input?.keys?.pull || ["Space"];
@@ -325,6 +344,8 @@ class InputManager {
       this.#isDragControlActive = false;
       this.#pointerAction = PointerAction.IDLE;
       this.#pointerDownAtMs = 0;
+      this.#rodControlDirectionX = 0;
+      this.#rodControlInputRatio = 0;
       resetInput();
     });
 
@@ -416,6 +437,7 @@ class InputManager {
     if (!this.#dragControlEnabled) return;
     if (!this.#isPointerDown || this.#isDragControlActive) return;
     if (this.#pointerAction === PointerAction.PULL) return;
+    if (this.#pointerAction === PointerAction.ROD_CONTROL_X) return;
 
     const dx = this.#currentPointerX - this.#startX;
     const dy = this.#currentPointerY - this.#startY;
@@ -445,6 +467,7 @@ class InputManager {
 
   #canTriggerLongPress() {
     if (!this.#isPointerDown || this.#isDragControlActive) return false;
+    if (this.#pointerAction === PointerAction.ROD_CONTROL_X) return false;
 
     const dx = this.#currentPointerX - this.#startX;
     const dy = this.#currentPointerY - this.#startY;
@@ -471,6 +494,11 @@ class InputManager {
       return;
     }
 
+    if (this.#pointerAction === PointerAction.ROD_CONTROL_X) {
+      this.#isPulling = false;
+      return;
+    }
+
     if (this.#pointerAction === PointerAction.PULL) {
       this.#isPulling = true;
       return;
@@ -488,6 +516,69 @@ class InputManager {
     }
   }
 
+  #updateRodControlPointerState() {
+    if (!this.#isPointerDown) return;
+    if (this.#pointerAction === PointerAction.DRAG_CONTROL) return;
+    if (this.#pointerAction === PointerAction.PULL) return;
+
+    const dx = this.#currentPointerX - this.#startX;
+    const dy = this.#currentPointerY - this.#startY;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+    const config = this.#getRodControlInputConfig();
+    const minLock = Math.max(1, Number(config.minLockDistancePx) || 8);
+    const dominance = Math.max(
+      1,
+      Number(config.horizontalDominanceRatio) || 1.15,
+    );
+
+    if (this.#pointerAction === PointerAction.PENDING) {
+      if (absX < minLock && absY < minLock) return;
+      if (absX >= absY * dominance) {
+        this.#pointerAction = PointerAction.ROD_CONTROL_X;
+        this.#isPulling = false;
+        this.#isDragControlActive = false;
+        this.#clearLongPressTimeout();
+      }
+    }
+
+    if (this.#pointerAction !== PointerAction.ROD_CONTROL_X) return;
+
+    this.#rodControlCurrentX = this.#currentPointerX;
+    const anchorX = Number(this.#rodControlAnchorX) || this.#startX;
+    const controlDx = this.#rodControlCurrentX - anchorX;
+    const fullPowerDistance = this.#getRodControlFullPowerDistancePx(config);
+    this.#rodControlDirectionX = Math.sign(controlDx);
+    this.#rodControlInputRatio = Math.max(
+      0,
+      Math.min(1, Math.abs(controlDx) / fullPowerDistance),
+    );
+  }
+
+  #getRodControlInputConfig() {
+    return (
+      CONFIG.fightPhysicsConfig?.getRodControlConfig?.()?.input ||
+      CONFIG.physics?.fight?.rodControl?.input ||
+      {}
+    );
+  }
+
+  #getRodControlFullPowerDistancePx(config) {
+    const width =
+      Number(this.#canvas?.clientWidth) ||
+      Number(this.#canvas?.width) ||
+      0;
+    const ratio = Math.max(
+      0,
+      Number(config.screenWidthRatioForFullPower) || 0.1,
+    );
+    const fallback = Math.max(
+      1,
+      Number(config.fallbackFullPowerPx) || 50,
+    );
+    return Math.max(fallback, width * ratio);
+  }
+
   consumeSwipe() {
     this.#hasSwipedThisTouch = true;
     this.#swipeDeltaY = 0;
@@ -496,11 +587,18 @@ class InputManager {
   getState() {
     const keys = CONFIG.input?.keys || {};
     const keyboardPulling = this.#checkKeyHeld(keys.pull);
+    const keyboardRodControlX =
+      this.#checkKeyHeld(keys.left) || this.#checkKeyHeld(keys.right);
+    let keyboardRodDirectionX = 0;
+    if (this.#checkKeyHeld(keys.left)) keyboardRodDirectionX -= 1;
+    if (this.#checkKeyHeld(keys.right)) keyboardRodDirectionX += 1;
 
     // Space/інша pull-клавіша має гарантовано працювати кожен кадр,
     // pointer-pull стартує тільки після pullHoldMinMs, якщо жест не став drag-control.
     this.#updatePointerPullState(Date.now());
-    this.#isPulling = keyboardPulling || this.#pointerAction === PointerAction.PULL;
+    this.#isPulling =
+      !keyboardRodControlX &&
+      (keyboardPulling || this.#pointerAction === PointerAction.PULL);
 
     // ЗМІНЕНО: Читаємо клавіші руху з конфігу
     if (this.#checkKeyHeld(keys.left) || this.#checkKeyHeld(keys.right)) {
@@ -510,6 +608,8 @@ class InputManager {
     }
 
     const state = this.#stateSnapshot;
+    const rodControlActive =
+      keyboardRodControlX || this.#pointerAction === PointerAction.ROD_CONTROL_X;
     state.isPulling = this.#isPulling;
     state.pullDirection = this.#pullDirection;
     state.panDeltaX = this.#panDeltaX;
@@ -517,8 +617,10 @@ class InputManager {
     state.swipeDeltaY = this.#swipeDeltaY;
     state.toggleHold = this.#holdToggleFlag;
     state.pumpAction = this.#pumpFlag;
-    state.dragIncrease = this.#checkKeyHeld(keys.dragIncrease);
-    state.dragDecrease = this.#checkKeyHeld(keys.dragDecrease);
+    state.dragIncrease =
+      !rodControlActive && this.#checkKeyHeld(keys.dragIncrease);
+    state.dragDecrease =
+      !rodControlActive && this.#checkKeyHeld(keys.dragDecrease);
     state.castPowerIncrease = state.dragIncrease;
     state.castPowerDecrease = state.dragDecrease;
     state.aimLeft = this.#checkKeyHeld(keys.left);
@@ -543,6 +645,15 @@ class InputManager {
     state.pointerReleased = this.#hasPointerRelease;
     state.pointerRelease.x = this.#releasePointerX;
     state.pointerRelease.y = this.#releasePointerY;
+    state.rodControlActive = rodControlActive;
+    state.rodControlDirectionX = keyboardRodControlX
+      ? Math.sign(keyboardRodDirectionX)
+      : this.#rodControlDirectionX;
+    state.rodControlInputRatio = keyboardRodControlX
+      ? 1
+      : this.#rodControlInputRatio;
+    state.rodControlAnchorX = this.#rodControlAnchorX;
+    state.rodControlCurrentX = this.#rodControlCurrentX;
 
     this.#panDeltaX = 0;
     this.#panDeltaY = 0;

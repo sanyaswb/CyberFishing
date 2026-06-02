@@ -13,6 +13,7 @@ class FightPhysicsPipeline {
     "update_fish_motion",
     "resolve_drag_context",
     "resolve_rod_pull_and_retrieve",
+    "resolve_rod_control_x",
     "preview_tension",
     "recover_line",
     "resolve_line_constraint",

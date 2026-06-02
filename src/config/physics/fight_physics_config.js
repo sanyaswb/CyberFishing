@@ -23,6 +23,44 @@ const FIGHT_PHYSICS_CONFIG = {
     capacityByRodLengthRatio: 1.0,
   },
 
+  rodControl: {
+    enabled: true,
+
+    input: {
+      minLockDistancePx: 8,
+      screenWidthRatioForFullPower: 0.3,
+      fallbackFullPowerPx: 50,
+      horizontalDominanceRatio: 1.15,
+    },
+
+    stroke: {
+      capacityByRodLengthRatio: 1.0,
+      recoveryRateMetersPerSecond: 0.65,
+      minRatioToApply: 0.02,
+    },
+
+    force: {
+      maxForceKg: 0.45,
+      sideMovePxPerSecond: 120,
+      fishWeightResistanceMultiplier: 0.15,
+    },
+
+    tension: {
+      sameDirectionMultiplier: 0.0,
+      sideMultiplier: 1.0,
+      oppositeDirectionMultiplier: 2.5,
+    },
+
+    rodVisual: {
+      maxOffsetScreenRatio: 0.08,
+      fallbackMaxOffsetPx: 80,
+      moveSmoothing: 6,
+      returnSmoothing: 4,
+      edgePaddingPx: 16,
+      clampToPlayableZone: true,
+    },
+  },
+
   tension: {
     smoothingPerSecond: 10.0,
     slackTensionKg: 0.0,

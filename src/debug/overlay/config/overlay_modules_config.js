@@ -13,6 +13,7 @@ const OVERLAY_MODULES = {
   fightPhysics: false,
   fightFish: false,
   fightRodHold: false,
+  fightRodControl: false,
   fightReelHold: false,
   fightDrag: false,
   fightLine: false,
@@ -25,6 +26,7 @@ const OVERLAY_MODULES = {
 const FIGHT_PHYSICS_SECTION_KEYS = [
   "fightFish",
   "fightRodHold",
+  "fightRodControl",
   "fightReelHold",
   "fightDrag",
   "fightLine",

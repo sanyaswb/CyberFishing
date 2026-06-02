@@ -362,6 +362,7 @@ class FightSessionFactory {
         rodHold: this.physicsConfig?.getRodHoldConfig?.() || {},
       },
     );
+    const rodControlSystem = new RodLateralControlSystem();
     const reelSystem = new ReelSystem(
       this.physicsConfig?.getReelConfig?.() || {},
     );
@@ -403,6 +404,7 @@ class FightSessionFactory {
       fishForceSystem,
       pullInputMapper,
       rodPullSystem,
+      rodControlSystem,
       reelSystem,
       tensionSystem,
       fightPhysicsSystem,
@@ -504,6 +506,7 @@ class FishingForceService {
       dragSystem,
       pullInputMapper,
       rodPullSystem,
+      rodControlSystem,
       reelSystem,
       tensionSystem,
       stressSystem,
@@ -526,6 +529,7 @@ class FishingForceService {
       dragSystem,
       pullInputMapper,
       rodPullSystem,
+      rodControlSystem,
       reelSystem,
       tensionSystem,
       stressSystem,
@@ -751,6 +755,7 @@ class FightService {
   #dragSystem = null;
   #pullInputMapper = null;
   #rodPullSystem = null;
+  #rodControlSystem = null;
   #reelSystem = null;
   #tensionSystem = null;
   #fightPhysicsSystem = null;
@@ -794,6 +799,7 @@ class FightService {
     this.#dragSystem = session.dragSystem;
     this.#pullInputMapper = session.pullInputMapper;
     this.#rodPullSystem = session.rodPullSystem;
+    this.#rodControlSystem = session.rodControlSystem;
     this.#reelSystem = session.reelSystem;
     this.#tensionSystem = session.tensionSystem;
     this.#fightPhysicsSystem = session.fightPhysicsSystem;
@@ -814,6 +820,7 @@ class FightService {
     this.#dragSystem?.updateEquipment(this.#reel);
     this.#pullInputMapper?.reset?.();
     this.#rodPullSystem?.reset?.();
+    this.#rodControlSystem?.reset?.();
     this.#tensionMeter.updateEquipment({
       rod: this.#rod,
       reel: this.#reel,
@@ -868,6 +875,7 @@ class FightService {
       dragSystem: this.#dragSystem,
       pullInputMapper: this.#pullInputMapper,
       rodPullSystem: this.#rodPullSystem,
+      rodControlSystem: this.#rodControlSystem,
       reelSystem: this.#reelSystem,
       tensionSystem: this.#tensionSystem,
       stressSystem: this.#tensionMeter,

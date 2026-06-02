@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.19.20 - Rod Control X
+
+- Added Rod Control X as a separate horizontal fight action with pointer/keyboard action lock.
+- Added a lateral rod control stroke meter so side control depletes and must recover after release.
+- Added lateral fish movement and lateral tension contribution with same/neutral/opposite direction multipliers.
+- Added smoothed visual rod X offset with canvas/playable-zone clamping.
+- Added a Rod Control UI bar and fight physics overlay section for balancing/debugging.
+
 ## v0.19.19.1 - Improve debug overlay DI and settings encapsulation
 
 ## v0.19.19 - overlay oop runtime

@@ -12,6 +12,7 @@ class FightPhysicsOverlayModule extends OverlayModule {
       [
         new FightFishSection({ settingsStore, htmlBuilder }),
         new FightRodHoldSection({ settingsStore, htmlBuilder }),
+        new FightRodControlSection({ settingsStore, htmlBuilder }),
         new FightReelHoldSection({ settingsStore, htmlBuilder }),
         new FightDragSection({ settingsStore, htmlBuilder }),
         new FightLineSection({ settingsStore, htmlBuilder }),

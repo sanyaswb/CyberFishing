@@ -1221,10 +1221,12 @@
     const spacing = uiIndicatorsConfig?.spacing || 40;
     const strokeHeight = 3;
     const strokeY = baseY + spacing;
+    const controlY = strokeY - strokeHeight - 8;
     return {
       x,
       width,
       strokeHeight,
+      controlY,
       strokeY,
       tensionY: strokeY + strokeHeight + 2,
       labelOffsetX: tensionConfig?.labelOffsetX || 60,
@@ -1233,6 +1235,7 @@
 
   drawRodStrokeBar(fightDebug, tensionConfig, uiIndicatorsConfig) {
     const layout = this.#getFightBarLayout(tensionConfig, uiIndicatorsConfig);
+    this.#drawRodControlBar(fightDebug, tensionConfig, layout);
     const ratio = Math.max(0, Math.min(1, Number(fightDebug?.rodStrokeRatio) || 0));
     const unrecovered = Number(fightDebug?.rodStrokeUnrecoveredMeters) || 0;
     const capacity = Number(fightDebug?.rodStrokeCapacityMeters) || 0;
@@ -1258,6 +1261,40 @@
       value,
       layout.x + layout.width + layout.labelOffsetX,
       layout.strokeY + layout.strokeHeight + 3,
+    );
+    this.#ctx.restore();
+  }
+
+  #drawRodControlBar(fightDebug, tensionConfig, layout) {
+    const ratio = Math.max(0, Math.min(1, Number(fightDebug?.rodControlRatio) || 0));
+    const used = Number(fightDebug?.rodControlUsedMeters) || 0;
+    const capacity = Number(fightDebug?.rodControlCapacityMeters) || 0;
+    const direction = Math.sign(Number(fightDebug?.rodControlDirectionX) || 0);
+    const active = !!fightDebug?.rodControlActive;
+    const label = "Контроль вудки";
+    const directionLabel = direction < 0 ? "L" : direction > 0 ? "R" : "-";
+    const value = `${directionLabel} ${used.toFixed(1)}м / ${capacity.toFixed(1)}м`;
+    const fillColor = active ? "#00d4ff" : "#5c7d99";
+
+    this.#ctx.save();
+    this.#ctx.fillStyle = "rgba(0, 212, 255, 0.18)";
+    this.#ctx.fillRect(layout.x, layout.controlY, layout.width, layout.strokeHeight);
+    this.#ctx.fillStyle = fillColor;
+    this.#ctx.fillRect(layout.x, layout.controlY, layout.width * ratio, layout.strokeHeight);
+
+    this.#ctx.fillStyle = tensionConfig?.labelColor || "#8a9bac";
+    this.#ctx.font = tensionConfig?.labelFont || "bold 12px monospace";
+    this.#ctx.textAlign = "left";
+    this.#ctx.fillText(
+      label,
+      layout.x - layout.labelOffsetX,
+      layout.controlY + layout.strokeHeight + 3,
+    );
+    this.#ctx.textAlign = "right";
+    this.#ctx.fillText(
+      value,
+      layout.x + layout.width + layout.labelOffsetX,
+      layout.controlY + layout.strokeHeight + 3,
     );
     this.#ctx.restore();
   }

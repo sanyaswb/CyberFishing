@@ -322,6 +322,15 @@ class FightPhysicsConfigAdapter {
     );
   }
 
+  getRodControlConfig() {
+    const fight = this.#physics().fight || {};
+    const config = fight.rodControl || {};
+    return {
+      ...config,
+      pixelsPerMeter: this.getPixelsPerMeter(),
+    };
+  }
+
   #root() {
     return this.config?.raw || this.config || {};
   }

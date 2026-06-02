@@ -131,6 +131,86 @@
     "label": "Ліміт контрольованої тяги",
     "description": "Максимальний player pressure як частка від міцності снасті. 0.6 на снасті 2 кг дає максимум 1.2 кг контрольованого тиску."
   },
+  "physics.fight.rodControl.enabled": {
+    "label": "Enable Rod Control X",
+    "description": "Turns on lateral rod control during fight."
+  },
+  "physics.fight.rodControl.input.minLockDistancePx": {
+    "label": "Rod Control lock distance",
+    "description": "Minimum pointer movement before the horizontal gesture can lock."
+  },
+  "physics.fight.rodControl.input.screenWidthRatioForFullPower": {
+    "label": "Rod Control full-power screen ratio",
+    "description": "Pointer travel as a screen-width ratio required for 100% lateral input."
+  },
+  "physics.fight.rodControl.input.fallbackFullPowerPx": {
+    "label": "Rod Control full-power fallback",
+    "description": "Fallback pointer travel in pixels required for 100% lateral input."
+  },
+  "physics.fight.rodControl.input.horizontalDominanceRatio": {
+    "label": "Rod Control horizontal dominance",
+    "description": "How much horizontal movement must dominate vertical movement to lock Rod Control X."
+  },
+  "physics.fight.rodControl.stroke.capacityByRodLengthRatio": {
+    "label": "Rod Control stroke capacity",
+    "description": "Rod length multiplier that defines available lateral control stroke in meters."
+  },
+  "physics.fight.rodControl.stroke.recoveryRateMetersPerSecond": {
+    "label": "Rod Control recovery speed",
+    "description": "How quickly the lateral control stroke recovers after release."
+  },
+  "physics.fight.rodControl.stroke.minRatioToApply": {
+    "label": "Rod Control minimum input",
+    "description": "Minimum input ratio required before lateral control applies movement."
+  },
+  "physics.fight.rodControl.force.maxForceKg": {
+    "label": "Rod Control max force",
+    "description": "Maximum lateral player force added by Rod Control X."
+  },
+  "physics.fight.rodControl.force.sideMovePxPerSecond": {
+    "label": "Rod Control side speed",
+    "description": "Base lateral fish movement speed in pixels per second."
+  },
+  "physics.fight.rodControl.force.fishWeightResistanceMultiplier": {
+    "label": "Rod Control fish weight resistance",
+    "description": "How much fish weight reduces lateral control force and movement."
+  },
+  "physics.fight.rodControl.tension.sameDirectionMultiplier": {
+    "label": "Rod Control same-direction tension",
+    "description": "Tension multiplier when fish movement and Rod Control point to the same side."
+  },
+  "physics.fight.rodControl.tension.sideMultiplier": {
+    "label": "Rod Control neutral side tension",
+    "description": "Tension multiplier when fish has no clear horizontal movement."
+  },
+  "physics.fight.rodControl.tension.oppositeDirectionMultiplier": {
+    "label": "Rod Control opposite-direction tension",
+    "description": "Tension multiplier when Rod Control opposes fish horizontal movement."
+  },
+  "physics.fight.rodControl.rodVisual.maxOffsetScreenRatio": {
+    "label": "Rod visual max offset ratio",
+    "description": "Maximum rod visual offset as a screen-width ratio."
+  },
+  "physics.fight.rodControl.rodVisual.fallbackMaxOffsetPx": {
+    "label": "Rod visual fallback offset",
+    "description": "Fallback maximum rod visual offset in pixels."
+  },
+  "physics.fight.rodControl.rodVisual.moveSmoothing": {
+    "label": "Rod visual move smoothing",
+    "description": "Smoothing speed while the rod moves toward lateral control."
+  },
+  "physics.fight.rodControl.rodVisual.returnSmoothing": {
+    "label": "Rod visual return smoothing",
+    "description": "Smoothing speed while the rod returns after release."
+  },
+  "physics.fight.rodControl.rodVisual.edgePaddingPx": {
+    "label": "Rod visual edge padding",
+    "description": "Minimum screen or playable-zone padding for the visual rod position."
+  },
+  "physics.fight.rodControl.rodVisual.clampToPlayableZone": {
+    "label": "Clamp rod visual to playable zone",
+    "description": "Keeps the visual rod position inside the playable map zone when bounds are known."
+  },
   "physics.fight.landing.catchZone.reel.landingDistanceMeters": {
     "label": "Landing distance для снасті з котушкою",
     "description": "Дистанція від гравця/берега, в якій риба зі снастю з котушкою може бути зарахована як спіймана."
