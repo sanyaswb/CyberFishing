@@ -49,7 +49,11 @@ class DevToolsParameterTooltipProvider {
       }
       return await response.json();
     } catch (error) {
-      console.warn("[DevTools] Tooltip descriptions failed to load:", url, error);
+      console.warn(
+        "[DevTools] Tooltip descriptions failed to load:",
+        url,
+        error,
+      );
       return null;
     }
   }
@@ -144,19 +148,24 @@ class DevTools {
     this.#renderRuntimeOverrideControls(body);
 
     // 1. OVERLAY MODULES
-    if (typeof OVERLAY_MODULES !== "undefined") {
+    const overlaySettings =
+      typeof window !== "undefined" && window.OverlaySettingsStore
+        ? window.OverlaySettingsStore
+        : null;
+    const overlayModules =
+      overlaySettings?.getAll?.() ||
+      (typeof OVERLAY_MODULES !== "undefined" ? OVERLAY_MODULES : null);
+    if (overlayModules) {
       const content = this.#createSectionWithCache(
-        "OVERLAY MODULES (На Екрані)",
+        "OVERLAY MODULES (В реальному часі)",
         body,
         ["OVERLAY_MODULES"],
       );
-      for (const k in OVERLAY_MODULES) {
-        this.#ui.createSwitcherRow(
-          k,
-          OVERLAY_MODULES[k],
-          content,
-          (v) => (OVERLAY_MODULES[k] = v),
-        );
+      for (const k in overlayModules) {
+        this.#ui.createSwitcherRow(k, overlayModules[k], content, (v) => {
+          if (overlaySettings?.setEnabled) overlaySettings.setEnabled(k, v);
+          else overlayModules[k] = v;
+        });
       }
     }
 
@@ -188,7 +197,10 @@ class DevTools {
       );
       for (const key of Object.keys(ITEM_DB)) {
         if (this.#excludeKeys.includes(key)) continue;
-        const sectionContent = this.#createSectionWithCache(key, dbContent, ["ITEM_DB", key]);
+        const sectionContent = this.#createSectionWithCache(key, dbContent, [
+          "ITEM_DB",
+          key,
+        ]);
         // Шлях тепер починається з "ITEM_DB"
         this.#buildTree(ITEM_DB[key], sectionContent, ["ITEM_DB", key]);
       }
@@ -240,7 +252,11 @@ class DevTools {
       );
       for (const key of Object.keys(CONFIG)) {
         if (this.#excludeKeys.includes(key)) continue;
-        const sectionContent = this.#createSectionWithCache(key, configContent, ["CONFIG", key]);
+        const sectionContent = this.#createSectionWithCache(
+          key,
+          configContent,
+          ["CONFIG", key],
+        );
         // Шлях тепер починається з "CONFIG"
         this.#buildTree(CONFIG[key], sectionContent, ["CONFIG", key]);
       }
@@ -291,7 +307,8 @@ class DevTools {
 
     hookedFish.physics = hookedFish.physics || {};
     hookedFish.physics.forceProfile = hookedFish.physics.forceProfile || {};
-    hookedFish.physics.movementProfile = hookedFish.physics.movementProfile || {};
+    hookedFish.physics.movementProfile =
+      hookedFish.physics.movementProfile || {};
     this.#ui.createInputRow(
       "levelBasePower",
       Number(
@@ -370,7 +387,11 @@ class DevTools {
   }) {
     if (!profile) return;
 
-    const content = this.#createSectionWithCache(title, parentElement, ["HOOKED_FISH", "physics", profilePath]);
+    const content = this.#createSectionWithCache(title, parentElement, [
+      "HOOKED_FISH",
+      "physics",
+      profilePath,
+    ]);
     for (const field of fields) {
       this.#ui.createInputRow(
         field,
@@ -398,9 +419,21 @@ class DevTools {
     physics.movementProfile = physics.movementProfile || {};
     physics.staminaProfile = physics.staminaProfile || {};
 
-    this.#applyDefaultNumber(physics.forceProfile, "basePower", physics.basePower ?? 1);
-    this.#applyDefaultNumber(physics.movementProfile, "baseSpeed", physics.baseSpeed ?? 1);
-    this.#applyDefaultNumber(physics.movementProfile, "agility", physics.agility ?? 1);
+    this.#applyDefaultNumber(
+      physics.forceProfile,
+      "basePower",
+      physics.basePower ?? 1,
+    );
+    this.#applyDefaultNumber(
+      physics.movementProfile,
+      "baseSpeed",
+      physics.baseSpeed ?? 1,
+    );
+    this.#applyDefaultNumber(
+      physics.movementProfile,
+      "agility",
+      physics.agility ?? 1,
+    );
     this.#applyDefaultNumber(
       physics.staminaProfile,
       "baseStamina",
@@ -488,7 +521,8 @@ class DevTools {
   }
 
   #formatDevToolsKey(key, path) {
-    if (path?.[0] !== "CONFIG" || !this.#configRuntime?.overrideStore) return key;
+    if (path?.[0] !== "CONFIG" || !this.#configRuntime?.overrideStore)
+      return key;
     const overridePath = path.slice(1).join(".");
     return this.#configRuntime.overrideStore.has(overridePath)
       ? `${key} *`
@@ -513,7 +547,11 @@ class DevTools {
             currentPath,
           );
         } else if (val.length > 0 && typeof val[0] === "object") {
-          const content = this.#createSectionWithCache(key, parentElement, currentPath);
+          const content = this.#createSectionWithCache(
+            key,
+            parentElement,
+            currentPath,
+          );
           val.forEach((item, index) => {
             const itemLabel = item.id || item.type || `Item [${index}]`;
             const itemContent = this.#createSectionWithCache(
@@ -525,7 +563,11 @@ class DevTools {
           });
         }
       } else if (val !== null && typeof val === "object") {
-        const content = this.#createSectionWithCache(key, parentElement, currentPath);
+        const content = this.#createSectionWithCache(
+          key,
+          parentElement,
+          currentPath,
+        );
         this.#buildTree(val, content, currentPath);
       } else if (
         typeof val === "number" ||
@@ -533,8 +575,11 @@ class DevTools {
         typeof val === "string"
       ) {
         if (typeof val === "boolean") {
-          this.#ui.createSwitcherRow(key, val, parentElement, (newVal) =>
-            this.#updateConfigValue(currentPath, newVal),
+          this.#ui.createSwitcherRow(
+            key,
+            val,
+            parentElement,
+            (newVal) => this.#updateConfigValue(currentPath, newVal),
             currentPath,
           );
         } else if (typeof val === "string") {
@@ -607,7 +652,11 @@ class DevTools {
   }
 
   #refreshFightPhysicsAdapter() {
-    if (typeof CONFIG === "undefined" || typeof FightPhysicsConfigAdapter === "undefined") return;
+    if (
+      typeof CONFIG === "undefined" ||
+      typeof FightPhysicsConfigAdapter === "undefined"
+    )
+      return;
     Object.defineProperty(CONFIG, "fightPhysicsConfig", {
       value: new FightPhysicsConfigAdapter(CONFIG),
       enumerable: false,
@@ -635,7 +684,11 @@ class DevTools {
       this.#populatePanel();
     });
     this.#ui.createButtonRow("Export overrides", content, () => {
-      const json = JSON.stringify(this.#configRuntime?.exportOverrides?.() || {}, null, 2);
+      const json = JSON.stringify(
+        this.#configRuntime?.exportOverrides?.() || {},
+        null,
+        2,
+      );
       console.log("[DevTools] Runtime overrides export:", json);
       if (navigator?.clipboard?.writeText) {
         navigator.clipboard.writeText(json).catch(() => {});
@@ -679,7 +732,6 @@ class DevTools {
       }),
     );
   }
-
 
   #syncHookedFishProfileAliases(path, newValue, fish) {
     if (path[0] !== "HOOKED_FISH" || path[1] !== "physics" || !fish?.physics) {
@@ -988,7 +1040,13 @@ class DevToolsUI {
     parentElement.appendChild(row);
   }
 
-  createSwitcherRow(labelStr, initialValue, parentElement, onChangeCallback, path = null) {
+  createSwitcherRow(
+    labelStr,
+    initialValue,
+    parentElement,
+    onChangeCallback,
+    path = null,
+  ) {
     const row = document.createElement("div");
     row.className = "devtools-row";
     this.#assignDevToolsPath(row, path);

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.19.18";
+const CURRENT_PROJECT_VERSION = "0.19.19";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,11 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "debug-metadata-cleanup",
+  codename: "overlay-oop-runtime",
   updatedAt: "2026-06-02",
   notes: Object.freeze([
-    "DevTools parameter description metadata moved into src/config/metadata",
-    "DevTools tooltip loading now reads all parameter metadata from one config metadata location",
+    "Debug overlay runtime moved into class-based config, core, DOM, service and module layers",
+    "Fight physics overlay is split into dedicated section classes",
+    "Overlay metric descriptions now live in config metadata and load through a catalog service",
+    "Overlay remains optional for prod through null-safe debug adapters",
   ]),
 });
 

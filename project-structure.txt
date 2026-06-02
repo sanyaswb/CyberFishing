@@ -89,6 +89,7 @@
 │  │  │  └── map_db.js
 │  │  ├── metadata
 │  │  │  ├── dev_tool_parameter_descriptions.json
+│  │  │  ├── overlay_metric_descriptions.json
 │  │  │  └── parameter_labels.json
 │  │  ├── physics
 │  │  │  ├── environment_physics_config.js
@@ -153,8 +154,50 @@
 │  │  │  ├── rod_stroke_debug_module.js
 │  │  │  ├── stamina_debug_module.js
 │  │  │  └── tension_debug_module.js
-│  │  ├── overlay_metric_inspector.js
-│  │  ├── overlay.js
+│  │  ├── overlay
+│  │  │  ├── config
+│  │  │  │  └── overlay_modules_config.js
+│  │  │  ├── core
+│  │  │  │  ├── overlay_controller.js
+│  │  │  │  ├── overlay_module_base.js
+│  │  │  │  ├── overlay_module_registry.js
+│  │  │  │  └── overlay_update_loop.js
+│  │  │  ├── dom
+│  │  │  │  ├── overlay_dom_adapter.js
+│  │  │  │  ├── overlay_metric_info_bridge.js
+│  │  │  │  ├── overlay_scale_controls.js
+│  │  │  │  └── overlay_style_installer.js
+│  │  │  ├── modules
+│  │  │  │  ├── behavior_overlay_module.js
+│  │  │  │  ├── chances_detail_overlay_module.js
+│  │  │  │  ├── chum_overlay_module.js
+│  │  │  │  ├── debuffs_overlay_module.js
+│  │  │  │  ├── echo_overlay_module.js
+│  │  │  │  ├── fight_physics
+│  │  │  │  │  ├── fight_auto_recovery_section.js
+│  │  │  │  │  ├── fight_drag_section.js
+│  │  │  │  │  ├── fight_fish_section.js
+│  │  │  │  │  ├── fight_line_section.js
+│  │  │  │  │  ├── fight_movement_section.js
+│  │  │  │  │  ├── fight_physics_overlay_module.js
+│  │  │  │  │  ├── fight_reel_hold_section.js
+│  │  │  │  │  ├── fight_rod_hold_section.js
+│  │  │  │  │  ├── fight_rod_stroke_section.js
+│  │  │  │  │  ├── fight_section_base.js
+│  │  │  │  │  └── fight_tension_section.js
+│  │  │  │  ├── fish_power_overlay_module.js
+│  │  │  │  ├── fish_states_overlay_module.js
+│  │  │  │  ├── live_forces_overlay_module.js
+│  │  │  │  ├── player_max_overlay_module.js
+│  │  │  │  └── worst_case_overlay_module.js
+│  │  │  ├── overlay_bootstrap.js
+│  │  │  └── services
+│  │  │    ├── overlay_console_metric_inspector.js
+│  │  │    ├── overlay_html_builder.js
+│  │  │    ├── overlay_metric_catalog.js
+│  │  │    ├── overlay_metric_resolver.js
+│  │  │    ├── overlay_settings_store.js
+│  │  │    └── overlay_value_formatter.js
 │  │  └── services
 │  │    ├── debug_data_selectors.js
 │  │    ├── debug_formatters.js

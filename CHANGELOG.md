@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.19.19 - overlay oop runtime
+
+- Split debug overlay into class-based config, core, DOM, service and module layers.
+- Replaced the monolithic overlay file with `src/debug/overlay/overlay_bootstrap.js`.
+- Split fight physics overlay into dedicated section renderers for fish, rod hold, reel hold, drag, line, rod stroke, auto recovery, movement and tension.
+- Moved overlay metric descriptions into `src/config/metadata/overlay_metric_descriptions.json`.
+- Split overlay metric inspection into catalog, resolver, console inspector and DOM bridge services.
+- Routed DevTools overlay toggles through `OverlaySettingsStore` while preserving `OVERLAY_MODULES` compatibility.
+
 ## v0.19.18 - debug metadata cleanup
 
 - Moved DevTools parameter descriptions into `src/config/metadata`.
