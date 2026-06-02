@@ -57,7 +57,7 @@ const PEACEFUL_FISH = [
 
     physics: {
       forceProfile: {
-        basePower: 0.5,
+        basePower: 1.0,
       },
 
       staminaProfile: {
