@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.19.16 - fight tension and applied movement overlay
+
+- Capped final line tension by drag when the reel can slip, while keeping raw tension for debug.
+- Treated 100% drag as locked drag so it can bypass slip caps intentionally.
+- Changed rod stroke loss so unrecovered Y-distance is lost when the fish moves away, even after hold is released.
+- Split fight overlay movement speed into model fight speed and actual applied rod/reel-hold speed.
+- Added reel hold overlay rows for applied frame movement and applied speed.
+
 ## v0.19.15 - reel hold stabilization
 
 - Added `ReelHoldRecoverySystem` to remaining regression harnesses.

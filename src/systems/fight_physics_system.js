@@ -998,6 +998,25 @@ class FightPhysicsSystem {
     dragContext,
   }) {
     const lineHasReserve = this.#lineHasReserve(lineState);
+    const frameDtSec = Math.max(0, Number(physics?.dtSec) || 0);
+    const appliedRodPullMoveMeters = Math.max(0, Number(rodPullMoveMeters) || 0);
+    const appliedReelHoldMoveMeters = Math.max(
+      0,
+      Number(holdReelRecoverMoveMeters) || 0,
+    );
+    const totalAppliedPullMoveMeters =
+      appliedRodPullMoveMeters + appliedReelHoldMoveMeters;
+    const rodPullAppliedSpeedMps =
+      frameDtSec > 0 ? appliedRodPullMoveMeters / frameDtSec : 0;
+    const reelHoldAppliedSpeedMps =
+      frameDtSec > 0 ? appliedReelHoldMoveMeters / frameDtSec : 0;
+    const totalAppliedPullSpeedMps =
+      frameDtSec > 0 ? totalAppliedPullMoveMeters / frameDtSec : 0;
+    const movementMode = appliedReelHoldMoveMeters > 0.000001
+      ? "reel_hold"
+      : appliedRodPullMoveMeters > 0.000001
+        ? "rod_hold"
+        : "none";
     const lineDebug = {
       totalLineMeters: Math.max(0, Number(lineState.totalLineMeters ?? lineState.totalLengthMeters) || 0),
       fishDistanceMeters: Math.max(0, Number(lineState.distanceMeters) || 0),
@@ -1113,7 +1132,11 @@ class FightPhysicsSystem {
         fishRetrieveResult?.yEscapeForceKg ?? forceData.yEscapeForceKg,
       fishRetrieveUsefulPullForceKg: fishRetrieveResult?.effectiveRodHoldKg,
       fishRetrieveSpeedMps: fishRetrieveResult?.speedMps,
+      modelFightSpeedMps: fishRetrieveResult?.speedMps,
       simpleFightSpeedMps: fishRetrieveResult?.speedMps,
+      totalAppliedPullMoveMeters,
+      totalAppliedPullSpeedMps,
+      movementMode,
       towardPlayerSpeedMps: fishRetrieveResult?.towardPlayerSpeedMps,
       awaySpeedMps: fishRetrieveResult?.awaySpeedMps,
       netForceKg: fishRetrieveResult?.netForceKg,
@@ -1143,7 +1166,8 @@ class FightPhysicsSystem {
       rodPullMaxDistanceMeters: rodPullDisplay.maxDistanceMeters,
       rodPullAvailableDistanceMeters: rodPullDisplay.availableDistanceMeters,
       rodPullDeltaMeters: rodPullResult.deltaMeters,
-      rodPullMoveMeters,
+      rodPullMoveMeters: appliedRodPullMoveMeters,
+      rodPullAppliedSpeedMps,
       rodPullMovementBlockReason: rodPullMovementBlockReason || "none",
       rodPullCanMoveFish: rodPullResult.canMoveFish,
       rodPullBlockedReason: rodPullDisplay.blockedReason,
@@ -1187,7 +1211,9 @@ class FightPhysicsSystem {
       holdReelRecoverReelMaxLoadKg: holdReelRecover?.reelMaxLoadKg ?? 0,
       holdReelRecoverSpeedMps:
         holdReelRecover?.recoverSpeedMetersPerSecond ?? 0,
-      holdReelRecoverMoveMeters: holdReelRecoverMoveMeters ?? 0,
+      holdReelRecoverMoveMeters: appliedReelHoldMoveMeters,
+      reelHoldMoveMeters: appliedReelHoldMoveMeters,
+      reelHoldAppliedSpeedMps,
       reelHoldMovementBlockReason: reelHoldMovementBlockReason || "none",
       hardTensionBlocked: !!hardTensionBlocked,
       holdReelRecoverBlockedReason:

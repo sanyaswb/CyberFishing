@@ -113,7 +113,7 @@ const ITEM_DB = {
         basePower: 1.0,
         compensation: 0.2,
         accuracy: 60,
-        lengthMeters: 12.0,
+        lengthMeters: 5.0,
         castPowerCoefficient: 1.0,
         maxLoadKg: 1,
         holdTensionRatio: 1.0,

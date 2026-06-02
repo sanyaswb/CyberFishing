@@ -20,7 +20,7 @@ const FIGHT_PHYSICS_CONFIG = {
   },
 
   rodStroke: {
-    capacityByRodLengthRatio: 0.5,
+    capacityByRodLengthRatio: 1.0,
   },
 
   tension: {
@@ -42,7 +42,7 @@ const FIGHT_PHYSICS_CONFIG = {
       enabled: true,
       liftWeightTensionRatio: 1.0,
       liftTimeSeconds: 0.35,
-      releaseTimeSeconds: 0.20,
+      releaseTimeSeconds: 0.2,
     },
 
     catchZone: {
