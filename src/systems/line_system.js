@@ -142,10 +142,8 @@ class LineSystem {
       releaseRatio = shouldSlip ? slipReleaseRatio : creepRatio;
       if (dragRatio <= 0.0001) releaseRatio = 1;
     } else {
-      const cfg = this.#config.drag || {};
-      const minReleaseAtFullDrag = cfg.yEscapeSpeedAtFullDrag ?? 0.02;
       const clampedDrag = this.#clamp01(control);
-      releaseRatio = 1 - clampedDrag * (1 - minReleaseAtFullDrag);
+      releaseRatio = 1 - clampedDrag;
     }
 
     const released = this.#spoolState.release(

@@ -14,7 +14,6 @@ const TACKLE_PHYSICS_CONFIG = {
   reelDrag: {
     minRatio: 0,
     maxRatio: 1,
-    yEscapeSpeedAtFullDrag: 0.02,
     tensionGrowthPower: 1.6,
     autoRetrieveEnabled: true,
     creepReleaseRatio: 0,

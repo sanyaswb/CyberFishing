@@ -234,6 +234,37 @@ autoRecoveryStrokeState.recoverWonDistance(autoRecoveryResult.recoveredMeters);
 approx(autoRecoveryResult.recoveredMeters, 0.8, 0.001, "auto recovery recovers released line through spool channel");
 approx(autoRecoveryLineSystem.releasedMeters, 7.2, 0.001, "auto recovery decreases released line");
 approx(autoRecoveryStrokeState.wonMeters, 0.2, 0.001, "auto recovery decreases rod stroke by the same meters");
+const dragSlipAutoRecoveryLineSystem = {
+  recoverCalled: false,
+  getState() {
+    return {
+      releasedMeters: 8,
+      distanceMeters: 7,
+    };
+  },
+  recoverReleasedLine() {
+    this.recoverCalled = true;
+    return 1;
+  },
+};
+const dragSlipBlockedAutoRecovery = new ReelSystem().recoverRodStrokeCredit({
+  dtSec: 1,
+  lineSystem: dragSlipAutoRecoveryLineSystem,
+  reel: {
+    hasReel: () => true,
+    getEffectiveMaxLoadKg: () => 1,
+    getRetrieveSpeedMetersPerSec: () => 0.8,
+  },
+  tensionKg: 0.8,
+  blockedReason: "raw_load_above_drag_limit",
+  playerHoldActive: false,
+  strokeWonMeters: 1,
+  fishDistanceMeters: 7,
+});
+assert(!dragSlipBlockedAutoRecovery.active, "drag slip blocks auto recovery");
+assert(dragSlipBlockedAutoRecovery.blockedReason === "raw_load_above_drag_limit", "auto recovery reports drag slip block");
+approx(dragSlipBlockedAutoRecovery.recoveredMeters, 0, 0.001, "drag slip recovers no stroke credit");
+assert(!dragSlipAutoRecoveryLineSystem.recoverCalled, "drag slip block does not touch released line recovery");
 
 const reelHold = new ReelHoldRecoverySystem().update({
   dtMs: 1000,

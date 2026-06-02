@@ -107,10 +107,6 @@
     "label": "Увімкнути підтягування вудкою",
     "description": "Вмикає або вимикає активний hold/rod pull для руху риби до гравця."
   },
-  "physics.fight.rodPull.pumpCreditReducesNextPullDistance": {
-    "label": "Попередній хід зменшує наступний",
-    "description": "Якщо true, невідновлений хід вудки зменшує доступну дистанцію наступного підтягування."
-  },
   "physics.fight.rodPull.distanceMultiplierByRodLength": {
     "label": "Дистанція ходу від довжини вудки",
     "description": "Скільки метрів активного ходу дає довжина вудки. 0.5 означає, що 3.6 м вудка дає 1.8 м ходу."
@@ -214,10 +210,6 @@
   "physics.tackle.reelDrag.maxRatio": {
     "label": "Максимальний відсоток фрикціону",
     "description": "Верхня межа drag ratio."
-  },
-  "physics.tackle.reelDrag.yEscapeSpeedAtFullDrag": {
-    "label": "Мінімальна втеча при повному фрикціоні",
-    "description": "Мінімальна частка швидкості втечі риби, яка лишається навіть при повністю затягнутому фрикціоні."
   },
   "physics.tackle.reelDrag.tensionGrowthPower": {
     "label": "Крива росту tension від фрикціону",

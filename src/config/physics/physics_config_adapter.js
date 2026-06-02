@@ -179,10 +179,6 @@ class FightPhysicsConfigAdapter {
     return {
       minRatio: this.#number(config.minRatio, 0),
       maxRatio: this.#number(config.maxRatio, 1),
-      yEscapeSpeedAtFullDrag: this.#number(
-        config.yEscapeSpeedAtFullDrag,
-        0.02,
-      ),
       tensionGrowthPower: this.#number(config.tensionGrowthPower, 1.6),
       autoRetrieveEnabled: config.autoRetrieveEnabled ?? true,
       creepReleaseRatio: this.#number(config.creepReleaseRatio, 0),
