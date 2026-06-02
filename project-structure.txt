@@ -129,11 +129,36 @@
 │  │    ├── line_inventory_controller.js
 │  │    └── line_spool_state.js
 │  ├── debug
+│  │  ├── core
+│  │  │  ├── debug_console.js
+│  │  │  ├── debug_context.js
+│  │  │  ├── debug_event_binder.js
+│  │  │  ├── debug_module_registry.js
+│  │  │  └── null_debug_runtime.js
 │  │  ├── debug.js
 │  │  ├── dev_tool_parameter_descriptions.json
 │  │  ├── dev_tools.js
+│  │  ├── god_mode.js
+│  │  ├── modules
+│  │  │  ├── base_debug_module.js
+│  │  │  ├── bite_ticks_debug_module.js
+│  │  │  ├── catch_time_debug_module.js
+│  │  │  ├── deviations_debug_module.js
+│  │  │  ├── exhaustion_debug_module.js
+│  │  │  ├── forces_debug_module.js
+│  │  │  ├── location_debug_module.js
+│  │  │  ├── map_debug_module.js
+│  │  │  ├── net_debug_module.js
+│  │  │  ├── prediction_debug_module.js
+│  │  │  ├── rod_stroke_debug_module.js
+│  │  │  ├── stamina_debug_module.js
+│  │  │  └── tension_debug_module.js
 │  │  ├── overlay_metric_inspector.js
-│  │  └── overlay.js
+│  │  ├── overlay.js
+│  │  └── services
+│  │    ├── debug_data_selectors.js
+│  │    ├── debug_formatters.js
+│  │    └── location_debug_data_provider.js
 │  ├── entities
 │  │  ├── fish.js
 │  │  └── tackle.js
