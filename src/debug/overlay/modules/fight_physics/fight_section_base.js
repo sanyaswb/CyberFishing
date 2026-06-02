@@ -1,14 +1,27 @@
 class FightSectionBase {
-  constructor(key, title, { settingsStore = window.OverlaySettingsStore } = {}) {
+  constructor(
+    key,
+    title,
+    {
+      settingsStore = typeof window !== "undefined"
+        ? window.OverlaySettingsStore
+        : null,
+      formatter = new OverlayValueFormatter(),
+      htmlBuilder = new OverlayHtmlBuilder(),
+    } = {},
+  ) {
     this.key = key;
     this.title = title;
     this.settingsStore = settingsStore;
-    this.formatter = new OverlayValueFormatter();
-    this.htmlBuilder = new OverlayHtmlBuilder();
+    this.formatter = formatter;
+    this.htmlBuilder = htmlBuilder;
   }
 
   isEnabled() {
-    return this.settingsStore.isEnabled("fightPhysics") || this.settingsStore.isEnabled(this.key);
+    return (
+      !!this.settingsStore?.isEnabled?.("fightPhysics") ||
+      !!this.settingsStore?.isEnabled?.(this.key)
+    );
   }
 
   render(data) {

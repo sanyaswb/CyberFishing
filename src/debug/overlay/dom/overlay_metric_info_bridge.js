@@ -2,6 +2,7 @@ class OverlayMetricInfoBridge {
   #catalog;
   #inspector;
   #documentTarget;
+  #isStarted = false;
 
   constructor({
     catalog = new OverlayMetricCatalog(),
@@ -14,15 +15,15 @@ class OverlayMetricInfoBridge {
   }
 
   start() {
+    if (this.#isStarted) return;
+    this.#isStarted = true;
     this.#listenForDebugData();
     const content = this.#documentTarget.querySelector(".debug-overlay-content");
     const target = content || this.#documentTarget;
-    target.addEventListener(
-      "pointerdown",
-      (event) => this.#handlePointerDown(event),
-      true,
-    );
+    target.addEventListener("pointerover", (event) => this.#handleHover(event), true);
+    target.addEventListener("focusin", (event) => this.#handleHover(event), true);
     target.addEventListener("click", (event) => this.#handleClick(event), true);
+    target.addEventListener("keydown", (event) => this.#handleKeyDown(event), true);
   }
 
   #listenForDebugData() {
@@ -31,36 +32,67 @@ class OverlayMetricInfoBridge {
     });
   }
 
-  #handlePointerDown(event) {
-    const button = event.target.closest?.(".overlay-metric-info-btn");
-    if (!button) return;
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation?.();
-    this.#inspectButton(button);
+  #handleHover(event) {
+    const label = this.#findMetricLabel(event.target);
+    if (!label) return;
+    this.#applyTooltip(label);
   }
 
   #handleClick(event) {
-    const button = event.target.closest?.(".overlay-metric-info-btn");
-    if (!button) return;
+    const label = this.#findMetricLabel(event.target);
+    if (!label) return;
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation?.();
+    this.#inspectLabel(label);
   }
 
-  #inspectButton(button) {
-    const row = button.closest(".debug-overlay-row");
-    const label = button.dataset.metric || "metric";
+  #handleKeyDown(event) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const label = this.#findMetricLabel(event.target);
+    if (!label) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation?.();
+    this.#inspectLabel(label);
+  }
+
+  #findMetricLabel(target) {
+    return target?.closest?.(".overlay-metric-label") || null;
+  }
+
+  #applyTooltip(labelElement) {
+    const metricLabel = labelElement.dataset.metric || "metric";
+    const entry = this.#catalog.getEntry(metricLabel);
+    labelElement.title = this.#buildTooltip(metricLabel, entry);
+  }
+
+  #inspectLabel(labelElement) {
+    const row = labelElement.closest(".debug-overlay-row");
+    const label = labelElement.dataset.metric || "metric";
     const value =
       row?.querySelector(".debug-overlay-value")?.textContent?.trim() || "";
     const entry = this.#catalog.getEntry(label);
-    button.classList.add("overlay-metric-info-btn-active");
+
+    labelElement.classList.add("overlay-metric-label-active");
     window.setTimeout(() => {
-      if (button.isConnected) {
-        button.classList.remove("overlay-metric-info-btn-active");
+      if (labelElement.isConnected) {
+        labelElement.classList.remove("overlay-metric-label-active");
       }
     }, 180);
+
     this.#inspector.inspect({ label, displayedValue: value, entry });
+  }
+
+  #buildTooltip(label, entry) {
+    if (!entry) {
+      return `${label}\nОпис для цієї overlay-метрики ще не додано.`;
+    }
+
+    const lines = [String(label)];
+    if (entry.description) lines.push(entry.description);
+    if (entry.formula) lines.push(`Formula: ${entry.formula}`);
+    return lines.join("\n");
   }
 }
 

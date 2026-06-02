@@ -21,7 +21,6 @@ class OverlayStyleInstaller {
       .debug-overlay-label {
         display: inline-flex;
         align-items: center;
-        gap: 5px;
         min-height: 16px;
         line-height: 1.2;
       }
@@ -29,35 +28,25 @@ class OverlayStyleInstaller {
         font-weight: bold;
         text-align: right;
       }
-      .overlay-metric-info-btn {
-        width: 14px;
-        height: 14px;
-        min-width: 14px;
-        flex: 0 0 14px;
-        box-sizing: border-box;
-        padding: 0;
-        border-radius: 4px;
-        border: 1px solid rgba(115, 194, 251, 0.9);
-        background: rgba(115, 194, 251, 0.12);
-        box-shadow: 0 0 5px rgba(115, 194, 251, 0.35);
-        cursor: pointer;
+      .overlay-metric-label {
+        cursor: help;
         pointer-events: auto;
-        touch-action: none;
-        transform: translateZ(0);
-        transition: none;
+        touch-action: manipulation;
+        text-decoration: underline dotted rgba(115, 194, 251, 0.55);
+        text-underline-offset: 2px;
+        border-radius: 3px;
         outline: none;
-        -webkit-tap-highlight-color: transparent;
+        transition: background 80ms ease, color 80ms ease;
       }
-      .overlay-metric-info-btn:hover {
-        background: rgba(115, 194, 251, 0.12);
-        border-color: rgba(115, 194, 251, 0.9);
-        box-shadow: 0 0 5px rgba(115, 194, 251, 0.35);
+      .overlay-metric-label:hover,
+      .overlay-metric-label:focus-visible {
+        color: #ffffff;
+        background: rgba(115, 194, 251, 0.16);
       }
-      .overlay-metric-info-btn-active,
-      .overlay-metric-info-btn:active {
-        background: rgba(255, 255, 255, 0.85);
-        border-color: #ffffff;
-        box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+      .overlay-metric-label-active,
+      .overlay-metric-label:active {
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.2);
       }
     `;
     this.#documentTarget.head.appendChild(style);

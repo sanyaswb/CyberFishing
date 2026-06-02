@@ -1,6 +1,6 @@
 class FishPowerModule extends OverlayModule {
-  constructor() {
-    super("fishBase");
+  constructor(options = {}) {
+    super("fishBase", options);
   }
 
   shouldRender(d) {

@@ -1,6 +1,6 @@
 class PlayerMaxModule extends OverlayModule {
-  constructor() {
-    super("playerMax");
+  constructor(options = {}) {
+    super("playerMax", options);
   }
 
   shouldRender(d) {

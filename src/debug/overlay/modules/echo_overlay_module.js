@@ -1,6 +1,6 @@
 class EchoModule extends OverlayModule {
-  constructor() {
-    super("echo");
+  constructor(options = {}) {
+    super("echo", options);
   }
 
   shouldRender(d) {

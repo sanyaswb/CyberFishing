@@ -1,6 +1,6 @@
 class ChancesDetailModule extends OverlayModule {
-  constructor() {
-    super("chancesDetail");
+  constructor(options = {}) {
+    super("chancesDetail", options);
   }
 
   shouldRender(d) {

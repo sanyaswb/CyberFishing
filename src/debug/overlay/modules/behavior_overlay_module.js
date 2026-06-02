@@ -1,6 +1,6 @@
 class BehaviorModule extends OverlayModule {
-  constructor() {
-    super("state");
+  constructor(options = {}) {
+    super("state", options);
   }
 
   shouldRender(d) {

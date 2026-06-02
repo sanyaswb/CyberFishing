@@ -1,6 +1,6 @@
 class DebuffsModule extends OverlayModule {
-  constructor() {
-    super("debuffsLive");
+  constructor(options = {}) {
+    super("debuffsLive", options);
   }
 
   shouldRender(d) {

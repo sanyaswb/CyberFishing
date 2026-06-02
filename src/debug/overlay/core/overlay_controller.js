@@ -6,6 +6,7 @@ class OverlayController {
   #data = {};
   #lastHtml = "";
   #updateLoop;
+  #isStarted = false;
 
   constructor({
     registry,
@@ -27,6 +28,8 @@ class OverlayController {
   }
 
   start() {
+    if (this.#isStarted) return;
+    this.#isStarted = true;
     this.#domAdapter.init();
     this.#documentTarget.addEventListener("debug-live-update", (event) => {
       this.#data = event.detail || {};

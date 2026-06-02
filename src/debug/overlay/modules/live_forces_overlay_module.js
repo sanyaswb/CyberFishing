@@ -1,13 +1,13 @@
 class LiveForcesModule extends OverlayModule {
-  constructor() {
-    super("liveY");
+  constructor(options = {}) {
+    super("liveY", options);
   }
 
   isActive(data) {
     return (
       this.shouldRender(data) &&
-      (this.settingsStore.isEnabled("liveY") ||
-        this.settingsStore.isEnabled("liveX"))
+      (this.settingsStore?.isEnabled?.("liveY") ||
+        this.settingsStore?.isEnabled?.("liveX"))
     );
   }
 
@@ -24,7 +24,7 @@ class LiveForcesModule extends OverlayModule {
     let html = "";
 
     // Блок Y (Тяга)
-    if (this.settingsStore.isEnabled("liveY")) {
+    if (this.settingsStore?.isEnabled?.("liveY")) {
       const yTotal = pY + fY || 1;
       const yDiff = Math.abs((pY / yTotal) * 100 - (fY / yTotal) * 100).toFixed(
         1,
@@ -40,7 +40,7 @@ class LiveForcesModule extends OverlayModule {
     }
 
     // Блок X (Керування)
-    if (this.settingsStore.isEnabled("liveX")) {
+    if (this.settingsStore?.isEnabled?.("liveX")) {
       const xLead =
         fX > pX
           ? `<span style="color: #ff4444;">🚨 Риба втікає (Домінує)</span>`

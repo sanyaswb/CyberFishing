@@ -2,8 +2,8 @@ class OverlayModule {
   constructor(
     key,
     {
-      settingsStore = window.OverlaySettingsStore,
-      htmlBuilder = new OverlayHtmlBuilder(),
+      settingsStore = typeof window !== "undefined" ? window.OverlaySettingsStore : null,
+      htmlBuilder = typeof OverlayHtmlBuilder !== "undefined" ? new OverlayHtmlBuilder() : null,
     } = {},
   ) {
     this.key = key;
@@ -12,7 +12,7 @@ class OverlayModule {
   }
 
   isActive(data) {
-    return this.settingsStore.isEnabled(this.key) && this.shouldRender(data);
+    return !!this.settingsStore?.isEnabled?.(this.key) && this.shouldRender(data);
   }
 
   shouldRender() {

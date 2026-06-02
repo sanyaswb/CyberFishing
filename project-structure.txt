@@ -197,7 +197,8 @@
 │  │  │    ├── overlay_metric_catalog.js
 │  │  │    ├── overlay_metric_resolver.js
 │  │  │    ├── overlay_settings_store.js
-│  │  │    └── overlay_value_formatter.js
+│  │  │    ├── overlay_value_formatter.js
+│  │  │    └── worst_case_force_debug_selector.js
 │  │  └── services
 │  │    ├── debug_data_selectors.js
 │  │    ├── debug_formatters.js

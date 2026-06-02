@@ -152,17 +152,23 @@ class DevTools {
       typeof window !== "undefined" && window.OverlaySettingsStore
         ? window.OverlaySettingsStore
         : null;
+    const legacyOverlayModules =
+      typeof OVERLAY_MODULES !== "undefined" ? OVERLAY_MODULES : null;
     const overlayModules =
-      overlaySettings?.getAll?.() ||
-      (typeof OVERLAY_MODULES !== "undefined" ? OVERLAY_MODULES : null);
-    if (overlayModules) {
+      overlaySettings?.getSnapshot?.() || legacyOverlayModules;
+    const overlayKeys =
+      overlaySettings?.keys?.() || Object.keys(overlayModules || {});
+    if (overlayModules && overlayKeys.length > 0) {
       const content = this.#createSectionWithCache(
         "OVERLAY MODULES (В реальному часі)",
         body,
         ["OVERLAY_MODULES"],
       );
-      for (const k in overlayModules) {
-        this.#ui.createSwitcherRow(k, overlayModules[k], content, (v) => {
+      for (const k of overlayKeys) {
+        const enabled = overlaySettings?.isEnabled
+          ? overlaySettings.isEnabled(k)
+          : !!overlayModules[k];
+        this.#ui.createSwitcherRow(k, enabled, content, (v) => {
           if (overlaySettings?.setEnabled) overlaySettings.setEnabled(k, v);
           else overlayModules[k] = v;
         });
@@ -187,6 +193,8 @@ class DevTools {
         });
       }
     }
+
+    this.#renderConfigDebugSection(body);
 
     // 3. ITEM_DB (БАЗА ПРЕДМЕТІВ)
     if (typeof ITEM_DB !== "undefined") {
@@ -251,7 +259,7 @@ class DevTools {
         ["CONFIG"],
       );
       for (const key of Object.keys(CONFIG)) {
-        if (this.#excludeKeys.includes(key)) continue;
+        if (this.#shouldSkipKey(["CONFIG"], key)) continue;
         const sectionContent = this.#createSectionWithCache(
           key,
           configContent,
@@ -263,6 +271,17 @@ class DevTools {
     }
 
     this.#renderActiveFishSection(body);
+  }
+
+  #renderConfigDebugSection(body) {
+    if (typeof CONFIG === "undefined" || !CONFIG?.debug) return;
+
+    const debugContent = this.#createSectionWithCache(
+      "🐞 DEBUG (CONFIG.debug)",
+      body,
+      ["CONFIG", "debug"],
+    );
+    this.#buildTree(CONFIG.debug, debugContent, ["CONFIG", "debug"]);
   }
 
   #renderActiveFishSection(body) {
@@ -459,6 +478,9 @@ class DevTools {
 
   #shouldSkipKey(path, key) {
     if (this.#excludeKeys.includes(key)) return true;
+    if (path[0] === "CONFIG" && path.length === 1 && key === "debug") {
+      return true;
+    }
     if (
       path[0] === "HOOKED_FISH" &&
       (key === "weight" ||

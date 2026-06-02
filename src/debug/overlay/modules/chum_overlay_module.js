@@ -1,6 +1,6 @@
 class ChumOverlayModule extends OverlayModule {
-  constructor() {
-    super("chum");
+  constructor(options = {}) {
+    super("chum", options);
   }
   shouldRender(d) {
     return d.chumZones?.length > 0;

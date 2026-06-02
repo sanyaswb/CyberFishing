@@ -1,6 +1,6 @@
 class FishStatesModule extends OverlayModule {
-  constructor() {
-    super("fishStates");
+  constructor(options = {}) {
+    super("fishStates", options);
   }
 
   shouldRender(d) {
