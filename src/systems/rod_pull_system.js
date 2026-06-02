@@ -85,7 +85,7 @@ class RodPullSystem {
       strokeResetReason = "stroke_capacity_initialized";
     }
     let strokeYLostMeters = 0;
-    if (inputState?.pullHeld && yLostBeforePullMeters > 0) {
+    if (yLostBeforePullMeters > 0) {
       strokeYLostMeters = this.#strokeState.loseWonDistance(yLostBeforePullMeters);
     }
 

@@ -420,7 +420,9 @@ class FightPhysicsSystem {
     const effectiveDragLimitKg = Number.isFinite(Number(player.effectiveDragLimitKg))
       ? Number(player.effectiveDragLimitKg)
       : fallbackDragLimitKg;
-    const dragLocked = !dragSupported;
+    const dragLocked =
+      !dragSupported ||
+      clampedDrag >= 0.999;
 
     return {
       clampedDrag,
@@ -475,10 +477,7 @@ class FightPhysicsSystem {
       inputState: pullInput,
       rod,
       pumpCreditMeters,
-      yLostBeforePullMeters:
-        pullInput?.pullHeld
-          ? forceData?.fightYMovementFrame?.yAwayMeters
-          : 0,
+      yLostBeforePullMeters: forceData?.fightYMovementFrame?.yAwayMeters,
       fishForceKg: forceData.totalFishForceKg,
       fishTensionKg: forceData.fishTensionKg,
       rodLimitKg,

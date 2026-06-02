@@ -55,7 +55,7 @@ const MAP_DB = {
     },
 
     zones: {
-      castable: [{ x: 0, y: 13, w: 64, h: 17 }],
+      castable: [{ x: 0, y: 13, w: 64, h: 16 }],
       collisions: [{ x: 12, y: 22, w: 3, h: 2 }],
       snags: [{ x: 50, y: 13, w: 14, h: 8 }],
       dynamic: [

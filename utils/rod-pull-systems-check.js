@@ -144,6 +144,34 @@ const strokeSynced = rodPullSystem.syncStrokeToPumpCredit({ pumpCreditMeters: 0.
 approx(strokeSynced.strokeSyncedMeters, 0, 0.001, "pump credit sync no longer changes rod stroke");
 assert(strokeSynced.strokeSyncReason === "debug_only", "pump credit sync is diagnostic only");
 
+const releasedHoldStrokeSystem = new RodPullSystem({
+  ...rodPullConfig,
+  capacityByRodLengthRatio: 0.5,
+  distanceMultiplierByRodLength: 0.5,
+});
+releasedHoldStrokeSystem.update({
+  dtSec: 0,
+  inputState: { pullHeld: true, pullStartedThisFrame: true },
+  rod,
+  fishTensionKg: 0,
+  rodLimitKg: 3,
+  lineHasReserve: true,
+  fishDistanceMeters: 10,
+});
+releasedHoldStrokeSystem.recordYMovement({ gainedMeters: 1.8 });
+const strokeLostAfterHoldRelease = releasedHoldStrokeSystem.update({
+  dtSec: 1 / 30,
+  inputState: { pullHeld: false, pullReleasedThisFrame: true },
+  rod,
+  fishTensionKg: 0,
+  rodLimitKg: 3,
+  lineHasReserve: false,
+  fishDistanceMeters: 10,
+  yLostBeforePullMeters: 1.8,
+});
+approx(strokeLostAfterHoldRelease.strokeYLostMeters, 1.8, 0.001, "Y escape after hold release eats unrecovered rod stroke");
+approx(strokeLostAfterHoldRelease.rodStrokeWonMeters, 0, 0.001, "released hold Y escape resets lost rod stroke credit");
+
 const autoRecover = new ReelAutoRecoveryCalculator().calculate({
   hasReel: true,
   playerHoldActive: false,

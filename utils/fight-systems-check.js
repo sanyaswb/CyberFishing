@@ -360,8 +360,54 @@ const resolvedDragTension = new TensionSystem().calculate({
   dragAlreadyResolved: true,
   shouldSlipDrag: dragForce.shouldSlipDrag,
 });
-approx(resolvedDragTension.tensionKg, 0.98, 0.0001, "resolved drag tension keeps fish opposition plus player tension");
+approx(resolvedDragTension.tensionKg, 0.5, 0.0001, "resolved movement drag still caps final line tension");
+approx(resolvedDragTension.rawTotalTensionKg, 0.98, 0.0001, "resolved movement drag keeps raw tension for debug");
+approx(resolvedDragTension.lineStressRatio, 0.25, 0.0001, "resolved movement drag uses capped tension for stress");
 assert(resolvedDragTension.shouldSlipDrag, "resolved drag tension keeps slip flag for line release");
+
+const landingLiftDragCap = new TensionSystem().calculate({
+  fishTensionKg: 1.1,
+  playerHoldTensionKg: 0,
+  totalTensionKg: 1.1,
+  rodLimitKg: 3,
+  lineLimitKg: 2,
+  hookLimitKg: 2,
+  dragLimitKg: 0.7,
+  lineHasReserve: true,
+  dragLocked: false,
+  dragAlreadyResolved: true,
+  shouldSlipDrag: false,
+});
+approx(landingLiftDragCap.tensionKg, 0.7, 0.0001, "landing lift tension is capped by slipping drag");
+approx(landingLiftDragCap.rawTotalTensionKg, 1.1, 0.0001, "landing lift keeps raw weight tension for debug");
+assert(landingLiftDragCap.shouldSlipDrag, "landing lift over drag limit marks drag slip");
+
+const hardLimitTension = new TensionSystem().calculate({
+  fishTensionKg: 1.1,
+  playerHoldTensionKg: 0,
+  totalTensionKg: 1.1,
+  rodLimitKg: 3,
+  lineLimitKg: 2,
+  hookLimitKg: 2,
+  dragLimitKg: 0.7,
+  hardLineLimit: true,
+  lineHasReserve: true,
+  dragLocked: false,
+});
+approx(hardLimitTension.tensionKg, 1.1, 0.0001, "hard line limit bypasses drag tension cap");
+const lockedDragTension = new TensionSystem().calculate({
+  fishTensionKg: 1.1,
+  playerHoldTensionKg: 0,
+  totalTensionKg: 1.1,
+  rodLimitKg: 3,
+  lineLimitKg: 2,
+  hookLimitKg: 2,
+  dragLimitKg: 0.7,
+  lineHasReserve: true,
+  dragLocked: true,
+});
+approx(lockedDragTension.tensionKg, 1.1, 0.0001, "locked drag bypasses drag tension cap");
+assert(!lockedDragTension.shouldSlipDrag, "locked drag does not mark slip");
 
 const holdWinsRetrieve = new FishRetrieveSystem({
   getWaterConfig: () => ({
