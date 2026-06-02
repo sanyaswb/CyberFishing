@@ -139,7 +139,7 @@ function createEquipment() {
   return {
     rod: hydrate("rods", "rod_test_feeder"),
     reel: hydrate("reels", "reel_test"),
-    line: hydrate("lines", "line_test_25m"),
+    line: hydrate("lines", "line_test_1"),
     sinker: hydrate("baits", "feeder_spring_basic"),
     hooks: [hydrate("hooks", "hook_basic", { maxLoadKg: 1 })],
     baits: [hydrate("baits", "bread")],

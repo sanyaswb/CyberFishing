@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.19.16";
+const CURRENT_PROJECT_VERSION = "0.19.17";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "fight-tension-stroke-overlay",
+  codename: "debug-oop-runtime",
   updatedAt: "2026-06-02",
   notes: Object.freeze([
-    "Final line tension is capped by drag when the reel can slip, while raw tension remains available for debug",
-    "Rod stroke now loses unrecovered Y-distance when the fish moves away even after hold is released",
-    "Fight overlay separates model fight speed from actual applied rod/reel-hold movement speed",
-    "Reel hold overlay now shows applied move and applied speed for balancing",
+    "Debug console runtime is split into class-based core, services and modules",
+    "src/debug/debug.js now acts as the single debug composition bootstrap",
+    "Small root debug wrapper files were removed while keeping the public window debug API",
+    "Debug remains optional for prod through null-safe adapters",
   ]),
 });
 

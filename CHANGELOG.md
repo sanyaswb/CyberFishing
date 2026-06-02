@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.19.17 - debug oop runtime
+
+- Refactored debug console runtime into class-based core, service and module layers.
+- Moved debug composition into `src/debug/debug.js` as the single root bootstrap.
+- Removed small root debug wrapper files while preserving the public `window` debug API.
+- Kept debug optional for prod through null-safe adapters and runtime smoke checks.
+
 ## v0.19.16 - fight tension and applied movement overlay
 
 - Capped final line tension by drag when the reel can slip, while keeping raw tension for debug.

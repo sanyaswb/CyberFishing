@@ -133,7 +133,7 @@ class FishSpeedDeltaRuntimeFactory {
     return {
       rod: this.#hydrate("rods", "rod_test_feeder"),
       reel: this.#hydrate("reels", "reel_test"),
-      line: this.#hydrate("lines", "line_test_25m"),
+      line: this.#hydrate("lines", "line_test_1"),
       sinker: this.#hydrate("baits", "feeder_spring_basic"),
       hooks: [this.#hydrate("hooks", "hook_basic")],
       baits: [this.#hydrate("baits", "bread")],
@@ -424,7 +424,7 @@ class FishSpeedDeltaProbe {
         fishWeightKg: scenario.fishWeightKg,
         dragRatio: scenario.dragRatio,
         input: "free movement: no rod hold, no reel retrieve",
-        equipment: "rod_test_feeder + reel_test + line_test_25m + hook_basic + bread",
+        equipment: "rod_test_feeder + reel_test + line_test_1 + hook_basic + bread",
         startDistanceMeters: scenario.startDistanceMeters,
         behaviorWarmupFrames: scenario.behaviorWarmupFrames,
         pixelsPerMeter,

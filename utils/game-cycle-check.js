@@ -157,7 +157,7 @@ function createTestBuild({
       hasDrag: reelHasDrag,
       retrieveSpeedMetersPerSec: 1.2,
     }),
-    line: hydrate("lines", "line_test_25m", {
+    line: hydrate("lines", "line_test_1", {
       instanceId: "cycle_line",
       lengthMeters: 25,
       maxLoadKg: lineMaxLoadKg,

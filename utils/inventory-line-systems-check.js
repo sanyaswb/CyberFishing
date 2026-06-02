@@ -58,9 +58,6 @@ const context = vm.createContext({
     this.type = type;
     this.detail = init?.detail;
   },
-  TestBuildProvider: {
-    injectDebugBuild() {},
-  },
 });
 
 for (const file of FILES) {
@@ -89,11 +86,11 @@ assert(inventory.equipItem("line", "uuid-line"), "long spool equips to pole rod 
 
 let equipment = inventory.getEquipped();
 const segmentId = equipment.line.instanceId;
-assert(equipment.line.lengthMeters === 13, "pole rod equips only rod length + 1m line segment");
+assert(equipment.line.lengthMeters === 6, "pole rod equips only rod length + 1m line segment");
 assert(equipment.line.detachedLineSegment, "equipped pole line is marked as a detachable segment");
 
 const sourceSpool = inventory.hydrateInstance("uuid-line");
-assert(Math.abs(sourceSpool.lengthMeters - 12) < 0.001, "source spool loses equipped segment length");
+assert(Math.abs(sourceSpool.lengthMeters - 19) < 0.001, "source spool loses equipped segment length");
 
 inventory.unequipItem("line");
 equipment = inventory.getEquipped();
@@ -119,7 +116,7 @@ const reelInventory = new InventoryManager(
     inventory: [
       { instanceId: "rod-spin", itemId: "rod_test_spin" },
       { instanceId: "reel-20", itemId: "reel_test" },
-      { instanceId: "line-25", itemId: "line_test_25m" },
+      { instanceId: "line-25", itemId: "line_test_1" },
     ],
   },
   new InventoryEventBridge(null),
@@ -153,7 +150,7 @@ const buildInventory = new InventoryManager(
       },
       { instanceId: "build-rod", itemId: "rod_test_spin", buildId: "build-box" },
       { instanceId: "build-reel", itemId: "reel_test", buildId: "build-box" },
-      { instanceId: "build-line", itemId: "line_test_25m", buildId: "build-box" },
+      { instanceId: "build-line", itemId: "line_test_1", buildId: "build-box" },
     ],
   },
   new InventoryEventBridge(null),

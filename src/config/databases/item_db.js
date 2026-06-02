@@ -193,9 +193,9 @@ const ITEM_DB = {
   },
 
   lines: {
-    line_test_25m: {
-      id: "line_test_25m",
-      name: "Тестова ліска 25м",
+    line_test_1: {
+      id: "line_test_1",
+      name: "Test line I",
       type: "fishing_line",
       icon: "🧵",
       displayStats: {
@@ -214,9 +214,9 @@ const ITEM_DB = {
       },
     },
 
-    line_test_10m: {
-      id: "line_test_10m",
-      name: "Коротка ліска 10м",
+    line_test_2: {
+      id: "line_test_2",
+      name: "Test line II",
       type: "fishing_line",
       icon: "🧵",
       displayStats: {
@@ -235,9 +235,9 @@ const ITEM_DB = {
       },
     },
 
-    line_test_50m: {
-      id: "line_test_50m",
-      name: "Довга ліска 50м",
+    line_test_3: {
+      id: "line_test_3",
+      name: "Test line III",
       type: "fishing_line",
       icon: "🧵",
       displayStats: {
@@ -658,6 +658,34 @@ const ITEM_DB = {
       icon: "🧰",
       displayStats: {},
       engineStats: { type: "build_box" },
+    },
+  },
+
+  builds: {
+    debug_float_build: {
+      id: "debug_float_build",
+      name: "Test Build (Dev)",
+      type: "build_template",
+      items: [
+        { itemId: "rod_test_float", quantity: 1 },
+        { itemId: "line_test_1", quantity: 1 },
+        { itemId: "float_day", quantity: 1 },
+        { itemId: "sinker_light", quantity: 1 },
+        { itemId: "hook_basic", quantity: 1 },
+      ],
+    },
+
+    debug_feeder_build: {
+      id: "debug_feeder_build",
+      name: "Test Build (Dev2)",
+      type: "build_template",
+      items: [
+        { itemId: "rod_test_feeder", quantity: 1 },
+        { itemId: "line_test_2", quantity: 1 },
+        { itemId: "feeder_spring_basic", quantity: 1 },
+        { itemId: "hook_basic", quantity: 1 },
+        { itemId: "reel_test", quantity: 1 },
+      ],
     },
   },
 };
