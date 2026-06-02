@@ -4,7 +4,7 @@ class DevToolsParameterTooltipProvider {
 
   constructor({
     urls = [
-      "src/debug/dev_tool_parameter_descriptions.json",
+      "src/config/metadata/dev_tool_parameter_descriptions.json",
       "src/config/metadata/parameter_labels.json",
     ],
   } = {}) {

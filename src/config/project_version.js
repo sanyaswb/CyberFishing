@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.19.17";
+const CURRENT_PROJECT_VERSION = "0.19.18";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,11 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "debug-oop-runtime",
+  codename: "debug-metadata-cleanup",
   updatedAt: "2026-06-02",
   notes: Object.freeze([
-    "Debug console runtime is split into class-based core, services and modules",
-    "src/debug/debug.js now acts as the single debug composition bootstrap",
-    "Small root debug wrapper files were removed while keeping the public window debug API",
-    "Debug remains optional for prod through null-safe adapters",
+    "DevTools parameter description metadata moved into src/config/metadata",
+    "DevTools tooltip loading now reads all parameter metadata from one config metadata location",
   ]),
 });
 

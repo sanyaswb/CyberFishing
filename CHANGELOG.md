@@ -1,5 +1,10 @@
 # CyberFishing changelog
 
+## v0.19.18 - debug metadata cleanup
+
+- Moved DevTools parameter descriptions into `src/config/metadata`.
+- Updated DevTools tooltip loading so parameter metadata lives in one shared metadata location.
+
 ## v0.19.17 - debug oop runtime
 
 - Refactored debug console runtime into class-based core, service and module layers.

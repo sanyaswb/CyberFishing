@@ -88,6 +88,7 @@
 │  │  │  ├── item_db.js
 │  │  │  └── map_db.js
 │  │  ├── metadata
+│  │  │  ├── dev_tool_parameter_descriptions.json
 │  │  │  └── parameter_labels.json
 │  │  ├── physics
 │  │  │  ├── environment_physics_config.js
@@ -136,7 +137,6 @@
 │  │  │  ├── debug_module_registry.js
 │  │  │  └── null_debug_runtime.js
 │  │  ├── debug.js
-│  │  ├── dev_tool_parameter_descriptions.json
 │  │  ├── dev_tools.js
 │  │  ├── god_mode.js
 │  │  ├── modules
