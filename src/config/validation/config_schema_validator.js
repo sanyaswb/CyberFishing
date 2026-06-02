@@ -1,0 +1,437 @@
+class ConfigValidationResult {
+  constructor({ errors = [], warnings = [], summary = {} } = {}) {
+    this.errors = errors;
+    this.warnings = warnings;
+    this.summary = summary;
+  }
+
+  get ok() {
+    return this.errors.length === 0;
+  }
+}
+
+class ConfigSchemaValidator {
+  static FORBIDDEN_FLAT_FISH_PHYSICS_KEYS = Object.freeze([
+    "basePower",
+    "baseStamina",
+    "maxSpeedMetersPerSec",
+    "speedForceMultiplier",
+    "waterResistanceMultiplier",
+    "minPowerRatio",
+    "agility",
+    "bounceCooldownMs",
+    "dirChangeMinMs",
+    "dirChangeMaxMs",
+    "lastDashTrigger",
+    "behaviors",
+    "pullResistance",
+  ]);
+
+  constructor({
+    config = {},
+    fishDb = [],
+    itemDb = {},
+    mapDb = {},
+    parameterLabels = {},
+    namingConvention = null,
+  } = {}) {
+    this.config = config || {};
+    this.fishDb = Array.isArray(fishDb) ? fishDb : [];
+    this.itemDb = itemDb || {};
+    this.mapDb = mapDb || {};
+    this.parameterLabels = parameterLabels || {};
+    this.namingConvention = namingConvention ||
+      (typeof PHYSICS_UNITS_AND_NAMING !== "undefined"
+        ? PHYSICS_UNITS_AND_NAMING
+        : null);
+    this.errors = [];
+    this.warnings = [];
+  }
+
+  validate() {
+    this.errors = [];
+    this.warnings = [];
+
+    this.#validateProjectVersion();
+    this.#validateImmutableBaseConfig();
+    this.#validatePhysicsConfig();
+    this.#validateFishCategories();
+    this.#validateFishDb();
+    this.#validateItemDb();
+    this.#validateMapDb();
+
+    return new ConfigValidationResult({
+      errors: this.errors,
+      warnings: this.warnings,
+      summary: {
+        physicsLeaves: this.#collectLeaves(this.config.physics, "physics").length,
+        fishCount: this.fishDb.length,
+        itemCount: this.#countItemRecords(this.itemDb),
+        mapCount: Object.keys(this.mapDb || {}).length,
+      },
+    });
+  }
+
+
+  #validateImmutableBaseConfig() {
+    if (typeof BASE_CONFIG === "undefined") {
+      this.#error("BASE_CONFIG", "missing immutable base config snapshot");
+      return;
+    }
+    if (!Object.isFrozen(BASE_CONFIG)) {
+      this.#error("BASE_CONFIG", "base config must be frozen");
+    }
+    if (BASE_CONFIG.physics && !Object.isFrozen(BASE_CONFIG.physics)) {
+      this.#error("BASE_CONFIG.physics", "base physics config must be deeply frozen");
+    }
+    if (typeof CONFIG_OVERRIDE_STORE === "undefined" || !CONFIG_OVERRIDE_STORE) {
+      this.#error("CONFIG_OVERRIDE_STORE", "missing runtime override store");
+    }
+  }
+
+  #validateFishCategories() {
+    if (typeof FISH_CATEGORIES === "undefined") {
+      this.#error("FISH_CATEGORIES", "missing fish category registry");
+      return;
+    }
+    const seen = new Set();
+    for (const [categoryName, fishList] of Object.entries(FISH_CATEGORIES)) {
+      if (!Array.isArray(fishList)) {
+        this.#error(`FISH_CATEGORIES.${categoryName}`, "category must be an array");
+        continue;
+      }
+      for (const fish of fishList) {
+        if (!fish?.id) continue;
+        if (seen.has(fish.id)) {
+          this.#error(`FISH_CATEGORIES.${categoryName}.${fish.id}`, "duplicate fish id across categories");
+        }
+        seen.add(fish.id);
+      }
+    }
+  }
+
+  #validateProjectVersion() {
+    if (typeof PROJECT_VERSION_CONFIG === "undefined") {
+      this.#warn("project.version", "PROJECT_VERSION_CONFIG is not loaded");
+      return;
+    }
+
+    this.#requireNonEmptyString(
+      "PROJECT_VERSION_CONFIG.version",
+      PROJECT_VERSION_CONFIG.version,
+    );
+    this.#requirePattern(
+      "PROJECT_VERSION_CONFIG.version",
+      PROJECT_VERSION_CONFIG.version,
+      /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/,
+      "expected semantic patch version like 0.17.4",
+    );
+  }
+
+  #validatePhysicsConfig() {
+    const physics = this.config.physics;
+    if (!physics || typeof physics !== "object") {
+      this.#error("CONFIG.physics", "missing physics config object");
+      return;
+    }
+
+    for (const { path, value, parentPath } of this.#collectLeaves(physics, "physics")) {
+      if (typeof value === "number") {
+        this.#requireFiniteNumber(path, value);
+        this.#warnIfPhysicsNameIsTooVague(path);
+      }
+      if (typeof value === "boolean" || typeof value === "number") {
+        if (!this.#hasParameterLabel(path, parentPath)) {
+          this.#error(path, "missing parameter label in parameter_labels.json");
+        }
+      }
+    }
+
+    this.#validateMinMaxPairs(physics, "physics");
+  }
+
+  #validateFishDb() {
+    if (!Array.isArray(this.fishDb) || this.fishDb.length === 0) {
+      this.#error("FISH_DB", "must be a non-empty array");
+      return;
+    }
+
+    const ids = new Set();
+    for (const fish of this.fishDb) {
+      const fishPath = `FISH_DB.${fish?.id || "<missing-id>"}`;
+      this.#requireNonEmptyString(`${fishPath}.id`, fish?.id);
+      this.#requireNonEmptyString(`${fishPath}.name`, fish?.name);
+      if (fish?.id) {
+        if (ids.has(fish.id)) this.#error(`${fishPath}.id`, "duplicate fish id");
+        ids.add(fish.id);
+      }
+
+      this.#requireFiniteNumber(`${fishPath}.baseChance`, fish?.baseChance, {
+        min: 0,
+      });
+      this.#requireFiniteNumber(`${fishPath}.maxHookSize`, fish?.maxHookSize, {
+        min: 0,
+      });
+      this.#validateFiniteNumberLeaves(fish, fishPath);
+      this.#validateFishPhysics(fishPath, fish?.physics);
+      this.#validateWeightConfig(fishPath, fish?.weightConfig);
+    }
+  }
+
+  #validateFishPhysics(fishPath, physics) {
+    if (!physics || typeof physics !== "object") {
+      this.#error(`${fishPath}.physics`, "missing fish physics object");
+      return;
+    }
+
+    const requiredProfiles = [
+      "forceProfile",
+      "staminaProfile",
+      "movementProfile",
+      "behaviorProfile",
+    ];
+    for (const profileName of requiredProfiles) {
+      if (!physics[profileName] || typeof physics[profileName] !== "object") {
+        this.#error(`${fishPath}.physics.${profileName}`, "missing structured profile");
+      }
+    }
+
+    for (const key of ConfigSchemaValidator.FORBIDDEN_FLAT_FISH_PHYSICS_KEYS) {
+      if (Object.prototype.hasOwnProperty.call(physics, key)) {
+        this.#error(
+          `${fishPath}.physics.${key}`,
+          "legacy flat fish physics field must not be stored in FISH_DB.physics",
+        );
+      }
+    }
+    if (Object.prototype.hasOwnProperty.call(physics, "resistanceProfile")) {
+      this.#error(`${fishPath}.physics.resistanceProfile`, "old resistanceProfile is not part of simplified fight physics");
+    }
+    if (Object.prototype.hasOwnProperty.call(physics, "retrieveProfile")) {
+      this.#error(`${fishPath}.physics.retrieveProfile`, "old retrieveProfile is not part of simplified fight physics");
+    }
+
+    this.#requireFiniteNumber(`${fishPath}.physics.forceProfile.basePower`, physics.forceProfile?.basePower, { min: 0 });
+    this.#requireFiniteNumber(`${fishPath}.physics.staminaProfile.baseStamina`, physics.staminaProfile?.baseStamina, { min: 0 });
+    if (Object.prototype.hasOwnProperty.call(Object(physics.staminaProfile), "staminaBossMultiplier")) {
+      this.#requireFiniteNumber(`${fishPath}.physics.staminaProfile.staminaBossMultiplier`, physics.staminaProfile?.staminaBossMultiplier, { min: 0 });
+    }
+    if (Object.prototype.hasOwnProperty.call(Object(physics.staminaProfile), "staminaRatioFromEndurance")) {
+      this.#requireFiniteNumber(`${fishPath}.physics.staminaProfile.staminaRatioFromEndurance`, physics.staminaProfile?.staminaRatioFromEndurance, { min: 0 });
+    }
+    this.#requireFiniteNumber(`${fishPath}.physics.movementProfile.baseSpeed`, physics.movementProfile?.baseSpeed, { min: 0 });
+    this.#requireFiniteNumber(`${fishPath}.physics.movementProfile.agility`, physics.movementProfile?.agility, { min: 0 });
+
+    const behaviors = physics.behaviorProfile?.behaviors;
+    if (!behaviors || typeof behaviors !== "object") {
+      this.#error(`${fishPath}.physics.behaviorProfile.behaviors`, "missing behavior map");
+    } else {
+      for (const [behaviorName, behavior] of Object.entries(behaviors)) {
+        const path = `${fishPath}.physics.behaviorProfile.behaviors.${behaviorName}`;
+        this.#requireFiniteNumber(`${path}.forceMultiplier`, behavior.forceMultiplier, { min: 0 });
+        this.#requireFiniteNumber(`${path}.speedMultiplier`, behavior.speedMultiplier, { min: 0 });
+        if (Object.prototype.hasOwnProperty.call(Object(behavior), "powerRatio")) {
+          this.#error(`${path}.powerRatio`, "old powerRatio must be replaced by forceMultiplier");
+        }
+        if (Object.prototype.hasOwnProperty.call(Object(behavior), "speedRatio")) {
+          this.#error(`${path}.speedRatio`, "old speedRatio must be replaced by speedMultiplier");
+        }
+        this.#requireFiniteNumber(`${path}.minTime`, behavior.minTime, { min: 0 });
+        this.#requireFiniteNumber(`${path}.maxTime`, behavior.maxTime, { min: 0 });
+        this.#requireFiniteNumber(`${path}.weight`, behavior.weight, { min: 0 });
+        this.#requireMinLessOrEqualMax(`${path}.minTime`, behavior.minTime, `${path}.maxTime`, behavior.maxTime);
+      }
+    }
+  }
+
+  #validateWeightConfig(fishPath, weightConfig) {
+    if (!weightConfig || typeof weightConfig !== "object") {
+      this.#error(`${fishPath}.weightConfig`, "missing weight config");
+      return;
+    }
+    this.#requireFiniteNumber(`${fishPath}.weightConfig.rarityCurve`, weightConfig.rarityCurve, { min: 0 });
+    this.#requireFiniteNumber(`${fishPath}.weightConfig.maxLevel`, weightConfig.maxLevel, { min: 1 });
+
+    if (Array.isArray(weightConfig.levelWeightRanges)) {
+      for (const [index, range] of weightConfig.levelWeightRanges.entries()) {
+        const path = `${fishPath}.weightConfig.levelWeightRanges[${index}]`;
+        this.#requireFiniteNumber(`${path}.level`, range.level, { min: 1 });
+        this.#requireFiniteNumber(`${path}.min`, range.min, { min: 0 });
+        this.#requireFiniteNumber(`${path}.max`, range.max, { min: 0 });
+        this.#requireFiniteNumber(`${path}.basePower`, range.basePower, { min: 0 });
+        this.#requireMinLessOrEqualMax(`${path}.min`, range.min, `${path}.max`, range.max);
+      }
+    }
+  }
+
+  #validateItemDb() {
+    if (!this.itemDb || typeof this.itemDb !== "object") {
+      this.#error("ITEM_DB", "must be an object");
+      return;
+    }
+
+    for (const [categoryName, category] of Object.entries(this.itemDb)) {
+      if (!category || typeof category !== "object") continue;
+      for (const [itemKey, item] of Object.entries(category)) {
+        const path = `ITEM_DB.${categoryName}.${itemKey}`;
+        this.#requireNonEmptyString(`${path}.id`, item?.id);
+        this.#requireNonEmptyString(`${path}.name`, item?.name);
+        this.#requireNonEmptyString(`${path}.type`, item?.type);
+        this.#validateFiniteNumberLeaves(item, path);
+        this.#validateMinMaxPairs(item, path);
+      }
+    }
+  }
+
+  #validateMapDb() {
+    if (!this.mapDb || typeof this.mapDb !== "object") {
+      this.#error("MAP_DB", "must be an object");
+      return;
+    }
+
+    for (const [mapKey, map] of Object.entries(this.mapDb)) {
+      const path = `MAP_DB.${mapKey}`;
+      this.#requireNonEmptyString(`${path}.id`, map?.id);
+      this.#requireNonEmptyString(`${path}.name`, map?.name);
+      this.#validateFiniteNumberLeaves(map, path);
+      this.#validateMinMaxPairs(map, path);
+      this.#requireFiniteNumber(`${path}.depthBounds.min`, map?.depthBounds?.min, { min: 0 });
+      this.#requireFiniteNumber(`${path}.depthBounds.max`, map?.depthBounds?.max, { min: 0 });
+      this.#requireMinLessOrEqualMax(`${path}.depthBounds.min`, map?.depthBounds?.min, `${path}.depthBounds.max`, map?.depthBounds?.max);
+      if (map?.environment?.current) {
+        this.#requireFiniteNumber(`${path}.environment.current.speedPxPerSec`, map.environment.current.speedPxPerSec, { min: 0 });
+      }
+    }
+  }
+
+  #validateFiniteNumberLeaves(object, basePath) {
+    for (const { path, value } of this.#collectLeaves(object, basePath)) {
+      if (typeof value !== "number") continue;
+      this.#requireFiniteNumber(path, value);
+    }
+  }
+
+  #validateMinMaxPairs(object, basePath) {
+    if (!object || typeof object !== "object") return;
+
+    if (Array.isArray(object)) {
+      object.forEach((value, index) => this.#validateMinMaxPairs(value, `${basePath}[${index}]`));
+      return;
+    }
+
+    const entries = Object.entries(object);
+    const localKeys = new Map(entries.map(([key, value]) => [key.toLowerCase(), { key, value }]));
+    for (const [key, value] of entries) {
+      if (/^min[A-Z_]?|^min$/u.test(key)) {
+        const suffix = key === "min" ? "" : key.slice(3);
+        const maxEntry = localKeys.get((suffix ? `max${suffix}` : "max").toLowerCase());
+        if (maxEntry) {
+          if (!(maxEntry.value === null && object.openEnded === true)) {
+            this.#requireMinLessOrEqualMax(
+              `${basePath}.${key}`,
+              value,
+              `${basePath}.${maxEntry.key}`,
+              maxEntry.value,
+            );
+          }
+        }
+      }
+      if (value && typeof value === "object") {
+        this.#validateMinMaxPairs(value, `${basePath}.${key}`);
+      }
+    }
+  }
+
+  #collectLeaves(object, basePath, output = []) {
+    if (object && typeof object === "object") {
+      if (Array.isArray(object)) {
+        object.forEach((value, index) => {
+          this.#collectLeaves(value, `${basePath}[${index}]`, output);
+        });
+        return output;
+      }
+
+      for (const [key, value] of Object.entries(object)) {
+        this.#collectLeaves(value, basePath ? `${basePath}.${key}` : key, output);
+      }
+      return output;
+    }
+
+    const parentPath = basePath.includes(".")
+      ? basePath.slice(0, basePath.lastIndexOf("."))
+      : "";
+    output.push({ path: basePath, parentPath, value: object });
+    return output;
+  }
+
+  #hasParameterLabel(path, parentPath) {
+    if (this.parameterLabels[path]) return true;
+    if (this.parameterLabels[parentPath]) return true;
+
+    const arrayParent = path.replace(/\[\d+\]/gu, "");
+    if (this.parameterLabels[arrayParent]) return true;
+
+    const withoutIndexLeaf = path.replace(/\[\d+\]$/u, "");
+    return !!this.parameterLabels[withoutIndexLeaf];
+  }
+
+  #warnIfPhysicsNameIsTooVague(path) {
+    const key = path.split(".").pop() || "";
+    if (!this.namingConvention) return;
+    if (/^[a-z]+$/u.test(key) && ["force", "speed", "resistance", "distance", "power"].includes(key)) {
+      this.#warn(path, "physics parameter name is too vague; add unit/context suffix");
+    }
+  }
+
+  #isAllowedOpenEndedNumber(_path, _value) {
+    return false;
+  }
+
+  #countItemRecords(itemDb) {
+    let count = 0;
+    for (const category of Object.values(itemDb || {})) {
+      if (category && typeof category === "object") count += Object.keys(category).length;
+    }
+    return count;
+  }
+
+  #requireFiniteNumber(path, value, { min = -Infinity, max = Infinity } = {}) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) {
+      this.#error(path, `expected finite number, got ${value}`);
+      return false;
+    }
+    if (parsed < min) this.#error(path, `expected >= ${min}, got ${parsed}`);
+    if (parsed > max) this.#error(path, `expected <= ${max}, got ${parsed}`);
+    return true;
+  }
+
+  #requireNonEmptyString(path, value) {
+    if (typeof value !== "string" || value.trim() === "") {
+      this.#error(path, "expected non-empty string");
+      return false;
+    }
+    return true;
+  }
+
+  #requirePattern(path, value, pattern, message) {
+    if (typeof value !== "string" || !pattern.test(value)) {
+      this.#error(path, message);
+    }
+  }
+
+  #requireMinLessOrEqualMax(minPath, minValue, maxPath, maxValue) {
+    const min = Number(minValue);
+    const max = Number(maxValue);
+    if (!Number.isFinite(min) || !Number.isFinite(max)) return;
+    if (min > max) this.#error(`${minPath} / ${maxPath}`, `min ${min} must be <= max ${max}`);
+  }
+
+  #error(path, message) {
+    this.errors.push({ path, message });
+  }
+
+  #warn(path, message) {
+    this.warnings.push({ path, message });
+  }
+}

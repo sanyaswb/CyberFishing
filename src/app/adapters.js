@@ -28,11 +28,18 @@ class DevFlagsProvider {
 
   isDebugEnabled() {
     const debugModules = this.#debugModulesSource?.();
+    const consoleModules = {
+      ...(this.#config.debug?.consoleModules || {}),
+      ...(debugModules || {}),
+    };
+    const hasActiveConsoleModule = Object.keys(consoleModules).some(
+      (key) => consoleModules[key] === true,
+    );
     return !!(
       this.#config.debug?.overlay ||
       this.#config.debug?.events ||
       this.#config.logs?.events ||
-      debugModules
+      hasActiveConsoleModule
     );
   }
 }
@@ -210,13 +217,22 @@ class CanvasMetricsProvider {
 
 class ConfigProvider {
   #config;
+  #fightPhysicsConfig;
 
   constructor(config) {
     this.#config = config;
+    this.#fightPhysicsConfig =
+      config?.fightPhysicsConfig ||
+      (typeof FightPhysicsConfigAdapter !== "undefined"
+        ? new FightPhysicsConfigAdapter(config)
+        : null);
   }
 
   get physics() {
     return this.#config.physics || {};
+  }
+  get fightPhysicsConfig() {
+    return this.#fightPhysicsConfig;
   }
   get tension() {
     return this.#config.tension || {};

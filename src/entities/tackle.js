@@ -1,3 +1,39 @@
+function getGlobalFightPhysicsConfig() {
+  if (typeof CONFIG === "undefined") return null;
+  if (CONFIG.fightPhysicsConfig) return CONFIG.fightPhysicsConfig;
+  if (typeof FightPhysicsConfigAdapter !== "undefined") {
+    return new FightPhysicsConfigAdapter(CONFIG);
+  }
+  return null;
+}
+
+function getGlobalRuntimePhysicsConfig() {
+  const physicsConfig = getGlobalFightPhysicsConfig();
+  return (
+    physicsConfig?.getDistanceConfig?.() ||
+    {}
+  );
+}
+
+function getGlobalPassiveRetrieveConfig() {
+  const physicsConfig = getGlobalFightPhysicsConfig();
+  return physicsConfig?.getPassiveRetrieveConfig?.() || {};
+}
+
+function getGlobalFloatMotionConfig() {
+  const physicsConfig = getGlobalFightPhysicsConfig();
+  return (
+    physicsConfig?.getFloatMotionConfig?.() ||
+    getGlobalRuntimePhysicsConfig().floatMotion ||
+    {}
+  );
+}
+
+function getGlobalLureRetrieveConfig() {
+  const physicsConfig = getGlobalFightPhysicsConfig();
+  return physicsConfig?.getLureRetrieveConfig?.() || {};
+}
+
 class Equipment {
   #level;
   #basePower;
@@ -21,6 +57,12 @@ class Rod extends Equipment {
   #type;
   #maxDistance;
   #hasReel;
+  #lengthMeters;
+  #castPowerCoefficient;
+  #maxLoadKg;
+  #holdTensionRatio;
+  #durability;
+  #durabilityMaxLoadLossPerPercent;
 
   constructor(
     level,
@@ -29,12 +71,22 @@ class Rod extends Equipment {
     type = "float_match",
     maxDistance = Infinity,
     hasReel = true,
+    options = {},
   ) {
     super(level, power);
     this.#compensation = compensation;
     this.#type = type;
     this.#maxDistance = maxDistance;
     this.#hasReel = hasReel;
+    this.#lengthMeters = Rod.#numberOrDefault(options.lengthMeters, 2.0);
+    this.#castPowerCoefficient = Rod.#nullableNumber(
+      options.castPowerCoefficient,
+    );
+    this.#maxLoadKg = Rod.#numberOrDefault(options.maxLoadKg, 8.0);
+    this.#holdTensionRatio = Rod.#numberOrDefault(options.holdTensionRatio, 1.0);
+    this.#durability = Rod.#numberOrDefault(options.durability, 100);
+    this.#durabilityMaxLoadLossPerPercent =
+      Rod.#numberOrDefault(options.durabilityMaxLoadLossPerPercent, 0.001);
   }
 
   getCompensation() {
@@ -52,19 +104,88 @@ class Rod extends Equipment {
   hasReel() {
     return this.#hasReel;
   }
+
+  getLengthMeters() {
+    return this.#lengthMeters;
+  }
+
+  getCastPowerCoefficient() {
+    return this.#castPowerCoefficient;
+  }
+
+  getMaxLoadKg() {
+    return this.#maxLoadKg;
+  }
+
+  getDurabilityMaxLoadLossPerPercent() {
+    return this.#durabilityMaxLoadLossPerPercent;
+  }
+
+  getEffectiveMaxLoadKg() {
+    const loss =
+      (100 - Math.max(0, Math.min(100, this.#durability))) *
+      this.#durabilityMaxLoadLossPerPercent;
+    return this.#maxLoadKg * Math.max(0.1, 1 - loss);
+  }
+
+  getHoldTensionRatio() {
+    return Math.max(0, Math.min(1, this.#holdTensionRatio));
+  }
+
+  static #numberOrDefault(value, fallback) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  static #nullableNumber(value) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
 }
 
 class Reel extends Equipment {
   #holdConfig;
+  #maxLoadKg;
+  #lineCapacityMeters;
+  #retrieveSpeedMetersPerSec;
+  #dragMinKg;
+  #dragMaxKg;
+  #dragChangeSpeedPerSec;
+  #hasDrag;
+  #durability;
+  #durabilityMaxLoadLossPerPercent;
 
-  constructor(level, power, holdConfig = null) {
+  constructor(level, power, options = {}) {
     super(level, power); // Стара логіка відпрацьовує як і раніше!
-    this.#holdConfig = holdConfig;
+    this.#holdConfig = null;
+    this.#maxLoadKg = Reel.#numberOrDefault(options.maxLoadKg, 10);
+    this.#lineCapacityMeters = Reel.#numberOrDefault(
+      options.lineCapacityMeters,
+      50,
+    );
+    this.#retrieveSpeedMetersPerSec =
+      Reel.#numberOrDefault(options.retrieveSpeedMetersPerSec, 0.8);
+    this.#dragMinKg = Reel.#numberOrDefault(options.dragMinKg, 0);
+    this.#dragMaxKg = Reel.#numberOrDefault(
+      options.dragMaxKg,
+      this.#maxLoadKg,
+    );
+    this.#dragChangeSpeedPerSec =
+      Reel.#numberOrDefault(options.dragChangeSpeedPerSec, 1.5);
+    this.#hasDrag = options.hasDrag !== false;
+    if (!this.#hasDrag) {
+      this.#dragMinKg = 0;
+      this.#dragMaxKg = 0;
+      this.#dragChangeSpeedPerSec = 0;
+    }
+    this.#durability = Reel.#numberOrDefault(options.durability, 100);
+    this.#durabilityMaxLoadLossPerPercent =
+      Reel.#numberOrDefault(options.durabilityMaxLoadLossPerPercent, 0.001);
   }
 
   // Метод для перевірки, чи взагалі доступна механіка утримання
   hasHoldMechanic() {
-    return this.#holdConfig && this.#holdConfig.activeLevel > 0;
+    return false;
   }
 
   // Зручний геттер, який збирає всі потрібні дані для поточного рівня утримання
@@ -88,28 +209,98 @@ class Reel extends Equipment {
       totalHoldForce: this.getPower() + stats.holdPower,
     };
   }
+
+  hasReel() {
+    return this.getPower() > 0 || this.#lineCapacityMeters > 0;
+  }
+
+  getMaxLoadKg() {
+    return this.#maxLoadKg;
+  }
+
+  getEffectiveMaxLoadKg() {
+    const loss =
+      (100 - Math.max(0, Math.min(100, this.#durability))) *
+      this.#durabilityMaxLoadLossPerPercent;
+    return this.#maxLoadKg * Math.max(0.1, 1 - loss);
+  }
+
+  getLineCapacityMeters() {
+    return this.#lineCapacityMeters;
+  }
+
+  getRetrieveSpeedMetersPerSec() {
+    return this.#retrieveSpeedMetersPerSec;
+  }
+
+  getDragChangeSpeedPerSec() {
+    return this.#dragChangeSpeedPerSec;
+  }
+
+  hasDrag() {
+    return this.#hasDrag;
+  }
+
+  getDragRangeKg() {
+    return { min: this.#dragMinKg, max: this.#dragMaxKg };
+  }
+
+  static #numberOrDefault(value, fallback) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
 }
 
 class Hook {
   #level;
   #weight;
   #quality;
+  #maxLoadKg;
+  #durability;
+  #durabilityMaxLoadLossPerPercent;
 
-  constructor(level, weight, quality) {
+  constructor(level, weight, quality, options = {}) {
     this.#level = level;
     this.#weight = weight;
     this.#quality = quality;
+    this.#maxLoadKg = Hook.#numberOrDefault(options.maxLoadKg, Infinity);
+    this.#durability = Hook.#numberOrDefault(options.durability, 100);
+    this.#durabilityMaxLoadLossPerPercent =
+      Hook.#numberOrDefault(options.durabilityMaxLoadLossPerPercent, 0.001);
   }
 
   getPower() {
     return (this.#level * this.#weight + this.#quality) * 0.01;
   }
+
+  getMaxLoadKg() {
+    return this.#maxLoadKg;
+  }
+
+  getEffectiveMaxLoadKg() {
+    if (!Number.isFinite(this.#maxLoadKg)) return Infinity;
+    const loss =
+      (100 - Math.max(0, Math.min(100, this.#durability))) *
+      this.#durabilityMaxLoadLossPerPercent;
+    return this.#maxLoadKg * Math.max(0.1, 1 - loss);
+  }
+
+  static #numberOrDefault(value, fallback) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
 }
 
 class Net {
   #config;
+  #converter;
 
-  constructor(config) {
+  constructor(config, physicsConfig = null) {
+    this.#converter = this.#createConverter(physicsConfig);
+    this.updateConfig(config);
+  }
+
+  updateConfig(config) {
     this.#config = config || { active: false };
   }
 
@@ -119,8 +310,26 @@ class Net {
 
   // Переводимо стару логіку "length * 10" у віртуальну дистанцію.
   // Наприклад, length 15 = 150 віртуальних пікселів від берега.
+  // Current model: length is meters; virtual reach is pixels via DistanceUnitConverter.
+  getReachMeters() {
+    const reachMeters = Number(
+      this.#config.lengthMeters ??
+        this.#config.reachMeters ??
+        this.#config.length,
+    );
+    return Number.isFinite(reachMeters) ? Math.max(0, reachMeters) : 0;
+  }
+
+  getReachPixels() {
+    return this.#converter.metersToPixels(this.getReachMeters());
+  }
+
   get virtualReach() {
-    return (this.#config.length || 0) * 10;
+    return this.getReachPixels();
+  }
+
+  getMaxWeight() {
+    return Math.max(0, Number(this.#config.maxWeight) || 0);
   }
 
   // Отримуємо віртуальну Y-координату, де починається зона підсаки
@@ -142,7 +351,8 @@ class Net {
   calculateCatchChance(fishWeight) {
     if (!this.isActive) return 100; // Якщо механіка підсаки вимкнена
 
-    const maxWeight = this.#config.maxWeight || 0;
+    const maxWeight = this.getMaxWeight();
+    if (maxWeight <= 0) return 0;
     if (fishWeight <= maxWeight) return 100;
 
     // Якщо риба важча за ліміт підсаки:
@@ -151,7 +361,9 @@ class Net {
 
     if (this.#config.chances) {
       for (const t of this.#config.chances) {
-        if (diffPercent >= t.min && diffPercent <= t.max) {
+        const maxBoundary = Number(t.max);
+        const isOpenEnded = t.openEnded === true || t.max === null;
+        if (diffPercent >= t.min && (isOpenEnded || diffPercent <= maxBoundary)) {
           baseChance = t.chance;
           break;
         }
@@ -160,6 +372,28 @@ class Net {
 
     const qualBonus = Math.round(((this.#config.quality || 1.0) - 1.0) * 10);
     return Math.min(100, Math.max(0, baseChance + qualBonus));
+  }
+
+  #createConverter(physicsConfig) {
+    const resolvedPhysics =
+      physicsConfig ||
+      getGlobalRuntimePhysicsConfig() ||
+      {};
+
+    if (typeof DistanceUnitConverter !== "undefined") {
+      return new DistanceUnitConverter(resolvedPhysics);
+    }
+
+    const pixelsPerMeter = Math.max(
+      1,
+      Number(resolvedPhysics.pixelsPerMeter) || 50,
+    );
+    return {
+      metersToPixels: (meters) => {
+        const value = Number(meters);
+        return Number.isFinite(value) ? value * pixelsPerMeter : 0;
+      },
+    };
   }
 }
 
@@ -213,14 +447,16 @@ class WaterEntity {
 
   _activeBiteSequence = null;
   _rng;
+  _debugEvents;
 
-  constructor(x, y, config, maxDepth, rng = null) {
+  constructor(x, y, config, maxDepth, rng = null, debugEvents = null) {
     this._position = new Vector2(x, y);
     this._velocity = new Vector2(0, 0);
     this._currentBiteMoveVelocity = new Vector2(0, 0);
     this._forceScratch = new Vector2(0, 0);
     this._config = config;
     this._rng = rng || { next: () => Math.random() };
+    this._debugEvents = debugEvents || null;
     this._maxDepth = maxDepth || config.maxDepth || 8.0;
     this._currentHookDepth = 0.1;
     this._targetHookDepth = 0.1;
@@ -238,17 +474,35 @@ class WaterEntity {
   }
 
   _chance(probability) {
-    return typeof this._rng.chance === "function"
-      ? this._rng.chance(probability)
-      : this._random() < probability;
+    return this._rollChance(probability).success;
+  }
+
+  _rollChance(probability) {
+    const normalized = Math.max(0, Math.min(1, Number(probability) || 0));
+    const roll = this._random();
+    return {
+      probability: normalized,
+      roll,
+      success: roll < normalized,
+    };
+  }
+
+  _formatPercent(value) {
+    return `${(Math.max(0, Math.min(1, Number(value) || 0)) * 100).toFixed(2)}%`;
+  }
+
+  _emitDebugEvent(type, detail) {
+    if (!this._debugEvents || typeof this._debugEvents.emit !== "function") return;
+    this._debugEvents.emit(type, detail);
   }
 
   _applyRetrieveForce(dt, pullDirection, power, multiplier, waterFriction = 0) {
     if (!pullDirection) return;
-    const dtSec = dt / 1000;
+    const dtSec = this._getClampedDtSec(dt);
     const targetSpeedPxPerSec =
       Math.max(0, power - waterFriction) * multiplier;
-    const force = targetSpeedPxPerSec * dtSec * (1 - this._velocityDamping);
+    const damping = this._getVelocityDamping(dtSec);
+    const force = targetSpeedPxPerSec * (1 - damping);
 
     this.applyForce(
       this._forceScratch.set(
@@ -258,26 +512,65 @@ class WaterEntity {
     );
   }
 
-  _applyPassiveRetrieve(dt, pullDirection) {
-    const physics = CONFIG.physics || {};
-    this._applyRetrieveForce(
-      dt,
-      pullDirection,
-      physics.passiveRetrievePower ?? 1.0,
-      physics.passiveRetrieveMultiplier ?? 35,
-      physics.passiveRetrieveWaterFriction ?? 0.35,
-    );
+  _applyRetrieveSpeed(dt, pullDirection, targetSpeedPxPerSec, waterFrictionMultiplier = 0) {
+    if (!pullDirection) return;
+    const dtSec = this._getClampedDtSec(dt);
+    const targetSpeed =
+      Math.max(0, Number(targetSpeedPxPerSec) || 0) *
+      Math.max(0, 1 - (Number(waterFrictionMultiplier) || 0));
+    const damping = this._getVelocityDamping(dtSec);
+    const force = targetSpeed * (1 - damping);
 
-    const dtSec = dt / 1000;
+    this.applyForce(
+      this._forceScratch.set(
+        pullDirection.x * force,
+        pullDirection.y * force,
+      ),
+    );
+  }
+
+  _applyPassiveRetrieve(dt, pullDirection, retrieveParams = null) {
+    const passiveRetrieve = getGlobalPassiveRetrieveConfig();
+    if (Number.isFinite(Number(retrieveParams?.targetSpeedPxPerSec))) {
+      this._applyRetrieveSpeed(
+        dt,
+        pullDirection,
+        retrieveParams.targetSpeedPxPerSec,
+        retrieveParams.waterFrictionMultiplier,
+      );
+    } else {
+      this._applyRetrieveForce(
+        dt,
+        pullDirection,
+        retrieveParams?.power ??
+          passiveRetrieve.passiveRetrievePowerRatio ??
+          passiveRetrieve.power ??
+          1.0,
+        retrieveParams?.multiplier ?? passiveRetrieve.multiplier ?? 35,
+        retrieveParams?.waterFriction ??
+          passiveRetrieve.waterFriction ??
+          0.35,
+      );
+    }
+
+    const dtSec = this._getClampedDtSec(dt);
     this._currentHookDepth = Math.max(
       0,
       this._currentHookDepth -
-        (physics.passiveRetrieveDepthRiseSpeed ?? 0.15) * dtSec,
+        (passiveRetrieve.depthRiseSpeed ?? 0.15) * dtSec,
     );
   }
 
   getPosition() {
     return this._position;
+  }
+
+  getVelocity() {
+    return this._velocity;
+  }
+
+  setVelocity(x, y) {
+    this._velocity.set(x, y);
   }
 
   getCurrentHookDepth() {
@@ -306,6 +599,78 @@ class WaterEntity {
 
   setHookDepth(depth) {
     this._currentHookDepth = depth;
+  }
+
+
+  applyHookedFightMovement({
+    boundsRect,
+    dt,
+    environment,
+    checkWater,
+    input = {},
+    pullDirection = null,
+    targetVelocity = null,
+  } = {}) {
+    this._isPlayerPullingThisFrame = !!(input.isPulling && pullDirection);
+
+    const dtSec = this._getClampedDtSec(dt);
+    const targetVelocityX = Number(targetVelocity?.x) || 0;
+    const targetVelocityY = Number(targetVelocity?.y) || 0;
+    const drift = this._calculateEnvironmentDrift(dtSec, environment);
+
+    // Hooked fight movement is authoritative: the simplified fight model already
+    // applies water resistance, drag escape multiplier and state speed modifiers.
+    // Do not run the generic WaterEntity damping on this movement frame.
+    this._velocity.set(targetVelocityX, targetVelocityY);
+
+    this._resetPassiveWindMotion(dt);
+
+    const prevX = this._position.x;
+    const prevY = this._position.y;
+    let nextX = this._position.x + targetVelocityX * dtSec + drift.x;
+    let nextY = this._position.y + targetVelocityY * dtSec + drift.y;
+
+    if (checkWater) {
+      if (!checkWater(nextX, this._position.y)) {
+        this._velocity.x = 0;
+        nextX = this._position.x;
+      }
+      if (!checkWater(this._position.x, nextY)) {
+        this._velocity.y = 0;
+        nextY = this._position.y;
+      }
+    }
+
+    const bounds = boundsRect || {
+      left: -Infinity,
+      right: Infinity,
+      top: -Infinity,
+      bottom: Infinity,
+    };
+
+    this._position.set(
+      Math.max(bounds.left, Math.min(bounds.right, nextX)),
+      Math.max(bounds.top, Math.min(bounds.bottom, nextY)),
+    );
+
+    const movedX = this._position.x - prevX;
+    const movedY = this._position.y - prevY;
+    this._updateMotionTilt(dt, movedX, movedY);
+    this._afterPhysicsUpdate(checkWater);
+
+    if (this._isBiting && typeof this.updateBite === "function") {
+      this.updateBite(dt, checkWater);
+    }
+
+    return {
+      movedX,
+      movedY,
+      actualSpeedPxPerSec: dtSec > 0 ? Math.hypot(movedX, movedY) / dtSec : 0,
+      targetSpeedPxPerSec: Math.hypot(targetVelocityX, targetVelocityY),
+      driftX: drift.x,
+      driftY: drift.y,
+      dampingApplied: false,
+    };
   }
 
   update(
@@ -354,22 +719,52 @@ class WaterEntity {
 
   _afterPhysicsUpdate(checkWater) {}
 
+  _getClampedDtSec(dt) {
+    const maxDtMs = getGlobalFightPhysicsConfig()?.getMaxDtMs?.() ?? 50;
+    return Math.min(Math.max(0, Number(dt) || 0), maxDtMs) / 1000;
+  }
+
+  _getVelocityDamping(dtSec) {
+    const dampingPerSecond =
+      this._config.velocityDampingPerSecond ??
+      -Math.log(Math.max(0.001, Math.min(0.999, this._velocityDamping))) * 60;
+    return Math.exp(-Math.max(0, dampingPerSecond) * dtSec);
+  }
+
+
+  _calculateEnvironmentDrift(dtSec, environment) {
+    if (!environment?.current) return { x: 0, y: 0 };
+
+    const activeCfg = this._sinkerConfig || this._config;
+    const compRange = activeCfg.currentCompensation || [0.1, 0.99];
+    const qual = Math.max(1, Math.min(10, activeCfg.quality || 1));
+    const comp = this._lerp(compRange[0], compRange[1], (qual - 1) / 9);
+    const driftSpeed = environment.current.speedPxPerSec * (1 - comp);
+
+    return {
+      x: environment.current.direction.x * driftSpeed * dtSec,
+      y: environment.current.direction.y * driftSpeed * dtSec,
+    };
+  }
+
+  _resetPassiveWindMotion(dt) {
+    this._targetWindAngle = 0;
+    this._windTimer = 0;
+    this._windFluctuationTimer = 0;
+    this._windAngleOffset = this._lerp(
+      this._windAngleOffset,
+      this._targetWindAngle,
+      dt * 0.005,
+    );
+  }
+
   _applyPhysics(boundsRect, checkWater, dt, environment) {
-    let driftDx = 0;
-    let driftDy = 0;
+    const dtSec = this._getClampedDtSec(dt);
+    const drift = this._calculateEnvironmentDrift(dtSec, environment);
+    const driftDx = drift.x;
+    const driftDy = drift.y;
 
     if (!this._isHooked && environment) {
-      if (environment.current) {
-        const activeCfg = this._sinkerConfig || this._config;
-        const compRange = activeCfg.currentCompensation || [0.1, 0.99];
-        const qual = Math.max(1, Math.min(10, activeCfg.quality || 1));
-        const comp = this._lerp(compRange[0], compRange[1], (qual - 1) / 9);
-
-        const driftSpeed = environment.current.speedPxPerSec * (1 - comp);
-        driftDx = environment.current.direction.x * driftSpeed * (dt / 1000);
-        driftDy = environment.current.direction.y * driftSpeed * (dt / 1000);
-      }
-
       const isActivelyPulling =
         this._isBiting &&
         (Math.abs(this._currentAngle) > 0.5 ||
@@ -405,7 +800,7 @@ class WaterEntity {
             this._windFluctuationTimer =
               this._getRandom(environment.wind.gustFluctuationMs) * 3;
           }
-          if (this._chance(environment.wind.gustChancePerSec * (dt / 1000))) {
+          if (this._chance(environment.wind.gustChancePerSec * dtSec)) {
             this._windTimer = this._getRandom(environment.wind.gustDurationMs);
             this._windFluctuationTimer = 0;
           }
@@ -432,15 +827,15 @@ class WaterEntity {
     );
 
     if (this._isBiting && !isSpinningLure) {
-      this._velocity.multiplyScalar(this._velocityDamping);
+      this._velocity.multiplyScalar(this._getVelocityDamping(dtSec));
       this._updateMotionTilt(dt, 0, 0);
       return;
     }
 
     const prevX = this._position.x;
     const prevY = this._position.y;
-    let nextX = this._position.x + this._velocity.x + driftDx;
-    let nextY = this._position.y + this._velocity.y + driftDy;
+    let nextX = this._position.x + this._velocity.x * dtSec + driftDx;
+    let nextY = this._position.y + this._velocity.y * dtSec + driftDy;
 
     if (checkWater) {
       if (!checkWater(nextX, this._position.y)) {
@@ -464,13 +859,13 @@ class WaterEntity {
       this._position.y - prevY,
     );
 
-    this._velocity.multiplyScalar(this._velocityDamping);
+    this._velocity.multiplyScalar(this._getVelocityDamping(dtSec));
   }
 
   _updateMotionTilt(dt, moveX, moveY) {
     if (!this._motionTiltEnabled) return;
 
-    const cfg = CONFIG.physics?.floatMotion || {};
+    const cfg = getGlobalFloatMotionConfig();
     if (cfg.enabled === false) {
       this._motionTiltAngle = 0;
       return;
@@ -573,21 +968,34 @@ class WaterEntity {
     this._biteMoveTimer = 0;
   }
 
+  _applyGodModeBiteSequence(seqCfg) {
+    if (typeof GodMode === "undefined") return seqCfg;
+    const mode = GodMode.biteSequenceMode;
+    if (mode !== "guaranteed" && mode !== "normal") return seqCfg;
+
+    seqCfg.chanceGuaranteed = mode === "guaranteed" ? 1.0 : 0.0;
+    seqCfg.chanceNormal = mode === "guaranteed" ? 0.0 : 1.0;
+    return seqCfg;
+  }
+
   startBite(isPulling = false, fishBiteSequence = null) {
     this._isBiting = true;
     this._isHooked = false;
 
     // 1. БЕРЕМО КОНФІГ ВІД РИБИ
     const baseSeq = fishBiteSequence || CONFIG.float.biteSequence;
-    const seqCfg = { ...baseSeq };
+    const seqCfg = this._applyGodModeBiteSequence({ ...baseSeq });
 
     const isSpinningLure = ["spinner", "wobbler", "jig"].includes(
       this._config.type,
     );
 
     if (isSpinningLure && !isPulling) {
-      seqCfg.chanceGuaranteed = CONFIG.physics?.idleSpinningBiteChance ?? 0.005;
+      seqCfg.chanceGuaranteed =
+        getGlobalLureRetrieveConfig().idleSpinningBiteChance ?? 0.005;
     }
+
+    this._applyGodModeBiteSequence(seqCfg);
 
     // 2. ЗАПАМ'ЯТОВУЄМО КОНФІГ ДЛЯ НАСТУПНИХ ІТЕРАЦІЙ
     this._activeBiteSequence = seqCfg;
@@ -596,6 +1004,25 @@ class WaterEntity {
     this._targetSequenceCount = Math.floor(
       this._getRandom(seqCfg.maxSequences),
     );
+
+    this._emitDebugEvent("debug-bite-sequence", {
+      mode: "BITING",
+      event: "START",
+      isPulling,
+      isSpinningLure,
+      sequence: {
+        chanceGuaranteed: seqCfg.chanceGuaranteed,
+        chanceGuaranteedPercent: this._formatPercent(seqCfg.chanceGuaranteed),
+        chanceNormal: seqCfg.chanceNormal,
+        chanceNormalPercent: this._formatPercent(seqCfg.chanceNormal),
+        maxSequences: seqCfg.maxSequences,
+        targetSequenceCount: this._targetSequenceCount,
+        guaranteedIters: seqCfg.guaranteedIters,
+        normalIters: seqCfg.normalIters,
+        intervalMs: seqCfg.intervalMs,
+        sequenceIntervalMs: seqCfg.sequenceIntervalMs,
+      },
+    });
 
     // Більше не передаємо seqCfg сюди, метод візьме його з this._activeBiteSequence
     this._rollBiteSequence();
@@ -680,14 +1107,19 @@ class WaterEntity {
     // 4. ЧИТАЄМО ЗБЕРЕЖЕНИЙ КОНФІГ
     const seqCfg = this._activeBiteSequence;
 
-    const isRed = this._chance(seqCfg.chanceGuaranteed);
+    const rollResult = this._rollChance(seqCfg.chanceGuaranteed);
+    const isRed = rollResult.success;
     const color = isRed ? "#ff0000" : "#ffff00";
     const range = isRed ? seqCfg.guaranteedIters : seqCfg.normalIters;
     const iters = Math.floor(this._getRandom(range));
+    const sequenceType = isRed ? "guaranteed" : "normal";
+    const debugIterations = [];
+    let sequenceIntervalMs = 0;
 
     if (this._currentSequenceCount > 1) {
+      sequenceIntervalMs = this._getRandom(seqCfg.sequenceIntervalMs);
       this._sequenceQueue.push({
-        duration: this._getRandom(seqCfg.sequenceIntervalMs),
+        duration: sequenceIntervalMs,
         angle: 0,
         scaleY: 1.0,
         startMove: false,
@@ -704,15 +1136,40 @@ class WaterEntity {
         s.isGuaranteed = isRed;
         this._sequenceQueue.push(s);
       }
+      const intervalMs = this._getRandom(seqCfg.intervalMs);
       this._sequenceQueue.push({
-        duration: this._getRandom(seqCfg.intervalMs),
+        duration: intervalMs,
         angle: 0,
         scaleY: 1.0,
         startMove: false,
         color: color,
         isGuaranteed: isRed,
       });
+      debugIterations.push({
+        index: i + 1,
+        result: "успішно",
+        stepCount: steps.length,
+        fallbackMs: intervalMs,
+      });
     }
+
+    this._emitDebugEvent("debug-bite-sequence", {
+      mode: "BITING",
+      event: "SEQUENCE_ROLL",
+      sequenceIndex: this._currentSequenceCount,
+      sequenceCount: this._targetSequenceCount,
+      chanceGuaranteed: seqCfg.chanceGuaranteed,
+      chanceGuaranteedPercent: this._formatPercent(seqCfg.chanceGuaranteed),
+      chanceNormal: seqCfg.chanceNormal,
+      chanceNormalPercent: this._formatPercent(seqCfg.chanceNormal),
+      roll: rollResult.roll,
+      rollPercent: this._formatPercent(rollResult.roll),
+      selectedType: sequenceType,
+      generatedIterations: iters,
+      sequenceIntervalMs,
+      iterations: debugIterations,
+    });
+
     this._nextAnimStep();
   }
 
@@ -863,7 +1320,7 @@ class SpinnerEntity extends WaterEntity {
         dt,
         pullDirection,
         reelPower,
-        CONFIG.physics?.lureRetrieveMultiplier ?? 150,
+        getGlobalLureRetrieveConfig().multiplier ?? 150,
         this._lureResistance,
       );
 
@@ -889,7 +1346,7 @@ class WobblerEntity extends WaterEntity {
         dt,
         pullDirection,
         reelPower,
-        CONFIG.physics?.lureRetrieveMultiplier ?? 150,
+        getGlobalLureRetrieveConfig().multiplier ?? 150,
         this._lureResistance,
       );
 
@@ -936,7 +1393,7 @@ class JigEntity extends WaterEntity {
         dt,
         pullDirection,
         reelPower,
-        CONFIG.physics?.lureRetrieveMultiplier ?? 150,
+        getGlobalLureRetrieveConfig().multiplier ?? 150,
         this._lureResistance,
       );
       this._currentHookDepth = Math.max(
@@ -985,7 +1442,7 @@ class FeederEntity extends WaterEntity {
 
   _processMechanics(dt, input, reelPower, pullDirection) {
     if (input.isPulling && pullDirection) {
-      this._applyPassiveRetrieve(dt, pullDirection);
+      this._applyPassiveRetrieve(dt, pullDirection, input.idleRetrieveParams);
       return;
     }
 
@@ -1091,7 +1548,7 @@ class FloatEntity extends WaterEntity {
 
     this._targetHookDepth = hasSinker
       ? targetDepth
-      : (CONFIG.physics?.defaultDepthNoSinker ?? 0.1);
+      : (getGlobalLureRetrieveConfig().defaultDepthNoSinker ?? 0.1);
     this._currentHookDepth = 0.1;
     this._isOverDepth = hasSinker ? isOverDepth : false;
     this._sinkerConfig = sinkerConfig;
@@ -1120,7 +1577,7 @@ class FloatEntity extends WaterEntity {
 
     this._sinkingTotalTime = baseSinkingTime / speedMult;
 
-    const startAngle = CONFIG.physics?.floatMotion?.sinkingStartAngleDeg ?? 90;
+    const startAngle = getGlobalFloatMotionConfig().sinkingStartAngleDeg ?? 90;
     this._sinkingStartAngle = this._chance(0.5) ? startAngle : -startAngle;
     this._currentAngle = this._sinkingStartAngle;
     this._currentScaleY = 1.0;
@@ -1136,7 +1593,7 @@ class FloatEntity extends WaterEntity {
 
     if (isPulling) {
       this._advanceSinkingVisual(dt);
-      this._applyPassiveRetrieve(dt, pullDirection);
+      this._applyPassiveRetrieve(dt, pullDirection, input.idleRetrieveParams);
       this._syncSinkingAngleToDepth();
       return;
     }
@@ -1222,7 +1679,7 @@ class FloatEntity extends WaterEntity {
           );
 
     const minDuration =
-      CONFIG.physics?.floatMotion?.minStandUpDurationMs ?? 400;
+      getGlobalFloatMotionConfig().minStandUpDurationMs ?? 400;
     if (minDuration <= 0) return depthProgress;
 
     const timeProgress = Math.max(
@@ -1233,7 +1690,7 @@ class FloatEntity extends WaterEntity {
   }
 
   _updatePullImpulseTilt(dt, pullDirection, isPulling) {
-    const cfg = CONFIG.physics?.floatMotion || {};
+    const cfg = getGlobalFloatMotionConfig();
     if (cfg.enabled === false) {
       this._pullImpulseAngle = 0;
       return;
@@ -1268,7 +1725,7 @@ class FloatEntity extends WaterEntity {
   }
 
   _getPullImpulseSign(pullDirection) {
-    const cfg = CONFIG.physics?.floatMotion || {};
+    const cfg = getGlobalFloatMotionConfig();
     const pullX = pullDirection?.x || 0;
     const deadZone = cfg.pullImpulseLateralDeadZone ?? 0.02;
     return Math.abs(pullX) > deadZone ? -Math.sign(pullX) : 0;
@@ -1276,12 +1733,12 @@ class FloatEntity extends WaterEntity {
 }
 
 class BaitFactory {
-  static create(type, x, y, config, equipment, rng = null) {
+  static create(type, x, y, config, equipment, rng = null, debugEvents = null) {
     switch (type) {
       case "spinner":
-        return new SpinnerEntity(x, y, config, config.maxDepth, rng);
+        return new SpinnerEntity(x, y, config, config.maxDepth, rng, debugEvents);
       case "wobbler":
-        return new WobblerEntity(x, y, config, config.maxDepth, rng);
+        return new WobblerEntity(x, y, config, config.maxDepth, rng, debugEvents);
       case "jig":
         return new JigEntity(
           x,
@@ -1289,12 +1746,13 @@ class BaitFactory {
           config,
           equipment?.sinker?.maxDepth || config.maxDepth,
           rng,
+          debugEvents,
         );
       case "feeder":
-        return new FeederEntity(x, y, config, config.maxDepth, rng);
+        return new FeederEntity(x, y, config, config.maxDepth, rng, debugEvents);
       case "float":
       default:
-        return new FloatEntity(x, y, config, config.maxDepth, rng);
+        return new FloatEntity(x, y, config, config.maxDepth, rng, debugEvents);
     }
   }
 }

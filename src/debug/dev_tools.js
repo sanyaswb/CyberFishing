@@ -1,7 +1,101 @@
+class DevToolsParameterTooltipProvider {
+  #descriptionsByKey = {};
+  #readyPromise;
+
+  constructor({
+    urls = [
+      "src/config/metadata/dev_tool_parameter_descriptions.json",
+      "src/config/metadata/parameter_labels.json",
+    ],
+  } = {}) {
+    this.#readyPromise = this.#load(urls);
+  }
+
+  get ready() {
+    return this.#readyPromise;
+  }
+
+  getTooltip(labelText) {
+    const description = this.#descriptionsByKey[String(labelText)];
+    if (!description) return "";
+
+    if (description.path) {
+      return `${description.path} = ${description.label}:\n${description.description}`;
+    }
+
+    return `${description.key} = ${description.ua}:\n${description.description}`;
+  }
+
+  async #load(urls) {
+    if (typeof fetch !== "function") return;
+
+    const targetUrls = Array.isArray(urls) ? urls : [urls];
+    const responses = await Promise.allSettled(
+      targetUrls.map((url) => this.#loadOne(url)),
+    );
+
+    for (const response of responses) {
+      if (response.status === "fulfilled") {
+        this.#ingestDescriptions(response.value);
+      }
+    }
+  }
+
+  async #loadOne(url) {
+    try {
+      const response = await fetch(url, { cache: "no-cache" });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.warn(
+        "[DevTools] Tooltip descriptions failed to load:",
+        url,
+        error,
+      );
+      return null;
+    }
+  }
+
+  #ingestDescriptions(descriptions) {
+    if (!descriptions) return;
+
+    if (Array.isArray(descriptions)) {
+      for (const item of descriptions) {
+        if (!item?.key) continue;
+        this.#descriptionsByKey[item.key] = item;
+      }
+      return;
+    }
+
+    for (const [path, item] of Object.entries(descriptions)) {
+      if (!item?.label) continue;
+
+      const normalized = {
+        path,
+        label: item.label,
+        description: item.description || "",
+      };
+      this.#descriptionsByKey[path] = normalized;
+
+      const leafKey = path.split(".").pop();
+      if (leafKey && !this.#descriptionsByKey[leafKey]) {
+        this.#descriptionsByKey[leafKey] = normalized;
+      }
+    }
+  }
+}
+
 class DevTools {
   #config;
   #ui;
   #isOpen = false;
+  #liveData = null;
+  #activeFishKey = "";
+  #activeFishShapeKey = "";
+  #configRuntime = null;
+  #activeFishVisibilityPolicy;
 
   #excludeKeys = [
     "id",
@@ -17,7 +111,35 @@ class DevTools {
 
   constructor(config) {
     this.#config = config;
-    this.#ui = new DevToolsUI(() => this.toggle(), this.#config);
+    this.#configRuntime =
+      typeof CONFIG_RUNTIME_CONTEXT !== "undefined"
+        ? CONFIG_RUNTIME_CONTEXT
+        : null;
+    this.#activeFishVisibilityPolicy =
+      typeof ActiveFishDevToolsVisibilityPolicy !== "undefined"
+        ? new ActiveFishDevToolsVisibilityPolicy()
+        : null;
+    const tooltipProvider = new DevToolsParameterTooltipProvider();
+    this.#ui = new DevToolsUI(
+      () => this.toggle(),
+      this.#config,
+      tooltipProvider,
+    );
+    tooltipProvider.ready.then(() => {
+      if (this.#isOpen) this.#populatePanel();
+    });
+    document.addEventListener("debug-live-update", (event) => {
+      this.#liveData = event.detail || null;
+      const nextFishKey = this.#getActiveFishKey();
+      const nextFishShapeKey = this.#getActiveFishShapeKey();
+      if (
+        this.#isOpen &&
+        (nextFishKey !== this.#activeFishKey ||
+          nextFishShapeKey !== this.#activeFishShapeKey)
+      ) {
+        this.#populatePanel();
+      }
+    });
   }
 
   toggle() {
@@ -32,76 +154,283 @@ class DevTools {
   #populatePanel() {
     const body = this.#ui.body;
     body.innerHTML = "";
+    this.#activeFishKey = this.#getActiveFishKey();
+    this.#activeFishShapeKey = this.#getActiveFishShapeKey();
+
+    this.#renderRuntimeOverrideControls(body);
 
     // 1. OVERLAY MODULES
-    if (typeof OVERLAY_MODULES !== "undefined") {
+    const overlaySettings =
+      typeof window !== "undefined" && window.OverlaySettingsStore
+        ? window.OverlaySettingsStore
+        : null;
+    const legacyOverlayModules =
+      typeof OVERLAY_MODULES !== "undefined" ? OVERLAY_MODULES : null;
+    const overlayModules =
+      overlaySettings?.getSnapshot?.() || legacyOverlayModules;
+    const overlayKeys =
+      overlaySettings?.keys?.() || Object.keys(overlayModules || {});
+    if (overlayModules && overlayKeys.length > 0) {
       const content = this.#createSectionWithCache(
-        "OVERLAY MODULES (На Екрані)",
+        "OVERLAY MODULES (В live time)",
         body,
+        ["OVERLAY_MODULES"],
       );
-      for (const k in OVERLAY_MODULES) {
-        this.#ui.createSwitcherRow(
-          k,
-          OVERLAY_MODULES[k],
-          content,
-          (v) => (OVERLAY_MODULES[k] = v),
-        );
+      for (const k of overlayKeys) {
+        const enabled = overlaySettings?.isEnabled
+          ? overlaySettings.isEnabled(k)
+          : !!overlayModules[k];
+        this.#ui.createSwitcherRow(k, enabled, content, (v) => {
+          if (overlaySettings?.setEnabled) overlaySettings.setEnabled(k, v);
+          else overlayModules[k] = v;
+        });
       }
     }
 
-    // 2. CONSOLE MODULES
-    if (typeof window !== "undefined" && window.DEBUG_MODULES) {
-      const content = this.#createSectionWithCache(
-        "CONSOLE MODULES (Логи F12)",
-        body,
-      );
-      for (const k in window.DEBUG_MODULES) {
-        this.#ui.createSwitcherRow(
-          k,
-          window.DEBUG_MODULES[k],
-          content,
-          (v) => {
-            window.DEBUG_MODULES[k] = v;
-            document.dispatchEvent(
-              new CustomEvent("debug-module-toggled", {
-                detail: { module: k, enabled: v },
-              }),
-            );
-          },
-        );
-      }
-    }
+    this.#renderConfigDebugSection(body);
 
     // 3. ITEM_DB (БАЗА ПРЕДМЕТІВ)
     if (typeof ITEM_DB !== "undefined") {
       const dbContent = this.#createSectionWithCache(
         "📦 БАЗА ПРЕДМЕТІВ (ITEM_DB)",
         body,
+        ["ITEM_DB"],
       );
       for (const key of Object.keys(ITEM_DB)) {
         if (this.#excludeKeys.includes(key)) continue;
-        const sectionContent = this.#createSectionWithCache(key, dbContent);
+        const sectionContent = this.#createSectionWithCache(key, dbContent, [
+          "ITEM_DB",
+          key,
+        ]);
         // Шлях тепер починається з "ITEM_DB"
         this.#buildTree(ITEM_DB[key], sectionContent, ["ITEM_DB", key]);
       }
     }
 
-    // 4. CONFIG (НАЛАШТУВАННЯ ГРИ)
+    // 4. FISH_DB (БАЗА РИБИ)
+    if (typeof FISH_DB !== "undefined") {
+      const fishDbContent = this.#createSectionWithCache(
+        "🐟 БАЗА РИБИ (FISH_DB)",
+        body,
+        ["FISH_DB"],
+      );
+      FISH_DB.forEach((fish, index) => {
+        const fishLabel = fish?.id || fish?.name || `Fish [${index}]`;
+        const sectionContent = this.#createSectionWithCache(
+          fishLabel,
+          fishDbContent,
+          ["FISH_DB", index],
+        );
+        this.#buildTree(fish, sectionContent, ["FISH_DB", index]);
+      });
+    }
+
+    // 5. MAP_DB (БАЗА ЛОКАЦІЙ)
+    if (typeof MAP_DB !== "undefined") {
+      const mapDbContent = this.#createSectionWithCache(
+        "🗺️ БАЗА ЛОКАЦІЙ (MAP_DB)",
+        body,
+        ["MAP_DB"],
+      );
+      for (const key of Object.keys(MAP_DB)) {
+        const location = MAP_DB[key];
+        const locationLabel = location?.id || location?.name || key;
+        const sectionContent = this.#createSectionWithCache(
+          locationLabel,
+          mapDbContent,
+          ["MAP_DB", key],
+        );
+        this.#buildTree(location, sectionContent, ["MAP_DB", key]);
+      }
+    }
+
+    // 6. CONFIG (НАЛАШТУВАННЯ ГРИ)
     if (typeof CONFIG !== "undefined") {
       const configContent = this.#createSectionWithCache(
         "⚙️ НАЛАШТУВАННЯ (CONFIG)",
         body,
+        ["CONFIG"],
       );
       for (const key of Object.keys(CONFIG)) {
-        if (this.#excludeKeys.includes(key)) continue;
-        const sectionContent = this.#createSectionWithCache(key, configContent);
+        if (this.#shouldSkipKey(["CONFIG"], key)) continue;
+        const sectionContent = this.#createSectionWithCache(
+          key,
+          configContent,
+          ["CONFIG", key],
+        );
         // Шлях тепер починається з "CONFIG"
         this.#buildTree(CONFIG[key], sectionContent, ["CONFIG", key]);
       }
     }
+
+    this.#renderActiveFishSection(body);
   }
 
-  #createSectionWithCache(labelStr, parentElement) {
+  #renderConfigDebugSection(body) {
+    if (typeof CONFIG === "undefined" || !CONFIG?.debug) return;
+
+    const debugContent = this.#createSectionWithCache(
+      "🐞 DEBUG (CONFIG.debug)",
+      body,
+      ["CONFIG", "debug"],
+    );
+    this.#buildTree(CONFIG.debug, debugContent, ["CONFIG", "debug"]);
+  }
+
+  #renderActiveFishSection(body) {
+    const hookedFish = this.#liveData?.hookedFish;
+    if (!hookedFish) return;
+
+    const fish = this.#activeFishVisibilityPolicy?.normalizeHookedFish
+      ? this.#activeFishVisibilityPolicy.normalizeHookedFish(hookedFish)
+      : hookedFish;
+    const fishLabel = fish.id || fish.name || "hookedFish";
+    const activeFishContent = this.#createSectionWithCache(
+      `ACTIVE FISH (${fishLabel})`,
+      body,
+      ["HOOKED_FISH"],
+    );
+
+    const fishRuntimeContent = this.#createSectionWithCache(
+      this.#activeFishVisibilityPolicy?.fishRuntimeRootTitle ||
+        "🐟 Fish runtime parameters (HOOKED_FISH)",
+      activeFishContent,
+      ["HOOKED_FISH"],
+    );
+    this.#buildTree(fish, fishRuntimeContent, ["HOOKED_FISH"], {
+      visibilityPolicy: this.#activeFishVisibilityPolicy,
+      applyHookedFishLegacySkips: false,
+    });
+
+    this.#renderActiveFishGlobalConfigShortcuts(activeFishContent);
+  }
+
+  #renderActiveFishGlobalConfigShortcuts(parentElement) {
+    const shortcuts =
+      this.#activeFishVisibilityPolicy?.getGlobalConfigShortcuts?.() || [];
+    if (!shortcuts.length || typeof CONFIG === "undefined") return;
+
+    const globalContent = this.#createSectionWithCache(
+      this.#activeFishVisibilityPolicy?.globalConfigRootTitle ||
+        "🌐 Global fight config shortcuts (CONFIG)",
+      parentElement,
+      ["CONFIG"],
+    );
+
+    for (const shortcut of shortcuts) {
+      const value = this.#readPath(shortcut.path);
+      if (!value || typeof value !== "object") continue;
+      const content = this.#createSectionWithCache(
+        shortcut.title || shortcut.path.join("."),
+        globalContent,
+        shortcut.path,
+      );
+      this.#buildTree(value, content, shortcut.path);
+    }
+  }
+
+  #readPath(path) {
+    const root = this.#resolveEditableRoot(path?.[0]);
+    if (!root) return undefined;
+    let current = root;
+    for (let i = 1; i < path.length; i++) {
+      if (current == null) return undefined;
+      current = current[path[i]];
+    }
+    return current;
+  }
+
+  #getActiveFishKey() {
+    const fish = this.#liveData?.hookedFish;
+    if (!fish) return "";
+    return `${fish.id || fish.name || "hookedFish"}:${fish.level ?? ""}:${fish.weight ?? ""}`;
+  }
+
+  #getActiveFishShapeKey() {
+    const fish = this.#liveData?.hookedFish;
+    if (!fish) return "";
+    const paths = [];
+    this.#collectVisibleScalarPaths(fish, ["HOOKED_FISH"], paths, {
+      visibilityPolicy: this.#activeFishVisibilityPolicy,
+      applyHookedFishLegacySkips: false,
+    });
+    return paths.join("|");
+  }
+
+  #collectVisibleScalarPaths(obj, path, output, options = {}) {
+    if (!obj || typeof obj !== "object") return;
+
+    for (const key in obj) {
+      if (this.#shouldSkipKey(path, key, options)) continue;
+
+      const value = obj[key];
+      const currentPath = [...path, key];
+      if (options.visibilityPolicy?.isVisible?.(currentPath, value) === false) {
+        continue;
+      }
+
+      if (value && typeof value === "object") {
+        this.#collectVisibleScalarPaths(value, currentPath, output, options);
+        continue;
+      }
+
+      if (
+        typeof value === "number" ||
+        typeof value === "boolean" ||
+        typeof value === "string"
+      ) {
+        output.push(currentPath.join("."));
+      }
+    }
+  }
+
+  #shouldSkipKey(path, key, options = {}) {
+    if (!options.visibilityPolicy && this.#excludeKeys.includes(key)) return true;
+    if (path[0] === "CONFIG" && path.length === 1 && key === "debug") {
+      return true;
+    }
+    if (options.applyHookedFishLegacySkips !== false) {
+      if (
+        path[0] === "HOOKED_FISH" &&
+        (key === "weight" ||
+          key === "level" ||
+          key === "maxLevel" ||
+          key === "resistance" ||
+          key === "biteSequence")
+      ) {
+        return true;
+      }
+      if (path[0] === "HOOKED_FISH" && path[1] === "physics") {
+        const compatibilityKeys = new Set([
+          "basePower",
+          "baseStamina",
+          "levelBasePower",
+          "staminaWeightMultiplier",
+          "minStaminaActivityMultiplier",
+          "exhaustedSpeedRatio",
+          "baseSpeedMetersPerSec",
+          "agility",
+          "bounceCooldownMs",
+          "dirChangeMinMs",
+          "dirChangeMaxMs",
+          "lastDashTrigger",
+          "behaviors",
+          "pullResistance",
+          "fishRetrieve",
+        ]);
+        if (compatibilityKeys.has(key)) return true;
+      }
+    }
+
+    const isConfigLocationsMap =
+      path[0] === "CONFIG" && path[1] === "locations" && key === "map";
+    const isConfigSpawnsFishes =
+      path[0] === "CONFIG" && path[1] === "spawns" && key === "fishes";
+
+    return isConfigLocationsMap || isConfigSpawnsFishes;
+  }
+
+  #createSectionWithCache(labelStr, parentElement, path = null) {
     let savedStates =
       typeof CacheManager !== "undefined"
         ? CacheManager.get("dev_tools_sections_state", {})
@@ -119,47 +448,74 @@ class DevTools {
           CacheManager.set("dev_tools_sections_state", savedStates);
         }
       },
+      path,
     );
   }
 
-  #buildTree(obj, parentElement, path) {
+  #formatDevToolsKey(key, path) {
+    if (path?.[0] !== "CONFIG" || !this.#configRuntime?.overrideStore)
+      return key;
+    const overridePath = path.slice(1).join(".");
+    return this.#configRuntime.overrideStore.has(overridePath)
+      ? `${key} *`
+      : key;
+  }
+
+  #buildTree(obj, parentElement, path, options = {}) {
     for (const key in obj) {
-      if (this.#excludeKeys.includes(key)) continue;
+      if (this.#shouldSkipKey(path, key, options)) continue;
 
       const val = obj[key];
       const currentPath = [...path, key];
+      if (options.visibilityPolicy?.isVisible?.(currentPath, val) === false) {
+        continue;
+      }
 
       if (Array.isArray(val)) {
         if (val.length > 0 && typeof val[0] === "number") {
           this.#ui.createInputRow(
-            key,
+            this.#formatDevToolsKey(key, currentPath),
             val.join(", "),
             parentElement,
             "array",
             (newVal) => this.#updateConfigValue(currentPath, newVal),
+            currentPath,
           );
         } else if (val.length > 0 && typeof val[0] === "object") {
-          const content = this.#createSectionWithCache(key, parentElement);
+          const content = this.#createSectionWithCache(
+            key,
+            parentElement,
+            currentPath,
+          );
           val.forEach((item, index) => {
             const itemLabel = item.id || item.type || `Item [${index}]`;
             const itemContent = this.#createSectionWithCache(
               itemLabel,
               content,
+              [...currentPath, index],
             );
-            this.#buildTree(item, itemContent, [...currentPath, index]);
+            this.#buildTree(item, itemContent, [...currentPath, index], options);
           });
         }
       } else if (val !== null && typeof val === "object") {
-        const content = this.#createSectionWithCache(key, parentElement);
-        this.#buildTree(val, content, currentPath);
+        const content = this.#createSectionWithCache(
+          key,
+          parentElement,
+          currentPath,
+        );
+        this.#buildTree(val, content, currentPath, options);
       } else if (
         typeof val === "number" ||
         typeof val === "boolean" ||
         typeof val === "string"
       ) {
         if (typeof val === "boolean") {
-          this.#ui.createSwitcherRow(key, val, parentElement, (newVal) =>
-            this.#updateConfigValue(currentPath, newVal),
+          this.#ui.createSwitcherRow(
+            key,
+            val,
+            parentElement,
+            (newVal) => this.#updateConfigValue(currentPath, newVal),
+            currentPath,
           );
         } else if (typeof val === "string") {
           if (key === "currentMethod") {
@@ -169,19 +525,26 @@ class DevTools {
               val,
               parentElement,
               (newVal) => this.#updateConfigValue(currentPath, newVal),
+              currentPath,
             );
           } else {
             this.#ui.createInputRow(
-              key,
+              this.#formatDevToolsKey(key, currentPath),
               val,
               parentElement,
               "string",
               (newVal) => this.#updateConfigValue(currentPath, newVal),
+              currentPath,
             );
           }
         } else {
-          this.#ui.createInputRow(key, val, parentElement, "number", (newVal) =>
-            this.#updateConfigValue(currentPath, newVal),
+          this.#ui.createInputRow(
+            this.#formatDevToolsKey(key, currentPath),
+            val,
+            parentElement,
+            "number",
+            (newVal) => this.#updateConfigValue(currentPath, newVal),
+            currentPath,
           );
         }
       }
@@ -189,24 +552,276 @@ class DevTools {
   }
 
   #updateConfigValue(path, newValue) {
-    // ДИНАМІЧНИЙ ВИБІР КОРЕНЯ: Визначаємо, що саме редагуємо - ITEM_DB чи CONFIG
-    let target = path[0] === "ITEM_DB" ? ITEM_DB : CONFIG;
+    const root = this.#resolveEditableRoot(path[0]);
+    if (!root) return;
 
-    // Проходимо по всьому шляху, пропускаючи нульовий індекс (назва кореня)
-    for (let i = 1; i < path.length - 1; i++) {
-      target = target[path[i]];
+    if (path[0] === "CONFIG" && this.#configRuntime) {
+      this.#configRuntime.set(path, newValue);
+      this.#refreshFightPhysicsAdapter();
+    } else {
+      let target = root;
+      for (let i = 1; i < path.length - 1; i++) {
+        target = target[path[i]];
+      }
+      target[path[path.length - 1]] = newValue;
     }
 
-    target[path[path.length - 1]] = newValue;
+    this.#syncDebugConsoleModule(path, newValue);
+    this.#syncHookedFishProfileAliases(path, newValue, root);
+    this.#syncHookedFishLevelBalance(path);
+    if (path[0] === "HOOKED_FISH") {
+      this.#emitHookedFishUpdated(path, newValue, root);
+      return;
+    }
     this.#syncItemDbStatAliases(path, newValue);
     console.log(`[DevTools] Оновлено ${path.join(".")} =`, newValue);
 
-    // Відправляємо подію з повним шляхом (наприклад: ["ITEM_DB", "rods", "rod_test_spin", "engineStats", "basePower"])
     document.dispatchEvent(
       new CustomEvent("config-updated", {
-        detail: { path: path, value: newValue },
+        detail: {
+          path,
+          value: newValue,
+          override: path[0] === "CONFIG",
+        },
       }),
     );
+  }
+
+  #syncDebugConsoleModule(path, newValue) {
+    if (
+      path[0] !== "CONFIG" ||
+      path[1] !== "debug" ||
+      path[2] !== "consoleModules" ||
+      path.length !== 4
+    ) {
+      return;
+    }
+
+    const moduleKey = path[3];
+    if (typeof window !== "undefined") {
+      window.DEBUG_MODULES = window.DEBUG_MODULES || {};
+      window.DEBUG_MODULES[moduleKey] = newValue === true;
+    }
+
+    document.dispatchEvent(
+      new CustomEvent("debug-module-toggled", {
+        detail: { module: moduleKey, enabled: newValue === true },
+      }),
+    );
+  }
+
+  #refreshFightPhysicsAdapter() {
+    if (
+      typeof CONFIG === "undefined" ||
+      typeof FightPhysicsConfigAdapter === "undefined"
+    )
+      return;
+    Object.defineProperty(CONFIG, "fightPhysicsConfig", {
+      value: new FightPhysicsConfigAdapter(CONFIG),
+      enumerable: false,
+      configurable: true,
+    });
+  }
+
+  #renderRuntimeOverrideControls(parentElement) {
+    const content = this.#createSectionWithCache(
+      "🧩 RUNTIME OVERRIDES",
+      parentElement,
+      ["CONFIG_OVERRIDES"],
+    );
+
+    const count = this.#configRuntime?.overrideStore?.entries?.().length || 0;
+    this.#ui.createInfoRow("active overrides", String(count), content);
+    this.#ui.createButtonRow("Reset all overrides", content, () => {
+      this.#configRuntime?.resetAll?.();
+      this.#refreshFightPhysicsAdapter();
+      document.dispatchEvent(
+        new CustomEvent("config-updated", {
+          detail: { path: ["CONFIG"], value: CONFIG, resetAll: true },
+        }),
+      );
+      this.#populatePanel();
+    });
+    this.#ui.createButtonRow("Export overrides", content, () => {
+      const json = JSON.stringify(
+        this.#configRuntime?.exportOverrides?.() || {},
+        null,
+        2,
+      );
+      console.log("[DevTools] Runtime overrides export:", json);
+      if (navigator?.clipboard?.writeText) {
+        navigator.clipboard.writeText(json).catch(() => {});
+      }
+      window.prompt?.("Copy runtime overrides JSON", json);
+    });
+    this.#ui.createButtonRow("Import overrides", content, () => {
+      const json = window.prompt?.("Paste runtime overrides JSON", "{}");
+      if (!json) return;
+      try {
+        this.#configRuntime?.importOverrides?.(JSON.parse(json));
+        this.#refreshFightPhysicsAdapter();
+        document.dispatchEvent(
+          new CustomEvent("config-updated", {
+            detail: { path: ["CONFIG"], value: CONFIG, importOverrides: true },
+          }),
+        );
+        this.#populatePanel();
+      } catch (error) {
+        console.warn("[DevTools] Failed to import runtime overrides", error);
+      }
+    });
+  }
+
+  #resolveEditableRoot(rootName) {
+    if (rootName === "ITEM_DB" && typeof ITEM_DB !== "undefined")
+      return ITEM_DB;
+    if (rootName === "FISH_DB" && typeof FISH_DB !== "undefined")
+      return FISH_DB;
+    if (rootName === "HOOKED_FISH") return this.#liveData?.hookedFish || null;
+    if (rootName === "MAP_DB" && typeof MAP_DB !== "undefined") return MAP_DB;
+    if (rootName === "CONFIG" && typeof CONFIG !== "undefined") return CONFIG;
+    return null;
+  }
+
+  #emitHookedFishUpdated(path, value, fish) {
+    console.log(`[DevTools] Оновлено ${path.join(".")} =`, value);
+    document.dispatchEvent(
+      new CustomEvent("debug-hooked-fish-updated", {
+        detail: { path, value, fish },
+      }),
+    );
+  }
+
+  #syncHookedFishProfileAliases(path, newValue, fish) {
+    if (path[0] !== "HOOKED_FISH" || path[1] !== "physics" || !fish?.physics) {
+      return;
+    }
+
+    const profileName = path[2];
+    const field = path[3];
+    if (!profileName || !field) return;
+
+    const aliasByProfile = {
+      forceProfile: {
+        basePower: "basePower",
+        levelBasePower: "levelBasePower",
+      },
+      staminaProfile: {
+        baseStamina: "baseStamina",
+        staminaWeightMultiplier: "staminaWeightMultiplier",
+        minStaminaActivityMultiplier: "minStaminaActivityMultiplier",
+        exhaustedSpeedRatio: "exhaustedSpeedRatio",
+      },
+      movementProfile: {
+        baseSpeed: "baseSpeed",
+        agility: "agility",
+        bounceCooldownMs: "bounceCooldownMs",
+        dirChangeMinMs: "dirChangeMinMs",
+        dirChangeMaxMs: "dirChangeMaxMs",
+        lastDashTrigger: "lastDashTrigger",
+      },
+    };
+
+    const alias = aliasByProfile[profileName]?.[field];
+    if (alias) {
+      fish.physics[alias] = newValue;
+    }
+  }
+
+  #syncHookedFishLevelBalance(path) {
+    if (path[0] !== "HOOKED_FISH") return;
+
+    const changedKey = path[path.length - 1];
+    if (changedKey !== "weight" && changedKey !== "level") return;
+
+    const fish = this.#liveData?.hookedFish;
+    if (!fish) return;
+
+    const template = this.#findFishTemplate(fish);
+    const ranges = template?.weightConfig?.levelWeightRanges;
+    if (!Array.isArray(ranges) || ranges.length === 0) return;
+
+    const range =
+      changedKey === "weight"
+        ? this.#findLevelRangeByWeight(ranges, fish.weight)
+        : this.#findLevelRangeByLevel(ranges, fish.level);
+    if (!range) return;
+
+    fish.level = Math.max(
+      1,
+      Math.round(Number(range.level) || fish.level || 1),
+    );
+    fish.physics = fish.physics || {};
+    fish.physics.forceProfile = fish.physics.forceProfile || {};
+    fish.physics.movementProfile = fish.physics.movementProfile || {};
+    this.#applyFiniteNumber(
+      fish.physics.forceProfile,
+      "levelBasePower",
+      range.basePower,
+    );
+    this.#applyFiniteNumber(fish.physics, "levelBasePower", range.basePower);
+    const levelSpeed = this.#firstFiniteNumber(
+      range.baseSpeed,
+      range.speedMultiplier,
+      range.speed,
+    );
+    this.#applyFiniteNumber(
+      fish.physics.movementProfile,
+      "baseSpeed",
+      levelSpeed,
+    );
+    this.#applyFiniteNumber(fish.physics, "baseSpeed", levelSpeed);
+  }
+
+  #findFishTemplate(fish) {
+    if (typeof FISH_DB === "undefined" || !Array.isArray(FISH_DB)) return null;
+    return FISH_DB.find((candidate) => candidate?.id === fish?.id) || null;
+  }
+
+  #findLevelRangeByLevel(ranges, level) {
+    const targetLevel = Math.round(Number(level) || 1);
+    return (
+      ranges.find(
+        (range) => Math.round(Number(range?.level) || 0) === targetLevel,
+      ) || null
+    );
+  }
+
+  #findLevelRangeByWeight(ranges, weight) {
+    const value = Number(weight);
+    if (!Number.isFinite(value)) return null;
+
+    let firstRange = null;
+    let lastRange = null;
+    for (const range of ranges) {
+      const min = Number(range?.min);
+      const max = Number(range?.max);
+      if (!Number.isFinite(min) || !Number.isFinite(max)) continue;
+
+      const normalized = {
+        range,
+        min: Math.min(min, max),
+        max: Math.max(min, max),
+      };
+      if (!firstRange) firstRange = normalized;
+      lastRange = normalized;
+      if (value >= normalized.min && value <= normalized.max) return range;
+    }
+
+    if (!firstRange) return null;
+    return value < firstRange.min ? firstRange.range : lastRange.range;
+  }
+
+  #applyFiniteNumber(target, key, value) {
+    if (!Number.isFinite(Number(value))) return;
+    target[key] = Math.max(0, Number(value));
+  }
+
+  #firstFiniteNumber(...values) {
+    for (const value of values) {
+      if (Number.isFinite(Number(value))) return Number(value);
+    }
+    return NaN;
   }
 
   #syncItemDbStatAliases(path, newValue) {
@@ -296,9 +911,11 @@ class DevToolsUI {
   #body;
   #btn;
   #onToggleCallback;
+  #tooltipProvider;
 
-  constructor(onToggleCallback, config) {
+  constructor(onToggleCallback, config, tooltipProvider = null) {
     this.#onToggleCallback = onToggleCallback;
+    this.#tooltipProvider = tooltipProvider;
     this.#initStyles();
     this.#initBtn(config);
     this.#initPanel();
@@ -316,16 +933,19 @@ class DevToolsUI {
     }
   }
 
-  createSection(labelStr, parentElement, isExpanded, onToggle) {
+  createSection(labelStr, parentElement, isExpanded, onToggle, path = null) {
     const section = document.createElement("div");
     section.className = "devtools-section";
+    this.#assignDevToolsPath(section, path);
 
     const title = document.createElement("div");
     title.className = "devtools-section-title";
+    this.#assignDevToolsPath(title, path);
     title.innerHTML = `<span>${isExpanded ? "▼" : "▶"}</span> ${labelStr}`;
 
     const content = document.createElement("div");
     content.className = "devtools-section-content";
+    this.#assignDevToolsPath(content, path);
     content.style.display = isExpanded ? "block" : "none";
 
     title.addEventListener("click", () => {
@@ -342,13 +962,41 @@ class DevToolsUI {
     return content;
   }
 
-  createSwitcherRow(labelStr, initialValue, parentElement, onChangeCallback) {
+  createInfoRow(labelStr, value, parentElement, path = null) {
     const row = document.createElement("div");
     row.className = "devtools-row";
+    this.#assignDevToolsPath(row, path);
+    row.appendChild(this.#createLabelElement(labelStr, path));
+    const valueEl = document.createElement("div");
+    valueEl.className = "devtools-value";
+    valueEl.innerText = value;
+    row.appendChild(valueEl);
+    parentElement.appendChild(row);
+  }
 
-    const label = document.createElement("div");
-    label.className = "devtools-label";
-    label.innerText = labelStr;
+  createButtonRow(labelStr, parentElement, onClickCallback) {
+    const row = document.createElement("div");
+    row.className = "devtools-row";
+    const btn = document.createElement("button");
+    btn.className = "devtools-action-btn";
+    btn.innerText = labelStr;
+    btn.addEventListener("click", onClickCallback);
+    row.appendChild(btn);
+    parentElement.appendChild(row);
+  }
+
+  createSwitcherRow(
+    labelStr,
+    initialValue,
+    parentElement,
+    onChangeCallback,
+    path = null,
+  ) {
+    const row = document.createElement("div");
+    row.className = "devtools-row";
+    this.#assignDevToolsPath(row, path);
+
+    const label = this.#createLabelElement(labelStr, path);
     row.appendChild(label);
 
     const inputElement = document.createElement("label");
@@ -369,13 +1017,12 @@ class DevToolsUI {
     parentElement.appendChild(row);
   }
 
-  createInputRow(key, val, parentElement, type, onChangeCallback) {
+  createInputRow(key, val, parentElement, type, onChangeCallback, path = null) {
     const row = document.createElement("div");
     row.className = "devtools-row";
+    this.#assignDevToolsPath(row, path);
 
-    const label = document.createElement("div");
-    label.className = "devtools-label";
-    label.innerText = key;
+    const label = this.#createLabelElement(key, path);
     row.appendChild(label);
 
     let inputElement;
@@ -413,13 +1060,13 @@ class DevToolsUI {
     currentValue,
     parentElement,
     onChangeCallback,
+    path = null,
   ) {
     const row = document.createElement("div");
     row.className = "devtools-row";
+    this.#assignDevToolsPath(row, path);
 
-    const label = document.createElement("div");
-    label.className = "devtools-label";
-    label.innerText = key;
+    const label = this.#createLabelElement(key, path);
     row.appendChild(label);
 
     const btn = document.createElement("button");
@@ -446,6 +1093,41 @@ class DevToolsUI {
 
     row.appendChild(btn);
     parentElement.appendChild(row);
+  }
+
+  #createLabelElement(rawLabel, path = null) {
+    const labelText = String(rawLabel);
+    const cleanLabelText = labelText.replace(/\s+\*$/u, "");
+    const label = document.createElement("div");
+    label.className = "devtools-label";
+    this.#assignDevToolsPath(label, path);
+    label.dataset.devtoolsKey = cleanLabelText;
+    label.innerText = this.#formatLabelText(labelText);
+    const tooltip = this.#getParameterTooltip(cleanLabelText);
+    const pathText = this.#normalizeDevToolsPath(path);
+    if (tooltip || pathText || labelText.length > 15) {
+      label.title = [pathText, tooltip || labelText].filter(Boolean).join("\n");
+    }
+    return label;
+  }
+
+  #assignDevToolsPath(element, path) {
+    const normalized = this.#normalizeDevToolsPath(path);
+    if (normalized) element.dataset.devtoolsPath = normalized;
+  }
+
+  #normalizeDevToolsPath(path) {
+    if (!path) return "";
+    if (Array.isArray(path)) return path.map(String).join(".");
+    return String(path);
+  }
+
+  #formatLabelText(labelText) {
+    return labelText.length > 15 ? `${labelText.slice(0, 15)}...` : labelText;
+  }
+
+  #getParameterTooltip(labelText) {
+    return this.#tooltipProvider?.getTooltip(labelText) || "";
   }
 
   #initStyles() {

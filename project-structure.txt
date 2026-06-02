@@ -2,6 +2,14 @@
 ├── assets
 │  ├── audio
 │  │  └── bell_ring.mp3
+│  ├── fish
+│  │  └── crucian_stalker
+│  │    ├── crucian_stalker--1.webp
+│  │    ├── crucian_stalker--2.webp
+│  │    ├── crucian_stalker--3.webp
+│  │    ├── crucian_stalker--4.webp
+│  │    ├── crucian_stalker--5.webp
+│  │    └── crucian_stalker--6.webp
 │  └── locations
 │    └── test
 │      ├── bg_test--day.webp
@@ -22,18 +30,30 @@
 │    │  └── eventRoutes.js
 │    └── services
 │      └── eventService.js
+├── CHANGELOG_ARCHIVE.md
+├── CHANGELOG.md
+├── docs
+│  ├── balance_simulator.md
+│  ├── fish_config_architecture.md
+│  ├── fishing_physics_formula_map.md
+│  ├── line_and_rod_stroke_debug.md
+│  ├── physics_units_and_naming.md
+│  ├── runtime_config_overrides.md
+│  └── simplified_fight_physics_model.md
+├── FORCODEX.md
 ├── index.html
 ├── package-lock.json
 ├── package.json
+├── project-structure.txt
 ├── README.md
 ├── src
-│  ├── .tmp.drivedownload
 │  ├── .tmp.driveupload
 │  ├── app
 │  │  ├── adapters.js
 │  │  ├── application.js
 │  │  ├── bite.js
 │  │  ├── bootstrap.js
+│  │  ├── cast_power.js
 │  │  ├── chum.js
 │  │  ├── context.js
 │  │  ├── core
@@ -52,29 +72,191 @@
 │  │  ├── utils.js
 │  │  └── world.js
 │  ├── config
-│  │  └── config.js
+│  │  ├── config.js
+│  │  ├── databases
+│  │  │  ├── fish
+│  │  │  │  ├── fish_categories.js
+│  │  │  │  ├── presets
+│  │  │  │  │  ├── fish_profile_factory.js
+│  │  │  │  │  └── fish_profile_presets.js
+│  │  │  │  └── species
+│  │  │  │    ├── event_fish.js
+│  │  │  │    ├── peaceful_fish.js
+│  │  │  │    ├── predator_fish.js
+│  │  │  │    └── rare_fish.js
+│  │  │  ├── fish_db.js
+│  │  │  ├── item_db.js
+│  │  │  └── map_db.js
+│  │  ├── metadata
+│  │  │  ├── dev_tool_parameter_descriptions.json
+│  │  │  ├── overlay_metric_descriptions.json
+│  │  │  └── parameter_labels.json
+│  │  ├── physics
+│  │  │  ├── environment_physics_config.js
+│  │  │  ├── fight_physics_config.js
+│  │  │  ├── physics_config_adapter.js
+│  │  │  ├── physics_config.js
+│  │  │  ├── physics_formula_map.js
+│  │  │  ├── physics_units_and_naming.js
+│  │  │  ├── retrieve_physics_config.js
+│  │  │  ├── tackle_physics_config.js
+│  │  │  └── tension_physics_config.js
+│  │  ├── project_version.js
+│  │  ├── runtime
+│  │  │  ├── config_override_store.js
+│  │  │  ├── immutable_config.js
+│  │  │  └── resolved_config_provider.js
+│  │  └── validation
+│  │    └── config_schema_validator.js
 │  ├── core
-│  │  └── core.js
+│  │  ├── casting_distance.js
+│  │  ├── core.js
+│  │  ├── fishing
+│  │  │  ├── drag_force_calculator.js
+│  │  │  ├── fish_retrieve_result.js
+│  │  │  ├── landing_lift_tension_calculator.js
+│  │  │  ├── landing_policy.js
+│  │  │  ├── line_tension_calculator.js
+│  │  │  ├── reel_auto_recovery_calculator.js
+│  │  │  ├── reel_hold_recovery_system.js
+│  │  │  ├── retrieve_policy.js
+│  │  │  ├── rod_axis_stroke_state.js
+│  │  │  ├── rod_pull_calculator.js
+│  │  │  ├── rod_pull_state.js
+│  │  │  ├── rod_stroke_state.js
+│  │  │  ├── rod_stroke_tracker.js
+│  │  │  ├── simple_fight_force_calculator.js
+│  │  │  └── slack_calculator.js
+│  │  └── line
+│  │    ├── line_allocation_policy.js
+│  │    ├── line_inventory_controller.js
+│  │    └── line_spool_state.js
 │  ├── debug
+│  │  ├── core
+│  │  │  ├── debug_console.js
+│  │  │  ├── debug_context.js
+│  │  │  ├── debug_event_binder.js
+│  │  │  ├── debug_module_registry.js
+│  │  │  └── null_debug_runtime.js
 │  │  ├── debug.js
 │  │  ├── dev_tools.js
-│  │  └── overlay.js
+│  │  ├── god_mode.js
+│  │  ├── modules
+│  │  │  ├── base_debug_module.js
+│  │  │  ├── bite_ticks_debug_module.js
+│  │  │  ├── catch_time_debug_module.js
+│  │  │  ├── deviations_debug_module.js
+│  │  │  ├── exhaustion_debug_module.js
+│  │  │  ├── forces_debug_module.js
+│  │  │  ├── location_debug_module.js
+│  │  │  ├── map_debug_module.js
+│  │  │  ├── net_debug_module.js
+│  │  │  ├── prediction_debug_module.js
+│  │  │  ├── rod_stroke_debug_module.js
+│  │  │  ├── stamina_debug_module.js
+│  │  │  └── tension_debug_module.js
+│  │  ├── overlay
+│  │  │  ├── config
+│  │  │  │  └── overlay_modules_config.js
+│  │  │  ├── core
+│  │  │  │  ├── overlay_controller.js
+│  │  │  │  ├── overlay_module_base.js
+│  │  │  │  ├── overlay_module_registry.js
+│  │  │  │  └── overlay_update_loop.js
+│  │  │  ├── dom
+│  │  │  │  ├── overlay_dom_adapter.js
+│  │  │  │  ├── overlay_metric_info_bridge.js
+│  │  │  │  ├── overlay_scale_controls.js
+│  │  │  │  └── overlay_style_installer.js
+│  │  │  ├── modules
+│  │  │  │  ├── behavior_overlay_module.js
+│  │  │  │  ├── chances_detail_overlay_module.js
+│  │  │  │  ├── chum_overlay_module.js
+│  │  │  │  ├── debuffs_overlay_module.js
+│  │  │  │  ├── echo_overlay_module.js
+│  │  │  │  ├── fight_physics
+│  │  │  │  │  ├── fight_auto_recovery_section.js
+│  │  │  │  │  ├── fight_drag_section.js
+│  │  │  │  │  ├── fight_fish_section.js
+│  │  │  │  │  ├── fight_line_section.js
+│  │  │  │  │  ├── fight_movement_section.js
+│  │  │  │  │  ├── fight_physics_overlay_module.js
+│  │  │  │  │  ├── fight_reel_hold_section.js
+│  │  │  │  │  ├── fight_rod_control_section.js
+│  │  │  │  │  ├── fight_rod_hold_section.js
+│  │  │  │  │  ├── fight_rod_stroke_section.js
+│  │  │  │  │  ├── fight_section_base.js
+│  │  │  │  │  └── fight_tension_section.js
+│  │  │  │  ├── fish_power_overlay_module.js
+│  │  │  │  ├── fish_states_overlay_module.js
+│  │  │  │  ├── live_forces_overlay_module.js
+│  │  │  │  ├── player_max_overlay_module.js
+│  │  │  │  └── worst_case_overlay_module.js
+│  │  │  ├── overlay_bootstrap.js
+│  │  │  └── services
+│  │  │    ├── overlay_console_metric_inspector.js
+│  │  │    ├── overlay_html_builder.js
+│  │  │    ├── overlay_metric_catalog.js
+│  │  │    ├── overlay_metric_resolver.js
+│  │  │    ├── overlay_settings_store.js
+│  │  │    ├── overlay_value_formatter.js
+│  │  │    └── worst_case_force_debug_selector.js
+│  │  └── services
+│  │    ├── active_fish_dev_tools_schema.js
+│  │    ├── debug_data_selectors.js
+│  │    ├── debug_formatters.js
+│  │    └── location_debug_data_provider.js
 │  ├── entities
 │  │  ├── fish.js
 │  │  └── tackle.js
+│  ├── input
+│  │  └── pull_input_mapper.js
 │  ├── render
 │  │  └── renderer.js
 │  ├── systems
 │  │  ├── bite_system.js
 │  │  ├── chum_system.js
+│  │  ├── drag_system.js
+│  │  ├── fight_physics_pipeline.js
+│  │  ├── fight_physics_system.js
+│  │  ├── fish_force_system.js
+│  │  ├── fish_retrieve_system.js
 │  │  ├── inventory_system.js
-│  │  └── physics_system.js
+│  │  ├── line_system.js
+│  │  ├── player_force_system.js
+│  │  ├── reel_system.js
+│  │  ├── rod_lateral_control_system.js
+│  │  ├── rod_pull_system.js
+│  │  ├── rod_visual_offset_system.js
+│  │  ├── stamina_system.js
+│  │  ├── tackle_stress_system.js
+│  │  └── tension_system.js
 │  ├── ui
 │  │  ├── styles
 │  │  │  └── style.css
-│  │  └── ui.js
+│  │  ├── ui.js
+│  │  └── version_badge.js
 │  └── world
 │    └── world.js
 └── utils
+  ├── cast-power-check.js
+  ├── catch-resolution-check.js
+  ├── catch-resolution-debug-check.js
+  ├── check-js.js
+  ├── config-overrides-check.js
   ├── convert-images.js
-  └── local-bridge.js
+  ├── dev-server.js
+  ├── fight-systems-check.js
+  ├── fish-db-structure-check.js
+  ├── fish-speed-delta-check.js
+  ├── fps-physics-check.js
+  ├── game-cycle-check.js
+  ├── inventory-line-systems-check.js
+  ├── local-bridge.js
+  ├── physics-formula-golden-check.js
+  ├── project-version-check.js
+  ├── rod-control-ux-check.js
+  ├── rod-pull-systems-check.js
+  ├── set-project-version.js
+  ├── simulate-fish-fight.js
+  └── validate-config.js

@@ -5,31 +5,58 @@ class BiteSystem {
   #overDepthPenaltyMult;
   #passivePullBiteChanceMultiplier;
   #lineConfig;
+  #runtimeConfig;
   #guaranteedBiteCooldownRange;
   #guaranteedBiteCooldownRemaining = 0;
+  #cooldownDebugTimer = 0;
   #possibleBitesBuffer;
   #possibleBiteChancesBuffer;
   #rng;
+  #debugEvents;
+  #tickIndex = 0;
 
-  constructor(biteConfig, runtimeConfig, rng = null) {
-    const physicsConfig = runtimeConfig?.physics || runtimeConfig || {};
+  constructor(biteConfig, runtimeConfig, rng = null, debugEvents = null) {
+    const physicsConfig = this.#resolvePhysicsConfig(runtimeConfig);
     const lineConfig = runtimeConfig?.ui?.line || runtimeConfig?.line || {};
-    this.#fishDatabase = biteConfig.fishes;
-    this.#tickRate = biteConfig.tickRateMs;
+    this.#runtimeConfig = runtimeConfig || {};
+    this.#fishDatabase = this.#resolveFishDatabase(biteConfig);
+    this.#tickRate = biteConfig?.tickRateMs ?? 1000;
     this.#timer = 0;
     this.#overDepthPenaltyMult = physicsConfig?.overDepthPenaltyMult || 0.5;
     this.#lineConfig = lineConfig;
     this.#passivePullBiteChanceMultiplier =
       lineConfig?.passivePullBiteChanceMultiplier ?? 1.0;
     this.#guaranteedBiteCooldownRange =
-      physicsConfig?.guaranteedBiteCooldownMs || [2000, 15000];
+      physicsConfig?.getLureRetrieveConfig?.()?.guaranteedBiteCooldownMs ||
+      [2000, 15000];
     this.#possibleBitesBuffer = [];
     this.#possibleBiteChancesBuffer = [];
     this.#rng = rng || { next: () => Math.random() };
+    this.#debugEvents = debugEvents || null;
+  }
+
+  setFishDatabase(fishDatabase) {
+    this.#fishDatabase = this.#resolveFishDatabase(fishDatabase);
+  }
+
+  #resolvePhysicsConfig(runtimeConfig) {
+    if (runtimeConfig?.fightPhysicsConfig) return runtimeConfig.fightPhysicsConfig;
+    if (typeof FightPhysicsConfigAdapter !== "undefined") {
+      return new FightPhysicsConfigAdapter(runtimeConfig);
+    }
+    return null;
   }
 
   reset() {
     this.#timer = 0;
+    this.#cooldownDebugTimer = 0;
+    this.#tickIndex = 0;
+  }
+
+  #resolveFishDatabase(source) {
+    if (Array.isArray(source)) return source;
+    if (Array.isArray(source?.fishes)) return source.fishes;
+    return [];
   }
 
   #lerp(start, end, t) {
@@ -37,7 +64,41 @@ class BiteSystem {
   }
 
   #clamp01(value) {
-    return Math.max(0, Math.min(1, value));
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return 0;
+    return Math.max(0, Math.min(1, parsed));
+  }
+
+  #getGodModeConfig() {
+    const godMode = this.#runtimeConfig?.debug?.godMode || null;
+    return godMode?.enabled ? godMode : null;
+  }
+
+  #clampChance(chance) {
+    return this.#clamp01(chance);
+  }
+
+  #applyGodModeChanceOverride(chance) {
+    const godMode = this.#getGodModeConfig();
+    if (!godMode?.fixedBiteChanceEnabled) return this.#clampChance(chance);
+
+    const percent = Number(godMode.fixedBiteChancePercent);
+    const normalized = Number.isFinite(percent) ? percent / 100 : 1;
+    return this.#clampChance(normalized);
+  }
+
+  #applyGodModeBiteSequence(sequence) {
+    if (!sequence) return sequence;
+
+    const godMode = this.#getGodModeConfig();
+    const mode = String(godMode?.biteSequenceMode || "default").toLowerCase();
+    if (mode !== "guaranteed" && mode !== "normal") return sequence;
+
+    return {
+      ...sequence,
+      chanceGuaranteed: mode === "guaranteed" ? 1.0 : 0.0,
+      chanceNormal: mode === "guaranteed" ? 0.0 : 1.0,
+    };
   }
 
   #getDepthRatio(hookDepth, depthConfig) {
@@ -112,14 +173,92 @@ class BiteSystem {
     return genWeight < firstRange.min ? firstRange.level : lastRange.level;
   }
 
+  #resolveLevelBasePower(weightConfig, level) {
+    const ranges = weightConfig?.levelWeightRanges;
+    if (!Array.isArray(ranges)) return 1;
+
+    const match = ranges.find(
+      (range) => Number(range?.level) === Number(level),
+    );
+    return Number.isFinite(Number(match?.basePower))
+      ? Math.max(0, Number(match.basePower))
+      : 1;
+  }
+
+  #resolveLevelAverageWeightKg(weightConfig, level, depthConfig = null) {
+    const ranges = weightConfig?.levelWeightRanges;
+    const match = Array.isArray(ranges)
+      ? ranges.find((range) => Number(range?.level) === Number(level))
+      : null;
+    const rangeMin = Number(match?.min);
+    const rangeMax = Number(match?.max);
+    if (Number.isFinite(rangeMin) && Number.isFinite(rangeMax)) {
+      return (Math.min(rangeMin, rangeMax) + Math.max(rangeMin, rangeMax)) / 2;
+    }
+
+    const maxLevel = Math.max(1, Math.round(Number(weightConfig?.maxLevel) || 1));
+    const currentLevel = Math.max(1, Math.round(Number(level) || 1));
+    const globalMin = Number(depthConfig?.minWeightAtMinDepth);
+    const globalMax = Number(depthConfig?.maxWeightAtMaxDepth);
+    if (!Number.isFinite(globalMin) || !Number.isFinite(globalMax)) return null;
+
+    const low = Math.min(globalMin, globalMax);
+    const high = Math.max(globalMin, globalMax);
+    const step = (high - low) / maxLevel;
+    return low + step * (currentLevel - 0.5);
+  }
+
+  #buildFishPhysics(fishPhysics, weightConfig, level) {
+    const levelBasePower = this.#resolveLevelBasePower(weightConfig, level);
+    if (typeof FishPhysicsProfile !== "undefined") {
+      return FishPhysicsProfile.toRuntimeConfig(fishPhysics || {}, {
+        levelBasePower,
+      });
+    }
+
+    return {
+      ...(fishPhysics || {}),
+      levelBasePower,
+    };
+  }
+
   #next() {
     return this.#rng.next();
   }
 
   #chance(probability) {
-    return typeof this.#rng.chance === "function"
-      ? this.#rng.chance(probability)
-      : this.#next() < probability;
+    return this.#rollChance(probability).success;
+  }
+
+  #rollChance(probability) {
+    const normalized = this.#clamp01(probability);
+    const roll = this.#next();
+    return {
+      probability: normalized,
+      roll,
+      success: roll < normalized,
+    };
+  }
+
+  #formatPercent(value) {
+    return `${(this.#clamp01(value) * 100).toFixed(2)}%`;
+  }
+
+  #emitDebugEvent(type, detail) {
+    if (!this.#debugEvents || typeof this.#debugEvents.emit !== "function")
+      return;
+    this.#debugEvents.emit(type, detail);
+  }
+
+  #buildGodModeDebug() {
+    const godMode = this.#getGodModeConfig();
+    if (!godMode) return null;
+    return {
+      enabled: true,
+      fixedBiteChanceEnabled: godMode.fixedBiteChanceEnabled === true,
+      fixedBiteChancePercent: godMode.fixedBiteChancePercent,
+      biteSequenceMode: godMode.biteSequenceMode || "default",
+    };
   }
 
   #int(min, max) {
@@ -154,6 +293,7 @@ class BiteSystem {
     max = Math.max(min, Math.floor(max));
     this.#guaranteedBiteCooldownRemaining =
       min === max ? min : this.#int(min, max);
+    return this.#guaranteedBiteCooldownRemaining;
   }
 
   #calculateFishChance(fish, envData, playerGear) {
@@ -205,7 +345,7 @@ class BiteSystem {
 
     chance *= this.#getDepthChanceMultiplier(hookDepth, dc);
 
-    return chance;
+    return this.#applyGodModeChanceOverride(chance);
   }
 
   #generateFishInstance(fish, currentDepth, playerGear) {
@@ -250,10 +390,12 @@ class BiteSystem {
       chosenBiteSequence = isActiveLure
         ? fish.biteMechanics.active
         : fish.biteMechanics.passive;
+      chosenBiteSequence = this.#applyGodModeBiteSequence(chosenBiteSequence);
     }
 
     const level = this.#resolveFishLevel(genWeight, weightRatio, wc);
     const maxLevel = wc.maxLevel || level;
+    const levelAverageWeightKg = this.#resolveLevelAverageWeightKg(wc, level, dc);
     const uniqueLevel = fish.visual?.uniqueLevel;
     const isUnique =
       fish.isUnique === true ||
@@ -267,8 +409,8 @@ class BiteSystem {
       weight: genWeight,
       level,
       maxLevel,
-      resistance: this.#lerp(wc.baseResistance, wc.maxResistance, weightRatio),
-      physics: fish.physics,
+      levelAverageWeightKg,
+      physics: this.#buildFishPhysics(fish.physics, wc, level),
       biteSequence: chosenBiteSequence,
       imagePath: this.#resolveFishImagePath(fish, level),
       isUnique,
@@ -286,31 +428,107 @@ class BiteSystem {
   }
 
   evaluateBite(dt, envData, playerGear) {
-    if (this.#updateGuaranteedBiteCooldown(dt)) return null;
+    const cooldownBeforeMs = this.#guaranteedBiteCooldownRemaining;
+    if (this.#updateGuaranteedBiteCooldown(dt)) {
+      this.#cooldownDebugTimer += dt;
+      if (this.#cooldownDebugTimer >= this.#tickRate) {
+        this.#cooldownDebugTimer -= this.#tickRate;
+        this.#tickIndex++;
+        this.#emitDebugEvent("debug-bite-tick", {
+          mode: "WAITING",
+          tickIndex: this.#tickIndex,
+          tickRateMs: this.#tickRate,
+          result: "COOLDOWN",
+          checkedFishCount: 0,
+          cooldown: {
+            active: true,
+            beforeMs: cooldownBeforeMs,
+            afterMs: this.#guaranteedBiteCooldownRemaining,
+            reason: "guaranteed_bite_cooldown",
+          },
+          godMode: this.#buildGodModeDebug(),
+        });
+      }
+      return null;
+    }
+    this.#cooldownDebugTimer = 0;
 
     this.#timer += dt;
     if (this.#timer < this.#tickRate) return null;
     this.#timer -= this.#tickRate;
+    this.#tickIndex++;
 
     this.#possibleBitesBuffer.length = 0;
     this.#possibleBiteChancesBuffer.length = 0;
 
+    const fishRolls = [];
+
     for (let i = 0; i < this.#fishDatabase.length; i++) {
       const fish = this.#fishDatabase[i];
       const chance = this.#calculateFishChance(fish, envData, playerGear);
+      const rollResult = chance > 0 ? this.#rollChance(chance) : null;
+      const success = rollResult ? rollResult.success : false;
 
-      if (chance > 0 && this.#chance(chance)) {
+      fishRolls.push({
+        id: fish.id,
+        name: fish.name,
+        chance,
+        chancePercent: this.#formatPercent(chance),
+        roll: rollResult ? rollResult.roll : null,
+        rollPercent: rollResult ? this.#formatPercent(rollResult.roll) : "—",
+        result: success ? "КЛЮНУЛО" : "НЕ КЛЮНУЛО",
+        skipped: chance <= 0,
+      });
+
+      if (success) {
         this.#possibleBitesBuffer.push(fish);
         this.#possibleBiteChancesBuffer.push(chance);
       }
     }
 
+    let selected = null;
+    let selectedChance = 0;
+    let selectedIndex = -1;
+    let cooldownStartedMs = 0;
+
     if (this.#possibleBitesBuffer.length > 0) {
-      const selectedIndex = this.#int(0, this.#possibleBitesBuffer.length - 1);
-      const selected = this.#possibleBitesBuffer[selectedIndex];
-      if (this.#possibleBiteChancesBuffer[selectedIndex] >= 1.0) {
-        this.#startGuaranteedBiteCooldown();
+      selectedIndex = this.#int(0, this.#possibleBitesBuffer.length - 1);
+      selected = this.#possibleBitesBuffer[selectedIndex];
+      selectedChance = this.#possibleBiteChancesBuffer[selectedIndex];
+      if (selectedChance >= 1.0) {
+        cooldownStartedMs = this.#startGuaranteedBiteCooldown();
       }
+    }
+
+    this.#emitDebugEvent("debug-bite-tick", {
+      mode: "WAITING",
+      tickIndex: this.#tickIndex,
+      tickRateMs: this.#tickRate,
+      result: selected ? "КЛЮНУЛО" : "НЕ КЛЮНУЛО",
+      checkedFishCount: this.#fishDatabase.length,
+      fishRolls,
+      bitesCount: this.#possibleBitesBuffer.length,
+      selectedFish: selected
+        ? {
+            id: selected.id,
+            name: selected.name,
+            index: selectedIndex,
+            chance: selectedChance,
+            chancePercent: this.#formatPercent(selectedChance),
+          }
+        : null,
+      cooldown: {
+        active: cooldownStartedMs > 0,
+        startedMs: cooldownStartedMs,
+        reason:
+          cooldownStartedMs > 0
+            ? "100% bite selected → cooldown started"
+            : null,
+      },
+      godMode: this.#buildGodModeDebug(),
+    });
+
+    if (selected) {
       // <-- ЗМІНЕНО: тепер передаємо playerGear сюди
       return this.#generateFishInstance(
         selected,
@@ -332,6 +550,7 @@ class BiteSystem {
         results.push({
           name: fish.name,
           chance: (chance * 100).toFixed(2) + "%",
+          chanceValue: chance,
           breakdown: this.#getBreakdown(fish, envData, playerGear),
         });
       }

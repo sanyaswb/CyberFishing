@@ -37,7 +37,22 @@ class GameCompositionRoot {
     const locId = location.id;
     const locCfg = location.config;
     const projector = new ViewportProjector(this.#config.locations, locId);
-    const inventory = new InventoryManager(ITEM_DB, this.#config.player);
+    const physicsConfig =
+      this.#config.fightPhysicsConfig ||
+      (typeof FightPhysicsConfigAdapter !== "undefined"
+        ? new FightPhysicsConfigAdapter(this.#config)
+        : null);
+    const castDistanceCalculator = new CastDistanceCalculator(this.#config);
+    const lineRules = new LineCompatibilityRules(
+      physicsConfig?.getLineConfig?.() || {},
+    );
+    const inventory = new InventoryManager(
+      ITEM_DB,
+      this.#config.player,
+      undefined,
+      castDistanceCalculator,
+      lineRules,
+    );
     const eq = inventory.getEquipped();
     const chumConfigObj = { baits: {}, deliveryMethods: {} };
     if (typeof ITEM_DB !== "undefined" && ITEM_DB.chums) {
@@ -68,11 +83,11 @@ class GameCompositionRoot {
         rng,
         now: () => clock.realNow,
       }),
-      bite: new BiteSystem(this.#config.spawns, this.#config, rng),
+      bite: new BiteSystem(this.#config.spawns, this.#config, rng, debugEvents),
       inventory,
     };
     systems.inventoryUI = new InventoryUI(systems.inventory);
-    const equipmentRules = new EquipmentRules();
+    const equipmentRules = new EquipmentRules(castDistanceCalculator);
     const baitRules = new BaitRules();
     const castRules = new CastRules(equipmentRules);
     const biteRules = new BiteRules(baitRules);
@@ -104,8 +119,12 @@ class GameCompositionRoot {
       devFlags,
       equipmentRules,
       baitRules,
+      debugEvents,
     });
-    const net = new Net(eq.net || { active: false, maxWeight: 0, length: 10 });
+    const net = new Net(
+      eq.net || { active: false, maxWeight: 0, length: 10 },
+      physicsConfig?.getDistanceConfig?.() || {},
+    );
     const castManager = new CastManager();
     const depthUI = new DepthSelectorUI();
     const timeUI = new TimeDisplayUI();
@@ -136,6 +155,7 @@ class GameCompositionRoot {
       devFlags,
       audio,
       canvasMetrics,
+      castDistanceCalculator,
       equipmentRules,
       baitRules,
       castRules,
@@ -168,12 +188,19 @@ class GameCompositionRoot {
       baitRules: runtime.baitRules,
       getRodVirtualPos: appPorts.getRodVirtualPos,
       getDynamicBounds: appPorts.getDynamicBounds,
+      debugEvents,
     });
 
     const fightService = new FightService({
       config,
       rng,
-      fightSessionFactory: new FightSessionFactory({ config, rng }),
+      devFlags,
+      fightSessionFactory: new FightSessionFactory({
+        config,
+        rng,
+        devFlags,
+        castDistanceCalculator: runtime.castDistanceCalculator,
+      }),
     });
 
     const debugService = new DebugService(config);

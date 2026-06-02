@@ -1,0 +1,221 @@
+{
+  "Fish weight": {
+    "formula": "runtime value: hookedFish.weight",
+    "description": "Фактична вага поточної підсіченої риби.",
+    "paths": [
+      "HOOKED_FISH.weight"
+    ]
+  },
+  "Water weight / passive force": {
+    "formula": "fishPassiveKg = fishWeightKg * tautBodyResistancePerKg * fishBasePower",
+    "description": "Базова вага риби у воді на натягнутій лісці.",
+    "paths": [
+      "HOOKED_FISH.weight",
+      "CONFIG.physics.water.tautBodyResistancePerKg",
+      "HOOKED_FISH.physics.forceProfile.basePower"
+    ]
+  },
+  "State force multiplier": {
+    "formula": "fishActiveKg = fishPassiveKg * stateForceMultiplier * directionMultiplier",
+    "description": "Множник сили поточного стану риби. Впливає на active fish force і tension.",
+    "paths": [
+      "HOOKED_FISH.physics.behaviorProfile.behaviors.<state>.forceMultiplier"
+    ]
+  },
+  "Direction multiplier": {
+    "formula": "directionMultiplier = toward/side/away multiplier from fish direction vs player",
+    "description": "Множник напрямку руху риби відносно гравця.",
+    "paths": [
+      "CONFIG.physics.fight.directionForce.towardPlayerMultiplier",
+      "CONFIG.physics.fight.directionForce.sideMultiplier",
+      "CONFIG.physics.fight.directionForce.awayMultiplier"
+    ]
+  },
+  "Active fish force": {
+    "formula": "fishActiveKg = fishPassiveKg * stateForceMultiplier * directionMultiplier",
+    "description": "Активна сила риби від стану і напрямку.",
+    "paths": [
+      "HOOKED_FISH.physics.behaviorProfile.behaviors.<state>.forceMultiplier",
+      "CONFIG.physics.fight.directionForce"
+    ]
+  },
+  "Fish opposition": {
+    "formula": "fishOppositionKg = fishPassiveKg + fishActiveKg",
+    "description": "Сумарна сила риби, яку має перевищити rod hold.",
+    "paths": [
+      "CONFIG.physics.water.tautBodyResistancePerKg",
+      "CONFIG.physics.fight.directionForce"
+    ]
+  },
+  "Rod hold": {
+    "formula": "rodHoldKg charges from 0 to rodHoldMaxKg by rodHold.chargeTimeSeconds",
+    "description": "Повна сила гравця проти риби. Не дорівнює tension.",
+    "paths": [
+      "CONFIG.physics.fight.rodHold.chargeTimeSeconds"
+    ]
+  },
+  "Rod hold max": {
+    "formula": "rodHoldMaxKg = max(0, rodLimitKg - fishTensionKg)",
+    "description": "Скільки hold-сили ще дозволяє вудка.",
+    "paths": [
+      "HOOKED_FISH.tackle.rod.maxLoadKg",
+      "DEBUG_DATA.fishTensionKg"
+    ]
+  },
+  "Angle multiplier": {
+    "formula": "effectiveRodHoldKg = rodHoldKg * rodAngleMultiplier",
+    "description": "Кутовий штраф до сили гравця.",
+    "paths": [
+      "CONFIG.physics.fight.rodHold.anglePenalty"
+    ]
+  },
+  "Effective rod hold": {
+    "formula": "effectiveRodHoldKg = rodHoldKg * rodAngleMultiplier",
+    "description": "Фактична hold-сила гравця проти риби після кутового штрафу.",
+    "paths": [
+      "CONFIG.physics.fight.rodHold.anglePenalty"
+    ]
+  },
+  "Hold tension ratio": {
+    "formula": "rawPlayerHoldTensionKg = effectiveRodHoldKg * holdTensionRatio",
+    "description": "Яка частина hold-сили йде в tension. Менше значення = краща вудка.",
+    "paths": [
+      "HOOKED_FISH.tackle.rod.holdTensionRatio"
+    ]
+  },
+  "Movable tension cap": {
+    "formula": "capKg = fishOppositionKg * movableHoldTensionCapRatio",
+    "description": "Якщо риба може рухатися, hold не може додати в tension більше цього cap.",
+    "paths": [
+      "DEBUG_DATA.fishOppositionKg",
+      "CONFIG.physics.fight.tension.movableHoldTensionCapRatio"
+    ]
+  },
+  "Hold to tension": {
+    "formula": "playerHoldTensionKg = fishCanMove ? min(rawHoldTension, capKg) : rawHoldTension",
+    "description": "Частина hold-сили, яка реально навантажує снасть.",
+    "paths": [
+      "CONFIG.physics.fight.tension.movableHoldTensionCapRatio"
+    ]
+  },
+  "Net force": {
+    "formula": "fishWonForceKg = max(0, fishOppositionKg - effectiveRodHoldKg)",
+    "description": "Чиста різниця сил. >0 перемагає гравець, <0 перемагає риба.",
+    "paths": [
+      "DEBUG_DATA.effectiveRodHoldKg",
+      "DEBUG_DATA.fishOppositionKg"
+    ]
+  },
+  "Winner": {
+    "formula": "winner = sign(effectiveRodHoldKg - fishOppositionKg)",
+    "description": "Хто зараз рухає систему: player/fish/balanced.",
+    "paths": [
+      "DEBUG_DATA.netForceKg"
+    ]
+  },
+  "Water resistance": {
+    "formula": "escapeSpeed = sqrt(fishWonForceKg / waterMotionResistance) * waterSpeedMultiplier",
+    "description": "Глобальний уповільнювач руху у воді.",
+    "paths": [
+      "CONFIG.physics.water.motionResistance"
+    ]
+  },
+  "Speed multiplier": {
+    "formula": "speedMps = sqrt(abs(netForceKg) / motionResistance) * waterSpeedMultiplier",
+    "description": "Ігровий множник швидкості після опору води.",
+    "paths": [
+      "CONFIG.physics.water.speedMultiplier"
+    ]
+  },
+  "Speed m/s": {
+    "formula": "speedMps is calculated from netForceKg and water settings",
+    "description": "Фінальна швидкість руху у метрах за секунду.",
+    "paths": [
+      "DEBUG_DATA.netForceKg",
+      "CONFIG.physics.water.motionResistance",
+      "CONFIG.physics.water.speedMultiplier"
+    ]
+  },
+  "Speed px/s": {
+    "formula": "speedPxPerSecond = speedMps * pixelsPerMeter",
+    "description": "Canvas-швидкість руху.",
+    "paths": [
+      "CONFIG.physics.simulation.pixelsPerMeter"
+    ]
+  },
+  "Fish tension": {
+    "formula": "fishTensionKg = lineSlack ? 0 : fishOppositionKg",
+    "description": "Натяг, який створює риба.",
+    "paths": [
+      "DEBUG_DATA.fishOppositionKg"
+    ]
+  },
+  "Player tension": {
+    "formula": "playerHoldTensionKg = capped hold tension contribution",
+    "description": "Натяг, який створює hold гравця.",
+    "paths": [
+      "DEBUG_DATA.playerHoldTensionKg"
+    ]
+  },
+  "Total tension": {
+    "formula": "totalTensionKg = fishTensionKg + playerHoldTensionKg",
+    "description": "Фінальне навантаження на снасть.",
+    "paths": [
+      "DEBUG_DATA.fishTensionKg",
+      "DEBUG_DATA.playerHoldTensionKg"
+    ]
+  },
+  "Rod stress": {
+    "formula": "rodStressRatio = totalTensionKg / rodLimitKg",
+    "description": "Відсоток навантаження на вудку.",
+    "paths": [
+      "DEBUG_DATA.totalTensionKg",
+      "DEBUG_DATA.rodMaxLoadKg"
+    ]
+  },
+  "Line stress": {
+    "formula": "lineStressRatio = totalTensionKg / lineLimitKg",
+    "description": "Відсоток навантаження на ліску.",
+    "paths": [
+      "DEBUG_DATA.totalTensionKg",
+      "DEBUG_DATA.lineMaxLoadKg"
+    ]
+  },
+  "Hook stress": {
+    "formula": "hookStressRatio = totalTensionKg / hookLimitKg",
+    "description": "Відсоток навантаження на гачок.",
+    "paths": [
+      "DEBUG_DATA.totalTensionKg",
+      "DEBUG_DATA.hookMaxLoadKg"
+    ]
+  },
+  "Reel hold active": {
+    "formula": "reelHoldActive = rodStrokeIsFull && playerIsHolding && reelSafeMarginKg > 0",
+    "description": "Підмотка катушкою після повного ходу вудки.",
+    "paths": [
+      "DEBUG_DATA.holdReelRecoverActive"
+    ]
+  },
+  "Reel safe margin": {
+    "formula": "reelSafeMarginKg = reelHoldLimitKg - totalTensionKg",
+    "description": "Запас катушки для безпечної підмотки.",
+    "paths": [
+      "DEBUG_DATA.holdReelRecoverReelMaxLoadKg",
+      "DEBUG_DATA.totalTensionKg"
+    ]
+  },
+  "Reel retrieve speed": {
+    "formula": "reelRetrieveSpeedMps = baseReelRetrieveSpeedMps * clamp01(reelSafeMarginKg / reelHoldLimitKg) * bearingBonus",
+    "description": "Швидкість підмотки катушкою у reelHold.",
+    "paths": [
+      "DEBUG_DATA.holdReelRecoverSpeedMps"
+    ]
+  },
+  "Reel blocked reason": {
+    "formula": "blocked reason explains why reelHold is not active",
+    "description": "Причина, чому підмотка катушкою зараз не працює.",
+    "paths": [
+      "DEBUG_DATA.holdReelRecoverBlockedReason"
+    ]
+  }
+}

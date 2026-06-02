@@ -273,6 +273,7 @@
     virtualBottomY,
     locationsConfig,
     catchZoneUIConfig,
+    zoneContext = null,
   ) {
     if (!locationsConfig.debugVisuals) return;
 
@@ -286,24 +287,89 @@
     ).y;
 
     const showCatch = locationsConfig.showCatchZone !== false;
+    const showLastDash = locationsConfig.showLastDashZone === true;
     const showNet = locationsConfig.showNetZone !== false;
+    const landingDistanceMeters = Math.max(
+      0,
+      Number(zoneContext?.landingDistanceMeters) || 0,
+    );
+    const lastDashDistanceMeters = Math.max(
+      0,
+      Number(zoneContext?.lastDashTriggerDistanceMeters) || 0,
+    );
+    const pixelsPerMeter = Math.max(
+      1,
+      Number(zoneContext?.pixelsPerMeter) || 50,
+    );
+    const hasLandingCircle =
+      landingDistanceMeters > 0 &&
+      Number.isFinite(Number(zoneContext?.rodVirtualX)) &&
+      Number.isFinite(Number(zoneContext?.rodVirtualY));
+
+    if (showLastDash && hasLandingCircle && lastDashDistanceMeters > 0) {
+      this.#withCastableClip(projector, locationsConfig, () => {
+        const virtualTriggerY =
+          zoneContext.rodVirtualY - lastDashDistanceMeters * pixelsPerMeter;
+        const triggerScreenY = projector.virtualToScreen(
+          0,
+          virtualTriggerY,
+          this.#screenB,
+        ).y;
+        const zoneTopY = Math.max(0, Math.min(triggerScreenY, catchScreenY));
+        const zoneHeight = Math.max(0, catchScreenY - zoneTopY);
+        if (zoneHeight > 0) {
+          this.#ctx.fillStyle =
+            catchZoneUIConfig?.lastDashFillColor ||
+            "rgba(170, 80, 255, 0.12)";
+          this.#ctx.fillRect(0, zoneTopY, this.#canvas.width, zoneHeight);
+        }
+
+        this.#ctx.strokeStyle =
+          catchZoneUIConfig?.lastDashStrokeColor || "rgba(190, 90, 255, 0.9)";
+        this.#ctx.lineWidth = 2;
+        this.#ctx.setLineDash(catchZoneUIConfig?.lastDashDash || [9, 7]);
+        this.#ctx.beginPath();
+        this.#ctx.moveTo(0, zoneTopY);
+        this.#ctx.lineTo(this.#canvas.width, zoneTopY);
+        this.#ctx.stroke();
+        this.#ctx.setLineDash([]);
+      });
+    }
 
     if (showCatch) {
-      const heightToDraw = this.#canvas.height - catchScreenY;
+      if (hasLandingCircle) {
+        this.#withCastableClip(projector, locationsConfig, () => {
+          this.#drawDistanceZoneEllipse(projector, {
+            centerVirtualX: zoneContext.rodVirtualX,
+            centerVirtualY: zoneContext.rodVirtualY,
+            radiusMeters: landingDistanceMeters,
+            pixelsPerMeter,
+            fillColor: catchZoneUIConfig?.color || "rgba(0, 150, 255, 0.3)",
+            strokeColor:
+              catchZoneUIConfig?.strokeColor || "rgba(0, 200, 255, 0.8)",
+            lineWidth: 2,
+          });
+        });
+      } else {
+        this.#withCastableClip(projector, locationsConfig, () => {
+          const heightToDraw = this.#canvas.height - catchScreenY;
 
-      if (heightToDraw > 0) {
-        this.#ctx.fillStyle =
-          catchZoneUIConfig?.color || "rgba(0, 150, 255, 0.3)";
-        this.#ctx.fillRect(0, catchScreenY, this.#canvas.width, heightToDraw);
+          if (heightToDraw > 0) {
+            this.#ctx.fillStyle =
+              catchZoneUIConfig?.color || "rgba(0, 150, 255, 0.3)";
+            this.#ctx.fillRect(0, catchScreenY, this.#canvas.width, heightToDraw);
+          }
+
+          const lineDrawY = Math.min(catchScreenY, this.#canvas.height - 2);
+          this.#ctx.strokeStyle =
+            catchZoneUIConfig?.strokeColor || "rgba(0, 200, 255, 0.8)";
+          this.#ctx.lineWidth = 2;
+          this.#ctx.beginPath();
+          this.#ctx.moveTo(0, lineDrawY);
+          this.#ctx.lineTo(this.#canvas.width, lineDrawY);
+          this.#ctx.stroke();
+        });
       }
-
-      const lineDrawY = Math.min(catchScreenY, this.#canvas.height - 2);
-      this.#ctx.strokeStyle = "rgba(0, 200, 255, 0.8)";
-      this.#ctx.lineWidth = 2;
-      this.#ctx.beginPath();
-      this.#ctx.moveTo(0, lineDrawY);
-      this.#ctx.lineTo(this.#canvas.width, lineDrawY);
-      this.#ctx.stroke();
     }
 
     if (showNet && netSystem && netSystem.isActive) {
@@ -336,54 +402,166 @@
     }
   }
 
-  drawChumZones(chumManager, projector) {
-    const zones = chumManager.getZones();
+  #drawDistanceZoneEllipse(
+    projector,
+    {
+      centerVirtualX,
+      centerVirtualY,
+      radiusMeters,
+      pixelsPerMeter,
+      fillColor,
+      strokeColor,
+      lineWidth = 2,
+      dash = null,
+    },
+  ) {
+    const center = projector.virtualToScreen(
+      centerVirtualX,
+      centerVirtualY,
+      this.#screenA,
+    );
+    const radiusX =
+      Math.max(0, Number(radiusMeters) || 0) *
+      Math.max(1, Number(pixelsPerMeter) || 50) *
+      projector.getScale();
+    const radiusY = radiusX;
+    if (radiusX <= 0 || radiusY <= 0) return;
 
-    for (const zone of zones) {
-      if (!zone.isDelivered || zone.isExpired) continue;
-
-      const cfg = zone.baitConfig;
-
-      let opacity = 1.0;
-      if (zone.currentBonus < cfg.maxBonus) {
-        opacity =
-          0.3 +
-          (0.7 * (zone.currentBonus - cfg.minBonus)) /
-            Math.max(0.01, cfg.maxBonus - cfg.minBonus);
-      }
-
-      const perspective = projector.getPerspective(zone.y);
-      const centerScreen = projector.virtualToScreen(
-        zone.x,
-        zone.y,
-        this.#screenA,
-      );
-      const rxScreen =
-        zone.baseRadius * perspective.scale * projector.getScale();
-      const ryScreen = rxScreen * perspective.squashY;
-
-      this.#ctx.save();
-      this.#ctx.beginPath();
-      this.#ctx.ellipse(
-        centerScreen.x,
-        centerScreen.y,
-        rxScreen,
-        ryScreen,
-        0,
-        0,
-        Math.PI * 2,
-      );
-
-      this.#ctx.fillStyle = `rgba(200, 255, 100, ${opacity * 0.2})`;
+    this.#ctx.save();
+    if (Array.isArray(dash)) this.#ctx.setLineDash(dash);
+    this.#ctx.beginPath();
+    this.#ctx.ellipse(center.x, center.y, radiusX, radiusY, 0, 0, Math.PI * 2);
+    if (fillColor) {
+      this.#ctx.fillStyle = fillColor;
       this.#ctx.fill();
-      this.#ctx.strokeStyle = `rgba(200, 255, 100, ${opacity * 0.5})`;
-      this.#ctx.lineWidth = 2;
-      this.#ctx.stroke();
-      this.#ctx.restore();
     }
+    if (strokeColor) {
+      this.#ctx.strokeStyle = strokeColor;
+      this.#ctx.lineWidth = lineWidth;
+      this.#ctx.stroke();
+    }
+    this.#ctx.restore();
   }
 
-  drawAimingZone(projector, virtualBottomY, maxDist, type = "chum") {
+  #withCastableClip(projector, locationsConfig, drawFn) {
+    if (!locationsConfig) {
+      drawFn();
+      return;
+    }
+
+    const zones = this.#getCastableZones(locationsConfig);
+    if (!zones.length) {
+      drawFn();
+      return;
+    }
+
+    this.#ctx.save();
+    this.#ctx.beginPath();
+    for (const zone of zones) {
+      const rect = this.#getCastableZoneScreenRect(
+        projector,
+        zone,
+        locationsConfig.cellSize,
+      );
+      if (!rect || rect.width <= 0 || rect.height <= 0) continue;
+      this.#ctx.rect(rect.x, rect.y, rect.width, rect.height);
+    }
+    this.#ctx.clip();
+    drawFn();
+    this.#ctx.restore();
+  }
+
+  #getCastableZones(locationsConfig) {
+    const maps = locationsConfig.map || {};
+    const locationId = locationsConfig.currentLocationId || Object.keys(maps)[0];
+    return maps[locationId]?.zones?.castable || [];
+  }
+
+  #getCastableZoneScreenRect(projector, zone, cellSize = 40) {
+    const size = Math.max(1, Number(cellSize) || 40);
+    let left = Number(zone.x) * size;
+    let right = (Number(zone.x) + Number(zone.w)) * size;
+
+    if (zone.adaptiveX) {
+      left = projector.screenToVirtual(0, 0, this.#screenA).x;
+      right = projector.screenToVirtual(this.#canvas.width, 0, this.#screenB).x;
+    }
+
+    const top = Number(zone.y) * size;
+    const bottom = (Number(zone.y) + Number(zone.h)) * size;
+    if (![left, right, top, bottom].every(Number.isFinite)) return null;
+
+    const screenA = projector.virtualToScreen(left, top, this.#screenA);
+    const x1 = screenA.x;
+    const y1 = screenA.y;
+    const screenB = projector.virtualToScreen(right, bottom, this.#screenB);
+    const x2 = screenB.x;
+    const y2 = screenB.y;
+
+    return {
+      x: Math.min(x1, x2),
+      y: Math.min(y1, y2),
+      width: Math.abs(x2 - x1),
+      height: Math.abs(y2 - y1),
+    };
+  }
+
+  drawChumZones(chumManager, projector, locationsConfig = null) {
+    const zones = chumManager.getZones();
+
+    this.#withCastableClip(projector, locationsConfig, () => {
+      for (const zone of zones) {
+        if (!zone.isDelivered || zone.isExpired) continue;
+
+        const cfg = zone.baitConfig;
+
+        let opacity = 1.0;
+        if (zone.currentBonus < cfg.maxBonus) {
+          opacity =
+            0.3 +
+            (0.7 * (zone.currentBonus - cfg.minBonus)) /
+              Math.max(0.01, cfg.maxBonus - cfg.minBonus);
+        }
+
+        const perspective = projector.getPerspective(zone.y);
+        const centerScreen = projector.virtualToScreen(
+          zone.x,
+          zone.y,
+          this.#screenA,
+        );
+        const rxScreen =
+          zone.baseRadius * perspective.scale * projector.getScale();
+        const ryScreen = rxScreen * perspective.squashY;
+
+        this.#ctx.save();
+        this.#ctx.beginPath();
+        this.#ctx.ellipse(
+          centerScreen.x,
+          centerScreen.y,
+          rxScreen,
+          ryScreen,
+          0,
+          0,
+          Math.PI * 2,
+        );
+
+        this.#ctx.fillStyle = `rgba(200, 255, 100, ${opacity * 0.2})`;
+        this.#ctx.fill();
+        this.#ctx.strokeStyle = `rgba(200, 255, 100, ${opacity * 0.5})`;
+        this.#ctx.lineWidth = 2;
+        this.#ctx.stroke();
+        this.#ctx.restore();
+      }
+    });
+  }
+
+  drawAimingZone(
+    projector,
+    virtualBottomY,
+    maxDist,
+    type = "chum",
+    locationsConfig = null,
+  ) {
     if (maxDist === Infinity) return;
 
     const virtualLineY = virtualBottomY - maxDist;
@@ -398,32 +576,42 @@
     );
     const fillHeight = screenBottomPos.y - lineScreenY;
 
-    this.#ctx.save();
-    this.#ctx.beginPath();
+    this.#withCastableClip(projector, locationsConfig, () => {
+      this.#ctx.save();
+      this.#ctx.beginPath();
 
-    this.#ctx.moveTo(0, lineScreenY);
-    this.#ctx.lineTo(this.#canvas.width, lineScreenY);
+      this.#ctx.moveTo(0, lineScreenY);
+      this.#ctx.lineTo(this.#canvas.width, lineScreenY);
 
-    if (type === "chum") {
-      this.#ctx.strokeStyle = "rgba(255, 170, 0, 0.8)";
-      this.#ctx.fillStyle = "rgba(255, 170, 0, 0.05)";
-    } else {
-      this.#ctx.strokeStyle = "rgba(0, 204, 255, 0.6)";
-      this.#ctx.fillStyle = "rgba(0, 204, 255, 0.05)";
-    }
+      if (type === "chum") {
+        this.#ctx.strokeStyle = "rgba(255, 170, 0, 0.8)";
+        this.#ctx.fillStyle = "rgba(255, 170, 0, 0.05)";
+      } else {
+        this.#ctx.strokeStyle = "rgba(0, 204, 255, 0.6)";
+        this.#ctx.fillStyle = "rgba(0, 204, 255, 0.05)";
+      }
 
-    this.#ctx.lineWidth = 2;
-    this.#ctx.setLineDash([15, 10]);
-    this.#ctx.stroke();
+      this.#ctx.lineWidth = 2;
+      this.#ctx.setLineDash([15, 10]);
+      this.#ctx.stroke();
 
-    if (fillHeight > 0) {
-      this.#ctx.fillRect(0, lineScreenY, this.#canvas.width, fillHeight);
-    }
+      if (fillHeight > 0) {
+        this.#ctx.fillRect(0, lineScreenY, this.#canvas.width, fillHeight);
+      }
 
-    this.#ctx.restore();
+      this.#ctx.restore();
+    });
   }
 
-  drawCastPowerAim(projector, bounds, visual, castingConfig, tensionConfig, nowMs = 0) {
+  drawCastPowerAim(
+    projector,
+    bounds,
+    visual,
+    castingConfig,
+    tensionConfig,
+    nowMs = 0,
+    maxDistancePx = null,
+  ) {
     if (!visual?.active) return;
     const lineCfg = castingConfig?.aimLine || {};
     const barCfg = castingConfig?.powerBar || {};
@@ -434,7 +622,16 @@
         ? lineCfg.chumColor || "rgba(255, 180, 0, 0.9)"
         : lineCfg.color || "rgba(0, 220, 255, 0.85)";
 
-    this.#drawCastAimLine(projector, bounds, visual.screenX, lineCfg, lineColor, nowMs);
+    this.#drawCastAimLine(
+      projector,
+      bounds,
+      visual.screenX,
+      lineCfg,
+      lineColor,
+      nowMs,
+      maxDistancePx,
+      power,
+    );
     this.#drawCastPowerBar(power, barCfg, color, visual.mode);
   }
 
@@ -456,19 +653,48 @@
     this.#ctx.restore();
   }
 
-  #drawCastAimLine(projector, bounds, screenX, lineCfg, color, nowMs) {
-    const topY = projector.virtualToScreen(0, bounds.top, this.#screenA).y;
-    const bottomY = projector.virtualToScreen(0, bounds.bottom, this.#screenB).y;
-    const y1 = Math.min(topY, bottomY);
-    const y2 = Math.max(topY, bottomY);
+  #drawCastAimLine(
+    projector,
+    bounds,
+    screenX,
+    lineCfg,
+    color,
+    nowMs,
+    maxDistancePx,
+    power,
+  ) {
+    const mapHeightPx = Math.max(0, bounds.bottom - bounds.top);
+    let resolvedMaxDistancePx = Number(maxDistancePx);
+    if (!Number.isFinite(resolvedMaxDistancePx)) {
+      resolvedMaxDistancePx = mapHeightPx;
+    }
+
+    const linePower =
+      lineCfg.fullDistance === false ? Math.max(0, Math.min(1, power || 0)) : 1;
+    const distancePx = Math.max(
+      0,
+      Math.min(resolvedMaxDistancePx, mapHeightPx) *
+        linePower,
+    );
+    const bottomScreenY = projector.virtualToScreen(
+      0,
+      bounds.bottom,
+      this.#screenB,
+    ).y;
+    const targetVirtualY = Math.max(bounds.top, bounds.bottom - distancePx);
+    const targetScreenY = projector.virtualToScreen(
+      0,
+      targetVirtualY,
+      this.#screenA,
+    ).y;
     const dash = Array.isArray(lineCfg.dash) ? lineCfg.dash : [12, 10];
     const dashSpeed = lineCfg.dashSpeedPxPerSecond ?? 42;
     const dashCycle = Math.max(1, dash[0] + (dash[1] || 0));
 
     this.#ctx.save();
     this.#ctx.beginPath();
-    this.#ctx.moveTo(screenX, y1);
-    this.#ctx.lineTo(screenX, y2);
+    this.#ctx.moveTo(screenX, bottomScreenY);
+    this.#ctx.lineTo(screenX, targetScreenY);
     this.#ctx.strokeStyle = color;
     this.#ctx.lineWidth = lineCfg.width || 2;
     this.#ctx.setLineDash(dash);
@@ -898,14 +1124,21 @@
     const barY = uiIndicatorsConfig?.y || 40;
     const gap = uiIndicatorsConfig?.conditionGap || 22;
     const labelOffsetY = uiIndicatorsConfig?.conditionLabelOffsetY || 9;
-    const maxPoints = Math.max(0.001, condition.maxPoints || 0);
+    const maxStamina = Math.max(
+      0.001,
+      Number(condition.maxStamina ?? condition.maxPoints) || 0,
+    );
+    const maxEndurance = Math.max(
+      0.001,
+      Number(condition.maxEndurance ?? condition.maxPoints) || 0,
+    );
     const staminaRatio = Math.max(
       0,
-      Math.min(1, condition.currentStamina / maxPoints),
+      Math.min(1, condition.currentStamina / maxStamina),
     );
     const exhaustionRatio = Math.max(
       0,
-      Math.min(1, condition.currentExhaustion / maxPoints),
+      Math.min(1, condition.currentExhaustion / maxEndurance),
     );
 
     this.#drawConditionBar({
@@ -915,7 +1148,7 @@
       height: barHeight,
       ratio: staminaRatio,
       color: "#ffcc00",
-      label: `STAMINA: ${Math.round(condition.currentStamina)}/${Math.round(condition.maxPoints)}`,
+      label: `STAMINA: ${Math.round(condition.currentStamina)}/${Math.round(maxStamina)}`,
       labelOffsetY,
       isActive: condition.phase === "stamina",
     });
@@ -927,7 +1160,7 @@
       height: barHeight,
       ratio: exhaustionRatio,
       color: "#ff4444",
-      label: `EXHAUSTION: ${Math.round(condition.currentExhaustion)}/${Math.round(condition.maxPoints)}`,
+      label: `ENDURANCE: ${Math.round(condition.currentExhaustion)}/${Math.round(maxEndurance)}`,
       labelOffsetY,
       isActive: condition.phase === "exhaustion",
     });
@@ -957,19 +1190,170 @@
     this.#ctx.fillText(label, x + width / 2, y + height + labelOffsetY);
   }
 
-  drawTensionBar(tensionMeter, tensionConfig, uiIndicatorsConfig) {
-    const barWidth = tensionConfig.barWidth;
-    const barHeight = tensionConfig.barHeight;
-    const barX = this.#resolveX(uiIndicatorsConfig?.x, barWidth);
+  drawDragBar(dragRatio, dragConfig, tensionConfig, uiIndicatorsConfig) {
+    const width = tensionConfig?.barWidth || 300;
+    const height = Math.max(8, Math.round((tensionConfig?.barHeight || 20) * 0.65));
+    const x = this.#resolveX(uiIndicatorsConfig?.x, width);
     const baseY = uiIndicatorsConfig?.y || 40;
     const spacing = uiIndicatorsConfig?.spacing || 40;
-    const barY = baseY + spacing;
+    const y = baseY + spacing + (tensionConfig?.barHeight || 20) + 14;
+    this.#drawSimpleRatioBar({
+      ratio: dragRatio,
+      x,
+      y,
+      width,
+      height,
+      label: "DRAG",
+      color: dragConfig?.barColor || "#73c2fb",
+      backgroundColor: tensionConfig?.backgroundColor || "#1a2b3c",
+      borderColor: tensionConfig?.borderColor || "#4a5b6c",
+      labelColor: tensionConfig?.labelColor || "#8a9bac",
+      labelFont: tensionConfig?.labelFont || "bold 12px monospace",
+      labelOffsetX: tensionConfig?.labelOffsetX || 60,
+      labelOffsetY: Math.max(10, Math.round(height * 0.85)),
+    });
+  }
+
+  #getFightBarLayout(tensionConfig, uiIndicatorsConfig) {
+    const width = tensionConfig?.barWidth || 300;
+    const x = this.#resolveX(uiIndicatorsConfig?.x, width);
+    const baseY = uiIndicatorsConfig?.y || 40;
+    const spacing = uiIndicatorsConfig?.spacing || 40;
+    const strokeHeight = 3;
+    const strokeY = baseY + spacing;
+    const controlY = strokeY - strokeHeight - 8;
+    return {
+      x,
+      width,
+      strokeHeight,
+      controlY,
+      strokeY,
+      tensionY: strokeY + strokeHeight + 2,
+      labelOffsetX: tensionConfig?.labelOffsetX || 60,
+    };
+  }
+
+  drawRodStrokeBar(fightDebug, tensionConfig, uiIndicatorsConfig) {
+    const layout = this.#getFightBarLayout(tensionConfig, uiIndicatorsConfig);
+    this.#drawRodControlBar(fightDebug, tensionConfig, layout);
+    const ratio = Math.max(0, Math.min(1, Number(fightDebug?.rodStrokeRatio) || 0));
+    const unrecovered = Number(fightDebug?.rodStrokeUnrecoveredMeters) || 0;
+    const capacity = Number(fightDebug?.rodStrokeCapacityMeters) || 0;
+    const label = "Хід вудки";
+    const value = `${unrecovered.toFixed(1)}м / ${capacity.toFixed(1)}м`;
+
+    this.#ctx.save();
+    this.#ctx.fillStyle = "rgba(58, 126, 210, 0.26)";
+    this.#ctx.fillRect(layout.x, layout.strokeY, layout.width, layout.strokeHeight);
+    this.#ctx.fillStyle = "#4aa3ff";
+    this.#ctx.fillRect(layout.x, layout.strokeY, layout.width * ratio, layout.strokeHeight);
+
+    this.#ctx.fillStyle = tensionConfig?.labelColor || "#8a9bac";
+    this.#ctx.font = tensionConfig?.labelFont || "bold 12px monospace";
+    this.#ctx.textAlign = "left";
+    this.#ctx.fillText(
+      label,
+      layout.x - layout.labelOffsetX,
+      layout.strokeY + layout.strokeHeight + 3,
+    );
+    this.#ctx.textAlign = "right";
+    this.#ctx.fillText(
+      value,
+      layout.x + layout.width + layout.labelOffsetX,
+      layout.strokeY + layout.strokeHeight + 3,
+    );
+    this.#ctx.restore();
+  }
+
+  #drawRodControlBar(fightDebug, tensionConfig, layout) {
+    const ratio = Math.max(
+      0,
+      Math.min(1, Number(fightDebug?.rodControlDeliveredForceRatio) || 0),
+    );
+    const direction = Math.sign(
+      Number(fightDebug?.rodControlInputDirectionX) ||
+        Number(fightDebug?.rodControlDirectionX) ||
+        0,
+    );
+    const active = !!fightDebug?.rodControlActive;
+    const label = "Контроль вудки";
+    const directionLabel = direction < 0 ? "L" : direction > 0 ? "R" : "-";
+    const value = `${directionLabel} ${(ratio * 100).toFixed(0)}%`;
+    const fillColor = active ? "#00d4ff" : "#5c7d99";
+
+    this.#ctx.save();
+    this.#ctx.fillStyle = "rgba(0, 212, 255, 0.18)";
+    this.#ctx.fillRect(layout.x, layout.controlY, layout.width, layout.strokeHeight);
+    this.#ctx.fillStyle = fillColor;
+    this.#ctx.fillRect(layout.x, layout.controlY, layout.width * ratio, layout.strokeHeight);
+
+    this.#ctx.fillStyle = tensionConfig?.labelColor || "#8a9bac";
+    this.#ctx.font = tensionConfig?.labelFont || "bold 12px monospace";
+    this.#ctx.textAlign = "left";
+    this.#ctx.fillText(
+      label,
+      layout.x - layout.labelOffsetX,
+      layout.controlY + layout.strokeHeight + 3,
+    );
+    this.#ctx.textAlign = "right";
+    this.#ctx.fillText(
+      value,
+      layout.x + layout.width + layout.labelOffsetX,
+      layout.controlY + layout.strokeHeight + 3,
+    );
+    this.#ctx.restore();
+  }
+
+  drawRodPullBar(fightDebug, tensionConfig, uiIndicatorsConfig) {
+    this.drawRodStrokeBar(fightDebug, tensionConfig, uiIndicatorsConfig);
+  }
+
+  #drawSimpleRatioBar({
+    ratio,
+    x,
+    y,
+    width,
+    height,
+    label,
+    color,
+    backgroundColor,
+    borderColor,
+    labelColor,
+    labelFont,
+    labelOffsetX,
+    labelOffsetY,
+  }) {
+    const clampedRatio = Math.max(0, Math.min(1, Number(ratio) || 0));
+    const padding = 2;
+    this.#ctx.save();
+    this.#ctx.fillStyle = backgroundColor;
+    this.#ctx.fillRect(x - padding, y - padding, width + padding * 2, height + padding * 2);
+    this.#ctx.strokeStyle = borderColor;
+    this.#ctx.lineWidth = 1;
+    this.#ctx.strokeRect(x - padding, y - padding, width + padding * 2, height + padding * 2);
+    this.#ctx.fillStyle = color;
+    this.#ctx.fillRect(x, y, width * clampedRatio, height);
+    this.#ctx.fillStyle = labelColor;
+    this.#ctx.font = labelFont;
+    this.#ctx.textAlign = "left";
+    this.#ctx.fillText(label, x - labelOffsetX, y + labelOffsetY);
+    this.#ctx.textAlign = "right";
+    this.#ctx.fillText(`${Math.round(clampedRatio * 100)}%`, x + width + labelOffsetX, y + labelOffsetY);
+    this.#ctx.restore();
+  }
+
+  drawTensionBar(tensionMeter, tensionConfig, uiIndicatorsConfig, fightDebug = null) {
+    const layout = this.#getFightBarLayout(tensionConfig, uiIndicatorsConfig);
+    const barWidth = layout.width;
+    const barHeight = tensionConfig.barHeight;
+    const barX = layout.x;
+    const barY = layout.tensionY;
 
     const padding = tensionConfig.borderPadding;
     const tension = tensionMeter.getTension();
-    const pulseIntensity = tensionMeter.getPulseIntensity({
-      tension: tensionConfig,
-    });
+    const pulseIntensity = tensionMeter.getPulseIntensity(tensionConfig);
+    const tensionKg = tensionMeter.getTensionKg?.();
+    const maxLoadKg = tensionMeter.getEffectiveMaxTackleLoadKg?.();
 
     this.#ctx.fillStyle = tensionConfig.backgroundColor;
     this.#ctx.fillRect(
@@ -1002,11 +1386,36 @@
     this.#ctx.strokeRect(barX, barY, fillWidth, barHeight);
     this.#ctx.shadowBlur = 0;
 
+    const dragLimitKg = Number(fightDebug?.dragLimitKg);
+    const maxLoadForMarker = Number(maxLoadKg);
+    const shouldDrawDragMarker = fightDebug?.dragSupported === true;
+    if (
+      shouldDrawDragMarker &&
+      Number.isFinite(dragLimitKg) &&
+      Number.isFinite(maxLoadForMarker) &&
+      maxLoadForMarker > 0
+    ) {
+      const markerRatio = Math.max(0, Math.min(1, dragLimitKg / maxLoadForMarker));
+      const markerX = barX + barWidth * markerRatio;
+      this.#ctx.strokeStyle = "#73c2fb";
+      this.#ctx.lineWidth = 2;
+      this.#ctx.beginPath();
+      this.#ctx.moveTo(markerX, barY - 4);
+      this.#ctx.lineTo(markerX, barY + barHeight + 4);
+      this.#ctx.stroke();
+    }
+
     this.#ctx.fillStyle = tensionConfig.labelColor;
     this.#ctx.font = tensionConfig.labelFont;
     this.#ctx.textAlign = "left";
+    const kgPrecision = Number.isFinite(maxLoadKg) && maxLoadKg <= 3 ? 2 : 1;
+    const tensionLabel = Number.isFinite(tensionKg) && Number.isFinite(maxLoadKg)
+      ? `Натяг: ${tensionKg.toFixed(kgPrecision)}/${maxLoadKg.toFixed(kgPrecision)}кг`
+      : Number.isFinite(tensionKg)
+        ? `Натяг: ${tensionKg.toFixed(kgPrecision)}кг`
+        : `Натяг: ${Math.round(tension)}%`;
     this.#ctx.fillText(
-      `TENSION: ${Math.round(tension)}%`,
+      tensionLabel,
       barX - tensionConfig.labelOffsetX,
       barY + tensionConfig.labelOffsetY,
     );
@@ -1024,11 +1433,15 @@
 
     if (tension >= tensionConfig.breakThreshold - 0.1) {
       const breakProgress = tensionMeter.getLineBreakProgress();
-      this.#drawLineBreakWarning(barX, barY - 25, barWidth, breakProgress);
+      const breakReason =
+        tensionMeter.getBreakTargetReason?.() ||
+        tensionMeter.getBreakReason?.() ||
+        "line";
+      this.#drawBreakWarning(barX, barY - 25, barWidth, breakProgress, breakReason);
     }
   }
 
-  #drawLineBreakWarning(x, y, width, progress) {
+  #drawBreakWarning(x, y, width, progress, reason = "line") {
     this.#ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
     this.#ctx.fillRect(x, y, width * progress, 8);
     this.#ctx.strokeStyle = "#ff0000";
@@ -1037,7 +1450,14 @@
     this.#ctx.fillStyle = "#ff0000";
     this.#ctx.font = "bold 10px monospace";
     this.#ctx.textAlign = "center";
-    this.#ctx.fillText("LINE BREAK", x + width / 2, y + 18);
+    const label = this.#breakWarningLabel(reason);
+    this.#ctx.fillText(label, x + width / 2, y + 18);
+  }
+
+  #breakWarningLabel(reason) {
+    if (reason === "rod") return "ROD BREAK";
+    if (reason === "leader") return "LEADER BREAK";
+    return "LINE BREAK";
   }
 
   drawGameOver(canvasWidth, canvasHeight, reason) {
@@ -1051,7 +1471,11 @@
     if (reason === "rod") {
       title = "ROD BROKEN";
       titleColor = "#ff0000";
-      desc = "Your equipment could not handle the stress.";
+      desc = "Your rod could not handle the stress.";
+    } else if (reason === "leader") {
+      title = "LEADER SNAPPED";
+      titleColor = "#ff6644";
+      desc = "The leader was the weakest part of the rig.";
     } else if (reason === "hook" || reason === "net_escape") {
       title = "FISH ESCAPED";
       titleColor = "#ffaa00";

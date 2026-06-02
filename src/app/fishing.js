@@ -4,13 +4,15 @@ class FishingController {
   #devFlags;
   #equipmentRules;
   #baitRules;
+  #debugEvents;
 
-  constructor({ inventory, equipment, devFlags, equipmentRules, baitRules }) {
+  constructor({ inventory, equipment, devFlags, equipmentRules, baitRules, debugEvents = null }) {
     this.#inventory = inventory;
     this.#equipment = equipment;
     this.#devFlags = devFlags;
     this.#equipmentRules = equipmentRules;
     this.#baitRules = baitRules;
+    this.#debugEvents = debugEvents;
   }
 
   consumeFirstBaitForFight(eq) {
@@ -87,7 +89,7 @@ class FishingController {
     return this.#baitRules.hasActiveLureType(types);
   }
 
-  applyFailureEquipmentLoss(reason, eq) {
+  applyFailureEquipmentLoss(reason, eq, failure = {}) {
     if (this.#devFlags.isEnabled("noEquipmentLoss")) {
       console.log(
         "%c[GOD MODE] 🛡️ Снасті та наживку врятовано від втрати!",
@@ -99,13 +101,19 @@ class FishingController {
     if (
       reason === "rod" ||
       reason === "line" ||
+      reason === "leader" ||
+      reason === "reel" ||
       reason === "hook" ||
       reason === "net_escape"
     ) {
       this.#equipment.consumeAllBaits(eq);
     }
 
-    if (reason === "rod" || reason === "line") {
+    if (reason === "leader") {
+      this.#equipment.consumeAllHooks(eq);
+    }
+
+    if (reason === "rod" || reason === "line" || reason === "reel") {
       this.#equipment.consumeAllHooks(eq);
       this.#equipment.consumeFloat(eq);
       this.#equipment.consumeSinker(eq);
@@ -114,6 +122,17 @@ class FishingController {
 
     if (reason === "rod" && eq?.rod) {
       this.#equipment.consumeRod(eq);
+    }
+
+    if (reason === "leader" && eq?.leader) {
+      this.#equipment.consumeLeader(eq);
+    }
+
+    if (reason === "line" && eq?.line) {
+      const lineLossMeters = Math.max(0, Number(failure?.lineLossMeters) || 0);
+      if (!this.#equipment.breakEquippedLine(lineLossMeters)) {
+        this.#equipment.consumeLine(eq);
+      }
     }
   }
 
@@ -159,6 +178,7 @@ class CastService {
   #baitRules;
   #getRodVirtualPos;
   #getDynamicBounds;
+  #debugEvents;
 
   constructor({
     config,
@@ -168,6 +188,7 @@ class CastService {
     baitRules,
     getRodVirtualPos,
     getDynamicBounds,
+    debugEvents = null,
   }) {
     this.#config = config;
     this.#rng = rng;
@@ -176,6 +197,7 @@ class CastService {
     this.#baitRules = baitRules;
     this.#getRodVirtualPos = getRodVirtualPos;
     this.#getDynamicBounds = getDynamicBounds;
+    this.#debugEvents = debugEvents;
   }
 
   cast(vx, vy, cellDepth, context) {
@@ -188,7 +210,7 @@ class CastService {
     const rodPos =
       context.rodVirtualPos || this.#getRodVirtualPos(this.#getDynamicBounds());
     const dist = Math.hypot(vx - rodPos.x, vy - rodPos.y);
-    const maxDist = normalizeDistance(eq.rod?.maxDistance, 2000);
+    const maxDist = this.#equipmentRules.getMaxCastDistance(eq, 2000);
     const castDistanceRatio = Math.min(1, dist / maxDist);
     const castStartTime = this.#clock.now;
 
@@ -216,6 +238,7 @@ class CastService {
       physicsConfig,
       eq,
       this.#rng,
+      this.#debugEvents,
     );
 
     if (typeof floatEntity.cast === "function") {
@@ -249,57 +272,126 @@ class CastService {
 }
 
 class FightSessionFactory {
-  constructor({ config, rng }) {
+  constructor({ config, rng, castDistanceCalculator = null, devFlags = null }) {
     this.config = config;
     this.rng = rng;
+    this.devFlags = devFlags;
+    this.physicsConfig =
+      config?.fightPhysicsConfig ||
+      (typeof FightPhysicsConfigAdapter !== "undefined"
+        ? new FightPhysicsConfigAdapter(config)
+        : null);
+    this.castDistanceCalculator =
+      castDistanceCalculator || new CastDistanceCalculator(config || {});
   }
 
   create(fishData, equipment) {
+    const lineSystemConfig = this.#getLineSystemConfig();
     const rod = new Rod(
       equipment.rod?.level || 1,
       equipment.rod?.basePower || 1.0,
       equipment.rod?.compensation || 0,
       equipment.rod?.type || "float",
-      normalizeDistance(equipment.rod?.maxDistance, 100),
+      this.castDistanceCalculator.getMaxCastDistancePx(equipment, 100),
       equipment.rod?.hasReel !== false,
+      {
+        lengthMeters: equipment.rod?.lengthMeters,
+        castPowerCoefficient: equipment.rod?.castPowerCoefficient,
+        maxLoadKg: equipment.rod?.maxLoadKg,
+        holdTensionRatio: equipment.rod?.holdTensionRatio,
+        durability: equipment.rod?.durability,
+        durabilityMaxLoadLossPerPercent:
+          equipment.rod?.durabilityMaxLoadLossPerPercent,
+      },
     );
     const reel = equipment.reel
       ? new Reel(
           equipment.reel.level || 1,
           equipment.reel.basePower || 1.0,
-          equipment.reel.hold || null,
+          {
+            maxLoadKg: equipment.reel.maxLoadKg,
+            lineCapacityMeters: equipment.reel.lineCapacityMeters,
+            retrieveSpeedMetersPerSec: equipment.reel.retrieveSpeedMetersPerSec,
+            dragMinKg: equipment.reel.dragMinKg,
+            dragMaxKg: equipment.reel.dragMaxKg,
+            dragChangeSpeedPerSec: equipment.reel.dragChangeSpeedPerSec,
+            hasDrag: equipment.reel.hasDrag,
+            durability: equipment.reel.durability,
+            durabilityMaxLoadLossPerPercent:
+              equipment.reel.durabilityMaxLoadLossPerPercent,
+          },
         )
-      : new Reel(0, 0, null);
+      : new Reel(0, 0, { lineCapacityMeters: 0 });
     const activeHook = equipment.hooks?.[0] || {};
     const hook = new Hook(
       activeHook.level || 1,
       activeHook.weight || 1,
       activeHook.quality || 1.0,
+      {
+        maxLoadKg: activeHook.maxLoadKg,
+        durability: activeHook.durability,
+        durabilityMaxLoadLossPerPercent:
+          activeHook.durabilityMaxLoadLossPerPercent,
+      },
     );
     const fish = new Fish(
       fishData.level,
       fishData.weight,
-      fishData.resistance,
       fishData.physics,
       this.rng,
     );
-    const fishingSystem = new FishingSystem(rod, reel, fish, this.rng);
-    const tensionMeter = new TensionMeter(
-      equipment.rod?.level || 1,
-      equipment.reel?.level || 0,
-      hook,
-      this.config.tension,
-      this.rng,
+    const lineSystem = new LineSystem({
+      rod,
+      reel,
+      config: lineSystemConfig,
+      lineStats: equipment.line,
+      castDistanceCalculator: this.castDistanceCalculator,
+    });
+    const dragSystem = new DragSystem(
+      this.physicsConfig?.getReelDragConfig?.() || {},
+      reel,
     );
+    const fishForceSystem = new FishForceSystem({
+      fish,
+      config: this.config,
+    });
+    const pullInputMapper = new PullInputMapper();
+    const rodPullSystem = new RodPullSystem(
+      {
+        ...(this.physicsConfig?.getRodPullConfig?.() || {}),
+        rodHold: this.physicsConfig?.getRodHoldConfig?.() || {},
+      },
+    );
+    const rodControlSystem = new RodLateralControlSystem();
+    const reelSystem = new ReelSystem(
+      this.physicsConfig?.getReelConfig?.() || {},
+    );
+    const tensionSystem = new TensionSystem();
+    const tensionMeter = new TackleStressSystem({
+      rod,
+      reel,
+      lineSystem,
+      hook,
+      leader: equipment.leader,
+      config: this.physicsConfig?.getTensionConfig?.() || this.config.tension,
+      rng: this.rng,
+      devFlags: this.devFlags,
+    });
+    const fightPhysicsSystem = new FightPhysicsSystem(this.config);
     const fishCondition = new FishCondition(
       fishData.level,
       fishData.weight,
       this.config.stamina.fish,
+      fishData.physics,
+      {
+        maxLevel: fishData.maxLevel,
+        levelAverageWeightKg: fishData.levelAverageWeightKg,
+      },
     );
     const staminaController = new StaminaController(
       fishCondition,
       fish,
-      rod.getPower() + reel.getPower(),
+      tensionMeter.getEffectiveMaxTackleLoadKg(),
       this.config.stamina.mechanics,
     );
     return {
@@ -307,7 +399,15 @@ class FightSessionFactory {
       reel,
       hook,
       fish,
-      fishingSystem,
+      lineSystem,
+      dragSystem,
+      fishForceSystem,
+      pullInputMapper,
+      rodPullSystem,
+      rodControlSystem,
+      reelSystem,
+      tensionSystem,
+      fightPhysicsSystem,
       tensionMeter,
       fishCondition,
       staminaController,
@@ -315,28 +415,66 @@ class FightSessionFactory {
   }
 
   createEquipment(equipment) {
+    const lineSystemConfig = this.#getLineSystemConfig();
     const rod = new Rod(
       equipment.rod?.level || 1,
       equipment.rod?.basePower || 1.0,
       equipment.rod?.compensation || 0,
       equipment.rod?.type || "float",
-      normalizeDistance(equipment.rod?.maxDistance, 100),
+      this.castDistanceCalculator.getMaxCastDistancePx(equipment, 100),
       equipment.rod?.hasReel !== false,
+      {
+        lengthMeters: equipment.rod?.lengthMeters,
+        castPowerCoefficient: equipment.rod?.castPowerCoefficient,
+        maxLoadKg: equipment.rod?.maxLoadKg,
+        holdTensionRatio: equipment.rod?.holdTensionRatio,
+        durability: equipment.rod?.durability,
+        durabilityMaxLoadLossPerPercent:
+          equipment.rod?.durabilityMaxLoadLossPerPercent,
+      },
     );
     const reel = equipment.reel
       ? new Reel(
           equipment.reel.level || 1,
           equipment.reel.basePower || 1.0,
-          equipment.reel.hold || null,
+          {
+            maxLoadKg: equipment.reel.maxLoadKg,
+            lineCapacityMeters: equipment.reel.lineCapacityMeters,
+            retrieveSpeedMetersPerSec: equipment.reel.retrieveSpeedMetersPerSec,
+            dragMinKg: equipment.reel.dragMinKg,
+            dragMaxKg: equipment.reel.dragMaxKg,
+            dragChangeSpeedPerSec: equipment.reel.dragChangeSpeedPerSec,
+            hasDrag: equipment.reel.hasDrag,
+            durability: equipment.reel.durability,
+            durabilityMaxLoadLossPerPercent:
+              equipment.reel.durabilityMaxLoadLossPerPercent,
+          },
         )
-      : new Reel(0, 0, null);
+      : new Reel(0, 0, { lineCapacityMeters: 0 });
     const activeHook = equipment.hooks?.[0] || {};
     const hook = new Hook(
       activeHook.level || 1,
       activeHook.weight || 1,
       activeHook.quality || 1.0,
+      {
+        maxLoadKg: activeHook.maxLoadKg,
+        durability: activeHook.durability,
+        durabilityMaxLoadLossPerPercent:
+          activeHook.durabilityMaxLoadLossPerPercent,
+      },
     );
-    return { rod, reel, hook };
+    const lineSystem = new LineSystem({
+      rod,
+      reel,
+      config: lineSystemConfig,
+      lineStats: equipment.line,
+      castDistanceCalculator: this.castDistanceCalculator,
+    });
+    return { rod, reel, hook, lineSystem };
+  }
+
+  #getLineSystemConfig() {
+    return this.physicsConfig?.getLineSystemConfig?.() || {};
   }
 }
 
@@ -355,118 +493,136 @@ class FishingForceService {
 
   applyForces(dt, context) {
     const {
-      fishingSystem,
       floatEntity,
       bounds,
       input,
       env,
       getRodVirtualPos,
-      getScreenOffsetRatio,
+      getBaseRodVirtualPos,
       checkWater,
+      rod,
+      reel,
+      fishForceSystem,
+      lineSystem,
+      dragSystem,
+      pullInputMapper,
+      rodPullSystem,
+      rodControlSystem,
+      reelSystem,
+      tensionSystem,
+      stressSystem,
+      fightPhysicsSystem,
+      fishCondition,
+      buffs,
     } = context;
-    const floatPos = floatEntity.getPosition();
-    const fishForceRaw = fishingSystem.calculateFishForce(
-      dt,
-      floatPos,
+    return fightPhysicsSystem.step({
+      dtMs: dt,
+      floatEntity,
       bounds,
-      this.#config.stamina.mechanics,
-      checkWater,
-    );
-    let tFishY = fishForceRaw.y;
-    const activeHold = fishingSystem.isHoldActive();
-    if (activeHold && tFishY < 0) {
-      tFishY = 0;
-      fishForceRaw.y *= fishingSystem.getHoldTensionMultiplier?.() || 1.0;
-    }
-    floatEntity.applyForce(
-      this.#fishForceApplied
-        .set(fishForceRaw.x, tFishY)
-        .multiplyScalar(this.#config.physics.fishForceMultiplier),
-    );
-    const rodPos = getRodVirtualPos(bounds);
-    const screenOffset = getScreenOffsetRatio(floatPos);
-    const pF = this.#playerForce.set(0, 0);
-    if (input.isPulling) {
-      pF.copy(
-        fishingSystem.calculatePlayerForce(
-          input.pullDirection,
-          floatPos.x,
-          floatPos.y,
-          rodPos,
-          screenOffset,
-          this.#config.physics,
-          bounds,
-        ),
-      );
-      this.#playerForceApplied
-        .copy(pF)
-        .multiplyScalar(this.#config.physics.playerForceMultiplier);
-      floatEntity.applyForce(this.#playerForceApplied);
-    }
-    this.#forces.pX = pF.x;
-    this.#forces.pY = pF.y;
-    this.#forces.fX = fishForceRaw.x;
-    this.#forces.fY = fishForceRaw.y;
-    const pMax = Math.abs(
-      fishingSystem.calculatePlayerForce(
-        this.#upDirection,
-        floatPos.x,
-        floatPos.y,
-        rodPos,
-        screenOffset,
-        this.#config.physics,
-        bounds,
-      ).y * this.#config.physics.playerForceMultiplier,
-    );
-    const fMag =
-      Math.max(Math.abs(fishForceRaw.x), Math.abs(fishForceRaw.y)) *
-      this.#config.physics.fishForceMultiplier;
-    let pullDirection = null;
-    if (input.isPulling) {
-      pullDirection = this.#pullDirection
-        .set(rodPos.x - floatPos.x, rodPos.y - floatPos.y)
-        .normalize();
-    }
-    floatEntity.update(
-      bounds,
-      dt,
+      input,
       env,
       checkWater,
-      input,
-      fishingSystem.getReelPower(),
-      pullDirection,
-    );
-    return { activeHold, pMax, fMag, forces: this.#forces };
+      rodTipPosition: getRodVirtualPos(bounds),
+      rodControlTargetPosition:
+        getBaseRodVirtualPos?.(bounds) || getRodVirtualPos(bounds),
+      rod,
+      reel,
+      fishForceSystem,
+      lineSystem,
+      dragSystem,
+      pullInputMapper,
+      rodPullSystem,
+      rodControlSystem,
+      reelSystem,
+      tensionSystem,
+      stressSystem,
+      fishCondition,
+      buffs,
+    });
   }
 }
 
 class CatchResolutionService {
+  #landingPolicyResolver;
+
+  constructor({ landingPolicyResolver = null } = {}) {
+    this.#landingPolicyResolver = landingPolicyResolver || new LandingPolicyResolver();
+  }
+
+  reset() {}
+
   resolveAutoCatch({
-    floatEntity,
-    bounds,
-    net,
     fishData,
-    projectorScale,
-    catchLineOffsetPx,
+    lineDistanceMeters,
+    maxTackleLoadKg,
+    config,
+    rod = null,
+    reel = null,
+    fightDebug = null,
   }) {
-    const updatedPos = floatEntity.getPosition();
-    const autoY = bounds.bottom - catchLineOffsetPx / projectorScale;
-    if (
-      updatedPos.y >= net.getTriggerVirtualY(bounds.bottom) &&
-      updatedPos.y < autoY
-    ) {
-      return { shouldTriggerLastDash: true };
+    const physicsConfig =
+      config?.fightPhysicsConfig ||
+      (typeof FightPhysicsConfigAdapter !== "undefined"
+        ? new FightPhysicsConfigAdapter(config)
+        : null);
+    const cfg = physicsConfig?.getCatchZoneConfig?.() || {};
+    const landingPolicy = this.#landingPolicyResolver.resolve({ rod, reel });
+    const landingDistanceMeters = landingPolicy.getLandingDistanceMeters({
+      rod,
+      reel,
+      config,
+      lineDistanceMeters,
+      fishData,
+      maxTackleLoadKg,
+    });
+    const rawDistanceMeters = Number(lineDistanceMeters);
+    const distanceMeters = Number.isFinite(rawDistanceMeters)
+      ? Math.max(0, rawDistanceMeters)
+      : Infinity;
+    if (distanceMeters > landingDistanceMeters) return {};
+
+    const landingReady = this.#isLandingLiftReady({
+      physicsConfig,
+      fightDebug,
+    });
+    const success = this.#canLandByWeight({
+      fishWeightKg: fishData?.weight,
+      maxTackleLoadKg,
+      config: cfg,
+    }) && landingReady;
+    const transition = success
+      ? { name: "victory", data: { fish: fishData } }
+      : null;
+    if (transition) {
+      this.#logAutoCatchVictory({
+        fishData,
+        distanceMeters,
+        landingDistanceMeters,
+        landingPolicy,
+        maxTackleLoadKg,
+        catchConfig: cfg,
+        landingReady,
+        fightDebug,
+      });
     }
-    if (updatedPos.y >= autoY) {
-      return { transition: { name: "victory", data: { fish: fishData } } };
-    }
-    return {};
+    return {
+      inLandingZone: true,
+      landingReady,
+      success,
+      landingDistanceMeters,
+      landingPolicy: landingPolicy.constructor?.name || "LandingPolicy",
+      transition,
+    };
+  }
+
+  getLandingRollProgress(_config) {
+    return 1;
   }
 
   resolveNetAttempt(net, fishWeight, rng, fishData) {
     const chance = net.calculateCatchChance(fishWeight);
     const roll = rng.range(0, 100);
-    const success = roll <= chance;
+    const success = chance > 0 && roll < chance;
     return {
       chance,
       roll,
@@ -477,16 +633,135 @@ class CatchResolutionService {
       },
     };
   }
+
+  #canLandByWeight({ fishWeightKg, maxTackleLoadKg, config }) {
+    const fishWeight = Math.max(0, Number(fishWeightKg) || 0);
+    const maxLoad = Math.max(0, Number(maxTackleLoadKg) || 0);
+    if (maxLoad <= 0) return false;
+
+    const maxRatio = Math.max(0, Number(config.maxLoadWeightRatio) || 1.0);
+    return fishWeight <= maxLoad * maxRatio + 0.0001;
+  }
+
+  #isLandingLiftReady({ physicsConfig, fightDebug }) {
+    const liftConfig = physicsConfig?.getLandingLiftConfig?.() || {};
+    if (liftConfig.enabled === false) return true;
+
+    const liftMaxKg = Math.max(0, Number(fightDebug?.landingLiftMaxKg) || 0);
+    const liftHoldKg = Math.max(0, Number(fightDebug?.landingLiftHoldKg) || 0);
+    const totalTensionKg = Math.max(0, Number(fightDebug?.totalTensionKg) || 0);
+    const currentTensionKg = Math.max(
+      0,
+      Number(fightDebug?.tensionKg) || 0,
+    );
+    if (liftMaxKg <= 0) return false;
+
+    return (
+      fightDebug?.landingLiftInZone === true &&
+      fightDebug?.landingLiftActive === true &&
+      liftHoldKg >= liftMaxKg - 0.001 &&
+      totalTensionKg >= liftMaxKg - 0.001 &&
+      currentTensionKg >= liftMaxKg - 0.001
+    );
+  }
+
+  #logAutoCatchVictory({
+    fishData,
+    distanceMeters,
+    landingDistanceMeters,
+    landingPolicy,
+    maxTackleLoadKg,
+    catchConfig,
+    landingReady,
+    fightDebug,
+  }) {
+    if (typeof console === "undefined") return;
+    if (typeof window === "undefined" || !window?.document) return;
+    if (window.DEBUG_MODULES?.catchResolution !== true) return;
+
+    const fishWeightKg = Math.max(0, Number(fishData?.weight) || 0);
+    const maxRatio = Math.max(
+      0,
+      Number(catchConfig?.maxLoadWeightRatio) || 1,
+    );
+    const maxAllowedWeightKg =
+      Math.max(0, Number(maxTackleLoadKg) || 0) * maxRatio;
+    const reason =
+      fightDebug?.landingLiftActive === true
+        ? "landing_lift_ready"
+        : "landing_lift_disabled_or_legacy";
+    const values = {
+      reason,
+      fishId: fishData?.id || fishData?.name || "unknown",
+      fishWeightKg,
+      maxTackleLoadKg: Number(maxTackleLoadKg) || 0,
+      maxAllowedWeightKg,
+      maxLoadWeightRatio: maxRatio,
+      lineDistanceMeters: distanceMeters,
+      landingDistanceMeters,
+      landingPolicy: landingPolicy?.constructor?.name || "LandingPolicy",
+      landingReady: !!landingReady,
+      landingLiftActive: !!fightDebug?.landingLiftActive,
+      landingLiftInZone: !!fightDebug?.landingLiftInZone,
+      landingLiftHoldKg: Number(fightDebug?.landingLiftHoldKg) || 0,
+      landingLiftMaxKg: Number(fightDebug?.landingLiftMaxKg) || 0,
+      landingLiftWaterTensionKg:
+        Number(fightDebug?.landingLiftWaterTensionKg) || 0,
+      landingLiftFishTensionKg:
+        Number(fightDebug?.landingLiftFishTensionKg) || 0,
+      tensionKg: Number(fightDebug?.tensionKg) || 0,
+      targetTensionKg: Number(fightDebug?.targetTensionKg) || 0,
+      totalTensionKg: Number(fightDebug?.totalTensionKg) || 0,
+      rawTensionKg: Number(fightDebug?.rawTensionKg) || 0,
+      fishTensionKg: Number(fightDebug?.fishTensionKg) || 0,
+      playerHoldTensionKg: Number(fightDebug?.playerHoldTensionKg) || 0,
+      rodHoldKg: Number(fightDebug?.activeRodPullForceKg) || 0,
+      rodHoldMaxKg: Number(fightDebug?.rodHoldMaxKg) || 0,
+      effectiveRodHoldKg: Number(fightDebug?.effectiveRodHoldKg) || 0,
+      holdTensionRatio: Number(fightDebug?.holdTensionRatio) || 0,
+      rodStrokeRatio: Number(fightDebug?.rodStrokeRatio) || 0,
+      rodPullBlockedReason: fightDebug?.rodPullBlockedReason || "none",
+      rodPullDragSlipping: !!fightDebug?.rodPullDragSlipping,
+      dragLimitKg: Number(fightDebug?.dragLimitKg) || 0,
+      dragLocked: !!fightDebug?.dragLocked,
+      reelSlip: !!fightDebug?.reelSlip,
+      rodStressRatio: Number(fightDebug?.rodStressRatio) || 0,
+      lineStressRatio: Number(fightDebug?.lineStressRatio) || 0,
+      hookStressRatio: Number(fightDebug?.hookStressRatio) || 0,
+      lineCanRelease: !!fightDebug?.lineCanRelease,
+      hardLineLimit: !!fightDebug?.hardLineLimit,
+    };
+
+    console.groupCollapsed?.("[CatchResolution] victory: " + reason);
+    if (typeof console.table === "function") {
+      console.table(values);
+    } else {
+      console.log(values);
+    }
+    console.groupEnd?.();
+  }
 }
 
 class FightService {
   #config;
+  #physicsConfig;
   #rng;
+  #devFlags;
   #upDirection = { x: 0, y: 1 };
   #forces = { pX: 0, pY: 0, fX: 0, fY: 0 };
   #forceService;
   #catchResolver;
   #fishingSystem = null;
+  #fish = null;
+  #fishForceSystem = null;
+  #lineSystem = null;
+  #dragSystem = null;
+  #pullInputMapper = null;
+  #rodPullSystem = null;
+  #rodControlSystem = null;
+  #reelSystem = null;
+  #tensionSystem = null;
+  #fightPhysicsSystem = null;
   #tensionMeter = null;
   #fishCondition = null;
   #staminaController = null;
@@ -498,14 +773,21 @@ class FightService {
   constructor({
     config,
     rng,
+    devFlags = null,
     fightSessionFactory = null,
     forceService = null,
     catchResolver = null,
   }) {
     this.#config = config;
+    this.#physicsConfig =
+      config?.fightPhysicsConfig ||
+      (typeof FightPhysicsConfigAdapter !== "undefined"
+        ? new FightPhysicsConfigAdapter(config)
+        : null);
     this.#rng = rng;
+    this.#devFlags = devFlags;
     this.#fightSessionFactory =
-      fightSessionFactory || new FightSessionFactory({ config, rng });
+      fightSessionFactory || new FightSessionFactory({ config, rng, devFlags });
     this.#forceService = forceService || new FishingForceService(config);
     this.#catchResolver = catchResolver || new CatchResolutionService();
   }
@@ -514,28 +796,54 @@ class FightService {
     const session = this.#fightSessionFactory.create(fishData, equipment);
     this.#rod = session.rod;
     this.#reel = session.reel;
-    this.#fishingSystem = session.fishingSystem;
+    this.#fish = session.fish;
+    this.#fishForceSystem = session.fishForceSystem;
+    this.#lineSystem = session.lineSystem;
+    this.#dragSystem = session.dragSystem;
+    this.#pullInputMapper = session.pullInputMapper;
+    this.#rodPullSystem = session.rodPullSystem;
+    this.#rodControlSystem = session.rodControlSystem;
+    this.#reelSystem = session.reelSystem;
+    this.#tensionSystem = session.tensionSystem;
+    this.#fightPhysicsSystem = session.fightPhysicsSystem;
     this.#tensionMeter = session.tensionMeter;
+    this.#fishingSystem = this.#createDebugFishingAdapter();
     this.#fishCondition = session.fishCondition;
     this.#staminaController = session.staminaController;
+    this.#catchResolver.reset?.();
   }
 
   syncEquipment(equipment) {
-    if (!this.#fishingSystem || !this.#tensionMeter || !this.#staminaController)
+    if (!this.#tensionMeter || !this.#staminaController)
       return;
     const next = this.#fightSessionFactory.createEquipment(equipment);
     this.#rod = next.rod;
     this.#reel = next.reel;
-    this.#fishingSystem.updateEquipment(this.#rod, this.#reel);
-    this.#tensionMeter.updateEquipment(
-      equipment.rod?.level || 1,
-      equipment.reel?.level || 0,
-      next.hook,
-      this.#config.tension,
-    );
+    this.#lineSystem = next.lineSystem;
+    this.#dragSystem?.updateEquipment(this.#reel);
+    this.#pullInputMapper?.reset?.();
+    this.#rodPullSystem?.reset?.();
+    this.#rodControlSystem?.reset?.();
+    this.#tensionMeter.updateEquipment({
+      rod: this.#rod,
+      reel: this.#reel,
+      lineSystem: this.#lineSystem,
+      leader: equipment.leader,
+    });
+    this.#fishingSystem = this.#createDebugFishingAdapter();
     this.#staminaController.updatePlayerPower(
-      this.#rod.getPower() + this.#reel.getPower(),
+      this.#tensionMeter.getEffectiveMaxTackleLoadKg(),
     );
+  }
+
+  syncFishRuntime(fishData) {
+    if (!this.#fish || !fishData) return;
+    this.#fish.updateRuntimeStats?.({
+      level: fishData.level,
+      weight: fishData.weight,
+      physics: fishData.physics,
+    });
+    this.#fishingSystem = this.#createDebugFishingAdapter();
   }
 
   /** @returns {FightUpdateResult} */
@@ -544,10 +852,14 @@ class FightService {
       return {
         transition: {
           name: "failed",
-          data: { reason: this.#tensionMeter.getBreakReason() },
+          data: {
+            reason: this.#tensionMeter.getBreakReason(),
+            failure: this.#tensionMeter.getBreakInfo?.(),
+          },
         },
       };
     }
+    this.#syncGodModeStamina();
     const {
       floatEntity,
       bounds,
@@ -559,75 +871,103 @@ class FightService {
     } = context;
     const forceData = this.#forceService.applyForces(dt, {
       ...context,
-      fishingSystem: this.#fishingSystem,
+      rod: this.#rod,
+      reel: this.#reel,
+      fishForceSystem: this.#fishForceSystem,
+      lineSystem: this.#lineSystem,
+      dragSystem: this.#dragSystem,
+      pullInputMapper: this.#pullInputMapper,
+      rodPullSystem: this.#rodPullSystem,
+      rodControlSystem: this.#rodControlSystem,
+      reelSystem: this.#reelSystem,
+      tensionSystem: this.#tensionSystem,
+      stressSystem: this.#tensionMeter,
+      fightPhysicsSystem: this.#fightPhysicsSystem,
+      fishCondition: this.#fishCondition,
+      buffs: null,
     });
     this.#forces = forceData.forces;
-    this.#tensionMeter.update(
-      input.isPulling,
-      forceData.pMax,
-      forceData.fMag,
-      this.#fishingSystem.getReelPower(),
-      forceData.fMag * 0.01,
-      dt,
-      this.#config.tension,
-      this.#config.hookMechanics,
-      forceData.activeHold,
-    );
-    const floatPos = floatEntity.getPosition();
-    this.#staminaController.evaluate(
-      this.#tensionMeter.getTension(),
-      input.isPulling,
-      dt,
-      floatPos.x,
-      bounds,
-    );
-    const resolution = this.#catchResolver.resolveAutoCatch({
-      floatEntity,
-      bounds,
-      net,
-      fishData,
-      projectorScale,
-      catchLineOffsetPx,
-    });
-    if (resolution.shouldTriggerLastDash) {
-      this.#fishingSystem.tryTriggerFishLastDash?.(dt);
+    const isRetrieveOnly =
+      this.#reel?.hasReel?.() &&
+      input.retrieve &&
+      !input.isPulling &&
+      !input.pointerDown;
+    const fightDebug = this.#tensionMeter.getDebugData?.() || {};
+    if (this.#isFishStaminaLocked()) {
+      this.#syncGodModeStamina();
+    } else {
+      this.#staminaController.evaluate({
+        tension: this.#tensionMeter.getTension(),
+        playerPowerIsPulling: input.isPulling && !isRetrieveOnly,
+        dt,
+        angleStressRatio: fightDebug.angleStressRatio || 0,
+        staminaPressureRatio: fightDebug.staminaPressureRatio || 0,
+        isLineFullyExtended: !!fightDebug.isLineFullyExtended,
+      });
     }
+    const resolution = this.#catchResolver.resolveAutoCatch({
+      fishData,
+      lineDistanceMeters: fightDebug.lineDistanceMeters,
+      maxTackleLoadKg: this.#tensionMeter.getEffectiveMaxTackleLoadKg?.(),
+      dtMs: dt,
+      rng: this.#rng,
+      config: this.#config,
+      rod: this.#rod,
+      reel: this.#reel,
+      fightDebug,
+    });
     if (resolution.transition) return { transition: resolution.transition };
     return {};
   }
 
+  #syncGodModeStamina() {
+    if (!this.#isFishStaminaLocked()) return;
+    this.#staminaController?.restoreFullStamina?.();
+  }
+
+  #isFishStaminaLocked() {
+    if (this.#devFlags?.isEnabled?.("noFishStaminaLoss")) return true;
+    const godMode = this.#config?.debug?.godMode;
+    return godMode?.enabled === true && godMode.noFishStaminaLoss === true;
+  }
+
   handlePlayerInput(input, equipment) {
-    const isHold = this.#fishingSystem.isHoldActive();
-    const swipeThreshold = equipment.reel?.hold?.swipeThresholdPx || 100;
-    if (this.#fishingSystem.getHoldUIState()?.hasHold) {
-      if (input.toggleHold || input.swipeDeltaY > swipeThreshold) {
-        isHold
-          ? this.#fishingSystem.deactivateHold()
-          : this.#fishingSystem.activateHold();
-      }
-    }
-    if (input.pumpAction || input.swipeDeltaY < -swipeThreshold) {
-      const red = this.#fishingSystem.tryUsePump(
-        equipment.reel?.pumpLevel || 0,
-        equipment.reel?.pumpPowerPerLevel || 10,
-      );
-      if (red > 0) this.#tensionMeter.applyPump(red);
-      return { consumedSwipe: true };
-    }
+    // DragSystem now reads pointerStart / pointerCurrent every frame in
+    // FightPhysicsSystem.step(), using the same drag-to-fill model as cast power.
+    // Do not consume swipeDeltaY here, otherwise it becomes a one-shot 10% step again.
     return {
-      consumedSwipe:
-        !!input.swipeDeltaY &&
-        (input.toggleHold || input.swipeDeltaY > swipeThreshold),
+      consumedSwipe: false,
     };
   }
 
   handleNetAttempt(net, rng, fishData) {
     return this.#catchResolver.resolveNetAttempt(
       net,
-      this.#fishingSystem.getFishWeight(),
+      this.#fish?.getWeight?.() || 0,
       rng,
       fishData,
     );
+  }
+
+  #createDebugFishingAdapter() {
+    return {
+      calculatePlayerForce: () => ({
+        x: 0,
+        y: this.#tensionMeter?.getEffectiveMaxTackleLoadKg?.() || 0,
+      }),
+      getCurrentState: () =>
+        this.#tensionMeter?.getDebugData?.().fishState || "idle",
+      getFishBasePower: () =>
+        this.#tensionMeter?.getDebugData?.().fishBasePower || 0,
+      getFishInitialPower: () =>
+        this.#tensionMeter?.getDebugData?.().fishInitialPower || 0,
+      getPullMultiplier: () =>
+        this.#tensionMeter?.getDebugData?.().pullMult || 0,
+      getMoveMultiplier: () =>
+        this.#tensionMeter?.getDebugData?.().moveMult || 0,
+      getActiveDebuffName: () => this.#fish?.activeDebuffName || "Немає",
+      getMasteryMultiplier: () => this.#fish?.getMasteryMultiplier?.() || 1.0,
+    };
   }
 
   /**
@@ -646,10 +986,10 @@ class FightService {
       floatPos.y,
       rodPos,
       screenOffset,
-      this.#config.physics,
+      this.#getDebugPhysicsConfig(),
       bounds,
     );
-    const xRange = this.#config.physics?.distanceXMultiplier || [1.0, 1.0];
+    const xRange = this.#physicsConfig?.getDistanceXMultiplier?.() || [1.0, 1.0];
     const boundsHeight = Math.max(1, bounds.bottom - bounds.top);
     const distRatio = Math.max(
       0,
@@ -657,25 +997,28 @@ class FightService {
     );
     const depthScaleX = xRange[0] + distRatio * (xRange[1] - xRange[0]);
     const steerP =
-      (this.#rod.getPower() + this.#reel.getPower()) *
-      this.#config.physics.playerSteeringMultiplier *
-      this.#config.physics.playerForceMultiplier *
+      (this.#tensionMeter?.getEffectiveMaxTackleLoadKg?.() || 0) *
+      (
+        this.#physicsConfig?.getPlayerSteeringMultiplier?.() ??
+        1.5
+      ) *
       depthScaleX;
     return {
       playerForceY: Math.abs(this.#forces.pY || 0),
       playerForceX: Math.abs(this.#forces.pX || 0),
       fishForceY: Math.abs(this.#forces.fY || 0),
       fishForceX: Math.abs(this.#forces.fX || 0),
-      playerMaxPowerY: Math.abs(
-        maxP.y * this.#config.physics.playerForceMultiplier,
-      ),
+      playerMaxPowerY: Math.abs(maxP.y || 0),
       playerMaxPowerX: steerP,
       fishState: fs?.getCurrentState?.() || "idle",
       fishBasePower: fs?.getFishBasePower?.() || 0,
       fishInitialPower: fs?.getFishInitialPower?.() || 0,
       tension: this.#tensionMeter?.getTension?.() || 0,
       lineBreakProgress: this.#tensionMeter?.getLineBreakProgress?.() || 0,
+      ...(this.#tensionMeter?.getDebugData?.() || {}),
       fishConditionPhase: this.#fishCondition?.phase || "n/a",
+      fishConditionMaxStamina: this.#fishCondition?.maxStamina || 0,
+      fishConditionMaxEndurance: this.#fishCondition?.maxEndurance || 0,
       fishConditionMaxPoints: this.#fishCondition?.maxPoints || 0,
       currentStamina: this.#fishCondition?.currentStamina || 0,
       currentExhaustion: this.#fishCondition?.currentExhaustion || 0,
@@ -690,11 +1033,15 @@ class FightService {
   }
 
   getHoldUiState() {
-    return this.#fishingSystem?.getHoldUIState?.() || null;
+    return null;
   }
 
   get tensionMeter() {
     return this.#tensionMeter;
+  }
+
+  #getDebugPhysicsConfig() {
+    return this.#physicsConfig?.getLineSystemConfig?.() || {};
   }
 
   get fishCondition() {

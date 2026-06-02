@@ -34,7 +34,7 @@ class RenderSystem {
     }
 
     if (locations?.showChumZones !== false) {
-      r.drawChumZones(this.#chum, this.#projector);
+      r.drawChumZones(this.#chum, this.#projector, locations);
     }
 
     if (this.#chum) {
@@ -77,6 +77,7 @@ class FishingRenderService {
   #lineStraightFactor = 0;
   #lineLastNow = 0;
   #lineCastStartTime = null;
+  #landingPolicyResolver = new LandingPolicyResolver();
 
   constructor({
     inventory,
@@ -233,12 +234,15 @@ class FishingRenderService {
     const targetYAfterShrink = rodTopY + distY * ratio;
     drop = Math.min(drop, Math.max(0, mapBottomScreenY - targetYAfterShrink));
 
+    const fightDebug = tMeter?.getDebugData?.() || {};
+
     renderer.drawCatchZone(
       this.#projector,
       this.#getNet(),
       bottom,
       this.#config.locations,
       this.#config.ui.catchZone,
+      this.#resolveLandingZoneContext(eq, bottom, fightDebug),
     );
     renderer.drawRodLine(
       sPos,
@@ -254,10 +258,18 @@ class FishingRenderService {
     );
     renderer.drawFloat(sPos, floatEntity, eq.float || {}, this.#projector, eq);
     if (state === "playing" && tMeter && fCond) {
+      if (typeof renderer.drawRodStrokeBar === "function") {
+        renderer.drawRodStrokeBar(
+          fightDebug,
+          this.#config.tension,
+          this.#config.ui.indicators,
+        );
+      }
       renderer.drawTensionBar(
         tMeter,
         this.#config.tension,
         this.#config.ui.indicators,
+        fightDebug,
       );
       renderer.drawFishCondition(fCond, this.#config.ui.indicators);
     }
@@ -267,5 +279,33 @@ class FishingRenderService {
     if (dtSec <= 0) return current;
     const alpha = 1 - Math.exp(-Math.max(0, speed) * dtSec);
     return current + (target - current) * alpha;
+  }
+
+  #resolveLandingZoneContext(eq, bottom, fightDebug) {
+    const policy = this.#landingPolicyResolver.resolve({
+      rod: eq.rod,
+      reel: eq.reel,
+    });
+    const landingDistanceMeters = policy.getLandingDistanceMeters({
+      rod: eq.rod,
+      reel: eq.reel,
+      config: this.#config,
+    });
+    const rodScreenX = this.#getRodScreenX();
+    const screenX = Number.isFinite(Number(rodScreenX))
+      ? Number(rodScreenX)
+      : this.#canvasMetrics.width / 2;
+    const rodVirtual = this.#projector.screenToVirtual(screenX, 0, this.#scratch2);
+    const lastDash = fightDebug?.lastDash || {};
+
+    return {
+      rodVirtualX: rodVirtual.x,
+      rodVirtualY: bottom,
+      landingDistanceMeters,
+      lastDashTriggerDistanceMeters: lastDash.triggerDistanceMeters,
+      pixelsPerMeter:
+        this.#config.fightPhysicsConfig?.getPixelsPerMeter?.() ||
+        50,
+    };
   }
 }

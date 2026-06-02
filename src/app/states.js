@@ -442,6 +442,7 @@ class ScoutingState extends GameState {
   #pendingCast = null;
   #missingRodWarnedForPress = false;
   #missingReelWarnedForPress = false;
+  #missingLineWarnedForPress = false;
   #isUiDimmed = false;
 
   /** @param {ScoutingStateDeps} deps */
@@ -463,6 +464,7 @@ class ScoutingState extends GameState {
     this.#pendingCast = null;
     this.#missingRodWarnedForPress = false;
     this.#missingReelWarnedForPress = false;
+    this.#missingLineWarnedForPress = false;
     this.#castAim.reset();
     this.#setUiDimmed(false);
   }
@@ -473,6 +475,7 @@ class ScoutingState extends GameState {
     this.#pendingCast = null;
     this.#missingRodWarnedForPress = false;
     this.#missingReelWarnedForPress = false;
+    this.#missingLineWarnedForPress = false;
     this.#setUiDimmed(false);
   }
 
@@ -484,8 +487,13 @@ class ScoutingState extends GameState {
       if (!this.#canStartRodCast(eq)) {
         if (!eq?.rod) {
           this.deps.commands.showMissingRodInventoryWarning?.();
-        } else {
+        } else if (
+          this.deps.rules.equipment.requiresReel(eq) &&
+          !eq?.reel
+        ) {
           this.deps.commands.showMissingReelInventoryWarning?.();
+        } else {
+          this.deps.commands.showMissingLineInventoryWarning?.();
         }
         return;
       }
@@ -506,10 +514,13 @@ class ScoutingState extends GameState {
 
       let isInside = true;
       if (!canCastAnywhere) {
-        const maxDist = this.deps.rules.equipment.getMaxCastDistance(eq);
-        if (maxDist !== Infinity) {
-          isInside = vPos.y >= bounds.bottom - maxDist;
-        }
+        isInside = this.deps.rules.cast.canCastAt(
+          vPos.x,
+          vPos.y,
+          eq,
+          bounds,
+          this.deps.world.getRodVirtualPos(bounds),
+        );
       }
 
       if ((cell && isInside) || canCastAnywhere) {
@@ -536,7 +547,9 @@ class ScoutingState extends GameState {
         this.deps.depthUI.hide();
       }
       this.deps.currentHookDepthRef.set(
-        this.deps.config.physics?.defaultDepthNoSinker ?? 0.1,
+        this.deps.config.fightPhysicsConfig?.getLureRetrieveConfig?.()
+          ?.defaultDepthNoSinker ??
+          0.1,
       );
       return;
     }
@@ -561,6 +574,9 @@ class ScoutingState extends GameState {
       if (!this.deps.isAimingChum()) {
         const visual = this.#castAim.getVisualState();
         if (visual) {
+          const eq = this.deps.inventory.getEquipped();
+          const maxDistance =
+            this.deps.rules.equipment.getEffectiveCastDistance(eq);
           this.#drawAccuracyPreview(renderer, bounds, this.#castAim, visual);
           renderer.drawCastPowerAim(
             this.deps.projector,
@@ -569,6 +585,7 @@ class ScoutingState extends GameState {
             this.deps.config.casting,
             this.deps.config.tension,
             this.deps.clock.now,
+            maxDistance,
           );
         }
       }
@@ -578,7 +595,7 @@ class ScoutingState extends GameState {
     if (!this.deps.isAimingChum()) {
       if (this.deps.config.locations?.showAimingZone !== false) {
         const eq = this.deps.inventory.getEquipped();
-        let maxDist = this.deps.rules.equipment.getMaxCastDistance(eq);
+        let maxDist = this.deps.rules.equipment.getEffectiveCastDistance(eq);
 
         if (maxDist !== Infinity) {
           maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
@@ -587,6 +604,7 @@ class ScoutingState extends GameState {
             bounds.bottom,
             maxDist,
             "rod",
+            this.deps.config.locations,
           );
         }
       }
@@ -603,19 +621,23 @@ class ScoutingState extends GameState {
           bounds.bottom,
           this.deps.getChumCastDistance(),
           "chum",
+          this.deps.config.locations,
         );
       }
     }
   }
 
   #updatePowerCasting(dt, bounds, input) {
-    if (!input?.pointerDown) {
+    const wantsRodAim = !!(input?.pointerDown || input?.isPulling);
+
+    if (!wantsRodAim) {
       this.#missingRodWarnedForPress = false;
       this.#missingReelWarnedForPress = false;
+      this.#missingLineWarnedForPress = false;
     }
 
     const eq = this.deps.inventory.getEquipped();
-    if (input?.pointerDown && !this.#canStartRodCast(eq)) {
+    if (wantsRodAim && !this.#canStartRodCast(eq)) {
       this.#castAim.reset();
       this.#pendingCast = null;
       this.#setUiDimmed(false);
@@ -630,6 +652,13 @@ class ScoutingState extends GameState {
       ) {
         this.deps.commands.showMissingReelInventoryWarning?.();
         this.#missingReelWarnedForPress = true;
+      } else if (
+        eq?.rod &&
+        !this.deps.rules.equipment.hasEquippedLine(eq) &&
+        !this.#missingLineWarnedForPress
+      ) {
+        this.deps.commands.showMissingLineInventoryWarning?.();
+        this.#missingLineWarnedForPress = true;
       }
       return false;
     }
@@ -658,7 +687,7 @@ class ScoutingState extends GameState {
 
     const canCastAnywhere =
       this.deps.services.devFlags.isEnabled("infiniteCasting");
-    const maxDistance = this.deps.rules.equipment.getMaxCastDistance(eq);
+    const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
     const accuracyPx =
       Number(eq?.rod?.accuracy) ||
       Number(eq?.rod?.engineStats?.accuracy) ||
@@ -715,7 +744,8 @@ class ScoutingState extends GameState {
 
   #canStartRodCast(eq) {
     if (!eq?.rod) return false;
-    return !this.deps.rules.equipment.requiresReel(eq) || !!eq.reel;
+    if (this.deps.rules.equipment.requiresReel(eq) && !eq.reel) return false;
+    return this.deps.rules.equipment.hasEquippedLine(eq);
   }
 
   #isCancelledRelease(release) {
@@ -743,7 +773,7 @@ class ScoutingState extends GameState {
   #drawAccuracyPreview(renderer, bounds, aim, visual) {
     if (!this.deps.config.debug?.casting?.showAccuracyArea) return;
     const eq = this.deps.inventory.getEquipped();
-    const maxDistance = this.deps.rules.equipment.getMaxCastDistance(eq);
+    const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
     const accuracyPx =
       Number(eq?.rod?.accuracy) ||
       Number(eq?.rod?.engineStats?.accuracy) ||
@@ -792,13 +822,21 @@ class WaitingState extends GameState {
       panViewport: deps.commands.panViewport,
       rng: deps.rng,
     });
+    this.#landingPolicyResolver = new LandingPolicyResolver();
+    this.#idleRetrievePolicyResolver = new IdleRetrievePolicyResolver();
   }
 
-  #effectiveInput = { isPulling: false, pullDirection: null };
+  #effectiveInput = {
+    isPulling: false,
+    pullDirection: null,
+    idleRetrieveParams: null,
+  };
   #pullDirection = new Vector2(0, 0);
   #baitIds = [];
   #baitTypes = [];
   #recastAim;
+  #landingPolicyResolver;
+  #idleRetrievePolicyResolver;
   #isRecastAiming = false;
   #pendingRecast = null;
 
@@ -819,9 +857,8 @@ class WaitingState extends GameState {
     }
 
     const eq = this.deps.inventory.getEquipped();
-    const isSpinning = this.deps.rules.equipment.isSpinning(eq);
 
-    if (!isSpinning && input.longPressPos && this.deps.canPlayerCast()) {
+    if (input.longPressPos && this.deps.canPlayerCast()) {
       if (this.#usePowerCasting()) {
         this.#isRecastAiming = true;
         input.longPressPos = null;
@@ -847,6 +884,9 @@ class WaitingState extends GameState {
     const effectiveInput = this.#effectiveInput;
     effectiveInput.isPulling = this.#isRecastAiming ? false : input.isPulling;
     effectiveInput.pullDirection = input.pullDirection;
+    effectiveInput.idleRetrieveParams = effectiveInput.isPulling
+      ? this.#getIdleRetrieveParams(eq)
+      : null;
 
     let pullDirection = null;
     if (effectiveInput.isPulling) {
@@ -867,12 +907,8 @@ class WaitingState extends GameState {
     );
 
     const updatedPos = this.deps.float.getPosition();
-    const shoreY =
-      bounds.bottom -
-      (this.deps.config.locations.catchLineOffsetPx || 5) /
-        this.deps.projector.getScale();
 
-    if (isSpinning && updatedPos.y >= shoreY) {
+    if (this.#isEmptyTackleLandingComplete(updatedPos, bounds, eq, isSpinning)) {
       this.deps.commands.setState("scouting");
       return;
     }
@@ -912,26 +948,41 @@ class WaitingState extends GameState {
         baitTypes,
       );
       const visual = template.visual || {};
-      const maxLevel = template.weightConfig?.maxLevel || fixed.level;
+      const weightConfig = template.weightConfig || {};
+      const fixedLevel = this.#resolveFixedCatchLevel(fixed.weight, weightConfig);
+      const maxLevel = weightConfig.maxLevel || fixedLevel;
       const uniqueLevel = visual.uniqueLevel;
       const isUnique =
         template.isUnique === true ||
         template.unique === true ||
-        (Number.isFinite(uniqueLevel) && fixed.level >= uniqueLevel);
+        (Number.isFinite(uniqueLevel) && fixedLevel >= uniqueLevel);
       const imagePattern =
         visual.imagePattern ||
         `assets/fish/${template.id}/${template.id}--{level}.webp`;
+      const fixedLevelRange = template.weightConfig?.levelWeightRanges?.find(
+        (range) => Number(range?.level) === Number(fixedLevel),
+      );
+      const fixedLevelBasePower = Number.isFinite(Number(fixedLevelRange?.basePower))
+        ? Number(fixedLevelRange.basePower)
+        : 1;
+      const levelAverageWeightKg = this.#resolveLevelAverageWeightKg(
+        weightConfig,
+        fixedLevel,
+      );
 
       hooked = {
         id: template.id,
         name: template.name + " (TEST)",
-        physics: template.physics,
-        level: fixed.level,
+        physics: {
+          ...(template.physics || {}),
+          levelBasePower: fixedLevelBasePower,
+        },
+        level: fixedLevel,
         maxLevel,
+        levelAverageWeightKg,
         weight: fixed.weight,
-        resistance: fixed.resistance,
         biteSequence: chosenSequence,
-        imagePath: imagePattern.replace("{level}", fixed.level),
+        imagePath: imagePattern.replace("{level}", fixedLevel),
         isUnique,
         isTrophy:
           template.trophyWeightKg !== undefined
@@ -947,6 +998,57 @@ class WaitingState extends GameState {
     }
   }
 
+  #resolveFixedCatchLevel(weight, weightConfig) {
+    const ranges = weightConfig?.levelWeightRanges;
+    const maxLevel = Math.max(1, Math.round(Number(weightConfig?.maxLevel) || 1));
+    const value = Number(weight);
+    if (!Array.isArray(ranges) || ranges.length === 0 || !Number.isFinite(value)) {
+      return maxLevel;
+    }
+
+    let firstRange = null;
+    let lastRange = null;
+    for (const range of ranges) {
+      const min = Number(range?.min);
+      const max = Number(range?.max);
+      const level = Number(range?.level);
+      if (
+        !Number.isFinite(min) ||
+        !Number.isFinite(max) ||
+        !Number.isFinite(level)
+      ) {
+        continue;
+      }
+
+      const normalized = {
+        level: Math.max(1, Math.round(level)),
+        min: Math.min(min, max),
+        max: Math.max(min, max),
+      };
+      if (!firstRange) firstRange = normalized;
+      lastRange = normalized;
+      if (value >= normalized.min && value <= normalized.max) {
+        return normalized.level;
+      }
+    }
+
+    if (!firstRange) return maxLevel;
+    return value < firstRange.min ? firstRange.level : lastRange.level;
+  }
+
+  #resolveLevelAverageWeightKg(weightConfig, level) {
+    const ranges = weightConfig?.levelWeightRanges;
+    const match = Array.isArray(ranges)
+      ? ranges.find((range) => Number(range?.level) === Number(level))
+      : null;
+    const rangeMin = Number(match?.min);
+    const rangeMax = Number(match?.max);
+    if (Number.isFinite(rangeMin) && Number.isFinite(rangeMax)) {
+      return (Math.min(rangeMin, rangeMax) + Math.max(rangeMin, rangeMax)) / 2;
+    }
+    return null;
+  }
+
   draw(renderer, bounds) {
     this.deps.render.drawFishingElements(
       renderer,
@@ -958,6 +1060,8 @@ class WaitingState extends GameState {
     );
     const visual = this.#recastAim.getVisualState();
     if (visual) {
+      const eq = this.deps.inventory.getEquipped();
+      const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
       this.#drawRecastAccuracyPreview(renderer, bounds);
       renderer.drawCastPowerAim(
         this.deps.projector,
@@ -966,6 +1070,7 @@ class WaitingState extends GameState {
         this.deps.config.casting,
         this.deps.config.tension,
         this.deps.clock.now,
+        maxDistance,
       );
     }
   }
@@ -992,7 +1097,7 @@ class WaitingState extends GameState {
 
     const canCastAnywhere =
       this.deps.services.devFlags.isEnabled("infiniteCasting");
-    const maxDistance = this.deps.rules.equipment.getMaxCastDistance(eq);
+    const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
     const accuracyPx =
       Number(eq?.rod?.accuracy) ||
       Number(eq?.rod?.engineStats?.accuracy) ||
@@ -1051,15 +1156,13 @@ class WaitingState extends GameState {
     const cell = this.deps.world.checkWater(vPos.x, vPos.y);
     const bounds = this.deps.world.getDynamicBounds();
 
-    let maxDist = this.deps.rules.equipment.getMaxCastDistance(eq);
-    if (maxDist !== Infinity) {
-      maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
-    }
-
-    let isInside = true;
-    if (maxDist !== Infinity) {
-      isInside = vPos.y >= bounds.bottom - maxDist;
-    }
+    const isInside = this.deps.rules.cast.canCastAt(
+      vPos.x,
+      vPos.y,
+      eq,
+      bounds,
+      this.deps.world.getRodVirtualPos(bounds),
+    );
 
     if (cell && isInside) {
       this.deps.castManager.registerCast(this.deps.clock.now);
@@ -1089,10 +1192,59 @@ class WaitingState extends GameState {
     return release.power <= threshold;
   }
 
+  #isEmptyTackleLandingComplete(position, bounds, eq, isSpinning) {
+    const landingDistanceMeters = this.#getLandingDistanceMeters(eq);
+    if (landingDistanceMeters <= 0) return false;
+
+    const rodPos = this.deps.world.getRodVirtualPos(bounds);
+    const pixelsPerMeter =
+      Math.max(
+        1,
+        Number(this.deps.config.fightPhysicsConfig?.getPixelsPerMeter?.()) ||
+          50,
+      );
+    const distanceMeters =
+      Math.hypot(position.x - rodPos.x, position.y - rodPos.y) / pixelsPerMeter;
+
+    if (distanceMeters <= landingDistanceMeters + 0.001) return true;
+
+    if (!isSpinning) return false;
+
+    const shoreY =
+      bounds.bottom -
+      (this.deps.config.locations.catchLineOffsetPx || 5) /
+        this.deps.projector.getScale();
+    return position.y >= shoreY;
+  }
+
+  #getLandingDistanceMeters(eq) {
+    const policy = this.#landingPolicyResolver.resolve({
+      rod: eq?.rod,
+      reel: eq?.reel,
+    });
+    return policy.getLandingDistanceMeters({
+      rod: eq?.rod,
+      reel: eq?.reel,
+      config: this.deps.config,
+    });
+  }
+
+  #getIdleRetrieveParams(eq) {
+    const policy = this.#idleRetrievePolicyResolver.resolve({
+      rod: eq?.rod,
+      reel: eq?.reel,
+    });
+    return policy.getRetrieveParams({
+      rod: eq?.rod,
+      reel: eq?.reel,
+      config: this.deps.config,
+    });
+  }
+
   #drawRecastAccuracyPreview(renderer, bounds) {
     if (!this.deps.config.debug?.casting?.showAccuracyArea) return;
     const eq = this.deps.inventory.getEquipped();
-    const maxDistance = this.deps.rules.equipment.getMaxCastDistance(eq);
+    const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
     const accuracyPx =
       Number(eq?.rod?.accuracy) ||
       Number(eq?.rod?.engineStats?.accuracy) ||
@@ -1293,7 +1445,11 @@ class BitingState extends GameState {
               eq,
               stepInfo,
               this.deps.rng,
-              this.deps.config.physics,
+              {
+                baitLossChance:
+                  this.deps.config.fightPhysicsConfig
+                    ?.getBaitLossChanceConfig?.() || {},
+              },
             )
           ) {
             this.deps.float.stopBite();
@@ -1477,6 +1633,7 @@ class PlayingState extends GameState {
     fightContext.net = this.deps.net;
     fightContext.fishData = fishData;
     fightContext.getRodVirtualPos = this.#getRodVirtualPos;
+    fightContext.getBaseRodVirtualPos = this.#getBaseRodVirtualPos;
     fightContext.getScreenOffsetRatio = this.#getScreenOffsetRatio;
     fightContext.checkWater = this.#checkWater;
 
@@ -1493,7 +1650,6 @@ class PlayingState extends GameState {
             : "Немає (Махова)",
         "Згенерована Вага": fishData.weight.toFixed(3) + " кг",
         "Рівень (Складність)": fishData.level,
-        "Базовий Опір": fishData.resistance.toFixed(2),
       });
 
       this.deps.services.debug.emit("debug-fish-hooked", {
@@ -1538,7 +1694,7 @@ class PlayingState extends GameState {
     this.deps.ui.updateNetButtonState(this.#hasEquippedNet, this.#isNetReady);
 
     if (updatedPos.y >= bounds.bottom) return;
-    this.deps.holdUI.update(this.deps.fight.getHoldUiState());
+    this.deps.holdUI.update(null);
   }
 
   handleNetClick() {
@@ -1607,6 +1763,9 @@ class PlayingState extends GameState {
 
   #getRodVirtualPos = (frameBounds) =>
     this.deps.world.getRodVirtualPos(frameBounds);
+  #getBaseRodVirtualPos = (frameBounds) =>
+    this.deps.world.getBaseRodVirtualPos?.(frameBounds) ||
+    this.deps.world.getRodVirtualPos(frameBounds);
   #getScreenOffsetRatio = (pos) => this.deps.world.getScreenOffsetRatio(pos);
   #checkWater = (vx, vy) => this.deps.world.checkWater(vx, vy);
 }
@@ -1619,12 +1778,13 @@ class FailedState extends GameState {
 
   enter(data) {
     if (super.enter) super.enter();
+    this.data = data || {};
     this.deps.ui.updateContinueButtonState(true);
 
     const eq = this.deps.inventory.getEquipped();
-    const reason = data?.reason;
+    const reason = this.data?.reason;
 
-    this.deps.fishing.applyFailureEquipmentLoss(reason, eq);
+    this.deps.fishing.applyFailureEquipmentLoss(reason, eq, this.data?.failure || this.data || {});
   }
 
   exit() {
@@ -1665,18 +1825,19 @@ class VictoryState extends GameState {
   }
 
   handleInput(input) {
-    if (!input?.clickPos) return;
+    const actionPoint = this.#getActionPoint(input);
+    if (!actionPoint) return;
 
     const viewport = this.deps.getViewportSize();
     const actions = this.#getVictoryActionRects(viewport);
-    const click = input.clickPos;
     const isActionClick =
-      this.#isPointInside(click, actions.claim) ||
-      this.#isPointInside(click, actions.release);
+      this.#isPointInside(actionPoint, actions.claim) ||
+      this.#isPointInside(actionPoint, actions.release);
 
     if (!isActionClick) return;
 
     input.clickPos = null;
+    input.pointerReleased = false;
     this.deps.commands.setState("scouting");
   }
 
@@ -1784,5 +1945,19 @@ class VictoryState extends GameState {
       point.y >= rect.y &&
       point.y <= rect.y + rect.h
     );
+  }
+
+  #getActionPoint(input) {
+    if (input?.clickPos) return input.clickPos;
+    if (!input?.pointerReleased) return null;
+
+    const point = input.pointerRelease || input.pointerCurrent;
+    if (
+      Number.isFinite(Number(point?.x)) &&
+      Number.isFinite(Number(point?.y))
+    ) {
+      return point;
+    }
+    return null;
   }
 }

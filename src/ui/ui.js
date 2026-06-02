@@ -1044,7 +1044,7 @@ class InventoryUI {
     topBar.className = "inv-top-bar";
 
     const powerLabelWrapper = document.createElement("div");
-    powerLabelWrapper.innerHTML = `💪 Загальна сила: <span style="color: #00ff80;">0</span> / 1000`;
+    powerLabelWrapper.innerHTML = `🧱 Макс. навантаження снасті: <span style="color: #00ff80;">0.0</span> кг`;
     this.#powerValueNode = powerLabelWrapper.querySelector("span");
 
     const closeBtn = document.createElement("button");
@@ -1171,6 +1171,7 @@ class InventoryUI {
 
     checkConflict(equippedItems.rod);
     checkConflict(equippedItems.reel);
+    checkConflict(equippedItems.line);
     checkConflict(equippedItems.float);
     checkConflict(equippedItems.sinker);
     checkConflict(equippedItems.net);
@@ -1238,6 +1239,9 @@ class InventoryUI {
       const canHaveReel = hasReelProp ?? rod.type !== "pole";
       if (canHaveReel)
         rodGroup.slots.push({ id: "reel", label: "Котушка", type: "reel" });
+      const canHaveLine = !canHaveReel || !!equipped.reel;
+      if (canHaveLine)
+        rodGroup.slots.push({ id: "line", label: "Ліска", type: "line" });
     }
     groups.push(rodGroup);
 
@@ -1520,30 +1524,54 @@ class InventoryUI {
     element.addEventListener("mouseenter", () => {
       if (!window.matchMedia("(hover: hover)").matches) return;
 
-      let html = `<div style="font-size: 16px; font-weight: bold; margin-bottom: 5px; color: #00ccff;">${item.icon} ${item.name}</div>`;
-      for (const [key, val] of Object.entries(item)) {
-        if (
-          [
-            "id",
-            "name",
-            "icon",
-            "type",
-            "instanceId",
-            "quantity",
-            "buildId",
-            "buildName",
-            "displayStats",
-            "engineStats",
-            "requiresTag",
-          ].includes(key)
-        )
-          continue;
+      const currentItem =
+        isEquipped || !instanceId
+          ? item
+          : this.#inventoryManager.hydrateInstance(instanceId) || item;
+
+      let html = `<div style="font-size: 16px; font-weight: bold; margin-bottom: 5px; color: #00ccff;">${currentItem.icon} ${currentItem.name}</div>`;
+      const renderedLabels = new Set();
+      const displayStats = currentItem.displayStats || {};
+      for (const [label, value] of Object.entries(displayStats)) {
+        if (value === undefined || value === null) continue;
+        renderedLabels.add(label);
+        html += `<div class="inv-tooltip-stat" style="color: #aaa;"><b>${label}:</b> <span style="color: #fff;">${value}</span></div>`;
+      }
+
+      const internalKeys = new Set([
+        "id",
+        "name",
+        "icon",
+        "type",
+        "instanceId",
+        "quantity",
+        "buildId",
+        "buildName",
+        "displayStats",
+        "engineStats",
+        "requiresTag",
+        "level",
+        "basePower",
+        "compensation",
+        "maxDistance",
+        "durabilityMaxLoadLossPerPercent",
+        "hasReel",
+        "capabilities",
+        "line",
+      ]);
+
+      for (const key of Object.keys(currentItem.engineStats || {})) {
+        internalKeys.add(key);
+      }
+
+      for (const [key, val] of Object.entries(currentItem)) {
+        if (internalKeys.has(key) || renderedLabels.has(key)) continue;
 
         if (typeof val !== "object" && typeof val !== "function") {
           html += `<div class="inv-tooltip-stat" style="color: #aaa;"><b>${key}:</b> <span style="color: #fff;">${val}</span></div>`;
         }
       }
-      html += this.#buildCompatibilityTooltip(item);
+      html += this.#buildCompatibilityTooltip(currentItem);
 
       this.#tooltipNode.innerHTML = html;
       this.#tooltipNode.style.display = "block";
@@ -1627,6 +1655,7 @@ class InventoryUI {
       float: "Поплавкова: болонська або махова",
       hook: "Поплавкова / фідерна",
       lure: "Спінінг",
+      line: "Ліска потрібної довжини",
       reel: "Вудка з котушкою",
       sinker: "Поплавкова / донна",
     };
@@ -1813,6 +1842,7 @@ class InventoryUI {
 
     countItem(equippedItems.rod);
     countItem(equippedItems.reel);
+    countItem(equippedItems.line);
     countItem(equippedItems.float);
     countItem(equippedItems.sinker);
     countItem(equippedItems.feederChum);

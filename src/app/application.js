@@ -5,8 +5,11 @@ class GameViewportFacade {
   #config;
   #biteEnvironmentService;
   #rodVirtualPos = new Vector2(0, 0);
+  #baseRodVirtualPos = new Vector2(0, 0);
   #screenScratch = new Vector2(0, 0);
+  #playableScratch = new Vector2(0, 0);
   #viewportSize = { width: 0, height: 0 };
+  #rodVisualOffsetSystem = new RodVisualOffsetSystem();
 
   constructor({
     world,
@@ -52,20 +55,19 @@ class GameViewportFacade {
   }
 
   getRodVirtualPos(bounds, screenXOverride = null) {
-    const rodConfig = this.#config.ui?.rod || {};
-    const rodX =
-      Number.isFinite(screenXOverride)
-        ? screenXOverride
-        : rodConfig.x === "center"
-          ? this.#canvasMetrics.width / 2
-          : Number(rodConfig.x);
-    const screenX = Number.isFinite(rodX)
-      ? rodX
-      : this.#canvasMetrics.width / 2;
+    const screenX = this.getRodScreenX(screenXOverride, bounds);
 
     this.#projector.screenToVirtual(screenX, 0, this.#rodVirtualPos);
     this.#rodVirtualPos.y = bounds.bottom;
     return this.#rodVirtualPos;
+  }
+
+  getBaseRodVirtualPos(bounds, screenXOverride = null) {
+    const screenX = this.#resolveBaseRodScreenX(screenXOverride);
+
+    this.#projector.screenToVirtual(screenX, 0, this.#baseRodVirtualPos);
+    this.#baseRodVirtualPos.y = bounds.bottom;
+    return this.#baseRodVirtualPos;
   }
 
   getScreenOffsetRatio(floatPos, screenXOverride = null) {
@@ -74,6 +76,53 @@ class GameViewportFacade {
       floatPos.y,
       this.#screenScratch,
     );
+    const screenX = this.getRodScreenX(screenXOverride, null);
+    const halfWidth = Math.max(1, this.#canvasMetrics.width / 2);
+    return Math.min(1, Math.abs(sPos.x - screenX) / halfWidth);
+  }
+
+  updateRodVisualOffset({ dtMs, input, fightDebug, bounds, stateName } = {}) {
+    const rodControlConfig = this.#config.fightPhysicsConfig?.getRodControlConfig?.() ||
+      this.#config.physics?.fight?.rodControl ||
+      {};
+    const activeInput =
+      stateName === "playing"
+        ? input
+        : {
+            ...input,
+            rodControlActive: false,
+            rodControlDirectionX: 0,
+            rodControlInputRatio: 0,
+          };
+    const offsetX = this.#rodVisualOffsetSystem.update({
+      dtSec: Math.max(0, Number(dtMs) || 0) / 1000,
+      inputState: activeInput,
+      fightDebug,
+      config: rodControlConfig,
+      canvasWidth: this.#canvasMetrics.width,
+    });
+    if (fightDebug) {
+      fightDebug.rodVisualOffsetX = offsetX;
+      fightDebug.rodVisualClamped = this.#rodVisualOffsetSystem.isClamped();
+    }
+  }
+
+  getRodScreenX(screenXOverride = null, bounds = null) {
+    const baseX = this.#resolveBaseRodScreenX(screenXOverride);
+    const playable = this.#resolvePlayableScreenBounds(bounds);
+    const rodControlConfig = this.#config.fightPhysicsConfig?.getRodControlConfig?.() ||
+      this.#config.physics?.fight?.rodControl ||
+      {};
+    return this.#rodVisualOffsetSystem.resolveScreenX({
+      baseX,
+      canvasWidth: this.#canvasMetrics.width,
+      playableLeft: playable.left,
+      playableRight: playable.right,
+      config: rodControlConfig,
+    });
+  }
+
+  #resolveBaseRodScreenX(screenXOverride = null) {
     const rodConfig = this.#config.ui?.rod || {};
     const rodX =
       Number.isFinite(screenXOverride)
@@ -81,11 +130,32 @@ class GameViewportFacade {
         : rodConfig.x === "center"
           ? this.#canvasMetrics.width / 2
           : Number(rodConfig.x);
-    const screenX = Number.isFinite(rodX)
+    return Number.isFinite(rodX)
       ? rodX
       : this.#canvasMetrics.width / 2;
-    const halfWidth = Math.max(1, this.#canvasMetrics.width / 2);
-    return Math.min(1, Math.abs(sPos.x - screenX) / halfWidth);
+  }
+
+  #resolvePlayableScreenBounds(bounds) {
+    if (!bounds) return { left: null, right: null };
+    const left = Number(bounds.left);
+    const right = Number(bounds.right);
+    if (!Number.isFinite(left) || !Number.isFinite(right)) {
+      return { left: null, right: null };
+    }
+    const leftScreen = this.#projector.virtualToScreen(
+      left,
+      Number(bounds.bottom) || 0,
+      this.#playableScratch,
+    ).x;
+    const rightScreen = this.#projector.virtualToScreen(
+      right,
+      Number(bounds.bottom) || 0,
+      this.#playableScratch,
+    ).x;
+    return {
+      left: Math.min(leftScreen, rightScreen),
+      right: Math.max(leftScreen, rightScreen),
+    };
   }
 
   getViewportSize() {
@@ -122,6 +192,14 @@ class GameDebugFacade {
 
   subscribeConfigUpdated(handler) {
     return this.#listeners.add(this.#documentTarget, "config-updated", handler);
+  }
+
+  subscribeHookedFishRuntimeUpdated(handler) {
+    return this.#listeners.add(
+      this.#documentTarget,
+      "debug-hooked-fish-updated",
+      handler,
+    );
   }
 
   clear() {
@@ -279,6 +357,13 @@ class GameApplication {
     swipeDeltaY: 0,
     toggleHold: false,
     pumpAction: false,
+    dragIncrease: false,
+    dragDecrease: false,
+    castPowerIncrease: false,
+    castPowerDecrease: false,
+    aimLeft: false,
+    aimRight: false,
+    retrieve: false,
     clickPos: null,
     isDoubleClick: false,
     longPressPos: null,
@@ -288,6 +373,11 @@ class GameApplication {
     pointerDelta: { x: 0, y: 0 },
     pointerReleased: false,
     pointerRelease: { x: 0, y: 0 },
+    rodControlActive: false,
+    rodControlDirectionX: 0,
+    rodControlInputRatio: 0,
+    rodControlAnchorX: 0,
+    rodControlCurrentX: 0,
   };
   #stateUpdateContext = { env: null, biteEnv: null, input: null };
   #biteEnvData = {
@@ -391,7 +481,8 @@ class GameApplication {
       getBiteEnv: () => this.getEnvDataForBite(),
       getDynamicBounds: () => this.getDynamicBounds(),
       getRodVirtualPos: (bounds) => this.getRodVirtualPos(bounds),
-      getRodScreenX: () => this.#castRodScreenX,
+      getBaseRodVirtualPos: (bounds) => this.getBaseRodVirtualPos(bounds),
+      getRodScreenX: () => this.getRodScreenX(),
       getScreenOffsetRatio: (pos) => this.getScreenOffsetRatio(pos),
       setState: (name, data) => this.setState(name, data),
       castLine: (vx, vy, depth, options) =>
@@ -401,6 +492,8 @@ class GameApplication {
         this.#showMissingRodInventoryWarning(),
       showMissingReelInventoryWarning: () =>
         this.#showMissingReelInventoryWarning(),
+      showMissingLineInventoryWarning: () =>
+        this.#showMissingLineInventoryWarning(),
       setInvalidCastMarker: (marker) => {
         this.invalidCastMarker = marker;
       },
@@ -544,7 +637,10 @@ class GameApplication {
     if (this.#net && typeof this.#net.updateConfig === "function") {
       this.#net.updateConfig(netConfig);
     } else {
-      this.#net = new Net(netConfig);
+      this.#net = new Net(
+        netConfig,
+        this.#config.fightPhysicsConfig?.getDistanceConfig?.() || {},
+      );
     }
 
     this.#hasEquippedNet = !!newEq.net;
@@ -586,6 +682,7 @@ class GameApplication {
       physicsConfig,
       eq,
       this.#rng,
+      this.#debugEvents,
     );
   }
 
@@ -618,9 +715,18 @@ class GameApplication {
       if (this.#isItemDatabaseUpdate(e)) {
         this.#handleItemDatabaseUpdate();
       }
+      if (this.#isFishDatabaseUpdate(e)) {
+        this.#handleFishDatabaseUpdate();
+      }
+      if (this.#isMapDatabaseUpdate(e)) {
+        this.#handleMapDatabaseUpdate();
+      }
       if (this.#isLocationsConfigUpdate(e)) {
         this.#viewportFacade.refreshLocationConfig(this.#config.locations);
       }
+    });
+    this.#debugFacade.subscribeHookedFishRuntimeUpdated((e) => {
+      this.#handleHookedFishRuntimeUpdate(e);
     });
   }
 
@@ -633,6 +739,31 @@ class GameApplication {
     this.#inventory?.refreshItemData?.();
     const eq = this.#inventory?.getEquipped?.();
     if (eq) this.#fightService?.syncEquipment(eq);
+  }
+
+  #isFishDatabaseUpdate(event) {
+    const path = event?.detail?.path;
+    return Array.isArray(path) && path[0] === "FISH_DB";
+  }
+
+  #handleFishDatabaseUpdate() {
+    if (typeof FISH_DB === "undefined") return;
+    this.#bite?.setFishDatabase?.(FISH_DB);
+  }
+
+  #handleHookedFishRuntimeUpdate(event) {
+    const fish = event?.detail?.fish;
+    if (!fish) return;
+    this.#fightService?.syncFishRuntime?.(fish);
+  }
+
+  #isMapDatabaseUpdate(event) {
+    const path = event?.detail?.path;
+    return Array.isArray(path) && path[0] === "MAP_DB";
+  }
+
+  #handleMapDatabaseUpdate() {
+    this.#viewportFacade.refreshLocationConfig(this.#config.locations);
   }
 
   #isLocationsConfigUpdate(event) {
@@ -659,6 +790,7 @@ class GameApplication {
 
   update(dt) {
     const timeScale = this.#config.debug?.timeScale || 1;
+    this.#syncDragControlAvailability();
     const input = this.#input.getState();
     this.#lastInputState = input;
     this.#applyViewportPan(input);
@@ -683,6 +815,7 @@ class GameApplication {
     context.env = this.#env.getPhysicsEnv();
     context.biteEnv = this.getEnvDataForBite();
     this.#stateMachine.update(dt, bounds, context);
+    this.#updateRodVisualOffset(dt, input, bounds);
 
     if (this.invalidCastMarker) {
       this.invalidCastMarker.timer -= dt;
@@ -691,6 +824,14 @@ class GameApplication {
 
     // Reuse the pre-built debug context object — no per-frame allocation.
     this.#debugService.update(this.#debugContext);
+  }
+
+
+  #syncDragControlAvailability() {
+    const eq = this.#inventory?.getEquipped?.() || {};
+    const rodAllowsReel = eq.rod?.hasReel !== false && eq.rod?.engineStats?.hasReel !== false;
+    const reelHasDrag = !!eq.reel && eq.reel.hasDrag !== false && eq.reel.engineStats?.hasDrag !== false;
+    this.#input?.setDragControlEnabled?.(rodAllowsReel && reelHasDrag);
   }
 
   #applyViewportPan(input) {
@@ -758,6 +899,7 @@ class GameApplication {
           bounds.bottom,
           this.chumCastDistance,
           "chum",
+          this.#config.locations,
         );
       }
       if (this.#config.debug?.casting?.showAccuracyArea) {
@@ -773,6 +915,7 @@ class GameApplication {
         this.#config.casting,
         this.#config.tension,
         this.#clock.now,
+        this.chumCastDistance,
       );
       return;
     }
@@ -786,6 +929,7 @@ class GameApplication {
       bounds.bottom,
       this.chumCastDistance,
       "chum",
+      this.#config.locations,
     );
   }
 
@@ -841,11 +985,37 @@ class GameApplication {
     return this.#viewportFacade.getRodVirtualPos(bounds, this.#castRodScreenX);
   }
 
+  getBaseRodVirtualPos(bounds) {
+    return this.#viewportFacade.getBaseRodVirtualPos(
+      bounds,
+      this.#castRodScreenX,
+    );
+  }
+
+  getRodScreenX(bounds = null) {
+    return this.#viewportFacade.getRodScreenX(
+      this.#castRodScreenX,
+      bounds || this.getDynamicBounds(),
+    );
+  }
+
   getScreenOffsetRatio(floatPos) {
     return this.#viewportFacade.getScreenOffsetRatio(
       floatPos,
       this.#castRodScreenX,
     );
+  }
+
+  #updateRodVisualOffset(dt, input, bounds) {
+    const stateName = this.#stateMachine?.currentName || this.#gameStateName;
+    const fightDebug = this.#fightService?.tensionMeter?.getDebugData?.() || {};
+    this.#viewportFacade.updateRodVisualOffset({
+      dtMs: dt,
+      input,
+      fightDebug,
+      bounds,
+      stateName,
+    });
   }
 
   checkWater(vx, vy) {
@@ -908,8 +1078,13 @@ class GameApplication {
     const rodName = this.#equipmentRules?.getRodDisplayName?.(eq) || "Ця";
     this.#inventoryUI?.open?.();
     this.#inventoryUI?.showWarning?.(
-      `${rodName}: потрібна котушка з ліскою для закидання.`,
+      `${rodName}: потрібна котушка для закидання.`,
     );
+  }
+
+  #showMissingLineInventoryWarning() {
+    this.#inventoryUI?.open?.();
+    this.#inventoryUI?.showWarning?.("Спочатку споряди ліску для закидання.");
   }
 
   start() {
