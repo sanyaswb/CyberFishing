@@ -6,6 +6,7 @@ class FightPhysicsSystem {
   #pumpCreditCalculator = new PumpCreditCalculator();
   #looseLineCalculator = new LooseLineCalculator();
   #rodStrokeTracker = new RodStrokeTracker();
+  #playerPullMotionSmoother = new PlayerPullMotionSmoother();
   #reelHoldRecoverySystem = new ReelHoldRecoverySystem();
   #landingPolicyResolver = new LandingPolicyResolver();
   #landingLiftCalculator = new LandingLiftTensionCalculator();
@@ -566,11 +567,16 @@ class FightPhysicsSystem {
       rodStrokeMoveCapacityMeters,
     );
     const desiredRodMoveMeters = requestedRodMoveMeters;
+    const smoothedRodMoveMeters = this.#smoothPlayerPullAxis({
+      axis: "y",
+      desiredMoveMeters: desiredRodMoveMeters,
+      dtSec,
+    });
     const pullStartY = Number(floatEntity.getPosition()?.y) || 0;
     const rodPullMovement = this.#applyRodPullMovement({
       floatEntity,
       rodTipPosition,
-      deltaMeters: desiredRodMoveMeters,
+      deltaMeters: smoothedRodMoveMeters,
       pixelsPerMeter:
         this.#physicsConfig?.getPixelsPerMeter?.() ||
         50,
@@ -742,10 +748,18 @@ class FightPhysicsSystem {
       fishWeightKg: forceData?.fishWeightKg,
       config,
     });
+    const desiredSignedMoveMeters =
+      (Number(rodControlResult.directionX) || 0) *
+      Math.max(0, Number(rodControlResult.desiredMoveMeters) || 0);
+    const smoothedSignedMoveMeters = this.#smoothPlayerPullAxis({
+      axis: "x",
+      desiredMoveMeters: desiredSignedMoveMeters,
+      dtSec,
+    });
     const movement = this.#applyRodControlMovement({
       floatEntity,
-      directionX: rodControlResult.directionX,
-      deltaMeters: rodControlResult.desiredMoveMeters,
+      directionX: Math.sign(smoothedSignedMoveMeters),
+      deltaMeters: Math.abs(smoothedSignedMoveMeters),
       targetX: rodControlResult.targetRodX,
       pixelsPerMeter:
         this.#physicsConfig?.getPixelsPerMeter?.() ||
@@ -805,6 +819,10 @@ class FightPhysicsSystem {
       blockedReason,
       visualRatio: 0,
     };
+  }
+
+  resetPlayerPullMotion() {
+    this.#playerPullMotionSmoother.reset();
   }
 
   #updateTension({
@@ -1178,6 +1196,7 @@ class FightPhysicsSystem {
       frameDtSec > 0 ? appliedRodControlMoveMeters / frameDtSec : 0;
     const reelHoldAppliedSpeedMps =
       frameDtSec > 0 ? appliedReelHoldMoveMeters / frameDtSec : 0;
+    const playerPullMotion = this.#playerPullMotionSmoother.getDebugData();
     const totalAppliedPullSpeedMps =
       frameDtSec > 0 ? totalAppliedPullMoveMeters / frameDtSec : 0;
     const movementMode = appliedReelHoldMoveMeters > 0.000001
@@ -1336,6 +1355,14 @@ class FightPhysicsSystem {
       rodPullDeltaMeters: rodPullResult.deltaMeters,
       rodPullMoveMeters: appliedRodPullMoveMeters,
       rodPullAppliedSpeedMps,
+      playerPullMotionEnabled: !!playerPullMotion.enabled,
+      playerPullMotionInertiaSeconds: playerPullMotion.inertiaSeconds,
+      playerPullDesiredMoveX: playerPullMotion.desiredMoveX,
+      playerPullActualMoveX: playerPullMotion.actualMoveX,
+      playerPullDesiredMoveY: playerPullMotion.desiredMoveY,
+      playerPullActualMoveY: playerPullMotion.actualMoveY,
+      playerPullVelocityX: playerPullMotion.velocityX,
+      playerPullVelocityY: playerPullMotion.velocityY,
       rodPullMovementBlockReason: rodPullMovementBlockReason || "none",
       rodPullCanMoveFish: rodPullResult.canMoveFish,
       rodPullBlockedReason: rodPullDisplay.blockedReason,
@@ -1367,6 +1394,8 @@ class FightPhysicsSystem {
       rodControlForceLimitKg: rodControlResult?.forceLimitKg ?? 0,
       rodControlDeliveredForceRatio:
         rodControlResult?.deliveredForceRatio ?? 0,
+      rodControlActualMovementRatio:
+        rodControlResult?.actualMovementRatio ?? 0,
       rodControlForceKg: rodControlResult?.forceKg ?? 0,
       rodControlPlayerTensionKg: rodControlResult?.playerTensionKg ?? 0,
       rodControlTensionMultiplier: rodControlResult?.tensionMultiplier ?? 0,
@@ -1514,6 +1543,19 @@ class FightPhysicsSystem {
     const yRatio = Math.abs(dy) / distance;
     if (yRatio <= 0.000001) return requested;
     return Math.min(requested, remainingStroke / yRatio);
+  }
+
+  #smoothPlayerPullAxis({ axis, desiredMoveMeters, dtSec }) {
+    const config =
+      this.#physicsConfig?.getPlayerPullMotionConfig?.() ||
+      this.#getRuntimePhysicsConfig()?.fight?.playerPullMotion ||
+      {};
+    return this.#playerPullMotionSmoother.updateAxis({
+      axis,
+      desiredMove: Number(desiredMoveMeters) || 0,
+      deltaTime: dtSec,
+      config,
+    }).move;
   }
 
   #applyRodPullMovement({

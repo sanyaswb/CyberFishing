@@ -824,6 +824,7 @@ class FightService {
     this.#pullInputMapper?.reset?.();
     this.#rodPullSystem?.reset?.();
     this.#rodControlSystem?.reset?.();
+    this.#fightPhysicsSystem?.resetPlayerPullMotion?.();
     this.#tensionMeter.updateEquipment({
       rod: this.#rod,
       reel: this.#reel,
@@ -1048,5 +1049,7 @@ class FightService {
     return this.#fishCondition;
   }
 
-  endFight() {}
+  endFight() {
+    this.#fightPhysicsSystem?.resetPlayerPullMotion?.();
+  }
 }

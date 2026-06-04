@@ -135,6 +135,10 @@
     "label": "Enable Rod Control X",
     "description": "Turns on lateral rod control during fight."
   },
+  "physics.fight.playerPullMotion.inertiaSeconds": {
+    "label": "Player pull fish movement inertia",
+    "description": "Ease-in/ease-out smoothing time for fish movement caused by Rod Hold and Rod Control. Set to 0 to disable."
+  },
   "physics.fight.rodControl.input.minLockDistancePx": {
     "label": "Rod Control lock distance",
     "description": "Minimum pointer movement before the horizontal gesture can lock."

@@ -204,6 +204,15 @@ class RodLateralControlSystem {
     movedPx = 0,
     currentFishX = null,
   } = {}) {
+    const desiredMoveMeters = Math.max(
+      0,
+      Number(this.#result.desiredMoveMeters) || 0,
+    );
+    const appliedMoveMeters = Math.max(0, Number(movedMeters) || 0);
+    const actualMovementRatio =
+      desiredMoveMeters > 0
+        ? this.#clamp01(appliedMoveMeters / desiredMoveMeters)
+        : 0;
     const nextOffset = Number.isFinite(Number(currentFishX))
       ? Number(currentFishX) - this.#targetRodXOnStart
       : this.#result.currentOffsetX;
@@ -212,8 +221,12 @@ class RodLateralControlSystem {
       currentAbs: Math.abs(nextOffset),
       alignedThresholdPx: this.#result.alignedThresholdPx,
     });
-    this.#result.appliedMoveMeters = Math.max(0, Number(movedMeters) || 0);
+    this.#result.appliedMoveMeters = appliedMoveMeters;
     this.#result.appliedMovePx = Math.max(0, Number(movedPx) || 0);
+    this.#result.actualMovementRatio = actualMovementRatio;
+    this.#result.deliveredForceRatio *= actualMovementRatio;
+    this.#result.forceKg *= actualMovementRatio;
+    this.#result.playerTensionKg *= actualMovementRatio;
     this.#result.currentOffsetX = nextOffset;
     this.#result.alignmentProgress = nextProgress;
     this.#result.aligned =
@@ -454,6 +467,7 @@ class RodLateralControlSystem {
       desiredMovePx: 0,
       appliedMoveMeters: 0,
       appliedMovePx: 0,
+      actualMovementRatio: 0,
       targetRodX: 0,
       initialOffsetX: 0,
       currentOffsetX: 0,

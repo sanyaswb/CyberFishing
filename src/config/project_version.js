@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.19.21.1";
+const CURRENT_PROJECT_VERSION = "0.19.22";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "rod-control-ux-stabilization",
-  updatedAt: "2026-06-02",
+  codename: "player-pull-motion-smoothing",
+  updatedAt: "2026-06-04",
   notes: Object.freeze([
-    "Rod Control now works in parallel with Rod Hold",
-    "Rod Control HUD shows delivered lateral force instead of alignment progress",
-    "Rod Control separates input power, angle efficiency, direction factor and load reserve",
-    "Rod Control uses stable target rod X and blocks force when load reserve is gone",
+    "Player-applied fish movement now eases in and out through one smoothing layer",
+    "Added configurable inertia for Rod Hold and Rod Control fish movement",
+    "Rod Control lateral tension now follows the actually applied smoothed movement",
+    "Added player pull motion debug metrics and focused regression checks",
   ]),
 });
 

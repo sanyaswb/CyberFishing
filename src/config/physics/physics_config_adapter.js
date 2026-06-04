@@ -331,6 +331,10 @@ class FightPhysicsConfigAdapter {
     };
   }
 
+  getPlayerPullMotionConfig() {
+    return this.#physics().fight?.playerPullMotion || {};
+  }
+
   #root() {
     return this.config?.raw || this.config || {};
   }

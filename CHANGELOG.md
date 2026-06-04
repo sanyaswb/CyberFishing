@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.19.22 - Player pull motion smoothing
+
+- Added a player pull motion smoothing layer for fish movement from Rod Hold and Rod Control.
+- Added configurable `physics.fight.playerPullMotion.inertiaSeconds`.
+- Smoothed player-applied fish movement now eases in and out while preserving Rod Control target clamping.
+- Rod Control lateral tension now scales from the actually applied smoothed movement.
+- Added player pull motion debug overlay metrics and focused smoother regression checks.
+
 ## v0.19.21.1 - Rod Control UX stabilization
 
 - Rod Control can now work in parallel with Rod Hold.

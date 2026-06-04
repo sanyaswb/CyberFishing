@@ -41,6 +41,7 @@ const FILES = [
   "src/core/fishing/drag_force_calculator.js",
   "src/core/fishing/landing_lift_tension_calculator.js",
   "src/core/fishing/line_tension_calculator.js",
+  "src/systems/player_pull_motion_smoother.js",
   "src/systems/rod_pull_system.js",
   "src/systems/rod_lateral_control_system.js",
   "src/systems/fish_retrieve_system.js",
@@ -499,6 +500,30 @@ const lateralAligned = new RodLateralControlSystem().update({
 assert(!lateralAligned.canApply, "Rod Control X stops when fish is aligned with rod X");
 assert(lateralAligned.blockedReason === "aligned", "Rod Control X reports aligned block reason");
 approx(lateralAligned.alignmentProgress, 1, 0.001, "Rod Control X treats threshold offset as full alignment");
+
+const pullSmoother = new PlayerPullMotionSmoother();
+const smoothStart = pullSmoother.updateAxis({
+  axis: "y",
+  desiredMove: 1,
+  deltaTime: 0.016,
+  config: { inertiaSeconds: 0.16 },
+});
+assert(smoothStart.move > 0 && smoothStart.move < 1, "Player pull motion smoother eases in below raw move");
+const smoothStop = pullSmoother.updateAxis({
+  axis: "y",
+  desiredMove: 0,
+  deltaTime: 0.016,
+  config: { inertiaSeconds: 0.16 },
+});
+assert(smoothStop.move > 0, "Player pull motion smoother keeps small stop inertia");
+pullSmoother.reset();
+const smoothBypass = pullSmoother.updateAxis({
+  axis: "y",
+  desiredMove: 1,
+  deltaTime: 0.016,
+  config: { inertiaSeconds: 0 },
+});
+approx(smoothBypass.move, 1, 0.001, "Player pull motion smoother bypasses when inertia is zero");
 
 console.log("rod-pull-systems-check passed:");
 for (const message of checks) console.log("- " + message);

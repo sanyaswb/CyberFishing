@@ -23,6 +23,10 @@ const FIGHT_PHYSICS_CONFIG = {
     capacityByRodLengthRatio: 1.0,
   },
 
+  playerPullMotion: {
+    inertiaSeconds: 0.16,
+  },
+
   rodControl: {
     enabled: true,
 

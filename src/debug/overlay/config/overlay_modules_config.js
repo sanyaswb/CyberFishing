@@ -1,5 +1,5 @@
 const OVERLAY_MODULES = {
-  echo: false,
+  echo: true,
   chancesDetail: false,
   state: true,
   chum: false,

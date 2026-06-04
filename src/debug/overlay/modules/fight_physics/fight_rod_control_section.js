@@ -22,6 +22,7 @@ class FightRodControlSection extends FightSectionBase {
       this.row("Load reserve", f.kg(d.rodControlLoadReserveKg, 3), Number(d.rodControlLoadReserveKg) > 0 ? "#00ff80" : "#ff8888"),
       this.row("Load reserve ratio", f.percent(d.rodControlLoadReserveRatio, 1), Number(d.rodControlLoadReserveRatio) > 0 ? "#00ff80" : "#ff8888"),
       this.row("Delivered force ratio", f.percent(d.rodControlDeliveredForceRatio, 1), f.stressColor(d.rodControlDeliveredForceRatio)),
+      this.row("Actual move ratio", f.percent(d.rodControlActualMovementRatio, 1), f.stressColor(d.rodControlActualMovementRatio)),
       this.row("Force", f.kg(d.rodControlForceKg, 3), Number(d.rodControlForceKg) > 0 ? "#00ff80" : "#8a9bac"),
       this.row("Move X", `${f.meters(d.rodControlMoveMeters, 3)} / ${f.num(d.rodControlMovePx, 1)}px`, Number(d.rodControlMoveMeters) > 0 ? "#00ff80" : "#8a9bac"),
       this.row("Lateral tension", f.kg(d.rodControlPlayerTensionKg, 3), Number(d.rodControlPlayerTensionKg) > 0 ? "#ffaa00" : "#8a9bac"),
@@ -32,6 +33,13 @@ class FightRodControlSection extends FightSectionBase {
       this.row("Alignment progress", f.percent(d.rodControlAlignmentProgress, 1), f.stressColor(d.rodControlAlignmentProgress)),
       this.row("Rod visual offset X", `${f.num(d.rodVisualOffsetX, 1)}px`, "#00d4ff"),
       this.row("Rod visual clamped", d.rodVisualClamped ? "yes" : "no", d.rodVisualClamped ? "#ffaa00" : "#8a9bac"),
+      this.row("Pull inertia", `${f.num(d.playerPullMotionInertiaSeconds, 3)}s`, d.playerPullMotionEnabled ? "#00d4ff" : "#8a9bac"),
+      this.row("Desired move X", f.meters(d.playerPullDesiredMoveX, 3), "#73c2fb"),
+      this.row("Actual move X", f.meters(d.playerPullActualMoveX, 3), "#00ff80"),
+      this.row("Desired move Y", f.meters(d.playerPullDesiredMoveY, 3), "#73c2fb"),
+      this.row("Actual move Y", f.meters(d.playerPullActualMoveY, 3), "#00ff80"),
+      this.row("Pull velocity X", `${f.num(d.playerPullVelocityX, 3)}m/s`, "#73c2fb"),
+      this.row("Pull velocity Y", `${f.num(d.playerPullVelocityY, 3)}m/s`, "#73c2fb"),
       this.row("Blocked reason", d.rodControlBlockedReason || d.rodControlMovementBlockReason || "none", (d.rodControlBlockedReason || "none") === "none" ? "#8a9bac" : "#ffaa00"),
     ];
   }

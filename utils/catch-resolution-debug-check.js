@@ -51,6 +51,7 @@ const FILES = [
   "src/systems/player_force_system.js",
   "src/systems/fish_force_system.js",
   "src/systems/fish_retrieve_system.js",
+  "src/systems/player_pull_motion_smoother.js",
   "src/systems/reel_system.js",
   "src/systems/rod_pull_system.js",
   "src/systems/rod_lateral_control_system.js",

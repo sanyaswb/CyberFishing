@@ -251,13 +251,13 @@ const CONFIG = {
 
     godMode: {
       enabled: true, // Гoловний рубильник (якщо false, інші ігноруються)
-      infiniteResources: true, // 1. Нескінченна наживка/снасті
+      infiniteResources: false, // 1. Нескінченна наживка/снасті
       noEquipmentLoss: true,
-      noHookEscape: true, // 2. Риба ніколи не зривається з гачка
-      noLineBreak: true, // 3. Ліска не рветься при 100% натягу
-      noRodBreak: true, // 4. Вудка ніколи не ламається
-      noFishStaminaLoss: true, // 5. Стаміна риби не витрачається і завжди тримається на 100%
-      infiniteCasting: true,
+      noHookEscape: false, // 2. Риба ніколи не зривається з гачка
+      noLineBreak: false, // 3. Ліска не рветься при 100% натягу
+      noRodBreak: false, // 4. Вудка ніколи не ламається
+      noFishStaminaLoss: false, // 5. Стаміна риби не витрачається і завжди тримається на 100%
+      infiniteCasting: false,
 
       // Bite debug controls. Працюють тільки коли enabled: true.
       // fixedBiteChancePercent обрізається до діапазону 0..100.

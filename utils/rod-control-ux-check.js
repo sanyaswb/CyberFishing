@@ -16,6 +16,7 @@ const FILES = [
   "src/config/runtime/resolved_config_provider.js",
   "src/config/runtime/immutable_config.js",
   "src/config/config.js",
+  "src/systems/player_pull_motion_smoother.js",
   "src/systems/rod_lateral_control_system.js",
   "src/systems/rod_visual_offset_system.js",
 ];
