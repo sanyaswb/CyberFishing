@@ -12,6 +12,8 @@
     "check:rod-pull": "node utils/rod-pull-systems-check.js",
     "check:rod-control-ux": "node utils/rod-control-ux-check.js",
     "check:tackle-stress": "node utils/tackle-stress-failure-check.js",
+    "check:hud-styles": "node utils/hud-style-resolver-check.js",
+    "check:hud-bars": "node utils/hud-bar-layout-check.js",
     "check:line": "node utils/inventory-line-systems-check.js",
     "check:casting": "node utils/cast-power-check.js",
     "check:catch": "node utils/catch-resolution-check.js",

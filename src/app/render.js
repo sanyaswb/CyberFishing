@@ -259,19 +259,10 @@ class FishingRenderService {
     renderer.drawFloat(sPos, floatEntity, eq.float || {}, this.#projector, eq);
     if (state === "playing" && tMeter && fCond) {
       if (typeof renderer.drawRodStrokeBar === "function") {
-        renderer.drawRodStrokeBar(
-          fightDebug,
-          this.#config.tension,
-          this.#config.ui.indicators,
-        );
+        renderer.drawRodStrokeBar(fightDebug);
       }
-      renderer.drawTensionBar(
-        tMeter,
-        this.#config.tension,
-        this.#config.ui.indicators,
-        fightDebug,
-      );
-      renderer.drawFishCondition(fCond, this.#config.ui.indicators);
+      renderer.drawTensionBar(tMeter, this.#config.tension, fightDebug);
+      renderer.drawFishCondition(fCond);
     }
   }
 

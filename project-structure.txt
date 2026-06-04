@@ -214,6 +214,7 @@
 │  ├── input
 │  │  └── pull_input_mapper.js
 │  ├── render
+│  │  ├── hud_bar_renderer.js
 │  │  └── renderer.js
 │  ├── systems
 │  │  ├── bite_system.js
@@ -236,6 +237,7 @@
 │  │  └── tension_system.js
 │  ├── ui
 │  │  ├── styles
+│  │  │  ├── hud_style_resolver.js
 │  │  │  └── style.css
 │  │  ├── ui.js
 │  │  └── version_badge.js
@@ -254,6 +256,8 @@
   ├── fish-speed-delta-check.js
   ├── fps-physics-check.js
   ├── game-cycle-check.js
+  ├── hud-bar-layout-check.js
+  ├── hud-style-resolver-check.js
   ├── inventory-line-systems-check.js
   ├── local-bridge.js
   ├── physics-formula-golden-check.js

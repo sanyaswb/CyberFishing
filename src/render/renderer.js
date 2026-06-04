@@ -4,10 +4,18 @@
   #screenA = new Vector2(0, 0);
   #screenB = new Vector2(0, 0);
   #imageCache = new Map();
+  #hudStyleResolver;
+  #hudBarRenderer;
 
   constructor(canvas) {
     this.#canvas = canvas;
     this.#ctx = canvas.getContext("2d", { alpha: false });
+    this.#hudStyleResolver = typeof HudStyleResolver !== "undefined"
+      ? new HudStyleResolver()
+      : null;
+    this.#hudBarRenderer = typeof HudBarRenderer !== "undefined"
+      ? new HudBarRenderer(this.#ctx)
+      : null;
   }
 
   #rgba(rgb, alpha = 1) {
@@ -188,6 +196,17 @@
       return (this.#canvas.width - elementWidth) / 2;
     }
     return Number(configValue) || 0;
+  }
+
+  #resolveHudBarStyle(path, overrides = null) {
+    if (this.#hudStyleResolver) {
+      return this.#hudStyleResolver.resolveBarStyle(path, { overrides });
+    }
+    return { ...(overrides || {}) };
+  }
+
+  #getHudBarsLayout() {
+    return this.#resolveHudBarStyle("layout");
   }
 
   drawInvalidCastMarker(marker) {
@@ -614,9 +633,12 @@
   ) {
     if (!visual?.active) return;
     const lineCfg = castingConfig?.aimLine || {};
-    const barCfg = castingConfig?.powerBar || {};
     const power = Math.max(0, Math.min(1, visual.power || 0));
-    const color = this.#ratioGradientColor(power * 100, tensionConfig?.colorGradient);
+    const tensionStyle = this.#resolveHudBarStyle("tension");
+    const color = this.#ratioGradientColor(
+      power * 100,
+      tensionStyle.gradient,
+    );
     const lineColor =
       visual.mode === "chum"
         ? lineCfg.chumColor || "rgba(255, 180, 0, 0.9)"
@@ -632,7 +654,7 @@
       maxDistancePx,
       power,
     );
-    this.#drawCastPowerBar(power, barCfg, color, visual.mode);
+    this.#drawCastPowerBar(power, color, visual.mode);
   }
 
   drawCastAccuracyPreview(preview, debugConfig) {
@@ -705,57 +727,26 @@
     this.#ctx.restore();
   }
 
-  #drawCastPowerBar(power, barCfg, fillColor, mode) {
-    const barWidth = barCfg.width || 300;
-    const barHeight = barCfg.height || 12;
-    const barX = this.#resolveX(barCfg.x || "center", barWidth);
-    const barY = barCfg.y || 18;
-    const padding = barCfg.borderPadding ?? 2;
-    const borderWidth = barCfg.borderWidth ?? 1;
+  #drawCastPowerBar(power, fillColor, mode) {
+    const style = this.#resolveHudBarStyle("castPower");
+    const barWidth = style.width || 300;
+    const barHeight = style.height || 12;
+    const barX = this.#resolveX(style.x || "center", barWidth);
+    const barY = style.y || 18;
 
-    this.#ctx.save();
-    this.#ctx.fillStyle = barCfg.backgroundColor || "#1a2b3c";
-    this.#ctx.fillRect(
-      barX - padding,
-      barY - padding,
-      barWidth + padding * 2,
-      barHeight + padding * 2,
-    );
-
-    this.#ctx.strokeStyle = barCfg.borderColor || "#4a5b6c";
-    this.#ctx.lineWidth = borderWidth;
-    this.#ctx.strokeRect(
-      barX - padding,
-      barY - padding,
-      barWidth + padding * 2,
-      barHeight + padding * 2,
-    );
-
-    const fillWidth = power * barWidth;
-    this.#ctx.fillStyle = fillColor;
-    this.#ctx.fillRect(barX, barY, fillWidth, barHeight);
-
-    this.#ctx.shadowColor = fillColor;
-    this.#ctx.shadowBlur = 10 * (barCfg.glowIntensity ?? 0.45);
-    this.#ctx.strokeStyle = fillColor;
-    this.#ctx.strokeRect(barX, barY, fillWidth, barHeight);
-    this.#ctx.shadowBlur = 0;
-
-    this.#ctx.fillStyle = barCfg.labelColor || "#8a9bac";
-    this.#ctx.font = barCfg.labelFont || "bold 11px monospace";
-    this.#ctx.textAlign = "left";
-    this.#ctx.fillText(
-      mode === "chum" ? "CHUM" : "CAST",
-      barX - (barCfg.labelOffsetX ?? 56),
-      barY + (barCfg.labelOffsetY ?? 12),
-    );
-    this.#ctx.textAlign = "right";
-    this.#ctx.fillText(
-      `${Math.round(power * 100)}%`,
-      barX + barWidth + (barCfg.labelOffsetX ?? 56),
-      barY + (barCfg.labelOffsetY ?? 12),
-    );
-    this.#ctx.restore();
+    if (this.#hudBarRenderer) {
+      this.#hudBarRenderer.drawFramedRatioBar({
+        ratio: power,
+        x: barX,
+        y: barY,
+        width: barWidth,
+      height: barHeight,
+      style,
+      fillColor,
+      topLabel: mode === "chum" ? "CHUM" : "CAST",
+      rightValue: `${Math.round(power * 100)}%`,
+    });
+  }
   }
 
   #ratioGradientColor(value, gradient) {
@@ -791,6 +782,21 @@
     const g = Math.round(start[1] + (end[1] - start[1]) * t);
     const b = Math.round(start[2] + (end[2] - start[2]) * t);
     return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  #getTensionStatus(tension, statuses = []) {
+    if (!Array.isArray(statuses) || statuses.length === 0) {
+      return { label: "Idle", color: "#4a5b6c" };
+    }
+
+    let current = statuses[0];
+    for (const status of statuses) {
+      if (tension >= status.threshold) current = status;
+    }
+    return {
+      label: current?.label || "Idle",
+      color: current?.color || "#4a5b6c",
+    };
   }
 
   drawBoatWaypoints(chumManager, projector) {
@@ -1117,13 +1123,14 @@
     ctx.restore();
   }
 
-  drawFishCondition(condition, uiIndicatorsConfig) {
-    const barWidth = uiIndicatorsConfig?.conditionWidth || 220;
-    const barHeight = uiIndicatorsConfig?.conditionHeight || 10;
-    const barX = this.#resolveX(uiIndicatorsConfig?.x, barWidth);
-    const barY = uiIndicatorsConfig?.y || 40;
-    const gap = uiIndicatorsConfig?.conditionGap || 22;
-    const labelOffsetY = uiIndicatorsConfig?.conditionLabelOffsetY || 9;
+  drawFishCondition(condition) {
+    const layout = this.#getHudBarsLayout();
+    const conditionStyle = this.#resolveHudBarStyle("fishCondition");
+    const barWidth = conditionStyle.width || 220;
+    const barHeight = conditionStyle.height || 10;
+    const barX = this.#resolveX(layout.x, barWidth);
+    const barY = layout.y || 40;
+    const gap = conditionStyle.gap || 22;
     const maxStamina = Math.max(
       0.001,
       Number(condition.maxStamina ?? condition.maxPoints) || 0,
@@ -1147,9 +1154,9 @@
       width: barWidth,
       height: barHeight,
       ratio: staminaRatio,
-      color: "#ffcc00",
-      label: `STAMINA: ${Math.round(condition.currentStamina)}/${Math.round(maxStamina)}`,
-      labelOffsetY,
+      style: this.#resolveHudBarStyle("fishCondition.stamina", conditionStyle),
+      label: "STAMINA",
+      value: `${Math.round(condition.currentStamina)}/${Math.round(maxStamina)}`,
       isActive: condition.phase === "stamina",
     });
 
@@ -1159,9 +1166,9 @@
       width: barWidth,
       height: barHeight,
       ratio: exhaustionRatio,
-      color: "#ff4444",
-      label: `ENDURANCE: ${Math.round(condition.currentExhaustion)}/${Math.round(maxEndurance)}`,
-      labelOffsetY,
+      style: this.#resolveHudBarStyle("fishCondition.exhaustion", conditionStyle),
+      label: "ENDURANCE",
+      value: `${Math.round(condition.currentExhaustion)}/${Math.round(maxEndurance)}`,
       isActive: condition.phase === "exhaustion",
     });
   }
@@ -1172,31 +1179,49 @@
     width,
     height,
     ratio,
-    color,
+    style,
     label,
-    labelOffsetY,
+    value,
     isActive,
   }) {
-    this.#ctx.fillStyle = "#0b1520";
-    this.#ctx.fillRect(x - 1, y - 1, width + 2, height + 2);
-    this.#ctx.fillStyle = color;
-    this.#ctx.fillRect(x, y, width * ratio, height);
-    this.#ctx.strokeStyle = isActive ? color : "#333";
-    this.#ctx.lineWidth = isActive ? 2 : 1;
-    this.#ctx.strokeRect(x - 1, y - 1, width + 2, height + 2);
-    this.#ctx.fillStyle = isActive ? "#ffffff" : "#8a9bac";
-    this.#ctx.font = "11px monospace";
-    this.#ctx.textAlign = "center";
-    this.#ctx.fillText(label, x + width / 2, y + height + labelOffsetY);
+    const fillColor = style.fillColor || "#ffcc00";
+    const drawStyle = {
+      ...style,
+      borderColor: isActive ? fillColor : style.borderColor || "#333",
+      borderWidth: isActive
+        ? style.activeBorderWidth ?? 2
+        : style.inactiveBorderWidth ?? style.borderWidth ?? 1,
+      labelColor: isActive
+        ? style.activeLabelColor || "#ffffff"
+        : style.labelColor || "#8a9bac",
+      valueColor: isActive
+        ? style.activeLabelColor || "#ffffff"
+        : style.valueColor || style.labelColor || "#8a9bac",
+    };
+    this.#hudBarRenderer.drawFramedRatioBar({
+      x,
+      y,
+      width,
+      height,
+      ratio,
+      style: drawStyle,
+      fillColor,
+      topLabel: label,
+      rightValue: value,
+    });
   }
 
-  drawDragBar(dragRatio, dragConfig, tensionConfig, uiIndicatorsConfig) {
-    const width = tensionConfig?.barWidth || 300;
-    const height = Math.max(8, Math.round((tensionConfig?.barHeight || 20) * 0.65));
-    const x = this.#resolveX(uiIndicatorsConfig?.x, width);
-    const baseY = uiIndicatorsConfig?.y || 40;
-    const spacing = uiIndicatorsConfig?.spacing || 40;
-    const y = baseY + spacing + (tensionConfig?.barHeight || 20) + 14;
+  drawDragBar(dragRatio, dragConfig, tensionConfig) {
+    const fightLayout = this.#getFightBarLayout();
+    const tensionStyle = this.#resolveHudBarStyle("tension");
+    const dragStyle = this.#resolveHudBarStyle("drag", {
+      fillColor: dragConfig?.barColor,
+    });
+    const width = fightLayout.width;
+    const height = dragStyle.height ||
+      Math.max(dragStyle.minHeight ?? 8, Math.round((tensionStyle.height || 20) * (dragStyle.heightRatio ?? 0.65)));
+    const x = fightLayout.x;
+    const y = fightLayout.tensionY + (tensionStyle.height || 20) + (dragStyle.yOffset ?? 14);
     this.#drawSimpleRatioBar({
       ratio: dragRatio,
       x,
@@ -1204,68 +1229,60 @@
       width,
       height,
       label: "DRAG",
-      color: dragConfig?.barColor || "#73c2fb",
-      backgroundColor: tensionConfig?.backgroundColor || "#1a2b3c",
-      borderColor: tensionConfig?.borderColor || "#4a5b6c",
-      labelColor: tensionConfig?.labelColor || "#8a9bac",
-      labelFont: tensionConfig?.labelFont || "bold 12px monospace",
-      labelOffsetX: tensionConfig?.labelOffsetX || 60,
-      labelOffsetY: Math.max(10, Math.round(height * 0.85)),
+      style: {
+        ...dragStyle,
+      },
     });
   }
 
-  #getFightBarLayout(tensionConfig, uiIndicatorsConfig) {
-    const width = tensionConfig?.barWidth || 300;
-    const x = this.#resolveX(uiIndicatorsConfig?.x, width);
-    const baseY = uiIndicatorsConfig?.y || 40;
-    const spacing = uiIndicatorsConfig?.spacing || 40;
-    const strokeHeight = 3;
+  #getFightBarLayout() {
+    const layout = this.#getHudBarsLayout();
+    const tensionStyle = this.#resolveHudBarStyle("tension");
+    const rodStrokeStyle = this.#resolveHudBarStyle("rodStroke");
+    const rodControlStyle = this.#resolveHudBarStyle("rodControl");
+    const width = tensionStyle.width || 300;
+    const x = this.#resolveX(layout.x, width);
+    const baseY = layout.y || 40;
+    const spacing = layout.spacing || 40;
+    const strokeHeight = rodStrokeStyle.height || 3;
+    const controlHeight = rodControlStyle.height || strokeHeight;
     const strokeY = baseY + spacing;
-    const controlY = strokeY - strokeHeight - 8;
+    const controlY = strokeY - controlHeight + (rodControlStyle.yOffset ?? -28);
     return {
       x,
       width,
       strokeHeight,
+      controlHeight,
       controlY,
       strokeY,
-      tensionY: strokeY + strokeHeight + 2,
-      labelOffsetX: tensionConfig?.labelOffsetX || 60,
+      tensionY: strokeY + strokeHeight + (layout.tensionGapFromStroke ?? 34),
     };
   }
 
-  drawRodStrokeBar(fightDebug, tensionConfig, uiIndicatorsConfig) {
-    const layout = this.#getFightBarLayout(tensionConfig, uiIndicatorsConfig);
-    this.#drawRodControlBar(fightDebug, tensionConfig, layout);
+  drawRodStrokeBar(fightDebug) {
+    const layout = this.#getFightBarLayout();
+    this.#drawRodControlBar(fightDebug, layout);
     const ratio = Math.max(0, Math.min(1, Number(fightDebug?.rodStrokeRatio) || 0));
     const unrecovered = Number(fightDebug?.rodStrokeUnrecoveredMeters) || 0;
     const capacity = Number(fightDebug?.rodStrokeCapacityMeters) || 0;
     const label = "Хід вудки";
     const value = `${unrecovered.toFixed(1)}м / ${capacity.toFixed(1)}м`;
+    const style = this.#resolveHudBarStyle("rodStroke", {
+    });
 
-    this.#ctx.save();
-    this.#ctx.fillStyle = "rgba(58, 126, 210, 0.26)";
-    this.#ctx.fillRect(layout.x, layout.strokeY, layout.width, layout.strokeHeight);
-    this.#ctx.fillStyle = "#4aa3ff";
-    this.#ctx.fillRect(layout.x, layout.strokeY, layout.width * ratio, layout.strokeHeight);
-
-    this.#ctx.fillStyle = tensionConfig?.labelColor || "#8a9bac";
-    this.#ctx.font = tensionConfig?.labelFont || "bold 12px monospace";
-    this.#ctx.textAlign = "left";
-    this.#ctx.fillText(
+    this.#drawThinLabeledRatioBar({
+      ratio,
+      x: layout.x,
+      y: layout.strokeY,
+      width: layout.width,
+      height: layout.strokeHeight,
       label,
-      layout.x - layout.labelOffsetX,
-      layout.strokeY + layout.strokeHeight + 3,
-    );
-    this.#ctx.textAlign = "right";
-    this.#ctx.fillText(
       value,
-      layout.x + layout.width + layout.labelOffsetX,
-      layout.strokeY + layout.strokeHeight + 3,
-    );
-    this.#ctx.restore();
+      style,
+    });
   }
 
-  #drawRodControlBar(fightDebug, tensionConfig, layout) {
+  #drawRodControlBar(fightDebug, layout) {
     const ratio = Math.max(
       0,
       Math.min(1, Number(fightDebug?.rodControlDeliveredForceRatio) || 0),
@@ -1279,33 +1296,27 @@
     const label = "Контроль вудки";
     const directionLabel = direction < 0 ? "L" : direction > 0 ? "R" : "-";
     const value = `${directionLabel} ${(ratio * 100).toFixed(0)}%`;
-    const fillColor = active ? "#00d4ff" : "#5c7d99";
-
-    this.#ctx.save();
-    this.#ctx.fillStyle = "rgba(0, 212, 255, 0.18)";
-    this.#ctx.fillRect(layout.x, layout.controlY, layout.width, layout.strokeHeight);
-    this.#ctx.fillStyle = fillColor;
-    this.#ctx.fillRect(layout.x, layout.controlY, layout.width * ratio, layout.strokeHeight);
-
-    this.#ctx.fillStyle = tensionConfig?.labelColor || "#8a9bac";
-    this.#ctx.font = tensionConfig?.labelFont || "bold 12px monospace";
-    this.#ctx.textAlign = "left";
-    this.#ctx.fillText(
+    const style = this.#resolveHudBarStyle("rodControl", {
+    });
+    this.#drawThinLabeledRatioBar({
+      ratio,
+      x: layout.x,
+      y: layout.controlY,
+      width: layout.width,
+      height: layout.controlHeight,
       label,
-      layout.x - layout.labelOffsetX,
-      layout.controlY + layout.strokeHeight + 3,
-    );
-    this.#ctx.textAlign = "right";
-    this.#ctx.fillText(
       value,
-      layout.x + layout.width + layout.labelOffsetX,
-      layout.controlY + layout.strokeHeight + 3,
-    );
-    this.#ctx.restore();
+      style: {
+        ...style,
+        fillColor: active
+          ? style.activeColor || "#00d4ff"
+          : style.inactiveColor || "#5c7d99",
+      },
+    });
   }
 
-  drawRodPullBar(fightDebug, tensionConfig, uiIndicatorsConfig) {
-    this.drawRodStrokeBar(fightDebug, tensionConfig, uiIndicatorsConfig);
+  drawRodPullBar(fightDebug) {
+    this.drawRodStrokeBar(fightDebug);
   }
 
   #drawSimpleRatioBar({
@@ -1315,121 +1326,120 @@
     width,
     height,
     label,
-    color,
-    backgroundColor,
-    borderColor,
-    labelColor,
-    labelFont,
-    labelOffsetX,
-    labelOffsetY,
+    style,
   }) {
     const clampedRatio = Math.max(0, Math.min(1, Number(ratio) || 0));
-    const padding = 2;
+    this.#hudBarRenderer.drawFramedRatioBar({
+      ratio: clampedRatio,
+      x,
+      y,
+      width,
+      height,
+      style,
+      fillColor: style.fillColor,
+      topLabel: label,
+      rightValue: `${Math.round(clampedRatio * 100)}%`,
+    });
+  }
+
+  #drawThinLabeledRatioBar({
+    ratio,
+    x,
+    y,
+    width,
+    height,
+    label,
+    value,
+    style,
+  }) {
+    const clampedRatio = Math.max(0, Math.min(1, Number(ratio) || 0));
     this.#ctx.save();
-    this.#ctx.fillStyle = backgroundColor;
-    this.#ctx.fillRect(x - padding, y - padding, width + padding * 2, height + padding * 2);
-    this.#ctx.strokeStyle = borderColor;
-    this.#ctx.lineWidth = 1;
-    this.#ctx.strokeRect(x - padding, y - padding, width + padding * 2, height + padding * 2);
-    this.#ctx.fillStyle = color;
+    this.#ctx.fillStyle = style.backgroundColor || "rgba(58, 126, 210, 0.26)";
+    this.#ctx.fillRect(x, y, width, height);
+    this.#ctx.fillStyle = style.fillColor || "#4aa3ff";
     this.#ctx.fillRect(x, y, width * clampedRatio, height);
-    this.#ctx.fillStyle = labelColor;
-    this.#ctx.font = labelFont;
-    this.#ctx.textAlign = "left";
-    this.#ctx.fillText(label, x - labelOffsetX, y + labelOffsetY);
-    this.#ctx.textAlign = "right";
-    this.#ctx.fillText(`${Math.round(clampedRatio * 100)}%`, x + width + labelOffsetX, y + labelOffsetY);
+
+    this.#ctx.fillStyle = style.labelColor || "#8a9bac";
+    this.#ctx.font = style.labelFont || "bold 12px monospace";
+    this.#ctx.textAlign = "center";
+    this.#ctx.textBaseline = "bottom";
+    this.#ctx.fillText(
+      label,
+      x + width / 2,
+      y - (style.labelGap ?? 5),
+    );
+    this.#ctx.fillStyle = style.valueColor || style.labelColor || "#8a9bac";
+    this.#ctx.font = style.valueFont || style.labelFont || "bold 12px monospace";
+    const valuePlacement = style.valuePlacement === "center" ? "center" : "rightInside";
+    this.#ctx.textAlign = valuePlacement === "center" ? "center" : "right";
+    this.#ctx.textBaseline = "middle";
+    this.#ctx.fillText(
+      value,
+      valuePlacement === "center" ? x + width / 2 : x + width - (style.valueGap ?? 6),
+      y + height / 2,
+    );
     this.#ctx.restore();
   }
 
-  drawTensionBar(tensionMeter, tensionConfig, uiIndicatorsConfig, fightDebug = null) {
-    const layout = this.#getFightBarLayout(tensionConfig, uiIndicatorsConfig);
+  drawTensionBar(tensionMeter, tensionConfig, fightDebug = null) {
+    const layout = this.#getFightBarLayout();
     const barWidth = layout.width;
-    const barHeight = tensionConfig.barHeight;
+    const tensionStyle = this.#resolveHudBarStyle("tension");
+    const barHeight = tensionStyle.height || 20;
     const barX = layout.x;
     const barY = layout.tensionY;
 
-    const padding = tensionConfig.borderPadding;
     const tension = tensionMeter.getTension();
     const pulseIntensity = tensionMeter.getPulseIntensity(tensionConfig);
     const tensionKg = tensionMeter.getTensionKg?.();
     const maxLoadKg = tensionMeter.getEffectiveMaxTackleLoadKg?.();
-
-    this.#ctx.fillStyle = tensionConfig.backgroundColor;
-    this.#ctx.fillRect(
-      barX - padding,
-      barY - padding,
-      barWidth + padding * 2,
-      barHeight + padding * 2,
+    const fillColor = this.#ratioGradientColor(
+      tension,
+      tensionStyle.gradient,
     );
-
-    this.#ctx.strokeStyle = tensionConfig.borderColor;
-    this.#ctx.lineWidth = tensionConfig.barBorderWidth;
-    this.#ctx.strokeRect(
-      barX - padding,
-      barY - padding,
-      barWidth + padding * 2,
-      barHeight + padding * 2,
-    );
-
-    const fillWidth = (tension / 100) * barWidth;
-    const fillColor = tensionMeter.getCurrentColor();
-
-    this.#ctx.fillStyle = fillColor;
-    this.#ctx.fillRect(barX, barY, fillWidth, barHeight);
-
-    const glowIntensity = pulseIntensity * tensionConfig.glowIntensity;
-    this.#ctx.shadowColor = fillColor;
-    this.#ctx.shadowBlur = 10 * glowIntensity;
-    this.#ctx.strokeStyle = fillColor;
-    this.#ctx.lineWidth = 2;
-    this.#ctx.strokeRect(barX, barY, fillWidth, barHeight);
-    this.#ctx.shadowBlur = 0;
-
     const dragLimitKg = Number(fightDebug?.dragLimitKg);
     const maxLoadForMarker = Number(maxLoadKg);
     const shouldDrawDragMarker = fightDebug?.dragSupported === true;
-    if (
-      shouldDrawDragMarker &&
-      Number.isFinite(dragLimitKg) &&
-      Number.isFinite(maxLoadForMarker) &&
-      maxLoadForMarker > 0
-    ) {
-      const markerRatio = Math.max(0, Math.min(1, dragLimitKg / maxLoadForMarker));
-      const markerX = barX + barWidth * markerRatio;
-      this.#ctx.strokeStyle = "#73c2fb";
-      this.#ctx.lineWidth = 2;
-      this.#ctx.beginPath();
-      this.#ctx.moveTo(markerX, barY - 4);
-      this.#ctx.lineTo(markerX, barY + barHeight + 4);
-      this.#ctx.stroke();
-    }
-
-    this.#ctx.fillStyle = tensionConfig.labelColor;
-    this.#ctx.font = tensionConfig.labelFont;
-    this.#ctx.textAlign = "left";
     const kgPrecision = Number.isFinite(maxLoadKg) && maxLoadKg <= 3 ? 2 : 1;
-    const tensionLabel = Number.isFinite(tensionKg) && Number.isFinite(maxLoadKg)
-      ? `Натяг: ${tensionKg.toFixed(kgPrecision)}/${maxLoadKg.toFixed(kgPrecision)}кг`
+    const tensionValue = Number.isFinite(tensionKg) && Number.isFinite(maxLoadKg)
+      ? `${tensionKg.toFixed(kgPrecision)}/${maxLoadKg.toFixed(kgPrecision)}кг`
       : Number.isFinite(tensionKg)
-        ? `Натяг: ${tensionKg.toFixed(kgPrecision)}кг`
-        : `Натяг: ${Math.round(tension)}%`;
-    this.#ctx.fillText(
-      tensionLabel,
-      barX - tensionConfig.labelOffsetX,
-      barY + tensionConfig.labelOffsetY,
-    );
+        ? `${tensionKg.toFixed(kgPrecision)}кг`
+        : `${Math.round(tension)}%`;
 
-    const statusLabel = tensionMeter.getCurrentStatusLabel();
-    const statusColor = tensionMeter.getCurrentStatusColor();
-
-    this.#ctx.fillStyle = statusColor;
-    this.#ctx.textAlign = "right";
-    this.#ctx.fillText(
-      statusLabel,
-      barX + barWidth + tensionConfig.labelOffsetX,
-      barY + tensionConfig.labelOffsetY,
+    const status = this.#getTensionStatus(
+      tension,
+      tensionStyle.statuses,
     );
+    const statusColor = status.color || tensionStyle.labelColor;
+    this.#hudBarRenderer.drawFramedRatioBar({
+      ratio: tension / 100,
+      x: barX,
+      y: barY,
+      width: barWidth,
+      height: barHeight,
+      style: {
+        ...tensionStyle,
+        glowIntensity: pulseIntensity * (tensionStyle.glowIntensity ?? 0.6),
+        labelColor: tensionStyle.labelColor,
+        valueColor: statusColor,
+      },
+      fillColor,
+      topLabel: "НАТЯГ",
+      rightValue: tensionValue,
+      marker: {
+        enabled: shouldDrawDragMarker &&
+          Number.isFinite(dragLimitKg) &&
+          Number.isFinite(maxLoadForMarker) &&
+          maxLoadForMarker > 0,
+        ratio: Number.isFinite(maxLoadForMarker) && maxLoadForMarker > 0
+          ? dragLimitKg / maxLoadForMarker
+          : 0,
+        color: tensionStyle.dragMarkerColor || tensionStyle.markerColor || "#73c2fb",
+        width: 2,
+        extendPx: 4,
+      },
+    });
 
     const stressRatio = Math.max(
       0,
@@ -1440,27 +1450,36 @@
         tensionMeter.getBreakTargetReason?.() ||
         tensionMeter.getBreakReason?.() ||
         "line";
-      this.#drawTackleStressBar(barX, barY - 25, barWidth, stressRatio, breakReason);
+      const stressStyle = this.#resolveHudBarStyle("tackleStress");
+      this.#drawTackleStressBar(
+        barX,
+        barY + (stressStyle.yOffset ?? -25),
+        barWidth,
+        stressRatio,
+        breakReason,
+      );
     }
   }
 
   #drawTackleStressBar(x, y, width, progress, reason = "line") {
-    this.#ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
-    this.#ctx.fillRect(x, y, width * progress, 8);
-    this.#ctx.strokeStyle = "#ff0000";
-    this.#ctx.lineWidth = 1;
-    this.#ctx.strokeRect(x, y, width, 8);
-    this.#ctx.fillStyle = "#ff0000";
-    this.#ctx.font = "bold 10px monospace";
-    this.#ctx.textAlign = "center";
-    const label = this.#tackleStressLabel(reason);
-    this.#ctx.fillText(label, x + width / 2, y + 18);
+    const style = this.#resolveHudBarStyle("tackleStress");
+    this.#hudBarRenderer.drawThinProgressBar({
+      x,
+      y,
+      width,
+      height: style.height || 8,
+      ratio: progress,
+      style,
+      label: this.#tackleStressLabel(reason, style),
+      value: `${Math.round(progress * 100)}%`,
+    });
   }
 
-  #tackleStressLabel(reason) {
-    if (reason === "rod") return "STRESS: ROD";
-    if (reason === "leader") return "STRESS: LEADER";
-    return "STRESS: LINE";
+  #tackleStressLabel(reason, style = {}) {
+    const prefix = style.labelPrefix || "STRESS";
+    if (reason === "rod") return `${prefix}: ROD`;
+    if (reason === "leader") return `${prefix}: LEADER`;
+    return `${prefix}: LINE`;
   }
 
   drawGameOver(canvasWidth, canvasHeight, reason) {

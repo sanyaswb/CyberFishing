@@ -10,6 +10,8 @@ const FILES = [
   "src/config/runtime/immutable_config.js",
   "src/config/config.js",
   "src/app/cast_power.js",
+  "src/ui/styles/hud_style_resolver.js",
+  "src/render/hud_bar_renderer.js",
   "src/render/renderer.js",
 ];
 

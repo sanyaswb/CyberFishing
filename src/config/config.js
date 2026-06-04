@@ -227,20 +227,7 @@ const CONFIG = {
       glowBlur: 8,
     },
 
-    powerBar: {
-      width: 300,
-      height: 12,
-      y: 42,
-      borderPadding: 2,
-      borderWidth: 1,
-      backgroundColor: "#1a2b3c",
-      borderColor: "#4a5b6c",
-      labelFont: "bold 11px monospace",
-      labelColor: "#8a9bac",
-      labelOffsetX: 56,
-      labelOffsetY: 12,
-      glowIntensity: 0.45,
-    },
+    // Canvas HUD bar styling lives in CONFIG.ui.hudStyles.bars.castPower.
   },
 
   debug: {
@@ -482,41 +469,7 @@ const CONFIG = {
     baseBreakTime: 1000,
     timePerEquipmentLevel: 100,
 
-    // Bar Display
-    barWidth: 300,
-    barHeight: 20,
-    barYOffset: 40, // From bottom
-    barBorderWidth: 1,
-    borderPadding: 2,
-    backgroundColor: "#1a2b3c",
-    borderColor: "#4a5b6c",
-    glowIntensity: 0.6,
-
-    // Label
-    labelFont: "bold 12px monospace",
-    labelColor: "#8a9bac",
-    labelOffsetX: 60,
-    labelOffsetY: 16,
-
-    // Status Thresholds and Colors
-    statuses: [
-      { threshold: 0, label: "Idle", color: "#4a5b6c" },
-      { threshold: 1, label: "LOW", color: "#00ccff" },
-      { threshold: 30, label: "MEDIUM", color: "#ffff00" },
-      { threshold: 60, label: "HIGH", color: "#ffaa00" },
-      { threshold: 80, label: "CRITICAL", color: "#ff4444" },
-    ],
-
-    // Color Gradient (Low to High Tension)
-    colorGradient: {
-      // 0-33%: Blue to Yellow
-      low: { start: [0, 0, 255], end: [255, 255, 0] },
-      // 33-66%: Yellow to Orange
-      mid: { start: [255, 255, 0], end: [255, 128, 0] },
-      // 66-100%: Orange to Red
-      high: { start: [255, 128, 0], end: [255, 0, 0] },
-      breakpoints: { low: 33, mid: 66 },
-    },
+    // Canvas HUD bar styling lives in CONFIG.ui.hudStyles.
   },
 
   ui: {
@@ -532,14 +485,124 @@ const CONFIG = {
       yOffset: 0,
     },
 
-    indicators: {
-      x: "center",
-      y: 40,
-      spacing: 56,
-      conditionWidth: 220,
-      conditionHeight: 10,
-      conditionGap: 22,
-      conditionLabelOffsetY: 9,
+    hudStyles: {
+      bars: {
+        layout: {
+          x: "center",
+          y: 40,
+          spacing: 90,
+          tensionGapFromStroke: 34,
+        },
+
+        shared: {
+          backgroundColor: "#1a2b3c",
+          borderColor: "#4a5b6c",
+          borderWidth: 1,
+          padding: 2,
+          labelFont: "bold 16px monospace",
+          labelColor: "#ffffff",
+          labelGap: 6,
+          valueGap: 6,
+          valuePlacement: "center",
+          valueFont: "bold 12px monospace",
+          valueColor: "#002d80",
+        },
+
+        tension: {
+          width: 300,
+          height: 20,
+          glowIntensity: 0.6,
+          gradient: {
+            low: { start: [0, 0, 255], end: [255, 255, 0] },
+            mid: { start: [255, 255, 0], end: [255, 128, 0] },
+            high: { start: [255, 128, 0], end: [255, 0, 0] },
+            breakpoints: { low: 33, mid: 66 },
+          },
+          statuses: [
+            { threshold: 0, label: "Idle", color: "#4a5b6c" },
+            { threshold: 1, label: "LOW", color: "#00ccff" },
+            { threshold: 30, label: "MEDIUM", color: "#ffff00" },
+            { threshold: 60, label: "HIGH", color: "#ffaa00" },
+            { threshold: 80, label: "CRITICAL", color: "#ffffff" },
+          ],
+          dragMarkerColor: "#73c2fb",
+        },
+
+        tackleStress: {
+          height: 8,
+          yOffset: 40,
+          fillColor: "rgba(255, 0, 0, 0.3)",
+          strokeColor: "#ff0000",
+          borderWidth: 1,
+          labelColor: "#ff0000",
+          labelFont: "bold 10px monospace",
+          valueFont: "bold 10px monospace",
+          labelPrefix: "STRESS",
+        },
+
+        fishCondition: {
+          width: 220,
+          height: 10,
+          gap: 34,
+          padding: 1,
+          backgroundColor: "#0b1520",
+          borderColor: "#333",
+          activeBorderWidth: 2,
+          inactiveBorderWidth: 1,
+          labelFont: "11px monospace",
+          // labelColor: "#8a9bac",
+          valueFont: "11px monospace",
+          activeLabelColor: "#ffffff",
+          stamina: {
+            fillColor: "#ffcc00",
+          },
+          exhaustion: {
+            fillColor: "#ff4444",
+          },
+        },
+
+        drag: {
+          heightRatio: 0.65,
+          minHeight: 8,
+          yOffset: 14,
+          fillColor: "#73c2fb",
+        },
+
+        rodStroke: {
+          valuePlacement: "right",
+          height: 3,
+          labelFont: "bold 11px monospace",
+          valueFont: "bold 11px monospace",
+          backgroundColor: "rgba(58, 126, 210, 0.26)",
+          fillColor: "#4aa3ff",
+        },
+
+        rodControl: {
+          valuePlacement: "right",
+          height: 3,
+          yOffset: -20,
+          labelFont: "bold 11px monospace",
+          valueFont: "bold 11px monospace",
+          activeColor: "#00d4ff",
+          inactiveColor: "#5c7d99",
+          backgroundColor: "rgba(0, 212, 255, 0.18)",
+        },
+
+        castPower: {
+          width: 300,
+          height: 12,
+          x: "center",
+          y: 42,
+          padding: 2,
+          borderWidth: 1,
+          backgroundColor: "#1a2b3c",
+          borderColor: "#4a5b6c",
+          labelFont: "bold 11px monospace",
+          labelColor: "#8a9bac",
+          valueFont: "bold 11px monospace",
+          glowIntensity: 0.45,
+        },
+      },
     },
 
     catchZone: {
