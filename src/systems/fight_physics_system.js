@@ -863,7 +863,26 @@ class FightPhysicsSystem {
       landingLift,
     };
 
-    stressSystem.updateTarget(tensionResult.tensionKg, dtSec, this.#config.tension || {});
+    if (typeof stressSystem.updateTensionFrame === "function") {
+      stressSystem.updateTensionFrame({
+        visibleTensionKg: tensionResult.tensionKg,
+        totalTensionKg: tensionResult.totalTensionKg,
+        rawTotalTensionKg: tensionResult.rawTotalTensionKg,
+        rawTensionKg: tensionResult.rawTensionKg,
+        fishTensionKg: tensionResult.fishTensionKg,
+        dtSec,
+        tensionConfig:
+          this.#physicsConfig?.getTensionConfig?.() ||
+          this.#config.tension ||
+          {},
+      });
+    } else {
+      stressSystem.updateTarget(
+        tensionResult.tensionKg,
+        dtSec,
+        this.#config.tension || {},
+      );
+    }
     return tensionResult;
   }
 

@@ -126,7 +126,9 @@
 │  │  │  ├── rod_stroke_state.js
 │  │  │  ├── rod_stroke_tracker.js
 │  │  │  ├── simple_fight_force_calculator.js
-│  │  │  └── slack_calculator.js
+│  │  │  ├── slack_calculator.js
+│  │  │  ├── tackle_failure_selector.js
+│  │  │  └── tackle_stress_accumulator.js
 │  │  └── line
 │  │    ├── line_allocation_policy.js
 │  │    ├── line_inventory_controller.js
@@ -260,4 +262,5 @@
   ├── rod-pull-systems-check.js
   ├── set-project-version.js
   ├── simulate-fish-fight.js
+  ├── tackle-stress-failure-check.js
   └── validate-config.js

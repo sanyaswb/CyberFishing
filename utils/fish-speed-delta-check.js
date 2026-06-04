@@ -33,6 +33,8 @@ const FILES = [
   "src/core/fishing/drag_force_calculator.js",
   "src/core/fishing/landing_lift_tension_calculator.js",
   "src/core/fishing/line_tension_calculator.js",
+  "src/core/fishing/tackle_failure_selector.js",
+  "src/core/fishing/tackle_stress_accumulator.js",
   "src/core/fishing/rod_pull_state.js",
   "src/core/fishing/rod_stroke_state.js",
   "src/core/fishing/rod_axis_stroke_state.js",

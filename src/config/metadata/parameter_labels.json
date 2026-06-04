@@ -368,20 +368,52 @@
     "description": "Наскільки швидко поточний натяг у кг наближається до target tension."
   },
   "physics.tension.overloadGraceMs": {
-    "label": "Затримка перед поломкою",
-    "description": "Скільки мілісекунд снасть може бути у перевантаженні перед deterministic break. 0 = миттєво."
+    "label": "Legacy overload grace",
+    "description": "Legacy/compatibility field. Stress-based tackle failure is controlled by physics.tension.tackleStress, not this value."
   },
   "physics.tension.breaking.thresholdPercent": {
-    "label": "Поріг поломки у відсотках",
-    "description": "Відсоток tension, на якому починається або відбувається поломка. 100 = поломка при досягненні maxLoad."
+    "label": "Legacy/UI tension threshold",
+    "description": "Legacy/compatibility threshold for the visible tension UI. Gameplay failure is controlled by physics.tension.tackleStress."
   },
   "physics.tension.breaking.baseBreakTimeMs": {
-    "label": "Базовий час поломки",
-    "description": "Базовий час до поломки у мілісекундах для старої/сумісної break-моделі."
+    "label": "Legacy break time",
+    "description": "Legacy/compatibility field. Gameplay failure timing now uses physics.tension.tackleStress.failureRoll and stress gain."
   },
   "physics.tension.breaking.timePerEquipmentLevelMs": {
-    "label": "Додатковий час поломки за рівень",
-    "description": "Скільки мілісекунд додається до часу поломки за рівень спорядження у старій/сумісній break-моделі."
+    "label": "Legacy level break time",
+    "description": "Legacy/compatibility field. Equipment level no longer changes direct overload break timing in the stress failure model."
+  },
+  "physics.tension.tackleStress.enabled": {
+    "label": "Tackle stress enabled",
+    "description": "Enables stress-based tackle failure instead of direct overload failure."
+  },
+  "physics.tension.tackleStress.stress.capacity": {
+    "label": "Tackle stress capacity",
+    "description": "Maximum stress value represented by a full Tackle Stress bar."
+  },
+  "physics.tension.tackleStress.stress.baseGainPerSecond": {
+    "label": "Tackle stress gain",
+    "description": "Base stress gain per second multiplied by overload ratio."
+  },
+  "physics.tension.tackleStress.stress.recoveryPerSecond": {
+    "label": "Tackle stress recovery",
+    "description": "Stress recovered per second when tackle is no longer overloaded."
+  },
+  "physics.tension.tackleStress.stress.minStressToRoll": {
+    "label": "Minimum stress to roll",
+    "description": "Stress ratio threshold below which failure rolls are skipped."
+  },
+  "physics.tension.tackleStress.failureRoll.intervalMs": {
+    "label": "Stress failure roll interval",
+    "description": "Milliseconds between one-shot tackle failure rolls."
+  },
+  "physics.tension.tackleStress.failureRoll.chanceScale": {
+    "label": "Stress failure chance scale",
+    "description": "Multiplier applied to stress ratio when calculating failure chance."
+  },
+  "physics.tension.tackleStress.failureSelection.tieBreakPriority": {
+    "label": "Stress failure tie priority",
+    "description": "Component priority used when multiple breakable tackle parts have equal max load."
   },
   "physics.retrieve.passive.passiveRetrievePowerRatio": {
     "label": "Сила пасивної підмотки",

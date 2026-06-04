@@ -8,6 +8,7 @@ class TackleStressSystem {
   #rng;
   #currentTensionKg = 0;
   #targetTensionKg = 0;
+  #effectiveTensionKg = 0;
   #tensionRatio = 0;
   #tensionPercent = 0;
   #pulsePhase = 0;
@@ -17,16 +18,21 @@ class TackleStressSystem {
   #isBroken = false;
   #breakReason = null;
   #breakInfo = null;
-  #overloadTimerMs = 0;
   #lastBreakProgress = 0;
   #preventedBreakReason = null;
   #debug = {};
   #devFlags;
+  #accumulator;
+  #failureSelector;
+  #stressDebug = {};
+  #selectedFailureComponent = null;
 
   constructor({ rod, reel, lineSystem, hook = null, leader = null, config, rng = null, devFlags = null }) {
     this.#config = config || {};
     this.#rng = rng || { next: () => Math.random() };
     this.#devFlags = devFlags;
+    this.#accumulator = new TackleStressAccumulator();
+    this.#failureSelector = new TackleFailureSelector();
     this.updateEquipment({ rod, reel, lineSystem, hook, leader });
   }
 
@@ -36,19 +42,79 @@ class TackleStressSystem {
     this.#lineSystem = lineSystem;
     this.#hook = hook;
     this.#leader = leader;
+    this.resetStress();
     this.#refreshRatios();
   }
 
   updateTarget(tensionKg, dtSec, tensionConfig) {
-    if (this.#isBroken) return;
-    this.#targetTensionKg = Math.max(0, Number(tensionKg) || 0);
-    const smooth = tensionConfig?.kgSmoothPerSecond ?? 18;
-    const alpha = 1 - Math.exp(-Math.max(0, smooth) * Math.max(0, dtSec || 0));
+    return this.updateTensionFrame({
+      visibleTensionKg: tensionKg,
+      totalTensionKg: tensionKg,
+      fishTensionKg: tensionKg,
+      dtSec,
+      tensionConfig,
+    });
+  }
+
+  updateTensionFrame({
+    visibleTensionKg,
+    tensionKg,
+    totalTensionKg,
+    rawTotalTensionKg,
+    rawTensionKg,
+    fishTensionKg,
+    dtSec,
+    tensionConfig,
+  } = {}) {
+    if (this.#isBroken) return this.#frameResult();
+    const config = tensionConfig || this.#config || {};
+    this.#targetTensionKg = this.#safeNumber(
+      visibleTensionKg,
+      this.#safeNumber(tensionKg, 0),
+    );
+    const smooth = config?.kgSmoothPerSecond ?? 18;
+    const dt = this.#safeNumber(dtSec, 0);
+    const alpha = 1 - Math.exp(-Math.max(0, smooth) * Math.max(0, dt));
     this.#currentTensionKg +=
       (this.#targetTensionKg - this.#currentTensionKg) * alpha;
     this.#refreshRatios();
-    this.#evaluateBreak(dtSec, tensionConfig);
-    this.#updateVisualStates(tensionConfig);
+
+    const stressConfig = this.#resolveTackleStressConfig(config);
+    this.#effectiveTensionKg = Math.max(
+      this.#safeNumber(totalTensionKg, this.#targetTensionKg),
+      this.#safeNumber(rawTotalTensionKg, 0),
+      this.#safeNumber(rawTensionKg, 0),
+      this.#safeNumber(fishTensionKg, 0),
+    );
+    this.#selectedFailureComponent = this.#selectFailureComponent();
+
+    if (stressConfig.enabled !== false) {
+      const stressFrame = this.#accumulator.update({
+        effectiveTensionKg: this.#effectiveTensionKg,
+        mainTackleLimitKg: this.getEffectiveMaxTackleLoadKg(),
+        dtSec: dt,
+        config: stressConfig,
+        rng: this.#rng,
+      });
+      this.#stressDebug = stressFrame;
+      this.#lastBreakProgress = stressFrame.stressRatio || 0;
+      if (stressFrame.failureTriggered) {
+        this.#triggerTackleFailure({
+          guaranteed: stressFrame.guaranteed,
+          stressFrame,
+        });
+      } else {
+        this.#preventedBreakReason = null;
+      }
+    } else {
+      this.#stressDebug = this.#accumulator.getDebugData(
+        this.#stressDebugDefaults(stressConfig),
+      );
+      this.#lastBreakProgress = 0;
+    }
+
+    this.#updateVisualStates(config);
+    return this.#frameResult();
   }
 
   setDebugData(data) {
@@ -56,25 +122,38 @@ class TackleStressSystem {
   }
 
   getDebugData() {
+    const stressConfig = this.#resolveTackleStressConfig(this.#config);
+    const selected = this.#selectedFailureComponent || this.#selectFailureComponent();
     return {
       ...this.#debug,
       tensionKg: this.#currentTensionKg,
       targetTensionKg: this.#targetTensionKg,
+      visibleTensionKg: this.#currentTensionKg,
+      currentTensionKg: this.#currentTensionKg,
+      effectiveTensionKg: this.#effectiveTensionKg,
       maxTackleLoadKg: this.getEffectiveMaxTackleLoadKg(),
+      mainTackleLimitKg: this.getEffectiveMaxTackleLoadKg(),
       rodMaxLoadKg: this.getEffectiveRodMaxLoadKg(),
       lineMaxLoadKg: this.getEffectiveLineSystemMaxLoadKg(),
       hookMaxLoadKg: this.getEffectiveHookMaxLoadKg(),
       leaderMaxLoadKg: this.getEffectiveLeaderMaxLoadKg(),
       reelMaxLoadKg: this.getEffectiveReelMaxLoadKg(),
-      rodStressRatio: this.#stressRatio(this.#currentTensionKg, this.getEffectiveRodMaxLoadKg()),
-      lineStressRatio: this.#stressRatio(this.#currentTensionKg, this.getEffectiveLineSystemMaxLoadKg()),
-      hookStressRatio: this.#stressRatio(this.#currentTensionKg, this.getEffectiveHookMaxLoadKg()),
+      rodStressRatio: this.#stressRatio(this.#effectiveTensionKg, this.getEffectiveRodMaxLoadKg()),
+      lineStressRatio: this.#stressRatio(this.#effectiveTensionKg, this.getEffectiveLineSystemMaxLoadKg()),
+      hookStressRatio: this.#stressRatio(this.#effectiveTensionKg, this.getEffectiveHookMaxLoadKg()),
       tensionRatio: this.#tensionRatio,
       tensionPercent: this.#tensionPercent,
+      mainTensionRatio: this.#tensionRatio,
+      mainTensionPercent: this.#tensionPercent,
       overloadProgress: this.#lastBreakProgress,
       breakPrevented: this.#preventedBreakReason !== null,
       preventedBreakReason: this.#preventedBreakReason,
       breakInfo: this.#breakInfo,
+      ...this.#stressDebugWithDefaults(stressConfig),
+      selectedFailureComponent: selected.component,
+      selectedFailureResult: selected.result,
+      failureTieBreakPriority: selected.tieBreakPriority,
+      tieBreakPriority: selected.tieBreakPriority,
     };
   }
 
@@ -125,6 +204,14 @@ class TackleStressSystem {
     return this.#tensionPercent;
   }
 
+  getStressTension() {
+    return Math.max(0, Math.min(100, (this.#stressDebug?.stressRatio || 0) * 100));
+  }
+
+  getStressRatio() {
+    return Math.max(0, Math.min(1, this.#stressDebug?.stressRatio || 0));
+  }
+
   getTensionKg() {
     return this.#currentTensionKg;
   }
@@ -157,8 +244,12 @@ class TackleStressSystem {
     return this.#breakInfo || { reason: this.#breakReason };
   }
 
+  getBreakResult() {
+    return this.#breakInfo?.result || null;
+  }
+
   getBreakTargetReason() {
-    return this.#breakReason || this.#selectBreakReason();
+    return this.#breakReason || this.#selectFailureComponent().reason;
   }
 
   getPulseIntensity(tensionConfig) {
@@ -183,13 +274,23 @@ class TackleStressSystem {
   reset() {
     this.#currentTensionKg = 0;
     this.#targetTensionKg = 0;
+    this.#effectiveTensionKg = 0;
     this.#isBroken = false;
     this.#breakReason = null;
     this.#breakInfo = null;
-    this.#overloadTimerMs = 0;
-    this.#lastBreakProgress = 0;
     this.#preventedBreakReason = null;
+    this.#selectedFailureComponent = null;
+    this.resetStress();
     this.#refreshRatios();
+  }
+
+  resetStress() {
+    this.#accumulator?.reset?.();
+    const stressConfig = this.#resolveTackleStressConfig(this.#config);
+    this.#stressDebug = this.#accumulator?.getDebugData?.(
+      this.#stressDebugDefaults(stressConfig),
+    ) || {};
+    this.#lastBreakProgress = 0;
   }
 
   #refreshRatios() {
@@ -198,34 +299,39 @@ class TackleStressSystem {
     this.#tensionPercent = Math.max(0, Math.min(100, this.#tensionRatio * 100));
   }
 
-  #evaluateBreak(dtSec, tensionConfig) {
-    const maxLoad = this.getEffectiveMaxTackleLoadKg();
-    const epsilon = Math.max(0, tensionConfig?.breakEpsilonKg ?? 0.0001);
-    const currentAtFailure = this.#currentTensionKg >= maxLoad - epsilon;
-    const targetAtFailure = this.#targetTensionKg >= maxLoad - epsilon;
-    if (!currentAtFailure && !targetAtFailure) {
-      this.#overloadTimerMs = 0;
-      this.#lastBreakProgress = 0;
-      this.#preventedBreakReason = null;
+  #triggerTackleFailure({ guaranteed, stressFrame }) {
+    const selected = this.#selectFailureComponent();
+    if (this.#isBreakPrevented(selected.reason)) {
+      this.#preventedBreakReason = selected.reason;
+      this.resetStress();
       return;
     }
 
-    const graceMs = Math.max(0, tensionConfig?.overloadGraceMs ?? 0);
-    this.#overloadTimerMs += Math.max(0, dtSec || 0) * 1000;
-    this.#lastBreakProgress =
-      graceMs <= 0 ? 1 : Math.min(1, this.#overloadTimerMs / graceMs);
-    if (this.#lastBreakProgress >= 1) {
-      const breakReason = this.#selectBreakReason();
-      if (this.#isBreakPrevented(breakReason)) {
-        this.#preventedBreakReason = breakReason;
-        this.#overloadTimerMs = 0;
-        this.#lastBreakProgress = 0;
-        return;
-      }
-      this.#isBroken = true;
-      this.#breakReason = breakReason;
-      this.#breakInfo = this.#createBreakInfo(this.#breakReason);
-    }
+    this.#isBroken = true;
+    this.#breakReason = selected.reason;
+    this.#breakInfo = this.#createBreakInfo({
+      selected,
+      guaranteed,
+      stressFrame,
+    });
+    this.resetStress();
+  }
+
+  #frameResult() {
+    return {
+      failed: this.#isBroken,
+      component: this.#breakInfo?.failureComponent || this.#breakReason || null,
+      result: this.#breakInfo?.result || null,
+      stressRatio: this.getStressRatio(),
+      failureChance: this.#stressDebug?.failureChance || 0,
+      failureSource: this.#breakInfo?.failureSource ||
+        this.#stressDebug?.failureSource ||
+        null,
+      guaranteedFailure: !!(
+        this.#breakInfo?.guaranteed ||
+        this.#stressDebug?.guaranteedFailure
+      ),
+    };
   }
 
   #isBreakPrevented(reason) {
@@ -236,32 +342,41 @@ class TackleStressSystem {
     return false;
   }
 
-  #selectBreakReason() {
-    const candidates = [
-      { reason: "rod", maxLoadKg: this.getEffectiveRodMaxLoadKg() },
-      { reason: "line", maxLoadKg: this.getEffectiveLineSystemMaxLoadKg() },
-      { reason: "hook", maxLoadKg: this.getEffectiveHookMaxLoadKg() },
-      { reason: "leader", maxLoadKg: this.getEffectiveLeaderMaxLoadKg() },
-    ]
-      .filter((item) => Number.isFinite(item.maxLoadKg) && item.maxLoadKg > 0)
-      .sort((a, b) => a.maxLoadKg - b.maxLoadKg);
-
-    return candidates[0]?.reason || "line";
+  #selectFailureComponent() {
+    const stressConfig = this.#resolveTackleStressConfig(this.#config);
+    return this.#failureSelector.select({
+      leaderMaxLoadKg: this.getEffectiveLeaderMaxLoadKg(),
+      lineMaxLoadKg: this.getEffectiveLineSystemMaxLoadKg(),
+      rodMaxLoadKg: this.getEffectiveRodMaxLoadKg(),
+      tieBreakPriority: stressConfig.failureSelection?.tieBreakPriority,
+    });
   }
 
-  #createBreakInfo(reason) {
+  #createBreakInfo({ selected, guaranteed, stressFrame }) {
     const info = {
-      reason,
+      reason: selected.reason,
+      result: selected.result,
+      failureComponent: selected.component,
+      component: selected.component,
+      guaranteed: !!guaranteed,
+      failureSource: stressFrame?.failureSource ||
+        (guaranteed ? "guaranteed" : "roll"),
       tensionKg: this.#currentTensionKg,
+      effectiveTensionKg: this.#effectiveTensionKg,
+      mainTackleLimitKg: this.getEffectiveMaxTackleLoadKg(),
+      stressRatio: stressFrame?.stressRatio || 0,
+      failureChance: stressFrame?.failureChance || 0,
+      lastRollValue: stressFrame?.lastRollValue ?? null,
+      lastRollPassed: !!stressFrame?.lastRollPassed,
       rodMaxLoadKg: this.getEffectiveRodMaxLoadKg(),
       lineMaxLoadKg: this.getEffectiveLineSystemMaxLoadKg(),
-      hookMaxLoadKg: this.getEffectiveHookMaxLoadKg(),
       leaderMaxLoadKg: this.getEffectiveLeaderMaxLoadKg(),
       reelMaxLoadKg: this.getEffectiveReelMaxLoadKg(),
+      tieBreakPriority: selected.tieBreakPriority,
       lineLossMeters: 0,
     };
 
-    if (reason === "line") {
+    if (selected.reason === "line") {
       info.lineLossMeters = this.#lineSystem?.calculateBreakLossMeters?.({
         rng: this.#rng,
       }) || 0;
@@ -290,10 +405,54 @@ class TackleStressSystem {
     );
   }
 
+  #resolveTackleStressConfig(tensionConfig) {
+    const raw = tensionConfig?.tackleStress || {};
+    return {
+      enabled: raw.enabled !== false,
+      stress: {
+        capacity: 1.0,
+        baseGainPerSecond: 0.45,
+        recoveryPerSecond: 0.35,
+        minStressToRoll: 0.01,
+        ...(raw.stress || {}),
+      },
+      failureRoll: {
+        intervalMs: 500,
+        chanceScale: 1.0,
+        ...(raw.failureRoll || {}),
+      },
+      failureSelection: {
+        tieBreakPriority: ["leader", "line", "rod"],
+        ...(raw.failureSelection || {}),
+      },
+    };
+  }
+
+  #stressDebugDefaults(stressConfig) {
+    return {
+      capacity: stressConfig?.stress?.capacity ?? 1,
+      recoveryPerSecond: stressConfig?.stress?.recoveryPerSecond ?? 0.35,
+      intervalMs: stressConfig?.failureRoll?.intervalMs ?? 500,
+    };
+  }
+
+  #stressDebugWithDefaults(stressConfig) {
+    const defaults = this.#stressDebugDefaults(stressConfig);
+    return {
+      ...this.#accumulator.getDebugData(defaults),
+      ...this.#stressDebug,
+    };
+  }
+
   #stressRatio(tensionKg, limitKg) {
     const limit = Number(limitKg);
     if (!Number.isFinite(limit) || limit <= 0) return 0;
     return Math.max(0, Number(tensionKg) || 0) / limit;
+  }
+
+  #safeNumber(value, fallback) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
   }
 
   static effectiveItemMaxLoadKg(item, fallback = 0) {

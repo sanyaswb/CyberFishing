@@ -1,5 +1,16 @@
 # CyberFishing changelog
 
+## v0.19.23 - Tackle stress failure system
+
+- Reworked tackle overload into a stress-based failure system.
+- Stress tension now accumulates after main tension overload.
+- Added failure roll every 500ms based on stress percentage.
+- Stress at 100% now guarantees tackle failure.
+- Added weakest-component failure selection with leader -> line -> rod tie priority.
+- Line now breaks before rod when their max load is equal.
+- Leader is lost first when leader, line and rod have equal max load.
+- Fish resistance can now accumulate stress even without Rod Hold.
+
 ## v0.19.22 - Player pull motion smoothing
 
 - Added a player pull motion smoothing layer for fish movement from Rod Hold and Rod Control.

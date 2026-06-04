@@ -1431,17 +1431,20 @@
       barY + tensionConfig.labelOffsetY,
     );
 
-    if (tension >= tensionConfig.breakThreshold - 0.1) {
-      const breakProgress = tensionMeter.getLineBreakProgress();
+    const stressRatio = Math.max(
+      0,
+      Math.min(1, Number(tensionMeter.getStressRatio?.()) || 0),
+    );
+    if (stressRatio > 0 || tension >= tensionConfig.breakThreshold - 0.1) {
       const breakReason =
         tensionMeter.getBreakTargetReason?.() ||
         tensionMeter.getBreakReason?.() ||
         "line";
-      this.#drawBreakWarning(barX, barY - 25, barWidth, breakProgress, breakReason);
+      this.#drawTackleStressBar(barX, barY - 25, barWidth, stressRatio, breakReason);
     }
   }
 
-  #drawBreakWarning(x, y, width, progress, reason = "line") {
+  #drawTackleStressBar(x, y, width, progress, reason = "line") {
     this.#ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
     this.#ctx.fillRect(x, y, width * progress, 8);
     this.#ctx.strokeStyle = "#ff0000";
@@ -1450,14 +1453,14 @@
     this.#ctx.fillStyle = "#ff0000";
     this.#ctx.font = "bold 10px monospace";
     this.#ctx.textAlign = "center";
-    const label = this.#breakWarningLabel(reason);
+    const label = this.#tackleStressLabel(reason);
     this.#ctx.fillText(label, x + width / 2, y + 18);
   }
 
-  #breakWarningLabel(reason) {
-    if (reason === "rod") return "ROD BREAK";
-    if (reason === "leader") return "LEADER BREAK";
-    return "LINE BREAK";
+  #tackleStressLabel(reason) {
+    if (reason === "rod") return "STRESS: ROD";
+    if (reason === "leader") return "STRESS: LEADER";
+    return "STRESS: LINE";
   }
 
   drawGameOver(canvasWidth, canvasHeight, reason) {

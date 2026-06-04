@@ -28,6 +28,44 @@ class TensionDebugModule extends ConsoleTableDebugModule {
       "Fish force kg": DebugFormatters.number(fishForceKg, 3),
       "Drag limit kg": DebugFormatters.number(dragLimitKg, 3),
       "Tension / max load": DebugFormatters.number(tensionRatio, 3),
+      "Effective tension kg": DebugFormatters.number(
+        live.effectiveTensionKg,
+        3,
+      ),
+      "Main tackle limit kg": DebugFormatters.number(
+        live.mainTackleLimitKg,
+        3,
+      ),
+      "Overload kg": DebugFormatters.number(live.overloadKg, 3),
+      "Stress overloaded": !!live.stressWasOverloaded,
+      "Stress value": DebugFormatters.number(live.stressValue, 3),
+      "Stress capacity": DebugFormatters.number(live.stressCapacity, 3),
+      "Stress ratio": DebugFormatters.number(live.stressRatio, 3),
+      "Stress gain / sec": DebugFormatters.number(
+        live.stressGainPerSecond,
+        3,
+      ),
+      "Stress recovery / sec": DebugFormatters.number(
+        live.stressRecoveryPerSecond,
+        3,
+      ),
+      "Failure roll timer ms": DebugFormatters.number(
+        live.failureRollTimerMs,
+        1,
+      ),
+      "Failure roll interval ms": DebugFormatters.number(
+        live.failureRollIntervalMs,
+        1,
+      ),
+      "Failure chance": DebugFormatters.number(live.failureChance, 3),
+      "Failure source": live.failureSource || "n/a",
+      "Last roll value": DebugFormatters.number(live.lastRollValue, 3),
+      "Last roll passed": !!live.lastRollPassed,
+      "Guaranteed failure": !!live.guaranteedFailure,
+      "Selected failure component": live.selectedFailureComponent || "n/a",
+      "Tie-break priority": Array.isArray(live.tieBreakPriority)
+        ? live.tieBreakPriority.join(" > ")
+        : "n/a",
       "Kg smoothing / sec": DebugFormatters.number(
         config.kgSmoothPerSecond,
         3,

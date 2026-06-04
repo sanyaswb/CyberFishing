@@ -282,12 +282,40 @@ class FightPhysicsConfigAdapter {
     return {
       ...displayConfig,
       ...config,
+      tackleStress: this.getTackleStressConfig(),
       breakThreshold: this.#number(breaking.thresholdPercent, 100),
       baseBreakTime: this.#number(breaking.baseBreakTimeMs, 1000),
       timePerEquipmentLevel: this.#number(
         breaking.timePerEquipmentLevelMs,
         100,
       ),
+    };
+  }
+
+  getTackleStressConfig() {
+    const config = this.#physics().tension?.tackleStress || {};
+    return {
+      enabled: config.enabled !== false,
+      stress: {
+        capacity: this.#number(config.stress?.capacity, 1),
+        baseGainPerSecond: this.#number(
+          config.stress?.baseGainPerSecond,
+          0.45,
+        ),
+        recoveryPerSecond: this.#number(
+          config.stress?.recoveryPerSecond,
+          0.35,
+        ),
+        minStressToRoll: this.#number(config.stress?.minStressToRoll, 0.01),
+      },
+      failureRoll: {
+        intervalMs: this.#number(config.failureRoll?.intervalMs, 500),
+        chanceScale: this.#number(config.failureRoll?.chanceScale, 1),
+      },
+      failureSelection: {
+        tieBreakPriority:
+          config.failureSelection?.tieBreakPriority || ["leader", "line", "rod"],
+      },
     };
   }
 
