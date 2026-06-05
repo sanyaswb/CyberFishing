@@ -11,83 +11,60 @@ class RodVisualOffsetSystem {
     canvasWidth,
   } = {}) {
     const cfg = config || {};
-    if (cfg.enabled === false) {
-      this.#offsetPx = this.#approach(this.#offsetPx, 0, 12, dtSec);
-      this.#clamped = false;
-      return this.#offsetPx;
-    }
-
     const visualCfg = cfg.rodVisual || {};
-    const direction = Math.sign(
-      Number(fightDebug?.rodControlInputDirectionX) ||
-        Number(inputState?.rodControlDirectionX) ||
-        0,
-    );
-    const inputRatio = this.#clamp01(
-      fightDebug?.rodControlInputRatio ??
-        inputState?.rodControlInputRatio,
-    );
-    const active = !!inputState?.rodControlActive;
-    const couplingMode =
-      fightDebug?.rodControlCouplingMode ||
-      (active ? "tight_line" : "free");
+    const enabled = cfg.enabled !== false;
+    const active = enabled && !!inputState?.rodControlActive;
+    const direction = active
+      ? Math.sign(Number(inputState?.rodControlDirectionX) || 0)
+      : 0;
+    const inputRatio = active
+      ? this.#clamp01(inputState?.rodControlInputRatio)
+      : 0;
     const width = Math.max(0, Number(canvasWidth) || 0);
-    const maxOffset = Math.max(
-      Number(visualCfg.fallbackMaxOffsetPx) || 80,
-      width * Math.max(0, Number(visualCfg.maxOffsetScreenRatio) || 0.08),
+    const maxOffsetPx = Math.max(
+      Number(visualCfg.fallbackMaxOffsetPx) || 55,
+      width * Math.max(
+        0,
+        Number(visualCfg.maxOffsetScreenRatio) || 0.05,
+      ),
     );
+    const weightSpeedRatio = this.#resolveWeightSpeedRatio({
+      fishWeightKg: fightDebug?.fishWeightKg,
+      rodMaxLoadKg: fightDebug?.rodMaxLoadKg,
+      config: visualCfg.weightSpeed,
+    });
+    const targetOffsetPx =
+      direction * maxOffsetPx * inputRatio;
+    const responsiveness = active
+      ? Number(visualCfg.moveResponsiveness) || 8
+      : Number(visualCfg.returnResponsiveness) ||
+        Number(visualCfg.returnSmoothing) ||
+        5;
     const previousOffset = this.#offsetPx;
-    const fishDriven =
-      active &&
-      couplingMode === "tight_line" &&
-      fightDebug?.rodControlVisualDrivenByFish !== false;
-    const inputDriven =
-      active &&
-      couplingMode === "drag_slip" &&
-      fightDebug?.rodControlVisualDrivenByInput !== false;
 
-    if (fishDriven && direction !== 0) {
-      const appliedMovePx = Math.max(
-        0,
-        Number(fightDebug?.rodControlMovePx) || 0,
-      );
-      const followRatio = Math.max(
-        0,
-        Number(visualCfg.followFishMovementRatio) || 1,
-      );
-      this.#offsetPx += direction * appliedMovePx * followRatio;
-    } else if (inputDriven && direction !== 0) {
-      const target = direction * maxOffset * inputRatio;
-      this.#offsetPx = this.#approach(
-        this.#offsetPx,
-        target,
-        Number(visualCfg.dragSlipResponsiveness) || 10,
-        dtSec,
-      );
-    } else if (!active || couplingMode === "free") {
-      this.#offsetPx = this.#approach(
-        this.#offsetPx,
-        0,
-        Number(visualCfg.returnSmoothing) || 5,
-        dtSec,
-      );
-    }
-
-    this.#offsetPx = Math.max(-maxOffset, Math.min(maxOffset, this.#offsetPx));
-    const strokeRatio = maxOffset > 0
-      ? this.#clamp01(Math.abs(this.#offsetPx) / maxOffset)
+    this.#offsetPx = this.#approach(
+      this.#offsetPx,
+      targetOffsetPx,
+      responsiveness * weightSpeedRatio,
+      dtSec,
+    );
+    this.#offsetPx = Math.max(
+      -maxOffsetPx,
+      Math.min(maxOffsetPx, this.#offsetPx),
+    );
+    const strokeRatio = maxOffsetPx > 0
+      ? this.#clamp01(Math.abs(this.#offsetPx) / maxOffsetPx)
       : 0;
     this.#frame = {
       offsetPx: this.#offsetPx,
       deltaPx: this.#offsetPx - previousOffset,
-      maxOffsetPx: maxOffset,
+      maxOffsetPx,
       strokeRatio,
-      atLimit: strokeRatio >= this.#clamp01(
-        config?.reelHold?.limitRatio ?? 0.98,
-      ),
-      couplingMode,
-      drivenByFish: fishDriven,
-      drivenByInput: inputDriven,
+      atLimit: strokeRatio >= 0.999,
+      targetOffsetPx,
+      inputRatio,
+      weightSpeedRatio,
+      drivenByInput: active,
     };
     return this.#offsetPx;
   }
@@ -102,10 +79,8 @@ class RodVisualOffsetSystem {
     const visualCfg = config?.rodVisual || {};
     const padding = Math.max(0, Number(visualCfg.edgePaddingPx) || 16);
     const width = Math.max(1, Number(canvasWidth) || 1);
-    const minCanvasX = padding;
-    const maxCanvasX = Math.max(minCanvasX, width - padding);
-    let minX = minCanvasX;
-    let maxX = maxCanvasX;
+    let minX = padding;
+    let maxX = Math.max(minX, width - padding);
 
     if (visualCfg.clampToPlayableZone !== false) {
       if (Number.isFinite(Number(playableLeft))) {
@@ -143,6 +118,35 @@ class RodVisualOffsetSystem {
     this.#frame = this.#createFrame();
   }
 
+  #resolveWeightSpeedRatio({
+    fishWeightKg,
+    rodMaxLoadKg,
+    config,
+  }) {
+    const maxLoad = Math.max(0, Number(rodMaxLoadKg) || 0);
+    if (maxLoad <= 0) return 1;
+    const weightRatio = Math.max(
+      0,
+      (Number(fishWeightKg) || 0) / maxLoad,
+    );
+    const fullSpeedAt = this.#clamp01(
+      config?.fullSpeedMaxWeightRatio ?? 0.3,
+    );
+    const minimumSpeedAt = Math.max(
+      fullSpeedAt + 0.000001,
+      Number(config?.minimumSpeedWeightRatio) || 1,
+    );
+    const minimumSpeed = this.#clamp01(
+      config?.minimumSpeedRatio ?? 0.5,
+    );
+    if (weightRatio <= fullSpeedAt) return 1;
+    if (weightRatio >= minimumSpeedAt) return minimumSpeed;
+    const progress =
+      (weightRatio - fullSpeedAt) /
+      (minimumSpeedAt - fullSpeedAt);
+    return 1 + (minimumSpeed - 1) * progress;
+  }
+
   #approach(current, target, speed, dtSec) {
     const dt = Math.max(0, Number(dtSec) || 0);
     if (dt <= 0) return current;
@@ -161,8 +165,9 @@ class RodVisualOffsetSystem {
       maxOffsetPx: 0,
       strokeRatio: 0,
       atLimit: false,
-      couplingMode: "free",
-      drivenByFish: false,
+      targetOffsetPx: 0,
+      inputRatio: 0,
+      weightSpeedRatio: 1,
       drivenByInput: false,
     };
   }

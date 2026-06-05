@@ -58,8 +58,6 @@ const FILES = [
   "src/systems/reel_system.js",
   "src/systems/rod_pull_system.js",
   "src/systems/rod_lateral_control_system.js",
-  "src/systems/rod_control_line_coupling_system.js",
-  "src/systems/rod_control_phase_resolver.js",
   "src/systems/tension_system.js",
   "src/systems/tackle_stress_system.js",
   "src/systems/fight_physics_pipeline.js",

@@ -16,11 +16,8 @@ const FILES = [
   "src/config/runtime/resolved_config_provider.js",
   "src/config/runtime/immutable_config.js",
   "src/config/config.js",
-  "src/core/fishing/reel_hold_load_policy.js",
   "src/systems/player_pull_motion_smoother.js",
   "src/systems/rod_lateral_control_system.js",
-  "src/systems/rod_control_line_coupling_system.js",
-  "src/systems/rod_control_phase_resolver.js",
   "src/systems/rod_visual_offset_system.js",
 ];
 
@@ -43,11 +40,7 @@ class FakeTarget {
   }
 
   dispatch(type, event = {}) {
-    const payload = {
-      type,
-      preventDefault() {},
-      ...event,
-    };
+    const payload = { type, preventDefault() {}, ...event };
     for (const handler of this.handlers.get(type) || []) handler(payload);
   }
 }
@@ -60,9 +53,7 @@ function assert(condition, message) {
 
 function approx(actual, expected, epsilon, message) {
   if (Math.abs(actual - expected) > epsilon) {
-    throw new Error(
-      `${message}: expected ${expected}, got ${actual}`,
-    );
+    throw new Error(`${message}: expected ${expected}, got ${actual}`);
   }
   checks.push(`${message} (${actual})`);
 }
@@ -111,7 +102,7 @@ key(window, "keydown", "KeyS", "s");
 const keyboardState = keyboardInput.getState();
 assert(keyboardState.isPulling, "Space keeps Rod Hold active while D is held");
 assert(keyboardState.rodControlActive, "D activates Rod Control while Space is held");
-assert(!keyboardState.dragIncrease && !keyboardState.dragDecrease, "Rod Control suppresses drag/friction keys");
+assert(!keyboardState.dragIncrease && !keyboardState.dragDecrease, "Rod Control suppresses drag keys");
 keyboardInput.dispose();
 key(window, "keyup", "Space", " ");
 key(window, "keyup", "KeyD", "d");
@@ -123,22 +114,14 @@ pointerCanvas.dispatch("pointerdown", { clientX: 500, clientY: 500 });
 pointerInput.getState();
 pointerCanvas.dispatch("pointermove", { clientX: 650, clientY: 502 });
 const pointerState = pointerInput.getState();
-assert(pointerState.isPulling, "Pointer PULL stays active during horizontal Rod Control");
-assert(pointerState.rodControlActive, "Pointer horizontal movement activates Rod Control");
-assert(!pointerState.dragControlActive, "Pointer Rod Control blocks drag/friction gesture mode");
+assert(pointerState.isPulling, "Pointer pull stays active during Rod Control");
+assert(pointerState.rodControlActive, "Horizontal pointer movement activates Rod Control");
+assert(!pointerState.dragControlActive, "Rod Control blocks drag gesture mode");
 pointerInput.dispose();
 
 const config = {
   enabled: true,
   pixelsPerMeter: 50,
-  alignment: {
-    useActualRodPositionAsTarget: false,
-    minInitialOffsetPx: 1,
-    alignedThresholdPx: 0,
-    maxEffectiveAngleDeg: 45,
-    allowAwayDirection: false,
-    awayDirectionMultiplier: 0,
-  },
   force: {
     maxForceKg: 0.22,
     sidePullSpeedMultiplier: 1,
@@ -156,323 +139,134 @@ const config = {
   rodVisual: {
     maxOffsetScreenRatio: 0.05,
     fallbackMaxOffsetPx: 55,
-    returnSmoothing: 5,
+    moveResponsiveness: 8,
+    returnResponsiveness: 5,
     edgePaddingPx: 16,
     clampToPlayableZone: true,
-    followFishMovementRatio: 1,
-    dragSlipResponsiveness: 10,
-  },
-  lineCoupling: {
-    tightLineUsesFishDrivenVisual: true,
-    dragSlipUsesInputDrivenVisual: true,
-  },
-  reelHold: {
-    enabled: true,
-    limitRatio: 0.98,
+    weightSpeed: {
+      fullSpeedMaxWeightRatio: 0.3,
+      minimumSpeedWeightRatio: 1,
+      minimumSpeedRatio: 0.5,
+    },
   },
 };
 
-const fullAngle = new RodLateralControlSystem().update({
+function controlFrame({
+  direction = 1,
+  inputRatio = 1,
+  tension = 0,
+  fishVelocityX = 0,
+} = {}) {
+  return new RodLateralControlSystem().update({
+    dtSec: 1,
+    inputState: {
+      rodControlActive: true,
+      rodControlDirectionX: direction,
+      rodControlInputRatio: inputRatio,
+    },
+    fishPosition: { x: 0, y: 100 },
+    rodLimitKg: 2,
+    maxTackleLoadKg: 2,
+    currentTensionKg: tension,
+    fishVelocityX,
+    fishWeightKg: 0,
+    config,
+  });
+}
+
+const centeredRight = controlFrame();
+assert(centeredRight.canApply, "Centered fish does not block right Rod Control");
+approx(centeredRight.directionX, 1, 0.001, "Input sets right movement direction");
+approx(centeredRight.deliveredForceRatio, 1, 0.001, "Full input delivers full force ratio");
+
+const centeredLeft = controlFrame({ direction: -1, inputRatio: 0.5 });
+assert(centeredLeft.canApply, "Centered fish does not block left Rod Control");
+approx(centeredLeft.directionX, -1, 0.001, "Input sets left movement direction");
+approx(centeredLeft.requestedForceRatio, 0.5, 0.001, "Input ratio is requested force");
+approx(centeredLeft.deliveredForceRatio, 0.5, 0.001, "Half input delivers half force");
+
+const oppositeFish = controlFrame({ direction: -1, fishVelocityX: 10 });
+approx(oppositeFish.tensionMultiplier, 2.5, 0.001, "Opposing fish uses maximum tension multiplier");
+const sameDirectionFish = controlFrame({ direction: 1, fishVelocityX: 10 });
+approx(sameDirectionFish.tensionMultiplier, 0, 0.001, "Same-direction fish uses minimum tension multiplier");
+
+const noReserve = controlFrame({ tension: 2 });
+assert(!noReserve.canApply, "No load reserve blocks Rod Control force");
+assert(noReserve.blockedReason === "no_load_reserve", "No reserve has exact block reason");
+
+const movementRecord = new RodLateralControlSystem();
+const movementFrame = movementRecord.update({
   dtSec: 1,
   inputState: {
     rodControlActive: true,
     rodControlDirectionX: 1,
-    rodControlInputRatio: 1,
-  },
-  fishPosition: { x: -100, y: 100 },
-  rodTipPosition: { x: 0, y: 0 },
-  rodControlTargetPosition: { x: 0, y: 0 },
-  rodLimitKg: 2,
-  maxTackleLoadKg: 2,
-  currentTensionKg: 0,
-  fishVelocityX: 0,
-  fishWeightKg: 0,
-  config,
-});
-approx(fullAngle.angleRatio, 1, 0.001, "45 degree line gives full angle ratio");
-approx(fullAngle.deliveredForceRatio, 1, 0.001, "100% input at 45 degrees delivers 100% force");
-
-const halfAngle = new RodLateralControlSystem().update({
-  dtSec: 1,
-  inputState: {
-    rodControlActive: true,
-    rodControlDirectionX: 1,
-    rodControlInputRatio: 1,
-  },
-  fishPosition: { x: -41.421356, y: 100 },
-  rodTipPosition: { x: 0, y: 0 },
-  rodControlTargetPosition: { x: 0, y: 0 },
-  rodLimitKg: 2,
-  maxTackleLoadKg: 2,
-  currentTensionKg: 0,
-  fishVelocityX: 0,
-  fishWeightKg: 0,
-  config,
-});
-approx(halfAngle.angleRatio, 0.5, 0.001, "22.5 degree line gives half angle ratio");
-approx(halfAngle.deliveredForceRatio, 0.5, 0.001, "100% input at 22.5 degrees delivers 50% force");
-
-const wrongDirection = new RodLateralControlSystem().update({
-  dtSec: 1,
-  inputState: {
-    rodControlActive: true,
-    rodControlDirectionX: -1,
-    rodControlInputRatio: 1,
-  },
-  fishPosition: { x: -100, y: 100 },
-  rodTipPosition: { x: 0, y: 0 },
-  rodControlTargetPosition: { x: 0, y: 0 },
-  rodLimitKg: 2,
-  maxTackleLoadKg: 2,
-  currentTensionKg: 0,
-  fishVelocityX: 0,
-  fishWeightKg: 0,
-  config,
-});
-approx(wrongDirection.deliveredForceRatio, 0, 0.001, "Wrong direction delivers zero force");
-assert(wrongDirection.blockedReason === "wrong_direction", "Wrong direction reports blocked reason");
-
-const noReserve = new RodLateralControlSystem().update({
-  dtSec: 1,
-  inputState: {
-    rodControlActive: true,
-    rodControlDirectionX: 1,
-    rodControlInputRatio: 1,
-  },
-  fishPosition: { x: -100, y: 100 },
-  rodTipPosition: { x: 0, y: 0 },
-  rodControlTargetPosition: { x: 0, y: 0 },
-  rodLimitKg: 0.2,
-  maxTackleLoadKg: 0.2,
-  currentTensionKg: 0.2,
-  fishVelocityX: 0,
-  fishWeightKg: 0,
-  config,
-});
-approx(noReserve.forceKg, 0, 0.001, "No load reserve gives zero force");
-approx(noReserve.deliveredForceRatio, 0, 0.001, "No load reserve gives zero delivered force ratio");
-assert(noReserve.blockedReason === "no_load_reserve", "No load reserve reports blocked reason");
-
-const nearCenter = new RodLateralControlSystem().update({
-  dtSec: 1,
-  inputState: {
-    rodControlActive: true,
-    rodControlDirectionX: 1,
-    rodControlInputRatio: 1,
+    rodControlInputRatio: 0.8,
   },
   fishPosition: { x: 0, y: 100 },
-  rodTipPosition: { x: 0, y: 0 },
-  rodControlTargetPosition: { x: 0, y: 0 },
   rodLimitKg: 2,
-  maxTackleLoadKg: 2,
   currentTensionKg: 0,
-  fishVelocityX: 0,
   fishWeightKg: 0,
   config,
 });
-approx(nearCenter.angleRatio, 0, 0.001, "Fish near rod X has zero side angle ratio");
-approx(nearCenter.deliveredForceRatio, 0, 0.001, "Fish near rod X gets zero delivered force");
+movementRecord.recordAppliedMovement({ movedMeters: 0, movedPx: 0 });
+approx(movementFrame.deliveredForceRatio, 0.8, 0.001, "Blocked movement does not mutate delivered force");
+approx(movementFrame.actualMovementRatio, 0, 0.001, "Applied movement is tracked separately");
 
-const noOvershoot = new RodLateralControlSystem().update({
-  dtSec: 1,
+const lightVisual = new RodVisualOffsetSystem();
+const lightOffset = lightVisual.update({
+  dtSec: 0.05,
   inputState: {
     rodControlActive: true,
     rodControlDirectionX: 1,
     rodControlInputRatio: 1,
   },
-  fishPosition: { x: -10, y: 10 },
-  rodTipPosition: { x: 0, y: 0 },
-  rodControlTargetPosition: { x: 0, y: 0 },
-  rodLimitKg: 2,
-  maxTackleLoadKg: 2,
-  currentTensionKg: 0,
-  fishVelocityX: 0,
-  fishWeightKg: 0,
-  config,
-});
-approx(noOvershoot.desiredMovePx, 10, 0.001, "Rod Control desired move is capped at target X");
-
-const stableTargetSystem = new RodLateralControlSystem();
-const stableFirst = stableTargetSystem.update({
-  dtSec: 0.1,
-  inputState: {
-    rodControlActive: true,
-    rodControlDirectionX: 1,
-    rodControlInputRatio: 1,
-  },
-  fishPosition: { x: -100, y: 100 },
-  rodTipPosition: { x: 0, y: 0 },
-  rodControlTargetPosition: { x: 0, y: 0 },
-  rodLimitKg: 2,
-  maxTackleLoadKg: 2,
-  currentTensionKg: 0,
-  fishVelocityX: 0,
-  fishWeightKg: 0,
-  config,
-});
-const stableSecond = stableTargetSystem.update({
-  dtSec: 0.1,
-  inputState: {
-    rodControlActive: true,
-    rodControlDirectionX: 1,
-    rodControlInputRatio: 1,
-  },
-  fishPosition: { x: -80, y: 100 },
-  rodTipPosition: { x: 50, y: 0 },
-  rodControlTargetPosition: { x: 50, y: 0 },
-  rodLimitKg: 2,
-  maxTackleLoadKg: 2,
-  currentTensionKg: 0,
-  fishVelocityX: 0,
-  fishWeightKg: 0,
-  config,
-});
-approx(stableFirst.targetRodX, 0, 0.001, "Rod Control stores initial target rod X");
-approx(stableSecond.targetRodX, 0, 0.001, "Rod Control target rod X stays stable while visual rod moves");
-
-const actualTargetConfig = {
-  ...config,
-  alignment: {
-    ...config.alignment,
-    useActualRodPositionAsTarget: true,
-  },
-};
-const actualTargetSystem = new RodLateralControlSystem();
-actualTargetSystem.update({
-  dtSec: 0.1,
-  inputState: {
-    rodControlActive: true,
-    rodControlDirectionX: 1,
-    rodControlInputRatio: 1,
-  },
-  fishPosition: { x: -100, y: 100 },
-  rodTipPosition: { x: 0, y: 0 },
-  rodControlTargetPosition: { x: 0, y: 0 },
-  rodLimitKg: 2,
-  maxTackleLoadKg: 2,
-  currentTensionKg: 0,
-  fishVelocityX: 0,
-  fishWeightKg: 0,
-  config: actualTargetConfig,
-});
-const actualTargetSecond = actualTargetSystem.update({
-  dtSec: 0.1,
-  inputState: {
-    rodControlActive: true,
-    rodControlDirectionX: 1,
-    rodControlInputRatio: 1,
-  },
-  fishPosition: { x: -80, y: 100 },
-  rodTipPosition: { x: 50, y: 0 },
-  rodControlTargetPosition: { x: 0, y: 0 },
-  rodLimitKg: 2,
-  maxTackleLoadKg: 2,
-  currentTensionKg: 0,
-  fishVelocityX: 0,
-  fishWeightKg: 0,
-  config: actualTargetConfig,
-});
-approx(actualTargetSecond.targetRodX, 50, 0.001, "Actual target mode follows current visual rod X");
-assert(actualTargetSecond.usesActualRodPositionAsTarget, "Actual target mode is exposed in Rod Control state");
-
-const visual = new RodVisualOffsetSystem();
-const rawInputOnlyOffset = visual.update({
-  dtSec: 1,
-  inputState: {
-    rodControlActive: true,
-    rodControlDirectionX: 1,
-    rodControlInputRatio: 1,
-  },
-  fightDebug: {
-    rodControlActive: true,
-    rodControlInputDirectionX: 1,
-    rodControlCouplingMode: "tight_line",
-    rodControlVisualDrivenByFish: true,
-    rodControlMovePx: 0,
-  },
+  fightDebug: { fishWeightKg: 0.3, rodMaxLoadKg: 1 },
   config,
   canvasWidth: 1000,
 });
-approx(rawInputOnlyOffset, 0, 0.001, "Rod visual ignores raw input without applied lateral stroke");
-const visualOffset = visual.update({
-  dtSec: 1,
-  inputState: {
-    rodControlActive: true,
-    rodControlDirectionX: 1,
-    rodControlInputRatio: 1,
-  },
-  fightDebug: {
-    rodControlActive: true,
-    rodControlInputDirectionX: 1,
-    rodControlCouplingMode: "tight_line",
-    rodControlVisualDrivenByFish: true,
-    rodControlMovePx: 2,
-  },
-  config,
-  canvasWidth: 1000,
-});
-approx(visualOffset, 2, 0.001, "Tight-line rod visual follows actual fish movement");
-const blockedVisualOffset = visual.update({
-  dtSec: 1,
-  inputState: {
-    rodControlActive: true,
-    rodControlDirectionX: 1,
-    rodControlInputRatio: 1,
-  },
-  fightDebug: {
-    rodControlActive: true,
-    rodControlInputDirectionX: 1,
-    rodControlCouplingMode: "tight_line",
-    rodControlVisualDrivenByFish: true,
-    rodControlMovePx: 0,
-  },
-  config,
-  canvasWidth: 1000,
-});
-approx(blockedVisualOffset, 2, 0.001, "Blocked fish does not grow tight-line visual offset");
-const slipVisual = new RodVisualOffsetSystem();
-const slipOffset = slipVisual.update({
-  dtSec: 1,
-  inputState: {
-    rodControlActive: true,
-    rodControlDirectionX: 1,
-    rodControlInputRatio: 1,
-  },
-  fightDebug: {
-    rodControlActive: true,
-    rodControlInputDirectionX: 1,
-    rodControlInputRatio: 1,
-    rodControlCouplingMode: "drag_slip",
-    rodControlVisualDrivenByInput: true,
-    rodControlMovePx: 0,
-  },
-  config,
-  canvasWidth: 1000,
-});
-assert(slipOffset > 0, "Drag-slip rod visual can move from input without moving fish");
+assert(lightOffset > 0 && lightOffset < 55, "Visual rod starts smoothly");
+approx(lightVisual.getFrame().weightSpeedRatio, 1, 0.001, "30% load keeps full visual speed");
 
-const coupling = new RodControlLineCouplingSystem();
-const tightCoupling = coupling.resolve({
-  rodControlActive: true,
-  lineCanRelease: false,
-  dragSlipping: false,
-  config: config.lineCoupling,
+const heavyVisual = new RodVisualOffsetSystem();
+const heavyOffset = heavyVisual.update({
+  dtSec: 0.05,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fightDebug: { fishWeightKg: 1, rodMaxLoadKg: 1 },
+  config,
+  canvasWidth: 1000,
 });
-assert(
-  tightCoupling.mode === "tight_line" && tightCoupling.fishDrivesRodVisual,
-  "Tight line selects fish-driven visual coupling",
-);
-const slipCoupling = coupling.resolve({
-  rodControlActive: true,
-  lineCanRelease: true,
-  dragSlipping: true,
-  config: config.lineCoupling,
+approx(heavyVisual.getFrame().weightSpeedRatio, 0.5, 0.001, "100% load halves visual speed");
+assert(heavyOffset > 0 && heavyOffset < lightOffset, "Heavy fish slows visual response");
+
+const continuedOffset = heavyVisual.update({
+  dtSec: 0.05,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fightDebug: { fishWeightKg: 1, rodMaxLoadKg: 1, rodControlMovePx: 0 },
+  config,
+  canvasWidth: 1000,
 });
-assert(
-  slipCoupling.mode === "drag_slip" && slipCoupling.inputDrivesRodVisual,
-  "Drag slip selects input-driven visual coupling",
-);
-approx(stableSecond.targetRodX, 0, 0.001, "Rod visual offset does not change stable target rod X");
+assert(continuedOffset > heavyOffset, "Visual rod ignores applied fish movement");
+
+const releasedOffset = heavyVisual.update({
+  dtSec: 0.05,
+  inputState: {
+    rodControlActive: false,
+    rodControlDirectionX: 0,
+    rodControlInputRatio: 0,
+  },
+  fightDebug: { fishWeightKg: 1, rodMaxLoadKg: 1 },
+  config,
+  canvasWidth: 1000,
+});
+assert(releasedOffset > 0 && releasedOffset < continuedOffset, "Visual rod returns smoothly");
 `, context);
 
 console.log("rod-control-ux-check passed:");

@@ -183,26 +183,6 @@
     "label": "Rod Control keyboard ramp down",
     "description": "Seconds for A/D Rod Control X input to return to zero after release."
   },
-  "physics.fight.rodControl.alignment.minInitialOffsetPx": {
-    "label": "Rod Control minimum initial offset",
-    "description": "Minimum fish-to-rod X offset required when Rod Control X starts."
-  },
-  "physics.fight.rodControl.alignment.alignedThresholdPx": {
-    "label": "Rod Control aligned threshold",
-    "description": "Fish-to-rod X distance treated as fully aligned."
-  },
-  "physics.fight.rodControl.alignment.maxEffectiveAngleDeg": {
-    "label": "Rod Control max effective angle",
-    "description": "Line angle that gives Rod Control X full angle power."
-  },
-  "physics.fight.rodControl.alignment.allowAwayDirection": {
-    "label": "Rod Control allow away direction",
-    "description": "Allows Rod Control X input away from the rod alignment direction."
-  },
-  "physics.fight.rodControl.alignment.awayDirectionMultiplier": {
-    "label": "Rod Control away direction multiplier",
-    "description": "Delivered force multiplier when Rod Control X is allowed away from rod alignment."
-  },
   "physics.fight.rodControl.force.maxForceKg": {
     "label": "Rod Control max force",
     "description": "Maximum lateral player force added by Rod Control X."
@@ -210,10 +190,6 @@
   "physics.fight.rodControl.force.sidePullSpeedMultiplier": {
     "label": "Rod Control pull speed multiplier",
     "description": "Multiplier for lateral pull speed derived from delivered force and water resistance."
-  },
-  "physics.fight.rodControl.alignment.useActualRodPositionAsTarget": {
-    "label": "Use actual rod position as Rod Control center",
-    "description": "When enabled, Rod Control alignment follows the current visually shifted rod position. When disabled, it uses the stable base position captured at control start."
   },
   "physics.fight.rodControl.force.fishWeightResistanceMultiplier": {
     "label": "Rod Control fish weight resistance",
@@ -239,17 +215,13 @@
     "label": "Rod visual fallback offset",
     "description": "Fallback maximum rod visual offset in pixels."
   },
-  "physics.fight.rodControl.rodVisual.followFishMovementRatio": {
-    "label": "Rod visual fish-follow ratio",
-    "description": "Visual rod movement per pixel of actual fish movement while the line is tight."
+  "physics.fight.rodControl.rodVisual.moveResponsiveness": {
+    "label": "Rod visual move responsiveness",
+    "description": "Base smoothing speed while input moves the visual rod sideways."
   },
-  "physics.fight.rodControl.rodVisual.dragSlipResponsiveness": {
-    "label": "Rod visual drag-slip responsiveness",
-    "description": "Response speed for input-driven rod movement while drag is slipping."
-  },
-  "physics.fight.rodControl.rodVisual.returnSmoothing": {
-    "label": "Rod visual return smoothing",
-    "description": "Smoothing speed while the rod returns after release."
+  "physics.fight.rodControl.rodVisual.returnResponsiveness": {
+    "label": "Rod visual return responsiveness",
+    "description": "Smoothing speed while the visual rod returns after release."
   },
   "physics.fight.rodControl.rodVisual.edgePaddingPx": {
     "label": "Rod visual edge padding",
@@ -259,21 +231,17 @@
     "label": "Clamp rod visual to playable zone",
     "description": "Keeps the visual rod position inside the playable map zone when bounds are known."
   },
-  "physics.fight.rodControl.lineCoupling.tightLineUsesFishDrivenVisual": {
-    "label": "Fish-driven tight-line visual",
-    "description": "Makes actual fish movement drive the visual rod offset while the line is tight."
+  "physics.fight.rodControl.rodVisual.weightSpeed.fullSpeedMaxWeightRatio": {
+    "label": "Rod visual full-speed weight ratio",
+    "description": "Fish-to-rod-load ratio at or below which visual sideways movement keeps full speed."
   },
-  "physics.fight.rodControl.lineCoupling.dragSlipUsesInputDrivenVisual": {
-    "label": "Input-driven drag-slip visual",
-    "description": "Allows input to drive the visual rod offset while released line absorbs the movement."
+  "physics.fight.rodControl.rodVisual.weightSpeed.minimumSpeedWeightRatio": {
+    "label": "Rod visual minimum-speed weight ratio",
+    "description": "Fish-to-rod-load ratio at which visual sideways movement reaches its minimum speed."
   },
-  "physics.fight.rodControl.reelHold.enabled": {
-    "label": "Rod Control reel hold",
-    "description": "Enables existing reel-hold behavior at the lateral visual limit."
-  },
-  "physics.fight.rodControl.reelHold.limitRatio": {
-    "label": "Rod Control reel-hold limit",
-    "description": "Visual lateral stroke ratio that counts as the Rod Control limit."
+  "physics.fight.rodControl.rodVisual.weightSpeed.minimumSpeedRatio": {
+    "label": "Rod visual minimum speed",
+    "description": "Lowest visual sideways speed multiplier for a fish at or above the configured load ratio."
   },
   "physics.fight.landing.catchZone.reel.landingDistanceMeters": {
     "label": "Landing distance для снасті з котушкою",

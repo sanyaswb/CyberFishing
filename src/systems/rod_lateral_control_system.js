@@ -1,121 +1,34 @@
 class RodLateralControlSystem {
-  #targetRodXOnStart = 0;
-  #initialOffsetX = 0;
-  #wasActive = false;
   #result = this.#createResult();
 
   update({
     dtSec,
     inputState,
     fishPosition,
-    rodTipPosition,
-    rodControlTargetPosition,
-    rod,
     rodLimitKg,
     maxTackleLoadKg,
     currentTensionKg,
     fishTensionKg,
     fishVelocityX,
     fishWeightKg,
-    lineCanRelease = false,
-    dragSlipping = false,
     config,
   } = {}) {
     const cfg = config || {};
     if (cfg.enabled === false) {
-      this.reset();
       this.#result = this.#createResult({ blockedReason: "disabled" });
       return this.#result;
     }
 
     const active = !!inputState?.rodControlActive;
-    const inputDirectionX = active
-      ? Math.sign(this.#safeNumber(inputState?.rodControlDirectionX, 0))
+    const directionX = active
+      ? Math.sign(this.#number(inputState?.rodControlDirectionX))
       : 0;
     const inputRatio = active
       ? this.#clamp01(inputState?.rodControlInputRatio)
       : 0;
     const hasFish = this.#hasPoint(fishPosition);
-    const fishX = this.#safeNumber(fishPosition?.x, 0);
-    const fishY = this.#safeNumber(fishPosition?.y, 0);
-    const alignmentCfg = cfg.alignment || {};
-    const useActualRodPositionAsTarget =
-      alignmentCfg.useActualRodPositionAsTarget === true;
-    const targetRodX = this.#resolveTargetRodX({
-      rodControlTargetPosition,
-      rodTipPosition,
-      useActualRodPositionAsTarget,
-    });
-    const rodY = this.#safeNumber(
-      rodTipPosition?.y ?? rodControlTargetPosition?.y,
-      0,
-    );
-    const minInitialOffsetPx = Math.max(
-      0,
-      this.#safeNumber(alignmentCfg.minInitialOffsetPx, 12),
-    );
-    const alignedThresholdPx = Math.max(
-      0,
-      this.#safeNumber(alignmentCfg.alignedThresholdPx, 8),
-    );
-    if (!active) {
-      this.#wasActive = false;
-      const currentOffsetX = fishX - targetRodX;
-      this.#result = this.#createResult({
-        active: false,
-        inputDirectionX: 0,
-        inputRatio: 0,
-        targetRodX,
-        currentOffsetX,
-        towardRodDirectionX: this.#towardRodDirection(currentOffsetX),
-        blockedReason: "no_input",
-      });
-      return this.#result;
-    }
-
-    if (!hasFish) {
-      this.#result = this.#createResult({
-        active: true,
-        inputDirectionX,
-        inputRatio,
-        targetRodX,
-        blockedReason: "no_fish",
-      });
-      return this.#result;
-    }
-
-    if (!this.#wasActive) {
-      this.#targetRodXOnStart = targetRodX;
-      this.#initialOffsetX = fishX - this.#targetRodXOnStart;
-      this.#wasActive = true;
-    } else if (useActualRodPositionAsTarget) {
-      this.#targetRodXOnStart = targetRodX;
-    }
-
-    const currentOffsetX = fishX - this.#targetRodXOnStart;
-    const initialAbs = Math.abs(this.#initialOffsetX);
-    const currentAbs = Math.abs(currentOffsetX);
-    const towardRodDirectionX = this.#towardRodDirection(currentOffsetX);
-    const lineAngleDeg = this.#calculateLineAngleDeg({
-      offsetX: currentOffsetX,
-      fishY,
-      rodY,
-    });
-    const angleRatio = this.#resolveAngleRatio({
-      lineAngleDeg,
-      alignmentCfg,
-    });
-    const directionFactor = this.#resolveDirectionFactor({
-      inputDirectionX,
-      towardRodDirectionX,
-      alignmentCfg,
-    });
-    const freeRodMovement = !!lineCanRelease && !!dragSlipping;
-    const geometricTransferRatio = this.#clamp01(
-      inputRatio * angleRatio * directionFactor,
-    );
     const forceFrame = this.#resolveForceFrame({
-      geometricTransferRatio,
+      inputRatio,
       rodLimitKg,
       maxTackleLoadKg,
       currentTensionKg,
@@ -124,138 +37,71 @@ class RodLateralControlSystem {
       config: cfg,
     });
     const deliveredForceRatio = this.#clamp01(
-      geometricTransferRatio * forceFrame.loadReserveRatio,
+      inputRatio * forceFrame.loadReserveRatio,
     );
-    const alignmentProgress = this.#calculateProgress({
-      initialAbs,
-      currentAbs,
-      alignedThresholdPx,
-    });
-    const aligned =
-      currentAbs <= alignedThresholdPx || towardRodDirectionX === 0;
-    const hasEnoughInitialOffset = initialAbs >= minInitialOffsetPx;
+    const forceKg = forceFrame.forceKg;
     const moveFrame = this.#resolveMoveFrame({
       dtSec,
-      forceKg: forceFrame.forceKg,
-      currentAbs,
-      alignedThresholdPx,
+      forceKg,
       config: cfg,
     });
+    const canApply =
+      active &&
+      hasFish &&
+      directionX !== 0 &&
+      inputRatio > 0 &&
+      forceFrame.loadReserveKg > 0 &&
+      forceKg > 0 &&
+      moveFrame.desiredMoveMeters > 0;
     const tensionMultiplier = this.#resolveTensionMultiplier({
-      controlDirectionX: towardRodDirectionX,
+      controlDirectionX: directionX,
       fishVelocityX,
       config: cfg,
     });
-    const forceKg =
-      !aligned && hasEnoughInitialOffset
-        ? forceFrame.forceKg
-        : 0;
-    const canApply =
-      deliveredForceRatio > 0 &&
-      forceKg > 0 &&
-      moveFrame.desiredMovePx > 0 &&
-      hasEnoughInitialOffset &&
-      !aligned &&
-      !freeRodMovement;
-    const blockedReason = this.#resolveBlockedReason({
-      active,
-      hasFish,
-      inputDirectionX,
-      inputRatio,
-      hasEnoughInitialOffset,
-      aligned,
-      directionFactor,
-      angleRatio,
-      loadReserveKg: forceFrame.loadReserveKg,
-      forceKg,
-      deliveredForceRatio,
-    });
-    const playerTensionKg = canApply ? forceKg * tensionMultiplier : 0;
-    const pixelsPerMeter = Math.max(1, this.#safeNumber(cfg.pixelsPerMeter, 50));
-    this.#result = {
+
+    this.#result = this.#createResult({
       active,
       canApply,
-      directionX: towardRodDirectionX,
-      inputDirectionX,
-      towardRodDirectionX,
+      directionX,
+      inputDirectionX: directionX,
       inputRatio,
-      angleRatio,
-      directionFactor,
-      geometricTransferRatio,
+      requestedForceRatio: inputRatio,
       loadReserveKg: forceFrame.loadReserveKg,
       loadReserveRatio: forceFrame.loadReserveRatio,
       forceLimitKg: forceFrame.forceLimitKg,
       currentTensionKg: forceFrame.currentTensionKg,
-      potentialDeliveredForceRatio: deliveredForceRatio,
       deliveredForceRatio: canApply ? deliveredForceRatio : 0,
       forceKg: canApply ? forceKg : 0,
-      playerTensionKg,
+      playerTensionKg: canApply ? forceKg * tensionMultiplier : 0,
       tensionMultiplier,
+      desiredMoveMeters: canApply ? moveFrame.desiredMoveMeters : 0,
       desiredMovePx: canApply ? moveFrame.desiredMovePx : 0,
-      desiredMoveMeters: canApply
-        ? moveFrame.desiredMovePx / pixelsPerMeter
-        : 0,
-      appliedMoveMeters: 0,
-      appliedMovePx: 0,
-      targetRodX: this.#targetRodXOnStart,
-      usesActualRodPositionAsTarget: useActualRodPositionAsTarget,
-      initialOffsetX: this.#initialOffsetX,
-      currentOffsetX,
-      alignmentProgress,
-      aligned,
-      alignedThresholdPx,
-      lineAngleDeg,
-      blockedReason: freeRodMovement ? "drag_slipping" : blockedReason,
       maxPullSpeedMetersPerSecond:
         moveFrame.maxPullSpeedMetersPerSecond,
-      freeRodMovement,
-      visualControlRatio: freeRodMovement ? inputRatio : deliveredForceRatio,
-    };
+      visualControlRatio: inputRatio,
+      blockedReason: this.#blockedReason({
+        active,
+        hasFish,
+        directionX,
+        inputRatio,
+        loadReserveKg: forceFrame.loadReserveKg,
+        forceKg,
+      }),
+    });
     return this.#result;
   }
 
-  recordAppliedMovement({
-    movedMeters = 0,
-    movedPx = 0,
-    currentFishX = null,
-  } = {}) {
+  recordAppliedMovement({ movedMeters = 0, movedPx = 0 } = {}) {
     const desiredMoveMeters = Math.max(
       0,
-      Number(this.#result.desiredMoveMeters) || 0,
+      this.#number(this.#result.desiredMoveMeters),
     );
-    const appliedMoveMeters = Math.max(0, Number(movedMeters) || 0);
-    const actualMovementRatio =
-      desiredMoveMeters > 0
-        ? this.#clamp01(appliedMoveMeters / desiredMoveMeters)
-        : 0;
-    const nextOffset =
-      currentFishX !== null &&
-      currentFishX !== undefined &&
-      Number.isFinite(Number(currentFishX))
-      ? Number(currentFishX) - this.#targetRodXOnStart
-      : this.#result.currentOffsetX;
-    const nextProgress = this.#calculateProgress({
-      initialAbs: Math.abs(this.#initialOffsetX),
-      currentAbs: Math.abs(nextOffset),
-      alignedThresholdPx: this.#result.alignedThresholdPx,
-    });
+    const appliedMoveMeters = Math.max(0, this.#number(movedMeters));
     this.#result.appliedMoveMeters = appliedMoveMeters;
-    this.#result.appliedMovePx = Math.max(0, Number(movedPx) || 0);
-    this.#result.actualMovementRatio = actualMovementRatio;
-    this.#result.currentOffsetX = nextOffset;
-    this.#result.alignmentProgress = nextProgress;
-    this.#result.aligned =
-      Math.abs(nextOffset) <=
-      Math.max(0, Number(this.#result.alignedThresholdPx) || 0);
-    if (this.#result.aligned) {
-      this.#result.canApply = false;
-      this.#result.deliveredForceRatio = 0;
-      this.#result.forceKg = 0;
-      this.#result.playerTensionKg = 0;
-      this.#result.desiredMoveMeters = 0;
-      this.#result.desiredMovePx = 0;
-      this.#result.blockedReason = "aligned";
-    }
+    this.#result.appliedMovePx = Math.max(0, this.#number(movedPx));
+    this.#result.actualMovementRatio = desiredMoveMeters > 0
+      ? this.#clamp01(appliedMoveMeters / desiredMoveMeters)
+      : 0;
     return this.#result;
   }
 
@@ -264,53 +110,11 @@ class RodLateralControlSystem {
   }
 
   reset() {
-    this.#targetRodXOnStart = 0;
-    this.#initialOffsetX = 0;
-    this.#wasActive = false;
     this.#result = this.#createResult();
   }
 
-  #resolveTargetRodX({
-    rodControlTargetPosition,
-    rodTipPosition,
-    useActualRodPositionAsTarget,
-  }) {
-    if (
-      useActualRodPositionAsTarget &&
-      Number.isFinite(Number(rodTipPosition?.x))
-    ) {
-      return Number(rodTipPosition.x);
-    }
-    if (Number.isFinite(Number(rodControlTargetPosition?.x))) {
-      return Number(rodControlTargetPosition.x);
-    }
-    return this.#safeNumber(rodTipPosition?.x, 0);
-  }
-
-  #resolveAngleRatio({ lineAngleDeg, alignmentCfg }) {
-    const maxEffectiveAngleDeg = this.#safeNumber(
-      alignmentCfg.maxEffectiveAngleDeg,
-      45,
-    );
-    if (maxEffectiveAngleDeg <= 0) return 0;
-    return this.#clamp01(lineAngleDeg / maxEffectiveAngleDeg);
-  }
-
-  #resolveDirectionFactor({
-    inputDirectionX,
-    towardRodDirectionX,
-    alignmentCfg,
-  }) {
-    if (inputDirectionX === 0 || towardRodDirectionX === 0) return 0;
-    if (inputDirectionX === towardRodDirectionX) return 1;
-    if (alignmentCfg.allowAwayDirection === true) {
-      return this.#clamp01(alignmentCfg.awayDirectionMultiplier);
-    }
-    return 0;
-  }
-
   #resolveForceFrame({
-    geometricTransferRatio,
+    inputRatio,
     rodLimitKg,
     maxTackleLoadKg,
     currentTensionKg,
@@ -321,152 +125,106 @@ class RodLateralControlSystem {
     const forceCfg = config.force || {};
     const maxForceKg = Math.max(
       0,
-      this.#safeNumber(forceCfg.maxForceKg, 0.22),
+      this.#number(forceCfg.maxForceKg, 0.22),
     );
     const tackleLimitKg = Math.max(
       0,
-      this.#safeNumber(
+      this.#number(
         rodLimitKg,
-        this.#safeNumber(maxTackleLoadKg, maxForceKg),
+        this.#number(maxTackleLoadKg, maxForceKg),
       ),
     );
     const resolvedCurrentTensionKg = Math.max(
       0,
-      this.#safeNumber(
-        currentTensionKg,
-        this.#safeNumber(fishTensionKg, 0),
-      ),
+      this.#number(currentTensionKg, this.#number(fishTensionKg)),
     );
     const loadReserveKg = Math.max(
       0,
       tackleLimitKg - resolvedCurrentTensionKg,
     );
     const forceLimitKg = Math.min(maxForceKg, loadReserveKg);
-    const loadReserveRatio =
-      maxForceKg > 0 ? this.#clamp01(forceLimitKg / maxForceKg) : 0;
-    const weightResistance = this.#weightResistance({ fishWeightKg, forceCfg });
+    const loadReserveRatio = maxForceKg > 0
+      ? this.#clamp01(forceLimitKg / maxForceKg)
+      : 0;
+    const weightResistance = Math.max(
+      0.25,
+      1 +
+        Math.max(0, this.#number(fishWeightKg)) *
+          Math.max(
+            0,
+            this.#number(forceCfg.fishWeightResistanceMultiplier),
+          ),
+    );
     return {
       currentTensionKg: resolvedCurrentTensionKg,
       loadReserveKg,
-      forceLimitKg,
       loadReserveRatio,
+      forceLimitKg,
       forceKg:
-        forceLimitKg * this.#clamp01(geometricTransferRatio) / weightResistance,
+        forceLimitKg * this.#clamp01(inputRatio) / weightResistance,
     };
   }
 
-  #resolveMoveFrame({
-    dtSec,
-    forceKg,
-    currentAbs,
-    alignedThresholdPx,
-    config,
-  }) {
+  #resolveMoveFrame({ dtSec, forceKg, config }) {
     const forceCfg = config.force || {};
     const waterCfg = config.water || {};
     const pixelsPerMeter = Math.max(
       1,
-      this.#safeNumber(config.pixelsPerMeter, 50),
+      this.#number(config.pixelsPerMeter, 50),
     );
     const resistance = Math.max(
       0.000001,
-      this.#safeNumber(waterCfg.motionResistance, 1000),
+      this.#number(waterCfg.motionResistance, 1000),
     );
     const maxPullSpeedMetersPerSecond =
-      Math.sqrt(Math.max(0, this.#safeNumber(forceKg, 0)) / resistance) *
-      Math.max(0, this.#safeNumber(waterCfg.speedMultiplier, 64)) *
-      Math.max(0, this.#safeNumber(forceCfg.sidePullSpeedMultiplier, 1));
-    const desired =
+      Math.sqrt(Math.max(0, this.#number(forceKg)) / resistance) *
+      Math.max(0, this.#number(waterCfg.speedMultiplier, 64)) *
+      Math.max(
+        0,
+        this.#number(forceCfg.sidePullSpeedMultiplier, 1),
+      );
+    const desiredMoveMeters =
       maxPullSpeedMetersPerSecond *
-      pixelsPerMeter *
-      Math.max(0, this.#safeNumber(dtSec, 0)) *
-      1;
-    const maxBeforeAlignment = Math.max(
-      0,
-      Math.max(0, this.#safeNumber(currentAbs, 0)) -
-        Math.max(0, this.#safeNumber(alignedThresholdPx, 0)),
-    );
+      Math.max(0, this.#number(dtSec));
     return {
-      desiredMovePx: Math.min(desired, maxBeforeAlignment),
+      desiredMoveMeters,
+      desiredMovePx: desiredMoveMeters * pixelsPerMeter,
       maxPullSpeedMetersPerSecond,
     };
   }
 
   #resolveTensionMultiplier({ controlDirectionX, fishVelocityX, config }) {
     const tension = config.tension || {};
-    const fishDirection = Math.sign(this.#safeNumber(fishVelocityX, 0));
+    const fishDirection = Math.sign(this.#number(fishVelocityX));
     if (fishDirection === 0 || controlDirectionX === 0) {
-      return Math.max(0, this.#safeNumber(tension.sideMultiplier, 1));
+      return Math.max(0, this.#number(tension.sideMultiplier, 1));
     }
     if (fishDirection === controlDirectionX) {
       return Math.max(
         0,
-        this.#safeNumber(tension.sameDirectionMultiplier, 0),
+        this.#number(tension.sameDirectionMultiplier, 0),
       );
     }
     return Math.max(
       0,
-      this.#safeNumber(tension.oppositeDirectionMultiplier, 2.5),
+      this.#number(tension.oppositeDirectionMultiplier, 2.5),
     );
   }
 
-  #resolveBlockedReason({
+  #blockedReason({
     active,
     hasFish,
-    inputDirectionX,
+    directionX,
     inputRatio,
-    hasEnoughInitialOffset,
-    aligned,
-    directionFactor,
-    angleRatio,
     loadReserveKg,
     forceKg,
-    deliveredForceRatio,
   }) {
     if (!active) return "no_input";
     if (!hasFish) return "no_fish";
-    if (inputDirectionX === 0) return "no_input";
-    if (inputRatio <= 0) return "dead_zone";
-    if (aligned) return "aligned";
-    if (!hasEnoughInitialOffset) return "initial_offset_too_small";
-    if (directionFactor <= 0) return "wrong_direction";
-    if (angleRatio <= 0) return "angle_too_small";
+    if (directionX === 0 || inputRatio <= 0) return "dead_zone";
     if (loadReserveKg <= 0) return "no_load_reserve";
-    if (forceKg <= 0 || deliveredForceRatio <= 0) return "no_force";
+    if (forceKg <= 0) return "no_force";
     return "none";
-  }
-
-  #calculateProgress({ initialAbs, currentAbs, alignedThresholdPx }) {
-    const initial = Math.max(0, this.#safeNumber(initialAbs, 0));
-    if (initial <= 0) return 0;
-    const threshold = Math.max(0, this.#safeNumber(alignedThresholdPx, 0));
-    if (Math.max(0, this.#safeNumber(currentAbs, 0)) <= threshold) return 1;
-    return this.#clamp01(
-      1 - Math.max(0, this.#safeNumber(currentAbs, 0)) / initial,
-    );
-  }
-
-  #calculateLineAngleDeg({ offsetX, fishY, rodY }) {
-    const dx = Math.abs(this.#safeNumber(offsetX, 0));
-    const dy = Math.abs(this.#safeNumber(fishY, 0) - this.#safeNumber(rodY, 0));
-    if (dx <= 0 && dy <= 0) return 0;
-    return (Math.atan2(dx, dy) * 180) / Math.PI;
-  }
-
-  #towardRodDirection(offsetX) {
-    return -Math.sign(this.#safeNumber(offsetX, 0));
-  }
-
-  #weightResistance({ fishWeightKg, forceCfg }) {
-    return Math.max(
-      0.25,
-      1 +
-        Math.max(0, this.#safeNumber(fishWeightKg, 0)) *
-          Math.max(
-            0,
-            this.#safeNumber(forceCfg.fishWeightResistanceMultiplier, 0),
-          ),
-    );
   }
 
   #hasPoint(point) {
@@ -477,27 +235,18 @@ class RodLateralControlSystem {
     );
   }
 
-  #safeNumber(value, fallback = 0) {
-    const number = Number(value);
-    return Number.isFinite(number) ? number : fallback;
-  }
-
   #createResult(overrides = {}) {
     return {
       active: false,
       canApply: false,
       directionX: 0,
       inputDirectionX: 0,
-      towardRodDirectionX: 0,
       inputRatio: 0,
-      angleRatio: 0,
-      directionFactor: 0,
-      geometricTransferRatio: 0,
+      requestedForceRatio: 0,
       loadReserveKg: 0,
       loadReserveRatio: 0,
       forceLimitKg: 0,
       currentTensionKg: 0,
-      potentialDeliveredForceRatio: 0,
       deliveredForceRatio: 0,
       forceKg: 0,
       playerTensionKg: 0,
@@ -508,22 +257,18 @@ class RodLateralControlSystem {
       appliedMovePx: 0,
       actualMovementRatio: 0,
       maxPullSpeedMetersPerSecond: 0,
-      freeRodMovement: false,
       visualControlRatio: 0,
-      targetRodX: 0,
-      usesActualRodPositionAsTarget: false,
-      initialOffsetX: 0,
-      currentOffsetX: 0,
-      alignmentProgress: 0,
-      aligned: false,
-      alignedThresholdPx: 0,
-      lineAngleDeg: 0,
       blockedReason: "no_input",
       ...overrides,
     };
   }
 
+  #number(value, fallback = 0) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+  }
+
   #clamp01(value) {
-    return Math.max(0, Math.min(1, this.#safeNumber(value, 0)));
+    return Math.max(0, Math.min(1, this.#number(value)));
   }
 }

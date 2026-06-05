@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.19.28 - Simple force-driven Rod Control.
+
+- Rod Control input now directly defines lateral force percentage and direction.
+- Fish X movement no longer depends on visual rod position, alignment, or visual limits.
+- Fight and line geometry now use the stable base rod position.
+- Visual rod movement is input-driven, eases in and out, and slows from 100% to 50% as fish weight rises from 30% to 100% of rod load.
+- Removed Rod Control alignment, line-coupling, lateral reel-hold phase, and target-position complexity.
+
 ## v0.19.27 - Configurable Rod Control center.
 
 - Added `physics.fight.rodControl.alignment.useActualRodPositionAsTarget`.

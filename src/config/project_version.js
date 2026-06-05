@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.19.27";
+const CURRENT_PROJECT_VERSION = "0.19.28";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,7 +13,7 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "configurable-rod-control-center",
+  codename: "simplified-force-driven-rod-control",
   updatedAt: "2026-06-05",
   notes: Object.freeze([
     "Rod Control center can use the stable base or actual visual rod position",

@@ -108,21 +108,12 @@ class GameViewportFacade {
       fightDebug.rodVisualDeltaX = visualFrame.deltaPx;
       fightDebug.rodVisualMaxOffsetX = visualFrame.maxOffsetPx;
       fightDebug.rodVisualStrokeRatio = visualFrame.strokeRatio;
-      fightDebug.rodControlAtLimit =
+      fightDebug.rodVisualAtLimit =
         visualFrame.atLimit || fightDebug.rodVisualClamped;
-      fightDebug.rodControlCouplingMode = visualFrame.couplingMode;
-      fightDebug.rodControlVisualDrivenByFish = visualFrame.drivenByFish;
+      fightDebug.rodVisualTargetOffsetX = visualFrame.targetOffsetPx;
+      fightDebug.rodVisualWeightSpeedRatio = visualFrame.weightSpeedRatio;
       fightDebug.rodControlVisualDrivenByInput = visualFrame.drivenByInput;
     }
-  }
-
-  getRodVisualFrame() {
-    const frame = this.#rodVisualOffsetSystem.getFrame();
-    return Object.freeze({
-      ...frame,
-      clamped: this.#rodVisualOffsetSystem.isClamped(),
-      atLimit: frame.atLimit || this.#rodVisualOffsetSystem.isClamped(),
-    });
   }
 
   getRodScreenX(screenXOverride = null, bounds = null) {
@@ -500,7 +491,6 @@ class GameApplication {
       getDynamicBounds: () => this.getDynamicBounds(),
       getRodVirtualPos: (bounds) => this.getRodVirtualPos(bounds),
       getBaseRodVirtualPos: (bounds) => this.getBaseRodVirtualPos(bounds),
-      getRodVisualFrame: () => this.getRodVisualFrame(),
       getRodScreenX: () => this.getRodScreenX(),
       getScreenOffsetRatio: (pos) => this.getScreenOffsetRatio(pos),
       setState: (name, data) => this.setState(name, data),
@@ -1009,10 +999,6 @@ class GameApplication {
       bounds,
       this.#castRodScreenX,
     );
-  }
-
-  getRodVisualFrame() {
-    return this.#viewportFacade.getRodVisualFrame();
   }
 
   getRodScreenX(bounds = null) {
