@@ -1,6 +1,6 @@
 # CyberFishing changelog
 
-## v0.19.27 - Configurable Rod Control center
+## v0.19.27 - Configurable Rod Control center.
 
 - Added `physics.fight.rodControl.alignment.useActualRodPositionAsTarget`.
 - `false` keeps the stable base rod coordinate captured at Rod Control start.
