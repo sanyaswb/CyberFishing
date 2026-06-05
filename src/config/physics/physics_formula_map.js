@@ -62,9 +62,11 @@ const PHYSICS_FORMULA_MAP = Object.freeze({
 
   movementSpeed: Object.freeze({
     title: "Movement speed",
-    formula: "fishWonForceKg = max(0, fishOppositionKg - effectiveRodHoldKg); speedMps = sqrt(fishWonForceKg / motionResistance) * speedMultiplier",
+    formula: "escapeOpposingHoldKg = activeRodHoldKg * holdOppositionRatio[fishDirectionState]; fishWonForceKg = max(0, fishOppositionKg - escapeOpposingHoldKg); toward movement is preserved and Rod Pull is applied separately",
     sources: Object.freeze([
-      "effectiveRodHoldKg",
+      "activeRodHoldKg",
+      "fishDirectionState",
+      "physics.fight.directionForce.*HoldOppositionRatio",
       "fishOppositionKg",
       "physics.water.motionResistance",
       "physics.water.speedMultiplier",
@@ -76,7 +78,7 @@ const PHYSICS_FORMULA_MAP = Object.freeze({
 
   dragForce: Object.freeze({
     title: "Drag force split",
-    formula: "fishWonYForceKg = fishWonForceKg * yAwayRatio; dragBlockedForceKg = lineCanSlip ? (activeDrag ? min(fishWonYForceKg, dragLimitKg) : 0) : fishWonYForceKg; yEscapeForceKg = lineCanSlip ? (activeDrag ? max(0, fishWonYForceKg - dragLimitKg) : fishWonYForceKg) : 0; finalYSpeedPxPerSec = lineCanSlip ? sign(targetY) * speedFromForce(yEscapeForceKg) : 0",
+    formula: "fishWonYForceKg = fishWonForceKg * yAwayRatio; drag affects only away Y movement; toward-player Y keeps targetYSpeed; away finalYSpeed = lineCanSlip ? sign(targetY) * speedFromForce(yEscapeForceKg) : 0",
     sources: Object.freeze([
       "fishWonForceKg",
       "yAwayRatio",

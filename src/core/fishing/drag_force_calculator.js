@@ -66,7 +66,12 @@ class DragForceCalculator {
         pixelsPerMeter,
       }) * Math.sign(Number(targetYSpeedPxPerSec) || 0);
     const dragSlowedYSpeedPxPerSec = 0;
-    const finalYSpeedPxPerSec = canSlipLine ? excessYSpeedPxPerSec : 0;
+    const hasAwayYMovement = resolvedYAwayRatio > 0.000001;
+    const finalYSpeedPxPerSec = hasAwayYMovement
+      ? canSlipLine
+        ? excessYSpeedPxPerSec
+        : 0
+      : Number(targetYSpeedPxPerSec) || 0;
 
     return Object.freeze({
       fishWonForceKg,
@@ -88,6 +93,7 @@ class DragForceCalculator {
       dragSupported: !!dragSupported,
       dragCanBeExceeded,
       shouldSlipDrag,
+      hasAwayYMovement,
     });
   }
 

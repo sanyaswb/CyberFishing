@@ -1,5 +1,6 @@
 class ReelHoldRecoverySystem {
   #timerMs = 0;
+  #loadPolicy = new ReelHoldLoadPolicy();
   #state = this.#createState({ blockedReason: "not_checked" });
 
   update({
@@ -26,15 +27,19 @@ class ReelHoldRecoverySystem {
       config.strokeToleranceMeters,
       0.001,
     );
-    const loadKg = this.#positive(rawTensionKg);
-    const maxLoadKg = this.#positive(reelMaxLoadKg);
-    const retrieveSpeed = this.#positive(retrieveSpeedMetersPerSecond);
     const recoverableLine = this.#positive(lineRecoverableMeters);
-    const loadReserveRatio = maxLoadKg > 0
-      ? this.#ratio((maxLoadKg - loadKg) / maxLoadKg, 0)
-      : 0;
-    const recoverSpeed =
-      retrieveSpeed * loadReserveRatio;
+    const loadFrame = this.#loadPolicy.evaluate({
+      dtMs,
+      config,
+      hasReel,
+      playerHoldActive,
+      rawTensionKg,
+      dragLimitKg,
+      dragLocked,
+      shouldSlipDrag,
+      reelMaxLoadKg,
+      retrieveSpeedMetersPerSecond,
+    });
     const strokeFull = this.#isStrokeFull({
       requireStrokeFull: config.requireRodStrokeFull !== false,
       strokeRatio,
@@ -44,37 +49,18 @@ class ReelHoldRecoverySystem {
       strokeToleranceMeters,
       rodPullBlockedReason,
     });
-    const tensionBelowDragLimit =
-      !!dragLocked || loadKg < this.#positive(dragLimitKg) - 0.001;
-    const tensionBelowMaxLoad = loadReserveRatio > 0.01;
-    const dragCanHold =
-      shouldSlipDrag !== true &&
-      tensionBelowDragLimit &&
-      tensionBelowMaxLoad;
     const hasRecoverableLine = recoverableLine > 0.001;
-    const enabled = config.enabled !== false;
     const eligible =
-      enabled &&
-      !!hasReel &&
-      !!playerHoldActive &&
+      loadFrame.eligible &&
       !!rodPullActive &&
       strokeFull &&
-      dragCanHold &&
-      hasRecoverableLine &&
-      recoverSpeed > 0.001;
+      hasRecoverableLine;
 
     const blockedReason = this.#blockedReason({
-      enabled,
-      hasReel,
-      playerHoldActive,
+      loadFrame,
       rodPullActive,
       strokeFull,
-      dragCanHold,
-      tensionBelowDragLimit,
-      tensionBelowMaxLoad,
       hasRecoverableLine,
-      loadReserveRatio,
-      recoverSpeed,
     });
 
     this.#timerMs = eligible
@@ -87,13 +73,14 @@ class ReelHoldRecoverySystem {
       active,
       timerMs: this.#timerMs,
       delayMs,
-      reelLoadReserveRatio: loadReserveRatio,
-      reelMaxLoadKg: maxLoadKg,
-      recoverSpeedMetersPerSecond: recoverSpeed,
-      maxMoveMeters: recoverSpeed * (this.#positive(dtMs) / 1000),
+      reelLoadReserveRatio: loadFrame.reelLoadReserveRatio,
+      reelMaxLoadKg: loadFrame.reelMaxLoadKg,
+      recoverSpeedMetersPerSecond:
+        loadFrame.recoverSpeedMetersPerSecond,
+      maxMoveMeters: loadFrame.maxMoveMeters,
       blockedReason,
       strokeFull,
-      dragCanHold,
+      dragCanHold: loadFrame.dragCanHold,
       lineRecoverableMeters: recoverableLine,
     });
     return this.#state;
@@ -131,31 +118,17 @@ class ReelHoldRecoverySystem {
   }
 
   #blockedReason({
-    enabled,
-    hasReel,
-    playerHoldActive,
+    loadFrame,
     rodPullActive,
     strokeFull,
-    dragCanHold,
-    tensionBelowDragLimit,
-    tensionBelowMaxLoad,
     hasRecoverableLine,
-    loadReserveRatio,
-    recoverSpeed,
   }) {
-    if (!enabled) return "disabled";
-    if (!hasReel) return "no_reel";
-    if (!playerHoldActive) return "not_holding";
+    if (!loadFrame?.eligible) {
+      return loadFrame?.blockedReason || "not_checked";
+    }
     if (!rodPullActive) return "rod_pull_inactive";
     if (!strokeFull) return "stroke_not_full";
-    if (!dragCanHold) {
-      if (!tensionBelowDragLimit) return "at_drag_limit";
-      if (!tensionBelowMaxLoad) return "near_max_load";
-      return "drag_slipping";
-    }
     if (!hasRecoverableLine) return "no_recoverable_line";
-    if (loadReserveRatio <= 0.01) return "no_reel_load_reserve";
-    if (recoverSpeed <= 0.001) return "zero_recover_speed";
     return "ready";
   }
 

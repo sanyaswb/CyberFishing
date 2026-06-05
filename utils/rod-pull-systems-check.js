@@ -28,7 +28,7 @@ const FILES = [
   "src/core/line/line_spool_state.js",
   "src/core/fishing/rod_pull_state.js",
   "src/core/fishing/rod_stroke_state.js",
-  "src/core/fishing/rod_axis_stroke_state.js",
+  "src/core/fishing/reel_hold_load_policy.js",
   "src/core/fishing/rod_stroke_tracker.js",
   "src/core/fishing/reel_auto_recovery_calculator.js",
   "src/core/fishing/reel_hold_recovery_system.js",
@@ -46,6 +46,8 @@ const FILES = [
   "src/systems/player_pull_motion_smoother.js",
   "src/systems/rod_pull_system.js",
   "src/systems/rod_lateral_control_system.js",
+  "src/systems/rod_control_line_coupling_system.js",
+  "src/systems/rod_control_phase_resolver.js",
   "src/systems/fish_retrieve_system.js",
   "src/systems/reel_system.js",
   "src/systems/tension_system.js",
@@ -424,8 +426,12 @@ const lateralConfig = {
   },
   force: {
     maxForceKg: 0.4,
-    sideMovePxPerSecond: 50,
+    sidePullSpeedMultiplier: 1,
     fishWeightResistanceMultiplier: 0,
+  },
+  water: {
+    motionResistance: 1000,
+    speedMultiplier: 64,
   },
   tension: {
     sameDirectionMultiplier: 0,
@@ -454,7 +460,8 @@ approx(lateralFrame.towardRodDirectionX, 1, 0.001, "Rod Control X resolves direc
 approx(lateralFrame.tensionMultiplier, 2.5, 0.001, "Rod Control X uses opposite-direction tension multiplier");
 approx(lateralFrame.forceKg, 0.4, 0.001, "Rod Control X force follows configured max force");
 approx(lateralFrame.alignmentProgress, 0, 0.001, "Rod Control X starts with zero alignment progress");
-approx(lateralFrame.desiredMoveMeters, 1, 0.001, "Rod Control X movement follows angle-based side speed");
+approx(lateralFrame.maxPullSpeedMetersPerSecond, 1.28, 0.001, "Rod Control X speed derives from delivered force");
+approx(lateralFrame.desiredMoveMeters, 1.28, 0.001, "Rod Control X movement follows force-derived pull speed");
 assert(lateralFrame.desiredMovePx > 0, "Rod Control X emits lateral pixel movement");
 const lateralApplied = lateralControl.recordAppliedMovement({
   movedMeters: 0.5,
@@ -463,6 +470,130 @@ const lateralApplied = lateralControl.recordAppliedMovement({
   rodX: 0,
 });
 approx(lateralApplied.alignmentProgress, 0.5, 0.001, "Rod Control X reports alignment progress from offset reduction");
+approx(lateralApplied.deliveredForceRatio, 1, 0.001, "Applied movement does not reduce delivered Rod Control force");
+approx(lateralApplied.forceKg, 0.4, 0.001, "Applied movement does not reduce Rod Control force");
+assert(lateralApplied.actualMovementRatio > 0 && lateralApplied.actualMovementRatio < 1, "Actual movement ratio stays separate from delivered force");
+
+const blockedApplied = new RodLateralControlSystem();
+const blockedAppliedFrame = blockedApplied.update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 0.8,
+  },
+  fishPosition: { x: -100, y: 100 },
+  rodTipPosition: { x: 0, y: 0 },
+  rodLimitKg: 3,
+  maxTackleLoadKg: 3,
+  fishTensionKg: 0,
+  fishVelocityX: 0,
+  fishWeightKg: 0,
+  config: lateralConfig,
+});
+blockedApplied.recordAppliedMovement({ movedMeters: 0, movedPx: 0 });
+approx(blockedAppliedFrame.deliveredForceRatio, 0.8, 0.001, "Zero applied movement does not mutate delivered force");
+approx(blockedAppliedFrame.actualMovementRatio, 0, 0.001, "Zero applied movement is reported separately");
+
+const lateralSlipSystem = new RodLateralControlSystem();
+const lateralSlip = lateralSlipSystem.update({
+  dtSec: 0.2,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: -1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: -100, y: 100 },
+  rodTipPosition: { x: 0, y: 0 },
+  rodLimitKg: 3,
+  maxTackleLoadKg: 3,
+  fishTensionKg: 0.5,
+  fishVelocityX: 20,
+  fishWeightKg: 0,
+  lineCanRelease: true,
+  dragSlipping: true,
+  config: lateralConfig,
+});
+assert(lateralSlip.freeRodMovement, "Rod Control allows independent rod movement while drag slips");
+approx(lateralSlip.desiredMoveMeters, 0, 0.001, "Drag slip rod movement does not teleport fish");
+approx(lateralSlip.deliveredForceRatio, 0, 0.001, "Drag slip applies no Rod Control force to fish");
+approx(lateralSlip.visualControlRatio, 1, 0.001, "Drag slip exposes full input-driven visual control");
+
+const lateralLoadPolicy = new ReelHoldLoadPolicy();
+const safeLateralReelHold = lateralLoadPolicy.evaluate({
+  dtMs: 100,
+  config: { enabled: true },
+  hasReel: true,
+  playerHoldActive: true,
+  rawTensionKg: 0.2,
+  dragLimitKg: 1,
+  dragLocked: true,
+  shouldSlipDrag: false,
+  reelMaxLoadKg: 2,
+  retrieveSpeedMetersPerSecond: 0.8,
+});
+assert(safeLateralReelHold.active, "Safe lateral reel hold activates without recoverable line");
+assert(safeLateralReelHold.maxMoveMeters > 0, "Lateral reel hold speed limits allowed X movement");
+
+const noReelLateralHold = lateralLoadPolicy.evaluate({
+  dtMs: 100,
+  config: { enabled: true },
+  hasReel: false,
+  playerHoldActive: true,
+  rawTensionKg: 0.2,
+  dragLimitKg: 1,
+  dragLocked: true,
+  reelMaxLoadKg: 0,
+  retrieveSpeedMetersPerSecond: 0,
+});
+assert(!noReelLateralHold.active && noReelLateralHold.blockedReason === "no_reel", "Lateral reel hold blocks at visual limit without reel");
+
+const phaseResolver = new RodControlPhaseResolver();
+assert(
+  phaseResolver.resolve({
+    rodControlActive: true,
+    fishAligned: false,
+    couplingMode: "tight_line",
+    rodControlCanApply: false,
+    rodControlAtLimit: false,
+    lateralReelHoldFrame: safeLateralReelHold,
+  }) === "blocked",
+  "Physical block before visual limit does not enter rod sweep",
+);
+assert(
+  phaseResolver.resolve({
+    rodControlActive: true,
+    fishAligned: false,
+    couplingMode: "tight_line",
+    rodControlCanApply: true,
+    rodControlAtLimit: false,
+    lateralReelHoldFrame: noReelLateralHold,
+  }) === "rod_sweep",
+  "Rod sweep remains available without reel before visual limit",
+);
+assert(
+  phaseResolver.resolve({
+    rodControlActive: true,
+    fishAligned: false,
+    couplingMode: "tight_line",
+    rodControlCanApply: true,
+    rodControlAtLimit: true,
+    lateralReelHoldFrame: noReelLateralHold,
+  }) === "blocked_at_limit",
+  "No reel blocks Rod Control continuation at visual limit",
+);
+assert(
+  phaseResolver.resolve({
+    rodControlActive: true,
+    fishAligned: false,
+    couplingMode: "tight_line",
+    rodControlCanApply: true,
+    rodControlAtLimit: true,
+    lateralReelHoldFrame: safeLateralReelHold,
+  }) === "lateral_reel_hold",
+  "Safe reel hold continues Rod Control at visual limit",
+);
+approx(lateralFrame.deliveredForceRatio, 1, 0.001, "Visual limit policy does not alter delivered force");
 
 const lateralWrongDirection = new RodLateralControlSystem().update({
   dtSec: 1,
@@ -526,6 +657,19 @@ const smoothBypass = pullSmoother.updateAxis({
   config: { inertiaSeconds: 0 },
 });
 approx(smoothBypass.move, 1, 0.001, "Player pull motion smoother bypasses when inertia is zero");
+pullSmoother.updateAxis({
+  axis: "x",
+  desiredMove: 1,
+  deltaTime: 0.016,
+  config: { inertiaSeconds: 0.16 },
+});
+pullSmoother.resetAxis("x");
+approx(
+  pullSmoother.getDebugData().velocityX,
+  0,
+  0.001,
+  "Player pull motion smoother can stop only the lateral axis",
+);
 
 console.log("rod-pull-systems-check passed:");
 for (const message of checks) console.log("- " + message);

@@ -16,6 +16,7 @@ class FightReelHoldSection extends FightSectionBase {
 
     return [
       this.row("Reel hold active", state, color),
+      this.row("Stroke source", d.holdReelRecoverSource || "none", "#73c2fb"),
       this.row("Reel safe margin", f.kg(safeMarginKg, 3), safeMarginKg > 0 ? "#00ff80" : "#ff8888"),
       this.row("Reel hold limit", f.kg(reelLimit, 3)),
       this.row("Reel retrieve speed", f.mps(d.holdReelRecoverSpeedMps, 3), "#00ff80"),

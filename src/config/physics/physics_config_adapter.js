@@ -40,6 +40,18 @@ class FightPhysicsConfigAdapter {
       towardPlayerMultiplier: this.#number(config.towardPlayerMultiplier, 0),
       sideMultiplier: this.#number(config.sideMultiplier, 1),
       awayMultiplier: this.#number(config.awayMultiplier, 2.5),
+      towardPlayerHoldOppositionRatio: this.#number(
+        config.towardPlayerHoldOppositionRatio,
+        0,
+      ),
+      sideHoldOppositionRatio: this.#number(
+        config.sideHoldOppositionRatio,
+        0.35,
+      ),
+      awayHoldOppositionRatio: this.#number(
+        config.awayHoldOppositionRatio,
+        1,
+      ),
     };
   }
 
@@ -356,6 +368,7 @@ class FightPhysicsConfigAdapter {
     return {
       ...config,
       pixelsPerMeter: this.getPixelsPerMeter(),
+      water: this.getWaterConfig(),
     };
   }
 

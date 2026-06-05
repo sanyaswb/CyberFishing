@@ -26,6 +26,7 @@ const FILES = [
   "src/config/runtime/immutable_config.js",
   "src/config/config.js",
   "src/core/fishing/simple_fight_force_calculator.js",
+  "src/core/fishing/hold_opposition_resolver.js",
   "src/core/fishing/drag_force_calculator.js",
   "src/core/fishing/landing_lift_tension_calculator.js",
   "src/core/fishing/line_tension_calculator.js",
@@ -216,6 +217,51 @@ approx(dragSlipTension.lineStressRatio, 0.25, 0.0001, "drag-capped line stress u
 assert(dragSlipTension.shouldSlipDrag, "drag slip flag releases line");
 
 const dragForceCalculator = new DragForceCalculator();
+const holdOppositionResolver = new HoldOppositionResolver();
+approx(
+  holdOppositionResolver.resolve({
+    activeRodHoldKg: 1,
+    fishDirectionState: "toward_player",
+  }).forceKg,
+  0,
+  0.0001,
+  "rod hold does not oppose fish movement toward player",
+);
+approx(
+  holdOppositionResolver.resolve({
+    activeRodHoldKg: 1,
+    fishDirectionState: "side",
+  }).forceKg,
+  0.35,
+  0.0001,
+  "rod hold partially opposes side movement",
+);
+approx(
+  holdOppositionResolver.resolve({
+    activeRodHoldKg: 1,
+    fishDirectionState: "away",
+  }).forceKg,
+  1,
+  0.0001,
+  "rod hold fully opposes away movement",
+);
+const towardPlayerForce = dragForceCalculator.calculate({
+  fishOppositionKg: 0.28,
+  effectiveRodHoldKg: 0,
+  yAwayRatio: 0,
+  dragRatio: 1,
+  dragLimitKg: 1,
+  lineHasReserve: false,
+  dragLocked: true,
+  dragSupported: true,
+  targetYSpeedPxPerSec: 42,
+});
+approx(
+  towardPlayerForce.finalYSpeedPxPerSec,
+  42,
+  0.0001,
+  "drag preserves fish Y movement toward player",
+);
 const openDragForce = dragForceCalculator.calculate({
   fishOppositionKg: 0.28,
   effectiveRodHoldKg: 0,

@@ -90,6 +90,20 @@ class PlayerPullMotionSmoother {
     this.#debug = this.#createDebug();
   }
 
+  resetAxis(axis) {
+    if (axis === "x") {
+      this.#velocityX = 0;
+      this.#debug.desiredMoveX = 0;
+      this.#debug.actualMoveX = 0;
+      this.#debug.velocityX = 0;
+      return;
+    }
+    this.#velocityY = 0;
+    this.#debug.desiredMoveY = 0;
+    this.#debug.actualMoveY = 0;
+    this.#debug.velocityY = 0;
+  }
+
   #createDebug() {
     return {
       enabled: false,

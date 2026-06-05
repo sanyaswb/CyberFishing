@@ -1,5 +1,39 @@
 # CyberFishing changelog
 
+## v0.19.27 - Configurable Rod Control center
+
+- Added `physics.fight.rodControl.alignment.useActualRodPositionAsTarget`.
+- `false` keeps the stable base rod coordinate captured at Rod Control start.
+- `true` makes alignment and the 0% center follow the current visually shifted rod position.
+- Added debug visibility and regression coverage for both target modes.
+
+## v0.19.26 - Rod Control lateral reel hold continuation
+
+- Removed the meter-based Rod Control X stroke as a gameplay movement limit.
+- Added explicit Rod Control phases, including `rod_sweep`, `lateral_reel_hold`, and `blocked_at_limit`.
+- Visual rod limits now stop only visual movement; safe reel-hold continuation can keep moving an unaligned fish.
+- Lateral reel hold uses reel load safety and retrieve speed without requiring or recovering vertical slack.
+- Delivered Rod Control force is no longer reduced by per-frame applied movement.
+- Gameplay now reads an immutable rod visual frame instead of debug data.
+- Removed obsolete X-stroke configuration and overlay metrics.
+
+## v0.19.25 - Fish-driven Rod Control
+
+- Taut-line rod movement now follows actual lateral fish displacement instead of raw A/D or swipe input.
+- Added explicit `tight_line`, `drag_slip`, and `free` visual coupling modes.
+- Replaced fixed lateral movement speed with force- and water-resistance-derived pull speed.
+- Drag slip can move the rod quickly and independently without teleporting the fish.
+- Added coupling, visual-limit, pull-speed and reel-hold-source debug metrics.
+
+## v0.19.24 - Direction-aware Rod Hold
+
+- Rod Hold now opposes fish movement according to its direction.
+- Fish movement toward the player is preserved instead of being suppressed by hold or drag.
+- Fish own toward movement and Rod Pull movement now combine into a higher approach speed.
+- Added configurable hold opposition ratios for toward, side and away movement.
+- Added direction, opposing hold and combined-speed debug metrics.
+- Added focused regression checks for all three direction cases.
+
 ## v0.19.23 - Tackle stress failure system
 
 - Reworked tackle overload into a stress-based failure system.

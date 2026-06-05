@@ -7,6 +7,9 @@ class FightPhysicsSystem {
   #looseLineCalculator = new LooseLineCalculator();
   #rodStrokeTracker = new RodStrokeTracker();
   #playerPullMotionSmoother = new PlayerPullMotionSmoother();
+  #rodControlLineCouplingSystem = new RodControlLineCouplingSystem();
+  #rodControlPhaseResolver = new RodControlPhaseResolver();
+  #reelHoldLoadPolicy = new ReelHoldLoadPolicy();
   #reelHoldRecoverySystem = new ReelHoldRecoverySystem();
   #landingPolicyResolver = new LandingPolicyResolver();
   #landingLiftCalculator = new LandingLiftTensionCalculator();
@@ -23,6 +26,7 @@ class FightPhysicsSystem {
     recoverSpeedMetersPerSecond: 0,
     maxMoveMeters: 0,
     blockedReason: "not_checked",
+    source: "none",
   };
   #debug = {};
 
@@ -41,6 +45,7 @@ class FightPhysicsSystem {
     checkWater,
     rodTipPosition,
     rodControlTargetPosition,
+    rodVisualFrame,
     rod,
     reel,
     fishForceSystem,
@@ -132,6 +137,7 @@ class FightPhysicsSystem {
     const rodControlFrame = pipelineFrame.run(
       "resolve_rod_control_x",
       () => this.#updateRodControl({
+      dtMs,
       dtSec,
       input,
       floatEntity,
@@ -147,6 +153,9 @@ class FightPhysicsSystem {
       maxTackleLoadKg,
       rodLimitKg,
       rodControlTargetPosition,
+      rodVisualFrame,
+      reel,
+      hasReel,
     }),
     );
     const lineStateAfterControl =
@@ -697,6 +706,7 @@ class FightPhysicsSystem {
   }
 
   #updateRodControl({
+    dtMs,
     dtSec,
     input,
     floatEntity,
@@ -712,6 +722,9 @@ class FightPhysicsSystem {
     maxTackleLoadKg,
     rodLimitKg,
     rodControlTargetPosition,
+    rodVisualFrame,
+    reel,
+    hasReel,
   }) {
     if (!rodControlSystem?.update) {
       return {
@@ -728,6 +741,36 @@ class FightPhysicsSystem {
 
     const config = this.#physicsConfig?.getRodControlConfig?.() || {};
     const fishPosition = floatEntity.getPosition();
+    const lineStateBeforeControl = lineSystem.updateDistance(
+      fishPosition,
+      rodTipPosition,
+    );
+    const currentTensionKg = Math.max(
+      0,
+      Number(stressSystem?.getTensionKg?.()) ||
+        Number(forceData?.fishTensionKg) ||
+        0,
+    );
+    const lineCanRelease = this.#lineHasReserve(lineStateBeforeControl);
+    const dragSlipping =
+      lineCanRelease &&
+      !dragContext.dragLocked &&
+      (
+        forceData?.shouldSlipDrag === true ||
+        currentTensionKg >
+          Math.max(0, Number(dragContext.effectiveDragLimitKg) || 0) + 0.001
+      );
+    const lineCouplingFrame = this.#rodControlLineCouplingSystem.resolve({
+      rodControlActive: input?.rodControlActive,
+      lineCanRelease,
+      dragSlipping,
+      config: config.lineCoupling,
+    });
+    const visualAtLimit = !!rodVisualFrame?.atLimit;
+    const visualStrokeRatio = Math.max(
+      0,
+      Math.min(1, Number(rodVisualFrame?.strokeRatio) || 0),
+    );
     const rodControlResult = rodControlSystem.update({
       dtSec,
       inputState: input,
@@ -737,25 +780,72 @@ class FightPhysicsSystem {
       rod,
       rodLimitKg,
       maxTackleLoadKg,
-      currentTensionKg: Math.max(
-        0,
-        Number(stressSystem?.getTensionKg?.()) ||
-          Number(forceData?.fishTensionKg) ||
-          0,
-      ),
+      currentTensionKg,
       fishTensionKg: forceData?.fishTensionKg,
       fishVelocityX: forceData?.targetVelocity?.x,
       fishWeightKg: forceData?.fishWeightKg,
+      lineCanRelease,
+      dragSlipping,
       config,
+    });
+    const projectedLoadKg = Math.max(
+      currentTensionKg,
+      Math.max(0, Number(forceData?.fishTensionKg) || 0) +
+        Math.max(0, Number(rodControlResult.playerTensionKg) || 0),
+    );
+    const lateralReelHoldFrame = this.#reelHoldLoadPolicy.evaluate({
+      dtMs,
+      config: config.reelHold,
+      hasReel,
+      playerHoldActive:
+        visualAtLimit &&
+        rodControlResult.active &&
+        rodControlResult.canApply,
+      rawTensionKg: projectedLoadKg,
+      dragLimitKg: dragContext.effectiveDragLimitKg,
+      dragLocked: dragContext.dragLocked,
+      shouldSlipDrag: dragSlipping,
+      reelMaxLoadKg:
+        reel?.getEffectiveMaxLoadKg?.() ??
+        reel?.getMaxLoadKg?.() ??
+        0,
+      retrieveSpeedMetersPerSecond:
+        reel?.getRetrieveSpeedMetersPerSec?.() ?? 0,
+    });
+    const movementPhase = this.#rodControlPhaseResolver.resolve({
+      rodControlActive: rodControlResult.active,
+      fishAligned: rodControlResult.aligned,
+      couplingMode: lineCouplingFrame.mode,
+      rodControlCanApply: rodControlResult.canApply,
+      rodControlAtLimit: visualAtLimit,
+      lateralReelHoldFrame,
     });
     const desiredSignedMoveMeters =
       (Number(rodControlResult.directionX) || 0) *
       Math.max(0, Number(rodControlResult.desiredMoveMeters) || 0);
-    const smoothedSignedMoveMeters = this.#smoothPlayerPullAxis({
-      axis: "x",
-      desiredMoveMeters: desiredSignedMoveMeters,
-      dtSec,
-    });
+    const movementAllowed =
+      movementPhase === "rod_sweep" ||
+      movementPhase === "lateral_reel_hold";
+    const stopFishXMovement = !movementAllowed;
+    if (stopFishXMovement) {
+      this.#playerPullMotionSmoother.resetAxis("x");
+    }
+    let smoothedSignedMoveMeters = stopFishXMovement
+      ? 0
+      : this.#smoothPlayerPullAxis({
+          axis: "x",
+          desiredMoveMeters: desiredSignedMoveMeters,
+          dtSec,
+        });
+    if (movementPhase === "lateral_reel_hold") {
+      smoothedSignedMoveMeters =
+        Math.sign(smoothedSignedMoveMeters) *
+        Math.min(
+          Math.abs(smoothedSignedMoveMeters),
+          Math.max(0, Number(lateralReelHoldFrame.maxMoveMeters) || 0),
+        );
+    }
+    const allowedMoveMeters = Math.abs(smoothedSignedMoveMeters);
     const movement = this.#applyRodControlMovement({
       floatEntity,
       directionX: Math.sign(smoothedSignedMoveMeters),
@@ -773,6 +863,53 @@ class FightPhysicsSystem {
       currentFishX: floatEntity.getPosition()?.x,
     });
     const updatedResult = rodControlSystem.getState?.() || rodControlResult;
+    const phase = this.#rodControlPhaseResolver.resolve({
+      rodControlActive: updatedResult.active,
+      fishAligned: updatedResult.aligned,
+      couplingMode: lineCouplingFrame.mode,
+      rodControlCanApply: updatedResult.canApply,
+      rodControlAtLimit: visualAtLimit,
+      lateralReelHoldFrame,
+    });
+    const phaseBlockedReason = phase === "blocked_at_limit"
+      ? this.#resolveLateralLimitBlockedReason({
+          rodControlResult: updatedResult,
+          lateralReelHoldFrame,
+        })
+      : phase === "blocked"
+        ? updatedResult.blockedReason
+        : "none";
+    if (phase === "blocked_at_limit") {
+      updatedResult.canApply = false;
+      updatedResult.deliveredForceRatio = 0;
+      updatedResult.forceKg = 0;
+      updatedResult.playerTensionKg = 0;
+      updatedResult.blockedReason = phaseBlockedReason;
+    }
+    Object.assign(updatedResult, {
+      phase,
+      couplingMode: lineCouplingFrame.mode,
+      visualDrivenByFish: lineCouplingFrame.fishDrivesRodVisual,
+      visualDrivenByInput: lineCouplingFrame.inputDrivesRodVisual,
+      lineHasReserve: lineCouplingFrame.lineHasReserve,
+      dragSlipping: lineCouplingFrame.dragSlipping,
+      visualAtLimit,
+      visualStrokeRatio,
+      visualControlRatio:
+        lineCouplingFrame.mode === "drag_slip"
+          ? updatedResult.inputRatio
+          : updatedResult.deliveredForceRatio,
+      allowedMoveMeters,
+      lateralReelHoldEligible: lateralReelHoldFrame.eligible,
+      lateralReelHoldActive:
+        phase === "lateral_reel_hold" && lateralReelHoldFrame.active,
+      lateralReelHoldMaxMoveMeters:
+        lateralReelHoldFrame.maxMoveMeters,
+      lateralReelHoldBlockedReason:
+        phase === "lateral_reel_hold"
+          ? "ready"
+          : lateralReelHoldFrame.blockedReason,
+    });
     const lineStateAfterControl = lineSystem.updateDistance(
       floatEntity.getPosition(),
       rodTipPosition,
@@ -809,6 +946,11 @@ class FightPhysicsSystem {
       desiredMovePx: 0,
       appliedMoveMeters: 0,
       appliedMovePx: 0,
+      actualMovementRatio: 0,
+      maxPullSpeedMetersPerSecond: 0,
+      freeRodMovement: false,
+      potentialDeliveredForceRatio: 0,
+      visualControlRatio: 0,
       initialOffsetX: 0,
       currentOffsetX: 0,
       alignmentProgress: 0,
@@ -817,8 +959,31 @@ class FightPhysicsSystem {
       lineAngleDeg: 0,
       angleRatio: 0,
       blockedReason,
-      visualRatio: 0,
+      phase: "inactive",
+      couplingMode: "free",
+      visualDrivenByFish: false,
+      visualDrivenByInput: false,
+      lineHasReserve: false,
+      dragSlipping: false,
+      visualAtLimit: false,
+      visualStrokeRatio: 0,
+      allowedMoveMeters: 0,
+      lateralReelHoldEligible: false,
+      lateralReelHoldActive: false,
+      lateralReelHoldMaxMoveMeters: 0,
+      lateralReelHoldBlockedReason: "not_checked",
     };
+  }
+
+  #resolveLateralLimitBlockedReason({
+    rodControlResult,
+    lateralReelHoldFrame,
+  }) {
+    if (!rodControlResult?.canApply) {
+      return rodControlResult?.blockedReason || "blocked";
+    }
+    return lateralReelHoldFrame?.blockedReason ||
+      "unsafe_lateral_reel_hold";
   }
 
   resetPlayerPullMotion() {
@@ -1076,13 +1241,17 @@ class FightPhysicsSystem {
         ),
     );
 
+    const rodStrokeRatio = Math.max(
+      0,
+      Math.min(1, Number(rodPullResult?.rodStrokeRatio) || 0),
+    );
     this.#holdReelRecoverState = this.#reelHoldRecoverySystem.update({
       dtMs,
       config: reelHoldConfig,
       hasReel,
       playerHoldActive: isPullMode,
       rodPullActive: rodPullResult?.active,
-      strokeRatio: rodPullResult?.rodStrokeRatio,
+      strokeRatio: rodStrokeRatio,
       strokeCapacityMeters: rodPullResult?.rodStrokeCapacityMeters,
       strokeUnrecoveredMeters: rodPullResult?.rodStrokeUnrecoveredMeters,
       rodPullBlockedReason: rodPullResult?.blockedReason,
@@ -1098,6 +1267,7 @@ class FightPhysicsSystem {
       lineRecoverableMeters,
       physics,
     });
+    this.#holdReelRecoverState.source = "rod_hold_y";
     return this.#holdReelRecoverState;
   }
 
@@ -1342,6 +1512,10 @@ class FightPhysicsSystem {
       simpleFightSpeedMps: fishRetrieveResult?.speedMps,
       totalAppliedPullMoveMeters,
       totalAppliedPullSpeedMps,
+      fishOwnTowardSpeedMps: forceData.fishOwnTowardSpeedMps ?? 0,
+      combinedTowardSpeedMps:
+        (Number(forceData.fishOwnTowardSpeedMps) || 0) +
+        totalAppliedPullSpeedMps,
       movementMode,
       towardPlayerSpeedMps: fishRetrieveResult?.towardPlayerSpeedMps,
       awaySpeedMps: fishRetrieveResult?.awaySpeedMps,
@@ -1398,6 +1572,8 @@ class FightPhysicsSystem {
       rodControlTowardRodDirectionX: rodControlResult?.towardRodDirectionX ?? 0,
       rodControlInputRatio: rodControlResult?.inputRatio ?? 0,
       rodControlTargetRodX: rodControlResult?.targetRodX ?? 0,
+      rodControlUsesActualRodPositionAsTarget:
+        !!rodControlResult?.usesActualRodPositionAsTarget,
       rodControlInitialOffsetX: rodControlResult?.initialOffsetX ?? 0,
       rodControlCurrentOffsetX: rodControlResult?.currentOffsetX ?? 0,
       rodControlAlignmentProgress: rodControlResult?.alignmentProgress ?? 0,
@@ -1413,13 +1589,25 @@ class FightPhysicsSystem {
       rodControlForceLimitKg: rodControlResult?.forceLimitKg ?? 0,
       rodControlDeliveredForceRatio:
         rodControlResult?.deliveredForceRatio ?? 0,
+      rodControlPotentialDeliveredForceRatio:
+        rodControlResult?.potentialDeliveredForceRatio ?? 0,
       rodControlActualMovementRatio:
         rodControlResult?.actualMovementRatio ?? 0,
+      rodControlMaxPullSpeedMps:
+        rodControlResult?.maxPullSpeedMetersPerSecond ?? 0,
+      rodControlFreeRodMovement:
+        !!rodControlResult?.freeRodMovement,
+      rodControlPhase:
+        rodControlResult?.phase || "inactive",
+      rodControlVisualControlRatio:
+        rodControlResult?.visualControlRatio ?? 0,
       rodControlForceKg: rodControlResult?.forceKg ?? 0,
       rodControlPlayerTensionKg: rodControlResult?.playerTensionKg ?? 0,
       rodControlTensionMultiplier: rodControlResult?.tensionMultiplier ?? 0,
       rodControlDesiredMoveMeters: rodControlResult?.desiredMoveMeters ?? 0,
       rodControlDesiredMovePx: rodControlResult?.desiredMovePx ?? 0,
+      rodControlAllowedMoveMeters:
+        rodControlResult?.allowedMoveMeters ?? 0,
       rodControlMoveMeters: appliedRodControlMoveMeters,
       rodControlMovePx: appliedRodControlMovePx,
       rodControlAppliedSpeedMps,
@@ -1428,7 +1616,26 @@ class FightPhysicsSystem {
         rodControlResult?.blockedReason ||
         "none",
       rodControlBlockedReason: rodControlResult?.blockedReason || "none",
-      rodControlVisualRatio: rodControlResult?.visualRatio ?? 0,
+      rodControlCouplingMode:
+        rodControlResult?.couplingMode || "free",
+      rodControlVisualDrivenByFish:
+        !!rodControlResult?.visualDrivenByFish,
+      rodControlVisualDrivenByInput:
+        !!rodControlResult?.visualDrivenByInput,
+      rodControlAtLimit:
+        !!rodControlResult?.visualAtLimit,
+      rodControlLineHasReserve:
+        !!rodControlResult?.lineHasReserve,
+      rodControlDragSlipping:
+        !!rodControlResult?.dragSlipping,
+      lateralReelHoldEligible:
+        !!rodControlResult?.lateralReelHoldEligible,
+      lateralReelHoldActive:
+        !!rodControlResult?.lateralReelHoldActive,
+      lateralReelHoldMaxMoveMeters:
+        rodControlResult?.lateralReelHoldMaxMoveMeters ?? 0,
+      lateralReelHoldBlockedReason:
+        rodControlResult?.lateralReelHoldBlockedReason || "not_checked",
       rodStrokeCapacityMeters: rodPullDisplay.rodStrokeCapacityMeters,
       rodStrokeWonMeters: rodPullDisplay.rodStrokeWonMeters,
       rodStrokeUsedMeters: rodPullDisplay.rodStrokeUsedMeters,
@@ -1470,6 +1677,8 @@ class FightPhysicsSystem {
       hardTensionBlocked: !!hardTensionBlocked,
       holdReelRecoverBlockedReason:
         holdReelRecover?.blockedReason || "not_checked",
+      holdReelRecoverSource:
+        holdReelRecover?.source || "none",
       tensionMode: tensionResult.mode,
       rawTensionKg: tensionResult.rawTensionKg,
       fishTensionKg: tensionResult.fishTensionKg,

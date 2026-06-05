@@ -1,6 +1,7 @@
 class RodVisualOffsetSystem {
   #offsetPx = 0;
   #clamped = false;
+  #frame = this.#createFrame();
 
   update({
     dtSec,
@@ -17,36 +18,77 @@ class RodVisualOffsetSystem {
     }
 
     const visualCfg = cfg.rodVisual || {};
-    const active =
-      !!fightDebug?.rodControlActive ||
-      !!inputState?.rodControlActive;
     const direction = Math.sign(
       Number(fightDebug?.rodControlInputDirectionX) ||
-        Number(fightDebug?.rodControlDirectionX) ||
         Number(inputState?.rodControlDirectionX) ||
         0,
     );
-    const ratio = Math.max(
-      0,
-      Math.min(
-        1,
-        Number(fightDebug?.rodControlVisualRatio) ||
-          Number(inputState?.rodControlInputRatio) ||
-          0,
-      ),
+    const inputRatio = this.#clamp01(
+      fightDebug?.rodControlInputRatio ??
+        inputState?.rodControlInputRatio,
     );
+    const active = !!inputState?.rodControlActive;
+    const couplingMode =
+      fightDebug?.rodControlCouplingMode ||
+      (active ? "tight_line" : "free");
     const width = Math.max(0, Number(canvasWidth) || 0);
     const maxOffset = Math.max(
       Number(visualCfg.fallbackMaxOffsetPx) || 80,
       width * Math.max(0, Number(visualCfg.maxOffsetScreenRatio) || 0.08),
     );
-    const target = active && direction !== 0
-      ? direction * maxOffset * ratio
+    const previousOffset = this.#offsetPx;
+    const fishDriven =
+      active &&
+      couplingMode === "tight_line" &&
+      fightDebug?.rodControlVisualDrivenByFish !== false;
+    const inputDriven =
+      active &&
+      couplingMode === "drag_slip" &&
+      fightDebug?.rodControlVisualDrivenByInput !== false;
+
+    if (fishDriven && direction !== 0) {
+      const appliedMovePx = Math.max(
+        0,
+        Number(fightDebug?.rodControlMovePx) || 0,
+      );
+      const followRatio = Math.max(
+        0,
+        Number(visualCfg.followFishMovementRatio) || 1,
+      );
+      this.#offsetPx += direction * appliedMovePx * followRatio;
+    } else if (inputDriven && direction !== 0) {
+      const target = direction * maxOffset * inputRatio;
+      this.#offsetPx = this.#approach(
+        this.#offsetPx,
+        target,
+        Number(visualCfg.dragSlipResponsiveness) || 10,
+        dtSec,
+      );
+    } else if (!active || couplingMode === "free") {
+      this.#offsetPx = this.#approach(
+        this.#offsetPx,
+        0,
+        Number(visualCfg.returnSmoothing) || 5,
+        dtSec,
+      );
+    }
+
+    this.#offsetPx = Math.max(-maxOffset, Math.min(maxOffset, this.#offsetPx));
+    const strokeRatio = maxOffset > 0
+      ? this.#clamp01(Math.abs(this.#offsetPx) / maxOffset)
       : 0;
-    const speed = active
-      ? Number(visualCfg.moveSmoothing) || 14
-      : Number(visualCfg.returnSmoothing) || 8;
-    this.#offsetPx = this.#approach(this.#offsetPx, target, speed, dtSec);
+    this.#frame = {
+      offsetPx: this.#offsetPx,
+      deltaPx: this.#offsetPx - previousOffset,
+      maxOffsetPx: maxOffset,
+      strokeRatio,
+      atLimit: strokeRatio >= this.#clamp01(
+        config?.reelHold?.limitRatio ?? 0.98,
+      ),
+      couplingMode,
+      drivenByFish: fishDriven,
+      drivenByInput: inputDriven,
+    };
     return this.#offsetPx;
   }
 
@@ -91,9 +133,14 @@ class RodVisualOffsetSystem {
     return this.#clamped;
   }
 
+  getFrame() {
+    return this.#frame;
+  }
+
   reset() {
     this.#offsetPx = 0;
     this.#clamped = false;
+    this.#frame = this.#createFrame();
   }
 
   #approach(current, target, speed, dtSec) {
@@ -101,5 +148,22 @@ class RodVisualOffsetSystem {
     if (dt <= 0) return current;
     const alpha = 1 - Math.exp(-Math.max(0, Number(speed) || 0) * dt);
     return current + (target - current) * alpha;
+  }
+
+  #clamp01(value) {
+    return Math.max(0, Math.min(1, Number(value) || 0));
+  }
+
+  #createFrame() {
+    return {
+      offsetPx: 0,
+      deltaPx: 0,
+      maxOffsetPx: 0,
+      strokeRatio: 0,
+      atLimit: false,
+      couplingMode: "free",
+      drivenByFish: false,
+      drivenByInput: false,
+    };
   }
 }

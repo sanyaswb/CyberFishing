@@ -499,6 +499,7 @@ class FishingForceService {
       env,
       getRodVirtualPos,
       getBaseRodVirtualPos,
+      getRodVisualFrame,
       checkWater,
       rod,
       reel,
@@ -525,6 +526,15 @@ class FishingForceService {
       rodTipPosition: getRodVirtualPos(bounds),
       rodControlTargetPosition:
         getBaseRodVirtualPos?.(bounds) || getRodVirtualPos(bounds),
+      rodVisualFrame: getRodVisualFrame?.() || Object.freeze({
+        offsetPx: 0,
+        deltaPx: 0,
+        maxOffsetPx: 0,
+        strokeRatio: 0,
+        atLimit: false,
+        clamped: false,
+        couplingMode: "free",
+      }),
       rod,
       reel,
       fishForceSystem,

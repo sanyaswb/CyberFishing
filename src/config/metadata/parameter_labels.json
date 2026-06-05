@@ -35,6 +35,18 @@
     "label": "Напрямок від гравця",
     "description": "Множник активної сили, коли риба рухається від гравця."
   },
+  "physics.fight.directionForce.towardPlayerHoldOppositionRatio": {
+    "label": "Протидія Rod Hold: до гравця",
+    "description": "Частка активного Rod Hold, яка протидіє руху риби до гравця. Значення 0 зберігає корисний рух риби."
+  },
+  "physics.fight.directionForce.sideHoldOppositionRatio": {
+    "label": "Протидія Rod Hold: боком",
+    "description": "Частка активного Rod Hold, яка протидіє боковому руху риби."
+  },
+  "physics.fight.directionForce.awayHoldOppositionRatio": {
+    "label": "Протидія Rod Hold: від гравця",
+    "description": "Частка активного Rod Hold, яка протидіє втечі риби від гравця."
+  },
   "physics.fight.rodHold.chargeTimeSeconds": {
     "label": "Час набору rod hold",
     "description": "За скільки секунд hold набирається від 0 до rodHoldMax."
@@ -195,9 +207,13 @@
     "label": "Rod Control max force",
     "description": "Maximum lateral player force added by Rod Control X."
   },
-  "physics.fight.rodControl.force.sideMovePxPerSecond": {
-    "label": "Rod Control side speed",
-    "description": "Base lateral fish movement speed in pixels per second."
+  "physics.fight.rodControl.force.sidePullSpeedMultiplier": {
+    "label": "Rod Control pull speed multiplier",
+    "description": "Multiplier for lateral pull speed derived from delivered force and water resistance."
+  },
+  "physics.fight.rodControl.alignment.useActualRodPositionAsTarget": {
+    "label": "Use actual rod position as Rod Control center",
+    "description": "When enabled, Rod Control alignment follows the current visually shifted rod position. When disabled, it uses the stable base position captured at control start."
   },
   "physics.fight.rodControl.force.fishWeightResistanceMultiplier": {
     "label": "Rod Control fish weight resistance",
@@ -223,9 +239,13 @@
     "label": "Rod visual fallback offset",
     "description": "Fallback maximum rod visual offset in pixels."
   },
-  "physics.fight.rodControl.rodVisual.moveSmoothing": {
-    "label": "Rod visual move smoothing",
-    "description": "Smoothing speed while the rod moves toward lateral control."
+  "physics.fight.rodControl.rodVisual.followFishMovementRatio": {
+    "label": "Rod visual fish-follow ratio",
+    "description": "Visual rod movement per pixel of actual fish movement while the line is tight."
+  },
+  "physics.fight.rodControl.rodVisual.dragSlipResponsiveness": {
+    "label": "Rod visual drag-slip responsiveness",
+    "description": "Response speed for input-driven rod movement while drag is slipping."
   },
   "physics.fight.rodControl.rodVisual.returnSmoothing": {
     "label": "Rod visual return smoothing",
@@ -238,6 +258,22 @@
   "physics.fight.rodControl.rodVisual.clampToPlayableZone": {
     "label": "Clamp rod visual to playable zone",
     "description": "Keeps the visual rod position inside the playable map zone when bounds are known."
+  },
+  "physics.fight.rodControl.lineCoupling.tightLineUsesFishDrivenVisual": {
+    "label": "Fish-driven tight-line visual",
+    "description": "Makes actual fish movement drive the visual rod offset while the line is tight."
+  },
+  "physics.fight.rodControl.lineCoupling.dragSlipUsesInputDrivenVisual": {
+    "label": "Input-driven drag-slip visual",
+    "description": "Allows input to drive the visual rod offset while released line absorbs the movement."
+  },
+  "physics.fight.rodControl.reelHold.enabled": {
+    "label": "Rod Control reel hold",
+    "description": "Enables existing reel-hold behavior at the lateral visual limit."
+  },
+  "physics.fight.rodControl.reelHold.limitRatio": {
+    "label": "Rod Control reel-hold limit",
+    "description": "Visual lateral stroke ratio that counts as the Rod Control limit."
   },
   "physics.fight.landing.catchZone.reel.landingDistanceMeters": {
     "label": "Landing distance для снасті з котушкою",

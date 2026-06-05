@@ -16,8 +16,11 @@ const FILES = [
   "src/config/runtime/resolved_config_provider.js",
   "src/config/runtime/immutable_config.js",
   "src/config/config.js",
+  "src/core/fishing/reel_hold_load_policy.js",
   "src/systems/player_pull_motion_smoother.js",
   "src/systems/rod_lateral_control_system.js",
+  "src/systems/rod_control_line_coupling_system.js",
+  "src/systems/rod_control_phase_resolver.js",
   "src/systems/rod_visual_offset_system.js",
 ];
 
@@ -129,6 +132,7 @@ const config = {
   enabled: true,
   pixelsPerMeter: 50,
   alignment: {
+    useActualRodPositionAsTarget: false,
     minInitialOffsetPx: 1,
     alignedThresholdPx: 0,
     maxEffectiveAngleDeg: 45,
@@ -137,8 +141,12 @@ const config = {
   },
   force: {
     maxForceKg: 0.22,
-    sideMovePxPerSecond: 50,
+    sidePullSpeedMultiplier: 1,
     fishWeightResistanceMultiplier: 0,
+  },
+  water: {
+    motionResistance: 1000,
+    speedMultiplier: 64,
   },
   tension: {
     sameDirectionMultiplier: 0,
@@ -148,10 +156,19 @@ const config = {
   rodVisual: {
     maxOffsetScreenRatio: 0.05,
     fallbackMaxOffsetPx: 55,
-    moveSmoothing: 7,
     returnSmoothing: 5,
     edgePaddingPx: 16,
     clampToPlayableZone: true,
+    followFishMovementRatio: 1,
+    dragSlipResponsiveness: 10,
+  },
+  lineCoupling: {
+    tightLineUsesFishDrivenVisual: true,
+    dragSlipUsesInputDrivenVisual: true,
+  },
+  reelHold: {
+    enabled: true,
+    limitRatio: 0.98,
   },
 };
 
@@ -313,7 +330,70 @@ const stableSecond = stableTargetSystem.update({
 approx(stableFirst.targetRodX, 0, 0.001, "Rod Control stores initial target rod X");
 approx(stableSecond.targetRodX, 0, 0.001, "Rod Control target rod X stays stable while visual rod moves");
 
+const actualTargetConfig = {
+  ...config,
+  alignment: {
+    ...config.alignment,
+    useActualRodPositionAsTarget: true,
+  },
+};
+const actualTargetSystem = new RodLateralControlSystem();
+actualTargetSystem.update({
+  dtSec: 0.1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: -100, y: 100 },
+  rodTipPosition: { x: 0, y: 0 },
+  rodControlTargetPosition: { x: 0, y: 0 },
+  rodLimitKg: 2,
+  maxTackleLoadKg: 2,
+  currentTensionKg: 0,
+  fishVelocityX: 0,
+  fishWeightKg: 0,
+  config: actualTargetConfig,
+});
+const actualTargetSecond = actualTargetSystem.update({
+  dtSec: 0.1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: -80, y: 100 },
+  rodTipPosition: { x: 50, y: 0 },
+  rodControlTargetPosition: { x: 0, y: 0 },
+  rodLimitKg: 2,
+  maxTackleLoadKg: 2,
+  currentTensionKg: 0,
+  fishVelocityX: 0,
+  fishWeightKg: 0,
+  config: actualTargetConfig,
+});
+approx(actualTargetSecond.targetRodX, 50, 0.001, "Actual target mode follows current visual rod X");
+assert(actualTargetSecond.usesActualRodPositionAsTarget, "Actual target mode is exposed in Rod Control state");
+
 const visual = new RodVisualOffsetSystem();
+const rawInputOnlyOffset = visual.update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fightDebug: {
+    rodControlActive: true,
+    rodControlInputDirectionX: 1,
+    rodControlCouplingMode: "tight_line",
+    rodControlVisualDrivenByFish: true,
+    rodControlMovePx: 0,
+  },
+  config,
+  canvasWidth: 1000,
+});
+approx(rawInputOnlyOffset, 0, 0.001, "Rod visual ignores raw input without applied lateral stroke");
 const visualOffset = visual.update({
   dtSec: 1,
   inputState: {
@@ -324,12 +404,74 @@ const visualOffset = visual.update({
   fightDebug: {
     rodControlActive: true,
     rodControlInputDirectionX: 1,
-    rodControlVisualRatio: 0.5,
+    rodControlCouplingMode: "tight_line",
+    rodControlVisualDrivenByFish: true,
+    rodControlMovePx: 2,
   },
   config,
   canvasWidth: 1000,
 });
-assert(visualOffset > 0, "Rod visual offset follows input direction");
+approx(visualOffset, 2, 0.001, "Tight-line rod visual follows actual fish movement");
+const blockedVisualOffset = visual.update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fightDebug: {
+    rodControlActive: true,
+    rodControlInputDirectionX: 1,
+    rodControlCouplingMode: "tight_line",
+    rodControlVisualDrivenByFish: true,
+    rodControlMovePx: 0,
+  },
+  config,
+  canvasWidth: 1000,
+});
+approx(blockedVisualOffset, 2, 0.001, "Blocked fish does not grow tight-line visual offset");
+const slipVisual = new RodVisualOffsetSystem();
+const slipOffset = slipVisual.update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fightDebug: {
+    rodControlActive: true,
+    rodControlInputDirectionX: 1,
+    rodControlInputRatio: 1,
+    rodControlCouplingMode: "drag_slip",
+    rodControlVisualDrivenByInput: true,
+    rodControlMovePx: 0,
+  },
+  config,
+  canvasWidth: 1000,
+});
+assert(slipOffset > 0, "Drag-slip rod visual can move from input without moving fish");
+
+const coupling = new RodControlLineCouplingSystem();
+const tightCoupling = coupling.resolve({
+  rodControlActive: true,
+  lineCanRelease: false,
+  dragSlipping: false,
+  config: config.lineCoupling,
+});
+assert(
+  tightCoupling.mode === "tight_line" && tightCoupling.fishDrivesRodVisual,
+  "Tight line selects fish-driven visual coupling",
+);
+const slipCoupling = coupling.resolve({
+  rodControlActive: true,
+  lineCanRelease: true,
+  dragSlipping: true,
+  config: config.lineCoupling,
+});
+assert(
+  slipCoupling.mode === "drag_slip" && slipCoupling.inputDrivesRodVisual,
+  "Drag slip selects input-driven visual coupling",
+);
 approx(stableSecond.targetRodX, 0, 0.001, "Rod visual offset does not change stable target rod X");
 `, context);
 

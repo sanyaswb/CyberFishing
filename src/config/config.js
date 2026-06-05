@@ -505,7 +505,7 @@ const CONFIG = {
           valueGap: 6,
           valuePlacement: "center",
           valueFont: "bold 12px monospace",
-          valueColor: "#002d80",
+          valueColor: "#ffffff",
         },
 
         tension: {

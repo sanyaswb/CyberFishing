@@ -10,12 +10,15 @@ class RodLateralControlSystem {
     fishPosition,
     rodTipPosition,
     rodControlTargetPosition,
+    rod,
     rodLimitKg,
     maxTackleLoadKg,
     currentTensionKg,
     fishTensionKg,
     fishVelocityX,
     fishWeightKg,
+    lineCanRelease = false,
+    dragSlipping = false,
     config,
   } = {}) {
     const cfg = config || {};
@@ -35,15 +38,18 @@ class RodLateralControlSystem {
     const hasFish = this.#hasPoint(fishPosition);
     const fishX = this.#safeNumber(fishPosition?.x, 0);
     const fishY = this.#safeNumber(fishPosition?.y, 0);
+    const alignmentCfg = cfg.alignment || {};
+    const useActualRodPositionAsTarget =
+      alignmentCfg.useActualRodPositionAsTarget === true;
     const targetRodX = this.#resolveTargetRodX({
       rodControlTargetPosition,
       rodTipPosition,
+      useActualRodPositionAsTarget,
     });
     const rodY = this.#safeNumber(
       rodTipPosition?.y ?? rodControlTargetPosition?.y,
       0,
     );
-    const alignmentCfg = cfg.alignment || {};
     const minInitialOffsetPx = Math.max(
       0,
       this.#safeNumber(alignmentCfg.minInitialOffsetPx, 12),
@@ -52,9 +58,8 @@ class RodLateralControlSystem {
       0,
       this.#safeNumber(alignmentCfg.alignedThresholdPx, 8),
     );
-
     if (!active) {
-      this.reset();
+      this.#wasActive = false;
       const currentOffsetX = fishX - targetRodX;
       this.#result = this.#createResult({
         active: false,
@@ -83,6 +88,8 @@ class RodLateralControlSystem {
       this.#targetRodXOnStart = targetRodX;
       this.#initialOffsetX = fishX - this.#targetRodXOnStart;
       this.#wasActive = true;
+    } else if (useActualRodPositionAsTarget) {
+      this.#targetRodXOnStart = targetRodX;
     }
 
     const currentOffsetX = fishX - this.#targetRodXOnStart;
@@ -103,6 +110,7 @@ class RodLateralControlSystem {
       towardRodDirectionX,
       alignmentCfg,
     });
+    const freeRodMovement = !!lineCanRelease && !!dragSlipping;
     const geometricTransferRatio = this.#clamp01(
       inputRatio * angleRatio * directionFactor,
     );
@@ -126,9 +134,9 @@ class RodLateralControlSystem {
     const aligned =
       currentAbs <= alignedThresholdPx || towardRodDirectionX === 0;
     const hasEnoughInitialOffset = initialAbs >= minInitialOffsetPx;
-    const desiredMovePx = this.#resolveMovePx({
+    const moveFrame = this.#resolveMoveFrame({
       dtSec,
-      deliveredForceRatio,
+      forceKg: forceFrame.forceKg,
       currentAbs,
       alignedThresholdPx,
       config: cfg,
@@ -145,9 +153,10 @@ class RodLateralControlSystem {
     const canApply =
       deliveredForceRatio > 0 &&
       forceKg > 0 &&
-      desiredMovePx > 0 &&
+      moveFrame.desiredMovePx > 0 &&
       hasEnoughInitialOffset &&
-      !aligned;
+      !aligned &&
+      !freeRodMovement;
     const blockedReason = this.#resolveBlockedReason({
       active,
       hasFish,
@@ -163,7 +172,6 @@ class RodLateralControlSystem {
     });
     const playerTensionKg = canApply ? forceKg * tensionMultiplier : 0;
     const pixelsPerMeter = Math.max(1, this.#safeNumber(cfg.pixelsPerMeter, 50));
-
     this.#result = {
       active,
       canApply,
@@ -178,23 +186,30 @@ class RodLateralControlSystem {
       loadReserveRatio: forceFrame.loadReserveRatio,
       forceLimitKg: forceFrame.forceLimitKg,
       currentTensionKg: forceFrame.currentTensionKg,
+      potentialDeliveredForceRatio: deliveredForceRatio,
       deliveredForceRatio: canApply ? deliveredForceRatio : 0,
       forceKg: canApply ? forceKg : 0,
       playerTensionKg,
       tensionMultiplier,
-      desiredMovePx: canApply ? desiredMovePx : 0,
-      desiredMoveMeters: canApply ? desiredMovePx / pixelsPerMeter : 0,
+      desiredMovePx: canApply ? moveFrame.desiredMovePx : 0,
+      desiredMoveMeters: canApply
+        ? moveFrame.desiredMovePx / pixelsPerMeter
+        : 0,
       appliedMoveMeters: 0,
       appliedMovePx: 0,
       targetRodX: this.#targetRodXOnStart,
+      usesActualRodPositionAsTarget: useActualRodPositionAsTarget,
       initialOffsetX: this.#initialOffsetX,
       currentOffsetX,
       alignmentProgress,
       aligned,
       alignedThresholdPx,
       lineAngleDeg,
-      blockedReason,
-      visualRatio: inputRatio * angleRatio,
+      blockedReason: freeRodMovement ? "drag_slipping" : blockedReason,
+      maxPullSpeedMetersPerSecond:
+        moveFrame.maxPullSpeedMetersPerSecond,
+      freeRodMovement,
+      visualControlRatio: freeRodMovement ? inputRatio : deliveredForceRatio,
     };
     return this.#result;
   }
@@ -213,7 +228,10 @@ class RodLateralControlSystem {
       desiredMoveMeters > 0
         ? this.#clamp01(appliedMoveMeters / desiredMoveMeters)
         : 0;
-    const nextOffset = Number.isFinite(Number(currentFishX))
+    const nextOffset =
+      currentFishX !== null &&
+      currentFishX !== undefined &&
+      Number.isFinite(Number(currentFishX))
       ? Number(currentFishX) - this.#targetRodXOnStart
       : this.#result.currentOffsetX;
     const nextProgress = this.#calculateProgress({
@@ -224,9 +242,6 @@ class RodLateralControlSystem {
     this.#result.appliedMoveMeters = appliedMoveMeters;
     this.#result.appliedMovePx = Math.max(0, Number(movedPx) || 0);
     this.#result.actualMovementRatio = actualMovementRatio;
-    this.#result.deliveredForceRatio *= actualMovementRatio;
-    this.#result.forceKg *= actualMovementRatio;
-    this.#result.playerTensionKg *= actualMovementRatio;
     this.#result.currentOffsetX = nextOffset;
     this.#result.alignmentProgress = nextProgress;
     this.#result.aligned =
@@ -255,7 +270,17 @@ class RodLateralControlSystem {
     this.#result = this.#createResult();
   }
 
-  #resolveTargetRodX({ rodControlTargetPosition, rodTipPosition }) {
+  #resolveTargetRodX({
+    rodControlTargetPosition,
+    rodTipPosition,
+    useActualRodPositionAsTarget,
+  }) {
+    if (
+      useActualRodPositionAsTarget &&
+      Number.isFinite(Number(rodTipPosition?.x))
+    ) {
+      return Number(rodTipPosition.x);
+    }
     if (Number.isFinite(Number(rodControlTargetPosition?.x))) {
       return Number(rodControlTargetPosition.x);
     }
@@ -330,28 +355,41 @@ class RodLateralControlSystem {
     };
   }
 
-  #resolveMovePx({
+  #resolveMoveFrame({
     dtSec,
-    deliveredForceRatio,
+    forceKg,
     currentAbs,
     alignedThresholdPx,
     config,
   }) {
     const forceCfg = config.force || {};
-    const speedPxPerSecond = Math.max(
-      0,
-      this.#safeNumber(forceCfg.sideMovePxPerSecond, 50),
+    const waterCfg = config.water || {};
+    const pixelsPerMeter = Math.max(
+      1,
+      this.#safeNumber(config.pixelsPerMeter, 50),
     );
+    const resistance = Math.max(
+      0.000001,
+      this.#safeNumber(waterCfg.motionResistance, 1000),
+    );
+    const maxPullSpeedMetersPerSecond =
+      Math.sqrt(Math.max(0, this.#safeNumber(forceKg, 0)) / resistance) *
+      Math.max(0, this.#safeNumber(waterCfg.speedMultiplier, 64)) *
+      Math.max(0, this.#safeNumber(forceCfg.sidePullSpeedMultiplier, 1));
     const desired =
-      speedPxPerSecond *
+      maxPullSpeedMetersPerSecond *
+      pixelsPerMeter *
       Math.max(0, this.#safeNumber(dtSec, 0)) *
-      this.#clamp01(deliveredForceRatio);
+      1;
     const maxBeforeAlignment = Math.max(
       0,
       Math.max(0, this.#safeNumber(currentAbs, 0)) -
         Math.max(0, this.#safeNumber(alignedThresholdPx, 0)),
     );
-    return Math.min(desired, maxBeforeAlignment);
+    return {
+      desiredMovePx: Math.min(desired, maxBeforeAlignment),
+      maxPullSpeedMetersPerSecond,
+    };
   }
 
   #resolveTensionMultiplier({ controlDirectionX, fishVelocityX, config }) {
@@ -459,6 +497,7 @@ class RodLateralControlSystem {
       loadReserveRatio: 0,
       forceLimitKg: 0,
       currentTensionKg: 0,
+      potentialDeliveredForceRatio: 0,
       deliveredForceRatio: 0,
       forceKg: 0,
       playerTensionKg: 0,
@@ -468,7 +507,11 @@ class RodLateralControlSystem {
       appliedMoveMeters: 0,
       appliedMovePx: 0,
       actualMovementRatio: 0,
+      maxPullSpeedMetersPerSecond: 0,
+      freeRodMovement: false,
+      visualControlRatio: 0,
       targetRodX: 0,
+      usesActualRodPositionAsTarget: false,
       initialOffsetX: 0,
       currentOffsetX: 0,
       alignmentProgress: 0,
@@ -476,7 +519,6 @@ class RodLateralControlSystem {
       alignedThresholdPx: 0,
       lineAngleDeg: 0,
       blockedReason: "no_input",
-      visualRatio: 0,
       ...overrides,
     };
   }

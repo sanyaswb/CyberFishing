@@ -6,6 +6,7 @@ class FishForceSystem {
   #targetVelocity = new Vector2(0, 0);
   #playerForceSystem;
   #forceCalculator = new SimpleFightForceCalculator();
+  #holdOppositionResolver = new HoldOppositionResolver();
   #dragForceCalculator = new DragForceCalculator();
   #physicsConfig;
   #debug = {};
@@ -92,6 +93,11 @@ class FishForceSystem {
       opposition,
       directionConfig: this.#physicsConfig?.getDirectionForceConfig?.(),
     });
+    const holdOpposition = this.#holdOppositionResolver.resolve({
+      activeRodHoldKg,
+      fishDirectionState: directionInfo.name,
+      directionConfig: this.#physicsConfig?.getDirectionForceConfig?.(),
+    });
     const directionMultiplier = directionInfo.multiplier;
     const fishBasePower = this.#firstFiniteNumber(
       fishPhysics.forceProfile?.basePower,
@@ -148,7 +154,7 @@ class FishForceSystem {
     const yAwayRatio = this.#calculateYAwayRatio({ moveDir, awayDir });
     const fishWonForceKg = Math.max(
       0,
-      totalFishForceKg - Math.max(0, Number(activeRodHoldKg) || 0),
+      totalFishForceKg - holdOpposition.forceKg,
     );
 
     const staminaActivityMultiplier = this.#lerp(
@@ -174,7 +180,7 @@ class FishForceSystem {
     const modelVelocityY = moveDir.y * speedPxPerSec;
     const dragFrame = this.#dragForceCalculator.calculate({
       fishOppositionKg: totalFishForceKg,
-      effectiveRodHoldKg: activeRodHoldKg,
+      effectiveRodHoldKg: holdOpposition.forceKg,
       yAwayRatio,
       dragRatio: this.#clamp01(dragRatio),
       dragLimitKg: playerData.effectiveDragLimitKg,
@@ -194,6 +200,11 @@ class FishForceSystem {
       dragFrame.finalXSpeedPxPerSec,
       dragFrame.finalYSpeedPxPerSec,
     );
+    const fishOwnTowardSpeedMps =
+      directionInfo.name === "toward_player"
+        ? Math.hypot(this.#targetVelocity.x, this.#targetVelocity.y) /
+          pixelsPerMeter
+        : 0;
     const staminaPressureRatio =
       playerData.isPulling && dragFrame.fishWonYForceKg > 0
         ? this.#clamp01(dragFrame.dragBlockedForceKg / dragFrame.fishWonYForceKg)
@@ -219,6 +230,8 @@ class FishForceSystem {
       fishWonYForceKg: dragFrame.fishWonYForceKg,
       yAwayRatio: dragFrame.yAwayRatio,
       activeRodHoldKgForEscape: Math.max(0, Number(activeRodHoldKg) || 0),
+      escapeOpposingHoldKg: holdOpposition.forceKg,
+      holdOppositionRatio: holdOpposition.ratio,
       modelFishEscapeSpeedPxPerSec: speedPxPerSec,
       modelFishEscapeVelocityX: modelVelocityX,
       modelFishEscapeVelocityY: modelVelocityY,
@@ -241,6 +254,9 @@ class FishForceSystem {
       opposition,
       directionResistanceMultiplier: directionMultiplier,
       fishDirectionState: directionInfo.name,
+      fishOwnTowardSpeedMps,
+      escapeOpposingHoldKg: holdOpposition.forceKg,
+      holdOppositionRatio: holdOpposition.ratio,
       awayFromPlayerRatio,
       dragRatio: this.#clamp01(dragRatio),
       dragLimitKg: playerData.dragLimitKg,
@@ -274,6 +290,7 @@ class FishForceSystem {
       fishStateSpeedMultiplier: behaviorSpeedRatio,
       directionResistanceMultiplier: directionMultiplier,
       fishDirectionState: directionInfo.name,
+      fishOwnTowardSpeedMps,
       waterMotionResistance: waterConfig.motionResistance,
       waterSpeedMultiplier: waterConfig.speedMultiplier,
       totalFishForceKg,

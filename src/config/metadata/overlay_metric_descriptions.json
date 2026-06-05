@@ -99,8 +99,8 @@
     ]
   },
   "Net force": {
-    "formula": "fishWonForceKg = max(0, fishOppositionKg - effectiveRodHoldKg)",
-    "description": "Чиста різниця сил. >0 перемагає гравець, <0 перемагає риба.",
+    "formula": "retrieveNetForceKg = effectiveRodHoldKg - fishOppositionKg; escapeOpposingHoldKg is direction-aware and is calculated separately",
+    "description": "Чиста сила Rod Pull. Власний рух риби до гравця не віднімається і додається окремо.",
     "paths": [
       "DEBUG_DATA.effectiveRodHoldKg",
       "DEBUG_DATA.fishOppositionKg"
