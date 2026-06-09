@@ -272,6 +272,8 @@ class FishForceSystem {
       lastDash: lastDashDebug,
       lastDashActive: behavior.name === (lastDashDebug.stateName || "lastDash"),
       lastDashInZone: !!lastDashDebug.inZone,
+      lastDashBlockedByCatchZone:
+        !!lastDashDebug.blockedByCatchZone,
     };
 
     return {
@@ -347,6 +349,10 @@ class FishForceSystem {
 
   evaluateLastDashTrigger(context = {}) {
     return this.#fish.evaluateLastDashTrigger?.(context) || {};
+  }
+
+  handleFightEvent(event = {}) {
+    this.#fish.handleFightEvent?.(event);
   }
 
   #getCurrentVelocityPxPerSec(env, physics) {

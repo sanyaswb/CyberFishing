@@ -231,5 +231,47 @@ assert(
   "raw overload gains stress even when visible tension is capped at main limit",
 );
 
+const dragSlipMeter = new TackleStressSystem({
+  rod: { getEffectiveMaxLoadKg: () => 1 },
+  reel: { hasReel: () => true, getEffectiveMaxLoadKg: () => 1 },
+  lineSystem: { getEffectiveLineMaxLoadKg: () => 1 },
+  config: {
+    kgSmoothPerSecond: 100,
+    tackleStress: config,
+  },
+  rng: { next: () => 0.99 },
+});
+dragSlipMeter.updateTensionFrame({
+  visibleTensionKg: 0.6,
+  totalTensionKg: 0.6,
+  rawTotalTensionKg: 1.1,
+  rawTensionKg: 1.1,
+  fishTensionKg: 0.8,
+  tensionStressSource: "visible",
+  dtSec: 1,
+  tensionConfig: {
+    kgSmoothPerSecond: 100,
+    tackleStress: config,
+  },
+});
+approx(
+  dragSlipMeter.getDebugData().effectiveTensionKg,
+  0.6,
+  0.0001,
+  "successful drag slip uses visible tension for stress",
+);
+assert(
+  dragSlipMeter.getDebugData().stressRatio === 0,
+  "drag-clamped raw overload does not accumulate tackle stress",
+);
+assert(
+  !dragSlipMeter.isBroken(),
+  "drag-clamped raw overload does not break tackle",
+);
+assert(
+  dragSlipMeter.getDebugData().tensionStressSource === "visible",
+  "stress debug reports visible tension source",
+);
+
 console.log("Tackle stress failure checks passed: " + checks.length);
 `, context);

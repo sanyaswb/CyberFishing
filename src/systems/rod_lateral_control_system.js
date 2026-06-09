@@ -5,12 +5,19 @@ class RodLateralControlSystem {
     dtSec,
     inputState,
     fishPosition,
+    rodTipPosition,
+    baseRodTipPosition,
+    actualRodTipPosition,
     rodLimitKg,
     maxTackleLoadKg,
     currentTensionKg,
     fishTensionKg,
     fishVelocityX,
     fishWeightKg,
+    dragLimitKg,
+    dragLocked = true,
+    lineHasReserve = false,
+    hardLineLimit = false,
     config,
   } = {}) {
     const cfg = config || {};
@@ -20,56 +27,80 @@ class RodLateralControlSystem {
     }
 
     const active = !!inputState?.rodControlActive;
-    const directionX = active
+    const inputDirectionX = active
       ? Math.sign(this.#number(inputState?.rodControlDirectionX))
       : 0;
     const inputRatio = active
       ? this.#clamp01(inputState?.rodControlInputRatio)
       : 0;
     const hasFish = this.#hasPoint(fishPosition);
+    const targetFrame = this.#resolveTargetFrame({
+      inputDirectionX,
+      fishPosition,
+      rodTipPosition,
+      baseRodTipPosition,
+      actualRodTipPosition,
+      config: cfg,
+    });
+    const requestedForceRatio = this.#clamp01(
+      inputRatio * targetFrame.angleRatio * targetFrame.directionFactor,
+    );
+    const tensionMultiplier = this.#resolveTensionMultiplier({
+      controlDirectionX: targetFrame.directionX,
+      fishVelocityX,
+      config: cfg,
+    });
     const forceFrame = this.#resolveForceFrame({
-      inputRatio,
+      requestedForceRatio,
       rodLimitKg,
       maxTackleLoadKg,
       currentTensionKg,
       fishTensionKg,
       fishWeightKg,
+      tensionMultiplier,
+      dragLimitKg,
+      dragLocked,
+      lineHasReserve,
+      hardLineLimit,
       config: cfg,
     });
     const deliveredForceRatio = this.#clamp01(
-      inputRatio * forceFrame.loadReserveRatio,
+      requestedForceRatio * forceFrame.loadReserveRatio,
     );
     const forceKg = forceFrame.forceKg;
     const moveFrame = this.#resolveMoveFrame({
       dtSec,
       forceKg,
+      maxBeforeAlignmentMeters: targetFrame.maxBeforeAlignmentMeters,
       config: cfg,
     });
     const canApply =
       active &&
       hasFish &&
-      directionX !== 0 &&
+      targetFrame.directionX !== 0 &&
       inputRatio > 0 &&
-      forceFrame.loadReserveKg > 0 &&
+      targetFrame.directionFactor > 0 &&
+      targetFrame.angleRatio > 0 &&
+      !targetFrame.aligned &&
+      forceFrame.effectiveForceLimitKg > 0 &&
       forceKg > 0 &&
       moveFrame.desiredMoveMeters > 0;
-    const tensionMultiplier = this.#resolveTensionMultiplier({
-      controlDirectionX: directionX,
-      fishVelocityX,
-      config: cfg,
-    });
 
     this.#result = this.#createResult({
       active,
       canApply,
-      directionX,
-      inputDirectionX: directionX,
+      directionX: targetFrame.directionX,
+      inputDirectionX,
       inputRatio,
-      requestedForceRatio: inputRatio,
+      requestedForceRatio,
       loadReserveKg: forceFrame.loadReserveKg,
       loadReserveRatio: forceFrame.loadReserveRatio,
       forceLimitKg: forceFrame.forceLimitKg,
+      effectiveForceLimitKg: forceFrame.effectiveForceLimitKg,
       currentTensionKg: forceFrame.currentTensionKg,
+      dragLimited: forceFrame.dragLimited,
+      dragReserveKg: forceFrame.dragReserveKg,
+      canSlipDrag: forceFrame.canSlipDrag,
       deliveredForceRatio: canApply ? deliveredForceRatio : 0,
       forceKg: canApply ? forceKg : 0,
       playerTensionKg: canApply ? forceKg * tensionMultiplier : 0,
@@ -78,13 +109,25 @@ class RodLateralControlSystem {
       desiredMovePx: canApply ? moveFrame.desiredMovePx : 0,
       maxPullSpeedMetersPerSecond:
         moveFrame.maxPullSpeedMetersPerSecond,
-      visualControlRatio: inputRatio,
+      visualControlRatio: canApply ? deliveredForceRatio : 0,
+      targetRodX: active ? targetFrame.targetRodX : null,
+      targetRodY: active ? targetFrame.targetRodY : null,
+      targetMode: targetFrame.targetMode,
+      fishOffsetX: targetFrame.fishOffsetX,
+      lineAngleDeg: targetFrame.lineAngleDeg,
+      angleRatio: targetFrame.angleRatio,
+      directionFactor: targetFrame.directionFactor,
+      aligned: targetFrame.aligned,
+      maxBeforeAlignmentMeters: targetFrame.maxBeforeAlignmentMeters,
       blockedReason: this.#blockedReason({
         active,
         hasFish,
-        directionX,
+        inputDirectionX,
         inputRatio,
+        targetFrame,
         loadReserveKg: forceFrame.loadReserveKg,
+        effectiveForceLimitKg: forceFrame.effectiveForceLimitKg,
+        dragLimited: forceFrame.dragLimited,
         forceKg,
       }),
     });
@@ -113,13 +156,118 @@ class RodLateralControlSystem {
     this.#result = this.#createResult();
   }
 
+  #resolveTargetFrame({
+    inputDirectionX,
+    fishPosition,
+    rodTipPosition,
+    baseRodTipPosition,
+    actualRodTipPosition,
+    config,
+  }) {
+    const alignment = config.alignment || {};
+    const enabled = alignment.enabled !== false;
+    const pixelsPerMeter = Math.max(
+      1,
+      this.#number(config.pixelsPerMeter, 50),
+    );
+
+    if (!enabled) {
+      return {
+        enabled: false,
+        directionX: Math.sign(inputDirectionX) || 0,
+        directionFactor: Math.sign(inputDirectionX) === 0 ? 0 : 1,
+        angleRatio: Math.sign(inputDirectionX) === 0 ? 0 : 1,
+        lineAngleDeg: 0,
+        targetRodX: null,
+        targetRodY: null,
+        targetMode: "input_direction",
+        fishOffsetX: 0,
+        aligned: false,
+        maxBeforeAlignmentMeters: Number.POSITIVE_INFINITY,
+      };
+    }
+
+    const useActual = alignment.useActualRodPositionAsTarget !== false;
+    const targetPoint = useActual
+      ? (actualRodTipPosition || rodTipPosition || baseRodTipPosition)
+      : (baseRodTipPosition || rodTipPosition || actualRodTipPosition);
+    if (!this.#hasPoint(fishPosition) || !this.#hasPoint(targetPoint)) {
+      return {
+        enabled: true,
+        directionX: 0,
+        directionFactor: 0,
+        angleRatio: 0,
+        lineAngleDeg: 0,
+        targetRodX: this.#number(targetPoint?.x, 0),
+        targetRodY: this.#number(targetPoint?.y, 0),
+        targetMode: useActual ? "actual_rod" : "base_rod",
+        fishOffsetX: 0,
+        aligned: false,
+        maxBeforeAlignmentMeters: 0,
+      };
+    }
+
+    const targetRodX = this.#number(targetPoint.x);
+    const targetRodY = this.#number(targetPoint.y);
+    const fishX = this.#number(fishPosition.x);
+    const fishY = this.#number(fishPosition.y);
+    const fishOffsetX = fishX - targetRodX;
+    const absOffsetX = Math.abs(fishOffsetX);
+    const alignedThresholdPx = Math.max(
+      0,
+      this.#number(alignment.alignedThresholdPx, 8),
+    );
+    const aligned = absOffsetX <= alignedThresholdPx;
+    const towardRodDirectionX = aligned ? 0 : -Math.sign(fishOffsetX);
+    const inputDir = Math.sign(inputDirectionX) || 0;
+    const maxEffectiveAngleDeg = Math.max(
+      0.000001,
+      this.#number(alignment.maxEffectiveAngleDeg, 45),
+    );
+    const dy = Math.abs(targetRodY - fishY);
+    const lineAngleDeg = Math.atan2(absOffsetX, Math.max(1, dy)) * 180 / Math.PI;
+    const angleRatio = aligned
+      ? 0
+      : this.#clamp01(lineAngleDeg / maxEffectiveAngleDeg);
+    let directionFactor = 0;
+    if (!aligned && inputDir !== 0) {
+      if (inputDir === towardRodDirectionX) {
+        directionFactor = 1;
+      } else if (alignment.allowAwayDirection === true) {
+        directionFactor = this.#clamp01(alignment.awayDirectionMultiplier);
+      }
+    }
+
+    return {
+      enabled: true,
+      directionX: towardRodDirectionX,
+      directionFactor,
+      angleRatio,
+      lineAngleDeg,
+      targetRodX,
+      targetRodY,
+      targetMode: useActual ? "actual_rod" : "base_rod",
+      fishOffsetX,
+      aligned,
+      maxBeforeAlignmentMeters: Math.max(
+        0,
+        (absOffsetX - alignedThresholdPx) / pixelsPerMeter,
+      ),
+    };
+  }
+
   #resolveForceFrame({
-    inputRatio,
+    requestedForceRatio,
     rodLimitKg,
     maxTackleLoadKg,
     currentTensionKg,
     fishTensionKg,
     fishWeightKg,
+    tensionMultiplier,
+    dragLimitKg,
+    dragLocked,
+    lineHasReserve,
+    hardLineLimit,
     config,
   }) {
     const forceCfg = config.force || {};
@@ -143,8 +291,30 @@ class RodLateralControlSystem {
       tackleLimitKg - resolvedCurrentTensionKg,
     );
     const forceLimitKg = Math.min(maxForceKg, loadReserveKg);
+    const canSlipDrag =
+      !dragLocked &&
+      !!lineHasReserve &&
+      !hardLineLimit;
+    const resolvedDragLimitKg = Math.max(
+      0,
+      this.#number(dragLimitKg),
+    );
+    const dragReserveKg = canSlipDrag
+      ? Math.max(0, resolvedDragLimitKg - resolvedCurrentTensionKg)
+      : loadReserveKg;
+    const effectiveTensionReserveKg = canSlipDrag
+      ? Math.min(loadReserveKg, dragReserveKg)
+      : loadReserveKg;
+    const tensionScale = Math.max(
+      1,
+      this.#number(tensionMultiplier, 1),
+    );
+    const effectiveForceLimitKg = Math.min(
+      maxForceKg,
+      effectiveTensionReserveKg / tensionScale,
+    );
     const loadReserveRatio = maxForceKg > 0
-      ? this.#clamp01(forceLimitKg / maxForceKg)
+      ? this.#clamp01(effectiveForceLimitKg / maxForceKg)
       : 0;
     const weightResistance = Math.max(
       0.25,
@@ -160,12 +330,18 @@ class RodLateralControlSystem {
       loadReserveKg,
       loadReserveRatio,
       forceLimitKg,
+      effectiveForceLimitKg,
+      dragLimited: canSlipDrag && effectiveForceLimitKg < forceLimitKg,
+      dragReserveKg,
+      canSlipDrag,
       forceKg:
-        forceLimitKg * this.#clamp01(inputRatio) / weightResistance,
+        effectiveForceLimitKg *
+        this.#clamp01(requestedForceRatio) /
+        weightResistance,
     };
   }
 
-  #resolveMoveFrame({ dtSec, forceKg, config }) {
+  #resolveMoveFrame({ dtSec, forceKg, maxBeforeAlignmentMeters, config }) {
     const forceCfg = config.force || {};
     const waterCfg = config.water || {};
     const pixelsPerMeter = Math.max(
@@ -183,9 +359,13 @@ class RodLateralControlSystem {
         0,
         this.#number(forceCfg.sidePullSpeedMultiplier, 1),
       );
-    const desiredMoveMeters =
+    const rawDesiredMoveMeters =
       maxPullSpeedMetersPerSecond *
       Math.max(0, this.#number(dtSec));
+    const alignmentLimit = Number.isFinite(Number(maxBeforeAlignmentMeters))
+      ? Math.max(0, Number(maxBeforeAlignmentMeters) || 0)
+      : rawDesiredMoveMeters;
+    const desiredMoveMeters = Math.min(rawDesiredMoveMeters, alignmentLimit);
     return {
       desiredMoveMeters,
       desiredMovePx: desiredMoveMeters * pixelsPerMeter,
@@ -214,15 +394,22 @@ class RodLateralControlSystem {
   #blockedReason({
     active,
     hasFish,
-    directionX,
+    inputDirectionX,
     inputRatio,
+    targetFrame,
     loadReserveKg,
+    effectiveForceLimitKg,
+    dragLimited,
     forceKg,
   }) {
     if (!active) return "no_input";
     if (!hasFish) return "no_fish";
-    if (directionX === 0 || inputRatio <= 0) return "dead_zone";
+    if (inputDirectionX === 0 || inputRatio <= 0) return "dead_zone";
+    if (targetFrame.aligned) return "aligned";
+    if (targetFrame.directionFactor <= 0) return "wrong_direction";
+    if (targetFrame.angleRatio <= 0) return "angle_too_small";
     if (loadReserveKg <= 0) return "no_load_reserve";
+    if (dragLimited && effectiveForceLimitKg <= 0) return "drag_limit_reached";
     if (forceKg <= 0) return "no_force";
     return "none";
   }
@@ -246,7 +433,11 @@ class RodLateralControlSystem {
       loadReserveKg: 0,
       loadReserveRatio: 0,
       forceLimitKg: 0,
+      effectiveForceLimitKg: 0,
       currentTensionKg: 0,
+      dragLimited: false,
+      dragReserveKg: 0,
+      canSlipDrag: false,
       deliveredForceRatio: 0,
       forceKg: 0,
       playerTensionKg: 0,
@@ -258,6 +449,15 @@ class RodLateralControlSystem {
       actualMovementRatio: 0,
       maxPullSpeedMetersPerSecond: 0,
       visualControlRatio: 0,
+      targetRodX: null,
+      targetRodY: null,
+      targetMode: "input_direction",
+      fishOffsetX: 0,
+      lineAngleDeg: 0,
+      angleRatio: 0,
+      directionFactor: 0,
+      aligned: false,
+      maxBeforeAlignmentMeters: 0,
       blockedReason: "no_input",
       ...overrides,
     };

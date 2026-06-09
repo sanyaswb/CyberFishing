@@ -642,5 +642,101 @@
   "physics.fight.reelHold.strokeToleranceMeters": {
     "label": "Reel hold stroke tolerance",
     "description": "Meter tolerance used to decide that rod stroke is effectively full."
+  },
+  "physics.fight.rodControl.alignment.enabled": {
+    "label": "Rod Control target alignment",
+    "description": "When enabled, lateral control pulls fish toward the selected rod X target instead of moving endlessly by input direction."
+  },
+  "physics.fight.rodControl.alignment.useActualRodPositionAsTarget": {
+    "label": "Use actual visual rod target",
+    "description": "If enabled, Rod Control aligns fish to the current visual rod X. If disabled, it aligns to the stable base rod X."
+  },
+  "physics.fight.rodControl.alignment.maxEffectiveAngleDeg": {
+    "label": "Rod Control max effective angle",
+    "description": "Line angle in degrees where lateral control reaches full geometric efficiency."
+  },
+  "physics.fight.rodControl.alignment.alignedThresholdPx": {
+    "label": "Rod Control aligned threshold",
+    "description": "Fish-to-rod X distance in pixels treated as already aligned."
+  },
+  "physics.fight.rodControl.alignment.allowAwayDirection": {
+    "label": "Allow away Rod Control direction",
+    "description": "Allows reduced force when the player moves the rod away from the alignment target."
+  },
+  "physics.fight.rodControl.alignment.awayDirectionMultiplier": {
+    "label": "Away direction force multiplier",
+    "description": "Force multiplier used when away-direction Rod Control is allowed."
+  },
+  "physics.fight.rodControl.rodVisual.tightLineFollowsAppliedFish": {
+    "label": "Tight-line rod follows fish movement",
+    "description": "When line is tight, the visual rod moves only from actual Rod Control fish displacement instead of raw input."
+  },
+  "physics.fight.rodControl.rodVisual.followFishMovementRatio": {
+    "label": "Rod visual follow-fish ratio",
+    "description": "How much visual rod offset is added from actual lateral fish movement in tight-line mode."
+  },
+  "physics.fight.rodControl.rodVisual.freeLineUsesInputDrivenVisual": {
+    "label": "Free-line visual follows input",
+    "description": "When drag slip releases line, visual rod movement can follow input instead of actual fish movement."
+  },
+  "physics.fight.rodControl.rodVisual.freeLineResponsiveness": {
+    "label": "Free-line visual responsiveness",
+    "description": "Smoothing speed for input-driven visual rod movement while line is slipping/released."
+  },
+  "physics.fight.rodControl.rodAim.enabled": {
+    "label": "Rod Aim enabled",
+    "description": "Allows horizontal rod aim offset to be controlled independently from fish movement."
+  },
+  "physics.fight.rodControl.rodAim.maxOffsetScreenRatio": {
+    "label": "Rod Aim max screen offset",
+    "description": "Maximum horizontal rod aim offset as a ratio of screen width."
+  },
+  "physics.fight.rodControl.rodAim.fallbackMaxOffsetPx": {
+    "label": "Rod Aim fallback max offset",
+    "description": "Minimum fallback horizontal rod aim offset in pixels."
+  },
+  "physics.fight.rodControl.rodAim.baseAimSpeedPxPerSecond": {
+    "label": "Rod Aim base speed",
+    "description": "Base speed for moving the rod aim horizontally before weight, line and load multipliers."
+  },
+  "physics.fight.rodControl.rodAim.fishLoadMinSpeedRatio": {
+    "label": "Rod Aim min fish-load speed",
+    "description": "Minimum horizontal rod aim speed ratio when the fish effective load is at or above the rod/tackle load limit."
+  },
+  "physics.fight.rodControl.rodAim.fishLoadMaxSpeedRatio": {
+    "label": "Rod Aim max fish-load speed",
+    "description": "Maximum horizontal rod aim speed ratio for very light fish relative to the rod/tackle load limit."
+  },
+  "physics.fight.rodControl.rodAim.fishLoadCurvePower": {
+    "label": "Rod Aim fish-load curve",
+    "description": "Non-linear curve power for converting fish load ratio into horizontal rod aim speed."
+  },
+  "physics.fight.rodControl.rodAim.tightLineAimMultiplier": {
+    "label": "Rod Aim tight-line speed",
+    "description": "Speed multiplier for horizontal rod aim movement when the line is tight or fully extended."
+  },
+  "physics.fight.rodControl.rodAim.freeLineAimMultiplier": {
+    "label": "Rod Aim free-line speed",
+    "description": "Speed multiplier for horizontal rod aim movement when line reserve is available."
+  },
+  "physics.fight.rodControl.rodAim.dragSlipAimMultiplier": {
+    "label": "Rod Aim drag-slip speed",
+    "description": "Speed multiplier for horizontal rod aim movement while drag slip releases line."
+  },
+  "physics.fight.rodControl.rodAim.minimumLoadSpeedRatio": {
+    "label": "Rod Aim minimum load speed",
+    "description": "Minimum rod aim speed ratio when load reserve is low."
+  },
+  "physics.fight.rodControl.rodAim.returnSpeedMultiplier": {
+    "label": "Rod Aim return speed",
+    "description": "Speed multiplier used when horizontal rod aim returns toward center after input release."
+  },
+  "physics.fight.rodControl.rodAim.edgePaddingPx": {
+    "label": "Rod Aim edge padding",
+    "description": "Padding from screen or playable-zone edges for horizontal rod aim."
+  },
+  "physics.fight.rodControl.rodAim.clampToPlayableZone": {
+    "label": "Rod Aim clamp to playable zone",
+    "description": "Prevents horizontal rod aim from leaving the playable map zone when enabled."
   }
 }

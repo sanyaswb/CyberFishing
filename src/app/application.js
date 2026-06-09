@@ -112,7 +112,26 @@ class GameViewportFacade {
         visualFrame.atLimit || fightDebug.rodVisualClamped;
       fightDebug.rodVisualTargetOffsetX = visualFrame.targetOffsetPx;
       fightDebug.rodVisualWeightSpeedRatio = visualFrame.weightSpeedRatio;
+      fightDebug.rodAimWeightSpeedRatio = visualFrame.weightSpeedRatio;
+      fightDebug.rodAimFishLoadRatio = visualFrame.weightLoadRatio;
+      fightDebug.rodAimEffectiveFishLoadKg = visualFrame.effectiveFishLoadKg;
+      fightDebug.rodAimLoadLimitKg = visualFrame.weightLoadLimitKg;
+      fightDebug.rodAimWeightCurvePower = visualFrame.weightCurvePower;
+      fightDebug.rodAimWeightMinSpeedRatio = visualFrame.weightSpeedMinRatio;
+      fightDebug.rodAimWeightMaxSpeedRatio = visualFrame.weightSpeedMaxRatio;
+      fightDebug.rodAimLoadSpeedRatio = visualFrame.loadSpeedRatio;
+      fightDebug.rodAimLineSpeedRatio = visualFrame.lineSpeedRatio;
+      fightDebug.rodAimDirectionSpeedRatio = visualFrame.directionSpeedRatio;
+      fightDebug.rodAimDirectionSpeedMode = visualFrame.directionSpeedMode;
+      fightDebug.rodAimFishMoveX = visualFrame.fishMoveX;
+      fightDebug.rodAimFishDirectionX = visualFrame.fishMoveDirectionX;
+      fightDebug.rodAimWithFishDirection = visualFrame.withFishDirection;
+      fightDebug.rodAimSpeedPxPerSecond = visualFrame.aimSpeedPxPerSecond;
+      fightDebug.rodAimLineMode = visualFrame.lineMode;
       fightDebug.rodControlVisualDrivenByInput = visualFrame.drivenByInput;
+      fightDebug.rodControlVisualDrivenByFish = visualFrame.drivenByFish;
+      fightDebug.rodControlVisualMode = visualFrame.mode;
+      fightDebug.rodControlFreeLineVisualMode = visualFrame.freeLineMode;
     }
   }
 

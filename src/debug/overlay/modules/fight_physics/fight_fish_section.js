@@ -16,6 +16,9 @@ class FightFishSection extends FightSectionBase {
       this.row("Active rod hold", f.kg(d.activeRodHoldKgForEscape, 3), "#73c2fb"),
       this.row("Hold opposition ratio", f.percent(d.holdOppositionRatio, 1), "#73c2fb"),
       this.row("Escape opposing hold", f.kg(d.escapeOpposingHoldKg, 3), "#ffaa00"),
+      this.row("Last dash active", d.lastDashActive ? "yes" : "no", d.lastDashActive ? "#ff5cf4" : "#8a9bac"),
+      this.row("Last dash trigger zone", d.lastDashInZone ? "inside" : "outside", d.lastDashInZone ? "#ff5cf4" : "#8a9bac"),
+      this.row("Last dash catch block", d.lastDashBlockedByCatchZone ? "blocked" : "ready", d.lastDashBlockedByCatchZone ? "#ffaa00" : "#8a9bac"),
     ];
   }
 }

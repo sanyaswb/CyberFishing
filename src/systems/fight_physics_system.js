@@ -12,6 +12,7 @@ class FightPhysicsSystem {
   #landingLiftCalculator = new LandingLiftTensionCalculator();
   #pipeline = new FightPhysicsPipeline();
   #fishRetrieveSystem;
+  #fishWasInCatchZone = false;
   #landingLiftHoldKg = 0;
   #holdReelRecoverState = {
     eligible: false,
@@ -41,6 +42,7 @@ class FightPhysicsSystem {
     env,
     checkWater,
     rodTipPosition,
+    actualRodTipPosition,
     rod,
     reel,
     fishForceSystem,
@@ -136,14 +138,17 @@ class FightPhysicsSystem {
       input,
       floatEntity,
       rodTipPosition,
+      actualRodTipPosition,
       lineSystem,
       rodControlSystem,
       forceData,
+      dragContext,
       stressSystem,
       bounds,
       checkWater,
       maxTackleLoadKg,
       rodLimitKg,
+      lineState: rodPullFrame.lineStateAfterPull,
     }),
     );
     const lineStateAfterControl =
@@ -356,6 +361,17 @@ class FightPhysicsSystem {
       config: this.#config,
       lineDistanceMeters: lineState.distanceMeters,
     });
+    const inCatchZone =
+      landingDistanceMeters > 0 &&
+      lineState.distanceMeters <= landingDistanceMeters + 0.001;
+    if (inCatchZone && !this.#fishWasInCatchZone) {
+      fishForceSystem.handleFightEvent?.({
+        type: FISH_FIGHT_EVENT.CATCH_ZONE_ENTERED,
+        lineDistanceMeters: lineState.distanceMeters,
+        landingDistanceMeters,
+      });
+    }
+    this.#fishWasInCatchZone = inCatchZone;
     fishForceSystem.evaluateLastDashTrigger?.({
       dtMs,
       lineDistanceMeters: lineState.distanceMeters,
@@ -698,14 +714,17 @@ class FightPhysicsSystem {
     input,
     floatEntity,
     rodTipPosition,
+    actualRodTipPosition,
     lineSystem,
     rodControlSystem,
     forceData,
+    dragContext,
     stressSystem,
     bounds,
     checkWater,
     maxTackleLoadKg,
     rodLimitKg,
+    lineState,
   }) {
     if (!rodControlSystem?.update) {
       return {
@@ -722,6 +741,14 @@ class FightPhysicsSystem {
 
     const config = this.#physicsConfig?.getRodControlConfig?.() || {};
     const fishPosition = floatEntity.getPosition();
+    const currentLineState = lineState || lineSystem.updateDistance(
+      fishPosition,
+      rodTipPosition,
+    );
+    const lineHasReserve = this.#lineHasReserve(currentLineState);
+    const hardLineLimit =
+      !!currentLineState?.isFullyExtended ||
+      !lineHasReserve;
     const currentTensionKg = Math.max(
       0,
       Number(stressSystem?.getTensionKg?.()) ||
@@ -732,23 +759,38 @@ class FightPhysicsSystem {
       dtSec,
       inputState: input,
       fishPosition,
+      rodTipPosition,
+      baseRodTipPosition: rodTipPosition,
+      actualRodTipPosition,
       rodLimitKg,
       maxTackleLoadKg,
       currentTensionKg,
       fishTensionKg: forceData?.fishTensionKg,
       fishVelocityX: forceData?.targetVelocity?.x,
       fishWeightKg: forceData?.fishWeightKg,
+      dragLimitKg: dragContext?.effectiveDragLimitKg,
+      dragLocked: dragContext?.dragLocked !== false,
+      lineHasReserve,
+      hardLineLimit,
       config,
     });
     const desiredSignedMoveMeters =
       (Number(rodControlResult.directionX) || 0) *
       Math.max(0, Number(rodControlResult.desiredMoveMeters) || 0);
-    const smoothedSignedMoveMeters = this.#smoothPlayerPullAxis({
+    const rawSmoothedSignedMoveMeters = this.#smoothPlayerPullAxis({
       axis: "x",
       desiredMoveMeters: rodControlResult.canApply
         ? desiredSignedMoveMeters
         : 0,
       dtSec,
+    });
+    const smoothedSignedMoveMeters = this.#limitRodControlMoveTowardTarget({
+      signedMoveMeters: rawSmoothedSignedMoveMeters,
+      fishPosition,
+      rodControlResult,
+      pixelsPerMeter:
+        this.#physicsConfig?.getPixelsPerMeter?.() ||
+        50,
     });
     const allowedMoveMeters = Math.abs(smoothedSignedMoveMeters);
     const movement = this.#applyRodControlMovement({
@@ -799,7 +841,11 @@ class FightPhysicsSystem {
       loadReserveKg: 0,
       loadReserveRatio: 0,
       forceLimitKg: 0,
+      effectiveForceLimitKg: 0,
       currentTensionKg: 0,
+      dragLimited: false,
+      dragReserveKg: 0,
+      canSlipDrag: false,
       deliveredForceRatio: 0,
       playerTensionKg: 0,
       tensionMultiplier: 0,
@@ -810,6 +856,14 @@ class FightPhysicsSystem {
       actualMovementRatio: 0,
       maxPullSpeedMetersPerSecond: 0,
       visualControlRatio: 0,
+      targetRodX: null,
+      targetRodY: null,
+      targetMode: "input_direction",
+      fishOffsetX: 0,
+      lineAngleDeg: 0,
+      angleRatio: 0,
+      directionFactor: 0,
+      aligned: false,
       blockedReason,
       phase: "inactive",
       allowedMoveMeters: 0,
@@ -859,12 +913,22 @@ class FightPhysicsSystem {
     };
 
     if (typeof stressSystem.updateTensionFrame === "function") {
+      const lineHasReserve = this.#lineHasReserve(lineState);
+      const canSlipDrag =
+        !dragContext.dragLocked &&
+        lineHasReserve &&
+        !hardLineLimit;
+      const tensionStressSource =
+        canSlipDrag && tensionResult.shouldSlipDrag
+          ? "visible"
+          : "raw";
       stressSystem.updateTensionFrame({
         visibleTensionKg: tensionResult.tensionKg,
         totalTensionKg: tensionResult.totalTensionKg,
         rawTotalTensionKg: tensionResult.rawTotalTensionKg,
         rawTensionKg: tensionResult.rawTensionKg,
         fishTensionKg: tensionResult.fishTensionKg,
+        tensionStressSource,
         dtSec,
         tensionConfig:
           this.#physicsConfig?.getTensionConfig?.() ||
@@ -1405,10 +1469,22 @@ class FightPhysicsSystem {
       rodControlLoadReserveKg: rodControlResult?.loadReserveKg ?? 0,
       rodControlLoadReserveRatio: rodControlResult?.loadReserveRatio ?? 0,
       rodControlForceLimitKg: rodControlResult?.forceLimitKg ?? 0,
+      rodControlEffectiveForceLimitKg:
+        rodControlResult?.effectiveForceLimitKg ?? 0,
+      rodControlDragLimited: !!rodControlResult?.dragLimited,
+      rodControlDragReserveKg: rodControlResult?.dragReserveKg ?? 0,
+      rodControlCanSlipDrag: !!rodControlResult?.canSlipDrag,
       rodControlDeliveredForceRatio:
         rodControlResult?.deliveredForceRatio ?? 0,
       rodControlActualMovementRatio:
         rodControlResult?.actualMovementRatio ?? 0,
+      rodControlTargetMode: rodControlResult?.targetMode || "input_direction",
+      rodControlTargetRodX: rodControlResult?.targetRodX ?? null,
+      rodControlFishOffsetX: rodControlResult?.fishOffsetX ?? 0,
+      rodControlLineAngleDeg: rodControlResult?.lineAngleDeg ?? 0,
+      rodControlAngleRatio: rodControlResult?.angleRatio ?? 0,
+      rodControlDirectionFactor: rodControlResult?.directionFactor ?? 0,
+      rodControlAligned: !!rodControlResult?.aligned,
       rodControlMaxPullSpeedMps:
         rodControlResult?.maxPullSpeedMetersPerSecond ?? 0,
       rodControlPhase:
@@ -1578,6 +1654,36 @@ class FightPhysicsSystem {
       deltaTime: dtSec,
       config,
     }).move;
+  }
+
+
+  #limitRodControlMoveTowardTarget({
+    signedMoveMeters,
+    fishPosition,
+    rodControlResult,
+    pixelsPerMeter,
+  }) {
+    const move = Number(signedMoveMeters) || 0;
+    if (move === 0) return 0;
+    if (rodControlResult?.active !== true) return move;
+    const rawTargetX = rodControlResult?.targetRodX;
+    if (rawTargetX === null || rawTargetX === undefined) return move;
+    const targetX = Number(rawTargetX);
+    if (!Number.isFinite(targetX)) return move;
+    const fishX = Number(fishPosition?.x);
+    if (!Number.isFinite(fishX)) return move;
+
+    const direction = Math.sign(move);
+    const distancePx = Math.abs(targetX - fishX);
+    const thresholdPx = 0.001;
+    if (distancePx <= thresholdPx) return 0;
+
+    const towardTarget = Math.sign(targetX - fishX);
+    if (towardTarget !== 0 && direction !== towardTarget) return 0;
+
+    const scale = Math.max(1, Number(pixelsPerMeter) || 50);
+    const maxMoveMeters = distancePx / scale;
+    return direction * Math.min(Math.abs(move), maxMoveMeters);
   }
 
   #applyRodPullMovement({

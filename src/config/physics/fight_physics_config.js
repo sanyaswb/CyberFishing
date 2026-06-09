@@ -44,6 +44,15 @@ const FIGHT_PHYSICS_CONFIG = {
       keyboardRampDownSeconds: 0.18,
     },
 
+    alignment: {
+      enabled: true,
+      useActualRodPositionAsTarget: true,
+      maxEffectiveAngleDeg: 45,
+      alignedThresholdPx: 8,
+      allowAwayDirection: false,
+      awayDirectionMultiplier: 0,
+    },
+
     force: {
       maxForceKg: 0.22,
       sidePullSpeedMultiplier: 1.0,
@@ -56,6 +65,23 @@ const FIGHT_PHYSICS_CONFIG = {
       oppositeDirectionMultiplier: 2.5,
     },
 
+    rodAim: {
+      enabled: true,
+      maxOffsetScreenRatio: 0.02,
+      fallbackMaxOffsetPx: 40,
+      baseAimSpeedPxPerSecond: 100,
+      fishLoadMinSpeedRatio: 0.3,
+      fishLoadMaxSpeedRatio: 1.5,
+      fishLoadCurvePower: 1.0,
+      tightLineAimMultiplier: 0.35,
+      freeLineAimMultiplier: 1.0,
+      dragSlipAimMultiplier: 1.3,
+      minimumLoadSpeedRatio: 0.35,
+      returnSpeedMultiplier: 1.5,
+      edgePaddingPx: 16,
+      clampToPlayableZone: true,
+    },
+
     rodVisual: {
       maxOffsetScreenRatio: 0.05,
       fallbackMaxOffsetPx: 55,
@@ -63,6 +89,10 @@ const FIGHT_PHYSICS_CONFIG = {
       returnResponsiveness: 5,
       edgePaddingPx: 16,
       clampToPlayableZone: true,
+      tightLineFollowsAppliedFish: true,
+      followFishMovementRatio: 1.0,
+      freeLineUsesInputDrivenVisual: true,
+      freeLineResponsiveness: 10,
       weightSpeed: {
         fullSpeedMaxWeightRatio: 0.3,
         minimumSpeedWeightRatio: 1.0,

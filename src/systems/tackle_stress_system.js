@@ -9,6 +9,7 @@ class TackleStressSystem {
   #currentTensionKg = 0;
   #targetTensionKg = 0;
   #effectiveTensionKg = 0;
+  #tensionStressSource = "raw";
   #tensionRatio = 0;
   #tensionPercent = 0;
   #pulsePhase = 0;
@@ -63,6 +64,7 @@ class TackleStressSystem {
     rawTotalTensionKg,
     rawTensionKg,
     fishTensionKg,
+    tensionStressSource = "raw",
     dtSec,
     tensionConfig,
   } = {}) {
@@ -80,12 +82,19 @@ class TackleStressSystem {
     this.#refreshRatios();
 
     const stressConfig = this.#resolveTackleStressConfig(config);
-    this.#effectiveTensionKg = Math.max(
-      this.#safeNumber(totalTensionKg, this.#targetTensionKg),
-      this.#safeNumber(rawTotalTensionKg, 0),
-      this.#safeNumber(rawTensionKg, 0),
-      this.#safeNumber(fishTensionKg, 0),
-    );
+    this.#tensionStressSource =
+      tensionStressSource === "visible" ? "visible" : "raw";
+    this.#effectiveTensionKg = this.#tensionStressSource === "visible"
+      ? Math.max(
+          this.#targetTensionKg,
+          this.#safeNumber(totalTensionKg, this.#targetTensionKg),
+        )
+      : Math.max(
+          this.#safeNumber(totalTensionKg, this.#targetTensionKg),
+          this.#safeNumber(rawTotalTensionKg, 0),
+          this.#safeNumber(rawTensionKg, 0),
+          this.#safeNumber(fishTensionKg, 0),
+        );
     this.#selectedFailureComponent = this.#selectFailureComponent();
 
     if (stressConfig.enabled !== false) {
@@ -131,6 +140,7 @@ class TackleStressSystem {
       visibleTensionKg: this.#currentTensionKg,
       currentTensionKg: this.#currentTensionKg,
       effectiveTensionKg: this.#effectiveTensionKg,
+      tensionStressSource: this.#tensionStressSource,
       maxTackleLoadKg: this.getEffectiveMaxTackleLoadKg(),
       mainTackleLimitKg: this.getEffectiveMaxTackleLoadKg(),
       rodMaxLoadKg: this.getEffectiveRodMaxLoadKg(),
@@ -275,6 +285,7 @@ class TackleStressSystem {
     this.#currentTensionKg = 0;
     this.#targetTensionKg = 0;
     this.#effectiveTensionKg = 0;
+    this.#tensionStressSource = "raw";
     this.#isBroken = false;
     this.#breakReason = null;
     this.#breakInfo = null;

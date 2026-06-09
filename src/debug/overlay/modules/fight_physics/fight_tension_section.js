@@ -13,6 +13,7 @@ class FightTensionSection extends FightSectionBase {
       this.row("Line stress", f.percent(d.lineStressRatio, 1), f.stressColor(d.lineStressRatio)),
       this.row("Hook stress", f.percent(d.hookStressRatio, 1), f.stressColor(d.hookStressRatio)),
       this.row("Effective tension", f.kg(d.effectiveTensionKg, 3), "#ffaa00"),
+      this.row("Stress tension source", d.tensionStressSource || "raw", d.tensionStressSource === "visible" ? "#00ff80" : "#ffaa00"),
       this.row("Main tackle limit", f.kg(d.mainTackleLimitKg, 3), "#8a9bac"),
       this.row("Overload", f.kg(d.overloadKg, 3), Number(d.overloadKg) > 0 ? "#ff8888" : "#8a9bac"),
       this.row("Stress overloaded", d.stressWasOverloaded ? "yes" : "no", d.stressWasOverloaded ? "#ff8888" : "#8a9bac"),

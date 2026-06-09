@@ -12,7 +12,8 @@ class RodVisualOffsetSystem {
   } = {}) {
     const cfg = config || {};
     const visualCfg = cfg.rodVisual || {};
-    const enabled = cfg.enabled !== false;
+    const aimCfg = cfg.rodAim || {};
+    const enabled = cfg.enabled !== false && aimCfg.enabled !== false;
     const active = enabled && !!inputState?.rodControlActive;
     const direction = active
       ? Math.sign(Number(inputState?.rodControlDirectionX) || 0)
@@ -22,32 +23,82 @@ class RodVisualOffsetSystem {
       : 0;
     const width = Math.max(0, Number(canvasWidth) || 0);
     const maxOffsetPx = Math.max(
-      Number(visualCfg.fallbackMaxOffsetPx) || 55,
+      Number(aimCfg.fallbackMaxOffsetPx) ||
+        Number(visualCfg.fallbackMaxOffsetPx) ||
+        55,
       width * Math.max(
         0,
-        Number(visualCfg.maxOffsetScreenRatio) || 0.05,
+        Number(aimCfg.maxOffsetScreenRatio) ||
+          Number(visualCfg.maxOffsetScreenRatio) ||
+          0.05,
       ),
     );
-    const weightSpeedRatio = this.#resolveWeightSpeedRatio({
-      fishWeightKg: fightDebug?.fishWeightKg,
-      rodMaxLoadKg: fightDebug?.rodMaxLoadKg,
-      config: visualCfg.weightSpeed,
-    });
-    const targetOffsetPx =
-      direction * maxOffsetPx * inputRatio;
-    const responsiveness = active
-      ? Number(visualCfg.moveResponsiveness) || 8
-      : Number(visualCfg.returnResponsiveness) ||
-        Number(visualCfg.returnSmoothing) ||
-        5;
-    const previousOffset = this.#offsetPx;
 
-    this.#offsetPx = this.#approach(
+    const lineModeFrame = this.#resolveLineMode({ fightDebug, visualCfg, aimCfg });
+    const directionFrame = this.#resolveDirectionSpeedFrame({
+      direction,
+      active,
+      fightDebug,
+      lineModeFrame,
+      aimCfg,
+      visualCfg,
+    });
+    const weightSpeedFrame = this.#resolveWeightSpeedFrame({
+      fishWeightKg: fightDebug?.fishWeightKg,
+      fishTensionKg: fightDebug?.fishTensionKg,
+      rodMaxLoadKg: fightDebug?.rodMaxLoadKg,
+      maxTackleLoadKg: fightDebug?.maxTackleLoadKg,
+      config: aimCfg,
+    });
+    const weightSpeedRatio = weightSpeedFrame.ratio;
+    const loadSpeedRatio = this.#resolveLoadSpeedRatio({
+      loadReserveRatio: fightDebug?.rodControlLoadReserveRatio,
+      config: aimCfg,
+    });
+
+    const previousOffset = this.#offsetPx;
+    let targetOffsetPx = 0;
+    let mode = "return";
+    let drivenByInput = false;
+    let drivenByFish = false;
+    let speedPxPerSecond = Math.max(
+      0,
+      Number(aimCfg.baseAimSpeedPxPerSecond) ||
+        Number(visualCfg.baseAimSpeedPxPerSecond) ||
+        120,
+    );
+
+    if (active && direction !== 0 && inputRatio > 0) {
+      mode = lineModeFrame.mode;
+      drivenByInput = true;
+      targetOffsetPx = direction * maxOffsetPx * inputRatio;
+      if (directionFrame.withFishDirection) {
+        drivenByFish = true;
+        speedPxPerSecond =
+          Math.abs(directionFrame.fishMoveX) +
+          speedPxPerSecond *
+            directionFrame.speedMultiplier *
+            weightSpeedRatio;
+      } else {
+        speedPxPerSecond *=
+          directionFrame.speedMultiplier * weightSpeedRatio * loadSpeedRatio;
+      }
+    } else {
+      speedPxPerSecond *= Math.max(
+        0,
+        Number(aimCfg.returnSpeedMultiplier) ||
+          Number(visualCfg.returnSpeedMultiplier) ||
+          0.75,
+      );
+    }
+
+    this.#offsetPx = this.#approachBySpeed(
       this.#offsetPx,
       targetOffsetPx,
-      responsiveness * weightSpeedRatio,
+      speedPxPerSecond,
       dtSec,
     );
+
     this.#offsetPx = Math.max(
       -maxOffsetPx,
       Math.min(maxOffsetPx, this.#offsetPx),
@@ -64,7 +115,25 @@ class RodVisualOffsetSystem {
       targetOffsetPx,
       inputRatio,
       weightSpeedRatio,
-      drivenByInput: active,
+      weightLoadRatio: weightSpeedFrame.loadRatio,
+      effectiveFishLoadKg: weightSpeedFrame.effectiveFishLoadKg,
+      weightLoadLimitKg: weightSpeedFrame.loadLimitKg,
+      weightCurvePower: weightSpeedFrame.curvePower,
+      weightSpeedMinRatio: weightSpeedFrame.minRatio,
+      weightSpeedMaxRatio: weightSpeedFrame.maxRatio,
+      loadSpeedRatio,
+      lineSpeedRatio: lineModeFrame.speedMultiplier,
+      directionSpeedRatio: directionFrame.speedMultiplier,
+      directionSpeedMode: directionFrame.mode,
+      fishMoveX: directionFrame.fishMoveX,
+      fishMoveDirectionX: directionFrame.fishMoveDirectionX,
+      withFishDirection: directionFrame.withFishDirection,
+      aimSpeedPxPerSecond: speedPxPerSecond,
+      drivenByInput,
+      drivenByFish,
+      mode,
+      freeLineMode: lineModeFrame.freeLineMode,
+      lineMode: lineModeFrame.lineMode,
     };
     return this.#offsetPx;
   }
@@ -72,17 +141,24 @@ class RodVisualOffsetSystem {
   resolveScreenX({
     baseX,
     canvasWidth,
-    playableLeft = null,
-    playableRight = null,
+    playableLeft,
+    playableRight,
     config,
-  }) {
+  } = {}) {
     const visualCfg = config?.rodVisual || {};
-    const padding = Math.max(0, Number(visualCfg.edgePaddingPx) || 16);
+    const aimCfg = config?.rodAim || {};
+    const padding = Math.max(
+      0,
+      Number(aimCfg.edgePaddingPx) || Number(visualCfg.edgePaddingPx) || 16,
+    );
     const width = Math.max(1, Number(canvasWidth) || 1);
     let minX = padding;
     let maxX = Math.max(minX, width - padding);
 
-    if (visualCfg.clampToPlayableZone !== false) {
+    const clampToPlayable = aimCfg.clampToPlayableZone !== undefined
+      ? aimCfg.clampToPlayableZone !== false
+      : visualCfg.clampToPlayableZone !== false;
+    if (clampToPlayable) {
       if (Number.isFinite(Number(playableLeft))) {
         minX = Math.max(minX, Number(playableLeft) + padding);
       }
@@ -118,44 +194,172 @@ class RodVisualOffsetSystem {
     this.#frame = this.#createFrame();
   }
 
-  #resolveWeightSpeedRatio({
-    fishWeightKg,
-    rodMaxLoadKg,
-    config,
+  #resolveDirectionSpeedFrame({
+    direction,
+    active,
+    fightDebug,
+    lineModeFrame,
+    aimCfg,
+    visualCfg,
   }) {
-    const maxLoad = Math.max(0, Number(rodMaxLoadKg) || 0);
-    if (maxLoad <= 0) return 1;
-    const weightRatio = Math.max(
+    const fishMoveX = this.#firstFiniteNumber(
+      fightDebug?.fishVelocityX,
+      fightDebug?.fishMoveX,
+      fightDebug?.targetVelocityX,
+      fightDebug?.forces?.fX,
+      fightDebug?.rodControlFishVelocityX,
       0,
-      (Number(fishWeightKg) || 0) / maxLoad,
     );
-    const fullSpeedAt = this.#clamp01(
-      config?.fullSpeedMaxWeightRatio ?? 0.3,
-    );
-    const minimumSpeedAt = Math.max(
-      fullSpeedAt + 0.000001,
-      Number(config?.minimumSpeedWeightRatio) || 1,
-    );
-    const minimumSpeed = this.#clamp01(
-      config?.minimumSpeedRatio ?? 0.5,
-    );
-    if (weightRatio <= fullSpeedAt) return 1;
-    if (weightRatio >= minimumSpeedAt) return minimumSpeed;
-    const progress =
-      (weightRatio - fullSpeedAt) /
-      (minimumSpeedAt - fullSpeedAt);
-    return 1 + (minimumSpeed - 1) * progress;
+    const fishMoveDirectionX = Math.sign(fishMoveX);
+    const inputDirectionX = Math.sign(Number(direction) || 0);
+    const withFishDirection = !!active &&
+      inputDirectionX !== 0 &&
+      fishMoveDirectionX !== 0 &&
+      inputDirectionX === fishMoveDirectionX;
+
+    if (withFishDirection) {
+      return {
+        mode: "with_fish",
+        fishMoveX,
+        fishMoveDirectionX,
+        withFishDirection: true,
+        speedMultiplier: Math.max(
+          0,
+          Number(aimCfg.returnSpeedMultiplier) ||
+            Number(visualCfg.returnSpeedMultiplier) ||
+            0.75,
+        ),
+      };
+    }
+
+    return {
+      mode: lineModeFrame?.lineMode || "line_state",
+      fishMoveX,
+      fishMoveDirectionX,
+      withFishDirection: false,
+      speedMultiplier: lineModeFrame?.speedMultiplier ?? 1,
+    };
   }
 
-  #approach(current, target, speed, dtSec) {
+  #resolveLineMode({ fightDebug, visualCfg, aimCfg }) {
+    const canRelease = !!fightDebug?.lineCanRelease ||
+      Number(fightDebug?.lineRemainingMeters) > 0;
+    const didSlip = !!fightDebug?.reelSlip ||
+      !!fightDebug?.shouldSlipDrag ||
+      Number(fightDebug?.lineReleasedThisFrameMeters) > 0;
+
+    if (didSlip) {
+      return {
+        mode: "drag_slip_aim",
+        lineMode: "drag_slip",
+        freeLineMode: true,
+        speedMultiplier: Math.max(
+          0,
+          Number(aimCfg.dragSlipAimMultiplier) || 1.3,
+        ),
+      };
+    }
+
+    if (canRelease && visualCfg.freeLineUsesInputDrivenVisual !== false) {
+      return {
+        mode: "free_line_aim",
+        lineMode: "free_line",
+        freeLineMode: true,
+        speedMultiplier: Math.max(
+          0,
+          Number(aimCfg.freeLineAimMultiplier) || 1,
+        ),
+      };
+    }
+
+    return {
+      mode: "tight_line_aim",
+      lineMode: "tight_line",
+      freeLineMode: false,
+      speedMultiplier: Math.max(
+        0,
+        Number(aimCfg.tightLineAimMultiplier) || 0.35,
+      ),
+    };
+  }
+
+  #resolveWeightSpeedFrame({
+    fishWeightKg,
+    fishTensionKg,
+    rodMaxLoadKg,
+    maxTackleLoadKg,
+    config,
+  }) {
+    const minRatio = this.#clamp01(config?.fishLoadMinSpeedRatio ?? 0.5);
+    const maxRatio = Math.max(minRatio, Number(config?.fishLoadMaxSpeedRatio) || 1.1);
+    const curvePower = Math.max(0.1, Number(config?.fishLoadCurvePower) || 1.0);
+    const fishWeight = Math.max(0, Number(fishWeightKg) || 0);
+    const fishTension = Math.max(0, Number(fishTensionKg) || 0);
+    const effectiveFishLoadKg = Math.max(fishWeight, fishTension);
+    const loadLimitKg = Math.max(
+      0,
+      Number(rodMaxLoadKg) || Number(maxTackleLoadKg) || 0,
+    );
+
+    if (effectiveFishLoadKg <= 0 || loadLimitKg <= 0) {
+      return {
+        ratio: maxRatio,
+        loadRatio: 0,
+        effectiveFishLoadKg,
+        loadLimitKg,
+        curvePower,
+        minRatio,
+        maxRatio,
+      };
+    }
+
+    const loadRatio = this.#clamp01(effectiveFishLoadKg / loadLimitKg);
+    const curvedLoadRatio = Math.pow(loadRatio, curvePower);
+    const ratio = maxRatio - (maxRatio - minRatio) * curvedLoadRatio;
+
+    return {
+      ratio: this.#clamp(ratio, minRatio, maxRatio),
+      loadRatio,
+      effectiveFishLoadKg,
+      loadLimitKg,
+      curvePower,
+      minRatio,
+      maxRatio,
+    };
+  }
+
+  #resolveLoadSpeedRatio({ loadReserveRatio, config }) {
+    const minRatio = this.#clamp01(config?.minimumLoadSpeedRatio ?? 0.35);
+    const parsed = Number(loadReserveRatio);
+    if (!Number.isFinite(parsed)) return 1;
+    return minRatio + (1 - minRatio) * this.#clamp01(parsed);
+  }
+
+  #approachBySpeed(current, target, speedPxPerSecond, dtSec) {
     const dt = Math.max(0, Number(dtSec) || 0);
     if (dt <= 0) return current;
-    const alpha = 1 - Math.exp(-Math.max(0, Number(speed) || 0) * dt);
-    return current + (target - current) * alpha;
+    const maxStep = Math.max(0, Number(speedPxPerSecond) || 0) * dt;
+    const delta = target - current;
+    if (Math.abs(delta) <= maxStep) return target;
+    return current + Math.sign(delta) * maxStep;
+  }
+
+  #firstFiniteNumber(...values) {
+    for (const value of values) {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+    return 0;
+  }
+
+  #clamp(value, min, max) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return min;
+    return Math.max(min, Math.min(max, parsed));
   }
 
   #clamp01(value) {
-    return Math.max(0, Math.min(1, Number(value) || 0));
+    return this.#clamp(value, 0, 1);
   }
 
   #createFrame() {
@@ -168,7 +372,25 @@ class RodVisualOffsetSystem {
       targetOffsetPx: 0,
       inputRatio: 0,
       weightSpeedRatio: 1,
+      weightLoadRatio: 0,
+      effectiveFishLoadKg: 0,
+      weightLoadLimitKg: 0,
+      weightCurvePower: 1,
+      weightSpeedMinRatio: 0.5,
+      weightSpeedMaxRatio: 1.1,
+      loadSpeedRatio: 1,
+      lineSpeedRatio: 1,
+      directionSpeedRatio: 1,
+      directionSpeedMode: "line_state",
+      fishMoveX: 0,
+      fishMoveDirectionX: 0,
+      withFishDirection: false,
+      aimSpeedPxPerSecond: 0,
       drivenByInput: false,
+      drivenByFish: false,
+      mode: "return",
+      freeLineMode: false,
+      lineMode: "tight_line",
     };
   }
 }

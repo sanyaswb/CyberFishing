@@ -1,3 +1,7 @@
+const FISH_FIGHT_EVENT = Object.freeze({
+  CATCH_ZONE_ENTERED: "catch_zone_entered",
+});
+
 class FishPhysicsProfile {
   #raw;
 
@@ -386,6 +390,10 @@ class Fish {
     return this.#behavior.evaluateLastDashTrigger(context);
   }
 
+  handleFightEvent(event = {}) {
+    this.#behavior.handleFightEvent(event);
+  }
+
   getLastDashDebugData() {
     return this.#behavior.getLastDashDebugData();
   }
@@ -486,6 +494,7 @@ class FishBehavior {
   #isLocked;
   #lastDashCheckTimer;
   #holdSpecialStateUntilLeave;
+  #lastDashBlockedByCatchZone;
   #lastDashDebug;
   #rng;
 
@@ -508,6 +517,7 @@ class FishBehavior {
     this.#isLocked = false;
     this.#lastDashCheckTimer = 0;
     this.#holdSpecialStateUntilLeave = null;
+    this.#lastDashBlockedByCatchZone = false;
     this.#lastDashDebug = {};
     this.#pickNextState();
   }
@@ -525,7 +535,12 @@ class FishBehavior {
     if (!states) return;
 
     const validKeys = [];
+    const lastDashStateName =
+      this.#config.lastDashTrigger?.targetState || "lastDash";
     for (const key of Object.keys(states)) {
+      if (this.#lastDashBlockedByCatchZone && key === lastDashStateName) {
+        continue;
+      }
       if (states[key].weight > 0) validKeys.push(key);
     }
 
@@ -555,6 +570,14 @@ class FishBehavior {
   }
 
   forceState(stateName, isLocked = false) {
+    const lastDashStateName =
+      this.#config.lastDashTrigger?.targetState || "lastDash";
+    if (
+      this.#lastDashBlockedByCatchZone &&
+      stateName === lastDashStateName
+    ) {
+      return;
+    }
     const state = this.#config.behaviors[stateName];
     if (!state) {
       console.error(`[BEHAVIOR ERROR] Стан ${stateName} не знайдено!`);
@@ -567,6 +590,12 @@ class FishBehavior {
     this.#isLocked = isLocked;
     this.#stateTimer = this.#range(state.minTime, state.maxTime);
     this.#dirTimer = 0;
+  }
+
+  handleFightEvent(event = {}) {
+    if (event.type !== FISH_FIGHT_EVENT.CATCH_ZONE_ENTERED) return;
+    this.#lastDashBlockedByCatchZone = true;
+    this.#lastDashCheckTimer = 0;
   }
 
   evaluateLastDashTrigger(context = {}) {
@@ -595,6 +624,21 @@ class FishBehavior {
     const zoneDistanceMeters = zoneShape === "circle"
       ? lineDistanceMeters
       : horizontalDistanceMeters;
+    if (this.#lastDashBlockedByCatchZone) {
+      this.#lastDashDebug = {
+        enabled: triggerEnabled && hasState && stateEnabled,
+        stateName,
+        inZone: false,
+        active: this.#currentStateName === stateName,
+        blockedByCatchZone: true,
+        lineDistanceMeters,
+        horizontalDistanceMeters,
+        zoneDistanceMeters,
+        zoneShape,
+        triggerDistanceMeters,
+      };
+      return this.#lastDashDebug;
+    }
     const inZone =
       hasState &&
       triggerEnabled &&

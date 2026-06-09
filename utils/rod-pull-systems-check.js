@@ -416,6 +416,14 @@ const lateralControl = new RodLateralControlSystem();
 const lateralConfig = {
   enabled: true,
   pixelsPerMeter: 50,
+  alignment: {
+    enabled: true,
+    useActualRodPositionAsTarget: true,
+    maxEffectiveAngleDeg: 45,
+    alignedThresholdPx: 0,
+    allowAwayDirection: false,
+    awayDirectionMultiplier: 0,
+  },
   force: {
     maxForceKg: 0.4,
     sidePullSpeedMultiplier: 1,
@@ -438,7 +446,9 @@ const lateralFrame = lateralControl.update({
     rodControlDirectionX: 1,
     rodControlInputRatio: 1,
   },
-  fishPosition: { x: 0, y: 100 },
+  fishPosition: { x: -50, y: 50 },
+  rodTipPosition: { x: 0, y: 0 },
+  actualRodTipPosition: { x: 0, y: 0 },
   rodLimitKg: 3,
   maxTackleLoadKg: 3,
   fishTensionKg: 0.5,
@@ -446,12 +456,12 @@ const lateralFrame = lateralControl.update({
   fishWeightKg: 0,
   config: lateralConfig,
 });
-assert(lateralFrame.canApply, "Rod Control X applies while fish is centered");
-approx(lateralFrame.directionX, 1, 0.001, "Rod Control X uses input direction");
+assert(lateralFrame.canApply, "Rod Control X applies when input pulls fish toward rod X");
+approx(lateralFrame.directionX, 1, 0.001, "Rod Control X moves toward the rod target");
 approx(lateralFrame.tensionMultiplier, 2.5, 0.001, "Rod Control X uses opposite-direction tension multiplier");
 approx(lateralFrame.forceKg, 0.4, 0.001, "Rod Control X force follows configured max force");
 approx(lateralFrame.maxPullSpeedMetersPerSecond, 1.28, 0.001, "Rod Control X speed derives from delivered force");
-approx(lateralFrame.desiredMoveMeters, 1.28, 0.001, "Rod Control X movement follows force-derived pull speed");
+approx(lateralFrame.desiredMoveMeters, 1, 0.001, "Rod Control X movement is clamped to rod target distance");
 assert(lateralFrame.desiredMovePx > 0, "Rod Control X emits lateral pixel movement");
 const lateralApplied = lateralControl.recordAppliedMovement({
   movedMeters: 0.5,
@@ -469,7 +479,9 @@ const blockedAppliedFrame = blockedApplied.update({
     rodControlDirectionX: 1,
     rodControlInputRatio: 0.8,
   },
-  fishPosition: { x: 0, y: 100 },
+  fishPosition: { x: -50, y: 50 },
+  rodTipPosition: { x: 0, y: 0 },
+  actualRodTipPosition: { x: 0, y: 0 },
   rodLimitKg: 3,
   maxTackleLoadKg: 3,
   fishTensionKg: 0,
@@ -488,7 +500,9 @@ const lateralLeft = new RodLateralControlSystem().update({
     rodControlDirectionX: -1,
     rodControlInputRatio: 0.5,
   },
-  fishPosition: { x: 0, y: 100 },
+  fishPosition: { x: 50, y: 50 },
+  rodTipPosition: { x: 0, y: 0 },
+  actualRodTipPosition: { x: 0, y: 0 },
   rodLimitKg: 3,
   maxTackleLoadKg: 3,
   fishTensionKg: 0,
@@ -496,8 +510,8 @@ const lateralLeft = new RodLateralControlSystem().update({
   fishWeightKg: 0,
   config: lateralConfig,
 });
-assert(lateralLeft.canApply, "Rod Control X accepts either direction at fish center");
-approx(lateralLeft.directionX, -1, 0.001, "Left input produces left force vector");
+assert(lateralLeft.canApply, "Rod Control X accepts left input when fish is right of rod");
+approx(lateralLeft.directionX, -1, 0.001, "Left input pulls the right-side fish toward rod target");
 approx(lateralLeft.requestedForceRatio, 0.5, 0.001, "Input ratio exposes requested force");
 approx(lateralLeft.deliveredForceRatio, 0.5, 0.001, "Delivered force follows requested force with full reserve");
 approx(lateralLeft.tensionMultiplier, 0, 0.001, "Same-direction fish movement uses zero tension multiplier");
@@ -509,7 +523,9 @@ const lateralNoReserve = new RodLateralControlSystem().update({
     rodControlDirectionX: 1,
     rodControlInputRatio: 1,
   },
-  fishPosition: { x: 0, y: 100 },
+  fishPosition: { x: -50, y: 50 },
+  rodTipPosition: { x: 0, y: 0 },
+  actualRodTipPosition: { x: 0, y: 0 },
   rodLimitKg: 0.4,
   maxTackleLoadKg: 0.4,
   currentTensionKg: 0.4,
@@ -519,6 +535,83 @@ const lateralNoReserve = new RodLateralControlSystem().update({
 });
 assert(!lateralNoReserve.canApply, "Rod Control X blocks without load reserve");
 assert(lateralNoReserve.blockedReason === "no_load_reserve", "Rod Control X reports load reserve block");
+
+const dragLimitedLateral = new RodLateralControlSystem().update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: -50, y: 50 },
+  rodTipPosition: { x: 0, y: 0 },
+  actualRodTipPosition: { x: 0, y: 0 },
+  rodLimitKg: 1,
+  maxTackleLoadKg: 1,
+  currentTensionKg: 0.6,
+  fishVelocityX: -20,
+  fishWeightKg: 0,
+  dragLimitKg: 0.6,
+  dragLocked: false,
+  lineHasReserve: true,
+  hardLineLimit: false,
+  config: lateralConfig,
+});
+assert(dragLimitedLateral.canSlipDrag, "Rod Control detects available drag slip");
+assert(dragLimitedLateral.dragLimited, "Rod Control reports drag-limited force");
+approx(dragLimitedLateral.dragReserveKg, 0, 0.001, "Full drag load leaves no lateral tension reserve");
+approx(dragLimitedLateral.playerTensionKg, 0, 0.001, "Rod Control adds no tension above active drag limit");
+assert(!dragLimitedLateral.canApply, "Rod Control fish movement stops when drag reserve is exhausted");
+assert(dragLimitedLateral.blockedReason === "drag_limit_reached", "Rod Control reports exhausted drag reserve");
+
+const partialDragReserve = new RodLateralControlSystem().update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: -50, y: 50 },
+  rodTipPosition: { x: 0, y: 0 },
+  actualRodTipPosition: { x: 0, y: 0 },
+  rodLimitKg: 1,
+  maxTackleLoadKg: 1,
+  currentTensionKg: 0.5,
+  fishVelocityX: -20,
+  fishWeightKg: 0,
+  dragLimitKg: 0.6,
+  dragLocked: false,
+  lineHasReserve: true,
+  hardLineLimit: false,
+  config: lateralConfig,
+});
+approx(partialDragReserve.dragReserveKg, 0.1, 0.001, "Rod Control exposes remaining drag tension reserve");
+approx(partialDragReserve.effectiveForceLimitKg, 0.04, 0.001, "Opposite-direction multiplier is included in force limit");
+approx(partialDragReserve.playerTensionKg, 0.1, 0.001, "Lateral tension stays inside drag reserve");
+
+const hardLineLateral = new RodLateralControlSystem().update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: -50, y: 50 },
+  rodTipPosition: { x: 0, y: 0 },
+  actualRodTipPosition: { x: 0, y: 0 },
+  rodLimitKg: 1,
+  maxTackleLoadKg: 1,
+  currentTensionKg: 0.6,
+  fishVelocityX: -20,
+  fishWeightKg: 0,
+  dragLimitKg: 0.6,
+  dragLocked: false,
+  lineHasReserve: false,
+  hardLineLimit: true,
+  config: lateralConfig,
+});
+assert(!hardLineLateral.canSlipDrag, "Fully extended line disables Rod Control drag protection");
+assert(hardLineLateral.playerTensionKg > 0, "Rod Control can add stress at hard line limit");
 
 const pullSmoother = new PlayerPullMotionSmoother();
 const smoothStart = pullSmoother.updateAxis({

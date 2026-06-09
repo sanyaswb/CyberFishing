@@ -1,5 +1,45 @@
 # CyberFishing changelog
 
+## v0.19.33 - Drag-aware Rod Control tension
+
+- Rod Control X now uses remaining drag tension reserve while drag can release line.
+- Opposite-direction tension multipliers are included in the effective lateral force limit.
+- Exhausted drag reserve prevents Rod Control from adding lateral tension or fish movement.
+- Locked drag and fully extended line still allow Rod Control overload and tackle stress.
+- Tackle stress now uses visible clamped tension after successful drag slip while retaining raw tension for diagnostics.
+- Added Rod Control drag-reserve and tension stress-source diagnostics.
+
+## v0.19.32 - Direction-aware relative Rod Aim speed
+
+- Merged direction-aware Rod Aim speed with the relative fish-load speed model.
+- Moving the rod in the same X direction as the fish now uses `rodAim.returnSpeedMultiplier`.
+- Moving against the fish keeps the line-state speed multiplier from tight-line/free-line/drag-slip.
+- Added Rod Aim direction-speed diagnostics and regression coverage.
+
+## v0.19.31 - Relative Rod Aim speed
+
+- Reworked Rod Aim weight speed from absolute fish weight to fish load relative to rod/tackle strength.
+- Added configurable non-linear Rod Aim speed curve with min/max speed ratios.
+- Very light fish now keeps near-base or above-base horizontal rod aim speed.
+- Fish close to tackle limit now slows Rod Aim toward the configured minimum speed ratio.
+- Added Rod Aim load-ratio diagnostics and regression coverage.
+
+## v0.19.30 - Rod Aim fish follow
+
+- Split Rod Control into player-driven rod aim and physics-limited fish lateral follow.
+- Rod aim can now move sideways even when the fish starts centered under the rod.
+- Fish now follows the current rod aim X through angle, load-reserve and force-limited lateral movement.
+- Rod aim speed now scales by fish weight, line state, drag-slip state and load reserve.
+- Added Rod Aim config labels, debug fields and regression coverage.
+
+## v0.19.29 - Rod Control decoupled visual target
+
+- Restored Rod Control alignment toward the configured rod X target.
+- Added configurable actual-rod versus base-rod target selection.
+- Tight-line visual rod movement now follows actual lateral fish displacement instead of raw A/D or swipe input.
+- Free-line / drag-slip visual movement can remain input-driven without teleporting the fish.
+- Added target, angle, direction-factor and visual-driving diagnostics for Rod Control.
+
 ## v0.19.28 - Simple force-driven Rod Control.
 
 - Rod Control input now directly defines lateral force percentage and direction.

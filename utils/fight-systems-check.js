@@ -186,6 +186,51 @@ const horizontalLastDash = lastDashBehavior.evaluateLastDashTrigger({
 assert(horizontalLastDash.inZone, "lastDash triggers from horizontal distance band");
 assert(horizontalLastDash.active, "lastDash can activate inside horizontal zone");
 
+const catchZoneBlockedLastDash = new FishBehavior({
+  lastDashTrigger: {
+    enabled: true,
+    targetState: "lastDash",
+    chance: 1,
+    checkIntervalMs: 1,
+    catchZoneMultiplier: 3,
+  },
+  behaviorProfile: {
+    behaviors: {
+      swim: {
+        forceMultiplier: 1,
+        speedMultiplier: 1,
+        minTime: 1,
+        maxTime: 1,
+        weight: 1,
+      },
+      lastDash: {
+        enabled: true,
+        forceMultiplier: 2,
+        speedMultiplier: 2,
+        minTime: 1000,
+        maxTime: 1000,
+        weight: 1,
+      },
+    },
+  },
+}, { next: () => 0, range: (min) => min });
+catchZoneBlockedLastDash.handleFightEvent({
+  type: FISH_FIGHT_EVENT.CATCH_ZONE_ENTERED,
+});
+const blockedLastDash = catchZoneBlockedLastDash.evaluateLastDashTrigger({
+  dtMs: 1000,
+  landingDistanceMeters: 1,
+  lineDistanceMeters: 0.5,
+  horizontalDistanceMeters: 0.5,
+});
+assert(blockedLastDash.blockedByCatchZone, "catch zone event blocks lastDash trigger");
+assert(!blockedLastDash.active, "lastDash does not activate after catch zone entry");
+catchZoneBlockedLastDash.update(10);
+assert(
+  catchZoneBlockedLastDash.getStateData().name !== "lastDash",
+  "catch zone event also excludes lastDash from random behavior selection",
+);
+
 const lineTension = new TensionSystem().calculate({
   fishTensionKg: 1.2,
   playerHoldTensionKg: 0.6,
