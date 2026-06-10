@@ -392,6 +392,30 @@ assert(
   !slackLineDragForce.dragEngaged,
   "drag engages only after released line becomes taut",
 );
+const slackEmptySpoolDragForce = dragForceCalculator.calculate({
+  fishOppositionKg: 0.28,
+  effectiveRodHoldKg: 0,
+  yAwayRatio: 1,
+  dragRatio: 0,
+  dragLimitKg: 0,
+  lineHasReserve: false,
+  lineTaut: false,
+  dragLocked: false,
+  dragSupported: true,
+  targetYSpeedPxPerSec: -15,
+});
+approx(
+  slackEmptySpoolDragForce.finalYSpeedPxPerSec,
+  -15,
+  0.0001,
+  "slack empty spool preserves free outward speed",
+);
+approx(
+  slackEmptySpoolDragForce.tautFinalYSpeedPxPerSec,
+  0,
+  0.0001,
+  "empty spool blocks the constrained speed after released radius",
+);
 const splitAtReleasedRadius = radialMovementSplitter.resolveVelocity({
   position: { x: 0, y: -495 },
   rodTipPosition: { x: 0, y: 0 },
@@ -420,8 +444,14 @@ approx(
 const emptySpoolFreeRadius = radialMovementSplitter.resolveVelocity({
   position: { x: 0, y: -495 },
   rodTipPosition: { x: 0, y: 0 },
-  freeVelocity: { x: 0, y: -15 },
-  constrainedVelocity: { x: 0, y: 0 },
+  freeVelocity: {
+    x: slackEmptySpoolDragForce.finalXSpeedPxPerSec,
+    y: slackEmptySpoolDragForce.finalYSpeedPxPerSec,
+  },
+  constrainedVelocity: {
+    x: slackEmptySpoolDragForce.finalXSpeedPxPerSec,
+    y: slackEmptySpoolDragForce.tautFinalYSpeedPxPerSec,
+  },
   releasedMeters: 10,
   pixelsPerMeter: 50,
   dtSec: 0.2,

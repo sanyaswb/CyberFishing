@@ -6,6 +6,7 @@
 - Taut Rod Control movement now follows the fixed released-line radius whenever line length cannot increase.
 - Rod Control drag protection now reads actual payout capability instead of inferring it from line reserve alone.
 - Added `freeReleasedLineMeters` to distinguish movement inside already released line from new spool payout.
+- Drag calculations now receive the actual spool reserve instead of a mixed line-absorption flag.
 - Fish can move freely inside the released-line radius even with holding drag or an empty spool.
 - Frames that reach the released-line radius are split between free movement and drag-resolved movement, preventing overshoot and clamp jitter.
 - Drag, payout, and fixed-radius constraints now engage only after the line becomes taut.

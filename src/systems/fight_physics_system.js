@@ -400,7 +400,7 @@ class FightPhysicsSystem {
       reel,
       playerMaxLoadKg,
       activeRodHoldKg,
-      lineHasReserve: this.#lineCanAbsorbEscape(lineState),
+      lineHasReserve: this.#lineHasReserve(lineState),
       lineTaut: this.#isLineTaut(lineState),
       env,
       buffs,
@@ -603,7 +603,7 @@ class FightPhysicsSystem {
       dragLimitKg: dragContext.effectiveDragLimitKg,
       dragLocked: dragContext.dragLocked,
       dragSupported: dragContext.dragSupported,
-      lineHasReserve: this.#lineCanAbsorbEscape(lineStateBeforePull),
+      lineHasReserve: this.#lineHasReserve(lineStateBeforePull),
       lineTaut: this.#isLineTaut(lineStateBeforePull),
     });
     const rodStrokeMoveCapacityMeters =
@@ -1712,10 +1712,6 @@ class FightPhysicsSystem {
   #lineHasReserve(lineState) {
     if (typeof lineState?.canReleaseLine === "boolean") return lineState.canReleaseLine;
     return (Number(lineState?.remainingMeters) || 0) > 0.001;
-  }
-
-  #lineCanAbsorbEscape(lineState) {
-    return this.#lineHasReserve(lineState) || !lineState?.isFullyExtended;
   }
 
   #isLineTaut(lineState) {
