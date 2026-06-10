@@ -11,6 +11,12 @@ class FightFishSection extends FightSectionBase {
       this.row("State force multiplier", `x${f.num(d.fishStateForceMultiplier ?? d.pullMult, 2)}`),
       this.row("Direction state", d.fishDirectionState || "unknown"),
       this.row("Direction multiplier", `x${f.num(d.directionResistanceMultiplier, 2)}`),
+      this.row("Radial intent", f.num(d.fishMoveIntentRadial, 3)),
+      this.row("Lateral intent", f.num(d.fishMoveIntentLateral, 3)),
+      this.row(
+        "World move direction",
+        `${f.num(d.fishMoveDirX, 3)}, ${f.num(d.fishMoveDirY, 3)}`,
+      ),
       this.row("Active fish force", f.kg(d.fishActiveKg, 3), "#ff8888"),
       this.row("Fish opposition", f.kg(d.fishOppositionKg, 3), "#ff8888"),
       this.row("Active rod hold", f.kg(d.activeRodHoldKgForEscape, 3), "#73c2fb"),

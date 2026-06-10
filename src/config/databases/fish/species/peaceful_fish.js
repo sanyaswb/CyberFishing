@@ -85,6 +85,11 @@ const PEACEFUL_FISH = [
           idle: {
             forceMultiplier: 0.7,
             speedMultiplier: 1,
+            direction: {
+              radialRange: [-0.25, 0.45],
+              lateralRange: [-0.8, 0.8],
+              agility: 0.35,
+            },
             minTime: 500,
             maxTime: 3000,
             weight: 25,
@@ -92,6 +97,11 @@ const PEACEFUL_FISH = [
           rest: {
             forceMultiplier: 0.3,
             speedMultiplier: 0.5,
+            direction: {
+              radialRange: [-0.5, 0.15],
+              lateralRange: [-0.6, 0.6],
+              agility: 0.25,
+            },
             minTime: 500,
             maxTime: 2500,
             weight: 25,
@@ -99,6 +109,11 @@ const PEACEFUL_FISH = [
           swim: {
             forceMultiplier: 1,
             speedMultiplier: 1,
+            direction: {
+              radialRange: [0.35, 1],
+              lateralRange: [-0.9, 0.9],
+              agility: 0.45,
+            },
             minTime: 2000,
             maxTime: 4000,
             weight: 25,
@@ -106,6 +121,11 @@ const PEACEFUL_FISH = [
           dash: {
             forceMultiplier: 1.2,
             speedMultiplier: 1.5,
+            direction: {
+              radialRange: [0.75, 1],
+              lateralRange: [-0.55, 0.55],
+              agility: 0.8,
+            },
             minTime: 1000,
             maxTime: 2200,
             weight: 25,
@@ -114,6 +134,11 @@ const PEACEFUL_FISH = [
             enabled: true,
             forceMultiplier: 1.5,
             speedMultiplier: 2,
+            direction: {
+              radialRange: [0.85, 1],
+              lateralRange: [-0.35, 0.35],
+              agility: 1,
+            },
             minTime: 1000,
             maxTime: 3000,
             weight: 0,

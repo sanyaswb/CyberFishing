@@ -240,8 +240,38 @@ class ConfigSchemaValidator {
         this.#requireFiniteNumber(`${path}.maxTime`, behavior.maxTime, { min: 0 });
         this.#requireFiniteNumber(`${path}.weight`, behavior.weight, { min: 0 });
         this.#requireMinLessOrEqualMax(`${path}.minTime`, behavior.minTime, `${path}.maxTime`, behavior.maxTime);
+        if (behavior.direction && typeof behavior.direction === "object") {
+          this.#requireNumericRange(
+            `${path}.direction.radialRange`,
+            behavior.direction.radialRange,
+          );
+          this.#requireNumericRange(
+            `${path}.direction.lateralRange`,
+            behavior.direction.lateralRange,
+          );
+          this.#requireFiniteNumber(
+            `${path}.direction.agility`,
+            behavior.direction.agility,
+            { min: 0 },
+          );
+        }
       }
     }
+  }
+
+  #requireNumericRange(path, value) {
+    if (!Array.isArray(value) || value.length < 2) {
+      this.#error(path, "must contain [min, max]");
+      return;
+    }
+    this.#requireFiniteNumber(`${path}[0]`, value[0]);
+    this.#requireFiniteNumber(`${path}[1]`, value[1]);
+    this.#requireMinLessOrEqualMax(
+      `${path}[0]`,
+      value[0],
+      `${path}[1]`,
+      value[1],
+    );
   }
 
   #validateWeightConfig(fishPath, weightConfig) {

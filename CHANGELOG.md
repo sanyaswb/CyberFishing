@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.19.35 - Radial fish fight movement
+
+- Replaced hardcoded upward fish escape movement with configurable radial and lateral fight intent.
+- Added `FishFightDirectionResolver` to convert line-space intent into a normalized world-space direction.
+- Added per-state direction ranges and agility settings for peaceful, predator, and preset fish profiles.
+- Refactored drag calculation to affect only outward radial velocity while preserving tangent and inward movement.
+- Kept movement inside already released slack line free from drag and added correct taut-boundary prediction.
+- Added radial intent, direction, force, and velocity diagnostics to the fight overlay.
+- Added config validation and dedicated regression coverage for 2D fish movement and radial drag.
+
 ## v0.19.34 - Fixed-length line constraint
 
 - Added an immutable line constraint state that separates drag payout blocking from a physically empty spool.

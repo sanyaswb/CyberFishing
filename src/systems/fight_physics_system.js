@@ -1479,6 +1479,9 @@ class FightPhysicsSystem {
       fishActiveKg: fishRetrieveResult?.fishActiveKg ?? forceData.fishActiveKg,
       fishWonForceKg:
         fishRetrieveResult?.fishWonForceKg ?? forceData.fishWonForceKg,
+      fishWonRadialForceKg:
+        fishRetrieveResult?.fishWonRadialForceKg ??
+        forceData.fishWonRadialForceKg,
       fishWonYForceKg:
         fishRetrieveResult?.fishWonYForceKg ?? forceData.fishWonYForceKg,
       yAwayRatio:
@@ -1489,6 +1492,22 @@ class FightPhysicsSystem {
         fishRetrieveResult?.excessYForceKg ?? forceData.excessYForceKg,
       yEscapeForceKg:
         fishRetrieveResult?.yEscapeForceKg ?? forceData.yEscapeForceKg,
+      radialEscapeForceKg:
+        fishRetrieveResult?.radialEscapeForceKg ??
+        forceData.radialEscapeForceKg,
+      radialSpeedPxPerSec:
+        fishRetrieveResult?.radialSpeedPxPerSec ??
+        forceData.radialSpeedPxPerSec,
+      outwardRadialSpeedPxPerSec:
+        fishRetrieveResult?.outwardRadialSpeedPxPerSec ??
+        forceData.outwardRadialSpeedPxPerSec,
+      tangentSpeedPxPerSec:
+        fishRetrieveResult?.tangentSpeedPxPerSec ??
+        forceData.tangentSpeedPxPerSec,
+      fishMoveIntentRadial: forceData.fishMoveIntentRadial,
+      fishMoveIntentLateral: forceData.fishMoveIntentLateral,
+      fishMoveDirX: forceData.fishMoveDirX,
+      fishMoveDirY: forceData.fishMoveDirY,
       fishRetrieveUsefulPullForceKg: fishRetrieveResult?.effectiveRodHoldKg,
       fishRetrieveSpeedMps: fishRetrieveResult?.speedMps,
       modelFightSpeedMps: fishRetrieveResult?.speedMps,

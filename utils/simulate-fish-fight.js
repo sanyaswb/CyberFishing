@@ -24,6 +24,7 @@ const FILES = [
   "src/config/runtime/immutable_config.js",
   "src/config/config.js",
   "src/core/fishing/simple_fight_force_calculator.js",
+  "src/core/fishing/fish_fight_direction_resolver.js",
   "src/core/fishing/drag_force_calculator.js",
 ];
 

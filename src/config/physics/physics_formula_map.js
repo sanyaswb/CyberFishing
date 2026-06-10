@@ -77,16 +77,17 @@ const PHYSICS_FORMULA_MAP = Object.freeze({
   }),
 
   dragForce: Object.freeze({
-    title: "Drag force split",
-    formula: "fishWonYForceKg = fishWonForceKg * yAwayRatio; drag affects only away Y movement; toward-player Y keeps targetYSpeed; away finalYSpeed = lineCanSlip ? sign(targetY) * speedFromForce(yEscapeForceKg) : 0",
+    title: "Radial drag force split",
+    formula: "targetVelocity = radialVelocity + tangentVelocity; drag affects only max(0, radialVelocity); tangent and inward radial movement are preserved",
     sources: Object.freeze([
       "fishWonForceKg",
-      "yAwayRatio",
+      "fish movement direction",
+      "rod-to-fish radial direction",
       "reel.dragMaxKg",
       "dragRatio",
       "line reserve / extension state",
     ]),
-    outputs: Object.freeze(["dragBlockedForceKg", "yEscapeForceKg", "excessYForceKg", "finalYSpeedPxPerSec", "shouldSlipDrag"]),
+    outputs: Object.freeze(["fishWonRadialForceKg", "dragBlockedForceKg", "radialEscapeForceKg", "radialSpeedPxPerSec", "tangentSpeedPxPerSec", "shouldSlipDrag"]),
   }),
 
   reelHold: Object.freeze({

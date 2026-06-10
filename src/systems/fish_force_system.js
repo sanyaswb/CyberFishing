@@ -1,8 +1,8 @@
 class FishForceSystem {
   #fish;
   #config;
-  #scratchA = new Vector2(0, 0);
   #scratchB = new Vector2(0, 0);
+  #directionResolver = new FishFightDirectionResolver();
   #targetVelocity = new Vector2(0, 0);
   #tautTargetVelocity = new Vector2(0, 0);
   #playerForceSystem;
@@ -72,16 +72,24 @@ class FishForceSystem {
       behavior.forceMultiplier ?? behavior.pullMult,
       1,
     );
-    const moveDir = this.#scratchA.set(
-      Number(behavior.moveX) || 0,
-      -behaviorPullValue,
-    );
-    if (moveDir.length() <= 0.001) moveDir.set(0, -1);
-    moveDir.normalize();
+    const movementIntent = behavior.movementIntent || {
+      radial: behaviorPullValue,
+      lateral: Number(behavior.moveX) || 0,
+    };
+    const moveDir = this.#directionResolver.resolve({
+      fishPosition,
+      rodTipPosition,
+      radialIntent: movementIntent.radial,
+      lateralIntent: movementIntent.lateral,
+    });
 
     const awayDir = this.#scratchB
-      .set(fishPosition.x - rodTipPosition.x, fishPosition.y - rodTipPosition.y)
-      .normalize();
+      .set(fishPosition.x - rodTipPosition.x, fishPosition.y - rodTipPosition.y);
+    if (awayDir.length() <= 0.001) {
+      awayDir.set(0, -1);
+    } else {
+      awayDir.normalize();
+    }
 
     const currentVelocity = this.#getCurrentVelocityPxPerSec(env, physics);
     const relativeVelocityX =
@@ -152,8 +160,10 @@ class FishForceSystem {
     const dragSupported = hasReel && reel?.hasDrag?.() !== false;
     const dragLocked = !dragSupported;
 
-    const awayFromPlayerRatio = Math.max(0, moveDir.x * awayDir.x + moveDir.y * awayDir.y);
-    const yAwayRatio = this.#calculateYAwayRatio({ moveDir, awayDir });
+    const outwardRatio = Math.max(
+      0,
+      moveDir.x * awayDir.x + moveDir.y * awayDir.y,
+    );
     const fishWonForceKg = Math.max(
       0,
       totalFishForceKg - holdOpposition.forceKg,
@@ -183,15 +193,17 @@ class FishForceSystem {
     const dragFrame = this.#dragForceCalculator.calculate({
       fishOppositionKg: totalFishForceKg,
       effectiveRodHoldKg: holdOpposition.forceKg,
-      yAwayRatio,
+      awayDir,
       dragRatio: this.#clamp01(dragRatio),
       dragLimitKg: playerData.effectiveDragLimitKg,
       lineHasReserve,
       lineTaut,
       dragLocked,
       dragSupported,
-      targetXSpeedPxPerSec: modelVelocityX,
-      targetYSpeedPxPerSec: modelVelocityY,
+      targetVelocity: {
+        x: modelVelocityX,
+        y: modelVelocityY,
+      },
       waterMotionResistance: waterConfig.motionResistance,
       waterSpeedMultiplier: waterConfig.speedMultiplier,
       fishBaseSpeed,
@@ -204,7 +216,7 @@ class FishForceSystem {
       dragFrame.finalYSpeedPxPerSec,
     );
     this.#tautTargetVelocity.set(
-      dragFrame.finalXSpeedPxPerSec,
+      dragFrame.tautFinalXSpeedPxPerSec,
       dragFrame.tautFinalYSpeedPxPerSec,
     );
     const fishOwnTowardSpeedMps =
@@ -213,8 +225,11 @@ class FishForceSystem {
           pixelsPerMeter
         : 0;
     const staminaPressureRatio =
-      playerData.isPulling && dragFrame.fishWonYForceKg > 0
-        ? this.#clamp01(dragFrame.dragBlockedForceKg / dragFrame.fishWonYForceKg)
+      playerData.isPulling && dragFrame.fishWonRadialForceKg > 0
+        ? this.#clamp01(
+            dragFrame.dragBlockedForceKg /
+              dragFrame.fishWonRadialForceKg,
+          )
         : 0;
 
     this.#debug = {
@@ -234,8 +249,16 @@ class FishForceSystem {
       fishSpeedPxPerSec: Math.hypot(this.#targetVelocity.x, this.#targetVelocity.y),
       fishSpeedMps: Math.hypot(this.#targetVelocity.x, this.#targetVelocity.y) / pixelsPerMeter,
       fishWonForceKg: dragFrame.fishWonForceKg,
+      fishWonRadialForceKg: dragFrame.fishWonRadialForceKg,
       fishWonYForceKg: dragFrame.fishWonYForceKg,
       yAwayRatio: dragFrame.yAwayRatio,
+      fishMoveIntentRadial: Number(movementIntent.radial) || 0,
+      fishMoveIntentLateral: Number(movementIntent.lateral) || 0,
+      fishMoveDirX: moveDir.x,
+      fishMoveDirY: moveDir.y,
+      fishRadialSpeedPxPerSec: dragFrame.radialSpeedPxPerSec,
+      fishTangentSpeedPxPerSec: dragFrame.tangentSpeedPxPerSec,
+      radialEscapeForceKg: dragFrame.radialEscapeForceKg,
       activeRodHoldKgForEscape: Math.max(0, Number(activeRodHoldKg) || 0),
       escapeOpposingHoldKg: holdOpposition.forceKg,
       holdOppositionRatio: holdOpposition.ratio,
@@ -265,7 +288,7 @@ class FishForceSystem {
       fishOwnTowardSpeedMps,
       escapeOpposingHoldKg: holdOpposition.forceKg,
       holdOppositionRatio: holdOpposition.ratio,
-      awayFromPlayerRatio,
+      awayFromPlayerRatio: outwardRatio,
       dragRatio: this.#clamp01(dragRatio),
       dragLimitKg: playerData.dragLimitKg,
       effectiveDragLimitKg: playerData.effectiveDragLimitKg,
@@ -307,9 +330,21 @@ class FishForceSystem {
       waterSpeedMultiplier: waterConfig.speedMultiplier,
       totalFishForceKg,
       opposition,
-      yAwayRatio,
+      yAwayRatio: outwardRatio,
+      awayDirX: awayDir.x,
+      awayDirY: awayDir.y,
       fishWonForceKg: dragFrame.fishWonForceKg,
+      fishWonRadialForceKg: dragFrame.fishWonRadialForceKg,
       fishWonYForceKg: dragFrame.fishWonYForceKg,
+      radialEscapeForceKg: dragFrame.radialEscapeForceKg,
+      radialSpeedPxPerSec: dragFrame.radialSpeedPxPerSec,
+      outwardRadialSpeedPxPerSec:
+        dragFrame.outwardRadialSpeedPxPerSec,
+      tangentSpeedPxPerSec: dragFrame.tangentSpeedPxPerSec,
+      fishMoveIntentRadial: Number(movementIntent.radial) || 0,
+      fishMoveIntentLateral: Number(movementIntent.lateral) || 0,
+      fishMoveDirX: moveDir.x,
+      fishMoveDirY: moveDir.y,
       dragBlockedForceKg: dragFrame.dragBlockedForceKg,
       excessYForceKg: dragFrame.excessYForceKg,
       yEscapeForceKg: dragFrame.yEscapeForceKg,
@@ -320,7 +355,7 @@ class FishForceSystem {
       modelFishEscapeSpeedPxPerSec: speedPxPerSec,
       modelFishEscapeVelocityX: modelVelocityX,
       modelFishEscapeVelocityY: modelVelocityY,
-      awayFromPlayerRatio,
+      awayFromPlayerRatio: outwardRatio,
       player: playerData,
       debug: this.#debug,
     };
@@ -415,12 +450,6 @@ class FishForceSystem {
       return { name: "away", multiplier: awayMultiplier };
     }
     return { name: "side", multiplier: sideMultiplier };
-  }
-
-  #calculateYAwayRatio({ moveDir, awayDir }) {
-    const awayYSign = Math.sign(Number(awayDir?.y) || 0);
-    if (awayYSign === 0) return 0;
-    return this.#clamp01((Number(moveDir?.y) || 0) * awayYSign);
   }
 
   #lerp(a, b, t) {

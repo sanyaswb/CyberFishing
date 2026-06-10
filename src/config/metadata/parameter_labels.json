@@ -607,6 +607,18 @@
     "label": "Профіль станів поведінки риби",
     "description": "Набір станів idle/rest/swim/dash/lastDash. Кожен стан визначає forceMultiplier, speedMultiplier, тривалість і вагу вибору."
   },
+  "fish.physics.behaviorProfile.behaviors.*.direction.radialRange": {
+    "label": "Fish radial intent range",
+    "description": "Movement intent relative to the line: positive values move away from the rod, negative values move toward it."
+  },
+  "fish.physics.behaviorProfile.behaviors.*.direction.lateralRange": {
+    "label": "Fish lateral intent range",
+    "description": "Sideways movement intent perpendicular to the current rod-to-fish line."
+  },
+  "fish.physics.behaviorProfile.behaviors.*.direction.agility": {
+    "label": "Fish direction agility",
+    "description": "Smoothing speed used when the fish changes radial or lateral movement intent."
+  },
   "physics.fight.rodHold.distanceMultiplierByRodLength": {
     "label": "Довжина ходу вудки",
     "description": "Множник довжини вудки, який визначає максимальний rod stroke у метрах."

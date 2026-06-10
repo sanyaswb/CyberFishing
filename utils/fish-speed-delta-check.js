@@ -31,6 +31,7 @@ const FILES = [
   "src/core/fishing/landing_policy.js",
   "src/core/fishing/simple_fight_force_calculator.js",
   "src/core/fishing/hold_opposition_resolver.js",
+  "src/core/fishing/fish_fight_direction_resolver.js",
   "src/core/fishing/drag_force_calculator.js",
   "src/core/fishing/landing_lift_tension_calculator.js",
   "src/core/fishing/line_tension_calculator.js",

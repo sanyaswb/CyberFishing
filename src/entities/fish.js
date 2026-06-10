@@ -202,11 +202,39 @@ class FishPhysicsProfile {
         forceMultiplier,
         speedMultiplier,
       };
+      if (behavior.direction && typeof behavior.direction === "object") {
+        normalized[name].direction = {
+          ...behavior.direction,
+          radialRange: this.#normalizeRange(
+            behavior.direction.radialRange,
+            [1, 1],
+          ),
+          lateralRange: this.#normalizeRange(
+            behavior.direction.lateralRange,
+            [-1, 1],
+          ),
+          agility: this.#firstFiniteNumber(
+            behavior.direction.agility,
+            behavior.agility,
+            1,
+          ),
+        };
+      }
       delete normalized[name].powerRatio;
       delete normalized[name].speedRatio;
       delete normalized[name].pullMult;
     }
     return normalized;
+  }
+
+  #normalizeRange(value, fallback) {
+    if (!Array.isArray(value) || value.length < 2) return [...fallback];
+    const first = Number(value[0]);
+    const second = Number(value[1]);
+    if (!Number.isFinite(first) || !Number.isFinite(second)) {
+      return [...fallback];
+    }
+    return first <= second ? [first, second] : [second, first];
   }
 
   #copyFiniteAlias(target, key, ...values) {
@@ -489,8 +517,10 @@ class FishBehavior {
   #targetPull;
   #currentMove;
   #targetMove;
-  #currentDirX;
-  #targetDirX;
+  #currentRadialIntent;
+  #targetRadialIntent;
+  #currentLateralIntent;
+  #targetLateralIntent;
   #isLocked;
   #lastDashCheckTimer;
   #holdSpecialStateUntilLeave;
@@ -512,8 +542,10 @@ class FishBehavior {
     this.#targetPull = 1.0;
     this.#currentMove = 0.0;
     this.#targetMove = 0.0;
-    this.#currentDirX = 0;
-    this.#targetDirX = 0;
+    this.#currentRadialIntent = 1;
+    this.#targetRadialIntent = 1;
+    this.#currentLateralIntent = 0;
+    this.#targetLateralIntent = 0;
     this.#isLocked = false;
     this.#lastDashCheckTimer = 0;
     this.#holdSpecialStateUntilLeave = null;
@@ -566,6 +598,7 @@ class FishBehavior {
     const state = states[this.#currentStateName];
     this.#targetPull = Math.max(0, Number(state.forceMultiplier ?? 1) || 0);
     this.#targetMove = this.#clampNonNegative(state.speedMultiplier ?? 0);
+    this.#pickDirectionTarget(state);
     this.#stateTimer = this.#range(state.minTime, state.maxTime);
   }
 
@@ -587,6 +620,7 @@ class FishBehavior {
     this.#currentStateName = stateName;
     this.#targetPull = Math.max(0, Number(state.forceMultiplier ?? 1) || 0);
     this.#targetMove = this.#clampNonNegative(state.speedMultiplier ?? 0);
+    this.#pickDirectionTarget(state);
     this.#isLocked = isLocked;
     this.#stateTimer = this.#range(state.minTime, state.maxTime);
     this.#dirTimer = 0;
@@ -741,8 +775,8 @@ class FishBehavior {
   }
 
   reactToWall(wallSide) {
-    this.#targetDirX = wallSide === -1 ? 1 : -1;
-    this.#currentDirX = this.#targetDirX;
+    this.#targetLateralIntent = wallSide === -1 ? 1 : -1;
+    this.#currentLateralIntent = this.#targetLateralIntent;
     const stateConfig = this.#config.behaviors[this.#currentStateName];
     this.#dirTimer =
       stateConfig.bounceCooldownMs ?? this.#config.bounceCooldownMs ?? 2000;
@@ -767,7 +801,7 @@ class FishBehavior {
 
     this.#dirTimer -= dt;
     if (this.#dirTimer <= 0) {
-      this.#targetDirX = this.#range(-1, 1);
+      this.#pickDirectionTarget(stateConfig);
       const minMs =
         stateConfig.dirChangeMinMs ?? this.#config.dirChangeMinMs ?? 500;
       const maxMs =
@@ -775,12 +809,52 @@ class FishBehavior {
       this.#dirTimer = this.#range(minMs, maxMs);
     }
 
-    const agility = stateConfig.agility ?? this.#config.agility ?? 1.0;
+    const agility =
+      stateConfig.direction?.agility ??
+      stateConfig.agility ??
+      this.#config.agility ??
+      1.0;
     const t = Math.min(1, (dt / 1000) * 3.0 * agility);
 
     this.#currentPull += (this.#targetPull - this.#currentPull) * t;
     this.#currentMove += (this.#targetMove - this.#currentMove) * t;
-    this.#currentDirX += (this.#targetDirX - this.#currentDirX) * t;
+    this.#currentRadialIntent +=
+      (this.#targetRadialIntent - this.#currentRadialIntent) * t;
+    this.#currentLateralIntent +=
+      (this.#targetLateralIntent - this.#currentLateralIntent) * t;
+  }
+
+  #pickDirectionTarget(stateConfig = {}) {
+    const direction = stateConfig.direction;
+    if (!direction || typeof direction !== "object") {
+      this.#targetRadialIntent = Math.max(
+        0,
+        Number(stateConfig.forceMultiplier ?? this.#targetPull) || 0,
+      );
+      this.#targetLateralIntent = this.#range(-1, 1);
+      return;
+    }
+
+    const radialRange = this.#rangePair(direction.radialRange, [1, 1]);
+    const lateralRange = this.#rangePair(direction.lateralRange, [-1, 1]);
+    this.#targetRadialIntent = this.#range(
+      radialRange[0],
+      radialRange[1],
+    );
+    this.#targetLateralIntent = this.#range(
+      lateralRange[0],
+      lateralRange[1],
+    );
+  }
+
+  #rangePair(value, fallback) {
+    if (!Array.isArray(value) || value.length < 2) return fallback;
+    const first = Number(value[0]);
+    const second = Number(value[1]);
+    if (!Number.isFinite(first) || !Number.isFinite(second)) {
+      return fallback;
+    }
+    return first <= second ? [first, second] : [second, first];
   }
 
   #clamp01(value) {
@@ -842,13 +916,30 @@ class FishBehavior {
   getStateData() {
     const stateConfig = this.#config.behaviors[this.#currentStateName];
     const speedRatio = this.#clampNonNegative(Math.abs(this.#currentMove));
+    const hasDirection =
+      stateConfig.direction &&
+      typeof stateConfig.direction === "object";
+    const radialIntent = hasDirection
+      ? this.#currentRadialIntent
+      : this.#currentPull;
+    const lateralIntent = hasDirection
+      ? this.#currentLateralIntent
+      : speedRatio * this.#currentLateralIntent;
     return {
       name: this.#currentStateName,
       pullMult: this.#currentPull,
       forceMultiplier: this.#currentPull,
       speedMultiplier: speedRatio,
-      moveX: speedRatio * this.#currentDirX,
-      agility: stateConfig.agility ?? this.#config.agility ?? 1.0,
+      movementIntent: {
+        radial: radialIntent,
+        lateral: lateralIntent,
+      },
+      moveX: speedRatio * this.#currentLateralIntent,
+      agility:
+        stateConfig.direction?.agility ??
+        stateConfig.agility ??
+        this.#config.agility ??
+        1.0,
     };
   }
 }
