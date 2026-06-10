@@ -365,10 +365,23 @@ class FightPhysicsConfigAdapter {
   getRodControlConfig() {
     const fight = this.#physics().fight || {};
     const config = fight.rodControl || {};
+    const lineConstraint = config.lineConstraint || {};
     return {
       ...config,
       pixelsPerMeter: this.getPixelsPerMeter(),
       water: this.getWaterConfig(),
+      lineConstraint: {
+        tautThresholdRatio: this.#number(
+          lineConstraint.tautThresholdRatio,
+          0.995,
+        ),
+        epsilonMeters: this.#number(
+          lineConstraint.epsilonMeters,
+          0.001,
+        ),
+        projectLockedMovementToArc:
+          lineConstraint.projectLockedMovementToArc !== false,
+      },
     };
   }
 

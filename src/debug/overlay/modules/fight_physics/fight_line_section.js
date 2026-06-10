@@ -18,6 +18,15 @@ class FightLineSection extends FightSectionBase {
     const fullyExtended = line.fullyExtended ?? d.isLineFullyExtended;
     const hardLimit = line.hardLineLimit ?? d.hardLineLimit;
     const hardLimitMeters = line.hardLineLimitMeters ?? released;
+    const lineLengthLocked = line.lineLengthLocked ?? d.lineLengthLocked;
+    const radialConstraintActive =
+      line.radialConstraintActive ?? d.radialConstraintActive;
+    const tautLine = line.tautLine ?? d.lineTaut;
+    const dragCanPayout = line.dragCanPayout ?? d.lineDragCanPayout;
+    const releaseBlockedReason =
+      line.releaseBlockedReason ?? d.lineReleaseBlockedReason ?? "none";
+    const constraintReason =
+      line.constraintReason ?? d.lineConstraintReason ?? "none";
 
     return [
       this.row("Total line", f.meters(total, 2), "#73c2fb"),
@@ -31,6 +40,12 @@ class FightLineSection extends FightSectionBase {
       this.row("Spool empty", spoolEmpty ? "YES" : "NO", spoolEmpty ? "#ff8888" : "#00ff80"),
       this.row("Fully extended", fullyExtended ? "YES" : "NO", fullyExtended ? "#ff8888" : "#00ff80"),
       this.row("Hard line limit", hardLimit ? `${f.meters(hardLimitMeters, 2)} / HIT` : f.meters(hardLimitMeters, 2), hardLimit ? "#ff8888" : "#8a9bac"),
+      this.row("Length locked", lineLengthLocked ? "YES" : "NO", lineLengthLocked ? "#ffaa00" : "#00ff80"),
+      this.row("Taut line", tautLine ? "YES" : "NO", tautLine ? "#ffaa00" : "#8a9bac"),
+      this.row("Radial constraint", radialConstraintActive ? "ACTIVE" : "OFF", radialConstraintActive ? "#ffaa00" : "#8a9bac"),
+      this.row("Drag can payout", dragCanPayout ? "YES" : "NO", dragCanPayout ? "#00ff80" : "#8a9bac"),
+      this.row("Release blocked reason", releaseBlockedReason, releaseBlockedReason === "none" ? "#8a9bac" : "#ff8888"),
+      this.row("Constraint reason", constraintReason, constraintReason === "none" ? "#8a9bac" : "#ffaa00"),
     ];
   }
 }

@@ -14,6 +14,7 @@ class DragForceCalculator {
     dragRatio = 0,
     dragLimitKg = 0,
     lineHasReserve = true,
+    lineTaut = true,
     dragLocked = false,
     dragSupported = true,
     targetXSpeedPxPerSec = 0,
@@ -32,29 +33,38 @@ class DragForceCalculator {
     const fishWonYForceKg = fishWonForceKg * resolvedYAwayRatio;
     const resolvedDragRatio = this.#clamp01(dragRatio);
     const resolvedDragLimitKg = this.#positive(dragLimitKg);
-    const canSlipLine = !!lineHasReserve && !dragLocked && !!dragSupported;
+    const dragEngaged = !!lineTaut;
+    const canSlipTautLine =
+      !!lineHasReserve &&
+      !dragLocked &&
+      !!dragSupported;
     const dragHasThreshold =
       resolvedDragRatio > 0.000001 && resolvedDragLimitKg > 0.000001;
-    const dragCanBeExceeded = canSlipLine && dragHasThreshold;
+    const dragCanBeExceeded =
+      dragEngaged && canSlipTautLine && dragHasThreshold;
     const shouldSlipDrag =
       dragCanBeExceeded && fishWonYForceKg > resolvedDragLimitKg + 0.000001;
 
-    const dragBlockedForceKg = canSlipLine
-      ? dragHasThreshold
-        ? Math.min(fishWonYForceKg, resolvedDragLimitKg)
-        : 0
-      : fishWonYForceKg;
+    const dragBlockedForceKg = !dragEngaged
+      ? 0
+      : canSlipTautLine
+        ? dragHasThreshold
+          ? Math.min(fishWonYForceKg, resolvedDragLimitKg)
+          : 0
+        : fishWonYForceKg;
 
     // Threshold drag model:
     // - open drag blocks nothing, so the full fish-won Y force can move the line;
     // - active drag blocks Y escape up to its kg limit;
     // - only force above that limit becomes Y movement;
     // - if the line cannot slip, no Y movement is allowed and all won Y force loads the line.
-    const yEscapeForceKg = canSlipLine
-      ? dragHasThreshold
-        ? Math.max(0, fishWonYForceKg - resolvedDragLimitKg)
-        : fishWonYForceKg
-      : 0;
+    const yEscapeForceKg = !dragEngaged
+      ? fishWonYForceKg
+      : canSlipTautLine
+        ? dragHasThreshold
+          ? Math.max(0, fishWonYForceKg - resolvedDragLimitKg)
+          : fishWonYForceKg
+        : 0;
     const excessYForceKg = yEscapeForceKg;
     const excessYSpeedPxPerSec =
       this.speedFromForceKg({
@@ -67,10 +77,15 @@ class DragForceCalculator {
       }) * Math.sign(Number(targetYSpeedPxPerSec) || 0);
     const dragSlowedYSpeedPxPerSec = 0;
     const hasAwayYMovement = resolvedYAwayRatio > 0.000001;
-    const finalYSpeedPxPerSec = hasAwayYMovement
-      ? canSlipLine
+    const tautFinalYSpeedPxPerSec = hasAwayYMovement
+      ? canSlipTautLine
         ? excessYSpeedPxPerSec
         : 0
+      : Number(targetYSpeedPxPerSec) || 0;
+    const finalYSpeedPxPerSec = hasAwayYMovement
+      ? dragEngaged
+        ? tautFinalYSpeedPxPerSec
+        : Number(targetYSpeedPxPerSec) || 0
       : Number(targetYSpeedPxPerSec) || 0;
 
     return Object.freeze({
@@ -88,7 +103,10 @@ class DragForceCalculator {
       targetYSpeedPxPerSec: Number(targetYSpeedPxPerSec) || 0,
       finalXSpeedPxPerSec: Number(targetXSpeedPxPerSec) || 0,
       finalYSpeedPxPerSec,
+      tautFinalYSpeedPxPerSec,
       lineHasReserve: !!lineHasReserve,
+      lineTaut: dragEngaged,
+      dragEngaged,
       dragLocked: !!dragLocked,
       dragSupported: !!dragSupported,
       dragCanBeExceeded,

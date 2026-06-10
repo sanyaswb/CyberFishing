@@ -4,6 +4,7 @@ class FishForceSystem {
   #scratchA = new Vector2(0, 0);
   #scratchB = new Vector2(0, 0);
   #targetVelocity = new Vector2(0, 0);
+  #tautTargetVelocity = new Vector2(0, 0);
   #playerForceSystem;
   #forceCalculator = new SimpleFightForceCalculator();
   #holdOppositionResolver = new HoldOppositionResolver();
@@ -33,6 +34,7 @@ class FishForceSystem {
     playerMaxLoadKg,
     activeRodHoldKg = 0,
     lineHasReserve = true,
+    lineTaut = true,
     env,
     buffs,
   }) {
@@ -185,6 +187,7 @@ class FishForceSystem {
       dragRatio: this.#clamp01(dragRatio),
       dragLimitKg: playerData.effectiveDragLimitKg,
       lineHasReserve,
+      lineTaut,
       dragLocked,
       dragSupported,
       targetXSpeedPxPerSec: modelVelocityX,
@@ -199,6 +202,10 @@ class FishForceSystem {
     this.#targetVelocity.set(
       dragFrame.finalXSpeedPxPerSec,
       dragFrame.finalYSpeedPxPerSec,
+    );
+    this.#tautTargetVelocity.set(
+      dragFrame.finalXSpeedPxPerSec,
+      dragFrame.tautFinalYSpeedPxPerSec,
     );
     const fishOwnTowardSpeedMps =
       directionInfo.name === "toward_player"
@@ -245,6 +252,7 @@ class FishForceSystem {
       dragSlowedYSpeedPxPerSec: dragFrame.dragSlowedYSpeedPxPerSec,
       excessYSpeedPxPerSec: dragFrame.excessYSpeedPxPerSec,
       dragCanBeExceeded: dragFrame.dragCanBeExceeded,
+      dragEngaged: dragFrame.dragEngaged,
       shouldSlipDrag: dragFrame.shouldSlipDrag,
       staminaPressureRatio,
       staminaRatio,
@@ -262,6 +270,7 @@ class FishForceSystem {
       dragLimitKg: playerData.dragLimitKg,
       effectiveDragLimitKg: playerData.effectiveDragLimitKg,
       dragLocked,
+      lineTaut: dragFrame.lineTaut,
       hasReel,
       anglePenalty: playerData.anglePenalty,
       angleStressRatio: playerData.angleStressRatio,
@@ -279,6 +288,7 @@ class FishForceSystem {
     return {
       behavior,
       targetVelocity: this.#targetVelocity,
+      tautTargetVelocity: this.#tautTargetVelocity,
       fishWeightKg: this.#fish.getWeight(),
       fishPhysicsConfig: fishPhysics,
       staticFishForceKg: staticForceKg,

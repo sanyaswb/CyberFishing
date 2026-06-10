@@ -738,5 +738,17 @@
   "physics.fight.rodControl.rodAim.clampToPlayableZone": {
     "label": "Rod Aim clamp to playable zone",
     "description": "Prevents horizontal rod aim from leaving the playable map zone when enabled."
+  },
+  "physics.fight.rodControl.lineConstraint.tautThresholdRatio": {
+    "label": "Rod control taut-line threshold",
+    "description": "Line extension ratio at which rod control treats the line as taut and locked movement is projected onto the line radius."
+  },
+  "physics.fight.rodControl.lineConstraint.epsilonMeters": {
+    "label": "Rod control line epsilon",
+    "description": "Small meter tolerance used when resolving locked line and hard line limit states."
+  },
+  "physics.fight.rodControl.lineConstraint.projectLockedMovementToArc": {
+    "label": "Project locked rod control to arc",
+    "description": "When enabled, lateral rod control moves fish along the fixed line radius while the line length is locked."
   }
 }

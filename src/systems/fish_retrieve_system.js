@@ -59,6 +59,7 @@ class FishRetrieveSystem {
       dragRatio,
       dragLimitKg,
       lineHasReserve,
+      lineTaut,
       dragLocked,
       dragSupported,
       targetXSpeedPxPerSec: forceData?.modelFishEscapeVelocityX,

@@ -65,6 +65,12 @@ const FIGHT_PHYSICS_CONFIG = {
       oppositeDirectionMultiplier: 2.5,
     },
 
+    lineConstraint: {
+      tautThresholdRatio: 0.995,
+      epsilonMeters: 0.001,
+      projectLockedMovementToArc: true,
+    },
+
     rodAim: {
       enabled: true,
       maxOffsetScreenRatio: 0.02,

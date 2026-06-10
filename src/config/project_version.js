@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.19.33";
+const CURRENT_PROJECT_VERSION = "0.19.34";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "drag-aware-rod-control-tension",
-  updatedAt: "2026-06-06",
+  codename: "fixed-length-line-constraint",
+  updatedAt: "2026-06-10",
   notes: Object.freeze([
-    "Rod Control X now respects remaining drag tension reserve",
-    "Lateral tension multipliers are included in the drag-aware force limit",
-    "Successful drag slip uses visible tension as the tackle stress source",
-    "Locked drag and hard line limits still allow overload stress",
+    "Line payout capability is resolved separately from physical spool limits",
+    "Taut locked-line Rod Control movement follows the fixed line radius",
+    "Fish movement uses already released free line before drag engages",
+    "Slack-to-taut transitions are resolved inside the movement frame",
+    "Drag holding and empty spool release blocks have distinct diagnostics",
   ]),
 });
 

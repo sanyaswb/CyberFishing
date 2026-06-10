@@ -18,6 +18,7 @@ class RodLateralControlSystem {
     dragLocked = true,
     lineHasReserve = false,
     hardLineLimit = false,
+    lineConstraintState = null,
     config,
   } = {}) {
     const cfg = config || {};
@@ -62,6 +63,7 @@ class RodLateralControlSystem {
       dragLocked,
       lineHasReserve,
       hardLineLimit,
+      lineConstraintState,
       config: cfg,
     });
     const deliveredForceRatio = this.#clamp01(
@@ -101,6 +103,8 @@ class RodLateralControlSystem {
       dragLimited: forceFrame.dragLimited,
       dragReserveKg: forceFrame.dragReserveKg,
       canSlipDrag: forceFrame.canSlipDrag,
+      lineLengthLocked: !!lineConstraintState?.lineLengthLocked,
+      radialConstraintActive: !!lineConstraintState?.radialConstraintActive,
       deliveredForceRatio: canApply ? deliveredForceRatio : 0,
       forceKg: canApply ? forceKg : 0,
       playerTensionKg: canApply ? forceKg * tensionMultiplier : 0,
@@ -268,6 +272,7 @@ class RodLateralControlSystem {
     dragLocked,
     lineHasReserve,
     hardLineLimit,
+    lineConstraintState,
     config,
   }) {
     const forceCfg = config.force || {};
@@ -291,10 +296,9 @@ class RodLateralControlSystem {
       tackleLimitKg - resolvedCurrentTensionKg,
     );
     const forceLimitKg = Math.min(maxForceKg, loadReserveKg);
-    const canSlipDrag =
-      !dragLocked &&
-      !!lineHasReserve &&
-      !hardLineLimit;
+    const canSlipDrag = lineConstraintState
+      ? lineConstraintState.dragCanPayout === true
+      : !dragLocked && !!lineHasReserve && !hardLineLimit;
     const resolvedDragLimitKg = Math.max(
       0,
       this.#number(dragLimitKg),
@@ -438,6 +442,9 @@ class RodLateralControlSystem {
       dragLimited: false,
       dragReserveKg: 0,
       canSlipDrag: false,
+      lineLengthLocked: false,
+      radialConstraintActive: false,
+      movementMode: "none",
       deliveredForceRatio: 0,
       forceKg: 0,
       playerTensionKg: 0,

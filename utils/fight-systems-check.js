@@ -28,6 +28,7 @@ const FILES = [
   "src/core/fishing/simple_fight_force_calculator.js",
   "src/core/fishing/hold_opposition_resolver.js",
   "src/core/fishing/drag_force_calculator.js",
+  "src/core/fishing/line_radial_movement_splitter.js",
   "src/core/fishing/landing_lift_tension_calculator.js",
   "src/core/fishing/line_tension_calculator.js",
   "src/core/fishing/rod_pull_state.js",
@@ -262,6 +263,7 @@ approx(dragSlipTension.lineStressRatio, 0.25, 0.0001, "drag-capped line stress u
 assert(dragSlipTension.shouldSlipDrag, "drag slip flag releases line");
 
 const dragForceCalculator = new DragForceCalculator();
+const radialMovementSplitter = new LineRadialMovementSplitter();
 const holdOppositionResolver = new HoldOppositionResolver();
 approx(
   holdOppositionResolver.resolve({
@@ -357,6 +359,113 @@ approx(belowThresholdDragForce.dragBlockedForceKg, 0.28, 0.0001, "drag threshold
 approx(belowThresholdDragForce.excessYForceKg, 0, 0.0001, "drag threshold has no excess below the limit");
 approx(belowThresholdDragForce.finalYSpeedPxPerSec, 0, 0.0001, "drag threshold stops Y movement below the limit");
 assert(!belowThresholdDragForce.shouldSlipDrag, "drag threshold does not slip below the limit");
+
+const slackLineDragForce = dragForceCalculator.calculate({
+  fishOppositionKg: 0.28,
+  effectiveRodHoldKg: 0,
+  yAwayRatio: 1,
+  dragRatio: 0.3,
+  dragLimitKg: 0.3,
+  lineHasReserve: true,
+  lineTaut: false,
+  dragLocked: false,
+  dragSupported: true,
+  targetYSpeedPxPerSec: -107.08,
+});
+approx(
+  slackLineDragForce.finalYSpeedPxPerSec,
+  -107.08,
+  0.0001,
+  "slack released line lets fish move away without drag payout",
+);
+approx(
+  slackLineDragForce.dragBlockedForceKg,
+  0,
+  0.0001,
+  "slack released line does not load drag",
+);
+assert(
+  !slackLineDragForce.shouldSlipDrag,
+  "slack released line does not trigger drag slip",
+);
+assert(
+  !slackLineDragForce.dragEngaged,
+  "drag engages only after released line becomes taut",
+);
+const splitAtReleasedRadius = radialMovementSplitter.resolveVelocity({
+  position: { x: 0, y: -495 },
+  rodTipPosition: { x: 0, y: 0 },
+  freeVelocity: { x: 0, y: -15 },
+  constrainedVelocity: { x: 0, y: 0 },
+  releasedMeters: 10,
+  pixelsPerMeter: 50,
+  dtSec: 1,
+});
+approx(
+  splitAtReleasedRadius.velocityY,
+  -5,
+  0.0001,
+  "slack fish uses only free released radius before held drag stops it",
+);
+assert(
+  splitAtReleasedRadius.crossedReleasedRadius,
+  "slack-to-taut transition is resolved inside the frame",
+);
+approx(
+  splitAtReleasedRadius.freeTimeSec,
+  1 / 3,
+  0.0001,
+  "free movement ends exactly at released radius",
+);
+const emptySpoolFreeRadius = radialMovementSplitter.resolveVelocity({
+  position: { x: 0, y: -495 },
+  rodTipPosition: { x: 0, y: 0 },
+  freeVelocity: { x: 0, y: -15 },
+  constrainedVelocity: { x: 0, y: 0 },
+  releasedMeters: 10,
+  pixelsPerMeter: 50,
+  dtSec: 0.2,
+});
+approx(
+  emptySpoolFreeRadius.velocityY,
+  -15,
+  0.0001,
+  "empty spool still allows movement inside released radius",
+);
+assert(
+  !emptySpoolFreeRadius.crossedReleasedRadius,
+  "free movement does not engage the line before reaching its radius",
+);
+const openDragAfterRadius = radialMovementSplitter.resolveVelocity({
+  position: { x: 0, y: -500 },
+  rodTipPosition: { x: 0, y: 0 },
+  freeVelocity: { x: 0, y: -15 },
+  constrainedVelocity: { x: 0, y: -15 },
+  releasedMeters: 10,
+  pixelsPerMeter: 50,
+  dtSec: 0.2,
+});
+approx(
+  openDragAfterRadius.velocityY,
+  -15,
+  0.0001,
+  "open drag keeps outward movement after released radius",
+);
+const heldDragAtRadius = radialMovementSplitter.resolveVelocity({
+  position: { x: 0, y: -500 },
+  rodTipPosition: { x: 0, y: 0 },
+  freeVelocity: { x: 0, y: -15 },
+  constrainedVelocity: { x: 0, y: 0 },
+  releasedMeters: 10,
+  pixelsPerMeter: 50,
+  dtSec: 0.2,
+});
+approx(
+  heldDragAtRadius.velocityY,
+  0,
+  0.0001,
+  "held drag blocks outward movement at released radius",
+);
 
 const dragForce = dragForceCalculator.calculate({
   fishOppositionKg: 0.78,

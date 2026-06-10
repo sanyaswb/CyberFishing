@@ -26,6 +26,10 @@ class LineSystem {
     didSlip: false,
     hasReserveAfterRelease: false,
     hardLimitReached: false,
+    lineLengthLocked: false,
+    blockedByDrag: false,
+    blockedByHardLimit: false,
+    releaseBlockedReason: "none",
   };
   #lastConstraintResult = {
     constrained: false,
@@ -116,9 +120,18 @@ class LineSystem {
       return this.#setReleaseResult({
         demandedMeters,
         unsatisfiedMeters: demandedMeters,
+        hasReserveAfterRelease: this.#remainingMeters > 0.001,
         hardLimitReached:
           demandedMeters > 0.000001 &&
           this.#remainingMeters <= 0.001,
+        lineLengthLocked: demandedMeters > 0.000001,
+        blockedByHardLimit:
+          demandedMeters > 0.000001 &&
+          this.#remainingMeters <= 0.001,
+        releaseBlockedReason:
+          demandedMeters > 0.000001
+            ? "spool_empty"
+            : "none",
       });
     }
 
@@ -153,6 +166,10 @@ class LineSystem {
     this.#refreshState();
 
     const unsatisfied = Math.max(0, excess - released);
+    const blockedByHardLimit =
+      unsatisfied > 0.000001 && this.#remainingMeters <= 0.001;
+    const blockedByDrag =
+      unsatisfied > 0.000001 && this.#remainingMeters > 0.001;
     return this.#setReleaseResult({
       releasedMeters: released,
       demandedMeters: excess,
@@ -160,7 +177,15 @@ class LineSystem {
       unsatisfiedMeters: unsatisfied,
       didSlip: released > 0.000001,
       hasReserveAfterRelease: this.#remainingMeters > 0.001,
-      hardLimitReached: unsatisfied > 0.000001 && this.#remainingMeters <= 0.001,
+      hardLimitReached: blockedByHardLimit,
+      lineLengthLocked: unsatisfied > 0.000001,
+      blockedByDrag,
+      blockedByHardLimit,
+      releaseBlockedReason: blockedByHardLimit
+        ? "spool_empty"
+        : blockedByDrag
+          ? "drag_holding"
+          : "none",
     });
   }
 
@@ -306,6 +331,10 @@ class LineSystem {
   }
 
   getState() {
+    const freeReleasedLineMeters = Math.max(
+      0,
+      this.#releasedMeters - this.#distanceMeters,
+    );
     return {
       hasReel: this.#hasReel,
       baseReachMeters: this.#baseReachMeters,
@@ -318,11 +347,12 @@ class LineSystem {
       spoolEmpty: this.#remainingMeters <= 0.001,
       maxRemainingMeters: this.#maxRemainingMeters,
       distanceMeters: this.#distanceMeters,
-      recoverableLineMeters: Math.max(0, this.#releasedMeters - this.#distanceMeters),
+      freeReleasedLineMeters,
+      recoverableLineMeters: freeReleasedLineMeters,
       actualSlackMeters: 0,
       // Deprecated compatibility alias. In the current fight loop this value is
       // pump credit / recoverable line, not physical loose line.
-      slackMeters: Math.max(0, this.#releasedMeters - this.#distanceMeters),
+      slackMeters: freeReleasedLineMeters,
       isFullyExtended: this.#isFullyExtended,
       lineExtensionRatio: this.#lineExtensionRatio,
       effectiveLineMaxLoadKg: this.getEffectiveLineMaxLoadKg(),
@@ -370,6 +400,12 @@ class LineSystem {
     this.#lastReleaseResult.hasReserveAfterRelease =
       result.hasReserveAfterRelease ?? this.#remainingMeters > 0.001;
     this.#lastReleaseResult.hardLimitReached = !!result.hardLimitReached;
+    this.#lastReleaseResult.lineLengthLocked = !!result.lineLengthLocked;
+    this.#lastReleaseResult.blockedByDrag = !!result.blockedByDrag;
+    this.#lastReleaseResult.blockedByHardLimit =
+      !!result.blockedByHardLimit;
+    this.#lastReleaseResult.releaseBlockedReason =
+      result.releaseBlockedReason || "none";
     return this.#lastReleaseResult;
   }
 
