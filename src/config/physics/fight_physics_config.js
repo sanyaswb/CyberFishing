@@ -27,6 +27,21 @@ const FIGHT_PHYSICS_CONFIG = {
     capacityByRodLengthRatio: 1.0,
   },
 
+  playerForceBudget: {
+    enabled: true,
+
+    control: {
+      maxBudgetShare: 0.5,
+      minInputRatio: 0.001,
+    },
+
+    tensionCeiling: {
+      holdMultiplier: 1.05,
+      controlMultiplier: 1.05,
+      maxCombinedMultiplier: 1.25,
+    },
+  },
+
   playerPullMotion: {
     inertiaSeconds: 0.16,
   },

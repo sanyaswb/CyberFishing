@@ -45,6 +45,15 @@ class RodStrokeDebugModule extends ConsoleTableDebugModule {
         live.rodStrokeUnrecoveredMeters,
         2,
       ),
+      "Stroke distance gained": DebugFormatters.number(
+        live.strokeDistanceGainedMeters,
+        3,
+      ),
+      "Stroke distance lost": DebugFormatters.number(
+        live.strokeDistanceLostMeters,
+        3,
+      ),
+      "Stroke distance reason": live.strokeDistanceReason || "none",
       "Pump credit meters": DebugFormatters.number(
         live.pumpCreditMeters ?? live.slackMeters,
         2,

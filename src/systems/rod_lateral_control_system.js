@@ -16,6 +16,7 @@ class RodLateralControlSystem {
     fishVelocity,
     fishVelocityX,
     fishWeightKg,
+    playerForceBudget,
     dragLimitKg,
     dragLocked = true,
     lineHasReserve = false,
@@ -65,6 +66,7 @@ class RodLateralControlSystem {
       currentTensionKg,
       fishTensionKg,
       fishWeightKg,
+      playerForceBudget,
       tensionMultiplier,
       dragLimitKg,
       dragLocked,
@@ -106,6 +108,9 @@ class RodLateralControlSystem {
       loadReserveRatio: forceFrame.loadReserveRatio,
       tensionCeilingMultiplier: forceFrame.tensionCeilingMultiplier,
       tensionCeilingKg: forceFrame.tensionCeilingKg,
+      playerForceBudgetEnabled: forceFrame.playerForceBudgetEnabled,
+      playerForceControlBudgetKg: forceFrame.playerForceControlBudgetKg,
+      playerForceControlShare: forceFrame.playerForceControlShare,
       forceLimitKg: forceFrame.forceLimitKg,
       effectiveForceLimitKg: forceFrame.effectiveForceLimitKg,
       currentTensionKg: forceFrame.currentTensionKg,
@@ -284,6 +289,7 @@ class RodLateralControlSystem {
     currentTensionKg,
     fishTensionKg,
     fishWeightKg,
+    playerForceBudget,
     tensionMultiplier,
     dragLimitKg,
     dragLocked,
@@ -304,20 +310,23 @@ class RodLateralControlSystem {
         this.#number(maxTackleLoadKg, maxForceKg),
       ),
     );
-    const tensionCeilingMultiplier = Math.max(
-      0,
-      this.#number(config.tensionCeilingMultiplier, 1),
+    const budget = playerForceBudget || {};
+    const hasExternalBudget = Number.isFinite(
+      Number(budget.controlBudgetKg),
     );
-    const tensionCeilingKg =
-      tackleLimitKg * tensionCeilingMultiplier;
+    const tensionCeilingMultiplier = hasExternalBudget
+      ? Math.max(0, this.#number(budget.combinedCeilingMultiplier, 1))
+      : Math.max(0, this.#number(config.tensionCeilingMultiplier, 1));
+    const tensionCeilingKg = hasExternalBudget
+      ? Math.max(0, this.#number(budget.combinedTensionCeilingKg, 0))
+      : tackleLimitKg * tensionCeilingMultiplier;
     const resolvedCurrentTensionKg = Math.max(
       0,
       this.#number(currentTensionKg, this.#number(fishTensionKg)),
     );
-    const loadReserveKg = Math.max(
-      0,
-      tensionCeilingKg - resolvedCurrentTensionKg,
-    );
+    const loadReserveKg = hasExternalBudget
+      ? Math.max(0, this.#number(budget.controlBudgetKg, 0))
+      : Math.max(0, tensionCeilingKg - resolvedCurrentTensionKg);
     const forceLimitKg = Math.min(maxForceKg, loadReserveKg);
     const canSlipDrag = lineConstraintState
       ? lineConstraintState.dragCanPayout === true
@@ -326,12 +335,16 @@ class RodLateralControlSystem {
       0,
       this.#number(dragLimitKg),
     );
-    const dragReserveKg = canSlipDrag
-      ? Math.max(0, resolvedDragLimitKg - resolvedCurrentTensionKg)
-      : loadReserveKg;
-    const effectiveTensionReserveKg = canSlipDrag
-      ? Math.min(loadReserveKg, dragReserveKg)
-      : loadReserveKg;
+    const dragReserveKg = hasExternalBudget
+      ? loadReserveKg
+      : canSlipDrag
+        ? Math.max(0, resolvedDragLimitKg - resolvedCurrentTensionKg)
+        : loadReserveKg;
+    const effectiveTensionReserveKg = hasExternalBudget
+      ? loadReserveKg
+      : canSlipDrag
+        ? Math.min(loadReserveKg, dragReserveKg)
+        : loadReserveKg;
     const tensionScale = Math.max(
       1,
       this.#number(tensionMultiplier, 1),
@@ -356,6 +369,13 @@ class RodLateralControlSystem {
       currentTensionKg: resolvedCurrentTensionKg,
       tensionCeilingMultiplier,
       tensionCeilingKg,
+      playerForceBudgetEnabled: hasExternalBudget,
+      playerForceControlBudgetKg: hasExternalBudget
+        ? Math.max(0, this.#number(budget.controlBudgetKg, 0))
+        : 0,
+      playerForceControlShare: hasExternalBudget
+        ? this.#clamp01(budget.controlShare)
+        : 0,
       loadReserveKg,
       loadReserveRatio,
       forceLimitKg,
@@ -516,6 +536,9 @@ class RodLateralControlSystem {
       loadReserveRatio: 0,
       tensionCeilingMultiplier: 1,
       tensionCeilingKg: 0,
+      playerForceBudgetEnabled: false,
+      playerForceControlBudgetKg: 0,
+      playerForceControlShare: 0,
       forceLimitKg: 0,
       effectiveForceLimitKg: 0,
       currentTensionKg: 0,

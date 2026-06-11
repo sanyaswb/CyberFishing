@@ -790,5 +790,29 @@
   "physics.fight.rodControl.lineConstraint.projectLockedMovementToArc": {
     "label": "Project locked rod control to arc",
     "description": "When enabled, lateral rod control moves fish along the fixed line radius while the line length is locked."
+  },
+  "physics.fight.playerForceBudget.enabled": {
+    "label": "Player force budget enabled",
+    "description": "Enables the shared per-frame player force budget that splits player effort between Rod Hold and Rod Control."
+  },
+  "physics.fight.playerForceBudget.control.maxBudgetShare": {
+    "label": "Rod Control max budget share",
+    "description": "Maximum share of the available player force budget that full Rod Control can take while Rod Hold is also active."
+  },
+  "physics.fight.playerForceBudget.control.minInputRatio": {
+    "label": "Rod Control budget input epsilon",
+    "description": "Small input ratio threshold reserved for budget-related control diagnostics."
+  },
+  "physics.fight.playerForceBudget.tensionCeiling.holdMultiplier": {
+    "label": "Rod Hold budget ceiling multiplier",
+    "description": "Additional tension ceiling multiplier contributed by active Rod Hold. A value of 1.05 adds a 5% overload ceiling."
+  },
+  "physics.fight.playerForceBudget.tensionCeiling.controlMultiplier": {
+    "label": "Rod Control budget ceiling multiplier",
+    "description": "Additional tension ceiling multiplier contributed by Rod Control, scaled by control input ratio."
+  },
+  "physics.fight.playerForceBudget.tensionCeiling.maxCombinedMultiplier": {
+    "label": "Player force max combined ceiling",
+    "description": "Safety cap for the combined Rod Hold and Rod Control tension ceiling multiplier."
   }
 }

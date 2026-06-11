@@ -7,6 +7,10 @@ class FightPhysicsSystem {
   #pumpCreditCalculator = new PumpCreditCalculator();
   #looseLineCalculator = new LooseLineCalculator();
   #rodStrokeTracker = new RodStrokeTracker();
+  #rodStrokeDistanceTracker =
+    typeof RodStrokeDistanceTracker !== "undefined"
+      ? new RodStrokeDistanceTracker()
+      : null;
   #playerPullMotionSmoother = new PlayerPullMotionSmoother();
   #reelHoldRecoverySystem = new ReelHoldRecoverySystem();
   #landingPolicyResolver = new LandingPolicyResolver();
@@ -14,6 +18,15 @@ class FightPhysicsSystem {
   #lineConstraintStateResolver = new LineConstraintStateResolver();
   #lineRadialMovementSplitter = new LineRadialMovementSplitter();
   #rodControlMovementProjector = new RodControlMovementProjector();
+  #fightInputActionComposer =
+    typeof FightInputActionComposer !== "undefined"
+      ? new FightInputActionComposer()
+      : null;
+  #playerForceBudgetAllocator =
+    typeof PlayerForceBudgetAllocator !== "undefined"
+      ? new PlayerForceBudgetAllocator()
+      : null;
+  #composedInputScratch = {};
   #pipeline = new FightPhysicsPipeline();
   #fishRetrieveSystem;
   #fishWasInCatchZone = false;
@@ -70,9 +83,13 @@ class FightPhysicsSystem {
       "resolve_delta_time",
       () => this.#getDtSec(dtMs, physics),
     );
+    const fightInput = pipelineFrame.run(
+      "compose_fight_input_actions",
+      () => this.#composeFightInput(input),
+    );
     const pullInput = pipelineFrame.run(
       "read_input",
-      () => this.#updateInput({ input, pullInputMapper, dragSystem, dtSec }),
+      () => this.#updateInput({ input: fightInput, pullInputMapper, dragSystem, dtSec }),
     );
     const hasReel = !!reel?.hasReel?.();
     const dragSupported = hasReel && reel?.hasDrag?.() !== false;
@@ -86,7 +103,7 @@ class FightPhysicsSystem {
       dtSec,
       floatEntity,
       bounds,
-      input,
+      input: fightInput,
       env,
       checkWater,
       rodTipPosition,
@@ -101,6 +118,15 @@ class FightPhysicsSystem {
       playerMaxLoadKg: maxTackleLoadKg,
     }));
     const forceData = motion.forceData;
+    const playerForceBudget = pipelineFrame.run(
+      "resolve_player_force_budget",
+      () => this.#resolvePlayerForceBudget({
+        fightInput,
+        forceData,
+        rodLimitKg,
+        physics,
+      }),
+    );
     const dragContext = pipelineFrame.run("resolve_drag_context", () =>
       this.#resolveDragContext({
       hasReel,
@@ -109,6 +135,7 @@ class FightPhysicsSystem {
       forceData,
       maxTackleLoadKg,
       rodLimitKg,
+      playerForceBudget,
     }),
     );
 
@@ -124,6 +151,7 @@ class FightPhysicsSystem {
       rodPullSystem,
       fishRetrieveSystem: this.#fishRetrieveSystem,
       forceData,
+      lineStateBeforeFishMotion: motion.lineStateBeforeFishMotion,
       fishCondition,
       dragContext,
       physics,
@@ -133,13 +161,14 @@ class FightPhysicsSystem {
       isRecoverMode,
       reel,
       rodLimitKg,
+      playerForceBudget,
     }),
     );
     const rodControlFrame = pipelineFrame.run(
       "resolve_rod_control_x",
       () => this.#updateRodControl({
       dtSec,
-      input,
+      input: fightInput,
       floatEntity,
       rodTipPosition,
       actualRodTipPosition,
@@ -154,6 +183,7 @@ class FightPhysicsSystem {
       rodLimitKg,
       lineState: rodPullFrame.lineStateAfterPull,
       fishRetrieveResult: rodPullFrame.fishRetrieveResult,
+      playerForceBudget,
     }),
     );
     const lineStateAfterControl =
@@ -239,6 +269,14 @@ class FightPhysicsSystem {
       hardLineLimitBeforeRelease: rodPullFrame.hardLineLimitBeforeRelease,
     }),
     );
+    const strokeDistanceFrame = pipelineFrame.run(
+      "update_rod_stroke_distance",
+      () => this.#recordRodStrokeDistance({
+        rodPullSystem,
+        previousLineState: rodPullFrame.lineStateBeforePull,
+        currentLineState: lineLimit.lineState,
+      }),
+    );
     const tensionResult = pipelineFrame.run(
       "update_final_tension",
       () => this.#updateTension({
@@ -269,6 +307,8 @@ class FightPhysicsSystem {
       releaseResult: lineLimit.releaseResult,
       recoveredMeters,
       autoRecovery: recoverFrame.autoRecovery,
+      strokeDistanceFrame,
+      prePullStrokeDistanceFrame: rodPullFrame.prePullStrokeDistanceFrame,
       autoRecoveredMeters: recoverFrame.autoRecoveredMeters,
       holdRecoveredMeters: recoverFrame.holdRecoveredMeters,
       hardLineLimit: lineLimit.hardLineLimit,
@@ -294,6 +334,7 @@ class FightPhysicsSystem {
       isRecoverMode,
       holdReelRecover,
       dragContext,
+      playerForceBudget,
     }),
     );
     this.#debug.fightPipeline = pipelineFrame.toDebugData();
@@ -320,6 +361,41 @@ class FightPhysicsSystem {
     ) / 1000;
   }
 
+  #composeFightInput(input = {}) {
+    const source = input || {};
+    const target = this.#composedInputScratch;
+    Object.assign(target, source);
+
+    const actions = source.fightActions || this.#fightInputActionComposer?.compose?.(
+      source,
+      {
+        keys: this.#config?.input?.keys || {},
+        rodControlInput:
+          this.#physicsConfig?.getRodControlConfig?.()?.input ||
+          this.#config?.physics?.fight?.rodControl?.input ||
+          {},
+      },
+    );
+
+    if (!actions?.hold || !actions?.lateralControl) {
+      target.fightActions = null;
+      return target;
+    }
+
+    target.fightActions = actions;
+    target.isPulling = !!actions.hold.active;
+    target.holdInputRatio = Number(actions.hold.ratio) || 0;
+    target.holdInputSource = actions.hold.source || "none";
+    target.rodControlActive = !!actions.lateralControl.active;
+    target.rodControlDirectionX = actions.lateralControl.directionX || 0;
+    target.rodControlInputRatio = Math.max(
+      0,
+      Math.min(1, Number(actions.lateralControl.inputRatio) || 0),
+    );
+    target.rodControlInputSource = actions.lateralControl.source || "none";
+    return target;
+  }
+
   #updateInput({ input, pullInputMapper, dragSystem, dtSec }) {
     const pullInput = pullInputMapper?.update(input) || {
       pullHeld: !!input?.isPulling,
@@ -328,6 +404,68 @@ class FightPhysicsSystem {
     };
     dragSystem.update(input, dtSec);
     return pullInput;
+  }
+
+  #resolvePlayerForceBudget({ fightInput, forceData, rodLimitKg, physics }) {
+    const config =
+      this.#physicsConfig?.getPlayerForceBudgetConfig?.() ||
+      physics?.fight?.playerForceBudget ||
+      this.#config?.physics?.fight?.playerForceBudget ||
+      {};
+    const actions = fightInput?.fightActions || {};
+    const holdAction = actions.hold?.active === true
+      ? actions.hold
+      : Object.freeze({
+          active: !!fightInput?.isPulling,
+          ratio: fightInput?.isPulling ? 1 : 0,
+          source: fightInput?.isPulling ? "legacy" : "none",
+        });
+    const controlAction = actions.lateralControl?.active === true
+      ? actions.lateralControl
+      : Object.freeze({
+          active: !!fightInput?.rodControlActive,
+          directionX: fightInput?.rodControlDirectionX || 0,
+          inputRatio: Math.max(
+            0,
+            Math.min(1, Number(fightInput?.rodControlInputRatio) || 0),
+          ),
+          source: fightInput?.rodControlActive ? "legacy" : "none",
+        });
+    const fallbackFrame = {
+      enabled: false,
+      reason: "allocator_missing",
+      rodLimitKg: Math.max(0, Number(rodLimitKg) || 0),
+      fishTensionKg: Math.max(0, Number(forceData?.fishTensionKg) || 0),
+      holdActive: !!holdAction.active,
+      controlActive: !!controlAction.active,
+      controlInputRatio: Math.max(
+        0,
+        Math.min(1, Number(controlAction.inputRatio) || 0),
+      ),
+      holdCeilingMultiplier: 1,
+      controlCeilingMultiplier: 1,
+      maxCombinedCeilingMultiplier: 1,
+      rawCombinedCeilingMultiplier: 1,
+      combinedCeilingMultiplier: 1,
+      combinedTensionCeilingKg: Math.max(0, Number(rodLimitKg) || 0),
+      totalPlayerBudgetKg: 0,
+      holdShare: 0,
+      controlShare: 0,
+      holdBudgetKg: 0,
+      controlBudgetKg: 0,
+    };
+
+    if (!this.#playerForceBudgetAllocator?.resolve) {
+      return Object.freeze(fallbackFrame);
+    }
+
+    return this.#playerForceBudgetAllocator.resolve({
+      rodLimitKg,
+      fishTensionKg: forceData?.fishTensionKg,
+      holdAction,
+      controlAction,
+      config,
+    });
   }
 
   #updateFishMotion({
@@ -492,7 +630,12 @@ class FightPhysicsSystem {
       towardPlayerYSign,
     };
     const velocity = floatEntity.getVelocity?.() || fishVelocity;
-    return { forceData, velocity, movementFrame };
+    return {
+      forceData,
+      velocity,
+      movementFrame,
+      lineStateBeforeFishMotion: lineState,
+    };
   }
 
   #resolveDragContext({ hasReel, dragSupported, dragSystem, forceData, maxTackleLoadKg, rodLimitKg }) {
@@ -543,6 +686,7 @@ class FightPhysicsSystem {
     rodPullSystem,
     fishRetrieveSystem,
     forceData,
+    lineStateBeforeFishMotion,
     fishCondition,
     dragContext,
     physics,
@@ -552,11 +696,19 @@ class FightPhysicsSystem {
     isRecoverMode,
     reel,
     rodLimitKg,
+    playerForceBudget,
   }) {
     const lineStateBeforePull = lineSystem.updateDistance(
       floatEntity.getPosition(),
       rodTipPosition,
     );
+    const prePullStrokeDistanceFrame = this.#calculateRodStrokeDistanceFrame({
+      previousDistanceMeters:
+        lineStateBeforeFishMotion?.distanceMeters ??
+        lineStateBeforePull.distanceMeters,
+      currentDistanceMeters: lineStateBeforePull.distanceMeters,
+      reasonPrefix: "pre_player",
+    });
     const pumpCreditMeters = this.#pumpCreditCalculator.calculateRecoverableLineMeters({
       releasedMeters: lineStateBeforePull.releasedMeters,
       fishDistanceMeters: lineStateBeforePull.distanceMeters,
@@ -566,10 +718,13 @@ class FightPhysicsSystem {
       inputState: pullInput,
       rod,
       pumpCreditMeters,
+      distanceLostBeforePullMeters:
+        prePullStrokeDistanceFrame.lostMeters,
       yLostBeforePullMeters: forceData?.fightYMovementFrame?.yAwayMeters,
       fishForceKg: forceData.totalFishForceKg,
       fishTensionKg: forceData.fishTensionKg,
       rodLimitKg,
+      playerForceBudget,
       dragLimitKg: dragContext.effectiveDragLimitKg,
       maxTackleLoadKg: dragContext.maxTackleLoadKg,
       dragLocked: dragContext.dragLocked,
@@ -631,7 +786,6 @@ class FightPhysicsSystem {
       desiredMoveMeters: desiredRodMoveMeters,
       dtSec,
     });
-    const pullStartY = Number(floatEntity.getPosition()?.y) || 0;
     const rodPullMovement = this.#applyRodPullMovement({
       floatEntity,
       rodTipPosition,
@@ -643,18 +797,6 @@ class FightPhysicsSystem {
       checkWater,
     });
     const rodPullMoveMeters = rodPullMovement.meters;
-    const pullEndY = Number(floatEntity.getPosition()?.y) || pullStartY;
-    const pullYFrame = this.#rodStrokeTracker.calculate({
-      previousFishY: pullStartY,
-      currentFishY: pullEndY,
-      pixelsPerMeter:
-        this.#physicsConfig?.getPixelsPerMeter?.() ||
-        50,
-      towardPlayerYSign: this.#rodStrokeTracker.resolveTowardPlayerYSign({
-        fishY: pullStartY,
-        rodTipY: rodTipPosition?.y,
-      }),
-    });
     const reelHoldDesiredMoveMeters = Math.min(
       Math.max(0, fishRetrieveFrame.desiredMoveMeters - rodPullMoveMeters),
       holdReelRecoverMoveMeters,
@@ -687,11 +829,6 @@ class FightPhysicsSystem {
         movementBlocked,
         hardTensionBlocked,
       });
-    if (rodPullResult.active) {
-      rodPullSystem.recordYMovement?.({
-        gainedMeters: pullYFrame.yTowardMeters,
-      });
-    }
     const lineStateAfterPull = lineSystem.updateDistance(
       floatEntity.getPosition(),
       rodTipPosition,
@@ -703,6 +840,7 @@ class FightPhysicsSystem {
       pumpCreditMeters,
       rodPullResult,
       fishRetrieveResult,
+      prePullStrokeDistanceFrame,
       rodPullMoveMeters,
       reelHoldMoveMeters,
       rodPullMovementBlockReason: rodPullMovement.blockedReason,
@@ -713,6 +851,49 @@ class FightPhysicsSystem {
         : 0,
       hardLineLimitBeforeRelease: !!lineStateAfterPull.isFullyExtended,
     };
+  }
+
+  #recordRodStrokeDistance({
+    rodPullSystem,
+    previousLineState,
+    currentLineState,
+  } = {}) {
+    const frame = this.#calculateRodStrokeDistanceFrame({
+      previousDistanceMeters: previousLineState?.distanceMeters,
+      currentDistanceMeters: currentLineState?.distanceMeters,
+      reasonPrefix: "player_frame",
+    });
+    rodPullSystem?.recordDistanceMovement?.({
+      gainedMeters: frame.gainedMeters,
+      lostMeters: frame.lostMeters,
+      previousDistanceMeters: frame.previousDistanceMeters,
+      currentDistanceMeters: frame.currentDistanceMeters,
+      deltaMeters: frame.deltaMeters,
+      reason: frame.reason,
+    });
+    return frame;
+  }
+
+  #calculateRodStrokeDistanceFrame({
+    previousDistanceMeters,
+    currentDistanceMeters,
+    reasonPrefix = "line_distance",
+  } = {}) {
+    if (!this.#rodStrokeDistanceTracker?.calculate) {
+      return {
+        previousDistanceMeters: Math.max(0, Number(previousDistanceMeters) || 0),
+        currentDistanceMeters: Math.max(0, Number(currentDistanceMeters) || 0),
+        deltaMeters: 0,
+        gainedMeters: 0,
+        lostMeters: 0,
+        reason: "distance_tracker_missing",
+      };
+    }
+    return this.#rodStrokeDistanceTracker.calculate({
+      previousDistanceMeters,
+      currentDistanceMeters,
+      reasonPrefix,
+    });
   }
 
   #calculateHoldReelRecoverMoveMeters({
@@ -772,6 +953,7 @@ class FightPhysicsSystem {
     rodLimitKg,
     lineState,
     fishRetrieveResult,
+    playerForceBudget,
   }) {
     if (!rodControlSystem?.update) {
       return {
@@ -829,6 +1011,7 @@ class FightPhysicsSystem {
       fishTensionKg: forceData?.fishTensionKg,
       fishVelocity: forceData?.targetVelocity,
       fishWeightKg: forceData?.fishWeightKg,
+      playerForceBudget,
       dragLimitKg: dragContext?.effectiveDragLimitKg,
       dragLocked: dragContext?.dragLocked !== false,
       lineHasReserve,
@@ -1303,6 +1486,8 @@ class FightPhysicsSystem {
     releaseResult,
     recoveredMeters,
     autoRecovery,
+    strokeDistanceFrame,
+    prePullStrokeDistanceFrame,
     autoRecoveredMeters,
     holdRecoveredMeters,
     hardLineLimit,
@@ -1328,6 +1513,7 @@ class FightPhysicsSystem {
     isRecoverMode,
     holdReelRecover,
     dragContext,
+    playerForceBudget,
   }) {
     const lineHasReserve = this.#lineHasReserve(lineState);
     const frameDtSec = Math.max(0, Number(physics?.dtSec) || 0);
@@ -1396,6 +1582,19 @@ class FightPhysicsSystem {
       rodStrokeRatio: Math.max(0, Math.min(1, Number(rodPullDisplay.rodStrokeRatio) || 0)),
       strokeRecoveredMeters: Math.max(0, Number(rodPullDisplay.strokeRecoveredMeters) || 0),
       strokeSyncedMeters: Math.max(0, Number(rodPullDisplay.strokeSyncedMeters) || 0),
+      strokeDistancePreviousMeters:
+        Math.max(0, Number(rodPullDisplay.strokeDistancePreviousMeters) || 0),
+      strokeDistanceCurrentMeters:
+        Math.max(0, Number(rodPullDisplay.strokeDistanceCurrentMeters) || 0),
+      strokeDistanceDeltaMeters:
+        Number(rodPullDisplay.strokeDistanceDeltaMeters) || 0,
+      strokeDistanceGainedMeters:
+        Math.max(0, Number(rodPullDisplay.strokeDistanceGainedMeters) || 0),
+      strokeDistanceLostMeters:
+        Math.max(0, Number(rodPullDisplay.strokeDistanceLostMeters) || 0),
+      strokeDistanceReason: rodPullDisplay.strokeDistanceReason || "none",
+      prePullStrokeDistanceLostMeters:
+        Math.max(0, Number(prePullStrokeDistanceFrame?.lostMeters) || 0),
       strokeYGainedMeters: Math.max(0, Number(rodPullDisplay.strokeYGainedMeters) || 0),
       strokeYLostMeters: Math.max(0, Number(rodPullDisplay.strokeYLostMeters) || 0),
       autoRecoverActive: !!autoRecovery?.active,
@@ -1460,6 +1659,22 @@ class FightPhysicsSystem {
       lineRecoveredThisFrameMeters: recoveredMeters,
       hardLineLimit,
       constraintCorrectionPx: constraintResult.correctionPx,
+      playerForceBudgetEnabled: !!playerForceBudget?.enabled,
+      playerForceTotalBudgetKg:
+        Math.max(0, Number(playerForceBudget?.totalPlayerBudgetKg) || 0),
+      playerForceHoldBudgetKg:
+        Math.max(0, Number(playerForceBudget?.holdBudgetKg) || 0),
+      playerForceControlBudgetKg:
+        Math.max(0, Number(playerForceBudget?.controlBudgetKg) || 0),
+      playerForceHoldShare:
+        Math.max(0, Math.min(1, Number(playerForceBudget?.holdShare) || 0)),
+      playerForceControlShare:
+        Math.max(0, Math.min(1, Number(playerForceBudget?.controlShare) || 0)),
+      playerForceCombinedCeilingMultiplier:
+        Math.max(0, Number(playerForceBudget?.combinedCeilingMultiplier) || 1),
+      playerForceCombinedTensionCeilingKg:
+        Math.max(0, Number(playerForceBudget?.combinedTensionCeilingKg) || 0),
+      playerForceBudgetReason: playerForceBudget?.reason || "none",
       rodPullActive: rodPullDisplay.active,
       rodPullRatio: rodPullDisplay.ratio,
       rodPullForceKg: rodPullResult.forceKg,
@@ -1591,6 +1806,12 @@ class FightPhysicsSystem {
         rodControlResult?.tensionCeilingMultiplier ?? 1,
       rodControlTensionCeilingKg:
         rodControlResult?.tensionCeilingKg ?? rodPullResult.rodLimitKg,
+      rodControlPlayerForceBudgetEnabled:
+        !!rodControlResult?.playerForceBudgetEnabled,
+      rodControlPlayerForceBudgetKg:
+        rodControlResult?.playerForceControlBudgetKg ?? 0,
+      rodControlPlayerForceBudgetShare:
+        rodControlResult?.playerForceControlShare ?? 0,
       rodControlForceLimitKg: rodControlResult?.forceLimitKg ?? 0,
       rodControlEffectiveForceLimitKg:
         rodControlResult?.effectiveForceLimitKg ?? 0,
@@ -1652,6 +1873,26 @@ class FightPhysicsSystem {
       rodStrokeRatio: rodPullDisplay.rodStrokeRatio,
       strokeRecoveredMeters: rodPullDisplay.strokeRecoveredMeters ?? 0,
       strokeSyncedMeters: rodPullDisplay.strokeSyncedMeters ?? 0,
+      strokeDistancePreviousMeters:
+        rodPullDisplay.strokeDistancePreviousMeters ?? 0,
+      strokeDistanceCurrentMeters:
+        rodPullDisplay.strokeDistanceCurrentMeters ?? 0,
+      strokeDistanceDeltaMeters:
+        rodPullDisplay.strokeDistanceDeltaMeters ?? 0,
+      strokeDistanceGainedMeters:
+        rodPullDisplay.strokeDistanceGainedMeters ?? 0,
+      strokeDistanceLostMeters:
+        rodPullDisplay.strokeDistanceLostMeters ?? 0,
+      strokeDistanceReason:
+        rodPullDisplay.strokeDistanceReason || "none",
+      prePullStrokeDistanceLostMeters:
+        prePullStrokeDistanceFrame?.lostMeters ?? 0,
+      playerFrameStrokeDistanceGainedMeters:
+        strokeDistanceFrame?.gainedMeters ?? 0,
+      playerFrameStrokeDistanceLostMeters:
+        strokeDistanceFrame?.lostMeters ?? 0,
+      playerFrameStrokeDistanceReason:
+        strokeDistanceFrame?.reason || "none",
       strokeYGainedMeters: rodPullDisplay.strokeYGainedMeters ?? 0,
       strokeYLostMeters: rodPullDisplay.strokeYLostMeters ?? 0,
       strokeResetReason: rodPullDisplay.strokeResetReason || "none",

@@ -45,17 +45,27 @@ class RodPullCalculator {
   calculateForceLimit({
     maxTackleLoadKg,
     rodLimitKg,
+    playerForceBudget,
     fishTensionKg,
     rodHoldMaxKg,
+    tensionCeilingMultiplier: externalTensionCeilingMultiplier,
+    tensionCeilingKg: externalTensionCeilingKg,
     dragLimitKg,
     dragLocked,
     hardLineLimit,
     lineHasReserve,
   } = {}) {
-    const tensionCeilingMultiplier = this.#tensionCeilingMultiplier();
+    const tensionCeilingMultiplier = Math.max(
+      0,
+      Number.isFinite(Number(externalTensionCeilingMultiplier))
+        ? Number(externalTensionCeilingMultiplier)
+        : this.#tensionCeilingMultiplier(),
+    );
     const resolvedRodLimitKg = Math.max(0, Number(rodLimitKg) || 0);
-    const tensionCeilingKg =
-      resolvedRodLimitKg * tensionCeilingMultiplier;
+    const externalCeilingKg = Number(externalTensionCeilingKg);
+    const tensionCeilingKg = Number.isFinite(externalCeilingKg)
+      ? Math.max(0, externalCeilingKg)
+      : resolvedRodLimitKg * tensionCeilingMultiplier;
     const directHoldMax = Number(rodHoldMaxKg);
     if (Number.isFinite(directHoldMax)) {
       const holdMax = Math.max(0, directHoldMax);
@@ -120,6 +130,7 @@ class RodPullCalculator {
     slackMeters,
     maxTackleLoadKg,
     rodLimitKg,
+    playerForceBudget,
     fishTensionKg,
     holdTensionRatio = 1,
     dragLimitKg,
@@ -158,6 +169,9 @@ class RodPullCalculator {
       maxTackleLoadKg,
       rodLimitKg,
       fishTensionKg,
+      rodHoldMaxKg: playerForceBudget?.holdBudgetKg,
+      tensionCeilingMultiplier: playerForceBudget?.combinedCeilingMultiplier,
+      tensionCeilingKg: playerForceBudget?.combinedTensionCeilingKg,
       dragLimitKg,
       dragLocked,
       hardLineLimit,

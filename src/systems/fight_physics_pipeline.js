@@ -9,14 +9,17 @@ class FightPhysicsPipeline {
   static STEPS = Object.freeze([
     "read_runtime_config",
     "resolve_delta_time",
+    "compose_fight_input_actions",
     "read_input",
     "update_fish_motion",
+    "resolve_player_force_budget",
     "resolve_drag_context",
     "resolve_rod_pull_and_retrieve",
     "resolve_rod_control_x",
     "preview_tension",
     "recover_line",
     "resolve_line_constraint",
+    "update_rod_stroke_distance",
     "update_final_tension",
     "write_debug_snapshot",
   ]);

@@ -97,6 +97,39 @@ class FightPhysicsConfigAdapter {
     };
   }
 
+  getPlayerForceBudgetConfig() {
+    const config = this.#physics().fight?.playerForceBudget || {};
+    const control = config.control || {};
+    const tensionCeiling = config.tensionCeiling || {};
+    return {
+      enabled: config.enabled !== false,
+      control: {
+        maxBudgetShare: Math.max(
+          0,
+          Math.min(1, this.#number(control.maxBudgetShare, 0.5)),
+        ),
+        minInputRatio: Math.max(
+          0,
+          this.#number(control.minInputRatio, 0.001),
+        ),
+      },
+      tensionCeiling: {
+        holdMultiplier: Math.max(
+          0,
+          this.#number(tensionCeiling.holdMultiplier, 1.05),
+        ),
+        controlMultiplier: Math.max(
+          0,
+          this.#number(tensionCeiling.controlMultiplier, 1.05),
+        ),
+        maxCombinedMultiplier: Math.max(
+          1,
+          this.#number(tensionCeiling.maxCombinedMultiplier, 1.25),
+        ),
+      },
+    };
+  }
+
   getFightTensionConfig() {
     const config = this.#physics().fight?.tension || {};
     return {

@@ -218,5 +218,41 @@
     "paths": [
       "DEBUG_DATA.holdReelRecoverBlockedReason"
     ]
+  },
+  "playerForceBudgetEnabled": {
+    "label": "Player force budget enabled",
+    "description": "Whether the shared player force budget allocator is active for the current fight frame."
+  },
+  "playerForceTotalBudgetKg": {
+    "label": "Player total budget, kg",
+    "description": "Total player force budget available after fish tension and combined tension ceiling are resolved."
+  },
+  "playerForceHoldBudgetKg": {
+    "label": "Rod Hold budget, kg",
+    "description": "Part of the player force budget assigned to Rod Hold."
+  },
+  "playerForceControlBudgetKg": {
+    "label": "Rod Control budget, kg",
+    "description": "Part of the player force budget assigned to Rod Control."
+  },
+  "playerForceHoldShare": {
+    "label": "Rod Hold budget share",
+    "description": "Share of total player force budget assigned to Rod Hold."
+  },
+  "playerForceControlShare": {
+    "label": "Rod Control budget share",
+    "description": "Share of total player force budget assigned to Rod Control."
+  },
+  "playerForceCombinedCeilingMultiplier": {
+    "label": "Player combined ceiling multiplier",
+    "description": "Combined Rod Hold plus Rod Control tension ceiling multiplier for the current frame."
+  },
+  "playerForceCombinedTensionCeilingKg": {
+    "label": "Player combined ceiling, kg",
+    "description": "Maximum tension ceiling derived from rod limit and combined player force ceiling multiplier."
+  },
+  "playerForceBudgetReason": {
+    "label": "Player force budget reason",
+    "description": "Explains which player channels were active when the budget was resolved."
   }
 }

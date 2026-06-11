@@ -104,6 +104,7 @@ class InputManager {
   #longPressTimeout = null;
   #eventCleanups = [];
   #dragControlEnabled = true;
+  #fightInputActionComposer = null;
   #stateSnapshot;
 
   constructor(canvas, anchorX = null) {
@@ -129,6 +130,10 @@ class InputManager {
     this.#panDeltaX = 0;
     this.#panDeltaY = 0;
     this.#clickPos = null;
+    this.#fightInputActionComposer =
+      typeof FightInputActionComposer !== "undefined"
+        ? new FightInputActionComposer()
+        : null;
     this.#stateSnapshot = {
       isPulling: false,
       pullDirection: this.#pullDirection,
@@ -161,6 +166,7 @@ class InputManager {
       rodControlInputRatio: 0,
       rodControlAnchorX: 0,
       rodControlCurrentX: 0,
+      fightActions: null,
     };
 
     this.#bindEvents();
@@ -683,6 +689,8 @@ class InputManager {
       : this.#rodControlInputRatio;
     state.rodControlAnchorX = this.#rodControlAnchorX;
     state.rodControlCurrentX = this.#rodControlCurrentX;
+    state.keys = this.#keys;
+    state.fightActions = this.#composeFightActions(state);
 
     this.#panDeltaX = 0;
     this.#panDeltaY = 0;
@@ -694,6 +702,20 @@ class InputManager {
     this.#hasPointerRelease = false;
 
     return state;
+  }
+
+  #composeFightActions(state) {
+    const composer = this.#fightInputActionComposer;
+    if (!composer?.compose) return null;
+    const rodControlConfig = this.#getRodControlInputConfig();
+    const previousFightActions = state.fightActions;
+    state.fightActions = null;
+    const nextFightActions = composer.compose(state, {
+      keys: CONFIG.input?.keys || {},
+      rodControlInput: rodControlConfig,
+    });
+    state.fightActions = previousFightActions;
+    return nextFightActions;
   }
 
   #updateKeyboardRodControlRatio(active) {

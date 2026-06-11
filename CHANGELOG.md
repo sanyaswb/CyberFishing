@@ -1,5 +1,29 @@
 # CyberFishing changelog
 
+## v0.19.43 - Player force budget
+
+- Added `PlayerForceBudgetAllocator` as the shared per-frame source of truth for player-applied force.
+- Rod Hold now consumes `holdBudgetKg` from the shared budget while Rod Control consumes `controlBudgetKg`.
+- Added configurable hold/control budget split and combined tension ceiling safeguards.
+- Rod Control no longer creates an independent overload reserve when an external player budget is present.
+- Added debug metrics and regression coverage for hold-only, control-only, hold+control split, ceiling caps, and negative-budget prevention.
+
+## v0.19.42 - Rod stroke line distance
+
+- Added `RodStrokeDistanceTracker` to calculate rod stroke gain/loss from actual line-distance changes.
+- Fight physics now records player-frame stroke after final line safety constraint, so X/Y movement and clamp results are both respected.
+- Pre-player fish escape now consumes stroke credit through line-distance loss instead of Y-only movement.
+- Rod stroke debug overlay now exposes line-distance previous/current/delta/gained/lost diagnostics while keeping legacy Y aliases.
+- Added regression coverage for distance gain, distance loss, arc movement, X-only line shortening, and jitter tolerance.
+
+## v0.19.41 - Fight input composition
+
+- Added `FightInputActionComposer` as the fight-stage source of truth for `hold` and `lateralControl` actions.
+- Fight physics now composes pointer/keyboard actions before pull, drag, fish motion and Rod Control systems consume input.
+- Pointer down starts Fight Rod Hold immediately; horizontal pointer movement adds Rod Control without disabling hold.
+- Preserved keyboard `Space + A/D` and standalone `A/D` Rod Control behavior.
+- Added regression coverage for input composition and the full `0.05 kg` hold+control victory cycle.
+
 ## v0.19.40 - Rod Control input isolation
 
 - Locked horizontal pointer gestures to the dedicated `rod_control_x` action so they cannot silently activate Rod Hold.

@@ -45,7 +45,10 @@ class FishRetrieveSystem {
       tautBodyResistancePerKg: water.tautBodyResistancePerKg,
       rodLimitKg: this.#positive(rodPullResult?.rodLimitKg),
       rodHoldTensionCeilingMultiplier:
-        rodHold.tensionCeilingMultiplier,
+        this.#positive(
+          rodPullResult?.tensionCeilingMultiplier,
+          rodHold.tensionCeilingMultiplier,
+        ),
       rodHoldKg: this.#resolvePlayerPullPressure(rodPullResult),
       rodAngleMultiplier: this.#ratio(forceData?.player?.anglePenalty, 1),
       holdTensionRatio: this.#ratio(rodPullResult?.holdTensionRatio, 1),
