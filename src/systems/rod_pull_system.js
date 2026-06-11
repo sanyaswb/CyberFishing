@@ -19,6 +19,8 @@ class RodPullSystem {
     availableExtraForceKg: 0,
     rodLimitKg: 0,
     fishTensionKg: 0,
+    tensionCeilingMultiplier: 1,
+    tensionCeilingKg: 0,
     rodHoldMaxKg: 0,
     effectiveForceKg: 0,
     holdTensionRatio: 1,
@@ -176,6 +178,8 @@ class RodPullSystem {
       availableExtraForceKg: 0,
       rodLimitKg: 0,
       fishTensionKg: 0,
+      tensionCeilingMultiplier: 1,
+      tensionCeilingKg: 0,
       rodHoldMaxKg: 0,
       effectiveForceKg: 0,
       holdTensionRatio: 1,
@@ -216,6 +220,9 @@ class RodPullSystem {
     this.#state.availableExtraForceKg = result.availableExtraForceKg;
     this.#state.rodLimitKg = result.rodLimitKg;
     this.#state.fishTensionKg = result.fishTensionKg;
+    this.#state.tensionCeilingMultiplier =
+      result.tensionCeilingMultiplier;
+    this.#state.tensionCeilingKg = result.tensionCeilingKg;
     this.#state.rodHoldMaxKg = result.rodHoldMaxKg;
     this.#state.effectiveForceKg = result.effectiveForceKg;
     this.#state.holdTensionRatio = result.holdTensionRatio;

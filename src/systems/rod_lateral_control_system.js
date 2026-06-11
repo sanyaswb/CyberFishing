@@ -104,6 +104,8 @@ class RodLateralControlSystem {
       requestedForceRatio,
       loadReserveKg: forceFrame.loadReserveKg,
       loadReserveRatio: forceFrame.loadReserveRatio,
+      tensionCeilingMultiplier: forceFrame.tensionCeilingMultiplier,
+      tensionCeilingKg: forceFrame.tensionCeilingKg,
       forceLimitKg: forceFrame.forceLimitKg,
       effectiveForceLimitKg: forceFrame.effectiveForceLimitKg,
       currentTensionKg: forceFrame.currentTensionKg,
@@ -302,13 +304,19 @@ class RodLateralControlSystem {
         this.#number(maxTackleLoadKg, maxForceKg),
       ),
     );
+    const tensionCeilingMultiplier = Math.max(
+      0,
+      this.#number(config.tensionCeilingMultiplier, 1),
+    );
+    const tensionCeilingKg =
+      tackleLimitKg * tensionCeilingMultiplier;
     const resolvedCurrentTensionKg = Math.max(
       0,
       this.#number(currentTensionKg, this.#number(fishTensionKg)),
     );
     const loadReserveKg = Math.max(
       0,
-      tackleLimitKg - resolvedCurrentTensionKg,
+      tensionCeilingKg - resolvedCurrentTensionKg,
     );
     const forceLimitKg = Math.min(maxForceKg, loadReserveKg);
     const canSlipDrag = lineConstraintState
@@ -346,6 +354,8 @@ class RodLateralControlSystem {
     );
     return {
       currentTensionKg: resolvedCurrentTensionKg,
+      tensionCeilingMultiplier,
+      tensionCeilingKg,
       loadReserveKg,
       loadReserveRatio,
       forceLimitKg,
@@ -504,6 +514,8 @@ class RodLateralControlSystem {
       requestedForceRatio: 0,
       loadReserveKg: 0,
       loadReserveRatio: 0,
+      tensionCeilingMultiplier: 1,
+      tensionCeilingKg: 0,
       forceLimitKg: 0,
       effectiveForceLimitKg: 0,
       currentTensionKg: 0,

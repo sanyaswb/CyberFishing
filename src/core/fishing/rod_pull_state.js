@@ -8,6 +8,8 @@ class RodPullState {
   availableExtraForceKg = 0;
   rodLimitKg = 0;
   fishTensionKg = 0;
+  tensionCeilingMultiplier = 1;
+  tensionCeilingKg = 0;
   rodHoldMaxKg = 0;
   effectiveForceKg = 0;
   holdTensionRatio = 1;
@@ -37,6 +39,8 @@ class RodPullState {
     this.availableExtraForceKg = 0;
     this.rodLimitKg = 0;
     this.fishTensionKg = 0;
+    this.tensionCeilingMultiplier = 1;
+    this.tensionCeilingKg = 0;
     this.rodHoldMaxKg = 0;
     this.effectiveForceKg = 0;
     this.holdTensionRatio = 1;

@@ -16,6 +16,7 @@ class SimpleFightForceCalculator {
     directionMultiplier = 1,
     tautBodyResistancePerKg = 0.2,
     rodLimitKg,
+    rodHoldTensionCeilingMultiplier = 1,
     rodHoldKg,
     rodAngleMultiplier = 1,
     holdTensionRatio = 1,
@@ -43,6 +44,11 @@ class SimpleFightForceCalculator {
     const rodHoldMaxKg = this.calculateRodHoldMaxKg({
       rodLimitKg,
       fishTensionKg,
+      tensionCeilingMultiplier: rodHoldTensionCeilingMultiplier,
+    });
+    const rodHoldTensionCeilingKg = this.calculateTensionCeilingKg({
+      rodLimitKg,
+      tensionCeilingMultiplier: rodHoldTensionCeilingMultiplier,
     });
     const effectiveRodHoldKg = this.calculateEffectiveRodHoldKg({
       rodHoldKg,
@@ -85,6 +91,11 @@ class SimpleFightForceCalculator {
       fishActiveKg,
       fishOppositionKg,
       fishTensionKg,
+      rodHoldTensionCeilingMultiplier: this.#positive(
+        rodHoldTensionCeilingMultiplier,
+        1,
+      ),
+      rodHoldTensionCeilingKg,
       rodHoldMaxKg,
       effectiveRodHoldKg,
       rawPlayerHoldTensionKg,
@@ -131,8 +142,28 @@ class SimpleFightForceCalculator {
     return this.#positive(fishPassiveKg) + this.#positive(fishActiveKg);
   }
 
-  calculateRodHoldMaxKg({ rodLimitKg, fishTensionKg } = {}) {
-    return Math.max(0, this.#positive(rodLimitKg) - this.#positive(fishTensionKg));
+  calculateRodHoldMaxKg({
+    rodLimitKg,
+    fishTensionKg,
+    tensionCeilingMultiplier = 1,
+  } = {}) {
+    return Math.max(
+      0,
+      this.calculateTensionCeilingKg({
+        rodLimitKg,
+        tensionCeilingMultiplier,
+      }) - this.#positive(fishTensionKg),
+    );
+  }
+
+  calculateTensionCeilingKg({
+    rodLimitKg,
+    tensionCeilingMultiplier = 1,
+  } = {}) {
+    return (
+      this.#positive(rodLimitKg) *
+      this.#positive(tensionCeilingMultiplier, 1)
+    );
   }
 
   calculateEffectiveRodHoldKg({

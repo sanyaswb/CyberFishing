@@ -60,6 +60,10 @@ class FightPhysicsConfigAdapter {
     const anglePenalty = config.anglePenalty || {};
     return {
       chargeTimeSeconds: this.#number(config.chargeTimeSeconds, 0.35),
+      tensionCeilingMultiplier: Math.max(
+        0,
+        this.#number(config.tensionCeilingMultiplier, 1),
+      ),
       distanceMultiplierByRodLength: this.#number(
         config.distanceMultiplierByRodLength,
         0.5,
@@ -368,6 +372,10 @@ class FightPhysicsConfigAdapter {
     const lineConstraint = config.lineConstraint || {};
     return {
       ...config,
+      tensionCeilingMultiplier: Math.max(
+        0,
+        this.#number(config.tensionCeilingMultiplier, 1),
+      ),
       pixelsPerMeter: this.getPixelsPerMeter(),
       water: this.getWaterConfig(),
       lineConstraint: {

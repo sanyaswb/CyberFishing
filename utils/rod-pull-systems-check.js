@@ -84,6 +84,8 @@ const physicsAdapter = CONFIG.fightPhysicsConfig;
 const pixelsPerMeter = physicsAdapter.getPixelsPerMeter();
 const rodPullConfig = physicsAdapter.getRodPullConfig();
 const poleIdleRetrieveConfig = physicsAdapter.getPoleIdleRetrieveConfig();
+approx(rodPullConfig.tensionCeilingMultiplier, 1.05, 0.001, "Rod Hold gameplay ceiling is configurable");
+approx(physicsAdapter.getRodControlConfig().tensionCeilingMultiplier, 1.15, 0.001, "Rod Control gameplay ceiling is configurable");
 
 const retrievePolicyResolver = new IdleRetrievePolicyResolver();
 const poleIdleParams = retrievePolicyResolver.resolve({ rod: { hasReel: false }, reel: null }).getRetrieveParams({ config: CONFIG });
@@ -113,6 +115,7 @@ approx(strokeState.wonMeters, 0.75, 0.001, "rod stroke keeps remaining won dista
 
 const calculator = new RodPullCalculator({
   ...rodPullConfig,
+  tensionCeilingMultiplier: 1,
   capacityByRodLengthRatio: 1,
   distanceMultiplierByRodLength: 1,
 });
@@ -122,9 +125,18 @@ approx(calculator.calculateAvailableDistance({ rodLengthMeters: 3.6, slackMeters
 const forceLimit = calculator.calculateForceLimit({ rodLimitKg: 3, fishTensionKg: 1.1 });
 approx(forceLimit.rodHoldMaxKg, 1.9, 0.001, "rodHoldMax = rodLimit - fishTension");
 approx(forceLimit.controlledPullLimitKg, 1.9, 0.001, "rod hold force is not clamped by line limit here");
+const overloadForceLimit = new RodPullCalculator({
+  tensionCeilingMultiplier: 1.1,
+}).calculateForceLimit({
+  rodLimitKg: 1,
+  fishTensionKg: 0.76,
+});
+approx(overloadForceLimit.tensionCeilingKg, 1.1, 0.001, "Rod Hold ceiling scales from rod load");
+approx(overloadForceLimit.rodHoldMaxKg, 0.34, 0.001, "Rod Hold can use only the reserve below its overload ceiling");
 
 const rodPullSystem = new RodPullSystem({
   ...rodPullConfig,
+  tensionCeilingMultiplier: 1,
   capacityByRodLengthRatio: 1,
   distanceMultiplierByRodLength: 1,
   chargeTimeSeconds: 0.5,
@@ -420,6 +432,7 @@ assert(simple.towardPlayerSpeedMps === 0, "equal hold and opposition stays balan
 const lateralControl = new RodLateralControlSystem();
 const lateralConfig = {
   enabled: true,
+  tensionCeilingMultiplier: 1,
   pixelsPerMeter: 50,
   alignment: {
     enabled: true,
@@ -620,6 +633,54 @@ const hardLineLateral = new RodLateralControlSystem().update({
 });
 assert(!hardLineLateral.canSlipDrag, "Fully extended line disables Rod Control drag protection");
 assert(hardLineLateral.playerTensionKg > 0, "Rod Control can add stress at hard line limit");
+
+const overloadLateralConfig = {
+  ...lateralConfig,
+  tensionCeilingMultiplier: 1.15,
+};
+const overloadLateral = new RodLateralControlSystem().update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: -50, y: 50 },
+  rodTipPosition: { x: 0, y: 0 },
+  actualRodTipPosition: { x: 0, y: 0 },
+  rodLimitKg: 1,
+  maxTackleLoadKg: 1,
+  currentTensionKg: 1,
+  fishVelocityX: -20,
+  fishWeightKg: 0,
+  dragLocked: true,
+  config: overloadLateralConfig,
+});
+approx(overloadLateral.tensionCeilingKg, 1.15, 0.001, "Rod Control ceiling scales from rod load");
+approx(overloadLateral.loadReserveKg, 0.15, 0.001, "Rod Control receives only current-frame overload reserve");
+approx(overloadLateral.playerTensionKg, 0.15, 0.001, "Opposite-direction tension reaches but does not exceed Rod Control ceiling");
+
+const stackedCeilingBlocked = new RodLateralControlSystem().update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: -50, y: 50 },
+  rodTipPosition: { x: 0, y: 0 },
+  actualRodTipPosition: { x: 0, y: 0 },
+  rodLimitKg: 1,
+  maxTackleLoadKg: 1,
+  currentTensionKg: 1.15,
+  fishVelocityX: -20,
+  fishWeightKg: 0,
+  dragLocked: true,
+  config: overloadLateralConfig,
+});
+approx(stackedCeilingBlocked.loadReserveKg, 0, 0.001, "Rod Control overload budget does not stack above its ceiling");
+approx(stackedCeilingBlocked.playerTensionKg, 0, 0.001, "Rod Control adds no tension after another action fills its ceiling");
+assert(stackedCeilingBlocked.blockedReason === "no_load_reserve", "Rod Control reports exhausted overload reserve");
 
 const pullSmoother = new PlayerPullMotionSmoother();
 const smoothStart = pullSmoother.updateAxis({

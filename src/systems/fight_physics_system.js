@@ -805,11 +805,16 @@ class FightPhysicsSystem {
     });
     const lineHasReserve = lineConstraintState.lineHasReserve;
     const hardLineLimit = lineConstraintState.hardLineLimit;
+    const currentFrameTensionKg = Number(
+      fishRetrieveResult?.totalTensionKg,
+    );
     const currentTensionKg = Math.max(
       0,
-      Number(stressSystem?.getTensionKg?.()) ||
-        Number(forceData?.fishTensionKg) ||
-        0,
+      Number.isFinite(currentFrameTensionKg)
+        ? currentFrameTensionKg
+        : Number(stressSystem?.getTensionKg?.()) ||
+          Number(forceData?.fishTensionKg) ||
+          0,
     );
     const rodControlResult = rodControlSystem.update({
       dtSec,
@@ -905,6 +910,8 @@ class FightPhysicsSystem {
       forceKg: 0,
       loadReserveKg: 0,
       loadReserveRatio: 0,
+      tensionCeilingMultiplier: 1,
+      tensionCeilingKg: 0,
       forceLimitKg: 0,
       effectiveForceLimitKg: 0,
       currentTensionKg: 0,
@@ -1458,6 +1465,10 @@ class FightPhysicsSystem {
       rodPullForceKg: rodPullResult.forceKg,
       rodLimitKg: rodPullResult.rodLimitKg,
       rodHoldMaxKg: rodPullResult.rodHoldMaxKg,
+      rodHoldTensionCeilingMultiplier:
+        rodPullResult.tensionCeilingMultiplier ?? 1,
+      rodHoldTensionCeilingKg:
+        rodPullResult.tensionCeilingKg ?? rodPullResult.rodLimitKg,
       effectiveRodHoldKg: fishRetrieveResult?.effectiveRodHoldKg ?? rodPullResult.effectiveForceKg,
       holdTensionRatio: rodPullResult.holdTensionRatio,
       playerHoldTensionKg: fishRetrieveResult?.playerHoldTensionKg ?? rodPullResult.playerHoldTensionKg,
@@ -1576,6 +1587,10 @@ class FightPhysicsSystem {
         rodControlResult?.requestedForceRatio ?? 0,
       rodControlLoadReserveKg: rodControlResult?.loadReserveKg ?? 0,
       rodControlLoadReserveRatio: rodControlResult?.loadReserveRatio ?? 0,
+      rodControlTensionCeilingMultiplier:
+        rodControlResult?.tensionCeilingMultiplier ?? 1,
+      rodControlTensionCeilingKg:
+        rodControlResult?.tensionCeilingKg ?? rodPullResult.rodLimitKg,
       rodControlForceLimitKg: rodControlResult?.forceLimitKg ?? 0,
       rodControlEffectiveForceLimitKg:
         rodControlResult?.effectiveForceLimitKg ?? 0,

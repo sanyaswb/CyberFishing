@@ -30,11 +30,12 @@ const PHYSICS_FORMULA_MAP = Object.freeze({
 
   rodHold: Object.freeze({
     title: "Rod hold",
-    formula: "rodHoldMaxKg = max(0, rodLimitKg - fishTensionKg); effectiveRodHoldKg = rodHoldKg * rodAngleMultiplier",
+    formula: "rodHoldCeilingKg = rodLimitKg * tensionCeilingMultiplier; rodHoldMaxKg = max(0, rodHoldCeilingKg - fishTensionKg); effectiveRodHoldKg = rodHoldKg * rodAngleMultiplier",
     sources: Object.freeze([
       "rod.maxLoadKg",
       "fishTensionKg",
       "physics.fight.rodHold.chargeTimeSeconds",
+      "physics.fight.rodHold.tensionCeilingMultiplier",
       "physics.fight.rodHold.anglePenalty",
     ]),
     outputs: Object.freeze(["rodHoldMaxKg", "effectiveRodHoldKg"]),

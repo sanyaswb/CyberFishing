@@ -25,6 +25,7 @@ class FishRetrieveSystem {
   } = {}) {
     const water = this.#resolveWaterConfig();
     const tension = this.#resolveTensionConfig();
+    const rodHold = this.#resolveRodHoldConfig();
     const frame = this.#calculator.calculate({
       fishWeightKg: this.#resolveFishWeight(forceData),
       fishBasePower: this.#positive(forceData?.fishBasePower, 1),
@@ -43,6 +44,8 @@ class FishRetrieveSystem {
       ),
       tautBodyResistancePerKg: water.tautBodyResistancePerKg,
       rodLimitKg: this.#positive(rodPullResult?.rodLimitKg),
+      rodHoldTensionCeilingMultiplier:
+        rodHold.tensionCeilingMultiplier,
       rodHoldKg: this.#resolvePlayerPullPressure(rodPullResult),
       rodAngleMultiplier: this.#ratio(forceData?.player?.anglePenalty, 1),
       holdTensionRatio: this.#ratio(rodPullResult?.holdTensionRatio, 1),
@@ -92,6 +95,9 @@ class FishRetrieveSystem {
     rodPullResult.playerHoldTensionKg = frame.playerHoldTensionKg;
     rodPullResult.totalTensionKg = frame.totalTensionKg;
     rodPullResult.rodHoldMaxKg = frame.rodHoldMaxKg;
+    rodPullResult.tensionCeilingMultiplier =
+      frame.rodHoldTensionCeilingMultiplier;
+    rodPullResult.tensionCeilingKg = frame.rodHoldTensionCeilingKg;
     rodPullResult.fishTensionKg = frame.fishTensionKg;
 
     return new FishRetrieveResult({
@@ -101,6 +107,9 @@ class FishRetrieveSystem {
       fishActiveKg: frame.fishActiveKg,
       fishOppositionKg: frame.fishOppositionKg,
       fishTensionKg: frame.fishTensionKg,
+      rodHoldTensionCeilingMultiplier:
+        frame.rodHoldTensionCeilingMultiplier,
+      rodHoldTensionCeilingKg: frame.rodHoldTensionCeilingKg,
       rodHoldMaxKg: frame.rodHoldMaxKg,
       effectiveRodHoldKg: frame.effectiveRodHoldKg,
       rawPlayerHoldTensionKg: frame.rawPlayerHoldTensionKg,
@@ -158,6 +167,17 @@ class FishRetrieveSystem {
     return {
       movableHoldTensionCapRatio: this.#positive(
         tension.movableHoldTensionCapRatio,
+        1,
+      ),
+    };
+  }
+
+  #resolveRodHoldConfig() {
+    const source = this.#configSource;
+    const rodHold = source?.getRodHoldConfig?.() || source?.rodHold || {};
+    return {
+      tensionCeilingMultiplier: this.#positive(
+        rodHold.tensionCeilingMultiplier,
         1,
       ),
     };

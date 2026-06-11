@@ -55,10 +55,11 @@
     ]
   },
   "Rod hold max": {
-    "formula": "rodHoldMaxKg = max(0, rodLimitKg - fishTensionKg)",
+    "formula": "rodHoldMaxKg = max(0, rodLimitKg * tensionCeilingMultiplier - fishTensionKg)",
     "description": "Скільки hold-сили ще дозволяє вудка.",
     "paths": [
       "HOOKED_FISH.tackle.rod.maxLoadKg",
+      "CONFIG.physics.fight.rodHold.tensionCeilingMultiplier",
       "DEBUG_DATA.fishTensionKg"
     ]
   },

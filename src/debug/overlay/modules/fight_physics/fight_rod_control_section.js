@@ -13,6 +13,7 @@ class FightRodControlSection extends FightSectionBase {
       this.row("Input direction X", inputLabel, inputDirection ? "#00d4ff" : "#8a9bac"),
       this.row("Input ratio", f.percent(d.rodControlInputRatio, 1), "#73c2fb"),
       this.row("Requested force", f.percent(d.rodControlRequestedForceRatio, 1), "#73c2fb"),
+      this.row("Tension ceiling", `${f.kg(d.rodControlTensionCeilingKg, 3)} (${f.percent(d.rodControlTensionCeilingMultiplier, 1)})`, Number(d.rodControlTensionCeilingMultiplier) > 1 ? "#ff8888" : "#73c2fb"),
       this.row("Load reserve", f.kg(d.rodControlLoadReserveKg, 3), Number(d.rodControlLoadReserveKg) > 0 ? "#00ff80" : "#ff8888"),
       this.row("Load reserve ratio", f.percent(d.rodControlLoadReserveRatio, 1), Number(d.rodControlLoadReserveRatio) > 0 ? "#00ff80" : "#ff8888"),
       this.row("Drag can slip", d.rodControlCanSlipDrag ? "yes" : "no", d.rodControlCanSlipDrag ? "#00ff80" : "#8a9bac"),

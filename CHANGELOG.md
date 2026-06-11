@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.19.38 - Player tension ceilings
+
+- Added independent tension ceiling multipliers for Rod Hold and Rod Control.
+- Rod Hold reserve now derives from its configured ceiling instead of stopping at 100% rod load.
+- Rod Control reserve uses the current-frame total after Rod Hold, preventing overload budgets from stacking.
+- Direction tension multipliers still control lateral risk without bypassing the Rod Control ceiling.
+- Added ceiling diagnostics, formulas, parameter labels, and overload regression coverage.
+
 ## v0.19.37 - Rod Control axis tension mode
 
 - Added `RodControlTensionModeResolver` for immutable same/side/opposite direction classification.

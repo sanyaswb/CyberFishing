@@ -10,6 +10,7 @@ const FIGHT_PHYSICS_CONFIG = {
 
   rodHold: {
     chargeTimeSeconds: 0.35,
+    tensionCeilingMultiplier: 1.05,
     distanceMultiplierByRodLength: 0.5,
     minStrokeMeters: 0.001,
     finalLandingDistanceMeters: 0.5,
@@ -32,6 +33,7 @@ const FIGHT_PHYSICS_CONFIG = {
 
   rodControl: {
     enabled: true,
+    tensionCeilingMultiplier: 1.15,
 
     input: {
       minLockDistancePx: 10,

@@ -14,6 +14,12 @@ class FishRetrieveResult {
     this.fishOppositionKg = this.#positive(data.fishOppositionKg);
     this.fishTensionKg = this.#positive(data.fishTensionKg);
 
+    this.rodHoldTensionCeilingMultiplier = this.#positive(
+      data.rodHoldTensionCeilingMultiplier ?? 1,
+    );
+    this.rodHoldTensionCeilingKg = this.#positive(
+      data.rodHoldTensionCeilingKg,
+    );
     this.rodHoldMaxKg = this.#positive(data.rodHoldMaxKg);
     this.effectiveRodHoldKg = this.#positive(data.effectiveRodHoldKg);
     this.rawPlayerHoldTensionKg = this.#positive(

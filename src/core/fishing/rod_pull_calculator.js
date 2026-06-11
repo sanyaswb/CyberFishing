@@ -52,6 +52,10 @@ class RodPullCalculator {
     hardLineLimit,
     lineHasReserve,
   } = {}) {
+    const tensionCeilingMultiplier = this.#tensionCeilingMultiplier();
+    const resolvedRodLimitKg = Math.max(0, Number(rodLimitKg) || 0);
+    const tensionCeilingKg =
+      resolvedRodLimitKg * tensionCeilingMultiplier;
     const directHoldMax = Number(rodHoldMaxKg);
     if (Number.isFinite(directHoldMax)) {
       const holdMax = Math.max(0, directHoldMax);
@@ -59,6 +63,8 @@ class RodPullCalculator {
         availableExtraForceKg: holdMax,
         controlledPullLimitKg: holdMax,
         rodHoldMaxKg: holdMax,
+        tensionCeilingMultiplier,
+        tensionCeilingKg,
         dragSlipping: false,
         blockedReason: "none",
       };
@@ -67,7 +73,7 @@ class RodPullCalculator {
     const rodLimit = Number(rodLimitKg);
     if (Number.isFinite(rodLimit)) {
       const fishTension = Math.max(0, Number(fishTensionKg) || 0);
-      const holdMax = Math.max(0, Math.max(0, rodLimit) - fishTension);
+      const holdMax = Math.max(0, tensionCeilingKg - fishTension);
       const dragLimit = Math.max(0, Number(dragLimitKg) || 0);
       const canSlipLine =
         dragLocked === false && lineHasReserve !== false && !hardLineLimit;
@@ -78,6 +84,8 @@ class RodPullCalculator {
         availableExtraForceKg: controlledHoldMax,
         controlledPullLimitKg: controlledHoldMax,
         rodHoldMaxKg: holdMax,
+        tensionCeilingMultiplier,
+        tensionCeilingKg,
         dragSlipping: canSlipLine && dragLimit < holdMax,
         blockedReason: "none",
       };
@@ -95,6 +103,9 @@ class RodPullCalculator {
       availableExtraForceKg: effectiveLoad,
       controlledPullLimitKg: effectiveLoad,
       rodHoldMaxKg: effectiveLoad,
+      tensionCeilingMultiplier,
+      tensionCeilingKg:
+        maxLoad * tensionCeilingMultiplier,
       dragSlipping: canSlipLine && dragLimit < controlledLoad,
       blockedReason: "none",
     };
@@ -172,6 +183,8 @@ class RodPullCalculator {
         rodLimitKg,
         fishTensionKg,
         rodHoldMaxKg: forceLimit.rodHoldMaxKg,
+        tensionCeilingMultiplier: forceLimit.tensionCeilingMultiplier,
+        tensionCeilingKg: forceLimit.tensionCeilingKg,
         holdTensionRatio,
         dragSlipping: forceLimit.dragSlipping,
         blockedReason: "stroke_capacity_unavailable",
@@ -210,6 +223,8 @@ class RodPullCalculator {
       rodLimitKg,
       fishTensionKg,
       rodHoldMaxKg: forceLimit.rodHoldMaxKg,
+      tensionCeilingMultiplier: forceLimit.tensionCeilingMultiplier,
+      tensionCeilingKg: forceLimit.tensionCeilingKg,
       holdTensionRatio,
       deltaMeters,
       canMoveFish: deltaMeters >= minDistance && forceKg > (Number(this.#config.minEffectivePullKg) || 0.01),
@@ -235,6 +250,13 @@ class RodPullCalculator {
       rodLimitKg: Math.max(0, Number(data.rodLimitKg) || 0),
       fishTensionKg: Math.max(0, Number(data.fishTensionKg) || 0),
       rodHoldMaxKg: Math.max(0, Number(data.rodHoldMaxKg) || 0),
+      tensionCeilingMultiplier: Math.max(
+        0,
+        Number.isFinite(Number(data.tensionCeilingMultiplier))
+          ? Number(data.tensionCeilingMultiplier)
+          : this.#tensionCeilingMultiplier(),
+      ),
+      tensionCeilingKg: Math.max(0, Number(data.tensionCeilingKg) || 0),
       effectiveForceKg: Math.max(0, Number(data.effectiveForceKg ?? data.forceKg) || 0),
       holdTensionRatio: this.#ratioOrDefault(data.holdTensionRatio, 1),
       playerHoldTensionKg: Math.max(0, Number(data.playerHoldTensionKg) || 0),
@@ -266,6 +288,13 @@ class RodPullCalculator {
       ? Math.min(1, ratio)
       : 0.85;
     return maxLoad * safeRatio;
+  }
+
+  #tensionCeilingMultiplier() {
+    const multiplier = Number(this.#config.tensionCeilingMultiplier);
+    return Number.isFinite(multiplier) && multiplier >= 0
+      ? multiplier
+      : 1;
   }
 
   #resolveHoldChargePerSecond() {
