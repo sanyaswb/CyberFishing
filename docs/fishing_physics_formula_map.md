@@ -107,13 +107,16 @@ if (fishWonForceKg > 0) {
 
 `stateSpeedMultiplier` affects movement speed only. It does not add tension.
 Fish escape speed is based on clean fish-won force, never on `totalTensionKg`.
-`yAwayRatio` is the absolute normalized Y component of fish movement, so a 45 degree escape projects about 0.707 of fish-won force onto Y.
+`radialAwayRatio` is the normalized outward component of fish movement along
+the line axis, so a 45 degree escape projects about 0.707 of fish-won force
+onto the radial direction. `yAwayRatio` remains a temporary compatibility
+alias.
 
 ## 7.1. Y drag escape
 
 ```js
 dragLimitKg = reelDragMaxKg * dragRatio;
-fishWonYForceKg = fishWonForceKg * yAwayRatio;
+fishWonRadialForceKg = fishWonForceKg * radialAwayRatio;
 activeDrag = dragRatio > 0 && dragLimitKg > 0;
 
 // Threshold drag model:
@@ -122,11 +125,11 @@ activeDrag = dragRatio > 0 && dragLimitKg > 0;
 // - only force above that kg limit becomes Y movement;
 // - if the line cannot slip, Y escape is blocked and all won Y force loads the line.
 dragBlockedForceKg = lineCanSlip
-  ? activeDrag ? Math.min(fishWonYForceKg, dragLimitKg) : 0
-  : fishWonYForceKg;
+  ? activeDrag ? Math.min(fishWonRadialForceKg, dragLimitKg) : 0
+  : fishWonRadialForceKg;
 
 yEscapeForceKg = lineCanSlip
-  ? activeDrag ? Math.max(0, fishWonYForceKg - dragLimitKg) : fishWonYForceKg
+  ? activeDrag ? Math.max(0, fishWonRadialForceKg - dragLimitKg) : fishWonRadialForceKg
   : 0;
 
 excessYForceKg = yEscapeForceKg;
@@ -136,7 +139,11 @@ finalXSpeedPx = targetXSpeedPx;
 finalYSpeedPx = lineCanSlip ? excessYSpeedPx : 0;
 ```
 
-Debug note: runtime drag effect is read from `dragRatio`, `dragLimitKg`, `fishWonYForceKg`, `dragBlockedForceKg`, `yEscapeForceKg`, `excessYForceKg` and `finalYSpeedPxPerSec`. Active drag is a force threshold: Y movement starts only from fish-won Y force above the drag limit. Open drag blocks nothing, so the full fish-won Y force becomes escape speed.
+Debug note: runtime drag effect is read from `dragRatio`, `dragLimitKg`,
+`fishWonRadialForceKg`, `dragBlockedForceKg`, `radialEscapeForceKg` and
+`finalRadialSpeedPxPerSec`. Active drag is a force threshold: outward radial
+movement starts only from fish-won radial force above the drag limit. Open
+drag blocks nothing, so the full fish-won radial force becomes escape speed.
 
 ## 8. Reel hold
 

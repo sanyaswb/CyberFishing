@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
-const ROOT = path.resolve(__dirname, "..");
+const ROOT = path.resolve(__dirname, "..", "..");
 const strict = process.argv.includes("--strict");
 const files = [];
 
@@ -69,7 +69,7 @@ for (const file of files) {
   }
 }
 
-console.log("Memory leak static audit:");
+console.log("Static lifecycle audit (not a runtime memory-leak proof):");
 if (findings.length === 0) {
   console.log("- no lifecycle patterns require review");
 } else {

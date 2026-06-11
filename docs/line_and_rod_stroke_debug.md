@@ -33,8 +33,8 @@ The runtime contract separates four concepts:
 - `rodStrokeUsedMeters`: compatibility alias for won Y-distance.
 - `rodStrokeUnrecoveredMeters`: compatibility alias for won Y-distance.
 - `rodStrokeRatio`: `rodStrokeWonMeters / rodStrokeCapacityMeters`.
-- `strokeYGainedMeters`: Y-distance gained by rod pull this frame.
-- `strokeYLostMeters`: Y-distance lost to fish escape this frame.
+- `strokeYGainedMeters`: deprecated compatibility alias for gained line distance.
+- `strokeYLostMeters`: deprecated compatibility alias for lost line distance.
 - `initialPumpCreditMeters`: diagnostic recoverable line at frame start.
 - `finalPumpCreditMeters`: diagnostic recoverable line after line release/recovery/constraint.
 - `strokeRecoveredMeters`: stroke reduced by reel auto recovery.

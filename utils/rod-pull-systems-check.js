@@ -99,21 +99,13 @@ approx(spool.releasedLineMeters, 20, 0.001, "line spool total usable line equals
 approx(spool.remainingLineMeters, 0, 0.001, "line spool reserve reaches zero only after full line release");
 approx(spool.recover(5, 18), 2, 0.001, "line spool recovery cannot shorten line below fish distance");
 
-const strokeTracker = new RodStrokeTracker();
-let yFrame = strokeTracker.calculate({ previousFishY: 100, currentFishY: 115, pixelsPerMeter: 50, towardPlayerYSign: 1 });
-approx(yFrame.yTowardMeters, 0.3, 0.001, "Y-only tracker counts toward-player Y gain");
-approx(yFrame.yAwayMeters, 0, 0.001, "Y-only tracker ignores away loss during Y gain");
-yFrame = strokeTracker.calculate({ previousFishY: 115, currentFishY: 102.5, pixelsPerMeter: 50, towardPlayerYSign: 1 });
-approx(yFrame.yTowardMeters, 0, 0.001, "Y-only tracker reports no gain during Y escape");
-approx(yFrame.yAwayMeters, 0.25, 0.001, "Y-only tracker counts Y escape as stroke loss");
-
 const strokeState = new RodStrokeState();
 strokeState.setCapacity(1.8);
-approx(strokeState.addWonDistance(1), 1, 0.001, "rod stroke stores won Y distance");
-approx(strokeState.loseWonDistance(0), 0, 0.001, "zero Y side movement does not reduce stroke");
-approx(strokeState.wonMeters, 1, 0.001, "side movement leaves stroke won unchanged");
-approx(strokeState.loseWonDistance(0.25), 0.25, 0.001, "Y escape reduces won stroke during hold");
-approx(strokeState.wonMeters, 0.75, 0.001, "rod stroke keeps remaining won distance after Y escape");
+approx(strokeState.addWonDistance(1), 1, 0.001, "rod stroke stores won line distance");
+approx(strokeState.loseWonDistance(0), 0, 0.001, "zero line-distance loss does not reduce stroke");
+approx(strokeState.wonMeters, 1, 0.001, "stable line distance leaves stroke won unchanged");
+approx(strokeState.loseWonDistance(0.25), 0.25, 0.001, "line-distance loss reduces won stroke during hold");
+approx(strokeState.wonMeters, 0.75, 0.001, "rod stroke keeps remaining won line distance");
 
 const calculator = new RodPullCalculator({
   ...rodPullConfig,
@@ -193,34 +185,6 @@ assert(strokeRecovered.strokeResetReason === "recovered_by_reel", "rod stroke ex
 const strokeSynced = rodPullSystem.syncStrokeToPumpCredit({ pumpCreditMeters: 0.1 });
 approx(strokeSynced.strokeSyncedMeters, 0, 0.001, "pump credit sync no longer changes rod stroke");
 assert(strokeSynced.strokeSyncReason === "debug_only", "pump credit sync is diagnostic only");
-
-const releasedHoldStrokeSystem = new RodPullSystem({
-  ...rodPullConfig,
-  capacityByRodLengthRatio: 0.5,
-  distanceMultiplierByRodLength: 0.5,
-});
-releasedHoldStrokeSystem.update({
-  dtSec: 0,
-  inputState: { pullHeld: true, pullStartedThisFrame: true },
-  rod,
-  fishTensionKg: 0,
-  rodLimitKg: 3,
-  lineHasReserve: true,
-  fishDistanceMeters: 10,
-});
-releasedHoldStrokeSystem.recordYMovement({ gainedMeters: 1.8 });
-const strokeLostAfterHoldRelease = releasedHoldStrokeSystem.update({
-  dtSec: 1 / 30,
-  inputState: { pullHeld: false, pullReleasedThisFrame: true },
-  rod,
-  fishTensionKg: 0,
-  rodLimitKg: 3,
-  lineHasReserve: false,
-  fishDistanceMeters: 10,
-  yLostBeforePullMeters: 1.8,
-});
-approx(strokeLostAfterHoldRelease.strokeYLostMeters, 1.8, 0.001, "Y escape after hold release eats unrecovered rod stroke");
-approx(strokeLostAfterHoldRelease.rodStrokeWonMeters, 0, 0.001, "released hold Y escape resets lost rod stroke credit");
 
 const autoRecover = new ReelAutoRecoveryCalculator().calculate({
   hasReel: true,

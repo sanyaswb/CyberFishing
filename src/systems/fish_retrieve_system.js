@@ -126,10 +126,12 @@ class FishRetrieveSystem {
       fishWonForceKg: dragFrame.fishWonForceKg,
       fishWonRadialForceKg: dragFrame.fishWonRadialForceKg,
       fishWonYForceKg: dragFrame.fishWonYForceKg,
+      radialAwayRatio: dragFrame.radialAwayRatio,
       yAwayRatio: dragFrame.yAwayRatio,
       dragBlockedForceKg: dragFrame.dragBlockedForceKg,
       radialEscapeForceKg: dragFrame.radialEscapeForceKg,
       radialSpeedPxPerSec: dragFrame.radialSpeedPxPerSec,
+      finalRadialSpeedPxPerSec: dragFrame.finalRadialSpeedPxPerSec,
       outwardRadialSpeedPxPerSec:
         dragFrame.outwardRadialSpeedPxPerSec,
       tangentSpeedPxPerSec: dragFrame.tangentSpeedPxPerSec,

@@ -1,5 +1,21 @@
 # CyberFishing changelog
 
+## v0.19.45 - Utility role cleanup
+
+- Separated manual diagnostics, compatibility checks and static lifecycle audits into explicit utility folders and npm command groups.
+- Renamed the fish speed diagnostic around radial movement and replaced legacy Y terminology with radial force and speed metrics.
+- Added `finalRadialSpeedPxPerSec` and `radialAwayRatio` debug fields while preserving existing Y aliases for compatibility.
+- Split legacy Y rod-stroke coverage out of the core Rod Pull regression check.
+- Documented the simplified fish-force simulator as a manual diagnostic that does not validate the complete fight pipeline.
+
+## v0.19.44 - Runtime fish overlay
+
+- Fight physics now exposes the normalized runtime fish behavior profiles in its per-frame debug snapshot.
+- Fish state force rows and worst-case force diagnostics now react to Active Fish DevTools changes instead of reading stale catch configuration.
+- Corrected fish force display formulas and units: passive force, state active force and total force are shown separately.
+- Valid zero force and speed multipliers remain zero in the overlay.
+- Added regression coverage that rejects stale hooked-fish values after a runtime update.
+
 ## v0.19.43 - Player force budget
 
 - Added `PlayerForceBudgetAllocator` as the shared per-frame source of truth for player-applied force.

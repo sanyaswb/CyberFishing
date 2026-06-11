@@ -45,7 +45,10 @@ class FishRetrieveResult {
       data.fishWonRadialForceKg ?? data.fishWonYForceKg,
     );
     this.fishWonYForceKg = this.#positive(data.fishWonYForceKg);
-    this.yAwayRatio = this.#ratio(data.yAwayRatio ?? 1);
+    this.radialAwayRatio = this.#ratio(
+      data.radialAwayRatio ?? data.yAwayRatio ?? 1,
+    );
+    this.yAwayRatio = this.radialAwayRatio;
     this.dragBlockedForceKg = this.#positive(
       data.dragBlockedForceKg ?? data.fishTensionKg,
     );
@@ -55,6 +58,8 @@ class FishRetrieveResult {
       data.radialEscapeForceKg ?? data.yEscapeForceKg ?? data.excessYForceKg,
     );
     this.radialSpeedPxPerSec = Number(data.radialSpeedPxPerSec) || 0;
+    this.finalRadialSpeedPxPerSec =
+      Number(data.finalRadialSpeedPxPerSec) || 0;
     this.outwardRadialSpeedPxPerSec = this.#positive(
       data.outwardRadialSpeedPxPerSec,
     );

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.19.43";
+const CURRENT_PROJECT_VERSION = "0.19.45";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "player-force-budget",
+  codename: "utility-role-cleanup",
   updatedAt: "2026-06-11",
   notes: Object.freeze([
-    "Added a shared PlayerForceBudgetAllocator for Rod Hold and Rod Control",
-    "Rod Hold receives a resolved holdBudgetKg instead of owning the whole player reserve",
-    "Rod Control receives a resolved controlBudgetKg and cannot exceed its player budget",
-    "Combined tension ceiling is configurable and capped by maxCombinedMultiplier",
-    "Hold+control and 0.05 kg full game-cycle scenarios remain catchable",
+    "Separated diagnostics, compatibility checks and lifecycle audits",
+    "Renamed the fish speed diagnostic around radial movement",
+    "Added radial speed and direction-ratio debug fields",
+    "Split legacy Y rod-stroke checks from core Rod Pull regressions",
+    "Kept legacy debug aliases and npm check commands compatible",
   ]),
 });
 

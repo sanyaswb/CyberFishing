@@ -123,6 +123,8 @@ class DragForceCalculator {
       tangentVelocityY + direction.y * tautRadialSpeed;
     const finalX = dragEngaged ? tautFinalX : targetX;
     const finalY = dragEngaged ? tautFinalY : targetY;
+    const finalRadialSpeed =
+      finalX * direction.x + finalY * direction.y;
 
     return Object.freeze({
       fishWonForceKg,
@@ -130,8 +132,10 @@ class DragForceCalculator {
       radialEscapeForceKg,
       radialSpeedPxPerSec: radialSpeed,
       outwardRadialSpeedPxPerSec: outwardRadialSpeed,
+      finalRadialSpeedPxPerSec: finalRadialSpeed,
       tangentSpeedPxPerSec: tangentSpeed,
       outwardRatio,
+      radialAwayRatio: outwardRatio,
       awayDirX: direction.x,
       awayDirY: direction.y,
       dragRatio: resolvedDragRatio,

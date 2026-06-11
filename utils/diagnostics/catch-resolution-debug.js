@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 
-const ROOT = path.resolve(__dirname, "..");
+const ROOT = path.resolve(__dirname, "..", "..");
 const FILES = [
   "src/core/core.js",
   "src/config/databases/fish/presets/fish_profile_factory.js",
@@ -406,4 +406,6 @@ function runScenario() {
 }
 
 runScenario();
-`, context, { filename: "utils/catch-resolution-debug-check.js#scenario" });
+`, context, {
+  filename: "utils/diagnostics/catch-resolution-debug.js#scenario",
+});

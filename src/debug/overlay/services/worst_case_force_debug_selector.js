@@ -13,7 +13,10 @@ class WorstCaseForceDebugSelector {
     const fightPhysicsConfig = config?.fightPhysicsConfig || null;
     const currentFishBase = Number(data.fishPassiveKg ?? data.fishBasePower) || 0;
     const { maxPull, maxMove } = this.#selectWorstBehaviorMultipliers(
-      activeFish.physics?.behaviorProfile?.behaviors || {},
+      data.fishRuntimeBehaviorStates ||
+        activeFish.physics?.behaviorProfile?.behaviors ||
+        activeFish.physics?.behaviors ||
+        {},
     );
     const effectiveTackleLoadKg = this.#selectEffectiveTackleLoadKg(
       data.equipment || data.eq || {},

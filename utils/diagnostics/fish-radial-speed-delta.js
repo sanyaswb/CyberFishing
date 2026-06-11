@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 
-const ROOT = path.resolve(__dirname, "..");
+const ROOT = path.resolve(__dirname, "..", "..");
 const FILES = [
   "src/core/core.js",
   "src/config/databases/fish/presets/fish_profile_factory.js",
@@ -91,7 +91,7 @@ for (const file of FILES) {
 }
 
 vm.runInContext(`
-class FishSpeedDeltaScenario {
+class FishRadialSpeedDeltaScenario {
   constructor({
     fishWeightKg = 0.8,
     dragRatio = 0,
@@ -127,7 +127,7 @@ class DeterministicRng {
   }
 }
 
-class FishSpeedDeltaRuntimeFactory {
+class FishRadialSpeedDeltaRuntimeFactory {
   createConfig() {
     const config = this.#clone(CONFIG);
     config.debug = config.debug || {};
@@ -247,10 +247,10 @@ class FishSpeedDeltaRuntimeFactory {
   }
 }
 
-class FishSpeedDeltaProbe {
+class FishRadialSpeedDeltaProbe {
   constructor(scenario) {
     this.scenario = scenario;
-    this.factory = new FishSpeedDeltaRuntimeFactory();
+    this.factory = new FishRadialSpeedDeltaRuntimeFactory();
   }
 
   run() {
@@ -331,13 +331,13 @@ class FishSpeedDeltaProbe {
 
     const last = samples[samples.length - 1];
     const summary = this.#createSummary({ scenario: this.scenario, config, fishData, last });
-    console.log("[FishSpeedDelta] assumptions");
+    console.log("[FishRadialSpeedDelta] assumptions");
     console.log(summary.assumptions);
-    console.log("[FishSpeedDelta] speed and factor samples");
+    console.log("[FishRadialSpeedDelta] speed and factor samples");
     console.table(samples);
-    console.log("[FishSpeedDelta] final comparison");
+    console.log("[FishRadialSpeedDelta] final comparison");
     console.log(summary.comparison);
-    console.log("[FishSpeedDelta] interpretation");
+    console.log("[FishRadialSpeedDelta] interpretation");
     console.log(summary.interpretation);
     this.#assertAuthoritativeFightMovement(summary);
   }
@@ -413,10 +413,19 @@ class FishSpeedDeltaProbe {
       activeKg: this.#round(debug.fishActiveKg, 4),
       oppositionKg: this.#round(debug.fishOppositionKg, 4),
       dragRatio: this.#round(debug.dragRatio, 3),
-      fishWonYForceKg: this.#round(debug.fishWonYForceKg, 4),
+      fishWonRadialForceKg: this.#round(
+        debug.fishWonRadialForceKg ?? debug.fishWonYForceKg,
+        4,
+      ),
       dragBlockedForceKg: this.#round(debug.dragBlockedForceKg, 4),
-      excessYForceKg: this.#round(debug.excessYForceKg, 4),
-      finalYSpeedPxPerSec: this.#round(debug.finalYSpeedPxPerSec, 3),
+      radialEscapeForceKg: this.#round(
+        debug.radialEscapeForceKg ?? debug.excessYForceKg,
+        4,
+      ),
+      finalRadialSpeedPxPerSec: this.#round(
+        debug.finalRadialSpeedPxPerSec,
+        3,
+      ),
       agility: this.#round(agility, 3),
       stateTransitionApproachPerFrame: this.#round(approach, 4),
       genericVelocityDampingPerFrame: this.#round(currentDamping, 4),
@@ -460,7 +469,7 @@ class FishSpeedDeltaProbe {
         "actualPxPerSec should match overlayModelPxPerSec when drag is 0 and line is unconstrained",
         "agility is still reported as state transition smoothing only; it must not damp stable fight movement",
         "generic WaterEntity damping is still reported for diagnostics but must not apply to hooked fight movement",
-        "drag effect is reported as fishWonYForceKg, dragBlockedForceKg, excessYForceKg and finalYSpeedPxPerSec",
+        "drag effect is reported in radial terms; Y fields are accepted only as compatibility aliases",
         "lineReleasedThisFrameM and lineConstrained show whether line release/constraint changed real movement",
       ],
     };
@@ -504,7 +513,7 @@ class FishSpeedDeltaProbe {
   }
 }
 
-new FishSpeedDeltaProbe(new FishSpeedDeltaScenario()).run();
+new FishRadialSpeedDeltaProbe(new FishRadialSpeedDeltaScenario()).run();
 `, context, {
-  filename: "utils/fish-speed-delta-check.js.vm",
+  filename: "utils/diagnostics/fish-radial-speed-delta.js.vm",
 });

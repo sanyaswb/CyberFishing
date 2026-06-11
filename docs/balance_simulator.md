@@ -1,6 +1,10 @@
 # Balance simulator
 
-`utils/simulate-fish-fight.js` runs the simplified fight calculator without Canvas.
+`utils/diagnostics/simulate-simple-fish-force.js` runs the simplified force
+calculator without Canvas.
+
+This is a manual diagnostic. It does not execute the complete modern fight
+pipeline and must not be used as proof that gameplay integration works.
 
 The simulator should be used to validate:
 

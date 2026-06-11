@@ -24,7 +24,11 @@ class FightDragSection extends FightSectionBase {
       this.row("Outward radial speed", `${f.num(d.outwardRadialSpeedPxPerSec, 1)}px/s`),
       this.row("Tangent speed", `${f.num(d.tangentSpeedPxPerSec, 1)}px/s`, "#73c2fb"),
       this.row("Final X speed", `${f.num(d.finalXSpeedPxPerSec, 1)}px/s`, "#73c2fb"),
-      this.row("Final Y speed", `${f.num(d.finalYSpeedPxPerSec, 1)}px/s`, "#73c2fb"),
+      this.row(
+        "Final radial speed",
+        `${f.num(d.finalRadialSpeedPxPerSec ?? d.finalYSpeedPxPerSec, 1)}px/s`,
+        "#73c2fb",
+      ),
       this.row("Drag state", shouldSlip ? "SLIPPING" : canHoldRadial ? "HOLDING_RADIAL" : "OPEN/NO_OUTWARD", shouldSlip ? "#ff8888" : "#00ff80"),
     ];
   }

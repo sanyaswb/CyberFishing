@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 
-const ROOT = path.resolve(__dirname, "..");
+const ROOT = path.resolve(__dirname, "..", "..");
 const FILES = [
   "src/config/databases/fish/presets/fish_profile_factory.js",
   "src/config/databases/fish/presets/fish_profile_presets.js",
@@ -118,7 +118,8 @@ const result = vm.runInContext(`(function runSimulation() {
   return { maxTension, maxLineStress, minDistance, last };
 })()`, context);
 
-console.log("Balance simulation passed:");
+console.log("Simple fish-force diagnostic completed:");
+console.log("- scope: SimpleFightForceCalculator only; not the full fight pipeline");
 console.log(`- max tension: ${result.maxTension.toFixed(3)} kg`);
 console.log(`- max line stress: ${(result.maxLineStress * 100).toFixed(1)}%`);
 console.log(`- closest distance: ${result.minDistance.toFixed(2)} m`);

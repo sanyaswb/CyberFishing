@@ -122,6 +122,7 @@
 │  │  │  ├── line_constraint_state_resolver.js
 │  │  │  ├── line_radial_movement_splitter.js
 │  │  │  ├── line_tension_calculator.js
+│  │  │  ├── player_force_budget_allocator.js
 │  │  │  ├── reel_auto_recovery_calculator.js
 │  │  │  ├── reel_hold_load_policy.js
 │  │  │  ├── reel_hold_recovery_system.js
@@ -130,12 +131,15 @@
 │  │  │  ├── rod_control_tension_mode_resolver.js
 │  │  │  ├── rod_pull_calculator.js
 │  │  │  ├── rod_pull_state.js
+│  │  │  ├── rod_stroke_distance_tracker.js
 │  │  │  ├── rod_stroke_state.js
 │  │  │  ├── rod_stroke_tracker.js
 │  │  │  ├── simple_fight_force_calculator.js
 │  │  │  ├── slack_calculator.js
 │  │  │  ├── tackle_failure_selector.js
 │  │  │  └── tackle_stress_accumulator.js
+│  │  ├── input
+│  │  │  └── fight_input_action_composer.js
 │  │  └── line
 │  │    ├── line_allocation_policy.js
 │  │    ├── line_inventory_controller.js
@@ -214,7 +218,8 @@
 │  │    ├── active_fish_dev_tools_schema.js
 │  │    ├── debug_data_selectors.js
 │  │    ├── debug_formatters.js
-│  │    └── location_debug_data_provider.js
+│  │    ├── location_debug_data_provider.js
+│  │    └── memory_leak_watchdog.js
 │  ├── entities
 │  │  ├── fish.js
 │  │  └── tackle.js
@@ -251,29 +256,40 @@
 │  └── world
 │    └── world.js
 └── utils
+  ├── audits
+  │  └── static-lifecycle-audit.js
   ├── cast-power-check.js
   ├── catch-resolution-check.js
-  ├── catch-resolution-debug-check.js
   ├── check-js.js
+  ├── checks
+  │  └── rod-stroke-legacy-y-check.js
   ├── config-overrides-check.js
   ├── convert-images.js
   ├── dev-server.js
+  ├── diagnostics
+  │  ├── catch-resolution-debug.js
+  │  ├── fish-radial-speed-delta.js
+  │  └── simulate-simple-fish-force.js
+  ├── fight-input-composition-check.js
   ├── fight-systems-check.js
   ├── fish-2d-behavior-check.js
   ├── fish-db-structure-check.js
-  ├── fish-speed-delta-check.js
   ├── fps-physics-check.js
   ├── game-cycle-check.js
+  ├── game-cycle-control-hold-check.js
   ├── hud-bar-layout-check.js
   ├── hud-style-resolver-check.js
   ├── inventory-line-systems-check.js
   ├── line-locked-rod-control-check.js
   ├── local-bridge.js
+  ├── memory-leak-watchdog-check.js
+  ├── overlay-runtime-fish-check.js
   ├── physics-formula-golden-check.js
+  ├── player-force-budget-check.js
   ├── project-version-check.js
   ├── rod-control-ux-check.js
   ├── rod-pull-systems-check.js
+  ├── rod-stroke-distance-check.js
   ├── set-project-version.js
-  ├── simulate-fish-fight.js
   ├── tackle-stress-failure-check.js
   └── validate-config.js
