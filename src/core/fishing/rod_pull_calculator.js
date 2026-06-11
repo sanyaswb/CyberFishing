@@ -69,14 +69,23 @@ class RodPullCalculator {
     const directHoldMax = Number(rodHoldMaxKg);
     if (Number.isFinite(directHoldMax)) {
       const holdMax = Math.max(0, directHoldMax);
+      const dragLimit = Math.max(0, Number(dragLimitKg) || 0);
+      const canSlipLine =
+        dragLocked === false && lineHasReserve !== false && !hardLineLimit;
+      const controlledHoldMax = canSlipLine
+        ? Math.min(holdMax, dragLimit)
+        : holdMax;
       return {
-        availableExtraForceKg: holdMax,
-        controlledPullLimitKg: holdMax,
+        availableExtraForceKg: controlledHoldMax,
+        controlledPullLimitKg: controlledHoldMax,
         rodHoldMaxKg: holdMax,
         tensionCeilingMultiplier,
         tensionCeilingKg,
-        dragSlipping: false,
-        blockedReason: "none",
+        dragSlipping: canSlipLine && dragLimit < holdMax,
+        blockedReason:
+          canSlipLine && dragLimit <= 0.000001
+            ? "drag_open_no_force_transfer"
+            : "none",
       };
     }
 

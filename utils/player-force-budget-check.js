@@ -32,6 +32,7 @@ const hold = Object.freeze({ active: true, ratio: 1, source: "test" });
 const noHold = Object.freeze({ active: false, ratio: 0, source: "none" });
 const fullControl = Object.freeze({ active: true, directionX: 1, inputRatio: 1, source: "test" });
 const halfControl = Object.freeze({ active: true, directionX: 1, inputRatio: 0.5, source: "test" });
+const belowThresholdControl = Object.freeze({ active: true, directionX: 1, inputRatio: 0.0005, source: "test" });
 const noControl = Object.freeze({ active: false, directionX: 0, inputRatio: 0, source: "none" });
 
 let frame = allocator.resolve({ rodLimitKg: 1, fishTensionKg: 0.4, holdAction: hold, controlAction: noControl, config });
@@ -89,6 +90,12 @@ approx(frame.holdShare, 0, 0.0001, "inactive input has no hold share");
 approx(frame.controlShare, 0, 0.0001, "inactive input has no control share");
 approx(frame.holdBudgetKg, 0, 0.0001, "inactive input has no hold budget");
 approx(frame.controlBudgetKg, 0, 0.0001, "inactive input has no control budget");
+
+frame = allocator.resolve({ rodLimitKg: 1, fishTensionKg: 0.4, holdAction: hold, controlAction: belowThresholdControl, config });
+assert(!frame.controlActive, "control input below configured minimum is inactive");
+approx(frame.controlInputRatio, 0, 0.0001, "inactive below-threshold control has zero input ratio");
+approx(frame.holdShare, 1, 0.0001, "below-threshold control does not consume hold share");
+approx(frame.controlBudgetKg, 0, 0.0001, "below-threshold control receives no budget");
 
 console.log("player-force-budget-check passed:\\n- " + checks.join("\\n- "));
 `, context);

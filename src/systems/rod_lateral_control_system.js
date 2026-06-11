@@ -335,16 +335,12 @@ class RodLateralControlSystem {
       0,
       this.#number(dragLimitKg),
     );
-    const dragReserveKg = hasExternalBudget
-      ? loadReserveKg
-      : canSlipDrag
-        ? Math.max(0, resolvedDragLimitKg - resolvedCurrentTensionKg)
-        : loadReserveKg;
-    const effectiveTensionReserveKg = hasExternalBudget
-      ? loadReserveKg
-      : canSlipDrag
-        ? Math.min(loadReserveKg, dragReserveKg)
-        : loadReserveKg;
+    const dragReserveKg = canSlipDrag
+      ? Math.max(0, resolvedDragLimitKg - resolvedCurrentTensionKg)
+      : loadReserveKg;
+    const effectiveTensionReserveKg = canSlipDrag
+      ? Math.min(loadReserveKg, dragReserveKg)
+      : loadReserveKg;
     const tensionScale = Math.max(
       1,
       this.#number(tensionMultiplier, 1),

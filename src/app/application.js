@@ -1116,7 +1116,7 @@ class GameApplication {
   }
 
   start() {
-    this.#loop.start();
+    return this.#loop.start();
   }
 
   stop() {
@@ -1130,8 +1130,13 @@ class GameApplication {
     this.#removeInventoryChangedListener = null;
 
     this.#input?.dispose?.();
+    this.#chumController?.dispose?.();
     this.#chum?.dispose?.();
     this.#inventory?.dispose?.();
+    this.#inventoryUI?.dispose?.();
+    this.#depthUI?.dispose?.();
+    this.#timeUI?.dispose?.();
+    this.#holdUI?.dispose?.();
     if (this.#ui) {
       this.#ui.onNetClick = null;
       this.#ui.onContinueClick = null;

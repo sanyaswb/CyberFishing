@@ -19,10 +19,17 @@ class PlayerForceBudgetAllocator {
     const rodLimit = this.#positive(rodLimitKg);
     const fishTension = this.#positive(fishTensionKg);
     const holdActive = !!holdAction?.active;
-    const controlActive = !!controlAction?.active;
-    const controlInputRatio = controlActive
+    const controlConfig = config.control || {};
+    const rawControlInputRatio = controlAction?.active
       ? this.#clamp01(controlAction?.inputRatio)
       : 0;
+    const minControlInputRatio = this.#clamp01(
+      controlConfig.minInputRatio ?? 0.001,
+    );
+    const controlActive =
+      !!controlAction?.active &&
+      rawControlInputRatio >= minControlInputRatio;
+    const controlInputRatio = controlActive ? rawControlInputRatio : 0;
 
     if (!enabled) {
       return this.#freeze({
@@ -82,7 +89,7 @@ class PlayerForceBudgetAllocator {
       holdActive,
       controlActive,
       controlInputRatio,
-      controlConfig: config.control || {},
+      controlConfig,
     });
 
     const holdBudgetKg = totalPlayerBudgetKg * shares.holdShare;

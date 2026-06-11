@@ -36,4 +36,15 @@
 
   window.CYBER_FISHING_DEBUG_OVERLAY = controller;
   window.CYBER_FISHING_OVERLAY_METRIC_INFO = metricInfoBridge;
+
+  window.addEventListener(
+    "pagehide",
+    () => {
+      metricInfoBridge.dispose();
+      controller.dispose();
+      window.CYBER_FISHING_OVERLAY_METRIC_INFO = null;
+      window.CYBER_FISHING_DEBUG_OVERLAY = null;
+    },
+    { once: true },
+  );
 })();

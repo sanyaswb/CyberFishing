@@ -6,7 +6,7 @@ class Game {
   }
 
   start() {
-    this.#app.start();
+    return this.#app.start();
   }
 
   stop() {

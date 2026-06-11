@@ -79,6 +79,14 @@ class ChumController {
     return this.#ui;
   }
 
+  dispose() {
+    this.#handCastAim?.reset?.();
+    this.#pendingHandDrop = null;
+    this.#activeBoat = null;
+    this.#ui?.dispose?.();
+    this.#ui = null;
+  }
+
   get isAiming() {
     return this.#isAiming;
   }

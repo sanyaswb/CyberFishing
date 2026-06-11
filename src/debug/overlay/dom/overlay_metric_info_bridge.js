@@ -3,6 +3,14 @@ class OverlayMetricInfoBridge {
   #inspector;
   #documentTarget;
   #isStarted = false;
+  #eventTarget = null;
+  #onDebugLiveUpdate = (event) => {
+    this.#inspector.updateLiveData(event.detail || {});
+  };
+  #onPointerOver = (event) => this.#handleHover(event);
+  #onFocusIn = (event) => this.#handleHover(event);
+  #onClick = (event) => this.#handleClick(event);
+  #onKeyDown = (event) => this.#handleKeyDown(event);
 
   constructor({
     catalog = new OverlayMetricCatalog(),
@@ -19,17 +27,44 @@ class OverlayMetricInfoBridge {
     this.#isStarted = true;
     this.#listenForDebugData();
     const content = this.#documentTarget.querySelector(".debug-overlay-content");
-    const target = content || this.#documentTarget;
-    target.addEventListener("pointerover", (event) => this.#handleHover(event), true);
-    target.addEventListener("focusin", (event) => this.#handleHover(event), true);
-    target.addEventListener("click", (event) => this.#handleClick(event), true);
-    target.addEventListener("keydown", (event) => this.#handleKeyDown(event), true);
+    this.#eventTarget = content || this.#documentTarget;
+    this.#eventTarget.addEventListener("pointerover", this.#onPointerOver, true);
+    this.#eventTarget.addEventListener("focusin", this.#onFocusIn, true);
+    this.#eventTarget.addEventListener("click", this.#onClick, true);
+    this.#eventTarget.addEventListener("keydown", this.#onKeyDown, true);
+  }
+
+  stop() {
+    if (!this.#isStarted) return;
+    this.#isStarted = false;
+    this.#documentTarget.removeEventListener(
+      "debug-live-update",
+      this.#onDebugLiveUpdate,
+    );
+    this.#eventTarget?.removeEventListener(
+      "pointerover",
+      this.#onPointerOver,
+      true,
+    );
+    this.#eventTarget?.removeEventListener(
+      "focusin",
+      this.#onFocusIn,
+      true,
+    );
+    this.#eventTarget?.removeEventListener("click", this.#onClick, true);
+    this.#eventTarget?.removeEventListener("keydown", this.#onKeyDown, true);
+    this.#eventTarget = null;
+  }
+
+  dispose() {
+    this.stop();
   }
 
   #listenForDebugData() {
-    this.#documentTarget.addEventListener("debug-live-update", (event) => {
-      this.#inspector.updateLiveData(event.detail || {});
-    });
+    this.#documentTarget.addEventListener(
+      "debug-live-update",
+      this.#onDebugLiveUpdate,
+    );
   }
 
   #handleHover(event) {

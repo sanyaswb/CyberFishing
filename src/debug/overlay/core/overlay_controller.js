@@ -7,6 +7,10 @@ class OverlayController {
   #lastHtml = "";
   #updateLoop;
   #isStarted = false;
+  #onDebugLiveUpdate = (event) => {
+    this.#data = event.detail || {};
+    this.#domAdapter.show();
+  };
 
   constructor({
     registry,
@@ -31,11 +35,28 @@ class OverlayController {
     if (this.#isStarted) return;
     this.#isStarted = true;
     this.#domAdapter.init();
-    this.#documentTarget.addEventListener("debug-live-update", (event) => {
-      this.#data = event.detail || {};
-      this.#domAdapter.show();
-    });
+    this.#documentTarget.addEventListener(
+      "debug-live-update",
+      this.#onDebugLiveUpdate,
+    );
     this.#updateLoop.start();
+  }
+
+  stop() {
+    if (!this.#isStarted) return;
+    this.#isStarted = false;
+    this.#updateLoop.stop();
+    this.#documentTarget.removeEventListener(
+      "debug-live-update",
+      this.#onDebugLiveUpdate,
+    );
+  }
+
+  dispose() {
+    this.stop();
+    this.#data = {};
+    this.#lastHtml = "";
+    this.#domAdapter.dispose?.();
   }
 
   update() {

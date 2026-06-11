@@ -64,6 +64,8 @@ const PointerAction = Object.freeze({
 });
 
 class InputManager {
+  static #activeListenerCount = 0;
+
   #canvas;
   #isPulling;
   #pullDirection;
@@ -201,9 +203,17 @@ class InputManager {
 
   #addEventListener(target, type, handler, options) {
     target.addEventListener(type, handler, options);
-    this.#eventCleanups.push(() =>
-      target.removeEventListener(type, handler, options),
-    );
+    InputManager.#activeListenerCount += 1;
+    let active = true;
+    this.#eventCleanups.push(() => {
+      if (!active) return;
+      active = false;
+      target.removeEventListener(type, handler, options);
+      InputManager.#activeListenerCount = Math.max(
+        0,
+        InputManager.#activeListenerCount - 1,
+      );
+    });
   }
 
   #bindEvents() {
@@ -750,6 +760,10 @@ class InputManager {
       this.#eventCleanups[i]();
     }
     this.#eventCleanups.length = 0;
+  }
+
+  static getActiveListenerCount() {
+    return InputManager.#activeListenerCount;
   }
 }
 

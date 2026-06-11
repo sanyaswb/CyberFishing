@@ -4,6 +4,8 @@ class DebugEventBinder {
   #debugModulesSource;
   #biteTickLogger;
   #biteSequenceLogger;
+  #cleanups = [];
+  #isBound = false;
 
   constructor({
     documentTarget = typeof document !== "undefined" ? document : null,
@@ -20,35 +22,36 @@ class DebugEventBinder {
   }
 
   bind() {
-    if (!this.#documentTarget || !this.#console) return;
+    if (!this.#documentTarget || !this.#console || this.#isBound) return this;
+    this.#isBound = true;
 
-    this.#documentTarget.addEventListener("debug-live-update", (event) => {
+    this.#listen("debug-live-update", (event) => {
       this.#console.setLiveData(event.detail);
     });
 
-    this.#documentTarget.addEventListener("debug-module-toggled", (event) => {
+    this.#listen("debug-module-toggled", (event) => {
       const { module, enabled } = event.detail || {};
       if (enabled) this.#console.requestModule(module, { reason: "enabled" });
     });
 
-    this.#documentTarget.addEventListener("config-updated", (event) => {
+    this.#listen("config-updated", (event) => {
       this.#handleConfigUpdated(event.detail?.path || []);
     });
 
-    this.#documentTarget.addEventListener("debug-fish-hooked", (event) => {
+    this.#listen("debug-fish-hooked", (event) => {
       this.#console.setFightData(event.detail);
       this.#console.printEnabled({ reason: "fish hooked" });
     });
 
-    this.#documentTarget.addEventListener("debug-bite-tick", (event) => {
+    this.#listen("debug-bite-tick", (event) => {
       this.#biteTickLogger?.print(event.detail);
     });
 
-    this.#documentTarget.addEventListener("debug-bite-sequence", (event) => {
+    this.#listen("debug-bite-sequence", (event) => {
       this.#biteSequenceLogger?.print(event.detail);
     });
 
-    this.#documentTarget.addEventListener("netCatchRoll", (event) => {
+    this.#listen("netCatchRoll", (event) => {
       this.#console.setNetRoll(event.detail);
       if (!this.#debugModulesSource().net) return;
       const { chance, roll, success } = event.detail;
@@ -57,6 +60,22 @@ class DebugEventBinder {
       );
       this.#console.printModule("net", { reason: "net roll" });
     });
+    return this;
+  }
+
+  dispose() {
+    for (let i = this.#cleanups.length - 1; i >= 0; i--) {
+      this.#cleanups[i]();
+    }
+    this.#cleanups.length = 0;
+    this.#isBound = false;
+  }
+
+  #listen(type, handler) {
+    this.#documentTarget.addEventListener(type, handler);
+    this.#cleanups.push(() =>
+      this.#documentTarget.removeEventListener(type, handler),
+    );
   }
 
   #handleConfigUpdated(path) {

@@ -127,6 +127,32 @@ approx(calculator.calculateAvailableDistance({ rodLengthMeters: 3.6, slackMeters
 const forceLimit = calculator.calculateForceLimit({ rodLimitKg: 3, fishTensionKg: 1.1 });
 approx(forceLimit.rodHoldMaxKg, 1.9, 0.001, "rodHoldMax = rodLimit - fishTension");
 approx(forceLimit.controlledPullLimitKg, 1.9, 0.001, "rod hold force is not clamped by line limit here");
+const openDragBudgetLimit = calculator.calculateForceLimit({
+  rodLimitKg: 3,
+  fishTensionKg: 1.1,
+  rodHoldMaxKg: 1.9,
+  dragLimitKg: 0,
+  dragLocked: false,
+  lineHasReserve: true,
+  hardLineLimit: false,
+});
+approx(openDragBudgetLimit.controlledPullLimitKg, 0, 0.001, "open drag blocks external Rod Hold budget transfer");
+approx(openDragBudgetLimit.rodHoldMaxKg, 1.9, 0.001, "open drag preserves potential Rod Hold budget");
+assert(openDragBudgetLimit.dragSlipping, "open drag marks external Rod Hold budget as slipping");
+assert(
+  openDragBudgetLimit.blockedReason === "drag_open_no_force_transfer",
+  "open drag reports blocked external Rod Hold transfer",
+);
+const hardLimitBudget = calculator.calculateForceLimit({
+  rodLimitKg: 3,
+  fishTensionKg: 1.1,
+  rodHoldMaxKg: 1.9,
+  dragLimitKg: 0,
+  dragLocked: false,
+  lineHasReserve: false,
+  hardLineLimit: true,
+});
+approx(hardLimitBudget.controlledPullLimitKg, 1.9, 0.001, "hard line bypasses drag gate for external Rod Hold budget");
 const overloadForceLimit = new RodPullCalculator({
   tensionCeilingMultiplier: 1.1,
 }).calculateForceLimit({
@@ -586,6 +612,44 @@ approx(dragLimitedLateral.dragReserveKg, 0, 0.001, "Full drag load leaves no lat
 approx(dragLimitedLateral.playerTensionKg, 0, 0.001, "Rod Control adds no tension above active drag limit");
 assert(!dragLimitedLateral.canApply, "Rod Control fish movement stops when drag reserve is exhausted");
 assert(dragLimitedLateral.blockedReason === "drag_limit_reached", "Rod Control reports exhausted drag reserve");
+
+const externalBudgetOpenDragLateral = new RodLateralControlSystem().update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: -50, y: 50 },
+  rodTipPosition: { x: 0, y: 0 },
+  actualRodTipPosition: { x: 0, y: 0 },
+  rodLimitKg: 1,
+  maxTackleLoadKg: 1,
+  currentTensionKg: 0,
+  fishVelocityX: -20,
+  fishWeightKg: 0,
+  playerForceBudget: {
+    enabled: true,
+    controlBudgetKg: 0.5,
+    controlShare: 0.5,
+    combinedCeilingMultiplier: 1.1,
+    combinedTensionCeilingKg: 1.1,
+  },
+  dragLimitKg: 0,
+  dragLocked: false,
+  lineHasReserve: true,
+  hardLineLimit: false,
+  config: lateralConfig,
+});
+assert(externalBudgetOpenDragLateral.playerForceBudgetEnabled, "Rod Control recognizes external player budget");
+approx(externalBudgetOpenDragLateral.loadReserveKg, 0.5, 0.001, "Rod Control preserves potential external budget");
+approx(externalBudgetOpenDragLateral.dragReserveKg, 0, 0.001, "open drag exposes zero transferable control reserve");
+approx(externalBudgetOpenDragLateral.playerTensionKg, 0, 0.001, "open drag blocks external Rod Control tension");
+assert(!externalBudgetOpenDragLateral.canApply, "open drag blocks external Rod Control movement");
+assert(
+  externalBudgetOpenDragLateral.blockedReason === "drag_limit_reached",
+  "open drag reports blocked external Rod Control transfer",
+);
 
 const partialDragReserve = new RodLateralControlSystem().update({
   dtSec: 1,

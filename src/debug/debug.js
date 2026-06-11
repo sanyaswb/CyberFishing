@@ -33,7 +33,7 @@ const biteSequenceLogger = new BiteSequenceLogPrinter({
   debugModulesSource: () => window.DEBUG_MODULES || {},
 });
 
-new DebugEventBinder({
+const debugEventBinder = new DebugEventBinder({
   debugConsole,
   debugModulesSource: () => window.DEBUG_MODULES || {},
   biteTickLogger,
@@ -56,8 +56,17 @@ window.DEBUG_MODULE_REGISTRY = debugModuleRegistry;
 window.DEBUG_CONSOLE_MODULES = debugModuleRegistry.toLegacyMap();
 window.DebugConsole = debugConsole;
 window.DebugRuntime = debugConsole;
+window.CYBER_FISHING_DEBUG_EVENT_BINDER = debugEventBinder;
 window.getActiveLocationDebugData = getActiveLocationDebugData;
 window.getZoneBounds = getZoneBounds;
 window.printLocationMapDebug = () => new LocationDebugPrinter().print();
 window.printBiteTickLog = (detail) => biteTickLogger.print(detail);
 window.printBiteSequenceLog = (detail) => biteSequenceLogger.print(detail);
+window.addEventListener(
+  "pagehide",
+  () => {
+    debugEventBinder.dispose();
+    window.CYBER_FISHING_DEBUG_EVENT_BINDER = null;
+  },
+  { once: true },
+);

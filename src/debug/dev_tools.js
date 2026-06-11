@@ -96,6 +96,20 @@ class DevTools {
   #activeFishShapeKey = "";
   #configRuntime = null;
   #activeFishVisibilityPolicy;
+  #isDisposed = false;
+  #onDebugLiveUpdate = (event) => {
+    if (this.#isDisposed) return;
+    this.#liveData = event.detail || null;
+    const nextFishKey = this.#getActiveFishKey();
+    const nextFishShapeKey = this.#getActiveFishShapeKey();
+    if (
+      this.#isOpen &&
+      (nextFishKey !== this.#activeFishKey ||
+        nextFishShapeKey !== this.#activeFishShapeKey)
+    ) {
+      this.#populatePanel();
+    }
+  };
 
   #excludeKeys = [
     "id",
@@ -128,27 +142,31 @@ class DevTools {
     tooltipProvider.ready.then(() => {
       if (this.#isOpen) this.#populatePanel();
     });
-    document.addEventListener("debug-live-update", (event) => {
-      this.#liveData = event.detail || null;
-      const nextFishKey = this.#getActiveFishKey();
-      const nextFishShapeKey = this.#getActiveFishShapeKey();
-      if (
-        this.#isOpen &&
-        (nextFishKey !== this.#activeFishKey ||
-          nextFishShapeKey !== this.#activeFishShapeKey)
-      ) {
-        this.#populatePanel();
-      }
-    });
+    document.addEventListener(
+      "debug-live-update",
+      this.#onDebugLiveUpdate,
+    );
   }
 
   toggle() {
+    if (this.#isDisposed) return;
     this.#isOpen = !this.#isOpen;
     this.#ui.togglePanel(this.#isOpen);
 
     if (this.#isOpen) {
       this.#populatePanel();
     }
+  }
+
+  dispose() {
+    if (this.#isDisposed) return;
+    this.#isDisposed = true;
+    document.removeEventListener(
+      "debug-live-update",
+      this.#onDebugLiveUpdate,
+    );
+    this.#liveData = null;
+    this.#ui.dispose();
   }
 
   #populatePanel() {
@@ -931,6 +949,15 @@ class DevToolsUI {
     } else {
       this.#panel.classList.remove("open");
     }
+  }
+
+  dispose() {
+    this.#btn?.remove();
+    this.#panel?.remove();
+    this.#btn = null;
+    this.#panel = null;
+    this.#body = null;
+    this.#onToggleCallback = null;
   }
 
   createSection(labelStr, parentElement, isExpanded, onToggle, path = null) {

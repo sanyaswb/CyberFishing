@@ -307,6 +307,11 @@ class UIManager {
   onNetClick;
   #continueBtn;
   onContinueClick;
+  #devTools;
+  #onFullscreenChange = () => {
+    if (!this.#fullscreenBtn) return;
+    this.#fullscreenBtn.innerHTML = document.fullscreenElement ? "🗗" : "⛶";
+  };
 
   constructor(config) {
     this.#config = config;
@@ -314,7 +319,7 @@ class UIManager {
     this.#initNetBtn();
     this.#initContinueBtn();
 
-    new DevTools(this.#config);
+    this.#devTools = new DevTools(this.#config);
   }
 
   hideNetButton() {
@@ -372,9 +377,10 @@ class UIManager {
       { id: "btn_fullscreen" },
     );
 
-    document.addEventListener("fullscreenchange", () => {
-      this.#fullscreenBtn.innerHTML = document.fullscreenElement ? "🗗" : "⛶";
-    });
+    document.addEventListener(
+      "fullscreenchange",
+      this.#onFullscreenChange,
+    );
 
     document.body.appendChild(this.#fullscreenBtn);
   }
@@ -503,6 +509,23 @@ class UIManager {
   updateContinueButtonState(isVisible) {
     if (!this.#continueBtn) return;
     this.#continueBtn.style.display = isVisible ? "block" : "none";
+  }
+
+  dispose() {
+    document.removeEventListener(
+      "fullscreenchange",
+      this.#onFullscreenChange,
+    );
+    this.#devTools?.dispose?.();
+    this.#devTools = null;
+    this.#fullscreenBtn?.remove();
+    this.#netBtn?.remove();
+    this.#continueBtn?.remove();
+    this.#fullscreenBtn = null;
+    this.#netBtn = null;
+    this.#continueBtn = null;
+    this.onNetClick = null;
+    this.onContinueClick = null;
   }
 }
 
@@ -652,6 +675,17 @@ class DepthSelectorUI {
     this.isActive = false;
     this.mainContainer.style.display = "none";
   }
+
+  dispose() {
+    this.onChange = null;
+    this.container?.remove();
+    this.container = null;
+    this.mainContainer = null;
+    this.slider = null;
+    this.input = null;
+    this.maxLabel = null;
+    this.inputContainer = null;
+  }
 }
 
 class TimeDisplayUI {
@@ -704,6 +738,13 @@ class TimeDisplayUI {
       this.timeSpan.innerText = timeStr;
       this.emojiSpan.innerText = emoji;
     }
+  }
+
+  dispose() {
+    this.container?.remove();
+    this.container = null;
+    this.emojiSpan = null;
+    this.timeSpan = null;
   }
 }
 
@@ -835,6 +876,11 @@ class ChumUI {
         break;
     }
   }
+
+  dispose() {
+    this.button?.remove();
+    this.button = null;
+  }
 }
 
 class HoldChargesUI {
@@ -948,6 +994,13 @@ class HoldChargesUI {
       }
     }
   }
+
+  dispose() {
+    this.circles.length = 0;
+    this.container?.remove();
+    this.container = null;
+    this.textLabel = null;
+  }
 }
 
 class InventoryUI {
@@ -970,6 +1023,10 @@ class InventoryUI {
   #inventoryGridNode;
   #tooltipNode;
   #selectedInstanceId = null;
+  #backpackButtonNode = null;
+  #onInventoryChanged = () => {
+    if (this.#isOpen) this.refreshUI();
+  };
 
   #saveInputNode;
   #saveBtnNode;
@@ -1034,6 +1091,7 @@ class InventoryUI {
     }
     btn.addEventListener("click", () => this.toggle());
     document.body.appendChild(btn);
+    this.#backpackButtonNode = btn;
   }
 
   #initModal() {
@@ -1120,9 +1178,10 @@ class InventoryUI {
   }
 
   #setupEventListeners() {
-    document.addEventListener("inventory-changed", () => {
-      if (this.#isOpen) this.refreshUI();
-    });
+    document.addEventListener(
+      "inventory-changed",
+      this.#onInventoryChanged,
+    );
   }
 
   toggle() {
@@ -1968,5 +2027,23 @@ class InventoryUI {
 
     this.#inventoryGridNode.innerHTML = "";
     this.#inventoryGridNode.appendChild(fragment);
+  }
+
+  dispose() {
+    document.removeEventListener(
+      "inventory-changed",
+      this.#onInventoryChanged,
+    );
+    if (this.#warningTimeout) {
+      clearTimeout(this.#warningTimeout);
+      this.#warningTimeout = null;
+    }
+    this.#backpackButtonNode?.remove();
+    this.#containerNode?.remove();
+    this.#tooltipNode?.remove();
+    this.#backpackButtonNode = null;
+    this.#containerNode = null;
+    this.#tooltipNode = null;
+    this.#isOpen = false;
   }
 }

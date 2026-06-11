@@ -14,6 +14,8 @@ class OverlayDomAdapter {
   }
 
   init() {
+    if (this.#container?.isConnected) return;
+
     this.#container = this.#documentTarget.createElement("div");
     this.#container.id = "debugOverlay";
     this.#container.className = "debug-overlay";
@@ -77,6 +79,12 @@ class OverlayDomAdapter {
     if (this.#container) {
       this.#container.style.transform = `scale(${this.#scale})`;
     }
+  }
+
+  dispose() {
+    this.#container?.remove();
+    this.#container = null;
+    this.#content = null;
   }
 }
 

@@ -289,6 +289,94 @@ assert(
     + ")"
 );
 
+const openDragConfig = createConfig();
+const openDragEquipment = createTestBuild();
+const openDragFishData = createFish();
+const openDragCast = createCast({
+  config: openDragConfig,
+  equipment: openDragEquipment,
+  distanceMeters: 1.8,
+});
+const openDragFight = new FightService({
+  config: openDragConfig,
+  rng: createRng(),
+  devFlags: createDevFlags(),
+});
+openDragFight.startFight(openDragFishData, openDragEquipment);
+
+let openDragDebug = null;
+let openDragSawComposedHold = false;
+let openDragSawComposedControl = false;
+let openDragMaxHoldForceKg = 0;
+let openDragMaxControlForceKg = 0;
+let openDragMaxAppliedMoveMeters = 0;
+
+for (let frame = 0; frame < 30; frame++) {
+  openDragFight.updateFight(1000 / 30, {
+    floatEntity: openDragCast.floatEntity,
+    bounds: openDragCast.bounds,
+    input: {
+      isPulling: false,
+      pointerDown: true,
+      pointerDelta: { x: 110, y: 2 },
+      pointerStart: { x: 500, y: 500 },
+      pointerCurrent: { x: 610, y: 502 },
+      dragIncrease: false,
+      dragDecrease: false,
+      retrieve: false,
+      pullDirection: { x: 0, y: 1 },
+    },
+    env: {},
+    net: null,
+    fishData: openDragFishData,
+    projectorScale: 1,
+    catchLineOffsetPx: 5,
+    getRodVirtualPos: () => openDragCast.rodVirtualPos,
+    checkWater: () => true,
+  });
+
+  openDragDebug = openDragFight.getDebugData({
+    floatEntity: openDragCast.floatEntity,
+    boundaries: openDragCast.bounds,
+    rodPos: openDragCast.rodVirtualPos,
+    screenOffset: 0,
+    equipment: openDragEquipment,
+  });
+  openDragSawComposedHold ||= openDragDebug.rodPullActive === true;
+  openDragSawComposedControl ||= openDragDebug.rodControlActive === true;
+  openDragMaxHoldForceKg = Math.max(
+    openDragMaxHoldForceKg,
+    Number(openDragDebug.activeRodPullForceKg) || 0,
+  );
+  openDragMaxControlForceKg = Math.max(
+    openDragMaxControlForceKg,
+    Number(openDragDebug.rodControlForceKg) || 0,
+  );
+  openDragMaxAppliedMoveMeters = Math.max(
+    openDragMaxAppliedMoveMeters,
+    Number(openDragDebug.fishRetrieveAppliedMoveMeters) || 0,
+  );
+}
+
+assert(openDragSawComposedHold, "open-drag cycle still composes Fight Rod Hold input");
+assert(openDragSawComposedControl, "open-drag cycle still composes Rod Control input");
+assert(
+  Math.abs(Number(openDragDebug?.dragRatio) || 0) <= 0.000001,
+  "open-drag cycle keeps reel drag at 0%",
+);
+assert(
+  openDragMaxHoldForceKg <= 0.000001,
+  "0% drag transfers no external Rod Hold force",
+);
+assert(
+  openDragMaxControlForceKg <= 0.000001,
+  "0% drag transfers no external Rod Control force",
+);
+assert(
+  openDragMaxAppliedMoveMeters <= 0.000001,
+  "0% drag produces no player retrieve movement",
+);
+
 console.log("game-cycle-control-hold-check passed:");
 for (const message of checks) console.log("- " + message);
 `, context, { filename: "utils/game-cycle-control-hold-check.js#scenario" });
