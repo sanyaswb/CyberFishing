@@ -52,8 +52,8 @@
     "description": "За скільки секунд hold набирається від 0 до rodHoldMax."
   },
   "physics.fight.rodHold.tensionCeilingMultiplier": {
-    "label": "Rod Hold tension ceiling",
-    "description": "Maximum total tension reachable through Rod Hold as a multiplier of the rod load limit. 1.05 allows up to 105%."
+    "label": "Максимальна межа total tension для Rod Hold",
+    "description": "Множник верхньої межі загального натягу відносно ліміту вудки. Це не множник сили й не гарантований tension: 1.05 лише дозволяє Rod Hold дійти максимум до 105%."
   },
   "physics.fight.rodHold.anglePenalty.enabled": {
     "label": "Кутовий штраф увімкнено",
@@ -152,8 +152,8 @@
     "description": "Turns on lateral rod control during fight."
   },
   "physics.fight.rodControl.tensionCeilingMultiplier": {
-    "label": "Rod Control tension ceiling",
-    "description": "Maximum current-frame total tension reachable through Rod Control as a multiplier of the rod load limit. It does not stack above the configured ceiling."
+    "label": "Максимальна межа total tension для Rod Control",
+    "description": "Множник верхньої межі загального натягу відносно ліміту вудки. Це не множник сили й не гарантований tension: input, кут, вага риби та drag можуть дати нижчий результат. Межа не стекується понад налаштований ceiling."
   },
   "physics.fight.playerPullMotion.inertiaSeconds": {
     "label": "Player pull fish movement inertia",

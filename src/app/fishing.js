@@ -650,18 +650,13 @@ class CatchResolutionService {
     const liftMaxKg = Math.max(0, Number(fightDebug?.landingLiftMaxKg) || 0);
     const liftHoldKg = Math.max(0, Number(fightDebug?.landingLiftHoldKg) || 0);
     const totalTensionKg = Math.max(0, Number(fightDebug?.totalTensionKg) || 0);
-    const currentTensionKg = Math.max(
-      0,
-      Number(fightDebug?.tensionKg) || 0,
-    );
     if (liftMaxKg <= 0) return false;
 
     return (
       fightDebug?.landingLiftInZone === true &&
       fightDebug?.landingLiftActive === true &&
       liftHoldKg >= liftMaxKg - 0.001 &&
-      totalTensionKg >= liftMaxKg - 0.001 &&
-      currentTensionKg >= liftMaxKg - 0.001
+      totalTensionKg >= liftMaxKg - 0.001
     );
   }
 

@@ -115,9 +115,18 @@ pointerCanvas.dispatch("pointerdown", { clientX: 500, clientY: 500 });
 pointerInput.getState();
 pointerCanvas.dispatch("pointermove", { clientX: 650, clientY: 502 });
 const pointerState = pointerInput.getState();
-assert(pointerState.isPulling, "Pointer pull stays active during Rod Control");
+assert(!pointerState.isPulling, "Horizontal pointer Rod Control does not activate Rod Hold");
 assert(pointerState.rodControlActive, "Horizontal pointer movement activates Rod Control");
 assert(!pointerState.dragControlActive, "Rod Control blocks drag gesture mode");
+assert(pointerState.pointerAction === "rod_control_x", "Pointer action locks to Rod Control X");
+window.dispatch("pointerup", { clientX: 650, clientY: 502 });
+const releasedControlState = pointerInput.getState();
+assert(!releasedControlState.isPulling, "Releasing Rod Control keeps Rod Hold inactive");
+assert(!releasedControlState.rodControlActive, "Releasing pointer ends Rod Control");
+pointerCanvas.dispatch("pointerdown", { clientX: 500, clientY: 500 });
+const nextPointerHoldState = pointerInput.getState();
+assert(nextPointerHoldState.isPulling, "A new pointer hold can start Rod Hold after Rod Control");
+assert(!nextPointerHoldState.rodControlActive, "A new centered hold does not reuse Rod Control state");
 pointerInput.dispose();
 
 const config = {

@@ -397,6 +397,10 @@ function runScenario() {
     summary.final.lineDistanceMeters <= 0.001,
     "pump/recover scenario should bring fish into landing range",
   );
+  assert(
+    summary.transition === "victory",
+    "0.05 kg fish must complete the landing transition",
+  );
 }
 
 runScenario();

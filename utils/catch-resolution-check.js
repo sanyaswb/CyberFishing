@@ -103,7 +103,10 @@ const smoothedTensionLag = resolver.resolveAutoCatch({
     totalTensionKg: fish.weight,
   },
 });
-assert(smoothedTensionLag.inLandingZone && !smoothedTensionLag.transition, "fish does not land before current tension reaches real weight");
+assert(
+  smoothedTensionLag.transition?.name === "victory",
+  "visual tension smoothing does not delay an authoritative landing lift",
+);
 
 resolver.reset();
 const maxLoadSuccess = resolver.resolveAutoCatch({

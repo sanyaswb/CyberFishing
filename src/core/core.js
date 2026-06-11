@@ -486,6 +486,15 @@ class InputManager {
       return;
     }
 
+    if (
+      this.#rodControlPointerActive ||
+      this.#pointerAction === PointerAction.ROD_CONTROL_X
+    ) {
+      this.#pointerAction = PointerAction.ROD_CONTROL_X;
+      this.#isPulling = false;
+      return;
+    }
+
     if (this.#isDragControlActive || this.#pointerAction === PointerAction.DRAG_CONTROL) {
       this.#pointerAction = PointerAction.DRAG_CONTROL;
       this.#isPulling = false;
@@ -529,6 +538,8 @@ class InputManager {
       if (absX >= absY * dominance) {
         this.#rodControlPointerActive = true;
         this.#isDragControlActive = false;
+        this.#pointerAction = PointerAction.ROD_CONTROL_X;
+        this.#isPulling = false;
         this.#clearLongPressTimeout();
       }
     }

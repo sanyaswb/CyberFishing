@@ -4,7 +4,10 @@ class LandingPolicy {
   }
 
   isInLandingZone(context = {}) {
-    const distanceMeters = Math.max(0, Number(context.lineDistanceMeters) || Infinity);
+    const rawDistanceMeters = Number(context.lineDistanceMeters);
+    const distanceMeters = Number.isFinite(rawDistanceMeters)
+      ? Math.max(0, rawDistanceMeters)
+      : Infinity;
     return distanceMeters <= this.getLandingDistanceMeters(context);
   }
 }

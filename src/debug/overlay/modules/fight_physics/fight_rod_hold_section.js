@@ -8,7 +8,7 @@ class FightRodHoldSection extends FightSectionBase {
     return [
       this.row("Rod hold", f.kg(d.rodPullForceKg, 3), "#00ff80"),
       this.row("Rod hold max", f.kg(d.rodHoldMaxKg, 3), "#ffaa00"),
-      this.row("Tension ceiling", `${f.kg(d.rodHoldTensionCeilingKg, 3)} (${f.percent(d.rodHoldTensionCeilingMultiplier, 1)})`, Number(d.rodHoldTensionCeilingMultiplier) > 1 ? "#ff8888" : "#73c2fb"),
+      this.row("Max allowed total tension", `${f.kg(d.rodHoldTensionCeilingKg, 3)} (${f.percent(d.rodHoldTensionCeilingMultiplier, 1)} of rod limit)`, Number(d.rodHoldTensionCeilingMultiplier) > 1 ? "#ff8888" : "#73c2fb"),
       this.row("Rod stroke", `${f.meters(d.rodStrokeUsed, 2)} / ${f.meters(d.rodStrokeCapacity, 2)}`),
       this.row("Rod pull move", f.meters(d.rodPullMoveMeters, 3), Number(d.rodPullMoveMeters) > 0 ? "#00ff80" : "#8a9bac"),
       this.row("Rod applied speed", f.mps(d.rodPullAppliedSpeedMps, 3), Number(d.rodPullAppliedSpeedMps) > 0 ? "#00ff80" : "#8a9bac"),
