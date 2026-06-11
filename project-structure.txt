@@ -113,6 +113,8 @@
 │  │  ├── core.js
 │  │  ├── fishing
 │  │  │  ├── drag_force_calculator.js
+│  │  │  ├── fish_direction_intent_sampler.js
+│  │  │  ├── fish_fight_direction_resolver.js
 │  │  │  ├── fish_retrieve_result.js
 │  │  │  ├── hold_opposition_resolver.js
 │  │  │  ├── landing_lift_tension_calculator.js
@@ -125,6 +127,7 @@
 │  │  │  ├── reel_hold_recovery_system.js
 │  │  │  ├── retrieve_policy.js
 │  │  │  ├── rod_control_movement_projector.js
+│  │  │  ├── rod_control_tension_mode_resolver.js
 │  │  │  ├── rod_pull_calculator.js
 │  │  │  ├── rod_pull_state.js
 │  │  │  ├── rod_stroke_state.js
@@ -256,6 +259,7 @@
   ├── convert-images.js
   ├── dev-server.js
   ├── fight-systems-check.js
+  ├── fish-2d-behavior-check.js
   ├── fish-db-structure-check.js
   ├── fish-speed-delta-check.js
   ├── fps-physics-check.js

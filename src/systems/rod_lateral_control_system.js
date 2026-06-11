@@ -1,5 +1,6 @@
 class RodLateralControlSystem {
   #result = this.#createResult();
+  #tensionModeResolver = new RodControlTensionModeResolver();
 
   update({
     dtSec,
@@ -12,6 +13,7 @@ class RodLateralControlSystem {
     maxTackleLoadKg,
     currentTensionKg,
     fishTensionKg,
+    fishVelocity,
     fishVelocityX,
     fishWeightKg,
     dragLimitKg,
@@ -46,9 +48,14 @@ class RodLateralControlSystem {
     const requestedForceRatio = this.#clamp01(
       inputRatio * targetFrame.angleRatio * targetFrame.directionFactor,
     );
-    const tensionMultiplier = this.#resolveTensionMultiplier({
-      controlDirectionX: targetFrame.directionX,
+    const tensionModeFrame = this.#resolveTensionModeFrame({
+      fishVelocity,
       fishVelocityX,
+      controlDirectionX: targetFrame.directionX,
+      config: cfg,
+    });
+    const tensionMultiplier = this.#resolveTensionMultiplier({
+      mode: tensionModeFrame.mode,
       config: cfg,
     });
     const forceFrame = this.#resolveForceFrame({
@@ -109,6 +116,14 @@ class RodLateralControlSystem {
       forceKg: canApply ? forceKg : 0,
       playerTensionKg: canApply ? forceKg * tensionMultiplier : 0,
       tensionMultiplier,
+      tensionMode: tensionModeFrame.mode,
+      fishControlAxisAlignment: tensionModeFrame.alignment,
+      fishControlAxisVelocityPxPerSecond:
+        tensionModeFrame.projectionSpeedPxPerSec,
+      fishAutonomousSpeedPxPerSecond:
+        tensionModeFrame.fishSpeedPxPerSec,
+      controlAxisX: tensionModeFrame.controlAxisX,
+      controlAxisY: tensionModeFrame.controlAxisY,
       desiredMoveMeters: canApply ? moveFrame.desiredMoveMeters : 0,
       desiredMovePx: canApply ? moveFrame.desiredMovePx : 0,
       maxPullSpeedMetersPerSecond:
@@ -377,22 +392,75 @@ class RodLateralControlSystem {
     };
   }
 
-  #resolveTensionMultiplier({ controlDirectionX, fishVelocityX, config }) {
+  #resolveTensionMultiplier({ mode, config }) {
     const tension = config.tension || {};
-    const fishDirection = Math.sign(this.#number(fishVelocityX));
-    if (fishDirection === 0 || controlDirectionX === 0) {
-      return Math.max(0, this.#number(tension.sideMultiplier, 1));
-    }
-    if (fishDirection === controlDirectionX) {
+    if (mode === "same_direction") {
       return Math.max(
         0,
         this.#number(tension.sameDirectionMultiplier, 0),
       );
     }
-    return Math.max(
-      0,
-      this.#number(tension.oppositeDirectionMultiplier, 2.5),
-    );
+    if (mode === "opposite_direction") {
+      return Math.max(
+        0,
+        this.#number(tension.oppositeDirectionMultiplier, 2.5),
+      );
+    }
+    return Math.max(0, this.#number(tension.sideMultiplier, 1));
+  }
+
+  #resolveTensionModeFrame({
+    fishVelocity,
+    fishVelocityX,
+    controlDirectionX,
+    config,
+  }) {
+    if (
+      fishVelocity &&
+      Number.isFinite(Number(fishVelocity.x)) &&
+      Number.isFinite(Number(fishVelocity.y))
+    ) {
+      return this.#tensionModeResolver.resolve({
+        fishVelocity,
+        controlAxis: {
+          x: controlDirectionX,
+          y: 0,
+        },
+        config: config.tension?.mode,
+      });
+    }
+    return this.#legacyResolveModeFromFishVelocityX({
+      fishVelocityX,
+      directionX: controlDirectionX,
+    });
+  }
+
+  #legacyResolveModeFromFishVelocityX({
+    fishVelocityX,
+    directionX,
+  }) {
+    const fishDirection = Math.sign(this.#number(fishVelocityX));
+    const controlDirection = Math.sign(this.#number(directionX));
+    const mode = fishDirection === 0 || controlDirection === 0
+      ? "side"
+      : fishDirection === controlDirection
+        ? "same_direction"
+        : "opposite_direction";
+    const speed = Math.abs(this.#number(fishVelocityX));
+    return Object.freeze({
+      mode,
+      alignment:
+        mode === "same_direction"
+          ? 1
+          : mode === "opposite_direction"
+            ? -1
+            : 0,
+      projectionSpeedPxPerSec:
+        this.#number(fishVelocityX) * controlDirection,
+      fishSpeedPxPerSec: speed,
+      controlAxisX: controlDirection,
+      controlAxisY: 0,
+    });
   }
 
   #blockedReason({
@@ -449,6 +517,12 @@ class RodLateralControlSystem {
       forceKg: 0,
       playerTensionKg: 0,
       tensionMultiplier: 0,
+      tensionMode: "side",
+      fishControlAxisAlignment: 0,
+      fishControlAxisVelocityPxPerSecond: 0,
+      fishAutonomousSpeedPxPerSecond: 0,
+      controlAxisX: 0,
+      controlAxisY: 0,
       desiredMoveMeters: 0,
       desiredMovePx: 0,
       appliedMoveMeters: 0,

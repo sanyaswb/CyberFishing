@@ -1,5 +1,24 @@
 # CyberFishing changelog
 
+## v0.19.37 - Rod Control axis tension mode
+
+- Added `RodControlTensionModeResolver` for immutable same/side/opposite direction classification.
+- Rod Control tension now compares autonomous fish velocity with the normalized control axis.
+- Direction classification uses normalized alignment instead of the sign of raw canvas X velocity.
+- Added configurable same-direction, opposite-direction, and minimum fish-speed thresholds.
+- Preserved the existing `0 / 1 / 2.5` tension multipliers and legacy `fishVelocityX` fallback.
+- Added alignment, projection speed, autonomous speed, and control-axis debug diagnostics.
+- Added regression coverage for horizontal, vertical, diagonal, near-zero, rotated-axis, threshold, and legacy cases.
+
+## v0.19.36 - Fish direction profile fallback
+
+- Added base `radialRange` and `lateralRange` settings to fish movement profiles.
+- Added `FishDirectionIntentSampler` for isolated radial/lateral intent sampling.
+- Fish behavior now resolves direction ranges by state override, movement profile, then engine default.
+- State direction overrides can provide radial and lateral ranges independently.
+- Removed repeated direction ranges from ordinary fish states while preserving dash-specific overrides.
+- Added config labels, validation, and regression coverage for every fallback level and legacy fish configs.
+
 ## v0.19.35 - Radial fish fight movement
 
 - Replaced hardcoded upward fish escape movement with configurable radial and lateral fight intent.

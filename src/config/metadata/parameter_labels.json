@@ -197,15 +197,27 @@
   },
   "physics.fight.rodControl.tension.sameDirectionMultiplier": {
     "label": "Rod Control same-direction tension",
-    "description": "Tension multiplier when fish movement and Rod Control point to the same side."
+    "description": "Tension multiplier when fish velocity projected onto the Rod Control axis points with the control direction."
   },
   "physics.fight.rodControl.tension.sideMultiplier": {
     "label": "Rod Control neutral side tension",
-    "description": "Tension multiplier when fish has no clear horizontal movement."
+    "description": "Tension multiplier when fish velocity has no meaningful component along the Rod Control axis."
   },
   "physics.fight.rodControl.tension.oppositeDirectionMultiplier": {
     "label": "Rod Control opposite-direction tension",
-    "description": "Tension multiplier when Rod Control opposes fish horizontal movement."
+    "description": "Tension multiplier when fish velocity projected onto the Rod Control axis opposes the control direction."
+  },
+  "physics.fight.rodControl.tension.mode.sameDirectionThreshold": {
+    "label": "Rod Control same-direction threshold",
+    "description": "Minimum normalized fish/control alignment classified as same-direction movement."
+  },
+  "physics.fight.rodControl.tension.mode.oppositeDirectionThreshold": {
+    "label": "Rod Control opposite-direction threshold",
+    "description": "Maximum normalized fish/control alignment classified as opposite-direction movement."
+  },
+  "physics.fight.rodControl.tension.mode.minFishSpeedPxPerSec": {
+    "label": "Rod Control direction minimum fish speed",
+    "description": "Fish autonomous speed below which Rod Control tension mode remains neutral side."
   },
   "physics.fight.rodControl.rodVisual.maxOffsetScreenRatio": {
     "label": "Rod visual max offset ratio",
@@ -602,6 +614,14 @@
   "fish.physics.movementProfile.lastDashTrigger": {
     "label": "Тригер останнього ривка",
     "description": "Поведінкова умова, яка може примусово включити lastDash біля landing/catch зони."
+  },
+  "fish.physics.movementProfile.radialRange": {
+    "label": "Base fish radial intent range",
+    "description": "Default movement range relative to the line. Positive values move away from the rod and negative values move toward it."
+  },
+  "fish.physics.movementProfile.lateralRange": {
+    "label": "Base fish lateral intent range",
+    "description": "Default sideways movement range perpendicular to the current rod-to-fish line."
   },
   "fish.physics.behaviorProfile.behaviors": {
     "label": "Профіль станів поведінки риби",

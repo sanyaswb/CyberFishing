@@ -822,7 +822,7 @@ class FightPhysicsSystem {
       maxTackleLoadKg,
       currentTensionKg,
       fishTensionKg: forceData?.fishTensionKg,
-      fishVelocityX: forceData?.targetVelocity?.x,
+      fishVelocity: forceData?.targetVelocity,
       fishWeightKg: forceData?.fishWeightKg,
       dragLimitKg: dragContext?.effectiveDragLimitKg,
       dragLocked: dragContext?.dragLocked !== false,
@@ -1602,6 +1602,16 @@ class FightPhysicsSystem {
       rodControlForceKg: rodControlResult?.forceKg ?? 0,
       rodControlPlayerTensionKg: rodControlResult?.playerTensionKg ?? 0,
       rodControlTensionMultiplier: rodControlResult?.tensionMultiplier ?? 0,
+      rodControlTensionMode:
+        rodControlResult?.tensionMode || "side",
+      rodControlFishControlAxisAlignment:
+        rodControlResult?.fishControlAxisAlignment ?? 0,
+      rodControlFishControlAxisVelocity:
+        rodControlResult?.fishControlAxisVelocityPxPerSecond ?? 0,
+      rodControlFishAutonomousSpeed:
+        rodControlResult?.fishAutonomousSpeedPxPerSecond ?? 0,
+      rodControlAxisX: rodControlResult?.controlAxisX ?? 0,
+      rodControlAxisY: rodControlResult?.controlAxisY ?? 0,
       rodControlDesiredMoveMeters: rodControlResult?.desiredMoveMeters ?? 0,
       rodControlDesiredMovePx: rodControlResult?.desiredMovePx ?? 0,
       rodControlAllowedMoveMeters:

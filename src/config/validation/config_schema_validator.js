@@ -221,6 +221,18 @@ class ConfigSchemaValidator {
     }
     this.#requireFiniteNumber(`${fishPath}.physics.movementProfile.baseSpeed`, physics.movementProfile?.baseSpeed, { min: 0 });
     this.#requireFiniteNumber(`${fishPath}.physics.movementProfile.agility`, physics.movementProfile?.agility, { min: 0 });
+    if (Object.prototype.hasOwnProperty.call(Object(physics.movementProfile), "radialRange")) {
+      this.#requireNumericRange(
+        `${fishPath}.physics.movementProfile.radialRange`,
+        physics.movementProfile.radialRange,
+      );
+    }
+    if (Object.prototype.hasOwnProperty.call(Object(physics.movementProfile), "lateralRange")) {
+      this.#requireNumericRange(
+        `${fishPath}.physics.movementProfile.lateralRange`,
+        physics.movementProfile.lateralRange,
+      );
+    }
 
     const behaviors = physics.behaviorProfile?.behaviors;
     if (!behaviors || typeof behaviors !== "object") {
@@ -241,19 +253,25 @@ class ConfigSchemaValidator {
         this.#requireFiniteNumber(`${path}.weight`, behavior.weight, { min: 0 });
         this.#requireMinLessOrEqualMax(`${path}.minTime`, behavior.minTime, `${path}.maxTime`, behavior.maxTime);
         if (behavior.direction && typeof behavior.direction === "object") {
-          this.#requireNumericRange(
-            `${path}.direction.radialRange`,
-            behavior.direction.radialRange,
-          );
-          this.#requireNumericRange(
-            `${path}.direction.lateralRange`,
-            behavior.direction.lateralRange,
-          );
-          this.#requireFiniteNumber(
-            `${path}.direction.agility`,
-            behavior.direction.agility,
-            { min: 0 },
-          );
+          if (Object.prototype.hasOwnProperty.call(behavior.direction, "radialRange")) {
+            this.#requireNumericRange(
+              `${path}.direction.radialRange`,
+              behavior.direction.radialRange,
+            );
+          }
+          if (Object.prototype.hasOwnProperty.call(behavior.direction, "lateralRange")) {
+            this.#requireNumericRange(
+              `${path}.direction.lateralRange`,
+              behavior.direction.lateralRange,
+            );
+          }
+          if (Object.prototype.hasOwnProperty.call(behavior.direction, "agility")) {
+            this.#requireFiniteNumber(
+              `${path}.direction.agility`,
+              behavior.direction.agility,
+              { min: 0 },
+            );
+          }
         }
       }
     }

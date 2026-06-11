@@ -63,6 +63,11 @@ const FIGHT_PHYSICS_CONFIG = {
       sameDirectionMultiplier: 0.0,
       sideMultiplier: 1.0,
       oppositeDirectionMultiplier: 2.5,
+      mode: {
+        sameDirectionThreshold: 0.35,
+        oppositeDirectionThreshold: -0.35,
+        minFishSpeedPxPerSec: 1,
+      },
     },
 
     lineConstraint: {

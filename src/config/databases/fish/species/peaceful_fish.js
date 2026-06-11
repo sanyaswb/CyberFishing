@@ -70,12 +70,14 @@ const PEACEFUL_FISH = [
         bounceCooldownMs: 2000,
         dirChangeMinMs: 500,
         dirChangeMaxMs: 1500,
+        radialRange: [-0.3, 1],
+        lateralRange: [-1, 1],
         lastDashTrigger: {
           enabled: true,
           targetState: "lastDash",
           chance: 0.5,
           checkIntervalMs: 1000,
-          catchZoneMultiplier: 3,
+          catchZoneMultiplier: 1.5,
           stayUntilLeaveZone: false,
         },
       },
@@ -85,11 +87,7 @@ const PEACEFUL_FISH = [
           idle: {
             forceMultiplier: 0.7,
             speedMultiplier: 1,
-            direction: {
-              radialRange: [-0.25, 0.45],
-              lateralRange: [-0.8, 0.8],
-              agility: 0.35,
-            },
+            agility: 0.35,
             minTime: 500,
             maxTime: 3000,
             weight: 25,
@@ -97,11 +95,7 @@ const PEACEFUL_FISH = [
           rest: {
             forceMultiplier: 0.3,
             speedMultiplier: 0.5,
-            direction: {
-              radialRange: [-0.5, 0.15],
-              lateralRange: [-0.6, 0.6],
-              agility: 0.25,
-            },
+            agility: 0.25,
             minTime: 500,
             maxTime: 2500,
             weight: 25,
@@ -109,11 +103,7 @@ const PEACEFUL_FISH = [
           swim: {
             forceMultiplier: 1,
             speedMultiplier: 1,
-            direction: {
-              radialRange: [0.35, 1],
-              lateralRange: [-0.9, 0.9],
-              agility: 0.45,
-            },
+            agility: 0.45,
             minTime: 2000,
             maxTime: 4000,
             weight: 25,

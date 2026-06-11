@@ -27,6 +27,7 @@ const FILES = [
   "src/config/config.js",
   "src/core/fishing/simple_fight_force_calculator.js",
   "src/core/fishing/hold_opposition_resolver.js",
+  "src/core/fishing/fish_direction_intent_sampler.js",
   "src/core/fishing/fish_fight_direction_resolver.js",
   "src/core/fishing/drag_force_calculator.js",
   "src/core/fishing/line_radial_movement_splitter.js",
@@ -67,6 +68,14 @@ for (const fish of FISH_DB) {
   assert(!!physics.forceProfile, fish.id + " has forceProfile");
   assert(!!physics.staminaProfile, fish.id + " has staminaProfile");
   assert(!!physics.movementProfile, fish.id + " has movementProfile");
+  assert(
+    Array.isArray(physics.movementProfile.radialRange),
+    fish.id + " has movementProfile.radialRange",
+  );
+  assert(
+    Array.isArray(physics.movementProfile.lateralRange),
+    fish.id + " has movementProfile.lateralRange",
+  );
   assert(!!physics.behaviorProfile?.behaviors, fish.id + " has behaviorProfile.behaviors");
   for (const key of forbiddenFishKeys) {
     assert(!(key in physics), fish.id + " does not store old " + key);

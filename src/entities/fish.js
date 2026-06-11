@@ -114,6 +114,16 @@ class FishPhysicsProfile {
         behaviorProfile.lastDashTrigger ||
         raw.lastDashTrigger,
     };
+    this.#copyNormalizedRange(
+      normalizedMovementProfile,
+      "radialRange",
+      movementProfile.radialRange,
+    );
+    this.#copyNormalizedRange(
+      normalizedMovementProfile,
+      "lateralRange",
+      movementProfile.lateralRange,
+    );
 
     const behaviors = this.#resolveBehaviors(raw, behaviorProfile);
     const normalizedBehaviorProfile = {
@@ -205,20 +215,26 @@ class FishPhysicsProfile {
       if (behavior.direction && typeof behavior.direction === "object") {
         normalized[name].direction = {
           ...behavior.direction,
-          radialRange: this.#normalizeRange(
-            behavior.direction.radialRange,
-            [1, 1],
-          ),
-          lateralRange: this.#normalizeRange(
-            behavior.direction.lateralRange,
-            [-1, 1],
-          ),
-          agility: this.#firstFiniteNumber(
-            behavior.direction.agility,
-            behavior.agility,
-            1,
-          ),
         };
+        this.#copyNormalizedRange(
+          normalized[name].direction,
+          "radialRange",
+          behavior.direction.radialRange,
+        );
+        this.#copyNormalizedRange(
+          normalized[name].direction,
+          "lateralRange",
+          behavior.direction.lateralRange,
+        );
+        const directionAgility = this.#firstFiniteNumber(
+          behavior.direction.agility,
+          NaN,
+        );
+        if (Number.isFinite(directionAgility)) {
+          normalized[name].direction.agility = directionAgility;
+        } else {
+          delete normalized[name].direction.agility;
+        }
       }
       delete normalized[name].powerRatio;
       delete normalized[name].speedRatio;
@@ -227,14 +243,19 @@ class FishPhysicsProfile {
     return normalized;
   }
 
-  #normalizeRange(value, fallback) {
-    if (!Array.isArray(value) || value.length < 2) return [...fallback];
+  #copyNormalizedRange(target, key, value) {
+    if (!Array.isArray(value) || value.length < 2) {
+      delete target[key];
+      return;
+    }
     const first = Number(value[0]);
     const second = Number(value[1]);
     if (!Number.isFinite(first) || !Number.isFinite(second)) {
-      return [...fallback];
+      delete target[key];
+      return;
     }
-    return first <= second ? [first, second] : [second, first];
+    target[key] =
+      first <= second ? [first, second] : [second, first];
   }
 
   #copyFiniteAlias(target, key, ...values) {
@@ -510,6 +531,8 @@ class Fish {
 
 class FishBehavior {
   #config;
+  #movementProfile;
+  #directionIntentSampler;
   #currentStateName;
   #stateTimer;
   #dirTimer;
@@ -534,7 +557,14 @@ class FishBehavior {
       ...fishConfig,
       behaviors: behaviorMap,
     };
+    this.#movementProfile =
+      fishConfig?.movementProfile &&
+      typeof fishConfig.movementProfile === "object"
+        ? fishConfig.movementProfile
+        : fishConfig || {};
     this.#rng = rng || { next: () => Math.random() };
+    this.#directionIntentSampler =
+      new FishDirectionIntentSampler(this.#rng);
     this.#currentStateName = "swim";
     this.#stateTimer = 0;
     this.#dirTimer = 0;
@@ -825,36 +855,23 @@ class FishBehavior {
   }
 
   #pickDirectionTarget(stateConfig = {}) {
-    const direction = stateConfig.direction;
-    if (!direction || typeof direction !== "object") {
-      this.#targetRadialIntent = Math.max(
-        0,
-        Number(stateConfig.forceMultiplier ?? this.#targetPull) || 0,
-      );
-      this.#targetLateralIntent = this.#range(-1, 1);
-      return;
-    }
-
-    const radialRange = this.#rangePair(direction.radialRange, [1, 1]);
-    const lateralRange = this.#rangePair(direction.lateralRange, [-1, 1]);
-    this.#targetRadialIntent = this.#range(
-      radialRange[0],
-      radialRange[1],
-    );
-    this.#targetLateralIntent = this.#range(
-      lateralRange[0],
-      lateralRange[1],
-    );
-  }
-
-  #rangePair(value, fallback) {
-    if (!Array.isArray(value) || value.length < 2) return fallback;
-    const first = Number(value[0]);
-    const second = Number(value[1]);
-    if (!Number.isFinite(first) || !Number.isFinite(second)) {
-      return fallback;
-    }
-    return first <= second ? [first, second] : [second, first];
+    const stateDirection =
+      stateConfig.direction &&
+      typeof stateConfig.direction === "object"
+        ? stateConfig.direction
+        : {};
+    const intent = this.#directionIntentSampler.sample({
+      radialRange:
+        stateDirection.radialRange ??
+        this.#movementProfile.radialRange ??
+        DEFAULT_FISH_RADIAL_RANGE,
+      lateralRange:
+        stateDirection.lateralRange ??
+        this.#movementProfile.lateralRange ??
+        DEFAULT_FISH_LATERAL_RANGE,
+    });
+    this.#targetRadialIntent = intent.radial;
+    this.#targetLateralIntent = intent.lateral;
   }
 
   #clamp01(value) {
@@ -916,23 +933,14 @@ class FishBehavior {
   getStateData() {
     const stateConfig = this.#config.behaviors[this.#currentStateName];
     const speedRatio = this.#clampNonNegative(Math.abs(this.#currentMove));
-    const hasDirection =
-      stateConfig.direction &&
-      typeof stateConfig.direction === "object";
-    const radialIntent = hasDirection
-      ? this.#currentRadialIntent
-      : this.#currentPull;
-    const lateralIntent = hasDirection
-      ? this.#currentLateralIntent
-      : speedRatio * this.#currentLateralIntent;
     return {
       name: this.#currentStateName,
       pullMult: this.#currentPull,
       forceMultiplier: this.#currentPull,
       speedMultiplier: speedRatio,
       movementIntent: {
-        radial: radialIntent,
-        lateral: lateralIntent,
+        radial: this.#currentRadialIntent,
+        lateral: this.#currentLateralIntent,
       },
       moveX: speedRatio * this.#currentLateralIntent,
       agility:

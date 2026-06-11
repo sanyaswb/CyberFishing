@@ -60,6 +60,8 @@ const PREDATOR_FISH = [
         bounceCooldownMs: 2000,
         dirChangeMinMs: 500,
         dirChangeMaxMs: 1500,
+        radialRange: [-0.3, 1],
+        lateralRange: [-1, 1],
         lastDashTrigger: {
           enabled: true,
           targetState: "lastDash",
@@ -75,11 +77,7 @@ const PREDATOR_FISH = [
           idle: {
             forceMultiplier: 0.8,
             speedMultiplier: 0.8,
-            direction: {
-              radialRange: [-0.1, 0.55],
-              lateralRange: [-0.9, 0.9],
-              agility: 0.6,
-            },
+            agility: 0.6,
             minTime: 500,
             maxTime: 2000,
             weight: 10,
@@ -87,11 +85,7 @@ const PREDATOR_FISH = [
           rest: {
             forceMultiplier: 0.5,
             speedMultiplier: 0.5,
-            direction: {
-              radialRange: [-0.35, 0.2],
-              lateralRange: [-0.65, 0.65],
-              agility: 0.4,
-            },
+            agility: 0.4,
             minTime: 500,
             maxTime: 2500,
             weight: 5,
@@ -99,11 +93,7 @@ const PREDATOR_FISH = [
           swim: {
             forceMultiplier: 1.0,
             speedMultiplier: 1.0,
-            direction: {
-              radialRange: [0.45, 1],
-              lateralRange: [-1, 1],
-              agility: 0.9,
-            },
+            agility: 0.9,
             minTime: 2000,
             maxTime: 4000,
             weight: 55,

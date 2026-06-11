@@ -17,6 +17,7 @@ const FILES = [
   "src/config/runtime/immutable_config.js",
   "src/config/config.js",
   "src/systems/player_pull_motion_smoother.js",
+  "src/core/fishing/rod_control_tension_mode_resolver.js",
   "src/systems/rod_lateral_control_system.js",
   "src/systems/rod_visual_offset_system.js",
 ];
@@ -183,6 +184,7 @@ function controlFrame({
   direction = -1,
   inputRatio = 1,
   tension = 0,
+  fishVelocity = null,
   fishVelocityX = 0,
   fishX = 100,
   fishY = 100,
@@ -203,6 +205,7 @@ function controlFrame({
     rodLimitKg: 2,
     maxTackleLoadKg: 2,
     currentTensionKg: tension,
+    fishVelocity,
     fishVelocityX,
     fishWeightKg: 0,
     config,
@@ -234,8 +237,88 @@ approx(halfInput.deliveredForceRatio, 0.5, 0.001, "Half input delivers half forc
 
 const oppositeFish = controlFrame({ direction: -1, fishVelocityX: 10 });
 approx(oppositeFish.tensionMultiplier, 2.5, 0.001, "Opposing fish uses maximum tension multiplier");
+assert(oppositeFish.tensionMode === "opposite_direction", "Opposing fish resolves opposite-direction tension mode");
+approx(oppositeFish.fishControlAxisVelocityPxPerSecond, -10, 0.001, "Opposing fish has negative control-axis projection");
 const sameDirectionFish = controlFrame({ direction: -1, fishVelocityX: -10 });
 approx(sameDirectionFish.tensionMultiplier, 0, 0.001, "Same-direction fish uses minimum tension multiplier");
+assert(sameDirectionFish.tensionMode === "same_direction", "Same-direction fish resolves matching tension mode");
+approx(sameDirectionFish.fishControlAxisVelocityPxPerSecond, 10, 0.001, "Same-direction fish has positive control-axis projection");
+const sideFish = controlFrame({ direction: -1, fishVelocityX: 0 });
+approx(sideFish.tensionMultiplier, 1, 0.001, "Fish without control-axis movement uses side multiplier");
+assert(sideFish.tensionMode === "side", "Fish without control-axis movement resolves side mode");
+
+const axisResolver = new RodControlTensionModeResolver();
+const rotatedSame = axisResolver.resolve({
+  fishVelocity: { x: 3, y: 4 },
+  controlAxis: { x: 0.6, y: 0.8 },
+});
+assert(rotatedSame.mode === "same_direction", "Rotated control axis detects same-direction movement");
+approx(rotatedSame.alignment, 1, 0.001, "Aligned vectors produce full positive alignment");
+approx(rotatedSame.projectionSpeedPxPerSec, 5, 0.001, "Rotated axis uses vector projection");
+const rotatedOpposite = axisResolver.resolve({
+  fishVelocity: { x: 3, y: 4 },
+  controlAxis: { x: -0.6, y: -0.8 },
+});
+assert(rotatedOpposite.mode === "opposite_direction", "Reversed control axis detects opposite movement");
+approx(rotatedOpposite.alignment, -1, 0.001, "Reversed vectors produce full negative alignment");
+approx(rotatedOpposite.projectionSpeedPxPerSec, -5, 0.001, "Reversed axis keeps signed projection");
+const rotatedSide = axisResolver.resolve({
+  fishVelocity: { x: 3, y: 4 },
+  controlAxis: { x: -0.8, y: 0.6 },
+});
+assert(rotatedSide.mode === "side", "Perpendicular fish movement resolves side mode");
+approx(rotatedSide.alignment, 0, 0.001, "Perpendicular vectors have zero alignment");
+approx(rotatedSide.projectionSpeedPxPerSec, 0, 0.001, "Perpendicular velocity has zero control-axis projection");
+
+const horizontalSame = axisResolver.resolve({
+  fishVelocity: { x: 100, y: 0 },
+  controlAxis: { x: 1, y: 0 },
+});
+assert(horizontalSame.mode === "same_direction", "Horizontal fish velocity with control resolves same direction");
+const horizontalOpposite = axisResolver.resolve({
+  fishVelocity: { x: -100, y: 0 },
+  controlAxis: { x: 1, y: 0 },
+});
+assert(horizontalOpposite.mode === "opposite_direction", "Horizontal fish velocity against control resolves opposite direction");
+const verticalSide = axisResolver.resolve({
+  fishVelocity: { x: 0, y: -100 },
+  controlAxis: { x: 1, y: 0 },
+});
+assert(verticalSide.mode === "side", "Vertical fish velocity is side movement for horizontal control");
+const diagonalSame = axisResolver.resolve({
+  fishVelocity: { x: 70, y: -70 },
+  controlAxis: { x: 1, y: 0 },
+});
+assert(diagonalSame.mode === "same_direction", "45-degree fish velocity exceeds same-direction threshold");
+approx(diagonalSame.alignment, Math.SQRT1_2, 0.001, "Diagonal alignment is normalized");
+const mostlyVertical = controlFrame({
+  direction: 1,
+  fishX: -100,
+  fishVelocity: { x: 20, y: 100 },
+  fishVelocityX: 20,
+});
+assert(mostlyVertical.tensionMode === "side", "Full-vector mode treats weak control-axis component as side");
+approx(mostlyVertical.tensionMultiplier, 1, 0.001, "Full-vector side mode uses neutral multiplier");
+const nearStopped = axisResolver.resolve({
+  fishVelocity: { x: 0.2, y: 0 },
+  controlAxis: { x: 1, y: 0 },
+});
+assert(nearStopped.mode === "side", "Fish below minimum autonomous speed resolves side");
+const tunedThreshold = axisResolver.resolve({
+  fishVelocity: { x: 20, y: 100 },
+  controlAxis: { x: 1, y: 0 },
+  config: {
+    sameDirectionThreshold: 0.15,
+    oppositeDirectionThreshold: -0.15,
+    minFishSpeedPxPerSec: 0,
+  },
+});
+assert(tunedThreshold.mode === "same_direction", "Configured threshold changes alignment classification");
+const missingAxis = axisResolver.resolve({
+  fishVelocity: { x: 100, y: 0 },
+  controlAxis: { x: 0, y: 0 },
+});
+assert(missingAxis.mode === "side", "Near-zero control axis resolves side");
 
 const noReserve = controlFrame({ tension: 2 });
 assert(!noReserve.canApply, "No load reserve blocks Rod Control force");

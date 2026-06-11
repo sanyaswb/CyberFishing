@@ -49,6 +49,7 @@ const FILES = [
   "src/core/fishing/tackle_stress_accumulator.js",
   "src/systems/player_pull_motion_smoother.js",
   "src/systems/rod_pull_system.js",
+  "src/core/fishing/rod_control_tension_mode_resolver.js",
   "src/systems/rod_lateral_control_system.js",
   "src/systems/fish_retrieve_system.js",
   "src/systems/reel_system.js",
@@ -463,6 +464,8 @@ const lateralFrame = lateralControl.update({
 assert(lateralFrame.canApply, "Rod Control X applies when input pulls fish toward rod X");
 approx(lateralFrame.directionX, 1, 0.001, "Rod Control X moves toward the rod target");
 approx(lateralFrame.tensionMultiplier, 2.5, 0.001, "Rod Control X uses opposite-direction tension multiplier");
+assert(lateralFrame.tensionMode === "opposite_direction", "Rod Control X exposes opposite tension mode");
+approx(lateralFrame.fishControlAxisVelocityPxPerSecond, -20, 0.001, "Rod Control X exposes signed fish projection");
 approx(lateralFrame.forceKg, 0.4, 0.001, "Rod Control X force follows configured max force");
 approx(lateralFrame.maxPullSpeedMetersPerSecond, 1.28, 0.001, "Rod Control X speed derives from delivered force");
 approx(lateralFrame.desiredMoveMeters, 1, 0.001, "Rod Control X movement is clamped to rod target distance");
@@ -519,6 +522,7 @@ approx(lateralLeft.directionX, -1, 0.001, "Left input pulls the right-side fish 
 approx(lateralLeft.requestedForceRatio, 0.5, 0.001, "Input ratio exposes requested force");
 approx(lateralLeft.deliveredForceRatio, 0.5, 0.001, "Delivered force follows requested force with full reserve");
 approx(lateralLeft.tensionMultiplier, 0, 0.001, "Same-direction fish movement uses zero tension multiplier");
+assert(lateralLeft.tensionMode === "same_direction", "Same-direction fish exposes matching tension mode");
 
 const lateralNoReserve = new RodLateralControlSystem().update({
   dtSec: 1,
