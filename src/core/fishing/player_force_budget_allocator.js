@@ -13,6 +13,7 @@ class PlayerForceBudgetAllocator {
     fishTensionKg,
     holdAction,
     controlAction,
+    controlEligibility = null,
     config = {},
   } = {}) {
     const enabled = config.enabled !== false;
@@ -26,10 +27,18 @@ class PlayerForceBudgetAllocator {
     const minControlInputRatio = this.#clamp01(
       controlConfig.minInputRatio ?? 0.001,
     );
-    const controlActive =
+    const controlRequested =
       !!controlAction?.active &&
       rawControlInputRatio >= minControlInputRatio;
+    const controlEligible =
+      controlRequested &&
+      controlEligibility?.canRequestForce !== false;
+    const controlActive = controlRequested && controlEligible;
     const controlInputRatio = controlActive ? rawControlInputRatio : 0;
+    const controlBlockedReason =
+      controlRequested && !controlEligible
+        ? controlEligibility?.blockedReason || "unavailable"
+        : "none";
 
     if (!enabled) {
       return this.#freeze({
@@ -39,6 +48,9 @@ class PlayerForceBudgetAllocator {
         fishTensionKg: fishTension,
         holdActive,
         controlActive,
+        controlRequested,
+        controlEligible,
+        controlBlockedReason,
         controlInputRatio,
         holdCeilingMultiplier: 1,
         controlCeilingMultiplier: 1,
@@ -88,6 +100,9 @@ class PlayerForceBudgetAllocator {
     const shares = this.#resolveShares({
       holdActive,
       controlActive,
+      controlRequested,
+      controlEligible,
+      controlBlockedReason,
       controlInputRatio,
       controlConfig,
     });
@@ -102,6 +117,9 @@ class PlayerForceBudgetAllocator {
       fishTensionKg: fishTension,
       holdActive,
       controlActive,
+      controlRequested,
+      controlEligible,
+      controlBlockedReason,
       controlInputRatio,
       holdCeilingMultiplier: holdMultiplier,
       controlCeilingMultiplier: controlMultiplier,

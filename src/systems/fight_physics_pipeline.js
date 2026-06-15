@@ -19,6 +19,7 @@ class FightPhysicsPipeline {
     "preview_tension",
     "recover_line",
     "resolve_line_constraint",
+    "inspect_pole_fight_sector",
     "update_rod_stroke_distance",
     "update_final_tension",
     "write_debug_snapshot",

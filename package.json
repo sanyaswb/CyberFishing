@@ -18,6 +18,8 @@
     "check:game-cycle-control-hold": "node utils/game-cycle-control-hold-check.js",
     "check:memory": "npm run audit:lifecycle && node utils/memory-leak-watchdog-check.js",
     "check:line-locked-rod-control": "node utils/line-locked-rod-control-check.js",
+    "check:pole-fight-sector": "node utils/pole-fight-sector-check.js",
+    "check:dev-tools-locations": "node utils/dev-tools-location-schema-check.js",
     "check:tackle-stress": "node utils/tackle-stress-failure-check.js",
     "check:hud-styles": "node utils/hud-style-resolver-check.js",
     "check:hud-bars": "node utils/hud-bar-layout-check.js",

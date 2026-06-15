@@ -26,16 +26,21 @@ class FightInputActionComposer {
     const pointerDown = input?.pointerDown === true;
     const legacyPulling = input?.isPulling === true || input?.pullHeld === true;
     const spaceDown = this.#isAnyKeyHeld(input, keysConfig.pull || ["Space"]);
-    const holdActive = pointerDown || legacyPulling || spaceDown;
-    const holdSource = pointerDown
-      ? "pointer"
-      : spaceDown
-        ? "keyboard"
-        : legacyPulling
+    const pointerControl = this.#resolvePointerControl(
+      input,
+      config.rodControlInput || {},
+    );
+    const pointerHoldActive = pointerDown && !pointerControl.active;
+    const legacyHoldActive = legacyPulling && !pointerControl.active;
+    const holdActive = pointerHoldActive || legacyHoldActive || spaceDown;
+    const holdSource = spaceDown
+      ? "keyboard"
+      : pointerHoldActive
+        ? "pointer"
+        : legacyHoldActive
           ? "legacy"
           : "none";
 
-    const pointerControl = this.#resolvePointerControl(input, config.rodControlInput || {});
     const keyboardControl = this.#resolveKeyboardControl(input, keysConfig);
     const legacyControl = this.#resolveLegacyControl(input);
     const lateralControl = this.#mergeLateralControl({

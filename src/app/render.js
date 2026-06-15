@@ -78,6 +78,11 @@ class FishingRenderService {
   #lineLastNow = 0;
   #lineCastStartTime = null;
   #landingPolicyResolver = new LandingPolicyResolver();
+  #poleFightSectorGeometry =
+    typeof PoleFightSectorGeometry !== "undefined"
+      ? new PoleFightSectorGeometry()
+      : null;
+  #castDistanceCalculator = null;
 
   constructor({
     inventory,
@@ -113,6 +118,10 @@ class FishingRenderService {
     this.#getCurrentHookDepth = getCurrentHookDepth;
     this.#scratch = scratch;
     this.#scratch2 = scratch2;
+    this.#castDistanceCalculator =
+      typeof CastDistanceCalculator !== "undefined"
+        ? new CastDistanceCalculator(this.#config)
+        : null;
   }
 
   draw(renderer, bottom, state, tMeter, fCond, startTime) {
@@ -236,6 +245,11 @@ class FishingRenderService {
 
     const fightDebug = tMeter?.getDebugData?.() || {};
 
+    renderer.drawPoleFightSector?.(
+      this.#projector,
+      this.#config.locations,
+      this.#resolvePoleFightSectorVisualFrame(bottom, fightDebug, eq),
+    );
     renderer.drawCatchZone(
       this.#projector,
       this.#getNet(),
@@ -270,6 +284,96 @@ class FishingRenderService {
     if (dtSec <= 0) return current;
     const alpha = 1 - Math.exp(-Math.max(0, speed) * dtSec);
     return current + (target - current) * alpha;
+  }
+
+  #resolvePoleFightSectorVisualFrame(bottom, fightDebug, equipment) {
+    const debugRadiusPx = Math.max(
+      0,
+      Number(fightDebug?.poleFightSectorLimitRadiusPx) || 0,
+    );
+    if (
+      fightDebug?.poleFightSectorActive === true &&
+      debugRadiusPx > 0
+    ) {
+      return fightDebug;
+    }
+
+    const sectorConfig =
+      this.#config.fightPhysicsConfig?.getPoleFightSectorConfig?.() ||
+      this.#config.physics?.fight?.poleFightSector ||
+      {};
+    const rodScreenX = Number(this.#getRodScreenX());
+    const origin = this.#projector.screenToVirtual(
+      Number.isFinite(rodScreenX)
+        ? rodScreenX
+        : this.#canvasMetrics.width / 2,
+      0,
+      this.#scratch2,
+    );
+    const limitRadiusPx = Math.max(
+      0,
+      Number(
+        this.#castDistanceCalculator?.getMaxCastDistancePx?.(
+          equipment,
+          0,
+        ),
+      ) || 0,
+    );
+    const geometry = this.#poleFightSectorGeometry?.resolve?.({
+      origin: {
+        x: Number(origin?.x) || 0,
+        y: Number(bottom) || 0,
+      },
+      config: sectorConfig,
+      limitRadiusPx,
+      pixelsPerMeter:
+        this.#config.fightPhysicsConfig?.getPixelsPerMeter?.() || 50,
+    });
+
+    return {
+      poleFightSectorEnabled: geometry?.enabled === true,
+      poleFightSectorActive: geometry?.active === true,
+      poleFightSectorClamped: false,
+      poleFightSectorOriginX: Number(geometry?.originX) || 0,
+      poleFightSectorOriginY: Number(geometry?.originY) || 0,
+      poleFightSectorShoreOpeningWidthMeters:
+        Math.max(
+          0,
+          Number(geometry?.shoreOpeningWidthMeters) || 0,
+        ),
+      poleFightSectorApexX:
+        Number(geometry?.sectorApexX ?? geometry?.originX) || 0,
+      poleFightSectorApexY:
+        Number(geometry?.sectorApexY ?? geometry?.originY) || 0,
+      poleFightSectorApexOffsetPx:
+        Math.max(0, Number(geometry?.apexOffsetPx) || 0),
+      poleFightSectorForwardX: Number(geometry?.forwardX) || 0,
+      poleFightSectorForwardY: Number(geometry?.forwardY) || -1,
+      poleFightSectorMaxAngleDeg: Math.max(
+        0,
+        Number(geometry?.maxAngleFromCenterDeg) || 0,
+      ),
+      poleFightSectorLimitRadiusPx: Math.max(
+        0,
+        Number(geometry?.limitRadiusPx) || 0,
+      ),
+      poleFightSectorLeftBoundaryDirectionX:
+        Number(geometry?.leftBoundaryDirectionX) || 0,
+      poleFightSectorLeftBoundaryDirectionY:
+        Number(geometry?.leftBoundaryDirectionY) || 0,
+      poleFightSectorRightBoundaryDirectionX:
+        Number(geometry?.rightBoundaryDirectionX) || 0,
+      poleFightSectorRightBoundaryDirectionY:
+        Number(geometry?.rightBoundaryDirectionY) || 0,
+      poleFightSectorLeftBoundaryRadiusIntersectionX:
+        Number(geometry?.leftBoundaryRadiusIntersectionX) || 0,
+      poleFightSectorLeftBoundaryRadiusIntersectionY:
+        Number(geometry?.leftBoundaryRadiusIntersectionY) || 0,
+      poleFightSectorRightBoundaryRadiusIntersectionX:
+        Number(geometry?.rightBoundaryRadiusIntersectionX) || 0,
+      poleFightSectorRightBoundaryRadiusIntersectionY:
+        Number(geometry?.rightBoundaryRadiusIntersectionY) || 0,
+    };
   }
 
   #resolveLandingZoneContext(eq, bottom, fightDebug) {

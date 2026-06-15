@@ -430,6 +430,24 @@ class FightPhysicsConfigAdapter {
     return this.#physics().fight?.playerPullMotion || {};
   }
 
+  getPoleFightSectorConfig() {
+    const config = this.#physics().fight?.poleFightSector || {};
+    return {
+      enabled: config.enabled !== false,
+      maxAngleFromCenterDeg: Math.max(
+        0,
+        Math.min(
+          89.9,
+          Math.abs(this.#number(config.maxAngleFromCenterDeg, 60)),
+        ),
+      ),
+      shoreOpeningWidthMeters: Math.max(
+        0,
+        this.#number(config.shoreOpeningWidthMeters, 1),
+      ),
+    };
+  }
+
   #root() {
     return this.config?.raw || this.config || {};
   }

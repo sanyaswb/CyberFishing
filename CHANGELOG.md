@@ -1,5 +1,74 @@
 # CyberFishing changelog
 
+## v0.19.52 - Radial pole fight sector geometry
+
+- Added `PoleFightSectorGeometry` as the shared source of truth for the sector origin, vertical forward axis, half-angle, boundary directions and physical line radius.
+- Rebuilt `PoleFightSectorConstraint` around the intersection of the angular sector and the released-line radius, stopping movement at the first trajectory intersection without adding displacement.
+- Autonomous fish movement, Rod Hold and Rod Control now pass the same line-derived radius into the shared constraint frame.
+- Preserved gradual recovery for fish already outside the angular sector while blocking movement farther outside.
+- Replaced the viewport-sized sector visualization with a red filled physical sector whose outer arc uses the exact fight-line radius.
+- Added an independent yellow `showFightLineRadius` semicircle for the unrestricted radial line boundary.
+- Renderer consumes the physics geometry frame during fights and uses the same geometry builder for its pre-snapshot fallback.
+- Added runtime debug fields for sector limit radius, forward axis, boundary directions, boundary type, outside state and recovery movement.
+- Added labels, DevTools schema wiring and config validation for the new location visibility toggle.
+- Expanded regressions for the 6 m pole radius, widening sector shape, angle/radius intersections, no added movement, gradual recovery and exact red/yellow render alignment.
+
+## v0.19.51 - Movement constraint invariants
+
+- Reworked locked-line Rod Control as a swept segment-to-circle projection instead of selecting a boundary point only from the input sign.
+- Positions slightly outside the released line radius are normalized locally; that correction is tracked separately and is never counted as player movement or rod stroke.
+- Added the invariant that applied Rod Control path cannot exceed the movement requested for the frame, preventing cross-circle teleports from keyboard and pointer input.
+- Added pre-player hard-line normalization for pole tackle so Rod Hold and Rod Control receive valid line geometry in the same frame.
+- Sector clipping is now a directional movement block rather than a hard tension obstruction, preserving movable-fish tension behavior.
+- Rod Hold and Rod Control no longer mutate autonomous fish velocity when the shared sector limits player movement.
+- Added constraint feedback to PlayerPullMotionSmoother so blocked X/Y velocity cannot accumulate and release as a later jump.
+- Added stable tangent boundary steering when an active fish reaches the empty-spool radius with only outward movement, preventing the center-line deadlock.
+- Added regressions for outside-radius A/D control, no cross-circle teleport, sector displacement invariants, smoother feedback and tangent fallback.
+
+## v0.19.50 - Swept pole fight sector
+
+- Replaced direct fish-position snapping with a swept `from -> proposed -> allowed` movement constraint.
+- Fish crossing a sector boundary now stops at the trajectory intersection instead of teleporting along a circular radius.
+- Fish already outside the sector may return toward the center over multiple frames, while movement farther outside is blocked.
+- Applied the same movement constraint to autonomous fish movement, Rod Hold and Rod Control before downstream line/tension state is finalized.
+- Fixed a stale `.constrain` runtime guard that forced `poleFightSectorActive` to remain false and prevented visualization.
+- Added a config-backed visual frame fallback plus regressions for crossing, recovery, outward blocking and visible rendering.
+
+## v0.19.49 - Nested location debug controls
+
+- Moved `Locations / Zones` inside the existing `DEBUG (CONFIG.debug)` section instead of exposing a separate top-level section.
+- Kept all switches bound directly to the authoritative runtime `CONFIG.locations` values.
+- Made the pole fight sector visualization clearly visible with stronger fill, boundary rays and a vertical center axis.
+- Replaced map-size-dependent visualization radius calculations with a viewport-covering render radius.
+- Added regression coverage for Debug nesting and complete sector rendering.
+
+## v0.19.48 - DevTools location controls
+
+- Added a dedicated `LOCATIONS / ZONES (CONFIG.locations)` section next to the main Debug controls.
+- Grouped all 14 location booleans into master visibility, gameplay zones and zone overlays.
+- Added live switches for castable, collisions, snags, dynamic zones, catch/lastDash/net/aiming zones and the pole fight sector visualization.
+- The shortcut edits the authoritative runtime `CONFIG.locations` paths and does not duplicate location state or map data.
+- Added regression coverage for missing, duplicate and accidentally exposed structural location keys.
+
+## v0.19.47 - Pole fight sector
+
+- Added `physics.fight.poleFightSector` with an enabled flag and configurable half-angle from the vertical-up center axis.
+- The sector origin uses the base rod position on the lower boundary of the active castable zone, not the visual rod tip.
+- Fish AI, Rod Hold and Rod Control now share one final angular constraint without duplicating sector logic.
+- Sector correction preserves the current line radius and removes only velocity that would continue pushing outside the boundary.
+- Added `locations.showPoleFightSector` for an independent clipped debug visualization.
+- Added sector geometry/debug fields and regression coverage for position, velocity, radius preservation, visualization toggling and the 6 m pole fight cycle.
+- `RodLateralControlSystem` now accepts its tension-mode resolver through constructor injection.
+
+## v0.19.46 - Rod Control movement isolation
+
+- Rod Control now moves freely along X while the requested point remains inside the already released line radius.
+- Locked-line arc projection starts only for the part of movement that would exceed that radius, preventing toward-center control from lifting the fish.
+- Horizontal pointer Control no longer activates pointer Rod Hold; explicit keyboard `Space + A/D` composition remains supported.
+- Aligned or direction-blocked Rod Control no longer reserves player force budget from Rod Hold.
+- Rod Control distance changes no longer charge or consume Rod Hold stroke.
+- Added a full 6 m pole regression for `Control -> release -> Hold` with a 0.05 kg fish.
+
 ## v0.19.45 - Utility role cleanup
 
 - Separated manual diagnostics, compatibility checks and static lifecycle audits into explicit utility folders and npm command groups.

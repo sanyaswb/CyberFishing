@@ -65,6 +65,50 @@ approx(
   "Arc movement preserves locked line radius",
 );
 
+const inwardHorizontalPoint = projector.resolveNextPoint({
+  position: { x: 150, y: -200 },
+  rodTipPosition: { x: 0, y: 0 },
+  directionX: -1,
+  deltaMeters: 0.5,
+  pixelsPerMeter: 50,
+  lineConstraintState: lockedDrag,
+});
+assert(
+  inwardHorizontalPoint.mode === "locked_free_x",
+  "Locked line allows horizontal movement that stays inside released radius",
+);
+approx(
+  inwardHorizontalPoint.x,
+  125,
+  0.000001,
+  "Toward-center Rod Control moves left without arc projection",
+);
+approx(
+  inwardHorizontalPoint.y,
+  -200,
+  0.000001,
+  "Toward-center Rod Control does not lift the fish",
+);
+
+const outwardArcPoint = projector.resolveNextPoint({
+  position: { x: 150, y: -200 },
+  rodTipPosition: { x: 0, y: 0 },
+  directionX: 1,
+  deltaMeters: 0.5,
+  pixelsPerMeter: 50,
+  lineConstraintState: lockedDrag,
+});
+assert(
+  outwardArcPoint.mode === "locked_arc",
+  "Locked line uses arc only when horizontal movement exceeds the radius",
+);
+approx(
+  Math.hypot(outwardArcPoint.x, outwardArcPoint.y) / 50,
+  lockedDrag.lockedLengthMeters,
+  0.000001,
+  "Outward arc remains on released line radius",
+);
+
 const slippingDrag = resolver.resolve({
   lineState: {
     releasedMeters: 5,

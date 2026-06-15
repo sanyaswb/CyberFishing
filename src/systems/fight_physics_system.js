@@ -17,7 +17,15 @@ class FightPhysicsSystem {
   #landingLiftCalculator = new LandingLiftTensionCalculator();
   #lineConstraintStateResolver = new LineConstraintStateResolver();
   #lineRadialMovementSplitter = new LineRadialMovementSplitter();
+  #fishBoundarySteeringPolicy =
+    typeof FishBoundarySteeringPolicy !== "undefined"
+      ? new FishBoundarySteeringPolicy()
+      : null;
   #rodControlMovementProjector = new RodControlMovementProjector();
+  #poleFightSectorConstraint =
+    typeof PoleFightSectorConstraint !== "undefined"
+      ? new PoleFightSectorConstraint()
+      : null;
   #fightInputActionComposer =
     typeof FightInputActionComposer !== "undefined"
       ? new FightInputActionComposer()
@@ -118,15 +126,29 @@ class FightPhysicsSystem {
       playerMaxLoadKg: maxTackleLoadKg,
     }));
     const forceData = motion.forceData;
-    const playerForceBudget = pipelineFrame.run(
+    const playerForceFrame = pipelineFrame.run(
       "resolve_player_force_budget",
-      () => this.#resolvePlayerForceBudget({
-        fightInput,
-        forceData,
-        rodLimitKg,
-        physics,
-      }),
+      () => {
+        const rodControlIntent = this.#resolveRodControlIntent({
+          fightInput,
+          floatEntity,
+          rodTipPosition,
+          actualRodTipPosition,
+          rodControlSystem,
+        });
+        return {
+          rodControlIntent,
+          budget: this.#resolvePlayerForceBudget({
+            fightInput,
+            forceData,
+            rodLimitKg,
+            physics,
+            rodControlIntent,
+          }),
+        };
+      },
     );
+    const playerForceBudget = playerForceFrame.budget;
     const dragContext = pipelineFrame.run("resolve_drag_context", () =>
       this.#resolveDragContext({
       hasReel,
@@ -184,6 +206,7 @@ class FightPhysicsSystem {
       lineState: rodPullFrame.lineStateAfterPull,
       fishRetrieveResult: rodPullFrame.fishRetrieveResult,
       playerForceBudget,
+      rodControlIntent: playerForceFrame.rodControlIntent,
     }),
     );
     const lineStateAfterControl =
@@ -269,12 +292,21 @@ class FightPhysicsSystem {
       hardLineLimitBeforeRelease: rodPullFrame.hardLineLimitBeforeRelease,
     }),
     );
+    const sectorFrame = pipelineFrame.run(
+      "inspect_pole_fight_sector",
+      () => this.#inspectPoleFightSector({
+        floatEntity,
+        rodTipPosition,
+        lineSystem,
+      }),
+    );
+    const finalLineState = sectorFrame.lineState || lineLimit.lineState;
     const strokeDistanceFrame = pipelineFrame.run(
       "update_rod_stroke_distance",
       () => this.#recordRodStrokeDistance({
         rodPullSystem,
         previousLineState: rodPullFrame.lineStateBeforePull,
-        currentLineState: lineLimit.lineState,
+        currentLineState: rodPullFrame.lineStateAfterPull,
       }),
     );
     const tensionResult = pipelineFrame.run(
@@ -287,7 +319,7 @@ class FightPhysicsSystem {
       fishRetrieveResult: rodPullFrame.fishRetrieveResult,
       rodControlResult: rodControlFrame.rodControlResult,
       dragContext,
-      lineState: lineLimit.lineState,
+      lineState: finalLineState,
       hardLineLimit: lineLimit.hardLineLimit,
       dtSec,
       pullInput,
@@ -300,7 +332,7 @@ class FightPhysicsSystem {
       () => this.#buildDebugSnapshot({
       forceData,
       dragSystem,
-      lineState: lineLimit.lineState,
+      lineState: finalLineState,
       finalPumpCreditMeters: lineLimit.finalPumpCreditMeters,
       initialPumpCreditMeters: rodPullFrame.pumpCreditMeters,
       actualSlackMeters: lineLimit.actualSlackMeters,
@@ -335,6 +367,7 @@ class FightPhysicsSystem {
       holdReelRecover,
       dragContext,
       playerForceBudget,
+      poleFightSectorFrame: sectorFrame,
     }),
     );
     this.#debug.fightPipeline = pipelineFrame.toDebugData();
@@ -406,7 +439,31 @@ class FightPhysicsSystem {
     return pullInput;
   }
 
-  #resolvePlayerForceBudget({ fightInput, forceData, rodLimitKg, physics }) {
+  #resolveRodControlIntent({
+    fightInput,
+    floatEntity,
+    rodTipPosition,
+    actualRodTipPosition,
+    rodControlSystem,
+  }) {
+    if (!rodControlSystem?.resolveIntent) return null;
+    return rodControlSystem.resolveIntent({
+      inputState: fightInput,
+      fishPosition: floatEntity?.getPosition?.(),
+      rodTipPosition,
+      baseRodTipPosition: rodTipPosition,
+      actualRodTipPosition,
+      config: this.#physicsConfig?.getRodControlConfig?.() || {},
+    });
+  }
+
+  #resolvePlayerForceBudget({
+    fightInput,
+    forceData,
+    rodLimitKg,
+    physics,
+    rodControlIntent,
+  }) {
     const config =
       this.#physicsConfig?.getPlayerForceBudgetConfig?.() ||
       physics?.fight?.playerForceBudget ||
@@ -420,7 +477,7 @@ class FightPhysicsSystem {
           ratio: fightInput?.isPulling ? 1 : 0,
           source: fightInput?.isPulling ? "legacy" : "none",
         });
-    const controlAction = actions.lateralControl?.active === true
+    const requestedControlAction = actions.lateralControl?.active === true
       ? actions.lateralControl
       : Object.freeze({
           active: !!fightInput?.rodControlActive,
@@ -431,6 +488,7 @@ class FightPhysicsSystem {
           ),
           source: fightInput?.rodControlActive ? "legacy" : "none",
         });
+    const controlAction = requestedControlAction;
     const fallbackFrame = {
       enabled: false,
       reason: "allocator_missing",
@@ -453,6 +511,15 @@ class FightPhysicsSystem {
       controlShare: 0,
       holdBudgetKg: 0,
       controlBudgetKg: 0,
+      controlRequested: requestedControlAction.active === true,
+      controlEligible:
+        requestedControlAction.active === true &&
+        rodControlIntent?.canRequestForce !== false,
+      controlBlockedReason:
+        requestedControlAction.active === true &&
+        rodControlIntent?.canRequestForce === false
+          ? rodControlIntent?.blockedReason || "unavailable"
+          : "none",
     };
 
     if (!this.#playerForceBudgetAllocator?.resolve) {
@@ -464,6 +531,7 @@ class FightPhysicsSystem {
       fishTensionKg: forceData?.fishTensionKg,
       holdAction,
       controlAction,
+      controlEligibility: rodControlIntent,
       config,
     });
   }
@@ -488,6 +556,7 @@ class FightPhysicsSystem {
     playerMaxLoadKg,
   }) {
     const fishPosition = floatEntity.getPosition();
+    const previousFishX = Number(fishPosition.x) || 0;
     const previousFishY = Number(fishPosition.y) || 0;
     const fishVelocity = floatEntity.getVelocity?.() || this.#velocityScratch.set(0, 0);
     const lineState = lineSystem.updateDistance(fishPosition, rodTipPosition);
@@ -557,9 +626,26 @@ class FightPhysicsSystem {
           50,
         dtSec,
       });
+    const boundarySteeringFrame = this.#fishBoundarySteeringPolicy?.resolveVelocity?.({
+      position: fishPosition,
+      rodTipPosition,
+      freeVelocity: forceData.targetVelocity,
+      constrainedVelocity: radialMovementFrame,
+      radialConstraintActive:
+        !this.#lineHasReserve(lineState) && this.#isLineTaut(lineState),
+      sectorConfig:
+        this.#physicsConfig?.getPoleFightSectorConfig?.() ||
+        this.#getRuntimePhysicsConfig()?.fight?.poleFightSector ||
+        {},
+      dtSec,
+    });
     const frameTargetVelocity = this.#radialTargetVelocity.set(
-      radialMovementFrame.velocityX,
-      radialMovementFrame.velocityY,
+      boundarySteeringFrame?.active
+        ? boundarySteeringFrame.velocityX
+        : radialMovementFrame.velocityX,
+      boundarySteeringFrame?.active
+        ? boundarySteeringFrame.velocityY
+        : radialMovementFrame.velocityY,
     );
 
     let movementFrame = null;
@@ -596,6 +682,49 @@ class FightPhysicsSystem {
         fallbackDampedUpdate: true,
       };
     }
+
+    const constrainedFishPosition = floatEntity.getPosition();
+    const sectorMovementFrame = this.#applyPoleFightSectorMovement({
+      fromPosition: {
+        x: previousFishX,
+        y: previousFishY,
+      },
+      proposedPosition: constrainedFishPosition,
+      velocity: floatEntity.getVelocity?.() || fishVelocity,
+      origin: rodTipPosition,
+      limitRadiusPx: this.#resolvePoleFightSectorLimitRadiusPx({
+        lineState,
+      }),
+      adjustVelocity: true,
+    });
+    let prePlayerLineConstraint = null;
+    const lineStateAfterFishMovement = lineSystem.updateDistance(
+      constrainedFishPosition,
+      rodTipPosition,
+    );
+    if (!this.#lineHasReserve(lineStateAfterFishMovement)) {
+      prePlayerLineConstraint = lineSystem.constrainPosition(
+        constrainedFishPosition,
+        floatEntity.getVelocity?.() || fishVelocity,
+        rodTipPosition,
+      );
+    }
+    const constrainedMovedX = constrainedFishPosition.x - previousFishX;
+    const constrainedMovedY = constrainedFishPosition.y - previousFishY;
+    movementFrame.movedX = constrainedMovedX;
+    movementFrame.movedY = constrainedMovedY;
+    movementFrame.actualSpeedPxPerSec = dtSec > 0
+      ? Math.hypot(constrainedMovedX, constrainedMovedY) / dtSec
+      : 0;
+    movementFrame.poleFightSectorClamped =
+      sectorMovementFrame.clamped === true;
+    movementFrame.prePlayerLineConstraintApplied =
+      prePlayerLineConstraint?.constrained === true ||
+      prePlayerLineConstraint?.hardLimit === true;
+    movementFrame.boundarySteeringActive =
+      boundarySteeringFrame?.active === true;
+    movementFrame.boundarySteeringReason =
+      boundarySteeringFrame?.reason || "none";
 
     movementFrame.freeReleasedLineMeters =
       Number(lineState.freeReleasedLineMeters) ||
@@ -795,8 +924,20 @@ class FightPhysicsSystem {
         50,
       bounds,
       checkWater,
+      limitRadiusPx: this.#resolvePoleFightSectorLimitRadiusPx({
+        lineState: lineStateBeforePull,
+      }),
     });
     const rodPullMoveMeters = rodPullMovement.meters;
+    this.#playerPullMotionSmoother.reconcileAxis?.({
+      axis: "y",
+      appliedMove: rodPullMoveMeters,
+      deltaTime: dtSec,
+      blocked:
+        rodPullMovement.hardBlocked ||
+        rodPullMovement.directionalBlocked ||
+        rodPullMoveMeters + 0.000001 < smoothedRodMoveMeters,
+    });
     const reelHoldDesiredMoveMeters = Math.min(
       Math.max(0, fishRetrieveFrame.desiredMoveMeters - rodPullMoveMeters),
       holdReelRecoverMoveMeters,
@@ -810,6 +951,9 @@ class FightPhysicsSystem {
         50,
       bounds,
       checkWater,
+      limitRadiusPx: this.#resolvePoleFightSectorLimitRadiusPx({
+        lineState: lineStateBeforePull,
+      }),
     });
     const reelHoldMoveMeters = reelHoldMovement.meters;
     const totalAppliedMoveMeters = rodPullMoveMeters + reelHoldMoveMeters;
@@ -954,6 +1098,7 @@ class FightPhysicsSystem {
     lineState,
     fishRetrieveResult,
     playerForceBudget,
+    rodControlIntent,
   }) {
     if (!rodControlSystem?.update) {
       return {
@@ -1017,18 +1162,22 @@ class FightPhysicsSystem {
       lineHasReserve,
       hardLineLimit,
       lineConstraintState,
+      intentFrame: rodControlIntent,
       config,
     });
     const desiredSignedMoveMeters =
       (Number(rodControlResult.directionX) || 0) *
       Math.max(0, Number(rodControlResult.desiredMoveMeters) || 0);
-    const rawSmoothedSignedMoveMeters = this.#smoothPlayerPullAxis({
-      axis: "x",
-      desiredMoveMeters: rodControlResult.canApply
-        ? desiredSignedMoveMeters
-        : 0,
-      dtSec,
-    });
+    let rawSmoothedSignedMoveMeters = 0;
+    if (rodControlResult.canApply) {
+      rawSmoothedSignedMoveMeters = this.#smoothPlayerPullAxis({
+        axis: "x",
+        desiredMoveMeters: desiredSignedMoveMeters,
+        dtSec,
+      });
+    } else {
+      this.#playerPullMotionSmoother.resetAxis?.("x");
+    }
     const smoothedSignedMoveMeters = this.#limitRodControlMoveTowardTarget({
       signedMoveMeters: rawSmoothedSignedMoveMeters,
       fishPosition,
@@ -1037,6 +1186,12 @@ class FightPhysicsSystem {
         this.#physicsConfig?.getPixelsPerMeter?.() ||
         50,
     });
+    if (
+      Math.abs(rawSmoothedSignedMoveMeters) > 0.000001 &&
+      Math.abs(smoothedSignedMoveMeters) <= 0.000001
+    ) {
+      this.#playerPullMotionSmoother.resetAxis?.("x");
+    }
     const allowedMoveMeters = Math.abs(smoothedSignedMoveMeters);
     const movement = this.#applyRodControlMovement({
       floatEntity,
@@ -1049,8 +1204,22 @@ class FightPhysicsSystem {
       bounds,
       checkWater,
       lineConstraintState,
+      limitRadiusPx: this.#resolvePoleFightSectorLimitRadiusPx({
+        lineConstraintState,
+      }),
       projectLockedMovementToArc:
         config.lineConstraint?.projectLockedMovementToArc !== false,
+    });
+    const requestedAppliedMeters = Math.abs(smoothedSignedMoveMeters);
+    const controlMovementBlocked =
+      movement.hardBlocked ||
+      movement.directionalBlocked ||
+      movement.meters + 0.000001 < requestedAppliedMeters;
+    this.#playerPullMotionSmoother.reconcileAxis?.({
+      axis: "x",
+      appliedMove: movement.signedMeters,
+      deltaTime: dtSec,
+      blocked: controlMovementBlocked,
     });
     rodControlSystem.recordAppliedMovement?.({
       movedMeters: movement.meters,
@@ -1127,6 +1296,8 @@ class FightPhysicsSystem {
 
   resetPlayerPullMotion() {
     this.#playerPullMotionSmoother.reset();
+    this.#fishBoundarySteeringPolicy?.reset?.();
+    this.#poleFightSectorConstraint?.reset?.();
   }
 
   #updateTension({
@@ -1476,6 +1647,96 @@ class FightPhysicsSystem {
     };
   }
 
+  #inspectPoleFightSector({
+    floatEntity,
+    rodTipPosition,
+    lineSystem,
+  }) {
+    const fallback = {
+      enabled: false,
+      active: false,
+      clamped: false,
+      side: "none",
+      angleDeg: 0,
+      clampedAngleDeg: 0,
+      maxAngleFromCenterDeg: 60,
+      radiusPx: 0,
+      originX: Number(rodTipPosition?.x) || 0,
+      originY: Number(rodTipPosition?.y) || 0,
+      radialOriginX: Number(rodTipPosition?.x) || 0,
+      radialOriginY: Number(rodTipPosition?.y) || 0,
+      sectorApexX: Number(rodTipPosition?.x) || 0,
+      sectorApexY: Number(rodTipPosition?.y) || 0,
+      apexOffsetPx: 0,
+      shoreOpeningWidthMeters: 0,
+      positionX: Number(floatEntity?.getPosition?.()?.x) || 0,
+      positionY: Number(floatEntity?.getPosition?.()?.y) || 0,
+      lineState: null,
+    };
+    if (!this.#poleFightSectorConstraint?.inspect) return fallback;
+
+    const lineState = lineSystem.updateDistance(
+      floatEntity.getPosition(),
+      rodTipPosition,
+    );
+    const frame = this.#poleFightSectorConstraint.inspect({
+      position: floatEntity.getPosition(),
+      origin: rodTipPosition,
+      limitRadiusPx: this.#resolvePoleFightSectorLimitRadiusPx({ lineState }),
+      pixelsPerMeter:
+        this.#physicsConfig?.getPixelsPerMeter?.() || 50,
+      config:
+        this.#physicsConfig?.getPoleFightSectorConfig?.() ||
+        this.#getRuntimePhysicsConfig()?.fight?.poleFightSector ||
+        {},
+    });
+    return {
+      ...frame,
+      lineState,
+    };
+  }
+
+  #applyPoleFightSectorMovement({
+    fromPosition,
+    proposedPosition,
+    velocity,
+    origin,
+    limitRadiusPx = 0,
+    adjustVelocity = false,
+  }) {
+    if (!this.#poleFightSectorConstraint?.resolveMovement) {
+      return {
+        active: false,
+        clamped: false,
+        positionX: Number(proposedPosition?.x) || 0,
+        positionY: Number(proposedPosition?.y) || 0,
+      };
+    }
+
+    const frame = this.#poleFightSectorConstraint.resolveMovement({
+      fromPosition,
+      proposedPosition,
+      velocity: adjustVelocity ? velocity : null,
+      origin,
+      limitRadiusPx,
+      pixelsPerMeter:
+        this.#physicsConfig?.getPixelsPerMeter?.() || 50,
+      config:
+        this.#physicsConfig?.getPoleFightSectorConfig?.() ||
+        this.#getRuntimePhysicsConfig()?.fight?.poleFightSector ||
+        {},
+    });
+    if (!frame.active) return frame;
+
+    proposedPosition.x = frame.positionX;
+    proposedPosition.y = frame.positionY;
+    if (adjustVelocity && frame.velocityAdjusted && velocity) {
+      velocity.x = frame.velocityX;
+      velocity.y = frame.velocityY;
+    }
+    return frame;
+  }
+
   #buildDebugSnapshot({
     forceData,
     dragSystem,
@@ -1514,6 +1775,7 @@ class FightPhysicsSystem {
     holdReelRecover,
     dragContext,
     playerForceBudget,
+    poleFightSectorFrame,
   }) {
     const lineHasReserve = this.#lineHasReserve(lineState);
     const frameDtSec = Math.max(0, Number(physics?.dtSec) || 0);
@@ -1675,6 +1937,90 @@ class FightPhysicsSystem {
       playerForceCombinedTensionCeilingKg:
         Math.max(0, Number(playerForceBudget?.combinedTensionCeilingKg) || 0),
       playerForceBudgetReason: playerForceBudget?.reason || "none",
+      playerForceControlRequested:
+        playerForceBudget?.controlRequested === true,
+      playerForceControlEligible:
+        playerForceBudget?.controlEligible === true,
+      playerForceControlBlockedReason:
+        playerForceBudget?.controlBlockedReason || "none",
+      poleFightSectorEnabled:
+        poleFightSectorFrame?.enabled === true,
+      poleFightSectorActive:
+        poleFightSectorFrame?.active === true,
+      poleFightSectorClamped:
+        poleFightSectorFrame?.clamped === true,
+      poleFightSectorSide:
+        poleFightSectorFrame?.side || "none",
+      poleFightSectorAngleDeg:
+        Number(poleFightSectorFrame?.angleDeg) || 0,
+      poleFightSectorClampedAngleDeg:
+        Number(poleFightSectorFrame?.clampedAngleDeg) || 0,
+      poleFightSectorMaxAngleDeg:
+        Number(poleFightSectorFrame?.maxAngleFromCenterDeg) || 0,
+      poleFightSectorFishRadiusPx:
+        Math.max(0, Number(poleFightSectorFrame?.radiusPx) || 0),
+      poleFightSectorRadiusPx:
+        Math.max(0, Number(poleFightSectorFrame?.radiusPx) || 0),
+      poleFightSectorLimitRadiusPx:
+        Math.max(0, Number(poleFightSectorFrame?.limitRadiusPx) || 0),
+      poleFightSectorLimitRadiusMeters:
+        Math.max(0, Number(poleFightSectorFrame?.limitRadiusPx) || 0) /
+        Math.max(1, this.#physicsConfig?.getPixelsPerMeter?.() || 50),
+      poleFightSectorOriginX:
+        Number(poleFightSectorFrame?.originX) || 0,
+      poleFightSectorOriginY:
+        Number(poleFightSectorFrame?.originY) || 0,
+      poleFightSectorShoreOpeningWidthMeters:
+        Math.max(
+          0,
+          Number(poleFightSectorFrame?.shoreOpeningWidthMeters) || 0,
+        ),
+      poleFightSectorApexX:
+        Number(
+          poleFightSectorFrame?.sectorApexX ??
+          poleFightSectorFrame?.originX,
+        ) || 0,
+      poleFightSectorApexY:
+        Number(
+          poleFightSectorFrame?.sectorApexY ??
+          poleFightSectorFrame?.originY,
+        ) || 0,
+      poleFightSectorApexOffsetPx:
+        Math.max(0, Number(poleFightSectorFrame?.apexOffsetPx) || 0),
+      poleFightSectorForwardX:
+        Number(poleFightSectorFrame?.forwardX) || 0,
+      poleFightSectorForwardY:
+        Number(poleFightSectorFrame?.forwardY) || -1,
+      poleFightSectorLeftBoundaryDirectionX:
+        Number(poleFightSectorFrame?.leftBoundaryDirectionX) || 0,
+      poleFightSectorLeftBoundaryDirectionY:
+        Number(poleFightSectorFrame?.leftBoundaryDirectionY) || 0,
+      poleFightSectorRightBoundaryDirectionX:
+        Number(poleFightSectorFrame?.rightBoundaryDirectionX) || 0,
+      poleFightSectorRightBoundaryDirectionY:
+        Number(poleFightSectorFrame?.rightBoundaryDirectionY) || 0,
+      poleFightSectorLeftBoundaryRadiusIntersectionX:
+        Number(
+          poleFightSectorFrame?.leftBoundaryRadiusIntersectionX,
+        ) || 0,
+      poleFightSectorLeftBoundaryRadiusIntersectionY:
+        Number(
+          poleFightSectorFrame?.leftBoundaryRadiusIntersectionY,
+        ) || 0,
+      poleFightSectorRightBoundaryRadiusIntersectionX:
+        Number(
+          poleFightSectorFrame?.rightBoundaryRadiusIntersectionX,
+        ) || 0,
+      poleFightSectorRightBoundaryRadiusIntersectionY:
+        Number(
+          poleFightSectorFrame?.rightBoundaryRadiusIntersectionY,
+        ) || 0,
+      poleFightSectorBoundaryType:
+        poleFightSectorFrame?.boundaryType || "none",
+      poleFightSectorOutside:
+        poleFightSectorFrame?.outside === true,
+      poleFightSectorRecoveryMovement:
+        poleFightSectorFrame?.recoveryMovement === true,
       rodPullActive: rodPullDisplay.active,
       rodPullRatio: rodPullDisplay.ratio,
       rodPullForceKg: rodPullResult.forceKg,
@@ -2097,6 +2443,7 @@ class FightPhysicsSystem {
     pixelsPerMeter,
     bounds,
     checkWater,
+    limitRadiusPx = 0,
   }) {
     const meters = Math.max(0, Number(deltaMeters) || 0);
     if (meters <= 0) return this.#movementResult();
@@ -2139,6 +2486,17 @@ class FightPhysicsSystem {
       next.y = waterEdgePoint.y;
     }
 
+    const sectorFrame = this.#applyPoleFightSectorMovement({
+      fromPosition: position,
+      proposedPosition: next,
+      origin: rodTipPosition,
+      limitRadiusPx,
+    });
+    const directionalBlocked = sectorFrame.clamped === true;
+    if (directionalBlocked && blockedReason === "none") {
+      blockedReason = "pole_fight_sector";
+    }
+
     const appliedPx = Math.hypot(next.x - position.x, next.y - position.y);
     position.x = next.x;
     position.y = next.y;
@@ -2146,6 +2504,7 @@ class FightPhysicsSystem {
       meters: appliedPx / scale,
       blockedReason,
       hardBlocked,
+      directionalBlocked,
     });
   }
 
@@ -2158,6 +2517,7 @@ class FightPhysicsSystem {
     bounds,
     checkWater,
     lineConstraintState,
+    limitRadiusPx = 0,
     projectLockedMovementToArc,
   }) {
     const direction = Math.sign(Number(directionX) || 0);
@@ -2168,6 +2528,7 @@ class FightPhysicsSystem {
 
     const position = floatEntity.getPosition();
     const scale = Math.max(1, Number(pixelsPerMeter) || 50);
+    const requestedMovePx = meters * scale;
     const rawNext = this.#rodControlMovementProjector.resolveNextPoint({
       position,
       rodTipPosition,
@@ -2177,40 +2538,101 @@ class FightPhysicsSystem {
       lineConstraintState,
       projectLockedMovementToArc,
     });
+    const movementStart = {
+      x: Number(rawNext.normalizedStartX) || position.x,
+      y: Number(rawNext.normalizedStartY) || position.y,
+    };
     const next = this.#clampToBounds(rawNext, bounds);
     let hardBlocked =
       Math.abs(next.x - rawNext.x) > 0.001 ||
       Math.abs(next.y - rawNext.y) > 0.001;
     let blockedReason = hardBlocked ? "bounds_blocked" : "none";
+    let postProjectionClamped = hardBlocked;
 
     if (typeof checkWater === "function" && !checkWater(next.x, next.y)) {
       const waterEdgePoint = this.#findLastWaterPoint({
-        from: position,
+        from: movementStart,
         to: next,
         checkWater,
       });
       hardBlocked = true;
+      postProjectionClamped = true;
       blockedReason = "water_blocked";
       if (!waterEdgePoint) {
-        return this.#movementResult({ blockedReason, hardBlocked });
+        position.x = movementStart.x;
+        position.y = movementStart.y;
+        return this.#movementResult({
+          blockedReason,
+          hardBlocked,
+          constraintCorrectionPx: rawNext.constraintCorrectionPx,
+        });
       }
       next.x = waterEdgePoint.x;
       next.y = waterEdgePoint.y;
     }
 
-    const appliedPx = Math.hypot(
-      next.x - position.x,
-      next.y - position.y,
+    const sectorFrame = this.#applyPoleFightSectorMovement({
+      fromPosition: movementStart,
+      proposedPosition: next,
+      origin: rodTipPosition,
+      limitRadiusPx,
+    });
+    const directionalBlocked = sectorFrame.clamped === true;
+    if (directionalBlocked) {
+      postProjectionClamped = true;
+      if (blockedReason === "none") blockedReason = "pole_fight_sector";
+    }
+
+    const endpointMovePx = Math.hypot(
+      next.x - movementStart.x,
+      next.y - movementStart.y,
     );
+    const projectedPathPx = Math.min(
+      requestedMovePx,
+      Math.max(0, Number(rawNext.appliedPathPx) || 0),
+    );
+    const appliedControlPx = postProjectionClamped
+      ? Math.min(projectedPathPx, endpointMovePx)
+      : projectedPathPx;
+    const movementInvariantViolated =
+      appliedControlPx > requestedMovePx + 0.001;
+
     position.x = next.x;
     position.y = next.y;
     return this.#movementResult({
-      meters: appliedPx / scale,
-      px: appliedPx,
-      blockedReason,
-      hardBlocked,
+      meters: movementInvariantViolated ? meters : appliedControlPx / scale,
+      px: movementInvariantViolated ? requestedMovePx : appliedControlPx,
+      signedMeters: direction * (
+        movementInvariantViolated ? meters : appliedControlPx / scale
+      ),
+      requestedPx: requestedMovePx,
+      blockedReason: movementInvariantViolated
+        ? "movement_invariant_violation"
+        : blockedReason,
+      hardBlocked: hardBlocked || movementInvariantViolated,
+      directionalBlocked,
+      constraintCorrectionPx: rawNext.constraintCorrectionPx,
       mode: rawNext.mode,
     });
+  }
+
+  #resolvePoleFightSectorLimitRadiusPx({
+    lineState = null,
+    lineConstraintState = null,
+  } = {}) {
+    const releasedMeters = Math.max(
+      0,
+      Number(
+        lineConstraintState?.lockedLengthMeters ??
+        lineConstraintState?.releasedMeters ??
+        lineState?.releasedMeters,
+      ) || 0,
+    );
+    const pixelsPerMeter = Math.max(
+      1,
+      Number(this.#physicsConfig?.getPixelsPerMeter?.()) || 50,
+    );
+    return releasedMeters * pixelsPerMeter;
   }
 
   #buildLinePayoutContext({
@@ -2252,15 +2674,26 @@ class FightPhysicsSystem {
   #movementResult({
     meters = 0,
     px = 0,
+    signedMeters = 0,
+    requestedPx = 0,
+    constraintCorrectionPx = 0,
     blockedReason = "none",
     hardBlocked = false,
+    directionalBlocked = false,
     mode = "none",
   } = {}) {
     return {
       meters: Math.max(0, Number(meters) || 0),
       px: Math.max(0, Number(px) || 0),
+      signedMeters: Number(signedMeters) || 0,
+      requestedPx: Math.max(0, Number(requestedPx) || 0),
+      constraintCorrectionPx: Math.max(
+        0,
+        Number(constraintCorrectionPx) || 0,
+      ),
       blockedReason,
       hardBlocked: !!hardBlocked,
+      directionalBlocked: !!directionalBlocked,
       mode,
     };
   }

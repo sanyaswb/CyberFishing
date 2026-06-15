@@ -97,5 +97,25 @@ approx(frame.controlInputRatio, 0, 0.0001, "inactive below-threshold control has
 approx(frame.holdShare, 1, 0.0001, "below-threshold control does not consume hold share");
 approx(frame.controlBudgetKg, 0, 0.0001, "below-threshold control receives no budget");
 
+frame = allocator.resolve({
+  rodLimitKg: 1,
+  fishTensionKg: 0.4,
+  holdAction: hold,
+  controlAction: fullControl,
+  controlEligibility: {
+    canRequestForce: false,
+    blockedReason: "aligned",
+  },
+  config,
+});
+assert(frame.controlRequested, "aligned input remains visible as requested control");
+assert(!frame.controlEligible, "aligned control is ineligible for force budget");
+assert(!frame.controlActive, "aligned control is inactive for budget allocation");
+assert(frame.controlBlockedReason === "aligned", "aligned budget block reason is preserved");
+approx(frame.holdShare, 1, 0.0001, "aligned control returns the full share to Rod Hold");
+approx(frame.controlShare, 0, 0.0001, "aligned control receives no force share");
+approx(frame.holdBudgetKg, 0.65, 0.0001, "Rod Hold receives the full hold-only budget after alignment");
+approx(frame.controlBudgetKg, 0, 0.0001, "aligned control receives zero budget");
+
 console.log("player-force-budget-check passed:\\n- " + checks.join("\\n- "));
 `, context);

@@ -46,6 +46,12 @@ const FIGHT_PHYSICS_CONFIG = {
     inertiaSeconds: 0.16,
   },
 
+  poleFightSector: {
+    enabled: true,
+    maxAngleFromCenterDeg: 50,
+    shoreOpeningWidthMeters: 3.0,
+  },
+
   rodControl: {
     enabled: true,
     tensionCeilingMultiplier: 1.15,

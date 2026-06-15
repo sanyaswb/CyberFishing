@@ -48,13 +48,13 @@ assert(actions.hold.active, "Pointer down starts Fight Rod Hold immediately");
 assert(!actions.lateralControl.active, "Centered pointer hold does not start Rod Control");
 
 const rightSwipe = composer.compose({ pointerDown: true, pointerDelta: { x: 80, y: 4 } }, config);
-assert(rightSwipe.hold.active, "Right pointer swipe keeps Fight Rod Hold active");
+assert(!rightSwipe.hold.active, "Right pointer Rod Control excludes pointer Rod Hold");
 assert(rightSwipe.lateralControl.active, "Right pointer swipe starts Rod Control");
 assert(rightSwipe.lateralControl.directionX === 1, "Right pointer swipe resolves right control direction");
 approx(rightSwipe.lateralControl.inputRatio, 0.8, 0.001, "Right pointer swipe scales control ratio");
 
 const leftSwipe = composer.compose({ pointerDown: true, pointerDelta: { x: -50, y: 3 } }, config);
-assert(leftSwipe.hold.active, "Left pointer swipe keeps Fight Rod Hold active");
+assert(!leftSwipe.hold.active, "Left pointer Rod Control excludes pointer Rod Hold");
 assert(leftSwipe.lateralControl.active, "Left pointer swipe starts Rod Control");
 assert(leftSwipe.lateralControl.directionX === -1, "Left pointer swipe resolves left control direction");
 
@@ -85,6 +85,16 @@ assert(spaceD.hold.active, "Space + D keeps Fight Rod Hold active");
 assert(spaceD.lateralControl.active, "Space + D starts right Rod Control");
 assert(spaceD.lateralControl.directionX === 1, "Space + D resolves right control direction");
 
+const pointerControlWithSpace = composer.compose({
+  pointerDown: true,
+  pointerDelta: { x: 80, y: 4 },
+  keys: { Space: true },
+}, config);
+assert(
+  pointerControlWithSpace.hold.active,
+  "Explicit Space keeps Rod Hold active during pointer Rod Control",
+);
+
 const spaceA = composer.compose({ keys: { Space: true, KeyA: true } }, config);
 assert(spaceA.hold.active, "Space + A keeps Fight Rod Hold active");
 assert(spaceA.lateralControl.active, "Space + A starts left Rod Control");
@@ -97,7 +107,7 @@ const legacy = composer.compose({
   rodControlDirectionX: 1,
   rodControlInputRatio: 0.6,
 }, config);
-assert(legacy.hold.active, "Pointer down overrides legacy no-pull state for fight hold");
+assert(legacy.hold.active, "Unclassified pointer down still starts Fight Rod Hold");
 assert(legacy.lateralControl.active, "Legacy Rod Control state is preserved for fight control");
 approx(legacy.lateralControl.inputRatio, 0.6, 0.001, "Legacy Rod Control ratio is preserved");
 `, context, { filename: "utils/fight-input-composition-check.js#scenario" });

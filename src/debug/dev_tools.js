@@ -96,6 +96,7 @@ class DevTools {
   #activeFishShapeKey = "";
   #configRuntime = null;
   #activeFishVisibilityPolicy;
+  #locationSchema;
   #isDisposed = false;
   #onDebugLiveUpdate = (event) => {
     if (this.#isDisposed) return;
@@ -132,6 +133,10 @@ class DevTools {
     this.#activeFishVisibilityPolicy =
       typeof ActiveFishDevToolsVisibilityPolicy !== "undefined"
         ? new ActiveFishDevToolsVisibilityPolicy()
+        : null;
+    this.#locationSchema =
+      typeof LocationDevToolsSchema !== "undefined"
+        ? new LocationDevToolsSchema()
         : null;
     const tooltipProvider = new DevToolsParameterTooltipProvider();
     this.#ui = new DevToolsUI(
@@ -205,7 +210,8 @@ class DevTools {
       }
     }
 
-    this.#renderConfigDebugSection(body);
+    const debugContent = this.#renderConfigDebugSection(body);
+    this.#renderLocationDebugSection(debugContent);
 
     // 3. ITEM_DB (БАЗА ПРЕДМЕТІВ)
     if (typeof ITEM_DB !== "undefined") {
@@ -285,7 +291,7 @@ class DevTools {
   }
 
   #renderConfigDebugSection(body) {
-    if (typeof CONFIG === "undefined" || !CONFIG?.debug) return;
+    if (typeof CONFIG === "undefined" || !CONFIG?.debug) return null;
 
     const debugContent = this.#createSectionWithCache(
       "🐞 DEBUG (CONFIG.debug)",
@@ -293,6 +299,44 @@ class DevTools {
       ["CONFIG", "debug"],
     );
     this.#buildTree(CONFIG.debug, debugContent, ["CONFIG", "debug"]);
+    return debugContent;
+  }
+
+  #renderLocationDebugSection(debugContent) {
+    if (
+      !debugContent ||
+      typeof CONFIG === "undefined" ||
+      !CONFIG?.locations ||
+      !this.#locationSchema
+    ) {
+      return;
+    }
+
+    const rootPath = ["CONFIG", "locations"];
+    const rootContent = this.#createSectionWithCache(
+      this.#locationSchema.rootTitle,
+      debugContent,
+      rootPath,
+    );
+
+    for (const group of this.#locationSchema.getGroups()) {
+      const groupContent = this.#createSectionWithCache(
+        group.title,
+        rootContent,
+      );
+      for (const key of group.keys) {
+        const value = CONFIG.locations[key];
+        if (typeof value !== "boolean") continue;
+        const path = [...rootPath, key];
+        this.#ui.createSwitcherRow(
+          this.#formatDevToolsKey(key, path),
+          value,
+          groupContent,
+          (newValue) => this.#updateConfigValue(path, newValue),
+          path,
+        );
+      }
+    }
   }
 
   #renderActiveFishSection(body) {

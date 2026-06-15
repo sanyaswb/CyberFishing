@@ -791,6 +791,18 @@
     "label": "Project locked rod control to arc",
     "description": "When enabled, lateral rod control moves fish along the fixed line radius while the line length is locked."
   },
+  "physics.fight.poleFightSector.enabled": {
+    "label": "Pole fight sector enabled",
+    "description": "Constrains hooked fish movement to the configured angular sector above the base rod position on the lower castable boundary."
+  },
+  "physics.fight.poleFightSector.maxAngleFromCenterDeg": {
+    "label": "Pole fight sector half-angle",
+    "description": "Maximum left or right angle in degrees from the vertical-up center axis of the fight sector."
+  },
+  "physics.fight.poleFightSector.shoreOpeningWidthMeters": {
+    "label": "Pole fight sector shore opening",
+    "description": "Full allowed width in meters where the fight sector crosses the shoreline. Zero keeps the original pointed sector."
+  },
   "physics.fight.playerForceBudget.enabled": {
     "label": "Player force budget enabled",
     "description": "Enables the shared per-frame player force budget that splits player effort between Rod Hold and Rod Control."
@@ -814,5 +826,13 @@
   "physics.fight.playerForceBudget.tensionCeiling.maxCombinedMultiplier": {
     "label": "Player force max combined ceiling",
     "description": "Safety cap for the combined Rod Hold and Rod Control tension ceiling multiplier."
+  },
+  "locations.showPoleFightSector": {
+    "label": "Show pole fight sector",
+    "description": "Shows the red allowed fish movement sector bounded by the configured angle and the released line radius."
+  },
+  "locations.showFightLineRadius": {
+    "label": "Show fight line radius",
+    "description": "Shows the yellow unrestricted radial movement boundary defined by the currently released line length."
   }
 }

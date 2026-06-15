@@ -421,6 +421,162 @@
     }
   }
 
+  drawPoleFightSector(projector, locationsConfig, sectorFrame) {
+    if (!locationsConfig?.debugVisuals) return;
+
+    const showSector = locationsConfig.showPoleFightSector === true;
+    const showLineRadius = locationsConfig.showFightLineRadius === true;
+    if (!showSector && !showLineRadius) return;
+
+    const originX = Number(sectorFrame?.poleFightSectorOriginX);
+    const originY = Number(sectorFrame?.poleFightSectorOriginY);
+    const apexX = Number(
+      sectorFrame?.poleFightSectorApexX ??
+      sectorFrame?.poleFightSectorOriginX,
+    );
+    const apexY = Number(
+      sectorFrame?.poleFightSectorApexY ??
+      sectorFrame?.poleFightSectorOriginY,
+    );
+    const leftIntersectionX = Number(
+      sectorFrame?.poleFightSectorLeftBoundaryRadiusIntersectionX,
+    );
+    const leftIntersectionY = Number(
+      sectorFrame?.poleFightSectorLeftBoundaryRadiusIntersectionY,
+    );
+    const rightIntersectionX = Number(
+      sectorFrame?.poleFightSectorRightBoundaryRadiusIntersectionX,
+    );
+    const rightIntersectionY = Number(
+      sectorFrame?.poleFightSectorRightBoundaryRadiusIntersectionY,
+    );
+    const radiusVirtualPx = Math.max(
+      0,
+      Number(sectorFrame?.poleFightSectorLimitRadiusPx) || 0,
+    );
+    const maxAngleDeg = Math.max(
+      0,
+      Math.min(
+        89.9,
+        Number(sectorFrame?.poleFightSectorMaxAngleDeg) || 0,
+      ),
+    );
+    const hasGeometry =
+      Number.isFinite(originX) &&
+      Number.isFinite(originY) &&
+      Number.isFinite(apexX) &&
+      Number.isFinite(apexY) &&
+      radiusVirtualPx > 0.000001;
+    if (!hasGeometry) return;
+
+    const centerScreen = projector.virtualToScreen(
+      originX,
+      originY,
+      this.#screenA,
+    );
+    const centerX = centerScreen.x;
+    const centerY = centerScreen.y;
+    const apexScreen = projector.virtualToScreen(
+      apexX,
+      apexY,
+      this.#screenB,
+    );
+    const apexScreenX = apexScreen.x;
+    const apexScreenY = apexScreen.y;
+    const clamped = sectorFrame?.poleFightSectorClamped === true;
+    const arcSegments = 64;
+
+    this.#withCastableClip(projector, locationsConfig, () => {
+      this.#ctx.save();
+
+      if (showSector && maxAngleDeg > 0) {
+        const hasBoundaryIntersections =
+          Number.isFinite(leftIntersectionX) &&
+          Number.isFinite(leftIntersectionY) &&
+          Number.isFinite(rightIntersectionX) &&
+          Number.isFinite(rightIntersectionY);
+        const leftAngleDeg = hasBoundaryIntersections
+          ? Math.atan2(
+              leftIntersectionX - originX,
+              -(leftIntersectionY - originY),
+            ) * 180 / Math.PI
+          : -maxAngleDeg;
+        const rightAngleDeg = hasBoundaryIntersections
+          ? Math.atan2(
+              rightIntersectionX - originX,
+              -(rightIntersectionY - originY),
+            ) * 180 / Math.PI
+          : maxAngleDeg;
+        this.#ctx.beginPath();
+        this.#ctx.moveTo(apexScreenX, apexScreenY);
+        for (let index = 0; index <= arcSegments; index += 1) {
+          const ratio = index / arcSegments;
+          const angleDeg =
+            leftAngleDeg + (rightAngleDeg - leftAngleDeg) * ratio;
+          const angleRad = angleDeg * Math.PI / 180;
+          const virtualX = originX + Math.sin(angleRad) * radiusVirtualPx;
+          const virtualY = originY - Math.cos(angleRad) * radiusVirtualPx;
+          const point = projector.virtualToScreen(
+            virtualX,
+            virtualY,
+            this.#screenA,
+          );
+          this.#ctx.lineTo(point.x, point.y);
+        }
+        this.#ctx.closePath();
+        this.#ctx.fillStyle = clamped
+          ? "rgba(210, 35, 25, 0.32)"
+          : "rgba(175, 0, 35, 0.28)";
+        this.#ctx.fill();
+
+        this.#ctx.strokeStyle = clamped
+          ? "rgba(255, 145, 35, 1)"
+          : "rgba(255, 70, 70, 0.98)";
+        this.#ctx.lineWidth = 3;
+        this.#ctx.setLineDash([]);
+        this.#ctx.stroke();
+
+        this.#ctx.beginPath();
+        this.#ctx.moveTo(apexScreenX, apexScreenY);
+        const centerEnd = projector.virtualToScreen(
+          originX,
+          originY - radiusVirtualPx,
+          this.#screenA,
+        );
+        this.#ctx.lineTo(centerEnd.x, centerEnd.y);
+        this.#ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
+        this.#ctx.lineWidth = 2;
+        this.#ctx.setLineDash([6, 8]);
+        this.#ctx.stroke();
+        this.#ctx.setLineDash([]);
+      }
+
+      if (showLineRadius) {
+        this.#ctx.beginPath();
+        for (let index = 0; index <= arcSegments; index += 1) {
+          const ratio = index / arcSegments;
+          const angleDeg = -90 + 180 * ratio;
+          const angleRad = angleDeg * Math.PI / 180;
+          const virtualX = originX + Math.sin(angleRad) * radiusVirtualPx;
+          const virtualY = originY - Math.cos(angleRad) * radiusVirtualPx;
+          const point = projector.virtualToScreen(
+            virtualX,
+            virtualY,
+            this.#screenA,
+          );
+          if (index === 0) this.#ctx.moveTo(point.x, point.y);
+          else this.#ctx.lineTo(point.x, point.y);
+        }
+        this.#ctx.strokeStyle = "rgba(255, 230, 0, 0.98)";
+        this.#ctx.lineWidth = 4;
+        this.#ctx.setLineDash([]);
+        this.#ctx.stroke();
+      }
+
+      this.#ctx.restore();
+    });
+  }
+
   #drawDistanceZoneEllipse(
     projector,
     {

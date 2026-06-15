@@ -1,6 +1,11 @@
 class RodLateralControlSystem {
   #result = this.#createResult();
-  #tensionModeResolver = new RodControlTensionModeResolver();
+  #tensionModeResolver;
+
+  constructor({ tensionModeResolver = null } = {}) {
+    this.#tensionModeResolver =
+      tensionModeResolver || new RodControlTensionModeResolver();
+  }
 
   update({
     dtSec,
@@ -22,6 +27,7 @@ class RodLateralControlSystem {
     lineHasReserve = false,
     hardLineLimit = false,
     lineConstraintState = null,
+    intentFrame = null,
     config,
   } = {}) {
     const cfg = config || {};
@@ -30,22 +36,19 @@ class RodLateralControlSystem {
       return this.#result;
     }
 
-    const active = !!inputState?.rodControlActive;
-    const inputDirectionX = active
-      ? Math.sign(this.#number(inputState?.rodControlDirectionX))
-      : 0;
-    const inputRatio = active
-      ? this.#clamp01(inputState?.rodControlInputRatio)
-      : 0;
-    const hasFish = this.#hasPoint(fishPosition);
-    const targetFrame = this.#resolveTargetFrame({
-      inputDirectionX,
+    const intent = intentFrame || this.resolveIntent({
+      inputState,
       fishPosition,
       rodTipPosition,
       baseRodTipPosition,
       actualRodTipPosition,
       config: cfg,
     });
+    const active = intent.active;
+    const inputDirectionX = intent.inputDirectionX;
+    const inputRatio = intent.inputRatio;
+    const hasFish = intent.hasFish;
+    const targetFrame = intent.targetFrame;
     const requestedForceRatio = this.#clamp01(
       inputRatio * targetFrame.angleRatio * targetFrame.directionFactor,
     );
@@ -145,19 +148,59 @@ class RodLateralControlSystem {
       directionFactor: targetFrame.directionFactor,
       aligned: targetFrame.aligned,
       maxBeforeAlignmentMeters: targetFrame.maxBeforeAlignmentMeters,
-      blockedReason: this.#blockedReason({
-        active,
-        hasFish,
-        inputDirectionX,
-        inputRatio,
-        targetFrame,
-        loadReserveKg: forceFrame.loadReserveKg,
-        effectiveForceLimitKg: forceFrame.effectiveForceLimitKg,
-        dragLimited: forceFrame.dragLimited,
-        forceKg,
-      }),
+      blockedReason: intent.canRequestForce
+        ? this.#forceBlockedReason({
+            loadReserveKg: forceFrame.loadReserveKg,
+            effectiveForceLimitKg: forceFrame.effectiveForceLimitKg,
+            dragLimited: forceFrame.dragLimited,
+            forceKg,
+          })
+        : intent.blockedReason,
     });
     return this.#result;
+  }
+
+  resolveIntent({
+    inputState,
+    fishPosition,
+    rodTipPosition,
+    baseRodTipPosition,
+    actualRodTipPosition,
+    config,
+  } = {}) {
+    const cfg = config || {};
+    const active = cfg.enabled !== false && !!inputState?.rodControlActive;
+    const inputDirectionX = active
+      ? Math.sign(this.#number(inputState?.rodControlDirectionX))
+      : 0;
+    const inputRatio = active
+      ? this.#clamp01(inputState?.rodControlInputRatio)
+      : 0;
+    const hasFish = this.#hasPoint(fishPosition);
+    const targetFrame = Object.freeze(this.#resolveTargetFrame({
+      inputDirectionX,
+      fishPosition,
+      rodTipPosition,
+      baseRodTipPosition,
+      actualRodTipPosition,
+      config: cfg,
+    }));
+    const blockedReason = this.#intentBlockedReason({
+      active,
+      hasFish,
+      inputDirectionX,
+      inputRatio,
+      targetFrame,
+    });
+    return Object.freeze({
+      active,
+      inputDirectionX,
+      inputRatio,
+      hasFish,
+      targetFrame,
+      canRequestForce: blockedReason === "none",
+      blockedReason,
+    });
   }
 
   recordAppliedMovement({ movedMeters = 0, movedPx = 0 } = {}) {
@@ -489,16 +532,12 @@ class RodLateralControlSystem {
     });
   }
 
-  #blockedReason({
+  #intentBlockedReason({
     active,
     hasFish,
     inputDirectionX,
     inputRatio,
     targetFrame,
-    loadReserveKg,
-    effectiveForceLimitKg,
-    dragLimited,
-    forceKg,
   }) {
     if (!active) return "no_input";
     if (!hasFish) return "no_fish";
@@ -506,6 +545,15 @@ class RodLateralControlSystem {
     if (targetFrame.aligned) return "aligned";
     if (targetFrame.directionFactor <= 0) return "wrong_direction";
     if (targetFrame.angleRatio <= 0) return "angle_too_small";
+    return "none";
+  }
+
+  #forceBlockedReason({
+    loadReserveKg,
+    effectiveForceLimitKg,
+    dragLimited,
+    forceKg,
+  }) {
     if (loadReserveKg <= 0) return "no_load_reserve";
     if (dragLimited && effectiveForceLimitKg <= 0) return "drag_limit_reached";
     if (forceKg <= 0) return "no_force";

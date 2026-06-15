@@ -113,6 +113,7 @@
 │  │  ├── core.js
 │  │  ├── fishing
 │  │  │  ├── drag_force_calculator.js
+│  │  │  ├── fish_boundary_steering_policy.js
 │  │  │  ├── fish_direction_intent_sampler.js
 │  │  │  ├── fish_fight_direction_resolver.js
 │  │  │  ├── fish_retrieve_result.js
@@ -123,6 +124,7 @@
 │  │  │  ├── line_radial_movement_splitter.js
 │  │  │  ├── line_tension_calculator.js
 │  │  │  ├── player_force_budget_allocator.js
+│  │  │  ├── pole_fight_sector_constraint.js
 │  │  │  ├── reel_auto_recovery_calculator.js
 │  │  │  ├── reel_hold_load_policy.js
 │  │  │  ├── reel_hold_recovery_system.js
@@ -219,6 +221,7 @@
 │  │    ├── debug_data_selectors.js
 │  │    ├── debug_formatters.js
 │  │    ├── location_debug_data_provider.js
+│  │    ├── location_dev_tools_schema.js
 │  │    └── memory_leak_watchdog.js
 │  ├── entities
 │  │  ├── fish.js
@@ -266,11 +269,13 @@
   ├── config-overrides-check.js
   ├── convert-images.js
   ├── dev-server.js
+  ├── dev-tools-location-schema-check.js
   ├── diagnostics
   │  ├── catch-resolution-debug.js
   │  ├── fish-radial-speed-delta.js
   │  └── simulate-simple-fish-force.js
   ├── fight-input-composition-check.js
+  ├── fight-movement-constraints-check.js
   ├── fight-systems-check.js
   ├── fish-2d-behavior-check.js
   ├── fish-db-structure-check.js
@@ -286,6 +291,7 @@
   ├── overlay-runtime-fish-check.js
   ├── physics-formula-golden-check.js
   ├── player-force-budget-check.js
+  ├── pole-fight-sector-check.js
   ├── project-version-check.js
   ├── rod-control-ux-check.js
   ├── rod-pull-systems-check.js

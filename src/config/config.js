@@ -301,6 +301,8 @@ const CONFIG = {
     showLastDashZone: false, // Відображення фіолетової lastDash trigger zone
     showNetZone: true, // Відображення зеленої зони
     showAimingZone: true, // Відображення зони закидання
+    showPoleFightSector: true, // Відображення допустимого сектора руху риби
+    showFightLineRadius: true, // Відображення повної радіальної межі випущеної ліски
 
     debugOpacity: 1.0,
     baseResolution: { width: 2560, height: 1440 },

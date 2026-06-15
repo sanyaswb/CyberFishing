@@ -116,7 +116,7 @@ pointerCanvas.dispatch("pointerdown", { clientX: 500, clientY: 500 });
 pointerInput.getState();
 pointerCanvas.dispatch("pointermove", { clientX: 650, clientY: 502 });
 const pointerState = pointerInput.getState();
-assert(pointerState.fightActions?.hold?.active, "Horizontal pointer Rod Control keeps Fight Rod Hold active");
+assert(!pointerState.fightActions?.hold?.active, "Horizontal pointer Rod Control excludes pointer Rod Hold");
 assert(pointerState.rodControlActive, "Horizontal pointer movement activates Rod Control");
 assert(!pointerState.dragControlActive, "Rod Control blocks drag gesture mode");
 assert(pointerState.pointerAction === "rod_control_x", "Pointer action locks to Rod Control X");
@@ -237,9 +237,46 @@ const centeredFish = controlFrame({ fishX: 0, direction: 1 });
 assert(!centeredFish.canApply, "Aligned fish blocks Rod Control");
 assert(centeredFish.blockedReason === "aligned", "Aligned fish has exact block reason");
 
+const intentResolver = new RodLateralControlSystem();
+const alignedIntent = intentResolver.resolveIntent({
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: 0, y: 100 },
+  rodTipPosition: { x: 0, y: 0 },
+  actualRodTipPosition: { x: 0, y: 0 },
+  config,
+});
+assert(
+  !alignedIntent.canRequestForce,
+  "Aligned Rod Control intent is ineligible before force-budget allocation",
+);
+assert(
+  alignedIntent.blockedReason === "aligned",
+  "Aligned intent exposes its budget block reason",
+);
+
 const wrongDirection = controlFrame({ direction: 1 });
 assert(!wrongDirection.canApply, "Wrong-side Rod Control is blocked");
 assert(wrongDirection.blockedReason === "wrong_direction", "Wrong direction has exact block reason");
+
+const wrongDirectionIntent = intentResolver.resolveIntent({
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: 100, y: 100 },
+  rodTipPosition: { x: 0, y: 0 },
+  actualRodTipPosition: { x: 0, y: 0 },
+  config,
+});
+assert(
+  !wrongDirectionIntent.canRequestForce,
+  "Wrong-direction control is ineligible before force-budget allocation",
+);
 
 const halfInput = controlFrame({ inputRatio: 0.5 });
 approx(halfInput.requestedForceRatio, 0.5, 0.001, "Input and angle combine into requested force");

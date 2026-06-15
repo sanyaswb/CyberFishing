@@ -55,6 +55,7 @@ class ConfigSchemaValidator {
     this.#validateProjectVersion();
     this.#validateImmutableBaseConfig();
     this.#validatePhysicsConfig();
+    this.#validateLocationDebugConfig();
     this.#validateFishCategories();
     this.#validateFishDb();
     this.#validateItemDb();
@@ -148,6 +149,23 @@ class ConfigSchemaValidator {
     }
 
     this.#validateMinMaxPairs(physics, "physics");
+  }
+
+  #validateLocationDebugConfig() {
+    const locations = this.config.locations || {};
+    const keys = [
+      "showPoleFightSector",
+      "showFightLineRadius",
+    ];
+    for (const key of keys) {
+      const path = `locations.${key}`;
+      if (typeof locations[key] !== "boolean") {
+        this.#error(path, "expected boolean location debug toggle");
+      }
+      if (!this.#hasParameterLabel(path, "locations")) {
+        this.#error(path, "missing parameter label in parameter_labels.json");
+      }
+    }
   }
 
   #validateFishDb() {

@@ -80,6 +80,28 @@ class PlayerPullMotionSmoother {
     };
   }
 
+  reconcileAxis({
+    axis,
+    appliedMove = 0,
+    deltaTime = 0,
+    blocked = false,
+  } = {}) {
+    if (!blocked) return;
+    const dt = Math.max(0, Number(deltaTime) || 0);
+    const move = Number(appliedMove) || 0;
+    const velocity = dt > 0 ? move / dt : 0;
+    const key = axis === "x" ? "x" : "y";
+    if (key === "x") {
+      this.#velocityX = velocity;
+      this.#debug.actualMoveX = move;
+      this.#debug.velocityX = velocity;
+      return;
+    }
+    this.#velocityY = velocity;
+    this.#debug.actualMoveY = move;
+    this.#debug.velocityY = velocity;
+  }
+
   getDebugData() {
     return this.#debug;
   }

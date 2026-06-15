@@ -123,5 +123,20 @@
     "key": "showLastDashZone",
     "ua": "показувати_зону_lastDash",
     "description": "Вмикає фіолетову пунктирну зону, де риба може спробувати особливий lastDash перед відловом."
+  },
+  {
+    "key": "showPoleFightSector",
+    "ua": "show_pole_fight_sector",
+    "description": "Shows the allowed fish movement sector from the base rod position on the lower castable boundary."
+  },
+  {
+    "key": "showFightLineRadius",
+    "ua": "показувати_радіус_ліски_під_час_виважування",
+    "description": "Показує жовту повну радіальну межу руху риби, визначену фактично випущеною довжиною ліски."
+  },
+  {
+    "key": "shoreOpeningWidthMeters",
+    "ua": "ширина_сектора_на_лінії_берега_в_метрах",
+    "description": "Повна ширина дозволеної червоної зони на лінії берега. Нуль залишає гостру вершину сектора."
   }
 ]
