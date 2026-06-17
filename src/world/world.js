@@ -110,19 +110,33 @@ class LocationMap {
   #cols;
   #rows;
   #dynamicZones;
-  #bgImages = {};
+  #imageAssets;
+  #bgAssetIds = {};
   #bgOpacities = { evening: 0, night: 0 };
   #isDynamicBg = false;
-  #depthImage;
+  #depthAssetId = "";
   #debugCanvas;
   #bgLoaded = false;
   #lastDebugState = "";
   #lastProjector = null;
   #castableBounds = { left: 0, right: 0, top: 0, bottom: 0 };
+  #backgroundRenderData = {
+    loaded: false,
+    dynamic: false,
+    assetIds: {},
+    eveningOpacity: 0,
+    nightOpacity: 0,
+    width: 0,
+    height: 0,
+  };
   #rng;
 
-  constructor(locationId, locationsConfig, rng = null) {
+  constructor(locationId, locationsConfig, rng = null, imageAssets = null) {
+    if (!imageAssets || typeof imageAssets.preload !== "function") {
+      throw new TypeError("LocationMap requires ImageAssetProvider");
+    }
     this.#locationsConfig = locationsConfig;
+    this.#imageAssets = imageAssets;
     this.#rng = rng || { next: () => Math.random() };
     this.#config = JSON.parse(JSON.stringify(locationsConfig.map[locationId]));
     this.#id = locationId;
@@ -164,45 +178,12 @@ class LocationMap {
         this.#config.zones.dynamic.forEach(scaleZone);
     }
 
-    if (this.#config.bgUrls) {
-      this.#isDynamicBg = true;
-      let loadedCount = 0;
-      ["day", "evening", "night"].forEach((key) => {
-        this.#bgImages[key] = new Image();
-        this.#bgImages[key].onload = () => {
-          loadedCount++;
-          if (loadedCount === 3) this.#bgLoaded = true;
-        };
-        this.#bgImages[key].src = this.#config.bgUrls[key];
-      });
-    } else if (this.#config.bgUrl) {
-      this.#bgImages.default = new Image();
-      this.#bgImages.default.onload = () => {
-        this.#bgLoaded = true;
-      };
-      this.#bgImages.default.src = this.#config.bgUrl;
-    }
-
     this.#buildGrid(actualCellSize);
-
-    if (this.#config.depthUrl) {
-      this.#depthImage = new Image();
-      this.#depthImage.onload = () => {
-        this.#processDepthMap(actualCellSize, baseRes.width, baseRes.height);
-        this.#generateStaticDebugMap(
-          actualCellSize,
-          baseRes.width,
-          baseRes.height,
-        );
-      };
-      this.#depthImage.src = this.#config.depthUrl;
-    } else {
-      this.#generateStaticDebugMap(
-        actualCellSize,
-        baseRes.width,
-        baseRes.height,
-      );
-    }
+    this.#preloadLocationAssets(
+      actualCellSize,
+      baseRes.width,
+      baseRes.height,
+    );
 
     if (
       this.#locationsConfig.enableDynamicZones !== false &&
@@ -226,18 +207,20 @@ class LocationMap {
       this.#debugCanvas.height = imgHeight;
     }
 
-    const ctx = this.#debugCanvas.getContext("2d", { alpha: true });
-    ctx.clearRect(0, 0, imgWidth, imgHeight);
+    const surface = new Canvas2DSurface(this.#debugCanvas, {
+      contextAttributes: { alpha: true },
+    });
+    surface.clearRect(0, 0, imgWidth, imgHeight);
 
     const locCfg = this.#locationsConfig;
 
     const drawZones = (zones, color) => {
       if (!zones) return;
-      ctx.fillStyle = color;
+      surface.fillStyle = color;
       for (const z of zones) {
         const w = z.adaptiveX ? imgWidth : z.w * cellSize;
         const startX = z.adaptiveX ? 0 : z.x * cellSize;
-        ctx.fillRect(startX, z.y * cellSize, w, z.h * cellSize);
+        surface.fillRect(startX, z.y * cellSize, w, z.h * cellSize);
       }
     };
 
@@ -250,9 +233,9 @@ class LocationMap {
         drawZones(this.#config.zones.collisions, "rgba(255, 0, 0, 0.4)");
     }
 
-    ctx.font = "10px monospace";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+    surface.font = "10px monospace";
+    surface.textAlign = "center";
+    surface.textBaseline = "middle";
 
     for (let i = 0; i < this.#cols; i++) {
       for (let j = 0; j < this.#rows; j++) {
@@ -261,13 +244,13 @@ class LocationMap {
         const y = cell.y * cellSize;
 
         if (locCfg.debugGrid) {
-          ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
-          ctx.strokeRect(x, y, cellSize, cellSize);
+          surface.strokeStyle = "rgba(255, 255, 255, 0.05)";
+          surface.strokeRect(x, y, cellSize, cellSize);
         }
 
         if (locCfg.debugDepthText && cell.isWater) {
-          ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
-          ctx.fillText(
+          surface.fillStyle = "rgba(255, 255, 255, 0.7)";
+          surface.fillText(
             cell.depth.toFixed(1),
             x + cellSize / 2,
             y + cellSize / 2,
@@ -325,16 +308,11 @@ class LocationMap {
     this.#cols = Math.ceil(baseRes.width / actualCellSize);
     this.#rows = Math.ceil(baseRes.height / actualCellSize);
     this.#buildGrid(actualCellSize);
-
-    if (
-      this.#config.depthUrl &&
-      this.#depthImage?.complete &&
-      this.#depthImage.naturalWidth > 0
-    ) {
-      this.#processDepthMap(actualCellSize, baseRes.width, baseRes.height);
-    }
-
-    this.#generateStaticDebugMap(actualCellSize, baseRes.width, baseRes.height);
+    this.#preloadLocationAssets(
+      actualCellSize,
+      baseRes.width,
+      baseRes.height,
+    );
     this.recalculateZones(null, actualCellSize);
   }
 
@@ -358,49 +336,17 @@ class LocationMap {
     return this.#castableBounds;
   }
 
-  drawBackground(ctx, projector) {
-    if (!this.#bgLoaded) return;
-
-    const pos = projector.virtualToScreen(0, 0);
-    const scale = projector.getScale();
-
-    const baseRes = this.#locationsConfig.baseResolution;
-    const w = baseRes.width * scale;
-    const h = baseRes.height * scale;
-
-    if (!this.#isDynamicBg) {
-      if (this.#bgImages.default?.complete)
-        ctx.drawImage(this.#bgImages.default, pos.x, pos.y, w, h);
-      return;
-    }
-
-    const opE = this.#bgOpacities.evening;
-    const opN = this.#bgOpacities.night;
-
-    if (opN === 1) {
-      if (this.#bgImages.night?.complete)
-        ctx.drawImage(this.#bgImages.night, pos.x, pos.y, w, h);
-    } else if (opN > 0) {
-      if (this.#bgImages.evening?.complete)
-        ctx.drawImage(this.#bgImages.evening, pos.x, pos.y, w, h);
-      ctx.globalAlpha = opN;
-      if (this.#bgImages.night?.complete)
-        ctx.drawImage(this.#bgImages.night, pos.x, pos.y, w, h);
-      ctx.globalAlpha = 1.0;
-    } else if (opE === 1) {
-      if (this.#bgImages.evening?.complete)
-        ctx.drawImage(this.#bgImages.evening, pos.x, pos.y, w, h);
-    } else if (opE > 0) {
-      if (this.#bgImages.day?.complete)
-        ctx.drawImage(this.#bgImages.day, pos.x, pos.y, w, h);
-      ctx.globalAlpha = opE;
-      if (this.#bgImages.evening?.complete)
-        ctx.drawImage(this.#bgImages.evening, pos.x, pos.y, w, h);
-      ctx.globalAlpha = 1.0;
-    } else {
-      if (this.#bgImages.day?.complete)
-        ctx.drawImage(this.#bgImages.day, pos.x, pos.y, w, h);
-    }
+  getBackgroundRenderData() {
+    const data = this.#backgroundRenderData;
+    const baseResolution = this.#locationsConfig.baseResolution;
+    data.loaded = this.#bgLoaded;
+    data.dynamic = this.#isDynamicBg;
+    data.assetIds = this.#bgAssetIds;
+    data.eveningOpacity = this.#bgOpacities.evening;
+    data.nightOpacity = this.#bgOpacities.night;
+    data.width = baseResolution.width;
+    data.height = baseResolution.height;
+    return data;
   }
 
   #buildGrid(cellSize) {
@@ -416,13 +362,17 @@ class LocationMap {
   }
 
   #processDepthMap(cellSize, imgWidth, imgHeight) {
+    const depthImage = this.#imageAssets.tryGet(this.#depthAssetId);
+    if (!depthImage) return;
     const canvas = document.createElement("canvas");
     canvas.width = imgWidth;
     canvas.height = imgHeight;
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    const surface = new Canvas2DSurface(canvas, {
+      contextAttributes: { willReadFrequently: true },
+    });
 
-    ctx.drawImage(this.#depthImage, 0, 0, imgWidth, imgHeight);
-    const imageData = ctx.getImageData(0, 0, imgWidth, imgHeight).data;
+    surface.drawImage(depthImage, 0, 0, imgWidth, imgHeight);
+    const imageData = surface.getImageData(0, 0, imgWidth, imgHeight).data;
 
     const minD = this.#config.depthBounds.min;
     const maxD = this.#config.depthBounds.max;
@@ -613,6 +563,63 @@ class LocationMap {
 
   get currentLocationId() {
     return this.#id;
+  }
+
+  #preloadLocationAssets(cellSize, width, height) {
+    this.#bgLoaded = false;
+    this.#bgAssetIds = {};
+    const manifest = {};
+    if (this.#config.bgUrls) {
+      this.#isDynamicBg = true;
+      for (const key of ["day", "evening", "night"]) {
+        const src = this.#config.bgUrls[key];
+        const assetId = ImageAssetProvider.assetIdForSource(
+          src,
+          `location:${this.#id}:${key}`,
+        );
+        this.#bgAssetIds[key] = assetId;
+        manifest[assetId] = src;
+      }
+    } else if (this.#config.bgUrl) {
+      this.#isDynamicBg = false;
+      const assetId = ImageAssetProvider.assetIdForSource(
+        this.#config.bgUrl,
+        `location:${this.#id}:default`,
+      );
+      this.#bgAssetIds.default = assetId;
+      manifest[assetId] = this.#config.bgUrl;
+    }
+
+    const backgroundPromise = Object.keys(manifest).length
+      ? this.#imageAssets.preload(manifest)
+      : Promise.resolve();
+    backgroundPromise
+      .then(() => {
+        this.#bgLoaded = true;
+      })
+      .catch(() => {
+        this.#bgLoaded = false;
+      });
+
+    if (!this.#config.depthUrl) {
+      this.#depthAssetId = "";
+      this.#generateStaticDebugMap(cellSize, width, height);
+      return;
+    }
+
+    this.#depthAssetId = ImageAssetProvider.assetIdForSource(
+      this.#config.depthUrl,
+      `location:${this.#id}:depth`,
+    );
+    this.#imageAssets
+      .preload({ [this.#depthAssetId]: this.#config.depthUrl })
+      .then(() => {
+        this.#processDepthMap(cellSize, width, height);
+        this.#generateStaticDebugMap(cellSize, width, height);
+      })
+      .catch(() => {
+        this.#generateStaticDebugMap(cellSize, width, height);
+      });
   }
 }
 

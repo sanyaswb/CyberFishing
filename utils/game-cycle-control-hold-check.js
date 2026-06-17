@@ -414,6 +414,8 @@ assert(
 );
 
 const poleConfig = createConfig();
+const poleSectorConfig = poleConfig.fightPhysicsConfig.getPoleFightSectorConfig();
+const poleSectorMaxAngleDeg = poleSectorConfig.maxAngleFromCenterDeg;
 const poleEquipment = createPoleBuild();
 const poleFishData = createStationaryFish();
 const poleCast = createCast({
@@ -563,8 +565,11 @@ assert(
   "6m pole cycle uses the shared pole fight sector constraint",
 );
 assert(
-  Math.abs(Number(poleHoldDebug?.poleFightSectorMaxAngleDeg) || 0) === 60,
-  "6m pole cycle exposes the configured 60 degree sector",
+  Math.abs(
+    (Number(poleHoldDebug?.poleFightSectorMaxAngleDeg) || 0) -
+      poleSectorMaxAngleDeg,
+  ) <= 0.000001,
+  "6m pole cycle exposes the configured sector angle",
 );
 assert(
   Math.abs(
@@ -573,7 +578,8 @@ assert(
   "6m pole cycle exposes the real 6m sector radius",
 );
 assert(
-  Math.abs(Number(poleHoldDebug?.poleFightSectorAngleDeg) || 0) <= 60.0001,
+  Math.abs(Number(poleHoldDebug?.poleFightSectorAngleDeg) || 0) <=
+    poleSectorMaxAngleDeg + 0.0001,
   "6m pole fish remains inside the configured angular sector",
 );
 assert(

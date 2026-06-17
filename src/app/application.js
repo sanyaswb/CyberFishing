@@ -242,7 +242,6 @@ class GameFishingFacade {
   #equipmentRules;
   #config;
   #castService;
-  #fishingRenderService;
   #biteEnvironmentService;
   #getCurrentHookDepth;
   #setCurrentHookDepth;
@@ -258,7 +257,6 @@ class GameFishingFacade {
     equipmentRules,
     config,
     castService,
-    fishingRenderService,
     biteEnvironmentService,
     getCurrentHookDepth,
     setCurrentHookDepth,
@@ -273,7 +271,6 @@ class GameFishingFacade {
     this.#equipmentRules = equipmentRules;
     this.#config = config;
     this.#castService = castService;
-    this.#fishingRenderService = fishingRenderService;
     this.#biteEnvironmentService = biteEnvironmentService;
     this.#getCurrentHookDepth = getCurrentHookDepth;
     this.#setCurrentHookDepth = setCurrentHookDepth;
@@ -297,17 +294,6 @@ class GameFishingFacade {
     this.#setCurrentHookDepth(result.currentHookDepth);
     this.#setState(result.nextState);
     return result;
-  }
-
-  drawFishingElements(renderer, bottom, state, tMeter, fCond, startTime) {
-    this.#fishingRenderService.draw(
-      renderer,
-      bottom,
-      state,
-      tMeter,
-      fCond,
-      startTime,
-    );
   }
 
   canPlayerCast() {
@@ -357,7 +343,8 @@ class GameApplication {
   #listeners = new EventLifecycle();
   #loop;
   #world;
-  #renderSystem;
+  #renderCoordinator;
+  #imageAssets;
   #fishingController;
   #chumController;
   #stateMachine;
@@ -375,8 +362,6 @@ class GameApplication {
   // Reusable debug context object — allocated once, never recreated per frame.
   #debugContext;
   #dayOfWeek = new Date().getDay();
-  #screenScratch = new Vector2(0, 0);
-  #screenScratch2 = new Vector2(0, 0);
   #lastInputState = {
     isPulling: false,
     pullDirection: null,
@@ -473,7 +458,7 @@ class GameApplication {
     this.#bite = runtime.bite;
     this.#inventory = runtime.inventory;
     this.#world = runtime.world;
-    this.#renderSystem = runtime.renderSystem;
+    this.#imageAssets = runtime.rendering.imageAssets;
     this.#fishingController = runtime.fishing;
     this.#net = runtime.net;
     this.#castManager = runtime.castManager;
@@ -525,28 +510,19 @@ class GameApplication {
       setInvalidCastMarker: (marker) => {
         this.invalidCastMarker = marker;
       },
-      drawFishingElements: (
-        renderer,
-        bottom,
-        state,
-        tMeter,
-        fCond,
-        startTime,
-      ) =>
-        this.drawFishingElements(
-          renderer,
-          bottom,
-          state,
-          tMeter,
-          fCond,
-          startTime,
-        ),
+      getInvalidCastMarker: () => this.invalidCastMarker,
       isDebugEnabled: () => this.isDebugEnabled(),
       emitDebugEvent: (type, detail) => this.emitDebugEvent(type, detail),
       subscribeConfigUpdated: (handler) => this.subscribeConfigUpdated(handler),
       getViewportSize: () => this.getViewportSize(),
       panViewport: (deltaX) => this.#world.pan(deltaX, 0),
       getInputState: () => this.#lastInputState,
+      getChumPowerAimVisual: () =>
+        this.#chumController?.getPowerAimVisualState?.() || null,
+      getChumAccuracyPreview: () =>
+        this.#chumController?.getPowerAimAccuracyPreview?.(
+          this.getDynamicBounds(),
+        ) || null,
       getGameStateName: () =>
         this.#stateMachine?.currentName || this.#gameStateName,
       onStateChanged: (name) => {
@@ -566,8 +542,6 @@ class GameApplication {
       debugEvents: this.#debugEvents,
       canvasMetrics: this.#canvasMetrics,
       biteEnvData: this.#biteEnvData,
-      screenScratch: this.#screenScratch,
-      screenScratch2: this.#screenScratch2,
     });
 
     this.#loop = services.loop;
@@ -575,6 +549,7 @@ class GameApplication {
     this.#debugService = services.debugService;
     this.#chumController = services.chumController;
     this.#stateMachine = services.stateMachine;
+    this.#renderCoordinator = services.renderCoordinator;
     this.#viewportFacade = new GameViewportFacade({
       world: this.#world,
       projector: this.#projector,
@@ -589,7 +564,6 @@ class GameApplication {
       equipmentRules: runtime.equipmentRules,
       config: this.#config,
       castService: services.castService,
-      fishingRenderService: services.fishingRenderService,
       biteEnvironmentService: services.biteEnvironmentService,
       getCurrentHookDepth: () => this.currentHookDepth,
       setCurrentHookDepth: (value) => {
@@ -752,6 +726,7 @@ class GameApplication {
       if (this.#isLocationsConfigUpdate(e)) {
         this.#viewportFacade.refreshLocationConfig(this.#config.locations);
       }
+      this.#renderCoordinator.invalidateStyles();
     });
     this.#debugFacade.subscribeHookedFishRuntimeUpdated((e) => {
       this.#handleHookedFishRuntimeUpdate(e);
@@ -813,7 +788,21 @@ class GameApplication {
     if (name === "scouting") {
       this.#castRodScreenX = null;
     }
+    if (name === "victory") {
+      this.#preloadVictoryFish(data?.fish || {});
+    }
     this.#stateMachine.setState(name, data);
+  }
+
+  #preloadVictoryFish(fish) {
+    const id = String(fish.id || "unknown");
+    const level = Number(fish.level) || 1;
+    const source =
+      fish.imagePath ||
+      `assets/fish/${id}/${id}--${level}.webp`;
+    const assetId = ImageAssetProvider.assetIdForSource(source, "fish");
+    if (!assetId || this.#imageAssets.has(assetId)) return;
+    this.#imageAssets.preload({ [assetId]: source }).catch(() => {});
   }
 
   update(dt) {
@@ -902,63 +891,7 @@ class GameApplication {
   }
 
   draw() {
-    const b = this.getDynamicBounds();
-    const r = this.#renderSystem.drawWorld(
-      this.invalidCastMarker,
-      this.isDebugEnabled(),
-    );
-
-    this.#stateMachine.draw(r, b);
-    this.#drawChumAimingRange(r, b);
-  }
-
-  #drawChumAimingRange(renderer, bounds) {
-    if (!this.isAimingChum) return;
-
-    const eq = this.#inventory.getEquipped();
-    const method = eq.delivery ? "boat" : "hand";
-    if (method !== "hand") return;
-
-    const visual = this.#chumController.getPowerAimVisualState?.();
-    if (visual && this.#config.casting?.enabled !== false) {
-      if (this.#config.debug?.casting?.showChumDistanceLine) {
-        renderer.drawAimingZone(
-          this.#projector,
-          bounds.bottom,
-          this.chumCastDistance,
-          "chum",
-          this.#config.locations,
-        );
-      }
-      if (this.#config.debug?.casting?.showAccuracyArea) {
-        renderer.drawCastAccuracyPreview?.(
-          this.#chumController.getPowerAimAccuracyPreview?.(bounds),
-          this.#config.debug?.casting,
-        );
-      }
-      renderer.drawCastPowerAim(
-        this.#projector,
-        bounds,
-        visual,
-        this.#config.casting,
-        this.#config.tension,
-        this.#clock.now,
-        this.chumCastDistance,
-      );
-      return;
-    }
-
-    if (this.gameStateName === "scouting") return;
-    if (this.#config.locations?.showAimingZone === false) return;
-    if (this.#config.casting?.enabled !== false) return;
-
-    renderer.drawAimingZone(
-      this.#projector,
-      bounds.bottom,
-      this.chumCastDistance,
-      "chum",
-      this.#config.locations,
-    );
+    this.#renderCoordinator.render();
   }
 
   castLine(vx, vy, cellDepth, options = {}) {
@@ -984,17 +917,6 @@ class GameApplication {
       this.#showMissingReelInventoryWarning();
     }
     return result;
-  }
-
-  drawFishingElements(renderer, bottom, state, tMeter, fCond, startTime) {
-    this.#fishingFacade.drawFishingElements(
-      renderer,
-      bottom,
-      state,
-      tMeter,
-      fCond,
-      startTime,
-    );
   }
 
   canPlayerCast() {

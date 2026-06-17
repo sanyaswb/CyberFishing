@@ -30,7 +30,6 @@
 │    │  └── eventRoutes.js
 │    └── services
 │      └── eventService.js
-├── CHANGELOG_ARCHIVE.md
 ├── CHANGELOG.md
 ├── docs
 │  ├── balance_simulator.md
@@ -65,7 +64,20 @@
 │  │  ├── fishing.js
 │  │  ├── game.js
 │  │  ├── inventory.js
-│  │  ├── render.js
+│  │  ├── rendering
+│  │  │  ├── boat_chum_render_frame_builder.js
+│  │  │  ├── casting_render_frame_builder.js
+│  │  │  ├── fight_area_render_frame_builder.js
+│  │  │  ├── fight_hud_frame_builder.js
+│  │  │  ├── fishing_equipment_render_model_builder.js
+│  │  │  ├── fishing_render_frame_builder.js
+│  │  │  ├── game_render_coordinator.js
+│  │  │  ├── game_render_frame_builder.js
+│  │  │  ├── game_render_intent.js
+│  │  │  ├── landing_area_render_frame_builder.js
+│  │  │  ├── location_debug_render_frame_builder.js
+│  │  │  ├── outcome_render_frame_builder.js
+│  │  │  └── world_render_frame_builder.js
 │  │  ├── rules.js
 │  │  ├── script.js
 │  │  ├── states.js
@@ -125,6 +137,7 @@
 │  │  │  ├── line_tension_calculator.js
 │  │  │  ├── player_force_budget_allocator.js
 │  │  │  ├── pole_fight_sector_constraint.js
+│  │  │  ├── pole_fight_sector_geometry.js
 │  │  │  ├── reel_auto_recovery_calculator.js
 │  │  │  ├── reel_hold_load_policy.js
 │  │  │  ├── reel_hold_recovery_system.js
@@ -229,8 +242,43 @@
 │  ├── input
 │  │  └── pull_input_mapper.js
 │  ├── render
-│  │  ├── hud_bar_renderer.js
-│  │  └── renderer.js
+│  │  ├── casting
+│  │  │  └── cast_scene_renderer.js
+│  │  ├── core
+│  │  │  ├── canvas_2d_surface.js
+│  │  │  ├── canvas_primitives.js
+│  │  │  ├── image_asset_provider.js
+│  │  │  ├── render_frame_buffer.js
+│  │  │  ├── render_math.js
+│  │  │  ├── render_order.js
+│  │  │  └── render_pass.js
+│  │  ├── fishing
+│  │  │  ├── fight_area_renderer.js
+│  │  │  ├── fishing_scene_renderer.js
+│  │  │  ├── float_renderer.js
+│  │  │  ├── line_visual_state_controller.js
+│  │  │  └── rod_line_renderer.js
+│  │  ├── hud
+│  │  │  ├── fight_hud_renderer.js
+│  │  │  ├── fight_status_bars_renderer.js
+│  │  │  ├── hold_charges_renderer.js
+│  │  │  └── hud_bar_renderer.js
+│  │  ├── pipeline
+│  │  │  ├── casting_render_pass.js
+│  │  │  ├── fishing_render_pass.js
+│  │  │  ├── game_render_pipeline.js
+│  │  │  ├── hud_render_pass.js
+│  │  │  ├── outcome_render_pass.js
+│  │  │  └── world_render_pass.js
+│  │  ├── screens
+│  │  │  ├── game_over_renderer.js
+│  │  │  ├── victory_layout_resolver.js
+│  │  │  ├── victory_renderer.js
+│  │  │  └── victory_theme_resolver.js
+│  │  └── world
+│  │    ├── boat_chum_renderer.js
+│  │    ├── world_debug_renderer.js
+│  │    └── world_scene_renderer.js
 │  ├── systems
 │  │  ├── bite_system.js
 │  │  ├── chum_system.js
@@ -252,7 +300,9 @@
 │  │  └── tension_system.js
 │  ├── ui
 │  │  ├── styles
+│  │  │  ├── fight_area_style_resolver.js
 │  │  │  ├── hud_style_resolver.js
+│  │  │  ├── outcome_style_resolver.js
 │  │  │  └── style.css
 │  │  ├── ui.js
 │  │  └── version_badge.js
@@ -274,6 +324,7 @@
   │  ├── catch-resolution-debug.js
   │  ├── fish-radial-speed-delta.js
   │  └── simulate-simple-fish-force.js
+  ├── fight-area-renderer-check.js
   ├── fight-input-composition-check.js
   ├── fight-movement-constraints-check.js
   ├── fight-systems-check.js
@@ -282,6 +333,8 @@
   ├── fps-physics-check.js
   ├── game-cycle-check.js
   ├── game-cycle-control-hold-check.js
+  ├── helpers
+  │  └── render_test_harness.js
   ├── hud-bar-layout-check.js
   ├── hud-style-resolver-check.js
   ├── inventory-line-systems-check.js
@@ -293,9 +346,19 @@
   ├── player-force-budget-check.js
   ├── pole-fight-sector-check.js
   ├── project-version-check.js
+  ├── render-allocation-check.js
+  ├── render-assets-check.js
+  ├── render-core-infrastructure-check.js
+  ├── render-frame-builder-check.js
+  ├── render-order-characterization-check.js
+  ├── render-pipeline-order-check.js
+  ├── render-scene-characterization-check.js
+  ├── render-ui-characterization-check.js
+  ├── renderer-architecture-check.js
   ├── rod-control-ux-check.js
   ├── rod-pull-systems-check.js
   ├── rod-stroke-distance-check.js
   ├── set-project-version.js
   ├── tackle-stress-failure-check.js
-  └── validate-config.js
+  ├── validate-config.js
+  └── victory-layout-check.js

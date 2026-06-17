@@ -11,8 +11,10 @@ const FILES = [
   "src/config/config.js",
   "src/app/cast_power.js",
   "src/ui/styles/hud_style_resolver.js",
-  "src/render/hud_bar_renderer.js",
-  "src/render/renderer.js",
+  "src/render/core/canvas_2d_surface.js",
+  "src/render/core/render_math.js",
+  "src/render/hud/hud_bar_renderer.js",
+  "src/render/casting/cast_scene_renderer.js",
 ];
 
 const context = vm.createContext({
@@ -138,20 +140,39 @@ const ctx = {
     return { width: 0 };
   },
 };
-const renderer = new Renderer({
+const surface = new Canvas2DSurface({
   width: 800,
   height: 600,
   getContext: () => ctx,
 });
-renderer.drawCastPowerAim(
-  projector,
-  bounds,
-  { active: true, screenX: 400, power: 0.25, mode: "rod" },
-  testConfig.casting,
-  CONFIG.tension,
-  0,
-  500,
-);
+const renderer = new CastSceneRenderer({
+  surface,
+  primitives: { withClip(_rects, draw) { draw(); } },
+  hudBarRenderer: new HudBarRenderer(surface),
+  hudStyleResolver: new HudStyleResolver({
+    hudStylesProvider: () => CONFIG.ui.hudStyles,
+  }),
+});
+renderer.render({
+  visible: true,
+  aimingZone: { visible: false },
+  accuracyArea: { visible: false },
+  powerAim: {
+    visible: true,
+    mode: "rod",
+    screenX: 400,
+    originY: 1000,
+    targetY: 500,
+    powerRatio: 0.25,
+    viewportWidth: 800,
+    lineColor: "#00ccff",
+    powerColor: "#00ccff",
+    lineWidth: 2,
+    dash: [12, 10],
+    dashOffset: 0,
+    glowBlur: 0,
+  },
+});
 assert(lineToCalls.length > 0, "cast aim line is drawn");
 approx(lineToCalls[0].y, 500, 0.001, "cast aim line uses full allowed distance, not current power");
 

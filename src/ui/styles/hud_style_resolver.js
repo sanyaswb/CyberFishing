@@ -1,5 +1,6 @@
 class HudStyleResolver {
   #hudStylesProvider;
+  #cache = new Map();
 
   constructor({ hudStylesProvider = null } = {}) {
     this.#hudStylesProvider = typeof hudStylesProvider === "function"
@@ -8,10 +9,23 @@ class HudStyleResolver {
   }
 
   resolveBarStyle(path, { overrides = null } = {}) {
+    if (!overrides && this.#cache.has(path)) {
+      return this.#cache.get(path);
+    }
     const bars = this.#getBarsConfig();
     const sharedStyle = bars.shared || {};
     const componentStyle = this.#getPathValue(bars, path) || {};
-    return HudStyleResolver.merge(sharedStyle, componentStyle, overrides);
+    const resolved = HudStyleResolver.merge(
+      sharedStyle,
+      componentStyle,
+      overrides,
+    );
+    if (!overrides) this.#cache.set(path, resolved);
+    return resolved;
+  }
+
+  invalidate() {
+    this.#cache.clear();
   }
 
   static merge(...sources) {

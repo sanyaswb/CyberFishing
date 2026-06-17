@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.19.52";
+const CURRENT_PROJECT_VERSION = "0.20.0";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "radial-sector-geometry",
-  updatedAt: "2026-06-15",
+  codename: "render-architecture",
+  updatedAt: "2026-06-18",
   notes: Object.freeze([
-    "Unified pole fight physics and rendering around one radial sector geometry frame",
-    "Bound the red allowed sector and yellow unrestricted arc to the real line radius",
-    "Applied the same angle-plus-radius area to fish AI, Rod Hold and Rod Control",
-    "Added independent live visibility for the full fight line radius",
-    "Added intersection, gradual recovery, 6 m pole and render-alignment regressions",
+    "Split the legacy Renderer into focused world, casting, fishing, HUD and outcome renderers",
+    "Added a reusable render frame, frame builders, ordered render passes and a render coordinator",
+    "Moved game states to render intents instead of direct Canvas draw calls",
+    "Centralized Victory layout, image asset preload and render ordering",
+    "Added architecture, pipeline, asset, allocation and render regression checks",
   ]),
 });
 

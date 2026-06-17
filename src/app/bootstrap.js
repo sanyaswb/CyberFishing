@@ -27,6 +27,76 @@ class GameCompositionRoot {
   }
 
   create(canvas, canvasMetrics, clock, debugEvents, devFlags, audio) {
+    const surface = new Canvas2DSurface(canvas, {
+      contextAttributes: { alpha: false },
+    });
+    const primitives = new CanvasPrimitives(surface);
+    const imageAssets = new ImageAssetProvider();
+    const hudStyleResolver = new HudStyleResolver({
+      hudStylesProvider: () => this.#config.ui?.hudStyles || {},
+    });
+    const fightAreaStyleResolver = new FightAreaStyleResolver({
+      configProvider: () => this.#config.ui?.catchZone || {},
+    });
+    const outcomeStyleResolver = new OutcomeStyleResolver({
+      configProvider: () => this.#config.ui?.victory || {},
+    });
+    const victoryLayoutResolver = new VictoryLayoutResolver();
+    const hudBarRenderer = new HudBarRenderer(surface);
+    const worldSceneRenderer = new WorldSceneRenderer({
+      surface,
+      assets: imageAssets,
+    });
+    const worldDebugRenderer = new WorldDebugRenderer({ surface });
+    const boatChumRenderer = new BoatChumRenderer({
+      surface,
+      primitives,
+    });
+    const castSceneRenderer = new CastSceneRenderer({
+      surface,
+      primitives,
+      hudBarRenderer,
+      hudStyleResolver,
+    });
+    const fightAreaRenderer = new FightAreaRenderer({
+      surface,
+      primitives,
+      styleResolver: fightAreaStyleResolver,
+    });
+    const fishingSceneRenderer = new FishingSceneRenderer({
+      fightAreaRenderer,
+      rodLineRenderer: new RodLineRenderer({ surface }),
+      floatRenderer: new FloatRenderer({ surface }),
+    });
+    const fightHudRenderer = new FightHudRenderer({
+      statusBarsRenderer: new FightStatusBarsRenderer({
+        surface,
+        hudBarRenderer,
+        styleResolver: hudStyleResolver,
+      }),
+      holdChargesRenderer: new HoldChargesRenderer({ surface }),
+    });
+    const pipeline = new GameRenderPipeline({
+      passes: RenderOrder.createPassList({
+        world: new WorldRenderPass({
+          sceneRenderer: worldSceneRenderer,
+          debugRenderer: worldDebugRenderer,
+          boatChumRenderer,
+        }),
+        casting: new CastingRenderPass({ renderer: castSceneRenderer }),
+        fishing: new FishingRenderPass({ renderer: fishingSceneRenderer }),
+        hud: new HudRenderPass({ renderer: fightHudRenderer }),
+        outcome: new OutcomeRenderPass({
+          gameOverRenderer: new GameOverRenderer({ surface }),
+          victoryRenderer: new VictoryRenderer({
+            surface,
+            primitives,
+            assets: imageAssets,
+            themeResolver: new VictoryThemeResolver(),
+          }),
+        }),
+      }),
+    });
     const location = new LocationManager(
       this.#config.locations,
       this.#config.player?.locationId,
@@ -68,9 +138,13 @@ class GameCompositionRoot {
       }
     }
     const systems = {
-      renderer: new Renderer(canvas),
       projector,
-      map: new LocationMap(locId, this.#config.locations, rng),
+      map: new LocationMap(
+        locId,
+        this.#config.locations,
+        rng,
+        imageAssets,
+      ),
       env: new EnvironmentSystem(
         locCfg,
         this.#config.debug?.initialTime ?? 12,
@@ -104,14 +178,6 @@ class GameCompositionRoot {
       clock,
       locationConfig: this.#config.locations,
     });
-    const renderSystem = new RenderSystem({
-      renderer: systems.renderer,
-      map: systems.map,
-      projector: systems.projector,
-      chum: systems.chum,
-      renderConfig: this.#config,
-      locationConfig: this.#config.locations,
-    });
     const equipment = new EquipmentService(systems.inventory);
     const fishing = new FishingController({
       inventory: systems.inventory,
@@ -132,7 +198,6 @@ class GameCompositionRoot {
     return {
       location,
       rng,
-      renderer: systems.renderer,
       projector: systems.projector,
       map: systems.map,
       env: systems.env,
@@ -143,7 +208,14 @@ class GameCompositionRoot {
       inventory: systems.inventory,
       inventoryUI: systems.inventoryUI,
       world,
-      renderSystem,
+      rendering: {
+        imageAssets,
+        pipeline,
+        hudStyleResolver,
+        fightAreaStyleResolver,
+        outcomeStyleResolver,
+        victoryLayoutResolver,
+      },
       fishing,
       equipment,
       net,
@@ -177,8 +249,6 @@ class GameCompositionRoot {
     debugEvents,
     canvasMetrics,
     biteEnvData,
-    screenScratch,
-    screenScratch2,
   }) {
     const castService = new CastService({
       config,
@@ -224,25 +294,6 @@ class GameCompositionRoot {
       biteEnvData,
     });
 
-    const fishingRenderService = new FishingRenderService({
-      inventory: runtime.inventory,
-      input: runtime.input,
-      projector: runtime.projector,
-      canvasMetrics,
-      clock,
-      config,
-      equipmentRules: runtime.equipmentRules,
-      baitRules: runtime.baitRules,
-      getFloat: appPorts.getFloat,
-      getNet: appPorts.getNet,
-      getInputState: appPorts.getInputState,
-      getRodScreenX: appPorts.getRodScreenX,
-      getCastDistanceRatio: appPorts.getCastDistanceRatio,
-      getCurrentHookDepth: appPorts.getCurrentHookDepth,
-      scratch: screenScratch,
-      scratch2: screenScratch2,
-    });
-
     const stateFactoryRoot = {
       inventory: runtime.inventory,
       input: runtime.input,
@@ -280,6 +331,7 @@ class GameCompositionRoot {
       getDynamicBounds: appPorts.getDynamicBounds,
       getRodVirtualPos: appPorts.getRodVirtualPos,
       getScreenOffsetRatio: appPorts.getScreenOffsetRatio,
+      victoryLayoutResolver: runtime.rendering.victoryLayoutResolver,
       setState: appPorts.setState,
       castLine: appPorts.castLine,
       markInvalidCast: appPorts.markInvalidCast,
@@ -287,7 +339,6 @@ class GameCompositionRoot {
       showMissingReelInventoryWarning: appPorts.showMissingReelInventoryWarning,
       setInvalidCastMarker: appPorts.setInvalidCastMarker,
       panViewport: appPorts.panViewport,
-      drawFishingElements: appPorts.drawFishingElements,
       isDebugEnabled: appPorts.isDebugEnabled,
       emitDebugEvent: appPorts.emitDebugEvent,
       subscribeConfigUpdated: appPorts.subscribeConfigUpdated,
@@ -335,6 +386,111 @@ class GameCompositionRoot {
       boatRules: runtime.boatRules,
     });
 
+    const worldBuilder = new WorldRenderFrameBuilder({
+      map: runtime.map,
+      projector: runtime.projector,
+      config,
+      canvasMetrics,
+      locationId: runtime.location.id,
+      boatChumBuilder: new BoatChumRenderFrameBuilder({
+        chum: runtime.chum,
+        projector: runtime.projector,
+        config,
+      }),
+      debugBuilder: new LocationDebugRenderFrameBuilder({
+        map: runtime.map,
+        projector: runtime.projector,
+        config,
+      }),
+    });
+    const castingBuilder = new CastingRenderFrameBuilder({
+      projector: runtime.projector,
+      config,
+      canvasMetrics,
+      hudStyleResolver: runtime.rendering.hudStyleResolver,
+      chumSource: {
+        isAiming: appPorts.isAimingChum,
+        getEquipment: () => runtime.inventory.getEquipped(),
+        getGameStateName: appPorts.getGameStateName,
+        getCastDistance: appPorts.getChumCastDistance,
+        getPowerAimVisual: appPorts.getChumPowerAimVisual,
+        getAccuracyPreview: appPorts.getChumAccuracyPreview,
+        getBounds: appPorts.getDynamicBounds,
+        getNow: () => clock.now,
+      },
+    });
+    const fightAreaBuilder = new FightAreaRenderFrameBuilder({
+      projector: runtime.projector,
+      config,
+      canvasMetrics,
+      getRodScreenX: appPorts.getRodScreenX,
+      landingAreaBuilder: new LandingAreaRenderFrameBuilder({
+        projector: runtime.projector,
+        config,
+        canvasMetrics,
+        getNet: appPorts.getNet,
+        getRodScreenX: appPorts.getRodScreenX,
+        landingPolicyResolver: new LandingPolicyResolver(),
+      }),
+      sectorGeometry: new PoleFightSectorGeometry(),
+    });
+    const hudBuilder = new FightHudFrameBuilder({
+      config,
+      canvasMetrics,
+    });
+    const fishingBuilder = new FishingRenderFrameBuilder({
+      inventory: runtime.inventory,
+      projector: runtime.projector,
+      canvasMetrics,
+      clock,
+      config,
+      equipmentRules: runtime.equipmentRules,
+      baitRules: runtime.baitRules,
+      getFloat: appPorts.getFloat,
+      getInputState: appPorts.getInputState,
+      getCastDistanceRatio: appPorts.getCastDistanceRatio,
+      getCurrentHookDepth: appPorts.getCurrentHookDepth,
+      getHoldState: () => fightService.getHoldUiState(),
+      lineVisualState: new LineVisualStateController(),
+      fightAreaBuilder,
+      hudBuilder,
+      equipmentModelBuilder: new FishingEquipmentRenderModelBuilder({
+        projector: runtime.projector,
+        canvasMetrics,
+        clock,
+        config,
+        getRodScreenX: appPorts.getRodScreenX,
+      }),
+    });
+    const outcomeBuilder = new OutcomeRenderFrameBuilder({
+      canvasMetrics,
+      clock,
+      styleResolver: runtime.rendering.outcomeStyleResolver,
+      layoutResolver: runtime.rendering.victoryLayoutResolver,
+    });
+    const frameBuilder = new GameRenderFrameBuilder({
+      canvasMetrics,
+      projector: runtime.projector,
+      worldBuilder,
+      castingBuilder,
+      fishingBuilder,
+      outcomeBuilder,
+    });
+    const renderCoordinator = new GameRenderCoordinator({
+      stateMachine,
+      frameBuffer: new RenderFrameBuffer(),
+      frameBuilder,
+      pipeline: runtime.rendering.pipeline,
+      getBounds: appPorts.getDynamicBounds,
+      getInvalidCastMarker: appPorts.getInvalidCastMarker,
+      isDebugEnabled: appPorts.isDebugEnabled,
+      invalidateStyles: () => {
+        runtime.rendering.hudStyleResolver.invalidate();
+        runtime.rendering.fightAreaStyleResolver.invalidate();
+        runtime.rendering.outcomeStyleResolver.invalidate();
+      },
+    });
+
     const loop = new GameLoop(
       clock,
       (dt) => appPorts.update(dt),
@@ -346,10 +502,10 @@ class GameCompositionRoot {
       fightService,
       debugService,
       biteEnvironmentService,
-      fishingRenderService,
       stateDepsFactory,
       stateMachine,
       chumController,
+      renderCoordinator,
       loop,
       debugEvents,
     };

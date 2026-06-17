@@ -6,10 +6,13 @@ const ROOT = path.resolve(__dirname, "..");
 const FILES = [
   "src/core/fishing/pole_fight_sector_geometry.js",
   "src/core/fishing/pole_fight_sector_constraint.js",
-  "src/render/renderer.js",
+  "src/render/core/render_frame_buffer.js",
+  "src/render/fishing/fight_area_renderer.js",
+  "src/app/rendering/fight_area_render_frame_builder.js",
 ];
 const FIGHT_SYSTEM_FILE = "src/systems/fight_physics_system.js";
-const FISHING_RENDER_FILE = "src/app/render.js";
+const FISHING_RENDER_FILE =
+  "src/app/rendering/fight_area_render_frame_builder.js";
 const checks = [];
 
 function assert(condition, message) {
@@ -65,20 +68,20 @@ const fishingRenderSource = fs.readFileSync(
   "utf8",
 );
 assert(
-  fishingRenderSource.includes("new PoleFightSectorGeometry()"),
-  "render fallback uses the same sector geometry builder as physics",
+  fishingRenderSource.includes("this.#sectorGeometry.resolve({"),
+  "render preview uses the injected shared sector geometry",
 );
 const rendererSource = fs.readFileSync(
-  path.join(ROOT, "src/render/renderer.js"),
+  path.join(ROOT, "src/render/fishing/fight_area_renderer.js"),
   "utf8",
 );
 assert(
-  !rendererSource.includes("Math.hypot(\n      this.#canvas.width"),
-  "sector rendering no longer uses a viewport-sized fake radius",
+  !rendererSource.includes("Math.hypot("),
+  "sector renderer does not reconstruct a fake geometry radius",
 );
 assert(
-  rendererSource.includes("poleFightSectorLimitRadiusPx"),
-  "sector rendering consumes the physical geometry-frame radius",
+  rendererSource.includes("model.sectorPoints"),
+  "sector renderer consumes prebuilt physical geometry points",
 );
 
 vm.runInContext(`
@@ -274,11 +277,8 @@ const ctx = {
   setLineDash() {},
   rect() {},
   clip() {},
-};
-const canvas = {
-  width: 1000,
-  height: 800,
-  getContext: () => ctx,
+  fillRect() {},
+  ellipse() {},
 };
 const projector = {
   getScale: () => 1,
@@ -326,8 +326,51 @@ const sectorDebug = {
   poleFightSectorRightBoundaryRadiusIntersectionY:
     geometry.rightBoundaryRadiusIntersectionY,
 };
-const renderer = new Renderer(canvas);
-renderer.drawPoleFightSector(projector, locations, sectorDebug);
+const area = new GameRenderFrame().fishing.fightAreas;
+const builder = new FightAreaRenderFrameBuilder({
+  projector,
+  config: {
+    locations,
+    physics: { fight: { poleFightSector: config } },
+    fightPhysicsConfig: {
+      getPoleFightSectorConfig: () => config,
+      getPixelsPerMeter: () => pixelsPerMeter,
+    },
+  },
+  canvasMetrics: { width: 1000, height: 800 },
+  getRodScreenX: () => origin.x,
+  landingAreaBuilder: { buildInto() {} },
+  sectorGeometry: geometryBuilder,
+});
+builder.buildInto({
+  target: area,
+  clipRegions: new ReusableRenderList(),
+  state: "playing",
+  bottom: origin.y,
+  fightDebug: sectorDebug,
+  equipment: {},
+  floatVirtualPosition: { x: origin.x, y: origin.y - 200 },
+});
+const renderer = new FightAreaRenderer({
+  surface: ctx,
+  primitives: { withClip(_rects, draw) { draw(); } },
+  styleResolver: {
+    resolve() {
+      return {
+        catchFill: "", catchStroke: "",
+        lastDashFill: "", lastDashStroke: "", lastDashDash: [],
+        netFill: "", netStroke: "",
+        sectorFill: "rgba(175, 0, 35, 0.28)",
+        sectorClampedFill: "rgba(210, 35, 25, 0.32)",
+        sectorStroke: "rgba(255, 70, 70, 0.98)",
+        sectorClampedStroke: "rgba(255, 145, 35, 1)",
+        sectorAxis: "rgba(255, 255, 255, 0.7)",
+        lineRadiusStroke: "rgba(255, 230, 0, 0.98)",
+      };
+    },
+  },
+});
+renderer.render(area);
 assert(fills.length === 1, "renderer fills the red allowed movement area");
 assert(strokes.length === 3, "renderer draws red boundary, center axis and yellow line arc");
 const redPath = fills[0].path;
@@ -353,7 +396,9 @@ approx(redTop.y, yellowTop.y, 0.0001, "red outer arc coincides with yellow line 
 
 locations.showPoleFightSector = false;
 locations.showFightLineRadius = false;
-renderer.drawPoleFightSector(projector, locations, sectorDebug);
+area.showSector = false;
+area.showLineRadius = false;
+renderer.render(area);
 assert(fills.length === 1 && strokes.length === 3, "disabled visual toggles skip both debug layers");
 `, context, { filename: "utils/pole-fight-sector-check.js#scenario" });
 

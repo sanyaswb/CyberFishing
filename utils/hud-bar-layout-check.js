@@ -3,7 +3,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const ROOT = path.resolve(__dirname, "..");
-const FILES = ["src/render/hud_bar_renderer.js"];
+const FILES = ["src/render/hud/hud_bar_renderer.js"];
 
 const textCalls = [];
 const context = vm.createContext({

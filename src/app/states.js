@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // JSDoc typedefs — grouped contracts per state. These contracts document the
-// actual runtime shape: deps.world / deps.commands / deps.render / deps.rules /
+// actual runtime shape: deps.world / deps.commands / deps.rules /
 // deps.services. No state receives a `systems` bag.
 // ---------------------------------------------------------------------------
 
@@ -21,11 +21,6 @@
  * @property {(marker: object|null) => void} setInvalidCastMarker
  * @property {(deltaX: number) => void} panViewport
  * @property {() => void} showMissingRodInventoryWarning
- */
-
-/**
- * @typedef {Object} StateRenderCommands
- * @property {(renderer: object, bottom: number, state: string, tMeter: object|null, fCond: object|null, startTime: number) => void} drawFishingElements
  */
 
 /**
@@ -64,7 +59,6 @@
  * @property {{ get: () => number, set: (v: number) => void }} currentHookDepthRef
  * @property {StateWorldQueries} world
  * @property {StateCommands} commands
- * @property {StateRenderCommands} render
  * @property {StateRules} rules
  * @property {StateServices} services
  */
@@ -89,7 +83,6 @@
  * @property {() => { width: number, height: number }} getViewportSize
  * @property {StateWorldQueries} world
  * @property {StateCommands} commands
- * @property {StateRenderCommands} render
  * @property {StateRules} rules
  * @property {StateServices} services
  */
@@ -109,7 +102,6 @@
  * @property {() => boolean} canPlayerCast
  * @property {StateWorldQueries} world
  * @property {StateCommands} commands
- * @property {StateRenderCommands} render
  * @property {StateRules} rules
  * @property {StateServices} services
  */
@@ -136,7 +128,6 @@
  * @property {(type: string, detail: object) => void} emitDebugEvent
  * @property {StateWorldQueries} world
  * @property {StateCommands} commands
- * @property {StateRenderCommands} render
  * @property {StateRules} rules
  * @property {StateServices} services
  */
@@ -149,7 +140,6 @@
  * @property {InventoryManager} inventory
  * @property {() => { width: number, height: number }} getViewportSize
  * @property {StateCommands} commands
- * @property {StateRenderCommands} render
  * @property {StateRules} rules
  * @property {StateServices} services
  */
@@ -207,8 +197,8 @@ class StateMachine {
     this.#state?.update(dt, bounds, context);
   }
 
-  draw(renderer, bounds) {
-    this.#state?.draw(renderer, bounds);
+  getRenderState(target, bounds) {
+    this.#state?.getRenderState(target, bounds);
   }
 
   dispose() {
@@ -264,7 +254,7 @@ class StateDepsFactory {
     };
   }
 
-  // Shared render + navigation commands available to all fishing states.
+  // Shared navigation commands available to all fishing states.
   #fishingCommands() {
     return {
       commands: {
@@ -277,9 +267,6 @@ class StateDepsFactory {
           this.#root.showMissingRodInventoryWarning,
         showMissingReelInventoryWarning:
           this.#root.showMissingReelInventoryWarning,
-      },
-      render: {
-        drawFishingElements: this.#root.drawFishingElements,
       },
       rules: {
         equipment: this.#root.equipmentRules,
@@ -419,6 +406,7 @@ class StateDepsFactory {
       fishing: root.fishing,
       inventory: root.inventory,
       getViewportSize: root.getViewportSize,
+      victoryLayoutResolver: root.victoryLayoutResolver,
       ...this.#fishingCommands(),
     });
   }
@@ -433,7 +421,7 @@ class GameState {
   exit() {}
   handleInput() {}
   update() {}
-  draw() {}
+  getRenderState() {}
   dispose() {}
 }
 
@@ -569,7 +557,8 @@ class ScoutingState extends GameState {
     }
   }
 
-  draw(renderer, bounds) {
+  getRenderState(target, bounds) {
+    target.stateName = "scouting";
     if (this.#usePowerCasting()) {
       if (!this.deps.isAimingChum()) {
         const visual = this.#castAim.getVisualState();
@@ -577,16 +566,13 @@ class ScoutingState extends GameState {
           const eq = this.deps.inventory.getEquipped();
           const maxDistance =
             this.deps.rules.equipment.getEffectiveCastDistance(eq);
-          this.#drawAccuracyPreview(renderer, bounds, this.#castAim, visual);
-          renderer.drawCastPowerAim(
-            this.deps.projector,
+          this.#populateAccuracyPreview(
+            target,
             bounds,
+            this.#castAim,
             visual,
-            this.deps.config.casting,
-            this.deps.config.tension,
-            this.deps.clock.now,
-            maxDistance,
           );
+          this.#populatePowerAim(target, bounds, visual, maxDistance);
         }
       }
       return;
@@ -599,12 +585,11 @@ class ScoutingState extends GameState {
 
         if (maxDist !== Infinity) {
           maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
-          renderer.drawAimingZone(
-            this.deps.projector,
+          this.#populateAimingZone(
+            target,
             bounds.bottom,
             maxDist,
             "rod",
-            this.deps.config.locations,
           );
         }
       }
@@ -616,12 +601,11 @@ class ScoutingState extends GameState {
         method === "hand" &&
         this.deps.config.locations?.showAimingZone !== false
       ) {
-        renderer.drawAimingZone(
-          this.deps.projector,
+        this.#populateAimingZone(
+          target,
           bounds.bottom,
           this.deps.getChumCastDistance(),
           "chum",
-          this.deps.config.locations,
         );
       }
     }
@@ -770,7 +754,7 @@ class ScoutingState extends GameState {
     });
   }
 
-  #drawAccuracyPreview(renderer, bounds, aim, visual) {
+  #populateAccuracyPreview(target, bounds, aim, visual) {
     if (!this.deps.config.debug?.casting?.showAccuracyArea) return;
     const eq = this.deps.inventory.getEquipped();
     const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
@@ -786,10 +770,24 @@ class ScoutingState extends GameState {
       this.#getRodAccuracyPercent(eq),
       this.#getRodAccuracyMultiplier(eq),
     );
-    renderer.drawCastAccuracyPreview?.(
-      preview,
-      this.deps.config.debug?.casting,
-    );
+    target.casting.accuracyPreview = preview;
+  }
+
+  #populatePowerAim(target, bounds, visual, maxDistance) {
+    target.casting.visible = true;
+    target.casting.powerVisible = true;
+    target.casting.visual = visual;
+    target.casting.bounds = bounds;
+    target.casting.maxDistance = maxDistance;
+    target.casting.nowMs = this.deps.clock.now;
+  }
+
+  #populateAimingZone(target, bottom, maxDistance, mode) {
+    target.casting.visible = true;
+    target.casting.zoneVisible = true;
+    target.casting.virtualBottomY = bottom;
+    target.casting.maxDistance = maxDistance;
+    target.casting.mode = mode;
   }
 
   #getRodAccuracyPercent(eq) {
@@ -1049,29 +1047,23 @@ class WaitingState extends GameState {
     return null;
   }
 
-  draw(renderer, bounds) {
-    this.deps.render.drawFishingElements(
-      renderer,
-      bounds.bottom,
-      "waiting",
-      null,
-      null,
-      this.deps.getCastStartTime(),
-    );
+  getRenderState(target, bounds) {
+    target.stateName = "waiting";
+    target.fishing.visible = true;
+    target.fishing.state = "waiting";
+    target.fishing.bottom = bounds.bottom;
+    target.fishing.startTime = this.deps.getCastStartTime();
     const visual = this.#recastAim.getVisualState();
     if (visual) {
       const eq = this.deps.inventory.getEquipped();
       const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
-      this.#drawRecastAccuracyPreview(renderer, bounds);
-      renderer.drawCastPowerAim(
-        this.deps.projector,
-        bounds,
-        visual,
-        this.deps.config.casting,
-        this.deps.config.tension,
-        this.deps.clock.now,
-        maxDistance,
-      );
+      this.#populateRecastAccuracyPreview(target, bounds);
+      target.casting.visible = true;
+      target.casting.powerVisible = true;
+      target.casting.visual = visual;
+      target.casting.bounds = bounds;
+      target.casting.maxDistance = maxDistance;
+      target.casting.nowMs = this.deps.clock.now;
     }
   }
 
@@ -1241,7 +1233,7 @@ class WaitingState extends GameState {
     });
   }
 
-  #drawRecastAccuracyPreview(renderer, bounds) {
+  #populateRecastAccuracyPreview(target, bounds) {
     if (!this.deps.config.debug?.casting?.showAccuracyArea) return;
     const eq = this.deps.inventory.getEquipped();
     const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
@@ -1257,10 +1249,7 @@ class WaitingState extends GameState {
       this.#getRodAccuracyPercent(eq),
       this.#getRodAccuracyMultiplier(eq),
     );
-    renderer.drawCastAccuracyPreview?.(
-      preview,
-      this.deps.config.debug?.casting,
-    );
+    target.casting.accuracyPreview = preview;
   }
 
   #getRodAccuracyPercent(eq) {
@@ -1592,15 +1581,12 @@ class BitingState extends GameState {
     this.#feederAudioPlayer = null;
   }
 
-  draw(renderer, bounds) {
-    this.deps.render.drawFishingElements(
-      renderer,
-      bounds.bottom,
-      "biting",
-      null,
-      null,
-      this.deps.getCastStartTime(),
-    );
+  getRenderState(target, bounds) {
+    target.stateName = "biting";
+    target.fishing.visible = true;
+    target.fishing.state = "biting";
+    target.fishing.bottom = bounds.bottom;
+    target.fishing.startTime = this.deps.getCastStartTime();
   }
 }
 
@@ -1724,15 +1710,14 @@ class PlayingState extends GameState {
       this.deps.input.consumeSwipe();
   }
 
-  draw(renderer, bounds) {
-    this.deps.render.drawFishingElements(
-      renderer,
-      bounds.bottom,
-      "playing",
-      this.deps.fight.tensionMeter,
-      this.deps.fight.fishCondition,
-      this.#startTime,
-    );
+  getRenderState(target, bounds) {
+    target.stateName = "playing";
+    target.fishing.visible = true;
+    target.fishing.state = "playing";
+    target.fishing.bottom = bounds.bottom;
+    target.fishing.startTime = this.#startTime;
+    target.fishing.tensionMeter = this.deps.fight.tensionMeter;
+    target.fishing.fishCondition = this.deps.fight.fishCondition;
   }
 
   getDebugData() {
@@ -1791,21 +1776,15 @@ class FailedState extends GameState {
     this.deps.ui.updateContinueButtonState(false);
   }
 
-  draw(renderer, bounds) {
-    this.deps.render.drawFishingElements(
-      renderer,
-      bounds.bottom,
-      "failed",
-      null,
-      null,
-      0,
-    );
-
-    renderer.drawGameOver(
-      this.deps.getViewportSize().width,
-      this.deps.getViewportSize().height,
-      this.data.reason,
-    );
+  getRenderState(target, bounds) {
+    target.stateName = "failed";
+    target.fishing.visible = true;
+    target.fishing.state = "failed";
+    target.fishing.bottom = bounds.bottom;
+    target.fishing.startTime = 0;
+    target.outcome.visible = true;
+    target.outcome.mode = "failed";
+    target.outcome.reason = this.data.reason;
   }
 }
 
@@ -1829,7 +1808,16 @@ class VictoryState extends GameState {
     if (!actionPoint) return;
 
     const viewport = this.deps.getViewportSize();
-    const actions = this.#getVictoryActionRects(viewport);
+    const fish = this.data.fish || {};
+    const extraStats = Array.isArray(fish.victoryStats)
+      ? fish.victoryStats.length
+      : 0;
+    const actions = this.deps.victoryLayoutResolver.resolve({
+      width: viewport.width,
+      height: viewport.height,
+      config: this.deps.config.ui?.victory || {},
+      statCount: 3 + extraStats,
+    });
     const isActionClick =
       this.#isPointInside(actionPoint, actions.claim) ||
       this.#isPointInside(actionPoint, actions.release);
@@ -1841,109 +1829,23 @@ class VictoryState extends GameState {
     this.deps.commands.setState("scouting");
   }
 
-  draw(renderer, bounds) {
-    this.deps.render.drawFishingElements(
-      renderer,
-      bounds.bottom,
-      "victory",
-      null,
-      null,
-      0,
-    );
-
-    const viewport = this.deps.getViewportSize();
-    renderer.drawVictory(
-      viewport.width,
-      viewport.height,
-      this.data.fish,
-      this.deps.config.ui?.victory,
-    );
-  }
-
-  #getVictoryActionRects(viewport) {
-    const config = this.deps.config.ui?.victory || {};
-    const cfg = {
-      panelWidth: 540,
-      panelMinHeight: 560,
-      viewportMargin: 24,
-      panelPadding: 24,
-      imageBoxSize: 260,
-      statPillHeight: 42,
-      buttonWidth: 150,
-      buttonHeight: 42,
-      buttonGap: 14,
-      ...config,
-    };
-    const margin = Math.max(8, cfg.viewportMargin || 24);
-    const maxPanelW = Math.max(260, viewport.width - margin * 2);
-    const panelW = Math.min(cfg.panelWidth, maxPanelW);
-    const padding = Math.min(cfg.panelPadding, Math.max(14, panelW * 0.06));
-    const maxPanelH = Math.max(320, viewport.height - margin * 2);
-    const titleH = 46;
-    const gap = 16;
-    const statH = cfg.statPillHeight;
-    const buttonH = cfg.buttonHeight;
-    const extraStats = Array.isArray(this.data?.fish?.victoryStats)
-      ? this.data.fish.victoryStats
-      : [];
-    const statItemsLength = 3 + extraStats.length;
-    const statColumns = Math.min(3, Math.max(1, statItemsLength));
-    const statRows = Math.ceil(statItemsLength / statColumns);
-    const pillGap = 8;
-    const statBlockH = statRows * statH + (statRows - 1) * pillGap;
-    let imageSize = Math.min(
-      cfg.imageBoxSize,
-      panelW - padding * 2,
-      Math.max(140, maxPanelH * 0.46),
-    );
-    let contentH =
-      padding * 2 + titleH + gap + imageSize + gap + statBlockH + gap + buttonH;
-
-    if (contentH > maxPanelH) {
-      imageSize = Math.max(120, imageSize - (contentH - maxPanelH));
-      contentH =
-        padding * 2 +
-        titleH +
-        gap +
-        imageSize +
-        gap +
-        statBlockH +
-        gap +
-        buttonH;
-    }
-
-    const panelH = Math.min(
-      maxPanelH,
-      Math.max(contentH, Math.min(cfg.panelMinHeight, maxPanelH)),
-    );
-    const panelX = (viewport.width - panelW) / 2;
-    const panelY = (viewport.height - panelH) / 2;
-    const imageY = panelY + padding + titleH + gap;
-    const statsY = imageY + imageSize + gap;
-    const buttonsY = statsY + statBlockH + gap;
-    const buttonW = Math.min(
-      cfg.buttonWidth,
-      (panelW - padding * 2 - cfg.buttonGap) / 2,
-    );
-    const buttonsX = panelX + (panelW - buttonW * 2 - cfg.buttonGap) / 2;
-
-    return {
-      claim: { x: buttonsX, y: buttonsY, w: buttonW, h: buttonH },
-      release: {
-        x: buttonsX + buttonW + cfg.buttonGap,
-        y: buttonsY,
-        w: buttonW,
-        h: buttonH,
-      },
-    };
+  getRenderState(target, bounds) {
+    target.stateName = "victory";
+    target.fishing.visible = true;
+    target.fishing.state = "victory";
+    target.fishing.bottom = bounds.bottom;
+    target.fishing.startTime = 0;
+    target.outcome.visible = true;
+    target.outcome.mode = "victory";
+    target.outcome.fish = this.data.fish || {};
   }
 
   #isPointInside(point, rect) {
     return (
       point.x >= rect.x &&
-      point.x <= rect.x + rect.w &&
+      point.x <= rect.x + rect.width &&
       point.y >= rect.y &&
-      point.y <= rect.y + rect.h
+      point.y <= rect.y + rect.height
     );
   }
 

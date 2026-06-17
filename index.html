@@ -106,6 +106,8 @@
     <script src="src/ui/ui.js"></script>
     <script src="src/ui/version_badge.js"></script>
     <script src="src/ui/styles/hud_style_resolver.js"></script>
+    <script src="src/ui/styles/fight_area_style_resolver.js"></script>
+    <script src="src/ui/styles/outcome_style_resolver.js"></script>
 
     <script src="src/debug/services/debug_formatters.js"></script>
     <script src="src/debug/services/debug_data_selectors.js"></script>
@@ -174,8 +176,36 @@
     <script src="src/debug/services/location_dev_tools_schema.js"></script>
     <script src="src/debug/dev_tools.js"></script>
 
-    <script src="src/render/hud_bar_renderer.js"></script>
-    <script src="src/render/renderer.js"></script>
+    <script src="src/render/core/canvas_2d_surface.js"></script>
+    <script src="src/render/core/canvas_primitives.js"></script>
+    <script src="src/render/core/image_asset_provider.js"></script>
+    <script src="src/render/core/render_frame_buffer.js"></script>
+    <script src="src/render/core/render_pass.js"></script>
+    <script src="src/render/core/render_order.js"></script>
+    <script src="src/render/core/render_math.js"></script>
+    <script src="src/render/world/world_scene_renderer.js"></script>
+    <script src="src/render/world/world_debug_renderer.js"></script>
+    <script src="src/render/world/boat_chum_renderer.js"></script>
+    <script src="src/render/casting/cast_scene_renderer.js"></script>
+    <script src="src/render/fishing/fight_area_renderer.js"></script>
+    <script src="src/render/fishing/rod_line_renderer.js"></script>
+    <script src="src/render/fishing/float_renderer.js"></script>
+    <script src="src/render/fishing/fishing_scene_renderer.js"></script>
+    <script src="src/render/fishing/line_visual_state_controller.js"></script>
+    <script src="src/render/hud/hud_bar_renderer.js"></script>
+    <script src="src/render/hud/hold_charges_renderer.js"></script>
+    <script src="src/render/hud/fight_status_bars_renderer.js"></script>
+    <script src="src/render/hud/fight_hud_renderer.js"></script>
+    <script src="src/render/screens/game_over_renderer.js"></script>
+    <script src="src/render/screens/victory_layout_resolver.js"></script>
+    <script src="src/render/screens/victory_theme_resolver.js"></script>
+    <script src="src/render/screens/victory_renderer.js"></script>
+    <script src="src/render/pipeline/world_render_pass.js"></script>
+    <script src="src/render/pipeline/casting_render_pass.js"></script>
+    <script src="src/render/pipeline/fishing_render_pass.js"></script>
+    <script src="src/render/pipeline/hud_render_pass.js"></script>
+    <script src="src/render/pipeline/outcome_render_pass.js"></script>
+    <script src="src/render/pipeline/game_render_pipeline.js"></script>
 
     <!-- APP UTILS -->
     <script src="src/app/utils.js"></script>
@@ -196,9 +226,8 @@
     <!-- APP CONTEXT -->
     <script src="src/app/context.js"></script>
 
-    <!-- APP WORLD / RENDER -->
+    <!-- APP WORLD -->
     <script src="src/app/world.js"></script>
-    <script src="src/app/render.js"></script>
 
     <!-- APP DOMAIN SERVICES -->
     <script src="src/app/inventory.js"></script>
@@ -209,6 +238,21 @@
 
     <!-- APP STATES -->
     <script src="src/app/states.js"></script>
+
+    <!-- APP RENDERING -->
+    <script src="src/app/rendering/game_render_intent.js"></script>
+    <script src="src/app/rendering/boat_chum_render_frame_builder.js"></script>
+    <script src="src/app/rendering/location_debug_render_frame_builder.js"></script>
+    <script src="src/app/rendering/world_render_frame_builder.js"></script>
+    <script src="src/app/rendering/casting_render_frame_builder.js"></script>
+    <script src="src/app/rendering/landing_area_render_frame_builder.js"></script>
+    <script src="src/app/rendering/fight_area_render_frame_builder.js"></script>
+    <script src="src/app/rendering/fight_hud_frame_builder.js"></script>
+    <script src="src/app/rendering/fishing_equipment_render_model_builder.js"></script>
+    <script src="src/app/rendering/fishing_render_frame_builder.js"></script>
+    <script src="src/app/rendering/outcome_render_frame_builder.js"></script>
+    <script src="src/app/rendering/game_render_frame_builder.js"></script>
+    <script src="src/app/rendering/game_render_coordinator.js"></script>
 
     <!-- APP APPLICATION / BOOTSTRAP -->
     <script src="src/app/application.js"></script>

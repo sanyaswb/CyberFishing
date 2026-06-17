@@ -1,8 +1,11 @@
 class HudBarRenderer {
-  #ctx;
+  #surface;
 
-  constructor(ctx) {
-    this.#ctx = ctx;
+  constructor(surface) {
+    if (!surface || typeof surface.fillRect !== "function") {
+      throw new TypeError("HudBarRenderer requires a drawing surface");
+    }
+    this.#surface = surface;
   }
 
   drawFramedRatioBar({
@@ -17,7 +20,7 @@ class HudBarRenderer {
     rightValue = null,
     marker = null,
   }) {
-    const ctx = this.#ctx;
+    const ctx = this.#surface;
     const clampedRatio = this.#clampRatio(ratio);
     const padding = this.#number(style.padding, 2);
     const borderWidth = this.#number(style.borderWidth, 1);
@@ -78,7 +81,7 @@ class HudBarRenderer {
     label = null,
     value = null,
   }) {
-    const ctx = this.#ctx;
+    const ctx = this.#surface;
     const clampedRatio = this.#clampRatio(ratio);
 
     ctx.save();
@@ -127,7 +130,7 @@ class HudBarRenderer {
   }) {
     if (!topLabel && !rightValue) return;
 
-    const ctx = this.#ctx;
+    const ctx = this.#surface;
     ctx.fillStyle = style.labelColor || "#8a9bac";
     ctx.font = style.labelFont || "bold 12px monospace";
 
