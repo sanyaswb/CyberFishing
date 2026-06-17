@@ -29,7 +29,6 @@ class FightStatusBarsRenderer {
     this.#drawRodControl(model.rodControl, layout);
     this.#drawRodStroke(model.rodStroke, layout);
     this.#drawTension(model.tension, model.tackleStress, layout);
-    this.#drawDrag(model.drag, layout);
   }
 
   #drawFishCondition(model, viewportWidth) {
@@ -228,34 +227,6 @@ class FightStatusBarsRenderer {
       style,
       label: model.label,
       value: model.value,
-    });
-  }
-
-  #drawDrag(model, layout) {
-    if (!model.visible) return;
-    const tensionStyle = this.#styles.resolveBarStyle("tension");
-    const style = this.#styles.resolveBarStyle("drag");
-    const height =
-      style.height ||
-      Math.max(
-        style.minHeight ?? 8,
-        Math.round(
-          (tensionStyle.height || 20) * (style.heightRatio ?? 0.65),
-        ),
-      );
-    this.#bars.drawFramedRatioBar({
-      ratio: model.ratio,
-      x: layout.x,
-      y:
-        layout.tensionY +
-        (tensionStyle.height || 20) +
-        (style.yOffset ?? 14),
-      width: layout.width,
-      height,
-      style,
-      fillColor: style.fillColor,
-      topLabel: "DRAG",
-      rightValue: `${Math.round(model.ratio * 100)}%`,
     });
   }
 

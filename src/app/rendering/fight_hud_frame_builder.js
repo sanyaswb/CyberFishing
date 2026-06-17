@@ -21,7 +21,6 @@ class FightHudFrameBuilder {
       tensionMeter,
       fightDebug,
     );
-    this.#buildDrag(target.drag, fightDebug);
     this.#buildHoldCharges(target.holdCharges, holdState);
   }
 
@@ -129,15 +128,6 @@ class FightHudFrameBuilder {
             ? "STRESS: LEADER"
             : "STRESS: LINE",
       value: `${Math.round(stressRatio * 100)}%`,
-    });
-  }
-
-  #buildDrag(target, debug) {
-    const dragRatio = Number(debug?.dragRatio);
-    if (!Number.isFinite(dragRatio)) return;
-    Object.assign(target, {
-      visible: true,
-      ratio: RenderMath.clamp(dragRatio),
     });
   }
 

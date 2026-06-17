@@ -100,7 +100,7 @@ const model = {
     label: "STRESS: LEADER",
     value: "30%",
   },
-  drag: { visible: false },
+  drag: { visible: true, ratio: 0.5 },
   holdCharges: { visible: false },
 };
 ctx.reset();
@@ -121,6 +121,8 @@ assert(
   ctx.textCall("1.23/2.50kg").args.length === 3,
   "HUD tension value is drawn without implicit zero max width",
 );
+assert(!ctx.textCall("DRAG"), "HUD no longer draws a separate drag label");
+assert(!ctx.textCall("50%"), "HUD no longer draws a separate drag percentage");
 
 const gameOver = new GameOverRenderer({ surface });
 const gameOverCases = [
