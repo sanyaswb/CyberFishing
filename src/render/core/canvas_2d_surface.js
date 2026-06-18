@@ -24,6 +24,10 @@ class Canvas2DSurface {
     return Math.max(0, Number(this.#canvas.height) || 0);
   }
 
+  get canvas() {
+    return this.#canvas;
+  }
+
   get fillStyle() {
     return this.#context.fillStyle;
   }
@@ -199,8 +203,42 @@ class Canvas2DSurface {
     this.#context.strokeRect(x, y, width, height);
   }
 
-  drawImage(...args) {
-    this.#context.drawImage(...args);
+  drawImage(
+    image,
+    sxOrDx,
+    syOrDy,
+    sWidthOrDWidth,
+    sHeightOrDHeight,
+    dx,
+    dy,
+    dWidth,
+    dHeight,
+  ) {
+    if (arguments.length === 3) {
+      this.#context.drawImage(image, sxOrDx, syOrDy);
+      return;
+    }
+    if (arguments.length === 5) {
+      this.#context.drawImage(
+        image,
+        sxOrDx,
+        syOrDy,
+        sWidthOrDWidth,
+        sHeightOrDHeight,
+      );
+      return;
+    }
+    this.#context.drawImage(
+      image,
+      sxOrDx,
+      syOrDy,
+      sWidthOrDWidth,
+      sHeightOrDHeight,
+      dx,
+      dy,
+      dWidth,
+      dHeight,
+    );
   }
 
   getImageData(x, y, width, height) {

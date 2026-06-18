@@ -86,3 +86,20 @@ if (
   throw new Error("Frame builders must not call Canvas drawing APIs");
 }
 console.log("- frame builders contain no Canvas drawing calls");
+const requiredPresentationOptionalCalls = [
+  "tensionMeter?.getDebugData",
+  "tensionMeter?.getTension",
+  "tensionMeter.getTensionKg?.",
+  "tensionMeter.getEffectiveMaxTackleLoadKg?.",
+  "tensionMeter.getStressRatio?.",
+  "tensionMeter.getBreakTargetReason?.",
+  "tensionMeter.getBreakReason?.",
+];
+for (const pattern of requiredPresentationOptionalCalls) {
+  if (builderSources.includes(pattern)) {
+    throw new Error(
+      `Required presentation contract uses optional chaining: ${pattern}`,
+    );
+  }
+}
+console.log("- required presentation contracts fail fast instead of optional chaining");

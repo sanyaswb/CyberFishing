@@ -9,6 +9,7 @@ class FightHudFrameBuilder {
 
   buildInto({ target, tensionMeter, fishCondition, fightDebug, holdState }) {
     if (!tensionMeter || !fishCondition) return;
+    this.#assertTensionMeter(tensionMeter);
     target.visible = true;
     target.viewportWidth = this.#canvasMetrics.width;
     target.viewportHeight = this.#canvasMetrics.height;
@@ -33,31 +34,27 @@ class FightHudFrameBuilder {
       0.001,
       Number(condition.maxEndurance ?? condition.maxPoints) || 0,
     );
-    Object.assign(target, {
-      visible: true,
-      staminaRatio: RenderMath.clamp(
-        condition.currentStamina / maxStamina,
-      ),
-      exhaustionRatio: RenderMath.clamp(
-        condition.currentExhaustion / maxEndurance,
-      ),
-      staminaValue:
-        `${Math.round(condition.currentStamina)}/${Math.round(maxStamina)}`,
-      exhaustionValue:
-        `${Math.round(condition.currentExhaustion)}/${Math.round(maxEndurance)}`,
-      phase: condition.phase,
-    });
+    target.visible = true;
+    target.staminaRatio = RenderMath.clamp(
+      condition.currentStamina / maxStamina,
+    );
+    target.exhaustionRatio = RenderMath.clamp(
+      condition.currentExhaustion / maxEndurance,
+    );
+    target.staminaValue =
+      `${Math.round(condition.currentStamina)}/${Math.round(maxStamina)}`;
+    target.exhaustionValue =
+      `${Math.round(condition.currentExhaustion)}/${Math.round(maxEndurance)}`;
+    target.phase = condition.phase;
   }
 
   #buildRodStroke(target, debug) {
     const unrecovered =
       Number(debug?.rodStrokeUnrecoveredMeters) || 0;
     const capacity = Number(debug?.rodStrokeCapacityMeters) || 0;
-    Object.assign(target, {
-      visible: true,
-      ratio: RenderMath.clamp(debug?.rodStrokeRatio),
-      value: `${unrecovered.toFixed(1)}м / ${capacity.toFixed(1)}м`,
-    });
+    target.visible = true;
+    target.ratio = RenderMath.clamp(debug?.rodStrokeRatio);
+    target.value = `${unrecovered.toFixed(1)}m / ${capacity.toFixed(1)}m`;
   }
 
   #buildRodControl(target, debug) {
@@ -69,66 +66,58 @@ class FightHudFrameBuilder {
         Number(debug?.rodControlDirectionX) ||
         0,
     );
-    Object.assign(target, {
-      visible: true,
-      ratio,
-      active: debug?.rodControlActive === true,
-      value:
-        `${direction < 0 ? "L" : direction > 0 ? "R" : "-"} ` +
-        `${(ratio * 100).toFixed(0)}%`,
-    });
+    target.visible = true;
+    target.ratio = ratio;
+    target.active = debug?.rodControlActive === true;
+    target.value =
+      `${direction < 0 ? "L" : direction > 0 ? "R" : "-"} ` +
+      `${(ratio * 100).toFixed(0)}%`;
   }
 
   #buildTension(target, stressTarget, tensionMeter, debug) {
     const tension = tensionMeter.getTension();
-    const tensionKg = tensionMeter.getTensionKg?.();
-    const maxLoadKg = tensionMeter.getEffectiveMaxTackleLoadKg?.();
+    const tensionKg = tensionMeter.getTensionKg();
+    const maxLoadKg = tensionMeter.getEffectiveMaxTackleLoadKg();
     const precision = Number.isFinite(maxLoadKg) && maxLoadKg <= 3 ? 2 : 1;
     const value =
       Number.isFinite(tensionKg) && Number.isFinite(maxLoadKg)
-        ? `${tensionKg.toFixed(precision)}/${maxLoadKg.toFixed(precision)}кг`
+        ? `${tensionKg.toFixed(precision)}/${maxLoadKg.toFixed(precision)}kg`
         : Number.isFinite(tensionKg)
-          ? `${tensionKg.toFixed(precision)}кг`
+          ? `${tensionKg.toFixed(precision)}kg`
           : `${Math.round(tension)}%`;
     const dragLimitKg = Number(debug?.dragLimitKg);
-    Object.assign(target, {
-      visible: true,
-      ratio: RenderMath.clamp(tension / 100),
-      pulse: tensionMeter.getPulseIntensity(this.#config.tension),
-      value,
-      dragMarkerVisible:
-        debug?.dragSupported === true &&
-        Number.isFinite(dragLimitKg) &&
-        Number.isFinite(maxLoadKg) &&
-        maxLoadKg > 0,
-      dragMarkerRatio:
-        Number.isFinite(maxLoadKg) && maxLoadKg > 0
-          ? dragLimitKg / maxLoadKg
-          : 0,
-    });
+    target.visible = true;
+    target.ratio = RenderMath.clamp(tension / 100);
+    target.pulse = tensionMeter.getPulseIntensity(this.#config.tension);
+    target.value = value;
+    target.dragMarkerVisible =
+      debug?.dragSupported === true &&
+      Number.isFinite(dragLimitKg) &&
+      Number.isFinite(maxLoadKg) &&
+      maxLoadKg > 0;
+    target.dragMarkerRatio =
+      Number.isFinite(maxLoadKg) && maxLoadKg > 0
+        ? dragLimitKg / maxLoadKg
+        : 0;
 
-    const stressRatio = RenderMath.clamp(
-      tensionMeter.getStressRatio?.(),
-    );
+    const stressRatio = RenderMath.clamp(tensionMeter.getStressRatio());
     const shouldShow =
       stressRatio > 0 ||
       tension >= (this.#config.tension?.breakThreshold || 100) - 0.1;
     if (!shouldShow) return;
     const reason =
-      tensionMeter.getBreakTargetReason?.() ||
-      tensionMeter.getBreakReason?.() ||
+      tensionMeter.getBreakTargetReason() ||
+      tensionMeter.getBreakReason() ||
       "line";
-    Object.assign(stressTarget, {
-      visible: true,
-      ratio: stressRatio,
-      label:
-        reason === "rod"
-          ? "STRESS: ROD"
-          : reason === "leader"
-            ? "STRESS: LEADER"
-            : "STRESS: LINE",
-      value: `${Math.round(stressRatio * 100)}%`,
-    });
+    stressTarget.visible = true;
+    stressTarget.ratio = stressRatio;
+    stressTarget.label =
+      reason === "rod"
+        ? "STRESS: ROD"
+        : reason === "leader"
+          ? "STRESS: LEADER"
+          : "STRESS: LINE";
+    stressTarget.value = `${Math.round(stressRatio * 100)}%`;
   }
 
   #buildHoldCharges(target, holdState) {
@@ -141,14 +130,30 @@ class FightHudFrameBuilder {
         1 - restoring[index] / maxTime,
       );
     }
-    Object.assign(target, {
-      visible: true,
-      max: holdState.max,
-      current: holdState.current,
-      active: holdState.isActive === true,
-      restoringCount: restoring.length,
-      viewportWidth: this.#canvasMetrics.width,
-      viewportHeight: this.#canvasMetrics.height,
-    });
+    target.visible = true;
+    target.max = holdState.max;
+    target.current = holdState.current;
+    target.active = holdState.isActive === true;
+    target.restoringCount = restoring.length;
+    target.viewportWidth = this.#canvasMetrics.width;
+    target.viewportHeight = this.#canvasMetrics.height;
+  }
+
+  #assertTensionMeter(tensionMeter) {
+    const methods = [
+      "getTension",
+      "getTensionKg",
+      "getEffectiveMaxTackleLoadKg",
+      "getPulseIntensity",
+      "getStressRatio",
+      "getBreakTargetReason",
+      "getBreakReason",
+    ];
+    for (let index = 0; index < methods.length; index += 1) {
+      const method = methods[index];
+      if (typeof tensionMeter[method] !== "function") {
+        throw new TypeError(`FightHudFrameBuilder requires tensionMeter.${method}`);
+      }
+    }
   }
 }

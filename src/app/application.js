@@ -29,8 +29,8 @@ class GameViewportFacade {
     this.#world.refreshViewport(recalculateMap);
   }
 
-  refreshLocationConfig(locationsConfig) {
-    this.#world.refreshLocationConfig(locationsConfig);
+  refreshLocationConfig(locationsConfig, locationResources) {
+    this.#world.refreshLocationConfig(locationsConfig, locationResources);
   }
 
   applyPan(input, stateName, isAimingChum) {
@@ -344,7 +344,8 @@ class GameApplication {
   #loop;
   #world;
   #renderCoordinator;
-  #imageAssets;
+  #assetPreloadCoordinator;
+  #locationAssetLoader;
   #fishingController;
   #chumController;
   #stateMachine;
@@ -424,7 +425,10 @@ class GameApplication {
     debugEvents,
     windowTarget,
     documentTarget,
+    runtime = null,
+    clock = null,
   }) {
+    if (clock) this.#clock = clock;
     this.#canvasMetrics = canvasMetrics;
     this.#config = new ConfigProvider(config);
     this.#composition = compositionRoot;
@@ -438,14 +442,16 @@ class GameApplication {
       listeners: this.#listeners,
       documentTarget: this.#documentTarget,
     });
-    const runtime = this.#composition.create(
-      canvas,
-      this.#canvasMetrics,
-      this.#clock,
-      this.#debugEvents,
-      this.#devFlags,
-      audio,
-    );
+    runtime =
+      runtime ||
+      this.#composition.create(
+        canvas,
+        this.#canvasMetrics,
+        this.#clock,
+        this.#debugEvents,
+        this.#devFlags,
+        audio,
+      );
     this.#location = runtime.location;
     this.#rng = runtime.rng;
     this.#projector = runtime.projector;
@@ -458,7 +464,17 @@ class GameApplication {
     this.#bite = runtime.bite;
     this.#inventory = runtime.inventory;
     this.#world = runtime.world;
-    this.#imageAssets = runtime.rendering.imageAssets;
+    this.#assetPreloadCoordinator = runtime.rendering.assetPreloadCoordinator;
+    if (
+      !this.#assetPreloadCoordinator ||
+      typeof this.#assetPreloadCoordinator.preloadVictoryAssets !== "function"
+    ) {
+      throw new TypeError("GameApplication requires AssetPreloadCoordinator");
+    }
+    this.#locationAssetLoader = runtime.rendering.locationAssetLoader;
+    if (!this.#locationAssetLoader || typeof this.#locationAssetLoader.load !== "function") {
+      throw new TypeError("GameApplication requires LocationAssetLoader");
+    }
     this.#fishingController = runtime.fishing;
     this.#net = runtime.net;
     this.#castManager = runtime.castManager;
@@ -724,7 +740,9 @@ class GameApplication {
         this.#handleMapDatabaseUpdate();
       }
       if (this.#isLocationsConfigUpdate(e)) {
-        this.#viewportFacade.refreshLocationConfig(this.#config.locations);
+        this.#reloadLocationConfig().catch((error) => {
+          console.error("[Location] Failed to reload location config", error);
+        });
       }
       this.#renderCoordinator.invalidateStyles();
     });
@@ -766,7 +784,20 @@ class GameApplication {
   }
 
   #handleMapDatabaseUpdate() {
-    this.#viewportFacade.refreshLocationConfig(this.#config.locations);
+    this.#reloadLocationConfig().catch((error) => {
+      console.error("[Location] Failed to reload map config", error);
+    });
+  }
+
+  async #reloadLocationConfig() {
+    const locationId = this.#location.id;
+    await this.#assetPreloadCoordinator.preloadLocation(locationId);
+    const resources = await this.#locationAssetLoader.load(
+      locationId,
+      this.#location.config,
+      this.#config.locations,
+    );
+    this.#viewportFacade.refreshLocationConfig(this.#config.locations, resources);
   }
 
   #isLocationsConfigUpdate(event) {
@@ -788,21 +819,33 @@ class GameApplication {
     if (name === "scouting") {
       this.#castRodScreenX = null;
     }
+    if (name === "playing") {
+      this.#preloadFishingAssets(data?.fish || {});
+    }
     if (name === "victory") {
-      this.#preloadVictoryFish(data?.fish || {});
+      return this.#transitionToVictoryWhenAssetsReady(data);
     }
     this.#stateMachine.setState(name, data);
   }
 
-  #preloadVictoryFish(fish) {
-    const id = String(fish.id || "unknown");
-    const level = Number(fish.level) || 1;
-    const source =
-      fish.imagePath ||
-      `assets/fish/${id}/${id}--${level}.webp`;
-    const assetId = ImageAssetProvider.assetIdForSource(source, "fish");
-    if (!assetId || this.#imageAssets.has(assetId)) return;
-    this.#imageAssets.preload({ [assetId]: source }).catch(() => {});
+  #preloadFishingAssets(fish) {
+    this.#assetPreloadCoordinator
+      .preloadFishingAssets(this.#inventory.getEquipped(), fish)
+      .catch(() => {});
+  }
+
+  #transitionToVictoryWhenAssetsReady(data) {
+    return this.#assetPreloadCoordinator
+      .preloadVictoryAssets(data?.fish || {})
+      .then(() => {
+        this.#stateMachine.setState("victory", data);
+      })
+      .catch((error) => {
+        this.#stateMachine.setState("failed", {
+          reason: "asset_load_failed",
+          error,
+        });
+      });
   }
 
   update(dt) {

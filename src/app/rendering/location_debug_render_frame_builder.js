@@ -2,18 +2,27 @@ class LocationDebugRenderFrameBuilder {
   #map;
   #projector;
   #config;
+  #debugMapBuilder;
   #screen = new Vector2(0, 0);
+  #debugCanvas = null;
+  #lastDebugKey = "";
 
-  constructor({ map, projector, config }) {
+  constructor({ map, projector, config, debugMapBuilder }) {
+    if (!debugMapBuilder || typeof debugMapBuilder.build !== "function") {
+      throw new TypeError(
+        "LocationDebugRenderFrameBuilder requires debugMapBuilder",
+      );
+    }
     this.#map = map;
     this.#projector = projector;
     this.#config = config;
+    this.#debugMapBuilder = debugMapBuilder;
   }
 
   buildInto(target, debugEnabled) {
     const locations = this.#config.locations || {};
     if (!debugEnabled || !locations.debugVisuals) return;
-    const debugCanvas = this.#map.getDebugCanvas();
+    const debugCanvas = this.#getDebugCanvas(locations);
     if (debugCanvas) {
       const position = this.#projector.virtualToScreen(
         0,
@@ -40,6 +49,28 @@ class LocationDebugRenderFrameBuilder {
         scale,
       );
     }
+  }
+
+  #getDebugCanvas(locations) {
+    const key = [
+      this.#map.getDebugRevision?.() || 0,
+      locations.debugGrid,
+      locations.debugDepthText,
+      locations.debugZones,
+      locations.enableCastable,
+      locations.enableCollisions,
+      locations.enableSnags,
+      locations.enableDynamicZones,
+      locations.cellSize,
+    ].join("|");
+    if (key !== this.#lastDebugKey || !this.#debugCanvas) {
+      this.#lastDebugKey = key;
+      this.#debugCanvas = this.#debugMapBuilder.build({
+        map: this.#map,
+        locationsConfig: locations,
+      });
+    }
+    return this.#debugCanvas;
   }
 
   #buildZone(zone, source, cellSize, scale) {

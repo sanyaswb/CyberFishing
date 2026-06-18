@@ -5,6 +5,26 @@ class GameRenderFrameBuilder {
   #castingBuilder;
   #fishingBuilder;
   #outcomeBuilder;
+  #worldContext = {
+    target: null,
+    invalidCastMarker: null,
+    debugEnabled: false,
+  };
+  #castingContext = {
+    target: null,
+    intent: null,
+    clipRegions: null,
+  };
+  #fishingContext = {
+    fishingTarget: null,
+    hudTarget: null,
+    intent: null,
+    clipRegions: null,
+  };
+  #outcomeContext = {
+    target: null,
+    intent: null,
+  };
 
   constructor({
     canvasMetrics,
@@ -43,26 +63,29 @@ class GameRenderFrameBuilder {
     frame.viewport.width = this.#canvasMetrics.width;
     frame.viewport.height = this.#canvasMetrics.height;
     frame.viewport.scale = this.#projector.getScale();
-    this.#worldBuilder.buildInto({
-      target: frame.world,
-      invalidCastMarker,
-      debugEnabled,
-    });
-    this.#castingBuilder.buildInto({
-      target: frame.casting,
-      intent,
-      clipRegions: frame.world.clipRegions,
-    });
-    this.#fishingBuilder.buildInto({
-      fishingTarget: frame.fishing,
-      hudTarget: frame.hud,
-      intent: intent.fishing,
-      clipRegions: frame.world.clipRegions,
-    });
-    this.#outcomeBuilder.buildInto({
-      target: frame.outcome,
-      intent: intent.outcome,
-    });
+    const worldContext = this.#worldContext;
+    worldContext.target = frame.world;
+    worldContext.invalidCastMarker = invalidCastMarker;
+    worldContext.debugEnabled = debugEnabled;
+    this.#worldBuilder.buildInto(worldContext);
+
+    const castingContext = this.#castingContext;
+    castingContext.target = frame.casting;
+    castingContext.intent = intent;
+    castingContext.clipRegions = frame.world.clipRegions;
+    this.#castingBuilder.buildInto(castingContext);
+
+    const fishingContext = this.#fishingContext;
+    fishingContext.fishingTarget = frame.fishing;
+    fishingContext.hudTarget = frame.hud;
+    fishingContext.intent = intent.fishing;
+    fishingContext.clipRegions = frame.world.clipRegions;
+    this.#fishingBuilder.buildInto(fishingContext);
+
+    const outcomeContext = this.#outcomeContext;
+    outcomeContext.target = frame.outcome;
+    outcomeContext.intent = intent.outcome;
+    this.#outcomeBuilder.buildInto(outcomeContext);
     return frame;
   }
 }

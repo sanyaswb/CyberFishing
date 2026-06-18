@@ -13,6 +13,9 @@ harness.load(context, [
   "src/render/core/canvas_2d_surface.js",
   "src/render/core/canvas_primitives.js",
   "src/render/core/render_math.js",
+  "src/render/core/render_order.js",
+  "src/render/core/render_component.js",
+  "src/render/core/composite_renderer.js",
   "src/render/hud/hud_bar_renderer.js",
   "src/render/hud/hold_charges_renderer.js",
   "src/render/hud/fight_status_bars_renderer.js",
@@ -65,12 +68,24 @@ const styleResolver = {
   },
 };
 const hud = new FightHudRenderer({
-  statusBarsRenderer: new FightStatusBarsRenderer({
-    surface,
-    hudBarRenderer: new HudBarRenderer(surface),
-    styleResolver,
-  }),
-  holdChargesRenderer: new HoldChargesRenderer({ surface }),
+  components: [
+    new RenderComponent({
+      id: "status-bars",
+      order: RenderOrder.values.HUD,
+      renderer: new FightStatusBarsRenderer({
+        surface,
+        hudBarRenderer: new HudBarRenderer(surface),
+        styleResolver,
+      }),
+      selectModel: (source) => source,
+    }),
+    new RenderComponent({
+      id: "hold-charges",
+      order: RenderOrder.values.HUD + 1,
+      renderer: new HoldChargesRenderer({ surface }),
+      selectModel: (source) => source.holdCharges,
+    }),
+  ],
 });
 const model = {
   visible: true,
@@ -166,15 +181,13 @@ const layout = new VictoryLayoutResolver().resolve({
 });
 const stats = {
   count: 3,
-  items: [
+  records: [
     { label: "1.234 kg", color: null },
     { label: "Trophy", color: null },
     { label: "Anomaly: none", color: null },
   ],
-  forEach(callback) {
-    for (let index = 0; index < this.count; index += 1) {
-      callback(this.items[index], index);
-    }
+  getAt(index) {
+    return this.records[index] || null;
   },
 };
 ctx.reset();

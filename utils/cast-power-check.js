@@ -147,7 +147,10 @@ const surface = new Canvas2DSurface({
 });
 const renderer = new CastSceneRenderer({
   surface,
-  primitives: { withClip(_rects, draw) { draw(); } },
+  primitives: {
+    beginClip() { return false; },
+    endClip() {},
+  },
   hudBarRenderer: new HudBarRenderer(surface),
   hudStyleResolver: new HudStyleResolver({
     hudStylesProvider: () => CONFIG.ui.hudStyles,

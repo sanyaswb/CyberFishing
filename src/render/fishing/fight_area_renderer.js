@@ -1,3 +1,7 @@
+const FIGHT_AREA_EMPTY_DASH = Object.freeze([]);
+const FIGHT_AREA_NET_DASH = Object.freeze([10, 10]);
+const FIGHT_AREA_AXIS_DASH = Object.freeze([6, 8]);
+
 class FightAreaRenderer {
   #surface;
   #primitives;
@@ -7,7 +11,11 @@ class FightAreaRenderer {
     if (!surface || typeof surface.ellipse !== "function") {
       throw new TypeError("FightAreaRenderer requires surface");
     }
-    if (!primitives || typeof primitives.withClip !== "function") {
+    if (
+      !primitives ||
+      typeof primitives.beginClip !== "function" ||
+      typeof primitives.endClip !== "function"
+    ) {
       throw new TypeError("FightAreaRenderer requires primitives");
     }
     if (!styleResolver || typeof styleResolver.resolve !== "function") {
@@ -21,13 +29,13 @@ class FightAreaRenderer {
   render(model) {
     if (!model.visible) return;
     const style = this.#styleResolver.resolve();
-    this.#primitives.withClip(model.clipRegions, () => {
-      this.#drawLastDash(model.lastDashZone, style);
-      this.#drawCatch(model.catchZone, style);
-      this.#drawNet(model.netZone, style);
-      this.#drawSector(model, style);
-      this.#drawLineRadius(model, style);
-    });
+    const clipped = this.#primitives.beginClip(model.clipRegions);
+    this.#drawLastDash(model.lastDashZone, style);
+    this.#drawCatch(model.catchZone, style);
+    this.#drawNet(model.netZone, style);
+    this.#drawSector(model, style);
+    this.#drawLineRadius(model, style);
+    this.#primitives.endClip(clipped);
   }
 
   #drawLastDash(model, style) {
@@ -44,7 +52,7 @@ class FightAreaRenderer {
     surface.moveTo(0, model.y);
     surface.lineTo(model.width, model.y);
     surface.stroke();
-    surface.setLineDash([]);
+    surface.setLineDash(FIGHT_AREA_EMPTY_DASH);
   }
 
   #drawCatch(model, style) {
@@ -87,12 +95,12 @@ class FightAreaRenderer {
     const surface = this.#surface;
     surface.strokeStyle = style.netStroke;
     surface.lineWidth = 1;
-    surface.setLineDash([10, 10]);
+    surface.setLineDash(FIGHT_AREA_NET_DASH);
     surface.beginPath();
     surface.moveTo(0, model.y);
     surface.lineTo(model.width, model.y);
     surface.stroke();
-    surface.setLineDash([]);
+    surface.setLineDash(FIGHT_AREA_EMPTY_DASH);
     if (model.height > 0) {
       surface.fillStyle = style.netFill;
       surface.fillRect(0, model.y, model.width, model.height);
@@ -104,10 +112,11 @@ class FightAreaRenderer {
     const surface = this.#surface;
     surface.save();
     surface.beginPath();
-    model.sectorPoints.forEach((point, index) => {
+    for (let index = 0; index < model.sectorPoints.count; index += 1) {
+      const point = model.sectorPoints.getAt(index);
       if (index === 0) surface.moveTo(point.x, point.y);
       else surface.lineTo(point.x, point.y);
-    });
+    }
     surface.closePath();
     surface.fillStyle = model.sectorClamped
       ? style.sectorClampedFill
@@ -117,16 +126,16 @@ class FightAreaRenderer {
       ? style.sectorClampedStroke
       : style.sectorStroke;
     surface.lineWidth = 3;
-    surface.setLineDash([]);
+    surface.setLineDash(FIGHT_AREA_EMPTY_DASH);
     surface.stroke();
     surface.beginPath();
     surface.moveTo(model.apexX, model.apexY);
     surface.lineTo(model.axisEndX, model.axisEndY);
     surface.strokeStyle = style.sectorAxis;
     surface.lineWidth = 2;
-    surface.setLineDash([6, 8]);
+    surface.setLineDash(FIGHT_AREA_AXIS_DASH);
     surface.stroke();
-    surface.setLineDash([]);
+    surface.setLineDash(FIGHT_AREA_EMPTY_DASH);
     surface.restore();
   }
 
@@ -134,13 +143,14 @@ class FightAreaRenderer {
     if (!model.showLineRadius || model.lineRadiusPoints.count < 2) return;
     const surface = this.#surface;
     surface.beginPath();
-    model.lineRadiusPoints.forEach((point, index) => {
+    for (let index = 0; index < model.lineRadiusPoints.count; index += 1) {
+      const point = model.lineRadiusPoints.getAt(index);
       if (index === 0) surface.moveTo(point.x, point.y);
       else surface.lineTo(point.x, point.y);
-    });
+    }
     surface.strokeStyle = style.lineRadiusStroke;
     surface.lineWidth = 4;
-    surface.setLineDash([]);
+    surface.setLineDash(FIGHT_AREA_EMPTY_DASH);
     surface.stroke();
   }
 }

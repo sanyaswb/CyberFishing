@@ -1,6 +1,11 @@
 class ReusableRenderList {
   #items = [];
   #count = 0;
+  #bufferId;
+
+  constructor(bufferId = "renderList") {
+    this.#bufferId = bufferId;
+  }
 
   reset() {
     this.#count = 0;
@@ -12,28 +17,45 @@ class ReusableRenderList {
     if (!record) {
       record = {};
       this.#items[this.#count] = record;
+      if (typeof RenderAllocationDiagnostics !== "undefined") {
+        RenderAllocationDiagnostics.recordBufferGrowth(this.#bufferId);
+      }
     }
     this.#count += 1;
     return record;
   }
 
-  forEach(callback) {
+  forEachActive(callback) {
+    if (typeof callback !== "function") {
+      throw new TypeError("ReusableRenderList forEachActive requires callback");
+    }
     for (let index = 0; index < this.#count; index += 1) {
       callback(this.#items[index], index);
     }
+  }
+
+  getAt(index) {
+    const activeIndex = Math.floor(Number(index));
+    return activeIndex >= 0 && activeIndex < this.#count
+      ? this.#items[activeIndex]
+      : null;
+  }
+
+  getActiveUnchecked(index) {
+    return this.#items[index];
   }
 
   get count() {
     return this.#count;
   }
 
-  get items() {
-    return this.#items;
-  }
 }
 
 class GameRenderFrame {
   constructor() {
+    if (typeof RenderAllocationDiagnostics !== "undefined") {
+      RenderAllocationDiagnostics.recordFrameCreated();
+    }
     this.frameNumber = 0;
     this.dt = 0;
     this.stateName = "";
@@ -45,14 +67,14 @@ class GameRenderFrame {
     this.world = {
       visible: false,
       backgroundColor: "#0f171e",
-      backgroundLayers: new ReusableRenderList(),
-      clipRegions: new ReusableRenderList(),
+      backgroundLayers: new ReusableRenderList("world.backgroundLayers"),
+      clipRegions: new ReusableRenderList("world.clipRegions"),
       debugImage: { visible: false },
-      dynamicZones: new ReusableRenderList(),
-      chumZones: new ReusableRenderList(),
-      waypoints: new ReusableRenderList(),
-      boats: new ReusableRenderList(),
-      sensorRays: new ReusableRenderList(),
+      dynamicZones: new ReusableRenderList("world.dynamicZones"),
+      chumZones: new ReusableRenderList("world.chumZones"),
+      waypoints: new ReusableRenderList("world.waypoints"),
+      boats: new ReusableRenderList("world.boats"),
+      sensorRays: new ReusableRenderList("world.sensorRays"),
       invalidCastMarker: { visible: false },
     };
     this.casting = {
@@ -65,9 +87,9 @@ class GameRenderFrame {
       visible: false,
       fightAreas: {
         visible: false,
-        clipRegions: new ReusableRenderList(),
-        sectorPoints: new ReusableRenderList(),
-        lineRadiusPoints: new ReusableRenderList(),
+        clipRegions: new ReusableRenderList("fightAreas.clipRegions"),
+        sectorPoints: new ReusableRenderList("sectorPoints"),
+        lineRadiusPoints: new ReusableRenderList("lineRadiusPoints"),
         catchZone: { visible: false },
         lastDashZone: { visible: false },
         netZone: { visible: false },
@@ -91,13 +113,19 @@ class GameRenderFrame {
       gameOver: { visible: false },
       victory: {
         visible: false,
-        stats: new ReusableRenderList(),
+        stats: new ReusableRenderList("victory.stats"),
       },
     };
     this.debug = { visible: false };
   }
 
-  reset({ frameNumber = this.frameNumber + 1, dt = 0, stateName = "" } = {}) {
+  reset(frameNumber = this.frameNumber + 1, dt = 0, stateName = "") {
+    if (frameNumber && typeof frameNumber === "object") {
+      const options = frameNumber;
+      frameNumber = options.frameNumber ?? this.frameNumber + 1;
+      dt = options.dt ?? 0;
+      stateName = options.stateName ?? "";
+    }
     this.frameNumber = frameNumber;
     this.dt = Math.max(0, Number(dt) || 0);
     this.stateName = String(stateName || "");
@@ -146,8 +174,8 @@ class GameRenderFrame {
 class RenderFrameBuffer {
   #frame = new GameRenderFrame();
 
-  acquire(resetOptions = {}) {
-    return this.#frame.reset(resetOptions);
+  acquire(frameNumber = this.#frame.frameNumber + 1, dt = 0, stateName = "") {
+    return this.#frame.reset(frameNumber, dt, stateName);
   }
 
   get current() {

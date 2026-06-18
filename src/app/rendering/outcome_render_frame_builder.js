@@ -4,6 +4,12 @@ class OutcomeRenderFrameBuilder {
   #styleResolver;
   #layoutResolver;
   #trophyFallbackColor = [145, 150, 160];
+  #layoutContext = {
+    width: 0,
+    height: 0,
+    config: null,
+    statCount: 0,
+  };
 
   constructor({
     canvasMetrics,
@@ -58,14 +64,12 @@ class OutcomeRenderFrameBuilder {
           ? "The fish was too heavy and broke out of the net!"
           : "The hook bent and the fish got away.";
     }
-    Object.assign(target, {
-      visible: true,
-      width: this.#canvasMetrics.width,
-      height: this.#canvasMetrics.height,
-      title,
-      titleColor,
-      description,
-    });
+    target.visible = true;
+    target.width = this.#canvasMetrics.width;
+    target.height = this.#canvasMetrics.height;
+    target.title = title;
+    target.titleColor = titleColor;
+    target.description = description;
   }
 
   #buildVictory(target, source) {
@@ -75,16 +79,14 @@ class OutcomeRenderFrameBuilder {
     const imagePath =
       source.imagePath ||
       `assets/fish/${id}/${id}--${level}.webp`;
-    Object.assign(fish, {
-      id,
-      name: String(source.name || "Unknown fish"),
-      level,
-      maxLevel: Number(source.maxLevel) || 0,
-      weight: Number(source.weight) || 0,
-      anomaly: String(source.anomaly || "none"),
-      isTrophy: source.isTrophy === true,
-      isUnique: source.isUnique === true,
-    });
+    fish.id = id;
+    fish.name = String(source.name || "Unknown fish");
+    fish.level = level;
+    fish.maxLevel = Number(source.maxLevel) || 0;
+    fish.weight = Number(source.weight) || 0;
+    fish.anomaly = String(source.anomaly || "none");
+    fish.isTrophy = source.isTrophy === true;
+    fish.isUnique = source.isUnique === true;
     const config = this.#styleResolver.resolveVictory();
     const stats = target.stats;
     this.#addStat(stats, `${fish.weight.toFixed(3)} kg`, null);
@@ -105,25 +107,25 @@ class OutcomeRenderFrameBuilder {
         stat.color || null,
       );
     }
-    Object.assign(target, {
-      visible: true,
-      width: this.#canvasMetrics.width,
-      height: this.#canvasMetrics.height,
-      nowMs: this.#clock.realNow ?? this.#clock.now,
-      fish,
-      config,
-      layout: this.#layoutResolver.resolve({
-        width: this.#canvasMetrics.width,
-        height: this.#canvasMetrics.height,
-        config,
-        statCount: stats.count,
-      }),
-      spriteId: ImageAssetProvider.assetIdForSource(imagePath, "fish"),
-      spritePath: imagePath,
-    });
+    target.visible = true;
+    target.width = this.#canvasMetrics.width;
+    target.height = this.#canvasMetrics.height;
+    target.nowMs = this.#clock.realNow ?? this.#clock.now;
+    target.fish = fish;
+    target.config = config;
+    const layoutContext = this.#layoutContext;
+    layoutContext.width = this.#canvasMetrics.width;
+    layoutContext.height = this.#canvasMetrics.height;
+    layoutContext.config = config;
+    layoutContext.statCount = stats.count;
+    target.layout = this.#layoutResolver.resolve(layoutContext);
+    target.spriteId = ImageAssetProvider.assetIdForSource(imagePath, "fish");
+    target.spritePath = imagePath;
   }
 
   #addStat(target, label, color) {
-    Object.assign(target.acquire(), { label, color });
+    const record = target.acquire();
+    record.label = label;
+    record.color = color;
   }
 }

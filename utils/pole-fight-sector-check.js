@@ -353,7 +353,10 @@ builder.buildInto({
 });
 const renderer = new FightAreaRenderer({
   surface: ctx,
-  primitives: { withClip(_rects, draw) { draw(); } },
+  primitives: {
+    beginClip() { return false; },
+    endClip() {},
+  },
   styleResolver: {
     resolve() {
       return {

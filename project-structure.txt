@@ -56,6 +56,7 @@
 │  │  ├── chum.js
 │  │  ├── context.js
 │  │  ├── core
+│  │  │  ├── dependency_contract_validator.js
 │  │  │  ├── event_bus.js
 │  │  │  ├── event_lifecycle.js
 │  │  │  ├── game_clock.js
@@ -83,6 +84,10 @@
 │  │  ├── states.js
 │  │  ├── utils.js
 │  │  └── world.js
+│  ├── assets
+│  │  ├── asset_load_result.js
+│  │  ├── asset_manifest.js
+│  │  └── asset_preload_coordinator.js
 │  ├── config
 │  │  ├── config.js
 │  │  ├── databases
@@ -239,6 +244,11 @@
 │  ├── entities
 │  │  ├── fish.js
 │  │  └── tackle.js
+│  ├── infrastructure
+│  │  └── location
+│  │    ├── depth_map_reader.js
+│  │    ├── location_asset_loader.js
+│  │    └── offscreen_canvas_factory.js
 │  ├── input
 │  │  └── pull_input_mapper.js
 │  ├── render
@@ -247,7 +257,10 @@
 │  │  ├── core
 │  │  │  ├── canvas_2d_surface.js
 │  │  │  ├── canvas_primitives.js
+│  │  │  ├── composite_renderer.js
 │  │  │  ├── image_asset_provider.js
+│  │  │  ├── render_allocation_diagnostics.js
+│  │  │  ├── render_component.js
 │  │  │  ├── render_frame_buffer.js
 │  │  │  ├── render_math.js
 │  │  │  ├── render_order.js
@@ -277,6 +290,7 @@
 │  │  │  └── victory_theme_resolver.js
 │  │  └── world
 │  │    ├── boat_chum_renderer.js
+│  │    ├── location_debug_map_builder.js
 │  │    ├── world_debug_renderer.js
 │  │    └── world_scene_renderer.js
 │  ├── systems
@@ -309,6 +323,7 @@
 │  └── world
 │    └── world.js
 └── utils
+  ├── asset-lifecycle-check.js
   ├── audits
   │  └── static-lifecycle-audit.js
   ├── cast-power-check.js
@@ -318,6 +333,7 @@
   │  └── rod-stroke-legacy-y-check.js
   ├── config-overrides-check.js
   ├── convert-images.js
+  ├── dependency-contract-check.js
   ├── dev-server.js
   ├── dev-tools-location-schema-check.js
   ├── diagnostics
@@ -340,6 +356,7 @@
   ├── inventory-line-systems-check.js
   ├── line-locked-rod-control-check.js
   ├── local-bridge.js
+  ├── location-architecture-check.js
   ├── memory-leak-watchdog-check.js
   ├── overlay-runtime-fish-check.js
   ├── physics-formula-golden-check.js
@@ -347,11 +364,16 @@
   ├── pole-fight-sector-check.js
   ├── project-version-check.js
   ├── render-allocation-check.js
+  ├── render-asset-lifecycle-check.js
   ├── render-assets-check.js
+  ├── render-collection-encapsulation-check.js
+  ├── render-composite-extension-check.js
   ├── render-core-infrastructure-check.js
   ├── render-frame-builder-check.js
+  ├── render-layer-dependency-check.js
   ├── render-order-characterization-check.js
   ├── render-pipeline-order-check.js
+  ├── render-runtime-allocation-check.js
   ├── render-scene-characterization-check.js
   ├── render-ui-characterization-check.js
   ├── renderer-architecture-check.js

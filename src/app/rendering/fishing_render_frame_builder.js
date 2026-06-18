@@ -17,6 +17,46 @@ class FishingRenderFrameBuilder {
   #equipmentModelBuilder;
   #screenA = new Vector2(0, 0);
   #screenB = new Vector2(0, 0);
+  #fightAreaContext = {
+    target: null,
+    clipRegions: null,
+    state: "",
+    bottom: 0,
+    fightDebug: null,
+    equipment: null,
+    floatVirtualPosition: null,
+  };
+  #rodLineContext = {
+    target: null,
+    floatPosition: null,
+    state: "",
+    tension: 0,
+    lineFrame: null,
+  };
+  #floatContext = {
+    target: null,
+    screenPosition: null,
+    floatEntity: null,
+    equipment: null,
+  };
+  #hudContext = {
+    target: null,
+    tensionMeter: null,
+    fishCondition: null,
+    fightDebug: null,
+    holdState: null,
+  };
+  #lineFrameContext = {
+    state: "",
+    nowMs: 0,
+    castStartTime: 0,
+    inputPulling: false,
+    hookDepth: 0,
+    castDistanceRatio: 0,
+    tensionRatio: 0,
+    sinkRate: 0,
+    lineConfig: null,
+  };
 
   constructor({
     inventory,
@@ -100,68 +140,76 @@ class FishingRenderFrameBuilder {
       this.#screenA,
     );
     const tensionMeter = intent.tensionMeter;
-    const fightDebug = tensionMeter?.getDebugData?.() || null;
+    const hasTensionMeter = !!tensionMeter;
+    if (intent.state === "playing") {
+      this.#assertTensionMeter(tensionMeter);
+    } else if (hasTensionMeter) {
+      this.#assertTensionMeter(tensionMeter);
+    }
+    const tension = hasTensionMeter ? tensionMeter.getTension() : 0;
+    const fightDebug = hasTensionMeter ? tensionMeter.getDebugData() : null;
     const lineFrame = this.#resolveLineFrame(
       intent,
       equipment,
-      tensionMeter,
+      tension,
       screenPosition,
     );
 
     fishingTarget.visible = true;
-    this.#fightAreaBuilder.buildInto({
-      target: fishingTarget.fightAreas,
-      clipRegions,
-      state: intent.state,
-      bottom: intent.bottom,
-      fightDebug,
-      equipment,
-      floatVirtualPosition: floatPosition,
-    });
-    this.#equipmentModelBuilder.buildRodLine({
-      target: fishingTarget.rodLine,
-      floatPosition: screenPosition,
-      state: intent.state,
-      tension: tensionMeter?.getTension?.() || 0,
-      lineFrame,
-    });
-    this.#equipmentModelBuilder.buildFloat({
-      target: fishingTarget.float,
-      screenPosition,
-      floatEntity,
-      equipment,
-    });
+    const fightAreaContext = this.#fightAreaContext;
+    fightAreaContext.target = fishingTarget.fightAreas;
+    fightAreaContext.clipRegions = clipRegions;
+    fightAreaContext.state = intent.state;
+    fightAreaContext.bottom = intent.bottom;
+    fightAreaContext.fightDebug = fightDebug;
+    fightAreaContext.equipment = equipment;
+    fightAreaContext.floatVirtualPosition = floatPosition;
+    this.#fightAreaBuilder.buildInto(fightAreaContext);
+
+    const rodLineContext = this.#rodLineContext;
+    rodLineContext.target = fishingTarget.rodLine;
+    rodLineContext.floatPosition = screenPosition;
+    rodLineContext.state = intent.state;
+    rodLineContext.tension = tension;
+    rodLineContext.lineFrame = lineFrame;
+    this.#equipmentModelBuilder.buildRodLine(rodLineContext);
+
+    const floatContext = this.#floatContext;
+    floatContext.target = fishingTarget.float;
+    floatContext.screenPosition = screenPosition;
+    floatContext.floatEntity = floatEntity;
+    floatContext.equipment = equipment;
+    this.#equipmentModelBuilder.buildFloat(floatContext);
 
     if (intent.state === "playing") {
-      this.#hudBuilder.buildInto({
-        target: hudTarget,
-        tensionMeter,
-        fishCondition: intent.fishCondition,
-        fightDebug,
-        holdState: this.#getHoldState(),
-      });
+      const hudContext = this.#hudContext;
+      hudContext.target = hudTarget;
+      hudContext.tensionMeter = tensionMeter;
+      hudContext.fishCondition = intent.fishCondition;
+      hudContext.fightDebug = fightDebug;
+      hudContext.holdState = this.#getHoldState();
+      this.#hudBuilder.buildInto(hudContext);
     }
   }
 
-  #resolveLineFrame(intent, equipment, tensionMeter, screenPosition) {
+  #resolveLineFrame(intent, equipment, tension, screenPosition) {
     const lineConfig = this.#config.ui.line;
     const activeItem =
       (this.#equipmentRules.isSpinning(equipment)
         ? equipment.baits?.[0]
         : equipment.sinker) || {};
     const straightenThreshold = lineConfig.straightenTension || 50;
-    const frame = this.#lineVisualState.update({
-      state: intent.state,
-      nowMs: this.#clock.now,
-      castStartTime: intent.startTime,
-      inputPulling: this.#getInputState().isPulling === true,
-      hookDepth: this.#getCurrentHookDepth(),
-      castDistanceRatio: this.#getCastDistanceRatio(),
-      tensionRatio:
-        (tensionMeter?.getTension?.() || 0) / straightenThreshold,
-      sinkRate: this.#baitRules.getSinkRate(activeItem, 1),
-      lineConfig,
-    });
+    const lineFrameContext = this.#lineFrameContext;
+    lineFrameContext.state = intent.state;
+    lineFrameContext.nowMs = this.#clock.now;
+    lineFrameContext.castStartTime = intent.startTime;
+    lineFrameContext.inputPulling = this.#getInputState().isPulling === true;
+    lineFrameContext.hookDepth = this.#getCurrentHookDepth();
+    lineFrameContext.castDistanceRatio = this.#getCastDistanceRatio();
+    lineFrameContext.tensionRatio = tension / straightenThreshold;
+    lineFrameContext.sinkRate = this.#baitRules.getSinkRate(activeItem, 1);
+    lineFrameContext.lineConfig = lineConfig;
+    const frame = this.#lineVisualState.update(lineFrameContext);
     let ratio = frame.lengthRatio;
     let drop = frame.dropOffset;
     const mapBottomY = this.#projector.virtualToScreen(
@@ -183,6 +231,16 @@ class FishingRenderFrameBuilder {
       Math.max(0, mapBottomY - targetY),
     );
     return frame;
+  }
+
+  #assertTensionMeter(tensionMeter) {
+    const methods = ["getDebugData", "getTension"];
+    for (let index = 0; index < methods.length; index += 1) {
+      const method = methods[index];
+      if (!tensionMeter || typeof tensionMeter[method] !== "function") {
+        throw new TypeError(`FishingRenderFrameBuilder requires tensionMeter.${method}`);
+      }
+    }
   }
 
 }

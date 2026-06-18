@@ -2,6 +2,29 @@ class FightStatusBarsRenderer {
   #surface;
   #bars;
   #styles;
+  #layout = {
+    x: 0, width: 0, strokeHeight: 0, controlHeight: 0,
+    controlY: 0, strokeY: 0, tensionY: 0,
+  };
+  #framedOptions = {
+    x: 0, y: 0, width: 0, height: 0, ratio: 0,
+    style: null, fillColor: null, topLabel: null,
+    rightValue: null, marker: null,
+  };
+  #thinOptions = {
+    x: 0, y: 0, width: 0, height: 0, ratio: 0,
+    style: null, label: null, value: null,
+  };
+  #conditionStyle = {};
+  #rodControlStyle = {};
+  #tensionStyle = {};
+  #tensionMarker = {
+    enabled: false,
+    ratio: 0,
+    color: "#73c2fb",
+    width: 2,
+    extendPx: 4,
+  };
 
   constructor({ surface, hudBarRenderer, styleResolver }) {
     if (!surface || typeof surface.fillRect !== "function") {
@@ -40,61 +63,62 @@ class FightStatusBarsRenderer {
     const x = RenderMath.resolveX(layout.x, width, viewportWidth);
     const y = layout.y || 40;
     const gap = baseStyle.gap || 22;
-    this.#drawConditionBar({
+    this.#drawConditionBar(
       x,
       y,
       width,
       height,
-      ratio: model.staminaRatio,
-      style: this.#styles.resolveBarStyle("fishCondition.stamina"),
-      label: "STAMINA",
-      value: model.staminaValue,
-      active: model.phase === "stamina",
-    });
-    this.#drawConditionBar({
+      model.staminaRatio,
+      this.#styles.resolveBarStyle("fishCondition.stamina"),
+      "STAMINA",
+      model.staminaValue,
+      model.phase === "stamina",
+    );
+    this.#drawConditionBar(
       x,
-      y: y + gap,
+      y + gap,
       width,
       height,
-      ratio: model.exhaustionRatio,
-      style: this.#styles.resolveBarStyle("fishCondition.exhaustion"),
-      label: "ENDURANCE",
-      value: model.exhaustionValue,
-      active: model.phase === "exhaustion",
-    });
+      model.exhaustionRatio,
+      this.#styles.resolveBarStyle("fishCondition.exhaustion"),
+      "ENDURANCE",
+      model.exhaustionValue,
+      model.phase === "exhaustion",
+    );
   }
 
-  #drawConditionBar(options) {
-    const fillColor = options.style.fillColor || "#ffcc00";
-    this.#bars.drawFramedRatioBar({
-      x: options.x,
-      y: options.y,
-      width: options.width,
-      height: options.height,
-      ratio: options.ratio,
-      style: {
-        ...options.style,
-        borderColor: options.active
-          ? fillColor
-          : options.style.borderColor || "#333",
-        borderWidth: options.active
-          ? options.style.activeBorderWidth ?? 2
-          : options.style.inactiveBorderWidth ??
-            options.style.borderWidth ??
-            1,
-        labelColor: options.active
-          ? options.style.activeLabelColor || "#ffffff"
-          : options.style.labelColor || "#8a9bac",
-        valueColor: options.active
-          ? options.style.activeLabelColor || "#ffffff"
-          : options.style.valueColor ||
-            options.style.labelColor ||
-            "#8a9bac",
-      },
-      fillColor,
-      topLabel: options.label,
-      rightValue: options.value,
-    });
+  #drawConditionBar(x, y, width, height, ratio, style, label, value, active) {
+    const fillColor = style.fillColor || "#ffcc00";
+    const options = this.#framedOptions;
+    const resolvedStyle = this.#conditionStyle;
+    Object.setPrototypeOf(resolvedStyle, style);
+    resolvedStyle.borderColor = active
+      ? fillColor
+      : style.borderColor || "#333";
+    resolvedStyle.borderWidth = active
+      ? style.activeBorderWidth ?? 2
+      : style.inactiveBorderWidth ??
+        style.borderWidth ??
+        1;
+    resolvedStyle.labelColor = active
+      ? style.activeLabelColor || "#ffffff"
+      : style.labelColor || "#8a9bac";
+    resolvedStyle.valueColor = active
+      ? style.activeLabelColor || "#ffffff"
+      : style.valueColor ||
+        style.labelColor ||
+        "#8a9bac";
+    options.x = x;
+    options.y = y;
+    options.width = width;
+    options.height = height;
+    options.ratio = ratio;
+    options.style = resolvedStyle;
+    options.fillColor = fillColor;
+    options.topLabel = label;
+    options.rightValue = value;
+    options.marker = null;
+    this.#bars.drawFramedRatioBar(options);
   }
 
   #resolveFightLayout(viewportWidth) {
@@ -102,62 +126,57 @@ class FightStatusBarsRenderer {
     const tension = this.#styles.resolveBarStyle("tension");
     const rodStroke = this.#styles.resolveBarStyle("rodStroke");
     const rodControl = this.#styles.resolveBarStyle("rodControl");
-    const width = tension.width || 300;
-    const x = RenderMath.resolveX(layout.x, width, viewportWidth);
+    const result = this.#layout;
+    result.width = tension.width || 300;
+    result.x = RenderMath.resolveX(layout.x, result.width, viewportWidth);
     const baseY = layout.y || 40;
-    const strokeHeight = rodStroke.height || 3;
-    const controlHeight = rodControl.height || strokeHeight;
-    const strokeY = baseY + (layout.spacing || 40);
-    return {
-      x,
-      width,
-      strokeHeight,
-      controlHeight,
-      controlY:
-        strokeY - controlHeight + (rodControl.yOffset ?? -28),
-      strokeY,
-      tensionY:
-        strokeY +
-        strokeHeight +
-        (layout.tensionGapFromStroke ?? 34),
-    };
+    result.strokeHeight = rodStroke.height || 3;
+    result.controlHeight = rodControl.height || result.strokeHeight;
+    result.strokeY = baseY + (layout.spacing || 40);
+    result.controlY =
+      result.strokeY - result.controlHeight + (rodControl.yOffset ?? -28);
+    result.tensionY =
+      result.strokeY +
+      result.strokeHeight +
+      (layout.tensionGapFromStroke ?? 34);
+    return result;
   }
 
   #drawRodStroke(model, layout) {
     if (!model.visible) return;
-    this.#drawThinBar({
-      ratio: model.ratio,
-      x: layout.x,
-      y: layout.strokeY,
-      width: layout.width,
-      height: layout.strokeHeight,
-      label: "Хід вудки",
-      value: model.value,
-      style: this.#styles.resolveBarStyle("rodStroke"),
-    });
+    this.#drawThinBar(
+      model.ratio,
+      layout.x,
+      layout.strokeY,
+      layout.width,
+      layout.strokeHeight,
+      "Rod stroke",
+      model.value,
+      this.#styles.resolveBarStyle("rodStroke"),
+    );
   }
 
   #drawRodControl(model, layout) {
     if (!model.visible) return;
     const style = this.#styles.resolveBarStyle("rodControl");
-    this.#drawThinBar({
-      ratio: model.ratio,
-      x: layout.x,
-      y: layout.controlY,
-      width: layout.width,
-      height: layout.controlHeight,
-      label: "Контроль вудки",
-      value: model.value,
-      style: {
-        ...style,
-        fillColor: model.active
-          ? style.activeColor || "#00d4ff"
-          : style.inactiveColor || "#5c7d99",
-      },
-    });
+    const resolvedStyle = this.#rodControlStyle;
+    Object.setPrototypeOf(resolvedStyle, style);
+    resolvedStyle.fillColor = model.active
+      ? style.activeColor || "#00d4ff"
+      : style.inactiveColor || "#5c7d99";
+    this.#drawThinBar(
+      model.ratio,
+      layout.x,
+      layout.controlY,
+      layout.width,
+      layout.controlHeight,
+      "Rod control",
+      model.value,
+      resolvedStyle,
+    );
   }
 
-  #drawThinBar({ ratio, x, y, width, height, label, value, style }) {
+  #drawThinBar(ratio, x, y, width, height, label, value, style) {
     const surface = this.#surface;
     const clamped = RenderMath.clamp(ratio);
     surface.save();
@@ -190,44 +209,45 @@ class FightStatusBarsRenderer {
     const style = this.#styles.resolveBarStyle("tension");
     const fillColor = this.#gradientColor(model.ratio * 100, style.gradient);
     const statusColor = this.#statusColor(model.ratio * 100, style.statuses);
-    this.#bars.drawFramedRatioBar({
-      ratio: model.ratio,
-      x: layout.x,
-      y: layout.tensionY,
-      width: layout.width,
-      height: style.height || 20,
-      style: {
-        ...style,
-        glowIntensity: model.pulse * (style.glowIntensity ?? 0.6),
-        valueColor: statusColor,
-      },
-      fillColor,
-      topLabel: "НАТЯГ",
-      rightValue: model.value,
-      marker: {
-        enabled: model.dragMarkerVisible,
-        ratio: model.dragMarkerRatio,
-        color: style.dragMarkerColor || style.markerColor || "#73c2fb",
-        width: 2,
-        extendPx: 4,
-      },
-    });
+    const resolvedStyle = this.#tensionStyle;
+    Object.setPrototypeOf(resolvedStyle, style);
+    resolvedStyle.glowIntensity =
+      model.pulse * (style.glowIntensity ?? 0.6);
+    resolvedStyle.valueColor = statusColor;
+    const marker = this.#tensionMarker;
+    marker.enabled = model.dragMarkerVisible;
+    marker.ratio = model.dragMarkerRatio;
+    marker.color = style.dragMarkerColor || style.markerColor || "#73c2fb";
+    marker.width = 2;
+    marker.extendPx = 4;
+    const options = this.#framedOptions;
+    options.x = layout.x;
+    options.y = layout.tensionY;
+    options.width = layout.width;
+    options.height = style.height || 20;
+    options.ratio = model.ratio;
+    options.style = resolvedStyle;
+    options.fillColor = fillColor;
+    options.topLabel = "TENSION";
+    options.rightValue = model.value;
+    options.marker = marker;
+    this.#bars.drawFramedRatioBar(options);
     this.#drawStress(stress, layout);
   }
 
   #drawStress(model, layout) {
     if (!model.visible) return;
     const style = this.#styles.resolveBarStyle("tackleStress");
-    this.#bars.drawThinProgressBar({
-      x: layout.x,
-      y: layout.tensionY + (style.yOffset ?? -25),
-      width: layout.width,
-      height: style.height || 8,
-      ratio: model.ratio,
-      style,
-      label: model.label,
-      value: model.value,
-    });
+    const options = this.#thinOptions;
+    options.x = layout.x;
+    options.y = layout.tensionY + (style.yOffset ?? -25);
+    options.width = layout.width;
+    options.height = style.height || 8;
+    options.ratio = model.ratio;
+    options.style = style;
+    options.label = model.label;
+    options.value = model.value;
+    this.#bars.drawThinProgressBar(options);
   }
 
   #gradientColor(value, gradient) {

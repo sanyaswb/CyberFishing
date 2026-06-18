@@ -1,27 +1,12 @@
 class FishingSceneRenderer {
-  #fightAreaRenderer;
-  #rodLineRenderer;
-  #floatRenderer;
+  #composite;
 
-  constructor({ fightAreaRenderer, rodLineRenderer, floatRenderer }) {
-    if (!fightAreaRenderer || typeof fightAreaRenderer.render !== "function") {
-      throw new TypeError("FishingSceneRenderer requires fightAreaRenderer");
-    }
-    if (!rodLineRenderer || typeof rodLineRenderer.render !== "function") {
-      throw new TypeError("FishingSceneRenderer requires rodLineRenderer");
-    }
-    if (!floatRenderer || typeof floatRenderer.render !== "function") {
-      throw new TypeError("FishingSceneRenderer requires floatRenderer");
-    }
-    this.#fightAreaRenderer = fightAreaRenderer;
-    this.#rodLineRenderer = rodLineRenderer;
-    this.#floatRenderer = floatRenderer;
+  constructor({ components }) {
+    this.#composite = new CompositeRenderer({ components });
   }
 
   render(model) {
     if (!model.visible) return;
-    this.#fightAreaRenderer.render(model.fightAreas);
-    this.#rodLineRenderer.render(model.rodLine);
-    this.#floatRenderer.render(model.float);
+    this.#composite.render(model);
   }
 }

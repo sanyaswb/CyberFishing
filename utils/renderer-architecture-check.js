@@ -24,6 +24,9 @@ function sourceOf(file) {
 function lineCount(file) {
   return sourceOf(file).split(/\r?\n/).length;
 }
+function normalizePath(file) {
+  return file.split(path.sep).join("/");
+}
 
 assert(
   !fs.existsSync(path.join(ROOT, "src/render/renderer.js")),
@@ -60,14 +63,16 @@ const contextOwners = allSourceFiles.filter((file) =>
   /\bgetContext\s*\(/.test(sourceOf(file)),
 );
 assert(
-  contextOwners.join("|") === "src\\render\\core\\canvas_2d_surface.js",
+  contextOwners.map(normalizePath).join("|") ===
+    "src/render/core/canvas_2d_surface.js",
   "getContext is owned only by Canvas2DSurface",
 );
 const imageOwners = allSourceFiles.filter((file) =>
   /\bnew\s+Image\s*\(/.test(sourceOf(file)),
 );
 assert(
-  imageOwners.join("|") === "src\\render\\core\\image_asset_provider.js",
+  imageOwners.map(normalizePath).join("|") ===
+    "src/render/core/image_asset_provider.js",
   "new Image is owned only by ImageAssetProvider",
 );
 

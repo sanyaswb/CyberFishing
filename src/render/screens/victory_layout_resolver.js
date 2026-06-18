@@ -18,6 +18,12 @@ class VictoryLayoutResolver {
     release: {},
   };
 
+  constructor() {
+    if (typeof RenderAllocationDiagnostics !== "undefined") {
+      RenderAllocationDiagnostics.recordVictoryLayoutCreated();
+    }
+  }
+
   resolve({ width, height, config, statCount = 3 }) {
     const viewportWidth = Math.max(1, Number(width) || 1);
     const viewportHeight = Math.max(1, Number(height) || 1);
@@ -134,17 +140,15 @@ class VictoryLayoutResolver {
       buttonWidth,
       buttonHeight,
     );
-    Object.assign(this.#layout.stats, {
-      x: panelX + padding,
-      y: statsY,
-      width: panelWidth - padding * 2,
-      height: statsHeight,
-      columns,
-      rows,
-      pillWidth,
-      pillHeight,
-      pillGap,
-    });
+    this.#layout.stats.x = panelX + padding;
+    this.#layout.stats.y = statsY;
+    this.#layout.stats.width = panelWidth - padding * 2;
+    this.#layout.stats.height = statsHeight;
+    this.#layout.stats.columns = columns;
+    this.#layout.stats.rows = rows;
+    this.#layout.stats.pillWidth = pillWidth;
+    this.#layout.stats.pillHeight = pillHeight;
+    this.#layout.stats.pillGap = pillGap;
     this.#layout.padding = padding;
     this.#layout.titleHeight = titleHeight;
     this.#layout.gap = gap;

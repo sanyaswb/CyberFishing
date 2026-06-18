@@ -51,18 +51,25 @@ class CastingRenderFrameBuilder {
   buildInto({ target, intent, clipRegions }) {
     if (intent.casting.visible) {
       if (intent.casting.zoneVisible) {
-        this.#buildAimingZone(target, {
-          bottom: intent.casting.virtualBottomY,
-          maxDistance: intent.casting.maxDistance,
-          mode: intent.casting.mode,
+        this.#buildAimingZone(
+          target,
+          intent.casting.virtualBottomY,
+          intent.casting.maxDistance,
+          intent.casting.mode,
           clipRegions,
-        });
+        );
       }
       if (intent.casting.accuracyPreview) {
         this.#buildAccuracy(target, intent.casting.accuracyPreview);
       }
       if (intent.casting.powerVisible) {
-        this.#buildPowerAim(target, intent.casting);
+        this.#buildPowerAim(
+          target,
+          intent.casting.visual,
+          intent.casting.bounds,
+          intent.casting.maxDistance,
+          intent.casting.nowMs,
+        );
       }
     }
     this.#buildChumAim(target, clipRegions);
@@ -78,12 +85,13 @@ class CastingRenderFrameBuilder {
     if (visual && castingEnabled) {
       if (this.#config.debug?.casting?.showChumDistanceLine) {
         const bounds = this.#chumSource.getBounds();
-        this.#buildAimingZone(target, {
-          bottom: bounds.bottom,
-          maxDistance: distance,
-          mode: "chum",
+        this.#buildAimingZone(
+          target,
+          bounds.bottom,
+          distance,
+          "chum",
           clipRegions,
-        });
+        );
       }
       if (this.#config.debug?.casting?.showAccuracyArea) {
         this.#buildAccuracy(
@@ -91,12 +99,13 @@ class CastingRenderFrameBuilder {
           this.#chumSource.getAccuracyPreview(),
         );
       }
-      this.#buildPowerAim(target, {
+      this.#buildPowerAim(
+        target,
         visual,
-        bounds: this.#chumSource.getBounds(),
-        maxDistance: distance,
-        nowMs: this.#chumSource.getNow(),
-      });
+        this.#chumSource.getBounds(),
+        distance,
+        this.#chumSource.getNow(),
+      );
       return;
     }
     if (
@@ -104,16 +113,17 @@ class CastingRenderFrameBuilder {
       !castingEnabled &&
       this.#config.locations?.showAimingZone !== false
     ) {
-      this.#buildAimingZone(target, {
-        bottom: this.#chumSource.getBounds().bottom,
-        maxDistance: distance,
-        mode: "chum",
+      this.#buildAimingZone(
+        target,
+        this.#chumSource.getBounds().bottom,
+        distance,
+        "chum",
         clipRegions,
-      });
+      );
     }
   }
 
-  #buildAimingZone(target, { bottom, maxDistance, mode, clipRegions }) {
+  #buildAimingZone(target, bottom, maxDistance, mode, clipRegions) {
     if (maxDistance === Infinity) return;
     const lineVirtualY = bottom - maxDistance;
     const lineY = this.#projector.virtualToScreen(
@@ -126,14 +136,12 @@ class CastingRenderFrameBuilder {
       bottom,
       this.#screenB,
     ).y;
-    Object.assign(target.aimingZone, {
-      visible: true,
-      lineY,
-      fillHeight: bottomY - lineY,
-      viewportWidth: this.#canvasMetrics.width,
-      mode,
-      clipRegions,
-    });
+    target.aimingZone.visible = true;
+    target.aimingZone.lineY = lineY;
+    target.aimingZone.fillHeight = bottomY - lineY;
+    target.aimingZone.viewportWidth = this.#canvasMetrics.width;
+    target.aimingZone.mode = mode;
+    target.aimingZone.clipRegions = clipRegions;
     target.visible = true;
   }
 
@@ -142,29 +150,26 @@ class CastingRenderFrameBuilder {
     const radiusY = preview?.radiusY ?? preview?.radiusPx ?? 0;
     if (!preview?.active || radiusX <= 0 || radiusY <= 0) return;
     const debug = this.#config.debug?.casting || {};
-    Object.assign(target.accuracyArea, {
-      visible: true,
-      x: preview.x,
-      y: preview.y,
-      radiusX,
-      radiusY,
-      fillColor:
-        debug.accuracyAreaFill || "rgba(255, 255, 255, 0.08)",
-      strokeColor:
-        debug.accuracyAreaStroke || "rgba(255, 255, 255, 0.55)",
-      lineWidth: debug.accuracyAreaLineWidth || 1,
-      dash: debug.accuracyAreaDash || this.#defaultAccuracyDash,
-    });
+    target.accuracyArea.visible = true;
+    target.accuracyArea.x = preview.x;
+    target.accuracyArea.y = preview.y;
+    target.accuracyArea.radiusX = radiusX;
+    target.accuracyArea.radiusY = radiusY;
+    target.accuracyArea.fillColor =
+      debug.accuracyAreaFill || "rgba(255, 255, 255, 0.08)";
+    target.accuracyArea.strokeColor =
+      debug.accuracyAreaStroke || "rgba(255, 255, 255, 0.55)";
+    target.accuracyArea.lineWidth = debug.accuracyAreaLineWidth || 1;
+    target.accuracyArea.dash =
+      debug.accuracyAreaDash || this.#defaultAccuracyDash;
     target.visible = true;
   }
 
-  #buildPowerAim(target, source) {
-    const visual = source.visual;
+  #buildPowerAim(target, visual, bounds, maxDistance, nowMs) {
     if (!visual?.active) return;
     const lineConfig = this.#config.casting?.aimLine || {};
-    const bounds = source.bounds;
     const mapHeight = Math.max(0, bounds.bottom - bounds.top);
-    let maxDistance = Number(source.maxDistance);
+    maxDistance = Number(maxDistance);
     if (!Number.isFinite(maxDistance)) maxDistance = mapHeight;
     const powerRatio = RenderMath.clamp(visual.power);
     const linePower = lineConfig.fullDistance === false ? powerRatio : 1;
@@ -185,30 +190,28 @@ class CastingRenderFrameBuilder {
       : this.#defaultDash;
     const dashCycle = Math.max(1, dash[0] + (dash[1] || 0));
     const tensionStyle = this.#hudStyleResolver.resolveBarStyle("tension");
-    Object.assign(target.powerAim, {
-      visible: true,
-      mode: visual.mode,
-      screenX: visual.screenX,
-      originY,
-      targetY,
-      powerRatio,
-      viewportWidth: this.#canvasMetrics.width,
-      lineColor:
-        visual.mode === "chum"
-          ? lineConfig.chumColor || "rgba(255, 180, 0, 0.9)"
-          : lineConfig.color || "rgba(0, 220, 255, 0.85)",
-      powerColor: this.#gradientColor(
-        powerRatio * 100,
-        tensionStyle.gradient,
-      ),
-      lineWidth: lineConfig.width || 2,
-      dash,
-      dashOffset:
-        -(((source.nowMs / 1000) *
-          (lineConfig.dashSpeedPxPerSecond ?? 42)) %
-          dashCycle),
-      glowBlur: lineConfig.glowBlur || 0,
-    });
+    target.powerAim.visible = true;
+    target.powerAim.mode = visual.mode;
+    target.powerAim.screenX = visual.screenX;
+    target.powerAim.originY = originY;
+    target.powerAim.targetY = targetY;
+    target.powerAim.powerRatio = powerRatio;
+    target.powerAim.viewportWidth = this.#canvasMetrics.width;
+    target.powerAim.lineColor =
+      visual.mode === "chum"
+        ? lineConfig.chumColor || "rgba(255, 180, 0, 0.9)"
+        : lineConfig.color || "rgba(0, 220, 255, 0.85)";
+    target.powerAim.powerColor = this.#gradientColor(
+      powerRatio * 100,
+      tensionStyle.gradient,
+    );
+    target.powerAim.lineWidth = lineConfig.width || 2;
+    target.powerAim.dash = dash;
+    target.powerAim.dashOffset =
+      -(((nowMs / 1000) *
+        (lineConfig.dashSpeedPxPerSecond ?? 42)) %
+        dashCycle);
+    target.powerAim.glowBlur = lineConfig.glowBlur || 0;
     target.visible = true;
   }
 

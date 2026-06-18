@@ -1,31 +1,12 @@
 class FightHudRenderer {
-  #statusBarsRenderer;
-  #holdChargesRenderer;
+  #composite;
 
-  constructor({ statusBarsRenderer, holdChargesRenderer }) {
-    if (
-      !statusBarsRenderer ||
-      typeof statusBarsRenderer.render !== "function"
-    ) {
-      throw new TypeError(
-        "FightHudRenderer requires statusBarsRenderer",
-      );
-    }
-    if (
-      !holdChargesRenderer ||
-      typeof holdChargesRenderer.render !== "function"
-    ) {
-      throw new TypeError(
-        "FightHudRenderer requires holdChargesRenderer",
-      );
-    }
-    this.#statusBarsRenderer = statusBarsRenderer;
-    this.#holdChargesRenderer = holdChargesRenderer;
+  constructor({ components }) {
+    this.#composite = new CompositeRenderer({ components });
   }
 
   render(model) {
     if (!model.visible) return;
-    this.#statusBarsRenderer.render(model);
-    this.#holdChargesRenderer.render(model.holdCharges);
+    this.#composite.render(model);
   }
 }

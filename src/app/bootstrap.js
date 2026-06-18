@@ -4,14 +4,23 @@ class GameCompositionRoot {
     this.#config = config || (typeof CONFIG !== "undefined" ? CONFIG : {});
   }
 
-  build(canvasId) {
+  async build(canvasId) {
     const canvas = document.getElementById(canvasId);
     const canvasMetrics = new CanvasMetricsProvider(canvas);
     canvasMetrics.resizeToViewport();
     const devFlags = new DevFlagsProvider({ config: this.#config });
     const audio = new BrowserAudioAdapter();
+    const clock = new GameClock();
     const debugEvents = new BrowserDebugAdapter(document, () =>
       devFlags.isDebugEnabled(),
+    );
+    const runtime = await this.create(
+      canvas,
+      canvasMetrics,
+      clock,
+      debugEvents,
+      devFlags,
+      audio,
     );
     return new GameApplication({
       canvas,
@@ -23,15 +32,43 @@ class GameCompositionRoot {
       debugEvents,
       windowTarget: window,
       documentTarget: document,
+      runtime,
+      clock,
     });
   }
 
-  create(canvas, canvasMetrics, clock, debugEvents, devFlags, audio) {
+  async create(canvas, canvasMetrics, clock, debugEvents, devFlags, audio) {
+    const contracts = new DependencyContractValidator({
+      stage: "bootstrap",
+      consumer: "GameCompositionRoot.create",
+    });
     const surface = new Canvas2DSurface(canvas, {
       contextAttributes: { alpha: false },
     });
     const primitives = new CanvasPrimitives(surface);
     const imageAssets = new ImageAssetProvider();
+    contracts.requireMethods(imageAssets, "imageAssets", ["preload", "tryGet"]);
+    const canvasFactory = new OffscreenCanvasFactory();
+    const assetPreloadCoordinator = new AssetPreloadCoordinator({
+      imageAssets,
+      locationsConfig: this.#config.locations,
+    });
+    contracts.requireMethods(assetPreloadCoordinator, "assetPreloadCoordinator", [
+      "preloadApplicationAssets",
+      "preloadLocation",
+      "preloadFishingAssets",
+      "preloadVictoryAssets",
+    ]);
+    const locationAssetLoader = new LocationAssetLoader({
+      imageAssets,
+      canvasFactory,
+    });
+    contracts.requireMethods(locationAssetLoader, "locationAssetLoader", [
+      "load",
+    ]);
+    const locationDebugMapBuilder = new LocationDebugMapBuilder({
+      canvasFactory,
+    });
     const hudStyleResolver = new HudStyleResolver({
       hudStylesProvider: () => this.#config.ui?.hudStyles || {},
     });
@@ -42,6 +79,9 @@ class GameCompositionRoot {
       configProvider: () => this.#config.ui?.victory || {},
     });
     const victoryLayoutResolver = new VictoryLayoutResolver();
+    contracts.requireMethods(victoryLayoutResolver, "victoryLayoutResolver", [
+      "resolve",
+    ]);
     const hudBarRenderer = new HudBarRenderer(surface);
     const worldSceneRenderer = new WorldSceneRenderer({
       surface,
@@ -63,25 +103,98 @@ class GameCompositionRoot {
       primitives,
       styleResolver: fightAreaStyleResolver,
     });
+    const rodLineRenderer = new RodLineRenderer({ surface });
+    const floatRenderer = new FloatRenderer({ surface });
     const fishingSceneRenderer = new FishingSceneRenderer({
-      fightAreaRenderer,
-      rodLineRenderer: new RodLineRenderer({ surface }),
-      floatRenderer: new FloatRenderer({ surface }),
+      components: [
+        new RenderComponent({
+          id: "fight-area",
+          order: RenderOrder.values.FIGHT_AREAS,
+          renderer: fightAreaRenderer,
+          selectModel: (model) => model.fightAreas,
+        }),
+        new RenderComponent({
+          id: "rod-line",
+          order: RenderOrder.values.FISHING_EQUIPMENT,
+          renderer: rodLineRenderer,
+          selectModel: (model) => model.rodLine,
+        }),
+        new RenderComponent({
+          id: "float",
+          order: RenderOrder.values.FISHING_EQUIPMENT + 1,
+          renderer: floatRenderer,
+          selectModel: (model) => model.float,
+        }),
+      ],
     });
+    const statusBarsRenderer = new FightStatusBarsRenderer({
+      surface,
+      hudBarRenderer,
+      styleResolver: hudStyleResolver,
+    });
+    const holdChargesRenderer = new HoldChargesRenderer({ surface });
     const fightHudRenderer = new FightHudRenderer({
-      statusBarsRenderer: new FightStatusBarsRenderer({
-        surface,
-        hudBarRenderer,
-        styleResolver: hudStyleResolver,
-      }),
-      holdChargesRenderer: new HoldChargesRenderer({ surface }),
+      components: [
+        new RenderComponent({
+          id: "status-bars",
+          order: RenderOrder.values.HUD,
+          renderer: statusBarsRenderer,
+          selectModel: (model) => model,
+        }),
+        new RenderComponent({
+          id: "hold-charges",
+          order: RenderOrder.values.HUD + 1,
+          renderer: holdChargesRenderer,
+          selectModel: (model) => model.holdCharges,
+        }),
+      ],
+    });
+    const invalidCastMarkerRenderer = {
+      render: (model) => worldSceneRenderer.renderInvalidCastMarker(model),
+    };
+    this.#validateRenderContracts(contracts, {
+      worldSceneRenderer,
+      worldDebugRenderer,
+      boatChumRenderer,
+      castSceneRenderer,
+      fightAreaRenderer,
+      rodLineRenderer,
+      floatRenderer,
+      fishingSceneRenderer,
+      statusBarsRenderer,
+      holdChargesRenderer,
+      fightHudRenderer,
+      invalidCastMarkerRenderer,
     });
     const pipeline = new GameRenderPipeline({
       passes: RenderOrder.createPassList({
         world: new WorldRenderPass({
-          sceneRenderer: worldSceneRenderer,
-          debugRenderer: worldDebugRenderer,
-          boatChumRenderer,
+          components: [
+            new RenderComponent({
+              id: "world-background",
+              order: RenderOrder.values.BACKGROUND,
+              renderer: worldSceneRenderer,
+              selectModel: (frame) => frame.world,
+            }),
+            new RenderComponent({
+              id: "world-debug",
+              order: RenderOrder.values.WORLD_DEBUG,
+              renderer: worldDebugRenderer,
+              selectModel: (frame) => frame.world,
+            }),
+            new RenderComponent({
+              id: "boat-chum",
+              order: RenderOrder.values.WORLD_ENTITIES,
+              renderer: boatChumRenderer,
+              selectModel: (frame) => frame.world,
+            }),
+            new RenderComponent({
+              id: "invalid-cast-marker",
+              order: RenderOrder.values.WORLD_ENTITIES + 1,
+              renderer: invalidCastMarkerRenderer,
+              selectModel: (frame) => frame.world.invalidCastMarker,
+            }),
+          ],
         }),
         casting: new CastingRenderPass({ renderer: castSceneRenderer }),
         fishing: new FishingRenderPass({ renderer: fishingSceneRenderer }),
@@ -97,6 +210,11 @@ class GameCompositionRoot {
         }),
       }),
     });
+    contracts.requireMethods(pipeline, "rendering.pipeline", [
+      "render",
+      "getPassCount",
+      "copyPassIdsInto",
+    ]);
     const location = new LocationManager(
       this.#config.locations,
       this.#config.player?.locationId,
@@ -106,6 +224,12 @@ class GameCompositionRoot {
     );
     const locId = location.id;
     const locCfg = location.config;
+    await assetPreloadCoordinator.preloadLocation(locId);
+    const locationResources = await locationAssetLoader.load(
+      locId,
+      locCfg,
+      this.#config.locations,
+    );
     const projector = new ViewportProjector(this.#config.locations, locId);
     const physicsConfig =
       this.#config.fightPhysicsConfig ||
@@ -143,7 +267,7 @@ class GameCompositionRoot {
         locId,
         this.#config.locations,
         rng,
-        imageAssets,
+        locationResources,
       ),
       env: new EnvironmentSystem(
         locCfg,
@@ -210,7 +334,10 @@ class GameCompositionRoot {
       world,
       rendering: {
         imageAssets,
+        assetPreloadCoordinator,
+        locationAssetLoader,
         pipeline,
+        locationDebugMapBuilder,
         hudStyleResolver,
         fightAreaStyleResolver,
         outcomeStyleResolver,
@@ -250,6 +377,10 @@ class GameCompositionRoot {
     canvasMetrics,
     biteEnvData,
   }) {
+    const contracts = new DependencyContractValidator({
+      stage: "bootstrap",
+      consumer: "GameCompositionRoot.createApplicationServices",
+    });
     const castService = new CastService({
       config,
       rng,
@@ -401,6 +532,7 @@ class GameCompositionRoot {
         map: runtime.map,
         projector: runtime.projector,
         config,
+        debugMapBuilder: runtime.rendering.locationDebugMapBuilder,
       }),
     });
     const castingBuilder = new CastingRenderFrameBuilder({
@@ -476,6 +608,15 @@ class GameCompositionRoot {
       fishingBuilder,
       outcomeBuilder,
     });
+    this.#validateFrameBuilderContracts(contracts, {
+      worldBuilder,
+      castingBuilder,
+      fightAreaBuilder,
+      hudBuilder,
+      fishingBuilder,
+      outcomeBuilder,
+      frameBuilder,
+    });
     const renderCoordinator = new GameRenderCoordinator({
       stateMachine,
       frameBuffer: new RenderFrameBuffer(),
@@ -490,6 +631,10 @@ class GameCompositionRoot {
         runtime.rendering.outcomeStyleResolver.invalidate();
       },
     });
+    contracts.requireMethods(renderCoordinator, "renderCoordinator", [
+      "render",
+      "invalidateStyles",
+    ]);
 
     const loop = new GameLoop(
       clock,
@@ -509,5 +654,21 @@ class GameCompositionRoot {
       loop,
       debugEvents,
     };
+  }
+
+  #validateRenderContracts(contracts, renderers) {
+    const names = Object.keys(renderers);
+    for (let index = 0; index < names.length; index += 1) {
+      const name = names[index];
+      contracts.requireMethods(renderers[name], name, ["render"]);
+    }
+  }
+
+  #validateFrameBuilderContracts(contracts, builders) {
+    const names = Object.keys(builders);
+    for (let index = 0; index < names.length; index += 1) {
+      const name = names[index];
+      contracts.requireMethods(builders[name], name, ["buildInto"]);
+    }
   }
 }

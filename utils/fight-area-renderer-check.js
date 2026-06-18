@@ -18,7 +18,8 @@ const landing = fs.readFileSync(
 );
 
 if (
-  renderer.indexOf("withClip") > renderer.indexOf("#drawLastDash") ||
+  renderer.indexOf("beginClip") > renderer.indexOf("#drawLastDash") ||
+  renderer.lastIndexOf("endClip") < renderer.indexOf("#drawLineRadius") ||
   !renderer.includes("this.#drawCatch") ||
   !renderer.includes("this.#drawNet") ||
   !renderer.includes("this.#drawSector") ||

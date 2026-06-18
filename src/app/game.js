@@ -1,19 +1,30 @@
 class Game {
   #app;
+  #ready;
 
   constructor(canvasId, compositionRoot = new GameCompositionRoot()) {
-    this.#app = compositionRoot.build(canvasId);
+    this.#ready = Promise.resolve(compositionRoot.build(canvasId)).then(
+      (app) => {
+        this.#app = app;
+        return app;
+      },
+    );
   }
 
-  start() {
-    return this.#app.start();
+  async start() {
+    const app = await this.#ready;
+    return app.start();
   }
 
   stop() {
-    this.#app.stop();
+    this.#app?.stop();
   }
 
   dispose() {
-    this.#app.dispose();
+    this.#app?.dispose();
+  }
+
+  get ready() {
+    return this.#ready;
   }
 }

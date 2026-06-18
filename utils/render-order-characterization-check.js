@@ -11,6 +11,9 @@ const context = harness.createContext({ Math, Number });
 harness.load(context, [
   "src/render/core/render_frame_buffer.js",
   "src/render/core/render_pass.js",
+  "src/render/core/render_order.js",
+  "src/render/core/render_component.js",
+  "src/render/core/composite_renderer.js",
   "src/render/pipeline/world_render_pass.js",
   "src/render/pipeline/casting_render_pass.js",
   "src/render/pipeline/fishing_render_pass.js",
@@ -30,13 +33,35 @@ const renderer = (name) => ({
   render() { calls.push(name); },
 });
 const scene = renderer("world.scene");
-scene.renderInvalidCastMarker = () => calls.push("world.invalidMarker");
 const pipeline = new GameRenderPipeline({
   passes: [
     new WorldRenderPass({
-      sceneRenderer: scene,
-      debugRenderer: renderer("world.debug"),
-      boatChumRenderer: renderer("world.entities"),
+      components: [
+        new RenderComponent({
+          id: "world-scene",
+          order: 100,
+          renderer: scene,
+          selectModel: (frame) => frame.world,
+        }),
+        new RenderComponent({
+          id: "world-debug",
+          order: 200,
+          renderer: renderer("world.debug"),
+          selectModel: (frame) => frame.world,
+        }),
+        new RenderComponent({
+          id: "world-entities",
+          order: 300,
+          renderer: renderer("world.entities"),
+          selectModel: (frame) => frame.world,
+        }),
+        new RenderComponent({
+          id: "world-invalid-marker",
+          order: 301,
+          renderer: renderer("world.invalidMarker"),
+          selectModel: (frame) => frame.world.invalidCastMarker,
+        }),
+      ],
     }),
     new CastingRenderPass({ renderer: renderer("casting") }),
     new FishingRenderPass({ renderer: renderer("fishing") }),
@@ -69,7 +94,7 @@ assert(
   ].join("|"),
   "render pipeline preserves the characterized layer order",
 );
-assert(pipeline.passes.length === 5, "pipeline owns five reusable passes");
+assert(pipeline.getPassCount() === 5, "pipeline owns five reusable passes");
 console.log("render-order-characterization-check passed:");
 for (const message of checks) console.log("- " + message);
 `, "utils/render-order-characterization-check.js#scenario");

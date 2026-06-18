@@ -7,6 +7,8 @@ class LandingAreaRenderFrameBuilder {
   #landingPolicyResolver;
   #screenA = new Vector2(0, 0);
   #screenB = new Vector2(0, 0);
+  #landingPolicyContext = { rod: null, reel: null };
+  #landingDistanceContext = { rod: null, reel: null, config: null };
 
   constructor({
     projector,
@@ -35,15 +37,15 @@ class LandingAreaRenderFrameBuilder {
       this.#screenA,
     ).y;
     const width = this.#canvasMetrics.width;
-    const policy = this.#landingPolicyResolver.resolve({
-      rod: equipment.rod,
-      reel: equipment.reel,
-    });
-    const landingDistance = policy.getLandingDistanceMeters({
-      rod: equipment.rod,
-      reel: equipment.reel,
-      config: this.#config,
-    });
+    this.#landingPolicyContext.rod = equipment.rod;
+    this.#landingPolicyContext.reel = equipment.reel;
+    const policy = this.#landingPolicyResolver.resolve(this.#landingPolicyContext);
+    this.#landingDistanceContext.rod = equipment.rod;
+    this.#landingDistanceContext.reel = equipment.reel;
+    this.#landingDistanceContext.config = this.#config;
+    const landingDistance = policy.getLandingDistanceMeters(
+      this.#landingDistanceContext,
+    );
     const rodScreenX = Number(this.#getRodScreenX());
     const rodVirtual = this.#projector.screenToVirtual(
       Number.isFinite(rodScreenX) ? rodScreenX : width / 2,

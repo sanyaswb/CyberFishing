@@ -38,30 +38,46 @@ class CanvasPrimitives {
   }
 
   withClip(rects, draw) {
-    const isReusableList = rects && typeof rects.forEach === "function";
+    const clipped = this.beginClip(rects);
+    draw();
+    this.endClip(clipped);
+  }
+
+  beginClip(rects) {
+    const isReusableList =
+      rects &&
+      typeof rects.getAt === "function" &&
+      typeof rects.count === "number";
     const isArray = Array.isArray(rects);
     const count = isReusableList ? rects.count : isArray ? rects.length : 0;
     if (count === 0) {
-      draw();
-      return;
+      return false;
     }
 
     this.#surface.save();
     this.#surface.beginPath();
-    const appendRect = (rect) => {
-      if (!rect || rect.width <= 0 || rect.height <= 0) return;
-      this.#surface.rect(rect.x, rect.y, rect.width, rect.height);
-    };
     if (isReusableList) {
-      rects.forEach(appendRect);
+      for (let index = 0; index < rects.count; index += 1) {
+        this.#appendClipRect(rects.getAt(index));
+      }
     } else {
       for (let index = 0; index < rects.length; index += 1) {
-        appendRect(rects[index]);
+        this.#appendClipRect(rects[index]);
       }
     }
     this.#surface.clip();
-    draw();
-    this.#surface.restore();
+    return true;
+  }
+
+  endClip(active) {
+    if (active) {
+      this.#surface.restore();
+    }
+  }
+
+  #appendClipRect(rect) {
+    if (!rect || rect.width <= 0 || rect.height <= 0) return;
+    this.#surface.rect(rect.x, rect.y, rect.width, rect.height);
   }
 
   drawImageCover(image, x, y, width, height) {
@@ -107,19 +123,15 @@ class CanvasPrimitives {
     let size = Math.max(minSize, Number(font?.size) || minSize);
 
     while (size > minSize) {
-      this.#surface.setState({
-        font: `${weight} ${size}px ${family}`,
-      });
+      this.#surface.font = `${weight} ${size}px ${family}`;
       if (this.#surface.measureText(text).width <= maxWidth) break;
       size -= 1;
     }
 
-    this.#surface.setState({
-      fillStyle: color,
-      font: `${weight} ${size}px ${family}`,
-      textAlign: align,
-      textBaseline: baseline,
-    });
+    this.#surface.fillStyle = color;
+    this.#surface.font = `${weight} ${size}px ${family}`;
+    this.#surface.textAlign = align;
+    this.#surface.textBaseline = baseline;
     this.#surface.drawText(text, x, y);
     return size;
   }

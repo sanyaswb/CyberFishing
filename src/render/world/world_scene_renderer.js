@@ -16,9 +16,10 @@ class WorldSceneRenderer {
   render(model) {
     if (!model.visible) return;
     this.#surface.clear(model.backgroundColor);
-    model.backgroundLayers.forEach((layer) => {
+    for (let index = 0; index < model.backgroundLayers.count; index += 1) {
+      const layer = model.backgroundLayers.getAt(index);
       const image = this.#assets.tryGet(layer.assetId);
-      if (!image) return;
+      if (!image) continue;
       const previousAlpha = this.#surface.globalAlpha;
       this.#surface.globalAlpha = layer.alpha;
       this.#surface.drawImage(
@@ -29,7 +30,7 @@ class WorldSceneRenderer {
         layer.height,
       );
       this.#surface.globalAlpha = previousAlpha;
-    });
+    }
   }
 
   renderInvalidCastMarker(model) {

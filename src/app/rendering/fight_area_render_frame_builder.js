@@ -7,6 +7,25 @@ class FightAreaRenderFrameBuilder {
   #sectorGeometry;
   #screenA = new Vector2(0, 0);
   #origin = { x: 0, y: 0 };
+  #landingContext = {
+    target: null,
+    bottom: 0,
+    debug: null,
+    equipment: null,
+  };
+  #previewGeometry = {
+    poleFightSectorOriginX: 0,
+    poleFightSectorOriginY: 0,
+    poleFightSectorApexX: 0,
+    poleFightSectorApexY: 0,
+    poleFightSectorMaxAngleDeg: 0,
+    poleFightSectorLimitRadiusPx: 0,
+    poleFightSectorLeftBoundaryRadiusIntersectionX: 0,
+    poleFightSectorLeftBoundaryRadiusIntersectionY: 0,
+    poleFightSectorRightBoundaryRadiusIntersectionX: 0,
+    poleFightSectorRightBoundaryRadiusIntersectionY: 0,
+    poleFightSectorClamped: false,
+  };
 
   constructor({
     projector,
@@ -50,12 +69,12 @@ class FightAreaRenderFrameBuilder {
     if (!locations.debugVisuals) return;
     target.visible = true;
     target.clipRegions = clipRegions;
-    this.#landingAreaBuilder.buildInto({
-      target,
-      bottom,
-      debug: fightDebug,
-      equipment,
-    });
+    const landingContext = this.#landingContext;
+    landingContext.target = target;
+    landingContext.bottom = bottom;
+    landingContext.debug = fightDebug;
+    landingContext.equipment = equipment;
+    this.#landingAreaBuilder.buildInto(landingContext);
     this.#buildSector(
       target,
       state,
@@ -106,10 +125,9 @@ class FightAreaRenderFrameBuilder {
     target.apexY = apex.y;
     target.sectorClamped =
       geometry.poleFightSectorClamped === true;
-    Object.assign(target.sectorPoints.acquire(), {
-      x: apex.x,
-      y: apex.y,
-    });
+    let record = target.sectorPoints.acquire();
+    record.x = apex.x;
+    record.y = apex.y;
     for (let index = 0; index <= 64; index += 1) {
       const angle =
         (leftAngle + (rightAngle - leftAngle) * (index / 64)) *
@@ -120,10 +138,9 @@ class FightAreaRenderFrameBuilder {
         originY - Math.cos(angle) * radius,
         this.#screenA,
       );
-      Object.assign(target.sectorPoints.acquire(), {
-        x: point.x,
-        y: point.y,
-      });
+      record = target.sectorPoints.acquire();
+      record.x = point.x;
+      record.y = point.y;
     }
     const axisEnd = this.#projector.virtualToScreen(
       originX,
@@ -140,10 +157,9 @@ class FightAreaRenderFrameBuilder {
         originY - Math.cos(angle) * radius,
         this.#screenA,
       );
-      Object.assign(target.lineRadiusPoints.acquire(), {
-        x: point.x,
-        y: point.y,
-      });
+      record = target.lineRadiusPoints.acquire();
+      record.x = point.x;
+      record.y = point.y;
     }
   }
 
@@ -181,23 +197,23 @@ class FightAreaRenderFrameBuilder {
         this.#config.fightPhysicsConfig?.getPixelsPerMeter?.() || 50,
     });
     if (!geometry.active) return null;
-    return {
-      poleFightSectorOriginX: geometry.originX,
-      poleFightSectorOriginY: geometry.originY,
-      poleFightSectorApexX: geometry.sectorApexX,
-      poleFightSectorApexY: geometry.sectorApexY,
-      poleFightSectorMaxAngleDeg: geometry.maxAngleFromCenterDeg,
-      poleFightSectorLimitRadiusPx: geometry.limitRadiusPx,
-      poleFightSectorLeftBoundaryRadiusIntersectionX:
-        geometry.leftBoundaryRadiusIntersectionX,
-      poleFightSectorLeftBoundaryRadiusIntersectionY:
-        geometry.leftBoundaryRadiusIntersectionY,
-      poleFightSectorRightBoundaryRadiusIntersectionX:
-        geometry.rightBoundaryRadiusIntersectionX,
-      poleFightSectorRightBoundaryRadiusIntersectionY:
-        geometry.rightBoundaryRadiusIntersectionY,
-      poleFightSectorClamped: false,
-    };
+    const frame = this.#previewGeometry;
+    frame.poleFightSectorOriginX = geometry.originX;
+    frame.poleFightSectorOriginY = geometry.originY;
+    frame.poleFightSectorApexX = geometry.sectorApexX;
+    frame.poleFightSectorApexY = geometry.sectorApexY;
+    frame.poleFightSectorMaxAngleDeg = geometry.maxAngleFromCenterDeg;
+    frame.poleFightSectorLimitRadiusPx = geometry.limitRadiusPx;
+    frame.poleFightSectorLeftBoundaryRadiusIntersectionX =
+      geometry.leftBoundaryRadiusIntersectionX;
+    frame.poleFightSectorLeftBoundaryRadiusIntersectionY =
+      geometry.leftBoundaryRadiusIntersectionY;
+    frame.poleFightSectorRightBoundaryRadiusIntersectionX =
+      geometry.rightBoundaryRadiusIntersectionX;
+    frame.poleFightSectorRightBoundaryRadiusIntersectionY =
+      geometry.rightBoundaryRadiusIntersectionY;
+    frame.poleFightSectorClamped = false;
+    return frame;
   }
 
   #resolveBoundaryAngle(x, y, originX, originY, fallback) {

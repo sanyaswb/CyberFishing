@@ -8,6 +8,12 @@ class GameRenderCoordinator {
   #isDebugEnabled;
   #invalidateStyles;
   #intent = new GameRenderIntent();
+  #buildContext = {
+    frame: null,
+    intent: null,
+    invalidCastMarker: null,
+    debugEnabled: false,
+  };
   #frameNumber = 0;
 
   constructor({
@@ -55,17 +61,17 @@ class GameRenderCoordinator {
     const bounds = this.#getBounds();
     const intent = this.#intent.reset();
     this.#stateMachine.getRenderState(intent, bounds);
-    const frame = this.#frameBuffer.acquire({
-      frameNumber: ++this.#frameNumber,
+    const frame = this.#frameBuffer.acquire(
+      ++this.#frameNumber,
       dt,
-      stateName: intent.stateName,
-    });
-    this.#frameBuilder.buildInto({
-      frame,
-      intent,
-      invalidCastMarker: this.#getInvalidCastMarker(),
-      debugEnabled: this.#isDebugEnabled(),
-    });
+      intent.stateName,
+    );
+    const context = this.#buildContext;
+    context.frame = frame;
+    context.intent = intent;
+    context.invalidCastMarker = this.#getInvalidCastMarker();
+    context.debugEnabled = this.#isDebugEnabled();
+    this.#frameBuilder.buildInto(context);
     this.#pipeline.render(frame);
     return frame;
   }

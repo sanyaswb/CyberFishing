@@ -139,14 +139,13 @@ class WorldRenderFrameBuilder {
 
   #addBackgroundLayer(target, assetId, alpha, position, width, height) {
     if (!assetId) return;
-    Object.assign(target.backgroundLayers.acquire(), {
-      assetId,
-      alpha,
-      x: position.x,
-      y: position.y,
-      width,
-      height,
-    });
+    const record = target.backgroundLayers.acquire();
+    record.assetId = assetId;
+    record.alpha = alpha;
+    record.x = position.x;
+    record.y = position.y;
+    record.width = width;
+    record.height = height;
   }
 
   #buildClipRegions(target) {
@@ -185,21 +184,18 @@ class WorldRenderFrameBuilder {
         bottom,
         this.#screenB,
       );
-      Object.assign(target.acquire(), {
-        x: Math.min(x1, second.x),
-        y: Math.min(y1, second.y),
-        width: Math.abs(second.x - x1),
-        height: Math.abs(second.y - y1),
-      });
+      const record = target.acquire();
+      record.x = Math.min(x1, second.x);
+      record.y = Math.min(y1, second.y);
+      record.width = Math.abs(second.x - x1);
+      record.height = Math.abs(second.y - y1);
     }
   }
 
   #buildInvalidMarker(target, marker) {
     if (!marker) return;
-    Object.assign(target, {
-      visible: true,
-      x: marker.x,
-      y: marker.y,
-    });
+    target.visible = true;
+    target.x = marker.x;
+    target.y = marker.y;
   }
 }

@@ -110,15 +110,13 @@ class LocationMap {
   #cols;
   #rows;
   #dynamicZones;
-  #imageAssets;
   #bgAssetIds = {};
   #bgOpacities = { evening: 0, night: 0 };
   #isDynamicBg = false;
-  #depthAssetId = "";
-  #debugCanvas;
   #bgLoaded = false;
   #lastDebugState = "";
   #lastProjector = null;
+  #debugRevision = 0;
   #castableBounds = { left: 0, right: 0, top: 0, bottom: 0 };
   #backgroundRenderData = {
     loaded: false,
@@ -131,12 +129,11 @@ class LocationMap {
   };
   #rng;
 
-  constructor(locationId, locationsConfig, rng = null, imageAssets = null) {
-    if (!imageAssets || typeof imageAssets.preload !== "function") {
-      throw new TypeError("LocationMap requires ImageAssetProvider");
+  constructor(locationId, locationsConfig, rng = null, resources = null) {
+    if (!resources || typeof resources !== "object") {
+      throw new TypeError("LocationMap requires ready location resources");
     }
     this.#locationsConfig = locationsConfig;
-    this.#imageAssets = imageAssets;
     this.#rng = rng || { next: () => Math.random() };
     this.#config = JSON.parse(JSON.stringify(locationsConfig.map[locationId]));
     this.#id = locationId;
@@ -179,11 +176,7 @@ class LocationMap {
     }
 
     this.#buildGrid(actualCellSize);
-    this.#preloadLocationAssets(
-      actualCellSize,
-      baseRes.width,
-      baseRes.height,
-    );
+    this.#applyLocationResources(resources, actualCellSize);
 
     if (
       this.#locationsConfig.enableDynamicZones !== false &&
@@ -195,72 +188,10 @@ class LocationMap {
     }
   }
 
-  #generateStaticDebugMap(cellSize, imgWidth, imgHeight) {
-    if (!this.#debugCanvas) {
-      this.#debugCanvas = document.createElement("canvas");
+  refreshConfig(locationsConfig, resources = null) {
+    if (!resources || typeof resources !== "object") {
+      throw new TypeError("LocationMap refreshConfig requires ready location resources");
     }
-    if (
-      this.#debugCanvas.width !== imgWidth ||
-      this.#debugCanvas.height !== imgHeight
-    ) {
-      this.#debugCanvas.width = imgWidth;
-      this.#debugCanvas.height = imgHeight;
-    }
-
-    const surface = new Canvas2DSurface(this.#debugCanvas, {
-      contextAttributes: { alpha: true },
-    });
-    surface.clearRect(0, 0, imgWidth, imgHeight);
-
-    const locCfg = this.#locationsConfig;
-
-    const drawZones = (zones, color) => {
-      if (!zones) return;
-      surface.fillStyle = color;
-      for (const z of zones) {
-        const w = z.adaptiveX ? imgWidth : z.w * cellSize;
-        const startX = z.adaptiveX ? 0 : z.x * cellSize;
-        surface.fillRect(startX, z.y * cellSize, w, z.h * cellSize);
-      }
-    };
-
-    if (locCfg.debugZones !== false) {
-      if (locCfg.enableCastable !== false)
-        drawZones(this.#config.zones.castable, "rgba(0, 255, 0, 0.15)");
-      if (locCfg.enableSnags !== false)
-        drawZones(this.#config.zones.snags, "rgba(255, 255, 0, 0.3)");
-      if (locCfg.enableCollisions !== false)
-        drawZones(this.#config.zones.collisions, "rgba(255, 0, 0, 0.4)");
-    }
-
-    surface.font = "10px monospace";
-    surface.textAlign = "center";
-    surface.textBaseline = "middle";
-
-    for (let i = 0; i < this.#cols; i++) {
-      for (let j = 0; j < this.#rows; j++) {
-        const cell = this.#grid[i][j];
-        const x = cell.x * cellSize;
-        const y = cell.y * cellSize;
-
-        if (locCfg.debugGrid) {
-          surface.strokeStyle = "rgba(255, 255, 255, 0.05)";
-          surface.strokeRect(x, y, cellSize, cellSize);
-        }
-
-        if (locCfg.debugDepthText && cell.isWater) {
-          surface.fillStyle = "rgba(255, 255, 255, 0.7)";
-          surface.fillText(
-            cell.depth.toFixed(1),
-            x + cellSize / 2,
-            y + cellSize / 2,
-          );
-        }
-      }
-    }
-  }
-
-  refreshConfig(locationsConfig) {
     this.#locationsConfig = locationsConfig;
     this.#config = JSON.parse(JSON.stringify(locationsConfig.map[this.#id]));
 
@@ -308,11 +239,7 @@ class LocationMap {
     this.#cols = Math.ceil(baseRes.width / actualCellSize);
     this.#rows = Math.ceil(baseRes.height / actualCellSize);
     this.#buildGrid(actualCellSize);
-    this.#preloadLocationAssets(
-      actualCellSize,
-      baseRes.width,
-      baseRes.height,
-    );
+    this.#applyLocationResources(resources, actualCellSize);
     this.recalculateZones(null, actualCellSize);
   }
 
@@ -361,19 +288,8 @@ class LocationMap {
     }
   }
 
-  #processDepthMap(cellSize, imgWidth, imgHeight) {
-    const depthImage = this.#imageAssets.tryGet(this.#depthAssetId);
-    if (!depthImage) return;
-    const canvas = document.createElement("canvas");
-    canvas.width = imgWidth;
-    canvas.height = imgHeight;
-    const surface = new Canvas2DSurface(canvas, {
-      contextAttributes: { willReadFrequently: true },
-    });
-
-    surface.drawImage(depthImage, 0, 0, imgWidth, imgHeight);
-    const imageData = surface.getImageData(0, 0, imgWidth, imgHeight).data;
-
+  #processDepthMap(depthReader, cellSize) {
+    if (!depthReader) return;
     const minD = this.#config.depthBounds.min;
     const maxD = this.#config.depthBounds.max;
 
@@ -392,11 +308,12 @@ class LocationMap {
           const px = Math.floor(i * cellSize + cellSize / 2);
           const py = Math.floor(j * cellSize + cellSize / 2);
 
-          const index = (py * imgWidth + px) * 4;
-          const r = imageData[index];
-
-          const ratio = r / 255;
-          this.#grid[i][j].depth = maxD - ratio * (maxD - minD);
+          this.#grid[i][j].depth = depthReader.getDepthAtPixel(
+            px,
+            py,
+            minD,
+            maxD,
+          );
           this.#grid[i][j].isWater = true;
         }
       }
@@ -481,14 +398,9 @@ class LocationMap {
     const locCfg = this.#locationsConfig;
     const currentDebugState = `${locCfg.debugGrid}_${locCfg.debugDepthText}_${locCfg.debugZones}_${locCfg.enableCastable}_${locCfg.enableCollisions}_${locCfg.enableSnags}_${locCfg.enableDynamicZones}`;
 
-    if (this.#lastDebugState !== currentDebugState && this.#debugCanvas) {
+    if (this.#lastDebugState !== currentDebugState) {
       this.#lastDebugState = currentDebugState;
-      const baseRes = locCfg.baseResolution;
-      this.#generateStaticDebugMap(
-        locCfg.cellSize,
-        baseRes.width,
-        baseRes.height,
-      );
+      this.#debugRevision += 1;
       this.recalculateZones(null, locCfg.cellSize);
     }
 
@@ -550,10 +462,6 @@ class LocationMap {
     return this.#dynamicZones;
   }
 
-  getDebugCanvas() {
-    return this.#debugCanvas;
-  }
-
   getCellAtVirtualPos(vX, vY, cellSize) {
     const c = Math.floor(vX / cellSize);
     const r = Math.floor(vY / cellSize);
@@ -565,61 +473,21 @@ class LocationMap {
     return this.#id;
   }
 
-  #preloadLocationAssets(cellSize, width, height) {
-    this.#bgLoaded = false;
-    this.#bgAssetIds = {};
-    const manifest = {};
-    if (this.#config.bgUrls) {
-      this.#isDynamicBg = true;
-      for (const key of ["day", "evening", "night"]) {
-        const src = this.#config.bgUrls[key];
-        const assetId = ImageAssetProvider.assetIdForSource(
-          src,
-          `location:${this.#id}:${key}`,
-        );
-        this.#bgAssetIds[key] = assetId;
-        manifest[assetId] = src;
-      }
-    } else if (this.#config.bgUrl) {
-      this.#isDynamicBg = false;
-      const assetId = ImageAssetProvider.assetIdForSource(
-        this.#config.bgUrl,
-        `location:${this.#id}:default`,
-      );
-      this.#bgAssetIds.default = assetId;
-      manifest[assetId] = this.#config.bgUrl;
-    }
+  getLocationZones() {
+    return this.#config.zones || {};
+  }
 
-    const backgroundPromise = Object.keys(manifest).length
-      ? this.#imageAssets.preload(manifest)
-      : Promise.resolve();
-    backgroundPromise
-      .then(() => {
-        this.#bgLoaded = true;
-      })
-      .catch(() => {
-        this.#bgLoaded = false;
-      });
+  getDebugRevision() {
+    return this.#debugRevision;
+  }
 
-    if (!this.#config.depthUrl) {
-      this.#depthAssetId = "";
-      this.#generateStaticDebugMap(cellSize, width, height);
-      return;
-    }
-
-    this.#depthAssetId = ImageAssetProvider.assetIdForSource(
-      this.#config.depthUrl,
-      `location:${this.#id}:depth`,
-    );
-    this.#imageAssets
-      .preload({ [this.#depthAssetId]: this.#config.depthUrl })
-      .then(() => {
-        this.#processDepthMap(cellSize, width, height);
-        this.#generateStaticDebugMap(cellSize, width, height);
-      })
-      .catch(() => {
-        this.#generateStaticDebugMap(cellSize, width, height);
-      });
+  #applyLocationResources(resources, cellSize) {
+    const background = resources.background || {};
+    this.#isDynamicBg = !!background.dynamic;
+    this.#bgAssetIds = background.assetIds || {};
+    this.#bgLoaded = resources.loaded !== false;
+    this.#processDepthMap(resources.depthReader || null, cellSize);
+    this.#debugRevision += 1;
   }
 }
 

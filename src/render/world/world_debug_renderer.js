@@ -24,7 +24,8 @@ class WorldDebugRenderer {
       surface.globalAlpha = previousAlpha;
     }
 
-    model.dynamicZones.forEach((zone) => {
+    for (let zoneIndex = 0; zoneIndex < model.dynamicZones.count; zoneIndex += 1) {
+      const zone = model.dynamicZones.getAt(zoneIndex);
       if (zone.hasBounds) {
         surface.fillStyle = "rgba(255, 100, 255, 0.1)";
         surface.strokeStyle = "rgba(255, 100, 255, 0.4)";
@@ -40,6 +41,6 @@ class WorldDebugRenderer {
       surface.strokeStyle = "#00ffff";
       surface.lineWidth = 2;
       surface.strokeRect(zone.x, zone.y, zone.width, zone.height);
-    });
+    }
   }
 }

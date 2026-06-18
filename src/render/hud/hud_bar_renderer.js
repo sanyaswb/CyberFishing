@@ -59,7 +59,7 @@ class HudBarRenderer {
       ctx.stroke();
     }
 
-    this.#drawLabels({
+    this.#drawLabels(
       x,
       y,
       width,
@@ -67,7 +67,7 @@ class HudBarRenderer {
       style,
       topLabel,
       rightValue,
-    });
+    );
     ctx.restore();
   }
 
@@ -107,19 +107,18 @@ class HudBarRenderer {
     if (value) {
       ctx.fillStyle = style.valueColor || style.labelColor || "#ff0000";
       ctx.font = style.valueFont || style.labelFont || "bold 10px monospace";
-      const valuePosition = this.#resolveValuePosition(x, width, style);
-      ctx.textAlign = valuePosition.align;
+      ctx.textAlign = this.#resolveValueAlign(style);
       ctx.textBaseline = "middle";
       ctx.fillText(
         value,
-        valuePosition.x,
+        this.#resolveValueX(x, width, style),
         y + height / 2,
       );
     }
     ctx.restore();
   }
 
-  #drawLabels({
+  #drawLabels(
     x,
     y,
     width,
@@ -127,7 +126,7 @@ class HudBarRenderer {
     style,
     topLabel,
     rightValue,
-  }) {
+  ) {
     if (!topLabel && !rightValue) return;
 
     const ctx = this.#surface;
@@ -142,12 +141,11 @@ class HudBarRenderer {
     if (rightValue) {
       ctx.fillStyle = style.valueColor || style.labelColor || "#8a9bac";
       ctx.font = style.valueFont || style.labelFont || "bold 12px monospace";
-      const valuePosition = this.#resolveValuePosition(x, width, style);
-      ctx.textAlign = valuePosition.align;
+      ctx.textAlign = this.#resolveValueAlign(style);
       ctx.textBaseline = "middle";
       ctx.fillText(
         rightValue,
-        valuePosition.x,
+        this.#resolveValueX(x, width, style),
         y + height / 2,
       );
       ctx.fillStyle = style.labelColor || "#8a9bac";
@@ -159,18 +157,14 @@ class HudBarRenderer {
     return Math.max(0, Math.min(1, Number(value) || 0));
   }
 
-  #resolveValuePosition(x, width, style) {
-    if (style.valuePlacement === "center") {
-      return {
-        x: x + width / 2,
-        align: "center",
-      };
-    }
+  #resolveValueX(x, width, style) {
+    return style.valuePlacement === "center"
+      ? x + width / 2
+      : x + width - this.#number(style.valueGap, 6);
+  }
 
-    return {
-      x: x + width - this.#number(style.valueGap, 6),
-      align: "right",
-    };
+  #resolveValueAlign(style) {
+    return style.valuePlacement === "center" ? "center" : "right";
   }
 
   #number(value, fallback) {

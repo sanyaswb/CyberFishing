@@ -3,6 +3,21 @@ class VictoryRenderer {
   #primitives;
   #assets;
   #themeResolver;
+  #textOptions = {
+    text: "",
+    x: 0,
+    y: 0,
+    maxWidth: 0,
+    font: {
+      size: 10,
+      family: "sans-serif",
+      weight: "bold",
+    },
+    color: "#ffffff",
+    align: "center",
+    baseline: "middle",
+    minSize: 10,
+  };
 
   constructor({ surface, primitives, assets, themeResolver }) {
     if (!surface || typeof surface.drawCurrentSurface !== "function") {
@@ -59,22 +74,26 @@ class VictoryRenderer {
     surface.lineWidth = 1.5;
     surface.stroke();
 
-    this.#primitives.drawFittedText({
-      text: "Caught",
-      x: layout.panel.x + layout.panel.width / 2,
-      y: layout.panel.y + layout.padding + 10,
-      maxWidth: layout.panel.width - layout.padding * 2,
-      font: { size: 14, family: "sans-serif", weight: "bold" },
-      color: RenderMath.rgba(color, 0.9),
-    });
-    this.#primitives.drawFittedText({
-      text: model.fish.name,
-      x: layout.panel.x + layout.panel.width / 2,
-      y: layout.panel.y + layout.padding + 34,
-      maxWidth: layout.panel.width - layout.padding * 2,
-      font: { size: 24, family: "sans-serif", weight: "bold" },
-      color: "#ffffff",
-    });
+    this.#drawFittedText(
+      "Caught",
+      layout.panel.x + layout.panel.width / 2,
+      layout.panel.y + layout.padding + 10,
+      layout.panel.width - layout.padding * 2,
+      14,
+      "sans-serif",
+      "bold",
+      RenderMath.rgba(color, 0.9),
+    );
+    this.#drawFittedText(
+      model.fish.name,
+      layout.panel.x + layout.panel.width / 2,
+      layout.panel.y + layout.padding + 34,
+      layout.panel.width - layout.padding * 2,
+      24,
+      "sans-serif",
+      "bold",
+      "#ffffff",
+    );
 
     this.#drawFishImage(model, theme);
     this.#drawStats(model, color);
@@ -120,14 +139,16 @@ class VictoryRenderer {
       );
       surface.restore();
     } else {
-      this.#primitives.drawFittedText({
-        text: "loading...",
-        x: imageRect.x + imageRect.width / 2,
-        y: imageRect.y + imageRect.height / 2,
-        maxWidth: imageRect.width - 20,
-        font: { size: 14, family: "monospace", weight: "bold" },
-        color: RenderMath.rgba(color, 0.85),
-      });
+      this.#drawFittedText(
+        "loading...",
+        imageRect.x + imageRect.width / 2,
+        imageRect.y + imageRect.height / 2,
+        imageRect.width - 20,
+        14,
+        "monospace",
+        "bold",
+        RenderMath.rgba(color, 0.85),
+      );
     }
 
     if (theme.isUnique) {
@@ -163,19 +184,22 @@ class VictoryRenderer {
     surface.strokeStyle = RenderMath.rgba(color, 0.9);
     surface.lineWidth = 1;
     surface.strokeRect(badge.x, badge.y, badge.width, badge.height);
-    this.#primitives.drawFittedText({
-      text: String(model.fish.level),
-      x: badge.x + badge.width / 2,
-      y: badge.y + badge.height / 2,
-      maxWidth: badge.width - 8,
-      font: { size: 22, family: "monospace", weight: "bold" },
-      color: RenderMath.rgba(color, 1),
-    });
+    this.#drawFittedText(
+      String(model.fish.level),
+      badge.x + badge.width / 2,
+      badge.y + badge.height / 2,
+      badge.width - 8,
+      22,
+      "monospace",
+      "bold",
+      RenderMath.rgba(color, 1),
+    );
   }
 
   #drawStats(model, fallbackColor) {
     const stats = model.layout.stats;
-    model.stats.forEach((stat, index) => {
+    for (let index = 0; index < model.stats.count; index += 1) {
+      const stat = this.#statAt(model.stats, index);
       const column = index % stats.columns;
       const row = Math.floor(index / stats.columns);
       this.#drawPill(
@@ -186,7 +210,11 @@ class VictoryRenderer {
         stat.label,
         stat.color || fallbackColor,
       );
-    });
+    }
+  }
+
+  #statAt(stats, index) {
+    return stats.getAt(index);
   }
 
   #drawPill(x, y, width, height, label, color) {
@@ -197,14 +225,16 @@ class VictoryRenderer {
     surface.strokeStyle = RenderMath.rgba(color, 0.38);
     surface.lineWidth = 1;
     surface.stroke();
-    this.#primitives.drawFittedText({
-      text: label,
-      x: x + width / 2,
-      y: y + height / 2,
-      maxWidth: width - 14,
-      font: { size: 13, family: "sans-serif", weight: "bold" },
-      color: "#e8edf5",
-    });
+    this.#drawFittedText(
+      label,
+      x + width / 2,
+      y + height / 2,
+      width - 14,
+      13,
+      "sans-serif",
+      "bold",
+      "#e8edf5",
+    );
   }
 
   #drawButton(rect, label, color, filled) {
@@ -223,13 +253,28 @@ class VictoryRenderer {
     surface.strokeStyle = RenderMath.rgba(color, 0.95);
     surface.lineWidth = 1.5;
     surface.stroke();
-    this.#primitives.drawFittedText({
-      text: label,
-      x: rect.x + rect.width / 2,
-      y: rect.y + rect.height / 2,
-      maxWidth: rect.width - 20,
-      font: { size: 15, family: "sans-serif", weight: "bold" },
-      color: filled ? "#061014" : "#e8edf5",
-    });
+    this.#drawFittedText(
+      label,
+      rect.x + rect.width / 2,
+      rect.y + rect.height / 2,
+      rect.width - 20,
+      15,
+      "sans-serif",
+      "bold",
+      filled ? "#061014" : "#e8edf5",
+    );
+  }
+
+  #drawFittedText(text, x, y, maxWidth, size, family, weight, color) {
+    const options = this.#textOptions;
+    options.text = text;
+    options.x = x;
+    options.y = y;
+    options.maxWidth = maxWidth;
+    options.font.size = size;
+    options.font.family = family;
+    options.font.weight = weight;
+    options.color = color;
+    this.#primitives.drawFittedText(options);
   }
 }

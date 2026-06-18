@@ -6,7 +6,11 @@ class BoatChumRenderer {
     if (!surface || typeof surface.ellipse !== "function") {
       throw new TypeError("BoatChumRenderer requires surface");
     }
-    if (!primitives || typeof primitives.withClip !== "function") {
+    if (
+      !primitives ||
+      typeof primitives.beginClip !== "function" ||
+      typeof primitives.endClip !== "function"
+    ) {
       throw new TypeError("BoatChumRenderer requires primitives");
     }
     this.#surface = surface;
@@ -22,32 +26,34 @@ class BoatChumRenderer {
   }
 
   #renderChumZones(model) {
-    this.#primitives.withClip(model.clipRegions, () => {
-      model.chumZones.forEach((zone) => {
-        const surface = this.#surface;
-        surface.save();
-        surface.beginPath();
-        surface.ellipse(
-          zone.x,
-          zone.y,
-          zone.radiusX,
-          zone.radiusY,
-          0,
-          0,
-          Math.PI * 2,
-        );
-        surface.fillStyle = `rgba(200, 255, 100, ${zone.opacity * 0.2})`;
-        surface.fill();
-        surface.strokeStyle = `rgba(200, 255, 100, ${zone.opacity * 0.5})`;
-        surface.lineWidth = 2;
-        surface.stroke();
-        surface.restore();
-      });
-    });
+    const clipped = this.#primitives.beginClip(model.clipRegions);
+    for (let index = 0; index < model.chumZones.count; index += 1) {
+      const zone = model.chumZones.getAt(index);
+      const surface = this.#surface;
+      surface.save();
+      surface.beginPath();
+      surface.ellipse(
+        zone.x,
+        zone.y,
+        zone.radiusX,
+        zone.radiusY,
+        0,
+        0,
+        Math.PI * 2,
+      );
+      surface.fillStyle = `rgba(200, 255, 100, ${zone.opacity * 0.2})`;
+      surface.fill();
+      surface.strokeStyle = `rgba(200, 255, 100, ${zone.opacity * 0.5})`;
+      surface.lineWidth = 2;
+      surface.stroke();
+      surface.restore();
+    }
+    this.#primitives.endClip(clipped);
   }
 
   #renderWaypoints(model) {
-    model.waypoints.forEach((waypoint) => {
+    for (let index = 0; index < model.waypoints.count; index += 1) {
+      const waypoint = model.waypoints.getAt(index);
       const surface = this.#surface;
       surface.save();
       surface.beginPath();
@@ -81,7 +87,7 @@ class BoatChumRenderer {
         );
       }
       surface.restore();
-    });
+    }
   }
 
   #renderBoats(model) {
@@ -89,7 +95,8 @@ class BoatChumRenderer {
     surface.save();
     surface.textAlign = "center";
     surface.textBaseline = "middle";
-    model.boats.forEach((boat) => {
+    for (let index = 0; index < model.boats.count; index += 1) {
+      const boat = model.boats.getAt(index);
       surface.save();
       surface.translate(boat.x, boat.y);
       surface.rotate(boat.angle + Math.PI);
@@ -110,7 +117,7 @@ class BoatChumRenderer {
         boat.barWidth * boat.energyRatio,
         boat.barHeight,
       );
-    });
+    }
     surface.restore();
   }
 
@@ -118,7 +125,8 @@ class BoatChumRenderer {
     const surface = this.#surface;
     surface.save();
     surface.lineWidth = 2;
-    model.sensorRays.forEach((ray) => {
+    for (let index = 0; index < model.sensorRays.count; index += 1) {
+      const ray = model.sensorRays.getAt(index);
       surface.strokeStyle = ray.blocked
         ? "rgba(255, 0, 0, 0.6)"
         : "rgba(0, 255, 0, 0.6)";
@@ -126,7 +134,7 @@ class BoatChumRenderer {
       surface.moveTo(ray.startX, ray.startY);
       surface.lineTo(ray.endX, ray.endY);
       surface.stroke();
-    });
+    }
     surface.restore();
   }
 }

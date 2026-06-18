@@ -1,9 +1,9 @@
-(function startCyberFishing() {
+(async function startCyberFishing() {
   window.CYBER_FISHING_GAME_CLEANUP?.();
 
   const game = new Game("gameCanvas");
-  const started = game.start();
   window.game = game;
+  const started = await game.start();
 
   const memoryConfig = CONFIG.debug?.memoryWatchdog || {};
   const watchdog =

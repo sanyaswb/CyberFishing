@@ -1,3 +1,5 @@
+const CAST_AIM_DASH = Object.freeze([15, 10]);
+
 class CastSceneRenderer {
   #surface;
   #primitives;
@@ -13,7 +15,11 @@ class CastSceneRenderer {
     if (!surface || typeof surface.beginPath !== "function") {
       throw new TypeError("CastSceneRenderer requires surface");
     }
-    if (!primitives || typeof primitives.withClip !== "function") {
+    if (
+      !primitives ||
+      typeof primitives.beginClip !== "function" ||
+      typeof primitives.endClip !== "function"
+    ) {
       throw new TypeError("CastSceneRenderer requires primitives");
     }
     if (!hudBarRenderer || typeof hudBarRenderer.drawFramedRatioBar !== "function") {
@@ -37,33 +43,33 @@ class CastSceneRenderer {
 
   #renderAimingZone(model) {
     if (!model.visible) return;
-    this.#primitives.withClip(model.clipRegions, () => {
-      const surface = this.#surface;
-      surface.save();
-      surface.beginPath();
-      surface.moveTo(0, model.lineY);
-      surface.lineTo(model.viewportWidth, model.lineY);
-      surface.strokeStyle =
-        model.mode === "chum"
-          ? "rgba(255, 170, 0, 0.8)"
-          : "rgba(0, 204, 255, 0.6)";
-      surface.fillStyle =
-        model.mode === "chum"
-          ? "rgba(255, 170, 0, 0.05)"
-          : "rgba(0, 204, 255, 0.05)";
-      surface.lineWidth = 2;
-      surface.setLineDash([15, 10]);
-      surface.stroke();
-      if (model.fillHeight > 0) {
-        surface.fillRect(
-          0,
-          model.lineY,
-          model.viewportWidth,
-          model.fillHeight,
-        );
-      }
-      surface.restore();
-    });
+    const clipped = this.#primitives.beginClip(model.clipRegions);
+    const surface = this.#surface;
+    surface.save();
+    surface.beginPath();
+    surface.moveTo(0, model.lineY);
+    surface.lineTo(model.viewportWidth, model.lineY);
+    surface.strokeStyle =
+      model.mode === "chum"
+        ? "rgba(255, 170, 0, 0.8)"
+        : "rgba(0, 204, 255, 0.6)";
+    surface.fillStyle =
+      model.mode === "chum"
+        ? "rgba(255, 170, 0, 0.05)"
+        : "rgba(0, 204, 255, 0.05)";
+    surface.lineWidth = 2;
+    surface.setLineDash(CAST_AIM_DASH);
+    surface.stroke();
+    if (model.fillHeight > 0) {
+      surface.fillRect(
+        0,
+        model.lineY,
+        model.viewportWidth,
+        model.fillHeight,
+      );
+    }
+    surface.restore();
+    this.#primitives.endClip(clipped);
   }
 
   #renderAccuracyArea(model) {

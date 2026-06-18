@@ -195,10 +195,10 @@ class GameWorld {
     this.#locationConfig = locationConfig;
   }
 
-  refreshLocationConfig(locationConfig) {
+  refreshLocationConfig(locationConfig, locationResources) {
     this.#locationConfig = locationConfig;
     if (typeof this.#map.refreshConfig === "function") {
-      this.#map.refreshConfig(locationConfig);
+      this.#map.refreshConfig(locationConfig, locationResources);
     }
     this.refreshViewport(true);
   }

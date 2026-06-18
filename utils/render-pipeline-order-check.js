@@ -37,7 +37,11 @@ assert(
   calls.join("|") === names.join("|"),
   "pipeline renders world, casting, fishing, HUD and outcome in order",
 );
-assert(pipeline.passes[0] === passes[0], "pipeline reuses pass instances");
+assert(pipeline.getPassCount() === 5, "pipeline owns five reusable passes");
+assert(pipeline.getPassIdAt(0) === "world", "pipeline exposes safe pass ids");
+const passIds = [];
+pipeline.copyPassIdsInto(passIds);
+assert(passIds.join("|") === names.join("|"), "tests inspect order without mutable storage");
 assert(
   RenderOrder.sequence.join("|") === names.join("|"),
   "RenderOrder is the single source of pass ordering",
@@ -49,6 +53,18 @@ try {
   failedFast = error.message.includes("pass 1");
 }
 assert(failedFast, "pipeline fails fast for an invalid required pass");
+let duplicateFailed = false;
+try {
+  new GameRenderPipeline({
+    passes: [
+      { id: "world", render() {} },
+      { id: "world", render() {} },
+    ],
+  });
+} catch (error) {
+  duplicateFailed = error.message.includes("Duplicate render pass id");
+}
+assert(duplicateFailed, "pipeline fails fast for duplicate pass ids");
 console.log("render-pipeline-order-check passed:");
 for (const message of checks) console.log("- " + message);
 `, "utils/render-pipeline-order-check.js#scenario");
