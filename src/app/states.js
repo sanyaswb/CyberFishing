@@ -1602,12 +1602,14 @@ class PlayingState extends GameState {
   #onConfigUpdateBind;
   #removeConfigUpdateListener = null;
   #fightFrameContext = new MutableFightFrameContext();
+  #rodControlCastAnchor = null;
 
   enter(data) {
     this.#startTime = this.deps.clock.now;
     this.data = data || {};
     this.deps.depthUI?.hide?.();
     const fishData = this.data.fish;
+    this.#rodControlCastAnchor = null;
 
     const eq = this.deps.inventory.getEquipped();
     this.#hasEquippedNet = !!eq.net;
@@ -1620,6 +1622,7 @@ class PlayingState extends GameState {
     fightContext.fishData = fishData;
     fightContext.getRodVirtualPos = this.#getRodVirtualPos;
     fightContext.getBaseRodVirtualPos = this.#getBaseRodVirtualPos;
+    fightContext.rodControlCastAnchor = null;
     fightContext.getScreenOffsetRatio = this.#getScreenOffsetRatio;
     fightContext.checkWater = this.#checkWater;
 
@@ -1665,6 +1668,8 @@ class PlayingState extends GameState {
     fightContext.projectorScale = this.deps.projector.getScale();
     fightContext.catchLineOffsetPx =
       this.deps.config.locations.catchLineOffsetPx || 5;
+    fightContext.rodControlCastAnchor =
+      this.#getRodControlCastAnchor(bounds);
 
     const result = this.deps.fight.updateFight(dt, fightContext);
     if (result.transition) {
@@ -1742,8 +1747,19 @@ class PlayingState extends GameState {
     this.deps.ui.hideNetButton();
     this.#removeConfigUpdateListener?.();
     this.#removeConfigUpdateListener = null;
+    this.#rodControlCastAnchor = null;
     this.#fightFrameContext.reset();
     this.deps.fight.endFight();
+  }
+
+  #getRodControlCastAnchor(frameBounds) {
+    if (this.#rodControlCastAnchor) return this.#rodControlCastAnchor;
+    const base = this.#getBaseRodVirtualPos(frameBounds);
+    this.#rodControlCastAnchor = Object.freeze({
+      x: Number(base?.x) || 0,
+      y: Number(base?.y) || 0,
+    });
+    return this.#rodControlCastAnchor;
   }
 
   #getRodVirtualPos = (frameBounds) =>

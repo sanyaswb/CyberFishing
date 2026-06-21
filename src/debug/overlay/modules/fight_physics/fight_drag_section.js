@@ -1,6 +1,9 @@
 class FightDragSection extends FightSectionBase {
   constructor(options = {}) {
-    super("fightDrag", "DRAG / RADIAL ESCAPE", options);
+    super("fightDrag", "DRAG / RADIAL ESCAPE", {
+      ...options,
+      categoryKey: "fightLineDrag",
+    });
   }
 
   rows(d) {

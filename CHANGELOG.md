@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.22.3 - Rod Control anchor mode
+
+- Added `physics.fight.rodControl.alignment.targetAnchorMode` with `current_base` and `cast_base` modes for Rod Control gameplay comparison.
+- Captured an immutable cast-base rod anchor at fight start and passed it through fight context instead of letting physics read viewport state.
+- Resolved the active Rod Control target anchor once in the fight physics pipeline, keeping `RodLateralControlSystem` dependent only on an injected point.
+- Exposed the resolved anchor through `rodControlTargetMode` as `current_base` or `cast_base`.
+- Added Rod Control UX regression coverage for injected current-base and cast-base anchors.
+
 ## v0.22.2 - Rod Control direction single source
 
 - Removed the legacy away-direction Rod Control config path, so lateral control can only pull opposite the fish side or use an exact centered-start latch.

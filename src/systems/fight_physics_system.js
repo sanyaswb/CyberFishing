@@ -68,6 +68,7 @@ class FightPhysicsSystem {
     checkWater,
     rodTipPosition,
     actualRodTipPosition,
+    rodControlCastAnchor,
     rod,
     reel,
     fishForceSystem,
@@ -86,6 +87,14 @@ class FightPhysicsSystem {
     const physics = pipelineFrame.run(
       "read_runtime_config",
       () => this.#getRuntimePhysicsConfig(),
+    );
+    const rodControlTargetAnchor = pipelineFrame.run(
+      "resolve_rod_control_target_anchor",
+      () => this.#resolveRodControlTargetAnchor({
+        currentBaseRodTipPosition: rodTipPosition,
+        castBaseRodTipPosition: rodControlCastAnchor,
+        physics,
+      }),
     );
     const dtSec = pipelineFrame.run(
       "resolve_delta_time",
@@ -133,6 +142,7 @@ class FightPhysicsSystem {
           fightInput,
           floatEntity,
           rodTipPosition,
+          rodControlTargetAnchor,
           actualRodTipPosition,
           rodControlSystem,
         });
@@ -193,6 +203,7 @@ class FightPhysicsSystem {
       input: fightInput,
       floatEntity,
       rodTipPosition,
+      rodControlTargetAnchor,
       actualRodTipPosition,
       lineSystem,
       rodControlSystem,
@@ -450,6 +461,7 @@ class FightPhysicsSystem {
     fightInput,
     floatEntity,
     rodTipPosition,
+    rodControlTargetAnchor,
     actualRodTipPosition,
     rodControlSystem,
   }) {
@@ -458,10 +470,47 @@ class FightPhysicsSystem {
       inputState: fightInput,
       fishPosition: floatEntity?.getPosition?.(),
       rodTipPosition,
-      baseRodTipPosition: rodTipPosition,
+      baseRodTipPosition: rodControlTargetAnchor || rodTipPosition,
       actualRodTipPosition,
       config: this.#physicsConfig?.getRodControlConfig?.() || {},
     });
+  }
+
+  #resolveRodControlTargetAnchor({
+    currentBaseRodTipPosition,
+    castBaseRodTipPosition,
+    physics,
+  } = {}) {
+    const config =
+      this.#physicsConfig?.getRodControlConfig?.() ||
+      physics?.fight?.rodControl ||
+      {};
+    const requestedMode =
+      config.alignment?.targetAnchorMode === "cast_base"
+        ? "cast_base"
+        : "current_base";
+    const mode =
+      requestedMode === "cast_base" && this.#hasPoint(castBaseRodTipPosition)
+        ? "cast_base"
+        : "current_base";
+    const source =
+      mode === "cast_base"
+        ? castBaseRodTipPosition
+        : currentBaseRodTipPosition;
+    if (!this.#hasPoint(source)) return null;
+    return Object.freeze({
+      x: Number(source.x),
+      y: Number(source.y),
+      mode,
+    });
+  }
+
+  #hasPoint(point) {
+    return (
+      point &&
+      Number.isFinite(Number(point.x)) &&
+      Number.isFinite(Number(point.y))
+    );
   }
 
   #resolvePlayerForceBudget({
@@ -1143,6 +1192,7 @@ class FightPhysicsSystem {
     input,
     floatEntity,
     rodTipPosition,
+    rodControlTargetAnchor,
     actualRodTipPosition,
     lineSystem,
     rodControlSystem,
@@ -1202,7 +1252,7 @@ class FightPhysicsSystem {
       inputState: input,
       fishPosition,
       rodTipPosition,
-      baseRodTipPosition: rodTipPosition,
+      baseRodTipPosition: rodControlTargetAnchor || rodTipPosition,
       actualRodTipPosition,
       rodLimitKg,
       maxTackleLoadKg,

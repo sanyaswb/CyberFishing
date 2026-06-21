@@ -3,6 +3,7 @@ class FightSectionBase {
     key,
     title,
     {
+      categoryKey = null,
       settingsStore = typeof window !== "undefined"
         ? window.OverlaySettingsStore
         : null,
@@ -12,20 +13,18 @@ class FightSectionBase {
   ) {
     this.key = key;
     this.title = title;
+    this.categoryKey = categoryKey;
     this.settingsStore = settingsStore;
     this.formatter = formatter;
     this.htmlBuilder = htmlBuilder;
   }
 
   isEnabled() {
-    return (
-      !!this.settingsStore?.isEnabled?.("fightPhysics") ||
-      !!this.settingsStore?.isEnabled?.(this.key)
-    );
+    return this.#matchesKey(this.key) || this.#matchesKey(this.categoryKey);
   }
 
-  render(data) {
-    if (!this.isEnabled()) return "";
+  render(data, { force = false } = {}) {
+    if (!force && !this.isEnabled()) return "";
     const body = this.rows(data).filter(Boolean).join("");
     return `<div style="margin-bottom:10px; background:rgba(0,0,0,0.22); border-left:3px solid #73c2fb; padding:6px; border-radius:4px;">
       <div style="color:#73c2fb; font-weight:bold; margin-bottom:5px; font-size:12px; text-transform:uppercase;">${this.title}</div>
@@ -39,6 +38,10 @@ class FightSectionBase {
 
   row(label, value, color = "#8a9bac") {
     return this.htmlBuilder.metricRow(label, value, { color });
+  }
+
+  #matchesKey(key) {
+    return !!key && !!this.settingsStore?.isEnabled?.(key);
   }
 }
 

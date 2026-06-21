@@ -1,6 +1,6 @@
 class FightFishSection extends FightSectionBase {
   constructor(options = {}) {
-    super("fightFish", "FISH", options);
+    super("fightFish", "FISH", { ...options, categoryKey: "fightCore" });
   }
 
   rows(d) {

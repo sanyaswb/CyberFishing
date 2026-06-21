@@ -1,6 +1,9 @@
 class FightAutoRecoverySection extends FightSectionBase {
   constructor(options = {}) {
-    super("fightAutoRecovery", "AUTO RECOVERY", options);
+    super("fightAutoRecovery", "AUTO RECOVERY", {
+      ...options,
+      categoryKey: "fightPlayerForce",
+    });
   }
 
   rows(d) {
@@ -22,7 +25,7 @@ class FightAutoRecoverySection extends FightSectionBase {
 
     return [
       this.row("Auto recover active", active ? "YES" : "NO", active ? "#00ff80" : "#8a9bac"),
-      this.row("Reel retrieve speed", f.mps(baseSpeed, 3), "#00ff80"),
+      this.row("Auto recover base speed", f.mps(baseSpeed, 3), "#00ff80"),
       this.row("Tension", f.kg(tension, 3), "#ffaa00"),
       this.row("Reel max load", f.kg(reelLimit, 3), "#73c2fb"),
       this.row("Reel load", f.percent(loadRatio, 1), f.stressColor(loadRatio)),

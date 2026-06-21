@@ -265,6 +265,7 @@ class RodLateralControlSystem {
 
     const targetPoint = baseRodTipPosition || rodTipPosition ||
       actualRodTipPosition;
+    const targetMode = targetPoint?.mode || "base_rod";
     if (!this.#hasPoint(fishPosition) || !this.#hasPoint(targetPoint)) {
       return {
         enabled: true,
@@ -274,7 +275,7 @@ class RodLateralControlSystem {
         lineAngleDeg: 0,
         targetRodX: this.#number(targetPoint?.x, 0),
         targetRodY: this.#number(targetPoint?.y, 0),
-        targetMode: "base_rod",
+        targetMode,
         fishOffsetX: 0,
         aligned: false,
         centered: false,
@@ -335,7 +336,7 @@ class RodLateralControlSystem {
       lineAngleDeg,
       targetRodX: centerStartActive ? null : targetRodX,
       targetRodY: centerStartActive ? null : targetRodY,
-      targetMode: centerStartActive ? "center_start" : "base_rod",
+      targetMode: centerStartActive ? "center_start" : targetMode,
       fishOffsetX,
       aligned,
       centered,

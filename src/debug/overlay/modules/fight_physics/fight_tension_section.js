@@ -1,6 +1,9 @@
 class FightTensionSection extends FightSectionBase {
   constructor(options = {}) {
-    super("fightTension", "TENSION", options);
+    super("fightTension", "TENSION", {
+      ...options,
+      categoryKey: "fightStress",
+    });
   }
 
   rows(d) {

@@ -1,6 +1,9 @@
 class FightRodStrokeSection extends FightSectionBase {
   constructor(options = {}) {
-    super("fightRodStroke", "ROD STROKE", options);
+    super("fightRodStroke", "ROD STROKE", {
+      ...options,
+      categoryKey: "fightStroke",
+    });
   }
 
   rows(d) {

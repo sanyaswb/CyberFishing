@@ -135,6 +135,7 @@ const config = {
   pixelsPerMeter: 50,
   alignment: {
     enabled: true,
+    targetAnchorMode: "current_base",
     maxEffectiveAngleDeg: 45,
     alignedThresholdPx: 0,
     centerStartThresholdPx: 0.5,
@@ -332,6 +333,46 @@ assert(
   visualTargetMustNotOverrideFishSide.blockedReason === "wrong_direction",
   "Same-side control stays blocked even when the visual rod is farther right",
 );
+
+const castAnchorTarget = new RodLateralControlSystem().update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: -1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: 100, y: 100 },
+  rodTipPosition: { x: 0, y: 0 },
+  baseRodTipPosition: { x: 50, y: 0, mode: "cast_base" },
+  actualRodTipPosition: { x: 120, y: 0 },
+  rodLimitKg: 2,
+  currentTensionKg: 0,
+  fishWeightKg: 0,
+  config,
+});
+assert(castAnchorTarget.canApply, "Rod Control can use an injected cast-base anchor");
+assert(castAnchorTarget.targetMode === "cast_base", "Rod Control reports injected cast-base target mode");
+approx(castAnchorTarget.targetRodX, 50, 0.001, "Rod Control target X follows the injected anchor");
+approx(castAnchorTarget.fishOffsetX, 50, 0.001, "Rod Control fish offset is measured from the injected anchor");
+
+const currentAnchorTarget = new RodLateralControlSystem().update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: -1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: 100, y: 100 },
+  rodTipPosition: { x: 0, y: 0 },
+  baseRodTipPosition: { x: 0, y: 0, mode: "current_base" },
+  actualRodTipPosition: { x: 120, y: 0 },
+  rodLimitKg: 2,
+  currentTensionKg: 0,
+  fishWeightKg: 0,
+  config,
+});
+assert(currentAnchorTarget.targetMode === "current_base", "Rod Control reports injected current-base target mode");
+approx(currentAnchorTarget.targetRodX, 0, 0.001, "Current-base target X follows the current base anchor");
 
 const halfInput = controlFrame({ inputRatio: 0.5 });
 approx(halfInput.requestedForceRatio, 0.5, 0.001, "Input and angle combine into requested force");

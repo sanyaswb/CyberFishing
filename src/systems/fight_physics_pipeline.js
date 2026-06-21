@@ -8,6 +8,7 @@
 class FightPhysicsPipeline {
   static STEPS = Object.freeze([
     "read_runtime_config",
+    "resolve_rod_control_target_anchor",
     "resolve_delta_time",
     "compose_fight_input_actions",
     "read_input",

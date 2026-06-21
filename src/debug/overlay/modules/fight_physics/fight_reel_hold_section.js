@@ -1,6 +1,9 @@
 class FightReelHoldSection extends FightSectionBase {
   constructor(options = {}) {
-    super("fightReelHold", "REEL HOLD", options);
+    super("fightReelHold", "REEL HOLD", {
+      ...options,
+      categoryKey: "fightPlayerForce",
+    });
   }
 
   rows(d) {
@@ -19,7 +22,7 @@ class FightReelHoldSection extends FightSectionBase {
       this.row("Stroke source", d.holdReelRecoverSource || "none", "#73c2fb"),
       this.row("Reel safe margin", f.kg(safeMarginKg, 3), safeMarginKg > 0 ? "#00ff80" : "#ff8888"),
       this.row("Reel hold limit", f.kg(reelLimit, 3)),
-      this.row("Reel retrieve speed", f.mps(d.holdReelRecoverSpeedMps, 3), "#00ff80"),
+      this.row("Reel hold retrieve speed", f.mps(d.holdReelRecoverSpeedMps, 3), "#00ff80"),
       this.row(
         "Reel hold move",
         f.meters(d.reelHoldMoveMeters ?? d.holdReelRecoverMoveMeters, 3),

@@ -1,6 +1,6 @@
 class FightLineSection extends FightSectionBase {
   constructor(options = {}) {
-    super("fightLine", "LINE", options);
+    super("fightLine", "LINE", { ...options, categoryKey: "fightLineDrag" });
   }
 
   rows(d) {
@@ -42,7 +42,7 @@ class FightLineSection extends FightSectionBase {
       this.row("Hard line limit", hardLimit ? `${f.meters(hardLimitMeters, 2)} / HIT` : f.meters(hardLimitMeters, 2), hardLimit ? "#ff8888" : "#8a9bac"),
       this.row("Length locked", lineLengthLocked ? "YES" : "NO", lineLengthLocked ? "#ffaa00" : "#00ff80"),
       this.row("Taut line", tautLine ? "YES" : "NO", tautLine ? "#ffaa00" : "#8a9bac"),
-      this.row("Radial constraint", radialConstraintActive ? "ACTIVE" : "OFF", radialConstraintActive ? "#ffaa00" : "#8a9bac"),
+      this.row("Line radial constraint", radialConstraintActive ? "ACTIVE" : "OFF", radialConstraintActive ? "#ffaa00" : "#8a9bac"),
       this.row("Drag can payout", dragCanPayout ? "YES" : "NO", dragCanPayout ? "#00ff80" : "#8a9bac"),
       this.row("Release blocked reason", releaseBlockedReason, releaseBlockedReason === "none" ? "#8a9bac" : "#ff8888"),
       this.row("Constraint reason", constraintReason, constraintReason === "none" ? "#8a9bac" : "#ffaa00"),

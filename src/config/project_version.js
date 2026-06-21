@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.22.2";
+const CURRENT_PROJECT_VERSION = "0.22.3";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "rod-control-direction-single-source",
+  codename: "rod-control-anchor-mode",
   updatedAt: "2026-06-21",
   notes: Object.freeze([
-    "Removed legacy same-side Rod Control direction math from physics config",
-    "Removed fish-driven Rod Control visual aim fields and debug bridge",
-    "Split broad aligned threshold from exact centered-start threshold",
-    "Exposed centered and center-start state from the Rod Control physics frame",
-    "Added regressions that block near-center same-side control",
+    "Added Rod Control targetAnchorMode for current-base versus cast-base gameplay testing",
+    "Captured an immutable cast-base rod anchor when a fight starts",
+    "Resolved the Rod Control target anchor once in the fight physics pipeline",
+    "Kept RodLateralControlSystem dependent only on an injected target point",
+    "Added Rod Control UX regressions for cast-base and current-base anchors",
   ]),
 });
 

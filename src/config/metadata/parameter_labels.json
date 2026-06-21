@@ -687,6 +687,10 @@
     "label": "Rod Control target alignment",
     "description": "When enabled, lateral control pulls fish toward the selected rod X target instead of moving endlessly by input direction."
   },
+  "physics.fight.rodControl.alignment.targetAnchorMode": {
+    "label": "Rod Control target anchor mode",
+    "description": "current_base uses the current base rod center; cast_base uses the base rod center captured at fight start."
+  },
   "physics.fight.rodControl.alignment.maxEffectiveAngleDeg": {
     "label": "Rod Control max effective angle",
     "description": "Line angle in degrees where lateral control reaches full geometric efficiency."

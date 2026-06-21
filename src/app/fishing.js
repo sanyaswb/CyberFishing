@@ -499,6 +499,7 @@ class FishingForceService {
       env,
       getRodVirtualPos,
       getBaseRodVirtualPos,
+      rodControlCastAnchor,
       checkWater,
       rod,
       reel,
@@ -525,6 +526,7 @@ class FishingForceService {
       rodTipPosition:
         getBaseRodVirtualPos?.(bounds) || getRodVirtualPos(bounds),
       actualRodTipPosition: getRodVirtualPos(bounds),
+      rodControlCastAnchor,
       rod,
       reel,
       fishForceSystem,

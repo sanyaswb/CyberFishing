@@ -69,6 +69,7 @@ const FIGHT_PHYSICS_CONFIG = {
 
     alignment: {
       enabled: true,
+      targetAnchorMode: "current_base",
       maxEffectiveAngleDeg: 45,
       alignedThresholdPx: 8,
       centerStartThresholdPx: 0.5,

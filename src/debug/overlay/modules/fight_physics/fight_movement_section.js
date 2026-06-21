@@ -1,6 +1,9 @@
 class FightMovementSection extends FightSectionBase {
   constructor(options = {}) {
-    super("fightMovement", "MOVEMENT", options);
+    super("fightMovement", "MOVEMENT", {
+      ...options,
+      categoryKey: "fightCore",
+    });
   }
 
   rows(d) {
@@ -15,7 +18,6 @@ class FightMovementSection extends FightSectionBase {
       this.row("Fish own toward speed", f.mps(d.fishOwnTowardSpeedMps, 3), "#73c2fb"),
       this.row("Rod pull speed", f.mps(d.totalAppliedPullSpeedMps, 3), "#00ff80"),
       this.row("Combined toward speed", f.mps(d.combinedTowardSpeedMps, 3), "#00d4ff"),
-      this.row("Actual applied speed", f.mps(d.totalAppliedPullSpeedMps, 3), Number(d.totalAppliedPullSpeedMps) > 0 ? "#00ff80" : "#8a9bac"),
       this.row("Applied move", f.meters(d.totalAppliedPullMoveMeters, 3), Number(d.totalAppliedPullMoveMeters) > 0 ? "#00ff80" : "#8a9bac"),
       this.row("Model speed px/s", `${f.num(d.simpleFightSpeedPxPerSec ?? d.fishSpeedPxPerSec, 1)}px/s`, "#73c2fb"),
     ];
