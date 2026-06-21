@@ -98,8 +98,7 @@ class FightPhysicsOverlayModule extends OverlayModule {
   #renderGroup(group, data) {
     const forceDefaultSummary =
       group.key === "fightCore" &&
-      this.settingsStore?.isEnabled?.("fightPhysics") &&
-      !this.settingsStore?.anyEnabled?.(FIGHT_PHYSICS_RENDER_KEYS);
+      this.settingsStore?.isEnabled?.("fightPhysics");
     const body = group.sections
       .map((section, index) =>
         section.render(data, { force: forceDefaultSummary && index === 0 }),

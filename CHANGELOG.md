@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.22.5 - Fish top-boundary lateral escape
+
+- Added configurable top-boundary lateral escape for fish that push outward near the vertical-up released-line radius.
+- Converted weak top-boundary sideways drift into a minimum tangent movement instead of visually preserving an upward blocked push.
+- Kept outward radial movement blocked while boosting only the allowed left/right tangent component.
+- Added `physics.fight.fishBoundarySteering.topEscape` balance parameters and metadata labels.
+- Added regression coverage for weak top-boundary tangent escape.
+
 ## v0.22.4 - Rod Control center-start session guard
 
 - Added Rod Control session state to distinguish controls that started centered from controls that merely arrived at center.

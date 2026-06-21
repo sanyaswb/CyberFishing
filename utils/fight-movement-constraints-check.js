@@ -100,16 +100,46 @@ assert(steeringFrame.active, "outward center deadlock receives a tangent fallbac
 assert(Math.abs(steeringFrame.velocityX) > 1, "tangent fallback produces lateral movement");
 approx(steeringFrame.velocityY, 0, 0.000001, "tangent fallback removes outward radial movement");
 const existingTangent = steering.resolveVelocity({
-  position: { x: 0, y: -300 },
+  position: { x: 150, y: -260 },
   rodTipPosition: origin,
   freeVelocity: { x: 30, y: -80 },
   constrainedVelocity: { velocityX: 30, velocityY: 0 },
   radialConstraintActive: true,
-  sectorConfig: { enabled: true, maxAngleFromCenterDeg: 60 },
+  sectorConfig: {
+    enabled: true,
+    maxAngleFromCenterDeg: 60,
+    boundarySteering: { topEscape: { angleDeg: 10 } },
+  },
   dtSec: 1 / 60,
 });
-assert(!existingTangent.active, "boundary steering preserves an existing constrained tangent velocity");
-approx(existingTangent.velocityX, 30, 0.000001, "existing tangent X is preserved");
+assert(!existingTangent.active, "boundary steering preserves an existing constrained tangent velocity outside the top escape cone");
+approx(existingTangent.velocityX, 30, 0.000001, "existing tangent X is preserved outside the top escape cone");
+
+const weakTopTangent = steering.resolveVelocity({
+  position: { x: 0, y: -300 },
+  rodTipPosition: origin,
+  freeVelocity: { x: 8, y: -80 },
+  constrainedVelocity: { velocityX: 8, velocityY: 0 },
+  radialConstraintActive: true,
+  sectorConfig: {
+    enabled: true,
+    maxAngleFromCenterDeg: 60,
+    boundarySteering: {
+      topEscape: {
+        enabled: true,
+        angleDeg: 18,
+        minTangentSpeedRatio: 0.65,
+        minTangentSpeedPxPerSec: 20,
+        outwardSpeedRatio: 0.35,
+      },
+    },
+  },
+  dtSec: 1 / 60,
+});
+assert(weakTopTangent.active, "weak top-boundary tangent receives lateral escape boost");
+assert(weakTopTangent.reason === "top_boundary_lateral_escape", "top-boundary boost reports its reason");
+assert(Math.abs(weakTopTangent.velocityX) >= 50, "top-boundary boost prefers lateral movement over upward pressure");
+approx(weakTopTangent.velocityY, 0, 0.000001, "top-boundary boost removes blocked outward velocity");
 
 const constraintResolver = new LineConstraintStateResolver();
 const dragHoldingConstraint = constraintResolver.resolve({

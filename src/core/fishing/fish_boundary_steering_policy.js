@@ -22,6 +22,7 @@ class FishBoundarySteeringPolicy {
     const radialLength = Math.hypot(radial.x, radial.y);
     const constrainedSpeed = Math.hypot(constrained.x, constrained.y);
     const freeSpeed = Math.hypot(free.x, free.y);
+    const topEscapeConfig = this.#resolveTopEscapeConfig(sectorConfig);
 
     this.#writeFrame({
       active: false,
@@ -31,13 +32,15 @@ class FishBoundarySteeringPolicy {
       velocityY: constrained.y,
       freeSpeedPxPerSec: freeSpeed,
       constrainedSpeedPxPerSec: constrainedSpeed,
+      topEscapeActive: false,
+      topEscapeAngleDeg: 0,
+      minTopTangentSpeedPxPerSec: 0,
     });
 
     if (
       !radialConstraintActive ||
       radialLength <= 0.001 ||
-      freeSpeed <= 0.001 ||
-      constrainedSpeed > 0.001
+      freeSpeed <= 0.001
     ) {
       return this.#frame;
     }
@@ -50,37 +53,120 @@ class FishBoundarySteeringPolicy {
     const positiveTangent = { x: -radial.y, y: radial.x };
     const projectedTangentSpeed =
       free.x * positiveTangent.x + free.y * positiveTangent.y;
-    if (Math.abs(projectedTangentSpeed) > 0.001) {
+    const constrainedTangentSpeed =
+      constrained.x * positiveTangent.x + constrained.y * positiveTangent.y;
+    const topEscapeFrame = this.#resolveTopEscapeFrame({
+      point,
+      origin,
+      freeSpeed,
+      outwardSpeed,
+      constrainedSpeed,
+      constrainedTangentSpeed,
+      config: topEscapeConfig,
+    });
+    const deadlockActive = constrainedSpeed <= 0.001;
+    if (!deadlockActive && !topEscapeFrame.active) return this.#frame;
+
+    if (Math.abs(constrainedTangentSpeed) > 0.001) {
+      this.#tangentSide = Math.sign(constrainedTangentSpeed);
+    } else if (Math.abs(projectedTangentSpeed) > 0.001) {
       this.#tangentSide = Math.sign(projectedTangentSpeed);
     }
     if (this.#tangentSide === 0) {
       this.#tangentSide = point.x >= origin.x ? -1 : 1;
     }
 
+    const targetTangentSpeed = deadlockActive
+      ? freeSpeed
+      : Math.max(
+          Math.abs(constrainedTangentSpeed),
+          topEscapeFrame.minTangentSpeedPxPerSec,
+        );
     this.#tangentSide = this.#chooseSectorSafeSide({
       point,
       origin,
       tangent: positiveTangent,
       preferredSide: this.#tangentSide,
-      speedPxPerSec: freeSpeed,
+      speedPxPerSec: targetTangentSpeed,
       dtSec,
       sectorConfig,
     });
 
     return this.#writeFrame({
       active: true,
-      reason: "outward_deadlock_tangent",
+      reason: deadlockActive
+        ? "outward_deadlock_tangent"
+        : "top_boundary_lateral_escape",
       tangentSide: this.#tangentSide,
-      velocityX: positiveTangent.x * freeSpeed * this.#tangentSide,
-      velocityY: positiveTangent.y * freeSpeed * this.#tangentSide,
+      velocityX: positiveTangent.x * targetTangentSpeed * this.#tangentSide,
+      velocityY: positiveTangent.y * targetTangentSpeed * this.#tangentSide,
       freeSpeedPxPerSec: freeSpeed,
       constrainedSpeedPxPerSec: constrainedSpeed,
+      topEscapeActive: topEscapeFrame.active,
+      topEscapeAngleDeg: topEscapeFrame.angleDeg,
+      minTopTangentSpeedPxPerSec:
+        topEscapeFrame.minTangentSpeedPxPerSec,
     });
   }
 
   reset() {
     this.#tangentSide = 0;
     this.#frame = this.#createFrame();
+  }
+
+  #resolveTopEscapeFrame({
+    point,
+    origin,
+    freeSpeed,
+    outwardSpeed,
+    constrainedSpeed,
+    constrainedTangentSpeed,
+    config,
+  }) {
+    const angleDeg = Math.abs(this.#angleDeg(point, origin));
+    const minTangentSpeedPxPerSec = Math.max(
+      Math.max(0, Number(config.minTangentSpeedPxPerSec) || 0),
+      freeSpeed * Math.max(0, Number(config.minTangentSpeedRatio) || 0),
+    );
+    const outwardRatio = freeSpeed > 0 ? outwardSpeed / freeSpeed : 0;
+    const active =
+      config.enabled !== false &&
+      angleDeg <= config.angleDeg &&
+      outwardRatio >= config.outwardSpeedRatio &&
+      constrainedSpeed > 0.001 &&
+      Math.abs(constrainedTangentSpeed) < minTangentSpeedPxPerSec;
+
+    return {
+      active,
+      angleDeg,
+      minTangentSpeedPxPerSec,
+    };
+  }
+
+  #resolveTopEscapeConfig(sectorConfig = {}) {
+    const source = sectorConfig.boundarySteering?.topEscape || {};
+    return {
+      enabled: source.enabled !== false,
+      angleDeg: Math.max(
+        0,
+        Math.min(
+          89.9,
+          Math.abs(Number(source.angleDeg ?? source.topAngleDeg) || 18),
+        ),
+      ),
+      minTangentSpeedRatio: Math.max(
+        0,
+        Math.min(1, Number(source.minTangentSpeedRatio) || 0.65),
+      ),
+      minTangentSpeedPxPerSec: Math.max(
+        0,
+        Number(source.minTangentSpeedPxPerSec) || 20,
+      ),
+      outwardSpeedRatio: Math.max(
+        0,
+        Math.min(1, Number(source.outwardSpeedRatio) || 0.35),
+      ),
+    };
   }
 
   #chooseSectorSafeSide({
@@ -142,6 +228,9 @@ class FishBoundarySteeringPolicy {
       velocityY: 0,
       freeSpeedPxPerSec: 0,
       constrainedSpeedPxPerSec: 0,
+      topEscapeActive: false,
+      topEscapeAngleDeg: 0,
+      minTopTangentSpeedPxPerSec: 0,
     };
   }
 

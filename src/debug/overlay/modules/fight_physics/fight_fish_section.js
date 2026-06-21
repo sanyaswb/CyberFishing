@@ -17,6 +17,14 @@ class FightFishSection extends FightSectionBase {
         "World move direction",
         `${f.num(d.fishMoveDirX, 3)}, ${f.num(d.fishMoveDirY, 3)}`,
       ),
+      this.row(
+        "Away direction",
+        `${f.num(d.awayDirX, 3)}, ${f.num(d.awayDirY, 3)}`,
+      ),
+      this.row(
+        "Raw model velocity",
+        `${f.num(d.modelFishEscapeVelocityX, 1)}, ${f.num(d.modelFishEscapeVelocityY, 1)}px/s`,
+      ),
       this.row("Active fish force", f.kg(d.fishActiveKg, 3), "#ff8888"),
       this.row("Fish opposition", f.kg(d.fishOppositionKg, 3), "#ff8888"),
       this.row("Active rod hold", f.kg(d.activeRodHoldKgForEscape, 3), "#73c2fb"),

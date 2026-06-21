@@ -448,6 +448,38 @@ class FightPhysicsConfigAdapter {
     };
   }
 
+  getFishBoundarySteeringConfig() {
+    const config = this.#physics().fight?.fishBoundarySteering || {};
+    const topEscape = config.topEscape || {};
+    return {
+      topEscape: {
+        enabled: topEscape.enabled !== false,
+        angleDeg: Math.max(
+          0,
+          Math.min(
+            89.9,
+            Math.abs(this.#number(topEscape.angleDeg, 18)),
+          ),
+        ),
+        minTangentSpeedRatio: Math.max(
+          0,
+          Math.min(
+            1,
+            this.#number(topEscape.minTangentSpeedRatio, 0.65),
+          ),
+        ),
+        minTangentSpeedPxPerSec: Math.max(
+          0,
+          this.#number(topEscape.minTangentSpeedPxPerSec, 20),
+        ),
+        outwardSpeedRatio: Math.max(
+          0,
+          Math.min(1, this.#number(topEscape.outwardSpeedRatio, 0.35)),
+        ),
+      },
+    };
+  }
+
   #root() {
     return this.config?.raw || this.config || {};
   }

@@ -702,10 +702,17 @@ class FightPhysicsSystem {
       constrainedVelocity: radialMovementFrame,
       radialConstraintActive:
         fishMotionLineConstraintState.radialConstraintActive,
-      sectorConfig:
-        this.#physicsConfig?.getPoleFightSectorConfig?.() ||
-        this.#getRuntimePhysicsConfig()?.fight?.poleFightSector ||
-        {},
+      sectorConfig: {
+        ...(
+          this.#physicsConfig?.getPoleFightSectorConfig?.() ||
+          this.#getRuntimePhysicsConfig()?.fight?.poleFightSector ||
+          {}
+        ),
+        boundarySteering:
+          this.#physicsConfig?.getFishBoundarySteeringConfig?.() ||
+          this.#getRuntimePhysicsConfig()?.fight?.fishBoundarySteering ||
+          {},
+      },
       dtSec,
     });
     const frameTargetVelocity = this.#radialTargetVelocity.set(
@@ -1915,11 +1922,13 @@ class FightPhysicsSystem {
     const playerPullMotion = this.#playerPullMotionSmoother.getDebugData();
     const totalAppliedPullSpeedMps =
       frameDtSec > 0 ? totalAppliedPullMoveMeters / frameDtSec : 0;
-    const movementMode = appliedReelHoldMoveMeters > 0.000001
-      ? "reel_hold"
-      : appliedRodPullMoveMeters > 0.000001
-        ? "rod_hold"
-        : "none";
+    const playerPullMovementMode = this.#resolvePlayerPullMovementMode({
+      appliedReelHoldMoveMeters,
+      appliedRodPullMoveMeters,
+    });
+    const fishMovementMode = this.#resolveFishMovementMode(
+      forceData.fightMovementFrame,
+    );
     const lineDebug = {
       totalLineMeters: Math.max(0, Number(lineState.totalLineMeters ?? lineState.totalLengthMeters) || 0),
       fishDistanceMeters: Math.max(0, Number(lineState.distanceMeters) || 0),
@@ -2200,6 +2209,8 @@ class FightPhysicsSystem {
       fishMoveIntentLateral: forceData.fishMoveIntentLateral,
       fishMoveDirX: forceData.fishMoveDirX,
       fishMoveDirY: forceData.fishMoveDirY,
+      awayDirX: forceData.awayDirX,
+      awayDirY: forceData.awayDirY,
       fishRuntimeBehaviorStates:
         forceData.fishPhysicsConfig?.behaviorProfile?.behaviors ||
         forceData.fishPhysicsConfig?.behaviors ||
@@ -2218,7 +2229,10 @@ class FightPhysicsSystem {
       combinedTowardSpeedMps:
         (Number(forceData.fishOwnTowardSpeedMps) || 0) +
         totalAppliedPullSpeedMps,
-      movementMode,
+      playerPullMovementMode,
+      fishMovementMode,
+      // Deprecated alias: this is player pull movement, not fish movement.
+      movementMode: playerPullMovementMode,
       towardPlayerSpeedMps: fishRetrieveResult?.towardPlayerSpeedMps,
       awaySpeedMps: fishRetrieveResult?.awaySpeedMps,
       netForceKg: fishRetrieveResult?.netForceKg,
@@ -2488,6 +2502,23 @@ class FightPhysicsSystem {
   #lineHasReserve(lineState) {
     if (typeof lineState?.canReleaseLine === "boolean") return lineState.canReleaseLine;
     return (Number(lineState?.remainingMeters) || 0) > 0.001;
+  }
+
+  #resolvePlayerPullMovementMode({
+    appliedReelHoldMoveMeters,
+    appliedRodPullMoveMeters,
+  } = {}) {
+    if (Number(appliedReelHoldMoveMeters) > 0.000001) return "reel_hold";
+    if (Number(appliedRodPullMoveMeters) > 0.000001) return "rod_hold";
+    return "none";
+  }
+
+  #resolveFishMovementMode(frame) {
+    if (frame?.boundarySteeringActive) {
+      return frame.boundarySteeringReason || "boundary_steering";
+    }
+    if (Number(frame?.actualSpeedPxPerSec) > 0.001) return "autonomous";
+    return "none";
   }
 
   #isLineTaut(lineState) {

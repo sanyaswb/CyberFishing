@@ -799,6 +799,26 @@
     "label": "Pole fight sector shore opening",
     "description": "Full allowed width in meters where the fight sector crosses the shoreline. Zero keeps the original pointed sector."
   },
+  "physics.fight.fishBoundarySteering.topEscape.enabled": {
+    "label": "Top boundary lateral escape enabled",
+    "description": "Enables extra tangent movement when a fish pushes outward near the top of the released-line radius."
+  },
+  "physics.fight.fishBoundarySteering.topEscape.angleDeg": {
+    "label": "Top boundary escape angle",
+    "description": "Half-angle in degrees around the vertical-up center line where weak sideways movement is boosted."
+  },
+  "physics.fight.fishBoundarySteering.topEscape.minTangentSpeedRatio": {
+    "label": "Top boundary tangent speed ratio",
+    "description": "Minimum tangent speed as a ratio of raw fish escape speed while the top boundary escape is active."
+  },
+  "physics.fight.fishBoundarySteering.topEscape.minTangentSpeedPxPerSec": {
+    "label": "Top boundary minimum tangent speed",
+    "description": "Absolute minimum tangent speed in pixels per second while the top boundary escape is active."
+  },
+  "physics.fight.fishBoundarySteering.topEscape.outwardSpeedRatio": {
+    "label": "Top boundary outward intent ratio",
+    "description": "Required share of raw fish movement that must point outward before top boundary lateral escape can activate."
+  },
   "physics.fight.playerForceBudget.enabled": {
     "label": "Player force budget enabled",
     "description": "Enables the shared per-frame player force budget that splits player effort between Rod Hold and Rod Control."
