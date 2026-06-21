@@ -104,8 +104,8 @@ class LineRadialMovementSplitter {
 
   #velocity(value) {
     return {
-      x: Number(value?.x) || 0,
-      y: Number(value?.y) || 0,
+      x: Number(value?.x ?? value?.velocityX) || 0,
+      y: Number(value?.y ?? value?.velocityY) || 0,
     };
   }
 

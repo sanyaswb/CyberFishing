@@ -9,6 +9,7 @@ const FILES = [
   "src/core/fishing/pole_fight_sector_constraint.js",
   "src/core/fishing/line_constraint_state_resolver.js",
   "src/core/fishing/line_constrained_fish_motion_resolver.js",
+  "src/core/fishing/line_radial_movement_splitter.js",
   "src/systems/player_pull_motion_smoother.js",
 ];
 const context = vm.createContext({ console, Math, Number, Object });
@@ -117,6 +118,19 @@ approx(outwardLeft.velocityX, -30, 0.000001, "outward-left preserves left tangen
 approx(outwardLeft.velocityY, 0, 0.000001, "outward-left removes only outward radial velocity");
 approx(outwardLeft.blockedRadialSpeedPxPerSec, 80, 0.000001, "outward-left reports blocked radial speed");
 approx(outwardLeft.allowedTangentSpeedPxPerSec, 30, 0.000001, "outward-left reports preserved tangent speed");
+
+const radialSplitter = new LineRadialMovementSplitter();
+const projectedSplit = radialSplitter.resolveVelocity({
+  position: topPosition,
+  rodTipPosition: origin,
+  freeVelocity: { x: -30, y: -80 },
+  constrainedVelocity: outwardLeft,
+  releasedMeters: 6,
+  pixelsPerMeter: 50,
+  dtSec: 1 / 60,
+});
+approx(projectedSplit.velocityX, -30, 0.000001, "splitter preserves projected tangent velocityX");
+approx(projectedSplit.velocityY, 0, 0.000001, "splitter preserves projected tangent velocityY");
 
 const outwardRight = motionResolver.resolve({
   position: topPosition,

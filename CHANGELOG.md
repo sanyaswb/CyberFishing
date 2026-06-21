@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.22.7 - Line-radius projection integration
+
+- Fixed `LineRadialMovementSplitter` so it accepts projected motion frames with `velocityX` / `velocityY`, not only `{ x, y }`.
+- Preserved `LineConstrainedFishMotionResolver` tangent output through the integrated fish movement pipeline.
+- Added regression coverage for `LineConstrainedFishMotionResolver -> LineRadialMovementSplitter` tangent preservation.
+- Kept pure outward boundary movement resolving to zero without reintroducing artificial tangent fallback.
+
 ## v0.22.6 - Fish line-radius projection
 
 - Added `LineConstrainedFishMotionResolver` to remove only the forbidden radial-outward component from raw fish movement at a locked released-line radius.

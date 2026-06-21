@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.22.6";
+const CURRENT_PROJECT_VERSION = "0.22.7";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "fish-line-radius-projection",
+  codename: "line-radius-projection-integration",
   updatedAt: "2026-06-21",
   notes: Object.freeze([
-    "Replaced top-boundary lateral escape with projection-based line-radius movement",
-    "Removed only forbidden radial-outward fish velocity at the locked released-line radius",
-    "Preserved existing tangent and inward fish movement without artificial boost",
-    "Removed fishBoundarySteering.topEscape balance config and metadata",
-    "Added debug and regression coverage for raw versus allowed fish velocity",
+    "Fixed LineRadialMovementSplitter reading projected velocityX and velocityY frames",
+    "Preserved resolver-projected tangent movement through the full fish movement pipeline",
+    "Added regression coverage for resolver to radial-splitter integration",
+    "Kept projection behavior unchanged for pure outward, lateral and inward movement",
+    "Closed the P0 integration gap from the v0.22.6 projection patch",
   ]),
 });
 
