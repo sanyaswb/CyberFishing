@@ -1,5 +1,21 @@
 # CyberFishing changelog
 
+## v0.22.9 - Pole sector angle constraint cleanup
+
+- Added `PoleFightSectorAngleConstraint` as the named angle-only constraint for autonomous fish movement.
+- Kept `PoleFightSectorConstraint` as the radius-aware sector constraint for existing callers.
+- Moved the fish movement pipeline to the dedicated angle-only sector path instead of toggling generic radius policy inline.
+- Loaded the new constraint in runtime and VM regression harnesses.
+- Added architecture checks to prevent reintroducing inline `enforceRadius: false` in autonomous fish movement.
+
+## v0.22.8 - Sector angle-only fish movement
+
+- Disabled pole fight sector radius enforcement for autonomous fish movement so tangent motion at max released-line radius can reach `LineSystem`'s radius clamp.
+- Added `enforceRadius` support to pole fight sector geometry and movement frames while keeping radius enforcement enabled by default for existing callers.
+- Kept `LineSystem` as the single owner of released-line radius clamping in the fish movement pipeline.
+- Added fight debug fields for fish actual blocker and sector movement enforcement state.
+- Added regression coverage for angle-only sector movement at max released-line radius.
+
 ## v0.22.7 - Line-radius projection integration
 
 - Fixed `LineRadialMovementSplitter` so it accepts projected motion frames with `velocityX` / `velocityY`, not only `{ x, y }`.

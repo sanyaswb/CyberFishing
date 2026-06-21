@@ -7,6 +7,7 @@ const FILES = [
   "src/core/fishing/rod_control_movement_projector.js",
   "src/core/fishing/pole_fight_sector_geometry.js",
   "src/core/fishing/pole_fight_sector_constraint.js",
+  "src/core/fishing/pole_fight_sector_angle_constraint.js",
   "src/core/fishing/line_constraint_state_resolver.js",
   "src/core/fishing/line_constrained_fish_motion_resolver.js",
   "src/core/fishing/line_radial_movement_splitter.js",
@@ -131,6 +132,44 @@ const projectedSplit = radialSplitter.resolveVelocity({
 });
 approx(projectedSplit.velocityX, -30, 0.000001, "splitter preserves projected tangent velocityX");
 approx(projectedSplit.velocityY, 0, 0.000001, "splitter preserves projected tangent velocityY");
+
+const tangentStep = {
+  x: topPosition.x + projectedSplit.velocityX * (1 / 60),
+  y: topPosition.y + projectedSplit.velocityY * (1 / 60),
+};
+const radiusEnforcedSector = sector.resolveMovement({
+  fromPosition: topPosition,
+  proposedPosition: tangentStep,
+  origin,
+  config: { enabled: true, maxAngleFromCenterDeg: 60 },
+  limitRadiusPx: 300,
+  pixelsPerMeter: 50,
+  enforceRadius: true,
+});
+assert(radiusEnforcedSector.clamped, "radius-enforced sector would block a straight tangent step at max radius");
+assert(radiusEnforcedSector.boundaryType === "radius", "radius-enforced sector reports radius boundary");
+const angleOnlySector = sector.resolveMovement({
+  fromPosition: topPosition,
+  proposedPosition: tangentStep,
+  origin,
+  config: { enabled: true, maxAngleFromCenterDeg: 60 },
+  limitRadiusPx: 300,
+  pixelsPerMeter: 50,
+  enforceRadius: false,
+});
+assert(!angleOnlySector.clamped, "angle-only sector does not block tangent movement at max radius");
+assert(angleOnlySector.enforceRadius === false, "angle-only sector reports disabled radius enforcement");
+const angleConstraint = new PoleFightSectorAngleConstraint();
+const namedAngleOnlySector = angleConstraint.resolveMovement({
+  fromPosition: topPosition,
+  proposedPosition: tangentStep,
+  origin,
+  config: { enabled: true, maxAngleFromCenterDeg: 60 },
+  limitRadiusPx: 300,
+  pixelsPerMeter: 50,
+});
+assert(!namedAngleOnlySector.clamped, "dedicated angle constraint does not block tangent movement at max radius");
+assert(namedAngleOnlySector.enforceRadius === false, "dedicated angle constraint exposes angle-only radius policy");
 
 const outwardRight = motionResolver.resolve({
   position: topPosition,

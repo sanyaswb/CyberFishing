@@ -28,6 +28,10 @@ class FightPhysicsSystem {
     typeof PoleFightSectorConstraint !== "undefined"
       ? new PoleFightSectorConstraint()
       : null;
+  #poleFightSectorAngleConstraint =
+    typeof PoleFightSectorAngleConstraint !== "undefined"
+      ? new PoleFightSectorAngleConstraint()
+      : null;
   #fightInputActionComposer =
     typeof FightInputActionComposer !== "undefined"
       ? new FightInputActionComposer()
@@ -764,7 +768,7 @@ class FightPhysicsSystem {
     }
 
     const constrainedFishPosition = floatEntity.getPosition();
-    const sectorMovementFrame = this.#applyPoleFightSectorMovement({
+    const sectorMovementFrame = this.#applyPoleFightSectorAngleMovement({
       fromPosition: {
         x: previousFishX,
         y: previousFishY,
@@ -803,6 +807,20 @@ class FightPhysicsSystem {
       : 0;
     movementFrame.poleFightSectorClamped =
       sectorMovementFrame.clamped === true;
+    movementFrame.poleFightSectorActive =
+      sectorMovementFrame.active === true;
+    movementFrame.poleFightSectorSide =
+      sectorMovementFrame.side || "none";
+    movementFrame.poleFightSectorAngleDeg =
+      sectorMovementFrame.proposedAngleDeg ??
+      sectorMovementFrame.angleDeg ??
+      0;
+    movementFrame.poleFightSectorBoundaryType =
+      sectorMovementFrame.boundaryType || "none";
+    movementFrame.poleFightSectorAllowedMoveRatio =
+      sectorMovementFrame.allowedMoveRatio ?? 1;
+    movementFrame.poleFightSectorEnforceRadius =
+      sectorMovementFrame.enforceRadius !== false;
     movementFrame.prePlayerLineConstraintApplied =
       prePlayerLineConstraint?.constrained === true ||
       prePlayerLineConstraint?.hardLimit === true;
@@ -828,6 +846,14 @@ class FightPhysicsSystem {
       projectionFrame.projectionReason === "free"
         ? "released_radius_crossed"
         : projectionFrame.projectionReason || projectionFrame.reason || "free";
+    movementFrame.fishActualBlockedReason =
+      this.#resolveFishActualBlockedReason({
+        allowedVelocityX: frameTargetVelocity.x,
+        allowedVelocityY: frameTargetVelocity.y,
+        actualSpeedPxPerSec: movementFrame.actualSpeedPxPerSec,
+        sectorMovementFrame,
+        lineConstraintResult: prePlayerLineConstraint,
+      });
     movementFrame.lineConstraintReason =
       fishMotionLineConstraintState.reason || "none";
     movementFrame.radialConstraintActive =
@@ -1430,6 +1456,7 @@ class FightPhysicsSystem {
   resetPlayerPullMotion() {
     this.#playerPullMotionSmoother.reset();
     this.#poleFightSectorConstraint?.reset?.();
+    this.#poleFightSectorAngleConstraint?.reset?.();
   }
 
   #updateTension({
@@ -1843,6 +1870,7 @@ class FightPhysicsSystem {
     origin,
     limitRadiusPx = 0,
     adjustVelocity = false,
+    enforceRadius = true,
   }) {
     if (!this.#poleFightSectorConstraint?.resolveMovement) {
       return {
@@ -1854,6 +1882,49 @@ class FightPhysicsSystem {
     }
 
     const frame = this.#poleFightSectorConstraint.resolveMovement({
+      fromPosition,
+      proposedPosition,
+      velocity: adjustVelocity ? velocity : null,
+      origin,
+      limitRadiusPx,
+      pixelsPerMeter:
+        this.#physicsConfig?.getPixelsPerMeter?.() || 50,
+      config:
+        this.#physicsConfig?.getPoleFightSectorConfig?.() ||
+        this.#getRuntimePhysicsConfig()?.fight?.poleFightSector ||
+        {},
+      enforceRadius,
+    });
+    if (!frame.active) return frame;
+
+    proposedPosition.x = frame.positionX;
+    proposedPosition.y = frame.positionY;
+    if (adjustVelocity && frame.velocityAdjusted && velocity) {
+      velocity.x = frame.velocityX;
+      velocity.y = frame.velocityY;
+    }
+    return frame;
+  }
+
+  #applyPoleFightSectorAngleMovement({
+    fromPosition,
+    proposedPosition,
+    velocity,
+    origin,
+    limitRadiusPx = 0,
+    adjustVelocity = false,
+  }) {
+    if (!this.#poleFightSectorAngleConstraint?.resolveMovement) {
+      return {
+        active: false,
+        clamped: false,
+        positionX: Number(proposedPosition?.x) || 0,
+        positionY: Number(proposedPosition?.y) || 0,
+        enforceRadius: false,
+      };
+    }
+
+    const frame = this.#poleFightSectorAngleConstraint.resolveMovement({
       fromPosition,
       proposedPosition,
       velocity: adjustVelocity ? velocity : null,
@@ -1950,6 +2021,24 @@ class FightPhysicsSystem {
     const fishMovementMode = this.#resolveFishMovementMode(
       forceData.fightMovementFrame,
     );
+    const fishMovementSummary = this.#resolveFishMovementSummary({
+      frame: forceData.fightMovementFrame,
+      awayDirX: forceData.awayDirX,
+      awayDirY: forceData.awayDirY,
+      fishWonForceKg:
+        fishRetrieveResult?.fishWonForceKg ?? forceData.fishWonForceKg,
+      netForceKg: fishRetrieveResult?.netForceKg,
+      rodControlForceKg: rodControlResult?.forceKg,
+    });
+    const fishPressureSummary = this.#resolveFishPressureSummary({
+      frame: forceData.fightMovementFrame,
+      awayDirX: forceData.awayDirX,
+      awayDirY: forceData.awayDirY,
+      fishWonForceKg:
+        fishRetrieveResult?.fishWonForceKg ?? forceData.fishWonForceKg,
+      netForceKg: fishRetrieveResult?.netForceKg,
+      rodControlForceKg: rodControlResult?.forceKg,
+    });
     const lineDebug = {
       totalLineMeters: Math.max(0, Number(lineState.totalLineMeters ?? lineState.totalLengthMeters) || 0),
       fishDistanceMeters: Math.max(0, Number(lineState.distanceMeters) || 0),
@@ -2252,6 +2341,38 @@ class FightPhysicsSystem {
         totalAppliedPullSpeedMps,
       playerPullMovementMode,
       fishMovementMode,
+      fishPressureRelation: fishPressureSummary.relation,
+      fishPressureRelationLabel: fishPressureSummary.relationLabel,
+      fishPressureDirection: fishPressureSummary.direction,
+      fishPressureDirectionLabel: fishPressureSummary.directionLabel,
+      fishPressureStrengthKg: fishPressureSummary.strengthKg,
+      fishPressureSpeedPxPerSec: fishPressureSummary.speedPxPerSec,
+      fishPressureDirX: fishPressureSummary.dirX,
+      fishPressureDirY: fishPressureSummary.dirY,
+      fishMovementRelation: fishMovementSummary.relation,
+      fishMovementRelationLabel: fishMovementSummary.relationLabel,
+      fishMovementDirection: fishMovementSummary.direction,
+      fishMovementDirectionLabel: fishMovementSummary.directionLabel,
+      fishMovementStrengthKg: fishMovementSummary.strengthKg,
+      fishMovementActualSpeedPxPerSec: fishMovementSummary.actualSpeedPxPerSec,
+      fishMovementActualDirX: fishMovementSummary.dirX,
+      fishMovementActualDirY: fishMovementSummary.dirY,
+      fishActualBlockedReason:
+        forceData.fightMovementFrame?.fishActualBlockedReason || "none",
+      fishMoveSectorClamped:
+        !!forceData.fightMovementFrame?.poleFightSectorClamped,
+      fishMoveSectorActive:
+        !!forceData.fightMovementFrame?.poleFightSectorActive,
+      fishMoveSectorSide:
+        forceData.fightMovementFrame?.poleFightSectorSide || "none",
+      fishMoveSectorAngleDeg:
+        forceData.fightMovementFrame?.poleFightSectorAngleDeg ?? 0,
+      fishMoveSectorBoundaryType:
+        forceData.fightMovementFrame?.poleFightSectorBoundaryType || "none",
+      fishMoveSectorAllowedMoveRatio:
+        forceData.fightMovementFrame?.poleFightSectorAllowedMoveRatio ?? 1,
+      fishMoveSectorEnforceRadius:
+        forceData.fightMovementFrame?.poleFightSectorEnforceRadius !== false,
       // Deprecated alias: this is player pull movement, not fish movement.
       movementMode: playerPullMovementMode,
       towardPlayerSpeedMps: fishRetrieveResult?.towardPlayerSpeedMps,
@@ -2560,6 +2681,218 @@ class FightPhysicsSystem {
     }
     if (Number(frame?.actualSpeedPxPerSec) > 0.001) return "autonomous";
     return "none";
+  }
+
+  #resolveFishActualBlockedReason({
+    allowedVelocityX = 0,
+    allowedVelocityY = 0,
+    actualSpeedPxPerSec = 0,
+    sectorMovementFrame = null,
+    lineConstraintResult = null,
+  } = {}) {
+    const allowedSpeed = Math.hypot(
+      Number(allowedVelocityX) || 0,
+      Number(allowedVelocityY) || 0,
+    );
+    if (allowedSpeed <= 0.001 || Number(actualSpeedPxPerSec) > 0.001) {
+      return "none";
+    }
+    if (sectorMovementFrame?.clamped === true) {
+      const boundaryType = sectorMovementFrame.boundaryType || "unknown";
+      const radiusDuplicate =
+        boundaryType.includes("radius") &&
+        sectorMovementFrame.enforceRadius !== false;
+      return radiusDuplicate
+        ? "sector_radius_duplicate"
+        : `sector_${boundaryType}`;
+    }
+    if (
+      lineConstraintResult?.constrained === true ||
+      lineConstraintResult?.hardLimit === true
+    ) {
+      return "line_radius";
+    }
+    return "unknown_post_constraint";
+  }
+
+  #resolveFishMovementSummary({
+    frame,
+    awayDirX = 0,
+    awayDirY = 0,
+    fishWonForceKg = 0,
+    netForceKg = 0,
+    rodControlForceKg = 0,
+  } = {}) {
+    const moveX = Number(frame?.movedX) || 0;
+    const moveY = Number(frame?.movedY) || 0;
+    const magnitude = Math.hypot(moveX, moveY);
+    const actualSpeedPxPerSec = Math.max(
+      0,
+      Number(frame?.actualSpeedPxPerSec) || 0,
+    );
+
+    if (magnitude <= 0.000001 || actualSpeedPxPerSec <= 0.001) {
+      return {
+        relation: "none",
+        relationLabel: "немає руху",
+        direction: "none",
+        directionLabel: "немає",
+        strengthKg: 0,
+        actualSpeedPxPerSec,
+        dirX: 0,
+        dirY: 0,
+      };
+    }
+
+    const dirX = moveX / magnitude;
+    const dirY = moveY / magnitude;
+    const awayLength = Math.hypot(Number(awayDirX) || 0, Number(awayDirY) || 0);
+    const normalizedAwayX = awayLength > 0.000001 ? awayDirX / awayLength : 0;
+    const normalizedAwayY = awayLength > 0.000001 ? awayDirY / awayLength : -1;
+    const radialDot = dirX * normalizedAwayX + dirY * normalizedAwayY;
+    const relation = this.#resolveFishMovementRelation(radialDot);
+
+    return {
+      relation,
+      relationLabel: this.#fishMovementRelationLabel(relation),
+      direction: this.#resolveEightWayDirection(dirX, dirY),
+      directionLabel: this.#eightWayDirectionLabel(dirX, dirY),
+      strengthKg: this.#resolveFishMovementStrengthKg({
+        relation,
+        fishWonForceKg,
+        netForceKg,
+        rodControlForceKg,
+      }),
+      actualSpeedPxPerSec,
+      dirX,
+      dirY,
+    };
+  }
+
+  #resolveFishPressureSummary({
+    frame,
+    awayDirX = 0,
+    awayDirY = 0,
+    fishWonForceKg = 0,
+    netForceKg = 0,
+    rodControlForceKg = 0,
+  } = {}) {
+    const rawX = Number(frame?.fishMoveRawVelocityX) || 0;
+    const rawY = Number(frame?.fishMoveRawVelocityY) || 0;
+    const allowedX = Number(frame?.fishMoveAllowedVelocityX) || 0;
+    const allowedY = Number(frame?.fishMoveAllowedVelocityY) || 0;
+    const rawSpeed = Math.hypot(rawX, rawY);
+    const allowedSpeed = Math.hypot(allowedX, allowedY);
+    const hasRawVelocity = rawSpeed > 0.001;
+    const sourceX = hasRawVelocity ? rawX : allowedX;
+    const sourceY = hasRawVelocity ? rawY : allowedY;
+    const speedPxPerSec = hasRawVelocity ? rawSpeed : allowedSpeed;
+    const hasVelocity = speedPxPerSec > 0.001;
+    const fallbackForce = Math.max(
+      0,
+      Number(fishWonForceKg) || 0,
+      Number(netForceKg) || 0,
+      Number(rodControlForceKg) || 0,
+    );
+
+    if (!hasVelocity && fallbackForce <= 0.000001) {
+      return {
+        relation: "none",
+        relationLabel: "немає тиску",
+        direction: "none",
+        directionLabel: "немає",
+        strengthKg: 0,
+        speedPxPerSec: 0,
+        dirX: 0,
+        dirY: 0,
+      };
+    }
+
+    const awayLength = Math.hypot(Number(awayDirX) || 0, Number(awayDirY) || 0);
+    const normalizedAwayX = awayLength > 0.000001 ? awayDirX / awayLength : 0;
+    const normalizedAwayY = awayLength > 0.000001 ? awayDirY / awayLength : -1;
+    const dirX = hasVelocity ? sourceX / speedPxPerSec : normalizedAwayX;
+    const dirY = hasVelocity ? sourceY / speedPxPerSec : normalizedAwayY;
+    const radialDot = dirX * normalizedAwayX + dirY * normalizedAwayY;
+    const relation = this.#resolveFishMovementRelation(radialDot);
+
+    return {
+      relation,
+      relationLabel: this.#fishMovementRelationLabel(relation),
+      direction: this.#resolveEightWayDirection(dirX, dirY),
+      directionLabel: this.#eightWayDirectionLabel(dirX, dirY),
+      strengthKg: this.#resolveFishMovementStrengthKg({
+        relation,
+        fishWonForceKg,
+        netForceKg,
+        rodControlForceKg,
+      }),
+      speedPxPerSec,
+      dirX,
+      dirY,
+    };
+  }
+
+  #resolveFishMovementRelation(radialDot) {
+    if (radialDot > 0.25) return "away_from_player";
+    if (radialDot < -0.25) return "toward_player";
+    return "sideways";
+  }
+
+  #fishMovementRelationLabel(relation) {
+    if (relation === "away_from_player") return "від гравця";
+    if (relation === "toward_player") return "до гравця";
+    if (relation === "sideways") return "поперек";
+    return "немає руху";
+  }
+
+  #resolveFishMovementStrengthKg({
+    relation,
+    fishWonForceKg = 0,
+    netForceKg = 0,
+    rodControlForceKg = 0,
+  } = {}) {
+    if (relation === "toward_player") return Math.max(0, Number(netForceKg) || 0);
+    if (relation === "away_from_player") {
+      return Math.max(0, Number(fishWonForceKg) || 0);
+    }
+    if (relation === "sideways") {
+      return Math.max(
+        0,
+        Number(fishWonForceKg) || 0,
+        Number(rodControlForceKg) || 0,
+      );
+    }
+    return 0;
+  }
+
+  #resolveEightWayDirection(dirX, dirY) {
+    const horizontal = this.#directionAxis(dirX, "left", "right");
+    const vertical = this.#directionAxis(dirY, "up", "down");
+    if (vertical && horizontal) return `${vertical}_${horizontal}`;
+    return vertical || horizontal || "none";
+  }
+
+  #eightWayDirectionLabel(dirX, dirY) {
+    const direction = this.#resolveEightWayDirection(dirX, dirY);
+    const labels = {
+      up: "вгору",
+      up_left: "вгору-вліво",
+      up_right: "вгору-вправо",
+      left: "вліво",
+      right: "вправо",
+      down: "вниз",
+      down_left: "вниз-вліво",
+      down_right: "вниз-вправо",
+      none: "немає",
+    };
+    return labels[direction] || labels.none;
+  }
+
+  #directionAxis(value, negativeName, positiveName) {
+    if (value < -0.3826834323650898) return negativeName;
+    if (value > 0.3826834323650898) return positiveName;
+    return "";
   }
 
   #isLineTaut(lineState) {

@@ -19,6 +19,7 @@ class PoleFightSectorConstraint {
     limitRadiusPx = 0,
     pixelsPerMeter = 50,
     geometryFrame = null,
+    enforceRadius = true,
   } = {}) {
     const from = this.#point(fromPosition);
     const proposed = this.#point(proposedPosition);
@@ -85,20 +86,38 @@ class PoleFightSectorConstraint {
       velocityY: Number(velocity?.y) || 0,
       boundaryType: "none",
       allowedMoveRatio: 1,
+      enforceRadius: enforceRadius !== false,
     });
 
     if (!this.#frame.active || !this.#geometry) return this.#frame;
 
-    const fromInside = this.#geometry.contains(from, geometry);
-    const proposedInside = this.#geometry.contains(proposed, geometry);
+    const containsOptions = { enforceRadius };
+    const fromInside = this.#geometry.contains(
+      from,
+      geometry,
+      containsOptions,
+    );
+    const proposedInside = this.#geometry.contains(
+      proposed,
+      geometry,
+      containsOptions,
+    );
     let allowed = proposed;
     let recoveryMovement = false;
     let allowedMoveRatio = 1;
 
     if (!proposedInside) {
       if (!fromInside) {
-        const fromViolation = this.#geometry.violation(from, geometry);
-        const proposedViolation = this.#geometry.violation(proposed, geometry);
+        const fromViolation = this.#geometry.violation(
+          from,
+          geometry,
+          containsOptions,
+        );
+        const proposedViolation = this.#geometry.violation(
+          proposed,
+          geometry,
+          containsOptions,
+        );
         const doesNotWorsenAngle =
           proposedViolation.angleExcessDeg <=
           fromViolation.angleExcessDeg + 0.0000001;
@@ -116,6 +135,7 @@ class PoleFightSectorConstraint {
           from,
           proposed,
           geometry,
+          enforceRadius,
         });
         allowed = boundary.point;
         allowedMoveRatio = boundary.ratio;
@@ -142,6 +162,7 @@ class PoleFightSectorConstraint {
           proposedAngleDeg,
           proposedRadiusPx,
           geometry,
+          enforceRadius,
         })
       : "none";
     const velocityFrame = clamped
@@ -187,6 +208,7 @@ class PoleFightSectorConstraint {
     limitRadiusPx = 0,
     pixelsPerMeter = 50,
     geometryFrame = null,
+    enforceRadius = true,
   } = {}) {
     return this.resolveMovement({
       fromPosition: position,
@@ -196,6 +218,7 @@ class PoleFightSectorConstraint {
       limitRadiusPx,
       pixelsPerMeter,
       geometryFrame,
+      enforceRadius,
     });
   }
 
@@ -203,7 +226,7 @@ class PoleFightSectorConstraint {
     this.#frame = this.#createFrame();
   }
 
-  #findBoundaryPoint({ from, proposed, geometry }) {
+  #findBoundaryPoint({ from, proposed, geometry, enforceRadius }) {
     let low = 0;
     let high = 1;
     let allowedX = from.x;
@@ -213,7 +236,7 @@ class PoleFightSectorConstraint {
       const ratio = (low + high) * 0.5;
       const x = from.x + (proposed.x - from.x) * ratio;
       const y = from.y + (proposed.y - from.y) * ratio;
-      if (this.#geometry.contains({ x, y }, geometry)) {
+      if (this.#geometry.contains({ x, y }, geometry, { enforceRadius })) {
         low = ratio;
         allowedX = x;
         allowedY = y;
@@ -232,11 +255,13 @@ class PoleFightSectorConstraint {
     proposedAngleDeg,
     proposedRadiusPx,
     geometry,
+    enforceRadius,
   }) {
     const angleOutside =
       Math.abs(proposedAngleDeg) >
       (Number(geometry.maxAngleFromCenterDeg) || 0) + 0.000001;
     const radiusOutside =
+      enforceRadius !== false &&
       proposedRadiusPx >
       Math.max(0, Number(geometry.limitRadiusPx) || 0) + 0.000001;
     if (angleOutside && radiusOutside) return "angle_and_radius";
@@ -316,6 +341,7 @@ class PoleFightSectorConstraint {
       velocityY: 0,
       boundaryType: "none",
       allowedMoveRatio: 1,
+      enforceRadius: true,
     };
   }
 

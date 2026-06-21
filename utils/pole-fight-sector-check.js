@@ -6,6 +6,7 @@ const ROOT = path.resolve(__dirname, "..");
 const FILES = [
   "src/core/fishing/pole_fight_sector_geometry.js",
   "src/core/fishing/pole_fight_sector_constraint.js",
+  "src/core/fishing/pole_fight_sector_angle_constraint.js",
   "src/render/core/render_frame_buffer.js",
   "src/render/fishing/fight_area_renderer.js",
   "src/app/rendering/fight_area_render_frame_builder.js",
@@ -63,6 +64,18 @@ assert(
   fightSystemSource.includes("#resolvePoleFightSectorLimitRadiusPx"),
   "autonomous, Hold and Control derive sector radius from line state",
 );
+assert(
+  fightSystemSource.includes("new PoleFightSectorAngleConstraint()"),
+  "autonomous fish movement uses the dedicated angle-only sector constraint",
+);
+assert(
+  fightSystemSource.includes("#applyPoleFightSectorAngleMovement({"),
+  "fish movement pipeline calls the angle-only sector movement path",
+);
+assert(
+  !fightSystemSource.includes("adjustVelocity: true,\n      enforceRadius: false"),
+  "fish movement pipeline no longer toggles the generic sector radius flag inline",
+);
 const fishingRenderSource = fs.readFileSync(
   path.join(ROOT, FISHING_RENDER_FILE),
   "utf8",
@@ -87,6 +100,9 @@ assert(
 vm.runInContext(`
 const geometryBuilder = new PoleFightSectorGeometry();
 const constraint = new PoleFightSectorConstraint({ geometry: geometryBuilder });
+const angleConstraint = new PoleFightSectorAngleConstraint({
+  geometry: geometryBuilder,
+});
 const origin = { x: 500, y: 700 };
 const config = {
   enabled: true,
@@ -206,6 +222,22 @@ frame = constraint.resolveMovement({
 assert(frame.clamped === true, "radial crossing is clipped");
 approx(radiusOf({ x: frame.positionX, y: frame.positionY }), 300, 0.0002, "radial crossing stops on released-line arc");
 assert(frame.boundaryType === "radius", "radial crossing reports line-radius boundary");
+frame = angleConstraint.resolveMovement({
+  fromPosition: from,
+  proposedPosition: proposed,
+  origin,
+  config,
+  limitRadiusPx,
+  pixelsPerMeter,
+});
+assert(
+  frame.clamped === false,
+  "dedicated angle constraint ignores radial boundary crossings",
+);
+assert(
+  frame.enforceRadius === false,
+  "dedicated angle constraint reports radius enforcement disabled",
+);
 
 from = pointAtSectorApex(50, 250);
 proposed = pointAtSectorApex(80, 360);

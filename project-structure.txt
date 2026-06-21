@@ -130,17 +130,18 @@
 │  │  ├── core.js
 │  │  ├── fishing
 │  │  │  ├── drag_force_calculator.js
-│  │  │  ├── fish_boundary_steering_policy.js
 │  │  │  ├── fish_direction_intent_sampler.js
 │  │  │  ├── fish_fight_direction_resolver.js
 │  │  │  ├── fish_retrieve_result.js
 │  │  │  ├── hold_opposition_resolver.js
 │  │  │  ├── landing_lift_tension_calculator.js
 │  │  │  ├── landing_policy.js
+│  │  │  ├── line_constrained_fish_motion_resolver.js
 │  │  │  ├── line_constraint_state_resolver.js
 │  │  │  ├── line_radial_movement_splitter.js
 │  │  │  ├── line_tension_calculator.js
 │  │  │  ├── player_force_budget_allocator.js
+│  │  │  ├── pole_fight_sector_angle_constraint.js
 │  │  │  ├── pole_fight_sector_constraint.js
 │  │  │  ├── pole_fight_sector_geometry.js
 │  │  │  ├── reel_auto_recovery_calculator.js
@@ -215,7 +216,11 @@
 │  │  │  │  │  ├── fight_movement_section.js
 │  │  │  │  │  ├── fight_physics_overlay_module.js
 │  │  │  │  │  ├── fight_reel_hold_section.js
+│  │  │  │  │  ├── fight_rod_control_force_section.js
+│  │  │  │  │  ├── fight_rod_control_geometry_section.js
+│  │  │  │  │  ├── fight_rod_control_input_section.js
 │  │  │  │  │  ├── fight_rod_control_section.js
+│  │  │  │  │  ├── fight_rod_control_visual_section.js
 │  │  │  │  │  ├── fight_rod_hold_section.js
 │  │  │  │  │  ├── fight_rod_stroke_section.js
 │  │  │  │  │  ├── fight_section_base.js

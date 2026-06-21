@@ -81,8 +81,13 @@ class PoleFightSectorGeometry {
     });
   }
 
-  contains(point, geometry, epsilonPx = 0.000001) {
+  contains(point, geometry, options = {}) {
     if (!geometry?.active) return true;
+    const enforceRadius = options.enforceRadius !== false;
+    const epsilonPx =
+      typeof options === "number"
+        ? options
+        : Number(options.epsilonPx) || 0.000001;
     const candidate = this.#point(point);
     if (!candidate.valid) return false;
     const center = {
@@ -97,6 +102,7 @@ class PoleFightSectorGeometry {
       Math.abs(this.angleDeg(candidate, apex)) <=
       (Number(geometry.maxAngleFromCenterDeg) || 0) + 0.000001;
     const radiusInside =
+      !enforceRadius ||
       Math.hypot(candidate.x - center.x, candidate.y - center.y) <=
       Math.max(0, Number(geometry.limitRadiusPx) || 0) +
         Math.max(0, Number(epsilonPx) || 0);
@@ -117,7 +123,7 @@ class PoleFightSectorGeometry {
     );
   }
 
-  violation(point, geometry) {
+  violation(point, geometry, options = {}) {
     if (!geometry?.active) {
       return {
         score: 0,
@@ -125,6 +131,7 @@ class PoleFightSectorGeometry {
         radiusExcessPx: 0,
       };
     }
+    const enforceRadius = options.enforceRadius !== false;
     const radialOrigin = {
       x: Number(geometry.radialOriginX ?? geometry.originX) || 0,
       y: Number(geometry.radialOriginY ?? geometry.originY) || 0,
@@ -138,11 +145,13 @@ class PoleFightSectorGeometry {
       Math.abs(this.angleDeg(point, sectorApex)) -
         (Number(geometry.maxAngleFromCenterDeg) || 0),
     );
-    const radiusExcessPx = Math.max(
-      0,
-      this.radiusPx(point, radialOrigin) -
-        Math.max(0.000001, Number(geometry.limitRadiusPx) || 0.000001),
-    );
+    const radiusExcessPx = enforceRadius
+      ? Math.max(
+          0,
+          this.radiusPx(point, radialOrigin) -
+            Math.max(0.000001, Number(geometry.limitRadiusPx) || 0.000001),
+        )
+      : 0;
     const normalizedAngle = angleExcessDeg /
       Math.max(0.000001, Number(geometry.maxAngleFromCenterDeg) || 1);
     const normalizedRadius = radiusExcessPx /

@@ -8,7 +8,36 @@ class FightMovementSection extends FightSectionBase {
 
   rows(d) {
     const f = this.formatter;
+    const relationColor = this.#movementRelationColor(d.fishMovementRelation);
+    const pressureColor = this.#movementRelationColor(d.fishPressureRelation);
     return [
+      this.row(
+        "Fish pressure",
+        `${d.fishPressureRelationLabel || "немає тиску"} · ${f.kg(d.fishPressureStrengthKg, 3)} · ${f.num(d.fishPressureSpeedPxPerSec, 1)}px/s`,
+        pressureColor,
+      ),
+      this.row(
+        "Pressure direction",
+        d.fishPressureDirectionLabel || "немає",
+        pressureColor,
+      ),
+      this.row(
+        "Fish actual move",
+        `${d.fishMovementRelationLabel || "немає руху"} · ${f.kg(d.fishMovementStrengthKg, 3)} · ${f.num(d.fishMovementActualSpeedPxPerSec, 1)}px/s`,
+        relationColor,
+      ),
+      this.row(
+        "Actual direction",
+        d.fishMovementDirectionLabel || "немає",
+        relationColor,
+      ),
+      this.row(
+        "Actual blocker",
+        d.fishActualBlockedReason || "none",
+        d.fishActualBlockedReason && d.fishActualBlockedReason !== "none"
+          ? "#ffaa00"
+          : "#8a9bac",
+      ),
       this.row("Net force", f.kg(d.netForceKg, 3), f.netForceColor(d.netForceKg)),
       this.row("Winner", f.winner(d.netForceKg), f.netForceColor(d.netForceKg)),
       this.row("Water resistance", f.num(d.waterMotionResistance, 1)),
@@ -22,6 +51,23 @@ class FightMovementSection extends FightSectionBase {
       this.row("Allowed tangent", `${f.num(d.fishMoveAllowedTangentSpeedPxPerSec, 1)}px/s`, Number(d.fishMoveAllowedTangentSpeedPxPerSec) > 0.001 ? "#00ff80" : "#8a9bac"),
       this.row("Move constraint", d.fishMoveConstraintActive ? "active" : "free", d.fishMoveConstraintActive ? "#ffaa00" : "#8a9bac"),
       this.row("Projection reason", d.fishMoveProjectionReason || "free", d.fishMoveProjectionReason === "radial_outward_projected" ? "#ffaa00" : "#8a9bac"),
+      this.row(
+        "Sector constraint",
+        `${d.fishMoveSectorActive ? "active" : "inactive"} · ${d.fishMoveSectorClamped ? "clamped" : "free"} · ${d.fishMoveSectorBoundaryType || "none"} · radius ${d.fishMoveSectorEnforceRadius ? "on" : "off"}`,
+        d.fishMoveSectorClamped ? "#ffaa00" : "#8a9bac",
+      ),
+      this.row(
+        "Sector angle",
+        `${f.num(d.fishMoveSectorAngleDeg, 1)}deg · ${d.fishMoveSectorSide || "none"}`,
+        d.fishMoveSectorActive ? "#73c2fb" : "#8a9bac",
+      ),
+      this.row(
+        "Sector move ratio",
+        f.percent(d.fishMoveSectorAllowedMoveRatio, 1),
+        Number(d.fishMoveSectorAllowedMoveRatio) < 0.999
+          ? "#ffaa00"
+          : "#8a9bac",
+      ),
       this.row("Line constraint", d.fightMovementLineConstraintReason || "none", d.fightMovementLineConstraintReason && d.fightMovementLineConstraintReason !== "none" ? "#ffaa00" : "#8a9bac"),
       this.row("Radial constraint", d.fightMovementRadialConstraintActive ? "yes" : "no", d.fightMovementRadialConstraintActive ? "#ffaa00" : "#8a9bac"),
       this.row("Target speed", `${f.num(d.fightMovementTargetSpeedPxPerSec, 1)}px/s`, "#73c2fb"),
@@ -33,6 +79,13 @@ class FightMovementSection extends FightSectionBase {
       this.row("Applied move", f.meters(d.totalAppliedPullMoveMeters, 3), Number(d.totalAppliedPullMoveMeters) > 0 ? "#00ff80" : "#8a9bac"),
       this.row("Model speed px/s", `${f.num(d.simpleFightSpeedPxPerSec ?? d.fishSpeedPxPerSec, 1)}px/s`, "#73c2fb"),
     ];
+  }
+
+  #movementRelationColor(relation) {
+    if (relation === "away_from_player") return "#ff8888";
+    if (relation === "toward_player") return "#00ff80";
+    if (relation === "sideways") return "#73c2fb";
+    return "#8a9bac";
   }
 }
 

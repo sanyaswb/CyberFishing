@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.22.7";
+const CURRENT_PROJECT_VERSION = "0.22.9";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "line-radius-projection-integration",
+  codename: "pole-sector-angle-constraint-cleanup",
   updatedAt: "2026-06-21",
   notes: Object.freeze([
-    "Fixed LineRadialMovementSplitter reading projected velocityX and velocityY frames",
-    "Preserved resolver-projected tangent movement through the full fish movement pipeline",
-    "Added regression coverage for resolver to radial-splitter integration",
-    "Kept projection behavior unchanged for pure outward, lateral and inward movement",
-    "Closed the P0 integration gap from the v0.22.6 projection patch",
+    "Added a dedicated PoleFightSectorAngleConstraint for autonomous fish movement",
+    "Kept PoleFightSectorConstraint as the radius-aware sector constraint for existing callers",
+    "Moved fish movement integration to the named angle-only sector path",
+    "Loaded the new angle constraint in runtime and VM regression harnesses",
+    "Added architecture checks preventing inline generic radius-policy toggles in fish movement",
   ]),
 });
 
