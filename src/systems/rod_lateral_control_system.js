@@ -2,6 +2,8 @@ class RodLateralControlSystem {
   #result = this.#createResult();
   #tensionModeResolver;
   #centerStartDirectionX = 0;
+  #controlStartedCentered = false;
+  #wasControlActive = false;
 
   constructor({ tensionModeResolver = null } = {}) {
     this.#tensionModeResolver =
@@ -33,6 +35,7 @@ class RodLateralControlSystem {
   } = {}) {
     const cfg = config || {};
     if (cfg.enabled === false) {
+      this.#resetControlSession();
       this.#result = this.#createResult({ blockedReason: "disabled" });
       return this.#result;
     }
@@ -150,6 +153,7 @@ class RodLateralControlSystem {
       aligned: targetFrame.aligned,
       centered: targetFrame.centered,
       centerStartActive: targetFrame.centerStartActive,
+      controlStartedCentered: targetFrame.controlStartedCentered,
       maxBeforeAlignmentMeters: targetFrame.maxBeforeAlignmentMeters,
       blockedReason: intent.canRequestForce
         ? this.#forceBlockedReason({
@@ -173,7 +177,8 @@ class RodLateralControlSystem {
   } = {}) {
     const cfg = config || {};
     const active = cfg.enabled !== false && !!inputState?.rodControlActive;
-    if (!active) this.#centerStartDirectionX = 0;
+    if (!active) this.#resetControlSession();
+    const controlSessionStarted = active && !this.#wasControlActive;
     const inputDirectionX = active
       ? Math.sign(this.#number(inputState?.rodControlDirectionX))
       : 0;
@@ -187,8 +192,10 @@ class RodLateralControlSystem {
       rodTipPosition,
       baseRodTipPosition,
       actualRodTipPosition,
+      controlSessionStarted,
       config: cfg,
     }));
+    if (active) this.#wasControlActive = true;
     const blockedReason = this.#intentBlockedReason({
       active,
       hasFish,
@@ -227,7 +234,13 @@ class RodLateralControlSystem {
 
   reset() {
     this.#result = this.#createResult();
+    this.#resetControlSession();
+  }
+
+  #resetControlSession() {
     this.#centerStartDirectionX = 0;
+    this.#controlStartedCentered = false;
+    this.#wasControlActive = false;
   }
 
   #resolveTargetFrame({
@@ -236,6 +249,7 @@ class RodLateralControlSystem {
     rodTipPosition,
     baseRodTipPosition,
     actualRodTipPosition,
+    controlSessionStarted = false,
     config,
   }) {
     const alignment = config.alignment || {};
@@ -259,6 +273,7 @@ class RodLateralControlSystem {
         aligned: false,
         centered: false,
         centerStartActive: false,
+        controlStartedCentered: false,
         maxBeforeAlignmentMeters: Number.POSITIVE_INFINITY,
       };
     }
@@ -280,6 +295,7 @@ class RodLateralControlSystem {
         aligned: false,
         centered: false,
         centerStartActive: false,
+        controlStartedCentered: false,
         maxBeforeAlignmentMeters: 0,
       };
     }
@@ -301,10 +317,22 @@ class RodLateralControlSystem {
     const aligned = absOffsetX <= alignedThresholdPx;
     const centered = absOffsetX <= centerStartThresholdPx;
     const inputDir = Math.sign(inputDirectionX) || 0;
-    if (centered && inputDir !== 0 && this.#centerStartDirectionX === 0) {
+
+    if (controlSessionStarted) {
+      this.#controlStartedCentered = centered;
+      this.#centerStartDirectionX = 0;
+    }
+
+    if (
+      this.#controlStartedCentered &&
+      centered &&
+      inputDir !== 0 &&
+      this.#centerStartDirectionX === 0
+    ) {
       this.#centerStartDirectionX = inputDir;
     }
-    const centerStartActive = this.#centerStartDirectionX !== 0;
+    const centerStartActive =
+      this.#controlStartedCentered && this.#centerStartDirectionX !== 0;
     const towardRodDirectionX = centerStartActive
       ? this.#centerStartDirectionX
       : aligned
@@ -341,6 +369,7 @@ class RodLateralControlSystem {
       aligned,
       centered,
       centerStartActive,
+      controlStartedCentered: this.#controlStartedCentered,
       maxBeforeAlignmentMeters: Math.max(
         0,
         centerStartActive
@@ -644,6 +673,7 @@ class RodLateralControlSystem {
       aligned: false,
       centered: false,
       centerStartActive: false,
+      controlStartedCentered: false,
       maxBeforeAlignmentMeters: 0,
       blockedReason: "no_input",
       ...overrides,

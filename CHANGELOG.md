@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.22.4 - Rod Control center-start session guard
+
+- Added Rod Control session state to distinguish controls that started centered from controls that merely arrived at center.
+- Restricted `center_start` to the active-edge session start when the fish is already centered.
+- Kept side-start Rod Control anchored to the rod target after center crossing so movement blocks as `aligned` instead of continuing sideways.
+- Switched the default `physics.fight.rodControl.alignment.targetAnchorMode` to `cast_base` for gameplay testing against the cast-start rod center.
+- Exposed `rodControlStartedCentered` in the fight debug overlay.
+- Added Rod Control UX regression coverage for side-start center crossing.
+
 ## v0.22.3 - Rod Control anchor mode
 
 - Added `physics.fight.rodControl.alignment.targetAnchorMode` with `current_base` and `cast_base` modes for Rod Control gameplay comparison.

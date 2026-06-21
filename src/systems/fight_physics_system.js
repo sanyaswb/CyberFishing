@@ -2304,6 +2304,8 @@ class FightPhysicsSystem {
       rodControlDirectionFactor: rodControlResult?.directionFactor ?? 0,
       rodControlAligned: !!rodControlResult?.aligned,
       rodControlCentered: !!rodControlResult?.centered,
+      rodControlStartedCentered:
+        !!rodControlResult?.controlStartedCentered,
       rodControlCenterStartActive:
         !!rodControlResult?.centerStartActive,
       rodControlMaxPullSpeedMps:

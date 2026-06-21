@@ -30,11 +30,16 @@ class FightRodControlInputSection extends FightSectionBase {
       this.row("Input ratio", f.percent(d.rodControlInputRatio, 1), "#73c2fb"),
       this.row("Target mode", d.rodControlTargetMode || "input_direction", "#00d4ff"),
       this.row(
+        "Started centered",
+        d.rodControlStartedCentered ? "yes" : "no",
+        d.rodControlStartedCentered ? "#73c2fb" : "#8a9bac",
+      ),
+      this.row(
         "Centered start",
         d.rodControlCenterStartActive
           ? "active"
           : d.rodControlCentered
-            ? "ready"
+            ? "centered"
             : "no",
         d.rodControlCenterStartActive
           ? "#00ff80"

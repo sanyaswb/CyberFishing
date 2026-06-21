@@ -236,6 +236,7 @@ const centeredFish = controlFrame({ fishX: 0, direction: 1 });
 assert(centeredFish.canApply, "Centered fish can start Rod Control to either side");
 assert(centeredFish.targetMode === "center_start", "Centered Rod Control latches the start direction");
 assert(centeredFish.centered, "Exact-center Rod Control reports centered state");
+assert(centeredFish.controlStartedCentered, "Exact-center Rod Control records session started centered");
 assert(centeredFish.centerStartActive, "Exact-center Rod Control reports center-start active state");
 approx(centeredFish.directionX, 1, 0.001, "Centered Rod Control follows the initial input direction");
 
@@ -267,6 +268,49 @@ assert(!nearCenterSameSide.centered, "Near-center fish is not exact center for f
 assert(!nearCenterSameSide.centerStartActive, "Near-center fish cannot latch same-side center start");
 assert(!nearCenterSameSide.canApply, "Near-center same-side Rod Control stays blocked");
 assert(nearCenterSameSide.blockedReason === "aligned", "Near-center same-side block remains aligned");
+
+const centerCrossingControl = new RodLateralControlSystem();
+const centerCrossingStart = centerCrossingControl.update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: -1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: 100, y: 100 },
+  rodTipPosition: { x: 0, y: 0 },
+  baseRodTipPosition: { x: 0, y: 0 },
+  actualRodTipPosition: { x: 0, y: 0 },
+  rodLimitKg: 2,
+  currentTensionKg: 0,
+  fishWeightKg: 0,
+  config,
+});
+assert(centerCrossingStart.canApply, "Side-start Rod Control can pull fish toward center");
+assert(!centerCrossingStart.controlStartedCentered, "Side-start Rod Control records non-centered session start");
+const centerCrossingAligned = centerCrossingControl.update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: -1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: 0, y: 100 },
+  rodTipPosition: { x: 0, y: 0 },
+  baseRodTipPosition: { x: 0, y: 0 },
+  actualRodTipPosition: { x: 0, y: 0 },
+  rodLimitKg: 2,
+  currentTensionKg: 0,
+  fishWeightKg: 0,
+  config,
+});
+assert(centerCrossingAligned.centered, "Fish reaching center is reported as centered");
+assert(!centerCrossingAligned.controlStartedCentered, "Arriving at center does not rewrite session start state");
+assert(!centerCrossingAligned.centerStartActive, "Arriving at center does not activate center-start mode");
+assert(centerCrossingAligned.targetMode !== "center_start", "Arriving at center does not switch to center_start");
+approx(centerCrossingAligned.targetRodX, 0, 0.001, "Arriving at center keeps a valid target rod X");
+assert(!centerCrossingAligned.canApply, "Rod Control stops when side-start fish reaches center");
+assert(centerCrossingAligned.blockedReason === "aligned", "Center crossing blocks as aligned while input remains held");
 
 const intentResolver = new RodLateralControlSystem();
 const alignedIntent = intentResolver.resolveIntent({

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.22.3";
+const CURRENT_PROJECT_VERSION = "0.22.4";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,15 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "rod-control-anchor-mode",
+  codename: "rod-control-center-start-session",
   updatedAt: "2026-06-21",
   notes: Object.freeze([
-    "Added Rod Control targetAnchorMode for current-base versus cast-base gameplay testing",
-    "Captured an immutable cast-base rod anchor when a fight starts",
-    "Resolved the Rod Control target anchor once in the fight physics pipeline",
-    "Kept RodLateralControlSystem dependent only on an injected target point",
-    "Added Rod Control UX regressions for cast-base and current-base anchors",
+    "Separated Rod Control center-start sessions from center-arrival alignment",
+    "Allowed center_start only when the active control session begins centered",
+    "Kept side-start Rod Control anchored when the fish reaches center",
+    "Defaulted Rod Control targetAnchorMode to cast_base for gameplay testing",
+    "Added debug output for Rod Control started-centered state",
+    "Added regression coverage for side-start center crossing",
   ]),
 });
 
