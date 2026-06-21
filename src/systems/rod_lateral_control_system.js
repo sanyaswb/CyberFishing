@@ -1,6 +1,7 @@
 class RodLateralControlSystem {
   #result = this.#createResult();
   #tensionModeResolver;
+  #centerStartDirectionX = 0;
 
   constructor({ tensionModeResolver = null } = {}) {
     this.#tensionModeResolver =
@@ -95,7 +96,7 @@ class RodLateralControlSystem {
       inputRatio > 0 &&
       targetFrame.directionFactor > 0 &&
       targetFrame.angleRatio > 0 &&
-      !targetFrame.aligned &&
+      (!targetFrame.aligned || targetFrame.centerStartActive) &&
       forceFrame.effectiveForceLimitKg > 0 &&
       forceKg > 0 &&
       moveFrame.desiredMoveMeters > 0;
@@ -147,6 +148,8 @@ class RodLateralControlSystem {
       angleRatio: targetFrame.angleRatio,
       directionFactor: targetFrame.directionFactor,
       aligned: targetFrame.aligned,
+      centered: targetFrame.centered,
+      centerStartActive: targetFrame.centerStartActive,
       maxBeforeAlignmentMeters: targetFrame.maxBeforeAlignmentMeters,
       blockedReason: intent.canRequestForce
         ? this.#forceBlockedReason({
@@ -170,6 +173,7 @@ class RodLateralControlSystem {
   } = {}) {
     const cfg = config || {};
     const active = cfg.enabled !== false && !!inputState?.rodControlActive;
+    if (!active) this.#centerStartDirectionX = 0;
     const inputDirectionX = active
       ? Math.sign(this.#number(inputState?.rodControlDirectionX))
       : 0;
@@ -223,6 +227,7 @@ class RodLateralControlSystem {
 
   reset() {
     this.#result = this.#createResult();
+    this.#centerStartDirectionX = 0;
   }
 
   #resolveTargetFrame({
@@ -252,14 +257,14 @@ class RodLateralControlSystem {
         targetMode: "input_direction",
         fishOffsetX: 0,
         aligned: false,
+        centered: false,
+        centerStartActive: false,
         maxBeforeAlignmentMeters: Number.POSITIVE_INFINITY,
       };
     }
 
-    const useActual = alignment.useActualRodPositionAsTarget !== false;
-    const targetPoint = useActual
-      ? (actualRodTipPosition || rodTipPosition || baseRodTipPosition)
-      : (baseRodTipPosition || rodTipPosition || actualRodTipPosition);
+    const targetPoint = baseRodTipPosition || rodTipPosition ||
+      actualRodTipPosition;
     if (!this.#hasPoint(fishPosition) || !this.#hasPoint(targetPoint)) {
       return {
         enabled: true,
@@ -269,9 +274,11 @@ class RodLateralControlSystem {
         lineAngleDeg: 0,
         targetRodX: this.#number(targetPoint?.x, 0),
         targetRodY: this.#number(targetPoint?.y, 0),
-        targetMode: useActual ? "actual_rod" : "base_rod",
+        targetMode: "base_rod",
         fishOffsetX: 0,
         aligned: false,
+        centered: false,
+        centerStartActive: false,
         maxBeforeAlignmentMeters: 0,
       };
     }
@@ -286,24 +293,37 @@ class RodLateralControlSystem {
       0,
       this.#number(alignment.alignedThresholdPx, 8),
     );
+    const centerStartThresholdPx = Math.max(
+      0,
+      this.#number(alignment.centerStartThresholdPx, 0.5),
+    );
     const aligned = absOffsetX <= alignedThresholdPx;
-    const towardRodDirectionX = aligned ? 0 : -Math.sign(fishOffsetX);
+    const centered = absOffsetX <= centerStartThresholdPx;
     const inputDir = Math.sign(inputDirectionX) || 0;
+    if (centered && inputDir !== 0 && this.#centerStartDirectionX === 0) {
+      this.#centerStartDirectionX = inputDir;
+    }
+    const centerStartActive = this.#centerStartDirectionX !== 0;
+    const towardRodDirectionX = centerStartActive
+      ? this.#centerStartDirectionX
+      : aligned
+        ? 0
+        : -Math.sign(fishOffsetX);
     const maxEffectiveAngleDeg = Math.max(
       0.000001,
       this.#number(alignment.maxEffectiveAngleDeg, 45),
     );
     const dy = Math.abs(targetRodY - fishY);
     const lineAngleDeg = Math.atan2(absOffsetX, Math.max(1, dy)) * 180 / Math.PI;
-    const angleRatio = aligned
-      ? 0
+    const angleRatio = centerStartActive
+      ? 1
+      : aligned
+        ? 0
       : this.#clamp01(lineAngleDeg / maxEffectiveAngleDeg);
     let directionFactor = 0;
-    if (!aligned && inputDir !== 0) {
+    if (inputDir !== 0) {
       if (inputDir === towardRodDirectionX) {
         directionFactor = 1;
-      } else if (alignment.allowAwayDirection === true) {
-        directionFactor = this.#clamp01(alignment.awayDirectionMultiplier);
       }
     }
 
@@ -313,14 +333,18 @@ class RodLateralControlSystem {
       directionFactor,
       angleRatio,
       lineAngleDeg,
-      targetRodX,
-      targetRodY,
-      targetMode: useActual ? "actual_rod" : "base_rod",
+      targetRodX: centerStartActive ? null : targetRodX,
+      targetRodY: centerStartActive ? null : targetRodY,
+      targetMode: centerStartActive ? "center_start" : "base_rod",
       fishOffsetX,
       aligned,
+      centered,
+      centerStartActive,
       maxBeforeAlignmentMeters: Math.max(
         0,
-        (absOffsetX - alignedThresholdPx) / pixelsPerMeter,
+        centerStartActive
+          ? Number.POSITIVE_INFINITY
+          : (absOffsetX - alignedThresholdPx) / pixelsPerMeter,
       ),
     };
   }
@@ -542,7 +566,7 @@ class RodLateralControlSystem {
     if (!active) return "no_input";
     if (!hasFish) return "no_fish";
     if (inputDirectionX === 0 || inputRatio <= 0) return "dead_zone";
-    if (targetFrame.aligned) return "aligned";
+    if (targetFrame.aligned && !targetFrame.centerStartActive) return "aligned";
     if (targetFrame.directionFactor <= 0) return "wrong_direction";
     if (targetFrame.angleRatio <= 0) return "angle_too_small";
     return "none";
@@ -617,6 +641,8 @@ class RodLateralControlSystem {
       angleRatio: 0,
       directionFactor: 0,
       aligned: false,
+      centered: false,
+      centerStartActive: false,
       maxBeforeAlignmentMeters: 0,
       blockedReason: "no_input",
       ...overrides,

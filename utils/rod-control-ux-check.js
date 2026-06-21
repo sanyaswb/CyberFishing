@@ -135,11 +135,9 @@ const config = {
   pixelsPerMeter: 50,
   alignment: {
     enabled: true,
-    useActualRodPositionAsTarget: true,
     maxEffectiveAngleDeg: 45,
     alignedThresholdPx: 0,
-    allowAwayDirection: false,
-    awayDirectionMultiplier: 0,
+    centerStartThresholdPx: 0.5,
   },
   force: {
     maxForceKg: 0.22,
@@ -234,8 +232,40 @@ approx(halfAngle.angleRatio, 0.5, 0.01, "22.5-degree angle delivers half angle r
 approx(halfAngle.deliveredForceRatio, 0.5, 0.01, "Full input at 22.5 degrees delivers half force");
 
 const centeredFish = controlFrame({ fishX: 0, direction: 1 });
-assert(!centeredFish.canApply, "Aligned fish blocks Rod Control");
-assert(centeredFish.blockedReason === "aligned", "Aligned fish has exact block reason");
+assert(centeredFish.canApply, "Centered fish can start Rod Control to either side");
+assert(centeredFish.targetMode === "center_start", "Centered Rod Control latches the start direction");
+assert(centeredFish.centered, "Exact-center Rod Control reports centered state");
+assert(centeredFish.centerStartActive, "Exact-center Rod Control reports center-start active state");
+approx(centeredFish.directionX, 1, 0.001, "Centered Rod Control follows the initial input direction");
+
+const nearCenterConfig = {
+  ...config,
+  alignment: {
+    ...config.alignment,
+    alignedThresholdPx: 8,
+    centerStartThresholdPx: 0.5,
+  },
+};
+const nearCenterSameSide = new RodLateralControlSystem().update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: 4, y: 100 },
+  rodTipPosition: { x: 0, y: 0 },
+  baseRodTipPosition: { x: 0, y: 0 },
+  actualRodTipPosition: { x: 0, y: 0 },
+  rodLimitKg: 2,
+  currentTensionKg: 0,
+  fishWeightKg: 0,
+  config: nearCenterConfig,
+});
+assert(!nearCenterSameSide.centered, "Near-center fish is not exact center for free direction start");
+assert(!nearCenterSameSide.centerStartActive, "Near-center fish cannot latch same-side center start");
+assert(!nearCenterSameSide.canApply, "Near-center same-side Rod Control stays blocked");
+assert(nearCenterSameSide.blockedReason === "aligned", "Near-center same-side block remains aligned");
 
 const intentResolver = new RodLateralControlSystem();
 const alignedIntent = intentResolver.resolveIntent({
@@ -250,19 +280,19 @@ const alignedIntent = intentResolver.resolveIntent({
   config,
 });
 assert(
-  !alignedIntent.canRequestForce,
-  "Aligned Rod Control intent is ineligible before force-budget allocation",
+  alignedIntent.canRequestForce,
+  "Centered Rod Control intent remains eligible before force-budget allocation",
 );
 assert(
-  alignedIntent.blockedReason === "aligned",
-  "Aligned intent exposes its budget block reason",
+  alignedIntent.blockedReason === "none",
+  "Centered intent has no block reason while the gesture is active",
 );
 
 const wrongDirection = controlFrame({ direction: 1 });
 assert(!wrongDirection.canApply, "Wrong-side Rod Control is blocked");
 assert(wrongDirection.blockedReason === "wrong_direction", "Wrong direction has exact block reason");
 
-const wrongDirectionIntent = intentResolver.resolveIntent({
+const wrongDirectionIntent = new RodLateralControlSystem().resolveIntent({
   inputState: {
     rodControlActive: true,
     rodControlDirectionX: 1,
@@ -276,6 +306,31 @@ const wrongDirectionIntent = intentResolver.resolveIntent({
 assert(
   !wrongDirectionIntent.canRequestForce,
   "Wrong-direction control is ineligible before force-budget allocation",
+);
+
+const visualTargetMustNotOverrideFishSide = new RodLateralControlSystem().update({
+  dtSec: 1,
+  inputState: {
+    rodControlActive: true,
+    rodControlDirectionX: 1,
+    rodControlInputRatio: 1,
+  },
+  fishPosition: { x: 40, y: 100 },
+  rodTipPosition: { x: 0, y: 0 },
+  baseRodTipPosition: { x: 0, y: 0 },
+  actualRodTipPosition: { x: 120, y: 0 },
+  rodLimitKg: 2,
+  currentTensionKg: 0,
+  fishWeightKg: 0,
+  config,
+});
+assert(
+  !visualTargetMustNotOverrideFishSide.canApply,
+  "Visual rod target cannot allow pulling toward the fish side",
+);
+assert(
+  visualTargetMustNotOverrideFishSide.blockedReason === "wrong_direction",
+  "Same-side control stays blocked even when the visual rod is farther right",
 );
 
 const halfInput = controlFrame({ inputRatio: 0.5 });
@@ -423,11 +478,10 @@ const tightOffset = tightVisual.update({
 approx(tightVisual.getFrame().weightSpeedRatio, 0.5, 0.001, "Fish at rod load limit uses configured minimum rod aim speed");
 approx(tightOffset, 1.05, 0.001, "Tight-line rod aim slows by relative fish load");
 assert(tightVisual.getFrame().drivenByInput, "Tight-line rod aim is input-driven");
-assert(!tightVisual.getFrame().drivenByFish, "Tight-line rod aim is not fish-driven");
 assert(tightVisual.getFrame().lineMode === "tight_line", "Tight-line rod aim reports tight line mode");
 
-const sameDirectionAim = new RodVisualOffsetSystem();
-const sameDirectionOffset = sameDirectionAim.update({
+const sameSideBlockedAim = new RodVisualOffsetSystem();
+const sameSideBlockedOffset = sameSideBlockedAim.update({
   dtSec: 0.05,
   inputState: {
     rodControlActive: true,
@@ -438,16 +492,18 @@ const sameDirectionOffset = sameDirectionAim.update({
     fishWeightKg: 1,
     rodMaxLoadKg: 1,
     rodControlLoadReserveRatio: 0,
+    rodControlDirectionX: -1,
+    rodControlDirectionFactor: 0,
+    rodControlBlockedReason: "wrong_direction",
     forces: { fX: 10 },
   },
   config,
   canvasWidth: 1000,
 });
-approx(sameDirectionAim.getFrame().directionSpeedRatio, 0.75, 0.001, "Rod aim with fish uses return speed multiplier");
-approx(sameDirectionOffset, 2.75, 0.001, "Rod aim with fish adds fish X speed without load-reserve slowdown");
-assert(sameDirectionAim.getFrame().withFishDirection, "Rod aim detects same X direction as fish");
-assert(sameDirectionAim.getFrame().directionSpeedMode === "with_fish", "Rod aim reports with-fish speed mode");
-assert(sameDirectionAim.getFrame().drivenByFish, "Rod aim with fish reports fish-driven visual movement");
+approx(sameSideBlockedOffset, 0, 0.001, "Same-side Rod Control does not move visual rod");
+assert(!sameSideBlockedAim.getFrame().drivenByInput, "Same-side Rod Control does not drive visual input");
+assert(!("withFishDirection" in sameSideBlockedAim.getFrame()), "Rod aim no longer exposes with-fish movement mode");
+assert(!("drivenByFish" in sameSideBlockedAim.getFrame()), "Rod aim no longer exposes fish-driven visual mode");
 
 const opposingDirectionAim = new RodVisualOffsetSystem();
 const opposingDirectionOffset = opposingDirectionAim.update({
@@ -463,7 +519,7 @@ const opposingDirectionOffset = opposingDirectionAim.update({
 });
 approx(opposingDirectionAim.getFrame().directionSpeedRatio, 0.35, 0.001, "Rod aim against fish uses tight-line speed multiplier");
 approx(opposingDirectionOffset, 1.05, 0.001, "Rod aim against fish keeps tight-line speed");
-assert(!opposingDirectionAim.getFrame().withFishDirection, "Rod aim detects opposing X direction from fish");
+assert(!("withFishDirection" in opposingDirectionAim.getFrame()), "Rod aim does not expose with-fish movement mode");
 
 const centeredFollow = new RodLateralControlSystem().update({
   dtSec: 1,
@@ -480,9 +536,9 @@ const centeredFollow = new RodLateralControlSystem().update({
   fishWeightKg: 0,
   config,
 });
-assert(centeredFollow.canApply, "Fish centered on base rod follows shifted actual rod target");
-approx(centeredFollow.directionX, -1, 0.001, "Centered fish moves toward shifted left rod aim");
-approx(centeredFollow.deliveredForceRatio, 1, 0.001, "Shifted rod aim creates full force at 45 degrees");
+assert(centeredFollow.canApply, "Centered fish can start left Rod Control");
+approx(centeredFollow.directionX, -1, 0.001, "Centered fish latches left input until release");
+approx(centeredFollow.deliveredForceRatio, 1, 0.001, "Centered start creates full control force");
 
 const freeLineVisual = new RodVisualOffsetSystem();
 const freeLineOffset = freeLineVisual.update({

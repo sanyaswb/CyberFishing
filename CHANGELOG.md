@@ -1,5 +1,20 @@
 # CyberFishing changelog
 
+## v0.22.2 - Rod Control direction single source
+
+- Removed the legacy away-direction Rod Control config path, so lateral control can only pull opposite the fish side or use an exact centered-start latch.
+- Split broad `alignedThresholdPx` from `centerStartThresholdPx`, preventing near-center fish from being treated as exact center for same-side starts.
+- Removed fish-driven visual aim fields from the runtime/debug bridge; rod visual movement now follows the accepted physics direction frame.
+- Added Rod Control debug output for centered and center-start states.
+- Added regression coverage for near-center same-side blocking and removed with-fish visual mode.
+
+## v0.22.1 - Rod Control opposite-side only
+
+- Rod Control X can now apply force only opposite the fish side: fish on the right allows left control, fish on the left allows right control.
+- A perfectly centered fish may start Rod Control in either direction, and that initial direction is latched until the control input is released.
+- Visual/actual rod offset no longer changes the physical direction eligibility, so the rod cannot be used to justify pulling toward the side where the fish already is.
+- Added regression coverage for centered starts, same-side blocking and visual rod target isolation.
+
 ## v0.22.0 - Render architecture P2 contracts and diagnostics
 
 - Added `render-layer-dependency-check` to enforce render, render/core and world dependency direction with file/line/symbol diagnostics.

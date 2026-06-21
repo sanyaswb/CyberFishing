@@ -49,8 +49,9 @@ const data = {
 const fishStatesModule = new context.window.FishStatesModule();
 const html = fishStatesModule.render(data);
 
-assertIncludes(html, "0.015 кг", "runtime active force");
 assertIncludes(html, "0.025 кг", "runtime total force");
+assertExcludes(html, "активна:", "state module hides active force detail");
+assertExcludes(html, "0.015 кг", "state module hides active force value");
 assertIncludes(html, "x1.50", "runtime force multiplier");
 assertIncludes(html, "x0.00", "zero multiplier");
 assertExcludes(html, "x9.00", "stale hooked-fish multiplier");

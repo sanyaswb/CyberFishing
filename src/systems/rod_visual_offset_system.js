@@ -15,12 +15,17 @@ class RodVisualOffsetSystem {
     const aimCfg = cfg.rodAim || {};
     const enabled = cfg.enabled !== false && aimCfg.enabled !== false;
     const active = enabled && !!inputState?.rodControlActive;
-    const direction = active
+    const inputDirection = active
       ? Math.sign(Number(inputState?.rodControlDirectionX) || 0)
       : 0;
     const inputRatio = active
       ? this.#clamp01(inputState?.rodControlInputRatio)
       : 0;
+    const direction = this.#resolveControlDirection({
+      active,
+      inputDirection,
+      fightDebug,
+    });
     const width = Math.max(0, Number(canvasWidth) || 0);
     const maxOffsetPx = Math.max(
       Number(aimCfg.fallbackMaxOffsetPx) ||
@@ -36,12 +41,8 @@ class RodVisualOffsetSystem {
 
     const lineModeFrame = this.#resolveLineMode({ fightDebug, visualCfg, aimCfg });
     const directionFrame = this.#resolveDirectionSpeedFrame({
-      direction,
-      active,
       fightDebug,
       lineModeFrame,
-      aimCfg,
-      visualCfg,
     });
     const weightSpeedFrame = this.#resolveWeightSpeedFrame({
       fishWeightKg: fightDebug?.fishWeightKg,
@@ -60,7 +61,6 @@ class RodVisualOffsetSystem {
     let targetOffsetPx = 0;
     let mode = "return";
     let drivenByInput = false;
-    let drivenByFish = false;
     let speedPxPerSecond = Math.max(
       0,
       Number(aimCfg.baseAimSpeedPxPerSecond) ||
@@ -72,17 +72,8 @@ class RodVisualOffsetSystem {
       mode = lineModeFrame.mode;
       drivenByInput = true;
       targetOffsetPx = direction * maxOffsetPx * inputRatio;
-      if (directionFrame.withFishDirection) {
-        drivenByFish = true;
-        speedPxPerSecond =
-          Math.abs(directionFrame.fishMoveX) +
-          speedPxPerSecond *
-            directionFrame.speedMultiplier *
-            weightSpeedRatio;
-      } else {
-        speedPxPerSecond *=
-          directionFrame.speedMultiplier * weightSpeedRatio * loadSpeedRatio;
-      }
+      speedPxPerSecond *=
+        directionFrame.speedMultiplier * weightSpeedRatio * loadSpeedRatio;
     } else {
       speedPxPerSecond *= Math.max(
         0,
@@ -127,10 +118,8 @@ class RodVisualOffsetSystem {
       directionSpeedMode: directionFrame.mode,
       fishMoveX: directionFrame.fishMoveX,
       fishMoveDirectionX: directionFrame.fishMoveDirectionX,
-      withFishDirection: directionFrame.withFishDirection,
       aimSpeedPxPerSecond: speedPxPerSecond,
       drivenByInput,
-      drivenByFish,
       mode,
       freeLineMode: lineModeFrame.freeLineMode,
       lineMode: lineModeFrame.lineMode,
@@ -194,13 +183,32 @@ class RodVisualOffsetSystem {
     this.#frame = this.#createFrame();
   }
 
+  #resolveControlDirection({ active, inputDirection, fightDebug }) {
+    if (!active) return 0;
+    const requestedDirection = Math.sign(Number(inputDirection) || 0);
+    if (requestedDirection === 0) return 0;
+
+    const blockedReason =
+      fightDebug?.rodControlBlockedReason ||
+      fightDebug?.rodControlMovementBlockReason ||
+      "none";
+    if (blockedReason === "wrong_direction") return 0;
+
+    const directionFactor = Number(fightDebug?.rodControlDirectionFactor);
+    if (Number.isFinite(directionFactor) && directionFactor <= 0) return 0;
+
+    const physicalDirection = Math.sign(
+      Number(fightDebug?.rodControlDirectionX) || 0,
+    );
+    if (physicalDirection !== 0 && requestedDirection !== physicalDirection) {
+      return 0;
+    }
+    return physicalDirection || requestedDirection;
+  }
+
   #resolveDirectionSpeedFrame({
-    direction,
-    active,
     fightDebug,
     lineModeFrame,
-    aimCfg,
-    visualCfg,
   }) {
     const fishMoveX = this.#firstFiniteNumber(
       fightDebug?.fishVelocityX,
@@ -211,32 +219,10 @@ class RodVisualOffsetSystem {
       0,
     );
     const fishMoveDirectionX = Math.sign(fishMoveX);
-    const inputDirectionX = Math.sign(Number(direction) || 0);
-    const withFishDirection = !!active &&
-      inputDirectionX !== 0 &&
-      fishMoveDirectionX !== 0 &&
-      inputDirectionX === fishMoveDirectionX;
-
-    if (withFishDirection) {
-      return {
-        mode: "with_fish",
-        fishMoveX,
-        fishMoveDirectionX,
-        withFishDirection: true,
-        speedMultiplier: Math.max(
-          0,
-          Number(aimCfg.returnSpeedMultiplier) ||
-            Number(visualCfg.returnSpeedMultiplier) ||
-            0.75,
-        ),
-      };
-    }
-
     return {
       mode: lineModeFrame?.lineMode || "line_state",
       fishMoveX,
       fishMoveDirectionX,
-      withFishDirection: false,
       speedMultiplier: lineModeFrame?.speedMultiplier ?? 1,
     };
   }
@@ -384,10 +370,8 @@ class RodVisualOffsetSystem {
       directionSpeedMode: "line_state",
       fishMoveX: 0,
       fishMoveDirectionX: 0,
-      withFishDirection: false,
       aimSpeedPxPerSecond: 0,
       drivenByInput: false,
-      drivenByFish: false,
       mode: "return",
       freeLineMode: false,
       lineMode: "tight_line",

@@ -69,11 +69,9 @@ const FIGHT_PHYSICS_CONFIG = {
 
     alignment: {
       enabled: true,
-      useActualRodPositionAsTarget: true,
       maxEffectiveAngleDeg: 45,
       alignedThresholdPx: 8,
-      allowAwayDirection: false,
-      awayDirectionMultiplier: 0,
+      centerStartThresholdPx: 0.5,
     },
 
     force: {

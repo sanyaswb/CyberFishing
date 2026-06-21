@@ -125,11 +125,9 @@ class GameViewportFacade {
       fightDebug.rodAimDirectionSpeedMode = visualFrame.directionSpeedMode;
       fightDebug.rodAimFishMoveX = visualFrame.fishMoveX;
       fightDebug.rodAimFishDirectionX = visualFrame.fishMoveDirectionX;
-      fightDebug.rodAimWithFishDirection = visualFrame.withFishDirection;
       fightDebug.rodAimSpeedPxPerSecond = visualFrame.aimSpeedPxPerSecond;
       fightDebug.rodAimLineMode = visualFrame.lineMode;
       fightDebug.rodControlVisualDrivenByInput = visualFrame.drivenByInput;
-      fightDebug.rodControlVisualDrivenByFish = visualFrame.drivenByFish;
       fightDebug.rodControlVisualMode = visualFrame.mode;
       fightDebug.rodControlFreeLineVisualMode = visualFrame.freeLineMode;
     }

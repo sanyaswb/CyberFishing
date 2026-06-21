@@ -687,10 +687,6 @@
     "label": "Rod Control target alignment",
     "description": "When enabled, lateral control pulls fish toward the selected rod X target instead of moving endlessly by input direction."
   },
-  "physics.fight.rodControl.alignment.useActualRodPositionAsTarget": {
-    "label": "Use actual visual rod target",
-    "description": "If enabled, Rod Control aligns fish to the current visual rod X. If disabled, it aligns to the stable base rod X."
-  },
   "physics.fight.rodControl.alignment.maxEffectiveAngleDeg": {
     "label": "Rod Control max effective angle",
     "description": "Line angle in degrees where lateral control reaches full geometric efficiency."
@@ -699,13 +695,9 @@
     "label": "Rod Control aligned threshold",
     "description": "Fish-to-rod X distance in pixels treated as already aligned."
   },
-  "physics.fight.rodControl.alignment.allowAwayDirection": {
-    "label": "Allow away Rod Control direction",
-    "description": "Allows reduced force when the player moves the rod away from the alignment target."
-  },
-  "physics.fight.rodControl.alignment.awayDirectionMultiplier": {
-    "label": "Away direction force multiplier",
-    "description": "Force multiplier used when away-direction Rod Control is allowed."
+  "physics.fight.rodControl.alignment.centerStartThresholdPx": {
+    "label": "Rod Control exact-center start threshold",
+    "description": "Fish-to-rod X distance in pixels where a centered fish may choose either lateral control direction until release."
   },
   "physics.fight.rodControl.rodVisual.tightLineFollowsAppliedFish": {
     "label": "Tight-line rod follows fish movement",

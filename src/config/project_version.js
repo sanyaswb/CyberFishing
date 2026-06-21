@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.22.0";
+const CURRENT_PROJECT_VERSION = "0.22.2";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "render-architecture-p2-contracts-diagnostics",
-  updatedAt: "2026-06-18",
+  codename: "rod-control-direction-single-source",
+  updatedAt: "2026-06-21",
   notes: Object.freeze([
-    "Added render layer dependency direction checks with cross-platform path normalization",
-    "Strengthened hot-path allocation checks and runtime allocation diagnostics",
-    "Validated required render and presentation contracts during composition",
-    "Expanded asset lifecycle checks for location, fish sprite and Victory preload gates",
-    "Strengthened reusable collection encapsulation and visual characterization gates",
+    "Removed legacy same-side Rod Control direction math from physics config",
+    "Removed fish-driven Rod Control visual aim fields and debug bridge",
+    "Split broad aligned threshold from exact centered-start threshold",
+    "Exposed centered and center-start state from the Rod Control physics frame",
+    "Added regressions that block near-center same-side control",
   ]),
 });
 

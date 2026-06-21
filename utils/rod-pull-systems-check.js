@@ -428,11 +428,9 @@ const lateralConfig = {
   pixelsPerMeter: 50,
   alignment: {
     enabled: true,
-    useActualRodPositionAsTarget: true,
     maxEffectiveAngleDeg: 45,
     alignedThresholdPx: 0,
-    allowAwayDirection: false,
-    awayDirectionMultiplier: 0,
+    centerStartThresholdPx: 0.5,
   },
   force: {
     maxForceKg: 0.4,
