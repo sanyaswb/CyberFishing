@@ -8,7 +8,7 @@ const FILES = [
   "src/core/fishing/pole_fight_sector_geometry.js",
   "src/core/fishing/pole_fight_sector_constraint.js",
   "src/core/fishing/line_constraint_state_resolver.js",
-  "src/core/fishing/fish_boundary_steering_policy.js",
+  "src/core/fishing/line_constrained_fish_motion_resolver.js",
   "src/systems/player_pull_motion_smoother.js",
 ];
 const context = vm.createContext({ console, Math, Number, Object });
@@ -86,60 +86,93 @@ assert(
   "sector clipping never adds displacement",
 );
 
-const steering = new FishBoundarySteeringPolicy();
-const steeringFrame = steering.resolveVelocity({
-  position: { x: 0, y: -300 },
-  rodTipPosition: origin,
-  freeVelocity: { x: 0, y: -80 },
-  constrainedVelocity: { velocityX: 0, velocityY: 0 },
+const motionResolver = new LineConstrainedFishMotionResolver();
+const lineConstraintState = Object.freeze({
   radialConstraintActive: true,
-  sectorConfig: { enabled: true, maxAngleFromCenterDeg: 60 },
-  dtSec: 1 / 60,
+  reason: "drag_holding",
 });
-assert(steeringFrame.active, "outward center deadlock receives a tangent fallback");
-assert(Math.abs(steeringFrame.velocityX) > 1, "tangent fallback produces lateral movement");
-approx(steeringFrame.velocityY, 0, 0.000001, "tangent fallback removes outward radial movement");
-const existingTangent = steering.resolveVelocity({
-  position: { x: 150, y: -260 },
-  rodTipPosition: origin,
-  freeVelocity: { x: 30, y: -80 },
-  constrainedVelocity: { velocityX: 30, velocityY: 0 },
-  radialConstraintActive: true,
-  sectorConfig: {
-    enabled: true,
-    maxAngleFromCenterDeg: 60,
-    boundarySteering: { topEscape: { angleDeg: 10 } },
-  },
-  dtSec: 1 / 60,
-});
-assert(!existingTangent.active, "boundary steering preserves an existing constrained tangent velocity outside the top escape cone");
-approx(existingTangent.velocityX, 30, 0.000001, "existing tangent X is preserved outside the top escape cone");
+const topPosition = { x: 0, y: -300 };
 
-const weakTopTangent = steering.resolveVelocity({
-  position: { x: 0, y: -300 },
+const pureOutward = motionResolver.resolve({
+  position: topPosition,
   rodTipPosition: origin,
-  freeVelocity: { x: 8, y: -80 },
-  constrainedVelocity: { velocityX: 8, velocityY: 0 },
-  radialConstraintActive: true,
-  sectorConfig: {
-    enabled: true,
-    maxAngleFromCenterDeg: 60,
-    boundarySteering: {
-      topEscape: {
-        enabled: true,
-        angleDeg: 18,
-        minTangentSpeedRatio: 0.65,
-        minTangentSpeedPxPerSec: 20,
-        outwardSpeedRatio: 0.35,
-      },
-    },
-  },
+  rawVelocity: { x: 0, y: -80 },
+  lineConstraintState,
   dtSec: 1 / 60,
 });
-assert(weakTopTangent.active, "weak top-boundary tangent receives lateral escape boost");
-assert(weakTopTangent.reason === "top_boundary_lateral_escape", "top-boundary boost reports its reason");
-assert(Math.abs(weakTopTangent.velocityX) >= 50, "top-boundary boost prefers lateral movement over upward pressure");
-approx(weakTopTangent.velocityY, 0, 0.000001, "top-boundary boost removes blocked outward velocity");
+assert(pureOutward.active, "pure outward velocity activates radial projection");
+assert(pureOutward.reason === "radial_outward_projected", "pure outward projection reports its reason");
+approx(pureOutward.velocityX, 0, 0.000001, "pure outward projection has no X movement");
+approx(pureOutward.velocityY, 0, 0.000001, "pure outward projection has no Y movement");
+approx(pureOutward.allowedTangentSpeedPxPerSec, 0, 0.000001, "pure outward projection does not invent tangent speed");
+
+const outwardLeft = motionResolver.resolve({
+  position: topPosition,
+  rodTipPosition: origin,
+  rawVelocity: { x: -30, y: -80 },
+  lineConstraintState,
+  dtSec: 1 / 60,
+});
+approx(outwardLeft.velocityX, -30, 0.000001, "outward-left preserves left tangent velocity");
+approx(outwardLeft.velocityY, 0, 0.000001, "outward-left removes only outward radial velocity");
+approx(outwardLeft.blockedRadialSpeedPxPerSec, 80, 0.000001, "outward-left reports blocked radial speed");
+approx(outwardLeft.allowedTangentSpeedPxPerSec, 30, 0.000001, "outward-left reports preserved tangent speed");
+
+const outwardRight = motionResolver.resolve({
+  position: topPosition,
+  rodTipPosition: origin,
+  rawVelocity: { x: 24, y: -80 },
+  lineConstraintState,
+  dtSec: 1 / 60,
+});
+approx(outwardRight.velocityX, 24, 0.000001, "outward-right preserves right tangent velocity");
+approx(outwardRight.velocityY, 0, 0.000001, "outward-right removes only outward radial velocity");
+
+const pureLateral = motionResolver.resolve({
+  position: topPosition,
+  rodTipPosition: origin,
+  rawVelocity: { x: 42, y: 0 },
+  lineConstraintState,
+  dtSec: 1 / 60,
+});
+assert(!pureLateral.active, "pure lateral velocity needs no projection");
+assert(pureLateral.reason === "allowed_inward_or_tangent", "pure lateral velocity reports allowed movement");
+approx(pureLateral.velocityX, 42, 0.000001, "pure lateral X is unchanged");
+approx(pureLateral.velocityY, 0, 0.000001, "pure lateral Y is unchanged");
+
+const inward = motionResolver.resolve({
+  position: topPosition,
+  rodTipPosition: origin,
+  rawVelocity: { x: 0, y: 55 },
+  lineConstraintState,
+  dtSec: 1 / 60,
+});
+assert(!inward.active, "inward velocity needs no projection");
+assert(inward.reason === "allowed_inward_or_tangent", "inward velocity reports allowed movement");
+approx(inward.velocityX, 0, 0.000001, "inward X is unchanged");
+approx(inward.velocityY, 55, 0.000001, "inward Y is unchanged");
+
+const freeLine = motionResolver.resolve({
+  position: topPosition,
+  rodTipPosition: origin,
+  rawVelocity: { x: 12, y: -80 },
+  lineConstraintState: { radialConstraintActive: false },
+  dtSec: 1 / 60,
+});
+assert(!freeLine.active, "inactive radial constraint leaves movement free");
+assert(freeLine.reason === "free", "inactive radial constraint reports free movement");
+approx(freeLine.velocityX, 12, 0.000001, "free movement keeps X velocity");
+approx(freeLine.velocityY, -80, 0.000001, "free movement keeps Y velocity");
+
+const legacyReasons = [
+  pureOutward.reason,
+  outwardLeft.reason,
+  outwardRight.reason,
+  pureLateral.reason,
+  inward.reason,
+];
+assert(!legacyReasons.includes("top_boundary_lateral_escape"), "projection resolver never reports top-boundary lateral escape");
+assert(!legacyReasons.includes("outward_deadlock_tangent"), "projection resolver never reports outward deadlock tangent");
 
 const constraintResolver = new LineConstraintStateResolver();
 const dragHoldingConstraint = constraintResolver.resolve({
@@ -159,17 +192,16 @@ const dragHoldingConstraint = constraintResolver.resolve({
 assert(dragHoldingConstraint.radialConstraintActive, "drag holding locks taut radial fish motion even with line reserve");
 assert(dragHoldingConstraint.lineLengthLocked, "drag holding reports locked line length");
 assert(dragHoldingConstraint.reason === "drag_holding", "drag holding is the shared constraint reason");
-const dragHoldingFallback = steering.resolveVelocity({
-  position: { x: 0, y: -300 },
+
+const dragHeldOutward = motionResolver.resolve({
+  position: topPosition,
   rodTipPosition: origin,
-  freeVelocity: { x: 0, y: -80 },
-  constrainedVelocity: { velocityX: 0, velocityY: 0 },
-  radialConstraintActive: dragHoldingConstraint.radialConstraintActive,
-  sectorConfig: { enabled: true, maxAngleFromCenterDeg: 60 },
+  rawVelocity: { x: 0, y: -80 },
+  lineConstraintState: dragHoldingConstraint,
   dtSec: 1 / 60,
 });
-assert(dragHoldingFallback.active, "drag-held outward deadlock receives tangent fallback from raw fish intent");
-approx(dragHoldingFallback.velocityY, 0, 0.000001, "drag-held fallback removes outward radial velocity");
+approx(dragHeldOutward.velocityX, 0, 0.000001, "drag-held pure outward receives no fallback X movement");
+approx(dragHeldOutward.velocityY, 0, 0.000001, "drag-held pure outward receives no fallback Y movement");
 
 const smoother = new PlayerPullMotionSmoother();
 const first = smoother.updateAxis({

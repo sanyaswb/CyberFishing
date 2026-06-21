@@ -37,6 +37,7 @@ const FILES = [
   "src/core/fishing/landing_lift_tension_calculator.js",
   "src/core/fishing/line_tension_calculator.js",
   "src/core/fishing/line_constraint_state_resolver.js",
+  "src/core/fishing/line_constrained_fish_motion_resolver.js",
   "src/core/fishing/line_radial_movement_splitter.js",
   "src/core/fishing/rod_control_movement_projector.js",
   "src/core/fishing/tackle_failure_selector.js",

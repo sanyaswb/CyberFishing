@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.22.6 - Fish line-radius projection
+
+- Added `LineConstrainedFishMotionResolver` to remove only the forbidden radial-outward component from raw fish movement at a locked released-line radius.
+- Removed the artificial `fishBoundarySteering.topEscape` boost path and deleted its active config/metadata.
+- Kept existing tangent and inward fish velocity unchanged; pure outward movement at the boundary can now correctly resolve to zero movement.
+- Updated fight debug output to show raw velocity, allowed velocity, radial speed, blocked radial speed, allowed tangent speed and projection reason.
+- Reworked `fight-movement-constraints-check` around projection behavior and legacy reason prevention.
+
 ## v0.22.5 - Fish top-boundary lateral escape
 
 - Added configurable top-boundary lateral escape for fish that push outward near the vertical-up released-line radius.

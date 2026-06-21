@@ -52,16 +52,6 @@ const FIGHT_PHYSICS_CONFIG = {
     shoreOpeningWidthMeters: 3.0,
   },
 
-  fishBoundarySteering: {
-    topEscape: {
-      enabled: true,
-      angleDeg: 18,
-      minTangentSpeedRatio: 0.65,
-      minTangentSpeedPxPerSec: 20,
-      outwardSpeedRatio: 0.35,
-    },
-  },
-
   rodControl: {
     enabled: true,
     tensionCeilingMultiplier: 1.15,

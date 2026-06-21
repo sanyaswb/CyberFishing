@@ -16,11 +16,13 @@ class FightPhysicsSystem {
   #landingPolicyResolver = new LandingPolicyResolver();
   #landingLiftCalculator = new LandingLiftTensionCalculator();
   #lineConstraintStateResolver = new LineConstraintStateResolver();
+  #lineConstrainedFishMotionResolver =
+    new LineConstrainedFishMotionResolver();
+  #lineConstrainedFishMotionPreviewResolver =
+    new LineConstrainedFishMotionResolver();
   #lineRadialMovementSplitter = new LineRadialMovementSplitter();
-  #fishBoundarySteeringPolicy =
-    typeof FishBoundarySteeringPolicy !== "undefined"
-      ? new FishBoundarySteeringPolicy()
-      : null;
+  #modelFishVelocityScratch = { x: 0, y: 0 };
+  #previewLineConstraintStateScratch = {};
   #rodControlMovementProjector = new RodControlMovementProjector();
   #poleFightSectorConstraint =
     typeof PoleFightSectorConstraint !== "undefined"
@@ -678,50 +680,52 @@ class FightPhysicsSystem {
       dragContext: fishMotionDragContext,
       fishRetrieveResult: forceData,
     });
-    const modelFishVelocity = {
-      x: forceData.modelFishEscapeVelocityX,
-      y: forceData.modelFishEscapeVelocityY,
-    };
+    const modelFishVelocity = this.#modelFishVelocityScratch;
+    modelFishVelocity.x = forceData.modelFishEscapeVelocityX;
+    modelFishVelocity.y = forceData.modelFishEscapeVelocityY;
+    const previewLineConstraintState =
+      this.#previewLineConstraintStateScratch;
+    Object.assign(previewLineConstraintState, fishMotionLineConstraintState);
+    previewLineConstraintState.radialConstraintActive =
+      !!fishMotionLineConstraintState.lineLengthLocked;
+    const activeProjectionFrame =
+      this.#lineConstrainedFishMotionResolver.resolve({
+        position: fishPosition,
+        rodTipPosition,
+        rawVelocity: modelFishVelocity,
+        lineConstraintState: fishMotionLineConstraintState,
+        dtSec,
+      });
+    const constrainedProjectionFrame =
+      fishMotionLineConstraintState.radialConstraintActive
+        ? activeProjectionFrame
+        : this.#lineConstrainedFishMotionPreviewResolver.resolve({
+            position: fishPosition,
+            rodTipPosition,
+            rawVelocity: modelFishVelocity,
+            lineConstraintState: previewLineConstraintState,
+            dtSec,
+          });
     const radialMovementFrame =
       this.#lineRadialMovementSplitter.resolveVelocity({
         position: fishPosition,
         rodTipPosition,
-        freeVelocity: forceData.targetVelocity,
-        constrainedVelocity:
-          forceData.tautTargetVelocity || forceData.targetVelocity,
+        freeVelocity: modelFishVelocity,
+        constrainedVelocity: constrainedProjectionFrame,
         releasedMeters: lineState.releasedMeters,
         pixelsPerMeter:
           this.#physicsConfig?.getPixelsPerMeter?.() ||
           50,
         dtSec,
       });
-    const boundarySteeringFrame = this.#fishBoundarySteeringPolicy?.resolveVelocity?.({
-      position: fishPosition,
-      rodTipPosition,
-      freeVelocity: modelFishVelocity,
-      constrainedVelocity: radialMovementFrame,
-      radialConstraintActive:
-        fishMotionLineConstraintState.radialConstraintActive,
-      sectorConfig: {
-        ...(
-          this.#physicsConfig?.getPoleFightSectorConfig?.() ||
-          this.#getRuntimePhysicsConfig()?.fight?.poleFightSector ||
-          {}
-        ),
-        boundarySteering:
-          this.#physicsConfig?.getFishBoundarySteeringConfig?.() ||
-          this.#getRuntimePhysicsConfig()?.fight?.fishBoundarySteering ||
-          {},
-      },
-      dtSec,
-    });
+    const projectionFrame =
+      radialMovementFrame.crossedReleasedRadius ||
+      fishMotionLineConstraintState.radialConstraintActive
+        ? constrainedProjectionFrame
+        : activeProjectionFrame;
     const frameTargetVelocity = this.#radialTargetVelocity.set(
-      boundarySteeringFrame?.active
-        ? boundarySteeringFrame.velocityX
-        : radialMovementFrame.velocityX,
-      boundarySteeringFrame?.active
-        ? boundarySteeringFrame.velocityY
-        : radialMovementFrame.velocityY,
+      radialMovementFrame.velocityX,
+      radialMovementFrame.velocityY,
     );
 
     let movementFrame = null;
@@ -802,10 +806,28 @@ class FightPhysicsSystem {
     movementFrame.prePlayerLineConstraintApplied =
       prePlayerLineConstraint?.constrained === true ||
       prePlayerLineConstraint?.hardLimit === true;
-    movementFrame.boundarySteeringActive =
-      boundarySteeringFrame?.active === true;
-    movementFrame.boundarySteeringReason =
-      boundarySteeringFrame?.reason || "none";
+    movementFrame.fishMoveRawVelocityX = modelFishVelocity.x;
+    movementFrame.fishMoveRawVelocityY = modelFishVelocity.y;
+    movementFrame.fishMoveAllowedVelocityX = frameTargetVelocity.x;
+    movementFrame.fishMoveAllowedVelocityY = frameTargetVelocity.y;
+    movementFrame.fishMoveRadialX = projectionFrame.radialX ?? 0;
+    movementFrame.fishMoveRadialY = projectionFrame.radialY ?? 0;
+    movementFrame.fishMoveRadialSpeedPxPerSec =
+      projectionFrame.radialSpeedPxPerSec ?? 0;
+    movementFrame.fishMoveBlockedRadialSpeedPxPerSec =
+      projectionFrame.blockedRadialSpeedPxPerSec ?? 0;
+    movementFrame.fishMoveAllowedTangentSpeedPxPerSec =
+      projectionFrame.allowedTangentSpeedPxPerSec ?? 0;
+    movementFrame.fishMoveConstraintActive =
+      !!fishMotionLineConstraintState.radialConstraintActive ||
+      !!radialMovementFrame.crossedReleasedRadius;
+    movementFrame.fishMoveConstraintReason =
+      fishMotionLineConstraintState.reason || "none";
+    movementFrame.fishMoveProjectionReason =
+      radialMovementFrame.crossedReleasedRadius &&
+      projectionFrame.projectionReason === "free"
+        ? "released_radius_crossed"
+        : projectionFrame.projectionReason || projectionFrame.reason || "free";
     movementFrame.lineConstraintReason =
       fishMotionLineConstraintState.reason || "none";
     movementFrame.radialConstraintActive =
@@ -1407,7 +1429,6 @@ class FightPhysicsSystem {
 
   resetPlayerPullMotion() {
     this.#playerPullMotionSmoother.reset();
-    this.#fishBoundarySteeringPolicy?.reset?.();
     this.#poleFightSectorConstraint?.reset?.();
   }
 
@@ -2484,10 +2505,30 @@ class FightPhysicsSystem {
         !!forceData.fightMovementFrame?.dampingApplied,
       fightMovementFallbackDampedUpdate:
         !!forceData.fightMovementFrame?.fallbackDampedUpdate,
-      fightMovementBoundarySteeringActive:
-        !!forceData.fightMovementFrame?.boundarySteeringActive,
-      fightMovementBoundarySteeringReason:
-        forceData.fightMovementFrame?.boundarySteeringReason || "none",
+      fishMoveRawVelocityX:
+        forceData.fightMovementFrame?.fishMoveRawVelocityX ?? 0,
+      fishMoveRawVelocityY:
+        forceData.fightMovementFrame?.fishMoveRawVelocityY ?? 0,
+      fishMoveAllowedVelocityX:
+        forceData.fightMovementFrame?.fishMoveAllowedVelocityX ?? 0,
+      fishMoveAllowedVelocityY:
+        forceData.fightMovementFrame?.fishMoveAllowedVelocityY ?? 0,
+      fishMoveRadialX:
+        forceData.fightMovementFrame?.fishMoveRadialX ?? 0,
+      fishMoveRadialY:
+        forceData.fightMovementFrame?.fishMoveRadialY ?? 0,
+      fishMoveRadialSpeedPxPerSec:
+        forceData.fightMovementFrame?.fishMoveRadialSpeedPxPerSec ?? 0,
+      fishMoveBlockedRadialSpeedPxPerSec:
+        forceData.fightMovementFrame?.fishMoveBlockedRadialSpeedPxPerSec ?? 0,
+      fishMoveAllowedTangentSpeedPxPerSec:
+        forceData.fightMovementFrame?.fishMoveAllowedTangentSpeedPxPerSec ?? 0,
+      fishMoveConstraintActive:
+        !!forceData.fightMovementFrame?.fishMoveConstraintActive,
+      fishMoveConstraintReason:
+        forceData.fightMovementFrame?.fishMoveConstraintReason || "none",
+      fishMoveProjectionReason:
+        forceData.fightMovementFrame?.fishMoveProjectionReason || "free",
       fightMovementLineConstraintReason:
         forceData.fightMovementFrame?.lineConstraintReason || "none",
       fightMovementRadialConstraintActive:
@@ -2514,8 +2555,8 @@ class FightPhysicsSystem {
   }
 
   #resolveFishMovementMode(frame) {
-    if (frame?.boundarySteeringActive) {
-      return frame.boundarySteeringReason || "boundary_steering";
+    if (frame?.fishMoveProjectionReason === "radial_outward_projected") {
+      return "radial_projection";
     }
     if (Number(frame?.actualSpeedPxPerSec) > 0.001) return "autonomous";
     return "none";

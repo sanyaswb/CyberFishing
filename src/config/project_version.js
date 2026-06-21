@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.22.5";
+const CURRENT_PROJECT_VERSION = "0.22.6";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "fish-top-boundary-lateral-escape",
+  codename: "fish-line-radius-projection",
   updatedAt: "2026-06-21",
   notes: Object.freeze([
-    "Added top-boundary lateral escape for fish stuck at the released-line radius",
-    "Boosted weak tangent movement near the vertical-up boundary instead of preserving near-zero sideways drift",
-    "Kept radial outward movement blocked while converting pressure into left/right motion",
-    "Added balance config for top escape angle, tangent speed ratio, minimum speed and outward intent threshold",
-    "Added regression coverage for weak top-boundary tangent escape",
+    "Replaced top-boundary lateral escape with projection-based line-radius movement",
+    "Removed only forbidden radial-outward fish velocity at the locked released-line radius",
+    "Preserved existing tangent and inward fish movement without artificial boost",
+    "Removed fishBoundarySteering.topEscape balance config and metadata",
+    "Added debug and regression coverage for raw versus allowed fish velocity",
   ]),
 });
 
