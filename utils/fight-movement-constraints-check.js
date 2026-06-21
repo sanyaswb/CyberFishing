@@ -7,6 +7,7 @@ const FILES = [
   "src/core/fishing/rod_control_movement_projector.js",
   "src/core/fishing/pole_fight_sector_geometry.js",
   "src/core/fishing/pole_fight_sector_constraint.js",
+  "src/core/fishing/line_constraint_state_resolver.js",
   "src/core/fishing/fish_boundary_steering_policy.js",
   "src/systems/player_pull_motion_smoother.js",
 ];
@@ -109,6 +110,36 @@ const existingTangent = steering.resolveVelocity({
 });
 assert(!existingTangent.active, "boundary steering preserves an existing constrained tangent velocity");
 approx(existingTangent.velocityX, 30, 0.000001, "existing tangent X is preserved");
+
+const constraintResolver = new LineConstraintStateResolver();
+const dragHoldingConstraint = constraintResolver.resolve({
+  lineState: {
+    releasedMeters: 6,
+    distanceMeters: 6,
+    remainingMeters: 8,
+    canReleaseLine: true,
+  },
+  payoutContext: {
+    dragCanPayout: false,
+    dragPayoutBlocked: true,
+    reason: "drag_holding",
+  },
+  config: { tautThresholdRatio: 0.995, epsilonMeters: 0.001 },
+});
+assert(dragHoldingConstraint.radialConstraintActive, "drag holding locks taut radial fish motion even with line reserve");
+assert(dragHoldingConstraint.lineLengthLocked, "drag holding reports locked line length");
+assert(dragHoldingConstraint.reason === "drag_holding", "drag holding is the shared constraint reason");
+const dragHoldingFallback = steering.resolveVelocity({
+  position: { x: 0, y: -300 },
+  rodTipPosition: origin,
+  freeVelocity: { x: 0, y: -80 },
+  constrainedVelocity: { velocityX: 0, velocityY: 0 },
+  radialConstraintActive: dragHoldingConstraint.radialConstraintActive,
+  sectorConfig: { enabled: true, maxAngleFromCenterDeg: 60 },
+  dtSec: 1 / 60,
+});
+assert(dragHoldingFallback.active, "drag-held outward deadlock receives tangent fallback from raw fish intent");
+approx(dragHoldingFallback.velocityY, 0, 0.000001, "drag-held fallback removes outward radial velocity");
 
 const smoother = new PlayerPullMotionSmoother();
 const first = smoother.updateAxis({
