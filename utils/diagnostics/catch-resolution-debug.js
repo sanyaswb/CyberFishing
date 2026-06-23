@@ -191,8 +191,8 @@ function createFish(weightKg) {
 function createCast({ config, equipment, distanceMeters }) {
   const equipmentRules = new EquipmentRules(new CastDistanceCalculator(config));
   const baitRules = new BaitRules();
-  const rodVirtualPos = { x: 500, y: 700 };
   const bounds = { left: 0, right: 1000, top: -800, bottom: 800 };
+  const rodVirtualPos = { x: 500, y: bounds.bottom };
   const castService = new CastService({
     config,
     rng: createRng(),
@@ -307,8 +307,6 @@ function runScenario() {
       env: {},
       net: null,
       fishData,
-      projectorScale: 1,
-      catchLineOffsetPx: 5,
       getRodVirtualPos: () => cast.rodVirtualPos,
       checkWater: () => true,
     });
@@ -365,6 +363,8 @@ function runScenario() {
     peak,
     final: {
       lineDistanceMeters: Number(lastDebug?.lineDistanceMeters) || 0,
+      shoreLandingDistanceMeters:
+        Number(lastDebug?.shoreLandingDistanceMeters) || 0,
       tensionKg: Number(lastDebug?.tensionKg) || 0,
       targetTensionKg: Number(lastDebug?.targetTensionKg) || 0,
       totalTensionKg: Number(lastDebug?.totalTensionKg) || 0,
@@ -398,8 +398,8 @@ function runScenario() {
     "peak total tension differs from expected movable/landing max",
   );
   assert(
-    summary.final.lineDistanceMeters <= 0.001,
-    "pump/recover scenario should bring fish into landing range",
+    summary.final.shoreLandingDistanceMeters <= 1.001,
+    "pump/recover scenario should bring fish into shore landing range",
   );
   assert(
     summary.transition === "victory",

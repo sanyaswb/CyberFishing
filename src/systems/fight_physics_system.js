@@ -664,13 +664,18 @@ class FightPhysicsSystem {
       config: this.#config,
       lineDistanceMeters: lineState.distanceMeters,
     });
+    const shoreLandingDistanceMeters = this.#calculateShoreLandingDistanceMeters({
+      fishPosition,
+      bounds,
+    });
     const inCatchZone =
       landingDistanceMeters > 0 &&
-      lineState.distanceMeters <= landingDistanceMeters + 0.001;
+      shoreLandingDistanceMeters <= landingDistanceMeters + 0.001;
     if (inCatchZone && !this.#fishWasInCatchZone) {
       fishForceSystem.handleFightEvent?.({
         type: FISH_FIGHT_EVENT.CATCH_ZONE_ENTERED,
         lineDistanceMeters: lineState.distanceMeters,
+        shoreLandingDistanceMeters,
         landingDistanceMeters,
       });
     }
@@ -678,10 +683,8 @@ class FightPhysicsSystem {
     fishForceSystem.evaluateLastDashTrigger?.({
       dtMs,
       lineDistanceMeters: lineState.distanceMeters,
-      horizontalDistanceMeters: this.#calculateHorizontalDistanceMeters({
-        fishPosition,
-        rodTipPosition,
-      }),
+      shoreLandingDistanceMeters,
+      horizontalDistanceMeters: shoreLandingDistanceMeters,
       landingDistanceMeters,
     });
 
@@ -703,6 +706,7 @@ class FightPhysicsSystem {
       buffs,
     });
     forceData.landingDistanceMeters = landingDistanceMeters;
+    forceData.shoreLandingDistanceMeters = shoreLandingDistanceMeters;
     const fishMotionDragContext = this.#resolveFishMotionDragContext({
       reel,
       dragSystem,
@@ -986,13 +990,17 @@ class FightPhysicsSystem {
     };
   }
 
-  #calculateHorizontalDistanceMeters({ fishPosition, rodTipPosition }) {
+  #calculateShoreLandingDistanceMeters({
+    fishPosition,
+    bounds,
+  } = {}) {
     const pixelsPerMeter =
       this.#physicsConfig?.getPixelsPerMeter?.() ||
       50;
-    const verticalPx =
-      (Number(rodTipPosition?.y) || 0) - (Number(fishPosition?.y) || 0);
-    return Math.max(0, verticalPx / Math.max(1, pixelsPerMeter));
+    const shoreY = Number(bounds?.bottom) || 0;
+    const fishY = Number(fishPosition?.y) || 0;
+    const distancePx = Math.max(0, shoreY - fishY);
+    return distancePx / Math.max(1, pixelsPerMeter);
   }
 
   #updateRodPull({
@@ -1619,13 +1627,13 @@ class FightPhysicsSystem {
     lineState,
   }) {
     const landingDistanceMeters = Number(forceData?.landingDistanceMeters) || 0;
-    const rawLineDistanceMeters = Number(lineState?.distanceMeters);
-    const lineDistanceMeters = Number.isFinite(rawLineDistanceMeters)
-      ? Math.max(0, rawLineDistanceMeters)
+    const rawShoreDistanceMeters = Number(forceData?.shoreLandingDistanceMeters);
+    const shoreLandingDistanceMeters = Number.isFinite(rawShoreDistanceMeters)
+      ? Math.max(0, rawShoreDistanceMeters)
       : Infinity;
     const inLandingZone =
       landingDistanceMeters > 0 &&
-      lineDistanceMeters <= landingDistanceMeters + 0.001;
+      shoreLandingDistanceMeters <= landingDistanceMeters + 0.001;
     const playerHoldActive = !!pullInput?.pullHeld;
     const lift = this.#landingLiftCalculator.calculate({
       previousLiftHoldKg: this.#landingLiftHoldKg,
@@ -1647,6 +1655,10 @@ class FightPhysicsSystem {
     const rawLineDistanceMeters = Number(lineState?.distanceMeters);
     const lineDistanceMeters = Number.isFinite(rawLineDistanceMeters)
       ? Math.max(0, rawLineDistanceMeters)
+      : Infinity;
+    const rawShoreDistanceMeters = Number(forceData?.shoreLandingDistanceMeters);
+    const shoreLandingDistanceMeters = Number.isFinite(rawShoreDistanceMeters)
+      ? Math.max(0, rawShoreDistanceMeters)
       : Infinity;
     const landingDistanceMeters = Math.max(
       0,
@@ -1676,6 +1688,7 @@ class FightPhysicsSystem {
       inLandingZone: !!lift?.inLandingZone,
       landingDistanceMeters,
       lineDistanceMeters,
+      shoreLandingDistanceMeters,
       lift,
       tension: tensionFrame,
       readiness,
@@ -2272,6 +2285,9 @@ class FightPhysicsSystem {
       isLineFullyExtended: lineState.isFullyExtended,
       lineExtensionRatio: lineState.lineExtensionRatio,
       lineDistanceMeters: lineState.distanceMeters,
+      shoreLandingDistanceMeters:
+        Math.max(0, Number(forceData.shoreLandingDistanceMeters) || 0),
+      landingDistanceMode: "shore",
       pumpCreditMeters: finalPumpCreditMeters,
       pumpCreditPenaltyMeters: initialPumpCreditMeters,
       actualSlackMeters,

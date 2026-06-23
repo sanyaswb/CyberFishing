@@ -1202,11 +1202,7 @@ class WaitingState extends GameState {
 
     if (!isSpinning) return false;
 
-    const shoreY =
-      bounds.bottom -
-      (this.deps.config.locations.catchLineOffsetPx || 5) /
-        this.deps.projector.getScale();
-    return position.y >= shoreY;
+    return position.y >= bounds.bottom;
   }
 
   #getLandingDistanceMeters(eq) {
@@ -1414,10 +1410,7 @@ class BitingState extends GameState {
     }
 
     const updatedPos = this.deps.float.getPosition();
-    const shoreY =
-      bounds.bottom -
-      (this.deps.config.locations.catchLineOffsetPx || 5) /
-        this.deps.projector.getScale();
+    const shoreY = bounds.bottom;
     if (isSpinning && updatedPos.y >= shoreY) {
       this.deps.float.stopBite();
       this.deps.commands.setState("scouting");
@@ -1665,9 +1658,6 @@ class PlayingState extends GameState {
     fightContext.input = input;
     fightContext.env = envData.env;
     fightContext.fishData = this.data.fish;
-    fightContext.projectorScale = this.deps.projector.getScale();
-    fightContext.catchLineOffsetPx =
-      this.deps.config.locations.catchLineOffsetPx || 5;
     fightContext.rodControlCastAnchor =
       this.#getRodControlCastAnchor(bounds);
 

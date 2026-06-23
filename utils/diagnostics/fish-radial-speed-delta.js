@@ -303,8 +303,6 @@ class FishRadialSpeedDeltaProbe {
         getRodVirtualPos: () => cast.rodVirtualPos,
         fishData,
         net: null,
-        projectorScale: 1,
-        catchLineOffsetPx: 0,
       });
       const after = this.#copyPosition(cast.floatEntity.getPosition());
       const velocity = cast.floatEntity.getVelocity?.() || { x: 0, y: 0 };
@@ -360,8 +358,6 @@ class FishRadialSpeedDeltaProbe {
         getRodVirtualPos: () => cast.rodVirtualPos,
         fishData,
         net: null,
-        projectorScale: 1,
-        catchLineOffsetPx: 0,
       });
     }
   }

@@ -220,8 +220,8 @@ function createCast({ config, equipment, distanceMeters }) {
   const rng = createRng();
   const equipmentRules = new EquipmentRules(new CastDistanceCalculator(config));
   const baitRules = new BaitRules();
-  const rodVirtualPos = { x: 500, y: 700 };
   const bounds = { left: 0, right: 1000, top: 0, bottom: 800 };
+  const rodVirtualPos = { x: 500, y: bounds.bottom };
   const castService = new CastService({
     config,
     rng,
@@ -289,8 +289,6 @@ function runFightScenario({
       env: {},
       net: null,
       fishData,
-      projectorScale: 1,
-      catchLineOffsetPx: 5,
       getRodVirtualPos: () => cast.rodVirtualPos,
       checkWater,
     });

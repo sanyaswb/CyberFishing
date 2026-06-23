@@ -198,6 +198,43 @@ const horizontalLastDash = lastDashBehavior.evaluateLastDashTrigger({
 assert(horizontalLastDash.inZone, "lastDash triggers from horizontal distance band");
 assert(horizontalLastDash.active, "lastDash can activate inside horizontal zone");
 
+const shoreDistanceLastDash = new FishBehavior({
+  lastDashTrigger: {
+    enabled: true,
+    targetState: "lastDash",
+    chance: 1,
+    checkIntervalMs: 1,
+    catchZoneMultiplier: 3,
+  },
+  behaviorProfile: {
+    behaviors: {
+      swim: {
+        forceMultiplier: 1,
+        speedMultiplier: 1,
+        minTime: 1000,
+        maxTime: 1000,
+        weight: 1,
+      },
+      lastDash: {
+        enabled: true,
+        forceMultiplier: 1,
+        speedMultiplier: 1,
+        minTime: 1000,
+        maxTime: 1000,
+        weight: 0,
+      },
+    },
+  },
+}, { next: () => 0, range: (min) => min });
+const shoreLastDash = shoreDistanceLastDash.evaluateLastDashTrigger({
+  dtMs: 1000,
+  landingDistanceMeters: 1,
+  lineDistanceMeters: 10,
+  shoreLandingDistanceMeters: 2,
+});
+assert(shoreLastDash.inZone, "lastDash horizontal zone can use shore landing distance");
+assert(shoreLastDash.active, "shore-distance lastDash can activate near landing band");
+
 const catchZoneBlockedLastDash = new FishBehavior({
   lastDashTrigger: {
     enabled: true,

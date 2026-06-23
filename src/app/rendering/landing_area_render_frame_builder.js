@@ -29,11 +29,9 @@ class LandingAreaRenderFrameBuilder {
   buildInto({ target, bottom, debug, equipment }) {
     const locations = this.#config.locations || {};
     const scale = this.#projector.getScale();
-    const catchVirtualY =
-      bottom - (locations.catchLineOffsetPx ?? 5) / scale;
     const catchY = this.#projector.virtualToScreen(
       0,
-      catchVirtualY,
+      bottom,
       this.#screenA,
     ).y;
     const width = this.#canvasMetrics.width;

@@ -556,6 +556,7 @@ class CatchResolutionService {
   resolveAutoCatch({
     fishData,
     lineDistanceMeters,
+    shoreLandingDistanceMeters,
     maxTackleLoadKg,
     config,
     rod = null,
@@ -578,13 +579,15 @@ class CatchResolutionService {
       fishData,
       maxTackleLoadKg,
     });
-    const rawDistanceMeters = Number(
-      landingFrame?.lineDistanceMeters ?? lineDistanceMeters,
+    const rawShoreDistanceMeters = Number(
+      landingFrame?.shoreLandingDistanceMeters ??
+        shoreLandingDistanceMeters ??
+        lineDistanceMeters,
     );
-    const distanceMeters = Number.isFinite(rawDistanceMeters)
-      ? Math.max(0, rawDistanceMeters)
+    const shoreDistanceMeters = Number.isFinite(rawShoreDistanceMeters)
+      ? Math.max(0, rawShoreDistanceMeters)
       : Infinity;
-    if (distanceMeters > landingDistanceMeters) return {};
+    if (shoreDistanceMeters > landingDistanceMeters) return {};
 
     const readiness = this.#resolveLandingReadiness({
       physicsConfig,
@@ -602,7 +605,7 @@ class CatchResolutionService {
     if (transition) {
       this.#logAutoCatchVictory({
         fishData,
-        distanceMeters,
+        shoreDistanceMeters,
         landingDistanceMeters,
         landingPolicy,
         maxTackleLoadKg,
@@ -619,6 +622,7 @@ class CatchResolutionService {
       landingReadyReason: readiness.reason,
       landingReadiness: readiness,
       success,
+      shoreLandingDistanceMeters: shoreDistanceMeters,
       landingDistanceMeters,
       landingPolicy: landingPolicy.constructor?.name || "LandingPolicy",
       transition,
@@ -680,7 +684,7 @@ class CatchResolutionService {
 
   #logAutoCatchVictory({
     fishData,
-    distanceMeters,
+    shoreDistanceMeters,
     landingDistanceMeters,
     landingPolicy,
     maxTackleLoadKg,
@@ -714,7 +718,9 @@ class CatchResolutionService {
       maxTackleLoadKg: Number(maxTackleLoadKg) || 0,
       maxAllowedWeightKg,
       maxLoadWeightRatio: maxRatio,
-      lineDistanceMeters: distanceMeters,
+      lineDistanceMeters:
+        Number(landingFrame?.lineDistanceMeters ?? fightDebug?.lineDistanceMeters) || 0,
+      shoreLandingDistanceMeters: shoreDistanceMeters,
       landingDistanceMeters,
       landingPolicy: landingPolicy?.constructor?.name || "LandingPolicy",
       landingReady: !!landingReady,
@@ -896,8 +902,6 @@ class FightService {
       input,
       net,
       fishData,
-      projectorScale,
-      catchLineOffsetPx,
     } = context;
     const forceData = this.#forceService.applyForces(dt, {
       ...context,
@@ -940,6 +944,8 @@ class FightService {
     const resolution = this.#catchResolver.resolveAutoCatch({
       fishData,
       lineDistanceMeters: forceData.fightFrame?.landing?.lineDistanceMeters,
+      shoreLandingDistanceMeters:
+        forceData.fightFrame?.landing?.shoreLandingDistanceMeters,
       maxTackleLoadKg: this.#tensionMeter.getEffectiveMaxTackleLoadKg?.(),
       dtMs: dt,
       rng: this.#rng,

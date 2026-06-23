@@ -1,5 +1,20 @@
 # CyberFishing changelog
 
+## v0.23.1 - Landing shoreline offset removal
+
+- Removed the obsolete landing shoreline offset configuration and runtime plumbing.
+- Made shore landing distance use `bounds.bottom` directly as the shoreline.
+- Updated landing area rendering, empty tackle landing checks and diagnostics to use the same shoreline.
+- Removed stale test context fields that still passed catch-line offset values.
+
+## v0.23.0 - Shore landing distance
+
+- Split fight line distance from landing/catch distance.
+- Kept `lineDistanceMeters` as the rod-tip-to-fish distance for line physics, tension, hold and hard-line limits.
+- Added `shoreLandingDistanceMeters` as the shore-line-to-fish distance used by landing zone, landing lift and auto-catch readiness.
+- Routed lastDash landing-band checks through shore distance while keeping line distance visible for diagnostics.
+- Added regression coverage for fish near shore but far from the rod tip, and fish near the rod tip but outside the shore landing zone.
+
 ## v0.22.9 - Pole sector angle constraint cleanup
 
 - Added `PoleFightSectorAngleConstraint` as the named angle-only constraint for autonomous fish movement.

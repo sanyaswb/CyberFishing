@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.22.9";
+const CURRENT_PROJECT_VERSION = "0.23.1";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "pole-sector-angle-constraint-cleanup",
-  updatedAt: "2026-06-21",
+  codename: "landing-shoreline-offset-removal",
+  updatedAt: "2026-06-24",
   notes: Object.freeze([
-    "Added a dedicated PoleFightSectorAngleConstraint for autonomous fish movement",
-    "Kept PoleFightSectorConstraint as the radius-aware sector constraint for existing callers",
-    "Moved fish movement integration to the named angle-only sector path",
-    "Loaded the new angle constraint in runtime and VM regression harnesses",
-    "Added architecture checks preventing inline generic radius-policy toggles in fish movement",
+    "Removed the obsolete landing shoreline offset configuration and runtime plumbing",
+    "Made shore landing distance use bounds.bottom directly as the shoreline",
+    "Updated landing area rendering and empty tackle landing checks to use the same shoreline",
+    "Removed stale test and diagnostic context fields for catch-line offset",
   ]),
 });
 

@@ -11,8 +11,6 @@ class MutableFightFrameContext {
     this.checkWater = null;
     this.net = null;
     this.fishData = null;
-    this.projectorScale = 1;
-    this.catchLineOffsetPx = 5;
   }
 
   reset() {

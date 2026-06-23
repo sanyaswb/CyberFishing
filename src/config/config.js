@@ -297,8 +297,8 @@ const CONFIG = {
     enableSnags: true, // Динамічні зони (наприклад, косяк риби)
     enableDynamicZones: false, // Вимикає всі динамічні зони (косяки риби, рухомі перешкоди тощо)
     showChumZones: true,
-    showCatchZone: false, // Відображення синьої зони
-    showLastDashZone: false, // Відображення фіолетової lastDash trigger zone
+    showCatchZone: true, // Відображення синьої зони
+    showLastDashZone: true, // Відображення фіолетової lastDash trigger zone
     showNetZone: true, // Відображення зеленої зони
     showAimingZone: true, // Відображення зони закидання
     showPoleFightSector: true, // Відображення допустимого сектора руху риби
@@ -308,7 +308,6 @@ const CONFIG = {
     baseResolution: { width: 2560, height: 1440 },
     designCellSize: 40,
     cellSize: 40,
-    catchLineOffsetPx: 5,
     lockZoneXToScreen: true,
     cameraFocusY: 0.7, // Позиція камери для поплавка на екрані (0.5 = центр, 0.7 = нижня третина)
 

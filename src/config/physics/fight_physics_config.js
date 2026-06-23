@@ -164,7 +164,7 @@ const FIGHT_PHYSICS_CONFIG = {
       pole: {
         landingDistanceByRodLength: 1.0,
         minLandingDistanceMeters: 1.0,
-        maxLandingDistanceMeters: 2.0,
+        maxLandingDistanceMeters: 1.0,
       },
 
       maxLoadWeightRatio: 1.0,

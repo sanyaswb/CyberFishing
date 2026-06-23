@@ -677,8 +677,13 @@ class FishBehavior {
     const lineDistanceMeters = this.#positiveOrInfinity(
       context.lineDistanceMeters,
     );
+    const shoreLandingDistanceMeters = this.#positiveOrInfinity(
+      context.shoreLandingDistanceMeters,
+    );
     const horizontalDistanceMeters = this.#positiveOrInfinity(
-      context.horizontalDistanceMeters ?? context.verticalDistanceMeters,
+      context.horizontalDistanceMeters ??
+        context.shoreLandingDistanceMeters ??
+        context.verticalDistanceMeters,
     );
     const triggerDistanceMeters = this.#resolveLastDashTriggerDistance(
       trigger,
@@ -696,6 +701,7 @@ class FishBehavior {
         active: this.#currentStateName === stateName,
         blockedByCatchZone: true,
         lineDistanceMeters,
+        shoreLandingDistanceMeters,
         horizontalDistanceMeters,
         zoneDistanceMeters,
         zoneShape,
@@ -721,6 +727,7 @@ class FishBehavior {
         stateName,
         inZone: false,
         lineDistanceMeters,
+        shoreLandingDistanceMeters,
         horizontalDistanceMeters,
         zoneDistanceMeters,
         zoneShape,
@@ -748,6 +755,7 @@ class FishBehavior {
         active: true,
         holdingUntilLeave: this.#holdSpecialStateUntilLeave === stateName,
         lineDistanceMeters,
+        shoreLandingDistanceMeters,
         horizontalDistanceMeters,
         zoneDistanceMeters,
         zoneShape,
@@ -765,6 +773,7 @@ class FishBehavior {
         active: false,
         waitingMs: this.#lastDashCheckTimer,
         lineDistanceMeters,
+        shoreLandingDistanceMeters,
         horizontalDistanceMeters,
         zoneDistanceMeters,
         zoneShape,
@@ -796,6 +805,7 @@ class FishBehavior {
       roll,
       holdingUntilLeave: this.#holdSpecialStateUntilLeave === stateName,
       lineDistanceMeters,
+      shoreLandingDistanceMeters,
       horizontalDistanceMeters,
       zoneDistanceMeters,
       zoneShape,

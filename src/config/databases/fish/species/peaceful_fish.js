@@ -77,7 +77,7 @@ const PEACEFUL_FISH = [
           targetState: "lastDash",
           chance: 0.5,
           checkIntervalMs: 1000,
-          catchZoneMultiplier: 1.5,
+          catchZoneMultiplier: 2.0,
           stayUntilLeaveZone: false,
         },
       },

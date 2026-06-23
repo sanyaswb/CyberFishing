@@ -59,6 +59,8 @@ function landingFrame(weightKg, overrides = {}) {
   return {
     inLandingZone: overrides.inLandingZone !== false,
     lineDistanceMeters: overrides.lineDistanceMeters ?? 0.8,
+    shoreLandingDistanceMeters:
+      overrides.shoreLandingDistanceMeters ?? overrides.lineDistanceMeters ?? 0.8,
     landingDistanceMeters: overrides.landingDistanceMeters ?? 1,
     lift: {
       inLandingZone: overrides.inLandingZone !== false,
@@ -126,6 +128,41 @@ const frameAuthoritative = resolver.resolveAutoCatch({
 assert(
   frameAuthoritative.transition?.name === "victory",
   "landing frame is authoritative over stale debug values",
+);
+
+resolver.reset();
+const shoreDistanceAuthoritative = resolver.resolveAutoCatch({
+  fishData: fish,
+  lineDistanceMeters: 0.2,
+  shoreLandingDistanceMeters: 2.5,
+  maxTackleLoadKg: 2,
+  config: CONFIG,
+  landingFrame: landingFrame(fish.weight, {
+    lineDistanceMeters: 0.2,
+    shoreLandingDistanceMeters: 2.5,
+  }),
+});
+assert(
+  !shoreDistanceAuthoritative.inLandingZone &&
+    !shoreDistanceAuthoritative.transition,
+  "shore landing distance, not line distance, gates auto landing",
+);
+
+resolver.reset();
+const closeShoreFarLine = resolver.resolveAutoCatch({
+  fishData: fish,
+  lineDistanceMeters: 5,
+  shoreLandingDistanceMeters: 0.5,
+  maxTackleLoadKg: 2,
+  config: CONFIG,
+  landingFrame: landingFrame(fish.weight, {
+    lineDistanceMeters: 5,
+    shoreLandingDistanceMeters: 0.5,
+  }),
+});
+assert(
+  closeShoreFarLine.transition?.name === "victory",
+  "fish can land near shore even when line distance to rod tip is long",
 );
 
 resolver.reset();
