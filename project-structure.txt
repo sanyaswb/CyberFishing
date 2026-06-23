@@ -43,7 +43,6 @@
 ├── index.html
 ├── package-lock.json
 ├── package.json
-├── project-structure.txt
 ├── README.md
 ├── src
 │  ├── .tmp.driveupload
@@ -134,6 +133,7 @@
 │  │  │  ├── fish_fight_direction_resolver.js
 │  │  │  ├── fish_retrieve_result.js
 │  │  │  ├── hold_opposition_resolver.js
+│  │  │  ├── landing_lift_readiness_policy.js
 │  │  │  ├── landing_lift_tension_calculator.js
 │  │  │  ├── landing_policy.js
 │  │  │  ├── line_constrained_fish_motion_resolver.js

@@ -23,6 +23,8 @@ class FightPhysicsPipeline {
     "inspect_pole_fight_sector",
     "update_rod_stroke_distance",
     "update_final_tension",
+    "resolve_landing_frame",
+    "resolve_stamina_frame",
     "write_debug_snapshot",
   ]);
 

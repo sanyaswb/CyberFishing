@@ -32,6 +32,7 @@ const FILES = [
   "src/core/fishing/drag_force_calculator.js",
   "src/core/fishing/line_radial_movement_splitter.js",
   "src/core/fishing/landing_lift_tension_calculator.js",
+  "src/core/fishing/landing_lift_readiness_policy.js",
   "src/core/fishing/line_tension_calculator.js",
   "src/core/fishing/rod_pull_state.js",
   "src/core/fishing/rod_stroke_state.js",
@@ -775,6 +776,31 @@ const fullLandingLift = liftCalc.calculate({
 });
 approx(fullLandingLift.liftHoldKg, 1.1, 0.0001, "landing hold reaches full real fish weight");
 approx(fullLandingLift.totalTensionKg, 1.1, 0.0001, "landing lift total tension avoids double counting player hold");
+
+const liftReadiness = new LandingLiftReadinessPolicy();
+const readyLandingLift = liftReadiness.evaluate({
+  landingLiftFrame: fullLandingLift,
+  tensionFrame: {
+    supportedTensionKg: 1.1,
+    rawTensionKg: 1.1,
+    visibleTensionKg: 0.7,
+  },
+  config: landingLiftConfig,
+});
+assert(readyLandingLift.ready, "landing readiness uses authoritative supported tension, not smoothed visual tension");
+
+const dragCappedLandingLift = liftReadiness.evaluate({
+  landingLiftFrame: fullLandingLift,
+  tensionFrame: {
+    supportedTensionKg: 0.7,
+    rawTensionKg: 1.1,
+    visibleTensionKg: 0.7,
+    shouldSlipDrag: true,
+  },
+  config: landingLiftConfig,
+});
+assert(!dragCappedLandingLift.ready, "landing readiness rejects raw lift weight when drag caps supported tension");
+assert(dragCappedLandingLift.reason === "drag_slipping", "landing readiness reports drag slip reason");
 
 const releasedLandingLift = liftCalc.calculate({
   previousLiftHoldKg: fullLandingLift.liftHoldKg,

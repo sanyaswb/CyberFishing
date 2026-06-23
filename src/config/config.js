@@ -408,7 +408,7 @@ const CONFIG = {
       baseStaminaMultiplier: 50,
       flatBonus: 500,
       staminaRatioFromEndurance: 0.1,
-      staminaBossMultiplier: 1.0,
+      staminaBossMultiplier: 1.5,
     },
     mechanics: {
       // Phase 1: Stamina

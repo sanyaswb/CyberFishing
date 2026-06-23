@@ -15,6 +15,10 @@ class FightPhysicsSystem {
   #reelHoldRecoverySystem = new ReelHoldRecoverySystem();
   #landingPolicyResolver = new LandingPolicyResolver();
   #landingLiftCalculator = new LandingLiftTensionCalculator();
+  #landingLiftReadinessPolicy =
+    typeof LandingLiftReadinessPolicy !== "undefined"
+      ? new LandingLiftReadinessPolicy()
+      : null;
   #lineConstraintStateResolver = new LineConstraintStateResolver();
   #lineConstrainedFishMotionResolver =
     new LineConstrainedFishMotionResolver();
@@ -349,6 +353,24 @@ class FightPhysicsSystem {
       pullInput,
     }),
     );
+    const landingFrame = pipelineFrame.run(
+      "resolve_landing_frame",
+      () => this.#buildLandingFrame({
+        forceData,
+        lineState: finalLineState,
+        tensionResult,
+      }),
+    );
+    const staminaFrame = pipelineFrame.run(
+      "resolve_stamina_frame",
+      () => this.#buildStaminaFrame({
+        forceData,
+        fishRetrieveResult: rodPullFrame.fishRetrieveResult,
+        lineState: finalLineState,
+        isPullMode,
+        isRecoverMode,
+      }),
+    );
     const rodPullDisplay = rodPullSystem.getState();
 
     this.#debug = pipelineFrame.run(
@@ -383,6 +405,8 @@ class FightPhysicsSystem {
       hardTensionBlocked: rodPullFrame.hardTensionBlocked,
       fishRetrieveResult: rodPullFrame.fishRetrieveResult,
       landingLiftResult: tensionResult.landingLift,
+      landingFrame,
+      staminaFrame,
       tensionResult,
       stressSystem,
       physics,
@@ -408,6 +432,10 @@ class FightPhysicsSystem {
       pMax: this.#debug.playerMaxPowerY,
       fMag: forceData.totalFishForceKg,
       forceData,
+      fightFrame: {
+        landing: landingFrame,
+        stamina: staminaFrame,
+      },
     };
   }
 
@@ -1614,12 +1642,126 @@ class FightPhysicsSystem {
     return lift;
   }
 
+  #buildLandingFrame({ forceData, lineState, tensionResult } = {}) {
+    const lift = tensionResult?.landingLift || {};
+    const rawLineDistanceMeters = Number(lineState?.distanceMeters);
+    const lineDistanceMeters = Number.isFinite(rawLineDistanceMeters)
+      ? Math.max(0, rawLineDistanceMeters)
+      : Infinity;
+    const landingDistanceMeters = Math.max(
+      0,
+      Number(forceData?.landingDistanceMeters) || 0,
+    );
+    const tensionFrame = Object.freeze({
+      visibleTensionKg: Math.max(0, Number(tensionResult?.tensionKg) || 0),
+      supportedTensionKg: Math.max(
+        0,
+        Number(tensionResult?.totalTensionKg) || 0,
+      ),
+      totalTensionKg: Math.max(0, Number(tensionResult?.totalTensionKg) || 0),
+      rawTensionKg: Math.max(0, Number(tensionResult?.rawTensionKg) || 0),
+      rawTotalTensionKg: Math.max(
+        0,
+        Number(tensionResult?.rawTotalTensionKg) || 0,
+      ),
+      shouldSlipDrag: !!tensionResult?.shouldSlipDrag,
+      dragSlipping: !!tensionResult?.shouldSlipDrag,
+    });
+    const readiness = this.#resolveLandingReadiness({
+      landingLiftFrame: lift,
+      tensionFrame,
+    });
+
+    return Object.freeze({
+      inLandingZone: !!lift?.inLandingZone,
+      landingDistanceMeters,
+      lineDistanceMeters,
+      lift,
+      tension: tensionFrame,
+      readiness,
+    });
+  }
+
+  #buildStaminaFrame({
+    forceData,
+    fishRetrieveResult,
+    lineState,
+    isPullMode,
+    isRecoverMode,
+  } = {}) {
+    const fishWonYForceKg = Math.max(
+      0,
+      Number(fishRetrieveResult?.fishWonYForceKg) || 0,
+    );
+    const dragBlockedForceKg = Math.max(
+      0,
+      Number(fishRetrieveResult?.dragBlockedForceKg) || 0,
+    );
+    const fallbackPressureRatio = Math.max(
+      0,
+      Math.min(1, Number(forceData?.staminaPressureRatio) || 0),
+    );
+    const staminaPressureRatio =
+      isPullMode && fishWonYForceKg > 0
+        ? Math.max(0, Math.min(1, dragBlockedForceKg / fishWonYForceKg))
+        : fallbackPressureRatio;
+
+    return Object.freeze({
+      playerPowerIsPulling: !!isPullMode && !isRecoverMode,
+      angleStressRatio: Math.max(
+        0,
+        Math.min(1, Number(forceData?.player?.angleStressRatio) || 0),
+      ),
+      staminaPressureRatio,
+      isLineFullyExtended: !!lineState?.isFullyExtended,
+      source: "fight_frame",
+    });
+  }
+
+  #resolveLandingReadiness({ landingLiftFrame, tensionFrame }) {
+    const config = this.#physicsConfig?.getLandingLiftConfig?.() || {};
+    if (this.#landingLiftReadinessPolicy?.evaluate) {
+      return this.#landingLiftReadinessPolicy.evaluate({
+        landingLiftFrame,
+        tensionFrame,
+        config,
+      });
+    }
+
+    const liftMaxKg = Math.max(0, Number(landingLiftFrame?.liftMaxKg) || 0);
+    const liftHoldKg = Math.max(0, Number(landingLiftFrame?.liftHoldKg) || 0);
+    const supportedTensionKg = Math.max(
+      0,
+      Number(tensionFrame?.supportedTensionKg) || 0,
+    );
+    return Object.freeze({
+      ready:
+        config.enabled === false ||
+        (
+          !!landingLiftFrame?.inLandingZone &&
+          !!landingLiftFrame?.playerHoldActive &&
+          !!landingLiftFrame?.active &&
+          liftMaxKg > 0 &&
+          liftHoldKg >= liftMaxKg - 0.001 &&
+          supportedTensionKg >= liftMaxKg - 0.001
+        ),
+      reason: "fallback",
+      liftRequiredKg: liftMaxKg,
+      liftHoldKg,
+      supportedTensionKg,
+      rawTensionKg: Math.max(0, Number(tensionFrame?.rawTensionKg) || 0),
+      visibleTensionKg: Math.max(
+        0,
+        Number(tensionFrame?.visibleTensionKg) || 0,
+      ),
+      dragSlipping: !!tensionFrame?.shouldSlipDrag,
+    });
+  }
+
   #resolveFishWeightKg(forceData) {
     return Math.max(
       0,
-      Number(forceData?.fishWeightKg) ||
-        Number(forceData?.debug?.fishWeightKg) ||
-        0,
+      Number(forceData?.fishWeightKg) || 0,
     );
   }
 
@@ -1978,6 +2120,8 @@ class FightPhysicsSystem {
     hardTensionBlocked,
     fishRetrieveResult,
     landingLiftResult,
+    landingFrame,
+    staminaFrame,
     tensionResult,
     stressSystem,
     physics,
@@ -2400,6 +2544,14 @@ class FightPhysicsSystem {
       landingLiftTimeSeconds: landingLiftResult?.liftTimeSeconds ?? 0,
       landingLiftReleaseTimeSeconds:
         landingLiftResult?.releaseTimeSeconds ?? 0,
+      landingReady: !!landingFrame?.readiness?.ready,
+      landingReadyReason: landingFrame?.readiness?.reason || "not_checked",
+      landingSupportedTensionKg:
+        landingFrame?.readiness?.supportedTensionKg ?? 0,
+      landingRawTensionKg: landingFrame?.readiness?.rawTensionKg ?? 0,
+      landingVisibleTensionKg:
+        landingFrame?.readiness?.visibleTensionKg ?? 0,
+      landingDragSlipping: !!landingFrame?.readiness?.dragSlipping,
       rodPullDistanceMeters: rodPullDisplay.distanceMeters,
       rodPullMaxDistanceMeters: rodPullDisplay.maxDistanceMeters,
       rodPullAvailableDistanceMeters: rodPullDisplay.availableDistanceMeters,
@@ -2585,17 +2737,10 @@ class FightPhysicsSystem {
       dragLocked: dragContext.dragLocked,
       rodPullCanWinDistance: rodPullResult.canMoveFish,
       shouldSlipDrag: !!fishRetrieveResult?.shouldSlipDrag,
-      staminaPressureRatio:
-        isPullMode && Number(fishRetrieveResult?.fishWonYForceKg) > 0
-          ? Math.max(
-              0,
-              Math.min(
-                1,
-                (Number(fishRetrieveResult?.dragBlockedForceKg) || 0) /
-                  Number(fishRetrieveResult.fishWonYForceKg),
-              ),
-            )
-          : forceData.staminaPressureRatio ?? 0,
+      staminaFrame,
+      staminaFrameSource: staminaFrame?.source || "none",
+      staminaPressureRatio: staminaFrame?.staminaPressureRatio ?? 0,
+      angleStressRatio: staminaFrame?.angleStressRatio ?? 0,
       playerForceY: Math.abs(rodPullResult.forceKg),
       playerForceX: Math.abs(rodControlResult?.forceKg || 0),
       fishForceY: Math.abs(forceData.totalFishForceKg * (forceData.targetVelocity.y < 0 ? -1 : 1)),

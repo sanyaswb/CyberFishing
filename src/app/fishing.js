@@ -560,6 +560,7 @@ class CatchResolutionService {
     config,
     rod = null,
     reel = null,
+    landingFrame = null,
     fightDebug = null,
   }) {
     const physicsConfig =
@@ -577,16 +578,19 @@ class CatchResolutionService {
       fishData,
       maxTackleLoadKg,
     });
-    const rawDistanceMeters = Number(lineDistanceMeters);
+    const rawDistanceMeters = Number(
+      landingFrame?.lineDistanceMeters ?? lineDistanceMeters,
+    );
     const distanceMeters = Number.isFinite(rawDistanceMeters)
       ? Math.max(0, rawDistanceMeters)
       : Infinity;
     if (distanceMeters > landingDistanceMeters) return {};
 
-    const landingReady = this.#isLandingLiftReady({
+    const readiness = this.#resolveLandingReadiness({
       physicsConfig,
-      fightDebug,
+      landingFrame,
     });
+    const landingReady = readiness.ready;
     const success = this.#canLandByWeight({
       fishWeightKg: fishData?.weight,
       maxTackleLoadKg,
@@ -604,12 +608,16 @@ class CatchResolutionService {
         maxTackleLoadKg,
         catchConfig: cfg,
         landingReady,
+        readiness,
+        landingFrame,
         fightDebug,
       });
     }
     return {
       inLandingZone: true,
       landingReady,
+      landingReadyReason: readiness.reason,
+      landingReadiness: readiness,
       success,
       landingDistanceMeters,
       landingPolicy: landingPolicy.constructor?.name || "LandingPolicy",
@@ -645,21 +653,29 @@ class CatchResolutionService {
     return fishWeight <= maxLoad * maxRatio + 0.0001;
   }
 
-  #isLandingLiftReady({ physicsConfig, fightDebug }) {
+  #resolveLandingReadiness({ physicsConfig, landingFrame }) {
+    if (landingFrame?.readiness) {
+      return landingFrame.readiness;
+    }
+
     const liftConfig = physicsConfig?.getLandingLiftConfig?.() || {};
-    if (liftConfig.enabled === false) return true;
+    if (liftConfig.enabled === false) {
+      return {
+        ready: true,
+        reason: "landing_lift_disabled",
+      };
+    }
 
-    const liftMaxKg = Math.max(0, Number(fightDebug?.landingLiftMaxKg) || 0);
-    const liftHoldKg = Math.max(0, Number(fightDebug?.landingLiftHoldKg) || 0);
-    const totalTensionKg = Math.max(0, Number(fightDebug?.totalTensionKg) || 0);
-    if (liftMaxKg <= 0) return false;
-
-    return (
-      fightDebug?.landingLiftInZone === true &&
-      fightDebug?.landingLiftActive === true &&
-      liftHoldKg >= liftMaxKg - 0.001 &&
-      totalTensionKg >= liftMaxKg - 0.001
-    );
+    return {
+      ready: false,
+      reason: "landing_frame_missing",
+      liftRequiredKg: 0,
+      liftHoldKg: 0,
+      supportedTensionKg: 0,
+      rawTensionKg: 0,
+      visibleTensionKg: 0,
+      dragSlipping: false,
+    };
   }
 
   #logAutoCatchVictory({
@@ -670,6 +686,8 @@ class CatchResolutionService {
     maxTackleLoadKg,
     catchConfig,
     landingReady,
+    readiness,
+    landingFrame,
     fightDebug,
   }) {
     if (typeof console === "undefined") return;
@@ -684,9 +702,11 @@ class CatchResolutionService {
     const maxAllowedWeightKg =
       Math.max(0, Number(maxTackleLoadKg) || 0) * maxRatio;
     const reason =
-      fightDebug?.landingLiftActive === true
+      landingReady
         ? "landing_lift_ready"
-        : "landing_lift_disabled_or_legacy";
+        : readiness?.reason || "landing_lift_disabled_or_legacy";
+    const lift = landingFrame?.lift || {};
+    const tension = landingFrame?.tension || {};
     const values = {
       reason,
       fishId: fishData?.id || fishData?.name || "unknown",
@@ -698,19 +718,31 @@ class CatchResolutionService {
       landingDistanceMeters,
       landingPolicy: landingPolicy?.constructor?.name || "LandingPolicy",
       landingReady: !!landingReady,
-      landingLiftActive: !!fightDebug?.landingLiftActive,
-      landingLiftInZone: !!fightDebug?.landingLiftInZone,
-      landingLiftHoldKg: Number(fightDebug?.landingLiftHoldKg) || 0,
-      landingLiftMaxKg: Number(fightDebug?.landingLiftMaxKg) || 0,
+      landingReadyReason: readiness?.reason || "not_checked",
+      landingLiftActive: !!(lift.active ?? fightDebug?.landingLiftActive),
+      landingLiftInZone: !!(lift.inLandingZone ?? fightDebug?.landingLiftInZone),
+      landingLiftHoldKg:
+        Number(lift.liftHoldKg ?? fightDebug?.landingLiftHoldKg) || 0,
+      landingLiftMaxKg:
+        Number(lift.liftMaxKg ?? fightDebug?.landingLiftMaxKg) || 0,
       landingLiftWaterTensionKg:
-        Number(fightDebug?.landingLiftWaterTensionKg) || 0,
+        Number(lift.waterFightTensionKg ?? fightDebug?.landingLiftWaterTensionKg) || 0,
       landingLiftFishTensionKg:
-        Number(fightDebug?.landingLiftFishTensionKg) || 0,
+        Number(lift.fishTensionKg ?? fightDebug?.landingLiftFishTensionKg) || 0,
       tensionKg: Number(fightDebug?.tensionKg) || 0,
       targetTensionKg: Number(fightDebug?.targetTensionKg) || 0,
-      totalTensionKg: Number(fightDebug?.totalTensionKg) || 0,
-      rawTensionKg: Number(fightDebug?.rawTensionKg) || 0,
-      fishTensionKg: Number(fightDebug?.fishTensionKg) || 0,
+      supportedTensionKg:
+        Number(readiness?.supportedTensionKg ?? tension.supportedTensionKg) || 0,
+      totalTensionKg:
+        Number(tension.totalTensionKg ?? fightDebug?.totalTensionKg) || 0,
+      rawTensionKg:
+        Number(tension.rawTensionKg ?? fightDebug?.rawTensionKg) || 0,
+      rawTotalTensionKg:
+        Number(tension.rawTotalTensionKg ?? fightDebug?.rawTotalTensionKg) || 0,
+      visibleTensionKg:
+        Number(tension.visibleTensionKg ?? fightDebug?.visibleTensionKg) || 0,
+      fishTensionKg:
+        Number(lift.fishTensionKg ?? fightDebug?.fishTensionKg) || 0,
       playerHoldTensionKg: Number(fightDebug?.playerHoldTensionKg) || 0,
       rodHoldKg: Number(fightDebug?.activeRodPullForceKg) || 0,
       rodHoldMaxKg: Number(fightDebug?.rodHoldMaxKg) || 0,
@@ -891,27 +923,30 @@ class FightService {
       !input.isPulling &&
       !input.pointerDown;
     const fightDebug = this.#tensionMeter.getDebugData?.() || {};
+    const staminaFrame = forceData.fightFrame?.stamina || {};
     if (this.#isFishStaminaLocked()) {
       this.#syncGodModeStamina();
     } else {
       this.#staminaController.evaluate({
         tension: this.#tensionMeter.getTension(),
-        playerPowerIsPulling: input.isPulling && !isRetrieveOnly,
+        playerPowerIsPulling:
+          staminaFrame.playerPowerIsPulling ?? (input.isPulling && !isRetrieveOnly),
         dt,
-        angleStressRatio: fightDebug.angleStressRatio || 0,
-        staminaPressureRatio: fightDebug.staminaPressureRatio || 0,
-        isLineFullyExtended: !!fightDebug.isLineFullyExtended,
+        angleStressRatio: staminaFrame.angleStressRatio || 0,
+        staminaPressureRatio: staminaFrame.staminaPressureRatio || 0,
+        isLineFullyExtended: !!staminaFrame.isLineFullyExtended,
       });
     }
     const resolution = this.#catchResolver.resolveAutoCatch({
       fishData,
-      lineDistanceMeters: fightDebug.lineDistanceMeters,
+      lineDistanceMeters: forceData.fightFrame?.landing?.lineDistanceMeters,
       maxTackleLoadKg: this.#tensionMeter.getEffectiveMaxTackleLoadKg?.(),
       dtMs: dt,
       rng: this.#rng,
       config: this.#config,
       rod: this.#rod,
       reel: this.#reel,
+      landingFrame: forceData.fightFrame?.landing,
       fightDebug,
     });
     if (resolution.transition) return { transition: resolution.transition };

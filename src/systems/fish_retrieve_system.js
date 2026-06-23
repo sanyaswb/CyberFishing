@@ -212,9 +212,7 @@ class FishRetrieveSystem {
   #resolveFishWeight(forceData) {
     return Math.max(
       0,
-      Number(forceData?.fishWeightKg) ||
-        Number(forceData?.debug?.fishWeightKg) ||
-        0,
+      Number(forceData?.fishWeightKg) || 0,
     );
   }
 
