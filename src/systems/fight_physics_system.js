@@ -1515,6 +1515,7 @@ class FightPhysicsSystem {
       rodPullResult,
       fishRetrieveResult,
       lineState,
+      maxTackleLoadKg: stressSystem.getEffectiveMaxTackleLoadKg?.(),
     });
     const calculatedTension = this.#calculateTension({
       tensionSystem,
@@ -1625,6 +1626,7 @@ class FightPhysicsSystem {
     rodPullResult,
     fishRetrieveResult,
     lineState,
+    maxTackleLoadKg,
   }) {
     const landingDistanceMeters = Number(forceData?.landingDistanceMeters) || 0;
     const rawShoreDistanceMeters = Number(forceData?.shoreLandingDistanceMeters);
@@ -1638,6 +1640,7 @@ class FightPhysicsSystem {
     const lift = this.#landingLiftCalculator.calculate({
       previousLiftHoldKg: this.#landingLiftHoldKg,
       fishWeightKg: this.#resolveFishWeightKg(forceData),
+      maxTackleLoadKg,
       waterFightTensionKg:
         fishRetrieveResult?.fishTensionKg ?? forceData?.fishTensionKg,
       inLandingZone,
@@ -2557,9 +2560,17 @@ class FightPhysicsSystem {
       landingLiftFishTensionKg: landingLiftResult?.fishTensionKg ?? 0,
       landingLiftWeightTensionRatio:
         landingLiftResult?.liftWeightTensionRatio ?? 0,
-      landingLiftTimeSeconds: landingLiftResult?.liftTimeSeconds ?? 0,
+      landingLiftFastTimeSeconds:
+        landingLiftResult?.fastLiftTimeSeconds ?? 0,
       landingLiftReleaseTimeSeconds:
         landingLiftResult?.releaseTimeSeconds ?? 0,
+      landingLiftProgressRatio: landingLiftResult?.progressRatio ?? 0,
+      landingLiftTackleLoadProgressRatio:
+        landingLiftResult?.tackleLoadProgressRatio ?? 0,
+      landingLiftSlowdownRatio: landingLiftResult?.slowdownRatio ?? 0,
+      landingLiftSpeedRatio: landingLiftResult?.speedRatio ?? 0,
+      landingLiftGainKgPerSecond:
+        landingLiftResult?.gainKgPerSecond ?? 0,
       landingReady: !!landingFrame?.readiness?.ready,
       landingReadyReason: landingFrame?.readiness?.reason || "not_checked",
       landingSupportedTensionKg:

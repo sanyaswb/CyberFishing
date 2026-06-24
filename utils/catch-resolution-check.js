@@ -215,6 +215,26 @@ assert(
 );
 
 resolver.reset();
+const dynamicFightTensionSpike = resolver.resolveAutoCatch({
+  fishData: fish,
+  lineDistanceMeters: 0.8,
+  maxTackleLoadKg: 2,
+  config: CONFIG,
+  landingFrame: landingFrame(fish.weight, {
+    ready: false,
+    reason: "lift_not_charged",
+    liftHoldKg: fish.weight * 0.25,
+    supportedTensionKg: fish.weight,
+    rawTensionKg: fish.weight * 3,
+  }),
+});
+assert(
+  dynamicFightTensionSpike.inLandingZone &&
+    !dynamicFightTensionSpike.transition,
+  "dynamic fight tension spike cannot land fish before landing lift is charged",
+);
+
+resolver.reset();
 const maxLoadSuccess = resolver.resolveAutoCatch({
   fishData: { weight: 2 },
   lineDistanceMeters: 0.8,
@@ -246,33 +266,33 @@ assert(!outsideZone.inLandingZone && !outsideZone.transition, "fish outside 1m r
 resolver.reset();
 const poleZone = resolver.resolveAutoCatch({
   fishData: { weight: 0.1 },
-  lineDistanceMeters: 2.0,
+  lineDistanceMeters: 1.0,
   maxTackleLoadKg: 2,
   config: CONFIG,
   rod: { type: "float", lengthMeters: 2.0, hasReel: false },
   reel: null,
-  landingFrame: landingFrame(0.1, { lineDistanceMeters: 2.0 }),
+  landingFrame: landingFrame(0.1, { lineDistanceMeters: 1.0 }),
 });
 assert(poleZone.inLandingZone && poleZone.transition?.name === "victory", "pole rod lands after lift inside rod-length lifting zone");
-assert(poleZone.landingDistanceMeters === 2, "pole landing distance follows rod length");
+assert(poleZone.landingDistanceMeters === 1, "pole landing distance follows configured clamp");
 
 resolver.reset();
 const poleClassZone = resolver.resolveAutoCatch({
   fishData: { weight: 0.1 },
-  lineDistanceMeters: 1.3,
+  lineDistanceMeters: 0.9,
   maxTackleLoadKg: 2,
   config: CONFIG,
   rod: new Rod(1, 1, 0, "float", Infinity, false, { lengthMeters: 2.0 }),
   reel: new Reel(0, 0, { lineCapacityMeters: 0 }),
-  landingFrame: landingFrame(0.1, { lineDistanceMeters: 1.3 }),
+  landingFrame: landingFrame(0.1, { lineDistanceMeters: 0.9 }),
 });
-assert(poleClassZone.inLandingZone && poleClassZone.transition?.name === "victory", "pole Rod instance lands fish after lift inside 2m lifting zone");
-assert(poleClassZone.landingDistanceMeters === 2, "pole Rod instance landing distance uses getLengthMeters");
+assert(poleClassZone.inLandingZone && poleClassZone.transition?.name === "victory", "pole Rod instance lands fish after lift inside 1m lifting zone");
+assert(poleClassZone.landingDistanceMeters === 1, "pole Rod instance landing distance uses configured clamp");
 
 resolver.reset();
 const poleTooFar = resolver.resolveAutoCatch({
   fishData: { weight: 0.1 },
-  lineDistanceMeters: 2.1,
+  lineDistanceMeters: 1.1,
   maxTackleLoadKg: 2,
   config: CONFIG,
   rod: { type: "float", lengthMeters: 2.0, hasReel: false },

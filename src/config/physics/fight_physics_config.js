@@ -152,8 +152,11 @@ const FIGHT_PHYSICS_CONFIG = {
     lift: {
       enabled: true,
       liftWeightTensionRatio: 1.0,
-      liftTimeSeconds: 0.35,
-      releaseTimeSeconds: 0.2,
+      fastLiftTimeSeconds: 0.35,
+      releaseTimeSeconds: 0.5,
+      slowdownStartRatio: 0.1,
+      endSpeedRatio: 0.01,
+      slowdownCurvePower: 0.5,
     },
 
     catchZone: {

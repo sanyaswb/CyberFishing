@@ -775,8 +775,11 @@ const liftCalc = new LandingLiftTensionCalculator();
 const landingLiftConfig = {
   enabled: true,
   liftWeightTensionRatio: 1,
-  liftTimeSeconds: 0.35,
+  fastLiftTimeSeconds: 0.25,
   releaseTimeSeconds: 0.2,
+  slowdownStartRatio: 0.75,
+  endSpeedRatio: 0.08,
+  slowdownCurvePower: 2.5,
 };
 const noHoldLandingLift = liftCalc.calculate({
   previousLiftHoldKg: 0,
@@ -790,29 +793,125 @@ const noHoldLandingLift = liftCalc.calculate({
 approx(noHoldLandingLift.liftHoldKg, 0, 0.0001, "landing zone without hold does not add real weight tension");
 approx(noHoldLandingLift.fishTensionKg, 0.3, 0.0001, "landing zone without hold keeps water fight tension");
 
-const halfLandingLift = liftCalc.calculate({
+const firstLandingLift = liftCalc.calculate({
   previousLiftHoldKg: 0,
   fishWeightKg: 1.1,
   waterFightTensionKg: 0.3,
   inLandingZone: true,
   playerHoldActive: true,
-  dtSec: 0.175,
+  dtSec: 0.05,
+  maxTackleLoadKg: 1.1,
   config: landingLiftConfig,
 });
-approx(halfLandingLift.liftHoldKg, 0.55, 0.0001, "landing hold gradually transfers half real fish weight");
-approx(halfLandingLift.fishTensionKg, 0.55, 0.0001, "landing lift overrides lower water fight tension");
+approx(firstLandingLift.liftHoldKg, 0.22, 0.0001, "landing hold starts with fast real weight transfer");
+approx(firstLandingLift.fishTensionKg, firstLandingLift.liftHoldKg, 0.0001, "active landing lift tension comes from lift hold only");
+approx(firstLandingLift.waterFightTensionKg, 0.3, 0.0001, "landing lift keeps water fight tension as diagnostics");
 
 const fullLandingLift = liftCalc.calculate({
-  previousLiftHoldKg: halfLandingLift.liftHoldKg,
+  previousLiftHoldKg: firstLandingLift.liftHoldKg,
   fishWeightKg: 1.1,
   waterFightTensionKg: 0.3,
   inLandingZone: true,
   playerHoldActive: true,
-  dtSec: 0.175,
+  dtSec: 4,
+  maxTackleLoadKg: 1.1,
   config: landingLiftConfig,
 });
 approx(fullLandingLift.liftHoldKg, 1.1, 0.0001, "landing hold reaches full real fish weight");
 approx(fullLandingLift.totalTensionKg, 1.1, 0.0001, "landing lift total tension avoids double counting player hold");
+
+const curveConfig = {
+  ...landingLiftConfig,
+  fastLiftTimeSeconds: 1,
+  slowdownStartRatio: 0.7,
+  endSpeedRatio: 0.1,
+  slowdownCurvePower: 2,
+};
+const lightLandingLift = liftCalc.calculate({
+  previousLiftHoldKg: 0,
+  fishWeightKg: 0.1,
+  waterFightTensionKg: 0,
+  inLandingZone: true,
+  playerHoldActive: true,
+  dtSec: 0.25,
+  maxTackleLoadKg: 1,
+  config: curveConfig,
+});
+const heavyLandingLift = liftCalc.calculate({
+  previousLiftHoldKg: 0,
+  fishWeightKg: 0.9,
+  waterFightTensionKg: 0,
+  inLandingZone: true,
+  playerHoldActive: true,
+  dtSec: 0.25,
+  maxTackleLoadKg: 1,
+  config: curveConfig,
+});
+assert(
+  Math.abs(
+    lightLandingLift.liftHoldKg / lightLandingLift.liftMaxKg -
+      heavyLandingLift.liftHoldKg / heavyLandingLift.liftMaxKg,
+  ) < 0.0001,
+  "landing lift starts with equal fast progress before slowdown",
+);
+
+const nearlyDoneSmallFishLift = liftCalc.calculate({
+  previousLiftHoldKg: 0.18,
+  fishWeightKg: 0.2,
+  waterFightTensionKg: 0,
+  inLandingZone: true,
+  playerHoldActive: true,
+  dtSec: 0.1,
+  maxTackleLoadKg: 1,
+  config: curveConfig,
+});
+approx(
+  nearlyDoneSmallFishLift.slowdownRatio,
+  0,
+  0.0001,
+  "small fish does not slow down when below tackle slowdown threshold",
+);
+
+const heavyStartLift = liftCalc.calculate({
+  previousLiftHoldKg: 0,
+  fishWeightKg: 0.9,
+  waterFightTensionKg: 0,
+  inLandingZone: true,
+  playerHoldActive: true,
+  dtSec: 0.1,
+  maxTackleLoadKg: 1,
+  config: curveConfig,
+});
+const heavyEndLift = liftCalc.calculate({
+  previousLiftHoldKg: 0.72,
+  fishWeightKg: 0.9,
+  waterFightTensionKg: 0,
+  inLandingZone: true,
+  playerHoldActive: true,
+  dtSec: 0.1,
+  maxTackleLoadKg: 1,
+  config: curveConfig,
+});
+assert(
+  heavyEndLift.liftHoldKg - 0.72 <
+    heavyStartLift.liftHoldKg,
+  "landing lift slows down after configured progress threshold",
+);
+
+const waterSpikeLandingLift = liftCalc.calculate({
+  previousLiftHoldKg: 0,
+  fishWeightKg: 1,
+  waterFightTensionKg: 2,
+  inLandingZone: true,
+  playerHoldActive: true,
+  dtSec: 0.05,
+  maxTackleLoadKg: 1,
+  config: curveConfig,
+});
+assert(
+  waterSpikeLandingLift.fishTensionKg < waterSpikeLandingLift.liftMaxKg,
+  "water fight tension spike cannot charge landing lift tension",
+);
 
 const liftReadiness = new LandingLiftReadinessPolicy();
 const readyLandingLift = liftReadiness.evaluate({

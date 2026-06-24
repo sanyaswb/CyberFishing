@@ -291,13 +291,25 @@
     "label": "Коефіцієнт ваги підйому",
     "description": "Яка частка реальної ваги риби поступово переходить у tension при hold у landing zone."
   },
-  "physics.fight.landing.lift.liftTimeSeconds": {
-    "label": "Час набору підйому",
-    "description": "За скільки секунд hold у landing zone доводить lift tension до реальної ваги риби."
+  "physics.fight.landing.lift.fastLiftTimeSeconds": {
+    "label": "Швидкий час підйому",
+    "description": "Базовий час набору landing lift до початку фінального уповільнення."
   },
   "physics.fight.landing.lift.releaseTimeSeconds": {
     "label": "Час спаду підйому",
     "description": "За скільки секунд lift tension спадає після відпускання hold або виходу з landing zone."
+  },
+  "physics.fight.landing.lift.slowdownStartRatio": {
+    "label": "Початок уповільнення підйому",
+    "description": "Частка від найслабшої ланки снасті, після якої починається фінальне уповільнення. 0.8 означає старт уповільнення на 80% maxTackleLoadKg."
+  },
+  "physics.fight.landing.lift.endSpeedRatio": {
+    "label": "Фінальна швидкість підйому",
+    "description": "Частка від стартової швидкості в кінці landing lift. 0.08 означає 8% від швидкого старту."
+  },
+  "physics.fight.landing.lift.slowdownCurvePower": {
+    "label": "Крива уповільнення підйому",
+    "description": "Форма фінального уповільнення. Більше значення довше тримає швидкість і різкіше гальмує в самому кінці."
   },
   "physics.tackle.line.defaultMaxLoadKg": {
     "label": "Стандартна міцність ліски",

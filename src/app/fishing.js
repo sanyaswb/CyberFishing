@@ -735,6 +735,19 @@ class CatchResolutionService {
         Number(lift.waterFightTensionKg ?? fightDebug?.landingLiftWaterTensionKg) || 0,
       landingLiftFishTensionKg:
         Number(lift.fishTensionKg ?? fightDebug?.landingLiftFishTensionKg) || 0,
+      landingLiftProgressRatio:
+        Number(lift.progressRatio ?? fightDebug?.landingLiftProgressRatio) || 0,
+      landingLiftTackleLoadProgressRatio:
+        Number(
+          lift.tackleLoadProgressRatio ??
+            fightDebug?.landingLiftTackleLoadProgressRatio,
+        ) || 0,
+      landingLiftSlowdownRatio:
+        Number(lift.slowdownRatio ?? fightDebug?.landingLiftSlowdownRatio) || 0,
+      landingLiftSpeedRatio:
+        Number(lift.speedRatio ?? fightDebug?.landingLiftSpeedRatio) || 0,
+      landingLiftGainKgPerSecond:
+        Number(lift.gainKgPerSecond ?? fightDebug?.landingLiftGainKgPerSecond) || 0,
       tensionKg: Number(fightDebug?.tensionKg) || 0,
       targetTensionKg: Number(fightDebug?.targetTensionKg) || 0,
       supportedTensionKg:

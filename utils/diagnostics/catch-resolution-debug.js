@@ -383,6 +383,16 @@ function runScenario() {
       landingLiftMaxKg: Number(lastDebug?.landingLiftMaxKg) || 0,
       landingLiftWaterTensionKg:
         Number(lastDebug?.landingLiftWaterTensionKg) || 0,
+      landingLiftProgressRatio:
+        Number(lastDebug?.landingLiftProgressRatio) || 0,
+      landingLiftTackleLoadProgressRatio:
+        Number(lastDebug?.landingLiftTackleLoadProgressRatio) || 0,
+      landingLiftSlowdownRatio:
+        Number(lastDebug?.landingLiftSlowdownRatio) || 0,
+      landingLiftSpeedRatio:
+        Number(lastDebug?.landingLiftSpeedRatio) || 0,
+      landingLiftGainKgPerSecond:
+        Number(lastDebug?.landingLiftGainKgPerSecond) || 0,
       lineStressRatio: Number(lastDebug?.lineStressRatio) || 0,
       rodStressRatio: Number(lastDebug?.rodStressRatio) || 0,
     },

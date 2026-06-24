@@ -1,5 +1,19 @@
 # CyberFishing changelog
 
+## v0.23.3 - Tackle-relative landing slowdown
+
+- Changed landing lift slowdown progress to use the weakest tackle load instead of the fish weight target.
+- Kept small fish fast on stronger tackle by avoiding final slowdown below the configured tackle-load threshold.
+- Added debug output for tackle-load landing lift progress.
+
+## v0.23.2 - CatchZone landing lift curve
+
+- Made catch zone victory depend on charged landing lift tension from player hold, not dynamic fish state tension.
+- Changed active landing lift tension to use accumulated real-weight lift pressure while keeping water fight tension as diagnostics.
+- Replaced landing lift timing multipliers with a fast-start curve whose slowdown threshold is based on tackle load.
+- Exposed landing lift progress ratio, slowdown ratio, speed ratio and gain rate in debug logs.
+- Added regression coverage for dynamic fight tension spikes, drag-capped landing, and light-vs-heavy landing lift timing.
+
 ## v0.23.1 - Landing shoreline offset removal
 
 - Removed the obsolete landing shoreline offset configuration and runtime plumbing.

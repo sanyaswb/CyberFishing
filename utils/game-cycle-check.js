@@ -254,6 +254,7 @@ function runFightScenario({
   frames = 240,
   checkWater = () => true,
   closeDrag = false,
+  requirePlayerTension = true,
 }) {
   const config = createConfig();
   const rng = createRng();
@@ -274,6 +275,7 @@ function runFightScenario({
   let sawMovement = false;
   let sawBlockedMovement = false;
   let lastDebug = null;
+  let transitionFrame = null;
 
   for (let frame = 0; frame < frames; frame++) {
     const result = fight.updateFight(1000 / 30, {
@@ -310,12 +312,15 @@ function runFightScenario({
 
     if (result.transition) {
       transition = result.transition;
+      transitionFrame = frame;
       break;
     }
   }
 
   assert(sawHold, name + ": rod hold produces force");
-  assert(sawPlayerTension, name + ": hold contributes player tension");
+  if (requirePlayerTension) {
+    assert(sawPlayerTension, name + ": hold contributes player tension");
+  }
   assert(
     sawFishTension || peakTotalTension > 0,
     name + ": fight produces blocked-force or player-hold tension",
@@ -329,6 +334,7 @@ function runFightScenario({
     sawMovement,
     sawBlockedMovement,
     lastDebug,
+    transitionFrame,
   };
 }
 
@@ -374,6 +380,59 @@ assert(
 );
 assert(victory.sawMovement, "easy fish physically moves toward player during hold");
 assert(victory.peakLineStress < 1, "easy fish stays under line break stress");
+
+const lightLanding = runFightScenario({
+  name: "light_landing_lift",
+  equipment: createTestBuild({
+    rodMaxLoadKg: 1,
+    reelMaxLoadKg: 1,
+    lineMaxLoadKg: 1,
+    hookMaxLoadKg: 1,
+  }),
+  fishData: createFish({
+    weightKg: 0.1,
+    basePower: 0.5,
+    baseSpeed: 0,
+    forceMultiplier: 0,
+    speedMultiplier: 0,
+  }),
+  startDistanceMeters: 0.8,
+  frames: 240,
+  closeDrag: true,
+  requirePlayerTension: false,
+});
+const heavyLanding = runFightScenario({
+  name: "heavy_landing_lift",
+  equipment: createTestBuild({
+    rodMaxLoadKg: 1,
+    reelMaxLoadKg: 1,
+    lineMaxLoadKg: 1,
+    hookMaxLoadKg: 1,
+  }),
+  fishData: createFish({
+    weightKg: 0.9,
+    basePower: 0.5,
+    baseSpeed: 0,
+    forceMultiplier: 0,
+    speedMultiplier: 0,
+  }),
+  startDistanceMeters: 0.8,
+  frames: 240,
+  closeDrag: true,
+  requirePlayerTension: false,
+});
+assert(
+  lightLanding.transition?.name === "victory",
+  "light fish reaches victory through landing lift",
+);
+assert(
+  heavyLanding.transition?.name === "victory",
+  "near-limit fish can still reach victory through landing lift",
+);
+assert(
+  lightLanding.transitionFrame < heavyLanding.transitionFrame,
+  "near-limit fish takes longer to land than light fish",
+);
 
 const breakCase = runFightScenario({
   name: "line_break",

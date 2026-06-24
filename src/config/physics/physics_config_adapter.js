@@ -319,8 +319,17 @@ class FightPhysicsConfigAdapter {
         config.liftWeightTensionRatio,
         1,
       ),
-      liftTimeSeconds: this.#number(config.liftTimeSeconds, 0.35),
+      fastLiftTimeSeconds: this.#number(
+        config.fastLiftTimeSeconds ?? config.liftTimeSeconds,
+        0.25,
+      ),
       releaseTimeSeconds: this.#number(config.releaseTimeSeconds, 0.2),
+      slowdownStartRatio: this.#number(config.slowdownStartRatio, 0.75),
+      endSpeedRatio: this.#number(config.endSpeedRatio, 0.08),
+      slowdownCurvePower: this.#number(
+        config.slowdownCurvePower,
+        2.5,
+      ),
     };
   }
 
