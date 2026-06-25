@@ -82,14 +82,13 @@ const context = vm.createContext({
 });
 
 for (const file of FILES) {
-  vm.runInContext(
-    fs.readFileSync(path.join(ROOT, file), "utf8"),
-    context,
-    { filename: file },
-  );
+  vm.runInContext(fs.readFileSync(path.join(ROOT, file), "utf8"), context, {
+    filename: file,
+  });
 }
 
-vm.runInContext(`
+vm.runInContext(
+  `
 CONFIG.input.pullHoldMinMs = 0;
 
 function key(target, type, code, keyValue = code) {
@@ -561,7 +560,7 @@ const tightOffset = tightVisual.update({
   canvasWidth: 1000,
 });
 approx(tightVisual.getFrame().weightSpeedRatio, 0.5, 0.001, "Fish at rod load limit uses configured minimum rod aim speed");
-approx(tightOffset, 1.05, 0.001, "Tight-line rod aim slows by relative fish load");
+approx(tightOffset, 1.0, 0.001, "Tight-line rod aim slows by relative fish load");
 assert(tightVisual.getFrame().drivenByInput, "Tight-line rod aim is input-driven");
 assert(tightVisual.getFrame().lineMode === "tight_line", "Tight-line rod aim reports tight line mode");
 
@@ -603,7 +602,7 @@ const opposingDirectionOffset = opposingDirectionAim.update({
   canvasWidth: 1000,
 });
 approx(opposingDirectionAim.getFrame().directionSpeedRatio, 0.35, 0.001, "Rod aim against fish uses tight-line speed multiplier");
-approx(opposingDirectionOffset, 1.05, 0.001, "Rod aim against fish keeps tight-line speed");
+approx(opposingDirectionOffset, 1.0, 0.001, "Rod aim against fish keeps tight-line speed");
 assert(!("withFishDirection" in opposingDirectionAim.getFrame()), "Rod aim does not expose with-fish movement mode");
 
 const centeredFollow = new RodLateralControlSystem().update({
@@ -700,7 +699,9 @@ const releasedOffset = heavyVisual.update({
   canvasWidth: 1000,
 });
 assert(releasedOffset >= 0 && releasedOffset < heavyOffset, "Visual rod returns toward center without overshoot");
-`, context);
+`,
+  context,
+);
 
 console.log("rod-control-ux-check passed:");
 for (const message of checks) console.log("- " + message);

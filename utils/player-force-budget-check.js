@@ -13,7 +13,8 @@ vm.runInContext(
   { filename: "src/core/fishing/player_force_budget_allocator.js" },
 );
 
-vm.runInContext(`
+vm.runInContext(
+  `
 const checks = [];
 function assert(condition, message) { if (!condition) throw new Error(message); checks.push(message); }
 function approx(value, expected, tolerance, message) { assert(Math.abs(Number(value) - expected) <= tolerance, message + " (" + value + ")"); }
@@ -23,9 +24,9 @@ const config = {
   enabled: true,
   control: { maxBudgetShare: 0.5, minInputRatio: 0.001 },
   tensionCeiling: {
-    holdMultiplier: 1.05,
-    controlMultiplier: 1.05,
-    maxCombinedMultiplier: 1.25,
+    holdMultiplier: 1.0,
+    controlMultiplier: 1.0,
+    maxCombinedMultiplier: 1.0,
   },
 };
 const hold = Object.freeze({ active: true, ratio: 1, source: "test" });
@@ -36,34 +37,34 @@ const belowThresholdControl = Object.freeze({ active: true, directionX: 1, input
 const noControl = Object.freeze({ active: false, directionX: 0, inputRatio: 0, source: "none" });
 
 let frame = allocator.resolve({ rodLimitKg: 1, fishTensionKg: 0.4, holdAction: hold, controlAction: noControl, config });
-approx(frame.combinedCeilingMultiplier, 1.05, 0.0001, "hold-only ceiling uses hold multiplier");
-approx(frame.totalPlayerBudgetKg, 0.65, 0.0001, "hold-only total budget uses ceiling minus fish tension");
+approx(frame.combinedCeilingMultiplier, 1.0, 0.0001, "hold-only ceiling uses hold multiplier");
+approx(frame.totalPlayerBudgetKg, 0.6, 0.0001, "hold-only total budget uses ceiling minus fish tension");
 approx(frame.holdShare, 1, 0.0001, "hold-only gets 100% hold share");
 approx(frame.controlShare, 0, 0.0001, "hold-only gets 0% control share");
-approx(frame.holdBudgetKg, 0.65, 0.0001, "hold-only budget goes to hold");
+approx(frame.holdBudgetKg, 0.6, 0.0001, "hold-only budget goes to hold");
 approx(frame.controlBudgetKg, 0, 0.0001, "hold-only gives no control budget");
 
 frame = allocator.resolve({ rodLimitKg: 1, fishTensionKg: 0.4, holdAction: hold, controlAction: fullControl, config });
-approx(frame.combinedCeilingMultiplier, 1.10, 0.0001, "hold+full-control combines hold and control ceiling extras");
-approx(frame.totalPlayerBudgetKg, 0.70, 0.0001, "hold+full-control total budget uses combined ceiling");
+approx(frame.combinedCeilingMultiplier, 1.0, 0.0001, "hold+full-control stays at base ceiling when no extras are configured");
+approx(frame.totalPlayerBudgetKg, 0.6, 0.0001, "hold+full-control total budget uses combined ceiling");
 approx(frame.holdShare, 0.5, 0.0001, "full control takes max configured share from hold");
 approx(frame.controlShare, 0.5, 0.0001, "full control receives max configured share");
-approx(frame.holdBudgetKg, 0.35, 0.0001, "hold+full-control splits hold budget");
-approx(frame.controlBudgetKg, 0.35, 0.0001, "hold+full-control splits control budget");
+approx(frame.holdBudgetKg, 0.3, 0.0001, "hold+full-control splits hold budget");
+approx(frame.controlBudgetKg, 0.3, 0.0001, "hold+full-control splits control budget");
 
 frame = allocator.resolve({ rodLimitKg: 1, fishTensionKg: 0.4, holdAction: hold, controlAction: halfControl, config });
-approx(frame.combinedCeilingMultiplier, 1.075, 0.0001, "half control scales control ceiling extra");
-approx(frame.totalPlayerBudgetKg, 0.675, 0.0001, "half control total budget is scaled by input");
+approx(frame.combinedCeilingMultiplier, 1.0, 0.0001, "half control keeps the base ceiling when no control extra is configured");
+approx(frame.totalPlayerBudgetKg, 0.6, 0.0001, "half control total budget uses the base ceiling");
 approx(frame.controlShare, 0.25, 0.0001, "half control takes half of max control share");
 approx(frame.holdShare, 0.75, 0.0001, "half control leaves the rest to hold");
-approx(frame.controlBudgetKg, 0.16875, 0.0001, "half control budget is proportional");
-approx(frame.holdBudgetKg, 0.50625, 0.0001, "half control leaves hold budget proportional");
+approx(frame.controlBudgetKg, 0.15, 0.0001, "half control budget is proportional");
+approx(frame.holdBudgetKg, 0.45, 0.0001, "half control leaves hold budget proportional");
 
 frame = allocator.resolve({ rodLimitKg: 1, fishTensionKg: 0.4, holdAction: noHold, controlAction: fullControl, config });
 approx(frame.holdShare, 0, 0.0001, "control-only has no hold share");
 approx(frame.controlShare, 1, 0.0001, "control-only receives 100% available player budget");
-approx(frame.combinedCeilingMultiplier, 1.05, 0.0001, "control-only contributes control ceiling only");
-approx(frame.controlBudgetKg, 0.65, 0.0001, "control-only gets full available budget");
+approx(frame.combinedCeilingMultiplier, 1.0, 0.0001, "control-only contributes control ceiling only");
+approx(frame.controlBudgetKg, 0.6, 0.0001, "control-only gets full available budget");
 
 frame = allocator.resolve({
   rodLimitKg: 1,
@@ -95,6 +96,7 @@ frame = allocator.resolve({ rodLimitKg: 1, fishTensionKg: 0.4, holdAction: hold,
 assert(!frame.controlActive, "control input below configured minimum is inactive");
 approx(frame.controlInputRatio, 0, 0.0001, "inactive below-threshold control has zero input ratio");
 approx(frame.holdShare, 1, 0.0001, "below-threshold control does not consume hold share");
+approx(frame.holdBudgetKg, 0.6, 0.0001, "below-threshold control leaves full budget with hold");
 approx(frame.controlBudgetKg, 0, 0.0001, "below-threshold control receives no budget");
 
 frame = allocator.resolve({
@@ -114,8 +116,10 @@ assert(!frame.controlActive, "aligned control is inactive for budget allocation"
 assert(frame.controlBlockedReason === "aligned", "aligned budget block reason is preserved");
 approx(frame.holdShare, 1, 0.0001, "aligned control returns the full share to Rod Hold");
 approx(frame.controlShare, 0, 0.0001, "aligned control receives no force share");
-approx(frame.holdBudgetKg, 0.65, 0.0001, "Rod Hold receives the full hold-only budget after alignment");
+approx(frame.holdBudgetKg, 0.6, 0.0001, "Rod Hold receives the full hold-only budget after alignment");
 approx(frame.controlBudgetKg, 0, 0.0001, "aligned control receives zero budget");
 
 console.log("player-force-budget-check passed:\\n- " + checks.join("\\n- "));
-`, context);
+`,
+  context,
+);

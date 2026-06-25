@@ -53,7 +53,7 @@
   },
   "physics.fight.rodHold.tensionCeilingMultiplier": {
     "label": "Максимальна межа total tension для Rod Hold",
-    "description": "Множник верхньої межі загального натягу відносно ліміту вудки. Це не множник сили й не гарантований tension: 1.05 лише дозволяє Rod Hold дійти максимум до 105%."
+    "description": "Множник верхньої межі загального натягу відносно ліміту вудки."
   },
   "physics.fight.rodHold.anglePenalty.enabled": {
     "label": "Кутовий штраф увімкнено",
@@ -825,7 +825,7 @@
   },
   "physics.fight.playerForceBudget.tensionCeiling.holdMultiplier": {
     "label": "Rod Hold budget ceiling multiplier",
-    "description": "Additional tension ceiling multiplier contributed by active Rod Hold. A value of 1.05 adds a 5% overload ceiling."
+    "description": "Additional tension ceiling multiplier contributed by active Rod Hold."
   },
   "physics.fight.playerForceBudget.tensionCeiling.controlMultiplier": {
     "label": "Rod Control budget ceiling multiplier",

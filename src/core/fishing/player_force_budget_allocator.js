@@ -28,11 +28,9 @@ class PlayerForceBudgetAllocator {
       controlConfig.minInputRatio ?? 0.001,
     );
     const controlRequested =
-      !!controlAction?.active &&
-      rawControlInputRatio >= minControlInputRatio;
+      !!controlAction?.active && rawControlInputRatio >= minControlInputRatio;
     const controlEligible =
-      controlRequested &&
-      controlEligibility?.canRequestForce !== false;
+      controlRequested && controlEligibility?.canRequestForce !== false;
     const controlActive = controlRequested && controlEligible;
     const controlInputRatio = controlActive ? rawControlInputRatio : 0;
     const controlBlockedReason =
@@ -78,7 +76,7 @@ class PlayerForceBudgetAllocator {
       1,
       this.#positive(
         ceiling.maxCombinedMultiplier,
-        this.#positive(config.maxCombinedMultiplier, 1.25),
+        this.#positive(config.maxCombinedMultiplier, 1.0),
       ),
     );
 
@@ -135,7 +133,12 @@ class PlayerForceBudgetAllocator {
     });
   }
 
-  #resolveShares({ holdActive, controlActive, controlInputRatio, controlConfig }) {
+  #resolveShares({
+    holdActive,
+    controlActive,
+    controlInputRatio,
+    controlConfig,
+  }) {
     if (!holdActive && !controlActive) {
       return { holdShare: 0, controlShare: 0 };
     }

@@ -25,10 +25,7 @@ class FightPhysicsConfigAdapter {
   getWaterConfig() {
     const water = this.#physics().water || {};
     return {
-      tautBodyResistancePerKg: this.#number(
-        water.tautBodyResistancePerKg,
-        0.2,
-      ),
+      tautBodyResistancePerKg: this.#number(water.tautBodyResistancePerKg, 0.2),
       motionResistance: this.#number(water.motionResistance, 1000),
       speedMultiplier: this.#number(water.speedMultiplier, 64),
     };
@@ -48,10 +45,7 @@ class FightPhysicsConfigAdapter {
         config.sideHoldOppositionRatio,
         0.35,
       ),
-      awayHoldOppositionRatio: this.#number(
-        config.awayHoldOppositionRatio,
-        1,
-      ),
+      awayHoldOppositionRatio: this.#number(config.awayHoldOppositionRatio, 1),
     };
   }
 
@@ -108,23 +102,20 @@ class FightPhysicsConfigAdapter {
           0,
           Math.min(1, this.#number(control.maxBudgetShare, 0.5)),
         ),
-        minInputRatio: Math.max(
-          0,
-          this.#number(control.minInputRatio, 0.001),
-        ),
+        minInputRatio: Math.max(0, this.#number(control.minInputRatio, 0.001)),
       },
       tensionCeiling: {
         holdMultiplier: Math.max(
           0,
-          this.#number(tensionCeiling.holdMultiplier, 1.05),
+          this.#number(tensionCeiling.holdMultiplier, 1.0),
         ),
         controlMultiplier: Math.max(
           0,
-          this.#number(tensionCeiling.controlMultiplier, 1.05),
+          this.#number(tensionCeiling.controlMultiplier, 1.0),
         ),
         maxCombinedMultiplier: Math.max(
           1,
-          this.#number(tensionCeiling.maxCombinedMultiplier, 1.25),
+          this.#number(tensionCeiling.maxCombinedMultiplier, 1.0),
         ),
       },
     };
@@ -169,11 +160,7 @@ class FightPhysicsConfigAdapter {
         config.power,
         1,
       ),
-      power: this.#number(
-        config.passiveRetrievePowerRatio,
-        config.power,
-        1,
-      ),
+      power: this.#number(config.passiveRetrievePowerRatio, config.power, 1),
       multiplier: this.#number(config.multiplier, 35),
       waterFriction: this.#number(config.waterFriction, 0.35),
       depthRiseSpeed: this.#number(config.depthRiseSpeed, 0.15),
@@ -264,8 +251,7 @@ class FightPhysicsConfigAdapter {
     const reel = this.#physics().tackle?.reel || {};
     return {
       enabled:
-        fight.enabled !== false &&
-        reel.holdRecoverAfterFullStrokeMs !== false,
+        fight.enabled !== false && reel.holdRecoverAfterFullStrokeMs !== false,
       requireRodStrokeFull: fight.requireRodStrokeFull !== false,
       delayMs: this.#number(
         fight.delayMs,
@@ -332,10 +318,7 @@ class FightPhysicsConfigAdapter {
     const config = this.#physics().fight?.landing?.lift || {};
     return {
       enabled: config.enabled !== false,
-      liftWeightTensionRatio: this.#number(
-        config.liftWeightTensionRatio,
-        1,
-      ),
+      liftWeightTensionRatio: this.#number(config.liftWeightTensionRatio, 1),
       fastLiftTimeSeconds: this.#number(
         config.fastLiftTimeSeconds ?? config.liftTimeSeconds,
         0.25,
@@ -343,10 +326,7 @@ class FightPhysicsConfigAdapter {
       releaseTimeSeconds: this.#number(config.releaseTimeSeconds, 0.2),
       slowdownStartRatio: this.#number(config.slowdownStartRatio, 0.75),
       endSpeedRatio: this.#number(config.endSpeedRatio, 0.08),
-      slowdownCurvePower: this.#number(
-        config.slowdownCurvePower,
-        2.5,
-      ),
+      slowdownCurvePower: this.#number(config.slowdownCurvePower, 2.5),
     };
   }
 
@@ -373,14 +353,8 @@ class FightPhysicsConfigAdapter {
       enabled: config.enabled !== false,
       stress: {
         capacity: this.#number(config.stress?.capacity, 1),
-        baseGainPerSecond: this.#number(
-          config.stress?.baseGainPerSecond,
-          0.45,
-        ),
-        recoveryPerSecond: this.#number(
-          config.stress?.recoveryPerSecond,
-          0.35,
-        ),
+        baseGainPerSecond: this.#number(config.stress?.baseGainPerSecond, 0.45),
+        recoveryPerSecond: this.#number(config.stress?.recoveryPerSecond, 0.35),
         minStressToRoll: this.#number(config.stress?.minStressToRoll, 0.01),
       },
       failureRoll: {
@@ -388,8 +362,11 @@ class FightPhysicsConfigAdapter {
         chanceScale: this.#number(config.failureRoll?.chanceScale, 1),
       },
       failureSelection: {
-        tieBreakPriority:
-          config.failureSelection?.tieBreakPriority || ["leader", "line", "rod"],
+        tieBreakPriority: config.failureSelection?.tieBreakPriority || [
+          "leader",
+          "line",
+          "rod",
+        ],
       },
     };
   }
@@ -419,8 +396,7 @@ class FightPhysicsConfigAdapter {
   getDistanceXMultiplier() {
     return (
       this.#physics().fight?.playerControl?.steering?.distanceXMultiplier || [
-        1,
-        1,
+        1, 1,
       ]
     );
   }
@@ -442,10 +418,7 @@ class FightPhysicsConfigAdapter {
           lineConstraint.tautThresholdRatio,
           0.995,
         ),
-        epsilonMeters: this.#number(
-          lineConstraint.epsilonMeters,
-          0.001,
-        ),
+        epsilonMeters: this.#number(lineConstraint.epsilonMeters, 0.001),
         projectLockedMovementToArc:
           lineConstraint.projectLockedMovementToArc !== false,
       },

@@ -73,16 +73,27 @@ const context = vm.createContext({
   Math,
   Number,
   Date,
-  setTimeout: (handler) => { const id = nextTimeoutId++; scheduledTimeouts.set(id, handler); return id; },
+  setTimeout: (handler) => {
+    const id = nextTimeoutId++;
+    scheduledTimeouts.set(id, handler);
+    return id;
+  },
   clearTimeout: (id) => scheduledTimeouts.delete(id),
-  __flushTimeouts: () => { const handlers = Array.from(scheduledTimeouts.values()); scheduledTimeouts.clear(); handlers.forEach((h) => h()); },
+  __flushTimeouts: () => {
+    const handlers = Array.from(scheduledTimeouts.values());
+    scheduledTimeouts.clear();
+    handlers.forEach((h) => h());
+  },
   window: {},
 });
 for (const file of FILES) {
-  vm.runInContext(fs.readFileSync(path.join(ROOT, file), "utf8"), context, { filename: file });
+  vm.runInContext(fs.readFileSync(path.join(ROOT, file), "utf8"), context, {
+    filename: file,
+  });
 }
 
-vm.runInContext(`
+vm.runInContext(
+  `
 const checks = [];
 function assert(condition, message) { if (!condition) throw new Error(message); checks.push(message); }
 function approx(value, expected, tolerance, message) { assert(Math.abs(value - expected) <= tolerance, message + " (" + value + ")"); }
@@ -91,7 +102,7 @@ const physicsAdapter = CONFIG.fightPhysicsConfig;
 const pixelsPerMeter = physicsAdapter.getPixelsPerMeter();
 const rodPullConfig = physicsAdapter.getRodPullConfig();
 const poleIdleRetrieveConfig = physicsAdapter.getPoleIdleRetrieveConfig();
-approx(rodPullConfig.tensionCeilingMultiplier, 1.05, 0.001, "Rod Hold gameplay ceiling is configurable");
+approx(rodPullConfig.tensionCeilingMultiplier, 1.0, 0.001, "Rod Hold gameplay ceiling is configurable");
 approx(physicsAdapter.getRodControlConfig().tensionCeilingMultiplier, 1.15, 0.001, "Rod Control gameplay ceiling is configurable");
 approx(physicsAdapter.getReelConfig().bearingRetrieveSpeedBonusMetersPerSec, 0.2, 0.001, "reel bearing retrieve speed bonus is configurable");
 
@@ -785,4 +796,6 @@ approx(
 
 console.log("rod-pull-systems-check passed:");
 for (const message of checks) console.log("- " + message);
-`, context);
+`,
+  context,
+);
