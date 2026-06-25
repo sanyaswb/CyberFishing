@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.23.3";
+const CURRENT_PROJECT_VERSION = "0.23.5";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "tackle-relative-landing-slowdown",
-  updatedAt: "2026-06-24",
+  codename: "stamina-active-force-balance",
+  updatedAt: "2026-06-26",
   notes: Object.freeze([
-    "Landing lift slowdown now uses the weakest tackle load instead of fish-weight progress",
-    "Small fish stay fast on stronger tackle because they remain below the slowdown threshold",
-    "Debug logs expose tackle-load landing lift progress",
+    "Stamina now drains from applied Rod Hold and weighted Rod Control force instead of raw tension",
+    "Line angle recovery uses the 0-15 / 15-75 / 75+ degree recovery zones",
+    "Debug output exposes stamina balance drain, regen, net change and budget overflow diagnostics",
   ]),
 });
 

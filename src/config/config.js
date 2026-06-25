@@ -413,6 +413,24 @@ const CONFIG = {
       // Phase 1: Stamina
       baseStaminaMultiplier: 50,
       flatBonus: 500,
+      activeDrain: {
+        enabled: true,
+        drainPerSecond: 100,
+        curvePower: 1.0,
+        lateralStaminaWeight: 0.5,
+      },
+      angleRecovery: {
+        enabled: true,
+        safeAngleDeg: 15,
+        maxRecoveryAngleDeg: 75,
+        middleMaxRecoveryRatio: 0.5,
+        regenPerSecond: 40,
+        curvePower: 1.0,
+        allowStaminaRegenWhilePulling: false,
+      },
+      passiveDrain: {
+        enabled: false,
+      },
 
       baseDepletionRate: 100,
       baseRegenRate: 20,

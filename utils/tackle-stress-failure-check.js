@@ -6,6 +6,7 @@ const ROOT = path.resolve(__dirname, "..");
 const FILES = [
   "src/core/fishing/tackle_failure_selector.js",
   "src/core/fishing/tackle_stress_accumulator.js",
+  "src/services/weakest_tackle_limit_resolver.js",
   "src/systems/tackle_stress_system.js",
 ];
 

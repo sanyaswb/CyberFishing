@@ -254,5 +254,58 @@
   "playerForceBudgetReason": {
     "label": "Player force budget reason",
     "description": "Explains which player channels were active when the budget was resolved."
+  },
+  "Applied rodHold": {
+    "formula": "appliedRodHoldKg = effectiveRodHoldKg after physics budget/clamp",
+    "description": "Rod Hold force used by the active stamina drain model.",
+    "paths": [
+      "DEBUG_DATA.staminaAppliedRodHoldKg"
+    ]
+  },
+  "Applied control": {
+    "formula": "appliedControlKg = rodControl.forceKg after physics budget/clamp",
+    "description": "Rod Control force used by the active stamina drain model.",
+    "paths": [
+      "DEBUG_DATA.staminaAppliedControlKg"
+    ]
+  },
+  "Used player pressure": {
+    "formula": "usedPlayerPressureKg = budgetedRodHoldKg + budgetedControlKg * lateralStaminaWeight",
+    "description": "Weighted player pressure that drains stamina.",
+    "paths": [
+      "DEBUG_DATA.staminaUsedPlayerPressureKg",
+      "CONFIG.stamina.mechanics.activeDrain.lateralStaminaWeight"
+    ]
+  },
+  "Active drain ratio": {
+    "formula": "activeDrainRatio = clamp(usedPlayerPressureKg / weakestTackleLimitKg, 0, 1)",
+    "description": "How much of the active stamina drain rate is used this frame.",
+    "paths": [
+      "DEBUG_DATA.staminaActiveDrainRatio",
+      "DEBUG_DATA.staminaWeakestTackleLimitKg"
+    ]
+  },
+  "Angle recovery ratio": {
+    "formula": "0 at <= safeAngleDeg, middle progress * middleMaxRecoveryRatio between safe and max, 1 at >= maxRecoveryAngleDeg",
+    "description": "Recovery ratio from current line angle.",
+    "paths": [
+      "DEBUG_DATA.staminaAngleRecoveryRatio",
+      "CONFIG.stamina.mechanics.angleRecovery"
+    ]
+  },
+  "Net stamina": {
+    "formula": "netStaminaPerSecond = angleRegenPerSecond - activeDrainPerSecond, clamped to <= 0 while pulling when regen while pulling is disabled",
+    "description": "Final stamina change rate for the current frame.",
+    "paths": [
+      "DEBUG_DATA.staminaNetPerSecond",
+      "CONFIG.stamina.mechanics.angleRecovery.allowStaminaRegenWhilePulling"
+    ]
+  },
+  "Budget overflow warning": {
+    "formula": "rawAppliedPlayerPressureKg > max(0, weakestTackleLimitKg - fishTensionKg)",
+    "description": "Diagnostic warning that stamina received more applied player force than the tackle budget should allow.",
+    "paths": [
+      "DEBUG_DATA.staminaBudgetOverflowWarning"
+    ]
   }
 }

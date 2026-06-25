@@ -120,16 +120,16 @@ const model = {
 };
 ctx.reset();
 hud.render(model);
-assert(!!ctx.textCall("STAMINA"), "HUD keeps the stamina label");
+assert(!!ctx.textCall("СТАМІНА"), "HUD keeps the stamina label");
 assert(!!ctx.textCall("75/100"), "HUD keeps the stamina value");
-assert(!!ctx.textCall("ENDURANCE"), "HUD keeps the endurance label");
+assert(!!ctx.textCall("ВИСНАЖЕННЯ"), "HUD keeps the exhaustion label");
 assert(!!ctx.textCall("20/80"), "HUD keeps the endurance value");
 assert(!!ctx.textCall("R 40%"), "HUD keeps rod-control direction and ratio");
 assert(!!ctx.textCall("1.23/2.50kg"), "HUD keeps tension value precision");
 assert(!!ctx.textCall("STRESS: LEADER"), "HUD keeps tackle stress target");
 assert(!!ctx.textCall("30%"), "HUD keeps tackle stress percentage");
 assert(
-  ctx.textCall("STAMINA").args.length === 3,
+  ctx.textCall("СТАМІНА").args.length === 3,
   "HUD stamina label is drawn without implicit zero max width",
 );
 assert(

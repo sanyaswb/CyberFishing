@@ -52,6 +52,10 @@ class OutcomeRenderFrameBuilder {
       title = "ROD BROKEN";
       titleColor = "#ff0000";
       description = "Your rod could not handle the stress.";
+    } else if (reason === "reel") {
+      title = "REEL FAILED";
+      titleColor = "#ff2200";
+      description = "The reel was the weakest part of the rig.";
     } else if (reason === "leader") {
       title = "LEADER SNAPPED";
       titleColor = "#ff6644";

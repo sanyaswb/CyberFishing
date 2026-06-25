@@ -48,9 +48,14 @@ class FightPhysicsSystem {
     typeof PlayerForceBudgetAllocator !== "undefined"
       ? new PlayerForceBudgetAllocator()
       : null;
+  #staminaBalanceFrame =
+    typeof StaminaBalanceFrame !== "undefined"
+      ? new StaminaBalanceFrame()
+      : null;
   #composedInputScratch = {};
   #pipeline = new FightPhysicsPipeline();
   #fishRetrieveSystem;
+  #staminaBudgetOverflowWarningActive = false;
   #fishWasInCatchZone = false;
   #landingLiftHoldKg = 0;
   #holdReelRecoverState = {
@@ -172,7 +177,7 @@ class FightPhysicsSystem {
           budget: this.#resolvePlayerForceBudget({
             fightInput,
             forceData,
-            rodLimitKg,
+            rodLimitKg: maxTackleLoadKg,
             physics,
             rodControlIntent,
           }),
@@ -385,8 +390,15 @@ class FightPhysicsSystem {
       "resolve_stamina_frame",
       () => this.#buildStaminaFrame({
         forceData,
+        rodPullResult: rodPullFrame.rodPullResult,
+        rodControlResult: rodControlFrame.rodControlResult,
         fishRetrieveResult: rodPullFrame.fishRetrieveResult,
         lineState: finalLineState,
+        stressSystem,
+        floatEntity,
+        rodTipPosition,
+        physics,
+        dtSec,
         isPullMode,
         isRecoverMode,
       }),
@@ -1526,6 +1538,7 @@ class FightPhysicsSystem {
     this.#playerPullMotionSmoother.reset();
     this.#poleFightSectorConstraint?.reset?.();
     this.#poleFightSectorAngleConstraint?.reset?.();
+    this.#staminaBudgetOverflowWarningActive = false;
     this.#recoveryFishSlowdownPolicy?.reset?.(
       this.#lineRecoveryFishSlowdownState,
     );
@@ -1736,10 +1749,98 @@ class FightPhysicsSystem {
 
   #buildStaminaFrame({
     forceData,
+    rodPullResult,
+    rodControlResult,
     fishRetrieveResult,
     lineState,
+    stressSystem,
+    floatEntity,
+    rodTipPosition,
+    physics,
+    dtSec,
     isPullMode,
     isRecoverMode,
+  } = {}) {
+    const playerIsPulling = !!isPullMode && !isRecoverMode;
+    const legacyAngleStressRatio = Math.max(
+      0,
+      Math.min(1, Number(forceData?.player?.angleStressRatio) || 0),
+    );
+    const legacyStaminaPressureRatio =
+      this.#resolveLegacyStaminaPressureRatio({
+        forceData,
+        fishRetrieveResult,
+        isPullMode,
+      });
+    const appliedRodHoldKg = Math.max(
+      0,
+      Number(
+        fishRetrieveResult?.effectiveRodHoldKg ??
+          rodPullResult?.effectiveForceKg ??
+          rodPullResult?.forceKg,
+      ) || 0,
+    );
+    const appliedControlKg = Math.max(
+      0,
+      Number(rodControlResult?.forceKg) || 0,
+    );
+    const weakestFrame =
+      stressSystem?.getWeakestTackleLimitFrame?.() ||
+      Object.freeze({
+        weakestTackleLimitKg:
+          Math.max(0, Number(stressSystem?.getEffectiveMaxTackleLoadKg?.()) || 0),
+        component: "stress_system",
+        candidates: Object.freeze([]),
+      });
+    const frame = this.#staminaBalanceFrame?.create?.({
+      playerIsPulling,
+      fishTensionKg:
+        fishRetrieveResult?.fishTensionKg ?? forceData?.fishTensionKg,
+      appliedRodHoldKg,
+      appliedControlKg,
+      weakestTackleLimitKg: weakestFrame.weakestTackleLimitKg,
+      lineAngleDeg: this.#resolveLineAngleDeg({
+        floatEntity,
+        rodTipPosition,
+        rodControlResult,
+      }),
+      isLineFullyExtended: !!lineState?.isFullyExtended,
+      dtSec,
+      config:
+        this.#config?.stamina?.mechanics ||
+        physics?.stamina?.mechanics ||
+        {},
+    });
+
+    if (frame) {
+      this.#warnStaminaBudgetOverflow(frame);
+      return Object.freeze({
+        ...frame,
+        angleStressRatio: legacyAngleStressRatio,
+        staminaPressureRatio: frame.activeDrainRatio,
+        legacyAngleStressRatio,
+        legacyStaminaPressureRatio,
+        weakestTackleLimitComponent: weakestFrame.component,
+        weakestTackleLimitCandidates: weakestFrame.candidates,
+      });
+    }
+
+    return Object.freeze({
+      playerPowerIsPulling: playerIsPulling,
+      angleStressRatio: Math.max(
+        0,
+        Math.min(1, Number(forceData?.player?.angleStressRatio) || 0),
+      ),
+      staminaPressureRatio: 0,
+      isLineFullyExtended: !!lineState?.isFullyExtended,
+      source: "legacy_fallback",
+    });
+  }
+
+  #resolveLegacyStaminaPressureRatio({
+    forceData,
+    fishRetrieveResult,
+    isPullMode,
   } = {}) {
     const fishWonYForceKg = Math.max(
       0,
@@ -1753,21 +1854,37 @@ class FightPhysicsSystem {
       0,
       Math.min(1, Number(forceData?.staminaPressureRatio) || 0),
     );
-    const staminaPressureRatio =
-      isPullMode && fishWonYForceKg > 0
-        ? Math.max(0, Math.min(1, dragBlockedForceKg / fishWonYForceKg))
-        : fallbackPressureRatio;
-
-    return Object.freeze({
-      playerPowerIsPulling: !!isPullMode && !isRecoverMode,
-      angleStressRatio: Math.max(
+    if (isPullMode && fishWonYForceKg > 0) {
+      return Math.max(
         0,
-        Math.min(1, Number(forceData?.player?.angleStressRatio) || 0),
-      ),
-      staminaPressureRatio,
-      isLineFullyExtended: !!lineState?.isFullyExtended,
-      source: "fight_frame",
-    });
+        Math.min(1, dragBlockedForceKg / fishWonYForceKg),
+      );
+    }
+    return fallbackPressureRatio;
+  }
+
+  #resolveLineAngleDeg({ floatEntity, rodTipPosition, rodControlResult } = {}) {
+    const fishPosition = floatEntity?.getPosition?.();
+    if (this.#hasPoint(fishPosition) && this.#hasPoint(rodTipPosition)) {
+      const absOffsetX = Math.abs(fishPosition.x - rodTipPosition.x);
+      const dy = Math.abs(rodTipPosition.y - fishPosition.y);
+      return Math.atan2(absOffsetX, Math.max(1, dy)) * 180 / Math.PI;
+    }
+    const existing = Number(rodControlResult?.lineAngleDeg);
+    return Number.isFinite(existing) && existing >= 0 ? existing : 0;
+  }
+
+  #warnStaminaBudgetOverflow(frame) {
+    if (!frame?.budgetOverflowWarning) {
+      this.#staminaBudgetOverflowWarningActive = false;
+      return;
+    }
+    if (this.#staminaBudgetOverflowWarningActive) return;
+    this.#staminaBudgetOverflowWarningActive = true;
+    console.warn(
+      "[STAMINA] Stamina received applied player pressure above available tackle budget. This means physics budget and stamina frame are out of sync.",
+      frame,
+    );
   }
 
   #resolveLandingReadiness({ landingLiftFrame, tensionFrame }) {
@@ -2804,6 +2921,46 @@ class FightPhysicsSystem {
       staminaFrameSource: staminaFrame?.source || "none",
       staminaPressureRatio: staminaFrame?.staminaPressureRatio ?? 0,
       angleStressRatio: staminaFrame?.angleStressRatio ?? 0,
+      staminaAppliedRodHoldKg: staminaFrame?.appliedRodHoldKg ?? 0,
+      staminaAppliedControlKg: staminaFrame?.appliedControlKg ?? 0,
+      staminaBudgetedRodHoldKg: staminaFrame?.budgetedRodHoldKg ?? 0,
+      staminaBudgetedControlKg: staminaFrame?.budgetedControlKg ?? 0,
+      staminaUsedPlayerPressureKg:
+        staminaFrame?.usedPlayerPressureKg ?? 0,
+      staminaRawAppliedPlayerPressureKg:
+        staminaFrame?.rawAppliedPlayerPressureKg ?? 0,
+      staminaAvailablePlayerPressureKg:
+        staminaFrame?.availablePlayerPressureKg ?? 0,
+      staminaActiveDrainRatio: staminaFrame?.activeDrainRatio ?? 0,
+      staminaActiveDrainPerSecond:
+        staminaFrame?.activeDrainPerSecond ?? 0,
+      staminaActiveDrain:
+        staminaFrame?.activeStaminaDrain ?? 0,
+      staminaLineAngleDeg: staminaFrame?.lineAngleDeg ?? 0,
+      staminaAngleRecoveryRatio:
+        staminaFrame?.angleRecoveryRatio ?? 0,
+      staminaAngleRegenPerSecond:
+        staminaFrame?.angleRegenPerSecond ?? 0,
+      staminaAngleRegen:
+        staminaFrame?.angleStaminaRegen ?? 0,
+      staminaNetPerSecond:
+        staminaFrame?.netStaminaPerSecond ?? 0,
+      staminaNetChange:
+        staminaFrame?.netStaminaChange ?? 0,
+      staminaWeakestTackleLimitKg:
+        staminaFrame?.weakestTackleLimitKg ?? 0,
+      staminaWeakestTackleLimitComponent:
+        staminaFrame?.weakestTackleLimitComponent || "none",
+      staminaLateralWeight:
+        staminaFrame?.lateralStaminaWeight ?? 0,
+      staminaAllowRegenWhilePulling:
+        staminaFrame?.allowStaminaRegenWhilePulling === true,
+      staminaRegenBlockedByPull:
+        staminaFrame?.regenBlockedByPull === true,
+      staminaBudgetOverflowWarning:
+        staminaFrame?.budgetOverflowWarning === true,
+      staminaPassiveDrainEnabled:
+        staminaFrame?.passiveDrainEnabled === true,
       playerForceY: Math.abs(rodPullResult.forceKg),
       playerForceX: Math.abs(rodControlResult?.forceKg || 0),
       fishForceY: Math.abs(forceData.totalFishForceKg * (forceData.targetVelocity.y < 0 ? -1 : 1)),

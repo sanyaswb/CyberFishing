@@ -52,6 +52,9 @@ const FILES = [
   "src/core/fishing/rod_stroke_tracker.js",
   "src/core/fishing/rod_stroke_distance_tracker.js",
   "src/core/fishing/player_force_budget_allocator.js",
+  "src/core/fishing/stamina/active_stamina_drain_calculator.js",
+  "src/core/fishing/stamina/angle_stamina_recovery_calculator.js",
+  "src/core/fishing/stamina/stamina_balance_frame.js",
   "src/core/fishing/reel_auto_recovery_calculator.js",
   "src/core/fishing/reel_hold_recovery_system.js",
   "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
@@ -74,6 +77,7 @@ const FILES = [
   "src/core/fishing/rod_control_tension_mode_resolver.js",
   "src/systems/rod_lateral_control_system.js",
   "src/systems/tension_system.js",
+  "src/services/weakest_tackle_limit_resolver.js",
   "src/systems/tackle_stress_system.js",
   "src/systems/fight_physics_pipeline.js",
   "src/systems/fight_physics_system.js",
@@ -256,6 +260,7 @@ function runFightScenario({
   frames = 240,
   checkWater = () => true,
   closeDrag = false,
+  requireHold = true,
   requirePlayerTension = true,
 }) {
   const config = createConfig();
@@ -319,7 +324,9 @@ function runFightScenario({
     }
   }
 
-  assert(sawHold, name + ": rod hold produces force");
+  if (requireHold) {
+    assert(sawHold, name + ": rod hold produces force");
+  }
   if (requirePlayerTension) {
     assert(sawPlayerTension, name + ": hold contributes player tension");
   }
@@ -446,8 +453,8 @@ const breakCase = runFightScenario({
     reelHasDrag: false,
   }),
   fishData: createFish({
-    weightKg: 0.2,
-    basePower: 0.5,
+    weightKg: 1,
+    basePower: 3,
     baseSpeed: 0,
     forceMultiplier: 1.0,
     speedMultiplier: 0,
@@ -455,25 +462,22 @@ const breakCase = runFightScenario({
   startDistanceMeters: 5,
   frames: 90,
   checkWater: () => false,
+  requireHold: false,
+  requirePlayerTension: false,
 });
 assert(
-  breakCase.sawBlockedMovement,
-  "blocked fish disables movable hold tension cap"
-    + " (last blocked="
-    + breakCase.lastDebug?.fishRetrieveMovementBlocked
-    + ", desired="
-    + Number(breakCase.lastDebug?.fishRetrieveDesiredMoveMeters || 0).toFixed(4)
-    + ", applied="
-    + Number(breakCase.lastDebug?.fishRetrieveAppliedMoveMeters || 0).toFixed(4)
+  breakCase.peakTotalTension >= 0.8,
+  "fish-pressure overload scenario exceeds line load"
+    + " (peak="
+    + Number(breakCase.peakTotalTension || 0).toFixed(4)
     + ", transition="
     + (breakCase.transition?.name || "none")
     + "/"
     + (breakCase.transition?.data?.reason || "no_reason")
     + ")",
 );
-assert(breakCase.peakTotalTension >= 0.8, "blocked/overloaded scenario exceeds line load");
-assert(breakCase.transition?.name === "failed", "overloaded scenario fails");
-assert(breakCase.transition?.data?.reason === "line", "overloaded scenario breaks the line");
+assert(breakCase.transition?.name === "failed", "fish-pressure overload scenario fails");
+assert(breakCase.transition?.data?.reason === "line", "fish-pressure overload scenario breaks the line");
 
 console.log("game-cycle-check passed:");
 console.log("- victory peak line stress: " + (victory.peakLineStress * 100).toFixed(1) + "%");

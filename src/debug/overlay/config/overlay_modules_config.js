@@ -30,6 +30,7 @@ const OVERLAY_MODULES = {
   fightRodControlGeometry: false,
   fightRodControlVisual: false,
   fightTension: false,
+  staminaBalance: false,
 };
 
 const FIGHT_PHYSICS_CATEGORY_KEYS = [

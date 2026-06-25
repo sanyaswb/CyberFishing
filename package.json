@@ -14,6 +14,7 @@
     "check:rod-control-ux": "node utils/rod-control-ux-check.js",
     "check:fight-input": "node utils/fight-input-composition-check.js",
     "check:player-force-budget": "node utils/player-force-budget-check.js",
+    "check:stamina-balance": "node utils/stamina-balance-check.js",
     "check:rod-stroke-distance": "node utils/rod-stroke-distance-check.js",
     "check:game-cycle-control-hold": "node utils/game-cycle-control-hold-check.js",
     "check:memory": "npm run audit:lifecycle && node utils/memory-leak-watchdog-check.js",

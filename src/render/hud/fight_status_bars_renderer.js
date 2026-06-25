@@ -70,7 +70,7 @@ class FightStatusBarsRenderer {
       height,
       model.staminaRatio,
       this.#styles.resolveBarStyle("fishCondition.stamina"),
-      "STAMINA",
+      "СТАМІНА",
       model.staminaValue,
       model.phase === "stamina",
     );
@@ -81,7 +81,7 @@ class FightStatusBarsRenderer {
       height,
       model.exhaustionRatio,
       this.#styles.resolveBarStyle("fishCondition.exhaustion"),
-      "ENDURANCE",
+      "ВИСНАЖЕННЯ",
       model.exhaustionValue,
       model.phase === "exhaustion",
     );

@@ -17,6 +17,7 @@
     new PlayerMaxModule(moduleOptions),
     new LiveForcesModule(moduleOptions),
     new ChumOverlayModule(moduleOptions),
+    new StaminaBalanceOverlayModule(moduleOptions),
     new WorstCaseModule({
       ...moduleOptions,
       selector: new WorstCaseForceDebugSelector({ configSource: () => CONFIG }),

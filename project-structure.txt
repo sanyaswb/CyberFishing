@@ -147,6 +147,8 @@
 │  │  │  ├── reel_auto_recovery_calculator.js
 │  │  │  ├── reel_hold_load_policy.js
 │  │  │  ├── reel_hold_recovery_system.js
+│  │  │  ├── reel_recovery_fish_slowdown_policy.js
+│  │  │  ├── reel_retrieve_speed_calculator.js
 │  │  │  ├── retrieve_policy.js
 │  │  │  ├── rod_control_movement_projector.js
 │  │  │  ├── rod_control_tension_mode_resolver.js
@@ -157,6 +159,10 @@
 │  │  │  ├── rod_stroke_tracker.js
 │  │  │  ├── simple_fight_force_calculator.js
 │  │  │  ├── slack_calculator.js
+│  │  │  ├── stamina
+│  │  │  │  ├── active_stamina_drain_calculator.js
+│  │  │  │  ├── angle_stamina_recovery_calculator.js
+│  │  │  │  └── stamina_balance_frame.js
 │  │  │  ├── tackle_failure_selector.js
 │  │  │  └── tackle_stress_accumulator.js
 │  │  ├── input
@@ -229,6 +235,7 @@
 │  │  │  │  ├── fish_states_overlay_module.js
 │  │  │  │  ├── live_forces_overlay_module.js
 │  │  │  │  ├── player_max_overlay_module.js
+│  │  │  │  ├── stamina_balance_overlay_module.js
 │  │  │  │  └── worst_case_overlay_module.js
 │  │  │  ├── overlay_bootstrap.js
 │  │  │  └── services
@@ -298,6 +305,8 @@
 │  │    ├── location_debug_map_builder.js
 │  │    ├── world_debug_renderer.js
 │  │    └── world_scene_renderer.js
+│  ├── services
+│  │  └── weakest_tackle_limit_resolver.js
 │  ├── systems
 │  │  ├── bite_system.js
 │  │  ├── chum_system.js
@@ -386,6 +395,7 @@
   ├── rod-pull-systems-check.js
   ├── rod-stroke-distance-check.js
   ├── set-project-version.js
+  ├── stamina-balance-check.js
   ├── tackle-stress-failure-check.js
   ├── validate-config.js
   └── victory-layout-check.js

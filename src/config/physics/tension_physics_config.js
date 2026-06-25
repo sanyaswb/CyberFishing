@@ -24,7 +24,7 @@ const TENSION_PHYSICS_CONFIG = {
     },
 
     failureSelection: {
-      tieBreakPriority: ["leader", "line", "rod"],
+      tieBreakPriority: ["leader", "line", "hook", "rod", "reel"],
     },
   },
 };

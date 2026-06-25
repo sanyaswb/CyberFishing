@@ -7,6 +7,7 @@ class StaminaController {
   #isMasteryActive = false;
   #isFullyRecovered = false;
   #hasLostStamina = false;
+  #lastStaminaBalanceFrame = null;
 
   constructor(condition, fish, playerBasePower, mechanicsConfig) {
     this.#condition = condition;
@@ -25,6 +26,10 @@ class StaminaController {
 
   isMasteryActive() {
     return this.#isMasteryActive;
+  }
+
+  getLastStaminaBalanceFrame() {
+    return this.#lastStaminaBalanceFrame;
   }
 
   restoreFullStamina() {
@@ -78,6 +83,12 @@ class StaminaController {
     const timeScale = dt / 1000;
     const angleStressRatio = this.#clamp01(args.angleStressRatio);
     const staminaPressureRatio = this.#clamp01(args.staminaPressureRatio);
+    const staminaFrame =
+      args.staminaFrame?.source === "stamina_balance_frame"
+        ? args.staminaFrame
+        : args.source === "stamina_balance_frame"
+          ? args
+          : null;
     const isLineFullyExtended = !!args.isLineFullyExtended;
     const effectivePressureRatio = Math.max(
       staminaPressureRatio,
@@ -99,6 +110,10 @@ class StaminaController {
     }
 
     if (this.#condition.phase === "stamina") {
+      if (staminaFrame) {
+        this.#evaluateStaminaBalanceFrame(staminaFrame);
+        return;
+      }
       this.#evaluateStaminaPhase({
         tension,
         timeScale,
@@ -107,6 +122,17 @@ class StaminaController {
         hasEffectivePressure,
       });
     }
+  }
+
+  #evaluateStaminaBalanceFrame(frame) {
+    this.#lastStaminaBalanceFrame = frame;
+    const netChange = Number(frame.netStaminaChange) || 0;
+    if (netChange < 0) {
+      this.#condition.applyStaminaDamage(-netChange);
+    } else if (netChange > 0) {
+      this.#condition.applyStaminaRegen(netChange);
+    }
+    this.#applyRecoveryPunishment();
   }
 
   #evaluateExhaustionPhase({

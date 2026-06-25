@@ -365,7 +365,9 @@ class FightPhysicsConfigAdapter {
         tieBreakPriority: config.failureSelection?.tieBreakPriority || [
           "leader",
           "line",
+          "hook",
           "rod",
+          "reel",
         ],
       },
     };

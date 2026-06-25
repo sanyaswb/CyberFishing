@@ -823,6 +823,7 @@ class FightService {
   #staminaController = null;
   #rod = null;
   #reel = null;
+  #hook = null;
 
   #fightSessionFactory;
 
@@ -852,6 +853,7 @@ class FightService {
     const session = this.#fightSessionFactory.create(fishData, equipment);
     this.#rod = session.rod;
     this.#reel = session.reel;
+    this.#hook = session.hook;
     this.#fish = session.fish;
     this.#fishForceSystem = session.fishForceSystem;
     this.#lineSystem = session.lineSystem;
@@ -875,6 +877,7 @@ class FightService {
     const next = this.#fightSessionFactory.createEquipment(equipment);
     this.#rod = next.rod;
     this.#reel = next.reel;
+    this.#hook = next.hook;
     this.#lineSystem = next.lineSystem;
     this.#dragSystem?.updateEquipment(this.#reel);
     this.#pullInputMapper?.reset?.();
@@ -885,6 +888,7 @@ class FightService {
       rod: this.#rod,
       reel: this.#reel,
       lineSystem: this.#lineSystem,
+      hook: this.#hook,
       leader: equipment.leader,
     });
     this.#fishingSystem = this.#createDebugFishingAdapter();
@@ -949,16 +953,22 @@ class FightService {
       !input.pointerDown;
     const fightDebug = this.#tensionMeter.getDebugData?.() || {};
     const staminaFrame = forceData.fightFrame?.stamina || {};
+    const isExhaustionPhase = this.#fishCondition?.phase === "exhaustion";
     if (this.#isFishStaminaLocked()) {
       this.#syncGodModeStamina();
     } else {
       this.#staminaController.evaluate({
+        staminaFrame,
         tension: this.#tensionMeter.getTension(),
         playerPowerIsPulling:
           staminaFrame.playerPowerIsPulling ?? (input.isPulling && !isRetrieveOnly),
         dt,
-        angleStressRatio: staminaFrame.angleStressRatio || 0,
-        staminaPressureRatio: staminaFrame.staminaPressureRatio || 0,
+        angleStressRatio: isExhaustionPhase
+          ? staminaFrame.legacyAngleStressRatio ?? staminaFrame.angleStressRatio ?? 0
+          : staminaFrame.angleStressRatio || 0,
+        staminaPressureRatio: isExhaustionPhase
+          ? staminaFrame.legacyStaminaPressureRatio ?? staminaFrame.staminaPressureRatio ?? 0
+          : staminaFrame.staminaPressureRatio || 0,
         isLineFullyExtended: !!staminaFrame.isLineFullyExtended,
       });
     }

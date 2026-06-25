@@ -835,6 +835,62 @@
     "label": "Player force max combined ceiling",
     "description": "Safety cap for the combined Rod Hold and Rod Control tension ceiling multiplier."
   },
+  "physics.fight.reelRecovery.fishSpeedMultiplier": {
+    "label": "Reel recovery fish speed multiplier",
+    "description": "Multiplier applied to fish movement while automatic or hold reel recovery takes line back."
+  },
+  "physics.tackle.reel.bearingRetrieveSpeedBonusMetersPerSec": {
+    "label": "Reel bearing retrieve speed bonus",
+    "description": "Additional retrieve speed in meters per second contributed by each reel bearing."
+  },
+  "stamina.mechanics.activeDrain.enabled": {
+    "label": "Active stamina drain enabled",
+    "description": "Enables stamina loss from applied player force during the STAMINA phase."
+  },
+  "stamina.mechanics.activeDrain.drainPerSecond": {
+    "label": "Active stamina drain per second",
+    "description": "Maximum stamina loss per second when applied player pressure reaches the weakest tackle limit."
+  },
+  "stamina.mechanics.activeDrain.curvePower": {
+    "label": "Active stamina drain curve",
+    "description": "Power curve applied to activeDrainRatio. 1.0 keeps the drain linear."
+  },
+  "stamina.mechanics.activeDrain.lateralStaminaWeight": {
+    "label": "Lateral stamina weight",
+    "description": "Multiplier for applied Rod Control force when converting lateral control into stamina pressure."
+  },
+  "stamina.mechanics.angleRecovery.enabled": {
+    "label": "Angle stamina recovery enabled",
+    "description": "Enables stamina recovery from line angle during the STAMINA phase."
+  },
+  "stamina.mechanics.angleRecovery.safeAngleDeg": {
+    "label": "Angle recovery safe angle",
+    "description": "Line angle at or below this value gives no stamina recovery."
+  },
+  "stamina.mechanics.angleRecovery.maxRecoveryAngleDeg": {
+    "label": "Angle recovery max angle",
+    "description": "Line angle at or above this value gives full stamina recovery."
+  },
+  "stamina.mechanics.angleRecovery.middleMaxRecoveryRatio": {
+    "label": "Middle angle max recovery ratio",
+    "description": "Maximum recovery ratio inside the middle zone between safeAngleDeg and maxRecoveryAngleDeg."
+  },
+  "stamina.mechanics.angleRecovery.regenPerSecond": {
+    "label": "Angle stamina regen per second",
+    "description": "Maximum stamina recovered per second when angleRecoveryRatio is 1.0."
+  },
+  "stamina.mechanics.angleRecovery.curvePower": {
+    "label": "Angle recovery curve",
+    "description": "Power curve applied to middle-zone angle progress. 1.0 keeps the recovery linear."
+  },
+  "stamina.mechanics.angleRecovery.allowStaminaRegenWhilePulling": {
+    "label": "Allow stamina regen while pulling",
+    "description": "If false, positive net stamina change is clamped to zero while the player is actively pulling."
+  },
+  "stamina.mechanics.passiveDrain.enabled": {
+    "label": "Passive stamina drain enabled",
+    "description": "Reserved for future passive stamina loss. It remains disabled for the active-force stamina model."
+  },
   "locations.showPoleFightSector": {
     "label": "Show pole fight sector",
     "description": "Shows the red allowed fish movement sector bounded by the configured angle and the released line radius."

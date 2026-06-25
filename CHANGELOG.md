@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.23.5 - Stamina active-force balance
+
+- Reworked STAMINA-phase drain to use applied Rod Hold force plus weighted Rod Control force instead of raw tension.
+- Added active stamina drain, angle stamina recovery and immutable stamina balance frame calculators.
+- Added a shared weakest tackle limit resolver for stress/break logic and stamina diagnostics, including hook and present reel components.
+- Added stamina budget overflow diagnostics and a dedicated STAMINA BALANCE debug overlay.
+- Updated HUD condition labels to `СТАМІНА` and `ВИСНАЖЕННЯ`.
+- Added stamina balance regression coverage for active drain, angle recovery, regen-while-pulling, float rods and max-line-limit behavior.
+
 ## v0.23.4 - Reel bearing recovery and inventory runtime stats
 
 - Added configurable reel bearing retrieve-speed bonus so bearing count increases effective reel pickup speed.

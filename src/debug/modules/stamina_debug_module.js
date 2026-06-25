@@ -25,6 +25,47 @@ class StaminaDebugModule extends ConsoleTableDebugModule {
         config.baseDepletionRate,
         3,
       ),
+      "Applied rodHold kg": DebugFormatters.number(
+        live.staminaAppliedRodHoldKg,
+        3,
+      ),
+      "Applied control kg": DebugFormatters.number(
+        live.staminaAppliedControlKg,
+        3,
+      ),
+      "Used player pressure kg": DebugFormatters.number(
+        live.staminaUsedPlayerPressureKg,
+        3,
+      ),
+      "Weakest tackle limit kg": DebugFormatters.number(
+        live.staminaWeakestTackleLimitKg,
+        3,
+      ),
+      "Active drain ratio": DebugFormatters.number(
+        live.staminaActiveDrainRatio,
+        3,
+      ),
+      "Active drain/sec": DebugFormatters.number(
+        live.staminaActiveDrainPerSecond,
+        3,
+      ),
+      "Line angle deg": DebugFormatters.number(
+        live.staminaLineAngleDeg,
+        2,
+      ),
+      "Angle recovery ratio": DebugFormatters.number(
+        live.staminaAngleRecoveryRatio,
+        3,
+      ),
+      "Angle regen/sec": DebugFormatters.number(
+        live.staminaAngleRegenPerSecond,
+        3,
+      ),
+      "Net stamina/sec": DebugFormatters.number(
+        live.staminaNetPerSecond,
+        3,
+      ),
+      "Budget overflow warning": live.staminaBudgetOverflowWarning === true,
       "Edge regen rate": DebugFormatters.number(config.edgeRegenRate, 3),
       "Regen multiplier phase 1": DebugFormatters.number(
         config.regenMultiplierPhase1,

@@ -25,15 +25,23 @@ class TackleStressSystem {
   #devFlags;
   #accumulator;
   #failureSelector;
+  #weakestLimitResolver;
   #stressDebug = {};
   #selectedFailureComponent = null;
 
-  constructor({ rod, reel, lineSystem, hook = null, leader = null, config, rng = null, devFlags = null }) {
+  constructor({ rod, reel, lineSystem, hook = null, leader = null, config, rng = null, devFlags = null, weakestLimitResolver = null }) {
     this.#config = config || {};
     this.#rng = rng || { next: () => Math.random() };
     this.#devFlags = devFlags;
     this.#accumulator = new TackleStressAccumulator();
     this.#failureSelector = new TackleFailureSelector();
+    this.#weakestLimitResolver =
+      weakestLimitResolver ||
+      (
+        typeof WeakestTackleLimitResolver !== "undefined"
+          ? new WeakestTackleLimitResolver()
+          : null
+      );
     this.updateEquipment({ rod, reel, lineSystem, hook, leader });
   }
 
@@ -133,6 +141,7 @@ class TackleStressSystem {
   getDebugData() {
     const stressConfig = this.#resolveTackleStressConfig(this.#config);
     const selected = this.#selectedFailureComponent || this.#selectFailureComponent();
+    const weakestLimit = this.getWeakestTackleLimitFrame();
     return {
       ...this.#debug,
       tensionKg: this.#currentTensionKg,
@@ -141,6 +150,8 @@ class TackleStressSystem {
       currentTensionKg: this.#currentTensionKg,
       effectiveTensionKg: this.#effectiveTensionKg,
       tensionStressSource: this.#tensionStressSource,
+      weakestTackleLimitComponent: weakestLimit.component,
+      weakestTackleLimitKg: weakestLimit.weakestTackleLimitKg,
       maxTackleLoadKg: this.getEffectiveMaxTackleLoadKg(),
       mainTackleLimitKg: this.getEffectiveMaxTackleLoadKg(),
       rodMaxLoadKg: this.getEffectiveRodMaxLoadKg(),
@@ -168,19 +179,35 @@ class TackleStressSystem {
   }
 
   getEffectiveMaxTackleLoadKg() {
+    return this.getWeakestTackleLimitFrame().weakestTackleLimitKg;
+  }
+
+  getWeakestTackleLimitFrame() {
+    if (this.#weakestLimitResolver?.resolve) {
+      return this.#weakestLimitResolver.resolve({
+        rod: this.#rod,
+        reel: this.#reel,
+        lineSystem: this.#lineSystem,
+        leader: this.#leader,
+        hook: this.#hook,
+      });
+    }
+
     const values = [
       this.getEffectiveRodMaxLoadKg(),
       this.getEffectiveLineSystemMaxLoadKg(),
       this.getEffectiveLeaderMaxLoadKg(),
+      this.getEffectiveHookMaxLoadKg(),
+      this.getEffectiveReelMaxLoadKg(),
     ]
       .map((value) => Number(value))
       .filter((value) => Number.isFinite(value) && value > 0);
 
-    if (values.length === 0) return 1;
-
-    // Reel load is deliberately not a breakable limit. A weak reel loses drag
-    // authority; the breakable failure still belongs to rod, main line or leader.
-    return Math.min(...values);
+    return Object.freeze({
+      weakestTackleLimitKg: values.length > 0 ? Math.min(...values) : 1,
+      component: "fallback",
+      candidates: Object.freeze([]),
+    });
   }
 
   getEffectiveRodMaxLoadKg() {
@@ -358,7 +385,9 @@ class TackleStressSystem {
     return this.#failureSelector.select({
       leaderMaxLoadKg: this.getEffectiveLeaderMaxLoadKg(),
       lineMaxLoadKg: this.getEffectiveLineSystemMaxLoadKg(),
+      hookMaxLoadKg: this.getEffectiveHookMaxLoadKg(),
       rodMaxLoadKg: this.getEffectiveRodMaxLoadKg(),
+      reelMaxLoadKg: this.getEffectiveReelMaxLoadKg(),
       tieBreakPriority: stressConfig.failureSelection?.tieBreakPriority,
     });
   }
@@ -381,6 +410,7 @@ class TackleStressSystem {
       lastRollPassed: !!stressFrame?.lastRollPassed,
       rodMaxLoadKg: this.getEffectiveRodMaxLoadKg(),
       lineMaxLoadKg: this.getEffectiveLineSystemMaxLoadKg(),
+      hookMaxLoadKg: this.getEffectiveHookMaxLoadKg(),
       leaderMaxLoadKg: this.getEffectiveLeaderMaxLoadKg(),
       reelMaxLoadKg: this.getEffectiveReelMaxLoadKg(),
       tieBreakPriority: selected.tieBreakPriority,
@@ -433,7 +463,7 @@ class TackleStressSystem {
         ...(raw.failureRoll || {}),
       },
       failureSelection: {
-        tieBreakPriority: ["leader", "line", "rod"],
+        tieBreakPriority: ["leader", "line", "hook", "rod", "reel"],
         ...(raw.failureSelection || {}),
       },
     };
