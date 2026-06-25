@@ -14,15 +14,24 @@ class FishStatesModule extends OverlayModule {
     let html = this.formatHeader("СИЛА РИБИ ЗА СТАНАМИ");
     const behaviors = this.#selectBehaviorStates(data);
     const passiveForceKg = this.#finiteNonNegative(data.fishPassiveKg);
+    const directionMultiplier = this.#finiteNonNegative(
+      data.directionResistanceMultiplier,
+      1,
+    );
 
     for (const [name, config] of Object.entries(behaviors)) {
-      html += this.#renderStateRow(name, config, passiveForceKg);
+      html += this.#renderStateRow(
+        name,
+        config,
+        passiveForceKg,
+        directionMultiplier,
+      );
     }
 
     return html + `<div style="margin-bottom: 12px;"></div>`;
   }
 
-  #renderStateRow(name, config, passiveForceKg) {
+  #renderStateRow(name, config, passiveForceKg, directionMultiplier) {
     const color = this.getStateColor(name);
     const forceMultiplier = this.#finiteNonNegative(
       config?.forceMultiplier,
@@ -32,12 +41,28 @@ class FishStatesModule extends OverlayModule {
       config?.speedMultiplier,
       0,
     );
-    const totalForceKg = passiveForceKg * (1 + forceMultiplier);
+    const finalForceKg = this.#calculateFinalStateForceKg({
+      passiveForceKg,
+      forceMultiplier,
+      directionMultiplier,
+    });
 
     return `<div style="margin-bottom: 3px; display: grid; grid-template-columns: 72px 1fr; gap: 8px; align-items: baseline; font-size: 12px;">
               <span style="color: ${color}; font-weight: bold;">${this.htmlBuilder.escapeHtml(name.toUpperCase())}</span>
-              <span style="color: #e6e6e6;">сила <span style="color: ${color}; font-weight: bold;">${totalForceKg.toFixed(3)} кг</span> · множ. <span style="color: ${color}; font-weight: bold;">x${forceMultiplier.toFixed(2)}</span> · швидк. <span style="color: ${color}; font-weight: bold;">x${speedMultiplier.toFixed(2)}</span></span>
+              <span style="color: #e6e6e6;">сила <span style="color: ${color}; font-weight: bold;">${finalForceKg.toFixed(3)} кг</span> · множ. <span style="color: ${color}; font-weight: bold;">x${forceMultiplier.toFixed(2)}</span> · швидк. <span style="color: ${color}; font-weight: bold;">x${speedMultiplier.toFixed(2)}</span></span>
             </div>`;
+  }
+
+  #calculateFinalStateForceKg({
+    passiveForceKg,
+    forceMultiplier,
+    directionMultiplier,
+  }) {
+    const activeForceKg =
+      this.#finiteNonNegative(passiveForceKg) *
+      this.#finiteNonNegative(forceMultiplier, 1) *
+      this.#finiteNonNegative(directionMultiplier, 1);
+    return this.#finiteNonNegative(passiveForceKg) + activeForceKg;
   }
 
   #selectBehaviorStates(data) {

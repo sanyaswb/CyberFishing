@@ -22,6 +22,7 @@ for (const relativePath of [
 const data = {
   gameState: "playing",
   fishPassiveKg: 0.01,
+  directionResistanceMultiplier: 2,
   hookedFish: {
     physics: {
       behaviorProfile: {
@@ -49,7 +50,8 @@ const data = {
 const fishStatesModule = new context.window.FishStatesModule();
 const html = fishStatesModule.render(data);
 
-assertIncludes(html, "0.025 кг", "runtime total force");
+assertIncludes(html, "0.040 кг", "runtime final force includes direction multiplier");
+assertExcludes(html, "0.025 кг", "state force excludes old non-direction total");
 assertExcludes(html, "активна:", "state module hides active force detail");
 assertExcludes(html, "0.015 кг", "state module hides active force value");
 assertIncludes(html, "x1.50", "runtime force multiplier");
