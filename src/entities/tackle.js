@@ -34,6 +34,11 @@ function getGlobalLureRetrieveConfig() {
   return physicsConfig?.getLureRetrieveConfig?.() || {};
 }
 
+function getGlobalReelConfig() {
+  const physicsConfig = getGlobalFightPhysicsConfig();
+  return physicsConfig?.getReelConfig?.() || {};
+}
+
 class Equipment {
   #level;
   #basePower;
@@ -144,10 +149,13 @@ class Rod extends Equipment {
 }
 
 class Reel extends Equipment {
+  #retrieveSpeedCalculator = new ReelRetrieveSpeedCalculator();
   #holdConfig;
   #maxLoadKg;
   #lineCapacityMeters;
-  #retrieveSpeedMetersPerSec;
+  #baseRetrieveSpeedMetersPerSec;
+  #bearingCount;
+  #bearingRetrieveSpeedBonusMetersPerSec;
   #dragMinKg;
   #dragMaxKg;
   #dragChangeSpeedPerSec;
@@ -163,8 +171,14 @@ class Reel extends Equipment {
       options.lineCapacityMeters,
       50,
     );
-    this.#retrieveSpeedMetersPerSec =
+    this.#baseRetrieveSpeedMetersPerSec =
       Reel.#numberOrDefault(options.retrieveSpeedMetersPerSec, 0.8);
+    this.#bearingCount = Reel.#numberOrDefault(options.bearingCount, 0);
+    this.#bearingRetrieveSpeedBonusMetersPerSec = Reel.#numberOrDefault(
+      options.bearingRetrieveSpeedBonusMetersPerSec,
+      getGlobalReelConfig().bearingRetrieveSpeedBonusMetersPerSec,
+      0,
+    );
     this.#dragMinKg = Reel.#numberOrDefault(options.dragMinKg, 0);
     this.#dragMaxKg = Reel.#numberOrDefault(
       options.dragMaxKg,
@@ -229,8 +243,24 @@ class Reel extends Equipment {
     return this.#lineCapacityMeters;
   }
 
+  getBaseRetrieveSpeedMetersPerSec() {
+    return this.#baseRetrieveSpeedMetersPerSec;
+  }
+
+  getBearingCount() {
+    return this.#bearingCount;
+  }
+
+  getBearingRetrieveSpeedBonusMetersPerSec() {
+    return this.#bearingRetrieveSpeedBonusMetersPerSec;
+  }
+
   getRetrieveSpeedMetersPerSec() {
-    return this.#retrieveSpeedMetersPerSec;
+    return this.#retrieveSpeedCalculator.calculate({
+      baseSpeedMetersPerSec: this.#baseRetrieveSpeedMetersPerSec,
+      bearingCount: this.#bearingCount,
+      bearingBonusMetersPerSec: this.#bearingRetrieveSpeedBonusMetersPerSec,
+    });
   }
 
   getDragChangeSpeedPerSec() {
@@ -245,9 +275,12 @@ class Reel extends Equipment {
     return { min: this.#dragMinKg, max: this.#dragMaxKg };
   }
 
-  static #numberOrDefault(value, fallback) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
+  static #numberOrDefault(...values) {
+    for (const value of values) {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+    return 0;
   }
 }
 

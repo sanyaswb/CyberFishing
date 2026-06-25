@@ -34,5 +34,6 @@ const TACKLE_PHYSICS_CONFIG = {
     autoRecoverSlack: true,
     holdRecoverAfterFullStrokeMs: 0,
     holdRecoverStrokeRatio: 1.0,
+    bearingRetrieveSpeedBonusMetersPerSec: 0.2,
   },
 };

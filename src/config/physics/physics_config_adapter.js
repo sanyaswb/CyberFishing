@@ -249,7 +249,14 @@ class FightPhysicsConfigAdapter {
   }
 
   getReelConfig() {
-    return this.#physics().tackle?.reel || {};
+    const config = this.#physics().tackle?.reel || {};
+    return {
+      ...config,
+      bearingRetrieveSpeedBonusMetersPerSec: this.#number(
+        config.bearingRetrieveSpeedBonusMetersPerSec,
+        0,
+      ),
+    };
   }
 
   getReelHoldConfig() {
@@ -275,6 +282,16 @@ class FightPhysicsConfigAdapter {
         reel.holdRecoverStrokeToleranceMeters,
         this.getRodHoldConfig().minStrokeMeters,
         0.001,
+      ),
+    };
+  }
+
+  getReelRecoveryConfig() {
+    const config = this.#physics().fight?.reelRecovery || {};
+    return {
+      fishSpeedMultiplier: Math.max(
+        0,
+        this.#number(config.fishSpeedMultiplier, 0.5),
       ),
     };
   }

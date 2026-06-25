@@ -13,6 +13,10 @@ class FightPhysicsSystem {
       : null;
   #playerPullMotionSmoother = new PlayerPullMotionSmoother();
   #reelHoldRecoverySystem = new ReelHoldRecoverySystem();
+  #recoveryFishSlowdownPolicy =
+    typeof ReelRecoveryFishSlowdownPolicy !== "undefined"
+      ? new ReelRecoveryFishSlowdownPolicy()
+      : null;
   #landingPolicyResolver = new LandingPolicyResolver();
   #landingLiftCalculator = new LandingLiftTensionCalculator();
   #landingLiftReadinessPolicy =
@@ -60,6 +64,12 @@ class FightPhysicsSystem {
     maxMoveMeters: 0,
     blockedReason: "not_checked",
     source: "none",
+  };
+  #lineRecoveryFishSlowdownState = {
+    active: false,
+    multiplier: 1,
+    source: "none",
+    recoveredMeters: 0,
   };
   #debug = {};
 
@@ -143,6 +153,7 @@ class FightPhysicsSystem {
       fishCondition,
       buffs,
       playerMaxLoadKg: maxTackleLoadKg,
+      lineRecoveryFishSlowdown: this.#lineRecoveryFishSlowdownState,
     }));
     const forceData = motion.forceData;
     const playerForceFrame = pipelineFrame.run(
@@ -294,6 +305,15 @@ class FightPhysicsSystem {
         autoRecoveredMeters: autoRecovery.recoveredMeters,
         holdRecoveredMeters,
       };
+    });
+    this.#recoveryFishSlowdownPolicy?.update?.({
+      target: this.#lineRecoveryFishSlowdownState,
+      autoRecoveredMeters: recoverFrame.autoRecoveredMeters,
+      holdRecoveredMeters: recoverFrame.holdRecoveredMeters,
+      config:
+        this.#physicsConfig?.getReelRecoveryConfig?.() ||
+        this.#getRuntimePhysicsConfig()?.fight?.reelRecovery ||
+        {},
     });
     const holdReelRecover = recoverFrame.holdReelRecover;
     const recoveredMeters = recoverFrame.recoveredMeters;
@@ -644,6 +664,7 @@ class FightPhysicsSystem {
     fishCondition,
     buffs,
     playerMaxLoadKg,
+    lineRecoveryFishSlowdown,
   }) {
     const fishPosition = floatEntity.getPosition();
     const previousFishX = Number(fishPosition.x) || 0;
@@ -704,9 +725,21 @@ class FightPhysicsSystem {
       lineTaut: this.#isLineTaut(lineState),
       env,
       buffs,
+      fishSpeedMultiplier:
+        this.#recoveryFishSlowdownPolicy?.getMotionMultiplier?.(
+          lineRecoveryFishSlowdown,
+        ) ?? 1,
     });
     forceData.landingDistanceMeters = landingDistanceMeters;
     forceData.shoreLandingDistanceMeters = shoreLandingDistanceMeters;
+    forceData.lineRecoveryFishSlowdownActive =
+      !!lineRecoveryFishSlowdown?.active;
+    forceData.lineRecoveryFishSlowdownMultiplier =
+      this.#recoveryFishSlowdownPolicy?.getMotionMultiplier?.(
+        lineRecoveryFishSlowdown,
+      ) ?? 1;
+    forceData.lineRecoveryFishSlowdownSource =
+      lineRecoveryFishSlowdown?.source || "none";
     const fishMotionDragContext = this.#resolveFishMotionDragContext({
       reel,
       dragSystem,
@@ -1493,6 +1526,9 @@ class FightPhysicsSystem {
     this.#playerPullMotionSmoother.reset();
     this.#poleFightSectorConstraint?.reset?.();
     this.#poleFightSectorAngleConstraint?.reset?.();
+    this.#recoveryFishSlowdownPolicy?.reset?.(
+      this.#lineRecoveryFishSlowdownState,
+    );
   }
 
   #updateTension({

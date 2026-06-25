@@ -148,6 +148,10 @@ const FIGHT_PHYSICS_CONFIG = {
     strokeToleranceMeters: 0.001,
   },
 
+  reelRecovery: {
+    fishSpeedMultiplier: 0.5,
+  },
+
   landing: {
     lift: {
       enabled: true,

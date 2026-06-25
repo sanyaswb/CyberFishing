@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.23.4 - Reel bearing recovery and inventory runtime stats
+
+- Added configurable reel bearing retrieve-speed bonus so bearing count increases effective reel pickup speed.
+- Added reel-recovery fish slowdown, halving effective fish movement while automatic or hold reel recovery is taking back line.
+- Routed reel recovery slowdown through fight physics config and debug coverage without mutating fish profile base speed.
+- Updated inventory hydration so reel, line, leader and rod tooltip values use runtime display stats instead of stale base item values.
+- Fixed rod cast-power tooltip to include the equipped reel bearing bonus.
+- Added runtime config provider wiring for inventory display stats and regression coverage for reel speed, line length and rod cast-power tooltips.
+
 ## v0.23.3 - Tackle-relative landing slowdown
 
 - Changed landing lift slowdown progress to use the weakest tackle load instead of the fish weight target.

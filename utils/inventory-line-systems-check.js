@@ -29,6 +29,7 @@ const FILES = [
   "src/config/config.js",
   "src/core/line/line_allocation_policy.js",
   "src/core/line/line_inventory_controller.js",
+  "src/core/fishing/reel_retrieve_speed_calculator.js",
   "src/systems/inventory_system.js",
 ];
 
@@ -91,6 +92,10 @@ assert(equipment.line.detachedLineSegment, "equipped pole line is marked as a de
 
 const sourceSpool = inventory.hydrateInstance("uuid-line");
 assert(Math.abs(sourceSpool.lengthMeters - 19) < 0.001, "source spool loses equipped segment length");
+assert(
+  String(sourceSpool.displayStats?.["Довжина"] || "").startsWith("19"),
+  "line inventory tooltip shows runtime remaining length",
+);
 
 inventory.unequipItem("line");
 equipment = inventory.getEquipped();
@@ -122,10 +127,25 @@ const reelInventory = new InventoryManager(
   new InventoryEventBridge(null),
   new CastDistanceCalculator(CONFIG),
   new LineCompatibilityRules(lineRulesConfig),
+  {
+    getReelConfig: () => ({ bearingRetrieveSpeedBonusMetersPerSec: 0.2 }),
+  },
 );
 
+const hydratedReel = reelInventory.hydrateInstance("reel-20");
+assert(
+  Object.values(hydratedReel.displayStats || {}).some((value) =>
+    String(value).startsWith("1.4"),
+  ),
+  "reel inventory tooltip shows bearing-adjusted retrieve speed",
+);
 assert(reelInventory.equipItem("rod", "rod-spin"), "reel rod equips for capacity check");
 assert(reelInventory.equipItem("reel", "reel-20"), "20m reel equips for capacity check");
+const equippedWithReel = reelInventory.getEquipped();
+assert(
+  String(equippedWithReel.rod?.displayStats?.["Сила закидання"] || "") === "0.84",
+  "rod inventory tooltip shows bearing-adjusted cast power",
+);
 assert(reelInventory.equipItem("line", "line-25"), "25m spool can equip on 20m reel through split");
 
 equipment = reelInventory.getEquipped();

@@ -37,6 +37,7 @@ class FishForceSystem {
     lineTaut = true,
     env,
     buffs,
+    fishSpeedMultiplier = 1,
   }) {
     const physics = this.#getRuntimePhysicsConfig();
     const pixelsPerMeter = Math.max(
@@ -114,11 +115,16 @@ class FishForceSystem {
       fishPhysics.basePower,
       1,
     );
-    const fishBaseSpeed = this.#firstFiniteNumber(
+    const rawFishBaseSpeed = this.#firstFiniteNumber(
       fishPhysics.movementProfile?.baseSpeed,
       fishPhysics.baseSpeed,
       1,
     );
+    const fishBaseSpeedMultiplier = this.#positiveOrDefault(
+      fishSpeedMultiplier,
+      1,
+    );
+    const fishBaseSpeed = rawFishBaseSpeed * fishBaseSpeedMultiplier;
     const waterConfig = this.#physicsConfig?.getWaterConfig?.() || {};
     const behaviorPowerRatio = Math.max(
       0,
@@ -237,6 +243,8 @@ class FishForceSystem {
       fishWeightKg: this.#fish.getWeight(),
       fishBasePower,
       fishBaseSpeed,
+      rawFishBaseSpeed,
+      fishBaseSpeedMultiplier,
       fishInitialPower: this.#fish.getInitialPower?.() || staticForceKg,
       pullMult: behaviorPowerRatio,
       moveMult: behaviorSpeedRatio,
@@ -322,6 +330,8 @@ class FishForceSystem {
       fishTensionKg: fishForceFrame.fishTensionKg,
       fishBasePower,
       fishBaseSpeed,
+      rawFishBaseSpeed,
+      fishBaseSpeedMultiplier,
       fishStateForceMultiplier: behaviorPowerRatio,
       fishStateSpeedMultiplier: behaviorSpeedRatio,
       directionResistanceMultiplier: directionMultiplier,
@@ -468,6 +478,12 @@ class FishForceSystem {
       if (Number.isFinite(Number(value))) return Math.max(0, Number(value));
     }
     return 0;
+  }
+
+  #positiveOrDefault(value, fallback) {
+    const number = Number(value);
+    if (Number.isFinite(number)) return Math.max(0, number);
+    return Math.max(0, Number(fallback) || 0);
   }
 
   #clamp01(value) {

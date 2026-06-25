@@ -1607,6 +1607,7 @@ class InventoryUI {
         "buildId",
         "buildName",
         "displayStats",
+        "displayStatsSchema",
         "engineStats",
         "requiresTag",
         "level",

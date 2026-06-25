@@ -24,6 +24,8 @@ const FILES = [
   "src/config/runtime/resolved_config_provider.js",
   "src/config/runtime/immutable_config.js",
   "src/config/config.js",
+  "src/core/fishing/reel_retrieve_speed_calculator.js",
+  "src/entities/tackle.js",
   "src/input/pull_input_mapper.js",
   "src/core/line/line_spool_state.js",
   "src/core/fishing/rod_pull_state.js",
@@ -34,6 +36,7 @@ const FILES = [
   "src/core/fishing/player_force_budget_allocator.js",
   "src/core/fishing/reel_auto_recovery_calculator.js",
   "src/core/fishing/reel_hold_recovery_system.js",
+  "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
   "src/core/fishing/slack_calculator.js",
   "src/core/fishing/rod_pull_calculator.js",
   "src/core/fishing/retrieve_policy.js",
@@ -90,6 +93,37 @@ const rodPullConfig = physicsAdapter.getRodPullConfig();
 const poleIdleRetrieveConfig = physicsAdapter.getPoleIdleRetrieveConfig();
 approx(rodPullConfig.tensionCeilingMultiplier, 1.05, 0.001, "Rod Hold gameplay ceiling is configurable");
 approx(physicsAdapter.getRodControlConfig().tensionCeilingMultiplier, 1.15, 0.001, "Rod Control gameplay ceiling is configurable");
+approx(physicsAdapter.getReelConfig().bearingRetrieveSpeedBonusMetersPerSec, 0.2, 0.001, "reel bearing retrieve speed bonus is configurable");
+
+const bearingReel = new Reel(1, 1, {
+  retrieveSpeedMetersPerSec: 0.8,
+  bearingCount: 3,
+  bearingRetrieveSpeedBonusMetersPerSec: 0.2,
+});
+approx(bearingReel.getBaseRetrieveSpeedMetersPerSec(), 0.8, 0.001, "reel keeps base retrieve speed");
+approx(bearingReel.getBearingCount(), 3, 0.001, "reel stores bearing count");
+approx(bearingReel.getRetrieveSpeedMetersPerSec(), 1.4, 0.001, "reel bearings increase retrieve speed");
+
+const recoverySlowdownPolicy = new ReelRecoveryFishSlowdownPolicy();
+const recoverySlowdownState = recoverySlowdownPolicy.createState();
+recoverySlowdownPolicy.update({
+  target: recoverySlowdownState,
+  autoRecoveredMeters: 0.2,
+  holdRecoveredMeters: 0,
+  config: physicsAdapter.getReelRecoveryConfig(),
+});
+assert(recoverySlowdownState.active, "reel recovery slowdown activates when line is recovered");
+approx(recoverySlowdownState.multiplier, 0.5, 0.001, "reel recovery slowdown uses configured fish speed multiplier");
+assert(recoverySlowdownState.source === "auto_recovery", "reel recovery slowdown tracks auto recovery source");
+approx(recoverySlowdownPolicy.getMotionMultiplier(recoverySlowdownState), 0.5, 0.001, "reel recovery slowdown exposes motion multiplier");
+recoverySlowdownPolicy.update({
+  target: recoverySlowdownState,
+  autoRecoveredMeters: 0,
+  holdRecoveredMeters: 0,
+  config: physicsAdapter.getReelRecoveryConfig(),
+});
+assert(!recoverySlowdownState.active, "reel recovery slowdown resets without recovered line");
+approx(recoverySlowdownPolicy.getMotionMultiplier(recoverySlowdownState), 1, 0.001, "inactive reel recovery keeps full fish speed");
 
 const retrievePolicyResolver = new IdleRetrievePolicyResolver();
 const poleIdleParams = retrievePolicyResolver.resolve({ rod: { hasReel: false }, reel: null }).getRetrieveParams({ config: CONFIG });

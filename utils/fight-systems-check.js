@@ -38,8 +38,11 @@ const FILES = [
   "src/core/fishing/rod_stroke_state.js",
   "src/core/fishing/rod_pull_calculator.js",
   "src/core/fishing/fish_retrieve_result.js",
+  "src/core/fishing/reel_retrieve_speed_calculator.js",
   "src/entities/tackle.js",
   "src/entities/fish.js",
+  "src/systems/player_force_system.js",
+  "src/systems/fish_force_system.js",
   "src/systems/fight_physics_pipeline.js",
   "src/systems/fish_retrieve_system.js",
   "src/systems/tension_system.js",
@@ -113,6 +116,74 @@ approx(smallFish.movableHoldTensionCapKg, 0.14, 0.0001, "movable cap uses fish o
 approx(smallFish.playerHoldTensionKg, 0.14, 0.0001, "movable fish caps hold tension by opposition");
 assert(smallFish.netForceKg > 0, "full rod hold still works against fish");
 assert(smallFish.speedMps > 0, "excess hold becomes speed");
+
+const recoverySlowdownFish = {
+  getBehavior() {
+    return {
+      name: "dash",
+      forceMultiplier: 1,
+      speedMultiplier: 1,
+      movementIntent: { radial: 1, lateral: 0 },
+    };
+  },
+  getPhysicsConfig() {
+    return {
+      forceProfile: { basePower: 1 },
+      movementProfile: { baseSpeed: 1 },
+      behaviorProfile: { behaviors: {} },
+    };
+  },
+  getWeight() {
+    return 1;
+  },
+  getInitialPower() {
+    return 1;
+  },
+  getLastDashDebugData() {
+    return {};
+  },
+};
+const recoverySlowdownForceSystem = new FishForceSystem({
+  fish: recoverySlowdownFish,
+  config: CONFIG,
+});
+const recoverySlowdownBaseContext = {
+  dtMs: 16,
+  fishPosition: { x: 0, y: 50 },
+  fishVelocity: { x: 0, y: 0 },
+  rodTipPosition: { x: 0, y: 0 },
+  fishCondition: {
+    currentStamina: 1,
+    maxStamina: 1,
+    currentExhaustion: 0,
+    maxEndurance: 1,
+  },
+  dragRatio: 0,
+  input: {},
+  rod: { getEffectiveMaxLoadKg: () => 0 },
+  reel: null,
+  playerMaxLoadKg: 0,
+  activeRodHoldKg: 0,
+  lineHasReserve: true,
+  lineTaut: false,
+  env: null,
+  buffs: null,
+};
+const normalRecoverySpeed = recoverySlowdownForceSystem.calculate({
+  ...recoverySlowdownBaseContext,
+});
+const slowedRecoverySpeed = recoverySlowdownForceSystem.calculate({
+  ...recoverySlowdownBaseContext,
+  fishSpeedMultiplier: 0.5,
+});
+approx(slowedRecoverySpeed.rawFishBaseSpeed, 1, 0.001, "recovery slowdown keeps raw fish base speed");
+approx(slowedRecoverySpeed.fishBaseSpeed, 0.5, 0.001, "recovery slowdown halves effective fish base speed");
+approx(
+  slowedRecoverySpeed.modelFishEscapeSpeedPxPerSec,
+  normalRecoverySpeed.modelFishEscapeSpeedPxPerSec * 0.5,
+  0.001,
+  "recovery slowdown halves fish escape speed",
+);
 
 const blockedFish = calc.calculate({
   fishWeightKg: 0.2,

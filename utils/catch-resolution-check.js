@@ -26,6 +26,7 @@ const FILES = [
   "src/core/casting_distance.js",
   "src/core/fishing/landing_policy.js",
   "src/core/fishing/landing_lift_readiness_policy.js",
+  "src/core/fishing/reel_retrieve_speed_calculator.js",
   "src/entities/tackle.js",
   "src/app/fishing.js",
 ];

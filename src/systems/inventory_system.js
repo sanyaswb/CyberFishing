@@ -176,9 +176,176 @@ class ItemDatabase {
       icon: item.icon,
       type: engineStats.type || item.type,
       displayStats: DisplayStatsResolver.resolve(item),
+      displayStatsSchema: item.displayStats || {},
       engineStats,
       ...engineStats,
     };
+  }
+}
+
+class RuntimeDisplayStatFormatter {
+  formatMeters(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "0";
+    return Number.isInteger(number) ? String(number) : number.toFixed(1);
+  }
+
+  formatCoefficient(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "0";
+    return number.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+  }
+}
+
+class RuntimeDisplayStatWriter {
+  #formatter;
+
+  constructor({ formatter = new RuntimeDisplayStatFormatter() } = {}) {
+    this.#formatter = formatter;
+  }
+
+  write(item, key, value, { format = "coefficient" } = {}) {
+    if (!item?.displayStats || value === undefined || value === null) return;
+    const stat = this.#parseDescriptor(key, item.displayStatsSchema?.[key]);
+    item.displayStats[stat.label] = this.#joinSuffix(
+      this.#format(value, format),
+      stat.suffix,
+    );
+  }
+
+  #format(value, format) {
+    if (format === "meters") return this.#formatter.formatMeters(value);
+    return this.#formatter.formatCoefficient(value);
+  }
+
+  #parseDescriptor(key, descriptor) {
+    if (descriptor && typeof descriptor === "object") {
+      return {
+        label: descriptor.label || key,
+        suffix: descriptor.suffix || "",
+      };
+    }
+
+    const text = String(descriptor || key);
+    const separatorIndex = text.indexOf(":");
+    if (separatorIndex < 0) {
+      return { label: text.trim() || key, suffix: "" };
+    }
+
+    return {
+      label: text.slice(0, separatorIndex).trim() || key,
+      suffix: text.slice(separatorIndex + 1).trim(),
+    };
+  }
+
+  #joinSuffix(value, suffix) {
+    const normalized = String(suffix || "").trim();
+    if (!normalized) return value;
+    const glue = normalized.startsWith("%") ? "" : " ";
+    return `${value}${glue}${normalized}`;
+  }
+}
+
+class InventoryRuntimeConfigProvider {
+  #config;
+  #physicsConfig;
+
+  constructor(
+    config = typeof CONFIG !== "undefined" ? CONFIG : null,
+    physicsConfig = null,
+  ) {
+    this.#config = config || null;
+    this.#physicsConfig =
+      physicsConfig ||
+      this.#config?.fightPhysicsConfig ||
+      this.#createPhysicsConfig(this.#config);
+  }
+
+  getReelConfig() {
+    return this.#physicsConfig?.getReelConfig?.() || {};
+  }
+
+  #createPhysicsConfig(config) {
+    if (!config || typeof FightPhysicsConfigAdapter === "undefined") {
+      return null;
+    }
+    return new FightPhysicsConfigAdapter(config);
+  }
+}
+
+class InventoryRuntimeDisplayStatsResolver {
+  #reelStatsResolver;
+  #lineStatsResolver;
+
+  constructor({
+    statWriter = new RuntimeDisplayStatWriter(),
+    reelStatsResolver = new ReelRuntimeDisplayStatsResolver({ statWriter }),
+    lineStatsResolver = new LineRuntimeDisplayStatsResolver({ statWriter }),
+  } = {}) {
+    this.#reelStatsResolver = reelStatsResolver;
+    this.#lineStatsResolver = lineStatsResolver;
+  }
+
+  apply(item, context = {}) {
+    this.#reelStatsResolver.apply(item, context);
+    this.#lineStatsResolver.apply(item, context);
+  }
+}
+
+class ReelRuntimeDisplayStatsResolver {
+  #retrieveSpeedCalculator;
+  #statWriter;
+
+  constructor({
+    retrieveSpeedCalculator = new ReelRetrieveSpeedCalculator(),
+    statWriter = new RuntimeDisplayStatWriter(),
+  } = {}) {
+    this.#retrieveSpeedCalculator = retrieveSpeedCalculator;
+    this.#statWriter = statWriter;
+  }
+
+  apply(item, { reelConfig = {} } = {}) {
+    if (!this.#isReel(item)) return;
+
+    const speed = this.#retrieveSpeedCalculator.calculate({
+      baseSpeedMetersPerSec: item.retrieveSpeedMetersPerSec,
+      bearingCount: item.bearingCount,
+      bearingBonusMetersPerSec:
+        reelConfig.bearingRetrieveSpeedBonusMetersPerSec,
+    });
+    this.#statWriter.write(item, "retrieveSpeedMetersPerSec", speed);
+  }
+
+  #isReel(item) {
+    return item?.type === "spinning_reel" || item?.requiresTag === "reel";
+  }
+}
+
+class LineRuntimeDisplayStatsResolver {
+  #statWriter;
+
+  constructor({ statWriter = new RuntimeDisplayStatWriter() } = {}) {
+    this.#statWriter = statWriter;
+  }
+
+  apply(item) {
+    if (item?.type === "fishing_line") {
+      this.#writeIfDefined(item, "lengthMeters", "meters");
+      this.#writeIfDefined(item, "diameterMm");
+      this.#writeIfDefined(item, "maxLoadKg");
+      return;
+    }
+
+    if (item?.type === "leader_line") {
+      this.#writeIfDefined(item, "diameterMm");
+      this.#writeIfDefined(item, "maxLoadKg");
+    }
+  }
+
+  #writeIfDefined(item, key, format = "coefficient") {
+    const value = item?.[key] ?? item?.engineStats?.[key];
+    if (value === undefined || value === null) return;
+    this.#statWriter.write(item, key, value, { format });
   }
 }
 
@@ -744,6 +911,8 @@ class InventoryManager {
   #castDistanceCalculator;
   #lineRules;
   #lineController;
+  #runtimeConfigProvider;
+  #runtimeDisplayStatsResolver;
   #isLocked = false;
   #equippedCache = null;
 
@@ -753,6 +922,7 @@ class InventoryManager {
     events = new InventoryEventBridge(),
     castDistanceCalculator = null,
     lineRules = null,
+    runtimeConfigProvider = null,
   ) {
     const cachedInventory = InventoryItemIdMigrationPolicy.migrateItems(
       CacheManager.get("player_inventory") || playerConfig.inventory || [],
@@ -767,6 +937,10 @@ class InventoryManager {
     this.#castDistanceCalculator =
       castDistanceCalculator || new CastDistanceCalculator();
     this.#lineRules = lineRules || new LineCompatibilityRules();
+    this.#runtimeConfigProvider =
+      runtimeConfigProvider || new InventoryRuntimeConfigProvider();
+    this.#runtimeDisplayStatsResolver =
+      new InventoryRuntimeDisplayStatsResolver();
     this.#lineController = new LineInventoryController({
       inventory: this.#inventory,
       db: this.#db,
@@ -1699,7 +1873,11 @@ class InventoryManager {
   #applyStandaloneCastDistanceStats(item) {
     if (!this.#isRodItem(item)) return;
     const requiredLine = this.#lineController.getMinimumLineLengthMeters(item);
-    item["Мін. ліска"] = `${this.#formatMeters(requiredLine)}м`;
+    this.#writeRuntimeDisplayStat(
+      item,
+      "Мін. ліска",
+      `${this.#formatMeters(requiredLine)}м`,
+    );
   }
 
   #applyEquippedCastDistanceStats(equipment) {
@@ -1711,17 +1889,29 @@ class InventoryManager {
     const previewPower = this.#getBuildCastPowerCoefficient(equipment);
     const info = this.#castDistanceCalculator.describe(equipment, previewPower);
     const requiredLine = this.#lineController.getMinimumLineLengthMeters(rodItem);
-    rodItem["Мін. ліска"] = `${this.#formatMeters(requiredLine)}м`;
-    rodItem["Сила закидання"] = this.#formatCoefficient(previewPower);
+    this.#writeRuntimeDisplayStat(
+      rodItem,
+      "Мін. ліска",
+      `${this.#formatMeters(requiredLine)}м`,
+    );
+    this.#writeRuntimeDisplayStat(
+      rodItem,
+      "Сила закидання",
+      this.#formatCoefficient(previewPower),
+    );
 
     if (!equipment?.line) {
       delete rodItem.maxDistance;
-      rodItem["Ліска"] = "Не споряджена";
-      delete rodItem["Довжина ліски"];
-      delete rodItem["Сила заброса"];
-      delete rodItem["Довжина заброса"];
-      delete rodItem["Макс. дальність закидання"];
-      rodItem["Масштаб"] = `${info.pixelsPerMeter}px = 1м`;
+      this.#writeRuntimeDisplayStat(rodItem, "Ліска", "Не споряджена");
+      this.#deleteRuntimeDisplayStat(rodItem, "Довжина ліски");
+      this.#deleteRuntimeDisplayStat(rodItem, "Сила заброса");
+      this.#deleteRuntimeDisplayStat(rodItem, "Довжина заброса");
+      this.#deleteRuntimeDisplayStat(rodItem, "Макс. дальність закидання");
+      this.#writeRuntimeDisplayStat(
+        rodItem,
+        "Масштаб",
+        `${info.pixelsPerMeter}px = 1м`,
+      );
       return;
     }
 
@@ -1729,12 +1919,33 @@ class InventoryManager {
     const castMeters = this.#formatMeters(info.effectiveDistanceMeters);
     const castPx = Math.round(info.effectiveDistancePx);
     rodItem.maxDistance = Math.round(info.maxDistancePx);
-    rodItem["Довжина ліски"] = `${lineMeters}м`;
-    delete rodItem["Сила заброса"];
-    delete rodItem["Довжина заброса"];
-    rodItem["Макс. дальність закидання"] = `${castMeters}м (${castPx}px)`;
-    rodItem["Масштаб"] = `${info.pixelsPerMeter}px = 1м`;
-    delete rodItem["Ліска"];
+    this.#writeRuntimeDisplayStat(rodItem, "Довжина ліски", `${lineMeters}м`);
+    this.#deleteRuntimeDisplayStat(rodItem, "Сила заброса");
+    this.#deleteRuntimeDisplayStat(rodItem, "Довжина заброса");
+    this.#writeRuntimeDisplayStat(
+      rodItem,
+      "Макс. дальність закидання",
+      `${castMeters}м (${castPx}px)`,
+    );
+    this.#writeRuntimeDisplayStat(
+      rodItem,
+      "Масштаб",
+      `${info.pixelsPerMeter}px = 1м`,
+    );
+    this.#deleteRuntimeDisplayStat(rodItem, "Ліска");
+  }
+
+  #writeRuntimeDisplayStat(item, label, value) {
+    if (!item) return;
+    if (!item.displayStats) item.displayStats = {};
+    item.displayStats[label] = value;
+    delete item[label];
+  }
+
+  #deleteRuntimeDisplayStat(item, label) {
+    if (!item) return;
+    if (item.displayStats) delete item.displayStats[label];
+    delete item[label];
   }
 
   #getBuildCastPowerCoefficient(equipment) {
@@ -1776,24 +1987,9 @@ class InventoryManager {
 
   #refreshRuntimeDisplayStats(item) {
     if (!item?.displayStats) return;
-    if (item.type === "fishing_line") {
-      item.displayStats["Довжина"] = `${this.#formatMeters(item.lengthMeters)} м.`;
-      if (item.diameterMm !== undefined) {
-        item.displayStats["Товщина"] = `${this.#formatCoefficient(item.diameterMm)} мм`;
-      }
-      if (item.maxLoadKg !== undefined) {
-        item.displayStats["Макс. навантаження"] = `${this.#formatCoefficient(item.maxLoadKg)} кг.`;
-      }
-    }
-
-    if (item.type === "leader_line") {
-      if (item.diameterMm !== undefined) {
-        item.displayStats["Товщина"] = `${this.#formatCoefficient(item.diameterMm)} мм`;
-      }
-      if (item.maxLoadKg !== undefined) {
-        item.displayStats["Макс. навантаження"] = `${this.#formatCoefficient(item.maxLoadKg)} кг.`;
-      }
-    }
+    this.#runtimeDisplayStatsResolver.apply(item, {
+      reelConfig: this.#runtimeConfigProvider.getReelConfig(),
+    });
   }
 
   _hydrateInstance(instanceId) {

@@ -240,12 +240,17 @@ class GameCompositionRoot {
     const lineRules = new LineCompatibilityRules(
       physicsConfig?.getLineConfig?.() || {},
     );
+    const runtimeConfigProvider = new InventoryRuntimeConfigProvider(
+      this.#config,
+      physicsConfig,
+    );
     const inventory = new InventoryManager(
       ITEM_DB,
       this.#config.player,
       undefined,
       castDistanceCalculator,
       lineRules,
+      runtimeConfigProvider,
     );
     const eq = inventory.getEquipped();
     const chumConfigObj = { baits: {}, deliveryMethods: {} };

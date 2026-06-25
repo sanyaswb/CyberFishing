@@ -312,6 +312,10 @@ class FightSessionFactory {
             maxLoadKg: equipment.reel.maxLoadKg,
             lineCapacityMeters: equipment.reel.lineCapacityMeters,
             retrieveSpeedMetersPerSec: equipment.reel.retrieveSpeedMetersPerSec,
+            bearingCount: equipment.reel.bearingCount,
+            bearingRetrieveSpeedBonusMetersPerSec:
+              this.physicsConfig?.getReelConfig?.()
+                ?.bearingRetrieveSpeedBonusMetersPerSec,
             dragMinKg: equipment.reel.dragMinKg,
             dragMaxKg: equipment.reel.dragMaxKg,
             dragChangeSpeedPerSec: equipment.reel.dragChangeSpeedPerSec,
@@ -441,6 +445,10 @@ class FightSessionFactory {
             maxLoadKg: equipment.reel.maxLoadKg,
             lineCapacityMeters: equipment.reel.lineCapacityMeters,
             retrieveSpeedMetersPerSec: equipment.reel.retrieveSpeedMetersPerSec,
+            bearingCount: equipment.reel.bearingCount,
+            bearingRetrieveSpeedBonusMetersPerSec:
+              this.physicsConfig?.getReelConfig?.()
+                ?.bearingRetrieveSpeedBonusMetersPerSec,
             dragMinKg: equipment.reel.dragMinKg,
             dragMaxKg: equipment.reel.dragMaxKg,
             dragChangeSpeedPerSec: equipment.reel.dragChangeSpeedPerSec,
