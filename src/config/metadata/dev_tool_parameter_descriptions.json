@@ -138,5 +138,50 @@
     "key": "shoreOpeningWidthMeters",
     "ua": "ширина_сектора_на_лінії_берега_в_метрах",
     "description": "Повна ширина дозволеної червоної зони на лінії берега. Нуль залишає гостру вершину сектора."
+  },
+  {
+    "key": "passiveDrain.enabled",
+    "ua": "пасивна_стаміна_увімкнена",
+    "description": "Вмикає passive stamina drain. За дефолтом false, щоб не ламати активну модель під час тестування."
+  },
+  {
+    "key": "passiveDrain.drainPerSecond",
+    "ua": "пасивна_витрата_за_сек",
+    "description": "Максимальна швидкість пасивної витрати stamina за секунду."
+  },
+  {
+    "key": "passiveDrain.curvePower",
+    "ua": "крива_пасивної_витрати",
+    "description": "Крива passiveDrainRatio. 1.0 = лінійно."
+  },
+  {
+    "key": "passiveDrain.lineTautThresholdRatio",
+    "ua": "поріг_натягу_ліски",
+    "description": "Мінімальний lineTautRatio для дозволу passive drain."
+  },
+  {
+    "key": "passiveDrain.defaultBehaviorMultiplier",
+    "ua": "множник_невідомого_стану",
+    "description": "Множник пасивної витрати для невідомого fish behavior."
+  },
+  {
+    "key": "passiveDrain.behaviorMultipliers.dash",
+    "ua": "пасивний_dash",
+    "description": "Множник passive drain для dash."
+  },
+  {
+    "key": "passiveDrain.behaviorMultipliers.swim",
+    "ua": "пасивний_swim",
+    "description": "Множник passive drain для swim."
+  },
+  {
+    "key": "passiveDrain.behaviorMultipliers.idle",
+    "ua": "пасивний_idle",
+    "description": "Множник passive drain для idle."
+  },
+  {
+    "key": "passiveDrain.behaviorMultipliers.rest",
+    "ua": "пасивний_rest",
+    "description": "Множник passive drain для rest."
   }
 ]

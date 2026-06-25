@@ -1805,6 +1805,27 @@ class FightPhysicsSystem {
         rodControlResult,
       }),
       isLineFullyExtended: !!lineState?.isFullyExtended,
+      fishWonRadialForceKg:
+        fishRetrieveResult?.fishWonRadialForceKg ??
+        forceData?.fishWonRadialForceKg,
+      dragBlockedForceKg:
+        fishRetrieveResult?.dragBlockedForceKg ??
+        forceData?.dragBlockedForceKg,
+      lineTaut:
+        fishRetrieveResult?.lineTaut ??
+        forceData?.lineTaut ??
+        this.#isLineTaut(lineState),
+      lineTautRatio: this.#resolveLineTautRatio({
+        fishRetrieveResult,
+        forceData,
+        lineState,
+      }),
+      fishBehaviorName: this.#resolveFishBehaviorName(forceData),
+      shouldSlipDrag:
+        fishRetrieveResult?.shouldSlipDrag ?? forceData?.shouldSlipDrag,
+      hardLineLimit:
+        !!lineState?.isFullyExtended ||
+        !!fishRetrieveResult?.tensionBlocked,
       dtSec,
       config:
         this.#config?.stamina?.mechanics ||
@@ -1835,6 +1856,31 @@ class FightPhysicsSystem {
       isLineFullyExtended: !!lineState?.isFullyExtended,
       source: "legacy_fallback",
     });
+  }
+
+  #resolveLineTautRatio({ fishRetrieveResult, forceData, lineState } = {}) {
+    const explicit = Number(
+      fishRetrieveResult?.lineTautRatio ?? forceData?.lineTautRatio,
+    );
+    if (Number.isFinite(explicit)) {
+      return Math.max(0, Math.min(1, explicit));
+    }
+    const lineTaut =
+      fishRetrieveResult?.lineTaut ??
+      forceData?.lineTaut ??
+      this.#isLineTaut(lineState);
+    return lineTaut ? 1 : 0;
+  }
+
+  #resolveFishBehaviorName(forceData) {
+    const value =
+      forceData?.behavior?.name ??
+      forceData?.debug?.fishState ??
+      forceData?.fishState ??
+      forceData?.fishBehaviorName ??
+      "unknown";
+    const normalized = String(value || "unknown").trim().toLowerCase();
+    return normalized || "unknown";
   }
 
   #resolveLegacyStaminaPressureRatio({
@@ -2961,6 +3007,36 @@ class FightPhysicsSystem {
         staminaFrame?.budgetOverflowWarning === true,
       staminaPassiveDrainEnabled:
         staminaFrame?.passiveDrainEnabled === true,
+      staminaPassiveDrainRatio:
+        staminaFrame?.passiveDrainRatio ?? 0,
+      staminaPassiveDrainPerSecond:
+        staminaFrame?.passiveDrainPerSecond ?? 0,
+      staminaPassiveDrain:
+        staminaFrame?.passiveStaminaDrain ?? 0,
+      staminaFishRadialEffortKg:
+        staminaFrame?.fishWonRadialForceKg ?? 0,
+      staminaDragBlockedKg:
+        staminaFrame?.dragBlockedForceKg ?? 0,
+      staminaResistanceRatio:
+        staminaFrame?.passiveResistanceRatio ?? 0,
+      staminaPassiveFishEffortRatio:
+        staminaFrame?.passiveFishEffortRatio ?? 0,
+      staminaLineTautRatio:
+        staminaFrame?.lineTautRatio ?? 0,
+      staminaLineTaut:
+        staminaFrame?.lineTaut === true,
+      staminaBehaviorMultiplier:
+        staminaFrame?.passiveBehaviorMultiplier ?? 0,
+      staminaBehaviorName:
+        staminaFrame?.fishBehaviorName || "unknown",
+      staminaShouldSlipDrag:
+        staminaFrame?.shouldSlipDrag === true,
+      staminaHardLineLimit:
+        staminaFrame?.hardLineLimit === true,
+      staminaTotalDrainPerSecond:
+        staminaFrame?.totalStaminaDrainPerSecond ?? 0,
+      staminaTotalDrain:
+        staminaFrame?.totalStaminaDrain ?? 0,
       playerForceY: Math.abs(rodPullResult.forceKg),
       playerForceX: Math.abs(rodControlResult?.forceKg || 0),
       fishForceY: Math.abs(forceData.totalFishForceKg * (forceData.targetVelocity.y < 0 ? -1 : 1)),

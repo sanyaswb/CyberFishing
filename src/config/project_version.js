@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.23.5";
+const CURRENT_PROJECT_VERSION = "0.23.6";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "stamina-active-force-balance",
+  codename: "stamina-passive-resisted-effort",
   updatedAt: "2026-06-26",
   notes: Object.freeze([
-    "Stamina now drains from applied Rod Hold and weighted Rod Control force instead of raw tension",
-    "Line angle recovery uses the 0-15 / 15-75 / 75+ degree recovery zones",
-    "Debug output exposes stamina balance drain, regen, net change and budget overflow diagnostics",
+    "Added optional passive stamina drain from resisted fish effort against a taut line",
+    "Stamina balance now combines active drain, passive drain and angle recovery into one frame",
+    "Debug output exposes passive effort, resistance, behavior multiplier and total drain diagnostics",
   ]),
 });
 

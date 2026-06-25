@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.23.6 - Stamina passive resisted effort
+
+- Added optional passive stamina drain from resisted fish effort against a taut line.
+- Added `PassiveStaminaDrainCalculator` and integrated passive drain into `StaminaBalanceFrame` alongside active drain and angle recovery.
+- Routed fish radial effort, drag blocked force, line taut state and fish behavior into the stamina frame without moving physics ownership into `StaminaController`.
+- Extended STAMINA BALANCE overlay/debug with passive drain ratio, passive drain/sec, fish effort, resistance ratio, line taut ratio, behavior multiplier and total drain/sec.
+- Added passive stamina config and metadata while keeping `passiveDrain.enabled` disabled by default.
+- Expanded stamina balance regression checks for passive disabled, slack line, zero effort/resistance, dash/swim/rest behavior, and active+passive total drain.
+
 ## v0.23.5 - Stamina active-force balance
 
 - Reworked STAMINA-phase drain to use applied Rod Hold force plus weighted Rod Control force instead of raw tension.

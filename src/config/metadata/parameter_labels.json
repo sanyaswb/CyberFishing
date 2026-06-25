@@ -888,8 +888,8 @@
     "description": "If false, positive net stamina change is clamped to zero while the player is actively pulling."
   },
   "stamina.mechanics.passiveDrain.enabled": {
-    "label": "Passive stamina drain enabled",
-    "description": "Reserved for future passive stamina loss. It remains disabled for the active-force stamina model."
+    "label": "Пасивна витрата стаміни",
+    "description": "Вмикає повільну витрату stamina від активної боротьби риби проти натягнутої/заблокованої ліски."
   },
   "locations.showPoleFightSector": {
     "label": "Show pole fight sector",
@@ -898,5 +898,45 @@
   "locations.showFightLineRadius": {
     "label": "Show fight line radius",
     "description": "Shows the yellow unrestricted radial movement boundary defined by the currently released line length."
+  },
+  "stamina.mechanics.passiveDrain.drainPerSecond": {
+    "label": "Пасивна витрата/сек",
+    "description": "Максимальна швидкість пасивного зняття stamina за секунду при повному effort/resistance/taut і відповідному behavior multiplier."
+  },
+  "stamina.mechanics.passiveDrain.curvePower": {
+    "label": "Крива пасивної витрати",
+    "description": "Степінь кривої passiveDrainRatio. 1.0 = лінійно, >1.0 робить слабкий passive drain мʼякшим."
+  },
+  "stamina.mechanics.passiveDrain.lineTautThresholdRatio": {
+    "label": "Поріг натягу ліски для passive drain",
+    "description": "Мінімальний lineTautRatio, з якого пасивна витрата stamina дозволена. Нижче порогу passive drain = 0."
+  },
+  "stamina.mechanics.passiveDrain.defaultBehaviorMultiplier": {
+    "label": "Passive multiplier за замовчуванням",
+    "description": "Множник пасивної витрати для невідомого fish behavior."
+  },
+  "stamina.mechanics.passiveDrain.behaviorMultipliers.dash": {
+    "label": "Passive dash multiplier",
+    "description": "Множник пасивної витрати stamina для dash."
+  },
+  "stamina.mechanics.passiveDrain.behaviorMultipliers.swim": {
+    "label": "Passive swim multiplier",
+    "description": "Множник пасивної витрати stamina для swim."
+  },
+  "stamina.mechanics.passiveDrain.behaviorMultipliers.idle": {
+    "label": "Passive idle multiplier",
+    "description": "Множник пасивної витрати stamina для idle."
+  },
+  "stamina.mechanics.passiveDrain.behaviorMultipliers.rest": {
+    "label": "Passive rest multiplier",
+    "description": "Множник пасивної витрати stamina для rest."
+  },
+  "stamina.mechanics.passiveDrain.slippingDragMultiplier": {
+    "label": "Passive drag slip multiplier",
+    "description": "Множник пасивної витрати, коли drag віддає ліску. За дефолтом 1.0, реальний вплив уже обмежує resistanceRatio."
+  },
+  "stamina.mechanics.passiveDrain.hardLimitMultiplier": {
+    "label": "Passive hard-limit multiplier",
+    "description": "Множник пасивної витрати, коли риба вперлась у hard line limit."
   }
 }

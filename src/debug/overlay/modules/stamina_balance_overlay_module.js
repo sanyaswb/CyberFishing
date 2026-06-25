@@ -38,6 +38,51 @@ class StaminaBalanceOverlayModule extends OverlayModule {
       { color: "#ff8888" },
     );
     html += this.metricRow(
+      "Passive enabled",
+      data.staminaPassiveDrainEnabled ? "yes" : "no",
+      { color: data.staminaPassiveDrainEnabled ? "#00ff80" : "#8a9bac" },
+    );
+    html += this.metricRow(
+      "Passive drain ratio",
+      f.percent(data.staminaPassiveDrainRatio, 1),
+      { color: f.stressColor(data.staminaPassiveDrainRatio) },
+    );
+    html += this.metricRow(
+      "Passive drain/sec",
+      f.num(data.staminaPassiveDrainPerSecond, 2),
+      { color: "#ffb86c" },
+    );
+    html += this.metricRow(
+      "Fish radial effort",
+      f.kg(data.staminaFishRadialEffortKg, 3),
+      { color: "#ff8888" },
+    );
+    html += this.metricRow(
+      "Drag blocked",
+      f.kg(data.staminaDragBlockedKg, 3),
+      { color: "#ffaa00" },
+    );
+    html += this.metricRow(
+      "Resistance ratio",
+      f.percent(data.staminaResistanceRatio, 1),
+      { color: "#ffaa00" },
+    );
+    html += this.metricRow(
+      "Line taut ratio",
+      f.percent(data.staminaLineTautRatio, 1),
+      { color: data.staminaLineTaut ? "#00ff80" : "#8a9bac" },
+    );
+    html += this.metricRow(
+      "Fish behavior",
+      `${data.staminaBehaviorName || "unknown"} x${f.num(data.staminaBehaviorMultiplier, 2)}`,
+      { color: "#c792ea" },
+    );
+    html += this.metricRow(
+      "Total drain/sec",
+      f.num(data.staminaTotalDrainPerSecond, 2),
+      { color: "#ff8888" },
+    );
+    html += this.metricRow(
       "Line angle",
       `${f.num(data.staminaLineAngleDeg, 1)}deg`,
       { color: "#73c2fb" },

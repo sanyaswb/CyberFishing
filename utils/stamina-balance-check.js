@@ -8,6 +8,7 @@ const FILES = [
   "src/core/line/line_spool_state.js",
   "src/core/fishing/stamina/active_stamina_drain_calculator.js",
   "src/core/fishing/stamina/angle_stamina_recovery_calculator.js",
+  "src/core/fishing/stamina/passive_stamina_drain_calculator.js",
   "src/core/fishing/stamina/stamina_balance_frame.js",
   "src/services/weakest_tackle_limit_resolver.js",
   "src/systems/line_system.js",
@@ -101,6 +102,86 @@ assert(frame.budgetOverflow, "budget overflow is flagged when applied player pre
 approx(frame.availablePlayerPressureKg, 0.2, 0.0001, "available player pressure is weakest limit minus fish tension");
 approx(frame.rawAppliedPlayerPressureKg, 1, 0.0001, "raw applied player pressure tracks unweighted applied force");
 
+
+const passiveDrain = new PassiveStaminaDrainCalculator();
+frame = passiveDrain.calculate({
+  fishWonRadialForceKg: 1,
+  dragBlockedForceKg: 1,
+  lineTaut: true,
+  fishBehaviorName: "dash",
+  weakestTackleLimitKg: 1,
+  dtSec: 1,
+  config: { enabled: false, drainPerSecond: 15 },
+});
+approx(frame.passiveStaminaDrain, 0, 0.0001, "passiveDrain.enabled=false gives zero passive drain");
+
+frame = passiveDrain.calculate({
+  fishWonRadialForceKg: 1,
+  dragBlockedForceKg: 1,
+  lineTaut: false,
+  fishBehaviorName: "dash",
+  weakestTackleLimitKg: 1,
+  dtSec: 1,
+  config: { enabled: true, drainPerSecond: 15, behaviorMultipliers: { dash: 1 } },
+});
+approx(frame.passiveStaminaDrain, 0, 0.0001, "slack line gives zero passive drain");
+
+frame = passiveDrain.calculate({
+  fishWonRadialForceKg: 0,
+  dragBlockedForceKg: 1,
+  lineTaut: true,
+  fishBehaviorName: "dash",
+  weakestTackleLimitKg: 1,
+  dtSec: 1,
+  config: { enabled: true, drainPerSecond: 15, behaviorMultipliers: { dash: 1 } },
+});
+approx(frame.passiveStaminaDrain, 0, 0.0001, "zero fish radial effort gives zero passive drain");
+
+frame = passiveDrain.calculate({
+  fishWonRadialForceKg: 1,
+  dragBlockedForceKg: 0,
+  lineTaut: true,
+  fishBehaviorName: "dash",
+  weakestTackleLimitKg: 1,
+  dtSec: 1,
+  config: { enabled: true, drainPerSecond: 15, behaviorMultipliers: { dash: 1 } },
+});
+approx(frame.passiveStaminaDrain, 0, 0.0001, "zero blocked force gives zero passive drain");
+
+frame = passiveDrain.calculate({
+  fishWonRadialForceKg: 1,
+  dragBlockedForceKg: 1,
+  lineTaut: true,
+  fishBehaviorName: "dash",
+  weakestTackleLimitKg: 1,
+  hardLineLimit: true,
+  dtSec: 1,
+  config: { enabled: true, drainPerSecond: 15, behaviorMultipliers: { dash: 1 }, hardLimitMultiplier: 1 },
+});
+approx(frame.passiveStaminaDrain, 15, 0.0001, "hard limit dash gives max passive drain for passive model");
+
+const swimFrame = passiveDrain.calculate({
+  fishWonRadialForceKg: 1,
+  dragBlockedForceKg: 1,
+  lineTaut: true,
+  fishBehaviorName: "swim",
+  weakestTackleLimitKg: 1,
+  dtSec: 1,
+  config: { enabled: true, drainPerSecond: 15, behaviorMultipliers: { dash: 1, swim: 0.5, rest: 0 } },
+});
+assert(swimFrame.passiveStaminaDrain < frame.passiveStaminaDrain, "swim passive drain is lower than dash passive drain");
+
+frame = passiveDrain.calculate({
+  fishWonRadialForceKg: 1,
+  dragBlockedForceKg: 1,
+  lineTaut: true,
+  fishBehaviorName: "rest",
+  weakestTackleLimitKg: 1,
+  dtSec: 1,
+  config: { enabled: true, drainPerSecond: 15, behaviorMultipliers: { rest: 0 } },
+});
+approx(frame.passiveStaminaDrain, 0, 0.0001, "rest gives zero passive drain");
+
 const angleRecovery = new AngleStaminaRecoveryCalculator();
 frame = angleRecovery.calculate({
   lineAngleDeg: 10,
@@ -138,7 +219,16 @@ const baseConfig = {
     curvePower: 1,
     allowStaminaRegenWhilePulling: false,
   },
-  passiveDrain: { enabled: false },
+  passiveDrain: {
+    enabled: false,
+    drainPerSecond: 15,
+    curvePower: 1,
+    lineTautThresholdRatio: 0.995,
+    defaultBehaviorMultiplier: 0.5,
+    behaviorMultipliers: { dash: 1, swim: 0.5, idle: 0.1, rest: 0 },
+    slippingDragMultiplier: 1,
+    hardLimitMultiplier: 1,
+  },
 };
 frame = balanceFactory.create({
   playerIsPulling: true,
@@ -153,6 +243,31 @@ approx(frame.rawNetStaminaChange, 20, 0.0001, "raw net stamina can be positive w
 approx(frame.netStaminaChange, 0, 0.0001, "regen while pulling is blocked when config disallows it");
 assert(frame.regenBlockedByPull, "regen block flag is set while pulling");
 assert(!frame.passiveDrainEnabled, "passive drain remains disabled");
+
+frame = balanceFactory.create({
+  playerIsPulling: false,
+  appliedRodHoldKg: 0.2,
+  appliedControlKg: 0,
+  weakestTackleLimitKg: 1,
+  lineAngleDeg: 10,
+  fishWonRadialForceKg: 1,
+  dragBlockedForceKg: 1,
+  lineTaut: true,
+  fishBehaviorName: "dash",
+  dtSec: 1,
+  config: {
+    ...baseConfig,
+    passiveDrain: {
+      ...baseConfig.passiveDrain,
+      enabled: true,
+      drainPerSecond: 15,
+    },
+  },
+});
+approx(frame.activeStaminaDrain, 20, 0.0001, "active drain remains unchanged when passive is enabled");
+approx(frame.passiveStaminaDrain, 15, 0.0001, "passive drain is calculated independently");
+approx(frame.totalStaminaDrain, 35, 0.0001, "passive and active drains are summed");
+approx(frame.netStaminaChange, -35, 0.0001, "angle regen is subtracted from total stamina drain");
 
 frame = balanceFactory.create({
   playerIsPulling: true,

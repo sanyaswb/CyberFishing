@@ -307,5 +307,71 @@
     "paths": [
       "DEBUG_DATA.staminaBudgetOverflowWarning"
     ]
+  },
+  "Passive enabled": {
+    "formula": "CONFIG.stamina.mechanics.passiveDrain.enabled",
+    "description": "Чи увімкнена пасивна витрата stamina від боротьби риби проти натягнутої ліски.",
+    "paths": [
+      "CONFIG.stamina.mechanics.passiveDrain.enabled"
+    ]
+  },
+  "Passive drain ratio": {
+    "formula": "fishEffortRatio * resistanceRatio * lineTautRatio * behaviorMultiplier",
+    "description": "Нормалізований коефіцієнт пасивного stamina drain. Не є простим tension-only значенням.",
+    "paths": [
+      "fightFrame.stamina.passiveDrainRatio"
+    ]
+  },
+  "Passive drain/sec": {
+    "formula": "passiveDrainPerSecond = drainPerSecond * passiveDrainRatio^curvePower",
+    "description": "Скільки stamina за секунду пасивно знімається з риби.",
+    "paths": [
+      "fightFrame.stamina.passiveDrainPerSecond"
+    ]
+  },
+  "Fish radial effort": {
+    "formula": "fishWonRadialForceKg",
+    "description": "Сила риби, яка реально направлена від гравця по радіусу ліски.",
+    "paths": [
+      "forceData.fishWonRadialForceKg",
+      "fishRetrieveResult.fishWonRadialForceKg"
+    ]
+  },
+  "Drag blocked": {
+    "formula": "dragBlockedForceKg",
+    "description": "Частина radial effort, яку реально заблокувала снасть/drag/hard limit.",
+    "paths": [
+      "forceData.dragBlockedForceKg",
+      "fishRetrieveResult.dragBlockedForceKg"
+    ]
+  },
+  "Resistance ratio": {
+    "formula": "resistanceRatio = dragBlockedForceKg / max(fishWonRadialForceKg, epsilon)",
+    "description": "Наскільки сильно снасть стримує активну втечу риби.",
+    "paths": [
+      "fightFrame.stamina.passiveResistanceRatio"
+    ]
+  },
+  "Line taut ratio": {
+    "formula": "lineTautRatio: 0 slack, 1 taut",
+    "description": "Чи ліска реально натягнута для пасивного stamina drain.",
+    "paths": [
+      "fightFrame.stamina.lineTautRatio"
+    ]
+  },
+  "Fish behavior": {
+    "formula": "behaviorMultiplier = passiveDrain.behaviorMultipliers[fishBehaviorName]",
+    "description": "Поточний fish behavior і його множник пасивної витрати stamina.",
+    "paths": [
+      "forceData.behavior.name",
+      "CONFIG.stamina.mechanics.passiveDrain.behaviorMultipliers"
+    ]
+  },
+  "Total drain/sec": {
+    "formula": "totalDrain/sec = activeDrain/sec + passiveDrain/sec",
+    "description": "Сумарна витрата stamina за секунду перед відніманням angle regen.",
+    "paths": [
+      "fightFrame.stamina.totalStaminaDrainPerSecond"
+    ]
   }
 }

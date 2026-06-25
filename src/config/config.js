@@ -430,6 +430,18 @@ const CONFIG = {
       },
       passiveDrain: {
         enabled: false,
+        drainPerSecond: 15,
+        curvePower: 1.0,
+        lineTautThresholdRatio: 0.995,
+        defaultBehaviorMultiplier: 0.5,
+        behaviorMultipliers: {
+          dash: 1.0,
+          swim: 0.5,
+          idle: 0.1,
+          rest: 0.0,
+        },
+        slippingDragMultiplier: 1.0,
+        hardLimitMultiplier: 1.0,
       },
 
       baseDepletionRate: 100,
