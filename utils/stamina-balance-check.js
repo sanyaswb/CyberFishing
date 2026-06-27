@@ -106,6 +106,7 @@ class FakeCondition {
     this.maxPoints = 100;
     this.currentStamina = stamina;
     this.currentExhaustion = endurance;
+    this.punishmentCalls = 0;
   }
 
   restoreFull() {
@@ -135,6 +136,7 @@ class FakeCondition {
   }
 
   applyPunishment(capPercent) {
+    this.punishmentCalls += 1;
     this.currentExhaustion = Math.max(this.currentExhaustion, this.maxEndurance * capPercent);
   }
 }
@@ -144,6 +146,9 @@ class FakeFish {
     this.randomDebuffApplied = false;
     this.powerDebuff = 0;
     this.masteryMultiplier = 1;
+    this.applyPowerDebuffCalls = 0;
+    this.powerDebuffByRatioCalls = 0;
+    this.lastPowerDebuffExhaustionRatio = null;
   }
 
   get hasActiveDebuff() {
@@ -155,6 +160,7 @@ class FakeFish {
   }
 
   applyPowerDebuff(amount) {
+    this.applyPowerDebuffCalls += 1;
     this.powerDebuff += Math.max(0, Number(amount) || 0);
   }
 
@@ -172,7 +178,18 @@ class FakeFish {
     this.masteryMultiplier = value;
   }
 
-  setPowerDebuffByExhaustionRatio() {}
+  setPowerDebuffByExhaustionRatio(
+    exhaustionRatio,
+    maxPowerDropPerSec,
+    maxDurationSec,
+  ) {
+    this.powerDebuffByRatioCalls += 1;
+    this.lastPowerDebuffExhaustionRatio = Number(exhaustionRatio);
+    this.powerDebuff =
+      Math.max(0, Number(maxPowerDropPerSec) || 0) *
+      Math.max(0, Number(maxDurationSec) || 0) *
+      Math.max(0, 1 - this.lastPowerDebuffExhaustionRatio);
+  }
 }
 
 function createController({ phase = "stamina", stamina = 100, endurance = 100 } = {}) {
@@ -181,6 +198,14 @@ function createController({ phase = "stamina", stamina = 100, endurance = 100 } 
   const controller = new StaminaController(condition, fish, 1, mechanicsConfig);
   return { condition, fish, controller };
 }
+
+let durationRuntime = createController();
+approx(
+  durationRuntime.controller.getExhaustionDurationMs(),
+  (100 / 87.5) * 1000,
+  0.0001,
+  "exhaustion duration uses configured expected endurance drain per second",
+);
 
 const activeDrain = new ActiveStaminaDrainCalculator();
 let frame = activeDrain.calculate({
@@ -345,6 +370,34 @@ runtime.controller.evaluate({
 });
 approx(runtime.condition.currentStamina, 70, 0.0001, "StaminaController applies passive stamina regen");
 
+runtime = createController({ phase: "stamina", stamina: 100, endurance: 20 });
+runtime.controller.evaluate({
+  staminaFrame: balanceFactory.create({
+    phase: "stamina",
+    appliedRodHoldKg: 0.2,
+    weakestTackleLimitKg: 1,
+    lineAngleDeg: 15,
+    dtSec: 1,
+    config: mechanicsConfig,
+  }),
+  dt: 1000,
+});
+runtime.controller.evaluate({
+  staminaFrame: balanceFactory.create({
+    phase: "stamina",
+    appliedRodHoldKg: 0,
+    weakestTackleLimitKg: 1,
+    lineAngleDeg: 90,
+    dtSec: 1,
+    config: mechanicsConfig,
+  }),
+  dt: 1000,
+});
+approx(runtime.condition.currentStamina, 100, 0.0001, "frame stamina can fully recover in phase 1");
+approx(runtime.condition.currentExhaustion, 20, 0.0001, "frame stamina recovery does not punish exhaustion");
+approx(runtime.condition.punishmentCalls, 0, 0.0001, "frame stamina path does not call legacy recovery punishment");
+approx(runtime.fish.powerDebuffByRatioCalls, 0, 0.0001, "frame stamina recovery does not synchronize power debuff");
+
 runtime = createController({ phase: "stamina", stamina: 10 });
 runtime.controller.evaluate({
   staminaFrame: balanceFactory.create({
@@ -371,6 +424,9 @@ runtime.controller.evaluate({
   dt: 1000,
 });
 approx(runtime.condition.currentExhaustion, 60, 0.0001, "phase exhaustion active pressure reduces endurance");
+approx(runtime.fish.powerDebuffByRatioCalls, 1, 0.0001, "frame endurance path synchronizes power debuff from endurance ratio");
+approx(runtime.fish.lastPowerDebuffExhaustionRatio, 0.6, 0.0001, "power debuff sync uses currentExhaustion / maxEndurance");
+approx(runtime.fish.applyPowerDebuffCalls, 0, 0.0001, "frame endurance path does not use incremental legacy power debuff");
 
 runtime = createController({ phase: "exhaustion", endurance: 100 });
 runtime.controller.evaluate({

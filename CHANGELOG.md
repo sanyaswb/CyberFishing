@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.23.8 - Stamina frame recovery punishment fix
+
+- Removed legacy recovery punishment from the new frame-based `STAMINA` path so normal stamina regen no longer mutates exhaustion or fish power.
+- Changed frame-based endurance power debuff progression to sync from actual `currentExhaustion / maxEndurance`.
+- Updated exhaustion duration reporting for debug/mastery timing to use configured expected endurance drain per second.
+- Marked the old angle stamina recovery calculator as deprecated compatibility code.
+- Added regression coverage for full stamina recovery without punishment and endurance-ratio power debuff sync.
+
 ## v0.23.7 - Stamina endurance phase split
 
 - Split the condition model so `STAMINA` is the active control gate and `ENDURANCE` is the phase-2 fish exhaustion pool.

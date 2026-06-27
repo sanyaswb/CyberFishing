@@ -3,6 +3,7 @@
   "source": "index.html",
   "scripts": {
     "dev": "node utils/dev-server.js",
+    "copy:version": "node utils/create-version-copy.js",
     "check:js": "node utils/check-js.js",
     "check:physics": "node utils/fps-physics-check.js",
     "check:fight": "node utils/fight-systems-check.js",

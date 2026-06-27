@@ -43,8 +43,16 @@ class StaminaController {
   }
 
   getExhaustionDurationMs() {
-    if (!this.#fish) return 1000;
+    const expectedDps = this.#expectedEnduranceDrainPerSecond();
+    if (expectedDps > 0) {
+      return (this.#maxEndurance() / expectedDps) * 1000;
+    }
 
+    return this.#legacyExhaustionDurationMs();
+  }
+
+  #legacyExhaustionDurationMs() {
+    if (!this.#fish) return 1000;
     const idealDps =
       this.#mechanicsConfig.baseDepletionRate *
       Math.max(0.001, this.#playerBasePower);
@@ -136,7 +144,6 @@ class StaminaController {
     } else if (netChange > 0) {
       this.#condition.applyStaminaRegen(netChange);
     }
-    this.#applyRecoveryPunishment();
   }
 
   #evaluateEnduranceBalanceFrame(frame, dt) {
@@ -152,10 +159,7 @@ class StaminaController {
       return;
     }
 
-    this.#applyEnduranceFrameDrain({
-      damage,
-      debuff: this.#resolveFramePowerDebuff(frame),
-    });
+    this.#applyEnduranceFrameDrain({ damage });
   }
 
   #evaluateExhaustionPhase({
@@ -267,44 +271,47 @@ class StaminaController {
     );
   }
 
-  #applyEnduranceFrameDrain({ damage, debuff }) {
+  #applyEnduranceFrameDrain({ damage }) {
     if (this.#condition.currentExhaustion <= 0) {
       this.#applyFinalDebuffIfExhausted();
       return;
     }
 
     if (this.#condition.currentExhaustion <= damage) {
-      const ratio =
-        this.#condition.currentExhaustion / Math.max(0.001, damage);
       this.#condition.applyExhaustionDamage(
         this.#condition.currentExhaustion,
       );
-      this.#fish.applyPowerDebuff(
-        debuff * ratio,
-        this.#mechanicsConfig.minBasePowerRatio ?? 0.2,
-      );
+      this.#syncFramePowerDebuffWithEndurance();
       this.#applyFinalDebuffIfExhausted();
       return;
     }
 
     this.#condition.applyExhaustionDamage(damage);
-    this.#fish.applyPowerDebuff(
-      debuff,
-      this.#mechanicsConfig.minBasePowerRatio ?? 0.2,
-    );
+    this.#syncFramePowerDebuffWithEndurance();
   }
 
-  #resolveFramePowerDebuff(frame) {
-    const dtSec = Math.max(0, Number(frame.dtSec) || 0);
-    const drainRatio = this.#clamp01(
-      frame.enduranceTotalDrainRatio ??
-        ((Number(frame.activeEnduranceDrainRatio) || 0) +
-          (Number(frame.passiveEnduranceDrainRatio) || 0)),
+  #syncFramePowerDebuffWithEndurance() {
+    if (typeof this.#fish?.setPowerDebuffByExhaustionRatio !== "function") {
+      return;
+    }
+
+    const enduranceRatio = this.#clamp01(
+      this.#condition.currentExhaustion / this.#maxEndurance(),
     );
-    return (
-      Math.max(0, Number(this.#mechanicsConfig.basePowerDropPerSec) || 0) *
-      drainRatio *
-      dtSec
+    const maxPowerDropPerSec = this.#positive(
+      this.#mechanicsConfig.basePowerDropPerSec,
+      0,
+    );
+    const expectedDurationSec = Math.max(
+      0.001,
+      this.getExhaustionDurationMs() / 1000,
+    );
+
+    this.#fish.setPowerDebuffByExhaustionRatio(
+      enduranceRatio,
+      maxPowerDropPerSec,
+      expectedDurationSec,
+      this.#mechanicsConfig.minBasePowerRatio ?? 0.2,
     );
   }
 
@@ -424,6 +431,31 @@ class StaminaController {
 
   #clamp01(value) {
     return Math.max(0, Math.min(1, Number(value) || 0));
+  }
+
+  #expectedEnduranceDrainPerSecond() {
+    const enduranceDrain = this.#mechanicsConfig.enduranceDrain || {};
+    const active = enduranceDrain.active || {};
+    const passive = enduranceDrain.passive || {};
+    const activeDps =
+      active.enabled === false
+        ? 0
+        : this.#positive(active.drainPerSecond, 80);
+    const passiveDps =
+      passive.enabled === false
+        ? 0
+        : this.#positive(passive.drainPerSecond, 15) *
+          this.#positive(passive.defaultBehaviorMultiplier, 0.5);
+    return Math.max(0, activeDps + passiveDps);
+  }
+
+  #positive(value, fallback = 0) {
+    const number = Number(value);
+    if (Number.isFinite(number) && number >= 0) return number;
+    const safeFallback = Number(fallback);
+    return Number.isFinite(safeFallback) && safeFallback >= 0
+      ? safeFallback
+      : 0;
   }
 
   #maxStamina() {

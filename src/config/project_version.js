@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.23.7";
+const CURRENT_PROJECT_VERSION = "0.23.8";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "stamina-endurance-phase-split",
+  codename: "stamina-frame-recovery-punishment-fix",
   updatedAt: "2026-06-27",
   notes: Object.freeze([
-    "Split STAMINA and ENDURANCE into separate control and exhaustion phases",
-    "STAMINA now drains only from applied player pressure and passively regenerates through angle-scaled recovery",
-    "ENDURANCE now drains from active player pressure and resisted fish effort in the exhaustion phase",
+    "Removed legacy recovery punishment from the frame-based STAMINA phase",
+    "Aligned exhaustion debug/mastery duration with configured endurance drain rates",
+    "Synchronized frame-based power debuff progression from actual endurance loss",
   ]),
 });
 

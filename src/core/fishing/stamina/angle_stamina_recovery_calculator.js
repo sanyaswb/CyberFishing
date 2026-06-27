@@ -1,3 +1,5 @@
+// Deprecated compatibility calculator. New stamina uses
+// StaminaAngleRegenMultiplierCalculator to scale passive recovery.
 class AngleStaminaRecoveryCalculator {
   calculate({
     lineAngleDeg = 0,
