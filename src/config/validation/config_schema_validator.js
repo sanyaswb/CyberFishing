@@ -56,6 +56,7 @@ class ConfigSchemaValidator {
     this.#validateImmutableBaseConfig();
     this.#validatePhysicsConfig();
     this.#validateLocationDebugConfig();
+    this.#validateStaminaMechanicsConfig();
     this.#validateFishCategories();
     this.#validateFishDb();
     this.#validateItemDb();
@@ -295,6 +296,51 @@ class ConfigSchemaValidator {
     }
   }
 
+  #validateStaminaMechanicsConfig() {
+    const config = this.config.stamina?.mechanics?.enduranceMovementDebuff;
+    if (!config || typeof config !== "object") {
+      this.#error(
+        "stamina.mechanics.enduranceMovementDebuff",
+        "missing endurance movement debuff config",
+      );
+      return;
+    }
+
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.enduranceMovementDebuff.enabled",
+      config.enabled,
+    );
+    this.#requireFiniteNumberWithLabel(
+      "stamina.mechanics.enduranceMovementDebuff.curvePower",
+      config.curvePower,
+      { min: 0 },
+    );
+
+    const direction = config.direction || {};
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.enduranceMovementDebuff.direction.enabled",
+      direction.enabled,
+    );
+    this.#requireNumericRangeWithLabel(
+      "stamina.mechanics.enduranceMovementDebuff.direction.exhaustedRadialRange",
+      direction.exhaustedRadialRange,
+    );
+
+    const behaviorWeights = config.behaviorWeights || {};
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.enduranceMovementDebuff.behaviorWeights.enabled",
+      behaviorWeights.enabled,
+    );
+    const multipliers = behaviorWeights.multipliersAtZeroEndurance || {};
+    for (const behaviorName of ["dash", "lastDash", "swim", "idle", "rest"]) {
+      this.#requireFiniteNumberWithLabel(
+        `stamina.mechanics.enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance.${behaviorName}`,
+        multipliers[behaviorName],
+        { min: 0 },
+      );
+    }
+  }
+
   #requireNumericRange(path, value) {
     if (!Array.isArray(value) || value.length < 2) {
       this.#error(path, "must contain [min, max]");
@@ -308,6 +354,11 @@ class ConfigSchemaValidator {
       `${path}[1]`,
       value[1],
     );
+  }
+
+  #requireNumericRangeWithLabel(path, value) {
+    this.#requireNumericRange(path, value);
+    this.#requireParameterLabel(path);
   }
 
   #validateWeightConfig(fishPath, weightConfig) {
@@ -470,6 +521,28 @@ class ConfigSchemaValidator {
     if (parsed < min) this.#error(path, `expected >= ${min}, got ${parsed}`);
     if (parsed > max) this.#error(path, `expected <= ${max}, got ${parsed}`);
     return true;
+  }
+
+  #requireFiniteNumberWithLabel(path, value, options = {}) {
+    const ok = this.#requireFiniteNumber(path, value, options);
+    this.#requireParameterLabel(path);
+    return ok;
+  }
+
+  #requireBooleanWithLabel(path, value) {
+    if (typeof value !== "boolean") {
+      this.#error(path, "expected boolean");
+    }
+    this.#requireParameterLabel(path);
+  }
+
+  #requireParameterLabel(path) {
+    const parentPath = path.includes(".")
+      ? path.slice(0, path.lastIndexOf("."))
+      : "";
+    if (!this.#hasParameterLabel(path, parentPath)) {
+      this.#error(path, "missing parameter label in parameter_labels.json");
+    }
   }
 
   #requireNonEmptyString(path, value) {

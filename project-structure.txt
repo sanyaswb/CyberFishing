@@ -129,6 +129,8 @@
 │  │  ├── core.js
 │  │  ├── fishing
 │  │  │  ├── drag_force_calculator.js
+│  │  │  ├── endurance
+│  │  │  │  └── endurance_movement_debuff_calculator.js
 │  │  │  ├── fish_direction_intent_sampler.js
 │  │  │  ├── fish_fight_direction_resolver.js
 │  │  │  ├── fish_retrieve_result.js
@@ -360,6 +362,7 @@
   │  ├── catch-resolution-debug.js
   │  ├── fish-radial-speed-delta.js
   │  └── simulate-simple-fish-force.js
+  ├── endurance-movement-debuff-check.js
   ├── fight-area-renderer-check.js
   ├── fight-input-composition-check.js
   ├── fight-movement-constraints-check.js

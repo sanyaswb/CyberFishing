@@ -955,6 +955,46 @@
     "label": "Endurance rest multiplier",
     "description": "Passive endurance drain multiplier for rest behavior."
   },
+  "stamina.mechanics.enduranceMovementDebuff.enabled": {
+    "label": "Endurance movement debuff enabled",
+    "description": "Enables the runtime movement debuff during the EXHAUSTION phase."
+  },
+  "stamina.mechanics.enduranceMovementDebuff.curvePower": {
+    "label": "Endurance movement debuff curve",
+    "description": "Power curve applied to endurance exhaustion progress before movement modifiers are interpolated."
+  },
+  "stamina.mechanics.enduranceMovementDebuff.direction.enabled": {
+    "label": "Endurance radial debuff enabled",
+    "description": "Enables runtime radial range override as the fish loses endurance."
+  },
+  "stamina.mechanics.enduranceMovementDebuff.direction.exhaustedRadialRange": {
+    "label": "Exhausted radial range",
+    "description": "Target radial intent range used when ENDURANCE reaches zero."
+  },
+  "stamina.mechanics.enduranceMovementDebuff.behaviorWeights.enabled": {
+    "label": "Endurance behavior weights enabled",
+    "description": "Enables runtime behavior weight multipliers as the fish loses endurance."
+  },
+  "stamina.mechanics.enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance.dash": {
+    "label": "Exhausted dash weight multiplier",
+    "description": "Runtime dash selection weight multiplier when ENDURANCE reaches zero."
+  },
+  "stamina.mechanics.enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance.lastDash": {
+    "label": "Exhausted lastDash weight multiplier",
+    "description": "Runtime lastDash selection weight multiplier when ENDURANCE reaches zero."
+  },
+  "stamina.mechanics.enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance.swim": {
+    "label": "Exhausted swim weight multiplier",
+    "description": "Runtime swim selection weight multiplier when ENDURANCE reaches zero."
+  },
+  "stamina.mechanics.enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance.idle": {
+    "label": "Exhausted idle weight multiplier",
+    "description": "Runtime idle selection weight multiplier when ENDURANCE reaches zero."
+  },
+  "stamina.mechanics.enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance.rest": {
+    "label": "Exhausted rest weight multiplier",
+    "description": "Runtime rest selection weight multiplier when ENDURANCE reaches zero."
+  },
   "stamina.mechanics.angleRecovery.enabled": {
     "label": "Angle stamina recovery enabled",
     "description": "Deprecated. Angle now multiplies passive stamina regen through passiveRegen.angleMultiplier."

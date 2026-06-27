@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.23.9 - Dynamic endurance movement debuff
+
+- Added a runtime `EnduranceMovementDebuffCalculator` for phase-2 fish movement behavior.
+- Routed the debuff through `FishForceSystem -> FishBehavior` before state and direction selection, using the frame-start `currentExhaustion`.
+- Added radial range overrides and behavior weight multipliers without mutating `movementProfile` or `behaviorProfile`.
+- Exposed endurance movement debuff progress, radial ranges and weight multipliers in debug snapshots and the STAMINA BALANCE overlay.
+- Added config metadata, validation and regression coverage for the new dynamic movement debuff.
+
 ## v0.23.8 - Stamina frame recovery punishment fix
 
 - Removed legacy recovery punishment from the new frame-based `STAMINA` path so normal stamina regen no longer mutates exhaustion or fish power.

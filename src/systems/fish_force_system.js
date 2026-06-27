@@ -9,6 +9,10 @@ class FishForceSystem {
   #forceCalculator = new SimpleFightForceCalculator();
   #holdOppositionResolver = new HoldOppositionResolver();
   #dragForceCalculator = new DragForceCalculator();
+  #enduranceMovementDebuffCalculator =
+    typeof EnduranceMovementDebuffCalculator !== "undefined"
+      ? new EnduranceMovementDebuffCalculator()
+      : null;
   #physicsConfig;
   #debug = {};
 
@@ -44,13 +48,11 @@ class FishForceSystem {
       1,
       Number(this.#physicsConfig?.getPixelsPerMeter?.()) || 50,
     );
-    const behavior = this.#fish.getBehavior(dtMs);
     const rawFishPhysics = this.#fish.getPhysicsConfig?.() || {};
     const fishPhysics =
       typeof FishPhysicsProfile !== "undefined"
         ? FishPhysicsProfile.toRuntimeConfig(rawFishPhysics)
         : rawFishPhysics;
-    const lastDashDebug = this.#fish.getLastDashDebugData?.() || {};
 
     const maxStamina = this.#firstFiniteNumber(
       fishCondition?.maxStamina,
@@ -68,6 +70,15 @@ class FishForceSystem {
     const exhaustionProgress = maxEndurance
       ? this.#clamp01(1 - fishCondition.currentExhaustion / maxEndurance)
       : 0;
+    const enduranceMovementDebuff = this.#calculateEnduranceMovementDebuff({
+      fishCondition,
+      maxEndurance,
+      fishPhysics,
+    });
+    const enduranceMovementDebug =
+      this.#enduranceMovementDebugFields(enduranceMovementDebuff);
+    const behavior = this.#fish.getBehavior(dtMs, enduranceMovementDebuff);
+    const lastDashDebug = this.#fish.getLastDashDebugData?.() || {};
 
     const behaviorPullValue = this.#numberOrDefault(
       behavior.forceMultiplier ?? behavior.pullMult,
@@ -291,6 +302,7 @@ class FishForceSystem {
       staminaActivityMultiplier,
       exhaustionProgress,
       exhaustionSpeedMultiplier,
+      ...enduranceMovementDebug,
       opposition,
       directionResistanceMultiplier: directionMultiplier,
       fishDirectionState: directionInfo.name,
@@ -358,6 +370,8 @@ class FishForceSystem {
       fishMoveIntentLateral: Number(movementIntent.lateral) || 0,
       fishMoveDirX: moveDir.x,
       fishMoveDirY: moveDir.y,
+      enduranceMovementDebuff,
+      ...enduranceMovementDebug,
       dragBlockedForceKg: dragFrame.dragBlockedForceKg,
       excessYForceKg: dragFrame.excessYForceKg,
       yEscapeForceKg: dragFrame.yEscapeForceKg,
@@ -411,6 +425,62 @@ class FishForceSystem {
 
   handleFightEvent(event = {}) {
     this.#fish.handleFightEvent?.(event);
+  }
+
+  #calculateEnduranceMovementDebuff({
+    fishCondition,
+    maxEndurance,
+    fishPhysics,
+  }) {
+    if (!this.#enduranceMovementDebuffCalculator) {
+      return Object.freeze({
+        enabled: false,
+        active: false,
+        enduranceProgress: 0,
+        debuffPower: 0,
+        baseRadialRange: null,
+        directionEnabled: false,
+        exhaustedRadialRange: null,
+        radialRangeOverride: null,
+        behaviorWeightMultipliers: Object.freeze({}),
+      });
+    }
+
+    return this.#enduranceMovementDebuffCalculator.calculate({
+      phase: fishCondition?.phase || "stamina",
+      currentExhaustion: fishCondition?.currentExhaustion ?? maxEndurance,
+      maxEndurance,
+      baseRadialRange:
+        fishPhysics?.movementProfile?.radialRange ??
+        fishPhysics?.radialRange,
+      config:
+        this.#config?.stamina?.mechanics?.enduranceMovementDebuff || {},
+    });
+  }
+
+  #enduranceMovementDebugFields(frame = {}) {
+    const base = frame?.baseRadialRange;
+    const effective = frame?.radialRangeOverride;
+    const multipliers = frame?.behaviorWeightMultipliers || {};
+    return {
+      enduranceMovementDebuffEnabled: frame?.enabled === true,
+      enduranceMovementDebuffActive: frame?.active === true,
+      enduranceMovementDebuffProgress: frame?.enduranceProgress ?? 0,
+      enduranceMovementDebuffPower: frame?.debuffPower ?? 0,
+      enduranceBaseRadialMin: Array.isArray(base) ? base[0] : null,
+      enduranceBaseRadialMax: Array.isArray(base) ? base[1] : null,
+      enduranceEffectiveRadialMin: Array.isArray(effective)
+        ? effective[0]
+        : null,
+      enduranceEffectiveRadialMax: Array.isArray(effective)
+        ? effective[1]
+        : null,
+      enduranceDashWeightMultiplier: multipliers.dash ?? 1,
+      enduranceLastDashWeightMultiplier: multipliers.lastDash ?? 1,
+      enduranceSwimWeightMultiplier: multipliers.swim ?? 1,
+      enduranceIdleWeightMultiplier: multipliers.idle ?? 1,
+      enduranceRestWeightMultiplier: multipliers.rest ?? 1,
+    };
   }
 
   #getCurrentVelocityPxPerSec(env, physics) {

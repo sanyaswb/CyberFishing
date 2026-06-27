@@ -8,6 +8,7 @@ const FILES = [
   "src/core/fishing/fish_direction_intent_sampler.js",
   "src/core/fishing/fish_fight_direction_resolver.js",
   "src/core/fishing/drag_force_calculator.js",
+  "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
   "src/entities/fish.js",
 ];
 

@@ -145,6 +145,39 @@ class StaminaBalanceOverlayModule extends OverlayModule {
       { color: "#c792ea" },
     );
     html += this.metricRow(
+      "Movement debuff",
+      data.enduranceMovementDebuffEnabled
+        ? data.enduranceMovementDebuffActive
+          ? "active"
+          : "ready"
+        : "disabled",
+      {
+        color: data.enduranceMovementDebuffActive
+          ? "#ffb86c"
+          : "#8a9bac",
+      },
+    );
+    html += this.metricRow(
+      "Movement progress",
+      `${f.percent(data.enduranceMovementDebuffProgress, 1)} / power ${f.percent(data.enduranceMovementDebuffPower, 1)}`,
+      { color: "#ffb86c" },
+    );
+    html += this.metricRow(
+      "Radial range",
+      `${f.num(data.enduranceBaseRadialMin, 2)}..${f.num(data.enduranceBaseRadialMax, 2)} -> ${f.num(data.enduranceEffectiveRadialMin, 2)}..${f.num(data.enduranceEffectiveRadialMax, 2)}`,
+      { color: "#73c2fb" },
+    );
+    html += this.metricRow(
+      "Dash/swim weights",
+      `x${f.num(data.enduranceDashWeightMultiplier, 2)} / x${f.num(data.enduranceSwimWeightMultiplier, 2)}`,
+      { color: "#ff8888" },
+    );
+    html += this.metricRow(
+      "Idle/rest weights",
+      `x${f.num(data.enduranceIdleWeightMultiplier, 2)} / x${f.num(data.enduranceRestWeightMultiplier, 2)}`,
+      { color: "#00ff80" },
+    );
+    html += this.metricRow(
       "Current exhaustion",
       f.num(data.currentExhaustion, 2),
       { color: "#ff8888" },

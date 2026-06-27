@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.23.8";
+const CURRENT_PROJECT_VERSION = "0.23.9";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "stamina-frame-recovery-punishment-fix",
-  updatedAt: "2026-06-27",
+  codename: "dynamic-endurance-movement-debuff",
+  updatedAt: "2026-06-28",
   notes: Object.freeze([
-    "Removed legacy recovery punishment from the frame-based STAMINA phase",
-    "Aligned exhaustion debug/mastery duration with configured endurance drain rates",
-    "Synchronized frame-based power debuff progression from actual endurance loss",
+    "Added a runtime endurance movement debuff for EXHAUSTION phase behavior",
+    "Reduced exhausted fish away movement through radial intent overrides",
+    "Shifted exhausted behavior selection toward idle/rest without mutating fish config",
   ]),
 });
 

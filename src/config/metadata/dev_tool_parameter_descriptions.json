@@ -248,5 +248,55 @@
     "key": "enduranceDrain.passive.behaviorMultipliers.rest",
     "ua": "endurance_rest_multiplier",
     "description": "Passive ENDURANCE drain multiplier for rest behavior."
+  },
+  {
+    "key": "enduranceMovementDebuff.enabled",
+    "ua": "endurance_movement_debuff_enabled",
+    "description": "Enables runtime movement debuff during the EXHAUSTION phase."
+  },
+  {
+    "key": "enduranceMovementDebuff.curvePower",
+    "ua": "endurance_movement_debuff_curve_power",
+    "description": "Power curve applied to exhaustion progress before movement modifiers are interpolated."
+  },
+  {
+    "key": "enduranceMovementDebuff.direction.enabled",
+    "ua": "endurance_movement_direction_debuff_enabled",
+    "description": "Enables runtime radial range override as the fish loses endurance."
+  },
+  {
+    "key": "enduranceMovementDebuff.direction.exhaustedRadialRange",
+    "ua": "endurance_exhausted_radial_range",
+    "description": "Target radial intent range when ENDURANCE reaches zero."
+  },
+  {
+    "key": "enduranceMovementDebuff.behaviorWeights.enabled",
+    "ua": "endurance_behavior_weight_debuff_enabled",
+    "description": "Enables runtime behavior weight multipliers as the fish loses endurance."
+  },
+  {
+    "key": "enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance.dash",
+    "ua": "endurance_zero_dash_weight_multiplier",
+    "description": "Runtime dash selection weight multiplier when ENDURANCE reaches zero."
+  },
+  {
+    "key": "enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance.lastDash",
+    "ua": "endurance_zero_last_dash_weight_multiplier",
+    "description": "Runtime lastDash selection weight multiplier when ENDURANCE reaches zero."
+  },
+  {
+    "key": "enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance.swim",
+    "ua": "endurance_zero_swim_weight_multiplier",
+    "description": "Runtime swim selection weight multiplier when ENDURANCE reaches zero."
+  },
+  {
+    "key": "enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance.idle",
+    "ua": "endurance_zero_idle_weight_multiplier",
+    "description": "Runtime idle selection weight multiplier when ENDURANCE reaches zero."
+  },
+  {
+    "key": "enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance.rest",
+    "ua": "endurance_zero_rest_weight_multiplier",
+    "description": "Runtime rest selection weight multiplier when ENDURANCE reaches zero."
   }
 ]

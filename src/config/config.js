@@ -457,6 +457,24 @@ const CONFIG = {
           },
         },
       },
+      enduranceMovementDebuff: {
+        enabled: true,
+        curvePower: 1.0,
+        direction: {
+          enabled: true,
+          exhaustedRadialRange: [-0.5, 0.25],
+        },
+        behaviorWeights: {
+          enabled: true,
+          multipliersAtZeroEndurance: {
+            dash: 0.35,
+            lastDash: 0.25,
+            swim: 0.65,
+            idle: 1.6,
+            rest: 2.0,
+          },
+        },
+      },
       // Deprecated aliases kept so existing dev tools/config overrides remain safe.
       angleRecovery: {
         enabled: false,

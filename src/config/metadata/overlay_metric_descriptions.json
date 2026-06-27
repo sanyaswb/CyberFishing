@@ -420,5 +420,52 @@
     "paths": [
       "DEBUG_DATA.enduranceTotalDrainPerSecond"
     ]
+  },
+  "Movement debuff": {
+    "formula": "active = CONFIG.stamina.mechanics.enduranceMovementDebuff.enabled && phase == exhaustion",
+    "description": "Whether the dynamic endurance movement debuff is enabled and active this frame.",
+    "paths": [
+      "DEBUG_DATA.enduranceMovementDebuffEnabled",
+      "DEBUG_DATA.enduranceMovementDebuffActive",
+      "CONFIG.stamina.mechanics.enduranceMovementDebuff.enabled"
+    ]
+  },
+  "Movement progress": {
+    "formula": "progress = clamp(1 - currentExhaustion / maxEndurance, 0, 1); power = progress ^ curvePower",
+    "description": "Endurance movement debuff progress and curved power used for radial and behavior-weight interpolation.",
+    "paths": [
+      "DEBUG_DATA.enduranceMovementDebuffProgress",
+      "DEBUG_DATA.enduranceMovementDebuffPower",
+      "CONFIG.stamina.mechanics.enduranceMovementDebuff.curvePower"
+    ]
+  },
+  "Radial range": {
+    "formula": "effectiveRadialRange = lerp(baseRadialRange, exhaustedRadialRange, debuffPower)",
+    "description": "Runtime radial intent range used by FishBehavior direction selection during EXHAUSTION.",
+    "paths": [
+      "DEBUG_DATA.enduranceBaseRadialMin",
+      "DEBUG_DATA.enduranceBaseRadialMax",
+      "DEBUG_DATA.enduranceEffectiveRadialMin",
+      "DEBUG_DATA.enduranceEffectiveRadialMax",
+      "CONFIG.stamina.mechanics.enduranceMovementDebuff.direction.exhaustedRadialRange"
+    ]
+  },
+  "Dash/swim weights": {
+    "formula": "effectiveWeight = baseWeight * lerp(1, multiplierAtZeroEndurance, debuffPower)",
+    "description": "Runtime behavior weight multipliers that make exhausted fish choose dash and swim less often.",
+    "paths": [
+      "DEBUG_DATA.enduranceDashWeightMultiplier",
+      "DEBUG_DATA.enduranceSwimWeightMultiplier",
+      "CONFIG.stamina.mechanics.enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance"
+    ]
+  },
+  "Idle/rest weights": {
+    "formula": "effectiveWeight = baseWeight * lerp(1, multiplierAtZeroEndurance, debuffPower)",
+    "description": "Runtime behavior weight multipliers that make exhausted fish idle or rest more often.",
+    "paths": [
+      "DEBUG_DATA.enduranceIdleWeightMultiplier",
+      "DEBUG_DATA.enduranceRestWeightMultiplier",
+      "CONFIG.stamina.mechanics.enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance"
+    ]
   }
 }

@@ -430,8 +430,8 @@ class Fish {
     return Math.max(0, Math.min(maxAllowedDebuff, Number(value) || 0));
   }
 
-  getBehavior(dt) {
-    this.#behavior.update(dt);
+  getBehavior(dt, runtimeMovementModifier = null) {
+    this.#behavior.update(dt, runtimeMovementModifier);
     return this.#behavior.getStateData();
   }
 
@@ -549,6 +549,7 @@ class FishBehavior {
   #holdSpecialStateUntilLeave;
   #lastDashBlockedByCatchZone;
   #lastDashDebug;
+  #runtimeMovementModifier;
   #rng;
 
   constructor(fishConfig, rng = null) {
@@ -581,6 +582,7 @@ class FishBehavior {
     this.#holdSpecialStateUntilLeave = null;
     this.#lastDashBlockedByCatchZone = false;
     this.#lastDashDebug = {};
+    this.#runtimeMovementModifier = null;
     this.#pickNextState();
   }
 
@@ -590,7 +592,7 @@ class FishBehavior {
       : min + this.#rng.next() * (max - min);
   }
 
-  #pickNextState() {
+  #pickNextState(runtimeMovementModifier = this.#runtimeMovementModifier) {
     if (this.#isLocked) return;
 
     const states = this.#config.behaviors;
@@ -603,32 +605,43 @@ class FishBehavior {
       if (this.#lastDashBlockedByCatchZone && key === lastDashStateName) {
         continue;
       }
-      if (states[key].weight > 0) validKeys.push(key);
+      if (this.#effectiveBehaviorWeight(key, states[key], runtimeMovementModifier) > 0) {
+        validKeys.push(key);
+      }
     }
 
     if (validKeys.length === 0) return;
 
     let totalWeight = 0;
     for (let k of validKeys) {
-      totalWeight += states[k].weight;
+      totalWeight += this.#effectiveBehaviorWeight(
+        k,
+        states[k],
+        runtimeMovementModifier,
+      );
     }
 
     let r = this.#range(0, totalWeight);
     let selectedKey = validKeys[0];
 
     for (let k of validKeys) {
-      if (r < states[k].weight) {
+      const weight = this.#effectiveBehaviorWeight(
+        k,
+        states[k],
+        runtimeMovementModifier,
+      );
+      if (r < weight) {
         selectedKey = k;
         break;
       }
-      r -= states[k].weight;
+      r -= weight;
     }
 
     this.#currentStateName = selectedKey;
     const state = states[this.#currentStateName];
     this.#targetPull = Math.max(0, Number(state.forceMultiplier ?? 1) || 0);
     this.#targetMove = this.#clampNonNegative(state.speedMultiplier ?? 0);
-    this.#pickDirectionTarget(state);
+    this.#pickDirectionTarget(state, runtimeMovementModifier);
     this.#stateTimer = this.#range(state.minTime, state.maxTime);
   }
 
@@ -650,7 +663,7 @@ class FishBehavior {
     this.#currentStateName = stateName;
     this.#targetPull = Math.max(0, Number(state.forceMultiplier ?? 1) || 0);
     this.#targetMove = this.#clampNonNegative(state.speedMultiplier ?? 0);
-    this.#pickDirectionTarget(state);
+    this.#pickDirectionTarget(state, this.#runtimeMovementModifier);
     this.#isLocked = isLocked;
     this.#stateTimer = this.#range(state.minTime, state.maxTime);
     this.#dirTimer = 0;
@@ -826,7 +839,8 @@ class FishBehavior {
     }
   }
 
-  update(dt) {
+  update(dt, runtimeMovementModifier = null) {
+    this.#runtimeMovementModifier = runtimeMovementModifier;
     this.#stateTimer -= dt;
     if (this.#stateTimer <= 0) {
       if (this.#holdSpecialStateUntilLeave === this.#currentStateName) {
@@ -834,14 +848,14 @@ class FishBehavior {
       } else if (this.#isLocked) {
         this.#isLocked = false;
       }
-      this.#pickNextState();
+      this.#pickNextState(runtimeMovementModifier);
     }
 
     const stateConfig = this.#config.behaviors[this.#currentStateName];
 
     this.#dirTimer -= dt;
     if (this.#dirTimer <= 0) {
-      this.#pickDirectionTarget(stateConfig);
+      this.#pickDirectionTarget(stateConfig, runtimeMovementModifier);
       const minMs =
         stateConfig.dirChangeMinMs ?? this.#config.dirChangeMinMs ?? 500;
       const maxMs =
@@ -864,17 +878,17 @@ class FishBehavior {
       (this.#targetLateralIntent - this.#currentLateralIntent) * t;
   }
 
-  #pickDirectionTarget(stateConfig = {}) {
+  #pickDirectionTarget(stateConfig = {}, runtimeMovementModifier = null) {
     const stateDirection =
       stateConfig.direction &&
       typeof stateConfig.direction === "object"
         ? stateConfig.direction
         : {};
     const intent = this.#directionIntentSampler.sample({
-      radialRange:
-        stateDirection.radialRange ??
-        this.#movementProfile.radialRange ??
-        DEFAULT_FISH_RADIAL_RANGE,
+      radialRange: this.#resolveRadialRange(
+        stateDirection,
+        runtimeMovementModifier,
+      ),
       lateralRange:
         stateDirection.lateralRange ??
         this.#movementProfile.lateralRange ??
@@ -882,6 +896,62 @@ class FishBehavior {
     });
     this.#targetRadialIntent = intent.radial;
     this.#targetLateralIntent = intent.lateral;
+  }
+
+  #resolveRadialRange(stateDirection, runtimeMovementModifier) {
+    const baseRange =
+      stateDirection.radialRange ??
+      this.#movementProfile.radialRange ??
+      DEFAULT_FISH_RADIAL_RANGE;
+    if (
+      runtimeMovementModifier?.active === true &&
+      runtimeMovementModifier?.directionEnabled === true &&
+      Array.isArray(runtimeMovementModifier.exhaustedRadialRange)
+    ) {
+      return this.#lerpRange(
+        baseRange,
+        runtimeMovementModifier.exhaustedRadialRange,
+        runtimeMovementModifier.debuffPower,
+      );
+    }
+    const override = runtimeMovementModifier?.radialRangeOverride;
+    if (Array.isArray(override) && override.length >= 2) {
+      return override;
+    }
+    return baseRange;
+  }
+
+  #lerpRange(baseRange, targetRange, ratio) {
+    const base = this.#normalizeRange(baseRange, DEFAULT_FISH_RADIAL_RANGE);
+    const target = this.#normalizeRange(targetRange, base);
+    const t = this.#clamp01(ratio);
+    return [
+      base[0] + (target[0] - base[0]) * t,
+      base[1] + (target[1] - base[1]) * t,
+    ];
+  }
+
+  #normalizeRange(value, fallback) {
+    const range = Array.isArray(value) && value.length >= 2 ? value : fallback;
+    const first = Number(range?.[0]);
+    const second = Number(range?.[1]);
+    if (!Number.isFinite(first) || !Number.isFinite(second)) {
+      return fallback;
+    }
+    return first <= second ? [first, second] : [second, first];
+  }
+
+  #effectiveBehaviorWeight(
+    behaviorName,
+    state,
+    runtimeMovementModifier,
+  ) {
+    const baseWeight = Math.max(0, Number(state?.weight) || 0);
+    const multiplier = Number(
+      runtimeMovementModifier?.behaviorWeightMultipliers?.[behaviorName],
+    );
+    if (!Number.isFinite(multiplier)) return baseWeight;
+    return baseWeight * Math.max(0, multiplier);
   }
 
   #clamp01(value) {

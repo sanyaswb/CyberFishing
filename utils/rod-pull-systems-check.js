@@ -62,6 +62,7 @@ const FILES = [
   "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
   "src/core/fishing/stamina/passive_stamina_drain_calculator.js",
   "src/core/fishing/stamina/stamina_balance_frame.js",
+  "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
   "src/systems/player_pull_motion_smoother.js",
   "src/systems/rod_pull_system.js",
   "src/core/fishing/rod_control_tension_mode_resolver.js",

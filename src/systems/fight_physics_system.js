@@ -2694,6 +2694,32 @@ class FightPhysicsSystem {
         forceData.fishPhysicsConfig?.forceProfile || {},
       fishRuntimeMovementProfile:
         forceData.fishPhysicsConfig?.movementProfile || {},
+      enduranceMovementDebuffEnabled:
+        forceData.enduranceMovementDebuffEnabled === true,
+      enduranceMovementDebuffActive:
+        forceData.enduranceMovementDebuffActive === true,
+      enduranceMovementDebuffProgress:
+        forceData.enduranceMovementDebuffProgress ?? 0,
+      enduranceMovementDebuffPower:
+        forceData.enduranceMovementDebuffPower ?? 0,
+      enduranceBaseRadialMin:
+        forceData.enduranceBaseRadialMin ?? null,
+      enduranceBaseRadialMax:
+        forceData.enduranceBaseRadialMax ?? null,
+      enduranceEffectiveRadialMin:
+        forceData.enduranceEffectiveRadialMin ?? null,
+      enduranceEffectiveRadialMax:
+        forceData.enduranceEffectiveRadialMax ?? null,
+      enduranceDashWeightMultiplier:
+        forceData.enduranceDashWeightMultiplier ?? 1,
+      enduranceLastDashWeightMultiplier:
+        forceData.enduranceLastDashWeightMultiplier ?? 1,
+      enduranceSwimWeightMultiplier:
+        forceData.enduranceSwimWeightMultiplier ?? 1,
+      enduranceIdleWeightMultiplier:
+        forceData.enduranceIdleWeightMultiplier ?? 1,
+      enduranceRestWeightMultiplier:
+        forceData.enduranceRestWeightMultiplier ?? 1,
       fishRetrieveUsefulPullForceKg: fishRetrieveResult?.effectiveRodHoldKg,
       fishRetrieveSpeedMps: fishRetrieveResult?.speedMps,
       modelFightSpeedMps: fishRetrieveResult?.speedMps,
