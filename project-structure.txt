@@ -160,8 +160,13 @@
 │  │  │  ├── simple_fight_force_calculator.js
 │  │  │  ├── slack_calculator.js
 │  │  │  ├── stamina
+│  │  │  │  ├── active_endurance_drain_calculator.js
 │  │  │  │  ├── active_stamina_drain_calculator.js
 │  │  │  │  ├── angle_stamina_recovery_calculator.js
+│  │  │  │  ├── passive_endurance_drain_calculator.js
+│  │  │  │  ├── passive_stamina_drain_calculator.js
+│  │  │  │  ├── passive_stamina_regen_calculator.js
+│  │  │  │  ├── stamina_angle_regen_multiplier_calculator.js
 │  │  │  │  └── stamina_balance_frame.js
 │  │  │  ├── tackle_failure_selector.js
 │  │  │  └── tackle_stress_accumulator.js

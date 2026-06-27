@@ -98,6 +98,10 @@ class StaminaController {
       playerPowerIsPulling && effectivePressureRatio > 0.001;
 
     if (this.#condition.phase === "exhaustion") {
+      if (staminaFrame) {
+        this.#evaluateEnduranceBalanceFrame(staminaFrame, dt);
+        return;
+      }
       this.#evaluateExhaustionPhase({
         tension,
         dt,
@@ -133,6 +137,25 @@ class StaminaController {
       this.#condition.applyStaminaRegen(netChange);
     }
     this.#applyRecoveryPunishment();
+  }
+
+  #evaluateEnduranceBalanceFrame(frame, dt) {
+    this.#lastStaminaBalanceFrame = frame;
+    this.#updateMasteryWindow(dt, 0, this.getExhaustionDurationMs());
+
+    const damage = Math.max(
+      0,
+      Number(frame.totalEnduranceDrain ?? frame.enduranceTotalDrain) || 0,
+    );
+    if (damage <= 0) {
+      this.#applyFinalDebuffIfExhausted();
+      return;
+    }
+
+    this.#applyEnduranceFrameDrain({
+      damage,
+      debuff: this.#resolveFramePowerDebuff(frame),
+    });
   }
 
   #evaluateExhaustionPhase({
@@ -242,6 +265,54 @@ class StaminaController {
       debuff,
       this.#mechanicsConfig.minBasePowerRatio ?? 0.2,
     );
+  }
+
+  #applyEnduranceFrameDrain({ damage, debuff }) {
+    if (this.#condition.currentExhaustion <= 0) {
+      this.#applyFinalDebuffIfExhausted();
+      return;
+    }
+
+    if (this.#condition.currentExhaustion <= damage) {
+      const ratio =
+        this.#condition.currentExhaustion / Math.max(0.001, damage);
+      this.#condition.applyExhaustionDamage(
+        this.#condition.currentExhaustion,
+      );
+      this.#fish.applyPowerDebuff(
+        debuff * ratio,
+        this.#mechanicsConfig.minBasePowerRatio ?? 0.2,
+      );
+      this.#applyFinalDebuffIfExhausted();
+      return;
+    }
+
+    this.#condition.applyExhaustionDamage(damage);
+    this.#fish.applyPowerDebuff(
+      debuff,
+      this.#mechanicsConfig.minBasePowerRatio ?? 0.2,
+    );
+  }
+
+  #resolveFramePowerDebuff(frame) {
+    const dtSec = Math.max(0, Number(frame.dtSec) || 0);
+    const drainRatio = this.#clamp01(
+      frame.enduranceTotalDrainRatio ??
+        ((Number(frame.activeEnduranceDrainRatio) || 0) +
+          (Number(frame.passiveEnduranceDrainRatio) || 0)),
+    );
+    return (
+      Math.max(0, Number(this.#mechanicsConfig.basePowerDropPerSec) || 0) *
+      drainRatio *
+      dtSec
+    );
+  }
+
+  #applyFinalDebuffIfExhausted() {
+    if (this.#condition.currentExhaustion > 0) return;
+    if (!this.#fish.hasActiveDebuff) {
+      this.#fish.applyRandomDebuff(this.#mechanicsConfig.debuffs);
+    }
   }
 
   #evaluateStaminaPhase({

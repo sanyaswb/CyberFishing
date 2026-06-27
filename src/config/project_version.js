@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.23.6";
+const CURRENT_PROJECT_VERSION = "0.23.7";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "stamina-passive-resisted-effort",
-  updatedAt: "2026-06-26",
+  codename: "stamina-endurance-phase-split",
+  updatedAt: "2026-06-27",
   notes: Object.freeze([
-    "Added optional passive stamina drain from resisted fish effort against a taut line",
-    "Stamina balance now combines active drain, passive drain and angle recovery into one frame",
-    "Debug output exposes passive effort, resistance, behavior multiplier and total drain diagnostics",
+    "Split STAMINA and ENDURANCE into separate control and exhaustion phases",
+    "STAMINA now drains only from applied player pressure and passively regenerates through angle-scaled recovery",
+    "ENDURANCE now drains from active player pressure and resisted fish effort in the exhaustion phase",
   ]),
 });
 

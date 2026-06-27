@@ -395,6 +395,7 @@ class FightPhysicsSystem {
         fishRetrieveResult: rodPullFrame.fishRetrieveResult,
         lineState: finalLineState,
         stressSystem,
+        fishCondition,
         floatEntity,
         rodTipPosition,
         physics,
@@ -1754,6 +1755,7 @@ class FightPhysicsSystem {
     fishRetrieveResult,
     lineState,
     stressSystem,
+    fishCondition,
     floatEntity,
     rodTipPosition,
     physics,
@@ -1793,6 +1795,7 @@ class FightPhysicsSystem {
         candidates: Object.freeze([]),
       });
     const frame = this.#staminaBalanceFrame?.create?.({
+      phase: fishCondition?.phase || "stamina",
       playerIsPulling,
       fishTensionKg:
         fishRetrieveResult?.fishTensionKg ?? forceData?.fishTensionKg,
@@ -2965,6 +2968,7 @@ class FightPhysicsSystem {
       shouldSlipDrag: !!fishRetrieveResult?.shouldSlipDrag,
       staminaFrame,
       staminaFrameSource: staminaFrame?.source || "none",
+      staminaPhase: staminaFrame?.phase || "stamina",
       staminaPressureRatio: staminaFrame?.staminaPressureRatio ?? 0,
       angleStressRatio: staminaFrame?.angleStressRatio ?? 0,
       staminaAppliedRodHoldKg: staminaFrame?.appliedRodHoldKg ?? 0,
@@ -2982,6 +2986,18 @@ class FightPhysicsSystem {
         staminaFrame?.activeDrainPerSecond ?? 0,
       staminaActiveDrain:
         staminaFrame?.activeStaminaDrain ?? 0,
+      staminaPassiveRegenPerSecond:
+        staminaFrame?.passiveStaminaRegenPerSecond ?? 0,
+      staminaPassiveRegen:
+        staminaFrame?.passiveStaminaRegen ?? 0,
+      staminaAngleRegenMultiplier:
+        staminaFrame?.angleRegenMultiplier ?? 1,
+      staminaRegenDelayActive:
+        staminaFrame?.regenDelayActive === true,
+      staminaPressureActive:
+        staminaFrame?.staminaPressureActive === true,
+      staminaPressureThresholdKg:
+        staminaFrame?.staminaPressureThresholdKg ?? 0,
       staminaLineAngleDeg: staminaFrame?.lineAngleDeg ?? 0,
       staminaAngleRecoveryRatio:
         staminaFrame?.angleRecoveryRatio ?? 0,
@@ -3037,6 +3053,34 @@ class FightPhysicsSystem {
         staminaFrame?.totalStaminaDrainPerSecond ?? 0,
       staminaTotalDrain:
         staminaFrame?.totalStaminaDrain ?? 0,
+      enduranceActiveDrainRatio:
+        staminaFrame?.activeEnduranceDrainRatio ?? 0,
+      enduranceActiveDrainPerSecond:
+        staminaFrame?.activeEnduranceDrainPerSecond ?? 0,
+      enduranceActiveDrain:
+        staminaFrame?.activeEnduranceDrain ?? 0,
+      endurancePassiveDrainRatio:
+        staminaFrame?.passiveEnduranceDrainRatio ?? 0,
+      endurancePassiveDrainPerSecond:
+        staminaFrame?.passiveEnduranceDrainPerSecond ?? 0,
+      endurancePassiveDrain:
+        staminaFrame?.passiveEnduranceDrain ?? 0,
+      enduranceTotalDrainRatio:
+        staminaFrame?.enduranceTotalDrainRatio ?? 0,
+      enduranceTotalDrainPerSecond:
+        staminaFrame?.totalEnduranceDrainPerSecond ?? 0,
+      enduranceTotalDrain:
+        staminaFrame?.totalEnduranceDrain ?? 0,
+      enduranceFishEffortRatio:
+        staminaFrame?.enduranceFishEffortRatio ?? 0,
+      enduranceResistanceRatio:
+        staminaFrame?.enduranceResistanceRatio ?? 0,
+      enduranceLineTautRatio:
+        staminaFrame?.enduranceLineTautRatio ?? 0,
+      enduranceBehaviorName:
+        staminaFrame?.enduranceBehaviorName || "unknown",
+      enduranceBehaviorMultiplier:
+        staminaFrame?.enduranceBehaviorMultiplier ?? 0,
       playerForceY: Math.abs(rodPullResult.forceKg),
       playerForceX: Math.abs(rodControlResult?.forceKg || 0),
       fishForceY: Math.abs(forceData.totalFishForceKg * (forceData.targetVelocity.y < 0 ? -1 : 1)),

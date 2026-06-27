@@ -419,8 +419,47 @@ const CONFIG = {
         curvePower: 1.0,
         lateralStaminaWeight: 0.5,
       },
-      angleRecovery: {
+      passiveRegen: {
         enabled: true,
+        regenPerSecond: 20,
+        pressureThresholdKg: 0.01,
+        allowWhilePressuring: false,
+        delay: {
+          enabled: false,
+          delayAfterPressureMs: 500,
+        },
+        angleMultiplier: {
+          enabled: true,
+          centerAngleDeg: 15,
+          minCenterMultiplier: 0.3,
+          badAngleDeg: 75,
+          badAngleMultiplier: 1.5,
+          extremeAngleDeg: 90,
+          extremeAngleMultiplier: 2.0,
+        },
+      },
+      enduranceDrain: {
+        active: {
+          enabled: true,
+          drainPerSecond: 80,
+          curvePower: 1.0,
+        },
+        passive: {
+          enabled: true,
+          drainPerSecond: 15,
+          curvePower: 1.0,
+          defaultBehaviorMultiplier: 0.5,
+          behaviorMultipliers: {
+            dash: 1.0,
+            swim: 0.5,
+            idle: 0.1,
+            rest: 0.0,
+          },
+        },
+      },
+      // Deprecated aliases kept so existing dev tools/config overrides remain safe.
+      angleRecovery: {
+        enabled: false,
         safeAngleDeg: 15,
         maxRecoveryAngleDeg: 75,
         middleMaxRecoveryRatio: 0.5,

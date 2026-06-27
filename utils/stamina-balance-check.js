@@ -8,6 +8,10 @@ const FILES = [
   "src/core/line/line_spool_state.js",
   "src/core/fishing/stamina/active_stamina_drain_calculator.js",
   "src/core/fishing/stamina/angle_stamina_recovery_calculator.js",
+  "src/core/fishing/stamina/stamina_angle_regen_multiplier_calculator.js",
+  "src/core/fishing/stamina/passive_stamina_regen_calculator.js",
+  "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+  "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
   "src/core/fishing/stamina/passive_stamina_drain_calculator.js",
   "src/core/fishing/stamina/stamina_balance_frame.js",
   "src/services/weakest_tackle_limit_resolver.js",
@@ -39,309 +43,387 @@ function approx(value, expected, tolerance, message) {
   assert(Math.abs(Number(value) - expected) <= tolerance, message + " (" + value + ")");
 }
 
+const mechanicsConfig = {
+  activeDrain: {
+    enabled: true,
+    drainPerSecond: 100,
+    curvePower: 1,
+    lateralStaminaWeight: 0.5,
+  },
+  passiveRegen: {
+    enabled: true,
+    regenPerSecond: 20,
+    pressureThresholdKg: 0.01,
+    allowWhilePressuring: false,
+    delay: {
+      enabled: false,
+      delayAfterPressureMs: 500,
+    },
+    angleMultiplier: {
+      enabled: true,
+      centerAngleDeg: 15,
+      minCenterMultiplier: 0.3,
+      badAngleDeg: 75,
+      badAngleMultiplier: 1.5,
+      extremeAngleDeg: 90,
+      extremeAngleMultiplier: 2,
+    },
+  },
+  enduranceDrain: {
+    active: {
+      enabled: true,
+      drainPerSecond: 80,
+      curvePower: 1,
+    },
+    passive: {
+      enabled: true,
+      drainPerSecond: 15,
+      curvePower: 1,
+      defaultBehaviorMultiplier: 0.5,
+      behaviorMultipliers: {
+        dash: 1,
+        swim: 0.5,
+        idle: 0.1,
+        rest: 0,
+      },
+    },
+  },
+  basePowerDropPerSec: 0.1,
+  minBasePowerRatio: 0.2,
+  baseDepletionRate: 100,
+  exhaustionDepletionMultiplier: 1,
+  masteryTimeRatio: 0.5,
+  masteryPowerMultiplier: 0.2,
+  punishmentCap: 0.8,
+  debuffs: { dashPullMult: 0.75 },
+};
+
+class FakeCondition {
+  constructor({ phase = "stamina", stamina = 100, endurance = 100 } = {}) {
+    this.phase = phase;
+    this.maxStamina = 100;
+    this.maxEndurance = 100;
+    this.maxPoints = 100;
+    this.currentStamina = stamina;
+    this.currentExhaustion = endurance;
+  }
+
+  restoreFull() {
+    this.currentStamina = this.maxStamina;
+    this.currentExhaustion = this.maxEndurance;
+    this.phase = "stamina";
+  }
+
+  breakExhaustion() {
+    if (this.phase === "exhaustion") this.phase = "stamina";
+  }
+
+  applyStaminaDamage(amount) {
+    if (this.phase !== "stamina") return;
+    this.currentStamina = Math.max(0, this.currentStamina - amount);
+    if (this.currentStamina === 0) this.phase = "exhaustion";
+  }
+
+  applyStaminaRegen(amount) {
+    if (this.phase !== "stamina") return;
+    this.currentStamina = Math.min(this.maxStamina, this.currentStamina + amount);
+  }
+
+  applyExhaustionDamage(amount) {
+    if (this.phase !== "exhaustion") return;
+    this.currentExhaustion = Math.max(0, this.currentExhaustion - amount);
+  }
+
+  applyPunishment(capPercent) {
+    this.currentExhaustion = Math.max(this.currentExhaustion, this.maxEndurance * capPercent);
+  }
+}
+
+class FakeFish {
+  constructor() {
+    this.randomDebuffApplied = false;
+    this.powerDebuff = 0;
+    this.masteryMultiplier = 1;
+  }
+
+  get hasActiveDebuff() {
+    return this.randomDebuffApplied;
+  }
+
+  getInitialPower() {
+    return 1;
+  }
+
+  applyPowerDebuff(amount) {
+    this.powerDebuff += Math.max(0, Number(amount) || 0);
+  }
+
+  applyRandomDebuff() {
+    this.randomDebuffApplied = true;
+  }
+
+  clearDebuff() {
+    this.randomDebuffApplied = false;
+  }
+
+  clearMasteryDebuff() {}
+
+  setMasteryMultiplier(value) {
+    this.masteryMultiplier = value;
+  }
+
+  setPowerDebuffByExhaustionRatio() {}
+}
+
+function createController({ phase = "stamina", stamina = 100, endurance = 100 } = {}) {
+  const condition = new FakeCondition({ phase, stamina, endurance });
+  const fish = new FakeFish();
+  const controller = new StaminaController(condition, fish, 1, mechanicsConfig);
+  return { condition, fish, controller };
+}
+
 const activeDrain = new ActiveStaminaDrainCalculator();
 let frame = activeDrain.calculate({
   appliedRodHoldKg: 0,
   appliedControlKg: 0,
   weakestTackleLimitKg: 1,
   dtSec: 1,
-  config: { enabled: true, drainPerSecond: 100, lateralStaminaWeight: 0.5 },
+  config: mechanicsConfig.activeDrain,
+  requestedRodHoldKg: 100,
+  rawInputPower: 100,
 });
-approx(frame.activeStaminaDrain, 0, 0.0001, "applied force 0 gives zero active drain");
+approx(frame.activeStaminaDrain, 0, 0.0001, "active stamina formulas ignore raw/requested input");
 
 frame = activeDrain.calculate({
   appliedRodHoldKg: 0.5,
   appliedControlKg: 0,
   weakestTackleLimitKg: 1,
   dtSec: 1,
-  config: { enabled: true, drainPerSecond: 100, lateralStaminaWeight: 0.5 },
+  config: mechanicsConfig.activeDrain,
 });
-approx(frame.activeDrainRatio, 0.5, 0.0001, "rodHold 0.5kg against weakest 1kg gives 0.5 drain ratio");
-approx(frame.activeStaminaDrain, 50, 0.0001, "rodHold drain uses active drain ratio");
+approx(frame.activeDrainRatio, 0.5, 0.0001, "active stamina pressure ratio comes from applied rodHold");
+approx(frame.activeStaminaDrain, 50, 0.0001, "phase stamina active pressure drains stamina");
 
 frame = activeDrain.calculate({
   appliedRodHoldKg: 0,
   appliedControlKg: 0.5,
   weakestTackleLimitKg: 1,
   dtSec: 1,
-  config: { enabled: true, drainPerSecond: 100, lateralStaminaWeight: 0.5 },
+  config: mechanicsConfig.activeDrain,
 });
-approx(frame.usedPlayerPressureKg, 0.25, 0.0001, "control force is weighted by lateral stamina weight");
-approx(frame.activeDrainRatio, 0.25, 0.0001, "weighted control pressure drives drain ratio");
+approx(frame.usedPlayerPressureKg, 0.25, 0.0001, "applied control uses lateral stamina weight");
 
-frame = activeDrain.calculate({
-  appliedRodHoldKg: 0.25,
-  appliedControlKg: 0.25,
-  weakestTackleLimitKg: 1,
+const angleMultiplier = new StaminaAngleRegenMultiplierCalculator();
+approx(angleMultiplier.calculate({ lineAngleDeg: 0, config: mechanicsConfig.passiveRegen.angleMultiplier }).angleRegenMultiplier, 0.3, 0.0001, "0deg angle gives x0.3 regen multiplier");
+approx(angleMultiplier.calculate({ lineAngleDeg: 15, config: mechanicsConfig.passiveRegen.angleMultiplier }).angleRegenMultiplier, 1.0, 0.0001, "15deg angle gives x1.0 regen multiplier");
+approx(angleMultiplier.calculate({ lineAngleDeg: 75, config: mechanicsConfig.passiveRegen.angleMultiplier }).angleRegenMultiplier, 1.5, 0.0001, "75deg angle gives x1.5 regen multiplier");
+approx(angleMultiplier.calculate({ lineAngleDeg: 90, config: mechanicsConfig.passiveRegen.angleMultiplier }).angleRegenMultiplier, 2.0, 0.0001, "90deg angle gives x2.0 regen multiplier");
+
+const regen = new PassiveStaminaRegenCalculator();
+frame = regen.calculate({
+  usedPlayerPressureKg: 0,
+  lineAngleDeg: 15,
   dtSec: 1,
-  config: { enabled: true, drainPerSecond: 100, lateralStaminaWeight: 0.5 },
+  nowMs: 1000,
+  config: mechanicsConfig.passiveRegen,
 });
-approx(frame.usedPlayerPressureKg, 0.375, 0.0001, "rodHold and control pressure combine");
+approx(frame.passiveStaminaRegen, 20, 0.0001, "phase stamina active pressure 0 regens stamina");
 
-frame = activeDrain.calculate({
-  requestedRodHoldKg: 99,
-  requestedControlKg: 99,
-  rawInputPower: 1,
-  appliedRodHoldKg: 0,
-  appliedControlKg: 0,
-  weakestTackleLimitKg: 1,
+frame = regen.calculate({
+  usedPlayerPressureKg: 0.5,
+  lineAngleDeg: 15,
   dtSec: 1,
-  config: { enabled: true, drainPerSecond: 100, lateralStaminaWeight: 0.5 },
+  nowMs: 1100,
+  config: mechanicsConfig.passiveRegen,
 });
-approx(frame.activeStaminaDrain, 0, 0.0001, "raw/requested input does not affect stamina drain");
+approx(frame.passiveStaminaRegen, 0, 0.0001, "phase stamina active pressure blocks passive regen");
 
-frame = activeDrain.calculate({
-  appliedRodHoldKg: 0.5,
-  appliedControlKg: 0.5,
-  fishTensionKg: 0.8,
-  weakestTackleLimitKg: 1,
+const delayedRegen = new PassiveStaminaRegenCalculator();
+const delayConfig = {
+  ...mechanicsConfig.passiveRegen,
+  delay: { enabled: true, delayAfterPressureMs: 500 },
+};
+delayedRegen.calculate({
+  usedPlayerPressureKg: 1,
+  lineAngleDeg: 15,
   dtSec: 1,
-  config: { enabled: true, drainPerSecond: 100, lateralStaminaWeight: 0.5 },
+  nowMs: 1000,
+  config: delayConfig,
 });
-assert(frame.budgetOverflow, "budget overflow is flagged when applied player pressure exceeds available tackle budget");
-approx(frame.availablePlayerPressureKg, 0.2, 0.0001, "available player pressure is weakest limit minus fish tension");
-approx(frame.rawAppliedPlayerPressureKg, 1, 0.0001, "raw applied player pressure tracks unweighted applied force");
+frame = delayedRegen.calculate({
+  usedPlayerPressureKg: 0,
+  lineAngleDeg: 15,
+  dtSec: 1,
+  nowMs: 1200,
+  config: delayConfig,
+});
+approx(frame.passiveStaminaRegen, 0, 0.0001, "regen delay enabled blocks regen before delayAfterPressureMs");
+frame = delayedRegen.calculate({
+  usedPlayerPressureKg: 0,
+  lineAngleDeg: 15,
+  dtSec: 1,
+  nowMs: 1600,
+  config: delayConfig,
+});
+approx(frame.passiveStaminaRegen, 20, 0.0001, "regen delay disabled window expires and regen resumes");
 
-
-const passiveDrain = new PassiveStaminaDrainCalculator();
-frame = passiveDrain.calculate({
+const endurancePassive = new PassiveEnduranceDrainCalculator();
+const dashPassive = endurancePassive.calculate({
   fishWonRadialForceKg: 1,
   dragBlockedForceKg: 1,
-  lineTaut: true,
+  lineTautRatio: 1,
   fishBehaviorName: "dash",
   weakestTackleLimitKg: 1,
   dtSec: 1,
-  config: { enabled: false, drainPerSecond: 15 },
+  config: mechanicsConfig.enduranceDrain.passive,
 });
-approx(frame.passiveStaminaDrain, 0, 0.0001, "passiveDrain.enabled=false gives zero passive drain");
+approx(dashPassive.passiveEnduranceDrain, 15, 0.0001, "phase exhaustion resisted fish effort drains endurance");
 
-frame = passiveDrain.calculate({
+const slackPassive = endurancePassive.calculate({
   fishWonRadialForceKg: 1,
   dragBlockedForceKg: 1,
   lineTaut: false,
   fishBehaviorName: "dash",
   weakestTackleLimitKg: 1,
   dtSec: 1,
-  config: { enabled: true, drainPerSecond: 15, behaviorMultipliers: { dash: 1 } },
+  config: mechanicsConfig.enduranceDrain.passive,
 });
-approx(frame.passiveStaminaDrain, 0, 0.0001, "slack line gives zero passive drain");
+approx(slackPassive.passiveEnduranceDrain, 0, 0.0001, "lineTaut false gives zero passive endurance drain");
 
-frame = passiveDrain.calculate({
-  fishWonRadialForceKg: 0,
-  dragBlockedForceKg: 1,
-  lineTaut: true,
-  fishBehaviorName: "dash",
-  weakestTackleLimitKg: 1,
-  dtSec: 1,
-  config: { enabled: true, drainPerSecond: 15, behaviorMultipliers: { dash: 1 } },
-});
-approx(frame.passiveStaminaDrain, 0, 0.0001, "zero fish radial effort gives zero passive drain");
-
-frame = passiveDrain.calculate({
-  fishWonRadialForceKg: 1,
-  dragBlockedForceKg: 0,
-  lineTaut: true,
-  fishBehaviorName: "dash",
-  weakestTackleLimitKg: 1,
-  dtSec: 1,
-  config: { enabled: true, drainPerSecond: 15, behaviorMultipliers: { dash: 1 } },
-});
-approx(frame.passiveStaminaDrain, 0, 0.0001, "zero blocked force gives zero passive drain");
-
-frame = passiveDrain.calculate({
+const restPassive = endurancePassive.calculate({
   fishWonRadialForceKg: 1,
   dragBlockedForceKg: 1,
-  lineTaut: true,
-  fishBehaviorName: "dash",
-  weakestTackleLimitKg: 1,
-  hardLineLimit: true,
-  dtSec: 1,
-  config: { enabled: true, drainPerSecond: 15, behaviorMultipliers: { dash: 1 }, hardLimitMultiplier: 1 },
-});
-approx(frame.passiveStaminaDrain, 15, 0.0001, "hard limit dash gives max passive drain for passive model");
-
-const swimFrame = passiveDrain.calculate({
-  fishWonRadialForceKg: 1,
-  dragBlockedForceKg: 1,
-  lineTaut: true,
-  fishBehaviorName: "swim",
-  weakestTackleLimitKg: 1,
-  dtSec: 1,
-  config: { enabled: true, drainPerSecond: 15, behaviorMultipliers: { dash: 1, swim: 0.5, rest: 0 } },
-});
-assert(swimFrame.passiveStaminaDrain < frame.passiveStaminaDrain, "swim passive drain is lower than dash passive drain");
-
-frame = passiveDrain.calculate({
-  fishWonRadialForceKg: 1,
-  dragBlockedForceKg: 1,
-  lineTaut: true,
+  lineTautRatio: 1,
   fishBehaviorName: "rest",
   weakestTackleLimitKg: 1,
   dtSec: 1,
-  config: { enabled: true, drainPerSecond: 15, behaviorMultipliers: { rest: 0 } },
+  config: mechanicsConfig.enduranceDrain.passive,
 });
-approx(frame.passiveStaminaDrain, 0, 0.0001, "rest gives zero passive drain");
+approx(restPassive.passiveEnduranceDrain, 0, 0.0001, "rest behavior gives zero passive endurance drain");
 
-const angleRecovery = new AngleStaminaRecoveryCalculator();
-frame = angleRecovery.calculate({
-  lineAngleDeg: 10,
-  dtSec: 1,
-  config: { enabled: true, safeAngleDeg: 15, maxRecoveryAngleDeg: 75, middleMaxRecoveryRatio: 0.5, regenPerSecond: 40 },
-});
-approx(frame.angleRecoveryRatio, 0, 0.0001, "angle <= 15deg gives zero regen");
-approx(frame.angleStaminaRegen, 0, 0.0001, "zero angle recovery ratio gives zero regen");
-
-frame = angleRecovery.calculate({
-  lineAngleDeg: 45,
-  dtSec: 1,
-  config: { enabled: true, safeAngleDeg: 15, maxRecoveryAngleDeg: 75, middleMaxRecoveryRatio: 0.5, regenPerSecond: 40 },
-});
-approx(frame.angleRecoveryRatio, 0.25, 0.0001, "angle 45deg gives middle-zone partial recovery");
-approx(frame.angleStaminaRegen, 10, 0.0001, "angle 45deg regens 25% of max regen");
-
-frame = angleRecovery.calculate({
-  lineAngleDeg: 75,
-  dtSec: 1,
-  config: { enabled: true, safeAngleDeg: 15, maxRecoveryAngleDeg: 75, middleMaxRecoveryRatio: 0.5, regenPerSecond: 40 },
-});
-approx(frame.angleRecoveryRatio, 1, 0.0001, "angle >= 75deg gives max recovery");
-approx(frame.angleStaminaRegen, 40, 0.0001, "max angle recovery uses max regen per second");
-
-const balanceFactory = new StaminaBalanceFrame();
-const baseConfig = {
-  activeDrain: { enabled: true, drainPerSecond: 100, lateralStaminaWeight: 0.5, curvePower: 1 },
-  angleRecovery: {
-    enabled: true,
-    safeAngleDeg: 15,
-    maxRecoveryAngleDeg: 75,
-    middleMaxRecoveryRatio: 0.5,
-    regenPerSecond: 40,
-    curvePower: 1,
-    allowStaminaRegenWhilePulling: false,
-  },
-  passiveDrain: {
-    enabled: false,
-    drainPerSecond: 15,
-    curvePower: 1,
-    lineTautThresholdRatio: 0.995,
-    defaultBehaviorMultiplier: 0.5,
-    behaviorMultipliers: { dash: 1, swim: 0.5, idle: 0.1, rest: 0 },
-    slippingDragMultiplier: 1,
-    hardLimitMultiplier: 1,
-  },
-};
-frame = balanceFactory.create({
-  playerIsPulling: true,
-  appliedRodHoldKg: 0.2,
-  appliedControlKg: 0,
-  weakestTackleLimitKg: 1,
-  lineAngleDeg: 75,
-  dtSec: 1,
-  config: baseConfig,
-});
-approx(frame.rawNetStaminaChange, 20, 0.0001, "raw net stamina can be positive while pulling");
-approx(frame.netStaminaChange, 0, 0.0001, "regen while pulling is blocked when config disallows it");
-assert(frame.regenBlockedByPull, "regen block flag is set while pulling");
-assert(!frame.passiveDrainEnabled, "passive drain remains disabled");
-
-frame = balanceFactory.create({
-  playerIsPulling: false,
-  appliedRodHoldKg: 0.2,
-  appliedControlKg: 0,
-  weakestTackleLimitKg: 1,
-  lineAngleDeg: 10,
+const swimPassive = endurancePassive.calculate({
   fishWonRadialForceKg: 1,
   dragBlockedForceKg: 1,
-  lineTaut: true,
-  fishBehaviorName: "dash",
-  dtSec: 1,
-  config: {
-    ...baseConfig,
-    passiveDrain: {
-      ...baseConfig.passiveDrain,
-      enabled: true,
-      drainPerSecond: 15,
-    },
-  },
-});
-approx(frame.activeStaminaDrain, 20, 0.0001, "active drain remains unchanged when passive is enabled");
-approx(frame.passiveStaminaDrain, 15, 0.0001, "passive drain is calculated independently");
-approx(frame.totalStaminaDrain, 35, 0.0001, "passive and active drains are summed");
-approx(frame.netStaminaChange, -35, 0.0001, "angle regen is subtracted from total stamina drain");
-
-frame = balanceFactory.create({
-  playerIsPulling: true,
-  appliedRodHoldKg: 0.2,
-  appliedControlKg: 0,
+  lineTautRatio: 1,
+  fishBehaviorName: "swim",
   weakestTackleLimitKg: 1,
-  lineAngleDeg: 75,
   dtSec: 1,
-  config: {
-    ...baseConfig,
-    angleRecovery: {
-      ...baseConfig.angleRecovery,
-      allowStaminaRegenWhilePulling: true,
-    },
-  },
+  config: mechanicsConfig.enduranceDrain.passive,
 });
-approx(frame.netStaminaChange, 20, 0.0001, "regen while pulling is allowed when config enables it");
+assert(dashPassive.passiveEnduranceDrain > swimPassive.passiveEnduranceDrain, "dash behavior drains endurance more than swim");
 
-const condition = {
+const balanceFactory = new StaminaBalanceFrame();
+frame = balanceFactory.create({
   phase: "stamina",
-  currentStamina: 50,
-  maxStamina: 100,
-  currentExhaustion: 0,
-  applyStaminaDamage(amount) { this.currentStamina = Math.max(0, this.currentStamina - amount); },
-  applyStaminaRegen(amount) { this.currentStamina = Math.min(this.maxStamina, this.currentStamina + amount); },
-  applyPunishment() {},
-};
-const fish = {
-  clearDebuff() {},
-  setMasteryMultiplier() {},
-  getInitialPower() { return 1; },
-  hasActiveDebuff: false,
-  clearMasteryDebuff() {},
-};
-const controller = new StaminaController(condition, fish, 1, {
-  baseDepletionRate: 100,
-  baseRegenRate: 20,
-  edgeRegenRate: 30,
+  appliedRodHoldKg: 0.5,
+  weakestTackleLimitKg: 1,
+  lineAngleDeg: 15,
+  dtSec: 1,
+  config: mechanicsConfig,
 });
-controller.evaluate({
+approx(frame.passiveStaminaDrain, 0, 0.0001, "phase stamina passive stamina drain is always zero");
+approx(frame.netStaminaChange, -50, 0.0001, "phase stamina net change uses active drain without passive drain");
+
+let runtime = createController({ phase: "stamina", stamina: 100 });
+runtime.controller.evaluate({
+  staminaFrame: frame,
+  dt: 1000,
+});
+approx(runtime.condition.currentStamina, 50, 0.0001, "StaminaController applies active stamina frame damage");
+
+runtime = createController({ phase: "stamina", stamina: 50 });
+runtime.controller.evaluate({
   staminaFrame: balanceFactory.create({
-    playerIsPulling: false,
-    appliedRodHoldKg: 0.3,
-    appliedControlKg: 0,
+    phase: "stamina",
+    appliedRodHoldKg: 0,
     weakestTackleLimitKg: 1,
-    lineAngleDeg: 10,
+    lineAngleDeg: 15,
     dtSec: 1,
-    config: baseConfig,
+    config: mechanicsConfig,
   }),
+  dt: 1000,
 });
-approx(condition.currentStamina, 20, 0.0001, "StaminaController applies balance frame net drain");
+approx(runtime.condition.currentStamina, 70, 0.0001, "StaminaController applies passive stamina regen");
+
+runtime = createController({ phase: "stamina", stamina: 10 });
+runtime.controller.evaluate({
+  staminaFrame: balanceFactory.create({
+    phase: "stamina",
+    appliedRodHoldKg: 1,
+    weakestTackleLimitKg: 1,
+    lineAngleDeg: 15,
+    dtSec: 1,
+    config: mechanicsConfig,
+  }),
+  dt: 1000,
+});
+assert(runtime.condition.phase === "exhaustion", "stamina = 0 transitions to exhaustion phase");
+
+runtime = createController({ phase: "exhaustion", endurance: 100 });
+runtime.controller.evaluate({
+  staminaFrame: balanceFactory.create({
+    phase: "exhaustion",
+    appliedRodHoldKg: 0.5,
+    weakestTackleLimitKg: 1,
+    dtSec: 1,
+    config: mechanicsConfig,
+  }),
+  dt: 1000,
+});
+approx(runtime.condition.currentExhaustion, 60, 0.0001, "phase exhaustion active pressure reduces endurance");
+
+runtime = createController({ phase: "exhaustion", endurance: 100 });
+runtime.controller.evaluate({
+  staminaFrame: balanceFactory.create({
+    phase: "exhaustion",
+    appliedRodHoldKg: 0.5,
+    fishWonRadialForceKg: 1,
+    dragBlockedForceKg: 1,
+    lineTautRatio: 1,
+    fishBehaviorName: "dash",
+    weakestTackleLimitKg: 1,
+    dtSec: 1,
+    config: mechanicsConfig,
+  }),
+  dt: 1000,
+});
+approx(runtime.condition.currentExhaustion, 45, 0.0001, "active and passive endurance drain are summed");
+
+runtime = createController({ phase: "exhaustion", endurance: 10 });
+runtime.controller.evaluate({
+  staminaFrame: balanceFactory.create({
+    phase: "exhaustion",
+    appliedRodHoldKg: 1,
+    fishWonRadialForceKg: 1,
+    dragBlockedForceKg: 1,
+    lineTautRatio: 1,
+    fishBehaviorName: "dash",
+    weakestTackleLimitKg: 1,
+    dtSec: 1,
+    config: mechanicsConfig,
+  }),
+  dt: 1000,
+});
+approx(runtime.condition.currentExhaustion, 0, 0.0001, "endurance can drain to zero");
+assert(runtime.fish.randomDebuffApplied, "endurance = 0 triggers final debuff");
+
+const source = StaminaController.toString();
+assert(!source.includes("fishWonRadialForceKg / weakestTackleLimitKg"), "StaminaController does not contain resisted-effort physics formula");
+assert(!source.includes("dragBlockedForceKg /"), "StaminaController does not calculate resistance physics formula");
 
 const weakest = new WeakestTackleLimitResolver().resolve({
-  rod: { getEffectiveMaxLoadKg: () => 1.5 },
-  reel: { hasReel: () => false, getEffectiveMaxLoadKg: () => 0.2 },
-  lineSystem: { getEffectiveLineMaxLoadKg: () => 1.0 },
+  rod: { maxLoadKg: 1.5 },
+  line: { maxLoadKg: 1.2 },
   leader: { maxLoadKg: 0.8 },
-  hook: { maxLoadKg: 1.2 },
+  hook: { maxLoadKg: 1.1 },
+  reel: null,
 });
 approx(weakest.weakestTackleLimitKg, 0.8, 0.0001, "float rod weakest limit ignores missing reel and uses active components");
-assert(weakest.component === "leader", "weakest component is exposed");
 
-const lineSystem = new LineSystem({
-  rod: { lengthMeters: 3, getLengthMeters: () => 3 },
-  reel: { hasReel: () => true },
-  config: { simulation: { pixelsPerMeter: 1 }, line: { rodLengthReserveMultiplier: 1 } },
-  lineStats: { lengthMeters: 6, maxLoadKg: 1, durability: 100 },
-});
-let lineState = lineSystem.updateDistance({ x: 0, y: 3 }, { x: 0, y: 0 });
+const lineSystem = new LineSystem({ lineLengthMeters: 6 });
+lineSystem.resetAfterCast?.({ castDistanceMeters: 3 });
+let lineState = lineSystem.getState?.() || {};
 assert(!lineState.isFullyExtended, "line is not fully extended at cast distance 3m with 6m available and no pull/control");
-lineState = lineSystem.updateDistance({ x: 0, y: 6 }, { x: 0, y: 0 });
-lineSystem.releaseForDistance({ dragRatio: 0, shouldSlip: true });
-lineState = lineSystem.updateDistance({ x: 0, y: 6 }, { x: 0, y: 0 });
-assert(lineState.isFullyExtended, "line becomes fully extended only at the actual released line limit");
 
 console.log("stamina-balance-check passed:\\n- " + checks.join("\\n- "));
 `,

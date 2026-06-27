@@ -285,20 +285,44 @@
       "DEBUG_DATA.staminaWeakestTackleLimitKg"
     ]
   },
+  "Passive stamina regen/sec": {
+    "formula": "passiveStaminaRegenPerSecond = regenPerSecond * angleRegenMultiplier when usedPlayerPressureKg <= pressureThresholdKg",
+    "description": "How much STAMINA is passively restored per second while the player is not applying meaningful pressure.",
+    "paths": [
+      "DEBUG_DATA.staminaPassiveRegenPerSecond",
+      "CONFIG.stamina.mechanics.passiveRegen"
+    ]
+  },
+  "Angle regen multiplier": {
+    "formula": "0deg=x0.3, 15deg=x1.0, 75deg=x1.5, 90deg+=x2.0 with interpolation",
+    "description": "Line-angle multiplier applied to passive STAMINA recovery.",
+    "paths": [
+      "DEBUG_DATA.staminaAngleRegenMultiplier",
+      "CONFIG.stamina.mechanics.passiveRegen.angleMultiplier"
+    ]
+  },
+  "Regen delay active": {
+    "formula": "nowMs - lastPressureTimeMs < delayAfterPressureMs",
+    "description": "Whether optional passive STAMINA recovery delay is currently blocking regen.",
+    "paths": [
+      "DEBUG_DATA.staminaRegenDelayActive",
+      "CONFIG.stamina.mechanics.passiveRegen.delay"
+    ]
+  },
   "Angle recovery ratio": {
     "formula": "0 at <= safeAngleDeg, middle progress * middleMaxRecoveryRatio between safe and max, 1 at >= maxRecoveryAngleDeg",
-    "description": "Recovery ratio from current line angle.",
+    "description": "Deprecated. Use Angle regen multiplier for the new passive stamina recovery model.",
     "paths": [
       "DEBUG_DATA.staminaAngleRecoveryRatio",
       "CONFIG.stamina.mechanics.angleRecovery"
     ]
   },
   "Net stamina": {
-    "formula": "netStaminaPerSecond = angleRegenPerSecond - activeDrainPerSecond, clamped to <= 0 while pulling when regen while pulling is disabled",
+    "formula": "netStaminaPerSecond = passiveStaminaRegenPerSecond - activeDrainPerSecond",
     "description": "Final stamina change rate for the current frame.",
     "paths": [
       "DEBUG_DATA.staminaNetPerSecond",
-      "CONFIG.stamina.mechanics.angleRecovery.allowStaminaRegenWhilePulling"
+      "CONFIG.stamina.mechanics.passiveRegen"
     ]
   },
   "Budget overflow warning": {
@@ -372,6 +396,29 @@
     "description": "Сумарна витрата stamina за секунду перед відніманням angle regen.",
     "paths": [
       "fightFrame.stamina.totalStaminaDrainPerSecond"
+    ]
+  },
+  "Active endurance/sec": {
+    "formula": "activeEnduranceDrainPerSecond = enduranceDrain.active.drainPerSecond * activeDrainRatio^curvePower",
+    "description": "ENDURANCE loss per second from applied player pressure during phase 2.",
+    "paths": [
+      "DEBUG_DATA.enduranceActiveDrainPerSecond",
+      "CONFIG.stamina.mechanics.enduranceDrain.active"
+    ]
+  },
+  "Passive endurance/sec": {
+    "formula": "passiveEnduranceDrainPerSecond = enduranceDrain.passive.drainPerSecond * passiveEnduranceDrainRatio^curvePower",
+    "description": "ENDURANCE loss per second from resisted fish effort against a taut line.",
+    "paths": [
+      "DEBUG_DATA.endurancePassiveDrainPerSecond",
+      "CONFIG.stamina.mechanics.enduranceDrain.passive"
+    ]
+  },
+  "Total endurance/sec": {
+    "formula": "totalEnduranceDrainPerSecond = activeEnduranceDrainPerSecond + passiveEnduranceDrainPerSecond",
+    "description": "Combined ENDURANCE loss per second during phase 2.",
+    "paths": [
+      "DEBUG_DATA.enduranceTotalDrainPerSecond"
     ]
   }
 }

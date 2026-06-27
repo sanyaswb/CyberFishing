@@ -859,9 +859,105 @@
     "label": "Lateral stamina weight",
     "description": "Multiplier for applied Rod Control force when converting lateral control into stamina pressure."
   },
+  "stamina.mechanics.passiveRegen.enabled": {
+    "label": "Passive stamina regen enabled",
+    "description": "Enables passive STAMINA recovery when applied player pressure is below the configured threshold."
+  },
+  "stamina.mechanics.passiveRegen.regenPerSecond": {
+    "label": "Passive stamina regen per second",
+    "description": "Base stamina recovered per second before the line-angle multiplier is applied."
+  },
+  "stamina.mechanics.passiveRegen.pressureThresholdKg": {
+    "label": "Stamina regen pressure threshold",
+    "description": "Applied player pressure at or below this value allows passive stamina recovery."
+  },
+  "stamina.mechanics.passiveRegen.allowWhilePressuring": {
+    "label": "Allow stamina regen while pressuring",
+    "description": "If true, passive stamina recovery can still run while applied player pressure is above the threshold."
+  },
+  "stamina.mechanics.passiveRegen.delay.enabled": {
+    "label": "Stamina regen delay enabled",
+    "description": "Adds an optional delay before passive stamina recovery resumes after active pressure."
+  },
+  "stamina.mechanics.passiveRegen.delay.delayAfterPressureMs": {
+    "label": "Stamina regen delay after pressure",
+    "description": "Milliseconds to wait after the last significant active pressure before passive stamina recovery resumes."
+  },
+  "stamina.mechanics.passiveRegen.angleMultiplier.centerAngleDeg": {
+    "label": "Center angle for stamina regen",
+    "description": "Line angle where passive stamina regen reaches the neutral x1.0 multiplier."
+  },
+  "stamina.mechanics.passiveRegen.angleMultiplier.enabled": {
+    "label": "Stamina angle regen multiplier enabled",
+    "description": "Enables line-angle scaling for passive stamina recovery."
+  },
+  "stamina.mechanics.passiveRegen.angleMultiplier.minCenterMultiplier": {
+    "label": "Minimum center regen multiplier",
+    "description": "Passive stamina regen multiplier at 0 degrees when the fish is centered."
+  },
+  "stamina.mechanics.passiveRegen.angleMultiplier.badAngleDeg": {
+    "label": "Bad angle for stamina regen",
+    "description": "Line angle where passive stamina regen reaches the bad-angle multiplier."
+  },
+  "stamina.mechanics.passiveRegen.angleMultiplier.badAngleMultiplier": {
+    "label": "Bad angle regen multiplier",
+    "description": "Passive stamina regen multiplier at the bad angle."
+  },
+  "stamina.mechanics.passiveRegen.angleMultiplier.extremeAngleDeg": {
+    "label": "Extreme angle for stamina regen",
+    "description": "Line angle where passive stamina regen reaches the extreme-angle multiplier."
+  },
+  "stamina.mechanics.passiveRegen.angleMultiplier.extremeAngleMultiplier": {
+    "label": "Extreme angle regen multiplier",
+    "description": "Passive stamina regen multiplier at or above the extreme angle."
+  },
+  "stamina.mechanics.enduranceDrain.active.enabled": {
+    "label": "Active endurance drain enabled",
+    "description": "Enables ENDURANCE drain from applied player pressure during the EXHAUSTION phase."
+  },
+  "stamina.mechanics.enduranceDrain.active.drainPerSecond": {
+    "label": "Active endurance drain per second",
+    "description": "Maximum endurance loss per second when player pressure reaches the weakest tackle limit."
+  },
+  "stamina.mechanics.enduranceDrain.active.curvePower": {
+    "label": "Active endurance drain curve",
+    "description": "Power curve applied to active endurance pressure ratio. 1.0 keeps the drain linear."
+  },
+  "stamina.mechanics.enduranceDrain.passive.enabled": {
+    "label": "Passive endurance drain enabled",
+    "description": "Enables ENDURANCE drain from resisted fish effort against a taut line."
+  },
+  "stamina.mechanics.enduranceDrain.passive.drainPerSecond": {
+    "label": "Passive endurance drain per second",
+    "description": "Maximum passive endurance loss per second at full fish effort, resistance, line tautness and behavior multiplier."
+  },
+  "stamina.mechanics.enduranceDrain.passive.curvePower": {
+    "label": "Passive endurance drain curve",
+    "description": "Power curve applied to passive endurance drain ratio. 1.0 keeps the drain linear."
+  },
+  "stamina.mechanics.enduranceDrain.passive.defaultBehaviorMultiplier": {
+    "label": "Default endurance behavior multiplier",
+    "description": "Passive endurance drain multiplier used when fish behavior has no specific configured value."
+  },
+  "stamina.mechanics.enduranceDrain.passive.behaviorMultipliers.dash": {
+    "label": "Endurance dash multiplier",
+    "description": "Passive endurance drain multiplier for dash behavior."
+  },
+  "stamina.mechanics.enduranceDrain.passive.behaviorMultipliers.swim": {
+    "label": "Endurance swim multiplier",
+    "description": "Passive endurance drain multiplier for swim behavior."
+  },
+  "stamina.mechanics.enduranceDrain.passive.behaviorMultipliers.idle": {
+    "label": "Endurance idle multiplier",
+    "description": "Passive endurance drain multiplier for idle behavior."
+  },
+  "stamina.mechanics.enduranceDrain.passive.behaviorMultipliers.rest": {
+    "label": "Endurance rest multiplier",
+    "description": "Passive endurance drain multiplier for rest behavior."
+  },
   "stamina.mechanics.angleRecovery.enabled": {
     "label": "Angle stamina recovery enabled",
-    "description": "Enables stamina recovery from line angle during the STAMINA phase."
+    "description": "Deprecated. Angle now multiplies passive stamina regen through passiveRegen.angleMultiplier."
   },
   "stamina.mechanics.angleRecovery.safeAngleDeg": {
     "label": "Angle recovery safe angle",

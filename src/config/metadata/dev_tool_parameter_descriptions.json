@@ -183,5 +183,70 @@
     "key": "passiveDrain.behaviorMultipliers.rest",
     "ua": "пасивний_rest",
     "description": "Множник passive drain для rest."
+  },
+  {
+    "key": "passiveRegen.regenPerSecond",
+    "ua": "passive_stamina_regen_per_second",
+    "description": "Base STAMINA recovery per second when the player is not applying meaningful pressure."
+  },
+  {
+    "key": "passiveRegen.pressureThresholdKg",
+    "ua": "stamina_regen_pressure_threshold_kg",
+    "description": "Applied player pressure threshold that decides whether passive STAMINA recovery is allowed."
+  },
+  {
+    "key": "passiveRegen.delay.enabled",
+    "ua": "stamina_regen_delay_enabled",
+    "description": "Enables optional delay before passive STAMINA recovery resumes after pressure."
+  },
+  {
+    "key": "passiveRegen.delay.delayAfterPressureMs",
+    "ua": "stamina_regen_delay_after_pressure_ms",
+    "description": "Delay duration after the last meaningful pressure before STAMINA regen resumes."
+  },
+  {
+    "key": "passiveRegen.angleMultiplier.minCenterMultiplier",
+    "ua": "stamina_center_regen_multiplier",
+    "description": "Passive STAMINA recovery multiplier at 0 degrees line angle."
+  },
+  {
+    "key": "passiveRegen.angleMultiplier.badAngleMultiplier",
+    "ua": "stamina_bad_angle_regen_multiplier",
+    "description": "Passive STAMINA recovery multiplier at the configured bad angle."
+  },
+  {
+    "key": "passiveRegen.angleMultiplier.extremeAngleMultiplier",
+    "ua": "stamina_extreme_angle_regen_multiplier",
+    "description": "Passive STAMINA recovery multiplier at or above the configured extreme angle."
+  },
+  {
+    "key": "enduranceDrain.active.drainPerSecond",
+    "ua": "active_endurance_drain_per_second",
+    "description": "Maximum ENDURANCE drain per second from applied player pressure in phase 2."
+  },
+  {
+    "key": "enduranceDrain.passive.drainPerSecond",
+    "ua": "passive_endurance_drain_per_second",
+    "description": "Maximum ENDURANCE drain per second from resisted fish effort in phase 2."
+  },
+  {
+    "key": "enduranceDrain.passive.behaviorMultipliers.dash",
+    "ua": "endurance_dash_multiplier",
+    "description": "Passive ENDURANCE drain multiplier for dash behavior."
+  },
+  {
+    "key": "enduranceDrain.passive.behaviorMultipliers.swim",
+    "ua": "endurance_swim_multiplier",
+    "description": "Passive ENDURANCE drain multiplier for swim behavior."
+  },
+  {
+    "key": "enduranceDrain.passive.behaviorMultipliers.idle",
+    "ua": "endurance_idle_multiplier",
+    "description": "Passive ENDURANCE drain multiplier for idle behavior."
+  },
+  {
+    "key": "enduranceDrain.passive.behaviorMultipliers.rest",
+    "ua": "endurance_rest_multiplier",
+    "description": "Passive ENDURANCE drain multiplier for rest behavior."
   }
 ]

@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.23.7 - Stamina endurance phase split
+
+- Split the condition model so `STAMINA` is the active control gate and `ENDURANCE` is the phase-2 fish exhaustion pool.
+- Replaced angle-generated stamina recovery with passive stamina regen multiplied by line angle: centered fish recover slower, bad angles recover faster.
+- Moved resisted fish effort drain from stamina into phase-2 endurance through dedicated active/passive endurance drain calculators.
+- Updated `StaminaBalanceFrame`, `StaminaController`, debug snapshots and the STAMINA BALANCE overlay with phase-specific stamina/endurance metrics.
+- Added new stamina/endurance config branches, metadata entries and regression coverage for regen delay, angle multipliers, endurance drain and final debuff trigger.
+
 ## v0.23.6 - Stamina passive resisted effort
 
 - Added optional passive stamina drain from resisted fish effort against a taut line.
