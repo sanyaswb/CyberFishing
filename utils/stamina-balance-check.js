@@ -343,11 +343,17 @@ frame = balanceFactory.create({
   appliedRodHoldKg: 0.5,
   weakestTackleLimitKg: 1,
   lineAngleDeg: 15,
+  currentExhaustion: 75,
+  maxEndurance: 100,
   dtSec: 1,
   config: mechanicsConfig,
 });
 approx(frame.passiveStaminaDrain, 0, 0.0001, "phase stamina passive stamina drain is always zero");
 approx(frame.netStaminaChange, -50, 0.0001, "phase stamina net change uses active drain without passive drain");
+approx(frame.frameCurrentExhaustion, 75, 0.0001, "stamina frame records frame-start exhaustion");
+approx(frame.frameMaxEndurance, 100, 0.0001, "stamina frame records frame max endurance");
+approx(frame.frameEnduranceProgress, 0.25, 0.0001, "stamina frame records frame endurance progress");
+assert(frame.framePhase === "stamina", "stamina frame records frame phase");
 
 let runtime = createController({ phase: "stamina", stamina: 100 });
 runtime.controller.evaluate({

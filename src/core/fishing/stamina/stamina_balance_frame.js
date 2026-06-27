@@ -33,6 +33,8 @@ class StaminaBalanceFrame {
     fishBehaviorName = "unknown",
     shouldSlipDrag = false,
     hardLineLimit = false,
+    currentExhaustion = null,
+    maxEndurance = null,
     dtSec = 0,
     nowMs = null,
     config = {},
@@ -90,11 +92,23 @@ class StaminaBalanceFrame {
       activeEndurance.activeEnduranceDrainRatio +
         passiveEndurance.passiveEnduranceDrainRatio,
     );
+    const frameMaxEndurance = this.#positive(maxEndurance);
+    const frameCurrentExhaustion =
+      currentExhaustion === null || currentExhaustion === undefined
+        ? frameMaxEndurance
+        : this.#positive(currentExhaustion, frameMaxEndurance);
+    const frameEnduranceProgress = frameMaxEndurance > 0
+      ? this.#clamp01(1 - frameCurrentExhaustion / frameMaxEndurance)
+      : 0;
 
     return Object.freeze({
       source: "stamina_balance_frame",
       phase: resolvedPhase,
       staminaPhase: resolvedPhase,
+      framePhase: resolvedPhase,
+      frameCurrentExhaustion,
+      frameMaxEndurance,
+      frameEnduranceProgress,
       playerIsPulling: !!playerIsPulling,
       playerPowerIsPulling: !!playerIsPulling,
       fishTensionKg: activeDrain.fishTensionKg,

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.23.10";
+const CURRENT_PROJECT_VERSION = "0.23.11";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "endurance-movement-debug-accuracy",
+  codename: "endurance-overlay-frame-consistency",
   updatedAt: "2026-06-28",
   notes: Object.freeze([
-    "Exposed actual state-specific radial ranges in endurance movement debug",
-    "Added last selected movement behavior and sampled radial intent diagnostics",
-    "Kept dynamic endurance movement debuff runtime-only without changing lastDash trigger rules",
+    "Separated frame-start and live exhaustion values in STAMINA BALANCE debug",
+    "Prioritized live condition phase while still showing frame phase",
+    "Clarified selected behavior radial range versus target exhausted radial range",
   ]),
 });
 

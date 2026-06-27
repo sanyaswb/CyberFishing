@@ -439,7 +439,16 @@
       "CONFIG.stamina.mechanics.enduranceMovementDebuff.curvePower"
     ]
   },
-  "Radial range": {
+  "Target exhausted radial": {
+    "formula": "CONFIG.stamina.mechanics.enduranceMovementDebuff.direction.exhaustedRadialRange",
+    "description": "The configured radial intent target used when ENDURANCE reaches zero.",
+    "paths": [
+      "DEBUG_DATA.enduranceTargetRadialMin",
+      "DEBUG_DATA.enduranceTargetRadialMax",
+      "CONFIG.stamina.mechanics.enduranceMovementDebuff.direction.exhaustedRadialRange"
+    ]
+  },
+  "Selected behavior range": {
     "formula": "effectiveRadialRange = lerp(baseRadialRange, exhaustedRadialRange, debuffPower)",
     "description": "Actual runtime radial intent range used by the last FishBehavior direction selection, including state-specific radial ranges.",
     "paths": [
@@ -450,7 +459,7 @@
       "CONFIG.stamina.mechanics.enduranceMovementDebuff.direction.exhaustedRadialRange"
     ]
   },
-  "Selected movement": {
+  "Last sampled movement": {
     "formula": "last sampled movement debug from FishBehavior direction target selection",
     "description": "Last selected behavior and sampled radial intent used by the endurance movement debuff debug view.",
     "paths": [

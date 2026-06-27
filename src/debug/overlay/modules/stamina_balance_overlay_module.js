@@ -11,10 +11,15 @@ class StaminaBalanceOverlayModule extends OverlayModule {
 
   render(data) {
     const f = this.#formatter;
-    const phase = data.staminaPhase || data.fishConditionPhase || "stamina";
+    const conditionPhase = this.#normalizePhase(data.fishConditionPhase);
+    const framePhase = this.#normalizePhase(data.framePhase || data.staminaPhase);
+    const phase = conditionPhase || framePhase || "stamina";
     let html = this.formatHeader("STAMINA BALANCE", "#ffcc00");
-    html += this.metricRow("Phase", phase, {
+    html += this.metricRow("Condition phase", phase, {
       color: phase === "exhaustion" ? "#ff8888" : "#ffcc00",
+    });
+    html += this.metricRow("Frame phase", framePhase || "stamina", {
+      color: framePhase === "exhaustion" ? "#ff8888" : "#8a9bac",
     });
 
     if (phase === "exhaustion") {
@@ -22,6 +27,12 @@ class StaminaBalanceOverlayModule extends OverlayModule {
     }
 
     return this.#renderStaminaPhase({ html, data, f });
+  }
+
+  #normalizePhase(value) {
+    const text = String(value || "").trim().toLowerCase();
+    if (text === "exhaustion" || text === "stamina") return text;
+    return null;
   }
 
   #renderStaminaPhase({ html, data, f }) {
@@ -159,16 +170,21 @@ class StaminaBalanceOverlayModule extends OverlayModule {
     );
     html += this.metricRow(
       "Movement progress",
-      `${f.percent(data.enduranceMovementDebuffProgress, 1)} / power ${f.percent(data.enduranceMovementDebuffPower, 1)}`,
+      `${f.percent(data.enduranceMovementDebuffProgress, 1)} / power ${f.percent(data.enduranceMovementDebuffPower, 1)} (frame)`,
       { color: "#ffb86c" },
     );
     html += this.metricRow(
-      "Radial range",
+      "Target exhausted radial",
+      `${f.num(data.enduranceTargetRadialMin, 2)}..${f.num(data.enduranceTargetRadialMax, 2)}`,
+      { color: "#8a9bac" },
+    );
+    html += this.metricRow(
+      "Selected behavior range",
       `${f.num(data.enduranceBaseRadialMin, 2)}..${f.num(data.enduranceBaseRadialMax, 2)} -> ${f.num(data.enduranceEffectiveRadialMin, 2)}..${f.num(data.enduranceEffectiveRadialMax, 2)}`,
       { color: "#73c2fb" },
     );
     html += this.metricRow(
-      "Selected movement",
+      "Last sampled movement",
       `${data.enduranceLastSelectedBehavior || "unknown"} / radial ${f.num(data.enduranceLastSampledRadialIntent, 3)}`,
       { color: "#c792ea" },
     );
@@ -183,14 +199,14 @@ class StaminaBalanceOverlayModule extends OverlayModule {
       { color: "#00ff80" },
     );
     html += this.metricRow(
-      "Current exhaustion",
-      f.num(data.currentExhaustion, 2),
-      { color: "#ff8888" },
+      "Frame exhaustion",
+      `${f.num(data.frameCurrentExhaustion, 2)}/${f.num(data.frameMaxEndurance, 2)} (${f.percent(data.frameEnduranceProgress, 1)})`,
+      { color: "#ffb86c" },
     );
     html += this.metricRow(
-      "Max endurance",
-      f.num(data.fishConditionMaxEndurance, 2),
-      { color: "#8a9bac" },
+      "Live exhaustion",
+      `${f.num(data.currentExhaustion, 2)}/${f.num(data.fishConditionMaxEndurance, 2)}`,
+      { color: "#ff8888" },
     );
     return `${html}<div style="margin-bottom: 12px;"></div>`;
   }

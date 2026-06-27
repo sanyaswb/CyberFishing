@@ -464,6 +464,7 @@ class FishForceSystem {
     const effective =
       movementDebug.effectiveRadialRange || frame?.radialRangeOverride;
     const multipliers = frame?.behaviorWeightMultipliers || {};
+    const target = frame?.exhaustedRadialRange;
     return {
       enduranceMovementDebuffEnabled: frame?.enabled === true,
       enduranceMovementDebuffActive: frame?.active === true,
@@ -475,6 +476,8 @@ class FishForceSystem {
         movementDebug.sampledRadialIntent ?? null,
       enduranceLastSampledLateralIntent:
         movementDebug.sampledLateralIntent ?? null,
+      enduranceTargetRadialMin: Array.isArray(target) ? target[0] : null,
+      enduranceTargetRadialMax: Array.isArray(target) ? target[1] : null,
       enduranceBaseRadialMin: Array.isArray(base) ? base[0] : null,
       enduranceBaseRadialMax: Array.isArray(base) ? base[1] : null,
       enduranceEffectiveRadialMin: Array.isArray(effective)

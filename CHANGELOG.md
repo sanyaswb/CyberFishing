@@ -1,5 +1,11 @@
 # CyberFishing changelog
 
+## v0.23.11 - Endurance overlay frame consistency
+
+- Added frame-start exhaustion fields to stamina/endurance frames so overlay values no longer mix live condition data with pre-drain frame math.
+- Updated STAMINA BALANCE overlay to show condition phase and frame phase separately.
+- Renamed movement debuff rows to distinguish target exhausted radial range from the selected behavior radial range and last sampled movement.
+
 ## v0.23.10 - Endurance movement debug accuracy
 
 - Updated endurance movement debuff debug to report the actual state-specific radial range used by `FishBehavior`.

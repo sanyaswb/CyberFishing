@@ -293,16 +293,16 @@ const CONFIG = {
     debugGrid: false, // Показувати лінії сітки
     debugDepthText: false, // Показувати цифри глибини
     enableCastable: true, // Зони, де можна закидати вудку
-    enableCollisions: true, // Колізії з землею (червоні зони) - забороняють закидати.
-    enableSnags: true, // Динамічні зони (наприклад, косяк риби)
+    enableCollisions: false, // Колізії з землею (червоні зони) - забороняють закидати.
+    enableSnags: false, // Динамічні зони (наприклад, косяк риби)
     enableDynamicZones: false, // Вимикає всі динамічні зони (косяки риби, рухомі перешкоди тощо)
-    showChumZones: true,
-    showCatchZone: true, // Відображення синьої зони
-    showLastDashZone: true, // Відображення фіолетової lastDash trigger zone
-    showNetZone: true, // Відображення зеленої зони
-    showAimingZone: true, // Відображення зони закидання
-    showPoleFightSector: true, // Відображення допустимого сектора руху риби
-    showFightLineRadius: true, // Відображення повної радіальної межі випущеної ліски
+    showChumZones: false,
+    showCatchZone: false, // Відображення синьої зони
+    showLastDashZone: false, // Відображення фіолетової lastDash trigger zone
+    showNetZone: false, // Відображення зеленої зони
+    showAimingZone: false, // Відображення зони закидання
+    showPoleFightSector: false, // Відображення допустимого сектора руху риби
+    showFightLineRadius: false, // Відображення повної радіальної межі випущеної ліски
 
     debugOpacity: 1.0,
     baseResolution: { width: 2560, height: 1440 },

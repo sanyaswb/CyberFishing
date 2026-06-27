@@ -449,6 +449,7 @@ class FightPhysicsSystem {
       dragContext,
       playerForceBudget,
       poleFightSectorFrame: sectorFrame,
+      fishCondition,
     }),
     );
     this.#debug.fightPipeline = pipelineFrame.toDebugData();
@@ -1829,6 +1830,9 @@ class FightPhysicsSystem {
       hardLineLimit:
         !!lineState?.isFullyExtended ||
         !!fishRetrieveResult?.tensionBlocked,
+      currentExhaustion: fishCondition?.currentExhaustion,
+      maxEndurance:
+        fishCondition?.maxEndurance ?? fishCondition?.maxPoints,
       dtSec,
       config:
         this.#config?.stamina?.mechanics ||
@@ -1856,9 +1860,35 @@ class FightPhysicsSystem {
         Math.min(1, Number(forceData?.player?.angleStressRatio) || 0),
       ),
       staminaPressureRatio: 0,
+      framePhase: fishCondition?.phase || "stamina",
+      frameCurrentExhaustion: Math.max(
+        0,
+        Number(fishCondition?.currentExhaustion) || 0,
+      ),
+      frameMaxEndurance: Math.max(
+        0,
+        Number(fishCondition?.maxEndurance ?? fishCondition?.maxPoints) || 0,
+      ),
+      frameEnduranceProgress:
+        this.#resolveFrameEnduranceProgress(fishCondition),
       isLineFullyExtended: !!lineState?.isFullyExtended,
       source: "legacy_fallback",
     });
+  }
+
+  #resolveFrameEnduranceProgress(fishCondition) {
+    const maxEndurance = Math.max(
+      0,
+      Number(fishCondition?.maxEndurance ?? fishCondition?.maxPoints) || 0,
+    );
+    if (maxEndurance <= 0) return 0;
+    return Math.max(
+      0,
+      Math.min(
+        1,
+        1 - (Number(fishCondition?.currentExhaustion) || 0) / maxEndurance,
+      ),
+    );
   }
 
   #resolveLineTautRatio({ fishRetrieveResult, forceData, lineState } = {}) {
@@ -2349,6 +2379,7 @@ class FightPhysicsSystem {
     dragContext,
     playerForceBudget,
     poleFightSectorFrame,
+    fishCondition,
   }) {
     const lineHasReserve = this.#lineHasReserve(lineState);
     const frameDtSec = Math.max(0, Number(physics?.dtSec) || 0);
@@ -2708,6 +2739,10 @@ class FightPhysicsSystem {
         forceData.enduranceLastSampledRadialIntent ?? null,
       enduranceLastSampledLateralIntent:
         forceData.enduranceLastSampledLateralIntent ?? null,
+      enduranceTargetRadialMin:
+        forceData.enduranceTargetRadialMin ?? null,
+      enduranceTargetRadialMax:
+        forceData.enduranceTargetRadialMax ?? null,
       enduranceBaseRadialMin:
         forceData.enduranceBaseRadialMin ?? null,
       enduranceBaseRadialMax:
@@ -2998,9 +3033,22 @@ class FightPhysicsSystem {
       dragLocked: dragContext.dragLocked,
       rodPullCanWinDistance: rodPullResult.canMoveFish,
       shouldSlipDrag: !!fishRetrieveResult?.shouldSlipDrag,
+      fishConditionPhase: fishCondition?.phase || "n/a",
+      currentStamina: fishCondition?.currentStamina ?? 0,
+      currentExhaustion: fishCondition?.currentExhaustion ?? 0,
+      fishConditionMaxStamina: fishCondition?.maxStamina ?? 0,
+      fishConditionMaxEndurance:
+        fishCondition?.maxEndurance ?? fishCondition?.maxPoints ?? 0,
       staminaFrame,
       staminaFrameSource: staminaFrame?.source || "none",
       staminaPhase: staminaFrame?.phase || "stamina",
+      framePhase: staminaFrame?.framePhase || staminaFrame?.phase || "stamina",
+      frameCurrentExhaustion:
+        staminaFrame?.frameCurrentExhaustion ?? 0,
+      frameMaxEndurance:
+        staminaFrame?.frameMaxEndurance ?? 0,
+      frameEnduranceProgress:
+        staminaFrame?.frameEnduranceProgress ?? 0,
       staminaPressureRatio: staminaFrame?.staminaPressureRatio ?? 0,
       angleStressRatio: staminaFrame?.angleStressRatio ?? 0,
       staminaAppliedRodHoldKg: staminaFrame?.appliedRodHoldKg ?? 0,
