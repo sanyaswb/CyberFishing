@@ -75,9 +75,9 @@ class FishForceSystem {
       maxEndurance,
       fishPhysics,
     });
-    const enduranceMovementDebug =
-      this.#enduranceMovementDebugFields(enduranceMovementDebuff);
     const behavior = this.#fish.getBehavior(dtMs, enduranceMovementDebuff);
+    const enduranceMovementDebug =
+      this.#enduranceMovementDebugFields(enduranceMovementDebuff, behavior);
     const lastDashDebug = this.#fish.getLastDashDebugData?.() || {};
 
     const behaviorPullValue = this.#numberOrDefault(
@@ -458,15 +458,23 @@ class FishForceSystem {
     });
   }
 
-  #enduranceMovementDebugFields(frame = {}) {
-    const base = frame?.baseRadialRange;
-    const effective = frame?.radialRangeOverride;
+  #enduranceMovementDebugFields(frame = {}, behavior = null) {
+    const movementDebug = behavior?.movementDebuffDebug || {};
+    const base = movementDebug.baseRadialRange || frame?.baseRadialRange;
+    const effective =
+      movementDebug.effectiveRadialRange || frame?.radialRangeOverride;
     const multipliers = frame?.behaviorWeightMultipliers || {};
     return {
       enduranceMovementDebuffEnabled: frame?.enabled === true,
       enduranceMovementDebuffActive: frame?.active === true,
       enduranceMovementDebuffProgress: frame?.enduranceProgress ?? 0,
       enduranceMovementDebuffPower: frame?.debuffPower ?? 0,
+      enduranceLastSelectedBehavior:
+        movementDebug.selectedBehavior || behavior?.name || "unknown",
+      enduranceLastSampledRadialIntent:
+        movementDebug.sampledRadialIntent ?? null,
+      enduranceLastSampledLateralIntent:
+        movementDebug.sampledLateralIntent ?? null,
       enduranceBaseRadialMin: Array.isArray(base) ? base[0] : null,
       enduranceBaseRadialMax: Array.isArray(base) ? base[1] : null,
       enduranceEffectiveRadialMin: Array.isArray(effective)

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.23.9";
+const CURRENT_PROJECT_VERSION = "0.23.10";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "dynamic-endurance-movement-debuff",
+  codename: "endurance-movement-debug-accuracy",
   updatedAt: "2026-06-28",
   notes: Object.freeze([
-    "Added a runtime endurance movement debuff for EXHAUSTION phase behavior",
-    "Reduced exhausted fish away movement through radial intent overrides",
-    "Shifted exhausted behavior selection toward idle/rest without mutating fish config",
+    "Exposed actual state-specific radial ranges in endurance movement debug",
+    "Added last selected movement behavior and sampled radial intent diagnostics",
+    "Kept dynamic endurance movement debuff runtime-only without changing lastDash trigger rules",
   ]),
 });
 

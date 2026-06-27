@@ -1,5 +1,11 @@
 # CyberFishing changelog
 
+## v0.23.10 - Endurance movement debug accuracy
+
+- Updated endurance movement debuff debug to report the actual state-specific radial range used by `FishBehavior`.
+- Added diagnostics for the last selected movement behavior and sampled radial/lateral intents.
+- Kept `lastDashTrigger` chance unchanged; special lastDash suppression remains a separate gameplay decision.
+
 ## v0.23.9 - Dynamic endurance movement debuff
 
 - Added a runtime `EnduranceMovementDebuffCalculator` for phase-2 fish movement behavior.

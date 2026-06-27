@@ -293,6 +293,30 @@ approx(
   0.000001,
   "progress 1 moves state-specific radial range to exhausted target",
 );
+const stateSpecificDebug =
+  stateSpecificExhausted.getStateData().movementDebuffDebug;
+assert(
+  stateSpecificDebug.selectedBehavior === "dash",
+  "movement debug stores last selected behavior",
+);
+approx(
+  stateSpecificDebug.baseRadialRange[0],
+  0.8,
+  0.000001,
+  "movement debug stores state-specific base radial min",
+);
+approx(
+  stateSpecificDebug.effectiveRadialRange[0],
+  -0.5,
+  0.000001,
+  "movement debug stores actual effective radial min",
+);
+approx(
+  stateSpecificDebug.sampledRadialIntent,
+  -0.5,
+  0.000001,
+  "movement debug stores last sampled radial intent",
+);
 
 console.log("endurance-movement-debuff-check passed:");
 for (const check of checks) console.log("- " + check);

@@ -168,6 +168,11 @@ class StaminaBalanceOverlayModule extends OverlayModule {
       { color: "#73c2fb" },
     );
     html += this.metricRow(
+      "Selected movement",
+      `${data.enduranceLastSelectedBehavior || "unknown"} / radial ${f.num(data.enduranceLastSampledRadialIntent, 3)}`,
+      { color: "#c792ea" },
+    );
+    html += this.metricRow(
       "Dash/swim weights",
       `x${f.num(data.enduranceDashWeightMultiplier, 2)} / x${f.num(data.enduranceSwimWeightMultiplier, 2)}`,
       { color: "#ff8888" },

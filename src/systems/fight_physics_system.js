@@ -2702,6 +2702,12 @@ class FightPhysicsSystem {
         forceData.enduranceMovementDebuffProgress ?? 0,
       enduranceMovementDebuffPower:
         forceData.enduranceMovementDebuffPower ?? 0,
+      enduranceLastSelectedBehavior:
+        forceData.enduranceLastSelectedBehavior || "unknown",
+      enduranceLastSampledRadialIntent:
+        forceData.enduranceLastSampledRadialIntent ?? null,
+      enduranceLastSampledLateralIntent:
+        forceData.enduranceLastSampledLateralIntent ?? null,
       enduranceBaseRadialMin:
         forceData.enduranceBaseRadialMin ?? null,
       enduranceBaseRadialMax:

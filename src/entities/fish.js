@@ -550,6 +550,7 @@ class FishBehavior {
   #lastDashBlockedByCatchZone;
   #lastDashDebug;
   #runtimeMovementModifier;
+  #lastMovementDebuffDebug;
   #rng;
 
   constructor(fishConfig, rng = null) {
@@ -583,6 +584,7 @@ class FishBehavior {
     this.#lastDashBlockedByCatchZone = false;
     this.#lastDashDebug = {};
     this.#runtimeMovementModifier = null;
+    this.#lastMovementDebuffDebug = null;
     this.#pickNextState();
   }
 
@@ -884,11 +886,12 @@ class FishBehavior {
       typeof stateConfig.direction === "object"
         ? stateConfig.direction
         : {};
+    const radialRangeFrame = this.#resolveRadialRangeFrame(
+      stateDirection,
+      runtimeMovementModifier,
+    );
     const intent = this.#directionIntentSampler.sample({
-      radialRange: this.#resolveRadialRange(
-        stateDirection,
-        runtimeMovementModifier,
-      ),
+      radialRange: radialRangeFrame.effectiveRange,
       lateralRange:
         stateDirection.lateralRange ??
         this.#movementProfile.lateralRange ??
@@ -896,29 +899,44 @@ class FishBehavior {
     });
     this.#targetRadialIntent = intent.radial;
     this.#targetLateralIntent = intent.lateral;
+    this.#lastMovementDebuffDebug = Object.freeze({
+      selectedBehavior: this.#currentStateName,
+      baseRadialRange: Object.freeze([...radialRangeFrame.baseRange]),
+      effectiveRadialRange: Object.freeze([...radialRangeFrame.effectiveRange]),
+      sampledRadialIntent: intent.radial,
+      sampledLateralIntent: intent.lateral,
+    });
   }
 
-  #resolveRadialRange(stateDirection, runtimeMovementModifier) {
-    const baseRange =
+  #resolveRadialRangeFrame(stateDirection, runtimeMovementModifier) {
+    const baseRange = this.#normalizeRange(
       stateDirection.radialRange ??
-      this.#movementProfile.radialRange ??
-      DEFAULT_FISH_RADIAL_RANGE;
+        this.#movementProfile.radialRange ??
+        DEFAULT_FISH_RADIAL_RANGE,
+      DEFAULT_FISH_RADIAL_RANGE,
+    );
     if (
       runtimeMovementModifier?.active === true &&
       runtimeMovementModifier?.directionEnabled === true &&
       Array.isArray(runtimeMovementModifier.exhaustedRadialRange)
     ) {
-      return this.#lerpRange(
+      return {
         baseRange,
-        runtimeMovementModifier.exhaustedRadialRange,
-        runtimeMovementModifier.debuffPower,
-      );
+        effectiveRange: this.#lerpRange(
+          baseRange,
+          runtimeMovementModifier.exhaustedRadialRange,
+          runtimeMovementModifier.debuffPower,
+        ),
+      };
     }
     const override = runtimeMovementModifier?.radialRangeOverride;
     if (Array.isArray(override) && override.length >= 2) {
-      return override;
+      return {
+        baseRange,
+        effectiveRange: this.#normalizeRange(override, baseRange),
+      };
     }
-    return baseRange;
+    return { baseRange, effectiveRange: baseRange };
   }
 
   #lerpRange(baseRange, targetRange, ratio) {
@@ -1022,6 +1040,7 @@ class FishBehavior {
         radial: this.#currentRadialIntent,
         lateral: this.#currentLateralIntent,
       },
+      movementDebuffDebug: this.#lastMovementDebuffDebug,
       moveX: speedRatio * this.#currentLateralIntent,
       agility:
         stateConfig.direction?.agility ??

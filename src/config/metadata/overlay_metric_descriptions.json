@@ -441,13 +441,22 @@
   },
   "Radial range": {
     "formula": "effectiveRadialRange = lerp(baseRadialRange, exhaustedRadialRange, debuffPower)",
-    "description": "Runtime radial intent range used by FishBehavior direction selection during EXHAUSTION.",
+    "description": "Actual runtime radial intent range used by the last FishBehavior direction selection, including state-specific radial ranges.",
     "paths": [
       "DEBUG_DATA.enduranceBaseRadialMin",
       "DEBUG_DATA.enduranceBaseRadialMax",
       "DEBUG_DATA.enduranceEffectiveRadialMin",
       "DEBUG_DATA.enduranceEffectiveRadialMax",
       "CONFIG.stamina.mechanics.enduranceMovementDebuff.direction.exhaustedRadialRange"
+    ]
+  },
+  "Selected movement": {
+    "formula": "last sampled movement debug from FishBehavior direction target selection",
+    "description": "Last selected behavior and sampled radial intent used by the endurance movement debuff debug view.",
+    "paths": [
+      "DEBUG_DATA.enduranceLastSelectedBehavior",
+      "DEBUG_DATA.enduranceLastSampledRadialIntent",
+      "DEBUG_DATA.enduranceLastSampledLateralIntent"
     ]
   },
   "Dash/swim weights": {
