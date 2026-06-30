@@ -8,6 +8,8 @@ class EchoModule extends OverlayModule {
   }
 
   render(d) {
+    if (!this.shouldRender(d)) return "";
+
     let html = this.formatHeader("📡 ЕХОЛОТ", "#00ff80");
     const stateText = d.isBoatSonar ? "СКАНУВАННЯ (КОРАБЛИК)" : d.gameState;
 
@@ -46,8 +48,6 @@ class EchoModule extends OverlayModule {
           </div>`;
         });
       }
-    } else {
-      html += `<div style="color: #8a9bac; margin-bottom: 4px;">Закиньте вудку для аналізу...</div>`;
     }
     return html + `<div style="margin-bottom: 12px;"></div>`;
   }

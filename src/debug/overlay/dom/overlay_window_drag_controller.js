@@ -46,7 +46,12 @@ class OverlayWindowDragController {
     this.#windowTarget?.removeEventListener?.("resize", this.#onResize);
   }
 
+  isDragging() {
+    return this.#isDragging;
+  }
+
   clampToViewport() {
+    if (this.#isDragging) return;
     if (!this.#element || this.#element.style.display === "none") return;
     if (!this.#windowTarget) return;
     const rect = this.#element.getBoundingClientRect();

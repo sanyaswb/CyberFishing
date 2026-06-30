@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.23.14";
+const CURRENT_PROJECT_VERSION = "0.23.15";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "overlay-balance-cleanup",
-  updatedAt: "2026-06-28",
+  codename: "overlay-lifecycle-stability",
+  updatedAt: "2026-06-30",
   notes: Object.freeze([
-    "Simplified Fish Balance overlay to show State Force Preview as the primary section",
-    "Moved Fish Summary, Current Fish Force and Fish Debuffs into optional overlay modules",
-    "Added state force detail toggles for active force, force multiplier, speed multiplier and behavior weight",
+    "Made overlay visibility depend only on non-empty rendered module output",
+    "Prevented debug overlay viewport clamping while the overlay window is actively dragged",
+    "Stopped controller update ticks from reapplying overlay scale and fighting drag layout",
   ]),
 });
 

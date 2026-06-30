@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.23.15 - Overlay lifecycle stability
+
+- Fixed the debug overlay visibility lifecycle so `debug-live-update` no longer shows an empty overlay window before any module renders content.
+- Made `OverlayController.update()` the single source of truth for overlay show/hide decisions based on rendered HTML output.
+- Prevented overlay viewport clamping while the overlay window is actively dragged, avoiding flicker and bottom-right jump artifacts.
+- Stopped update ticks from reapplying overlay scale every refresh; scale is now applied only through the scale control path.
+- Added a self-guard to `EchoModule.render()` and removed the pre-cast placeholder output.
+- Added regression coverage for overlay visibility, drag-clamp ownership and echo pre-cast behavior.
+
 ## v0.23.14 - Overlay balance cleanup
 
 - Simplified `Fish Balance` so the default module shows only `State Force Preview`.

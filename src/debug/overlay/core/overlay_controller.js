@@ -12,7 +12,6 @@ class OverlayController {
   #isStarted = false;
   #onDebugLiveUpdate = (event) => {
     this.#data = event.detail || {};
-    this.#domAdapter.show();
   };
 
   constructor({
@@ -88,7 +87,6 @@ class OverlayController {
         this.#lastHtml = html;
       }
       this.#domAdapter.show();
-      this.#domAdapter.applyScale();
       return;
     }
 

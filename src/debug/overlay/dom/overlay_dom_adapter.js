@@ -67,8 +67,9 @@ class OverlayDomAdapter {
 
   show() {
     if (!this.#container) return;
+    if (this.#container.style.display === "block") return;
     this.#container.style.display = "block";
-    this.#dragController?.clampToViewport?.();
+    this.#clampWhenStable();
   }
 
   hide() {
@@ -78,7 +79,7 @@ class OverlayDomAdapter {
   updateHtml(html) {
     if (!this.#content) return;
     this.#content.innerHTML = html;
-    this.#dragController?.clampToViewport?.();
+    this.#clampWhenStable();
   }
 
   getRootElement() {
@@ -93,8 +94,13 @@ class OverlayDomAdapter {
   applyScale() {
     if (this.#container) {
       this.#container.style.transform = `scale(${this.#scale})`;
-      this.#dragController?.clampToViewport?.();
+      this.#clampWhenStable();
     }
+  }
+
+  #clampWhenStable() {
+    if (this.#dragController?.isDragging?.()) return;
+    this.#dragController?.clampToViewport?.();
   }
 
   dispose() {
