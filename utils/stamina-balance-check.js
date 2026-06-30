@@ -88,8 +88,6 @@ const mechanicsConfig = {
       },
     },
   },
-  basePowerDropPerSec: 0.1,
-  minBasePowerRatio: 0.2,
   powerDebuff: {
     enabled: true,
     minBasePowerRatio: 0.2,
@@ -114,11 +112,8 @@ const mechanicsConfig = {
       maxRecoveryRatio: 0.8,
     },
   },
-  baseDepletionRate: 100,
-  exhaustionDepletionMultiplier: 1,
   masteryTimeRatio: 0.5,
   masteryPowerMultiplier: 0.2,
-  punishmentCap: 0.8,
   debuffs: { dashPullMult: 0.75 },
 };
 
@@ -130,7 +125,6 @@ class FakeCondition {
     this.maxPoints = 100;
     this.currentStamina = stamina;
     this.currentExhaustion = endurance;
-    this.punishmentCalls = 0;
   }
 
   restoreFull() {
@@ -166,10 +160,6 @@ class FakeCondition {
     );
   }
 
-  applyPunishment(capPercent) {
-    this.punishmentCalls += 1;
-    this.currentExhaustion = Math.max(this.currentExhaustion, this.maxEndurance * capPercent);
-  }
 }
 
 class FakeFish {
@@ -244,7 +234,7 @@ class FakeFish {
 function createController({ phase = "stamina", stamina = 100, endurance = 100 } = {}) {
   const condition = new FakeCondition({ phase, stamina, endurance });
   const fish = new FakeFish();
-  const controller = new StaminaController(condition, fish, 1, mechanicsConfig);
+  const controller = new StaminaController(condition, fish, mechanicsConfig);
   return { condition, fish, controller };
 }
 
@@ -404,9 +394,39 @@ approx(frame.frameMaxEndurance, 100, 0.0001, "stamina frame records frame max en
 approx(frame.frameEnduranceProgress, 0.25, 0.0001, "stamina frame records frame endurance progress");
 assert(frame.framePhase === "stamina", "stamina frame records frame phase");
 
+frame = balanceFactory.create({
+  phase: "stamina",
+  appliedRodHoldKg: 0.5,
+  weakestTackleLimitKg: 1,
+  lineAngleDeg: 15,
+  playerPressureControlExhausted: true,
+  dtSec: 1,
+  config: mechanicsConfig,
+});
+approx(frame.physicalAppliedRodHoldKg, 0.5, 0.0001, "control-exhausted frame preserves physical rod hold force");
+approx(frame.appliedRodHoldKg, 0, 0.0001, "control-exhausted frame removes rod hold from stamina control pressure");
+approx(frame.usedPlayerPressureKg, 0, 0.0001, "control-exhausted frame reports zero control pressure");
+approx(frame.activeStaminaDrain, 0, 0.0001, "control-exhausted frame stops active stamina drain");
+approx(frame.passiveStaminaRegen, 20, 0.0001, "control-exhausted frame allows stamina regen");
+assert(frame.playerPressureControlExhausted, "stamina frame records control exhausted state");
+
 let runtime = createController({ phase: "stamina", stamina: 100 });
 runtime.controller.evaluate({
   staminaFrame: frame,
+  dt: 1000,
+});
+approx(runtime.condition.currentStamina, 100, 0.0001, "StaminaController applies control-exhausted stamina regen cap");
+
+runtime = createController({ phase: "stamina", stamina: 100 });
+runtime.controller.evaluate({
+  staminaFrame: balanceFactory.create({
+    phase: "stamina",
+    appliedRodHoldKg: 0.5,
+    weakestTackleLimitKg: 1,
+    lineAngleDeg: 15,
+    dtSec: 1,
+    config: mechanicsConfig,
+  }),
   dt: 1000,
 });
 approx(runtime.condition.currentStamina, 50, 0.0001, "StaminaController applies active stamina frame damage");
@@ -450,7 +470,6 @@ runtime.controller.evaluate({
 });
 approx(runtime.condition.currentStamina, 100, 0.0001, "frame stamina can fully recover in phase 1");
 approx(runtime.condition.currentExhaustion, 50, 0.0001, "full stamina smoothly recovers endurance in phase 1");
-approx(runtime.condition.punishmentCalls, 0, 0.0001, "frame stamina path does not call legacy recovery punishment");
 approx(runtime.fish.powerRatioByEnduranceCalls, 1, 0.0001, "frame stamina endurance recovery synchronizes power ratio");
 approx(runtime.fish.lastPowerRatioEnduranceRatio, 0.5, 0.0001, "recovered endurance ratio feeds power sync");
 
@@ -552,6 +571,23 @@ runtime = createController({ phase: "exhaustion", endurance: 100 });
 runtime.controller.evaluate({
   staminaFrame: balanceFactory.create({
     phase: "exhaustion",
+    appliedRodHoldKg: 0.5,
+    playerPressureControlExhausted: true,
+    lineTaut: true,
+    lineTautRatio: 1,
+    weakestTackleLimitKg: 1,
+    dtSec: 5,
+    config: mechanicsConfig,
+  }),
+  dt: 5000,
+});
+assert(runtime.condition.phase === "stamina", "control-exhausted pressure starts phase recovery timer even with physical pressure");
+approx(runtime.condition.currentExhaustion, 100, 0.0001, "control-exhausted phase rollback preserves endurance");
+
+runtime = createController({ phase: "exhaustion", endurance: 100 });
+runtime.controller.evaluate({
+  staminaFrame: balanceFactory.create({
+    phase: "exhaustion",
     appliedRodHoldKg: 0.05,
     lineTaut: true,
     lineTautRatio: 1,
@@ -640,6 +676,10 @@ assert(runtime.fish.randomDebuffApplied, "endurance = 0 triggers final debuff");
 const source = StaminaController.toString();
 assert(!source.includes("fishWonRadialForceKg / weakestTackleLimitKg"), "StaminaController does not contain resisted-effort physics formula");
 assert(!source.includes("dragBlockedForceKg /"), "StaminaController does not calculate resistance physics formula");
+assert(!source.includes("applyRecoveryPunishment"), "StaminaController does not contain legacy recovery punishment");
+assert(!source.includes("applyExhaustionPressure"), "StaminaController does not contain legacy exhaustion pressure");
+assert(!source.includes("legacyAngleStress"), "StaminaController does not contain legacy angle fallback");
+assert(!source.includes("basePowerDropPerSec"), "StaminaController does not contain legacy duration-based power fallback");
 
 const weakest = new WeakestTackleLimitResolver().resolve({
   rod: { maxLoadKg: 1.5 },

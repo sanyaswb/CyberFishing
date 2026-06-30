@@ -125,6 +125,7 @@ class FightPhysicsConfigAdapter {
     const config = this.#physics().fight?.playerPressureFatigue || {};
     const recovery = config.recovery || {};
     const channels = config.channels || {};
+    const controlBreak = config.controlBreak || {};
     return {
       enabled: config.enabled === true,
       pressureThresholdKg: Math.max(
@@ -144,6 +145,20 @@ class FightPhysicsConfigAdapter {
         Math.min(1, this.#number(config.minEfficiency, 0.45)),
       ),
       curvePower: Math.max(0, this.#number(config.curvePower, 1.2)),
+      controlBreak: {
+        enabled: controlBreak.enabled === true,
+        fatigueRatioThreshold: Math.max(
+          0,
+          Math.min(
+            1,
+            this.#number(controlBreak.fatigueRatioThreshold, 0.9),
+          ),
+        ),
+        minContinuousPressureMs: Math.max(
+          0,
+          this.#number(controlBreak.minContinuousPressureMs, 8000),
+        ),
+      },
       recovery: {
         delayAfterPressureMs: Math.max(
           0,

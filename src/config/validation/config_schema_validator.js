@@ -192,6 +192,20 @@ class ConfigSchemaValidator {
       config.curvePower,
       { min: 0 },
     );
+    this.#requireBooleanWithLabel(
+      "physics.fight.playerPressureFatigue.controlBreak.enabled",
+      config.controlBreak?.enabled,
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureFatigue.controlBreak.fatigueRatioThreshold",
+      config.controlBreak?.fatigueRatioThreshold,
+      { min: 0, max: 1 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureFatigue.controlBreak.minContinuousPressureMs",
+      config.controlBreak?.minContinuousPressureMs,
+      { min: 0 },
+    );
     this.#requireFiniteNumberWithLabel(
       "physics.fight.playerPressureFatigue.recovery.delayAfterPressureMs",
       config.recovery?.delayAfterPressureMs,

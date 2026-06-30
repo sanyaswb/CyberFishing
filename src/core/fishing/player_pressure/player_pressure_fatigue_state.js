@@ -8,6 +8,10 @@ class PlayerPressureFatigueState {
   pressureKg = 0;
   fatigueRatio = 0;
   fatigueProgress = 0;
+  controlBreakEnabled = false;
+  isControlExhausted = false;
+  controlBreakFatigueRatioThreshold = 0.9;
+  controlBreakMinContinuousPressureMs = 8000;
   delayAfterPressureMs = 0;
   recoveryPerSecond = 0;
 
@@ -21,6 +25,10 @@ class PlayerPressureFatigueState {
     this.pressureKg = 0;
     this.fatigueRatio = 0;
     this.fatigueProgress = 0;
+    this.controlBreakEnabled = false;
+    this.isControlExhausted = false;
+    this.controlBreakFatigueRatioThreshold = 0.9;
+    this.controlBreakMinContinuousPressureMs = 8000;
     this.delayAfterPressureMs = 0;
     this.recoveryPerSecond = 0;
   }
@@ -35,6 +43,16 @@ class PlayerPressureFatigueState {
     this.pressureKg = this.#positive(frame.pressureKg);
     this.fatigueRatio = this.#ratio(frame.fatigueRatio);
     this.fatigueProgress = this.#ratio(frame.fatigueProgress);
+    this.controlBreakEnabled = frame.controlBreakEnabled === true;
+    this.isControlExhausted = frame.isControlExhausted === true;
+    this.controlBreakFatigueRatioThreshold = this.#ratio(
+      frame.controlBreakFatigueRatioThreshold,
+      0.9,
+    );
+    this.controlBreakMinContinuousPressureMs = this.#positive(
+      frame.controlBreakMinContinuousPressureMs,
+      8000,
+    );
     this.delayAfterPressureMs = this.#positive(frame.delayAfterPressureMs);
     this.recoveryPerSecond = this.#positive(frame.recoveryPerSecond);
   }
@@ -50,6 +68,12 @@ class PlayerPressureFatigueState {
       pressureKg: this.pressureKg,
       fatigueRatio: this.fatigueRatio,
       fatigueProgress: this.fatigueProgress,
+      controlBreakEnabled: this.controlBreakEnabled,
+      isControlExhausted: this.isControlExhausted,
+      controlBreakFatigueRatioThreshold:
+        this.controlBreakFatigueRatioThreshold,
+      controlBreakMinContinuousPressureMs:
+        this.controlBreakMinContinuousPressureMs,
       delayAfterPressureMs: this.delayAfterPressureMs,
       recoveryPerSecond: this.recoveryPerSecond,
     });

@@ -48,6 +48,11 @@ const config = {
   fatigueDurationMs: 6000,
   minEfficiency: 0.45,
   curvePower: 1.0,
+  controlBreak: {
+    enabled: true,
+    fatigueRatioThreshold: 0.9,
+    minContinuousPressureMs: 8000,
+  },
   recovery: {
     delayAfterPressureMs: 400,
     recoveryPerSecond: 0.8,
@@ -100,6 +105,27 @@ frame = fatigueCalculator.calculate({
 fatigueState.applyFrame(frame);
 approx(frame.efficiency, 1, 0.0001, "pressure fatigue recovers to full efficiency");
 assert(frame.recoveryState === "full", "pressure fatigue reports full recovery");
+
+const controlBreakState = new PlayerPressureFatigueState();
+frame = fatigueCalculator.calculate({
+  state: controlBreakState,
+  dtSec: 8,
+  pressureKg: 1,
+  config,
+});
+controlBreakState.applyFrame(frame);
+assert(!frame.isControlExhausted, "pressure fatigue waits for fatigue threshold before control break");
+
+frame = fatigueCalculator.calculate({
+  state: controlBreakState,
+  dtSec: 0.4,
+  pressureKg: 1,
+  config,
+});
+controlBreakState.applyFrame(frame);
+assert(frame.controlBreakEnabled, "pressure fatigue exposes control break enabled");
+assert(frame.isControlExhausted, "pressure fatigue marks control exhausted after long fatigued pressure");
+approx(frame.fatigueProgress, 0.9, 0.0001, "pressure fatigue control break uses normalized fatigue progress");
 
 const rodPullCalculator = new RodPullCalculator({
   enabled: true,

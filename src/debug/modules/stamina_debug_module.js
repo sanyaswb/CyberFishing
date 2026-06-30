@@ -22,10 +22,6 @@ class StaminaDebugModule extends ConsoleTableDebugModule {
         live.fishConditionMaxEndurance,
         3,
       ),
-      "Base depletion rate": DebugFormatters.number(
-        config.baseDepletionRate,
-        3,
-      ),
       "Applied rodHold kg": DebugFormatters.number(
         live.staminaAppliedRodHoldKg,
         3,
@@ -92,11 +88,6 @@ class StaminaDebugModule extends ConsoleTableDebugModule {
         3,
       )}`,
       "Budget overflow warning": live.staminaBudgetOverflowWarning === true,
-      "Edge regen rate": DebugFormatters.number(config.edgeRegenRate, 3),
-      "Regen multiplier phase 1": DebugFormatters.number(
-        config.regenMultiplierPhase1,
-        3,
-      ),
       "Mastery active": live.isMasteryActive === true,
       "Mastery timer": DebugFormatters.ms(live.masteryTimerMs),
       "Mastery multiplier live": DebugFormatters.number(

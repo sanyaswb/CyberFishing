@@ -50,6 +50,12 @@ const FIGHT_PHYSICS_CONFIG = {
     minEfficiency: 0.45,
     curvePower: 1.2,
 
+    controlBreak: {
+      enabled: true,
+      fatigueRatioThreshold: 0.9,
+      minContinuousPressureMs: 8000,
+    },
+
     recovery: {
       delayAfterPressureMs: 400,
       recoveryPerSecond: 0.8,

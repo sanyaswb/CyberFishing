@@ -205,6 +205,21 @@
     "description": "Minimum transmitted player force multiplier after long continuous pressure."
   },
   {
+    "key": "playerPressureFatigue.controlBreak.enabled",
+    "ua": "player_pressure_control_break_enabled",
+    "description": "Treats long fully fatigued pressure as no control for stamina regen and phase recovery."
+  },
+  {
+    "key": "playerPressureFatigue.controlBreak.fatigueRatioThreshold",
+    "ua": "player_pressure_control_break_fatigue_threshold",
+    "description": "Normalized fatigue progress required before continuous pressure stops counting as control."
+  },
+  {
+    "key": "playerPressureFatigue.controlBreak.minContinuousPressureMs",
+    "ua": "player_pressure_control_break_hold_ms",
+    "description": "Minimum continuous pressure duration before fatigue can break control pressure."
+  },
+  {
     "key": "playerPressureFatigue.recovery.recoveryPerSecond",
     "ua": "player_pressure_recovery_per_second",
     "description": "Efficiency recovered per second after pressure stops and the recovery delay has elapsed."

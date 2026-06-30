@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.23.18";
+const CURRENT_PROJECT_VERSION = "0.23.20";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "phase-recovery",
+  codename: "pressure-control-break",
   updatedAt: "2026-07-01",
   notes: Object.freeze([
-    "Added EXHAUSTION to STAMINA rollback on slack line or sustained low effective pressure",
-    "Added smooth ENDURANCE recovery in STAMINA phase after full stamina recovery",
-    "Preserved current ENDURANCE when returning from phase 2 back to phase 1",
+    "Added Player Pressure Fatigue control-break state for long fully fatigued pressure",
+    "Separated physical pressure from stamina/endurance control pressure",
+    "Allowed stamina regen and phase rollback while physical force still remains after control breaks",
   ]),
 });
 

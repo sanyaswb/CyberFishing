@@ -859,6 +859,18 @@
     "label": "Pressure fatigue curve",
     "description": "Power curve for efficiency loss after the grace window."
   },
+  "physics.fight.playerPressureFatigue.controlBreak.enabled": {
+    "label": "Pressure control break enabled",
+    "description": "Enables treating long fully fatigued pressure as no control for stamina regen and phase recovery."
+  },
+  "physics.fight.playerPressureFatigue.controlBreak.fatigueRatioThreshold": {
+    "label": "Pressure control break fatigue threshold",
+    "description": "Normalized fatigue progress required before continuous pressure stops counting as control."
+  },
+  "physics.fight.playerPressureFatigue.controlBreak.minContinuousPressureMs": {
+    "label": "Pressure control break hold time",
+    "description": "Minimum continuous pressure duration before fatigue can break control pressure."
+  },
   "physics.fight.playerPressureFatigue.recovery.delayAfterPressureMs": {
     "label": "Pressure recovery delay",
     "description": "Milliseconds to wait after pressure stops before pressure efficiency begins recovering."

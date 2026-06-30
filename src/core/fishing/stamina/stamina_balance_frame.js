@@ -23,6 +23,7 @@ class StaminaBalanceFrame {
     fishTensionKg = 0,
     appliedRodHoldKg = 0,
     appliedControlKg = 0,
+    playerPressureControlExhausted = false,
     weakestTackleLimitKg = 0,
     lineAngleDeg = 0,
     isLineFullyExtended = false,
@@ -43,9 +44,18 @@ class StaminaBalanceFrame {
     const dt = this.#positive(dtSec);
     const resolvedNowMs = this.#resolveNowMs({ nowMs, dtSec: dt });
     const resolvedPhase = this.#normalizePhase(phase);
+    const controlExhausted = playerPressureControlExhausted === true;
+    const physicalAppliedRodHoldKg = this.#positive(appliedRodHoldKg);
+    const physicalAppliedControlKg = this.#positive(appliedControlKg);
+    const controlRodHoldKg = controlExhausted
+      ? 0
+      : physicalAppliedRodHoldKg;
+    const controlAppliedKg = controlExhausted
+      ? 0
+      : physicalAppliedControlKg;
     const activeDrain = this.#activeStaminaDrainCalculator.calculate({
-      appliedRodHoldKg,
-      appliedControlKg,
+      appliedRodHoldKg: controlRodHoldKg,
+      appliedControlKg: controlAppliedKg,
       fishTensionKg,
       weakestTackleLimitKg,
       dtSec: dt,
@@ -114,6 +124,14 @@ class StaminaBalanceFrame {
       fishTensionKg: activeDrain.fishTensionKg,
       appliedRodHoldKg: activeDrain.appliedRodHoldKg,
       appliedControlKg: activeDrain.appliedControlKg,
+      controlRodHoldKg: activeDrain.appliedRodHoldKg,
+      controlAppliedRodHoldKg: activeDrain.appliedRodHoldKg,
+      controlAppliedControlKg: activeDrain.appliedControlKg,
+      physicalAppliedRodHoldKg,
+      physicalAppliedControlKg,
+      physicalAppliedPlayerPressureKg:
+        physicalAppliedRodHoldKg + physicalAppliedControlKg,
+      playerPressureControlExhausted: controlExhausted,
       budgetedRodHoldKg: activeDrain.budgetedRodHoldKg,
       budgetedControlKg: activeDrain.budgetedControlKg,
       weakestTackleLimitKg: activeDrain.weakestTackleLimitKg,

@@ -16,14 +16,6 @@ class ExhaustionDebugModule extends ConsoleTableDebugModule {
         3,
       ),
       "Duration live": DebugFormatters.ms(live.exhaustionDurationMs),
-      "Optimal max tension": DebugFormatters.number(
-        config.exhaustionOptimalMax,
-        2,
-      ),
-      "Base power drop per sec": DebugFormatters.number(
-        config.basePowerDropPerSec,
-        4,
-      ),
       "Mastery time ratio": DebugFormatters.number(
         config.masteryTimeRatio,
         3,

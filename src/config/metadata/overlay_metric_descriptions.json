@@ -631,6 +631,14 @@
       "DEBUG_DATA.playerPressureFatigueFatigueRatio"
     ]
   },
+  "fightSummary.pressureFatigueControlState": {
+    "formula": "control exhausted when fatigueProgress >= controlBreak.fatigueRatioThreshold and holdMs >= minContinuousPressureMs",
+    "description": "Whether long continuous pressure still counts as control for stamina regen and phase recovery.",
+    "paths": [
+      "DEBUG_DATA.playerPressureFatigueControlExhausted",
+      "CONFIG.physics.fight.playerPressureFatigue.controlBreak"
+    ]
+  },
   "fightSummary.pressureFatigueRecovery": {
     "formula": "waiting | active | full | pressuring",
     "description": "Current pressure fatigue recovery state.",

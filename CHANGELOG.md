@@ -1,5 +1,20 @@
 # CyberFishing changelog
 
+## v0.23.20 - Pressure control break
+
+- Added `playerPressureFatigue.controlBreak` for long continuous pressure after fatigue is nearly maxed.
+- Split physical pressure from stamina/endurance control pressure: tension can still receive fatigued force while STAMINA regen and phase rollback treat exhausted control as no pressure.
+- Added `isControlExhausted` fatigue state/debug fields and Fight Summary control state.
+- Extended stamina and fatigue checks for long-hold control break, stamina regen unblocking and phase recovery with physical pressure still present.
+
+## v0.23.19 - Stamina frame only
+
+- Removed legacy `StaminaController` fallback paths for tension/angle-based stamina and duration-based exhaustion.
+- Made stamina/endurance state updates depend only on `StaminaBalanceFrame`.
+- Removed legacy recovery punishment and duration-based power debuff fallback from `StaminaController`.
+- Removed stale legacy stamina/exhaustion config and debug rows.
+- Added regression checks that block reintroducing the old fallback identifiers.
+
 ## v0.23.18 - Phase recovery
 
 - Added EXHAUSTION to STAMINA rollback when the line is slack or effective post-fatigue player pressure stays below threshold.

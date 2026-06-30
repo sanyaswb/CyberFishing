@@ -25,12 +25,19 @@ class PlayerPressureFatigueCalculator {
     const pressureActive = enabled && pressure > pressureThresholdKg;
 
     if (!enabled) {
+      const controlBreak = this.#controlBreakFrame({ config });
       return this.#frame({
         enabled: false,
         pressureThresholdKg,
         minEfficiency,
         delayAfterPressureMs,
         recoveryPerSecond,
+        controlBreakEnabled: controlBreak.enabled,
+        isControlExhausted: false,
+        controlBreakFatigueRatioThreshold:
+          controlBreak.fatigueRatioThreshold,
+        controlBreakMinContinuousPressureMs:
+          controlBreak.minContinuousPressureMs,
       });
     }
 
@@ -83,6 +90,12 @@ class PlayerPressureFatigueCalculator {
     );
     const curvedProgress = Math.pow(fatigueProgress, curvePower);
     const efficiency = this.#lerp(1, minEfficiency, curvedProgress);
+    const controlBreak = this.#controlBreakFrame({
+      config,
+      pressureActive: true,
+      pressureHoldMs,
+      fatigueProgress,
+    });
 
     return this.#frame({
       enabled: true,
@@ -94,6 +107,12 @@ class PlayerPressureFatigueCalculator {
       pressureKg: pressure,
       fatigueRatio: 1 - efficiency,
       fatigueProgress,
+      controlBreakEnabled: controlBreak.enabled,
+      isControlExhausted: controlBreak.isControlExhausted,
+      controlBreakFatigueRatioThreshold:
+        controlBreak.fatigueRatioThreshold,
+      controlBreakMinContinuousPressureMs:
+        controlBreak.minContinuousPressureMs,
       pressureThresholdKg,
       minEfficiency,
       graceDurationMs,
@@ -101,6 +120,35 @@ class PlayerPressureFatigueCalculator {
       curvePower,
       delayAfterPressureMs,
       recoveryPerSecond,
+    });
+  }
+
+  #controlBreakFrame({
+    config = {},
+    pressureActive = false,
+    pressureHoldMs = 0,
+    fatigueProgress = 0,
+  } = {}) {
+    const controlBreak = config?.controlBreak || {};
+    const enabled = controlBreak.enabled === true;
+    const fatigueRatioThreshold = this.#clamp01(
+      controlBreak.fatigueRatioThreshold ?? 0.9,
+    );
+    const minContinuousPressureMs = this.#positive(
+      controlBreak.minContinuousPressureMs,
+      8000,
+    );
+    const isControlExhausted =
+      enabled &&
+      pressureActive === true &&
+      this.#positive(pressureHoldMs) >= minContinuousPressureMs &&
+      this.#clamp01(fatigueProgress) >= fatigueRatioThreshold;
+
+    return Object.freeze({
+      enabled,
+      isControlExhausted,
+      fatigueRatioThreshold,
+      minContinuousPressureMs,
     });
   }
 
@@ -137,6 +185,7 @@ class PlayerPressureFatigueCalculator {
       : waiting
         ? "waiting"
         : "active";
+    const controlBreak = this.#controlBreakFrame({ config });
 
     return this.#frame({
       enabled: true,
@@ -162,6 +211,12 @@ class PlayerPressureFatigueCalculator {
       curvePower: Math.max(0.000001, this.#positive(config?.curvePower, 1.2)),
       delayAfterPressureMs,
       recoveryPerSecond,
+      controlBreakEnabled: controlBreak.enabled,
+      isControlExhausted: false,
+      controlBreakFatigueRatioThreshold:
+        controlBreak.fatigueRatioThreshold,
+      controlBreakMinContinuousPressureMs:
+        controlBreak.minContinuousPressureMs,
     });
   }
 
@@ -200,6 +255,15 @@ class PlayerPressureFatigueCalculator {
       pressureThresholdKg: this.#positive(data.pressureThresholdKg, 0.01),
       fatigueRatio: this.#clamp01(data.fatigueRatio ?? (1 - efficiency)),
       fatigueProgress: this.#clamp01(data.fatigueProgress),
+      controlBreakEnabled: data.controlBreakEnabled === true,
+      isControlExhausted: data.isControlExhausted === true,
+      controlBreakFatigueRatioThreshold: this.#clamp01(
+        data.controlBreakFatigueRatioThreshold ?? 0.9,
+      ),
+      controlBreakMinContinuousPressureMs: this.#positive(
+        data.controlBreakMinContinuousPressureMs,
+        8000,
+      ),
       minEfficiency: this.#clamp01(data.minEfficiency ?? 0.45),
       graceDurationMs: this.#positive(data.graceDurationMs, 3000),
       fatigueDurationMs: this.#positive(data.fatigueDurationMs, 6000),

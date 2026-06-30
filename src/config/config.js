@@ -519,24 +519,6 @@ const CONFIG = {
         hardLimitMultiplier: 1.0,
       },
 
-      baseDepletionRate: 100,
-      baseRegenRate: 20,
-      edgeRegenRate: 30,
-      optimalMax: 100,
-      exhaustionOptimalMax: 85,
-
-      // НОВЕ:
-      // Керує швидкістю падіння червоної шкали EXHAUSTION.
-      // 0.5 = у 2 рази повільніше
-      // 1.0 = стандартно
-      // 2.0 = у 2 рази швидше
-      exhaustionDepletionMultiplier: 0.05,
-
-      // Legacy fallback: old per-second power drop for non frame-based exhaustion path.
-      // The new frame-based endurance path uses powerDebuff below.
-      basePowerDropPerSec: 0.1,
-
-      minBasePowerRatio: 0.2,
       powerDebuff: {
         enabled: true,
         minBasePowerRatio: 0.2,
@@ -544,8 +526,6 @@ const CONFIG = {
       },
       masteryTimeRatio: 0.5,
       masteryPowerMultiplier: 0.2,
-      regenMultiplierPhase1: 1.5,
-      punishmentCap: 0.8,
 
       debuffs: {
         swimPullMult: 0.75, // Зменшує тягу на 25%

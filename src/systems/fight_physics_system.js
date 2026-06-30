@@ -426,6 +426,7 @@ class FightPhysicsSystem {
         dtSec,
         isPullMode,
         isRecoverMode,
+        playerPressureFatigue: playerPressureFatigueFrame,
       }),
     );
     const rodPullDisplay = rodPullSystem.getState();
@@ -705,6 +706,14 @@ class FightPhysicsSystem {
       pressureKg: enabled ? this.#positive(state.pressureKg) : 0,
       fatigueRatio: enabled ? this.#clamp01(1 - efficiency) : 0,
       fatigueProgress: enabled ? this.#clamp01(state.fatigueProgress) : 0,
+      controlBreakEnabled: enabled && state.controlBreakEnabled === true,
+      isControlExhausted: enabled && state.isControlExhausted === true,
+      controlBreakFatigueRatioThreshold: enabled
+        ? this.#clamp01(state.controlBreakFatigueRatioThreshold ?? 0.9)
+        : 0,
+      controlBreakMinContinuousPressureMs: enabled
+        ? this.#positive(state.controlBreakMinContinuousPressureMs)
+        : 0,
       channels: this.#resolvePlayerPressureFatigueChannels(config),
     });
   }
@@ -749,6 +758,12 @@ class FightPhysicsSystem {
         pressureKg: 0,
         fatigueRatio: 0,
         fatigueProgress: 0,
+        controlBreakEnabled: config.controlBreak?.enabled === true,
+        isControlExhausted: false,
+        controlBreakFatigueRatioThreshold:
+          this.#clamp01(config.controlBreak?.fatigueRatioThreshold ?? 0.9),
+        controlBreakMinContinuousPressureMs:
+          this.#positive(config.controlBreak?.minContinuousPressureMs),
         channels,
         rawRodHoldKg,
         rawControlKg,
@@ -1908,18 +1923,9 @@ class FightPhysicsSystem {
     dtSec,
     isPullMode,
     isRecoverMode,
+    playerPressureFatigue,
   } = {}) {
     const playerIsPulling = !!isPullMode && !isRecoverMode;
-    const legacyAngleStressRatio = Math.max(
-      0,
-      Math.min(1, Number(forceData?.player?.angleStressRatio) || 0),
-    );
-    const legacyStaminaPressureRatio =
-      this.#resolveLegacyStaminaPressureRatio({
-        forceData,
-        fishRetrieveResult,
-        isPullMode,
-      });
     const appliedRodHoldKg = Math.max(
       0,
       Number(
@@ -1932,6 +1938,8 @@ class FightPhysicsSystem {
       0,
       Number(rodControlResult?.forceKg) || 0,
     );
+    const playerPressureControlExhausted =
+      playerPressureFatigue?.isControlExhausted === true;
     const weakestFrame =
       stressSystem?.getWeakestTackleLimitFrame?.() ||
       Object.freeze({
@@ -1947,6 +1955,7 @@ class FightPhysicsSystem {
         fishRetrieveResult?.fishTensionKg ?? forceData?.fishTensionKg,
       appliedRodHoldKg,
       appliedControlKg,
+      playerPressureControlExhausted,
       weakestTackleLimitKg: weakestFrame.weakestTackleLimitKg,
       lineAngleDeg: this.#resolveLineAngleDeg({
         floatEntity,
@@ -1989,10 +1998,8 @@ class FightPhysicsSystem {
       this.#warnStaminaBudgetOverflow(frame);
       return Object.freeze({
         ...frame,
-        angleStressRatio: legacyAngleStressRatio,
+        angleStressRatio: frame.angleStressRatio,
         staminaPressureRatio: frame.activeDrainRatio,
-        legacyAngleStressRatio,
-        legacyStaminaPressureRatio,
         weakestTackleLimitComponent: weakestFrame.component,
         weakestTackleLimitCandidates: weakestFrame.candidates,
       });
@@ -2059,32 +2066,6 @@ class FightPhysicsSystem {
       "unknown";
     const normalized = String(value || "unknown").trim().toLowerCase();
     return normalized || "unknown";
-  }
-
-  #resolveLegacyStaminaPressureRatio({
-    forceData,
-    fishRetrieveResult,
-    isPullMode,
-  } = {}) {
-    const fishWonYForceKg = Math.max(
-      0,
-      Number(fishRetrieveResult?.fishWonYForceKg) || 0,
-    );
-    const dragBlockedForceKg = Math.max(
-      0,
-      Number(fishRetrieveResult?.dragBlockedForceKg) || 0,
-    );
-    const fallbackPressureRatio = Math.max(
-      0,
-      Math.min(1, Number(forceData?.staminaPressureRatio) || 0),
-    );
-    if (isPullMode && fishWonYForceKg > 0) {
-      return Math.max(
-        0,
-        Math.min(1, dragBlockedForceKg / fishWonYForceKg),
-      );
-    }
-    return fallbackPressureRatio;
   }
 
   #resolveLineAngleDeg({ floatEntity, rodTipPosition, rodControlResult } = {}) {
@@ -2739,6 +2720,14 @@ class FightPhysicsSystem {
         playerPressureFatigue?.fatigueRatio ?? 0,
       playerPressureFatigueProgress:
         playerPressureFatigue?.fatigueProgress ?? 0,
+      playerPressureFatigueControlBreakEnabled:
+        playerPressureFatigue?.controlBreakEnabled === true,
+      playerPressureFatigueControlExhausted:
+        playerPressureFatigue?.isControlExhausted === true,
+      playerPressureFatigueControlBreakThreshold:
+        playerPressureFatigue?.controlBreakFatigueRatioThreshold ?? 0,
+      playerPressureFatigueControlBreakMinHoldMs:
+        playerPressureFatigue?.controlBreakMinContinuousPressureMs ?? 0,
       playerPressureFatigueRawRodHoldKg:
         playerPressureFatigue?.rawRodHoldKg ?? 0,
       playerPressureFatigueRawControlKg:
@@ -3245,6 +3234,24 @@ class FightPhysicsSystem {
       angleStressRatio: staminaFrame?.angleStressRatio ?? 0,
       staminaAppliedRodHoldKg: staminaFrame?.appliedRodHoldKg ?? 0,
       staminaAppliedControlKg: staminaFrame?.appliedControlKg ?? 0,
+      staminaPhysicalAppliedRodHoldKg:
+        staminaFrame?.physicalAppliedRodHoldKg ??
+        staminaFrame?.appliedRodHoldKg ??
+        0,
+      staminaPhysicalAppliedControlKg:
+        staminaFrame?.physicalAppliedControlKg ??
+        staminaFrame?.appliedControlKg ??
+        0,
+      staminaControlAppliedRodHoldKg:
+        staminaFrame?.controlAppliedRodHoldKg ??
+        staminaFrame?.appliedRodHoldKg ??
+        0,
+      staminaControlAppliedControlKg:
+        staminaFrame?.controlAppliedControlKg ??
+        staminaFrame?.appliedControlKg ??
+        0,
+      staminaPlayerPressureControlExhausted:
+        staminaFrame?.playerPressureControlExhausted === true,
       staminaBudgetedRodHoldKg: staminaFrame?.budgetedRodHoldKg ?? 0,
       staminaBudgetedControlKg: staminaFrame?.budgetedControlKg ?? 0,
       staminaUsedPlayerPressureKg:

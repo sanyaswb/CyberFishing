@@ -65,6 +65,8 @@ class FightSummaryOverlayModule extends OverlayModule {
     const recoveryState = enabled
       ? data.playerPressureFatigueRecoveryState || "full"
       : "disabled";
+    const controlExhausted =
+      enabled && data.playerPressureFatigueControlExhausted === true;
     let html = `<div style="margin:6px 0 3px; color:#ffaa00; font-weight:700;">PLAYER PRESSURE FATIGUE</div>`;
     html += this.metricRow("Efficiency", enabled ? `x${f.num(efficiency, 2)}` : "disabled", {
       metricKey: "fightSummary.pressureFatigueEfficiency",
@@ -77,6 +79,10 @@ class FightSummaryOverlayModule extends OverlayModule {
     html += this.metricRow("Fatigue", f.percent(fatigueRatio, 1), {
       metricKey: "fightSummary.pressureFatigueRatio",
       color: fatigueRatio > 0.001 ? "#ffaa00" : "#00ff80",
+    });
+    html += this.metricRow("Control", controlExhausted ? "exhausted" : "active", {
+      metricKey: "fightSummary.pressureFatigueControlState",
+      color: controlExhausted ? "#ff4444" : "#00ff80",
     });
     html += this.metricRow("Recovery", recoveryState, {
       metricKey: "fightSummary.pressureFatigueRecovery",

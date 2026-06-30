@@ -1172,16 +1172,6 @@ class FishCondition {
       this.#currentExhaustion + recovery,
     );
   }
-
-  applyPunishment(capPercent) {
-    const cap = this.#maxEndurance * capPercent;
-    if (this.#currentExhaustion < cap) {
-      this.#currentExhaustion = cap;
-      console.log(
-        `[STAMINA] Риба відновилася! Виснаження повернулося до ${capPercent * 100}%`,
-      );
-    }
-  }
 }
 
 class FishEndurancePointsCalculator {

@@ -395,7 +395,6 @@ class FightSessionFactory {
     const staminaController = new StaminaController(
       fishCondition,
       fish,
-      tensionMeter.getEffectiveMaxTackleLoadKg(),
       this.config.stamina.mechanics,
     );
     return {
@@ -892,9 +891,6 @@ class FightService {
       leader: equipment.leader,
     });
     this.#fishingSystem = this.#createDebugFishingAdapter();
-    this.#staminaController.updatePlayerPower(
-      this.#tensionMeter.getEffectiveMaxTackleLoadKg(),
-    );
   }
 
   syncFishRuntime(fishData) {
@@ -946,30 +942,14 @@ class FightService {
       buffs: null,
     });
     this.#forces = forceData.forces;
-    const isRetrieveOnly =
-      this.#reel?.hasReel?.() &&
-      input.retrieve &&
-      !input.isPulling &&
-      !input.pointerDown;
     const fightDebug = this.#tensionMeter.getDebugData?.() || {};
     const staminaFrame = forceData.fightFrame?.stamina || {};
-    const isExhaustionPhase = this.#fishCondition?.phase === "exhaustion";
     if (this.#isFishStaminaLocked()) {
       this.#syncGodModeStamina();
     } else {
       this.#staminaController.evaluate({
         staminaFrame,
-        tension: this.#tensionMeter.getTension(),
-        playerPowerIsPulling:
-          staminaFrame.playerPowerIsPulling ?? (input.isPulling && !isRetrieveOnly),
         dt,
-        angleStressRatio: isExhaustionPhase
-          ? staminaFrame.legacyAngleStressRatio ?? staminaFrame.angleStressRatio ?? 0
-          : staminaFrame.angleStressRatio || 0,
-        staminaPressureRatio: isExhaustionPhase
-          ? staminaFrame.legacyStaminaPressureRatio ?? staminaFrame.staminaPressureRatio ?? 0
-          : staminaFrame.staminaPressureRatio || 0,
-        isLineFullyExtended: !!staminaFrame.isLineFullyExtended,
       });
     }
     const resolution = this.#catchResolver.resolveAutoCatch({

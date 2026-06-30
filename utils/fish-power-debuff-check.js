@@ -32,14 +32,6 @@ function assertIncludes(value, expected, label) {
   }
 }
 
-function assertOrder(source, first, second, label) {
-  const firstIndex = source.indexOf(first);
-  const secondIndex = source.indexOf(second);
-  if (firstIndex === -1 || secondIndex === -1 || firstIndex >= secondIndex) {
-    throw new Error(`${label}: expected ${first} before ${second}`);
-  }
-}
-
 approx(powerRatioFromEndurance({ currentExhaustion: 3400, maxEndurance: 3400 }), 1, 0.000001, "100% endurance keeps full power");
 approx(powerRatioFromEndurance({ currentExhaustion: 1700, maxEndurance: 3400 }), 0.6, 0.000001, "50% endurance keeps 60% power with min 20%");
 approx(powerRatioFromEndurance({ currentExhaustion: 0, maxEndurance: 3400 }), 0.2, 0.000001, "0% endurance reaches minimum power");
@@ -61,15 +53,12 @@ assertIncludes(fishSource, "runtimeForceMultiplier", "Fish behavior exposes runt
 
 const staminaSource = fs.readFileSync(path.join(root, "src/systems/stamina_system.js"), "utf8");
 assertIncludes(staminaSource, "setPowerRatioByEnduranceRatio", "StaminaController uses new frame-based power sync");
-const syncStart = staminaSource.indexOf("  #syncFramePowerDebuffWithEndurance() {");
-const syncEnd = staminaSource.indexOf("  #applyFinalDebuffIfExhausted", syncStart);
-const syncSource = staminaSource.slice(syncStart, syncEnd);
-assertOrder(
-  syncSource,
-  "setPowerRatioByEnduranceRatio",
-  "basePowerDropPerSec",
-  "Frame-based power sync uses endurance ratio before legacy basePowerDropPerSec fallback",
-);
+if (staminaSource.includes("basePowerDropPerSec")) {
+  throw new Error("StaminaController should not contain legacy basePowerDropPerSec fallback");
+}
+if (staminaSource.includes("setPowerDebuffByExhaustionRatio")) {
+  throw new Error("StaminaController should not contain legacy duration-based power sync");
+}
 
 const forceSource = fs.readFileSync(path.join(root, "src/systems/fish_force_system.js"), "utf8");
 assertIncludes(forceSource, "fishRuntimeForceMultiplier", "FishForceSystem exports runtime force multiplier");
