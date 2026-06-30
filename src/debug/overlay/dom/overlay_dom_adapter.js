@@ -3,6 +3,7 @@ class OverlayDomAdapter {
   #styleInstaller;
   #container = null;
   #content = null;
+  #dragController = null;
   #scale = 1;
 
   constructor({
@@ -25,7 +26,7 @@ class OverlayDomAdapter {
       padding: 15px 15px 50px 15px; font-family: monospace;
       font-size: 14px; border: 1px solid #4a5b6c; border-radius: 8px;
       z-index: 10000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-      min-width: 280px; transform-origin: bottom left;
+      min-width: 280px; transform-origin: top left;
       touch-action: none; pointer-events: all;
     `;
 
@@ -46,7 +47,14 @@ class OverlayDomAdapter {
     this.#documentTarget.body.appendChild(this.#container);
     this.#styleInstaller.install();
 
-    if (
+    if (typeof OverlayWindowDragController !== "undefined") {
+      this.#dragController = new OverlayWindowDragController({
+        element: this.#container,
+        config: typeof CONFIG !== "undefined" ? CONFIG : {},
+        id: "debug_overlay",
+      });
+      this.#dragController.attach();
+    } else if (
       typeof UIDraggableButton !== "undefined" &&
       typeof CONFIG !== "undefined"
     ) {
@@ -58,7 +66,9 @@ class OverlayDomAdapter {
   }
 
   show() {
-    if (this.#container) this.#container.style.display = "block";
+    if (!this.#container) return;
+    this.#container.style.display = "block";
+    this.#dragController?.clampToViewport?.();
   }
 
   hide() {
@@ -68,6 +78,11 @@ class OverlayDomAdapter {
   updateHtml(html) {
     if (!this.#content) return;
     this.#content.innerHTML = html;
+    this.#dragController?.clampToViewport?.();
+  }
+
+  getRootElement() {
+    return this.#container;
   }
 
   setScale(scale) {
@@ -78,13 +93,16 @@ class OverlayDomAdapter {
   applyScale() {
     if (this.#container) {
       this.#container.style.transform = `scale(${this.#scale})`;
+      this.#dragController?.clampToViewport?.();
     }
   }
 
   dispose() {
+    this.#dragController?.detach?.();
     this.#container?.remove();
     this.#container = null;
     this.#content = null;
+    this.#dragController = null;
   }
 }
 

@@ -43,7 +43,7 @@ class FightMovementSection extends FightSectionBase {
       this.row("Water resistance", f.num(d.waterMotionResistance, 1)),
       this.row("Speed multiplier", `x${f.num(d.waterSpeedMultiplier, 2)}`),
       this.row("Fish movement mode", d.fishMovementMode || "none", d.fishMovementMode === "none" ? "#8a9bac" : "#00ff80"),
-      this.row("Player pull movement mode", d.playerPullMovementMode || d.movementMode || "none", (d.playerPullMovementMode || d.movementMode) === "none" ? "#8a9bac" : "#00ff80"),
+      this.row("Player pull movement mode", d.playerPullMovementMode || "none", (d.playerPullMovementMode || "none") === "none" ? "#8a9bac" : "#00ff80"),
       this.row("Raw velocity", `${f.num(d.fishMoveRawVelocityX, 1)}, ${f.num(d.fishMoveRawVelocityY, 1)}px/s`, "#73c2fb"),
       this.row("Allowed velocity", `${f.num(d.fishMoveAllowedVelocityX, 1)}, ${f.num(d.fishMoveAllowedVelocityY, 1)}px/s`, "#00ff80"),
       this.row("Radial speed", `${f.num(d.fishMoveRadialSpeedPxPerSec, 1)}px/s`, Number(d.fishMoveRadialSpeedPxPerSec) > 0 ? "#ffaa00" : "#8a9bac"),
@@ -72,12 +72,11 @@ class FightMovementSection extends FightSectionBase {
       this.row("Radial constraint", d.fightMovementRadialConstraintActive ? "yes" : "no", d.fightMovementRadialConstraintActive ? "#ffaa00" : "#8a9bac"),
       this.row("Target speed", `${f.num(d.fightMovementTargetSpeedPxPerSec, 1)}px/s`, "#73c2fb"),
       this.row("Actual speed", `${f.num(d.fightMovementActualSpeedPxPerSec, 1)}px/s`, Number(d.fightMovementActualSpeedPxPerSec) > 0.001 ? "#00ff80" : "#8a9bac"),
-      this.row("Model fight speed", f.mps(d.modelFightSpeedMps ?? d.simpleFightSpeedMps, 3), "#73c2fb"),
+      this.row("Model fight speed", f.mps(d.modelFightSpeedMps, 3), "#73c2fb"),
       this.row("Fish own toward speed", f.mps(d.fishOwnTowardSpeedMps, 3), "#73c2fb"),
       this.row("Rod pull speed", f.mps(d.totalAppliedPullSpeedMps, 3), "#00ff80"),
       this.row("Combined toward speed", f.mps(d.combinedTowardSpeedMps, 3), "#00d4ff"),
       this.row("Applied move", f.meters(d.totalAppliedPullMoveMeters, 3), Number(d.totalAppliedPullMoveMeters) > 0 ? "#00ff80" : "#8a9bac"),
-      this.row("Model speed px/s", `${f.num(d.simpleFightSpeedPxPerSec ?? d.fishSpeedPxPerSec, 1)}px/s`, "#73c2fb"),
     ];
   }
 

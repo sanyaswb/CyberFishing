@@ -121,11 +121,32 @@ class FishForceSystem {
       directionConfig: this.#physicsConfig?.getDirectionForceConfig?.(),
     });
     const directionMultiplier = directionInfo.multiplier;
-    const fishBasePower = this.#firstFiniteNumber(
+    const configuredFishBasePower = this.#firstFiniteNumber(
       fishPhysics.forceProfile?.basePower,
       fishPhysics.basePower,
       1,
     );
+    const fishInitialPower = this.#firstFiniteNumber(
+      this.#fish.getInitialPower?.(),
+      configuredFishBasePower,
+    );
+    const fishCurrentPower = this.#firstFiniteNumber(
+      this.#fish.getPower?.(),
+      fishInitialPower,
+    );
+    const fishPowerBeforeMastery = this.#firstFiniteNumber(
+      this.#fish.getPowerBeforeMastery?.(),
+      fishCurrentPower,
+    );
+    const fishPowerDebuff = this.#firstFiniteNumber(
+      this.#fish.getPowerDebuff?.(),
+      Math.max(0, fishInitialPower - fishPowerBeforeMastery),
+      0,
+    );
+    const fishPowerRatio = fishInitialPower > 0
+      ? Math.max(0, fishCurrentPower / fishInitialPower)
+      : 1;
+    const fishBasePower = configuredFishBasePower * fishPowerRatio;
     const rawFishBaseSpeed = this.#firstFiniteNumber(
       fishPhysics.movementProfile?.baseSpeed,
       fishPhysics.baseSpeed,
@@ -148,6 +169,19 @@ class FishForceSystem {
     const fishForceFrame = this.#forceCalculator.calculate({
       fishWeightKg: this.#fish.getWeight(),
       fishBasePower,
+      fishBaseSpeed,
+      fishStateForceMultiplier: behaviorPowerRatio,
+      fishStateSpeedMultiplier: behaviorSpeedRatio,
+      directionMultiplier,
+      tautBodyResistancePerKg: waterConfig.tautBodyResistancePerKg,
+      rodLimitKg: 0,
+      rodHoldKg: 0,
+      waterMotionResistance: waterConfig.motionResistance,
+      waterSpeedMultiplier: waterConfig.speedMultiplier,
+    });
+    const fishForceBeforeExhaustionFrame = this.#forceCalculator.calculate({
+      fishWeightKg: this.#fish.getWeight(),
+      fishBasePower: configuredFishBasePower,
       fishBaseSpeed,
       fishStateForceMultiplier: behaviorPowerRatio,
       fishStateSpeedMultiplier: behaviorSpeedRatio,
@@ -253,16 +287,46 @@ class FishForceSystem {
       fishState: behavior.name,
       fishWeightKg: this.#fish.getWeight(),
       fishBasePower,
+      fishConfiguredBasePower: configuredFishBasePower,
+      fishInitialPower,
+      fishCurrentPower,
+      fishPowerBeforeMastery,
+      fishPowerRatio,
+      fishPowerDebuff,
+      fishBasePowerExhaustionLoss: Math.max(
+        0,
+        configuredFishBasePower - fishBasePower,
+      ),
       fishBaseSpeed,
       rawFishBaseSpeed,
       fishBaseSpeedMultiplier,
-      fishInitialPower: this.#fish.getInitialPower?.() || staticForceKg,
       pullMult: behaviorPowerRatio,
       moveMult: behaviorSpeedRatio,
       staticFishForceKg: staticForceKg,
       fishPassiveKg: fishForceFrame.fishPassiveKg,
       fishActiveKg: fishForceFrame.fishActiveKg,
       fishOppositionKg: fishForceFrame.fishOppositionKg,
+      fishPassiveWithoutExhaustionKg:
+        fishForceBeforeExhaustionFrame.fishPassiveKg,
+      fishActiveWithoutExhaustionKg:
+        fishForceBeforeExhaustionFrame.fishActiveKg,
+      fishOppositionWithoutExhaustionKg:
+        fishForceBeforeExhaustionFrame.fishOppositionKg,
+      fishPassiveExhaustionLossKg: Math.max(
+        0,
+        fishForceBeforeExhaustionFrame.fishPassiveKg -
+          fishForceFrame.fishPassiveKg,
+      ),
+      fishActiveExhaustionLossKg: Math.max(
+        0,
+        fishForceBeforeExhaustionFrame.fishActiveKg -
+          fishForceFrame.fishActiveKg,
+      ),
+      fishOppositionExhaustionLossKg: Math.max(
+        0,
+        fishForceBeforeExhaustionFrame.fishOppositionKg -
+          fishForceFrame.fishOppositionKg,
+      ),
       fishTensionKg: fishForceFrame.fishTensionKg,
       totalFishForceKg,
       fishSpeedPxPerSec: Math.hypot(this.#targetVelocity.x, this.#targetVelocity.y),
@@ -339,8 +403,39 @@ class FishForceSystem {
       fishPassiveKg: fishForceFrame.fishPassiveKg,
       fishActiveKg: fishForceFrame.fishActiveKg,
       fishOppositionKg: fishForceFrame.fishOppositionKg,
+      fishPassiveWithoutExhaustionKg:
+        fishForceBeforeExhaustionFrame.fishPassiveKg,
+      fishActiveWithoutExhaustionKg:
+        fishForceBeforeExhaustionFrame.fishActiveKg,
+      fishOppositionWithoutExhaustionKg:
+        fishForceBeforeExhaustionFrame.fishOppositionKg,
+      fishPassiveExhaustionLossKg: Math.max(
+        0,
+        fishForceBeforeExhaustionFrame.fishPassiveKg -
+          fishForceFrame.fishPassiveKg,
+      ),
+      fishActiveExhaustionLossKg: Math.max(
+        0,
+        fishForceBeforeExhaustionFrame.fishActiveKg -
+          fishForceFrame.fishActiveKg,
+      ),
+      fishOppositionExhaustionLossKg: Math.max(
+        0,
+        fishForceBeforeExhaustionFrame.fishOppositionKg -
+          fishForceFrame.fishOppositionKg,
+      ),
       fishTensionKg: fishForceFrame.fishTensionKg,
       fishBasePower,
+      fishConfiguredBasePower: configuredFishBasePower,
+      fishInitialPower,
+      fishCurrentPower,
+      fishPowerBeforeMastery,
+      fishPowerRatio,
+      fishPowerDebuff,
+      fishBasePowerExhaustionLoss: Math.max(
+        0,
+        configuredFishBasePower - fishBasePower,
+      ),
       fishBaseSpeed,
       rawFishBaseSpeed,
       fishBaseSpeedMultiplier,

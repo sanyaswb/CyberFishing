@@ -462,16 +462,16 @@ const CONFIG = {
         curvePower: 1.0,
         direction: {
           enabled: true,
-          exhaustedRadialRange: [-0.5, 0.25],
+          exhaustedRadialRange: [-0.35, 0.45],
         },
         behaviorWeights: {
           enabled: true,
           multipliersAtZeroEndurance: {
-            dash: 0.35,
-            lastDash: 0.25,
-            swim: 0.65,
-            idle: 1.6,
-            rest: 2.0,
+            dash: 0.4,
+            lastDash: 0.6,
+            swim: 0.8,
+            idle: 1.3,
+            rest: 1.5,
           },
         },
       },

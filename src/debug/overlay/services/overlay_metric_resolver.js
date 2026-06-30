@@ -28,7 +28,7 @@ class OverlayMetricResolver {
       "movableHoldTensionCapKg",
       "totalTensionKg",
       "netForceKg",
-      "simpleFightSpeedMps",
+      "modelFightSpeedMps",
       "rodStressRatio",
       "lineStressRatio",
       "hookStressRatio",

@@ -485,5 +485,324 @@
       "DEBUG_DATA.enduranceRestWeightMultiplier",
       "CONFIG.stamina.mechanics.enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance"
     ]
+  },
+  "fishStates.actualDirection": {
+    "formula": "actualDirection = DEBUG_DATA.fishDirectionState normalized to away / side / toward",
+    "description": "Поточний реальний напрямок руху риби відносно гравця, який використовується режимом Actual у таблиці сили станів.",
+    "paths": [
+      "DEBUG_DATA.fishDirectionState"
+    ]
+  },
+  "fishStates.directionMultiplier": {
+    "formula": "usedDirectionMultiplier = actual snapshot multiplier or forced directionForce multiplier",
+    "description": "Множник напрямку, який зараз використовується тільки для preview-розрахунку сили state-ів у Fish States overlay.",
+    "paths": [
+      "DEBUG_DATA.directionResistanceMultiplier",
+      "CONFIG.physics.fight.directionForce.awayMultiplier",
+      "CONFIG.physics.fight.directionForce.sideMultiplier",
+      "CONFIG.physics.fight.directionForce.towardPlayerMultiplier"
+    ]
+  },
+  "fishBalance.weight": {
+    "formula": "fishWeightKg",
+    "description": "Вага поточної риби у модулі Fish Balance.",
+    "paths": [
+      "DEBUG_DATA.fishWeightKg"
+    ]
+  },
+  "fishBalance.basePower": {
+    "formula": "fishBasePower",
+    "description": "Поточний базовий коефіцієнт сили риби.",
+    "paths": [
+      "DEBUG_DATA.fishBasePower"
+    ]
+  },
+  "fishBalance.passiveForce": {
+    "formula": "fishPassiveKg = fishWeightKg * tautBodyResistancePerKg * fishBasePower",
+    "description": "Пасивний опір тіла риби у воді.",
+    "paths": [
+      "DEBUG_DATA.fishPassiveKg"
+    ]
+  },
+  "fishBalance.activeForce": {
+    "formula": "fishActiveKg = fishPassiveKg * stateForceMultiplier * directionMultiplier",
+    "description": "Активна силова частина поточного стану риби.",
+    "paths": [
+      "DEBUG_DATA.fishActiveKg"
+    ]
+  },
+  "fishBalance.opposition": {
+    "formula": "fishOppositionKg = fishPassiveKg + fishActiveKg",
+    "description": "Загальна сила протидії риби у поточному кадрі.",
+    "paths": [
+      "DEBUG_DATA.fishOppositionKg"
+    ]
+  },
+  "fishBalance.currentBehavior": {
+    "formula": "fishState",
+    "description": "Поточний behavior state риби.",
+    "paths": [
+      "DEBUG_DATA.fishState"
+    ]
+  },
+  "fishBalance.currentDirection": {
+    "formula": "fishDirectionState",
+    "description": "Поточний напрям руху риби відносно гравця.",
+    "paths": [
+      "DEBUG_DATA.fishDirectionState"
+    ]
+  },
+  "fishBalance.directionMultiplier": {
+    "formula": "directionResistanceMultiplier",
+    "description": "Множник сили риби за поточним напрямком away/side/toward.",
+    "paths": [
+      "DEBUG_DATA.directionResistanceMultiplier"
+    ]
+  },
+  "fishBalance.randomDebuff": {
+    "formula": "activeDebuffName",
+    "description": "Поточний random debuff після повного виснаження, якщо він є.",
+    "paths": [
+      "DEBUG_DATA.activeDebuffName"
+    ]
+  },
+  "fishBalance.mastery": {
+    "formula": "isMasteryActive",
+    "description": "Поточний стан mastery-послаблення риби.",
+    "paths": [
+      "DEBUG_DATA.isMasteryActive"
+    ]
+  },
+  "fishBalance.movementDebuffProgress": {
+    "formula": "enduranceMovementDebuffProgress = 1 - currentExhaustion / maxEndurance",
+    "description": "Прогрес динамічного phase-2 movement debuff.",
+    "paths": [
+      "DEBUG_DATA.enduranceMovementDebuffProgress"
+    ]
+  },
+  "fishBalance.movementDebuffPower": {
+    "formula": "debuffPower = enduranceProgress ^ curvePower",
+    "description": "Фактична сила динамічного movement debuff після curvePower.",
+    "paths": [
+      "DEBUG_DATA.enduranceMovementDebuffPower"
+    ]
+  },
+  "fishBalance.effectiveRadial": {
+    "formula": "runtime effective radial range",
+    "description": "Останній effective radial range після movement debuff.",
+    "paths": [
+      "DEBUG_DATA.enduranceEffectiveRadialMin",
+      "DEBUG_DATA.enduranceEffectiveRadialMax"
+    ]
+  },
+  "fightSummary.fishOpposition": {
+    "formula": "fishOppositionKg",
+    "description": "Сила протидії риби в поточному кадрі.",
+    "paths": [
+      "DEBUG_DATA.fishOppositionKg"
+    ]
+  },
+  "fightSummary.playerPressure": {
+    "formula": "playerHoldTensionKg + rodControlPlayerTensionKg",
+    "description": "Сумарний pressure гравця від rod hold і lateral control.",
+    "paths": [
+      "DEBUG_DATA.playerHoldTensionKg",
+      "DEBUG_DATA.rodControlPlayerTensionKg"
+    ]
+  },
+  "fightSummary.totalTension": {
+    "formula": "totalTensionKg",
+    "description": "Загальний натяг снасті.",
+    "paths": [
+      "DEBUG_DATA.totalTensionKg"
+    ]
+  },
+  "fightSummary.weakestLimit": {
+    "formula": "min(rod,line,hook,reel limits)",
+    "description": "Найслабший допустимий ліміт снасті.",
+    "paths": [
+      "DEBUG_DATA.weakestTackleLimitKg"
+    ]
+  },
+  "fightSummary.tensionRatio": {
+    "formula": "totalTensionKg / weakestLimitKg",
+    "description": "Відсоток навантаження від найслабшої снасті.",
+    "paths": [
+      "DEBUG_DATA.totalTensionKg",
+      "DEBUG_DATA.weakestTackleLimitKg"
+    ]
+  },
+  "fightSummary.winner": {
+    "formula": "sign(netForceKg)",
+    "description": "Хто перемагає по net force: fish, player або balance.",
+    "paths": [
+      "DEBUG_DATA.netForceKg"
+    ]
+  },
+  "fightSummary.netForce": {
+    "formula": "netForceKg",
+    "description": "Різниця між тиском гравця і силою риби.",
+    "paths": [
+      "DEBUG_DATA.netForceKg"
+    ]
+  },
+  "fightSummary.breakRisk": {
+    "formula": "tensionRatio thresholds and failureChance",
+    "description": "Стислий ризик поломки снасті.",
+    "paths": [
+      "DEBUG_DATA.failureChance",
+      "DEBUG_DATA.guaranteedFailure"
+    ]
+  },
+  "lineAndDrag.lineReleased": {
+    "formula": "releasedLineMeters / totalLineMeters",
+    "description": "Скільки ліски випущено від загальної довжини.",
+    "paths": [
+      "DEBUG_DATA.lineDebug.releasedLineMeters",
+      "DEBUG_DATA.lineDebug.totalLineMeters"
+    ]
+  },
+  "lineAndDrag.lineRemaining": {
+    "formula": "remainingLineMeters",
+    "description": "Запас ліски на котушці.",
+    "paths": [
+      "DEBUG_DATA.lineDebug.remainingLineMeters"
+    ]
+  },
+  "lineAndDrag.fullyExtended": {
+    "formula": "fullyExtended",
+    "description": "Чи ліска повністю вийшла до робочого ліміту.",
+    "paths": [
+      "DEBUG_DATA.lineDebug.fullyExtended"
+    ]
+  },
+  "lineAndDrag.hardLimit": {
+    "formula": "hardLineLimit",
+    "description": "Чи риба вперлась у жорсткий ліміт ліски.",
+    "paths": [
+      "DEBUG_DATA.lineDebug.hardLineLimit"
+    ]
+  },
+  "lineAndDrag.dragSetting": {
+    "formula": "dragRatio",
+    "description": "Поточний відсоток фрикціону.",
+    "paths": [
+      "DEBUG_DATA.dragRatio"
+    ]
+  },
+  "lineAndDrag.dragLimit": {
+    "formula": "dragLimitKg",
+    "description": "Силовий ліміт фрикціону у кг.",
+    "paths": [
+      "DEBUG_DATA.dragLimitKg"
+    ]
+  },
+  "lineAndDrag.dragState": {
+    "formula": "shouldSlipDrag / dragCanPayout",
+    "description": "Стислий стан фрикціону: тримає чи віддає ліску.",
+    "paths": [
+      "DEBUG_DATA.shouldSlipDrag"
+    ]
+  },
+  "lineAndDrag.blockedForce": {
+    "formula": "dragBlockedForceKg",
+    "description": "Скільки сили риби блокується фрикціоном/лімітом.",
+    "paths": [
+      "DEBUG_DATA.dragBlockedForceKg"
+    ]
+  },
+  "rodControlSummary.hold": {
+    "formula": "rodPullForceKg / rodHoldMaxKg",
+    "description": "Поточний rod hold від максимального hold.",
+    "paths": [
+      "DEBUG_DATA.rodPullForceKg",
+      "DEBUG_DATA.rodHoldMaxKg"
+    ]
+  },
+  "rodControlSummary.stroke": {
+    "formula": "rodStrokeUsed / rodStrokeCapacity",
+    "description": "Використаний stroke вудки від доступної місткості.",
+    "paths": [
+      "DEBUG_DATA.rodStrokeUsed",
+      "DEBUG_DATA.rodStrokeCapacity"
+    ]
+  },
+  "rodControlSummary.input": {
+    "formula": "rodControlInputDirectionX + rodControlInputRatio",
+    "description": "Напрям і сила lateral control input.",
+    "paths": [
+      "DEBUG_DATA.rodControlInputDirectionX",
+      "DEBUG_DATA.rodControlInputRatio"
+    ]
+  },
+  "rodControlSummary.angle": {
+    "formula": "rodControlLineAngleDeg",
+    "description": "Кут ліски для lateral control.",
+    "paths": [
+      "DEBUG_DATA.rodControlLineAngleDeg"
+    ]
+  },
+  "rodControlSummary.directionFactor": {
+    "formula": "rodControlDirectionFactor",
+    "description": "Множник ефективності lateral control за напрямком.",
+    "paths": [
+      "DEBUG_DATA.rodControlDirectionFactor"
+    ]
+  },
+  "rodControlSummary.loadReserve": {
+    "formula": "rodControlLoadReserveKg",
+    "description": "Скільки силового бюджету залишилось до ліміту снасті.",
+    "paths": [
+      "DEBUG_DATA.rodControlLoadReserveKg"
+    ]
+  },
+  "rodControlSummary.lateralForce": {
+    "formula": "rodControlForceKg",
+    "description": "Фактична lateral force, яку додав rod control.",
+    "paths": [
+      "DEBUG_DATA.rodControlForceKg"
+    ]
+  },
+  "rodControlSummary.blockedReason": {
+    "formula": "rodControlBlockedReason",
+    "description": "Причина блокування lateral control, якщо є.",
+    "paths": [
+      "DEBUG_DATA.rodControlBlockedReason"
+    ]
+  },
+  "fishMovementSummary.pressure": {
+    "formula": "fishPressureRelation + force + raw speed",
+    "description": "Куди риба тисне до constraints.",
+    "paths": [
+      "DEBUG_DATA.fishPressureRelationLabel"
+    ]
+  },
+  "fishMovementSummary.actualMove": {
+    "formula": "fishMovementRelation after constraints",
+    "description": "Фактичний рух риби після constraints.",
+    "paths": [
+      "DEBUG_DATA.fishMovementRelationLabel"
+    ]
+  },
+  "fishMovementSummary.blocker": {
+    "formula": "fishActualBlockedReason",
+    "description": "Що заблокувало фактичний рух риби.",
+    "paths": [
+      "DEBUG_DATA.fishActualBlockedReason"
+    ]
+  },
+  "fishMovementSummary.targetSpeed": {
+    "formula": "fightMovementTargetSpeedPxPerSec",
+    "description": "Цільова швидкість руху риби в fight movement.",
+    "paths": [
+      "DEBUG_DATA.fightMovementTargetSpeedPxPerSec"
+    ]
+  },
+  "fishMovementSummary.actualSpeed": {
+    "formula": "fightMovementActualSpeedPxPerSec",
+    "description": "Фактична швидкість після constraints.",
+    "paths": [
+      "DEBUG_DATA.fightMovementActualSpeedPxPerSec"
+    ]
   }
 }

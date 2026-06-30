@@ -4,14 +4,35 @@
 
   const settingsStore = window.OverlaySettingsStore;
   const htmlBuilder = new OverlayHtmlBuilder();
-  const moduleOptions = { settingsStore, htmlBuilder };
+  const viewStateStore = new OverlayViewStateStore({
+    fishStatesDirectionMode: "away",
+    fishStateForceDetails: {
+      active: false,
+      force: false,
+      speed: false,
+      weight: false,
+    },
+  });
+  const moduleOptions = {
+    settingsStore,
+    htmlBuilder,
+    viewStateStore,
+    configSource: () => CONFIG,
+  };
   const registry = new OverlayModuleRegistry();
   registry.registerMany([
     new EchoModule(moduleOptions),
     new ChancesDetailModule(moduleOptions),
     new BehaviorModule(moduleOptions),
+    new FishBalanceModule(moduleOptions),
+    new FishSummaryOverlayModule(moduleOptions),
+    new FishCurrentForceOverlayModule(moduleOptions),
+    new FishDebuffsSummaryOverlayModule(moduleOptions),
+    new FightSummaryOverlayModule(moduleOptions),
+    new LineAndDragSummaryOverlayModule(moduleOptions),
+    new RodControlSummaryOverlayModule(moduleOptions),
+    new FishMovementSummaryOverlayModule(moduleOptions),
     new FishPowerModule(moduleOptions),
-    new FishStatesModule(moduleOptions),
     new DebuffsModule(moduleOptions),
     new FightPhysicsOverlayModule(moduleOptions),
     new PlayerMaxModule(moduleOptions),
@@ -24,11 +45,19 @@
     }),
   ]);
 
+  const domAdapter = new OverlayDomAdapter();
+  const interactionBridge = new OverlayInteractionBridge({
+    rootElementProvider: () => domAdapter.getRootElement(),
+    viewStateStore,
+  });
+
   const controller = new OverlayController({
     registry,
-    domAdapter: new OverlayDomAdapter(),
+    domAdapter,
     documentTarget: document,
     configSource: () => CONFIG,
+    viewStateStore,
+    interactionBridge,
   });
   controller.start();
 
@@ -36,6 +65,7 @@
   metricInfoBridge.start();
 
   window.CYBER_FISHING_DEBUG_OVERLAY = controller;
+  window.CYBER_FISHING_OVERLAY_VIEW_STATE = viewStateStore;
   window.CYBER_FISHING_OVERLAY_METRIC_INFO = metricInfoBridge;
 
   window.addEventListener(
@@ -44,6 +74,7 @@
       metricInfoBridge.dispose();
       controller.dispose();
       window.CYBER_FISHING_OVERLAY_METRIC_INFO = null;
+      window.CYBER_FISHING_OVERLAY_VIEW_STATE = null;
       window.CYBER_FISHING_DEBUG_OVERLAY = null;
     },
     { once: true },

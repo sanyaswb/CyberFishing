@@ -1,5 +1,28 @@
 # CyberFishing changelog
 
+## v0.23.14 - Overlay balance cleanup
+
+- Simplified `Fish Balance` so the default module shows only `State Force Preview`.
+- Moved `Fish Summary`, `Current Fish Force` and `Fish Debuffs` into optional overlay modules.
+- Added `Active / Force / Speed / Weight` toggles to the state force preview so extra state details can be enabled only when needed.
+- Removed duplicate `State Force Preview` heading output and replaced `Actual/Forced` wording with a cleaner direction label.
+- Removed legacy Y/simple speed fallbacks from main overlay-oriented sections and marked remaining legacy stroke rows as deprecated in Advanced.
+
+## v0.23.13 - Balance overlay refactor
+
+- Added `Fish Balance` overlay module combining fish base force, state force preview and live debuffs.
+- Added compact `Fight Summary`, `Line & Drag Summary`, `Rod Control Summary` and `Fish Movement Summary` overlay modules.
+- Updated overlay defaults to prioritize balance-focused modules while keeping detailed fish/fight modules available as Advanced sections.
+- Reused the existing Actual/Away/Side/Toward fish-state force preview without changing gameplay physics.
+- Added overlay module grouping in DevTools and regression coverage for the new summary overlay layout.
+
+## v0.23.12 - Fish state force direction tabs
+
+- Added `Actual / Away / Side / Toward` tabs to the Fish State Force overlay section.
+- Added an overlay-only view-state store and interaction bridge so debug UI controls do not mutate gameplay state.
+- Updated fish state force rows to show used direction multiplier, passive force, active force, state force multiplier, speed multiplier and behavior weight.
+- Kept the force formula and gameplay physics unchanged; the new tabs are preview-only balancing tools.
+
 ## v0.23.11 - Endurance overlay frame consistency
 
 - Added frame-start exhaustion fields to stamina/endurance frames so overlay values no longer mix live condition data with pre-drain frame math.

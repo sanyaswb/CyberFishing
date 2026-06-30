@@ -371,6 +371,14 @@ class Fish {
     return current * this.#masteryPowerMult;
   }
 
+  getPowerBeforeMastery() {
+    return Math.max(0, this.getInitialPower() - this.#powerDebuff);
+  }
+
+  getPowerDebuff() {
+    return Math.max(0, this.#powerDebuff);
+  }
+
   get activeDebuffName() {
     return this.#hasActiveDebuff
       ? this.#lastDebuffName || "Невідомий"

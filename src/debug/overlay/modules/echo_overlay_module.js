@@ -3,8 +3,8 @@ class EchoModule extends OverlayModule {
     super("echo", options);
   }
 
-  shouldRender(d) {
-    return ["scouting", "waiting", "biting"].includes(d.gameState);
+  shouldRender(d = {}) {
+    return d.isBoatSonar || ["waiting", "biting"].includes(d.gameState);
   }
 
   render(d) {

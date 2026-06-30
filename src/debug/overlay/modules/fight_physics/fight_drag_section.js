@@ -10,10 +10,8 @@ class FightDragSection extends FightSectionBase {
     const f = this.formatter;
     const dragRatio = Number(d.dragRatio) || 0;
     const dragLimitKg = Number(d.effectiveDragLimitKg ?? d.dragLimitKg) || 0;
-    const fishWonRadialForceKg =
-      Number(d.fishWonRadialForceKg ?? d.fishWonYForceKg) || 0;
-    const radialEscapeForceKg =
-      Number(d.radialEscapeForceKg ?? d.yEscapeForceKg) || 0;
+    const fishWonRadialForceKg = Number(d.fishWonRadialForceKg) || 0;
+    const radialEscapeForceKg = Number(d.radialEscapeForceKg) || 0;
     const shouldSlip = !!d.shouldSlipDrag;
     const canHoldRadial =
       fishWonRadialForceKg <= dragLimitKg + 0.000001 && dragRatio > 0;

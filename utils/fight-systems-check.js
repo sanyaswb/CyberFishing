@@ -185,6 +185,30 @@ approx(
   0.001,
   "recovery slowdown halves fish escape speed",
 );
+const exhaustedFish = {
+  ...recoverySlowdownFish,
+  getPower() {
+    return 0.5;
+  },
+  getPowerBeforeMastery() {
+    return 0.5;
+  },
+  getPowerDebuff() {
+    return 0.5;
+  },
+};
+const exhaustedForceSystem = new FishForceSystem({
+  fish: exhaustedFish,
+  config: CONFIG,
+});
+const exhaustedForce = exhaustedForceSystem.calculate({
+  ...recoverySlowdownBaseContext,
+});
+approx(exhaustedForce.fishBasePower, 0.5, 0.0001, "fish force uses current power ratio");
+approx(exhaustedForce.fishPassiveKg, 0.1, 0.0001, "exhaustion lowers passive fish force");
+approx(exhaustedForce.fishOppositionKg, 0.35, 0.0001, "exhaustion lowers total fish force");
+approx(exhaustedForce.fishOppositionWithoutExhaustionKg, 0.7, 0.0001, "force frame keeps pre-exhaustion total");
+approx(exhaustedForce.fishOppositionExhaustionLossKg, 0.35, 0.0001, "force frame exposes exhaustion force loss");
 
 const blockedFish = calc.calculate({
   fishWeightKg: 0.2,

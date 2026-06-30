@@ -199,15 +199,47 @@ class DevTools {
         body,
         ["OVERLAY_MODULES"],
       );
-      for (const k of overlayKeys) {
+      const renderedKeys = new Set();
+      const groups =
+        typeof OVERLAY_MODULE_GROUPS !== "undefined" &&
+        Array.isArray(OVERLAY_MODULE_GROUPS)
+          ? OVERLAY_MODULE_GROUPS
+          : [];
+
+      const renderSwitcher = (key, parent) => {
+        if (!overlayKeys.includes(key) || renderedKeys.has(key)) return;
+        renderedKeys.add(key);
         const enabled = overlaySettings?.isEnabled
-          ? overlaySettings.isEnabled(k)
-          : !!overlayModules[k];
-        this.#ui.createSwitcherRow(k, enabled, content, (v) => {
-          if (overlaySettings?.setEnabled) overlaySettings.setEnabled(k, v);
-          else overlayModules[k] = v;
-        });
+          ? overlaySettings.isEnabled(key)
+          : !!overlayModules[key];
+        const label = this.#getOverlayModuleLabel(key);
+        this.#ui.createSwitcherRow(
+          label,
+          enabled,
+          parent,
+          (v) => {
+            if (overlaySettings?.setEnabled) overlaySettings.setEnabled(key, v);
+            else overlayModules[key] = v;
+          },
+          ["OVERLAY_MODULES", key],
+        );
+      };
+
+      if (groups.length > 0) {
+        for (const group of groups) {
+          const keys = Array.isArray(group?.keys) ? group.keys : [];
+          const visibleKeys = keys.filter((key) => overlayKeys.includes(key));
+          if (visibleKeys.length === 0) continue;
+          const groupContent = this.#createSectionWithCache(
+            group.label || "Overlay group",
+            content,
+            ["OVERLAY_MODULES", group.label || "group"],
+          );
+          visibleKeys.forEach((key) => renderSwitcher(key, groupContent));
+        }
       }
+
+      overlayKeys.forEach((key) => renderSwitcher(key, content));
     }
 
     const debugContent = this.#renderConfigDebugSection(body);
@@ -521,6 +553,12 @@ class DevTools {
     return this.#configRuntime.overrideStore.has(overridePath)
       ? `${key} *`
       : key;
+  }
+
+  #getOverlayModuleLabel(key) {
+    const labels =
+      typeof OVERLAY_MODULE_LABELS !== "undefined" ? OVERLAY_MODULE_LABELS : {};
+    return labels?.[key]?.label || key;
   }
 
   #buildTree(obj, parentElement, path, options = {}) {

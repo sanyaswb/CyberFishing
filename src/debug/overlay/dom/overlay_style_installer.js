@@ -28,6 +28,36 @@ class OverlayStyleInstaller {
         font-weight: bold;
         text-align: right;
       }
+
+      .debug-overlay-tab-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin: 4px 0 6px;
+        pointer-events: auto;
+      }
+      .debug-overlay-tab {
+        font: inherit;
+        font-size: 11px;
+        padding: 2px 6px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.08);
+        color: inherit;
+        cursor: pointer;
+        pointer-events: auto;
+        touch-action: manipulation;
+      }
+      .debug-overlay-tab:hover,
+      .debug-overlay-tab:focus-visible {
+        background: rgba(120, 190, 255, 0.16);
+        border-color: rgba(120, 190, 255, 0.45);
+        outline: none;
+      }
+      .debug-overlay-tab--active {
+        background: rgba(120, 190, 255, 0.22);
+        border-color: rgba(120, 190, 255, 0.65);
+      }
       .overlay-metric-label {
         cursor: help;
         pointer-events: auto;
