@@ -54,11 +54,10 @@
   },
   delivery: {
     type: "single",
-    dependencies: ["deliveryChums"], // Змінено на множину
+    dependencies: ["deliveryChums"],
     acceptTypes: ["boat", "chum_delivery"],
   },
   deliveryChums: {
-    // Змінено на масив
     type: "array",
     dependencies: [],
     acceptTypes: ["chum_mix"],
@@ -473,6 +472,25 @@ const CONFIG = {
             idle: 1.3,
             rest: 1.5,
           },
+        },
+      },
+      phaseRecovery: {
+        enabled: true,
+        pressureThresholdKg: 0.01,
+        pressureThresholdRatioOfMax: 0.08,
+        exhaustionToStamina: {
+          enabled: true,
+          noPressureTimeoutMs: 5000,
+          slackLineRecovery: {
+            enabled: true,
+            lineTautThresholdRatio: 0.1,
+          },
+        },
+        enduranceRecovery: {
+          enabled: true,
+          requiresFullStamina: true,
+          recoveryPerSecond: 30,
+          maxRecoveryRatio: 0.8,
         },
       },
       // Deprecated aliases kept so existing dev tools/config overrides remain safe.

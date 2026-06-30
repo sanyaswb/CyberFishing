@@ -29,6 +29,7 @@ class FightSummaryOverlayModule extends OverlayModule {
       metricKey: "fightSummary.playerPressure",
       color: "#00ff80",
     });
+    html += this.#renderPlayerPressureFatigue(data);
     html += this.metricRow("Total tension", f.kg(totalTensionKg, 3), {
       metricKey: "fightSummary.totalTension",
       color: f.stressColor(tensionRatio),
@@ -54,6 +55,46 @@ class FightSummaryOverlayModule extends OverlayModule {
       color: breakRisk.color,
     });
     return html + `<div style="margin-bottom: 12px;"></div>`;
+  }
+
+  #renderPlayerPressureFatigue(data) {
+    const f = this.#formatter;
+    const enabled = data.playerPressureFatigueEnabled === true;
+    const efficiency = this.#finite(data.playerPressureFatigueEfficiency, 1);
+    const fatigueRatio = this.#finite(data.playerPressureFatigueFatigueRatio, 0);
+    const recoveryState = enabled
+      ? data.playerPressureFatigueRecoveryState || "full"
+      : "disabled";
+    let html = `<div style="margin:6px 0 3px; color:#ffaa00; font-weight:700;">PLAYER PRESSURE FATIGUE</div>`;
+    html += this.metricRow("Efficiency", enabled ? `x${f.num(efficiency, 2)}` : "disabled", {
+      metricKey: "fightSummary.pressureFatigueEfficiency",
+      color: enabled && efficiency < 0.999 ? "#ffaa00" : "#00ff80",
+    });
+    html += this.metricRow("Hold time", f.seconds(data.playerPressureFatigueHoldMs), {
+      metricKey: "fightSummary.pressureFatigueHoldTime",
+      color: "#73c2fb",
+    });
+    html += this.metricRow("Fatigue", f.percent(fatigueRatio, 1), {
+      metricKey: "fightSummary.pressureFatigueRatio",
+      color: fatigueRatio > 0.001 ? "#ffaa00" : "#00ff80",
+    });
+    html += this.metricRow("Recovery", recoveryState, {
+      metricKey: "fightSummary.pressureFatigueRecovery",
+      color: recoveryState === "active"
+        ? "#00ff80"
+        : recoveryState === "waiting"
+          ? "#ffaa00"
+          : "#8a9bac",
+    });
+    html += this.metricRow("Rod hold after fatigue", f.kg(data.playerPressureFatigueRodHoldKg, 3), {
+      metricKey: "fightSummary.pressureFatigueRodHold",
+      color: "#00ff80",
+    });
+    html += this.metricRow("Control after fatigue", f.kg(data.playerPressureFatigueControlKg, 3), {
+      metricKey: "fightSummary.pressureFatigueControl",
+      color: "#00d4ff",
+    });
+    return html;
   }
 
   #resolvePlayerPressureKg(data) {

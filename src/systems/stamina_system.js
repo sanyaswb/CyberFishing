@@ -8,6 +8,7 @@ class StaminaController {
   #isFullyRecovered = false;
   #hasLostStamina = false;
   #lastStaminaBalanceFrame = null;
+  #phaseRecoveryNoPressureMs = 0;
 
   constructor(condition, fish, playerBasePower, mechanicsConfig) {
     this.#condition = condition;
@@ -38,6 +39,7 @@ class StaminaController {
     this.#isMasteryActive = false;
     this.#isFullyRecovered = false;
     this.#hasLostStamina = false;
+    this.#phaseRecoveryNoPressureMs = 0;
     this.#fish.clearDebuff?.();
     this.#fish.setMasteryMultiplier?.(1.0);
   }
@@ -138,16 +140,26 @@ class StaminaController {
 
   #evaluateStaminaBalanceFrame(frame) {
     this.#lastStaminaBalanceFrame = frame;
+    this.#phaseRecoveryNoPressureMs = 0;
     const netChange = Number(frame.netStaminaChange) || 0;
     if (netChange < 0) {
       this.#condition.applyStaminaDamage(-netChange);
     } else if (netChange > 0) {
       this.#condition.applyStaminaRegen(netChange);
     }
+    this.#recoverEnduranceInStaminaPhase(frame);
   }
 
   #evaluateEnduranceBalanceFrame(frame, dt) {
     this.#lastStaminaBalanceFrame = frame;
+    if (this.#condition.currentExhaustion <= 0) {
+      this.#applyFinalDebuffIfExhausted();
+      return;
+    }
+    if (this.#shouldReturnToStaminaPhase(frame, dt)) {
+      this.#returnToStaminaPhase();
+      return;
+    }
     this.#updateMasteryWindow(dt, 0, this.getExhaustionDurationMs());
 
     const damage = Math.max(
@@ -160,6 +172,107 @@ class StaminaController {
     }
 
     this.#applyEnduranceFrameDrain({ damage });
+  }
+
+  #shouldReturnToStaminaPhase(frame, dt) {
+    const phaseRecovery = this.#phaseRecoveryConfig();
+    const exhaustionToStamina = phaseRecovery.exhaustionToStamina || {};
+    if (
+      phaseRecovery.enabled === false ||
+      exhaustionToStamina.enabled === false
+    ) {
+      this.#phaseRecoveryNoPressureMs = 0;
+      return false;
+    }
+
+    if (this.#isSlackPhaseRecoveryFrame(frame, exhaustionToStamina)) {
+      this.#phaseRecoveryNoPressureMs = 0;
+      return true;
+    }
+
+    const pressureKg = this.#positive(frame.usedPlayerPressureKg, 0);
+    const thresholdKg = this.#phaseRecoveryPressureThresholdKg(
+      phaseRecovery,
+      frame,
+    );
+    if (pressureKg <= thresholdKg) {
+      this.#phaseRecoveryNoPressureMs += Math.max(0, Number(dt) || 0);
+    } else {
+      this.#phaseRecoveryNoPressureMs = 0;
+    }
+
+    return (
+      this.#phaseRecoveryNoPressureMs >=
+      this.#positive(exhaustionToStamina.noPressureTimeoutMs, 5000)
+    );
+  }
+
+  #isSlackPhaseRecoveryFrame(frame, exhaustionToStamina) {
+    const slackConfig = exhaustionToStamina.slackLineRecovery || {};
+    if (slackConfig.enabled === false) return false;
+    if (frame.lineIsSlack === true) return true;
+    if (frame.lineTaut === false) return true;
+
+    const threshold = this.#clamp01(
+      slackConfig.lineTautThresholdRatio ?? 0.1,
+    );
+    const ratio = Number(frame.lineTautRatio ?? frame.rawLineTautRatio);
+    return Number.isFinite(ratio) && ratio <= threshold;
+  }
+
+  #phaseRecoveryPressureThresholdKg(phaseRecovery, frame) {
+    const absoluteThresholdKg = this.#positive(
+      phaseRecovery.pressureThresholdKg,
+      0.01,
+    );
+    const ratioThreshold = this.#clamp01(
+      phaseRecovery.pressureThresholdRatioOfMax ?? 0,
+    );
+    const maxPressureKg = this.#positive(frame.weakestTackleLimitKg, 0);
+    return Math.max(absoluteThresholdKg, maxPressureKg * ratioThreshold);
+  }
+
+  #returnToStaminaPhase() {
+    this.#phaseRecoveryNoPressureMs = 0;
+    this.#masteryTimer = 0;
+    if (this.#isMasteryActive) {
+      this.#isMasteryActive = false;
+      this.#fish.clearMasteryDebuff?.();
+    }
+    this.#fish.setMasteryMultiplier?.(1.0);
+    this.#condition.breakExhaustion?.();
+  }
+
+  #recoverEnduranceInStaminaPhase(frame) {
+    if (this.#condition.phase !== "stamina") return;
+    if ((frame.framePhase ?? frame.phase) !== "stamina") return;
+
+    const phaseRecovery = this.#phaseRecoveryConfig();
+    const recovery = phaseRecovery.enduranceRecovery || {};
+    if (phaseRecovery.enabled === false || recovery.enabled === false) return;
+    if (
+      recovery.requiresFullStamina !== false &&
+      this.#condition.currentStamina < this.#maxStamina()
+    ) {
+      return;
+    }
+
+    const recoveryPerSecond = this.#positive(recovery.recoveryPerSecond, 30);
+    const recoveryAmount = recoveryPerSecond * this.#positive(frame.dtSec, 0);
+    if (recoveryAmount <= 0) return;
+
+    const capRatio = this.#clamp01(recovery.maxRecoveryRatio ?? 0.8);
+    const recoveryCap = this.#maxEndurance() * capRatio;
+    if (this.#condition.currentExhaustion >= recoveryCap) return;
+    if (typeof this.#condition.applyExhaustionRegen !== "function") return;
+
+    this.#condition.applyExhaustionRegen(recoveryAmount, recoveryCap);
+    this.#syncFramePowerDebuffWithEndurance();
+  }
+
+  #phaseRecoveryConfig() {
+    const config = this.#mechanicsConfig.phaseRecovery;
+    return config && typeof config === "object" ? config : { enabled: false };
   }
 
   #evaluateExhaustionPhase({

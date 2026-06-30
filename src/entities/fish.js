@@ -1161,6 +1161,18 @@ class FishCondition {
     this.#currentExhaustion = Math.max(0, this.#currentExhaustion - amount);
   }
 
+  applyExhaustionRegen(amount, cap = this.#maxEndurance) {
+    const recovery = Math.max(0, Number(amount) || 0);
+    const limit = Math.max(
+      0,
+      Math.min(this.#maxEndurance, Number(cap) || this.#maxEndurance),
+    );
+    this.#currentExhaustion = Math.min(
+      limit,
+      this.#currentExhaustion + recovery,
+    );
+  }
+
   applyPunishment(capPercent) {
     const cap = this.#maxEndurance * capPercent;
     if (this.#currentExhaustion < cap) {

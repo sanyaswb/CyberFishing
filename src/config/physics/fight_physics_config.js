@@ -42,6 +42,25 @@ const FIGHT_PHYSICS_CONFIG = {
     },
   },
 
+  playerPressureFatigue: {
+    enabled: true,
+    pressureThresholdKg: 0.01,
+    graceDurationMs: 3000,
+    fatigueDurationMs: 6000,
+    minEfficiency: 0.45,
+    curvePower: 1.2,
+
+    recovery: {
+      delayAfterPressureMs: 400,
+      recoveryPerSecond: 0.8,
+    },
+
+    channels: {
+      rodHold: true,
+      rodControl: true,
+    },
+  },
+
   playerPullMotion: {
     inertiaSeconds: 0.16,
   },

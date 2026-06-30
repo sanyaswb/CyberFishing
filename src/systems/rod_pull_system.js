@@ -17,6 +17,7 @@ class RodPullSystem {
     maxDistanceMeters: 0,
     availableDistanceMeters: 0,
     availableExtraForceKg: 0,
+    rawForceKg: 0,
     rodLimitKg: 0,
     fishTensionKg: 0,
     tensionCeilingMultiplier: 1,
@@ -42,6 +43,8 @@ class RodPullSystem {
     releasedThisFrame: false,
     releaseRecovering: false,
     releaseRecoveryRatio: 0,
+    playerPressureEfficiency: 1,
+    playerPressureFatigueEnabled: false,
     rodStrokeCapacityMeters: 0,
     rodStrokeWonMeters: 0,
     rodStrokeUsedMeters: 0,
@@ -86,6 +89,7 @@ class RodPullSystem {
     fishDistanceMeters,
     distanceLostBeforePullMeters = null,
     yLostBeforePullMeters = 0,
+    playerPressureFatigue = null,
   }) {
     this.#clearStrokeFrameDiagnostics();
     if (inputState?.pullStartedThisFrame) {
@@ -132,6 +136,7 @@ class RodPullSystem {
       hardLineLimit,
       lineHasReserve,
       fishDistanceMeters,
+      playerPressureFatigue,
     });
 
     this.#applyPlayerForceBudgetDiagnostics(playerForceBudget);
@@ -282,6 +287,7 @@ class RodPullSystem {
       maxDistanceMeters: 0,
       availableDistanceMeters: 0,
       availableExtraForceKg: 0,
+      rawForceKg: 0,
       rodLimitKg: 0,
       fishTensionKg: 0,
       tensionCeilingMultiplier: 1,
@@ -298,6 +304,8 @@ class RodPullSystem {
       releasedThisFrame: false,
       releaseRecovering: false,
       releaseRecoveryRatio: 0,
+      playerPressureEfficiency: 1,
+      playerPressureFatigueEnabled: false,
       rodStrokeCapacityMeters: 0,
       rodStrokeWonMeters: 0,
       rodStrokeUsedMeters: 0,
@@ -322,6 +330,7 @@ class RodPullSystem {
     this.#state.distanceMeters = result.distanceMeters;
     this.#state.maxDistanceMeters = result.maxDistanceMeters;
     this.#state.availableDistanceMeters = result.availableDistanceMeters;
+    this.#state.rawForceKg = result.rawForceKg;
     this.#state.forceKg = result.forceKg;
     this.#state.availableExtraForceKg = result.availableExtraForceKg;
     this.#state.rodLimitKg = result.rodLimitKg;
@@ -341,6 +350,9 @@ class RodPullSystem {
     this.#state.releasedThisFrame = result.releasedThisFrame;
     this.#state.releaseRecovering = result.releaseRecovering;
     this.#state.releaseRecoveryRatio = result.releaseRecoveryRatio;
+    this.#state.playerPressureEfficiency = result.playerPressureEfficiency;
+    this.#state.playerPressureFatigueEnabled =
+      result.playerPressureFatigueEnabled;
     this.#state.rodStrokeWonMeters = result.rodStrokeWonMeters;
     this.#state.rodStrokeUnrecoveredMeters =
       result.rodStrokeUnrecoveredMeters;

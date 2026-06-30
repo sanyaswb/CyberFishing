@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.23.16";
+const CURRENT_PROJECT_VERSION = "0.23.18";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "fish-power-debuff-correction",
-  updatedAt: "2026-06-30",
+  codename: "phase-recovery",
+  updatedAt: "2026-07-01",
   notes: Object.freeze([
-    "Fixed frame-based fish power debuff scaling so minimum power is reached only at zero endurance",
-    "Separated runtime fish force from current state max fish force in debug data",
-    "Updated Fish Balance current force display to show compact inline power loss",
+    "Added EXHAUSTION to STAMINA rollback on slack line or sustained low effective pressure",
+    "Added smooth ENDURANCE recovery in STAMINA phase after full stamina recovery",
+    "Preserved current ENDURANCE when returning from phase 2 back to phase 1",
   ]),
 });
 

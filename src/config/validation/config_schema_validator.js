@@ -150,6 +150,66 @@ class ConfigSchemaValidator {
     }
 
     this.#validateMinMaxPairs(physics, "physics");
+    this.#validatePlayerPressureFatigueConfig();
+  }
+
+  #validatePlayerPressureFatigueConfig() {
+    const config = this.config.physics?.fight?.playerPressureFatigue;
+    if (!config || typeof config !== "object") {
+      this.#error(
+        "physics.fight.playerPressureFatigue",
+        "missing player pressure fatigue config",
+      );
+      return;
+    }
+
+    this.#requireBooleanWithLabel(
+      "physics.fight.playerPressureFatigue.enabled",
+      config.enabled,
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureFatigue.pressureThresholdKg",
+      config.pressureThresholdKg,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureFatigue.graceDurationMs",
+      config.graceDurationMs,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureFatigue.fatigueDurationMs",
+      config.fatigueDurationMs,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureFatigue.minEfficiency",
+      config.minEfficiency,
+      { min: 0, max: 1 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureFatigue.curvePower",
+      config.curvePower,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureFatigue.recovery.delayAfterPressureMs",
+      config.recovery?.delayAfterPressureMs,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureFatigue.recovery.recoveryPerSecond",
+      config.recovery?.recoveryPerSecond,
+      { min: 0 },
+    );
+    this.#requireBooleanWithLabel(
+      "physics.fight.playerPressureFatigue.channels.rodHold",
+      config.channels?.rodHold,
+    );
+    this.#requireBooleanWithLabel(
+      "physics.fight.playerPressureFatigue.channels.rodControl",
+      config.channels?.rodControl,
+    );
   }
 
   #validateLocationDebugConfig() {
@@ -363,6 +423,72 @@ class ConfigSchemaValidator {
         { min: 0 },
       );
     }
+
+    const phaseRecovery = mechanics.phaseRecovery;
+    if (!phaseRecovery || typeof phaseRecovery !== "object") {
+      this.#error(
+        "stamina.mechanics.phaseRecovery",
+        "missing stamina/endurance phase recovery config",
+      );
+      return;
+    }
+
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.phaseRecovery.enabled",
+      phaseRecovery.enabled,
+    );
+    this.#requireFiniteNumberWithLabel(
+      "stamina.mechanics.phaseRecovery.pressureThresholdKg",
+      phaseRecovery.pressureThresholdKg,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "stamina.mechanics.phaseRecovery.pressureThresholdRatioOfMax",
+      phaseRecovery.pressureThresholdRatioOfMax,
+      { min: 0, max: 1 },
+    );
+
+    const exhaustionToStamina = phaseRecovery.exhaustionToStamina || {};
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.phaseRecovery.exhaustionToStamina.enabled",
+      exhaustionToStamina.enabled,
+    );
+    this.#requireFiniteNumberWithLabel(
+      "stamina.mechanics.phaseRecovery.exhaustionToStamina.noPressureTimeoutMs",
+      exhaustionToStamina.noPressureTimeoutMs,
+      { min: 0 },
+    );
+
+    const slackLineRecovery = exhaustionToStamina.slackLineRecovery || {};
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.phaseRecovery.exhaustionToStamina.slackLineRecovery.enabled",
+      slackLineRecovery.enabled,
+    );
+    this.#requireFiniteNumberWithLabel(
+      "stamina.mechanics.phaseRecovery.exhaustionToStamina.slackLineRecovery.lineTautThresholdRatio",
+      slackLineRecovery.lineTautThresholdRatio,
+      { min: 0, max: 1 },
+    );
+
+    const enduranceRecovery = phaseRecovery.enduranceRecovery || {};
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.phaseRecovery.enduranceRecovery.enabled",
+      enduranceRecovery.enabled,
+    );
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.phaseRecovery.enduranceRecovery.requiresFullStamina",
+      enduranceRecovery.requiresFullStamina,
+    );
+    this.#requireFiniteNumberWithLabel(
+      "stamina.mechanics.phaseRecovery.enduranceRecovery.recoveryPerSecond",
+      enduranceRecovery.recoveryPerSecond,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "stamina.mechanics.phaseRecovery.enduranceRecovery.maxRecoveryRatio",
+      enduranceRecovery.maxRecoveryRatio,
+      { min: 0, max: 1 },
+    );
   }
 
   #requireNumericRange(path, value) {

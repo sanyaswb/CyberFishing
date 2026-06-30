@@ -121,6 +121,46 @@ class FightPhysicsConfigAdapter {
     };
   }
 
+  getPlayerPressureFatigueConfig() {
+    const config = this.#physics().fight?.playerPressureFatigue || {};
+    const recovery = config.recovery || {};
+    const channels = config.channels || {};
+    return {
+      enabled: config.enabled === true,
+      pressureThresholdKg: Math.max(
+        0,
+        this.#number(config.pressureThresholdKg, 0.01),
+      ),
+      graceDurationMs: Math.max(
+        0,
+        this.#number(config.graceDurationMs, 3000),
+      ),
+      fatigueDurationMs: Math.max(
+        0,
+        this.#number(config.fatigueDurationMs, 6000),
+      ),
+      minEfficiency: Math.max(
+        0,
+        Math.min(1, this.#number(config.minEfficiency, 0.45)),
+      ),
+      curvePower: Math.max(0, this.#number(config.curvePower, 1.2)),
+      recovery: {
+        delayAfterPressureMs: Math.max(
+          0,
+          this.#number(recovery.delayAfterPressureMs, 400),
+        ),
+        recoveryPerSecond: Math.max(
+          0,
+          this.#number(recovery.recoveryPerSecond, 0.8),
+        ),
+      },
+      channels: {
+        rodHold: channels.rodHold !== false,
+        rodControl: channels.rodControl !== false,
+      },
+    };
+  }
+
   getFightTensionConfig() {
     const config = this.#physics().fight?.tension || {};
     return {

@@ -835,6 +835,46 @@
     "label": "Player force max combined ceiling",
     "description": "Safety cap for the combined Rod Hold and Rod Control tension ceiling multiplier."
   },
+  "physics.fight.playerPressureFatigue.enabled": {
+    "label": "Player pressure fatigue enabled",
+    "description": "Enables the anti-spam pressure fatigue model that reduces transmitted Rod Hold and Rod Control force during continuous pressure."
+  },
+  "physics.fight.playerPressureFatigue.pressureThresholdKg": {
+    "label": "Pressure fatigue threshold",
+    "description": "Minimum effective player pressure in kilograms required to accumulate pressure fatigue."
+  },
+  "physics.fight.playerPressureFatigue.graceDurationMs": {
+    "label": "Pressure fatigue grace",
+    "description": "Milliseconds of continuous pressure before player pressure efficiency starts falling."
+  },
+  "physics.fight.playerPressureFatigue.fatigueDurationMs": {
+    "label": "Pressure fatigue duration",
+    "description": "Milliseconds after the grace window for efficiency to reach the configured minimum."
+  },
+  "physics.fight.playerPressureFatigue.minEfficiency": {
+    "label": "Pressure minimum efficiency",
+    "description": "Lowest multiplier applied to transmitted player force after long continuous pressure."
+  },
+  "physics.fight.playerPressureFatigue.curvePower": {
+    "label": "Pressure fatigue curve",
+    "description": "Power curve for efficiency loss after the grace window."
+  },
+  "physics.fight.playerPressureFatigue.recovery.delayAfterPressureMs": {
+    "label": "Pressure recovery delay",
+    "description": "Milliseconds to wait after pressure stops before pressure efficiency begins recovering."
+  },
+  "physics.fight.playerPressureFatigue.recovery.recoveryPerSecond": {
+    "label": "Pressure recovery speed",
+    "description": "Efficiency recovered per second after the recovery delay."
+  },
+  "physics.fight.playerPressureFatigue.channels.rodHold": {
+    "label": "Fatigue affects Rod Hold",
+    "description": "When enabled, pressure fatigue multiplies Rod Hold force before tension and stamina calculations."
+  },
+  "physics.fight.playerPressureFatigue.channels.rodControl": {
+    "label": "Fatigue affects Rod Control",
+    "description": "When enabled, pressure fatigue multiplies Rod Control force before tension and stamina calculations."
+  },
   "physics.fight.reelRecovery.fishSpeedMultiplier": {
     "label": "Reel recovery fish speed multiplier",
     "description": "Multiplier applied to fish movement while automatic or hold reel recovery takes line back."
@@ -994,6 +1034,50 @@
   "stamina.mechanics.enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance.rest": {
     "label": "Exhausted rest weight multiplier",
     "description": "Runtime rest selection weight multiplier when ENDURANCE reaches zero."
+  },
+  "stamina.mechanics.phaseRecovery.enabled": {
+    "label": "Phase recovery enabled",
+    "description": "Enables returning from EXHAUSTION to STAMINA when player pressure is lost or the line becomes slack."
+  },
+  "stamina.mechanics.phaseRecovery.pressureThresholdKg": {
+    "label": "Phase recovery pressure threshold",
+    "description": "Absolute effective player pressure threshold used to decide when phase 2 no-pressure recovery can start."
+  },
+  "stamina.mechanics.phaseRecovery.pressureThresholdRatioOfMax": {
+    "label": "Phase recovery pressure ratio",
+    "description": "Weakest-tackle-limit ratio used as an additional effective pressure threshold for phase 2 recovery."
+  },
+  "stamina.mechanics.phaseRecovery.exhaustionToStamina.enabled": {
+    "label": "Exhaustion rollback enabled",
+    "description": "Enables returning from EXHAUSTION back to STAMINA without resetting current ENDURANCE."
+  },
+  "stamina.mechanics.phaseRecovery.exhaustionToStamina.noPressureTimeoutMs": {
+    "label": "No-pressure rollback timeout",
+    "description": "How long effective player pressure may stay below threshold in EXHAUSTION before the fish returns to STAMINA."
+  },
+  "stamina.mechanics.phaseRecovery.exhaustionToStamina.slackLineRecovery.enabled": {
+    "label": "Slack rollback enabled",
+    "description": "Enables immediate EXHAUSTION to STAMINA rollback when the line becomes slack."
+  },
+  "stamina.mechanics.phaseRecovery.exhaustionToStamina.slackLineRecovery.lineTautThresholdRatio": {
+    "label": "Slack line taut threshold",
+    "description": "Line taut ratio at or below which phase recovery treats the line as slack."
+  },
+  "stamina.mechanics.phaseRecovery.enduranceRecovery.enabled": {
+    "label": "Endurance recovery enabled",
+    "description": "Enables smooth ENDURANCE recovery while the fish is back in STAMINA phase."
+  },
+  "stamina.mechanics.phaseRecovery.enduranceRecovery.requiresFullStamina": {
+    "label": "Endurance recovery requires full stamina",
+    "description": "If true, ENDURANCE recovers only after STAMINA has fully recovered."
+  },
+  "stamina.mechanics.phaseRecovery.enduranceRecovery.recoveryPerSecond": {
+    "label": "Endurance recovery per second",
+    "description": "ENDURANCE points recovered per second while recovery conditions are satisfied."
+  },
+  "stamina.mechanics.phaseRecovery.enduranceRecovery.maxRecoveryRatio": {
+    "label": "Endurance recovery cap ratio",
+    "description": "Maximum ENDURANCE ratio that smooth recovery can restore after the fish returns to STAMINA."
   },
   "stamina.mechanics.angleRecovery.enabled": {
     "label": "Angle stamina recovery enabled",

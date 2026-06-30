@@ -185,6 +185,31 @@
     "description": "Множник passive drain для rest."
   },
   {
+    "key": "playerPressureFatigue.enabled",
+    "ua": "player_pressure_fatigue_enabled",
+    "description": "Enables the anti-spam player pressure fatigue model for continuous Rod Hold / Rod Control force."
+  },
+  {
+    "key": "playerPressureFatigue.graceDurationMs",
+    "ua": "player_pressure_grace_ms",
+    "description": "Milliseconds of continuous effective pressure before player pressure efficiency starts to fall."
+  },
+  {
+    "key": "playerPressureFatigue.fatigueDurationMs",
+    "ua": "player_pressure_fatigue_duration_ms",
+    "description": "Milliseconds after grace for pressure efficiency to reach the minimum value."
+  },
+  {
+    "key": "playerPressureFatigue.minEfficiency",
+    "ua": "player_pressure_min_efficiency",
+    "description": "Minimum transmitted player force multiplier after long continuous pressure."
+  },
+  {
+    "key": "playerPressureFatigue.recovery.recoveryPerSecond",
+    "ua": "player_pressure_recovery_per_second",
+    "description": "Efficiency recovered per second after pressure stops and the recovery delay has elapsed."
+  },
+  {
     "key": "passiveRegen.regenPerSecond",
     "ua": "passive_stamina_regen_per_second",
     "description": "Base STAMINA recovery per second when the player is not applying meaningful pressure."
@@ -298,6 +323,41 @@
     "key": "enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance.rest",
     "ua": "endurance_zero_rest_weight_multiplier",
     "description": "Runtime rest selection weight multiplier when ENDURANCE reaches zero."
+  },
+  {
+    "key": "stamina.mechanics.phaseRecovery.enabled",
+    "ua": "phase_recovery_enabled",
+    "description": "Enables EXHAUSTION to STAMINA rollback and smooth ENDURANCE recovery."
+  },
+  {
+    "key": "stamina.mechanics.phaseRecovery.pressureThresholdKg",
+    "ua": "phase_recovery_pressure_threshold_kg",
+    "description": "Absolute post-fatigue effective player pressure threshold for phase recovery."
+  },
+  {
+    "key": "stamina.mechanics.phaseRecovery.pressureThresholdRatioOfMax",
+    "ua": "phase_recovery_pressure_threshold_ratio",
+    "description": "Weakest tackle limit ratio used as an additional post-fatigue pressure threshold."
+  },
+  {
+    "key": "stamina.mechanics.phaseRecovery.exhaustionToStamina.noPressureTimeoutMs",
+    "ua": "phase_recovery_no_pressure_timeout_ms",
+    "description": "No-pressure duration in EXHAUSTION before the fish returns to STAMINA."
+  },
+  {
+    "key": "stamina.mechanics.phaseRecovery.exhaustionToStamina.slackLineRecovery.lineTautThresholdRatio",
+    "ua": "phase_recovery_slack_line_taut_threshold",
+    "description": "Line taut ratio treated as slack for immediate EXHAUSTION rollback."
+  },
+  {
+    "key": "stamina.mechanics.phaseRecovery.enduranceRecovery.recoveryPerSecond",
+    "ua": "phase_recovery_endurance_per_second",
+    "description": "ENDURANCE points recovered per second while recovery conditions are satisfied."
+  },
+  {
+    "key": "stamina.mechanics.phaseRecovery.enduranceRecovery.maxRecoveryRatio",
+    "ua": "phase_recovery_endurance_cap_ratio",
+    "description": "Maximum ENDURANCE ratio that smooth recovery can restore."
   },
   {
     "key": "stamina.mechanics.powerDebuff.enabled",

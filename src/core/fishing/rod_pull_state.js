@@ -4,6 +4,7 @@ class RodPullState {
   distanceMeters = 0;
   maxDistanceMeters = 0;
   availableDistanceMeters = 0;
+  rawForceKg = 0;
   forceKg = 0;
   availableExtraForceKg = 0;
   rodLimitKg = 0;
@@ -22,6 +23,8 @@ class RodPullState {
   releasedThisFrame = false;
   releaseRecovering = false;
   releaseRecoveryRatio = 0;
+  playerPressureEfficiency = 1;
+  playerPressureFatigueEnabled = false;
   rodStrokeWonMeters = 0;
   rodStrokeUnrecoveredMeters = 0;
   rodStrokeRatio = 0;
@@ -35,6 +38,7 @@ class RodPullState {
     this.distanceMeters = 0;
     this.maxDistanceMeters = 0;
     this.availableDistanceMeters = 0;
+    this.rawForceKg = 0;
     this.forceKg = 0;
     this.availableExtraForceKg = 0;
     this.rodLimitKg = 0;
@@ -53,6 +57,8 @@ class RodPullState {
     this.releasedThisFrame = false;
     this.releaseRecovering = false;
     this.releaseRecoveryRatio = 0;
+    this.playerPressureEfficiency = 1;
+    this.playerPressureFatigueEnabled = false;
     this.rodStrokeWonMeters = 0;
     this.rodStrokeUnrecoveredMeters = 0;
     this.rodStrokeRatio = 0;

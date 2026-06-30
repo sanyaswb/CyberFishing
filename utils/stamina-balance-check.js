@@ -95,6 +95,25 @@ const mechanicsConfig = {
     minBasePowerRatio: 0.2,
     curvePower: 1,
   },
+  phaseRecovery: {
+    enabled: true,
+    pressureThresholdKg: 0.01,
+    pressureThresholdRatioOfMax: 0.08,
+    exhaustionToStamina: {
+      enabled: true,
+      noPressureTimeoutMs: 5000,
+      slackLineRecovery: {
+        enabled: true,
+        lineTautThresholdRatio: 0.1,
+      },
+    },
+    enduranceRecovery: {
+      enabled: true,
+      requiresFullStamina: true,
+      recoveryPerSecond: 30,
+      maxRecoveryRatio: 0.8,
+    },
+  },
   baseDepletionRate: 100,
   exhaustionDepletionMultiplier: 1,
   masteryTimeRatio: 0.5,
@@ -138,6 +157,13 @@ class FakeCondition {
   applyExhaustionDamage(amount) {
     if (this.phase !== "exhaustion") return;
     this.currentExhaustion = Math.max(0, this.currentExhaustion - amount);
+  }
+
+  applyExhaustionRegen(amount, cap = this.maxEndurance) {
+    this.currentExhaustion = Math.min(
+      Math.max(0, Math.min(this.maxEndurance, Number(cap) || this.maxEndurance)),
+      this.currentExhaustion + Math.max(0, Number(amount) || 0),
+    );
   }
 
   applyPunishment(capPercent) {
@@ -423,9 +449,23 @@ runtime.controller.evaluate({
   dt: 1000,
 });
 approx(runtime.condition.currentStamina, 100, 0.0001, "frame stamina can fully recover in phase 1");
-approx(runtime.condition.currentExhaustion, 20, 0.0001, "frame stamina recovery does not punish exhaustion");
+approx(runtime.condition.currentExhaustion, 50, 0.0001, "full stamina smoothly recovers endurance in phase 1");
 approx(runtime.condition.punishmentCalls, 0, 0.0001, "frame stamina path does not call legacy recovery punishment");
-approx(runtime.fish.powerDebuffByRatioCalls, 0, 0.0001, "frame stamina recovery does not synchronize power debuff");
+approx(runtime.fish.powerRatioByEnduranceCalls, 1, 0.0001, "frame stamina endurance recovery synchronizes power ratio");
+approx(runtime.fish.lastPowerRatioEnduranceRatio, 0.5, 0.0001, "recovered endurance ratio feeds power sync");
+
+runtime.controller.evaluate({
+  staminaFrame: balanceFactory.create({
+    phase: "stamina",
+    appliedRodHoldKg: 0,
+    weakestTackleLimitKg: 1,
+    lineAngleDeg: 90,
+    dtSec: 2,
+    config: mechanicsConfig,
+  }),
+  dt: 2000,
+});
+approx(runtime.condition.currentExhaustion, 80, 0.0001, "endurance recovery is capped by maxRecoveryRatio");
 
 runtime = createController({ phase: "stamina", stamina: 10 });
 runtime.controller.evaluate({
@@ -446,6 +486,8 @@ runtime.controller.evaluate({
   staminaFrame: balanceFactory.create({
     phase: "exhaustion",
     appliedRodHoldKg: 0.5,
+    lineTaut: true,
+    lineTautRatio: 1,
     weakestTackleLimitKg: 1,
     dtSec: 1,
     config: mechanicsConfig,
@@ -458,6 +500,107 @@ approx(runtime.fish.powerDebuffByRatioCalls, 0, 0.0001, "frame endurance path do
 approx(runtime.fish.lastPowerRatioEnduranceRatio, 0.6, 0.0001, "power ratio sync uses currentExhaustion / maxEndurance");
 approx(runtime.fish.powerDebuff, 0.32, 0.0001, "power debuff scales linearly from endurance ratio and min power ratio");
 approx(runtime.fish.applyPowerDebuffCalls, 0, 0.0001, "frame endurance path does not use incremental legacy power debuff");
+
+runtime = createController({ phase: "exhaustion", endurance: 100 });
+runtime.controller.evaluate({
+  staminaFrame: balanceFactory.create({
+    phase: "exhaustion",
+    appliedRodHoldKg: 0.5,
+    lineTaut: false,
+    lineTautRatio: 0,
+    weakestTackleLimitKg: 1,
+    dtSec: 1,
+    config: mechanicsConfig,
+  }),
+  dt: 1000,
+});
+assert(runtime.condition.phase === "stamina", "slack line returns exhaustion phase back to stamina");
+approx(runtime.condition.currentExhaustion, 100, 0.0001, "slack phase rollback freezes endurance on rollback frame");
+
+runtime = createController({ phase: "exhaustion", endurance: 100 });
+for (let i = 0; i < 4; i += 1) {
+  runtime.controller.evaluate({
+    staminaFrame: balanceFactory.create({
+      phase: "exhaustion",
+      appliedRodHoldKg: 0,
+      lineTaut: true,
+      lineTautRatio: 1,
+      weakestTackleLimitKg: 1,
+      dtSec: 1,
+      config: mechanicsConfig,
+    }),
+    dt: 1000,
+  });
+}
+assert(runtime.condition.phase === "exhaustion", "no-pressure phase rollback waits for configured timeout");
+runtime.controller.evaluate({
+  staminaFrame: balanceFactory.create({
+    phase: "exhaustion",
+    appliedRodHoldKg: 0,
+    lineTaut: true,
+    lineTautRatio: 1,
+    weakestTackleLimitKg: 1,
+    dtSec: 1,
+    config: mechanicsConfig,
+  }),
+  dt: 1000,
+});
+assert(runtime.condition.phase === "stamina", "no-pressure timeout returns exhaustion phase back to stamina");
+approx(runtime.condition.currentExhaustion, 100, 0.0001, "no-pressure rollback preserves current endurance");
+
+runtime = createController({ phase: "exhaustion", endurance: 100 });
+runtime.controller.evaluate({
+  staminaFrame: balanceFactory.create({
+    phase: "exhaustion",
+    appliedRodHoldKg: 0.05,
+    lineTaut: true,
+    lineTautRatio: 1,
+    weakestTackleLimitKg: 1,
+    dtSec: 5,
+    config: mechanicsConfig,
+  }),
+  dt: 5000,
+});
+assert(runtime.condition.phase === "stamina", "pressure threshold also uses weakest tackle ratio");
+
+runtime = createController({ phase: "exhaustion", endurance: 100 });
+runtime.controller.evaluate({
+  staminaFrame: balanceFactory.create({
+    phase: "exhaustion",
+    appliedRodHoldKg: 0,
+    lineTaut: true,
+    lineTautRatio: 1,
+    weakestTackleLimitKg: 1,
+    dtSec: 4000,
+    config: mechanicsConfig,
+  }),
+  dt: 4000,
+});
+runtime.controller.evaluate({
+  staminaFrame: balanceFactory.create({
+    phase: "exhaustion",
+    appliedRodHoldKg: 0.2,
+    lineTaut: true,
+    lineTautRatio: 1,
+    weakestTackleLimitKg: 1,
+    dtSec: 1,
+    config: mechanicsConfig,
+  }),
+  dt: 1000,
+});
+runtime.controller.evaluate({
+  staminaFrame: balanceFactory.create({
+    phase: "exhaustion",
+    appliedRodHoldKg: 0,
+    lineTaut: true,
+    lineTautRatio: 1,
+    weakestTackleLimitKg: 1,
+    dtSec: 4000,
+    config: mechanicsConfig,
+  }),
+  dt: 4000,
+});
+assert(runtime.condition.phase === "exhaustion", "effective pressure resets no-pressure rollback timer");
 
 runtime = createController({ phase: "exhaustion", endurance: 100 });
 runtime.controller.evaluate({

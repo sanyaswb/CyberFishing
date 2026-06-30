@@ -610,6 +610,48 @@
       "DEBUG_DATA.rodControlPlayerTensionKg"
     ]
   },
+  "fightSummary.pressureFatigueEfficiency": {
+    "formula": "applied player pressure fatigue efficiency",
+    "description": "Multiplier applied to Rod Hold and Rod Control force in the current frame.",
+    "paths": [
+      "DEBUG_DATA.playerPressureFatigueEfficiency"
+    ]
+  },
+  "fightSummary.pressureFatigueHoldTime": {
+    "formula": "continuous effective pressure time",
+    "description": "How long the player has been continuously transmitting meaningful pressure.",
+    "paths": [
+      "DEBUG_DATA.playerPressureFatigueHoldMs"
+    ]
+  },
+  "fightSummary.pressureFatigueRatio": {
+    "formula": "1 - playerPressureFatigueEfficiency",
+    "description": "Visible pressure fatigue amount after the grace window.",
+    "paths": [
+      "DEBUG_DATA.playerPressureFatigueFatigueRatio"
+    ]
+  },
+  "fightSummary.pressureFatigueRecovery": {
+    "formula": "waiting | active | full | pressuring",
+    "description": "Current pressure fatigue recovery state.",
+    "paths": [
+      "DEBUG_DATA.playerPressureFatigueRecoveryState"
+    ]
+  },
+  "fightSummary.pressureFatigueRodHold": {
+    "formula": "rawRodHoldKg * pressureEfficiency",
+    "description": "Rod Hold force after player pressure fatigue, before stamina and tension consumers read it.",
+    "paths": [
+      "DEBUG_DATA.playerPressureFatigueRodHoldKg"
+    ]
+  },
+  "fightSummary.pressureFatigueControl": {
+    "formula": "rawControlKg * pressureEfficiency",
+    "description": "Rod Control force after player pressure fatigue, before stamina and tension consumers read it.",
+    "paths": [
+      "DEBUG_DATA.playerPressureFatigueControlKg"
+    ]
+  },
   "fightSummary.totalTension": {
     "formula": "totalTensionKg",
     "description": "Загальний натяг снасті.",

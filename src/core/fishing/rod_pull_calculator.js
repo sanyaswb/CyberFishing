@@ -147,6 +147,7 @@ class RodPullCalculator {
     hardLineLimit,
     lineHasReserve = true,
     fishDistanceMeters,
+    playerPressureFatigue,
   }) {
     const maxDistanceMeters = this.calculateMaxDistance({ rodLengthMeters });
     const availableDistanceMeters = this.calculateStrokeCapacity({
@@ -186,6 +187,10 @@ class RodPullCalculator {
       hardLineLimit,
       lineHasReserve,
     });
+    const pressureEfficiency = this.#pressureEfficiency({
+      frame: playerPressureFatigue,
+      channel: "rodHold",
+    });
     const prevDistance = Math.max(0, Number(previousState?.distanceMeters) || 0);
     const prevRatio = Math.max(0, Math.min(1, Number(previousState?.ratio) || 0));
     const previousHoldActive =
@@ -193,7 +198,9 @@ class RodPullCalculator {
 
     if (availableDistanceMeters < minDistance) {
       const preservedRatio = previousHoldActive ? prevRatio : 0;
-      const preservedForceKg = forceLimit.controlledPullLimitKg * preservedRatio;
+      const preservedRawForceKg =
+        forceLimit.controlledPullLimitKg * preservedRatio;
+      const preservedForceKg = preservedRawForceKg * pressureEfficiency;
       return this.#buildResult({
         active: true,
         ratio: preservedRatio,
@@ -201,6 +208,7 @@ class RodPullCalculator {
         maxDistanceMeters,
         availableDistanceMeters,
         availableExtraForceKg: forceLimit.availableExtraForceKg,
+        rawForceKg: preservedRawForceKg,
         forceKg: preservedForceKg,
         totalTensionKg: preservedForceKg,
         rodLimitKg,
@@ -211,6 +219,8 @@ class RodPullCalculator {
         holdTensionRatio,
         dragSlipping: forceLimit.dragSlipping,
         blockedReason: "stroke_capacity_unavailable",
+        playerPressureEfficiency: pressureEfficiency,
+        playerPressureFatigueEnabled: playerPressureFatigue?.enabled === true,
         lineHasReserve: lineCanRelease,
         canReleaseLine: lineCanRelease,
         spoolEmpty: !lineCanRelease,
@@ -224,7 +234,8 @@ class RodPullCalculator {
     const distanceMeters = Math.min(availableDistanceMeters, nextRatio * availableDistanceMeters);
     const deltaMeters = Math.max(0, distanceMeters - prevDistance);
     const controlledLoad = forceLimit.controlledPullLimitKg;
-    const forceKg = controlledLoad * nextRatio;
+    const rawForceKg = controlledLoad * nextRatio;
+    const forceKg = rawForceKg * pressureEfficiency;
     let blockedReason = "none";
 
     if (hardLineLimit) {
@@ -251,6 +262,9 @@ class RodPullCalculator {
       holdTensionRatio,
       deltaMeters,
       canMoveFish: deltaMeters >= minDistance && forceKg > (Number(this.#config.minEffectivePullKg) || 0.01),
+      rawForceKg,
+      playerPressureEfficiency: pressureEfficiency,
+      playerPressureFatigueEnabled: playerPressureFatigue?.enabled === true,
       dragSlipping: forceLimit.dragSlipping,
       blockedReason,
       chargeSpeedMultiplier: 1,
@@ -265,6 +279,10 @@ class RodPullCalculator {
     const result = {
       active: !!data.active,
       ratio: Math.max(0, Math.min(1, Number(data.ratio) || 0)),
+      rawForceKg: Math.max(
+        0,
+        Number(data.rawForceKg ?? data.forceKg) || 0,
+      ),
       forceKg: Math.max(0, Number(data.forceKg) || 0),
       distanceMeters: Math.max(0, Number(data.distanceMeters) || 0),
       maxDistanceMeters: Math.max(0, Number(data.maxDistanceMeters) || 0),
@@ -293,6 +311,12 @@ class RodPullCalculator {
       releaseRecoveryRatio: Math.max(0, Math.min(1, Number(data.releaseRecoveryRatio) || 0)),
       chargeSpeedMultiplier: Math.max(0, Number(data.chargeSpeedMultiplier) || 0),
       chargePerSecond: Math.max(0, Number(data.chargePerSecond) || 0),
+      playerPressureEfficiency: this.#ratioOrDefault(
+        data.playerPressureEfficiency,
+        1,
+      ),
+      playerPressureFatigueEnabled:
+        data.playerPressureFatigueEnabled === true,
       lineHasReserve: data.lineHasReserve !== false,
       canReleaseLine: data.canReleaseLine !== false,
       spoolEmpty: !!data.spoolEmpty,
@@ -338,5 +362,12 @@ class RodPullCalculator {
     const number = Number(value);
     if (Number.isFinite(number)) return Math.max(0, Math.min(1, number));
     return Math.max(0, Math.min(1, Number(fallback) || 0));
+  }
+
+  #pressureEfficiency({ frame, channel }) {
+    if (frame?.enabled !== true) return 1;
+    const channels = frame.channels || {};
+    if (channels[channel] === false) return 1;
+    return this.#ratioOrDefault(frame.efficiency, 1);
   }
 }
