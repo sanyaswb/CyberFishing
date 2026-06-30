@@ -143,6 +143,10 @@
 │  │  │  ├── line_radial_movement_splitter.js
 │  │  │  ├── line_tension_calculator.js
 │  │  │  ├── player_force_budget_allocator.js
+│  │  │  ├── player_pressure
+│  │  │  │  ├── player_pressure_fatigue_calculator.js
+│  │  │  │  ├── player_pressure_fatigue_state.js
+│  │  │  │  └── player_pressure_gain_resolver.js
 │  │  │  ├── pole_fight_sector_angle_constraint.js
 │  │  │  ├── pole_fight_sector_constraint.js
 │  │  │  ├── pole_fight_sector_geometry.js
@@ -212,9 +216,11 @@
 │  │  │  │  └── overlay_update_loop.js
 │  │  │  ├── dom
 │  │  │  │  ├── overlay_dom_adapter.js
+│  │  │  │  ├── overlay_interaction_bridge.js
 │  │  │  │  ├── overlay_metric_info_bridge.js
 │  │  │  │  ├── overlay_scale_controls.js
-│  │  │  │  └── overlay_style_installer.js
+│  │  │  │  ├── overlay_style_installer.js
+│  │  │  │  └── overlay_window_drag_controller.js
 │  │  │  ├── modules
 │  │  │  │  ├── behavior_overlay_module.js
 │  │  │  │  ├── chances_detail_overlay_module.js
@@ -238,8 +244,19 @@
 │  │  │  │  │  ├── fight_rod_stroke_section.js
 │  │  │  │  │  ├── fight_section_base.js
 │  │  │  │  │  └── fight_tension_section.js
+│  │  │  │  ├── fight_summary
+│  │  │  │  │  ├── fight_summary_overlay_module.js
+│  │  │  │  │  ├── fish_movement_summary_overlay_module.js
+│  │  │  │  │  ├── line_and_drag_summary_overlay_module.js
+│  │  │  │  │  └── rod_control_summary_overlay_module.js
+│  │  │  │  ├── fish_balance
+│  │  │  │  │  ├── fish_current_force_overlay_module.js
+│  │  │  │  │  ├── fish_debuffs_summary_overlay_module.js
+│  │  │  │  │  ├── fish_live_force_summary_section.js
+│  │  │  │  │  ├── fish_state_force_preview_section.js
+│  │  │  │  │  └── fish_summary_overlay_module.js
+│  │  │  │  ├── fish_balance_overlay_module.js
 │  │  │  │  ├── fish_power_overlay_module.js
-│  │  │  │  ├── fish_states_overlay_module.js
 │  │  │  │  ├── live_forces_overlay_module.js
 │  │  │  │  ├── player_max_overlay_module.js
 │  │  │  │  ├── stamina_balance_overlay_module.js
@@ -252,6 +269,7 @@
 │  │  │    ├── overlay_metric_resolver.js
 │  │  │    ├── overlay_settings_store.js
 │  │  │    ├── overlay_value_formatter.js
+│  │  │    ├── overlay_view_state_store.js
 │  │  │    └── worst_case_force_debug_selector.js
 │  │  └── services
 │  │    ├── active_fish_dev_tools_schema.js
@@ -344,67 +362,7 @@
 │  └── world
 │    └── world.js
 └── utils
-  ├── asset-lifecycle-check.js
-  ├── audits
-  │  └── static-lifecycle-audit.js
-  ├── cast-power-check.js
-  ├── catch-resolution-check.js
   ├── check-js.js
-  ├── checks
-  │  └── rod-stroke-legacy-y-check.js
-  ├── config-overrides-check.js
-  ├── convert-images.js
   ├── create-version-copy.js
-  ├── dependency-contract-check.js
   ├── dev-server.js
-  ├── dev-tools-location-schema-check.js
-  ├── diagnostics
-  │  ├── catch-resolution-debug.js
-  │  ├── fish-radial-speed-delta.js
-  │  └── simulate-simple-fish-force.js
-  ├── endurance-movement-debuff-check.js
-  ├── fight-area-renderer-check.js
-  ├── fight-input-composition-check.js
-  ├── fight-movement-constraints-check.js
-  ├── fight-systems-check.js
-  ├── fish-2d-behavior-check.js
-  ├── fish-db-structure-check.js
-  ├── fps-physics-check.js
-  ├── game-cycle-check.js
-  ├── game-cycle-control-hold-check.js
-  ├── helpers
-  │  └── render_test_harness.js
-  ├── hud-bar-layout-check.js
-  ├── hud-style-resolver-check.js
-  ├── inventory-line-systems-check.js
-  ├── line-locked-rod-control-check.js
-  ├── local-bridge.js
-  ├── location-architecture-check.js
-  ├── memory-leak-watchdog-check.js
-  ├── overlay-runtime-fish-check.js
-  ├── physics-formula-golden-check.js
-  ├── player-force-budget-check.js
-  ├── pole-fight-sector-check.js
-  ├── project-version-check.js
-  ├── render-allocation-check.js
-  ├── render-asset-lifecycle-check.js
-  ├── render-assets-check.js
-  ├── render-collection-encapsulation-check.js
-  ├── render-composite-extension-check.js
-  ├── render-core-infrastructure-check.js
-  ├── render-frame-builder-check.js
-  ├── render-layer-dependency-check.js
-  ├── render-order-characterization-check.js
-  ├── render-pipeline-order-check.js
-  ├── render-runtime-allocation-check.js
-  ├── render-scene-characterization-check.js
-  ├── render-ui-characterization-check.js
-  ├── renderer-architecture-check.js
-  ├── rod-control-ux-check.js
-  ├── rod-pull-systems-check.js
-  ├── rod-stroke-distance-check.js
-  ├── set-project-version.js
-  ├── stamina-balance-check.js
-  ├── tackle-stress-failure-check.js
-  ├── validate-config.js
-  └── victory-layout-check.js
+  └── game-cycle-check.js
