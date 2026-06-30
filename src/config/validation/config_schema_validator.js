@@ -151,6 +151,53 @@ class ConfigSchemaValidator {
 
     this.#validateMinMaxPairs(physics, "physics");
     this.#validatePlayerPressureFatigueConfig();
+    this.#validatePlayerPressureGainConfig();
+  }
+
+  #validatePlayerPressureGainConfig() {
+    const config = this.config.physics?.fight?.playerPressureGain;
+    if (!config || typeof config !== "object") {
+      this.#error(
+        "physics.fight.playerPressureGain",
+        "missing player pressure gain config",
+      );
+      return;
+    }
+
+    this.#requireBooleanWithLabel(
+      "physics.fight.playerPressureGain.enabled",
+      config.enabled,
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureGain.inputThresholds.holdForceKg",
+      config.inputThresholds?.holdForceKg,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureGain.inputThresholds.controlInputRatio",
+      config.inputThresholds?.controlInputRatio,
+      { min: 0, max: 1 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureGain.inputThresholds.controlForceKg",
+      config.inputThresholds?.controlForceKg,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureGain.multipliers.holdOnly",
+      config.multipliers?.holdOnly,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureGain.multipliers.controlOnly",
+      config.multipliers?.controlOnly,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureGain.multipliers.holdAndControl",
+      config.multipliers?.holdAndControl,
+      { min: 0 },
+    );
   }
 
   #validatePlayerPressureFatigueConfig() {

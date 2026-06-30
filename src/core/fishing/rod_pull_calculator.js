@@ -147,6 +147,7 @@ class RodPullCalculator {
     hardLineLimit,
     lineHasReserve = true,
     fishDistanceMeters,
+    playerPressureGain,
     playerPressureFatigue,
   }) {
     const maxDistanceMeters = this.calculateMaxDistance({ rodLengthMeters });
@@ -228,7 +229,12 @@ class RodPullCalculator {
     }
 
     const dt = Math.max(0, Number(dtSec) || 0);
-    const chargePerSecond = this.#resolveHoldChargePerSecond();
+    const pressureGainMultiplier = this.#pressureGainMultiplier({
+      frame: playerPressureGain,
+      channel: "rodHold",
+    });
+    const baseChargePerSecond = this.#resolveHoldChargePerSecond();
+    const chargePerSecond = baseChargePerSecond * pressureGainMultiplier;
     const chargedRatio = Math.min(1, prevRatio + chargePerSecond * dt);
     const nextRatio = chargedRatio;
     const distanceMeters = Math.min(availableDistanceMeters, nextRatio * availableDistanceMeters);
@@ -268,7 +274,10 @@ class RodPullCalculator {
       dragSlipping: forceLimit.dragSlipping,
       blockedReason,
       chargeSpeedMultiplier: 1,
+      playerPressureGainMultiplier: pressureGainMultiplier,
+      playerPressureGainMode: playerPressureGain?.mode || "none",
       chargePerSecond,
+      baseChargePerSecond,
       lineHasReserve: lineCanRelease,
       canReleaseLine: lineCanRelease,
       spoolEmpty: !lineCanRelease,
@@ -310,7 +319,16 @@ class RodPullCalculator {
       releaseRecovering: !!data.releaseRecovering,
       releaseRecoveryRatio: Math.max(0, Math.min(1, Number(data.releaseRecoveryRatio) || 0)),
       chargeSpeedMultiplier: Math.max(0, Number(data.chargeSpeedMultiplier) || 0),
+      playerPressureGainMultiplier: Math.max(
+        0,
+        Number(data.playerPressureGainMultiplier) || 1,
+      ),
+      playerPressureGainMode: data.playerPressureGainMode || "none",
       chargePerSecond: Math.max(0, Number(data.chargePerSecond) || 0),
+      baseChargePerSecond: Math.max(
+        0,
+        Number(data.baseChargePerSecond ?? data.chargePerSecond) || 0,
+      ),
       playerPressureEfficiency: this.#ratioOrDefault(
         data.playerPressureEfficiency,
         1,
@@ -369,5 +387,11 @@ class RodPullCalculator {
     const channels = frame.channels || {};
     if (channels[channel] === false) return 1;
     return this.#ratioOrDefault(frame.efficiency, 1);
+  }
+
+  #pressureGainMultiplier({ frame, channel }) {
+    if (frame?.enabled !== true) return 1;
+    if (channel === "rodHold" && frame.holdActive !== true) return 1;
+    return Math.max(0, Number(frame.multiplier) || 1);
   }
 }

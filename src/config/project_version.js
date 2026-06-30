@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.23.20";
+const CURRENT_PROJECT_VERSION = "0.23.21";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "pressure-control-break",
+  codename: "combined-pressure-gain",
   updatedAt: "2026-07-01",
   notes: Object.freeze([
-    "Added Player Pressure Fatigue control-break state for long fully fatigued pressure",
-    "Separated physical pressure from stamina/endurance control pressure",
-    "Allowed stamina regen and phase rollback while physical force still remains after control breaks",
+    "Added Combined Rod Hold + Rod Control pressure gain before fatigue",
+    "Kept Rod Control from reducing Rod Hold budget in the default player force allocation",
+    "Exposed input combo gain in fight debug data and Fight Summary overlay",
   ]),
 });
 

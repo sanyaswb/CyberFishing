@@ -190,6 +190,31 @@
     "description": "Enables the anti-spam player pressure fatigue model for continuous Rod Hold / Rod Control force."
   },
   {
+    "key": "playerPressureGain.enabled",
+    "ua": "player_pressure_gain_enabled",
+    "description": "Enables combo pressure gain for Rod Hold and Rod Control input combinations."
+  },
+  {
+    "key": "playerPressureGain.inputThresholds.holdForceKg",
+    "ua": "player_pressure_gain_hold_threshold_kg",
+    "description": "Minimum Rod Hold budget force for hold to count in the pressure gain combo."
+  },
+  {
+    "key": "playerPressureGain.inputThresholds.controlInputRatio",
+    "ua": "player_pressure_gain_control_input_threshold",
+    "description": "Minimum Rod Control input ratio for control to count in the pressure gain combo."
+  },
+  {
+    "key": "playerPressureGain.inputThresholds.controlForceKg",
+    "ua": "player_pressure_gain_control_force_threshold_kg",
+    "description": "Minimum Rod Control budget force for control to count in the pressure gain combo."
+  },
+  {
+    "key": "playerPressureGain.multipliers.holdAndControl",
+    "ua": "player_pressure_gain_hold_and_control_multiplier",
+    "description": "Pressure buildup multiplier when Rod Hold and Rod Control are active together."
+  },
+  {
     "key": "playerPressureFatigue.graceDurationMs",
     "ua": "player_pressure_grace_ms",
     "description": "Milliseconds of continuous effective pressure before player pressure efficiency starts to fall."

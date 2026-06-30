@@ -29,6 +29,12 @@ class FightSummaryOverlayModule extends OverlayModule {
       metricKey: "fightSummary.playerPressure",
       color: "#00ff80",
     });
+    html += this.metricRow("Input combo", this.#formatInputCombo(data), {
+      metricKey: "fightSummary.inputCombo",
+      color: data.playerPressureGainMode === "hold_and_control"
+        ? "#ffaa00"
+        : "#73c2fb",
+    });
     html += this.#renderPlayerPressureFatigue(data);
     html += this.metricRow("Total tension", f.kg(totalTensionKg, 3), {
       metricKey: "fightSummary.totalTension",
@@ -101,6 +107,19 @@ class FightSummaryOverlayModule extends OverlayModule {
       color: "#00d4ff",
     });
     return html;
+  }
+
+  #formatInputCombo(data) {
+    const mode = data.playerPressureGainMode || "none";
+    const multiplier = this.#finite(data.playerPressureGainMultiplier, 1);
+    const labelByMode = {
+      none: "none",
+      hold_only: "hold",
+      control_only: "control",
+      hold_and_control: "hold + control",
+    };
+    const label = labelByMode[mode] || mode;
+    return `${label} x${this.#formatter.num(multiplier, 2)}`;
   }
 
   #resolvePlayerPressureKg(data) {

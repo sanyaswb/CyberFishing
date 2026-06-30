@@ -48,6 +48,10 @@ class FightPhysicsSystem {
     typeof PlayerForceBudgetAllocator !== "undefined"
       ? new PlayerForceBudgetAllocator()
       : null;
+  #playerPressureGainResolver =
+    typeof PlayerPressureGainResolver !== "undefined"
+      ? new PlayerPressureGainResolver()
+      : null;
   #playerPressureFatigueCalculator =
     typeof PlayerPressureFatigueCalculator !== "undefined"
       ? new PlayerPressureFatigueCalculator()
@@ -193,6 +197,13 @@ class FightPhysicsSystem {
       },
     );
     const playerForceBudget = playerForceFrame.budget;
+    const playerPressureGainFrame = pipelineFrame.run(
+      "resolve_player_pressure_gain",
+      () => this.#resolvePlayerPressureGain({
+        playerForceBudget,
+        physics,
+      }),
+    );
     const playerPressureFatigueApplication = pipelineFrame.run(
       "resolve_player_pressure_fatigue_application",
       () => this.#buildPlayerPressureFatigueApplicationFrame({ physics }),
@@ -232,6 +243,7 @@ class FightPhysicsSystem {
       reel,
       rodLimitKg,
       playerForceBudget,
+      playerPressureGain: playerPressureGainFrame,
       playerPressureFatigue: playerPressureFatigueApplication,
     }),
     );
@@ -257,6 +269,7 @@ class FightPhysicsSystem {
       fishRetrieveResult: rodPullFrame.fishRetrieveResult,
       playerForceBudget,
       rodControlIntent: playerForceFrame.rodControlIntent,
+      playerPressureGain: playerPressureGainFrame,
       playerPressureFatigue: playerPressureFatigueApplication,
     }),
     );
@@ -473,6 +486,7 @@ class FightPhysicsSystem {
       holdReelRecover,
       dragContext,
       playerForceBudget,
+      playerPressureGain: playerPressureGainFrame,
       playerPressureFatigue: playerPressureFatigueFrame,
       poleFightSectorFrame: sectorFrame,
       fishCondition,
@@ -684,6 +698,46 @@ class FightPhysicsSystem {
       controlEligibility: rodControlIntent,
       config,
     });
+  }
+
+  #resolvePlayerPressureGain({ playerForceBudget, physics } = {}) {
+    const config = this.#resolvePlayerPressureGainConfig(physics);
+    const fallback = Object.freeze({
+      source: "player_pressure_gain",
+      enabled: false,
+      mode: "none",
+      multiplier: 1,
+      holdActive: false,
+      controlActive: false,
+      holdForceKg: 0,
+      controlForceKg: 0,
+      controlInputRatio: 0,
+      holdForceThresholdKg: 0.01,
+      controlInputThreshold: 0.05,
+      controlForceThresholdKg: 0.01,
+    });
+
+    if (!this.#playerPressureGainResolver?.resolve) {
+      return fallback;
+    }
+
+    return this.#playerPressureGainResolver.resolve({
+      holdActive: playerForceBudget?.holdActive === true,
+      controlActive: playerForceBudget?.controlActive === true,
+      holdForceKg: playerForceBudget?.holdBudgetKg,
+      controlForceKg: playerForceBudget?.controlBudgetKg,
+      controlInputRatio: playerForceBudget?.controlInputRatio,
+      config,
+    });
+  }
+
+  #resolvePlayerPressureGainConfig(physics) {
+    return (
+      this.#physicsConfig?.getPlayerPressureGainConfig?.() ||
+      physics?.fight?.playerPressureGain ||
+      this.#config?.physics?.fight?.playerPressureGain ||
+      {}
+    );
   }
 
   #buildPlayerPressureFatigueApplicationFrame({ physics } = {}) {
@@ -1223,6 +1277,7 @@ class FightPhysicsSystem {
     reel,
     rodLimitKg,
     playerForceBudget,
+    playerPressureGain,
     playerPressureFatigue,
   }) {
     const lineStateBeforePull = lineSystem.updateDistance(
@@ -1252,6 +1307,7 @@ class FightPhysicsSystem {
       fishTensionKg: forceData.fishTensionKg,
       rodLimitKg,
       playerForceBudget,
+      playerPressureGain,
       dragLimitKg: dragContext.effectiveDragLimitKg,
       maxTackleLoadKg: dragContext.maxTackleLoadKg,
       dragLocked: dragContext.dragLocked,
@@ -1499,6 +1555,7 @@ class FightPhysicsSystem {
     fishRetrieveResult,
     playerForceBudget,
     rodControlIntent,
+    playerPressureGain,
     playerPressureFatigue,
   }) {
     if (!rodControlSystem?.update) {
@@ -1560,6 +1617,7 @@ class FightPhysicsSystem {
       hardLineLimit,
       lineConstraintState,
       intentFrame: rodControlIntent,
+      playerPressureGain,
       playerPressureFatigue,
       config,
     });
@@ -2504,6 +2562,7 @@ class FightPhysicsSystem {
     holdReelRecover,
     dragContext,
     playerForceBudget,
+    playerPressureGain,
     playerPressureFatigue,
     poleFightSectorFrame,
     fishCondition,
@@ -2697,6 +2756,23 @@ class FightPhysicsSystem {
         playerForceBudget?.controlEligible === true,
       playerForceControlBlockedReason:
         playerForceBudget?.controlBlockedReason || "none",
+      playerPressureGainMode:
+        playerPressureGain?.mode || "none",
+      playerPressureGainMultiplier:
+        Math.max(0, Number(playerPressureGain?.multiplier) || 1),
+      playerPressureHoldActive:
+        playerPressureGain?.holdActive === true,
+      playerPressureControlActive:
+        playerPressureGain?.controlActive === true,
+      playerPressureHoldForceKg:
+        Math.max(0, Number(playerPressureGain?.holdForceKg) || 0),
+      playerPressureControlForceKg:
+        Math.max(0, Number(playerPressureGain?.controlForceKg) || 0),
+      playerPressureControlInputRatio:
+        Math.max(
+          0,
+          Math.min(1, Number(playerPressureGain?.controlInputRatio) || 0),
+        ),
       playerPressureFatigueEnabled:
         playerPressureFatigue?.enabled === true,
       playerPressureFatigueEfficiency:

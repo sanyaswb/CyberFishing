@@ -610,6 +610,15 @@
       "DEBUG_DATA.rodControlPlayerTensionKg"
     ]
   },
+  "fightSummary.inputCombo": {
+    "formula": "playerPressureGainMode + playerPressureGainMultiplier",
+    "description": "Current Rod Hold / Rod Control input combo and pressure buildup multiplier.",
+    "paths": [
+      "DEBUG_DATA.playerPressureGainMode",
+      "DEBUG_DATA.playerPressureGainMultiplier",
+      "CONFIG.physics.fight.playerPressureGain"
+    ]
+  },
   "fightSummary.pressureFatigueEfficiency": {
     "formula": "applied player pressure fatigue efficiency",
     "description": "Multiplier applied to Rod Hold and Rod Control force in the current frame.",

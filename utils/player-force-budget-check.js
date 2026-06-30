@@ -22,6 +22,7 @@ function approx(value, expected, tolerance, message) { assert(Math.abs(Number(va
 const allocator = new PlayerForceBudgetAllocator();
 const config = {
   enabled: true,
+  allocationMode: "independent",
   control: { maxBudgetShare: 0.5, minInputRatio: 0.001 },
   tensionCeiling: {
     holdMultiplier: 1.0,
@@ -47,18 +48,18 @@ approx(frame.controlBudgetKg, 0, 0.0001, "hold-only gives no control budget");
 frame = allocator.resolve({ rodLimitKg: 1, fishTensionKg: 0.4, holdAction: hold, controlAction: fullControl, config });
 approx(frame.combinedCeilingMultiplier, 1.0, 0.0001, "hold+full-control stays at base ceiling when no extras are configured");
 approx(frame.totalPlayerBudgetKg, 0.6, 0.0001, "hold+full-control total budget uses combined ceiling");
-approx(frame.holdShare, 0.5, 0.0001, "full control takes max configured share from hold");
-approx(frame.controlShare, 0.5, 0.0001, "full control receives max configured share");
-approx(frame.holdBudgetKg, 0.3, 0.0001, "hold+full-control splits hold budget");
-approx(frame.controlBudgetKg, 0.3, 0.0001, "hold+full-control splits control budget");
+approx(frame.holdShare, 1, 0.0001, "independent full control keeps the full hold share");
+approx(frame.controlShare, 1, 0.0001, "independent full control receives its own full share");
+approx(frame.holdBudgetKg, 0.6, 0.0001, "independent hold+full-control keeps full hold budget");
+approx(frame.controlBudgetKg, 0.6, 0.0001, "independent hold+full-control gives full control budget");
 
 frame = allocator.resolve({ rodLimitKg: 1, fishTensionKg: 0.4, holdAction: hold, controlAction: halfControl, config });
 approx(frame.combinedCeilingMultiplier, 1.0, 0.0001, "half control keeps the base ceiling when no control extra is configured");
 approx(frame.totalPlayerBudgetKg, 0.6, 0.0001, "half control total budget uses the base ceiling");
-approx(frame.controlShare, 0.25, 0.0001, "half control takes half of max control share");
-approx(frame.holdShare, 0.75, 0.0001, "half control leaves the rest to hold");
-approx(frame.controlBudgetKg, 0.15, 0.0001, "half control budget is proportional");
-approx(frame.holdBudgetKg, 0.45, 0.0001, "half control leaves hold budget proportional");
+approx(frame.controlShare, 1, 0.0001, "independent half control gets a full control budget once active");
+approx(frame.holdShare, 1, 0.0001, "independent half control does not reduce hold share");
+approx(frame.controlBudgetKg, 0.6, 0.0001, "independent half control gets the available control budget");
+approx(frame.holdBudgetKg, 0.6, 0.0001, "independent half control leaves full budget with hold");
 
 frame = allocator.resolve({ rodLimitKg: 1, fishTensionKg: 0.4, holdAction: noHold, controlAction: fullControl, config });
 approx(frame.holdShare, 0, 0.0001, "control-only has no hold share");
@@ -80,6 +81,21 @@ frame = allocator.resolve({
 approx(frame.rawCombinedCeilingMultiplier, 2, 0.0001, "raw ceiling can exceed safety cap");
 approx(frame.combinedCeilingMultiplier, 1.25, 0.0001, "combined ceiling respects max safety cap");
 approx(frame.totalPlayerBudgetKg, 1.25, 0.0001, "budget uses capped ceiling");
+
+frame = allocator.resolve({
+  rodLimitKg: 1,
+  fishTensionKg: 0.4,
+  holdAction: hold,
+  controlAction: fullControl,
+  config: {
+    ...config,
+    allocationMode: "split",
+  },
+});
+approx(frame.holdShare, 0.5, 0.0001, "legacy split mode lets full control take max configured share from hold");
+approx(frame.controlShare, 0.5, 0.0001, "legacy split mode gives full control the configured share");
+approx(frame.holdBudgetKg, 0.3, 0.0001, "legacy split mode splits hold budget");
+approx(frame.controlBudgetKg, 0.3, 0.0001, "legacy split mode splits control budget");
 
 frame = allocator.resolve({ rodLimitKg: 1, fishTensionKg: 2, holdAction: hold, controlAction: fullControl, config });
 approx(frame.totalPlayerBudgetKg, 0, 0.0001, "budget cannot go negative when fish tension exceeds ceiling");

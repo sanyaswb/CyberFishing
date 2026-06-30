@@ -815,6 +815,10 @@
     "label": "Player force budget enabled",
     "description": "Enables the shared per-frame player force budget that splits player effort between Rod Hold and Rod Control."
   },
+  "physics.fight.playerForceBudget.allocationMode": {
+    "label": "Player force allocation mode",
+    "description": "Budget allocation strategy. independent keeps Rod Hold and Rod Control from reducing each other; split keeps legacy sharing."
+  },
   "physics.fight.playerForceBudget.control.maxBudgetShare": {
     "label": "Rod Control max budget share",
     "description": "Maximum share of the available player force budget that full Rod Control can take while Rod Hold is also active."
@@ -834,6 +838,34 @@
   "physics.fight.playerForceBudget.tensionCeiling.maxCombinedMultiplier": {
     "label": "Player force max combined ceiling",
     "description": "Safety cap for the combined Rod Hold and Rod Control tension ceiling multiplier."
+  },
+  "physics.fight.playerPressureGain.enabled": {
+    "label": "Player pressure gain enabled",
+    "description": "Enables combo pressure gain for Rod Hold and Rod Control input combinations."
+  },
+  "physics.fight.playerPressureGain.inputThresholds.holdForceKg": {
+    "label": "Pressure gain hold threshold",
+    "description": "Minimum Rod Hold budget force for hold to count in the pressure gain combo."
+  },
+  "physics.fight.playerPressureGain.inputThresholds.controlInputRatio": {
+    "label": "Pressure gain control input threshold",
+    "description": "Minimum Rod Control input ratio for control to count in the pressure gain combo."
+  },
+  "physics.fight.playerPressureGain.inputThresholds.controlForceKg": {
+    "label": "Pressure gain control force threshold",
+    "description": "Minimum Rod Control budget force for control to count in the pressure gain combo."
+  },
+  "physics.fight.playerPressureGain.multipliers.holdOnly": {
+    "label": "Pressure gain hold-only multiplier",
+    "description": "Pressure buildup multiplier when only Rod Hold is active."
+  },
+  "physics.fight.playerPressureGain.multipliers.controlOnly": {
+    "label": "Pressure gain control-only multiplier",
+    "description": "Pressure buildup multiplier when only Rod Control is active."
+  },
+  "physics.fight.playerPressureGain.multipliers.holdAndControl": {
+    "label": "Pressure gain hold and control multiplier",
+    "description": "Pressure buildup multiplier when Rod Hold and Rod Control are active together."
   },
   "physics.fight.playerPressureFatigue.enabled": {
     "label": "Player pressure fatigue enabled",

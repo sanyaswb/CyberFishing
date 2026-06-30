@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.23.21 - Combined pressure gain
+
+- Added `playerPressureGain` config and resolver for Rod Hold / Rod Control input combos.
+- Changed the default player force budget allocation to independent Hold and Control budgets, with legacy split mode kept explicit.
+- Applied hold + control combo gain to pressure buildup before Player Pressure Fatigue, without post-multiplying final tension.
+- Added Fight Summary input combo debug output and regression coverage for gain modes, thresholds and budget behavior.
+
 ## v0.23.20 - Pressure control break
 
 - Added `playerPressureFatigue.controlBreak` for long continuous pressure after fatigue is nearly maxed.

@@ -97,6 +97,8 @@ class FightPhysicsConfigAdapter {
     const tensionCeiling = config.tensionCeiling || {};
     return {
       enabled: config.enabled !== false,
+      allocationMode:
+        config.allocationMode === "split" ? "split" : "independent",
       control: {
         maxBudgetShare: Math.max(
           0,
@@ -116,6 +118,37 @@ class FightPhysicsConfigAdapter {
         maxCombinedMultiplier: Math.max(
           1,
           this.#number(tensionCeiling.maxCombinedMultiplier, 1.0),
+        ),
+      },
+    };
+  }
+
+  getPlayerPressureGainConfig() {
+    const config = this.#physics().fight?.playerPressureGain || {};
+    const inputThresholds = config.inputThresholds || {};
+    const multipliers = config.multipliers || {};
+    return {
+      enabled: config.enabled === true,
+      inputThresholds: {
+        holdForceKg: Math.max(
+          0,
+          this.#number(inputThresholds.holdForceKg, 0.01),
+        ),
+        controlInputRatio: Math.max(
+          0,
+          Math.min(1, this.#number(inputThresholds.controlInputRatio, 0.05)),
+        ),
+        controlForceKg: Math.max(
+          0,
+          this.#number(inputThresholds.controlForceKg, 0.01),
+        ),
+      },
+      multipliers: {
+        holdOnly: Math.max(0, this.#number(multipliers.holdOnly, 1.0)),
+        controlOnly: Math.max(0, this.#number(multipliers.controlOnly, 1.0)),
+        holdAndControl: Math.max(
+          0,
+          this.#number(multipliers.holdAndControl, 1.5),
         ),
       },
     };

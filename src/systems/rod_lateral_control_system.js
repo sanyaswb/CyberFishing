@@ -31,6 +31,7 @@ class RodLateralControlSystem {
     hardLineLimit = false,
     lineConstraintState = null,
     intentFrame = null,
+    playerPressureGain = null,
     playerPressureFatigue = null,
     config,
   } = {}) {
@@ -54,8 +55,15 @@ class RodLateralControlSystem {
     const inputRatio = intent.inputRatio;
     const hasFish = intent.hasFish;
     const targetFrame = intent.targetFrame;
-    const requestedForceRatio = this.#clamp01(
+    const baseRequestedForceRatio = this.#clamp01(
       inputRatio * targetFrame.angleRatio * targetFrame.directionFactor,
+    );
+    const pressureGainMultiplier = this.#pressureGainMultiplier({
+      frame: playerPressureGain,
+      channel: "rodControl",
+    });
+    const requestedForceRatio = this.#clamp01(
+      baseRequestedForceRatio * pressureGainMultiplier,
     );
     const tensionModeFrame = this.#resolveTensionModeFrame({
       fishVelocity,
@@ -115,6 +123,7 @@ class RodLateralControlSystem {
       inputDirectionX,
       inputRatio,
       requestedForceRatio,
+      baseRequestedForceRatio,
       loadReserveKg: forceFrame.loadReserveKg,
       loadReserveRatio: forceFrame.loadReserveRatio,
       tensionCeilingMultiplier: forceFrame.tensionCeilingMultiplier,
@@ -136,6 +145,8 @@ class RodLateralControlSystem {
       playerTensionKg: canApply ? forceKg * tensionMultiplier : 0,
       playerPressureEfficiency: forceFrame.playerPressureEfficiency,
       playerPressureFatigueEnabled: forceFrame.playerPressureFatigueEnabled,
+      playerPressureGainMultiplier: pressureGainMultiplier,
+      playerPressureGainMode: playerPressureGain?.mode || "none",
       tensionMultiplier,
       tensionMode: tensionModeFrame.mode,
       fishControlAxisAlignment: tensionModeFrame.alignment,
@@ -429,9 +440,16 @@ class RodLateralControlSystem {
       0,
       this.#number(currentTensionKg, this.#number(fishTensionKg)),
     );
+    const remainingTensionReserveKg = Math.max(
+      0,
+      tensionCeilingKg - resolvedCurrentTensionKg,
+    );
     const loadReserveKg = hasExternalBudget
-      ? Math.max(0, this.#number(budget.controlBudgetKg, 0))
-      : Math.max(0, tensionCeilingKg - resolvedCurrentTensionKg);
+      ? Math.min(
+          Math.max(0, this.#number(budget.controlBudgetKg, 0)),
+          remainingTensionReserveKg,
+        )
+      : remainingTensionReserveKg;
     const forceLimitKg = Math.min(maxForceKg, loadReserveKg);
     const canSlipDrag = lineConstraintState
       ? lineConstraintState.dragCanPayout === true
@@ -663,11 +681,14 @@ class RodLateralControlSystem {
       radialConstraintActive: false,
       movementMode: "none",
       deliveredForceRatio: 0,
+      baseRequestedForceRatio: 0,
       rawForceKg: 0,
       forceKg: 0,
       playerTensionKg: 0,
       playerPressureEfficiency: 1,
       playerPressureFatigueEnabled: false,
+      playerPressureGainMultiplier: 1,
+      playerPressureGainMode: "none",
       tensionMultiplier: 0,
       tensionMode: "side",
       fishControlAxisAlignment: 0,
@@ -713,5 +734,11 @@ class RodLateralControlSystem {
     const channels = frame.channels || {};
     if (channels[channel] === false) return 1;
     return this.#clamp01(frame.efficiency ?? 1);
+  }
+
+  #pressureGainMultiplier({ frame, channel }) {
+    if (frame?.enabled !== true) return 1;
+    if (channel === "rodControl" && frame.controlActive !== true) return 1;
+    return Math.max(0, this.#number(frame.multiplier, 1));
   }
 }

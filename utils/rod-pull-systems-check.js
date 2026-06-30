@@ -34,6 +34,7 @@ const FILES = [
   "src/core/fishing/rod_stroke_tracker.js",
   "src/core/fishing/rod_stroke_distance_tracker.js",
   "src/core/fishing/player_force_budget_allocator.js",
+  "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
   "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
   "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
   "src/core/fishing/reel_auto_recovery_calculator.js",

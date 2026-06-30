@@ -1,6 +1,5 @@
 /**
- * Resolves one per-frame player force budget and splits it between Rod Hold
- * and Rod Control.
+ * Resolves per-frame player force budgets for Rod Hold and Rod Control.
  *
  * Responsibility boundary:
  * - input: already resolved fish tension, tackle limit and composed fight actions;
@@ -37,6 +36,8 @@ class PlayerForceBudgetAllocator {
       controlRequested && !controlEligible
         ? controlEligibility?.blockedReason || "unavailable"
         : "none";
+    const allocationMode =
+      config.allocationMode === "split" ? "split" : "independent";
 
     if (!enabled) {
       return this.#freeze({
@@ -50,6 +51,7 @@ class PlayerForceBudgetAllocator {
         controlEligible,
         controlBlockedReason,
         controlInputRatio,
+        allocationMode,
         holdCeilingMultiplier: 1,
         controlCeilingMultiplier: 1,
         maxCombinedCeilingMultiplier: 1,
@@ -103,6 +105,7 @@ class PlayerForceBudgetAllocator {
       controlBlockedReason,
       controlInputRatio,
       controlConfig,
+      allocationMode,
     });
 
     const holdBudgetKg = totalPlayerBudgetKg * shares.holdShare;
@@ -119,6 +122,7 @@ class PlayerForceBudgetAllocator {
       controlEligible,
       controlBlockedReason,
       controlInputRatio,
+      allocationMode,
       holdCeilingMultiplier: holdMultiplier,
       controlCeilingMultiplier: controlMultiplier,
       maxCombinedCeilingMultiplier: maxCombinedMultiplier,
@@ -138,6 +142,7 @@ class PlayerForceBudgetAllocator {
     controlActive,
     controlInputRatio,
     controlConfig,
+    allocationMode,
   }) {
     if (!holdActive && !controlActive) {
       return { holdShare: 0, controlShare: 0 };
@@ -147,6 +152,10 @@ class PlayerForceBudgetAllocator {
     }
     if (!holdActive && controlActive) {
       return { holdShare: 0, controlShare: 1 };
+    }
+
+    if (allocationMode !== "split") {
+      return { holdShare: 1, controlShare: 1 };
     }
 
     const maxBudgetShare = this.#clamp01(

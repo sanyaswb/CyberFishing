@@ -29,6 +29,7 @@ const FIGHT_PHYSICS_CONFIG = {
 
   playerForceBudget: {
     enabled: true,
+    allocationMode: "independent",
 
     control: {
       maxBudgetShare: 0.5,
@@ -39,6 +40,20 @@ const FIGHT_PHYSICS_CONFIG = {
       holdMultiplier: 1.0,
       controlMultiplier: 1.0,
       maxCombinedMultiplier: 1.0,
+    },
+  },
+
+  playerPressureGain: {
+    enabled: true,
+    inputThresholds: {
+      holdForceKg: 0.01,
+      controlInputRatio: 0.05,
+      controlForceKg: 0.01,
+    },
+    multipliers: {
+      holdOnly: 1.0,
+      controlOnly: 1.0,
+      holdAndControl: 1.5,
     },
   },
 
