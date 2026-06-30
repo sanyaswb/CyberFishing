@@ -90,6 +90,11 @@ const mechanicsConfig = {
   },
   basePowerDropPerSec: 0.1,
   minBasePowerRatio: 0.2,
+  powerDebuff: {
+    enabled: true,
+    minBasePowerRatio: 0.2,
+    curvePower: 1,
+  },
   baseDepletionRate: 100,
   exhaustionDepletionMultiplier: 1,
   masteryTimeRatio: 0.5,
@@ -148,7 +153,9 @@ class FakeFish {
     this.masteryMultiplier = 1;
     this.applyPowerDebuffCalls = 0;
     this.powerDebuffByRatioCalls = 0;
+    this.powerRatioByEnduranceCalls = 0;
     this.lastPowerDebuffExhaustionRatio = null;
+    this.lastPowerRatioEnduranceRatio = null;
   }
 
   get hasActiveDebuff() {
@@ -189,6 +196,22 @@ class FakeFish {
       Math.max(0, Number(maxPowerDropPerSec) || 0) *
       Math.max(0, Number(maxDurationSec) || 0) *
       Math.max(0, 1 - this.lastPowerDebuffExhaustionRatio);
+  }
+
+  setPowerRatioByEnduranceRatio(
+    enduranceRatio,
+    minBasePowerRatio = 0.2,
+    curvePower = 1,
+  ) {
+    this.powerRatioByEnduranceCalls += 1;
+    this.lastPowerRatioEnduranceRatio = Number(enduranceRatio);
+    const ratio = Math.max(0, Math.min(1, Number(enduranceRatio) || 0));
+    const minRatio = Math.max(0, Math.min(1, Number(minBasePowerRatio) || 0));
+    const curve = Math.max(0.001, Number(curvePower) || 1);
+    const progress = 1 - ratio;
+    const debuffProgress = Math.pow(progress, curve);
+    const targetPowerRatio = 1 - (1 - minRatio) * debuffProgress;
+    this.powerDebuff = 1 - targetPowerRatio;
   }
 }
 
@@ -430,8 +453,10 @@ runtime.controller.evaluate({
   dt: 1000,
 });
 approx(runtime.condition.currentExhaustion, 60, 0.0001, "phase exhaustion active pressure reduces endurance");
-approx(runtime.fish.powerDebuffByRatioCalls, 1, 0.0001, "frame endurance path synchronizes power debuff from endurance ratio");
-approx(runtime.fish.lastPowerDebuffExhaustionRatio, 0.6, 0.0001, "power debuff sync uses currentExhaustion / maxEndurance");
+approx(runtime.fish.powerRatioByEnduranceCalls, 1, 0.0001, "frame endurance path synchronizes power ratio from endurance ratio");
+approx(runtime.fish.powerDebuffByRatioCalls, 0, 0.0001, "frame endurance path does not use legacy duration-based power sync");
+approx(runtime.fish.lastPowerRatioEnduranceRatio, 0.6, 0.0001, "power ratio sync uses currentExhaustion / maxEndurance");
+approx(runtime.fish.powerDebuff, 0.32, 0.0001, "power debuff scales linearly from endurance ratio and min power ratio");
 approx(runtime.fish.applyPowerDebuffCalls, 0, 0.0001, "frame endurance path does not use incremental legacy power debuff");
 
 runtime = createController({ phase: "exhaustion", endurance: 100 });

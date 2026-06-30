@@ -514,10 +514,16 @@ const CONFIG = {
       // 2.0 = у 2 рази швидше
       exhaustionDepletionMultiplier: 0.05,
 
-      // Керує тим, як швидко реально падає сила/опір риби в кг під час exhaustion.
+      // Legacy fallback: old per-second power drop for non frame-based exhaustion path.
+      // The new frame-based endurance path uses powerDebuff below.
       basePowerDropPerSec: 0.1,
 
       minBasePowerRatio: 0.2,
+      powerDebuff: {
+        enabled: true,
+        minBasePowerRatio: 0.2,
+        curvePower: 1.0,
+      },
       masteryTimeRatio: 0.5,
       masteryPowerMultiplier: 0.2,
       regenMultiplierPhase1: 1.5,

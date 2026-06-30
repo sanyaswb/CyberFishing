@@ -298,5 +298,20 @@
     "key": "enduranceMovementDebuff.behaviorWeights.multipliersAtZeroEndurance.rest",
     "ua": "endurance_zero_rest_weight_multiplier",
     "description": "Runtime rest selection weight multiplier when ENDURANCE reaches zero."
+  },
+  {
+    "key": "stamina.mechanics.powerDebuff.enabled",
+    "ua": "дебаф_сили_за_виснаженням",
+    "description": "Вмикає frame-based синхронізацію сили риби від currentExhaustion / maxEndurance."
+  },
+  {
+    "key": "stamina.mechanics.powerDebuff.minBasePowerRatio",
+    "ua": "мінімальна_частка_сили_риби",
+    "description": "Мінімальна частка сили риби при ENDURANCE = 0."
+  },
+  {
+    "key": "stamina.mechanics.powerDebuff.curvePower",
+    "ua": "крива_дебафу_сили",
+    "description": "Крива послаблення сили риби за шкалою ENDURANCE."
   }
 ]

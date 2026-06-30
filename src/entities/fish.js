@@ -428,6 +428,25 @@ class Fish {
     );
   }
 
+  setPowerRatioByEnduranceRatio(
+    enduranceRatio,
+    minBasePowerRatio = 0.2,
+    curvePower = 1.0,
+  ) {
+    const ratio = Math.max(0, Math.min(1, Number(enduranceRatio) || 0));
+    const minRatio = Math.max(0, Math.min(1, Number(minBasePowerRatio) || 0));
+    const curve = Math.max(0.001, Number(curvePower) || 1);
+    const exhaustionProgress = 1.0 - ratio;
+    const debuffProgress = Math.pow(exhaustionProgress, curve);
+    const targetPowerRatio = 1.0 - (1.0 - minRatio) * debuffProgress;
+    const initialPower = this.getInitialPower();
+
+    this.#powerDebuff = this.#clampPowerDebuff(
+      initialPower * (1.0 - targetPowerRatio),
+      minRatio,
+    );
+  }
+
   #clampPowerDebuff(value, minBasePowerRatio) {
     const initial = this.getInitialPower();
     const minRatio = Math.max(
@@ -1039,10 +1058,15 @@ class FishBehavior {
   getStateData() {
     const stateConfig = this.#config.behaviors[this.#currentStateName];
     const speedRatio = this.#clampNonNegative(Math.abs(this.#currentMove));
+    const targetForceMultiplier = this.#clampNonNegative(
+      stateConfig.forceMultiplier ?? this.#targetPull ?? this.#currentPull,
+    );
     return {
       name: this.#currentStateName,
       pullMult: this.#currentPull,
       forceMultiplier: this.#currentPull,
+      runtimeForceMultiplier: this.#currentPull,
+      targetForceMultiplier,
       speedMultiplier: speedRatio,
       movementIntent: {
         radial: this.#currentRadialIntent,

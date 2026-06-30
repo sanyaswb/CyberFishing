@@ -291,13 +291,34 @@ class StaminaController {
   }
 
   #syncFramePowerDebuffWithEndurance() {
+    const enduranceRatio = this.#clamp01(
+      this.#condition.currentExhaustion / this.#maxEndurance(),
+    );
+    const powerDebuffConfig = this.#mechanicsConfig.powerDebuff || {};
+    const enabled = powerDebuffConfig.enabled !== false;
+    const minBasePowerRatio = this.#clamp01(
+      powerDebuffConfig.minBasePowerRatio ??
+        this.#mechanicsConfig.minBasePowerRatio ??
+        0.2,
+    );
+    const curvePower = Math.max(
+      0.001,
+      Number(powerDebuffConfig.curvePower) || 1.0,
+    );
+
+    if (enabled && typeof this.#fish?.setPowerRatioByEnduranceRatio === "function") {
+      this.#fish.setPowerRatioByEnduranceRatio(
+        enduranceRatio,
+        minBasePowerRatio,
+        curvePower,
+      );
+      return;
+    }
+
     if (typeof this.#fish?.setPowerDebuffByExhaustionRatio !== "function") {
       return;
     }
 
-    const enduranceRatio = this.#clamp01(
-      this.#condition.currentExhaustion / this.#maxEndurance(),
-    );
     const maxPowerDropPerSec = this.#positive(
       this.#mechanicsConfig.basePowerDropPerSec,
       0,
@@ -311,7 +332,7 @@ class StaminaController {
       enduranceRatio,
       maxPowerDropPerSec,
       expectedDurationSec,
-      this.#mechanicsConfig.minBasePowerRatio ?? 0.2,
+      minBasePowerRatio,
     );
   }
 

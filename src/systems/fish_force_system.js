@@ -160,7 +160,19 @@ class FishForceSystem {
     const waterConfig = this.#physicsConfig?.getWaterConfig?.() || {};
     const behaviorPowerRatio = Math.max(
       0,
-      Number(behavior.forceMultiplier ?? behaviorPullValue) || 0,
+      Number(
+        behavior.runtimeForceMultiplier ??
+          behavior.forceMultiplier ??
+          behaviorPullValue,
+      ) || 0,
+    );
+    const behaviorTargetPowerRatio = Math.max(
+      0,
+      Number(
+        behavior.targetForceMultiplier ??
+          behavior.forceMultiplier ??
+          behaviorPullValue,
+      ) || 0,
     );
     const behaviorSpeedRatio = Math.max(
       0,
@@ -192,6 +204,26 @@ class FishForceSystem {
       waterMotionResistance: waterConfig.motionResistance,
       waterSpeedMultiplier: waterConfig.speedMultiplier,
     });
+    const currentStateMaxActiveForceKg =
+      fishForceFrame.fishPassiveKg *
+      behaviorTargetPowerRatio *
+      directionMultiplier;
+    const fishCurrentStateMaxForceKg =
+      fishForceFrame.fishPassiveKg + currentStateMaxActiveForceKg;
+    const stateMaxForceWithoutPowerDebuffKg =
+      fishForceBeforeExhaustionFrame.fishPassiveKg +
+      fishForceBeforeExhaustionFrame.fishPassiveKg *
+        behaviorTargetPowerRatio *
+        directionMultiplier;
+    const fishBaseForcePowerLossKg = Math.max(
+      0,
+      fishForceBeforeExhaustionFrame.fishPassiveKg -
+        fishForceFrame.fishPassiveKg,
+    );
+    const fishStateMaxForcePowerLossKg = Math.max(
+      0,
+      stateMaxForceWithoutPowerDebuffKg - fishCurrentStateMaxForceKg,
+    );
     const staticForceKg = fishForceFrame.fishPassiveKg;
     const totalFishForceKg = fishForceFrame.fishOppositionKg;
 
@@ -293,6 +325,12 @@ class FishForceSystem {
       fishPowerBeforeMastery,
       fishPowerRatio,
       fishPowerDebuff,
+      fishPowerMinBaseRatio:
+        this.#config?.stamina?.mechanics?.powerDebuff?.minBasePowerRatio ??
+        this.#config?.stamina?.mechanics?.minBasePowerRatio ??
+        0.2,
+      fishPowerDebuffCurvePower:
+        this.#config?.stamina?.mechanics?.powerDebuff?.curvePower ?? 1.0,
       fishBasePowerExhaustionLoss: Math.max(
         0,
         configuredFishBasePower - fishBasePower,
@@ -302,8 +340,19 @@ class FishForceSystem {
       fishBaseSpeedMultiplier,
       pullMult: behaviorPowerRatio,
       moveMult: behaviorSpeedRatio,
+      fishRuntimeForceMultiplier: behaviorPowerRatio,
+      fishStateTargetForceMultiplier: behaviorTargetPowerRatio,
       staticFishForceKg: staticForceKg,
       fishPassiveKg: fishForceFrame.fishPassiveKg,
+      fishBaseForceCurrentKg: fishForceFrame.fishPassiveKg,
+      fishBaseForceWithoutPowerDebuffKg:
+        fishForceBeforeExhaustionFrame.fishPassiveKg,
+      fishBaseForcePowerLossKg,
+      currentStateMaxActiveForceKg,
+      fishCurrentStateMaxActiveForceKg: currentStateMaxActiveForceKg,
+      fishCurrentStateMaxForceKg,
+      fishStateMaxForceWithoutPowerDebuffKg: stateMaxForceWithoutPowerDebuffKg,
+      fishStateMaxForcePowerLossKg,
       fishActiveKg: fishForceFrame.fishActiveKg,
       fishOppositionKg: fishForceFrame.fishOppositionKg,
       fishPassiveWithoutExhaustionKg:
@@ -432,6 +481,12 @@ class FishForceSystem {
       fishPowerBeforeMastery,
       fishPowerRatio,
       fishPowerDebuff,
+      fishPowerMinBaseRatio:
+        this.#config?.stamina?.mechanics?.powerDebuff?.minBasePowerRatio ??
+        this.#config?.stamina?.mechanics?.minBasePowerRatio ??
+        0.2,
+      fishPowerDebuffCurvePower:
+        this.#config?.stamina?.mechanics?.powerDebuff?.curvePower ?? 1.0,
       fishBasePowerExhaustionLoss: Math.max(
         0,
         configuredFishBasePower - fishBasePower,
@@ -439,6 +494,17 @@ class FishForceSystem {
       fishBaseSpeed,
       rawFishBaseSpeed,
       fishBaseSpeedMultiplier,
+      fishRuntimeForceMultiplier: behaviorPowerRatio,
+      fishStateTargetForceMultiplier: behaviorTargetPowerRatio,
+      currentStateMaxActiveForceKg,
+      fishCurrentStateMaxActiveForceKg: currentStateMaxActiveForceKg,
+      fishCurrentStateMaxForceKg,
+      fishStateMaxForceWithoutPowerDebuffKg: stateMaxForceWithoutPowerDebuffKg,
+      fishStateMaxForcePowerLossKg,
+      fishBaseForceCurrentKg: fishForceFrame.fishPassiveKg,
+      fishBaseForceWithoutPowerDebuffKg:
+        fishForceBeforeExhaustionFrame.fishPassiveKg,
+      fishBaseForcePowerLossKg,
       fishStateForceMultiplier: behaviorPowerRatio,
       fishStateSpeedMultiplier: behaviorSpeedRatio,
       directionResistanceMultiplier: directionMultiplier,

@@ -39,6 +39,15 @@ const data = {
   fishPassiveKg: 0.01,
   fishActiveKg: 0.038,
   fishOppositionKg: 0.048,
+  fishBaseForceCurrentKg: 0.01,
+  fishBaseForceWithoutPowerDebuffKg: 0.012,
+  fishBaseForcePowerLossKg: 0.002,
+  fishCurrentStateMaxForceKg: 0.048,
+  fishStateMaxForceWithoutPowerDebuffKg: 0.06,
+  fishStateMaxForcePowerLossKg: 0.012,
+  fishRuntimeForceMultiplier: 1.1,
+  fishStateTargetForceMultiplier: 1.9,
+  fishPowerRatio: 0.833333,
   fishOppositionWithoutExhaustionKg: 0.06,
   fishOppositionExhaustionLossKg: 0.012,
   directionResistanceMultiplier: 2,
@@ -84,8 +93,9 @@ assertEquals(
 let html = fishBalanceModule.render(data);
 assertIncludes(html, "FISH BALANCE", "FishBalance module renders title");
 assertIncludes(html, "ПОТОЧНА СИЛА", "FishBalance renders live force summary");
-assertIncludes(html, "0.060", "FishBalance renders before-exhaustion force");
-assertIncludes(html, "-0.012", "FishBalance renders exhaustion force loss");
+assertIncludes(html, "(-0.002 кг)", "FishBalance renders base force loss inline");
+assertIncludes(html, "(-0.012 кг)", "FishBalance renders multiplied force loss inline");
+assertExcludes(html, "Виснаження", "FishBalance no longer renders separate exhaustion row");
 assertIncludes(html, "STATE FORCE PREVIEW", "FishBalance renders state force preview");
 assertExcludes(html, "Current", "state force preview does not render current direction button");
 assertIncludes(html, 'data-overlay-control="fish-state-direction"', 'tab controls are rendered');

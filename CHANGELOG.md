@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.23.16 - Fish power debuff correction
+
+- Fixed frame-based fish power debuff scaling so minimum power is reached only when ENDURANCE reaches zero.
+- Added `stamina.mechanics.powerDebuff` with `enabled`, `minBasePowerRatio` and `curvePower` settings.
+- Kept `basePowerDropPerSec` as legacy fallback and removed it from the new frame-based power sync path.
+- Separated runtime fish force multiplier from current state target force multiplier in debug data.
+- Added current state max force debug fields for Fish Balance overlay.
+- Updated `ПОТОЧНА СИЛА` to show inline loss next to `База` and `З множниками` instead of a separate exhaustion row.
+- Added regression coverage for endurance-ratio power debuff scaling and current state max force overlay data.
+
 ## v0.23.15 - Overlay lifecycle stability
 
 - Fixed the debug overlay visibility lifecycle so `debug-live-update` no longer shows an empty overlay window before any module renders content.

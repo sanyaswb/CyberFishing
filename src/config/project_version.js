@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - use `node utils/set-project-version.js <version> [label]` to update this file.
  */
-const CURRENT_PROJECT_VERSION = "0.23.15";
+const CURRENT_PROJECT_VERSION = "0.23.16";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "overlay-lifecycle-stability",
+  codename: "fish-power-debuff-correction",
   updatedAt: "2026-06-30",
   notes: Object.freeze([
-    "Made overlay visibility depend only on non-empty rendered module output",
-    "Prevented debug overlay viewport clamping while the overlay window is actively dragged",
-    "Stopped controller update ticks from reapplying overlay scale and fighting drag layout",
+    "Fixed frame-based fish power debuff scaling so minimum power is reached only at zero endurance",
+    "Separated runtime fish force from current state max fish force in debug data",
+    "Updated Fish Balance current force display to show compact inline power loss",
   ]),
 });
 

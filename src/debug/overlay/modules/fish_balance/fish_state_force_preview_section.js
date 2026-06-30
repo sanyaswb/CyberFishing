@@ -190,6 +190,7 @@ class FishStateForcePreviewSection {
       fish.id || fish.name || "fish",
       fish.level ?? "",
       fish.weight ?? data?.fishWeightKg ?? "",
+      Number(data?.fishPassiveKg ?? 0).toFixed(6),
     ].join(":");
   }
 

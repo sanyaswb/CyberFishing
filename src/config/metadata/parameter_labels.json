@@ -1074,5 +1074,17 @@
   "stamina.mechanics.passiveDrain.hardLimitMultiplier": {
     "label": "Passive hard-limit multiplier",
     "description": "Множник пасивної витрати, коли риба вперлась у hard line limit."
+  },
+  "stamina.mechanics.powerDebuff.enabled": {
+    "label": "Frame power debuff enabled",
+    "description": "Enables frame-based fish power synchronization from currentExhaustion / maxEndurance."
+  },
+  "stamina.mechanics.powerDebuff.minBasePowerRatio": {
+    "label": "Minimum fish power ratio",
+    "description": "Minimum remaining fish power ratio at zero ENDURANCE. 0.2 means 20% of initial power remains."
+  },
+  "stamina.mechanics.powerDebuff.curvePower": {
+    "label": "Fish power debuff curve",
+    "description": "Power curve applied to ENDURANCE exhaustion progress before fish power is reduced."
   }
 }

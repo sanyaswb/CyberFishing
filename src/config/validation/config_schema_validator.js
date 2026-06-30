@@ -297,7 +297,31 @@ class ConfigSchemaValidator {
   }
 
   #validateStaminaMechanicsConfig() {
-    const config = this.config.stamina?.mechanics?.enduranceMovementDebuff;
+    const mechanics = this.config.stamina?.mechanics || {};
+    const powerDebuff = mechanics.powerDebuff || {};
+    if (!powerDebuff || typeof powerDebuff !== "object") {
+      this.#error(
+        "stamina.mechanics.powerDebuff",
+        "missing frame-based power debuff config",
+      );
+    } else {
+      this.#requireBooleanWithLabel(
+        "stamina.mechanics.powerDebuff.enabled",
+        powerDebuff.enabled,
+      );
+      this.#requireFiniteNumberWithLabel(
+        "stamina.mechanics.powerDebuff.minBasePowerRatio",
+        powerDebuff.minBasePowerRatio,
+        { min: 0, max: 1 },
+      );
+      this.#requireFiniteNumberWithLabel(
+        "stamina.mechanics.powerDebuff.curvePower",
+        powerDebuff.curvePower,
+        { min: 0 },
+      );
+    }
+
+    const config = mechanics.enduranceMovementDebuff;
     if (!config || typeof config !== "object") {
       this.#error(
         "stamina.mechanics.enduranceMovementDebuff",

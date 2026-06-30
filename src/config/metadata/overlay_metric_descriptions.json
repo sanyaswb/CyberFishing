@@ -804,5 +804,110 @@
     "paths": [
       "DEBUG_DATA.fightMovementActualSpeedPxPerSec"
     ]
+  },
+  "fishBalance.currentBaseForce": {
+    "formula": "fishBaseForceCurrentKg = fishWeightKg * tautBodyResistancePerKg * fishPowerRatio",
+    "description": "Поточна базова сила риби без множників стану і напрямку.",
+    "paths": [
+      "DEBUG_DATA.fishBaseForceCurrentKg"
+    ]
+  },
+  "fishBalance.currentStateMaxForce": {
+    "formula": "fishCurrentStateMaxForceKg = base + base * targetStateForceMultiplier * directionMultiplier",
+    "description": "Максимальна сила поточного стану і напрямку без runtime currentPull interpolation.",
+    "paths": [
+      "DEBUG_DATA.fishCurrentStateMaxForceKg"
+    ]
+  },
+  "fishBalance.stateTargetForceMultiplier": {
+    "formula": "targetStateForceMultiplier = behaviorProfile.behaviors[currentState].forceMultiplier",
+    "description": "Статичний цільовий множник сили поточного стану риби.",
+    "paths": [
+      "DEBUG_DATA.fishStateTargetForceMultiplier"
+    ]
+  },
+  "fishBalance.powerRatio": {
+    "formula": "fishPowerRatio = fish.getPower() / fish.getInitialPower()",
+    "description": "Поточна частка сили риби після endurance power debuff і mastery.",
+    "paths": [
+      "DEBUG_DATA.fishPowerRatio"
+    ]
+  },
+  "fishPowerRatio": {
+    "formula": "fishPowerRatio = fish.getPower() / fish.getInitialPower()",
+    "description": "Поточна частка сили риби після endurance power debuff і mastery.",
+    "paths": [
+      "DEBUG_DATA.fishPowerRatio"
+    ]
+  },
+  "fishPowerDebuffKg": {
+    "formula": "fishPowerDebuffKg = fish.getPowerDebuff()",
+    "description": "Втрата power риби від endurance debuff до mastery multiplier.",
+    "paths": [
+      "DEBUG_DATA.fishPowerDebuff"
+    ]
+  },
+  "fishBaseForceCurrentKg": {
+    "formula": "fishBaseForceCurrentKg = current passive fish force",
+    "description": "Поточна базова сила риби без state/direction multipliers.",
+    "paths": [
+      "DEBUG_DATA.fishBaseForceCurrentKg"
+    ]
+  },
+  "fishBaseForceWithoutPowerDebuffKg": {
+    "formula": "full power passive fish force",
+    "description": "Базова сила риби без endurance/mastery power loss.",
+    "paths": [
+      "DEBUG_DATA.fishBaseForceWithoutPowerDebuffKg"
+    ]
+  },
+  "fishBaseForcePowerLossKg": {
+    "formula": "baseWithoutPowerDebuff - baseCurrent",
+    "description": "Втрачена базова сила через power debuff.",
+    "paths": [
+      "DEBUG_DATA.fishBaseForcePowerLossKg"
+    ]
+  },
+  "fishStateTargetForceMultiplier": {
+    "formula": "config target force multiplier for current fish state",
+    "description": "Статичний множник сили поточного стану без interpolation.",
+    "paths": [
+      "DEBUG_DATA.fishStateTargetForceMultiplier"
+    ]
+  },
+  "fishRuntimeForceMultiplier": {
+    "formula": "runtime currentPull multiplier",
+    "description": "Фактичний згладжений множник сили поточного кадру.",
+    "paths": [
+      "DEBUG_DATA.fishRuntimeForceMultiplier"
+    ]
+  },
+  "fishCurrentStateMaxForceKg": {
+    "formula": "baseCurrent + baseCurrent * targetStateForceMultiplier * directionMultiplier",
+    "description": "Майже статична максимальна сила поточного state + direction.",
+    "paths": [
+      "DEBUG_DATA.fishCurrentStateMaxForceKg"
+    ]
+  },
+  "fishStateMaxForceWithoutPowerDebuffKg": {
+    "formula": "fullPowerBase + fullPowerBase * targetStateForceMultiplier * directionMultiplier",
+    "description": "Current state max force without power debuff.",
+    "paths": [
+      "DEBUG_DATA.fishStateMaxForceWithoutPowerDebuffKg"
+    ]
+  },
+  "fishStateMaxForcePowerLossKg": {
+    "formula": "stateMaxWithoutPowerDebuff - stateMaxCurrent",
+    "description": "Втрачена сила current state max через endurance/mastery power loss.",
+    "paths": [
+      "DEBUG_DATA.fishStateMaxForcePowerLossKg"
+    ]
+  },
+  "fishCurrentStateMaxActiveForceKg": {
+    "formula": "fishBaseForceCurrentKg * fishStateTargetForceMultiplier * directionMultiplier",
+    "description": "Активна частина current state max force без runtime interpolation.",
+    "paths": [
+      "DEBUG_DATA.fishCurrentStateMaxActiveForceKg"
+    ]
   }
 }

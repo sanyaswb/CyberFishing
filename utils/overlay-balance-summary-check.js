@@ -98,10 +98,10 @@ const fishBalance = new context.window.FishBalanceModule(options);
 let html = fishBalance.render(data);
 assertIncludes(html, "FISH BALANCE", "FishBalance renders header");
 assertIncludes(html, "ПОТОЧНА СИЛА", "FishBalance renders live force summary");
-assertIncludes(html, "З множниками", "FishBalance renders current force with multipliers");
-assertIncludes(html, "Виснаження", "FishBalance renders exhaustion force loss");
-assertIncludes(html, "0.640", "FishBalance renders force before exhaustion");
-assertIncludes(html, "-0.080", "FishBalance renders force spent by exhaustion");
+assertIncludes(html, "З множниками", "FishBalance renders current state max force with multipliers");
+assertIncludes(html, "(-0.020 кг)", "FishBalance renders base force loss inline");
+assertIncludes(html, "(-0.080 кг)", "FishBalance renders multiplied force loss inline");
+assertExcludes(html, "Виснаження", "FishBalance no longer renders separate exhaustion force loss row");
 assertIncludes(html, "STATE FORCE PREVIEW", "FishBalance renders state force preview");
 assertExcludes(html, "FISH SUMMARY", "FishBalance no longer renders fish summary subsection");
 assertExcludes(html, "CURRENT FORCE", "FishBalance no longer renders current force subsection");
@@ -199,9 +199,18 @@ function createDebugData() {
     fishPassiveKg: 0.16,
     fishActiveKg: 0.4,
     fishOppositionKg: 0.56,
+    fishBaseForceCurrentKg: 0.16,
+    fishBaseForceWithoutPowerDebuffKg: 0.18,
+    fishBaseForcePowerLossKg: 0.02,
+    fishCurrentStateMaxForceKg: 0.56,
+    fishStateMaxForceWithoutPowerDebuffKg: 0.64,
+    fishStateMaxForcePowerLossKg: 0.08,
+    fishRuntimeForceMultiplier: 0.82,
+    fishStateTargetForceMultiplier: 1,
+    fishPowerRatio: 0.8888889,
     fishOppositionWithoutExhaustionKg: 0.64,
     fishOppositionExhaustionLossKg: 0.08,
-    fishStateForceMultiplier: 1,
+    fishStateForceMultiplier: 0.82,
     activeDebuffName: "restWeight",
     isMasteryActive: false,
     masteryCurrentMult: 1,
