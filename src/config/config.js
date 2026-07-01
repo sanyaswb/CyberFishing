@@ -272,6 +272,18 @@ const CONFIG = {
       map: false,
     },
 
+    memoryWatchdog: {
+      enabled: false,
+      intervalMs: 5000,
+      maxSamples: 12,
+      minTrendSamples: 6,
+      thresholds: {
+        heapGrowthBytes: 16777216,
+        domNodeGrowth: 50,
+        listenerGrowth: 10,
+      },
+    },
+
     casting: {
       showChumDistanceLine: true,
       showAccuracyArea: true,

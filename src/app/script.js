@@ -7,10 +7,9 @@
 
   const memoryConfig = CONFIG.debug?.memoryWatchdog || {};
   const watchdog =
-    memoryConfig.enabled === false ||
-    typeof MemoryLeakWatchdog === "undefined"
-      ? null
-      : new MemoryLeakWatchdog({
+    memoryConfig.enabled === true &&
+    typeof MemoryLeakWatchdog !== "undefined"
+      ? new MemoryLeakWatchdog({
           intervalMs: memoryConfig.intervalMs,
           maxSamples: memoryConfig.maxSamples,
           minTrendSamples: memoryConfig.minTrendSamples,
@@ -26,7 +25,8 @@
                 InputManager.getActiveListenerCount(),
             };
           },
-        });
+        })
+      : null;
 
   watchdog?.start();
   window.CYBER_FISHING_MEMORY_WATCHDOG = watchdog;

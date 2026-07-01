@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.23.22 - Runtime diagnostics opt-in
+
+- Kept the trimmed utility set focused on `check-js.js`, `game-cycle-check.js`, `dev-server.js` and version-copy support.
+- Changed `MemoryLeakWatchdog` startup to opt-in only through `CONFIG.debug.memoryWatchdog.enabled === true`.
+- Added explicit default memory watchdog config with bounded sampling settings.
+- Updated project version metadata comments after removing the old `set-project-version.js` workflow.
+
 ## v0.23.21 - Combined pressure gain
 
 - Added `playerPressureGain` config and resolver for Rod Hold / Rod Control input combos.

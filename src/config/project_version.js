@@ -3,9 +3,9 @@
  *
  * Patch rule:
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
- * - use `node utils/set-project-version.js <version> [label]` to update this file.
+ * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.23.21";
+const CURRENT_PROJECT_VERSION = "0.23.22";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "combined-pressure-gain",
+  codename: "runtime-diagnostics-opt-in",
   updatedAt: "2026-07-01",
   notes: Object.freeze([
-    "Added Combined Rod Hold + Rod Control pressure gain before fatigue",
-    "Kept Rod Control from reducing Rod Hold budget in the default player force allocation",
-    "Exposed input combo gain in fight debug data and Fight Summary overlay",
+    "Kept runtime memory leak watchdog disabled unless explicitly enabled in CONFIG.debug",
+    "Documented the remaining minimal utility checks",
+    "Aligned project version metadata with the changelog entry",
   ]),
 });
 

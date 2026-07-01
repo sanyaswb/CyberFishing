@@ -1214,5 +1214,33 @@
   "stamina.mechanics.powerDebuff.curvePower": {
     "label": "Fish power debuff curve",
     "description": "Power curve applied to ENDURANCE exhaustion progress before fish power is reduced."
+  },
+  "debug.memoryWatchdog.enabled": {
+    "label": "Memory watchdog enabled",
+    "description": "Starts the runtime memory leak watchdog only when explicitly enabled."
+  },
+  "debug.memoryWatchdog.intervalMs": {
+    "label": "Memory watchdog interval",
+    "description": "Milliseconds between runtime memory watchdog samples."
+  },
+  "debug.memoryWatchdog.maxSamples": {
+    "label": "Memory watchdog sample limit",
+    "description": "Maximum number of memory watchdog samples retained in bounded history."
+  },
+  "debug.memoryWatchdog.minTrendSamples": {
+    "label": "Memory watchdog trend samples",
+    "description": "Minimum sample count before memory watchdog trend detection can report growth."
+  },
+  "debug.memoryWatchdog.thresholds.heapGrowthBytes": {
+    "label": "Memory watchdog heap threshold",
+    "description": "Heap growth in bytes required before the watchdog reports a persistent memory issue."
+  },
+  "debug.memoryWatchdog.thresholds.domNodeGrowth": {
+    "label": "Memory watchdog DOM threshold",
+    "description": "DOM node growth required before the watchdog reports a persistent memory issue."
+  },
+  "debug.memoryWatchdog.thresholds.listenerGrowth": {
+    "label": "Memory watchdog listener threshold",
+    "description": "Managed listener growth required before the watchdog reports a persistent memory issue."
   }
 }
