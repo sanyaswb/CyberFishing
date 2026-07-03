@@ -626,6 +626,22 @@
       "DEBUG_DATA.playerPressureFatigueEfficiency"
     ]
   },
+  "fightSummary.pressureFatigueState": {
+    "formula": "idle | grace | fatiguing | recovering",
+    "description": "Current player pressure fatigue state.",
+    "paths": [
+      "DEBUG_DATA.playerPressureFatigueState"
+    ]
+  },
+  "fightSummary.pressureFatigueSource": {
+    "formula": "playerPressureFatigueSourceMode + playerPressureFatigueSourceActive",
+    "description": "Gameplay source that currently drives player pressure fatigue.",
+    "paths": [
+      "DEBUG_DATA.playerPressureFatigueSourceMode",
+      "DEBUG_DATA.playerPressureFatigueSourceActive",
+      "CONFIG.physics.fight.playerPressureFatigue.source.mode"
+    ]
+  },
   "fightSummary.pressureFatigueHoldTime": {
     "formula": "continuous effective pressure time",
     "description": "How long the player has been continuously transmitting meaningful pressure.",
@@ -634,14 +650,14 @@
     ]
   },
   "fightSummary.pressureFatigueRatio": {
-    "formula": "1 - playerPressureFatigueEfficiency",
-    "description": "Visible pressure fatigue amount after the grace window.",
+    "formula": "playerPressureFatigueProgress",
+    "description": "Normalized fatigue buildup progress after the grace window.",
     "paths": [
-      "DEBUG_DATA.playerPressureFatigueFatigueRatio"
+      "DEBUG_DATA.playerPressureFatigueProgress"
     ]
   },
   "fightSummary.pressureFatigueControlState": {
-    "formula": "control exhausted when fatigueProgress >= controlBreak.fatigueRatioThreshold and holdMs >= minContinuousPressureMs",
+    "formula": "control exhausted when fatigueProgress >= controlBreak.fatigueProgressThreshold and holdMs >= minContinuousPressureMs",
     "description": "Whether long continuous pressure still counts as control for stamina regen and phase recovery.",
     "paths": [
       "DEBUG_DATA.playerPressureFatigueControlExhausted",
@@ -653,6 +669,37 @@
     "description": "Current pressure fatigue recovery state.",
     "paths": [
       "DEBUG_DATA.playerPressureFatigueRecoveryState"
+    ]
+  },
+  "fightSummary.pressureFatigueGraceTime": {
+    "formula": "graceElapsedMs / graceDurationMs",
+    "description": "Elapsed and configured duration of the full-efficiency fatigue grace window.",
+    "paths": [
+      "DEBUG_DATA.playerPressureFatigueGraceElapsedMs",
+      "DEBUG_DATA.playerPressureFatigueGraceDurationMs"
+    ]
+  },
+  "fightSummary.pressureFatigueFatigueTime": {
+    "formula": "fatigueElapsedMs / fatigueDurationMs",
+    "description": "Elapsed and configured duration of the active fatigue buildup window.",
+    "paths": [
+      "DEBUG_DATA.playerPressureFatigueFatigueElapsedMs",
+      "DEBUG_DATA.playerPressureFatigueFatigueDurationMs"
+    ]
+  },
+  "fightSummary.pressureFatigueRecoveryDelay": {
+    "formula": "recoveryDelayElapsedMs / recoveryDelayMs",
+    "description": "Elapsed and configured delay before fatigue recovery starts after reel hold release.",
+    "paths": [
+      "DEBUG_DATA.playerPressureFatigueRecoveryDelayElapsedMs",
+      "DEBUG_DATA.playerPressureFatigueRecoveryDelayMs"
+    ]
+  },
+  "fightSummary.pressureFatigueRecoveryRemaining": {
+    "formula": "recoveryRemainingMs",
+    "description": "Estimated remaining time until player pressure fatigue fully recovers.",
+    "paths": [
+      "DEBUG_DATA.playerPressureFatigueRecoveryRemainingMs"
     ]
   },
   "fightSummary.pressureFatigueRodHold": {

@@ -3,6 +3,10 @@ class PlayerPressureFatigueCalculator {
     state = null,
     dtSec = 0,
     pressureKg = 0,
+    sourceResult = null,
+    sourceActive = null,
+    sourceMode = null,
+    sourceReason = null,
     config = {},
   } = {}) {
     const enabled = config?.enabled === true;
@@ -22,20 +26,37 @@ class PlayerPressureFatigueCalculator {
       0.8,
     );
     const pressure = this.#positive(pressureKg);
-    const pressureActive = enabled && pressure > pressureThresholdKg;
+    const resolvedSourceActive =
+      typeof sourceActive === "boolean"
+        ? sourceActive
+        : sourceResult?.active;
+    const pressureActive =
+      enabled &&
+      resolvedSourceActive === true;
+    const sourceFrame = this.#sourceFrame({
+      config,
+      sourceResult,
+      sourceActive: pressureActive,
+      sourceMode,
+      sourceReason,
+    });
 
     if (!enabled) {
       const controlBreak = this.#controlBreakFrame({ config });
       return this.#frame({
         enabled: false,
+        stateName: "idle",
+        ...sourceFrame,
+        sourceActive: false,
         pressureThresholdKg,
         minEfficiency,
         delayAfterPressureMs,
+        recoveryDelayMs: delayAfterPressureMs,
         recoveryPerSecond,
         controlBreakEnabled: controlBreak.enabled,
         isControlExhausted: false,
-        controlBreakFatigueRatioThreshold:
-          controlBreak.fatigueRatioThreshold,
+        controlBreakFatigueProgressThreshold:
+          controlBreak.fatigueProgressThreshold,
         controlBreakMinContinuousPressureMs:
           controlBreak.minContinuousPressureMs,
       });
@@ -51,6 +72,7 @@ class PlayerPressureFatigueCalculator {
         pressureThresholdKg,
         delayAfterPressureMs,
         recoveryPerSecond,
+        sourceFrame,
       });
     }
 
@@ -64,6 +86,7 @@ class PlayerPressureFatigueCalculator {
       delayAfterPressureMs,
       recoveryPerSecond,
       config,
+      sourceFrame,
     });
   }
 
@@ -76,6 +99,7 @@ class PlayerPressureFatigueCalculator {
     pressureThresholdKg,
     delayAfterPressureMs,
     recoveryPerSecond,
+    sourceFrame,
   }) {
     const graceDurationMs = this.#positive(config?.graceDurationMs, 3000);
     const fatigueDurationMs = Math.max(
@@ -85,6 +109,13 @@ class PlayerPressureFatigueCalculator {
     const curvePower = Math.max(0.000001, this.#positive(config?.curvePower, 1.2));
     const previousHoldMs = this.#positive(state?.pressureHoldMs);
     const pressureHoldMs = previousHoldMs + Math.max(0, dtMs);
+    const graceElapsedMs = Math.min(pressureHoldMs, graceDurationMs);
+    const graceRemainingMs = Math.max(0, graceDurationMs - graceElapsedMs);
+    const fatigueElapsedMs = Math.max(0, pressureHoldMs - graceDurationMs);
+    const fatigueRemainingMs = Math.max(
+      0,
+      fatigueDurationMs - fatigueElapsedMs,
+    );
     const fatigueProgress = this.#clamp01(
       (pressureHoldMs - graceDurationMs) / fatigueDurationMs,
     );
@@ -99,18 +130,34 @@ class PlayerPressureFatigueCalculator {
 
     return this.#frame({
       enabled: true,
+      stateName: pressureHoldMs < graceDurationMs ? "grace" : "fatiguing",
+      ...sourceFrame,
       efficiency,
       pressureHoldMs,
+      holdElapsedMs: pressureHoldMs,
       recoveryIdleMs: 0,
-      recoveryState: "pressuring",
+      recoveryState: pressureHoldMs < graceDurationMs
+        ? "grace"
+        : "pressuring",
       pressureActive: true,
       pressureKg: pressure,
       fatigueRatio: 1 - efficiency,
       fatigueProgress,
+      graceElapsedMs,
+      graceDurationMs,
+      graceRemainingMs,
+      fatigueElapsedMs,
+      fatigueDurationMs,
+      fatigueRemainingMs,
+      recoveryDelayElapsedMs: 0,
+      recoveryDelayMs: delayAfterPressureMs,
+      recoveryDelayRemainingMs: 0,
+      recoveryProgress: 0,
+      recoveryRemainingMs: 0,
       controlBreakEnabled: controlBreak.enabled,
       isControlExhausted: controlBreak.isControlExhausted,
-      controlBreakFatigueRatioThreshold:
-        controlBreak.fatigueRatioThreshold,
+      controlBreakFatigueProgressThreshold:
+        controlBreak.fatigueProgressThreshold,
       controlBreakMinContinuousPressureMs:
         controlBreak.minContinuousPressureMs,
       pressureThresholdKg,
@@ -131,8 +178,10 @@ class PlayerPressureFatigueCalculator {
   } = {}) {
     const controlBreak = config?.controlBreak || {};
     const enabled = controlBreak.enabled === true;
-    const fatigueRatioThreshold = this.#clamp01(
-      controlBreak.fatigueRatioThreshold ?? 0.9,
+    const fatigueProgressThreshold = this.#clamp01(
+      controlBreak.fatigueProgressThreshold ??
+        controlBreak.fatigueRatioThreshold ??
+        0.9,
     );
     const minContinuousPressureMs = this.#positive(
       controlBreak.minContinuousPressureMs,
@@ -142,12 +191,13 @@ class PlayerPressureFatigueCalculator {
       enabled &&
       pressureActive === true &&
       this.#positive(pressureHoldMs) >= minContinuousPressureMs &&
-      this.#clamp01(fatigueProgress) >= fatigueRatioThreshold;
+      this.#clamp01(fatigueProgress) >= fatigueProgressThreshold;
 
     return Object.freeze({
       enabled,
       isControlExhausted,
-      fatigueRatioThreshold,
+      fatigueProgressThreshold,
+      fatigueRatioThreshold: fatigueProgressThreshold,
       minContinuousPressureMs,
     });
   }
@@ -162,6 +212,7 @@ class PlayerPressureFatigueCalculator {
     delayAfterPressureMs,
     recoveryPerSecond,
     config,
+    sourceFrame,
   }) {
     const previousEfficiency = this.#clamp01(state?.efficiency ?? 1);
     const previousIdleMs = this.#positive(state?.recoveryIdleMs);
@@ -170,6 +221,24 @@ class PlayerPressureFatigueCalculator {
     const recoveredEfficiency = waiting
       ? previousEfficiency
       : Math.min(1, previousEfficiency + recoveryPerSecond * dtSec);
+    const fatigueProgress = this.#fatigueProgressFromEfficiency({
+      efficiency: recoveredEfficiency,
+      minEfficiency,
+      curvePower: Math.max(0.000001, this.#positive(config?.curvePower, 1.2)),
+    });
+    const recoveryDelayElapsedMs = Math.min(
+      recoveryIdleMs,
+      delayAfterPressureMs,
+    );
+    const recoveryDelayRemainingMs = Math.max(
+      0,
+      delayAfterPressureMs - recoveryDelayElapsedMs,
+    );
+    const recoveryRemainingMs =
+      recoveredEfficiency >= 0.999999 || recoveryPerSecond <= 0
+        ? 0
+        : Math.ceil(((1 - recoveredEfficiency) / recoveryPerSecond) * 1000);
+    const recoveryProgress = this.#clamp01(1 - fatigueProgress);
     const pressureHoldMs = this.#holdMsFromEfficiency({
       efficiency: recoveredEfficiency,
       minEfficiency,
@@ -189,18 +258,17 @@ class PlayerPressureFatigueCalculator {
 
     return this.#frame({
       enabled: true,
+      stateName: recoveredEfficiency >= 0.999999 ? "idle" : "recovering",
+      ...sourceFrame,
       efficiency: recoveredEfficiency,
       pressureHoldMs,
+      holdElapsedMs: pressureHoldMs,
       recoveryIdleMs,
       recoveryState,
       pressureActive: false,
       pressureKg: pressure,
       fatigueRatio: 1 - recoveredEfficiency,
-      fatigueProgress: this.#fatigueProgressFromEfficiency({
-        efficiency: recoveredEfficiency,
-        minEfficiency,
-        curvePower: Math.max(0.000001, this.#positive(config?.curvePower, 1.2)),
-      }),
+      fatigueProgress,
       pressureThresholdKg,
       minEfficiency,
       graceDurationMs: this.#positive(config?.graceDurationMs, 3000),
@@ -210,11 +278,16 @@ class PlayerPressureFatigueCalculator {
       ),
       curvePower: Math.max(0.000001, this.#positive(config?.curvePower, 1.2)),
       delayAfterPressureMs,
+      recoveryDelayMs: delayAfterPressureMs,
+      recoveryDelayElapsedMs,
+      recoveryDelayRemainingMs,
+      recoveryProgress,
+      recoveryRemainingMs,
       recoveryPerSecond,
       controlBreakEnabled: controlBreak.enabled,
       isControlExhausted: false,
-      controlBreakFatigueRatioThreshold:
-        controlBreak.fatigueRatioThreshold,
+      controlBreakFatigueProgressThreshold:
+        controlBreak.fatigueProgressThreshold,
       controlBreakMinContinuousPressureMs:
         controlBreak.minContinuousPressureMs,
     });
@@ -244,10 +317,32 @@ class PlayerPressureFatigueCalculator {
 
   #frame(data = {}) {
     const efficiency = this.#clamp01(data.efficiency ?? 1);
+    const graceDurationMs = this.#positive(data.graceDurationMs, 3000);
+    const fatigueDurationMs = this.#positive(data.fatigueDurationMs, 6000);
+    const holdElapsedMs = this.#positive(
+      data.holdElapsedMs ?? data.pressureHoldMs,
+    );
+    const graceElapsedMs = this.#positive(
+      data.graceElapsedMs,
+      Math.min(holdElapsedMs, graceDurationMs),
+    );
+    const fatigueElapsedMs = this.#positive(
+      data.fatigueElapsedMs,
+      Math.max(0, holdElapsedMs - graceDurationMs),
+    );
+    const recoveryDelayMs = this.#positive(
+      data.recoveryDelayMs ?? data.delayAfterPressureMs,
+      400,
+    );
     return Object.freeze({
       enabled: data.enabled === true,
       efficiency,
-      pressureHoldMs: this.#positive(data.pressureHoldMs),
+      stateName: data.stateName || "idle",
+      sourceMode: data.sourceMode || "reel_hold",
+      sourceActive: data.sourceActive === true,
+      sourceReason: data.sourceReason || "reel_hold_inactive",
+      pressureHoldMs: this.#positive(data.pressureHoldMs ?? holdElapsedMs),
+      holdElapsedMs,
       recoveryIdleMs: this.#positive(data.recoveryIdleMs),
       recoveryState: data.recoveryState || "full",
       pressureActive: data.pressureActive === true,
@@ -255,18 +350,43 @@ class PlayerPressureFatigueCalculator {
       pressureThresholdKg: this.#positive(data.pressureThresholdKg, 0.01),
       fatigueRatio: this.#clamp01(data.fatigueRatio ?? (1 - efficiency)),
       fatigueProgress: this.#clamp01(data.fatigueProgress),
+      graceElapsedMs,
+      graceDurationMs,
+      graceRemainingMs: this.#positive(
+        data.graceRemainingMs,
+        Math.max(0, graceDurationMs - graceElapsedMs),
+      ),
+      fatigueElapsedMs,
+      fatigueDurationMs,
+      fatigueRemainingMs: this.#positive(
+        data.fatigueRemainingMs,
+        Math.max(0, fatigueDurationMs - fatigueElapsedMs),
+      ),
+      recoveryDelayElapsedMs: this.#positive(data.recoveryDelayElapsedMs),
+      recoveryDelayMs,
+      recoveryDelayRemainingMs: this.#positive(
+        data.recoveryDelayRemainingMs,
+        Math.max(0, recoveryDelayMs - this.#positive(data.recoveryDelayElapsedMs)),
+      ),
+      recoveryProgress: this.#clamp01(data.recoveryProgress),
+      recoveryRemainingMs: this.#positive(data.recoveryRemainingMs),
       controlBreakEnabled: data.controlBreakEnabled === true,
       isControlExhausted: data.isControlExhausted === true,
+      controlBreakFatigueProgressThreshold: this.#clamp01(
+        data.controlBreakFatigueProgressThreshold ??
+          data.controlBreakFatigueRatioThreshold ??
+          0.9,
+      ),
       controlBreakFatigueRatioThreshold: this.#clamp01(
-        data.controlBreakFatigueRatioThreshold ?? 0.9,
+        data.controlBreakFatigueProgressThreshold ??
+          data.controlBreakFatigueRatioThreshold ??
+          0.9,
       ),
       controlBreakMinContinuousPressureMs: this.#positive(
         data.controlBreakMinContinuousPressureMs,
         8000,
       ),
       minEfficiency: this.#clamp01(data.minEfficiency ?? 0.45),
-      graceDurationMs: this.#positive(data.graceDurationMs, 3000),
-      fatigueDurationMs: this.#positive(data.fatigueDurationMs, 6000),
       curvePower: this.#positive(data.curvePower, 1.2),
       delayAfterPressureMs: this.#positive(data.delayAfterPressureMs, 400),
       recoveryPerSecond: this.#positive(data.recoveryPerSecond, 0.8),
@@ -290,6 +410,27 @@ class PlayerPressureFatigueCalculator {
     const number = Number(value);
     if (!Number.isFinite(number)) return 0;
     return Math.max(0, Math.min(1, number));
+  }
+
+  #sourceFrame({
+    config = {},
+    sourceResult = null,
+    sourceActive,
+    sourceMode,
+    sourceReason,
+  } = {}) {
+    const configuredMode = config?.source?.mode || "reel_hold";
+    return Object.freeze({
+      sourceMode:
+        sourceMode ||
+        sourceResult?.sourceMode ||
+        configuredMode,
+      sourceActive: sourceActive === true,
+      sourceReason:
+        sourceReason ||
+        sourceResult?.reason ||
+        (sourceActive ? "source_active" : "missing_source"),
+    });
   }
 }
 

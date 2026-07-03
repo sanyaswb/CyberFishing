@@ -214,6 +214,12 @@ class ConfigSchemaValidator {
       "physics.fight.playerPressureFatigue.enabled",
       config.enabled,
     );
+    if ((config.source?.mode || "reel_hold") !== "reel_hold") {
+      this.#error(
+        "physics.fight.playerPressureFatigue.source.mode",
+        "unsupported player pressure fatigue source mode",
+      );
+    }
     this.#requireFiniteNumberWithLabel(
       "physics.fight.playerPressureFatigue.pressureThresholdKg",
       config.pressureThresholdKg,
@@ -244,8 +250,8 @@ class ConfigSchemaValidator {
       config.controlBreak?.enabled,
     );
     this.#requireFiniteNumberWithLabel(
-      "physics.fight.playerPressureFatigue.controlBreak.fatigueRatioThreshold",
-      config.controlBreak?.fatigueRatioThreshold,
+      "physics.fight.playerPressureFatigue.controlBreak.fatigueProgressThreshold",
+      config.controlBreak?.fatigueProgressThreshold,
       { min: 0, max: 1 },
     );
     this.#requireFiniteNumberWithLabel(
@@ -263,6 +269,11 @@ class ConfigSchemaValidator {
       config.recovery?.recoveryPerSecond,
       { min: 0 },
     );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureFatigue.recovery.holdCompleteVisibleMs",
+      config.recovery?.holdCompleteVisibleMs,
+      { min: 0 },
+    );
     this.#requireBooleanWithLabel(
       "physics.fight.playerPressureFatigue.channels.rodHold",
       config.channels?.rodHold,
@@ -270,6 +281,34 @@ class ConfigSchemaValidator {
     this.#requireBooleanWithLabel(
       "physics.fight.playerPressureFatigue.channels.rodControl",
       config.channels?.rodControl,
+    );
+    this.#requireBooleanWithLabel(
+      "physics.fight.playerPressureFatigue.visual.enabled",
+      config.visual?.enabled,
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureFatigue.visual.position.offsetX",
+      config.visual?.position?.offsetX,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureFatigue.visual.position.offsetY",
+      config.visual?.position?.offsetY,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureFatigue.visual.radius",
+      config.visual?.radius,
+      { min: 1 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerPressureFatigue.visual.ringWidth",
+      config.visual?.ringWidth,
+      { min: 1 },
+    );
+    this.#requireBooleanWithLabel(
+      "physics.fight.playerPressureFatigue.visual.idleVisible",
+      config.visual?.idleVisible,
     );
   }
 

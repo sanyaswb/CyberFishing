@@ -159,8 +159,14 @@ class FightPhysicsConfigAdapter {
     const recovery = config.recovery || {};
     const channels = config.channels || {};
     const controlBreak = config.controlBreak || {};
+    const visual = config.visual || {};
+    const position = visual.position || {};
+    const colors = visual.colors || {};
     return {
       enabled: config.enabled === true,
+      source: {
+        mode: config.source?.mode || "reel_hold",
+      },
       pressureThresholdKg: Math.max(
         0,
         this.#number(config.pressureThresholdKg, 0.01),
@@ -180,11 +186,26 @@ class FightPhysicsConfigAdapter {
       curvePower: Math.max(0, this.#number(config.curvePower, 1.2)),
       controlBreak: {
         enabled: controlBreak.enabled === true,
+        fatigueProgressThreshold: Math.max(
+          0,
+          Math.min(
+            1,
+            this.#number(
+              controlBreak.fatigueProgressThreshold ??
+                controlBreak.fatigueRatioThreshold,
+              0.9,
+            ),
+          ),
+        ),
         fatigueRatioThreshold: Math.max(
           0,
           Math.min(
             1,
-            this.#number(controlBreak.fatigueRatioThreshold, 0.9),
+            this.#number(
+              controlBreak.fatigueProgressThreshold ??
+                controlBreak.fatigueRatioThreshold,
+              0.9,
+            ),
           ),
         ),
         minContinuousPressureMs: Math.max(
@@ -201,10 +222,34 @@ class FightPhysicsConfigAdapter {
           0,
           this.#number(recovery.recoveryPerSecond, 0.8),
         ),
+        holdCompleteVisibleMs: Math.max(
+          0,
+          this.#number(recovery.holdCompleteVisibleMs, 500),
+        ),
       },
       channels: {
         rodHold: channels.rodHold !== false,
         rodControl: channels.rodControl !== false,
+      },
+      visual: {
+        enabled: visual.enabled === true,
+        position: {
+          anchor: position.anchor || "top_right",
+          offsetX: Math.max(0, this.#number(position.offsetX, 24)),
+          offsetY: Math.max(0, this.#number(position.offsetY, 24)),
+        },
+        radius: Math.max(1, this.#number(visual.radius, 16)),
+        ringWidth: Math.max(1, this.#number(visual.ringWidth, 4)),
+        idleVisible: visual.idleVisible === true,
+        colors: {
+          grace: colors.grace || "#ffffff",
+          ready: colors.ready || "#2ecc71",
+          warning: colors.warning || "#f1c40f",
+          danger: colors.danger || "#e74c3c",
+          background: colors.background || "rgba(0, 0, 0, 0.35)",
+          ringBackground:
+            colors.ringBackground || "rgba(255, 255, 255, 0.18)",
+        },
       },
     };
   }

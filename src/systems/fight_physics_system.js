@@ -56,6 +56,10 @@ class FightPhysicsSystem {
     typeof PlayerPressureFatigueCalculator !== "undefined"
       ? new PlayerPressureFatigueCalculator()
       : null;
+  #playerPressureFatigueSourceResolver =
+    typeof PlayerPressureFatigueSourceResolver !== "undefined"
+      ? new PlayerPressureFatigueSourceResolver()
+      : null;
   #playerPressureFatigueState =
     typeof PlayerPressureFatigueState !== "undefined"
       ? new PlayerPressureFatigueState()
@@ -273,16 +277,6 @@ class FightPhysicsSystem {
       playerPressureFatigue: playerPressureFatigueApplication,
     }),
     );
-    const playerPressureFatigueFrame = pipelineFrame.run(
-      "update_player_pressure_fatigue",
-      () => this.#updatePlayerPressureFatigueFrame({
-        dtSec,
-        physics,
-        appliedFrame: playerPressureFatigueApplication,
-        rodPullResult: rodPullFrame.rodPullResult,
-        rodControlResult: rodControlFrame.rodControlResult,
-      }),
-    );
     const lineStateAfterControl =
       rodControlFrame.lineStateAfterControl || rodPullFrame.lineStateAfterPull;
     const tensionPreview = pipelineFrame.run(
@@ -348,6 +342,26 @@ class FightPhysicsSystem {
         holdRecoveredMeters,
       };
     });
+    const playerPressureFatigueSourceFrame = pipelineFrame.run(
+      "resolve_player_pressure_fatigue_source",
+      () => this.#resolvePlayerPressureFatigueSource({
+        physics,
+        recoverFrame,
+        rodPullResult: rodPullFrame.rodPullResult,
+        rodControlResult: rodControlFrame.rodControlResult,
+      }),
+    );
+    const playerPressureFatigueFrame = pipelineFrame.run(
+      "update_player_pressure_fatigue",
+      () => this.#updatePlayerPressureFatigueFrame({
+        dtSec,
+        physics,
+        appliedFrame: playerPressureFatigueApplication,
+        sourceFrame: playerPressureFatigueSourceFrame,
+        rodPullResult: rodPullFrame.rodPullResult,
+        rodControlResult: rodControlFrame.rodControlResult,
+      }),
+    );
     this.#recoveryFishSlowdownPolicy?.update?.({
       target: this.#lineRecoveryFishSlowdownState,
       autoRecoveredMeters: recoverFrame.autoRecoveredMeters,
@@ -740,6 +754,40 @@ class FightPhysicsSystem {
     );
   }
 
+  #resolvePlayerPressureFatigueSource({
+    physics,
+    recoverFrame,
+    rodPullResult,
+    rodControlResult,
+  } = {}) {
+    const config = this.#resolvePlayerPressureFatigueConfig(physics);
+    const effectivePressureKg =
+      this.#positive(rodPullResult?.forceKg) +
+      this.#positive(rodControlResult?.forceKg);
+    const fallback = Object.freeze({
+      source: "player_pressure_fatigue_source",
+      sourceMode: config?.source?.mode || "reel_hold",
+      active: false,
+      reason: "missing_resolver",
+      reelHoldActive: recoverFrame?.holdReelRecover?.active === true,
+      rodHoldActive: rodPullResult?.active === true,
+      controlActive: rodControlResult?.canApply === true,
+      effectivePressureKg,
+    });
+
+    if (!this.#playerPressureFatigueSourceResolver?.resolve) {
+      return fallback;
+    }
+
+    return this.#playerPressureFatigueSourceResolver.resolve({
+      reelHoldActive: recoverFrame?.holdReelRecover?.active === true,
+      rodHoldActive: rodPullResult?.active === true,
+      controlActive: rodControlResult?.canApply === true,
+      effectivePressureKg,
+      config,
+    });
+  }
+
   #buildPlayerPressureFatigueApplicationFrame({ physics } = {}) {
     const config = this.#resolvePlayerPressureFatigueConfig(physics);
     const enabled =
@@ -754,16 +802,51 @@ class FightPhysicsSystem {
       efficiency,
       appliedEfficiency: efficiency,
       pressureHoldMs: enabled ? this.#positive(state.pressureHoldMs) : 0,
+      holdElapsedMs: enabled ? this.#positive(state.holdElapsedMs) : 0,
       recoveryIdleMs: enabled ? this.#positive(state.recoveryIdleMs) : 0,
       recoveryState: enabled ? state.recoveryState || "full" : "disabled",
+      stateName: enabled ? state.stateName || "idle" : "idle",
+      sourceMode: enabled ? state.sourceMode || "reel_hold" : "reel_hold",
+      sourceActive: enabled && state.sourceActive === true,
+      sourceReason: enabled
+        ? state.sourceReason || "reel_hold_inactive"
+        : "disabled",
       pressureActive: enabled && state.pressureActive === true,
       pressureKg: enabled ? this.#positive(state.pressureKg) : 0,
       fatigueRatio: enabled ? this.#clamp01(1 - efficiency) : 0,
       fatigueProgress: enabled ? this.#clamp01(state.fatigueProgress) : 0,
+      graceElapsedMs: enabled ? this.#positive(state.graceElapsedMs) : 0,
+      graceDurationMs: enabled ? this.#positive(state.graceDurationMs) : 0,
+      graceRemainingMs: enabled ? this.#positive(state.graceRemainingMs) : 0,
+      fatigueElapsedMs: enabled ? this.#positive(state.fatigueElapsedMs) : 0,
+      fatigueDurationMs: enabled ? this.#positive(state.fatigueDurationMs) : 0,
+      fatigueRemainingMs: enabled ? this.#positive(state.fatigueRemainingMs) : 0,
+      recoveryDelayElapsedMs: enabled
+        ? this.#positive(state.recoveryDelayElapsedMs)
+        : 0,
+      recoveryDelayMs: enabled ? this.#positive(state.recoveryDelayMs) : 0,
+      recoveryDelayRemainingMs: enabled
+        ? this.#positive(state.recoveryDelayRemainingMs)
+        : 0,
+      recoveryProgress: enabled ? this.#clamp01(state.recoveryProgress) : 0,
+      recoveryRemainingMs: enabled
+        ? this.#positive(state.recoveryRemainingMs)
+        : 0,
       controlBreakEnabled: enabled && state.controlBreakEnabled === true,
       isControlExhausted: enabled && state.isControlExhausted === true,
+      controlBreakFatigueProgressThreshold: enabled
+        ? this.#clamp01(
+            state.controlBreakFatigueProgressThreshold ??
+              state.controlBreakFatigueRatioThreshold ??
+              0.9,
+          )
+        : 0,
       controlBreakFatigueRatioThreshold: enabled
-        ? this.#clamp01(state.controlBreakFatigueRatioThreshold ?? 0.9)
+        ? this.#clamp01(
+            state.controlBreakFatigueProgressThreshold ??
+              state.controlBreakFatigueRatioThreshold ??
+              0.9,
+          )
         : 0,
       controlBreakMinContinuousPressureMs: enabled
         ? this.#positive(state.controlBreakMinContinuousPressureMs)
@@ -776,6 +859,7 @@ class FightPhysicsSystem {
     dtSec,
     physics,
     appliedFrame,
+    sourceFrame,
     rodPullResult,
     rodControlResult,
   } = {}) {
@@ -806,16 +890,42 @@ class FightPhysicsSystem {
         appliedEfficiency: 1,
         nextEfficiency: 1,
         pressureHoldMs: 0,
+        holdElapsedMs: 0,
         recoveryIdleMs: 0,
         recoveryState: "disabled",
+        stateName: "idle",
+        sourceMode: config.source?.mode || "reel_hold",
+        sourceActive: false,
+        sourceReason: "disabled",
         pressureActive: false,
         pressureKg: 0,
         fatigueRatio: 0,
         fatigueProgress: 0,
+        graceElapsedMs: 0,
+        graceDurationMs: this.#positive(config.graceDurationMs),
+        graceRemainingMs: 0,
+        fatigueElapsedMs: 0,
+        fatigueDurationMs: this.#positive(config.fatigueDurationMs),
+        fatigueRemainingMs: 0,
+        recoveryDelayElapsedMs: 0,
+        recoveryDelayMs: this.#positive(config.recovery?.delayAfterPressureMs),
+        recoveryDelayRemainingMs: 0,
+        recoveryProgress: 0,
+        recoveryRemainingMs: 0,
         controlBreakEnabled: config.controlBreak?.enabled === true,
         isControlExhausted: false,
+        controlBreakFatigueProgressThreshold:
+          this.#clamp01(
+            config.controlBreak?.fatigueProgressThreshold ??
+              config.controlBreak?.fatigueRatioThreshold ??
+              0.9,
+          ),
         controlBreakFatigueRatioThreshold:
-          this.#clamp01(config.controlBreak?.fatigueRatioThreshold ?? 0.9),
+          this.#clamp01(
+            config.controlBreak?.fatigueProgressThreshold ??
+              config.controlBreak?.fatigueRatioThreshold ??
+              0.9,
+          ),
         controlBreakMinContinuousPressureMs:
           this.#positive(config.controlBreak?.minContinuousPressureMs),
         channels,
@@ -830,6 +940,10 @@ class FightPhysicsSystem {
       state: this.#playerPressureFatigueState,
       dtSec,
       pressureKg,
+      sourceResult: sourceFrame,
+      sourceActive: sourceFrame?.active === true,
+      sourceMode: sourceFrame?.sourceMode,
+      sourceReason: sourceFrame?.reason,
       config,
     });
     this.#playerPressureFatigueState.applyFrame(nextFrame);
@@ -2783,10 +2897,30 @@ class FightPhysicsSystem {
         playerPressureFatigue?.nextEfficiency ??
         playerPressureFatigue?.efficiency ??
         1,
+      playerPressureFatigueState:
+        playerPressureFatigue?.stateName || "idle",
+      playerPressureFatigueSourceMode:
+        playerPressureFatigue?.sourceMode || "reel_hold",
+      playerPressureFatigueSourceActive:
+        playerPressureFatigue?.sourceActive === true,
+      playerPressureFatigueSourceReason:
+        playerPressureFatigue?.sourceReason || "reel_hold_inactive",
       playerPressureFatigueHoldMs:
-        playerPressureFatigue?.pressureHoldMs ?? 0,
+        playerPressureFatigue?.holdElapsedMs ??
+        playerPressureFatigue?.pressureHoldMs ??
+        0,
+      playerPressureFatigueHoldElapsedMs:
+        playerPressureFatigue?.holdElapsedMs ??
+        playerPressureFatigue?.pressureHoldMs ??
+        0,
       playerPressureFatigueHoldSeconds:
-        Math.max(0, Number(playerPressureFatigue?.pressureHoldMs) || 0) /
+        Math.max(
+          0,
+          Number(
+            playerPressureFatigue?.holdElapsedMs ??
+              playerPressureFatigue?.pressureHoldMs,
+          ) || 0,
+        ) /
         1000,
       playerPressureFatigueRecoveryState:
         playerPressureFatigue?.recoveryState || "disabled",
@@ -2796,12 +2930,38 @@ class FightPhysicsSystem {
         playerPressureFatigue?.fatigueRatio ?? 0,
       playerPressureFatigueProgress:
         playerPressureFatigue?.fatigueProgress ?? 0,
+      playerPressureFatigueGraceElapsedMs:
+        playerPressureFatigue?.graceElapsedMs ?? 0,
+      playerPressureFatigueGraceDurationMs:
+        playerPressureFatigue?.graceDurationMs ?? 0,
+      playerPressureFatigueGraceRemainingMs:
+        playerPressureFatigue?.graceRemainingMs ?? 0,
+      playerPressureFatigueFatigueElapsedMs:
+        playerPressureFatigue?.fatigueElapsedMs ?? 0,
+      playerPressureFatigueFatigueDurationMs:
+        playerPressureFatigue?.fatigueDurationMs ?? 0,
+      playerPressureFatigueFatigueRemainingMs:
+        playerPressureFatigue?.fatigueRemainingMs ?? 0,
+      playerPressureFatigueRecoveryDelayElapsedMs:
+        playerPressureFatigue?.recoveryDelayElapsedMs ?? 0,
+      playerPressureFatigueRecoveryDelayMs:
+        playerPressureFatigue?.recoveryDelayMs ??
+        playerPressureFatigue?.delayAfterPressureMs ??
+        0,
+      playerPressureFatigueRecoveryDelayRemainingMs:
+        playerPressureFatigue?.recoveryDelayRemainingMs ?? 0,
+      playerPressureFatigueRecoveryProgress:
+        playerPressureFatigue?.recoveryProgress ?? 0,
+      playerPressureFatigueRecoveryRemainingMs:
+        playerPressureFatigue?.recoveryRemainingMs ?? 0,
       playerPressureFatigueControlBreakEnabled:
         playerPressureFatigue?.controlBreakEnabled === true,
       playerPressureFatigueControlExhausted:
         playerPressureFatigue?.isControlExhausted === true,
       playerPressureFatigueControlBreakThreshold:
-        playerPressureFatigue?.controlBreakFatigueRatioThreshold ?? 0,
+        playerPressureFatigue?.controlBreakFatigueProgressThreshold ??
+        playerPressureFatigue?.controlBreakFatigueRatioThreshold ??
+        0,
       playerPressureFatigueControlBreakMinHoldMs:
         playerPressureFatigue?.controlBreakMinContinuousPressureMs ?? 0,
       playerPressureFatigueRawRodHoldKg:

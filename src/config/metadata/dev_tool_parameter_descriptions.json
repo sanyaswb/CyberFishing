@@ -187,7 +187,12 @@
   {
     "key": "playerPressureFatigue.enabled",
     "ua": "player_pressure_fatigue_enabled",
-    "description": "Enables the anti-spam player pressure fatigue model for continuous Rod Hold / Rod Control force."
+    "description": "Enables the anti-spam player pressure fatigue model driven by continuous reel hold."
+  },
+  {
+    "key": "playerPressureFatigue.source.mode",
+    "ua": "player_pressure_fatigue_source_mode",
+    "description": "Gameplay source that starts pressure fatigue. The active mode is reel_hold."
   },
   {
     "key": "playerPressureGain.enabled",
@@ -235,7 +240,7 @@
     "description": "Treats long fully fatigued pressure as no control for stamina regen and phase recovery."
   },
   {
-    "key": "playerPressureFatigue.controlBreak.fatigueRatioThreshold",
+    "key": "playerPressureFatigue.controlBreak.fatigueProgressThreshold",
     "ua": "player_pressure_control_break_fatigue_threshold",
     "description": "Normalized fatigue progress required before continuous pressure stops counting as control."
   },
@@ -248,6 +253,46 @@
     "key": "playerPressureFatigue.recovery.recoveryPerSecond",
     "ua": "player_pressure_recovery_per_second",
     "description": "Efficiency recovered per second after pressure stops and the recovery delay has elapsed."
+  },
+  {
+    "key": "playerPressureFatigue.recovery.holdCompleteVisibleMs",
+    "ua": "player_pressure_recovery_complete_visible_ms",
+    "description": "Milliseconds to keep the recovered HUD indicator visible before hiding it."
+  },
+  {
+    "key": "playerPressureFatigue.visual.enabled",
+    "ua": "player_pressure_fatigue_visual_enabled",
+    "description": "Shows the player pressure fatigue indicator in the gameplay HUD."
+  },
+  {
+    "key": "playerPressureFatigue.visual.position.anchor",
+    "ua": "player_pressure_fatigue_visual_anchor",
+    "description": "HUD anchor used to position the player pressure fatigue indicator."
+  },
+  {
+    "key": "playerPressureFatigue.visual.position.offsetX",
+    "ua": "player_pressure_fatigue_visual_offset_x",
+    "description": "Horizontal offset from the HUD anchor in pixels."
+  },
+  {
+    "key": "playerPressureFatigue.visual.position.offsetY",
+    "ua": "player_pressure_fatigue_visual_offset_y",
+    "description": "Vertical offset from the HUD anchor in pixels."
+  },
+  {
+    "key": "playerPressureFatigue.visual.radius",
+    "ua": "player_pressure_fatigue_visual_radius",
+    "description": "Radius of the circular player pressure fatigue indicator."
+  },
+  {
+    "key": "playerPressureFatigue.visual.ringWidth",
+    "ua": "player_pressure_fatigue_visual_ring_width",
+    "description": "Stroke width of the circular player pressure fatigue indicator."
+  },
+  {
+    "key": "playerPressureFatigue.visual.idleVisible",
+    "ua": "player_pressure_fatigue_visual_idle_visible",
+    "description": "Keeps the player pressure fatigue indicator visible while idle."
   },
   {
     "key": "passiveRegen.regenPerSecond",

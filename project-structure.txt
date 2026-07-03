@@ -146,6 +146,7 @@
 │  │  │  ├── player_force_budget_allocator.js
 │  │  │  ├── player_pressure
 │  │  │  │  ├── player_pressure_fatigue_calculator.js
+│  │  │  │  ├── player_pressure_fatigue_source_resolver.js
 │  │  │  │  ├── player_pressure_fatigue_state.js
 │  │  │  │  └── player_pressure_gain_resolver.js
 │  │  │  ├── pole_fight_sector_angle_constraint.js
@@ -313,7 +314,8 @@
 │  │  │  ├── fight_hud_renderer.js
 │  │  │  ├── fight_status_bars_renderer.js
 │  │  │  ├── hold_charges_renderer.js
-│  │  │  └── hud_bar_renderer.js
+│  │  │  ├── hud_bar_renderer.js
+│  │  │  └── player_pressure_fatigue_indicator_renderer.js
 │  │  ├── pipeline
 │  │  │  ├── casting_render_pass.js
 │  │  │  ├── fishing_render_pass.js

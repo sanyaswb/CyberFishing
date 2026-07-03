@@ -106,6 +106,7 @@ class GameRenderFrame {
       tackleStress: { visible: false },
       drag: { visible: false },
       holdCharges: { visible: false },
+      playerPressureFatigue: { visible: false },
     };
     this.outcome = {
       visible: false,
@@ -161,6 +162,7 @@ class GameRenderFrame {
     this.hud.tackleStress.visible = false;
     this.hud.drag.visible = false;
     this.hud.holdCharges.visible = false;
+    this.hud.playerPressureFatigue.visible = false;
     this.outcome.visible = false;
     this.outcome.mode = "";
     this.outcome.gameOver.visible = false;

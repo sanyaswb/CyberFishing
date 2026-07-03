@@ -66,14 +66,32 @@ class FightSummaryOverlayModule extends OverlayModule {
   #renderPlayerPressureFatigue(data) {
     const f = this.#formatter;
     const enabled = data.playerPressureFatigueEnabled === true;
+    const state = enabled ? data.playerPressureFatigueState || "idle" : "disabled";
+    const source = data.playerPressureFatigueSourceMode || "reel_hold";
     const efficiency = this.#finite(data.playerPressureFatigueEfficiency, 1);
-    const fatigueRatio = this.#finite(data.playerPressureFatigueFatigueRatio, 0);
+    const fatigueProgress = this.#finite(data.playerPressureFatigueProgress, 0);
     const recoveryState = enabled
       ? data.playerPressureFatigueRecoveryState || "full"
       : "disabled";
     const controlExhausted =
       enabled && data.playerPressureFatigueControlExhausted === true;
-    let html = `<div style="margin:6px 0 3px; color:#ffaa00; font-weight:700;">PLAYER PRESSURE FATIGUE</div>`;
+    let html = `<div style="margin:6px 0 3px; color:#ffaa00; font-weight:700;">PLAYER FATIGUE</div>`;
+    html += this.metricRow("State", state, {
+      metricKey: "fightSummary.pressureFatigueState",
+      color: state === "fatiguing"
+        ? "#ffaa00"
+        : state === "recovering"
+          ? "#73c2fb"
+          : state === "grace"
+            ? "#ffffff"
+            : "#8a9bac",
+    });
+    html += this.metricRow("Source", source, {
+      metricKey: "fightSummary.pressureFatigueSource",
+      color: data.playerPressureFatigueSourceActive === true
+        ? "#00ff80"
+        : "#8a9bac",
+    });
     html += this.metricRow("Efficiency", enabled ? `x${f.num(efficiency, 2)}` : "disabled", {
       metricKey: "fightSummary.pressureFatigueEfficiency",
       color: enabled && efficiency < 0.999 ? "#ffaa00" : "#00ff80",
@@ -82,9 +100,9 @@ class FightSummaryOverlayModule extends OverlayModule {
       metricKey: "fightSummary.pressureFatigueHoldTime",
       color: "#73c2fb",
     });
-    html += this.metricRow("Fatigue", f.percent(fatigueRatio, 1), {
+    html += this.metricRow("Fatigue", f.percent(fatigueProgress, 1), {
       metricKey: "fightSummary.pressureFatigueRatio",
-      color: fatigueRatio > 0.001 ? "#ffaa00" : "#00ff80",
+      color: fatigueProgress > 0.001 ? "#ffaa00" : "#00ff80",
     });
     html += this.metricRow("Control", controlExhausted ? "exhausted" : "active", {
       metricKey: "fightSummary.pressureFatigueControlState",
@@ -98,6 +116,31 @@ class FightSummaryOverlayModule extends OverlayModule {
           ? "#ffaa00"
           : "#8a9bac",
     });
+    html += this.metricRow("Grace", this.#formatElapsed(
+      data.playerPressureFatigueGraceElapsedMs,
+      data.playerPressureFatigueGraceDurationMs,
+    ), {
+      metricKey: "fightSummary.pressureFatigueGraceTime",
+      color: "#ffffff",
+    });
+    html += this.metricRow("Fatigue time", this.#formatElapsed(
+      data.playerPressureFatigueFatigueElapsedMs,
+      data.playerPressureFatigueFatigueDurationMs,
+    ), {
+      metricKey: "fightSummary.pressureFatigueFatigueTime",
+      color: "#ffaa00",
+    });
+    html += this.metricRow("Recovery delay", this.#formatElapsed(
+      data.playerPressureFatigueRecoveryDelayElapsedMs,
+      data.playerPressureFatigueRecoveryDelayMs,
+    ), {
+      metricKey: "fightSummary.pressureFatigueRecoveryDelay",
+      color: "#73c2fb",
+    });
+    html += this.metricRow("Recovery left", f.seconds(data.playerPressureFatigueRecoveryRemainingMs), {
+      metricKey: "fightSummary.pressureFatigueRecoveryRemaining",
+      color: "#73c2fb",
+    });
     html += this.metricRow("Rod hold after fatigue", f.kg(data.playerPressureFatigueRodHoldKg, 3), {
       metricKey: "fightSummary.pressureFatigueRodHold",
       color: "#00ff80",
@@ -107,6 +150,12 @@ class FightSummaryOverlayModule extends OverlayModule {
       color: "#00d4ff",
     });
     return html;
+  }
+
+  #formatElapsed(elapsedMs, durationMs) {
+    const elapsed = Math.max(0, Number(elapsedMs) || 0) / 1000;
+    const duration = Math.max(0, Number(durationMs) || 0) / 1000;
+    return `${elapsed.toFixed(1)}s / ${duration.toFixed(1)}s`;
   }
 
   #formatInputCombo(data) {

@@ -133,6 +133,8 @@ class GameCompositionRoot {
       styleResolver: hudStyleResolver,
     });
     const holdChargesRenderer = new HoldChargesRenderer({ surface });
+    const playerPressureFatigueIndicatorRenderer =
+      new PlayerPressureFatigueIndicatorRenderer({ surface });
     const fightHudRenderer = new FightHudRenderer({
       components: [
         new RenderComponent({
@@ -146,6 +148,12 @@ class GameCompositionRoot {
           order: RenderOrder.values.HUD + 1,
           renderer: holdChargesRenderer,
           selectModel: (model) => model.holdCharges,
+        }),
+        new RenderComponent({
+          id: "player-pressure-fatigue",
+          order: RenderOrder.values.HUD + 2,
+          renderer: playerPressureFatigueIndicatorRenderer,
+          selectModel: (model) => model.playerPressureFatigue,
         }),
       ],
     });

@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.23.23 - Reel hold fatigue source
+
+- Changed Player Pressure Fatigue source from rod hold pressure to reel hold.
+- Added HUD fatigue indicator with grace, fatigue and recovery visual states.
+- Added debug overlay timing fields for player fatigue state, source and recovery.
+- Added fatigue source resolver to separate input/source detection from fatigue calculation.
+- Added metadata for player fatigue visual and timing parameters.
+
 ## v0.23.22 - Runtime diagnostics opt-in
 
 - Kept the trimmed utility set focused on `check-js.js`, `game-cycle-check.js`, `dev-server.js` and version-copy support.

@@ -59,6 +59,9 @@ const FIGHT_PHYSICS_CONFIG = {
 
   playerPressureFatigue: {
     enabled: true,
+    source: {
+      mode: "reel_hold",
+    },
     pressureThresholdKg: 0.01,
     graceDurationMs: 3000,
     fatigueDurationMs: 6000,
@@ -67,18 +70,39 @@ const FIGHT_PHYSICS_CONFIG = {
 
     controlBreak: {
       enabled: true,
-      fatigueRatioThreshold: 0.9,
+      fatigueProgressThreshold: 0.9,
       minContinuousPressureMs: 8000,
     },
 
     recovery: {
       delayAfterPressureMs: 400,
       recoveryPerSecond: 0.8,
+      holdCompleteVisibleMs: 500,
     },
 
     channels: {
       rodHold: true,
       rodControl: true,
+    },
+
+    visual: {
+      enabled: true,
+      position: {
+        anchor: "top_right",
+        offsetX: 24,
+        offsetY: 24,
+      },
+      radius: 16,
+      ringWidth: 4,
+      idleVisible: false,
+      colors: {
+        grace: "#ffffff",
+        ready: "#2ecc71",
+        warning: "#f1c40f",
+        danger: "#e74c3c",
+        background: "rgba(0, 0, 0, 0.35)",
+        ringBackground: "rgba(255, 255, 255, 0.18)",
+      },
     },
   },
 

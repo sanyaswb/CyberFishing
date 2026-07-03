@@ -22,6 +22,7 @@ class FightHudFrameBuilder {
       tensionMeter,
       fightDebug,
     );
+    this.#buildPlayerPressureFatigue(target.playerPressureFatigue, fightDebug);
     this.#buildHoldCharges(target.holdCharges, holdState);
   }
 
@@ -137,6 +138,43 @@ class FightHudFrameBuilder {
     target.restoringCount = restoring.length;
     target.viewportWidth = this.#canvasMetrics.width;
     target.viewportHeight = this.#canvasMetrics.height;
+  }
+
+  #buildPlayerPressureFatigue(target, debug) {
+    const config =
+      this.#config.physics?.fight?.playerPressureFatigue?.visual ||
+      this.#config.playerPressureFatigue?.visual ||
+      {};
+    const enabled =
+      debug?.playerPressureFatigueEnabled === true &&
+      config.enabled === true;
+    const stateName = debug?.playerPressureFatigueState || "idle";
+    const idleVisible = config.idleVisible === true;
+    const visible = enabled && (idleVisible || stateName !== "idle");
+    target.visible = visible;
+    target.viewportWidth = this.#canvasMetrics.width;
+    target.viewportHeight = this.#canvasMetrics.height;
+    target.config = config;
+    target.state = {
+      stateName,
+      sourceMode: debug?.playerPressureFatigueSourceMode || "reel_hold",
+      sourceActive: debug?.playerPressureFatigueSourceActive === true,
+      efficiency: RenderMath.clamp(debug?.playerPressureFatigueEfficiency),
+      fatigueProgress: RenderMath.clamp(
+        debug?.playerPressureFatigueProgress,
+      ),
+      graceElapsedMs: Math.max(
+        0,
+        Number(debug?.playerPressureFatigueGraceElapsedMs) || 0,
+      ),
+      graceDurationMs: Math.max(
+        0,
+        Number(debug?.playerPressureFatigueGraceDurationMs) || 0,
+      ),
+      recoveryProgress: RenderMath.clamp(
+        debug?.playerPressureFatigueRecoveryProgress,
+      ),
+    };
   }
 
   #assertTensionMeter(tensionMeter) {

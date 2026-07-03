@@ -869,7 +869,11 @@
   },
   "physics.fight.playerPressureFatigue.enabled": {
     "label": "Player pressure fatigue enabled",
-    "description": "Enables the anti-spam pressure fatigue model that reduces transmitted Rod Hold and Rod Control force during continuous pressure."
+    "description": "Enables the anti-spam pressure fatigue model driven by continuous reel hold."
+  },
+  "physics.fight.playerPressureFatigue.source.mode": {
+    "label": "Pressure fatigue source",
+    "description": "Gameplay source that starts player pressure fatigue. The active mode is reel_hold."
   },
   "physics.fight.playerPressureFatigue.pressureThresholdKg": {
     "label": "Pressure fatigue threshold",
@@ -895,7 +899,7 @@
     "label": "Pressure control break enabled",
     "description": "Enables treating long fully fatigued pressure as no control for stamina regen and phase recovery."
   },
-  "physics.fight.playerPressureFatigue.controlBreak.fatigueRatioThreshold": {
+  "physics.fight.playerPressureFatigue.controlBreak.fatigueProgressThreshold": {
     "label": "Pressure control break fatigue threshold",
     "description": "Normalized fatigue progress required before continuous pressure stops counting as control."
   },
@@ -911,6 +915,10 @@
     "label": "Pressure recovery speed",
     "description": "Efficiency recovered per second after the recovery delay."
   },
+  "physics.fight.playerPressureFatigue.recovery.holdCompleteVisibleMs": {
+    "label": "Pressure recovery complete visibility",
+    "description": "Milliseconds to keep the recovered HUD indicator visible before hiding it."
+  },
   "physics.fight.playerPressureFatigue.channels.rodHold": {
     "label": "Fatigue affects Rod Hold",
     "description": "When enabled, pressure fatigue multiplies Rod Hold force before tension and stamina calculations."
@@ -918,6 +926,50 @@
   "physics.fight.playerPressureFatigue.channels.rodControl": {
     "label": "Fatigue affects Rod Control",
     "description": "When enabled, pressure fatigue multiplies Rod Control force before tension and stamina calculations."
+  },
+  "physics.fight.playerPressureFatigue.visual.enabled": {
+    "label": "Pressure fatigue HUD enabled",
+    "description": "Shows the player pressure fatigue indicator in the gameplay HUD."
+  },
+  "physics.fight.playerPressureFatigue.visual.position.anchor": {
+    "label": "Pressure fatigue HUD anchor",
+    "description": "HUD anchor used to position the player pressure fatigue indicator."
+  },
+  "physics.fight.playerPressureFatigue.visual.position.offsetX": {
+    "label": "Pressure fatigue HUD X offset",
+    "description": "Horizontal offset from the HUD anchor in pixels."
+  },
+  "physics.fight.playerPressureFatigue.visual.position.offsetY": {
+    "label": "Pressure fatigue HUD Y offset",
+    "description": "Vertical offset from the HUD anchor in pixels."
+  },
+  "physics.fight.playerPressureFatigue.visual.radius": {
+    "label": "Pressure fatigue HUD radius",
+    "description": "Radius of the circular player pressure fatigue indicator."
+  },
+  "physics.fight.playerPressureFatigue.visual.ringWidth": {
+    "label": "Pressure fatigue HUD ring width",
+    "description": "Stroke width of the circular player pressure fatigue indicator."
+  },
+  "physics.fight.playerPressureFatigue.visual.idleVisible": {
+    "label": "Pressure fatigue idle visible",
+    "description": "Keeps the player pressure fatigue indicator visible while idle."
+  },
+  "physics.fight.playerPressureFatigue.visual.colors.grace": {
+    "label": "Pressure fatigue grace color",
+    "description": "HUD indicator color during the full-efficiency grace window."
+  },
+  "physics.fight.playerPressureFatigue.visual.colors.ready": {
+    "label": "Pressure fatigue ready color",
+    "description": "HUD indicator color at low fatigue or after recovery."
+  },
+  "physics.fight.playerPressureFatigue.visual.colors.warning": {
+    "label": "Pressure fatigue warning color",
+    "description": "HUD indicator midpoint color while fatigue grows."
+  },
+  "physics.fight.playerPressureFatigue.visual.colors.danger": {
+    "label": "Pressure fatigue danger color",
+    "description": "HUD indicator color at maximum fatigue."
   },
   "physics.fight.reelRecovery.fishSpeedMultiplier": {
     "label": "Reel recovery fish speed multiplier",
