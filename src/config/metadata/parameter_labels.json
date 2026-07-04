@@ -979,74 +979,6 @@
     "label": "Reel bearing retrieve speed bonus",
     "description": "Additional retrieve speed in meters per second contributed by each reel bearing."
   },
-  "stamina.mechanics.activeDrain.enabled": {
-    "label": "Active stamina drain enabled",
-    "description": "Enables stamina loss from applied player force during the STAMINA phase."
-  },
-  "stamina.mechanics.activeDrain.drainPerSecond": {
-    "label": "Active stamina drain per second",
-    "description": "Maximum stamina loss per second when applied player pressure reaches the weakest tackle limit."
-  },
-  "stamina.mechanics.activeDrain.curvePower": {
-    "label": "Active stamina drain curve",
-    "description": "Power curve applied to activeDrainRatio. 1.0 keeps the drain linear."
-  },
-  "stamina.mechanics.activeDrain.lateralStaminaWeight": {
-    "label": "Lateral stamina weight",
-    "description": "Multiplier for applied Rod Control force when converting lateral control into stamina pressure."
-  },
-  "stamina.mechanics.passiveRegen.enabled": {
-    "label": "Passive stamina regen enabled",
-    "description": "Enables passive STAMINA recovery when applied player pressure is below the configured threshold."
-  },
-  "stamina.mechanics.passiveRegen.regenPerSecond": {
-    "label": "Passive stamina regen per second",
-    "description": "Base stamina recovered per second before the line-angle multiplier is applied."
-  },
-  "stamina.mechanics.passiveRegen.pressureThresholdKg": {
-    "label": "Stamina regen pressure threshold",
-    "description": "Applied player pressure at or below this value allows passive stamina recovery."
-  },
-  "stamina.mechanics.passiveRegen.allowWhilePressuring": {
-    "label": "Allow stamina regen while pressuring",
-    "description": "If true, passive stamina recovery can still run while applied player pressure is above the threshold."
-  },
-  "stamina.mechanics.passiveRegen.delay.enabled": {
-    "label": "Stamina regen delay enabled",
-    "description": "Adds an optional delay before passive stamina recovery resumes after active pressure."
-  },
-  "stamina.mechanics.passiveRegen.delay.delayAfterPressureMs": {
-    "label": "Stamina regen delay after pressure",
-    "description": "Milliseconds to wait after the last significant active pressure before passive stamina recovery resumes."
-  },
-  "stamina.mechanics.passiveRegen.angleMultiplier.centerAngleDeg": {
-    "label": "Center angle for stamina regen",
-    "description": "Line angle where passive stamina regen reaches the neutral x1.0 multiplier."
-  },
-  "stamina.mechanics.passiveRegen.angleMultiplier.enabled": {
-    "label": "Stamina angle regen multiplier enabled",
-    "description": "Enables line-angle scaling for passive stamina recovery."
-  },
-  "stamina.mechanics.passiveRegen.angleMultiplier.minCenterMultiplier": {
-    "label": "Minimum center regen multiplier",
-    "description": "Passive stamina regen multiplier at 0 degrees when the fish is centered."
-  },
-  "stamina.mechanics.passiveRegen.angleMultiplier.badAngleDeg": {
-    "label": "Bad angle for stamina regen",
-    "description": "Line angle where passive stamina regen reaches the bad-angle multiplier."
-  },
-  "stamina.mechanics.passiveRegen.angleMultiplier.badAngleMultiplier": {
-    "label": "Bad angle regen multiplier",
-    "description": "Passive stamina regen multiplier at the bad angle."
-  },
-  "stamina.mechanics.passiveRegen.angleMultiplier.extremeAngleDeg": {
-    "label": "Extreme angle for stamina regen",
-    "description": "Line angle where passive stamina regen reaches the extreme-angle multiplier."
-  },
-  "stamina.mechanics.passiveRegen.angleMultiplier.extremeAngleMultiplier": {
-    "label": "Extreme angle regen multiplier",
-    "description": "Passive stamina regen multiplier at or above the extreme angle."
-  },
   "stamina.mechanics.enduranceDrain.active.enabled": {
     "label": "Active endurance drain enabled",
     "description": "Enables ENDURANCE drain from applied player pressure during the EXHAUSTION phase."
@@ -1287,82 +1219,6 @@
     "label": "Fatigue regen bonus",
     "description": "Maximum extra stamina regen multiplier added at full player fatigue."
   },
-  "stamina.mechanics.phaseRecovery.enabled": {
-    "label": "Phase recovery enabled",
-    "description": "Enables returning from EXHAUSTION to STAMINA when player pressure is lost or the line becomes slack."
-  },
-  "stamina.mechanics.phaseRecovery.pressureThresholdKg": {
-    "label": "Phase recovery pressure threshold",
-    "description": "Absolute effective player pressure threshold used to decide when phase 2 no-pressure recovery can start."
-  },
-  "stamina.mechanics.phaseRecovery.pressureThresholdRatioOfMax": {
-    "label": "Phase recovery pressure ratio",
-    "description": "Weakest-tackle-limit ratio used as an additional effective pressure threshold for phase 2 recovery."
-  },
-  "stamina.mechanics.phaseRecovery.exhaustionToStamina.enabled": {
-    "label": "Exhaustion rollback enabled",
-    "description": "Enables returning from EXHAUSTION back to STAMINA without resetting current ENDURANCE."
-  },
-  "stamina.mechanics.phaseRecovery.exhaustionToStamina.noPressureTimeoutMs": {
-    "label": "No-pressure rollback timeout",
-    "description": "How long effective player pressure may stay below threshold in EXHAUSTION before the fish returns to STAMINA."
-  },
-  "stamina.mechanics.phaseRecovery.exhaustionToStamina.slackLineRecovery.enabled": {
-    "label": "Slack rollback enabled",
-    "description": "Enables immediate EXHAUSTION to STAMINA rollback when the line becomes slack."
-  },
-  "stamina.mechanics.phaseRecovery.exhaustionToStamina.slackLineRecovery.lineTautThresholdRatio": {
-    "label": "Slack line taut threshold",
-    "description": "Line taut ratio at or below which phase recovery treats the line as slack."
-  },
-  "stamina.mechanics.phaseRecovery.enduranceRecovery.enabled": {
-    "label": "Endurance recovery enabled",
-    "description": "Enables smooth ENDURANCE recovery while the fish is back in STAMINA phase."
-  },
-  "stamina.mechanics.phaseRecovery.enduranceRecovery.requiresFullStamina": {
-    "label": "Endurance recovery requires full stamina",
-    "description": "If true, ENDURANCE recovers only after STAMINA has fully recovered."
-  },
-  "stamina.mechanics.phaseRecovery.enduranceRecovery.recoveryPerSecond": {
-    "label": "Endurance recovery per second",
-    "description": "ENDURANCE points recovered per second while recovery conditions are satisfied."
-  },
-  "stamina.mechanics.phaseRecovery.enduranceRecovery.maxRecoveryRatio": {
-    "label": "Endurance recovery cap ratio",
-    "description": "Maximum ENDURANCE ratio that smooth recovery can restore after the fish returns to STAMINA."
-  },
-  "stamina.mechanics.angleRecovery.enabled": {
-    "label": "Angle stamina recovery enabled",
-    "description": "Deprecated. Angle now multiplies passive stamina regen through passiveRegen.angleMultiplier."
-  },
-  "stamina.mechanics.angleRecovery.safeAngleDeg": {
-    "label": "Angle recovery safe angle",
-    "description": "Line angle at or below this value gives no stamina recovery."
-  },
-  "stamina.mechanics.angleRecovery.maxRecoveryAngleDeg": {
-    "label": "Angle recovery max angle",
-    "description": "Line angle at or above this value gives full stamina recovery."
-  },
-  "stamina.mechanics.angleRecovery.middleMaxRecoveryRatio": {
-    "label": "Middle angle max recovery ratio",
-    "description": "Maximum recovery ratio inside the middle zone between safeAngleDeg and maxRecoveryAngleDeg."
-  },
-  "stamina.mechanics.angleRecovery.regenPerSecond": {
-    "label": "Angle stamina regen per second",
-    "description": "Maximum stamina recovered per second when angleRecoveryRatio is 1.0."
-  },
-  "stamina.mechanics.angleRecovery.curvePower": {
-    "label": "Angle recovery curve",
-    "description": "Power curve applied to middle-zone angle progress. 1.0 keeps the recovery linear."
-  },
-  "stamina.mechanics.angleRecovery.allowStaminaRegenWhilePulling": {
-    "label": "Allow stamina regen while pulling",
-    "description": "If false, positive net stamina change is clamped to zero while the player is actively pulling."
-  },
-  "stamina.mechanics.passiveDrain.enabled": {
-    "label": "Пасивна витрата стаміни",
-    "description": "Вмикає повільну витрату stamina від активної боротьби риби проти натягнутої/заблокованої ліски."
-  },
   "locations.showPoleFightSector": {
     "label": "Show pole fight sector",
     "description": "Shows the red allowed fish movement sector bounded by the configured angle and the released line radius."
@@ -1370,46 +1226,6 @@
   "locations.showFightLineRadius": {
     "label": "Show fight line radius",
     "description": "Shows the yellow unrestricted radial movement boundary defined by the currently released line length."
-  },
-  "stamina.mechanics.passiveDrain.drainPerSecond": {
-    "label": "Пасивна витрата/сек",
-    "description": "Максимальна швидкість пасивного зняття stamina за секунду при повному effort/resistance/taut і відповідному behavior multiplier."
-  },
-  "stamina.mechanics.passiveDrain.curvePower": {
-    "label": "Крива пасивної витрати",
-    "description": "Степінь кривої passiveDrainRatio. 1.0 = лінійно, >1.0 робить слабкий passive drain мʼякшим."
-  },
-  "stamina.mechanics.passiveDrain.lineTautThresholdRatio": {
-    "label": "Поріг натягу ліски для passive drain",
-    "description": "Мінімальний lineTautRatio, з якого пасивна витрата stamina дозволена. Нижче порогу passive drain = 0."
-  },
-  "stamina.mechanics.passiveDrain.defaultBehaviorMultiplier": {
-    "label": "Passive multiplier за замовчуванням",
-    "description": "Множник пасивної витрати для невідомого fish behavior."
-  },
-  "stamina.mechanics.passiveDrain.behaviorMultipliers.dash": {
-    "label": "Passive dash multiplier",
-    "description": "Множник пасивної витрати stamina для dash."
-  },
-  "stamina.mechanics.passiveDrain.behaviorMultipliers.swim": {
-    "label": "Passive swim multiplier",
-    "description": "Множник пасивної витрати stamina для swim."
-  },
-  "stamina.mechanics.passiveDrain.behaviorMultipliers.idle": {
-    "label": "Passive idle multiplier",
-    "description": "Множник пасивної витрати stamina для idle."
-  },
-  "stamina.mechanics.passiveDrain.behaviorMultipliers.rest": {
-    "label": "Passive rest multiplier",
-    "description": "Множник пасивної витрати stamina для rest."
-  },
-  "stamina.mechanics.passiveDrain.slippingDragMultiplier": {
-    "label": "Passive drag slip multiplier",
-    "description": "Множник пасивної витрати, коли drag віддає ліску. За дефолтом 1.0, реальний вплив уже обмежує resistanceRatio."
-  },
-  "stamina.mechanics.passiveDrain.hardLimitMultiplier": {
-    "label": "Passive hard-limit multiplier",
-    "description": "Множник пасивної витрати, коли риба вперлась у hard line limit."
   },
   "stamina.mechanics.powerDebuff.enabled": {
     "label": "Frame power debuff enabled",
@@ -1450,5 +1266,29 @@
   "debug.memoryWatchdog.thresholds.listenerGrowth": {
     "label": "Memory watchdog listener threshold",
     "description": "Managed listener growth required before the watchdog reports a persistent memory issue."
+  },
+  "stamina.mechanics.regen.afterExhaustion.inactivityRecovery.enabled": {
+    "label": "Exhaustion no-input recovery",
+    "description": "Enables phase-2 stamina recovery after raw stamina input stays inactive for the timeout."
+  },
+  "stamina.mechanics.regen.afterExhaustion.inactivityRecovery.noInputTimeoutMs": {
+    "label": "No-input recovery timeout",
+    "description": "Raw input inactivity duration required before phase-2 stamina recovery can start."
+  },
+  "stamina.mechanics.enduranceRecovery.enabled": {
+    "label": "Endurance recovery enabled",
+    "description": "Enables smooth ENDURANCE recovery while the fish is back in STAMINA phase."
+  },
+  "stamina.mechanics.enduranceRecovery.requiresFullStamina": {
+    "label": "Endurance recovery requires full stamina",
+    "description": "If true, ENDURANCE recovers only after STAMINA has fully recovered."
+  },
+  "stamina.mechanics.enduranceRecovery.recoveryPerSecond": {
+    "label": "Endurance recovery per second",
+    "description": "ENDURANCE points recovered per second while recovery conditions are satisfied."
+  },
+  "stamina.mechanics.enduranceRecovery.maxRecoveryRatio": {
+    "label": "Endurance recovery cap ratio",
+    "description": "Maximum ENDURANCE ratio that smooth recovery can restore after the fish returns to STAMINA."
   }
 }

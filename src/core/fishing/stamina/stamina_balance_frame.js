@@ -1,25 +1,17 @@
 class StaminaBalanceFrame {
-  #activeStaminaDrainCalculator;
-  #passiveStaminaRegenCalculator;
+  #phaseMachine;
   #activeEnduranceDrainCalculator;
   #passiveEnduranceDrainCalculator;
-  #phaseMachine;
   #elapsedMs = 0;
 
   constructor({
-    activeStaminaDrainCalculator = new ActiveStaminaDrainCalculator(),
-    passiveStaminaRegenCalculator = new PassiveStaminaRegenCalculator(),
+    phaseMachine = new StaminaPhaseMachine(),
     activeEnduranceDrainCalculator = new ActiveEnduranceDrainCalculator(),
     passiveEnduranceDrainCalculator = new PassiveEnduranceDrainCalculator(),
-    phaseMachine = typeof StaminaPhaseMachine !== "undefined"
-      ? new StaminaPhaseMachine()
-      : null,
   } = {}) {
-    this.#activeStaminaDrainCalculator = activeStaminaDrainCalculator;
-    this.#passiveStaminaRegenCalculator = passiveStaminaRegenCalculator;
+    this.#phaseMachine = phaseMachine;
     this.#activeEnduranceDrainCalculator = activeEnduranceDrainCalculator;
     this.#passiveEnduranceDrainCalculator = passiveEnduranceDrainCalculator;
-    this.#phaseMachine = phaseMachine;
   }
 
   create({
@@ -37,6 +29,7 @@ class StaminaBalanceFrame {
     lineAngleDeg = 0,
     fishLateralContext = {},
     controlDirectionX = 0,
+    rawStaminaInputActive = false,
     fishStaminaResistanceKg = 0,
     isLineFullyExtended = false,
     fishWonRadialForceKg = 0,
@@ -52,252 +45,10 @@ class StaminaBalanceFrame {
     nowMs = null,
     config = {},
   } = {}) {
-    const mechanics = config || {};
     const dt = this.#positive(dtSec);
     const resolvedNowMs = this.#resolveNowMs({ nowMs, dtSec: dt });
+    const mechanics = config || {};
     const resolvedPhase = this.#normalizePhase(phase);
-    if (
-      mechanics.simplifiedModel?.enabled === true &&
-      this.#phaseMachine
-    ) {
-      return this.#createSimplified({
-        phase: resolvedPhase,
-        playerIsPulling,
-        fishTensionKg,
-        appliedRodHoldKg,
-        appliedReelHoldKg,
-        appliedControlKg,
-        playerPressureControlExhausted,
-        playerFatigueProgress,
-        weakestTackleLimitKg,
-        currentStamina,
-        maxStamina,
-        lineAngleDeg,
-        fishLateralContext,
-        controlDirectionX,
-        fishStaminaResistanceKg,
-        isLineFullyExtended,
-        fishWonRadialForceKg,
-        dragBlockedForceKg,
-        lineTaut,
-        lineTautRatio,
-        fishBehaviorName,
-        shouldSlipDrag,
-        hardLineLimit,
-        currentExhaustion,
-        maxEndurance,
-        dtSec: dt,
-        nowMs: resolvedNowMs,
-        mechanics,
-      });
-    }
-    const controlExhausted = playerPressureControlExhausted === true;
-    const physicalAppliedRodHoldKg = this.#positive(appliedRodHoldKg);
-    const physicalAppliedControlKg = this.#positive(appliedControlKg);
-    const controlRodHoldKg = controlExhausted
-      ? 0
-      : physicalAppliedRodHoldKg;
-    const controlAppliedKg = controlExhausted
-      ? 0
-      : physicalAppliedControlKg;
-    const activeDrain = this.#activeStaminaDrainCalculator.calculate({
-      appliedRodHoldKg: controlRodHoldKg,
-      appliedControlKg: controlAppliedKg,
-      fishTensionKg,
-      weakestTackleLimitKg,
-      dtSec: dt,
-      config: mechanics.activeDrain || {},
-    });
-    const passiveRegen = this.#passiveStaminaRegenCalculator.calculate({
-      usedPlayerPressureKg: activeDrain.usedPlayerPressureKg,
-      lineAngleDeg,
-      dtSec: dt,
-      nowMs: resolvedNowMs,
-      config: mechanics.passiveRegen || {},
-    });
-    const activeEndurance = this.#activeEnduranceDrainCalculator.calculate({
-      activePressureRatio: activeDrain.activeDrainRatio,
-      dtSec: dt,
-      config: mechanics.enduranceDrain?.active || {},
-    });
-    const passiveEndurance =
-      this.#passiveEnduranceDrainCalculator.calculate({
-        fishWonRadialForceKg,
-        dragBlockedForceKg,
-        lineTaut,
-        lineTautRatio,
-        fishBehaviorName,
-        weakestTackleLimitKg: activeDrain.weakestTackleLimitKg,
-        dtSec: dt,
-        config:
-          mechanics.enduranceDrain?.passive ||
-          mechanics.passiveDrain ||
-          {},
-      });
-    const netStaminaChange =
-      passiveRegen.passiveStaminaRegen -
-      activeDrain.activeStaminaDrain;
-    const netStaminaPerSecond =
-      dt > 0 ? netStaminaChange / dt : 0;
-    const totalEnduranceDrain =
-      activeEndurance.activeEnduranceDrain +
-      passiveEndurance.passiveEnduranceDrain;
-    const totalEnduranceDrainPerSecond =
-      activeEndurance.activeEnduranceDrainPerSecond +
-      passiveEndurance.passiveEnduranceDrainPerSecond;
-    const enduranceTotalDrainRatio = this.#clamp01(
-      activeEndurance.activeEnduranceDrainRatio +
-        passiveEndurance.passiveEnduranceDrainRatio,
-    );
-    const frameMaxEndurance = this.#positive(maxEndurance);
-    const frameCurrentExhaustion =
-      currentExhaustion === null || currentExhaustion === undefined
-        ? frameMaxEndurance
-        : this.#positive(currentExhaustion, frameMaxEndurance);
-    const frameEnduranceProgress = frameMaxEndurance > 0
-      ? this.#clamp01(1 - frameCurrentExhaustion / frameMaxEndurance)
-      : 0;
-
-    return Object.freeze({
-      source: "stamina_balance_frame",
-      phase: resolvedPhase,
-      staminaPhase: resolvedPhase,
-      framePhase: resolvedPhase,
-      frameCurrentExhaustion,
-      frameMaxEndurance,
-      frameEnduranceProgress,
-      playerIsPulling: !!playerIsPulling,
-      playerPowerIsPulling: !!playerIsPulling,
-      fishTensionKg: activeDrain.fishTensionKg,
-      appliedRodHoldKg: activeDrain.appliedRodHoldKg,
-      appliedControlKg: activeDrain.appliedControlKg,
-      controlRodHoldKg: activeDrain.appliedRodHoldKg,
-      controlAppliedRodHoldKg: activeDrain.appliedRodHoldKg,
-      controlAppliedControlKg: activeDrain.appliedControlKg,
-      physicalAppliedRodHoldKg,
-      physicalAppliedControlKg,
-      physicalAppliedPlayerPressureKg:
-        physicalAppliedRodHoldKg + physicalAppliedControlKg,
-      playerPressureControlExhausted: controlExhausted,
-      budgetedRodHoldKg: activeDrain.budgetedRodHoldKg,
-      budgetedControlKg: activeDrain.budgetedControlKg,
-      weakestTackleLimitKg: activeDrain.weakestTackleLimitKg,
-      lineAngleDeg: passiveRegen.lineAngleDeg,
-      isLineFullyExtended: !!isLineFullyExtended,
-      fishWonRadialForceKg: passiveEndurance.fishWonRadialForceKg,
-      dragBlockedForceKg: passiveEndurance.dragBlockedForceKg,
-      lineTaut: passiveEndurance.lineTaut,
-      lineTautRatio: passiveEndurance.lineTautRatio,
-      rawLineTautRatio: passiveEndurance.rawLineTautRatio,
-      fishBehaviorName: passiveEndurance.fishBehaviorName,
-      shouldSlipDrag: !!shouldSlipDrag,
-      hardLineLimit: !!hardLineLimit,
-      dtSec: dt,
-      nowMs: resolvedNowMs,
-
-      lateralStaminaWeight: activeDrain.lateralStaminaWeight,
-      rawAppliedPlayerPressureKg: activeDrain.rawAppliedPlayerPressureKg,
-      availablePlayerPressureKg: activeDrain.availablePlayerPressureKg,
-      usedPlayerPressureKg: activeDrain.usedPlayerPressureKg,
-      activeDrainRatio: activeDrain.activeDrainRatio,
-      curvedActiveDrainRatio: activeDrain.curvedActiveDrainRatio,
-      activeDrainPerSecond: activeDrain.activeDrainPerSecond,
-      activeStaminaDrain: activeDrain.activeStaminaDrain,
-      passiveStaminaRegen: passiveRegen.passiveStaminaRegen,
-      passiveStaminaRegenPerSecond: passiveRegen.passiveRegenPerSecond,
-      staminaPassiveRegenPerSecond: passiveRegen.passiveRegenPerSecond,
-      angleRegenMultiplier: passiveRegen.angleRegenMultiplier,
-      staminaAngleRegenMultiplier: passiveRegen.angleRegenMultiplier,
-      regenDelayActive: passiveRegen.regenDelayActive,
-      staminaRegenDelayActive: passiveRegen.regenDelayActive,
-      staminaPressureThresholdKg: passiveRegen.pressureThresholdKg,
-      staminaPressureActive: passiveRegen.pressureActive,
-      netStaminaChange,
-      netStaminaPerSecond,
-      rawNetStaminaChange: netStaminaChange,
-
-      activeEnduranceDrainRatio:
-        activeEndurance.activeEnduranceDrainRatio,
-      enduranceActiveDrainRatio:
-        activeEndurance.activeEnduranceDrainRatio,
-      activeEnduranceDrainPerSecond:
-        activeEndurance.activeEnduranceDrainPerSecond,
-      activeEnduranceDrain: activeEndurance.activeEnduranceDrain,
-      passiveEnduranceDrainRatio:
-        passiveEndurance.passiveEnduranceDrainRatio,
-      endurancePassiveDrainRatio:
-        passiveEndurance.passiveEnduranceDrainRatio,
-      passiveEnduranceDrainPerSecond:
-        passiveEndurance.passiveEnduranceDrainPerSecond,
-      passiveEnduranceDrain:
-        passiveEndurance.passiveEnduranceDrain,
-      totalEnduranceDrain,
-      totalEnduranceDrainPerSecond,
-      enduranceTotalDrain: totalEnduranceDrain,
-      enduranceTotalDrainPerSecond: totalEnduranceDrainPerSecond,
-      enduranceTotalDrainRatio,
-      enduranceFishEffortRatio: passiveEndurance.fishEffortRatio,
-      enduranceResistanceRatio: passiveEndurance.resistanceRatio,
-      enduranceLineTautRatio: passiveEndurance.lineTautRatio,
-      enduranceBehaviorName: passiveEndurance.fishBehaviorName,
-      enduranceBehaviorMultiplier: passiveEndurance.behaviorMultiplier,
-
-      passiveDrainEnabled: false,
-      passiveDrainRatio: 0,
-      passiveDrainPerSecond: 0,
-      passiveStaminaDrain: 0,
-      totalStaminaDrain: activeDrain.activeStaminaDrain,
-      totalStaminaDrainPerSecond: activeDrain.activeDrainPerSecond,
-      angleRecoveryRatio: 0,
-      angleRegenPerSecond: passiveRegen.passiveRegenPerSecond,
-      angleStaminaRegen: passiveRegen.passiveStaminaRegen,
-      allowStaminaRegenWhilePulling:
-        passiveRegen.allowWhilePressuring === true,
-      regenBlockedByPull: passiveRegen.blockedByPressure,
-
-      budgetOverflowWarning: activeDrain.budgetOverflow,
-      budgetOverflow: activeDrain.budgetOverflow,
-      budgetScale: activeDrain.budgetScale,
-      activeDrain,
-      passiveRegen,
-      activeEndurance,
-      passiveEndurance,
-      angleMultiplier: passiveRegen.angleMultiplier,
-      angleStressRatio: 0,
-      staminaPressureRatio: activeDrain.activeDrainRatio,
-    });
-  }
-
-  #createSimplified({
-    phase,
-    playerIsPulling,
-    fishTensionKg,
-    appliedRodHoldKg,
-    appliedReelHoldKg,
-    appliedControlKg,
-    playerPressureControlExhausted,
-    playerFatigueProgress,
-    weakestTackleLimitKg,
-    currentStamina,
-    maxStamina,
-    lineAngleDeg,
-    fishLateralContext,
-    controlDirectionX,
-    fishStaminaResistanceKg,
-    isLineFullyExtended,
-    fishWonRadialForceKg,
-    dragBlockedForceKg,
-    lineTaut,
-    lineTautRatio,
-    fishBehaviorName,
-    shouldSlipDrag,
-    hardLineLimit,
-    currentExhaustion,
-    maxEndurance,
-    dtSec,
-    nowMs,
-    mechanics,
-  }) {
     const physicalAppliedRodHoldKg = this.#positive(appliedRodHoldKg);
     const physicalAppliedReelHoldKg = this.#positive(appliedReelHoldKg);
     const physicalAppliedControlKg = this.#positive(appliedControlKg);
@@ -308,7 +59,7 @@ class StaminaBalanceFrame {
         ? frameMaxStamina
         : this.#positive(currentStamina, frameMaxStamina);
     const staminaModel = this.#phaseMachine.createFrame({
-      phase,
+      phase: resolvedPhase,
       currentStamina: frameCurrentStamina,
       maxStamina: frameMaxStamina,
       rodHoldKg: physicalAppliedRodHoldKg,
@@ -317,10 +68,11 @@ class StaminaBalanceFrame {
       controlExhausted,
       fishLateralContext,
       controlDirectionX,
+      rawStaminaInputActive,
       fishStaminaResistanceKg,
       playerFatigueProgress,
       lineAngleDeg,
-      dtSec,
+      dtSec: dt,
       config: mechanics,
     });
     const activeEnduranceRatio =
@@ -329,7 +81,7 @@ class StaminaBalanceFrame {
         : 0;
     const activeEndurance = this.#activeEnduranceDrainCalculator.calculate({
       activePressureRatio: activeEnduranceRatio,
-      dtSec,
+      dtSec: dt,
       config: mechanics.enduranceDrain?.active || {},
     });
     const passiveEndurance =
@@ -340,11 +92,8 @@ class StaminaBalanceFrame {
         lineTautRatio,
         fishBehaviorName,
         weakestTackleLimitKg,
-        dtSec,
-        config:
-          mechanics.enduranceDrain?.passive ||
-          mechanics.passiveDrain ||
-          {},
+        dtSec: dt,
+        config: mechanics.enduranceDrain?.passive || {},
       });
     const totalEnduranceDrain =
       activeEndurance.activeEnduranceDrain +
@@ -365,7 +114,7 @@ class StaminaBalanceFrame {
       ? this.#clamp01(1 - frameCurrentExhaustion / frameMaxEndurance)
       : 0;
     const netStaminaChange = staminaModel.staminaDelta;
-    const netStaminaPerSecond = dtSec > 0 ? netStaminaChange / dtSec : 0;
+    const netStaminaPerSecond = dt > 0 ? netStaminaChange / dt : 0;
     const rawAppliedPlayerPressureKg =
       physicalAppliedRodHoldKg +
       physicalAppliedReelHoldKg +
@@ -375,14 +124,19 @@ class StaminaBalanceFrame {
       source: "stamina_balance_frame",
       staminaModelSource: "simplified_stamina_model",
       staminaModelMode: "simplified",
-      phase,
-      staminaPhase: phase,
-      framePhase: phase,
+      phase: resolvedPhase,
+      staminaPhase: resolvedPhase,
+      framePhase: resolvedPhase,
       nextPhase: staminaModel.nextPhase,
       staminaMode: staminaModel.staminaMode,
       staminaTransitionReason: staminaModel.transitionReason,
       staminaRecoveryFromExhaustionActive:
         staminaModel.staminaRecoveryFromExhaustionActive,
+      rawStaminaInputActive: staminaModel.rawStaminaInputActive,
+      staminaNoInputElapsedMs: staminaModel.staminaNoInputElapsedMs,
+      staminaNoInputTimeoutMs: staminaModel.staminaNoInputTimeoutMs,
+      staminaNoInputRecoveryReady: staminaModel.staminaNoInputRecoveryReady,
+      staminaRecoveryTrigger: staminaModel.staminaRecoveryTrigger,
       staminaPhaseReturnThreshold: staminaModel.phaseReturnThreshold,
       staminaBefore: staminaModel.staminaBefore,
       staminaAfter: staminaModel.staminaAfter,
@@ -419,8 +173,8 @@ class StaminaBalanceFrame {
       fishBehaviorName: passiveEndurance.fishBehaviorName,
       shouldSlipDrag: !!shouldSlipDrag,
       hardLineLimit: !!hardLineLimit,
-      dtSec,
-      nowMs,
+      dtSec: dt,
+      nowMs: resolvedNowMs,
 
       playerStaminaPressureKg: staminaModel.playerStaminaPressureKg,
       fishStaminaResistanceKg: staminaModel.fishStaminaResistanceKg,
@@ -439,7 +193,7 @@ class StaminaBalanceFrame {
       playerFatigueProgress: staminaModel.playerFatigueProgress,
       playerFatigueFull: staminaModel.playerFatigueFull,
 
-      lateralStaminaWeight: staminaModel.controlStaminaDrainMultiplier,
+      lateralStaminaWeight: staminaModel.controlDrainMultiplier,
       rawAppliedPlayerPressureKg,
       availablePlayerPressureKg: Math.max(
         0,
@@ -476,8 +230,7 @@ class StaminaBalanceFrame {
         passiveEndurance.passiveEnduranceDrainRatio,
       passiveEnduranceDrainPerSecond:
         passiveEndurance.passiveEnduranceDrainPerSecond,
-      passiveEnduranceDrain:
-        passiveEndurance.passiveEnduranceDrain,
+      passiveEnduranceDrain: passiveEndurance.passiveEnduranceDrain,
       totalEnduranceDrain,
       totalEnduranceDrainPerSecond,
       enduranceTotalDrain: totalEnduranceDrain,

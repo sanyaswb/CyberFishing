@@ -4,6 +4,7 @@ class StaminaPhaseMachine {
   #regenCalculator;
   #transitionResolver;
   #staminaRecoveryFromExhaustionActive = false;
+  #staminaNoInputElapsedMs = 0;
 
   constructor({
     pressureResolver = new StaminaPressureResolver(),
@@ -19,6 +20,7 @@ class StaminaPhaseMachine {
 
   reset() {
     this.#staminaRecoveryFromExhaustionActive = false;
+    this.#staminaNoInputElapsedMs = 0;
   }
 
   createFrame({
@@ -31,6 +33,7 @@ class StaminaPhaseMachine {
     controlExhausted = false,
     fishLateralContext = {},
     controlDirectionX = 0,
+    rawStaminaInputActive = false,
     fishStaminaResistanceKg = 0,
     playerFatigueProgress = 0,
     lineAngleDeg = 0,
@@ -57,7 +60,20 @@ class StaminaPhaseMachine {
     );
     const playerFatigue = this.#clamp01(playerFatigueProgress);
     const playerFatigueFull =
-      playerFatigue >= 1 || controlExhausted === true;
+      playerFatigue >= 1;
+    const noInputFrame = this.#updateNoInputState({
+      phase: resolvedPhase,
+      rawStaminaInputActive,
+      dtSec,
+      config: regenConfig.afterExhaustion?.inactivityRecovery || {},
+    });
+    const recoveryTrigger = this.#resolveRecoveryTrigger({
+      playerFatigueFull,
+      controlExhausted,
+      noInputRecoveryReady: noInputFrame.staminaNoInputRecoveryReady,
+      alreadyRecovering: this.#staminaRecoveryFromExhaustionActive,
+    });
+    const recoveryFromExhaustionAllowed = recoveryTrigger !== "none";
     const pressureActive =
       pressureFrame.playerStaminaPressureKg > pressureThresholdKg;
     const beforeExhaustion = regenConfig.beforeExhaustion || {};
@@ -83,7 +99,7 @@ class StaminaPhaseMachine {
           : (
               (
                 afterExhaustion.allowOnlyWhenPlayerFatigueFull !== false &&
-                playerFatigueFull
+                recoveryFromExhaustionAllowed
               ) ||
               this.#staminaRecoveryFromExhaustionActive
             );
@@ -123,6 +139,8 @@ class StaminaPhaseMachine {
       maxStamina: max,
       playerFatigueProgress: playerFatigue,
       controlExhausted,
+      staminaNoInputRecoveryReady: noInputFrame.staminaNoInputRecoveryReady,
+      recoveryTrigger,
       staminaRecoveryFromExhaustionActive:
         this.#staminaRecoveryFromExhaustionActive || staminaMode === "regen",
       config: mechanics,
@@ -167,11 +185,53 @@ class StaminaPhaseMachine {
       fatigueRegenMultiplier: regenFrame.fatigueRegenMultiplier,
       playerFatigueProgress: playerFatigue,
       playerFatigueFull,
+      rawStaminaInputActive: rawStaminaInputActive === true,
+      staminaNoInputElapsedMs: noInputFrame.staminaNoInputElapsedMs,
+      staminaNoInputTimeoutMs: noInputFrame.staminaNoInputTimeoutMs,
+      staminaNoInputRecoveryReady:
+        noInputFrame.staminaNoInputRecoveryReady,
+      staminaRecoveryTrigger: recoveryTrigger,
       transitionReason: transitionFrame.transitionReason,
       phaseReturnThreshold: transitionFrame.phaseReturnThreshold,
       staminaRecoveryFromExhaustionActive:
         this.#staminaRecoveryFromExhaustionActive,
     });
+  }
+
+  #updateNoInputState({
+    phase,
+    rawStaminaInputActive,
+    dtSec,
+    config,
+  }) {
+    const enabled = config.enabled === true;
+    const timeoutMs = this.#positive(config.noInputTimeoutMs, 5000);
+    if (phase !== "exhaustion") {
+      this.#staminaNoInputElapsedMs = 0;
+    } else if (rawStaminaInputActive === true) {
+      this.#staminaNoInputElapsedMs = 0;
+    } else {
+      this.#staminaNoInputElapsedMs += this.#positive(dtSec) * 1000;
+    }
+    return Object.freeze({
+      staminaNoInputElapsedMs: this.#staminaNoInputElapsedMs,
+      staminaNoInputTimeoutMs: timeoutMs,
+      staminaNoInputRecoveryReady:
+        enabled && this.#staminaNoInputElapsedMs >= timeoutMs,
+    });
+  }
+
+  #resolveRecoveryTrigger({
+    playerFatigueFull,
+    controlExhausted,
+    noInputRecoveryReady,
+    alreadyRecovering,
+  }) {
+    if (playerFatigueFull === true) return "fatigue_full";
+    if (controlExhausted === true) return "control_exhausted";
+    if (noInputRecoveryReady === true) return "no_input_timeout";
+    if (alreadyRecovering === true) return "already_recovering";
+    return "none";
   }
 
   #normalizePhase(value) {

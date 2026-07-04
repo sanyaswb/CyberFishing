@@ -269,62 +269,6 @@
       "DEBUG_DATA.staminaAppliedControlKg"
     ]
   },
-  "Used player pressure": {
-    "formula": "usedPlayerPressureKg = budgetedRodHoldKg + budgetedControlKg * lateralStaminaWeight",
-    "description": "Weighted player pressure that drains stamina.",
-    "paths": [
-      "DEBUG_DATA.staminaUsedPlayerPressureKg",
-      "CONFIG.stamina.mechanics.activeDrain.lateralStaminaWeight"
-    ]
-  },
-  "Active drain ratio": {
-    "formula": "activeDrainRatio = clamp(usedPlayerPressureKg / weakestTackleLimitKg, 0, 1)",
-    "description": "How much of the active stamina drain rate is used this frame.",
-    "paths": [
-      "DEBUG_DATA.staminaActiveDrainRatio",
-      "DEBUG_DATA.staminaWeakestTackleLimitKg"
-    ]
-  },
-  "Passive stamina regen/sec": {
-    "formula": "passiveStaminaRegenPerSecond = regenPerSecond * angleRegenMultiplier when usedPlayerPressureKg <= pressureThresholdKg",
-    "description": "How much STAMINA is passively restored per second while the player is not applying meaningful pressure.",
-    "paths": [
-      "DEBUG_DATA.staminaPassiveRegenPerSecond",
-      "CONFIG.stamina.mechanics.passiveRegen"
-    ]
-  },
-  "Angle regen multiplier": {
-    "formula": "0deg=x0.3, 15deg=x1.0, 75deg=x1.5, 90deg+=x2.0 with interpolation",
-    "description": "Line-angle multiplier applied to passive STAMINA recovery.",
-    "paths": [
-      "DEBUG_DATA.staminaAngleRegenMultiplier",
-      "CONFIG.stamina.mechanics.passiveRegen.angleMultiplier"
-    ]
-  },
-  "Regen delay active": {
-    "formula": "nowMs - lastPressureTimeMs < delayAfterPressureMs",
-    "description": "Whether optional passive STAMINA recovery delay is currently blocking regen.",
-    "paths": [
-      "DEBUG_DATA.staminaRegenDelayActive",
-      "CONFIG.stamina.mechanics.passiveRegen.delay"
-    ]
-  },
-  "Angle recovery ratio": {
-    "formula": "0 at <= safeAngleDeg, middle progress * middleMaxRecoveryRatio between safe and max, 1 at >= maxRecoveryAngleDeg",
-    "description": "Deprecated. Use Angle regen multiplier for the new passive stamina recovery model.",
-    "paths": [
-      "DEBUG_DATA.staminaAngleRecoveryRatio",
-      "CONFIG.stamina.mechanics.angleRecovery"
-    ]
-  },
-  "Net stamina": {
-    "formula": "netStaminaPerSecond = passiveStaminaRegenPerSecond - activeDrainPerSecond",
-    "description": "Final stamina change rate for the current frame.",
-    "paths": [
-      "DEBUG_DATA.staminaNetPerSecond",
-      "CONFIG.stamina.mechanics.passiveRegen"
-    ]
-  },
   "Budget overflow warning": {
     "formula": "rawAppliedPlayerPressureKg > max(0, weakestTackleLimitKg - fishTensionKg)",
     "description": "Diagnostic warning that stamina received more applied player force than the tackle budget should allow.",
@@ -332,25 +276,11 @@
       "DEBUG_DATA.staminaBudgetOverflowWarning"
     ]
   },
-  "Passive enabled": {
-    "formula": "CONFIG.stamina.mechanics.passiveDrain.enabled",
-    "description": "Чи увімкнена пасивна витрата stamina від боротьби риби проти натягнутої ліски.",
-    "paths": [
-      "CONFIG.stamina.mechanics.passiveDrain.enabled"
-    ]
-  },
   "Passive drain ratio": {
     "formula": "fishEffortRatio * resistanceRatio * lineTautRatio * behaviorMultiplier",
     "description": "Нормалізований коефіцієнт пасивного stamina drain. Не є простим tension-only значенням.",
     "paths": [
       "fightFrame.stamina.passiveDrainRatio"
-    ]
-  },
-  "Passive drain/sec": {
-    "formula": "passiveDrainPerSecond = drainPerSecond * passiveDrainRatio^curvePower",
-    "description": "Скільки stamina за секунду пасивно знімається з риби.",
-    "paths": [
-      "fightFrame.stamina.passiveDrainPerSecond"
     ]
   },
   "Fish radial effort": {
@@ -381,21 +311,6 @@
     "description": "Чи ліска реально натягнута для пасивного stamina drain.",
     "paths": [
       "fightFrame.stamina.lineTautRatio"
-    ]
-  },
-  "Fish behavior": {
-    "formula": "behaviorMultiplier = passiveDrain.behaviorMultipliers[fishBehaviorName]",
-    "description": "Поточний fish behavior і його множник пасивної витрати stamina.",
-    "paths": [
-      "forceData.behavior.name",
-      "CONFIG.stamina.mechanics.passiveDrain.behaviorMultipliers"
-    ]
-  },
-  "Total drain/sec": {
-    "formula": "totalDrain/sec = activeDrain/sec + passiveDrain/sec",
-    "description": "Сумарна витрата stamina за секунду перед відніманням angle regen.",
-    "paths": [
-      "fightFrame.stamina.totalStaminaDrainPerSecond"
     ]
   },
   "Active endurance/sec": {
@@ -1081,6 +996,24 @@
     "description": "Активна частина current state max force без runtime interpolation.",
     "paths": [
       "DEBUG_DATA.fishCurrentStateMaxActiveForceKg"
+    ]
+  },
+  "staminaBalance.noInput": {
+    "formula": "rawStaminaInputActive ? 0 : elapsed no-input time in EXHAUSTION",
+    "description": "Raw stamina input inactivity timer used by phase-2 stamina recovery.",
+    "paths": [
+      "DEBUG_DATA.rawStaminaInputActive",
+      "DEBUG_DATA.staminaNoInputElapsedMs",
+      "DEBUG_DATA.staminaNoInputTimeoutMs",
+      "DEBUG_DATA.staminaNoInputRecoveryReady"
+    ]
+  },
+  "staminaBalance.recoveryTrigger": {
+    "formula": "fatigue_full | control_exhausted | no_input_timeout | already_recovering | none",
+    "description": "Reason that currently allows or blocks EXHAUSTION stamina recovery.",
+    "paths": [
+      "DEBUG_DATA.staminaRecoveryTrigger",
+      "DEBUG_DATA.staminaRecoveryFromExhaustionActive"
     ]
   }
 }

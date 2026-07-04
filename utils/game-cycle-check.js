@@ -56,13 +56,8 @@ const FILES = [
   "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
   "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
   "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
-  "src/core/fishing/stamina/active_stamina_drain_calculator.js",
-  "src/core/fishing/stamina/angle_stamina_recovery_calculator.js",
-  "src/core/fishing/stamina/stamina_angle_regen_multiplier_calculator.js",
-  "src/core/fishing/stamina/passive_stamina_regen_calculator.js",
   "src/core/fishing/stamina/active_endurance_drain_calculator.js",
   "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
-  "src/core/fishing/stamina/passive_stamina_drain_calculator.js",
   "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
   "src/core/fishing/stamina/stamina_pressure_resolver.js",
   "src/core/fishing/stamina/stamina_drain_calculator.js",
@@ -310,6 +305,40 @@ function runSimplifiedStaminaChecks() {
   });
   assert(releaseInExhaustion.staminaMode === "idle", "phase 2 release pressure does not regen stamina");
   assert(releaseInExhaustion.nextPhase === "exhaustion", "phase 2 release pressure does not return to stamina");
+  assert(releaseInExhaustion.staminaNoInputElapsedMs < releaseInExhaustion.staminaNoInputTimeoutMs, "phase 2 no input below timeout does not recover");
+
+  const inactivityMachine = new StaminaPhaseMachine();
+  let inactivityFrame = null;
+  for (let i = 0; i < 5; i += 1) {
+    inactivityFrame = inactivityMachine.createFrame({
+      phase: "exhaustion",
+      currentStamina: 0,
+      maxStamina: 100,
+      rawStaminaInputActive: false,
+      fishStaminaResistanceKg: 0.5,
+      playerFatigueProgress: 0,
+      dtSec: 1,
+      config: mechanics,
+    });
+  }
+  assert(inactivityFrame.staminaNoInputRecoveryReady === true, "phase 2 no input timeout becomes recovery-ready");
+  assert(inactivityFrame.staminaRecoveryTrigger === "no_input_timeout", "phase 2 no input timeout is recovery trigger");
+  assert(inactivityFrame.staminaMode === "regen", "phase 2 no input timeout starts stamina recovery");
+
+  const activeInputFrame = inactivityMachine.createFrame({
+    phase: "exhaustion",
+    currentStamina: 0,
+    maxStamina: 100,
+    rawStaminaInputActive: true,
+    controlExhausted: true,
+    controlKg: 0.5,
+    fishStaminaResistanceKg: 0.5,
+    playerFatigueProgress: 0,
+    dtSec: 1,
+    config: mechanics,
+  });
+  assert(activeInputFrame.staminaNoInputElapsedMs === 0, "raw input active resets no-input timer");
+  assert(activeInputFrame.staminaRecoveryTrigger === "control_exhausted", "control exhausted holding input is not inactivity trigger");
 
   const fatigueRecovery = machine.createFrame({
     phase: "exhaustion",

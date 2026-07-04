@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.23.25";
+const CURRENT_PROJECT_VERSION = "0.23.26";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "simplified-stamina-model",
+  codename: "stamina-inactivity-cleanup",
   updatedAt: "2026-07-04",
   notes: Object.freeze([
-    "Reworked fish stamina into explicit drain, regen and idle decisions",
-    "Removed line slack dependency from active stamina phase switching",
-    "Added lateral position and control direction stamina pressure weighting",
+    "Added phase-2 stamina recovery after raw input inactivity timeout",
+    "Separated raw stamina input inactivity from effective stamina pressure",
+    "Removed legacy stamina drain/regen fallback calculators",
   ]),
 });
 

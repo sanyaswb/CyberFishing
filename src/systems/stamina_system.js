@@ -5,7 +5,6 @@ class StaminaController {
   #masteryTimer = 0;
   #isMasteryActive = false;
   #lastStaminaBalanceFrame = null;
-  #phaseRecoveryNoPressureMs = 0;
 
   constructor(condition, fish, mechanicsConfig) {
     this.#condition = condition;
@@ -29,7 +28,6 @@ class StaminaController {
     this.#condition.restoreFull?.();
     this.#masteryTimer = 0;
     this.#isMasteryActive = false;
-    this.#phaseRecoveryNoPressureMs = 0;
     this.#fish.clearDebuff?.();
     this.#fish.setMasteryMultiplier?.(1.0);
   }
@@ -55,60 +53,17 @@ class StaminaController {
     if (!staminaFrame) return;
 
     if (this.#condition.phase === "exhaustion") {
-      this.#evaluateEnduranceBalanceFrame(staminaFrame, dt);
+      this.#evaluateSimplifiedEnduranceFrame(staminaFrame, dt);
       return;
     }
 
     if (this.#condition.phase === "stamina") {
-      this.#evaluateStaminaBalanceFrame(staminaFrame);
+      this.#evaluateSimplifiedStaminaFrame(staminaFrame);
     }
-  }
-
-  #evaluateStaminaBalanceFrame(frame) {
-    this.#lastStaminaBalanceFrame = frame;
-    this.#phaseRecoveryNoPressureMs = 0;
-    if (frame.staminaModelMode === "simplified") {
-      this.#evaluateSimplifiedStaminaFrame(frame);
-      return;
-    }
-    const netChange = Number(frame.netStaminaChange) || 0;
-    if (netChange < 0) {
-      this.#condition.applyStaminaDamage(-netChange);
-    } else if (netChange > 0) {
-      this.#condition.applyStaminaRegen(netChange);
-    }
-    this.#recoverEnduranceInStaminaPhase(frame);
-  }
-
-  #evaluateEnduranceBalanceFrame(frame, dt) {
-    this.#lastStaminaBalanceFrame = frame;
-    if (this.#condition.currentExhaustion <= 0) {
-      this.#applyFinalDebuffIfExhausted();
-      return;
-    }
-    if (frame.staminaModelMode === "simplified") {
-      this.#evaluateSimplifiedEnduranceFrame(frame, dt);
-      return;
-    }
-    if (this.#shouldReturnToStaminaPhase(frame, dt)) {
-      this.#returnToStaminaPhase();
-      return;
-    }
-    this.#updateMasteryWindow(dt, 0, this.getExhaustionDurationMs());
-
-    const damage = Math.max(
-      0,
-      Number(frame.totalEnduranceDrain ?? frame.enduranceTotalDrain) || 0,
-    );
-    if (damage <= 0) {
-      this.#applyFinalDebuffIfExhausted();
-      return;
-    }
-
-    this.#applyEnduranceFrameDrain({ damage });
   }
 
   #evaluateSimplifiedStaminaFrame(frame) {
+    this.#lastStaminaBalanceFrame = frame;
     const mode = frame.staminaMode || "idle";
     if (mode === "drain") {
       const damage = Math.max(
@@ -127,6 +82,11 @@ class StaminaController {
   }
 
   #evaluateSimplifiedEnduranceFrame(frame, dt) {
+    this.#lastStaminaBalanceFrame = frame;
+    if (this.#condition.currentExhaustion <= 0) {
+      this.#applyFinalDebuffIfExhausted();
+      return;
+    }
     const mode = frame.staminaMode || "idle";
     if (mode === "regen") {
       const regen = Math.max(
@@ -156,66 +116,7 @@ class StaminaController {
     this.#applyEnduranceFrameDrain({ damage });
   }
 
-  #shouldReturnToStaminaPhase(frame, dt) {
-    const phaseRecovery = this.#phaseRecoveryConfig();
-    const exhaustionToStamina = phaseRecovery.exhaustionToStamina || {};
-    if (
-      phaseRecovery.enabled === false ||
-      exhaustionToStamina.enabled === false
-    ) {
-      this.#phaseRecoveryNoPressureMs = 0;
-      return false;
-    }
-
-    if (this.#isSlackPhaseRecoveryFrame(frame, exhaustionToStamina)) {
-      this.#phaseRecoveryNoPressureMs = 0;
-      return true;
-    }
-
-    const pressureKg = this.#positive(frame.usedPlayerPressureKg, 0);
-    const thresholdKg = this.#phaseRecoveryPressureThresholdKg(
-      phaseRecovery,
-      frame,
-    );
-    if (pressureKg <= thresholdKg) {
-      this.#phaseRecoveryNoPressureMs += Math.max(0, Number(dt) || 0);
-    } else {
-      this.#phaseRecoveryNoPressureMs = 0;
-    }
-
-    return (
-      this.#phaseRecoveryNoPressureMs >=
-      this.#positive(exhaustionToStamina.noPressureTimeoutMs, 5000)
-    );
-  }
-
-  #isSlackPhaseRecoveryFrame(frame, exhaustionToStamina) {
-    const slackConfig = exhaustionToStamina.slackLineRecovery || {};
-    if (slackConfig.enabled === false) return false;
-    if (frame.lineIsSlack === true) return true;
-    if (frame.lineTaut === false) return true;
-
-    const threshold = this.#clamp01(
-      slackConfig.lineTautThresholdRatio ?? 0.1,
-    );
-    const ratio = Number(frame.lineTautRatio ?? frame.rawLineTautRatio);
-    return Number.isFinite(ratio) && ratio <= threshold;
-  }
-
-  #phaseRecoveryPressureThresholdKg(phaseRecovery, frame) {
-    const absoluteThresholdKg = this.#positive(
-      phaseRecovery.pressureThresholdKg,
-      0.01,
-    );
-    const ratioThreshold = this.#clamp01(
-      phaseRecovery.pressureThresholdRatioOfMax ?? 0,
-    );
-    const maxPressureKg = this.#positive(frame.weakestTackleLimitKg, 0);
-    return Math.max(absoluteThresholdKg, maxPressureKg * ratioThreshold);
-  }
-
   #returnToStaminaPhase() {
-    this.#phaseRecoveryNoPressureMs = 0;
     this.#masteryTimer = 0;
     if (this.#isMasteryActive) {
       this.#isMasteryActive = false;
@@ -229,9 +130,8 @@ class StaminaController {
     if (this.#condition.phase !== "stamina") return;
     if ((frame.framePhase ?? frame.phase) !== "stamina") return;
 
-    const phaseRecovery = this.#phaseRecoveryConfig();
-    const recovery = phaseRecovery.enduranceRecovery || {};
-    if (phaseRecovery.enabled === false || recovery.enabled === false) return;
+    const recovery = this.#enduranceRecoveryConfig();
+    if (recovery.enabled === false) return;
     if (
       recovery.requiresFullStamina !== false &&
       this.#condition.currentStamina < this.#maxStamina()
@@ -252,8 +152,8 @@ class StaminaController {
     this.#syncFramePowerDebuffWithEndurance();
   }
 
-  #phaseRecoveryConfig() {
-    const config = this.#mechanicsConfig.phaseRecovery;
+  #enduranceRecoveryConfig() {
+    const config = this.#mechanicsConfig.enduranceRecovery;
     return config && typeof config === "object" ? config : { enabled: false };
   }
 

@@ -525,68 +525,22 @@ class ConfigSchemaValidator {
       );
     }
 
-    const phaseRecovery = mechanics.phaseRecovery;
-    if (!phaseRecovery || typeof phaseRecovery !== "object") {
-      this.#error(
-        "stamina.mechanics.phaseRecovery",
-        "missing stamina/endurance phase recovery config",
-      );
-      return;
-    }
-
+    const enduranceRecovery = mechanics.enduranceRecovery || {};
     this.#requireBooleanWithLabel(
-      "stamina.mechanics.phaseRecovery.enabled",
-      phaseRecovery.enabled,
-    );
-    this.#requireFiniteNumberWithLabel(
-      "stamina.mechanics.phaseRecovery.pressureThresholdKg",
-      phaseRecovery.pressureThresholdKg,
-      { min: 0 },
-    );
-    this.#requireFiniteNumberWithLabel(
-      "stamina.mechanics.phaseRecovery.pressureThresholdRatioOfMax",
-      phaseRecovery.pressureThresholdRatioOfMax,
-      { min: 0, max: 1 },
-    );
-
-    const exhaustionToStamina = phaseRecovery.exhaustionToStamina || {};
-    this.#requireBooleanWithLabel(
-      "stamina.mechanics.phaseRecovery.exhaustionToStamina.enabled",
-      exhaustionToStamina.enabled,
-    );
-    this.#requireFiniteNumberWithLabel(
-      "stamina.mechanics.phaseRecovery.exhaustionToStamina.noPressureTimeoutMs",
-      exhaustionToStamina.noPressureTimeoutMs,
-      { min: 0 },
-    );
-
-    const slackLineRecovery = exhaustionToStamina.slackLineRecovery || {};
-    this.#requireBooleanWithLabel(
-      "stamina.mechanics.phaseRecovery.exhaustionToStamina.slackLineRecovery.enabled",
-      slackLineRecovery.enabled,
-    );
-    this.#requireFiniteNumberWithLabel(
-      "stamina.mechanics.phaseRecovery.exhaustionToStamina.slackLineRecovery.lineTautThresholdRatio",
-      slackLineRecovery.lineTautThresholdRatio,
-      { min: 0, max: 1 },
-    );
-
-    const enduranceRecovery = phaseRecovery.enduranceRecovery || {};
-    this.#requireBooleanWithLabel(
-      "stamina.mechanics.phaseRecovery.enduranceRecovery.enabled",
+      "stamina.mechanics.enduranceRecovery.enabled",
       enduranceRecovery.enabled,
     );
     this.#requireBooleanWithLabel(
-      "stamina.mechanics.phaseRecovery.enduranceRecovery.requiresFullStamina",
+      "stamina.mechanics.enduranceRecovery.requiresFullStamina",
       enduranceRecovery.requiresFullStamina,
     );
     this.#requireFiniteNumberWithLabel(
-      "stamina.mechanics.phaseRecovery.enduranceRecovery.recoveryPerSecond",
+      "stamina.mechanics.enduranceRecovery.recoveryPerSecond",
       enduranceRecovery.recoveryPerSecond,
       { min: 0 },
     );
     this.#requireFiniteNumberWithLabel(
-      "stamina.mechanics.phaseRecovery.enduranceRecovery.maxRecoveryRatio",
+      "stamina.mechanics.enduranceRecovery.maxRecoveryRatio",
       enduranceRecovery.maxRecoveryRatio,
       { min: 0, max: 1 },
     );
@@ -712,6 +666,16 @@ class ConfigSchemaValidator {
       "stamina.mechanics.regen.afterExhaustion.phaseReturnThresholdRatio",
       afterExhaustion.phaseReturnThresholdRatio,
       { min: 0, max: 1 },
+    );
+    const inactivityRecovery = afterExhaustion.inactivityRecovery || {};
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.regen.afterExhaustion.inactivityRecovery.enabled",
+      inactivityRecovery.enabled,
+    );
+    this.#requireFiniteNumberWithLabel(
+      "stamina.mechanics.regen.afterExhaustion.inactivityRecovery.noInputTimeoutMs",
+      inactivityRecovery.noInputTimeoutMs,
+      { min: 0 },
     );
 
     const angleMultiplier = regen.angleMultiplier || {};

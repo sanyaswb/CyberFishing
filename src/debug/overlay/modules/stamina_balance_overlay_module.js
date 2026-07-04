@@ -89,6 +89,32 @@ class StaminaBalanceOverlayModule extends OverlayModule {
       },
     );
     html += this.metricRow(
+      "Raw input",
+      data.rawStaminaInputActive ? "active" : "inactive",
+      { color: data.rawStaminaInputActive ? "#00ff80" : "#8a9bac" },
+    );
+    html += this.metricRow(
+      "No input",
+      `${f.seconds(data.staminaNoInputElapsedMs)} / ${f.seconds(data.staminaNoInputTimeoutMs)}`,
+      {
+        color: data.staminaNoInputRecoveryReady
+          ? "#00ff80"
+          : "#8a9bac",
+      },
+    );
+    html += this.metricRow(
+      "Recovery trigger",
+      data.staminaRecoveryTrigger || "none",
+      {
+        color: data.staminaRecoveryTrigger === "no_input_timeout"
+          ? "#00ff80"
+          : data.staminaRecoveryTrigger === "fatigue_full" ||
+              data.staminaRecoveryTrigger === "control_exhausted"
+            ? "#ffaa00"
+            : "#8a9bac",
+      },
+    );
+    html += this.metricRow(
       "Regen multipliers",
       `angle x${f.num(data.staminaAngleRegenMultiplier, 2)} / fatigue x${f.num(data.fatigueRegenMultiplier, 2)}`,
       { color: "#00ff80" },
@@ -106,6 +132,9 @@ class StaminaBalanceOverlayModule extends OverlayModule {
   }
 
   #renderStaminaPhase({ html, data, f }) {
+    if (data.staminaModelMode === "simplified") {
+      return this.#renderSimplifiedStaminaPhase({ html, data, f });
+    }
     html += this.metricRow(
       "Applied rodHold",
       f.kg(data.staminaAppliedRodHoldKg, 3),
@@ -180,6 +209,35 @@ class StaminaBalanceOverlayModule extends OverlayModule {
       "Budget overflow warning",
       data.staminaBudgetOverflowWarning ? "yes" : "no",
       { color: data.staminaBudgetOverflowWarning ? "#ff4444" : "#8a9bac" },
+    );
+    return `${html}<div style="margin-bottom: 12px;"></div>`;
+  }
+
+  #renderSimplifiedStaminaPhase({ html, data, f }) {
+    html += this.metricRow(
+      "Rod / reel / control pressure",
+      `${f.kg(data.rodHoldStaminaPressureKg, 3)} / ${f.kg(data.reelHoldStaminaPressureKg, 3)} / ${f.kg(data.controlStaminaPressureKg, 3)}`,
+      { color: "#00ff80" },
+    );
+    html += this.metricRow(
+      "Drain/sec",
+      f.num(data.staminaActiveDrainPerSecond, 2),
+      { color: data.staminaMode === "drain" ? "#ff8888" : "#8a9bac" },
+    );
+    html += this.metricRow(
+      "Regen/sec",
+      f.num(data.staminaRegenPerSecond, 2),
+      { color: data.staminaMode === "regen" ? "#00ff80" : "#8a9bac" },
+    );
+    html += this.metricRow(
+      "Current stamina",
+      `${f.num(data.currentStamina, 2)} / ${f.num(data.fishConditionMaxStamina, 2)}`,
+      { color: "#ffcc00" },
+    );
+    html += this.metricRow(
+      "Frame stamina",
+      `${f.num(data.staminaBefore, 2)} -> ${f.num(data.staminaAfter, 2)}`,
+      { color: "#73c2fb" },
     );
     return `${html}<div style="margin-bottom: 12px;"></div>`;
   }

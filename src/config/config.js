@@ -469,6 +469,10 @@ const CONFIG = {
         afterExhaustion: {
           allowOnlyWhenPlayerFatigueFull: true,
           phaseReturnThresholdRatio: 0.001,
+          inactivityRecovery: {
+            enabled: true,
+            noInputTimeoutMs: 5000,
+          },
         },
         angleMultiplier: {
           enabled: true,
@@ -484,34 +488,8 @@ const CONFIG = {
           maxBonusMultiplier: 1.0,
         },
       },
-      // Phase 1: Stamina
       baseStaminaMultiplier: 50,
       flatBonus: 500,
-      activeDrain: {
-        enabled: true,
-        drainPerSecond: 100,
-        curvePower: 1.0,
-        lateralStaminaWeight: 0.5,
-      },
-      passiveRegen: {
-        enabled: true,
-        regenPerSecond: 20,
-        pressureThresholdKg: 0.01,
-        allowWhilePressuring: false,
-        delay: {
-          enabled: false,
-          delayAfterPressureMs: 500,
-        },
-        angleMultiplier: {
-          enabled: true,
-          centerAngleDeg: 15,
-          minCenterMultiplier: 0.3,
-          badAngleDeg: 75,
-          badAngleMultiplier: 1.5,
-          extremeAngleDeg: 90,
-          extremeAngleMultiplier: 2.0,
-        },
-      },
       enduranceDrain: {
         active: {
           enabled: true,
@@ -549,49 +527,11 @@ const CONFIG = {
           },
         },
       },
-      phaseRecovery: {
+      enduranceRecovery: {
         enabled: true,
-        pressureThresholdKg: 0.01,
-        pressureThresholdRatioOfMax: 0.08,
-        exhaustionToStamina: {
-          enabled: true,
-          noPressureTimeoutMs: 5000,
-          slackLineRecovery: {
-            enabled: false,
-            lineTautThresholdRatio: 0.1,
-          },
-        },
-        enduranceRecovery: {
-          enabled: true,
-          requiresFullStamina: true,
-          recoveryPerSecond: 30,
-          maxRecoveryRatio: 0.8,
-        },
-      },
-      // Deprecated aliases kept so existing dev tools/config overrides remain safe.
-      angleRecovery: {
-        enabled: false,
-        safeAngleDeg: 15,
-        maxRecoveryAngleDeg: 75,
-        middleMaxRecoveryRatio: 0.5,
-        regenPerSecond: 40,
-        curvePower: 1.0,
-        allowStaminaRegenWhilePulling: false,
-      },
-      passiveDrain: {
-        enabled: false,
-        drainPerSecond: 15,
-        curvePower: 1.0,
-        lineTautThresholdRatio: 0.995,
-        defaultBehaviorMultiplier: 0.5,
-        behaviorMultipliers: {
-          dash: 1.0,
-          swim: 0.5,
-          idle: 0.1,
-          rest: 0.0,
-        },
-        slippingDragMultiplier: 1.0,
-        hardLimitMultiplier: 1.0,
+        requiresFullStamina: true,
+        recoveryPerSecond: 30,
+        maxRecoveryRatio: 0.8,
       },
 
       powerDebuff: {

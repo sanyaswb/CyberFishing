@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.23.26 - Stamina inactivity recovery and legacy cleanup
+
+- Added phase 2 stamina recovery trigger after 5 seconds of raw player input inactivity.
+- Kept phase 2 release from starting recovery instantly.
+- Added no-input stamina recovery debug and overlay fields.
+- Separated raw input inactivity from effective stamina pressure after fatigue.
+- Removed legacy stamina drain/regen fallback calculators and script entries.
+- Cleaned old slackLineRecovery/noPressureTimeout stamina phase recovery paths from the simplified model.
+- Updated metadata and overlay labels for the simplified stamina model.
+
 ## v0.23.25 - Simplified stamina model
 
 - Reworked fish stamina into a simplified explicit drain / regen / idle model.

@@ -450,6 +450,7 @@ class FightPhysicsSystem {
         floatEntity,
         rodTipPosition,
         physics,
+        fightInput,
         dtSec,
         isPullMode,
         isRecoverMode,
@@ -2093,6 +2094,7 @@ class FightPhysicsSystem {
     floatEntity,
     rodTipPosition,
     physics,
+    fightInput,
     dtSec,
     isPullMode,
     isRecoverMode,
@@ -2151,6 +2153,9 @@ class FightPhysicsSystem {
         rodControlResult,
       }),
       controlDirectionX: rodControlResult?.inputDirectionX ?? 0,
+      rawStaminaInputActive: this.#resolveRawStaminaInputActive({
+        fightInput,
+      }),
       fishStaminaResistanceKg: this.#resolveFishStaminaResistanceKg({
         forceData,
         fishRetrieveResult,
@@ -2286,6 +2291,17 @@ class FightPhysicsSystem {
       maxAllowedLateralOffsetPx,
       angleRatio,
     });
+  }
+
+  #resolveRawStaminaInputActive({ fightInput } = {}) {
+    const actions = fightInput?.fightActions;
+    if (actions?.hold?.active === true) return true;
+    if (actions?.lateralControl?.active === true) return true;
+    return (
+      fightInput?.isPulling === true ||
+      fightInput?.pullHeld === true ||
+      fightInput?.rodControlActive === true
+    );
   }
 
   #resolveFishStaminaResistanceKg({ forceData, fishRetrieveResult } = {}) {
@@ -3527,6 +3543,16 @@ class FightPhysicsSystem {
         staminaFrame?.staminaTransitionReason || "none",
       staminaRecoveryFromExhaustionActive:
         staminaFrame?.staminaRecoveryFromExhaustionActive === true,
+      rawStaminaInputActive:
+        staminaFrame?.rawStaminaInputActive === true,
+      staminaNoInputElapsedMs:
+        staminaFrame?.staminaNoInputElapsedMs ?? 0,
+      staminaNoInputTimeoutMs:
+        staminaFrame?.staminaNoInputTimeoutMs ?? 0,
+      staminaNoInputRecoveryReady:
+        staminaFrame?.staminaNoInputRecoveryReady === true,
+      staminaRecoveryTrigger:
+        staminaFrame?.staminaRecoveryTrigger || "none",
       staminaPhaseReturnThreshold:
         staminaFrame?.staminaPhaseReturnThreshold ?? 0,
       staminaBefore: staminaFrame?.staminaBefore ?? 0,

@@ -5,6 +5,8 @@ class StaminaTransitionResolver {
     maxStamina = 1,
     playerFatigueProgress = 0,
     controlExhausted = false,
+    staminaNoInputRecoveryReady = false,
+    recoveryTrigger = "none",
     staminaRecoveryFromExhaustionActive = false,
     config = {},
   } = {}) {
@@ -12,8 +14,12 @@ class StaminaTransitionResolver {
     const stamina = this.#positive(currentStamina);
     const max = Math.max(0.001, this.#positive(maxStamina, 1));
     const fatigueFull =
-      this.#clamp01(playerFatigueProgress) >= 1 ||
-      controlExhausted === true;
+      this.#clamp01(playerFatigueProgress) >= 1;
+    const recoveryFromExhaustionAllowed =
+      fatigueFull ||
+      controlExhausted === true ||
+      staminaNoInputRecoveryReady === true ||
+      staminaRecoveryFromExhaustionActive === true;
     const regenConfig = config.regen || {};
     const afterExhaustion = regenConfig.afterExhaustion || {};
     const threshold =
@@ -30,7 +36,7 @@ class StaminaTransitionResolver {
 
     if (resolvedPhase === "exhaustion") {
       const recoveryActive =
-        staminaRecoveryFromExhaustionActive === true || fatigueFull;
+        recoveryFromExhaustionAllowed;
       if (recoveryActive && stamina >= threshold && threshold > 0) {
         return Object.freeze({
           nextPhase: "stamina",
@@ -43,7 +49,7 @@ class StaminaTransitionResolver {
         nextPhase: "exhaustion",
         staminaRecoveryFromExhaustionActive: recoveryActive,
         transitionReason: recoveryActive
-          ? "fatigue_full_recovery"
+          ? `${recoveryTrigger || "already_recovering"}_recovery`
           : "exhaustion_locked",
         phaseReturnThreshold: threshold,
       });
