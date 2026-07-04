@@ -11,6 +11,9 @@ class StaminaDebugModule extends ConsoleTableDebugModule {
     console.table({
       "Fish condition phase": live.fishConditionPhase || "n/a",
       "Stamina frame phase": live.staminaPhase || "n/a",
+      "Stamina model": live.staminaModelMode || "legacy",
+      "Stamina mode": live.staminaMode || "idle",
+      "Transition reason": live.staminaTransitionReason || "none",
       "Fish state": live.fishState || "n/a",
       "Current stamina": DebugFormatters.number(live.currentStamina, 3),
       "Current exhaustion": DebugFormatters.number(live.currentExhaustion, 3),
@@ -34,6 +37,39 @@ class StaminaDebugModule extends ConsoleTableDebugModule {
         live.staminaUsedPlayerPressureKg,
         3,
       ),
+      "Player stamina pressure kg": DebugFormatters.number(
+        live.playerStaminaPressureKg,
+        3,
+      ),
+      "Fish stamina resistance kg": DebugFormatters.number(
+        live.fishStaminaResistanceKg,
+        3,
+      ),
+      "Player advantage ratio": DebugFormatters.number(
+        live.playerAdvantageRatio,
+        3,
+      ),
+      "Stamina drain multiplier": DebugFormatters.number(
+        live.staminaDrainMultiplier,
+        3,
+      ),
+      "Lateral edge ratio": DebugFormatters.number(
+        live.lateralEdgeRatio,
+        3,
+      ),
+      "Hold stamina multiplier": DebugFormatters.number(
+        live.holdStaminaDrainMultiplier,
+        3,
+      ),
+      "Control stamina multiplier": DebugFormatters.number(
+        live.controlStaminaDrainMultiplier,
+        3,
+      ),
+      "Control centering factor": DebugFormatters.number(
+        live.controlCenteringFactor,
+        3,
+      ),
+      "Control direction state": live.controlDirectionState || "unknown",
       "Weakest tackle limit kg": DebugFormatters.number(
         live.staminaWeakestTackleLimitKg,
         3,
@@ -56,6 +92,10 @@ class StaminaDebugModule extends ConsoleTableDebugModule {
       ),
       "Angle regen multiplier": DebugFormatters.number(
         live.staminaAngleRegenMultiplier,
+        3,
+      ),
+      "Fatigue regen multiplier": DebugFormatters.number(
+        live.fatigueRegenMultiplier,
         3,
       ),
       "Regen delay active": live.staminaRegenDelayActive === true,

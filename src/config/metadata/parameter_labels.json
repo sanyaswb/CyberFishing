@@ -1131,6 +1131,162 @@
     "label": "Exhausted rest weight multiplier",
     "description": "Runtime rest selection weight multiplier when ENDURANCE reaches zero."
   },
+  "stamina.mechanics.simplifiedModel.enabled": {
+    "label": "Simplified stamina model",
+    "description": "Enables the explicit drain, regen or idle stamina state machine."
+  },
+  "stamina.mechanics.pressure.thresholdKg": {
+    "label": "Stamina pressure threshold",
+    "description": "Minimum player stamina pressure required to count as active control."
+  },
+  "stamina.mechanics.pressure.inputWeights.rodHold": {
+    "label": "Rod hold stamina weight",
+    "description": "Input weight applied to Rod Hold stamina pressure."
+  },
+  "stamina.mechanics.pressure.inputWeights.reelHold": {
+    "label": "Reel hold stamina weight",
+    "description": "Input weight applied to Reel Hold stamina pressure."
+  },
+  "stamina.mechanics.pressure.inputWeights.control": {
+    "label": "Control stamina weight",
+    "description": "Input weight applied to lateral control stamina pressure."
+  },
+  "stamina.mechanics.pressure.lateralPositionWeights.enabled": {
+    "label": "Lateral stamina weights",
+    "description": "Enables center-to-edge pressure weighting for hold and control stamina drain."
+  },
+  "stamina.mechanics.pressure.lateralPositionWeights.centerHoldMultiplier": {
+    "label": "Center hold multiplier",
+    "description": "Hold/Reel stamina pressure multiplier when the fish is centered."
+  },
+  "stamina.mechanics.pressure.lateralPositionWeights.edgeHoldMultiplier": {
+    "label": "Edge hold multiplier",
+    "description": "Hold/Reel stamina pressure multiplier when the fish is at the lateral edge."
+  },
+  "stamina.mechanics.pressure.lateralPositionWeights.centerControlMultiplier": {
+    "label": "Center control multiplier",
+    "description": "Control stamina pressure multiplier when the fish is centered."
+  },
+  "stamina.mechanics.pressure.lateralPositionWeights.edgeControlMultiplier": {
+    "label": "Edge control multiplier",
+    "description": "Control stamina pressure multiplier when the fish is at the lateral edge."
+  },
+  "stamina.mechanics.pressure.lateralPositionWeights.curvePower": {
+    "label": "Lateral stamina curve",
+    "description": "Curve power used to interpolate hold and control stamina multipliers."
+  },
+  "stamina.mechanics.pressure.controlDirection.enabled": {
+    "label": "Control direction factor",
+    "description": "Enables stamina pressure scaling based on whether control pulls fish back to center."
+  },
+  "stamina.mechanics.pressure.controlDirection.centeringMultiplier": {
+    "label": "Centering control multiplier",
+    "description": "Control stamina multiplier when input pulls the fish toward center."
+  },
+  "stamina.mechanics.pressure.controlDirection.wrongDirectionMultiplier": {
+    "label": "Wrong control multiplier",
+    "description": "Control stamina multiplier when input pushes the fish farther from center."
+  },
+  "stamina.mechanics.pressure.controlDirection.neutralMultiplier": {
+    "label": "Neutral control multiplier",
+    "description": "Control stamina multiplier near center or without a strict direction."
+  },
+  "stamina.mechanics.pressure.controlDirection.centerDeadZoneRatio": {
+    "label": "Control center dead zone",
+    "description": "Lateral edge ratio near center where control direction is treated as neutral."
+  },
+  "stamina.mechanics.drain.baseDrainPerSecond": {
+    "label": "Base stamina drain",
+    "description": "Base STAMINA drain per second before player-vs-fish advantage scaling."
+  },
+  "stamina.mechanics.drain.enabled": {
+    "label": "Simplified stamina drain enabled",
+    "description": "Enables active stamina drain in the simplified stamina model."
+  },
+  "stamina.mechanics.drain.advantageDrain.enabled": {
+    "label": "Advantage drain enabled",
+    "description": "Enables player-vs-fish advantage scaling for stamina drain."
+  },
+  "stamina.mechanics.drain.advantageDrain.minAdvantageRatio": {
+    "label": "Minimum advantage ratio",
+    "description": "Player advantage ratio clamped as the lower stamina drain bound."
+  },
+  "stamina.mechanics.drain.advantageDrain.maxAdvantageRatio": {
+    "label": "Maximum advantage ratio",
+    "description": "Player advantage ratio clamped as the full-speed stamina drain bound."
+  },
+  "stamina.mechanics.drain.advantageDrain.minDrainMultiplier": {
+    "label": "Minimum drain multiplier",
+    "description": "Minimum stamina drain multiplier after advantage clamping."
+  },
+  "stamina.mechanics.drain.advantageDrain.maxDrainMultiplier": {
+    "label": "Maximum drain multiplier",
+    "description": "Maximum stamina drain multiplier after advantage clamping."
+  },
+  "stamina.mechanics.drain.advantageDrain.curvePower": {
+    "label": "Advantage drain curve",
+    "description": "Curve power applied to normalized player advantage before stamina drain scaling."
+  },
+  "stamina.mechanics.regen.baseRegenPerSecond": {
+    "label": "Base stamina regen",
+    "description": "Base STAMINA recovery per second before angle and fatigue multipliers."
+  },
+  "stamina.mechanics.regen.enabled": {
+    "label": "Simplified stamina regen enabled",
+    "description": "Enables stamina recovery in the simplified stamina model."
+  },
+  "stamina.mechanics.regen.beforeExhaustion.immediateOnNoPressure": {
+    "label": "Pre-exhaustion no-pressure regen",
+    "description": "Allows phase-1 stamina recovery immediately when player stamina pressure stops."
+  },
+  "stamina.mechanics.regen.beforeExhaustion.allowWhenPlayerFatigueFull": {
+    "label": "Pre-exhaustion fatigue regen",
+    "description": "Allows phase-1 stamina recovery when player fatigue reaches full red."
+  },
+  "stamina.mechanics.regen.afterExhaustion.allowOnlyWhenPlayerFatigueFull": {
+    "label": "Exhaustion fatigue-only regen",
+    "description": "Requires full player fatigue before STAMINA can recover in EXHAUSTION phase."
+  },
+  "stamina.mechanics.regen.afterExhaustion.phaseReturnThresholdRatio": {
+    "label": "Phase return threshold",
+    "description": "Small max-stamina ratio that must be recovered before EXHAUSTION returns to STAMINA."
+  },
+  "stamina.mechanics.regen.angleMultiplier.enabled": {
+    "label": "Angle regen multiplier enabled",
+    "description": "Enables line-angle stamina recovery speed scaling when recovery is already allowed."
+  },
+  "stamina.mechanics.regen.angleMultiplier.centerAngleDeg": {
+    "label": "Center regen angle",
+    "description": "Line angle treated as centered for stamina regen scaling."
+  },
+  "stamina.mechanics.regen.angleMultiplier.centerMultiplier": {
+    "label": "Center regen multiplier",
+    "description": "Stamina regen multiplier when the fish is near center angle."
+  },
+  "stamina.mechanics.regen.angleMultiplier.sideAngleDeg": {
+    "label": "Side regen angle",
+    "description": "Line angle where stamina regen reaches the side multiplier."
+  },
+  "stamina.mechanics.regen.angleMultiplier.sideMultiplier": {
+    "label": "Side regen multiplier",
+    "description": "Stamina regen multiplier at side angle."
+  },
+  "stamina.mechanics.regen.angleMultiplier.edgeAngleDeg": {
+    "label": "Edge regen angle",
+    "description": "Line angle where stamina regen reaches the edge multiplier."
+  },
+  "stamina.mechanics.regen.angleMultiplier.edgeMultiplier": {
+    "label": "Edge regen multiplier",
+    "description": "Stamina regen multiplier at extreme edge angle."
+  },
+  "stamina.mechanics.regen.fatigueMultiplier.enabled": {
+    "label": "Fatigue regen multiplier enabled",
+    "description": "Enables player fatigue based stamina recovery speed scaling."
+  },
+  "stamina.mechanics.regen.fatigueMultiplier.maxBonusMultiplier": {
+    "label": "Fatigue regen bonus",
+    "description": "Maximum extra stamina regen multiplier added at full player fatigue."
+  },
   "stamina.mechanics.phaseRecovery.enabled": {
     "label": "Phase recovery enabled",
     "description": "Enables returning from EXHAUSTION to STAMINA when player pressure is lost or the line becomes slack."

@@ -1,5 +1,22 @@
 # CyberFishing changelog
 
+## v0.23.25 - Simplified stamina model
+
+- Reworked fish stamina into a simplified explicit drain / regen / idle model.
+- Removed line slack / line taut dependency from active stamina phase switching.
+- Fixed pole rod phase flicker when STAMINA reaches zero.
+- Added player-vs-fish advantage based stamina drain scaling.
+- Added lateral position based stamina pressure weighting for rod hold, reel hold and control.
+- Added control direction factor so lateral control is most effective when pulling fish back to center.
+- Split stamina recovery rules before and after EXHAUSTION phase.
+- Added debug fields for simplified stamina model, lateral pressure and drain/regen decisions.
+
+## v0.23.24 - Fatigue HUD cleanup
+
+- Renamed stale hold-reel recovery debug source from `rod_hold_y` to `reel_hold_recovery`.
+- Implemented `playerPressureFatigue.recovery.holdCompleteVisibleMs` as a short render-only recovered state in the fatigue HUD.
+- Cached parsed fatigue HUD colors to avoid creating color objects during each render.
+
 ## v0.23.23 - Reel hold fatigue source
 
 - Changed Player Pressure Fatigue source from rod hold pressure to reel hold.

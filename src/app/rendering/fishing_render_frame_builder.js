@@ -45,6 +45,7 @@ class FishingRenderFrameBuilder {
     fishCondition: null,
     fightDebug: null,
     holdState: null,
+    nowMs: 0,
   };
   #lineFrameContext = {
     state: "",
@@ -188,6 +189,7 @@ class FishingRenderFrameBuilder {
       hudContext.fishCondition = intent.fishCondition;
       hudContext.fightDebug = fightDebug;
       hudContext.holdState = this.#getHoldState();
+      hudContext.nowMs = this.#clock.now;
       this.#hudBuilder.buildInto(hudContext);
     }
   }

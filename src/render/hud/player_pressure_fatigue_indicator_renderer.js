@@ -1,6 +1,7 @@
 class PlayerPressureFatigueIndicatorRenderer {
   #surface;
   #fallbackConfig;
+  #colorCache = new Map();
 
   constructor({ surface, config = {} } = {}) {
     if (!surface || typeof surface.arc !== "function") {
@@ -78,6 +79,7 @@ class PlayerPressureFatigueIndicatorRenderer {
   #color({ state, stateName, config }) {
     const colors = config.colors || {};
     if (stateName === "grace") return colors.grace || "#ffffff";
+    if (stateName === "recovered") return colors.ready || "#2ecc71";
     const progress = this.#clamp01(state.fatigueProgress);
     if (progress < 0.5) {
       return this.#lerpColor(
@@ -105,14 +107,17 @@ class PlayerPressureFatigueIndicatorRenderer {
 
   #parseColor(value) {
     const source = String(value || "").trim();
+    if (this.#colorCache.has(source)) return this.#colorCache.get(source);
+    let parsed = { r: 255, g: 255, b: 255 };
     if (/^#[0-9a-f]{6}$/i.test(source)) {
-      return {
+      parsed = {
         r: parseInt(source.slice(1, 3), 16),
         g: parseInt(source.slice(3, 5), 16),
         b: parseInt(source.slice(5, 7), 16),
       };
     }
-    return { r: 255, g: 255, b: 255 };
+    this.#colorCache.set(source, parsed);
+    return parsed;
   }
 
   #positive(value, fallback = 0) {

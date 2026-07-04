@@ -421,6 +421,69 @@ const CONFIG = {
       staminaBossMultiplier: 1.5,
     },
     mechanics: {
+      simplifiedModel: {
+        enabled: true,
+      },
+      pressure: {
+        thresholdKg: 0.01,
+        inputWeights: {
+          rodHold: 1.0,
+          reelHold: 1.0,
+          control: 1.0,
+        },
+        lateralPositionWeights: {
+          enabled: true,
+          centerHoldMultiplier: 1.0,
+          edgeHoldMultiplier: 0.1,
+          centerControlMultiplier: 0.1,
+          edgeControlMultiplier: 1.0,
+          curvePower: 1.0,
+        },
+        controlDirection: {
+          enabled: true,
+          centeringMultiplier: 1.0,
+          wrongDirectionMultiplier: 0.15,
+          neutralMultiplier: 0.5,
+          centerDeadZoneRatio: 0.05,
+        },
+      },
+      drain: {
+        enabled: true,
+        baseDrainPerSecond: 100,
+        advantageDrain: {
+          enabled: true,
+          minAdvantageRatio: 0.1,
+          maxAdvantageRatio: 0.9,
+          minDrainMultiplier: 0.25,
+          maxDrainMultiplier: 1.0,
+          curvePower: 1.0,
+        },
+      },
+      regen: {
+        enabled: true,
+        baseRegenPerSecond: 20,
+        beforeExhaustion: {
+          immediateOnNoPressure: true,
+          allowWhenPlayerFatigueFull: true,
+        },
+        afterExhaustion: {
+          allowOnlyWhenPlayerFatigueFull: true,
+          phaseReturnThresholdRatio: 0.001,
+        },
+        angleMultiplier: {
+          enabled: true,
+          centerAngleDeg: 15,
+          centerMultiplier: 1.0,
+          sideAngleDeg: 75,
+          sideMultiplier: 1.5,
+          edgeAngleDeg: 90,
+          edgeMultiplier: 2.0,
+        },
+        fatigueMultiplier: {
+          enabled: true,
+          maxBonusMultiplier: 1.0,
+        },
+      },
       // Phase 1: Stamina
       baseStaminaMultiplier: 50,
       flatBonus: 500,
@@ -494,7 +557,7 @@ const CONFIG = {
           enabled: true,
           noPressureTimeoutMs: 5000,
           slackLineRecovery: {
-            enabled: true,
+            enabled: false,
             lineTautThresholdRatio: 0.1,
           },
         },

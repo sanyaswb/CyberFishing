@@ -453,6 +453,7 @@ class FightPhysicsSystem {
         dtSec,
         isPullMode,
         isRecoverMode,
+        holdReelRecover,
         playerPressureFatigue: playerPressureFatigueFrame,
       }),
     );
@@ -2095,6 +2096,7 @@ class FightPhysicsSystem {
     dtSec,
     isPullMode,
     isRecoverMode,
+    holdReelRecover,
     playerPressureFatigue,
   } = {}) {
     const playerIsPulling = !!isPullMode && !isRecoverMode;
@@ -2110,6 +2112,13 @@ class FightPhysicsSystem {
       0,
       Number(rodControlResult?.forceKg) || 0,
     );
+    const appliedReelHoldKg = holdReelRecover?.active === true
+      ? Math.max(
+          0,
+          (Number(holdReelRecover?.reelMaxLoadKg) || 0) *
+            (Number(holdReelRecover?.reelLoadReserveRatio) || 0),
+        )
+      : 0;
     const playerPressureControlExhausted =
       playerPressureFatigue?.isControlExhausted === true;
     const weakestFrame =
@@ -2126,13 +2135,25 @@ class FightPhysicsSystem {
       fishTensionKg:
         fishRetrieveResult?.fishTensionKg ?? forceData?.fishTensionKg,
       appliedRodHoldKg,
+      appliedReelHoldKg,
       appliedControlKg,
       playerPressureControlExhausted,
+      playerFatigueProgress: playerPressureFatigue?.fatigueProgress ?? 0,
       weakestTackleLimitKg: weakestFrame.weakestTackleLimitKg,
+      currentStamina: fishCondition?.currentStamina,
+      maxStamina: fishCondition?.maxStamina ?? fishCondition?.maxPoints,
       lineAngleDeg: this.#resolveLineAngleDeg({
         floatEntity,
         rodTipPosition,
         rodControlResult,
+      }),
+      fishLateralContext: this.#resolveStaminaLateralContext({
+        rodControlResult,
+      }),
+      controlDirectionX: rodControlResult?.inputDirectionX ?? 0,
+      fishStaminaResistanceKg: this.#resolveFishStaminaResistanceKg({
+        forceData,
+        fishRetrieveResult,
       }),
       isLineFullyExtended: !!lineState?.isFullyExtended,
       fishWonRadialForceKg:
@@ -2249,6 +2270,39 @@ class FightPhysicsSystem {
     }
     const existing = Number(rodControlResult?.lineAngleDeg);
     return Number.isFinite(existing) && existing >= 0 ? existing : 0;
+  }
+
+  #resolveStaminaLateralContext({ rodControlResult } = {}) {
+    const fishOffsetX = Number(rodControlResult?.fishOffsetX) || 0;
+    const angleRatio = Math.max(
+      0,
+      Math.min(1, Number(rodControlResult?.angleRatio) || 0),
+    );
+    const absOffset = Math.abs(fishOffsetX);
+    const maxAllowedLateralOffsetPx =
+      angleRatio > 0.000001 ? absOffset / angleRatio : 0;
+    return Object.freeze({
+      fishLateralOffsetPx: fishOffsetX,
+      maxAllowedLateralOffsetPx,
+      angleRatio,
+    });
+  }
+
+  #resolveFishStaminaResistanceKg({ forceData, fishRetrieveResult } = {}) {
+    const candidates = [
+      forceData?.fishCurrentStateMaxForceKg,
+      forceData?.debug?.fishCurrentStateMaxForceKg,
+      forceData?.fishStateMaxForceWithoutPowerDebuffKg,
+      fishRetrieveResult?.fishOppositionKg,
+      forceData?.fishOppositionKg,
+      forceData?.totalFishForceKg,
+      forceData?.fishWeightKg,
+    ];
+    for (const candidate of candidates) {
+      const value = Number(candidate);
+      if (Number.isFinite(value) && value > 0) return value;
+    }
+    return 0;
   }
 
   #warnStaminaBudgetOverflow(frame) {
@@ -2434,7 +2488,7 @@ class FightPhysicsSystem {
       lineRecoverableMeters,
       physics,
     });
-    this.#holdReelRecoverState.source = "rod_hold_y";
+    this.#holdReelRecoverState.source = "reel_hold_recovery";
     return this.#holdReelRecoverState;
   }
 
@@ -3467,8 +3521,61 @@ class FightPhysicsSystem {
       frameEnduranceProgress:
         staminaFrame?.frameEnduranceProgress ?? 0,
       staminaPressureRatio: staminaFrame?.staminaPressureRatio ?? 0,
+      staminaModelMode: staminaFrame?.staminaModelMode || "legacy",
+      staminaMode: staminaFrame?.staminaMode || "idle",
+      staminaTransitionReason:
+        staminaFrame?.staminaTransitionReason || "none",
+      staminaRecoveryFromExhaustionActive:
+        staminaFrame?.staminaRecoveryFromExhaustionActive === true,
+      staminaPhaseReturnThreshold:
+        staminaFrame?.staminaPhaseReturnThreshold ?? 0,
+      staminaBefore: staminaFrame?.staminaBefore ?? 0,
+      staminaAfter: staminaFrame?.staminaAfter ?? 0,
+      playerStaminaPressureKg:
+        staminaFrame?.playerStaminaPressureKg ??
+        staminaFrame?.usedPlayerPressureKg ??
+        0,
+      fishStaminaResistanceKg:
+        staminaFrame?.fishStaminaResistanceKg ?? 0,
+      playerAdvantageRatio:
+        staminaFrame?.playerAdvantageRatio ??
+        staminaFrame?.activeDrainRatio ??
+        0,
+      clampedAdvantageRatio:
+        staminaFrame?.clampedAdvantageRatio ?? 0,
+      staminaDrainMultiplier:
+        staminaFrame?.staminaDrainMultiplier ?? 0,
+      lateralEdgeRatio:
+        staminaFrame?.lateralEdgeRatio ?? 0,
+      holdStaminaDrainMultiplier:
+        staminaFrame?.holdStaminaDrainMultiplier ?? 1,
+      controlStaminaDrainMultiplier:
+        staminaFrame?.controlStaminaDrainMultiplier ??
+        staminaFrame?.lateralStaminaWeight ??
+        0,
+      controlCenteringFactor:
+        staminaFrame?.controlCenteringFactor ?? 1,
+      controlDirectionState:
+        staminaFrame?.controlDirectionState || "unknown",
+      rodHoldStaminaPressureKg:
+        staminaFrame?.rodHoldStaminaPressureKg ?? 0,
+      reelHoldStaminaPressureKg:
+        staminaFrame?.reelHoldStaminaPressureKg ?? 0,
+      controlStaminaPressureKg:
+        staminaFrame?.controlStaminaPressureKg ?? 0,
+      staminaRegenPerSecond:
+        staminaFrame?.passiveStaminaRegenPerSecond ?? 0,
+      fatigueRegenMultiplier:
+        staminaFrame?.fatigueRegenMultiplier ?? 1,
+      staminaPlayerFatigueProgress:
+        staminaFrame?.playerFatigueProgress ??
+        playerPressureFatigue?.fatigueProgress ??
+        0,
+      staminaPlayerFatigueFull:
+        staminaFrame?.playerFatigueFull === true,
       angleStressRatio: staminaFrame?.angleStressRatio ?? 0,
       staminaAppliedRodHoldKg: staminaFrame?.appliedRodHoldKg ?? 0,
+      staminaAppliedReelHoldKg: staminaFrame?.appliedReelHoldKg ?? 0,
       staminaAppliedControlKg: staminaFrame?.appliedControlKg ?? 0,
       staminaPhysicalAppliedRodHoldKg:
         staminaFrame?.physicalAppliedRodHoldKg ??

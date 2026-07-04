@@ -1,13 +1,23 @@
 class FightHudFrameBuilder {
   #config;
   #canvasMetrics;
+  #fatigueCompleteVisibleMs = 0;
+  #previousFatigueStateName = "idle";
+  #previousFatigueBuildNowMs = null;
 
   constructor({ config, canvasMetrics }) {
     this.#config = config;
     this.#canvasMetrics = canvasMetrics;
   }
 
-  buildInto({ target, tensionMeter, fishCondition, fightDebug, holdState }) {
+  buildInto({
+    target,
+    tensionMeter,
+    fishCondition,
+    fightDebug,
+    holdState,
+    nowMs = null,
+  }) {
     if (!tensionMeter || !fishCondition) return;
     this.#assertTensionMeter(tensionMeter);
     target.visible = true;
@@ -22,7 +32,11 @@ class FightHudFrameBuilder {
       tensionMeter,
       fightDebug,
     );
-    this.#buildPlayerPressureFatigue(target.playerPressureFatigue, fightDebug);
+    this.#buildPlayerPressureFatigue(
+      target.playerPressureFatigue,
+      fightDebug,
+      nowMs,
+    );
     this.#buildHoldCharges(target.holdCharges, holdState);
   }
 
@@ -140,15 +154,35 @@ class FightHudFrameBuilder {
     target.viewportHeight = this.#canvasMetrics.height;
   }
 
-  #buildPlayerPressureFatigue(target, debug) {
+  #buildPlayerPressureFatigue(target, debug, nowMs) {
     const config =
       this.#config.physics?.fight?.playerPressureFatigue?.visual ||
       this.#config.playerPressureFatigue?.visual ||
       {};
+    const recoveryConfig =
+      this.#config.physics?.fight?.playerPressureFatigue?.recovery ||
+      this.#config.playerPressureFatigue?.recovery ||
+      {};
     const enabled =
       debug?.playerPressureFatigueEnabled === true &&
       config.enabled === true;
-    const stateName = debug?.playerPressureFatigueState || "idle";
+    const frameDeltaMs = this.#resolveFrameDeltaMs(nowMs);
+    const rawStateName = debug?.playerPressureFatigueState || "idle";
+    const holdCompleteVisibleMs = Math.max(
+      0,
+      Number(recoveryConfig.holdCompleteVisibleMs) || 0,
+    );
+    if (
+      enabled &&
+      rawStateName === "idle" &&
+      this.#previousFatigueStateName === "recovering"
+    ) {
+      this.#fatigueCompleteVisibleMs = holdCompleteVisibleMs;
+    } else if (rawStateName !== "idle") {
+      this.#fatigueCompleteVisibleMs = 0;
+    }
+    const completeVisible = this.#fatigueCompleteVisibleMs > 0;
+    const stateName = completeVisible ? "recovered" : rawStateName;
     const idleVisible = config.idleVisible === true;
     const visible = enabled && (idleVisible || stateName !== "idle");
     target.visible = visible;
@@ -175,6 +209,20 @@ class FightHudFrameBuilder {
         debug?.playerPressureFatigueRecoveryProgress,
       ),
     };
+    this.#fatigueCompleteVisibleMs = Math.max(
+      0,
+      this.#fatigueCompleteVisibleMs - frameDeltaMs,
+    );
+    this.#previousFatigueStateName = rawStateName;
+  }
+
+  #resolveFrameDeltaMs(nowMs) {
+    const now = Number(nowMs);
+    if (!Number.isFinite(now)) return 0;
+    const previous = this.#previousFatigueBuildNowMs;
+    this.#previousFatigueBuildNowMs = now;
+    if (!Number.isFinite(previous)) return 0;
+    return Math.max(0, Math.min(250, now - previous));
   }
 
   #assertTensionMeter(tensionMeter) {

@@ -1156,6 +1156,14 @@ class FishCondition {
     );
   }
 
+  applyExhaustionStaminaRegen(amount) {
+    if (this.#phase !== "exhaustion") return;
+    this.#currentStamina = Math.min(
+      this.#maxStamina,
+      this.#currentStamina + Math.max(0, Number(amount) || 0),
+    );
+  }
+
   applyExhaustionDamage(amount) {
     if (this.#phase !== "exhaustion") return;
     this.#currentExhaustion = Math.max(0, this.#currentExhaustion - amount);

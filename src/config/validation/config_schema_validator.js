@@ -458,6 +458,7 @@ class ConfigSchemaValidator {
 
   #validateStaminaMechanicsConfig() {
     const mechanics = this.config.stamina?.mechanics || {};
+    this.#validateSimplifiedStaminaModelConfig(mechanics);
     const powerDebuff = mechanics.powerDebuff || {};
     if (!powerDebuff || typeof powerDebuff !== "object") {
       this.#error(
@@ -588,6 +589,160 @@ class ConfigSchemaValidator {
       "stamina.mechanics.phaseRecovery.enduranceRecovery.maxRecoveryRatio",
       enduranceRecovery.maxRecoveryRatio,
       { min: 0, max: 1 },
+    );
+  }
+
+  #validateSimplifiedStaminaModelConfig(mechanics) {
+    const simplifiedModel = mechanics.simplifiedModel || {};
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.simplifiedModel.enabled",
+      simplifiedModel.enabled,
+    );
+
+    const pressure = mechanics.pressure || {};
+    this.#requireFiniteNumberWithLabel(
+      "stamina.mechanics.pressure.thresholdKg",
+      pressure.thresholdKg,
+      { min: 0 },
+    );
+    const inputWeights = pressure.inputWeights || {};
+    for (const key of ["rodHold", "reelHold", "control"]) {
+      this.#requireFiniteNumberWithLabel(
+        `stamina.mechanics.pressure.inputWeights.${key}`,
+        inputWeights[key],
+        { min: 0 },
+      );
+    }
+
+    const lateral = pressure.lateralPositionWeights || {};
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.pressure.lateralPositionWeights.enabled",
+      lateral.enabled,
+    );
+    for (const key of [
+      "centerHoldMultiplier",
+      "edgeHoldMultiplier",
+      "centerControlMultiplier",
+      "edgeControlMultiplier",
+      "curvePower",
+    ]) {
+      this.#requireFiniteNumberWithLabel(
+        `stamina.mechanics.pressure.lateralPositionWeights.${key}`,
+        lateral[key],
+        { min: 0 },
+      );
+    }
+
+    const controlDirection = pressure.controlDirection || {};
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.pressure.controlDirection.enabled",
+      controlDirection.enabled,
+    );
+    for (const key of [
+      "centeringMultiplier",
+      "wrongDirectionMultiplier",
+      "neutralMultiplier",
+    ]) {
+      this.#requireFiniteNumberWithLabel(
+        `stamina.mechanics.pressure.controlDirection.${key}`,
+        controlDirection[key],
+        { min: 0 },
+      );
+    }
+    this.#requireFiniteNumberWithLabel(
+      "stamina.mechanics.pressure.controlDirection.centerDeadZoneRatio",
+      controlDirection.centerDeadZoneRatio,
+      { min: 0, max: 1 },
+    );
+
+    const drain = mechanics.drain || {};
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.drain.enabled",
+      drain.enabled,
+    );
+    this.#requireFiniteNumberWithLabel(
+      "stamina.mechanics.drain.baseDrainPerSecond",
+      drain.baseDrainPerSecond,
+      { min: 0 },
+    );
+    const advantageDrain = drain.advantageDrain || {};
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.drain.advantageDrain.enabled",
+      advantageDrain.enabled,
+    );
+    for (const key of [
+      "minAdvantageRatio",
+      "maxAdvantageRatio",
+      "minDrainMultiplier",
+      "maxDrainMultiplier",
+      "curvePower",
+    ]) {
+      this.#requireFiniteNumberWithLabel(
+        `stamina.mechanics.drain.advantageDrain.${key}`,
+        advantageDrain[key],
+        { min: 0 },
+      );
+    }
+
+    const regen = mechanics.regen || {};
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.regen.enabled",
+      regen.enabled,
+    );
+    this.#requireFiniteNumberWithLabel(
+      "stamina.mechanics.regen.baseRegenPerSecond",
+      regen.baseRegenPerSecond,
+      { min: 0 },
+    );
+    const beforeExhaustion = regen.beforeExhaustion || {};
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.regen.beforeExhaustion.immediateOnNoPressure",
+      beforeExhaustion.immediateOnNoPressure,
+    );
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.regen.beforeExhaustion.allowWhenPlayerFatigueFull",
+      beforeExhaustion.allowWhenPlayerFatigueFull,
+    );
+    const afterExhaustion = regen.afterExhaustion || {};
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.regen.afterExhaustion.allowOnlyWhenPlayerFatigueFull",
+      afterExhaustion.allowOnlyWhenPlayerFatigueFull,
+    );
+    this.#requireFiniteNumberWithLabel(
+      "stamina.mechanics.regen.afterExhaustion.phaseReturnThresholdRatio",
+      afterExhaustion.phaseReturnThresholdRatio,
+      { min: 0, max: 1 },
+    );
+
+    const angleMultiplier = regen.angleMultiplier || {};
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.regen.angleMultiplier.enabled",
+      angleMultiplier.enabled,
+    );
+    for (const key of [
+      "centerAngleDeg",
+      "centerMultiplier",
+      "sideAngleDeg",
+      "sideMultiplier",
+      "edgeAngleDeg",
+      "edgeMultiplier",
+    ]) {
+      this.#requireFiniteNumberWithLabel(
+        `stamina.mechanics.regen.angleMultiplier.${key}`,
+        angleMultiplier[key],
+        { min: 0 },
+      );
+    }
+
+    const fatigueMultiplier = regen.fatigueMultiplier || {};
+    this.#requireBooleanWithLabel(
+      "stamina.mechanics.regen.fatigueMultiplier.enabled",
+      fatigueMultiplier.enabled,
+    );
+    this.#requireFiniteNumberWithLabel(
+      "stamina.mechanics.regen.fatigueMultiplier.maxBonusMultiplier",
+      fatigueMultiplier.maxBonusMultiplier,
+      { min: 0 },
     );
   }
 

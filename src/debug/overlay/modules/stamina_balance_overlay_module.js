@@ -21,6 +21,7 @@ class StaminaBalanceOverlayModule extends OverlayModule {
     html += this.metricRow("Frame phase", framePhase || "stamina", {
       color: framePhase === "exhaustion" ? "#ff8888" : "#8a9bac",
     });
+    html += this.#renderSimplifiedSummary({ data, f });
 
     if (phase === "exhaustion") {
       return this.#renderEndurancePhase({ html, data, f });
@@ -33,6 +34,75 @@ class StaminaBalanceOverlayModule extends OverlayModule {
     const text = String(value || "").trim().toLowerCase();
     if (text === "exhaustion" || text === "stamina") return text;
     return null;
+  }
+
+  #renderSimplifiedSummary({ data, f }) {
+    if (data.staminaModelMode !== "simplified") {
+      return this.metricRow("Model", data.staminaModelMode || "legacy", {
+        color: "#8a9bac",
+      });
+    }
+    let html = "";
+    html += this.metricRow("Model", "simplified", {
+      color: "#00ff80",
+    });
+    html += this.metricRow(
+      "Mode / reason",
+      `${data.staminaMode || "idle"} / ${data.staminaTransitionReason || "none"}`,
+      {
+        color: data.staminaMode === "drain"
+          ? "#ff8888"
+          : data.staminaMode === "regen"
+            ? "#00ff80"
+            : "#8a9bac",
+      },
+    );
+    html += this.metricRow(
+      "Stamina pressure",
+      `${f.kg(data.playerStaminaPressureKg, 3)} vs ${f.kg(data.fishStaminaResistanceKg, 3)}`,
+      { color: "#ffaa00" },
+    );
+    html += this.metricRow(
+      "Advantage / drain mult",
+      `${f.percent(data.playerAdvantageRatio, 1)} / x${f.num(data.staminaDrainMultiplier, 2)}`,
+      { color: f.stressColor(data.playerAdvantageRatio) },
+    );
+    html += this.metricRow(
+      "Lateral edge",
+      f.percent(data.lateralEdgeRatio, 1),
+      { color: "#73c2fb" },
+    );
+    html += this.metricRow(
+      "Hold / control mult",
+      `x${f.num(data.holdStaminaDrainMultiplier, 2)} / x${f.num(data.controlStaminaDrainMultiplier, 2)}`,
+      { color: "#c792ea" },
+    );
+    html += this.metricRow(
+      "Control dir",
+      `${data.controlDirectionState || "unknown"} x${f.num(data.controlCenteringFactor, 2)}`,
+      {
+        color: data.controlDirectionState === "centering"
+          ? "#00ff80"
+          : data.controlDirectionState === "wrong"
+            ? "#ff8888"
+            : "#8a9bac",
+      },
+    );
+    html += this.metricRow(
+      "Regen multipliers",
+      `angle x${f.num(data.staminaAngleRegenMultiplier, 2)} / fatigue x${f.num(data.fatigueRegenMultiplier, 2)}`,
+      { color: "#00ff80" },
+    );
+    html += this.metricRow(
+      "Exhaustion recovery",
+      data.staminaRecoveryFromExhaustionActive ? "active" : "locked",
+      {
+        color: data.staminaRecoveryFromExhaustionActive
+          ? "#00ff80"
+          : "#8a9bac",
+      },
+    );
+    return html;
   }
 
   #renderStaminaPhase({ html, data, f }) {

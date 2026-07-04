@@ -410,6 +410,146 @@
     "description": "Runtime rest selection weight multiplier when ENDURANCE reaches zero."
   },
   {
+    "key": "stamina.mechanics.simplifiedModel.enabled",
+    "ua": "simplified_stamina_model_enabled",
+    "description": "Enables the explicit drain, regen or idle stamina state machine."
+  },
+  {
+    "key": "stamina.mechanics.pressure.thresholdKg",
+    "ua": "stamina_pressure_threshold_kg",
+    "description": "Minimum player stamina pressure required to count as active control."
+  },
+  {
+    "key": "stamina.mechanics.pressure.inputWeights.rodHold",
+    "ua": "stamina_rod_hold_weight",
+    "description": "Input weight applied to Rod Hold stamina pressure."
+  },
+  {
+    "key": "stamina.mechanics.pressure.inputWeights.reelHold",
+    "ua": "stamina_reel_hold_weight",
+    "description": "Input weight applied to Reel Hold stamina pressure."
+  },
+  {
+    "key": "stamina.mechanics.pressure.inputWeights.control",
+    "ua": "stamina_control_weight",
+    "description": "Input weight applied to lateral control stamina pressure."
+  },
+  {
+    "key": "stamina.mechanics.pressure.lateralPositionWeights.enabled",
+    "ua": "stamina_lateral_weights_enabled",
+    "description": "Enables center-to-edge pressure weighting for hold and control stamina drain."
+  },
+  {
+    "key": "stamina.mechanics.pressure.lateralPositionWeights.centerHoldMultiplier",
+    "ua": "stamina_center_hold_multiplier",
+    "description": "Hold/Reel stamina pressure multiplier when the fish is centered."
+  },
+  {
+    "key": "stamina.mechanics.pressure.lateralPositionWeights.edgeHoldMultiplier",
+    "ua": "stamina_edge_hold_multiplier",
+    "description": "Hold/Reel stamina pressure multiplier when the fish is at the lateral edge."
+  },
+  {
+    "key": "stamina.mechanics.pressure.lateralPositionWeights.centerControlMultiplier",
+    "ua": "stamina_center_control_multiplier",
+    "description": "Control stamina pressure multiplier when the fish is centered."
+  },
+  {
+    "key": "stamina.mechanics.pressure.lateralPositionWeights.edgeControlMultiplier",
+    "ua": "stamina_edge_control_multiplier",
+    "description": "Control stamina pressure multiplier when the fish is at the lateral edge."
+  },
+  {
+    "key": "stamina.mechanics.pressure.lateralPositionWeights.curvePower",
+    "ua": "stamina_lateral_curve_power",
+    "description": "Curve power used to interpolate hold and control stamina multipliers."
+  },
+  {
+    "key": "stamina.mechanics.pressure.controlDirection.enabled",
+    "ua": "stamina_control_direction_enabled",
+    "description": "Enables stamina pressure scaling based on whether control pulls fish back to center."
+  },
+  {
+    "key": "stamina.mechanics.pressure.controlDirection.centeringMultiplier",
+    "ua": "stamina_centering_control_multiplier",
+    "description": "Control stamina multiplier when input pulls the fish toward center."
+  },
+  {
+    "key": "stamina.mechanics.pressure.controlDirection.wrongDirectionMultiplier",
+    "ua": "stamina_wrong_control_multiplier",
+    "description": "Control stamina multiplier when input pushes the fish farther from center."
+  },
+  {
+    "key": "stamina.mechanics.pressure.controlDirection.neutralMultiplier",
+    "ua": "stamina_neutral_control_multiplier",
+    "description": "Control stamina multiplier near center or without a strict direction."
+  },
+  {
+    "key": "stamina.mechanics.pressure.controlDirection.centerDeadZoneRatio",
+    "ua": "stamina_control_center_dead_zone_ratio",
+    "description": "Lateral edge ratio near center where control direction is treated as neutral."
+  },
+  {
+    "key": "stamina.mechanics.drain.baseDrainPerSecond",
+    "ua": "stamina_base_drain_per_second",
+    "description": "Base STAMINA drain per second before player-vs-fish advantage scaling."
+  },
+  {
+    "key": "stamina.mechanics.drain.advantageDrain.minAdvantageRatio",
+    "ua": "stamina_min_advantage_ratio",
+    "description": "Player advantage ratio clamped as the lower stamina drain bound."
+  },
+  {
+    "key": "stamina.mechanics.drain.advantageDrain.maxAdvantageRatio",
+    "ua": "stamina_max_advantage_ratio",
+    "description": "Player advantage ratio clamped as the full-speed stamina drain bound."
+  },
+  {
+    "key": "stamina.mechanics.drain.advantageDrain.minDrainMultiplier",
+    "ua": "stamina_min_drain_multiplier",
+    "description": "Minimum stamina drain multiplier after advantage clamping."
+  },
+  {
+    "key": "stamina.mechanics.drain.advantageDrain.maxDrainMultiplier",
+    "ua": "stamina_max_drain_multiplier",
+    "description": "Maximum stamina drain multiplier after advantage clamping."
+  },
+  {
+    "key": "stamina.mechanics.drain.advantageDrain.curvePower",
+    "ua": "stamina_advantage_drain_curve_power",
+    "description": "Curve power applied to normalized player advantage before stamina drain scaling."
+  },
+  {
+    "key": "stamina.mechanics.regen.baseRegenPerSecond",
+    "ua": "stamina_base_regen_per_second",
+    "description": "Base STAMINA recovery per second before angle and fatigue multipliers."
+  },
+  {
+    "key": "stamina.mechanics.regen.beforeExhaustion.immediateOnNoPressure",
+    "ua": "stamina_pre_exhaustion_no_pressure_regen",
+    "description": "Allows phase-1 stamina recovery immediately when player stamina pressure stops."
+  },
+  {
+    "key": "stamina.mechanics.regen.beforeExhaustion.allowWhenPlayerFatigueFull",
+    "ua": "stamina_pre_exhaustion_fatigue_regen",
+    "description": "Allows phase-1 stamina recovery when player fatigue reaches full red."
+  },
+  {
+    "key": "stamina.mechanics.regen.afterExhaustion.allowOnlyWhenPlayerFatigueFull",
+    "ua": "stamina_exhaustion_fatigue_only_regen",
+    "description": "Requires full player fatigue before STAMINA can recover in EXHAUSTION phase."
+  },
+  {
+    "key": "stamina.mechanics.regen.afterExhaustion.phaseReturnThresholdRatio",
+    "ua": "stamina_phase_return_threshold_ratio",
+    "description": "Small max-stamina ratio that must be recovered before EXHAUSTION returns to STAMINA."
+  },
+  {
+    "key": "stamina.mechanics.regen.fatigueMultiplier.maxBonusMultiplier",
+    "ua": "stamina_fatigue_regen_bonus_multiplier",
+    "description": "Maximum extra stamina regen multiplier added at full player fatigue."
+  },
+  {
     "key": "stamina.mechanics.phaseRecovery.enabled",
     "ua": "phase_recovery_enabled",
     "description": "Enables EXHAUSTION to STAMINA rollback and smooth ENDURANCE recovery."

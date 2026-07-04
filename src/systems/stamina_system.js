@@ -67,6 +67,10 @@ class StaminaController {
   #evaluateStaminaBalanceFrame(frame) {
     this.#lastStaminaBalanceFrame = frame;
     this.#phaseRecoveryNoPressureMs = 0;
+    if (frame.staminaModelMode === "simplified") {
+      this.#evaluateSimplifiedStaminaFrame(frame);
+      return;
+    }
     const netChange = Number(frame.netStaminaChange) || 0;
     if (netChange < 0) {
       this.#condition.applyStaminaDamage(-netChange);
@@ -82,10 +86,62 @@ class StaminaController {
       this.#applyFinalDebuffIfExhausted();
       return;
     }
+    if (frame.staminaModelMode === "simplified") {
+      this.#evaluateSimplifiedEnduranceFrame(frame, dt);
+      return;
+    }
     if (this.#shouldReturnToStaminaPhase(frame, dt)) {
       this.#returnToStaminaPhase();
       return;
     }
+    this.#updateMasteryWindow(dt, 0, this.getExhaustionDurationMs());
+
+    const damage = Math.max(
+      0,
+      Number(frame.totalEnduranceDrain ?? frame.enduranceTotalDrain) || 0,
+    );
+    if (damage <= 0) {
+      this.#applyFinalDebuffIfExhausted();
+      return;
+    }
+
+    this.#applyEnduranceFrameDrain({ damage });
+  }
+
+  #evaluateSimplifiedStaminaFrame(frame) {
+    const mode = frame.staminaMode || "idle";
+    if (mode === "drain") {
+      const damage = Math.max(
+        0,
+        Number(frame.activeStaminaDrain ?? frame.totalStaminaDrain) || 0,
+      );
+      if (damage > 0) this.#condition.applyStaminaDamage(damage);
+    } else if (mode === "regen") {
+      const regen = Math.max(
+        0,
+        Number(frame.passiveStaminaRegen ?? frame.staminaRegen) || 0,
+      );
+      if (regen > 0) this.#condition.applyStaminaRegen(regen);
+    }
+    this.#recoverEnduranceInStaminaPhase(frame);
+  }
+
+  #evaluateSimplifiedEnduranceFrame(frame, dt) {
+    const mode = frame.staminaMode || "idle";
+    if (mode === "regen") {
+      const regen = Math.max(
+        0,
+        Number(frame.passiveStaminaRegen ?? frame.staminaRegen) || 0,
+      );
+      if (regen > 0) {
+        this.#condition.applyExhaustionStaminaRegen?.(regen);
+      }
+      if (frame.nextPhase === "stamina") {
+        this.#returnToStaminaPhase();
+        return;
+      }
+    }
+
     this.#updateMasteryWindow(dt, 0, this.getExhaustionDurationMs());
 
     const damage = Math.max(

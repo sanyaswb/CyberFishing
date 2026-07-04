@@ -63,6 +63,12 @@ const FILES = [
   "src/core/fishing/stamina/active_endurance_drain_calculator.js",
   "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
   "src/core/fishing/stamina/passive_stamina_drain_calculator.js",
+  "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+  "src/core/fishing/stamina/stamina_pressure_resolver.js",
+  "src/core/fishing/stamina/stamina_drain_calculator.js",
+  "src/core/fishing/stamina/stamina_regen_calculator.js",
+  "src/core/fishing/stamina/stamina_transition_resolver.js",
+  "src/core/fishing/stamina/stamina_phase_machine.js",
   "src/core/fishing/stamina/stamina_balance_frame.js",
   "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
   "src/core/fishing/reel_auto_recovery_calculator.js",
@@ -231,6 +237,94 @@ function createFish({ weightKg, basePower = 0.5, baseSpeed = 1, forceMultiplier 
   }
   return template;
 }
+
+function runSimplifiedStaminaChecks() {
+  const mechanics = clone(CONFIG.stamina.mechanics);
+  const machine = new StaminaPhaseMachine();
+
+  const centerHold = machine.createFrame({
+    phase: "stamina",
+    currentStamina: 100,
+    maxStamina: 100,
+    rodHoldKg: 0.5,
+    controlKg: 0,
+    fishStaminaResistanceKg: 0.5,
+    fishLateralContext: { fishLateralOffsetPx: 0, maxAllowedLateralOffsetPx: 100 },
+    dtSec: 1,
+    config: mechanics,
+  });
+  assert(centerHold.staminaModelMode === "simplified", "simplified stamina model is active");
+  assert(centerHold.staminaMode === "drain", "simplified stamina drains under effective pressure");
+  assert(centerHold.staminaDrain > 0 && centerHold.staminaRegen === 0, "stamina frame never drains and regens simultaneously");
+  assertApprox(centerHold.holdDrainMultiplier, 1, 0.000001, "center fish gives full hold stamina multiplier");
+  assertApprox(centerHold.controlDrainMultiplier, 0.1, 0.000001, "center fish gives low control stamina multiplier");
+
+  const edgeControl = machine.createFrame({
+    phase: "stamina",
+    currentStamina: 100,
+    maxStamina: 100,
+    rodHoldKg: 0,
+    controlKg: 0.5,
+    controlDirectionX: -1,
+    fishStaminaResistanceKg: 0.5,
+    fishLateralContext: { fishLateralOffsetPx: 100, maxAllowedLateralOffsetPx: 100 },
+    dtSec: 1,
+    config: mechanics,
+  });
+  assertApprox(edgeControl.holdDrainMultiplier, 0.1, 0.000001, "edge fish gives low hold stamina multiplier");
+  assertApprox(edgeControl.controlDrainMultiplier, 1, 0.000001, "edge fish gives full control stamina multiplier");
+  assert(edgeControl.controlDirectionState === "centering", "control toward center is marked centering");
+
+  const wrongControl = machine.createFrame({
+    phase: "stamina",
+    currentStamina: 100,
+    maxStamina: 100,
+    controlKg: 0.5,
+    controlDirectionX: 1,
+    fishStaminaResistanceKg: 0.5,
+    fishLateralContext: { fishLateralOffsetPx: 100, maxAllowedLateralOffsetPx: 100 },
+    dtSec: 1,
+    config: mechanics,
+  });
+  assert(wrongControl.controlDirectionState === "wrong", "control away from center is marked wrong");
+  assert(wrongControl.controlStaminaPressureKg < edgeControl.controlStaminaPressureKg, "wrong control has lower stamina pressure than centering control");
+
+  const noPressureStamina = machine.createFrame({
+    phase: "stamina",
+    currentStamina: 50,
+    maxStamina: 100,
+    fishStaminaResistanceKg: 0.5,
+    dtSec: 1,
+    config: mechanics,
+  });
+  assert(noPressureStamina.staminaMode === "regen", "phase 1 release pressure immediately regens stamina");
+
+  const releaseInExhaustion = machine.createFrame({
+    phase: "exhaustion",
+    currentStamina: 0,
+    maxStamina: 100,
+    fishStaminaResistanceKg: 0.5,
+    playerFatigueProgress: 0,
+    dtSec: 1,
+    config: mechanics,
+  });
+  assert(releaseInExhaustion.staminaMode === "idle", "phase 2 release pressure does not regen stamina");
+  assert(releaseInExhaustion.nextPhase === "exhaustion", "phase 2 release pressure does not return to stamina");
+
+  const fatigueRecovery = machine.createFrame({
+    phase: "exhaustion",
+    currentStamina: 0,
+    maxStamina: 100,
+    fishStaminaResistanceKg: 0.5,
+    playerFatigueProgress: 1,
+    dtSec: 1,
+    config: mechanics,
+  });
+  assert(fatigueRecovery.staminaMode === "regen", "phase 2 full fatigue starts stamina recovery");
+  assert(fatigueRecovery.nextPhase === "stamina", "phase 2 returns only after stamina recovers past threshold");
+}
+
+runSimplifiedStaminaChecks();
 
 function createCast({ config, equipment, distanceMeters }) {
   const rng = createRng();

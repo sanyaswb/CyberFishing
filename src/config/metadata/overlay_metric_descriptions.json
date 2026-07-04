@@ -716,6 +716,73 @@
       "DEBUG_DATA.playerPressureFatigueControlKg"
     ]
   },
+  "staminaBalance.model": {
+    "formula": "staminaModelMode",
+    "description": "Active stamina model mode. simplified means the explicit drain/regen/idle state machine is active.",
+    "paths": [
+      "DEBUG_DATA.staminaModelMode"
+    ]
+  },
+  "staminaBalance.mode": {
+    "formula": "staminaMode + staminaTransitionReason",
+    "description": "Current stamina frame decision and transition reason.",
+    "paths": [
+      "DEBUG_DATA.staminaMode",
+      "DEBUG_DATA.staminaTransitionReason"
+    ]
+  },
+  "staminaBalance.playerStaminaPressure": {
+    "formula": "rodHoldStaminaPressureKg + reelHoldStaminaPressureKg + controlStaminaPressureKg",
+    "description": "Contextual player pressure used only for stamina drain/recovery decisions.",
+    "paths": [
+      "DEBUG_DATA.playerStaminaPressureKg",
+      "DEBUG_DATA.rodHoldStaminaPressureKg",
+      "DEBUG_DATA.reelHoldStaminaPressureKg",
+      "DEBUG_DATA.controlStaminaPressureKg"
+    ]
+  },
+  "staminaBalance.fishResistance": {
+    "formula": "fishCurrentStateMaxForceKg fallback fishOppositionKg",
+    "description": "Stable fish resistance value used in player-vs-fish stamina advantage scaling.",
+    "paths": [
+      "DEBUG_DATA.fishStaminaResistanceKg"
+    ]
+  },
+  "staminaBalance.advantage": {
+    "formula": "playerStaminaPressureKg / (playerStaminaPressureKg + fishStaminaResistanceKg)",
+    "description": "Player advantage ratio used to scale stamina drain speed between configured min and max multipliers.",
+    "paths": [
+      "DEBUG_DATA.playerAdvantageRatio",
+      "DEBUG_DATA.clampedAdvantageRatio",
+      "DEBUG_DATA.staminaDrainMultiplier"
+    ]
+  },
+  "staminaBalance.lateral": {
+    "formula": "lateralEdgeRatio -> hold/control stamina multipliers",
+    "description": "Fish lateral position inside the fight sector and resulting hold/control stamina multipliers.",
+    "paths": [
+      "DEBUG_DATA.lateralEdgeRatio",
+      "DEBUG_DATA.holdStaminaDrainMultiplier",
+      "DEBUG_DATA.controlStaminaDrainMultiplier"
+    ]
+  },
+  "staminaBalance.controlDirection": {
+    "formula": "controlDirectionState * controlCenteringFactor",
+    "description": "Whether lateral control is pulling the fish back to center, pushing it away, or neutral.",
+    "paths": [
+      "DEBUG_DATA.controlDirectionState",
+      "DEBUG_DATA.controlCenteringFactor"
+    ]
+  },
+  "staminaBalance.regenMultipliers": {
+    "formula": "baseRegenPerSecond * angleRegenMultiplier * fatigueRegenMultiplier",
+    "description": "Angle and player fatigue multipliers used when stamina recovery is allowed.",
+    "paths": [
+      "DEBUG_DATA.staminaAngleRegenMultiplier",
+      "DEBUG_DATA.fatigueRegenMultiplier",
+      "DEBUG_DATA.staminaRegenPerSecond"
+    ]
+  },
   "fightSummary.totalTension": {
     "formula": "totalTensionKg",
     "description": "Загальний натяг снасті.",

@@ -175,7 +175,13 @@
 │  │  │  │  ├── passive_stamina_drain_calculator.js
 │  │  │  │  ├── passive_stamina_regen_calculator.js
 │  │  │  │  ├── stamina_angle_regen_multiplier_calculator.js
-│  │  │  │  └── stamina_balance_frame.js
+│  │  │  │  ├── stamina_balance_frame.js
+│  │  │  │  ├── stamina_drain_calculator.js
+│  │  │  │  ├── stamina_lateral_position_resolver.js
+│  │  │  │  ├── stamina_phase_machine.js
+│  │  │  │  ├── stamina_pressure_resolver.js
+│  │  │  │  ├── stamina_regen_calculator.js
+│  │  │  │  └── stamina_transition_resolver.js
 │  │  │  ├── tackle_failure_selector.js
 │  │  │  └── tackle_stress_accumulator.js
 │  │  ├── input
