@@ -67,6 +67,8 @@ class RodPullSystem {
     strokeSyncReason: "none",
     playerPressureGainMultiplier: 1,
     playerPressureGainMode: "none",
+    tensionBuildRateMultiplier: 1,
+    tensionBuildMode: "none",
     chargePerSecond: 0,
     baseChargePerSecond: 0,
   };
@@ -94,6 +96,7 @@ class RodPullSystem {
     distanceLostBeforePullMeters = null,
     yLostBeforePullMeters = 0,
     playerPressureGain = null,
+    playerTensionBuildRate = null,
     playerPressureFatigue = null,
   }) {
     this.#clearStrokeFrameDiagnostics();
@@ -142,6 +145,7 @@ class RodPullSystem {
       lineHasReserve,
       fishDistanceMeters,
       playerPressureGain,
+      playerTensionBuildRate,
       playerPressureFatigue,
     });
 

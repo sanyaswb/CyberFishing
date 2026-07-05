@@ -129,6 +129,10 @@ class FightPhysicsConfigAdapter {
     const multipliers = config.multipliers || {};
     return {
       enabled: config.enabled === true,
+      rodControlBuildPerSecond: Math.max(
+        0,
+        this.#number(config.rodControlBuildPerSecond, 4.0),
+      ),
       inputThresholds: {
         holdForceKg: Math.max(
           0,
@@ -150,6 +154,47 @@ class FightPhysicsConfigAdapter {
           0,
           this.#number(multipliers.holdAndControl, 1.5),
         ),
+      },
+    };
+  }
+
+  getPlayerTensionBuildRateConfig() {
+    const config = this.#physics().fight?.playerTensionBuildRate || {};
+    const inputThresholds = config.inputThresholds || {};
+    const multipliers = config.multipliers || {};
+    const applyTo = config.applyTo || {};
+    return {
+      enabled: config.enabled === true,
+      inputThresholds: {
+        holdForceKg: Math.max(
+          0,
+          this.#number(inputThresholds.holdForceKg, 0.01),
+        ),
+        controlForceKg: Math.max(
+          0,
+          this.#number(inputThresholds.controlForceKg, 0.01),
+        ),
+        holdInputRatio: Math.max(
+          0,
+          Math.min(1, this.#number(inputThresholds.holdInputRatio, 0.05)),
+        ),
+        controlInputRatio: Math.max(
+          0,
+          Math.min(1, this.#number(inputThresholds.controlInputRatio, 0.05)),
+        ),
+      },
+      multipliers: {
+        none: Math.max(0, this.#number(multipliers.none, 1.0)),
+        holdOnly: Math.max(0, this.#number(multipliers.holdOnly, 1.0)),
+        controlOnly: Math.max(0, this.#number(multipliers.controlOnly, 1.0)),
+        holdAndControl: Math.max(
+          0,
+          this.#number(multipliers.holdAndControl, 1.5),
+        ),
+      },
+      applyTo: {
+        rodHoldCharge: applyTo.rodHoldCharge !== false,
+        rodControlBuild: applyTo.rodControlBuild !== false,
       },
     };
   }

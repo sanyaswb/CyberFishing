@@ -148,7 +148,8 @@
 │  │  │  │  ├── player_pressure_fatigue_calculator.js
 │  │  │  │  ├── player_pressure_fatigue_source_resolver.js
 │  │  │  │  ├── player_pressure_fatigue_state.js
-│  │  │  │  └── player_pressure_gain_resolver.js
+│  │  │  │  ├── player_pressure_gain_resolver.js
+│  │  │  │  └── player_tension_build_rate_resolver.js
 │  │  │  ├── pole_fight_sector_angle_constraint.js
 │  │  │  ├── pole_fight_sector_constraint.js
 │  │  │  ├── pole_fight_sector_geometry.js

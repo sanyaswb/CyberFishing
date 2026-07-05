@@ -52,6 +52,10 @@ class FightPhysicsSystem {
     typeof PlayerPressureGainResolver !== "undefined"
       ? new PlayerPressureGainResolver()
       : null;
+  #playerTensionBuildRateResolver =
+    typeof PlayerTensionBuildRateResolver !== "undefined"
+      ? new PlayerTensionBuildRateResolver()
+      : null;
   #playerPressureFatigueCalculator =
     typeof PlayerPressureFatigueCalculator !== "undefined"
       ? new PlayerPressureFatigueCalculator()
@@ -208,6 +212,13 @@ class FightPhysicsSystem {
         physics,
       }),
     );
+    const playerTensionBuildRateFrame = pipelineFrame.run(
+      "resolve_player_tension_build_rate",
+      () => this.#resolvePlayerTensionBuildRate({
+        playerForceBudget,
+        physics,
+      }),
+    );
     const playerPressureFatigueApplication = pipelineFrame.run(
       "resolve_player_pressure_fatigue_application",
       () => this.#buildPlayerPressureFatigueApplicationFrame({ physics }),
@@ -248,6 +259,7 @@ class FightPhysicsSystem {
       rodLimitKg,
       playerForceBudget,
       playerPressureGain: playerPressureGainFrame,
+      playerTensionBuildRate: playerTensionBuildRateFrame,
       playerPressureFatigue: playerPressureFatigueApplication,
     }),
     );
@@ -274,6 +286,7 @@ class FightPhysicsSystem {
       playerForceBudget,
       rodControlIntent: playerForceFrame.rodControlIntent,
       playerPressureGain: playerPressureGainFrame,
+      playerTensionBuildRate: playerTensionBuildRateFrame,
       playerPressureFatigue: playerPressureFatigueApplication,
     }),
     );
@@ -503,6 +516,7 @@ class FightPhysicsSystem {
       dragContext,
       playerForceBudget,
       playerPressureGain: playerPressureGainFrame,
+      playerTensionBuildRate: playerTensionBuildRateFrame,
       playerPressureFatigue: playerPressureFatigueFrame,
       poleFightSectorFrame: sectorFrame,
       fishCondition,
@@ -752,6 +766,49 @@ class FightPhysicsSystem {
       this.#physicsConfig?.getPlayerPressureGainConfig?.() ||
       physics?.fight?.playerPressureGain ||
       this.#config?.physics?.fight?.playerPressureGain ||
+      {}
+    );
+  }
+
+  #resolvePlayerTensionBuildRate({ playerForceBudget, physics } = {}) {
+    const config = this.#resolvePlayerTensionBuildRateConfig(physics);
+    const fallback = Object.freeze({
+      source: "player_tension_build_rate",
+      enabled: false,
+      mode: "none",
+      buildRateMultiplier: 1,
+      holdActive: false,
+      controlActive: false,
+      holdForceKg: 0,
+      controlForceKg: 0,
+      holdInputRatio: 0,
+      controlInputRatio: 0,
+      applyTo: Object.freeze({
+        rodHoldCharge: true,
+        rodControlBuild: true,
+      }),
+    });
+
+    if (!this.#playerTensionBuildRateResolver?.resolve) {
+      return fallback;
+    }
+
+    return this.#playerTensionBuildRateResolver.resolve({
+      holdActive: playerForceBudget?.holdActive === true,
+      controlActive: playerForceBudget?.controlActive === true,
+      holdForceKg: playerForceBudget?.holdBudgetKg,
+      controlForceKg: playerForceBudget?.controlBudgetKg,
+      holdInputRatio: playerForceBudget?.holdActive === true ? 1 : 0,
+      controlInputRatio: playerForceBudget?.controlInputRatio,
+      config,
+    });
+  }
+
+  #resolvePlayerTensionBuildRateConfig(physics) {
+    return (
+      this.#physicsConfig?.getPlayerTensionBuildRateConfig?.() ||
+      physics?.fight?.playerTensionBuildRate ||
+      this.#config?.physics?.fight?.playerTensionBuildRate ||
       {}
     );
   }
@@ -1394,6 +1451,7 @@ class FightPhysicsSystem {
     rodLimitKg,
     playerForceBudget,
     playerPressureGain,
+    playerTensionBuildRate,
     playerPressureFatigue,
   }) {
     const lineStateBeforePull = lineSystem.updateDistance(
@@ -1424,6 +1482,7 @@ class FightPhysicsSystem {
       rodLimitKg,
       playerForceBudget,
       playerPressureGain,
+      playerTensionBuildRate,
       dragLimitKg: dragContext.effectiveDragLimitKg,
       maxTackleLoadKg: dragContext.maxTackleLoadKg,
       dragLocked: dragContext.dragLocked,
@@ -1672,6 +1731,7 @@ class FightPhysicsSystem {
     playerForceBudget,
     rodControlIntent,
     playerPressureGain,
+    playerTensionBuildRate,
     playerPressureFatigue,
   }) {
     if (!rodControlSystem?.update) {
@@ -1734,6 +1794,7 @@ class FightPhysicsSystem {
       lineConstraintState,
       intentFrame: rodControlIntent,
       playerPressureGain,
+      playerTensionBuildRate,
       playerPressureFatigue,
       config,
     });
@@ -2747,6 +2808,7 @@ class FightPhysicsSystem {
     dragContext,
     playerForceBudget,
     playerPressureGain,
+    playerTensionBuildRate,
     playerPressureFatigue,
     poleFightSectorFrame,
     fishCondition,
@@ -2957,6 +3019,42 @@ class FightPhysicsSystem {
           0,
           Math.min(1, Number(playerPressureGain?.controlInputRatio) || 0),
         ),
+      tensionBuildMode:
+        playerTensionBuildRate?.mode || "none",
+      tensionBuildRateMultiplier:
+        Math.max(
+          0,
+          Number(playerTensionBuildRate?.buildRateMultiplier) || 1,
+        ),
+      tensionBuildHoldActive:
+        playerTensionBuildRate?.holdActive === true,
+      tensionBuildControlActive:
+        playerTensionBuildRate?.controlActive === true,
+      rodHoldBaseChargePerSecond:
+        Math.max(0, Number(rodPullResult?.baseChargePerSecond) || 0),
+      rodHoldEffectiveChargePerSecond:
+        Math.max(0, Number(rodPullResult?.chargePerSecond) || 0),
+      rodControlBaseBuildPerSecond:
+        Math.max(0, Number(rodControlResult?.controlBaseBuildPerSecond) || 0),
+      rodControlEffectiveBuildPerSecond:
+        Math.max(
+          0,
+          Number(rodControlResult?.controlEffectiveBuildPerSecond) || 0,
+        ),
+      rodControlBuildRatio:
+        Math.max(0, Math.min(1, Number(rodControlResult?.controlBuildRatio) || 0)),
+      tensionBuildRemainingReserveKg:
+        Math.max(
+          0,
+          Number(playerForceBudget?.combinedTensionCeilingKg) -
+            Number(tensionResult?.totalTensionKg),
+        ) || 0,
+      tensionBuildBlockedByCap:
+        Math.max(
+          0,
+          Number(playerForceBudget?.combinedTensionCeilingKg) -
+            Number(tensionResult?.totalTensionKg),
+        ) <= 0.001,
       playerPressureFatigueEnabled:
         playerPressureFatigue?.enabled === true,
       playerPressureFatigueEfficiency:

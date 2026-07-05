@@ -4,6 +4,7 @@ class RodLateralControlSystem {
   #centerStartDirectionX = 0;
   #controlStartedCentered = false;
   #wasControlActive = false;
+  #controlBuildRatio = 0;
 
   constructor({ tensionModeResolver = null } = {}) {
     this.#tensionModeResolver =
@@ -32,6 +33,7 @@ class RodLateralControlSystem {
     lineConstraintState = null,
     intentFrame = null,
     playerPressureGain = null,
+    playerTensionBuildRate = null,
     playerPressureFatigue = null,
     config,
   } = {}) {
@@ -58,13 +60,30 @@ class RodLateralControlSystem {
     const baseRequestedForceRatio = this.#clamp01(
       inputRatio * targetFrame.angleRatio * targetFrame.directionFactor,
     );
-    const pressureGainMultiplier = this.#pressureGainMultiplier({
+    const tensionBuildRateMultiplier = this.#tensionBuildRateMultiplier({
+      frame: playerTensionBuildRate,
+      fallbackFrame: playerPressureGain,
+      channel: "rodControl",
+    });
+    const baseBuildPerSecond = this.#resolveControlBuildPerSecond({
+      config: cfg,
+      frame: playerTensionBuildRate,
+    });
+    const effectiveBuildPerSecond =
+      baseBuildPerSecond * tensionBuildRateMultiplier;
+    const controlBuildRatio = this.#updateControlBuildRatio({
+      active,
+      requestedForceRatio: baseRequestedForceRatio,
+      buildPerSecond: effectiveBuildPerSecond,
+      dtSec,
+    });
+    const legacyPressureGainMultiplier = this.#pressureGainMultiplier({
       frame: playerPressureGain,
       channel: "rodControl",
     });
-    const requestedForceRatio = this.#clamp01(
-      baseRequestedForceRatio * pressureGainMultiplier,
-    );
+    const requestedForceRatio = playerTensionBuildRate?.enabled === true
+      ? Math.min(baseRequestedForceRatio, controlBuildRatio)
+      : this.#clamp01(baseRequestedForceRatio * legacyPressureGainMultiplier);
     const tensionModeFrame = this.#resolveTensionModeFrame({
       fishVelocity,
       fishVelocityX,
@@ -145,8 +164,13 @@ class RodLateralControlSystem {
       playerTensionKg: canApply ? forceKg * tensionMultiplier : 0,
       playerPressureEfficiency: forceFrame.playerPressureEfficiency,
       playerPressureFatigueEnabled: forceFrame.playerPressureFatigueEnabled,
-      playerPressureGainMultiplier: pressureGainMultiplier,
+      playerPressureGainMultiplier: legacyPressureGainMultiplier,
       playerPressureGainMode: playerPressureGain?.mode || "none",
+      tensionBuildRateMultiplier,
+      tensionBuildMode: playerTensionBuildRate?.mode || "none",
+      controlBuildRatio,
+      controlBaseBuildPerSecond: baseBuildPerSecond,
+      controlEffectiveBuildPerSecond: effectiveBuildPerSecond,
       tensionMultiplier,
       tensionMode: tensionModeFrame.mode,
       fishControlAxisAlignment: tensionModeFrame.alignment,
@@ -253,6 +277,7 @@ class RodLateralControlSystem {
   reset() {
     this.#result = this.#createResult();
     this.#resetControlSession();
+    this.#controlBuildRatio = 0;
   }
 
   #resetControlSession() {
@@ -689,6 +714,11 @@ class RodLateralControlSystem {
       playerPressureFatigueEnabled: false,
       playerPressureGainMultiplier: 1,
       playerPressureGainMode: "none",
+      tensionBuildRateMultiplier: 1,
+      tensionBuildMode: "none",
+      controlBuildRatio: 0,
+      controlBaseBuildPerSecond: 0,
+      controlEffectiveBuildPerSecond: 0,
       tensionMultiplier: 0,
       tensionMode: "side",
       fishControlAxisAlignment: 0,
@@ -740,5 +770,61 @@ class RodLateralControlSystem {
     if (frame?.enabled !== true) return 1;
     if (channel === "rodControl" && frame.controlActive !== true) return 1;
     return Math.max(0, this.#number(frame.multiplier, 1));
+  }
+
+  #tensionBuildRateMultiplier({ frame, fallbackFrame, channel }) {
+    if (frame?.enabled === true) {
+      const applyTo = frame.applyTo || {};
+      if (channel === "rodControl" && applyTo.rodControlBuild === false) {
+        return 1;
+      }
+      if (channel === "rodHold" && applyTo.rodHoldCharge === false) {
+        return 1;
+      }
+      return Math.max(0, this.#number(frame.buildRateMultiplier, 1));
+    }
+    return this.#pressureGainMultiplier({
+      frame: fallbackFrame,
+      channel,
+    });
+  }
+
+  #resolveControlBuildPerSecond({ config, frame }) {
+    const configured =
+      frame?.rodControlBuildPerSecond ??
+      frame?.controlBuildPerSecond ??
+      config?.force?.controlBuildPerSecond ??
+      config?.force?.buildPerSecond;
+    const number = Number(configured);
+    if (Number.isFinite(number) && number > 0) return number;
+    const rampSeconds = Number(config?.input?.keyboardRampUpSeconds);
+    if (Number.isFinite(rampSeconds) && rampSeconds > 0) {
+      return 1 / rampSeconds;
+    }
+    return 4;
+  }
+
+  #updateControlBuildRatio({
+    active,
+    requestedForceRatio,
+    buildPerSecond,
+    dtSec,
+  }) {
+    const target = this.#clamp01(requestedForceRatio);
+    if (active !== true || target <= 0) {
+      this.#controlBuildRatio = 0;
+      return 0;
+    }
+    const step = Math.max(0, this.#number(buildPerSecond)) *
+      Math.max(0, this.#number(dtSec));
+    if (this.#controlBuildRatio > target) {
+      this.#controlBuildRatio = target;
+      return this.#controlBuildRatio;
+    }
+    this.#controlBuildRatio = Math.min(
+      target,
+      this.#controlBuildRatio + step,
+    );
+    return this.#controlBuildRatio;
   }
 }

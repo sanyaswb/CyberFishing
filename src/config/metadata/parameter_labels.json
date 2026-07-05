@@ -867,6 +867,54 @@
     "label": "Pressure gain hold and control multiplier",
     "description": "Pressure buildup multiplier when Rod Hold and Rod Control are active together."
   },
+  "physics.fight.playerTensionBuildRate.enabled": {
+    "label": "Tension build rate enabled",
+    "description": "Enables explicit TENSION build-rate scaling for Rod Hold and Rod Control combinations."
+  },
+  "physics.fight.playerTensionBuildRate.rodControlBuildPerSecond": {
+    "label": "Rod Control build speed",
+    "description": "Base per-second speed used to approach the requested Rod Control force ratio."
+  },
+  "physics.fight.playerTensionBuildRate.inputThresholds.holdForceKg": {
+    "label": "Tension build hold force threshold",
+    "description": "Minimum Rod Hold budget force required for hold to count in TENSION build mode."
+  },
+  "physics.fight.playerTensionBuildRate.inputThresholds.controlForceKg": {
+    "label": "Tension build control force threshold",
+    "description": "Minimum Rod Control budget force required for control to count in TENSION build mode."
+  },
+  "physics.fight.playerTensionBuildRate.inputThresholds.holdInputRatio": {
+    "label": "Tension build hold input threshold",
+    "description": "Minimum hold input ratio required for hold to count in TENSION build mode."
+  },
+  "physics.fight.playerTensionBuildRate.inputThresholds.controlInputRatio": {
+    "label": "Tension build control input threshold",
+    "description": "Minimum Rod Control input ratio required for control to count in TENSION build mode."
+  },
+  "physics.fight.playerTensionBuildRate.multipliers.none": {
+    "label": "Tension build no-input multiplier",
+    "description": "Build-rate multiplier when no player pressure channel is active."
+  },
+  "physics.fight.playerTensionBuildRate.multipliers.holdOnly": {
+    "label": "Tension build hold-only multiplier",
+    "description": "Build-rate multiplier when only Rod Hold is active."
+  },
+  "physics.fight.playerTensionBuildRate.multipliers.controlOnly": {
+    "label": "Tension build control-only multiplier",
+    "description": "Build-rate multiplier when only Rod Control is active."
+  },
+  "physics.fight.playerTensionBuildRate.multipliers.holdAndControl": {
+    "label": "Tension build hold and control multiplier",
+    "description": "Build-rate multiplier when Rod Hold and Rod Control are active together."
+  },
+  "physics.fight.playerTensionBuildRate.applyTo.rodHoldCharge": {
+    "label": "Apply build rate to Rod Hold",
+    "description": "Allows TENSION build-rate multiplier to speed up Rod Hold charge without raising caps."
+  },
+  "physics.fight.playerTensionBuildRate.applyTo.rodControlBuild": {
+    "label": "Apply build rate to Rod Control",
+    "description": "Allows TENSION build-rate multiplier to speed up Rod Control force buildup without raising caps."
+  },
   "physics.fight.playerPressureFatigue.enabled": {
     "label": "Player pressure fatigue enabled",
     "description": "Enables the anti-spam pressure fatigue model driven by continuous reel hold."

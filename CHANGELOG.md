@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.23.27 - Simultaneous touch hold/control and tension build rate
+
+- Fixed touch fight input so lateral control no longer cancels rod hold.
+- Allowed touch Rod Hold and Rod Control to be active simultaneously.
+- Added explicit TENSION build-rate resolver for hold/control combinations.
+- Made hold + control fill the TENSION bar faster without increasing tension caps or final load.
+- Added debug and overlay fields for tension build mode, build multiplier, cap blocking and reserve.
+
 ## v0.23.26 - Stamina inactivity recovery and legacy cleanup
 
 - Added phase 2 stamina recovery trigger after 5 seconds of raw player input inactivity.

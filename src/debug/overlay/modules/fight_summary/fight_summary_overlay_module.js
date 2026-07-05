@@ -31,10 +31,11 @@ class FightSummaryOverlayModule extends OverlayModule {
     });
     html += this.metricRow("Input combo", this.#formatInputCombo(data), {
       metricKey: "fightSummary.inputCombo",
-      color: data.playerPressureGainMode === "hold_and_control"
+      color: data.tensionBuildMode === "hold_and_control"
         ? "#ffaa00"
         : "#73c2fb",
     });
+    html += this.#renderTensionBuild(data);
     html += this.#renderPlayerPressureFatigue(data);
     html += this.metricRow("Total tension", f.kg(totalTensionKg, 3), {
       metricKey: "fightSummary.totalTension",
@@ -152,6 +153,52 @@ class FightSummaryOverlayModule extends OverlayModule {
     return html;
   }
 
+  #renderTensionBuild(data) {
+    const f = this.#formatter;
+    const mode = data.tensionBuildMode || "none";
+    const multiplier = this.#finite(data.tensionBuildRateMultiplier, 1);
+    const capBlocked = data.tensionBuildBlockedByCap === true;
+    const reserveKg = this.#positive(data.tensionBuildRemainingReserveKg);
+    let html = `<div style="margin:6px 0 3px; color:#ffaa00; font-weight:700;">TENSION BUILD</div>`;
+    html += this.metricRow("Mode", this.#formatMode(mode), {
+      metricKey: "fightSummary.tensionBuildMode",
+      color: mode === "hold_and_control" ? "#ffaa00" : "#73c2fb",
+    });
+    html += this.metricRow("Build rate", `x${f.num(multiplier, 2)}`, {
+      metricKey: "fightSummary.tensionBuildRate",
+      color: multiplier > 1.001 ? "#ffaa00" : "#8a9bac",
+    });
+    html += this.metricRow(
+      "Hold charge",
+      `${f.num(data.rodHoldBaseChargePerSecond, 2)}/s -> ${f.num(data.rodHoldEffectiveChargePerSecond, 2)}/s`,
+      {
+        metricKey: "fightSummary.tensionBuildHoldCharge",
+        color: "#73c2fb",
+      },
+    );
+    html += this.metricRow(
+      "Control build",
+      `${f.num(data.rodControlBaseBuildPerSecond, 2)}/s -> ${f.num(data.rodControlEffectiveBuildPerSecond, 2)}/s`,
+      {
+        metricKey: "fightSummary.tensionBuildControlBuild",
+        color: "#73c2fb",
+      },
+    );
+    html += this.metricRow("Control ratio", f.percent(data.rodControlBuildRatio, 1), {
+      metricKey: "fightSummary.tensionBuildControlRatio",
+      color: "#00d4ff",
+    });
+    html += this.metricRow("Cap blocked", capBlocked ? "yes" : "no", {
+      metricKey: "fightSummary.tensionBuildCapBlocked",
+      color: capBlocked ? "#ff8888" : "#00ff80",
+    });
+    html += this.metricRow("Reserve", f.kg(reserveKg, 3), {
+      metricKey: "fightSummary.tensionBuildReserve",
+      color: capBlocked ? "#ff8888" : "#00ff80",
+    });
+    return html;
+  }
+
   #formatElapsed(elapsedMs, durationMs) {
     const elapsed = Math.max(0, Number(elapsedMs) || 0) / 1000;
     const duration = Math.max(0, Number(durationMs) || 0) / 1000;
@@ -159,16 +206,23 @@ class FightSummaryOverlayModule extends OverlayModule {
   }
 
   #formatInputCombo(data) {
-    const mode = data.playerPressureGainMode || "none";
-    const multiplier = this.#finite(data.playerPressureGainMultiplier, 1);
+    const mode = data.tensionBuildMode || data.playerPressureGainMode || "none";
+    const multiplier = this.#finite(
+      data.tensionBuildRateMultiplier ?? data.playerPressureGainMultiplier,
+      1,
+    );
+    const label = this.#formatMode(mode);
+    return `${label} x${this.#formatter.num(multiplier, 2)}`;
+  }
+
+  #formatMode(mode) {
     const labelByMode = {
       none: "none",
       hold_only: "hold",
       control_only: "control",
       hold_and_control: "hold + control",
     };
-    const label = labelByMode[mode] || mode;
-    return `${label} x${this.#formatter.num(multiplier, 2)}`;
+    return labelByMode[mode] || mode;
   }
 
   #resolvePlayerPressureKg(data) {

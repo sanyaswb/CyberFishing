@@ -57,6 +57,27 @@ const FIGHT_PHYSICS_CONFIG = {
     },
   },
 
+  playerTensionBuildRate: {
+    enabled: true,
+    rodControlBuildPerSecond: 4.0,
+    inputThresholds: {
+      holdForceKg: 0.01,
+      controlForceKg: 0.01,
+      holdInputRatio: 0.05,
+      controlInputRatio: 0.05,
+    },
+    multipliers: {
+      none: 1.0,
+      holdOnly: 1.0,
+      controlOnly: 1.0,
+      holdAndControl: 1.5,
+    },
+    applyTo: {
+      rodHoldCharge: true,
+      rodControlBuild: true,
+    },
+  },
+
   playerPressureFatigue: {
     enabled: true,
     source: {

@@ -15,6 +15,7 @@ class FightPhysicsPipeline {
     "update_fish_motion",
     "resolve_player_force_budget",
     "resolve_player_pressure_gain",
+    "resolve_player_tension_build_rate",
     "resolve_player_pressure_fatigue_application",
     "resolve_drag_context",
     "resolve_rod_pull_and_retrieve",

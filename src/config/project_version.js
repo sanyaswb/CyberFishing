@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.23.26";
+const CURRENT_PROJECT_VERSION = "0.23.27";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "stamina-inactivity-cleanup",
-  updatedAt: "2026-07-04",
+  codename: "simultaneous-touch-hold-control-tension-build-rate",
+  updatedAt: "2026-07-05",
   notes: Object.freeze([
-    "Added phase-2 stamina recovery after raw input inactivity timeout",
-    "Separated raw stamina input inactivity from effective stamina pressure",
-    "Removed legacy stamina drain/regen fallback calculators",
+    "Fixed touch fight input so lateral control no longer cancels rod hold",
+    "Allowed touch Rod Hold and Rod Control to be active simultaneously",
+    "Added explicit TENSION build-rate resolver for hold/control combinations",
+    "Made hold + control fill TENSION faster without increasing tension caps or final load",
+    "Added debug and overlay fields for tension build mode, build multiplier, cap blocking and reserve",
   ]),
 });
 

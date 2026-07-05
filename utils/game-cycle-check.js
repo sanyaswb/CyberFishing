@@ -4,6 +4,7 @@ const vm = require("node:vm");
 
 const ROOT = path.resolve(__dirname, "..");
 const FILES = [
+  "src/core/input/fight_input_action_composer.js",
   "src/core/core.js",
   "src/config/databases/fish/presets/fish_profile_factory.js",
   "src/config/databases/fish/presets/fish_profile_presets.js",
@@ -53,6 +54,7 @@ const FILES = [
   "src/core/fishing/rod_stroke_distance_tracker.js",
   "src/core/fishing/player_force_budget_allocator.js",
   "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+  "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
   "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
   "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
   "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
@@ -384,6 +386,82 @@ function createCast({ config, equipment, distanceMeters }) {
   assert(result.floatEntity, "cast creates runtime float/tackle entity");
   return { ...result, rodVirtualPos, bounds };
 }
+
+function runTouchHoldControlBuildCheck() {
+  const config = createConfig();
+  const composer = new FightInputActionComposer();
+  const composed = composer.compose(
+    {
+      pointerDown: true,
+      pointerDelta: { x: 120, y: 0 },
+      keys: {},
+    },
+    {
+      keys: config.input.keys,
+      rodControlInput: config.physics.fight.rodControl.input,
+    },
+  );
+  assert(composed.hold.active === true, "touch lateral control keeps pointer Rod Hold active");
+  assert(composed.lateralControl.active === true, "touch lateral control activates Rod Control");
+
+  const equipment = createTestBuild({
+    rodMaxLoadKg: 3,
+    reelMaxLoadKg: 3,
+    lineMaxLoadKg: 3,
+    hookMaxLoadKg: 3,
+  });
+  const fishData = createFish({
+    weightKg: 0.25,
+    basePower: 0.5,
+    baseSpeed: 0.1,
+    forceMultiplier: 0.5,
+    speedMultiplier: 0.1,
+  });
+  const rng = createRng();
+  const cast = createCast({ config, equipment, distanceMeters: 2.0 });
+  const fight = new FightService({
+    config,
+    rng,
+    devFlags: createDevFlags(),
+  });
+  fight.startFight(fishData, equipment);
+  fight.updateFight(1000 / 30, {
+    floatEntity: cast.floatEntity,
+    bounds: cast.bounds,
+    input: {
+      pointerDown: true,
+      pointerDelta: { x: 120, y: 0 },
+      keys: {},
+      retrieve: false,
+      dragIncrease: true,
+      pullDirection: { x: 0, y: 1 },
+    },
+    env: {},
+    net: null,
+    fishData,
+    getRodVirtualPos: () => cast.rodVirtualPos,
+    checkWater: () => true,
+  });
+  const debug = fight.getDebugData({
+    floatEntity: cast.floatEntity,
+    boundaries: cast.bounds,
+    rodPos: cast.rodVirtualPos,
+    screenOffset: 0,
+    equipment,
+  });
+
+  assert(debug.playerForceBudgetReason === "hold_and_control", "touch hold + control resolves shared force-budget mode");
+  assert(debug.tensionBuildMode === "hold_and_control", "touch hold + control resolves tensionBuildMode");
+  assertApprox(debug.tensionBuildRateMultiplier, 1.5, 0.000001, "hold + control uses x1.5 TENSION build rate");
+  assert(debug.tensionBuildHoldActive === true, "tension build sees active hold channel");
+  assert(debug.tensionBuildControlActive === true, "tension build sees active control channel");
+  assert(debug.rodHoldEffectiveChargePerSecond > debug.rodHoldBaseChargePerSecond, "hold + control speeds up Rod Hold charge");
+  assert(debug.rodControlEffectiveBuildPerSecond > debug.rodControlBaseBuildPerSecond, "hold + control speeds up Rod Control build");
+  assertApprox(debug.playerForceCombinedCeilingMultiplier, 1, 0.000001, "build rate does not increase tension ceiling multiplier");
+  assert(debug.totalTensionKg <= debug.playerForceCombinedTensionCeilingKg + 0.000001, "build rate does not bypass final tension ceiling");
+}
+
+runTouchHoldControlBuildCheck();
 
 function runFightScenario({
   name,

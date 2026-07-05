@@ -507,7 +507,6 @@ class InputManager {
       this.#pointerAction === PointerAction.ROD_CONTROL_X
     ) {
       this.#pointerAction = PointerAction.ROD_CONTROL_X;
-      this.#isPulling = false;
       return;
     }
 
@@ -555,7 +554,6 @@ class InputManager {
         this.#rodControlPointerActive = true;
         this.#isDragControlActive = false;
         this.#pointerAction = PointerAction.ROD_CONTROL_X;
-        this.#isPulling = false;
         this.#clearLongPressTimeout();
       }
     }
@@ -646,7 +644,14 @@ class InputManager {
     // pointer-pull стартує тільки після pullHoldMinMs, якщо жест не став drag-control.
     this.#updatePointerPullState(Date.now());
     this.#isPulling =
-      keyboardPulling || this.#pointerAction === PointerAction.PULL;
+      keyboardPulling ||
+      this.#pointerAction === PointerAction.PULL ||
+      (
+        this.#isPointerDown &&
+        this.#rodControlPointerActive &&
+        Math.max(0, Date.now() - Number(this.#pointerDownAtMs || Date.now())) >=
+          Math.max(0, Number(CONFIG.input?.pullHoldMinMs) || 0)
+      );
 
     if (keyboardPulling && !this.#isPointerDown) {
       this.#pullDirection.set(0, 1);

@@ -30,8 +30,8 @@ class FightInputActionComposer {
       input,
       config.rodControlInput || {},
     );
-    const pointerHoldActive = pointerDown && !pointerControl.active;
-    const legacyHoldActive = legacyPulling && !pointerControl.active;
+    const pointerHoldActive = pointerDown;
+    const legacyHoldActive = legacyPulling;
     const holdActive = pointerHoldActive || legacyHoldActive || spaceDown;
     const holdSource = spaceDown
       ? "keyboard"

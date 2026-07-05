@@ -148,6 +148,7 @@ class RodPullCalculator {
     lineHasReserve = true,
     fishDistanceMeters,
     playerPressureGain,
+    playerTensionBuildRate,
     playerPressureFatigue,
   }) {
     const maxDistanceMeters = this.calculateMaxDistance({ rodLengthMeters });
@@ -229,12 +230,13 @@ class RodPullCalculator {
     }
 
     const dt = Math.max(0, Number(dtSec) || 0);
-    const pressureGainMultiplier = this.#pressureGainMultiplier({
-      frame: playerPressureGain,
+    const tensionBuildRateMultiplier = this.#tensionBuildRateMultiplier({
+      frame: playerTensionBuildRate,
+      fallbackFrame: playerPressureGain,
       channel: "rodHold",
     });
     const baseChargePerSecond = this.#resolveHoldChargePerSecond();
-    const chargePerSecond = baseChargePerSecond * pressureGainMultiplier;
+    const chargePerSecond = baseChargePerSecond * tensionBuildRateMultiplier;
     const chargedRatio = Math.min(1, prevRatio + chargePerSecond * dt);
     const nextRatio = chargedRatio;
     const distanceMeters = Math.min(availableDistanceMeters, nextRatio * availableDistanceMeters);
@@ -273,9 +275,12 @@ class RodPullCalculator {
       playerPressureFatigueEnabled: playerPressureFatigue?.enabled === true,
       dragSlipping: forceLimit.dragSlipping,
       blockedReason,
-      chargeSpeedMultiplier: 1,
-      playerPressureGainMultiplier: pressureGainMultiplier,
+      chargeSpeedMultiplier: tensionBuildRateMultiplier,
+      playerPressureGainMultiplier:
+        Math.max(0, Number(playerPressureGain?.multiplier) || 1),
       playerPressureGainMode: playerPressureGain?.mode || "none",
+      tensionBuildRateMultiplier,
+      tensionBuildMode: playerTensionBuildRate?.mode || "none",
       chargePerSecond,
       baseChargePerSecond,
       lineHasReserve: lineCanRelease,
@@ -324,6 +329,11 @@ class RodPullCalculator {
         Number(data.playerPressureGainMultiplier) || 1,
       ),
       playerPressureGainMode: data.playerPressureGainMode || "none",
+      tensionBuildRateMultiplier: Math.max(
+        0,
+        Number(data.tensionBuildRateMultiplier) || 1,
+      ),
+      tensionBuildMode: data.tensionBuildMode || "none",
       chargePerSecond: Math.max(0, Number(data.chargePerSecond) || 0),
       baseChargePerSecond: Math.max(
         0,
@@ -393,5 +403,18 @@ class RodPullCalculator {
     if (frame?.enabled !== true) return 1;
     if (channel === "rodHold" && frame.holdActive !== true) return 1;
     return Math.max(0, Number(frame.multiplier) || 1);
+  }
+
+  #tensionBuildRateMultiplier({ frame, fallbackFrame, channel }) {
+    if (frame?.enabled === true) {
+      const applyTo = frame.applyTo || {};
+      if (channel === "rodHold" && applyTo.rodHoldCharge === false) return 1;
+      if (channel === "rodControl" && applyTo.rodControlBuild === false) return 1;
+      return Math.max(0, Number(frame.buildRateMultiplier) || 1);
+    }
+    return this.#pressureGainMultiplier({
+      frame: fallbackFrame,
+      channel,
+    });
   }
 }

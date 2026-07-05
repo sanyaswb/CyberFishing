@@ -152,6 +152,7 @@ class ConfigSchemaValidator {
     this.#validateMinMaxPairs(physics, "physics");
     this.#validatePlayerPressureFatigueConfig();
     this.#validatePlayerPressureGainConfig();
+    this.#validatePlayerTensionBuildRateConfig();
   }
 
   #validatePlayerPressureGainConfig() {
@@ -197,6 +198,75 @@ class ConfigSchemaValidator {
       "physics.fight.playerPressureGain.multipliers.holdAndControl",
       config.multipliers?.holdAndControl,
       { min: 0 },
+    );
+  }
+
+  #validatePlayerTensionBuildRateConfig() {
+    const config = this.config.physics?.fight?.playerTensionBuildRate;
+    if (!config || typeof config !== "object") {
+      this.#error(
+        "physics.fight.playerTensionBuildRate",
+        "missing player tension build rate config",
+      );
+      return;
+    }
+
+    this.#requireBooleanWithLabel(
+      "physics.fight.playerTensionBuildRate.enabled",
+      config.enabled,
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerTensionBuildRate.rodControlBuildPerSecond",
+      config.rodControlBuildPerSecond,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerTensionBuildRate.inputThresholds.holdForceKg",
+      config.inputThresholds?.holdForceKg,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerTensionBuildRate.inputThresholds.controlForceKg",
+      config.inputThresholds?.controlForceKg,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerTensionBuildRate.inputThresholds.holdInputRatio",
+      config.inputThresholds?.holdInputRatio,
+      { min: 0, max: 1 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerTensionBuildRate.inputThresholds.controlInputRatio",
+      config.inputThresholds?.controlInputRatio,
+      { min: 0, max: 1 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerTensionBuildRate.multipliers.none",
+      config.multipliers?.none,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerTensionBuildRate.multipliers.holdOnly",
+      config.multipliers?.holdOnly,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerTensionBuildRate.multipliers.controlOnly",
+      config.multipliers?.controlOnly,
+      { min: 0 },
+    );
+    this.#requireFiniteNumberWithLabel(
+      "physics.fight.playerTensionBuildRate.multipliers.holdAndControl",
+      config.multipliers?.holdAndControl,
+      { min: 0 },
+    );
+    this.#requireBooleanWithLabel(
+      "physics.fight.playerTensionBuildRate.applyTo.rodHoldCharge",
+      config.applyTo?.rodHoldCharge,
+    );
+    this.#requireBooleanWithLabel(
+      "physics.fight.playerTensionBuildRate.applyTo.rodControlBuild",
+      config.applyTo?.rodControlBuild,
     );
   }
 
