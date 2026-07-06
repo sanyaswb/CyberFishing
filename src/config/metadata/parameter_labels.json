@@ -667,6 +667,10 @@
     "label": "Reel hold stroke ratio",
     "description": "Minimum used rod stroke ratio required before reel hold can activate."
   },
+  "physics.fight.reelHold.strokeRatioTolerance": {
+    "label": "Reel hold stroke ratio tolerance",
+    "description": "Small ratio tolerance used only for floating-point precision near full rod stroke."
+  },
   "physics.fight.reelHold.strokeToleranceMeters": {
     "label": "Reel hold stroke tolerance",
     "description": "Meter tolerance used to decide that rod stroke is effectively full."

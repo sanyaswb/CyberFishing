@@ -71,7 +71,9 @@ class ReelHoldGateLiveProbe {
   }
 
   #diagnose(live) {
-    const rodStrokeRatio = Number(live.rodStrokeRatio) || 0;
+    const rodStrokeRatio = Number(
+      live.holdReelRecoverInputStrokeRatio ?? live.rodStrokeRatio,
+    ) || 0;
     const requiredStrokeRatio =
       Number(
         live.holdReelRecoverRequiredStrokeRatio ??
@@ -232,6 +234,16 @@ class ReelHoldGateLiveProbe {
       "Fight mode": live.fightMode || "n/a",
       "Rod pull active": live.rodPullActive === true,
       "Rod stroke ratio": this.#percent(live.rodStrokeRatio),
+      "ReelHold input stroke": this.#percent(
+        live.holdReelRecoverInputStrokeRatio,
+      ),
+      "Final rod stroke": this.#percent(live.finalRodStrokeRatio),
+      "Stroke delta to full": this.#percent(
+        live.holdReelRecoverStrokeRatioDeltaToFull,
+      ),
+      "Stroke tolerance": this.#percent(
+        live.holdReelRecoverStrokeRatioTolerance,
+      ),
       "Rod stroke won m": this.#num(live.rodStrokeWonMeters, 3),
       "Rod stroke capacity m": this.#num(live.rodStrokeCapacityMeters, 3),
       "Eligible": live.holdReelRecoverEligible === true,

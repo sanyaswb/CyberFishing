@@ -306,6 +306,16 @@ class FightPhysicsSystem {
       hardLineLimit: rodPullFrame.hardLineLimitBeforeRelease,
     }),
     );
+    const strokeDistanceFrame = pipelineFrame.run(
+      "update_rod_stroke_distance",
+      () => this.#recordRodStrokeDistance({
+        rodPullSystem,
+        previousLineState: rodPullFrame.lineStateBeforePull,
+        currentLineState: rodPullFrame.lineStateAfterPull,
+      }),
+    );
+    const postStrokeRodPullResult = rodPullSystem.getState?.() ||
+      rodPullFrame.rodPullResult;
     const recoverFrame = pipelineFrame.run("recover_line", () => {
       const recoveryLoad = this.#resolveReelRecoveryLoad({
         tensionResult: tensionPreview,
@@ -316,7 +326,7 @@ class FightPhysicsSystem {
       isPullMode,
       hasReel,
       reel,
-      rodPullResult: rodPullFrame.rodPullResult,
+      rodPullResult: postStrokeRodPullResult,
       tensionPreview,
       dragContext,
       physics,
@@ -330,7 +340,7 @@ class FightPhysicsSystem {
       tensionKg: recoveryLoad.tensionKg,
       blockedReason: recoveryLoad.blockedReason,
       playerHoldActive: isPullMode,
-      strokeWonMeters: rodPullFrame.rodPullResult.rodStrokeWonMeters,
+      strokeWonMeters: postStrokeRodPullResult.rodStrokeWonMeters,
       fishDistanceMeters: lineStateAfterControl.distanceMeters,
     });
       const holdRecoveredMeters = holdReelRecover.recoveringLine
@@ -358,7 +368,7 @@ class FightPhysicsSystem {
       () => this.#resolvePlayerPressureFatigueSource({
         physics,
         recoverFrame,
-        rodPullResult: rodPullFrame.rodPullResult,
+        rodPullResult: postStrokeRodPullResult,
         rodControlResult: rodControlFrame.rodControlResult,
       }),
     );
@@ -369,7 +379,7 @@ class FightPhysicsSystem {
         physics,
         appliedFrame: playerPressureFatigueApplication,
         sourceFrame: playerPressureFatigueSourceFrame,
-        rodPullResult: rodPullFrame.rodPullResult,
+        rodPullResult: postStrokeRodPullResult,
         rodControlResult: rodControlFrame.rodControlResult,
       }),
     );
@@ -414,21 +424,13 @@ class FightPhysicsSystem {
       lineLimit.lineConstraintState ||
       rodControlFrame.lineConstraintState ||
       motion.lineConstraintStateBeforeFishMotion;
-    const strokeDistanceFrame = pipelineFrame.run(
-      "update_rod_stroke_distance",
-      () => this.#recordRodStrokeDistance({
-        rodPullSystem,
-        previousLineState: rodPullFrame.lineStateBeforePull,
-        currentLineState: rodPullFrame.lineStateAfterPull,
-      }),
-    );
     const tensionResult = pipelineFrame.run(
       "update_final_tension",
       () => this.#updateTension({
       tensionSystem,
       stressSystem,
       forceData,
-      rodPullResult: rodPullFrame.rodPullResult,
+      rodPullResult: postStrokeRodPullResult,
       fishRetrieveResult: rodPullFrame.fishRetrieveResult,
       rodControlResult: rodControlFrame.rodControlResult,
       dragContext,
@@ -452,7 +454,7 @@ class FightPhysicsSystem {
       "resolve_stamina_frame",
       () => this.#buildStaminaFrame({
         forceData,
-        rodPullResult: rodPullFrame.rodPullResult,
+        rodPullResult: postStrokeRodPullResult,
         rodControlResult: rodControlFrame.rodControlResult,
         fishRetrieveResult: rodPullFrame.fishRetrieveResult,
         lineState: finalLineState,
@@ -490,7 +492,7 @@ class FightPhysicsSystem {
       hardLineLimit: lineLimit.hardLineLimit,
       constraintResult: lineLimit.constraintResult,
       rodPullDisplay,
-      rodPullResult: rodPullFrame.rodPullResult,
+      rodPullResult: postStrokeRodPullResult,
       rodPullMoveMeters: rodPullFrame.rodPullMoveMeters,
       rodControlResult: rodControlFrame.rodControlResult,
       rodControlMoveMeters: rodControlFrame.rodControlMoveMeters,
@@ -2923,6 +2925,15 @@ class FightPhysicsSystem {
         holdReelRecover?.playerHoldActive === true,
       reelHoldRequiredStrokeRatio:
         Math.max(0, Number(holdReelRecover?.requiredStrokeRatio) || 1),
+      holdReelRecoverInputStrokeRatio:
+        Math.max(0, Math.min(1, Number(holdReelRecover?.inputStrokeRatio) || 0)),
+      finalRodStrokeRatio:
+        Math.max(0, Math.min(1, Number(rodPullDisplay.rodStrokeRatio) || 0)),
+      holdReelRecoverStrokeRatioDeltaToFull:
+        Math.max(0, Number(holdReelRecover?.strokeRatioDeltaToFull) || 0),
+      holdReelRecoverStrokeRatioTolerance:
+        Math.max(0, Number(holdReelRecover?.strokeRatioTolerance) || 0),
+      holdReelRecoverStrokeFull: holdReelRecover?.strokeFull === true,
       reelHoldStrokeFull: holdReelRecover?.strokeFull === true,
       reelHoldRawTensionKg:
         Math.max(0, Number(holdReelRecover?.rawTensionKg) || 0),
@@ -3591,6 +3602,14 @@ class FightPhysicsSystem {
         holdReelRecover?.playerHoldActive === true,
       reelHoldRequiredStrokeRatio:
         holdReelRecover?.requiredStrokeRatio ?? 1,
+      holdReelRecoverInputStrokeRatio:
+        holdReelRecover?.inputStrokeRatio ?? 0,
+      finalRodStrokeRatio: rodPullDisplay.rodStrokeRatio ?? 0,
+      holdReelRecoverStrokeRatioDeltaToFull:
+        holdReelRecover?.strokeRatioDeltaToFull ?? 0,
+      holdReelRecoverStrokeRatioTolerance:
+        holdReelRecover?.strokeRatioTolerance ?? 0,
+      holdReelRecoverStrokeFull: holdReelRecover?.strokeFull === true,
       reelHoldStrokeFull: holdReelRecover?.strokeFull === true,
       reelHoldRawTensionKg: holdReelRecover?.rawTensionKg ?? 0,
       reelHoldDragLimitKg: holdReelRecover?.dragLimitKg ?? 0,

@@ -20,6 +20,11 @@ class ReelHoldRecoverySystem {
   } = {}) {
     const delayMs = this.#resolveDelayMs(config);
     const requiredStrokeRatio = this.#ratio(config.strokeRatio, 1);
+    const strokeRatioTolerance = this.#positive(
+      config.strokeRatioTolerance,
+      0.001,
+    );
+    const inputStrokeRatio = this.#ratio(strokeRatio, 0);
     const recoverableLine = this.#positive(lineRecoverableMeters);
     const loadFrame = this.#loadPolicy.evaluate({
       dtMs,
@@ -35,8 +40,9 @@ class ReelHoldRecoverySystem {
     });
     const strokeFull = this.#isStrokeFull({
       requireStrokeFull: config.requireRodStrokeFull !== false,
-      strokeRatio,
+      strokeRatio: inputStrokeRatio,
       requiredStrokeRatio,
+      strokeRatioTolerance,
     });
     const hasRecoverableLine = recoverableLine > 0.001;
     const eligible =
@@ -78,6 +84,12 @@ class ReelHoldRecoverySystem {
       retrieveSpeedMetersPerSecond:
         loadFrame.retrieveSpeedMetersPerSecond,
       requiredStrokeRatio,
+      inputStrokeRatio,
+      strokeRatioTolerance,
+      strokeRatioDeltaToFull: Math.max(
+        0,
+        requiredStrokeRatio - inputStrokeRatio,
+      ),
       recoverSpeedMetersPerSecond:
         loadFrame.recoverSpeedMetersPerSecond,
       maxMoveMeters: loadFrame.maxMoveMeters,
@@ -107,9 +119,11 @@ class ReelHoldRecoverySystem {
     requireStrokeFull,
     strokeRatio,
     requiredStrokeRatio,
+    strokeRatioTolerance,
   }) {
     if (!requireStrokeFull) return true;
-    return this.#ratio(strokeRatio, 0) >= requiredStrokeRatio;
+    return this.#ratio(strokeRatio, 0) >=
+      requiredStrokeRatio - this.#positive(strokeRatioTolerance, 0.001);
   }
 
   #blockedReason({
@@ -162,6 +176,9 @@ class ReelHoldRecoverySystem {
       tensionBelowMaxLoad: false,
       retrieveSpeedMetersPerSecond: 0,
       requiredStrokeRatio: 1,
+      inputStrokeRatio: 0,
+      strokeRatioTolerance: 0.001,
+      strokeRatioDeltaToFull: 1,
       recoverSpeedMetersPerSecond: 0,
       maxMoveMeters: 0,
       blockedReason: "not_checked",

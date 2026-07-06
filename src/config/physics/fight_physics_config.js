@@ -229,6 +229,7 @@ const FIGHT_PHYSICS_CONFIG = {
     requireRodStrokeFull: true,
     delayMs: 0,
     strokeRatio: 1.0,
+    strokeRatioTolerance: 0.001,
     strokeToleranceMeters: 0.001,
   },
 

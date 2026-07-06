@@ -34,6 +34,16 @@ class ReelHoldGateDebugModule extends ConsoleTableDebugModule {
       "Player hold active": live.reelHoldPlayerHoldActive === true,
       "Rod pull active": live.rodPullActive === true,
       "Rod stroke ratio": this.#percent(live.rodStrokeRatio),
+      "ReelHold input stroke": this.#percent(
+        live.holdReelRecoverInputStrokeRatio,
+      ),
+      "Final rod stroke": this.#percent(live.finalRodStrokeRatio),
+      "Stroke delta to full": this.#percent(
+        live.holdReelRecoverStrokeRatioDeltaToFull,
+      ),
+      "Stroke tolerance": this.#percent(
+        live.holdReelRecoverStrokeRatioTolerance,
+      ),
       "Required stroke ratio": this.#percent(
         live.reelHoldRequiredStrokeRatio ?? 1,
       ),
@@ -89,7 +99,9 @@ class ReelHoldGateDebugModule extends ConsoleTableDebugModule {
   }
 
   #diagnose(live) {
-    const rodStrokeRatio = Number(live.rodStrokeRatio) || 0;
+    const rodStrokeRatio = Number(
+      live.holdReelRecoverInputStrokeRatio ?? live.rodStrokeRatio,
+    ) || 0;
     const requiredStrokeRatio =
       Number(live.reelHoldRequiredStrokeRatio) || 1;
     const checks = [

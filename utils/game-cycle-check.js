@@ -669,6 +669,14 @@ function runReelHoldStrokeGateCheck() {
   assert(fullMetersFrame.active === false, "reel hold ignores full stroke meters when rod stroke ratio is below required ratio");
   assert(fullMetersFrame.blockedReason === "stroke_not_full", "reel hold full-stroke gate uses rod stroke ratio as source of truth");
 
+  const toleranceFrame = system.update({
+    ...common,
+    strokeRatio: 0.9995,
+  });
+  assert(toleranceFrame.active === true, "reel hold allows tiny stroke ratio tolerance for float precision");
+  assertApprox(toleranceFrame.strokeRatioTolerance, 0.001, 0.000001, "reel hold diagnostics expose stroke ratio tolerance");
+  assertApprox(toleranceFrame.inputStrokeRatio, 0.9995, 0.000001, "reel hold diagnostics expose input stroke ratio");
+
   const fullFrame = system.update({
     ...common,
     strokeRatio: 1,
@@ -717,6 +725,7 @@ function runReelHoldConfigSourceCheck() {
   assert(reelHold.enabled === true, "reel hold enabled is sourced from physics.fight.reelHold");
   assertApprox(reelHold.delayMs, 0, 0.000001, "legacy tackle reel hold delay no longer overrides reel hold config");
   assertApprox(reelHold.strokeRatio, 1, 0.000001, "legacy tackle reel hold ratio no longer overrides reel hold config");
+  assertApprox(reelHold.strokeRatioTolerance, 0.001, 0.000001, "reel hold ratio tolerance defaults to a small precision guard");
   assertApprox(reelHold.strokeToleranceMeters, 0.001, 0.000001, "legacy tackle reel hold tolerance no longer overrides reel hold config");
 }
 
@@ -784,6 +793,80 @@ function runRodStrokeRecoverySourceCheck() {
 }
 
 runRodStrokeRecoverySourceCheck();
+
+function runReelHoldPostStrokeOrderCheck() {
+  const config = createConfig();
+  const equipment = createTestBuild({
+    rodMaxLoadKg: 20,
+    reelMaxLoadKg: 20,
+    lineMaxLoadKg: 20,
+    hookMaxLoadKg: 20,
+  });
+  const fishData = createFish({
+    weightKg: 0.25,
+    basePower: 0.5,
+    baseSpeed: 0.8,
+    forceMultiplier: 0.5,
+    speedMultiplier: 0.8,
+  });
+  const cast = createCast({ config, equipment, distanceMeters: 5.8 });
+  const fight = new FightService({
+    config,
+    rng: createRng(),
+    devFlags: createDevFlags(),
+  });
+  fight.startFight(fishData, equipment);
+
+  let fullStrokeDebug = null;
+  for (let frame = 0; frame < 160; frame++) {
+    const result = fight.updateFight(1000 / 30, {
+      floatEntity: cast.floatEntity,
+      bounds: cast.bounds,
+      input: {
+        isPulling: true,
+        retrieve: false,
+        pointerDown: false,
+        dragIncrease: true,
+        pullDirection: { x: 0, y: 1 },
+      },
+      env: {},
+      net: null,
+      fishData,
+      getRodVirtualPos: () => cast.rodVirtualPos,
+      checkWater: () => true,
+    });
+    const debug = fight.getDebugData({
+      floatEntity: cast.floatEntity,
+      boundaries: cast.bounds,
+      rodPos: cast.rodVirtualPos,
+      screenOffset: 0,
+      equipment,
+    });
+    if (
+      Number(debug.finalRodStrokeRatio ?? debug.rodStrokeRatio) >= 0.999 &&
+      debug.reelHoldPlayerHoldActive === true &&
+      debug.rodPullActive === true
+    ) {
+      fullStrokeDebug = debug;
+      break;
+    }
+    if (result.transition) break;
+  }
+
+  assert(fullStrokeDebug, "post-stroke reel hold check reaches full rod stroke");
+  assert(
+    fullStrokeDebug.holdReelRecoverBlockedReason !== "stroke_not_full",
+    "reel hold uses post-stroke rod state after rodHold movement is recorded",
+  );
+  assert(
+    Number(fullStrokeDebug.holdReelRecoverInputStrokeRatio) >=
+      Number(fullStrokeDebug.reelHoldRequiredStrokeRatio) -
+        Number(fullStrokeDebug.holdReelRecoverStrokeRatioTolerance),
+    "reel hold input stroke ratio is the post-record stroke ratio",
+  );
+}
+
+runReelHoldPostStrokeOrderCheck();
 
 function runFightScenario({
   name,

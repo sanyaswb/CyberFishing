@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.23.34 - Reel hold uses post-stroke rod state
+
+- Moved `update_rod_stroke_distance` before `recover_line` in the fight physics pipeline.
+- Made reel hold and auto rod-stroke recovery use the post-record rod stroke state for the current frame.
+- Added `strokeRatioTolerance` as a small precision guard for reel hold gating.
+- Added debug fields for reel hold input stroke ratio, final rod stroke ratio, delta-to-full and tolerance.
+- Added regression coverage for the post-stroke reel hold ordering bug.
+
 ## v0.23.33 - Reel hold transition probe
 
 - Changed `ReelHoldGateLiveProbe` from interval-based logging to semantic transition logging.

@@ -420,6 +420,10 @@ class FightPhysicsConfigAdapter {
       requireRodStrokeFull: fight.requireRodStrokeFull !== false,
       delayMs: this.#number(fight.delayMs, 0),
       strokeRatio: this.#number(fight.strokeRatio, 1),
+      strokeRatioTolerance: this.#number(
+        fight.strokeRatioTolerance,
+        0.001,
+      ),
       strokeToleranceMeters: this.#number(
         fight.strokeToleranceMeters,
         this.getRodHoldConfig().minStrokeMeters,

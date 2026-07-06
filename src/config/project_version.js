@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.23.33";
+const CURRENT_PROJECT_VERSION = "0.23.34";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "reel-hold-transition-probe",
+  codename: "reel-hold-post-stroke-state",
   updatedAt: "2026-07-06",
   notes: Object.freeze([
-    "Changed reel hold live diagnostics from interval polling to semantic transition logging",
-    "Removed rodStrokeRatio drift from the live probe signature to prevent console spam",
-    "Reset live probe signatures outside the playing state for clean fight sessions",
-    "Kept reelHoldGate enabled for focused gameplay diagnostics",
+    "Moved rod stroke distance recording before reel hold recovery checks",
+    "Made reel hold use the post-stroke rod state from the current frame",
+    "Added a small strokeRatioTolerance precision guard for reel hold gating",
+    "Added debug fields and regression coverage for reel hold input-vs-final stroke ratios",
   ]),
 });
 
