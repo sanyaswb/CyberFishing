@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.23.35 - Reel hold debug speed
+
+- Made `reelHoldAppliedSpeedMps` use the real frame `dtSec` passed into the debug snapshot.
+- Added reel hold debug fields for previous-frame movement state and current-frame calculated state.
+- Exposed reel hold movement dt and previous/current engagement states in console diagnostics.
+- Added regression coverage for reel hold applied speed.
+
 ## v0.23.34 - Reel hold uses post-stroke rod state
 
 - Moved `update_rod_stroke_distance` before `recover_line` in the fight physics pipeline.

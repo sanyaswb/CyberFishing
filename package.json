@@ -7,7 +7,8 @@
     "check:js": "node utils/check-js.js",
     "check:game-cycle": "node utils/game-cycle-check.js",
     "struct": "struct -i dist -i build -i coverage -o project-structure.txt",
-    "git:add": "npm run struct && git add ."
+    "git:add": "npm run struct && git add .",
+    "git:version-copy": "node utils/git-version-copy.js"
   },
   "dependencies": {
     "glob": "^13.0.6",

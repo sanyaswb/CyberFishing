@@ -284,6 +284,11 @@ class ReelHoldGateLiveProbe {
       "Has recoverable line":
         live.holdReelRecoverHasRecoverableLine === true,
       "Recovering line": live.holdReelRecoveringLine === true,
+      "Movement state used": live.reelHoldStateUsedForMovement || "n/a",
+      "State calculated": live.reelHoldStateCalculatedThisFrame || "n/a",
+      "Previous engaged": live.previousReelHoldEngaged === true,
+      "Current engaged": live.currentReelHoldEngaged === true,
+      "Frame dt sec": this.#num(live.reelHoldAppliedDtSec, 4),
       "ReelHold move m": this.#num(live.reelHoldMoveMeters, 4),
       "Applied speed m/s": this.#num(live.reelHoldAppliedSpeedMps, 3),
       "Hard line limit": live.hardLineLimit === true,

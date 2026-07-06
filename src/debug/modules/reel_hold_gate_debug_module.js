@@ -86,6 +86,11 @@ class ReelHoldGateDebugModule extends ConsoleTableDebugModule {
       "Has recoverable line":
         live.holdReelRecoverHasRecoverableLine === true,
       "Recovering line": live.holdReelRecoveringLine === true,
+      "Movement state used": live.reelHoldStateUsedForMovement || "n/a",
+      "State calculated": live.reelHoldStateCalculatedThisFrame || "n/a",
+      "Previous engaged": live.previousReelHoldEngaged === true,
+      "Current engaged": live.currentReelHoldEngaged === true,
+      "Frame dt sec": this.#num(live.reelHoldAppliedDtSec, 4),
       "Fish desired move m": this.#num(live.fishRetrieveDesiredMoveMeters, 4),
       "Hold reel max move m": this.#num(live.holdReelRecoverMoveMeters, 4),
       "ReelHold move m": this.#num(live.reelHoldMoveMeters, 4),

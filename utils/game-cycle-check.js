@@ -818,6 +818,7 @@ function runReelHoldPostStrokeOrderCheck() {
   fight.startFight(fishData, equipment);
 
   let fullStrokeDebug = null;
+  let movingReelHoldDebug = null;
   for (let frame = 0; frame < 160; frame++) {
     const result = fight.updateFight(1000 / 30, {
       floatEntity: cast.floatEntity,
@@ -847,7 +848,10 @@ function runReelHoldPostStrokeOrderCheck() {
       debug.reelHoldPlayerHoldActive === true &&
       debug.rodPullActive === true
     ) {
-      fullStrokeDebug = debug;
+      fullStrokeDebug ||= debug;
+    }
+    if (Number(debug.reelHoldMoveMeters) > 0.000001) {
+      movingReelHoldDebug = debug;
       break;
     }
     if (result.transition) break;
@@ -863,6 +867,18 @@ function runReelHoldPostStrokeOrderCheck() {
       Number(fullStrokeDebug.reelHoldRequiredStrokeRatio) -
         Number(fullStrokeDebug.holdReelRecoverStrokeRatioTolerance),
     "reel hold input stroke ratio is the post-record stroke ratio",
+  );
+  assert(movingReelHoldDebug, "reel hold movement debug captures a moving reel hold frame");
+  assert(
+    Number(movingReelHoldDebug.reelHoldAppliedDtSec) > 0,
+    "reel hold applied speed uses real frame dt",
+  );
+  assertApprox(
+    movingReelHoldDebug.reelHoldAppliedSpeedMps,
+    Number(movingReelHoldDebug.reelHoldMoveMeters) /
+      Number(movingReelHoldDebug.reelHoldAppliedDtSec),
+    0.000001,
+    "reel hold applied speed matches reel hold move divided by frame dt",
   );
 }
 

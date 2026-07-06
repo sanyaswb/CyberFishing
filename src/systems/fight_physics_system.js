@@ -476,6 +476,7 @@ class FightPhysicsSystem {
     this.#debug = pipelineFrame.run(
       "write_debug_snapshot",
       () => this.#buildDebugSnapshot({
+      dtSec,
       forceData,
       dragSystem,
       lineState: finalLineState,
@@ -500,6 +501,8 @@ class FightPhysicsSystem {
       rodControlMovementBlockReason: rodControlFrame.rodControlMovementBlockReason,
       lineConstraintState: finalLineConstraintState,
       holdReelRecoverMoveMeters: rodPullFrame.holdReelRecoverMoveMeters,
+      previousReelHoldEngaged: rodPullFrame.previousReelHoldEngaged,
+      previousReelHoldActive: rodPullFrame.previousReelHoldActive,
       rodPullMovementBlockReason: rodPullFrame.rodPullMovementBlockReason,
       reelHoldMovementBlockReason: rodPullFrame.reelHoldMovementBlockReason,
       hardTensionBlocked: rodPullFrame.hardTensionBlocked,
@@ -1618,6 +1621,8 @@ class FightPhysicsSystem {
       holdReelRecoverMoveMeters: holdReelRecoverActive
         ? reelHoldMoveMeters
         : 0,
+      previousReelHoldEngaged: !!holdReelRecover?.engaged,
+      previousReelHoldActive: holdReelRecoverActive,
       hardLineLimitBeforeRelease: !!lineStateAfterPull.isFullyExtended,
     };
   }
@@ -2759,6 +2764,7 @@ class FightPhysicsSystem {
   }
 
   #buildDebugSnapshot({
+    dtSec,
     forceData,
     dragSystem,
     lineState,
@@ -2783,6 +2789,8 @@ class FightPhysicsSystem {
     rodControlMovementBlockReason,
     lineConstraintState,
     holdReelRecoverMoveMeters,
+    previousReelHoldEngaged,
+    previousReelHoldActive,
     rodPullMovementBlockReason,
     reelHoldMovementBlockReason,
     hardTensionBlocked,
@@ -2805,7 +2813,7 @@ class FightPhysicsSystem {
     fishCondition,
   }) {
     const lineHasReserve = this.#lineHasReserve(lineState);
-    const frameDtSec = Math.max(0, Number(physics?.dtSec) || 0);
+    const frameDtSec = Math.max(0, Number(dtSec) || 0);
     const appliedRodPullMoveMeters = Math.max(0, Number(rodPullMoveMeters) || 0);
     const appliedRodControlMoveMeters = Math.max(
       0,
@@ -3638,6 +3646,13 @@ class FightPhysicsSystem {
       holdReelRecoverMoveMeters: appliedReelHoldMoveMeters,
       reelHoldMoveMeters: appliedReelHoldMoveMeters,
       reelHoldAppliedSpeedMps,
+      reelHoldAppliedDtSec: frameDtSec,
+      reelHoldStateUsedForMovement: "previous_frame",
+      reelHoldStateCalculatedThisFrame: "current_frame",
+      previousReelHoldEngaged: previousReelHoldEngaged === true,
+      previousReelHoldActive: previousReelHoldActive === true,
+      currentReelHoldEngaged: !!holdReelRecover?.engaged,
+      currentReelHoldActive: !!holdReelRecover?.active,
       reelHoldMovementBlockReason: reelHoldMovementBlockReason || "none",
       hardTensionBlocked: !!hardTensionBlocked,
       holdReelRecoverBlockedReason:
