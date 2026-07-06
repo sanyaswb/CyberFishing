@@ -33,6 +33,14 @@ class RodControlSummaryOverlayModule extends OverlayModule {
       metricKey: "rodControlSummary.input",
       color: inputDirection ? "#00d4ff" : "#8a9bac",
     });
+    html += this.metricRow("Requested", f.percent(data.rodControlRequestedForceRatio, 1), {
+      metricKey: "rodControlSummary.requested",
+      color: "#73c2fb",
+    });
+    html += this.metricRow("Delivered", f.percent(data.rodControlDeliveredForceRatio, 1), {
+      metricKey: "rodControlSummary.delivered",
+      color: f.stressColor(data.rodControlDeliveredForceRatio),
+    });
     html += this.metricRow("Line angle", `${f.num(data.rodControlLineAngleDeg, 1)}°`, {
       metricKey: "rodControlSummary.angle",
       color: "#73c2fb",

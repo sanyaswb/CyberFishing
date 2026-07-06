@@ -13,6 +13,11 @@ class FightRodControlGeometrySection extends FightSectionBase {
       this.row("Fish offset X", `${f.num(d.rodControlFishOffsetX, 1)}px`, "#73c2fb"),
       this.row("Line angle", `${f.num(d.rodControlLineAngleDeg, 1)}deg`, "#73c2fb"),
       this.row(
+        "Full-force angle",
+        `${f.num(d.rodControlMaxEffectiveAngleDeg, 1)}deg`,
+        "#73c2fb",
+      ),
+      this.row(
         "Angle ratio",
         f.percent(d.rodControlAngleRatio, 1),
         f.stressColor(d.rodControlAngleRatio),

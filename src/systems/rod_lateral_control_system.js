@@ -1,14 +1,20 @@
 class RodLateralControlSystem {
   #result = this.#createResult();
   #tensionModeResolver;
+  #angleResolver;
   #centerStartDirectionX = 0;
   #controlStartedCentered = false;
   #wasControlActive = false;
   #controlBuildRatio = 0;
 
-  constructor({ tensionModeResolver = null } = {}) {
+  constructor({
+    tensionModeResolver = null,
+    angleResolver = null,
+  } = {}) {
     this.#tensionModeResolver =
       tensionModeResolver || new RodControlTensionModeResolver();
+    this.#angleResolver =
+      angleResolver || new RodControlAngleResolver();
   }
 
   update({
@@ -24,7 +30,6 @@ class RodLateralControlSystem {
     fishTensionKg,
     fishVelocity,
     fishVelocityX,
-    fishWeightKg,
     playerForceBudget,
     dragLimitKg,
     dragLocked = true,
@@ -100,7 +105,6 @@ class RodLateralControlSystem {
       maxTackleLoadKg,
       currentTensionKg,
       fishTensionKg,
-      fishWeightKg,
       playerForceBudget,
       tensionMultiplier,
       dragLimitKg,
@@ -190,6 +194,7 @@ class RodLateralControlSystem {
       targetMode: targetFrame.targetMode,
       fishOffsetX: targetFrame.fishOffsetX,
       lineAngleDeg: targetFrame.lineAngleDeg,
+      maxEffectiveAngleDeg: targetFrame.maxEffectiveAngleDeg,
       angleRatio: targetFrame.angleRatio,
       directionFactor: targetFrame.directionFactor,
       aligned: targetFrame.aligned,
@@ -381,17 +386,17 @@ class RodLateralControlSystem {
       : aligned
         ? 0
         : -Math.sign(fishOffsetX);
-    const maxEffectiveAngleDeg = Math.max(
-      0.000001,
-      this.#number(alignment.maxEffectiveAngleDeg, 45),
-    );
-    const dy = Math.abs(targetRodY - fishY);
-    const lineAngleDeg = Math.atan2(absOffsetX, Math.max(1, dy)) * 180 / Math.PI;
-    const angleRatio = centerStartActive
-      ? 1
-      : aligned
-        ? 0
-      : this.#clamp01(lineAngleDeg / maxEffectiveAngleDeg);
+    const angleFrame = this.#angleResolver.resolve({
+      absOffsetX,
+      targetRodY,
+      fishY,
+      aligned,
+      centerStartActive,
+      config: alignment,
+    });
+    const lineAngleDeg = angleFrame.lineAngleDeg;
+    const angleRatio = angleFrame.angleRatio;
+    const maxEffectiveAngleDeg = angleFrame.maxEffectiveAngleDeg;
     let directionFactor = 0;
     if (inputDir !== 0) {
       if (inputDir === towardRodDirectionX) {
@@ -405,6 +410,7 @@ class RodLateralControlSystem {
       directionFactor,
       angleRatio,
       lineAngleDeg,
+      maxEffectiveAngleDeg,
       targetRodX: centerStartActive ? null : targetRodX,
       targetRodY: centerStartActive ? null : targetRodY,
       targetMode: centerStartActive ? "center_start" : targetMode,
@@ -428,7 +434,6 @@ class RodLateralControlSystem {
     maxTackleLoadKg,
     currentTensionKg,
     fishTensionKg,
-    fishWeightKg,
     playerForceBudget,
     tensionMultiplier,
     dragLimitKg,
@@ -439,17 +444,9 @@ class RodLateralControlSystem {
     playerPressureFatigue,
     config,
   }) {
-    const forceCfg = config.force || {};
-    const maxForceKg = Math.max(
-      0,
-      this.#number(forceCfg.maxForceKg, 0.22),
-    );
     const tackleLimitKg = Math.max(
       0,
-      this.#number(
-        rodLimitKg,
-        this.#number(maxTackleLoadKg, maxForceKg),
-      ),
+      this.#number(rodLimitKg, this.#number(maxTackleLoadKg, 0)),
     );
     const budget = playerForceBudget || {};
     const hasExternalBudget = Number.isFinite(
@@ -469,13 +466,14 @@ class RodLateralControlSystem {
       0,
       tensionCeilingKg - resolvedCurrentTensionKg,
     );
+    const externalControlBudgetKg = Math.max(
+      0,
+      this.#number(budget.controlBudgetKg, 0),
+    );
     const loadReserveKg = hasExternalBudget
-      ? Math.min(
-          Math.max(0, this.#number(budget.controlBudgetKg, 0)),
-          remainingTensionReserveKg,
-        )
+      ? externalControlBudgetKg
       : remainingTensionReserveKg;
-    const forceLimitKg = Math.min(maxForceKg, loadReserveKg);
+    const forceLimitKg = loadReserveKg;
     const canSlipDrag = lineConstraintState
       ? lineConstraintState.dragCanPayout === true
       : !dragLocked && !!lineHasReserve && !hardLineLimit;
@@ -483,40 +481,22 @@ class RodLateralControlSystem {
       0,
       this.#number(dragLimitKg),
     );
-    const dragReserveKg = canSlipDrag
-      ? Math.max(0, resolvedDragLimitKg - resolvedCurrentTensionKg)
-      : loadReserveKg;
-    const effectiveTensionReserveKg = canSlipDrag
-      ? Math.min(loadReserveKg, dragReserveKg)
-      : loadReserveKg;
+    const dragReserveKg = canSlipDrag ? resolvedDragLimitKg : loadReserveKg;
+    const effectiveTensionReserveKg = loadReserveKg;
     const tensionScale = Math.max(
       1,
       this.#number(tensionMultiplier, 1),
     );
-    const effectiveForceLimitKg = Math.min(
-      maxForceKg,
-      effectiveTensionReserveKg / tensionScale,
-    );
-    const loadReserveRatio = maxForceKg > 0
-      ? this.#clamp01(effectiveForceLimitKg / maxForceKg)
+    const effectiveForceLimitKg = effectiveTensionReserveKg / tensionScale;
+    const loadReserveRatio = loadReserveKg > 0
+      ? this.#clamp01(effectiveTensionReserveKg / loadReserveKg)
       : 0;
-    const weightResistance = Math.max(
-      0.25,
-      1 +
-        Math.max(0, this.#number(fishWeightKg)) *
-          Math.max(
-            0,
-            this.#number(forceCfg.fishWeightResistanceMultiplier),
-          ),
-    );
     const playerPressureEfficiency = this.#pressureEfficiency({
       frame: playerPressureFatigue,
       channel: "rodControl",
     });
     const rawForceKg =
-      effectiveForceLimitKg *
-      this.#clamp01(requestedForceRatio) /
-      weightResistance;
+      effectiveForceLimitKg * this.#clamp01(requestedForceRatio);
     return {
       currentTensionKg: resolvedCurrentTensionKg,
       tensionCeilingMultiplier,
@@ -532,7 +512,7 @@ class RodLateralControlSystem {
       loadReserveRatio,
       forceLimitKg,
       effectiveForceLimitKg,
-      dragLimited: canSlipDrag && effectiveForceLimitKg < forceLimitKg,
+      dragLimited: false,
       dragReserveKg,
       canSlipDrag,
       rawForceKg,
@@ -738,6 +718,7 @@ class RodLateralControlSystem {
       targetMode: "input_direction",
       fishOffsetX: 0,
       lineAngleDeg: 0,
+      maxEffectiveAngleDeg: 0,
       angleRatio: 0,
       directionFactor: 0,
       aligned: false,

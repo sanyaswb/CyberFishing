@@ -42,7 +42,7 @@ class FightRodControlForceSection extends FightSectionBase {
         d.rodControlDragLimited ? "yes" : "no",
         d.rodControlDragLimited ? "#ffaa00" : "#8a9bac",
       ),
-      this.row("Effective force limit", f.kg(d.rodControlEffectiveForceLimitKg, 3), "#73c2fb"),
+      this.row("Movement force limit", f.kg(d.rodControlEffectiveForceLimitKg, 3), "#73c2fb"),
       this.row(
         "Delivered force ratio",
         f.percent(d.rodControlDeliveredForceRatio, 1),
@@ -55,12 +55,12 @@ class FightRodControlForceSection extends FightSectionBase {
       ),
       this.row("Max pull speed", f.mps(d.rodControlMaxPullSpeedMps, 3), "#73c2fb"),
       this.row(
-        "Force",
+        "Movement force",
         f.kg(d.rodControlForceKg, 3),
         Number(d.rodControlForceKg) > 0 ? "#00ff80" : "#8a9bac",
       ),
       this.row(
-        "Lateral tension",
+        "Applied tension",
         f.kg(d.rodControlPlayerTensionKg, 3),
         Number(d.rodControlPlayerTensionKg) > 0 ? "#ffaa00" : "#8a9bac",
       ),

@@ -183,17 +183,9 @@
     "label": "Rod Control keyboard ramp down",
     "description": "Seconds for A/D Rod Control X input to return to zero after release."
   },
-  "physics.fight.rodControl.force.maxForceKg": {
-    "label": "Rod Control max force",
-    "description": "Maximum lateral player force added by Rod Control X."
-  },
   "physics.fight.rodControl.force.sidePullSpeedMultiplier": {
     "label": "Rod Control pull speed multiplier",
     "description": "Multiplier for lateral pull speed derived from delivered force and water resistance."
-  },
-  "physics.fight.rodControl.force.fishWeightResistanceMultiplier": {
-    "label": "Rod Control fish weight resistance",
-    "description": "How much fish weight reduces lateral control force and movement."
   },
   "physics.fight.rodControl.tension.sameDirectionMultiplier": {
     "label": "Rod Control same-direction tension",
@@ -684,8 +676,8 @@
     "description": "current_base uses the current base rod center; cast_base uses the base rod center captured at fight start."
   },
   "physics.fight.rodControl.alignment.maxEffectiveAngleDeg": {
-    "label": "Rod Control max effective angle",
-    "description": "Line angle in degrees where lateral control reaches full geometric efficiency."
+    "label": "Rod Control full-force angle",
+    "description": "Single source angle in degrees where Rod Control X reaches 100% geometric force ratio."
   },
   "physics.fight.rodControl.alignment.alignedThresholdPx": {
     "label": "Rod Control aligned threshold",

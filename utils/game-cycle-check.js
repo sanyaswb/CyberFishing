@@ -89,6 +89,7 @@ const FILES = [
   "src/systems/reel_system.js",
   "src/systems/rod_pull_system.js",
   "src/core/fishing/rod_control_tension_mode_resolver.js",
+  "src/core/fishing/rod_control_angle_resolver.js",
   "src/systems/rod_lateral_control_system.js",
   "src/systems/tension_system.js",
   "src/services/weakest_tackle_limit_resolver.js",
@@ -480,6 +481,134 @@ function runTouchHoldControlBuildCheck() {
 }
 
 runTouchHoldControlBuildCheck();
+
+
+function runRodControlHoldStyleForceCheck() {
+  const config = createConfig();
+  const rodControlConfig = config.physics.fight.rodControl;
+  assertApprox(
+    rodControlConfig.alignment.maxEffectiveAngleDeg,
+    20,
+    0.000001,
+    "rod control reaches full geometry at 20 degrees",
+  );
+  assert(
+    !Object.prototype.hasOwnProperty.call(rodControlConfig.force, "maxForceKg"),
+    "rod control no longer uses fixed maxForceKg cap",
+  );
+  assert(
+    !Object.prototype.hasOwnProperty.call(
+      rodControlConfig.force,
+      "fishWeightResistanceMultiplier",
+    ),
+    "rod control no longer uses fish-weight force divisor",
+  );
+
+  const allocator = new PlayerForceBudgetAllocator();
+  const budget = allocator.resolve({
+    rodLimitKg: 1,
+    fishTensionKg: 0.5,
+    holdAction: { active: false },
+    controlAction: { active: true, inputRatio: 1 },
+    controlEligibility: { canRequestForce: true, blockedReason: "none" },
+    config: config.physics.fight.playerForceBudget,
+  });
+  const system = new RodLateralControlSystem();
+  const result = system.update({
+    dtSec: 1 / 60,
+    inputState: {
+      rodControlActive: true,
+      rodControlDirectionX: -1,
+      rodControlInputRatio: 1,
+    },
+    fishPosition: { x: 600, y: 300 },
+    rodTipPosition: { x: 500, y: 500 },
+    baseRodTipPosition: { x: 500, y: 500 },
+    actualRodTipPosition: { x: 500, y: 500 },
+    rodLimitKg: 1,
+    maxTackleLoadKg: 1,
+    currentTensionKg: 0.5,
+    fishTensionKg: 0.5,
+    fishVelocity: { x: 0, y: 0 },
+    playerForceBudget: budget,
+    dragLimitKg: 1,
+    dragLocked: true,
+    lineHasReserve: false,
+    hardLineLimit: true,
+    lineConstraintState: { dragCanPayout: false },
+    config: rodControlConfig,
+  });
+
+  assertApprox(result.maxEffectiveAngleDeg, 20, 0.000001, "rod control exposes the configured full-force angle");
+  assert(result.lineAngleDeg > 20, "test fish is beyond the full-force line angle");
+  assertApprox(result.angleRatio, 1, 0.000001, "rod control angle ratio reaches 100 percent at 20 degrees");
+  assertApprox(result.playerForceControlBudgetKg, 0.5, 0.000001, "rod control receives the remaining player budget");
+  assertApprox(result.playerTensionKg, 0.5, 0.000001, "rod control applies hold-style lateral tension from available budget");
+  assertApprox(result.forceKg, 0.5, 0.000001, "neutral side rod control force matches lateral tension");
+
+  const heavyResult = system.update({
+    dtSec: 1 / 60,
+    inputState: {
+      rodControlActive: true,
+      rodControlDirectionX: -1,
+      rodControlInputRatio: 1,
+    },
+    fishPosition: { x: 600, y: 300 },
+    rodTipPosition: { x: 500, y: 500 },
+    baseRodTipPosition: { x: 500, y: 500 },
+    actualRodTipPosition: { x: 500, y: 500 },
+    rodLimitKg: 1,
+    maxTackleLoadKg: 1,
+    currentTensionKg: 0.5,
+    fishTensionKg: 0.5,
+    fishVelocity: { x: 0, y: 0 },
+    playerForceBudget: budget,
+    dragLimitKg: 1,
+    dragLocked: true,
+    lineHasReserve: false,
+    hardLineLimit: true,
+    lineConstraintState: { dragCanPayout: false },
+    config: rodControlConfig,
+  });
+  assertApprox(heavyResult.playerTensionKg, 0.5, 0.000001, "fish weight no longer reduces rod control tension");
+
+  const dragSlipResult = system.update({
+    dtSec: 1 / 60,
+    inputState: {
+      rodControlActive: true,
+      rodControlDirectionX: -1,
+      rodControlInputRatio: 1,
+    },
+    fishPosition: { x: 600, y: 300 },
+    rodTipPosition: { x: 500, y: 500 },
+    baseRodTipPosition: { x: 500, y: 500 },
+    actualRodTipPosition: { x: 500, y: 500 },
+    rodLimitKg: 1,
+    maxTackleLoadKg: 1,
+    currentTensionKg: 0.5,
+    fishTensionKg: 0.5,
+    fishVelocity: { x: 0, y: 0 },
+    playerForceBudget: budget,
+    dragLimitKg: 0.1,
+    dragLocked: false,
+    lineHasReserve: true,
+    hardLineLimit: false,
+    lineConstraintState: { dragCanPayout: true },
+    config: rodControlConfig,
+  });
+  assertApprox(
+    dragSlipResult.playerTensionKg,
+    0.5,
+    0.000001,
+    "drag-slip Rod Control uses hold-style drag cap without subtracting post-hold current tension",
+  );
+  assert(
+    dragSlipResult.dragLimited === false,
+    "drag-slip Rod Control force is not directly capped before downstream tension resolution",
+  );
+}
+
+runRodControlHoldStyleForceCheck();
 
 function runRodPullConfigSourceCheck() {
   const legacyOnly = new RodPullCalculator({

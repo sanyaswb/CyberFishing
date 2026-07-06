@@ -161,6 +161,7 @@
 │  │  │  ├── reel_recovery_fish_slowdown_policy.js
 │  │  │  ├── reel_retrieve_speed_calculator.js
 │  │  │  ├── retrieve_policy.js
+│  │  │  ├── rod_control_angle_resolver.js
 │  │  │  ├── rod_control_movement_projector.js
 │  │  │  ├── rod_control_tension_mode_resolver.js
 │  │  │  ├── rod_pull_calculator.js

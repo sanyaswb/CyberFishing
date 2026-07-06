@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.23.39 - Rod Control Hold-Style Force
+
+- Changed Rod Control X force to use the available player tension budget, similar to Rod Hold, instead of a fixed `rodControl.force.maxForceKg` cap.
+- Removed fish-weight force division from Rod Control X so fish weight no longer silently reduces lateral force through `fishWeightResistanceMultiplier`.
+- Added `RodControlAngleResolver` as the single source for Rod Control line angle and angle ratio calculation.
+- Reduced the full-force Rod Control angle from `45°` to `20°`.
+- Changed the HUD Rod Control bar to show raw control input while the label also shows delivered lateral tension.
+- Exposed the configured full-force angle in the Rod Control geometry debug section.
+- Cleaned the unused Rod Control fish-weight input and removed direct drag reserve cutting from the control channel.
+
 ## v0.23.37 - Player Reel Fatigue Debug Alignment
 
 - Aligned Player Reel Fatigue debug and HUD fallback mode with the new `reel_hold_session` source.

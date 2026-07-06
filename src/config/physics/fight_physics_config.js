@@ -154,15 +154,13 @@ const FIGHT_PHYSICS_CONFIG = {
     alignment: {
       enabled: true,
       targetAnchorMode: "cast_base", // or "current_base"
-      maxEffectiveAngleDeg: 45,
+      maxEffectiveAngleDeg: 20,
       alignedThresholdPx: 8,
       centerStartThresholdPx: 0.5,
     },
 
     force: {
-      maxForceKg: 0.22,
       sidePullSpeedMultiplier: 1.0,
-      fishWeightResistanceMultiplier: 0.35,
     },
 
     tension: {

@@ -73,20 +73,22 @@ class FightHudFrameBuilder {
   }
 
   #buildRodControl(target, debug) {
-    const ratio = RenderMath.clamp(
-      debug?.rodControlDeliveredForceRatio,
-    );
+    const inputRatio = RenderMath.clamp(debug?.rodControlInputRatio);
     const direction = Math.sign(
       Number(debug?.rodControlInputDirectionX) ||
         Number(debug?.rodControlDirectionX) ||
         0,
     );
+    const deliveredTensionKg = Number(debug?.rodControlPlayerTensionKg);
+    const deliveredLabel = Number.isFinite(deliveredTensionKg)
+      ? ` / ${deliveredTensionKg.toFixed(2)}kg`
+      : "";
     target.visible = true;
-    target.ratio = ratio;
+    target.ratio = inputRatio;
     target.active = debug?.rodControlActive === true;
     target.value =
       `${direction < 0 ? "L" : direction > 0 ? "R" : "-"} ` +
-      `${(ratio * 100).toFixed(0)}%`;
+      `${(inputRatio * 100).toFixed(0)}%${deliveredLabel}`;
   }
 
   #buildTension(target, stressTarget, tensionMeter, debug) {
