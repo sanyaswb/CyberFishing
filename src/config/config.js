@@ -263,6 +263,7 @@ const CONFIG = {
       deviations: false,
       tension: false,
       rodStroke: false,
+      reelHoldGate: true,
       stamina: false,
       exhaustion: false,
       catchTime: false,

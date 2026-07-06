@@ -2917,6 +2917,29 @@ class FightPhysicsSystem {
         Math.max(0, Math.min(1, Number(autoRecovery?.reelLoadRatio) || 0)),
       autoRecoveredMeters: Math.max(0, Number(autoRecoveredMeters) || 0),
       holdRecoveredMeters: Math.max(0, Number(holdRecoveredMeters) || 0),
+      reelHoldConfigEnabled: holdReelRecover?.enabled === true,
+      reelHoldHasReel: holdReelRecover?.hasReel === true,
+      reelHoldPlayerHoldActive:
+        holdReelRecover?.playerHoldActive === true,
+      reelHoldRequiredStrokeRatio:
+        Math.max(0, Number(holdReelRecover?.requiredStrokeRatio) || 1),
+      reelHoldStrokeFull: holdReelRecover?.strokeFull === true,
+      reelHoldRawTensionKg:
+        Math.max(0, Number(holdReelRecover?.rawTensionKg) || 0),
+      reelHoldDragLimitKg:
+        Math.max(0, Number(holdReelRecover?.dragLimitKg) || 0),
+      reelHoldDragLocked: holdReelRecover?.dragLocked === true,
+      reelHoldShouldSlipDrag: holdReelRecover?.shouldSlipDrag === true,
+      reelHoldTensionBelowDragLimit:
+        holdReelRecover?.tensionBelowDragLimit === true,
+      reelHoldTensionBelowMaxLoad:
+        holdReelRecover?.tensionBelowMaxLoad === true,
+      reelHoldDragCanHold: holdReelRecover?.dragCanHold === true,
+      reelHoldRetrieveSpeedMps:
+        Math.max(
+          0,
+          Number(holdReelRecover?.retrieveSpeedMetersPerSecond) || 0,
+        ),
       holdReelRecoverEngaged: !!holdReelRecover?.engaged,
       holdReelRecoveringLine: !!holdReelRecover?.recoveringLine,
       holdReelRecoverHasRecoverableLine:
@@ -3562,6 +3585,24 @@ class FightPhysicsSystem {
       autoRecoverMaxByLineMeters: autoRecovery?.maxRecoverByLineMeters ?? 0,
       autoRecoveredMeters: autoRecoveredMeters ?? 0,
       holdRecoveredMeters: holdRecoveredMeters ?? 0,
+      reelHoldConfigEnabled: holdReelRecover?.enabled === true,
+      reelHoldHasReel: holdReelRecover?.hasReel === true,
+      reelHoldPlayerHoldActive:
+        holdReelRecover?.playerHoldActive === true,
+      reelHoldRequiredStrokeRatio:
+        holdReelRecover?.requiredStrokeRatio ?? 1,
+      reelHoldStrokeFull: holdReelRecover?.strokeFull === true,
+      reelHoldRawTensionKg: holdReelRecover?.rawTensionKg ?? 0,
+      reelHoldDragLimitKg: holdReelRecover?.dragLimitKg ?? 0,
+      reelHoldDragLocked: holdReelRecover?.dragLocked === true,
+      reelHoldShouldSlipDrag: holdReelRecover?.shouldSlipDrag === true,
+      reelHoldTensionBelowDragLimit:
+        holdReelRecover?.tensionBelowDragLimit === true,
+      reelHoldTensionBelowMaxLoad:
+        holdReelRecover?.tensionBelowMaxLoad === true,
+      reelHoldDragCanHold: holdReelRecover?.dragCanHold === true,
+      reelHoldRetrieveSpeedMps:
+        holdReelRecover?.retrieveSpeedMetersPerSecond ?? 0,
       holdReelRecoverEligible: !!holdReelRecover?.eligible,
       holdReelRecoverActive: !!holdReelRecover?.active,
       holdReelRecoverEngaged: !!holdReelRecover?.engaged,

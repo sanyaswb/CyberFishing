@@ -37,8 +37,19 @@ class ReelHoldLoadPolicy {
     return {
       eligible,
       active: eligible,
+      enabled,
+      hasReel: !!hasReel,
+      playerHoldActive: !!playerHoldActive,
+      rawTensionKg: loadKg,
+      dragLimitKg: this.#positive(dragLimitKg),
+      dragLocked: !!dragLocked,
+      shouldSlipDrag: shouldSlipDrag === true,
+      tensionBelowDragLimit,
+      tensionBelowMaxLoad,
+      dragCanHold,
       reelLoadReserveRatio: loadReserveRatio,
       reelMaxLoadKg: maxLoadKg,
+      retrieveSpeedMetersPerSecond: retrieveSpeed,
       recoverSpeedMetersPerSecond,
       maxMoveMeters:
         recoverSpeedMetersPerSecond *
@@ -52,7 +63,6 @@ class ReelHoldLoadPolicy {
         tensionBelowMaxLoad,
         recoverSpeedMetersPerSecond,
       }),
-      dragCanHold,
     };
   }
 

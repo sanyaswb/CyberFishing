@@ -676,6 +676,15 @@ function runReelHoldStrokeGateCheck() {
     strokeUnrecoveredMeters: 1,
   });
   assert(fullFrame.active === true, "reel hold can activate after full rod stroke");
+  assert(fullFrame.enabled === true, "reel hold diagnostics expose config gate");
+  assert(fullFrame.hasReel === true, "reel hold diagnostics expose reel gate");
+  assert(fullFrame.playerHoldActive === true, "reel hold diagnostics expose player hold gate");
+  assertApprox(fullFrame.requiredStrokeRatio, 1, 0.000001, "reel hold diagnostics expose required stroke ratio");
+  assert(fullFrame.strokeFull === true, "reel hold diagnostics expose stroke gate");
+  assert(fullFrame.tensionBelowDragLimit === true, "reel hold diagnostics expose drag limit gate");
+  assert(fullFrame.tensionBelowMaxLoad === true, "reel hold diagnostics expose reel max load gate");
+  assert(fullFrame.dragCanHold === true, "reel hold diagnostics expose combined drag hold gate");
+  assertApprox(fullFrame.retrieveSpeedMetersPerSecond, 1.2, 0.000001, "reel hold diagnostics expose retrieve speed");
 
   const noLineFrame = system.update({
     ...common,

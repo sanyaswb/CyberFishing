@@ -1,5 +1,26 @@
 # CyberFishing changelog
 
+## v0.23.33 - Reel hold transition probe
+
+- Changed `ReelHoldGateLiveProbe` from interval-based logging to semantic transition logging.
+- Removed `rodStrokeRatio` drift from the live probe signature to prevent console spam.
+- Reset live probe signatures outside `gameState: playing` so each fight can log clean state transitions.
+- Kept `reelHoldGate` enabled for focused gameplay diagnostics.
+
+## v0.23.32 - Reel hold live probe
+
+- Added `ReelHoldGateLiveProbe` to print reel hold diagnostics from `debug-live-update` during live fight frames.
+- Prevented `reelHoldGate` from printing the misleading early `fish hooked` snapshot.
+- Throttled live reel hold diagnostics and limited them to near-full rod stroke or active reel hold checks.
+- Enabled `debug.consoleModules.reelHoldGate` for gameplay testing.
+
+## v0.23.31 - Reel hold gate diagnostics
+
+- Added the `reelHoldGate` console debug module with separate gate and movement diagnostics.
+- Exposed reel hold config, reel, input, stroke, drag/load and retrieve-speed gates in debug snapshots.
+- Added `firstFailedGate`, `engagedButNotMoving` and movement diagnosis output for reel hold debugging.
+- Added regression coverage for reel hold diagnostic fields.
+
 ## v0.23.30 - Rod stroke and reel hold separation
 
 - Separated `reelHold` engagement from recoverable-line availability.

@@ -207,6 +207,8 @@
 │  │  │  ├── map_debug_module.js
 │  │  │  ├── net_debug_module.js
 │  │  │  ├── prediction_debug_module.js
+│  │  │  ├── reel_hold_gate_debug_module.js
+│  │  │  ├── reel_hold_gate_live_probe.js
 │  │  │  ├── rod_stroke_debug_module.js
 │  │  │  ├── stamina_debug_module.js
 │  │  │  └── tension_debug_module.js

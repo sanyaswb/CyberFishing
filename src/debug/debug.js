@@ -13,6 +13,7 @@ const debugModuleRegistry = new DebugModuleRegistry();
   new DeviationsDebugModule(),
   new TensionDebugModule(),
   new RodStrokeDebugModule(),
+  new ReelHoldGateDebugModule(),
   new StaminaDebugModule(),
   new ExhaustionDebugModule(),
   new CatchTimeDebugModule(),

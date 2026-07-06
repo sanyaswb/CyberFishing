@@ -56,7 +56,15 @@ class DebugConsole {
   printEnabled(meta = {}) {
     const modules = this.#debugModulesSource() || {};
     for (const moduleName of Object.keys(modules)) {
-      if (modules[moduleName]) this.printModule(moduleName, meta);
+      if (!modules[moduleName]) continue;
+      const module = this.#registry.get(moduleName);
+      if (
+        meta.reason === "fish hooked" &&
+        module?.printOnFishHooked === false
+      ) {
+        continue;
+      }
+      this.printModule(moduleName, meta);
     }
   }
 }
