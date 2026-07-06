@@ -330,12 +330,10 @@ class FightPhysicsSystem {
       tensionKg: recoveryLoad.tensionKg,
       blockedReason: recoveryLoad.blockedReason,
       playerHoldActive: isPullMode,
-      strokeWonMeters:
-        rodPullFrame.rodPullResult.rodStrokeWonMeters ??
-        rodPullFrame.rodPullResult.rodStrokeUnrecoveredMeters,
+      strokeWonMeters: rodPullFrame.rodPullResult.rodStrokeWonMeters,
       fishDistanceMeters: lineStateAfterControl.distanceMeters,
     });
-      const holdRecoveredMeters = holdReelRecover.active
+      const holdRecoveredMeters = holdReelRecover.recoveringLine
         ? this.#recoverLineCredit({
             dtSec,
             reelSystem,
@@ -1492,10 +1490,7 @@ class FightPhysicsSystem {
     const remainingStrokeMeters = Math.max(
       0,
       (Number(rodPullResult.maxDistanceMeters) || 0) -
-        (Number(
-          rodPullResult.rodStrokeWonMeters ??
-            rodPullResult.rodStrokeUsedMeters,
-        ) || 0),
+        (Number(rodPullResult.rodStrokeWonMeters) || 0),
     );
     const rodStrokeMovementBlocked = this.#isRodStrokeMovementBlocked(
       rodPullResult,
@@ -2922,6 +2917,12 @@ class FightPhysicsSystem {
         Math.max(0, Math.min(1, Number(autoRecovery?.reelLoadRatio) || 0)),
       autoRecoveredMeters: Math.max(0, Number(autoRecoveredMeters) || 0),
       holdRecoveredMeters: Math.max(0, Number(holdRecoveredMeters) || 0),
+      holdReelRecoverEngaged: !!holdReelRecover?.engaged,
+      holdReelRecoveringLine: !!holdReelRecover?.recoveringLine,
+      holdReelRecoverHasRecoverableLine:
+        !!holdReelRecover?.hasRecoverableLine,
+      holdReelRecoverLineBlockedReason:
+        holdReelRecover?.lineRecoveryBlockedReason || "not_checked",
       strokeResetReason: rodPullDisplay.strokeResetReason || "none",
     };
 
@@ -3563,6 +3564,10 @@ class FightPhysicsSystem {
       holdRecoveredMeters: holdRecoveredMeters ?? 0,
       holdReelRecoverEligible: !!holdReelRecover?.eligible,
       holdReelRecoverActive: !!holdReelRecover?.active,
+      holdReelRecoverEngaged: !!holdReelRecover?.engaged,
+      holdReelRecoveringLine: !!holdReelRecover?.recoveringLine,
+      holdReelRecoverHasRecoverableLine:
+        !!holdReelRecover?.hasRecoverableLine,
       holdReelRecoverTimerMs: holdReelRecover?.timerMs ?? 0,
       holdReelRecoverDelayMs: holdReelRecover?.delayMs ?? 0,
       holdReelRecoverLoadReserveRatio:
@@ -3577,6 +3582,8 @@ class FightPhysicsSystem {
       hardTensionBlocked: !!hardTensionBlocked,
       holdReelRecoverBlockedReason:
         holdReelRecover?.blockedReason || "not_checked",
+      holdReelRecoverLineBlockedReason:
+        holdReelRecover?.lineRecoveryBlockedReason || "not_checked",
       holdReelRecoverSource:
         holdReelRecover?.source || "none",
       tensionMode: tensionResult.mode,

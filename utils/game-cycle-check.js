@@ -676,6 +676,17 @@ function runReelHoldStrokeGateCheck() {
     strokeUnrecoveredMeters: 1,
   });
   assert(fullFrame.active === true, "reel hold can activate after full rod stroke");
+
+  const noLineFrame = system.update({
+    ...common,
+    strokeRatio: 1,
+    lineRecoverableMeters: 0,
+  });
+  assert(noLineFrame.active === true, "reel hold remains engaged without recoverable line");
+  assert(noLineFrame.engaged === true, "reel hold engagement is separate from line recovery");
+  assert(noLineFrame.recoveringLine === false, "reel hold does not recover line when no line credit exists");
+  assert(noLineFrame.blockedReason === "ready", "missing recoverable line does not block reel hold engagement");
+  assert(noLineFrame.lineRecoveryBlockedReason === "no_recoverable_line", "missing recoverable line is reported as line recovery block only");
 }
 
 runReelHoldStrokeGateCheck();
@@ -701,6 +712,69 @@ function runReelHoldConfigSourceCheck() {
 }
 
 runReelHoldConfigSourceCheck();
+
+function runRodStrokeRecoverySourceCheck() {
+  const reelSystem = new ReelSystem({ autoRecoverLineCredit: true });
+  const lineState = {
+    releasedMeters: 2,
+    distanceMeters: 1,
+  };
+  const lineSystem = {
+    getState: () => lineState,
+    recoverReleasedLine: () => {
+      throw new Error("rod stroke recovery must not recover line without strokeWonMeters");
+    },
+  };
+  const reel = {
+    hasReel: () => true,
+    getEffectiveMaxLoadKg: () => 5,
+    getRetrieveSpeedMetersPerSec: () => 1,
+  };
+
+  const noWonStroke = reelSystem.recoverRodStrokeCredit({
+    dtSec: 1,
+    lineSystem,
+    reel,
+    tensionKg: 0,
+    playerHoldActive: false,
+    strokeWonMeters: undefined,
+    rodStrokeUnrecoveredMeters: 1,
+    fishDistanceMeters: 1,
+  });
+  assert(noWonStroke.active === false, "rod stroke recovery does not use rodStrokeUnrecoveredMeters as fallback credit");
+  assert(noWonStroke.blockedReason === "no_stroke_credit", "rod stroke recovery requires explicit rodStrokeWonMeters");
+
+  const calculator = new ReelAutoRecoveryCalculator();
+  const loadLimited = calculator.calculate({
+    hasReel: true,
+    playerHoldActive: false,
+    strokeWonMeters: 2,
+    totalTensionKg: 2,
+    reelMaxLoadKg: 4,
+    retrieveSpeedMetersPerSec: 1,
+    releasedLineMeters: 4,
+    fishDistanceMeters: 1,
+    dtSec: 1,
+  });
+  assertApprox(loadLimited.recoverSpeedMetersPerSec, 1, 0.000001, "auto recovery speed is not reduced by tension below reel load");
+  assertApprox(loadLimited.recoveredMeters, 1, 0.000001, "auto recovery recovers at reel retrieve speed when load gate passes");
+
+  const desyncedLine = calculator.calculate({
+    hasReel: true,
+    playerHoldActive: false,
+    strokeWonMeters: 1,
+    totalTensionKg: 0,
+    reelMaxLoadKg: 4,
+    retrieveSpeedMetersPerSec: 1,
+    releasedLineMeters: 1,
+    fishDistanceMeters: 1,
+    dtSec: 1,
+  });
+  assert(desyncedLine.active === false, "auto recovery does not recover line when line system has no recoverable meters");
+  assert(desyncedLine.blockedReason === "stroke_line_desync", "rod stroke credit without recoverable line is reported as stroke_line_desync");
+}
+
+runRodStrokeRecoverySourceCheck();
 
 function runFightScenario({
   name,

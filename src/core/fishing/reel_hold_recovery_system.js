@@ -42,24 +42,26 @@ class ReelHoldRecoverySystem {
     const eligible =
       loadFrame.eligible &&
       !!rodPullActive &&
-      strokeFull &&
-      hasRecoverableLine;
+      strokeFull;
 
     const blockedReason = this.#blockedReason({
       loadFrame,
       rodPullActive,
       strokeFull,
-      hasRecoverableLine,
     });
 
     this.#timerMs = eligible
       ? Math.min(delayMs, this.#timerMs + this.#positive(dtMs))
       : 0;
 
-    const active = eligible && this.#timerMs >= delayMs;
+    const engaged = eligible && this.#timerMs >= delayMs;
+    const recoveringLine = engaged && hasRecoverableLine;
     this.#state = this.#createState({
       eligible,
-      active,
+      active: engaged,
+      engaged,
+      recoveringLine,
+      hasRecoverableLine,
       timerMs: this.#timerMs,
       delayMs,
       reelLoadReserveRatio: loadFrame.reelLoadReserveRatio,
@@ -68,6 +70,11 @@ class ReelHoldRecoverySystem {
         loadFrame.recoverSpeedMetersPerSecond,
       maxMoveMeters: loadFrame.maxMoveMeters,
       blockedReason,
+      lineRecoveryBlockedReason: this.#lineRecoveryBlockedReason({
+        engaged,
+        hasRecoverableLine,
+        blockedReason,
+      }),
       strokeFull,
       dragCanHold: loadFrame.dragCanHold,
       lineRecoverableMeters: recoverableLine,
@@ -97,15 +104,23 @@ class ReelHoldRecoverySystem {
     loadFrame,
     rodPullActive,
     strokeFull,
-    hasRecoverableLine,
   }) {
     if (!loadFrame?.eligible) {
       return loadFrame?.blockedReason || "not_checked";
     }
     if (!rodPullActive) return "rod_pull_inactive";
     if (!strokeFull) return "stroke_not_full";
-    if (!hasRecoverableLine) return "no_recoverable_line";
     return "ready";
+  }
+
+  #lineRecoveryBlockedReason({
+    engaged,
+    hasRecoverableLine,
+    blockedReason,
+  }) {
+    if (!engaged) return blockedReason || "not_engaged";
+    if (!hasRecoverableLine) return "no_recoverable_line";
+    return "none";
   }
 
   #resolveDelayMs(config) {
@@ -117,6 +132,9 @@ class ReelHoldRecoverySystem {
     return {
       eligible: false,
       active: false,
+      engaged: false,
+      recoveringLine: false,
+      hasRecoverableLine: false,
       timerMs: 0,
       delayMs: 0,
       reelLoadReserveRatio: 0,
@@ -124,6 +142,7 @@ class ReelHoldRecoverySystem {
       recoverSpeedMetersPerSecond: 0,
       maxMoveMeters: 0,
       blockedReason: "not_checked",
+      lineRecoveryBlockedReason: "not_checked",
       strokeFull: false,
       dragCanHold: false,
       lineRecoverableMeters: 0,

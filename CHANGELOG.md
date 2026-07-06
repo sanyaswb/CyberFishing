@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.23.30 - Rod stroke and reel hold separation
+
+- Separated `reelHold` engagement from recoverable-line availability.
+- Made auto rod stroke recovery use reel retrieve speed after the load gate passes, without tension-based speed scaling.
+- Added `stroke_line_desync` diagnostics when `rodStrokeWonMeters` exists but the line system has no recoverable meters.
+- Added debug fields for reel hold engagement vs actual line recovery.
+- Added regression coverage for reel hold engagement and auto recovery source-of-truth rules.
+
 ## v0.23.29 - Rod stroke source cleanup
 
 - Made reel hold full-stroke gating depend only on factual `rodStrokeRatio`.

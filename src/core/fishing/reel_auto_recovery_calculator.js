@@ -20,8 +20,10 @@ class ReelAutoRecoveryCalculator {
     const reelLoadRatio = reelMaxLoad > 0
       ? this.#clamp01(tension / reelMaxLoad)
       : 1;
-    const reelEfficiency = Math.max(0, 1 - reelLoadRatio);
-    const recoverSpeedMetersPerSec = retrieveSpeed * reelEfficiency;
+    const reelEfficiency = reelMaxLoad > 0 && tension < reelMaxLoad - 0.000001
+      ? 1
+      : 0;
+    const recoverSpeedMetersPerSec = retrieveSpeed;
     const desiredRecoverMeters =
       recoverSpeedMetersPerSec * this.#positive(dtSec);
 
@@ -72,7 +74,7 @@ class ReelAutoRecoveryCalculator {
     if (tension >= reelMaxLoad - 0.000001) {
       return "tension_at_or_above_reel_load";
     }
-    if (maxRecoverByLineMeters <= 0.000001) return "line_taut";
+    if (maxRecoverByLineMeters <= 0.000001) return "stroke_line_desync";
     if (desiredRecoverMeters <= 0.000001) return "zero_recover_speed";
     return "none";
   }
