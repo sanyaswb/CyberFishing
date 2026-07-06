@@ -43,7 +43,6 @@
 ├── index.html
 ├── package-lock.json
 ├── package.json
-├── project-structure.txt
 ├── README.md
 ├── src
 │  ├── .tmp.driveupload
@@ -153,6 +152,7 @@
 │  │  │  ├── pole_fight_sector_angle_constraint.js
 │  │  │  ├── pole_fight_sector_constraint.js
 │  │  │  ├── pole_fight_sector_geometry.js
+│  │  │  ├── recoverable_line_calculator.js
 │  │  │  ├── reel_auto_recovery_calculator.js
 │  │  │  ├── reel_hold_load_policy.js
 │  │  │  ├── reel_hold_recovery_system.js
@@ -167,7 +167,6 @@
 │  │  │  ├── rod_stroke_state.js
 │  │  │  ├── rod_stroke_tracker.js
 │  │  │  ├── simple_fight_force_calculator.js
-│  │  │  ├── slack_calculator.js
 │  │  │  ├── stamina
 │  │  │  │  ├── active_endurance_drain_calculator.js
 │  │  │  │  ├── passive_endurance_drain_calculator.js

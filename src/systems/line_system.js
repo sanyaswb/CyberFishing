@@ -256,12 +256,6 @@ class LineSystem {
     return recovered;
   }
 
-  recoverSlack(args) {
-    // Deprecated compatibility alias. This recovers pump credit / released line,
-    // not physical loose line.
-    return this.recoverLineCredit(args || {});
-  }
-
   applyRetrieve(args) {
     return this.recoverLineCredit({
       hasReel: args?.hasReel,
@@ -350,9 +344,6 @@ class LineSystem {
       freeReleasedLineMeters,
       recoverableLineMeters: freeReleasedLineMeters,
       actualSlackMeters: 0,
-      // Deprecated compatibility alias. In the current fight loop this value is
-      // pump credit / recoverable line, not physical loose line.
-      slackMeters: freeReleasedLineMeters,
       isFullyExtended: this.#isFullyExtended,
       lineExtensionRatio: this.#lineExtensionRatio,
       effectiveLineMaxLoadKg: this.getEffectiveLineMaxLoadKg(),

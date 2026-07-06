@@ -15,10 +15,9 @@ class ReelSystem {
     loadLimitKg = null,
     maxRecoverMeters = null,
   }) {
-    if (this.#config.autoRecoverSlack === false) return 0;
+    if (this.#config.autoRecoverLineCredit === false) return 0;
     if (!lineSystem || !reel?.hasReel?.()) return 0;
-    const recover = lineSystem.recoverLineCredit || lineSystem.recoverSlack;
-    return recover.call(lineSystem, {
+    return lineSystem.recoverLineCredit({
       hasReel: true,
       inputRecover,
       reel,
@@ -27,12 +26,6 @@ class ReelSystem {
       loadLimitKg,
       maxRecoverMeters,
     });
-  }
-
-  recoverSlack(args) {
-    // Deprecated compatibility alias. Reels recover pump credit / released line,
-    // not physical loose line.
-    return this.recoverLineCredit(args || {});
   }
 
   recoverRodStrokeCredit({

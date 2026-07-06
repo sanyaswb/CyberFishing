@@ -11,7 +11,6 @@ const FIGHT_PHYSICS_CONFIG = {
   rodHold: {
     chargeTimeSeconds: 0.35,
     tensionCeilingMultiplier: 1.0,
-    distanceMultiplierByRodLength: 0.5,
     minStrokeMeters: 0.001,
     finalLandingDistanceMeters: 0.5,
 

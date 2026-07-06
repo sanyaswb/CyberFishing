@@ -23,16 +23,8 @@ class RodPullCalculator {
     return available;
   }
 
-  calculateAvailableDistance(args = {}) {
-    // Deprecated compatibility alias. Pump credit/slack no longer reduce rod stroke.
-    return this.calculateStrokeCapacity(args);
-  }
-
   calculateMaxDistance({ rodLengthMeters }) {
-    const multiplier = Number(
-      this.#config.capacityByRodLengthRatio ??
-        this.#config.distanceMultiplierByRodLength,
-    );
+    const multiplier = Number(this.#config.capacityByRodLengthRatio);
     return Math.max(
       0,
       (Number(rodLengthMeters) || 0) *
@@ -135,8 +127,6 @@ class RodPullCalculator {
     input,
     previousState,
     rodLengthMeters,
-    pumpCreditMeters,
-    slackMeters,
     maxTackleLoadKg,
     rodLimitKg,
     playerForceBudget,
@@ -376,14 +366,10 @@ class RodPullCalculator {
     const chargeTimeSeconds = Number(
       this.#config.chargeTimeSeconds ?? this.#config.rodHold?.chargeTimeSeconds,
     );
-    if (Number.isFinite(chargeTimeSeconds) && chargeTimeSeconds > 0) {
-      return 1 / chargeTimeSeconds;
-    }
-
-    return Math.max(
-      0,
-      Number(this.#config.strokeChargePerSecond ?? this.#config.chargePerSecond) || 0.65,
-    );
+    const seconds = Number.isFinite(chargeTimeSeconds) && chargeTimeSeconds > 0
+      ? chargeTimeSeconds
+      : 0.35;
+    return 1 / seconds;
   }
 
   #ratioOrDefault(value, fallback) {

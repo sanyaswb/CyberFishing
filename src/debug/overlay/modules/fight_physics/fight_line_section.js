@@ -10,7 +10,7 @@ class FightLineSection extends FightSectionBase {
     const fishDistance = line.fishDistanceMeters ?? d.lineDistanceMeters;
     const released = line.releasedLineMeters ?? d.lineReleasedMeters;
     const remaining = line.remainingLineMeters ?? d.lineRemainingMeters;
-    const recoverable = line.recoverableLineMeters ?? d.lineRecoverableMeters ?? d.pumpCreditMeters;
+    const recoverable = line.recoverableLineMeters ?? d.lineRecoverableMeters;
     const releasedFrame = line.lineReleasedThisFrameMeters ?? d.lineReleasedThisFrameMeters;
     const recoveredFrame = line.lineRecoveredThisFrameMeters ?? d.lineRecoveredThisFrameMeters;
     const lineHasReserve = line.lineHasReserve ?? d.lineCanRelease;

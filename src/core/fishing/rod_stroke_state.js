@@ -54,15 +54,6 @@ class RodStrokeState {
     return this.recoverWonDistance(meters);
   }
 
-  clampToPumpCredit() {
-    // Pump credit is diagnostic only in the new model. It must not reset stroke.
-    return 0;
-  }
-
-  clampToSlack() {
-    return this.clampToPumpCredit();
-  }
-
   reset() {
     this.#capacityMeters = 0;
     this.#wonMeters = 0;

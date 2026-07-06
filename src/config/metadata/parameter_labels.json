@@ -123,14 +123,6 @@
     "label": "Увімкнути підтягування вудкою",
     "description": "Вмикає або вимикає активний hold/rod pull для руху риби до гравця."
   },
-  "physics.fight.rodPull.distanceMultiplierByRodLength": {
-    "label": "Дистанція ходу від довжини вудки",
-    "description": "Скільки метрів активного ходу дає довжина вудки. 0.5 означає, що 3.6 м вудка дає 1.8 м ходу."
-  },
-  "physics.fight.rodPull.strokeChargePerSecond": {
-    "label": "Швидкість набору ходу",
-    "description": "Як швидко hold набирає силу/хід. 1.0 означає повний хід приблизно за одну секунду."
-  },
   "physics.fight.rodPull.minEffectivePullKg": {
     "label": "Мінімальна ефективна тяга",
     "description": "Мінімальний player pressure, після якого pull вважається достатнім для ефективного руху риби."
@@ -386,18 +378,6 @@
   "physics.tackle.reelDrag.keyboardControl.changeSpeedPerSec": {
     "label": "Швидкість зміни фрикціону з клавіатури",
     "description": "На скільки drag ratio змінюється за секунду при клавішах керування фрикціоном."
-  },
-  "physics.tackle.reel.autoRecoverSlack": {
-    "label": "Автовідновлення слабини котушкою",
-    "description": "Дозволяє котушці автоматично підбирати слабину, коли навантаження дозволяє."
-  },
-  "physics.tackle.reel.holdRecoverAfterFullStrokeMs": {
-    "label": "Затримка hold-підмотки",
-    "description": "Скільки мілісекунд треба утримувати повний stroke, перш ніж котушка допоможе підмотувати під час hold."
-  },
-  "physics.tackle.reel.holdRecoverStrokeRatio": {
-    "label": "Поріг stroke для hold-підмотки",
-    "description": "Яка частка ходу вудки має бути заповнена, щоб hold-assisted reel recovery став доступним."
   },
   "physics.tension.kgSmoothPerSecond": {
     "label": "Швидкість згладжування tension",
@@ -658,10 +638,6 @@
   "fish.physics.behaviorProfile.behaviors.*.direction.agility": {
     "label": "Fish direction agility",
     "description": "Smoothing speed used when the fish changes radial or lateral movement intent."
-  },
-  "physics.fight.rodHold.distanceMultiplierByRodLength": {
-    "label": "Довжина ходу вудки",
-    "description": "Множник довжини вудки, який визначає максимальний rod stroke у метрах."
   },
   "physics.fight.rodHold.minStrokeMeters": {
     "label": "Мінімальний хід вудки",
@@ -1338,5 +1314,9 @@
   "stamina.mechanics.enduranceRecovery.maxRecoveryRatio": {
     "label": "Endurance recovery cap ratio",
     "description": "Maximum ENDURANCE ratio that smooth recovery can restore after the fish returns to STAMINA."
+  },
+  "physics.tackle.reel.autoRecoverLineCredit": {
+    "label": "Auto recover line credit",
+    "description": "Allows the reel to recover released line credit when load conditions allow it."
   }
 }

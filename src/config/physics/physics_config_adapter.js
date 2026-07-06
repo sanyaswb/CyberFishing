@@ -58,10 +58,6 @@ class FightPhysicsConfigAdapter {
         0,
         this.#number(config.tensionCeilingMultiplier, 1),
       ),
-      distanceMultiplierByRodLength: this.#number(
-        config.distanceMultiplierByRodLength,
-        0.5,
-      ),
       minStrokeMeters: this.#number(config.minStrokeMeters, 0.001),
       finalLandingDistanceMeters: this.#number(
         config.finalLandingDistanceMeters,
@@ -81,11 +77,9 @@ class FightPhysicsConfigAdapter {
 
   getRodStrokeConfig() {
     const stroke = this.#physics().fight?.rodStroke || {};
-    const hold = this.getRodHoldConfig();
     return {
       capacityByRodLengthRatio: this.#number(
         stroke.capacityByRodLengthRatio,
-        hold.distanceMultiplierByRodLength,
         0.5,
       ),
     };
@@ -318,12 +312,7 @@ class FightPhysicsConfigAdapter {
       ...rodHold,
       rodHold,
       rodStroke,
-      strokeChargePerSecond:
-        rodHold.chargeTimeSeconds > 0
-          ? 1 / rodHold.chargeTimeSeconds
-          : undefined,
       capacityByRodLengthRatio: rodStroke.capacityByRodLengthRatio,
-      distanceMultiplierByRodLength: rodStroke.capacityByRodLengthRatio,
       minStrokeMeters: rodHold.minStrokeMeters,
       finalLandingDistanceMeters: rodHold.finalLandingDistanceMeters,
     };
@@ -426,24 +415,13 @@ class FightPhysicsConfigAdapter {
 
   getReelHoldConfig() {
     const fight = this.#physics().fight?.reelHold || {};
-    const reel = this.#physics().tackle?.reel || {};
     return {
-      enabled:
-        fight.enabled !== false && reel.holdRecoverAfterFullStrokeMs !== false,
+      enabled: fight.enabled !== false,
       requireRodStrokeFull: fight.requireRodStrokeFull !== false,
-      delayMs: this.#number(
-        fight.delayMs,
-        reel.holdRecoverAfterFullStrokeMs,
-        0,
-      ),
-      strokeRatio: this.#number(
-        fight.strokeRatio,
-        reel.holdRecoverStrokeRatio,
-        1,
-      ),
+      delayMs: this.#number(fight.delayMs, 0),
+      strokeRatio: this.#number(fight.strokeRatio, 1),
       strokeToleranceMeters: this.#number(
         fight.strokeToleranceMeters,
-        reel.holdRecoverStrokeToleranceMeters,
         this.getRodHoldConfig().minStrokeMeters,
         0.001,
       ),

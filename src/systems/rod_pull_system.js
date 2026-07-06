@@ -54,17 +54,13 @@ class RodPullSystem {
     canReleaseLine: true,
     spoolEmpty: false,
     strokeRecoveredMeters: 0,
-    strokeSyncedMeters: 0,
     strokeDistancePreviousMeters: 0,
     strokeDistanceCurrentMeters: 0,
     strokeDistanceDeltaMeters: 0,
     strokeDistanceGainedMeters: 0,
     strokeDistanceLostMeters: 0,
     strokeDistanceReason: "none",
-    strokeYGainedMeters: 0,
-    strokeYLostMeters: 0,
     strokeResetReason: "none",
-    strokeSyncReason: "none",
     playerPressureGainMultiplier: 1,
     playerPressureGainMode: "none",
     tensionBuildRateMultiplier: 1,
@@ -81,8 +77,6 @@ class RodPullSystem {
     dtSec,
     inputState,
     rod,
-    pumpCreditMeters,
-    slackMeters,
     fishForceKg,
     fishTensionKg,
     rodLimitKg,
@@ -94,7 +88,6 @@ class RodPullSystem {
     lineHasReserve = true,
     fishDistanceMeters,
     distanceLostBeforePullMeters = null,
-    yLostBeforePullMeters = 0,
     playerPressureGain = null,
     playerTensionBuildRate = null,
     playerPressureFatigue = null,
@@ -121,7 +114,7 @@ class RodPullSystem {
       Number.isFinite(Number(distanceLostBeforePullMeters));
     const distanceLostBeforePull = hasDistanceLostBeforePull
       ? Math.max(0, Number(distanceLostBeforePullMeters) || 0)
-      : Math.max(0, Number(yLostBeforePullMeters) || 0);
+      : 0;
     let strokeDistanceLostMeters = 0;
     if (distanceLostBeforePull > 0) {
       strokeDistanceLostMeters = this.#strokeState.loseWonDistance(distanceLostBeforePull);
@@ -132,8 +125,6 @@ class RodPullSystem {
       input: inputState,
       previousState: this.#state,
       rodLengthMeters: this.#rodLengthMeters(rod),
-      pumpCreditMeters,
-      slackMeters,
       maxTackleLoadKg,
       rodLimitKg: this.#rodLimitKg(rod, rodLimitKg),
       playerForceBudget,
@@ -157,12 +148,9 @@ class RodPullSystem {
     this.#result.strokeDistanceReason = strokeDistanceLostMeters > 0
       ? "pre_player_distance_lost"
       : "none";
-    // Deprecated Y aliases retained for debug compatibility.
-    this.#result.strokeYLostMeters = strokeDistanceLostMeters;
-    this.#result.strokeYGainedMeters = 0;
     this.#result.strokeResetReason = strokeResetReason;
 
-    this.#syncStrokeSnapshot();
+    this.#writeStrokeSnapshot();
     this.#copyResultToState(this.#result);
     return this.#result;
   }
@@ -197,11 +185,6 @@ class RodPullSystem {
       Number(budget.combinedTensionCeilingKg) || 0,
     );
     this.#result.playerForceBudgetReason = budget.reason || "none";
-  }
-
-  updateReleaseRecovery({ pumpCreditMeters, slackMeters }) {
-    this.#syncStrokeSnapshot();
-    return this.#result;
   }
 
   recordAppliedStroke({ movedMeters }) {
@@ -243,21 +226,8 @@ class RodPullSystem {
     if (gained > 0 || lost > 0 || reason !== "line_distance") {
       this.#result.strokeDistanceReason = reason || "line_distance";
     }
-    // Deprecated Y aliases retained for existing overlays/tests.
-    this.#result.strokeYLostMeters =
-      Math.max(0, Number(this.#result.strokeYLostMeters) || 0) + lost;
-    this.#result.strokeYGainedMeters =
-      Math.max(0, Number(this.#result.strokeYGainedMeters) || 0) + gained;
-    this.#syncStrokeSnapshot();
+    this.#writeStrokeSnapshot();
     return this.#result;
-  }
-
-  recordYMovement({ gainedMeters = 0, lostMeters = 0 } = {}) {
-    return this.recordDistanceMovement({
-      gainedMeters,
-      lostMeters,
-      reason: "legacy_y_movement",
-    });
   }
 
   recoverStroke({ recoveredMeters }) {
@@ -266,21 +236,8 @@ class RodPullSystem {
     this.#result.strokeResetReason = recovered > 0
       ? "recovered_by_reel"
       : "none";
-    this.#syncStrokeSnapshot();
+    this.#writeStrokeSnapshot();
     return this.#result;
-  }
-
-  syncStrokeToPumpCredit({ pumpCreditMeters }) {
-    this.#result.strokeSyncedMeters = 0;
-    this.#result.strokeSyncReason = "debug_only";
-    this.#syncStrokeSnapshot();
-    return this.#result;
-  }
-
-  // Deprecated compatibility alias. This accepts the old name, but the value is
-  // pump credit / recoverable line, not real loose line.
-  syncStrokeToSlack({ slackMeters }) {
-    return this.syncStrokeToPumpCredit({ pumpCreditMeters: slackMeters });
   }
 
   getState() {
@@ -325,11 +282,7 @@ class RodPullSystem {
       canReleaseLine: true,
       spoolEmpty: false,
       strokeRecoveredMeters: 0,
-      strokeSyncedMeters: 0,
-      strokeYGainedMeters: 0,
-      strokeYLostMeters: 0,
       strokeResetReason: "none",
-      strokeSyncReason: "none",
     };
     this.#strokeState.reset();
   }
@@ -371,7 +324,6 @@ class RodPullSystem {
     this.#state.canReleaseLine = result.canReleaseLine;
     this.#state.spoolEmpty = result.spoolEmpty;
     this.#state.strokeRecoveredMeters = result.strokeRecoveredMeters;
-    this.#state.strokeSyncedMeters = result.strokeSyncedMeters;
     this.#state.strokeDistancePreviousMeters = result.strokeDistancePreviousMeters;
     this.#state.strokeDistanceCurrentMeters = result.strokeDistanceCurrentMeters;
     this.#state.strokeDistanceDeltaMeters = result.strokeDistanceDeltaMeters;
@@ -379,10 +331,9 @@ class RodPullSystem {
     this.#state.strokeDistanceLostMeters = result.strokeDistanceLostMeters;
     this.#state.strokeDistanceReason = result.strokeDistanceReason;
     this.#state.strokeResetReason = result.strokeResetReason;
-    this.#state.strokeSyncReason = result.strokeSyncReason;
   }
 
-  #syncStrokeSnapshot() {
+  #writeStrokeSnapshot() {
     const snapshot = this.#strokeState.writeSnapshot(this.#strokeSnapshot);
     this.#result.rodStrokeCapacityMeters = snapshot.rodStrokeCapacityMeters;
     this.#result.rodStrokeWonMeters = snapshot.rodStrokeWonMeters;
@@ -392,7 +343,6 @@ class RodPullSystem {
     this.#result.releaseRecovering = snapshot.rodStrokeUnrecoveredMeters > 0 && !this.#result.active;
     this.#result.releaseRecoveryRatio = snapshot.rodStrokeRatio;
     this.#result.strokeRecoveredMeters = Math.max(0, Number(this.#result.strokeRecoveredMeters) || 0);
-    this.#result.strokeSyncedMeters = Math.max(0, Number(this.#result.strokeSyncedMeters) || 0);
     this.#result.strokeDistancePreviousMeters = Math.max(
       0,
       Number(this.#result.strokeDistancePreviousMeters) || 0,
@@ -405,25 +355,18 @@ class RodPullSystem {
     this.#result.strokeDistanceGainedMeters = Math.max(0, Number(this.#result.strokeDistanceGainedMeters) || 0);
     this.#result.strokeDistanceLostMeters = Math.max(0, Number(this.#result.strokeDistanceLostMeters) || 0);
     this.#result.strokeDistanceReason = this.#result.strokeDistanceReason || "none";
-    this.#result.strokeYGainedMeters = Math.max(0, Number(this.#result.strokeYGainedMeters) || 0);
-    this.#result.strokeYLostMeters = Math.max(0, Number(this.#result.strokeYLostMeters) || 0);
     this.#result.strokeResetReason = this.#result.strokeResetReason || "none";
-    this.#result.strokeSyncReason = this.#result.strokeSyncReason || "none";
   }
 
   #clearStrokeFrameDiagnostics() {
     this.#result.strokeRecoveredMeters = 0;
-    this.#result.strokeSyncedMeters = 0;
     this.#result.strokeDistancePreviousMeters = 0;
     this.#result.strokeDistanceCurrentMeters = 0;
     this.#result.strokeDistanceDeltaMeters = 0;
     this.#result.strokeDistanceGainedMeters = 0;
     this.#result.strokeDistanceLostMeters = 0;
     this.#result.strokeDistanceReason = "none";
-    this.#result.strokeYGainedMeters = 0;
-    this.#result.strokeYLostMeters = 0;
     this.#result.strokeResetReason = "none";
-    this.#result.strokeSyncReason = "none";
   }
 
   #clamp01(value) {

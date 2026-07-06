@@ -20,14 +20,9 @@ class FightRodStrokeSection extends FightSectionBase {
     const distanceGained = line.strokeDistanceGainedMeters ?? d.strokeDistanceGainedMeters;
     const distanceLost = line.strokeDistanceLostMeters ?? d.strokeDistanceLostMeters;
     const distanceReason = line.strokeDistanceReason ?? d.strokeDistanceReason ?? "none";
-    const yGained = line.strokeYGainedMeters ?? d.strokeYGainedMeters;
-    const yLost = line.strokeYLostMeters ?? d.strokeYLostMeters;
-    const initialCredit = line.initialPumpCreditMeters ?? d.pumpCreditPenaltyMeters;
-    const finalCredit = line.finalPumpCreditMeters ?? d.pumpCreditMeters;
     const releasedFrame = line.lineReleasedThisFrameMeters ?? d.lineReleasedThisFrameMeters;
     const recoveredFrame = line.lineRecoveredThisFrameMeters ?? d.lineRecoveredThisFrameMeters;
     const resetReason = line.strokeResetReason ?? d.strokeResetReason ?? "none";
-    const syncReason = line.strokeSyncReason ?? d.strokeSyncReason ?? "none";
 
     return [
       this.row("Stroke capacity", f.meters(capacity, 2), "#73c2fb"),
@@ -40,14 +35,9 @@ class FightRodStrokeSection extends FightSectionBase {
       this.row("Distance gained frame", f.meters(distanceGained, 3), Number(distanceGained) > 0 ? "#00ff80" : "#8a9bac"),
       this.row("Distance lost frame", f.meters(distanceLost, 3), Number(distanceLost) > 0 ? "#ff8888" : "#8a9bac"),
       this.row("Distance reason", distanceReason, distanceReason === "none" ? "#8a9bac" : "#ffaa00"),
-      this.row("Legacy Y gained (deprecated)", f.meters(yGained, 3), Number(yGained) > 0 ? "#00ff80" : "#8a9bac"),
-      this.row("Legacy Y lost (deprecated)", f.meters(yLost, 3), Number(yLost) > 0 ? "#ff8888" : "#8a9bac"),
-      this.row("Initial pump credit", f.meters(initialCredit, 2), "#8a9bac"),
-      this.row("Final pump credit", f.meters(finalCredit, 2), "#8a9bac"),
       this.row("Released this frame", f.meters(releasedFrame, 3), Number(releasedFrame) > 0 ? "#ff8888" : "#8a9bac"),
       this.row("Recovered this frame", f.meters(recoveredFrame, 3), Number(recoveredFrame) > 0 ? "#00ff80" : "#8a9bac"),
       this.row("Stroke reset reason", resetReason, resetReason === "none" ? "#8a9bac" : "#ffaa00"),
-      this.row("Stroke sync reason", syncReason, syncReason === "none" ? "#8a9bac" : "#ffaa00"),
     ];
   }
 }

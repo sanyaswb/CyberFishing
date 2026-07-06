@@ -4,7 +4,7 @@ class FightPhysicsSystem {
   #velocityScratch = new Vector2(0, 0);
   #radialTargetVelocity = new Vector2(0, 0);
   #waterProbePoint = { x: 0, y: 0 };
-  #pumpCreditCalculator = new PumpCreditCalculator();
+  #recoverableLineCalculator = new RecoverableLineCalculator();
   #looseLineCalculator = new LooseLineCalculator();
   #rodStrokeTracker = new RodStrokeTracker();
   #rodStrokeDistanceTracker =
@@ -479,8 +479,8 @@ class FightPhysicsSystem {
       forceData,
       dragSystem,
       lineState: finalLineState,
-      finalPumpCreditMeters: lineLimit.finalPumpCreditMeters,
-      initialPumpCreditMeters: rodPullFrame.pumpCreditMeters,
+      finalRecoverableLineMeters: lineLimit.finalRecoverableLineMeters,
+      initialRecoverableLineMeters: rodPullFrame.initialRecoverableLineMeters,
       actualSlackMeters: lineLimit.actualSlackMeters,
       releaseResult: lineLimit.releaseResult,
       recoveredMeters,
@@ -1465,7 +1465,7 @@ class FightPhysicsSystem {
       currentDistanceMeters: lineStateBeforePull.distanceMeters,
       reasonPrefix: "pre_player",
     });
-    const pumpCreditMeters = this.#pumpCreditCalculator.calculateRecoverableLineMeters({
+    const initialRecoverableLineMeters = this.#recoverableLineCalculator.calculateRecoverableLineMeters({
       releasedMeters: lineStateBeforePull.releasedMeters,
       fishDistanceMeters: lineStateBeforePull.distanceMeters,
     });
@@ -1473,10 +1473,8 @@ class FightPhysicsSystem {
       dtSec,
       inputState: pullInput,
       rod,
-      pumpCreditMeters,
       distanceLostBeforePullMeters:
         prePullStrokeDistanceFrame.lostMeters,
-      yLostBeforePullMeters: forceData?.fightYMovementFrame?.yAwayMeters,
       fishForceKg: forceData.totalFishForceKg,
       fishTensionKg: forceData.fishTensionKg,
       rodLimitKg,
@@ -1611,7 +1609,7 @@ class FightPhysicsSystem {
     return {
       lineStateBeforePull,
       lineStateAfterPull,
-      pumpCreditMeters,
+      initialRecoverableLineMeters,
       rodPullResult,
       fishRetrieveResult,
       prePullStrokeDistanceFrame,
@@ -2452,8 +2450,7 @@ class FightPhysicsSystem {
     loadLimitKg = null,
     maxRecoverMeters = null,
   }) {
-    const recover = reelSystem.recoverLineCredit || reelSystem.recoverSlack;
-    return recover.call(reelSystem, {
+    return reelSystem.recoverLineCredit({
       dtSec,
       lineSystem,
       reel,
@@ -2550,9 +2547,6 @@ class FightPhysicsSystem {
       playerHoldActive: isPullMode,
       rodPullActive: rodPullResult?.active,
       strokeRatio: rodStrokeRatio,
-      strokeCapacityMeters: rodPullResult?.rodStrokeCapacityMeters,
-      strokeUnrecoveredMeters: rodPullResult?.rodStrokeUnrecoveredMeters,
-      rodPullBlockedReason: rodPullResult?.blockedReason,
       rawTensionKg: tensionPreview?.rawTensionKg,
       dragLimitKg: dragContext?.effectiveDragLimitKg,
       dragLocked: dragContext?.dragLocked,
@@ -2610,7 +2604,7 @@ class FightPhysicsSystem {
       fishRetrieveResult: tensionResult,
       payoutResult: releaseResult,
     });
-    const finalPumpCreditMeters = this.#pumpCreditCalculator.calculateRecoverableLineMeters({
+    const finalRecoverableLineMeters = this.#recoverableLineCalculator.calculateRecoverableLineMeters({
       releasedMeters: lineState.releasedMeters,
       fishDistanceMeters: lineState.distanceMeters,
     });
@@ -2628,7 +2622,7 @@ class FightPhysicsSystem {
       lineState,
       lineConstraintState,
       hardLineLimit,
-      finalPumpCreditMeters,
+      finalRecoverableLineMeters,
       actualSlackMeters,
     };
   }
@@ -2771,8 +2765,8 @@ class FightPhysicsSystem {
     forceData,
     dragSystem,
     lineState,
-    finalPumpCreditMeters,
-    initialPumpCreditMeters,
+    finalRecoverableLineMeters,
+    initialRecoverableLineMeters,
     actualSlackMeters,
     releaseResult,
     recoveredMeters,
@@ -2870,8 +2864,10 @@ class FightPhysicsSystem {
       releasedLineMeters: Math.max(0, Number(lineState.releasedMeters) || 0),
       remainingLineMeters: Math.max(0, Number(lineState.remainingMeters) || 0),
       recoverableLineMeters: Math.max(0, Number(lineState.recoverableLineMeters) || 0),
-      initialPumpCreditMeters: Math.max(0, Number(initialPumpCreditMeters) || 0),
-      finalPumpCreditMeters: Math.max(0, Number(finalPumpCreditMeters) || 0),
+      initialRecoverableLineMeters:
+        Math.max(0, Number(initialRecoverableLineMeters) || 0),
+      finalRecoverableLineMeters:
+        Math.max(0, Number(finalRecoverableLineMeters) || 0),
       lineReleasedThisFrameMeters: Math.max(0, Number(releaseResult.releasedMeters) || 0),
       lineRecoveredThisFrameMeters: Math.max(0, Number(recoveredMeters) || 0),
       lineDemandedThisFrameMeters: Math.max(0, Number(releaseResult.demandedMeters) || 0),
@@ -2899,7 +2895,6 @@ class FightPhysicsSystem {
       rodStrokeUnrecoveredMeters: Math.max(0, Number(rodPullDisplay.rodStrokeUnrecoveredMeters) || 0),
       rodStrokeRatio: Math.max(0, Math.min(1, Number(rodPullDisplay.rodStrokeRatio) || 0)),
       strokeRecoveredMeters: Math.max(0, Number(rodPullDisplay.strokeRecoveredMeters) || 0),
-      strokeSyncedMeters: Math.max(0, Number(rodPullDisplay.strokeSyncedMeters) || 0),
       strokeDistancePreviousMeters:
         Math.max(0, Number(rodPullDisplay.strokeDistancePreviousMeters) || 0),
       strokeDistanceCurrentMeters:
@@ -2913,8 +2908,6 @@ class FightPhysicsSystem {
       strokeDistanceReason: rodPullDisplay.strokeDistanceReason || "none",
       prePullStrokeDistanceLostMeters:
         Math.max(0, Number(prePullStrokeDistanceFrame?.lostMeters) || 0),
-      strokeYGainedMeters: Math.max(0, Number(rodPullDisplay.strokeYGainedMeters) || 0),
-      strokeYLostMeters: Math.max(0, Number(rodPullDisplay.strokeYLostMeters) || 0),
       autoRecoverActive: !!autoRecovery?.active,
       autoRecoverBlockedReason: autoRecovery?.blockedReason || "not_checked",
       autoRecoverSpeedMetersPerSec:
@@ -2930,7 +2923,6 @@ class FightPhysicsSystem {
       autoRecoveredMeters: Math.max(0, Number(autoRecoveredMeters) || 0),
       holdRecoveredMeters: Math.max(0, Number(holdRecoveredMeters) || 0),
       strokeResetReason: rodPullDisplay.strokeResetReason || "none",
-      strokeSyncReason: rodPullDisplay.strokeSyncReason || "none",
     };
 
     return {
@@ -2949,19 +2941,13 @@ class FightPhysicsSystem {
       lineBaseReachMeters: lineState.baseReachMeters,
       lineTotalLengthMeters: lineState.totalLengthMeters,
       lineRecoverableMeters: lineState.recoverableLineMeters,
-      lineSlackMeters: lineState.recoverableLineMeters,
       isLineFullyExtended: lineState.isFullyExtended,
       lineExtensionRatio: lineState.lineExtensionRatio,
       lineDistanceMeters: lineState.distanceMeters,
       shoreLandingDistanceMeters:
         Math.max(0, Number(forceData.shoreLandingDistanceMeters) || 0),
       landingDistanceMode: "shore",
-      pumpCreditMeters: finalPumpCreditMeters,
-      pumpCreditPenaltyMeters: initialPumpCreditMeters,
       actualSlackMeters,
-      // Deprecated debug aliases: these values are pump credit, not real loose line.
-      slackMeters: finalPumpCreditMeters,
-      slackPenaltyMeters: initialPumpCreditMeters,
       lineReleasedThisFrameMeters: releaseResult.releasedMeters,
       lineDemandedThisFrameMeters: releaseResult.demandedMeters,
       lineUnsatisfiedThisFrameMeters: releaseResult.unsatisfiedMeters,
@@ -3540,7 +3526,6 @@ class FightPhysicsSystem {
       rodStrokeUnrecoveredMeters: rodPullDisplay.rodStrokeUnrecoveredMeters,
       rodStrokeRatio: rodPullDisplay.rodStrokeRatio,
       strokeRecoveredMeters: rodPullDisplay.strokeRecoveredMeters ?? 0,
-      strokeSyncedMeters: rodPullDisplay.strokeSyncedMeters ?? 0,
       strokeDistancePreviousMeters:
         rodPullDisplay.strokeDistancePreviousMeters ?? 0,
       strokeDistanceCurrentMeters:
@@ -3561,12 +3546,9 @@ class FightPhysicsSystem {
         strokeDistanceFrame?.lostMeters ?? 0,
       playerFrameStrokeDistanceReason:
         strokeDistanceFrame?.reason || "none",
-      strokeYGainedMeters: rodPullDisplay.strokeYGainedMeters ?? 0,
-      strokeYLostMeters: rodPullDisplay.strokeYLostMeters ?? 0,
       strokeResetReason: rodPullDisplay.strokeResetReason || "none",
-      strokeSyncReason: rodPullDisplay.strokeSyncReason || "none",
       availableExtraForceKg: rodPullDisplay.availableExtraForceKg,
-      reelRecoveringSlack: recoveredMeters > 0,
+      reelRecoveringLineCredit: recoveredMeters > 0,
       autoRecoverActive: !!autoRecovery?.active,
       autoRecoverBlockedReason: autoRecovery?.blockedReason || "not_checked",
       autoRecoverSpeedMps: autoRecovery?.recoverSpeedMetersPerSec ?? 0,

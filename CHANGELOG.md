@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.23.29 - Rod stroke source cleanup
+
+- Made reel hold full-stroke gating depend only on factual `rodStrokeRatio`.
+- Removed `max_distance_reached`, unrecovered-meter, legacy Y, pump credit and slack aliases from rod stroke gameplay/debug paths.
+- Replaced pump-credit/slack recovery naming with explicit recoverable-line and line-credit terminology.
+- Removed legacy rod stroke capacity and charge config fallbacks.
+- Added regression coverage for reel hold, rod stroke distance source, line credit recovery naming and config source-of-truth rules.
+
 ## v0.23.28 - Touch hold threshold preservation
 
 - Preserved `pullHoldMinMs` for touch Rod Hold while keeping simultaneous lateral control support.

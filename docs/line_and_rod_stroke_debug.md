@@ -9,8 +9,8 @@ The runtime contract separates four concepts:
 - fish distance: real distance from rod tip to fish;
 - released line: physical line currently available between rod and fish;
 - remaining line: physical line still on the reel spool;
-- rod stroke won: Y-distance won by rod hold that still has to be recovered by the reel;
-- pump credit: diagnostic `releasedLineMeters - fishDistanceMeters`, not a source of truth.
+- rod stroke won: line-distance won by rod hold that still has to be recovered by the reel;
+- recoverable line: diagnostic `max(0, releasedLineMeters - fishDistanceMeters)`.
 
 ## LINE fields
 
@@ -19,6 +19,8 @@ The runtime contract separates four concepts:
 - `releasedLineMeters`: current released line length.
 - `remainingLineMeters`: remaining releasable line on the spool.
 - `recoverableLineMeters`: diagnostic `max(0, releasedLineMeters - fishDistanceMeters)`.
+- `initialRecoverableLineMeters`: recoverable line at frame start.
+- `finalRecoverableLineMeters`: recoverable line after line release/recovery/constraint.
 - `lineReleasedThisFrameMeters`: line released by drag/slip this frame.
 - `lineRecoveredThisFrameMeters`: line recovered by reel/recovery this frame.
 - `lineHasReserve`: whether line can still be released.
@@ -29,18 +31,12 @@ The runtime contract separates four concepts:
 ## ROD STROKE fields
 
 - `rodStrokeCapacityMeters`: maximum rod stroke distance for the current cycle.
-- `rodStrokeWonMeters`: won Y-distance that still has not been recovered.
-- `rodStrokeUsedMeters`: compatibility alias for won Y-distance.
-- `rodStrokeUnrecoveredMeters`: compatibility alias for won Y-distance.
+- `rodStrokeWonMeters`: won line-distance that still has not been recovered.
+- `rodStrokeUsedMeters`: compatibility alias for won line-distance.
+- `rodStrokeUnrecoveredMeters`: compatibility alias for won line-distance.
 - `rodStrokeRatio`: `rodStrokeWonMeters / rodStrokeCapacityMeters`.
-- `strokeYGainedMeters`: deprecated compatibility alias for gained line distance.
-- `strokeYLostMeters`: deprecated compatibility alias for lost line distance.
-- `initialPumpCreditMeters`: diagnostic recoverable line at frame start.
-- `finalPumpCreditMeters`: diagnostic recoverable line after line release/recovery/constraint.
 - `strokeRecoveredMeters`: stroke reduced by reel auto recovery.
-- `strokeSyncedMeters`: always diagnostic in the new model; pump credit does not sync stroke.
 - `strokeResetReason`: why stroke was reduced/reset by direct recovery.
-- `strokeSyncReason`: why stroke was clamped to pump credit.
 
 ## AUTO RECOVERY fields
 
@@ -58,15 +54,7 @@ The runtime contract separates four concepts:
 - `new_pull_cycle`: new pull stroke cycle started.
 - `stroke_capacity_initialized`: active pull initialized an empty stroke capacity.
 - `recovered_by_reel`: reel/line recovery reduced unrecovered stroke.
-- `pump_credit_zero`: legacy reason; pump credit no longer clears stroke.
-
-`strokeSyncReason`:
-
-- `none`: sync did not reduce stroke.
-- `debug_only`: pump credit sync was called but did not mutate stroke.
-- `synced_to_pump_credit`: legacy reason; no longer used as source of truth.
-- `pump_credit_zero`: legacy reason; no longer used as source of truth.
 
 ## Important rule
 
-`LineSpoolState` owns physical line length. `RodStrokeState` owns won Y-distance. `ReelAutoRecoveryCalculator` owns tension-based recovery speed. Pump credit remains a debug value only and must not reset or clamp rod stroke.
+`LineSpoolState` owns physical line length. `RodStrokeState` owns won line-distance. `ReelAutoRecoveryCalculator` owns tension-based recovery speed. Recoverable line remains a line diagnostic only and must not reset or clamp rod stroke.

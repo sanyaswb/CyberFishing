@@ -73,7 +73,7 @@ const FILES = [
   "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
   "src/core/fishing/rod_pull_calculator.js",
   "src/core/fishing/fish_retrieve_result.js",
-  "src/core/fishing/slack_calculator.js",
+  "src/core/fishing/recoverable_line_calculator.js",
   "src/core/fishing/reel_retrieve_speed_calculator.js",
   "src/entities/tackle.js",
   "src/entities/fish.js",
@@ -479,6 +479,228 @@ function runTouchHoldControlBuildCheck() {
 }
 
 runTouchHoldControlBuildCheck();
+
+function runRodPullConfigSourceCheck() {
+  const legacyOnly = new RodPullCalculator({
+    enabled: true,
+    distanceMultiplierByRodLength: 10,
+    strokeChargePerSecond: 100,
+    chargePerSecond: 100,
+    minStrokeMeters: 0.001,
+  });
+  assertApprox(
+    legacyOnly.calculateMaxDistance({ rodLengthMeters: 2 }),
+    1,
+    0.000001,
+    "legacy distanceMultiplierByRodLength no longer controls rod stroke capacity",
+  );
+  const legacyChargeFrame = legacyOnly.calculateNextState({
+    dtSec: 0.1,
+    input: { pullHeld: true },
+    previousState: {},
+    rodLengthMeters: 2,
+    maxTackleLoadKg: 5,
+    rodLimitKg: 5,
+    fishTensionKg: 0,
+    dragLimitKg: 5,
+    dragLocked: true,
+    hardLineLimit: false,
+    lineHasReserve: true,
+    fishDistanceMeters: 5,
+  });
+  assertApprox(
+    legacyChargeFrame.ratio,
+    0.1 / 0.35,
+    0.000001,
+    "legacy strokeChargePerSecond and chargePerSecond no longer control rod hold charge",
+  );
+
+  const currentConfig = new RodPullCalculator({
+    enabled: true,
+    capacityByRodLengthRatio: 0.25,
+    chargeTimeSeconds: 1,
+    minStrokeMeters: 0.001,
+  });
+  assertApprox(
+    currentConfig.calculateMaxDistance({ rodLengthMeters: 2 }),
+    0.5,
+    0.000001,
+    "rodStroke.capacityByRodLengthRatio controls rod stroke capacity",
+  );
+  const currentChargeFrame = currentConfig.calculateNextState({
+    dtSec: 0.25,
+    input: { pullHeld: true },
+    previousState: {},
+    rodLengthMeters: 2,
+    maxTackleLoadKg: 5,
+    rodLimitKg: 5,
+    fishTensionKg: 0,
+    dragLimitKg: 5,
+    dragLocked: true,
+    hardLineLimit: false,
+    lineHasReserve: true,
+    fishDistanceMeters: 5,
+  });
+  assertApprox(
+    currentChargeFrame.ratio,
+    0.25,
+    0.000001,
+    "rodHold.chargeTimeSeconds controls rod hold charge",
+  );
+
+  const adapterConfig = createConfig();
+  adapterConfig.physics.fight.rodHold.distanceMultiplierByRodLength = 10;
+  const rodPullConfig = adapterConfig.fightPhysicsConfig.getRodPullConfig();
+  assertApprox(
+    rodPullConfig.capacityByRodLengthRatio,
+    adapterConfig.physics.fight.rodStroke.capacityByRodLengthRatio,
+    0.000001,
+    "rod pull adapter sources capacity from physics.fight.rodStroke only",
+  );
+  assert(
+    !Object.prototype.hasOwnProperty.call(rodPullConfig, "distanceMultiplierByRodLength"),
+    "rod pull adapter no longer exports distanceMultiplierByRodLength",
+  );
+  assert(
+    !Object.prototype.hasOwnProperty.call(rodPullConfig, "strokeChargePerSecond"),
+    "rod pull adapter no longer exports strokeChargePerSecond",
+  );
+}
+
+runRodPullConfigSourceCheck();
+
+function runRodStrokeDistanceSourceCheck() {
+  const system = new RodPullSystem({
+    enabled: true,
+    capacityByRodLengthRatio: 1,
+    chargeTimeSeconds: 1,
+    minStrokeMeters: 0.001,
+    tensionCeilingMultiplier: 1,
+  });
+  const rod = {
+    lengthMeters: 1,
+    getEffectiveMaxLoadKg: () => 5,
+    getHoldTensionRatio: () => 1,
+  };
+  const common = {
+    dtSec: 1 / 60,
+    inputState: { pullHeld: true },
+    rod,
+    fishForceKg: 0,
+    fishTensionKg: 0,
+    rodLimitKg: 5,
+    playerForceBudget: null,
+    dragLimitKg: 5,
+    maxTackleLoadKg: 5,
+    dragLocked: true,
+    hardLineLimit: false,
+    lineHasReserve: true,
+    fishDistanceMeters: 5,
+  };
+
+  system.update({
+    ...common,
+    distanceLostBeforePullMeters: 0,
+  });
+  system.recordDistanceMovement({
+    gainedMeters: 0.8,
+    reason: "test_seed_distance",
+  });
+  assertApprox(system.getState().rodStrokeWonMeters, 0.8, 0.000001, "rod stroke test seeds won distance");
+
+  const legacyYFrame = system.update({
+    ...common,
+    distanceLostBeforePullMeters: 0,
+    yLostBeforePullMeters: 0.5,
+  });
+  assertApprox(legacyYFrame.rodStrokeWonMeters, 0.8, 0.000001, "legacy Y loss no longer reduces rod stroke");
+  assertApprox(legacyYFrame.strokeDistanceLostMeters, 0, 0.000001, "legacy Y loss is ignored by distance-based stroke loss");
+
+  const distanceFrame = system.update({
+    ...common,
+    distanceLostBeforePullMeters: 0.3,
+    yLostBeforePullMeters: 0,
+  });
+  assertApprox(distanceFrame.rodStrokeWonMeters, 0.5, 0.000001, "distance loss remains the rod stroke loss source");
+  assertApprox(distanceFrame.strokeDistanceLostMeters, 0.3, 0.000001, "distance loss diagnostics still report stroke loss");
+}
+
+runRodStrokeDistanceSourceCheck();
+
+function runReelHoldStrokeGateCheck() {
+  const system = new ReelHoldRecoverySystem();
+  const common = {
+    dtMs: 16.666,
+    config: {
+      enabled: true,
+      requireRodStrokeFull: true,
+      delayMs: 0,
+      strokeRatio: 1,
+      strokeToleranceMeters: 0.001,
+    },
+    hasReel: true,
+    playerHoldActive: true,
+    rodPullActive: true,
+    rawTensionKg: 0.2,
+    dragLimitKg: 3,
+    dragLocked: false,
+    shouldSlipDrag: false,
+    reelMaxLoadKg: 3,
+    retrieveSpeedMetersPerSecond: 1.2,
+    lineRecoverableMeters: 0.5,
+  };
+
+  const earlyFrame = system.update({
+    ...common,
+    strokeRatio: 0.73,
+    strokeCapacityMeters: 1,
+    strokeUnrecoveredMeters: 0.73,
+    rodPullBlockedReason: "max_distance_reached",
+  });
+  assert(earlyFrame.active === false, "reel hold ignores max_distance_reached until rod stroke is full");
+  assert(earlyFrame.blockedReason === "stroke_not_full", "reel hold reports stroke_not_full below required rod stroke ratio");
+
+  const fullMetersFrame = system.update({
+    ...common,
+    strokeRatio: 0.99,
+    strokeCapacityMeters: 1,
+    strokeUnrecoveredMeters: 1,
+  });
+  assert(fullMetersFrame.active === false, "reel hold ignores full stroke meters when rod stroke ratio is below required ratio");
+  assert(fullMetersFrame.blockedReason === "stroke_not_full", "reel hold full-stroke gate uses rod stroke ratio as source of truth");
+
+  const fullFrame = system.update({
+    ...common,
+    strokeRatio: 1,
+    strokeCapacityMeters: 1,
+    strokeUnrecoveredMeters: 1,
+  });
+  assert(fullFrame.active === true, "reel hold can activate after full rod stroke");
+}
+
+runReelHoldStrokeGateCheck();
+
+function runReelHoldConfigSourceCheck() {
+  const config = createConfig();
+  config.physics.fight.reelHold = {
+    enabled: true,
+    requireRodStrokeFull: true,
+    delayMs: 0,
+    strokeRatio: 1,
+    strokeToleranceMeters: 0.001,
+  };
+  config.physics.tackle.reel.holdRecoverAfterFullStrokeMs = false;
+  config.physics.tackle.reel.holdRecoverStrokeRatio = 0.25;
+  config.physics.tackle.reel.holdRecoverStrokeToleranceMeters = 0.25;
+
+  const reelHold = new FightPhysicsConfigAdapter(config).getReelHoldConfig();
+  assert(reelHold.enabled === true, "reel hold enabled is sourced from physics.fight.reelHold");
+  assertApprox(reelHold.delayMs, 0, 0.000001, "legacy tackle reel hold delay no longer overrides reel hold config");
+  assertApprox(reelHold.strokeRatio, 1, 0.000001, "legacy tackle reel hold ratio no longer overrides reel hold config");
+  assertApprox(reelHold.strokeToleranceMeters, 0.001, 0.000001, "legacy tackle reel hold tolerance no longer overrides reel hold config");
+}
+
+runReelHoldConfigSourceCheck();
 
 function runFightScenario({
   name,

@@ -10,9 +10,6 @@ class ReelHoldRecoverySystem {
     playerHoldActive,
     rodPullActive,
     strokeRatio,
-    strokeCapacityMeters,
-    strokeUnrecoveredMeters,
-    rodPullBlockedReason,
     rawTensionKg,
     dragLimitKg,
     dragLocked,
@@ -23,10 +20,6 @@ class ReelHoldRecoverySystem {
   } = {}) {
     const delayMs = this.#resolveDelayMs(config);
     const requiredStrokeRatio = this.#ratio(config.strokeRatio, 1);
-    const strokeToleranceMeters = this.#positive(
-      config.strokeToleranceMeters,
-      0.001,
-    );
     const recoverableLine = this.#positive(lineRecoverableMeters);
     const loadFrame = this.#loadPolicy.evaluate({
       dtMs,
@@ -44,10 +37,6 @@ class ReelHoldRecoverySystem {
       requireStrokeFull: config.requireRodStrokeFull !== false,
       strokeRatio,
       requiredStrokeRatio,
-      strokeCapacityMeters,
-      strokeUnrecoveredMeters,
-      strokeToleranceMeters,
-      rodPullBlockedReason,
     });
     const hasRecoverableLine = recoverableLine > 0.001;
     const eligible =
@@ -99,22 +88,9 @@ class ReelHoldRecoverySystem {
     requireStrokeFull,
     strokeRatio,
     requiredStrokeRatio,
-    strokeCapacityMeters,
-    strokeUnrecoveredMeters,
-    strokeToleranceMeters,
-    rodPullBlockedReason,
   }) {
     if (!requireStrokeFull) return true;
-    const capacity = this.#positive(strokeCapacityMeters);
-    const unrecovered = this.#positive(strokeUnrecoveredMeters);
-    return (
-      this.#ratio(strokeRatio, 0) >= requiredStrokeRatio ||
-      (
-        capacity > 0 &&
-        unrecovered >= capacity - strokeToleranceMeters
-      ) ||
-      rodPullBlockedReason === "max_distance_reached"
-    );
+    return this.#ratio(strokeRatio, 0) >= requiredStrokeRatio;
   }
 
   #blockedReason({

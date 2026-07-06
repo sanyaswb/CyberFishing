@@ -54,16 +54,12 @@ class RodStrokeDebugModule extends ConsoleTableDebugModule {
         3,
       ),
       "Stroke distance reason": live.strokeDistanceReason || "none",
-      "Pump credit meters": DebugFormatters.number(
-        live.pumpCreditMeters ?? live.slackMeters,
-        2,
-      ),
-      "Pump credit penalty": DebugFormatters.number(
-        live.pumpCreditPenaltyMeters ?? live.slackPenaltyMeters,
+      "Recoverable line meters": DebugFormatters.number(
+        live.lineRecoverableMeters,
         2,
       ),
       "Actual loose line": DebugFormatters.number(live.actualSlackMeters, 2),
-      "Reel recovering line credit": live.reelRecoveringSlack === true,
+      "Reel recovering line credit": live.reelRecoveringLineCredit === true,
       "Hard line limit": live.hardLineLimit === true,
       Result: live.rodPullCanMoveFish ? "MOVING_FISH" : "NO_PULL",
       "Blocked reason": live.rodPullBlockedReason || "none",

@@ -31,9 +31,7 @@ const TACKLE_PHYSICS_CONFIG = {
   },
 
   reel: {
-    autoRecoverSlack: true,
-    holdRecoverAfterFullStrokeMs: 0,
-    holdRecoverStrokeRatio: 1.0,
+    autoRecoverLineCredit: true,
     bearingRetrieveSpeedBonusMetersPerSec: 0.2,
   },
 };
