@@ -879,6 +879,8 @@ class FightPhysicsSystem {
     return this.#playerReelFatigueSession.update({
       playerHoldActive: holdReelRecover.playerHoldActive === true,
       reelHoldEngagedThisFrame: holdReelRecover.engaged === true,
+      // Fight lifecycle is controlled by resetPlayerPullMotion() on fight exit/reset.
+      // Keep fightActive=true during active frame simulation.
       fightActive: true,
     });
   }
@@ -3002,11 +3004,14 @@ class FightPhysicsSystem {
           0,
           Number(holdReelRecover?.retrieveSpeedMetersPerSecond) || 0,
         ),
+      reelHoldActive: !!holdReelRecover?.active,
+      reelHoldEngaged: !!holdReelRecover?.engaged,
       holdReelRecoverEngaged: !!holdReelRecover?.engaged,
       reelHoldCanPull:
         (holdReelRecover?.canPull ?? holdReelRecover?.engaged) === true,
       reelHoldBlockedReason:
         holdReelRecover?.blockedReason || "not_checked",
+      reelHoldRecoveringLine: !!holdReelRecover?.recoveringLine,
       holdReelRecoveringLine: !!holdReelRecover?.recoveringLine,
       holdReelRecoverHasRecoverableLine:
         !!holdReelRecover?.hasRecoverableLine,
@@ -3131,6 +3136,12 @@ class FightPhysicsSystem {
           Number(playerForceBudget?.combinedTensionCeilingKg) -
             Number(tensionResult?.totalTensionKg),
         ) <= 0.001,
+      playerReelFatigueSessionActive:
+        playerReelFatigueSession?.active === true,
+      playerReelFatigueSessionStarted:
+        playerReelFatigueSession?.startedThisFrame === true,
+      playerReelFatigueSessionEnded:
+        playerReelFatigueSession?.endedThisFrame === true,
       playerPressureFatigueEnabled:
         playerPressureFatigue?.enabled === true,
       playerPressureFatigueEfficiency:
@@ -3656,6 +3667,12 @@ class FightPhysicsSystem {
       reelHoldHasReel: holdReelRecover?.hasReel === true,
       reelHoldPlayerHoldActive:
         holdReelRecover?.playerHoldActive === true,
+      playerReelFatigueSessionActive:
+        playerReelFatigueSession?.active === true,
+      playerReelFatigueSessionStarted:
+        playerReelFatigueSession?.startedThisFrame === true,
+      playerReelFatigueSessionEnded:
+        playerReelFatigueSession?.endedThisFrame === true,
       reelHoldRequiredStrokeRatio:
         holdReelRecover?.requiredStrokeRatio ?? 1,
       holdReelRecoverInputStrokeRatio:
@@ -3682,6 +3699,11 @@ class FightPhysicsSystem {
       holdReelRecoverActive: !!holdReelRecover?.active,
       holdReelRecoverEngaged: !!holdReelRecover?.engaged,
       holdReelRecoveringLine: !!holdReelRecover?.recoveringLine,
+      reelHoldActive: !!holdReelRecover?.active,
+      reelHoldEngaged: !!holdReelRecover?.engaged,
+      reelHoldCanPull:
+        (holdReelRecover?.canPull ?? holdReelRecover?.engaged) === true,
+      reelHoldRecoveringLine: !!holdReelRecover?.recoveringLine,
       holdReelRecoverHasRecoverableLine:
         !!holdReelRecover?.hasRecoverableLine,
       holdReelRecoverTimerMs: holdReelRecover?.timerMs ?? 0,
@@ -3704,6 +3726,8 @@ class FightPhysicsSystem {
       reelHoldMovementBlockReason: reelHoldMovementBlockReason || "none",
       hardTensionBlocked: !!hardTensionBlocked,
       holdReelRecoverBlockedReason:
+        holdReelRecover?.blockedReason || "not_checked",
+      reelHoldBlockedReason:
         holdReelRecover?.blockedReason || "not_checked",
       holdReelRecoverLineBlockedReason:
         holdReelRecover?.lineRecoveryBlockedReason || "not_checked",

@@ -137,7 +137,7 @@
   {
     "key": "playerPressureFatigue.source.mode",
     "ua": "player_pressure_fatigue_source_mode",
-    "description": "Gameplay source that starts pressure fatigue. The active mode is reel_hold."
+    "description": "Gameplay source that starts pressure fatigue. The active mode is reel_hold_session."
   },
   {
     "key": "playerPressureGain.enabled",

@@ -901,7 +901,7 @@
   },
   "physics.fight.playerPressureFatigue.source.mode": {
     "label": "Pressure fatigue source",
-    "description": "Gameplay source that starts player pressure fatigue. The active mode is reel_hold."
+    "description": "Gameplay source that starts player pressure fatigue. The active mode is reel_hold_session."
   },
   "physics.fight.playerPressureFatigue.pressureThresholdKg": {
     "label": "Pressure fatigue threshold",

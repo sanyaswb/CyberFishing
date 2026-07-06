@@ -68,7 +68,8 @@ class FightSummaryOverlayModule extends OverlayModule {
     const f = this.#formatter;
     const enabled = data.playerPressureFatigueEnabled === true;
     const state = enabled ? data.playerPressureFatigueState || "idle" : "disabled";
-    const source = data.playerPressureFatigueSourceMode || "reel_hold";
+    const source = data.playerPressureFatigueSourceMode || "reel_hold_session";
+    const sessionActive = data.playerReelFatigueSessionActive === true;
     const efficiency = this.#finite(data.playerPressureFatigueEfficiency, 1);
     const fatigueProgress = this.#finite(data.playerPressureFatigueProgress, 0);
     const recoveryState = enabled
@@ -92,6 +93,16 @@ class FightSummaryOverlayModule extends OverlayModule {
       color: data.playerPressureFatigueSourceActive === true
         ? "#00ff80"
         : "#8a9bac",
+    });
+    html += this.metricRow("Source active", data.playerPressureFatigueSourceActive === true ? "YES" : "NO", {
+      metricKey: "fightSummary.pressureFatigueSourceActive",
+      color: data.playerPressureFatigueSourceActive === true
+        ? "#00ff80"
+        : "#8a9bac",
+    });
+    html += this.metricRow("Reel fatigue session", sessionActive ? "ACTIVE" : "INACTIVE", {
+      metricKey: "fightSummary.playerReelFatigueSession",
+      color: sessionActive ? "#00ff80" : "#8a9bac",
     });
     html += this.metricRow("Efficiency", enabled ? `x${f.num(efficiency, 2)}` : "disabled", {
       metricKey: "fightSummary.pressureFatigueEfficiency",

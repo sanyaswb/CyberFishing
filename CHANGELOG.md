@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.23.37 - Player Reel Fatigue Debug Alignment
+
+- Aligned Player Reel Fatigue debug and HUD fallback mode with the new `reel_hold_session` source.
+- Added explicit debug aliases for ReelHold capability state: `reelHoldActive`, `reelHoldEngaged` and `reelHoldRecoveringLine`.
+- Improved overlay separation between Player Reel Fatigue Session and ReelHold Pull Capability.
+- Documented fight lifecycle handling for the session latch and reset it explicitly on new fight start/end paths.
+- Added regression coverage for reel hold session source consistency and debug alias presence.
+
 ## v0.23.36 - Player Reel Fatigue Session Latch
 
 - Added `PlayerReelFatigueSession` to separate player reel fatigue session state from per-frame reel hold pull capability.

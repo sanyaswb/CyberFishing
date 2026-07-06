@@ -769,6 +769,12 @@ function calculateFatigueFrame({
 
 function runPlayerReelFatigueSessionLatchCheck() {
   const config = createFatigueLatchConfig();
+  const defaultSourceConfig =
+    new FightPhysicsConfigAdapter(createConfig()).getPlayerPressureFatigueConfig();
+  assert(
+    defaultSourceConfig.source.mode === "reel_hold_session",
+    "default player pressure fatigue source mode is reel_hold_session",
+  );
   const session = new PlayerReelFatigueSession();
   const resolver = new PlayerPressureFatigueSourceResolver();
   const calculator = new PlayerPressureFatigueCalculator();
@@ -791,6 +797,7 @@ function runPlayerReelFatigueSessionLatchCheck() {
     dtSec: 1,
   });
   assert(frame.stateName === "grace", "fatigue starts in grace after reel hold session starts");
+  assert(frame.sourceActive === true, "fatigue source is active when reel hold session starts");
   const holdMsAfterStart = frame.holdElapsedMs;
 
   sessionFrame = session.update({
@@ -1059,6 +1066,39 @@ function runReelHoldPostStrokeOrderCheck() {
       Number(movingReelHoldDebug.reelHoldAppliedDtSec),
     0.000001,
     "reel hold applied speed matches reel hold move divided by frame dt",
+  );
+  assert(
+    Object.prototype.hasOwnProperty.call(movingReelHoldDebug, "reelHoldActive"),
+    "debug snapshot exposes reelHoldActive capability alias",
+  );
+  assert(
+    Object.prototype.hasOwnProperty.call(movingReelHoldDebug, "reelHoldEngaged"),
+    "debug snapshot exposes reelHoldEngaged capability alias",
+  );
+  assert(
+    Object.prototype.hasOwnProperty.call(movingReelHoldDebug, "reelHoldCanPull"),
+    "debug snapshot exposes reelHoldCanPull capability alias",
+  );
+  assert(
+    Object.prototype.hasOwnProperty.call(movingReelHoldDebug, "reelHoldRecoveringLine"),
+    "debug snapshot exposes reelHoldRecoveringLine capability alias",
+  );
+  assert(
+    Object.prototype.hasOwnProperty.call(movingReelHoldDebug, "reelHoldBlockedReason"),
+    "debug snapshot exposes reelHoldBlockedReason capability alias",
+  );
+  assert(
+    Object.prototype.hasOwnProperty.call(movingReelHoldDebug, "playerReelFatigueSessionActive"),
+    "debug snapshot exposes player reel fatigue session state",
+  );
+  assert(
+    movingReelHoldDebug.playerPressureFatigueSourceMode === "reel_hold_session",
+    "debug snapshot exposes reel_hold_session fatigue source mode",
+  );
+  assert(
+    movingReelHoldDebug.playerPressureFatigueSourceActive ===
+      movingReelHoldDebug.playerReelFatigueSessionActive,
+    "debug snapshot fatigue source active follows reel fatigue session active",
   );
 }
 

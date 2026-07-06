@@ -863,6 +863,7 @@ class FightService {
     this.#reelSystem = session.reelSystem;
     this.#tensionSystem = session.tensionSystem;
     this.#fightPhysicsSystem = session.fightPhysicsSystem;
+    this.#fightPhysicsSystem?.resetPlayerPullMotion?.();
     this.#tensionMeter = session.tensionMeter;
     this.#fishingSystem = this.#createDebugFishingAdapter();
     this.#fishCondition = session.fishCondition;

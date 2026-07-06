@@ -191,7 +191,8 @@ class FightHudFrameBuilder {
     target.config = config;
     target.state = {
       stateName,
-      sourceMode: debug?.playerPressureFatigueSourceMode || "reel_hold",
+      sourceMode:
+        debug?.playerPressureFatigueSourceMode || "reel_hold_session",
       sourceActive: debug?.playerPressureFatigueSourceActive === true,
       efficiency: RenderMath.clamp(debug?.playerPressureFatigueEfficiency),
       fatigueProgress: RenderMath.clamp(
