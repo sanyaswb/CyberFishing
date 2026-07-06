@@ -111,7 +111,7 @@ const FIGHT_PHYSICS_CONFIG = {
       position: {
         anchor: "top_right",
         offsetX: 24,
-        offsetY: 24,
+        offsetY: 56,
       },
       radius: 16,
       ringWidth: 4,

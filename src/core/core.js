@@ -533,6 +533,23 @@ class InputManager {
     }
   }
 
+  #isPointerHoldActive(now = Date.now()) {
+    if (!this.#isPointerDown) return false;
+    if (this.#pointerAction === PointerAction.PULL) return true;
+    if (
+      this.#rodControlPointerActive ||
+      this.#pointerAction === PointerAction.ROD_CONTROL_X
+    ) {
+      const holdMs = Math.max(0, Number(CONFIG.input?.pullHoldMinMs) || 0);
+      const elapsedMs = Math.max(
+        0,
+        Number(now) - Number(this.#pointerDownAtMs || now),
+      );
+      return elapsedMs >= holdMs;
+    }
+    return false;
+  }
+
   #updateRodControlPointerState() {
     if (!this.#isPointerDown) return;
     if (this.#pointerAction === PointerAction.DRAG_CONTROL) return;
@@ -642,16 +659,10 @@ class InputManager {
 
     // Space/інша pull-клавіша має гарантовано працювати кожен кадр,
     // pointer-pull стартує тільки після pullHoldMinMs, якщо жест не став drag-control.
-    this.#updatePointerPullState(Date.now());
-    this.#isPulling =
-      keyboardPulling ||
-      this.#pointerAction === PointerAction.PULL ||
-      (
-        this.#isPointerDown &&
-        this.#rodControlPointerActive &&
-        Math.max(0, Date.now() - Number(this.#pointerDownAtMs || Date.now())) >=
-          Math.max(0, Number(CONFIG.input?.pullHoldMinMs) || 0)
-      );
+    const now = Date.now();
+    this.#updatePointerPullState(now);
+    const pointerHoldActive = this.#isPointerHoldActive(now);
+    this.#isPulling = keyboardPulling || pointerHoldActive;
 
     if (keyboardPulling && !this.#isPointerDown) {
       this.#pullDirection.set(0, 1);
@@ -661,6 +672,7 @@ class InputManager {
     const rodControlActive =
       keyboardRodControlX || this.#rodControlPointerActive;
     state.isPulling = this.#isPulling;
+    state.pointerHoldActive = pointerHoldActive;
     state.pullDirection = this.#pullDirection;
     state.panDeltaX = this.#panDeltaX;
     state.panDeltaY = this.#panDeltaY;

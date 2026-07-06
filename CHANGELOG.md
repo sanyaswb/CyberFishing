@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.23.28 - Touch hold threshold preservation
+
+- Preserved `pullHoldMinMs` for touch Rod Hold while keeping simultaneous lateral control support.
+- Added `pointerHoldActive` as the explicit InputManager source of truth for touch hold.
+- Prevented raw `pointerDown` from being interpreted as Rod Hold by fight input composition.
+- Added regression coverage for early touch input before the hold threshold.
+
 ## v0.23.27 - Simultaneous touch hold/control and tension build rate
 
 - Fixed touch fight input so lateral control no longer cancels rod hold.

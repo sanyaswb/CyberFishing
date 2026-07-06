@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.23.27";
+const CURRENT_PROJECT_VERSION = "0.23.28";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "simultaneous-touch-hold-control-tension-build-rate",
-  updatedAt: "2026-07-05",
+  codename: "touch-hold-threshold-preserved",
+  updatedAt: "2026-07-06",
   notes: Object.freeze([
-    "Fixed touch fight input so lateral control no longer cancels rod hold",
-    "Allowed touch Rod Hold and Rod Control to be active simultaneously",
-    "Added explicit TENSION build-rate resolver for hold/control combinations",
-    "Made hold + control fill TENSION faster without increasing tension caps or final load",
-    "Added debug and overlay fields for tension build mode, build multiplier, cap blocking and reserve",
+    "Preserved pullHoldMinMs for touch Rod Hold while keeping simultaneous lateral control support",
+    "Added pointerHoldActive as the explicit InputManager source of truth for touch hold",
+    "Prevented raw pointerDown from being interpreted as Rod Hold by fight input composition",
+    "Added regression coverage for early touch input before the hold threshold",
   ]),
 });
 

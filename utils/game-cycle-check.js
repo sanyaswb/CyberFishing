@@ -390,9 +390,25 @@ function createCast({ config, equipment, distanceMeters }) {
 function runTouchHoldControlBuildCheck() {
   const config = createConfig();
   const composer = new FightInputActionComposer();
+  const earlyTouch = composer.compose(
+    {
+      pointerDown: true,
+      pointerHoldActive: false,
+      pointerDelta: { x: 120, y: 0 },
+      keys: {},
+    },
+    {
+      keys: config.input.keys,
+      rodControlInput: config.physics.fight.rodControl.input,
+    },
+  );
+  assert(earlyTouch.hold.active === false, "raw touch before hold threshold does not start Rod Hold");
+  assert(earlyTouch.lateralControl.active === true, "raw touch can start Rod Control before hold threshold");
+
   const composed = composer.compose(
     {
       pointerDown: true,
+      pointerHoldActive: true,
       pointerDelta: { x: 120, y: 0 },
       keys: {},
     },
@@ -430,6 +446,7 @@ function runTouchHoldControlBuildCheck() {
     bounds: cast.bounds,
     input: {
       pointerDown: true,
+      pointerHoldActive: true,
       pointerDelta: { x: 120, y: 0 },
       keys: {},
       retrieve: false,
