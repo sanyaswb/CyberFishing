@@ -338,9 +338,10 @@ class PlayerPressureFatigueCalculator {
       enabled: data.enabled === true,
       efficiency,
       stateName: data.stateName || "idle",
-      sourceMode: data.sourceMode || "reel_hold",
+      sourceMode: data.sourceMode || "reel_hold_session",
       sourceActive: data.sourceActive === true,
-      sourceReason: data.sourceReason || "reel_hold_inactive",
+      sourceReason:
+        data.sourceReason || "reel_hold_session_inactive",
       pressureHoldMs: this.#positive(data.pressureHoldMs ?? holdElapsedMs),
       holdElapsedMs,
       recoveryIdleMs: this.#positive(data.recoveryIdleMs),
@@ -419,7 +420,7 @@ class PlayerPressureFatigueCalculator {
     sourceMode,
     sourceReason,
   } = {}) {
-    const configuredMode = config?.source?.mode || "reel_hold";
+    const configuredMode = config?.source?.mode || "reel_hold_session";
     return Object.freeze({
       sourceMode:
         sourceMode ||

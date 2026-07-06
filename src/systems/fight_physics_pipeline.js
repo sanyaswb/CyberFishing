@@ -23,6 +23,7 @@ class FightPhysicsPipeline {
     "preview_tension",
     "update_rod_stroke_distance",
     "recover_line",
+    "update_player_reel_fatigue_session",
     "resolve_player_pressure_fatigue_source",
     "update_player_pressure_fatigue",
     "resolve_line_constraint",

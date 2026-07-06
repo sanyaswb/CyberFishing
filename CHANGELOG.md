@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.23.36 - Player Reel Fatigue Session Latch
+
+- Added `PlayerReelFatigueSession` to separate player reel fatigue session state from per-frame reel hold pull capability.
+- Changed Player Pressure Fatigue source mode to `reel_hold_session` so stroke drops, drag slip and load blockers no longer restart grace or start recovery.
+- Added `reelHoldCanPull`, `reelHoldBlockedReason` and player reel fatigue session debug fields.
+- Added regression coverage for stroke drop, drag slip, drag/reel limit blockers, release recovery and release during grace.
+
 ## v0.23.35 - Reel hold debug speed
 
 - Made `reelHoldAppliedSpeedMps` use the real frame `dtSec` passed into the debug snapshot.

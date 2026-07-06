@@ -9,9 +9,9 @@ class PlayerPressureFatigueState {
   pressureKg = 0;
   fatigueRatio = 0;
   fatigueProgress = 0;
-  sourceMode = "reel_hold";
+  sourceMode = "reel_hold_session";
   sourceActive = false;
-  sourceReason = "reel_hold_inactive";
+  sourceReason = "reel_hold_session_inactive";
   holdElapsedMs = 0;
   graceElapsedMs = 0;
   graceDurationMs = 3000;
@@ -42,9 +42,9 @@ class PlayerPressureFatigueState {
     this.pressureKg = 0;
     this.fatigueRatio = 0;
     this.fatigueProgress = 0;
-    this.sourceMode = "reel_hold";
+    this.sourceMode = "reel_hold_session";
     this.sourceActive = false;
-    this.sourceReason = "reel_hold_inactive";
+    this.sourceReason = "reel_hold_session_inactive";
     this.holdElapsedMs = 0;
     this.graceElapsedMs = 0;
     this.graceDurationMs = 3000;
@@ -76,9 +76,9 @@ class PlayerPressureFatigueState {
     this.pressureKg = this.#positive(frame.pressureKg);
     this.fatigueRatio = this.#ratio(frame.fatigueRatio);
     this.fatigueProgress = this.#ratio(frame.fatigueProgress);
-    this.sourceMode = frame.sourceMode || "reel_hold";
+    this.sourceMode = frame.sourceMode || "reel_hold_session";
     this.sourceActive = frame.sourceActive === true;
-    this.sourceReason = frame.sourceReason || "reel_hold_inactive";
+    this.sourceReason = frame.sourceReason || "reel_hold_session_inactive";
     this.holdElapsedMs = this.#positive(
       frame.holdElapsedMs ?? frame.pressureHoldMs,
     );

@@ -80,7 +80,7 @@ const FIGHT_PHYSICS_CONFIG = {
   playerPressureFatigue: {
     enabled: true,
     source: {
-      mode: "reel_hold",
+      mode: "reel_hold_session",
     },
     pressureThresholdKg: 0.01,
     graceDurationMs: 3000,

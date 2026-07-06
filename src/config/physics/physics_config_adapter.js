@@ -204,7 +204,7 @@ class FightPhysicsConfigAdapter {
     return {
       enabled: config.enabled === true,
       source: {
-        mode: config.source?.mode || "reel_hold",
+        mode: config.source?.mode || "reel_hold_session",
       },
       pressureThresholdKg: Math.max(
         0,

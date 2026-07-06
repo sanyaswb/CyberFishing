@@ -55,6 +55,7 @@ const FILES = [
   "src/core/fishing/player_force_budget_allocator.js",
   "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
   "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+  "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
   "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
   "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
   "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
@@ -684,6 +685,7 @@ function runReelHoldStrokeGateCheck() {
     strokeUnrecoveredMeters: 1,
   });
   assert(fullFrame.active === true, "reel hold can activate after full rod stroke");
+  assert(fullFrame.canPull === true, "reel hold exposes canPull when capability is engaged");
   assert(fullFrame.enabled === true, "reel hold diagnostics expose config gate");
   assert(fullFrame.hasReel === true, "reel hold diagnostics expose reel gate");
   assert(fullFrame.playerHoldActive === true, "reel hold diagnostics expose player hold gate");
@@ -701,12 +703,190 @@ function runReelHoldStrokeGateCheck() {
   });
   assert(noLineFrame.active === true, "reel hold remains engaged without recoverable line");
   assert(noLineFrame.engaged === true, "reel hold engagement is separate from line recovery");
+  assert(noLineFrame.canPull === true, "reel hold can pull even when line recovery has no credit");
   assert(noLineFrame.recoveringLine === false, "reel hold does not recover line when no line credit exists");
   assert(noLineFrame.blockedReason === "ready", "missing recoverable line does not block reel hold engagement");
   assert(noLineFrame.lineRecoveryBlockedReason === "no_recoverable_line", "missing recoverable line is reported as line recovery block only");
 }
 
 runReelHoldStrokeGateCheck();
+
+function createFatigueLatchConfig() {
+  return {
+    enabled: true,
+    source: { mode: "reel_hold_session" },
+    pressureThresholdKg: 0.01,
+    graceDurationMs: 3000,
+    fatigueDurationMs: 6000,
+    minEfficiency: 0.45,
+    curvePower: 1.2,
+    controlBreak: {
+      enabled: true,
+      fatigueProgressThreshold: 0.9,
+      minContinuousPressureMs: 8000,
+    },
+    recovery: {
+      delayAfterPressureMs: 400,
+      recoveryPerSecond: 0.8,
+    },
+    channels: {
+      rodHold: true,
+      rodControl: true,
+    },
+  };
+}
+
+function calculateFatigueFrame({
+  state,
+  calculator,
+  resolver,
+  config,
+  sessionFrame,
+  reelHoldActive,
+  dtSec,
+}) {
+  const sourceFrame = resolver.resolve({
+    reelHoldActive,
+    reelHoldSessionActive: sessionFrame.active,
+    rodHoldActive: sessionFrame.active,
+    controlActive: false,
+    effectivePressureKg: 1,
+    config,
+  });
+  const frame = calculator.calculate({
+    state,
+    dtSec,
+    pressureKg: 1,
+    sourceResult: sourceFrame,
+    sourceActive: sourceFrame.active,
+    sourceMode: sourceFrame.sourceMode,
+    sourceReason: sourceFrame.reason,
+    config,
+  });
+  state.applyFrame(frame);
+  return frame;
+}
+
+function runPlayerReelFatigueSessionLatchCheck() {
+  const config = createFatigueLatchConfig();
+  const session = new PlayerReelFatigueSession();
+  const resolver = new PlayerPressureFatigueSourceResolver();
+  const calculator = new PlayerPressureFatigueCalculator();
+  const state = new PlayerPressureFatigueState();
+
+  let sessionFrame = session.update({
+    playerHoldActive: true,
+    reelHoldEngagedThisFrame: true,
+  });
+  assert(sessionFrame.active === true, "player reel fatigue session starts on first reel hold engagement");
+  assert(sessionFrame.startedThisFrame === true, "player reel fatigue session reports start frame");
+
+  let frame = calculateFatigueFrame({
+    state,
+    calculator,
+    resolver,
+    config,
+    sessionFrame,
+    reelHoldActive: true,
+    dtSec: 1,
+  });
+  assert(frame.stateName === "grace", "fatigue starts in grace after reel hold session starts");
+  const holdMsAfterStart = frame.holdElapsedMs;
+
+  sessionFrame = session.update({
+    playerHoldActive: true,
+    reelHoldEngagedThisFrame: false,
+  });
+  frame = calculateFatigueFrame({
+    state,
+    calculator,
+    resolver,
+    config,
+    sessionFrame,
+    reelHoldActive: false,
+    dtSec: 1,
+  });
+  assert(sessionFrame.active === true, "stroke drop does not end player reel fatigue session");
+  assert(frame.sourceActive === true, "stroke drop keeps fatigue source active through session latch");
+  assert(frame.stateName !== "recovering", "stroke drop does not start fatigue recovery");
+  assert(frame.holdElapsedMs > holdMsAfterStart, "stroke drop does not reset fatigue hold timer");
+
+  frame = calculateFatigueFrame({
+    state,
+    calculator,
+    resolver,
+    config,
+    sessionFrame,
+    reelHoldActive: false,
+    dtSec: 2.5,
+  });
+  assert(sessionFrame.active === true, "drag slipping does not end player reel fatigue session");
+  assert(frame.sourceActive === true, "drag slipping keeps fatigue source active through session latch");
+  assert(frame.stateName === "fatiguing", "drag slipping does not restart grace or recovery");
+  assert(frame.fatigueProgress > 0, "fatigue keeps building while reel hold is temporarily blocked");
+
+  frame = calculateFatigueFrame({
+    state,
+    calculator,
+    resolver,
+    config,
+    sessionFrame,
+    reelHoldActive: false,
+    dtSec: 0.5,
+  });
+  assert(frame.sourceActive === true, "drag/reel limit blocker keeps fatigue source active through session latch");
+  assert(frame.stateName !== "recovering", "drag/reel limit blocker does not start fatigue recovery");
+
+  sessionFrame = session.update({
+    playerHoldActive: false,
+    reelHoldEngagedThisFrame: false,
+  });
+  frame = calculateFatigueFrame({
+    state,
+    calculator,
+    resolver,
+    config,
+    sessionFrame,
+    reelHoldActive: false,
+    dtSec: 0.1,
+  });
+  assert(sessionFrame.active === false, "release ends player reel fatigue session");
+  assert(sessionFrame.endedThisFrame === true, "release reports player reel fatigue session end frame");
+  assert(frame.stateName === "recovering", "release after fatigue progress starts recovery");
+
+  const graceSession = new PlayerReelFatigueSession();
+  const graceState = new PlayerPressureFatigueState();
+  let graceSessionFrame = graceSession.update({
+    playerHoldActive: true,
+    reelHoldEngagedThisFrame: true,
+  });
+  calculateFatigueFrame({
+    state: graceState,
+    calculator,
+    resolver,
+    config,
+    sessionFrame: graceSessionFrame,
+    reelHoldActive: true,
+    dtSec: 1,
+  });
+  graceSessionFrame = graceSession.update({
+    playerHoldActive: false,
+    reelHoldEngagedThisFrame: false,
+  });
+  const graceReleaseFrame = calculateFatigueFrame({
+    state: graceState,
+    calculator,
+    resolver,
+    config,
+    sessionFrame: graceSessionFrame,
+    reelHoldActive: false,
+    dtSec: 0.1,
+  });
+  assert(graceSessionFrame.active === false, "release during grace ends player reel fatigue session");
+  assert(graceReleaseFrame.stateName === "idle", "release during full-efficiency grace returns fatigue to idle");
+}
+
+runPlayerReelFatigueSessionLatchCheck();
 
 function runReelHoldConfigSourceCheck() {
   const config = createConfig();

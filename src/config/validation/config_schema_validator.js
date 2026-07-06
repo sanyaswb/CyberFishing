@@ -284,7 +284,8 @@ class ConfigSchemaValidator {
       "physics.fight.playerPressureFatigue.enabled",
       config.enabled,
     );
-    if ((config.source?.mode || "reel_hold") !== "reel_hold") {
+    const sourceMode = config.source?.mode || "reel_hold_session";
+    if (!["reel_hold", "reel_hold_session"].includes(sourceMode)) {
       this.#error(
         "physics.fight.playerPressureFatigue.source.mode",
         "unsupported player pressure fatigue source mode",

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.23.35";
+const CURRENT_PROJECT_VERSION = "0.23.36";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "reel-hold-debug-speed",
-  updatedAt: "2026-07-06",
+  codename: "player-reel-fatigue-session-latch",
+  updatedAt: "2026-07-07",
   notes: Object.freeze([
-    "Made reel hold applied speed use the real frame dt in debug snapshots",
-    "Added debug fields that explain previous-frame movement state handoff",
-    "Exposed reel hold movement dt and previous/current engagement states in console diagnostics",
-    "Added regression coverage for reel hold applied speed",
+    "Added Player Reel Fatigue Session as a latch separate from reel hold pull capability",
+    "Changed fatigue source mode to reel_hold_session so temporary blockers do not restart grace",
+    "Added session and reel hold can-pull debug fields",
+    "Added regression coverage for stroke, drag, load blocker and release behavior",
   ]),
 });
 

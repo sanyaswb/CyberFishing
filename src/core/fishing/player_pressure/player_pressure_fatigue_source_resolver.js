@@ -7,6 +7,7 @@ class PlayerPressureFatigueSourceResolver {
 
   resolve({
     reelHoldActive = false,
+    reelHoldSessionActive = false,
     rodHoldActive = false,
     controlActive = false,
     effectivePressureKg = 0,
@@ -15,7 +16,7 @@ class PlayerPressureFatigueSourceResolver {
     const cfg = config || this.#config || {};
     const source = cfg.source || {};
     const enabled = cfg.enabled === true;
-    const sourceMode = source.mode || "reel_hold";
+    const sourceMode = source.mode || "reel_hold_session";
 
     if (!enabled) {
       return this.#frame({
@@ -23,6 +24,7 @@ class PlayerPressureFatigueSourceResolver {
         active: false,
         reason: "disabled",
         reelHoldActive,
+        reelHoldSessionActive,
         rodHoldActive,
         controlActive,
         effectivePressureKg,
@@ -36,6 +38,23 @@ class PlayerPressureFatigueSourceResolver {
         active,
         reason: active ? "reel_hold_active" : "reel_hold_inactive",
         reelHoldActive,
+        reelHoldSessionActive,
+        rodHoldActive,
+        controlActive,
+        effectivePressureKg,
+      });
+    }
+
+    if (sourceMode === "reel_hold_session") {
+      const active = reelHoldSessionActive === true;
+      return this.#frame({
+        sourceMode,
+        active,
+        reason: active
+          ? "reel_hold_session_active"
+          : "reel_hold_session_inactive",
+        reelHoldActive,
+        reelHoldSessionActive,
         rodHoldActive,
         controlActive,
         effectivePressureKg,
@@ -47,6 +66,7 @@ class PlayerPressureFatigueSourceResolver {
       active: false,
       reason: "unsupported_source_mode",
       reelHoldActive,
+      reelHoldSessionActive,
       rodHoldActive,
       controlActive,
       effectivePressureKg,
@@ -58,6 +78,7 @@ class PlayerPressureFatigueSourceResolver {
     active,
     reason,
     reelHoldActive,
+    reelHoldSessionActive,
     rodHoldActive,
     controlActive,
     effectivePressureKg,
@@ -68,6 +89,7 @@ class PlayerPressureFatigueSourceResolver {
       active: active === true,
       reason,
       reelHoldActive: reelHoldActive === true,
+      reelHoldSessionActive: reelHoldSessionActive === true,
       rodHoldActive: rodHoldActive === true,
       controlActive: controlActive === true,
       effectivePressureKg: this.#positive(effectivePressureKg),

@@ -68,6 +68,10 @@ class FightPhysicsSystem {
     typeof PlayerPressureFatigueState !== "undefined"
       ? new PlayerPressureFatigueState()
       : null;
+  #playerReelFatigueSession =
+    typeof PlayerReelFatigueSession !== "undefined"
+      ? new PlayerReelFatigueSession()
+      : null;
   #staminaBalanceFrame =
     typeof StaminaBalanceFrame !== "undefined"
       ? new StaminaBalanceFrame()
@@ -363,11 +367,18 @@ class FightPhysicsSystem {
         holdRecoveredMeters,
       };
     });
+    const playerReelFatigueSessionFrame = pipelineFrame.run(
+      "update_player_reel_fatigue_session",
+      () => this.#updatePlayerReelFatigueSession({
+        recoverFrame,
+      }),
+    );
     const playerPressureFatigueSourceFrame = pipelineFrame.run(
       "resolve_player_pressure_fatigue_source",
       () => this.#resolvePlayerPressureFatigueSource({
         physics,
         recoverFrame,
+        playerReelFatigueSession: playerReelFatigueSessionFrame,
         rodPullResult: postStrokeRodPullResult,
         rodControlResult: rodControlFrame.rodControlResult,
       }),
@@ -520,6 +531,7 @@ class FightPhysicsSystem {
       playerForceBudget,
       playerPressureGain: playerPressureGainFrame,
       playerTensionBuildRate: playerTensionBuildRateFrame,
+      playerReelFatigueSession: playerReelFatigueSessionFrame,
       playerPressureFatigue: playerPressureFatigueFrame,
       poleFightSectorFrame: sectorFrame,
       fishCondition,
@@ -819,6 +831,7 @@ class FightPhysicsSystem {
   #resolvePlayerPressureFatigueSource({
     physics,
     recoverFrame,
+    playerReelFatigueSession,
     rodPullResult,
     rodControlResult,
   } = {}) {
@@ -828,10 +841,11 @@ class FightPhysicsSystem {
       this.#positive(rodControlResult?.forceKg);
     const fallback = Object.freeze({
       source: "player_pressure_fatigue_source",
-      sourceMode: config?.source?.mode || "reel_hold",
+      sourceMode: config?.source?.mode || "reel_hold_session",
       active: false,
       reason: "missing_resolver",
       reelHoldActive: recoverFrame?.holdReelRecover?.active === true,
+      reelHoldSessionActive: playerReelFatigueSession?.active === true,
       rodHoldActive: rodPullResult?.active === true,
       controlActive: rodControlResult?.canApply === true,
       effectivePressureKg,
@@ -843,10 +857,29 @@ class FightPhysicsSystem {
 
     return this.#playerPressureFatigueSourceResolver.resolve({
       reelHoldActive: recoverFrame?.holdReelRecover?.active === true,
+      reelHoldSessionActive: playerReelFatigueSession?.active === true,
       rodHoldActive: rodPullResult?.active === true,
       controlActive: rodControlResult?.canApply === true,
       effectivePressureKg,
       config,
+    });
+  }
+
+  #updatePlayerReelFatigueSession({ recoverFrame } = {}) {
+    const holdReelRecover = recoverFrame?.holdReelRecover || {};
+    if (!this.#playerReelFatigueSession?.update) {
+      return Object.freeze({
+        active: false,
+        startedThisFrame: false,
+        endedThisFrame: false,
+        reason: "missing_session",
+      });
+    }
+
+    return this.#playerReelFatigueSession.update({
+      playerHoldActive: holdReelRecover.playerHoldActive === true,
+      reelHoldEngagedThisFrame: holdReelRecover.engaged === true,
+      fightActive: true,
     });
   }
 
@@ -868,10 +901,12 @@ class FightPhysicsSystem {
       recoveryIdleMs: enabled ? this.#positive(state.recoveryIdleMs) : 0,
       recoveryState: enabled ? state.recoveryState || "full" : "disabled",
       stateName: enabled ? state.stateName || "idle" : "idle",
-      sourceMode: enabled ? state.sourceMode || "reel_hold" : "reel_hold",
+      sourceMode: enabled
+        ? state.sourceMode || "reel_hold_session"
+        : "reel_hold_session",
       sourceActive: enabled && state.sourceActive === true,
       sourceReason: enabled
-        ? state.sourceReason || "reel_hold_inactive"
+        ? state.sourceReason || "reel_hold_session_inactive"
         : "disabled",
       pressureActive: enabled && state.pressureActive === true,
       pressureKg: enabled ? this.#positive(state.pressureKg) : 0,
@@ -956,7 +991,7 @@ class FightPhysicsSystem {
         recoveryIdleMs: 0,
         recoveryState: "disabled",
         stateName: "idle",
-        sourceMode: config.source?.mode || "reel_hold",
+        sourceMode: config.source?.mode || "reel_hold_session",
         sourceActive: false,
         sourceReason: "disabled",
         pressureActive: false,
@@ -1936,6 +1971,7 @@ class FightPhysicsSystem {
     this.#poleFightSectorAngleConstraint?.reset?.();
     this.#staminaBudgetOverflowWarningActive = false;
     this.#playerPressureFatigueState?.reset?.();
+    this.#playerReelFatigueSession?.reset?.();
     this.#recoveryFishSlowdownPolicy?.reset?.(
       this.#lineRecoveryFishSlowdownState,
     );
@@ -2808,6 +2844,7 @@ class FightPhysicsSystem {
     playerForceBudget,
     playerPressureGain,
     playerTensionBuildRate,
+    playerReelFatigueSession,
     playerPressureFatigue,
     poleFightSectorFrame,
     fishCondition,
@@ -2931,6 +2968,12 @@ class FightPhysicsSystem {
       reelHoldHasReel: holdReelRecover?.hasReel === true,
       reelHoldPlayerHoldActive:
         holdReelRecover?.playerHoldActive === true,
+      playerReelFatigueSessionActive:
+        playerReelFatigueSession?.active === true,
+      playerReelFatigueSessionStarted:
+        playerReelFatigueSession?.startedThisFrame === true,
+      playerReelFatigueSessionEnded:
+        playerReelFatigueSession?.endedThisFrame === true,
       reelHoldRequiredStrokeRatio:
         Math.max(0, Number(holdReelRecover?.requiredStrokeRatio) || 1),
       holdReelRecoverInputStrokeRatio:
@@ -2960,6 +3003,10 @@ class FightPhysicsSystem {
           Number(holdReelRecover?.retrieveSpeedMetersPerSecond) || 0,
         ),
       holdReelRecoverEngaged: !!holdReelRecover?.engaged,
+      reelHoldCanPull:
+        (holdReelRecover?.canPull ?? holdReelRecover?.engaged) === true,
+      reelHoldBlockedReason:
+        holdReelRecover?.blockedReason || "not_checked",
       holdReelRecoveringLine: !!holdReelRecover?.recoveringLine,
       holdReelRecoverHasRecoverableLine:
         !!holdReelRecover?.hasRecoverableLine,
@@ -3097,11 +3144,12 @@ class FightPhysicsSystem {
       playerPressureFatigueState:
         playerPressureFatigue?.stateName || "idle",
       playerPressureFatigueSourceMode:
-        playerPressureFatigue?.sourceMode || "reel_hold",
+        playerPressureFatigue?.sourceMode || "reel_hold_session",
       playerPressureFatigueSourceActive:
         playerPressureFatigue?.sourceActive === true,
       playerPressureFatigueSourceReason:
-        playerPressureFatigue?.sourceReason || "reel_hold_inactive",
+        playerPressureFatigue?.sourceReason ||
+        "reel_hold_session_inactive",
       playerPressureFatigueHoldMs:
         playerPressureFatigue?.holdElapsedMs ??
         playerPressureFatigue?.pressureHoldMs ??
