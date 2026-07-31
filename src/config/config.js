@@ -310,7 +310,7 @@ const CONFIG = {
     enableCollisions: false, // Колізії з землею (червоні зони) - забороняють закидати.
     enableSnags: false, // Динамічні зони (наприклад, косяк риби)
     enableDynamicZones: false, // Вимикає всі динамічні зони (косяки риби, рухомі перешкоди тощо)
-    showChumZones: false,
+    showChumZones: true, // Відображення зон прикормки (жовті)
     showCatchZone: false, // Відображення синьої зони
     showLastDashZone: false, // Відображення фіолетової lastDash trigger zone
     showNetZone: false, // Відображення зеленої зони

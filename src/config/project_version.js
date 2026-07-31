@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.23.44";
+const CURRENT_PROJECT_VERSION = "0.23.45";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "embedded-float-ballast",
+  codename: "inventory-one-click-equip",
   updatedAt: "2026-07-31",
   notes: Object.freeze([
-    "Removed the standalone sinker item and float-rig sinker slot",
-    "Moved sinking speed, height and current compensation profiles into the float",
-    "Separated feeder springs into a dedicated feederRig equipment slot",
-    "Preserved feeder spring physics and automatic bottom-depth casting",
-    "Migrated legacy feeder rigs from sinkerId and removed obsolete sinker inventory entries",
+    "Equipped items with one valid target slot on the first inventory click",
+    "Kept two-click and explicit slot selection for items with multiple targets",
+    "Highlighted only valid equipment targets",
+    "Removed rejected item and slot highlighting from the inventory UI",
+    "Allowed selected items to replace equipment in occupied valid slots",
   ]),
 });
 

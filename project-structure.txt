@@ -186,6 +186,8 @@
 │  │  ├── float_tackle_line_budget_policy.js
 │  │  ├── input
 │  │  │  └── fight_input_action_composer.js
+│  │  ├── inventory
+│  │  │  └── equip_target_selection_policy.js
 │  │  └── line
 │  │    ├── line_allocation_policy.js
 │  │    ├── line_inventory_controller.js
@@ -379,5 +381,6 @@
   ├── float-depth-cast-check.js
   ├── game-cycle-check.js
   ├── git-version-copy.js
+  ├── inventory-equip-ux-check.js
   ├── inventory-lifecycle-check.js
   └── line-allocation-check.js

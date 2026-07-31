@@ -8,6 +8,7 @@
     "check:line-allocation": "node utils/line-allocation-check.js",
     "check:float-depth": "node utils/float-depth-cast-check.js",
     "check:inventory": "node utils/inventory-lifecycle-check.js",
+    "check:inventory-ux": "node utils/inventory-equip-ux-check.js",
     "check:game-cycle": "node utils/game-cycle-check.js",
     "struct": "struct -i dist -i build -i coverage -o project-structure.txt",
     "git:add": "npm run struct && git add .",

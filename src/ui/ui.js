@@ -1065,6 +1065,7 @@ class HoldChargesUI {
 
 class InventoryUI {
   #inventoryManager;
+  #equipTargetPolicy;
   #isOpen = false;
   #warningTimeout;
 
@@ -1095,6 +1096,9 @@ class InventoryUI {
 
   constructor(inventoryManager) {
     this.#inventoryManager = inventoryManager;
+    this.#equipTargetPolicy = new InventoryEquipTargetSelectionPolicy(
+      typeof SLOT_CONFIG !== "undefined" ? SLOT_CONFIG : {},
+    );
     this.#initBackpackButton();
     this.#initModal();
     this.#setupEventListeners();
@@ -1511,6 +1515,14 @@ class InventoryUI {
     const slotDiv = document.createElement("div");
     slotDiv.className = `inv-slot ${isInventory ? "inventory" : ""}`;
 
+    if (
+      !isInventory &&
+      slotId &&
+      this.#isSelectedItemValidForSlot(slotId)
+    ) {
+      slotDiv.classList.add("highlight-target");
+    }
+
     // Якщо це пуста заглушка для речі, яка лежить у ящику, але зараз одягнена
     if (isBuildPlaceholder) {
       slotDiv.innerHTML = `<span style="font-size: 10px; color: #00ff80;">Екіпір.</span>`;
@@ -1551,38 +1563,6 @@ class InventoryUI {
       slotDiv.innerHTML = `<span style="font-size: 10px; color: #555;">✖</span>`;
       slotDiv.title = label;
 
-      let isTarget = false;
-      let targetRejectionReason = null;
-      if (this.#selectedInstanceId && !this.#viewingBuildId) {
-        const selectedItem = this.#inventoryManager._hydrateInstance(
-          this.#selectedInstanceId,
-        );
-        if (selectedItem) {
-          const baseSlot = slotId.split("_")[0];
-          const config =
-            typeof SLOT_CONFIG !== "undefined" ? SLOT_CONFIG[baseSlot] : null;
-          if (
-            config &&
-            config.acceptTypes &&
-            config.acceptTypes.includes(selectedItem.type)
-          ) {
-            const validation = this.#inventoryManager.validateEquipToSlot(
-              slotId,
-              selectedItem,
-            );
-            isTarget = validation.isValid;
-            targetRejectionReason = validation.isValid
-              ? null
-              : validation.reason;
-            if (isTarget) {
-              slotDiv.classList.add("highlight-target");
-            } else {
-              slotDiv.classList.add("highlight-rejected");
-            }
-          }
-        }
-      }
-
       // --- ДОДАНО: Візуальне виділення активного пустого слота ---
       if (this.#highlightedSlotId === slotId) {
         slotDiv.classList.add("highlight-active-empty");
@@ -1597,31 +1577,9 @@ class InventoryUI {
           return;
         }
 
-        if (targetRejectionReason) {
-          this.showWarning(targetRejectionReason);
-          return;
-        }
+        if (this.#tryEquipSelectedItemToSlot(slotId)) return;
 
-        if (isTarget) {
-          // Залишаємо нашу недавню перевірку EquipmentValidator
-          const selectedItem = this.#inventoryManager._hydrateInstance(
-            this.#selectedInstanceId,
-          );
-          const validation = this.#inventoryManager.validateEquipToSlot(
-            slotId,
-            selectedItem,
-          );
-
-          if (!validation.isValid) {
-            this.showWarning(validation.reason);
-            return;
-          }
-
-          this.#inventoryManager.equipItem(slotId, this.#selectedInstanceId);
-          this.#selectedInstanceId = null;
-          this.#highlightedSlotId = null; // Скидаємо підсвітку після екіпірування
-          this.refreshUI();
-        } else if (!this.#viewingBuildId) {
+        if (!this.#viewingBuildId) {
           // --- ДОДАНО: Логіка перемикання підсвітки сумісних речей ---
           if (this.#highlightedSlotId === slotId) {
             this.#highlightedSlotId = null; // Якщо клікнули повторно - вимикаємо
@@ -1636,6 +1594,134 @@ class InventoryUI {
     }
 
     return slotDiv;
+  }
+
+  #resolveEquipInteraction(item) {
+    return this.#equipTargetPolicy.resolve({
+      item,
+      slotGroups: this.#getAvailableSlots(
+        this.#inventoryManager.getEquipped(),
+      ),
+      validateSlot: (slotId, candidate) =>
+        this.#inventoryManager.validateEquipToSlot(slotId, candidate),
+    });
+  }
+
+  #isSelectedItemValidForSlot(slotId) {
+    if (!this.#selectedInstanceId) return false;
+    const selectedItem = this.#inventoryManager._hydrateInstance(
+      this.#selectedInstanceId,
+    );
+    if (!selectedItem) return false;
+    return this.#inventoryManager.validateEquipToSlot(
+      slotId,
+      selectedItem,
+    ).isValid;
+  }
+
+  #tryEquipSelectedItemToSlot(slotId) {
+    if (!this.#selectedInstanceId) return false;
+
+    const selectedItem = this.#inventoryManager._hydrateInstance(
+      this.#selectedInstanceId,
+    );
+    if (!selectedItem) {
+      this.#selectedInstanceId = null;
+      return false;
+    }
+
+    const validation = this.#inventoryManager.validateEquipToSlot(
+      slotId,
+      selectedItem,
+    );
+    if (!validation.isValid) {
+      this.showWarning(validation.reason);
+      return true;
+    }
+
+    const equipped = this.#inventoryManager.equipItem(
+      slotId,
+      this.#selectedInstanceId,
+    );
+    if (!equipped) {
+      this.showWarning("Не вдалося спорядити предмет у вибраний слот.");
+      return true;
+    }
+
+    this.#selectedInstanceId = null;
+    this.#highlightedSlotId = null;
+    this.refreshUI();
+    return true;
+  }
+
+  #tryEquipInventoryItemToHighlightedSlot(instanceId, item) {
+    if (!this.#highlightedSlotId) return false;
+
+    const validation = this.#inventoryManager.validateEquipToSlot(
+      this.#highlightedSlotId,
+      item,
+    );
+    if (!validation.isValid) return false;
+
+    const equipped = this.#inventoryManager.equipItem(
+      this.#highlightedSlotId,
+      instanceId,
+    );
+    if (!equipped) {
+      this.showWarning("Не вдалося спорядити предмет у вибраний слот.");
+      return true;
+    }
+
+    this.#selectedInstanceId = null;
+    this.#highlightedSlotId = null;
+    this.refreshUI();
+    return true;
+  }
+
+  #handleInventoryItemClick(instanceId) {
+    const item = this.#inventoryManager._hydrateInstance(instanceId);
+    if (!item) {
+      this.showWarning("Предмет не знайдено.");
+      return;
+    }
+
+    if (this.#tryEquipInventoryItemToHighlightedSlot(instanceId, item)) {
+      return;
+    }
+
+    this.#highlightedSlotId = null;
+
+    if (this.#selectedInstanceId === instanceId) {
+      const result = this.#inventoryManager.autoEquipItem(instanceId);
+      if (!result.success) this.showWarning(result.reason);
+      this.#selectedInstanceId = null;
+      this.refreshUI();
+      return;
+    }
+
+    const interaction = this.#resolveEquipInteraction(item);
+    if (interaction.shouldEquipImmediately) {
+      const equipped = this.#inventoryManager.equipItem(
+        interaction.validSlotIds[0],
+        instanceId,
+      );
+      if (!equipped) {
+        this.showWarning("Не вдалося спорядити предмет.");
+      }
+      this.#selectedInstanceId = null;
+    } else if (interaction.requiresSlotChoice) {
+      this.#selectedInstanceId = instanceId;
+    } else {
+      const validation = this.#inventoryManager.validateEquip(item);
+      this.#selectedInstanceId = null;
+      this.showWarning(
+        interaction.rejectionReason ||
+          validation.reason ||
+          "Для цього предмета немає доступного слота.",
+      );
+    }
+
+    this.refreshUI();
   }
 
   #addTooltip(element, item, slotId, isEquipped, instanceId) {
@@ -1723,21 +1809,11 @@ class InventoryUI {
       }
 
       if (isEquipped && slotId) {
+        if (this.#tryEquipSelectedItemToSlot(slotId)) return;
         this.#highlightedSlotId = null;
         this.#inventoryManager.unequipItem(slotId);
       } else if (!isEquipped && instanceId) {
-        if (this.#selectedInstanceId === instanceId) {
-          const result = this.#inventoryManager.autoEquipItem(instanceId);
-          if (!result.success) {
-            this.showWarning(result.reason);
-          } else {
-            this.#highlightedSlotId = null;
-          }
-          this.#selectedInstanceId = null;
-        } else {
-          this.#selectedInstanceId = instanceId;
-        }
-        this.refreshUI();
+        this.#handleInventoryItemClick(instanceId);
       }
     });
   }
@@ -2073,8 +2149,6 @@ class InventoryUI {
             );
             if (validation.isValid) {
               slotDom.classList.add("highlight-compatible");
-            } else {
-              slotDom.classList.add("highlight-rejected");
             }
           }
         }

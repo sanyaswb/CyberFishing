@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.23.45 - Inventory One-Click Equip
+
+### Fixed
+
+- Removed rejected-item and rejected-slot highlighting from inventory selection; incompatible items now remain visually neutral.
+- Changed the first inventory click to equip immediately when an item has exactly one valid target slot.
+- Preserved item selection, second-click auto-equip and explicit slot selection when multiple valid target slots exist.
+- Allowed a selected multi-slot item to replace an item in an already occupied compatible slot.
+- Added a dedicated equip-target selection policy and regression checks for immediate, multi-slot and rejected-target scenarios.
+
 ## v0.23.44 - Embedded Float Ballast
 
 ### Fixed
