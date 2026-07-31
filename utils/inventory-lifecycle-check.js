@@ -175,6 +175,18 @@ class InventoryFixtureFactory {
     });
   }
 
+  createLegacyRigMigrationFixture() {
+    return this.#createFixture({
+      inventory: [
+        this.#item("legacy-feeder-rig", "feeder_rig", null),
+        this.#item("legacy-sinker", "sinker_light", null),
+      ],
+      equipment: {
+        sinkerId: "legacy-feeder-rig",
+      },
+    });
+  }
+
   #createFixture({ inventory, equipment = {}, resetCache = true }) {
     if (resetCache) MemoryCacheManager.reset();
     const events = new InventoryEventProbe();
@@ -201,7 +213,7 @@ class InventoryFixtureFactory {
             lengthMeters: 5,
             hasReel: false,
             maxHooks: 1,
-            capabilities: ["float", "sinker", "hook"],
+            capabilities: ["float", "hook"],
           },
         },
         rod_spin: {
@@ -240,6 +252,18 @@ class InventoryFixtureFactory {
             maxLoadKg: 1,
             diameterMm: 0.22,
             durability: 100,
+          },
+        },
+      },
+      tackle: {
+        feeder_rig: {
+          id: "feeder_rig",
+          name: "Feeder rig",
+          type: "feeder_rig",
+          engineStats: {
+            type: "feeder_rig",
+            requiresTag: "feeder_rig",
+            capabilities: ["hook", "bait", "chum_mix"],
           },
         },
       },
@@ -312,6 +336,7 @@ class InventoryLifecycleCheckSuite {
     this.#checkRealLineLoss();
     this.#checkCacheReload();
     this.#checkRepeatedCycles();
+    this.#checkLegacyRigMigration();
   }
 
   #checkDirectLineUnequip() {
@@ -473,6 +498,27 @@ class InventoryLifecycleCheckSuite {
       fixture.manager.unequipItem("rod");
       this.#assertSingleLine(fixture.manager, "build-a", 25);
     }
+  }
+
+  #checkLegacyRigMigration() {
+    const fixture = this.#fixtures.createLegacyRigMigrationFixture();
+    const equipped = fixture.manager.getEquipped();
+
+    Assertion.equal(
+      equipped.feederRig?.instanceId,
+      "legacy-feeder-rig",
+      "legacy feeder rig moves from sinkerId to feederRigId",
+    );
+    Assertion.that(
+      !Object.prototype.hasOwnProperty.call(equipped, "sinker"),
+      "hydrated equipment no longer exposes a sinker slot",
+    );
+    Assertion.that(
+      !fixture.manager
+        .getInventoryItems()
+        .some((item) => item.itemId === "sinker_light"),
+      "deprecated standalone sinker is removed during inventory migration",
+    );
   }
 
   #equipFloatLine(manager) {

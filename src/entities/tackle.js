@@ -450,7 +450,7 @@ class WaterEntity {
   _currentAngle = 0;
   _currentScaleY = 1.0;
   _perspectiveScale = 1.0;
-  _sinkerHeightScale = 1.0;
+  _weightedTackleHeightScale = 1.0;
 
   _sequenceQueue = [];
   _animTimer = 0;
@@ -474,7 +474,7 @@ class WaterEntity {
   _pullImpulseAngle = 0;
   _pullImpulseScaleY = 1;
   _pullImpulseSign = 0;
-  _sinkerConfig = null;
+  _weightedTackleConfig = null;
   _sinkingStartAngle = 90;
   _isPlayerPullingThisFrame = false;
 
@@ -768,7 +768,7 @@ class WaterEntity {
   _calculateEnvironmentDrift(dtSec, environment) {
     if (!environment?.current) return { x: 0, y: 0 };
 
-    const activeCfg = this._sinkerConfig || this._config;
+    const activeCfg = this._weightedTackleConfig || this._config;
     const compRange = activeCfg.currentCompensation || [0.1, 0.99];
     const qual = Math.max(1, Math.min(10, activeCfg.quality || 1));
     const comp = this._lerp(compRange[0], compRange[1], (qual - 1) / 9);
@@ -949,7 +949,9 @@ class WaterEntity {
       color: this._currentColor,
       angle: finalAngle,
       scaleY:
-        this._currentScaleY * this._sinkerHeightScale * this._pullImpulseScaleY,
+        this._currentScaleY *
+        this._weightedTackleHeightScale *
+        this._pullImpulseScaleY,
       perspectiveScale: this._perspectiveScale,
     };
   }
@@ -1448,7 +1450,7 @@ class FeederEntity extends WaterEntity {
   _sinkingTotalTime = 0;
   _sinkingStartAngle = 90;
 
-  cast(x, y, targetDepth, isOverDepth, sinkerConfig, distanceRatio) {
+  cast(x, y, targetDepth, isOverDepth, rigConfig, distanceRatio) {
     this._position.set(x, y);
     this._velocity.set(0, 0);
     this._isHooked = false;
@@ -1457,13 +1459,17 @@ class FeederEntity extends WaterEntity {
 
     this._targetHookDepth = targetDepth;
     this._currentHookDepth = 0.1;
-    this._sinkerConfig = sinkerConfig;
+    this._weightedTackleConfig = rigConfig;
 
-    const engine = sinkerConfig?.engineStats || sinkerConfig || {};
+    const engine = {
+      ...(rigConfig?.engineStats || {}),
+      ...(rigConfig || {}),
+    };
     const weightCfg =
       engine.weights && engine.weight ? engine.weights[engine.weight] : engine;
     const speedMult = weightCfg.speedMult || engine.speedMult || 1.5;
-    this._sinkerHeightScale = weightCfg.heightScale || engine.heightScale || 1.0;
+    this._weightedTackleHeightScale =
+      weightCfg.heightScale || engine.heightScale || 1.0;
     this._isSinking = true;
     this._sinkingTotalTime = (targetDepth / speedMult) * 1000;
     this._sinkingTimer = this._sinkingTotalTime;
@@ -1565,7 +1571,7 @@ class FloatEntity extends WaterEntity {
   _sinkingVisualElapsed = 0;
   _sinkingDelayTimer = 0;
 
-  cast(x, y, targetDepth, isOverDepth, sinkerConfig, distanceRatio) {
+  cast(x, y, targetDepth, isOverDepth, ballastConfig, distanceRatio) {
     this._position.set(x, y);
     this._velocity.set(0, 0);
     this._motionTiltAngle = 0;
@@ -1577,21 +1583,25 @@ class FloatEntity extends WaterEntity {
     this._isBiting = false;
     this.stopBite();
 
-    const hasSinker = !!sinkerConfig;
-
-    this._targetHookDepth = hasSinker
-      ? targetDepth
-      : (getGlobalLureRetrieveConfig().defaultDepthNoSinker ?? 0.1);
+    this._targetHookDepth = Math.max(
+      getGlobalLureRetrieveConfig().defaultSurfaceDepthMeters ?? 0.1,
+      Number(targetDepth) || 0,
+    );
     this._currentHookDepth = 0.1;
-    this._isOverDepth = hasSinker ? isOverDepth : false;
-    this._sinkerConfig = sinkerConfig;
+    this._isOverDepth = !!isOverDepth;
+    this._weightedTackleConfig = ballastConfig;
 
-    const engine = sinkerConfig?.engineStats || sinkerConfig || {};
+    const engine = {
+      ...(ballastConfig?.engineStats || {}),
+      ...(ballastConfig || {}),
+    };
     const weightCfg =
-      engine.weights && engine.weight ? engine.weights[engine.weight] : engine;
+      engine.ballastProfiles && engine.ballastWeight
+        ? engine.ballastProfiles[engine.ballastWeight]
+        : engine;
 
     const speedMult = weightCfg.speedMult || 1.0;
-    this._sinkerHeightScale = weightCfg.heightScale || 1.0;
+    this._weightedTackleHeightScale = weightCfg.heightScale || 1.0;
 
     const pRange = this._config.perspectiveScaleRange || [1.3, 0.7];
     this._perspectiveScale =
@@ -1600,7 +1610,7 @@ class FloatEntity extends WaterEntity {
     this._isSinking = true;
     this._sinkingDelayTimer = this._config.sinkingDelayMs || 500;
 
-    const maxDepth = engine.maxDepth || 8.0;
+    const maxDepth = engine.sinkingReferenceDepthMeters || 8.0;
     const depthRatio = Math.max(
       0.1,
       Math.min(1.0, this._targetHookDepth / maxDepth),
@@ -1777,7 +1787,7 @@ class BaitFactory {
           x,
           y,
           config,
-          equipment?.sinker?.maxDepth || config.maxDepth,
+          config.maxDepth,
           rng,
           debugEvents,
         );

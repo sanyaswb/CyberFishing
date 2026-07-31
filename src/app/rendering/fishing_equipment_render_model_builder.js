@@ -96,7 +96,7 @@ class FishingEquipmentRenderModelBuilder {
     let kind = "";
     if (floatEntity.isHooked()) kind = "hooked";
     else if (rodType === "spinning" && equipment.baits?.[0]) kind = "lure";
-    else if (rodType === "feeder" && equipment.sinker) kind = "feeder";
+    else if (rodType === "feeder" && equipment.feederRig) kind = "feeder";
     else if (equipment.float) kind = "float";
     if (!kind) return;
     const floatConfig = equipment.float || {};

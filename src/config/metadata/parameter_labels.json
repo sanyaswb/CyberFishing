@@ -316,8 +316,8 @@
     "description": "Додатковий запас ліски без котушки для монтажу/вузлів понад мінімальну довжину."
   },
   "physics.tackle.line.noReelRodLengthMultiplier": {
-    "label": "Legacy множник ліски махової",
-    "description": "Старий fallback для довжини ліски без котушки. Нова логіка використовує noReelMinRodLengthMultiplier + noReelExtraLengthMeters."
+    "label": "Максимальна ліска махової",
+    "description": "Максимальна споряджена довжина ліски без котушки як множник довжини вудки."
   },
   "physics.tackle.line.fullExtensionTensionMultiplier": {
     "label": "Множник натягу на повному розтягненні",
@@ -447,9 +447,9 @@
     "label": "Шанс клювання на нерухому спінінгову приманку",
     "description": "Базовий шанс bite, коли спінінгова приманка не проводиться активно."
   },
-  "physics.retrieve.lure.defaultDepthNoSinker": {
-    "label": "Глибина без грузила",
-    "description": "Fallback-глибина гачка/приманки без грузила."
+  "physics.retrieve.lure.defaultSurfaceDepthMeters": {
+    "label": "Поверхнева глибина",
+    "description": "Мінімальна глибина гачка або приманки біля поверхні."
   },
   "physics.retrieve.lure.guaranteedBiteCooldownMs": {
     "label": "Кулдаун гарантованого клювання",

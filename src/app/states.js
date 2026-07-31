@@ -423,6 +423,23 @@ class GameState {
   update() {}
   getRenderState() {}
   dispose() {}
+
+  getSelectedHookDepthMeters() {
+    return this.deps.currentHookDepthRef?.get?.() ?? null;
+  }
+
+  getEffectiveCastDistance(
+    equipment,
+    fallback = Infinity,
+    castPowerCoefficient = null,
+  ) {
+    return this.deps.rules.equipment.getEffectiveCastDistance(
+      equipment,
+      fallback,
+      castPowerCoefficient,
+      this.getSelectedHookDepthMeters(),
+    );
+  }
 }
 
 class ScoutingState extends GameState {
@@ -508,6 +525,7 @@ class ScoutingState extends GameState {
           eq,
           bounds,
           this.deps.world.getRodVirtualPos(bounds),
+          this.getSelectedHookDepthMeters(),
         );
       }
 
@@ -536,7 +554,7 @@ class ScoutingState extends GameState {
       }
       this.deps.currentHookDepthRef.set(
         this.deps.config.fightPhysicsConfig?.getLureRetrieveConfig?.()
-          ?.defaultDepthNoSinker ??
+          ?.defaultSurfaceDepthMeters ??
           0.1,
       );
       return;
@@ -548,13 +566,17 @@ class ScoutingState extends GameState {
       this.deps.depthUI.show(
         maxDepth,
         Math.min(this.deps.currentHookDepthRef.get(), maxDepth),
-        (d) => this.deps.currentHookDepthRef.set(d),
+        (d) => {
+          this.deps.currentHookDepthRef.set(d);
+          this.#syncDepthCastDistance(eq, bounds);
+        },
       );
     } else {
       if (typeof this.deps.depthUI.updateMax === "function") {
         this.deps.depthUI.updateMax(maxDepth);
       }
     }
+    this.#syncDepthCastDistance(eq, bounds);
   }
 
   getRenderState(target, bounds) {
@@ -564,8 +586,7 @@ class ScoutingState extends GameState {
         const visual = this.#castAim.getVisualState();
         if (visual) {
           const eq = this.deps.inventory.getEquipped();
-          const maxDistance =
-            this.deps.rules.equipment.getEffectiveCastDistance(eq);
+          const maxDistance = this.getEffectiveCastDistance(eq);
           this.#populateAccuracyPreview(
             target,
             bounds,
@@ -581,7 +602,7 @@ class ScoutingState extends GameState {
     if (!this.deps.isAimingChum()) {
       if (this.deps.config.locations?.showAimingZone !== false) {
         const eq = this.deps.inventory.getEquipped();
-        let maxDist = this.deps.rules.equipment.getEffectiveCastDistance(eq);
+        let maxDist = this.getEffectiveCastDistance(eq);
 
         if (maxDist !== Infinity) {
           maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
@@ -671,7 +692,7 @@ class ScoutingState extends GameState {
 
     const canCastAnywhere =
       this.deps.services.devFlags.isEnabled("infiniteCasting");
-    const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
+    const maxDistance = this.getEffectiveCastDistance(eq);
     const accuracyPx =
       Number(eq?.rod?.accuracy) ||
       Number(eq?.rod?.engineStats?.accuracy) ||
@@ -757,7 +778,7 @@ class ScoutingState extends GameState {
   #populateAccuracyPreview(target, bounds, aim, visual) {
     if (!this.deps.config.debug?.casting?.showAccuracyArea) return;
     const eq = this.deps.inventory.getEquipped();
-    const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
+    const maxDistance = this.getEffectiveCastDistance(eq);
     const accuracyPx =
       Number(eq?.rod?.accuracy) ||
       Number(eq?.rod?.engineStats?.accuracy) ||
@@ -780,6 +801,29 @@ class ScoutingState extends GameState {
     target.casting.bounds = bounds;
     target.casting.maxDistance = maxDistance;
     target.casting.nowMs = this.deps.clock.now;
+  }
+
+  #syncDepthCastDistance(eq, bounds) {
+    if (!this.deps.depthUI?.isActive) return;
+
+    const info = this.deps.rules.equipment.getCastDistanceInfo(
+      eq,
+      1,
+      this.getSelectedHookDepthMeters(),
+    );
+    const pixelsPerMeter = Math.max(1, Number(info.pixelsPerMeter) || 1);
+    const locationLimitPx = Math.max(0, bounds.bottom - bounds.top);
+    const availablePx = Math.min(info.maxDistancePx, locationLimitPx);
+    const fullLinePx = Math.min(
+      info.lineLengthMeters * pixelsPerMeter,
+      locationLimitPx,
+    );
+
+    this.deps.depthUI.updateCastDistance?.({
+      availableMeters: availablePx / pixelsPerMeter,
+      maximumMeters: fullLinePx / pixelsPerMeter,
+      visible: info.isFloatDepthLimited,
+    });
   }
 
   #populateAimingZone(target, bottom, maxDistance, mode) {
@@ -1056,7 +1100,7 @@ class WaitingState extends GameState {
     const visual = this.#recastAim.getVisualState();
     if (visual) {
       const eq = this.deps.inventory.getEquipped();
-      const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
+      const maxDistance = this.getEffectiveCastDistance(eq);
       this.#populateRecastAccuracyPreview(target, bounds);
       target.casting.visible = true;
       target.casting.powerVisible = true;
@@ -1089,7 +1133,7 @@ class WaitingState extends GameState {
 
     const canCastAnywhere =
       this.deps.services.devFlags.isEnabled("infiniteCasting");
-    const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
+    const maxDistance = this.getEffectiveCastDistance(eq);
     const accuracyPx =
       Number(eq?.rod?.accuracy) ||
       Number(eq?.rod?.engineStats?.accuracy) ||
@@ -1232,7 +1276,7 @@ class WaitingState extends GameState {
   #populateRecastAccuracyPreview(target, bounds) {
     if (!this.deps.config.debug?.casting?.showAccuracyArea) return;
     const eq = this.deps.inventory.getEquipped();
-    const maxDistance = this.deps.rules.equipment.getEffectiveCastDistance(eq);
+    const maxDistance = this.getEffectiveCastDistance(eq);
     const accuracyPx =
       Number(eq?.rod?.accuracy) ||
       Number(eq?.rod?.engineStats?.accuracy) ||
@@ -1607,7 +1651,9 @@ class PlayingState extends GameState {
     const eq = this.deps.inventory.getEquipped();
     this.#hasEquippedNet = !!eq.net;
     this.deps.fishing.consumeFirstBaitForFight(eq);
-    this.deps.fight.startFight(fishData, eq);
+    this.deps.fight.startFight(fishData, eq, {
+      selectedDepthMeters: this.getSelectedHookDepthMeters(),
+    });
 
     const fightContext = this.#fightFrameContext;
     fightContext.floatEntity = this.deps.float;

@@ -17,6 +17,11 @@ class EquipmentRules {
     return equipment?.rod?.type === "feeder";
   }
 
+  isFloatRod(equipment) {
+    const type = equipment?.rod?.type;
+    return type === "float" || type === "pole";
+  }
+
   getRodKind(equipment) {
     const rod = equipment?.rod;
     if (!rod) return "none";
@@ -55,14 +60,19 @@ class EquipmentRules {
     const firstBait = equipment.baits?.[0];
     return (
       (this.isSpinning(equipment) && firstBait?.type === "jig") ||
-      (!this.isSpinning(equipment) && !!equipment.sinker)
+      (this.isFloatRod(equipment) && !!equipment.float)
     );
   }
 
-  getMaxCastDistance(equipment, fallback = Infinity) {
+  getMaxCastDistance(
+    equipment,
+    fallback = Infinity,
+    selectedDepthMeters = null,
+  ) {
     const distance = this.#castDistanceCalculator.getMaxCastDistancePx(
       equipment,
       fallback,
+      { selectedDepthMeters },
     );
     return normalizeDistance(distance, fallback);
   }
@@ -71,6 +81,7 @@ class EquipmentRules {
     equipment,
     fallback = Infinity,
     castPowerCoefficient = null,
+    selectedDepthMeters = null,
   ) {
     const power =
       castPowerCoefficient === null || castPowerCoefficient === undefined
@@ -79,6 +90,7 @@ class EquipmentRules {
     const distance = this.#castDistanceCalculator.getEffectiveCastDistancePx(
       equipment,
       power,
+      { selectedDepthMeters },
     );
     return normalizeDistance(distance, fallback);
   }
@@ -101,8 +113,21 @@ class EquipmentRules {
     );
   }
 
-  getCastDistanceInfo(equipment, castPowerCoefficient = null) {
-    return this.#castDistanceCalculator.describe(equipment, castPowerCoefficient);
+  getCastDistanceInfo(
+    equipment,
+    castPowerCoefficient = null,
+    selectedDepthMeters = null,
+  ) {
+    return this.#castDistanceCalculator.describe(equipment, castPowerCoefficient, {
+      selectedDepthMeters,
+    });
+  }
+
+  getFloatLineBudget(equipment, selectedDepthMeters = null) {
+    return this.#castDistanceCalculator.getFloatLineBudget(
+      equipment,
+      selectedDepthMeters,
+    );
   }
 
   #clamp01(value) {
@@ -116,16 +141,13 @@ class EquipmentRules {
     if (this.isSpinning(equipment) && firstBait?.type === "jig") {
       return firstBait.engineStats?.maxDepth ?? firstBait.maxDepth ?? 8.0;
     }
-    if (equipment?.sinker) {
-      return (
-        equipment.sinker.engineStats?.maxDepth ??
-        equipment.sinker.maxDepth ??
-        10.0
-      );
+    if (this.isFloatRod(equipment) && equipment?.float) {
+      const budget = this.getFloatLineBudget(equipment);
+      if (budget?.applies) return budget.maxDepthMeters;
     }
     return (
       config.fightPhysicsConfig?.getLureRetrieveConfig?.()
-        ?.defaultDepthNoSinker ??
+        ?.defaultSurfaceDepthMeters ??
       0.1
     );
   }
@@ -160,8 +182,20 @@ class CastRules {
     this.equipmentRules = equipmentRules;
   }
 
-  canCastAt(vx, vy, equipment, bounds, rodPos) {
-    const maxDistance = this.equipmentRules.getEffectiveCastDistance(equipment);
+  canCastAt(
+    vx,
+    vy,
+    equipment,
+    bounds,
+    rodPos,
+    selectedDepthMeters = null,
+  ) {
+    const maxDistance = this.equipmentRules.getEffectiveCastDistance(
+      equipment,
+      Infinity,
+      null,
+      selectedDepthMeters,
+    );
     if (maxDistance === Infinity) return true;
     const maxInsideBounds = Math.min(maxDistance, bounds.bottom - bounds.top);
     const castLineY = bounds.bottom - maxInsideBounds;

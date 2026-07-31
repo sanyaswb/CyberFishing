@@ -27,6 +27,7 @@ const FILES = [
   "src/config/runtime/immutable_config.js",
   "src/config/config.js",
   "src/app/utils.js",
+  "src/core/float_tackle_line_budget_policy.js",
   "src/core/casting_distance.js",
   "src/core/line/line_spool_state.js",
   "src/core/fishing/landing_policy.js",
@@ -203,7 +204,7 @@ function createTestBuild({
       lengthMeters: 25,
       maxLoadKg: lineMaxLoadKg,
     }),
-    sinker: hydrate("baits", "feeder_spring_basic", {
+    feederRig: hydrate("baits", "feeder_spring_basic", {
       instanceId: "cycle_feeder",
     }),
     hooks: [
@@ -360,7 +361,12 @@ function runSimplifiedStaminaChecks() {
 
 runSimplifiedStaminaChecks();
 
-function createCast({ config, equipment, distanceMeters }) {
+function createCast({
+  config,
+  equipment,
+  distanceMeters,
+  currentHookDepth = 1,
+}) {
   const rng = createRng();
   const equipmentRules = new EquipmentRules(new CastDistanceCalculator(config));
   const baitRules = new BaitRules();
@@ -382,13 +388,113 @@ function createCast({ config, equipment, distanceMeters }) {
     {
       equipment,
       rodVirtualPos,
-      currentHookDepth: 1,
+      currentHookDepth,
     },
   );
   assert(result.success, "cast succeeds with equipped test build and bait");
   assert(result.floatEntity, "cast creates runtime float/tackle entity");
   return { ...result, rodVirtualPos, bounds };
 }
+
+function runFloatDepthIntegrationChecks() {
+  const config = createConfig();
+  assert(
+    !ITEM_DB.sinkers,
+    "standalone sinker item category is removed",
+  );
+  assert(
+    !!ITEM_DB.floats.float_day.engineStats.ballastProfiles,
+    "float owns its ballast profiles",
+  );
+  assert(
+    ITEM_DB.baits.feeder_spring_basic.type === "feeder_rig" &&
+      Array.isArray(
+        ITEM_DB.baits.feeder_spring_basic.engineStats.currentCompensation,
+      ),
+    "feeder spring preserves its feeder weight parameters",
+  );
+  const equipment = {
+    rod: hydrate("rods", "rod_test_float", {
+      instanceId: "float_depth_rod",
+      lengthMeters: 5,
+      hasReel: false,
+    }),
+    reel: null,
+    line: hydrate("lines", "line_test_1", {
+      instanceId: "float_depth_line",
+      lengthMeters: 10,
+    }),
+    float: hydrate("floats", "float_day", {
+      instanceId: "float_depth_float",
+    }),
+    hooks: [
+      hydrate("hooks", "hook_basic", {
+        instanceId: "float_depth_hook",
+      }),
+    ],
+    baits: [
+      hydrate("baits", "bread", {
+        instanceId: "float_depth_bait",
+      }),
+    ],
+  };
+  const calculator = new CastDistanceCalculator(config);
+  const equipmentRules = new EquipmentRules(calculator, config);
+
+  assert(
+    equipmentRules.canSelectDepth(equipment),
+    "float enables depth selection",
+  );
+  assertApprox(
+    equipmentRules.getMaxHookDepth(equipment, config),
+    5,
+    0.000001,
+    "float maximum depth uses free line after the rod length",
+  );
+  assertApprox(
+    calculator.getMaxCastDistanceMeters(equipment, 0, {
+      selectedDepthMeters: 3,
+    }),
+    7,
+    0.000001,
+    "3m float depth reduces 10m line cast distance to 7m",
+  );
+
+  const cast = createCast({
+    config,
+    equipment,
+    distanceMeters: 7,
+    currentHookDepth: 3,
+  });
+  const checkWater = () => ({ depth: 10 });
+  cast.floatEntity.update(cast.bounds, 6000, {}, checkWater);
+  cast.floatEntity.update(cast.bounds, 6000, {}, checkWater);
+  assertApprox(
+    cast.floatEntity.getCurrentHookDepth(),
+    3,
+    0.000001,
+    "float reaches selected depth using its embedded ballast",
+  );
+
+  const session = new FightSessionFactory({
+    config,
+    rng: createRng(),
+    castDistanceCalculator: calculator,
+    devFlags: createDevFlags(),
+  }).create(
+    createFish({ weightKg: 0.25 }),
+    equipment,
+    { selectedDepthMeters: 3 },
+  );
+  assertApprox(
+    session.lineSystem.getState().totalLengthMeters,
+    7,
+    0.000001,
+    "fight radial line limit uses the depth-adjusted 7m budget",
+  );
+}
+
+runFloatDepthIntegrationChecks();
 
 function runTouchHoldControlBuildCheck() {
   const config = createConfig();

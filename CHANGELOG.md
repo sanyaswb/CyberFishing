@@ -1,5 +1,29 @@
 # CyberFishing changelog
 
+## v0.23.44 - Embedded Float Ballast
+
+### Fixed
+
+- Removed the standalone `sinker_light` item, its inventory category entry, its default/debug instances and the float-rig sinker slot.
+- Moved the former light/medium/heavy sinking profile, sinking reference depth and current compensation into the float configuration.
+- Added a dedicated `feederRig` equipment slot for feeder springs while preserving feeder physics, hook capacity, chum support and automatic bottom-depth behavior.
+- Updated casting, rendering, equipment loss and inventory UI paths to distinguish floats from feeder rigs.
+- Added save migration that moves legacy feeder springs from `sinkerId` to `feederRigId` and discards obsolete standalone sinker instances.
+- Renamed the surface-depth fallback to remove the obsolete sinker dependency from runtime terminology.
+- Added regression checks for embedded float ballast, preserved feeder parameters and legacy inventory migration.
+
+## v0.23.43 - Float Depth Line Budget
+
+### Fixed
+
+- Changed the float-rig depth selector trigger from the sinker to the equipped float.
+- Derived maximum float depth from equipped line length minus rod length.
+- Reduced float cast distance and fight radial line limit by the selected depth while preserving the full cast at the `0.1m` surface preset.
+- Added a live cast-distance bar that grows or shrinks with the selected depth and respects the location height limit.
+- Allowed an equipped float to reach the selected depth without requiring a separate sinker; an equipped sinker still controls its sinking profile.
+- Kept feeder rods on automatic bottom depth without reducing their cast distance.
+- Added regression checks for pole, reel-float, float-without-sinker and unchanged feeder scenarios.
+
 ## v0.23.42 - Tackle-Aware Rod Stroke
 
 ### Fixed

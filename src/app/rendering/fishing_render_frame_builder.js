@@ -199,7 +199,9 @@ class FishingRenderFrameBuilder {
     const activeItem =
       (this.#equipmentRules.isSpinning(equipment)
         ? equipment.baits?.[0]
-        : equipment.sinker) || {};
+        : this.#equipmentRules.isFeeder(equipment)
+          ? equipment.feederRig
+          : equipment.float) || {};
     const straightenThreshold = lineConfig.straightenTension || 50;
     const lineFrameContext = this.#lineFrameContext;
     lineFrameContext.state = intent.state;

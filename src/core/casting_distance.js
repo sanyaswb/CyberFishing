@@ -34,6 +34,7 @@ class CastDistanceCalculator {
   #physicsConfig;
   #converter;
   #lineConfig;
+  #floatLineBudgetPolicy;
 
   constructor(config = {}) {
     this.#config = config || {};
@@ -45,6 +46,12 @@ class CastDistanceCalculator {
     this.#converter = new DistanceUnitConverter(physicsConfig);
     this.#lineConfig =
       this.#physicsConfig?.getLineConfig?.() || physicsConfig.line || {};
+    this.#floatLineBudgetPolicy =
+      typeof FloatTackleLineBudgetPolicy !== "undefined"
+        ? new FloatTackleLineBudgetPolicy(
+            this.#config.casting?.floatDepth || {},
+          )
+        : null;
   }
 
   get pixelsPerMeter() {
@@ -88,10 +95,16 @@ class CastDistanceCalculator {
     return equipment.line || null;
   }
 
-  getMaxCastDistanceMeters(equipment, fallbackMeters = null) {
+  getMaxCastDistanceMeters(equipment, fallbackMeters = null, options = {}) {
     const lineStats = this.getEquippedLineStats(equipment);
     const lineMeters = this.getLineMeters(lineStats);
-    if (lineMeters > 0) return lineMeters;
+    if (lineMeters > 0) {
+      const budget = this.getFloatLineBudget(
+        equipment,
+        options?.selectedDepthMeters,
+      );
+      return budget?.applies ? budget.maxCastDistanceMeters : lineMeters;
+    }
 
     const rod = equipment?.rod || null;
     const legacyPixels = this.#readNumber(rod, "maxDistance", "getMaxDistance");
@@ -102,21 +115,29 @@ class CastDistanceCalculator {
     return this.#numberOrDefault(fallbackMeters, 0);
   }
 
-  getMaxCastDistancePx(equipment, fallbackPx = Infinity) {
+  getMaxCastDistancePx(equipment, fallbackPx = Infinity, options = {}) {
     const fallbackMeters = Number.isFinite(Number(fallbackPx))
       ? this.pixelsToMeters(Number(fallbackPx))
       : null;
-    const meters = this.getMaxCastDistanceMeters(equipment, fallbackMeters);
+    const meters = this.getMaxCastDistanceMeters(
+      equipment,
+      fallbackMeters,
+      options,
+    );
     if (!Number.isFinite(meters)) return fallbackPx;
     return this.metersToPixels(meters);
   }
 
-  getEffectiveCastDistancePx(equipment, castPowerCoefficient = 1) {
+  getEffectiveCastDistancePx(
+    equipment,
+    castPowerCoefficient = 1,
+    options = {},
+  ) {
     const power =
       castPowerCoefficient === null || castPowerCoefficient === undefined
         ? this.getBuildCastPowerCoefficient(equipment)
         : this.#clamp01(castPowerCoefficient);
-    return this.getMaxCastDistancePx(equipment, 0) * power;
+    return this.getMaxCastDistancePx(equipment, 0, options) * power;
   }
 
   getBuildCastPowerCoefficient(equipment, fallback = null) {
@@ -183,9 +204,17 @@ class CastDistanceCalculator {
     };
   }
 
-  describe(equipment, castPowerCoefficient = null) {
+  describe(equipment, castPowerCoefficient = null, options = {}) {
     const lineStats = this.getEquippedLineStats(equipment);
-    const maxDistanceMeters = this.getMaxCastDistanceMeters(equipment, 0);
+    const lineBudget = this.getFloatLineBudget(
+      equipment,
+      options?.selectedDepthMeters,
+    );
+    const maxDistanceMeters = this.getMaxCastDistanceMeters(
+      equipment,
+      0,
+      options,
+    );
     const maxDistancePx = this.metersToPixels(maxDistanceMeters);
     const power =
       castPowerCoefficient === null || castPowerCoefficient === undefined
@@ -199,6 +228,10 @@ class CastDistanceCalculator {
     return {
       pixelsPerMeter: this.pixelsPerMeter,
       lineLengthMeters: this.getLineMeters(lineStats),
+      selectedDepthMeters: lineBudget?.selectedDepthMeters ?? null,
+      depthLineCostMeters: lineBudget?.depthLineCostMeters ?? 0,
+      maxDepthMeters: lineBudget?.maxDepthMeters ?? null,
+      isFloatDepthLimited: !!lineBudget?.applies,
       requiredLineMeters: baseReachMeters,
       reserveMeters: Math.max(0, maxDistanceMeters - baseReachMeters),
       maxDistanceMeters,
@@ -207,6 +240,13 @@ class CastDistanceCalculator {
       effectiveDistanceMeters: this.pixelsToMeters(effectiveDistancePx),
       effectiveDistancePx,
     };
+  }
+
+  getFloatLineBudget(equipment, selectedDepthMeters = null) {
+    return this.#floatLineBudgetPolicy?.resolve?.({
+      equipment,
+      selectedDepthMeters,
+    }) || null;
   }
 
   #isReelAvailable(reel) {

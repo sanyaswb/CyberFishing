@@ -347,7 +347,10 @@ class FightPhysicsConfigAdapter {
         config.idleSpinningBiteChance,
         0.005,
       ),
-      defaultDepthNoSinker: this.#number(config.defaultDepthNoSinker, 0.1),
+      defaultSurfaceDepthMeters: this.#number(
+        config.defaultSurfaceDepthMeters ?? config.defaultDepthNoSinker,
+        0.1,
+      ),
       guaranteedBiteCooldownMs: config.guaranteedBiteCooldownMs || [0, 0],
     };
   }

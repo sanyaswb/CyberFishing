@@ -683,12 +683,12 @@ class GameApplication {
         eq.baits[0].type,
       );
       physicsConfig = { ...eq.baits[0] };
+    } else if (eq.rod?.type === "feeder" && eq.feederRig) {
+      physicsType = "feeder";
+      physicsConfig = { ...eq.feederRig };
     } else if (eq.float) {
       physicsType = "float";
       physicsConfig = { ...eq.float };
-    } else if (eq.sinker) {
-      physicsType = "float";
-      physicsConfig = { ...eq.sinker };
     }
 
     this.#float = BaitFactory.create(

@@ -8,7 +8,7 @@ const PASSIVE_RETRIEVE_PHYSICS_CONFIG = {
 const LURE_RETRIEVE_PHYSICS_CONFIG = {
   multiplier: 50,
   idleSpinningBiteChance: 0.005,
-  defaultDepthNoSinker: 0.1,
+  defaultSurfaceDepthMeters: 0.1,
   guaranteedBiteCooldownMs: [0, 0],
 };
 

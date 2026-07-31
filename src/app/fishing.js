@@ -116,7 +116,7 @@ class FishingController {
     if (reason === "rod" || reason === "line" || reason === "reel") {
       this.#equipment.consumeAllHooks(eq);
       this.#equipment.consumeFloat(eq);
-      this.#equipment.consumeSinker(eq);
+      this.#equipment.consumeFeederRig(eq);
       this.#consumeFeederChumLoad(eq);
     }
 
@@ -210,7 +210,11 @@ class CastService {
     const rodPos =
       context.rodVirtualPos || this.#getRodVirtualPos(this.#getDynamicBounds());
     const dist = Math.hypot(vx - rodPos.x, vy - rodPos.y);
-    const maxDist = this.#equipmentRules.getMaxCastDistance(eq, 2000);
+    const maxDist = this.#equipmentRules.getMaxCastDistance(
+      eq,
+      2000,
+      context.currentHookDepth,
+    );
     const castDistanceRatio = Math.min(1, dist / maxDist);
     const castStartTime = this.#clock.now;
 
@@ -223,12 +227,15 @@ class CastService {
       const baitStats = eq.baits[0].engineStats || eq.baits[0];
       physicsType = this.#baitRules.getPhysicsType(eq.baits[0], "spinner");
       physicsConfig = { ...baitStats };
+    } else if (this.#equipmentRules.isFeeder(eq) && eq.feederRig) {
+      physicsType = "feeder";
+      physicsConfig = {
+        ...eq.feederRig.engineStats,
+        ...eq.feederRig,
+      };
     } else if (eq.float) {
       physicsType = "float";
       physicsConfig = { ...eq.float.engineStats, ...eq.float };
-    } else if (eq.sinker) {
-      physicsType = this.#equipmentRules.isFeeder(eq) ? "feeder" : "float";
-      physicsConfig = { ...eq.sinker.engineStats, ...eq.sinker };
     }
 
     const floatEntity = BaitFactory.create(
@@ -242,15 +249,12 @@ class CastService {
     );
 
     if (typeof floatEntity.cast === "function") {
-      const sinkerCfg = eq.sinker
-        ? { ...eq.sinker.engineStats, ...eq.sinker }
-        : null;
       floatEntity.cast(
         vx,
         vy,
         currentHookDepth,
         currentHookDepth > cellDepth,
-        sinkerCfg,
+        physicsConfig,
         castDistanceRatio,
       );
     } else {
@@ -285,14 +289,20 @@ class FightSessionFactory {
       castDistanceCalculator || new CastDistanceCalculator(config || {});
   }
 
-  create(fishData, equipment) {
+  create(fishData, equipment, options = {}) {
     const lineSystemConfig = this.#getLineSystemConfig();
+    const castOptions = this.#getCastOptions(options);
+    const activeLineStats = this.#resolveActiveLineStats(equipment, options);
     const rod = new Rod(
       equipment.rod?.level || 1,
       equipment.rod?.basePower || 1.0,
       equipment.rod?.compensation || 0,
       equipment.rod?.type || "float",
-      this.castDistanceCalculator.getMaxCastDistancePx(equipment, 100),
+      this.castDistanceCalculator.getMaxCastDistancePx(
+        equipment,
+        100,
+        castOptions,
+      ),
       equipment.rod?.hasReel !== false,
       {
         lengthMeters: equipment.rod?.lengthMeters,
@@ -348,7 +358,7 @@ class FightSessionFactory {
       rod,
       reel,
       config: lineSystemConfig,
-      lineStats: equipment.line,
+      lineStats: activeLineStats,
       castDistanceCalculator: this.castDistanceCalculator,
     });
     const dragSystem = new DragSystem(
@@ -417,14 +427,20 @@ class FightSessionFactory {
     };
   }
 
-  createEquipment(equipment) {
+  createEquipment(equipment, options = {}) {
     const lineSystemConfig = this.#getLineSystemConfig();
+    const castOptions = this.#getCastOptions(options);
+    const activeLineStats = this.#resolveActiveLineStats(equipment, options);
     const rod = new Rod(
       equipment.rod?.level || 1,
       equipment.rod?.basePower || 1.0,
       equipment.rod?.compensation || 0,
       equipment.rod?.type || "float",
-      this.castDistanceCalculator.getMaxCastDistancePx(equipment, 100),
+      this.castDistanceCalculator.getMaxCastDistancePx(
+        equipment,
+        100,
+        castOptions,
+      ),
       equipment.rod?.hasReel !== false,
       {
         lengthMeters: equipment.rod?.lengthMeters,
@@ -474,7 +490,7 @@ class FightSessionFactory {
       rod,
       reel,
       config: lineSystemConfig,
-      lineStats: equipment.line,
+      lineStats: activeLineStats,
       castDistanceCalculator: this.castDistanceCalculator,
     });
     return { rod, reel, hook, lineSystem };
@@ -482,6 +498,33 @@ class FightSessionFactory {
 
   #getLineSystemConfig() {
     return this.physicsConfig?.getLineSystemConfig?.() || {};
+  }
+
+  #getCastOptions(options) {
+    return {
+      selectedDepthMeters: options?.selectedDepthMeters ?? null,
+    };
+  }
+
+  #resolveActiveLineStats(equipment, options) {
+    const line = equipment?.line;
+    if (!line) return null;
+
+    const budget = this.castDistanceCalculator.getFloatLineBudget(
+      equipment,
+      options?.selectedDepthMeters,
+    );
+    if (!budget?.applies) return line;
+
+    const activeLengthMeters = budget.maxCastDistanceMeters;
+    return {
+      ...line,
+      lengthMeters: activeLengthMeters,
+      engineStats: {
+        ...(line.engineStats || {}),
+        lengthMeters: activeLengthMeters,
+      },
+    };
   }
 }
 
@@ -823,6 +866,7 @@ class FightService {
   #rod = null;
   #reel = null;
   #hook = null;
+  #fightSessionOptions = {};
 
   #fightSessionFactory;
 
@@ -848,8 +892,15 @@ class FightService {
     this.#catchResolver = catchResolver || new CatchResolutionService();
   }
 
-  startFight(fishData, equipment) {
-    const session = this.#fightSessionFactory.create(fishData, equipment);
+  startFight(fishData, equipment, options = {}) {
+    this.#fightSessionOptions = {
+      selectedDepthMeters: options?.selectedDepthMeters ?? null,
+    };
+    const session = this.#fightSessionFactory.create(
+      fishData,
+      equipment,
+      this.#fightSessionOptions,
+    );
     this.#rod = session.rod;
     this.#reel = session.reel;
     this.#hook = session.hook;
@@ -874,7 +925,10 @@ class FightService {
   syncEquipment(equipment) {
     if (!this.#tensionMeter || !this.#staminaController)
       return;
-    const next = this.#fightSessionFactory.createEquipment(equipment);
+    const next = this.#fightSessionFactory.createEquipment(
+      equipment,
+      this.#fightSessionOptions,
+    );
     this.#rod = next.rod;
     this.#reel = next.reel;
     this.#hook = next.hook;

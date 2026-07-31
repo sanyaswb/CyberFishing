@@ -402,17 +402,56 @@ class InventoryItemIdMigrationPolicy {
     line_test_10m: "line_test_2",
     line_test_50m: "line_test_3",
   };
+  static #removedItemIds = new Set(["sinker_light"]);
 
   static migrateItems(items = []) {
     if (!Array.isArray(items)) return [];
-    return items.map((item) => this.migrateItem(item));
+    const migrated = [];
+    for (const item of items) {
+      const next = this.migrateItem(item);
+      if (next) migrated.push(next);
+    }
+    return migrated;
   }
 
   static migrateItem(item) {
     if (!item || typeof item !== "object") return item;
     const itemId = this.#itemIdMap[item.itemId] || item.itemId;
+    if (this.#removedItemIds.has(itemId)) return null;
     if (itemId === item.itemId) return { ...item };
     return { ...item, itemId };
+  }
+}
+
+class EquipmentStateMigrationPolicy {
+  static migrate({ equipment = {}, inventoryItems = [], itemDB = {} } = {}) {
+    const migrated = { ...(equipment || {}) };
+    if (!migrated.feederRigId && migrated.sinkerId) {
+      const itemType = this.#getItemType(
+        migrated.sinkerId,
+        inventoryItems,
+        itemDB,
+      );
+      if (itemType === "feeder_rig") {
+        migrated.feederRigId = migrated.sinkerId;
+      }
+    }
+    delete migrated.sinkerId;
+    return migrated;
+  }
+
+  static #getItemType(instanceId, inventoryItems, itemDB) {
+    const instance = inventoryItems.find(
+      (item) => item?.instanceId === instanceId,
+    );
+    if (!instance?.itemId) return null;
+
+    for (const category of Object.values(itemDB || {})) {
+      if (!category || typeof category !== "object") continue;
+      const item = category[instance.itemId];
+      if (item?.type) return item.type;
+    }
+    return null;
   }
 }
 
@@ -465,8 +504,13 @@ class ConfiguredInventorySeeder {
       return;
     }
 
-    const existingItemId =
-      InventoryItemIdMigrationPolicy.migrateItem(existing).itemId;
+    const migratedExisting = InventoryItemIdMigrationPolicy.migrateItem(existing);
+    if (!migratedExisting) {
+      this.#inventory.remove(existing.instanceId);
+      this.#inventory.addItem({ ...migratedItem });
+      return;
+    }
+    const existingItemId = migratedExisting.itemId;
     if (
       existingItemId !== migratedItem.itemId ||
       existing.buildId !== migratedItem.buildId
@@ -885,7 +929,7 @@ class EquipmentValidator {
       equippedHydrated.reel,
       equippedHydrated.line,
       equippedHydrated.float,
-      equippedHydrated.sinker,
+      equippedHydrated.feederRig,
       ...(equippedHydrated.hooks || []),
     ];
 
@@ -927,8 +971,12 @@ class InventoryManager {
     const cachedInventory = InventoryItemIdMigrationPolicy.migrateItems(
       CacheManager.get("player_inventory") || playerConfig.inventory || [],
     );
-    const cachedEquipment =
-      CacheManager.get("player_equipment") || playerConfig.equipment || {};
+    const cachedEquipment = EquipmentStateMigrationPolicy.migrate({
+      equipment:
+        CacheManager.get("player_equipment") || playerConfig.equipment || {},
+      inventoryItems: cachedInventory,
+      itemDB,
+    });
 
     this.#db = new ItemDatabase(itemDB);
     this.#inventory = new Inventory(cachedInventory);
@@ -1002,7 +1050,7 @@ class InventoryManager {
     countId(newRaw.lineId);
     countId(newRaw.leaderId);
     countId(newRaw.floatId);
-    countId(newRaw.sinkerId);
+    countId(newRaw.feederRigId);
     countId(newRaw.netId);
     countId(newRaw.deliveryId);
     if (newRaw.hooks) {
@@ -1231,8 +1279,8 @@ class InventoryManager {
     if (baseSlot === "hooks") {
       // ВИПРАВЛЕНО: Додано перевірку на базову кількість гачків вудки
       const maxHooks =
-        eq.sinker?.hooksCount ||
-        eq.sinker?.engineStats?.hooksCount ||
+        eq.feederRig?.hooksCount ||
+        eq.feederRig?.engineStats?.hooksCount ||
         eq.rod?.maxHooks ||
         1;
 
@@ -1245,8 +1293,8 @@ class InventoryManager {
 
     if (baseSlot === "baits") {
       const maxHooks =
-        eq.sinker?.hooksCount ||
-        eq.sinker?.engineStats?.hooksCount ||
+        eq.feederRig?.hooksCount ||
+        eq.feederRig?.engineStats?.hooksCount ||
         eq.rod?.maxHooks ||
         1;
       const baits = eq.baits || [];
@@ -1266,9 +1314,11 @@ class InventoryManager {
     }
 
     if (itemData.type === "chum_mix") {
-      const sinkerCaps =
-        eq.sinker?.capabilities || eq.sinker?.engineStats?.capabilities || [];
-      const hasFeederSlot = sinkerCaps.includes("chum_mix");
+      const feederRigCaps =
+        eq.feederRig?.capabilities ||
+        eq.feederRig?.engineStats?.capabilities ||
+        [];
+      const hasFeederSlot = feederRigCaps.includes("chum_mix");
 
       if (hasFeederSlot && !eq.feederChum) return "feederChum";
 
@@ -1442,7 +1492,7 @@ class InventoryManager {
           "line",
           "leader",
           "float",
-          "sinker",
+          "feederRig",
           "feederChum",
           "hooks",
           "baits",
@@ -1515,11 +1565,11 @@ class InventoryManager {
   #getAdditionalUnequipSlots(slotPath, equippedBefore) {
     const slotPaths = [];
 
-    if (slotPath === "sinker") {
+    if (slotPath === "feederRig") {
       slotPaths.push("feederChum");
       const removedHooksCount =
-        equippedBefore.sinker?.hooksCount ||
-        equippedBefore.sinker?.engineStats?.hooksCount ||
+        equippedBefore.feederRig?.hooksCount ||
+        equippedBefore.feederRig?.engineStats?.hooksCount ||
         0;
       const oldHooks = equippedBefore.hooks || [];
       const oldBaits = equippedBefore.baits || [];
@@ -1690,7 +1740,7 @@ class InventoryManager {
       line: this._hydrateInstance(raw.lineId),
       leader: this._hydrateInstance(raw.leaderId),
       float: this._hydrateInstance(raw.floatId),
-      sinker: this._hydrateInstance(raw.sinkerId),
+      feederRig: this._hydrateInstance(raw.feederRigId),
       hooks: this.#hydrateSlotArray(raw.hooks),
       feederChum: this._hydrateInstance(raw.feederChumId),
       net: this._hydrateInstance(raw.netId),
@@ -1814,7 +1864,7 @@ class InventoryManager {
     countId(raw.lineId);
     countId(raw.leaderId);
     countId(raw.floatId);
-    countId(raw.sinkerId);
+    countId(raw.feederRigId);
     countId(raw.feederChumId);
     countId(raw.netId);
     countId(raw.deliveryId);
@@ -2053,8 +2103,8 @@ class InventoryManager {
           else if (cBase.type === "leader_line") cat = "Поводок";
           else if (["float_tackle", "day", "night"].includes(cBase.type))
             cat = "Поплавок";
-          else if (["sinker", "feeder_rig"].includes(cBase.type))
-            cat = "Грузило/Годівниця";
+          else if (cBase.type === "feeder_rig")
+            cat = "Фідерна оснастка";
           else if (cBase.type === "hook") cat = "Гачок";
           else if (["lure", "spinner", "wobbler", "jig"].includes(cBase.type))
             cat = "Приманка";

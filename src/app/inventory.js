@@ -52,9 +52,9 @@ class EquipmentService {
     return this.#inventory.consumeEquipped("float", 1);
   }
 
-  consumeSinker(eq = this.getEquipped()) {
-    if (!eq?.sinker) return false;
-    return this.#inventory.consumeEquipped("sinker", 1);
+  consumeFeederRig(eq = this.getEquipped()) {
+    if (!eq?.feederRig) return false;
+    return this.#inventory.consumeEquipped("feederRig", 1);
   }
 
   consumeRod(eq = this.getEquipped()) {

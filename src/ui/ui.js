@@ -568,9 +568,36 @@ class DepthSelectorUI {
                     display: flex; flex-direction: column; justify-content: space-between;
                     height: 100%; color: #fff; font-size: 14px; font-weight: bold; margin-left: 5px;
                 }
+                #ds-distance-panel {
+                    position: absolute; left: -165px; top: -66px; width: 145px;
+                    padding: 8px 10px; border: 1px solid rgba(115, 194, 251, 0.8);
+                    border-radius: 7px; background: rgba(11, 21, 32, 0.9);
+                    color: #fff; font-size: 12px; font-weight: bold;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+                }
+                #ds-distance-value {
+                    display: block; margin-bottom: 6px; color: #00ff80;
+                    font-size: 14px; text-align: center;
+                }
+                #ds-distance-track {
+                    width: 100%; height: 9px; overflow: hidden;
+                    border: 1px solid rgba(255, 255, 255, 0.65);
+                    border-radius: 5px; background: rgba(0, 0, 0, 0.55);
+                }
+                #ds-distance-fill {
+                    width: 100%; height: 100%; border-radius: inherit;
+                    background: linear-gradient(90deg, #0b8f49, #00ff80);
+                    transition: width 80ms linear;
+                }
             </style>
             <div id="ds-container">
                 <div id="ds-wrapper">
+                    <div id="ds-distance-panel">
+                        <span id="ds-distance-value">Закид: 0.0 м</span>
+                        <div id="ds-distance-track" role="progressbar" aria-label="Доступна дальність закидання">
+                            <div id="ds-distance-fill"></div>
+                        </div>
+                    </div>
                     <div id="ds-input-container">
                         <input type="text" id="ds-input" value="1.5">
                     </div>
@@ -592,6 +619,10 @@ class DepthSelectorUI {
     this.input = document.getElementById("ds-input");
     this.maxLabel = document.getElementById("ds-max");
     this.inputContainer = document.getElementById("ds-input-container");
+    this.distanceValue = document.getElementById("ds-distance-value");
+    this.distancePanel = document.getElementById("ds-distance-panel");
+    this.distanceTrack = document.getElementById("ds-distance-track");
+    this.distanceFill = document.getElementById("ds-distance-fill");
 
     this.onChange = null;
     this.isActive = false;
@@ -631,7 +662,8 @@ class DepthSelectorUI {
     const max = parseFloat(this.slider.max);
     const val = parseFloat(this.slider.value);
 
-    const percent = (val - min) / (max - min);
+    const range = max - min;
+    const percent = range > 0 ? (val - min) / range : 0;
     const sliderHeight = this.slider.clientHeight;
     const offset = percent * sliderHeight;
 
@@ -671,6 +703,30 @@ class DepthSelectorUI {
     requestAnimationFrame(() => this.#updateInputPosition());
   }
 
+  updateCastDistance({ availableMeters, maximumMeters, visible = true } = {}) {
+    this.distancePanel.style.display = visible ? "block" : "none";
+    if (!visible) return;
+
+    const maximum = Math.max(0, Number(maximumMeters) || 0);
+    const available = Math.max(
+      0,
+      Math.min(maximum, Number(availableMeters) || 0),
+    );
+    const ratio = maximum > 0 ? available / maximum : 0;
+
+    this.distanceValue.innerText = `Закид: ${available.toFixed(1)} м`;
+    this.distanceFill.style.width = `${(ratio * 100).toFixed(1)}%`;
+    this.distanceTrack.setAttribute("aria-valuemin", "0");
+    this.distanceTrack.setAttribute(
+      "aria-valuemax",
+      maximum.toFixed(1),
+    );
+    this.distanceTrack.setAttribute(
+      "aria-valuenow",
+      available.toFixed(1),
+    );
+  }
+
   hide() {
     this.isActive = false;
     this.mainContainer.style.display = "none";
@@ -685,6 +741,10 @@ class DepthSelectorUI {
     this.input = null;
     this.maxLabel = null;
     this.inputContainer = null;
+    this.distanceValue = null;
+    this.distancePanel = null;
+    this.distanceTrack = null;
+    this.distanceFill = null;
   }
 }
 
@@ -1232,7 +1292,7 @@ class InventoryUI {
     checkConflict(equippedItems.reel);
     checkConflict(equippedItems.line);
     checkConflict(equippedItems.float);
-    checkConflict(equippedItems.sinker);
+    checkConflict(equippedItems.feederRig);
     checkConflict(equippedItems.net);
     checkConflict(equippedItems.delivery);
     if (equippedItems.hooks) equippedItems.hooks.forEach(checkConflict);
@@ -1310,7 +1370,6 @@ class InventoryUI {
         rigGroup.slots.push({ id: "baits_0", label: "Приманка", type: "lure" });
       } else if (rod.type === "float" || rod.type === "pole") {
         rigGroup.slots.push({ id: "float", label: "Поплавок", type: "float" });
-        rigGroup.slots.push({ id: "sinker", label: "Грузило", type: "sinker" });
         const maxHooks = rod.maxHooks || 1;
         for (let i = 0; i < maxHooks; i++) {
           rigGroup.slots.push({
@@ -1328,18 +1387,18 @@ class InventoryUI {
         }
       } else if (rod.type === "feeder") {
         rigGroup.slots.push({
-          id: "sinker",
-          label: "Годівниця/Грузило",
-          type: "sinker",
+          id: "feederRig",
+          label: "Фідерна оснастка",
+          type: "feeder_rig",
         });
-        const sinkerCaps =
-          equipped.sinker?.capabilities ||
-          equipped.sinker?.engineStats?.capabilities ||
+        const feederRigCaps =
+          equipped.feederRig?.capabilities ||
+          equipped.feederRig?.engineStats?.capabilities ||
           [];
         const hasChumSlot =
-          sinkerCaps.includes("chum_mix") ||
-          equipped.sinker?.hasChumSlot ||
-          equipped.sinker?.engineStats?.hasChumSlot;
+          feederRigCaps.includes("chum_mix") ||
+          equipped.feederRig?.hasChumSlot ||
+          equipped.feederRig?.engineStats?.hasChumSlot;
         if (hasChumSlot)
           rigGroup.slots.push({
             id: "feederChum",
@@ -1347,8 +1406,8 @@ class InventoryUI {
             type: "chum_mix",
           });
         const maxHooks =
-          equipped.sinker?.hooksCount ||
-          equipped.sinker?.engineStats?.hooksCount ||
+          equipped.feederRig?.hooksCount ||
+          equipped.feederRig?.engineStats?.hooksCount ||
           rod.maxHooks ||
           1;
         for (let i = 0; i < maxHooks; i++) {
@@ -1717,7 +1776,6 @@ class InventoryUI {
       lure: "Спінінг",
       line: "Ліска потрібної довжини",
       reel: "Вудка з котушкою",
-      sinker: "Поплавкова / донна",
     };
     return labels[tag] || tag || "Не вказано";
   }
@@ -1904,7 +1962,7 @@ class InventoryUI {
     countItem(equippedItems.reel);
     countItem(equippedItems.line);
     countItem(equippedItems.float);
-    countItem(equippedItems.sinker);
+    countItem(equippedItems.feederRig);
     countItem(equippedItems.feederChum);
     countItem(equippedItems.net);
     countItem(equippedItems.delivery);
