@@ -61,7 +61,11 @@ class LineInventoryController {
     const sourceInstance = sourceItem.sourceLineInstanceId
       ? this.#inventory.getInstance(sourceItem.sourceLineInstanceId)
       : null;
-    if (sourceInstance && this.#canMergeLineItems(sourceItem, sourceInstance)) {
+    if (
+      sourceInstance &&
+      !sourceInstance.detachedLineSegment &&
+      this.#canMergeLineItems(sourceItem, sourceInstance)
+    ) {
       this.#setLineLengthMeters(
         sourceInstance,
         this.getInventoryLineLengthMeters(sourceInstance) +
@@ -139,7 +143,8 @@ class LineInventoryController {
     for (let i = 0; i < items.length; i++) {
       const candidate = items[i];
       if (candidate === sourceItem) continue;
-      if (candidate.buildId) continue;
+      if (candidate.detachedLineSegment) continue;
+      if (!this.#hasSameBuildContext(sourceItem, candidate)) continue;
       if (this.#isEquipped(candidate.instanceId)) continue;
       if (candidate.itemId !== sourceItem.itemId) continue;
 
@@ -153,9 +158,14 @@ class LineInventoryController {
   #canMergeLineItems(a, b) {
     if (!a || !b) return false;
     if (a.itemId !== b.itemId) return false;
+    if (!this.#hasSameBuildContext(a, b)) return false;
     const sourceData = this.#hydrateLineItem(a);
     const targetData = this.#hydrateLineItem(b);
     return this.#hasSameLineMergeSignature(sourceData, targetData);
+  }
+
+  #hasSameBuildContext(a, b) {
+    return (a?.buildId ?? null) === (b?.buildId ?? null);
   }
 
   #hydrateLineItem(item) {

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.23.39";
+const CURRENT_PROJECT_VERSION = "0.23.40";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "rod-control-hold-style-force",
-  updatedAt: "2026-07-07",
+  codename: "build-aware-line-reconciliation",
+  updatedAt: "2026-07-16",
   notes: Object.freeze([
-    "Changed Rod Control X force to use hold-style available tension budget",
-    "Removed fixed Rod Control max force and fish-weight force divisor from active force calculation",
-    "Made 20 degrees the single configured full-force Rod Control angle",
-    "Changed HUD Rod Control bar to show input ratio with delivered tension in the label",
-    "Cleaned legacy Rod Control weight input and direct drag reserve cutting from the control channel",
+    "Centralized equipment unequip lifecycle handling in InventoryManager",
+    "Returned detached line segments after rod, reel, build-switch and compatibility cascades",
+    "Added build-aware source spool and fallback matching",
+    "Preserved real equipped-line losses during segment reconciliation",
+    "Committed batch equipment operations with one save and one inventory event",
   ]),
 });
 

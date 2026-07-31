@@ -1066,6 +1066,13 @@ class InventoryManager {
   }
 
   disassembleBuild(buildId) {
+    if (!buildId) return;
+    const equippedBuildSlotPaths = this.#getEquippedSlotPathsForBuild(buildId);
+    this.#unequipSlotsWithLifecycle(equippedBuildSlotPaths, {
+      save: false,
+      notify: false,
+    });
+
     const items = this.#inventory.getAll();
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
@@ -1079,37 +1086,10 @@ class InventoryManager {
   }
 
   equipBuild(buildId) {
-    const slotsToClear = [
-      "rod",
-      "reel",
-      "line",
-      "leader",
-      "float",
-      "sinker",
-      "net",
-      "delivery",
-      "feederChum",
-    ];
-    for (let i = 0; i < slotsToClear.length; i++) {
-      this.unequipItem(slotsToClear[i]);
-    }
-
-    const eq = this.getEquipped();
-    if (eq.hooks) {
-      for (let i = 0; i < eq.hooks.length; i++) {
-        this.unequipItem(`hooks_${i}`);
-      }
-    }
-    if (eq.baits) {
-      for (let i = 0; i < eq.baits.length; i++) {
-        this.unequipItem(`baits_${i}`);
-      }
-    }
-    if (eq.deliveryChums) {
-      for (let i = 0; i < eq.deliveryChums.length; i++) {
-        this.unequipItem(`deliveryChums_${i}`);
-      }
-    }
+    this.#unequipSlotsWithLifecycle(Object.keys(SLOT_CONFIG), {
+      save: false,
+      notify: false,
+    });
 
     const items = this.#getBuildItemsInEquipOrder(buildId);
 
@@ -1121,7 +1101,12 @@ class InventoryManager {
       const qtyToEquip = itemData.quantity || 1;
       for (let q = 0; q < qtyToEquip; q++) {
         const slotPath = this.#findTargetSlotPath(itemData);
-        if (slotPath) this.equipItem(slotPath, item.instanceId);
+        if (slotPath) {
+          this.#equipItemWithLifecycle(slotPath, item.instanceId, {
+            save: false,
+            notify: false,
+          });
+        }
       }
     }
 
@@ -1329,34 +1314,6 @@ class InventoryManager {
     return this.#lineController.mergeLineLengthIntoAvailableStack(sourceItem);
   }
 
-  #findLineLengthMergeTarget(sourceItem, sourceData) {
-    const items = this.#inventory.getAll();
-    for (let i = 0; i < items.length; i++) {
-      const candidate = items[i];
-      if (candidate === sourceItem) continue;
-      if (candidate.buildId) continue;
-      if (this.#isInstanceEquipped(candidate.instanceId)) continue;
-      if (candidate.itemId !== sourceItem.itemId) continue;
-
-      const candidateData = this._hydrateInstance(candidate.instanceId);
-      if (!this.#hasSameLineMergeSignature(sourceData, candidateData)) continue;
-      return candidate;
-    }
-    return null;
-  }
-
-  #hasSameLineMergeSignature(a, b) {
-    if (!a || !b) return false;
-    const keys = ["id", "type", "maxLoadKg", "diameterMm", "durability"];
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
-      const av = a[key] ?? a.engineStats?.[key];
-      const bv = b[key] ?? b.engineStats?.[key];
-      if (String(av) !== String(bv)) return false;
-    }
-    return true;
-  }
-
   #isInstanceEquipped(instanceId) {
     return !!this.#equipment.findSlotByInstanceId(instanceId);
   }
@@ -1373,7 +1330,11 @@ class InventoryManager {
     const nextLength = Math.max(0, currentLength - loss);
 
     if (nextLength <= 0.001) {
-      this.#equipment.unequip("line");
+      this.#setInventoryLineLengthMeters(item, 0);
+      this.#unequipSlotsWithLifecycle(["line"], {
+        save: false,
+        notify: false,
+      });
       this.#inventory.remove(raw.lineId);
     } else {
       this.#setInventoryLineLengthMeters(item, nextLength);
@@ -1391,7 +1352,10 @@ class InventoryManager {
       this.#equippedCache = null;
       const slot = this.#equipment.findSlotByInstanceId(instanceId);
       if (slot && !this.#inventory.getInstance(instanceId)) {
-        this.#equipment.unequip(slot);
+        this.#unequipSlotsWithLifecycle([slot], {
+          save: false,
+          notify: false,
+        });
       }
       this.#saveAndNotify();
     }
@@ -1407,7 +1371,10 @@ class InventoryManager {
 
     this.#equippedCache = null;
     if (unequipAfterConsume || !this.#inventory.getInstance(item.instanceId)) {
-      this.#equipment.unequip(slotPath);
+      this.#unequipSlotsWithLifecycle([slotPath], {
+        save: false,
+        notify: false,
+      });
     }
 
     this.#saveAndNotify();
@@ -1418,17 +1385,41 @@ class InventoryManager {
     if (this.#inventory.remove(instanceId)) {
       this.#equippedCache = null;
       const slot = this.#equipment.findSlotByInstanceId(instanceId);
-      if (slot) this.#equipment.unequip(slot);
+      if (slot) {
+        this.#unequipSlotsWithLifecycle([slot], {
+          save: false,
+          notify: false,
+        });
+      }
       this.#saveAndNotify();
     }
   }
 
   equipItem(slotPath, instanceId) {
+    return this.#equipItemWithLifecycle(slotPath, instanceId);
+  }
+
+  #equipItemWithLifecycle(
+    slotPath,
+    instanceId,
+    { save = true, notify = true } = {},
+  ) {
     if (!this.#inventory.getInstance(instanceId)) return false;
 
     let itemData = this._hydrateInstance(instanceId);
-    const slotValidation = this.validateEquipToSlot(slotPath, itemData);
+    let slotValidation = this.validateEquipToSlot(slotPath, itemData);
     if (!slotValidation.isValid) return false;
+
+    const equippedLineId = this.#equipment.getRawState().lineId;
+    if (slotPath === "line" && equippedLineId && equippedLineId !== instanceId) {
+      this.#unequipSlotsWithLifecycle(["line"], {
+        save: false,
+        notify: false,
+      });
+      itemData = this._hydrateInstance(instanceId);
+      slotValidation = this.validateEquipToSlot(slotPath, itemData);
+      if (!slotValidation.isValid) return false;
+    }
 
     const preparedInstanceId = this.#prepareInstanceForEquip(
       slotPath,
@@ -1453,23 +1444,13 @@ class InventoryManager {
           "float",
           "sinker",
           "feederChum",
+          "hooks",
+          "baits",
         ];
-        for (let i = 0; i < slotsToUnequip.length; i++) {
-          this.#equipment.unequip(slotsToUnequip[i]);
-        }
-
-        this.#equippedCache = null;
-        const eq = this.getEquipped();
-        if (eq.hooks) {
-          for (let i = 0; i < eq.hooks.length; i++) {
-            this.#equipment.unequip(`hooks_${i}`);
-          }
-        }
-        if (eq.baits) {
-          for (let i = 0; i < eq.baits.length; i++) {
-            this.#equipment.unequip(`baits_${i}`);
-          }
-        }
+        this.#unequipSlotsWithLifecycle(slotsToUnequip, {
+          save: false,
+          notify: false,
+        });
       }
     }
 
@@ -1477,94 +1458,113 @@ class InventoryManager {
       const eq = this.getEquipped();
       const sections =
         eq.delivery?.sections || eq.delivery?.engineStats?.sections || 1;
+      const slotsToUnequip = [];
       for (let i = 0; i < sections; i++) {
-        this.#equipment.unequip(`deliveryChums_${i}`);
+        slotsToUnequip.push(`deliveryChums_${i}`);
       }
+      this.#unequipSlotsWithLifecycle(slotsToUnequip, {
+        save: false,
+        notify: false,
+      });
     }
 
     const success = this.#equipment.equip(slotPath, instanceId);
     if (success) {
       this.#equippedCache = null;
       this.#enforceEquippedLineCompatibility();
-      this.#saveAndNotify();
+      if (save || notify) this.#saveAndNotify({ save, notify });
     }
     return success;
   }
 
   unequipItem(slotPath) {
     const equippedBefore = this.getEquipped();
-    this.#equipment.unequip(slotPath);
-    this.#equippedCache = null;
+    const slotPaths = [
+      slotPath,
+      ...this.#getAdditionalUnequipSlots(slotPath, equippedBefore),
+    ];
+    this.#unequipSlotsWithLifecycle(slotPaths, {
+      save: false,
+      notify: false,
+    });
 
-    if (slotPath === "line") {
-      this.#mergeDetachedLineSegment(equippedBefore.line);
+    this.#saveAndNotify();
+  }
+
+  #getEquippedSlotPathsForBuild(buildId) {
+    const raw = this.#equipment.getRawState();
+    const slotPaths = [];
+
+    for (const [slotName, settings] of Object.entries(SLOT_CONFIG)) {
+      if (settings.type === "array") {
+        const instanceIds = raw[slotName] || [];
+        for (let i = 0; i < instanceIds.length; i++) {
+          const item = this.#inventory.getInstance(instanceIds[i]);
+          if (item?.buildId === buildId) slotPaths.push(`${slotName}_${i}`);
+        }
+        continue;
+      }
+
+      const item = this.#inventory.getInstance(raw[`${slotName}Id`]);
+      if (item?.buildId === buildId) slotPaths.push(slotName);
     }
 
-    // КАСКАДНЕ ЗНЯТТЯ (Щоб не залишалося прихованих "привидів" у слотах)
-    if (slotPath === "rod") {
-      // Знімаємо все, що висіло на вудці
-      const slotsToUnequip = ["reel", "line", "leader", "float", "sinker", "feederChum"];
-      for (let i = 0; i < slotsToUnequip.length; i++) {
-        this.#equipment.unequip(slotsToUnequip[i]);
-      }
+    return slotPaths;
+  }
 
-      const eq = this.getEquipped();
-      if (eq.hooks) {
-        for (let i = 0; i < eq.hooks.length; i++) {
-          this.#equipment.unequip(`hooks_${i}`);
-        }
-      }
-      if (eq.baits) {
-        for (let i = 0; i < eq.baits.length; i++) {
-          this.#equipment.unequip(`baits_${i}`);
-        }
-      }
-    } else if (slotPath === "sinker") {
-      // Знімаємо прикормку
-      this.#equipment.unequip("feederChum");
+  #getAdditionalUnequipSlots(slotPath, equippedBefore) {
+    const slotPaths = [];
 
+    if (slotPath === "sinker") {
+      slotPaths.push("feederChum");
       const removedHooksCount =
         equippedBefore.sinker?.hooksCount ||
         equippedBefore.sinker?.engineStats?.hooksCount ||
         0;
-      if (removedHooksCount > 0) {
-        const oldHooks = equippedBefore.hooks || [];
-        const oldBaits = equippedBefore.baits || [];
-        const maxSlots = Math.max(oldHooks.length, oldBaits.length);
-        for (let i = 0; i < maxSlots; i++) {
-          this.#equipment.unequip(`hooks_${i}`);
-          this.#equipment.unequip(`baits_${i}`);
-        }
-        this.#saveAndNotify();
-        return;
-      }
+      const oldHooks = equippedBefore.hooks || [];
+      const oldBaits = equippedBefore.baits || [];
+      const maxSlots = Math.max(oldHooks.length, oldBaits.length);
+      const firstRemovedIndex = removedHooksCount > 0
+        ? 0
+        : equippedBefore.rod?.maxHooks || 1;
 
-      // Відрізаємо зайві гачки, якщо базова вудка підтримує менше
-      const eq = this.getEquipped();
-      const baseRodHooks = eq.rod?.maxHooks || 1;
-      if (eq.hooks) {
-        for (let i = 0; i < eq.hooks.length; i++) {
-          if (i >= baseRodHooks) {
-            this.#equipment.unequip(`hooks_${i}`);
-            this.#equipment.unequip(`baits_${i}`);
-          }
-        }
+      for (let i = firstRemovedIndex; i < maxSlots; i++) {
+        slotPaths.push(`hooks_${i}`, `baits_${i}`);
       }
     } else if (slotPath.startsWith("hooks_")) {
-      // Знімаємо наживку саме з ЦЬОГО гачка
       const index = slotPath.split("_")[1];
-      this.#equipment.unequip(`baits_${index}`);
-    } else if (slotPath === "delivery") {
-      // Знімаємо всю прикормку з усіх бункерів кораблика
-      const eq = this.getEquipped();
-      const sections =
-        eq.delivery?.sections || eq.delivery?.engineStats?.sections || 1;
-      for (let i = 0; i < sections; i++) {
-        this.#equipment.unequip(`deliveryChums_${i}`);
+      slotPaths.push(`baits_${index}`);
+    }
+
+    return slotPaths;
+  }
+
+  #unequipSlotsWithLifecycle(
+    slotPaths,
+    { save = true, notify = true } = {},
+  ) {
+    const equippedBefore = this.getEquipped();
+    const lineBefore = equippedBefore.line;
+    const lineInstanceIdBefore = lineBefore?.instanceId || null;
+    const uniqueSlotPaths = new Set(slotPaths || []);
+
+    for (const slotPath of uniqueSlotPaths) {
+      if (typeof slotPath === "string" && slotPath) {
+        this.#equipment.unequip(slotPath);
       }
     }
 
-    this.#saveAndNotify();
+    this.#equippedCache = null;
+    const rawAfter = this.#equipment.getRawState();
+    const lineInstanceIdAfter = rawAfter.lineId || null;
+    const lineWasRemoved =
+      lineInstanceIdBefore && lineInstanceIdAfter !== lineInstanceIdBefore;
+
+    if (lineWasRemoved) {
+      this.#mergeDetachedLineSegment(lineBefore);
+    }
+
+    if (save || notify) this.#saveAndNotify({ save, notify });
   }
 
   validateEquip(itemData) {
@@ -1752,8 +1752,10 @@ class InventoryManager {
 
     const line = this._hydrateInstance(raw.lineId);
     if (!line) {
-      this.#equipment.unequip("line");
-      this.#equippedCache = null;
+      this.#unequipSlotsWithLifecycle(["line"], {
+        save: false,
+        notify: false,
+      });
       return true;
     }
 
@@ -1780,9 +1782,10 @@ class InventoryManager {
       return false;
     }
 
-    this.#equipment.unequip("line");
-    this.#mergeDetachedLineSegment(line);
-    this.#equippedCache = null;
+    this.#unequipSlotsWithLifecycle(["line"], {
+      save: false,
+      notify: false,
+    });
     return true;
   }
 
@@ -2073,11 +2076,15 @@ class InventoryManager {
     return hydrated;
   }
 
-  #saveAndNotify() {
+  #saveAndNotify({ save = true, notify = true } = {}) {
     this.#equippedCache = null;
-    CacheManager.set("player_inventory", this.#inventory.getAll());
-    CacheManager.set("player_equipment", this.#equipment.getRawState());
+    if (save) {
+      CacheManager.set("player_inventory", this.#inventory.getAll());
+      CacheManager.set("player_equipment", this.#equipment.getRawState());
+    }
 
-    this.#events.emit("inventory-changed", { equipment: this.getEquipped() });
+    if (notify) {
+      this.#events.emit("inventory-changed", { equipment: this.getEquipped() });
+    }
   }
 }
