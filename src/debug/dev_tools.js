@@ -95,6 +95,7 @@ class DevTools {
   #activeFishKey = "";
   #activeFishShapeKey = "";
   #configRuntime = null;
+  #fishRarityResolver;
   #activeFishVisibilityPolicy;
   #locationSchema;
   #isDisposed = false;
@@ -124,8 +125,16 @@ class DevTools {
     "statuses",
   ];
 
-  constructor(config) {
+  constructor(config, fishRarityResolver) {
+    if (
+      !fishRarityResolver ||
+      typeof fishRarityResolver.resolve !== "function" ||
+      typeof fishRarityResolver.resolveForLevel !== "function"
+    ) {
+      throw new TypeError("DevTools requires fishRarityResolver");
+    }
     this.#config = config;
+    this.#fishRarityResolver = fishRarityResolver;
     this.#configRuntime =
       typeof CONFIG_RUNTIME_CONTEXT !== "undefined"
         ? CONFIG_RUNTIME_CONTEXT
@@ -841,16 +850,53 @@ class DevTools {
     const ranges = template?.weightConfig?.levelWeightRanges;
     if (!Array.isArray(ranges) || ranges.length === 0) return;
 
-    const range =
-      changedKey === "weight"
-        ? this.#findLevelRangeByWeight(ranges, fish.weight)
-        : this.#findLevelRangeByLevel(ranges, fish.level);
+    const visual = template.visual || {};
+    let range = null;
+    let profile = null;
+    if (changedKey === "weight") {
+      profile = this.#fishRarityResolver.resolve({
+        weightKg: fish.weight,
+        weightConfig: template.weightConfig,
+        depthConfig: template.depthConfig,
+        rarityProfile: template.rarityProfile,
+        baseAnomaly: template.anomaly,
+      });
+      fish.level = profile.level;
+      fish.maxLevel = profile.maxLevel;
+      fish.isUnique = profile.isUnique;
+      fish.anomaly = profile.anomaly;
+      fish.rarity = profile.rarity;
+      range = this.#findLevelRangeByLevel(ranges, profile.level);
+    } else {
+      range = this.#findLevelRangeByLevel(ranges, fish.level);
+      if (range) {
+        fish.level = Math.max(
+          1,
+          Math.round(Number(range.level) || fish.level || 1),
+        );
+        profile = this.#fishRarityResolver.resolveForLevel({
+          level: fish.level,
+          weightKg: fish.weight,
+          weightConfig: template.weightConfig,
+          depthConfig: template.depthConfig,
+          rarityProfile: template.rarityProfile,
+          baseAnomaly: template.anomaly,
+        });
+        fish.maxLevel = profile.maxLevel;
+        fish.isUnique = profile.isUnique;
+        fish.anomaly = profile.anomaly;
+        fish.rarity = profile.rarity;
+      }
+    }
     if (!range) return;
 
-    fish.level = Math.max(
-      1,
-      Math.round(Number(range.level) || fish.level || 1),
-    );
+    const imagePattern =
+      visual.imagePattern ||
+      `assets/fish/${template.id}/${template.id}--{level}.webp`;
+    fish.imagePath =
+      fish.isUnique && visual.uniqueImagePath
+        ? visual.uniqueImagePath
+        : imagePattern.replace("{level}", fish.level);
     fish.physics = fish.physics || {};
     fish.physics.forceProfile = fish.physics.forceProfile || {};
     fish.physics.movementProfile = fish.physics.movementProfile || {};
@@ -885,31 +931,6 @@ class DevTools {
         (range) => Math.round(Number(range?.level) || 0) === targetLevel,
       ) || null
     );
-  }
-
-  #findLevelRangeByWeight(ranges, weight) {
-    const value = Number(weight);
-    if (!Number.isFinite(value)) return null;
-
-    let firstRange = null;
-    let lastRange = null;
-    for (const range of ranges) {
-      const min = Number(range?.min);
-      const max = Number(range?.max);
-      if (!Number.isFinite(min) || !Number.isFinite(max)) continue;
-
-      const normalized = {
-        range,
-        min: Math.min(min, max),
-        max: Math.max(min, max),
-      };
-      if (!firstRange) firstRange = normalized;
-      lastRange = normalized;
-      if (value >= normalized.min && value <= normalized.max) return range;
-    }
-
-    if (!firstRange) return null;
-    return value < firstRange.min ? firstRange.range : lastRange.range;
   }
 
   #applyFiniteNumber(target, key, value) {

@@ -3,8 +3,20 @@ class OutcomeRenderFrameBuilder {
   #clock;
   #styleResolver;
   #layoutResolver;
-  #fishRarityCalculator;
-  #trophyFallbackColor = [145, 150, 160];
+  #unknownRarity = Object.freeze({
+    isResolved: false,
+    halfSteps: 0,
+    stars: 0,
+    maxHalfSteps: 0,
+    maxStars: 0,
+    unitsPerStar: 2,
+    weightBand: 0,
+    weightBandCount: 0,
+    levelMinWeightKg: null,
+    levelMaxWeightKg: null,
+    isMaximum: false,
+    isRarest: false,
+  });
   #layoutContext = {
     width: 0,
     height: 0,
@@ -17,7 +29,6 @@ class OutcomeRenderFrameBuilder {
     clock,
     styleResolver,
     layoutResolver,
-    fishRarityCalculator,
   }) {
     if (!styleResolver || typeof styleResolver.resolveVictory !== "function") {
       throw new TypeError(
@@ -29,19 +40,10 @@ class OutcomeRenderFrameBuilder {
         "OutcomeRenderFrameBuilder requires layoutResolver",
       );
     }
-    if (
-      !fishRarityCalculator ||
-      typeof fishRarityCalculator.calculate !== "function"
-    ) {
-      throw new TypeError(
-        "OutcomeRenderFrameBuilder requires fishRarityCalculator",
-      );
-    }
     this.#canvasMetrics = canvasMetrics;
     this.#clock = clock;
     this.#styleResolver = styleResolver;
     this.#layoutResolver = layoutResolver;
-    this.#fishRarityCalculator = fishRarityCalculator;
   }
 
   buildInto({ target, intent }) {
@@ -109,7 +111,8 @@ class OutcomeRenderFrameBuilder {
     this.#addStat(
       stats,
       fish.isTrophy ? "✓ Trophy" : "❌ Not trophy",
-      fish.isTrophy ? null : this.#trophyFallbackColor,
+      null,
+      fish.isTrophy ? null : "neutral",
     );
     this.#addStat(stats, `Anomaly: ${fish.anomaly}`, null);
     const extraStats = Array.isArray(source.victoryStats)
@@ -144,17 +147,13 @@ class OutcomeRenderFrameBuilder {
     if (rarity && Number.isFinite(Number(rarity.halfSteps))) {
       return rarity;
     }
-    return this.#fishRarityCalculator.calculate({
-      level: fish.level,
-      weightKg: fish.weight,
-      isUnique: fish.isUnique,
-      anomaly: fish.anomaly,
-    });
+    return this.#unknownRarity;
   }
 
-  #addStat(target, label, color) {
+  #addStat(target, label, color, tone = null) {
     const record = target.acquire();
     record.label = label;
     record.color = color;
+    record.tone = tone;
   }
 }

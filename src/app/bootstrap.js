@@ -78,15 +78,21 @@ class GameCompositionRoot {
     const outcomeStyleResolver = new OutcomeStyleResolver({
       configProvider: () => this.#config.ui?.victory || {},
     });
+    const rarityVisualResolver = new RarityVisualResolver({
+      configProvider: () => this.#config.rarity?.visual || {},
+    });
     const victoryLayoutResolver = new VictoryLayoutResolver();
     contracts.requireMethods(victoryLayoutResolver, "victoryLayoutResolver", [
       "resolve",
     ]);
-    const fishRarityCalculator = new FishRarityCalculator(
-      this.#config.fishRarity,
+    const fishRarityResolver = new FishRarityResolver(
+      this.#config.rarity,
     );
-    contracts.requireMethods(fishRarityCalculator, "fishRarityCalculator", [
-      "calculate",
+    contracts.requireMethods(fishRarityResolver, "fishRarityResolver", [
+      "resolve",
+      "resolveLevel",
+      "resolveForLevel",
+      "resolveRarity",
     ]);
     const hudBarRenderer = new HudBarRenderer(surface);
     const worldSceneRenderer = new WorldSceneRenderer({
@@ -219,7 +225,14 @@ class GameCompositionRoot {
             surface,
             primitives,
             assets: imageAssets,
-            themeResolver: new VictoryThemeResolver(),
+            themeResolver: new VictoryThemeResolver({
+              rarityVisualResolver,
+            }),
+            starRatingRenderer: new StarRatingRenderer({
+              surface,
+              primitives,
+            }),
+            rarityAnimationResolver: new RarityAnimationResolver(),
           }),
         }),
       }),
@@ -295,7 +308,10 @@ class GameCompositionRoot {
         this.#config.spawns,
       ),
       input: new InputManager(canvas, Number(this.#config.ui?.rod?.x) || null),
-      ui: new UIManager(this.#config),
+      ui: new UIManager(
+        this.#config,
+        new DevTools(this.#config, fishRarityResolver),
+      ),
       chum: new ChumManager(locId, chumConfigObj, projector, {
         rng,
         now: () => clock.realNow,
@@ -305,7 +321,7 @@ class GameCompositionRoot {
         this.#config,
         rng,
         debugEvents,
-        fishRarityCalculator,
+        fishRarityResolver,
       ),
       inventory,
     };
@@ -366,9 +382,10 @@ class GameCompositionRoot {
         hudStyleResolver,
         fightAreaStyleResolver,
         outcomeStyleResolver,
+        rarityVisualResolver,
         victoryLayoutResolver,
       },
-      fishRarityCalculator,
+      fishRarityResolver,
       fishing,
       equipment,
       net,
@@ -489,7 +506,7 @@ class GameCompositionRoot {
       getRodVirtualPos: appPorts.getRodVirtualPos,
       getScreenOffsetRatio: appPorts.getScreenOffsetRatio,
       victoryLayoutResolver: runtime.rendering.victoryLayoutResolver,
-      fishRarityCalculator: runtime.fishRarityCalculator,
+      fishRarityResolver: runtime.fishRarityResolver,
       setState: appPorts.setState,
       castLine: appPorts.castLine,
       markInvalidCast: appPorts.markInvalidCast,
@@ -626,7 +643,6 @@ class GameCompositionRoot {
       clock,
       styleResolver: runtime.rendering.outcomeStyleResolver,
       layoutResolver: runtime.rendering.victoryLayoutResolver,
-      fishRarityCalculator: runtime.fishRarityCalculator,
     });
     const frameBuilder = new GameRenderFrameBuilder({
       canvasMetrics,
@@ -657,6 +673,7 @@ class GameCompositionRoot {
         runtime.rendering.hudStyleResolver.invalidate();
         runtime.rendering.fightAreaStyleResolver.invalidate();
         runtime.rendering.outcomeStyleResolver.invalidate();
+        runtime.rendering.rarityVisualResolver.invalidate();
       },
     });
     contracts.requireMethods(renderCoordinator, "renderCoordinator", [

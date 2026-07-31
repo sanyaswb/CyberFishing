@@ -85,7 +85,7 @@
  * @property {StateCommands} commands
  * @property {StateRules} rules
  * @property {StateServices} services
- * @property {FishRarityCalculator} fishRarityCalculator
+ * @property {FishRarityResolver} fishRarityResolver
  */
 
 /**
@@ -140,7 +140,7 @@
  * @property {FishingController} fishing
  * @property {InventoryManager} inventory
  * @property {() => { width: number, height: number }} getViewportSize
- * @property {FishRarityCalculator} fishRarityCalculator
+ * @property {FishRarityResolver} fishRarityResolver
  * @property {StateCommands} commands
  * @property {StateRules} rules
  * @property {StateServices} services
@@ -337,7 +337,7 @@ class StateDepsFactory {
       canPlayerCast: root.canPlayerCast,
       setInvalidCastMarker: root.setInvalidCastMarker,
       getViewportSize: root.getViewportSize,
-      fishRarityCalculator: root.fishRarityCalculator,
+      fishRarityResolver: root.fishRarityResolver,
       ...this.#worldQueries(),
       ...this.#fishingCommands(),
     });
@@ -410,7 +410,7 @@ class StateDepsFactory {
       inventory: root.inventory,
       getViewportSize: root.getViewportSize,
       victoryLayoutResolver: root.victoryLayoutResolver,
-      fishRarityCalculator: root.fishRarityCalculator,
+      fishRarityResolver: root.fishRarityResolver,
       ...this.#fishingCommands(),
     });
   }
@@ -995,13 +995,20 @@ class WaitingState extends GameState {
       );
       const visual = template.visual || {};
       const weightConfig = template.weightConfig || {};
-      const fixedLevel = this.#resolveFixedCatchLevel(fixed.weight, weightConfig);
-      const maxLevel = weightConfig.maxLevel || fixedLevel;
-      const uniqueLevel = visual.uniqueLevel;
-      const isUnique =
-        template.isUnique === true ||
-        template.unique === true ||
-        (Number.isFinite(uniqueLevel) && fixedLevel >= uniqueLevel);
+      const rarityProfile = this.deps.fishRarityResolver.resolve({
+        weightKg: fixed.weight,
+        weightConfig,
+        depthConfig: template.depthConfig,
+        rarityProfile: template.rarityProfile,
+        baseAnomaly: template.anomaly,
+      });
+      const {
+        level: fixedLevel,
+        maxLevel,
+        isUnique,
+        anomaly,
+        rarity,
+      } = rarityProfile;
       const imagePattern =
         visual.imagePattern ||
         `assets/fish/${template.id}/${template.id}--{level}.webp`;
@@ -1015,19 +1022,10 @@ class WaitingState extends GameState {
         weightConfig,
         fixedLevel,
       );
-      const configuredAnomaly = template.anomaly || "none";
-      const rarity = this.deps.fishRarityCalculator.calculate({
-        level: fixedLevel,
-        weightKg: fixed.weight,
-        weightConfig,
-        depthConfig: template.depthConfig,
-        isUnique,
-        anomaly: configuredAnomaly,
-      });
-      const anomaly =
-        rarity.isRarest === true && visual.uniqueAnomaly
-          ? visual.uniqueAnomaly
-          : configuredAnomaly;
+      const imagePath =
+        isUnique && visual.uniqueImagePath
+          ? visual.uniqueImagePath
+          : imagePattern.replace("{level}", fixedLevel);
 
       hooked = {
         id: template.id,
@@ -1041,7 +1039,7 @@ class WaitingState extends GameState {
         levelAverageWeightKg,
         weight: fixed.weight,
         biteSequence: chosenSequence,
-        imagePath: imagePattern.replace("{level}", fixedLevel),
+        imagePath,
         isUnique,
         isTrophy:
           template.trophyWeightKg !== undefined
@@ -1056,44 +1054,6 @@ class WaitingState extends GameState {
       this.deps.float.startBite(effectiveInput.isPulling, hooked.biteSequence);
       this.deps.commands.setState("biting", { fish: hooked });
     }
-  }
-
-  #resolveFixedCatchLevel(weight, weightConfig) {
-    const ranges = weightConfig?.levelWeightRanges;
-    const maxLevel = Math.max(1, Math.round(Number(weightConfig?.maxLevel) || 1));
-    const value = Number(weight);
-    if (!Array.isArray(ranges) || ranges.length === 0 || !Number.isFinite(value)) {
-      return maxLevel;
-    }
-
-    let firstRange = null;
-    let lastRange = null;
-    for (const range of ranges) {
-      const min = Number(range?.min);
-      const max = Number(range?.max);
-      const level = Number(range?.level);
-      if (
-        !Number.isFinite(min) ||
-        !Number.isFinite(max) ||
-        !Number.isFinite(level)
-      ) {
-        continue;
-      }
-
-      const normalized = {
-        level: Math.max(1, Math.round(level)),
-        min: Math.min(min, max),
-        max: Math.max(min, max),
-      };
-      if (!firstRange) firstRange = normalized;
-      lastRange = normalized;
-      if (value >= normalized.min && value <= normalized.max) {
-        return normalized.level;
-      }
-    }
-
-    if (!firstRange) return maxLevel;
-    return value < firstRange.min ? firstRange.level : lastRange.level;
   }
 
   #resolveLevelAverageWeightKg(weightConfig, level) {

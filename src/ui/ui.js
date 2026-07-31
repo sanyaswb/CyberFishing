@@ -313,13 +313,16 @@ class UIManager {
     this.#fullscreenBtn.innerHTML = document.fullscreenElement ? "🗗" : "⛶";
   };
 
-  constructor(config) {
+  constructor(config, devTools) {
+    if (!devTools || typeof devTools.dispose !== "function") {
+      throw new TypeError("UIManager requires devTools");
+    }
     this.#config = config;
     this.#initFullscreenBtn();
     this.#initNetBtn();
     this.#initContinueBtn();
 
-    this.#devTools = new DevTools(this.#config);
+    this.#devTools = devTools;
   }
 
   hideNetButton() {

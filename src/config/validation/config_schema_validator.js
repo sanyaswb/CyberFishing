@@ -58,6 +58,7 @@ class ConfigSchemaValidator {
     this.#validateLocationDebugConfig();
     this.#validateStaminaMechanicsConfig();
     this.#validateFishCategories();
+    this.#validateRarityConfig();
     this.#validateFishDb();
     this.#validateItemDb();
     this.#validateMapDb();
@@ -425,6 +426,23 @@ class ConfigSchemaValidator {
       this.#validateFiniteNumberLeaves(fish, fishPath);
       this.#validateFishPhysics(fishPath, fish?.physics);
       this.#validateWeightConfig(fishPath, fish?.weightConfig);
+    }
+  }
+
+  #validateRarityConfig() {
+    if (typeof RarityConfigValidator === "undefined") {
+      this.#error(
+        "CONFIG.rarity",
+        "RarityConfigValidator is not loaded",
+      );
+      return;
+    }
+    const issues = new RarityConfigValidator().validate({
+      rarityConfig: this.config.rarity,
+      fishDb: this.fishDb,
+    });
+    for (const issue of issues) {
+      this.#error(issue.path, issue.message);
     }
   }
 

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.23.46";
+const CURRENT_PROJECT_VERSION = "0.23.48";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "fish-rarity-stars",
+  codename: "rarity-domain-hardening",
   updatedAt: "2026-07-31",
   notes: Object.freeze([
-    "Added twelve fish rarity steps rendered as six half-fillable stars",
-    "Calculated rarity from the fish level and its seven weight bands",
-    "Added a crown and animated gold Victory theme for the rarest anomaly",
-    "Raised the Victory canvas above all DOM interface elements",
+    "Restricted unique fish state to explicit 12/12 rarity profiles",
+    "Moved anomaly rules out of visual configuration",
+    "Centralized rarity colors and normalized level gradients",
+    "Removed inaccurate Victory-side rarity recalculation",
+    "Added rarity schema and integration regression coverage",
   ]),
 });
 

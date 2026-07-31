@@ -13,7 +13,7 @@ class BiteSystem {
   #possibleBiteChancesBuffer;
   #rng;
   #debugEvents;
-  #fishRarityCalculator;
+  #fishRarityResolver;
   #tickIndex = 0;
 
   constructor(
@@ -21,13 +21,13 @@ class BiteSystem {
     runtimeConfig,
     rng = null,
     debugEvents = null,
-    fishRarityCalculator = null,
+    fishRarityResolver = null,
   ) {
     if (
-      !fishRarityCalculator ||
-      typeof fishRarityCalculator.calculate !== "function"
+      !fishRarityResolver ||
+      typeof fishRarityResolver.resolve !== "function"
     ) {
-      throw new TypeError("BiteSystem requires fishRarityCalculator");
+      throw new TypeError("BiteSystem requires fishRarityResolver");
     }
     const physicsConfig = this.#resolvePhysicsConfig(runtimeConfig);
     const lineConfig = runtimeConfig?.ui?.line || runtimeConfig?.line || {};
@@ -46,7 +46,7 @@ class BiteSystem {
     this.#possibleBiteChancesBuffer = [];
     this.#rng = rng || { next: () => Math.random() };
     this.#debugEvents = debugEvents || null;
-    this.#fishRarityCalculator = fishRarityCalculator;
+    this.#fishRarityResolver = fishRarityResolver;
   }
 
   setFishDatabase(fishDatabase) {
@@ -141,50 +141,6 @@ class BiteSystem {
       }
     }
     return false;
-  }
-
-  #resolveFishLevel(genWeight, weightRatio, weightConfig) {
-    const maxLevel = Math.max(1, Math.round(weightConfig.maxLevel || 1));
-    let level = Math.max(1, Math.round(weightRatio * maxLevel));
-    const ranges = weightConfig.levelWeightRanges;
-
-    if (!Array.isArray(ranges) || ranges.length === 0) return level;
-
-    let firstRange = null;
-    let lastRange = null;
-
-    for (let i = 0; i < ranges.length; i++) {
-      const range = ranges[i];
-      if (!range) continue;
-
-      const rangeLevel = Number(range.level);
-      const rangeMin = Number(range.min);
-      const rangeMax = Number(range.max);
-
-      if (
-        !Number.isFinite(rangeLevel) ||
-        !Number.isFinite(rangeMin) ||
-        !Number.isFinite(rangeMax)
-      ) {
-        continue;
-      }
-
-      const normalized = {
-        level: Math.max(1, Math.round(rangeLevel)),
-        min: Math.min(rangeMin, rangeMax),
-        max: Math.max(rangeMin, rangeMax),
-      };
-
-      if (!firstRange) firstRange = normalized;
-      lastRange = normalized;
-
-      if (genWeight >= normalized.min && genWeight <= normalized.max) {
-        return normalized.level;
-      }
-    }
-
-    if (!firstRange) return level;
-    return genWeight < firstRange.min ? firstRange.level : lastRange.level;
   }
 
   #resolveLevelBasePower(weightConfig, level) {
@@ -384,10 +340,6 @@ class BiteSystem {
 
     const genWeight =
       curMinW + (curMaxW - curMinW) * Math.pow(this.#next(), wc.rarityCurve);
-    const weightRatio =
-      (genWeight - dc.minWeightAtMinDepth) /
-      (dc.maxWeightAtMaxDepth - dc.minWeightAtMinDepth);
-
     // --- ДОДАНО: Логіка вибору профілю клювання ---
     const baitsToTest = Array.isArray(playerGear.baits)
       ? playerGear.baits
@@ -407,28 +359,16 @@ class BiteSystem {
       chosenBiteSequence = this.#applyGodModeBiteSequence(chosenBiteSequence);
     }
 
-    const level = this.#resolveFishLevel(genWeight, weightRatio, wc);
-    const maxLevel = wc.maxLevel || level;
-    const levelAverageWeightKg = this.#resolveLevelAverageWeightKg(wc, level, dc);
-    const uniqueLevel = fish.visual?.uniqueLevel;
-    const isUnique =
-      fish.isUnique === true ||
-      fish.unique === true ||
-      (Number.isFinite(uniqueLevel) && level >= uniqueLevel);
-    const trophyWeight = fish.trophyWeightKg ?? fish.trophyWeight ?? null;
-    const configuredAnomaly = fish.anomaly || "none";
-    const rarity = this.#fishRarityCalculator.calculate({
-      level,
+    const rarityProfile = this.#fishRarityResolver.resolve({
       weightKg: genWeight,
       weightConfig: wc,
       depthConfig: dc,
-      isUnique,
-      anomaly: configuredAnomaly,
+      rarityProfile: fish.rarityProfile,
+      baseAnomaly: fish.anomaly,
     });
-    const anomaly =
-      rarity.isRarest === true && fish.visual?.uniqueAnomaly
-        ? fish.visual.uniqueAnomaly
-        : configuredAnomaly;
+    const { level, maxLevel, isUnique, anomaly, rarity } = rarityProfile;
+    const levelAverageWeightKg = this.#resolveLevelAverageWeightKg(wc, level, dc);
+    const trophyWeight = fish.trophyWeightKg ?? fish.trophyWeight ?? null;
 
     return {
       id: fish.id,
@@ -439,7 +379,7 @@ class BiteSystem {
       levelAverageWeightKg,
       physics: this.#buildFishPhysics(fish.physics, wc, level),
       biteSequence: chosenBiteSequence,
-      imagePath: this.#resolveFishImagePath(fish, level),
+      imagePath: this.#resolveFishImagePath(fish, level, isUnique),
       isUnique,
       isTrophy: trophyWeight !== null ? genWeight >= trophyWeight : false,
       anomaly,
@@ -447,7 +387,11 @@ class BiteSystem {
     };
   }
 
-  #resolveFishImagePath(fish, level) {
+  #resolveFishImagePath(fish, level, isUnique = false) {
+    const uniqueImagePath = fish.visual?.uniqueImagePath;
+    if (isUnique && typeof uniqueImagePath === "string" && uniqueImagePath) {
+      return uniqueImagePath;
+    }
     const pattern = fish.visual?.imagePattern;
     if (typeof pattern === "string") {
       return pattern.replace("{level}", level);

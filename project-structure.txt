@@ -124,12 +124,13 @@
 │  │  │  ├── immutable_config.js
 │  │  │  └── resolved_config_provider.js
 │  │  └── validation
-│  │    └── config_schema_validator.js
+│  │    ├── config_schema_validator.js
+│  │    └── rarity_config_validator.js
 │  ├── core
 │  │  ├── casting_distance.js
 │  │  ├── core.js
 │  │  ├── fish
-│  │  │  └── fish_rarity_calculator.js
+│  │  │  └── fish_rarity_resolver.js
 │  │  ├── fishing
 │  │  │  ├── drag_force_calculator.js
 │  │  │  ├── endurance
@@ -337,6 +338,8 @@
 │  │  │  └── world_render_pass.js
 │  │  ├── screens
 │  │  │  ├── game_over_renderer.js
+│  │  │  ├── rarity_animation_resolver.js
+│  │  │  ├── star_rating_renderer.js
 │  │  │  ├── victory_layout_resolver.js
 │  │  │  ├── victory_renderer.js
 │  │  │  └── victory_theme_resolver.js
@@ -371,6 +374,7 @@
 │  │  │  ├── fight_area_style_resolver.js
 │  │  │  ├── hud_style_resolver.js
 │  │  │  ├── outcome_style_resolver.js
+│  │  │  ├── rarity_visual_resolver.js
 │  │  │  └── style.css
 │  │  ├── ui.js
 │  │  └── version_badge.js

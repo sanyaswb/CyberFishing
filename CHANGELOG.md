@@ -1,5 +1,41 @@
 # CyberFishing changelog
 
+## v0.23.48 - Rarity Domain Hardening
+
+### Changed
+
+- Moved unique-fish eligibility and anomaly selection from `visual` into a species `rarityProfile`.
+- Restricted unique state, golden animation and the `inside` anomaly to an explicit maximum `12/12` rarity result; a non-maximum level-6 fish is no longer unique.
+- Added optional `visual.uniqueImagePath` support while retaining the level image when no dedicated asset exists.
+- Replaced duplicated Victory colors with a shared six-stop rarity palette and normalized interpolation for arbitrary level counts such as 5, 6, 9 or 12.
+- Extracted star rendering and rarity pulse calculation from `VictoryRenderer`; normalized star geometry is now cached outside the render loop.
+- Renamed the domain maximum marker from `isCrown` to `isMaximum`.
+
+### Fixed
+
+- Removed Victory's inaccurate rarity fallback calculation when weight-range data is unavailable; missing domain rarity now produces an explicit unknown descriptor.
+- Fixed the five-level Victory gradient so levels 4 and 5 no longer share the same red color.
+- Added rarity configuration validation for scale consistency, color stops, unique profiles, sequential levels and gram-normalized range gaps or overlaps.
+
+### Tests
+
+- Added regression coverage for non-maximum level-6 fish, unique anomaly/image routing, Victory rarity transfer and unknown fallback, 5/6/9/12-level gradients, and invalid rarity configurations.
+
+## v0.23.47 - Gap-Safe Fish Rarity Resolution
+
+### Fixed
+
+- Centralized fish level, unique-state and rarity classification in `FishRarityResolver`.
+- Normalized configured weight boundaries to integer grams so decimal gaps such as `0.250–0.251kg` cannot fall through to the maximum level.
+- Fixed a `0.2505kg` crucian-stalker resolving as level 6, unique and using the level-6 image; it now resolves as level 2 with the level-2 image.
+- Removed the duplicated level-by-weight algorithms from normal bite generation and debug fixed catches.
+- Routed live DevTools weight edits through the same resolver and kept level, rarity, unique state, anomaly and image path synchronized.
+- Made invalid weights fall back safely to the first level instead of producing a unique maximum-level fish.
+
+### Tests
+
+- Added direct resolver and full `BiteSystem` regression coverage for the `0.2505kg` boundary case.
+
 ## v0.23.46 - Fish Rarity Stars
 
 ### Added

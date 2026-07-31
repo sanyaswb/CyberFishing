@@ -30,22 +30,10 @@ class OutcomeStyleResolver {
       blurPx: 3,
       uniqueGlowPulseMs: 1200,
       uniqueFrameDash: [12, 7],
-      levelColors: {
-        1: [145, 150, 160],
-        2: [0, 210, 120],
-        3: [0, 160, 255],
-        4: [170, 100, 255],
-        preUnique: [255, 70, 70],
-        unique: [255, 205, 55],
-      },
     };
     this.#cache = {
       ...defaults,
       ...config,
-      levelColors: {
-        ...defaults.levelColors,
-        ...(config.levelColors || {}),
-      },
     };
     return this.#cache;
   }
