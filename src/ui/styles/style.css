@@ -12,6 +12,11 @@ canvas {
   background-color: #0f171e;
 }
 
+body.victory-outcome-active canvas#gameCanvas {
+  position: relative;
+  z-index: 20000;
+}
+
 body.scouting-pointer-hold .ui-fade-target,
 body.scouting-pointer-hold .inv-backpack-btn {
   opacity: 0.18 !important;

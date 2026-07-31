@@ -45,6 +45,9 @@ class VictoryRenderer {
     const config = model.config;
     const theme = this.#themeResolver.resolve(model.fish, config);
     const color = theme.color;
+    const rarestPulse = theme.isRarest
+      ? this.#resolveRarestPulse(model.nowMs, config.uniqueGlowPulseMs)
+      : 0;
 
     surface.save();
     if (config.blurPx > 0) {
@@ -56,7 +59,7 @@ class VictoryRenderer {
     surface.fillRect(0, 0, model.width, model.height);
 
     surface.shadowColor = RenderMath.rgba(color, 0.35);
-    surface.shadowBlur = theme.isUnique ? 34 : 20;
+    surface.shadowBlur = theme.isRarest ? 30 + rarestPulse * 22 : 20;
     this.#primitives.roundedRect(
       layout.panel.x,
       layout.panel.y,
@@ -66,13 +69,19 @@ class VictoryRenderer {
     );
     surface.fillStyle = RenderMath.rgba(
       color,
-      theme.isUnique ? 0.2 : 0.15,
+      theme.isRarest ? 0.18 + rarestPulse * 0.12 : 0.15,
     );
     surface.fill();
     surface.shadowBlur = 0;
     surface.strokeStyle = RenderMath.rgba(color, 0.75);
-    surface.lineWidth = 1.5;
+    surface.lineWidth = theme.isRarest ? 2.5 + rarestPulse : 1.5;
+    if (theme.isRarest) {
+      surface.setLineDash(config.uniqueFrameDash);
+      surface.lineDashOffset = -(model.nowMs / 45);
+    }
     surface.stroke();
+    surface.setLineDash([]);
+    surface.lineDashOffset = 0;
 
     this.#drawFittedText(
       "Caught",
@@ -95,7 +104,8 @@ class VictoryRenderer {
       "#ffffff",
     );
 
-    this.#drawFishImage(model, theme);
+    this.#drawFishImage(model, theme, rarestPulse);
+    this.#drawRarity(model, theme);
     this.#drawStats(model, color);
     this.#drawButton(layout.claim, "Claim", color, true);
     this.#drawButton(
@@ -107,7 +117,7 @@ class VictoryRenderer {
     surface.restore();
   }
 
-  #drawFishImage(model, theme) {
+  #drawFishImage(model, theme, rarestPulse) {
     const surface = this.#surface;
     const imageRect = model.layout.image;
     const color = theme.color;
@@ -151,18 +161,9 @@ class VictoryRenderer {
       );
     }
 
-    if (theme.isUnique) {
-      const pulse =
-        0.5 +
-        Math.sin(
-          (model.nowMs /
-            Math.max(1, model.config.uniqueGlowPulseMs)) *
-            Math.PI *
-            2,
-        ) *
-          0.5;
+    if (theme.isRarest) {
       surface.shadowColor = RenderMath.rgba(color, 0.95);
-      surface.shadowBlur = 14 + pulse * 18;
+      surface.shadowBlur = 14 + rarestPulse * 18;
     }
     surface.strokeStyle = RenderMath.rgba(color, 1);
     surface.lineWidth = model.config.imageBorderWidth;
@@ -174,6 +175,117 @@ class VictoryRenderer {
     );
     surface.shadowBlur = 0;
     this.#drawBadge(model, color);
+  }
+
+  #drawRarity(model, theme) {
+    const surface = this.#surface;
+    const rect = model.layout.rarity;
+    const rarity = model.fish.rarity || {};
+    const maxStars = Math.max(1, Math.round(Number(rarity.maxStars) || 6));
+    const halfSteps = Math.max(0, Math.round(Number(rarity.halfSteps) || 0));
+    const maxHalfSteps = Math.max(
+      1,
+      Math.round(Number(rarity.maxHalfSteps) || maxStars * 2),
+    );
+    const configuredRadius = Number(model.config.rarityStarRadius) || 12;
+    const gap = Math.max(2, Number(model.config.rarityStarGap) || 7);
+    const crownWidth = rarity.isCrown === true ? 30 : 0;
+    const radius = Math.min(
+      configuredRadius,
+      (rect.width - crownWidth - gap * Math.max(0, maxStars - 1)) /
+        (maxStars * 2),
+    );
+    const starsWidth = maxStars * radius * 2 + (maxStars - 1) * gap;
+    const totalWidth = starsWidth + crownWidth;
+    const startX = rect.x + (rect.width - totalWidth) / 2 + radius;
+    const centerY = rect.y + rect.height - radius - 2;
+    const starColor = model.config.levelColors?.unique || [255, 205, 55];
+
+    this.#drawFittedText(
+      `Rarity ${halfSteps}/${maxHalfSteps}`,
+      rect.x + rect.width / 2,
+      rect.y + 9,
+      rect.width - 12,
+      11,
+      "sans-serif",
+      "bold",
+      RenderMath.rgba(theme.color, 0.95),
+    );
+
+    for (let index = 0; index < maxStars; index += 1) {
+      const centerX = startX + index * (radius * 2 + gap);
+      const fillRatio = Math.max(
+        0,
+        Math.min(1, (halfSteps - index * 2) / 2),
+      );
+      this.#drawStar(centerX, centerY, radius, fillRatio, starColor);
+    }
+
+    if (rarity.isCrown === true) {
+      this.#drawFittedText(
+        "\u{1F451}",
+        startX - radius + starsWidth + crownWidth / 2,
+        centerY,
+        crownWidth,
+        20,
+        "sans-serif",
+        "bold",
+        RenderMath.rgba(starColor, 1),
+      );
+    }
+  }
+
+  #drawStar(centerX, centerY, radius, fillRatio, color) {
+    const surface = this.#surface;
+    this.#traceStar(centerX, centerY, radius);
+    surface.fillStyle = "rgba(255, 255, 255, 0.08)";
+    surface.fill();
+
+    if (fillRatio > 0) {
+      surface.save();
+      this.#traceStar(centerX, centerY, radius);
+      surface.clip();
+      surface.fillStyle = RenderMath.rgba(color, 0.96);
+      surface.fillRect(
+        centerX - radius,
+        centerY - radius,
+        radius * 2 * fillRatio,
+        radius * 2,
+      );
+      surface.restore();
+    }
+
+    this.#traceStar(centerX, centerY, radius);
+    surface.strokeStyle = RenderMath.rgba(color, 0.8);
+    surface.lineWidth = 1.25;
+    surface.stroke();
+  }
+
+  #traceStar(centerX, centerY, outerRadius) {
+    const surface = this.#surface;
+    const innerRadius = outerRadius * 0.46;
+    surface.beginPath();
+    for (let point = 0; point < 10; point += 1) {
+      const radius = point % 2 === 0 ? outerRadius : innerRadius;
+      const angle = -Math.PI / 2 + point * Math.PI / 5;
+      const x = centerX + Math.cos(angle) * radius;
+      const y = centerY + Math.sin(angle) * radius;
+      if (point === 0) surface.moveTo(x, y);
+      else surface.lineTo(x, y);
+    }
+    surface.closePath();
+  }
+
+  #resolveRarestPulse(nowMs, durationMs) {
+    return (
+      0.5 +
+      Math.sin(
+        (Number(nowMs || 0) / Math.max(1, Number(durationMs) || 1200)) *
+          Math.PI *
+          2,
+      ) *
+        0.5
+    );
   }
 
   #drawBadge(model, color) {

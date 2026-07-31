@@ -1,5 +1,19 @@
 # CyberFishing changelog
 
+## v0.23.46 - Fish Rarity Stars
+
+### Added
+
+- Added a fish rarity calculator with 12 half-star steps across six visual stars.
+- Split each fish level's gram range into seven equal rarity bands, including derived ranges for species without explicit level ranges.
+- Added a dedicated Victory rarity row with half-filled stars, a 12/12 crown and the numeric rarity score.
+- Added an animated gold panel, frame and image glow for maximum-rarity anomalous or unique fish.
+- Marked the rarest clean crucian-stalker variant with its `inside` anomaly identifier.
+
+### Fixed
+
+- Raised the Victory canvas above every DOM interface layer while the catch result is active.
+
 ## v0.23.45 - Inventory One-Click Equip
 
 ### Fixed

@@ -3,6 +3,7 @@ class OutcomeRenderFrameBuilder {
   #clock;
   #styleResolver;
   #layoutResolver;
+  #fishRarityCalculator;
   #trophyFallbackColor = [145, 150, 160];
   #layoutContext = {
     width: 0,
@@ -16,6 +17,7 @@ class OutcomeRenderFrameBuilder {
     clock,
     styleResolver,
     layoutResolver,
+    fishRarityCalculator,
   }) {
     if (!styleResolver || typeof styleResolver.resolveVictory !== "function") {
       throw new TypeError(
@@ -27,10 +29,19 @@ class OutcomeRenderFrameBuilder {
         "OutcomeRenderFrameBuilder requires layoutResolver",
       );
     }
+    if (
+      !fishRarityCalculator ||
+      typeof fishRarityCalculator.calculate !== "function"
+    ) {
+      throw new TypeError(
+        "OutcomeRenderFrameBuilder requires fishRarityCalculator",
+      );
+    }
     this.#canvasMetrics = canvasMetrics;
     this.#clock = clock;
     this.#styleResolver = styleResolver;
     this.#layoutResolver = layoutResolver;
+    this.#fishRarityCalculator = fishRarityCalculator;
   }
 
   buildInto({ target, intent }) {
@@ -91,6 +102,7 @@ class OutcomeRenderFrameBuilder {
     fish.anomaly = String(source.anomaly || "none");
     fish.isTrophy = source.isTrophy === true;
     fish.isUnique = source.isUnique === true;
+    fish.rarity = this.#resolveRarity(source, fish);
     const config = this.#styleResolver.resolveVictory();
     const stats = target.stats;
     this.#addStat(stats, `${fish.weight.toFixed(3)} kg`, null);
@@ -125,6 +137,19 @@ class OutcomeRenderFrameBuilder {
     target.layout = this.#layoutResolver.resolve(layoutContext);
     target.spriteId = ImageAssetProvider.assetIdForSource(imagePath, "fish");
     target.spritePath = imagePath;
+  }
+
+  #resolveRarity(source, fish) {
+    const rarity = source.rarity;
+    if (rarity && Number.isFinite(Number(rarity.halfSteps))) {
+      return rarity;
+    }
+    return this.#fishRarityCalculator.calculate({
+      level: fish.level,
+      weightKg: fish.weight,
+      isUnique: fish.isUnique,
+      anomaly: fish.anomaly,
+    });
   }
 
   #addStat(target, label, color) {

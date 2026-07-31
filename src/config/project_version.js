@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.23.45";
+const CURRENT_PROJECT_VERSION = "0.23.46";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "inventory-one-click-equip",
+  codename: "fish-rarity-stars",
   updatedAt: "2026-07-31",
   notes: Object.freeze([
-    "Equipped items with one valid target slot on the first inventory click",
-    "Kept two-click and explicit slot selection for items with multiple targets",
-    "Highlighted only valid equipment targets",
-    "Removed rejected item and slot highlighting from the inventory UI",
-    "Allowed selected items to replace equipment in occupied valid slots",
+    "Added twelve fish rarity steps rendered as six half-fillable stars",
+    "Calculated rarity from the fish level and its seven weight bands",
+    "Added a crown and animated gold Victory theme for the rarest anomaly",
+    "Raised the Victory canvas above all DOM interface elements",
   ]),
 });
 

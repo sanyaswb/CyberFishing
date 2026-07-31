@@ -9,6 +9,7 @@ const PEACEFUL_FISH = [
     visual: {
       imagePattern: "assets/fish/crucian_stalker/crucian_stalker--{level}.webp",
       uniqueLevel: 6,
+      uniqueAnomaly: "inside",
     },
 
     weatherMultipliers: {

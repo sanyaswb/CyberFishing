@@ -511,7 +511,15 @@ class UIManager {
     this.#continueBtn.style.display = isVisible ? "block" : "none";
   }
 
+  setOutcomeOverlayActive(isActive) {
+    document.body?.classList.toggle(
+      "victory-outcome-active",
+      isActive === true,
+    );
+  }
+
   dispose() {
+    this.setOutcomeOverlayActive(false);
     document.removeEventListener(
       "fullscreenchange",
       this.#onFullscreenChange,

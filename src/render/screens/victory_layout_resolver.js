@@ -3,6 +3,7 @@ class VictoryLayoutResolver {
     panel: {},
     image: {},
     badge: {},
+    rarity: {},
     stats: {
       x: 0,
       y: 0,
@@ -32,6 +33,7 @@ class VictoryLayoutResolver {
     const configuredPadding = Number(config?.panelPadding) || 24;
     const configuredPillHeight = Number(config?.statPillHeight) || 42;
     const configuredButtonHeight = Number(config?.buttonHeight) || 42;
+    const configuredRarityHeight = Number(config?.rarityRowHeight) || 50;
     const configuredImageSize = Number(config?.imageBoxSize) || 260;
     const configuredMinHeight = Number(config?.panelMinHeight) || 560;
     const configuredButtonWidth = Number(config?.buttonWidth) || 150;
@@ -62,6 +64,8 @@ class VictoryLayoutResolver {
       gap +
       imageSize +
       gap +
+      configuredRarityHeight +
+      gap +
       statsHeight +
       gap +
       buttonHeight;
@@ -76,6 +80,8 @@ class VictoryLayoutResolver {
         titleHeight +
         gap +
         imageSize +
+        gap +
+        configuredRarityHeight +
         gap +
         statsHeight +
         gap +
@@ -93,7 +99,8 @@ class VictoryLayoutResolver {
     const panelY = (viewportHeight - panelHeight) / 2;
     const imageX = panelX + (panelWidth - imageSize) / 2;
     const imageY = panelY + padding + titleHeight + gap;
-    const statsY = imageY + imageSize + gap;
+    const rarityY = imageY + imageSize + gap;
+    const statsY = rarityY + configuredRarityHeight + gap;
     const pillWidth =
       (panelWidth - padding * 2 - pillGap * (columns - 1)) / columns;
     const buttonsY = statsY + statsHeight + gap;
@@ -125,6 +132,13 @@ class VictoryLayoutResolver {
       imageY,
       badgeSize,
       badgeSize,
+    );
+    this.#setRect(
+      this.#layout.rarity,
+      panelX + padding,
+      rarityY,
+      panelWidth - padding * 2,
+      configuredRarityHeight,
     );
     this.#setRect(
       this.#layout.claim,

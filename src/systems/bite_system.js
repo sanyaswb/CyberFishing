@@ -13,9 +13,22 @@ class BiteSystem {
   #possibleBiteChancesBuffer;
   #rng;
   #debugEvents;
+  #fishRarityCalculator;
   #tickIndex = 0;
 
-  constructor(biteConfig, runtimeConfig, rng = null, debugEvents = null) {
+  constructor(
+    biteConfig,
+    runtimeConfig,
+    rng = null,
+    debugEvents = null,
+    fishRarityCalculator = null,
+  ) {
+    if (
+      !fishRarityCalculator ||
+      typeof fishRarityCalculator.calculate !== "function"
+    ) {
+      throw new TypeError("BiteSystem requires fishRarityCalculator");
+    }
     const physicsConfig = this.#resolvePhysicsConfig(runtimeConfig);
     const lineConfig = runtimeConfig?.ui?.line || runtimeConfig?.line || {};
     this.#runtimeConfig = runtimeConfig || {};
@@ -33,6 +46,7 @@ class BiteSystem {
     this.#possibleBiteChancesBuffer = [];
     this.#rng = rng || { next: () => Math.random() };
     this.#debugEvents = debugEvents || null;
+    this.#fishRarityCalculator = fishRarityCalculator;
   }
 
   setFishDatabase(fishDatabase) {
@@ -402,6 +416,19 @@ class BiteSystem {
       fish.unique === true ||
       (Number.isFinite(uniqueLevel) && level >= uniqueLevel);
     const trophyWeight = fish.trophyWeightKg ?? fish.trophyWeight ?? null;
+    const configuredAnomaly = fish.anomaly || "none";
+    const rarity = this.#fishRarityCalculator.calculate({
+      level,
+      weightKg: genWeight,
+      weightConfig: wc,
+      depthConfig: dc,
+      isUnique,
+      anomaly: configuredAnomaly,
+    });
+    const anomaly =
+      rarity.isRarest === true && fish.visual?.uniqueAnomaly
+        ? fish.visual.uniqueAnomaly
+        : configuredAnomaly;
 
     return {
       id: fish.id,
@@ -415,7 +442,8 @@ class BiteSystem {
       imagePath: this.#resolveFishImagePath(fish, level),
       isUnique,
       isTrophy: trophyWeight !== null ? genWeight >= trophyWeight : false,
-      anomaly: fish.anomaly || "none",
+      anomaly,
+      rarity,
     };
   }
 

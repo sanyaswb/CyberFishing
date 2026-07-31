@@ -350,6 +350,14 @@ const CONFIG = {
     fishes: typeof FISH_DB !== "undefined" ? FISH_DB : [],
   },
 
+  fishRarity: {
+    weightBandsPerLevel: 7,
+    weightUnitsPerKg: 1000,
+    maxHalfSteps: 12,
+    maxStars: 6,
+    noneAnomalyIds: ["", "none"],
+  },
+
   logs: {
     events: false,
     maxEntries: 50,
@@ -731,11 +739,15 @@ const CONFIG = {
       imageBoxSize: 260,
       imageBorderWidth: 3,
       statPillHeight: 42,
+      rarityRowHeight: 50,
+      rarityStarGap: 7,
+      rarityStarRadius: 12,
       buttonWidth: 150,
       buttonHeight: 42,
       buttonGap: 14,
       blurPx: 3,
       uniqueGlowPulseMs: 1200,
+      uniqueFrameDash: [12, 7],
       levelColors: {
         1: [145, 150, 160],
         2: [0, 210, 120],

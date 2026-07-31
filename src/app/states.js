@@ -85,6 +85,7 @@
  * @property {StateCommands} commands
  * @property {StateRules} rules
  * @property {StateServices} services
+ * @property {FishRarityCalculator} fishRarityCalculator
  */
 
 /**
@@ -139,6 +140,7 @@
  * @property {FishingController} fishing
  * @property {InventoryManager} inventory
  * @property {() => { width: number, height: number }} getViewportSize
+ * @property {FishRarityCalculator} fishRarityCalculator
  * @property {StateCommands} commands
  * @property {StateRules} rules
  * @property {StateServices} services
@@ -335,6 +337,7 @@ class StateDepsFactory {
       canPlayerCast: root.canPlayerCast,
       setInvalidCastMarker: root.setInvalidCastMarker,
       getViewportSize: root.getViewportSize,
+      fishRarityCalculator: root.fishRarityCalculator,
       ...this.#worldQueries(),
       ...this.#fishingCommands(),
     });
@@ -407,6 +410,7 @@ class StateDepsFactory {
       inventory: root.inventory,
       getViewportSize: root.getViewportSize,
       victoryLayoutResolver: root.victoryLayoutResolver,
+      fishRarityCalculator: root.fishRarityCalculator,
       ...this.#fishingCommands(),
     });
   }
@@ -1011,6 +1015,19 @@ class WaitingState extends GameState {
         weightConfig,
         fixedLevel,
       );
+      const configuredAnomaly = template.anomaly || "none";
+      const rarity = this.deps.fishRarityCalculator.calculate({
+        level: fixedLevel,
+        weightKg: fixed.weight,
+        weightConfig,
+        depthConfig: template.depthConfig,
+        isUnique,
+        anomaly: configuredAnomaly,
+      });
+      const anomaly =
+        rarity.isRarest === true && visual.uniqueAnomaly
+          ? visual.uniqueAnomaly
+          : configuredAnomaly;
 
       hooked = {
         id: template.id,
@@ -1030,7 +1047,8 @@ class WaitingState extends GameState {
           template.trophyWeightKg !== undefined
             ? fixed.weight >= template.trophyWeightKg
             : false,
-        anomaly: template.anomaly || "none",
+        anomaly,
+        rarity,
       };
     }
 
@@ -1849,10 +1867,12 @@ class VictoryState extends GameState {
   enter(data) {
     this.data = data || {};
     this.deps.ui.updateContinueButtonState(false);
+    this.deps.ui.setOutcomeOverlayActive(true);
   }
 
   exit() {
     this.deps.ui.updateContinueButtonState(false);
+    this.deps.ui.setOutcomeOverlayActive(false);
   }
 
   handleInput(input) {

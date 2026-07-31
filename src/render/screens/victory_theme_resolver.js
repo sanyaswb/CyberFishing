@@ -1,5 +1,5 @@
 class VictoryThemeResolver {
-  #theme = { color: [145, 150, 160], isUnique: false };
+  #theme = { color: [145, 150, 160], isRarest: false };
 
   resolve(fish, config) {
     const colors = config.levelColors || {};
@@ -13,8 +13,8 @@ class VictoryThemeResolver {
     const maxLevel = Math.max(level, Math.round(fish.maxLevel || level));
     let color = gray;
 
-    this.#theme.isUnique = fish.isUnique === true;
-    if (this.#theme.isUnique) color = gold;
+    this.#theme.isRarest = fish.rarity?.isRarest === true;
+    if (this.#theme.isRarest) color = gold;
     else if (maxLevel > 2 && level === maxLevel - 1) color = red;
     else if (level === 2) color = green;
     else if (level === 3) color = blue;

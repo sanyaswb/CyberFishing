@@ -128,6 +128,8 @@
 │  ├── core
 │  │  ├── casting_distance.js
 │  │  ├── core.js
+│  │  ├── fish
+│  │  │  └── fish_rarity_calculator.js
 │  │  ├── fishing
 │  │  │  ├── drag_force_calculator.js
 │  │  │  ├── endurance
@@ -378,6 +380,7 @@
   ├── check-js.js
   ├── create-version-copy.js
   ├── dev-server.js
+  ├── fish-rarity-check.js
   ├── float-depth-cast-check.js
   ├── game-cycle-check.js
   ├── git-version-copy.js
