@@ -67,14 +67,14 @@ class CastDistanceCalculator {
     if (hasReel) {
       const multiplier = this.#numberOrDefault(
         this.#lineConfig.rodLengthReserveMultiplier,
-        1.0,
+        2.0,
       );
       return Math.max(0, rodLength * multiplier);
     }
 
     const multiplier = this.#numberOrDefault(
       this.#lineConfig.noReelMinRodLengthMultiplier,
-      1.0,
+      2.0,
     );
     return Math.max(0, rodLength * multiplier);
   }

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.23.40";
+const CURRENT_PROJECT_VERSION = "0.23.42";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "build-aware-line-reconciliation",
-  updatedAt: "2026-07-16",
+  codename: "tackle-aware-rod-stroke",
+  updatedAt: "2026-07-31",
   notes: Object.freeze([
-    "Centralized equipment unequip lifecycle handling in InventoryManager",
-    "Returned detached line segments after rod, reel, build-switch and compatibility cascades",
-    "Added build-aware source spool and fallback matching",
-    "Preserved real equipped-line losses during segment reconciliation",
-    "Committed batch equipment operations with one save and one inventory event",
+    "Resolved pole rod stroke capacity from equipped line length",
+    "Resolved reel rod stroke capacity from physical rod length",
+    "Passed the active line-system length and reel state into RodPullSystem",
+    "Centralized tackle-aware capacity selection in RodStrokeCapacityResolver",
+    "Added regression checks for 10m pole and 3m reel-rod stroke capacities",
   ]),
 });
 

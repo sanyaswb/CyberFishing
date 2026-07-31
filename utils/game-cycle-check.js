@@ -72,6 +72,7 @@ const FILES = [
   "src/core/fishing/reel_auto_recovery_calculator.js",
   "src/core/fishing/reel_hold_recovery_system.js",
   "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+  "src/core/fishing/rod_stroke_capacity_resolver.js",
   "src/core/fishing/rod_pull_calculator.js",
   "src/core/fishing/fish_retrieve_result.js",
   "src/core/fishing/recoverable_line_calculator.js",
@@ -620,7 +621,7 @@ function runRodPullConfigSourceCheck() {
   });
   assertApprox(
     legacyOnly.calculateMaxDistance({ rodLengthMeters: 2 }),
-    1,
+    2,
     0.000001,
     "legacy distanceMultiplierByRodLength no longer controls rod stroke capacity",
   );
@@ -687,6 +688,12 @@ function runRodPullConfigSourceCheck() {
     0.000001,
     "rod pull adapter sources capacity from physics.fight.rodStroke only",
   );
+  assertApprox(
+    rodPullConfig.capacityByLineLengthRatio,
+    adapterConfig.physics.fight.rodStroke.capacityByLineLengthRatio,
+    0.000001,
+    "rod pull adapter sources pole capacity from physics.fight.rodStroke only",
+  );
   assert(
     !Object.prototype.hasOwnProperty.call(rodPullConfig, "distanceMultiplierByRodLength"),
     "rod pull adapter no longer exports distanceMultiplierByRodLength",
@@ -698,6 +705,64 @@ function runRodPullConfigSourceCheck() {
 }
 
 runRodPullConfigSourceCheck();
+
+function runRodStrokeCapacitySourceCheck() {
+  const config = createConfig().fightPhysicsConfig.getRodPullConfig();
+  const calculator = new RodPullCalculator(config);
+
+  assertApprox(
+    calculator.calculateMaxDistance({
+      rodLengthMeters: 5,
+      lineLengthMeters: 10,
+      hasReel: false,
+    }),
+    10,
+    0.000001,
+    "pole rod stroke capacity equals equipped line length",
+  );
+  assertApprox(
+    calculator.calculateMaxDistance({
+      rodLengthMeters: 3,
+      lineLengthMeters: 10,
+      hasReel: true,
+    }),
+    3,
+    0.000001,
+    "reel rod stroke capacity equals rod length",
+  );
+
+  const poleSystem = new RodPullSystem(config);
+  const poleFrame = poleSystem.update({
+    dtSec: 0,
+    inputState: { pullHeld: false },
+    rod: { lengthMeters: 5 },
+    lineLengthMeters: 10,
+    hasReel: false,
+  });
+  assertApprox(
+    poleFrame.rodStrokeCapacityMeters,
+    10,
+    0.000001,
+    "RodPullSystem preserves 10m pole stroke capacity",
+  );
+
+  const reelSystem = new RodPullSystem(config);
+  const reelFrame = reelSystem.update({
+    dtSec: 0,
+    inputState: { pullHeld: false },
+    rod: { lengthMeters: 3 },
+    lineLengthMeters: 10,
+    hasReel: true,
+  });
+  assertApprox(
+    reelFrame.rodStrokeCapacityMeters,
+    3,
+    0.000001,
+    "RodPullSystem preserves 3m reel-rod stroke capacity",
+  );
+}
+
+runRodStrokeCapacitySourceCheck();
 
 function runRodStrokeDistanceSourceCheck() {
   const system = new RodPullSystem({

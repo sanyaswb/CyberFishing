@@ -2,9 +2,9 @@ const TACKLE_PHYSICS_CONFIG = {
   line: {
     defaultMaxLoadKg: 12,
     durabilityMaxLoadLossPerPercent: 0.001,
-    rodLengthReserveMultiplier: 1.0,
-    noReelMinRodLengthMultiplier: 1.0,
-    noReelExtraLengthMeters: 1.0,
+    rodLengthReserveMultiplier: 2.0,
+    noReelMinRodLengthMultiplier: 2.0,
+    noReelExtraLengthMeters: 0.0,
     noReelRodLengthMultiplier: 2.0,
     fullExtensionTensionMultiplier: 1.0,
     slackTensionMultiplier: 0.0,

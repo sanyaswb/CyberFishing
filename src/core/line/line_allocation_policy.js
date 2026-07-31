@@ -76,14 +76,14 @@ class LineAllocationPolicy {
     if (this.rodRequiresReel(rod)) {
       const multiplier = this.#numberOrDefault(
         this.#lineConfig.rodLengthReserveMultiplier,
-        1,
+        2,
       );
       return Math.max(0, rodLength * multiplier);
     }
 
     const multiplier = this.#numberOrDefault(
       this.#lineConfig.noReelMinRodLengthMultiplier,
-      1,
+      2,
     );
     return Math.max(0, rodLength * multiplier);
   }
@@ -97,11 +97,15 @@ class LineAllocationPolicy {
     }
 
     const rodLength = this.#rodLengthMeters(rod);
+    const rodLengthMultiplier = this.#numberOrDefault(
+      this.#lineConfig.noReelRodLengthMultiplier,
+      2,
+    );
     const extraMeters = this.#numberOrDefault(
       this.#lineConfig.noReelExtraLengthMeters,
-      1,
+      0,
     );
-    return Math.max(0, rodLength + extraMeters);
+    return Math.max(0, (rodLength * rodLengthMultiplier) + extraMeters);
   }
 
   rodRequiresReel(rod) {

@@ -86,6 +86,8 @@ class RodPullSystem {
     dragLocked,
     hardLineLimit,
     lineHasReserve = true,
+    lineLengthMeters = 0,
+    hasReel = true,
     fishDistanceMeters,
     distanceLostBeforePullMeters = null,
     playerPressureGain = null,
@@ -98,6 +100,8 @@ class RodPullSystem {
     }
     const configuredCapacity = this.#calculator.calculateMaxDistance({
       rodLengthMeters: this.#rodLengthMeters(rod),
+      lineLengthMeters,
+      hasReel,
     });
     const previousStrokeSnapshot = this.#strokeState.getSnapshot();
     this.#strokeState.setCapacity(configuredCapacity);
@@ -125,6 +129,8 @@ class RodPullSystem {
       input: inputState,
       previousState: this.#state,
       rodLengthMeters: this.#rodLengthMeters(rod),
+      lineLengthMeters,
+      hasReel,
       maxTackleLoadKg,
       rodLimitKg: this.#rodLimitKg(rod, rodLimitKg),
       playerForceBudget,

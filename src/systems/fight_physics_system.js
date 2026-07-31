@@ -1526,6 +1526,8 @@ class FightPhysicsSystem {
       dragLocked: dragContext.dragLocked,
       hardLineLimit: lineStateBeforePull.isFullyExtended,
       lineHasReserve: this.#lineHasReserve(lineStateBeforePull),
+      lineLengthMeters: lineStateBeforePull.totalLengthMeters,
+      hasReel: lineStateBeforePull.hasReel,
       fishDistanceMeters: lineStateBeforePull.distanceMeters,
       playerPressureFatigue,
     });

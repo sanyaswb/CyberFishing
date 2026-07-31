@@ -159,10 +159,10 @@ class InventoryFixtureFactory {
         this.#box("build-a", "Build A"),
         this.#box("build-b", "Build B"),
         this.#item("rod-a", "rod_float", "build-a"),
-        this.#line("line-a-fallback", "build-a", 19),
-        this.#line("line-b-source", "build-b", 19),
+        this.#line("line-a-fallback", "build-a", 15),
+        this.#line("line-b-source", "build-b", 15),
         {
-          ...this.#line("line-a-segment", "build-a", 6),
+          ...this.#line("line-a-segment", "build-a", 10),
           detachedLineSegment: true,
           sourceLineItemId: "line",
           sourceLineInstanceId: "line-b-source",
@@ -210,7 +210,7 @@ class InventoryFixtureFactory {
           type: "spinning",
           engineStats: {
             type: "spinning",
-            lengthMeters: 5,
+            lengthMeters: 3,
             hasReel: true,
             maxHooks: 1,
             capabilities: ["reel", "lure"],
@@ -225,7 +225,7 @@ class InventoryFixtureFactory {
           engineStats: {
             type: "spinning_reel",
             requiresTag: "reel",
-            lineCapacityMeters: 6,
+            lineCapacityMeters: 10,
           },
         },
       },
@@ -413,7 +413,7 @@ class InventoryLifecycleCheckSuite {
     fixture.manager.unequipItem("rod");
 
     this.#assertSingleLine(fixture.manager, "build-a", 25);
-    this.#assertSingleLine(fixture.manager, "build-b", 19);
+    this.#assertSingleLine(fixture.manager, "build-b", 15);
     this.#assertSingleCommit(fixture.events, "build-aware fallback");
   }
 
@@ -485,8 +485,8 @@ class InventoryLifecycleCheckSuite {
     Assertion.equal(lines.length, 2, `${buildId} has spool and equipped segment`);
     const segment = lines.find((item) => item.detachedLineSegment);
     const spool = lines.find((item) => !item.detachedLineSegment);
-    Assertion.equal(segment?.lengthMeters, 6, `${buildId} segment is 6m`);
-    Assertion.equal(spool?.lengthMeters, 19, `${buildId} spool remainder is 19m`);
+    Assertion.equal(segment?.lengthMeters, 10, `${buildId} segment is 10m`);
+    Assertion.equal(spool?.lengthMeters, 15, `${buildId} spool remainder is 15m`);
     Assertion.equal(segment?.buildId, buildId, `${buildId} segment preserves buildId`);
   }
 

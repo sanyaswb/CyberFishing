@@ -80,7 +80,11 @@ class FightPhysicsConfigAdapter {
     return {
       capacityByRodLengthRatio: this.#number(
         stroke.capacityByRodLengthRatio,
-        0.5,
+        1,
+      ),
+      capacityByLineLengthRatio: this.#number(
+        stroke.capacityByLineLengthRatio,
+        1,
       ),
     };
   }
@@ -313,6 +317,7 @@ class FightPhysicsConfigAdapter {
       rodHold,
       rodStroke,
       capacityByRodLengthRatio: rodStroke.capacityByRodLengthRatio,
+      capacityByLineLengthRatio: rodStroke.capacityByLineLengthRatio,
       minStrokeMeters: rodHold.minStrokeMeters,
       finalLandingDistanceMeters: rodHold.finalLandingDistanceMeters,
     };

@@ -24,6 +24,7 @@ const FIGHT_PHYSICS_CONFIG = {
 
   rodStroke: {
     capacityByRodLengthRatio: 1.0,
+    capacityByLineLengthRatio: 1.0,
   },
 
   playerForceBudget: {

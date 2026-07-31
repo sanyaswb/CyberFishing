@@ -1,12 +1,25 @@
 class RodPullCalculator {
   #config;
+  #strokeCapacityResolver;
 
-  constructor(config = {}) {
+  constructor(config = {}, strokeCapacityResolver = null) {
     this.#config = config || {};
+    this.#strokeCapacityResolver =
+      strokeCapacityResolver ||
+      new RodStrokeCapacityResolver(this.#config.rodStroke || this.#config);
   }
 
-  calculateStrokeCapacity({ rodLengthMeters, fishDistanceMeters } = {}) {
-    const maxDistanceMeters = this.calculateMaxDistance({ rodLengthMeters });
+  calculateStrokeCapacity({
+    rodLengthMeters,
+    lineLengthMeters,
+    hasReel = true,
+    fishDistanceMeters,
+  } = {}) {
+    const maxDistanceMeters = this.calculateMaxDistance({
+      rodLengthMeters,
+      lineLengthMeters,
+      hasReel,
+    });
     const available = maxDistanceMeters;
     const distanceToFish = Math.max(0, Number(fishDistanceMeters) || 0);
     const finalLandingDistance = Math.max(
@@ -23,13 +36,16 @@ class RodPullCalculator {
     return available;
   }
 
-  calculateMaxDistance({ rodLengthMeters }) {
-    const multiplier = Number(this.#config.capacityByRodLengthRatio);
-    return Math.max(
-      0,
-      (Number(rodLengthMeters) || 0) *
-        (Number.isFinite(multiplier) ? multiplier : 0.5),
-    );
+  calculateMaxDistance({
+    rodLengthMeters,
+    lineLengthMeters,
+    hasReel = true,
+  } = {}) {
+    return this.#strokeCapacityResolver.resolve({
+      rodLengthMeters,
+      lineLengthMeters,
+      hasReel,
+    });
   }
 
   // New-model contract: RodPullCalculator owns only player demand + rod stroke.
@@ -127,6 +143,8 @@ class RodPullCalculator {
     input,
     previousState,
     rodLengthMeters,
+    lineLengthMeters,
+    hasReel = true,
     maxTackleLoadKg,
     rodLimitKg,
     playerForceBudget,
@@ -141,9 +159,15 @@ class RodPullCalculator {
     playerTensionBuildRate,
     playerPressureFatigue,
   }) {
-    const maxDistanceMeters = this.calculateMaxDistance({ rodLengthMeters });
+    const maxDistanceMeters = this.calculateMaxDistance({
+      rodLengthMeters,
+      lineLengthMeters,
+      hasReel,
+    });
     const availableDistanceMeters = this.calculateStrokeCapacity({
       rodLengthMeters,
+      lineLengthMeters,
+      hasReel,
       fishDistanceMeters,
     });
     const releasedThisFrame = !!input?.pullReleasedThisFrame;

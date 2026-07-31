@@ -1,5 +1,24 @@
 # CyberFishing changelog
 
+## v0.23.42 - Tackle-Aware Rod Stroke
+
+### Fixed
+
+- Changed pole-rod stroke capacity to use the full equipped line length.
+- Kept reel-equipped rod stroke capacity tied to the physical rod length.
+- Added a dedicated rod-stroke capacity resolver and passed the active line-system state into the pull system.
+- Added regression checks for a 5m pole rod with 10m of line and a 3m reel rod with 10m of line.
+
+## v0.23.41 - Rod-Length Line Reserve
+
+### Fixed
+
+- Changed the minimum line requirement to two rod lengths: one along the rod and one as casting reserve.
+- Changed 5m pole rods to equip exactly 10m of line and cast up to 10m.
+- Disabled the legacy fixed `+1m` pole-rod allowance through the physics configuration.
+- Changed reel rods to fill up to reel capacity only when the reel can hold the two-rod-length minimum.
+- Added regression checks for 5m pole rods, 3m rods with 10m reels, and rejection of 10m reels on 6m rods.
+
 ## v0.23.40 - Build-Aware Line Segment Reconciliation
 
 ### Fixed
