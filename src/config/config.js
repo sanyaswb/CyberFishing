@@ -298,6 +298,7 @@ const CONFIG = {
       enabled: true,
       fishId: "crucian_stalker", // Можна вписати 'perch_radioactive'
       weight: 0.8,
+      hasAnomaly: false,
     },
   },
 
@@ -351,17 +352,17 @@ const CONFIG = {
   },
 
   rarity: {
-    scale: {
+    // Immutable by contract: changing the rarity scale requires a restart.
+    scale: Object.freeze({
       maxUnits: 12,
       unitsPerStar: 2,
       fishWeightBands: 7,
       weightUnitsPerKg: 1000,
-    },
+    }),
     fish: {
       noneAnomalyIds: ["", "none"],
     },
     visual: {
-      preMaximumPosition: 0.8,
       colorStops: [
         { id: "common", position: 0, color: [145, 150, 160] },
         { id: "uncommon", position: 0.2, color: [0, 210, 120] },
@@ -370,6 +371,29 @@ const CONFIG = {
         { id: "legendary", position: 0.8, color: [255, 70, 70] },
         { id: "unique", position: 1, color: [255, 205, 55] },
       ],
+      frame: {
+        borderWidth: 1.5,
+        backgroundAlpha: 0.15,
+        panelGlow: 20,
+        panelGlowAlpha: 0.35,
+        strokeAlpha: 0.75,
+      },
+      maximum: {
+        pulseDurationMs: 1200,
+        frameDash: [12, 7],
+        frameDashSpeedPxPerSecond: 22.222,
+        borderWidthMin: 2.5,
+        borderWidthMax: 3.5,
+        panelGlowMin: 30,
+        panelGlowMax: 52,
+        panelGlowAlpha: 0.35,
+        imageGlowMin: 14,
+        imageGlowMax: 32,
+        imageGlowAlpha: 0.95,
+        backgroundAlphaMin: 0.18,
+        backgroundAlphaMax: 0.3,
+        strokeAlpha: 0.75,
+      },
     },
   },
 
@@ -761,8 +785,6 @@ const CONFIG = {
       buttonHeight: 42,
       buttonGap: 14,
       blurPx: 3,
-      uniqueGlowPulseMs: 1200,
-      uniqueFrameDash: [12, 7],
     },
 
     line: {

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.23.48";
+const CURRENT_PROJECT_VERSION = "0.23.50";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "rarity-domain-hardening",
+  codename: "anomaly-driven-unique-fish",
   updatedAt: "2026-07-31",
   notes: Object.freeze([
-    "Restricted unique fish state to explicit 12/12 rarity profiles",
-    "Moved anomaly rules out of visual configuration",
-    "Centralized rarity colors and normalized level gradients",
-    "Removed inaccurate Victory-side rarity recalculation",
-    "Added rarity schema and integration regression coverage",
+    "Roll anomalous fish independently from weight-based rarity",
+    "Restrict anomaly variants by species-configured locations and chance",
+    "Route every anomalous crucian level to its matching unique skin",
+    "Keep fixed catches and DevTools on the same anomaly and visual model",
+    "Remove the obsolete maximum-rarity unique-fish policy",
   ]),
 });
 

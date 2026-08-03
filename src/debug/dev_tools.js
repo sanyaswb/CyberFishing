@@ -95,7 +95,7 @@ class DevTools {
   #activeFishKey = "";
   #activeFishShapeKey = "";
   #configRuntime = null;
-  #fishRarityResolver;
+  #hookedFishProfileSynchronizer;
   #activeFishVisibilityPolicy;
   #locationSchema;
   #isDisposed = false;
@@ -125,16 +125,17 @@ class DevTools {
     "statuses",
   ];
 
-  constructor(config, fishRarityResolver) {
+  constructor(config, hookedFishProfileSynchronizer) {
     if (
-      !fishRarityResolver ||
-      typeof fishRarityResolver.resolve !== "function" ||
-      typeof fishRarityResolver.resolveForLevel !== "function"
+      !hookedFishProfileSynchronizer ||
+      typeof hookedFishProfileSynchronizer.synchronize !== "function"
     ) {
-      throw new TypeError("DevTools requires fishRarityResolver");
+      throw new TypeError(
+        "DevTools requires hookedFishProfileSynchronizer",
+      );
     }
     this.#config = config;
-    this.#fishRarityResolver = fishRarityResolver;
+    this.#hookedFishProfileSynchronizer = hookedFishProfileSynchronizer;
     this.#configRuntime =
       typeof CONFIG_RUNTIME_CONTEXT !== "undefined"
         ? CONFIG_RUNTIME_CONTEXT
@@ -841,62 +842,25 @@ class DevTools {
     if (path[0] !== "HOOKED_FISH") return;
 
     const changedKey = path[path.length - 1];
-    if (changedKey !== "weight" && changedKey !== "level") return;
+    if (
+      changedKey !== "weight" &&
+      changedKey !== "level" &&
+      changedKey !== "hasAnomaly"
+    ) {
+      return;
+    }
 
     const fish = this.#liveData?.hookedFish;
     if (!fish) return;
 
     const template = this.#findFishTemplate(fish);
-    const ranges = template?.weightConfig?.levelWeightRanges;
-    if (!Array.isArray(ranges) || ranges.length === 0) return;
-
-    const visual = template.visual || {};
-    let range = null;
-    let profile = null;
-    if (changedKey === "weight") {
-      profile = this.#fishRarityResolver.resolve({
-        weightKg: fish.weight,
-        weightConfig: template.weightConfig,
-        depthConfig: template.depthConfig,
-        rarityProfile: template.rarityProfile,
-        baseAnomaly: template.anomaly,
-      });
-      fish.level = profile.level;
-      fish.maxLevel = profile.maxLevel;
-      fish.isUnique = profile.isUnique;
-      fish.anomaly = profile.anomaly;
-      fish.rarity = profile.rarity;
-      range = this.#findLevelRangeByLevel(ranges, profile.level);
-    } else {
-      range = this.#findLevelRangeByLevel(ranges, fish.level);
-      if (range) {
-        fish.level = Math.max(
-          1,
-          Math.round(Number(range.level) || fish.level || 1),
-        );
-        profile = this.#fishRarityResolver.resolveForLevel({
-          level: fish.level,
-          weightKg: fish.weight,
-          weightConfig: template.weightConfig,
-          depthConfig: template.depthConfig,
-          rarityProfile: template.rarityProfile,
-          baseAnomaly: template.anomaly,
-        });
-        fish.maxLevel = profile.maxLevel;
-        fish.isUnique = profile.isUnique;
-        fish.anomaly = profile.anomaly;
-        fish.rarity = profile.rarity;
-      }
-    }
+    const synchronization = this.#hookedFishProfileSynchronizer.synchronize({
+      fish,
+      template,
+      changedKey,
+    });
+    const range = synchronization?.range;
     if (!range) return;
-
-    const imagePattern =
-      visual.imagePattern ||
-      `assets/fish/${template.id}/${template.id}--{level}.webp`;
-    fish.imagePath =
-      fish.isUnique && visual.uniqueImagePath
-        ? visual.uniqueImagePath
-        : imagePattern.replace("{level}", fish.level);
     fish.physics = fish.physics || {};
     fish.physics.forceProfile = fish.physics.forceProfile || {};
     fish.physics.movementProfile = fish.physics.movementProfile || {};
@@ -922,15 +886,6 @@ class DevTools {
   #findFishTemplate(fish) {
     if (typeof FISH_DB === "undefined" || !Array.isArray(FISH_DB)) return null;
     return FISH_DB.find((candidate) => candidate?.id === fish?.id) || null;
-  }
-
-  #findLevelRangeByLevel(ranges, level) {
-    const targetLevel = Math.round(Number(level) || 1);
-    return (
-      ranges.find(
-        (range) => Math.round(Number(range?.level) || 0) === targetLevel,
-      ) || null
-    );
   }
 
   #applyFiniteNumber(target, key, value) {

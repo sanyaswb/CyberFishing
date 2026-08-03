@@ -110,6 +110,7 @@ class BiteEnvironmentService {
         : hookDepth;
 
     const biteEnv = this.#biteEnvData;
+    biteEnv.locationId = this.#world.currentLocationId;
     biteEnv.hookDepth = hookDepth;
     biteEnv.bottomDepth = bottomDepth;
     biteEnv.lineLength = isFeeder

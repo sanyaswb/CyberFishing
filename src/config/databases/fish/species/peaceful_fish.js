@@ -8,11 +8,14 @@ const PEACEFUL_FISH = [
     trophyWeightKg: 1.0,
     visual: {
       imagePattern: "assets/fish/crucian_stalker/crucian_stalker--{level}.webp",
-      // Optional: uniqueImagePath can point to a dedicated clean variant asset.
+      uniqueImagePattern:
+        "assets/fish/crucian_stalker/crucian_stalker--{level}-uniq.webp",
     },
-    rarityProfile: {
-      uniqueAtHalfSteps: 12,
-      uniqueAnomalyId: "inside",
+    anomalyVariant: {
+      enabled: true,
+      anomalyId: "inside",
+      chance: 0.01,
+      locationIds: ["test"],
     },
 
     weatherMultipliers: {

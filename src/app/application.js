@@ -393,6 +393,7 @@ class GameApplication {
   };
   #stateUpdateContext = { env: null, biteEnv: null, input: null };
   #biteEnvData = {
+    locationId: "",
     hookDepth: 0,
     bottomDepth: 0,
     lineLength: 0,

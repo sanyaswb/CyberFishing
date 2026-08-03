@@ -4,7 +4,6 @@ class VictoryRenderer {
   #assets;
   #themeResolver;
   #starRatingRenderer;
-  #rarityAnimationResolver;
   #textOptions = {
     text: "",
     x: 0,
@@ -27,7 +26,6 @@ class VictoryRenderer {
     assets,
     themeResolver,
     starRatingRenderer,
-    rarityAnimationResolver,
   }) {
     if (!surface || typeof surface.drawCurrentSurface !== "function") {
       throw new TypeError("VictoryRenderer requires surface");
@@ -44,20 +42,11 @@ class VictoryRenderer {
     if (!starRatingRenderer || typeof starRatingRenderer.render !== "function") {
       throw new TypeError("VictoryRenderer requires starRatingRenderer");
     }
-    if (
-      !rarityAnimationResolver ||
-      typeof rarityAnimationResolver.resolvePulse !== "function"
-    ) {
-      throw new TypeError(
-        "VictoryRenderer requires rarityAnimationResolver",
-      );
-    }
     this.#surface = surface;
     this.#primitives = primitives;
     this.#assets = assets;
     this.#themeResolver = themeResolver;
     this.#starRatingRenderer = starRatingRenderer;
-    this.#rarityAnimationResolver = rarityAnimationResolver;
   }
 
   render(model) {
@@ -65,14 +54,8 @@ class VictoryRenderer {
     const surface = this.#surface;
     const layout = model.layout;
     const config = model.config;
-    const theme = this.#themeResolver.resolve(model.fish);
+    const theme = this.#themeResolver.resolve(model.fish, model.nowMs);
     const color = theme.color;
-    const rarestPulse = theme.isRarest
-      ? this.#rarityAnimationResolver.resolvePulse(
-          model.nowMs,
-          config.uniqueGlowPulseMs,
-        )
-      : 0;
 
     surface.save();
     if (config.blurPx > 0) {
@@ -83,8 +66,8 @@ class VictoryRenderer {
     surface.fillStyle = "rgba(0, 0, 0, 0.48)";
     surface.fillRect(0, 0, model.width, model.height);
 
-    surface.shadowColor = RenderMath.rgba(color, 0.35);
-    surface.shadowBlur = theme.isRarest ? 30 + rarestPulse * 22 : 20;
+    surface.shadowColor = RenderMath.rgba(color, theme.glow.panelAlpha);
+    surface.shadowBlur = theme.glow.panelBlur;
     this.#primitives.roundedRect(
       layout.panel.x,
       layout.panel.y,
@@ -94,15 +77,17 @@ class VictoryRenderer {
     );
     surface.fillStyle = RenderMath.rgba(
       color,
-      theme.isRarest ? 0.18 + rarestPulse * 0.12 : 0.15,
+      theme.background.alpha,
     );
     surface.fill();
     surface.shadowBlur = 0;
-    surface.strokeStyle = RenderMath.rgba(color, 0.75);
-    surface.lineWidth = theme.isRarest ? 2.5 + rarestPulse : 1.5;
-    if (theme.isRarest) {
-      surface.setLineDash(config.uniqueFrameDash);
-      surface.lineDashOffset = -(model.nowMs / 45);
+    surface.strokeStyle = RenderMath.rgba(color, theme.frameAlpha);
+    surface.lineWidth = theme.borderWidth;
+    if (theme.isAnimated) {
+      surface.setLineDash(theme.frameDash);
+      surface.lineDashOffset = -(
+        (model.nowMs / 1000) * theme.frameDashSpeedPxPerSecond
+      );
     }
     surface.stroke();
     surface.setLineDash([]);
@@ -129,7 +114,7 @@ class VictoryRenderer {
       "#ffffff",
     );
 
-    this.#drawFishImage(model, theme, rarestPulse);
+    this.#drawFishImage(model, theme);
     this.#starRatingRenderer.render({
       rect: model.layout.rarity,
       rarity: model.fish.rarity,
@@ -148,7 +133,7 @@ class VictoryRenderer {
     surface.restore();
   }
 
-  #drawFishImage(model, theme, rarestPulse) {
+  #drawFishImage(model, theme) {
     const surface = this.#surface;
     const imageRect = model.layout.image;
     const color = theme.color;
@@ -192,9 +177,12 @@ class VictoryRenderer {
       );
     }
 
-    if (theme.isRarest) {
-      surface.shadowColor = RenderMath.rgba(color, 0.95);
-      surface.shadowBlur = 14 + rarestPulse * 18;
+    if (theme.isAnimated) {
+      surface.shadowColor = RenderMath.rgba(
+        color,
+        theme.glow.imageAlpha,
+      );
+      surface.shadowBlur = theme.glow.imageBlur;
     }
     surface.strokeStyle = RenderMath.rgba(color, 1);
     surface.lineWidth = model.config.imageBorderWidth;

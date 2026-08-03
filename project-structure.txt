@@ -4,11 +4,17 @@
 │  │  └── bell_ring.mp3
 │  ├── fish
 │  │  └── crucian_stalker
+│  │    ├── crucian_stalker--1-uniq.webp
 │  │    ├── crucian_stalker--1.webp
+│  │    ├── crucian_stalker--2-uniq.webp
 │  │    ├── crucian_stalker--2.webp
+│  │    ├── crucian_stalker--3-uniq.webp
 │  │    ├── crucian_stalker--3.webp
+│  │    ├── crucian_stalker--4-uniq.webp
 │  │    ├── crucian_stalker--4.webp
+│  │    ├── crucian_stalker--5-uniq.webp
 │  │    ├── crucian_stalker--5.webp
+│  │    ├── crucian_stalker--6-uniq.webp
 │  │    └── crucian_stalker--6.webp
 │  └── locations
 │    └── test
@@ -31,6 +37,7 @@
 │    └── services
 │      └── eventService.js
 ├── CHANGELOG.md
+├── convert-images.js
 ├── docs
 │  ├── balance_simulator.md
 │  ├── fish_config_architecture.md
@@ -63,6 +70,7 @@
 │  │  │  └── game_loop.js
 │  │  ├── debug.js
 │  │  ├── fishing.js
+│  │  ├── fixed_catch_fish_factory.js
 │  │  ├── game.js
 │  │  ├── inventory.js
 │  │  ├── rendering
@@ -130,7 +138,9 @@
 │  │  ├── casting_distance.js
 │  │  ├── core.js
 │  │  ├── fish
-│  │  │  └── fish_rarity_resolver.js
+│  │  │  ├── fish_anomaly_variant_resolver.js
+│  │  │  ├── fish_rarity_resolver.js
+│  │  │  └── fish_visual_variant_resolver.js
 │  │  ├── fishing
 │  │  │  ├── drag_force_calculator.js
 │  │  │  ├── endurance
@@ -290,6 +300,7 @@
 │  │    ├── active_fish_dev_tools_schema.js
 │  │    ├── debug_data_selectors.js
 │  │    ├── debug_formatters.js
+│  │    ├── hooked_fish_profile_synchronizer.js
 │  │    ├── location_debug_data_provider.js
 │  │    ├── location_dev_tools_schema.js
 │  │    └── memory_leak_watchdog.js
@@ -390,4 +401,5 @@
   ├── git-version-copy.js
   ├── inventory-equip-ux-check.js
   ├── inventory-lifecycle-check.js
-  └── line-allocation-check.js
+  ├── line-allocation-check.js
+  └── rarity-production-check.js

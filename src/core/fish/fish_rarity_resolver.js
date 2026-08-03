@@ -40,7 +40,6 @@ class FishRarityResolver {
     weightKg,
     weightConfig = null,
     depthConfig = null,
-    rarityProfile = null,
     baseAnomaly = "none",
   } = {}) {
     const level = this.resolveLevel({
@@ -53,7 +52,6 @@ class FishRarityResolver {
       weightKg,
       weightConfig,
       depthConfig,
-      rarityProfile,
       baseAnomaly,
     });
   }
@@ -63,7 +61,6 @@ class FishRarityResolver {
     weightKg,
     weightConfig = null,
     depthConfig = null,
-    rarityProfile = null,
     baseAnomaly = "none",
   } = {}) {
     const maxLevel = this.#resolveMaxLevel(weightConfig);
@@ -77,21 +74,9 @@ class FishRarityResolver {
       weightConfig,
       depthConfig,
     });
-    const uniqueThreshold = Number(rarityProfile?.uniqueAtHalfSteps);
-    const uniqueAnomaly = this.#normalizeAnomalyId(
-      rarityProfile?.uniqueAnomalyId,
-    );
-    const hasUniquePolicy =
-      Number.isFinite(uniqueThreshold) &&
-      uniqueThreshold > 0 &&
-      !this.#noneAnomalyIds.has(uniqueAnomaly);
-    const isUnique =
-      hasUniquePolicy &&
-      rarityValues.isMaximum === true &&
-      rarityValues.halfSteps >= uniqueThreshold;
-    const anomaly = isUnique
-      ? uniqueAnomaly
-      : this.#normalizeAnomalyId(baseAnomaly);
+    const anomaly = this.#normalizeAnomalyId(baseAnomaly);
+    const hasAnomaly = !this.#noneAnomalyIds.has(anomaly);
+    const isUnique = hasAnomaly;
     const rarity = Object.freeze({
       ...rarityValues,
       isRarest: isUnique,
@@ -100,6 +85,7 @@ class FishRarityResolver {
     return Object.freeze({
       level: normalizedLevel,
       maxLevel,
+      hasAnomaly,
       isUnique,
       anomaly,
       rarity,
@@ -138,7 +124,6 @@ class FishRarityResolver {
     weightKg,
     weightConfig = null,
     depthConfig = null,
-    rarityProfile = null,
     baseAnomaly = "none",
   } = {}) {
     return this.resolveForLevel({
@@ -146,7 +131,6 @@ class FishRarityResolver {
       weightKg,
       weightConfig,
       depthConfig,
-      rarityProfile,
       baseAnomaly,
     }).rarity;
   }

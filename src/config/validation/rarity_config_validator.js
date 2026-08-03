@@ -1,13 +1,22 @@
 class RarityConfigValidator {
   #errors = [];
 
-  validate({ rarityConfig, fishDb = [] } = {}) {
+  validate({ rarityConfig, fishDb = [], mapDb = {} } = {}) {
     this.#errors = [];
     this.#validateScale(rarityConfig?.scale);
     this.#validateVisual(rarityConfig?.visual);
     this.#validateFishSettings(rarityConfig?.fish);
-    this.#validateFishProfiles(rarityConfig, fishDb);
+    this.#validateFishEntries(rarityConfig, fishDb, mapDb);
     return this.#errors.slice();
+  }
+
+  assertValid(input = {}) {
+    const issues = this.validate(input);
+    if (issues.length === 0) return true;
+    const details = issues
+      .map((issue) => `- ${issue.path}: ${issue.message}`)
+      .join("\n");
+    throw new Error(`Invalid rarity configuration:\n${details}`);
   }
 
   #validateScale(scale) {
@@ -15,6 +24,12 @@ class RarityConfigValidator {
     if (!scale || typeof scale !== "object") {
       this.#error(path, "missing rarity scale");
       return;
+    }
+    if (!Object.isFrozen(scale)) {
+      this.#error(
+        path,
+        "rarity scale must be immutable; restart is required for scale changes",
+      );
     }
     const maxUnits = this.#requirePositiveInteger(
       `${path}.maxUnits`,
@@ -39,7 +54,7 @@ class RarityConfigValidator {
     ) {
       this.#error(
         `${path}.maxUnits`,
-        "must be divisible by unitsPerStar",
+        "maxHalfSteps/maxUnits must equal maxStars * unitsPerStar",
       );
     }
   }
@@ -50,25 +65,22 @@ class RarityConfigValidator {
       this.#error(path, "missing rarity visual config");
       return;
     }
-    const preMaximum = Number(visual.preMaximumPosition);
-    if (!Number.isFinite(preMaximum) || preMaximum < 0 || preMaximum >= 1) {
-      this.#error(
-        `${path}.preMaximumPosition`,
-        "expected a finite value in the [0, 1) interval",
-      );
-    }
-
     const stops = visual.colorStops;
     if (!Array.isArray(stops) || stops.length < 2) {
       this.#error(`${path}.colorStops`, "requires at least two color stops");
       return;
     }
     let previousPosition = -Infinity;
+    const stopIds = new Set();
     stops.forEach((stop, index) => {
       const stopPath = `${path}.colorStops[${index}]`;
-      if (!String(stop?.id || "").trim()) {
+      const stopId = String(stop?.id || "").trim();
+      if (!stopId) {
         this.#error(`${stopPath}.id`, "expected non-empty id");
+      } else if (stopIds.has(stopId)) {
+        this.#error(`${stopPath}.id`, "duplicate color stop id");
       }
+      stopIds.add(stopId);
       const position = Number(stop?.position);
       if (!Number.isFinite(position) || position < 0 || position > 1) {
         this.#error(`${stopPath}.position`, "expected value in [0, 1]");
@@ -90,6 +102,81 @@ class RarityConfigValidator {
         "last stop must be 1",
       );
     }
+    this.#validateVisualEffects(path, visual);
+  }
+
+  #validateVisualEffects(path, visual) {
+    const frame = visual.frame;
+    if (!frame || typeof frame !== "object") {
+      this.#error(`${path}.frame`, "missing ordinary rarity frame config");
+    } else {
+      this.#requireNonNegativeNumber(`${path}.frame.borderWidth`, frame.borderWidth);
+      this.#requireRatio(`${path}.frame.backgroundAlpha`, frame.backgroundAlpha);
+      this.#requireNonNegativeNumber(`${path}.frame.panelGlow`, frame.panelGlow);
+      this.#requireRatio(`${path}.frame.panelGlowAlpha`, frame.panelGlowAlpha);
+      this.#requireRatio(`${path}.frame.strokeAlpha`, frame.strokeAlpha);
+    }
+
+    const maximum = visual.maximum;
+    if (!maximum || typeof maximum !== "object") {
+      this.#error(`${path}.maximum`, "missing maximum rarity effect config");
+      return;
+    }
+    for (const field of [
+      "pulseDurationMs",
+      "frameDashSpeedPxPerSecond",
+      "borderWidthMin",
+      "borderWidthMax",
+      "panelGlowMin",
+      "panelGlowMax",
+      "imageGlowMin",
+      "imageGlowMax",
+    ]) {
+      this.#requireNonNegativeNumber(`${path}.maximum.${field}`, maximum[field]);
+    }
+    for (const field of [
+      "panelGlowAlpha",
+      "imageGlowAlpha",
+      "backgroundAlphaMin",
+      "backgroundAlphaMax",
+      "strokeAlpha",
+    ]) {
+      this.#requireRatio(`${path}.maximum.${field}`, maximum[field]);
+    }
+    this.#requireMinMax(
+      `${path}.maximum.borderWidthMin`,
+      maximum.borderWidthMin,
+      `${path}.maximum.borderWidthMax`,
+      maximum.borderWidthMax,
+    );
+    this.#requireMinMax(
+      `${path}.maximum.panelGlowMin`,
+      maximum.panelGlowMin,
+      `${path}.maximum.panelGlowMax`,
+      maximum.panelGlowMax,
+    );
+    this.#requireMinMax(
+      `${path}.maximum.imageGlowMin`,
+      maximum.imageGlowMin,
+      `${path}.maximum.imageGlowMax`,
+      maximum.imageGlowMax,
+    );
+    this.#requireMinMax(
+      `${path}.maximum.backgroundAlphaMin`,
+      maximum.backgroundAlphaMin,
+      `${path}.maximum.backgroundAlphaMax`,
+      maximum.backgroundAlphaMax,
+    );
+    if (!Array.isArray(maximum.frameDash) || maximum.frameDash.length === 0) {
+      this.#error(`${path}.maximum.frameDash`, "expected non-empty dash array");
+    } else {
+      maximum.frameDash.forEach((value, index) =>
+        this.#requireNonNegativeNumber(
+          `${path}.maximum.frameDash[${index}]`,
+          value,
+        ),
+      );
+    }
   }
 
   #validateFishSettings(fishSettings) {
@@ -107,40 +194,51 @@ class RarityConfigValidator {
     }
   }
 
-  #validateFishProfiles(rarityConfig, fishDb) {
+  #validateFishEntries(rarityConfig, fishDb, mapDb) {
     const maxUnits = Number(rarityConfig?.scale?.maxUnits);
+    const fishWeightBands = Number(
+      rarityConfig?.scale?.fishWeightBands,
+    );
     const weightUnitsPerKg = Number(
       rarityConfig?.scale?.weightUnitsPerKg,
     );
     for (const fish of Array.isArray(fishDb) ? fishDb : []) {
       const fishPath = `FISH_DB.${fish?.id || "<missing-id>"}`;
-      if (
-        Object.prototype.hasOwnProperty.call(Object(fish?.visual), "uniqueLevel") ||
-        Object.prototype.hasOwnProperty.call(Object(fish?.visual), "uniqueAnomaly")
-      ) {
+      const uniqueImagePattern = fish?.visual?.uniqueImagePattern;
+      if (fish?.anomalyVariant && uniqueImagePattern === undefined) {
         this.#error(
-          `${fishPath}.visual`,
-          "unique rules belong to rarityProfile, not visual config",
+          `${fishPath}.visual.uniqueImagePattern`,
+          "anomaly variant requires a level-specific unique image pattern",
         );
       }
-      if (
-        Object.prototype.hasOwnProperty.call(
-          Object(fish?.visual),
-          "uniqueImagePath",
-        ) &&
-        !String(fish.visual.uniqueImagePath || "").trim()
-      ) {
-        this.#error(
-          `${fishPath}.visual.uniqueImagePath`,
-          "expected non-empty asset path when configured",
-        );
+      if (uniqueImagePattern !== undefined) {
+        const pattern = String(uniqueImagePattern || "").trim();
+        if (!pattern) {
+          this.#error(
+            `${fishPath}.visual.uniqueImagePattern`,
+            "expected non-empty asset pattern when configured",
+          );
+        } else if (!pattern.includes("{level}")) {
+          this.#error(
+            `${fishPath}.visual.uniqueImagePattern`,
+            'expected a "{level}" placeholder',
+          );
+        }
       }
-      this.#validateFishProfile(
+      this.#validateRarityReachability(
         fishPath,
-        fish?.rarityProfile,
         maxUnits,
-        rarityConfig?.fish?.noneAnomalyIds,
+        fishWeightBands,
+        fish?.weightConfig?.maxLevel,
       );
+      if (fish?.anomalyVariant !== undefined) {
+        this.#validateAnomalyVariant(
+          fishPath,
+          fish.anomalyVariant,
+          rarityConfig?.fish?.noneAnomalyIds,
+          mapDb,
+        );
+      }
       this.#validateWeightRanges(
         fishPath,
         fish?.weightConfig,
@@ -149,33 +247,47 @@ class RarityConfigValidator {
     }
   }
 
-  #validateFishProfile(
+  #validateRarityReachability(
     fishPath,
-    profile,
     maxUnits,
-    noneAnomalyIds,
+    fishWeightBands,
+    maxLevel,
   ) {
-    if (profile === undefined || profile === null) return;
-    const path = `${fishPath}.rarityProfile`;
-    if (typeof profile !== "object") {
-      this.#error(path, "expected object");
-      return;
-    }
-    const threshold = this.#requirePositiveInteger(
-      `${path}.uniqueAtHalfSteps`,
-      profile.uniqueAtHalfSteps,
-    );
+    const maxReachableUnits = Number(maxLevel) + Number(fishWeightBands) - 1;
     if (
-      Number.isFinite(threshold) &&
+      Number.isFinite(maxReachableUnits) &&
       Number.isFinite(maxUnits) &&
-      threshold !== maxUnits
+      maxReachableUnits > maxUnits
     ) {
       this.#error(
-        `${path}.uniqueAtHalfSteps`,
-        "unique fish must require the maximum rarity score",
+        `${fishPath}.weightConfig.maxLevel`,
+        `maximum rarity would clamp ${maxReachableUnits - maxUnits + 1} upper bands to ${maxUnits}`,
       );
     }
-    const anomaly = String(profile.uniqueAnomalyId || "")
+  }
+
+  #validateAnomalyVariant(
+    fishPath,
+    anomalyVariant,
+    noneAnomalyIds,
+    mapDb,
+  ) {
+    const path = `${fishPath}.anomalyVariant`;
+    if (!anomalyVariant || typeof anomalyVariant !== "object") {
+      this.#error(path, "missing anomaly variant config");
+      return;
+    }
+    if (
+      anomalyVariant.enabled !== undefined &&
+      typeof anomalyVariant.enabled !== "boolean"
+    ) {
+      this.#error(`${path}.enabled`, "expected boolean");
+    }
+    const chance = Number(anomalyVariant.chance);
+    if (!Number.isFinite(chance) || chance <= 0 || chance > 1) {
+      this.#error(`${path}.chance`, "expected probability in the (0, 1] interval");
+    }
+    const anomaly = String(anomalyVariant.anomalyId || "")
       .trim()
       .toLowerCase();
     const noneIds = new Set(
@@ -185,10 +297,29 @@ class RarityConfigValidator {
     );
     if (!anomaly || noneIds.has(anomaly)) {
       this.#error(
-        `${path}.uniqueAnomalyId`,
+        `${path}.anomalyId`,
         "expected a non-empty anomaly id eligible for unique rarity",
       );
     }
+    const locationIds = anomalyVariant.locationIds;
+    if (!Array.isArray(locationIds) || locationIds.length === 0) {
+      this.#error(`${path}.locationIds`, "requires at least one location id");
+      return;
+    }
+    const knownLocations = new Set(Object.keys(mapDb || {}));
+    const seenLocations = new Set();
+    locationIds.forEach((locationId, index) => {
+      const locationPath = `${path}.locationIds[${index}]`;
+      const normalized = String(locationId || "").trim();
+      if (!normalized) {
+        this.#error(locationPath, "expected non-empty location id");
+      } else if (seenLocations.has(normalized)) {
+        this.#error(locationPath, "duplicate location id");
+      } else if (knownLocations.size > 0 && !knownLocations.has(normalized)) {
+        this.#error(locationPath, `unknown location id: ${normalized}`);
+      }
+      seenLocations.add(normalized);
+    });
   }
 
   #validateWeightRanges(fishPath, weightConfig, weightUnitsPerKg) {
@@ -252,6 +383,32 @@ class RarityConfigValidator {
       return NaN;
     }
     return parsed;
+  }
+
+  #requireNonNegativeNumber(path, value) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      this.#error(path, "expected finite number >= 0");
+      return NaN;
+    }
+    return parsed;
+  }
+
+  #requireRatio(path, value) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) {
+      this.#error(path, "expected value in [0, 1]");
+      return NaN;
+    }
+    return parsed;
+  }
+
+  #requireMinMax(minPath, minValue, maxPath, maxValue) {
+    const min = Number(minValue);
+    const max = Number(maxValue);
+    if (Number.isFinite(min) && Number.isFinite(max) && min > max) {
+      this.#error(`${minPath} / ${maxPath}`, "minimum must not exceed maximum");
+    }
   }
 
   #toWeightUnit(weightKg, unitsPerKg) {

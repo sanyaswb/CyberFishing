@@ -28,8 +28,6 @@ class OutcomeStyleResolver {
       buttonHeight: 42,
       buttonGap: 14,
       blurPx: 3,
-      uniqueGlowPulseMs: 1200,
-      uniqueFrameDash: [12, 7],
     };
     this.#cache = {
       ...defaults,

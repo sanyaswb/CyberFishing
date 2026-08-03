@@ -14,6 +14,8 @@ class BiteSystem {
   #rng;
   #debugEvents;
   #fishRarityResolver;
+  #fishAnomalyVariantResolver;
+  #fishVisualVariantResolver;
   #tickIndex = 0;
 
   constructor(
@@ -22,12 +24,26 @@ class BiteSystem {
     rng = null,
     debugEvents = null,
     fishRarityResolver = null,
+    fishAnomalyVariantResolver = null,
+    fishVisualVariantResolver = null,
   ) {
     if (
       !fishRarityResolver ||
       typeof fishRarityResolver.resolve !== "function"
     ) {
       throw new TypeError("BiteSystem requires fishRarityResolver");
+    }
+    if (
+      !fishAnomalyVariantResolver ||
+      typeof fishAnomalyVariantResolver.resolve !== "function"
+    ) {
+      throw new TypeError("BiteSystem requires fishAnomalyVariantResolver");
+    }
+    if (
+      !fishVisualVariantResolver ||
+      typeof fishVisualVariantResolver.resolveImagePath !== "function"
+    ) {
+      throw new TypeError("BiteSystem requires fishVisualVariantResolver");
     }
     const physicsConfig = this.#resolvePhysicsConfig(runtimeConfig);
     const lineConfig = runtimeConfig?.ui?.line || runtimeConfig?.line || {};
@@ -47,6 +63,8 @@ class BiteSystem {
     this.#rng = rng || { next: () => Math.random() };
     this.#debugEvents = debugEvents || null;
     this.#fishRarityResolver = fishRarityResolver;
+    this.#fishAnomalyVariantResolver = fishAnomalyVariantResolver;
+    this.#fishVisualVariantResolver = fishVisualVariantResolver;
   }
 
   setFishDatabase(fishDatabase) {
@@ -318,7 +336,7 @@ class BiteSystem {
     return this.#applyGodModeChanceOverride(chance);
   }
 
-  #generateFishInstance(fish, currentDepth, playerGear) {
+  #generateFishInstance(fish, currentDepth, playerGear, locationId) {
     // <-- ДОДАНО playerGear
     const { depthConfig: dc, weightConfig: wc } = fish;
 
@@ -359,14 +377,19 @@ class BiteSystem {
       chosenBiteSequence = this.#applyGodModeBiteSequence(chosenBiteSequence);
     }
 
-    const rarityProfile = this.#fishRarityResolver.resolve({
+    const anomalyVariant = this.#fishAnomalyVariantResolver.resolve({
+      config: fish.anomalyVariant,
+      locationId,
+      roll: this.#next(),
+    });
+    const fishProfile = this.#fishRarityResolver.resolve({
       weightKg: genWeight,
       weightConfig: wc,
       depthConfig: dc,
-      rarityProfile: fish.rarityProfile,
-      baseAnomaly: fish.anomaly,
+      baseAnomaly: anomalyVariant.anomalyId,
     });
-    const { level, maxLevel, isUnique, anomaly, rarity } = rarityProfile;
+    const { level, maxLevel, hasAnomaly, isUnique, anomaly, rarity } =
+      fishProfile;
     const levelAverageWeightKg = this.#resolveLevelAverageWeightKg(wc, level, dc);
     const trophyWeight = fish.trophyWeightKg ?? fish.trophyWeight ?? null;
 
@@ -379,24 +402,19 @@ class BiteSystem {
       levelAverageWeightKg,
       physics: this.#buildFishPhysics(fish.physics, wc, level),
       biteSequence: chosenBiteSequence,
-      imagePath: this.#resolveFishImagePath(fish, level, isUnique),
+      imagePath: this.#fishVisualVariantResolver.resolveImagePath({
+        visual: fish.visual,
+        fishId: fish.id,
+        level,
+        isUnique,
+        anomaly,
+      }),
       isUnique,
+      hasAnomaly,
       isTrophy: trophyWeight !== null ? genWeight >= trophyWeight : false,
       anomaly,
       rarity,
     };
-  }
-
-  #resolveFishImagePath(fish, level, isUnique = false) {
-    const uniqueImagePath = fish.visual?.uniqueImagePath;
-    if (isUnique && typeof uniqueImagePath === "string" && uniqueImagePath) {
-      return uniqueImagePath;
-    }
-    const pattern = fish.visual?.imagePattern;
-    if (typeof pattern === "string") {
-      return pattern.replace("{level}", level);
-    }
-    return `assets/fish/${fish.id}/${fish.id}--${level}.webp`;
   }
 
   evaluateBite(dt, envData, playerGear) {
@@ -506,6 +524,7 @@ class BiteSystem {
         selected,
         envData.hookDepth,
         playerGear,
+        envData.locationId,
       );
     }
 

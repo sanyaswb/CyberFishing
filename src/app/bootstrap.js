@@ -38,6 +38,7 @@ class GameCompositionRoot {
   }
 
   async create(canvas, canvasMetrics, clock, debugEvents, devFlags, audio) {
+    this.#validateRarityConfiguration();
     const contracts = new DependencyContractValidator({
       stage: "bootstrap",
       consumer: "GameCompositionRoot.create",
@@ -78,8 +79,10 @@ class GameCompositionRoot {
     const outcomeStyleResolver = new OutcomeStyleResolver({
       configProvider: () => this.#config.ui?.victory || {},
     });
+    const rarityAnimationResolver = new RarityAnimationResolver();
     const rarityVisualResolver = new RarityVisualResolver({
       configProvider: () => this.#config.rarity?.visual || {},
+      animationResolver: rarityAnimationResolver,
     });
     const victoryLayoutResolver = new VictoryLayoutResolver();
     contracts.requireMethods(victoryLayoutResolver, "victoryLayoutResolver", [
@@ -94,6 +97,21 @@ class GameCompositionRoot {
       "resolveForLevel",
       "resolveRarity",
     ]);
+    const fishVisualVariantResolver = new FishVisualVariantResolver({
+      noneAnomalyIds: this.#config.rarity?.fish?.noneAnomalyIds,
+    });
+    const fishAnomalyVariantResolver = new FishAnomalyVariantResolver({
+      noneAnomalyId: "none",
+    });
+    const fixedCatchFishFactory = new FixedCatchFishFactory({
+      fishRarityResolver,
+      fishVisualVariantResolver,
+    });
+    const hookedFishProfileSynchronizer =
+      new HookedFishProfileSynchronizer({
+        fishRarityResolver,
+        fishVisualVariantResolver,
+      });
     const hudBarRenderer = new HudBarRenderer(surface);
     const worldSceneRenderer = new WorldSceneRenderer({
       surface,
@@ -232,7 +250,6 @@ class GameCompositionRoot {
               surface,
               primitives,
             }),
-            rarityAnimationResolver: new RarityAnimationResolver(),
           }),
         }),
       }),
@@ -310,7 +327,7 @@ class GameCompositionRoot {
       input: new InputManager(canvas, Number(this.#config.ui?.rod?.x) || null),
       ui: new UIManager(
         this.#config,
-        new DevTools(this.#config, fishRarityResolver),
+        new DevTools(this.#config, hookedFishProfileSynchronizer),
       ),
       chum: new ChumManager(locId, chumConfigObj, projector, {
         rng,
@@ -322,6 +339,8 @@ class GameCompositionRoot {
         rng,
         debugEvents,
         fishRarityResolver,
+        fishAnomalyVariantResolver,
+        fishVisualVariantResolver,
       ),
       inventory,
     };
@@ -386,6 +405,9 @@ class GameCompositionRoot {
         victoryLayoutResolver,
       },
       fishRarityResolver,
+      fishAnomalyVariantResolver,
+      fishVisualVariantResolver,
+      fixedCatchFishFactory,
       fishing,
       equipment,
       net,
@@ -506,7 +528,7 @@ class GameCompositionRoot {
       getRodVirtualPos: appPorts.getRodVirtualPos,
       getScreenOffsetRatio: appPorts.getScreenOffsetRatio,
       victoryLayoutResolver: runtime.rendering.victoryLayoutResolver,
-      fishRarityResolver: runtime.fishRarityResolver,
+      fixedCatchFishFactory: runtime.fixedCatchFishFactory,
       setState: appPorts.setState,
       castLine: appPorts.castLine,
       markInvalidCast: appPorts.markInvalidCast,
@@ -707,6 +729,17 @@ class GameCompositionRoot {
       const name = names[index];
       contracts.requireMethods(renderers[name], name, ["render"]);
     }
+  }
+
+  #validateRarityConfiguration() {
+    if (typeof RarityConfigValidator === "undefined") {
+      throw new Error("RarityConfigValidator must be loaded before startup");
+    }
+    new RarityConfigValidator().assertValid({
+      rarityConfig: this.#config.rarity,
+      fishDb: this.#config.spawns?.fishes || [],
+      mapDb: this.#config.locations?.map || {},
+    });
   }
 
   #validateFrameBuilderContracts(contracts, builders) {

@@ -1,5 +1,49 @@
 # CyberFishing changelog
 
+## v0.23.50 - Anomaly-Driven Unique Fish
+
+### Added
+
+- Added a species-level `anomalyVariant` policy with its own chance, anomaly identifier and allowed locations.
+- Added an independent anomaly roll after a base fish bite and exposed `hasAnomaly` on the caught-fish state.
+- Added production checks for every configured level-specific unique fish asset.
+
+### Changed
+
+- A fish is now unique only when it carries an anomaly; weight still determines its level and star rarity but no longer decides uniqueness.
+- Routed anomalous crucian-stalker catches to `crucian_stalker--{level}-uniq.webp`, including all six weight levels.
+- Kept fixed catches and live DevTools edits synchronized through the same anomaly, rarity and image resolvers.
+- Removed the obsolete `rarityProfile`, `uniqueAtHalfSteps` and `uniqueAnomalyId` implementation instead of retaining a compatibility branch.
+
+### Tests
+
+- Added regressions for exact anomaly chance boundaries, location restrictions, ordinary maximum-weight fish, anomalous level-six fish, all six fixed-catch skins and live DevTools anomaly toggles.
+
+## v0.23.49 - Rarity Architecture Completion
+
+### Added
+
+- Added mandatory startup validation for the production rarity scale, fish database, rarity profiles, weight ranges, visual effects and color stops.
+- Added a standalone production rarity check and regressions for unreachable unique thresholds, incorrect maximum levels, clamped upper bands, range gaps/overlaps and duplicate/unordered color stops.
+- Added `FishVisualVariantResolver` as the single image-selection policy used by regular bites, fixed catches and live DevTools updates.
+- Added level-specific unique image routing through `visual.uniqueImagePattern`; crucian-stalker unique files are expected as `crucian_stalker--{level}-uniq.webp` and remain user-supplied.
+
+### Changed
+
+- Moved rarity frame, background, glow, pulse and dash values into `CONFIG.rarity.visual`; Victory now consumes a ready visual descriptor instead of owning rarity values.
+- Derived the ordinary maximum color from the penultimate color stop and removed the duplicated `preMaximumPosition` setting.
+- Made the rarity scale explicitly immutable until restart and reject invalid scale relations during validation.
+- Extracted fixed-catch construction and hooked-fish profile synchronization so all gameplay and debug paths share the same rarity and visual resolvers.
+
+### Fixed
+
+- Prevented species configurations where maximum rarity is unreachable or multiple upper weight bands collapse into the same maximum score.
+- Kept unique sprite selection gated by both maximum rarity and the species anomaly policy.
+
+### Tests
+
+- Added coverage for production configuration, unique sprite routing, fixed catches, DevTools weight edits, configurable Victory effects and 6/9/12-level visual scales.
+
 ## v0.23.48 - Rarity Domain Hardening
 
 ### Changed
