@@ -5,9 +5,10 @@ class RarityVisualResolver {
   #animationResolver;
   #stops = null;
   #frame = null;
-  #maximumEffects = null;
+  #uniqueEffects = null;
   #resolvedByPosition = new Map();
   #ordinaryDescriptors = new Map();
+  #semanticDescriptors = new Map();
   #animatedDescriptor = {
     position: 0,
     id: "unknown",
@@ -40,6 +41,58 @@ class RarityVisualResolver {
     this.#animationResolver = animationResolver;
   }
 
+  resolve({ tier, maxTier, isUnique = false } = {}) {
+    this.#ensureConfig();
+    const normalizedTier = Math.max(1, Math.round(Number(tier) || 1));
+    const normalizedMaxTier = Math.max(
+      normalizedTier,
+      Math.round(Number(maxTier) || normalizedTier),
+    );
+    const tierPosition =
+      normalizedMaxTier <= 1
+        ? 0
+        : (normalizedTier - 1) / (normalizedMaxTier - 1);
+    const unique = isUnique === true;
+    const palettePosition = unique
+      ? 1
+      : tierPosition * this.preMaximumPosition;
+    const cacheKey = `${palettePosition.toFixed(6)}:${unique ? 1 : 0}`;
+    const cached = this.#semanticDescriptors.get(cacheKey);
+    if (cached) return cached;
+
+    const visual = this.resolvePosition(palettePosition);
+    const color = visual.color;
+    const frame = this.#frame;
+    const uniqueEffects = this.#uniqueEffects;
+    const backgroundAlpha = unique
+      ? uniqueEffects.backgroundAlphaMin
+      : frame.backgroundAlpha;
+    const descriptor = Object.freeze({
+      id: unique ? "unique" : visual.id,
+      normalized: visual.position,
+      color,
+      cssColor: this.#toCssColor(color),
+      borderWidth: unique
+        ? uniqueEffects.borderWidthMin
+        : frame.borderWidth,
+      background: Object.freeze({
+        color,
+        alpha: backgroundAlpha,
+      }),
+      glow: Object.freeze({
+        enabled: unique,
+        blur: unique ? uniqueEffects.panelGlowMax : 0,
+      }),
+      animation: Object.freeze({
+        enabled: unique,
+        durationMs: unique ? uniqueEffects.pulseDurationMs : 0,
+      }),
+      isUnique: unique,
+    });
+    this.#semanticDescriptors.set(cacheKey, descriptor);
+    return descriptor;
+  }
+
   resolvePosition(position) {
     this.#ensureConfig();
     const normalized = this.#clamp01(position);
@@ -65,7 +118,7 @@ class RarityVisualResolver {
     return resolved;
   }
 
-  resolveLevel(level, maxLevel, reserveMaximum = false) {
+  resolveLevel(level, maxLevel, reserveMaximum = true) {
     const position = this.#resolveLevelPosition(
       level,
       maxLevel,
@@ -77,7 +130,7 @@ class RarityVisualResolver {
   resolveLevelDescriptor({
     level,
     maxLevel,
-    reserveMaximum = false,
+    reserveMaximum = true,
     isAnimated = false,
     nowMs = 0,
   } = {}) {
@@ -91,7 +144,7 @@ class RarityVisualResolver {
     this.#ensureConfig();
     const visual = this.resolvePosition(position);
     const frame = this.#frame;
-    const maximum = this.#maximumEffects;
+    const uniqueEffects = this.#uniqueEffects;
     if (!isAnimated) {
       const cacheKey = visual.position.toFixed(6);
       const cached = this.#ordinaryDescriptors.get(cacheKey);
@@ -123,7 +176,7 @@ class RarityVisualResolver {
     const descriptor = this.#animatedDescriptor;
     const pulse = this.#animationResolver.resolvePulse(
       nowMs,
-      maximum.pulseDurationMs,
+      uniqueEffects.pulseDurationMs,
     );
 
     descriptor.position = visual.position;
@@ -132,32 +185,32 @@ class RarityVisualResolver {
     descriptor.neutralColor = this.neutral.color;
     descriptor.maximumColor = this.maximum.color;
     descriptor.borderWidth = this.#mixNumber(
-      maximum.borderWidthMin,
-      maximum.borderWidthMax,
+      uniqueEffects.borderWidthMin,
+      uniqueEffects.borderWidthMax,
       pulse,
     );
-    descriptor.frameAlpha = maximum.strokeAlpha;
+    descriptor.frameAlpha = uniqueEffects.strokeAlpha;
     descriptor.background.alpha = this.#mixNumber(
-      maximum.backgroundAlphaMin,
-      maximum.backgroundAlphaMax,
+      uniqueEffects.backgroundAlphaMin,
+      uniqueEffects.backgroundAlphaMax,
       pulse,
     );
     descriptor.glow.panelBlur = this.#mixNumber(
-      maximum.panelGlowMin,
-      maximum.panelGlowMax,
+      uniqueEffects.panelGlowMin,
+      uniqueEffects.panelGlowMax,
       pulse,
     );
-    descriptor.glow.panelAlpha = maximum.panelGlowAlpha;
+    descriptor.glow.panelAlpha = uniqueEffects.panelGlowAlpha;
     descriptor.glow.imageBlur = this.#mixNumber(
-      maximum.imageGlowMin,
-      maximum.imageGlowMax,
+      uniqueEffects.imageGlowMin,
+      uniqueEffects.imageGlowMax,
       pulse,
     );
-    descriptor.glow.imageAlpha = maximum.imageGlowAlpha;
+    descriptor.glow.imageAlpha = uniqueEffects.imageGlowAlpha;
     descriptor.pulse = pulse;
-    descriptor.frameDash = maximum.frameDash;
+    descriptor.frameDash = uniqueEffects.frameDash;
     descriptor.frameDashSpeedPxPerSecond =
-      maximum.frameDashSpeedPxPerSecond;
+      uniqueEffects.frameDashSpeedPxPerSecond;
     descriptor.isAnimated = true;
     return descriptor;
   }
@@ -178,9 +231,10 @@ class RarityVisualResolver {
   invalidate() {
     this.#stops = null;
     this.#frame = null;
-    this.#maximumEffects = null;
+    this.#uniqueEffects = null;
     this.#resolvedByPosition.clear();
     this.#ordinaryDescriptors.clear();
+    this.#semanticDescriptors.clear();
   }
 
   #resolveLevelPosition(level, maxLevel, reserveMaximum) {
@@ -221,26 +275,26 @@ class RarityVisualResolver {
       panelGlowAlpha: this.#clamp01(frame.panelGlowAlpha),
       strokeAlpha: this.#clamp01(frame.strokeAlpha),
     };
-    const maximum = config.maximum || {};
-    this.#maximumEffects = {
-      pulseDurationMs: this.#number(maximum.pulseDurationMs, 1),
-      frameDash: Array.isArray(maximum.frameDash)
-        ? Object.freeze(maximum.frameDash.slice())
+    const uniqueEffects = config.uniqueEffects || {};
+    this.#uniqueEffects = {
+      pulseDurationMs: this.#number(uniqueEffects.pulseDurationMs, 1),
+      frameDash: Array.isArray(uniqueEffects.frameDash)
+        ? Object.freeze(uniqueEffects.frameDash.slice())
         : RarityVisualResolver.EMPTY_DASH,
       frameDashSpeedPxPerSecond: this.#number(
-        maximum.frameDashSpeedPxPerSecond,
+        uniqueEffects.frameDashSpeedPxPerSecond,
       ),
-      borderWidthMin: this.#number(maximum.borderWidthMin),
-      borderWidthMax: this.#number(maximum.borderWidthMax),
-      panelGlowMin: this.#number(maximum.panelGlowMin),
-      panelGlowMax: this.#number(maximum.panelGlowMax),
-      panelGlowAlpha: this.#clamp01(maximum.panelGlowAlpha),
-      imageGlowMin: this.#number(maximum.imageGlowMin),
-      imageGlowMax: this.#number(maximum.imageGlowMax),
-      imageGlowAlpha: this.#clamp01(maximum.imageGlowAlpha),
-      backgroundAlphaMin: this.#clamp01(maximum.backgroundAlphaMin),
-      backgroundAlphaMax: this.#clamp01(maximum.backgroundAlphaMax),
-      strokeAlpha: this.#clamp01(maximum.strokeAlpha),
+      borderWidthMin: this.#number(uniqueEffects.borderWidthMin),
+      borderWidthMax: this.#number(uniqueEffects.borderWidthMax),
+      panelGlowMin: this.#number(uniqueEffects.panelGlowMin),
+      panelGlowMax: this.#number(uniqueEffects.panelGlowMax),
+      panelGlowAlpha: this.#clamp01(uniqueEffects.panelGlowAlpha),
+      imageGlowMin: this.#number(uniqueEffects.imageGlowMin),
+      imageGlowMax: this.#number(uniqueEffects.imageGlowMax),
+      imageGlowAlpha: this.#clamp01(uniqueEffects.imageGlowAlpha),
+      backgroundAlphaMin: this.#clamp01(uniqueEffects.backgroundAlphaMin),
+      backgroundAlphaMax: this.#clamp01(uniqueEffects.backgroundAlphaMax),
+      strokeAlpha: this.#clamp01(uniqueEffects.strokeAlpha),
     };
   }
 
@@ -260,6 +314,10 @@ class RarityVisualResolver {
 
   #mixNumber(from, to, ratio) {
     return from + (to - from) * this.#clamp01(ratio);
+  }
+
+  #toCssColor(color) {
+    return `rgb(${color.join(", ")})`;
   }
 
   #number(value, fallback = 0) {

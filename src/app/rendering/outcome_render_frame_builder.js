@@ -15,7 +15,6 @@ class OutcomeRenderFrameBuilder {
     levelMinWeightKg: null,
     levelMaxWeightKg: null,
     isMaximum: false,
-    isRarest: false,
   });
   #layoutContext = {
     width: 0,

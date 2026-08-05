@@ -440,6 +440,7 @@ class ConfigSchemaValidator {
     const issues = new RarityConfigValidator().validate({
       rarityConfig: this.config.rarity,
       fishDb: this.fishDb,
+      itemDb: this.itemDb,
       mapDb: this.mapDb,
     });
     for (const issue of issues) {

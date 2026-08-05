@@ -127,12 +127,15 @@
 │  │  │  ├── tackle_physics_config.js
 │  │  │  └── tension_physics_config.js
 │  │  ├── project_version.js
+│  │  ├── rarity
+│  │  │  └── rarity_visual_config.js
 │  │  ├── runtime
 │  │  │  ├── config_override_store.js
 │  │  │  ├── immutable_config.js
 │  │  │  └── resolved_config_provider.js
 │  │  └── validation
 │  │    ├── config_schema_validator.js
+│  │    ├── item_rarity_config_validator.js
 │  │    └── rarity_config_validator.js
 │  ├── core
 │  │  ├── casting_distance.js
@@ -200,7 +203,15 @@
 │  │  ├── input
 │  │  │  └── fight_input_action_composer.js
 │  │  ├── inventory
-│  │  │  └── equip_target_selection_policy.js
+│  │  │  ├── equip_target_selection_policy.js
+│  │  │  └── inventory_item_stacking_policy.js
+│  │  ├── items
+│  │  │  └── rarity
+│  │  │    ├── authored_item_rarity_strategy.js
+│  │  │    ├── item_rarity_descriptor.js
+│  │  │    ├── item_rarity_resolver.js
+│  │  │    ├── item_rarity_strategy_registry.js
+│  │  │    └── item_rarity_strategy.js
 │  │  └── line
 │  │    ├── line_allocation_policy.js
 │  │    ├── line_inventory_controller.js
@@ -300,6 +311,8 @@
 │  │    ├── active_fish_dev_tools_schema.js
 │  │    ├── debug_data_selectors.js
 │  │    ├── debug_formatters.js
+│  │    ├── dev_tools_control_binding_registry.js
+│  │    ├── dev_tools_parameter_alias_registry.js
 │  │    ├── hooked_fish_profile_synchronizer.js
 │  │    ├── location_debug_data_provider.js
 │  │    ├── location_dev_tools_schema.js
@@ -313,7 +326,8 @@
 │  │    ├── location_asset_loader.js
 │  │    └── offscreen_canvas_factory.js
 │  ├── input
-│  │  └── pull_input_mapper.js
+│  │  ├── pull_input_mapper.js
+│  │  └── victory_action_gesture_resolver.js
 │  ├── render
 │  │  ├── casting
 │  │  │  └── cast_scene_renderer.js
@@ -369,6 +383,7 @@
 │  │  ├── fight_physics_system.js
 │  │  ├── fish_force_system.js
 │  │  ├── fish_retrieve_system.js
+│  │  ├── inventory_item_factory.js
 │  │  ├── inventory_system.js
 │  │  ├── line_system.js
 │  │  ├── player_force_system.js
@@ -381,6 +396,8 @@
 │  │  ├── tackle_stress_system.js
 │  │  └── tension_system.js
 │  ├── ui
+│  │  ├── rarity
+│  │  │  └── item_rarity_dom_adapter.js
 │  │  ├── styles
 │  │  │  ├── fight_area_style_resolver.js
 │  │  │  ├── hud_style_resolver.js
@@ -395,11 +412,14 @@
   ├── check-js.js
   ├── create-version-copy.js
   ├── dev-server.js
+  ├── dev-tools-linked-parameter-check.js
   ├── fish-rarity-check.js
   ├── float-depth-cast-check.js
   ├── game-cycle-check.js
   ├── git-version-copy.js
   ├── inventory-equip-ux-check.js
   ├── inventory-lifecycle-check.js
+  ├── item-rarity-check.js
   ├── line-allocation-check.js
-  └── rarity-production-check.js
+  ├── rarity-production-check.js
+  └── victory-input-check.js

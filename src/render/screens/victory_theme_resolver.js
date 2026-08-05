@@ -19,11 +19,12 @@ class VictoryThemeResolver {
       level,
       Math.round(Number(fish?.maxLevel) || level),
     );
+    const useUniqueTheme = fish?.isUnique === true;
     return this.#rarityVisualResolver.resolveLevelDescriptor({
       level,
       maxLevel,
       reserveMaximum: true,
-      isAnimated: fish?.rarity?.isRarest === true,
+      isAnimated: useUniqueTheme,
       nowMs,
     });
   }

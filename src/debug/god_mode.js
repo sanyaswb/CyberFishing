@@ -41,6 +41,10 @@ class GodMode {
     return Math.max(0, Math.min(100, Number.isFinite(value) ? value : 100));
   }
 
+  static get forceAnomalyChance() {
+    return this.isActive && CONFIG.debug.godMode.forceAnomalyChance === true;
+  }
+
   static get biteSequenceMode() {
     if (!this.isActive) return "default";
     const mode = String(

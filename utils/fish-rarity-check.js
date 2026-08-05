@@ -90,6 +90,7 @@ class FishRarityCheck {
     this.anomalyVariantResolver = new FishAnomalyVariantResolver();
     this.fixedCatchFishFactory = new FixedCatchFishFactory({
       fishRarityResolver: this.resolver,
+      fishAnomalyVariantResolver: this.anomalyVariantResolver,
       fishVisualVariantResolver: this.visualVariantResolver,
     });
     this.hookedFishProfileSynchronizer =
@@ -113,7 +114,7 @@ class FishRarityCheck {
     this.#checkEveryLevelRange();
     this.#checkCrucianExamples();
     this.#checkHalfStarResolution();
-    this.#checkRarestAnomalyThemeGate();
+    this.#checkUniqueAnomalyThemeGate();
     this.#checkAnomalyVariantSelection();
     this.#checkDerivedLevelRange();
     this.#checkVisualScaleDistribution();
@@ -145,19 +146,21 @@ class FishRarityCheck {
   }
 
   #checkCrucianExamples() {
-    const fourPointTwo = this.resolver.resolveRarity(
+    const fourPointTwoProfile = this.resolver.resolve(
       this.fixture.input(6, 4.2),
     );
+    const fourPointTwo = fourPointTwoProfile.rarity;
     Assertion.equal(fourPointTwo.halfSteps, 9, "4.200kg rarity score");
     Assertion.equal(fourPointTwo.stars, 4.5, "4.200kg visual stars");
     Assertion.that(
-      !fourPointTwo.isRarest,
+      !fourPointTwoProfile.isUnique,
       "non-maximum level-6 fish must not be unique",
     );
 
-    const fourPointEight = this.resolver.resolveRarity(
+    const fourPointEightProfile = this.resolver.resolve(
       this.fixture.input(6, 4.8),
     );
+    const fourPointEight = fourPointEightProfile.rarity;
     Assertion.equal(fourPointEight.halfSteps, 12, "4.800kg rarity score");
     Assertion.equal(fourPointEight.stars, 6, "4.800kg visual stars");
     Assertion.that(
@@ -165,23 +168,28 @@ class FishRarityCheck {
       "4.800kg catch should have maximum rarity",
     );
     Assertion.that(
-      !fourPointEight.isRarest,
+      !fourPointEightProfile.isUnique,
       "maximum weight without anomaly remains ordinary",
     );
 
-    const anomalousFourPointTwo = this.resolver.resolveRarity(
+    const anomalousFourPointTwoProfile = this.resolver.resolve(
       this.fixture.input(6, 4.2, {
         baseAnomaly: "inside",
       }),
     );
+    const anomalousFourPointTwo = anomalousFourPointTwoProfile.rarity;
     Assertion.equal(
       anomalousFourPointTwo.halfSteps,
       9,
       "anomaly does not alter weight rarity",
     );
     Assertion.that(
-      anomalousFourPointTwo.isRarest,
+      anomalousFourPointTwoProfile.isUnique,
       "anomaly makes a non-maximum fish unique",
+    );
+    Assertion.that(
+      !("isRarest" in anomalousFourPointTwo),
+      "weight rarity must not expose an anomaly-derived isRarest flag",
     );
 
     Assertion.equal(
@@ -212,25 +220,34 @@ class FishRarityCheck {
     Assertion.equal(rarity.stars, 0.5, "one half-filled star");
   }
 
-  #checkRarestAnomalyThemeGate() {
-    const ordinary = this.resolver.resolveRarity(this.fixture.input(6, 5));
+  #checkUniqueAnomalyThemeGate() {
+    const ordinary = this.resolver.resolve(this.fixture.input(6, 5));
     Assertion.that(
-      ordinary.isMaximum,
+      ordinary.rarity.isMaximum,
       "maximum score should keep its maximum marker",
     );
     Assertion.that(
-      !ordinary.isRarest,
+      !ordinary.isUnique,
       "ordinary fish should not get anomalous gold theme",
     );
 
-    const anomalous = this.resolver.resolveRarity(
-      this.fixture.input(6, 5, {
+    const anomalous = this.resolver.resolve(
+      this.fixture.input(1, 0.05, {
         baseAnomaly: "inside",
       }),
     );
     Assertion.that(
-      anomalous.isRarest,
-      "anomalous fish should get gold theme",
+      anomalous.isUnique,
+      "minimum-weight anomalous fish should be unique",
+    );
+    Assertion.equal(
+      anomalous.rarity.stars,
+      0.5,
+      "unique fish keeps its independent minimum weight rarity",
+    );
+    Assertion.that(
+      !anomalous.rarity.isMaximum,
+      "unique fish does not imply maximum weight rarity",
     );
 
     const visual = {
@@ -276,10 +293,22 @@ class FishRarityCheck {
       config,
       locationId: "other",
       roll: 0,
+      chanceOverride: 1,
     });
     Assertion.that(
       !wrongLocation.hasAnomaly,
-      "anomaly does not spawn outside configured locations",
+      "100% chance override preserves configured locations",
+    );
+
+    const forced = this.anomalyVariantResolver.resolve({
+      config,
+      locationId: "test",
+      roll: 0.999,
+      chanceOverride: 1,
+    });
+    Assertion.that(
+      forced.hasAnomaly,
+      "100% chance override succeeds at a normally failing roll",
     );
   }
 
@@ -449,6 +478,61 @@ class FishRarityCheck {
       "assets/fish/crucian_stalker/crucian_stalker--6-uniq.webp",
       "unique image contract",
     );
+
+    fish.anomalyVariant.chance = 0.01;
+    const highRollRng = { next: () => 0.999, int: () => 0 };
+    const ordinaryBiteSystem = new this.BiteSystem(
+      [fish],
+      { fightPhysicsConfig: {}, ui: { line: {} } },
+      highRollRng,
+      null,
+      this.resolver,
+      this.anomalyVariantResolver,
+      this.visualVariantResolver,
+    );
+    const ordinaryHighRollCatch = ordinaryBiteSystem.evaluateBite(
+      1000,
+      environment,
+      gear,
+    );
+    Assertion.that(
+      !ordinaryHighRollCatch.isUnique,
+      "configured anomaly chance normally fails at a high roll",
+    );
+
+    const godModeBiteSystem = new this.BiteSystem(
+      [fish],
+      {
+        fightPhysicsConfig: {},
+        ui: { line: {} },
+        debug: {
+          godMode: {
+            enabled: true,
+            fixedBiteChanceEnabled: false,
+            forceAnomalyChance: true,
+          },
+        },
+      },
+      highRollRng,
+      null,
+      this.resolver,
+      this.anomalyVariantResolver,
+      this.visualVariantResolver,
+    );
+    const forcedAnomalyCatch = godModeBiteSystem.evaluateBite(
+      1000,
+      environment,
+      gear,
+    );
+    Assertion.that(
+      forcedAnomalyCatch.hasAnomaly && forcedAnomalyCatch.isUnique,
+      "God Mode forces eligible anomaly chance to 100%",
+    );
+    Assertion.equal(
+      forcedAnomalyCatch.imagePath,
+      "assets/fish/crucian_stalker/crucian_stalker--6-uniq.webp",
+      "God Mode forced anomaly uses the unique level skin",
+    );
   }
 
   #checkVisualScaleDistribution() {
@@ -468,7 +552,7 @@ class FishRarityCheck {
         panelGlowAlpha: 0.35,
         strokeAlpha: 0.75,
       },
-      maximum: {
+      uniqueEffects: {
         pulseDurationMs: 1200,
         frameDash: [12, 7],
         frameDashSpeedPxPerSecond: 22.222,
@@ -495,33 +579,52 @@ class FishRarityCheck {
     const levelFour = themeResolver.resolve({
       level: 4,
       maxLevel: 5,
-      rarity: { isRarest: false },
+      isUnique: false,
     });
     Assertion.equal(levelFour.color[0], 170, "max-level-5 level 4 red channel");
     Assertion.equal(levelFour.color[1], 100, "max-level-5 level 4 green channel");
     const levelFive = themeResolver.resolve({
       level: 5,
       maxLevel: 5,
-      rarity: { isRarest: false },
+      isUnique: false,
     });
     Assertion.equal(levelFive.color[0], 255, "ordinary maximum level is red");
     Assertion.equal(levelFive.color[1], 70, "ordinary maximum level is not gold");
-    const unique = themeResolver.resolve({
-      level: 5,
+    const ordinaryLowRarity = themeResolver.resolve({
+      level: 1,
       maxLevel: 5,
-      rarity: { isRarest: true },
+      isUnique: false,
+      rarity: { stars: 0.5, isMaximum: false },
     });
-    Assertion.equal(unique.color[0], 255, "unique theme red channel");
-    Assertion.equal(unique.color[1], 205, "unique theme gold channel");
-    Assertion.that(unique.isAnimated, "unique descriptor is animated");
+    const unique = themeResolver.resolve({
+      level: 1,
+      maxLevel: 5,
+      isUnique: true,
+      rarity: { stars: 0.5, isMaximum: false },
+    });
+    Assertion.equal(
+      ordinaryLowRarity.color[0],
+      145,
+      "ordinary half-star fish keeps the common theme",
+    );
+    Assertion.that(
+      !ordinaryLowRarity.isAnimated,
+      "ordinary half-star fish is not animated",
+    );
+    Assertion.equal(unique.color[0], 255, "low-rarity unique theme red channel");
+    Assertion.equal(unique.color[1], 205, "low-rarity unique theme gold channel");
+    Assertion.that(
+      unique.isAnimated,
+      "low-rarity unique descriptor is animated",
+    );
     Assertion.equal(
       unique.frameDash.join(","),
-      config.maximum.frameDash.join(","),
+      config.uniqueEffects.frameDash.join(","),
       "unique descriptor uses configured frame dash",
     );
     Assertion.equal(
       unique.glow.panelAlpha,
-      config.maximum.panelGlowAlpha,
+      config.uniqueEffects.panelGlowAlpha,
       "unique descriptor uses configured panel glow",
     );
     Assertion.equal(
@@ -539,7 +642,11 @@ class FishRarityCheck {
       const first = visualResolver.resolveLevel(1, maxLevel);
       const last = visualResolver.resolveLevel(maxLevel, maxLevel);
       Assertion.equal(first.position, 0, `${maxLevel}-level scale start`);
-      Assertion.equal(last.position, 1, `${maxLevel}-level item scale end`);
+      Assertion.equal(
+        last.position,
+        0.8,
+        `${maxLevel}-level ordinary scale ends before unique`,
+      );
     }
     Assertion.equal(
       visualResolver.preMaximumPosition,
@@ -560,6 +667,10 @@ class FishRarityCheck {
       visual: {
         colorStops: [
           { id: "common", position: 0, color: [145, 150, 160] },
+          { id: "uncommon", position: 0.2, color: [0, 210, 120] },
+          { id: "rare", position: 0.4, color: [0, 160, 255] },
+          { id: "epic", position: 0.6, color: [170, 100, 255] },
+          { id: "legendary", position: 0.8, color: [255, 70, 70] },
           { id: "unique", position: 1, color: [255, 205, 55] },
         ],
         frame: {
@@ -569,7 +680,7 @@ class FishRarityCheck {
           panelGlowAlpha: 0.35,
           strokeAlpha: 0.75,
         },
-        maximum: {
+        uniqueEffects: {
           pulseDurationMs: 1200,
           frameDash: [12, 7],
           frameDashSpeedPxPerSecond: 22.222,
@@ -744,12 +855,42 @@ class FishRarityCheck {
       "fixed catch ordinary image",
     );
 
+    const godForced = this.fixedCatchFishFactory.create({
+      template,
+      weightKg: 4.2,
+      biteSequence: ["test"],
+      anomalyChanceOverride: 1,
+      locationId: "test",
+    });
+    Assertion.that(
+      godForced.hasAnomaly && godForced.isUnique,
+      "God Mode anomaly override applies to an eligible fixed catch",
+    );
+    Assertion.equal(
+      godForced.imagePath,
+      "assets/fish/crucian_stalker/crucian_stalker--6-uniq.webp",
+      "God Mode fixed catch uses the unique level skin",
+    );
+
+    const wrongLocation = this.fixedCatchFishFactory.create({
+      template,
+      weightKg: 4.2,
+      biteSequence: ["test"],
+      anomalyChanceOverride: 1,
+      locationId: "missing",
+    });
+    Assertion.that(
+      !wrongLocation.hasAnomaly && !wrongLocation.isUnique,
+      "God Mode fixed catch preserves anomaly location restrictions",
+    );
+
     for (const range of this.fixture.weightConfig.levelWeightRanges) {
       const unique = this.fixedCatchFishFactory.create({
         template,
         weightKg: range.min,
         biteSequence: ["test"],
-        hasAnomaly: true,
+        anomalyChanceOverride: 1,
+        locationId: "test",
       });
       Assertion.that(
         unique.hasAnomaly,
@@ -854,19 +995,65 @@ class FishRarityCheck {
     const resolved = this.resolver.resolve({
       weightKg: 4.2,
       weightConfig: this.fixture.weightConfig,
-    }).rarity;
+    });
     builder.buildInto({
       target: frame.outcome,
       intent: {
         visible: true,
         mode: "victory",
-        fish: { id: "fixture", level: 6, maxLevel: 6, weight: 4.2, rarity: resolved },
+        fish: {
+          id: "fixture",
+          level: 6,
+          maxLevel: 6,
+          weight: 4.2,
+          isUnique: resolved.isUnique,
+          rarity: resolved.rarity,
+        },
       },
     });
     Assertion.equal(
       frame.outcome.victory.fish.rarity.halfSteps,
       9,
       "Victory preserves resolved rarity",
+    );
+    Assertion.that(
+      !frame.outcome.victory.fish.isUnique,
+      "Victory preserves ordinary fish identity separately from rarity",
+    );
+
+    const uniqueHalfStar = this.resolver.resolve({
+      weightKg: 0.05,
+      weightConfig: this.fixture.weightConfig,
+      baseAnomaly: "inside",
+    });
+    frame.reset();
+    builder.buildInto({
+      target: frame.outcome,
+      intent: {
+        visible: true,
+        mode: "victory",
+        fish: {
+          id: "fixture",
+          level: 1,
+          maxLevel: 6,
+          weight: 0.05,
+          isUnique: uniqueHalfStar.isUnique,
+          rarity: uniqueHalfStar.rarity,
+        },
+      },
+    });
+    Assertion.that(
+      frame.outcome.victory.fish.isUnique,
+      "Victory preserves unique fish identity",
+    );
+    Assertion.equal(
+      frame.outcome.victory.fish.rarity.stars,
+      0.5,
+      "Victory preserves independent half-star rarity for a unique fish",
+    );
+    Assertion.that(
+      !frame.outcome.victory.fish.rarity.isMaximum,
+      "Victory unique identity does not alter maximum rarity",
     );
 
     frame.reset();
@@ -913,6 +1100,10 @@ const runtime = new RuntimeLoader().loadClasses([
   {
     relativePath: "src/render/screens/victory_theme_resolver.js",
     classNames: ["VictoryThemeResolver"],
+  },
+  {
+    relativePath: "src/config/validation/item_rarity_config_validator.js",
+    classNames: ["ItemRarityConfigValidator"],
   },
   {
     relativePath: "src/config/validation/rarity_config_validator.js",

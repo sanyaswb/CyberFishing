@@ -21,6 +21,7 @@ class BiteTicksDebugModule extends ConsoleTableDebugModule {
       "GOD fixed chance": godMode.fixedBiteChanceEnabled
         ? `${godMode.fixedBiteChancePercent}%`
         : "off",
+      "GOD anomaly chance": godMode.forceAnomalyChance ? "100%" : "default",
       "GOD bite sequence mode": godMode.biteSequenceMode || "default",
       "Event source": "BiteSystem + WaterEntity.startBite/_rollBiteSequence",
     });
@@ -62,6 +63,9 @@ class BiteTickLogPrinter {
       "GOD fixed chance": detail.godMode?.fixedBiteChanceEnabled
         ? `${detail.godMode.fixedBiteChancePercent}%`
         : "off",
+      "GOD anomaly chance": detail.godMode?.forceAnomalyChance
+        ? "100%"
+        : "default",
       "GOD sequence mode": detail.godMode?.biteSequenceMode || "default",
     });
 

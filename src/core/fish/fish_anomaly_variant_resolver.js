@@ -12,7 +12,12 @@ class FishAnomalyVariantResolver {
     });
   }
 
-  resolve({ config = null, locationId = "", roll = 1 } = {}) {
+  resolve({
+    config = null,
+    locationId = "",
+    roll = 1,
+    chanceOverride = null,
+  } = {}) {
     if (!config || config.enabled === false) return this.#none();
 
     const allowedLocations = Array.isArray(config.locationIds)
@@ -26,7 +31,15 @@ class FishAnomalyVariantResolver {
       return this.#none();
     }
 
-    const chance = Math.max(0, Math.min(1, Number(config.chance) || 0));
+    const hasChanceOverride =
+      chanceOverride !== null && chanceOverride !== undefined;
+    const chanceSource = hasChanceOverride
+      ? Number(chanceOverride)
+      : Number(config.chance);
+    const chance = Math.max(
+      0,
+      Math.min(1, Number.isFinite(chanceSource) ? chanceSource : 0),
+    );
     const parsedRoll = Number(roll);
     const normalizedRoll = Number.isFinite(parsedRoll)
       ? Math.max(0, Math.min(1, parsedRoll))

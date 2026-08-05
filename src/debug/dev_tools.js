@@ -98,6 +98,7 @@ class DevTools {
   #hookedFishProfileSynchronizer;
   #activeFishVisibilityPolicy;
   #locationSchema;
+  #parameterAliases;
   #isDisposed = false;
   #onDebugLiveUpdate = (event) => {
     if (this.#isDisposed) return;
@@ -148,6 +149,10 @@ class DevTools {
       typeof LocationDevToolsSchema !== "undefined"
         ? new LocationDevToolsSchema()
         : null;
+    this.#parameterAliases =
+      typeof DevToolsParameterAliasRegistry !== "undefined"
+        ? new DevToolsParameterAliasRegistry()
+        : null;
     const tooltipProvider = new DevToolsParameterTooltipProvider();
     this.#ui = new DevToolsUI(
       () => this.toggle(),
@@ -186,6 +191,7 @@ class DevTools {
 
   #populatePanel() {
     const body = this.#ui.body;
+    this.#ui.clearValueBindings();
     body.innerHTML = "";
     this.#activeFishKey = this.#getActiveFishKey();
     this.#activeFishShapeKey = this.#getActiveFishShapeKey();
@@ -619,49 +625,87 @@ class DevTools {
         typeof val === "boolean" ||
         typeof val === "string"
       ) {
-        if (typeof val === "boolean") {
-          this.#ui.createSwitcherRow(
-            key,
-            val,
-            parentElement,
-            (newVal) => this.#updateConfigValue(currentPath, newVal),
-            currentPath,
-          );
-        } else if (typeof val === "string") {
-          if (key === "currentMethod") {
-            this.#ui.createEnumToggleRow(
-              key,
-              ["hand", "boat"],
-              val,
-              parentElement,
-              (newVal) => this.#updateConfigValue(currentPath, newVal),
-              currentPath,
-            );
-          } else {
-            this.#ui.createInputRow(
-              this.#formatDevToolsKey(key, currentPath),
-              val,
-              parentElement,
-              "string",
-              (newVal) => this.#updateConfigValue(currentPath, newVal),
-              currentPath,
-            );
-          }
-        } else {
-          this.#ui.createInputRow(
-            this.#formatDevToolsKey(key, currentPath),
-            val,
-            parentElement,
-            "number",
-            (newVal) => this.#updateConfigValue(currentPath, newVal),
-            currentPath,
-          );
-        }
+        this.#renderScalarValue({
+          key,
+          value: val,
+          parentElement,
+          displayPath: currentPath,
+          canonicalPath: currentPath,
+        });
       }
+    }
+
+    this.#renderParameterAliases(obj, parentElement, path);
+  }
+
+  #renderParameterAliases(obj, parentElement, parentPath) {
+    const aliases =
+      this.#parameterAliases?.getAliasesForParent(parentPath) || [];
+    for (const alias of aliases) {
+      if (Object.prototype.hasOwnProperty.call(obj, alias.key)) continue;
+      const value = this.#readPath(alias.canonicalPath);
+      if (
+        typeof value !== "number" &&
+        typeof value !== "boolean" &&
+        typeof value !== "string"
+      ) {
+        continue;
+      }
+      this.#renderScalarValue({
+        key: alias.key,
+        value,
+        parentElement,
+        displayPath: alias.displayPath,
+        canonicalPath: alias.canonicalPath,
+      });
     }
   }
 
+  #renderScalarValue({
+    key,
+    value,
+    parentElement,
+    displayPath,
+    canonicalPath,
+  }) {
+    const onChange = (newValue) =>
+      this.#updateConfigValue(canonicalPath, newValue);
+    if (typeof value === "boolean") {
+      this.#ui.createSwitcherRow(
+        key,
+        value,
+        parentElement,
+        onChange,
+        displayPath,
+        canonicalPath,
+      );
+      return;
+    }
+    if (typeof value === "string" && key === "currentMethod") {
+      this.#ui.createEnumToggleRow(
+        key,
+        ["hand", "boat"],
+        value,
+        parentElement,
+        onChange,
+        displayPath,
+        canonicalPath,
+      );
+      return;
+    }
+    this.#ui.createInputRow(
+      this.#formatDevToolsKey(key, canonicalPath),
+      value,
+      parentElement,
+      typeof value === "number" ? "number" : "string",
+      onChange,
+      displayPath,
+      canonicalPath,
+    );
+  }
+
   #updateConfigValue(path, newValue) {
+    path = this.#parameterAliases?.resolveCanonicalPath(path) || path;
     const root = this.#resolveEditableRoot(path[0]);
     if (!root) return;
 
@@ -675,6 +719,8 @@ class DevTools {
       }
       target[path[path.length - 1]] = newValue;
     }
+
+    this.#ui.syncValue(path, newValue);
 
     this.#syncDebugConsoleModule(path, newValue);
     this.#syncHookedFishProfileAliases(path, newValue, root);
@@ -768,7 +814,11 @@ class DevTools {
       const json = window.prompt?.("Paste runtime overrides JSON", "{}");
       if (!json) return;
       try {
-        this.#configRuntime?.importOverrides?.(JSON.parse(json));
+        const overrides = JSON.parse(json);
+        const normalizedOverrides =
+          this.#parameterAliases?.normalizeConfigOverrides(overrides) ||
+          overrides;
+        this.#configRuntime?.importOverrides?.(normalizedOverrides);
         this.#refreshFightPhysicsAdapter();
         document.dispatchEvent(
           new CustomEvent("config-updated", {
@@ -988,6 +1038,7 @@ class DevToolsUI {
   #btn;
   #onToggleCallback;
   #tooltipProvider;
+  #controlBindings = new DevToolsControlBindingRegistry();
 
   constructor(onToggleCallback, config, tooltipProvider = null) {
     this.#onToggleCallback = onToggleCallback;
@@ -1010,12 +1061,21 @@ class DevToolsUI {
   }
 
   dispose() {
+    this.#controlBindings.clear();
     this.#btn?.remove();
     this.#panel?.remove();
     this.#btn = null;
     this.#panel = null;
     this.#body = null;
     this.#onToggleCallback = null;
+  }
+
+  clearValueBindings() {
+    this.#controlBindings.clear();
+  }
+
+  syncValue(path, value) {
+    this.#controlBindings.sync(path, value);
   }
 
   createSection(labelStr, parentElement, isExpanded, onToggle, path = null) {
@@ -1076,6 +1136,7 @@ class DevToolsUI {
     parentElement,
     onChangeCallback,
     path = null,
+    bindingPath = path,
   ) {
     const row = document.createElement("div");
     row.className = "devtools-row";
@@ -1099,10 +1160,21 @@ class DevToolsUI {
     row.appendChild(inputElement);
 
     cb.addEventListener("change", (e) => onChangeCallback(e.target.checked));
+    this.#controlBindings.register(bindingPath, (value) => {
+      cb.checked = value === true;
+    });
     parentElement.appendChild(row);
   }
 
-  createInputRow(key, val, parentElement, type, onChangeCallback, path = null) {
+  createInputRow(
+    key,
+    val,
+    parentElement,
+    type,
+    onChangeCallback,
+    path = null,
+    bindingPath = path,
+  ) {
     const row = document.createElement("div");
     row.className = "devtools-row";
     this.#assignDevToolsPath(row, path);
@@ -1135,6 +1207,9 @@ class DevToolsUI {
       });
     }
 
+    this.#controlBindings.register(bindingPath, (value) => {
+      inputElement.value = Array.isArray(value) ? value.join(", ") : value;
+    });
     row.appendChild(inputElement);
     parentElement.appendChild(row);
   }
@@ -1146,6 +1221,7 @@ class DevToolsUI {
     parentElement,
     onChangeCallback,
     path = null,
+    bindingPath = path,
   ) {
     const row = document.createElement("div");
     row.className = "devtools-row";
@@ -1174,6 +1250,9 @@ class DevToolsUI {
       let newVal = optionsArray[nextIndex];
       btn.innerText = newVal;
       onChangeCallback(newVal);
+    });
+    this.#controlBindings.register(bindingPath, (value) => {
+      btn.innerText = String(value);
     });
 
     row.appendChild(btn);

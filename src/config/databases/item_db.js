@@ -7,6 +7,7 @@
  * Важливо: дальність закидання НЕ зберігається в ITEM_DB.
  * Її рахує CastDistanceCalculator з окремо спорядженої ліски
  * та CONFIG.physics.simulation.pixelsPerMeter.
+ * rarityProfile призначається дизайнером і не виводиться з engineStats.
  */
 const ITEM_DB = {
   rods: {
@@ -16,6 +17,12 @@ const ITEM_DB = {
       name: "Тестовий Спінінг",
       type: "spinning", // Для UI фільтрів
       icon: "🎣",
+      rarityProfile: {
+        mode: "authored",
+        tier: 3,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
@@ -54,6 +61,12 @@ const ITEM_DB = {
       name: "Тестовий Фідер",
       type: "feeder", // Для UI фільтрів
       icon: "🎣",
+      rarityProfile: {
+        mode: "authored",
+        tier: 2,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
@@ -92,6 +105,13 @@ const ITEM_DB = {
       name: "Бамбукова Вудка",
       type: "float",
       icon: "🎣",
+      rarityProfile: {
+        mode: "authored",
+        tier: 5,
+        maxTier: 5,
+        isUnique: true,
+        uniqueId: "stalker_bamboo_rod",
+      },
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
@@ -131,6 +151,12 @@ const ITEM_DB = {
       name: "Тестова Котушка",
       type: "spinning_reel",
       icon: "⚙️",
+      rarityProfile: {
+        mode: "authored",
+        tier: 3,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lineCapacityMeters: "Ємність: м.",
@@ -163,6 +189,12 @@ const ITEM_DB = {
       name: "Інерційна котушка без фрикціону",
       type: "spinning_reel",
       icon: "⚙️",
+      rarityProfile: {
+        mode: "authored",
+        tier: 1,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lineCapacityMeters: "Ємність: м.",
@@ -198,6 +230,12 @@ const ITEM_DB = {
       name: "Test line I",
       type: "fishing_line",
       icon: "🧵",
+      rarityProfile: {
+        mode: "authored",
+        tier: 1,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         lengthMeters: "Довжина: м.",
         diameterMm: "Товщина: мм",
@@ -219,6 +257,12 @@ const ITEM_DB = {
       name: "Test line II",
       type: "fishing_line",
       icon: "🧵",
+      rarityProfile: {
+        mode: "authored",
+        tier: 2,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         lengthMeters: "Довжина: м.",
         diameterMm: "Товщина: мм",
@@ -240,6 +284,12 @@ const ITEM_DB = {
       name: "Test line III",
       type: "fishing_line",
       icon: "🧵",
+      rarityProfile: {
+        mode: "authored",
+        tier: 3,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         lengthMeters: "Довжина: м.",
         diameterMm: "Товщина: мм",
@@ -263,6 +313,12 @@ const ITEM_DB = {
       name: "Тестовий поводок 0.25мм",
       type: "leader_line",
       icon: "🪢",
+      rarityProfile: {
+        mode: "authored",
+        tier: 2,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         diameterMm: "Товщина: мм",
         maxLoadKg: "Макс. навантаження: кг.",
@@ -285,6 +341,12 @@ const ITEM_DB = {
       name: "Базовий гачок",
       type: "hook",
       icon: "🪝",
+      rarityProfile: {
+        mode: "authored",
+        tier: 1,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         weight: "Вага: кг",
         quality: "Якість:",
@@ -304,6 +366,12 @@ const ITEM_DB = {
       name: "Базова пружина",
       type: "feeder_rig",
       icon: "🪤",
+      rarityProfile: {
+        mode: "authored",
+        tier: 2,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         hooksCount: "Гачки:",
         hasChumSlot: {
@@ -328,6 +396,12 @@ const ITEM_DB = {
       name: "Масляний черв'як",
       type: "bait",
       icon: "🪱",
+      rarityProfile: {
+        mode: "authored",
+        tier: 2,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         type: {
           label: "Тип",
@@ -342,6 +416,12 @@ const ITEM_DB = {
       name: "Хліб",
       type: "bait",
       icon: "🍞",
+      rarityProfile: {
+        mode: "authored",
+        tier: 1,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         type: {
           label: "Тип",
@@ -356,6 +436,12 @@ const ITEM_DB = {
       name: "Блешня (Тест)",
       type: "lure",
       icon: "🥄",
+      rarityProfile: {
+        mode: "authored",
+        tier: 3,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         type: {
           label: "Тип",
@@ -383,6 +469,12 @@ const ITEM_DB = {
       name: "Воблер Suspend",
       type: "lure",
       icon: "🐟",
+      rarityProfile: {
+        mode: "authored",
+        tier: 4,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         type: {
           label: "Тип",
@@ -420,6 +512,12 @@ const ITEM_DB = {
       name: "Воблер Sinking",
       type: "lure",
       icon: "🐟",
+      rarityProfile: {
+        mode: "authored",
+        tier: 3,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         type: {
           label: "Тип",
@@ -457,6 +555,12 @@ const ITEM_DB = {
       name: "Джиг",
       type: "jig",
       icon: "🪨",
+      rarityProfile: {
+        mode: "authored",
+        tier: 2,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         type: {
           label: "Тип",
@@ -486,6 +590,12 @@ const ITEM_DB = {
       name: "Денний поплавок",
       type: "float_tackle",
       icon: "🥢",
+      rarityProfile: {
+        mode: "authored",
+        tier: 4,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         type: {
           label: "Тип",
@@ -529,6 +639,12 @@ const ITEM_DB = {
       name: "Базова підсака",
       type: "net", // Залишається як є
       icon: "🕸️",
+      rarityProfile: {
+        mode: "authored",
+        tier: 1,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         maxWeight: "Макс. вага: кг",
         length: "Довжина: м",
@@ -556,6 +672,12 @@ const ITEM_DB = {
       name: "Базова коропова суміш",
       type: "chum_mix",
       icon: "🍞",
+      rarityProfile: {
+        mode: "authored",
+        tier: 2,
+        maxTier: 5,
+        isUnique: false,
+      },
       displayStats: {
         minBonusDurationHours: "Мін. тривалість: год",
         radius: "Радіус: px",
@@ -582,6 +704,12 @@ const ITEM_DB = {
       name: "Кораблик (Рівень 3)",
       icon: "🚤",
       type: "boat",
+      rarityProfile: {
+        mode: "authored",
+        tier: 5,
+        maxTier: 5,
+        isUnique: false,
+      },
 
       displayStats: {
         speedPxPerSec: {
@@ -638,6 +766,7 @@ const ITEM_DB = {
       name: "Ящик збірки",
       type: "build_box",
       icon: "🧰",
+      rarityProfile: null,
       displayStats: {},
       engineStats: { type: "build_box" },
     },
@@ -648,6 +777,7 @@ const ITEM_DB = {
       id: "debug_float_build",
       name: "Test Build (Dev)",
       type: "build_template",
+      rarityProfile: null,
       items: [
         { itemId: "rod_test_float", quantity: 1 },
         { itemId: "line_test_1", quantity: 1 },
@@ -660,6 +790,7 @@ const ITEM_DB = {
       id: "debug_feeder_build",
       name: "Test Build (Dev2)",
       type: "build_template",
+      rarityProfile: null,
       items: [
         { itemId: "rod_test_feeder", quantity: 1 },
         { itemId: "line_test_2", quantity: 1 },

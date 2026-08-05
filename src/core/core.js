@@ -83,6 +83,7 @@ class InputManager {
   #releasePointerX;
   #releasePointerY;
   #hasPointerRelease = false;
+  #pointerReleaseCancelled = false;
   #rodControlPointerActive = false;
   #rodControlAnchorX = 0;
   #rodControlCurrentX = 0;
@@ -97,6 +98,7 @@ class InputManager {
   #pumpFlag = false;
   #hasSwipedThisTouch = false;
   #clickPos;
+  #pointerGestureId;
   #anchorX;
   #keys = {};
   #isDoubleClick = false;
@@ -132,6 +134,7 @@ class InputManager {
     this.#panDeltaX = 0;
     this.#panDeltaY = 0;
     this.#clickPos = null;
+    this.#pointerGestureId = 0;
     this.#fightInputActionComposer =
       typeof FightInputActionComposer !== "undefined"
         ? new FightInputActionComposer()
@@ -161,7 +164,9 @@ class InputManager {
       pointerStart: { x: 0, y: 0 },
       pointerCurrent: { x: 0, y: 0 },
       pointerDelta: { x: 0, y: 0 },
+      pointerGestureId: 0,
       pointerReleased: false,
+      pointerReleaseCancelled: false,
       pointerRelease: { x: 0, y: 0 },
       rodControlActive: false,
       rodControlDirectionX: 0,
@@ -218,6 +223,7 @@ class InputManager {
 
   #bindEvents() {
     this.#addEventListener(this.#canvas, "pointerdown", (e) => {
+      this.#pointerGestureId += 1;
       this.#isPointerDown = true;
       this.#isPulling = false;
       this.#isDragging = false;
@@ -231,6 +237,7 @@ class InputManager {
       this.#currentPointerX = e.clientX;
       this.#currentPointerY = e.clientY;
       this.#hasPointerRelease = false;
+      this.#pointerReleaseCancelled = false;
       this.#rodControlPointerActive = false;
       this.#rodControlAnchorX = e.clientX;
       this.#rodControlCurrentX = e.clientX;
@@ -300,6 +307,7 @@ class InputManager {
           e.type === "pointercancel");
 
       if (isPointerEvent) {
+        this.#pointerReleaseCancelled = e.type === "pointercancel";
         if (this.#isPointerDown) {
           const now = Date.now();
           const holdMs = Math.max(0, Number(CONFIG.input?.pullHoldMinMs) || 0);
@@ -646,6 +654,10 @@ class InputManager {
     this.#swipeDeltaY = 0;
   }
 
+  getPointerGestureId() {
+    return this.#pointerGestureId;
+  }
+
   getState() {
     const keys = CONFIG.input?.keys || {};
     const keyboardPulling = this.#checkKeyHeld(keys.pull);
@@ -704,7 +716,9 @@ class InputManager {
     state.pointerCurrent.y = this.#currentPointerY;
     state.pointerDelta.x = this.#currentPointerX - this.#startX;
     state.pointerDelta.y = this.#currentPointerY - this.#startY;
+    state.pointerGestureId = this.#pointerGestureId;
     state.pointerReleased = this.#hasPointerRelease;
+    state.pointerReleaseCancelled = this.#pointerReleaseCancelled;
     state.pointerRelease.x = this.#releasePointerX;
     state.pointerRelease.y = this.#releasePointerY;
     state.rodControlActive = rodControlActive;
@@ -727,6 +741,7 @@ class InputManager {
     this.#pumpFlag = false;
     this.#longPressPos = null;
     this.#hasPointerRelease = false;
+    this.#pointerReleaseCancelled = false;
 
     return state;
   }

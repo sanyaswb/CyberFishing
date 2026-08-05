@@ -1,12 +1,13 @@
 class RarityConfigValidator {
   #errors = [];
 
-  validate({ rarityConfig, fishDb = [], mapDb = {} } = {}) {
+  validate({ rarityConfig, fishDb = [], itemDb = {}, mapDb = {} } = {}) {
     this.#errors = [];
     this.#validateScale(rarityConfig?.scale);
     this.#validateVisual(rarityConfig?.visual);
     this.#validateFishSettings(rarityConfig?.fish);
     this.#validateFishEntries(rarityConfig, fishDb, mapDb);
+    this.#validateItemEntries(itemDb);
     return this.#errors.slice();
   }
 
@@ -102,7 +103,41 @@ class RarityConfigValidator {
         "last stop must be 1",
       );
     }
+    const requiredIds = [
+      "common",
+      "uncommon",
+      "rare",
+      "epic",
+      "legendary",
+      "unique",
+    ];
+    for (const requiredId of requiredIds) {
+      if (!stopIds.has(requiredId)) {
+        this.#error(
+          `${path}.colorStops`,
+          `missing required color stop: ${requiredId}`,
+        );
+      }
+    }
+    if (String(stops[stops.length - 1]?.id || "") !== "unique") {
+      this.#error(
+        `${path}.colorStops[${stops.length - 1}].id`,
+        "unique must be the final color stop",
+      );
+    }
     this.#validateVisualEffects(path, visual);
+  }
+
+  #validateItemEntries(itemDb) {
+    if (typeof ItemRarityConfigValidator === "undefined") {
+      this.#error(
+        "ITEM_DB",
+        "ItemRarityConfigValidator is not loaded",
+      );
+      return;
+    }
+    const issues = new ItemRarityConfigValidator().validate({ itemDb });
+    for (const issue of issues) this.#error(issue.path, issue.message);
   }
 
   #validateVisualEffects(path, visual) {
@@ -117,9 +152,9 @@ class RarityConfigValidator {
       this.#requireRatio(`${path}.frame.strokeAlpha`, frame.strokeAlpha);
     }
 
-    const maximum = visual.maximum;
-    if (!maximum || typeof maximum !== "object") {
-      this.#error(`${path}.maximum`, "missing maximum rarity effect config");
+    const uniqueEffects = visual.uniqueEffects;
+    if (!uniqueEffects || typeof uniqueEffects !== "object") {
+      this.#error(`${path}.uniqueEffects`, "missing unique fish effect config");
       return;
     }
     for (const field of [
@@ -132,7 +167,10 @@ class RarityConfigValidator {
       "imageGlowMin",
       "imageGlowMax",
     ]) {
-      this.#requireNonNegativeNumber(`${path}.maximum.${field}`, maximum[field]);
+      this.#requireNonNegativeNumber(
+        `${path}.uniqueEffects.${field}`,
+        uniqueEffects[field],
+      );
     }
     for (const field of [
       "panelGlowAlpha",
@@ -141,38 +179,47 @@ class RarityConfigValidator {
       "backgroundAlphaMax",
       "strokeAlpha",
     ]) {
-      this.#requireRatio(`${path}.maximum.${field}`, maximum[field]);
+      this.#requireRatio(
+        `${path}.uniqueEffects.${field}`,
+        uniqueEffects[field],
+      );
     }
     this.#requireMinMax(
-      `${path}.maximum.borderWidthMin`,
-      maximum.borderWidthMin,
-      `${path}.maximum.borderWidthMax`,
-      maximum.borderWidthMax,
+      `${path}.uniqueEffects.borderWidthMin`,
+      uniqueEffects.borderWidthMin,
+      `${path}.uniqueEffects.borderWidthMax`,
+      uniqueEffects.borderWidthMax,
     );
     this.#requireMinMax(
-      `${path}.maximum.panelGlowMin`,
-      maximum.panelGlowMin,
-      `${path}.maximum.panelGlowMax`,
-      maximum.panelGlowMax,
+      `${path}.uniqueEffects.panelGlowMin`,
+      uniqueEffects.panelGlowMin,
+      `${path}.uniqueEffects.panelGlowMax`,
+      uniqueEffects.panelGlowMax,
     );
     this.#requireMinMax(
-      `${path}.maximum.imageGlowMin`,
-      maximum.imageGlowMin,
-      `${path}.maximum.imageGlowMax`,
-      maximum.imageGlowMax,
+      `${path}.uniqueEffects.imageGlowMin`,
+      uniqueEffects.imageGlowMin,
+      `${path}.uniqueEffects.imageGlowMax`,
+      uniqueEffects.imageGlowMax,
     );
     this.#requireMinMax(
-      `${path}.maximum.backgroundAlphaMin`,
-      maximum.backgroundAlphaMin,
-      `${path}.maximum.backgroundAlphaMax`,
-      maximum.backgroundAlphaMax,
+      `${path}.uniqueEffects.backgroundAlphaMin`,
+      uniqueEffects.backgroundAlphaMin,
+      `${path}.uniqueEffects.backgroundAlphaMax`,
+      uniqueEffects.backgroundAlphaMax,
     );
-    if (!Array.isArray(maximum.frameDash) || maximum.frameDash.length === 0) {
-      this.#error(`${path}.maximum.frameDash`, "expected non-empty dash array");
+    if (
+      !Array.isArray(uniqueEffects.frameDash) ||
+      uniqueEffects.frameDash.length === 0
+    ) {
+      this.#error(
+        `${path}.uniqueEffects.frameDash`,
+        "expected non-empty dash array",
+      );
     } else {
-      maximum.frameDash.forEach((value, index) =>
+      uniqueEffects.frameDash.forEach((value, index) =>
         this.#requireNonNegativeNumber(
-          `${path}.maximum.frameDash[${index}]`,
+          `${path}.uniqueEffects.frameDash[${index}]`,
           value,
         ),
       );

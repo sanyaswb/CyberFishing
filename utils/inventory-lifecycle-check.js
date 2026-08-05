@@ -85,6 +85,41 @@ class InventoryRuntimeLoader {
       "src/core/line/line_inventory_controller.js",
       "LineInventoryController",
     );
+    this.#loadClass(
+      context,
+      "src/core/items/rarity/item_rarity_descriptor.js",
+      "ItemRarityDescriptor",
+    );
+    this.#loadClass(
+      context,
+      "src/core/items/rarity/item_rarity_strategy.js",
+      "ItemRarityStrategy",
+    );
+    this.#loadClass(
+      context,
+      "src/core/items/rarity/authored_item_rarity_strategy.js",
+      "AuthoredItemRarityStrategy",
+    );
+    this.#loadClass(
+      context,
+      "src/core/items/rarity/item_rarity_strategy_registry.js",
+      "ItemRarityStrategyRegistry",
+    );
+    this.#loadClass(
+      context,
+      "src/core/items/rarity/item_rarity_resolver.js",
+      "ItemRarityResolver",
+    );
+    this.#loadClass(
+      context,
+      "src/core/inventory/inventory_item_stacking_policy.js",
+      "InventoryItemStackingPolicy",
+    );
+    this.#loadClass(
+      context,
+      "src/systems/inventory_item_factory.js",
+      "InventoryItemFactory",
+    );
     this.#loadClass(context, "src/systems/inventory_system.js", "InventoryManager");
     return context.InventoryManager;
   }
@@ -208,6 +243,7 @@ class InventoryFixtureFactory {
           id: "rod_float",
           name: "Float rod",
           type: "float",
+          rarityProfile: this.#ordinaryRarity(),
           engineStats: {
             type: "float",
             lengthMeters: 5,
@@ -220,6 +256,7 @@ class InventoryFixtureFactory {
           id: "rod_spin",
           name: "Spinning rod",
           type: "spinning",
+          rarityProfile: this.#ordinaryRarity(),
           engineStats: {
             type: "spinning",
             lengthMeters: 3,
@@ -234,6 +271,7 @@ class InventoryFixtureFactory {
           id: "reel",
           name: "Reel",
           type: "spinning_reel",
+          rarityProfile: this.#ordinaryRarity(),
           engineStats: {
             type: "spinning_reel",
             requiresTag: "reel",
@@ -246,6 +284,7 @@ class InventoryFixtureFactory {
           id: "line",
           name: "Line",
           type: "fishing_line",
+          rarityProfile: this.#ordinaryRarity(),
           engineStats: {
             type: "fishing_line",
             lengthMeters: 25,
@@ -260,6 +299,7 @@ class InventoryFixtureFactory {
           id: "feeder_rig",
           name: "Feeder rig",
           type: "feeder_rig",
+          rarityProfile: this.#ordinaryRarity(),
           engineStats: {
             type: "feeder_rig",
             requiresTag: "feeder_rig",
@@ -272,10 +312,20 @@ class InventoryFixtureFactory {
           id: "sys_build_box",
           name: "Build box",
           type: "build_box",
+          rarityProfile: null,
           engineStats: { type: "build_box" },
         },
       },
       builds: {},
+    };
+  }
+
+  #ordinaryRarity() {
+    return {
+      mode: "authored",
+      tier: 1,
+      maxTier: 5,
+      isUnique: false,
     };
   }
 

@@ -14,6 +14,7 @@ const FILES = [
   "src/config/databases/fish/species/event_fish.js",
   "src/config/databases/fish/fish_categories.js",
   "src/config/databases/fish_db.js",
+  "src/config/rarity/rarity_visual_config.js",
   "src/config/databases/item_db.js",
   "src/config/physics/environment_physics_config.js",
   "src/config/physics/retrieve_physics_config.js",

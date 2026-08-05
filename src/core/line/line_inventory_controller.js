@@ -184,6 +184,6 @@ class LineInventoryController {
       const bv = b[key] ?? b.engineStats?.[key];
       if (String(av) !== String(bv)) return false;
     }
-    return true;
+    return JSON.stringify(a.rarity) === JSON.stringify(b.rarity);
   }
 }

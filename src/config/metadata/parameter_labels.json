@@ -1259,6 +1259,14 @@
     "label": "Fish power debuff curve",
     "description": "Power curve applied to ENDURANCE exhaustion progress before fish power is reduced."
   },
+  "debug.godMode.forceAnomalyChance": {
+    "label": "GOD anomaly chance 100%",
+    "description": "Canonical anomaly chance override. The switch shown under Fixed Catch is linked to this same value, so both controls always change together."
+  },
+  "debug.fixedCatch.hasAnomaly": {
+    "label": "Fixed Catch anomaly",
+    "description": "Linked view of debug.godMode.forceAnomalyChance. Changing either switch immediately changes the other; no second anomaly value is stored."
+  },
   "debug.memoryWatchdog.enabled": {
     "label": "Memory watchdog enabled",
     "description": "Starts the runtime memory leak watchdog only when explicitly enabled."

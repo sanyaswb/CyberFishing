@@ -133,6 +133,11 @@ class BiteSystem {
     };
   }
 
+  #resolveGodModeAnomalyChanceOverride() {
+    const godMode = this.#getGodModeConfig();
+    return godMode?.forceAnomalyChance === true ? 1 : null;
+  }
+
   #getDepthRatio(hookDepth, depthConfig) {
     const range = depthConfig.maxDepth - depthConfig.minDepth;
     if (!Number.isFinite(range) || range <= 0) return 0;
@@ -245,6 +250,7 @@ class BiteSystem {
       enabled: true,
       fixedBiteChanceEnabled: godMode.fixedBiteChanceEnabled === true,
       fixedBiteChancePercent: godMode.fixedBiteChancePercent,
+      forceAnomalyChance: godMode.forceAnomalyChance === true,
       biteSequenceMode: godMode.biteSequenceMode || "default",
     };
   }
@@ -381,6 +387,7 @@ class BiteSystem {
       config: fish.anomalyVariant,
       locationId,
       roll: this.#next(),
+      chanceOverride: this.#resolveGodModeAnomalyChanceOverride(),
     });
     const fishProfile = this.#fishRarityResolver.resolve({
       weightKg: genWeight,

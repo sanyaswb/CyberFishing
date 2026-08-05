@@ -84,10 +84,32 @@ class GameCompositionRoot {
       configProvider: () => this.#config.rarity?.visual || {},
       animationResolver: rarityAnimationResolver,
     });
+    const itemRarityStrategyRegistry = new ItemRarityStrategyRegistry([
+      new AuthoredItemRarityStrategy(),
+    ]);
+    const itemRarityResolver = new ItemRarityResolver({
+      strategyRegistry: itemRarityStrategyRegistry,
+    });
+    const itemRarityDomAdapter = new ItemRarityDomAdapter({
+      visualResolver: rarityVisualResolver,
+    });
+    contracts.requireMethods(itemRarityResolver, "itemRarityResolver", [
+      "resolve",
+    ]);
+    contracts.requireMethods(itemRarityDomAdapter, "itemRarityDomAdapter", [
+      "apply",
+      "clear",
+    ]);
     const victoryLayoutResolver = new VictoryLayoutResolver();
     contracts.requireMethods(victoryLayoutResolver, "victoryLayoutResolver", [
       "resolve",
     ]);
+    const victoryActionGestureResolver = new VictoryActionGestureResolver();
+    contracts.requireMethods(
+      victoryActionGestureResolver,
+      "victoryActionGestureResolver",
+      ["resolve"],
+    );
     const fishRarityResolver = new FishRarityResolver(
       this.#config.rarity,
     );
@@ -105,6 +127,7 @@ class GameCompositionRoot {
     });
     const fixedCatchFishFactory = new FixedCatchFishFactory({
       fishRarityResolver,
+      fishAnomalyVariantResolver,
       fishVisualVariantResolver,
     });
     const hookedFishProfileSynchronizer =
@@ -295,6 +318,7 @@ class GameCompositionRoot {
       castDistanceCalculator,
       lineRules,
       runtimeConfigProvider,
+      itemRarityResolver,
     );
     const eq = inventory.getEquipped();
     const chumConfigObj = { baits: {}, deliveryMethods: {} };
@@ -344,7 +368,9 @@ class GameCompositionRoot {
       ),
       inventory,
     };
-    systems.inventoryUI = new InventoryUI(systems.inventory);
+    systems.inventoryUI = new InventoryUI(systems.inventory, {
+      rarityDomAdapter: itemRarityDomAdapter,
+    });
     const equipmentRules = new EquipmentRules(castDistanceCalculator);
     const baitRules = new BaitRules();
     const castRules = new CastRules(equipmentRules);
@@ -404,7 +430,11 @@ class GameCompositionRoot {
         rarityVisualResolver,
         victoryLayoutResolver,
       },
+      interaction: {
+        victoryActionGestureResolver,
+      },
       fishRarityResolver,
+      itemRarityResolver,
       fishAnomalyVariantResolver,
       fishVisualVariantResolver,
       fixedCatchFishFactory,
@@ -528,6 +558,8 @@ class GameCompositionRoot {
       getRodVirtualPos: appPorts.getRodVirtualPos,
       getScreenOffsetRatio: appPorts.getScreenOffsetRatio,
       victoryLayoutResolver: runtime.rendering.victoryLayoutResolver,
+      victoryActionGestureResolver:
+        runtime.interaction.victoryActionGestureResolver,
       fixedCatchFishFactory: runtime.fixedCatchFishFactory,
       setState: appPorts.setState,
       castLine: appPorts.castLine,
@@ -738,6 +770,7 @@ class GameCompositionRoot {
     new RarityConfigValidator().assertValid({
       rarityConfig: this.#config.rarity,
       fishDb: this.#config.spawns?.fishes || [],
+      itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
       mapDb: this.#config.locations?.map || {},
     });
   }

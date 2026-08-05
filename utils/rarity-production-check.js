@@ -17,6 +17,7 @@ class ProductionRarityConfigLoader {
       [
         "globalThis.__RARITY_CONFIG__ = CONFIG.rarity;",
         "globalThis.__FISH_DB__ = FISH_DB;",
+        "globalThis.__ITEM_DB__ = ITEM_DB;",
         "globalThis.__MAP_DB__ = MAP_DB;",
         "globalThis.__RARITY_VALIDATOR__ = RarityConfigValidator;",
       ].join("\n"),
@@ -25,6 +26,7 @@ class ProductionRarityConfigLoader {
     return {
       rarityConfig: context.__RARITY_CONFIG__,
       fishDb: context.__FISH_DB__,
+      itemDb: context.__ITEM_DB__,
       mapDb: context.__MAP_DB__,
       Validator: context.__RARITY_VALIDATOR__,
     };
@@ -46,12 +48,16 @@ class ProductionRarityConfigLoader {
 
 class ProductionRarityCheck {
   run() {
-    const { rarityConfig, fishDb, mapDb, Validator } =
+    const { rarityConfig, fishDb, itemDb, mapDb, Validator } =
       new ProductionRarityConfigLoader().load();
-    new Validator().assertValid({ rarityConfig, fishDb, mapDb });
+    new Validator().assertValid({ rarityConfig, fishDb, itemDb, mapDb });
     this.#assertUniqueAssets(fishDb);
+    const itemCount = Object.values(itemDb).reduce(
+      (total, category) => total + Object.keys(category || {}).length,
+      0,
+    );
     console.log(
-      `Production rarity config passed for ${fishDb.length} fish species.`,
+      `Production rarity config passed for ${fishDb.length} fish species and ${itemCount} item records.`,
     );
   }
 

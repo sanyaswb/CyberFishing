@@ -17,6 +17,7 @@
       aria-label="Поточна версія гри"
     ></div>
     <script src="src/config/project_version.js"></script>
+    <script src="src/config/rarity/rarity_visual_config.js"></script>
     <script src="src/config/databases/item_db.js"></script>
     <script src="src/config/databases/fish/presets/fish_profile_factory.js"></script>
     <script src="src/config/databases/fish/presets/fish_profile_presets.js"></script>
@@ -40,17 +41,25 @@
     <script src="src/config/runtime/resolved_config_provider.js"></script>
     <script src="src/config/runtime/immutable_config.js"></script>
     <script src="src/config/config.js"></script>
+    <script src="src/config/validation/item_rarity_config_validator.js"></script>
     <script src="src/config/validation/rarity_config_validator.js"></script>
     <script src="src/config/validation/config_schema_validator.js"></script>
 
     <script src="src/input/pull_input_mapper.js"></script>
+    <script src="src/input/victory_action_gesture_resolver.js"></script>
 
     <script src="src/core/input/fight_input_action_composer.js"></script>
     <script src="src/core/core.js"></script>
     <script src="src/core/fish/fish_rarity_resolver.js"></script>
     <script src="src/core/fish/fish_anomaly_variant_resolver.js"></script>
     <script src="src/core/fish/fish_visual_variant_resolver.js"></script>
+    <script src="src/core/items/rarity/item_rarity_descriptor.js"></script>
+    <script src="src/core/items/rarity/item_rarity_strategy.js"></script>
+    <script src="src/core/items/rarity/authored_item_rarity_strategy.js"></script>
+    <script src="src/core/items/rarity/item_rarity_strategy_registry.js"></script>
+    <script src="src/core/items/rarity/item_rarity_resolver.js"></script>
     <script src="src/core/inventory/equip_target_selection_policy.js"></script>
+    <script src="src/core/inventory/inventory_item_stacking_policy.js"></script>
     <script src="src/core/float_tackle_line_budget_policy.js"></script>
     <script src="src/core/casting_distance.js"></script>
     <script src="src/core/line/line_spool_state.js"></script>
@@ -130,6 +139,7 @@
     <script src="src/systems/fight_physics_system.js"></script>
     <script src="src/systems/bite_system.js"></script>
     <script src="src/systems/chum_system.js"></script>
+    <script src="src/systems/inventory_item_factory.js"></script>
     <script src="src/systems/inventory_system.js"></script>
 
     <script src="src/ui/ui.js"></script>
@@ -138,6 +148,7 @@
     <script src="src/ui/styles/fight_area_style_resolver.js"></script>
     <script src="src/ui/styles/outcome_style_resolver.js"></script>
     <script src="src/ui/styles/rarity_visual_resolver.js"></script>
+    <script src="src/ui/rarity/item_rarity_dom_adapter.js"></script>
 
     <script src="src/debug/services/debug_formatters.js"></script>
     <script src="src/debug/services/debug_data_selectors.js"></script>
@@ -224,6 +235,8 @@
     <script src="src/debug/services/active_fish_dev_tools_schema.js"></script>
     <script src="src/debug/services/location_dev_tools_schema.js"></script>
     <script src="src/debug/services/hooked_fish_profile_synchronizer.js"></script>
+    <script src="src/debug/services/dev_tools_parameter_alias_registry.js"></script>
+    <script src="src/debug/services/dev_tools_control_binding_registry.js"></script>
     <script src="src/debug/dev_tools.js"></script>
 
     <script src="src/render/core/canvas_2d_surface.js"></script>

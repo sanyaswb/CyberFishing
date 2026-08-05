@@ -1,10 +1,23 @@
 class FixedCatchFishFactory {
   #fishRarityResolver;
+  #fishAnomalyVariantResolver;
   #fishVisualVariantResolver;
 
-  constructor({ fishRarityResolver, fishVisualVariantResolver }) {
+  constructor({
+    fishRarityResolver,
+    fishAnomalyVariantResolver,
+    fishVisualVariantResolver,
+  }) {
     if (!fishRarityResolver || typeof fishRarityResolver.resolve !== "function") {
       throw new TypeError("FixedCatchFishFactory requires fishRarityResolver");
+    }
+    if (
+      !fishAnomalyVariantResolver ||
+      typeof fishAnomalyVariantResolver.resolve !== "function"
+    ) {
+      throw new TypeError(
+        "FixedCatchFishFactory requires fishAnomalyVariantResolver",
+      );
     }
     if (
       !fishVisualVariantResolver ||
@@ -15,6 +28,7 @@ class FixedCatchFishFactory {
       );
     }
     this.#fishRarityResolver = fishRarityResolver;
+    this.#fishAnomalyVariantResolver = fishAnomalyVariantResolver;
     this.#fishVisualVariantResolver = fishVisualVariantResolver;
   }
 
@@ -23,19 +37,23 @@ class FixedCatchFishFactory {
     weightKg,
     biteSequence,
     nameSuffix = " (TEST)",
-    hasAnomaly = false,
+    anomalyChanceOverride = null,
+    locationId = "",
   }) {
     if (!template || typeof template !== "object") {
       throw new TypeError("FixedCatchFishFactory requires fish template");
     }
     const weightConfig = template.weightConfig || {};
+    const anomalyId = this.#resolveAnomalyId({
+      template,
+      anomalyChanceOverride,
+      locationId,
+    });
     const profile = this.#fishRarityResolver.resolve({
       weightKg,
       weightConfig,
       depthConfig: template.depthConfig,
-      baseAnomaly: hasAnomaly
-        ? template.anomalyVariant?.anomalyId
-        : template.anomaly,
+      baseAnomaly: anomalyId,
     });
     const levelRange = this.#findLevelRange(weightConfig, profile.level);
     const levelBasePower = Number.isFinite(Number(levelRange?.basePower))
@@ -71,6 +89,25 @@ class FixedCatchFishFactory {
       anomaly: profile.anomaly,
       rarity: profile.rarity,
     };
+  }
+
+  #resolveAnomalyId({
+    template,
+    anomalyChanceOverride,
+    locationId,
+  }) {
+    if (
+      anomalyChanceOverride === null ||
+      anomalyChanceOverride === undefined
+    ) {
+      return template.anomaly;
+    }
+    return this.#fishAnomalyVariantResolver.resolve({
+      config: template.anomalyVariant,
+      locationId,
+      roll: 0,
+      chanceOverride: anomalyChanceOverride,
+    }).anomalyId;
   }
 
   #findLevelRange(weightConfig, level) {

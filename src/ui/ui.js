@@ -1077,6 +1077,7 @@ class HoldChargesUI {
 class InventoryUI {
   #inventoryManager;
   #equipTargetPolicy;
+  #rarityDomAdapter;
   #isOpen = false;
   #warningTimeout;
 
@@ -1105,8 +1106,9 @@ class InventoryUI {
 
   #highlightedSlotId = null;
 
-  constructor(inventoryManager) {
+  constructor(inventoryManager, { rarityDomAdapter = null } = {}) {
     this.#inventoryManager = inventoryManager;
+    this.#rarityDomAdapter = rarityDomAdapter;
     this.#equipTargetPolicy = new InventoryEquipTargetSelectionPolicy(
       typeof SLOT_CONFIG !== "undefined" ? SLOT_CONFIG : {},
     );
@@ -1286,6 +1288,7 @@ class InventoryUI {
     if (!this.#tooltipNode) return;
     this.#tooltipNode.style.display = "none";
     this.#tooltipNode.innerHTML = "";
+    this.#rarityDomAdapter?.clear(this.#tooltipNode);
   }
 
   refreshUI() {
@@ -1546,6 +1549,7 @@ class InventoryUI {
     }
 
     if (item) {
+      this.#rarityDomAdapter?.apply(slotDiv, item.rarity);
       if (!isInventory) {
         slotDiv.classList.add("equipped");
         // Додаємо фіолетову крапку, якщо річ зі збірки
@@ -1743,8 +1747,9 @@ class InventoryUI {
         isEquipped || !instanceId
           ? item
           : this.#inventoryManager.hydrateInstance(instanceId) || item;
+      this.#rarityDomAdapter?.apply(this.#tooltipNode, currentItem.rarity);
 
-      let html = `<div style="font-size: 16px; font-weight: bold; margin-bottom: 5px; color: #00ccff;">${currentItem.icon} ${currentItem.name}</div>`;
+      let html = `<div class="inv-tooltip-title">${currentItem.icon} ${currentItem.name}</div>`;
       const renderedLabels = new Set();
       const displayStats = currentItem.displayStats || {};
       for (const [label, value] of Object.entries(displayStats)) {
@@ -1765,6 +1770,8 @@ class InventoryUI {
         "displayStats",
         "displayStatsSchema",
         "engineStats",
+        "rarityProfile",
+        "rarity",
         "requiresTag",
         "level",
         "basePower",
@@ -1798,7 +1805,7 @@ class InventoryUI {
     });
 
     element.addEventListener("mouseleave", () => {
-      this.#tooltipNode.style.display = "none";
+      this.#hideTooltip();
     });
 
     element.addEventListener("click", () => {

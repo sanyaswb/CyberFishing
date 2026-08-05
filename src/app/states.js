@@ -134,15 +134,21 @@
  */
 
 /**
- * @typedef {Object} ResultStateDeps
+ * @typedef {Object} FailedStateDeps
  * @property {UIManager} ui
- * @property {ConfigProvider} config
  * @property {FishingController} fishing
  * @property {InventoryManager} inventory
+ */
+
+/**
+ * @typedef {Object} VictoryStateDeps
+ * @property {UIManager} ui
+ * @property {InputManager} input
+ * @property {ConfigProvider} config
  * @property {() => { width: number, height: number }} getViewportSize
- * @property {StateCommands} commands
- * @property {StateRules} rules
- * @property {StateServices} services
+ * @property {VictoryLayoutResolver} victoryLayoutResolver
+ * @property {VictoryActionGestureResolver} victoryActionGestureResolver
+ * @property {{ setState: (name: string, data?: object) => void }} commands
  */
 
 class StateMachine {
@@ -235,8 +241,9 @@ class StateDepsFactory {
       case "playing":
         return this.#createPlayingDeps();
       case "failed":
+        return this.#createFailedDeps();
       case "victory":
-        return this.#createResultDeps();
+        return this.#createVictoryDeps();
       default:
         throw new Error(`Unknown state deps: ${name}`);
     }
@@ -398,18 +405,29 @@ class StateDepsFactory {
     });
   }
 
-  /** @returns {ResultStateDeps} */
-  #createResultDeps() {
+  /** @returns {FailedStateDeps} */
+  #createFailedDeps() {
     const root = this.#root;
     return Object.freeze({
-      // Direct subsystem references — result states need very little
       ui: root.ui,
-      config: root.config,
       fishing: root.fishing,
       inventory: root.inventory,
+    });
+  }
+
+  /** @returns {VictoryStateDeps} */
+  #createVictoryDeps() {
+    const root = this.#root;
+    return Object.freeze({
+      ui: root.ui,
+      input: root.input,
+      config: root.config,
       getViewportSize: root.getViewportSize,
       victoryLayoutResolver: root.victoryLayoutResolver,
-      ...this.#fishingCommands(),
+      victoryActionGestureResolver: root.victoryActionGestureResolver,
+      commands: Object.freeze({
+        setState: root.setState,
+      }),
     });
   }
 }
@@ -995,7 +1013,12 @@ class WaitingState extends GameState {
         template,
         weightKg: fixed.weight,
         biteSequence: chosenSequence,
-        hasAnomaly: fixed.hasAnomaly === true,
+        anomalyChanceOverride: this.deps.services.devFlags.isEnabled(
+          "forceAnomalyChance",
+        )
+          ? 1
+          : null,
+        locationId: biteEnv?.locationId || "",
       });
     }
 
@@ -1722,7 +1745,7 @@ class PlayingState extends GameState {
 }
 
 class FailedState extends GameState {
-  /** @param {ResultStateDeps} deps */
+  /** @param {FailedStateDeps} deps */
   constructor(deps) {
     super(deps);
   }
@@ -1755,13 +1778,16 @@ class FailedState extends GameState {
 }
 
 class VictoryState extends GameState {
-  /** @param {ResultStateDeps} deps */
+  #entryPointerGestureId = 0;
+
+  /** @param {VictoryStateDeps} deps */
   constructor(deps) {
     super(deps);
   }
 
   enter(data) {
     this.data = data || {};
+    this.#entryPointerGestureId = this.deps.input.getPointerGestureId();
     this.deps.ui.updateContinueButtonState(false);
     this.deps.ui.setOutcomeOverlayActive(true);
   }
@@ -1772,8 +1798,7 @@ class VictoryState extends GameState {
   }
 
   handleInput(input) {
-    const actionPoint = this.#getActionPoint(input);
-    if (!actionPoint) return;
+    if (!input?.pointerReleased) return;
 
     const viewport = this.deps.getViewportSize();
     const fish = this.data.fish || {};
@@ -1786,13 +1811,13 @@ class VictoryState extends GameState {
       config: this.deps.config.ui?.victory || {},
       statCount: 3 + extraStats,
     });
-    const isActionClick =
-      this.#isPointInside(actionPoint, actions.claim) ||
-      this.#isPointInside(actionPoint, actions.release);
+    const action = this.deps.victoryActionGestureResolver.resolve({
+      input,
+      entryGestureId: this.#entryPointerGestureId,
+      actions,
+    });
+    if (!action) return;
 
-    if (!isActionClick) return;
-
-    input.clickPos = null;
     input.pointerReleased = false;
     this.deps.commands.setState("scouting");
   }
@@ -1806,28 +1831,5 @@ class VictoryState extends GameState {
     target.outcome.visible = true;
     target.outcome.mode = "victory";
     target.outcome.fish = this.data.fish || {};
-  }
-
-  #isPointInside(point, rect) {
-    return (
-      point.x >= rect.x &&
-      point.x <= rect.x + rect.width &&
-      point.y >= rect.y &&
-      point.y <= rect.y + rect.height
-    );
-  }
-
-  #getActionPoint(input) {
-    if (input?.clickPos) return input.clickPos;
-    if (!input?.pointerReleased) return null;
-
-    const point = input.pointerRelease || input.pointerCurrent;
-    if (
-      Number.isFinite(Number(point?.x)) &&
-      Number.isFinite(Number(point?.y))
-    ) {
-      return point;
-    }
-    return null;
   }
 }

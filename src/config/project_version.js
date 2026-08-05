@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.23.50";
+const CURRENT_PROJECT_VERSION = "0.23.56";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "anomaly-driven-unique-fish",
-  updatedAt: "2026-07-31",
+  codename: "universal-item-rarity",
+  updatedAt: "2026-08-06",
   notes: Object.freeze([
-    "Roll anomalous fish independently from weight-based rarity",
-    "Restrict anomaly variants by species-configured locations and chance",
-    "Route every anomalous crucian level to its matching unique skin",
-    "Keep fixed catches and DevTools on the same anomaly and visual model",
-    "Remove the obsolete maximum-rarity unique-fish policy",
+    "Add authored rarity profiles to every inventory item",
+    "Resolve immutable rarity once when an inventory instance is created",
+    "Share one visual palette between fish, items and Victory UI",
+    "Keep rarity frames independent from inventory interaction states",
+    "Validate item rarity during startup and production checks",
   ]),
 });
 

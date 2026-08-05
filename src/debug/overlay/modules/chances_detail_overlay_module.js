@@ -18,6 +18,9 @@ class ChancesDetailModule extends OverlayModule {
       typeof CONFIG !== "undefined" ? CONFIG.debug?.godMode : null;
     if (godMode?.enabled) {
       const biteMode = godMode.biteSequenceMode || "default";
+      if (godMode.forceAnomalyChance) {
+        html += '<div style="margin-bottom:6px; color:#ffd34d; font-size:11px;">GOD Anomaly Chance: 100%</div>';
+      }
       if (godMode.fixedBiteChanceEnabled) {
         const fixedPercent = Math.max(
           0,

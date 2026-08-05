@@ -175,6 +175,7 @@ class ItemDatabase {
       name: item.name,
       icon: item.icon,
       type: engineStats.type || item.type,
+      rarityProfile: item.rarityProfile ?? null,
       displayStats: DisplayStatsResolver.resolve(item),
       displayStatsSchema: item.displayStats || {},
       engineStats,
@@ -351,17 +352,22 @@ class LineRuntimeDisplayStatsResolver {
 
 class Inventory {
   #items;
+  #itemFactory;
 
-  constructor(initialItems = []) {
+  constructor(initialItems = [], itemFactory = null) {
     this.#items = new Map();
+    this.#itemFactory = itemFactory;
     for (let i = 0; i < initialItems.length; i++) {
-      const item = initialItems[i];
-      this.#items.set(item.instanceId, item);
+      this.addItem(initialItems[i]);
     }
   }
 
   addItem(itemData) {
-    this.#items.set(itemData.instanceId, itemData);
+    const item = this.#itemFactory
+      ? this.#itemFactory.create(itemData)
+      : itemData;
+    this.#items.set(item.instanceId, item);
+    return item;
   }
 
   getInstance(instanceId) {
@@ -957,6 +963,8 @@ class InventoryManager {
   #lineController;
   #runtimeConfigProvider;
   #runtimeDisplayStatsResolver;
+  #itemFactory;
+  #stackingPolicy;
   #isLocked = false;
   #equippedCache = null;
 
@@ -967,6 +975,8 @@ class InventoryManager {
     castDistanceCalculator = null,
     lineRules = null,
     runtimeConfigProvider = null,
+    itemRarityResolver = null,
+    stackingPolicy = null,
   ) {
     const cachedInventory = InventoryItemIdMigrationPolicy.migrateItems(
       CacheManager.get("player_inventory") || playerConfig.inventory || [],
@@ -979,7 +989,13 @@ class InventoryManager {
     });
 
     this.#db = new ItemDatabase(itemDB);
-    this.#inventory = new Inventory(cachedInventory);
+    this.#itemFactory = new InventoryItemFactory({
+      itemDatabase: this.#db,
+      itemRarityResolver: itemRarityResolver || new ItemRarityResolver(),
+    });
+    this.#stackingPolicy =
+      stackingPolicy || new InventoryItemStackingPolicy();
+    this.#inventory = new Inventory(cachedInventory, this.#itemFactory);
     this.#equipment = new InventoryEquipment(SLOT_CONFIG, cachedEquipment);
     this.#events = events || new InventoryEventBridge();
     this.#castDistanceCalculator =
@@ -1914,13 +1930,7 @@ class InventoryManager {
   }
 
   #canStackItems(a, b) {
-    const ignored = new Set(["instanceId", "quantity", "buildId"]);
-    const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
-    for (const key of keys) {
-      if (ignored.has(key)) continue;
-      if (JSON.stringify(a[key]) !== JSON.stringify(b[key])) return false;
-    }
-    return true;
+    return this.#stackingPolicy.canStack(a, b);
   }
 
   #applyStandaloneCastDistanceStats(item) {
@@ -2028,6 +2038,7 @@ class InventoryManager {
       "quantity",
       "buildId",
       "buildName",
+      "rarity",
     ]);
     const overrides = {};
     for (const [key, value] of Object.entries(invItem || {})) {
@@ -2065,6 +2076,7 @@ class InventoryManager {
       instanceId: invItem.instanceId,
       quantity: invItem.quantity || 1,
       buildId: invItem.buildId,
+      rarity: invItem.rarity ?? null,
     };
     this.#refreshRuntimeDisplayStats(hydrated);
     this.#applyStandaloneCastDistanceStats(hydrated);

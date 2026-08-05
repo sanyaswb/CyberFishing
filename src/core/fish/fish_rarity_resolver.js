@@ -77,10 +77,7 @@ class FishRarityResolver {
     const anomaly = this.#normalizeAnomalyId(baseAnomaly);
     const hasAnomaly = !this.#noneAnomalyIds.has(anomaly);
     const isUnique = hasAnomaly;
-    const rarity = Object.freeze({
-      ...rarityValues,
-      isRarest: isUnique,
-    });
+    const rarity = Object.freeze(rarityValues);
 
     return Object.freeze({
       level: normalizedLevel,
@@ -124,14 +121,12 @@ class FishRarityResolver {
     weightKg,
     weightConfig = null,
     depthConfig = null,
-    baseAnomaly = "none",
   } = {}) {
     return this.resolveForLevel({
       level,
       weightKg,
       weightConfig,
       depthConfig,
-      baseAnomaly,
     }).rarity;
   }
 
