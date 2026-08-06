@@ -25,6 +25,7 @@ class ItemRarityDomAdapter {
     const visual = this.#visualResolver.resolve(rarity);
     element.classList.add("has-rarity");
     element.classList.toggle("rarity-unique", visual.isUnique);
+    element.classList.toggle("rarity-glow", visual.glow.enabled);
     element.dataset.rarity = visual.id;
     element.style.setProperty("--rarity-color", visual.cssColor);
     element.style.setProperty(
@@ -49,7 +50,7 @@ class ItemRarityDomAdapter {
 
   clear(element) {
     if (!element?.style || !element.classList) return;
-    element.classList.remove("has-rarity", "rarity-unique");
+    element.classList.remove("has-rarity", "rarity-unique", "rarity-glow");
     if (element.dataset) delete element.dataset.rarity;
     for (const property of ItemRarityDomAdapter.#properties) {
       element.style.removeProperty(property);

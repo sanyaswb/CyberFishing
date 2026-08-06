@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.23.56";
+const CURRENT_PROJECT_VERSION = "0.23.67";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "universal-item-rarity",
+  codename: "double-inventory-slots",
   updatedAt: "2026-08-06",
   notes: Object.freeze([
-    "Add authored rarity profiles to every inventory item",
-    "Resolve immutable rarity once when an inventory instance is created",
-    "Share one visual palette between fish, items and Victory UI",
-    "Keep rarity frames independent from inventory interaction states",
-    "Validate item rarity during startup and production checks",
+    "Double inventory item slots from fifty to one hundred pixels",
+    "Configure all inventory slot dimensions from one shared CSS variable",
+    "Scale item icons, Level badges, quantities and Capacity bars proportionally",
   ]),
 });
 

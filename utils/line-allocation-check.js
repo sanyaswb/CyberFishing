@@ -35,6 +35,11 @@ class LineRuntimeLoader {
       "src/core/casting_distance.js",
       "CastDistanceCalculator",
     );
+    this.#loadClass(
+      context,
+      "src/core/line/line_inventory_controller.js",
+      "LineInventoryController",
+    );
     return context;
   }
 
@@ -86,6 +91,7 @@ class LineAllocationScenarioFactory {
 }
 
 class LineAllocationCheck {
+  #runtime;
   #policy;
   #distanceCalculator;
   #scenarios = new LineAllocationScenarioFactory();
@@ -94,7 +100,9 @@ class LineAllocationCheck {
     LineAllocationPolicy,
     CastDistanceCalculator,
     TACKLE_PHYSICS_CONFIG,
+    ...runtime
   }) {
+    this.#runtime = { TACKLE_PHYSICS_CONFIG, ...runtime };
     const lineConfig = TACKLE_PHYSICS_CONFIG.line;
     this.#policy = new LineAllocationPolicy(lineConfig);
     this.#distanceCalculator = new CastDistanceCalculator({
@@ -107,6 +115,7 @@ class LineAllocationCheck {
     this.#checkFiveMeterPoleRod();
     this.#checkThreeMeterReelRod();
     this.#checkUndersizedReel();
+    this.#checkSplitInheritance();
   }
 
   #checkFiveMeterPoleRod() {
@@ -166,6 +175,74 @@ class LineAllocationCheck {
     Assertion.equal(result.minimumLengthMeters, 12, "6m reel rod requires at least 12m");
     Assertion.equal(result.maximumLengthMeters, 10, "rejected reel capacity is reported");
     Assertion.that(result.reason.includes("12"), "rejection explains the 12m minimum");
+  }
+
+  #checkSplitInheritance() {
+    const source = {
+      instanceId: "source-line",
+      itemId: "line_test",
+      quantity: 1,
+      lengthMeters: 25,
+      quality: 8,
+      rarity: { tier: 3, isUnique: false },
+      rolledStats: { coating: 0.4 },
+    };
+    const items = new Map([[source.instanceId, source]]);
+    const inventory = {
+      getInstance: (instanceId) => items.get(instanceId) || null,
+      addItem: (item) => items.set(item.instanceId, item),
+      getAll: () => Array.from(items.values()),
+      remove: (instanceId) => items.delete(instanceId),
+    };
+    const controller = new this.#runtime.LineInventoryController({
+      inventory,
+      db: {
+        getItemData: () => ({
+          id: "line_test",
+          type: "fishing_line",
+          engineStats: {
+            type: "fishing_line",
+            lengthMeters: 25,
+            diameterMm: 0.2,
+            maxLoadKg: 1,
+            quality: 5,
+          },
+        }),
+      },
+      makeId: () => "split-line",
+      lineConfig: this.#runtime.TACKLE_PHYSICS_CONFIG.line,
+      isEquipped: () => false,
+    });
+    const segmentId = controller.prepareLineForEquip({
+      slotPath: "line",
+      instanceId: source.instanceId,
+      itemData: {
+        type: "fishing_line",
+        lengthMeters: 25,
+        engineStats: { type: "fishing_line", lengthMeters: 25 },
+      },
+      equipment: {
+        rod: {
+          type: "pole",
+          engineStats: { lengthMeters: 5, hasReel: false },
+        },
+        reel: null,
+      },
+    });
+    const segment = items.get(segmentId);
+    Assertion.equal(segment.lengthMeters, 10, "split segment receives allocated length");
+    Assertion.equal(source.lengthMeters, 15, "source line keeps remaining length");
+    Assertion.equal(segment.quality, 8, "split segment inherits runtime quality");
+    Assertion.equal(
+      JSON.stringify(segment.rarity),
+      JSON.stringify(source.rarity),
+      "split segment inherits rarity",
+    );
+    Assertion.equal(
+      JSON.stringify(segment.rolledStats),
+      JSON.stringify(source.rolledStats),
+      "split segment inherits rolled stats",
+    );
   }
 }
 

@@ -176,6 +176,7 @@ class ItemDatabase {
       icon: item.icon,
       type: engineStats.type || item.type,
       rarityProfile: item.rarityProfile ?? null,
+      progressionProfile: item.progressionProfile ?? null,
       displayStats: DisplayStatsResolver.resolve(item),
       displayStatsSchema: item.displayStats || {},
       engineStats,
@@ -964,7 +965,9 @@ class InventoryManager {
   #runtimeConfigProvider;
   #runtimeDisplayStatsResolver;
   #itemFactory;
+  #itemViewFactory;
   #stackingPolicy;
+  #lineCapacityStateProvider = () => null;
   #isLocked = false;
   #equippedCache = null;
 
@@ -977,6 +980,9 @@ class InventoryManager {
     runtimeConfigProvider = null,
     itemRarityResolver = null,
     stackingPolicy = null,
+    itemProgressionResolver = null,
+    itemViewFactory = null,
+    itemConditionResolver = null,
   ) {
     const cachedInventory = InventoryItemIdMigrationPolicy.migrateItems(
       CacheManager.get("player_inventory") || playerConfig.inventory || [],
@@ -1005,6 +1011,21 @@ class InventoryManager {
       runtimeConfigProvider || new InventoryRuntimeConfigProvider();
     this.#runtimeDisplayStatsResolver =
       new InventoryRuntimeDisplayStatsResolver();
+    this.#itemViewFactory = itemViewFactory || (
+      itemProgressionResolver &&
+      typeof InventoryItemViewFactory !== "undefined"
+        ? new InventoryItemViewFactory({
+            itemDatabase: this.#db,
+            progressionResolver: itemProgressionResolver,
+            conditionResolver: itemConditionResolver,
+            displayStatsResolver: this.#runtimeDisplayStatsResolver,
+            runtimeContextProvider: () => ({
+              reelConfig: this.#runtimeConfigProvider.getReelConfig(),
+              lineCapacity: this.#buildLineCapacityContext(),
+            }),
+          })
+        : null
+    );
     this.#lineController = new LineInventoryController({
       inventory: this.#inventory,
       db: this.#db,
@@ -1210,6 +1231,13 @@ class InventoryManager {
 
   setLock(locked) {
     this.#isLocked = locked;
+  }
+
+  setLineCapacityStateProvider(provider) {
+    if (typeof provider !== "function") {
+      throw new TypeError("Line capacity state provider must be a function");
+    }
+    this.#lineCapacityStateProvider = provider;
   }
 
   get isLocked() {
@@ -2039,6 +2067,18 @@ class InventoryManager {
       "buildId",
       "buildName",
       "rarity",
+      "progression",
+      "powerPercent",
+      "powerLevel",
+      "normalizedPower",
+      "powerColor",
+      "powerGradient",
+      "qualityMax",
+      "capacityPercent",
+      "capacityMeters",
+      "capacityMaximumMeters",
+      "condition",
+      "conditionPercent",
     ]);
     const overrides = {};
     for (const [key, value] of Object.entries(invItem || {})) {
@@ -2064,21 +2104,23 @@ class InventoryManager {
     const baseItem = this.#db.getItemData(invItem.itemId);
     if (!baseItem) return null;
 
-    const overrides = this.#getRuntimeItemOverrides(invItem);
-    const hydrated = {
-      ...baseItem,
-      ...overrides,
-      engineStats: {
-        ...(baseItem.engineStats || {}),
+    const hydrated = this.#itemViewFactory?.create(invItem) || (() => {
+      const overrides = this.#getRuntimeItemOverrides(invItem);
+      return {
+        ...baseItem,
         ...overrides,
-      },
-      displayStats: { ...(baseItem.displayStats || {}) },
-      instanceId: invItem.instanceId,
-      quantity: invItem.quantity || 1,
-      buildId: invItem.buildId,
-      rarity: invItem.rarity ?? null,
-    };
-    this.#refreshRuntimeDisplayStats(hydrated);
+        engineStats: {
+          ...(baseItem.engineStats || {}),
+          ...overrides,
+        },
+        displayStats: { ...(baseItem.displayStats || {}) },
+        instanceId: invItem.instanceId,
+        quantity: invItem.quantity || 1,
+        buildId: invItem.buildId,
+        rarity: invItem.rarity ?? null,
+      };
+    })();
+    if (!this.#itemViewFactory) this.#refreshRuntimeDisplayStats(hydrated);
     this.#applyStandaloneCastDistanceStats(hydrated);
 
     if (hydrated.type === "build_box") {
@@ -2148,5 +2190,27 @@ class InventoryManager {
     if (notify) {
       this.#events.emit("inventory-changed", { equipment: this.getEquipped() });
     }
+  }
+
+  #buildLineCapacityContext() {
+    const equipment = this.#equipment.getRawState();
+    const reelInstance = equipment.reelId
+      ? this.#inventory.getInstance(equipment.reelId)
+      : null;
+    const reelBase = reelInstance?.itemId
+      ? this.#db.getItemData(reelInstance.itemId)
+      : null;
+    const reelCapacity = Number(
+      reelInstance?.lineCapacityMeters ??
+        reelBase?.lineCapacityMeters ??
+        reelBase?.engineStats?.lineCapacityMeters,
+    );
+    return {
+      equippedLineInstanceId: equipment.lineId || null,
+      reelCapacityMeters: Number.isFinite(reelCapacity)
+        ? Math.max(0, reelCapacity)
+        : null,
+      activeState: this.#lineCapacityStateProvider() || null,
+    };
   }
 }

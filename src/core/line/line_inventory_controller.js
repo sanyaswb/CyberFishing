@@ -177,12 +177,20 @@ class LineInventoryController {
 
   #hasSameLineMergeSignature(a, b) {
     if (!a || !b) return false;
-    const keys = ["id", "type", "maxLoadKg", "diameterMm", "durability"];
+    const keys = [
+      "id",
+      "type",
+      "maxLoadKg",
+      "diameterMm",
+      "durability",
+      "quality",
+      "rolledStats",
+    ];
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
       const av = a[key] ?? a.engineStats?.[key];
       const bv = b[key] ?? b.engineStats?.[key];
-      if (String(av) !== String(bv)) return false;
+      if (JSON.stringify(av) !== JSON.stringify(bv)) return false;
     }
     return JSON.stringify(a.rarity) === JSON.stringify(b.rarity);
   }

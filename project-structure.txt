@@ -112,6 +112,9 @@
 │  │  │  ├── fish_db.js
 │  │  │  ├── item_db.js
 │  │  │  └── map_db.js
+│  │  ├── items
+│  │  │  ├── item_condition_config.js
+│  │  │  └── item_progression_config.js
 │  │  ├── metadata
 │  │  │  ├── dev_tool_parameter_descriptions.json
 │  │  │  ├── overlay_metric_descriptions.json
@@ -133,10 +136,15 @@
 │  │  │  ├── config_override_store.js
 │  │  │  ├── immutable_config.js
 │  │  │  └── resolved_config_provider.js
-│  │  └── validation
-│  │    ├── config_schema_validator.js
-│  │    ├── item_rarity_config_validator.js
-│  │    └── rarity_config_validator.js
+│  │  ├── validation
+│  │  │  ├── config_schema_validator.js
+│  │  │  ├── degradation_color_config_validator.js
+│  │  │  ├── item_condition_config_validator.js
+│  │  │  ├── item_progression_config_validator.js
+│  │  │  ├── item_rarity_config_validator.js
+│  │  │  └── rarity_config_validator.js
+│  │  └── visual
+│  │    └── degradation_color_config.js
 │  ├── core
 │  │  ├── casting_distance.js
 │  │  ├── core.js
@@ -206,6 +214,23 @@
 │  │  │  ├── equip_target_selection_policy.js
 │  │  │  └── inventory_item_stacking_policy.js
 │  │  ├── items
+│  │  │  ├── condition
+│  │  │  │  ├── item_condition_descriptor.js
+│  │  │  │  └── item_condition_resolver.js
+│  │  │  ├── progression
+│  │  │  │  ├── composite_metric_strategy.js
+│  │  │  │  ├── derived_stat_metric_strategy.js
+│  │  │  │  ├── item_capacity_resolver.js
+│  │  │  │  ├── item_catalog_baseline_registry.js
+│  │  │  │  ├── item_level_resolver.js
+│  │  │  │  ├── item_metric_strategy_registry.js
+│  │  │  │  ├── item_metric_strategy.js
+│  │  │  │  ├── item_power_resolver.js
+│  │  │  │  ├── item_progression_descriptor.js
+│  │  │  │  ├── item_progression_resolver.js
+│  │  │  │  ├── item_quality_resolver.js
+│  │  │  │  ├── numeric_stat_metric_strategy.js
+│  │  │  │  └── target_range_metric_strategy.js
 │  │  │  └── rarity
 │  │  │    ├── authored_item_rarity_strategy.js
 │  │  │    ├── item_rarity_descriptor.js
@@ -314,6 +339,7 @@
 │  │    ├── dev_tools_control_binding_registry.js
 │  │    ├── dev_tools_parameter_alias_registry.js
 │  │    ├── hooked_fish_profile_synchronizer.js
+│  │    ├── item_progression_debug_snapshot_provider.js
 │  │    ├── location_debug_data_provider.js
 │  │    ├── location_dev_tools_schema.js
 │  │    └── memory_leak_watchdog.js
@@ -384,6 +410,7 @@
 │  │  ├── fish_force_system.js
 │  │  ├── fish_retrieve_system.js
 │  │  ├── inventory_item_factory.js
+│  │  ├── inventory_item_view_factory.js
 │  │  ├── inventory_system.js
 │  │  ├── line_system.js
 │  │  ├── player_force_system.js
@@ -396,9 +423,15 @@
 │  │  ├── tackle_stress_system.js
 │  │  └── tension_system.js
 │  ├── ui
+│  │  ├── condition
+│  │  │  └── item_condition_dom_adapter.js
+│  │  ├── progression
+│  │  │  ├── item_progression_dom_adapter.js
+│  │  │  └── item_progression_visual_resolver.js
 │  │  ├── rarity
 │  │  │  └── item_rarity_dom_adapter.js
 │  │  ├── styles
+│  │  │  ├── degradation_color_resolver.js
 │  │  │  ├── fight_area_style_resolver.js
 │  │  │  ├── hud_style_resolver.js
 │  │  │  ├── outcome_style_resolver.js
@@ -411,6 +444,7 @@
 └── utils
   ├── check-js.js
   ├── create-version-copy.js
+  ├── degradation-color-check.js
   ├── dev-server.js
   ├── dev-tools-linked-parameter-check.js
   ├── fish-rarity-check.js
@@ -419,6 +453,8 @@
   ├── git-version-copy.js
   ├── inventory-equip-ux-check.js
   ├── inventory-lifecycle-check.js
+  ├── item-condition-check.js
+  ├── item-progression-check.js
   ├── item-rarity-check.js
   ├── line-allocation-check.js
   ├── rarity-production-check.js

@@ -19,6 +19,7 @@ const RARITY_VISUAL_CONFIG = {
     strokeAlpha: 0.75,
   },
   uniqueEffects: {
+    itemGlowEnabled: false,
     pulseDurationMs: 1200,
     frameDash: [12, 7],
     frameDashSpeedPxPerSecond: 22.222,

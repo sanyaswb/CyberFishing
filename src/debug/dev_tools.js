@@ -99,6 +99,8 @@ class DevTools {
   #activeFishVisibilityPolicy;
   #locationSchema;
   #parameterAliases;
+  #itemProgressionDebugProvider;
+  #itemProgressionResolver;
   #isDisposed = false;
   #onDebugLiveUpdate = (event) => {
     if (this.#isDisposed) return;
@@ -126,7 +128,14 @@ class DevTools {
     "statuses",
   ];
 
-  constructor(config, hookedFishProfileSynchronizer) {
+  constructor(
+    config,
+    hookedFishProfileSynchronizer,
+    {
+      itemProgressionDebugProvider = null,
+      itemProgressionResolver = null,
+    } = {},
+  ) {
     if (
       !hookedFishProfileSynchronizer ||
       typeof hookedFishProfileSynchronizer.synchronize !== "function"
@@ -153,6 +162,8 @@ class DevTools {
       typeof DevToolsParameterAliasRegistry !== "undefined"
         ? new DevToolsParameterAliasRegistry()
         : null;
+    this.#itemProgressionDebugProvider = itemProgressionDebugProvider;
+    this.#itemProgressionResolver = itemProgressionResolver;
     const tooltipProvider = new DevToolsParameterTooltipProvider();
     this.#ui = new DevToolsUI(
       () => this.toggle(),
@@ -197,6 +208,7 @@ class DevTools {
     this.#activeFishShapeKey = this.#getActiveFishShapeKey();
 
     this.#renderRuntimeOverrideControls(body);
+    this.#renderItemProgressionSection(body);
 
     // 1. OVERLAY MODULES
     const overlaySettings =
@@ -638,6 +650,69 @@ class DevTools {
     this.#renderParameterAliases(obj, parentElement, path);
   }
 
+  #renderItemProgressionSection(body) {
+    const snapshots = this.#itemProgressionDebugProvider?.getSnapshots?.() || [];
+    if (snapshots.length === 0) return;
+    const root = this.#createSectionWithCache(
+      "📈 ITEM PROGRESSION",
+      body,
+      ["ITEM_PROGRESSION"],
+    );
+    for (const snapshot of snapshots) {
+      const item = this.#createSectionWithCache(
+        snapshot.itemId,
+        root,
+        ["ITEM_PROGRESSION", snapshot.itemId],
+      );
+      this.#ui.createInfoRow("Group", snapshot.group, item);
+      this.#ui.createInfoRow("Strategy", snapshot.strategy, item);
+      this.#ui.createInfoRow("Raw metric", String(snapshot.rawMetric), item);
+      this.#ui.createInfoRow("Baseline min/max", snapshot.baseline, item);
+      this.#ui.createInfoRow(
+        "Normalized Power",
+        String(snapshot.normalizedPower),
+        item,
+      );
+      this.#ui.createInfoRow(
+        "Power percent",
+        `${snapshot.powerPercent}%`,
+        item,
+      );
+      this.#ui.createInfoRow("Power level", snapshot.powerLevel, item);
+      this.#ui.createInfoRow("Quality", snapshot.quality, item);
+      if (snapshot.capacity !== "N/A") {
+        this.#ui.createInfoRow("Capacity", snapshot.capacity, item);
+        this.#ui.createInfoRow(
+          "Capacity source",
+          snapshot.capacitySource,
+          item,
+        );
+      }
+      this.#ui.createInfoRow("Out-of-range", snapshot.outOfRange, item);
+      this.#ui.createInfoRow("Config source", snapshot.configSource, item);
+      if (snapshot.breakdown.length > 0) {
+        const breakdown = this.#createSectionWithCache(
+          "Composite breakdown",
+          item,
+          ["ITEM_PROGRESSION", snapshot.itemId, "breakdown"],
+        );
+        for (const component of snapshot.breakdown) {
+          this.#ui.createInfoRow(
+            component.label || component.id,
+            `${this.#formatProgressionPercent(component.percent)}% × ${component.weight}`,
+            breakdown,
+          );
+        }
+      }
+    }
+  }
+
+  #formatProgressionPercent(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "N/A";
+    return number.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+  }
+
   #renderParameterAliases(obj, parentElement, parentPath) {
     const aliases =
       this.#parameterAliases?.getAliasesForParent(parentPath) || [];
@@ -730,6 +805,7 @@ class DevTools {
       return;
     }
     this.#syncItemDbStatAliases(path, newValue);
+    this.#invalidateItemProgression(path);
     console.log(`[DevTools] Оновлено ${path.join(".")} =`, newValue);
 
     document.dispatchEvent(
@@ -796,6 +872,7 @@ class DevTools {
           detail: { path: ["CONFIG"], value: CONFIG, resetAll: true },
         }),
       );
+      this.#invalidateItemProgression(["CONFIG", "itemProgression"]);
       this.#populatePanel();
     });
     this.#ui.createButtonRow("Export overrides", content, () => {
@@ -825,6 +902,7 @@ class DevTools {
             detail: { path: ["CONFIG"], value: CONFIG, importOverrides: true },
           }),
         );
+        this.#invalidateItemProgression(["CONFIG", "itemProgression"]);
         this.#populatePanel();
       } catch (error) {
         console.warn("[DevTools] Failed to import runtime overrides", error);
@@ -1029,6 +1107,17 @@ class DevTools {
       return "distance";
     }
     return null;
+  }
+
+  #invalidateItemProgression(path) {
+    const affectsProgression =
+      path?.[0] === "ITEM_DB" ||
+      (path?.[0] === "CONFIG" && path?.[1] === "itemProgression");
+    if (!affectsProgression) return;
+    this.#itemProgressionResolver?.invalidate?.();
+    document.dispatchEvent(new CustomEvent("item-progression-updated", {
+      detail: { path },
+    }));
   }
 }
 

@@ -1,5 +1,16 @@
 class InventoryItemStackingPolicy {
-  static #ignoredKeys = new Set(["instanceId", "quantity", "buildId"]);
+  static #ignoredKeys = new Set([
+    "instanceId",
+    "quantity",
+    "buildId",
+    "progression",
+    "powerPercent",
+    "powerLevel",
+    "normalizedPower",
+    "powerColor",
+    "powerGradient",
+    "qualityMax",
+  ]);
 
   canStack(left, right) {
     if (!left || !right || left.itemId !== right.itemId) return false;

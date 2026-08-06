@@ -1078,6 +1078,8 @@ class InventoryUI {
   #inventoryManager;
   #equipTargetPolicy;
   #rarityDomAdapter;
+  #progressionDomAdapter;
+  #conditionDomAdapter;
   #isOpen = false;
   #warningTimeout;
 
@@ -1096,8 +1098,13 @@ class InventoryUI {
   #inventoryGridNode;
   #tooltipNode;
   #selectedInstanceId = null;
+  #dynamicCapacityElapsedMs = 0;
+  #dynamicCapacitySignature = null;
   #backpackButtonNode = null;
   #onInventoryChanged = () => {
+    if (this.#isOpen) this.refreshUI();
+  };
+  #onProgressionUpdated = () => {
     if (this.#isOpen) this.refreshUI();
   };
 
@@ -1106,9 +1113,18 @@ class InventoryUI {
 
   #highlightedSlotId = null;
 
-  constructor(inventoryManager, { rarityDomAdapter = null } = {}) {
+  constructor(
+    inventoryManager,
+    {
+      rarityDomAdapter = null,
+      progressionDomAdapter = null,
+      conditionDomAdapter = null,
+    } = {},
+  ) {
     this.#inventoryManager = inventoryManager;
     this.#rarityDomAdapter = rarityDomAdapter;
+    this.#progressionDomAdapter = progressionDomAdapter;
+    this.#conditionDomAdapter = conditionDomAdapter;
     this.#equipTargetPolicy = new InventoryEquipTargetSelectionPolicy(
       typeof SLOT_CONFIG !== "undefined" ? SLOT_CONFIG : {},
     );
@@ -1259,6 +1275,10 @@ class InventoryUI {
       "inventory-changed",
       this.#onInventoryChanged,
     );
+    document.addEventListener(
+      "item-progression-updated",
+      this.#onProgressionUpdated,
+    );
   }
 
   toggle() {
@@ -1288,11 +1308,56 @@ class InventoryUI {
     if (!this.#tooltipNode) return;
     this.#tooltipNode.style.display = "none";
     this.#tooltipNode.innerHTML = "";
+    delete this.#tooltipNode.dataset.instanceId;
     this.#rarityDomAdapter?.clear(this.#tooltipNode);
+    this.#progressionDomAdapter?.clear(this.#tooltipNode);
+  }
+
+  updateDynamicProgression(dt = 0) {
+    if (!this.#isOpen || !this.#progressionDomAdapter) {
+      this.#dynamicCapacityElapsedMs = 0;
+      return;
+    }
+    this.#dynamicCapacityElapsedMs += Math.max(0, Number(dt) || 0);
+    if (this.#dynamicCapacityElapsedMs < 100) return;
+    this.#dynamicCapacityElapsedMs = 0;
+
+    const equippedLine = this.#inventoryManager.getEquipped()?.line;
+    if (!equippedLine?.instanceId) return;
+    const currentLine = this.#inventoryManager.hydrateInstance(
+      equippedLine.instanceId,
+    );
+    const capacity = currentLine?.progression?.capacity;
+    if (!capacity?.available) return;
+    const signature = [
+      equippedLine.instanceId,
+      capacity.current,
+      capacity.maximum,
+      capacity.source,
+    ].join(":");
+    if (signature === this.#dynamicCapacitySignature) return;
+    this.#dynamicCapacitySignature = signature;
+
+    for (const slot of this.#containerNode.querySelectorAll(
+      ".inv-slot[data-instance-id]",
+    )) {
+      if (slot.dataset.instanceId !== equippedLine.instanceId) continue;
+      this.#progressionDomAdapter.updateCapacity(
+        slot,
+        currentLine.progression,
+      );
+    }
+    if (this.#tooltipNode.dataset.instanceId === equippedLine.instanceId) {
+      this.#progressionDomAdapter.updateCapacity(
+        this.#tooltipNode,
+        currentLine.progression,
+      );
+    }
   }
 
   refreshUI() {
     this.#hideTooltip();
+    this.#dynamicCapacitySignature = null;
     this.#powerValueNode.innerText = this.#inventoryManager
       .getTotalPower()
       .toFixed(1);
@@ -1549,7 +1614,12 @@ class InventoryUI {
     }
 
     if (item) {
+      const resolvedInstanceId = instanceId || item.instanceId;
+      if (resolvedInstanceId) {
+        slotDiv.dataset.instanceId = String(resolvedInstanceId);
+      }
       this.#rarityDomAdapter?.apply(slotDiv, item.rarity);
+      this.#conditionDomAdapter?.apply(slotDiv, item.condition);
       if (!isInventory) {
         slotDiv.classList.add("equipped");
         // Додаємо фіолетову крапку, якщо річ зі збірки
@@ -1561,11 +1631,17 @@ class InventoryUI {
         }
       }
 
-      let iconHTML = item.icon || "📦";
+      const contentNode = document.createElement("div");
+      contentNode.className = "inv-slot__content";
+      contentNode.textContent = item.icon || "📦";
+      slotDiv.appendChild(contentNode);
       if (isInventory && item.quantity > 1) {
-        iconHTML += `<span class="qty">${item.quantity}</span>`;
+        const quantityNode = document.createElement("span");
+        quantityNode.className = "qty";
+        quantityNode.textContent = String(item.quantity);
+        slotDiv.appendChild(quantityNode);
       }
-      slotDiv.innerHTML += iconHTML;
+      this.#progressionDomAdapter?.apply(slotDiv, item.progression);
 
       this.#addTooltip(
         slotDiv,
@@ -1743,19 +1819,19 @@ class InventoryUI {
     element.addEventListener("mouseenter", () => {
       if (!window.matchMedia("(hover: hover)").matches) return;
 
-      const currentItem =
-        isEquipped || !instanceId
-          ? item
-          : this.#inventoryManager.hydrateInstance(instanceId) || item;
+      const currentItem = instanceId
+        ? this.#inventoryManager.hydrateInstance(instanceId) || item
+        : item;
       this.#rarityDomAdapter?.apply(this.#tooltipNode, currentItem.rarity);
 
-      let html = `<div class="inv-tooltip-title">${currentItem.icon} ${currentItem.name}</div>`;
+      const titleHtml = `<div class="inv-tooltip-title">${currentItem.icon} ${currentItem.name}</div>`;
+      let detailsHtml = "";
       const renderedLabels = new Set();
       const displayStats = currentItem.displayStats || {};
       for (const [label, value] of Object.entries(displayStats)) {
         if (value === undefined || value === null) continue;
         renderedLabels.add(label);
-        html += `<div class="inv-tooltip-stat" style="color: #aaa;"><b>${label}:</b> <span style="color: #fff;">${value}</span></div>`;
+        detailsHtml += `<div class="inv-tooltip-stat" style="color: #aaa;"><b>${label}:</b> <span style="color: #fff;">${value}</span></div>`;
       }
 
       const internalKeys = new Set([
@@ -1772,6 +1848,8 @@ class InventoryUI {
         "engineStats",
         "rarityProfile",
         "rarity",
+        "progressionProfile",
+        "progression",
         "requiresTag",
         "level",
         "basePower",
@@ -1791,13 +1869,21 @@ class InventoryUI {
         if (internalKeys.has(key) || renderedLabels.has(key)) continue;
 
         if (typeof val !== "object" && typeof val !== "function") {
-          html += `<div class="inv-tooltip-stat" style="color: #aaa;"><b>${key}:</b> <span style="color: #fff;">${val}</span></div>`;
+          detailsHtml += `<div class="inv-tooltip-stat" style="color: #aaa;"><b>${key}:</b> <span style="color: #fff;">${val}</span></div>`;
         }
       }
-      html += this.#buildCompatibilityTooltip(currentItem);
+      detailsHtml += this.#buildCompatibilityTooltip(currentItem);
 
-      this.#tooltipNode.innerHTML = html;
+      this.#tooltipNode.innerHTML = titleHtml;
+      this.#progressionDomAdapter?.appendTooltip(
+        this.#tooltipNode,
+        currentItem.progression,
+      );
+      this.#tooltipNode.insertAdjacentHTML("beforeend", detailsHtml);
       this.#tooltipNode.style.display = "block";
+      if (currentItem.instanceId) {
+        this.#tooltipNode.dataset.instanceId = String(currentItem.instanceId);
+      }
 
       const rect = element.getBoundingClientRect();
       this.#tooltipNode.style.left = `${rect.right + 10}px`;
@@ -2184,6 +2270,10 @@ class InventoryUI {
     document.removeEventListener(
       "inventory-changed",
       this.#onInventoryChanged,
+    );
+    document.removeEventListener(
+      "item-progression-updated",
+      this.#onProgressionUpdated,
     );
     if (this.#warningTimeout) {
       clearTimeout(this.#warningTimeout);

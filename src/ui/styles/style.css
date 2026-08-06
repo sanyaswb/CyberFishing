@@ -211,6 +211,10 @@ input:checked + .slider:before {
 /* =========================================
    INVENTORY UI
    ========================================= */
+.inv-modal {
+  --inventory-slot-size: 100px;
+}
+
 .inv-backpack-btn {
   position: absolute;
   bottom: 20px;
@@ -273,8 +277,8 @@ input:checked + .slider:before {
   border-radius: 10px;
   padding: 15px;
   display: grid;
-  grid-template-columns: repeat(2, 50px);
-  grid-auto-rows: 50px;
+  grid-template-columns: repeat(2, var(--inventory-slot-size));
+  grid-auto-rows: var(--inventory-slot-size);
   gap: 15px;
   align-content: start;
   justify-content: center;
@@ -312,23 +316,23 @@ input:checked + .slider:before {
 
 .inv-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 50px);
-  grid-auto-rows: 50px;
+  grid-template-columns: repeat(auto-fill, var(--inventory-slot-size));
+  grid-auto-rows: var(--inventory-slot-size);
   gap: 10px;
   overflow-y: auto;
   flex: 1;
 }
 
 .inv-slot {
-  width: 50px;
-  height: 50px;
+  width: var(--inventory-slot-size);
+  height: var(--inventory-slot-size);
   box-sizing: border-box;
   background: rgba(0, 0, 0, 0.5);
   border: 2px dashed #555;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 24px;
+  font-size: calc(var(--inventory-slot-size) * 0.48);
   cursor: pointer;
   position: relative;
 }
@@ -358,7 +362,17 @@ input:checked + .slider:before {
 
 .inv-slot.has-rarity::before {
   border: var(--rarity-border-width) solid var(--rarity-color);
-  background: var(--rarity-background-color);
+  background-color: transparent;
+  background-image: linear-gradient(
+    var(--rarity-background-color),
+    var(--rarity-background-color)
+  );
+  background-position: bottom;
+  background-repeat: no-repeat;
+  background-size: 100% var(--item-condition-percent, 100%);
+}
+
+.inv-slot.has-rarity.rarity-glow::before {
   box-shadow: 0 0 var(--rarity-glow-blur) var(--rarity-color);
 }
 
@@ -370,12 +384,9 @@ input:checked + .slider:before {
 @keyframes inventory-rarity-pulse {
   0%,
   100% {
-    box-shadow: 0 0 calc(var(--rarity-glow-blur) * 0.45)
-      var(--rarity-color);
     opacity: 0.78;
   }
   50% {
-    box-shadow: 0 0 var(--rarity-glow-blur) var(--rarity-color);
     opacity: 1;
   }
 }
@@ -394,11 +405,71 @@ input:checked + .slider:before {
   border-color: transparent;
 }
 
+.inv-slot__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.inv-slot__level-badge {
+  position: absolute;
+  top: calc(var(--inventory-slot-size) * 0.04);
+  left: calc(var(--inventory-slot-size) * 0.04);
+  z-index: 2;
+  display: grid;
+  width: calc(var(--inventory-slot-size) * 0.26);
+  height: calc(var(--inventory-slot-size) * 0.26);
+  place-items: center;
+  box-sizing: border-box;
+  border: 2px solid var(--rarity-color);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.78);
+  color: var(--rarity-color);
+  font-size: calc(var(--inventory-slot-size) * 0.16);
+  font-weight: 800;
+  line-height: calc(var(--inventory-slot-size) * 0.22);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95);
+  pointer-events: none;
+}
+
+.inv-slot__capacity-bar {
+  position: absolute;
+  right: calc(var(--inventory-slot-size) * 0.04);
+  bottom: calc(var(--inventory-slot-size) * 0.04);
+  left: calc(var(--inventory-slot-size) * 0.04);
+  z-index: 2;
+  height: calc(var(--inventory-slot-size) * 0.08);
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.24);
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.62);
+  pointer-events: none;
+}
+
+.inv-slot__capacity-track,
+.inv-slot__capacity-fill {
+  position: absolute;
+  inset: 0;
+}
+
+.inv-slot__capacity-track {
+  background: rgba(135, 143, 151, 0.42);
+}
+
+.inv-slot__capacity-fill {
+  background: var(--item-capacity-color);
+  clip-path: inset(0 calc(100% - var(--item-capacity-percent)) 0 0);
+}
+
 .inv-slot .qty {
   position: absolute;
-  bottom: 0;
-  right: 2px;
-  font-size: 10px;
+  top: 0;
+  right: calc(var(--inventory-slot-size) * 0.04);
+  z-index: 2;
+  font-size: calc(var(--inventory-slot-size) * 0.2);
   color: #fff;
   text-shadow: 1px 1px #000;
 }
@@ -420,7 +491,7 @@ input:checked + .slider:before {
   border-color: var(--rarity-color);
 }
 
-.inv-tooltip.rarity-unique {
+.inv-tooltip.rarity-unique.rarity-glow {
   box-shadow: 0 0 var(--rarity-glow-blur) var(--rarity-color);
   animation: inventory-rarity-tooltip-pulse var(--rarity-animation-duration)
     ease-in-out infinite;
@@ -485,6 +556,87 @@ input:checked + .slider:before {
 .inv-slot.selected {
   transform: scale(1.05);
   z-index: 2;
+}
+
+.inv-tooltip-progression .inv-tooltip-section-title,
+.inv-tooltip-progression .inv-tooltip-stat b {
+  color: var(--item-power-color);
+}
+
+.inv-tooltip__scale-block {
+  margin: 7px 0;
+}
+
+.inv-tooltip__scale-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 3px;
+  font-size: 10px;
+}
+
+.inv-tooltip__scale-header b {
+  color: var(--item-power-color);
+}
+
+.inv-tooltip__scale-block--capacity .inv-tooltip__scale-header b {
+  color: var(--item-capacity-color);
+}
+
+.inv-tooltip__power-scale,
+.inv-tooltip__capacity-scale,
+.inv-tooltip__quality-scale {
+  width: 100%;
+  height: 7px;
+  box-sizing: border-box;
+}
+
+.inv-tooltip__power-scale,
+.inv-tooltip__capacity-scale {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.inv-tooltip__power-track,
+.inv-tooltip__power-fill,
+.inv-tooltip__capacity-track,
+.inv-tooltip__capacity-fill {
+  position: absolute;
+  inset: 1px;
+}
+
+.inv-tooltip__power-track,
+.inv-tooltip__capacity-track {
+  background: rgba(135, 143, 151, 0.42);
+}
+
+.inv-tooltip__power-fill {
+  background: var(--item-power-color);
+  clip-path: inset(0 calc(100% - var(--item-power-percent)) 0 0);
+}
+
+.inv-tooltip__capacity-fill {
+  background: var(--item-capacity-color);
+  clip-path: inset(0 calc(100% - var(--item-capacity-percent)) 0 0);
+}
+
+.inv-tooltip__quality-scale {
+  display: grid;
+  grid-template-columns: repeat(var(--item-quality-sections), minmax(0, 1fr));
+  gap: 2px;
+}
+
+.inv-tooltip__quality-segment {
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--item-quality-color) 58%, transparent);
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.inv-tooltip__quality-segment.is-filled {
+  background: var(--item-quality-color);
 }
 
 .inv-slot.selected::after {

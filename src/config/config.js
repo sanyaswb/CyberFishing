@@ -365,6 +365,10 @@ const CONFIG = {
     visual: RARITY_VISUAL_CONFIG,
   },
 
+  itemProgression: ITEM_PROGRESSION_CONFIG,
+  itemCondition: ITEM_CONDITION_CONFIG,
+  degradationColors: DEGRADATION_COLOR_CONFIG,
+
   logs: {
     events: false,
     maxEntries: 50,

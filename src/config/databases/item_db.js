@@ -23,6 +23,7 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "rod.spinning" },
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
@@ -47,6 +48,7 @@ const ITEM_DB = {
         lengthMeters: 2.4,
         castPowerCoefficient: 0.54,
         maxLoadKg: 1,
+        quality: 6,
         holdTensionRatio: 1.0,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
@@ -67,6 +69,7 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "rod.feeder" },
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
@@ -91,6 +94,7 @@ const ITEM_DB = {
         lengthMeters: 3.6,
         castPowerCoefficient: 0.66,
         maxLoadKg: 1,
+        quality: 7,
         holdTensionRatio: 1.0,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
@@ -112,6 +116,7 @@ const ITEM_DB = {
         isUnique: true,
         uniqueId: "stalker_bamboo_rod",
       },
+      progressionProfile: { groupId: "rod.float" },
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
@@ -136,6 +141,7 @@ const ITEM_DB = {
         lengthMeters: 5.0,
         castPowerCoefficient: 1.0,
         maxLoadKg: 1,
+        quality: 8,
         holdTensionRatio: 1.0,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
@@ -157,6 +163,7 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "reel.drag" },
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lineCapacityMeters: "Ємність: м.",
@@ -178,6 +185,7 @@ const ITEM_DB = {
         dragMinKg: 0,
         dragMaxKg: 1,
         dragChangeSpeedPerSec: 0.35,
+        quality: 6,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
         requiresTag: "reel",
@@ -195,6 +203,7 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "reel.no_drag" },
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lineCapacityMeters: "Ємність: м.",
@@ -217,6 +226,7 @@ const ITEM_DB = {
         dragMinKg: 0,
         dragMaxKg: 0,
         dragChangeSpeedPerSec: 0,
+        quality: 4,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
         requiresTag: "reel",
@@ -236,6 +246,7 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "line.fishing" },
       displayStats: {
         lengthMeters: "Довжина: м.",
         diameterMm: "Товщина: мм",
@@ -247,6 +258,7 @@ const ITEM_DB = {
         lengthMeters: 25,
         diameterMm: 0.22,
         maxLoadKg: 1,
+        quality: 5,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
       },
@@ -263,6 +275,7 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "line.fishing" },
       displayStats: {
         lengthMeters: "Довжина: м.",
         diameterMm: "Товщина: мм",
@@ -274,6 +287,7 @@ const ITEM_DB = {
         lengthMeters: 10,
         diameterMm: 0.16,
         maxLoadKg: 1,
+        quality: 7,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
       },
@@ -290,6 +304,7 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "line.fishing" },
       displayStats: {
         lengthMeters: "Довжина: м.",
         diameterMm: "Товщина: мм",
@@ -301,6 +316,7 @@ const ITEM_DB = {
         lengthMeters: 50,
         diameterMm: 0.16,
         maxLoadKg: 1,
+        quality: 7,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
       },
@@ -319,6 +335,7 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "line.leader" },
       displayStats: {
         diameterMm: "Товщина: мм",
         maxLoadKg: "Макс. навантаження: кг.",
@@ -328,6 +345,7 @@ const ITEM_DB = {
         type: "leader_line",
         diameterMm: 0.25,
         maxLoadKg: 1.2,
+        quality: 6,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
         requiresTag: "line",
@@ -347,12 +365,13 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "hook.standard" },
       displayStats: {
         weight: "Вага: кг",
-        quality: "Якість:",
       },
       engineStats: {
         weight: 4,
+        maxLoadKg: 0.8,
         quality: 1,
         requiresTag: "hook",
         capabilities: ["bait"], // ДОДАНО: тепер гачок дозволяє чіпляти наживку!
@@ -372,13 +391,13 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "rig.feeder" },
       displayStats: {
         hooksCount: "Гачки:",
         hasChumSlot: {
           label: "Прикормка",
           map: { true: "Є", false: "Немає" },
         },
-        quality: "Якість:",
         currentCompensation: "Компенсація:",
       },
       engineStats: {
@@ -386,6 +405,7 @@ const ITEM_DB = {
         capabilities: ["hook", "bait", "chum_mix"],
         hooksCount: 2,
         hasChumSlot: true,
+        rigPower: 1.8,
         quality: 7.0,
         currentCompensation: [0.1, 1.0], // Додано компенсацію для фідерної снасті
       },
@@ -402,13 +422,19 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "bait.natural" },
       displayStats: {
         type: {
           label: "Тип",
           map: { bait: "Наживка" },
         },
       },
-      engineStats: { type: "bait", requiresTag: "bait" },
+      engineStats: {
+        type: "bait",
+        attractionPower: 1.8,
+        quality: 8,
+        requiresTag: "bait",
+      },
     },
 
     bread: {
@@ -422,13 +448,19 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "bait.natural" },
       displayStats: {
         type: {
           label: "Тип",
           map: { bait: "Наживка" },
         },
       },
-      engineStats: { type: "bait", requiresTag: "bait" },
+      engineStats: {
+        type: "bait",
+        attractionPower: 1,
+        quality: 5,
+        requiresTag: "bait",
+      },
     },
 
     test_spinner: {
@@ -442,12 +474,12 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "lure.spinner" },
       displayStats: {
         type: {
           label: "Тип",
           map: { spinner: "Блешня" },
         },
-        quality: "Якість:",
         sinkSpeed: "Занурення: м/с",
         riseSpeed: "Підйом: м/с",
         currentCompensation: "Компенсація:",
@@ -458,6 +490,7 @@ const ITEM_DB = {
         waterFriction: 0.2,
         sinkSpeed: 1.5,
         riseSpeed: 2.0,
+        attractionPower: 7,
         quality: 8.0,
         currentCompensation: [0.1, 1.0],
         requiresTag: "lure",
@@ -475,12 +508,12 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "lure.wobbler" },
       displayStats: {
         type: {
           label: "Тип",
           map: { wobbler: "Воблер" },
         },
-        quality: "Якість:",
         targetMaxDepth: {
           label: "Глибина",
           range: ["targetMinDepth", "targetMaxDepth"],
@@ -501,6 +534,7 @@ const ITEM_DB = {
         targetMinDepth: 2.0,
         targetMaxDepth: 4.5,
         maxDepth: 6.5,
+        attractionPower: 8,
         quality: 8.0,
         currentCompensation: [0.1, 1.0],
         requiresTag: "lure",
@@ -518,12 +552,12 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "lure.wobbler" },
       displayStats: {
         type: {
           label: "Тип",
           map: { wobbler: "Воблер" },
         },
-        quality: "Якість:",
         targetMaxDepth: {
           label: "Глибина",
           range: ["targetMinDepth", "targetMaxDepth"],
@@ -544,6 +578,7 @@ const ITEM_DB = {
         targetMinDepth: 1.0,
         targetMaxDepth: 3.5,
         maxDepth: 5.0,
+        attractionPower: 7.5,
         quality: 8.0,
         currentCompensation: [0.1, 1.0],
         requiresTag: "lure",
@@ -561,12 +596,12 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "lure.jig" },
       displayStats: {
         type: {
           label: "Тип",
           map: { jig: "Джиг" },
         },
-        quality: "Якість:",
         sinkSpeed: "Занурення: м/с",
         riseSpeed: "Підйом: м/с",
         currentCompensation: "Компенсація:",
@@ -577,6 +612,7 @@ const ITEM_DB = {
         waterFriction: 0.15,
         sinkSpeed: 3.0,
         riseSpeed: 2.5,
+        jigPower: 6.5,
         quality: 7.0,
         currentCompensation: [0.1, 0.9],
         requiresTag: "lure",
@@ -596,12 +632,12 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "float.day" },
       displayStats: {
         type: {
           label: "Тип",
           map: { day: "Денний", night: "Нічний" },
         },
-        quality: "Якість:",
         windCompensation: "Компенсація:",
         ballastWeight: {
           label: "Огрузка",
@@ -615,6 +651,7 @@ const ITEM_DB = {
         width: 3,
         length: 15,
         type: "day",
+        sensitivity: 9,
         quality: 10.0,
         windCompensation: [0.1, 1.0],
         overDepthPenaltyMult: 0.5,
@@ -645,10 +682,10 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "net.landing" },
       displayStats: {
         maxWeight: "Макс. вага: кг",
         length: "Довжина: м",
-        quality: "Якість:",
       },
       engineStats: {
         active: true,
@@ -678,6 +715,7 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "chum.carp" },
       displayStats: {
         minBonusDurationHours: "Мін. тривалість: год",
         radius: "Радіус: px",
@@ -688,6 +726,7 @@ const ITEM_DB = {
         targetFishes: ["crucian_stalker"],
         radius: 150,
         maxBonus: 2.0,
+        quality: 6,
         minBonus: 1.2,
         rampUpTimeMs: 3600000,
         peakDurationMs: 7200000,
@@ -710,6 +749,7 @@ const ITEM_DB = {
         maxTier: 5,
         isUnique: false,
       },
+      progressionProfile: { groupId: "delivery.boat" },
 
       displayStats: {
         speedPxPerSec: {
@@ -731,6 +771,7 @@ const ITEM_DB = {
         type: "boat",
         capabilities: ["chum_mix"],
         sections: 3,
+        quality: 9,
         level: 3,
         statsByLevel: {
           1: { speedPxPerSec: 150, maxEnergy: 60, energyDrainPerSec: 1 },
@@ -767,6 +808,7 @@ const ITEM_DB = {
       type: "build_box",
       icon: "🧰",
       rarityProfile: null,
+      progressionProfile: null,
       displayStats: {},
       engineStats: { type: "build_box" },
     },
@@ -778,6 +820,7 @@ const ITEM_DB = {
       name: "Test Build (Dev)",
       type: "build_template",
       rarityProfile: null,
+      progressionProfile: null,
       items: [
         { itemId: "rod_test_float", quantity: 1 },
         { itemId: "line_test_1", quantity: 1 },
@@ -791,6 +834,7 @@ const ITEM_DB = {
       name: "Test Build (Dev2)",
       type: "build_template",
       rarityProfile: null,
+      progressionProfile: null,
       items: [
         { itemId: "rod_test_feeder", quantity: 1 },
         { itemId: "line_test_2", quantity: 1 },

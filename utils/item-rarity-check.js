@@ -107,10 +107,9 @@ class ItemRarityCheck {
     this.#runtime = runtime;
     this.#itemDb = runtime.__ITEM_DB__;
     this.#domainResolver = new runtime.__ITEM_RESOLVER__();
-    this.#visualResolver = new runtime.__VISUAL_RESOLVER__({
-      configProvider: () => runtime.__VISUAL_CONFIG__,
-      animationResolver: { resolvePulse: () => 0 },
-    });
+    this.#visualResolver = this.#createVisualResolver(
+      runtime.__VISUAL_CONFIG__,
+    );
   }
 
   run() {
@@ -183,8 +182,24 @@ class ItemRarityCheck {
     });
     Assertion.equal(unique.id, "unique", "unique visual id");
     Assertion.jsonEqual(unique.color, [255, 205, 55], "unique gold color");
-    Assertion.that(unique.glow.enabled, "unique glow is enabled");
+    Assertion.that(!unique.glow.enabled, "unique item glow is config-disabled");
+    Assertion.equal(unique.glow.blur, 0, "disabled item glow has no blur");
     Assertion.that(unique.animation.enabled, "unique animation is enabled");
+
+    const glowEnabledConfig = {
+      ...this.#runtime.__VISUAL_CONFIG__,
+      uniqueEffects: {
+        ...this.#runtime.__VISUAL_CONFIG__.uniqueEffects,
+        itemGlowEnabled: true,
+      },
+    };
+    const glowEnabledVisual = this.#createVisualResolver(
+      glowEnabledConfig,
+    ).resolve({ tier: 1, maxTier: 12, isUnique: true });
+    Assertion.that(
+      glowEnabledVisual.glow.enabled,
+      "unique item glow can be re-enabled from config",
+    );
 
     for (const maxTier of [5, 6, 9, 12]) {
       let previous = -1;
@@ -326,8 +341,16 @@ class ItemRarityCheck {
     Assertion.equal(element.style.values.size, 6, "adapter writes six CSS variables");
     Assertion.that(element.classList.contains("has-rarity"), "rarity frame class");
     Assertion.that(element.classList.contains("rarity-unique"), "unique class");
+    Assertion.that(
+      !element.classList.contains("rarity-glow"),
+      "disabled glow does not add a DOM glow class",
+    );
     adapter.clear(element);
     Assertion.equal(element.style.values.size, 0, "adapter clears CSS variables");
+    Assertion.that(
+      !element.classList.contains("rarity-glow"),
+      "adapter clears the DOM glow class",
+    );
   }
 
   #checkCssLayering() {
@@ -338,6 +361,21 @@ class ItemRarityCheck {
     Assertion.that(
       css.includes(".inv-slot.has-rarity::before"),
       "rarity uses the slot before layer",
+    );
+    Assertion.that(
+      css.includes(".inv-slot.has-rarity.rarity-glow::before"),
+      "item glow CSS is gated by the config-driven class",
+    );
+    Assertion.that(
+      css.includes(".inv-tooltip.rarity-unique.rarity-glow"),
+      "tooltip glow CSS is gated by the config-driven class",
+    );
+    const pulseStart = css.indexOf("@keyframes inventory-rarity-pulse");
+    const pulseEnd = css.indexOf(".inv-slot.equipped::after", pulseStart);
+    const pulseCss = css.slice(pulseStart, pulseEnd);
+    Assertion.that(
+      pulseStart >= 0 && pulseEnd > pulseStart && !pulseCss.includes("box-shadow"),
+      "unique item pulse keeps opacity animation independent from glow",
     );
     for (const state of [
       "equipped",
@@ -435,6 +473,13 @@ class ItemRarityCheck {
       if (category?.[itemId]) return category[itemId];
     }
     return null;
+  }
+
+  #createVisualResolver(config) {
+    return new this.#runtime.__VISUAL_RESOLVER__({
+      configProvider: () => config,
+      animationResolver: { resolvePulse: () => 0 },
+    });
   }
 }
 

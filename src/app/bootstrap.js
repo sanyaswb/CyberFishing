@@ -39,6 +39,9 @@ class GameCompositionRoot {
 
   async create(canvas, canvasMetrics, clock, debugEvents, devFlags, audio) {
     this.#validateRarityConfiguration();
+    this.#validateItemProgressionConfiguration();
+    this.#validateItemConditionConfiguration();
+    this.#validateDegradationColorConfiguration();
     const contracts = new DependencyContractValidator({
       stage: "bootstrap",
       consumer: "GameCompositionRoot.create",
@@ -84,6 +87,9 @@ class GameCompositionRoot {
       configProvider: () => this.#config.rarity?.visual || {},
       animationResolver: rarityAnimationResolver,
     });
+    const degradationColorResolver = new DegradationColorResolver({
+      configProvider: () => this.#config.degradationColors || {},
+    });
     const itemRarityStrategyRegistry = new ItemRarityStrategyRegistry([
       new AuthoredItemRarityStrategy(),
     ]);
@@ -93,13 +99,74 @@ class GameCompositionRoot {
     const itemRarityDomAdapter = new ItemRarityDomAdapter({
       visualResolver: rarityVisualResolver,
     });
+    const itemConditionResolver = new ItemConditionResolver({
+      configProvider: () => this.#config.itemCondition || {},
+    });
+    const itemConditionDomAdapter = new ItemConditionDomAdapter();
+    const itemMetricStrategyRegistry = new ItemMetricStrategyRegistry([
+      new NumericStatMetricStrategy(),
+      new DerivedStatMetricStrategy(),
+      new TargetRangeMetricStrategy(),
+      new CompositeMetricStrategy(),
+    ]);
+    const itemCatalogBaselineRegistry = new ItemCatalogBaselineRegistry({
+      itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
+      strategyRegistry: itemMetricStrategyRegistry,
+    });
+    const itemPowerResolver = new ItemPowerResolver({
+      strategyRegistry: itemMetricStrategyRegistry,
+      baselineRegistry: itemCatalogBaselineRegistry,
+    });
+    const itemProgressionResolver = new ItemProgressionResolver({
+      configProvider: () => this.#config.itemProgression || {},
+      powerResolver: itemPowerResolver,
+      levelResolver: new ItemLevelResolver(),
+      qualityResolver: new ItemQualityResolver(),
+      capacityResolver: new ItemCapacityResolver(),
+      baselineRegistry: itemCatalogBaselineRegistry,
+    });
+    const itemProgressionVisualResolver = new ItemProgressionVisualResolver({
+      rarityVisualResolver,
+      degradationColorResolver,
+    });
+    const itemProgressionDomAdapter = new ItemProgressionDomAdapter({
+      visualResolver: itemProgressionVisualResolver,
+    });
+    const itemProgressionDebugProvider =
+      new ItemProgressionDebugSnapshotProvider({
+        itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
+        progressionResolver: itemProgressionResolver,
+      });
     contracts.requireMethods(itemRarityResolver, "itemRarityResolver", [
       "resolve",
     ]);
+    contracts.requireMethods(
+      degradationColorResolver,
+      "degradationColorResolver",
+      ["resolvePercent"],
+    );
     contracts.requireMethods(itemRarityDomAdapter, "itemRarityDomAdapter", [
       "apply",
       "clear",
     ]);
+    contracts.requireMethods(itemConditionResolver, "itemConditionResolver", [
+      "resolve",
+    ]);
+    contracts.requireMethods(
+      itemConditionDomAdapter,
+      "itemConditionDomAdapter",
+      ["apply", "clear"],
+    );
+    contracts.requireMethods(
+      itemProgressionResolver,
+      "itemProgressionResolver",
+      ["resolve", "invalidate"],
+    );
+    contracts.requireMethods(
+      itemProgressionDomAdapter,
+      "itemProgressionDomAdapter",
+      ["apply", "appendTooltip", "updateCapacity", "clear"],
+    );
     const victoryLayoutResolver = new VictoryLayoutResolver();
     contracts.requireMethods(victoryLayoutResolver, "victoryLayoutResolver", [
       "resolve",
@@ -319,6 +386,10 @@ class GameCompositionRoot {
       lineRules,
       runtimeConfigProvider,
       itemRarityResolver,
+      undefined,
+      itemProgressionResolver,
+      undefined,
+      itemConditionResolver,
     );
     const eq = inventory.getEquipped();
     const chumConfigObj = { baits: {}, deliveryMethods: {} };
@@ -351,7 +422,10 @@ class GameCompositionRoot {
       input: new InputManager(canvas, Number(this.#config.ui?.rod?.x) || null),
       ui: new UIManager(
         this.#config,
-        new DevTools(this.#config, hookedFishProfileSynchronizer),
+        new DevTools(this.#config, hookedFishProfileSynchronizer, {
+          itemProgressionDebugProvider,
+          itemProgressionResolver,
+        }),
       ),
       chum: new ChumManager(locId, chumConfigObj, projector, {
         rng,
@@ -370,6 +444,8 @@ class GameCompositionRoot {
     };
     systems.inventoryUI = new InventoryUI(systems.inventory, {
       rarityDomAdapter: itemRarityDomAdapter,
+      progressionDomAdapter: itemProgressionDomAdapter,
+      conditionDomAdapter: itemConditionDomAdapter,
     });
     const equipmentRules = new EquipmentRules(castDistanceCalculator);
     const baitRules = new BaitRules();
@@ -698,6 +774,9 @@ class GameCompositionRoot {
       styleResolver: runtime.rendering.outcomeStyleResolver,
       layoutResolver: runtime.rendering.victoryLayoutResolver,
     });
+    runtime.inventory.setLineCapacityStateProvider?.(
+      () => fightService.getLineCapacityState(),
+    );
     const frameBuilder = new GameRenderFrameBuilder({
       canvasMetrics,
       projector: runtime.projector,
@@ -773,6 +852,41 @@ class GameCompositionRoot {
       itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
       mapDb: this.#config.locations?.map || {},
     });
+  }
+
+  #validateItemProgressionConfiguration() {
+    if (typeof ItemProgressionConfigValidator === "undefined") {
+      throw new Error(
+        "ItemProgressionConfigValidator must be loaded before startup",
+      );
+    }
+    new ItemProgressionConfigValidator().assertValid({
+      progressionConfig: this.#config.itemProgression,
+      itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
+    });
+  }
+
+  #validateItemConditionConfiguration() {
+    if (typeof ItemConditionConfigValidator === "undefined") {
+      throw new Error(
+        "ItemConditionConfigValidator must be loaded before startup",
+      );
+    }
+    new ItemConditionConfigValidator().assertValid({
+      conditionConfig: this.#config.itemCondition,
+      itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
+    });
+  }
+
+  #validateDegradationColorConfiguration() {
+    if (typeof DegradationColorConfigValidator === "undefined") {
+      throw new Error(
+        "DegradationColorConfigValidator must be loaded before startup",
+      );
+    }
+    new DegradationColorConfigValidator().assertValid(
+      this.#config.degradationColors,
+    );
   }
 
   #validateFrameBuilderContracts(contracts, builders) {

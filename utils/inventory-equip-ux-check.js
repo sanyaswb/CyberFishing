@@ -61,6 +61,7 @@ class InventoryEquipUxCheck {
     this.#checkMultipleTargetsRequireChoice();
     this.#checkRejectedTargetsAreExcluded();
     this.#checkRejectedHighlightWasRemoved();
+    this.#checkSlotSizeUsesSingleSource();
   }
 
   #checkSingleTargetUsesImmediateMode() {
@@ -126,6 +127,34 @@ class InventoryEquipUxCheck {
     Assertion.that(
       !styleSource.includes("highlight-rejected"),
       "rejected highlighting styles are removed",
+    );
+  }
+
+  #checkSlotSizeUsesSingleSource() {
+    const styleSource = fs.readFileSync(
+      path.join(ROOT, "src/ui/styles/style.css"),
+      "utf8",
+    );
+
+    Assertion.that(
+      styleSource.includes("--inventory-slot-size: 100px"),
+      "inventory slot size is configured once at twice the former size",
+    );
+    for (const declaration of [
+      "grid-template-columns: repeat(2, var(--inventory-slot-size))",
+      "grid-template-columns: repeat(auto-fill, var(--inventory-slot-size))",
+      "grid-auto-rows: var(--inventory-slot-size)",
+      "width: var(--inventory-slot-size)",
+      "height: var(--inventory-slot-size)",
+    ]) {
+      Assertion.that(
+        styleSource.includes(declaration),
+        `${declaration} uses the shared inventory slot size`,
+      );
+    }
+    Assertion.that(
+      !styleSource.includes("repeat(auto-fill, 50px)"),
+      "inventory grid no longer duplicates the legacy slot size",
     );
   }
 

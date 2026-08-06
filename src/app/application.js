@@ -876,6 +876,7 @@ class GameApplication {
     context.env = this.#env.getPhysicsEnv();
     context.biteEnv = this.getEnvDataForBite();
     this.#stateMachine.update(dt, bounds, context);
+    this.#inventoryUI?.updateDynamicProgression?.(dt);
     this.#updateRodVisualOffset(dt, input, bounds);
 
     if (this.invalidCastMarker) {

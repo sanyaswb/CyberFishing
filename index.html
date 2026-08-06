@@ -17,7 +17,10 @@
       aria-label="Поточна версія гри"
     ></div>
     <script src="src/config/project_version.js"></script>
-    <script src="src/config/rarity/rarity_visual_config.js"></script>
+      <script src="src/config/rarity/rarity_visual_config.js"></script>
+      <script src="src/config/visual/degradation_color_config.js"></script>
+      <script src="src/config/items/item_progression_config.js"></script>
+      <script src="src/config/items/item_condition_config.js"></script>
     <script src="src/config/databases/item_db.js"></script>
     <script src="src/config/databases/fish/presets/fish_profile_factory.js"></script>
     <script src="src/config/databases/fish/presets/fish_profile_presets.js"></script>
@@ -43,6 +46,9 @@
     <script src="src/config/config.js"></script>
     <script src="src/config/validation/item_rarity_config_validator.js"></script>
     <script src="src/config/validation/rarity_config_validator.js"></script>
+      <script src="src/config/validation/item_progression_config_validator.js"></script>
+      <script src="src/config/validation/item_condition_config_validator.js"></script>
+      <script src="src/config/validation/degradation_color_config_validator.js"></script>
     <script src="src/config/validation/config_schema_validator.js"></script>
 
     <script src="src/input/pull_input_mapper.js"></script>
@@ -57,7 +63,22 @@
     <script src="src/core/items/rarity/item_rarity_strategy.js"></script>
     <script src="src/core/items/rarity/authored_item_rarity_strategy.js"></script>
     <script src="src/core/items/rarity/item_rarity_strategy_registry.js"></script>
-    <script src="src/core/items/rarity/item_rarity_resolver.js"></script>
+      <script src="src/core/items/rarity/item_rarity_resolver.js"></script>
+      <script src="src/core/items/condition/item_condition_descriptor.js"></script>
+      <script src="src/core/items/condition/item_condition_resolver.js"></script>
+    <script src="src/core/items/progression/item_metric_strategy.js"></script>
+    <script src="src/core/items/progression/numeric_stat_metric_strategy.js"></script>
+    <script src="src/core/items/progression/derived_stat_metric_strategy.js"></script>
+    <script src="src/core/items/progression/target_range_metric_strategy.js"></script>
+    <script src="src/core/items/progression/composite_metric_strategy.js"></script>
+    <script src="src/core/items/progression/item_metric_strategy_registry.js"></script>
+    <script src="src/core/items/progression/item_catalog_baseline_registry.js"></script>
+    <script src="src/core/items/progression/item_power_resolver.js"></script>
+    <script src="src/core/items/progression/item_level_resolver.js"></script>
+    <script src="src/core/items/progression/item_quality_resolver.js"></script>
+    <script src="src/core/items/progression/item_capacity_resolver.js"></script>
+    <script src="src/core/items/progression/item_progression_descriptor.js"></script>
+    <script src="src/core/items/progression/item_progression_resolver.js"></script>
     <script src="src/core/inventory/equip_target_selection_policy.js"></script>
     <script src="src/core/inventory/inventory_item_stacking_policy.js"></script>
     <script src="src/core/float_tackle_line_budget_policy.js"></script>
@@ -140,6 +161,7 @@
     <script src="src/systems/bite_system.js"></script>
     <script src="src/systems/chum_system.js"></script>
     <script src="src/systems/inventory_item_factory.js"></script>
+    <script src="src/systems/inventory_item_view_factory.js"></script>
     <script src="src/systems/inventory_system.js"></script>
 
     <script src="src/ui/ui.js"></script>
@@ -147,8 +169,12 @@
     <script src="src/ui/styles/hud_style_resolver.js"></script>
     <script src="src/ui/styles/fight_area_style_resolver.js"></script>
     <script src="src/ui/styles/outcome_style_resolver.js"></script>
-    <script src="src/ui/styles/rarity_visual_resolver.js"></script>
-    <script src="src/ui/rarity/item_rarity_dom_adapter.js"></script>
+      <script src="src/ui/styles/rarity_visual_resolver.js"></script>
+      <script src="src/ui/styles/degradation_color_resolver.js"></script>
+      <script src="src/ui/rarity/item_rarity_dom_adapter.js"></script>
+      <script src="src/ui/condition/item_condition_dom_adapter.js"></script>
+    <script src="src/ui/progression/item_progression_visual_resolver.js"></script>
+    <script src="src/ui/progression/item_progression_dom_adapter.js"></script>
 
     <script src="src/debug/services/debug_formatters.js"></script>
     <script src="src/debug/services/debug_data_selectors.js"></script>
@@ -235,6 +261,7 @@
     <script src="src/debug/services/active_fish_dev_tools_schema.js"></script>
     <script src="src/debug/services/location_dev_tools_schema.js"></script>
     <script src="src/debug/services/hooked_fish_profile_synchronizer.js"></script>
+    <script src="src/debug/services/item_progression_debug_snapshot_provider.js"></script>
     <script src="src/debug/services/dev_tools_parameter_alias_registry.js"></script>
     <script src="src/debug/services/dev_tools_control_binding_registry.js"></script>
     <script src="src/debug/dev_tools.js"></script>

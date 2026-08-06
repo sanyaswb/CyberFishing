@@ -9,6 +9,7 @@ class RarityVisualResolver {
   #resolvedByPosition = new Map();
   #ordinaryDescriptors = new Map();
   #semanticDescriptors = new Map();
+  #ordinaryStops = null;
   #animatedDescriptor = {
     position: 0,
     id: "unknown",
@@ -67,6 +68,7 @@ class RarityVisualResolver {
     const backgroundAlpha = unique
       ? uniqueEffects.backgroundAlphaMin
       : frame.backgroundAlpha;
+    const itemGlowEnabled = unique && uniqueEffects.itemGlowEnabled;
     const descriptor = Object.freeze({
       id: unique ? "unique" : visual.id,
       normalized: visual.position,
@@ -80,8 +82,8 @@ class RarityVisualResolver {
         alpha: backgroundAlpha,
       }),
       glow: Object.freeze({
-        enabled: unique,
-        blur: unique ? uniqueEffects.panelGlowMax : 0,
+        enabled: itemGlowEnabled,
+        blur: itemGlowEnabled ? uniqueEffects.panelGlowMax : 0,
       }),
       animation: Object.freeze({
         enabled: unique,
@@ -228,10 +230,24 @@ class RarityVisualResolver {
     return this.#stops[Math.max(0, this.#stops.length - 2)].position;
   }
 
+  get ordinaryStops() {
+    this.#ensureConfig();
+    if (!this.#ordinaryStops) {
+      const lastIndex = Math.max(1, this.#stops.length - 1);
+      this.#ordinaryStops = Object.freeze(
+        this.#stops
+          .slice(0, lastIndex)
+          .map((stop) => this.resolvePosition(stop.position)),
+      );
+    }
+    return this.#ordinaryStops;
+  }
+
   invalidate() {
     this.#stops = null;
     this.#frame = null;
     this.#uniqueEffects = null;
+    this.#ordinaryStops = null;
     this.#resolvedByPosition.clear();
     this.#ordinaryDescriptors.clear();
     this.#semanticDescriptors.clear();
@@ -277,6 +293,7 @@ class RarityVisualResolver {
     };
     const uniqueEffects = config.uniqueEffects || {};
     this.#uniqueEffects = {
+      itemGlowEnabled: uniqueEffects.itemGlowEnabled !== false,
       pulseDurationMs: this.#number(uniqueEffects.pulseDurationMs, 1),
       frameDash: Array.isArray(uniqueEffects.frameDash)
         ? Object.freeze(uniqueEffects.frameDash.slice())

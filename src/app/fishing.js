@@ -853,6 +853,8 @@ class FightService {
   #fish = null;
   #fishForceSystem = null;
   #lineSystem = null;
+  #lineInstanceId = null;
+  #isActive = false;
   #dragSystem = null;
   #pullInputMapper = null;
   #rodPullSystem = null;
@@ -907,6 +909,8 @@ class FightService {
     this.#fish = session.fish;
     this.#fishForceSystem = session.fishForceSystem;
     this.#lineSystem = session.lineSystem;
+    this.#lineInstanceId = equipment?.line?.instanceId || null;
+    this.#isActive = true;
     this.#dragSystem = session.dragSystem;
     this.#pullInputMapper = session.pullInputMapper;
     this.#rodPullSystem = session.rodPullSystem;
@@ -933,6 +937,7 @@ class FightService {
     this.#reel = next.reel;
     this.#hook = next.hook;
     this.#lineSystem = next.lineSystem;
+    this.#lineInstanceId = equipment?.line?.instanceId || null;
     this.#dragSystem?.updateEquipment(this.#reel);
     this.#pullInputMapper?.reset?.();
     this.#rodPullSystem?.reset?.();
@@ -1153,7 +1158,22 @@ class FightService {
     return this.#fishCondition;
   }
 
+  getLineCapacityState() {
+    if (!this.#isActive || !this.#lineInstanceId) return null;
+    const state = this.#lineSystem?.getState?.();
+    if (!state) return null;
+    return Object.freeze({
+      lineInstanceId: this.#lineInstanceId,
+      hasReel: !!state.hasReel,
+      totalMeters: Math.max(0, Number(state.totalLineMeters) || 0),
+      releasedMeters: Math.max(0, Number(state.releasedMeters) || 0),
+      remainingMeters: Math.max(0, Number(state.remainingMeters) || 0),
+    });
+  }
+
   endFight() {
     this.#fightPhysicsSystem?.resetPlayerPullMotion?.();
+    this.#isActive = false;
+    this.#lineInstanceId = null;
   }
 }

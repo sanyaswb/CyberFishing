@@ -1,4 +1,19 @@
 class InventoryItemFactory {
+  static #derivedProgressionKeys = new Set([
+    "progression",
+    "powerPercent",
+    "powerLevel",
+    "normalizedPower",
+    "powerColor",
+    "powerGradient",
+    "qualityMax",
+    "capacityPercent",
+    "capacityMeters",
+    "capacityMaximumMeters",
+    "condition",
+    "conditionPercent",
+  ]);
+
   #itemDatabase;
   #itemRarityResolver;
 
@@ -22,12 +37,13 @@ class InventoryItemFactory {
       throw new RangeError(`Unknown inventory item: ${source.itemId}`);
     }
 
+    const canonicalSource = this.#withoutDerivedProgression(source);
     const hasRuntimeRarity = Object.prototype.hasOwnProperty.call(
-      source,
+      canonicalSource,
       "rarity",
     );
-    const raritySource = hasRuntimeRarity && source.rarity != null
-      ? source.rarity
+    const raritySource = hasRuntimeRarity && canonicalSource.rarity != null
+      ? canonicalSource.rarity
       : baseItem.rarityProfile;
     const rarity =
       raritySource === null
@@ -35,7 +51,7 @@ class InventoryItemFactory {
         : this.#itemRarityResolver.resolve(raritySource);
 
     return {
-      ...source,
+      ...canonicalSource,
       rarity,
     };
   }
@@ -43,5 +59,15 @@ class InventoryItemFactory {
   createMany(sources = []) {
     if (!Array.isArray(sources)) return [];
     return sources.map((source) => this.create(source));
+  }
+
+  #withoutDerivedProgression(source) {
+    const canonical = {};
+    for (const [key, value] of Object.entries(source)) {
+      if (!InventoryItemFactory.#derivedProgressionKeys.has(key)) {
+        canonical[key] = value;
+      }
+    }
+    return canonical;
   }
 }

@@ -1,5 +1,149 @@
 # CyberFishing changelog
 
+## v0.23.67 - Double Inventory Slots
+
+### Changed
+
+- Doubled equipped and backpack item cells from 50×50 px to 100×100 px.
+- Added `--inventory-slot-size` as the single source of truth for both inventory grids and item cells.
+- Scaled item icons, Level badges, stack quantities and compact Capacity bars proportionally with the shared cell size.
+
+### Tests
+
+- Added a CSS contract proving both grids and item cells use the shared 100 px slot configuration.
+
+## v0.23.66 - Universal Degradation Colors
+
+### Added
+
+- Added an immutable degradation color configuration and reusable resolver for Capacity, condition, fuel, charge and future consumable resources.
+- Added startup validation for degradation range, stops and RGB color contracts.
+
+### Changed
+
+- Capacity now uses its own continuous color scale: red at 1%, through orange and yellow, to green at 100%.
+- Kept each Capacity fill a single solid color selected at its current percentage, with the unused track remaining neutral gray.
+- Removed the visual dependency between Capacity and item rarity or Power.
+
+### Tests
+
+- Covered exact color anchors, interpolation, clamping, immutable results and production Capacity integration.
+
+## v0.23.65 - Power-Segment Item Level
+
+### Changed
+
+- Item Level is now derived automatically from the normalized Power scale.
+- Split Power into six equal segments that map to Levels 1 through 6.
+- Removed manually authored `progressionProfile.level` values from all gameplay items.
+- The dependency remains one-way: Power determines Level, while Level never feeds back into Power.
+- Level badge colors continue to match the item rarity frame.
+
+### Tests
+
+- Covered all six segment boundaries, maximum Power, unavailable Power and legacy manual Level values.
+- Added production coverage proving every item Level matches its calculated Power segment.
+
+## v0.23.64 - Rarity-Colored Item Level
+
+### Changed
+
+- The Level badge border and number now always use the item rarity frame color.
+- Removed authored Level from progression-gradient color calculation.
+- Level remains an independent conditional number and does not affect Power.
+
+### Tests
+
+- Added a visual contract requiring Level badges to inherit `--rarity-color` and forbidding a separate Level color variable.
+
+## v0.23.63 - Solid Capacity Color
+
+### Changed
+
+- Capacity fill now uses one solid color selected from the rarity palette at the current capacity percentage.
+- Applied the same color rule to compact fishing-line thumbnails and detailed Capacity tooltips.
+- The unused part of every Capacity scale remains neutral gray.
+
+## v0.23.62 - Independent Item Condition
+
+### Added
+
+- Added an immutable Condition descriptor sourced from runtime durability, authored durability or the configured full-condition default.
+- Added a bottom-up Condition fill to item thumbnails: 100% fills the complete rarity background and 20% leaves only the lower 20% filled.
+- Added explicit authored `progressionProfile.level` values for every gameplay item.
+
+### Changed
+
+- The rarity frame now remains full while only its background height represents Condition.
+- Power loader fill now uses one solid color resolved at the current Power position; the unfilled remainder stays neutral gray.
+- Item Level is no longer calculated from Power and remains independent from functional stats such as boat upgrade level.
+
+## v0.23.61 - Dynamic Line Capacity
+
+### Added
+
+- Added an independent line-capacity descriptor sourced from inventory, equipped reel and active line state.
+- Added compact Capacity loader bars to fishing-line thumbnails.
+- Added live Capacity updates while the inventory is open during active fishing.
+
+### Changed
+
+- Fishing-line details now show Capacity instead of the nominal Power scale.
+- Capacity details expose remaining meters, reel maximum, used meters and the exact percentage.
+- Other item types keep their existing Power and Quality presentation.
+
+## v0.23.60 - Power Loader Scale
+
+### Changed
+
+- Power now uses loader-style filling in the detailed item tooltip.
+- The filled percentage reveals the matching portion of the rarity gradient while the remaining percentage stays neutral gray.
+- Removed the standalone vertical Power marker.
+
+## v0.23.59 - Detailed Progression Scales
+
+### Changed
+
+- Item thumbnails now show only the numeric power Level in a dedicated square badge without an `L` prefix.
+- Moved the Power gradient and segmented Quality scales from item thumbnails into the detailed hover tooltip.
+- Kept exact Power, Quality, source metric and comparison-range values in the detailed item view.
+
+## v0.23.58 - Item Power, Level and Quality
+
+### Added
+
+- Added independent Power, power Level and Quality descriptors without changing authored rarity.
+- Added 17 explicit comparison groups, fixed/catalog baselines and numeric, derived, target-range and composite metric strategies.
+- Added cached immutable progression read models during inventory hydration and a dedicated inventory view factory.
+- Added compact `L` badges, marker/fill Power gradients, segmented Quality bars and exact progression details in tooltips.
+- Added an `ITEM PROGRESSION` DevTools section with group, metric, baseline, level, quality, range and composite diagnostics.
+- Added startup validation and a focused production/regression check for progression configuration and lifecycle behavior.
+
+### Changed
+
+- Migrated all 21 gameplay items to explicit progression groups and canonical quality values; three technical records explicitly opt out.
+- Made line Power depend on strength-to-diameter efficiency rather than remaining length.
+- Made reel Power composite and boat Power depend on the current upgrade-level stat.
+- Kept derived progression out of save and stacking identity while preserving runtime quality as canonical instance data.
+- Continued to source every Power, Level and Quality color from the ordinary rarity palette, excluding gold.
+
+### Fixed
+
+- Durability and remaining line length can no longer change nominal Power or power Level.
+- Different runtime quality can no longer merge through ordinary stacking or detached-line merging.
+- Unique rarity no longer implies maximum item strength, Level or Quality.
+
+## v0.23.57 - Configurable Item Rarity Glow
+
+### Added
+
+- Added `CONFIG.rarity.visual.uniqueEffects.itemGlowEnabled` as the single switch for unique item glow.
+
+### Changed
+
+- Temporarily disabled unique item glow while keeping the gold background and border pulse active.
+- Kept Victory UI fish glow independent from the item-only switch.
+
 ## v0.23.56 - Universal Item Rarity
 
 ### Added
@@ -25,10 +169,6 @@
 - Selected and equipped styles no longer overwrite the item's rarity border.
 - Unique item pulsing no longer requires per-frame DOM updates and is disabled by `prefers-reduced-motion`.
 
-### Tests
-
-- Covered production profiles, invalid bounds and duplicate unique IDs, immutable descriptor migration, shared fish/item colors and startup rejection of invalid rarity configuration.
-
 ## v0.23.55 - DevTools Parameter Aliases
 
 ### Added
@@ -48,10 +188,6 @@
 
 - Removed the duplicated `CONFIG.debug.fixedCatch.hasAnomaly` value and its separate Fixed Catch branch from fish construction.
 - Removed the possibility of contradictory anomaly booleans being stored by DevTools.
-
-### Tests
-
-- Covered declarative alias discovery, bidirectional UI synchronization, legacy override normalization, canonical precedence and the absence of duplicate config storage.
 
 ## v0.23.54 - Victory Button Gesture UX
 
@@ -78,10 +214,6 @@
 
 - Removed the short-click gesture identifier introduced for Victory; button activation no longer depends on the gameplay hold threshold.
 
-### Tests
-
-- Covered inherited fight release, held button press, mismatched press/release targets, pointer cancellation, both Victory actions and Fixed Catch anomaly precedence.
-
 ## v0.23.53 - Victory Gesture Isolation
 
 ### Added
@@ -99,10 +231,6 @@
 - Victory actions now accept only a filtered short click or tap whose gesture started after Victory opened.
 - Space-based pulling remains unchanged because keyboard release does not create a pointer click.
 
-### Tests
-
-- Covered inherited raw pointer release, an inherited same-gesture click, a new click outside the actions and a new click on the Claim action.
-
 ## v0.23.52 - God Mode Anomaly Chance
 
 ### Added
@@ -116,10 +244,6 @@
 - Extended `FishAnomalyVariantResolver` with a non-mutating chance override; the configured species chance remains unchanged.
 - Kept anomaly species support and location restrictions active even when the God Mode chance override is enabled.
 
-### Tests
-
-- Added regressions for a normally failing high anomaly roll, the forced `100%` result, location restrictions and unique level-skin routing.
-
 ## v0.23.51 - Rarity and Uniqueness Separation
 
 ### Changed
@@ -132,10 +256,6 @@
 
 - A low-weight anomalous fish can now remain at `0.5` stars with `rarity.isMaximum: false` while still receiving its unique sprite and golden Victory theme.
 - Maximum star rarity without an anomaly remains an ordinary fish and does not receive the unique animation.
-
-### Tests
-
-- Added regression coverage comparing ordinary and unique `0.5`-star fish, Victory state transfer and the absence of anomaly-derived fields inside `rarity`.
 
 ## v0.23.50 - Anomaly-Driven Unique Fish
 
@@ -151,7 +271,3 @@
 - Routed anomalous crucian-stalker catches to `crucian_stalker--{level}-uniq.webp`, including all six weight levels.
 - Kept fixed catches and live DevTools edits synchronized through the same anomaly, rarity and image resolvers.
 - Removed the obsolete `rarityProfile`, `uniqueAtHalfSteps` and `uniqueAnomalyId` implementation instead of retaining a compatibility branch.
-
-### Tests
-
-- Added regressions for exact anomaly chance boundaries, location restrictions, ordinary maximum-weight fish, anomalous level-six fish, all six fixed-catch skins and live DevTools anomaly toggles.
