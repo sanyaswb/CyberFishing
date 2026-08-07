@@ -157,14 +157,13 @@ class RarityConfigValidator {
       this.#error(`${path}.uniqueEffects`, "missing unique fish effect config");
       return;
     }
-    if (
-      uniqueEffects.itemGlowEnabled !== undefined &&
-      typeof uniqueEffects.itemGlowEnabled !== "boolean"
-    ) {
-      this.#error(
-        `${path}.uniqueEffects.itemGlowEnabled`,
-        "expected boolean",
-      );
+    for (const field of ["itemGlowEnabled", "itemPulseEnabled"]) {
+      if (
+        uniqueEffects[field] !== undefined &&
+        typeof uniqueEffects[field] !== "boolean"
+      ) {
+        this.#error(`${path}.uniqueEffects.${field}`, "expected boolean");
+      }
     }
     for (const field of [
       "pulseDurationMs",

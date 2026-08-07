@@ -69,6 +69,7 @@ class RarityVisualResolver {
       ? uniqueEffects.backgroundAlphaMin
       : frame.backgroundAlpha;
     const itemGlowEnabled = unique && uniqueEffects.itemGlowEnabled;
+    const itemPulseEnabled = unique && uniqueEffects.itemPulseEnabled;
     const descriptor = Object.freeze({
       id: unique ? "unique" : visual.id,
       normalized: visual.position,
@@ -86,8 +87,8 @@ class RarityVisualResolver {
         blur: itemGlowEnabled ? uniqueEffects.panelGlowMax : 0,
       }),
       animation: Object.freeze({
-        enabled: unique,
-        durationMs: unique ? uniqueEffects.pulseDurationMs : 0,
+        enabled: itemPulseEnabled,
+        durationMs: itemPulseEnabled ? uniqueEffects.pulseDurationMs : 0,
       }),
       isUnique: unique,
     });
@@ -294,6 +295,7 @@ class RarityVisualResolver {
     const uniqueEffects = config.uniqueEffects || {};
     this.#uniqueEffects = {
       itemGlowEnabled: uniqueEffects.itemGlowEnabled !== false,
+      itemPulseEnabled: uniqueEffects.itemPulseEnabled !== false,
       pulseDurationMs: this.#number(uniqueEffects.pulseDurationMs, 1),
       frameDash: Array.isArray(uniqueEffects.frameDash)
         ? Object.freeze(uniqueEffects.frameDash.slice())

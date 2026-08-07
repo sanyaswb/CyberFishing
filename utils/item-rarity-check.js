@@ -184,7 +184,15 @@ class ItemRarityCheck {
     Assertion.jsonEqual(unique.color, [255, 205, 55], "unique gold color");
     Assertion.that(!unique.glow.enabled, "unique item glow is config-disabled");
     Assertion.equal(unique.glow.blur, 0, "disabled item glow has no blur");
-    Assertion.that(unique.animation.enabled, "unique animation is enabled");
+    Assertion.that(
+      !unique.animation.enabled,
+      "unique item pulse is config-disabled",
+    );
+    Assertion.equal(
+      unique.animation.durationMs,
+      0,
+      "disabled item pulse has no duration",
+    );
 
     const glowEnabledConfig = {
       ...this.#runtime.__VISUAL_CONFIG__,
@@ -199,6 +207,21 @@ class ItemRarityCheck {
     Assertion.that(
       glowEnabledVisual.glow.enabled,
       "unique item glow can be re-enabled from config",
+    );
+
+    const pulseEnabledConfig = {
+      ...this.#runtime.__VISUAL_CONFIG__,
+      uniqueEffects: {
+        ...this.#runtime.__VISUAL_CONFIG__.uniqueEffects,
+        itemPulseEnabled: true,
+      },
+    };
+    const pulseEnabledVisual = this.#createVisualResolver(
+      pulseEnabledConfig,
+    ).resolve({ tier: 1, maxTier: 12, isUnique: true });
+    Assertion.that(
+      pulseEnabledVisual.animation.enabled,
+      "unique item pulse can be re-enabled from config",
     );
 
     for (const maxTier of [5, 6, 9, 12]) {
@@ -345,11 +368,19 @@ class ItemRarityCheck {
       !element.classList.contains("rarity-glow"),
       "disabled glow does not add a DOM glow class",
     );
+    Assertion.that(
+      !element.classList.contains("rarity-pulse"),
+      "disabled pulse does not add a DOM animation class",
+    );
     adapter.clear(element);
     Assertion.equal(element.style.values.size, 0, "adapter clears CSS variables");
     Assertion.that(
       !element.classList.contains("rarity-glow"),
       "adapter clears the DOM glow class",
+    );
+    Assertion.that(
+      !element.classList.contains("rarity-pulse"),
+      "adapter clears the DOM pulse class",
     );
   }
 
@@ -367,7 +398,11 @@ class ItemRarityCheck {
       "item glow CSS is gated by the config-driven class",
     );
     Assertion.that(
-      css.includes(".inv-tooltip.rarity-unique.rarity-glow"),
+      css.includes(".inv-slot.rarity-unique.rarity-pulse::before"),
+      "item pulse CSS is gated by the config-driven class",
+    );
+    Assertion.that(
+      css.includes(".inv-tooltip.rarity-unique.rarity-glow.rarity-pulse"),
       "tooltip glow CSS is gated by the config-driven class",
     );
     const pulseStart = css.indexOf("@keyframes inventory-rarity-pulse");

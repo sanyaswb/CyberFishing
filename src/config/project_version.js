@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.23.67";
+const CURRENT_PROJECT_VERSION = "0.23.68";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "double-inventory-slots",
+  codename: "config-disabled-item-pulse",
   updatedAt: "2026-08-06",
   notes: Object.freeze([
-    "Double inventory item slots from fifty to one hundred pixels",
-    "Configure all inventory slot dimensions from one shared CSS variable",
-    "Scale item icons, Level badges, quantities and Capacity bars proportionally",
+    "Add a dedicated configuration switch for unique item pulsing",
+    "Disable inventory item pulsing by default without removing its animation",
+    "Keep item glow and item pulse controlled independently",
   ]),
 });
 

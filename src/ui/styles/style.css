@@ -376,7 +376,7 @@ input:checked + .slider:before {
   box-shadow: 0 0 var(--rarity-glow-blur) var(--rarity-color);
 }
 
-.inv-slot.rarity-unique::before {
+.inv-slot.rarity-unique.rarity-pulse::before {
   animation: inventory-rarity-pulse var(--rarity-animation-duration)
     ease-in-out infinite;
 }
@@ -491,7 +491,7 @@ input:checked + .slider:before {
   border-color: var(--rarity-color);
 }
 
-.inv-tooltip.rarity-unique.rarity-glow {
+.inv-tooltip.rarity-unique.rarity-glow.rarity-pulse {
   box-shadow: 0 0 var(--rarity-glow-blur) var(--rarity-color);
   animation: inventory-rarity-tooltip-pulse var(--rarity-animation-duration)
     ease-in-out infinite;
@@ -873,8 +873,8 @@ input:checked + .slider:before {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .inv-slot.rarity-unique::before,
-  .inv-tooltip.rarity-unique {
+  .inv-slot.rarity-unique.rarity-pulse::before,
+  .inv-tooltip.rarity-unique.rarity-pulse {
     animation: none;
   }
 }

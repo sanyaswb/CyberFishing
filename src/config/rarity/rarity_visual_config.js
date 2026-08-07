@@ -20,6 +20,7 @@ const RARITY_VISUAL_CONFIG = {
   },
   uniqueEffects: {
     itemGlowEnabled: false,
+    itemPulseEnabled: false,
     pulseDurationMs: 1200,
     frameDash: [12, 7],
     frameDashSpeedPxPerSecond: 22.222,
