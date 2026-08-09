@@ -379,15 +379,18 @@ const CONFIG = {
     equipment: {
       rodId: null,
       reelId: null,
+      terminalLineId: null,
+      tackleId: null,
       floatId: null,
-      feederRigId: null,
-      lineId: null,
-      hooks: [],
-      baits: [],
+      handChumId: null,
       netId: null,
-      feederChumId: null,
       deliveryId: null,
-      deliveryChums: [],
+      gasMaskId: null,
+    },
+
+    inventorySettings: {
+      autoBait: false,
+      autoChum: false,
     },
 
     inventory: [

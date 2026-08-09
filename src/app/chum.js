@@ -100,7 +100,7 @@ class ChumController {
   }
 
   refreshActiveHandChum() {
-    this.#activeHandChum = this.#inventory.findFirstItemByType("chum_mix");
+    this.#activeHandChum = this.#inventory.getEquipped()?.handChum || null;
   }
 
   updateUI() {
@@ -344,8 +344,14 @@ class ChumController {
       if (this.#pendingHandDrop.timer <= 0) {
         const drop = this.#pendingHandDrop;
         this.#pendingHandDrop = null;
-        this.#chum.deployBait(drop.x, drop.y, drop.chumId);
-        this.#fishing.consumeHandChum(drop.activeChum);
+        const consumed = this.#fishing.consumeHandChum({
+          instanceId: drop.chumInstanceId,
+        });
+        if (consumed) {
+          this.#chum.deployBait(drop.x, drop.y, drop.chumId);
+        } else {
+          this.#warn("Обрана прикормка більше недоступна.");
+        }
         input.clickPos = null;
         this.toggleAim();
       }
@@ -399,7 +405,7 @@ class ChumController {
       x: target.x,
       y: target.y,
       chumId: activeChum.id,
-      activeChum,
+      chumInstanceId: activeChum.instanceId,
     };
   }
 

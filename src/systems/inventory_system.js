@@ -967,6 +967,10 @@ class InventoryManager {
   #itemFactory;
   #itemViewFactory;
   #stackingPolicy;
+  #inventoryV2 = null;
+  #inventoryV2Facade = null;
+  #inventoryV2Bridge = null;
+  #removeInventoryV2Listener = null;
   #lineCapacityStateProvider = () => null;
   #isLocked = false;
   #equippedCache = null;
@@ -1035,6 +1039,42 @@ class InventoryManager {
     });
 
     this.#setupInventorySeeders(itemDB, playerConfig);
+    this.#initializeInventoryV2(cachedEquipment, playerConfig);
+  }
+
+  #initializeInventoryV2(legacyEquipment, playerConfig) {
+    if (typeof InventoryV2CompositionRoot === "undefined") return;
+    try {
+      this.#inventoryV2 = InventoryV2CompositionRoot.compose({
+        cache: CacheManager,
+        legacyItems: this.#inventory.getAll(),
+        legacyEquipment,
+        legacySettings: playerConfig?.inventorySettings || {},
+        itemDefinitionResolver: this.#db,
+        itemViewFactory: this.#itemViewFactory,
+        instanceIdFactory: (context = {}) => {
+          const prefix =
+            typeof context === "string" ? context : context?.prefix || "item";
+          return this.#makeId(prefix);
+        },
+        loadValueProvider: () => this.getMaxTackleLoadKg(),
+        lineConfig: this.#lineRules.config,
+      });
+      this.#inventoryV2Facade = this.#inventoryV2.facade;
+      this.#inventoryV2Bridge = this.#inventoryV2.gameplayBridge;
+      this.#removeInventoryV2Listener = this.#inventoryV2Facade.subscribe(() => {
+        this.#equippedCache = null;
+        this.#events.emit("inventory-changed", {
+          equipment: this.getEquipped(),
+          source: "inventory-v2",
+        });
+      });
+    } catch (error) {
+      this.#inventoryV2 = null;
+      this.#inventoryV2Facade = null;
+      this.#inventoryV2Bridge = null;
+      console.error("Inventory v2 initialization failed; using legacy inventory.", error);
+    }
   }
 
   #setupInventorySeeders(itemDB, playerConfig) {
@@ -1056,6 +1096,16 @@ class InventoryManager {
   }
 
   saveBuild(buildName) {
+    if (this.#inventoryV2Facade) {
+      const result = this.dispatchInventoryV2Action({
+        type: InventoryV2ActionType.LOADOUT_SAVE,
+        name: String(buildName || ""),
+      });
+      return {
+        ...result,
+        reason: result.warning || null,
+      };
+    }
     const buildId = this.#makeId("build");
     const raw = this.#equipment.getRawState();
 
@@ -1151,6 +1201,12 @@ class InventoryManager {
   }
 
   disassembleBuild(buildId) {
+    if (this.#inventoryV2Facade) {
+      return this.dispatchInventoryV2Action({
+        type: InventoryV2ActionType.INVENTORY_ITEM_LONG_PRESS,
+        instanceId: buildId,
+      });
+    }
     if (!buildId) return;
     const equippedBuildSlotPaths = this.#getEquippedSlotPathsForBuild(buildId);
     this.#unequipSlotsWithLifecycle(equippedBuildSlotPaths, {
@@ -1171,6 +1227,12 @@ class InventoryManager {
   }
 
   equipBuild(buildId) {
+    if (this.#inventoryV2Facade) {
+      return this.dispatchInventoryV2Action({
+        type: InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+        instanceId: buildId,
+      });
+    }
     this.#unequipSlotsWithLifecycle(Object.keys(SLOT_CONFIG), {
       save: false,
       notify: false,
@@ -1233,6 +1295,114 @@ class InventoryManager {
     this.#isLocked = locked;
   }
 
+  get inventoryV2Facade() {
+    return this.#inventoryV2Facade;
+  }
+
+  dispatchInventoryV2Action(action = {}) {
+    if (!this.#inventoryV2Facade) {
+      return {
+        success: false,
+        warning: "Нова модель інвентарю недоступна.",
+        refresh: false,
+      };
+    }
+    const safeWhileLocked = new Set([
+      InventoryV2ActionType.OPEN,
+      InventoryV2ActionType.CLOSE,
+      InventoryV2ActionType.CATEGORY_SELECT,
+      InventoryV2ActionType.ASSEMBLY_BACK,
+      InventoryV2ActionType.AUTO_BAIT_CHANGE,
+      InventoryV2ActionType.AUTO_CHUM_CHANGE,
+    ]);
+    if (this.#isLocked && !safeWhileLocked.has(action.type)) {
+      return {
+        success: false,
+        warning: "Витягніть снасть з води, щоб змінити спорядження.",
+        refresh: false,
+      };
+    }
+    return this.#inventoryV2Facade.dispatch(action);
+  }
+
+  setBoatChargeProvider(provider) {
+    this.#inventoryV2Facade?.setBoatChargeProvider?.(provider);
+  }
+
+  handleRodRetrieved(context = {}) {
+    return this.#inventoryV2Bridge?.handleRodRetrieved?.(context) ??
+      this.#inventoryV2Bridge?.rodRetrieved?.(context) ??
+      null;
+  }
+
+  handleHandChumUsed(context = {}) {
+    return this.#inventoryV2Bridge?.handleHandChumUsed?.(context) ??
+      this.#inventoryV2Bridge?.handChumUsed?.(context) ??
+      null;
+  }
+
+  handleBoatReturned(context = {}) {
+    return this.#inventoryV2Bridge?.handleBoatReturned?.(context) ??
+      this.#inventoryV2Bridge?.boatReturned?.(context) ??
+      null;
+  }
+
+  evaluateCastReadiness(equipment = null) {
+    const inventoryV2Readiness =
+      this.#inventoryV2Bridge?.evaluateCastReadiness?.() || null;
+    if (typeof inventoryV2Readiness?.canCast === "boolean") {
+      return inventoryV2Readiness;
+    }
+
+    const eq = equipment || this.getEquipped();
+    if (!eq?.rod) {
+      return Object.freeze({
+        canCast: false,
+        shouldOpenInventory: true,
+        warning: "Спочатку спорядіть вудилище.",
+        warningCode: "rod-required",
+      });
+    }
+
+    const rod = eq.rod;
+    const supportsReel =
+      rod.equipmentCapabilities?.supportsReel ??
+      rod.engineStats?.equipmentCapabilities?.supportsReel ??
+      rod.supportsReel ??
+      rod.engineStats?.supportsReel ??
+      rod.hasReel ??
+      rod.engineStats?.hasReel ??
+      rod.type !== "pole";
+    if (supportsReel && !eq.reel) {
+      return Object.freeze({
+        canCast: false,
+        shouldOpenInventory: true,
+        warning: "Для цієї вудки потрібна котушка.",
+        warningCode: "reel-required",
+      });
+    }
+
+    if ((Number(eq.line?.lengthMeters) || 0) <= 0) {
+      return Object.freeze({
+        canCast: false,
+        shouldOpenInventory: true,
+        warning: supportsReel
+          ? "У котушку потрібно встановити ліску."
+          : "Для закидання потрібно спорядити ліску.",
+        warningCode: supportsReel
+          ? "reel-line-required"
+          : "terminal-line-required",
+      });
+    }
+
+    return Object.freeze({
+      canCast: true,
+      shouldOpenInventory: false,
+      warning: null,
+      warningCode: null,
+    });
+  }
+
   setLineCapacityStateProvider(provider) {
     if (typeof provider !== "function") {
       throw new TypeError("Line capacity state provider must be a function");
@@ -1280,6 +1450,16 @@ class InventoryManager {
   }
 
   autoEquipItem(instanceId) {
+    if (this.#inventoryV2Facade) {
+      const result = this.dispatchInventoryV2Action({
+        type: InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+        instanceId,
+      });
+      return {
+        ...result,
+        reason: result.warning || null,
+      };
+    }
     const itemData = this._hydrateInstance(instanceId);
     if (!itemData) return { success: false, reason: "Предмет не знайдено" };
 
@@ -1413,6 +1593,9 @@ class InventoryManager {
   }
 
   breakEquippedLine(lossMeters) {
+    if (this.#inventoryV2Bridge) {
+      return this.#inventoryV2Bridge.breakEquippedLine(lossMeters);
+    }
     const raw = this.#equipment.getRawState();
     if (!raw.lineId) return false;
 
@@ -1441,6 +1624,9 @@ class InventoryManager {
   }
 
   consumeItem(instanceId, amount = 1) {
+    if (this.#inventoryV2Bridge) {
+      return this.#inventoryV2Bridge.consumeItem(instanceId, amount);
+    }
     const success = this.#inventory.consume(instanceId, amount);
     if (success) {
       this.#equippedCache = null;
@@ -1456,7 +1642,18 @@ class InventoryManager {
     return success;
   }
 
+  consumeHandChum() {
+    return this.consumeEquipped("handChum", 1, true);
+  }
+
   consumeEquipped(slotPath, amount = 1, unequipAfterConsume = true) {
+    if (this.#inventoryV2Bridge) {
+      return this.#inventoryV2Bridge.consumeEquipped(
+        slotPath,
+        amount,
+        unequipAfterConsume,
+      );
+    }
     const item = this.#getEquippedItemAtSlot(slotPath);
     if (!item?.instanceId) return false;
 
@@ -1490,6 +1687,12 @@ class InventoryManager {
   }
 
   equipItem(slotPath, instanceId) {
+    if (this.#inventoryV2Facade) {
+      return this.dispatchInventoryV2Action({
+        type: InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+        instanceId,
+      }).success === true;
+    }
     return this.#equipItemWithLifecycle(slotPath, instanceId);
   }
 
@@ -1572,6 +1775,27 @@ class InventoryManager {
   }
 
   unequipItem(slotPath) {
+    if (this.#inventoryV2Facade) {
+      const slotMap = {
+        rod: "rod",
+        reel: "reel",
+        line: "terminalLine",
+        leader: "terminalLine",
+        float: "float",
+        feederRig: "tackle",
+        net: "net",
+        delivery: "delivery",
+        handChum: "handChum",
+      };
+      const slotId = slotMap[slotPath];
+      if (!slotId) return false;
+      return this.dispatchInventoryV2Action({
+        type: InventoryV2ActionType.EQUIPMENT_SLOT_LONG_PRESS,
+        slotId,
+        instanceId:
+          this.#inventoryV2.equipmentState.getRootInstanceId(slotId) || "missing",
+      }).success === true;
+    }
     const equippedBefore = this.getEquipped();
     const slotPaths = [
       slotPath,
@@ -1777,6 +2001,12 @@ class InventoryManager {
   getEquipped() {
     if (this.#equippedCache) return this.#equippedCache;
 
+    if (this.#inventoryV2Bridge) {
+      this.#equippedCache = this.#inventoryV2Bridge.getEquipped();
+      this.#applyEquippedCastDistanceStats(this.#equippedCache);
+      return this.#equippedCache;
+    }
+
     const raw = this.#equipment.getRawState();
     this.#equippedCache = {
       rod: this._hydrateInstance(raw.rodId),
@@ -1797,14 +2027,32 @@ class InventoryManager {
   }
 
   getInventoryItems() {
+    if (this.#inventoryV2Bridge) {
+      return this.#inventoryV2Bridge.listItems({
+        includeAttached: false,
+        includeLoadout: false,
+        hydrated: false,
+      });
+    }
     return this.#inventory.getAll();
   }
 
   hydrateInstance(instanceId) {
+    if (this.#inventoryV2Bridge) {
+      return this.#inventoryV2Bridge.hydrateInstance(instanceId);
+    }
     return this._hydrateInstance(instanceId);
   }
 
   findFirstItemByType(type) {
+    if (this.#inventoryV2Bridge) {
+      const items = this.#inventoryV2Bridge.listItems({
+        includeAttached: false,
+        includeLoadout: false,
+        hydrated: true,
+      });
+      return items.find((item) => item?.type === type) || null;
+    }
     const items = this.#inventory.getAll();
     for (let i = 0; i < items.length; i++) {
       const hydrated = this._hydrateInstance(items[i].instanceId);
@@ -1814,6 +2062,18 @@ class InventoryManager {
   }
 
   findItemsByType(type, out = []) {
+    if (this.#inventoryV2Bridge) {
+      out.length = 0;
+      const items = this.#inventoryV2Bridge.listItems({
+        includeAttached: false,
+        includeLoadout: false,
+        hydrated: true,
+      });
+      for (const item of items) {
+        if (item?.type === type) out.push(item);
+      }
+      return out;
+    }
     out.length = 0;
     const items = this.#inventory.getAll();
     for (let i = 0; i < items.length; i++) {
@@ -1830,6 +2090,10 @@ class InventoryManager {
   refreshItemData() {
     this.#db.refresh();
     this.#equippedCache = null;
+    if (this.#inventoryV2Facade) {
+      this.#inventoryV2Facade.notify();
+      return;
+    }
     this.#events.emit("inventory-changed", {
       equipment: this.getEquipped(),
       source: "item-db-updated",
@@ -1837,6 +2101,8 @@ class InventoryManager {
   }
 
   dispose() {
+    this.#removeInventoryV2Listener?.();
+    this.#removeInventoryV2Listener = null;
     this.#events.clear();
   }
 
@@ -2098,6 +2364,9 @@ class InventoryManager {
 
   _hydrateInstance(instanceId) {
     if (!instanceId) return null;
+    if (this.#inventoryV2Bridge) {
+      return this.#inventoryV2Bridge.hydrateInstance(instanceId);
+    }
     const invItem = this.#inventory.getInstance(instanceId);
     if (!invItem) return null;
 

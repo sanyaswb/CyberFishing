@@ -64,6 +64,46 @@ class LineAllocationPolicy {
     };
   }
 
+  /**
+   * Resolves winding a loose reel before a rod is selected. Rod-specific
+   * minimum length is intentionally deferred until that prepared reel is
+   * equipped.
+   */
+  resolveForReel({ lineItem, reel } = {}) {
+    if (!reel) {
+      return this.#invalid("Котушку для намотування ліски не знайдено.");
+    }
+    const sourceLength = this.getLineLengthMeters(lineItem);
+    if (sourceLength <= 0) {
+      return this.#invalid("У вибраній лісці немає доступної довжини.");
+    }
+    const maximumLength = this.#numberOrDefault(
+      reel?.lineCapacityMeters ?? reel?.engineStats?.lineCapacityMeters,
+      Infinity,
+    );
+    if (Number.isFinite(maximumLength) && maximumLength <= 0) {
+      return this.#invalid("Котушка не має доступної місткості для ліски.");
+    }
+    const equipLength = Number.isFinite(maximumLength)
+      ? Math.min(sourceLength, maximumLength)
+      : sourceLength;
+    const remainingLength = Math.max(0, sourceLength - equipLength);
+    return {
+      isValid: true,
+      reason: remainingLength > 0.001
+        ? `Буде намотано ${this.#formatMeters(equipLength)}м ліски.`
+        : null,
+      rodRequiresReel: true,
+      sourceLengthMeters: sourceLength,
+      minimumLengthMeters: 0,
+      maximumLengthMeters: maximumLength,
+      equipLengthMeters: equipLength,
+      remainingLengthMeters: remainingLength,
+      shouldSplit: remainingLength > 0.001,
+      deferredRodValidation: true,
+    };
+  }
+
   getLineLengthMeters(lineItem) {
     return this.#numberOrDefault(
       lineItem?.lengthMeters ?? lineItem?.engineStats?.lengthMeters,

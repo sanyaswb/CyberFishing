@@ -19,7 +19,12 @@ class ItemProgressionDomAdapter {
     this.#visualResolver = visualResolver;
   }
 
-  apply(element, progression, visual = null) {
+  resolveVisual(progression) {
+    if (!progression?.available) return null;
+    return this.#visualResolver.resolve(progression);
+  }
+
+  apply(element, progression, visual = null, options = {}) {
     this.clear(element);
     if (!element?.style || !progression?.available) return null;
     const resolvedVisual = visual || this.#visualResolver.resolve(progression);
@@ -29,13 +34,16 @@ class ItemProgressionDomAdapter {
 
     const documentRef = element.ownerDocument || globalThis.document;
     if (!documentRef?.createElement) return resolvedVisual;
-    if (progression.level?.available) {
+    if (progression.level?.available && options.renderLevelBadge !== false) {
       element.appendChild(this.#createLevelBadge(
         documentRef,
         progression.level,
       ));
     }
-    if (progression.capacity?.available) {
+    if (
+      progression.capacity?.available &&
+      options.renderCapacityBar !== false
+    ) {
       element.appendChild(this.#createSlotCapacityBar(
         documentRef,
         progression.capacity,

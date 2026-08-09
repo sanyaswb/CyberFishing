@@ -54,6 +54,12 @@ const ITEM_DB = {
         durabilityMaxLoadLossPerPercent: 0.001,
         hasReel: true,
         capabilities: ["reel", "lure"],
+        equipmentCapabilities: {
+          supportsReel: true,
+          supportsFloat: false,
+          supportsFeederRig: false,
+          supportsLures: true,
+        },
       },
     },
 
@@ -100,6 +106,12 @@ const ITEM_DB = {
         durabilityMaxLoadLossPerPercent: 0.001,
         hasReel: true,
         capabilities: ["reel", "feeder_rig"],
+        equipmentCapabilities: {
+          supportsReel: true,
+          supportsFloat: false,
+          supportsFeederRig: true,
+          supportsLures: false,
+        },
       },
     },
 
@@ -147,6 +159,12 @@ const ITEM_DB = {
         durabilityMaxLoadLossPerPercent: 0.001,
         hasReel: false,
         capabilities: ["float", "hook"],
+        equipmentCapabilities: {
+          supportsReel: false,
+          supportsFloat: true,
+          supportsFeederRig: false,
+          supportsLures: false,
+        },
       },
     },
   },
@@ -189,6 +207,7 @@ const ITEM_DB = {
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
         requiresTag: "reel",
+        assemblyProfileId: "reel_standard",
       },
     },
 
@@ -230,6 +249,7 @@ const ITEM_DB = {
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
         requiresTag: "reel",
+        assemblyProfileId: "reel_standard",
       },
     },
   },
@@ -373,6 +393,7 @@ const ITEM_DB = {
         weight: 4,
         maxLoadKg: 0.8,
         quality: 1,
+        assemblyProfileId: "hook_standard",
         requiresTag: "hook",
         capabilities: ["bait"], // ДОДАНО: тепер гачок дозволяє чіпляти наживку!
       },
@@ -407,6 +428,7 @@ const ITEM_DB = {
         hasChumSlot: true,
         rigPower: 1.8,
         quality: 7.0,
+        assemblyProfileId: "feeder_spring_basic",
         currentCompensation: [0.1, 1.0], // Додано компенсацію для фідерної снасті
       },
     },
@@ -773,6 +795,7 @@ const ITEM_DB = {
         sections: 3,
         quality: 9,
         level: 3,
+        assemblyProfileId: "bait_boat",
         statsByLevel: {
           1: { speedPxPerSec: 150, maxEnergy: 60, energyDrainPerSec: 1 },
           2: { speedPxPerSec: 200, maxEnergy: 90, energyDrainPerSec: 1 },

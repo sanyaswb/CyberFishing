@@ -156,7 +156,12 @@ class EquipmentRules {
 class BaitRules {
   isActiveLure(item) {
     const type = item?.type;
-    return type === "spinner" || type === "wobbler" || type === "jig";
+    return (
+      type === "lure" ||
+      type === "spinner" ||
+      type === "wobbler" ||
+      type === "jig"
+    );
   }
 
   hasActiveLureType(types) {

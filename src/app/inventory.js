@@ -94,4 +94,11 @@ class EquipmentService {
     if (!Number.isInteger(slotIndex) || slotIndex < 0) return false;
     return this.#inventory.consumeEquipped(`deliveryChums_${slotIndex}`, 1);
   }
+
+  consumeHandChum(chum = this.getEquipped()?.handChum) {
+    const instanceId =
+      typeof chum === "string" ? chum : chum?.instanceId || null;
+    if (!instanceId) return false;
+    return this.#inventory.consumeItem(instanceId, 1);
+  }
 }

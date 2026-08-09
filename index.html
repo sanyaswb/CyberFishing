@@ -8,6 +8,7 @@
     />
     <title>Fishing Mechanic Prototype</title>
     <link rel="stylesheet" href="src/ui/styles/style.css" />
+    <link rel="stylesheet" href="src/ui/styles/inventory_v2.css" />
   </head>
   <body>
     <canvas id="gameCanvas"></canvas>
@@ -44,6 +45,8 @@
     <script src="src/config/runtime/resolved_config_provider.js"></script>
     <script src="src/config/runtime/immutable_config.js"></script>
     <script src="src/config/config.js"></script>
+    <script src="src/config/inventory/item_assembly_profile_config.js"></script>
+    <script src="src/config/inventory/equipment_slot_config.js"></script>
     <script src="src/config/validation/item_rarity_config_validator.js"></script>
     <script src="src/config/validation/rarity_config_validator.js"></script>
       <script src="src/config/validation/item_progression_config_validator.js"></script>
@@ -137,6 +140,62 @@
     <script src="src/core/fishing/landing_lift_readiness_policy.js"></script>
     <script src="src/core/line/line_allocation_policy.js"></script>
     <script src="src/core/line/line_inventory_controller.js"></script>
+
+    <!-- Inventory v2 domain -->
+    <script src="src/core/inventory/inventory_item_location.js"></script>
+    <script src="src/core/inventory/inventory_item_reservation_policy.js"></script>
+    <script src="src/core/inventory/flat_inventory_item_repository.js"></script>
+    <script src="src/core/inventory/item_assembly_stacking_policy.js"></script>
+    <script src="src/core/inventory/unlimited_assembly_capacity_policy.js"></script>
+    <script src="src/core/assemblies/assembly_state.js"></script>
+    <script src="src/core/assemblies/assembly_state_repository.js"></script>
+    <script src="src/core/assemblies/assembly_profile_registry.js"></script>
+    <script src="src/core/assemblies/item_assembly_reader.js"></script>
+    <script src="src/core/assemblies/assembly_attachment_target_resolver.js"></script>
+    <script src="src/core/assemblies/assembly_completion_policy.js"></script>
+    <script src="src/core/assemblies/exact_assembly_refill_signature_policy.js"></script>
+    <script src="src/core/assemblies/item_assembly_service.js"></script>
+    <script src="src/core/equipment/rod_capability_resolver.js"></script>
+    <script src="src/core/equipment/equipment_slot_visibility_policy.js"></script>
+    <script src="src/core/equipment/terminal_line_slot_resolver.js"></script>
+    <script src="src/core/equipment/equipment_state.js"></script>
+    <script src="src/core/equipment/equipment_slot_availability_policy.js"></script>
+    <script src="src/core/equipment/inventory_capacity_policy.js"></script>
+    <script src="src/core/equipment/equipment_transition_planner.js"></script>
+    <script src="src/core/equipment/exact_item_signature_policy.js"></script>
+    <script src="src/core/equipment/auto_refill_policy.js"></script>
+    <script src="src/core/equipment/fishing_readiness_policy.js"></script>
+    <script src="src/core/equipment/equipment_compatibility_policy.js"></script>
+    <script src="src/core/loadouts/equipment_loadout.js"></script>
+    <script src="src/core/loadouts/equipment_loadout_repository.js"></script>
+    <script src="src/core/loadouts/loadout_equipment_transition_planner.js"></script>
+
+    <!-- Inventory v2 persistence and application services -->
+    <script src="src/infrastructure/storage/legacy_inventory_unit_allocator.js"></script>
+    <script src="src/infrastructure/storage/inventory_v2_state_store.js"></script>
+    <script src="src/infrastructure/storage/inventory_v2_legacy_migration.js"></script>
+    <script src="src/infrastructure/storage/inventory_v2_snapshot_factory.js"></script>
+    <script src="src/infrastructure/storage/inventory_v2_transaction_coordinator.js"></script>
+    <script src="src/application/inventory/inventory_v2_transaction_participants.js"></script>
+    <script src="src/application/inventory/equipment_transition_executor.js"></script>
+    <script src="src/application/inventory/inventory_v2_equipment_transition_port.js"></script>
+    <script src="src/application/inventory/loadout_application_service.js"></script>
+    <script src="src/application/inventory/inventory_v2_loadout_port.js"></script>
+    <script src="src/application/inventory/equipment_projection_service.js"></script>
+    <script src="src/application/inventory/equipment_auto_refill_target_provider.js"></script>
+    <script src="src/application/inventory/auto_refill_coordinator.js"></script>
+    <script src="src/application/inventory/inventory_v2_refill_ports.js"></script>
+    <script src="src/application/inventory/inventory_v2_item_hydrator.js"></script>
+    <script src="src/application/inventory/inventory_v2_item_view_factory.js"></script>
+    <script src="src/application/inventory/inventory_v2_subfilter_resolver.js"></script>
+    <script src="src/application/inventory/inventory_v2_context_item_filter.js"></script>
+    <script src="src/application/inventory/inventory_v2_view_model_factory.js"></script>
+    <script src="src/application/inventory/inventory_v2_line_allocation_service.js"></script>
+    <script src="src/application/inventory/inventory_v2_equipment_line_readiness_policy.js"></script>
+    <script src="src/application/inventory/inventory_v2_command_service.js"></script>
+    <script src="src/application/inventory/inventory_v2_gameplay_bridge.js"></script>
+    <script src="src/application/inventory/inventory_v2_facade.js"></script>
+    <script src="src/application/inventory/inventory_v2_composition_root.js"></script>
     <script src="src/services/weakest_tackle_limit_resolver.js"></script>
     <script src="src/world/world.js"></script>
 
@@ -175,6 +234,25 @@
       <script src="src/ui/condition/item_condition_dom_adapter.js"></script>
     <script src="src/ui/progression/item_progression_visual_resolver.js"></script>
     <script src="src/ui/progression/item_progression_dom_adapter.js"></script>
+
+    <!-- Inventory v2 presentation -->
+    <script src="src/ui/inventory/inventory_v2_view_model.js"></script>
+    <script src="src/ui/inventory/inventory_v2_dom_factory.js"></script>
+    <script src="src/ui/inventory/inventory_v2_long_press_controller.js"></script>
+    <script src="src/ui/inventory/inventory_v2_attachment_badge_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_tooltip_presenter.js"></script>
+    <script src="src/ui/inventory/inventory_v2_resource_meter_resolver.js"></script>
+    <script src="src/ui/inventory/inventory_v2_resource_meter_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_item_parameters_resolver.js"></script>
+    <script src="src/ui/inventory/inventory_v2_item_parameters_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_item_card_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_header_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_loadout_panel_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_assembly_editor_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_inventory_grid_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_ui.js"></script>
+    <script src="src/ui/inventory/inventory_v2_bootstrap.js"></script>
 
     <script src="src/debug/services/debug_formatters.js"></script>
     <script src="src/debug/services/debug_data_selectors.js"></script>

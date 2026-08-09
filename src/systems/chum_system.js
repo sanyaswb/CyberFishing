@@ -106,6 +106,7 @@ class ChumManager {
   #boatEnergy = null;
   #projector;
   #onConfigUpdateBind;
+  #onBoatReturned;
   #rng;
   #now;
 
@@ -114,6 +115,10 @@ class ChumManager {
     this.#projector = projector;
     this.#rng = services.rng || { next: () => Math.random() };
     this.#now = services.now || (() => Date.now());
+    this.#onBoatReturned =
+      typeof services.onBoatReturned === "function"
+        ? services.onBoatReturned
+        : null;
     this.#storageKey = `chum_active_${locationId}`;
     this.#locationMemoryKey = `chum_memory_${locationId}`;
 
@@ -303,6 +308,13 @@ class ChumManager {
       }
 
       if (boat.isFinished) {
+        if (boat.remainingSections <= 0) {
+          this.#onBoatReturned?.({
+            allBaysEmptied: true,
+            hasReturnedToPlayer: true,
+            rootInstanceId: boat.rootInstanceId,
+          });
+        }
         this.#boats.splice(i, 1);
       }
     }
@@ -418,6 +430,7 @@ class ChumManager {
 }
 
 class BaitBoat {
+  #rootInstanceId;
   #sensorRays = Array.from({ length: 3 }, () => ({
     startX: 0,
     startY: 0,
@@ -435,6 +448,10 @@ class BaitBoat {
     this.pos = new Vector2(startX, startY);
     this.target = null;
     this.config = config;
+    // The equipped delivery slot may change while this boat is away. Keep the
+    // identity of the assembly that actually started the trip on the runtime
+    // boat so the return event can refill that exact root.
+    this.#rootInstanceId = config?.instanceId || null;
     this.stats = config.statsByLevel[config.level] || config.statsByLevel[1];
     this.zoneId = zoneId;
     this.velocity = new Vector2(0, 0);
@@ -459,6 +476,10 @@ class BaitBoat {
   get sensorRays() {
     if (this.config.showSensors === false) return [];
     return this.#sensorRays;
+  }
+
+  get rootInstanceId() {
+    return this.#rootInstanceId;
   }
 
   setTarget(targetX, targetY, zoneId = null, isReturn = false) {

@@ -430,6 +430,8 @@ class GameCompositionRoot {
       chum: new ChumManager(locId, chumConfigObj, projector, {
         rng,
         now: () => clock.realNow,
+        onBoatReturned: (context) =>
+          inventory.handleBoatReturned?.(context),
       }),
       bite: new BiteSystem(
         this.#config.spawns,
@@ -442,11 +444,35 @@ class GameCompositionRoot {
       ),
       inventory,
     };
-    systems.inventoryUI = new InventoryUI(systems.inventory, {
-      rarityDomAdapter: itemRarityDomAdapter,
-      progressionDomAdapter: itemProgressionDomAdapter,
-      conditionDomAdapter: itemConditionDomAdapter,
+    inventory.setBoatChargeProvider?.((boatItem) => {
+      const current = systems.chum.getBoatEnergy();
+      const level = Number(boatItem?.level ?? boatItem?.engineStats?.level) || 1;
+      const statsByLevel =
+        boatItem?.statsByLevel || boatItem?.engineStats?.statsByLevel || {};
+      const levelStats = statsByLevel[level] || statsByLevel[1] || {};
+      return {
+        current,
+        maximum: Number(
+          boatItem?.maxEnergy ??
+            boatItem?.engineStats?.maxEnergy ??
+            levelStats.maxEnergy,
+        ),
+      };
     });
+    const inventoryV2Facade = inventory.inventoryV2Facade;
+    systems.inventoryUI = inventoryV2Facade
+      ? InventoryV2Bootstrap.create({
+          facade: inventoryV2Facade,
+          onAction: (action) => inventory.dispatchInventoryV2Action(action),
+          rarityDomAdapter: itemRarityDomAdapter,
+          progressionDomAdapter: itemProgressionDomAdapter,
+          conditionDomAdapter: itemConditionDomAdapter,
+        })
+      : new InventoryUI(systems.inventory, {
+          rarityDomAdapter: itemRarityDomAdapter,
+          progressionDomAdapter: itemProgressionDomAdapter,
+          conditionDomAdapter: itemConditionDomAdapter,
+        });
     const equipmentRules = new EquipmentRules(castDistanceCalculator);
     const baitRules = new BaitRules();
     const castRules = new CastRules(equipmentRules);
@@ -561,6 +587,8 @@ class GameCompositionRoot {
       getRodVirtualPos: appPorts.getRodVirtualPos,
       getDynamicBounds: appPorts.getDynamicBounds,
       debugEvents,
+      castReadinessEvaluator: (equipment) =>
+        runtime.inventory.evaluateCastReadiness?.(equipment),
     });
 
     const fightService = new FightService({
@@ -642,6 +670,7 @@ class GameCompositionRoot {
       markInvalidCast: appPorts.markInvalidCast,
       showMissingRodInventoryWarning: appPorts.showMissingRodInventoryWarning,
       showMissingReelInventoryWarning: appPorts.showMissingReelInventoryWarning,
+      showMissingLineInventoryWarning: appPorts.showMissingLineInventoryWarning,
       setInvalidCastMarker: appPorts.setInvalidCastMarker,
       panViewport: appPorts.panViewport,
       isDebugEnabled: appPorts.isDebugEnabled,

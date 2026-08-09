@@ -814,7 +814,11 @@ class GameApplication {
 
   setState(name, data = {}) {
     const currentName = this.#stateMachine?.currentName || this.#gameStateName;
-    if (this.#shouldConsumeWetFeederChum(currentName, name)) {
+    const rodWasRetrieved = this.#shouldConsumeWetFeederChum(
+      currentName,
+      name,
+    );
+    if (rodWasRetrieved) {
       this.#consumeWetFeederChum();
     }
     if (name === "scouting") {
@@ -824,9 +828,12 @@ class GameApplication {
       this.#preloadFishingAssets(data?.fish || {});
     }
     if (name === "victory") {
-      return this.#transitionToVictoryWhenAssetsReady(data);
+      return this.#transitionToVictoryWhenAssetsReady(data, {
+        handleRodRetrieved: rodWasRetrieved,
+      });
     }
     this.#stateMachine.setState(name, data);
+    if (rodWasRetrieved) this.#inventory?.handleRodRetrieved?.();
   }
 
   #preloadFishingAssets(fish) {
@@ -835,17 +842,22 @@ class GameApplication {
       .catch(() => {});
   }
 
-  #transitionToVictoryWhenAssetsReady(data) {
+  #transitionToVictoryWhenAssetsReady(
+    data,
+    { handleRodRetrieved = false } = {},
+  ) {
     return this.#assetPreloadCoordinator
       .preloadVictoryAssets(data?.fish || {})
       .then(() => {
         this.#stateMachine.setState("victory", data);
+        if (handleRodRetrieved) this.#inventory?.handleRodRetrieved?.();
       })
       .catch((error) => {
         this.#stateMachine.setState("failed", {
           reason: "asset_load_failed",
           error,
         });
+        if (handleRodRetrieved) this.#inventory?.handleRodRetrieved?.();
       });
   }
 
@@ -947,6 +959,7 @@ class GameApplication {
       currentName === "playing"
     ) {
       this.#consumeWetFeederChum();
+      this.#inventory?.handleRodRetrieved?.();
     }
 
     this.#castRodScreenX = Number.isFinite(options.rodScreenX)
@@ -960,6 +973,8 @@ class GameApplication {
       this.#showMissingRodInventoryWarning();
     } else if (result?.reason === "missing_reel") {
       this.#showMissingReelInventoryWarning();
+    } else if (result?.reason === "missing_line") {
+      this.#showMissingLineInventoryWarning();
     }
     return result;
   }

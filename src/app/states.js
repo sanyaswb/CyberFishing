@@ -275,6 +275,8 @@ class StateDepsFactory {
           this.#root.showMissingRodInventoryWarning,
         showMissingReelInventoryWarning:
           this.#root.showMissingReelInventoryWarning,
+        showMissingLineInventoryWarning:
+          this.#root.showMissingLineInventoryWarning,
       },
       rules: {
         equipment: this.#root.equipmentRules,
@@ -768,6 +770,8 @@ class ScoutingState extends GameState {
   }
 
   #canStartRodCast(eq) {
+    const readiness = this.deps.inventory.evaluateCastReadiness?.(eq);
+    if (typeof readiness?.canCast === "boolean") return readiness.canCast;
     if (!eq?.rod) return false;
     if (this.deps.rules.equipment.requiresReel(eq) && !eq.reel) return false;
     return this.deps.rules.equipment.hasEquippedLine(eq);

@@ -48,9 +48,16 @@ class FishingController {
   }
 
   consumeHandChum(chum) {
-    if (this.#devFlags.isEnabled("infiniteResources")) return false;
+    if (this.#devFlags.isEnabled("infiniteResources")) return true;
     if (!chum?.instanceId) return false;
-    return this.#inventory.consumeItem(chum.instanceId, 1);
+    const consumed =
+      this.#equipment.consumeHandChum?.(chum.instanceId) || false;
+    if (consumed) {
+      this.#inventory.handleHandChumUsed?.({
+        consumedInstanceId: chum.instanceId,
+      });
+    }
+    return consumed;
   }
 
   consumeDeliveryChum(slotIndex) {
@@ -68,7 +75,13 @@ class FishingController {
     for (let i = 0; i < baits.length; i++) {
       const hook = hooks[i];
       const bait = baits[i];
-      if (!hook || !bait) continue;
+      if (!bait) continue;
+
+      // A lure, spinner, wobbler or jig is the terminal tackle itself. Inventory v2
+      // intentionally projects that real item through `baits` for the legacy
+      // bite API, without manufacturing a fake hook or bait child for it.
+      const isSelfContainedLure = this.#baitRules.isActiveLure(bait);
+      if (!hook && !isSelfContainedLure) continue;
 
       let isEaten = false;
       for (let j = 0; j < eaten.length; j++) {
@@ -179,6 +192,7 @@ class CastService {
   #getRodVirtualPos;
   #getDynamicBounds;
   #debugEvents;
+  #castReadinessEvaluator;
 
   constructor({
     config,
@@ -189,6 +203,7 @@ class CastService {
     getRodVirtualPos,
     getDynamicBounds,
     debugEvents = null,
+    castReadinessEvaluator = null,
   }) {
     this.#config = config;
     this.#rng = rng;
@@ -198,14 +213,22 @@ class CastService {
     this.#getRodVirtualPos = getRodVirtualPos;
     this.#getDynamicBounds = getDynamicBounds;
     this.#debugEvents = debugEvents;
+    this.#castReadinessEvaluator =
+      typeof castReadinessEvaluator === "function"
+        ? castReadinessEvaluator
+        : null;
   }
 
   cast(vx, vy, cellDepth, context) {
     const eq = context.equipment;
-    if (!eq?.rod) return { success: false, reason: "missing_rod" };
-    const needsReel = this.#equipmentRules.requiresReel(eq);
-    if (needsReel && !eq.reel)
-      return { success: false, reason: "missing_reel" };
+    const readiness = this.#evaluateCastReadiness(eq);
+    if (!readiness.canCast) {
+      return {
+        success: false,
+        reason: this.#resolveReadinessFailureReason(readiness),
+        readiness,
+      };
+    }
 
     const rodPos =
       context.rodVirtualPos || this.#getRodVirtualPos(this.#getDynamicBounds());
@@ -272,6 +295,49 @@ class CastService {
       currentHookDepth,
       nextState: "waiting",
     };
+  }
+
+  #evaluateCastReadiness(equipment) {
+    const evaluated = this.#castReadinessEvaluator?.(equipment);
+    if (typeof evaluated?.canCast === "boolean") return evaluated;
+
+    if (!equipment?.rod) {
+      return {
+        canCast: false,
+        shouldOpenInventory: true,
+        warningCode: "rod-required",
+        warning: "Спочатку спорядіть вудилище.",
+      };
+    }
+    if (this.#equipmentRules.requiresReel(equipment) && !equipment.reel) {
+      return {
+        canCast: false,
+        shouldOpenInventory: true,
+        warningCode: "reel-required",
+        warning: "Для цієї вудки потрібна котушка.",
+      };
+    }
+    if (!this.#equipmentRules.hasEquippedLine(equipment)) {
+      return {
+        canCast: false,
+        shouldOpenInventory: true,
+        warningCode: "line-required",
+        warning: "Для закидання потрібна ліска.",
+      };
+    }
+    return {
+      canCast: true,
+      shouldOpenInventory: false,
+      warningCode: null,
+      warning: null,
+    };
+  }
+
+  #resolveReadinessFailureReason(readiness) {
+    const warningCode = String(readiness?.warningCode || "");
+    if (warningCode === "rod-required") return "missing_rod";
+    if (warningCode === "reel-required") return "missing_reel";
+    return "missing_line";
   }
 }
 

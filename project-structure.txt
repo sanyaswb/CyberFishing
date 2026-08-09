@@ -92,6 +92,28 @@
 │  │  ├── states.js
 │  │  ├── utils.js
 │  │  └── world.js
+│  ├── application
+│  │  └── inventory
+│  │    ├── auto_refill_coordinator.js
+│  │    ├── equipment_auto_refill_target_provider.js
+│  │    ├── equipment_projection_service.js
+│  │    ├── equipment_transition_executor.js
+│  │    ├── inventory_v2_command_service.js
+│  │    ├── inventory_v2_composition_root.js
+│  │    ├── inventory_v2_context_item_filter.js
+│  │    ├── inventory_v2_equipment_line_readiness_policy.js
+│  │    ├── inventory_v2_equipment_transition_port.js
+│  │    ├── inventory_v2_facade.js
+│  │    ├── inventory_v2_gameplay_bridge.js
+│  │    ├── inventory_v2_item_hydrator.js
+│  │    ├── inventory_v2_item_view_factory.js
+│  │    ├── inventory_v2_line_allocation_service.js
+│  │    ├── inventory_v2_loadout_port.js
+│  │    ├── inventory_v2_refill_ports.js
+│  │    ├── inventory_v2_subfilter_resolver.js
+│  │    ├── inventory_v2_transaction_participants.js
+│  │    ├── inventory_v2_view_model_factory.js
+│  │    └── loadout_application_service.js
 │  ├── assets
 │  │  ├── asset_load_result.js
 │  │  ├── asset_manifest.js
@@ -112,6 +134,9 @@
 │  │  │  ├── fish_db.js
 │  │  │  ├── item_db.js
 │  │  │  └── map_db.js
+│  │  ├── inventory
+│  │  │  ├── equipment_slot_config.js
+│  │  │  └── item_assembly_profile_config.js
 │  │  ├── items
 │  │  │  ├── item_condition_config.js
 │  │  │  └── item_progression_config.js
@@ -146,8 +171,29 @@
 │  │  └── visual
 │  │    └── degradation_color_config.js
 │  ├── core
+│  │  ├── assemblies
+│  │  │  ├── assembly_attachment_target_resolver.js
+│  │  │  ├── assembly_completion_policy.js
+│  │  │  ├── assembly_profile_registry.js
+│  │  │  ├── assembly_state_repository.js
+│  │  │  ├── assembly_state.js
+│  │  │  ├── exact_assembly_refill_signature_policy.js
+│  │  │  ├── item_assembly_reader.js
+│  │  │  └── item_assembly_service.js
 │  │  ├── casting_distance.js
 │  │  ├── core.js
+│  │  ├── equipment
+│  │  │  ├── auto_refill_policy.js
+│  │  │  ├── equipment_compatibility_policy.js
+│  │  │  ├── equipment_slot_availability_policy.js
+│  │  │  ├── equipment_slot_visibility_policy.js
+│  │  │  ├── equipment_state.js
+│  │  │  ├── equipment_transition_planner.js
+│  │  │  ├── exact_item_signature_policy.js
+│  │  │  ├── fishing_readiness_policy.js
+│  │  │  ├── inventory_capacity_policy.js
+│  │  │  ├── rod_capability_resolver.js
+│  │  │  └── terminal_line_slot_resolver.js
 │  │  ├── fish
 │  │  │  ├── fish_anomaly_variant_resolver.js
 │  │  │  ├── fish_rarity_resolver.js
@@ -212,7 +258,12 @@
 │  │  │  └── fight_input_action_composer.js
 │  │  ├── inventory
 │  │  │  ├── equip_target_selection_policy.js
-│  │  │  └── inventory_item_stacking_policy.js
+│  │  │  ├── flat_inventory_item_repository.js
+│  │  │  ├── inventory_item_location.js
+│  │  │  ├── inventory_item_reservation_policy.js
+│  │  │  ├── inventory_item_stacking_policy.js
+│  │  │  ├── item_assembly_stacking_policy.js
+│  │  │  └── unlimited_assembly_capacity_policy.js
 │  │  ├── items
 │  │  │  ├── condition
 │  │  │  │  ├── item_condition_descriptor.js
@@ -237,10 +288,14 @@
 │  │  │    ├── item_rarity_resolver.js
 │  │  │    ├── item_rarity_strategy_registry.js
 │  │  │    └── item_rarity_strategy.js
-│  │  └── line
-│  │    ├── line_allocation_policy.js
-│  │    ├── line_inventory_controller.js
-│  │    └── line_spool_state.js
+│  │  ├── line
+│  │  │  ├── line_allocation_policy.js
+│  │  │  ├── line_inventory_controller.js
+│  │  │  └── line_spool_state.js
+│  │  └── loadouts
+│  │    ├── equipment_loadout_repository.js
+│  │    ├── equipment_loadout.js
+│  │    └── loadout_equipment_transition_planner.js
 │  ├── debug
 │  │  ├── core
 │  │  │  ├── debug_console.js
@@ -347,10 +402,16 @@
 │  │  ├── fish.js
 │  │  └── tackle.js
 │  ├── infrastructure
-│  │  └── location
-│  │    ├── depth_map_reader.js
-│  │    ├── location_asset_loader.js
-│  │    └── offscreen_canvas_factory.js
+│  │  ├── location
+│  │  │  ├── depth_map_reader.js
+│  │  │  ├── location_asset_loader.js
+│  │  │  └── offscreen_canvas_factory.js
+│  │  └── storage
+│  │    ├── inventory_v2_legacy_migration.js
+│  │    ├── inventory_v2_snapshot_factory.js
+│  │    ├── inventory_v2_state_store.js
+│  │    ├── inventory_v2_transaction_coordinator.js
+│  │    └── legacy_inventory_unit_allocator.js
 │  ├── input
 │  │  ├── pull_input_mapper.js
 │  │  └── victory_action_gesture_resolver.js
@@ -425,6 +486,24 @@
 │  ├── ui
 │  │  ├── condition
 │  │  │  └── item_condition_dom_adapter.js
+│  │  ├── inventory
+│  │  │  ├── inventory_v2_assembly_editor_renderer.js
+│  │  │  ├── inventory_v2_attachment_badge_renderer.js
+│  │  │  ├── inventory_v2_bootstrap.js
+│  │  │  ├── inventory_v2_dom_factory.js
+│  │  │  ├── inventory_v2_header_renderer.js
+│  │  │  ├── inventory_v2_inventory_grid_renderer.js
+│  │  │  ├── inventory_v2_item_card_renderer.js
+│  │  │  ├── inventory_v2_item_parameters_renderer.js
+│  │  │  ├── inventory_v2_item_parameters_resolver.js
+│  │  │  ├── inventory_v2_loadout_panel_renderer.js
+│  │  │  ├── inventory_v2_long_press_controller.js
+│  │  │  ├── inventory_v2_resource_meter_renderer.js
+│  │  │  ├── inventory_v2_resource_meter_resolver.js
+│  │  │  ├── inventory_v2_saved_loadout_preview_renderer.js
+│  │  │  ├── inventory_v2_tooltip_presenter.js
+│  │  │  ├── inventory_v2_ui.js
+│  │  │  └── inventory_v2_view_model.js
 │  │  ├── progression
 │  │  │  ├── item_progression_dom_adapter.js
 │  │  │  └── item_progression_visual_resolver.js
@@ -434,6 +513,7 @@
 │  │  │  ├── degradation_color_resolver.js
 │  │  │  ├── fight_area_style_resolver.js
 │  │  │  ├── hud_style_resolver.js
+│  │  │  ├── inventory_v2.css
 │  │  │  ├── outcome_style_resolver.js
 │  │  │  ├── rarity_visual_resolver.js
 │  │  │  └── style.css
@@ -443,6 +523,7 @@
 │    └── world.js
 └── utils
   ├── check-js.js
+  ├── consumable-event-identity-check.js
   ├── create-version-copy.js
   ├── degradation-color-check.js
   ├── dev-server.js
@@ -453,6 +534,14 @@
   ├── git-version-copy.js
   ├── inventory-equip-ux-check.js
   ├── inventory-lifecycle-check.js
+  ├── inventory-v2-cast-and-lure-check.js
+  ├── inventory-v2-equipment-check.js
+  ├── inventory-v2-integration-check.js
+  ├── inventory-v2-line-allocation-check.js
+  ├── inventory-v2-migration-check.js
+  ├── inventory-v2-transaction-check.js
+  ├── inventory-v2-ui-check.js
+  ├── item-assembly-domain-check.js
   ├── item-condition-check.js
   ├── item-progression-check.js
   ├── item-rarity-check.js

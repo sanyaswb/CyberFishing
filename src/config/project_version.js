@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.23.68";
+const CURRENT_PROJECT_VERSION = "0.24.0";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "config-disabled-item-pulse",
-  updatedAt: "2026-08-06",
+  codename: "inventory-v2-assemblies",
+  updatedAt: "2026-08-09",
   notes: Object.freeze([
-    "Add a dedicated configuration switch for unique item pulsing",
-    "Disable inventory item pulsing by default without removing its animation",
-    "Keep item glow and item pulse controlled independently",
+    "Rebuild the inventory around equipment slots and assembled items",
+    "Add reusable craft editors for reels, rigs, hooks and bait boats",
+    "Show only compatible components while an assembly editor is open",
+    "Preserve complete equipment loadouts and auto-refill preferences",
   ]),
 });
 

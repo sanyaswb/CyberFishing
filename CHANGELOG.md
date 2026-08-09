@@ -1,5 +1,17 @@
 # CyberFishing changelog
 
+## v0.24.0 - Inventory V2 and Assemblies
+
+### Changed
+
+- Rebuilt the inventory around clear equipment slots for rod, reel, line or leader, tackle and float, plus hand chum, landing net, bait boat and the future gas-mask slot.
+- Added assembly editors for reels, feeder rigs, hooks and bait boats. Their contents stay together as one prepared item in the backpack and can be equipped, removed or disassembled when needed.
+- Added smart inventory filtering while editing an assembly: the backpack shows only components that can be installed into the currently open item, including newly available nested slots.
+- Added saved equipment loadouts that preserve the five main equipment slots and their assembled contents, with preview, partial equip and disassembly actions.
+- Added global auto-refill options for bait and chum. Exact previously used variants are restored after the relevant fishing, hand-chum or bait-boat action when available.
+- Added safe transitions when changing rods: incompatible equipped items are returned to the backpack instead of being lost.
+- Updated the craft editor into a production-style vertical card with item artwork, centered sockets and structured gameplay parameters above its actions.
+
 ## v0.23.68 - Config-Disabled Item Pulse
 
 ### Changed
@@ -7,10 +19,6 @@
 - Added `uniqueEffects.itemPulseEnabled` as the configuration switch for unique inventory item pulsing.
 - Set item pulsing to `false` while retaining the animation implementation for later re-enabling.
 - Kept item glow and item pulse independent and left unique fish victory animation unchanged.
-
-### Tests
-
-- Covered disabled pulse descriptors and DOM classes, configuration re-enabling and CSS class gating.
 
 ## v0.23.67 - Double Inventory Slots
 
