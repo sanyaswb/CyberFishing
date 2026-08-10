@@ -106,6 +106,20 @@ vm.runInContext(
         },
       },
     },
+    rodSpinning: {
+      id: "rodSpinning",
+      name: "Spinning rod",
+      type: "spinning",
+      engineStats: {
+        type: "spinning",
+        equipmentCapabilities: {
+          supportsReel: true,
+          supportsFloat: false,
+          supportsFeederRig: false,
+          supportsLures: true,
+        },
+      },
+    },
     reel: {
       id: "reel",
       name: "Reel",
@@ -143,6 +157,18 @@ vm.runInContext(
       name: "Hook",
       type: "hook",
       engineStats: { type: "hook", assemblyProfileId: "hook_standard" },
+    },
+    spinner: {
+      id: "spinner",
+      name: "Spinner",
+      type: "spinner",
+      engineStats: { type: "spinner" },
+    },
+    wobbler: {
+      id: "wobbler",
+      name: "Wobbler",
+      type: "wobbler",
+      engineStats: { type: "wobbler" },
     },
     bait: {
       id: "bait",
@@ -277,6 +303,82 @@ vm.runInContext(
     ],
   });
 
+  const compatibleFiltering = makeComposition({
+    items: [
+      raw("compatible-pole", "rodPole"),
+      raw("compatible-alternative-rod", "rodSpinning"),
+      raw("compatible-reel", "reel"),
+      raw("compatible-hook", "hook"),
+      raw("compatible-spinner", "spinner"),
+      raw("compatible-float", "floatDay"),
+      raw("compatible-bait", "bait"),
+      raw("compatible-net", "net"),
+    ],
+  });
+  assertIntegration(
+    compatibleFiltering.facade
+      .getViewModel()
+      .inventory.categories.slice(0, 2)
+      .map((category) => category.id)
+      .join(",") === "all,compatible",
+    "Compatible is the second inventory group after All",
+  );
+  dispatch(compatibleFiltering, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+    instanceId: "compatible-pole",
+  });
+  const poleCompatibleView = compatibleFiltering.facade.getViewModel();
+  const poleCompatibleIds = poleCompatibleView.inventory.items
+    .map((item) => item.instanceId)
+    .sort()
+    .join(",");
+  assertIntegration(
+    compatibleFiltering.commands.getUiState().activeCategoryId ===
+      "compatible" &&
+      poleCompatibleView.inventory.activeCategoryId === "compatible" &&
+      poleCompatibleIds ===
+        "compatible-float,compatible-hook,compatible-net",
+    "equipping a pole rod automatically shows only items compatible with its active context",
+  );
+  dispatch(compatibleFiltering, InventoryV2ActionType.CATEGORY_SELECT, {
+    categoryId: "all",
+  });
+  const allAfterRodEquip = compatibleFiltering.facade.getViewModel();
+  assertIntegration(
+    allAfterRodEquip.inventory.activeCategoryId === "all" &&
+      allAfterRodEquip.inventory.items.some(
+        (item) => item.instanceId === "compatible-reel",
+      ) &&
+      allAfterRodEquip.inventory.items.some(
+        (item) => item.instanceId === "compatible-spinner",
+      ) &&
+      allAfterRodEquip.inventory.items.some(
+        (item) => item.instanceId === "compatible-bait",
+      ),
+    "switching to All restores incompatible and unattached inventory items",
+  );
+  dispatch(compatibleFiltering, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+    instanceId: "compatible-net",
+  });
+  assertIntegration(
+    compatibleFiltering.commands.getUiState().activeCategoryId ===
+      "compatible",
+    "equipping a separate auxiliary item reactivates Compatible",
+  );
+  const compatibleHookRoot = dispatch(
+    compatibleFiltering,
+    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    { instanceId: "compatible-hook" },
+  ).rootInstanceId;
+  dispatch(compatibleFiltering, InventoryV2ActionType.ASSEMBLY_EQUIP, {
+    rootInstanceId: compatibleHookRoot,
+  });
+  assertIntegration(
+    compatibleFiltering.facade
+      .getViewModel()
+      .inventory.items.some((item) => item.instanceId === "compatible-bait"),
+    "Compatible reuses assembly target rules for components of equipped stacks",
+  );
+
   const highlightedSelection = makeComposition({
     items: [
       raw("highlight-rod", "rodPole"),
@@ -313,6 +415,39 @@ vm.runInContext(
     highlightedSelection.equipmentState.getRootInstanceId("float") !== null &&
       highlightedSelection.commands.getUiState().highlightedEquipmentSlotId === null,
     "activating a highlighted compatible card equips it and clears selection",
+  );
+
+  const directLureEquipment = makeComposition({
+    items: [
+      raw("lure-rod", "rodSpinning"),
+      raw("lure-spinner", "spinner"),
+      raw("lure-wobbler", "wobbler"),
+    ],
+  });
+  dispatch(directLureEquipment, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+    instanceId: "lure-rod",
+  });
+  dispatch(directLureEquipment, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+    instanceId: "lure-spinner",
+  });
+  assertIntegration(
+    directLureEquipment.equipmentState.getRootInstanceId("tackle") ===
+      "lure-spinner" &&
+      directLureEquipment.projectionService.project(
+        directLureEquipment.equipmentState,
+      ).baits[0]?.instanceId === "lure-spinner",
+    "a non-composite spinner equips without requesting assembly slots",
+  );
+  dispatch(directLureEquipment, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+    instanceId: "lure-wobbler",
+  });
+  assertIntegration(
+    directLureEquipment.equipmentState.getRootInstanceId("tackle") ===
+      "lure-wobbler" &&
+      directLureEquipment.projectionService.project(
+        directLureEquipment.equipmentState,
+      ).baits[0]?.instanceId === "lure-wobbler",
+    "a non-composite wobbler replaces another lure and remains projectable",
   );
 
   const presentationEnrichment = makeComposition({
@@ -557,6 +692,7 @@ vm.runInContext(
   const completedHookEditor = flow.facade.getViewModel().panel.assembly;
   assertIntegration(
     completedHookEditor.showDisassemble === true &&
+      completedHookEditor.showEquip === true &&
       completedHookEditor.showUnequip === false &&
       completedHookEditor.root.assemblyCompletion.isComplete === true &&
       completedHookEditor.root.assemblyCompletion.hasAnyComponent === true,
@@ -575,7 +711,8 @@ vm.runInContext(
   });
   assertIntegration(
     flow.commands.getUiState().panelMode === "assembly" &&
-      flow.facade.getViewModel().panel.assembly.showUnequip === true,
+      flow.facade.getViewModel().panel.assembly.showUnequip === true &&
+      flow.facade.getViewModel().panel.assembly.showEquip === false,
     "short press on active prepared stack opens its editor",
   );
   dispatch(flow, InventoryV2ActionType.ASSEMBLY_UNEQUIP, {
@@ -704,6 +841,9 @@ vm.runInContext(
       flow.equipmentState.getRootInstanceId("handChum") !== null,
     "saving a loadout leaves auxiliary equipment active",
   );
+  dispatch(flow, InventoryV2ActionType.CATEGORY_SELECT, {
+    categoryId: "all",
+  });
   assertIntegration(
     flow.facade
       .getViewModel()
@@ -771,18 +911,68 @@ vm.runInContext(
     instanceId: springDraft,
   });
   assertIntegration(
-    flow.repository.require(springDraft).location.kind === "INVENTORY" &&
-      flow.loadouts.require(saved.loadoutId).getRootInstanceId("tackle") === null,
-    "long press unequips an active stack intact and releases loadout custody",
+    flow.repository.require(springDraft).location.kind === "LOADOUT" &&
+      flow.loadouts.require(saved.loadoutId).getRootInstanceId("tackle") ===
+        springDraft,
+    "long press returns an active stack to its original loadout custody",
   );
   const remainingLoadoutRod = flow.loadouts
     .require(saved.loadoutId)
     .getRootInstanceId("rod");
+  const repositorySizeBeforeRodCycles = flow.repository.size;
+  for (let cycle = 0; cycle < 3; cycle += 1) {
+    dispatch(flow, InventoryV2ActionType.LOADOUT_PREVIEW_SLOT_EQUIP, {
+      loadoutId: saved.loadoutId,
+      slotId: "rod",
+    });
+    dispatch(flow, InventoryV2ActionType.EQUIPMENT_SLOT_LONG_PRESS, {
+      slotId: "rod",
+      instanceId: remainingLoadoutRod,
+    });
+    assertIntegration(
+      flow.equipmentState.getRootInstanceId("rod") === null &&
+        flow.repository.require(remainingLoadoutRod).location.kind ===
+          "LOADOUT" &&
+        flow.loadouts
+          .require(saved.loadoutId)
+          .getRootInstanceId("rod") === remainingLoadoutRod &&
+        flow.repository.size === repositorySizeBeforeRodCycles &&
+        flow.repository.list().filter(
+          (item) => item.instanceId === remainingLoadoutRod,
+        ).length === 1,
+      "repeated loadout rod equip and unequip preserves one owned instance",
+    );
+  }
   assertIntegration(
-    flow.commands.consumeItem(remainingLoadoutRod, 1).success === true &&
+    flow.commands.consumeItem(springDraft, 1).success === true &&
+      flow.loadouts.has(saved.loadoutId) &&
+      flow.commands.consumeItem(remainingLoadoutRod, 1).success === true &&
       !flow.loadouts.has(saved.loadoutId),
-    "consuming the final loadout root removes the empty loadout card",
+    "consuming every loadout root removes the empty loadout card",
   );
+
+  const looseStackCycles = makeComposition({
+    items: [raw("stacked-pole-rods", "rodPole", 2)],
+  });
+  const looseStackInitialSize = looseStackCycles.repository.size;
+  for (let cycle = 0; cycle < 3; cycle += 1) {
+    dispatch(looseStackCycles, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+      instanceId: "stacked-pole-rods",
+    });
+    dispatch(looseStackCycles, InventoryV2ActionType.EQUIPMENT_SLOT_ACTIVATE, {
+      slotId: "rod",
+    });
+    const looseItems = looseStackCycles.repository.list();
+    assertIntegration(
+      looseStackCycles.equipmentState.getRootInstanceId("rod") === null &&
+        looseStackCycles.repository.size === looseStackInitialSize &&
+        looseStackCycles.repository.require("stacked-pole-rods").quantity === 2 &&
+        looseItems.reduce((sum, item) => sum + item.quantity, 0) === 2 &&
+        new Set(looseItems.map((item) => item.instanceId)).size ===
+          looseItems.length,
+      "repeated loose-item equip and unequip restores one stack without cloning",
+    );
+  }
 
   const disassembly = makeComposition({
     items: [
@@ -1043,6 +1233,14 @@ vm.runInContext(
     InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "raw-reel-with-pole" },
   ).rootInstanceId;
+  const poleReelEditor = reelWithPoleActive.facade.getViewModel().panel.assembly;
+  assertIntegration(
+    poleReelEditor.showEquip === true &&
+      poleReelEditor.canEquip === false &&
+      poleReelEditor.equipWarning ===
+        "Цей слот не підтримується обраним вудилищем.",
+    "a reel editor keeps Equip disabled while a pole rod is active",
+  );
   dispatch(reelWithPoleActive, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "raw-line-with-pole",
   });
@@ -1274,6 +1472,7 @@ vm.runInContext(
     readiness.facade.getViewModel().panel.assembly;
   assertIntegration(
     equippedEmptyReelEditor.equipped === true &&
+      equippedEmptyReelEditor.showEquip === false &&
       equippedEmptyReelEditor.showUnequip === true &&
       equippedEmptyReelEditor.showDisassemble === false &&
       equippedEmptyReelEditor.root.assemblyCompletion.hasAnyComponent === false,

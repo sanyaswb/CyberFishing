@@ -1,63 +1,36 @@
-const fs = require("node:fs");
-const path = require("node:path");
-const vm = require("node:vm");
+const { CheckAssertion } = require("./testing/core/check_assertion");
+const { SourceRuntime } = require("./testing/core/source_runtime");
 
-const ROOT = path.resolve(__dirname, "..");
-
-class Assertion {
-  static that(condition, message) {
-    if (!condition) throw new Error(`Float depth check failed: ${message}`);
-  }
-
-  static close(actual, expected, message) {
-    this.that(
-      Math.abs(actual - expected) <= 0.000001,
-      `${message}; expected ${expected}, received ${actual}`,
-    );
-  }
-}
+const Assertion = CheckAssertion.create("Float depth check");
 
 class RuntimeLoader {
   load() {
-    const context = vm.createContext({ console });
+    const runtime = new SourceRuntime();
     this.#loadClass(
-      context,
+      runtime,
       "src/core/float_tackle_line_budget_policy.js",
       "FloatTackleLineBudgetPolicy",
     );
     this.#loadClass(
-      context,
+      runtime,
       "src/core/casting_distance.js",
       "CastDistanceCalculator",
     );
     this.#loadClass(
-      context,
+      runtime,
       "src/core/fishing/rod_stroke_capacity_resolver.js",
       "RodStrokeCapacityResolver",
     );
-    this.#loadRules(context);
-    return context;
+    this.#loadRules(runtime);
+    return runtime.context;
   }
 
-  #loadClass(context, relativePath, className) {
-    const source = fs.readFileSync(path.join(ROOT, relativePath), "utf8");
-    vm.runInContext(
-      `${source}\nglobalThis.${className} = ${className};`,
-      context,
-      { filename: relativePath },
-    );
+  #loadClass(runtime, relativePath, className) {
+    runtime.load(relativePath, { expose: [className] });
   }
 
-  #loadRules(context) {
-    const source = fs.readFileSync(
-      path.join(ROOT, "src/app/rules.js"),
-      "utf8",
-    );
-    vm.runInContext(
-      `${source}\nglobalThis.EquipmentRules = EquipmentRules;`,
-      context,
-      { filename: "src/app/rules.js" },
-    );
+  #loadRules(runtime) {
+    runtime.load("src/app/rules.js", { expose: ["EquipmentRules"] });
   }
 }
 

@@ -115,15 +115,14 @@ class EquipmentSlotAvailabilityPolicy {
       state: EquipmentSlotAvailabilityState.NO_ACCESSIBLE_COMPATIBLE_ITEM,
       supported: true,
       visible: true,
-      showCross: true,
+      showCross: false,
       warningCode: EquipmentSlotWarningCode.NO_ACCESSIBLE_COMPATIBLE_ITEM,
       warning: "В інвентарі немає відповідного доступного предмета.",
     });
   }
 
   getClickWarning(resolution) {
-    if (!resolution?.showCross) return null;
-    return resolution.warning || null;
+    return resolution?.warning || null;
   }
 
   #resolveAcceptedTypes(slotId, config, rod) {

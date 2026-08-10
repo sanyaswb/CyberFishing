@@ -1,48 +1,29 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const vm = require("node:vm");
+const { CheckAssertion } = require("./testing/core/check_assertion");
+const { SourceRuntime } = require("./testing/core/source_runtime");
 
 const ROOT = path.resolve(__dirname, "..");
-
-class Assertion {
-  static that(condition, message) {
-    if (!condition) {
-      throw new Error(`DevTools linked parameter check failed: ${message}`);
-    }
-  }
-
-  static equal(actual, expected, message) {
-    this.that(
-      actual === expected,
-      `${message}; expected ${expected}, received ${actual}`,
-    );
-  }
-}
+const Assertion = CheckAssertion.create("DevTools linked parameter check");
 
 class RuntimeLoader {
   load() {
-    const context = vm.createContext({ console, window: {} });
+    const runtime = new SourceRuntime({ globals: { window: {} } });
     this.#run(
-      context,
+      runtime,
       "src/debug/services/dev_tools_parameter_alias_registry.js",
       ["DevToolsParameterAliasRegistry"],
     );
     this.#run(
-      context,
+      runtime,
       "src/debug/services/dev_tools_control_binding_registry.js",
       ["DevToolsControlBindingRegistry"],
     );
-    return context;
+    return runtime.context;
   }
 
-  #run(context, relativePath, classNames) {
-    const source = fs.readFileSync(path.join(ROOT, relativePath), "utf8");
-    const exports = classNames
-      .map((className) => `globalThis.${className} = ${className};`)
-      .join("\n");
-    vm.runInContext(`${source}\n${exports}`, context, {
-      filename: relativePath,
-    });
+  #run(runtime, relativePath, classNames) {
+    runtime.load(relativePath, { expose: classNames });
   }
 }
 

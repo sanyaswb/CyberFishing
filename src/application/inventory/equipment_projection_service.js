@@ -104,16 +104,19 @@ class EquipmentProjectionService {
       if (explicitIndex !== null) maxIndex = Math.max(maxIndex, explicitIndex);
     }
     const assemblyState =
-      this.#assemblyReader?.getAssemblyState?.(rootInstanceId) || {};
-    const remembered = assemblyState.refillSignatures || {};
+      this.#assemblyReader?.getAssemblyState?.(rootInstanceId) || null;
+    const remembered = assemblyState?.refillSignatures || {};
     for (const path of Object.keys(remembered)) {
       const match = path.match(
         new RegExp(`^(?:${refillPathPrefix}|${selectedSlotId})\\[(\\d+)\\]`),
       );
       if (match) maxIndex = Math.max(maxIndex, Number(match[1]));
     }
+    const assemblyCapacity = assemblyState
+      ? this.#assemblyReader?.getSlotCapacity?.(rootInstanceId, selectedSlotId)
+      : null;
     const configuredCount = Number(
-      this.#assemblyReader?.getSlotCapacity?.(rootInstanceId, selectedSlotId) ??
+      assemblyCapacity ??
         rootItem.slotCount ??
         rootItem.sections ??
         rootItem.hooksCount ??

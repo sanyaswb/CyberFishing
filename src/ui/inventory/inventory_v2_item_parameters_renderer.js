@@ -82,7 +82,14 @@ class InventoryV2ItemParametersRenderer {
     
     li.appendChild(header);
 
-    if (parameter.kind === "bar" && parameter.percent !== undefined) {
+    if (parameter.kind === "resource" && parameter.resource) {
+      li.appendChild(
+        this.#resourceMeterRenderer.create(parameter.resource, {
+          variant: "parameter",
+          showIcon: false,
+        }),
+      );
+    } else if (parameter.kind === "bar" && parameter.percent !== undefined) {
       const barContainer = this.#dom.element("div", "inventory-v2-parameter-bar");
       const barTrack = this.#dom.element("div", "inventory-v2-parameter-bar-track");
       const barFill = this.#dom.element("div", "inventory-v2-parameter-bar-fill");

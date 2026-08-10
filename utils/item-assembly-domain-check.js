@@ -1,46 +1,10 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { CheckAssertion } = require("./testing/core/check_assertion");
 
 const ROOT = path.resolve(__dirname, "..");
-
-class Assertion {
-  static that(condition, message) {
-    if (!condition) throw new Error(`Item assembly check failed: ${message}`);
-  }
-
-  static equal(actual, expected, message) {
-    this.that(
-      Object.is(actual, expected),
-      `${message}; expected ${expected}, received ${actual}`,
-    );
-  }
-
-  static deepEqual(actual, expected, message) {
-    this.equal(JSON.stringify(actual), JSON.stringify(expected), message);
-  }
-
-  static throwsCode(action, code, message) {
-    let error = null;
-    try {
-      action();
-    } catch (caught) {
-      error = caught;
-    }
-    this.that(error, `${message}; expected an error`);
-    this.equal(error.code, code, message);
-  }
-
-  static throws(action, message) {
-    let thrown = false;
-    try {
-      action();
-    } catch {
-      thrown = true;
-    }
-    this.that(thrown, `${message}; expected an error`);
-  }
-}
+const Assertion = CheckAssertion.create("Item assembly check");
 
 class AssemblyRuntimeLoader {
   #context = vm.createContext({ console });

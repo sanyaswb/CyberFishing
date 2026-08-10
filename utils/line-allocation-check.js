@@ -1,64 +1,40 @@
-const fs = require("node:fs");
-const path = require("node:path");
-const vm = require("node:vm");
+const { CheckAssertion } = require("./testing/core/check_assertion");
+const { SourceRuntime } = require("./testing/core/source_runtime");
 
-const ROOT = path.resolve(__dirname, "..");
-
-class Assertion {
-  static that(condition, message) {
-    if (!condition) throw new Error(`Line allocation check failed: ${message}`);
-  }
-
-  static equal(actual, expected, message) {
-    this.that(
-      Object.is(actual, expected),
-      `${message}; expected ${expected}, received ${actual}`,
-    );
-  }
-}
+const Assertion = CheckAssertion.create("Line allocation check");
 
 class LineRuntimeLoader {
   load() {
-    const context = vm.createContext({ console });
+    const runtime = new SourceRuntime();
     this.#loadConstant(
-      context,
+      runtime,
       "src/config/physics/tackle_physics_config.js",
       "TACKLE_PHYSICS_CONFIG",
     );
     this.#loadClass(
-      context,
+      runtime,
       "src/core/line/line_allocation_policy.js",
       "LineAllocationPolicy",
     );
     this.#loadClass(
-      context,
+      runtime,
       "src/core/casting_distance.js",
       "CastDistanceCalculator",
     );
     this.#loadClass(
-      context,
+      runtime,
       "src/core/line/line_inventory_controller.js",
       "LineInventoryController",
     );
-    return context;
+    return runtime.context;
   }
 
-  #loadConstant(context, relativePath, constantName) {
-    const source = fs.readFileSync(path.join(ROOT, relativePath), "utf8");
-    vm.runInContext(
-      `${source}\nglobalThis.${constantName} = ${constantName};`,
-      context,
-      { filename: relativePath },
-    );
+  #loadConstant(runtime, relativePath, constantName) {
+    runtime.load(relativePath, { expose: [constantName] });
   }
 
-  #loadClass(context, relativePath, className) {
-    const source = fs.readFileSync(path.join(ROOT, relativePath), "utf8");
-    vm.runInContext(
-      `${source}\nglobalThis.${className} = ${className};`,
-      context,
-      { filename: relativePath },
-    );
+  #loadClass(runtime, relativePath, className) {
+    runtime.load(relativePath, { expose: [className] });
   }
 }
 

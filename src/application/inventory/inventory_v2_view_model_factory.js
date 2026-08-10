@@ -1,6 +1,7 @@
 class InventoryV2ViewModelFactory {
   static #categories = Object.freeze([
-    { id: "all", label: "Усе", icon: "🎒" },
+    { id: "all", label: "Усі", icon: "🎒" },
+    { id: "compatible", label: "Сумісне", icon: "✓" },
     { id: "loadouts", label: "Комплекти", icon: "🧰" },
     { id: "rods", label: "Вудилища", icon: "🎣" },
     { id: "reels", label: "Котушки", icon: "⚙️" },
@@ -218,6 +219,7 @@ class InventoryV2ViewModelFactory {
         sockets: [],
         equipped: false,
         canEquip: false,
+        showEquip: false,
         canUnequip: false,
         showUnequip: false,
         canDisassemble: false,
@@ -260,18 +262,58 @@ class InventoryV2ViewModelFactory {
     const rootView = this.#itemViews.create(rootInstanceId);
     const hasAttachedComponents =
       rootView?.assemblyCompletion?.hasAnyComponent === true;
+    const equipAvailability = equipped
+      ? { canEquip: false, warning: "Цей стек уже споряджений." }
+      : this.#resolveAssemblyEquipAvailability(rootView);
     return {
       root: rootView ? { ...rootView, equipped } : null,
       rootLabel: this.#itemViews.create(rootInstanceId)?.name || "Предмет",
       rootInstanceId,
       sockets,
       equipped,
-      canEquip: true,
+      canEquip: equipAvailability.canEquip,
+      showEquip: !equipped,
+      equipWarning: equipAvailability.warning,
       canUnequip: equipped,
       showUnequip: equipped,
       canDisassemble: hasAttachedComponents,
       showDisassemble: hasAttachedComponents,
     };
+  }
+
+  #resolveAssemblyEquipAvailability(rootView) {
+    if (!rootView) {
+      return {
+        canEquip: false,
+        warning: "Збірку не знайдено.",
+      };
+    }
+    const rodInstanceId = this.#equipmentState.getRootInstanceId("rod");
+    const rod = rodInstanceId
+      ? this.#itemViews.create(rodInstanceId)
+      : null;
+    const slotConfig =
+      typeof EQUIPMENT_SLOT_CONFIG !== "undefined"
+        ? EQUIPMENT_SLOT_CONFIG
+        : {};
+    const itemType = this.#itemType(rootView);
+    const candidateSlotIds = EQUIPMENT_ALL_SLOT_IDS.filter((slotId) =>
+      (slotConfig[slotId]?.acceptTypes || []).includes(itemType),
+    );
+    let warning = "Збірка не сумісна з поточним спорядженням.";
+    for (const slotId of candidateSlotIds) {
+      const validation = this.#compatibilityPolicy.validate({
+        slotId,
+        item: rootView,
+        equipmentState: this.#equipmentState,
+        rod,
+      });
+      if (validation.isValid) {
+        return { canEquip: true, warning: "" };
+      }
+      if (validation.reason) warning = validation.reason;
+    }
+    return { canEquip: false, warning };
   }
 
   #createSavedLoadoutPreview(loadoutId) {
@@ -323,6 +365,13 @@ class InventoryV2ViewModelFactory {
     const itemViews = accessibleRawItems
       .map((item) => this.#itemViews.create(item.instanceId))
       .filter(Boolean);
+    const compatibleInstanceIds = contextFiltered
+      ? new Set()
+      : new Set(
+          this.#contextItemFilter
+            .filter(accessibleRawItems, { mode: "equipment-compatible" })
+            .map((item) => item.instanceId),
+        );
     const categories = contextFiltered
       ? InventoryV2ViewModelFactory.#categories.filter(
           (category) =>
@@ -339,7 +388,11 @@ class InventoryV2ViewModelFactory {
       : "all";
     const highlightedSlotId = uiState.highlightedEquipmentSlotId || null;
     const categoryItems = itemViews
-      .filter((item) => this.#matchesCategory(item, categoryId))
+      .filter((item) =>
+        categoryId === "compatible"
+          ? compatibleInstanceIds.has(item.instanceId)
+          : this.#matchesCategory(item, categoryId),
+      )
       .map((item) => ({
         ...item,
         compatibleWithHighlightedSlot:
@@ -401,7 +454,9 @@ class InventoryV2ViewModelFactory {
       highlightedSlotId: highlightedSlotId || "",
       emptyMessage: contextFiltered
         ? "В інвентарі немає сумісних компонентів для цієї збірки."
-        : "У цій категорії немає предметів",
+        : categoryId === "compatible"
+          ? "Немає доступних предметів, сумісних із поточним спорядженням."
+          : "У цій категорії немає предметів",
     };
   }
 
@@ -418,6 +473,7 @@ class InventoryV2ViewModelFactory {
 
   #matchesCategory(item, categoryId) {
     if (categoryId === "all") return true;
+    if (categoryId === "compatible") return false;
     const type = item?.type;
     if (categoryId === "loadouts") return type === "equipment_loadout";
     if (categoryId === "rods") {

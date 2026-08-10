@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.0";
+const CURRENT_PROJECT_VERSION = "0.24.9";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "inventory-v2-assemblies",
-  updatedAt: "2026-08-09",
+  codename: "inventory-v2-stabilized",
+  updatedAt: "2026-08-10",
   notes: Object.freeze([
-    "Rebuild the inventory around equipment slots and assembled items",
-    "Add reusable craft editors for reels, rigs, hooks and bait boats",
-    "Show only compatible components while an assembly editor is open",
-    "Preserve complete equipment loadouts and auto-refill preferences",
+    "Finalize Inventory V2 equipment, assemblies and saved loadout behavior",
+    "Keep item parameters and finite-resource meters consistent across views",
+    "Reuse one compatibility path for equipment, assembly and inventory filters",
+    "Validate inventory behavior through the consolidated automated check runner",
   ]),
 });
 

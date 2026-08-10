@@ -1,21 +1,10 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { CheckAssertion } = require("./testing/core/check_assertion");
 
 const ROOT = path.resolve(__dirname, "..");
-
-class Assertion {
-  static that(condition, message) {
-    if (!condition) throw new Error(`Inventory lifecycle check failed: ${message}`);
-  }
-
-  static equal(actual, expected, message) {
-    this.that(
-      Object.is(actual, expected),
-      `${message}; expected ${expected}, received ${actual}`,
-    );
-  }
-}
+const Assertion = CheckAssertion.create("Inventory lifecycle check");
 
 class MemoryCacheManager {
   static values = new Map();

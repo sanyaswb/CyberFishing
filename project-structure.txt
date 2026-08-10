@@ -136,6 +136,7 @@
 │  │  │  └── map_db.js
 │  │  ├── inventory
 │  │  │  ├── equipment_slot_config.js
+│  │  │  ├── inventory_v2_item_parameter_config.js
 │  │  │  └── item_assembly_profile_config.js
 │  │  ├── items
 │  │  │  ├── item_condition_config.js
@@ -532,7 +533,6 @@
   ├── float-depth-cast-check.js
   ├── game-cycle-check.js
   ├── git-version-copy.js
-  ├── inventory-equip-ux-check.js
   ├── inventory-lifecycle-check.js
   ├── inventory-v2-cast-and-lure-check.js
   ├── inventory-v2-equipment-check.js
@@ -547,4 +547,14 @@
   ├── item-rarity-check.js
   ├── line-allocation-check.js
   ├── rarity-production-check.js
+  ├── run-checks.js
+  ├── testing
+  │  ├── core
+  │  │  ├── check_assertion.js
+  │  │  ├── check_catalog.js
+  │  │  ├── check_runner.js
+  │  │  └── source_runtime.js
+  │  ├── README.md
+  │  └── suites
+  │    └── check_manifest.js
   └── victory-input-check.js

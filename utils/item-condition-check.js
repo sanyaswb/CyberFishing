@@ -1,50 +1,29 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const vm = require("node:vm");
+const { CheckAssertion } = require("./testing/core/check_assertion");
+const { SourceRuntime } = require("./testing/core/source_runtime");
 
 const ROOT = path.resolve(__dirname, "..");
-
-class Assertion {
-  static that(condition, message) {
-    if (!condition) throw new Error(`Item condition check failed: ${message}`);
-  }
-
-  static equal(actual, expected, message) {
-    this.that(
-      Object.is(actual, expected),
-      `${message}; expected ${expected}, received ${actual}`,
-    );
-  }
-}
+const Assertion = CheckAssertion.create("Item condition check");
 
 class RuntimeLoader {
   load() {
-    const context = vm.createContext({ console });
-    for (const relativePath of [
+    const runtime = new SourceRuntime();
+    runtime.loadMany([
       "src/config/items/item_condition_config.js",
       "src/config/databases/item_db.js",
       "src/config/validation/item_condition_config_validator.js",
       "src/core/items/condition/item_condition_descriptor.js",
       "src/core/items/condition/item_condition_resolver.js",
       "src/ui/condition/item_condition_dom_adapter.js",
-    ]) {
-      vm.runInContext(
-        fs.readFileSync(path.join(ROOT, relativePath), "utf8"),
-        context,
-        { filename: relativePath },
-      );
-    }
-    vm.runInContext(
-      [
-        "globalThis.CONFIGURATION = ITEM_CONDITION_CONFIG;",
-        "globalThis.DB = ITEM_DB;",
-        "globalThis.Validator = ItemConditionConfigValidator;",
-        "globalThis.Resolver = ItemConditionResolver;",
-        "globalThis.Adapter = ItemConditionDomAdapter;",
-      ].join("\n"),
-      context,
-    );
-    return context;
+    ]).expose({
+      CONFIGURATION: "ITEM_CONDITION_CONFIG",
+      DB: "ITEM_DB",
+      Validator: "ItemConditionConfigValidator",
+      Resolver: "ItemConditionResolver",
+      Adapter: "ItemConditionDomAdapter",
+    });
+    return runtime.context;
   }
 }
 

@@ -1,34 +1,14 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const vm = require("node:vm");
+const { CheckAssertion } = require("./testing/core/check_assertion");
+const { SourceRuntime } = require("./testing/core/source_runtime");
 
 const ROOT = path.resolve(__dirname, "..");
-
-class Assertion {
-  static that(condition, message) {
-    if (!condition) {
-      throw new Error(`Item progression check failed: ${message}`);
-    }
-  }
-
-  static equal(actual, expected, message) {
-    this.that(
-      Object.is(actual, expected),
-      `${message}; expected ${expected}, received ${actual}`,
-    );
-  }
-
-  static near(actual, expected, message, epsilon = 1e-9) {
-    this.that(
-      Math.abs(actual - expected) <= epsilon,
-      `${message}; expected ${expected}, received ${actual}`,
-    );
-  }
-}
+const Assertion = CheckAssertion.create("Item progression check");
 
 class RuntimeLoader {
   load() {
-    const context = vm.createContext({ console });
+    const runtime = new SourceRuntime();
     const scripts = [
       "src/config/rarity/rarity_visual_config.js",
       "src/config/visual/degradation_color_config.js",
@@ -56,43 +36,33 @@ class RuntimeLoader {
       "src/ui/styles/degradation_color_resolver.js",
       "src/ui/progression/item_progression_visual_resolver.js",
     ];
-    for (const relativePath of scripts) {
-      vm.runInContext(
-        fs.readFileSync(path.join(ROOT, relativePath), "utf8"),
-        context,
-        { filename: relativePath },
-      );
-    }
-    vm.runInContext(
-      [
-        "globalThis.DB = ITEM_DB;",
-        "globalThis.CONFIGURATION = ITEM_PROGRESSION_CONFIG;",
-        "globalThis.VISUAL_CONFIG = RARITY_VISUAL_CONFIG;",
-        "globalThis.DEGRADATION_CONFIG = DEGRADATION_COLOR_CONFIG;",
-        "globalThis.Validator = ItemProgressionConfigValidator;",
-        "globalThis.MetricBase = ItemMetricStrategy;",
-        "globalThis.Numeric = NumericStatMetricStrategy;",
-        "globalThis.Derived = DerivedStatMetricStrategy;",
-        "globalThis.Target = TargetRangeMetricStrategy;",
-        "globalThis.Composite = CompositeMetricStrategy;",
-        "globalThis.Registry = ItemMetricStrategyRegistry;",
-        "globalThis.Baselines = ItemCatalogBaselineRegistry;",
-        "globalThis.Power = ItemPowerResolver;",
-        "globalThis.Level = ItemLevelResolver;",
-        "globalThis.Quality = ItemQualityResolver;",
-        "globalThis.Capacity = ItemCapacityResolver;",
-        "globalThis.Progression = ItemProgressionResolver;",
-        "globalThis.Stacking = InventoryItemStackingPolicy;",
-        "globalThis.RawFactory = InventoryItemFactory;",
-        "globalThis.ViewFactory = InventoryItemViewFactory;",
-        "globalThis.RarityAnimation = RarityAnimationResolver;",
-        "globalThis.RarityVisual = RarityVisualResolver;",
-        "globalThis.DegradationVisual = DegradationColorResolver;",
-        "globalThis.ProgressionVisual = ItemProgressionVisualResolver;",
-      ].join("\n"),
-      context,
-    );
-    return context;
+    runtime.loadMany(scripts).expose({
+      DB: "ITEM_DB",
+      CONFIGURATION: "ITEM_PROGRESSION_CONFIG",
+      VISUAL_CONFIG: "RARITY_VISUAL_CONFIG",
+      DEGRADATION_CONFIG: "DEGRADATION_COLOR_CONFIG",
+      Validator: "ItemProgressionConfigValidator",
+      MetricBase: "ItemMetricStrategy",
+      Numeric: "NumericStatMetricStrategy",
+      Derived: "DerivedStatMetricStrategy",
+      Target: "TargetRangeMetricStrategy",
+      Composite: "CompositeMetricStrategy",
+      Registry: "ItemMetricStrategyRegistry",
+      Baselines: "ItemCatalogBaselineRegistry",
+      Power: "ItemPowerResolver",
+      Level: "ItemLevelResolver",
+      Quality: "ItemQualityResolver",
+      Capacity: "ItemCapacityResolver",
+      Progression: "ItemProgressionResolver",
+      Stacking: "InventoryItemStackingPolicy",
+      RawFactory: "InventoryItemFactory",
+      ViewFactory: "InventoryItemViewFactory",
+      RarityAnimation: "RarityAnimationResolver",
+      RarityVisual: "RarityVisualResolver",
+      DegradationVisual: "DegradationColorResolver",
+      ProgressionVisual: "ItemProgressionVisualResolver",
+    });
+    return runtime.context;
   }
 }
 

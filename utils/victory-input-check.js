@@ -1,8 +1,5 @@
-const fs = require("node:fs");
-const path = require("node:path");
-const vm = require("node:vm");
-
-const ROOT = path.resolve(__dirname, "..");
+const { CheckAssertion } = require("./testing/core/check_assertion");
+const { SourceRuntime } = require("./testing/core/source_runtime");
 
 class EventTargetStub {
   constructor() {
@@ -31,18 +28,7 @@ class EventTargetStub {
   }
 }
 
-class Assertion {
-  static that(condition, message) {
-    if (!condition) throw new Error(`Victory input check failed: ${message}`);
-  }
-
-  static equal(actual, expected, message) {
-    this.that(
-      actual === expected,
-      `${message}; expected ${expected}, received ${actual}`,
-    );
-  }
-}
+const Assertion = CheckAssertion.create("Victory input check");
 
 class RuntimeLoader {
   load() {
@@ -53,43 +39,38 @@ class RuntimeLoader {
         return clock.now;
       }
     }
-    const context = vm.createContext({
-      console,
-      clearTimeout,
-      setTimeout,
-      Date: TestDate,
-      window: windowTarget,
-      TEST_CLOCK: clock,
-      CONFIG: {
-        input: {
-          pullHoldMinMs: 120,
-          keys: {},
+    const runtime = new SourceRuntime({
+      globals: {
+        clearTimeout,
+        setTimeout,
+        Date: TestDate,
+        window: windowTarget,
+        TEST_CLOCK: clock,
+        CONFIG: {
+          input: {
+            pullHoldMinMs: 120,
+            keys: {},
+          },
         },
       },
     });
-    this.#run(context, "src/core/core.js", ["InputManager"]);
+    this.#run(runtime, "src/core/core.js", ["InputManager"]);
     this.#run(
-      context,
+      runtime,
       "src/input/victory_action_gesture_resolver.js",
       ["VictoryActionGestureResolver"],
     );
     this.#run(
-      context,
+      runtime,
       "src/render/screens/victory_layout_resolver.js",
       ["VictoryLayoutResolver"],
     );
-    this.#run(context, "src/app/states.js", ["VictoryState"]);
-    return context;
+    this.#run(runtime, "src/app/states.js", ["VictoryState"]);
+    return runtime.context;
   }
 
-  #run(context, relativePath, classNames) {
-    const source = fs.readFileSync(path.join(ROOT, relativePath), "utf8");
-    const exports = classNames
-      .map((className) => `globalThis.${className} = ${className};`)
-      .join("\n");
-    vm.runInContext(`${source}\n${exports}`, context, {
-      filename: relativePath,
-    });
+  #run(runtime, relativePath, classNames) {
+    runtime.load(relativePath, { expose: classNames });
   }
 }
 

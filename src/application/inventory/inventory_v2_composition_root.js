@@ -78,13 +78,6 @@ class InventoryV2CompositionRoot {
       profileRegistry,
       reader: assemblyReader,
     });
-    const contextItemFilter = new InventoryV2ContextItemFilter({
-      strategies: [
-        new AssemblyInventoryContextFilterStrategy({
-          targetResolver: attachmentTargetResolver,
-        }),
-      ],
-    });
     const signaturePolicy = new ExactAssemblyRefillSignaturePolicy();
     const stackingPolicy = new ItemAssemblyStackingPolicy();
     const capacityPolicy = new UnlimitedInventoryCapacityPolicy();
@@ -153,6 +146,21 @@ class InventoryV2CompositionRoot {
       slotConfig: EQUIPMENT_SLOT_CONFIG,
       visibilityPolicy,
       terminalLineResolver,
+    });
+    const contextItemFilter = new InventoryV2ContextItemFilter({
+      strategies: [
+        new AssemblyInventoryContextFilterStrategy({
+          targetResolver: attachmentTargetResolver,
+        }),
+        new EquipmentInventoryContextFilterStrategy({
+          equipmentState,
+          compatibilityPolicy,
+          visibilityPolicy,
+          targetResolver: attachmentTargetResolver,
+          itemReader: (raw) => hydrator.hydrate(raw, repository),
+          slotIds: EQUIPMENT_ALL_SLOT_IDS,
+        }),
+      ],
     });
     const rodChangePlanner = new ManualRodChangePlanner({ capacityPolicy });
     const equipmentTransitionPort = new InventoryV2EquipmentTransitionPort({
@@ -279,6 +287,8 @@ class InventoryV2CompositionRoot {
       projectionService,
       lineAllocationService,
       equipmentLineReadinessPolicy,
+      stackingPolicy,
+      reservationPolicy,
       instanceIdFactory,
     });
     const gameplayBridge = new InventoryV2GameplayBridge({

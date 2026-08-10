@@ -1,47 +1,24 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const vm = require("node:vm");
+const { CheckAssertion } = require("./testing/core/check_assertion");
+const { SourceRuntime } = require("./testing/core/source_runtime");
 
 const ROOT = path.resolve(__dirname, "..");
-
-class Assertion {
-  static that(condition, message) {
-    if (!condition) {
-      throw new Error(`Degradation color check failed: ${message}`);
-    }
-  }
-
-  static equal(actual, expected, message) {
-    this.that(
-      Object.is(actual, expected),
-      `${message}; expected ${expected}, received ${actual}`,
-    );
-  }
-}
+const Assertion = CheckAssertion.create("Degradation color check");
 
 class RuntimeLoader {
   load() {
-    const context = vm.createContext({ console });
-    for (const relativePath of [
+    const runtime = new SourceRuntime();
+    runtime.loadMany([
       "src/config/visual/degradation_color_config.js",
       "src/config/validation/degradation_color_config_validator.js",
       "src/ui/styles/degradation_color_resolver.js",
-    ]) {
-      vm.runInContext(
-        fs.readFileSync(path.join(ROOT, relativePath), "utf8"),
-        context,
-        { filename: relativePath },
-      );
-    }
-    vm.runInContext(
-      [
-        "globalThis.CONFIGURATION = DEGRADATION_COLOR_CONFIG;",
-        "globalThis.Validator = DegradationColorConfigValidator;",
-        "globalThis.Resolver = DegradationColorResolver;",
-      ].join("\n"),
-      context,
-    );
-    return context;
+    ]).expose({
+      CONFIGURATION: "DEGRADATION_COLOR_CONFIG",
+      Validator: "DegradationColorConfigValidator",
+      Resolver: "DegradationColorResolver",
+    });
+    return runtime.context;
   }
 }
 

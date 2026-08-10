@@ -88,10 +88,15 @@ class InventoryV2AssemblyEditorRenderer {
       "inventory-v2-assembly-editor__actions",
     );
     actions.append(
-      this.#actionButton("Спорядити", "is-primary", model.canEquip, () => {
-        if (!model.canEquip) return onWarning?.(model.equipWarning);
-        onEquip?.();
-      }),
+      ...(model.showEquip ? [this.#actionButton(
+        "Спорядити",
+        "is-primary",
+        model.canEquip,
+        () => {
+          if (!model.canEquip) return onWarning?.(model.equipWarning);
+          onEquip?.();
+        },
+      )] : []),
       ...(model.showUnequip ? [this.#actionButton("Зняти", "", model.equipped && model.canUnequip, () => {
         if (!model.equipped || !model.canUnequip) {
           return onWarning?.(

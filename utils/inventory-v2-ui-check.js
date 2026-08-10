@@ -6,6 +6,13 @@ const vm = require("vm");
 const ROOT = path.resolve(__dirname, "..");
 const UI_DIRECTORY = path.join(ROOT, "src", "ui", "inventory");
 const STYLE_FILE = path.join(ROOT, "src", "ui", "styles", "inventory_v2.css");
+const ITEM_PARAMETER_CONFIG_FILE = path.join(
+  ROOT,
+  "src",
+  "config",
+  "inventory",
+  "inventory_v2_item_parameter_config.js",
+);
 const VIEW_MODEL_FACTORY_FILE = path.join(
   ROOT,
   "src",
@@ -49,6 +56,10 @@ const UI_SCRIPT_ORDER = Object.freeze([
 ]);
 
 class InventoryV2SourceReader {
+  readItemParameterConfig() {
+    return fs.readFileSync(ITEM_PARAMETER_CONFIG_FILE, "utf8");
+  }
+
   readJavaScriptFiles() {
     return UI_SCRIPT_ORDER.map((name) => ({
       name,
@@ -336,7 +347,8 @@ class InventoryV2StaticContractCheck {
 
   run() {
     const files = this.#reader.readJavaScriptFiles();
-    const combined = files.map((file) => file.source).join("\n");
+    const parameterConfig = this.#reader.readItemParameterConfig();
+    const combined = [parameterConfig, ...files.map((file) => file.source)].join("\n");
     const style = this.#reader.readStyle();
 
     this.#assertSafeTextRendering(combined);
@@ -416,6 +428,7 @@ class InventoryV2StaticContractCheck {
       ".inventory-v2-attachments--boat-cargo",
       ".inventory-v2-resource-meter",
       ".inventory-v2-resource-meter--thumbnail",
+      ".inventory-v2-resource-meter--parameter",
       ".inventory-v2-resource-meter__icon",
       ".inventory-v2-resource-meter__track",
       ".inventory-v2-resource-meter__fill",
@@ -449,6 +462,12 @@ class InventoryV2StaticContractCheck {
     const resourceTrackRule = style.match(
       /\.inventory-v2-resource-meter__track\s*\{[\s\S]*?\n\}/,
     )?.[0];
+    const parameterBarRule = style.match(
+      /\.inventory-v2-parameter-bar-track\s*\{[\s\S]*?\n\}/,
+    )?.[0];
+    const parameterSegmentsRule = style.match(
+      /\.inventory-v2-parameter-segments\s*\{[\s\S]*?\n\}/,
+    )?.[0];
     assert.ok(warningRule, "Missing inventory warning rule");
     assert.ok(
       !warningRule.includes("position: absolute") &&
@@ -479,6 +498,15 @@ class InventoryV2StaticContractCheck {
         resourceIconRule.includes("bottom: calc(100% + 2px)") &&
         resourceIconRule.includes("left: 0"),
       "The optional resource icon must sit above the scale on its left edge",
+    );
+    assert.ok(
+      parameterBarRule?.includes(
+        "height: var(--inventory-v2-parameter-meter-height)",
+      ) &&
+        parameterSegmentsRule?.includes(
+          "height: var(--inventory-v2-parameter-meter-height)",
+        ),
+      "All production parameter scales must share one configured height",
     );
     assert.ok(
       style.includes("clamp(170px, 10.1vw, 194px)"),
@@ -515,7 +543,21 @@ class InventoryV2StaticContractCheck {
     assert.match(
       style,
       /\.inventory-v2-slot:not\(\.is-filled\)\s*\{[\s\S]*?border:\s*2px solid #252e31;[\s\S]*?background:\s*#181e20;/,
-      "Open empty slots must use the lighter gas-mask visual without a cross",
+      "Open empty slots must keep the standard empty-slot visual",
+    );
+    assert.match(
+      style,
+      /\.inventory-v2-slot--locked:not\(\.is-filled\),\s*\.inventory-v2-slot--unavailable:not\(\.is-filled\)\s*\{[\s\S]*?border-color:\s*#080a0b;[\s\S]*?background:\s*#101415;/,
+      "Locked and missing-item slots must share the same dark well visual",
+    );
+    assert.ok(
+      !style.includes(
+        ".inventory-v2-slot--unavailable .inventory-v2-slot__empty-button::before",
+      ) &&
+        !style.includes(
+          ".inventory-v2-slot--unavailable .inventory-v2-slot__empty-button::after",
+        ),
+      "Missing-item slots must use the dark visual without the locked cross",
     );
     assert.ok(
       style.includes(".inventory-v2-slot.is-highlighted {"),
@@ -756,6 +798,9 @@ class InventoryV2StaticContractCheck {
     };
     sandbox.globalThis = sandbox;
     const context = vm.createContext(sandbox);
+    vm.runInContext(this.#reader.readItemParameterConfig(), context, {
+      filename: "inventory_v2_item_parameter_config.js",
+    });
     files.forEach((file) => {
       vm.runInContext(file.source, context, { filename: file.name });
     });
@@ -1164,7 +1209,12 @@ class InventoryV2StaticContractCheck {
         type: "system-only-type",
         level: 3,
         charge: { percent: 72, label: "Charge 72%" },
-        displayStats: { Power: "12 kg", Range: "45 m" },
+        condition: { percent: 80 },
+        displayStats: { Power: "12 kg", Range: "45 m", Стан: "80%" },
+        displayStatsSchema: {
+          rangeMeters: { label: "Range" },
+          durability: "Стан: %",
+        },
         engineStats: { internalRuntimeValue: 999 },
       });
     assert.ok(
@@ -1174,17 +1224,21 @@ class InventoryV2StaticContractCheck {
         productionParameters.some(
           (parameter) =>
             parameter.id === "resource:energy" &&
-            parameter.kind === "bar" &&
-            parameter.percent === 72,
+            parameter.kind === "resource" &&
+            parameter.resource?.percent === 72,
         ) &&
         productionParameters.some(
           (parameter) =>
-            parameter.id === "stat:power" && parameter.value === "12 kg",
+            parameter.id === "power" && parameter.value === "12 kg",
         ) &&
         productionParameters.some(
           (parameter) =>
-            parameter.id === "stat:range" && parameter.value === "45 m",
+            parameter.id === "stat:rangeMeters" &&
+            parameter.value === "45 m",
         ) &&
+        productionParameters.filter(
+          (parameter) => parameter.id === "condition",
+        ).length === 1 &&
         !productionParameters.some(
           (parameter) =>
             parameter.label === "instanceId" || parameter.label === "internalRuntimeValue",
@@ -1440,9 +1494,9 @@ class InventoryV2StaticContractCheck {
         .length >= 3 &&
         this.#findAllByClass(
           assemblyParameters,
-          "inventory-v2-parameter-bar-track",
+          "inventory-v2-resource-meter--parameter",
         ).length === 1,
-      "The large card must render its resource as a production parameter bar",
+      "The large card must reuse the shared resource meter renderer",
     );
     const assemblyWorkspace = this.#findByClass(
       ui.rootNode,
@@ -1480,8 +1534,14 @@ class InventoryV2StaticContractCheck {
       "A filled compatible socket must be highlighted for replacement",
     );
 
+    assert.strictEqual(
+      this.#walk(ui.rootNode).filter(
+        (node) => node.tagName === "BUTTON" && node.textContent === "Спорядити",
+      ).length,
+      0,
+      "An equipped assembly must hide Equip",
+    );
     const buttonActions = [
-      ["Спорядити", sandbox.InventoryV2ActionType.ASSEMBLY_EQUIP],
       ["Зняти", sandbox.InventoryV2ActionType.ASSEMBLY_UNEQUIP],
       ["Розібрати", sandbox.InventoryV2ActionType.ASSEMBLY_DISASSEMBLE],
       ["Назад", sandbox.InventoryV2ActionType.ASSEMBLY_BACK],
@@ -1512,10 +1572,31 @@ class InventoryV2StaticContractCheck {
       2,
       "An unequipped root with empty sockets must omit Unequip and Disassemble",
     );
+    this.#findByText(ui.rootNode, "Спорядити").click();
+    this.#assertLast(dispatched, {
+      type: sandbox.InventoryV2ActionType.ASSEMBLY_EQUIP,
+      rootInstanceId: "assembly-active",
+    });
     assert.strictEqual(
       this.#findAllByClass(ui.rootNode, "is-danger").length,
       0,
       "The hidden Disassemble action must not leave a danger button",
+    );
+    currentView.panel.assembly.canEquip = false;
+    currentView.panel.assembly.equipWarning =
+      "Цей слот не підтримується обраним вудилищем.";
+    ui.render(currentView);
+    const blockedEquipButton = this.#findByText(ui.rootNode, "Спорядити");
+    assert.ok(
+      blockedEquipButton.classList.contains("is-disabled") &&
+        blockedEquipButton.getAttribute("aria-disabled") === "true",
+      "An incompatible assembly must render Equip as inactive",
+    );
+    blockedEquipButton.click();
+    assert.strictEqual(
+      this.#findByClass(ui.rootNode, "inventory-v2-warning").textContent,
+      "Цей слот не підтримується обраним вудилищем.",
+      "The inactive Equip action must explain the rod incompatibility",
     );
 
     ui.close();

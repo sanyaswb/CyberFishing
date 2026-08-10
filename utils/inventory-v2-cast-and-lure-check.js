@@ -1,63 +1,38 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const vm = require("node:vm");
+const { CheckAssertion } = require("./testing/core/check_assertion");
+const { SourceRuntime } = require("./testing/core/source_runtime");
 
 const ROOT = path.resolve(__dirname, "..");
+const Assertion = CheckAssertion.create("Inventory-v2 cast/lure check");
 
-class Assertion {
-  static that(condition, message) {
-    if (!condition) {
-      throw new Error(`Inventory-v2 cast/lure check failed: ${message}`);
-    }
-  }
-
-  static equal(actual, expected, message) {
-    this.that(
-      Object.is(actual, expected),
-      `${message}; expected ${expected}, received ${actual}`,
-    );
-  }
-
-}
-
-class SourceRuntime {
+class InventoryV2SourceRuntime extends SourceRuntime {
   constructor() {
-    this.context = vm.createContext({
-      console,
-      requestAnimationFrame: (callback) => callback(),
-      CastPowerAim: class CastPowerAimStub {
-        reset() {}
-        update() {
-          return null;
-        }
-        getVisualState() {
-          return null;
-        }
-      },
-      BaitFactory: {
-        createCount: 0,
-        create() {
-          this.createCount += 1;
-          return {
-            cast() {},
-            setPosition() {},
-            setHookDepth() {},
-            stopBite() {},
-          };
+    super({
+      globals: {
+        requestAnimationFrame: (callback) => callback(),
+        CastPowerAim: class CastPowerAimStub {
+          reset() {}
+          update() {
+            return null;
+          }
+          getVisualState() {
+            return null;
+          }
+        },
+        BaitFactory: {
+          createCount: 0,
+          create() {
+            this.createCount += 1;
+            return {
+              cast() {},
+              setPosition() {},
+              setHookDepth() {},
+              stopBite() {},
+            };
+          },
         },
       },
-    });
-  }
-
-  load(file) {
-    vm.runInContext(fs.readFileSync(path.join(ROOT, file), "utf8"), this.context, {
-      filename: file,
-    });
-  }
-
-  run(source) {
-    return vm.runInContext(source, this.context, {
-      filename: "inventory-v2-cast-and-lure-check.runtime.js",
     });
   }
 }
@@ -88,7 +63,10 @@ class LureProjectionAndBiteCheck {
         const assemblyReader = {
           getChild() { return null; },
           getChildren() { return []; },
-          getAssemblyState() { return {}; },
+          getAssemblyState() { return null; },
+          getSlotCapacity() {
+            throw new Error("non-composite lure requested assembly capacity");
+          },
         };
         const projection = new EquipmentProjectionService({
           itemReader,
@@ -318,7 +296,7 @@ class CompositionSeamCheck {
   }
 }
 
-const runtime = new SourceRuntime();
+const runtime = new InventoryV2SourceRuntime();
 runtime.load("src/application/inventory/equipment_projection_service.js");
 runtime.load("src/app/rules.js");
 runtime.load("src/app/fishing.js");

@@ -1,31 +1,10 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { CheckAssertion } = require("./testing/core/check_assertion");
 
 const ROOT = path.resolve(__dirname, "..");
-
-class Assertion {
-  static that(condition, message) {
-    if (!condition) throw new Error(`Inventory-v2 equipment check failed: ${message}`);
-  }
-
-  static equal(actual, expected, message) {
-    this.that(
-      Object.is(actual, expected),
-      `${message}; expected ${expected}, received ${actual}`,
-    );
-  }
-
-  static throws(operation, message) {
-    let thrown = false;
-    try {
-      operation();
-    } catch (_error) {
-      thrown = true;
-    }
-    this.that(thrown, message);
-  }
-}
+const Assertion = CheckAssertion.create("Inventory-v2 equipment check");
 
 class RuntimeLoader {
   load() {
@@ -225,8 +204,8 @@ class InventoryV2EquipmentCheck {
     leader.location = { kind: "attached", slotIndex: 0 };
     const missing = policy.resolve({ slotId: "terminalLine", equipmentState: state, rod, inventoryItems: [leader] });
     Assertion.equal(missing.state, r.EquipmentSlotAvailabilityState.NO_ACCESSIBLE_COMPATIBLE_ITEM, "attached items are not accessible inventory candidates");
-    Assertion.equal(missing.showCross, true, "no accessible compatible item draws a cross");
-    Assertion.that(policy.getClickWarning(missing)?.includes("немає"), "missing item warning appears on click");
+    Assertion.equal(missing.showCross, false, "missing inventory items never imply a locked slot");
+    Assertion.that(policy.getClickWarning(missing)?.includes("немає"), "an ordinary empty slot still explains the missing item on click");
 
     const locked = policy.resolve({ slotId: "gasMask", equipmentState: state, rod, inventoryItems: [] });
     Assertion.equal(locked.state, r.EquipmentSlotAvailabilityState.LOCKED, "gas mask is game-locked");

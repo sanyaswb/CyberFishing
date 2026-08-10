@@ -1,0 +1,136 @@
+const CHECK_DEFINITIONS = Object.freeze([
+  {
+    id: "syntax",
+    title: "JavaScript syntax",
+    file: "utils/check-js.js",
+    suites: ["quick"],
+  },
+  {
+    id: "line-allocation",
+    title: "Line allocation domain",
+    file: "utils/line-allocation-check.js",
+    suites: ["gameplay"],
+  },
+  {
+    id: "float-depth",
+    title: "Float depth and casting",
+    file: "utils/float-depth-cast-check.js",
+    suites: ["gameplay"],
+  },
+  {
+    id: "inventory-lifecycle",
+    title: "Inventory compatibility lifecycle",
+    file: "utils/inventory-lifecycle-check.js",
+    suites: ["inventory"],
+  },
+  {
+    id: "assembly-domain",
+    title: "Item assembly domain",
+    file: "utils/item-assembly-domain-check.js",
+    suites: ["inventory", "inventory-v2"],
+  },
+  {
+    id: "inventory-v2-equipment",
+    title: "Inventory V2 equipment policies",
+    file: "utils/inventory-v2-equipment-check.js",
+    suites: ["inventory", "inventory-v2"],
+  },
+  {
+    id: "inventory-v2-transaction",
+    title: "Inventory V2 transactions",
+    file: "utils/inventory-v2-transaction-check.js",
+    suites: ["inventory", "inventory-v2"],
+  },
+  {
+    id: "inventory-v2-migration",
+    title: "Inventory V2 migrations",
+    file: "utils/inventory-v2-migration-check.js",
+    suites: ["inventory", "inventory-v2"],
+  },
+  {
+    id: "inventory-v2-cast-lure",
+    title: "Inventory V2 cast and lure integration",
+    file: "utils/inventory-v2-cast-and-lure-check.js",
+    suites: ["inventory", "inventory-v2", "gameplay"],
+  },
+  {
+    id: "inventory-v2-line-allocation",
+    title: "Inventory V2 line allocation",
+    file: "utils/inventory-v2-line-allocation-check.js",
+    suites: ["inventory", "inventory-v2"],
+  },
+  {
+    id: "consumable-event-identity",
+    title: "Consumable event identity",
+    file: "utils/consumable-event-identity-check.js",
+    suites: ["inventory", "inventory-v2", "gameplay"],
+  },
+  {
+    id: "inventory-v2-integration",
+    title: "Inventory V2 application integration",
+    file: "utils/inventory-v2-integration-check.js",
+    suites: ["inventory", "inventory-v2"],
+  },
+  {
+    id: "inventory-v2-ui",
+    title: "Inventory V2 UI",
+    file: "utils/inventory-v2-ui-check.js",
+    suites: ["inventory", "inventory-v2"],
+  },
+  {
+    id: "fish-rarity",
+    title: "Fish rarity",
+    file: "utils/fish-rarity-check.js",
+    suites: ["items"],
+  },
+  {
+    id: "item-rarity",
+    title: "Item rarity",
+    file: "utils/item-rarity-check.js",
+    suites: ["items"],
+  },
+  {
+    id: "item-progression",
+    title: "Item progression",
+    file: "utils/item-progression-check.js",
+    suites: ["items"],
+  },
+  {
+    id: "item-condition",
+    title: "Item condition",
+    file: "utils/item-condition-check.js",
+    suites: ["items"],
+  },
+  {
+    id: "degradation-colors",
+    title: "Degradation colors",
+    file: "utils/degradation-color-check.js",
+    suites: ["items"],
+  },
+  {
+    id: "rarity-production",
+    title: "Production rarity configuration",
+    file: "utils/rarity-production-check.js",
+    suites: ["quick", "items"],
+  },
+  {
+    id: "victory-input",
+    title: "Victory input",
+    file: "utils/victory-input-check.js",
+    suites: ["gameplay"],
+  },
+  {
+    id: "game-cycle",
+    title: "Full game cycle",
+    file: "utils/game-cycle-check.js",
+    suites: ["gameplay"],
+  },
+  {
+    id: "devtools-links",
+    title: "DevTools linked parameters",
+    file: "utils/dev-tools-linked-parameter-check.js",
+    suites: ["tools"],
+  },
+]);
+
+module.exports = { CHECK_DEFINITIONS };

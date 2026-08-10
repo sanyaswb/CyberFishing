@@ -1,29 +1,14 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const vm = require("node:vm");
+const { CheckAssertion } = require("./testing/core/check_assertion");
+const { SourceRuntime } = require("./testing/core/source_runtime");
 
 const ROOT = path.resolve(__dirname, "..");
-
-class Assertion {
-  static that(condition, message) {
-    if (!condition) throw new Error(`Item rarity check failed: ${message}`);
-  }
-
-  static equal(actual, expected, message) {
-    this.that(
-      Object.is(actual, expected),
-      `${message}; expected ${expected}, received ${actual}`,
-    );
-  }
-
-  static jsonEqual(actual, expected, message) {
-    this.equal(JSON.stringify(actual), JSON.stringify(expected), message);
-  }
-}
+const Assertion = CheckAssertion.create("Item rarity check");
 
 class ItemRarityRuntimeLoader {
   load() {
-    const context = vm.createContext({ console });
+    const runtime = new SourceRuntime();
     const scripts = [
       "src/config/rarity/rarity_visual_config.js",
       "src/config/databases/item_db.js",
@@ -38,29 +23,17 @@ class ItemRarityRuntimeLoader {
       "src/ui/styles/rarity_visual_resolver.js",
       "src/ui/rarity/item_rarity_dom_adapter.js",
     ];
-    for (const relativePath of scripts) {
-      vm.runInContext(this.#read(relativePath), context, {
-        filename: relativePath,
-      });
-    }
-    vm.runInContext(
-      [
-        "globalThis.__ITEM_DB__ = ITEM_DB;",
-        "globalThis.__VISUAL_CONFIG__ = RARITY_VISUAL_CONFIG;",
-        "globalThis.__ITEM_VALIDATOR__ = ItemRarityConfigValidator;",
-        "globalThis.__ITEM_RESOLVER__ = ItemRarityResolver;",
-        "globalThis.__STACKING_POLICY__ = InventoryItemStackingPolicy;",
-        "globalThis.__ITEM_FACTORY__ = InventoryItemFactory;",
-        "globalThis.__VISUAL_RESOLVER__ = RarityVisualResolver;",
-        "globalThis.__DOM_ADAPTER__ = ItemRarityDomAdapter;",
-      ].join("\n"),
-      context,
-    );
-    return context;
-  }
-
-  #read(relativePath) {
-    return fs.readFileSync(path.join(ROOT, relativePath), "utf8");
+    runtime.loadMany(scripts).expose({
+      __ITEM_DB__: "ITEM_DB",
+      __VISUAL_CONFIG__: "RARITY_VISUAL_CONFIG",
+      __ITEM_VALIDATOR__: "ItemRarityConfigValidator",
+      __ITEM_RESOLVER__: "ItemRarityResolver",
+      __STACKING_POLICY__: "InventoryItemStackingPolicy",
+      __ITEM_FACTORY__: "InventoryItemFactory",
+      __VISUAL_RESOLVER__: "RarityVisualResolver",
+      __DOM_ADAPTER__: "ItemRarityDomAdapter",
+    });
+    return runtime.context;
   }
 }
 

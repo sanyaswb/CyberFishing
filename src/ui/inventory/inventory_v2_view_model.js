@@ -237,6 +237,7 @@ class InventoryV2ViewModelNormalizer {
       sockets: Object.freeze(this.#normalizeSlots(source.sockets, "socket")),
       equipped: source.equipped === true,
       canEquip: source.canEquip !== false,
+      showEquip: source.showEquip !== false && source.equipped !== true,
       canUnequip: source.canUnequip !== false,
       showUnequip: source.showUnequip !== false,
       canDisassemble: source.canDisassemble !== false,
@@ -263,7 +264,7 @@ class InventoryV2ViewModelNormalizer {
     const categories = this.#array(source.categories).map((category) =>
       Object.freeze({
         id: this.#text(category?.id, "all"),
-        label: this.#text(category?.label, "Усе"),
+        label: this.#text(category?.label, "Усі"),
         icon: this.#text(category?.icon, ""),
         selected:
           category?.selected === true ||

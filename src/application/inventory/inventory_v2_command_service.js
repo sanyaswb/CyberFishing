@@ -29,6 +29,8 @@ class InventoryV2CommandService {
   #projectionService;
   #lineAllocationService;
   #equipmentLineReadinessPolicy;
+  #stackingPolicy;
+  #reservationPolicy;
   #fallbackSequence = 0;
   #uiState = {
     isOpen: false,
@@ -62,6 +64,8 @@ class InventoryV2CommandService {
     projectionService,
     lineAllocationService,
     equipmentLineReadinessPolicy = null,
+    stackingPolicy = null,
+    reservationPolicy = null,
     instanceIdFactory = null,
   } = {}) {
     this.#repository = repository;
@@ -84,6 +88,9 @@ class InventoryV2CommandService {
     this.#projectionService = projectionService;
     this.#lineAllocationService = lineAllocationService;
     this.#equipmentLineReadinessPolicy = equipmentLineReadinessPolicy;
+    this.#stackingPolicy =
+      stackingPolicy || new ItemAssemblyStackingPolicy();
+    this.#reservationPolicy = reservationPolicy;
     this.#instanceIdFactory = instanceIdFactory;
     this.#assertDependencies();
   }
@@ -333,6 +340,7 @@ class InventoryV2CommandService {
   #unequipSlot(slotId) {
     const currentId = this.#equipmentState.getRootInstanceId(slotId);
     if (!currentId) return this.#failure("Комірка вже порожня.");
+    let unequippedInstanceId = currentId;
     this.#transaction.runAtomic(() => {
       if (slotId === "rod") {
         const plan = this.#rodChangePlanner.plan({
@@ -341,18 +349,17 @@ class InventoryV2CommandService {
         });
         this.#assertAllowedPlan(plan);
         this.#equipmentState.restore(plan.after);
-        this.#releaseLooseTerminalLineAfterPlan(plan);
+        const settledRoots = this.#settleUnequippedRootsAfterPlan(plan);
+        unequippedInstanceId = settledRoots.get(currentId) || currentId;
       } else {
         this.#equipmentState.clear(slotId);
-        if (slotId === "terminalLine") {
-          this.#releaseLooseLine(currentId);
-        }
+        unequippedInstanceId =
+          this.#settleUnequippedRoot(currentId, slotId) || currentId;
       }
-      this.#releaseRootFromLoadout(currentId);
     });
     this.#uiState.selectedInstanceId = null;
     this.#uiState.highlightedEquipmentSlotId = null;
-    return this.#success({ unequippedInstanceId: currentId });
+    return this.#success({ unequippedInstanceId });
   }
 
   #activateAssemblySocket(action) {
@@ -411,7 +418,7 @@ class InventoryV2CommandService {
       this.#equipRootWithinTransaction(rootInstanceId, slotId);
     });
     this.#showLoadoutPanel();
-    return this.#success({ equippedInstanceId: rootInstanceId, slotId });
+    return this.#equipmentSuccess({ equippedInstanceId: rootInstanceId, slotId });
   }
 
   #equipPreparedRoot(rootInstanceId, preferredSlotId = null) {
@@ -428,7 +435,7 @@ class InventoryV2CommandService {
       this.#equipRootWithinTransaction(rootInstanceId, slotId),
     );
     this.#showLoadoutPanel();
-    return this.#success({ equippedInstanceId: rootInstanceId, slotId });
+    return this.#equipmentSuccess({ equippedInstanceId: rootInstanceId, slotId });
   }
 
   #unequipAssembly(rootInstanceId) {
@@ -486,7 +493,7 @@ class InventoryV2CommandService {
     });
     if (!result.success) return this.#failure(result.warning);
     this.#showLoadoutPanel();
-    return this.#success({ loadoutId, equippedAll: true });
+    return this.#equipmentSuccess({ loadoutId, equippedAll: true });
   }
 
   #equipLoadoutSlot(loadoutId, slotId) {
@@ -512,20 +519,10 @@ class InventoryV2CommandService {
     }
 
     this.#transaction.runAtomic(() => {
-      const previousTerminalLineId =
-        slotId === "terminalLine"
-          ? this.#equipmentState.getRootInstanceId("terminalLine")
-          : null;
       this.#equipRootWithinTransaction(rootInstanceId, slotId);
-      if (
-        previousTerminalLineId &&
-        previousTerminalLineId !== rootInstanceId
-      ) {
-        this.#releaseLooseLine(previousTerminalLineId);
-      }
     });
     this.#showSavedLoadoutPreview(loadoutId);
-    return this.#success({
+    return this.#equipmentSuccess({
       loadoutId,
       slotId,
       equippedInstanceId: rootInstanceId,
@@ -583,7 +580,7 @@ class InventoryV2CommandService {
     });
     this.#uiState.selectedInstanceId = null;
     this.#uiState.highlightedEquipmentSlotId = null;
-    return this.#success({ equippedInstanceId, slotId });
+    return this.#equipmentSuccess({ equippedInstanceId, slotId });
   }
 
   #equipRootWithinTransaction(instanceId, slotId) {
@@ -602,8 +599,9 @@ class InventoryV2CommandService {
       });
       this.#assertAllowedPlan(plan);
       this.#equipmentState.restore(plan.after);
-      this.#releaseLooseTerminalLineAfterPlan(plan);
+      this.#settleUnequippedRootsAfterPlan(plan);
     } else {
+      const previousRootId = this.#equipmentState.getRootInstanceId(slotId);
       if (slotId === "reel") {
         this.#assertEquipmentLineReady({
           ...this.#equipmentState.snapshot(),
@@ -611,6 +609,9 @@ class InventoryV2CommandService {
         });
       }
       this.#equipmentState.setRootInstanceId(slotId, instanceId);
+      if (previousRootId && previousRootId !== instanceId) {
+        this.#settleUnequippedRoot(previousRootId, slotId);
+      }
     }
     if (slotId === "handChum") {
       this.#refillMemory.remember(
@@ -773,12 +774,44 @@ class InventoryV2CommandService {
     return this.#repository.require(result.instanceId);
   }
 
-  #releaseLooseTerminalLineAfterPlan(plan) {
-    const previousId = plan?.before?.terminalLine || null;
-    const nextId = plan?.after?.terminalLine || null;
-    if (previousId && previousId !== nextId) {
-      this.#releaseLooseLine(previousId);
+  #settleUnequippedRootsAfterPlan(plan) {
+    const settledRoots = new Map();
+    for (const movement of plan?.movements || []) {
+      if (movement.direction !== "to-inventory" || !movement.instanceId) {
+        continue;
+      }
+      settledRoots.set(
+        movement.instanceId,
+        this.#settleUnequippedRoot(movement.instanceId, movement.slotId) ||
+          movement.instanceId,
+      );
     }
+    return settledRoots;
+  }
+
+  #settleUnequippedRoot(instanceId, slotId) {
+    const item = this.#repository.get(instanceId);
+    if (!item || InventoryItemLocation.isLoadout(item.location)) {
+      return instanceId;
+    }
+    if (slotId === "terminalLine") {
+      return this.#releaseLooseLine(instanceId)?.instanceId || instanceId;
+    }
+    if (
+      !InventoryItemLocation.isInventory(item.location) ||
+      this.#assemblyStates.has(instanceId)
+    ) {
+      return instanceId;
+    }
+    return this.#repository.mergeInventoryItem(
+      instanceId,
+      this.#stackingPolicy,
+      {
+        canMerge: (candidate) =>
+          !this.#assemblyStates.has(candidate.instanceId) &&
+          !this.#reservationPolicy?.isReserved?.(candidate),
+      },
+    );
   }
 
   #assertEquipmentLineReady(equipmentSnapshot) {
@@ -992,6 +1025,12 @@ class InventoryV2CommandService {
 
   #success(extra = {}) {
     return Object.freeze({ success: true, warning: null, refresh: true, ...extra });
+  }
+
+  #equipmentSuccess(extra = {}) {
+    this.#uiState.activeCategoryId = "compatible";
+    this.#uiState.activeSubfilterIds = [];
+    return this.#success(extra);
   }
 
   #failure(warning, error = null) {

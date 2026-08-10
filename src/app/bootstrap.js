@@ -460,19 +460,16 @@ class GameCompositionRoot {
       };
     });
     const inventoryV2Facade = inventory.inventoryV2Facade;
-    systems.inventoryUI = inventoryV2Facade
-      ? InventoryV2Bootstrap.create({
-          facade: inventoryV2Facade,
-          onAction: (action) => inventory.dispatchInventoryV2Action(action),
-          rarityDomAdapter: itemRarityDomAdapter,
-          progressionDomAdapter: itemProgressionDomAdapter,
-          conditionDomAdapter: itemConditionDomAdapter,
-        })
-      : new InventoryUI(systems.inventory, {
-          rarityDomAdapter: itemRarityDomAdapter,
-          progressionDomAdapter: itemProgressionDomAdapter,
-          conditionDomAdapter: itemConditionDomAdapter,
-        });
+    if (!inventoryV2Facade) {
+      throw new Error("Inventory V2 composition is required");
+    }
+    systems.inventoryUI = InventoryV2Bootstrap.create({
+      facade: inventoryV2Facade,
+      onAction: (action) => inventory.dispatchInventoryV2Action(action),
+      rarityDomAdapter: itemRarityDomAdapter,
+      progressionDomAdapter: itemProgressionDomAdapter,
+      conditionDomAdapter: itemConditionDomAdapter,
+    });
     const equipmentRules = new EquipmentRules(castDistanceCalculator);
     const baitRules = new BaitRules();
     const castRules = new CastRules(equipmentRules);

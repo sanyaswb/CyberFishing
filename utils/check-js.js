@@ -1,9 +1,16 @@
-const { spawnSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
+const vm = require("node:vm");
+const { spawnSync } = require("node:child_process");
 
 const ROOT_DIR = path.resolve(__dirname, "..");
-const IGNORED_DIRS = new Set([".git", "node_modules"]);
+const IGNORED_DIRS = new Set([
+  ".git",
+  "build",
+  "coverage",
+  "dist",
+  "node_modules",
+]);
 
 class JavaScriptFileFinder {
   constructor(rootDir) {
@@ -36,10 +43,19 @@ class JavaScriptSyntaxChecker {
   }
 
   check(filePath) {
-    return spawnSync(this.nodePath, ["--check", filePath], {
-      encoding: "utf8",
-      stdio: "pipe",
-    });
+    try {
+      new vm.Script(fs.readFileSync(filePath, "utf8"), { filename: filePath });
+      return null;
+    } catch (error) {
+      const moduleFallback = spawnSync(this.nodePath, ["--check", filePath], {
+        encoding: "utf8",
+        stdio: "pipe",
+      });
+      if (moduleFallback.status === 0) return null;
+      return {
+        stack: moduleFallback.stderr || moduleFallback.stdout || error.stack,
+      };
+    }
   }
 }
 
@@ -60,10 +76,10 @@ class CheckJsCommand {
     let failed = false;
 
     for (const filePath of files) {
-      const result = this.#checker.check(filePath);
-      if (result.status !== 0) {
+      const error = this.#checker.check(filePath);
+      if (error) {
         failed = true;
-        process.stderr.write(result.stderr || result.stdout);
+        process.stderr.write(`${error.stack || error.message}\n`);
       }
     }
 

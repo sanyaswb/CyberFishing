@@ -1,35 +1,15 @@
-const fs = require("node:fs");
-const path = require("node:path");
-const vm = require("node:vm");
+const { CheckAssertion } = require("./testing/core/check_assertion");
+const { SourceRuntime } = require("./testing/core/source_runtime");
 
-const ROOT = path.resolve(__dirname, "..");
-
-class Assertion {
-  static that(condition, message) {
-    if (!condition) throw new Error(`Fish rarity check failed: ${message}`);
-  }
-
-  static equal(actual, expected, message) {
-    this.that(
-      actual === expected,
-      `${message}; expected ${expected}, received ${actual}`,
-    );
-  }
-}
+const Assertion = CheckAssertion.create("Fish rarity check");
 
 class RuntimeLoader {
   loadClasses(definitions) {
-    const context = vm.createContext({ console });
+    const runtime = new SourceRuntime();
     for (const { relativePath, classNames } of definitions) {
-      const source = fs.readFileSync(path.join(ROOT, relativePath), "utf8");
-      const exports = classNames
-        .map((className) => `globalThis.${className} = ${className};`)
-        .join("\n");
-      vm.runInContext(`${source}\n${exports}`, context, {
-        filename: relativePath,
-      });
+      runtime.load(relativePath, { expose: classNames });
     }
-    return context;
+    return runtime.context;
   }
 }
 
