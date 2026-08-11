@@ -2,8 +2,14 @@ class InventoryV2AssemblyEditorRenderer {
   #dom;
   #itemRenderer;
   #parametersRenderer;
+  #parameterSectionResolver;
 
-  constructor({ domFactory, itemRenderer, parametersRenderer = null } = {}) {
+  constructor({
+    domFactory,
+    itemRenderer,
+    parametersRenderer = null,
+    parameterSectionResolver = null,
+  } = {}) {
     this.#dom = domFactory || new globalThis.InventoryV2DomFactory();
     this.#itemRenderer =
       itemRenderer ||
@@ -11,6 +17,9 @@ class InventoryV2AssemblyEditorRenderer {
     this.#parametersRenderer =
       parametersRenderer ||
       new globalThis.InventoryV2ItemParametersRenderer({ domFactory: this.#dom });
+    this.#parameterSectionResolver =
+      parameterSectionResolver ||
+      new globalThis.InventoryV2AssemblyParameterSectionResolver();
   }
 
   render(
@@ -33,34 +42,40 @@ class InventoryV2AssemblyEditorRenderer {
       "inventory-v2-assembly-editor__workspace",
     );
     workspace.appendChild(this.#renderRootVisual(model));
-    const sockets = this.#dom.element(
-      "div",
-      "inventory-v2-assembly-editor__sockets",
-    );
-    model.sockets.forEach((socket) => {
-      sockets.appendChild(
-        this.#itemRenderer.renderSlot(socket, {
-          variant: "socket",
-          onActivate: () => onSocketActivate?.(socket),
-          onUnavailable: (warning) => onWarning?.(warning),
-        }),
+    if (model.sockets.length > 0) {
+      const sockets = this.#dom.element(
+        "div",
+        "inventory-v2-assembly-editor__sockets",
       );
-    });
-    workspace.appendChild(sockets);
-    const parameters = this.#parametersRenderer.render(model.root);
+      model.sockets.forEach((socket) => {
+        sockets.appendChild(
+          this.#itemRenderer.renderSlot(socket, {
+            variant: "socket",
+            onActivate: () => onSocketActivate?.(socket),
+            onUnavailable: (warning) => onWarning?.(warning),
+          }),
+        );
+      });
+      workspace.appendChild(sockets);
+    }
+    const parameterSections = this.#parameterSectionResolver.resolve(model);
+    const parameters = this.#parametersRenderer.renderSections(
+      parameterSections,
+    );
     if (parameters) workspace.appendChild(parameters);
-    editor.append(workspace, this.#renderActions(model, {
+    editor.append(this.#renderActions(model, {
       onEquip,
       onUnequip,
       onDisassemble,
       onBack,
       onWarning,
-    }));
+    }), workspace);
     return editor;
   }
 
-  updateDynamicVisuals(host, item) {
-    return this.#parametersRenderer.update(host, item);
+  updateDynamicVisuals(host, model) {
+    const sections = this.#parameterSectionResolver.resolve(model);
+    return this.#parametersRenderer.updateSections(host, sections);
   }
 
   #renderRootVisual(model) {

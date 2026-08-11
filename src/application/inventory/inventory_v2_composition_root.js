@@ -249,6 +249,7 @@ class InventoryV2CompositionRoot {
       boatChargeProvider,
     });
     const subfilterResolver = new InventoryV2SubfilterResolver();
+    const itemOrderResolver = new InventoryV2ItemOrderResolver();
     const viewModels = new InventoryV2ViewModelFactory({
       repository,
       assemblyStates,
@@ -258,10 +259,12 @@ class InventoryV2CompositionRoot {
       loadouts,
       itemViews,
       subfilterResolver,
+      itemOrderResolver,
       visibilityPolicy,
       availabilityPolicy,
       terminalLineResolver,
       compatibilityPolicy,
+      equipmentLineReadinessPolicy,
       projectionService,
       settings,
       loadValueProvider,

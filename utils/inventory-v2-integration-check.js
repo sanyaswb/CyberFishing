@@ -5,8 +5,10 @@ const vm = require("node:vm");
 const root = path.resolve(__dirname, "..");
 const context = vm.createContext({ console });
 const files = [
+  "src/config/rarity/rarity_visual_config.js",
   "src/config/inventory/item_assembly_profile_config.js",
   "src/config/inventory/equipment_slot_config.js",
+  "src/config/inventory/inventory_v2_sort_config.js",
   "src/core/inventory/inventory_item_location.js",
   "src/core/inventory/inventory_item_reservation_policy.js",
   "src/core/inventory/flat_inventory_item_repository.js",
@@ -52,6 +54,7 @@ const files = [
   "src/application/inventory/inventory_v2_item_hydrator.js",
   "src/application/inventory/inventory_v2_item_view_factory.js",
   "src/application/inventory/inventory_v2_subfilter_resolver.js",
+  "src/application/inventory/inventory_v2_item_order_resolver.js",
   "src/application/inventory/inventory_v2_context_item_filter.js",
   "src/application/inventory/inventory_v2_view_model_factory.js",
   "src/application/inventory/inventory_v2_line_allocation_service.js",
@@ -323,6 +326,64 @@ vm.runInContext(
       .join(",") === "all,compatible",
     "Compatible is the second inventory group after All",
   );
+
+  const cardInspection = makeComposition({
+    items: [
+      raw("inspect-pole", "rodPole"),
+      raw("inspect-hook", "hook"),
+      raw("inspect-float", "floatDay"),
+      raw("inspect-reel", "reel"),
+      raw("inspect-bait", "bait"),
+    ],
+  });
+  dispatch(cardInspection, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+    instanceId: "inspect-pole",
+  });
+  cardInspection.equipmentState.setRootInstanceId("tackle", "inspect-hook");
+  cardInspection.equipmentState.setRootInstanceId("float", "inspect-float");
+  dispatch(cardInspection, InventoryV2ActionType.EQUIPMENT_SLOT_ACTIVATE, {
+    slotId: "rod",
+  });
+  const equippedRodCard = cardInspection.facade.getViewModel();
+  const rodParameterItemIds = equippedRodCard.panel.assembly.parameterItems
+    .map((item) => item.instanceId)
+    .sort()
+    .join(",");
+  assertIntegration(
+    cardInspection.equipmentState.getRootInstanceId("rod") === "inspect-pole" &&
+      equippedRodCard.panel.mode === "assembly" &&
+      equippedRodCard.panel.assembly.rootInstanceId === "inspect-pole" &&
+      equippedRodCard.panel.assembly.showEquip === false &&
+      equippedRodCard.panel.assembly.showUnequip === true &&
+      rodParameterItemIds === "inspect-float,inspect-hook",
+    "short press on an equipped rod opens its card with equipped component sections without unequipping it",
+  );
+  dispatch(cardInspection, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+    instanceId: "inspect-reel",
+  });
+  const incompatibleReelCard = cardInspection.facade.getViewModel();
+  assertIntegration(
+    incompatibleReelCard.panel.assembly.rootInstanceId === "inspect-reel" &&
+      incompatibleReelCard.panel.assembly.showEquip === true &&
+      incompatibleReelCard.panel.assembly.canEquip === false &&
+      Boolean(incompatibleReelCard.panel.assembly.equipWarning),
+    "an incompatible inventory item still opens its card with a disabled Equip action and a reason",
+  );
+  dispatch(cardInspection, InventoryV2ActionType.ASSEMBLY_BACK, {
+    rootInstanceId: "inspect-reel",
+  });
+  dispatch(cardInspection, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+    instanceId: "inspect-bait",
+  });
+  const slotlessItemCard = cardInspection.facade.getViewModel();
+  assertIntegration(
+    slotlessItemCard.panel.assembly.rootInstanceId === "inspect-bait" &&
+      slotlessItemCard.panel.assembly.sockets.length === 0 &&
+      slotlessItemCard.panel.assembly.canEquip === false &&
+      Boolean(slotlessItemCard.panel.assembly.equipWarning),
+    "a slotless inventory item opens as a read-only card and keeps normal inventory browsing",
+  );
+
   dispatch(compatibleFiltering, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "compatible-pole",
   });
@@ -667,6 +728,256 @@ vm.runInContext(
     rootInstanceId: contextBoatRoot,
   });
 
+  const inventoryOrdering = makeComposition({
+    items: [
+      raw("sort-bait", "bait", 1, {
+        rarity: "common",
+        engineStats: { level: 2, power: 2 },
+      }),
+      raw("sort-wobbler", "wobbler", 1, {
+        rarity: "rare",
+        engineStats: { level: 5, power: 4 },
+      }),
+      raw("sort-reel", "reel", 1, {
+        rarity: "epic",
+        engineStats: { level: 4, power: 3 },
+      }),
+      raw("sort-hook", "hook", 1, {
+        rarity: "legendary",
+        engineStats: { level: 1, power: 8 },
+      }),
+      raw("sort-rod", "rodPole", 1, {
+        rarity: "uncommon",
+        engineStats: { level: 3, power: 1 },
+      }),
+    ],
+  });
+  const orderedIds = () =>
+    inventoryOrdering.facade
+      .getViewModel()
+      .inventory.items.map((item) => item.instanceId)
+      .join(",");
+  assertIntegration(
+    orderedIds() ===
+      "sort-rod,sort-reel,sort-hook,sort-wobbler,sort-bait",
+    "type sorting follows the configured rod-to-consumable order",
+  );
+  dispatch(
+    inventoryOrdering,
+    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    { criterionId: "rarity" },
+  );
+  dispatch(
+    inventoryOrdering,
+    InventoryV2ActionType.SORT_DIRECTION_SELECT,
+    { directionId: "descending" },
+  );
+  assertIntegration(
+    orderedIds() ===
+      "sort-hook,sort-reel,sort-wobbler,sort-rod,sort-bait",
+    "rarity sorting supports highest-to-lowest direction",
+  );
+  dispatch(
+    inventoryOrdering,
+    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    { criterionId: "level" },
+  );
+  assertIntegration(
+    orderedIds() ===
+      "sort-wobbler,sort-reel,sort-rod,sort-bait,sort-hook",
+    "level sorting uses stable numeric gameplay values",
+  );
+  dispatch(
+    inventoryOrdering,
+    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    { criterionId: "power" },
+  );
+  assertIntegration(
+    orderedIds() ===
+      "sort-hook,sort-wobbler,sort-reel,sort-bait,sort-rod",
+    "power sorting uses stable progression or EngineStats values",
+  );
+  dispatch(
+    inventoryOrdering,
+    InventoryV2ActionType.SORT_DIRECTION_SELECT,
+    { directionId: "ascending" },
+  );
+  assertIntegration(
+    orderedIds() ===
+      "sort-rod,sort-bait,sort-reel,sort-wobbler,sort-hook",
+    "sort direction can be reversed without changing the criterion",
+  );
+  dispatch(
+    inventoryOrdering,
+    InventoryV2ActionType.RARITY_FILTER_TOGGLE,
+    { rarityId: "rare", enabled: true },
+  );
+  assertIntegration(
+    orderedIds() === "sort-wobbler",
+    "rarity square filters inventory independently from sorting",
+  );
+  dispatch(
+    inventoryOrdering,
+    InventoryV2ActionType.RARITY_FILTER_TOGGLE,
+    { rarityId: "rare", enabled: false },
+  );
+
+  const stablePlacementOrdering = makeComposition({
+    items: [
+      raw("stable-spring", "spring"),
+      raw("stable-bait", "bait", 1, { rarity: "rare" }),
+      raw("stable-hooks", "hook", 4, { rarity: "common" }),
+    ],
+  });
+  dispatch(
+    stablePlacementOrdering,
+    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    { criterionId: "rarity" },
+  );
+  dispatch(
+    stablePlacementOrdering,
+    InventoryV2ActionType.SORT_DIRECTION_SELECT,
+    { directionId: "descending" },
+  );
+  const stableSpringRoot = dispatch(
+    stablePlacementOrdering,
+    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    { instanceId: "stable-spring" },
+  ).rootInstanceId;
+  stablePlacementOrdering.facade.getViewModel();
+  dispatch(
+    stablePlacementOrdering,
+    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    { instanceId: "stable-hooks" },
+  );
+  dispatch(
+    stablePlacementOrdering,
+    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    { instanceId: "stable-hooks" },
+  );
+  assertIntegration(
+    stablePlacementOrdering.facade
+      .getViewModel()
+      .inventory.items.map((item) => item.instanceId)
+      .join(",") === "stable-hooks,stable-bait",
+    "newly compatible bait appears after the placement source instead of moving it",
+  );
+  dispatch(
+    stablePlacementOrdering,
+    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    { instanceId: "stable-hooks" },
+  );
+  dispatch(
+    stablePlacementOrdering,
+    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    { instanceId: "stable-hooks" },
+  );
+  dispatch(
+    stablePlacementOrdering,
+    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    { instanceId: "stable-hooks" },
+  );
+  assertIntegration(
+    [0, 1, 2].every(
+      (slotIndex) =>
+        stablePlacementOrdering.assemblyReader.getChild(
+          stableSpringRoot,
+          "hook",
+          slotIndex,
+        ) !== null,
+    ) &&
+      stablePlacementOrdering.facade
+        .getViewModel()
+        .inventory.items.map((item) => item.instanceId)
+        .join(",") === "stable-bait,stable-hooks",
+    "normal rarity sorting resumes after all compatible empty cells are filled",
+  );
+
+  const repeatedSocketPlacement = makeComposition({
+    items: [
+      raw("rapid-boat", "boat"),
+      raw("rapid-chum", "chum", 3, {
+        rarity: "common",
+        recipe: "rapid-fill",
+      }),
+    ],
+  });
+  const rapidBoatRoot = dispatch(
+    repeatedSocketPlacement,
+    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    { instanceId: "rapid-boat" },
+  ).rootInstanceId;
+  const firstCargoSelection = dispatch(
+    repeatedSocketPlacement,
+    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    { instanceId: "rapid-chum" },
+  );
+  const firstHighlightedCargo = repeatedSocketPlacement.facade
+    .getViewModel()
+    .panel.assembly.sockets.filter((socket) => socket.highlighted)
+    .map((socket) => socket.slotIndex);
+  assertIntegration(
+    firstCargoSelection.requiresSocketChoice === true &&
+      firstHighlightedCargo.join(",") === "0,1,2",
+    "the first click highlights all empty compatible boat sections in stable order",
+  );
+  dispatch(
+    repeatedSocketPlacement,
+    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    { instanceId: "rapid-chum" },
+  );
+  assertIntegration(
+    repeatedSocketPlacement.assemblyReader.getChild(
+      rapidBoatRoot,
+      "cargo",
+      0,
+    ) !== null,
+    "the second click fills the leftmost highlighted section",
+  );
+  const secondCargoSelection = dispatch(
+    repeatedSocketPlacement,
+    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    { instanceId: "rapid-chum" },
+  );
+  const remainingHighlightedCargo = repeatedSocketPlacement.facade
+    .getViewModel()
+    .panel.assembly.sockets.filter((socket) => socket.highlighted)
+    .map((socket) => socket.slotIndex);
+  assertIntegration(
+    secondCargoSelection.requiresSocketChoice === true &&
+      remainingHighlightedCargo.join(",") === "1,2",
+    "the next selection highlights only empty sections and keeps left-to-right order",
+  );
+  dispatch(
+    repeatedSocketPlacement,
+    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    { instanceId: "rapid-chum" },
+  );
+  assertIntegration(
+    repeatedSocketPlacement.assemblyReader.getChild(
+      rapidBoatRoot,
+      "cargo",
+      1,
+    ) !== null,
+    "the fourth click fills the next empty section",
+  );
+  dispatch(
+    repeatedSocketPlacement,
+    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    { instanceId: "rapid-chum" },
+  );
+  assertIntegration(
+    [0, 1, 2].every(
+      (slotIndex) =>
+        repeatedSocketPlacement.assemblyReader.getChild(
+          rapidBoatRoot,
+          "cargo",
+          slotIndex,
+        ) !== null,
+    ),
+    "the last remaining compatible section fills with one click",
+  );
+
   dispatch(flow, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "pole-rod",
   });
@@ -959,8 +1270,9 @@ vm.runInContext(
     dispatch(looseStackCycles, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
       instanceId: "stacked-pole-rods",
     });
-    dispatch(looseStackCycles, InventoryV2ActionType.EQUIPMENT_SLOT_ACTIVATE, {
+    dispatch(looseStackCycles, InventoryV2ActionType.EQUIPMENT_SLOT_LONG_PRESS, {
       slotId: "rod",
+      instanceId: looseStackCycles.equipmentState.getRootInstanceId("rod"),
     });
     const looseItems = looseStackCycles.repository.list();
     assertIntegration(
@@ -1008,6 +1320,21 @@ vm.runInContext(
     InventoryV2ActionType.LOADOUT_SAVE,
     { name: "Disassembly kit" },
   ).loadoutId;
+  const activeDisassemblyAttempt = disassembly.facade.dispatch({
+    type: InventoryV2ActionType.ASSEMBLY_DISASSEMBLE,
+    rootInstanceId: disassemblySpring,
+  });
+  assertIntegration(
+    activeDisassemblyAttempt.success === false &&
+      disassembly.equipmentState.getRootInstanceId("tackle") ===
+        disassemblySpring &&
+      disassembly.assemblyStates.has(disassemblySpring),
+    "an equipped stack must be unequipped before it can be disassembled",
+  );
+  dispatch(disassembly, InventoryV2ActionType.EQUIPMENT_SLOT_LONG_PRESS, {
+    slotId: "tackle",
+    instanceId: disassemblySpring,
+  });
   dispatch(disassembly, InventoryV2ActionType.ASSEMBLY_DISASSEMBLE, {
     rootInstanceId: disassemblySpring,
   });
@@ -1023,7 +1350,7 @@ vm.runInContext(
         "LOADOUT" &&
       !disassembly.assemblyStates.has(disassemblySpring) &&
       disassembly.equipmentState.getRootInstanceId("tackle") === null,
-    "disassembling an active stack updates its loadout without destroying the other roots",
+    "disassembling an unequipped stack updates its loadout without destroying the other roots",
   );
   dispatch(disassembly, InventoryV2ActionType.LOADOUT_DISASSEMBLE, {
     loadoutId: disassemblyLoadoutId,
@@ -1187,6 +1514,67 @@ vm.runInContext(
 
   // Winding a raw reel is rod-independent. Rod compatibility is checked only
   // when that prepared reel is equipped.
+  const contextualActivation = makeComposition({
+    items: [
+      raw("activation-rod", "rodFeeder", 1, {
+        engineStats: { lengthMeters: 2 },
+      }),
+      raw("activation-reel", "reel", 1, {
+        engineStats: { lineCapacityMeters: 20 },
+      }),
+      raw("activation-line", "line", 1, { lengthMeters: 10 }),
+      raw("activation-empty-reel", "reel", 1, {
+        engineStats: { lineCapacityMeters: 20 },
+      }),
+    ],
+  });
+  dispatch(contextualActivation, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+    instanceId: "activation-rod",
+  });
+  const completeReelRoot = dispatch(
+    contextualActivation,
+    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    { instanceId: "activation-reel" },
+  ).rootInstanceId;
+  dispatch(contextualActivation, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+    instanceId: "activation-line",
+  });
+  dispatch(contextualActivation, InventoryV2ActionType.ASSEMBLY_BACK, {
+    rootInstanceId: completeReelRoot,
+  });
+  dispatch(contextualActivation, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+    instanceId: completeReelRoot,
+  });
+  assertIntegration(
+    contextualActivation.equipmentState.getRootInstanceId("reel") ===
+      completeReelRoot &&
+      contextualActivation.commands.getUiState().panelMode === "loadout",
+    "a complete compatible assembly equips immediately without opening its card",
+  );
+  dispatch(contextualActivation, InventoryV2ActionType.ASSEMBLY_UNEQUIP, {
+    rootInstanceId: completeReelRoot,
+  });
+  const emptyPreparedReel = dispatch(
+    contextualActivation,
+    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    { instanceId: "activation-empty-reel" },
+  ).rootInstanceId;
+  dispatch(contextualActivation, InventoryV2ActionType.ASSEMBLY_EQUIP, {
+    rootInstanceId: emptyPreparedReel,
+  });
+  dispatch(contextualActivation, InventoryV2ActionType.ASSEMBLY_UNEQUIP, {
+    rootInstanceId: emptyPreparedReel,
+  });
+  dispatch(contextualActivation, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+    instanceId: emptyPreparedReel,
+  });
+  assertIntegration(
+    contextualActivation.equipmentState.getRootInstanceId("reel") === null &&
+      contextualActivation.facade.getViewModel().panel.assembly.rootInstanceId ===
+        emptyPreparedReel,
+    "an incomplete prepared assembly opens its card instead of equipping immediately",
+  );
+
   const reelWithoutRod = makeComposition({
     items: [
       raw("raw-reel-no-rod", "reel", 1, {
@@ -1281,6 +1669,14 @@ vm.runInContext(
   dispatch(changedRodReel, InventoryV2ActionType.ASSEMBLY_EQUIP, {
     rootInstanceId: preparedShortReel,
   });
+  const equippedTooltipContext =
+    changedRodReel.facade.getViewModel().tooltipContext;
+  assertIntegration(
+    equippedTooltipContext.equipment.rod?.instanceId === "short-reel-rod" &&
+      equippedTooltipContext.equipment.reel?.instanceId === preparedShortReel &&
+      equippedTooltipContext.equipment.line?.instanceId != null,
+    "balance tooltip context exposes projected rod, reel and installed line",
+  );
   dispatch(changedRodReel, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "long-reel-rod",
   });
@@ -1289,12 +1685,14 @@ vm.runInContext(
     instanceId: preparedShortReel,
   });
   assertIntegration(
-    rejectedPreparedReel.success === false &&
-      /закоротка|мінімум/i.test(rejectedPreparedReel.warning || "") &&
+    rejectedPreparedReel.success === true &&
       changedRodReel.equipmentState.getRootInstanceId("reel") === null &&
       changedRodReel.assemblyStates.require(preparedShortReel).isPrepared &&
-      lineMeters(changedRodReel, "short-reel-line") === 5,
-    "a prepared reel with 5m line is rejected by a longer rod without consuming line or changing state",
+      lineMeters(changedRodReel, "short-reel-line") === 5 &&
+      changedRodReel.facade.getViewModel().panel.assembly.rootInstanceId ===
+        preparedShortReel &&
+      changedRodReel.facade.getViewModel().panel.assembly.canEquip === false,
+    "an incompatible prepared reel opens its card without consuming line or changing state",
   );
 
   const draftReelRollback = makeComposition({
@@ -1493,9 +1891,12 @@ vm.runInContext(
     instanceId: "ready-leader",
   });
   assertIntegration(
-    leaderAttempt.success === false &&
-      readiness.equipmentState.getRootInstanceId("terminalLine") === null,
-    "leader cannot equip before a reel line is installed",
+    leaderAttempt.success === true &&
+      readiness.equipmentState.getRootInstanceId("terminalLine") === null &&
+      readiness.facade.getViewModel().panel.assembly.rootInstanceId ===
+        "ready-leader" &&
+      readiness.facade.getViewModel().panel.assembly.canEquip === false,
+    "leader cannot equip before a reel line is installed, but its card opens with a disabled Equip action",
   );
 
   // Exact, sequential and partial auto-refill for tackle, hand chum and boat.

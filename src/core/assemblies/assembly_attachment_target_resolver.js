@@ -121,6 +121,12 @@ class AssemblyAttachmentTargetResolver {
     );
   }
 
+  findPlacementTargets(rootInstanceId, candidate) {
+    const compatible = this.findCompatibleTargets(rootInstanceId, candidate);
+    const empty = compatible.filter((target) => !target.occupied);
+    return Object.freeze(empty.length > 0 ? empty : [...compatible]);
+  }
+
   hasCompatibleTarget(rootInstanceId, candidate) {
     if (!candidate || candidate.instanceId === rootInstanceId) return false;
     return this.listTargets(rootInstanceId).some((target) =>

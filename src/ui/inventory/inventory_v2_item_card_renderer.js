@@ -55,6 +55,7 @@ class InventoryV2ItemCardRenderer {
       variant = "standard",
       onActivate = null,
       onLongPress = null,
+      longPressDurationMs = null,
       onUnavailable = null,
       framelessItem = false,
       showAttachments = true,
@@ -84,6 +85,7 @@ class InventoryV2ItemCardRenderer {
           variant,
           onActivate,
           onLongPress,
+          longPressDurationMs,
           frameless: framelessItem,
           showAttachments,
         }),
@@ -120,6 +122,7 @@ class InventoryV2ItemCardRenderer {
       compatible = false,
       onActivate = null,
       onLongPress = null,
+      longPressDurationMs = null,
     } = {},
   ) {
     const wrapper = this.#dom.element(
@@ -134,6 +137,7 @@ class InventoryV2ItemCardRenderer {
         variant: "inventory",
         onActivate,
         onLongPress,
+        longPressDurationMs,
       }),
     );
     return wrapper;
@@ -145,6 +149,7 @@ class InventoryV2ItemCardRenderer {
       variant = "standard",
       onActivate = null,
       onLongPress = null,
+      longPressDurationMs = null,
       frameless = false,
       showAttachments = true,
       showMetadata = true,
@@ -171,7 +176,12 @@ class InventoryV2ItemCardRenderer {
       this.#attachmentRenderer.render(card, item.attachments);
     }
     this.#tooltipPresenter?.bind?.(card, item);
-    this.#bindInteraction(card, onActivate, onLongPress);
+    this.#bindInteraction(
+      card,
+      onActivate,
+      onLongPress,
+      longPressDurationMs,
+    );
     return card;
   }
 
@@ -265,11 +275,12 @@ class InventoryV2ItemCardRenderer {
     }
   }
 
-  #bindInteraction(card, onActivate, onLongPress) {
+  #bindInteraction(card, onActivate, onLongPress, longPressDurationMs) {
     if (this.#longPressController && typeof onLongPress === "function") {
       this.#longPressController.bind(card, {
         onClick: onActivate,
         onLongPress,
+        durationMs: longPressDurationMs,
       });
       return;
     }

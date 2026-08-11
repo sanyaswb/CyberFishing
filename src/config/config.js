@@ -237,6 +237,10 @@ const CONFIG = {
     initialTime: null, // Початковий час. 17.5 = 17:30. Якщо поставити null, гра візьме реальний час.
     timeScale: 240, // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
 
+    inventory: {
+      showEngineStats: false,
+    },
+
     godMode: {
       enabled: true, // Гoловний рубильник (якщо false, інші ігноруються)
       infiniteResources: false, // 1. Нескінченна наживка/снасті

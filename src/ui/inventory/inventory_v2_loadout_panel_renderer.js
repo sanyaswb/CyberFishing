@@ -90,18 +90,15 @@ class InventoryV2LoadoutPanelRenderer {
     variant,
     { onSlotActivate, onSlotLongPress, onWarning },
   ) {
-    const supportsLongPress =
-      slot.longPressEnabled === true ||
-      slot.item?.isAssembly === true ||
-      slot.item?.composite === true ||
-      slot.item?.status === "draft" ||
-      slot.item?.status === "prepared";
+    const supportsLongPress = Boolean(slot.item);
     return this.#itemRenderer.renderSlot(slot, {
       variant,
       onActivate: () => onSlotActivate?.(slot),
       onLongPress: supportsLongPress
         ? () => onSlotLongPress?.(slot)
         : null,
+      longPressDurationMs:
+        globalThis.InventoryV2LongPressController.EQUIPPED_DURATION_MS,
       onUnavailable: (warning) => onWarning?.(warning),
     });
   }

@@ -3,6 +3,9 @@ const InventoryV2ActionType = Object.freeze({
   CLOSE: "inventory-v2/close",
   CATEGORY_SELECT: "inventory-v2/category-select",
   SUBFILTER_TOGGLE: "inventory-v2/subfilter-toggle",
+  SORT_CRITERION_SELECT: "inventory-v2/sort-criterion-select",
+  SORT_DIRECTION_SELECT: "inventory-v2/sort-direction-select",
+  RARITY_FILTER_TOGGLE: "inventory-v2/rarity-filter-toggle",
   INVENTORY_ITEM_ACTIVATE: "inventory-v2/inventory-item-activate",
   INVENTORY_ITEM_LONG_PRESS: "inventory-v2/inventory-item-long-press",
   EQUIPMENT_SLOT_ACTIVATE: "inventory-v2/equipment-slot-activate",
@@ -64,6 +67,18 @@ class InventoryV2ActionContract {
         this.#requireId(action.filterId, "filterId");
         if (typeof action.enabled !== "boolean") {
           throw new TypeError("Inventory V2 subfilter enabled must be boolean");
+        }
+        break;
+      case types.SORT_CRITERION_SELECT:
+        this.#requireId(action.criterionId, "criterionId");
+        break;
+      case types.SORT_DIRECTION_SELECT:
+        this.#requireId(action.directionId, "directionId");
+        break;
+      case types.RARITY_FILTER_TOGGLE:
+        this.#requireId(action.rarityId, "rarityId");
+        if (typeof action.enabled !== "boolean") {
+          throw new TypeError("Inventory V2 rarity filter enabled must be boolean");
         }
         break;
       case types.INVENTORY_ITEM_ACTIVATE:
@@ -196,6 +211,11 @@ class InventoryV2ViewModelNormalizer {
           (value) => typeof value === "string" && value.trim(),
         ),
       ),
+      equipment: Object.freeze({
+        ...(source.equipment && typeof source.equipment === "object"
+          ? source.equipment
+          : {}),
+      }),
     });
   }
 
@@ -235,6 +255,7 @@ class InventoryV2ViewModelNormalizer {
         source.root?.instanceId || "",
       ),
       sockets: Object.freeze(this.#normalizeSlots(source.sockets, "socket")),
+      parameterItems: Object.freeze(this.#array(source.parameterItems)),
       equipped: source.equipped === true,
       canEquip: source.canEquip !== false,
       showEquip: source.showEquip !== false && source.equipped !== true,
@@ -281,11 +302,13 @@ class InventoryV2ViewModelNormalizer {
           this.#array(source.activeSubfilterIds).includes(filter?.id),
       }),
     );
+    const sort = this.#normalizeSort(source.sort);
     return Object.freeze({
       mode: source.mode === "saved-loadout" ? "saved-loadout" : "inventory",
       savedLoadout: this.#normalizeSavedLoadout(source.savedLoadout),
       categories: Object.freeze(categories),
       subfilters: Object.freeze(subfilters),
+      sort,
       activeSubfilterIds: Object.freeze(
         this.#array(source.activeSubfilterIds).filter(
           (value) => typeof value === "string" && value.trim(),
@@ -295,6 +318,52 @@ class InventoryV2ViewModelNormalizer {
       selectedInstanceId: this.#text(source.selectedInstanceId, ""),
       highlightedSlotId: this.#text(source.highlightedSlotId, ""),
       emptyMessage: this.#text(source.emptyMessage, "Інвентар порожній"),
+    });
+  }
+
+  #normalizeSort(source = {}) {
+    const criterionId = this.#text(source.criterionId, "type");
+    const directionId = this.#text(source.directionId, "ascending");
+    const activeRarityIds = this.#array(source.activeRarityIds).filter(
+      (value) => typeof value === "string" && value.trim(),
+    );
+    return Object.freeze({
+      criterionId,
+      directionId,
+      criteria: Object.freeze(
+        this.#array(source.criteria).map((criterion) =>
+          Object.freeze({
+            id: this.#text(criterion?.id, "type"),
+            label: this.#text(criterion?.label, "Сортування"),
+            selected:
+              criterion?.selected === true || criterion?.id === criterionId,
+          }),
+        ),
+      ),
+      directions: Object.freeze(
+        this.#array(source.directions).map((direction) =>
+          Object.freeze({
+            id: this.#text(direction?.id, "ascending"),
+            icon: this.#text(direction?.icon, "↕"),
+            label: this.#text(direction?.label, "Напрямок"),
+            selected:
+              direction?.selected === true || direction?.id === directionId,
+          }),
+        ),
+      ),
+      rarities: Object.freeze(
+        this.#array(source.rarities).map((rarity) =>
+          Object.freeze({
+            id: this.#text(rarity?.id, "common"),
+            label: this.#text(rarity?.label, "Рідкість"),
+            color: this.#text(rarity?.color, "rgb(145, 150, 160)"),
+            count: Math.max(0, Math.floor(this.#finite(rarity?.count, 0))),
+            selected:
+              rarity?.selected === true || activeRarityIds.includes(rarity?.id),
+          }),
+        ),
+      ),
+      activeRarityIds: Object.freeze(activeRarityIds),
     });
   }
 

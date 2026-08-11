@@ -1,19 +1,23 @@
 class InventoryV2LongPressController {
   static DURATION_MS = 1500;
+  static EQUIPPED_DURATION_MS = 800;
   static MOVEMENT_TOLERANCE_PX = 8;
 
   #durationMs;
   #movementTolerancePx;
+  #degradationColorResolver;
   #bindings = new Set();
 
   constructor({
     movementTolerancePx = InventoryV2LongPressController.MOVEMENT_TOLERANCE_PX,
+    degradationColorResolver = null,
   } = {}) {
     this.#durationMs = InventoryV2LongPressController.DURATION_MS;
     this.#movementTolerancePx = Math.max(
       0,
       Number(movementTolerancePx) || 0,
     );
+    this.#degradationColorResolver = degradationColorResolver;
   }
 
   get hasActivePress() {
@@ -23,14 +27,24 @@ class InventoryV2LongPressController {
     return false;
   }
 
-  bind(element, { onClick = null, onLongPress = null } = {}) {
+  bind(
+    element,
+    {
+      onClick = null,
+      onLongPress = null,
+      durationMs = this.#durationMs,
+    } = {},
+  ) {
     if (!element?.addEventListener) return () => {};
 
     const binding = {
       element,
       onClick,
       onLongPress,
+      durationMs: Math.max(1, Number(durationMs) || this.#durationMs),
       timerId: null,
+      animationFrameId: null,
+      startedAt: 0,
       pointerId: null,
       startX: 0,
       startY: 0,
@@ -56,11 +70,7 @@ class InventoryV2LongPressController {
       click,
       contextMenu,
     });
-    element.dataset.longPressDuration = String(this.#durationMs);
-    element.style.setProperty(
-      "--inventory-v2-long-press-duration",
-      `${this.#durationMs}ms`,
-    );
+    element.dataset.longPressDuration = String(binding.durationMs);
     element.addEventListener("pointerdown", pointerDown);
     element.addEventListener("pointermove", pointerMove);
     element.addEventListener("pointerup", pointerUp);
@@ -92,15 +102,20 @@ class InventoryV2LongPressController {
     binding.startX = Number(event.clientX) || 0;
     binding.startY = Number(event.clientY) || 0;
     binding.fired = false;
+    binding.startedAt = this.#now();
+    this.#updateProgressVisual(binding, 0);
     binding.element.classList.add("is-long-pressing");
+    this.#scheduleProgressUpdate(binding);
     binding.element.setPointerCapture?.(event.pointerId);
     binding.timerId = globalThis.setTimeout(() => {
       binding.timerId = null;
       binding.fired = true;
+      this.#stopProgressUpdate(binding);
+      this.#updateProgressVisual(binding, 1);
       binding.element.classList.remove("is-long-pressing");
       binding.element.classList.add("is-long-press-fired");
       binding.onLongPress?.(event);
-    }, this.#durationMs);
+    }, binding.durationMs);
   }
 
   #move(binding, event) {
@@ -145,7 +160,55 @@ class InventoryV2LongPressController {
       globalThis.clearTimeout(binding.timerId);
       binding.timerId = null;
     }
+    this.#stopProgressUpdate(binding);
+    this.#updateProgressVisual(binding, 0);
     binding.element.classList.remove("is-long-pressing");
+  }
+
+  #scheduleProgressUpdate(binding) {
+    if (typeof globalThis.requestAnimationFrame !== "function") return;
+    const update = () => {
+      if (binding.disposed || binding.timerId === null) return;
+      const elapsed = Math.max(0, this.#now() - binding.startedAt);
+      this.#updateProgressVisual(
+        binding,
+        Math.min(1, elapsed / binding.durationMs),
+      );
+      binding.animationFrameId = globalThis.requestAnimationFrame(update);
+    };
+    binding.animationFrameId = globalThis.requestAnimationFrame(update);
+  }
+
+  #stopProgressUpdate(binding) {
+    if (binding.animationFrameId === null) return;
+    globalThis.cancelAnimationFrame?.(binding.animationFrameId);
+    binding.animationFrameId = null;
+  }
+
+  #updateProgressVisual(binding, ratio) {
+    const normalized = Math.max(0, Math.min(1, Number(ratio) || 0));
+    binding.progress?.style?.setProperty(
+      "--inventory-v2-long-press-angle",
+      `${normalized * 360}deg`,
+    );
+    const color = this.#degradationColorResolver?.resolveWorseningProgress?.(
+      normalized * 100,
+    );
+    if (color?.available !== true) return;
+    binding.progress.style.setProperty(
+      "--inventory-v2-long-press-color",
+      color.cssColor,
+    );
+    binding.progress.style.setProperty(
+      "--inventory-v2-long-press-glow-color",
+      color.cssGlowColor,
+    );
+  }
+
+  #now() {
+    return typeof globalThis.performance?.now === "function"
+      ? globalThis.performance.now()
+      : Date.now();
   }
 
   #matchesPointer(binding, event) {

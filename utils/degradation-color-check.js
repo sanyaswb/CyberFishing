@@ -37,6 +37,7 @@ class DegradationColorCheck {
     this.#checkConfiguration();
     this.#checkAnchors();
     this.#checkInterpolation();
+    this.#checkWorseningProgress();
     this.#checkBounds();
     this.#checkCapacityIntegration();
     console.log("Degradation color config, resolver and Capacity integration passed.");
@@ -78,6 +79,26 @@ class DegradationColorCheck {
     Assertion.equal(below.outOfRange, "below", "below-range state is exposed");
     Assertion.equal(above.percent, 100, "values above range clamp to 100%");
     Assertion.equal(above.outOfRange, "above", "above-range state is exposed");
+  }
+
+  #checkWorseningProgress() {
+    const initial = this.#resolver.resolveWorseningProgress(0);
+    const complete = this.#resolver.resolveWorseningProgress(100);
+    Assertion.that(
+      initial.color[0] === 214 && initial.color[1] === 220,
+      "interaction progress starts from the configured neutral grey",
+    );
+    Assertion.that(
+      complete.color[0] === 255 &&
+        complete.color[1] === 0 &&
+        complete.color[2] === 0,
+      "100% interaction progress resolves to the shared degradation red",
+    );
+    Assertion.that(
+      initial.cssColor.startsWith("rgba(") &&
+        complete.cssGlowColor.startsWith("rgba("),
+      "interaction progress exposes reusable translucent fill and glow colors",
+    );
   }
 
   #checkCapacityIntegration() {

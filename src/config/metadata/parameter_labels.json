@@ -1322,5 +1322,9 @@
   "physics.tackle.reel.autoRecoverLineCredit": {
     "label": "Auto recover line credit",
     "description": "Allows the reel to recover released line credit when load conditions allow it."
+  },
+  "debug.inventory.showEngineStats": {
+    "label": "Inventory: EngineStats",
+    "description": "Показує у tooltip інвентарю технічну секцію EngineStats. За замовчуванням вимкнено."
   }
 }

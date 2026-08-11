@@ -42,14 +42,7 @@ class DegradationColorConfigValidator {
         );
       }
       previousPosition = position;
-      if (
-        !Array.isArray(stop?.color) ||
-        stop.color.length !== 3 ||
-        stop.color.some(
-          (channel) =>
-            !Number.isInteger(channel) || channel < 0 || channel > 255,
-        )
-      ) {
+      if (!this.#isRgbColor(stop?.color)) {
         this.#error(`${path}.color`, "expected RGB channels in [0, 255]");
       }
     });
@@ -65,6 +58,22 @@ class DegradationColorConfigValidator {
         "last stop must match range maximum",
       );
     }
+    const progress = config?.interactionProgress;
+    if (!this.#isRgbColor(progress?.neutralColor)) {
+      this.#error(
+        "DEGRADATION_COLOR_CONFIG.interactionProgress.neutralColor",
+        "expected RGB channels in [0, 255]",
+      );
+    }
+    for (const key of ["fillAlpha", "glowAlpha"]) {
+      const value = Number(progress?.[key]);
+      if (!Number.isFinite(value) || value < 0 || value > 1) {
+        this.#error(
+          `DEGRADATION_COLOR_CONFIG.interactionProgress.${key}`,
+          "expected a finite alpha in [0, 1]",
+        );
+      }
+    }
     return this.#errors.slice();
   }
 
@@ -79,5 +88,16 @@ class DegradationColorConfigValidator {
 
   #error(path, message) {
     this.#errors.push(Object.freeze({ path, message }));
+  }
+
+  #isRgbColor(value) {
+    return (
+      Array.isArray(value) &&
+      value.length === 3 &&
+      value.every(
+        (channel) =>
+          Number.isInteger(channel) && channel >= 0 && channel <= 255,
+      )
+    );
   }
 }

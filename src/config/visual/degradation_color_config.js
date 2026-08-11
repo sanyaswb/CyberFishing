@@ -13,8 +13,13 @@ const DEGRADATION_COLOR_CONFIG = (() => {
   };
 
   return deepFreeze({
-    revision: 1,
+    revision: 2,
     range: { minimum: 0, maximum: 100 },
+    interactionProgress: {
+      neutralColor: [214, 220, 222],
+      fillAlpha: 0.48,
+      glowAlpha: 0.72,
+    },
     colorStops: [
       { id: "empty", position: 0, color: [255, 0, 0] },
       { id: "critical", position: 1, color: [255, 0, 0] },

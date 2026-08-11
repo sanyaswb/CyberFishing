@@ -41,6 +41,42 @@ class DegradationColorResolver {
     });
   }
 
+  resolveWorseningProgress(value) {
+    const config = this.#configProvider() || {};
+    const minimum = Number(config.range?.minimum);
+    const maximum = Number(config.range?.maximum);
+    const progress = Math.max(0, Math.min(100, Number(value) || 0));
+    if (!Number.isFinite(minimum) || !Number.isFinite(maximum)) {
+      return this.#unavailable("degradation_color_config_invalid");
+    }
+    const remaining = maximum - ((maximum - minimum) * progress) / 100;
+    const degradation = this.resolvePercent(remaining);
+    if (!degradation.available) return degradation;
+
+    const presentation = config.interactionProgress || {};
+    const neutral = this.#normalizeColor(presentation.neutralColor);
+    if (!neutral) {
+      return this.#unavailable("degradation_progress_color_invalid");
+    }
+    const ratio = progress / 100;
+    const color = neutral.map((channel, index) =>
+      Math.round(
+        channel + (Number(degradation.color[index]) - channel) * ratio,
+      ),
+    );
+    const fillAlpha = this.#clampAlpha(presentation.fillAlpha, 0.48);
+    const glowAlpha = this.#clampAlpha(presentation.glowAlpha, 0.72);
+    return Object.freeze({
+      available: true,
+      reason: null,
+      progress,
+      remaining,
+      color: Object.freeze(color),
+      cssColor: `rgba(${color.join(", ")}, ${fillAlpha})`,
+      cssGlowColor: `rgba(${color.join(", ")}, ${glowAlpha})`,
+    });
+  }
+
   #resolveColor(value, stops) {
     if (value <= Number(stops[0].position)) return stops[0].color.slice(0, 3);
     for (let index = 1; index < stops.length; index += 1) {
@@ -59,6 +95,23 @@ class DegradationColorResolver {
       );
     }
     return stops[stops.length - 1].color.slice(0, 3);
+  }
+
+  #normalizeColor(value) {
+    if (!Array.isArray(value) || value.length < 3) return null;
+    return value.slice(0, 3).map((channel) => {
+      const numeric = Number(channel);
+      return Number.isFinite(numeric)
+        ? Math.max(0, Math.min(255, Math.round(numeric)))
+        : 0;
+    });
+  }
+
+  #clampAlpha(value, fallback) {
+    const numeric = Number(value);
+    return Number.isFinite(numeric)
+      ? Math.max(0, Math.min(1, numeric))
+      : fallback;
   }
 
   #unavailable(reason) {

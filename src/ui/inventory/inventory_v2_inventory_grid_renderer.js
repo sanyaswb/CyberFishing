@@ -2,6 +2,7 @@ class InventoryV2InventoryGridRenderer {
   #dom;
   #itemRenderer;
   #subfiltersExpanded = false;
+  #sortExpanded = false;
 
   constructor({ domFactory, itemRenderer } = {}) {
     this.#dom = domFactory || new globalThis.InventoryV2DomFactory();
@@ -15,6 +16,9 @@ class InventoryV2InventoryGridRenderer {
     {
       onCategorySelect = null,
       onSubfilterToggle = null,
+      onSortCriterionSelect = null,
+      onSortDirectionSelect = null,
+      onRarityFilterToggle = null,
       onItemActivate = null,
       onItemLongPress = null,
     } = {},
@@ -24,21 +28,38 @@ class InventoryV2InventoryGridRenderer {
       "inventory-v2-inventory-panel",
     );
     const subfilters = this.#renderSubfilters(model, onSubfilterToggle);
+    const sortOptions = this.#renderSortOptions(model, {
+      onSortCriterionSelect,
+      onSortDirectionSelect,
+      onRarityFilterToggle,
+    });
     panel.appendChild(
-      this.#renderCategories(model, onCategorySelect, (toggle) => {
-        this.#subfiltersExpanded = !this.#subfiltersExpanded;
-        subfilters.classList.toggle("is-open", this.#subfiltersExpanded);
-        this.#syncSubfilterToggle(toggle);
+      this.#renderCategories(model, {
+        onCategorySelect,
+        onSubfiltersToggle: (toggle) => {
+          this.#subfiltersExpanded = !this.#subfiltersExpanded;
+          subfilters.classList.toggle("is-open", this.#subfiltersExpanded);
+          this.#syncSubfilterToggle(toggle);
+        },
+        onSortToggle: (toggle) => {
+          this.#sortExpanded = !this.#sortExpanded;
+          sortOptions.classList.toggle("is-open", this.#sortExpanded);
+          this.#syncSortToggle(toggle);
+        },
       }),
     );
     panel.appendChild(subfilters);
+    panel.appendChild(sortOptions);
     panel.appendChild(
       this.#renderItems(model, { onItemActivate, onItemLongPress }),
     );
     return panel;
   }
 
-  #renderCategories(model, onCategorySelect, onSubfiltersToggle) {
+  #renderCategories(
+    model,
+    { onCategorySelect, onSubfiltersToggle, onSortToggle },
+  ) {
     const navigation = this.#dom.element(
       "nav",
       "inventory-v2-categories",
@@ -56,6 +77,18 @@ class InventoryV2InventoryGridRenderer {
     );
     toggle.addEventListener("click", () => onSubfiltersToggle?.(toggle));
     navigation.appendChild(toggle);
+    const sortToggle = this.#dom.button(
+      "inventory-v2-categories__toggle inventory-v2-categories__sort-toggle",
+      "",
+      { title: "Сортування та фільтр рідкості" },
+    );
+    this.#syncSortToggle(sortToggle);
+    sortToggle.setAttribute(
+      "aria-label",
+      "Показати або приховати сортування та фільтр рідкості",
+    );
+    sortToggle.addEventListener("click", () => onSortToggle?.(sortToggle));
+    navigation.appendChild(sortToggle);
     model.categories.forEach((category) => {
       const label = [category.icon, category.label].filter(Boolean).join(" ");
       const button = this.#dom.button(
@@ -115,6 +148,85 @@ class InventoryV2InventoryGridRenderer {
     toggle.textContent = this.#subfiltersExpanded ? "▴" : "▾";
     toggle.setAttribute("aria-expanded", String(this.#subfiltersExpanded));
     toggle.classList.toggle("is-active", this.#subfiltersExpanded);
+  }
+
+  #renderSortOptions(
+    model,
+    {
+      onSortCriterionSelect,
+      onSortDirectionSelect,
+      onRarityFilterToggle,
+    },
+  ) {
+    const container = this.#dom.element("div", "inventory-v2-sort-options");
+    container.classList.toggle("is-open", this.#sortExpanded);
+    container.setAttribute("aria-label", "Сортування інвентарю");
+
+    const directionGroup = this.#dom.element(
+      "div",
+      "inventory-v2-sort-options__group inventory-v2-sort-options__directions",
+    );
+    model.sort.directions.forEach((direction) => {
+      const button = this.#dom.button(
+        "inventory-v2-sort-options__button inventory-v2-sort-options__direction",
+        direction.icon,
+        { title: direction.label },
+      );
+      button.classList.toggle("is-active", direction.selected);
+      button.setAttribute("aria-label", direction.label);
+      button.setAttribute("aria-pressed", String(direction.selected));
+      button.addEventListener("click", () =>
+        onSortDirectionSelect?.(direction.id),
+      );
+      directionGroup.appendChild(button);
+    });
+    container.appendChild(directionGroup);
+
+    const criterionGroup = this.#dom.element(
+      "div",
+      "inventory-v2-sort-options__group inventory-v2-sort-options__criteria",
+    );
+    model.sort.criteria.forEach((criterion) => {
+      const button = this.#dom.button(
+        "inventory-v2-sort-options__button inventory-v2-sort-options__criterion",
+        criterion.label,
+      );
+      button.classList.toggle("is-active", criterion.selected);
+      button.setAttribute("aria-pressed", String(criterion.selected));
+      button.addEventListener("click", () =>
+        onSortCriterionSelect?.(criterion.id),
+      );
+      criterionGroup.appendChild(button);
+    });
+    container.appendChild(criterionGroup);
+
+    const rarityGroup = this.#dom.element(
+      "div",
+      "inventory-v2-sort-options__group inventory-v2-sort-options__rarities",
+    );
+    model.sort.rarities.forEach((rarity) => {
+      const label = `${rarity.label}: ${rarity.count}`;
+      const button = this.#dom.button(
+        "inventory-v2-sort-options__rarity",
+        "",
+        { title: label },
+      );
+      button.style.setProperty("--inventory-v2-rarity-filter-color", rarity.color);
+      button.classList.toggle("is-active", rarity.selected);
+      button.setAttribute("aria-label", label);
+      button.setAttribute("aria-pressed", String(rarity.selected));
+      button.addEventListener("click", () =>
+        onRarityFilterToggle?.(rarity.id, !rarity.selected),
+      );
+      rarityGroup.appendChild(button);
+    });
+    container.appendChild(rarityGroup);
+    return container;
+  }
+
+  #syncSortToggle(toggle) {
+    toggle.setAttribute("aria-expanded", String(this.#sortExpanded));
+    toggle.classList.toggle("is-active", this.#sortExpanded);
   }
 
   #renderItems(model, { onItemActivate, onItemLongPress }) {

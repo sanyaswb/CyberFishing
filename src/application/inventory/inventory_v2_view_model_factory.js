@@ -22,10 +22,12 @@ class InventoryV2ViewModelFactory {
   #loadouts;
   #itemViews;
   #subfilterResolver;
+  #itemOrderResolver;
   #visibilityPolicy;
   #availabilityPolicy;
   #terminalLineResolver;
   #compatibilityPolicy;
+  #equipmentLineReadinessPolicy;
   #projectionService;
   #settings;
   #loadValueProvider;
@@ -39,10 +41,12 @@ class InventoryV2ViewModelFactory {
     loadouts,
     itemViews,
     subfilterResolver,
+    itemOrderResolver,
     visibilityPolicy,
     availabilityPolicy,
     terminalLineResolver,
     compatibilityPolicy,
+    equipmentLineReadinessPolicy = null,
     projectionService,
     settings,
     loadValueProvider = null,
@@ -56,14 +60,19 @@ class InventoryV2ViewModelFactory {
     this.#loadouts = loadouts;
     this.#itemViews = itemViews;
     this.#subfilterResolver = subfilterResolver;
+    this.#itemOrderResolver = itemOrderResolver;
     this.#visibilityPolicy = visibilityPolicy;
     this.#availabilityPolicy = availabilityPolicy;
     this.#terminalLineResolver = terminalLineResolver;
     this.#compatibilityPolicy = compatibilityPolicy;
+    this.#equipmentLineReadinessPolicy = equipmentLineReadinessPolicy;
     this.#projectionService = projectionService;
     this.#settings = settings;
     this.#loadValueProvider = loadValueProvider;
-    if (!this.#attachmentTargetResolver?.listTargets) {
+    if (
+      !this.#attachmentTargetResolver?.listTargets ||
+      !this.#attachmentTargetResolver?.findPlacementTargets
+    ) {
       throw new TypeError(
         "InventoryV2ViewModelFactory requires attachmentTargetResolver",
       );
@@ -73,6 +82,14 @@ class InventoryV2ViewModelFactory {
         "InventoryV2ViewModelFactory requires contextItemFilter",
       );
     }
+    if (
+      !this.#itemOrderResolver?.resolve ||
+      !this.#itemOrderResolver?.createControls
+    ) {
+      throw new TypeError(
+        "InventoryV2ViewModelFactory requires itemOrderResolver",
+      );
+    }
   }
 
   create(uiState = {}) {
@@ -80,9 +97,14 @@ class InventoryV2ViewModelFactory {
       this.#equipmentState,
     );
     const accessibleRawItems = this.#accessibleInventoryItems();
+    const editingRootInstanceId = uiState.editingRootInstanceId || null;
+    const isAttachmentEditor =
+      uiState.panelMode === "assembly" &&
+      Boolean(editingRootInstanceId) &&
+      this.#assemblyStates.has(editingRootInstanceId);
     const inventoryContext = {
-      mode: uiState.panelMode === "assembly" ? "assembly" : "loadout",
-      rootInstanceId: uiState.editingRootInstanceId || null,
+      mode: isAttachmentEditor ? "assembly" : "loadout",
+      rootInstanceId: editingRootInstanceId,
     };
     const visibleInventoryItems = this.#contextItemFilter.filter(
       accessibleRawItems,
@@ -125,9 +147,10 @@ class InventoryV2ViewModelFactory {
           uiState.highlightedEquipmentSlotId,
         ),
         assembly: this.#createAssemblyEditor(
-          uiState.editingRootInstanceId,
+          editingRootInstanceId,
           accessibleRawItems,
           selectedRaw,
+          equipmentProjection,
         ),
       },
       inventory: {
@@ -211,12 +234,18 @@ class InventoryV2ViewModelFactory {
     };
   }
 
-  #createAssemblyEditor(rootInstanceId, accessibleRawItems, selectedRaw) {
-    if (!rootInstanceId || !this.#assemblyStates.has(rootInstanceId)) {
+  #createAssemblyEditor(
+    rootInstanceId,
+    accessibleRawItems,
+    selectedRaw,
+    equipmentProjection,
+  ) {
+    if (!rootInstanceId || !this.#repository.has(rootInstanceId)) {
       return {
         root: null,
         rootInstanceId: "",
         sockets: [],
+        parameterItems: [],
         equipped: false,
         canEquip: false,
         showEquip: false,
@@ -226,15 +255,21 @@ class InventoryV2ViewModelFactory {
         showDisassemble: false,
       };
     }
-    const sockets = this.#attachmentTargetResolver
-      .listTargets(rootInstanceId)
+    const hasAssembly = this.#assemblyStates.has(rootInstanceId);
+    const targets = hasAssembly
+      ? this.#attachmentTargetResolver.listTargets(rootInstanceId)
+      : [];
+    const highlightedSocketIds = new Set(
+      hasAssembly && selectedRaw
+        ? this.#attachmentTargetResolver
+            .findPlacementTargets(rootInstanceId, selectedRaw)
+            .map((target) => target.socketId)
+        : [],
+    );
+    const sockets = targets
       .map((target) => {
         const hasCompatibleItem = accessibleRawItems.some((candidate) =>
           this.#attachmentTargetResolver.accepts(target, candidate),
-        );
-        const selectedCompatible = this.#attachmentTargetResolver.accepts(
-          target,
-          selectedRaw,
         );
         return {
           socketId: target.socketId,
@@ -253,7 +288,7 @@ class InventoryV2ViewModelFactory {
           warning: hasCompatibleItem
             ? ""
             : "В інвентарі немає відповідного доступного предмета.",
-          highlighted: selectedCompatible,
+          highlighted: highlightedSocketIds.has(target.socketId),
         };
       });
     const equipped = Object.values(this.#equipmentState.snapshot()).includes(
@@ -263,21 +298,25 @@ class InventoryV2ViewModelFactory {
     const hasAttachedComponents =
       rootView?.assemblyCompletion?.hasAnyComponent === true;
     const equipAvailability = equipped
-      ? { canEquip: false, warning: "Цей стек уже споряджений." }
+      ? { canEquip: false, warning: "Цей предмет уже споряджений." }
       : this.#resolveAssemblyEquipAvailability(rootView);
     return {
       root: rootView ? { ...rootView, equipped } : null,
       rootLabel: this.#itemViews.create(rootInstanceId)?.name || "Предмет",
       rootInstanceId,
       sockets,
+      parameterItems: this.#createEquippedRodParameterItems(
+        rootInstanceId,
+        equipmentProjection,
+      ),
       equipped,
       canEquip: equipAvailability.canEquip,
       showEquip: !equipped,
       equipWarning: equipAvailability.warning,
       canUnequip: equipped,
       showUnequip: equipped,
-      canDisassemble: hasAttachedComponents,
-      showDisassemble: hasAttachedComponents,
+      canDisassemble: !equipped && hasAssembly && hasAttachedComponents,
+      showDisassemble: !equipped && hasAssembly && hasAttachedComponents,
     };
   }
 
@@ -285,7 +324,7 @@ class InventoryV2ViewModelFactory {
     if (!rootView) {
       return {
         canEquip: false,
-        warning: "Збірку не знайдено.",
+        warning: "Предмет не знайдено.",
       };
     }
     const rodInstanceId = this.#equipmentState.getRootInstanceId("rod");
@@ -300,7 +339,9 @@ class InventoryV2ViewModelFactory {
     const candidateSlotIds = EQUIPMENT_ALL_SLOT_IDS.filter((slotId) =>
       (slotConfig[slotId]?.acceptTypes || []).includes(itemType),
     );
-    let warning = "Збірка не сумісна з поточним спорядженням.";
+    let warning = candidateSlotIds.length
+      ? "Предмет не сумісний з поточним спорядженням."
+      : "Для цього предмета немає доступної комірки спорядження.";
     for (const slotId of candidateSlotIds) {
       const validation = this.#compatibilityPolicy.validate({
         slotId,
@@ -309,11 +350,50 @@ class InventoryV2ViewModelFactory {
         rod,
       });
       if (validation.isValid) {
-        return { canEquip: true, warning: "" };
+        const readiness = this.#validateActivationReadiness(
+          slotId,
+          rootView.instanceId,
+        );
+        if (readiness.isValid !== false) {
+          return { canEquip: true, warning: "" };
+        }
+        warning = readiness.warning || warning;
+        continue;
       }
       if (validation.reason) warning = validation.reason;
     }
     return { canEquip: false, warning };
+  }
+
+  #validateActivationReadiness(slotId, instanceId) {
+    if (!this.#equipmentLineReadinessPolicy?.validate) {
+      return { isValid: true };
+    }
+    return this.#equipmentLineReadinessPolicy.validate({
+      ...this.#equipmentState.snapshot(),
+      [slotId]: instanceId,
+    });
+  }
+
+  #createEquippedRodParameterItems(rootInstanceId, projection = {}) {
+    if (projection?.rod?.instanceId !== rootInstanceId) return [];
+    const candidates = [
+      projection.reel,
+      projection.line,
+      projection.leader,
+      projection.feederRig,
+      ...(projection.hooks || []),
+      ...(projection.baits || []),
+      projection.feederChum,
+      projection.float,
+    ];
+    const unique = new Map();
+    for (const item of candidates) {
+      const view = this.#createProjectedItemView(item);
+      if (!view?.instanceId || view.instanceId === rootInstanceId) continue;
+      if (!unique.has(view.instanceId)) unique.set(view.instanceId, view);
+    }
+    return [...unique.values()];
   }
 
   #createSavedLoadoutPreview(loadoutId) {
@@ -436,12 +516,22 @@ class InventoryV2ViewModelFactory {
     for (const group of subfilterGroups.values()) {
       group.selected = activeSubfilterIds.has(group.id);
     }
-    const items = activeSubfilterIds.size
+    const subfilteredItems = activeSubfilterIds.size
       ? categoryItems.filter((item) => {
           const group = this.#subfilterResolver.resolve(item, { categoryId });
           return group && activeSubfilterIds.has(group.id);
         })
       : categoryItems;
+    const sortOptions = {
+      criterionId: uiState.sortCriterionId,
+      directionId: uiState.sortDirectionId,
+      activeRarityIds: uiState.activeRarityFilterIds,
+      placementOrderKey: uiState.placementOrderKey,
+    };
+    const items = this.#itemOrderResolver.resolve(
+      subfilteredItems,
+      sortOptions,
+    );
     return {
       categories,
       activeCategoryId: categoryId,
@@ -449,6 +539,10 @@ class InventoryV2ViewModelFactory {
         left.label.localeCompare(right.label, "uk-UA"),
       ),
       activeSubfilterIds: [...activeSubfilterIds],
+      sort: this.#itemOrderResolver.createControls(
+        subfilteredItems,
+        sortOptions,
+      ),
       items,
       selectedInstanceId: uiState.selectedInstanceId || "",
       highlightedSlotId: highlightedSlotId || "",
@@ -503,24 +597,35 @@ class InventoryV2ViewModelFactory {
   }
 
   #createTooltipContext(equipmentProjection) {
+    const equipment = Object.freeze({
+      rod: this.#createProjectedItemView(equipmentProjection.rod),
+      reel: this.#createProjectedItemView(equipmentProjection.reel),
+      line: this.#createProjectedItemView(equipmentProjection.line),
+      leader: this.#createProjectedItemView(equipmentProjection.leader),
+      float: this.#createProjectedItemView(equipmentProjection.float),
+      tackle: this.#createProjectedItemView(equipmentProjection.feederRig),
+      hooks: Object.freeze(
+        (equipmentProjection.hooks || [])
+          .map((item) => this.#createProjectedItemView(item))
+          .filter(Boolean),
+      ),
+    });
     const projectedItems = [
-      equipmentProjection.rod,
-      equipmentProjection.reel,
-      equipmentProjection.line,
-      equipmentProjection.leader,
-      equipmentProjection.float,
-      equipmentProjection.feederRig,
-      ...(equipmentProjection.hooks || []),
-    ]
-      .map((item) => this.#createProjectedItemView(item))
-      .filter(Boolean);
+      equipment.rod,
+      equipment.reel,
+      equipment.line,
+      equipment.leader,
+      equipment.float,
+      equipment.tackle,
+      ...equipment.hooks,
+    ].filter(Boolean);
     const capabilities = new Set();
     for (const item of projectedItems) {
       const authored = item.capabilities || item.engineStats?.capabilities;
       if (!Array.isArray(authored)) continue;
       authored.forEach((capability) => capabilities.add(capability));
     }
-    const rod = projectedItems[0] || null;
+    const rod = equipment.rod || null;
     const rodType = this.#itemType(rod);
     const hasReel = rod
       ? Boolean(rod.hasReel ?? rod.engineStats?.hasReel ?? rodType !== "pole")
@@ -529,6 +634,7 @@ class InventoryV2ViewModelFactory {
       rodType,
       rodHasReel: hasReel,
       availableCapabilities: [...capabilities],
+      equipment,
     };
   }
 

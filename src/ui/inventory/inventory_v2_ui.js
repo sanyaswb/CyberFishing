@@ -43,8 +43,10 @@ class InventoryV2UI {
     savedLoadoutRenderer = null,
     inventoryRenderer = null,
     tooltipPresenter = null,
+    balanceParameterResolver = null,
     resourceMeterResolver = null,
     resourceMeterRenderer = null,
+    degradationColorResolver = null,
   } = {}) {
     globalThis.InventoryV2FacadeContract.assert(facade, {
       actionDispatcher: onAction,
@@ -64,13 +66,15 @@ class InventoryV2UI {
     this.#normalizer =
       normalizer || new globalThis.InventoryV2ViewModelNormalizer();
     this.#longPressController =
-      longPressController || new globalThis.InventoryV2LongPressController();
+      longPressController || new globalThis.InventoryV2LongPressController({
+        degradationColorResolver,
+      });
     this.#tooltipPresenter =
       tooltipPresenter ||
       new globalThis.InventoryV2TooltipPresenter({
         documentRef,
         rarityDomAdapter,
-        progressionDomAdapter,
+        balanceParameterResolver,
       });
 
     const attachmentRenderer =
@@ -235,7 +239,7 @@ class InventoryV2UI {
     if (viewModel.panel.mode === "assembly") {
       this.#assemblyRenderer.updateDynamicVisuals(
         this.#leftHost,
-        viewModel.panel.assembly.root,
+        viewModel.panel.assembly,
       );
     }
 
@@ -483,6 +487,22 @@ class InventoryV2UI {
         this.#dispatch({
           type: globalThis.InventoryV2ActionType.SUBFILTER_TOGGLE,
           filterId,
+          enabled,
+        }),
+      onSortCriterionSelect: (criterionId) =>
+        this.#dispatch({
+          type: globalThis.InventoryV2ActionType.SORT_CRITERION_SELECT,
+          criterionId,
+        }),
+      onSortDirectionSelect: (directionId) =>
+        this.#dispatch({
+          type: globalThis.InventoryV2ActionType.SORT_DIRECTION_SELECT,
+          directionId,
+        }),
+      onRarityFilterToggle: (rarityId, enabled) =>
+        this.#dispatch({
+          type: globalThis.InventoryV2ActionType.RARITY_FILTER_TOGGLE,
+          rarityId,
           enabled,
         }),
       onItemActivate: (item) =>

@@ -469,6 +469,14 @@ class GameCompositionRoot {
       rarityDomAdapter: itemRarityDomAdapter,
       progressionDomAdapter: itemProgressionDomAdapter,
       conditionDomAdapter: itemConditionDomAdapter,
+      degradationColorResolver,
+      balanceParameterResolver: new InventoryV2BalanceParameterResolver({
+        castDistanceCalculator,
+        retrieveSpeedCalculator: new ReelRetrieveSpeedCalculator(),
+        reelConfig: physicsConfig?.getReelConfig?.() || {},
+        physicsConfig: this.#config.physics,
+        debugConfig: this.#config.debug?.inventory,
+      }),
     });
     const equipmentRules = new EquipmentRules(castDistanceCalculator);
     const baitRules = new BaitRules();

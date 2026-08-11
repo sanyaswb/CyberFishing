@@ -1,5 +1,108 @@
 # CyberFishing changelog
 
+## v0.24.15 - Stable Inventory Sorting
+
+### Added
+
+- Added a funnel panel immediately after the subtype arrow with ascending and descending controls, sorting by type, rarity, level or power, and colour-square rarity filters.
+- Added multi-rarity filtering: no selected square shows every item, while one or more selected squares show only those rarity tiers.
+- Added a reusable inventory order resolver backed by one configuration for type priority and stable numeric paths; rarity colours continue to come from the existing rarity visual configuration.
+
+### Changed
+
+- Locked the current inventory order during a repeated socket-placement sequence, so newly compatible items appear after the existing cards instead of moving the selected source.
+- Kept the placement order locked across the `2 + 2 + 1` repeated-click flow and restored normal sorting immediately after the final compatible empty cell is filled.
+- Made equal sort values preserve their previous relative order without applying undocumented secondary criteria.
+
+### Validation
+
+- Added integration coverage for configured type order, rarity, level and power sorting, both directions and rarity filtering.
+- Added a regression scenario where higher-rarity bait becomes compatible after attaching a hook but cannot displace the selected hook stack until all hook cells are filled.
+- Added UI interaction and contract coverage for the funnel, direction controls, criteria and rarity squares.
+
+## v0.24.14 - Socket Placement UX
+
+### Changed
+
+- Replaced the green socket outline with a translucent green background overlay that slowly pulses between 20% and 50% opacity.
+- Restored repeated-click placement for items compatible with multiple assembly cells: the first click selects and highlights the choices, while the second click fills the leftmost empty compatible cell.
+- Prioritized empty compatible cells over occupied replacement targets, preserving explicit replacement only after no empty compatible cells remain.
+- Kept one-click placement when exactly one compatible empty cell remains, enabling the `2 + 2 + 1` click flow for three identical bait-boat sections.
+
+### Validation
+
+- Added integration coverage for stable left-to-right filling, empty-cell highlighting and automatic final-cell placement across all three boat sections.
+- Added UI contract coverage for the outline-free green overlay, shared success colour and 20%–50% pulse range.
+
+## v0.24.13 - Long-Press Equipment UX
+
+### Changed
+
+- Moved item-card actions above the image, attachment cells and parameter sections so Equip, Unequip, Disassemble and Back remain immediately accessible when a card contains many parameters.
+- Made an 800 ms hold unequip any equipped item, including ordinary rods and auxiliary equipment; inventory disassembly keeps the more deliberate 1500 ms threshold.
+- Restricted Disassemble to unequipped inventory items; active item cards hide the action and the command layer rejects direct attempts until the item is removed.
+- Replaced the bottom hold-progress strip with a centered translucent circular sector that fills clockwise above the item visual.
+- Delegated the progress colour transition to the shared degradation colour resolver: it begins with the configured neutral grey and reaches the common critical red at 100%.
+
+### Validation
+
+- Added UI coverage for separate equipped/inventory hold durations, ordinary equipped-item removal, circular progress markup and top action placement.
+- Added degradation-colour coverage for the neutral start, translucent reusable colours and shared red completion state.
+
+## v0.24.12 - Inventory Item Inspection
+
+### Added
+
+- Added context-aware inventory activation: incompatible or incomplete items open as left-panel cards with an explicit Equip reason instead of failing silently.
+- Added an `inventory.showEngineStats` switch under DevTools `DEBUG`; raw EngineStats are hidden by default and appear as the final tooltip section only when explicitly enabled.
+- Added equipped-rod parameter sections for the installed reel, line or leader, tackle, hooks, bait, feeder chum and float.
+
+### Changed
+
+- A short press on any equipped item, including a rod, now opens its detail card instead of unequipping it; explicit Unequip and the existing long-press flow remain responsible for removal.
+- A complete compatible item still equips immediately from the backpack without opening its card; items with empty attachment cells open in the editor first.
+- Reused the equipment compatibility policy to determine whether the card's Equip action is enabled and to provide the warning shown when it is not.
+- Reordered tooltip information into primary gameplay values followed by grouped casting or retrieve calculations; the technical EngineStats block is always last.
+- Increased parameter typography and made the tooltip size itself from its widest row while stretching all rows to the same width.
+
+### Validation
+
+- Added integration coverage for equipped-rod inspection, attached parameter sections, incompatible and slotless item cards, disabled Equip reasons and clone-safe long-press unequip cycles.
+- Added UI coverage for context-aware item activation, default-hidden EngineStats, debug-last ordering and the disabled-by-default configuration.
+
+## v0.24.11 - Tooltip Scroll Routing
+
+### Changed
+
+- Simplified grouped assembly-component headings to the compact `Гачок ×3` / `Черв'як ×3` format without repeating socket labels or duplicate parameter sections.
+- Routed wheel input over a hovered item to its open tooltip first; inventory scrolling resumes automatically after the tooltip reaches the relevant edge.
+- Centralized scrollbar dimensions and colours and applied the inventory-filter scrollbar style to the balance tooltip.
+
+### Validation
+
+- Added UI checks for compact grouped headings, tooltip-first wheel consumption, boundary pass-through and the shared scrollbar style source.
+
+## v0.24.10 - Assembly Parameters and Balance Tooltip
+
+### Added
+
+- Added separate production-parameter sections for an assembly root and every attached component; statistically identical components such as three equal hooks are grouped into one `×3` section.
+- Added a balance-only item tooltip with the in-game label, stable `EngineStats` path, factual value, balance baseline and explicit signed difference.
+- Added derived rod cast distance in metres and pixels, including the signed difference from coefficient `1` and the reference distance used when no active line is available.
+- Added derived reel retrieve speed and retrieve duration with explicit bearing contributions.
+
+### Changed
+
+- Reused `CastDistanceCalculator` and `ReelRetrieveSpeedCalculator` as the single source of gameplay formulas instead of duplicating their arithmetic in the UI.
+- Applied semantic difference colours: improvements are green and regressions are red, including inverse metrics where a lower duration is beneficial.
+- Restricted the hover tooltip to balancing and system values; presentation and compatibility descriptions remain outside it.
+- Made the large assembly-root card hoverable so it exposes the same balance tooltip as inventory and socket items.
+
+### Validation
+
+- Added coverage for attached-item sections, grouping three identical hooks, the `7.12 (+2.12)` baseline case, cast range `6 m / 300 px (-300 px)`, and green negative retrieve-time effects.
+- Added integration coverage for projected rod, reel and installed-line data in the shared tooltip context.
+
 ## v0.24.9 - Inventory V2 Stabilization
 
 ### Summary

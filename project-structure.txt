@@ -106,6 +106,7 @@
 │  │    ├── inventory_v2_facade.js
 │  │    ├── inventory_v2_gameplay_bridge.js
 │  │    ├── inventory_v2_item_hydrator.js
+│  │    ├── inventory_v2_item_order_resolver.js
 │  │    ├── inventory_v2_item_view_factory.js
 │  │    ├── inventory_v2_line_allocation_service.js
 │  │    ├── inventory_v2_loadout_port.js
@@ -137,6 +138,7 @@
 │  │  ├── inventory
 │  │  │  ├── equipment_slot_config.js
 │  │  │  ├── inventory_v2_item_parameter_config.js
+│  │  │  ├── inventory_v2_sort_config.js
 │  │  │  └── item_assembly_profile_config.js
 │  │  ├── items
 │  │  │  ├── item_condition_config.js
@@ -489,7 +491,9 @@
 │  │  │  └── item_condition_dom_adapter.js
 │  │  ├── inventory
 │  │  │  ├── inventory_v2_assembly_editor_renderer.js
+│  │  │  ├── inventory_v2_assembly_parameter_section_resolver.js
 │  │  │  ├── inventory_v2_attachment_badge_renderer.js
+│  │  │  ├── inventory_v2_balance_parameter_resolver.js
 │  │  │  ├── inventory_v2_bootstrap.js
 │  │  │  ├── inventory_v2_dom_factory.js
 │  │  │  ├── inventory_v2_header_renderer.js

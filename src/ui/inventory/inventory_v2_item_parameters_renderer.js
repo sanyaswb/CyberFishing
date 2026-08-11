@@ -17,29 +17,103 @@ class InventoryV2ItemParametersRenderer {
   }
 
   render(item) {
-    const parameters = this.#resolver.resolve(item);
-    if (!parameters.length) return null;
+    return this.renderSections(
+      [{ item, title: item?.name || "Предмет", slotLabel: "", count: 1 }],
+      { showHeaders: false },
+    );
+  }
+
+  renderSections(sections = [], { showHeaders = true } = {}) {
     const panel = this.#dom.element(
       "section",
       "inventory-v2-item-parameters",
     );
-    panel.dataset.instanceId = String(item?.instanceId || "");
-    this.#populate(panel, parameters);
-    return panel;
+    const source = [...(sections || [])];
+    panel.dataset.instanceId = String(source[0]?.item?.instanceId || "");
+    for (const section of source) {
+      const parameters = this.#resolver.resolve(section?.item);
+      if (!parameters.length) continue;
+      panel.appendChild(
+        this.#renderSection(section, parameters, showHeaders),
+      );
+    }
+    return panel.children.length ? panel : null;
   }
 
   update(host, item) {
-    const panel = this.#findPanel(host, item?.instanceId);
-    if (!panel) return null;
+    const section = this.#findSection(host, item?.instanceId);
+    if (!section) return null;
     const parameters = this.#resolver.resolve(item);
     if (!parameters.length) {
-      panel.remove();
+      section.remove();
       return null;
     }
-    panel.dataset.instanceId = String(item?.instanceId || "");
-    panel.replaceChildren();
-    this.#populate(panel, parameters);
-    return panel;
+    section.dataset.instanceId = String(item?.instanceId || "");
+    const list = this.#findParameterList(section) ||
+      this.#dom.element("ul", "inventory-v2-parameters-list");
+    list.replaceChildren(
+      ...parameters.map((parameter) => this.#renderRow(parameter)),
+    );
+    if (!list.parentNode) section.appendChild(list);
+    return section;
+  }
+
+  updateSections(host, sections = []) {
+    for (const section of sections || []) {
+      if (section?.item) this.update(host, section.item);
+    }
+  }
+
+  #renderSection(section, parameters, showHeader) {
+    const article = this.#dom.element(
+      "article",
+      "inventory-v2-item-parameter-section",
+    );
+    article.dataset.instanceId = String(section?.item?.instanceId || "");
+    if (showHeader) {
+      article.appendChild(this.#renderSectionHeader(section));
+    }
+    this.#populate(article, parameters);
+    return article;
+  }
+
+  #renderSectionHeader(section) {
+    const header = this.#dom.element(
+      "header",
+      "inventory-v2-item-parameter-section__header",
+    );
+    const identity = this.#dom.element(
+      "span",
+      "inventory-v2-item-parameter-section__identity",
+    );
+    const icon = section?.item?.icon || section?.item?.emoji;
+    if (icon) {
+      identity.appendChild(this.#dom.element(
+        "span",
+        "inventory-v2-item-parameter-section__icon",
+        icon,
+      ));
+    }
+    const count = Math.max(1, Math.floor(Number(section?.count) || 1));
+    const title = [
+      section?.title || section?.item?.name || "Предмет",
+      count > 1 ? `×${count}` : "",
+    ].filter(Boolean).join(" ");
+    identity.appendChild(this.#dom.element(
+      "strong",
+      "inventory-v2-item-parameter-section__title",
+      title,
+    ));
+    header.appendChild(identity);
+    const meta = String(section?.slotLabel || "").trim();
+    if (meta) {
+      header.appendChild(this.#dom.element(
+        "span",
+        "inventory-v2-item-parameter-section__meta",
+        meta,
+      ));
+    }
+    return header;
   }
 
   #populate(panel, parameters) {
@@ -123,18 +197,25 @@ class InventoryV2ItemParametersRenderer {
     return li;
   }
 
-  #findPanel(host, instanceId) {
-    const panels = [
-      ...(host?.classList?.contains("inventory-v2-item-parameters")
+  #findSection(host, instanceId) {
+    const sections = [
+      ...(host?.classList?.contains("inventory-v2-item-parameter-section")
         ? [host]
         : []),
       ...Array.from(
-        host?.querySelectorAll?.(".inventory-v2-item-parameters") || [],
+        host?.querySelectorAll?.(".inventory-v2-item-parameter-section") || [],
       ),
     ];
-    return panels.find(
-      (panel) => String(panel.dataset?.instanceId || "") === String(instanceId || ""),
+    return sections.find(
+      (section) =>
+        String(section.dataset?.instanceId || "") === String(instanceId || ""),
     ) || null;
+  }
+
+  #findParameterList(section) {
+    return Array.from(
+      section?.querySelectorAll?.(".inventory-v2-parameters-list") || [],
+    )[0] || null;
   }
 }
 

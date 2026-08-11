@@ -6,6 +6,7 @@ const vm = require("vm");
 const ROOT = path.resolve(__dirname, "..");
 const UI_DIRECTORY = path.join(ROOT, "src", "ui", "inventory");
 const STYLE_FILE = path.join(ROOT, "src", "ui", "styles", "inventory_v2.css");
+const CONFIG_FILE = path.join(ROOT, "src", "config", "config.js");
 const ITEM_PARAMETER_CONFIG_FILE = path.join(
   ROOT,
   "src",
@@ -40,10 +41,12 @@ const UI_SCRIPT_ORDER = Object.freeze([
   "inventory_v2_dom_factory.js",
   "inventory_v2_long_press_controller.js",
   "inventory_v2_attachment_badge_renderer.js",
+  "inventory_v2_balance_parameter_resolver.js",
   "inventory_v2_tooltip_presenter.js",
   "inventory_v2_resource_meter_resolver.js",
   "inventory_v2_resource_meter_renderer.js",
   "inventory_v2_item_parameters_resolver.js",
+  "inventory_v2_assembly_parameter_section_resolver.js",
   "inventory_v2_item_parameters_renderer.js",
   "inventory_v2_item_card_renderer.js",
   "inventory_v2_header_renderer.js",
@@ -69,6 +72,10 @@ class InventoryV2SourceReader {
 
   readStyle() {
     return fs.readFileSync(STYLE_FILE, "utf8");
+  }
+
+  readConfig() {
+    return fs.readFileSync(CONFIG_FILE, "utf8");
   }
 
   readApplicationFactory() {
@@ -350,11 +357,17 @@ class InventoryV2StaticContractCheck {
     const parameterConfig = this.#reader.readItemParameterConfig();
     const combined = [parameterConfig, ...files.map((file) => file.source)].join("\n");
     const style = this.#reader.readStyle();
+    const config = this.#reader.readConfig();
 
     this.#assertSafeTextRendering(combined);
     this.#assertGlobalClasses(combined);
     this.#assertLongPressContract(combined, style);
     this.#assertVisualContract(style);
+    assert.match(
+      config,
+      /inventory:\s*\{\s*showEngineStats:\s*false/s,
+      "Inventory EngineStats debug output must be disabled by default",
+    );
     this.#assertApplicationFactoryContract(combined);
     this.#assertViewModelContract(files[0].source);
     this.#assertAllInteractions(files);
@@ -382,6 +395,8 @@ class InventoryV2StaticContractCheck {
       "InventoryV2ResourceMeterRenderer",
       "InventoryV2ItemParametersResolver",
       "InventoryV2ItemParametersRenderer",
+      "InventoryV2BalanceParameterResolver",
+      "InventoryV2AssemblyParameterSectionResolver",
     ];
     for (const className of expected) {
       assert.ok(
@@ -393,6 +408,7 @@ class InventoryV2StaticContractCheck {
 
   #assertLongPressContract(source, style) {
     assert.match(source, /DURATION_MS\s*=\s*1500/);
+    assert.match(source, /EQUIPPED_DURATION_MS\s*=\s*800/);
     assert.match(source, /MOVEMENT_TOLERANCE_PX\s*=\s*8/);
     assert.match(source, /get hasActivePress\(\)/);
     assert.match(source, /longPressController\.hasActivePress/);
@@ -410,7 +426,9 @@ class InventoryV2StaticContractCheck {
     assert.match(source, /pointermove/);
     assert.match(source, /pointercancel/);
     assert.match(source, /lostpointercapture/);
-    assert.match(style, /inventory-v2-long-press-duration,\s*1500ms/);
+    assert.match(style, /conic-gradient\(/);
+    assert.match(style, /inventory-v2-long-press-angle/);
+    assert.match(style, /z-index:\s*30/);
   }
 
   #assertVisualContract(style) {
@@ -434,16 +452,26 @@ class InventoryV2StaticContractCheck {
       ".inventory-v2-resource-meter__fill",
       ".inventory-v2-assembly-editor__visual",
       ".inventory-v2-item-parameters",
+      ".inventory-v2-item-parameter-section",
+      ".inventory-v2-item-parameter-section__header",
       ".inventory-v2-parameters-list",
       ".inventory-v2-parameter-row",
       ".inventory-v2-parameter-bar-track",
       ".inventory-v2-parameter-segments",
       ".inventory-v2-item-card__incomplete-dot",
       ".inventory-v2-categories__toggle",
+      ".inventory-v2-categories__sort-toggle::before",
       ".inventory-v2-subfilters",
       ".inventory-v2-subfilters__checkbox",
+      ".inventory-v2-sort-options",
+      ".inventory-v2-sort-options__button",
+      ".inventory-v2-sort-options__rarity",
       ".inventory-v2-inventory-item.is-compatible:not(.is-selected)",
       ".inventory-v2-tooltip",
+      ".inventory-v2-balance-tooltip__row",
+      ".inventory-v2-balance-tooltip__identity",
+      ".inventory-v2-balance-tooltip__delta",
+      ".inventory-v2-tooltip::-webkit-scrollbar-thumb",
     ]) {
       assert.ok(style.includes(selector), `Missing selector: ${selector}`);
     }
@@ -526,6 +554,15 @@ class InventoryV2StaticContractCheck {
         style.includes("grid-template-columns: repeat(2, minmax(0, 1fr))"),
       "The assembly editor must stack visual, sockets and production parameters in one card",
     );
+    assert.ok(
+      style.includes("--inventory-v2-scrollbar-size") &&
+        style.includes("--inventory-v2-scrollbar-thumb") &&
+        style.includes(".inventory-v2-categories,") &&
+        style.includes(".inventory-v2-subfilters,") &&
+        style.includes(".inventory-v2-sort-options,") &&
+        style.includes(".inventory-v2-tooltip"),
+      "Inventory filters and tooltip must share one scrollbar style source",
+    );
     assert.match(
       style,
       /\.inventory-v2-loadout-panel__auxiliary\s*\{[\s\S]*?grid-template-columns:\s*repeat\(\s*4,\s*var\(--inventory-v2-auxiliary-card-size\)/,
@@ -562,6 +599,31 @@ class InventoryV2StaticContractCheck {
     assert.ok(
       style.includes(".inventory-v2-slot.is-highlighted {"),
       "Compatible filled and empty sockets must share the highlight state",
+    );
+    const highlightedSlotRule = style.match(
+      /\.inventory-v2-slot\.is-highlighted\s*\{[\s\S]*?\n\}/,
+    )?.[0];
+    const highlightedSlotOverlayRule = style.match(
+      /\.inventory-v2-slot\.is-highlighted::after\s*\{[\s\S]*?\n\}/,
+    )?.[0];
+    assert.ok(
+      highlightedSlotRule &&
+        !highlightedSlotRule.includes("outline") &&
+        !highlightedSlotRule.includes("box-shadow") &&
+        highlightedSlotOverlayRule?.includes(
+          "background: var(--inventory-v2-success)",
+        ),
+      "Compatible sockets must use a green background overlay without an outline",
+    );
+    assert.ok(
+      highlightedSlotOverlayRule?.includes("opacity: 0.2") &&
+        highlightedSlotOverlayRule.includes(
+          "animation: inventory-v2-compatible-slot-pulse 2400ms ease-in-out infinite",
+        ) &&
+        /@keyframes inventory-v2-compatible-slot-pulse\s*\{[\s\S]*?opacity:\s*0\.5;/.test(
+          style,
+        ),
+      "Compatible socket backgrounds must pulse slowly between 20% and 50% opacity",
     );
     assert.ok(
       style.includes("--inventory-slot-size: var(--inventory-v2-card-size)"),
@@ -612,14 +674,16 @@ class InventoryV2StaticContractCheck {
       assert.ok(factory.includes(token), `View-model factory must emit ${token}`);
     }
     assert.ok(
-      factory.includes("highlighted: selectedCompatible"),
-      "Compatible replacement must highlight occupied sockets too",
+      factory.includes(
+        "highlighted: highlightedSocketIds.has(target.socketId)",
+      ) && factory.includes("findPlacementTargets"),
+      "Socket highlighting must use the shared empty-first placement targets",
     );
     assert.ok(
       commandService.includes(
-        "this.#attachmentTargetResolver.findCompatibleTargets",
+        "this.#attachmentTargetResolver.findPlacementTargets",
       ),
-      "Assembly actions and contextual inventory must share target resolution",
+      "Assembly actions and socket highlighting must share placement resolution",
     );
     assert.ok(
       !factory.includes("highlighted: !child"),
@@ -635,9 +699,13 @@ class InventoryV2StaticContractCheck {
     );
     assert.ok(
       uiSource.includes("InventoryV2TooltipPresenter") &&
-        uiSource.includes("displayStats") &&
-        uiSource.includes("appendTooltip"),
-      "V2 cards must restore the legacy parameter tooltip",
+        uiSource.includes("InventoryV2BalanceParameterResolver") &&
+        uiSource.includes("technicalPath") &&
+        uiSource.includes("baseline") &&
+        uiSource.includes("delta") &&
+        uiSource.includes("#scrollTooltipFirst") &&
+        !uiSource.includes("appendTooltip"),
+      "V2 cards must use the dedicated balance-only tooltip",
     );
     assert.ok(
       !uiSource.includes('"inventory-v2-item-card__name"'),
@@ -664,6 +732,9 @@ class InventoryV2StaticContractCheck {
       "CLOSE",
       "CATEGORY_SELECT",
       "SUBFILTER_TOGGLE",
+      "SORT_CRITERION_SELECT",
+      "SORT_DIRECTION_SELECT",
+      "RARITY_FILTER_TOGGLE",
       "INVENTORY_ITEM_ACTIVATE",
       "INVENTORY_ITEM_LONG_PRESS",
       "EQUIPMENT_SLOT_ACTIVATE",
@@ -723,6 +794,11 @@ class InventoryV2StaticContractCheck {
         handChum: [{ id: "must-not-leak" }],
         boatChums: [{ id: "must-not-leak" }],
       },
+      tooltipContext: {
+        equipment: {
+          rod: { instanceId: "active-rod", type: "pole" },
+        },
+      },
       panel: {
         loadout: {
           mainSlots: [
@@ -767,6 +843,10 @@ class InventoryV2StaticContractCheck {
     );
     assert.strictEqual(normalized.header.activeBaits.length, 1);
     assert.strictEqual(normalized.header.activeChums.length, 1);
+    assert.strictEqual(
+      normalized.tooltipContext.equipment.rod.instanceId,
+      "active-rod",
+    );
     assert.strictEqual(normalized.inventory.mode, "saved-loadout");
     assert.strictEqual(normalized.inventory.savedLoadout.loadoutId, "saved-kit");
     assert.strictEqual(actions.OPEN, "inventory-v2/open");
@@ -959,6 +1039,43 @@ class InventoryV2StaticContractCheck {
       "Separate nets category must be rendered",
     );
 
+    const sortToggle = this.#findByClass(
+      ui.rootNode,
+      "inventory-v2-categories__sort-toggle",
+    );
+    const sortPanel = this.#findByClass(
+      ui.rootNode,
+      "inventory-v2-sort-options",
+    );
+    assert.strictEqual(sortToggle.getAttribute("aria-expanded"), "false");
+    sortToggle.click();
+    assert.ok(sortPanel.classList.contains("is-open"));
+    assert.strictEqual(sortToggle.getAttribute("aria-expanded"), "true");
+    const sortDirections = this.#findAllByClass(
+      sortPanel,
+      "inventory-v2-sort-options__direction",
+    );
+    sortDirections[1].click();
+    this.#assertLast(dispatched, {
+      type: sandbox.InventoryV2ActionType.SORT_DIRECTION_SELECT,
+      directionId: "descending",
+    });
+    this.#findByText(sortPanel, "За рідкістю").click();
+    this.#assertLast(dispatched, {
+      type: sandbox.InventoryV2ActionType.SORT_CRITERION_SELECT,
+      criterionId: "rarity",
+    });
+    const rarityButtons = this.#findAllByClass(
+      sortPanel,
+      "inventory-v2-sort-options__rarity",
+    );
+    rarityButtons[1].click();
+    this.#assertLast(dispatched, {
+      type: sandbox.InventoryV2ActionType.RARITY_FILTER_TOGGLE,
+      rarityId: "rare",
+      enabled: true,
+    });
+
     this.#findByClass(ui.rootNode, "inventory-v2-categories__button").click();
     this.#assertLast(dispatched, {
       type: sandbox.InventoryV2ActionType.CATEGORY_SELECT,
@@ -966,13 +1083,40 @@ class InventoryV2StaticContractCheck {
     });
 
     const inventoryCard = this.#inventoryCard(ui.rootNode, "assembly-bag");
+    assert.strictEqual(inventoryCard.dataset.longPressDuration, "1500");
+    assert.strictEqual(
+      this.#findAllByClass(
+        inventoryCard,
+        "inventory-v2-long-press-progress",
+      ).length,
+      1,
+      "Long press must render one centered circular progress overlay",
+    );
     const tooltip = this.#findByClass(document.body, "inventory-v2-tooltip");
     inventoryCard.emit("mouseenter");
     assert.ok(
       tooltip.textContent.includes("Потужність") &&
-        tooltip.textContent.includes("12 кг") &&
-        tooltip.textContent.includes("Сумісність"),
-      "Hover must show authored display parameters and compatibility",
+        !tooltip.textContent.includes("engineStats.maxLoadKg") &&
+        tooltip.textContent.includes("1.2 кг") &&
+        tooltip.textContent.includes("+0.7 кг") &&
+        !tooltip.textContent.includes("Сумісність"),
+      "Hover must show balance names, EngineStats paths, actual values and baseline deltas",
+    );
+    tooltip.clientHeight = 100;
+    tooltip.scrollHeight = 300;
+    const tooltipWheel = inventoryCard.emit("wheel", { deltaY: 60 });
+    assert.strictEqual(tooltip.scrollTop, 60);
+    assert.strictEqual(tooltipWheel.defaultPrevented, true);
+    assert.strictEqual(tooltipWheel.propagationStopped, true);
+    inventoryCard.emit("wheel", { deltaY: 1000 });
+    const inventoryWheelAtTooltipEnd = inventoryCard.emit("wheel", {
+      deltaY: 30,
+    });
+    assert.strictEqual(tooltip.scrollTop, 200);
+    assert.strictEqual(
+      inventoryWheelAtTooltipEnd.defaultPrevented,
+      false,
+      "Wheel input must return to the inventory after tooltip reaches its edge",
     );
     inventoryCard.emit("mouseleave");
     assert.strictEqual(tooltip.style.display, "none");
@@ -1087,12 +1231,34 @@ class InventoryV2StaticContractCheck {
     });
 
     dispatched.length = 0;
+    const rodCard = this.#findByClass(
+      this.#field(ui.rootNode, "rod"),
+      "inventory-v2-item-card",
+    );
+    assert.strictEqual(rodCard.dataset.longPressDuration, "800");
+    rodCard.emit("pointerdown", { pointerId: 12 });
+    timers.advance(799);
+    assert.strictEqual(dispatched.length, 0);
+    timers.advance(1);
+    rodCard.emit("pointerup", { pointerId: 12 });
+    rodCard.click();
+    this.#assertLast(dispatched, {
+      type: sandbox.InventoryV2ActionType.EQUIPMENT_SLOT_LONG_PRESS,
+      slotId: "rod",
+      instanceId: "rod",
+    });
+    assert.strictEqual(dispatched.length, 1);
+
+    dispatched.length = 0;
     const tackleCard = this.#findByClass(
       this.#field(ui.rootNode, "tackle"),
       "inventory-v2-item-card",
     );
+    assert.strictEqual(tackleCard.dataset.longPressDuration, "800");
     tackleCard.emit("pointerdown", { pointerId: 9 });
-    timers.advance(1500);
+    timers.advance(799);
+    assert.strictEqual(dispatched.length, 0);
+    timers.advance(1);
     tackleCard.emit("pointerup", { pointerId: 9 });
     tackleCard.click();
     this.#assertLast(dispatched, {
@@ -1244,6 +1410,136 @@ class InventoryV2StaticContractCheck {
             parameter.label === "instanceId" || parameter.label === "internalRuntimeValue",
         ),
       "Large assembly cards must expose only authored gameplay parameters",
+    );
+    const balanceResolver = new sandbox.InventoryV2BalanceParameterResolver({
+      debugConfig: { showEngineStats: false },
+      retrieveSpeedCalculator: {
+        calculate: ({
+          baseSpeedMetersPerSec,
+          bearingCount,
+          bearingBonusMetersPerSec,
+        }) =>
+          Number(baseSpeedMetersPerSec) +
+          Number(bearingCount) * Number(bearingBonusMetersPerSec),
+      },
+      reelConfig: { bearingRetrieveSpeedBonusMetersPerSec: 0.2 },
+      castDistanceCalculator: {
+        getBuildCastPowerCoefficient: (equipment) =>
+          Number(equipment.rod?.engineStats?.castPowerCoefficient) || 1,
+        describe: (equipment, coefficient = null) => {
+          const power = coefficient === null
+            ? Number(equipment.rod?.engineStats?.castPowerCoefficient) || 1
+            : Number(coefficient);
+          return {
+            castPowerCoefficient: power,
+            effectiveDistanceMeters: 12 * power,
+            effectiveDistancePx: 600 * power,
+          };
+        },
+      },
+    });
+    const reelBalanceSections = balanceResolver.resolve({
+      instanceId: "balance-reel",
+      type: "spinning_reel",
+      engineStats: {
+        type: "spinning_reel",
+        retrieveSpeedMetersPerSec: 0.8,
+        bearingCount: 3,
+        lineCapacityMeters: 20,
+      },
+      displayStatsSchema: {
+        retrieveSpeedMetersPerSec: { label: "Підмотка", suffix: "м/с" },
+      },
+      progression: {
+        power: {
+          breakdown: [
+            {
+              id: "retrieveSpeedMetersPerSec",
+              minimum: 0.4,
+            },
+            { id: "bearingCount", minimum: 0 },
+          ],
+        },
+      },
+    });
+    const reelBalanceRows = reelBalanceSections.flatMap(
+      (section) => section.rows,
+    );
+    const engineRetrieveSpeed = reelBalanceRows.find(
+      (row) => row.id === "engine:retrieveSpeedMetersPerSec",
+    );
+    const effectiveRetrieveSpeed = reelBalanceRows.find(
+      (row) => row.id === "effective-retrieve-speed",
+    );
+    const retrieveDuration = reelBalanceRows.find(
+      (row) => row.id === "retrieve-duration",
+    );
+    assert.strictEqual(engineRetrieveSpeed.technicalPath, "engineStats.retrieveSpeedMetersPerSec");
+    assert.strictEqual(engineRetrieveSpeed.actual, "0.8 м/с");
+    assert.strictEqual(engineRetrieveSpeed.delta, "+0.4 м/с");
+    assert.strictEqual(effectiveRetrieveSpeed.actual, "1.4 м/с");
+    assert.strictEqual(retrieveDuration.tone, "positive");
+    assert.ok(
+      retrieveDuration.delta.startsWith("-") &&
+        retrieveDuration.impacts[0].value.startsWith("-"),
+      "Reduced retrieve duration from bearings must be a green negative-time bonus",
+    );
+    assert.strictEqual(reelBalanceSections[0].id, "retrieve");
+    assert.ok(
+      !reelBalanceSections.some((section) => section.id === "engine"),
+      "EngineStats must be hidden by default",
+    );
+    const debugBalanceResolver = new sandbox.InventoryV2BalanceParameterResolver({
+      debugConfig: { showEngineStats: true },
+    });
+    const debugSections = debugBalanceResolver.resolve({
+      type: "hook",
+      engineStats: { type: "hook", maxLoadKg: 2 },
+    });
+    assert.strictEqual(debugSections.at(-1).id, "engine");
+    assert.strictEqual(debugSections.at(-1).showTechnicalPaths, true);
+
+    const upgradedStatRows = balanceResolver.resolve({
+      instanceId: "quality-nine-hook",
+      type: "hook",
+      quality: 9,
+      engineStats: { type: "hook", maxLoadKg: 7.12, quality: 9 },
+      progression: {
+        quality: { value: 9, minimum: 1, maximum: 10 },
+        power: {
+          available: true,
+          rawValue: 7.12,
+          minimum: 5,
+          maximum: 8,
+          metricId: "maxLoadKg",
+          breakdown: [],
+        },
+      },
+    }).flatMap((section) => section.rows);
+    const upgradedLoad = upgradedStatRows.find(
+      (row) => row.id === "engine:maxLoadKg",
+    );
+    assert.strictEqual(upgradedLoad.actual, "7.12 кг");
+    assert.strictEqual(upgradedLoad.delta, "+2.12 кг");
+    assert.strictEqual(upgradedLoad.baseline, "5 кг");
+
+    const rodBalanceRows = balanceResolver.resolve({
+      instanceId: "balance-rod",
+      type: "spinning",
+      engineStats: {
+        type: "spinning",
+        castPowerCoefficient: 0.5,
+      },
+    }).flatMap((section) => section.rows);
+    const castDistance = rodBalanceRows.find(
+      (row) => row.id === "cast-distance",
+    );
+    assert.strictEqual(castDistance.actual, "6 м (300 px)");
+    assert.strictEqual(castDistance.delta, "-6 м (-300 px)");
+    assert.strictEqual(
+      castDistance.tone,
+      "negative",
+      "Reduced cast distance must be marked as harmful",
     );
     const inventoryBoat = isolatedItemRenderer.renderInventoryItem({
       instanceId: "boat-inventory",
@@ -1467,6 +1763,28 @@ class InventoryV2StaticContractCheck {
 
     currentView = this.#editorViewModel();
     ui.render(currentView);
+    this.#inventoryCard(ui.rootNode, "assembly-bag").click();
+    this.#assertLast(dispatched, {
+      type: sandbox.InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+      instanceId: "assembly-bag",
+    });
+    const editor = this.#findByClass(
+      ui.rootNode,
+      "inventory-v2-assembly-editor",
+    );
+    const editorActions = this.#findByClass(
+      editor,
+      "inventory-v2-assembly-editor__actions",
+    );
+    const editorWorkspace = this.#findByClass(
+      editor,
+      "inventory-v2-assembly-editor__workspace",
+    );
+    assert.ok(
+      editor.children.indexOf(editorActions) <
+        editor.children.indexOf(editorWorkspace),
+      "Card actions must render above the item image and parameter workspace",
+    );
     const assemblyVisual = this.#findByClass(
       ui.rootNode,
       "inventory-v2-assembly-editor__visual",
@@ -1486,8 +1804,19 @@ class InventoryV2StaticContractCheck {
     assert.ok(
       assemblyParameters.textContent.includes("Рівень") &&
         assemblyParameters.textContent.includes("Power") &&
-        assemblyParameters.textContent.includes("55%"),
-      "The assembly root must show only its production parameters below sockets",
+        assemblyParameters.textContent.includes("55%") &&
+        assemblyParameters.textContent.includes("Spring") &&
+        assemblyParameters.textContent.includes("Worm") &&
+        assemblyParameters.textContent.includes("Freshness"),
+      "The assembly editor must show production parameters for its root and attached components",
+    );
+    assert.strictEqual(
+      this.#findAllByClass(
+        assemblyParameters,
+        "inventory-v2-item-parameter-section",
+      ).length,
+      2,
+      "Root and attached bait must render as separate parameter sections",
     );
     assert.ok(
       this.#findAllByClass(assemblyParameters, "inventory-v2-parameter-row")
@@ -1497,6 +1826,43 @@ class InventoryV2StaticContractCheck {
           "inventory-v2-resource-meter--parameter",
         ).length === 1,
       "The large card must reuse the shared resource meter renderer",
+    );
+    const groupedHookSections =
+      new sandbox.InventoryV2AssemblyParameterSectionResolver().resolve({
+        root: { instanceId: "rig", itemId: "rig", name: "Rig" },
+        sockets: [0, 1, 2].map((index) => ({
+          slotId: "hook",
+          label: `Hook ${index + 1}`,
+          item: {
+            instanceId: `hook-${index}`,
+            itemId: "hook-basic",
+            name: "Hook",
+            type: "hook",
+            quality: 6,
+            engineStats: { maxLoadKg: 1.5 },
+            displayStats: { Power: "1.5 kg" },
+          },
+        })),
+      });
+    assert.strictEqual(groupedHookSections.length, 2);
+    assert.strictEqual(groupedHookSections[1].count, 3);
+    assert.strictEqual(groupedHookSections[1].slotLabel, "");
+    assert.strictEqual(
+      groupedHookSections[1].item.instanceId,
+      "hook-0",
+      "Three statistically identical hooks must share one component section",
+    );
+    const groupedHookPanel =
+      new sandbox.InventoryV2ItemParametersRenderer().renderSections(
+        groupedHookSections,
+      );
+    assert.strictEqual(
+      this.#findByClass(
+        groupedHookPanel,
+        "inventory-v2-item-parameter-section__title",
+      ).textContent,
+      "Hook ×3",
+      "A grouped component header must contain only its item name and count",
     );
     const assemblyWorkspace = this.#findByClass(
       ui.rootNode,
@@ -1543,7 +1909,6 @@ class InventoryV2StaticContractCheck {
     );
     const buttonActions = [
       ["Зняти", sandbox.InventoryV2ActionType.ASSEMBLY_UNEQUIP],
-      ["Розібрати", sandbox.InventoryV2ActionType.ASSEMBLY_DISASSEMBLE],
       ["Назад", sandbox.InventoryV2ActionType.ASSEMBLY_BACK],
     ];
     buttonActions.forEach(([label, type]) => {
@@ -1552,6 +1917,19 @@ class InventoryV2StaticContractCheck {
         type,
         rootInstanceId: "assembly-active",
       });
+    });
+
+    currentView = this.#editorViewModel();
+    currentView.panel.assembly.equipped = false;
+    currentView.panel.assembly.canUnequip = false;
+    currentView.panel.assembly.showUnequip = false;
+    currentView.panel.assembly.canDisassemble = true;
+    currentView.panel.assembly.showDisassemble = true;
+    ui.render(currentView);
+    this.#findByText(ui.rootNode, "Розібрати").click();
+    this.#assertLast(dispatched, {
+      type: sandbox.InventoryV2ActionType.ASSEMBLY_DISASSEMBLE,
+      rootInstanceId: "assembly-active",
     });
 
     currentView = this.#editorViewModel();
@@ -1631,6 +2009,13 @@ class InventoryV2StaticContractCheck {
       { type: actions.CLOSE },
       { type: actions.CATEGORY_SELECT, categoryId: "all" },
       { type: actions.SUBFILTER_TOGGLE, filterId: "hooks", enabled: true },
+      { type: actions.SORT_CRITERION_SELECT, criterionId: "rarity" },
+      { type: actions.SORT_DIRECTION_SELECT, directionId: "descending" },
+      {
+        type: actions.RARITY_FILTER_TOGGLE,
+        rarityId: "rare",
+        enabled: true,
+      },
       { type: actions.INVENTORY_ITEM_ACTIVATE, instanceId: "item" },
       { type: actions.INVENTORY_ITEM_LONG_PRESS, instanceId: "item" },
       {
@@ -1740,12 +2125,68 @@ class InventoryV2StaticContractCheck {
         subfilters: [
           { id: "hooks", label: "Гачки", count: 1, selected: false },
         ],
+        sort: {
+          criterionId: "type",
+          directionId: "ascending",
+          activeRarityIds: [],
+          criteria: [
+            { id: "type", label: "За типом", selected: true },
+            { id: "rarity", label: "За рідкістю", selected: false },
+          ],
+          directions: [
+            {
+              id: "ascending",
+              icon: "↑",
+              label: "Від меншого до більшого",
+              selected: true,
+            },
+            {
+              id: "descending",
+              icon: "↓",
+              label: "Від більшого до меншого",
+              selected: false,
+            },
+          ],
+          rarities: [
+            {
+              id: "common",
+              label: "Звичайні",
+              color: "rgb(145, 150, 160)",
+              count: 1,
+              selected: false,
+            },
+            {
+              id: "rare",
+              label: "Рідкі",
+              color: "rgb(0, 160, 255)",
+              count: 1,
+              selected: false,
+            },
+          ],
+        },
         items: [
           item("assembly-bag", {
             status: "prepared",
             compatibleWithHighlightedSlot: true,
             requiresTag: "hook",
-            displayStats: { "Потужність": "12 кг" },
+            displayStats: { "Потужність": "1.2 кг" },
+            displayStatsSchema: {
+              maxLoadKg: { label: "Потужність", suffix: "кг" },
+            },
+            engineStats: { type: "hook", maxLoadKg: 1.2 },
+            progression: {
+              power: {
+                available: true,
+                rawValue: 1.2,
+                minimum: 0.5,
+                maximum: 3,
+                metricId: "maxLoadKg",
+                metricLabel: "Потужність",
+                metricSuffix: "кг",
+                percent: 28,
+                breakdown: [],
+              },
+            },
           }),
           item("saved-kit", {
             type: "equipment_loadout",
@@ -1787,7 +2228,8 @@ class InventoryV2StaticContractCheck {
           equipped: true,
           canEquip: true,
           canUnequip: true,
-          canDisassemble: true,
+          canDisassemble: false,
+          showDisassemble: false,
           sockets: [
             {
               socketId: "hook[0]",
@@ -1812,6 +2254,7 @@ class InventoryV2StaticContractCheck {
                 name: "Worm",
                 icon: "W",
                 quantity: 1,
+                displayStats: { Freshness: "100%" },
               },
             },
           ],
