@@ -147,6 +147,8 @@ class InventoryV2ActionContract {
 }
 
 class InventoryV2ViewModelNormalizer {
+  #sortDefaults;
+
   static MAIN_SLOT_IDS = Object.freeze([
     "rod",
     "reel",
@@ -161,6 +163,19 @@ class InventoryV2ViewModelNormalizer {
     "delivery",
     "gasMask",
   ]);
+
+  constructor({
+    sortConfig = typeof INVENTORY_V2_SORT_CONFIG !== "undefined"
+      ? INVENTORY_V2_SORT_CONFIG
+      : null,
+  } = {}) {
+    this.#sortDefaults = Object.freeze({
+      criterionIds: Object.freeze([
+        ...(sortConfig?.defaults?.criterionIds || ["rarity"]),
+      ]),
+      directionId: String(sortConfig?.defaults?.directionId || "descending"),
+    });
+  }
 
   normalize(source = {}) {
     const panel = source.panel || {};
@@ -322,23 +337,39 @@ class InventoryV2ViewModelNormalizer {
   }
 
   #normalizeSort(source = {}) {
-    const criterionId = this.#text(source.criterionId, "type");
-    const directionId = this.#text(source.directionId, "ascending");
+    const requestedCriterionIds = Array.isArray(source.criterionIds)
+      ? source.criterionIds
+      : source.criterionId
+        ? [source.criterionId]
+        : this.#sortDefaults.criterionIds;
+    const criterionIds = Object.freeze([
+      ...new Set(
+        requestedCriterionIds
+          .filter((value) => typeof value === "string" && value.trim())
+          .map((value) => value.trim()),
+      ),
+    ]);
+    const directionId = this.#text(
+      source.directionId,
+      this.#sortDefaults.directionId,
+    );
     const activeRarityIds = this.#array(source.activeRarityIds).filter(
       (value) => typeof value === "string" && value.trim(),
     );
     return Object.freeze({
-      criterionId,
+      criterionIds,
       directionId,
       criteria: Object.freeze(
-        this.#array(source.criteria).map((criterion) =>
-          Object.freeze({
-            id: this.#text(criterion?.id, "type"),
+        this.#array(source.criteria).map((criterion) => {
+          const id = this.#text(criterion?.id, "type");
+          const priorityIndex = criterionIds.indexOf(id);
+          return Object.freeze({
+            id,
             label: this.#text(criterion?.label, "Сортування"),
-            selected:
-              criterion?.selected === true || criterion?.id === criterionId,
-          }),
-        ),
+            selected: priorityIndex >= 0,
+            priority: priorityIndex >= 0 ? priorityIndex + 1 : null,
+          });
+        }),
       ),
       directions: Object.freeze(
         this.#array(source.directions).map((direction) =>

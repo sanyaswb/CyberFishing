@@ -1,5 +1,78 @@
 # CyberFishing changelog
 
+## v0.24.20 - Chained Inventory Sorting
+
+### Added
+
+- Several sorting criteria can now be active at the same time; each new criterion is appended to the sorting chain.
+- Active criterion buttons display numbered priorities so the comparison order remains visible.
+- Repeatedly pressing an active criterion removes it and automatically recalculates the remaining priorities.
+
+### Changed
+
+- The shared ascending or descending direction now applies consistently to every criterion in the chain.
+- With no active criteria, inventory items retain their stable natural order.
+- The default sorting configuration now stores an ordered criterion list, initially rarity only.
+
+### Tests
+
+- Added integration coverage for criterion toggling, priority projection, stable unsorted order and rarity-plus-level sorting.
+- Added UI coverage for rendering multiple numbered sorting priorities.
+
+## v0.24.19 - Default Rarity Sorting
+
+### Changed
+
+- Inventory now opens sorted by rarity from highest to lowest by default.
+- Application state, ordering and UI normalization now read their initial criterion and direction from the shared sorting configuration.
+- Manual sorting by type, level, power or the opposite direction remains unchanged.
+
+### Tests
+
+- Updated integration coverage to verify the default rarity-descending order and explicit switching back to type-ascending order.
+
+## v0.24.18 - Filter Click Restoration
+
+### Fixed
+
+- Filter and sorting buttons can be selected again: horizontal navigation no longer captures the pointer immediately on press.
+- Mouse and touch dragging starts only after crossing the shared movement threshold, so a short press remains a normal click.
+- Pointer movement below the threshold no longer shifts the filter row or suppresses its button action.
+
+### Tests
+
+- Added Inventory V2 UI regression coverage for short filter presses, unchanged scroll position below the threshold and preserved clicks.
+
+## v0.24.17 - Inventory Scroll Restoration
+
+### Changed
+
+- Applied the existing shared scrollbar dimensions, track and thumb colours to every scrollable left-panel mode: loadout, item editor and saved-loadout preview.
+- Restored vertical-wheel navigation for horizontal category, subtype and sorting rows: positive wheel movement scrolls right and negative movement scrolls left.
+- Restored horizontal drag and swipe with one pointer-event implementation for mouse, pen and touch devices.
+- Prevented a completed drag from accidentally activating the category or filter button beneath the pointer.
+- Replaced the private legacy mouse-only helper with a reusable horizontal-scroll controller shared by Inventory V1 and Inventory V2.
+- Preserved normal page scrolling when a horizontal row is already at the boundary or has no overflow.
+
+### Validation
+
+- Added interaction coverage for both wheel directions, touch swipe, mouse drag, released pointer state and post-swipe click suppression.
+- Added style-contract coverage confirming that every left-panel scrollbar and horizontal filter uses the common scrollbar source.
+
+## v0.24.16 - Parameter Section Tiles
+
+### Changed
+
+- Replaced the long vertical list of assembly parameter sections with separate bordered tiles in a balanced two-column grid.
+- Kept two and four sections in even rows, while the third or any final odd section occupies a centered row at the same tile width.
+- Expanded only the parameter workspace to the available width of the left panel; the main item image and attachment sockets keep their established compact width and centered alignment.
+- Added container-based responsiveness so the parameter grid collapses to one column according to its actual available width instead of relying only on the viewport size.
+- Kept a single parameter section full-width and reset centered odd-section sizing when the grid becomes one column.
+
+### Validation
+
+- Added UI style-contract coverage for the two-column grid, centered odd tile and container-driven single-column fallback.
+
 ## v0.24.15 - Stable Inventory Sorting
 
 ### Added

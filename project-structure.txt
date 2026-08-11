@@ -489,6 +489,8 @@
 │  ├── ui
 │  │  ├── condition
 │  │  │  └── item_condition_dom_adapter.js
+│  │  ├── interaction
+│  │  │  └── horizontal_scroll_controller.js
 │  │  ├── inventory
 │  │  │  ├── inventory_v2_assembly_editor_renderer.js
 │  │  │  ├── inventory_v2_assembly_parameter_section_resolver.js

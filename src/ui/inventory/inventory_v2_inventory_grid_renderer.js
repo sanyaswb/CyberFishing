@@ -1,14 +1,21 @@
 class InventoryV2InventoryGridRenderer {
   #dom;
   #itemRenderer;
+  #horizontalScrollController;
   #subfiltersExpanded = false;
   #sortExpanded = false;
 
-  constructor({ domFactory, itemRenderer } = {}) {
+  constructor({
+    domFactory,
+    itemRenderer,
+    horizontalScrollController = null,
+  } = {}) {
     this.#dom = domFactory || new globalThis.InventoryV2DomFactory();
     this.#itemRenderer =
       itemRenderer ||
       new globalThis.InventoryV2ItemCardRenderer({ domFactory: this.#dom });
+    this.#horizontalScrollController =
+      horizontalScrollController || new globalThis.HorizontalScrollController();
   }
 
   render(
@@ -33,21 +40,23 @@ class InventoryV2InventoryGridRenderer {
       onSortDirectionSelect,
       onRarityFilterToggle,
     });
-    panel.appendChild(
-      this.#renderCategories(model, {
-        onCategorySelect,
-        onSubfiltersToggle: (toggle) => {
-          this.#subfiltersExpanded = !this.#subfiltersExpanded;
-          subfilters.classList.toggle("is-open", this.#subfiltersExpanded);
-          this.#syncSubfilterToggle(toggle);
-        },
-        onSortToggle: (toggle) => {
-          this.#sortExpanded = !this.#sortExpanded;
-          sortOptions.classList.toggle("is-open", this.#sortExpanded);
-          this.#syncSortToggle(toggle);
-        },
-      }),
-    );
+    const categories = this.#renderCategories(model, {
+      onCategorySelect,
+      onSubfiltersToggle: (toggle) => {
+        this.#subfiltersExpanded = !this.#subfiltersExpanded;
+        subfilters.classList.toggle("is-open", this.#subfiltersExpanded);
+        this.#syncSubfilterToggle(toggle);
+      },
+      onSortToggle: (toggle) => {
+        this.#sortExpanded = !this.#sortExpanded;
+        sortOptions.classList.toggle("is-open", this.#sortExpanded);
+        this.#syncSortToggle(toggle);
+      },
+    });
+    this.#horizontalScrollController.attach(categories);
+    this.#horizontalScrollController.attach(subfilters);
+    this.#horizontalScrollController.attach(sortOptions);
+    panel.appendChild(categories);
     panel.appendChild(subfilters);
     panel.appendChild(sortOptions);
     panel.appendChild(
@@ -193,6 +202,15 @@ class InventoryV2InventoryGridRenderer {
       );
       button.classList.toggle("is-active", criterion.selected);
       button.setAttribute("aria-pressed", String(criterion.selected));
+      button.dataset.sortPriority = criterion.selected
+        ? String(criterion.priority)
+        : "";
+      button.setAttribute(
+        "aria-label",
+        criterion.selected
+          ? `${criterion.label}, пріоритет ${criterion.priority}`
+          : criterion.label,
+      );
       button.addEventListener("click", () =>
         onSortCriterionSelect?.(criterion.id),
       );

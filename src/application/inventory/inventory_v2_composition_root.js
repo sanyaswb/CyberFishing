@@ -249,7 +249,9 @@ class InventoryV2CompositionRoot {
       boatChargeProvider,
     });
     const subfilterResolver = new InventoryV2SubfilterResolver();
-    const itemOrderResolver = new InventoryV2ItemOrderResolver();
+    const itemOrderResolver = new InventoryV2ItemOrderResolver({
+      config: INVENTORY_V2_SORT_CONFIG,
+    });
     const viewModels = new InventoryV2ViewModelFactory({
       repository,
       assemblyStates,
@@ -293,6 +295,7 @@ class InventoryV2CompositionRoot {
       stackingPolicy,
       reservationPolicy,
       instanceIdFactory,
+      sortConfig: INVENTORY_V2_SORT_CONFIG,
     });
     const gameplayBridge = new InventoryV2GameplayBridge({
       repository,

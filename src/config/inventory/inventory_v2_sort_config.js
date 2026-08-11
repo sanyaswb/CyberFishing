@@ -1,7 +1,7 @@
 const INVENTORY_V2_SORT_CONFIG = Object.freeze({
   defaults: Object.freeze({
-    criterionId: "type",
-    directionId: "ascending",
+    criterionIds: Object.freeze(["rarity"]),
+    directionId: "descending",
   }),
   directions: Object.freeze([
     Object.freeze({

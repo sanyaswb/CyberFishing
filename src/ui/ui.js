@@ -1134,45 +1134,7 @@ class InventoryUI {
   }
 
   #enableHorizontalDrag(element) {
-    let isDown = false;
-    let startX;
-    let scrollLeft;
-
-    element.style.cursor = "grab";
-
-    element.addEventListener("mousedown", (e) => {
-      isDown = true;
-      element.style.cursor = "grabbing";
-      startX = e.pageX - element.offsetLeft;
-      scrollLeft = element.scrollLeft;
-    });
-
-    element.addEventListener("mouseleave", () => {
-      isDown = false;
-      element.style.cursor = "grab";
-    });
-
-    element.addEventListener("mouseup", () => {
-      isDown = false;
-      element.style.cursor = "grab";
-    });
-
-    element.addEventListener("mousemove", (e) => {
-      if (!isDown) return;
-      e.preventDefault();
-      const x = e.pageX - element.offsetLeft;
-      const walk = (x - startX) * 2;
-      element.scrollLeft = scrollLeft - walk;
-    });
-
-    element.addEventListener(
-      "wheel",
-      (e) => {
-        e.preventDefault();
-        element.scrollLeft += e.deltaY;
-      },
-      { passive: false },
-    );
+    new HorizontalScrollController().attach(element);
   }
 
   #initBackpackButton() {

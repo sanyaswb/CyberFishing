@@ -759,8 +759,45 @@ vm.runInContext(
       .join(",");
   assertIntegration(
     orderedIds() ===
+      "sort-hook,sort-reel,sort-wobbler,sort-rod,sort-bait",
+    "inventory defaults to rarity sorting from highest to lowest",
+  );
+  const defaultSort = inventoryOrdering.facade.getViewModel().inventory.sort;
+  assertIntegration(
+    defaultSort.criterionIds.join(",") === "rarity" &&
+      defaultSort.criteria.find((criterion) => criterion.id === "rarity")
+        ?.priority === 1,
+    "default rarity criterion exposes the first sorting priority",
+  );
+  dispatch(
+    inventoryOrdering,
+    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    { criterionId: "rarity" },
+  );
+  assertIntegration(
+    orderedIds() ===
+      "sort-bait,sort-wobbler,sort-reel,sort-hook,sort-rod",
+    "reselecting the only active criterion restores stable inventory order",
+  );
+  dispatch(
+    inventoryOrdering,
+    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    { criterionId: "type" },
+  );
+  dispatch(
+    inventoryOrdering,
+    InventoryV2ActionType.SORT_DIRECTION_SELECT,
+    { directionId: "ascending" },
+  );
+  assertIntegration(
+    orderedIds() ===
       "sort-rod,sort-reel,sort-hook,sort-wobbler,sort-bait",
     "type sorting follows the configured rod-to-consumable order",
+  );
+  dispatch(
+    inventoryOrdering,
+    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    { criterionId: "type" },
   );
   dispatch(
     inventoryOrdering,
@@ -782,6 +819,20 @@ vm.runInContext(
     InventoryV2ActionType.SORT_CRITERION_SELECT,
     { criterionId: "level" },
   );
+  const rarityThenLevel = inventoryOrdering.facade.getViewModel().inventory.sort;
+  assertIntegration(
+    rarityThenLevel.criterionIds.join(",") === "rarity,level" &&
+      rarityThenLevel.criteria.find((criterion) => criterion.id === "rarity")
+        ?.priority === 1 &&
+      rarityThenLevel.criteria.find((criterion) => criterion.id === "level")
+        ?.priority === 2,
+    "additional criteria are appended and expose their sorting priority",
+  );
+  dispatch(
+    inventoryOrdering,
+    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    { criterionId: "rarity" },
+  );
   assertIntegration(
     orderedIds() ===
       "sort-wobbler,sort-reel,sort-rod,sort-bait,sort-hook",
@@ -791,6 +842,11 @@ vm.runInContext(
     inventoryOrdering,
     InventoryV2ActionType.SORT_CRITERION_SELECT,
     { criterionId: "power" },
+  );
+  dispatch(
+    inventoryOrdering,
+    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    { criterionId: "level" },
   );
   assertIntegration(
     orderedIds() ===
@@ -822,6 +878,40 @@ vm.runInContext(
     { rarityId: "rare", enabled: false },
   );
 
+  const chainedOrdering = makeComposition({
+    items: [
+      raw("multi-rare-low", "hook", 1, {
+        rarity: "rare",
+        engineStats: { level: 2 },
+      }),
+      raw("multi-common-high", "hook", 1, {
+        rarity: "common",
+        engineStats: { level: 9 },
+      }),
+      raw("multi-rare-high", "hook", 1, {
+        rarity: "rare",
+        engineStats: { level: 8 },
+      }),
+      raw("multi-epic-low", "hook", 1, {
+        rarity: "epic",
+        engineStats: { level: 1 },
+      }),
+    ],
+  });
+  dispatch(
+    chainedOrdering,
+    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    { criterionId: "level" },
+  );
+  assertIntegration(
+    chainedOrdering.facade
+      .getViewModel()
+      .inventory.items.map((item) => item.instanceId)
+      .join(",") ===
+      "multi-epic-low,multi-rare-high,multi-rare-low,multi-common-high",
+    "secondary level sorting orders items inside the same rarity",
+  );
+
   const stablePlacementOrdering = makeComposition({
     items: [
       raw("stable-spring", "spring"),
@@ -829,16 +919,6 @@ vm.runInContext(
       raw("stable-hooks", "hook", 4, { rarity: "common" }),
     ],
   });
-  dispatch(
-    stablePlacementOrdering,
-    InventoryV2ActionType.SORT_CRITERION_SELECT,
-    { criterionId: "rarity" },
-  );
-  dispatch(
-    stablePlacementOrdering,
-    InventoryV2ActionType.SORT_DIRECTION_SELECT,
-    { directionId: "descending" },
-  );
   const stableSpringRoot = dispatch(
     stablePlacementOrdering,
     InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,

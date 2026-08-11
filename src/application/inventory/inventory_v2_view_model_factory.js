@@ -523,7 +523,7 @@ class InventoryV2ViewModelFactory {
         })
       : categoryItems;
     const sortOptions = {
-      criterionId: uiState.sortCriterionId,
+      criterionIds: uiState.sortCriterionIds,
       directionId: uiState.sortDirectionId,
       activeRarityIds: uiState.activeRarityFilterIds,
       placementOrderKey: uiState.placementOrderKey,

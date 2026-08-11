@@ -31,13 +31,14 @@ class InventoryV2CommandService {
   #equipmentLineReadinessPolicy;
   #stackingPolicy;
   #reservationPolicy;
+  #sortConfig;
   #fallbackSequence = 0;
   #uiState = {
     isOpen: false,
     activeCategoryId: "all",
     activeSubfilterIds: [],
-    sortCriterionId: "type",
-    sortDirectionId: "ascending",
+    sortCriterionIds: [],
+    sortDirectionId: null,
     activeRarityFilterIds: [],
     placementOrderKey: null,
     selectedInstanceId: null,
@@ -71,6 +72,9 @@ class InventoryV2CommandService {
     stackingPolicy = null,
     reservationPolicy = null,
     instanceIdFactory = null,
+    sortConfig = typeof INVENTORY_V2_SORT_CONFIG !== "undefined"
+      ? INVENTORY_V2_SORT_CONFIG
+      : null,
   } = {}) {
     this.#repository = repository;
     this.#assemblyStates = assemblyStates;
@@ -96,6 +100,11 @@ class InventoryV2CommandService {
       stackingPolicy || new ItemAssemblyStackingPolicy();
     this.#reservationPolicy = reservationPolicy;
     this.#instanceIdFactory = instanceIdFactory;
+    this.#sortConfig = sortConfig;
+    this.#uiState.sortCriterionIds = [
+      ...(sortConfig?.defaults?.criterionIds || []),
+    ];
+    this.#uiState.sortDirectionId = sortConfig?.defaults?.directionId || null;
     this.#assertDependencies();
   }
 
@@ -104,6 +113,9 @@ class InventoryV2CommandService {
       ...this.#uiState,
       activeSubfilterIds: Object.freeze([
         ...this.#uiState.activeSubfilterIds,
+      ]),
+      sortCriterionIds: Object.freeze([
+        ...this.#uiState.sortCriterionIds,
       ]),
       activeRarityFilterIds: Object.freeze([
         ...this.#uiState.activeRarityFilterIds,
@@ -629,17 +641,22 @@ class InventoryV2CommandService {
 
   #selectSortCriterion(criterionId) {
     const candidate = String(criterionId || "");
-    const available = INVENTORY_V2_SORT_CONFIG.criteria.some(
+    const available = this.#sortConfig.criteria.some(
       (criterion) => criterion.id === candidate,
     );
     if (!available) return this.#failure("Невідомий критерій сортування.");
-    this.#uiState.sortCriterionId = candidate;
-    return this.#success({ sortCriterionId: candidate });
+    const selected = this.#uiState.sortCriterionIds;
+    this.#uiState.sortCriterionIds = selected.includes(candidate)
+      ? selected.filter((id) => id !== candidate)
+      : [...selected, candidate];
+    return this.#success({
+      sortCriterionIds: [...this.#uiState.sortCriterionIds],
+    });
   }
 
   #selectSortDirection(directionId) {
     const candidate = String(directionId || "");
-    const available = INVENTORY_V2_SORT_CONFIG.directions.some(
+    const available = this.#sortConfig.directions.some(
       (direction) => direction.id === candidate,
     );
     if (!available) return this.#failure("Невідомий напрямок сортування.");
@@ -650,7 +667,7 @@ class InventoryV2CommandService {
   #toggleRarityFilter(rarityId, enabled) {
     const candidate = String(rarityId || "");
     const available = Object.hasOwn(
-      INVENTORY_V2_SORT_CONFIG.rarityLabels,
+      this.#sortConfig.rarityLabels,
       candidate,
     );
     if (!available) return this.#failure("Невідома рідкість предмета.");
@@ -1211,6 +1228,7 @@ class InventoryV2CommandService {
       [this.#projectionService, "projectionService"],
       [this.#lineAllocationService, "lineAllocationService"],
       [this.#equipmentLineReadinessPolicy, "equipmentLineReadinessPolicy"],
+      [this.#sortConfig, "sortConfig"],
     ];
     for (const [dependency, name] of dependencies) {
       if (!dependency) throw new TypeError(`InventoryV2CommandService requires ${name}`);
@@ -1218,6 +1236,27 @@ class InventoryV2CommandService {
     if (!this.#attachmentTargetResolver.findPlacementTargets) {
       throw new TypeError(
         "InventoryV2CommandService requires attachmentTargetResolver.findPlacementTargets()",
+      );
+    }
+    if (
+      !Array.isArray(this.#sortConfig.defaults?.criterionIds) ||
+      this.#sortConfig.defaults.criterionIds.length === 0 ||
+      !this.#sortConfig.defaults?.directionId ||
+      !Array.isArray(this.#sortConfig.criteria) ||
+      !Array.isArray(this.#sortConfig.directions) ||
+      this.#sortConfig.defaults.criterionIds.some(
+        (criterionId) =>
+          !this.#sortConfig.criteria.some(
+            (criterion) => criterion.id === criterionId,
+          ),
+      ) ||
+      !this.#sortConfig.directions.some(
+        (direction) =>
+          direction.id === this.#sortConfig.defaults.directionId,
+      )
+    ) {
+      throw new TypeError(
+        "InventoryV2CommandService requires valid sortConfig defaults",
       );
     }
   }

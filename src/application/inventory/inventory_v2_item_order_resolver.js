@@ -48,15 +48,17 @@ class InventoryV2ItemOrderResolver {
     const filtered = activeRarityIds.size
       ? source.filter((item) => activeRarityIds.has(this.resolveRarityId(item)))
       : source;
-    const criterionId = this.#criterionId(options.criterionId);
+    const criterionIds = this.#criterionIds(options);
     const directionId = this.#directionId(options.directionId);
     const originalIndexes = new Map(
       filtered.map((item, index) => [item.instanceId, index]),
     );
     const sorted = filtered.slice().sort((left, right) => {
-      const comparison = this.#compare(left, right, criterionId);
-      if (comparison !== 0) {
-        return directionId === "descending" ? -comparison : comparison;
+      for (const criterionId of criterionIds) {
+        const comparison = this.#compare(left, right, criterionId);
+        if (comparison !== 0) {
+          return directionId === "descending" ? -comparison : comparison;
+        }
       }
       return (
         (originalIndexes.get(left.instanceId) || 0) -
@@ -74,7 +76,7 @@ class InventoryV2ItemOrderResolver {
   }
 
   createControls(items = [], options = {}) {
-    const criterionId = this.#criterionId(options.criterionId);
+    const criterionIds = this.#criterionIds(options);
     const directionId = this.#directionId(options.directionId);
     const activeRarityIds = this.#validRarityIds(options.activeRarityIds);
     const counts = new Map(this.#rarityOptions.map((option) => [option.id, 0]));
@@ -83,15 +85,17 @@ class InventoryV2ItemOrderResolver {
       counts.set(rarityId, (counts.get(rarityId) || 0) + 1);
     }
     return Object.freeze({
-      criterionId,
+      criterionIds: Object.freeze([...criterionIds]),
       directionId,
       criteria: Object.freeze(
-        this.#config.criteria.map((criterion) =>
-          Object.freeze({
+        this.#config.criteria.map((criterion) => {
+          const priorityIndex = criterionIds.indexOf(criterion.id);
+          return Object.freeze({
             ...criterion,
-            selected: criterion.id === criterionId,
-          }),
-        ),
+            selected: priorityIndex >= 0,
+            priority: priorityIndex >= 0 ? priorityIndex + 1 : null,
+          });
+        }),
       ),
       directions: Object.freeze(
         this.#config.directions.map((direction) =>
@@ -205,11 +209,17 @@ class InventoryV2ItemOrderResolver {
     return [...retained, ...appeared];
   }
 
-  #criterionId(candidate) {
-    const id = String(candidate || this.#config.defaults.criterionId);
-    return this.#config.criteria.some((criterion) => criterion.id === id)
-      ? id
-      : this.#config.defaults.criterionId;
+  #criterionIds(options = {}) {
+    const candidates = Array.isArray(options.criterionIds)
+      ? options.criterionIds
+      : options.criterionId
+        ? [options.criterionId]
+        : this.#config.defaults.criterionIds;
+    const available = new Set(
+      this.#config.criteria.map((criterion) => criterion.id),
+    );
+    return [...new Set(candidates.map((id) => String(id || "")))]
+      .filter((id) => available.has(id));
   }
 
   #directionId(candidate) {

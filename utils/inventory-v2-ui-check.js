@@ -35,8 +35,10 @@ const COMMAND_SERVICE_FILE = path.join(
   "inventory",
   "inventory_v2_command_service.js",
 );
+const LEGACY_UI_FILE = path.join(ROOT, "src", "ui", "ui.js");
 
 const UI_SCRIPT_ORDER = Object.freeze([
+  "../interaction/horizontal_scroll_controller.js",
   "inventory_v2_view_model.js",
   "inventory_v2_dom_factory.js",
   "inventory_v2_long_press_controller.js",
@@ -88,6 +90,10 @@ class InventoryV2SourceReader {
 
   readCommandService() {
     return fs.readFileSync(COMMAND_SERVICE_FILE, "utf8");
+  }
+
+  readLegacyUi() {
+    return fs.readFileSync(LEGACY_UI_FILE, "utf8");
   }
 }
 
@@ -358,10 +364,12 @@ class InventoryV2StaticContractCheck {
     const combined = [parameterConfig, ...files.map((file) => file.source)].join("\n");
     const style = this.#reader.readStyle();
     const config = this.#reader.readConfig();
+    const legacyUi = this.#reader.readLegacyUi();
 
     this.#assertSafeTextRendering(combined);
     this.#assertGlobalClasses(combined);
     this.#assertLongPressContract(combined, style);
+    this.#assertHorizontalScrollContract(combined, legacyUi, style);
     this.#assertVisualContract(style);
     assert.match(
       config,
@@ -369,7 +377,9 @@ class InventoryV2StaticContractCheck {
       "Inventory EngineStats debug output must be disabled by default",
     );
     this.#assertApplicationFactoryContract(combined);
-    this.#assertViewModelContract(files[0].source);
+    this.#assertViewModelContract(
+      files.find((file) => file.name === "inventory_v2_view_model.js")?.source || "",
+    );
     this.#assertAllInteractions(files);
     console.log("Inventory V2 UI contract and interaction checks passed.");
   }
@@ -431,6 +441,30 @@ class InventoryV2StaticContractCheck {
     assert.match(style, /z-index:\s*30/);
   }
 
+  #assertHorizontalScrollContract(source, legacyUi, style) {
+    assert.ok(
+      source.includes("class HorizontalScrollController") &&
+        source.includes('addEventListener("wheel"') &&
+        source.includes('addEventListener("pointerdown"') &&
+        source.includes('addEventListener("pointermove"') &&
+        source.includes("element.scrollLeft = next"),
+      "Inventory V2 must use one wheel and pointer horizontal-scroll controller",
+    );
+    assert.ok(
+      legacyUi.includes("new HorizontalScrollController().attach(element)") &&
+        !legacyUi.includes('element.addEventListener("mousedown"'),
+      "Legacy inventory must reuse the shared horizontal-scroll controller",
+    );
+    assert.ok(
+      style.includes(".inventory-v2-loadout-panel,") &&
+        style.includes(".inventory-v2-assembly-editor,") &&
+        style.includes(".inventory-v2-saved-loadout-preview,") &&
+        style.includes(".inventory-v2-horizontal-scroll") &&
+        style.includes("touch-action: pan-y"),
+      "Every left panel and horizontal filter must share scrollbar and swipe styles",
+    );
+  }
+
   #assertVisualContract(style) {
     for (const selector of [
       ".inventory-v2-modal",
@@ -453,6 +487,8 @@ class InventoryV2StaticContractCheck {
       ".inventory-v2-assembly-editor__visual",
       ".inventory-v2-item-parameters",
       ".inventory-v2-item-parameter-section",
+      ".inventory-v2-item-parameter-section:only-child",
+      ".inventory-v2-item-parameter-section:last-child:nth-child(odd):not(:only-child)",
       ".inventory-v2-item-parameter-section__header",
       ".inventory-v2-parameters-list",
       ".inventory-v2-parameter-row",
@@ -465,6 +501,7 @@ class InventoryV2StaticContractCheck {
       ".inventory-v2-subfilters__checkbox",
       ".inventory-v2-sort-options",
       ".inventory-v2-sort-options__button",
+      ".inventory-v2-sort-options__criterion.is-active::before",
       ".inventory-v2-sort-options__rarity",
       ".inventory-v2-inventory-item.is-compatible:not(.is-selected)",
       ".inventory-v2-tooltip",
@@ -548,11 +585,27 @@ class InventoryV2StaticContractCheck {
     );
     assert.ok(
       style.includes("--inventory-v2-assembly-card-width") &&
+        style.includes("--inventory-v2-assembly-content-width") &&
         style.includes(".inventory-v2-assembly-editor__visual") &&
         style.includes(".inventory-v2-parameters-list") &&
         style.includes(".inventory-v2-parameter-bar-track") &&
         style.includes("grid-template-columns: repeat(2, minmax(0, 1fr))"),
       "The assembly editor must stack visual, sockets and production parameters in one card",
+    );
+    assert.match(
+      style,
+      /\.inventory-v2-item-parameters\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
+      "Multiple parameter sections must use a balanced two-column tile grid",
+    );
+    assert.match(
+      style,
+      /\.inventory-v2-item-parameter-section:last-child:nth-child\(odd\):not\(:only-child\)\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*-1;[\s\S]*?justify-self:\s*center;/,
+      "The final odd parameter tile must occupy a centered row",
+    );
+    assert.match(
+      style,
+      /@container inventory-v2-assembly-workspace \(max-width:\s*520px\)\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)/,
+      "The parameter tile grid must collapse to one column from its own container width",
     );
     assert.ok(
       style.includes("--inventory-v2-scrollbar-size") &&
@@ -1013,6 +1066,90 @@ class InventoryV2StaticContractCheck {
       ui.rootNode,
       "inventory-v2-subfilters",
     );
+    categoryNavigation.scrollWidth = 600;
+    categoryNavigation.clientWidth = 200;
+    categoryNavigation.scrollLeft = 50;
+    categoryNavigation.emit("pointerdown", {
+      pointerType: "mouse",
+      pointerId: 29,
+      clientX: 100,
+    });
+    assert.strictEqual(
+      categoryNavigation.classList.contains("is-horizontal-dragging"),
+      false,
+    );
+    assert.strictEqual(categoryNavigation.hasPointerCapture(29), false);
+    categoryNavigation.emit("pointermove", {
+      pointerType: "mouse",
+      pointerId: 29,
+      clientX: 96,
+    });
+    assert.strictEqual(categoryNavigation.scrollLeft, 50);
+    categoryNavigation.emit("pointerup", {
+      pointerType: "mouse",
+      pointerId: 29,
+      clientX: 96,
+    });
+    const shortFilterClick = categoryNavigation.emit("click");
+    assert.strictEqual(shortFilterClick.defaultPrevented, false);
+
+    categoryNavigation.scrollLeft = 0;
+    const wheelRight = categoryNavigation.emit("wheel", { deltaY: 80 });
+    assert.strictEqual(categoryNavigation.scrollLeft, 80);
+    assert.strictEqual(wheelRight.defaultPrevented, true);
+    categoryNavigation.emit("wheel", { deltaY: -30 });
+    assert.strictEqual(
+      categoryNavigation.scrollLeft,
+      50,
+      "Wheel toward the user must scroll right and away must scroll left",
+    );
+    categoryNavigation.emit("pointerdown", {
+      pointerId: 30,
+      pointerType: "touch",
+      clientX: 120,
+    });
+    const touchSwipe = categoryNavigation.emit("pointermove", {
+      pointerId: 30,
+      pointerType: "touch",
+      clientX: 70,
+    });
+    categoryNavigation.emit("pointerup", {
+      pointerId: 30,
+      pointerType: "touch",
+      clientX: 70,
+    });
+    assert.strictEqual(categoryNavigation.scrollLeft, 100);
+    assert.strictEqual(touchSwipe.defaultPrevented, true);
+    assert.ok(
+      !categoryNavigation.classList.contains("is-horizontal-dragging"),
+      "Touch swipe must release the horizontal drag state",
+    );
+    const suppressedSwipeClick = categoryNavigation.emit("click");
+    assert.strictEqual(
+      suppressedSwipeClick.defaultPrevented,
+      true,
+      "A completed swipe must not activate a filter button accidentally",
+    );
+    categoryNavigation.emit("pointerdown", {
+      pointerId: 31,
+      pointerType: "mouse",
+      clientX: 70,
+    });
+    categoryNavigation.emit("pointermove", {
+      pointerId: 31,
+      pointerType: "mouse",
+      clientX: 110,
+    });
+    categoryNavigation.emit("pointerup", {
+      pointerId: 31,
+      pointerType: "mouse",
+      clientX: 110,
+    });
+    assert.strictEqual(
+      categoryNavigation.scrollLeft,
+      60,
+      "Mouse drag must use the same horizontal swipe controller",
+    );
     assert.strictEqual(categoryToggle.getAttribute("aria-expanded"), "false");
     categoryToggle.click();
     assert.ok(subfilterPanel.classList.contains("is-open"));
@@ -1051,6 +1188,13 @@ class InventoryV2StaticContractCheck {
     sortToggle.click();
     assert.ok(sortPanel.classList.contains("is-open"));
     assert.strictEqual(sortToggle.getAttribute("aria-expanded"), "true");
+    const activeSortCriteria = this.#findAllByClass(
+      sortPanel,
+      "inventory-v2-sort-options__criterion",
+    ).filter((button) => button.classList.contains("is-active"));
+    assert.strictEqual(activeSortCriteria.length, 2);
+    assert.strictEqual(activeSortCriteria[0].dataset.sortPriority, "1");
+    assert.strictEqual(activeSortCriteria[1].dataset.sortPriority, "2");
     const sortDirections = this.#findAllByClass(
       sortPanel,
       "inventory-v2-sort-options__direction",
@@ -2126,7 +2270,7 @@ class InventoryV2StaticContractCheck {
           { id: "hooks", label: "Гачки", count: 1, selected: false },
         ],
         sort: {
-          criterionId: "type",
+          criterionIds: ["type", "rarity"],
           directionId: "ascending",
           activeRarityIds: [],
           criteria: [
