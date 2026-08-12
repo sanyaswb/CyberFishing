@@ -373,8 +373,8 @@ class InventoryV2StaticContractCheck {
     this.#assertVisualContract(style);
     assert.match(
       config,
-      /inventory:\s*\{\s*showEngineStats:\s*false/s,
-      "Inventory EngineStats debug output must be disabled by default",
+      /inventory:\s*\{\s*showEffectiveStats:\s*false/s,
+      "Inventory EffectiveItemStats debug output must be disabled by default",
     );
     this.#assertApplicationFactoryContract(combined);
     this.#assertViewModelContract(
@@ -747,8 +747,9 @@ class InventoryV2StaticContractCheck {
       "Boat charge must support both delivery item types",
     );
     assert.ok(
-      uiSource.includes("progressionRendersLevel"),
-      "Item renderer must avoid duplicate level badges",
+      !uiSource.includes("item.level") &&
+        uiSource.includes("this.#progressionDomAdapter.apply("),
+      "Item renderer must delegate the only progression-level badge to its adapter",
     );
     assert.ok(
       uiSource.includes("InventoryV2TooltipPresenter") &&
@@ -849,7 +850,7 @@ class InventoryV2StaticContractCheck {
       },
       tooltipContext: {
         equipment: {
-          rod: { instanceId: "active-rod", type: "pole" },
+          rod: { instanceId: "active-rod", itemType: "rod", variant: "pole" },
         },
       },
       panel: {
@@ -1244,7 +1245,7 @@ class InventoryV2StaticContractCheck {
         tooltip.textContent.includes("1.2 кг") &&
         tooltip.textContent.includes("+0.7 кг") &&
         !tooltip.textContent.includes("Сумісність"),
-      "Hover must show balance names, EngineStats paths, actual values and baseline deltas",
+      "Hover must show balance names, EffectiveItemStats paths, actual values and baseline deltas",
     );
     tooltip.clientHeight = 100;
     tooltip.scrollHeight = 300;
@@ -1516,8 +1517,15 @@ class InventoryV2StaticContractCheck {
     const productionParameters =
       new sandbox.InventoryV2ItemParametersResolver().resolve({
         instanceId: "internal-instance",
-        type: "system-only-type",
-        level: 3,
+        itemType: "system-only-type",
+        progression: {
+          progressionLevel: { current: 3, maximum: 6 },
+          rating: {
+            available: true,
+            percent: 80,
+            metricLabel: "Rating",
+          },
+        },
         charge: { percent: 72, label: "Charge 72%" },
         condition: { percent: 80 },
         displayStats: { Power: "12 kg", Range: "45 m", Стан: "80%" },
@@ -1525,11 +1533,13 @@ class InventoryV2StaticContractCheck {
           rangeMeters: { label: "Range" },
           durability: "Стан: %",
         },
-        engineStats: { internalRuntimeValue: 999 },
+        effectiveStats: { internalRuntimeValue: 999 },
       });
     assert.ok(
       productionParameters.some(
-        (parameter) => parameter.id === "level" && parameter.value === "3",
+          (parameter) =>
+            parameter.id === "progressionLevel" &&
+            parameter.value === "3 / 6",
       ) &&
         productionParameters.some(
           (parameter) =>
@@ -1539,7 +1549,7 @@ class InventoryV2StaticContractCheck {
         ) &&
         productionParameters.some(
           (parameter) =>
-            parameter.id === "power" && parameter.value === "12 kg",
+            parameter.id === "rating" && parameter.value === "80%",
         ) &&
         productionParameters.some(
           (parameter) =>
@@ -1556,7 +1566,7 @@ class InventoryV2StaticContractCheck {
       "Large assembly cards must expose only authored gameplay parameters",
     );
     const balanceResolver = new sandbox.InventoryV2BalanceParameterResolver({
-      debugConfig: { showEngineStats: false },
+      debugConfig: { showEffectiveStats: false },
       retrieveSpeedCalculator: {
         calculate: ({
           baseSpeedMetersPerSec,
@@ -1569,10 +1579,10 @@ class InventoryV2StaticContractCheck {
       reelConfig: { bearingRetrieveSpeedBonusMetersPerSec: 0.2 },
       castDistanceCalculator: {
         getBuildCastPowerCoefficient: (equipment) =>
-          Number(equipment.rod?.engineStats?.castPowerCoefficient) || 1,
+          Number(equipment.rod?.effectiveStats?.castPowerCoefficient) || 1,
         describe: (equipment, coefficient = null) => {
           const power = coefficient === null
-            ? Number(equipment.rod?.engineStats?.castPowerCoefficient) || 1
+            ? Number(equipment.rod?.effectiveStats?.castPowerCoefficient) || 1
             : Number(coefficient);
           return {
             castPowerCoefficient: power,
@@ -1584,9 +1594,9 @@ class InventoryV2StaticContractCheck {
     });
     const reelBalanceSections = balanceResolver.resolve({
       instanceId: "balance-reel",
-      type: "spinning_reel",
-      engineStats: {
-        type: "spinning_reel",
+      itemType: "reel",
+      variant: "spinning_reel",
+      effectiveStats: {
         retrieveSpeedMetersPerSec: 0.8,
         bearingCount: 3,
         lineCapacityMeters: 20,
@@ -1595,7 +1605,7 @@ class InventoryV2StaticContractCheck {
         retrieveSpeedMetersPerSec: { label: "Підмотка", suffix: "м/с" },
       },
       progression: {
-        power: {
+        rating: {
           breakdown: [
             {
               id: "retrieveSpeedMetersPerSec",
@@ -1610,7 +1620,7 @@ class InventoryV2StaticContractCheck {
       (section) => section.rows,
     );
     const engineRetrieveSpeed = reelBalanceRows.find(
-      (row) => row.id === "engine:retrieveSpeedMetersPerSec",
+      (row) => row.id === "stat:retrieveSpeedMetersPerSec",
     );
     const effectiveRetrieveSpeed = reelBalanceRows.find(
       (row) => row.id === "effective-retrieve-speed",
@@ -1618,7 +1628,7 @@ class InventoryV2StaticContractCheck {
     const retrieveDuration = reelBalanceRows.find(
       (row) => row.id === "retrieve-duration",
     );
-    assert.strictEqual(engineRetrieveSpeed.technicalPath, "engineStats.retrieveSpeedMetersPerSec");
+    assert.strictEqual(engineRetrieveSpeed.technicalPath, "effectiveStats.retrieveSpeedMetersPerSec");
     assert.strictEqual(engineRetrieveSpeed.actual, "0.8 м/с");
     assert.strictEqual(engineRetrieveSpeed.delta, "+0.4 м/с");
     assert.strictEqual(effectiveRetrieveSpeed.actual, "1.4 м/с");
@@ -1631,26 +1641,26 @@ class InventoryV2StaticContractCheck {
     assert.strictEqual(reelBalanceSections[0].id, "retrieve");
     assert.ok(
       !reelBalanceSections.some((section) => section.id === "engine"),
-      "EngineStats must be hidden by default",
+      "EffectiveItemStats must be hidden by default",
     );
     const debugBalanceResolver = new sandbox.InventoryV2BalanceParameterResolver({
-      debugConfig: { showEngineStats: true },
+      debugConfig: { showEffectiveStats: true },
     });
     const debugSections = debugBalanceResolver.resolve({
-      type: "hook",
-      engineStats: { type: "hook", maxLoadKg: 2 },
+      itemType: "hook",
+      effectiveStats: { maxLoadKg: 2 },
     });
-    assert.strictEqual(debugSections.at(-1).id, "engine");
+    assert.strictEqual(debugSections.at(-1).id, "effective-stats");
     assert.strictEqual(debugSections.at(-1).showTechnicalPaths, true);
 
     const upgradedStatRows = balanceResolver.resolve({
       instanceId: "quality-nine-hook",
-      type: "hook",
+      itemType: "hook",
       quality: 9,
-      engineStats: { type: "hook", maxLoadKg: 7.12, quality: 9 },
+      effectiveStats: { maxLoadKg: 7.12, quality: 9 },
       progression: {
         quality: { value: 9, minimum: 1, maximum: 10 },
-        power: {
+        rating: {
           available: true,
           rawValue: 7.12,
           minimum: 5,
@@ -1661,7 +1671,7 @@ class InventoryV2StaticContractCheck {
       },
     }).flatMap((section) => section.rows);
     const upgradedLoad = upgradedStatRows.find(
-      (row) => row.id === "engine:maxLoadKg",
+      (row) => row.id === "stat:maxLoadKg",
     );
     assert.strictEqual(upgradedLoad.actual, "7.12 кг");
     assert.strictEqual(upgradedLoad.delta, "+2.12 кг");
@@ -1669,9 +1679,9 @@ class InventoryV2StaticContractCheck {
 
     const rodBalanceRows = balanceResolver.resolve({
       instanceId: "balance-rod",
-      type: "spinning",
-      engineStats: {
-        type: "spinning",
+      itemType: "rod",
+      variant: "spinning",
+      effectiveStats: {
         castPowerCoefficient: 0.5,
       },
     }).flatMap((section) => section.rows);
@@ -1801,10 +1811,9 @@ class InventoryV2StaticContractCheck {
       instanceId: "leveled-item",
       name: "Leveled item",
       icon: "L",
-      level: 4,
       progression: {
         available: true,
-        level: { available: true, value: 4 },
+        progressionLevel: { available: true, current: 4, maximum: 6 },
         capacity: { available: true, percent: 75 },
       },
     });
@@ -1946,7 +1955,7 @@ class InventoryV2StaticContractCheck {
       "inventory-v2-item-parameters",
     );
     assert.ok(
-      assemblyParameters.textContent.includes("Рівень") &&
+      assemblyParameters.textContent.includes("Прогресійний рівень") &&
         assemblyParameters.textContent.includes("Power") &&
         assemblyParameters.textContent.includes("55%") &&
         assemblyParameters.textContent.includes("Spring") &&
@@ -1981,9 +1990,9 @@ class InventoryV2StaticContractCheck {
             instanceId: `hook-${index}`,
             itemId: "hook-basic",
             name: "Hook",
-            type: "hook",
+            itemType: "hook",
             quality: 6,
-            engineStats: { maxLoadKg: 1.5 },
+            effectiveStats: { maxLoadKg: 1.5 },
             displayStats: { Power: "1.5 kg" },
           },
         })),
@@ -2204,7 +2213,7 @@ class InventoryV2StaticContractCheck {
     const item = (instanceId, extra = {}) => ({
       instanceId,
       itemId: instanceId,
-      type: "hook",
+      itemType: "hook",
       name: instanceId,
       icon: "•",
       quantity: 1,
@@ -2245,7 +2254,7 @@ class InventoryV2StaticContractCheck {
               slotId: "delivery",
               label: "Boat",
               item: item("boat-active", {
-                type: "boat",
+                itemType: "boat",
                 charge: { percent: 55, label: "Boat charge 55%" },
               }),
             },
@@ -2317,9 +2326,9 @@ class InventoryV2StaticContractCheck {
             displayStatsSchema: {
               maxLoadKg: { label: "Потужність", suffix: "кг" },
             },
-            engineStats: { type: "hook", maxLoadKg: 1.2 },
+            effectiveStats: { maxLoadKg: 1.2 },
             progression: {
-              power: {
+              rating: {
                 available: true,
                 rawValue: 1.2,
                 minimum: 0.5,
@@ -2333,7 +2342,7 @@ class InventoryV2StaticContractCheck {
             },
           }),
           item("saved-kit", {
-            type: "equipment_loadout",
+            itemType: "equipment_loadout",
             name: "Saved kit",
           }),
         ],
@@ -2353,7 +2362,14 @@ class InventoryV2StaticContractCheck {
             instanceId: "assembly-active",
             name: "Spring",
             icon: "S",
-            level: 2,
+            progression: {
+              available: true,
+              progressionLevel: {
+                available: true,
+                current: 2,
+                maximum: 6,
+              },
+            },
             charge: { percent: 55, label: "Charge 55%" },
             displayStats: { Power: "12 kg", Hooks: "3" },
             status: "prepared",
@@ -2394,7 +2410,7 @@ class InventoryV2StaticContractCheck {
               item: {
                 instanceId: "bait-active",
                 itemId: "bait-worm",
-                type: "bait",
+                itemType: "bait",
                 name: "Worm",
                 icon: "W",
                 quantity: 1,
@@ -2427,7 +2443,8 @@ class InventoryV2StaticContractCheck {
               item: {
                 instanceId: "saved-rod",
                 itemId: "saved-rod",
-                type: "feeder",
+                itemType: "rod",
+                variant: "feeder",
                 name: "Saved rod",
                 icon: "R",
                 quantity: 1,
@@ -2440,7 +2457,8 @@ class InventoryV2StaticContractCheck {
               item: {
                 instanceId: "saved-rig",
                 itemId: "saved-rig",
-                type: "spring",
+                itemType: "feeder_rig",
+                variant: "spring",
                 name: "Saved spring",
                 icon: "S",
                 quantity: 1,

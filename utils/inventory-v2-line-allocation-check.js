@@ -27,20 +27,22 @@ vm.runInContext(`(() => {
       instanceId: "line-25",
       itemId: "line-basic",
       quantity: 1,
-      lengthMeters: 25,
-      diameterMm: 0.22,
-      maxLoadKg: 1,
-      durability: 100,
-      quality: 5,
+      statOverrides: {
+        lengthMeters: 25,
+        diameterMm: 0.22,
+        maxLoadKg: 1,
+        durability: 100,
+        quality: 5,
+      },
       rarity: { tier: 1 },
       location: InventoryItemLocation.inventory(),
     }],
   });
   const hydrate = (raw) => ({
     id: raw.itemId,
-    type: "fishing_line",
-    engineStats: { type: "fishing_line", lengthMeters: 25 },
+    itemType: "fishing_line",
     ...raw,
+    effectiveStats: { ...raw.statOverrides },
   });
   const service = new InventoryV2LineAllocationService({
     repository,
@@ -48,8 +50,8 @@ vm.runInContext(`(() => {
     lineConfig: { rodLengthReserveMultiplier: 2 },
     instanceIdFactory: () => "line-segment-" + (++sequence),
   });
-  const rod = { type: "feeder", hasReel: true, lengthMeters: 3 };
-  const reel = { type: "spinning_reel", lineCapacityMeters: 20 };
+  const rod = { itemType: "rod", variant: "feeder", effectiveStats: { hasReel: true, lengthMeters: 3 } };
+  const reel = { itemType: "reel", variant: "spinning_reel", effectiveStats: { lineCapacityMeters: 20 } };
 
   const prepared = service.prepare({
     sourceInstanceId: "line-25",
@@ -75,14 +77,15 @@ vm.runInContext(`(() => {
       { instanceId: "reel-root", itemId: "reel", quantity: 1,
         location: InventoryItemLocation.inventory() },
       { instanceId: "line-25", itemId: "line-basic", quantity: 1,
-        lengthMeters: 25, diameterMm: 0.22, maxLoadKg: 1,
-        durability: 100, quality: 5, rarity: { tier: 1 },
+        statOverrides: { lengthMeters: 25, diameterMm: 0.22, maxLoadKg: 1,
+          durability: 100, quality: 5 }, rarity: { tier: 1 },
         location: InventoryItemLocation.inventory() },
     ],
   });
   const hydrate = (raw) => raw.itemId === "reel"
-    ? { type: "spinning_reel", ...raw }
-    : { id: raw.itemId, type: "fishing_line", engineStats: { type: "fishing_line" }, ...raw };
+    ? { itemType: "reel", variant: "spinning_reel", effectiveStats: {}, ...raw }
+    : { id: raw.itemId, itemType: "fishing_line", ...raw,
+        effectiveStats: { ...raw.statOverrides } };
   const service = new InventoryV2LineAllocationService({
     repository,
     itemReader: hydrate,
@@ -91,8 +94,8 @@ vm.runInContext(`(() => {
   });
   const prepared = service.prepare({
     sourceInstanceId: "line-25",
-    rod: { type: "feeder", hasReel: true, lengthMeters: 3 },
-    reel: { type: "spinning_reel", lineCapacityMeters: 20 },
+    rod: { itemType: "rod", variant: "feeder", effectiveStats: { hasReel: true, lengthMeters: 3 } },
+    reel: { itemType: "reel", variant: "spinning_reel", effectiveStats: { lineCapacityMeters: 20 } },
   });
   repository.setLocation(
     prepared.instanceId,
@@ -107,8 +110,8 @@ vm.runInContext(`(() => {
 
   const preparedAgain = service.prepare({
     sourceInstanceId: "line-25",
-    rod: { type: "feeder", hasReel: true, lengthMeters: 3 },
-    reel: { type: "spinning_reel", lineCapacityMeters: 20 },
+    rod: { itemType: "rod", variant: "feeder", effectiveStats: { hasReel: true, lengthMeters: 3 } },
+    reel: { itemType: "reel", variant: "spinning_reel", effectiveStats: { lineCapacityMeters: 20 } },
   });
   const damaged = service.break(preparedAgain.instanceId, 7.5);
   assert(damaged.success && !damaged.depleted,

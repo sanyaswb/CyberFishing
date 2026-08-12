@@ -38,8 +38,9 @@ class InventoryV2SubfilterResolver {
 
   resolve(item, { categoryId = "all" } = {}) {
     if (!item) return null;
-    const type = item.type ?? item.engineStats?.type ?? null;
-    if (type === "equipment_loadout") {
+    const itemType = item.itemType ?? null;
+    const groupingType = item.variant || itemType;
+    if (itemType === "equipment_loadout") {
       if (categoryId !== "loadouts") return null;
       const name = String(item.name || "Комплект").trim() || "Комплект";
       return Object.freeze({
@@ -47,10 +48,13 @@ class InventoryV2SubfilterResolver {
         label: name,
       });
     }
-    const configured = this.#groups[type];
+    const configured = this.#groups[groupingType];
     if (configured) return configured;
-    if (!type) return null;
-    return Object.freeze({ id: `type:${type}`, label: String(type) });
+    if (!groupingType) return null;
+    return Object.freeze({
+      id: `type:${groupingType}`,
+      label: String(groupingType),
+    });
   }
 }
 

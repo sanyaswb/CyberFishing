@@ -616,7 +616,8 @@ class DevTools {
             currentPath,
           );
           val.forEach((item, index) => {
-            const itemLabel = item.id || item.type || `Item [${index}]`;
+            const itemLabel =
+              item.id || item.variant || item.itemType || `Item [${index}]`;
             const itemContent = this.#createSectionWithCache(
               itemLabel,
               content,
@@ -669,16 +670,20 @@ class DevTools {
       this.#ui.createInfoRow("Raw metric", String(snapshot.rawMetric), item);
       this.#ui.createInfoRow("Baseline min/max", snapshot.baseline, item);
       this.#ui.createInfoRow(
-        "Normalized Power",
-        String(snapshot.normalizedPower),
+        "Normalized rating",
+        String(snapshot.normalizedRating),
         item,
       );
       this.#ui.createInfoRow(
-        "Power percent",
-        `${snapshot.powerPercent}%`,
+        "Rating percent",
+        `${snapshot.ratingPercent}%`,
         item,
       );
-      this.#ui.createInfoRow("Power level", snapshot.powerLevel, item);
+      this.#ui.createInfoRow(
+        "Progression level",
+        snapshot.progressionLevel,
+        item,
+      );
       this.#ui.createInfoRow("Quality", snapshot.quality, item);
       if (snapshot.capacity !== "N/A") {
         this.#ui.createInfoRow("Capacity", snapshot.capacity, item);
@@ -1039,28 +1044,28 @@ class DevTools {
     if (!item || typeof item !== "object") return;
 
     if (group === "displayStats") {
-      const engineKey = this.#resolveDisplayStatEngineKey(
+      const gameplayKey = this.#resolveDisplayStatGameplayKey(
         item,
         category,
         field,
         newValue,
       );
-      if (!engineKey) return;
-      item.engineStats = item.engineStats || {};
-      item.engineStats[engineKey] = newValue;
+      if (!gameplayKey) return;
+      item.gameplayStats = item.gameplayStats || {};
+      item.gameplayStats[gameplayKey] = newValue;
       return;
     }
 
-    if (group === "engineStats") {
-      const displayKey = this.#resolveEngineStatDisplayKey(item, field);
+    if (group === "gameplayStats") {
+      const displayKey = this.#resolveGameplayStatDisplayKey(item, field);
       if (!displayKey) return;
       item.displayStats[displayKey] = newValue;
     }
   }
 
-  #resolveDisplayStatEngineKey(item, category, field, value) {
+  #resolveDisplayStatGameplayKey(item, category, field, value) {
     const key = String(field).toLowerCase();
-    if (key === "level") return "level";
+    if (key === "level") return "equipmentPowerLevel";
     if (key === "power" || key === "basepower" || key === "strength") {
       return "basePower";
     }
@@ -1069,27 +1074,29 @@ class DevTools {
     if (category !== "rods") return null;
     const keys = Object.keys(item.displayStats || {});
     const index = keys.indexOf(field);
-    if (index === 0 && Number.isFinite(Number(value))) return "level";
+    if (index === 0 && Number.isFinite(Number(value))) {
+      return "equipmentPowerLevel";
+    }
     if (index === 1 && Number.isFinite(Number(value))) return "basePower";
     return null;
   }
 
-  #resolveEngineStatDisplayKey(item, field) {
+  #resolveGameplayStatDisplayKey(item, field) {
     const displayStats = item.displayStats;
     if (!displayStats || typeof displayStats !== "object") return null;
 
     for (const key of Object.keys(displayStats)) {
-      const engineKey = this.#resolveDisplayStatEngineKey(
+      const gameplayKey = this.#resolveDisplayStatGameplayKey(
         item,
         "rods",
         key,
         displayStats[key],
       );
-      if (engineKey === field) return key;
+      if (gameplayKey === field) return key;
     }
 
     if (
-      field === "level" &&
+      field === "equipmentPowerLevel" &&
       Object.prototype.hasOwnProperty.call(displayStats, "level")
     ) {
       return "level";

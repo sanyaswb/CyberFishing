@@ -11,6 +11,7 @@ class ItemProgressionConfigValidator {
   ]);
 
   #errors = [];
+  #effectiveStatsResolver = new EffectiveItemStatsResolver();
 
   validate({ progressionConfig, itemDb = {} } = {}) {
     this.#errors = [];
@@ -19,7 +20,9 @@ class ItemProgressionConfigValidator {
       this.#error("ITEM_PROGRESSION_CONFIG.groups", "missing groups config");
       return this.#errors.slice();
     }
-    this.#validateLevelScale(progressionConfig.levelScale);
+    this.#validateProgressionLevelScale(
+      progressionConfig.progressionLevelScale,
+    );
     this.#validateGroups(progressionConfig, itemDb);
     this.#validateItems(groups, itemDb);
     return this.#errors.slice();
@@ -45,7 +48,7 @@ class ItemProgressionConfigValidator {
         this.#error(path, "expected group object");
         continue;
       }
-      this.#validatePower(`${path}.power`, group.power);
+      this.#validateRating(`${path}.rating`, group.rating);
       this.#validateQuality(
         `${path}.quality`,
         group.quality,
@@ -53,58 +56,61 @@ class ItemProgressionConfigValidator {
         maxSections,
       );
       this.#validateCapacity(`${path}.capacity`, group.capacity);
-      this.#validateCatalogRange(groupId, group.power, itemDb, path);
+      this.#validateCatalogRange(groupId, group.rating, itemDb, path);
     }
   }
 
-  #validatePower(path, power) {
-    if (!power || typeof power !== "object") {
-      this.#error(path, "missing power config");
+  #validateRating(path, rating) {
+    if (!rating || typeof rating !== "object") {
+      this.#error(path, "missing rating config");
       return;
     }
-    if (!ItemProgressionConfigValidator.#strategies.has(power.strategyId)) {
+    if (!ItemProgressionConfigValidator.#strategies.has(rating.strategyId)) {
       this.#error(`${path}.strategyId`, "unsupported strategy");
     }
-    if (Object.prototype.hasOwnProperty.call(power, "maxLevel")) {
+    if (Object.prototype.hasOwnProperty.call(rating, "maxLevel")) {
       this.#error(
         `${path}.maxLevel`,
         "level scale must be configured globally",
       );
     }
-    this.#rejectVisualKeys(path, power);
+    this.#rejectVisualKeys(path, rating);
 
-    if (power.strategyId === "numeric_stat") {
-      this.#requirePath(`${path}.statPath`, power.statPath);
-      this.#validateDirection(`${path}.direction`, power.direction);
-      this.#validateBaseline(`${path}.baseline`, power.baseline);
+    if (rating.strategyId === "numeric_stat") {
+      this.#requirePath(`${path}.statPath`, rating.statPath);
+      this.#validateDirection(`${path}.direction`, rating.direction);
+      this.#validateBaseline(`${path}.baseline`, rating.baseline);
       return;
     }
-    if (power.strategyId === "derived_stat") {
-      this.#validateDerived(path, power);
-      this.#validateDirection(`${path}.direction`, power.direction);
-      this.#validateBaseline(`${path}.baseline`, power.baseline);
+    if (rating.strategyId === "derived_stat") {
+      this.#validateDerived(path, rating);
+      this.#validateDirection(`${path}.direction`, rating.direction);
+      this.#validateBaseline(`${path}.baseline`, rating.baseline);
       return;
     }
-    if (power.strategyId === "target_range") {
-      this.#requirePath(`${path}.statPath`, power.statPath);
-      this.#validateTargetRange(`${path}.targetRange`, power.targetRange);
+    if (rating.strategyId === "target_range") {
+      this.#requirePath(`${path}.statPath`, rating.statPath);
+      this.#validateTargetRange(`${path}.targetRange`, rating.targetRange);
       return;
     }
-    if (power.strategyId === "composite") {
-      this.#validateComposite(path, power.components);
+    if (rating.strategyId === "composite") {
+      this.#validateComposite(path, rating.components);
     }
   }
 
-  #validateDerived(path, power) {
-    if (power.formulaId === "ratio") {
-      this.#requirePath(`${path}.numeratorPath`, power.numeratorPath);
-      this.#requirePath(`${path}.denominatorPath`, power.denominatorPath);
+  #validateDerived(path, rating) {
+    if (rating.formulaId === "ratio") {
+      this.#requirePath(`${path}.numeratorPath`, rating.numeratorPath);
+      this.#requirePath(`${path}.denominatorPath`, rating.denominatorPath);
       return;
     }
-    if (power.formulaId === "upgrade_level_stat") {
-      this.#requirePath(`${path}.tablePath`, power.tablePath);
-      this.#requirePath(`${path}.levelPath`, power.levelPath);
-      this.#requirePath(`${path}.statKey`, power.statKey);
+    if (rating.formulaId === "upgrade_level_stat") {
+      this.#requirePath(`${path}.tablePath`, rating.tablePath);
+      this.#requirePath(
+        `${path}.upgradeLevelPath`,
+        rating.upgradeLevelPath,
+      );
+      this.#requirePath(`${path}.statKey`, rating.statKey);
       return;
     }
     this.#error(`${path}.formulaId`, "unsupported derived formula");
@@ -244,11 +250,12 @@ class ItemProgressionConfigValidator {
     for (const [categoryId, category] of Object.entries(itemDb || {})) {
       if (!category || typeof category !== "object") continue;
       for (const [itemId, item] of Object.entries(category)) {
+        const effectiveItem = this.#withEffectiveStats(item);
         const path = `ITEM_DB.${categoryId}.${itemId}`;
         const technical =
           categoryId === "builds" ||
-          item?.type === "build_box" ||
-          item?.type === "build_template";
+          item?.itemType === "build_box" ||
+          item?.itemType === "build_template";
         if (!Object.prototype.hasOwnProperty.call(item || {}, "progressionProfile")) {
           this.#error(`${path}.progressionProfile`, "missing explicit progression profile");
           continue;
@@ -268,9 +275,12 @@ class ItemProgressionConfigValidator {
           );
           continue;
         }
-        this.#validateItemMetric(path, item, group.power);
+        this.#validateItemMetric(path, effectiveItem, group.rating);
         if (group.capacity) {
-          const capacityValue = this.#readPath(item, group.capacity.statPath);
+          const capacityValue = this.#readPath(
+            effectiveItem,
+            group.capacity.statPath,
+          );
           if (!Number.isFinite(Number(capacityValue))) {
             this.#error(
               `${path}.${group.capacity.statPath}`,
@@ -278,7 +288,10 @@ class ItemProgressionConfigValidator {
             );
           }
         }
-        const qualityValue = this.#readPath(item, group.quality?.statPath);
+        const qualityValue = this.#readPath(
+          effectiveItem,
+          group.quality?.statPath,
+        );
         if (!Number.isFinite(Number(qualityValue))) {
           this.#error(
             `${path}.${group.quality?.statPath}`,
@@ -297,9 +310,9 @@ class ItemProgressionConfigValidator {
     }
   }
 
-  #validateItemMetric(path, item, power) {
-    if (power.strategyId === "composite") {
-      for (const component of power.components || []) {
+  #validateItemMetric(path, item, rating) {
+    if (rating.strategyId === "composite") {
+      for (const component of rating.components || []) {
         this.#validateItemMetric(path, item, {
           ...component,
           strategyId: component.strategyId || "numeric_stat",
@@ -307,53 +320,62 @@ class ItemProgressionConfigValidator {
       }
       return;
     }
-    const metric = this.#readMetric(item, power);
+    const metric = this.#readMetric(item, rating);
     if (!Number.isFinite(metric)) {
-      const metricPath = power.statPath || power.numeratorPath || power.tablePath;
+      const metricPath =
+        rating.statPath || rating.numeratorPath || rating.tablePath;
       this.#error(
-        `${path}.${metricPath || "engineStats"}`,
-        `${metricPath || power.formulaId} is required and must be numeric`,
+        `${path}.${metricPath || "effectiveStats"}`,
+        `${metricPath || rating.formulaId} is required and must be numeric`,
       );
     }
   }
 
-  #validateCatalogRange(groupId, power, itemDb, groupPath) {
-    if (power?.baseline?.mode !== "catalog") return;
+  #validateCatalogRange(groupId, rating, itemDb, groupPath) {
+    if (rating?.baseline?.mode !== "catalog") return;
     const values = [];
     for (const category of Object.values(itemDb || {})) {
       for (const item of Object.values(category || {})) {
         if (item?.progressionProfile?.groupId !== groupId) continue;
-        const value = this.#readMetric(item, power);
+        const value = this.#readMetric(this.#withEffectiveStats(item), rating);
         if (Number.isFinite(value)) values.push(value);
       }
     }
-    if (new Set(values).size < 2 && !power.baseline.fallback) {
+    if (new Set(values).size < 2 && !rating.baseline.fallback) {
       this.#error(
-        `${groupPath}.power.baseline`,
+        `${groupPath}.rating.baseline`,
         "catalog requires two distinct values or a fixed fallback",
       );
     }
   }
 
-  #readMetric(item, power) {
-    if (!power) return NaN;
-    if (power.strategyId === "numeric_stat" || power.strategyId === "target_range") {
-      return Number(this.#readPath(item, power.statPath));
+  #readMetric(item, rating) {
+    if (!rating) return NaN;
+    if (
+      rating.strategyId === "numeric_stat" ||
+      rating.strategyId === "target_range"
+    ) {
+      return Number(this.#readPath(item, rating.statPath));
     }
-    if (power.strategyId === "derived_stat" && power.formulaId === "ratio") {
-      const numerator = Number(this.#readPath(item, power.numeratorPath));
-      const denominator = Number(this.#readPath(item, power.denominatorPath));
+    if (
+      rating.strategyId === "derived_stat" &&
+      rating.formulaId === "ratio"
+    ) {
+      const numerator = Number(this.#readPath(item, rating.numeratorPath));
+      const denominator = Number(
+        this.#readPath(item, rating.denominatorPath),
+      );
       return denominator === 0 ? NaN : numerator / denominator;
     }
     if (
-      power.strategyId === "derived_stat" &&
-      power.formulaId === "upgrade_level_stat"
+      rating.strategyId === "derived_stat" &&
+      rating.formulaId === "upgrade_level_stat"
     ) {
-      const table = this.#readPath(item, power.tablePath);
-      const level = this.#readPath(item, power.levelPath);
-      return Number(table?.[level]?.[power.statKey]);
+      const table = this.#readPath(item, rating.tablePath);
+      const upgradeLevel = this.#readPath(item, rating.upgradeLevelPath);
+      return Number(table?.[upgradeLevel]?.[rating.statKey]);
     }
-    return power.strategyId === "composite" ? 0 : NaN;
+    return rating.strategyId === "composite" ? 0 : NaN;
   }
 
   #readPath(source, path) {
@@ -366,34 +388,44 @@ class ItemProgressionConfigValidator {
     return current;
   }
 
+  #withEffectiveStats(item) {
+    if (!item || item.effectiveStats) return item;
+    return {
+      ...item,
+      effectiveStats: this.#effectiveStatsResolver.resolve({
+        definition: item,
+      }),
+    };
+  }
+
   #validateDirection(path, direction) {
     if (!ItemProgressionConfigValidator.#directions.has(direction)) {
       this.#error(path, "expected higher_is_better or lower_is_better");
     }
   }
 
-  #validateLevelScale(scale) {
-    if (scale?.source !== "power.normalized") {
+  #validateProgressionLevelScale(scale) {
+    if (scale?.source !== "rating.normalized") {
       this.#error(
-        "ITEM_PROGRESSION_CONFIG.levelScale.source",
-        "expected power.normalized",
+        "ITEM_PROGRESSION_CONFIG.progressionLevelScale.source",
+        "expected rating.normalized",
       );
     }
     if (scale?.distribution !== "equal_segments") {
       this.#error(
-        "ITEM_PROGRESSION_CONFIG.levelScale.distribution",
+        "ITEM_PROGRESSION_CONFIG.progressionLevelScale.distribution",
         "expected equal_segments",
       );
     }
     if (!Number.isInteger(scale?.minimum) || scale.minimum < 1) {
       this.#error(
-        "ITEM_PROGRESSION_CONFIG.levelScale.minimum",
+        "ITEM_PROGRESSION_CONFIG.progressionLevelScale.minimum",
         "expected integer >= 1",
       );
     }
     if (!Number.isInteger(scale?.segments) || scale.segments < 1) {
       this.#error(
-        "ITEM_PROGRESSION_CONFIG.levelScale.segments",
+        "ITEM_PROGRESSION_CONFIG.progressionLevelScale.segments",
         "expected integer >= 1",
       );
     }

@@ -5,13 +5,7 @@ class ItemQualityResolver {
     }
     const minimum = Number(qualityConfig.min);
     const maximum = Number(qualityConfig.maxSections);
-    const runtimeValue = Object.prototype.hasOwnProperty.call(
-      item || {},
-      "quality",
-    )
-      ? item.quality
-      : this.#readPath(item, qualityConfig.statPath);
-    const value = Number(runtimeValue);
+    const value = Number(this.#readPath(item, qualityConfig.statPath));
     if (!Number.isFinite(value)) return this.#unavailable("quality_missing");
     if (
       !Number.isFinite(minimum) ||

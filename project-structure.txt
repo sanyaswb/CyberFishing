@@ -4,18 +4,20 @@
 │  │  └── bell_ring.mp3
 │  ├── fish
 │  │  └── crucian_stalker
-│  │    ├── crucian_stalker--1-uniq.webp
-│  │    ├── crucian_stalker--1.webp
-│  │    ├── crucian_stalker--2-uniq.webp
-│  │    ├── crucian_stalker--2.webp
-│  │    ├── crucian_stalker--3-uniq.webp
-│  │    ├── crucian_stalker--3.webp
-│  │    ├── crucian_stalker--4-uniq.webp
-│  │    ├── crucian_stalker--4.webp
-│  │    ├── crucian_stalker--5-uniq.webp
-│  │    ├── crucian_stalker--5.webp
-│  │    ├── crucian_stalker--6-uniq.webp
-│  │    └── crucian_stalker--6.webp
+│  │    ├── standart
+│  │    │  ├── crucian_stalker--1.webp
+│  │    │  ├── crucian_stalker--2.webp
+│  │    │  ├── crucian_stalker--3.webp
+│  │    │  ├── crucian_stalker--4.webp
+│  │    │  ├── crucian_stalker--5.webp
+│  │    │  └── crucian_stalker--6.webp
+│  │    └── uniq
+│  │      ├── crucian_stalker--1-uniq.webp
+│  │      ├── crucian_stalker--2-uniq.webp
+│  │      ├── crucian_stalker--3-uniq.webp
+│  │      ├── crucian_stalker--4-uniq.webp
+│  │      ├── crucian_stalker--5-uniq.webp
+│  │      └── crucian_stalker--6-uniq.webp
 │  └── locations
 │    └── test
 │      ├── bg_test--day.webp
@@ -96,7 +98,7 @@
 │  │  └── inventory
 │  │    ├── auto_refill_coordinator.js
 │  │    ├── equipment_auto_refill_target_provider.js
-│  │    ├── equipment_projection_service.js
+│  │    ├── equipment_read_model_factory.js
 │  │    ├── equipment_transition_executor.js
 │  │    ├── inventory_v2_command_service.js
 │  │    ├── inventory_v2_composition_root.js
@@ -271,20 +273,26 @@
 │  │  │  ├── condition
 │  │  │  │  ├── item_condition_descriptor.js
 │  │  │  │  └── item_condition_resolver.js
+│  │  │  ├── effective_item_stats_resolver.js
 │  │  │  ├── progression
 │  │  │  │  ├── composite_metric_strategy.js
 │  │  │  │  ├── derived_stat_metric_strategy.js
 │  │  │  │  ├── item_capacity_resolver.js
 │  │  │  │  ├── item_catalog_baseline_registry.js
-│  │  │  │  ├── item_level_resolver.js
 │  │  │  │  ├── item_metric_strategy_registry.js
 │  │  │  │  ├── item_metric_strategy.js
-│  │  │  │  ├── item_power_resolver.js
 │  │  │  │  ├── item_progression_descriptor.js
+│  │  │  │  ├── item_progression_level_resolver.js
 │  │  │  │  ├── item_progression_resolver.js
 │  │  │  │  ├── item_quality_resolver.js
+│  │  │  │  ├── item_rating_resolver.js
 │  │  │  │  ├── numeric_stat_metric_strategy.js
 │  │  │  │  └── target_range_metric_strategy.js
+│  │  │  ├── quality
+│  │  │  │  ├── environmental_compensation_modifier.js
+│  │  │  │  ├── hook_quality_modifier.js
+│  │  │  │  ├── item_quality_grade_policy.js
+│  │  │  │  └── net_quality_modifier.js
 │  │  │  └── rarity
 │  │  │    ├── authored_item_rarity_strategy.js
 │  │  │    ├── item_rarity_descriptor.js
@@ -412,9 +420,11 @@
 │  │  └── storage
 │  │    ├── inventory_v2_legacy_migration.js
 │  │    ├── inventory_v2_snapshot_factory.js
+│  │    ├── inventory_v2_snapshot_migration.js
 │  │    ├── inventory_v2_state_store.js
 │  │    ├── inventory_v2_transaction_coordinator.js
-│  │    └── legacy_inventory_unit_allocator.js
+│  │    ├── legacy_inventory_unit_allocator.js
+│  │    └── legacy_item_state_migration.js
 │  ├── input
 │  │  ├── pull_input_mapper.js
 │  │  └── victory_action_gesture_resolver.js

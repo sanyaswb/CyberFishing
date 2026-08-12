@@ -64,14 +64,13 @@ class WeakestTackleLimitResolver {
   static effectiveItemMaxLoadKg(item, fallback = 0) {
     if (!item) return fallback;
     const maxLoadKg = Number(
-      item.maxLoadKg ?? item.engineStats?.maxLoadKg ?? fallback,
+      item.effectiveStats?.maxLoadKg ?? fallback,
     );
     const durability = Number(
-      item.durability ?? item.engineStats?.durability ?? 100,
+      item.effectiveStats?.durability ?? 100,
     );
     const lossPerPercent = Number(
-      item.durabilityMaxLoadLossPerPercent ??
-        item.engineStats?.durabilityMaxLoadLossPerPercent ??
+        item.effectiveStats?.durabilityMaxLoadLossPerPercent ??
         0.001,
     );
     if (!Number.isFinite(maxLoadKg) || maxLoadKg <= 0) return fallback;

@@ -7,9 +7,10 @@ const PEACEFUL_FISH = [
     maxHookSize: 6,
     trophyWeightKg: 1.0,
     visual: {
-      imagePattern: "assets/fish/crucian_stalker/crucian_stalker--{level}.webp",
+      imagePattern:
+        "assets/fish/crucian_stalker/standart/crucian_stalker--{level}.webp",
       uniqueImagePattern:
-        "assets/fish/crucian_stalker/crucian_stalker--{level}-uniq.webp",
+        "assets/fish/crucian_stalker/unique/crucian_stalker--{level}-uniq.webp",
     },
     anomalyVariant: {
       enabled: true,

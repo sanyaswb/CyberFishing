@@ -68,9 +68,14 @@
     <script src="src/core/items/rarity/item_rarity_strategy.js"></script>
     <script src="src/core/items/rarity/authored_item_rarity_strategy.js"></script>
     <script src="src/core/items/rarity/item_rarity_strategy_registry.js"></script>
-      <script src="src/core/items/rarity/item_rarity_resolver.js"></script>
-      <script src="src/core/items/condition/item_condition_descriptor.js"></script>
-      <script src="src/core/items/condition/item_condition_resolver.js"></script>
+    <script src="src/core/items/rarity/item_rarity_resolver.js"></script>
+    <script src="src/core/items/condition/item_condition_descriptor.js"></script>
+    <script src="src/core/items/condition/item_condition_resolver.js"></script>
+    <script src="src/core/items/effective_item_stats_resolver.js"></script>
+    <script src="src/core/items/quality/item_quality_grade_policy.js"></script>
+    <script src="src/core/items/quality/hook_quality_modifier.js"></script>
+    <script src="src/core/items/quality/net_quality_modifier.js"></script>
+    <script src="src/core/items/quality/environmental_compensation_modifier.js"></script>
     <script src="src/core/items/progression/item_metric_strategy.js"></script>
     <script src="src/core/items/progression/numeric_stat_metric_strategy.js"></script>
     <script src="src/core/items/progression/derived_stat_metric_strategy.js"></script>
@@ -78,8 +83,8 @@
     <script src="src/core/items/progression/composite_metric_strategy.js"></script>
     <script src="src/core/items/progression/item_metric_strategy_registry.js"></script>
     <script src="src/core/items/progression/item_catalog_baseline_registry.js"></script>
-    <script src="src/core/items/progression/item_power_resolver.js"></script>
-    <script src="src/core/items/progression/item_level_resolver.js"></script>
+    <script src="src/core/items/progression/item_rating_resolver.js"></script>
+    <script src="src/core/items/progression/item_progression_level_resolver.js"></script>
     <script src="src/core/items/progression/item_quality_resolver.js"></script>
     <script src="src/core/items/progression/item_capacity_resolver.js"></script>
     <script src="src/core/items/progression/item_progression_descriptor.js"></script>
@@ -174,6 +179,8 @@
 
     <!-- Inventory v2 persistence and application services -->
     <script src="src/infrastructure/storage/legacy_inventory_unit_allocator.js"></script>
+    <script src="src/infrastructure/storage/legacy_item_state_migration.js"></script>
+    <script src="src/infrastructure/storage/inventory_v2_snapshot_migration.js"></script>
     <script src="src/infrastructure/storage/inventory_v2_state_store.js"></script>
     <script src="src/infrastructure/storage/inventory_v2_legacy_migration.js"></script>
     <script src="src/infrastructure/storage/inventory_v2_snapshot_factory.js"></script>
@@ -183,7 +190,7 @@
     <script src="src/application/inventory/inventory_v2_equipment_transition_port.js"></script>
     <script src="src/application/inventory/loadout_application_service.js"></script>
     <script src="src/application/inventory/inventory_v2_loadout_port.js"></script>
-    <script src="src/application/inventory/equipment_projection_service.js"></script>
+    <script src="src/application/inventory/equipment_read_model_factory.js"></script>
     <script src="src/application/inventory/equipment_auto_refill_target_provider.js"></script>
     <script src="src/application/inventory/auto_refill_coordinator.js"></script>
     <script src="src/application/inventory/inventory_v2_refill_ports.js"></script>

@@ -31,19 +31,19 @@ class InventoryV2BalanceParameterResolver {
     if (!item || typeof item !== "object") return Object.freeze([]);
     const baselines = this.#resolveProgressionBaselines(item);
     const progressionRows = this.#progressionRows(item);
-    const engineRows = this.#engineRows(item, baselines);
+    const effectiveStatRows = this.#effectiveStatRows(item, baselines);
     const derivedRows = this.#derivedRows(item, context);
     const sections = this.#composeSections({
       item,
       progressionRows,
-      engineRows,
+      effectiveStatRows,
       derivedRows,
     });
     return Object.freeze(sections);
   }
 
-  #composeSections({ item, progressionRows, engineRows, derivedRows }) {
-    const gameplayRows = [...progressionRows, ...engineRows, ...derivedRows];
+  #composeSections({ item, progressionRows, effectiveStatRows, derivedRows }) {
+    const gameplayRows = [...progressionRows, ...effectiveStatRows, ...derivedRows];
     const byId = new Map(gameplayRows.map((row) => [row.id, row]));
     const consumed = new Set();
     const take = (...ids) => ids
@@ -55,9 +55,9 @@ class InventoryV2BalanceParameterResolver {
       });
 
     const primary = take(
-      "level",
+      "progression-level",
       "rarity",
-      "engine:maxLoadKg",
+      "stat:maxLoadKg",
       "quality",
       "condition",
     );
@@ -69,7 +69,7 @@ class InventoryV2BalanceParameterResolver {
       sections.push(this.#section(
         "casting",
         "Закидання",
-        take("engine:castPowerCoefficient", "cast-distance"),
+        take("stat:castPowerCoefficient", "cast-distance"),
       ));
     }
     if (this.#isReel(item)) {
@@ -77,8 +77,8 @@ class InventoryV2BalanceParameterResolver {
         "retrieve",
         "Підмотка",
         take(
-          "engine:retrieveSpeedMetersPerSec",
-          "engine:bearingCount",
+          "stat:retrieveSpeedMetersPerSec",
+          "stat:bearingCount",
           "effective-retrieve-speed",
           "retrieve-duration",
         ),
@@ -90,11 +90,11 @@ class InventoryV2BalanceParameterResolver {
       "Інші параметри",
       gameplayRows.filter((row) => !consumed.has(row.id)),
     ));
-    if (this.#debugConfig.showEngineStats === true) {
+    if (this.#debugConfig.showEffectiveStats === true) {
       sections.push(this.#section(
-        "engine",
-        "EngineStats · DEBUG",
-        engineRows,
+        "effective-stats",
+        "EffectiveItemStats · DEBUG",
+        effectiveStatRows,
         { showTechnicalPaths: true },
       ));
     }
@@ -113,18 +113,16 @@ class InventoryV2BalanceParameterResolver {
       }));
     }
 
-    const level = Number(
-      item.progression?.level?.current ??
-        item.progression?.level?.value ??
-        item.level ??
-        item.engineStats?.level,
+    const progressionLevel = Number(
+      item.progression?.progressionLevel?.current ??
+        item.progression?.progressionLevel?.value,
     );
-    if (Number.isFinite(level)) {
+    if (Number.isFinite(progressionLevel)) {
       rows.push(this.#row({
-        id: "level",
-        label: "Рівень",
-        technicalPath: "progression.level",
-        actual: level,
+        id: "progression-level",
+        label: "Прогресійний рівень",
+        technicalPath: "progression.progressionLevel",
+        actual: progressionLevel,
         baseline: 1,
         precision: 0,
         direction: "higher_is_better",
@@ -133,7 +131,7 @@ class InventoryV2BalanceParameterResolver {
 
     const quality = item.progression?.quality;
     const qualityValue = Number(
-      quality?.value ?? item.quality ?? item.engineStats?.quality,
+      quality?.value ?? item.effectiveStats?.quality,
     );
     if (Number.isFinite(qualityValue)) {
       const minimum = Number.isFinite(Number(quality?.minimum))
@@ -169,21 +167,24 @@ class InventoryV2BalanceParameterResolver {
       }));
     }
 
-    const power = item.progression?.power;
-    if (power?.available === true && Number.isFinite(Number(power.rawValue))) {
-      const powerMinimum = Number(power.minimum);
+    const rating = item.progression?.rating;
+    if (
+      rating?.available === true &&
+      Number.isFinite(Number(rating.rawValue))
+    ) {
+      const ratingMinimum = Number(rating.minimum);
       rows.push(this.#row({
-        id: "power",
-        label: power.metricLabel || "Балансна сила",
-        technicalPath: `progression.power.${power.metricId || "value"}`,
-        actual: Number(power.rawValue),
-        baseline: Number.isFinite(powerMinimum) ? powerMinimum : null,
-        unit: power.metricSuffix || "",
+        id: "rating",
+        label: rating.metricLabel || "Рейтинг категорії",
+        technicalPath: `progression.rating.${rating.metricId || "value"}`,
+        actual: Number(rating.rawValue),
+        baseline: Number.isFinite(ratingMinimum) ? ratingMinimum : null,
+        unit: rating.metricSuffix || "",
         direction: "higher_is_better",
-        impacts: Number.isFinite(Number(power.percent))
+        impacts: Number.isFinite(Number(rating.percent))
           ? [this.#impact(
               "Позиція в балансному діапазоні",
-              `${this.#formatNumber(power.percent, 2)}%`,
+              `${this.#formatNumber(rating.percent, 2)}%`,
               "neutral",
             )]
           : [],
@@ -192,11 +193,11 @@ class InventoryV2BalanceParameterResolver {
     return rows;
   }
 
-  #engineRows(item, baselines) {
+  #effectiveStatRows(item, baselines) {
     const values = [];
-    this.#flattenEngineStats(item.engineStats || {}, "", values);
+    this.#flattenEffectiveStats(item.effectiveStats || {}, "", values);
     return values
-      .filter(([path]) => !["level", "quality"].includes(path))
+      .filter(([path]) => path !== "quality")
       .map(([path, actual]) => {
         const definition = this.#definition(item, path);
         const progressionBaseline = baselines.get(path);
@@ -204,9 +205,9 @@ class InventoryV2BalanceParameterResolver {
         const baseline = progressionBaseline?.minimum ??
           (Number.isFinite(configuredBaseline) ? configuredBaseline : null);
         return this.#row({
-          id: `engine:${path}`,
+          id: `stat:${path}`,
           label: definition.label,
-          technicalPath: `engineStats.${path}`,
+          technicalPath: `effectiveStats.${path}`,
           actual,
           baseline,
           unit: definition.unit,
@@ -233,7 +234,7 @@ class InventoryV2BalanceParameterResolver {
     if (!this.#isReel(item) || !this.#retrieveSpeedCalculator?.calculate) {
       return [];
     }
-    const stats = item.engineStats || item;
+    const stats = item.effectiveStats || {};
     const baseSpeed = Number(stats.retrieveSpeedMetersPerSec);
     const bearingCount = Number(stats.bearingCount) || 0;
     const bearingBonus = Number(
@@ -308,16 +309,16 @@ class InventoryV2BalanceParameterResolver {
     );
     const activeLine = isActiveRod ? equipment.line : null;
     const activeLineMeters = Number(
-      activeLine?.lengthMeters ?? activeLine?.engineStats?.lengthMeters,
+      activeLine?.effectiveStats?.lengthMeters,
     );
     const referenceMeters = activeLineMeters > 0
       ? activeLineMeters
       : Math.max(0, Number(this.#config.referenceCastDistanceMeters) || 12);
     const line = activeLineMeters > 0
-      ? { ...activeLine, lengthMeters: activeLineMeters }
+      ? activeLine
       : {
-          lengthMeters: referenceMeters,
-          engineStats: { lengthMeters: referenceMeters },
+          itemType: "fishing_line",
+          effectiveStats: Object.freeze({ lengthMeters: referenceMeters }),
         };
     const previewEquipment = {
       ...equipment,
@@ -325,12 +326,15 @@ class InventoryV2BalanceParameterResolver {
       reel: isActiveRod ? equipment.reel || null : null,
       line,
     };
-    const power = this.#castDistanceCalculator.getBuildCastPowerCoefficient?.(
-      previewEquipment,
-    );
+    const castPowerCoefficient =
+      this.#castDistanceCalculator.getBuildCastPowerCoefficient?.(
+        previewEquipment,
+      );
     const actual = this.#castDistanceCalculator.describe(
       previewEquipment,
-      Number.isFinite(Number(power)) ? Number(power) : null,
+      Number.isFinite(Number(castPowerCoefficient))
+        ? Number(castPowerCoefficient)
+        : null,
     );
     const baseline = this.#castDistanceCalculator.describe(
       previewEquipment,
@@ -387,8 +391,8 @@ class InventoryV2BalanceParameterResolver {
 
   #resolveProgressionBaselines(item) {
     const baselines = new Map();
-    const power = item.progression?.power;
-    for (const component of power?.breakdown || []) {
+    const rating = item.progression?.rating;
+    for (const component of rating?.breakdown || []) {
       const minimum = Number(component.minimum);
       if (!component.id || !Number.isFinite(minimum)) continue;
       baselines.set(component.id, {
@@ -397,19 +401,19 @@ class InventoryV2BalanceParameterResolver {
       });
     }
     if (
-      power?.metricId &&
-      Number.isFinite(Number(power.minimum)) &&
-      !baselines.has(power.metricId)
+      rating?.metricId &&
+      Number.isFinite(Number(rating.minimum)) &&
+      !baselines.has(rating.metricId)
     ) {
-      baselines.set(power.metricId, {
-        minimum: Number(power.minimum),
-        direction: this.#config.stats?.[power.metricId]?.direction,
+      baselines.set(rating.metricId, {
+        minimum: Number(rating.minimum),
+        direction: this.#config.stats?.[rating.metricId]?.direction,
       });
     }
     return baselines;
   }
 
-  #flattenEngineStats(value, path, output) {
+  #flattenEffectiveStats(value, path, output) {
     if (this.#isIgnored(path)) return;
     if (Array.isArray(value)) {
       if (value.every((entry) => this.#isScalar(entry))) {
@@ -425,7 +429,7 @@ class InventoryV2BalanceParameterResolver {
       left.localeCompare(right, "en"),
     )) {
       const childPath = path ? `${path}.${key}` : key;
-      this.#flattenEngineStats(value[key], childPath, output);
+      this.#flattenEffectiveStats(value[key], childPath, output);
     }
   }
 
@@ -582,7 +586,7 @@ class InventoryV2BalanceParameterResolver {
 
   #isIgnored(path) {
     if (!path) return false;
-    return (this.#config.ignoredEnginePaths || []).some(
+    return (this.#config.ignoredEffectiveStatsPaths || []).some(
       (ignored) => path === ignored || path.startsWith(`${ignored}.`),
     );
   }
@@ -594,12 +598,11 @@ class InventoryV2BalanceParameterResolver {
   }
 
   #isReel(item) {
-    return (item.type || item.engineStats?.type) === "spinning_reel";
+    return item?.itemType === "reel";
   }
 
   #isRod(item) {
-    return ["spinning", "feeder", "float", "pole", "match", "bolognese"]
-      .includes(item.type || item.engineStats?.type);
+    return item?.itemType === "rod";
   }
 
   #createCastDistanceCalculator() {

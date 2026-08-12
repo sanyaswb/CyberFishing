@@ -91,7 +91,7 @@ class EquipmentSlotAvailabilityPolicy {
         : (item) => this.#isAccessibleInventoryRoot(item);
     const compatibleItem = (inventoryItems || []).find((item) => {
       if (!accessiblePredicate(item)) return false;
-      const itemType = item?.type ?? item?.engineStats?.type;
+      const itemType = item?.itemType;
       if (!acceptTypes.includes(itemType)) return false;
       return (
         typeof isCompatible !== "function" ||

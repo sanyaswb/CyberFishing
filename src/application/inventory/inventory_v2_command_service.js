@@ -26,7 +26,6 @@ class InventoryV2CommandService {
   #autoRefillCoordinator;
   #hydrator;
   #instanceIdFactory;
-  #projectionService;
   #lineAllocationService;
   #equipmentLineReadinessPolicy;
   #stackingPolicy;
@@ -66,7 +65,6 @@ class InventoryV2CommandService {
     signaturePolicy,
     autoRefillCoordinator,
     hydrator,
-    projectionService,
     lineAllocationService,
     equipmentLineReadinessPolicy = null,
     stackingPolicy = null,
@@ -93,7 +91,6 @@ class InventoryV2CommandService {
     this.#signaturePolicy = signaturePolicy;
     this.#autoRefillCoordinator = autoRefillCoordinator;
     this.#hydrator = hydrator;
-    this.#projectionService = projectionService;
     this.#lineAllocationService = lineAllocationService;
     this.#equipmentLineReadinessPolicy = equipmentLineReadinessPolicy;
     this.#stackingPolicy =
@@ -1133,7 +1130,7 @@ class InventoryV2CommandService {
   }
 
   #type(rawItem) {
-    return this.#hydrate(rawItem)?.type || null;
+    return this.#hydrate(rawItem)?.itemType || null;
   }
 
   #showAssemblyEditor(rootInstanceId) {
@@ -1225,7 +1222,6 @@ class InventoryV2CommandService {
       [this.#signaturePolicy, "signaturePolicy"],
       [this.#autoRefillCoordinator, "autoRefillCoordinator"],
       [this.#hydrator, "hydrator"],
-      [this.#projectionService, "projectionService"],
       [this.#lineAllocationService, "lineAllocationService"],
       [this.#equipmentLineReadinessPolicy, "equipmentLineReadinessPolicy"],
       [this.#sortConfig, "sortConfig"],

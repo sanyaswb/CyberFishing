@@ -17,8 +17,7 @@ class DragSystem {
     this.#dragSupported = !!reel?.hasReel?.() && reel?.hasDrag?.() !== false;
     const reelSpeed =
       reel?.getDragChangeSpeedPerSec?.() ??
-      reel?.dragChangeSpeedPerSec ??
-      reel?.engineStats?.dragChangeSpeedPerSec;
+      reel?.effectiveStats?.dragChangeSpeedPerSec;
 
     this.#changeSpeed =
       Number(reelSpeed) || Number(this.#config.changeSpeedPerSec) || 1.5;

@@ -6,12 +6,12 @@ class CompositeMetricStrategy extends ItemMetricStrategy {
   evaluate({
     item,
     groupId,
-    powerConfig,
+    ratingConfig,
     strategyRegistry,
     baselineRegistry,
   } = {}) {
-    const components = Array.isArray(powerConfig?.components)
-      ? powerConfig.components
+    const components = Array.isArray(ratingConfig?.components)
+      ? ratingConfig.components
       : [];
     if (components.length === 0) {
       return this.unavailable("composite_components_missing", {
@@ -34,7 +34,7 @@ class CompositeMetricStrategy extends ItemMetricStrategy {
       const metric = strategy.evaluate({
         item,
         groupId,
-        powerConfig: component,
+        ratingConfig: component,
         strategyRegistry,
         baselineRegistry,
       });
@@ -50,7 +50,7 @@ class CompositeMetricStrategy extends ItemMetricStrategy {
       if (!Number.isFinite(score)) {
         const baseline = baselineRegistry?.resolve({
           groupId,
-          powerConfig: component,
+          ratingConfig: component,
           strategy,
           metricKey: `component:${index}`,
         });

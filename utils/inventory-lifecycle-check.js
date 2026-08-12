@@ -106,6 +106,11 @@ class InventoryRuntimeLoader {
     );
     this.#loadClass(
       context,
+      "src/core/items/effective_item_stats_resolver.js",
+      "EffectiveItemStatsResolver",
+    );
+    this.#loadClass(
+      context,
       "src/systems/inventory_item_factory.js",
       "InventoryItemFactory",
     );
@@ -231,10 +236,10 @@ class InventoryFixtureFactory {
         rod_float: {
           id: "rod_float",
           name: "Float rod",
-          type: "float",
+          itemType: "rod",
+          variant: "float",
           rarityProfile: this.#ordinaryRarity(),
-          engineStats: {
-            type: "float",
+          gameplayStats: {
             lengthMeters: 5,
             hasReel: false,
             maxHooks: 1,
@@ -244,10 +249,10 @@ class InventoryFixtureFactory {
         rod_spin: {
           id: "rod_spin",
           name: "Spinning rod",
-          type: "spinning",
+          itemType: "rod",
+          variant: "spinning",
           rarityProfile: this.#ordinaryRarity(),
-          engineStats: {
-            type: "spinning",
+          gameplayStats: {
             lengthMeters: 3,
             hasReel: true,
             maxHooks: 1,
@@ -259,10 +264,10 @@ class InventoryFixtureFactory {
         reel: {
           id: "reel",
           name: "Reel",
-          type: "spinning_reel",
+          itemType: "reel",
+          variant: "spinning_reel",
           rarityProfile: this.#ordinaryRarity(),
-          engineStats: {
-            type: "spinning_reel",
+          gameplayStats: {
             requiresTag: "reel",
             lineCapacityMeters: 10,
           },
@@ -272,10 +277,9 @@ class InventoryFixtureFactory {
         line: {
           id: "line",
           name: "Line",
-          type: "fishing_line",
+          itemType: "fishing_line",
           rarityProfile: this.#ordinaryRarity(),
-          engineStats: {
-            type: "fishing_line",
+          gameplayStats: {
             lengthMeters: 25,
             maxLoadKg: 1,
             diameterMm: 0.22,
@@ -287,10 +291,9 @@ class InventoryFixtureFactory {
         feeder_rig: {
           id: "feeder_rig",
           name: "Feeder rig",
-          type: "feeder_rig",
+          itemType: "feeder_rig",
           rarityProfile: this.#ordinaryRarity(),
-          engineStats: {
-            type: "feeder_rig",
+          gameplayStats: {
             requiresTag: "feeder_rig",
             capabilities: ["hook", "bait", "chum_mix"],
           },
@@ -300,9 +303,9 @@ class InventoryFixtureFactory {
         sys_build_box: {
           id: "sys_build_box",
           name: "Build box",
-          type: "build_box",
+          itemType: "build_box",
           rarityProfile: null,
-          engineStats: { type: "build_box" },
+          gameplayStats: {},
         },
       },
       builds: {},
@@ -322,7 +325,9 @@ class InventoryFixtureFactory {
     return {
       getBuildCastPowerCoefficient: () => 1,
       describe: (equipment) => {
-        const lineLengthMeters = Number(equipment?.line?.lengthMeters) || 0;
+        const lineLengthMeters = Number(
+          equipment?.line?.effectiveStats?.lengthMeters,
+        ) || 0;
         return {
           pixelsPerMeter: 10,
           lineLengthMeters,
@@ -340,7 +345,7 @@ class InventoryFixtureFactory {
       itemId: "sys_build_box",
       quantity: 1,
       buildName,
-      type: "build_box",
+      itemType: "build_box",
     };
   }
 
@@ -351,7 +356,7 @@ class InventoryFixtureFactory {
   #line(instanceId, buildId, lengthMeters) {
     return {
       ...this.#item(instanceId, "line", buildId),
-      lengthMeters,
+      statOverrides: { lengthMeters },
     };
   }
 }
@@ -494,7 +499,11 @@ class InventoryLifecycleCheckSuite {
       .filter((item) => item.itemId === "line");
     Assertion.equal(lines.length, 1, "disassembled build has one general line");
     Assertion.equal(lines[0].buildId, undefined, "disassembled line leaves build context");
-    Assertion.equal(lines[0].lengthMeters, 25, "disassembled line preserves length");
+    Assertion.equal(
+      lines[0].statOverrides?.lengthMeters,
+      25,
+      "disassembled line preserves length",
+    );
     Assertion.equal(
       fixture.manager.getEquipped().line,
       null,
@@ -570,15 +579,27 @@ class InventoryLifecycleCheckSuite {
     Assertion.equal(lines.length, 2, `${buildId} has spool and equipped segment`);
     const segment = lines.find((item) => item.detachedLineSegment);
     const spool = lines.find((item) => !item.detachedLineSegment);
-    Assertion.equal(segment?.lengthMeters, 10, `${buildId} segment is 10m`);
-    Assertion.equal(spool?.lengthMeters, 15, `${buildId} spool remainder is 15m`);
+    Assertion.equal(
+      segment?.statOverrides?.lengthMeters,
+      10,
+      `${buildId} segment is 10m`,
+    );
+    Assertion.equal(
+      spool?.statOverrides?.lengthMeters,
+      15,
+      `${buildId} spool remainder is 15m`,
+    );
     Assertion.equal(segment?.buildId, buildId, `${buildId} segment preserves buildId`);
   }
 
   #assertSingleLine(manager, buildId, lengthMeters) {
     const lines = this.#lineItems(manager, buildId);
     Assertion.equal(lines.length, 1, `${buildId} has one line instance`);
-    Assertion.equal(lines[0].lengthMeters, lengthMeters, `${buildId} line length is preserved`);
+    Assertion.equal(
+      lines[0].statOverrides?.lengthMeters,
+      lengthMeters,
+      `${buildId} line length is preserved`,
+    );
     Assertion.equal(
       Boolean(lines[0].detachedLineSegment),
       false,

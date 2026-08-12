@@ -102,14 +102,20 @@ class InventoryV2LineAllocationService {
         Number(allocation.equipLengthMeters) || 0,
       );
       this.#repository.update(isolated.instanceId, {
-        lengthMeters: remainingLength,
+        statOverrides: {
+          ...(isolated.statOverrides || {}),
+          lengthMeters: remainingLength,
+        },
         quantity: 1,
       });
       const segment = this.#repository.add({
         ...this.#clone(isolated),
         instanceId: this.#nextInstanceId(isolated),
         quantity: 1,
-        lengthMeters: equippedLength,
+        statOverrides: {
+          ...(isolated.statOverrides || {}),
+          lengthMeters: equippedLength,
+        },
         detachedLineSegment: true,
         sourceLineItemId: isolated.itemId,
         sourceLineInstanceId: isolated.instanceId,
@@ -211,7 +217,10 @@ class InventoryV2LineAllocationService {
 
     const totalLength = this.getLengthMeters(target) + this.getLengthMeters(released);
     this.#repository.update(target.instanceId, {
-      lengthMeters: totalLength,
+      statOverrides: {
+        ...(target.statOverrides || {}),
+        lengthMeters: totalLength,
+      },
       quantity: 1,
     });
     this.#repository.remove(instanceId);
@@ -242,7 +251,10 @@ class InventoryV2LineAllocationService {
       });
     }
     this.#repository.update(instanceId, {
-      lengthMeters: remaining,
+      statOverrides: {
+        ...(item.statOverrides || {}),
+        lengthMeters: remaining,
+      },
       quantity: 1,
     });
     return Object.freeze({
@@ -258,11 +270,11 @@ class InventoryV2LineAllocationService {
         ? this.#repository.get(itemOrInstanceId)
         : itemOrInstanceId;
     if (!raw) return 0;
-    const ownLength = Number(raw.lengthMeters);
+    const ownLength = Number(raw.statOverrides?.lengthMeters);
     if (Number.isFinite(ownLength)) return Math.max(0, ownLength);
     const hydrated = this.#hydrate(raw);
     const baseLength = Number(
-      hydrated?.lengthMeters ?? hydrated?.engineStats?.lengthMeters,
+      hydrated?.effectiveStats?.lengthMeters,
     );
     return Number.isFinite(baseLength) ? Math.max(0, baseLength) : 0;
   }
@@ -284,18 +296,25 @@ class InventoryV2LineAllocationService {
     const a = this.#hydrate(left);
     const b = this.#hydrate(right);
     if (!a || !b) return false;
-    const keys = [
+    const metadataKeys = [
       "id",
-      "type",
+      "itemType",
+      "rolledStats",
+    ];
+    const statKeys = [
       "maxLoadKg",
       "diameterMm",
       "durability",
       "quality",
-      "rolledStats",
     ];
-    for (const key of keys) {
-      const leftValue = a[key] ?? a.engineStats?.[key];
-      const rightValue = b[key] ?? b.engineStats?.[key];
+    for (const key of metadataKeys) {
+      if (this.#stableSerialize(a[key]) !== this.#stableSerialize(b[key])) {
+        return false;
+      }
+    }
+    for (const key of statKeys) {
+      const leftValue = a.effectiveStats?.[key];
+      const rightValue = b.effectiveStats?.[key];
       if (this.#stableSerialize(leftValue) !== this.#stableSerialize(rightValue)) {
         return false;
       }
@@ -316,7 +335,7 @@ class InventoryV2LineAllocationService {
   }
 
   #type(item) {
-    return item?.type ?? item?.engineStats?.type ?? null;
+    return item?.itemType ?? null;
   }
 
   #nextInstanceId(source) {

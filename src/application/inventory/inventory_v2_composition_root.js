@@ -125,7 +125,7 @@ class InventoryV2CompositionRoot {
     });
     const itemReader = (instanceId) =>
       hydrator.hydrate(instanceId, repository);
-    const projectionService = new EquipmentProjectionService({
+    const equipmentReadModelFactory = new EquipmentReadModelFactory({
       itemReader,
       assemblyReader,
       capabilityResolver,
@@ -267,7 +267,7 @@ class InventoryV2CompositionRoot {
       terminalLineResolver,
       compatibilityPolicy,
       equipmentLineReadinessPolicy,
-      projectionService,
+      equipmentReadModelFactory,
       settings,
       loadValueProvider,
     });
@@ -289,7 +289,6 @@ class InventoryV2CompositionRoot {
       signaturePolicy,
       autoRefillCoordinator,
       hydrator,
-      projectionService,
       lineAllocationService,
       equipmentLineReadinessPolicy,
       stackingPolicy,
@@ -301,7 +300,7 @@ class InventoryV2CompositionRoot {
       repository,
       hydrator,
       equipmentState,
-      projectionService,
+      equipmentReadModelFactory,
       readinessPolicy,
       commands,
       itemViews,
@@ -330,7 +329,7 @@ class InventoryV2CompositionRoot {
       transaction,
       snapshotFactory,
       stateStore: store,
-      projectionService,
+      equipmentReadModelFactory,
       readinessPolicy,
       compatibilityPolicy,
       visibilityPolicy,
@@ -362,11 +361,25 @@ class InventoryV2CompositionRoot {
     instanceIdFactory,
   }) {
     if (initialSnapshot) {
-      const snapshot = store.save(initialSnapshot);
-      return { snapshot, warnings: [] };
+      const migration = new InventoryV2SnapshotMigration({
+        itemDefinitionResolver: definitionLookup,
+        targetSchemaVersion: INVENTORY_V2_SCHEMA_VERSION,
+      }).migrate(initialSnapshot);
+      const snapshot = store.save(migration.snapshot);
+      return { snapshot, warnings: [...migration.warnings] };
     }
     const loaded = store.load();
     if (loaded) return { snapshot: loaded, warnings: [] };
+
+    const previousSnapshot = store.loadPrevious?.([2]) || null;
+    if (previousSnapshot) {
+      const migration = new InventoryV2SnapshotMigration({
+        itemDefinitionResolver: definitionLookup,
+        targetSchemaVersion: INVENTORY_V2_SCHEMA_VERSION,
+      }).migrate(previousSnapshot);
+      const snapshot = store.save(migration.snapshot);
+      return { snapshot, warnings: [...migration.warnings] };
+    }
 
     const provided =
       typeof legacyStateProvider === "function"

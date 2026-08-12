@@ -79,8 +79,8 @@ class RuntimeLoader {
     this.#load(context, "src/core/equipment/fishing_readiness_policy.js", [
       "FishingReadinessPolicy",
     ]);
-    this.#load(context, "src/application/inventory/equipment_projection_service.js", [
-      "EquipmentProjectionService",
+    this.#load(context, "src/application/inventory/equipment_read_model_factory.js", [
+      "EquipmentReadModelFactory",
     ]);
     return context;
   }
@@ -160,7 +160,7 @@ class InventoryV2EquipmentCheck {
     this.#checkRootOnlyEquipmentState();
     this.#checkManualRodTransition();
     this.#checkLoadoutBoundary();
-    this.#checkLegacyProjection();
+    this.#checkCanonicalReadModel();
     this.#checkFishingReadiness();
     this.#checkExactAutoRefill();
   }
@@ -171,8 +171,8 @@ class InventoryV2EquipmentCheck {
     Assertion.equal(r.EQUIPMENT_AUXILIARY_SLOT_IDS.join(","), "handChum,net,delivery,gasMask", "auxiliary slots are separate");
 
     const visibility = new r.EquipmentSlotVisibilityPolicy();
-    const pole = { equipmentCapabilities: { supportsReel: false, supportsFloat: true } };
-    const feeder = { engineStats: { equipmentCapabilities: { supportsReel: true, supportsFloat: false } } };
+    const pole = { effectiveStats: { equipmentCapabilities: { supportsReel: false, supportsFloat: true } } };
+    const feeder = { effectiveStats: { equipmentCapabilities: { supportsReel: true, supportsFloat: false } } };
     Assertion.equal(visibility.isVisible("reel", { rod: pole }), false, "pole hides reel by capability");
     Assertion.equal(visibility.isVisible("float", { rod: pole }), true, "pole shows float by capability");
     Assertion.equal(visibility.isVisible("reel", { rod: feeder }), true, "feeder shows reel by capability");
@@ -188,11 +188,11 @@ class InventoryV2EquipmentCheck {
   #checkAvailabilitySemantics() {
     const r = this.#runtime;
     const policy = new r.EquipmentSlotAvailabilityPolicy();
-    const rod = { equipmentCapabilities: { supportsReel: true, supportsFloat: false } };
+    const rod = { effectiveStats: { equipmentCapabilities: { supportsReel: true, supportsFloat: false } } };
     const state = new r.EquipmentState({ rod: "rod-a" });
     const leader = {
       instanceId: "leader-a",
-      type: "leader_line",
+      itemType: "leader_line",
       quantity: 1,
       location: { kind: "INVENTORY" },
     };
@@ -303,24 +303,24 @@ class InventoryV2EquipmentCheck {
     Assertion.equal(plan.after.delivery, "boat-a", "loadout leaves auxiliary boat active");
   }
 
-  #checkLegacyProjection() {
+  #checkCanonicalReadModel() {
     const r = this.#runtime;
     const itemList = [
-      { instanceId: "rod", itemId: "rod", type: "feeder", equipmentCapabilities: { supportsReel: true, supportsFeederRig: true } },
-      { instanceId: "reel", itemId: "reel", type: "spinning_reel" },
-      { instanceId: "reel-line", itemId: "line", type: "fishing_line", location: { slotIndex: 0 } },
-      { instanceId: "leader", itemId: "leader", type: "leader_line" },
-      { instanceId: "rig", itemId: "rig", type: "feeder_rig", hooksCount: 2 },
-      { instanceId: "hook-0", itemId: "hook", type: "hook", location: { slotIndex: 0 } },
-      { instanceId: "hook-1", itemId: "hook", type: "hook", location: { slotIndex: 1 } },
-      { instanceId: "bait-0", itemId: "bait", type: "bait", location: { slotIndex: 0 } },
-      { instanceId: "rig-chum", itemId: "chum", type: "chum_mix", location: { slotIndex: 0 } },
-      { instanceId: "float", itemId: "float", type: "day" },
-      { instanceId: "net", itemId: "net", type: "net" },
-      { instanceId: "boat", itemId: "boat", type: "boat", sections: 3 },
-      { instanceId: "cargo-0", itemId: "chum-a", type: "chum_mix", location: { slotIndex: 0 } },
-      { instanceId: "cargo-2", itemId: "chum-b", type: "chum_mix", location: { slotIndex: 2 } },
-      { instanceId: "hand", itemId: "chum-hand", type: "chum_mix" },
+      { instanceId: "rod", itemId: "rod", itemType: "rod", variant: "feeder", effectiveStats: { equipmentCapabilities: { supportsReel: true, supportsFeederRig: true } } },
+      { instanceId: "reel", itemId: "reel", itemType: "reel", variant: "spinning_reel", effectiveStats: {} },
+      { instanceId: "reel-line", itemId: "line", itemType: "fishing_line", effectiveStats: {}, location: { slotIndex: 0 } },
+      { instanceId: "leader", itemId: "leader", itemType: "leader_line", effectiveStats: {} },
+      { instanceId: "rig", itemId: "rig", itemType: "feeder_rig", effectiveStats: { hooksCount: 2 } },
+      { instanceId: "hook-0", itemId: "hook", itemType: "hook", effectiveStats: {}, location: { slotIndex: 0 } },
+      { instanceId: "hook-1", itemId: "hook", itemType: "hook", effectiveStats: {}, location: { slotIndex: 1 } },
+      { instanceId: "bait-0", itemId: "bait", itemType: "bait", effectiveStats: {}, location: { slotIndex: 0 } },
+      { instanceId: "rig-chum", itemId: "chum", itemType: "chum_mix", effectiveStats: {}, location: { slotIndex: 0 } },
+      { instanceId: "float", itemId: "float", itemType: "float", variant: "day", effectiveStats: {} },
+      { instanceId: "net", itemId: "net", itemType: "net", effectiveStats: {} },
+      { instanceId: "boat", itemId: "boat", itemType: "boat", effectiveStats: { sections: 3 } },
+      { instanceId: "cargo-0", itemId: "chum-a", itemType: "chum_mix", effectiveStats: {}, location: { slotIndex: 0 } },
+      { instanceId: "cargo-2", itemId: "chum-b", itemType: "chum_mix", effectiveStats: {}, location: { slotIndex: 2 } },
+      { instanceId: "hand", itemId: "chum-hand", itemType: "chum_mix", effectiveStats: {} },
     ];
     const items = new Map(itemList.map((item) => [item.instanceId, item]));
     const assemblies = new MemoryAssemblyReader(items);
@@ -344,32 +344,36 @@ class InventoryV2EquipmentCheck {
       delivery: "boat",
       handChum: "hand",
     });
-    const projection = new r.EquipmentProjectionService({
+    const readModel = new r.EquipmentReadModelFactory({
       itemReader: (id) => items.get(id),
       assemblyReader: assemblies,
-    }).project(state);
-    Assertion.equal(projection.line.instanceId, "reel-line", "projection unfolds reel line");
-    Assertion.equal(projection.leader.instanceId, "leader", "projection maps terminal leader");
-    Assertion.equal(projection.feederRig.instanceId, "rig", "projection maps feeder tackle");
-    Assertion.equal(projection.hooks.length, 2, "projection unfolds indexed hooks");
-    Assertion.equal(projection.baits[0].instanceId, "bait-0", "projection binds bait to hook zero");
-    Assertion.equal(projection.baits[1], null, "projection preserves empty bait index");
-    Assertion.equal(projection.feederChum.instanceId, "rig-chum", "projection unfolds tackle chum");
-    Assertion.equal(projection.deliveryChums.length, 3, "projection preserves boat bay capacity");
-    Assertion.equal(projection.deliveryChums[1], null, "projection preserves an empty middle bay");
-    Assertion.equal(projection.deliveryChums[2].instanceId, "cargo-2", "projection preserves cargo index two");
-    Assertion.equal(projection.handChum.instanceId, "hand", "projection exposes manual chum independently");
+    }).create(state);
+    Assertion.equal(readModel.line.instanceId, "reel-line", "read model unfolds reel line");
+    Assertion.equal(readModel.leader.instanceId, "leader", "read model maps terminal leader");
+    Assertion.equal(readModel.feederRig.instanceId, "rig", "read model maps feeder tackle");
+    Assertion.equal(readModel.hooks.length, 2, "read model unfolds indexed hooks");
+    Assertion.equal(readModel.baits[0].instanceId, "bait-0", "read model binds bait to hook zero");
+    Assertion.equal(readModel.baits[1], null, "read model preserves empty bait index");
+    Assertion.equal(readModel.feederChum.instanceId, "rig-chum", "read model unfolds tackle chum");
+    Assertion.equal(readModel.deliveryChums.length, 3, "read model preserves boat bay capacity");
+    Assertion.equal(readModel.deliveryChums[1], null, "read model preserves an empty middle bay");
+    Assertion.equal(readModel.deliveryChums[2].instanceId, "cargo-2", "read model preserves cargo index two");
+    Assertion.equal(readModel.handChum.instanceId, "hand", "read model exposes manual chum independently");
+    Assertion.that(
+      !("type" in readModel.rod) && !("engineStats" in readModel.rod),
+      "read model does not recreate legacy item fields",
+    );
   }
 
   #checkFishingReadiness() {
     const r = this.#runtime;
     const items = new Map([
-      ["rod", { instanceId: "rod", itemId: "rod", type: "feeder", equipmentCapabilities: { supportsReel: true, supportsFeederRig: true } }],
-      ["reel", { instanceId: "reel", itemId: "reel", type: "spinning_reel" }],
-      ["line", { instanceId: "line", itemId: "line", type: "fishing_line", location: { slotIndex: 0 } }],
-      ["leader", { instanceId: "leader", itemId: "leader", type: "leader_line" }],
-      ["rig", { instanceId: "rig", itemId: "rig", type: "feeder_rig" }],
-      ["hook", { instanceId: "hook", itemId: "hook", type: "hook", location: { slotIndex: 0 } }],
+      ["rod", { instanceId: "rod", itemId: "rod", itemType: "rod", variant: "feeder", effectiveStats: { equipmentCapabilities: { supportsReel: true, supportsFeederRig: true } } }],
+      ["reel", { instanceId: "reel", itemId: "reel", itemType: "reel", variant: "spinning_reel", effectiveStats: {} }],
+      ["line", { instanceId: "line", itemId: "line", itemType: "fishing_line", effectiveStats: {}, location: { slotIndex: 0 } }],
+      ["leader", { instanceId: "leader", itemId: "leader", itemType: "leader_line", effectiveStats: {} }],
+      ["rig", { instanceId: "rig", itemId: "rig", itemType: "feeder_rig", effectiveStats: {} }],
+      ["hook", { instanceId: "hook", itemId: "hook", itemType: "hook", effectiveStats: {}, location: { slotIndex: 0 } }],
     ]);
     const assemblies = new MemoryAssemblyReader(items);
     const state = new r.EquipmentState({ rod: "rod", reel: "reel", tackle: "rig" });
@@ -393,7 +397,7 @@ class InventoryV2EquipmentCheck {
   #checkExactAutoRefill() {
     const r = this.#runtime;
     const signaturePolicy = new r.ExactItemSignaturePolicy();
-    const baitA1 = { instanceId: "a1", itemId: "worm", type: "bait", rarityProfile: { tier: 2 }, engineStats: { size: 1 }, quantity: 1, location: "inventory" };
+    const baitA1 = { instanceId: "a1", itemId: "worm", itemType: "bait", rarityProfile: { tier: 2 }, effectiveStats: { size: 1 }, quantity: 1, location: "inventory" };
     const baitA2 = { ...baitA1, instanceId: "a2" };
     const baitB = { ...baitA1, instanceId: "b", rarityProfile: { tier: 3 } };
     const signatureA = signaturePolicy.create(baitA1);

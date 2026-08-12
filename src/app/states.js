@@ -716,8 +716,7 @@ class ScoutingState extends GameState {
       this.deps.services.devFlags.isEnabled("infiniteCasting");
     const maxDistance = this.getEffectiveCastDistance(eq);
     const accuracyPx =
-      Number(eq?.rod?.accuracy) ||
-      Number(eq?.rod?.engineStats?.accuracy) ||
+      Number(eq?.rod?.effectiveStats?.accuracy) ||
       this.deps.config.casting?.rodAccuracyFallbackPx ||
       80;
     const accuracyPercent = this.#getRodAccuracyPercent(eq);
@@ -804,8 +803,7 @@ class ScoutingState extends GameState {
     const eq = this.deps.inventory.getEquipped();
     const maxDistance = this.getEffectiveCastDistance(eq);
     const accuracyPx =
-      Number(eq?.rod?.accuracy) ||
-      Number(eq?.rod?.engineStats?.accuracy) ||
+      Number(eq?.rod?.effectiveStats?.accuracy) ||
       this.deps.config.casting?.rodAccuracyFallbackPx ||
       80;
     const preview = aim.getAccuracyPreview(
@@ -860,8 +858,7 @@ class ScoutingState extends GameState {
 
   #getRodAccuracyPercent(eq) {
     return (
-      Number(eq?.rod?.accuracyPercent) ||
-      Number(eq?.rod?.engineStats?.accuracyPercent) ||
+      Number(eq?.rod?.effectiveStats?.accuracyPercent) ||
       this.deps.config.casting?.accuracyDistancePercent ||
       null
     );
@@ -869,8 +866,7 @@ class ScoutingState extends GameState {
 
   #getRodAccuracyMultiplier(eq) {
     return (
-      Number(eq?.rod?.accuracyMultiplier) ||
-      Number(eq?.rod?.engineStats?.accuracyMultiplier) ||
+      Number(eq?.rod?.effectiveStats?.accuracyMultiplier) ||
       this.deps.config.casting?.accuracyDistanceMultiplier ||
       1
     );
@@ -944,7 +940,7 @@ class WaitingState extends GameState {
     const eq = this.deps.inventory.getEquipped();
     this.#updatePowerRecast(dt, bounds, input, eq);
 
-    const reelPower = eq?.reel ? eq.reel.basePower || 0 : 0;
+    const reelPower = eq?.reel?.effectiveStats?.basePower || 0;
     const isSpinning = this.deps.rules.equipment.isSpinning(eq);
 
     const effectiveInput = this.#effectiveInput;
@@ -997,7 +993,10 @@ class WaitingState extends GameState {
         : envData.biteEnv;
 
     let hooked = this.deps.biteSystem.evaluateBite(dt, biteEnv, {
-      hookSize: eq?.hooks?.[0]?.level || eq?.baits?.[0]?.level || 1,
+      hookSize:
+        eq?.hooks?.[0]?.effectiveStats?.equipmentPowerLevel ||
+        eq?.baits?.[0]?.effectiveStats?.equipmentPowerLevel ||
+        1,
       baits: baitIds,
       baitTypes: baitTypes,
       isPulling: effectiveInput.isPulling,
@@ -1076,8 +1075,7 @@ class WaitingState extends GameState {
       this.deps.services.devFlags.isEnabled("infiniteCasting");
     const maxDistance = this.getEffectiveCastDistance(eq);
     const accuracyPx =
-      Number(eq?.rod?.accuracy) ||
-      Number(eq?.rod?.engineStats?.accuracy) ||
+      Number(eq?.rod?.effectiveStats?.accuracy) ||
       this.deps.config.casting?.rodAccuracyFallbackPx ||
       80;
     const accuracyPercent = this.#getRodAccuracyPercent(eq);
@@ -1219,8 +1217,7 @@ class WaitingState extends GameState {
     const eq = this.deps.inventory.getEquipped();
     const maxDistance = this.getEffectiveCastDistance(eq);
     const accuracyPx =
-      Number(eq?.rod?.accuracy) ||
-      Number(eq?.rod?.engineStats?.accuracy) ||
+      Number(eq?.rod?.effectiveStats?.accuracy) ||
       this.deps.config.casting?.rodAccuracyFallbackPx ||
       80;
     const preview = this.#recastAim.getAccuracyPreview(
@@ -1235,8 +1232,7 @@ class WaitingState extends GameState {
 
   #getRodAccuracyPercent(eq) {
     return (
-      Number(eq?.rod?.accuracyPercent) ||
-      Number(eq?.rod?.engineStats?.accuracyPercent) ||
+      Number(eq?.rod?.effectiveStats?.accuracyPercent) ||
       this.deps.config.casting?.accuracyDistancePercent ||
       null
     );
@@ -1244,8 +1240,7 @@ class WaitingState extends GameState {
 
   #getRodAccuracyMultiplier(eq) {
     return (
-      Number(eq?.rod?.accuracyMultiplier) ||
-      Number(eq?.rod?.engineStats?.accuracyMultiplier) ||
+      Number(eq?.rod?.effectiveStats?.accuracyMultiplier) ||
       this.deps.config.casting?.accuracyDistanceMultiplier ||
       1
     );
@@ -1356,7 +1351,7 @@ class BitingState extends GameState {
     const eq = this.deps.inventory.getEquipped();
     const isSpinning = this.deps.rules.equipment.isSpinning(eq);
 
-    const reelPower = eq?.reel ? eq.reel.basePower || 0 : 0;
+    const reelPower = eq?.reel?.effectiveStats?.basePower || 0;
 
     let pullDirection = null;
     if (input.isPulling) {
@@ -1612,9 +1607,9 @@ class PlayingState extends GameState {
         "color: #00ff00; font-size: 16px; font-weight: bold;",
       );
       console.table({
-        "Тип Вудки": eq.rod?.type || "float",
+        "Тип Вудки": eq.rod?.variant || "float",
         "Наявність Котушки":
-          (eq.rod?.hasReel ?? eq.rod?.engineStats?.hasReel ?? true)
+          (eq.rod?.effectiveStats?.hasReel ?? true)
             ? "Є"
             : "Немає (Махова)",
         "Згенерована Вага": fishData.weight.toFixed(3) + " кг",

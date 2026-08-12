@@ -1,4 +1,10 @@
 class ItemCapacityResolver {
+  #effectiveStatsResolver;
+
+  constructor({ effectiveStatsResolver = new EffectiveItemStatsResolver() } = {}) {
+    this.#effectiveStatsResolver = effectiveStatsResolver;
+  }
+
   resolve({ item, capacityConfig, context = {} } = {}) {
     if (!capacityConfig || typeof capacityConfig !== "object") {
       return this.#unavailable("capacity_config_missing");
@@ -18,8 +24,18 @@ class ItemCapacityResolver {
     const isEquipped = !!item?.instanceId &&
       item.instanceId === lineContext.equippedLineInstanceId;
     const reelCapacity = this.#number(lineContext.reelCapacityMeters);
+    const catalogItem = context.catalogItem?.effectiveStats
+      ? context.catalogItem
+      : context.catalogItem
+        ? {
+            ...context.catalogItem,
+            effectiveStats: this.#effectiveStatsResolver.resolve({
+              definition: context.catalogItem,
+            }),
+          }
+        : null;
     const catalogLength = this.#number(
-      this.#readPath(context.catalogItem, capacityConfig.statPath),
+      this.#readPath(catalogItem, capacityConfig.statPath),
     );
 
     let current = Math.max(0, currentLength);

@@ -1,43 +1,60 @@
 class ItemProgressionResolver {
   #configProvider;
-  #powerResolver;
-  #levelResolver;
+  #ratingResolver;
+  #progressionLevelResolver;
   #qualityResolver;
   #capacityResolver;
   #baselineRegistry;
+  #effectiveStatsResolver;
   #cache = new Map();
   #revision = 0;
 
   constructor({
     configProvider,
-    powerResolver,
-    levelResolver,
+    ratingResolver,
+    progressionLevelResolver,
     qualityResolver,
     capacityResolver = null,
     baselineRegistry,
+    effectiveStatsResolver = new EffectiveItemStatsResolver(),
   } = {}) {
     if (typeof configProvider !== "function") {
       throw new TypeError("ItemProgressionResolver requires configProvider");
     }
-    if (!powerResolver || typeof powerResolver.resolve !== "function") {
-      throw new TypeError("ItemProgressionResolver requires powerResolver");
+    if (!ratingResolver || typeof ratingResolver.resolve !== "function") {
+      throw new TypeError("ItemProgressionResolver requires ratingResolver");
     }
-    if (!levelResolver || typeof levelResolver.resolve !== "function") {
-      throw new TypeError("ItemProgressionResolver requires levelResolver");
+    if (
+      !progressionLevelResolver ||
+      typeof progressionLevelResolver.resolve !== "function"
+    ) {
+      throw new TypeError(
+        "ItemProgressionResolver requires progressionLevelResolver",
+      );
     }
     if (!qualityResolver || typeof qualityResolver.resolve !== "function") {
       throw new TypeError("ItemProgressionResolver requires qualityResolver");
     }
     this.#configProvider = configProvider;
-    this.#powerResolver = powerResolver;
-    this.#levelResolver = levelResolver;
+    this.#ratingResolver = ratingResolver;
+    this.#progressionLevelResolver = progressionLevelResolver;
     this.#qualityResolver = qualityResolver;
     this.#capacityResolver = capacityResolver;
     this.#baselineRegistry = baselineRegistry || null;
+    this.#effectiveStatsResolver = effectiveStatsResolver;
   }
 
   resolve(item, context = {}) {
-    const profile = item?.progressionProfile;
+    const effectiveItem = item?.effectiveStats
+      ? item
+      : {
+          ...item,
+          effectiveStats: this.#effectiveStatsResolver.resolve({
+            definition: item,
+            instanceState: item,
+          }),
+        };
+    const profile = effectiveItem?.progressionProfile;
     if (!profile) return this.#unavailable("technical_item");
     const config = this.#configProvider() || {};
     const groupId = String(profile.groupId || "");
@@ -45,44 +62,55 @@ class ItemProgressionResolver {
     if (!groupConfig) return this.#unavailable("group_missing", groupId);
 
     const capacity = this.#capacityResolver?.resolve?.({
-      item,
+      item: effectiveItem,
       capacityConfig: groupConfig.capacity,
       context,
     }) || this.#unavailableCapacity("capacity_resolver_missing");
     const signature = this.#buildSignature(
-      item,
+      effectiveItem,
       groupId,
       groupConfig,
       config.revision,
     );
     let core = this.#cache.get(signature);
     if (!core) {
-      const power = this.#powerResolver.resolve({ item, groupId, groupConfig });
-      const level = this.#levelResolver.resolve(power, config.levelScale);
+      const rating = this.#ratingResolver.resolve({
+        item: effectiveItem,
+        groupId,
+        groupConfig,
+      });
+      const progressionLevel = this.#progressionLevelResolver.resolve(
+        rating,
+        config.progressionLevelScale,
+      );
       const quality = this.#qualityResolver.resolve({
-        item,
+        item: effectiveItem,
         qualityConfig: groupConfig.quality,
       });
       const defaultCapacity = this.#unavailableCapacity(
         "capacity_config_missing",
       );
       core = Object.freeze({
-        available: power.available || level.available || quality.available,
-        reason: power.available || level.available || quality.available
+        available:
+          rating.available || progressionLevel.available || quality.available,
+        reason:
+          rating.available || progressionLevel.available || quality.available
           ? null
-          : power.reason || level.reason || quality.reason,
+          : rating.reason || progressionLevel.reason || quality.reason,
         groupId,
-        power,
-        level,
+        rating,
+        progressionLevel,
         quality,
         descriptor: new ItemProgressionDescriptor({
-          available: power.available || level.available || quality.available,
-          reason: power.available || level.available || quality.available
+          available:
+            rating.available || progressionLevel.available || quality.available,
+          reason:
+            rating.available || progressionLevel.available || quality.available
             ? null
-            : power.reason || level.reason || quality.reason,
+            : rating.reason || progressionLevel.reason || quality.reason,
           groupId,
-          power,
-          level,
+          rating,
+          progressionLevel,
           quality,
           capacity: defaultCapacity,
         }),
@@ -96,8 +124,8 @@ class ItemProgressionResolver {
         ? null
         : core.reason || capacity.reason,
       groupId: core.groupId,
-      power: core.power,
-      level: core.level,
+      rating: core.rating,
+      progressionLevel: core.progressionLevel,
       quality: core.quality,
       capacity,
     });
@@ -111,13 +139,13 @@ class ItemProgressionResolver {
 
   #buildSignature(item, groupId, groupConfig, configRevision) {
     const paths = new Set();
-    this.#collectMetricPaths(groupConfig.power, paths);
+    this.#collectMetricPaths(groupConfig.rating, paths);
     if (groupConfig.quality?.statPath) paths.add(groupConfig.quality.statPath);
     const values = [];
     for (const path of Array.from(paths).sort()) {
       values.push([path, this.#readPath(item, path)]);
     }
-    values.push(["qualityOverride", item?.quality]);
+    values.push(["statOverrides", item?.statOverrides]);
     values.push(["rolledStats", item?.rolledStats]);
     return JSON.stringify([
       groupId,
@@ -134,7 +162,7 @@ class ItemProgressionResolver {
       "numeratorPath",
       "denominatorPath",
       "tablePath",
-      "levelPath",
+      "upgradeLevelPath",
     ]) {
       if (config[key]) output.add(config[key]);
     }
@@ -154,7 +182,7 @@ class ItemProgressionResolver {
   }
 
   #unavailable(reason, groupId = null) {
-    const unavailablePower = Object.freeze({
+    const unavailableRating = Object.freeze({
       available: false,
       reason,
       strategyId: null,
@@ -170,7 +198,7 @@ class ItemProgressionResolver {
       configSource: null,
       breakdown: Object.freeze([]),
     });
-    const unavailableLevel = Object.freeze({
+    const unavailableProgressionLevel = Object.freeze({
       available: false,
       reason,
       current: null,
@@ -192,8 +220,8 @@ class ItemProgressionResolver {
       available: false,
       reason,
       groupId,
-      power: unavailablePower,
-      level: unavailableLevel,
+      rating: unavailableRating,
+      progressionLevel: unavailableProgressionLevel,
       quality: unavailableQuality,
       capacity: unavailableCapacity,
     });

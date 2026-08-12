@@ -28,7 +28,7 @@ class InventoryV2ViewModelFactory {
   #terminalLineResolver;
   #compatibilityPolicy;
   #equipmentLineReadinessPolicy;
-  #projectionService;
+  #equipmentReadModelFactory;
   #settings;
   #loadValueProvider;
 
@@ -47,7 +47,7 @@ class InventoryV2ViewModelFactory {
     terminalLineResolver,
     compatibilityPolicy,
     equipmentLineReadinessPolicy = null,
-    projectionService,
+    equipmentReadModelFactory,
     settings,
     loadValueProvider = null,
   } = {}) {
@@ -66,7 +66,7 @@ class InventoryV2ViewModelFactory {
     this.#terminalLineResolver = terminalLineResolver;
     this.#compatibilityPolicy = compatibilityPolicy;
     this.#equipmentLineReadinessPolicy = equipmentLineReadinessPolicy;
-    this.#projectionService = projectionService;
+    this.#equipmentReadModelFactory = equipmentReadModelFactory;
     this.#settings = settings;
     this.#loadValueProvider = loadValueProvider;
     if (
@@ -93,7 +93,7 @@ class InventoryV2ViewModelFactory {
   }
 
   create(uiState = {}) {
-    const equipmentProjection = this.#projectionService.project(
+    const equipmentReadModel = this.#equipmentReadModelFactory.create(
       this.#equipmentState,
     );
     const accessibleRawItems = this.#accessibleInventoryItems();
@@ -113,12 +113,12 @@ class InventoryV2ViewModelFactory {
     const selectedRaw = uiState.selectedInstanceId
       ? this.#repository.get(uiState.selectedInstanceId)
       : null;
-    const activeBaits = (equipmentProjection.baits || [])
+    const activeBaits = (equipmentReadModel.baits || [])
       .map((item) => this.#createProjectedItemView(item))
       .filter(
         (item) => ["bait", "fishing_bait"].includes(this.#itemType(item)),
       );
-    const activeChums = [equipmentProjection.feederChum]
+    const activeChums = [equipmentReadModel.feederChum]
       .map((item) => this.#createProjectedItemView(item))
       .filter(
         (item) => ["chum_mix", "groundbait"].includes(this.#itemType(item)),
@@ -137,12 +137,12 @@ class InventoryV2ViewModelFactory {
         },
       },
       settings: this.#settings.snapshot(),
-      tooltipContext: this.#createTooltipContext(equipmentProjection),
+      tooltipContext: this.#createTooltipContext(equipmentReadModel),
       panel: {
         mode: uiState.panelMode === "assembly" ? "assembly" : "loadout",
         loadout: this.#createEquipmentPanel(
           accessibleRawItems,
-          equipmentProjection.rod,
+          equipmentReadModel.rod,
           selectedRaw,
           uiState.highlightedEquipmentSlotId,
         ),
@@ -150,14 +150,14 @@ class InventoryV2ViewModelFactory {
           editingRootInstanceId,
           accessibleRawItems,
           selectedRaw,
-          equipmentProjection,
+          equipmentReadModel,
         ),
       },
       inventory: {
         ...this.#createInventory(
           uiState,
           visibleInventoryItems,
-          equipmentProjection.rod,
+          equipmentReadModel.rod,
           inventoryContext,
         ),
         mode: uiState.viewingLoadoutId ? "saved-loadout" : "inventory",
@@ -238,7 +238,7 @@ class InventoryV2ViewModelFactory {
     rootInstanceId,
     accessibleRawItems,
     selectedRaw,
-    equipmentProjection,
+    equipmentReadModel,
   ) {
     if (!rootInstanceId || !this.#repository.has(rootInstanceId)) {
       return {
@@ -307,7 +307,7 @@ class InventoryV2ViewModelFactory {
       sockets,
       parameterItems: this.#createEquippedRodParameterItems(
         rootInstanceId,
-        equipmentProjection,
+        equipmentReadModel,
       ),
       equipped,
       canEquip: equipAvailability.canEquip,
@@ -568,25 +568,35 @@ class InventoryV2ViewModelFactory {
   #matchesCategory(item, categoryId) {
     if (categoryId === "all") return true;
     if (categoryId === "compatible") return false;
-    const type = item?.type;
-    if (categoryId === "loadouts") return type === "equipment_loadout";
-    if (categoryId === "rods") {
-      return ["spinning", "feeder", "float", "pole", "match", "bolognese"].includes(type);
+    const itemType = item?.itemType;
+    if (categoryId === "loadouts") return itemType === "equipment_loadout";
+    if (categoryId === "rods") return itemType === "rod";
+    if (categoryId === "reels") return itemType === "reel";
+    if (categoryId === "lines") {
+      return ["fishing_line", "leader_line"].includes(itemType);
     }
-    if (categoryId === "reels") return type === "spinning_reel";
-    if (categoryId === "lines") return ["fishing_line", "leader_line"].includes(type);
     if (categoryId === "tackle") {
-      return ["hook", "feeder_rig", "spring", "feeder_tackle", "lure", "spinner", "wobbler", "jig", "float_tackle", "day", "night"].includes(type);
+      return ["hook", "feeder_rig", "lure", "float"].includes(itemType);
     }
-    if (categoryId === "baits") return ["bait", "fishing_bait"].includes(type);
-    if (categoryId === "chums") return ["chum_mix", "groundbait"].includes(type);
-    if (categoryId === "boats") return ["boat", "chum_delivery"].includes(type);
-    if (categoryId === "nets") return type === "net";
-    return type === "gas_mask";
+    if (categoryId === "baits") {
+      return ["bait", "fishing_bait"].includes(itemType);
+    }
+    if (categoryId === "chums") {
+      return ["chum_mix", "groundbait"].includes(itemType);
+    }
+    if (categoryId === "boats") {
+      return ["boat", "chum_delivery"].includes(itemType);
+    }
+    if (categoryId === "nets") return itemType === "net";
+    return itemType === "gas_mask";
   }
 
   #itemType(item) {
-    return item?.type ?? item?.engineStats?.type ?? null;
+    return item?.itemType ?? null;
+  }
+
+  #variant(item) {
+    return item?.variant ?? null;
   }
 
   #createProjectedItemView(item) {
@@ -596,16 +606,16 @@ class InventoryV2ViewModelFactory {
     return this.#itemViews.create(instanceId) || item;
   }
 
-  #createTooltipContext(equipmentProjection) {
+  #createTooltipContext(equipmentReadModel) {
     const equipment = Object.freeze({
-      rod: this.#createProjectedItemView(equipmentProjection.rod),
-      reel: this.#createProjectedItemView(equipmentProjection.reel),
-      line: this.#createProjectedItemView(equipmentProjection.line),
-      leader: this.#createProjectedItemView(equipmentProjection.leader),
-      float: this.#createProjectedItemView(equipmentProjection.float),
-      tackle: this.#createProjectedItemView(equipmentProjection.feederRig),
+      rod: this.#createProjectedItemView(equipmentReadModel.rod),
+      reel: this.#createProjectedItemView(equipmentReadModel.reel),
+      line: this.#createProjectedItemView(equipmentReadModel.line),
+      leader: this.#createProjectedItemView(equipmentReadModel.leader),
+      float: this.#createProjectedItemView(equipmentReadModel.float),
+      tackle: this.#createProjectedItemView(equipmentReadModel.feederRig),
       hooks: Object.freeze(
-        (equipmentProjection.hooks || [])
+        (equipmentReadModel.hooks || [])
           .map((item) => this.#createProjectedItemView(item))
           .filter(Boolean),
       ),
@@ -621,14 +631,14 @@ class InventoryV2ViewModelFactory {
     ].filter(Boolean);
     const capabilities = new Set();
     for (const item of projectedItems) {
-      const authored = item.capabilities || item.engineStats?.capabilities;
+      const authored = item.effectiveStats?.capabilities;
       if (!Array.isArray(authored)) continue;
       authored.forEach((capability) => capabilities.add(capability));
     }
     const rod = equipment.rod || null;
-    const rodType = this.#itemType(rod);
+    const rodType = this.#variant(rod);
     const hasReel = rod
-      ? Boolean(rod.hasReel ?? rod.engineStats?.hasReel ?? rodType !== "pole")
+      ? Boolean(rod.effectiveStats?.hasReel ?? rodType !== "pole")
       : null;
     return {
       rodType,

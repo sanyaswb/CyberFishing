@@ -18,8 +18,11 @@ const INVENTORY_V2_SORT_CONFIG = Object.freeze({
   criteria: Object.freeze([
     Object.freeze({ id: "type", label: "За типом" }),
     Object.freeze({ id: "rarity", label: "За рідкістю" }),
-    Object.freeze({ id: "level", label: "За рівнем" }),
-    Object.freeze({ id: "power", label: "За силою" }),
+    Object.freeze({
+      id: "progressionLevel",
+      label: "За рівнем прогресії",
+    }),
+    Object.freeze({ id: "rating", label: "За рейтингом" }),
   ]),
   typeOrder: Object.freeze([
     "spinning",
@@ -61,18 +64,10 @@ const INVENTORY_V2_SORT_CONFIG = Object.freeze({
     unique: "Унікальні",
   }),
   numericPaths: Object.freeze({
-    level: Object.freeze([
-      "progression.level.current",
-      "level",
-      "engineStats.level",
+    progressionLevel: Object.freeze([
+      "progression.progressionLevel.current",
     ]),
-    power: Object.freeze([
-      "progression.power.rawValue",
-      "power",
-      "engineStats.power",
-      "engineStats.maxLoadKg",
-      "engineStats.basePower",
-    ]),
+    rating: Object.freeze(["progression.rating.rawValue"]),
   }),
 });
 

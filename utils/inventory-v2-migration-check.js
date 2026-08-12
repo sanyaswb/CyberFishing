@@ -7,6 +7,8 @@ const context = vm.createContext({ console });
 const files = [
   "src/config/inventory/item_assembly_profile_config.js",
   "src/config/inventory/equipment_slot_config.js",
+  "src/core/items/effective_item_stats_resolver.js",
+  "src/infrastructure/storage/legacy_item_state_migration.js",
   "src/core/inventory/inventory_item_location.js",
   "src/core/inventory/flat_inventory_item_repository.js",
   "src/core/inventory/item_assembly_stacking_policy.js",
@@ -22,6 +24,7 @@ const files = [
   "src/core/loadouts/equipment_loadout.js",
   "src/core/loadouts/equipment_loadout_repository.js",
   "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+  "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
   "src/infrastructure/storage/inventory_v2_state_store.js",
   "src/infrastructure/storage/inventory_v2_legacy_migration.js",
 ];
@@ -34,21 +37,21 @@ for (const file of files) {
 vm.runInContext(
   `
   const definitions = {
-    rod: { id: "rod", type: "feeder", engineStats: { type: "feeder", equipmentCapabilities: { supportsReel: true, supportsFloat: false, supportsFeederRig: true, supportsLures: false } } },
-    spinRod: { id: "spinRod", type: "spinning", engineStats: { type: "spinning", equipmentCapabilities: { supportsReel: true, supportsFloat: false, supportsFeederRig: false, supportsLures: true } } },
-    floatRod: { id: "floatRod", type: "float", engineStats: { type: "float", equipmentCapabilities: { supportsReel: false, supportsFloat: true, supportsFeederRig: false, supportsLures: false } } },
-    poleRod: { id: "poleRod", type: "pole", engineStats: { type: "pole", equipmentCapabilities: { supportsReel: false, supportsFloat: true, supportsFeederRig: false, supportsLures: false } } },
-    reel: { id: "reel", type: "spinning_reel", engineStats: { type: "spinning_reel", assemblyProfileId: "reel_standard" } },
-    line: { id: "line", type: "fishing_line", engineStats: { type: "fishing_line" } },
-    line_test_1: { id: "line_test_1", type: "fishing_line", engineStats: { type: "fishing_line", lengthMeters: 25 } },
-    leader: { id: "leader", type: "leader_line", engineStats: { type: "leader_line" } },
-    spring: { id: "spring", type: "feeder_rig", engineStats: { type: "feeder_rig", assemblyProfileId: "feeder_spring_basic", hooksCount: 2, hasChumSlot: true } },
-    hook: { id: "hook", type: "hook", engineStats: { type: "hook", assemblyProfileId: "hook_standard" } },
-    bait: { id: "bait", type: "bait", engineStats: { type: "bait" } },
-    lure: { id: "lure", type: "lure", engineStats: { type: "lure" } },
-    chum: { id: "chum", type: "chum_mix", engineStats: { type: "chum_mix" } },
-    net: { id: "net", type: "net", engineStats: { type: "net" } },
-    boat: { id: "boat", type: "boat", engineStats: { type: "boat", assemblyProfileId: "bait_boat", sections: 2 } },
+    rod: { id: "rod", itemType: "rod", variant: "feeder", gameplayStats: { equipmentCapabilities: { supportsReel: true, supportsFloat: false, supportsFeederRig: true, supportsLures: false } } },
+    spinRod: { id: "spinRod", itemType: "rod", variant: "spinning", gameplayStats: { equipmentCapabilities: { supportsReel: true, supportsFloat: false, supportsFeederRig: false, supportsLures: true } } },
+    floatRod: { id: "floatRod", itemType: "rod", variant: "float", gameplayStats: { equipmentCapabilities: { supportsReel: false, supportsFloat: true, supportsFeederRig: false, supportsLures: false } } },
+    poleRod: { id: "poleRod", itemType: "rod", variant: "pole", gameplayStats: { equipmentCapabilities: { supportsReel: false, supportsFloat: true, supportsFeederRig: false, supportsLures: false } } },
+    reel: { id: "reel", itemType: "reel", variant: "spinning_reel", gameplayStats: { assemblyProfileId: "reel_standard" } },
+    line: { id: "line", itemType: "fishing_line", gameplayStats: {} },
+    line_test_1: { id: "line_test_1", itemType: "fishing_line", gameplayStats: { lengthMeters: 25 } },
+    leader: { id: "leader", itemType: "leader_line", gameplayStats: {} },
+    spring: { id: "spring", itemType: "feeder_rig", gameplayStats: { assemblyProfileId: "feeder_spring_basic", hooksCount: 2, hasChumSlot: true } },
+    hook: { id: "hook", itemType: "hook", gameplayStats: { assemblyProfileId: "hook_standard" } },
+    bait: { id: "bait", itemType: "bait", gameplayStats: {} },
+    lure: { id: "lure", itemType: "lure", gameplayStats: {} },
+    chum: { id: "chum", itemType: "chum_mix", gameplayStats: {} },
+    net: { id: "net", itemType: "net", gameplayStats: {} },
+    boat: { id: "boat", itemType: "boat", gameplayStats: { assemblyProfileId: "bait_boat", sections: 2 } },
   };
   let sequence = 0;
   const migration = new InventoryV2LegacyMigration({
@@ -94,7 +97,7 @@ const assert = (condition, message) => {
 const byId = new Map(snapshot.items.map((item) => [item.instanceId, item]));
 const loadout = snapshot.loadouts[0];
 
-assert(snapshot.schemaVersion === 2, "schema version is 2");
+assert(snapshot.schemaVersion === 3, "schema version is 3");
 assert(snapshot.loadouts.length === 1, "legacy build becomes one loadout");
 assert(loadout.rootInstanceIds.net === undefined, "net is excluded from loadout");
 assert(loadout.rootInstanceIds.delivery === undefined, "boat is excluded from loadout");
@@ -123,6 +126,48 @@ assert(
 assert(
   snapshot.assemblies.every((assembly) => assembly.status === "PREPARED"),
   "legacy composites migrate as prepared",
+);
+
+vm.runInContext(
+  `
+  globalThis.snapshotUpgrade = new InventoryV2SnapshotMigration({
+    itemDefinitionResolver: (itemId) => definitions[itemId] || null,
+    targetSchemaVersion: INVENTORY_V2_SCHEMA_VERSION,
+  }).migrate({
+    schemaVersion: 2,
+    items: [{
+      instanceId: "schema2-rod",
+      itemId: "spinRod",
+      type: "spinning",
+      engineStats: { level: 4, maxLoadKg: 1.25 },
+      effectiveStats: { stale: true },
+      quantity: 1,
+      location: { kind: "INVENTORY" },
+    }],
+    assemblies: [],
+    equipment: {},
+    loadouts: [],
+    settings: {},
+  });
+  `,
+  context,
+);
+const upgradedItem = context.snapshotUpgrade.snapshot.items[0];
+assert(context.snapshotUpgrade.snapshot.schemaVersion === 3, "schema 2 upgrades to schema 3");
+assert(
+  upgradedItem.itemType === "rod" && upgradedItem.variant === "spinning",
+  "schema upgrade assigns canonical item type semantics",
+);
+assert(
+  upgradedItem.statOverrides.equipmentPowerLevel === 4 &&
+    upgradedItem.statOverrides.maxLoadKg === 1.25,
+  "schema upgrade preserves legacy gameplay values as canonical overrides",
+);
+assert(
+  !("type" in upgradedItem) &&
+    !("engineStats" in upgradedItem) &&
+    !("effectiveStats" in upgradedItem),
+  "schema upgrade removes all legacy and derived runtime fields",
 );
 
 vm.runInContext(

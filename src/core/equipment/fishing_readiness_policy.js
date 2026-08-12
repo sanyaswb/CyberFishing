@@ -171,13 +171,11 @@ class FishingReadinessPolicy {
   }
 
   #isLeader(item) {
-    const type = item?.type ?? item?.engineStats?.type;
-    return type === "leader_line";
+    return item?.itemType === "leader_line";
   }
 
   #isHook(item) {
-    const type = item?.type ?? item?.engineStats?.type;
-    return type === "hook";
+    return item?.itemType === "hook";
   }
 
   #slotId(key, fallback) {

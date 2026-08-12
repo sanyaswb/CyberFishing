@@ -94,16 +94,16 @@ class ItemConditionCheck {
   }
 
   #checkResolution() {
-    const full = this.#resolver.resolve({ engineStats: { durability: 100 } });
+    const full = this.#resolver.resolve({ effectiveStats: { durability: 100 } });
     Assertion.equal(full.percent, 100, "100 condition maps to full height");
     Assertion.equal(full.source, "authored", "catalog durability is authored");
     const worn = this.#resolver.resolve({
-      durability: 20,
-      engineStats: { durability: 100 },
+      statOverrides: { durability: 20 },
+      effectiveStats: { durability: 100 },
     });
     Assertion.equal(worn.percent, 20, "20 condition maps to 20 percent height");
     Assertion.equal(worn.source, "runtime", "runtime durability has priority");
-    const clamped = this.#resolver.resolve({ durability: -5 });
+    const clamped = this.#resolver.resolve({ statOverrides: { durability: -5 } });
     Assertion.equal(clamped.percent, 0, "condition is clamped below minimum");
     Assertion.equal(clamped.outOfRange, "below", "below-range state is exposed");
     const fallback = this.#resolver.resolve({});
@@ -119,8 +119,11 @@ class ItemConditionCheck {
       for (const item of Object.values(category || {})) {
         if (!item?.progressionProfile) continue;
         gameplayCount += 1;
-        if (item.engineStats?.durability !== undefined) authoredCount += 1;
-        const condition = this.#resolver.resolve(item);
+        if (item.gameplayStats?.durability !== undefined) authoredCount += 1;
+        const condition = this.#resolver.resolve({
+          ...item,
+          effectiveStats: item.gameplayStats || {},
+        });
         Assertion.that(condition.available, `${item.id} condition is available`);
         Assertion.equal(condition.percent, 100, `${item.id} starts at full condition`);
       }
@@ -135,7 +138,9 @@ class ItemConditionCheck {
       classList: new FakeClassList(),
       dataset: {},
     };
-    const condition = this.#resolver.resolve({ durability: 20 });
+    const condition = this.#resolver.resolve({
+      statOverrides: { durability: 20 },
+    });
     new this.#runtime.Adapter().apply(element, condition);
     Assertion.that(
       element.classList.contains("has-item-condition"),
@@ -180,7 +185,7 @@ class ItemConditionCheck {
       "condition is derived during item hydration",
     );
     Assertion.that(
-      inventoryFactory.includes('"condition"') && factory.includes('"condition"'),
+      inventoryFactory.includes('"condition"'),
       "derived condition is excluded from persistent item data",
     );
     Assertion.that(

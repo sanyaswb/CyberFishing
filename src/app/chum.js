@@ -107,8 +107,8 @@ class ChumController {
     const eq = this.#inventory.getEquipped();
     const method = eq.delivery ? "boat" : "hand";
     const boatItem = eq.delivery || {};
-    const isManual = boatItem.manualControl ?? true;
-    const sections = boatItem.sections ?? boatItem.engineStats?.sections ?? 1;
+    const isManual = boatItem.effectiveStats?.manualControl ?? true;
+    const sections = boatItem.effectiveStats?.sections ?? 1;
 
     let state = "idle";
     let count = 0;
@@ -186,7 +186,7 @@ class ChumController {
 
     const activeBoat = boats[0];
     const boatItem = eq.delivery || {};
-    const isManual = boatItem.manualControl ?? true;
+    const isManual = boatItem.effectiveStats?.manualControl ?? true;
 
     if (this.#isAiming) {
       this.toggleAim();
@@ -477,7 +477,7 @@ class ChumController {
 
     const eq = this.#inventory.getEquipped();
     const boatItem = eq.delivery || {};
-    const isManual = boatItem.manualControl ?? true;
+    const isManual = boatItem.effectiveStats?.manualControl ?? true;
 
     if (isManual) {
       if (activeBoat.state !== "returning") {
@@ -520,7 +520,7 @@ class ChumController {
 
     if (activeBoat.remainingSections <= 0) {
       const hasAI =
-        boatItem.hasAutoReturn ?? boatItem.engineStats?.hasAutoReturn ?? false;
+        boatItem.effectiveStats?.hasAutoReturn ?? false;
       if (hasAI) {
         activeBoat.state = "returning";
       }

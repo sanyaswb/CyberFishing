@@ -91,11 +91,11 @@ class DomainFixture {
     });
   }
 
-  inventory(instanceId, itemId, type, quantity = 1, extra = {}) {
+  inventory(instanceId, itemId, itemType, quantity = 1, extra = {}) {
     return {
       instanceId,
       itemId,
-      type,
+      itemType,
       quantity,
       location: this.#runtime.InventoryItemLocation.inventory(),
       ...extra,
@@ -105,14 +105,14 @@ class DomainFixture {
   #items() {
     return [
       this.inventory("spring-stack", "spring-basic", "feeder_rig", 2, {
-        engineStats: {
+        effectiveStats: {
           assemblyProfileId: "feeder_spring_basic",
           hooksCount: 2,
           hasChumSlot: true,
         },
       }),
       this.inventory("hook-stack", "hook-basic", "hook", 3, {
-        engineStats: { assemblyProfileId: "hook_standard" },
+        effectiveStats: { assemblyProfileId: "hook_standard" },
       }),
       this.inventory("bait-red", "worm", "bait", 5, {
         rarity: { tier: 2 },
@@ -125,12 +125,12 @@ class DomainFixture {
       this.inventory("chum-stack", "carp-mix", "chum_mix", 3, {
         recipe: "carp-v1",
       }),
-      this.inventory("reel-one", "reel-test", "spinning_reel", 1),
+      this.inventory("reel-one", "reel-test", "reel", 1),
       this.inventory("line-stack", "line-basic", "fishing_line", 2, {
-        lengthMeters: 25,
+        effectiveStats: { lengthMeters: 25 },
       }),
       this.inventory("boat-one", "boat-lvl3", "boat", 1, {
-        engineStats: { assemblyProfileId: "bait_boat", sections: 3 },
+        effectiveStats: { assemblyProfileId: "bait_boat", sections: 3 },
       }),
       this.inventory("hook-one", "hook-basic", "hook", 1),
     ];

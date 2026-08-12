@@ -11,7 +11,7 @@ class NetDebugModule extends ConsoleTableDebugModule {
     console.table({
       "Equipped net": net.name || net.id || "none",
       "Net active": net.active === true,
-      "Net level": net.level ?? "n/a",
+      "Quality grade": net.effectiveStats?.quality ?? "n/a",
       Fish: fish ? fish.name || fish.id : "n/a",
       "Fish weight": fish
         ? `${DebugFormatters.number(fish.weight, 3)} kg`

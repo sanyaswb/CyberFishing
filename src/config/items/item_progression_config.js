@@ -4,7 +4,7 @@
  */
 const ITEM_PROGRESSION_CONFIG = (() => {
   const quality = () => ({
-    statPath: "engineStats.quality",
+    statPath: "effectiveStats.quality",
     min: 1,
     maxSections: 10,
   });
@@ -43,9 +43,9 @@ const ITEM_PROGRESSION_CONFIG = (() => {
   };
 
   return deepFreeze({
-    revision: 4,
-    levelScale: {
-      source: "power.normalized",
+    revision: 5,
+    progressionLevelScale: {
+      source: "rating.normalized",
       distribution: "equal_segments",
       minimum: 1,
       segments: 6,
@@ -53,67 +53,67 @@ const ITEM_PROGRESSION_CONFIG = (() => {
     qualityLimits: { minSections: 2, maxSections: 12 },
     groups: {
       "rod.spinning": {
-        power: numeric("engineStats.maxLoadKg", 0.5, 3, {
+        rating: numeric("effectiveStats.maxLoadKg", 0.5, 3, {
           metricLabel: "Макс. навантаження",
           metricSuffix: "кг",
         }),
         quality: quality(),
       },
       "rod.feeder": {
-        power: numeric("engineStats.maxLoadKg", 0.5, 3, {
+        rating: numeric("effectiveStats.maxLoadKg", 0.5, 3, {
           metricLabel: "Макс. навантаження",
           metricSuffix: "кг",
         }),
         quality: quality(),
       },
       "rod.float": {
-        power: numeric("engineStats.maxLoadKg", 0.5, 3, {
+        rating: numeric("effectiveStats.maxLoadKg", 0.5, 3, {
           metricLabel: "Макс. навантаження",
           metricSuffix: "кг",
         }),
         quality: quality(),
       },
       "reel.drag": {
-        power: {
+        rating: {
           strategyId: "composite",
           metricLabel: "Композитний рейтинг",
           components: [
-            component("engineStats.maxLoadKg", 0.35, 0.5, 5, "Навантаження"),
-            component("engineStats.dragMaxKg", 0.25, 0, 4, "Фрикціон"),
+            component("effectiveStats.maxLoadKg", 0.35, 0.5, 5, "Навантаження"),
+            component("effectiveStats.dragMaxKg", 0.25, 0, 4, "Фрикціон"),
             component(
-              "engineStats.retrieveSpeedMetersPerSec",
+              "effectiveStats.retrieveSpeedMetersPerSec",
               0.2,
               0.4,
               1.5,
               "Підмотка",
             ),
             component(
-              "engineStats.lineCapacityMeters",
+              "effectiveStats.lineCapacityMeters",
               0.15,
               10,
               100,
               "Ємність",
             ),
-            component("engineStats.bearingCount", 0.05, 0, 10, "Підшипники"),
+            component("effectiveStats.bearingCount", 0.05, 0, 10, "Підшипники"),
           ],
         },
         quality: quality(),
       },
       "reel.no_drag": {
-        power: {
+        rating: {
           strategyId: "composite",
           metricLabel: "Композитний рейтинг",
           components: [
-            component("engineStats.maxLoadKg", 0.45, 0.5, 5, "Навантаження"),
+            component("effectiveStats.maxLoadKg", 0.45, 0.5, 5, "Навантаження"),
             component(
-              "engineStats.retrieveSpeedMetersPerSec",
+              "effectiveStats.retrieveSpeedMetersPerSec",
               0.3,
               0.4,
               1.5,
               "Підмотка",
             ),
             component(
-              "engineStats.lineCapacityMeters",
+              "effectiveStats.lineCapacityMeters",
               0.25,
               10,
               100,
@@ -124,11 +124,11 @@ const ITEM_PROGRESSION_CONFIG = (() => {
         quality: quality(),
       },
       "line.fishing": {
-        power: {
+        rating: {
           strategyId: "derived_stat",
           formulaId: "ratio",
-          numeratorPath: "engineStats.maxLoadKg",
-          denominatorPath: "engineStats.diameterMm",
+          numeratorPath: "effectiveStats.maxLoadKg",
+          denominatorPath: "effectiveStats.diameterMm",
           direction: "higher_is_better",
           baseline: {
             mode: "catalog",
@@ -139,7 +139,7 @@ const ITEM_PROGRESSION_CONFIG = (() => {
         },
         capacity: {
           strategyId: "line_capacity",
-          statPath: "engineStats.lengthMeters",
+          statPath: "effectiveStats.lengthMeters",
           metricLabel: "Ємність",
           metricSuffix: "м",
           inventoryDetailLabel: "Залишок ліски",
@@ -148,11 +148,11 @@ const ITEM_PROGRESSION_CONFIG = (() => {
         quality: quality(),
       },
       "line.leader": {
-        power: {
+        rating: {
           strategyId: "derived_stat",
           formulaId: "ratio",
-          numeratorPath: "engineStats.maxLoadKg",
-          denominatorPath: "engineStats.diameterMm",
+          numeratorPath: "effectiveStats.maxLoadKg",
+          denominatorPath: "effectiveStats.diameterMm",
           direction: "higher_is_better",
           baseline: fixed(3, 8),
           metricLabel: "Міцність до товщини",
@@ -161,67 +161,67 @@ const ITEM_PROGRESSION_CONFIG = (() => {
         quality: quality(),
       },
       "hook.standard": {
-        power: numeric("engineStats.maxLoadKg", 0.5, 3, {
+        rating: numeric("effectiveStats.maxLoadKg", 0.5, 3, {
           metricLabel: "Міцність гачка",
           metricSuffix: "кг",
         }),
         quality: quality(),
       },
       "rig.feeder": {
-        power: numeric("engineStats.rigPower", 0.5, 3, {
+        rating: numeric("effectiveStats.rigPower", 0.5, 3, {
           metricLabel: "Сила оснастки",
         }),
         quality: quality(),
       },
       "bait.natural": {
-        power: numeric("engineStats.attractionPower", 0.5, 3, {
+        rating: numeric("effectiveStats.attractionPower", 0.5, 3, {
           metricLabel: "Привабливість",
         }),
         quality: quality(),
       },
       "lure.spinner": {
-        power: numeric("engineStats.attractionPower", 1, 10, {
+        rating: numeric("effectiveStats.attractionPower", 1, 10, {
           metricLabel: "Привабливість",
         }),
         quality: quality(),
       },
       "lure.wobbler": {
-        power: numeric("engineStats.attractionPower", 1, 10, {
+        rating: numeric("effectiveStats.attractionPower", 1, 10, {
           metricLabel: "Привабливість",
         }),
         quality: quality(),
       },
       "lure.jig": {
-        power: numeric("engineStats.jigPower", 1, 10, {
+        rating: numeric("effectiveStats.jigPower", 1, 10, {
           metricLabel: "Контроль джигу",
         }),
         quality: quality(),
       },
       "float.day": {
-        power: numeric("engineStats.sensitivity", 1, 10, {
+        rating: numeric("effectiveStats.sensitivity", 1, 10, {
           metricLabel: "Чутливість",
         }),
         quality: quality(),
       },
       "net.landing": {
-        power: numeric("engineStats.maxWeight", 1, 10, {
+        rating: numeric("effectiveStats.maxWeight", 1, 10, {
           metricLabel: "Макс. вага",
           metricSuffix: "кг",
         }),
         quality: quality(),
       },
       "chum.carp": {
-        power: numeric("engineStats.maxBonus", 1, 3, {
+        rating: numeric("effectiveStats.maxBonus", 1, 3, {
           metricLabel: "Макс. бонус",
         }),
         quality: quality(),
       },
       "delivery.boat": {
-        power: {
+        rating: {
           strategyId: "derived_stat",
           formulaId: "upgrade_level_stat",
-          tablePath: "engineStats.statsByLevel",
-          levelPath: "engineStats.level",
+          tablePath: "effectiveStats.statsByLevel",
+          upgradeLevelPath: "effectiveStats.upgradeLevel",
           statKey: "speedPxPerSec",
           direction: "higher_is_better",
           baseline: fixed(100, 300),

@@ -1,5 +1,5 @@
-class ItemLevelResolver {
-  resolve(power, scale = {}) {
+class ItemProgressionLevelResolver {
+  resolve(rating, scale = {}) {
     const minimum = Number(scale.minimum);
     const segments = Number(scale.segments);
     if (
@@ -7,33 +7,33 @@ class ItemLevelResolver {
       minimum < 1 ||
       !Number.isInteger(segments) ||
       segments < 1 ||
-      scale.source !== "power.normalized" ||
+      scale.source !== "rating.normalized" ||
       scale.distribution !== "equal_segments"
     ) {
       return Object.freeze({
         available: false,
-        reason: "level_config_invalid",
+        reason: "progression_level_config_invalid",
         current: null,
         maximum: null,
       });
     }
     const maximum = minimum + segments - 1;
-    if (!power?.available || !Number.isFinite(Number(power.normalized))) {
+    if (!rating?.available || !Number.isFinite(Number(rating.normalized))) {
       return Object.freeze({
         available: false,
-        reason: power?.reason || "power_unavailable",
+        reason: rating?.reason || "rating_unavailable",
         current: null,
         maximum,
       });
     }
-    const normalized = Math.max(0, Math.min(1, Number(power.normalized)));
+    const normalized = Math.max(0, Math.min(1, Number(rating.normalized)));
     const segmentIndex = normalized >= 1
       ? segments - 1
       : Math.floor(normalized * segments);
     return Object.freeze({
       available: true,
       reason: null,
-      source: "power_equal_segments",
+      source: "rating_equal_segments",
       current: minimum + segmentIndex,
       minimum,
       maximum,

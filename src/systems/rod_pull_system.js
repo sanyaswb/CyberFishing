@@ -383,9 +383,8 @@ class RodPullSystem {
 
   #rodLengthMeters(rod) {
     return (
-      Number(rod?.lengthMeters) ||
       Number(rod?.getLengthMeters?.()) ||
-      Number(rod?.engineStats?.lengthMeters) ||
+      Number(rod?.effectiveStats?.lengthMeters) ||
       1
     );
   }
@@ -395,7 +394,7 @@ class RodPullSystem {
       Number(fallback) ||
       Number(rod?.getEffectiveMaxLoadKg?.()) ||
       Number(rod?.getMaxLoadKg?.()) ||
-      Number(rod?.engineStats?.maxLoadKg) ||
+      Number(rod?.effectiveStats?.maxLoadKg) ||
       0
     );
   }
@@ -412,10 +411,10 @@ class RodPullSystem {
   #holdTensionRatio(rod) {
     const direct = Number(rod?.getHoldTensionRatio?.());
     if (Number.isFinite(direct)) return Math.max(0, Math.min(1, direct));
-    const plain = Number(rod?.holdTensionRatio);
-    if (Number.isFinite(plain)) return Math.max(0, Math.min(1, plain));
-    const engine = Number(rod?.engineStats?.holdTensionRatio);
-    if (Number.isFinite(engine)) return Math.max(0, Math.min(1, engine));
+    const effective = Number(rod?.effectiveStats?.holdTensionRatio);
+    if (Number.isFinite(effective)) {
+      return Math.max(0, Math.min(1, effective));
+    }
     return Math.max(
       0,
       Math.min(

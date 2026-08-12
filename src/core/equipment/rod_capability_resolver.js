@@ -1,51 +1,40 @@
 class RodCapabilityResolver {
   resolve(rod) {
     const equipmentCapabilities =
-      rod?.equipmentCapabilities || rod?.engineStats?.equipmentCapabilities || {};
-    const direct = this.#asCapabilityMap(rod?.capabilities);
-    const engine = this.#asCapabilityMap(rod?.engineStats?.capabilities);
-    const authored = rod?.capabilities && !Array.isArray(rod.capabilities)
-      ? rod.capabilities
-      : {};
-    const engineAuthored =
-      rod?.engineStats?.capabilities && !Array.isArray(rod.engineStats.capabilities)
-        ? rod.engineStats.capabilities
+      rod?.effectiveStats?.equipmentCapabilities || {};
+    const capabilities = this.#asCapabilityMap(
+      rod?.effectiveStats?.capabilities,
+    );
+    const capabilityFlags =
+      rod?.effectiveStats?.capabilities && !Array.isArray(rod.effectiveStats.capabilities)
+        ? rod.effectiveStats.capabilities
         : {};
 
     return Object.freeze({
       supportsReel: this.#firstBoolean(
         equipmentCapabilities.supportsReel,
-        authored.supportsReel,
-        engineAuthored.supportsReel,
-        rod?.supportsReel,
-        rod?.engineStats?.supportsReel,
-        rod?.hasReel,
-        rod?.engineStats?.hasReel,
-        direct.has("reel") || engine.has("reel"),
+        capabilityFlags.supportsReel,
+        rod?.effectiveStats?.supportsReel,
+        rod?.effectiveStats?.hasReel,
+        capabilities.has("reel"),
       ),
       supportsFloat: this.#firstBoolean(
         equipmentCapabilities.supportsFloat,
-        authored.supportsFloat,
-        engineAuthored.supportsFloat,
-        rod?.supportsFloat,
-        rod?.engineStats?.supportsFloat,
-        direct.has("float") || engine.has("float"),
+        capabilityFlags.supportsFloat,
+        rod?.effectiveStats?.supportsFloat,
+        capabilities.has("float"),
       ),
       supportsFeederRig: this.#firstBoolean(
         equipmentCapabilities.supportsFeederRig,
-        authored.supportsFeederRig,
-        engineAuthored.supportsFeederRig,
-        rod?.supportsFeederRig,
-        rod?.engineStats?.supportsFeederRig,
-        direct.has("feeder_rig") || engine.has("feeder_rig"),
+        capabilityFlags.supportsFeederRig,
+        rod?.effectiveStats?.supportsFeederRig,
+        capabilities.has("feeder_rig"),
       ),
       supportsLures: this.#firstBoolean(
         equipmentCapabilities.supportsLures,
-        authored.supportsLures,
-        engineAuthored.supportsLures,
-        rod?.supportsLures,
-        rod?.engineStats?.supportsLures,
-        direct.has("lure") || engine.has("lure"),
+        capabilityFlags.supportsLures,
+        rod?.effectiveStats?.supportsLures,
+        capabilities.has("lure"),
       ),
     });
   }

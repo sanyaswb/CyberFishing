@@ -853,7 +853,7 @@ class ConfigSchemaValidator {
         const path = `ITEM_DB.${categoryName}.${itemKey}`;
         this.#requireNonEmptyString(`${path}.id`, item?.id);
         this.#requireNonEmptyString(`${path}.name`, item?.name);
-        this.#requireNonEmptyString(`${path}.type`, item?.type);
+        this.#requireNonEmptyString(`${path}.itemType`, item?.itemType);
         this.#validateFiniteNumberLeaves(item, path);
         this.#validateMinMaxPairs(item, path);
       }

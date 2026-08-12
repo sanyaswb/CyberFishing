@@ -73,11 +73,10 @@ class FishRarityCheck {
       fishAnomalyVariantResolver: this.anomalyVariantResolver,
       fishVisualVariantResolver: this.visualVariantResolver,
     });
-    this.hookedFishProfileSynchronizer =
-      new HookedFishProfileSynchronizer({
-        fishRarityResolver: this.resolver,
-        fishVisualVariantResolver: this.visualVariantResolver,
-      });
+    this.hookedFishProfileSynchronizer = new HookedFishProfileSynchronizer({
+      fishRarityResolver: this.resolver,
+      fishVisualVariantResolver: this.visualVariantResolver,
+    });
     this.BiteSystem = BiteSystem;
     this.RarityVisualResolver = RarityVisualResolver;
     this.VictoryThemeResolver = VictoryThemeResolver;
@@ -331,16 +330,19 @@ class FishRarityCheck {
       weightConfig: this.fixture.weightConfig,
     });
     Assertion.equal(invalidWeight.level, 1, "invalid weight safe level");
-    Assertion.that(!invalidWeight.isUnique, "invalid weight must not be unique");
+    Assertion.that(
+      !invalidWeight.isUnique,
+      "invalid weight must not be unique",
+    );
 
     const imagePath =
-      "assets/fish/crucian_stalker/crucian_stalker--{level}.webp".replace(
+      "assets/fish/crucian_stalker/standart/crucian_stalker--{level}.webp".replace(
         "{level}",
         profile.level,
       );
     Assertion.equal(
       imagePath,
-      "assets/fish/crucian_stalker/crucian_stalker--2.webp",
+      "assets/fish/crucian_stalker/standart/crucian_stalker--2.webp",
       "gap weight image level",
     );
   }
@@ -366,9 +368,9 @@ class FishRarityCheck {
       weightConfig: this.fixture.weightConfig,
       visual: {
         imagePattern:
-          "assets/fish/crucian_stalker/crucian_stalker--{level}.webp",
+          "assets/fish/crucian_stalker/standart/crucian_stalker--{level}.webp",
         uniqueImagePattern:
-          "assets/fish/crucian_stalker/crucian_stalker--{level}-uniq.webp",
+          "assets/fish/crucian_stalker/unique/crucian_stalker--{level}-uniq.webp",
       },
       physics: {},
     };
@@ -402,18 +404,14 @@ class FishRarityCheck {
       baitTypes: ["float"],
       isPulling: false,
     };
-    const caught = biteSystem.evaluateBite(
-      1000,
-      environment,
-      gear,
-    );
+    const caught = biteSystem.evaluateBite(1000, environment, gear);
 
     Assertion.that(caught, "gap-weight fish should be generated");
     Assertion.equal(caught.level, 2, "generated gap-weight fish level");
     Assertion.that(!caught.isUnique, "generated gap-weight fish uniqueness");
     Assertion.equal(
       caught.imagePath,
-      "assets/fish/crucian_stalker/crucian_stalker--2.webp",
+      "assets/fish/crucian_stalker/standart/crucian_stalker--2.webp",
       "generated gap-weight fish image",
     );
     Assertion.equal(
@@ -445,17 +443,13 @@ class FishRarityCheck {
       this.anomalyVariantResolver,
       this.visualVariantResolver,
     );
-    const uniqueCatch = uniqueBiteSystem.evaluateBite(
-      1000,
-      environment,
-      gear,
-    );
+    const uniqueCatch = uniqueBiteSystem.evaluateBite(1000, environment, gear);
     Assertion.that(uniqueCatch.hasAnomaly, "generated anomaly flag is true");
     Assertion.that(uniqueCatch.isUnique, "generated anomalous fish is unique");
     Assertion.equal(uniqueCatch.anomaly, "inside", "unique anomaly policy");
     Assertion.equal(
       uniqueCatch.imagePath,
-      "assets/fish/crucian_stalker/crucian_stalker--6-uniq.webp",
+      "assets/fish/crucian_stalker/unique/crucian_stalker--6-uniq.webp",
       "unique image contract",
     );
 
@@ -562,14 +556,22 @@ class FishRarityCheck {
       isUnique: false,
     });
     Assertion.equal(levelFour.color[0], 170, "max-level-5 level 4 red channel");
-    Assertion.equal(levelFour.color[1], 100, "max-level-5 level 4 green channel");
+    Assertion.equal(
+      levelFour.color[1],
+      100,
+      "max-level-5 level 4 green channel",
+    );
     const levelFive = themeResolver.resolve({
       level: 5,
       maxLevel: 5,
       isUnique: false,
     });
     Assertion.equal(levelFive.color[0], 255, "ordinary maximum level is red");
-    Assertion.equal(levelFive.color[1], 70, "ordinary maximum level is not gold");
+    Assertion.equal(
+      levelFive.color[1],
+      70,
+      "ordinary maximum level is not gold",
+    );
     const ordinaryLowRarity = themeResolver.resolve({
       level: 1,
       maxLevel: 5,
@@ -591,8 +593,16 @@ class FishRarityCheck {
       !ordinaryLowRarity.isAnimated,
       "ordinary half-star fish is not animated",
     );
-    Assertion.equal(unique.color[0], 255, "low-rarity unique theme red channel");
-    Assertion.equal(unique.color[1], 205, "low-rarity unique theme gold channel");
+    Assertion.equal(
+      unique.color[0],
+      255,
+      "low-rarity unique theme red channel",
+    );
+    Assertion.equal(
+      unique.color[1],
+      205,
+      "low-rarity unique theme gold channel",
+    );
     Assertion.that(
       unique.isAnimated,
       "low-rarity unique descriptor is animated",
@@ -956,9 +966,9 @@ class FishRarityCheck {
       },
       visual: {
         imagePattern:
-          "assets/fish/crucian_stalker/crucian_stalker--{level}.webp",
+          "assets/fish/crucian_stalker/standart/crucian_stalker--{level}.webp",
         uniqueImagePattern:
-          "assets/fish/crucian_stalker/crucian_stalker--{level}-uniq.webp",
+          "assets/fish/crucian_stalker/unique/crucian_stalker--{level}-uniq.webp",
       },
       physics: {},
     };

@@ -40,26 +40,22 @@ function getGlobalReelConfig() {
 }
 
 class Equipment {
-  #level;
+  #equipmentPowerLevel;
   #basePower;
 
-  constructor(level, basePower) {
-    this.#level = level;
+  constructor(equipmentPowerLevel, basePower) {
+    this.#equipmentPowerLevel = equipmentPowerLevel;
     this.#basePower = basePower;
   }
 
   getPower() {
-    // --- СТАРИЙ ВАРІАНТ (Множення) ---
-    // return this.#level * this.#basePower;
-
-    // --- НОВИЙ ВАРІАНТ (Додавання) ---
-    return this.#level + this.#basePower;
+    return this.#equipmentPowerLevel + this.#basePower;
   }
 }
 
 class Rod extends Equipment {
   #compensation;
-  #type;
+  #variant;
   #maxDistance;
   #hasReel;
   #lengthMeters;
@@ -70,17 +66,17 @@ class Rod extends Equipment {
   #durabilityMaxLoadLossPerPercent;
 
   constructor(
-    level,
+    equipmentPowerLevel,
     power,
     compensation = 0,
-    type = "float_match",
+    variant = "float_match",
     maxDistance = Infinity,
     hasReel = true,
     options = {},
   ) {
-    super(level, power);
+    super(equipmentPowerLevel, power);
     this.#compensation = compensation;
-    this.#type = type;
+    this.#variant = variant;
     this.#maxDistance = maxDistance;
     this.#hasReel = hasReel;
     this.#lengthMeters = Rod.#numberOrDefault(options.lengthMeters, 2.0);
@@ -98,8 +94,8 @@ class Rod extends Equipment {
     return this.#compensation;
   }
 
-  getType() {
-    return this.#type;
+  getVariant() {
+    return this.#variant;
   }
 
   getMaxDistance() {
@@ -163,8 +159,8 @@ class Reel extends Equipment {
   #durability;
   #durabilityMaxLoadLossPerPercent;
 
-  constructor(level, power, options = {}) {
-    super(level, power); // Стара логіка відпрацьовує як і раніше!
+  constructor(equipmentPowerLevel, power, options = {}) {
+    super(equipmentPowerLevel, power); // Стара логіка відпрацьовує як і раніше!
     this.#holdConfig = null;
     this.#maxLoadKg = Reel.#numberOrDefault(options.maxLoadKg, 10);
     this.#lineCapacityMeters = Reel.#numberOrDefault(
@@ -285,17 +281,20 @@ class Reel extends Equipment {
 }
 
 class Hook {
-  #level;
+  #equipmentPowerLevel;
   #weight;
   #quality;
+  #qualityModifier;
   #maxLoadKg;
   #durability;
   #durabilityMaxLoadLossPerPercent;
 
-  constructor(level, weight, quality, options = {}) {
-    this.#level = level;
+  constructor(equipmentPowerLevel, weight, quality, options = {}) {
+    this.#equipmentPowerLevel = equipmentPowerLevel;
     this.#weight = weight;
     this.#quality = quality;
+    this.#qualityModifier =
+      options.qualityModifier || new HookQualityModifier();
     this.#maxLoadKg = Hook.#numberOrDefault(options.maxLoadKg, Infinity);
     this.#durability = Hook.#numberOrDefault(options.durability, 100);
     this.#durabilityMaxLoadLossPerPercent =
@@ -303,7 +302,8 @@ class Hook {
   }
 
   getPower() {
-    return (this.#level * this.#weight + this.#quality) * 0.01;
+    const equipmentPower = this.#equipmentPowerLevel * this.#weight * 0.01;
+    return equipmentPower + this.#qualityModifier.getPowerBonus(this.#quality);
   }
 
   getMaxLoadKg() {
@@ -327,9 +327,11 @@ class Hook {
 class Net {
   #config;
   #converter;
+  #qualityModifier;
 
-  constructor(config, physicsConfig = null) {
+  constructor(config, physicsConfig = null, qualityModifier = null) {
     this.#converter = this.#createConverter(physicsConfig);
+    this.#qualityModifier = qualityModifier || new NetQualityModifier();
     this.updateConfig(config);
   }
 
@@ -403,8 +405,10 @@ class Net {
       }
     }
 
-    const qualBonus = Math.round(((this.#config.quality || 1.0) - 1.0) * 10);
-    return Math.min(100, Math.max(0, baseChance + qualBonus));
+    const qualityBonus = this.#qualityModifier.getCatchChanceBonusPercent(
+      this.#config.quality,
+    );
+    return Math.min(100, Math.max(0, baseChance + qualityBonus));
   }
 
   #createConverter(physicsConfig) {
@@ -481,8 +485,17 @@ class WaterEntity {
   _activeBiteSequence = null;
   _rng;
   _debugEvents;
+  _environmentalCompensationModifier;
 
-  constructor(x, y, config, maxDepth, rng = null, debugEvents = null) {
+  constructor(
+    x,
+    y,
+    config,
+    maxDepth,
+    rng = null,
+    debugEvents = null,
+    environmentalCompensationModifier = null,
+  ) {
     this._position = new Vector2(x, y);
     this._velocity = new Vector2(0, 0);
     this._currentBiteMoveVelocity = new Vector2(0, 0);
@@ -490,6 +503,9 @@ class WaterEntity {
     this._config = config;
     this._rng = rng || { next: () => Math.random() };
     this._debugEvents = debugEvents || null;
+    this._environmentalCompensationModifier =
+      environmentalCompensationModifier ||
+      new EnvironmentalCompensationModifier();
     this._maxDepth = maxDepth || config.maxDepth || 8.0;
     this._currentHookDepth = 0.1;
     this._targetHookDepth = 0.1;
@@ -770,8 +786,10 @@ class WaterEntity {
 
     const activeCfg = this._weightedTackleConfig || this._config;
     const compRange = activeCfg.currentCompensation || [0.1, 0.99];
-    const qual = Math.max(1, Math.min(10, activeCfg.quality || 1));
-    const comp = this._lerp(compRange[0], compRange[1], (qual - 1) / 9);
+    const comp = this._environmentalCompensationModifier.getCoefficient(
+      activeCfg.quality,
+      compRange,
+    );
     const driftSpeed = environment.current.speedPxPerSec * (1 - comp);
 
     return {
@@ -806,11 +824,9 @@ class WaterEntity {
       if (environment.wind && !isActivelyPulling) {
         const dir = environment.wind.direction;
         const windCompRange = this._config.windCompensation || [0.1, 0.99];
-        const qual = Math.max(1, Math.min(10, this._config.quality || 1));
-        const windComp = this._lerp(
-          windCompRange[0],
-          windCompRange[1],
-          (qual - 1) / 9,
+        const windComp = this._environmentalCompensationModifier.getCoefficient(
+          this._config.quality,
+          windCompRange,
         );
 
         this._windFluctuationTimer -= dt;
@@ -1461,15 +1477,12 @@ class FeederEntity extends WaterEntity {
     this._currentHookDepth = 0.1;
     this._weightedTackleConfig = rigConfig;
 
-    const engine = {
-      ...(rigConfig?.engineStats || {}),
-      ...(rigConfig || {}),
-    };
+    const stats = rigConfig?.effectiveStats || rigConfig || {};
     const weightCfg =
-      engine.weights && engine.weight ? engine.weights[engine.weight] : engine;
-    const speedMult = weightCfg.speedMult || engine.speedMult || 1.5;
+      stats.weights && stats.weight ? stats.weights[stats.weight] : stats;
+    const speedMult = weightCfg.speedMult || stats.speedMult || 1.5;
     this._weightedTackleHeightScale =
-      weightCfg.heightScale || engine.heightScale || 1.0;
+      weightCfg.heightScale || stats.heightScale || 1.0;
     this._isSinking = true;
     this._sinkingTotalTime = (targetDepth / speedMult) * 1000;
     this._sinkingTimer = this._sinkingTotalTime;
@@ -1591,14 +1604,11 @@ class FloatEntity extends WaterEntity {
     this._isOverDepth = !!isOverDepth;
     this._weightedTackleConfig = ballastConfig;
 
-    const engine = {
-      ...(ballastConfig?.engineStats || {}),
-      ...(ballastConfig || {}),
-    };
+    const stats = ballastConfig?.effectiveStats || ballastConfig || {};
     const weightCfg =
-      engine.ballastProfiles && engine.ballastWeight
-        ? engine.ballastProfiles[engine.ballastWeight]
-        : engine;
+      stats.ballastProfiles && stats.ballastWeight
+        ? stats.ballastProfiles[stats.ballastWeight]
+        : stats;
 
     const speedMult = weightCfg.speedMult || 1.0;
     this._weightedTackleHeightScale = weightCfg.heightScale || 1.0;
@@ -1610,7 +1620,7 @@ class FloatEntity extends WaterEntity {
     this._isSinking = true;
     this._sinkingDelayTimer = this._config.sinkingDelayMs || 500;
 
-    const maxDepth = engine.sinkingReferenceDepthMeters || 8.0;
+    const maxDepth = stats.sinkingReferenceDepthMeters || 8.0;
     const depthRatio = Math.max(
       0.1,
       Math.min(1.0, this._targetHookDepth / maxDepth),

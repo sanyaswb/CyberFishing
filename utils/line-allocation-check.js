@@ -18,6 +18,11 @@ class LineRuntimeLoader {
     );
     this.#loadClass(
       runtime,
+      "src/core/items/effective_item_stats_resolver.js",
+      "EffectiveItemStatsResolver",
+    );
+    this.#loadClass(
+      runtime,
       "src/core/casting_distance.js",
       "CastDistanceCalculator",
     );
@@ -41,11 +46,12 @@ class LineRuntimeLoader {
 class LineAllocationScenarioFactory {
   pole({ rodLengthMeters, sourceLineMeters }) {
     return {
-      lineItem: { lengthMeters: sourceLineMeters },
+      lineItem: { effectiveStats: { lengthMeters: sourceLineMeters } },
       equipment: {
         rod: {
-          type: "pole",
-          engineStats: { lengthMeters: rodLengthMeters, hasReel: false },
+          itemType: "rod",
+          variant: "pole",
+          effectiveStats: { lengthMeters: rodLengthMeters, hasReel: false },
         },
         reel: null,
       },
@@ -54,13 +60,14 @@ class LineAllocationScenarioFactory {
 
   reel({ rodLengthMeters, reelCapacityMeters, sourceLineMeters }) {
     return {
-      lineItem: { lengthMeters: sourceLineMeters },
+      lineItem: { effectiveStats: { lengthMeters: sourceLineMeters } },
       equipment: {
         rod: {
-          type: "spinning",
-          engineStats: { lengthMeters: rodLengthMeters, hasReel: true },
+          itemType: "rod",
+          variant: "spinning",
+          effectiveStats: { lengthMeters: rodLengthMeters, hasReel: true },
         },
-        reel: { engineStats: { lineCapacityMeters: reelCapacityMeters } },
+        reel: { itemType: "reel", effectiveStats: { lineCapacityMeters: reelCapacityMeters } },
       },
     };
   }
@@ -109,7 +116,7 @@ class LineAllocationCheck {
 
     const distance = this.#distanceCalculator.describe({
       ...scenario.equipment,
-      line: { lengthMeters: result.equipLengthMeters },
+      line: { effectiveStats: { lengthMeters: result.equipLengthMeters } },
     }, 1);
     Assertion.equal(distance.requiredLineMeters, 10, "pole rod base line requirement is 10m");
     Assertion.equal(distance.reserveMeters, 0, "pole rod has no line beyond its 10m reach");
@@ -132,7 +139,7 @@ class LineAllocationCheck {
 
     const distance = this.#distanceCalculator.describe({
       ...scenario.equipment,
-      line: { lengthMeters: result.equipLengthMeters },
+      line: { effectiveStats: { lengthMeters: result.equipLengthMeters } },
     }, 1);
     Assertion.equal(distance.requiredLineMeters, 6, "3m rod and reserve use 6m");
     Assertion.equal(distance.reserveMeters, 4, "4m remains available on the reel");
@@ -158,8 +165,7 @@ class LineAllocationCheck {
       instanceId: "source-line",
       itemId: "line_test",
       quantity: 1,
-      lengthMeters: 25,
-      quality: 8,
+      statOverrides: { lengthMeters: 25, quality: 8 },
       rarity: { tier: 3, isUnique: false },
       rolledStats: { coating: 0.4 },
     };
@@ -175,9 +181,8 @@ class LineAllocationCheck {
       db: {
         getItemData: () => ({
           id: "line_test",
-          type: "fishing_line",
-          engineStats: {
-            type: "fishing_line",
+          itemType: "fishing_line",
+          gameplayStats: {
             lengthMeters: 25,
             diameterMm: 0.2,
             maxLoadKg: 1,
@@ -193,22 +198,22 @@ class LineAllocationCheck {
       slotPath: "line",
       instanceId: source.instanceId,
       itemData: {
-        type: "fishing_line",
-        lengthMeters: 25,
-        engineStats: { type: "fishing_line", lengthMeters: 25 },
+        itemType: "fishing_line",
+        effectiveStats: { lengthMeters: 25 },
       },
       equipment: {
         rod: {
-          type: "pole",
-          engineStats: { lengthMeters: 5, hasReel: false },
+          itemType: "rod",
+          variant: "pole",
+          effectiveStats: { lengthMeters: 5, hasReel: false },
         },
         reel: null,
       },
     });
     const segment = items.get(segmentId);
-    Assertion.equal(segment.lengthMeters, 10, "split segment receives allocated length");
-    Assertion.equal(source.lengthMeters, 15, "source line keeps remaining length");
-    Assertion.equal(segment.quality, 8, "split segment inherits runtime quality");
+    Assertion.equal(segment.statOverrides.lengthMeters, 10, "split segment receives allocated length");
+    Assertion.equal(source.statOverrides.lengthMeters, 15, "source line keeps remaining length");
+    Assertion.equal(segment.statOverrides.quality, 8, "split segment inherits runtime quality");
     Assertion.equal(
       JSON.stringify(segment.rarity),
       JSON.stringify(source.rarity),

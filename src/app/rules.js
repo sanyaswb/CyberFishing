@@ -10,27 +10,27 @@ class EquipmentRules {
   }
 
   isSpinning(equipment) {
-    return equipment?.rod?.type === "spinning";
+    return equipment?.rod?.variant === "spinning";
   }
 
   isFeeder(equipment) {
-    return equipment?.rod?.type === "feeder";
+    return equipment?.rod?.variant === "feeder";
   }
 
   isFloatRod(equipment) {
-    const type = equipment?.rod?.type;
-    return type === "float" || type === "pole";
+    const variant = equipment?.rod?.variant;
+    return variant === "float" || variant === "pole";
   }
 
   getRodKind(equipment) {
     const rod = equipment?.rod;
     if (!rod) return "none";
-    if (rod.type === "spinning") return "spinning";
-    if (rod.type === "feeder") return "feeder";
-    if (rod.type === "float" || rod.type === "pole") {
+    if (rod.variant === "spinning") return "spinning";
+    if (rod.variant === "feeder") return "feeder";
+    if (rod.variant === "float" || rod.variant === "pole") {
       return this.requiresReel(equipment) ? "bolognese" : "pole";
     }
-    return rod.type || "unknown";
+    return rod.variant || "unknown";
   }
 
   getRodDisplayName(equipment) {
@@ -47,11 +47,11 @@ class EquipmentRules {
   requiresReel(equipment) {
     const rod = equipment?.rod;
     if (!rod) return false;
-    return rod.hasReel ?? rod.engineStats?.hasReel ?? rod.type !== "pole";
+    return rod.effectiveStats?.hasReel ?? rod.variant !== "pole";
   }
 
   hasEquippedLine(equipment) {
-    return (Number(equipment?.line?.lengthMeters) || 0) > 0;
+    return (Number(equipment?.line?.effectiveStats?.lengthMeters) || 0) > 0;
   }
 
   canSelectDepth(equipment) {
@@ -59,7 +59,7 @@ class EquipmentRules {
     if (this.isFeeder(equipment)) return false;
     const firstBait = equipment.baits?.[0];
     return (
-      (this.isSpinning(equipment) && firstBait?.type === "jig") ||
+      (this.isSpinning(equipment) && firstBait?.variant === "jig") ||
       (this.isFloatRod(equipment) && !!equipment.float)
     );
   }
@@ -138,8 +138,8 @@ class EquipmentRules {
 
   getMaxHookDepth(equipment, config) {
     const firstBait = equipment?.baits?.[0];
-    if (this.isSpinning(equipment) && firstBait?.type === "jig") {
-      return firstBait.engineStats?.maxDepth ?? firstBait.maxDepth ?? 8.0;
+    if (this.isSpinning(equipment) && firstBait?.variant === "jig") {
+      return firstBait.effectiveStats?.maxDepth ?? 8.0;
     }
     if (this.isFloatRod(equipment) && equipment?.float) {
       const budget = this.getFloatLineBudget(equipment);
@@ -155,30 +155,25 @@ class EquipmentRules {
 
 class BaitRules {
   isActiveLure(item) {
-    const type = item?.type;
-    return (
-      type === "lure" ||
-      type === "spinner" ||
-      type === "wobbler" ||
-      type === "jig"
-    );
+    return item?.itemType === "lure";
   }
 
   hasActiveLureType(types) {
     for (let i = 0; i < types.length; i++) {
-      if (this.isActiveLure({ type: types[i] })) return true;
+      if (["lure", "spinner", "wobbler", "jig"].includes(types[i])) {
+        return true;
+      }
     }
     return false;
   }
 
   getPhysicsType(item, fallback = "float") {
     if (!item) return fallback;
-    const stats = item.engineStats || item;
-    return stats.type || item.type || fallback;
+    return item.variant || item.itemType || fallback;
   }
 
   getSinkRate(item, fallback = 1) {
-    return item?.sinkSpeed || item?.engineStats?.sinkSpeed || fallback;
+    return item?.effectiveStats?.sinkSpeed || fallback;
   }
 }
 
@@ -217,7 +212,11 @@ class BiteRules {
   }
 
   getHookSize(equipment) {
-    return equipment?.hooks?.[0]?.level || equipment?.baits?.[0]?.level || 1;
+    return (
+      equipment?.hooks?.[0]?.effectiveStats?.equipmentPowerLevel ||
+      equipment?.baits?.[0]?.effectiveStats?.equipmentPowerLevel ||
+      1
+    );
   }
 
   selectBiteSequence(fishTemplate, baitTypes) {
@@ -242,13 +241,13 @@ class ChumRules {
   }
 
   getDeliverySections(deliveryItem) {
-    return deliveryItem?.sections ?? deliveryItem?.engineStats?.sections ?? 1;
+    return deliveryItem?.effectiveStats?.sections ?? 1;
   }
 }
 
 class BoatRules {
   isManual(boatItem) {
-    return boatItem?.manualControl ?? true;
+    return boatItem?.effectiveStats?.manualControl ?? true;
   }
 
   isBusy(boat) {
@@ -274,7 +273,7 @@ class BoatRules {
 
   canAutoReturn(boatItem) {
     return (
-      boatItem?.hasAutoReturn ?? boatItem?.engineStats?.hasAutoReturn ?? false
+      boatItem?.effectiveStats?.hasAutoReturn ?? false
     );
   }
 

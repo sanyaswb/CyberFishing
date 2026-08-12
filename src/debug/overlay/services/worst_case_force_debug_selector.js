@@ -66,7 +66,8 @@ class WorstCaseForceDebugSelector {
     const loads = [];
     this.#pushFinitePositive(loads, this.#effectiveLoad(equipment.rod, 0));
 
-    const hasReel = equipment.rod?.hasReel !== false && !!equipment.reel;
+    const hasReel =
+      equipment.rod?.effectiveStats?.hasReel !== false && !!equipment.reel;
     if (hasReel) {
       this.#pushFinitePositive(loads, this.#effectiveLoad(equipment.reel, 0));
       this.#pushFinitePositive(loads, this.#effectiveLoad(equipment.reel?.line, 0));
@@ -81,9 +82,11 @@ class WorstCaseForceDebugSelector {
   }
 
   #effectiveLoad(item, fallback = 0) {
-    const maxLoad = Number(item?.maxLoadKg ?? fallback);
-    const durability = Number(item?.durability ?? 100);
-    const lossPerPercent = Number(item?.durabilityMaxLoadLossPerPercent ?? 0.001);
+    const maxLoad = Number(item?.effectiveStats?.maxLoadKg ?? fallback);
+    const durability = Number(item?.effectiveStats?.durability ?? 100);
+    const lossPerPercent = Number(
+      item?.effectiveStats?.durabilityMaxLoadLossPerPercent ?? 0.001,
+    );
 
     if (!Number.isFinite(maxLoad) || maxLoad <= 0) return fallback;
 

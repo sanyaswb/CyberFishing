@@ -208,19 +208,6 @@ class InventoryV2ItemCardRenderer {
   }
 
   #renderMetadata(card, item) {
-    const progressionRendersLevel =
-      typeof this.#progressionDomAdapter?.apply === "function" &&
-      item.progression?.available === true &&
-      item.progression?.level?.available === true;
-    if (!progressionRendersLevel && Number.isFinite(Number(item.level))) {
-      card.appendChild(
-        this.#dom.element(
-          "span",
-          "inventory-v2-item-card__level",
-          Math.max(0, Math.floor(Number(item.level))),
-        ),
-      );
-    }
     if (Number(item.quantity) > 1) {
       card.appendChild(
         this.#dom.element(

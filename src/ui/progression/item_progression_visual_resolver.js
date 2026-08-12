@@ -26,8 +26,10 @@ class ItemProgressionVisualResolver {
 
   resolve(progression) {
     if (!progression?.available) return this.#unavailable();
-    const power = this.#resolvePosition(progression.power?.normalized);
-    const level = this.#resolveLevel(progression.level);
+    const rating = this.#resolvePosition(progression.rating?.normalized);
+    const progressionLevel = this.#resolveProgressionLevel(
+      progression.progressionLevel,
+    );
     const quality = this.#resolvePosition(
       progression.quality?.available
         ? progression.quality.visualPosition
@@ -40,10 +42,13 @@ class ItemProgressionVisualResolver {
       : this.#unavailableVisual();
     return Object.freeze({
       available:
-        power.available || level.available || quality.available || capacity.available,
+        rating.available ||
+        progressionLevel.available ||
+        quality.available ||
+        capacity.available,
       gradient: this.#ordinaryGradient(),
-      power,
-      level,
+      rating,
+      progressionLevel,
       quality,
       capacity,
     });
@@ -68,9 +73,9 @@ class ItemProgressionVisualResolver {
     });
   }
 
-  #resolveLevel(level) {
+  #resolveProgressionLevel(progressionLevel) {
     return Object.freeze({
-      available: Boolean(level?.available),
+      available: Boolean(progressionLevel?.available),
       color: null,
       cssColor: "",
     });
@@ -96,8 +101,8 @@ class ItemProgressionVisualResolver {
     return Object.freeze({
       available: false,
       gradient: "",
-      power: unavailable,
-      level: unavailable,
+      rating: unavailable,
+      progressionLevel: unavailable,
       quality: unavailable,
       capacity: unavailable,
     });

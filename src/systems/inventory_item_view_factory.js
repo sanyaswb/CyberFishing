@@ -1,32 +1,10 @@
 class InventoryItemViewFactory {
-  static #identityKeys = new Set([
-    "instanceId",
-    "itemId",
-    "quantity",
-    "buildId",
-    "buildName",
-    "rarity",
-  ]);
-  static #derivedKeys = new Set([
-    "progression",
-    "powerPercent",
-    "powerLevel",
-    "normalizedPower",
-    "powerColor",
-    "powerGradient",
-    "qualityMax",
-    "capacityPercent",
-    "capacityMeters",
-    "capacityMaximumMeters",
-    "condition",
-    "conditionPercent",
-  ]);
-
   #itemDatabase;
   #progressionResolver;
   #conditionResolver;
   #displayStatsResolver;
   #runtimeContextProvider;
+  #effectiveStatsResolver;
 
   constructor({
     itemDatabase,
@@ -34,6 +12,7 @@ class InventoryItemViewFactory {
     conditionResolver = null,
     displayStatsResolver = null,
     runtimeContextProvider = () => ({}),
+    effectiveStatsResolver = new EffectiveItemStatsResolver(),
   } = {}) {
     if (!itemDatabase || typeof itemDatabase.getItemData !== "function") {
       throw new TypeError("InventoryItemViewFactory requires itemDatabase");
@@ -53,20 +32,22 @@ class InventoryItemViewFactory {
     this.#conditionResolver = conditionResolver;
     this.#displayStatsResolver = displayStatsResolver;
     this.#runtimeContextProvider = runtimeContextProvider;
+    this.#effectiveStatsResolver = effectiveStatsResolver;
   }
 
   create(instance) {
     if (!instance?.itemId) return null;
     const baseItem = this.#itemDatabase.getItemData(instance.itemId);
     if (!baseItem) return null;
-    const overrides = this.#runtimeOverrides(instance);
+    const effectiveStats = this.#effectiveStatsResolver.resolve({
+      definition: baseItem,
+      instanceState: instance,
+    });
+    const { gameplayStats: _authoredStats, ...definitionMetadata } = baseItem;
     const hydrated = {
-      ...baseItem,
-      ...overrides,
-      engineStats: {
-        ...(baseItem.engineStats || {}),
-        ...overrides,
-      },
+      ...definitionMetadata,
+      ...instance,
+      effectiveStats,
       displayStats: { ...(baseItem.displayStats || {}) },
       instanceId: instance.instanceId,
       quantity: instance.quantity || 1,
@@ -86,19 +67,4 @@ class InventoryItemViewFactory {
     return hydrated;
   }
 
-  #runtimeOverrides(instance) {
-    const overrides = {};
-    for (const [key, value] of Object.entries(instance || {})) {
-      if (
-        InventoryItemViewFactory.#identityKeys.has(key) ||
-        InventoryItemViewFactory.#derivedKeys.has(key) ||
-        value === undefined ||
-        typeof value === "function"
-      ) {
-        continue;
-      }
-      overrides[key] = value;
-    }
-    return overrides;
-  }
 }

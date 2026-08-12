@@ -152,7 +152,10 @@ class ChumManager {
   getBoatEnergy() {
     if (this.#boatEnergy === null) {
       const config = this.#chumConfig.deliveryMethods.boat;
-      const stats = config.statsByLevel[config.level] || config.statsByLevel[1];
+      const statsConfig = config.effectiveStats || config;
+      const stats =
+        statsConfig.statsByLevel[statsConfig.upgradeLevel] ||
+        statsConfig.statsByLevel[1];
       this.#boatEnergy = stats.maxEnergy;
     }
     return this.#boatEnergy;
@@ -447,12 +450,15 @@ class BaitBoat {
     this.startPos = new Vector2(startX, startY);
     this.pos = new Vector2(startX, startY);
     this.target = null;
-    this.config = config;
+    const statsConfig = config.effectiveStats || config;
+    this.config = statsConfig;
     // The equipped delivery slot may change while this boat is away. Keep the
     // identity of the assembly that actually started the trip on the runtime
     // boat so the return event can refill that exact root.
     this.#rootInstanceId = config?.instanceId || null;
-    this.stats = config.statsByLevel[config.level] || config.statsByLevel[1];
+    this.stats =
+      statsConfig.statsByLevel[statsConfig.upgradeLevel] ||
+      statsConfig.statsByLevel[1];
     this.zoneId = zoneId;
     this.velocity = new Vector2(0, 0);
     this.angle = -Math.PI / 2;
@@ -461,7 +467,7 @@ class BaitBoat {
     this.isBaitDropped = false;
     this.isFinished = false;
     this.hasLeftShore = false;
-    this.remainingSections = config.sections || 1;
+    this.remainingSections = statsConfig.sections || 1;
     this.waypoints = [];
 
     this.avoidanceState = "none";

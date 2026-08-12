@@ -55,9 +55,9 @@ class AssemblyProfileRegistry {
     const requestedProfileId =
       explicitProfileId ||
       item?.assemblyProfileId ||
-      item?.engineStats?.assemblyProfileId ||
+      item?.effectiveStats?.assemblyProfileId ||
       definition?.assemblyProfileId ||
-      definition?.engineStats?.assemblyProfileId ||
+      definition?.gameplayStats?.assemblyProfileId ||
       null;
     if (requestedProfileId) {
       this.require(requestedProfileId);
@@ -127,12 +127,12 @@ class AssemblyProfileRegistry {
   #itemTypes(item) {
     const definition = this.#resolveDefinition(item);
     return [
-      item?.type,
+      item?.itemType,
+      item?.variant,
       item?.category,
       item?.kind,
-      item?.engineStats?.type,
-      definition?.type,
-      definition?.engineStats?.type,
+      definition?.itemType,
+      definition?.variant,
     ].filter((value, index, values) =>
       typeof value === "string" && value.length > 0 && values.indexOf(value) === index,
     );
@@ -143,13 +143,13 @@ class AssemblyProfileRegistry {
     if (Object.prototype.hasOwnProperty.call(item || {}, propertyName)) {
       return item[propertyName];
     }
-    if (Object.prototype.hasOwnProperty.call(item?.engineStats || {}, propertyName)) {
-      return item.engineStats[propertyName];
+    if (Object.prototype.hasOwnProperty.call(item?.effectiveStats || {}, propertyName)) {
+      return item.effectiveStats[propertyName];
     }
     if (Object.prototype.hasOwnProperty.call(definition || {}, propertyName)) {
       return definition[propertyName];
     }
-    return definition?.engineStats?.[propertyName];
+    return definition?.gameplayStats?.[propertyName];
   }
 
   #resolveDefinition(item) {

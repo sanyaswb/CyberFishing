@@ -3,8 +3,14 @@ class ItemCatalogBaselineRegistry {
   #strategyRegistry;
   #cache = new Map();
   #logger;
+  #effectiveStatsResolver;
 
-  constructor({ itemDb = {}, strategyRegistry, logger = console } = {}) {
+  constructor({
+    itemDb = {},
+    strategyRegistry,
+    logger = console,
+    effectiveStatsResolver = new EffectiveItemStatsResolver(),
+  } = {}) {
     if (!strategyRegistry || typeof strategyRegistry.get !== "function") {
       throw new TypeError(
         "ItemCatalogBaselineRegistry requires strategyRegistry",
@@ -13,10 +19,11 @@ class ItemCatalogBaselineRegistry {
     this.#itemDb = itemDb || {};
     this.#strategyRegistry = strategyRegistry;
     this.#logger = logger;
+    this.#effectiveStatsResolver = effectiveStatsResolver;
   }
 
-  resolve({ groupId, powerConfig, strategy, metricKey = "power" } = {}) {
-    const baseline = powerConfig?.baseline;
+  resolve({ groupId, ratingConfig, strategy, metricKey = "rating" } = {}) {
+    const baseline = ratingConfig?.baseline;
     if (!baseline || typeof baseline !== "object") {
       return this.#unavailable("baseline_missing");
     }
@@ -35,18 +42,26 @@ class ItemCatalogBaselineRegistry {
       groupId,
       strategy?.id,
       metricKey,
-      powerConfig?.statPath,
-      powerConfig?.formulaId,
+      ratingConfig?.statPath,
+      ratingConfig?.formulaId,
     ].join(":");
     const cached = this.#cache.get(key);
     if (cached) return cached;
 
     const values = [];
     for (const item of this.#catalogItems(groupId)) {
+      const metricItem = item.effectiveStats
+        ? item
+        : {
+            ...item,
+            effectiveStats: this.#effectiveStatsResolver.resolve({
+              definition: item,
+            }),
+          };
       const metric = strategy?.evaluate({
-        item,
+        item: metricItem,
         groupId,
-        powerConfig,
+        ratingConfig,
         strategyRegistry: this.#strategyRegistry,
         baselineRegistry: this,
       });

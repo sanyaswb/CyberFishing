@@ -6,7 +6,7 @@ class FloatTackleLineBudgetPolicy {
   }
 
   appliesTo(equipment) {
-    const rodType = equipment?.rod?.type;
+    const rodType = equipment?.rod?.variant;
     const isFloatRod = rodType === "float" || rodType === "pole";
     return isFloatRod && !!equipment?.float;
   }
@@ -87,7 +87,7 @@ class FloatTackleLineBudgetPolicy {
     return Math.max(
       0,
       this.#numberOrDefault(
-        source?.[propertyName] ?? source?.engineStats?.[propertyName],
+        source?.effectiveStats?.[propertyName],
         0,
       ),
     );

@@ -3,8 +3,8 @@ class NumericStatMetricStrategy extends ItemMetricStrategy {
     super("numeric_stat");
   }
 
-  evaluate({ item, powerConfig } = {}) {
-    const statPath = powerConfig?.statPath;
+  evaluate({ item, ratingConfig } = {}) {
+    const statPath = ratingConfig?.statPath;
     const rawValue = this.finiteNumber(this.readPath(item, statPath));
     if (rawValue === null) {
       return this.unavailable("metric_missing", {

@@ -52,6 +52,7 @@ class LineSystem {
     this.#hasReel = !!reel?.hasReel?.();
 
     const effectiveLineStats = lineStats || null;
+    const resolvedLineStats = effectiveLineStats?.effectiveStats || {};
     const lineConfig = this.#config.line || {};
     const reachModel = this.#distanceCalculator.getLineReachModel({
       rod,
@@ -74,15 +75,15 @@ class LineSystem {
     this.#distanceMeters = 0;
 
     this.#lineMaxLoadKg = this.#numberOrDefault(
-      effectiveLineStats?.maxLoadKg,
+      resolvedLineStats.maxLoadKg,
       this.#numberOrDefault(lineConfig.defaultMaxLoadKg, 8),
     );
     this.#lineDurability = this.#numberOrDefault(
-      effectiveLineStats?.durability,
+      resolvedLineStats.durability,
       100,
     );
     this.#durabilityLossPerPercent = this.#numberOrDefault(
-      effectiveLineStats?.durabilityMaxLoadLossPerPercent,
+      resolvedLineStats.durabilityMaxLoadLossPerPercent,
       lineConfig.durabilityMaxLoadLossPerPercent ?? 0.001,
     );
   }

@@ -1,11 +1,14 @@
 class DisplayStatsResolver {
   static resolve(item) {
     const schema = item?.displayStats || {};
-    const engineStats = item?.engineStats || {};
+    const effectiveStats =
+      item?.effectiveStats ||
+      item?.gameplayStats ||
+      {};
     const resolved = {};
 
     for (const [key, descriptor] of Object.entries(schema)) {
-      const value = this.#resolveValue(key, descriptor, item, engineStats);
+      const value = this.#resolveValue(key, descriptor, item, effectiveStats);
       const stat = this.#buildStat(key, descriptor, value);
       if (!stat) continue;
       resolved[stat.label] = stat.value;
@@ -14,31 +17,31 @@ class DisplayStatsResolver {
     return resolved;
   }
 
-  static #resolveValue(key, descriptor, item, engineStats) {
+  static #resolveValue(key, descriptor, item, effectiveStats) {
     if (descriptor && typeof descriptor === "object") {
       if (descriptor.byLevel) {
-        const table = this.#readPath(descriptor.byLevel, item, engineStats);
+        const table = this.#readPath(descriptor.byLevel, item, effectiveStats);
         const level = this.#readPath(
-          descriptor.levelKey || "level",
+          descriptor.levelKey,
           item,
-          engineStats,
+          effectiveStats,
         );
         return table?.[level]?.[descriptor.stat];
       }
 
       if (descriptor.range) {
-        const from = this.#readPath(descriptor.range[0], item, engineStats);
-        const to = this.#readPath(descriptor.range[1], item, engineStats);
+        const from = this.#readPath(descriptor.range[0], item, effectiveStats);
+        const to = this.#readPath(descriptor.range[1], item, effectiveStats);
         if (from === undefined || to === undefined) return undefined;
         return `${this.#formatScalar(from)}-${this.#formatScalar(to)}`;
       }
 
       const valueKey = descriptor.key || key;
-      return this.#readPath(valueKey, item, engineStats);
+      return this.#readPath(valueKey, item, effectiveStats);
     }
 
-    if (Object.prototype.hasOwnProperty.call(engineStats, key)) {
-      return engineStats[key];
+    if (Object.prototype.hasOwnProperty.call(effectiveStats, key)) {
+      return effectiveStats[key];
     }
 
     if (Object.prototype.hasOwnProperty.call(item || {}, key)) {
@@ -97,17 +100,17 @@ class DisplayStatsResolver {
     };
   }
 
-  static #readPath(path, item, engineStats) {
+  static #readPath(path, item, effectiveStats) {
     if (!path) return undefined;
-    if (Object.prototype.hasOwnProperty.call(engineStats, path)) {
-      return engineStats[path];
+    if (Object.prototype.hasOwnProperty.call(effectiveStats, path)) {
+      return effectiveStats[path];
     }
     if (Object.prototype.hasOwnProperty.call(item || {}, path)) {
       return item[path];
     }
 
     const parts = String(path).split(".");
-    let current = { ...item, engineStats };
+    let current = { ...item, effectiveStats };
     for (let i = 0; i < parts.length; i++) {
       if (!current || typeof current !== "object") return undefined;
       current = current[parts[i]];
@@ -168,19 +171,17 @@ class ItemDatabase {
     const item = this.#db[category][itemId];
     if (!item) return null;
 
-    const engineStats = item.engineStats || {};
-
     return {
       id: item.id,
       name: item.name,
       icon: item.icon,
-      type: engineStats.type || item.type,
+      itemType: item.itemType,
+      variant: item.variant || null,
       rarityProfile: item.rarityProfile ?? null,
       progressionProfile: item.progressionProfile ?? null,
       displayStats: DisplayStatsResolver.resolve(item),
       displayStatsSchema: item.displayStats || {},
-      engineStats,
-      ...engineStats,
+      gameplayStats: { ...(item.gameplayStats || {}) },
     };
   }
 }
@@ -310,8 +311,8 @@ class ReelRuntimeDisplayStatsResolver {
     if (!this.#isReel(item)) return;
 
     const speed = this.#retrieveSpeedCalculator.calculate({
-      baseSpeedMetersPerSec: item.retrieveSpeedMetersPerSec,
-      bearingCount: item.bearingCount,
+      baseSpeedMetersPerSec: item.effectiveStats?.retrieveSpeedMetersPerSec,
+      bearingCount: item.effectiveStats?.bearingCount,
       bearingBonusMetersPerSec:
         reelConfig.bearingRetrieveSpeedBonusMetersPerSec,
     });
@@ -319,7 +320,7 @@ class ReelRuntimeDisplayStatsResolver {
   }
 
   #isReel(item) {
-    return item?.type === "spinning_reel" || item?.requiresTag === "reel";
+    return item?.itemType === "reel";
   }
 }
 
@@ -331,21 +332,21 @@ class LineRuntimeDisplayStatsResolver {
   }
 
   apply(item) {
-    if (item?.type === "fishing_line") {
+    if (item?.itemType === "fishing_line") {
       this.#writeIfDefined(item, "lengthMeters", "meters");
       this.#writeIfDefined(item, "diameterMm");
       this.#writeIfDefined(item, "maxLoadKg");
       return;
     }
 
-    if (item?.type === "leader_line") {
+    if (item?.itemType === "leader_line") {
       this.#writeIfDefined(item, "diameterMm");
       this.#writeIfDefined(item, "maxLoadKg");
     }
   }
 
   #writeIfDefined(item, key, format = "coefficient") {
-    const value = item?.[key] ?? item?.engineStats?.[key];
+    const value = item?.effectiveStats?.[key];
     if (value === undefined || value === null) return;
     this.#statWriter.write(item, key, value, { format });
   }
@@ -456,7 +457,7 @@ class EquipmentStateMigrationPolicy {
     for (const category of Object.values(itemDB || {})) {
       if (!category || typeof category !== "object") continue;
       const item = category[instance.itemId];
-      if (item?.type) return item.type;
+      if (item?.itemType) return item.itemType;
     }
     return null;
   }
@@ -758,9 +759,13 @@ class LineCompatibilityRules {
 
 class EquipmentValidator {
   static VALID_BASE_TYPES = new Set([
-    "spinning",
+    "rod",
+    "reel",
     "float",
-    "feeder",
+    "hook",
+    "feeder_rig",
+    "lure",
+    "bait",
     "net",
     "chum_mix",
     "boat",
@@ -768,16 +773,16 @@ class EquipmentValidator {
 
   static validate(itemData, equippedHydrated) {
     if (!itemData) return { isValid: false, reason: "Помилка даних предмета" };
-    if (this.VALID_BASE_TYPES.has(itemData.type)) return { isValid: true };
-    if (itemData.type === "fishing_line") {
+    if (this.VALID_BASE_TYPES.has(itemData.itemType)) return { isValid: true };
+    if (itemData.itemType === "fishing_line") {
       return this.validateFishingLine(itemData, equippedHydrated);
     }
 
-    if (itemData.type === "leader_line") {
+    if (itemData.itemType === "leader_line") {
       return this.validateLeader(itemData, equippedHydrated);
     }
 
-    const reqTag = itemData.requiresTag || itemData.engineStats?.requiresTag;
+    const reqTag = itemData.effectiveStats?.requiresTag;
     if (!reqTag) return { isValid: true };
 
     if (!equippedHydrated.rod) {
@@ -833,7 +838,7 @@ class EquipmentValidator {
     }
 
     const lineLength = this.#numberOrDefault(
-      itemData.lengthMeters ?? itemData.engineStats?.lengthMeters,
+      itemData.effectiveStats?.lengthMeters,
       0,
     );
     const minLength = this.getMinimumLineLengthMeters(rod);
@@ -845,8 +850,7 @@ class EquipmentValidator {
     }
 
     const reelCapacity = this.#numberOrDefault(
-      equippedHydrated?.reel?.lineCapacityMeters ??
-        equippedHydrated?.reel?.engineStats?.lineCapacityMeters,
+      equippedHydrated?.reel?.effectiveStats?.lineCapacityMeters,
       Infinity,
     );
     if (rodNeedsReel && Number.isFinite(reelCapacity) && lineLength > reelCapacity) {
@@ -861,7 +865,7 @@ class EquipmentValidator {
 
   static getMinimumLineLengthMeters(rod) {
     const rodLength = this.#numberOrDefault(
-      rod?.lengthMeters ?? rod?.engineStats?.lengthMeters,
+      rod?.effectiveStats?.lengthMeters,
       0,
     );
     return Math.max(0, rodLength);
@@ -879,37 +883,37 @@ class EquipmentValidator {
   }
 
   static getCompatibilityInfo(itemData, equippedHydrated) {
-    if (itemData?.type === "fishing_line") {
+    if (itemData?.itemType === "fishing_line") {
       const validation = this.validateFishingLine(itemData, equippedHydrated);
       return {
         hasCompatibility: true,
         isCompatible: validation.isValid,
         requiredTag: "line",
         reason: validation.reason || null,
-        rodType: equippedHydrated?.rod?.type || null,
+        rodType: equippedHydrated?.rod?.variant || null,
         rodHasReel: EquipmentValidator.#rodRequiresReel(equippedHydrated?.rod),
       };
     }
 
-    if (itemData?.type === "leader_line") {
+    if (itemData?.itemType === "leader_line") {
       const validation = this.validateLeader(itemData, equippedHydrated);
       return {
         hasCompatibility: true,
         isCompatible: validation.isValid,
         requiredTag: "line",
         reason: validation.reason || null,
-        rodType: equippedHydrated?.rod?.type || null,
+        rodType: equippedHydrated?.rod?.variant || null,
         rodHasReel: EquipmentValidator.#rodRequiresReel(equippedHydrated?.rod),
       };
     }
 
-    const reqTag = itemData?.requiresTag || itemData?.engineStats?.requiresTag;
+    const reqTag = itemData?.effectiveStats?.requiresTag;
     if (!reqTag) {
       return {
         hasCompatibility: false,
         isCompatible: true,
         requiredTag: null,
-        rodType: equippedHydrated?.rod?.type || null,
+        rodType: equippedHydrated?.rod?.variant || null,
         rodHasReel: EquipmentValidator.#rodRequiresReel(equippedHydrated?.rod),
       };
     }
@@ -919,14 +923,14 @@ class EquipmentValidator {
       hasCompatibility: true,
       isCompatible: availableCaps.has(reqTag),
       requiredTag: reqTag,
-      rodType: equippedHydrated?.rod?.type || null,
+      rodType: equippedHydrated?.rod?.variant || null,
       rodHasReel: EquipmentValidator.#rodRequiresReel(equippedHydrated?.rod),
     };
   }
 
   static #rodRequiresReel(rod) {
     if (!rod) return null;
-    return rod.hasReel ?? rod.engineStats?.hasReel ?? rod.type !== "pole";
+    return rod.effectiveStats?.hasReel ?? rod.variant !== "pole";
   }
 
   static #getAvailableCapabilities(equippedHydrated) {
@@ -943,7 +947,7 @@ class EquipmentValidator {
     for (const part of parts) {
       if (!part) continue;
       const partCaps =
-        part.capabilities || part.engineStats?.capabilities || [];
+        part.effectiveStats?.capabilities || [];
       for (let i = 0; i < partCaps.length; i++) {
         caps.add(partCaps[i]);
       }
@@ -974,6 +978,7 @@ class InventoryManager {
   #lineCapacityStateProvider = () => null;
   #isLocked = false;
   #equippedCache = null;
+  #effectiveStatsResolver;
 
   constructor(
     itemDB,
@@ -999,6 +1004,7 @@ class InventoryManager {
     });
 
     this.#db = new ItemDatabase(itemDB);
+    this.#effectiveStatsResolver = new EffectiveItemStatsResolver();
     this.#itemFactory = new InventoryItemFactory({
       itemDatabase: this.#db,
       itemRarityResolver: itemRarityResolver || new ItemRarityResolver(),
@@ -1044,37 +1050,30 @@ class InventoryManager {
 
   #initializeInventoryV2(legacyEquipment, playerConfig) {
     if (typeof InventoryV2CompositionRoot === "undefined") return;
-    try {
-      this.#inventoryV2 = InventoryV2CompositionRoot.compose({
-        cache: CacheManager,
-        legacyItems: this.#inventory.getAll(),
-        legacyEquipment,
-        legacySettings: playerConfig?.inventorySettings || {},
-        itemDefinitionResolver: this.#db,
-        itemViewFactory: this.#itemViewFactory,
-        instanceIdFactory: (context = {}) => {
-          const prefix =
-            typeof context === "string" ? context : context?.prefix || "item";
-          return this.#makeId(prefix);
-        },
-        loadValueProvider: () => this.getMaxTackleLoadKg(),
-        lineConfig: this.#lineRules.config,
+    this.#inventoryV2 = InventoryV2CompositionRoot.compose({
+      cache: CacheManager,
+      legacyItems: this.#inventory.getAll(),
+      legacyEquipment,
+      legacySettings: playerConfig?.inventorySettings || {},
+      itemDefinitionResolver: this.#db,
+      itemViewFactory: this.#itemViewFactory,
+      instanceIdFactory: (context = {}) => {
+        const prefix =
+          typeof context === "string" ? context : context?.prefix || "item";
+        return this.#makeId(prefix);
+      },
+      loadValueProvider: () => this.getMaxTackleLoadKg(),
+      lineConfig: this.#lineRules.config,
+    });
+    this.#inventoryV2Facade = this.#inventoryV2.facade;
+    this.#inventoryV2Bridge = this.#inventoryV2.gameplayBridge;
+    this.#removeInventoryV2Listener = this.#inventoryV2Facade.subscribe(() => {
+      this.#equippedCache = null;
+      this.#events.emit("inventory-changed", {
+        equipment: this.getEquipped(),
+        source: "inventory-v2",
       });
-      this.#inventoryV2Facade = this.#inventoryV2.facade;
-      this.#inventoryV2Bridge = this.#inventoryV2.gameplayBridge;
-      this.#removeInventoryV2Listener = this.#inventoryV2Facade.subscribe(() => {
-        this.#equippedCache = null;
-        this.#events.emit("inventory-changed", {
-          equipment: this.getEquipped(),
-          source: "inventory-v2",
-        });
-      });
-    } catch (error) {
-      this.#inventoryV2 = null;
-      this.#inventoryV2Facade = null;
-      this.#inventoryV2Bridge = null;
-      console.error("Inventory v2 initialization failed; using legacy inventory.", error);
-    }
+    });
   }
 
   #setupInventorySeeders(itemDB, playerConfig) {
@@ -1269,7 +1268,7 @@ class InventoryManager {
       if (item.buildId !== buildId) continue;
       const itemData = this._hydrateInstance(item.instanceId);
       if (!itemData) continue;
-      if (itemData.type === "build_box") continue;
+      if (itemData.itemType === "build_box") continue;
       buildItems.push({ item, itemData });
     }
 
@@ -1284,10 +1283,10 @@ class InventoryManager {
 
   #getBuildEquipPriority(itemData) {
     if (!itemData) return 100;
-    if (SLOT_CONFIG.rod.acceptTypes.includes(itemData.type)) return 0;
-    if (SLOT_CONFIG.reel.acceptTypes.includes(itemData.type)) return 10;
-    if (SLOT_CONFIG.line.acceptTypes.includes(itemData.type)) return 20;
-    if (SLOT_CONFIG.leader.acceptTypes.includes(itemData.type)) return 30;
+    if (SLOT_CONFIG.rod.acceptTypes.includes(itemData.itemType)) return 0;
+    if (SLOT_CONFIG.reel.acceptTypes.includes(itemData.itemType)) return 10;
+    if (SLOT_CONFIG.line.acceptTypes.includes(itemData.itemType)) return 20;
+    if (SLOT_CONFIG.leader.acceptTypes.includes(itemData.itemType)) return 30;
     return 50;
   }
 
@@ -1366,13 +1365,10 @@ class InventoryManager {
 
     const rod = eq.rod;
     const supportsReel =
-      rod.equipmentCapabilities?.supportsReel ??
-      rod.engineStats?.equipmentCapabilities?.supportsReel ??
-      rod.supportsReel ??
-      rod.engineStats?.supportsReel ??
-      rod.hasReel ??
-      rod.engineStats?.hasReel ??
-      rod.type !== "pole";
+      rod.effectiveStats?.equipmentCapabilities?.supportsReel ??
+      rod.effectiveStats?.supportsReel ??
+      rod.effectiveStats?.hasReel ??
+      rod.variant !== "pole";
     if (supportsReel && !eq.reel) {
       return Object.freeze({
         canCast: false,
@@ -1382,7 +1378,7 @@ class InventoryManager {
       });
     }
 
-    if ((Number(eq.line?.lengthMeters) || 0) <= 0) {
+    if ((Number(eq.line?.effectiveStats?.lengthMeters) || 0) <= 0) {
       return Object.freeze({
         canCast: false,
         shouldOpenInventory: true,
@@ -1429,11 +1425,10 @@ class InventoryManager {
 
     const effectiveLoad = (item, fallback = 0) => {
       if (!item) return fallback;
-      const maxLoadKg = Number(item.maxLoadKg ?? item.engineStats?.maxLoadKg ?? fallback);
-      const durability = Number(item.durability ?? item.engineStats?.durability ?? 100);
+      const maxLoadKg = Number(item.effectiveStats?.maxLoadKg ?? fallback);
+      const durability = Number(item.effectiveStats?.durability ?? 100);
       const lossPerPercent = Number(
-        item.durabilityMaxLoadLossPerPercent ??
-          item.engineStats?.durabilityMaxLoadLossPerPercent ??
+        item.effectiveStats?.durabilityMaxLoadLossPerPercent ??
           0.001,
       );
       if (!Number.isFinite(maxLoadKg) || maxLoadKg <= 0) return fallback;
@@ -1468,7 +1463,7 @@ class InventoryManager {
       return { success: false, reason: validation.reason };
 
     const targetSlotPath = this.#findTargetSlotPath(itemData);
-    if (!targetSlotPath && itemData.type === "bait") {
+    if (!targetSlotPath && itemData.itemType === "bait") {
       return {
         success: false,
         reason: "Немає вільного гачка для наживки.",
@@ -1490,7 +1485,7 @@ class InventoryManager {
   #findTargetSlotPath(itemData) {
     let baseSlot = null;
     for (const [slot, config] of Object.entries(SLOT_CONFIG)) {
-      if (config.acceptTypes && config.acceptTypes.includes(itemData.type)) {
+      if (config.acceptTypes && config.acceptTypes.includes(itemData.itemType)) {
         baseSlot = slot;
         break;
       }
@@ -1503,9 +1498,8 @@ class InventoryManager {
     if (baseSlot === "hooks") {
       // ВИПРАВЛЕНО: Додано перевірку на базову кількість гачків вудки
       const maxHooks =
-        eq.feederRig?.hooksCount ||
-        eq.feederRig?.engineStats?.hooksCount ||
-        eq.rod?.maxHooks ||
+        eq.feederRig?.effectiveStats?.hooksCount ||
+        eq.rod?.effectiveStats?.maxHooks ||
         1;
 
       const currentArr = eq[baseSlot] || [];
@@ -1517,13 +1511,12 @@ class InventoryManager {
 
     if (baseSlot === "baits") {
       const maxHooks =
-        eq.feederRig?.hooksCount ||
-        eq.feederRig?.engineStats?.hooksCount ||
-        eq.rod?.maxHooks ||
+        eq.feederRig?.effectiveStats?.hooksCount ||
+        eq.rod?.effectiveStats?.maxHooks ||
         1;
       const baits = eq.baits || [];
 
-      if (itemData.type === "bait") {
+      if (itemData.itemType === "bait") {
         const hooks = eq.hooks || [];
         for (let i = 0; i < maxHooks; i++) {
           if (hooks[i] && !baits[i]) return `baits_${i}`;
@@ -1537,10 +1530,9 @@ class InventoryManager {
       return "baits_0";
     }
 
-    if (itemData.type === "chum_mix") {
+    if (itemData.itemType === "chum_mix") {
       const feederRigCaps =
-        eq.feederRig?.capabilities ||
-        eq.feederRig?.engineStats?.capabilities ||
+        eq.feederRig?.effectiveStats?.capabilities ||
         [];
       const hasFeederSlot = feederRigCaps.includes("chum_mix");
 
@@ -1548,7 +1540,7 @@ class InventoryManager {
 
       if (eq.delivery) {
         const sections =
-          eq.delivery.sections || eq.delivery.engineStats?.sections || 1;
+          eq.delivery.effectiveStats?.sections || 1;
         const arr = eq.deliveryChums || [];
         for (let i = 0; i < sections; i++) {
           if (!arr[i]) return `deliveryChums_${i}`;
@@ -1576,7 +1568,10 @@ class InventoryManager {
 
   #setInventoryLineLengthMeters(item, lengthMeters) {
     if (!item) return;
-    item.lengthMeters = Math.max(0, Number(lengthMeters) || 0);
+    item.statOverrides = {
+      ...(item.statOverrides || {}),
+      lengthMeters: Math.max(0, Number(lengthMeters) || 0),
+    };
     item.quantity = 1;
   }
 
@@ -1733,7 +1728,7 @@ class InventoryManager {
     // КАСКАД: Якщо вдягаємо нову вудку, і її тип відрізняється від поточної — скидаємо стару оснастку
     if (slotPath === "rod") {
       const currentRod = this.getEquipped().rod;
-      if (currentRod && currentRod.type !== itemData.type) {
+      if (currentRod && currentRod.variant !== itemData.variant) {
         const slotsToUnequip = [
           "reel",
           "line",
@@ -1751,10 +1746,10 @@ class InventoryManager {
       }
     }
 
-    if (slotPath === "delivery" && itemData?.type !== "boat") {
+    if (slotPath === "delivery" && itemData?.itemType !== "boat") {
       const eq = this.getEquipped();
       const sections =
-        eq.delivery?.sections || eq.delivery?.engineStats?.sections || 1;
+        eq.delivery?.effectiveStats?.sections || 1;
       const slotsToUnequip = [];
       for (let i = 0; i < sections; i++) {
         slotsToUnequip.push(`deliveryChums_${i}`);
@@ -1836,8 +1831,7 @@ class InventoryManager {
     if (slotPath === "feederRig") {
       slotPaths.push("feederChum");
       const removedHooksCount =
-        equippedBefore.feederRig?.hooksCount ||
-        equippedBefore.feederRig?.engineStats?.hooksCount ||
+        equippedBefore.feederRig?.effectiveStats?.hooksCount ||
         0;
       const oldHooks = equippedBefore.hooks || [];
       const oldBaits = equippedBefore.baits || [];
@@ -1886,10 +1880,10 @@ class InventoryManager {
   }
 
   validateEquip(itemData) {
-    if (itemData?.type === "fishing_line") {
+    if (itemData?.itemType === "fishing_line") {
       return this.#lineController.validateLine(itemData, this.getEquipped());
     }
-    if (itemData?.type === "leader_line") {
+    if (itemData?.itemType === "leader_line") {
       return this.#lineController.validateLeader(itemData, this.getEquipped());
     }
     return EquipmentValidator.validate(itemData, this.getEquipped());
@@ -1897,25 +1891,25 @@ class InventoryManager {
 
   getCompatibilityInfo(itemData) {
     const equipment = this.getEquipped();
-    if (itemData?.type === "fishing_line") {
+    if (itemData?.itemType === "fishing_line") {
       const validation = this.#lineController.validateLine(itemData, equipment);
       return {
         hasCompatibility: true,
         isCompatible: validation.isValid,
         requiredTag: "line",
         reason: validation.reason || null,
-        rodType: equipment?.rod?.type || null,
+        rodType: equipment?.rod?.variant || null,
         rodHasReel: this.#lineController.rodRequiresReel(equipment?.rod),
       };
     }
-    if (itemData?.type === "leader_line") {
+    if (itemData?.itemType === "leader_line") {
       const validation = this.#lineController.validateLeader(itemData, equipment);
       return {
         hasCompatibility: true,
         isCompatible: validation.isValid,
         requiredTag: "line",
         reason: validation.reason || null,
-        rodType: equipment?.rod?.type || null,
+        rodType: equipment?.rod?.variant || null,
         rodHasReel: this.#lineController.rodRequiresReel(equipment?.rod),
       };
     }
@@ -1930,8 +1924,8 @@ class InventoryManager {
     const slotConfig = typeof SLOT_CONFIG !== "undefined" ? SLOT_CONFIG[baseSlot] : null;
     if (
       slotConfig?.acceptTypes &&
-      itemData?.type &&
-      !slotConfig.acceptTypes.includes(itemData.type)
+      itemData?.itemType &&
+      !slotConfig.acceptTypes.includes(itemData.itemType)
     ) {
       return {
         isValid: false,
@@ -1939,7 +1933,7 @@ class InventoryManager {
       };
     }
 
-    if (itemData?.type === "fishing_line") {
+    if (itemData?.itemType === "fishing_line") {
       if (baseSlot !== "line") {
         return {
           isValid: false,
@@ -1949,7 +1943,7 @@ class InventoryManager {
       return this.#lineController.validateLine(itemData, this.getEquipped());
     }
 
-    if (itemData?.type === "leader_line") {
+    if (itemData?.itemType === "leader_line") {
       if (baseSlot !== "leader") {
         return {
           isValid: false,
@@ -1959,7 +1953,7 @@ class InventoryManager {
       return this.#lineController.validateLeader(itemData, this.getEquipped());
     }
 
-    if (itemData?.type !== "bait") return { isValid: true };
+    if (itemData?.itemType !== "bait") return { isValid: true };
 
     const parsed = this.#parseIndexedSlot(slotPath);
     if (!parsed || parsed.group !== "baits") {
@@ -2051,12 +2045,12 @@ class InventoryManager {
         includeLoadout: false,
         hydrated: true,
       });
-      return items.find((item) => item?.type === type) || null;
+      return items.find((item) => this.#matchesItemType(item, type)) || null;
     }
     const items = this.#inventory.getAll();
     for (let i = 0; i < items.length; i++) {
       const hydrated = this._hydrateInstance(items[i].instanceId);
-      if (hydrated && hydrated.type === type) return hydrated;
+      if (this.#matchesItemType(hydrated, type)) return hydrated;
     }
     return null;
   }
@@ -2070,7 +2064,7 @@ class InventoryManager {
         hydrated: true,
       });
       for (const item of items) {
-        if (item?.type === type) out.push(item);
+        if (this.#matchesItemType(item, type)) out.push(item);
       }
       return out;
     }
@@ -2078,7 +2072,7 @@ class InventoryManager {
     const items = this.#inventory.getAll();
     for (let i = 0; i < items.length; i++) {
       const hydrated = this._hydrateInstance(items[i].instanceId);
-      if (hydrated && hydrated.type === type) out.push(hydrated);
+      if (this.#matchesItemType(hydrated, type)) out.push(hydrated);
     }
     return out;
   }
@@ -2194,7 +2188,7 @@ class InventoryManager {
     if (!sourceItem || sourceItem.itemId === "sys_build_box") return;
 
     const sourceData = this._hydrateInstance(sourceItem.instanceId);
-    if (sourceData?.type === "fishing_line") {
+    if (sourceData?.itemType === "fishing_line") {
       this.#mergeLineLengthIntoAvailableStack(sourceItem);
       return;
     }
@@ -2310,7 +2304,11 @@ class InventoryManager {
   }
 
   #isRodItem(item) {
-    return ["spinning", "feeder", "float", "pole"].includes(item?.type);
+    return item?.itemType === "rod";
+  }
+
+  #matchesItemType(item, type) {
+    return item?.itemType === type || item?.variant === type;
   }
 
   #formatMeters(value) {
@@ -2323,36 +2321,6 @@ class InventoryManager {
     const number = Number(value);
     if (!Number.isFinite(number)) return "0";
     return number.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
-  }
-
-  #getRuntimeItemOverrides(invItem) {
-    const ignored = new Set([
-      "instanceId",
-      "itemId",
-      "quantity",
-      "buildId",
-      "buildName",
-      "rarity",
-      "progression",
-      "powerPercent",
-      "powerLevel",
-      "normalizedPower",
-      "powerColor",
-      "powerGradient",
-      "qualityMax",
-      "capacityPercent",
-      "capacityMeters",
-      "capacityMaximumMeters",
-      "condition",
-      "conditionPercent",
-    ]);
-    const overrides = {};
-    for (const [key, value] of Object.entries(invItem || {})) {
-      if (ignored.has(key)) continue;
-      if (value === undefined || typeof value === "function") continue;
-      overrides[key] = value;
-    }
-    return overrides;
   }
 
   #refreshRuntimeDisplayStats(item) {
@@ -2373,15 +2341,16 @@ class InventoryManager {
     const baseItem = this.#db.getItemData(invItem.itemId);
     if (!baseItem) return null;
 
-    const hydrated = this.#itemViewFactory?.create(invItem) || (() => {
-      const overrides = this.#getRuntimeItemOverrides(invItem);
+    const canonicalView = this.#itemViewFactory?.create(invItem) || (() => {
+      const instanceState = invItem;
+      const { gameplayStats: _authoredStats, ...definitionMetadata } = baseItem;
       return {
-        ...baseItem,
-        ...overrides,
-        engineStats: {
-          ...(baseItem.engineStats || {}),
-          ...overrides,
-        },
+        ...definitionMetadata,
+        ...instanceState,
+        effectiveStats: this.#effectiveStatsResolver.resolve({
+          definition: baseItem,
+          instanceState,
+        }),
         displayStats: { ...(baseItem.displayStats || {}) },
         instanceId: invItem.instanceId,
         quantity: invItem.quantity || 1,
@@ -2389,10 +2358,11 @@ class InventoryManager {
         rarity: invItem.rarity ?? null,
       };
     })();
+    const hydrated = canonicalView;
     if (!this.#itemViewFactory) this.#refreshRuntimeDisplayStats(hydrated);
     this.#applyStandaloneCastDistanceStats(hydrated);
 
-    if (hydrated.type === "build_box") {
+    if (hydrated.itemType === "build_box") {
       hydrated.name = invItem.buildName || "Без назви (Старий ящик)";
 
       const contents = [];
@@ -2419,20 +2389,20 @@ class InventoryManager {
         const cBase = this.#db.getItemData(c.itemId);
         if (cBase) {
           let cat = "Інше";
-          if (["spinning", "feeder", "float", "pole"].includes(cBase.type))
+          if (cBase.itemType === "rod")
             cat = "Вудилище";
-          else if (cBase.type === "spinning_reel") cat = "Котушка";
-          else if (cBase.type === "fishing_line") cat = "Ліска";
-          else if (cBase.type === "leader_line") cat = "Поводок";
-          else if (["float_tackle", "day", "night"].includes(cBase.type))
+          else if (cBase.itemType === "reel") cat = "Котушка";
+          else if (cBase.itemType === "fishing_line") cat = "Ліска";
+          else if (cBase.itemType === "leader_line") cat = "Поводок";
+          else if (cBase.itemType === "float")
             cat = "Поплавок";
-          else if (cBase.type === "feeder_rig")
+          else if (cBase.itemType === "feeder_rig")
             cat = "Фідерна оснастка";
-          else if (cBase.type === "hook") cat = "Гачок";
-          else if (["lure", "spinner", "wobbler", "jig"].includes(cBase.type))
+          else if (cBase.itemType === "hook") cat = "Гачок";
+          else if (cBase.itemType === "lure")
             cat = "Приманка";
-          else if (cBase.type === "net") cat = "Підсака";
-          else if (cBase.type === "boat") cat = "Кораблик";
+          else if (cBase.itemType === "net") cat = "Підсака";
+          else if (cBase.itemType === "boat") cat = "Кораблик";
 
           if (!grouped[cat]) grouped[cat] = [];
           grouped[cat].push(
@@ -2470,9 +2440,8 @@ class InventoryManager {
       ? this.#db.getItemData(reelInstance.itemId)
       : null;
     const reelCapacity = Number(
-      reelInstance?.lineCapacityMeters ??
-        reelBase?.lineCapacityMeters ??
-        reelBase?.engineStats?.lineCapacityMeters,
+      reelInstance?.statOverrides?.lineCapacityMeters ??
+        reelBase?.gameplayStats?.lineCapacityMeters,
     );
     return {
       equippedLineInstanceId: equipment.lineId || null,

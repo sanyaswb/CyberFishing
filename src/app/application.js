@@ -650,7 +650,7 @@ class GameApplication {
 
   #handleInventoryChanged(newEq) {
     const netConfig = newEq.net
-      ? { ...newEq.net, ...(newEq.net.engineStats || {}) }
+      ? newEq.net.effectiveStats || newEq.net
       : { active: false, maxWeight: 0, length: 10, chances: [] };
 
     if (this.#net && typeof this.#net.updateConfig === "function") {
@@ -683,10 +683,10 @@ class GameApplication {
     if (this.#baitRules.isActiveLure(eq.baits?.[0])) {
       physicsType = this.#baitRules.getPhysicsType(
         eq.baits[0],
-        eq.baits[0].type,
+        eq.baits[0].variant || eq.baits[0].itemType,
       );
       physicsConfig = { ...eq.baits[0] };
-    } else if (eq.rod?.type === "feeder" && eq.feederRig) {
+    } else if (eq.rod?.variant === "feeder" && eq.feederRig) {
       physicsType = "feeder";
       physicsConfig = { ...eq.feederRig };
     } else if (eq.float) {
@@ -903,8 +903,8 @@ class GameApplication {
 
   #syncDragControlAvailability() {
     const eq = this.#inventory?.getEquipped?.() || {};
-    const rodAllowsReel = eq.rod?.hasReel !== false && eq.rod?.engineStats?.hasReel !== false;
-    const reelHasDrag = !!eq.reel && eq.reel.hasDrag !== false && eq.reel.engineStats?.hasDrag !== false;
+    const rodAllowsReel = eq.rod?.effectiveStats?.hasReel !== false;
+    const reelHasDrag = !!eq.reel && eq.reel.effectiveStats?.hasDrag !== false;
     this.#input?.setDragControlEnabled?.(rodAllowsReel && reelHasDrag);
   }
 

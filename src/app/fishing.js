@@ -40,9 +40,9 @@ class FishingController {
   #isWithinSafeRecastWindow(chum, elapsedMs) {
     if (!chum || !Number.isFinite(elapsedMs)) return false;
     const safeWindowMs =
-      chum.safeRecastWindowMs ??
-      chum.feederSafeRecastWindowMs ??
-      chum.recastGraceMs ??
+      chum.effectiveStats?.safeRecastWindowMs ??
+      chum.effectiveStats?.feederSafeRecastWindowMs ??
+      chum.effectiveStats?.recastGraceMs ??
       0;
     return safeWindowMs > 0 && elapsedMs <= safeWindowMs;
   }
@@ -93,7 +93,7 @@ class FishingController {
 
       if (!isEaten) {
         outIds.push(bait.id);
-        outTypes.push(bait.type);
+        outTypes.push(bait.variant || bait.itemType);
       }
     }
   }
@@ -156,7 +156,7 @@ class FishingController {
     const hooks = eq?.hooks || [];
     const baits = eq?.baits || [];
     for (let i = 0; i < baits.length; i++) {
-      if (hooks[i] && baits[i] && baits[i].type === "bait") {
+      if (hooks[i] && baits[i]?.itemType === "bait") {
         consumedBaitId = baits[i].instanceId;
         break;
       }
@@ -247,18 +247,18 @@ class CastService {
     let physicsType = "float";
     let physicsConfig = {};
     if (this.#equipmentRules.isSpinning(eq) && eq.baits?.[0]) {
-      const baitStats = eq.baits[0].engineStats || eq.baits[0];
+      const baitStats = eq.baits[0].effectiveStats || {};
       physicsType = this.#baitRules.getPhysicsType(eq.baits[0], "spinner");
-      physicsConfig = { ...baitStats };
+      physicsConfig = { ...baitStats, type: eq.baits[0].variant };
     } else if (this.#equipmentRules.isFeeder(eq) && eq.feederRig) {
       physicsType = "feeder";
-      physicsConfig = {
-        ...eq.feederRig.engineStats,
-        ...eq.feederRig,
-      };
+      physicsConfig = { ...eq.feederRig.effectiveStats, type: "feeder" };
     } else if (eq.float) {
       physicsType = "float";
-      physicsConfig = { ...eq.float.engineStats, ...eq.float };
+      physicsConfig = {
+        ...eq.float.effectiveStats,
+        type: eq.float.variant || "day",
+      };
     }
 
     const floatEntity = BaitFactory.create(
@@ -359,59 +359,62 @@ class FightSessionFactory {
     const lineSystemConfig = this.#getLineSystemConfig();
     const castOptions = this.#getCastOptions(options);
     const activeLineStats = this.#resolveActiveLineStats(equipment, options);
+    const rodStats = equipment.rod?.effectiveStats || {};
+    const reelStats = equipment.reel?.effectiveStats || {};
     const rod = new Rod(
-      equipment.rod?.level || 1,
-      equipment.rod?.basePower || 1.0,
-      equipment.rod?.compensation || 0,
-      equipment.rod?.type || "float",
+      rodStats.equipmentPowerLevel || 1,
+      rodStats.basePower || 1.0,
+      rodStats.compensation || 0,
+      equipment.rod?.variant || "float",
       this.castDistanceCalculator.getMaxCastDistancePx(
         equipment,
         100,
         castOptions,
       ),
-      equipment.rod?.hasReel !== false,
+      rodStats.hasReel !== false,
       {
-        lengthMeters: equipment.rod?.lengthMeters,
-        castPowerCoefficient: equipment.rod?.castPowerCoefficient,
-        maxLoadKg: equipment.rod?.maxLoadKg,
-        holdTensionRatio: equipment.rod?.holdTensionRatio,
-        durability: equipment.rod?.durability,
+        lengthMeters: rodStats.lengthMeters,
+        castPowerCoefficient: rodStats.castPowerCoefficient,
+        maxLoadKg: rodStats.maxLoadKg,
+        holdTensionRatio: rodStats.holdTensionRatio,
+        durability: rodStats.durability,
         durabilityMaxLoadLossPerPercent:
-          equipment.rod?.durabilityMaxLoadLossPerPercent,
+          rodStats.durabilityMaxLoadLossPerPercent,
       },
     );
     const reel = equipment.reel
       ? new Reel(
-          equipment.reel.level || 1,
-          equipment.reel.basePower || 1.0,
+          reelStats.equipmentPowerLevel || 1,
+          reelStats.basePower || 1.0,
           {
-            maxLoadKg: equipment.reel.maxLoadKg,
-            lineCapacityMeters: equipment.reel.lineCapacityMeters,
-            retrieveSpeedMetersPerSec: equipment.reel.retrieveSpeedMetersPerSec,
-            bearingCount: equipment.reel.bearingCount,
+            maxLoadKg: reelStats.maxLoadKg,
+            lineCapacityMeters: reelStats.lineCapacityMeters,
+            retrieveSpeedMetersPerSec: reelStats.retrieveSpeedMetersPerSec,
+            bearingCount: reelStats.bearingCount,
             bearingRetrieveSpeedBonusMetersPerSec:
               this.physicsConfig?.getReelConfig?.()
                 ?.bearingRetrieveSpeedBonusMetersPerSec,
-            dragMinKg: equipment.reel.dragMinKg,
-            dragMaxKg: equipment.reel.dragMaxKg,
-            dragChangeSpeedPerSec: equipment.reel.dragChangeSpeedPerSec,
-            hasDrag: equipment.reel.hasDrag,
-            durability: equipment.reel.durability,
+            dragMinKg: reelStats.dragMinKg,
+            dragMaxKg: reelStats.dragMaxKg,
+            dragChangeSpeedPerSec: reelStats.dragChangeSpeedPerSec,
+            hasDrag: reelStats.hasDrag,
+            durability: reelStats.durability,
             durabilityMaxLoadLossPerPercent:
-              equipment.reel.durabilityMaxLoadLossPerPercent,
+              reelStats.durabilityMaxLoadLossPerPercent,
           },
         )
       : new Reel(0, 0, { lineCapacityMeters: 0 });
     const activeHook = equipment.hooks?.[0] || {};
+    const hookStats = activeHook.effectiveStats || {};
     const hook = new Hook(
-      activeHook.level || 1,
-      activeHook.weight || 1,
-      activeHook.quality || 1.0,
+      hookStats.equipmentPowerLevel || 1,
+      hookStats.weight || 1,
+      hookStats.quality || 1.0,
       {
-        maxLoadKg: activeHook.maxLoadKg,
-        durability: activeHook.durability,
+        maxLoadKg: hookStats.maxLoadKg,
+        durability: hookStats.durability,
         durabilityMaxLoadLossPerPercent:
-          activeHook.durabilityMaxLoadLossPerPercent,
+          hookStats.durabilityMaxLoadLossPerPercent,
       },
     );
     const fish = new Fish(
@@ -497,59 +500,62 @@ class FightSessionFactory {
     const lineSystemConfig = this.#getLineSystemConfig();
     const castOptions = this.#getCastOptions(options);
     const activeLineStats = this.#resolveActiveLineStats(equipment, options);
+    const rodStats = equipment.rod?.effectiveStats || {};
+    const reelStats = equipment.reel?.effectiveStats || {};
     const rod = new Rod(
-      equipment.rod?.level || 1,
-      equipment.rod?.basePower || 1.0,
-      equipment.rod?.compensation || 0,
-      equipment.rod?.type || "float",
+      rodStats.equipmentPowerLevel || 1,
+      rodStats.basePower || 1.0,
+      rodStats.compensation || 0,
+      equipment.rod?.variant || "float",
       this.castDistanceCalculator.getMaxCastDistancePx(
         equipment,
         100,
         castOptions,
       ),
-      equipment.rod?.hasReel !== false,
+      rodStats.hasReel !== false,
       {
-        lengthMeters: equipment.rod?.lengthMeters,
-        castPowerCoefficient: equipment.rod?.castPowerCoefficient,
-        maxLoadKg: equipment.rod?.maxLoadKg,
-        holdTensionRatio: equipment.rod?.holdTensionRatio,
-        durability: equipment.rod?.durability,
+        lengthMeters: rodStats.lengthMeters,
+        castPowerCoefficient: rodStats.castPowerCoefficient,
+        maxLoadKg: rodStats.maxLoadKg,
+        holdTensionRatio: rodStats.holdTensionRatio,
+        durability: rodStats.durability,
         durabilityMaxLoadLossPerPercent:
-          equipment.rod?.durabilityMaxLoadLossPerPercent,
+          rodStats.durabilityMaxLoadLossPerPercent,
       },
     );
     const reel = equipment.reel
       ? new Reel(
-          equipment.reel.level || 1,
-          equipment.reel.basePower || 1.0,
+          reelStats.equipmentPowerLevel || 1,
+          reelStats.basePower || 1.0,
           {
-            maxLoadKg: equipment.reel.maxLoadKg,
-            lineCapacityMeters: equipment.reel.lineCapacityMeters,
-            retrieveSpeedMetersPerSec: equipment.reel.retrieveSpeedMetersPerSec,
-            bearingCount: equipment.reel.bearingCount,
+            maxLoadKg: reelStats.maxLoadKg,
+            lineCapacityMeters: reelStats.lineCapacityMeters,
+            retrieveSpeedMetersPerSec: reelStats.retrieveSpeedMetersPerSec,
+            bearingCount: reelStats.bearingCount,
             bearingRetrieveSpeedBonusMetersPerSec:
               this.physicsConfig?.getReelConfig?.()
                 ?.bearingRetrieveSpeedBonusMetersPerSec,
-            dragMinKg: equipment.reel.dragMinKg,
-            dragMaxKg: equipment.reel.dragMaxKg,
-            dragChangeSpeedPerSec: equipment.reel.dragChangeSpeedPerSec,
-            hasDrag: equipment.reel.hasDrag,
-            durability: equipment.reel.durability,
+            dragMinKg: reelStats.dragMinKg,
+            dragMaxKg: reelStats.dragMaxKg,
+            dragChangeSpeedPerSec: reelStats.dragChangeSpeedPerSec,
+            hasDrag: reelStats.hasDrag,
+            durability: reelStats.durability,
             durabilityMaxLoadLossPerPercent:
-              equipment.reel.durabilityMaxLoadLossPerPercent,
+              reelStats.durabilityMaxLoadLossPerPercent,
           },
         )
       : new Reel(0, 0, { lineCapacityMeters: 0 });
     const activeHook = equipment.hooks?.[0] || {};
+    const hookStats = activeHook.effectiveStats || {};
     const hook = new Hook(
-      activeHook.level || 1,
-      activeHook.weight || 1,
-      activeHook.quality || 1.0,
+      hookStats.equipmentPowerLevel || 1,
+      hookStats.weight || 1,
+      hookStats.quality || 1.0,
       {
-        maxLoadKg: activeHook.maxLoadKg,
-        durability: activeHook.durability,
+        maxLoadKg: hookStats.maxLoadKg,
+        durability: hookStats.durability,
         durabilityMaxLoadLossPerPercent:
-          activeHook.durabilityMaxLoadLossPerPercent,
+          hookStats.durabilityMaxLoadLossPerPercent,
       },
     );
     const lineSystem = new LineSystem({
@@ -585,11 +591,10 @@ class FightSessionFactory {
     const activeLengthMeters = budget.maxCastDistanceMeters;
     return {
       ...line,
-      lengthMeters: activeLengthMeters,
-      engineStats: {
-        ...(line.engineStats || {}),
+      effectiveStats: Object.freeze({
+        ...(line.effectiveStats || {}),
         lengthMeters: activeLengthMeters,
-      },
+      }),
     };
   }
 }

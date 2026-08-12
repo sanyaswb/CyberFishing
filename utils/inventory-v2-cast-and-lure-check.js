@@ -53,7 +53,13 @@ class LureProjectionAndBiteCheck {
         };
 
         const items = new Map([
-          ["rod-1", { id: "rod-1", instanceId: "rod-1", type: "spinning" }],
+          ["rod-1", {
+            id: "rod-1",
+            instanceId: "rod-1",
+            itemType: "rod",
+            variant: "spinning",
+            effectiveStats: {},
+          }],
         ]);
         const itemReader = {
           getById(instanceId) {
@@ -68,7 +74,7 @@ class LureProjectionAndBiteCheck {
             throw new Error("non-composite lure requested assembly capacity");
           },
         };
-        const projection = new EquipmentProjectionService({
+        const readModelFactory = new EquipmentReadModelFactory({
           itemReader,
           assemblyReader,
         });
@@ -86,9 +92,11 @@ class LureProjectionAndBiteCheck {
           items.set(instanceId, {
             id: instanceId,
             instanceId,
-            type: lureType,
+            itemType: "lure",
+            variant: lureType === "lure" ? null : lureType,
+            effectiveStats: {},
           });
-          const equipment = projection.project({
+          const equipment = readModelFactory.create({
             rootInstanceIds: {
               rod: "rod-1",
               tackle: instanceId,
@@ -96,7 +104,10 @@ class LureProjectionAndBiteCheck {
           });
 
           assert(equipment.hooks.length === 0, lureType + " must not require a fake hook");
-          assert(equipment.baits[0] === items.get(instanceId), lureType + " must project its real item");
+          assert(
+            equipment.baits[0]?.instanceId === instanceId,
+            lureType + " must project its real item",
+          );
 
           const ids = [];
           const types = [];
@@ -105,7 +116,7 @@ class LureProjectionAndBiteCheck {
           sameValues(types, [lureType], lureType + " must keep its real bite type");
         }
 
-        const bait = { id: "worm", instanceId: "worm-1", type: "bait" };
+        const bait = { id: "worm", instanceId: "worm-1", itemType: "bait" };
         const ids = [];
         const types = [];
         controller.collectAvailableBaits(
@@ -136,16 +147,16 @@ class DefinitiveCastReadinessCheck {
           if (!condition) throw new Error(message);
         };
         const equipmentRules = {
-          requiresReel: (equipment) => equipment?.rod?.type !== "pole",
+          requiresReel: (equipment) => equipment?.rod?.variant !== "pole",
           hasEquippedLine: (equipment) =>
-            (Number(equipment?.line?.lengthMeters) || 0) > 0,
+            (Number(equipment?.line?.effectiveStats?.lengthMeters) || 0) > 0,
           getMaxCastDistance: () => 1000,
           isFeeder: () => false,
           isSpinning: () => false,
         };
         const blockedEquipment = {
-          rod: { id: "spinning-rod", type: "spinning" },
-          reel: { id: "reel-1", type: "spinning_reel" },
+          rod: { id: "spinning-rod", itemType: "rod", variant: "spinning" },
+          reel: { id: "reel-1", itemType: "reel", variant: "spinning_reel" },
           line: null,
         };
         const readiness = Object.freeze({
@@ -210,8 +221,8 @@ class ScoutingCastWarningCheck {
           if (!condition) throw new Error(message);
         };
         const equipment = {
-          rod: { id: "rod-1", type: "spinning" },
-          reel: { id: "reel-1", type: "spinning_reel" },
+          rod: { id: "rod-1", itemType: "rod", variant: "spinning" },
+          reel: { id: "reel-1", itemType: "reel", variant: "spinning_reel" },
           line: null,
         };
         const readiness = Object.freeze({
@@ -297,7 +308,7 @@ class CompositionSeamCheck {
 }
 
 const runtime = new InventoryV2SourceRuntime();
-runtime.load("src/application/inventory/equipment_projection_service.js");
+runtime.load("src/application/inventory/equipment_read_model_factory.js");
 runtime.load("src/app/rules.js");
 runtime.load("src/app/fishing.js");
 runtime.load("src/app/states.js");

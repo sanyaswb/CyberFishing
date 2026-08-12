@@ -38,14 +38,19 @@ class EquipmentFactory {
   floatRig({ rodLengthMeters, lineLengthMeters, hasReel }) {
     return {
       rod: {
-        type: hasReel ? "float" : "pole",
-        lengthMeters: rodLengthMeters,
-        hasReel,
-        castPowerCoefficient: 1,
+        itemType: "rod",
+        variant: hasReel ? "float" : "pole",
+        effectiveStats: {
+          lengthMeters: rodLengthMeters,
+          hasReel,
+          castPowerCoefficient: 1,
+        },
       },
-      reel: hasReel ? { lineCapacityMeters: lineLengthMeters } : null,
-      line: { lengthMeters: lineLengthMeters },
-      float: { type: "float_tackle" },
+      reel: hasReel
+        ? { itemType: "reel", effectiveStats: { lineCapacityMeters: lineLengthMeters } }
+        : null,
+      line: { itemType: "fishing_line", effectiveStats: { lengthMeters: lineLengthMeters } },
+      float: { itemType: "float", variant: "day", effectiveStats: {} },
       baits: [],
     };
   }
@@ -53,15 +58,18 @@ class EquipmentFactory {
   feeder({ lineLengthMeters }) {
     return {
       rod: {
-        type: "feeder",
-        lengthMeters: 3,
-        hasReel: true,
-        castPowerCoefficient: 1,
+        itemType: "rod",
+        variant: "feeder",
+        effectiveStats: {
+          lengthMeters: 3,
+          hasReel: true,
+          castPowerCoefficient: 1,
+        },
       },
-      reel: { lineCapacityMeters: lineLengthMeters },
-      line: { lengthMeters: lineLengthMeters },
+      reel: { itemType: "reel", effectiveStats: { lineCapacityMeters: lineLengthMeters } },
+      line: { itemType: "fishing_line", effectiveStats: { lengthMeters: lineLengthMeters } },
       float: null,
-      feederRig: { type: "feeder_rig", maxDepth: 10 },
+      feederRig: { itemType: "feeder_rig", effectiveStats: { maxDepth: 10 } },
       baits: [],
     };
   }
@@ -69,15 +77,18 @@ class EquipmentFactory {
   spinning({ lineLengthMeters }) {
     return {
       rod: {
-        type: "spinning",
-        lengthMeters: 2.4,
-        hasReel: true,
-        castPowerCoefficient: 1,
+        itemType: "rod",
+        variant: "spinning",
+        effectiveStats: {
+          lengthMeters: 2.4,
+          hasReel: true,
+          castPowerCoefficient: 1,
+        },
       },
-      reel: { lineCapacityMeters: lineLengthMeters },
-      line: { lengthMeters: lineLengthMeters },
+      reel: { itemType: "reel", effectiveStats: { lineCapacityMeters: lineLengthMeters } },
+      line: { itemType: "fishing_line", effectiveStats: { lengthMeters: lineLengthMeters } },
       float: null,
-      baits: [{ type: "jig", maxDepth: 6.5 }],
+      baits: [{ itemType: "lure", variant: "jig", effectiveStats: { maxDepth: 6.5 } }],
     };
   }
 }

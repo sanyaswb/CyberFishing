@@ -1,4 +1,4 @@
-const INVENTORY_V2_SCHEMA_VERSION = 2;
+const INVENTORY_V2_SCHEMA_VERSION = 3;
 
 /**
  * Persistence boundary for inventory-v2.
@@ -27,6 +27,13 @@ class InventoryV2StateStore {
     if (!snapshot || snapshot.schemaVersion !== INVENTORY_V2_SCHEMA_VERSION) {
       return null;
     }
+    return this.#clone(snapshot);
+  }
+
+  loadPrevious(acceptedVersions = [2]) {
+    const snapshot = this.#cache.get(this.#key, null);
+    const accepted = new Set(acceptedVersions.map((value) => Number(value)));
+    if (!snapshot || !accepted.has(Number(snapshot.schemaVersion))) return null;
     return this.#clone(snapshot);
   }
 

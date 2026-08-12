@@ -9,10 +9,19 @@ class InventoryV2LegacyMigration {
   #itemDefinitionResolver;
   #instanceIdFactory;
   #legacyItemsById = new Map();
+  #itemStateMigration;
+  #effectiveStatsResolver;
 
-  constructor({ itemDefinitionResolver, instanceIdFactory = null } = {}) {
+  constructor({
+    itemDefinitionResolver,
+    instanceIdFactory = null,
+    itemStateMigration = new LegacyItemStateMigration(),
+    effectiveStatsResolver = new EffectiveItemStatsResolver(),
+  } = {}) {
     this.#itemDefinitionResolver = itemDefinitionResolver;
     this.#instanceIdFactory = instanceIdFactory;
+    this.#itemStateMigration = itemStateMigration;
+    this.#effectiveStatsResolver = effectiveStatsResolver;
   }
 
   migrate({ legacyItems = [], legacyEquipment = {}, settings = {} } = {}) {
@@ -205,7 +214,14 @@ class InventoryV2LegacyMigration {
   #typeFromLegacyItem(item) {
     if (!item) return null;
     const definition = this.#definition(item.itemId) || {};
-    return item.type ?? definition.type ?? definition.engineStats?.type ?? null;
+    return (
+      item.variant ??
+      item.type ??
+      item.itemType ??
+      definition.variant ??
+      definition.itemType ??
+      null
+    );
   }
 
   #collectBuildMetadata(items) {
@@ -236,18 +252,12 @@ class InventoryV2LegacyMigration {
 
   #toRepositoryItem(source) {
     const definition = this.#definition(source.itemId) || {};
-    const item = { ...source };
+    const item = this.#itemStateMigration.migrate(source, definition);
     delete item.buildId;
     delete item.buildName;
     delete item.detachedLineSegment;
     delete item.sourceLineItemId;
     delete item.sourceLineInstanceId;
-    item.type = item.type || definition.type || definition.engineStats?.type;
-    item.assemblyProfileId =
-      item.assemblyProfileId ||
-      definition.assemblyProfileId ||
-      definition.engineStats?.assemblyProfileId ||
-      undefined;
     item.location = InventoryItemLocation.inventory();
     return item;
   }
@@ -832,7 +842,19 @@ class InventoryV2LegacyMigration {
     const acceptedTypes = EQUIPMENT_SLOT_CONFIG?.[slotId]?.acceptTypes || [];
     return (
       acceptedTypes.length === 0 ||
-      acceptedTypes.includes(this.#legacyType(legacyId))
+      acceptedTypes.includes(this.#itemTypeByLegacyId(legacyId))
+    );
+  }
+
+  #itemTypeByLegacyId(instanceId) {
+    const item = this.#legacyItemsById.get(instanceId);
+    const definition = this.#definition(item?.itemId) || {};
+    return (
+      item?.itemType ??
+      definition.itemType ??
+      item?.type ??
+      definition.type ??
+      null
     );
   }
 
@@ -954,18 +976,19 @@ class InventoryV2LegacyMigration {
   #viewFromRaw(raw) {
     if (!raw) return null;
     const definition = this.#definition(raw.itemId) || {};
+    const instanceState = this.#itemStateMigration.migrate(raw, definition);
     return {
       ...definition,
-      ...raw,
-      engineStats: {
-        ...(definition.engineStats || {}),
-        ...(raw.engineStats || {}),
-      },
+      ...instanceState,
+      effectiveStats: this.#effectiveStatsResolver.resolve({
+        definition,
+        instanceState,
+      }),
     };
   }
 
   #type(item) {
-    return item?.type ?? item?.engineStats?.type ?? null;
+    return item?.variant ?? item?.itemType ?? item?.type ?? null;
   }
 
   #definition(itemId) {
@@ -977,13 +1000,24 @@ class InventoryV2LegacyMigration {
   }
 
   #isBuildBox(item) {
-    return item?.itemId === "sys_build_box" || item?.type === "build_box";
+    return (
+      item?.itemId === "sys_build_box" ||
+      item?.itemType === "build_box" ||
+      item?.type === "build_box"
+    );
   }
 
   #legacyType(instanceId) {
     const item = this.#legacyItemsById.get(instanceId);
     const definition = this.#definition(item?.itemId) || {};
-    return item?.type ?? definition.type ?? definition.engineStats?.type ?? null;
+    return (
+      item?.variant ??
+      item?.type ??
+      item?.itemType ??
+      definition.variant ??
+      definition.itemType ??
+      null
+    );
   }
 
   #stableSerialize(value) {
@@ -1025,11 +1059,13 @@ class InventoryV2LegacyMigration {
   }
 
   #lineLengthMeters(item) {
-    const ownLength = Number(item?.lengthMeters);
+    const ownLength = Number(
+      item?.statOverrides?.lengthMeters ?? item?.lengthMeters,
+    );
     if (Number.isFinite(ownLength)) return Math.max(0, ownLength);
     const definition = this.#definition(item?.itemId) || {};
     const baseLength = Number(
-      definition.lengthMeters ?? definition.engineStats?.lengthMeters,
+      definition.gameplayStats?.lengthMeters,
     );
     return Number.isFinite(baseLength) ? Math.max(0, baseLength) : 0;
   }
@@ -1064,7 +1100,7 @@ class InventoryV2LegacyMigration {
     }
     for (const [slotId, instanceId] of Object.entries(equipment.snapshot())) {
       if (!instanceId) continue;
-      const type = this.#type(this.#view(context, instanceId));
+      const type = this.#view(context, instanceId)?.itemType;
       const acceptedTypes = EQUIPMENT_SLOT_CONFIG?.[slotId]?.acceptTypes || [];
       if (acceptedTypes.length > 0 && !acceptedTypes.includes(type)) {
         throw new Error(`Equipment root ${instanceId} is invalid for ${slotId}`);

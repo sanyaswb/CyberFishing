@@ -87,7 +87,10 @@ class CastDistanceCalculator {
   }
 
   getLineMeters(lineStats = null) {
-    return Math.max(0, this.#numberOrDefault(lineStats?.lengthMeters, 0));
+    return Math.max(
+      0,
+      this.#numberOrDefault(lineStats?.effectiveStats?.lengthMeters, 0),
+    );
   }
 
   getEquippedLineStats(equipment) {
@@ -252,10 +255,8 @@ class CastDistanceCalculator {
   #isReelAvailable(reel) {
     if (!reel) return false;
     if (typeof reel.hasReel === "function") return reel.hasReel();
-    const power = Number(reel.basePower ?? reel.engineStats?.basePower ?? 0);
-    const capacity = Number(
-      reel.lineCapacityMeters ?? reel.engineStats?.lineCapacityMeters ?? 0,
-    );
+    const power = Number(reel.effectiveStats?.basePower ?? 0);
+    const capacity = Number(reel.effectiveStats?.lineCapacityMeters ?? 0);
     return power > 0 || capacity > 0;
   }
 
@@ -264,7 +265,7 @@ class CastDistanceCalculator {
     if (typeof source[getterName] === "function") {
       return Number(source[getterName]());
     }
-    return Number(source[propertyName] ?? source.engineStats?.[propertyName]);
+    return Number(source.effectiveStats?.[propertyName]);
   }
 
   #numberOrDefault(value, fallback) {

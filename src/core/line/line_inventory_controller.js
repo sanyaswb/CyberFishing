@@ -4,13 +4,22 @@ class LineInventoryController {
   #makeId;
   #policy;
   #isEquipped;
+  #effectiveStatsResolver;
 
-  constructor({ inventory, db, makeId, lineConfig, isEquipped }) {
+  constructor({
+    inventory,
+    db,
+    makeId,
+    lineConfig,
+    isEquipped,
+    effectiveStatsResolver = new EffectiveItemStatsResolver(),
+  }) {
     this.#inventory = inventory;
     this.#db = db;
     this.#makeId = makeId;
     this.#policy = new LineAllocationPolicy(lineConfig || {});
     this.#isEquipped = isEquipped || (() => false);
+    this.#effectiveStatsResolver = effectiveStatsResolver;
   }
 
   validateLine(lineItem, equipment) {
@@ -41,7 +50,10 @@ class LineInventoryController {
 
   prepareLineForEquip({ slotPath, instanceId, itemData, equipment }) {
     const baseSlot = (slotPath || "").split("_")[0];
-    if (baseSlot !== "line" || itemData?.type !== "fishing_line") {
+    if (
+      baseSlot !== "line" ||
+      itemData?.itemType !== "fishing_line"
+    ) {
       return instanceId;
     }
 
@@ -81,7 +93,7 @@ class LineInventoryController {
   mergeLineLengthIntoAvailableStack(sourceItem) {
     if (!sourceItem) return false;
     const sourceData = this.#hydrateLineItem(sourceItem);
-    if (sourceData?.type !== "fishing_line") return false;
+    if (sourceData?.itemType !== "fishing_line") return false;
 
     const targetItem = this.#findLineLengthMergeTarget(sourceItem, sourceData);
     if (!targetItem) {
@@ -103,10 +115,10 @@ class LineInventoryController {
 
   getInventoryLineLengthMeters(item) {
     if (!item) return 0;
-    const ownLength = Number(item.lengthMeters);
+    const ownLength = Number(item.statOverrides?.lengthMeters);
     if (Number.isFinite(ownLength)) return Math.max(0, ownLength);
     const base = this.#db.getItemData(item.itemId);
-    const baseLength = Number(base?.lengthMeters ?? base?.engineStats?.lengthMeters);
+    const baseLength = Number(base?.gameplayStats?.lengthMeters);
     return Number.isFinite(baseLength) ? Math.max(0, baseLength) : 0;
   }
 
@@ -122,7 +134,10 @@ class LineInventoryController {
       ...sourceItem,
       instanceId: segmentId,
       quantity: 1,
-      lengthMeters: equipLength,
+      statOverrides: {
+        ...(sourceItem.statOverrides || {}),
+        lengthMeters: equipLength,
+      },
       detachedLineSegment: true,
       sourceLineItemId: sourceItem.itemId,
       sourceLineInstanceId: sourceItem.instanceId,
@@ -134,7 +149,10 @@ class LineInventoryController {
 
   #setLineLengthMeters(item, lengthMeters) {
     if (!item) return;
-    item.lengthMeters = Math.max(0, Number(lengthMeters) || 0);
+    item.statOverrides = {
+      ...(item.statOverrides || {}),
+      lengthMeters: Math.max(0, Number(lengthMeters) || 0),
+    };
     item.quantity = 1;
   }
 
@@ -172,24 +190,35 @@ class LineInventoryController {
     if (!item) return null;
     const base = this.#db.getItemData(item.itemId);
     if (!base) return null;
-    return { ...base, ...(base.engineStats || {}), ...item };
+    return {
+      ...base,
+      ...item,
+      effectiveStats: this.#effectiveStatsResolver.resolve({
+        definition: base,
+        instanceState: item,
+      }),
+    };
   }
 
   #hasSameLineMergeSignature(a, b) {
     if (!a || !b) return false;
-    const keys = [
+    const metadataKeys = [
       "id",
-      "type",
+      "itemType",
+      "rolledStats",
+    ];
+    const statKeys = [
       "maxLoadKg",
       "diameterMm",
       "durability",
       "quality",
-      "rolledStats",
     ];
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
-      const av = a[key] ?? a.engineStats?.[key];
-      const bv = b[key] ?? b.engineStats?.[key];
+    for (const key of metadataKeys) {
+      if (JSON.stringify(a[key]) !== JSON.stringify(b[key])) return false;
+    }
+    for (const key of statKeys) {
+      const av = a.effectiveStats?.[key];
+      const bv = b.effectiveStats?.[key];
       if (JSON.stringify(av) !== JSON.stringify(bv)) return false;
     }
     return JSON.stringify(a.rarity) === JSON.stringify(b.rarity);

@@ -92,7 +92,7 @@ class FishingEquipmentRenderModelBuilder {
     const scale = this.#projector.getPerspective(
       floatEntity.getPosition().y,
     ).scale;
-    const rodType = equipment.rod?.type || "float";
+    const rodType = equipment.rod?.variant || "float";
     let kind = "";
     if (floatEntity.isHooked()) kind = "hooked";
     else if (rodType === "spinning" && equipment.baits?.[0]) kind = "lure";
@@ -100,14 +100,8 @@ class FishingEquipmentRenderModelBuilder {
     else if (equipment.float) kind = "float";
     if (!kind) return;
     const floatConfig = equipment.float || {};
-    const width =
-      floatConfig.width ||
-      floatConfig.engineStats?.width ||
-      3;
-    const length =
-      floatConfig.length ||
-      floatConfig.engineStats?.length ||
-      15;
+    const width = floatConfig.effectiveStats?.width || 3;
+    const length = floatConfig.effectiveStats?.length || 15;
     target.visible = true;
     target.kind = kind;
     target.x = screenPosition.x;

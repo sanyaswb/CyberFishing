@@ -21,7 +21,7 @@ class EquipmentService {
     const hooks = eq?.hooks || [];
     const baits = eq?.baits || [];
     for (let i = 0; i < baits.length; i++) {
-      if (hooks[i] && baits[i]?.type === "bait") {
+      if (hooks[i] && baits[i]?.itemType === "bait") {
         return this.#inventory.consumeEquipped(`baits_${i}`, 1, false);
       }
     }

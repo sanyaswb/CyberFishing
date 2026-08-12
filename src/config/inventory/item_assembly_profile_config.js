@@ -8,7 +8,7 @@ const ITEM_ASSEMBLY_PROFILE_IDS = Object.freeze({
 const ITEM_ASSEMBLY_PROFILE_CONFIG = Object.freeze({
   [ITEM_ASSEMBLY_PROFILE_IDS.REEL]: Object.freeze({
     id: ITEM_ASSEMBLY_PROFILE_IDS.REEL,
-    fallbackTypes: Object.freeze(["spinning_reel", "reel"]),
+    fallbackTypes: Object.freeze(["reel"]),
     slots: Object.freeze([
       Object.freeze({
         id: "line",
@@ -23,8 +23,6 @@ const ITEM_ASSEMBLY_PROFILE_CONFIG = Object.freeze({
     id: ITEM_ASSEMBLY_PROFILE_IDS.FEEDER_RIG,
     fallbackTypes: Object.freeze([
       "feeder_rig",
-      "spring_rig",
-      "feeder_tackle",
     ]),
     slots: Object.freeze([
       Object.freeze({

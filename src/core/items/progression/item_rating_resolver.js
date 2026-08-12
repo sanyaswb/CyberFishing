@@ -1,34 +1,34 @@
-class ItemPowerResolver {
+class ItemRatingResolver {
   #strategyRegistry;
   #baselineRegistry;
 
   constructor({ strategyRegistry, baselineRegistry } = {}) {
     if (!strategyRegistry || typeof strategyRegistry.get !== "function") {
-      throw new TypeError("ItemPowerResolver requires strategyRegistry");
+      throw new TypeError("ItemRatingResolver requires strategyRegistry");
     }
     if (!baselineRegistry || typeof baselineRegistry.resolve !== "function") {
-      throw new TypeError("ItemPowerResolver requires baselineRegistry");
+      throw new TypeError("ItemRatingResolver requires baselineRegistry");
     }
     this.#strategyRegistry = strategyRegistry;
     this.#baselineRegistry = baselineRegistry;
   }
 
   resolve({ item, groupId, groupConfig } = {}) {
-    const powerConfig = groupConfig?.power;
-    const strategy = this.#strategyRegistry.get(powerConfig?.strategyId);
-    if (!strategy) return this.#unavailable("strategy_missing", powerConfig);
+    const ratingConfig = groupConfig?.rating;
+    const strategy = this.#strategyRegistry.get(ratingConfig?.strategyId);
+    if (!strategy) return this.#unavailable("strategy_missing", ratingConfig);
 
     const metric = strategy.evaluate({
       item,
       groupId,
-      powerConfig,
+      ratingConfig,
       strategyRegistry: this.#strategyRegistry,
       baselineRegistry: this.#baselineRegistry,
     });
     if (!metric?.available) {
       return this.#unavailable(
         metric?.reason || "metric_missing",
-        powerConfig,
+        ratingConfig,
         strategy.id,
         metric?.metricId,
       );
@@ -41,13 +41,13 @@ class ItemPowerResolver {
     if (!Number.isFinite(normalized)) {
       const baseline = this.#baselineRegistry.resolve({
         groupId,
-        powerConfig,
+        ratingConfig,
         strategy,
       });
       if (!baseline.available) {
         return this.#unavailable(
           baseline.reason,
-          powerConfig,
+          ratingConfig,
           strategy.id,
           metric.metricId,
         );
@@ -59,13 +59,13 @@ class ItemPowerResolver {
         metric.rawValue,
         minimum,
         maximum,
-        powerConfig.direction,
+        ratingConfig.direction,
       );
     }
     if (!Number.isFinite(normalized)) {
       return this.#unavailable(
         "normalization_failed",
-        powerConfig,
+        ratingConfig,
         strategy.id,
         metric.metricId,
       );
@@ -82,8 +82,8 @@ class ItemPowerResolver {
       reason: null,
       strategyId: strategy.id,
       metricId: metric.metricId,
-      metricLabel: powerConfig.metricLabel || metric.metricId,
-      metricSuffix: powerConfig.metricSuffix || "",
+      metricLabel: ratingConfig.metricLabel || metric.metricId,
+      metricSuffix: ratingConfig.metricSuffix || "",
       rawValue: metric.rawValue,
       minimum,
       maximum,
@@ -107,10 +107,10 @@ class ItemPowerResolver {
     return Object.freeze({
       available: false,
       reason,
-      strategyId: strategyId || config.strategyId || null,
+      strategyId: strategyId || config?.strategyId || null,
       metricId: metricId || null,
-      metricLabel: config.metricLabel || null,
-      metricSuffix: config.metricSuffix || "",
+      metricLabel: config?.metricLabel || null,
+      metricSuffix: config?.metricSuffix || "",
       rawValue: null,
       minimum: null,
       maximum: null,

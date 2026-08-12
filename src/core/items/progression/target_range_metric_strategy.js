@@ -3,18 +3,18 @@ class TargetRangeMetricStrategy extends ItemMetricStrategy {
     super("target_range");
   }
 
-  evaluate({ item, powerConfig } = {}) {
+  evaluate({ item, ratingConfig } = {}) {
     const rawValue = this.finiteNumber(
-      this.readPath(item, powerConfig?.statPath),
+      this.readPath(item, ratingConfig?.statPath),
     );
-    const target = powerConfig?.targetRange || {};
+    const target = ratingConfig?.targetRange || {};
     const targetMinimum = this.finiteNumber(target.minimum);
     const targetMaximum = this.finiteNumber(target.maximum);
     const falloffMinimum = this.finiteNumber(target.falloffMinimum);
     const falloffMaximum = this.finiteNumber(target.falloffMaximum);
     if (rawValue === null) {
       return this.unavailable("metric_missing", {
-        metricId: String(powerConfig?.statPath || "target_range"),
+        metricId: String(ratingConfig?.statPath || "target_range"),
       });
     }
     if (
@@ -25,7 +25,7 @@ class TargetRangeMetricStrategy extends ItemMetricStrategy {
       targetMaximum >= falloffMaximum
     ) {
       return this.unavailable("target_range_invalid", {
-        metricId: String(powerConfig?.statPath || "target_range"),
+        metricId: String(ratingConfig?.statPath || "target_range"),
       });
     }
 
@@ -39,7 +39,7 @@ class TargetRangeMetricStrategy extends ItemMetricStrategy {
     }
     normalized = Math.max(0, Math.min(1, normalized));
     return this.available({
-      metricId: String(powerConfig.statPath).split(".").pop(),
+      metricId: String(ratingConfig.statPath).split(".").pop(),
       rawValue,
       normalized,
       minimum: falloffMinimum,

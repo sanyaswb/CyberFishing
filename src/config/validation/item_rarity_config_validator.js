@@ -50,7 +50,7 @@ class ItemRarityConfigValidator {
     }
 
     const profile = item.rarityProfile;
-    const itemType = String(item.type || item.engineStats?.type || "").trim();
+    const itemType = String(item.itemType || "").trim();
     if (profile === null) {
       if (!this.#nullProfileTypes.has(itemType)) {
         this.#error(

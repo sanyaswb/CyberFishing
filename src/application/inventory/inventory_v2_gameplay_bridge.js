@@ -2,7 +2,7 @@ class InventoryV2GameplayBridge {
   #repository;
   #hydrator;
   #equipmentState;
-  #projectionService;
+  #equipmentReadModelFactory;
   #readinessPolicy;
   #commands;
   #itemViews;
@@ -13,7 +13,7 @@ class InventoryV2GameplayBridge {
     repository,
     hydrator,
     equipmentState,
-    projectionService,
+    equipmentReadModelFactory,
     readinessPolicy,
     commands,
     itemViews = null,
@@ -21,7 +21,7 @@ class InventoryV2GameplayBridge {
     this.#repository = repository;
     this.#hydrator = hydrator;
     this.#equipmentState = equipmentState;
-    this.#projectionService = projectionService;
+    this.#equipmentReadModelFactory = equipmentReadModelFactory;
     this.#readinessPolicy = readinessPolicy;
     this.#commands = commands;
     this.#itemViews = itemViews;
@@ -32,12 +32,8 @@ class InventoryV2GameplayBridge {
     return this;
   }
 
-  getProjectedEquipment() {
-    return this.#projectionService.project(this.#equipmentState);
-  }
-
   getEquipped() {
-    return this.getProjectedEquipment();
+    return this.#equipmentReadModelFactory.create(this.#equipmentState);
   }
 
   listItems({
@@ -49,7 +45,10 @@ class InventoryV2GameplayBridge {
       .list()
       .filter((item) => includeAttached || !InventoryItemLocation.isAttached(item.location))
       .filter((item) => includeLoadout || !InventoryItemLocation.isLoadout(item.location))
-      .map((item) => (hydrated ? this.#hydrator.hydrate(item, this.#repository) : item));
+      .map((item) => {
+        if (!hydrated) return item;
+        return this.#hydrator.hydrate(item, this.#repository);
+      });
   }
 
   getInventoryItems() {
@@ -66,9 +65,8 @@ class InventoryV2GameplayBridge {
 
   getItem(instanceId, { hydrated = true } = {}) {
     const item = this.#repository.get(instanceId);
-    return item && hydrated
-      ? this.#hydrator.hydrate(item, this.#repository)
-      : item;
+    if (!item || !hydrated) return item;
+    return this.#hydrator.hydrate(item, this.#repository);
   }
 
   hydrateInstance(instanceId) {
@@ -76,13 +74,13 @@ class InventoryV2GameplayBridge {
   }
 
   findFirstItemByType(type) {
-    return this.listItems().find((item) => item?.type === type) || null;
+    return this.listItems().find((item) => this.#matchesType(item, type)) || null;
   }
 
   findItemsByType(type, out = []) {
     out.length = 0;
     for (const item of this.listItems()) {
-      if (item?.type === type) out.push(item);
+      if (this.#matchesType(item, type)) out.push(item);
     }
     return out;
   }
@@ -159,6 +157,10 @@ class InventoryV2GameplayBridge {
 
   getLastResult() {
     return this.#lastResult;
+  }
+
+  #matchesType(item, type) {
+    return item?.itemType === type || item?.variant === type;
   }
 
   #booleanMutation(result) {

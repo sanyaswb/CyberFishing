@@ -58,7 +58,7 @@ class InventoryV2ItemViewFactory {
     return {
       instanceId: loadout.loadoutId,
       itemId: "equipment_loadout",
-      type: "equipment_loadout",
+      itemType: "equipment_loadout",
       name: loadout.name,
       icon: "🧰",
       quantity: 1,
@@ -100,7 +100,7 @@ class InventoryV2ItemViewFactory {
 
   #createBoatCharge(item) {
     if (
-      !["boat", "chum_delivery"].includes(item?.type) ||
+      !["boat", "chum_delivery"].includes(item?.itemType) ||
       !this.#boatChargeProvider
     ) {
       return null;
@@ -110,7 +110,7 @@ class InventoryV2ItemViewFactory {
       typeof reading === "number" ? reading : reading?.current,
     );
     const maximum = Number(
-      reading?.maximum ?? item.maxEnergy ?? item.engineStats?.maxEnergy,
+      reading?.maximum ?? item.effectiveStats?.maxEnergy,
     );
     if (!Number.isFinite(current)) return null;
     const percent = Number.isFinite(maximum) && maximum > 0

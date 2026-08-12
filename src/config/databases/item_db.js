@@ -7,7 +7,7 @@
  * Важливо: дальність закидання НЕ зберігається в ITEM_DB.
  * Її рахує CastDistanceCalculator з окремо спорядженої ліски
  * та CONFIG.physics.simulation.pixelsPerMeter.
- * rarityProfile призначається дизайнером і не виводиться з engineStats.
+ * rarityProfile призначається дизайнером і не виводиться з gameplayStats.
  */
 const ITEM_DB = {
   rods: {
@@ -15,7 +15,8 @@ const ITEM_DB = {
     rod_test_spin: {
       id: "rod_test_spin",
       name: "Тестовий Спінінг",
-      type: "spinning", // Для UI фільтрів
+      itemType: "rod",
+      variant: "spinning",
       icon: "🎣",
       rarityProfile: {
         mode: "authored",
@@ -28,7 +29,8 @@ const ITEM_DB = {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
         castPowerCoefficient: "Сила закидання:",
-        type: {
+        variant: {
+          key: "variant",
           label: "Тип",
           map: {
             spinning: "Спінінг",
@@ -39,9 +41,8 @@ const ITEM_DB = {
         },
         durability: "Стан: %",
       },
-      engineStats: {
-        type: "spinning", // КРИТИЧНО ДЛЯ ФІЗИКИ
-        level: 4,
+      gameplayStats: {
+        equipmentPowerLevel: 4,
         basePower: 1.5,
         compensation: 0.6,
         accuracy: 70,
@@ -67,7 +68,8 @@ const ITEM_DB = {
     rod_test_feeder: {
       id: "rod_test_feeder",
       name: "Тестовий Фідер",
-      type: "feeder", // Для UI фільтрів
+      itemType: "rod",
+      variant: "feeder",
       icon: "🎣",
       rarityProfile: {
         mode: "authored",
@@ -80,7 +82,8 @@ const ITEM_DB = {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
         castPowerCoefficient: "Сила закидання:",
-        type: {
+        variant: {
+          key: "variant",
           label: "Тип",
           map: {
             spinning: "Спінінг",
@@ -91,9 +94,8 @@ const ITEM_DB = {
         },
         durability: "Стан: %",
       },
-      engineStats: {
-        type: "feeder", // КРИТИЧНО ДЛЯ ФІЗИКИ
-        level: 4,
+      gameplayStats: {
+        equipmentPowerLevel: 4,
         basePower: 1.5,
         compensation: 0.4,
         accuracy: 85,
@@ -119,7 +121,8 @@ const ITEM_DB = {
     rod_test_float: {
       id: "rod_test_float",
       name: "Бамбукова Вудка",
-      type: "float",
+      itemType: "rod",
+      variant: "float",
       icon: "🎣",
       rarityProfile: {
         mode: "authored",
@@ -133,7 +136,8 @@ const ITEM_DB = {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
         castPowerCoefficient: "Сила закидання:",
-        type: {
+        variant: {
+          key: "variant",
           label: "Тип",
           map: {
             spinning: "Спінінг",
@@ -144,9 +148,8 @@ const ITEM_DB = {
         },
         durability: "Стан: %",
       },
-      engineStats: {
-        type: "float",
-        level: 1,
+      gameplayStats: {
+        equipmentPowerLevel: 1,
         basePower: 1.0,
         compensation: 0.2,
         accuracy: 60,
@@ -173,7 +176,8 @@ const ITEM_DB = {
     reel_test: {
       id: "reel_test",
       name: "Тестова Котушка",
-      type: "spinning_reel",
+      itemType: "reel",
+      variant: "spinning_reel",
       icon: "⚙️",
       rarityProfile: {
         mode: "authored",
@@ -194,7 +198,7 @@ const ITEM_DB = {
         bearingCount: "Підшипники:",
         durability: "Стан: %",
       },
-      engineStats: {
+      gameplayStats: {
         basePower: 1.0,
         maxLoadKg: 1,
         lineCapacityMeters: 20,
@@ -214,7 +218,8 @@ const ITEM_DB = {
     reel_bolognese_nodrag: {
       id: "reel_bolognese_nodrag",
       name: "Інерційна котушка без фрикціону",
-      type: "spinning_reel",
+      itemType: "reel",
+      variant: "spinning_reel",
       icon: "⚙️",
       rarityProfile: {
         mode: "authored",
@@ -235,7 +240,7 @@ const ITEM_DB = {
         },
         durability: "Стан: %",
       },
-      engineStats: {
+      gameplayStats: {
         basePower: 0.6,
         maxLoadKg: 1.5,
         lineCapacityMeters: 18,
@@ -258,7 +263,7 @@ const ITEM_DB = {
     line_test_1: {
       id: "line_test_1",
       name: "Test line I",
-      type: "fishing_line",
+      itemType: "fishing_line",
       icon: "🧵",
       rarityProfile: {
         mode: "authored",
@@ -273,8 +278,7 @@ const ITEM_DB = {
         maxLoadKg: "Макс. навантаження: кг.",
         durability: "Стан: %",
       },
-      engineStats: {
-        type: "fishing_line",
+      gameplayStats: {
         lengthMeters: 25,
         diameterMm: 0.22,
         maxLoadKg: 1,
@@ -287,7 +291,7 @@ const ITEM_DB = {
     line_test_2: {
       id: "line_test_2",
       name: "Test line II",
-      type: "fishing_line",
+      itemType: "fishing_line",
       icon: "🧵",
       rarityProfile: {
         mode: "authored",
@@ -302,8 +306,7 @@ const ITEM_DB = {
         maxLoadKg: "Макс. навантаження: кг.",
         durability: "Стан: %",
       },
-      engineStats: {
-        type: "fishing_line",
+      gameplayStats: {
         lengthMeters: 10,
         diameterMm: 0.16,
         maxLoadKg: 1,
@@ -316,7 +319,7 @@ const ITEM_DB = {
     line_test_3: {
       id: "line_test_3",
       name: "Test line III",
-      type: "fishing_line",
+      itemType: "fishing_line",
       icon: "🧵",
       rarityProfile: {
         mode: "authored",
@@ -331,8 +334,7 @@ const ITEM_DB = {
         maxLoadKg: "Макс. навантаження: кг.",
         durability: "Стан: %",
       },
-      engineStats: {
-        type: "fishing_line",
+      gameplayStats: {
         lengthMeters: 50,
         diameterMm: 0.16,
         maxLoadKg: 1,
@@ -347,7 +349,7 @@ const ITEM_DB = {
     leader_test_025: {
       id: "leader_test_025",
       name: "Тестовий поводок 0.25мм",
-      type: "leader_line",
+      itemType: "leader_line",
       icon: "🪢",
       rarityProfile: {
         mode: "authored",
@@ -361,8 +363,7 @@ const ITEM_DB = {
         maxLoadKg: "Макс. навантаження: кг.",
         durability: "Стан: %",
       },
-      engineStats: {
-        type: "leader_line",
+      gameplayStats: {
         diameterMm: 0.25,
         maxLoadKg: 1.2,
         quality: 6,
@@ -377,7 +378,7 @@ const ITEM_DB = {
     hook_basic: {
       id: "hook_basic",
       name: "Базовий гачок",
-      type: "hook",
+      itemType: "hook",
       icon: "🪝",
       rarityProfile: {
         mode: "authored",
@@ -389,7 +390,8 @@ const ITEM_DB = {
       displayStats: {
         weight: "Вага: кг",
       },
-      engineStats: {
+      gameplayStats: {
+        equipmentPowerLevel: 1,
         weight: 4,
         maxLoadKg: 0.8,
         quality: 1,
@@ -404,7 +406,7 @@ const ITEM_DB = {
     feeder_spring_basic: {
       id: "feeder_spring_basic",
       name: "Базова пружина",
-      type: "feeder_rig",
+      itemType: "feeder_rig",
       icon: "🪤",
       rarityProfile: {
         mode: "authored",
@@ -421,7 +423,7 @@ const ITEM_DB = {
         },
         currentCompensation: "Компенсація:",
       },
-      engineStats: {
+      gameplayStats: {
         requiresTag: "feeder_rig",
         capabilities: ["hook", "bait", "chum_mix"],
         hooksCount: 2,
@@ -436,7 +438,7 @@ const ITEM_DB = {
     oil_worm: {
       id: "oil_worm",
       name: "Масляний черв'як",
-      type: "bait",
+      itemType: "bait",
       icon: "🪱",
       rarityProfile: {
         mode: "authored",
@@ -446,13 +448,13 @@ const ITEM_DB = {
       },
       progressionProfile: { groupId: "bait.natural" },
       displayStats: {
-        type: {
+        itemType: {
+          key: "itemType",
           label: "Тип",
           map: { bait: "Наживка" },
         },
       },
-      engineStats: {
-        type: "bait",
+      gameplayStats: {
         attractionPower: 1.8,
         quality: 8,
         requiresTag: "bait",
@@ -462,7 +464,7 @@ const ITEM_DB = {
     bread: {
       id: "bread",
       name: "Хліб",
-      type: "bait",
+      itemType: "bait",
       icon: "🍞",
       rarityProfile: {
         mode: "authored",
@@ -472,13 +474,13 @@ const ITEM_DB = {
       },
       progressionProfile: { groupId: "bait.natural" },
       displayStats: {
-        type: {
+        itemType: {
+          key: "itemType",
           label: "Тип",
           map: { bait: "Наживка" },
         },
       },
-      engineStats: {
-        type: "bait",
+      gameplayStats: {
         attractionPower: 1,
         quality: 5,
         requiresTag: "bait",
@@ -488,7 +490,8 @@ const ITEM_DB = {
     test_spinner: {
       id: "test_spinner",
       name: "Блешня (Тест)",
-      type: "lure",
+      itemType: "lure",
+      variant: "spinner",
       icon: "🥄",
       rarityProfile: {
         mode: "authored",
@@ -498,7 +501,8 @@ const ITEM_DB = {
       },
       progressionProfile: { groupId: "lure.spinner" },
       displayStats: {
-        type: {
+        variant: {
+          key: "variant",
           label: "Тип",
           map: { spinner: "Блешня" },
         },
@@ -506,8 +510,7 @@ const ITEM_DB = {
         riseSpeed: "Підйом: м/с",
         currentCompensation: "Компенсація:",
       },
-      engineStats: {
-        type: "spinner",
+      gameplayStats: {
         mode: 1,
         waterFriction: 0.2,
         sinkSpeed: 1.5,
@@ -522,7 +525,8 @@ const ITEM_DB = {
     test_wobbler_suspend: {
       id: "test_wobbler_suspend",
       name: "Воблер Suspend",
-      type: "lure",
+      itemType: "lure",
+      variant: "wobbler",
       icon: "🐟",
       rarityProfile: {
         mode: "authored",
@@ -532,7 +536,8 @@ const ITEM_DB = {
       },
       progressionProfile: { groupId: "lure.wobbler" },
       displayStats: {
-        type: {
+        variant: {
+          key: "variant",
           label: "Тип",
           map: { wobbler: "Воблер" },
         },
@@ -547,8 +552,7 @@ const ITEM_DB = {
         },
         currentCompensation: "Компенсація:",
       },
-      engineStats: {
-        type: "wobbler",
+      gameplayStats: {
         mode: 2,
         waterFriction: 0.4,
         sinkSpeed: 1.0,
@@ -566,7 +570,8 @@ const ITEM_DB = {
     test_wobbler_sinking: {
       id: "test_wobbler_sinking",
       name: "Воблер Sinking",
-      type: "lure",
+      itemType: "lure",
+      variant: "wobbler",
       icon: "🐟",
       rarityProfile: {
         mode: "authored",
@@ -576,7 +581,8 @@ const ITEM_DB = {
       },
       progressionProfile: { groupId: "lure.wobbler" },
       displayStats: {
-        type: {
+        variant: {
+          key: "variant",
           label: "Тип",
           map: { wobbler: "Воблер" },
         },
@@ -591,8 +597,7 @@ const ITEM_DB = {
         },
         currentCompensation: "Компенсація:",
       },
-      engineStats: {
-        type: "wobbler",
+      gameplayStats: {
         mode: 3,
         waterFriction: 0.3,
         sinkSpeed: 2.0,
@@ -610,7 +615,8 @@ const ITEM_DB = {
     test_jig: {
       id: "test_jig",
       name: "Джиг",
-      type: "jig",
+      itemType: "lure",
+      variant: "jig",
       icon: "🪨",
       rarityProfile: {
         mode: "authored",
@@ -620,7 +626,8 @@ const ITEM_DB = {
       },
       progressionProfile: { groupId: "lure.jig" },
       displayStats: {
-        type: {
+        variant: {
+          key: "variant",
           label: "Тип",
           map: { jig: "Джиг" },
         },
@@ -628,8 +635,7 @@ const ITEM_DB = {
         riseSpeed: "Підйом: м/с",
         currentCompensation: "Компенсація:",
       },
-      engineStats: {
-        type: "jig",
+      gameplayStats: {
         mode: 1,
         waterFriction: 0.15,
         sinkSpeed: 3.0,
@@ -646,7 +652,8 @@ const ITEM_DB = {
     float_day: {
       id: "float_day",
       name: "Денний поплавок",
-      type: "float_tackle",
+      itemType: "float",
+      variant: "day",
       icon: "🥢",
       rarityProfile: {
         mode: "authored",
@@ -656,7 +663,8 @@ const ITEM_DB = {
       },
       progressionProfile: { groupId: "float.day" },
       displayStats: {
-        type: {
+        variant: {
+          key: "variant",
           label: "Тип",
           map: { day: "Денний", night: "Нічний" },
         },
@@ -669,10 +677,9 @@ const ITEM_DB = {
         length: "Довжина: см",
       },
 
-      engineStats: {
+      gameplayStats: {
         width: 3,
         length: 15,
-        type: "day",
         sensitivity: 9,
         quality: 10.0,
         windCompensation: [0.1, 1.0],
@@ -696,7 +703,7 @@ const ITEM_DB = {
     net_basic: {
       id: "net_basic",
       name: "Базова підсака",
-      type: "net", // Залишається як є
+      itemType: "net",
       icon: "🕸️",
       rarityProfile: {
         mode: "authored",
@@ -709,7 +716,7 @@ const ITEM_DB = {
         maxWeight: "Макс. вага: кг",
         length: "Довжина: м",
       },
-      engineStats: {
+      gameplayStats: {
         active: true,
         length: 3.0,
         maxWeight: 3.0,
@@ -729,7 +736,7 @@ const ITEM_DB = {
     carp_mix_basic: {
       id: "carp_mix_basic",
       name: "Базова коропова суміш",
-      type: "chum_mix",
+      itemType: "chum_mix",
       icon: "🍞",
       rarityProfile: {
         mode: "authored",
@@ -743,7 +750,7 @@ const ITEM_DB = {
         radius: "Радіус: px",
         maxBonus: "Макс. бонус:",
       },
-      engineStats: {
+      gameplayStats: {
         requiresTag: "chum_mix",
         targetFishes: ["crucian_stalker"],
         radius: 150,
@@ -764,7 +771,7 @@ const ITEM_DB = {
       id: "boat_lvl3",
       name: "Кораблик (Рівень 3)",
       icon: "🚤",
-      type: "boat",
+      itemType: "boat",
       rarityProfile: {
         mode: "authored",
         tier: 5,
@@ -774,9 +781,11 @@ const ITEM_DB = {
       progressionProfile: { groupId: "delivery.boat" },
 
       displayStats: {
+        upgradeLevel: "Рівень покращення:",
         speedPxPerSec: {
           label: "Швидкість",
           byLevel: "statsByLevel",
+          levelKey: "upgradeLevel",
           stat: "speedPxPerSec",
           suffix: "px/с",
         },
@@ -786,15 +795,14 @@ const ITEM_DB = {
         },
         sections: "Бункери:",
       },
-      engineStats: {
+      gameplayStats: {
         hasSonar: true,
         showSensors: false,
         manualControl: false,
-        type: "boat",
         capabilities: ["chum_mix"],
         sections: 3,
         quality: 9,
-        level: 3,
+        upgradeLevel: 3,
         assemblyProfileId: "bait_boat",
         statsByLevel: {
           1: { speedPxPerSec: 150, maxEnergy: 60, energyDrainPerSec: 1 },
@@ -828,12 +836,12 @@ const ITEM_DB = {
     sys_build_box: {
       id: "sys_build_box",
       name: "Ящик збірки",
-      type: "build_box",
+      itemType: "build_box",
       icon: "🧰",
       rarityProfile: null,
       progressionProfile: null,
       displayStats: {},
-      engineStats: { type: "build_box" },
+      gameplayStats: {},
     },
   },
 
@@ -841,7 +849,7 @@ const ITEM_DB = {
     debug_float_build: {
       id: "debug_float_build",
       name: "Test Build (Dev)",
-      type: "build_template",
+      itemType: "build_template",
       rarityProfile: null,
       progressionProfile: null,
       items: [
@@ -855,7 +863,7 @@ const ITEM_DB = {
     debug_feeder_build: {
       id: "debug_feeder_build",
       name: "Test Build (Dev2)",
-      type: "build_template",
+      itemType: "build_template",
       rarityProfile: null,
       progressionProfile: null,
       items: [

@@ -37,9 +37,13 @@ class DebugService {
     const equippedBaits = eq?.baits || [];
     for (let i = 0; i < equippedBaits.length; i++) {
       if (equippedBaits[i]?.id) currentBaits.push(equippedBaits[i].id);
-      if (equippedBaits[i]?.type) currentBaitTypes.push(equippedBaits[i].type);
+      const baitType = equippedBaits[i]?.variant || equippedBaits[i]?.itemType;
+      if (baitType) currentBaitTypes.push(baitType);
     }
-    const currentHookSize = eq?.hooks?.[0]?.level || eq?.baits?.[0]?.level || 1;
+    const currentHookSize =
+      eq?.hooks?.[0]?.effectiveStats?.equipmentPowerLevel ||
+      eq?.baits?.[0]?.effectiveStats?.equipmentPowerLevel ||
+      1;
     const detail = {
       gameState: context.getGameStateName(),
       floatX: Math.round(pos.x),
@@ -63,7 +67,7 @@ class DebugService {
     };
 
     const activeBoat = context.getActiveBoat();
-    const boatHasSonar = eq?.delivery?.hasSonar ?? false;
+    const boatHasSonar = eq?.delivery?.effectiveStats?.hasSonar ?? false;
     if (activeBoat && boatHasSonar && detail.gameState === "scouting") {
       const boatCell = context.checkWater(activeBoat.pos.x, activeBoat.pos.y);
       const boatChum = context.getChumDataAt(

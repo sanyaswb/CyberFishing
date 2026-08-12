@@ -12,10 +12,11 @@ class DebugFormatters {
 
   static equipmentPower(item) {
     if (!item) return 0;
-    const maxLoad = Number(item.maxLoadKg);
-    const durability = Number(item.durability ?? 100);
+    const stats = item.effectiveStats || item;
+    const maxLoad = Number(stats.maxLoadKg);
+    const durability = Number(stats.durability ?? 100);
     const lossPerPercent = Number(
-      item.durabilityMaxLoadLossPerPercent ?? 0.001,
+      stats.durabilityMaxLoadLossPerPercent ?? 0.001,
     );
     if (!Number.isFinite(maxLoad) || maxLoad <= 0) return 0;
     return (
@@ -26,10 +27,13 @@ class DebugFormatters {
 
   static hookPower(hook) {
     if (!hook) return 0;
-    const level = Number(hook.level) || 0;
-    const weight = Number(hook.weight) || 0;
-    const quality = Number(hook.quality) || 0;
-    return (level * weight + quality) * 0.01;
+    const stats = hook.effectiveStats || hook;
+    const equipmentPowerLevel = Number(stats.equipmentPowerLevel) || 0;
+    const weight = Number(stats.weight) || 0;
+    const equipmentPower = equipmentPowerLevel * weight * 0.01;
+    return equipmentPower + new HookQualityModifier().getPowerBonus(
+      stats.quality,
+    );
   }
 }
 

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.20";
+const CURRENT_PROJECT_VERSION = "0.24.23";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "inventory-v2-chained-sorting",
-  updatedAt: "2026-08-11",
+  codename: "canonical-item-runtime",
+  updatedAt: "2026-08-12",
   notes: Object.freeze([
-    "Allow several inventory sorting criteria to be active together",
-    "Apply criteria in the order selected by the player",
-    "Show each active criterion's priority directly on its button",
-    "Keep one shared direction for the complete sorting chain",
+    "Use itemType, variant and effectiveStats exclusively at runtime",
+    "Remove legacy item flattening from gameplay and UI read models",
+    "Migrate inventory schema 2 saves to canonical schema 3 at load time",
+    "Keep legacy item conversion inside the persistence boundary",
   ]),
 });
 

@@ -34,9 +34,15 @@ class InventoryV2ItemParametersResolver {
     const renderedIds = new Set();
     const visual = this.#progressionDomAdapter?.resolveVisual?.(item.progression);
 
-    const level = this.#resolveLevel(item);
-    if (level) {
-      this.#append(parameters, renderedIds, "level", "text", level);
+    const progressionLevel = this.#resolveProgressionLevel(item);
+    if (progressionLevel) {
+      this.#append(
+        parameters,
+        renderedIds,
+        "progressionLevel",
+        "text",
+        progressionLevel,
+      );
     }
 
     if (item.rarity) {
@@ -69,18 +75,18 @@ class InventoryV2ItemParametersResolver {
       );
     }
 
-    const power = item.progression?.power;
-    if (power?.available && Number.isFinite(Number(power.percent))) {
+    const rating = item.progression?.rating;
+    if (rating?.available && Number.isFinite(Number(rating.percent))) {
       this.#append(
         parameters,
         renderedIds,
-        "power",
+        "rating",
         "bar",
-        `${Math.round(Number(power.percent))}%`,
+        `${Math.round(Number(rating.percent))}%`,
         {
-          label: power.metricLabel,
-          percent: power.percent,
-          color: visual?.power?.cssColor,
+          label: rating.metricLabel,
+          percent: rating.percent,
+          color: visual?.rating?.cssColor,
         },
       );
     }
@@ -181,13 +187,11 @@ class InventoryV2ItemParametersResolver {
     return `stat:${slug || "parameter"}`;
   }
 
-  #resolveLevel(item) {
-    const progressionLevel = item.progression?.level;
+  #resolveProgressionLevel(item) {
+    const progressionLevel = item.progression?.progressionLevel;
     const current = Number(
       progressionLevel?.current ??
-        progressionLevel?.value ??
-        item.level ??
-        item.engineStats?.level,
+        progressionLevel?.value,
     );
     if (!Number.isFinite(current)) return "";
     const maximum = Number(progressionLevel?.maximum);

@@ -113,14 +113,14 @@ class GameCompositionRoot {
       itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
       strategyRegistry: itemMetricStrategyRegistry,
     });
-    const itemPowerResolver = new ItemPowerResolver({
+    const itemRatingResolver = new ItemRatingResolver({
       strategyRegistry: itemMetricStrategyRegistry,
       baselineRegistry: itemCatalogBaselineRegistry,
     });
     const itemProgressionResolver = new ItemProgressionResolver({
       configProvider: () => this.#config.itemProgression || {},
-      powerResolver: itemPowerResolver,
-      levelResolver: new ItemLevelResolver(),
+      ratingResolver: itemRatingResolver,
+      progressionLevelResolver: new ItemProgressionLevelResolver(),
       qualityResolver: new ItemQualityResolver(),
       capacityResolver: new ItemCapacityResolver(),
       baselineRegistry: itemCatalogBaselineRegistry,
@@ -393,16 +393,28 @@ class GameCompositionRoot {
     );
     const eq = inventory.getEquipped();
     const chumConfigObj = { baits: {}, deliveryMethods: {} };
+    const bootstrapItemDatabase = new ItemDatabase(ITEM_DB);
+    const bootstrapStatsResolver = new EffectiveItemStatsResolver();
+    const projectDefinition = (itemId) => {
+      const definition = bootstrapItemDatabase.getItemData(itemId);
+      if (!definition) return null;
+      return {
+        ...definition,
+        effectiveStats: bootstrapStatsResolver.resolve({ definition }),
+      };
+    };
     if (typeof ITEM_DB !== "undefined" && ITEM_DB.chums) {
       for (const [key, item] of Object.entries(ITEM_DB.chums)) {
-        chumConfigObj.baits[key] = { ...item, ...(item.engineStats || {}) };
+        chumConfigObj.baits[key] = projectDefinition(item.id);
       }
     }
     if (typeof ITEM_DB !== "undefined" && ITEM_DB.deliveryMethods) {
       const firstBoatKey = Object.keys(ITEM_DB.deliveryMethods)[0];
       if (firstBoatKey) {
-        const b = ITEM_DB.deliveryMethods[firstBoatKey];
-        chumConfigObj.deliveryMethods.boat = { ...b, ...(b.engineStats || {}) };
+        const boatDefinition = ITEM_DB.deliveryMethods[firstBoatKey];
+        chumConfigObj.deliveryMethods.boat = projectDefinition(
+          boatDefinition.id,
+        );
       }
     }
     const systems = {
@@ -446,15 +458,17 @@ class GameCompositionRoot {
     };
     inventory.setBoatChargeProvider?.((boatItem) => {
       const current = systems.chum.getBoatEnergy();
-      const level = Number(boatItem?.level ?? boatItem?.engineStats?.level) || 1;
+      const upgradeLevel = Number(
+        boatItem?.effectiveStats?.upgradeLevel,
+      ) || 1;
       const statsByLevel =
-        boatItem?.statsByLevel || boatItem?.engineStats?.statsByLevel || {};
-      const levelStats = statsByLevel[level] || statsByLevel[1] || {};
+        boatItem?.effectiveStats?.statsByLevel || {};
+      const levelStats =
+        statsByLevel[upgradeLevel] || statsByLevel[1] || {};
       return {
         current,
         maximum: Number(
-          boatItem?.maxEnergy ??
-            boatItem?.engineStats?.maxEnergy ??
+          boatItem?.effectiveStats?.maxEnergy ??
             levelStats.maxEnergy,
         ),
       };

@@ -62,20 +62,17 @@ class InventoryV2AssemblyParameterSectionResolver {
 
   #signature(item) {
     return this.#stableSerialize({
-      itemId: item.itemId || item.id || item.type,
+      itemId: item.itemId || item.id || item.itemType,
       rarity: item.rarity?.id || item.rarity || item.rarityProfile?.tier,
-      level:
-        item.progression?.level?.current ??
-        item.progression?.level?.value ??
-        item.level ??
-        item.engineStats?.level,
+      progressionLevel:
+        item.progression?.progressionLevel?.current ??
+        item.progression?.progressionLevel?.value,
       quality:
         item.progression?.quality?.value ??
-        item.quality ??
-        item.engineStats?.quality,
+        item.effectiveStats?.quality,
       condition: item.condition?.percent,
       charge: item.charge?.percent,
-      engineStats: item.engineStats || null,
+      effectiveStats: item.effectiveStats || null,
       displayStats: item.displayStats || null,
     });
   }

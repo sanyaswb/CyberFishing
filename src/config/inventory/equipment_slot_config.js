@@ -42,14 +42,14 @@ const EQUIPMENT_SLOT_CONFIG = Object.freeze({
     label: "Вудилище",
     group: "main",
     visibility: "always",
-    acceptTypes: Object.freeze(["spinning", "feeder", "float", "pole", "match", "bolognese"]),
+    acceptTypes: Object.freeze(["rod"]),
   }),
   [EquipmentSlotId.REEL]: Object.freeze({
     id: EquipmentSlotId.REEL,
     label: "Котушка",
     group: "main",
     visibility: "supportsReel",
-    acceptTypes: Object.freeze(["spinning_reel"]),
+    acceptTypes: Object.freeze(["reel"]),
   }),
   [EquipmentSlotId.TERMINAL_LINE]: Object.freeze({
     id: EquipmentSlotId.TERMINAL_LINE,
@@ -67,12 +67,7 @@ const EQUIPMENT_SLOT_CONFIG = Object.freeze({
     acceptTypes: Object.freeze([
       "hook",
       "feeder_rig",
-      "spring",
-      "feeder_tackle",
       "lure",
-      "spinner",
-      "wobbler",
-      "jig",
     ]),
   }),
   [EquipmentSlotId.FLOAT]: Object.freeze({
@@ -80,7 +75,7 @@ const EQUIPMENT_SLOT_CONFIG = Object.freeze({
     label: "Поплавок",
     group: "main",
     visibility: "supportsFloat",
-    acceptTypes: Object.freeze(["float_tackle", "day", "night"]),
+    acceptTypes: Object.freeze(["float"]),
   }),
   [EquipmentSlotId.HAND_CHUM]: Object.freeze({
     id: EquipmentSlotId.HAND_CHUM,

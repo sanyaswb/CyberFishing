@@ -1,8 +1,8 @@
 const INVENTORY_V2_ITEM_PARAMETER_CONFIG = Object.freeze({
-  level: Object.freeze({
-    label: "Рівень",
+  progressionLevel: Object.freeze({
+    label: "Прогресійний рівень",
     description:
-      "Рівень предмета. Більш високий рівень відкриває доступ до кращих характеристик.",
+      "Сегмент рейтингу предмета за шкалою прогресії. Не є рівнем покращення або gameplay-рівнем спорядження.",
   }),
   rarity: Object.freeze({
     label: "Рідкість",
@@ -12,12 +12,12 @@ const INVENTORY_V2_ITEM_PARAMETER_CONFIG = Object.freeze({
   quality: Object.freeze({
     label: "Якість",
     description:
-      "Якість предмета показує заповнення доступних секцій покращення.",
+      "Внутрішній grade якості екземпляра від 1 до 10. Через доменні модифікатори впливає на силу гачка, шанс підсаки та компенсацію течії й вітру; секції лише візуалізують цей grade.",
   }),
-  power: Object.freeze({
-    label: "Сила",
+  rating: Object.freeze({
+    label: "Рейтинг",
     description:
-      "Поточна потужність або ефективність предмета відносно його максимального потенціалу.",
+      "Нормалізована позиція предмета в балансному діапазоні його категорії. Не є gameplay-силою або фізичною силою.",
   }),
   condition: Object.freeze({
     label: "Стан",
@@ -60,12 +60,12 @@ const INVENTORY_V2_ITEM_PARAMETER_CONFIG = Object.freeze({
 });
 
 const INVENTORY_V2_ITEM_PARAMETER_ALIASES = Object.freeze({
-  power: "power",
-  "сила": "power",
+  rating: "rating",
+  "рейтинг": "rating",
   condition: "condition",
   "стан": "condition",
-  level: "level",
-  "рівень": "level",
+  progressionlevel: "progressionLevel",
+  "прогресійний рівень": "progressionLevel",
   rarity: "rarity",
   "рідкість": "rarity",
   quality: "quality",
@@ -74,17 +74,22 @@ const INVENTORY_V2_ITEM_PARAMETER_ALIASES = Object.freeze({
 
 const INVENTORY_V2_BALANCE_TOOLTIP_CONFIG = Object.freeze({
   referenceCastDistanceMeters: 12,
-  ignoredEnginePaths: Object.freeze([
+  ignoredEffectiveStatsPaths: Object.freeze([
     "assemblyProfileId",
     "capabilities",
     "emoji",
     "equipmentCapabilities",
     "requiresTag",
-    "type",
   ]),
   stats: Object.freeze({
-    level: Object.freeze({
-      label: "Рівень",
+    upgradeLevel: Object.freeze({
+      label: "Рівень покращення",
+      baseline: 1,
+      precision: 0,
+      direction: "higher_is_better",
+    }),
+    equipmentPowerLevel: Object.freeze({
+      label: "Рівень сили спорядження",
       baseline: 1,
       precision: 0,
       direction: "higher_is_better",

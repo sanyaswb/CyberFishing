@@ -65,16 +65,15 @@ class IdleRetrievePolicyResolver {
     if (!rod) return true;
     const rodHasReel =
       (typeof rod?.hasReel === "function" ? rod.hasReel() : undefined) ??
-      rod?.hasReel ??
-      rod?.engineStats?.hasReel;
+      rod?.effectiveStats?.hasReel;
     if (rodHasReel === false) return false;
     if (!reel) return false;
     if (typeof reel.hasReel === "function") return reel.hasReel();
 
     const capacity = Number(
-      reel.lineCapacityMeters ?? reel.engineStats?.lineCapacityMeters ?? 0,
+      reel.effectiveStats?.lineCapacityMeters ?? 0,
     );
-    const power = Number(reel.basePower ?? reel.engineStats?.basePower ?? 0);
+    const power = Number(reel.effectiveStats?.basePower ?? 0);
     return capacity > 0 || power > 0;
   }
 }

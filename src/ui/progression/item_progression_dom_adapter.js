@@ -1,7 +1,7 @@
 class ItemProgressionDomAdapter {
   static #properties = Object.freeze([
-    "--item-power-percent",
-    "--item-power-color",
+    "--item-rating-percent",
+    "--item-rating-color",
     "--item-capacity-percent",
     "--item-capacity-color",
     "--item-quality-color",
@@ -34,10 +34,13 @@ class ItemProgressionDomAdapter {
 
     const documentRef = element.ownerDocument || globalThis.document;
     if (!documentRef?.createElement) return resolvedVisual;
-    if (progression.level?.available && options.renderLevelBadge !== false) {
-      element.appendChild(this.#createLevelBadge(
+    if (
+      progression.progressionLevel?.available &&
+      options.renderLevelBadge !== false
+    ) {
+      element.appendChild(this.#createProgressionLevelBadge(
         documentRef,
-        progression.level,
+        progression.progressionLevel,
       ));
     }
     if (
@@ -100,12 +103,12 @@ class ItemProgressionDomAdapter {
     title.textContent = "Прогресія предмета";
     section.appendChild(title);
 
-    if (progression.level?.available) {
+    if (progression.progressionLevel?.available) {
       this.#appendTooltipRow(
         documentRef,
         section,
-        "Рівень предмета",
-        `${progression.level.current}/${progression.level.maximum}`,
+        "Прогресійний рівень",
+        `${progression.progressionLevel.current}/${progression.progressionLevel.maximum}`,
       );
     }
     if (progression.capacity?.available) {
@@ -134,28 +137,28 @@ class ItemProgressionDomAdapter {
         ),
         "capacityUsed",
       );
-    } else if (progression.power?.available) {
-      section.appendChild(this.#createTooltipPowerScale(
+    } else if (progression.rating?.available) {
+      section.appendChild(this.#createTooltipRatingScale(
         documentRef,
-        progression.power,
+        progression.rating,
       ));
       this.#appendTooltipRow(
         documentRef,
         section,
-        progression.power.metricLabel || "Основний параметр",
+        progression.rating.metricLabel || "Основний параметр",
         this.#withSuffix(
-          this.#format(progression.power.rawValue),
-          progression.power.metricSuffix,
+          this.#format(progression.rating.rawValue),
+          progression.rating.metricSuffix,
         ),
       );
       this.#appendTooltipRow(
         documentRef,
         section,
         "Діапазон групи",
-        `${this.#format(progression.power.minimum)}–${this.#format(
-          progression.power.maximum,
-        )}${progression.power.metricSuffix
-          ? ` ${progression.power.metricSuffix}`
+        `${this.#format(progression.rating.minimum)}–${this.#format(
+          progression.rating.maximum,
+        )}${progression.rating.metricSuffix
+          ? ` ${progression.rating.metricSuffix}`
           : ""}`,
       );
     }
@@ -175,7 +178,7 @@ class ItemProgressionDomAdapter {
     for (const selector of [
       ".inv-slot__level-badge",
       ".inv-slot__quality-bar",
-      ".inv-slot__power-bar",
+      ".inv-slot__rating-bar",
       ".inv-slot__capacity-bar",
       ".inv-tooltip-progression",
     ]) {
@@ -191,11 +194,11 @@ class ItemProgressionDomAdapter {
 
   #applyVariables(element, progression, visual) {
     if (!element?.style) return;
-    const percent = Number(progression.power?.percent) || 0;
-    element.style.setProperty("--item-power-percent", `${percent}%`);
+    const percent = Number(progression.rating?.percent) || 0;
+    element.style.setProperty("--item-rating-percent", `${percent}%`);
     element.style.setProperty(
-      "--item-power-color",
-      visual.power?.cssColor || "transparent",
+      "--item-rating-color",
+      visual.rating?.cssColor || "transparent",
     );
     const capacityPercent = Number(progression.capacity?.percent) || 0;
     element.style.setProperty(
@@ -216,13 +219,13 @@ class ItemProgressionDomAdapter {
     );
   }
 
-  #createLevelBadge(documentRef, level) {
+  #createProgressionLevelBadge(documentRef, progressionLevel) {
     const badge = documentRef.createElement("div");
     badge.className = "inv-slot__level-badge";
-    badge.textContent = String(level.current);
+    badge.textContent = String(progressionLevel.current);
     badge.setAttribute(
       "aria-label",
-      `Рівень предмета ${level.current} з ${level.maximum}`,
+      `Прогресійний рівень ${progressionLevel.current} з ${progressionLevel.maximum}`,
     );
     return badge;
   }
@@ -242,20 +245,23 @@ class ItemProgressionDomAdapter {
     return bar;
   }
 
-  #createTooltipPowerScale(documentRef, power) {
+  #createTooltipRatingScale(documentRef, rating) {
     const block = this.#createTooltipScaleBlock(
       documentRef,
-      "Сила",
-      `${this.#format(power.percent)}%`,
+      "Рейтинг",
+      `${this.#format(rating.percent)}%`,
     );
     const scale = documentRef.createElement("div");
-    scale.className = "inv-tooltip__power-scale";
+    scale.className = "inv-tooltip__rating-scale";
     scale.setAttribute("role", "img");
-    scale.setAttribute("aria-label", `Сила ${this.#format(power.percent)}%`);
+    scale.setAttribute(
+      "aria-label",
+      `Рейтинг ${this.#format(rating.percent)}%`,
+    );
     const track = documentRef.createElement("span");
-    track.className = "inv-tooltip__power-track";
+    track.className = "inv-tooltip__rating-track";
     const fill = documentRef.createElement("span");
-    fill.className = "inv-tooltip__power-fill";
+    fill.className = "inv-tooltip__rating-fill";
     scale.append(track, fill);
     block.appendChild(scale);
     return block;

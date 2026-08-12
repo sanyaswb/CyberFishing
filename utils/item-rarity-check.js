@@ -19,6 +19,7 @@ class ItemRarityRuntimeLoader {
       "src/core/items/rarity/item_rarity_strategy_registry.js",
       "src/core/items/rarity/item_rarity_resolver.js",
       "src/core/inventory/inventory_item_stacking_policy.js",
+      "src/core/items/effective_item_stats_resolver.js",
       "src/systems/inventory_item_factory.js",
       "src/ui/styles/rarity_visual_resolver.js",
       "src/ui/rarity/item_rarity_dom_adapter.js",

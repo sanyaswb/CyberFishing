@@ -107,7 +107,7 @@ class EquipmentCompatibilityPolicy {
   }
 
   #type(item) {
-    return item?.type ?? item?.engineStats?.type ?? null;
+    return item?.itemType ?? null;
   }
 
   #result(isValid, reason = null, warningCode = null) {

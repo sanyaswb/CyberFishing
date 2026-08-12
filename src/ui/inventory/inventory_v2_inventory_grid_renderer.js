@@ -267,7 +267,7 @@ class InventoryV2InventoryGridRenderer {
         item.composite === true ||
         item.status === "draft" ||
         item.status === "prepared" ||
-        item.type === "equipment_loadout";
+        item.itemType === "equipment_loadout";
       grid.appendChild(
         this.#itemRenderer.renderInventoryItem(item, {
           selected: item.instanceId === model.selectedInstanceId,

@@ -145,8 +145,8 @@ class InventoryV2ItemOrderResolver {
   #compare(left, right, criterionId) {
     if (criterionId === "type") {
       const fallback = this.#typeRanks.size;
-      const leftType = String(left?.type || left?.engineStats?.type || "");
-      const rightType = String(right?.type || right?.engineStats?.type || "");
+      const leftType = String(left?.variant || left?.itemType || "");
+      const rightType = String(right?.variant || right?.itemType || "");
       const rankDifference =
         (this.#typeRanks.get(leftType) ?? fallback) -
         (this.#typeRanks.get(rightType) ?? fallback);
@@ -218,7 +218,11 @@ class InventoryV2ItemOrderResolver {
     const available = new Set(
       this.#config.criteria.map((criterion) => criterion.id),
     );
-    return [...new Set(candidates.map((id) => String(id || "")))]
+    const legacyIds = { level: "progressionLevel", power: "rating" };
+    return [...new Set(candidates.map((id) => {
+      const normalized = String(id || "");
+      return legacyIds[normalized] || normalized;
+    }))]
       .filter((id) => available.has(id));
   }
 

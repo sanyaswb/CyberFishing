@@ -1,6 +1,11 @@
 class InventoryItemFactory {
   static #derivedProgressionKeys = new Set([
     "progression",
+    "ratingPercent",
+    "progressionLevel",
+    "normalizedRating",
+    "ratingColor",
+    "ratingGradient",
     "powerPercent",
     "powerLevel",
     "normalizedPower",
@@ -17,7 +22,10 @@ class InventoryItemFactory {
   #itemDatabase;
   #itemRarityResolver;
 
-  constructor({ itemDatabase, itemRarityResolver }) {
+  constructor({
+    itemDatabase,
+    itemRarityResolver,
+  }) {
     if (!itemDatabase || typeof itemDatabase.getItemData !== "function") {
       throw new TypeError("InventoryItemFactory requires itemDatabase");
     }

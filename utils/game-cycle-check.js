@@ -5,6 +5,10 @@ const vm = require("node:vm");
 const ROOT = path.resolve(__dirname, "..");
 const FILES = [
   "src/core/input/fight_input_action_composer.js",
+  "src/core/items/quality/item_quality_grade_policy.js",
+  "src/core/items/quality/hook_quality_modifier.js",
+  "src/core/items/quality/net_quality_modifier.js",
+  "src/core/items/quality/environmental_compensation_modifier.js",
   "src/core/core.js",
   "src/config/databases/fish/presets/fish_profile_factory.js",
   "src/config/databases/fish/presets/fish_profile_presets.js",
@@ -145,13 +149,16 @@ function clone(value) {
 function hydrate(group, id, overrides = {}) {
   const source = ITEM_DB[group]?.[id];
   if (!source) throw new Error("Missing item " + group + "." + id);
+  const { instanceId, ...statOverrides } = overrides;
   return {
     ...clone(source),
-    ...(source.engineStats ? clone(source.engineStats) : {}),
-    ...overrides,
+    effectiveStats: {
+      ...clone(source.gameplayStats || {}),
+      ...statOverrides,
+    },
     id: source.id,
     itemId: source.id,
-    instanceId: overrides.instanceId || "test_" + id,
+    instanceId: instanceId || "test_" + id,
   };
 }
 
@@ -407,13 +414,13 @@ function runFloatDepthIntegrationChecks() {
     "standalone sinker item category is removed",
   );
   assert(
-    !!ITEM_DB.floats.float_day.engineStats.ballastProfiles,
+    !!ITEM_DB.floats.float_day.gameplayStats.ballastProfiles,
     "float owns its ballast profiles",
   );
   assert(
-    ITEM_DB.baits.feeder_spring_basic.type === "feeder_rig" &&
+    ITEM_DB.baits.feeder_spring_basic.itemType === "feeder_rig" &&
       Array.isArray(
-        ITEM_DB.baits.feeder_spring_basic.engineStats.currentCompensation,
+        ITEM_DB.baits.feeder_spring_basic.gameplayStats.currentCompensation,
       ),
     "feeder spring preserves its feeder weight parameters",
   );
@@ -845,7 +852,7 @@ function runRodStrokeCapacitySourceCheck() {
   const poleFrame = poleSystem.update({
     dtSec: 0,
     inputState: { pullHeld: false },
-    rod: { lengthMeters: 5 },
+    rod: { effectiveStats: { lengthMeters: 5 } },
     lineLengthMeters: 10,
     hasReel: false,
   });
@@ -860,7 +867,7 @@ function runRodStrokeCapacitySourceCheck() {
   const reelFrame = reelSystem.update({
     dtSec: 0,
     inputState: { pullHeld: false },
-    rod: { lengthMeters: 3 },
+    rod: { effectiveStats: { lengthMeters: 3 } },
     lineLengthMeters: 10,
     hasReel: true,
   });
@@ -883,7 +890,7 @@ function runRodStrokeDistanceSourceCheck() {
     tensionCeilingMultiplier: 1,
   });
   const rod = {
-    lengthMeters: 1,
+    effectiveStats: { lengthMeters: 1 },
     getEffectiveMaxLoadKg: () => 5,
     getHoldTensionRatio: () => 1,
   };

@@ -3,13 +3,13 @@ class DerivedStatMetricStrategy extends ItemMetricStrategy {
     super("derived_stat");
   }
 
-  evaluate({ item, powerConfig } = {}) {
-    const formulaId = powerConfig?.formulaId;
+  evaluate({ item, ratingConfig } = {}) {
+    const formulaId = ratingConfig?.formulaId;
     if (formulaId === "ratio") {
-      return this.#resolveRatio(item, powerConfig);
+      return this.#resolveRatio(item, ratingConfig);
     }
     if (formulaId === "upgrade_level_stat") {
-      return this.#resolveUpgradeLevelStat(item, powerConfig);
+      return this.#resolveUpgradeLevelStat(item, ratingConfig);
     }
     return this.unavailable("unsupported_formula", {
       metricId: String(formulaId || "derived_stat"),
@@ -37,8 +37,10 @@ class DerivedStatMetricStrategy extends ItemMetricStrategy {
 
   #resolveUpgradeLevelStat(item, config) {
     const table = this.readPath(item, config?.tablePath);
-    const level = this.readPath(item, config?.levelPath);
-    const rawValue = this.finiteNumber(table?.[level]?.[config?.statKey]);
+    const upgradeLevel = this.readPath(item, config?.upgradeLevelPath);
+    const rawValue = this.finiteNumber(
+      table?.[upgradeLevel]?.[config?.statKey],
+    );
     if (rawValue === null) {
       return this.unavailable("metric_missing", {
         metricId: String(config?.statKey || "upgrade_level_stat"),
@@ -47,7 +49,7 @@ class DerivedStatMetricStrategy extends ItemMetricStrategy {
     return this.available({
       metricId: String(config.statKey),
       rawValue,
-      inputs: Object.freeze({ level: Number(level) }),
+      inputs: Object.freeze({ upgradeLevel: Number(upgradeLevel) }),
     });
   }
 }

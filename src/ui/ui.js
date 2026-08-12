@@ -1399,8 +1399,8 @@ class InventoryUI {
 
     const rod = equipped.rod;
     if (rod) {
-      const hasReelProp = rod.hasReel ?? rod.engineStats?.hasReel;
-      const canHaveReel = hasReelProp ?? rod.type !== "pole";
+      const hasReelProp = rod.effectiveStats?.hasReel;
+      const canHaveReel = hasReelProp ?? rod.variant !== "pole";
       if (canHaveReel)
         rodGroup.slots.push({ id: "reel", label: "Котушка", type: "reel" });
       const canHaveLine = !canHaveReel || !!equipped.reel;
@@ -1411,11 +1411,11 @@ class InventoryUI {
 
     if (rod) {
       const rigGroup = { groupName: "Оснастка", slots: [] };
-      if (rod.type === "spinning") {
+      if (rod.variant === "spinning") {
         rigGroup.slots.push({ id: "baits_0", label: "Приманка", type: "lure" });
-      } else if (rod.type === "float" || rod.type === "pole") {
+      } else if (rod.variant === "float" || rod.variant === "pole") {
         rigGroup.slots.push({ id: "float", label: "Поплавок", type: "float" });
-        const maxHooks = rod.maxHooks || 1;
+        const maxHooks = rod.effectiveStats?.maxHooks || 1;
         for (let i = 0; i < maxHooks; i++) {
           rigGroup.slots.push({
             id: `hooks_${i}`,
@@ -1430,20 +1430,18 @@ class InventoryUI {
             });
           }
         }
-      } else if (rod.type === "feeder") {
+      } else if (rod.variant === "feeder") {
         rigGroup.slots.push({
           id: "feederRig",
           label: "Фідерна оснастка",
           type: "feeder_rig",
         });
         const feederRigCaps =
-          equipped.feederRig?.capabilities ||
-          equipped.feederRig?.engineStats?.capabilities ||
+          equipped.feederRig?.effectiveStats?.capabilities ||
           [];
         const hasChumSlot =
           feederRigCaps.includes("chum_mix") ||
-          equipped.feederRig?.hasChumSlot ||
-          equipped.feederRig?.engineStats?.hasChumSlot;
+          equipped.feederRig?.effectiveStats?.hasChumSlot;
         if (hasChumSlot)
           rigGroup.slots.push({
             id: "feederChum",
@@ -1451,9 +1449,8 @@ class InventoryUI {
             type: "chum_mix",
           });
         const maxHooks =
-          equipped.feederRig?.hooksCount ||
-          equipped.feederRig?.engineStats?.hooksCount ||
-          rod.maxHooks ||
+          equipped.feederRig?.effectiveStats?.hooksCount ||
+          rod.effectiveStats?.maxHooks ||
           1;
         for (let i = 0; i < maxHooks; i++) {
           rigGroup.slots.push({
@@ -1483,8 +1480,7 @@ class InventoryUI {
 
     if (equipped.delivery) {
       const sections =
-        equipped.delivery.sections ||
-        equipped.delivery.engineStats?.sections ||
+        equipped.delivery.effectiveStats?.sections ||
         1;
       for (let i = 0; i < sections; i++) {
         extraGroup.slots.push({
@@ -1800,14 +1796,17 @@ class InventoryUI {
         "id",
         "name",
         "icon",
-        "type",
+        "itemType",
+        "variant",
         "instanceId",
         "quantity",
         "buildId",
         "buildName",
         "displayStats",
         "displayStatsSchema",
-        "engineStats",
+        "gameplayStats",
+        "effectiveStats",
+        "statOverrides",
         "rarityProfile",
         "rarity",
         "progressionProfile",
@@ -1823,7 +1822,7 @@ class InventoryUI {
         "line",
       ]);
 
-      for (const key of Object.keys(currentItem.engineStats || {})) {
+      for (const key of Object.keys(currentItem.effectiveStats || {})) {
         internalKeys.add(key);
       }
 
@@ -1868,7 +1867,7 @@ class InventoryUI {
         this.#warningBoxNode.style.display = "none";
       }
 
-      if (item.type === "build_box") {
+      if (item.itemType === "build_box") {
         this.#viewingBuildId = item.instanceId;
         this.refreshUI();
         return;
@@ -2039,20 +2038,21 @@ class InventoryUI {
 
       // --- НОВА ЛОГІКА ДЛЯ ЗБІРОК ---
       if (this.#activeCategory === "builds") {
-        if (itemData.type === "build_box") {
+        if (itemData.itemType === "build_box") {
           availableGroups.add(itemData.name); // Чекбокси отримують імена збірок!
         }
         return;
       }
 
       // Для всіх інших категорій ховаємо ящики з лійки
-      if (itemData.type === "build_box") return;
+      if (itemData.itemType === "build_box") return;
 
       if (
         catConfig.acceptTypes === "ALL" ||
-        catConfig.acceptTypes.includes(itemData.type)
+        catConfig.acceptTypes.includes(itemData.itemType)
       ) {
-        const groupLabel = SUBFILTER_MAPPING[itemData.type] || itemData.type;
+        const filterType = itemData.variant || itemData.itemType;
+        const groupLabel = SUBFILTER_MAPPING[filterType] || filterType;
         availableGroups.add(groupLabel);
       }
     });
@@ -2159,7 +2159,7 @@ class InventoryUI {
 
         if (
           catConfig.acceptTypes !== "ALL" &&
-          !catConfig.acceptTypes.includes(itemData.type)
+          !catConfig.acceptTypes.includes(itemData.itemType)
         )
           return;
 
@@ -2173,7 +2173,8 @@ class InventoryUI {
             return;
         } else {
           // У всіх інших вкладках фільтруємо за типом (а ящик тепер зникає, якщо не вибраний)
-          const groupLabel = SUBFILTER_MAPPING[itemData.type] || itemData.type;
+          const filterType = itemData.variant || itemData.itemType;
+          const groupLabel = SUBFILTER_MAPPING[filterType] || filterType;
           if (
             this.#activeSubFilters.size > 0 &&
             !this.#activeSubFilters.has(groupLabel)
@@ -2183,7 +2184,7 @@ class InventoryUI {
 
         const eqCount = equippedCounts[invItem.instanceId] || 0;
         const remainingQty = itemData.quantity - eqCount;
-        if (remainingQty <= 0 && itemData.type !== "build_box") return;
+        if (remainingQty <= 0 && itemData.itemType !== "build_box") return;
 
         const displayItemData = { ...itemData, quantity: remainingQty };
 
@@ -2206,7 +2207,7 @@ class InventoryUI {
           if (
             config &&
             config.acceptTypes &&
-            config.acceptTypes.includes(itemData.type)
+            config.acceptTypes.includes(itemData.itemType)
           ) {
             // Потім глибока перевірка валідатором (на наявність вудки/гачка)
             const validation = this.#inventoryManager.validateEquipToSlot(

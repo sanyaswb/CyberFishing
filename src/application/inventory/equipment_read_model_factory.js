@@ -1,8 +1,8 @@
 /**
- * Anti-corruption layer for legacy fishing systems. It unfolds inventory-v2
- * roots and assembly children into the former flat equipment read model.
+ * Builds the canonical hydrated equipment read model used by gameplay and UI.
+ * Item parameters remain available only through effectiveStats.
  */
-class EquipmentProjectionService {
+class EquipmentReadModelFactory {
   #itemReader;
   #assemblyReader;
   #capabilityResolver;
@@ -21,7 +21,7 @@ class EquipmentProjectionService {
         : null);
   }
 
-  project(equipmentState) {
+  create(equipmentState) {
     const rod = this.#rootItem(equipmentState, "rod");
     const reel = this.#rootItem(equipmentState, "reel");
     const terminalLine = this.#rootItem(equipmentState, "terminalLine");
@@ -117,12 +117,9 @@ class EquipmentProjectionService {
       : null;
     const configuredCount = Number(
       assemblyCapacity ??
-        rootItem.slotCount ??
-        rootItem.sections ??
-        rootItem.hooksCount ??
-        rootItem.engineStats?.slotCount ??
-        rootItem.engineStats?.sections ??
-        rootItem.engineStats?.hooksCount,
+        rootItem.effectiveStats?.slotCount ??
+        rootItem.effectiveStats?.sections ??
+        rootItem.effectiveStats?.hooksCount,
     );
     if (Number.isInteger(configuredCount) && configuredCount > 0) {
       maxIndex = Math.max(maxIndex, configuredCount - 1);
@@ -171,14 +168,16 @@ class EquipmentProjectionService {
   #item(reference) {
     if (!reference) return null;
     if (typeof reference === "object") return reference;
-    if (typeof this.#itemReader === "function") return this.#itemReader(reference);
-    return (
+    const item = typeof this.#itemReader === "function"
+      ? this.#itemReader(reference)
+      : (
       this.#itemReader?.getById?.(reference) ||
       this.#itemReader?.getInstance?.(reference) ||
       this.#itemReader?.hydrateInstance?.(reference) ||
       this.#itemReader?.get?.(reference) ||
       null
     );
+    return item;
   }
 
   #instanceId(item) {
@@ -186,7 +185,7 @@ class EquipmentProjectionService {
   }
 
   #type(item) {
-    return item?.type ?? item?.engineStats?.type ?? null;
+    return item?.variant || item?.itemType || null;
   }
 
   #childSlotIndex(reference) {
@@ -200,3 +199,5 @@ class EquipmentProjectionService {
     return Number.isInteger(index) && index >= 0 ? index : null;
   }
 }
+
+globalThis.EquipmentReadModelFactory = EquipmentReadModelFactory;

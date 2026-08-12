@@ -20,7 +20,7 @@ class InventoryEquipTargetSelectionPolicy {
 
         const baseSlot = slotId.split("_")[0];
         const acceptedTypes = this.#slotConfig[baseSlot]?.acceptTypes || [];
-        if (!acceptedTypes.includes(item.type)) continue;
+        if (!acceptedTypes.includes(item.itemType)) continue;
 
         const validation =
           typeof validateSlot === "function"

@@ -10,12 +10,12 @@
       "feederChum",
       "baits",
     ],
-    acceptTypes: ["spinning", "float", "feeder", "pole"],
+    acceptTypes: ["rod"],
   },
   reel: {
     type: "single",
     dependencies: ["line"],
-    acceptTypes: ["spinning_reel"],
+    acceptTypes: ["reel"],
   },
   line: {
     type: "single",
@@ -30,7 +30,7 @@
   float: {
     type: "single",
     dependencies: [],
-    acceptTypes: ["float_tackle", "day", "night"],
+    acceptTypes: ["float"],
   },
   feederRig: {
     type: "single",
@@ -65,7 +65,7 @@
   baits: {
     type: "array",
     dependencies: [],
-    acceptTypes: ["bait", "lure", "spinner", "wobbler", "jig"],
+    acceptTypes: ["bait", "lure"],
   },
 };
 
@@ -103,9 +103,9 @@ const INVENTORY_CATEGORIES = [
   {
     id: "rods",
     label: "🎣 Вудилища",
-    acceptTypes: ["spinning", "feeder", "float", "pole"],
+    acceptTypes: ["rod"],
   },
-  { id: "reels", label: "⚙️ Котушки", acceptTypes: ["spinning_reel"] },
+  { id: "reels", label: "⚙️ Котушки", acceptTypes: ["reel"] },
   {
     id: "lines",
     label: "🧵 Ліски",
@@ -114,17 +114,7 @@ const INVENTORY_CATEGORIES = [
   {
     id: "tackle",
     label: "🪢 Оснастка",
-    acceptTypes: [
-      "float_tackle",
-      "day",
-      "night",
-      "feeder_rig",
-      "hook",
-      "lure",
-      "spinner",
-      "wobbler",
-      "jig",
-    ],
+    acceptTypes: ["float", "feeder_rig", "hook", "lure"],
   },
   { id: "baits", label: "🪱 Наживки", acceptTypes: ["bait"] },
   { id: "chum", label: "🍞 Прикормки", acceptTypes: ["chum_mix"] },
@@ -238,7 +228,7 @@ const CONFIG = {
     timeScale: 240, // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
 
     inventory: {
-      showEngineStats: false,
+      showEffectiveStats: false,
     },
 
     godMode: {

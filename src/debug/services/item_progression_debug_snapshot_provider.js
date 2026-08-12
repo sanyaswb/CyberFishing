@@ -1,8 +1,13 @@
 class ItemProgressionDebugSnapshotProvider {
   #itemDb;
   #progressionResolver;
+  #effectiveStatsResolver;
 
-  constructor({ itemDb = {}, progressionResolver } = {}) {
+  constructor({
+    itemDb = {},
+    progressionResolver,
+    effectiveStatsResolver = new EffectiveItemStatsResolver(),
+  } = {}) {
     if (!progressionResolver || typeof progressionResolver.resolve !== "function") {
       throw new TypeError(
         "ItemProgressionDebugSnapshotProvider requires progressionResolver",
@@ -10,6 +15,7 @@ class ItemProgressionDebugSnapshotProvider {
     }
     this.#itemDb = itemDb;
     this.#progressionResolver = progressionResolver;
+    this.#effectiveStatsResolver = effectiveStatsResolver;
   }
 
   getSnapshots() {
@@ -20,24 +26,25 @@ class ItemProgressionDebugSnapshotProvider {
         if (!item?.progressionProfile) continue;
         const hydrated = {
           ...item,
-          ...(item.engineStats || {}),
-          engineStats: { ...(item.engineStats || {}) },
+          effectiveStats: this.#effectiveStatsResolver.resolve({
+            definition: item,
+          }),
         };
         const progression = this.#progressionResolver.resolve(hydrated);
         snapshots.push(Object.freeze({
           itemId: item.id,
           group: progression.groupId,
-          strategy: progression.power.strategyId,
-          rawMetric: progression.power.rawValue,
-          baseline: progression.power.available
-            ? `${this.#format(progression.power.minimum)}–${this.#format(
-                progression.power.maximum,
+          strategy: progression.rating.strategyId,
+          rawMetric: progression.rating.rawValue,
+          baseline: progression.rating.available
+            ? `${this.#format(progression.rating.minimum)}–${this.#format(
+                progression.rating.maximum,
               )}`
             : "N/A",
-          normalizedPower: progression.power.normalized,
-          powerPercent: progression.power.percent,
-          powerLevel: progression.level.available
-            ? `${progression.level.current}/${progression.level.maximum}`
+          normalizedRating: progression.rating.normalized,
+          ratingPercent: progression.rating.percent,
+          progressionLevel: progression.progressionLevel.available
+            ? `${progression.progressionLevel.current}/${progression.progressionLevel.maximum}`
             : "N/A",
           quality: progression.quality.available
             ? `${this.#format(progression.quality.value)}/${progression.quality.maximum}`
@@ -50,9 +57,9 @@ class ItemProgressionDebugSnapshotProvider {
               )}%)`
             : "N/A",
           capacitySource: progression.capacity?.source || "N/A",
-          outOfRange: progression.power.outOfRange || "none",
-          configSource: progression.power.configSource || "N/A",
-          breakdown: progression.power.breakdown || Object.freeze([]),
+          outOfRange: progression.rating.outOfRange || "none",
+          configSource: progression.rating.configSource || "N/A",
+          breakdown: progression.rating.breakdown || Object.freeze([]),
         }));
       }
     }

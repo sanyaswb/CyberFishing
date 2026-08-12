@@ -78,7 +78,7 @@ class LineAllocationPolicy {
       return this.#invalid("У вибраній лісці немає доступної довжини.");
     }
     const maximumLength = this.#numberOrDefault(
-      reel?.lineCapacityMeters ?? reel?.engineStats?.lineCapacityMeters,
+      reel?.effectiveStats?.lineCapacityMeters,
       Infinity,
     );
     if (Number.isFinite(maximumLength) && maximumLength <= 0) {
@@ -106,7 +106,7 @@ class LineAllocationPolicy {
 
   getLineLengthMeters(lineItem) {
     return this.#numberOrDefault(
-      lineItem?.lengthMeters ?? lineItem?.engineStats?.lengthMeters,
+      lineItem?.effectiveStats?.lengthMeters,
       0,
     );
   }
@@ -131,7 +131,7 @@ class LineAllocationPolicy {
   getMaximumLineLengthMeters({ rod, reel } = {}) {
     if (this.rodRequiresReel(rod)) {
       return this.#numberOrDefault(
-        reel?.lineCapacityMeters ?? reel?.engineStats?.lineCapacityMeters,
+        reel?.effectiveStats?.lineCapacityMeters,
         Infinity,
       );
     }
@@ -150,7 +150,7 @@ class LineAllocationPolicy {
 
   rodRequiresReel(rod) {
     if (!rod) return null;
-    return rod.hasReel ?? rod.engineStats?.hasReel ?? rod.type !== "pole";
+    return rod.effectiveStats?.hasReel ?? rod.variant !== "pole";
   }
 
   #invalid(reason, data = {}) {
@@ -159,7 +159,7 @@ class LineAllocationPolicy {
 
   #rodLengthMeters(rod) {
     return this.#numberOrDefault(
-      rod?.lengthMeters ?? rod?.engineStats?.lengthMeters,
+      rod?.effectiveStats?.lengthMeters,
       0,
     );
   }
