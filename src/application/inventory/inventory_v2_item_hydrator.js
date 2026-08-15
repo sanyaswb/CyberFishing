@@ -50,23 +50,43 @@ class InventoryV2ItemHydrator {
         ? repository?.get?.(itemOrInstanceId)
         : itemOrInstanceId;
     if (!raw) return null;
-    const definition = this.getDefinition(raw.itemId) || {};
+    const definition = this.getDefinition(raw.itemId);
+    if (!definition) {
+      throw new RangeError(`Unknown item definition: ${raw.itemId}`);
+    }
     const effectiveStats = this.#effectiveStatsResolver.resolve({
       definition,
       instanceState: raw,
     });
     const { gameplayStats: _authoredStats, ...definitionMetadata } = definition;
+    const instanceState = this.#withoutDefinitionOwnedFields(
+      raw,
+      definitionMetadata,
+    );
     return {
       ...definitionMetadata,
-      ...raw,
+      ...instanceState,
       id: definition.id || raw.itemId,
       itemId: raw.itemId,
       instanceId: raw.instanceId,
       quantity: raw.quantity,
-      itemType: raw.itemType || definition.itemType || null,
-      variant: raw.variant || definition.variant || null,
+      itemType: definition.itemType || null,
+      variant: definition.variant || null,
       effectiveStats,
     };
+  }
+
+  #withoutDefinitionOwnedFields(raw, definitionMetadata) {
+    const owned = new Set([
+      ...Object.keys(definitionMetadata || {}),
+      "gameplayStats",
+      "effectiveStats",
+      "itemType",
+      "variant",
+    ]);
+    return Object.fromEntries(
+      Object.entries(raw).filter(([key]) => !owned.has(key)),
+    );
   }
 
   #normalizeDefinition(definition) {

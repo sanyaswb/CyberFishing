@@ -1,18 +1,18 @@
-class ItemProgressionLevelResolver {
-  resolve(rating, scale = {}) {
-    const minimum = Number(scale.minimum);
-    const segments = Number(scale.segments);
+class ItemRatingTierResolver {
+  resolve(rating, config = {}) {
+    const minimum = Number(config.minimum);
+    const segments = Number(config.segments);
     if (
       !Number.isInteger(minimum) ||
       minimum < 1 ||
       !Number.isInteger(segments) ||
       segments < 1 ||
-      scale.source !== "rating.normalized" ||
-      scale.distribution !== "equal_segments"
+      config.source !== "rating.normalized" ||
+      config.distribution !== "equal_segments"
     ) {
       return Object.freeze({
         available: false,
-        reason: "progression_level_config_invalid",
+        reason: "rating_tier_config_invalid",
         current: null,
         maximum: null,
       });
@@ -23,7 +23,9 @@ class ItemProgressionLevelResolver {
         available: false,
         reason: rating?.reason || "rating_unavailable",
         current: null,
+        minimum,
         maximum,
+        segments,
       });
     }
     const normalized = Math.max(0, Math.min(1, Number(rating.normalized)));
@@ -43,3 +45,5 @@ class ItemProgressionLevelResolver {
     });
   }
 }
+
+globalThis.ItemRatingTierResolver = ItemRatingTierResolver;

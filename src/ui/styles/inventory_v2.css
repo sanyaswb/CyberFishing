@@ -685,7 +685,7 @@
   clip-path: inset(0 calc(100% - var(--inventory-v2-resource-percent)) 0 0);
 }
 
-.inventory-v2-item-card .inv-slot__level-badge {
+.inventory-v2-item-card .inv-slot__rating-tier-badge {
   display: flex;
   align-items: center;
   justify-content: center;

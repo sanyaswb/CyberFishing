@@ -55,7 +55,7 @@ class InventoryV2BalanceParameterResolver {
       });
 
     const primary = take(
-      "progression-level",
+      "rating-tier",
       "rarity",
       "stat:maxLoadKg",
       "quality",
@@ -113,16 +113,17 @@ class InventoryV2BalanceParameterResolver {
       }));
     }
 
-    const progressionLevel = Number(
-      item.progression?.progressionLevel?.current ??
-        item.progression?.progressionLevel?.value,
+    const ratingTierDescriptor = item.progression?.ratingTier;
+    const ratingTier = Number(
+      ratingTierDescriptor?.current ??
+        ratingTierDescriptor?.value,
     );
-    if (Number.isFinite(progressionLevel)) {
+    if (ratingTierDescriptor?.available && Number.isFinite(ratingTier)) {
       rows.push(this.#row({
-        id: "progression-level",
-        label: "Прогресійний рівень",
-        technicalPath: "progression.progressionLevel",
-        actual: progressionLevel,
+        id: "rating-tier",
+        label: "Клас рейтингу",
+        technicalPath: "progression.ratingTier",
+        actual: ratingTier,
         baseline: 1,
         precision: 0,
         direction: "higher_is_better",
@@ -130,10 +131,8 @@ class InventoryV2BalanceParameterResolver {
     }
 
     const quality = item.progression?.quality;
-    const qualityValue = Number(
-      quality?.value ?? item.effectiveStats?.quality,
-    );
-    if (Number.isFinite(qualityValue)) {
+    const qualityValue = Number(quality?.value);
+    if (quality?.available && Number.isFinite(qualityValue)) {
       const minimum = Number.isFinite(Number(quality?.minimum))
         ? Number(quality.minimum)
         : 1;
@@ -154,12 +153,26 @@ class InventoryV2BalanceParameterResolver {
     }
 
     const condition = Number(item.condition?.percent);
-    if (Number.isFinite(condition)) {
+    if (item.condition?.available && Number.isFinite(condition)) {
       rows.push(this.#row({
         id: "condition",
         label: "Поточний стан",
         technicalPath: "condition.percent",
         actual: condition,
+        baseline: 100,
+        unit: "%",
+        precision: 0,
+        direction: "higher_is_better",
+      }));
+    }
+
+    const freshness = Number(item.freshness?.percent);
+    if (item.freshness?.available && Number.isFinite(freshness)) {
+      rows.push(this.#row({
+        id: "freshness",
+        label: "Свіжість",
+        technicalPath: "freshness.percent",
+        actual: freshness,
         baseline: 100,
         unit: "%",
         precision: 0,

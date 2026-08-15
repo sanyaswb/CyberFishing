@@ -3,18 +3,24 @@ class ItemProgressionDescriptor {
     available = true,
     reason = null,
     groupId,
-    rating,
-    progressionLevel,
-    quality,
-    capacity,
+    rating = null,
+    ratingTier = null,
+    quality = null,
+    capacity = null,
   }) {
-    this.available = available;
+    this.available = Boolean(available);
     this.reason = reason;
     this.groupId = groupId || null;
-    this.rating = rating;
-    this.progressionLevel = progressionLevel;
-    this.quality = quality;
-    this.capacity = capacity;
+    for (const [capabilityId, descriptor] of Object.entries({
+      rating,
+      ratingTier,
+      quality,
+      capacity,
+    })) {
+      if (descriptor !== null && descriptor !== undefined) {
+        this[capabilityId] = descriptor;
+      }
+    }
     Object.freeze(this);
   }
 }

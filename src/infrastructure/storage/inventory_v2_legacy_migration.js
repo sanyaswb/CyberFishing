@@ -11,17 +11,22 @@ class InventoryV2LegacyMigration {
   #legacyItemsById = new Map();
   #itemStateMigration;
   #effectiveStatsResolver;
+  #itemSnapshotMapper;
 
   constructor({
     itemDefinitionResolver,
     instanceIdFactory = null,
     itemStateMigration = new LegacyItemStateMigration(),
     effectiveStatsResolver = new EffectiveItemStatsResolver(),
+    itemSnapshotMapper = null,
   } = {}) {
     this.#itemDefinitionResolver = itemDefinitionResolver;
     this.#instanceIdFactory = instanceIdFactory;
     this.#itemStateMigration = itemStateMigration;
     this.#effectiveStatsResolver = effectiveStatsResolver;
+    this.#itemSnapshotMapper =
+      itemSnapshotMapper ||
+      new InventoryItemSnapshotMapper({ itemDefinitionResolver });
   }
 
   migrate({ legacyItems = [], legacyEquipment = {}, settings = {} } = {}) {
@@ -42,7 +47,7 @@ class InventoryV2LegacyMigration {
     const buildMetadata = this.#collectBuildMetadata(normalizedLegacy);
     const repositoryItems = normalizedLegacy
       .filter((item) => !this.#isBuildBox(item))
-      .map((item) => this.#toRepositoryItem(item));
+      .map((item) => this.#toRepositoryItem(item, warnings));
 
     const repository = new FlatInventoryItemRepository({
       items: repositoryItems,
@@ -87,8 +92,12 @@ class InventoryV2LegacyMigration {
     }
     const equipment = this.#migrateEquipment(context);
     this.#validate(context, equipment);
-    const handChum = repository.get(
-      equipment.getRootInstanceId("handChum"),
+    const itemSnapshots = this.#itemSnapshotMapper.toSnapshots(
+      repository.list(),
+    );
+    const handChumId = equipment.getRootInstanceId("handChum");
+    const handChum = itemSnapshots.find(
+      (item) => item.instanceId === handChumId,
     );
     const refillMemory = handChum
       ? {
@@ -99,7 +108,7 @@ class InventoryV2LegacyMigration {
     return Object.freeze({
       snapshot: {
         schemaVersion: INVENTORY_V2_SCHEMA_VERSION,
-        items: repository.toSnapshot(),
+        items: itemSnapshots,
         assemblies: assemblyStates.toSnapshot(),
         equipment: equipment.snapshot(),
         loadouts: loadouts.toSnapshot(),
@@ -250,9 +259,11 @@ class InventoryV2LegacyMigration {
     return builds;
   }
 
-  #toRepositoryItem(source) {
+  #toRepositoryItem(source, warnings) {
     const definition = this.#definition(source.itemId) || {};
-    const item = this.#itemStateMigration.migrate(source, definition);
+    const item = this.#itemStateMigration.migrate(source, definition, {
+      warnings,
+    });
     delete item.buildId;
     delete item.buildName;
     delete item.detachedLineSegment;

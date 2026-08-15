@@ -1,111 +1,147 @@
+/**
+ * Converts legacy item records into canonical instance facts.
+ *
+ * Legacy authored values are deliberately not promoted to overrides. Current
+ * balance always comes from the current ItemDefinition.
+ */
 class LegacyItemStateMigration {
-  static #equipmentPowerTypes = new Set([
-    "rod",
-    "reel",
-    "hook",
-    "spinning",
-    "feeder",
-    "float",
-    "pole",
-    "spinning_reel",
+  static #legacyMutableStatKeys = Object.freeze([
+    "lengthMeters",
+    "durability",
   ]);
 
-  static #derivedRuntimeKeys = new Set([
-    "progression",
-    "ratingPercent",
-    "progressionLevel",
-    "normalizedRating",
-    "ratingColor",
-    "ratingGradient",
-    "powerPercent",
-    "powerLevel",
-    "normalizedPower",
-    "powerColor",
-    "powerGradient",
-    "qualityMax",
-    "capacityPercent",
-    "capacityMeters",
-    "capacityMaximumMeters",
-    "condition",
-    "conditionPercent",
-    "effectiveStats",
+  static #instanceFactKeys = Object.freeze([
+    "rolledStats",
+    "rarity",
+    "recipe",
+    "recipeVariant",
+    "qualityGrade",
+    "freshnessState",
+    "conditionState",
+    "upgradeState",
+    "resourceState",
+    "detachedLineSegment",
+    "sourceLineItemId",
+    "sourceLineInstanceId",
   ]);
 
-  migrate(source, definition = {}) {
+  #overridePolicy;
+
+  constructor({ overridePolicy = new ItemStatOverridePolicy() } = {}) {
+    if (!overridePolicy || typeof overridePolicy.normalize !== "function") {
+      throw new TypeError(
+        "LegacyItemStateMigration requires ItemStatOverridePolicy",
+      );
+    }
+    this.#overridePolicy = overridePolicy;
+  }
+
+  migrate(source, definition = {}, { warnings = null } = {}) {
     if (!source || typeof source !== "object") return source;
-    const normalized = { ...source };
-    const legacyStats = source.engineStats || {};
-    const definitionStats = definition.gameplayStats || {};
-    const itemType =
-      source.itemType || definition.itemType || source.type || null;
-    const variant =
-      source.variant ||
-      legacyStats.variant ||
-      legacyStats.type ||
-      (source.type && source.type !== itemType ? source.type : null) ||
-      definition.variant ||
-      null;
-    const statOverrides = { ...(source.statOverrides || {}) };
+    this.#reportClassificationMismatch(source, definition, warnings);
 
-    for (const [key, value] of Object.entries(legacyStats)) {
-      if (["type", "variant", "level"].includes(key)) continue;
-      statOverrides[key] = value;
+    const normalized = {
+      instanceId: source.instanceId,
+      itemId: source.itemId,
+      quantity: source.quantity ?? 1,
+    };
+    if (source.location && typeof source.location === "object") {
+      normalized.location = this.#clone(source.location);
     }
-    for (const key of Object.keys(definitionStats)) {
-      if (["type", "variant"].includes(key)) continue;
-      if (!Object.prototype.hasOwnProperty.call(normalized, key)) continue;
-      statOverrides[key] = normalized[key];
-      delete normalized[key];
+    for (const key of LegacyItemStateMigration.#instanceFactKeys) {
+      if (source[key] !== undefined) normalized[key] = this.#clone(source[key]);
     }
 
-    const legacyLevel = source.level ?? legacyStats.level;
-    if (legacyLevel !== undefined && legacyLevel !== null) {
-      if (this.#hasUpgradeLevels(source, legacyStats, definitionStats)) {
-        this.#assignCanonicalLevel(
-          statOverrides,
-          "upgradeLevel",
-          legacyLevel,
+    const candidates = this.#legacyMutableCandidates(source);
+    const statOverrides = this.#overridePolicy.normalize({
+      definition,
+      overrides: candidates,
+      allowedKeys: LegacyItemStateMigration.#legacyMutableStatKeys,
+      rejectInvalid: false,
+      onRejected: ({ key, error }) => {
+        warnings?.push?.(
+          `Dropped legacy override ${source.instanceId || source.itemId || "item"}.${key}: ${error.message}`,
         );
-      } else if (
-        LegacyItemStateMigration.#equipmentPowerTypes.has(itemType) ||
-        LegacyItemStateMigration.#equipmentPowerTypes.has(variant)
-      ) {
-        this.#assignCanonicalLevel(
-          statOverrides,
-          "equipmentPowerLevel",
-          legacyLevel,
-        );
-      }
-    }
-
-    delete normalized.type;
-    delete normalized.level;
-    delete normalized.engineStats;
-    for (const key of LegacyItemStateMigration.#derivedRuntimeKeys) {
-      delete normalized[key];
-    }
-    normalized.itemType = itemType;
-    if (variant) normalized.variant = variant;
-    else delete normalized.variant;
+      },
+    });
     if (Object.keys(statOverrides).length > 0) {
       normalized.statOverrides = statOverrides;
-    } else {
-      delete normalized.statOverrides;
     }
+    this.#reportDiscardedAuthoredStats(source, definition, warnings);
     return normalized;
   }
 
-  #hasUpgradeLevels(source, legacyStats, definitionStats) {
-    return Boolean(
-      source.statsByLevel ||
-      source.statOverrides?.statsByLevel ||
-      legacyStats.statsByLevel ||
-      definitionStats.statsByLevel
-    );
+  #legacyMutableCandidates(source) {
+    const candidates = {};
+    const explicitOverrides = source.statOverrides;
+    if (explicitOverrides && typeof explicitOverrides === "object") {
+      for (const key of LegacyItemStateMigration.#legacyMutableStatKeys) {
+        if (Object.prototype.hasOwnProperty.call(explicitOverrides, key)) {
+          candidates[key] = explicitOverrides[key];
+        }
+      }
+    }
+    for (const key of LegacyItemStateMigration.#legacyMutableStatKeys) {
+      if (
+        !Object.prototype.hasOwnProperty.call(candidates, key) &&
+        Object.prototype.hasOwnProperty.call(source, key)
+      ) {
+        candidates[key] = source[key];
+      }
+    }
+    return candidates;
   }
 
-  #assignCanonicalLevel(statOverrides, key, value) {
-    if (statOverrides[key] === undefined) statOverrides[key] = value;
+  #reportClassificationMismatch(source, definition, warnings) {
+    if (!warnings?.push) return;
+    for (const key of ["itemType", "variant"]) {
+      if (
+        source[key] != null &&
+        definition[key] != null &&
+        source[key] !== definition[key]
+      ) {
+        warnings.push(
+          `Ignored mutable ${key} on ${source.instanceId || source.itemId}: ${source[key]} != ${definition[key]}.`,
+        );
+      }
+    }
+  }
+
+  #reportDiscardedAuthoredStats(source, definition, warnings) {
+    if (!warnings?.push) return;
+    const authoredKeys = Object.keys(definition?.gameplayStats || {});
+    const discarded = new Set();
+    for (const key of Object.keys(source.engineStats || {})) {
+      if (!["type", "variant"].includes(key)) discarded.add(key);
+    }
+    for (const key of authoredKeys) {
+      if (
+        !LegacyItemStateMigration.#legacyMutableStatKeys.includes(key) &&
+        Object.prototype.hasOwnProperty.call(source, key)
+      ) {
+        discarded.add(key);
+      }
+    }
+    for (const key of Object.keys(source.statOverrides || {})) {
+      if (!LegacyItemStateMigration.#legacyMutableStatKeys.includes(key)) {
+        discarded.add(key);
+      }
+    }
+    if (discarded.size > 0) {
+      warnings.push(
+        `Discarded authored legacy stats for ${source.instanceId || source.itemId}: ${[...discarded].sort().join(", ")}.`,
+      );
+    }
+  }
+
+  #clone(value) {
+    if (Array.isArray(value)) return value.map((entry) => this.#clone(entry));
+    if (!value || typeof value !== "object") return value;
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([, entry]) => entry !== undefined)
+        .map(([key, entry]) => [key, this.#clone(entry)]),
+    );
   }
 }
 

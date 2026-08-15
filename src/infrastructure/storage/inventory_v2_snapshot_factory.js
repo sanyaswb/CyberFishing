@@ -5,6 +5,7 @@ class InventoryV2SnapshotFactory {
   #loadouts;
   #settings;
   #refillMemory;
+  #itemSnapshotMapper;
 
   constructor({
     repository,
@@ -13,6 +14,7 @@ class InventoryV2SnapshotFactory {
     loadouts,
     settings,
     refillMemory,
+    itemSnapshotMapper,
   } = {}) {
     this.#repository = repository;
     this.#assemblyStates = assemblyStates;
@@ -20,12 +22,18 @@ class InventoryV2SnapshotFactory {
     this.#loadouts = loadouts;
     this.#settings = settings;
     this.#refillMemory = refillMemory;
+    if (!itemSnapshotMapper?.toSnapshots) {
+      throw new TypeError(
+        "InventoryV2SnapshotFactory requires InventoryItemSnapshotMapper",
+      );
+    }
+    this.#itemSnapshotMapper = itemSnapshotMapper;
   }
 
   create() {
     return {
       schemaVersion: INVENTORY_V2_SCHEMA_VERSION,
-      items: this.#repository.toSnapshot(),
+      items: this.#itemSnapshotMapper.toSnapshots(this.#repository.list()),
       assemblies: this.#assemblyStates.toSnapshot(),
       equipment: this.#equipmentState.snapshot(),
       loadouts: this.#loadouts.toSnapshot(),

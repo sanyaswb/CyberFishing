@@ -7,6 +7,7 @@ class ExactItemSignaturePolicy {
     "progression",
     "ratingPercent",
     "progressionLevel",
+    "ratingTier",
     "normalizedRating",
     "ratingColor",
     "ratingGradient",
@@ -18,6 +19,8 @@ class ExactItemSignaturePolicy {
     "qualityMax",
     "capacityPercent",
     "conditionPercent",
+    "freshness",
+    "freshnessPercent",
   ]);
 
   create(item) {

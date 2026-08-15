@@ -143,8 +143,8 @@
 │  │  │  ├── inventory_v2_sort_config.js
 │  │  │  └── item_assembly_profile_config.js
 │  │  ├── items
-│  │  │  ├── item_condition_config.js
-│  │  │  └── item_progression_config.js
+│  │  │  ├── item_progression_config.js
+│  │  │  └── item_stat_override_config.js
 │  │  ├── metadata
 │  │  │  ├── dev_tool_parameter_descriptions.json
 │  │  │  ├── overlay_metric_descriptions.json
@@ -169,7 +169,6 @@
 │  │  ├── validation
 │  │  │  ├── config_schema_validator.js
 │  │  │  ├── degradation_color_config_validator.js
-│  │  │  ├── item_condition_config_validator.js
 │  │  │  ├── item_progression_config_validator.js
 │  │  │  ├── item_rarity_config_validator.js
 │  │  │  └── rarity_config_validator.js
@@ -274,6 +273,12 @@
 │  │  │  │  ├── item_condition_descriptor.js
 │  │  │  │  └── item_condition_resolver.js
 │  │  │  ├── effective_item_stats_resolver.js
+│  │  │  ├── freshness
+│  │  │  │  ├── item_freshness_descriptor.js
+│  │  │  │  └── item_freshness_resolver.js
+│  │  │  ├── item_stat_override_policy.js
+│  │  │  ├── metrics
+│  │  │  │  └── item_bounded_metric_resolver.js
 │  │  │  ├── progression
 │  │  │  │  ├── composite_metric_strategy.js
 │  │  │  │  ├── derived_stat_metric_strategy.js
@@ -282,10 +287,10 @@
 │  │  │  │  ├── item_metric_strategy_registry.js
 │  │  │  │  ├── item_metric_strategy.js
 │  │  │  │  ├── item_progression_descriptor.js
-│  │  │  │  ├── item_progression_level_resolver.js
 │  │  │  │  ├── item_progression_resolver.js
 │  │  │  │  ├── item_quality_resolver.js
 │  │  │  │  ├── item_rating_resolver.js
+│  │  │  │  ├── item_rating_tier_resolver.js
 │  │  │  │  ├── numeric_stat_metric_strategy.js
 │  │  │  │  └── target_range_metric_strategy.js
 │  │  │  ├── quality
@@ -418,6 +423,7 @@
 │  │  │  ├── location_asset_loader.js
 │  │  │  └── offscreen_canvas_factory.js
 │  │  └── storage
+│  │    ├── inventory_item_snapshot_mapper.js
 │  │    ├── inventory_v2_legacy_migration.js
 │  │    ├── inventory_v2_snapshot_factory.js
 │  │    ├── inventory_v2_snapshot_migration.js
@@ -561,6 +567,7 @@
   ├── item-condition-check.js
   ├── item-progression-check.js
   ├── item-rarity-check.js
+  ├── item-state-hardening-check.js
   ├── line-allocation-check.js
   ├── rarity-production-check.js
   ├── run-checks.js

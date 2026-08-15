@@ -16,6 +16,16 @@ class LineRuntimeLoader {
       "src/core/line/line_allocation_policy.js",
       "LineAllocationPolicy",
     );
+    this.#loadConstant(
+      runtime,
+      "src/config/items/item_stat_override_config.js",
+      "ITEM_STAT_OVERRIDE_CONFIG",
+    );
+    this.#loadClass(
+      runtime,
+      "src/core/items/item_stat_override_policy.js",
+      "ItemStatOverridePolicy",
+    );
     this.#loadClass(
       runtime,
       "src/core/items/effective_item_stats_resolver.js",

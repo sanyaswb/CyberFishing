@@ -1,12 +1,25 @@
 /**
- * Single source of truth for item comparison groups and progression rules.
+ * Single source of truth for optional item metric capabilities.
+ *
+ * A descriptor exists only when its configuration exists in the item group.
+ * Matrix candidates must stay absent until a concrete gameplay consumer is
+ * confirmed; authored stats alone are not sufficient evidence.
  * Visual colors intentionally remain in RARITY_VISUAL_CONFIG.
  */
 const ITEM_PROGRESSION_CONFIG = (() => {
-  const quality = () => ({
+  const quality = (gameplayConsumer) => ({
     statPath: "effectiveStats.quality",
     min: 1,
     maxSections: 10,
+    gameplayConsumer,
+  });
+  const condition = (gameplayConsumer) => ({
+    statPath: "effectiveStats.durability",
+    runtimeOverridePath: "statOverrides.durability",
+    minimum: 0,
+    maximum: 100,
+    metricLabel: "Стан",
+    gameplayConsumer,
   });
   const fixed = (minimum, maximum) => ({
     mode: "fixed",
@@ -20,6 +33,7 @@ const ITEM_PROGRESSION_CONFIG = (() => {
     baseline: fixed(minimum, maximum),
     metricLabel: options.metricLabel || statPath.split(".").pop(),
     metricSuffix: options.metricSuffix || "",
+    gameplayConsumer: options.gameplayConsumer,
   });
   const component = (
     statPath,
@@ -43,40 +57,38 @@ const ITEM_PROGRESSION_CONFIG = (() => {
   };
 
   return deepFreeze({
-    revision: 5,
-    progressionLevelScale: {
-      source: "rating.normalized",
-      distribution: "equal_segments",
-      minimum: 1,
-      segments: 6,
-    },
+    revision: 6,
     qualityLimits: { minSections: 2, maxSections: 12 },
     groups: {
       "rod.spinning": {
         rating: numeric("effectiveStats.maxLoadKg", 0.5, 3, {
           metricLabel: "Макс. навантаження",
           metricSuffix: "кг",
+          gameplayConsumer: "Rod.getEffectiveMaxLoadKg",
         }),
-        quality: quality(),
+        condition: condition("Rod.getEffectiveMaxLoadKg"),
       },
       "rod.feeder": {
         rating: numeric("effectiveStats.maxLoadKg", 0.5, 3, {
           metricLabel: "Макс. навантаження",
           metricSuffix: "кг",
+          gameplayConsumer: "Rod.getEffectiveMaxLoadKg",
         }),
-        quality: quality(),
+        condition: condition("Rod.getEffectiveMaxLoadKg"),
       },
       "rod.float": {
         rating: numeric("effectiveStats.maxLoadKg", 0.5, 3, {
           metricLabel: "Макс. навантаження",
           metricSuffix: "кг",
+          gameplayConsumer: "Rod.getEffectiveMaxLoadKg",
         }),
-        quality: quality(),
+        condition: condition("Rod.getEffectiveMaxLoadKg"),
       },
       "reel.drag": {
         rating: {
           strategyId: "composite",
           metricLabel: "Композитний рейтинг",
+          gameplayConsumer: "ReelSystem",
           components: [
             component("effectiveStats.maxLoadKg", 0.35, 0.5, 5, "Навантаження"),
             component("effectiveStats.dragMaxKg", 0.25, 0, 4, "Фрикціон"),
@@ -97,12 +109,13 @@ const ITEM_PROGRESSION_CONFIG = (() => {
             component("effectiveStats.bearingCount", 0.05, 0, 10, "Підшипники"),
           ],
         },
-        quality: quality(),
+        condition: condition("Reel.getEffectiveMaxLoadKg"),
       },
       "reel.no_drag": {
         rating: {
           strategyId: "composite",
           metricLabel: "Композитний рейтинг",
+          gameplayConsumer: "ReelSystem",
           components: [
             component("effectiveStats.maxLoadKg", 0.45, 0.5, 5, "Навантаження"),
             component(
@@ -121,7 +134,7 @@ const ITEM_PROGRESSION_CONFIG = (() => {
             ),
           ],
         },
-        quality: quality(),
+        condition: condition("Reel.getEffectiveMaxLoadKg"),
       },
       "line.fishing": {
         rating: {
@@ -136,6 +149,7 @@ const ITEM_PROGRESSION_CONFIG = (() => {
           },
           metricLabel: "Міцність до товщини",
           metricSuffix: "кг/мм",
+          gameplayConsumer: "LineSystem",
         },
         capacity: {
           strategyId: "line_capacity",
@@ -144,8 +158,9 @@ const ITEM_PROGRESSION_CONFIG = (() => {
           metricSuffix: "м",
           inventoryDetailLabel: "Залишок ліски",
           equippedDetailLabel: "На котушці",
+          gameplayConsumer: "LineAllocationPolicy",
         },
-        quality: quality(),
+        condition: condition("LineSystem.getEffectiveMaxLoadKg"),
       },
       "line.leader": {
         rating: {
@@ -157,64 +172,48 @@ const ITEM_PROGRESSION_CONFIG = (() => {
           baseline: fixed(3, 8),
           metricLabel: "Міцність до товщини",
           metricSuffix: "кг/мм",
+          gameplayConsumer: "TackleFailureSelector",
         },
-        quality: quality(),
+        condition: condition("TackleFailureSelector"),
       },
       "hook.standard": {
         rating: numeric("effectiveStats.maxLoadKg", 0.5, 3, {
           metricLabel: "Міцність гачка",
           metricSuffix: "кг",
+          gameplayConsumer: "Hook.getEffectiveMaxLoadKg",
         }),
-        quality: quality(),
+        quality: quality("HookQualityModifier"),
+        condition: condition("Hook.getEffectiveMaxLoadKg"),
       },
       "rig.feeder": {
-        rating: numeric("effectiveStats.rigPower", 0.5, 3, {
-          metricLabel: "Сила оснастки",
-        }),
-        quality: quality(),
+        quality: quality("EnvironmentalCompensationModifier"),
       },
-      "bait.natural": {
-        rating: numeric("effectiveStats.attractionPower", 0.5, 3, {
-          metricLabel: "Привабливість",
-        }),
-        quality: quality(),
-      },
+      "bait.natural": {},
       "lure.spinner": {
-        rating: numeric("effectiveStats.attractionPower", 1, 10, {
-          metricLabel: "Привабливість",
-        }),
-        quality: quality(),
+        quality: quality("EnvironmentalCompensationModifier"),
       },
       "lure.wobbler": {
-        rating: numeric("effectiveStats.attractionPower", 1, 10, {
-          metricLabel: "Привабливість",
-        }),
-        quality: quality(),
+        quality: quality("EnvironmentalCompensationModifier"),
       },
       "lure.jig": {
-        rating: numeric("effectiveStats.jigPower", 1, 10, {
-          metricLabel: "Контроль джигу",
-        }),
-        quality: quality(),
+        quality: quality("EnvironmentalCompensationModifier"),
       },
       "float.day": {
-        rating: numeric("effectiveStats.sensitivity", 1, 10, {
-          metricLabel: "Чутливість",
-        }),
-        quality: quality(),
+        quality: quality("EnvironmentalCompensationModifier"),
       },
       "net.landing": {
         rating: numeric("effectiveStats.maxWeight", 1, 10, {
           metricLabel: "Макс. вага",
           metricSuffix: "кг",
+          gameplayConsumer: "LandingNet.calculateCatchChance",
         }),
-        quality: quality(),
+        quality: quality("NetQualityModifier"),
       },
       "chum.carp": {
         rating: numeric("effectiveStats.maxBonus", 1, 3, {
           metricLabel: "Макс. бонус",
+          gameplayConsumer: "ChumBonusCalculator",
         }),
-        quality: quality(),
       },
       "delivery.boat": {
         rating: {
@@ -227,8 +226,8 @@ const ITEM_PROGRESSION_CONFIG = (() => {
           baseline: fixed(100, 300),
           metricLabel: "Швидкість поточного upgrade",
           metricSuffix: "px/с",
+          gameplayConsumer: "BoatDeliveryController",
         },
-        quality: quality(),
       },
     },
   });

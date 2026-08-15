@@ -1,7 +1,7 @@
 class ItemProgressionResolver {
   #configProvider;
   #ratingResolver;
-  #progressionLevelResolver;
+  #ratingTierResolver;
   #qualityResolver;
   #capacityResolver;
   #baselineRegistry;
@@ -12,7 +12,7 @@ class ItemProgressionResolver {
   constructor({
     configProvider,
     ratingResolver,
-    progressionLevelResolver,
+    ratingTierResolver = null,
     qualityResolver,
     capacityResolver = null,
     baselineRegistry,
@@ -24,12 +24,9 @@ class ItemProgressionResolver {
     if (!ratingResolver || typeof ratingResolver.resolve !== "function") {
       throw new TypeError("ItemProgressionResolver requires ratingResolver");
     }
-    if (
-      !progressionLevelResolver ||
-      typeof progressionLevelResolver.resolve !== "function"
-    ) {
+    if (ratingTierResolver && typeof ratingTierResolver.resolve !== "function") {
       throw new TypeError(
-        "ItemProgressionResolver requires progressionLevelResolver",
+        "ItemProgressionResolver ratingTierResolver must implement resolve",
       );
     }
     if (!qualityResolver || typeof qualityResolver.resolve !== "function") {
@@ -37,7 +34,7 @@ class ItemProgressionResolver {
     }
     this.#configProvider = configProvider;
     this.#ratingResolver = ratingResolver;
-    this.#progressionLevelResolver = progressionLevelResolver;
+    this.#ratingTierResolver = ratingTierResolver;
     this.#qualityResolver = qualityResolver;
     this.#capacityResolver = capacityResolver;
     this.#baselineRegistry = baselineRegistry || null;
@@ -55,17 +52,13 @@ class ItemProgressionResolver {
           }),
         };
     const profile = effectiveItem?.progressionProfile;
-    if (!profile) return this.#unavailable("technical_item");
+    if (!profile) return this.#empty("technical_item");
+
     const config = this.#configProvider() || {};
     const groupId = String(profile.groupId || "");
     const groupConfig = config.groups?.[groupId];
-    if (!groupConfig) return this.#unavailable("group_missing", groupId);
+    if (!groupConfig) return this.#empty("group_missing", groupId);
 
-    const capacity = this.#capacityResolver?.resolve?.({
-      item: effectiveItem,
-      capacityConfig: groupConfig.capacity,
-      context,
-    }) || this.#unavailableCapacity("capacity_resolver_missing");
     const signature = this.#buildSignature(
       effectiveItem,
       groupId,
@@ -74,58 +67,23 @@ class ItemProgressionResolver {
     );
     let core = this.#cache.get(signature);
     if (!core) {
-      const rating = this.#ratingResolver.resolve({
-        item: effectiveItem,
-        groupId,
-        groupConfig,
-      });
-      const progressionLevel = this.#progressionLevelResolver.resolve(
-        rating,
-        config.progressionLevelScale,
-      );
-      const quality = this.#qualityResolver.resolve({
-        item: effectiveItem,
-        qualityConfig: groupConfig.quality,
-      });
-      const defaultCapacity = this.#unavailableCapacity(
-        "capacity_config_missing",
-      );
-      core = Object.freeze({
-        available:
-          rating.available || progressionLevel.available || quality.available,
-        reason:
-          rating.available || progressionLevel.available || quality.available
-          ? null
-          : rating.reason || progressionLevel.reason || quality.reason,
-        groupId,
-        rating,
-        progressionLevel,
-        quality,
-        descriptor: new ItemProgressionDescriptor({
-          available:
-            rating.available || progressionLevel.available || quality.available,
-          reason:
-            rating.available || progressionLevel.available || quality.available
-            ? null
-            : rating.reason || progressionLevel.reason || quality.reason,
-          groupId,
-          rating,
-          progressionLevel,
-          quality,
-          capacity: defaultCapacity,
-        }),
-      });
+      core = this.#resolveCore(effectiveItem, groupId, groupConfig);
       this.#cache.set(signature, core);
     }
-    if (!groupConfig.capacity) return core.descriptor;
-    return new ItemProgressionDescriptor({
-      available: core.available || capacity.available,
-      reason: core.available || capacity.available
-        ? null
-        : core.reason || capacity.reason,
-      groupId: core.groupId,
+
+    if (!groupConfig.capacity) return core;
+    const capacity = this.#capacityResolver?.resolve?.({
+      item: effectiveItem,
+      capacityConfig: groupConfig.capacity,
+      context,
+    }) || Object.freeze({
+      available: false,
+      reason: "capacity_resolver_missing",
+    });
+    return this.#descriptor({
+      groupId,
       rating: core.rating,
-      progressionLevel: core.progressionLevel,
+      ratingTier: core.ratingTier,
       quality: core.quality,
       capacity,
     });
@@ -135,6 +93,49 @@ class ItemProgressionResolver {
     this.#revision += 1;
     this.#cache.clear();
     this.#baselineRegistry?.invalidate?.();
+  }
+
+  #resolveCore(item, groupId, groupConfig) {
+    const rating = groupConfig.rating
+      ? this.#ratingResolver.resolve({ item, groupId, groupConfig })
+      : null;
+    const ratingTier = groupConfig.ratingTier
+      ? this.#ratingTierResolver?.resolve?.(rating, groupConfig.ratingTier) ||
+        Object.freeze({
+          available: false,
+          reason: "rating_tier_resolver_missing",
+        })
+      : null;
+    const quality = groupConfig.quality
+      ? this.#qualityResolver.resolve({
+          item,
+          qualityConfig: groupConfig.quality,
+        })
+      : null;
+    return this.#descriptor({ groupId, rating, ratingTier, quality });
+  }
+
+  #descriptor({
+    groupId,
+    rating = null,
+    ratingTier = null,
+    quality = null,
+    capacity = null,
+  }) {
+    const descriptors = [rating, ratingTier, quality, capacity].filter(Boolean);
+    const available = descriptors.some((descriptor) => descriptor.available);
+    return new ItemProgressionDescriptor({
+      available,
+      reason: available
+        ? null
+        : descriptors.find((descriptor) => descriptor.reason)?.reason ||
+          "capabilities_not_configured",
+      groupId,
+      rating,
+      ratingTier,
+      quality,
+      capacity,
+    });
   }
 
   #buildSignature(item, groupId, groupConfig, configRevision) {
@@ -181,66 +182,13 @@ class ItemProgressionResolver {
     return current;
   }
 
-  #unavailable(reason, groupId = null) {
-    const unavailableRating = Object.freeze({
-      available: false,
-      reason,
-      strategyId: null,
-      metricId: null,
-      metricLabel: null,
-      metricSuffix: "",
-      rawValue: null,
-      minimum: null,
-      maximum: null,
-      normalized: null,
-      percent: null,
-      outOfRange: null,
-      configSource: null,
-      breakdown: Object.freeze([]),
-    });
-    const unavailableProgressionLevel = Object.freeze({
-      available: false,
-      reason,
-      current: null,
-      maximum: null,
-    });
-    const unavailableQuality = Object.freeze({
-      available: false,
-      reason,
-      value: null,
-      minimum: null,
-      maximum: null,
-      filledSections: 0,
-      totalSections: 0,
-      fillRatio: 0,
-      visualPosition: 0,
-    });
-    const unavailableCapacity = this.#unavailableCapacity(reason);
+  #empty(reason, groupId = null) {
     return new ItemProgressionDescriptor({
       available: false,
       reason,
       groupId,
-      rating: unavailableRating,
-      progressionLevel: unavailableProgressionLevel,
-      quality: unavailableQuality,
-      capacity: unavailableCapacity,
-    });
-  }
-
-  #unavailableCapacity(reason) {
-    return Object.freeze({
-      available: false,
-      reason,
-      strategyId: null,
-      metricLabel: null,
-      metricSuffix: "",
-      detailLabel: null,
-      source: null,
-      current: null,
-      maximum: null,
-      used: null,
-      normalized: null,
-      percent: null,
     });
   }
 }
+
+globalThis.ItemProgressionResolver = ItemProgressionResolver;

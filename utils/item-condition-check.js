@@ -10,17 +10,24 @@ class RuntimeLoader {
   load() {
     const runtime = new SourceRuntime();
     runtime.loadMany([
-      "src/config/items/item_condition_config.js",
+      "src/config/items/item_progression_config.js",
+      "src/config/items/item_stat_override_config.js",
       "src/config/databases/item_db.js",
-      "src/config/validation/item_condition_config_validator.js",
+      "src/core/items/item_stat_override_policy.js",
+      "src/core/items/effective_item_stats_resolver.js",
+      "src/config/validation/item_progression_config_validator.js",
+      "src/core/items/metrics/item_bounded_metric_resolver.js",
       "src/core/items/condition/item_condition_descriptor.js",
       "src/core/items/condition/item_condition_resolver.js",
+      "src/core/items/freshness/item_freshness_descriptor.js",
+      "src/core/items/freshness/item_freshness_resolver.js",
       "src/ui/condition/item_condition_dom_adapter.js",
     ]).expose({
-      CONFIGURATION: "ITEM_CONDITION_CONFIG",
+      CONFIGURATION: "ITEM_PROGRESSION_CONFIG",
       DB: "ITEM_DB",
-      Validator: "ItemConditionConfigValidator",
+      Validator: "ItemProgressionConfigValidator",
       Resolver: "ItemConditionResolver",
+      FreshnessResolver: "ItemFreshnessResolver",
       Adapter: "ItemConditionDomAdapter",
     });
     return runtime.context;
@@ -62,11 +69,21 @@ class FakeClassList {
 class ItemConditionCheck {
   #runtime;
   #resolver;
+  #freshnessResolver;
 
   constructor(runtime) {
     this.#runtime = runtime;
     this.#resolver = new runtime.Resolver({
-      configProvider: () => runtime.CONFIGURATION,
+      profileProvider: (item) => {
+        const groupId = item?.progressionProfile?.groupId;
+        return runtime.CONFIGURATION.groups[groupId]?.condition;
+      },
+    });
+    this.#freshnessResolver = new runtime.FreshnessResolver({
+      profileProvider: (item) => {
+        const groupId = item?.progressionProfile?.groupId;
+        return runtime.CONFIGURATION.groups[groupId]?.freshness;
+      },
     });
   }
 
@@ -74,6 +91,7 @@ class ItemConditionCheck {
     this.#checkConfiguration();
     this.#checkResolution();
     this.#checkProductionItems();
+    this.#checkFreshnessCapability();
     this.#checkDomContract();
     this.#checkCssContract();
     this.#checkLifecycleContract();
@@ -82,33 +100,50 @@ class ItemConditionCheck {
 
   #checkConfiguration() {
     const issues = new this.#runtime.Validator().validate({
-      conditionConfig: this.#runtime.CONFIGURATION,
+      progressionConfig: this.#runtime.CONFIGURATION,
       itemDb: this.#runtime.DB,
     });
     Assertion.equal(issues.length, 0, `production config: ${JSON.stringify(issues)}`);
+    const invalidConfig = JSON.parse(JSON.stringify(this.#runtime.CONFIGURATION));
+    invalidConfig.groups["rod.spinning"].condition.maximum = 0;
     const invalid = new this.#runtime.Validator().validate({
-      conditionConfig: { ...this.#runtime.CONFIGURATION, maximum: 0 },
+      progressionConfig: invalidConfig,
       itemDb: this.#runtime.DB,
     });
     Assertion.that(invalid.length > 0, "invalid condition range is rejected");
   }
 
   #checkResolution() {
-    const full = this.#resolver.resolve({ effectiveStats: { durability: 100 } });
+    const profile = { progressionProfile: { groupId: "rod.spinning" } };
+    const full = this.#resolver.resolve({
+      ...profile,
+      effectiveStats: { durability: 100 },
+    });
     Assertion.equal(full.percent, 100, "100 condition maps to full height");
     Assertion.equal(full.source, "authored", "catalog durability is authored");
     const worn = this.#resolver.resolve({
+      ...profile,
       statOverrides: { durability: 20 },
       effectiveStats: { durability: 100 },
     });
     Assertion.equal(worn.percent, 20, "20 condition maps to 20 percent height");
     Assertion.equal(worn.source, "runtime", "runtime durability has priority");
-    const clamped = this.#resolver.resolve({ statOverrides: { durability: -5 } });
+    const clamped = this.#resolver.resolve({
+      ...profile,
+      statOverrides: { durability: -5 },
+    });
     Assertion.equal(clamped.percent, 0, "condition is clamped below minimum");
     Assertion.equal(clamped.outOfRange, "below", "below-range state is exposed");
-    const fallback = this.#resolver.resolve({});
-    Assertion.equal(fallback.percent, 100, "items without wear data start full");
-    Assertion.equal(fallback.source, "default", "default source remains explicit");
+    const missing = this.#resolver.resolve(profile);
+    Assertion.that(
+      !missing.available && missing.reason === "condition_missing",
+      "configured condition requires real state instead of a global default",
+    );
+    Assertion.equal(
+      this.#resolver.resolve({ progressionProfile: { groupId: "bait.natural" } }),
+      null,
+      "items without condition capability create no descriptor",
+    );
     Assertion.that(Object.isFrozen(worn), "condition descriptor is immutable");
   }
 
@@ -118,6 +153,17 @@ class ItemConditionCheck {
     for (const category of Object.values(this.#runtime.DB)) {
       for (const item of Object.values(category || {})) {
         if (!item?.progressionProfile) continue;
+        const profile = this.#runtime.CONFIGURATION.groups[
+          item.progressionProfile.groupId
+        ];
+        if (!profile.condition) {
+          Assertion.equal(
+            this.#resolver.resolve({ ...item, effectiveStats: item.gameplayStats || {} }),
+            null,
+            `${item.id} has no forced condition descriptor`,
+          );
+          continue;
+        }
         gameplayCount += 1;
         if (item.gameplayStats?.durability !== undefined) authoredCount += 1;
         const condition = this.#resolver.resolve({
@@ -128,8 +174,31 @@ class ItemConditionCheck {
         Assertion.equal(condition.percent, 100, `${item.id} starts at full condition`);
       }
     }
-    Assertion.equal(gameplayCount, 21, "all gameplay items are covered");
-    Assertion.equal(authoredCount, 9, "existing durability-enabled items stay authored");
+    Assertion.equal(gameplayCount, 10, "only durability-backed item groups are covered");
+    Assertion.equal(authoredCount, 10, "condition-enabled items author durability explicitly");
+  }
+
+  #checkFreshnessCapability() {
+    const bait = {
+      progressionProfile: { groupId: "bait.natural" },
+      freshnessState: { percent: 82 },
+    };
+    Assertion.equal(
+      this.#freshnessResolver.resolve(bait),
+      null,
+      "freshness remains disabled without a confirmed gameplay capability",
+    );
+    const enabled = this.#freshnessResolver.resolve(bait, {
+      statPath: "freshnessState.percent",
+      minimum: 0,
+      maximum: 100,
+      metricLabel: "Свіжість",
+    });
+    Assertion.that(
+      enabled.available && enabled.percent === 82,
+      "freshness descriptor is available when an explicit capability is configured",
+    );
+    Assertion.that(Object.isFrozen(enabled), "freshness descriptor is immutable");
   }
 
   #checkDomContract() {
@@ -139,6 +208,7 @@ class ItemConditionCheck {
       dataset: {},
     };
     const condition = this.#resolver.resolve({
+      progressionProfile: { groupId: "rod.spinning" },
       statOverrides: { durability: 20 },
     });
     new this.#runtime.Adapter().apply(element, condition);
@@ -181,7 +251,8 @@ class ItemConditionCheck {
     );
     const ui = fs.readFileSync(path.join(ROOT, "src/ui/ui.js"), "utf8");
     Assertion.that(
-      factory.includes("hydrated.condition = this.#conditionResolver?.resolve(hydrated)"),
+      factory.includes("const condition = this.#conditionResolver?.resolve(hydrated)") &&
+        factory.includes("if (condition) hydrated.condition = condition"),
       "condition is derived during item hydration",
     );
     Assertion.that(

@@ -1,9 +1,9 @@
-class ItemConditionDescriptor {
+class ItemFreshnessDescriptor {
   constructor({
-    capabilityId = "condition",
+    capabilityId = "freshness",
     available,
     reason = null,
-    metricLabel = "Стан",
+    metricLabel = "Свіжість",
     source = null,
     rawValue = null,
     current = null,
@@ -28,3 +28,5 @@ class ItemConditionDescriptor {
     Object.freeze(this);
   }
 }
+
+globalThis.ItemFreshnessDescriptor = ItemFreshnessDescriptor;

@@ -102,6 +102,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["items"],
   },
   {
+    id: "item-state-hardening",
+    title: "Canonical item instance state and persistence",
+    file: "utils/item-state-hardening-check.js",
+    suites: ["inventory", "inventory-v2", "items"],
+  },
+  {
     id: "degradation-colors",
     title: "Degradation colors",
     file: "utils/degradation-color-check.js",

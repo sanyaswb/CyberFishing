@@ -35,12 +35,12 @@ class ItemProgressionDomAdapter {
     const documentRef = element.ownerDocument || globalThis.document;
     if (!documentRef?.createElement) return resolvedVisual;
     if (
-      progression.progressionLevel?.available &&
-      options.renderLevelBadge !== false
+      progression.ratingTier?.available &&
+      options.renderRatingTierBadge !== false
     ) {
-      element.appendChild(this.#createProgressionLevelBadge(
+      element.appendChild(this.#createRatingTierBadge(
         documentRef,
-        progression.progressionLevel,
+        progression.ratingTier,
       ));
     }
     if (
@@ -103,12 +103,12 @@ class ItemProgressionDomAdapter {
     title.textContent = "Прогресія предмета";
     section.appendChild(title);
 
-    if (progression.progressionLevel?.available) {
+    if (progression.ratingTier?.available) {
       this.#appendTooltipRow(
         documentRef,
         section,
-        "Прогресійний рівень",
-        `${progression.progressionLevel.current}/${progression.progressionLevel.maximum}`,
+        "Клас рейтингу",
+        `${progression.ratingTier.current}/${progression.ratingTier.maximum}`,
       );
     }
     if (progression.capacity?.available) {
@@ -176,7 +176,7 @@ class ItemProgressionDomAdapter {
     if (!element) return;
     element.classList?.remove("has-item-progression");
     for (const selector of [
-      ".inv-slot__level-badge",
+      ".inv-slot__rating-tier-badge",
       ".inv-slot__quality-bar",
       ".inv-slot__rating-bar",
       ".inv-slot__capacity-bar",
@@ -219,13 +219,13 @@ class ItemProgressionDomAdapter {
     );
   }
 
-  #createProgressionLevelBadge(documentRef, progressionLevel) {
+  #createRatingTierBadge(documentRef, ratingTier) {
     const badge = documentRef.createElement("div");
-    badge.className = "inv-slot__level-badge";
-    badge.textContent = String(progressionLevel.current);
+    badge.className = "inv-slot__rating-tier-badge";
+    badge.textContent = String(ratingTier.current);
     badge.setAttribute(
       "aria-label",
-      `Прогресійний рівень ${progressionLevel.current} з ${progressionLevel.maximum}`,
+      `Клас рейтингу ${ratingTier.current} з ${ratingTier.maximum}`,
     );
     return badge;
   }

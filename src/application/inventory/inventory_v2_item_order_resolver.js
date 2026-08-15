@@ -218,7 +218,11 @@ class InventoryV2ItemOrderResolver {
     const available = new Set(
       this.#config.criteria.map((criterion) => criterion.id),
     );
-    const legacyIds = { level: "progressionLevel", power: "rating" };
+    const legacyIds = {
+      level: "ratingTier",
+      progressionLevel: "ratingTier",
+      power: "rating",
+    };
     return [...new Set(candidates.map((id) => {
       const normalized = String(id || "");
       return legacyIds[normalized] || normalized;

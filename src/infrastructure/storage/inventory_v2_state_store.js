@@ -1,4 +1,4 @@
-const INVENTORY_V2_SCHEMA_VERSION = 3;
+const INVENTORY_V2_SCHEMA_VERSION = 4;
 
 /**
  * Persistence boundary for inventory-v2.
@@ -10,16 +10,24 @@ const INVENTORY_V2_SCHEMA_VERSION = 3;
 class InventoryV2StateStore {
   #cache;
   #key;
+  #itemSnapshotMapper;
 
   constructor({
     cache = typeof CacheManager !== "undefined" ? CacheManager : null,
     key = "player_inventory_v2",
+    itemSnapshotMapper,
   } = {}) {
     if (!cache || typeof cache.get !== "function" || typeof cache.set !== "function") {
       throw new TypeError("InventoryV2StateStore requires a cache adapter");
     }
+    if (!itemSnapshotMapper?.toSnapshots) {
+      throw new TypeError(
+        "InventoryV2StateStore requires InventoryItemSnapshotMapper",
+      );
+    }
     this.#cache = cache;
     this.#key = key;
+    this.#itemSnapshotMapper = itemSnapshotMapper;
   }
 
   load() {
@@ -30,7 +38,7 @@ class InventoryV2StateStore {
     return this.#clone(snapshot);
   }
 
-  loadPrevious(acceptedVersions = [2]) {
+  loadPrevious(acceptedVersions = [3, 2]) {
     const snapshot = this.#cache.get(this.#key, null);
     const accepted = new Set(acceptedVersions.map((value) => Number(value)));
     if (!snapshot || !accepted.has(Number(snapshot.schemaVersion))) return null;
@@ -49,7 +57,7 @@ class InventoryV2StateStore {
     }
     return {
       schemaVersion: INVENTORY_V2_SCHEMA_VERSION,
-      items: this.#array(snapshot.items),
+      items: this.#itemSnapshotMapper.toSnapshots(this.#array(snapshot.items)),
       assemblies: this.#array(snapshot.assemblies),
       equipment: this.#object(snapshot.equipment),
       loadouts: this.#array(snapshot.loadouts),

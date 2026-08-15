@@ -1,7 +1,21 @@
 class EffectiveItemStatsResolver {
+  #overridePolicy;
+
+  constructor({ overridePolicy = new ItemStatOverridePolicy() } = {}) {
+    if (!overridePolicy || typeof overridePolicy.normalize !== "function") {
+      throw new TypeError(
+        "EffectiveItemStatsResolver requires ItemStatOverridePolicy",
+      );
+    }
+    this.#overridePolicy = overridePolicy;
+  }
+
   resolve({ definition = {}, instanceState = {} } = {}) {
     const authoredStats = definition.gameplayStats || {};
-    const explicitOverrides = instanceState.statOverrides || {};
+    const explicitOverrides = this.#overridePolicy.normalize({
+      definition,
+      overrides: instanceState.statOverrides || {},
+    });
     const resolved = this.#clone(authoredStats);
 
     this.#applyOverrides(resolved, explicitOverrides);

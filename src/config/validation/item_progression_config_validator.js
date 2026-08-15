@@ -1,4 +1,12 @@
 class ItemProgressionConfigValidator {
+  static #capabilities = new Set([
+    "rating",
+    "ratingTier",
+    "quality",
+    "condition",
+    "capacity",
+    "freshness",
+  ]);
   static #strategies = new Set([
     "numeric_stat",
     "derived_stat",
@@ -16,13 +24,10 @@ class ItemProgressionConfigValidator {
   validate({ progressionConfig, itemDb = {} } = {}) {
     this.#errors = [];
     const groups = progressionConfig?.groups;
-    if (!groups || typeof groups !== "object") {
+    if (!groups || typeof groups !== "object" || Array.isArray(groups)) {
       this.#error("ITEM_PROGRESSION_CONFIG.groups", "missing groups config");
       return this.#errors.slice();
     }
-    this.#validateProgressionLevelScale(
-      progressionConfig.progressionLevelScale,
-    );
     this.#validateGroups(progressionConfig, itemDb);
     this.#validateItems(groups, itemDb);
     return this.#errors.slice();
@@ -34,45 +39,69 @@ class ItemProgressionConfigValidator {
     const details = issues
       .map((issue) => `- ${issue.path}: ${issue.message}`)
       .join("\n");
-    throw new Error(`Invalid item progression configuration:\n${details}`);
+    throw new Error(`Invalid item metric capability configuration:\n${details}`);
   }
 
   #validateGroups(config, itemDb) {
-    const groupEntries = Object.entries(config.groups || {});
     const minSections = Number(config.qualityLimits?.minSections ?? 2);
     const maxSections = Number(config.qualityLimits?.maxSections ?? 12);
-    for (const [groupId, group] of groupEntries) {
+    for (const [groupId, group] of Object.entries(config.groups || {})) {
       const path = `ITEM_PROGRESSION_CONFIG.groups.${groupId}`;
       if (!groupId.trim()) this.#error(path, "group id must not be empty");
-      if (!group || typeof group !== "object") {
-        this.#error(path, "expected group object");
+      if (!group || typeof group !== "object" || Array.isArray(group)) {
+        this.#error(path, "expected capability profile object");
         continue;
       }
-      this.#validateRating(`${path}.rating`, group.rating);
-      this.#validateQuality(
-        `${path}.quality`,
-        group.quality,
-        minSections,
-        maxSections,
-      );
-      this.#validateCapacity(`${path}.capacity`, group.capacity);
-      this.#validateCatalogRange(groupId, group.rating, itemDb, path);
+      for (const capabilityId of Object.keys(group)) {
+        if (!ItemProgressionConfigValidator.#capabilities.has(capabilityId)) {
+          this.#error(
+            `${path}.${capabilityId}`,
+            "unknown item metric capability",
+          );
+        }
+      }
+      if (group.rating !== undefined) {
+        this.#validateRating(`${path}.rating`, group.rating);
+        this.#validateCatalogRange(groupId, group.rating, itemDb, path);
+      }
+      if (group.ratingTier !== undefined) {
+        this.#validateRatingTier(
+          `${path}.ratingTier`,
+          group.ratingTier,
+          group.rating,
+        );
+      }
+      if (group.quality !== undefined) {
+        this.#validateQuality(
+          `${path}.quality`,
+          group.quality,
+          minSections,
+          maxSections,
+        );
+      }
+      if (group.capacity !== undefined) {
+        this.#validateCapacity(`${path}.capacity`, group.capacity);
+      }
+      if (group.condition !== undefined) {
+        this.#validateBoundedMetric(`${path}.condition`, group.condition);
+      }
+      if (group.freshness !== undefined) {
+        this.#validateBoundedMetric(`${path}.freshness`, group.freshness);
+      }
     }
   }
 
   #validateRating(path, rating) {
-    if (!rating || typeof rating !== "object") {
-      this.#error(path, "missing rating config");
+    if (!rating || typeof rating !== "object" || Array.isArray(rating)) {
+      this.#error(path, "expected rating config object");
       return;
     }
     if (!ItemProgressionConfigValidator.#strategies.has(rating.strategyId)) {
       this.#error(`${path}.strategyId`, "unsupported strategy");
     }
+    this.#requireGameplayConsumer(path, rating.gameplayConsumer);
     if (Object.prototype.hasOwnProperty.call(rating, "maxLevel")) {
-      this.#error(
-        `${path}.maxLevel`,
-        "level scale must be configured globally",
-      );
+      this.#error(`${path}.maxLevel`, "use an explicit ratingTier capability");
     }
     this.#rejectVisualKeys(path, rating);
 
@@ -98,6 +127,29 @@ class ItemProgressionConfigValidator {
     }
   }
 
+  #validateRatingTier(path, ratingTier, rating) {
+    if (!ratingTier || typeof ratingTier !== "object" || Array.isArray(ratingTier)) {
+      this.#error(path, "expected ratingTier config object");
+      return;
+    }
+    if (!rating || typeof rating !== "object") {
+      this.#error(path, "ratingTier requires a rating capability");
+    }
+    if (ratingTier.source !== "rating.normalized") {
+      this.#error(`${path}.source`, "expected rating.normalized");
+    }
+    if (ratingTier.distribution !== "equal_segments") {
+      this.#error(`${path}.distribution`, "expected equal_segments");
+    }
+    if (!Number.isInteger(ratingTier.minimum) || ratingTier.minimum < 1) {
+      this.#error(`${path}.minimum`, "expected integer >= 1");
+    }
+    if (!Number.isInteger(ratingTier.segments) || ratingTier.segments < 1) {
+      this.#error(`${path}.segments`, "expected integer >= 1");
+    }
+    this.#rejectVisualKeys(path, ratingTier);
+  }
+
   #validateDerived(path, rating) {
     if (rating.formulaId === "ratio") {
       this.#requirePath(`${path}.numeratorPath`, rating.numeratorPath);
@@ -106,10 +158,7 @@ class ItemProgressionConfigValidator {
     }
     if (rating.formulaId === "upgrade_level_stat") {
       this.#requirePath(`${path}.tablePath`, rating.tablePath);
-      this.#requirePath(
-        `${path}.upgradeLevelPath`,
-        rating.upgradeLevelPath,
-      );
+      this.#requirePath(`${path}.upgradeLevelPath`, rating.upgradeLevelPath);
       this.#requirePath(`${path}.statKey`, rating.statKey);
       return;
     }
@@ -141,14 +190,8 @@ class ItemProgressionConfigValidator {
           component.targetRange,
         );
       } else {
-        this.#validateDirection(
-          `${componentPath}.direction`,
-          component.direction,
-        );
-        this.#validateBaseline(
-          `${componentPath}.baseline`,
-          component.baseline,
-        );
+        this.#validateDirection(`${componentPath}.direction`, component.direction);
+        this.#validateBaseline(`${componentPath}.baseline`, component.baseline);
       }
       const weight = Number(component.weight);
       if (!Number.isFinite(weight) || weight <= 0) {
@@ -212,11 +255,12 @@ class ItemProgressionConfigValidator {
   }
 
   #validateQuality(path, quality, minSections, maxSections) {
-    if (!quality || typeof quality !== "object") {
-      this.#error(path, "missing quality config");
+    if (!quality || typeof quality !== "object" || Array.isArray(quality)) {
+      this.#error(path, "expected quality config object");
       return;
     }
     this.#requirePath(`${path}.statPath`, quality.statPath);
+    this.#requireGameplayConsumer(path, quality.gameplayConsumer);
     if (!Number.isFinite(Number(quality.min))) {
       this.#error(`${path}.min`, "expected finite number");
     }
@@ -234,8 +278,7 @@ class ItemProgressionConfigValidator {
   }
 
   #validateCapacity(path, capacity) {
-    if (capacity === undefined) return;
-    if (!capacity || typeof capacity !== "object") {
+    if (!capacity || typeof capacity !== "object" || Array.isArray(capacity)) {
       this.#error(path, "expected capacity config object");
       return;
     }
@@ -243,7 +286,32 @@ class ItemProgressionConfigValidator {
       this.#error(`${path}.strategyId`, "unsupported capacity strategy");
     }
     this.#requirePath(`${path}.statPath`, capacity.statPath);
+    this.#requireGameplayConsumer(path, capacity.gameplayConsumer);
     this.#rejectVisualKeys(path, capacity);
+  }
+
+  #validateBoundedMetric(path, metric) {
+    if (!metric || typeof metric !== "object" || Array.isArray(metric)) {
+      this.#error(path, "expected bounded metric config object");
+      return;
+    }
+    this.#requirePath(`${path}.statPath`, metric.statPath);
+    this.#requireGameplayConsumer(path, metric.gameplayConsumer);
+    if (metric.runtimeOverridePath !== undefined) {
+      this.#requirePath(`${path}.runtimeOverridePath`, metric.runtimeOverridePath);
+    }
+    this.#validateRange(path, metric.minimum, metric.maximum);
+    if (metric.defaultCurrent !== undefined) {
+      const value = Number(metric.defaultCurrent);
+      if (
+        !Number.isFinite(value) ||
+        value < Number(metric.minimum) ||
+        value > Number(metric.maximum)
+      ) {
+        this.#error(`${path}.defaultCurrent`, "expected value inside metric range");
+      }
+    }
+    this.#rejectVisualKeys(path, metric);
   }
 
   #validateItems(groups, itemDb) {
@@ -257,7 +325,7 @@ class ItemProgressionConfigValidator {
           item?.itemType === "build_box" ||
           item?.itemType === "build_template";
         if (!Object.prototype.hasOwnProperty.call(item || {}, "progressionProfile")) {
-          this.#error(`${path}.progressionProfile`, "missing explicit progression profile");
+          this.#error(`${path}.progressionProfile`, "missing explicit metric profile");
           continue;
         }
         if (technical) {
@@ -275,38 +343,80 @@ class ItemProgressionConfigValidator {
           );
           continue;
         }
-        this.#validateItemMetric(path, effectiveItem, group.rating);
+        if (group.rating) this.#validateItemMetric(path, effectiveItem, group.rating);
         if (group.capacity) {
-          const capacityValue = this.#readPath(
+          this.#validateNumericCapability(
+            path,
             effectiveItem,
             group.capacity.statPath,
+            "capacity",
+            groupId,
           );
-          if (!Number.isFinite(Number(capacityValue))) {
-            this.#error(
-              `${path}.${group.capacity.statPath}`,
-              `numeric capacity is required by group ${groupId}`,
-            );
-          }
         }
-        const qualityValue = this.#readPath(
-          effectiveItem,
-          group.quality?.statPath,
-        );
-        if (!Number.isFinite(Number(qualityValue))) {
-          this.#error(
-            `${path}.${group.quality?.statPath}`,
-            `numeric quality is required by group ${groupId}`,
+        if (group.quality) {
+          this.#validateItemQuality(path, effectiveItem, group.quality, groupId);
+        }
+        if (group.condition) {
+          this.#validateItemBoundedMetric(
+            path,
+            effectiveItem,
+            group.condition,
+            "condition",
+            groupId,
           );
-        } else if (
-          Number(qualityValue) < Number(group.quality.min) ||
-          Number(qualityValue) > Number(group.quality.maxSections)
-        ) {
-          this.#error(
-            `${path}.${group.quality.statPath}`,
-            "quality value is outside group bounds",
+        }
+        if (group.freshness) {
+          this.#validateItemBoundedMetric(
+            path,
+            effectiveItem,
+            group.freshness,
+            "freshness",
+            groupId,
           );
         }
       }
+    }
+  }
+
+  #validateNumericCapability(path, item, statPath, capabilityId, groupId) {
+    const value = this.#readPath(item, statPath);
+    if (!Number.isFinite(Number(value))) {
+      this.#error(
+        `${path}.${statPath}`,
+        `numeric ${capabilityId} is required by group ${groupId}`,
+      );
+    }
+  }
+
+  #validateItemQuality(path, item, quality, groupId) {
+    const value = this.#readPath(item, quality.statPath);
+    if (!Number.isFinite(Number(value))) {
+      this.#error(
+        `${path}.${quality.statPath}`,
+        `numeric quality is required by group ${groupId}`,
+      );
+      return;
+    }
+    if (Number(value) < Number(quality.min) || Number(value) > Number(quality.maxSections)) {
+      this.#error(`${path}.${quality.statPath}`, "quality value is outside group bounds");
+    }
+  }
+
+  #validateItemBoundedMetric(path, item, metric, capabilityId, groupId) {
+    const authored = this.#readPath(item, metric.statPath);
+    const value = authored ?? metric.defaultCurrent;
+    if (!Number.isFinite(Number(value))) {
+      this.#error(
+        `${path}.${metric.statPath}`,
+        `numeric ${capabilityId} is required by group ${groupId}`,
+      );
+      return;
+    }
+    if (Number(value) < Number(metric.minimum) || Number(value) > Number(metric.maximum)) {
+      this.#error(
+        `${path}.${metric.statPath}`,
+        `${capabilityId} value is outside group bounds`,
+      );
     }
   }
 
@@ -322,8 +432,7 @@ class ItemProgressionConfigValidator {
     }
     const metric = this.#readMetric(item, rating);
     if (!Number.isFinite(metric)) {
-      const metricPath =
-        rating.statPath || rating.numeratorPath || rating.tablePath;
+      const metricPath = rating.statPath || rating.numeratorPath || rating.tablePath;
       this.#error(
         `${path}.${metricPath || "effectiveStats"}`,
         `${metricPath || rating.formulaId} is required and must be numeric`,
@@ -351,20 +460,12 @@ class ItemProgressionConfigValidator {
 
   #readMetric(item, rating) {
     if (!rating) return NaN;
-    if (
-      rating.strategyId === "numeric_stat" ||
-      rating.strategyId === "target_range"
-    ) {
+    if (rating.strategyId === "numeric_stat" || rating.strategyId === "target_range") {
       return Number(this.#readPath(item, rating.statPath));
     }
-    if (
-      rating.strategyId === "derived_stat" &&
-      rating.formulaId === "ratio"
-    ) {
+    if (rating.strategyId === "derived_stat" && rating.formulaId === "ratio") {
       const numerator = Number(this.#readPath(item, rating.numeratorPath));
-      const denominator = Number(
-        this.#readPath(item, rating.denominatorPath),
-      );
+      const denominator = Number(this.#readPath(item, rating.denominatorPath));
       return denominator === 0 ? NaN : numerator / denominator;
     }
     if (
@@ -392,9 +493,7 @@ class ItemProgressionConfigValidator {
     if (!item || item.effectiveStats) return item;
     return {
       ...item,
-      effectiveStats: this.#effectiveStatsResolver.resolve({
-        definition: item,
-      }),
+      effectiveStats: this.#effectiveStatsResolver.resolve({ definition: item }),
     };
   }
 
@@ -404,42 +503,24 @@ class ItemProgressionConfigValidator {
     }
   }
 
-  #validateProgressionLevelScale(scale) {
-    if (scale?.source !== "rating.normalized") {
-      this.#error(
-        "ITEM_PROGRESSION_CONFIG.progressionLevelScale.source",
-        "expected rating.normalized",
-      );
-    }
-    if (scale?.distribution !== "equal_segments") {
-      this.#error(
-        "ITEM_PROGRESSION_CONFIG.progressionLevelScale.distribution",
-        "expected equal_segments",
-      );
-    }
-    if (!Number.isInteger(scale?.minimum) || scale.minimum < 1) {
-      this.#error(
-        "ITEM_PROGRESSION_CONFIG.progressionLevelScale.minimum",
-        "expected integer >= 1",
-      );
-    }
-    if (!Number.isInteger(scale?.segments) || scale.segments < 1) {
-      this.#error(
-        "ITEM_PROGRESSION_CONFIG.progressionLevelScale.segments",
-        "expected integer >= 1",
-      );
-    }
-  }
-
   #requirePath(path, value) {
     if (!String(value || "").trim()) this.#error(path, "expected non-empty path");
+  }
+
+  #requireGameplayConsumer(path, value) {
+    if (!String(value || "").trim()) {
+      this.#error(
+        `${path}.gameplayConsumer`,
+        "capability requires a confirmed gameplay consumer",
+      );
+    }
   }
 
   #rejectVisualKeys(path, value) {
     if (!value || typeof value !== "object") return;
     for (const [key, child] of Object.entries(value)) {
       if (/(?:color|rgb|gradient)/i.test(key)) {
-        this.#error(`${path}.${key}`, "progression config must not own colors");
+        this.#error(`${path}.${key}`, "metric config must not own colors");
       }
       this.#rejectVisualKeys(`${path}.${key}`, child);
     }

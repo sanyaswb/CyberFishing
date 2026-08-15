@@ -395,6 +395,8 @@ const ITEM_DB = {
         weight: 4,
         maxLoadKg: 0.8,
         quality: 1,
+        durability: 100,
+        durabilityMaxLoadLossPerPercent: 0.001,
         assemblyProfileId: "hook_standard",
         requiresTag: "hook",
         capabilities: ["bait"], // ДОДАНО: тепер гачок дозволяє чіпляти наживку!

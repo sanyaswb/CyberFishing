@@ -3,6 +3,7 @@ class InventoryItemFactory {
     "progression",
     "ratingPercent",
     "progressionLevel",
+    "ratingTier",
     "normalizedRating",
     "ratingColor",
     "ratingGradient",
@@ -17,6 +18,8 @@ class InventoryItemFactory {
     "capacityMaximumMeters",
     "condition",
     "conditionPercent",
+    "freshness",
+    "freshnessPercent",
   ]);
 
   #itemDatabase;

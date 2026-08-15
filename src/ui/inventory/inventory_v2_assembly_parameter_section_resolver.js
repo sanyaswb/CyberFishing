@@ -64,13 +64,14 @@ class InventoryV2AssemblyParameterSectionResolver {
     return this.#stableSerialize({
       itemId: item.itemId || item.id || item.itemType,
       rarity: item.rarity?.id || item.rarity || item.rarityProfile?.tier,
-      progressionLevel:
-        item.progression?.progressionLevel?.current ??
-        item.progression?.progressionLevel?.value,
+      ratingTier:
+        item.progression?.ratingTier?.current ??
+        item.progression?.ratingTier?.value,
       quality:
         item.progression?.quality?.value ??
         item.effectiveStats?.quality,
       condition: item.condition?.percent,
+      freshness: item.freshness?.percent,
       charge: item.charge?.percent,
       effectiveStats: item.effectiveStats || null,
       displayStats: item.displayStats || null,

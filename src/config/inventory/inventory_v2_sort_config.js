@@ -19,8 +19,8 @@ const INVENTORY_V2_SORT_CONFIG = Object.freeze({
     Object.freeze({ id: "type", label: "За типом" }),
     Object.freeze({ id: "rarity", label: "За рідкістю" }),
     Object.freeze({
-      id: "progressionLevel",
-      label: "За рівнем прогресії",
+      id: "ratingTier",
+      label: "За класом рейтингу",
     }),
     Object.freeze({ id: "rating", label: "За рейтингом" }),
   ]),
@@ -64,8 +64,8 @@ const INVENTORY_V2_SORT_CONFIG = Object.freeze({
     unique: "Унікальні",
   }),
   numericPaths: Object.freeze({
-    progressionLevel: Object.freeze([
-      "progression.progressionLevel.current",
+    ratingTier: Object.freeze([
+      "progression.ratingTier.current",
     ]),
     rating: Object.freeze(["progression.rating.rawValue"]),
   }),

@@ -7,7 +7,10 @@ const context = vm.createContext({ console });
 const files = [
   "src/config/inventory/item_assembly_profile_config.js",
   "src/config/inventory/equipment_slot_config.js",
+  "src/config/items/item_stat_override_config.js",
+  "src/core/items/item_stat_override_policy.js",
   "src/core/items/effective_item_stats_resolver.js",
+  "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
   "src/infrastructure/storage/legacy_item_state_migration.js",
   "src/core/inventory/inventory_item_location.js",
   "src/core/inventory/flat_inventory_item_repository.js",
@@ -42,7 +45,7 @@ vm.runInContext(
     floatRod: { id: "floatRod", itemType: "rod", variant: "float", gameplayStats: { equipmentCapabilities: { supportsReel: false, supportsFloat: true, supportsFeederRig: false, supportsLures: false } } },
     poleRod: { id: "poleRod", itemType: "rod", variant: "pole", gameplayStats: { equipmentCapabilities: { supportsReel: false, supportsFloat: true, supportsFeederRig: false, supportsLures: false } } },
     reel: { id: "reel", itemType: "reel", variant: "spinning_reel", gameplayStats: { assemblyProfileId: "reel_standard" } },
-    line: { id: "line", itemType: "fishing_line", gameplayStats: {} },
+    line: { id: "line", itemType: "fishing_line", gameplayStats: { lengthMeters: 25 } },
     line_test_1: { id: "line_test_1", itemType: "fishing_line", gameplayStats: { lengthMeters: 25 } },
     leader: { id: "leader", itemType: "leader_line", gameplayStats: {} },
     spring: { id: "spring", itemType: "feeder_rig", gameplayStats: { assemblyProfileId: "feeder_spring_basic", hooksCount: 2, hasChumSlot: true } },
@@ -97,7 +100,7 @@ const assert = (condition, message) => {
 const byId = new Map(snapshot.items.map((item) => [item.instanceId, item]));
 const loadout = snapshot.loadouts[0];
 
-assert(snapshot.schemaVersion === 3, "schema version is 3");
+assert(snapshot.schemaVersion === 4, "schema version is 4");
 assert(snapshot.loadouts.length === 1, "legacy build becomes one loadout");
 assert(loadout.rootInstanceIds.net === undefined, "net is excluded from loadout");
 assert(loadout.rootInstanceIds.delivery === undefined, "boat is excluded from loadout");
@@ -153,15 +156,14 @@ vm.runInContext(
   context,
 );
 const upgradedItem = context.snapshotUpgrade.snapshot.items[0];
-assert(context.snapshotUpgrade.snapshot.schemaVersion === 3, "schema 2 upgrades to schema 3");
+assert(context.snapshotUpgrade.snapshot.schemaVersion === 4, "schema 2 upgrades to schema 4");
 assert(
-  upgradedItem.itemType === "rod" && upgradedItem.variant === "spinning",
-  "schema upgrade assigns canonical item type semantics",
+  !("itemType" in upgradedItem) && !("variant" in upgradedItem),
+  "schema upgrade does not persist definition-owned classification",
 );
 assert(
-  upgradedItem.statOverrides.equipmentPowerLevel === 4 &&
-    upgradedItem.statOverrides.maxLoadKg === 1.25,
-  "schema upgrade preserves legacy gameplay values as canonical overrides",
+  !("statOverrides" in upgradedItem),
+  "schema upgrade discards legacy authored balance instead of pinning it",
 );
 assert(
   !("type" in upgradedItem) &&
@@ -397,7 +399,11 @@ const totalByItemId = (result, itemId) =>
 const totalLineLength = (result) =>
   result.snapshot.items
     .filter((item) => item.itemId === "line")
-    .reduce((sum, item) => sum + Number(item.lengthMeters || 0) * item.quantity, 0);
+    .reduce(
+      (sum, item) =>
+        sum + Number(item.statOverrides?.lengthMeters ?? 25) * item.quantity,
+      0,
+    );
 
 const partial = regression.partialFeeder;
 const partialHooks = childrenOf(
@@ -418,17 +424,20 @@ assert(
 const replaced = regression.activeOverridesBuild;
 const activeReel = replaced.snapshot.equipment.reel;
 const activeLine = childrenOf(replaced, activeReel, "line")[0];
-assert(activeLine?.variant === "new", "active line replaces the saved loadout line");
+assert(activeLine?.instanceId === "replace-new-line", "active line replaces the saved loadout line");
 const activeTackle = replaced.snapshot.equipment.tackle;
 const activeHook = childrenOf(replaced, activeTackle, "hook")[0];
-assert(activeHook?.variant === "new", "active hook replaces the saved loadout hook");
+assert(activeHook?.instanceId === "replace-new-hook", "active hook replaces the saved loadout hook");
 assert(
-  childrenOf(replaced, activeHook.instanceId, "bait")[0]?.variant === "new",
+  childrenOf(replaced, activeHook.instanceId, "bait")[0]?.instanceId ===
+    "replace-new-bait",
   "active hook keeps its aligned bait",
 );
 assert(
   replaced.snapshot.items.some(
-    (item) => item.variant === "old" && item.location.kind === "INVENTORY",
+    (item) =>
+      ["replace-old-line", "replace-old-hook"].includes(item.instanceId) &&
+      item.location.kind === "INVENTORY",
   ),
   "replaced saved components return to inventory",
 );
@@ -475,8 +484,8 @@ assert(
 );
 assert(totalLineLength(activeSegment) === 25, "active line segment preserves total length");
 assert(
-  itemAt(activeSegment, "active-segment")?.lengthMeters === 10 &&
-    itemAt(activeSegment, "active-segment-source")?.lengthMeters === 15,
+  itemAt(activeSegment, "active-segment")?.statOverrides?.lengthMeters === 10 &&
+    itemAt(activeSegment, "active-segment-source")?.statOverrides?.lengthMeters === 15,
   "active segment and source spool remain separate",
 );
 const inactiveSegment = regression.inactiveLineSegment;
@@ -567,7 +576,7 @@ assert(
       "rare" &&
     migratedHandChum.settings.refillMemory.handChum?.properties
       ?.recipeVariant === "garlic",
-  "active hand chum keeps its exact refill signature during migration",
+  "active hand chum keeps instance rarity and recipe source facts",
 );
 
 console.log("Inventory-v2 migration checks passed.");

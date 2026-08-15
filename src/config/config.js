@@ -360,7 +360,6 @@ const CONFIG = {
   },
 
   itemProgression: ITEM_PROGRESSION_CONFIG,
-  itemCondition: ITEM_CONDITION_CONFIG,
   degradationColors: DEGRADATION_COLOR_CONFIG,
 
   logs: {

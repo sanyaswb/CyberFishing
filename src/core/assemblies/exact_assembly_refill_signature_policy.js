@@ -7,6 +7,7 @@ class ExactAssemblyRefillSignaturePolicy {
     "progression",
     "ratingPercent",
     "progressionLevel",
+    "ratingTier",
     "normalizedRating",
     "ratingColor",
     "ratingGradient",
@@ -18,6 +19,8 @@ class ExactAssemblyRefillSignaturePolicy {
     "qualityMax",
     "capacityPercent",
     "conditionPercent",
+    "freshness",
+    "freshnessPercent",
   ]);
 
   create(item) {

@@ -40,7 +40,6 @@ class GameCompositionRoot {
   async create(canvas, canvasMetrics, clock, debugEvents, devFlags, audio) {
     this.#validateRarityConfiguration();
     this.#validateItemProgressionConfiguration();
-    this.#validateItemConditionConfiguration();
     this.#validateDegradationColorConfiguration();
     const contracts = new DependencyContractValidator({
       stage: "bootstrap",
@@ -99,8 +98,15 @@ class GameCompositionRoot {
     const itemRarityDomAdapter = new ItemRarityDomAdapter({
       visualResolver: rarityVisualResolver,
     });
+    const metricCapabilityProvider = (capabilityId) => (item) => {
+      const groupId = item?.progressionProfile?.groupId;
+      return this.#config.itemProgression?.groups?.[groupId]?.[capabilityId];
+    };
     const itemConditionResolver = new ItemConditionResolver({
-      configProvider: () => this.#config.itemCondition || {},
+      profileProvider: metricCapabilityProvider("condition"),
+    });
+    const itemFreshnessResolver = new ItemFreshnessResolver({
+      profileProvider: metricCapabilityProvider("freshness"),
     });
     const itemConditionDomAdapter = new ItemConditionDomAdapter();
     const itemMetricStrategyRegistry = new ItemMetricStrategyRegistry([
@@ -120,7 +126,7 @@ class GameCompositionRoot {
     const itemProgressionResolver = new ItemProgressionResolver({
       configProvider: () => this.#config.itemProgression || {},
       ratingResolver: itemRatingResolver,
-      progressionLevelResolver: new ItemProgressionLevelResolver(),
+      ratingTierResolver: new ItemRatingTierResolver(),
       qualityResolver: new ItemQualityResolver(),
       capacityResolver: new ItemCapacityResolver(),
       baselineRegistry: itemCatalogBaselineRegistry,
@@ -150,6 +156,9 @@ class GameCompositionRoot {
       "clear",
     ]);
     contracts.requireMethods(itemConditionResolver, "itemConditionResolver", [
+      "resolve",
+    ]);
+    contracts.requireMethods(itemFreshnessResolver, "itemFreshnessResolver", [
       "resolve",
     ]);
     contracts.requireMethods(
@@ -390,6 +399,7 @@ class GameCompositionRoot {
       itemProgressionResolver,
       undefined,
       itemConditionResolver,
+      itemFreshnessResolver,
     );
     const eq = inventory.getEquipped();
     const chumConfigObj = { baits: {}, deliveryMethods: {} };
@@ -910,18 +920,6 @@ class GameCompositionRoot {
     }
     new ItemProgressionConfigValidator().assertValid({
       progressionConfig: this.#config.itemProgression,
-      itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
-    });
-  }
-
-  #validateItemConditionConfiguration() {
-    if (typeof ItemConditionConfigValidator === "undefined") {
-      throw new Error(
-        "ItemConditionConfigValidator must be loaded before startup",
-      );
-    }
-    new ItemConditionConfigValidator().assertValid({
-      conditionConfig: this.#config.itemCondition,
       itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
     });
   }

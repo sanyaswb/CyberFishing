@@ -13,8 +13,10 @@ class RuntimeLoader {
       "src/config/rarity/rarity_visual_config.js",
       "src/config/visual/degradation_color_config.js",
       "src/config/items/item_progression_config.js",
+      "src/config/items/item_stat_override_config.js",
       "src/config/databases/item_db.js",
       "src/config/validation/item_progression_config_validator.js",
+      "src/core/items/item_stat_override_policy.js",
       "src/core/items/effective_item_stats_resolver.js",
       "src/core/items/progression/item_metric_strategy.js",
       "src/core/items/progression/numeric_stat_metric_strategy.js",
@@ -24,7 +26,7 @@ class RuntimeLoader {
       "src/core/items/progression/item_metric_strategy_registry.js",
       "src/core/items/progression/item_catalog_baseline_registry.js",
       "src/core/items/progression/item_rating_resolver.js",
-      "src/core/items/progression/item_progression_level_resolver.js",
+      "src/core/items/progression/item_rating_tier_resolver.js",
       "src/core/items/progression/item_quality_resolver.js",
       "src/core/items/progression/item_capacity_resolver.js",
       "src/core/items/progression/item_progression_descriptor.js",
@@ -56,7 +58,7 @@ class RuntimeLoader {
       Registry: "ItemMetricStrategyRegistry",
       Baselines: "ItemCatalogBaselineRegistry",
       Rating: "ItemRatingResolver",
-      ProgressionLevel: "ItemProgressionLevelResolver",
+      RatingTier: "ItemRatingTierResolver",
       Quality: "ItemQualityResolver",
       Capacity: "ItemCapacityResolver",
       Progression: "ItemProgressionResolver",
@@ -89,7 +91,7 @@ class ItemProgressionCheck {
     this.#checkProductionValidation();
     this.#checkNormalizationStrategies();
     this.#checkBaselinesAndBounds();
-    this.#checkProgressionLevelBoundaries();
+    this.#checkRatingTierBoundaries();
     this.#checkQuality();
     this.#checkQualityModifiersAndEffectiveStats();
     this.#checkCapacity();
@@ -134,10 +136,37 @@ class ItemProgressionCheck {
       this.#runtime.CONFIGURATION.groups,
     )) {
       Assertion.that(
-        group.rating && !Object.prototype.hasOwnProperty.call(group, "power"),
-        `${groupId} owns rating instead of progression power`,
+        !Object.prototype.hasOwnProperty.call(group, "power") &&
+          !Object.prototype.hasOwnProperty.call(group, "progressionLevel"),
+        `${groupId} uses explicit metric capabilities without generic power or level`,
       );
     }
+    Assertion.that(
+      !Object.prototype.hasOwnProperty.call(
+        this.#runtime.CONFIGURATION,
+        "progressionLevelScale",
+      ),
+      "production config has no global automatic level scale",
+    );
+    for (const groupId of [
+      "bait.natural",
+      "rig.feeder",
+      "lure.spinner",
+      "lure.wobbler",
+      "lure.jig",
+      "float.day",
+    ]) {
+      Assertion.that(
+        !("rating" in this.#runtime.CONFIGURATION.groups[groupId]),
+        `${groupId} has no unconfirmed global rating`,
+      );
+    }
+    Assertion.that(
+      Object.values(this.#runtime.CONFIGURATION.groups).every(
+        (group) => !("ratingTier" in group) && !("freshness" in group),
+      ),
+      "ratingTier and freshness remain disabled in production",
+    );
   }
 
   #checkNormalizationStrategies() {
@@ -181,12 +210,6 @@ class ItemProgressionCheck {
 
     const compositeConfig = {
       revision: 1,
-      progressionLevelScale: {
-        source: "rating.normalized",
-        distribution: "equal_segments",
-        minimum: 1,
-        segments: 6,
-      },
       groups: {
         composite: {
           rating: {
@@ -232,12 +255,6 @@ class ItemProgressionCheck {
   #checkBaselinesAndBounds() {
     const config = {
       revision: 1,
-      progressionLevelScale: {
-        source: "rating.normalized",
-        distribution: "equal_segments",
-        minimum: 1,
-        segments: 6,
-      },
       groups: {
         fixed: {
           rating: {
@@ -297,37 +314,37 @@ class ItemProgressionCheck {
     );
   }
 
-  #checkProgressionLevelBoundaries() {
-    const resolver = new this.#runtime.ProgressionLevel();
+  #checkRatingTierBoundaries() {
+    const resolver = new this.#runtime.RatingTier();
     const scale = {
       source: "rating.normalized",
       distribution: "equal_segments",
       minimum: 1,
       segments: 6,
     };
-    const progressionLevel = (normalized) => resolver.resolve(
+    const ratingTier = (normalized) => resolver.resolve(
       { available: true, normalized },
       scale,
     ).current;
-    Assertion.equal(progressionLevel(0), 1, "zero rating maps to level 1");
+    Assertion.equal(ratingTier(0), 1, "zero rating maps to tier 1");
     Assertion.equal(
-      progressionLevel(1 / 6 - 1e-8),
+      ratingTier(1 / 6 - 1e-8),
       1,
-      "value below first boundary stays at progression level 1",
+      "value below first boundary stays at rating tier 1",
     );
-    Assertion.equal(progressionLevel(1 / 6), 2, "first sixth starts level 2");
-    Assertion.equal(progressionLevel(0.5), 4, "rating midpoint starts level 4");
+    Assertion.equal(ratingTier(1 / 6), 2, "first sixth starts tier 2");
+    Assertion.equal(ratingTier(0.5), 4, "rating midpoint starts tier 4");
     Assertion.equal(
-      progressionLevel(5 / 6 - 1e-8),
+      ratingTier(5 / 6 - 1e-8),
       5,
-      "value below final boundary stays at progression level 5",
+      "value below final boundary stays at rating tier 5",
     );
-    Assertion.equal(progressionLevel(5 / 6), 6, "final sixth starts level 6");
-    Assertion.equal(progressionLevel(1), 6, "maximum rating maps to level 6");
+    Assertion.equal(ratingTier(5 / 6), 6, "final sixth starts tier 6");
+    Assertion.equal(ratingTier(1), 6, "maximum rating maps to tier 6");
     Assertion.equal(
       resolver.resolve({ available: false, reason: "metric_missing" }, scale).reason,
       "metric_missing",
-      "unavailable rating keeps progression level unavailable",
+      "unavailable rating keeps rating tier unavailable",
     );
   }
 
@@ -384,20 +401,29 @@ class ItemProgressionCheck {
       },
       instanceState: {
         statOverrides: {
-          maxLoadKg: { add: 0.15 },
           quality: 8,
         },
       },
     });
-    Assertion.near(
-      effectiveStats.maxLoadKg,
-      1.15,
-      "additive stat override produces the effective max load",
-    );
+    Assertion.equal(effectiveStats.maxLoadKg, 1, "immutable authored stats stay unchanged");
     Assertion.equal(effectiveStats.quality, 8, "effective quality has one value");
     Assertion.that(
       Object.isFrozen(effectiveStats) && Object.isFrozen(effectiveStats.nested),
       "effective stats snapshot is deeply immutable",
+    );
+    Assertion.throws(
+      () => new this.#runtime.EffectiveStats().resolve({
+        definition: { gameplayStats: { maxLoadKg: 1 } },
+        instanceState: { statOverrides: { maxLoadKg: { add: 0.15 } } },
+      }),
+      "immutable maxLoadKg override is rejected",
+    );
+    Assertion.throws(
+      () => new this.#runtime.EffectiveStats().resolve({
+        definition: { gameplayStats: { maxLoadKg: 1 } },
+        instanceState: { statOverrides: { maxloadKg: 999, ghostStat: 123 } },
+      }),
+      "unknown and misspelled overrides are rejected",
     );
 
     const strictStats = new this.#runtime.EffectiveStats().resolve({
@@ -482,35 +508,42 @@ class ItemProgressionCheck {
     const items = this.#gameplayItems();
     for (const item of items) {
       const progression = resolver.resolve(this.#hydrateBase(item));
+      const profile = this.#runtime.CONFIGURATION.groups[
+        item.progressionProfile.groupId
+      ];
       Assertion.that(Object.isFrozen(progression), `${item.id} descriptor is immutable`);
-      Assertion.that(
-        progression.rating.available,
-        `${item.id} rating is available`,
-      );
-      const scale = this.#runtime.CONFIGURATION.progressionLevelScale;
-      const expectedProgressionLevel = scale.minimum + Math.min(
-        scale.segments - 1,
-        Math.floor(progression.rating.normalized * scale.segments),
+      Assertion.equal(
+        Object.prototype.hasOwnProperty.call(progression, "rating"),
+        Boolean(profile.rating),
+        `${item.id} creates rating only when configured`,
       );
       Assertion.equal(
-        progression.progressionLevel.current,
-        expectedProgressionLevel,
-        `${item.id} progression level follows its rating segment`,
+        Object.prototype.hasOwnProperty.call(progression, "ratingTier"),
+        Boolean(profile.ratingTier),
+        `${item.id} creates ratingTier only when configured`,
       );
-      Assertion.that(
-        !Object.prototype.hasOwnProperty.call(
-          item.progressionProfile,
-          "progressionLevel",
-        ),
-        `${item.id} does not require a manually authored progression level`,
-      );
-      Assertion.that(progression.quality.available, `${item.id} quality is available`);
       Assertion.equal(
-        progression.capacity.available,
-        item.itemType === "fishing_line",
-        `${item.id} capacity availability matches item type`,
+        Object.prototype.hasOwnProperty.call(progression, "quality"),
+        Boolean(profile.quality),
+        `${item.id} creates quality only when configured`,
+      );
+      Assertion.equal(
+        Object.prototype.hasOwnProperty.call(progression, "capacity"),
+        Boolean(profile.capacity),
+        `${item.id} creates capacity only when configured`,
       );
     }
+
+    const bait = resolver.resolve(
+      this.#hydrateBase(this.#runtime.DB.baits.oil_worm),
+    );
+    Assertion.that(
+      !bait.available &&
+        !("rating" in bait) &&
+        !("quality" in bait) &&
+        !("ratingTier" in bait),
+      "natural bait has no forced global metrics",
+    );
 
     const uniqueRod = resolver.resolve(
       this.#hydrateBase(this.#runtime.DB.rods.rod_test_float),
@@ -524,10 +557,9 @@ class ItemProgressionCheck {
       this.#hydrateBase(this.#runtime.DB.rods.rod_test_spin),
     );
     Assertion.equal(spinningRod.rating.percent, 20, "rod rating remains 20%");
-    Assertion.equal(
-      spinningRod.progressionLevel.current,
-      2,
-      "rod rating maps to progression level 2 independently of equipment power",
+    Assertion.that(
+      !("ratingTier" in spinningRod),
+      "rod rating does not create a global tier automatically",
     );
 
     const line2 = this.#hydrateBase(this.#runtime.DB.lines.line_test_2);
@@ -570,13 +602,6 @@ class ItemProgressionCheck {
         upgradeLevel: 1,
       }),
     });
-    const ignoredManualProgressionLevel = resolver.resolve({
-      ...boat,
-      progressionProfile: {
-        ...boat.progressionProfile,
-        progressionLevel: 1,
-      },
-    });
     Assertion.that(
       upgradeLevel3.rating.percent > upgradeLevel1.rating.percent,
       "boat upgrade level changes nominal rating",
@@ -586,25 +611,9 @@ class ItemProgressionCheck {
       75,
       "boat upgrade level 3 produces a 75% category rating",
     );
-    Assertion.equal(
-      upgradeLevel3.progressionLevel.current,
-      5,
-      "boat upgrade level 3 remains distinct from progression level 5",
-    );
     Assertion.that(
-      upgradeLevel3.progressionLevel.current >
-        upgradeLevel1.progressionLevel.current,
-      "higher rating automatically produces a higher progression level",
-    );
-    Assertion.equal(
-      upgradeLevel3.rating.percent,
-      ignoredManualProgressionLevel.rating.percent,
-      "manual progression level does not change rating",
-    );
-    Assertion.equal(
-      ignoredManualProgressionLevel.progressionLevel.current,
-      upgradeLevel3.progressionLevel.current,
-      "manual progression level is ignored in favor of the rating segment",
+      !("ratingTier" in upgradeLevel3),
+      "boat upgradeLevel stays independent and does not create ratingTier",
     );
   }
 
@@ -664,7 +673,15 @@ class ItemProgressionCheck {
       progressionResolver,
     });
     const view = viewFactory.create(raw);
-    Assertion.equal(view.progression.quality.value, 9, "legacy view gets runtime progression");
+    Assertion.equal(
+      view.effectiveStats.quality,
+      9,
+      "runtime quality remains an effective gameplay stat",
+    );
+    Assertion.that(
+      !("quality" in view.progression),
+      "line UI does not create quality without the capability",
+    );
     const activeViewFactory = new this.#runtime.ViewFactory({
       itemDatabase: { getItemData: () => baseLine },
       progressionResolver,
@@ -727,9 +744,26 @@ class ItemProgressionCheck {
       "gold unique stop is excluded from progression gradient",
     );
     Assertion.that(
-      visual.progressionLevel.available &&
-        visual.progressionLevel.cssColor === "",
-      "rating-derived progression level has no separate gradient color",
+      !visual.ratingTier.available && !("ratingTier" in progression),
+      "rating does not create a rating tier without an explicit capability",
+    );
+    const tierConfig = JSON.parse(JSON.stringify(this.#runtime.CONFIGURATION));
+    tierConfig.groups["rod.float"].ratingTier = {
+      source: "rating.normalized",
+      distribution: "equal_segments",
+      minimum: 1,
+      segments: 6,
+    };
+    const tierProgression = this.#createResolver(
+      tierConfig,
+      this.#runtime.DB,
+    ).resolve(this.#hydrateBase(this.#runtime.DB.rods.rod_test_float));
+    const tierVisual = visualResolver.resolve(tierProgression);
+    Assertion.that(
+      tierProgression.ratingTier.available &&
+        tierVisual.ratingTier.available &&
+        tierVisual.ratingTier.cssColor === "",
+      "explicit ratingTier is supported as rating segmentation",
     );
     const lineProgression = progressionResolver.resolve(
       this.#hydrateBase(this.#runtime.DB.lines.line_test_1),
@@ -757,7 +791,7 @@ class ItemProgressionCheck {
       );
     }
     for (const selector of [
-      ".inv-slot__level-badge",
+      ".inv-slot__rating-tier-badge",
       ".inv-tooltip__rating-scale",
       ".inv-tooltip__rating-fill",
       ".inv-slot__capacity-bar",
@@ -803,24 +837,24 @@ class ItemProgressionCheck {
     );
     Assertion.that(
       adapter.includes(
-        "badge.textContent = String(progressionLevel.current)",
+        "badge.textContent = String(ratingTier.current)",
       ) &&
         !adapter.includes(
-          'badge.textContent = `L${progressionLevel.current}`',
+          'badge.textContent = `L${ratingTier.current}`',
         ),
-      "thumbnail progression-level badge is numeric without an L prefix",
+      "thumbnail rating-tier badge is numeric without an L prefix",
     );
     Assertion.that(
-      adapter.includes("Прогресійний рівень") &&
-        !adapter.includes("Рівень сили"),
-      "progression level is labeled independently from gameplay power",
+      adapter.includes("Клас рейтингу") &&
+        !adapter.includes("Прогресійний рівень"),
+      "rating segmentation is no longer named as a generic level",
     );
     Assertion.that(
       css.includes("solid var(--rarity-color)") &&
         css.includes("color: var(--rarity-color)") &&
         !css.includes("--item-level-color") &&
         !adapter.includes("--item-level-color"),
-      "progression-level badge inherits the item rarity frame color",
+      "rating-tier badge inherits the item rarity frame color",
     );
     Assertion.that(
       css.includes(".inv-slot.has-rarity::before") &&
@@ -839,9 +873,9 @@ class ItemProgressionCheck {
       },
     );
     Assertion.equal(
-      boat.statOverrides.upgradeLevel,
-      2,
-      "boat level migrates to upgrade level override",
+      boat.statOverrides,
+      undefined,
+      "legacy authored boat level is not pinned as an instance override",
     );
     Assertion.that(!("level" in boat), "boat migration removes generic level");
 
@@ -850,9 +884,9 @@ class ItemProgressionCheck {
       { itemType: "rod", variant: "spinning", gameplayStats: {} },
     );
     Assertion.equal(
-      rod.statOverrides.equipmentPowerLevel,
-      4,
-      "rod level migrates to equipment power level",
+      rod.statOverrides,
+      undefined,
+      "legacy authored rod level is not pinned as an instance override",
     );
     Assertion.that(
       !("engineStats" in rod),
@@ -871,19 +905,64 @@ class ItemProgressionCheck {
       issues.some((issue) => issue.message.includes("missing explicit")),
       "missing progression profile is rejected",
     );
-    const invalidProgressionLevelConfig = JSON.parse(
+    const invalidRatingTierConfig = JSON.parse(
       JSON.stringify(this.#runtime.CONFIGURATION),
     );
-    invalidProgressionLevelConfig.progressionLevelScale.segments = 0;
-    const progressionLevelIssues = new this.#runtime.Validator().validate({
-      progressionConfig: invalidProgressionLevelConfig,
+    invalidRatingTierConfig.groups["rod.spinning"].ratingTier = {
+      source: "rating.normalized",
+      distribution: "equal_segments",
+      minimum: 1,
+      segments: 0,
+    };
+    const ratingTierIssues = new this.#runtime.Validator().validate({
+      progressionConfig: invalidRatingTierConfig,
       itemDb: this.#runtime.DB,
     });
     Assertion.that(
-      progressionLevelIssues.some((issue) =>
-        issue.path.endsWith("progressionLevelScale.segments"),
+      ratingTierIssues.some((issue) =>
+        issue.path.endsWith("ratingTier.segments"),
       ),
-      "progression-level scale requires at least one configured segment",
+      "configured ratingTier requires at least one segment",
+    );
+
+    const missingRatingConfig = JSON.parse(
+      JSON.stringify(this.#runtime.CONFIGURATION),
+    );
+    missingRatingConfig.groups["bait.natural"].ratingTier = {
+      source: "rating.normalized",
+      distribution: "equal_segments",
+      minimum: 1,
+      segments: 6,
+    };
+    const missingRatingIssues = new this.#runtime.Validator().validate({
+      progressionConfig: missingRatingConfig,
+      itemDb: this.#runtime.DB,
+    });
+    Assertion.that(
+      missingRatingIssues.some((issue) =>
+        issue.message.includes("requires a rating capability"),
+      ),
+      "ratingTier cannot exist without rating",
+    );
+
+    const unconfirmedCapability = JSON.parse(
+      JSON.stringify(this.#runtime.CONFIGURATION),
+    );
+    unconfirmedCapability.groups["bait.natural"].rating = {
+      strategyId: "numeric_stat",
+      statPath: "effectiveStats.attractionPower",
+      direction: "higher_is_better",
+      baseline: { mode: "fixed", minimum: 0.5, maximum: 3 },
+    };
+    const unconfirmedIssues = new this.#runtime.Validator().validate({
+      progressionConfig: unconfirmedCapability,
+      itemDb: this.#runtime.DB,
+    });
+    Assertion.that(
+      unconfirmedIssues.some((issue) =>
+        issue.message.includes("confirmed gameplay consumer"),
+      ),
+      "yellow matrix capabilities require explicit gameplay-consumer evidence",
     );
   }
 
@@ -905,7 +984,7 @@ class ItemProgressionCheck {
         strategyRegistry: registry,
         baselineRegistry: baselines,
       }),
-      progressionLevelResolver: new this.#runtime.ProgressionLevel(),
+      ratingTierResolver: new this.#runtime.RatingTier(),
       qualityResolver: new this.#runtime.Quality(),
       capacityResolver: new this.#runtime.Capacity(),
       baselineRegistry: baselines,

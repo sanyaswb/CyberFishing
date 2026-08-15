@@ -27,8 +27,8 @@ class ItemProgressionVisualResolver {
   resolve(progression) {
     if (!progression?.available) return this.#unavailable();
     const rating = this.#resolvePosition(progression.rating?.normalized);
-    const progressionLevel = this.#resolveProgressionLevel(
-      progression.progressionLevel,
+    const ratingTier = this.#resolveRatingTier(
+      progression.ratingTier,
     );
     const quality = this.#resolvePosition(
       progression.quality?.available
@@ -43,12 +43,12 @@ class ItemProgressionVisualResolver {
     return Object.freeze({
       available:
         rating.available ||
-        progressionLevel.available ||
+        ratingTier.available ||
         quality.available ||
         capacity.available,
       gradient: this.#ordinaryGradient(),
       rating,
-      progressionLevel,
+      ratingTier,
       quality,
       capacity,
     });
@@ -59,7 +59,12 @@ class ItemProgressionVisualResolver {
   }
 
   #resolvePosition(normalized) {
-    if (!Number.isFinite(Number(normalized))) {
+    if (
+      normalized === null ||
+      normalized === undefined ||
+      normalized === "" ||
+      !Number.isFinite(Number(normalized))
+    ) {
       return Object.freeze({ available: false, color: null, cssColor: "" });
     }
     const position = Math.max(0, Math.min(1, Number(normalized))) *
@@ -73,9 +78,9 @@ class ItemProgressionVisualResolver {
     });
   }
 
-  #resolveProgressionLevel(progressionLevel) {
+  #resolveRatingTier(ratingTier) {
     return Object.freeze({
-      available: Boolean(progressionLevel?.available),
+      available: Boolean(ratingTier?.available),
       color: null,
       cssColor: "",
     });
@@ -102,7 +107,7 @@ class ItemProgressionVisualResolver {
       available: false,
       gradient: "",
       rating: unavailable,
-      progressionLevel: unavailable,
+      ratingTier: unavailable,
       quality: unavailable,
       capacity: unavailable,
     });

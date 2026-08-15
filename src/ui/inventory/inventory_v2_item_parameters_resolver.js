@@ -34,14 +34,14 @@ class InventoryV2ItemParametersResolver {
     const renderedIds = new Set();
     const visual = this.#progressionDomAdapter?.resolveVisual?.(item.progression);
 
-    const progressionLevel = this.#resolveProgressionLevel(item);
-    if (progressionLevel) {
+    const ratingTier = this.#resolveRatingTier(item);
+    if (ratingTier) {
       this.#append(
         parameters,
         renderedIds,
-        "progressionLevel",
+        "ratingTier",
         "text",
-        progressionLevel,
+        ratingTier,
       );
     }
 
@@ -92,7 +92,7 @@ class InventoryV2ItemParametersResolver {
     }
 
     const condition = item.condition;
-    if (condition && Number.isFinite(Number(condition.percent))) {
+    if (condition?.available && Number.isFinite(Number(condition.percent))) {
       this.#append(
         parameters,
         renderedIds,
@@ -103,6 +103,18 @@ class InventoryV2ItemParametersResolver {
           percent: condition.percent,
           color: condition.visual?.cssColor || condition.color,
         },
+      );
+    }
+
+    const freshness = item.freshness;
+    if (freshness?.available && Number.isFinite(Number(freshness.percent))) {
+      this.#append(
+        parameters,
+        renderedIds,
+        "freshness",
+        "bar",
+        `${Math.round(Number(freshness.percent))}%`,
+        { percent: freshness.percent },
       );
     }
 
@@ -187,14 +199,15 @@ class InventoryV2ItemParametersResolver {
     return `stat:${slug || "parameter"}`;
   }
 
-  #resolveProgressionLevel(item) {
-    const progressionLevel = item.progression?.progressionLevel;
+  #resolveRatingTier(item) {
+    const ratingTier = item.progression?.ratingTier;
+    if (!ratingTier?.available) return "";
     const current = Number(
-      progressionLevel?.current ??
-        progressionLevel?.value,
+      ratingTier?.current ??
+        ratingTier?.value,
     );
     if (!Number.isFinite(current)) return "";
-    const maximum = Number(progressionLevel?.maximum);
+    const maximum = Number(ratingTier?.maximum);
     const value = Math.max(0, Math.floor(current));
     return Number.isFinite(maximum) && maximum > 0
       ? `${value} / ${Math.floor(maximum)}`

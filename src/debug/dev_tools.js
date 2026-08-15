@@ -680,8 +680,8 @@ class DevTools {
         item,
       );
       this.#ui.createInfoRow(
-        "Progression level",
-        snapshot.progressionLevel,
+        "Rating tier",
+        snapshot.ratingTier,
         item,
       );
       this.#ui.createInfoRow("Quality", snapshot.quality, item);

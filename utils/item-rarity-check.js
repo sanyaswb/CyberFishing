@@ -12,7 +12,9 @@ class ItemRarityRuntimeLoader {
     const scripts = [
       "src/config/rarity/rarity_visual_config.js",
       "src/config/databases/item_db.js",
+      "src/config/items/item_stat_override_config.js",
       "src/config/validation/item_rarity_config_validator.js",
+      "src/core/items/item_stat_override_policy.js",
       "src/core/items/rarity/item_rarity_descriptor.js",
       "src/core/items/rarity/item_rarity_strategy.js",
       "src/core/items/rarity/authored_item_rarity_strategy.js",

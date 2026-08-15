@@ -414,7 +414,7 @@ input:checked + .slider:before {
   pointer-events: none;
 }
 
-.inv-slot__level-badge {
+.inv-slot__rating-tier-badge {
   position: absolute;
   top: calc(var(--inventory-slot-size) * 0.04);
   left: calc(var(--inventory-slot-size) * 0.04);

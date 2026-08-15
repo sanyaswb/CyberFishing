@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.23";
+const CURRENT_PROJECT_VERSION = "0.24.25";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "canonical-item-runtime",
-  updatedAt: "2026-08-12",
+  codename: "optional-item-metric-capabilities",
+  updatedAt: "2026-08-15",
   notes: Object.freeze([
-    "Use itemType, variant and effectiveStats exclusively at runtime",
-    "Remove legacy item flattening from gameplay and UI read models",
-    "Migrate inventory schema 2 saves to canonical schema 3 at load time",
-    "Keep legacy item conversion inside the persistence boundary",
+    "Resolve rating, quality, condition, capacity and freshness only when configured",
+    "Remove global automatic progression levels and support optional ratingTier",
+    "Keep upgradeLevel independent from rating segmentation",
+    "Expose only gameplay-backed metric capabilities in production profiles",
   ]),
 });
 

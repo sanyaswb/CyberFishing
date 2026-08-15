@@ -26,12 +26,16 @@ class InventoryV2CompositionRoot {
       itemDefinitionResolver: definitions,
     });
     const definitionLookup = (itemId) => hydrator.getDefinition(itemId);
+    const itemSnapshotMapper = new InventoryItemSnapshotMapper({
+      itemDefinitionResolver: definitionLookup,
+    });
     const store =
       stateStore ||
       new InventoryV2StateStore({
         cache:
           cache ||
           (typeof CacheManager !== "undefined" ? CacheManager : null),
+        itemSnapshotMapper,
       });
 
     const resolvedState = this.#resolveSnapshot({
@@ -43,6 +47,7 @@ class InventoryV2CompositionRoot {
       legacySettings,
       cache,
       definitionLookup,
+      itemSnapshotMapper,
       instanceIdFactory,
     });
     const snapshot = resolvedState.snapshot;
@@ -102,6 +107,7 @@ class InventoryV2CompositionRoot {
       loadouts,
       settings,
       refillMemory,
+      itemSnapshotMapper,
     });
     const transaction = new InventoryV2TransactionCoordinator({
       participants: [
@@ -345,6 +351,7 @@ class InventoryV2CompositionRoot {
       viewModels,
       contextItemFilter,
       hydrator,
+      itemSnapshotMapper,
       reservationPolicy,
     });
   }
@@ -358,23 +365,36 @@ class InventoryV2CompositionRoot {
     legacySettings,
     cache,
     definitionLookup,
+    itemSnapshotMapper,
     instanceIdFactory,
   }) {
     if (initialSnapshot) {
       const migration = new InventoryV2SnapshotMigration({
         itemDefinitionResolver: definitionLookup,
+        itemSnapshotMapper,
         targetSchemaVersion: INVENTORY_V2_SCHEMA_VERSION,
       }).migrate(initialSnapshot);
       const snapshot = store.save(migration.snapshot);
       return { snapshot, warnings: [...migration.warnings] };
     }
     const loaded = store.load();
-    if (loaded) return { snapshot: loaded, warnings: [] };
+    if (loaded) {
+      const normalized = new InventoryV2SnapshotMigration({
+        itemDefinitionResolver: definitionLookup,
+        itemSnapshotMapper,
+        targetSchemaVersion: INVENTORY_V2_SCHEMA_VERSION,
+      }).migrate(loaded);
+      return {
+        snapshot: normalized.snapshot,
+        warnings: [...normalized.warnings],
+      };
+    }
 
-    const previousSnapshot = store.loadPrevious?.([2]) || null;
+    const previousSnapshot = store.loadPrevious?.([3, 2]) || null;
     if (previousSnapshot) {
       const migration = new InventoryV2SnapshotMigration({
         itemDefinitionResolver: definitionLookup,
+        itemSnapshotMapper,
         targetSchemaVersion: INVENTORY_V2_SCHEMA_VERSION,
       }).migrate(previousSnapshot);
       const snapshot = store.save(migration.snapshot);
@@ -403,6 +423,7 @@ class InventoryV2CompositionRoot {
       legacySettings || provided.settings || {};
     const migration = new InventoryV2LegacyMigration({
       itemDefinitionResolver: definitionLookup,
+      itemSnapshotMapper,
       instanceIdFactory,
     }).migrate({
       legacyItems: sourceItems,

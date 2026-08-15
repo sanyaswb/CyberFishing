@@ -104,6 +104,15 @@ class InventoryRuntimeLoader {
       "src/core/inventory/inventory_item_stacking_policy.js",
       "InventoryItemStackingPolicy",
     );
+    this.#loadSlotConfigFile(
+      context,
+      "src/config/items/item_stat_override_config.js",
+    );
+    this.#loadClass(
+      context,
+      "src/core/items/item_stat_override_policy.js",
+      "ItemStatOverridePolicy",
+    );
     this.#loadClass(
       context,
       "src/core/items/effective_item_stats_resolver.js",
@@ -123,6 +132,14 @@ class InventoryRuntimeLoader {
     const match = source.match(/const SLOT_CONFIG = [\s\S]*?\n};/);
     Assertion.that(match, "SLOT_CONFIG can be loaded for integration checks");
     vm.runInContext(`${match[0]}\nglobalThis.SLOT_CONFIG = SLOT_CONFIG;`, context);
+  }
+
+  #loadSlotConfigFile(context, relativePath) {
+    vm.runInContext(
+      fs.readFileSync(path.join(ROOT, relativePath), "utf8"),
+      context,
+      { filename: relativePath },
+    );
   }
 
   #loadClass(context, relativePath, className) {

@@ -9,6 +9,8 @@ const files = [
   "src/config/inventory/item_assembly_profile_config.js",
   "src/config/inventory/equipment_slot_config.js",
   "src/config/inventory/inventory_v2_sort_config.js",
+  "src/config/items/item_stat_override_config.js",
+  "src/core/items/item_stat_override_policy.js",
   "src/core/items/effective_item_stats_resolver.js",
   "src/core/inventory/inventory_item_location.js",
   "src/core/inventory/inventory_item_reservation_policy.js",
@@ -39,6 +41,7 @@ const files = [
   "src/core/loadouts/loadout_equipment_transition_planner.js",
   "src/core/line/line_allocation_policy.js",
   "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+  "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
   "src/infrastructure/storage/legacy_item_state_migration.js",
   "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
   "src/infrastructure/storage/inventory_v2_state_store.js",
@@ -89,7 +92,9 @@ vm.runInContext(
       name: "Pole rod",
       itemType: "rod",
       variant: "pole",
+      rarityProfile: { mode: "authored", tier: 2, maxTier: 5, isUnique: false },
       gameplayStats: {
+        lengthMeters: 4,
         equipmentCapabilities: {
           supportsReel: false,
           supportsFloat: true,
@@ -104,6 +109,22 @@ vm.runInContext(
       itemType: "rod",
       variant: "feeder",
       gameplayStats: {
+        lengthMeters: 4,
+        equipmentCapabilities: {
+          supportsReel: true,
+          supportsFloat: false,
+          supportsFeederRig: true,
+          supportsLures: false,
+        },
+      },
+    },
+    rodFeederShort: {
+      id: "rodFeederShort",
+      name: "Short feeder rod",
+      itemType: "rod",
+      variant: "feeder",
+      gameplayStats: {
+        lengthMeters: 2,
         equipmentCapabilities: {
           supportsReel: true,
           supportsFloat: false,
@@ -131,8 +152,10 @@ vm.runInContext(
       name: "Reel",
       itemType: "reel",
       variant: "spinning_reel",
+      rarityProfile: { mode: "authored", tier: 4, maxTier: 5, isUnique: false },
       gameplayStats: {
         assemblyProfileId: "reel_standard",
+        lineCapacityMeters: 20,
       },
     },
     line: {
@@ -161,6 +184,7 @@ vm.runInContext(
       id: "hook",
       name: "Hook",
       itemType: "hook",
+      rarityProfile: { mode: "authored", tier: 5, maxTier: 5, isUnique: false },
       gameplayStats: { assemblyProfileId: "hook_standard" },
     },
     spinner: {
@@ -175,12 +199,14 @@ vm.runInContext(
       name: "Wobbler",
       itemType: "lure",
       variant: "wobbler",
+      rarityProfile: { mode: "authored", tier: 3, maxTier: 5, isUnique: false },
       gameplayStats: {},
     },
     bait: {
       id: "bait",
       name: "Bait",
       itemType: "bait",
+      rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
       gameplayStats: {},
     },
     chum: {
@@ -734,11 +760,11 @@ vm.runInContext(
   });
 
   const orderingProgression = {
-    "sort-bait": { progressionLevel: { current: 2 }, rating: { rawValue: 2 } },
-    "sort-wobbler": { progressionLevel: { current: 5 }, rating: { rawValue: 4 } },
-    "sort-reel": { progressionLevel: { current: 4 }, rating: { rawValue: 3 } },
-    "sort-hook": { progressionLevel: { current: 1 }, rating: { rawValue: 8 } },
-    "sort-rod": { progressionLevel: { current: 3 }, rating: { rawValue: 1 } },
+    "sort-bait": { ratingTier: { current: 2 }, rating: { rawValue: 2 } },
+    "sort-wobbler": { ratingTier: { current: 5 }, rating: { rawValue: 4 } },
+    "sort-reel": { ratingTier: { current: 4 }, rating: { rawValue: 3 } },
+    "sort-hook": { ratingTier: { current: 1 }, rating: { rawValue: 8 } },
+    "sort-rod": { ratingTier: { current: 3 }, rating: { rawValue: 1 } },
   };
   const inventoryOrdering = makeComposition({
     items: [
@@ -835,15 +861,15 @@ vm.runInContext(
   dispatch(
     inventoryOrdering,
     InventoryV2ActionType.SORT_CRITERION_SELECT,
-    { criterionId: "progressionLevel" },
+    { criterionId: "ratingTier" },
   );
   const rarityThenLevel = inventoryOrdering.facade.getViewModel().inventory.sort;
   assertIntegration(
-    rarityThenLevel.criterionIds.join(",") === "rarity,progressionLevel" &&
+    rarityThenLevel.criterionIds.join(",") === "rarity,ratingTier" &&
       rarityThenLevel.criteria.find((criterion) => criterion.id === "rarity")
         ?.priority === 1 &&
       rarityThenLevel.criteria.find(
-        (criterion) => criterion.id === "progressionLevel",
+        (criterion) => criterion.id === "ratingTier",
       )
         ?.priority === 2,
     "additional criteria are appended and expose their sorting priority",
@@ -856,7 +882,7 @@ vm.runInContext(
   assertIntegration(
     orderedIds() ===
       "sort-wobbler,sort-reel,sort-rod,sort-bait,sort-hook",
-    "progression-level sorting uses the derived rating segment",
+    "rating-tier sorting uses the explicitly supplied rating segment",
   );
   dispatch(
     inventoryOrdering,
@@ -866,7 +892,7 @@ vm.runInContext(
   dispatch(
     inventoryOrdering,
     InventoryV2ActionType.SORT_CRITERION_SELECT,
-    { criterionId: "progressionLevel" },
+    { criterionId: "ratingTier" },
   );
   assertIntegration(
     orderedIds() ===
@@ -898,7 +924,7 @@ vm.runInContext(
     { rarityId: "rare", enabled: false },
   );
 
-  const chainedProgressionLevels = {
+  const chainedRatingTiers = {
     "multi-rare-low": 2,
     "multi-common-high": 9,
     "multi-rare-high": 8,
@@ -927,8 +953,8 @@ vm.runInContext(
           ...instance,
           effectiveStats: Object.freeze({ ...(definition.gameplayStats || {}) }),
           progression: {
-            progressionLevel: {
-              current: chainedProgressionLevels[instance.instanceId],
+            ratingTier: {
+              current: chainedRatingTiers[instance.instanceId],
             },
           },
         };
@@ -938,7 +964,7 @@ vm.runInContext(
   dispatch(
     chainedOrdering,
     InventoryV2ActionType.SORT_CRITERION_SELECT,
-    { criterionId: "progressionLevel" },
+    { criterionId: "ratingTier" },
   );
   assertIntegration(
     chainedOrdering.facade
@@ -946,7 +972,7 @@ vm.runInContext(
       .inventory.items.map((item) => item.instanceId)
       .join(",") ===
       "multi-epic-low,multi-rare-high,multi-rare-low,multi-common-high",
-    "secondary progression-level sorting orders items inside the same rarity",
+    "secondary rating-tier sorting orders items inside the same rarity",
   );
 
   const stablePlacementOrdering = makeComposition({
@@ -1483,12 +1509,8 @@ vm.runInContext(
   // source spool, and disassembly must do the same for its contained segment.
   const lineLoadout = makeComposition({
     items: [
-      raw("line-kit-rod", "rodPole", 1, {
-        statOverrides: { lengthMeters: 4 },
-      }),
-      raw("loose-rod", "rodPole", 1, {
-        statOverrides: { lengthMeters: 4 },
-      }),
+      raw("line-kit-rod", "rodPole"),
+      raw("loose-rod", "rodPole"),
       raw("line-kit-source", "line", 1, { statOverrides: { lengthMeters: 25 } }),
       raw("loose-line-source", "line", 1, { statOverrides: { lengthMeters: 25 } }),
       raw("line-kit-float", "floatDay"),
@@ -1635,16 +1657,10 @@ vm.runInContext(
   // when that prepared reel is equipped.
   const contextualActivation = makeComposition({
     items: [
-      raw("activation-rod", "rodFeeder", 1, {
-        statOverrides: { lengthMeters: 2 },
-      }),
-      raw("activation-reel", "reel", 1, {
-        statOverrides: { lineCapacityMeters: 20 },
-      }),
+      raw("activation-rod", "rodFeederShort"),
+      raw("activation-reel", "reel"),
       raw("activation-line", "line", 1, { statOverrides: { lengthMeters: 10 } }),
-      raw("activation-empty-reel", "reel", 1, {
-        statOverrides: { lineCapacityMeters: 20 },
-      }),
+      raw("activation-empty-reel", "reel"),
     ],
   });
   dispatch(contextualActivation, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
@@ -1696,9 +1712,7 @@ vm.runInContext(
 
   const reelWithoutRod = makeComposition({
     items: [
-      raw("raw-reel-no-rod", "reel", 1, {
-        statOverrides: { lineCapacityMeters: 20 },
-      }),
+      raw("raw-reel-no-rod", "reel"),
       raw("raw-line-no-rod", "line", 1, { statOverrides: { lengthMeters: 25 } }),
     ],
   });
@@ -1723,12 +1737,8 @@ vm.runInContext(
 
   const reelWithPoleActive = makeComposition({
     items: [
-      raw("active-pole-for-reel", "rodPole", 1, {
-        statOverrides: { lengthMeters: 4 },
-      }),
-      raw("raw-reel-with-pole", "reel", 1, {
-        statOverrides: { lineCapacityMeters: 20 },
-      }),
+      raw("active-pole-for-reel", "rodPole"),
+      raw("raw-reel-with-pole", "reel"),
       raw("raw-line-with-pole", "line", 1, { statOverrides: { lengthMeters: 25 } }),
     ],
   });
@@ -1762,15 +1772,9 @@ vm.runInContext(
 
   const changedRodReel = makeComposition({
     items: [
-      raw("short-reel-rod", "rodFeeder", 1, {
-        statOverrides: { lengthMeters: 2 },
-      }),
-      raw("long-reel-rod", "rodFeeder", 1, {
-        statOverrides: { lengthMeters: 4 },
-      }),
-      raw("prepared-short-reel", "reel", 1, {
-        statOverrides: { lineCapacityMeters: 20 },
-      }),
+      raw("short-reel-rod", "rodFeederShort"),
+      raw("long-reel-rod", "rodFeeder"),
+      raw("prepared-short-reel", "reel"),
       raw("short-reel-line", "line", 1, { statOverrides: { lengthMeters: 5 } }),
     ],
   });
@@ -1816,12 +1820,8 @@ vm.runInContext(
 
   const draftReelRollback = makeComposition({
     items: [
-      raw("draft-long-rod", "rodFeeder", 1, {
-        statOverrides: { lengthMeters: 4 },
-      }),
-      raw("draft-short-reel", "reel", 1, {
-        statOverrides: { lineCapacityMeters: 20 },
-      }),
+      raw("draft-long-rod", "rodFeeder"),
+      raw("draft-short-reel", "reel"),
       raw("draft-short-line", "line", 1, { statOverrides: { lengthMeters: 5 } }),
     ],
   });
@@ -1856,11 +1856,9 @@ vm.runInContext(
   const invalidLoadout = makeComposition({
     items: [
       raw("invalid-kit-rod", "rodFeeder", 1, {
-        statOverrides: { lengthMeters: 4 },
         location: InventoryItemLocation.loadout("invalid-line-kit", "rod"),
       }),
       raw("invalid-kit-reel", "reel", 1, {
-        statOverrides: { lineCapacityMeters: 20 },
         location: InventoryItemLocation.loadout("invalid-line-kit", "reel"),
       }),
       raw("invalid-kit-line", "line", 1, {

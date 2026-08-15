@@ -2,6 +2,7 @@ class InventoryItemViewFactory {
   #itemDatabase;
   #progressionResolver;
   #conditionResolver;
+  #freshnessResolver;
   #displayStatsResolver;
   #runtimeContextProvider;
   #effectiveStatsResolver;
@@ -10,6 +11,7 @@ class InventoryItemViewFactory {
     itemDatabase,
     progressionResolver,
     conditionResolver = null,
+    freshnessResolver = null,
     displayStatsResolver = null,
     runtimeContextProvider = () => ({}),
     effectiveStatsResolver = new EffectiveItemStatsResolver(),
@@ -30,6 +32,12 @@ class InventoryItemViewFactory {
       );
     }
     this.#conditionResolver = conditionResolver;
+    if (freshnessResolver && typeof freshnessResolver.resolve !== "function") {
+      throw new TypeError(
+        "InventoryItemViewFactory freshnessResolver must implement resolve",
+      );
+    }
+    this.#freshnessResolver = freshnessResolver;
     this.#displayStatsResolver = displayStatsResolver;
     this.#runtimeContextProvider = runtimeContextProvider;
     this.#effectiveStatsResolver = effectiveStatsResolver;
@@ -63,7 +71,10 @@ class InventoryItemViewFactory {
       hydrated,
       runtimeContext,
     );
-    hydrated.condition = this.#conditionResolver?.resolve(hydrated) || null;
+    const condition = this.#conditionResolver?.resolve(hydrated) || null;
+    if (condition) hydrated.condition = condition;
+    const freshness = this.#freshnessResolver?.resolve(hydrated) || null;
+    if (freshness) hydrated.freshness = freshness;
     return hydrated;
   }
 

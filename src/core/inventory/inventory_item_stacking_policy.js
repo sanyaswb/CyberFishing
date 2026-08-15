@@ -6,6 +6,7 @@ class InventoryItemStackingPolicy {
     "progression",
     "ratingPercent",
     "progressionLevel",
+    "ratingTier",
     "normalizedRating",
     "ratingColor",
     "ratingGradient",
@@ -15,6 +16,8 @@ class InventoryItemStackingPolicy {
     "powerColor",
     "powerGradient",
     "qualityMax",
+    "freshness",
+    "freshnessPercent",
   ]);
 
   canStack(left, right) {

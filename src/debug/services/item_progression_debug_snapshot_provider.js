@@ -34,19 +34,19 @@ class ItemProgressionDebugSnapshotProvider {
         snapshots.push(Object.freeze({
           itemId: item.id,
           group: progression.groupId,
-          strategy: progression.rating.strategyId,
-          rawMetric: progression.rating.rawValue,
-          baseline: progression.rating.available
+          strategy: progression.rating?.strategyId || "N/A",
+          rawMetric: progression.rating?.rawValue ?? null,
+          baseline: progression.rating?.available
             ? `${this.#format(progression.rating.minimum)}–${this.#format(
                 progression.rating.maximum,
               )}`
             : "N/A",
-          normalizedRating: progression.rating.normalized,
-          ratingPercent: progression.rating.percent,
-          progressionLevel: progression.progressionLevel.available
-            ? `${progression.progressionLevel.current}/${progression.progressionLevel.maximum}`
+          normalizedRating: progression.rating?.normalized ?? null,
+          ratingPercent: progression.rating?.percent ?? null,
+          ratingTier: progression.ratingTier?.available
+            ? `${progression.ratingTier.current}/${progression.ratingTier.maximum}`
             : "N/A",
-          quality: progression.quality.available
+          quality: progression.quality?.available
             ? `${this.#format(progression.quality.value)}/${progression.quality.maximum}`
             : "N/A",
           capacity: progression.capacity?.available
@@ -57,9 +57,9 @@ class ItemProgressionDebugSnapshotProvider {
               )}%)`
             : "N/A",
           capacitySource: progression.capacity?.source || "N/A",
-          outOfRange: progression.rating.outOfRange || "none",
-          configSource: progression.rating.configSource || "N/A",
-          breakdown: progression.rating.breakdown || Object.freeze([]),
+          outOfRange: progression.rating?.outOfRange || "none",
+          configSource: progression.rating?.configSource || "N/A",
+          breakdown: progression.rating?.breakdown || Object.freeze([]),
         }));
       }
     }

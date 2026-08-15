@@ -684,9 +684,9 @@ class InventoryV2StaticContractCheck {
     );
     assert.ok(
       style.includes("object-position: center center") &&
-        style.includes(".inventory-v2-item-card .inv-slot__level-badge") &&
+        style.includes(".inventory-v2-item-card .inv-slot__rating-tier-badge") &&
         style.includes("justify-content: center"),
-      "Item artwork and level numbers must remain centered",
+      "Item artwork and optional rating-tier numbers must remain centered",
     );
     assert.doesNotMatch(
       style,
@@ -749,7 +749,7 @@ class InventoryV2StaticContractCheck {
     assert.ok(
       !uiSource.includes("item.level") &&
         uiSource.includes("this.#progressionDomAdapter.apply("),
-      "Item renderer must delegate the only progression-level badge to its adapter",
+      "Item renderer must delegate the optional rating-tier badge to its adapter",
     );
     assert.ok(
       uiSource.includes("InventoryV2TooltipPresenter") &&
@@ -1476,7 +1476,7 @@ class InventoryV2StaticContractCheck {
     const progressionDomAdapter = {
       apply: (card, _progression, _visual, options = {}) => {
         const badge = document.createElement("span");
-        badge.className = "inv-slot__level-badge";
+        badge.className = "inv-slot__rating-tier-badge";
         badge.textContent = "4";
         card.appendChild(badge);
         if (options.renderCapacityBar !== false) {
@@ -1519,7 +1519,7 @@ class InventoryV2StaticContractCheck {
         instanceId: "internal-instance",
         itemType: "system-only-type",
         progression: {
-          progressionLevel: { current: 3, maximum: 6 },
+          ratingTier: { available: true, current: 3, maximum: 6 },
           rating: {
             available: true,
             percent: 80,
@@ -1527,7 +1527,8 @@ class InventoryV2StaticContractCheck {
           },
         },
         charge: { percent: 72, label: "Charge 72%" },
-        condition: { percent: 80 },
+        condition: { available: true, percent: 80 },
+        freshness: { available: true, percent: 82 },
         displayStats: { Power: "12 kg", Range: "45 m", Стан: "80%" },
         displayStatsSchema: {
           rangeMeters: { label: "Range" },
@@ -1538,7 +1539,7 @@ class InventoryV2StaticContractCheck {
     assert.ok(
       productionParameters.some(
           (parameter) =>
-            parameter.id === "progressionLevel" &&
+            parameter.id === "ratingTier" &&
             parameter.value === "3 / 6",
       ) &&
         productionParameters.some(
@@ -1559,6 +1560,10 @@ class InventoryV2StaticContractCheck {
         productionParameters.filter(
           (parameter) => parameter.id === "condition",
         ).length === 1 &&
+        productionParameters.some(
+          (parameter) =>
+            parameter.id === "freshness" && parameter.value === "82%",
+        ) &&
         !productionParameters.some(
           (parameter) =>
             parameter.label === "instanceId" || parameter.label === "internalRuntimeValue",
@@ -1813,12 +1818,12 @@ class InventoryV2StaticContractCheck {
       icon: "L",
       progression: {
         available: true,
-        progressionLevel: { available: true, current: 4, maximum: 6 },
+        ratingTier: { available: true, current: 4, maximum: 6 },
         capacity: { available: true, percent: 75 },
       },
     });
     assert.strictEqual(
-      this.#findAllByClass(leveledCard, "inv-slot__level-badge").length,
+      this.#findAllByClass(leveledCard, "inv-slot__rating-tier-badge").length,
       1,
     );
     const lineResourceMeter = this.#findByClass(
@@ -1848,7 +1853,7 @@ class InventoryV2StaticContractCheck {
         "inventory-v2-item-card__level",
       ).length,
       0,
-      "Progression adapter and item renderer must not duplicate the level badge",
+      "Progression adapter and item renderer must not duplicate the rating-tier badge",
     );
 
     currentView = this.#savedLoadoutViewModel();
@@ -1955,7 +1960,7 @@ class InventoryV2StaticContractCheck {
       "inventory-v2-item-parameters",
     );
     assert.ok(
-      assemblyParameters.textContent.includes("Прогресійний рівень") &&
+      assemblyParameters.textContent.includes("Клас рейтингу") &&
         assemblyParameters.textContent.includes("Power") &&
         assemblyParameters.textContent.includes("55%") &&
         assemblyParameters.textContent.includes("Spring") &&
@@ -2364,7 +2369,7 @@ class InventoryV2StaticContractCheck {
             icon: "S",
             progression: {
               available: true,
-              progressionLevel: {
+              ratingTier: {
                 available: true,
                 current: 2,
                 maximum: 6,

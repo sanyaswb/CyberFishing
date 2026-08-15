@@ -1,8 +1,8 @@
 const INVENTORY_V2_ITEM_PARAMETER_CONFIG = Object.freeze({
-  progressionLevel: Object.freeze({
-    label: "Прогресійний рівень",
+  ratingTier: Object.freeze({
+    label: "Клас рейтингу",
     description:
-      "Сегмент рейтингу предмета за шкалою прогресії. Не є рівнем покращення або gameplay-рівнем спорядження.",
+      "Опціональна сегментація рейтингу предмета. Не є рівнем покращення або gameplay-рівнем спорядження.",
   }),
   rarity: Object.freeze({
     label: "Рідкість",
@@ -23,6 +23,11 @@ const INVENTORY_V2_ITEM_PARAMETER_CONFIG = Object.freeze({
     label: "Стан",
     description:
       "Технічний стан предмета. Якщо стан падає до нуля, предмет може зламатися або втратити ефективність.",
+  }),
+  freshness: Object.freeze({
+    label: "Свіжість",
+    description:
+      "Поточна свіжість предмета. Відображається лише для категорій із підтвердженою gameplay-механікою свіжості.",
   }),
   "resource:energy": Object.freeze({
     label: "Заряд",
@@ -64,8 +69,10 @@ const INVENTORY_V2_ITEM_PARAMETER_ALIASES = Object.freeze({
   "рейтинг": "rating",
   condition: "condition",
   "стан": "condition",
-  progressionlevel: "progressionLevel",
-  "прогресійний рівень": "progressionLevel",
+  ratingtier: "ratingTier",
+  "клас рейтингу": "ratingTier",
+  freshness: "freshness",
+  "свіжість": "freshness",
   rarity: "rarity",
   "рідкість": "rarity",
   quality: "quality",

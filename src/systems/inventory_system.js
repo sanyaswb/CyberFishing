@@ -992,6 +992,7 @@ class InventoryManager {
     itemProgressionResolver = null,
     itemViewFactory = null,
     itemConditionResolver = null,
+    itemFreshnessResolver = null,
   ) {
     const cachedInventory = InventoryItemIdMigrationPolicy.migrateItems(
       CacheManager.get("player_inventory") || playerConfig.inventory || [],
@@ -1028,6 +1029,7 @@ class InventoryManager {
             itemDatabase: this.#db,
             progressionResolver: itemProgressionResolver,
             conditionResolver: itemConditionResolver,
+            freshnessResolver: itemFreshnessResolver,
             displayStatsResolver: this.#runtimeDisplayStatsResolver,
             runtimeContextProvider: () => ({
               reelConfig: this.#runtimeConfigProvider.getReelConfig(),
