@@ -12,6 +12,8 @@ class ItemFreshnessDescriptor {
     normalized = null,
     percent = null,
     outOfRange = null,
+    lossPerMinute = null,
+    minimumMultiplier = null,
   }) {
     this.capabilityId = capabilityId;
     this.available = Boolean(available);
@@ -25,6 +27,8 @@ class ItemFreshnessDescriptor {
     this.normalized = normalized;
     this.percent = percent;
     this.outOfRange = outOfRange;
+    this.lossPerMinute = lossPerMinute;
+    this.minimumMultiplier = minimumMultiplier;
     Object.freeze(this);
   }
 }

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.25";
+const CURRENT_PROJECT_VERSION = "0.24.30";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "optional-item-metric-capabilities",
-  updatedAt: "2026-08-15",
+  codename: "effective-item-rarity-read-model",
+  updatedAt: "2026-08-18",
   notes: Object.freeze([
-    "Resolve rating, quality, condition, capacity and freshness only when configured",
-    "Remove global automatic progression levels and support optional ratingTier",
-    "Keep upgradeLevel independent from rating segmentation",
-    "Expose only gameplay-backed metric capabilities in production profiles",
+    "Restore authored rarity at the item read-model boundary after snapshot loading",
+    "Keep authored rarity out of canonical instance snapshots",
+    "Use the effective rarity descriptor for Inventory V2 visuals, filters and sorting",
+    "Sort inventory by rarity descending by default with stable ties",
   ]),
 });
 

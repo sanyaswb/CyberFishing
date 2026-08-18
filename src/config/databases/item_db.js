@@ -25,6 +25,13 @@ const ITEM_DB = {
         isUnique: false,
       },
       progressionProfile: { groupId: "rod.spinning" },
+      capabilities: ["reel", "lure"],
+      equipmentCapabilities: {
+        supportsReel: true,
+        supportsFloat: false,
+        supportsFeederRig: false,
+        supportsLures: true,
+      },
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
@@ -54,13 +61,6 @@ const ITEM_DB = {
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
         hasReel: true,
-        capabilities: ["reel", "lure"],
-        equipmentCapabilities: {
-          supportsReel: true,
-          supportsFloat: false,
-          supportsFeederRig: false,
-          supportsLures: true,
-        },
       },
     },
 
@@ -78,6 +78,13 @@ const ITEM_DB = {
         isUnique: false,
       },
       progressionProfile: { groupId: "rod.feeder" },
+      capabilities: ["reel", "feeder_rig"],
+      equipmentCapabilities: {
+        supportsReel: true,
+        supportsFloat: false,
+        supportsFeederRig: true,
+        supportsLures: false,
+      },
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
@@ -107,13 +114,6 @@ const ITEM_DB = {
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
         hasReel: true,
-        capabilities: ["reel", "feeder_rig"],
-        equipmentCapabilities: {
-          supportsReel: true,
-          supportsFloat: false,
-          supportsFeederRig: true,
-          supportsLures: false,
-        },
       },
     },
 
@@ -132,6 +132,13 @@ const ITEM_DB = {
         uniqueId: "stalker_bamboo_rod",
       },
       progressionProfile: { groupId: "rod.float" },
+      capabilities: ["float", "hook"],
+      equipmentCapabilities: {
+        supportsReel: false,
+        supportsFloat: true,
+        supportsFeederRig: false,
+        supportsLures: false,
+      },
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lengthMeters: "Довжина: м.",
@@ -161,13 +168,6 @@ const ITEM_DB = {
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
         hasReel: false,
-        capabilities: ["float", "hook"],
-        equipmentCapabilities: {
-          supportsReel: false,
-          supportsFloat: true,
-          supportsFeederRig: false,
-          supportsLures: false,
-        },
       },
     },
   },
@@ -186,6 +186,8 @@ const ITEM_DB = {
         isUnique: false,
       },
       progressionProfile: { groupId: "reel.drag" },
+      requiresTag: "reel",
+      assemblyProfileId: "reel_standard",
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lineCapacityMeters: "Ємність: м.",
@@ -210,8 +212,6 @@ const ITEM_DB = {
         quality: 6,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
-        requiresTag: "reel",
-        assemblyProfileId: "reel_standard",
       },
     },
 
@@ -228,6 +228,8 @@ const ITEM_DB = {
         isUnique: false,
       },
       progressionProfile: { groupId: "reel.no_drag" },
+      requiresTag: "reel",
+      assemblyProfileId: "reel_standard",
       displayStats: {
         maxLoadKg: "Макс. навантаження: кг.",
         lineCapacityMeters: "Ємність: м.",
@@ -253,8 +255,6 @@ const ITEM_DB = {
         quality: 4,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
-        requiresTag: "reel",
-        assemblyProfileId: "reel_standard",
       },
     },
   },
@@ -358,6 +358,7 @@ const ITEM_DB = {
         isUnique: false,
       },
       progressionProfile: { groupId: "line.leader" },
+      requiresTag: "line",
       displayStats: {
         diameterMm: "Товщина: мм",
         maxLoadKg: "Макс. навантаження: кг.",
@@ -369,7 +370,6 @@ const ITEM_DB = {
         quality: 6,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
-        requiresTag: "line",
       },
     },
   },
@@ -387,19 +387,20 @@ const ITEM_DB = {
         isUnique: false,
       },
       progressionProfile: { groupId: "hook.standard" },
+      assemblyProfileId: "hook_standard",
+      requiresTag: "hook",
+      capabilities: ["bait"],
       displayStats: {
         weight: "Вага: кг",
       },
       gameplayStats: {
-        equipmentPowerLevel: 1,
+        hookSizeGrade: 1,
+        hookPowerGrade: 1,
         weight: 4,
         maxLoadKg: 0.8,
         quality: 1,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
-        assemblyProfileId: "hook_standard",
-        requiresTag: "hook",
-        capabilities: ["bait"], // ДОДАНО: тепер гачок дозволяє чіпляти наживку!
       },
     },
   },
@@ -417,6 +418,9 @@ const ITEM_DB = {
         isUnique: false,
       },
       progressionProfile: { groupId: "rig.feeder" },
+      requiresTag: "feeder_rig",
+      capabilities: ["hook", "bait", "chum_mix"],
+      assemblyProfileId: "feeder_spring_basic",
       displayStats: {
         hooksCount: "Гачки:",
         hasChumSlot: {
@@ -426,13 +430,9 @@ const ITEM_DB = {
         currentCompensation: "Компенсація:",
       },
       gameplayStats: {
-        requiresTag: "feeder_rig",
-        capabilities: ["hook", "bait", "chum_mix"],
         hooksCount: 2,
         hasChumSlot: true,
-        rigPower: 1.8,
         quality: 7.0,
-        assemblyProfileId: "feeder_spring_basic",
         currentCompensation: [0.1, 1.0], // Додано компенсацію для фідерної снасті
       },
     },
@@ -449,6 +449,7 @@ const ITEM_DB = {
         isUnique: false,
       },
       progressionProfile: { groupId: "bait.natural" },
+      requiresTag: "bait",
       displayStats: {
         itemType: {
           key: "itemType",
@@ -456,11 +457,7 @@ const ITEM_DB = {
           map: { bait: "Наживка" },
         },
       },
-      gameplayStats: {
-        attractionPower: 1.8,
-        quality: 8,
-        requiresTag: "bait",
-      },
+      gameplayStats: {},
     },
 
     bread: {
@@ -475,6 +472,7 @@ const ITEM_DB = {
         isUnique: false,
       },
       progressionProfile: { groupId: "bait.natural" },
+      requiresTag: "bait",
       displayStats: {
         itemType: {
           key: "itemType",
@@ -482,11 +480,7 @@ const ITEM_DB = {
           map: { bait: "Наживка" },
         },
       },
-      gameplayStats: {
-        attractionPower: 1,
-        quality: 5,
-        requiresTag: "bait",
-      },
+      gameplayStats: {},
     },
 
     test_spinner: {
@@ -502,6 +496,7 @@ const ITEM_DB = {
         isUnique: false,
       },
       progressionProfile: { groupId: "lure.spinner" },
+      requiresTag: "lure",
       displayStats: {
         variant: {
           key: "variant",
@@ -517,10 +512,8 @@ const ITEM_DB = {
         waterFriction: 0.2,
         sinkSpeed: 1.5,
         riseSpeed: 2.0,
-        attractionPower: 7,
         quality: 8.0,
         currentCompensation: [0.1, 1.0],
-        requiresTag: "lure",
       },
     },
 
@@ -537,6 +530,7 @@ const ITEM_DB = {
         isUnique: false,
       },
       progressionProfile: { groupId: "lure.wobbler" },
+      requiresTag: "lure",
       displayStats: {
         variant: {
           key: "variant",
@@ -562,10 +556,8 @@ const ITEM_DB = {
         targetMinDepth: 2.0,
         targetMaxDepth: 4.5,
         maxDepth: 6.5,
-        attractionPower: 8,
         quality: 8.0,
         currentCompensation: [0.1, 1.0],
-        requiresTag: "lure",
       },
     },
 
@@ -582,6 +574,7 @@ const ITEM_DB = {
         isUnique: false,
       },
       progressionProfile: { groupId: "lure.wobbler" },
+      requiresTag: "lure",
       displayStats: {
         variant: {
           key: "variant",
@@ -607,10 +600,8 @@ const ITEM_DB = {
         targetMinDepth: 1.0,
         targetMaxDepth: 3.5,
         maxDepth: 5.0,
-        attractionPower: 7.5,
         quality: 8.0,
         currentCompensation: [0.1, 1.0],
-        requiresTag: "lure",
       },
     },
 
@@ -627,6 +618,7 @@ const ITEM_DB = {
         isUnique: false,
       },
       progressionProfile: { groupId: "lure.jig" },
+      requiresTag: "lure",
       displayStats: {
         variant: {
           key: "variant",
@@ -642,10 +634,8 @@ const ITEM_DB = {
         waterFriction: 0.15,
         sinkSpeed: 3.0,
         riseSpeed: 2.5,
-        jigPower: 6.5,
         quality: 7.0,
         currentCompensation: [0.1, 0.9],
-        requiresTag: "lure",
       },
     },
   },
@@ -664,6 +654,7 @@ const ITEM_DB = {
         isUnique: false,
       },
       progressionProfile: { groupId: "float.day" },
+      requiresTag: "float",
       displayStats: {
         variant: {
           key: "variant",
@@ -682,7 +673,6 @@ const ITEM_DB = {
       gameplayStats: {
         width: 3,
         length: 15,
-        sensitivity: 9,
         quality: 10.0,
         windCompensation: [0.1, 1.0],
         overDepthPenaltyMult: 0.5,
@@ -696,7 +686,6 @@ const ITEM_DB = {
           medium: { speedMult: 1.5, heightScale: 0.85 },
           heavy: { speedMult: 2.0, heightScale: 0.7 },
         },
-        requiresTag: "float",
       },
     },
   },
@@ -747,13 +736,13 @@ const ITEM_DB = {
         isUnique: false,
       },
       progressionProfile: { groupId: "chum.carp" },
+      requiresTag: "chum_mix",
       displayStats: {
         minBonusDurationHours: "Мін. тривалість: год",
         radius: "Радіус: px",
         maxBonus: "Макс. бонус:",
       },
       gameplayStats: {
-        requiresTag: "chum_mix",
         targetFishes: ["crucian_stalker"],
         radius: 150,
         maxBonus: 2.0,
@@ -781,6 +770,8 @@ const ITEM_DB = {
         isUnique: false,
       },
       progressionProfile: { groupId: "delivery.boat" },
+      capabilities: ["chum_mix"],
+      assemblyProfileId: "bait_boat",
 
       displayStats: {
         upgradeLevel: "Рівень покращення:",
@@ -801,11 +792,9 @@ const ITEM_DB = {
         hasSonar: true,
         showSensors: false,
         manualControl: false,
-        capabilities: ["chum_mix"],
         sections: 3,
         quality: 9,
         upgradeLevel: 3,
-        assemblyProfileId: "bait_boat",
         statsByLevel: {
           1: { speedPxPerSec: 150, maxEnergy: 60, energyDrainPerSec: 1 },
           2: { speedPxPerSec: 200, maxEnergy: 90, energyDrainPerSec: 1 },

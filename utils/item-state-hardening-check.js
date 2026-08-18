@@ -11,6 +11,7 @@ class ItemStateHardeningRuntimeLoader {
       "src/core/items/item_stat_override_policy.js",
       "src/core/items/effective_item_stats_resolver.js",
       "src/application/inventory/inventory_v2_item_hydrator.js",
+      "src/core/items/freshness/item_freshness_state_policy.js",
       "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
       "src/infrastructure/storage/legacy_item_state_migration.js",
       "src/infrastructure/storage/inventory_v2_state_store.js",

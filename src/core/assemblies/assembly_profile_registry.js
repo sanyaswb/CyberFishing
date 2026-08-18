@@ -55,9 +55,7 @@ class AssemblyProfileRegistry {
     const requestedProfileId =
       explicitProfileId ||
       item?.assemblyProfileId ||
-      item?.effectiveStats?.assemblyProfileId ||
       definition?.assemblyProfileId ||
-      definition?.gameplayStats?.assemblyProfileId ||
       null;
     if (requestedProfileId) {
       this.require(requestedProfileId);

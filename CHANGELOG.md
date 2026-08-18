@@ -1,5 +1,94 @@
 # CyberFishing changelog
 
+## v0.24.30 - Effective Item Rarity Read Model
+
+### Added
+
+- Added `EffectiveItemRarityResolver` as the single read-model boundary that combines authored `ItemDefinition.rarityProfile` with an optional instance-specific rarity fact.
+- Added a snapshot round-trip regression check covering rarity restoration, localized labels, CSS projection, filtering and default sorting.
+
+### Changed
+
+- Restored authored rarity descriptors while hydrating Inventory V2 items after save/load without duplicating authored rarity in canonical snapshots.
+- Made Inventory V2 cards, parameters, balance tooltips, filters, sorting and assembly grouping consume the restored `item.rarity` descriptor instead of reading `rarityProfile` at runtime.
+- Kept the default inventory order explicit: rarity descending (`unique`/`legendary` first, `common` last), with the original repository order preserved for equal rarity.
+
+### Fixed
+
+- Fixed missing rarity frames, backgrounds and CSS variables after Inventory V2 snapshot restoration.
+- Fixed rarity labels silently falling back to `Звичайний` when a valid domain descriptor had no presentation-level `id`.
+- Fixed technical items without a rarity descriptor receiving a misleading empty `has-rarity` card state.
+- Fixed items without a rarity capability being counted and filtered as `common`; they now remain visible only in unfiltered views and sort after graded items.
+- Completed isolated test-runtime dependency loading for item views introduced by the rarity reconstruction boundary.
+
+## v0.24.29 - Final Item Stat Contract
+
+### Changed
+
+- Moved assembly and compatibility metadata out of `gameplayStats`. Runtime consumers now read `capabilities`, `equipmentCapabilities`, `requiresTag` and `assemblyProfileId` only from the item definition.
+- Removed unconsumed `rigPower` and `sensitivity` stats and their Inventory V2 parameter metadata.
+- Hardened item validation against generic `level`, `power` and `type`, plus metadata stored inside numerical gameplay stats.
+- Removed legacy progression and power aliases from runtime sorting; the final runtime contract is based on `itemType`, `variant`, `effectiveStats`, explicit domain levels and optional descriptors.
+
+### Tests
+
+- Added a final stat-contract audit that scans production item definitions and verifies canonical metadata consumers and sorting keys.
+
+## v0.24.28 - Hook Domain Semantics
+
+### Added
+
+- Added `hookSizeGrade` as the explicit hook-to-fish compatibility parameter and `hookPowerGrade` as the input to the preserved hook power formula.
+- Added `HookPowerPolicy` as the single owner of hook power calculation; Quality continues to affect it only through `HookQualityModifier`.
+
+### Changed
+
+- Removed the hook's implicit use of `equipmentPowerLevel` as both size and power.
+- Kept `maxLoadKg` responsible for mechanical strength and removed the duplicate hook formula from debug formatting.
+
+### Tests
+
+- Added comparative coverage proving that the refactor preserves the current hook power balance while separating size, strength and Quality semantics.
+
+## v0.24.27 - Gameplay-backed Freshness
+
+### Added
+
+- Added canonical `freshnessState.percent`, linear water-exposure decay, a configurable freshness modifier and read-only projected Freshness descriptors.
+- Added a shared cast-exposure resolver, an application service that commits bait exposure once per retrieval, a freshness-aware refill compatibility policy and freshest-candidate selection.
+
+### Changed
+
+- Renamed bounded metric configuration from `runtimeOverridePath` to `instanceStatePath` and made value resolution explicitly `instance → authored → default`.
+- Made `BaitEffectivenessResolver` combine fish affinity with Freshness while keeping compatibility stars stable and hiding undiscovered values.
+- Replaced parallel bait ID/type inputs with one canonical bait-candidate collection shared by `WaitingState`, `BiteSystem` and debug.
+- Kept Freshness out of refill signatures but inside exact stacking identity, so differently aged bait never merges and auto-refill chooses the freshest compatible item.
+- Persisted only validated, rounded, non-default Freshness state in schema 4; legacy invalid state is discarded once at the storage boundary with a warning.
+
+### Tests
+
+- Added decay, modifier, best-candidate, idempotent retrieval, save/load, legacy default, stacking, auto-refill, UI and debug consistency coverage.
+
+## v0.24.26 - Contextual Bait Effectiveness
+
+### Added
+
+- Added a dedicated bait-effectiveness domain with immutable descriptors, a relative five-star grading policy and an injectable knowledge policy for future discovery/journal mechanics.
+- Added an inventory catalog projection that evaluates bait and lure effectiveness separately for every fish species.
+
+### Changed
+
+- Made `BaitEffectivenessResolver` the single consumer of `fish.baitMultipliers`. `BiteSystem`, its debug breakdown and Inventory V2 now use the same authoritative affinity values.
+- Replaced misleading global bait/lure strength in the UI with contextual effectiveness by fish species. Stars compare an item with the best configured bait for that same fish; the tooltip also exposes the actual bite multiplier.
+- Removed unused `attractionPower` and `jigPower` from item gameplay stats and parameter metadata. Natural bait no longer carries decorative Quality values without a gameplay effect.
+- Kept player knowledge independent from mechanics: hiding an undiscovered effectiveness descriptor cannot change the multiplier used by `BiteSystem`.
+- Aligned the Crucian Stalker asset catalog with the canonical `unique/` directory used by its configured visual pattern.
+
+### Tests
+
+- Added contextual multiplier, relative grade, knowledge-policy, inventory read-model, UI descriptor and single-source checks.
+- Updated fish-generation integration to inject the shared bait-effectiveness resolver.
+
 ## v0.24.25 - Optional Item Metric Capabilities
 
 ### Added

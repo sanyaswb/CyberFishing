@@ -78,6 +78,30 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["inventory", "inventory-v2"],
   },
   {
+    id: "bait-effectiveness",
+    title: "Contextual bait effectiveness",
+    file: "utils/bait-effectiveness-check.js",
+    suites: ["items", "gameplay", "inventory-v2"],
+  },
+  {
+    id: "item-freshness-gameplay",
+    title: "Gameplay-backed bait freshness",
+    file: "utils/item-freshness-gameplay-check.js",
+    suites: ["items", "gameplay", "inventory-v2"],
+  },
+  {
+    id: "hook-domain-semantics",
+    title: "Hook domain semantics",
+    file: "utils/hook-domain-semantics-check.js",
+    suites: ["items", "gameplay"],
+  },
+  {
+    id: "item-stat-contract",
+    title: "Final item stat contract",
+    file: "utils/item-stat-contract-check.js",
+    suites: ["quick", "items", "inventory-v2"],
+  },
+  {
     id: "fish-rarity",
     title: "Fish rarity",
     file: "utils/fish-rarity-check.js",
@@ -88,6 +112,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     title: "Item rarity",
     file: "utils/item-rarity-check.js",
     suites: ["items"],
+  },
+  {
+    id: "item-rarity-roundtrip",
+    title: "Item rarity snapshot and Inventory V2",
+    file: "utils/item-rarity-roundtrip-check.js",
+    suites: ["quick", "inventory", "inventory-v2", "items"],
   },
   {
     id: "item-progression",

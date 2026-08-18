@@ -338,6 +338,7 @@ class GameApplication {
   #windowTarget;
   #documentTarget;
   #clock = new GameClock();
+  #castExposureResolver = new FishingCastExposureResolver();
   #listeners = new EventLifecycle();
   #loop;
   #world;
@@ -464,6 +465,14 @@ class GameApplication {
     this.#chum = runtime.chum;
     this.#bite = runtime.bite;
     this.#inventory = runtime.inventory;
+    this.#inventory.setFreshnessExposureProvider?.((item) => {
+      const active = ["waiting", "biting", "playing"].includes(
+        this.#stateMachine?.currentName || this.#gameStateName,
+      );
+      return active && InventoryItemLocation.isAttached(item?.location)
+        ? this.#getCastExposureMs()
+        : 0;
+    });
     this.#world = runtime.world;
     this.#assetPreloadCoordinator = runtime.rendering.assetPreloadCoordinator;
     if (
@@ -615,6 +624,7 @@ class GameApplication {
       getEquipment: () => this.#inventory?.getEquipped?.() || {},
       getInputState: () => this.#lastInputState,
       getGameStateName: () => this.gameStateName,
+      getCastExposureMs: () => this.#getCastExposureMs(),
       getLiveChances: (biteEnv, options) => {
         const bite = this.#bite;
         return (
@@ -818,9 +828,10 @@ class GameApplication {
       currentName,
       name,
     );
-    if (rodWasRetrieved) {
-      this.#consumeWetFeederChum();
-    }
+    const retrievalContext = rodWasRetrieved
+      ? this.#createRodRetrievalContext()
+      : null;
+    if (retrievalContext) this.#consumeWetFeederChum(retrievalContext);
     if (name === "scouting") {
       this.#castRodScreenX = null;
     }
@@ -829,11 +840,13 @@ class GameApplication {
     }
     if (name === "victory") {
       return this.#transitionToVictoryWhenAssetsReady(data, {
-        handleRodRetrieved: rodWasRetrieved,
+        rodRetrievalContext: retrievalContext,
       });
     }
     this.#stateMachine.setState(name, data);
-    if (rodWasRetrieved) this.#inventory?.handleRodRetrieved?.();
+    if (retrievalContext) {
+      this.#inventory?.handleRodRetrieved?.(retrievalContext);
+    }
   }
 
   #preloadFishingAssets(fish) {
@@ -844,20 +857,24 @@ class GameApplication {
 
   #transitionToVictoryWhenAssetsReady(
     data,
-    { handleRodRetrieved = false } = {},
+    { rodRetrievalContext = null } = {},
   ) {
     return this.#assetPreloadCoordinator
       .preloadVictoryAssets(data?.fish || {})
       .then(() => {
         this.#stateMachine.setState("victory", data);
-        if (handleRodRetrieved) this.#inventory?.handleRodRetrieved?.();
+        if (rodRetrievalContext) {
+          this.#inventory?.handleRodRetrieved?.(rodRetrievalContext);
+        }
       })
       .catch((error) => {
         this.#stateMachine.setState("failed", {
           reason: "asset_load_failed",
           error,
         });
-        if (handleRodRetrieved) this.#inventory?.handleRodRetrieved?.();
+        if (rodRetrievalContext) {
+          this.#inventory?.handleRodRetrieved?.(rodRetrievalContext);
+        }
       });
   }
 
@@ -936,15 +953,33 @@ class GameApplication {
     );
   }
 
-  #consumeWetFeederChum() {
-    const eq = this.#inventory?.getEquipped?.();
-    const elapsedMs = this.#getFeederChumElapsedMs();
-    this.#fishingController?.consumeWetFeederChum?.(eq, elapsedMs);
+  #consumeWetFeederChum(context = this.#createRodRetrievalContext()) {
+    this.#fishingController?.consumeWetFeederChum?.(
+      context.equipment,
+      context.exposureMs,
+    );
   }
 
-  #getFeederChumElapsedMs() {
-    const timeScale = this.#config.debug?.timeScale || 1;
-    return Math.max(0, this.#clock.now - this.castStartTime) * timeScale;
+  #getCastExposureMs() {
+    return this.#castExposureResolver.resolve({
+      nowMs: this.#clock.now,
+      castStartTimeMs: this.castStartTime,
+      timeScale: this.#config.debug?.timeScale || 1,
+    });
+  }
+
+  #createRodRetrievalContext() {
+    const equipment = this.#inventory?.getEquipped?.() || {};
+    return Object.freeze({
+      equipment,
+      exposureMs: this.#getCastExposureMs(),
+      exposureToken: `cast:${this.castStartTime}`,
+      baitInstanceIds: Object.freeze(
+        (equipment.baits || [])
+          .filter((bait) => bait?.instanceId)
+          .map((bait) => bait.instanceId),
+      ),
+    });
   }
 
   draw() {
@@ -958,8 +993,9 @@ class GameApplication {
       currentName === "biting" ||
       currentName === "playing"
     ) {
-      this.#consumeWetFeederChum();
-      this.#inventory?.handleRodRetrieved?.();
+      const retrievalContext = this.#createRodRetrievalContext();
+      this.#consumeWetFeederChum(retrievalContext);
+      this.#inventory?.handleRodRetrieved?.(retrievalContext);
     }
 
     this.#castRodScreenX = Number.isFinite(options.rodScreenX)

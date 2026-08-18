@@ -1062,6 +1062,35 @@
   border-color: transparent;
 }
 
+.inventory-v2-bait-effectiveness {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.inventory-v2-bait-effectiveness__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #aebbc0;
+  font-size: 12px;
+}
+
+.inventory-v2-bait-effectiveness__fish {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inventory-v2-bait-effectiveness__value {
+  flex: 0 0 auto;
+  color: #f3c969;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
 .inventory-v2-assembly-editor__actions {
   display: grid;
   width: var(--inventory-v2-assembly-card-width);

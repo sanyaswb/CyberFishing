@@ -201,6 +201,27 @@ class GameCompositionRoot {
     const fishAnomalyVariantResolver = new FishAnomalyVariantResolver({
       noneAnomalyId: "none",
     });
+    const baitEffectivenessResolver = new BaitEffectivenessResolver({
+      gradePolicy: new BaitEffectivenessGradePolicy(),
+      knowledgePolicy: new AlwaysKnownBaitEffectivenessPolicy(),
+      freshnessResolver: itemFreshnessResolver,
+      freshnessModifier: new BaitFreshnessModifier(),
+    });
+    const baitEffectivenessCatalogResolver =
+      new BaitEffectivenessCatalogResolver({
+        fishDatabase: this.#config.spawns,
+        resolver: baitEffectivenessResolver,
+      });
+    contracts.requireMethods(
+      baitEffectivenessResolver,
+      "baitEffectivenessResolver",
+      ["resolve", "resolveMultiplier", "resolveBestMultiplier", "resolveBestMatch"],
+    );
+    contracts.requireMethods(
+      baitEffectivenessCatalogResolver,
+      "baitEffectivenessCatalogResolver",
+      ["resolve"],
+    );
     const fixedCatchFishFactory = new FixedCatchFishFactory({
       fishRarityResolver,
       fishAnomalyVariantResolver,
@@ -400,6 +421,7 @@ class GameCompositionRoot {
       undefined,
       itemConditionResolver,
       itemFreshnessResolver,
+      baitEffectivenessCatalogResolver,
     );
     const eq = inventory.getEquipped();
     const chumConfigObj = { baits: {}, deliveryMethods: {} };
@@ -463,6 +485,7 @@ class GameCompositionRoot {
         fishRarityResolver,
         fishAnomalyVariantResolver,
         fishVisualVariantResolver,
+        baitEffectivenessResolver,
       ),
       inventory,
     };
@@ -491,6 +514,7 @@ class GameCompositionRoot {
       facade: inventoryV2Facade,
       onAction: (action) => inventory.dispatchInventoryV2Action(action),
       rarityDomAdapter: itemRarityDomAdapter,
+      rarityVisualResolver,
       progressionDomAdapter: itemProgressionDomAdapter,
       conditionDomAdapter: itemConditionDomAdapter,
       degradationColorResolver,
@@ -500,6 +524,7 @@ class GameCompositionRoot {
         reelConfig: physicsConfig?.getReelConfig?.() || {},
         physicsConfig: this.#config.physics,
         debugConfig: this.#config.debug?.inventory,
+        rarityVisualResolver,
       }),
     });
     const equipmentRules = new EquipmentRules(castDistanceCalculator);

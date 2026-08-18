@@ -163,6 +163,8 @@ class InventoryV2ItemParametersRenderer {
           showIcon: false,
         }),
       );
+    } else if (parameter.kind === "effectiveness") {
+      li.appendChild(this.#renderEffectiveness(parameter.entries));
     } else if (parameter.kind === "bar" && parameter.percent !== undefined) {
       const barContainer = this.#dom.element("div", "inventory-v2-parameter-bar");
       const barTrack = this.#dom.element("div", "inventory-v2-parameter-bar-track");
@@ -195,6 +197,71 @@ class InventoryV2ItemParametersRenderer {
     }
 
     return li;
+  }
+
+  #renderEffectiveness(entries = []) {
+    const list = this.#dom.element(
+      "div",
+      "inventory-v2-bait-effectiveness",
+    );
+    for (const entry of entries) {
+      const row = this.#dom.element(
+        "div",
+        "inventory-v2-bait-effectiveness__row",
+      );
+      row.appendChild(this.#dom.element(
+        "span",
+        "inventory-v2-bait-effectiveness__fish",
+        entry.fishName || entry.fishId,
+      ));
+      const value = this.#dom.element(
+        "span",
+        "inventory-v2-bait-effectiveness__value",
+        this.#effectivenessText(entry),
+      );
+      if (entry.discovered && Number.isFinite(Number(entry.multiplier))) {
+        const lines = [
+          `Базовий множник клювання ×${this.#formatMultiplier(entry.multiplier)}`,
+        ];
+        if (Number.isFinite(Number(entry.freshnessPercent))) {
+          lines.push(`Свіжість ${Math.round(Number(entry.freshnessPercent))}%`);
+        }
+        if (Number.isFinite(Number(entry.freshnessMultiplier))) {
+          lines.push(
+            `Модифікатор свіжості ×${this.#formatMultiplier(entry.freshnessMultiplier)}`,
+          );
+        }
+        if (Number.isFinite(Number(entry.effectiveMultiplier))) {
+          lines.push(
+            `Поточний множник ×${this.#formatMultiplier(entry.effectiveMultiplier)}`,
+          );
+        }
+        value.setAttribute(
+          "title",
+          lines.join("\n"),
+        );
+      }
+      row.appendChild(value);
+      list.appendChild(row);
+    }
+    return list;
+  }
+
+  #effectivenessText(entry) {
+    if (!entry?.discovered) return "Невідомо";
+    if (!entry.compatible) return "Не підходить";
+    const maximum = Math.max(1, Math.floor(Number(entry.maximumStars) || 5));
+    const filled = Math.max(
+      0,
+      Math.min(maximum, Math.floor(Number(entry.stars) || 0)),
+    );
+    return `${"★".repeat(filled)}${"☆".repeat(maximum - filled)}`;
+  }
+
+  #formatMultiplier(value) {
+    const multiplier = Number(value);
+    if (!Number.isFinite(multiplier)) return "0";
+    return multiplier.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
   }
 
   #findSection(host, instanceId) {

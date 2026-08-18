@@ -1,39 +1,31 @@
 class RodCapabilityResolver {
   resolve(rod) {
-    const equipmentCapabilities =
-      rod?.effectiveStats?.equipmentCapabilities || {};
-    const capabilities = this.#asCapabilityMap(
-      rod?.effectiveStats?.capabilities,
-    );
+    const equipmentCapabilities = rod?.equipmentCapabilities || {};
+    const capabilities = this.#asCapabilityMap(rod?.capabilities);
     const capabilityFlags =
-      rod?.effectiveStats?.capabilities && !Array.isArray(rod.effectiveStats.capabilities)
-        ? rod.effectiveStats.capabilities
+      rod?.capabilities && !Array.isArray(rod.capabilities)
+        ? rod.capabilities
         : {};
 
     return Object.freeze({
       supportsReel: this.#firstBoolean(
         equipmentCapabilities.supportsReel,
         capabilityFlags.supportsReel,
-        rod?.effectiveStats?.supportsReel,
-        rod?.effectiveStats?.hasReel,
         capabilities.has("reel"),
       ),
       supportsFloat: this.#firstBoolean(
         equipmentCapabilities.supportsFloat,
         capabilityFlags.supportsFloat,
-        rod?.effectiveStats?.supportsFloat,
         capabilities.has("float"),
       ),
       supportsFeederRig: this.#firstBoolean(
         equipmentCapabilities.supportsFeederRig,
         capabilityFlags.supportsFeederRig,
-        rod?.effectiveStats?.supportsFeederRig,
         capabilities.has("feeder_rig"),
       ),
       supportsLures: this.#firstBoolean(
         equipmentCapabilities.supportsLures,
         capabilityFlags.supportsLures,
-        rod?.effectiveStats?.supportsLures,
         capabilities.has("lure"),
       ),
     });

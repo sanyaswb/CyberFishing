@@ -20,6 +20,8 @@ class RuntimeLoader {
       "src/core/items/condition/item_condition_descriptor.js",
       "src/core/items/condition/item_condition_resolver.js",
       "src/core/items/freshness/item_freshness_descriptor.js",
+      "src/core/items/freshness/item_freshness_state_policy.js",
+      "src/core/items/freshness/bait_freshness_decay_policy.js",
       "src/core/items/freshness/item_freshness_resolver.js",
       "src/ui/condition/item_condition_dom_adapter.js",
     ]).expose({
@@ -127,7 +129,7 @@ class ItemConditionCheck {
       effectiveStats: { durability: 100 },
     });
     Assertion.equal(worn.percent, 20, "20 condition maps to 20 percent height");
-    Assertion.equal(worn.source, "runtime", "runtime durability has priority");
+    Assertion.equal(worn.source, "instance", "instance durability has priority");
     const clamped = this.#resolver.resolve({
       ...profile,
       statOverrides: { durability: -5 },
@@ -183,20 +185,10 @@ class ItemConditionCheck {
       progressionProfile: { groupId: "bait.natural" },
       freshnessState: { percent: 82 },
     };
-    Assertion.equal(
-      this.#freshnessResolver.resolve(bait),
-      null,
-      "freshness remains disabled without a confirmed gameplay capability",
-    );
-    const enabled = this.#freshnessResolver.resolve(bait, {
-      statPath: "freshnessState.percent",
-      minimum: 0,
-      maximum: 100,
-      metricLabel: "Свіжість",
-    });
+    const enabled = this.#freshnessResolver.resolve(bait);
     Assertion.that(
       enabled.available && enabled.percent === 82,
-      "freshness descriptor is available when an explicit capability is configured",
+      "freshness descriptor is available for gameplay-backed natural bait",
     );
     Assertion.that(Object.isFrozen(enabled), "freshness descriptor is immutable");
   }

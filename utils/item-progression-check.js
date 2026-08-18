@@ -31,12 +31,19 @@ class RuntimeLoader {
       "src/core/items/progression/item_capacity_resolver.js",
       "src/core/items/progression/item_progression_descriptor.js",
       "src/core/items/progression/item_progression_resolver.js",
+      "src/core/items/freshness/item_freshness_state_policy.js",
       "src/infrastructure/storage/legacy_item_state_migration.js",
       "src/core/items/quality/item_quality_grade_policy.js",
       "src/core/items/quality/hook_quality_modifier.js",
       "src/core/items/quality/net_quality_modifier.js",
       "src/core/items/quality/environmental_compensation_modifier.js",
       "src/core/inventory/inventory_item_stacking_policy.js",
+      "src/core/items/rarity/item_rarity_descriptor.js",
+      "src/core/items/rarity/item_rarity_strategy.js",
+      "src/core/items/rarity/authored_item_rarity_strategy.js",
+      "src/core/items/rarity/item_rarity_strategy_registry.js",
+      "src/core/items/rarity/item_rarity_resolver.js",
+      "src/core/items/rarity/effective_item_rarity_resolver.js",
       "src/systems/inventory_item_factory.js",
       "src/systems/inventory_item_view_factory.js",
       "src/render/screens/rarity_animation_resolver.js",
@@ -163,9 +170,14 @@ class ItemProgressionCheck {
     }
     Assertion.that(
       Object.values(this.#runtime.CONFIGURATION.groups).every(
-        (group) => !("ratingTier" in group) && !("freshness" in group),
+        (group) => !("ratingTier" in group),
       ),
-      "ratingTier and freshness remain disabled in production",
+      "ratingTier remains disabled in production",
+    );
+    Assertion.that(
+      this.#runtime.CONFIGURATION.groups["bait.natural"].freshness
+        ?.gameplayConsumer === "BaitEffectivenessResolver",
+      "freshness is enabled only with a confirmed gameplay consumer",
     );
   }
 

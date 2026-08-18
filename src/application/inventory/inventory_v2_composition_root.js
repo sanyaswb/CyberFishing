@@ -18,6 +18,7 @@ class InventoryV2CompositionRoot {
     loadValueProvider = null,
     warningSink = null,
     lineConfig = {},
+    itemFreshnessResolver = null,
   } = {}) {
     const definitions =
       itemDefinitionResolver ||
@@ -83,7 +84,7 @@ class InventoryV2CompositionRoot {
       profileRegistry,
       reader: assemblyReader,
     });
-    const signaturePolicy = new ExactAssemblyRefillSignaturePolicy();
+    const signaturePolicy = new RefillCompatibleSignaturePolicy();
     const stackingPolicy = new ItemAssemblyStackingPolicy();
     const capacityPolicy = new UnlimitedInventoryCapacityPolicy();
     const assemblyService = new ItemAssemblyService({
@@ -221,6 +222,7 @@ class InventoryV2CompositionRoot {
       signaturePolicy,
       stackingPolicy,
       reservationPolicy,
+      candidatePolicy: new FreshestRefillCandidatePolicy(),
     });
     const refillTargetWriter = new InventoryV2RefillTargetWriter({
       repository,
@@ -301,6 +303,13 @@ class InventoryV2CompositionRoot {
       reservationPolicy,
       instanceIdFactory,
       sortConfig: INVENTORY_V2_SORT_CONFIG,
+      baitExposureService: itemFreshnessResolver
+        ? new ApplyBaitExposureService({
+            repository,
+            hydrator,
+            freshnessResolver: itemFreshnessResolver,
+          })
+        : null,
     });
     const gameplayBridge = new InventoryV2GameplayBridge({
       repository,

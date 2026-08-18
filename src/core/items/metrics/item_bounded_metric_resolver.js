@@ -33,19 +33,21 @@ class ItemBoundedMetricResolver {
       return this.#unavailable("capability_range_invalid");
     }
 
-    const runtimeValue = config.runtimeOverridePath
-      ? this.#readPath(item, config.runtimeOverridePath)
+    const instanceValue = config.instanceStatePath
+      ? this.#readPath(item, config.instanceStatePath)
       : undefined;
-    const authoredValue = this.#readPath(item, config.statPath);
-    const hasRuntime = runtimeValue !== undefined && runtimeValue !== null;
+    const authoredValue = config.statPath
+      ? this.#readPath(item, config.statPath)
+      : undefined;
+    const hasInstance = instanceValue !== undefined && instanceValue !== null;
     const hasAuthored = authoredValue !== undefined && authoredValue !== null;
     const hasDefault = config.defaultCurrent !== undefined;
-    if (!hasRuntime && !hasAuthored && !hasDefault) {
+    if (!hasInstance && !hasAuthored && !hasDefault) {
       return this.#unavailable(`${this.#capabilityId}_missing`);
     }
 
-    const rawValue = hasRuntime
-      ? runtimeValue
+    const rawValue = hasInstance
+      ? instanceValue
       : hasAuthored
         ? authoredValue
         : config.defaultCurrent;
@@ -60,7 +62,7 @@ class ItemBoundedMetricResolver {
       available: true,
       reason: null,
       metricLabel: config.metricLabel || this.#capabilityId,
-      source: hasRuntime ? "runtime" : hasAuthored ? "authored" : "default",
+      source: hasInstance ? "instance" : hasAuthored ? "authored" : "default",
       rawValue: numeric,
       current,
       minimum,

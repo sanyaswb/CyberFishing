@@ -41,6 +41,7 @@ const files = [
   "src/core/loadouts/loadout_equipment_transition_planner.js",
   "src/core/line/line_allocation_policy.js",
   "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+  "src/core/items/freshness/item_freshness_state_policy.js",
   "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
   "src/infrastructure/storage/legacy_item_state_migration.js",
   "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
@@ -57,6 +58,9 @@ const files = [
   "src/application/inventory/equipment_auto_refill_target_provider.js",
   "src/application/inventory/auto_refill_coordinator.js",
   "src/application/inventory/inventory_v2_refill_ports.js",
+  "src/application/inventory/refill_compatible_signature_policy.js",
+  "src/application/inventory/freshest_refill_candidate_policy.js",
+  "src/application/inventory/apply_bait_exposure_service.js",
   "src/application/inventory/inventory_v2_item_hydrator.js",
   "src/application/inventory/inventory_v2_item_view_factory.js",
   "src/application/inventory/inventory_v2_subfilter_resolver.js",
@@ -93,14 +97,14 @@ vm.runInContext(
       itemType: "rod",
       variant: "pole",
       rarityProfile: { mode: "authored", tier: 2, maxTier: 5, isUnique: false },
+      equipmentCapabilities: {
+        supportsReel: false,
+        supportsFloat: true,
+        supportsFeederRig: false,
+        supportsLures: false,
+      },
       gameplayStats: {
         lengthMeters: 4,
-        equipmentCapabilities: {
-          supportsReel: false,
-          supportsFloat: true,
-          supportsFeederRig: false,
-          supportsLures: false,
-        },
       },
     },
     rodFeeder: {
@@ -108,14 +112,14 @@ vm.runInContext(
       name: "Feeder rod",
       itemType: "rod",
       variant: "feeder",
+      equipmentCapabilities: {
+        supportsReel: true,
+        supportsFloat: false,
+        supportsFeederRig: true,
+        supportsLures: false,
+      },
       gameplayStats: {
         lengthMeters: 4,
-        equipmentCapabilities: {
-          supportsReel: true,
-          supportsFloat: false,
-          supportsFeederRig: true,
-          supportsLures: false,
-        },
       },
     },
     rodFeederShort: {
@@ -123,14 +127,14 @@ vm.runInContext(
       name: "Short feeder rod",
       itemType: "rod",
       variant: "feeder",
+      equipmentCapabilities: {
+        supportsReel: true,
+        supportsFloat: false,
+        supportsFeederRig: true,
+        supportsLures: false,
+      },
       gameplayStats: {
         lengthMeters: 2,
-        equipmentCapabilities: {
-          supportsReel: true,
-          supportsFloat: false,
-          supportsFeederRig: true,
-          supportsLures: false,
-        },
       },
     },
     rodSpinning: {
@@ -138,14 +142,13 @@ vm.runInContext(
       name: "Spinning rod",
       itemType: "rod",
       variant: "spinning",
-      gameplayStats: {
-        equipmentCapabilities: {
-          supportsReel: true,
-          supportsFloat: false,
-          supportsFeederRig: false,
-          supportsLures: true,
-        },
+      equipmentCapabilities: {
+        supportsReel: true,
+        supportsFloat: false,
+        supportsFeederRig: false,
+        supportsLures: true,
       },
+      gameplayStats: {},
     },
     reel: {
       id: "reel",
@@ -153,8 +156,8 @@ vm.runInContext(
       itemType: "reel",
       variant: "spinning_reel",
       rarityProfile: { mode: "authored", tier: 4, maxTier: 5, isUnique: false },
+      assemblyProfileId: "reel_standard",
       gameplayStats: {
-        assemblyProfileId: "reel_standard",
         lineCapacityMeters: 20,
       },
     },
@@ -174,8 +177,8 @@ vm.runInContext(
       id: "spring",
       name: "Spring",
       itemType: "feeder_rig",
+      assemblyProfileId: "feeder_spring_basic",
       gameplayStats: {
-        assemblyProfileId: "feeder_spring_basic",
         hooksCount: 3,
         hasChumSlot: true,
       },
@@ -185,7 +188,8 @@ vm.runInContext(
       name: "Hook",
       itemType: "hook",
       rarityProfile: { mode: "authored", tier: 5, maxTier: 5, isUnique: false },
-      gameplayStats: { assemblyProfileId: "hook_standard" },
+      assemblyProfileId: "hook_standard",
+      gameplayStats: {},
     },
     spinner: {
       id: "spinner",
@@ -219,8 +223,8 @@ vm.runInContext(
       id: "boat",
       name: "Bait boat",
       itemType: "boat",
+      assemblyProfileId: "bait_boat",
       gameplayStats: {
-        assemblyProfileId: "bait_boat",
         sections: 3,
       },
     },

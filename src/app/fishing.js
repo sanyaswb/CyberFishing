@@ -65,9 +65,8 @@ class FishingController {
     return this.#equipment.consumeDeliveryChum(slotIndex);
   }
 
-  collectAvailableBaits(eq, eatenBaits, outIds, outTypes) {
-    outIds.length = 0;
-    outTypes.length = 0;
+  collectAvailableBaits(eq, eatenBaits, outCandidates) {
+    outCandidates.length = 0;
 
     const hooks = eq?.hooks || [];
     const baits = eq?.baits || [];
@@ -77,9 +76,8 @@ class FishingController {
       const bait = baits[i];
       if (!bait) continue;
 
-      // A lure, spinner, wobbler or jig is the terminal tackle itself. Inventory v2
-      // intentionally projects that real item through `baits` for the legacy
-      // bite API, without manufacturing a fake hook or bait child for it.
+      // A lure, spinner, wobbler or jig is the terminal tackle itself, so the
+      // canonical item is a valid candidate without a separate hook child.
       const isSelfContainedLure = this.#baitRules.isActiveLure(bait);
       if (!hook && !isSelfContainedLure) continue;
 
@@ -92,14 +90,9 @@ class FishingController {
       }
 
       if (!isEaten) {
-        outIds.push(bait.id);
-        outTypes.push(bait.variant || bait.itemType);
+        outCandidates.push(bait);
       }
     }
-  }
-
-  hasActiveLureType(types) {
-    return this.#baitRules.hasActiveLureType(types);
   }
 
   applyFailureEquipmentLoss(reason, eq, failure = {}) {
@@ -406,17 +399,7 @@ class FightSessionFactory {
       : new Reel(0, 0, { lineCapacityMeters: 0 });
     const activeHook = equipment.hooks?.[0] || {};
     const hookStats = activeHook.effectiveStats || {};
-    const hook = new Hook(
-      hookStats.equipmentPowerLevel || 1,
-      hookStats.weight || 1,
-      hookStats.quality || 1.0,
-      {
-        maxLoadKg: hookStats.maxLoadKg,
-        durability: hookStats.durability,
-        durabilityMaxLoadLossPerPercent:
-          hookStats.durabilityMaxLoadLossPerPercent,
-      },
-    );
+    const hook = new Hook(hookStats);
     const fish = new Fish(
       fishData.level,
       fishData.weight,
@@ -547,17 +530,7 @@ class FightSessionFactory {
       : new Reel(0, 0, { lineCapacityMeters: 0 });
     const activeHook = equipment.hooks?.[0] || {};
     const hookStats = activeHook.effectiveStats || {};
-    const hook = new Hook(
-      hookStats.equipmentPowerLevel || 1,
-      hookStats.weight || 1,
-      hookStats.quality || 1.0,
-      {
-        maxLoadKg: hookStats.maxLoadKg,
-        durability: hookStats.durability,
-        durabilityMaxLoadLossPerPercent:
-          hookStats.durabilityMaxLoadLossPerPercent,
-      },
-    );
+    const hook = new Hook(hookStats);
     const lineSystem = new LineSystem({
       rod,
       reel,

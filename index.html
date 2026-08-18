@@ -8,7 +8,7 @@
     />
     <title>Fishing Mechanic Prototype</title>
     <link rel="stylesheet" href="src/ui/styles/style.css" />
-    <link rel="stylesheet" href="src/ui/styles/inventory_v2.css" />
+    <link rel="stylesheet" href="src/ui/styles/inventory_v2.css?v=0.24.30" />
   </head>
   <body>
     <canvas id="gameCanvas"></canvas>
@@ -17,12 +17,12 @@
       class="game-version-badge"
       aria-label="Поточна версія гри"
     ></div>
-    <script src="src/config/project_version.js"></script>
+    <script src="src/config/project_version.js?v=0.24.30"></script>
     <script src="src/config/rarity/rarity_visual_config.js"></script>
     <script src="src/config/visual/degradation_color_config.js"></script>
-    <script src="src/config/items/item_progression_config.js"></script>
+    <script src="src/config/items/item_progression_config.js?v=0.24.30"></script>
     <script src="src/config/items/item_stat_override_config.js"></script>
-    <script src="src/config/databases/item_db.js"></script>
+    <script src="src/config/databases/item_db.js?v=0.24.30"></script>
     <script src="src/config/databases/fish/presets/fish_profile_factory.js"></script>
     <script src="src/config/databases/fish/presets/fish_profile_presets.js"></script>
     <script src="src/config/databases/fish/species/peaceful_fish.js"></script>
@@ -47,11 +47,11 @@
     <script src="src/config/config.js"></script>
     <script src="src/config/inventory/item_assembly_profile_config.js"></script>
     <script src="src/config/inventory/equipment_slot_config.js"></script>
-    <script src="src/config/inventory/inventory_v2_item_parameter_config.js"></script>
+    <script src="src/config/inventory/inventory_v2_item_parameter_config.js?v=0.24.30"></script>
     <script src="src/config/inventory/inventory_v2_sort_config.js"></script>
     <script src="src/config/validation/item_rarity_config_validator.js"></script>
     <script src="src/config/validation/rarity_config_validator.js"></script>
-    <script src="src/config/validation/item_progression_config_validator.js"></script>
+    <script src="src/config/validation/item_progression_config_validator.js?v=0.24.30"></script>
     <script src="src/config/validation/degradation_color_config_validator.js"></script>
     <script src="src/config/validation/config_schema_validator.js"></script>
 
@@ -68,15 +68,27 @@
     <script src="src/core/items/rarity/authored_item_rarity_strategy.js"></script>
     <script src="src/core/items/rarity/item_rarity_strategy_registry.js"></script>
     <script src="src/core/items/rarity/item_rarity_resolver.js"></script>
+    <script src="src/core/items/rarity/effective_item_rarity_resolver.js?v=0.24.30"></script>
     <script src="src/core/items/item_stat_override_policy.js"></script>
     <script src="src/core/items/effective_item_stats_resolver.js"></script>
-    <script src="src/core/items/metrics/item_bounded_metric_resolver.js"></script>
+    <script src="src/core/items/metrics/item_bounded_metric_resolver.js?v=0.24.30"></script>
     <script src="src/core/items/condition/item_condition_descriptor.js"></script>
     <script src="src/core/items/condition/item_condition_resolver.js"></script>
-    <script src="src/core/items/freshness/item_freshness_descriptor.js"></script>
-    <script src="src/core/items/freshness/item_freshness_resolver.js"></script>
+    <script src="src/core/items/freshness/item_freshness_descriptor.js?v=0.24.30"></script>
+    <script src="src/core/items/freshness/item_freshness_state_policy.js?v=0.24.30"></script>
+    <script src="src/core/items/freshness/bait_freshness_decay_policy.js?v=0.24.30"></script>
+    <script src="src/core/items/freshness/bait_freshness_modifier.js?v=0.24.30"></script>
+    <script src="src/core/items/freshness/item_freshness_resolver.js?v=0.24.30"></script>
+    <script src="src/core/items/bait/bait_effectiveness_descriptor.js?v=0.24.30"></script>
+    <script src="src/core/items/bait/bait_effectiveness_match.js?v=0.24.30"></script>
+    <script src="src/core/items/bait/bait_effectiveness_grade_policy.js?v=0.24.30"></script>
+    <script src="src/core/items/bait/bait_effectiveness_knowledge_policy.js?v=0.24.30"></script>
+    <script src="src/core/items/bait/bait_effectiveness_resolver.js?v=0.24.30"></script>
+    <script src="src/core/items/bait/bait_effectiveness_catalog_resolver.js?v=0.24.30"></script>
+    <script src="src/core/fishing/fishing_cast_exposure_resolver.js?v=0.24.30"></script>
     <script src="src/core/items/quality/item_quality_grade_policy.js"></script>
     <script src="src/core/items/quality/hook_quality_modifier.js"></script>
+    <script src="src/core/items/hook/hook_power_policy.js?v=0.24.30"></script>
     <script src="src/core/items/quality/net_quality_modifier.js"></script>
     <script src="src/core/items/quality/environmental_compensation_modifier.js"></script>
     <script src="src/core/items/progression/item_metric_strategy.js"></script>
@@ -159,13 +171,13 @@
     <script src="src/core/inventory/unlimited_assembly_capacity_policy.js"></script>
     <script src="src/core/assemblies/assembly_state.js"></script>
     <script src="src/core/assemblies/assembly_state_repository.js"></script>
-    <script src="src/core/assemblies/assembly_profile_registry.js"></script>
+    <script src="src/core/assemblies/assembly_profile_registry.js?v=0.24.30"></script>
     <script src="src/core/assemblies/item_assembly_reader.js"></script>
     <script src="src/core/assemblies/assembly_attachment_target_resolver.js"></script>
     <script src="src/core/assemblies/assembly_completion_policy.js"></script>
     <script src="src/core/assemblies/exact_assembly_refill_signature_policy.js"></script>
     <script src="src/core/assemblies/item_assembly_service.js"></script>
-    <script src="src/core/equipment/rod_capability_resolver.js"></script>
+    <script src="src/core/equipment/rod_capability_resolver.js?v=0.24.30"></script>
     <script src="src/core/equipment/equipment_slot_visibility_policy.js"></script>
     <script src="src/core/equipment/terminal_line_slot_resolver.js"></script>
     <script src="src/core/equipment/equipment_state.js"></script>
@@ -182,8 +194,8 @@
 
     <!-- Inventory v2 persistence and application services -->
     <script src="src/infrastructure/storage/legacy_inventory_unit_allocator.js"></script>
-    <script src="src/infrastructure/storage/inventory_item_snapshot_mapper.js"></script>
-    <script src="src/infrastructure/storage/legacy_item_state_migration.js"></script>
+    <script src="src/infrastructure/storage/inventory_item_snapshot_mapper.js?v=0.24.30"></script>
+    <script src="src/infrastructure/storage/legacy_item_state_migration.js?v=0.24.30"></script>
     <script src="src/infrastructure/storage/inventory_v2_snapshot_migration.js"></script>
     <script src="src/infrastructure/storage/inventory_v2_state_store.js"></script>
     <script src="src/infrastructure/storage/inventory_v2_legacy_migration.js"></script>
@@ -197,23 +209,26 @@
     <script src="src/application/inventory/equipment_read_model_factory.js"></script>
     <script src="src/application/inventory/equipment_auto_refill_target_provider.js"></script>
     <script src="src/application/inventory/auto_refill_coordinator.js"></script>
-    <script src="src/application/inventory/inventory_v2_refill_ports.js"></script>
+    <script src="src/application/inventory/inventory_v2_refill_ports.js?v=0.24.30"></script>
+    <script src="src/application/inventory/refill_compatible_signature_policy.js?v=0.24.30"></script>
+    <script src="src/application/inventory/freshest_refill_candidate_policy.js?v=0.24.30"></script>
+    <script src="src/application/inventory/apply_bait_exposure_service.js?v=0.24.30"></script>
     <script src="src/application/inventory/inventory_v2_item_hydrator.js"></script>
     <script src="src/application/inventory/inventory_v2_item_view_factory.js"></script>
     <script src="src/application/inventory/inventory_v2_subfilter_resolver.js"></script>
-    <script src="src/application/inventory/inventory_v2_item_order_resolver.js"></script>
+    <script src="src/application/inventory/inventory_v2_item_order_resolver.js?v=0.24.30"></script>
     <script src="src/application/inventory/inventory_v2_context_item_filter.js"></script>
-    <script src="src/application/inventory/inventory_v2_view_model_factory.js"></script>
+    <script src="src/application/inventory/inventory_v2_view_model_factory.js?v=0.24.30"></script>
     <script src="src/application/inventory/inventory_v2_line_allocation_service.js"></script>
     <script src="src/application/inventory/inventory_v2_equipment_line_readiness_policy.js"></script>
-    <script src="src/application/inventory/inventory_v2_command_service.js"></script>
+    <script src="src/application/inventory/inventory_v2_command_service.js?v=0.24.30"></script>
     <script src="src/application/inventory/inventory_v2_gameplay_bridge.js"></script>
     <script src="src/application/inventory/inventory_v2_facade.js"></script>
-    <script src="src/application/inventory/inventory_v2_composition_root.js"></script>
+    <script src="src/application/inventory/inventory_v2_composition_root.js?v=0.24.30"></script>
     <script src="src/services/weakest_tackle_limit_resolver.js"></script>
     <script src="src/world/world.js"></script>
 
-    <script src="src/entities/tackle.js"></script>
+    <script src="src/entities/tackle.js?v=0.24.30"></script>
     <script src="src/entities/fish.js"></script>
 
     <script src="src/systems/stamina_system.js"></script>
@@ -231,14 +246,14 @@
     <script src="src/systems/tackle_stress_system.js"></script>
     <script src="src/systems/fight_physics_pipeline.js"></script>
     <script src="src/systems/fight_physics_system.js"></script>
-    <script src="src/systems/bite_system.js"></script>
+    <script src="src/systems/bite_system.js?v=0.24.30"></script>
     <script src="src/systems/chum_system.js"></script>
     <script src="src/systems/inventory_item_factory.js"></script>
-    <script src="src/systems/inventory_item_view_factory.js"></script>
-    <script src="src/systems/inventory_system.js"></script>
+    <script src="src/systems/inventory_item_view_factory.js?v=0.24.30"></script>
+    <script src="src/systems/inventory_system.js?v=0.24.30"></script>
 
     <script src="src/ui/interaction/horizontal_scroll_controller.js"></script>
-    <script src="src/ui/ui.js"></script>
+    <script src="src/ui/ui.js?v=0.24.30"></script>
     <script src="src/ui/version_badge.js"></script>
     <script src="src/ui/styles/hud_style_resolver.js"></script>
     <script src="src/ui/styles/fight_area_style_resolver.js"></script>
@@ -255,23 +270,23 @@
     <script src="src/ui/inventory/inventory_v2_dom_factory.js"></script>
     <script src="src/ui/inventory/inventory_v2_long_press_controller.js"></script>
     <script src="src/ui/inventory/inventory_v2_attachment_badge_renderer.js"></script>
-    <script src="src/ui/inventory/inventory_v2_balance_parameter_resolver.js"></script>
+    <script src="src/ui/inventory/inventory_v2_balance_parameter_resolver.js?v=0.24.30"></script>
     <script src="src/ui/inventory/inventory_v2_tooltip_presenter.js"></script>
     <script src="src/ui/inventory/inventory_v2_resource_meter_resolver.js"></script>
     <script src="src/ui/inventory/inventory_v2_resource_meter_renderer.js"></script>
-    <script src="src/ui/inventory/inventory_v2_item_parameters_resolver.js"></script>
-    <script src="src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js"></script>
-    <script src="src/ui/inventory/inventory_v2_item_parameters_renderer.js"></script>
-    <script src="src/ui/inventory/inventory_v2_item_card_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_item_parameters_resolver.js?v=0.24.30"></script>
+    <script src="src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js?v=0.24.30"></script>
+    <script src="src/ui/inventory/inventory_v2_item_parameters_renderer.js?v=0.24.30"></script>
+    <script src="src/ui/inventory/inventory_v2_item_card_renderer.js?v=0.24.30"></script>
     <script src="src/ui/inventory/inventory_v2_header_renderer.js"></script>
     <script src="src/ui/inventory/inventory_v2_loadout_panel_renderer.js"></script>
     <script src="src/ui/inventory/inventory_v2_assembly_editor_renderer.js"></script>
     <script src="src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js"></script>
     <script src="src/ui/inventory/inventory_v2_inventory_grid_renderer.js"></script>
-    <script src="src/ui/inventory/inventory_v2_ui.js"></script>
+    <script src="src/ui/inventory/inventory_v2_ui.js?v=0.24.30"></script>
     <script src="src/ui/inventory/inventory_v2_bootstrap.js"></script>
 
-    <script src="src/debug/services/debug_formatters.js"></script>
+    <script src="src/debug/services/debug_formatters.js?v=0.24.30"></script>
     <script src="src/debug/services/debug_data_selectors.js"></script>
     <script src="src/debug/services/location_debug_data_provider.js"></script>
     <script src="src/debug/services/memory_leak_watchdog.js"></script>
@@ -419,7 +434,7 @@
     <script src="src/app/adapters.js"></script>
 
     <!-- APP RULES -->
-    <script src="src/app/rules.js"></script>
+    <script src="src/app/rules.js?v=0.24.30"></script>
     <script src="src/app/cast_power.js"></script>
 
     <!-- APP CONTEXT -->
@@ -430,14 +445,14 @@
 
     <!-- APP DOMAIN SERVICES -->
     <script src="src/app/inventory.js"></script>
-    <script src="src/app/fishing.js"></script>
+    <script src="src/app/fishing.js?v=0.24.30"></script>
     <script src="src/app/bite.js"></script>
     <script src="src/app/chum.js"></script>
-    <script src="src/app/debug.js"></script>
+    <script src="src/app/debug.js?v=0.24.30"></script>
 
     <!-- APP STATES -->
     <script src="src/app/fixed_catch_fish_factory.js"></script>
-    <script src="src/app/states.js"></script>
+    <script src="src/app/states.js?v=0.24.30"></script>
 
     <!-- APP RENDERING -->
     <script src="src/app/rendering/game_render_intent.js"></script>
@@ -455,8 +470,8 @@
     <script src="src/app/rendering/game_render_coordinator.js"></script>
 
     <!-- APP APPLICATION / BOOTSTRAP -->
-    <script src="src/app/application.js"></script>
-    <script src="src/app/bootstrap.js"></script>
+    <script src="src/app/application.js?v=0.24.30"></script>
+    <script src="src/app/bootstrap.js?v=0.24.30"></script>
 
     <!-- PUBLIC GAME API -->
     <script src="src/app/game.js"></script>

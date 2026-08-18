@@ -29,6 +29,11 @@ const INVENTORY_V2_ITEM_PARAMETER_CONFIG = Object.freeze({
     description:
       "Поточна свіжість предмета. Відображається лише для категорій із підтвердженою gameplay-механікою свіжості.",
   }),
+  baitEffectiveness: Object.freeze({
+    label: "Ефективність за видом риби",
+    description:
+      "Контекстна ефективність наживки або приманки. Оцінка походить із того самого коефіцієнта вподобання риби, який читає система клювання.",
+  }),
   "resource:energy": Object.freeze({
     label: "Заряд",
     description: "Поточний запас енергії предмета.",
@@ -97,6 +102,18 @@ const INVENTORY_V2_BALANCE_TOOLTIP_CONFIG = Object.freeze({
     }),
     equipmentPowerLevel: Object.freeze({
       label: "Рівень сили спорядження",
+      baseline: 1,
+      precision: 0,
+      direction: "higher_is_better",
+    }),
+    hookSizeGrade: Object.freeze({
+      label: "Розмір гачка",
+      baseline: 1,
+      precision: 0,
+      direction: "neutral",
+    }),
+    hookPowerGrade: Object.freeze({
+      label: "Клас пробивної сили гачка",
       baseline: 1,
       precision: 0,
       direction: "higher_is_better",
@@ -193,22 +210,6 @@ const INVENTORY_V2_BALANCE_TOOLTIP_CONFIG = Object.freeze({
     durabilityMaxLoadLossPerPercent: Object.freeze({
       label: "Втрата навантаження за 1% зносу",
       direction: "lower_is_better",
-    }),
-    rigPower: Object.freeze({
-      label: "Сила оснастки",
-      direction: "higher_is_better",
-    }),
-    attractionPower: Object.freeze({
-      label: "Привабливість",
-      direction: "higher_is_better",
-    }),
-    jigPower: Object.freeze({
-      label: "Контроль джигу",
-      direction: "higher_is_better",
-    }),
-    sensitivity: Object.freeze({
-      label: "Чутливість",
-      direction: "higher_is_better",
     }),
     maxWeight: Object.freeze({
       label: "Макс. вага",

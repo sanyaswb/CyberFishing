@@ -631,7 +631,7 @@ class InventoryV2ViewModelFactory {
     ].filter(Boolean);
     const capabilities = new Set();
     for (const item of projectedItems) {
-      const authored = item.effectiveStats?.capabilities;
+      const authored = item.capabilities;
       if (!Array.isArray(authored)) continue;
       authored.forEach((capability) => capabilities.add(capability));
     }

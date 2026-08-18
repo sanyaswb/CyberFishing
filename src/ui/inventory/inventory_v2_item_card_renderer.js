@@ -236,12 +236,13 @@ class InventoryV2ItemCardRenderer {
 
   #applyVisualAdapters(card, item, frameless, { showMetadata = true } = {}) {
     if (!frameless) {
-      if (this.#rarityDomAdapter?.apply && item.rarity) {
-        this.#rarityDomAdapter.apply(card, item.rarity);
+      if (this.#rarityDomAdapter?.apply) {
+        if (item.rarity) this.#rarityDomAdapter.apply(card, item.rarity);
+        else this.#rarityDomAdapter.clear?.(card);
       } else {
-        card.classList.add("has-rarity");
         const color = item.rarityVisual?.cssColor || item.rarityColor;
         if (this.#isSafeCssColor(color)) {
+          card.classList.add("has-rarity");
           card.style.setProperty("--rarity-color", color);
         }
       }

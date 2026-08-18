@@ -9,7 +9,8 @@ class ProductionRarityConfigLoader {
   load() {
     const scripts = this.#readConfigScriptPaths();
     const context = vm.createContext({ console, structuredClone });
-    for (const relativePath of scripts) {
+    for (const browserPath of scripts) {
+      const relativePath = this.#toFilePath(browserPath);
       const source = fs.readFileSync(path.join(ROOT, relativePath), "utf8");
       vm.runInContext(source, context, { filename: relativePath });
     }
@@ -39,10 +40,14 @@ class ProductionRarityConfigLoader {
     let match = pattern.exec(html);
     while (match) {
       scripts.push(match[1]);
-      if (match[1] === VALIDATOR_SCRIPT) return scripts;
+      if (this.#toFilePath(match[1]) === VALIDATOR_SCRIPT) return scripts;
       match = pattern.exec(html);
     }
     throw new Error(`${VALIDATOR_SCRIPT} is not loaded by index.html`);
+  }
+
+  #toFilePath(browserPath) {
+    return String(browserPath || "").split(/[?#]/u, 1)[0];
   }
 }
 

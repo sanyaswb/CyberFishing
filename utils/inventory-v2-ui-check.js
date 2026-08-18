@@ -1570,6 +1570,61 @@ class InventoryV2StaticContractCheck {
         ),
       "Large assembly cards must expose only authored gameplay parameters",
     );
+    const contextualItem = {
+      instanceId: "contextual-bait",
+      itemId: "oil_worm",
+      itemType: "bait",
+      name: "Масляний черв'як",
+      progression: {},
+      effectiveStats: {},
+      baitEffectiveness: {
+        available: true,
+        baitId: "oil_worm",
+        entries: [
+          {
+            fishId: "perch",
+            fishName: "Окунь",
+            discovered: true,
+            compatible: true,
+            multiplier: 2,
+            relativeEffectiveness: 1,
+            stars: 5,
+            maximumStars: 5,
+          },
+          {
+            fishId: "carp",
+            fishName: "Короп",
+            discovered: true,
+            compatible: false,
+            multiplier: 0,
+            relativeEffectiveness: 0,
+            stars: 0,
+            maximumStars: 5,
+          },
+        ],
+      },
+    };
+    const contextualParameters =
+      new sandbox.InventoryV2ItemParametersResolver().resolve(contextualItem);
+    assert.equal(
+      contextualParameters.find((parameter) =>
+        parameter.id === "baitEffectiveness"
+      )?.kind,
+      "effectiveness",
+      "Contextual bait effectiveness must be an opt-in UI descriptor",
+    );
+    const contextualPanel = new sandbox.InventoryV2ItemParametersRenderer({
+      domFactory: new sandbox.InventoryV2DomFactory(document),
+    }).render(contextualItem);
+    const contextualValues = this.#findAllByClass(
+      contextualPanel,
+      "inventory-v2-bait-effectiveness__value",
+    );
+    assert.deepEqual(
+      contextualValues.map((node) => node.textContent),
+      ["★★★★★", "Не підходить"],
+      "Contextual UI must distinguish effective and incompatible fish matches",
+    );
     const balanceResolver = new sandbox.InventoryV2BalanceParameterResolver({
       debugConfig: { showEffectiveStats: false },
       retrieveSpeedCalculator: {
@@ -1597,6 +1652,14 @@ class InventoryV2StaticContractCheck {
         },
       },
     });
+    const contextualSection = balanceResolver
+      .resolve(contextualItem)
+      .find((section) => section.id === "bait-effectiveness");
+    assert.equal(
+      contextualSection?.rows?.[0]?.baseline,
+      "×2",
+      "Balance tooltip must expose the BiteSystem multiplier",
+    );
     const reelBalanceSections = balanceResolver.resolve({
       instanceId: "balance-reel",
       itemType: "reel",
@@ -1706,6 +1769,10 @@ class InventoryV2StaticContractCheck {
       icon: "B",
       charge: { percent: 74, label: "Boat charge 74%" },
     });
+    assert.ok(
+      !inventoryBoat.classList.contains("has-rarity"),
+      "An item without a rarity descriptor must not receive a rarity frame state",
+    );
     const inventoryBoatMeter = this.#findByClass(
       inventoryBoat,
       "inventory-v2-resource-meter",

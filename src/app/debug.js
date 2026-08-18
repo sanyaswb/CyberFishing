@@ -1,7 +1,6 @@
 class DebugService {
   #config;
   #currentBaits = [];
-  #currentBaitTypes = [];
   constructor(config) {
     this.#config = config;
   }
@@ -31,18 +30,14 @@ class DebugService {
     const eq = context.getEquipment();
     const input = context.getInputState?.() || {};
     const currentBaits = this.#currentBaits;
-    const currentBaitTypes = this.#currentBaitTypes;
     currentBaits.length = 0;
-    currentBaitTypes.length = 0;
     const equippedBaits = eq?.baits || [];
     for (let i = 0; i < equippedBaits.length; i++) {
-      if (equippedBaits[i]?.id) currentBaits.push(equippedBaits[i].id);
-      const baitType = equippedBaits[i]?.variant || equippedBaits[i]?.itemType;
-      if (baitType) currentBaitTypes.push(baitType);
+      if (equippedBaits[i]) currentBaits.push(equippedBaits[i]);
     }
     const currentHookSize =
-      eq?.hooks?.[0]?.effectiveStats?.equipmentPowerLevel ||
-      eq?.baits?.[0]?.effectiveStats?.equipmentPowerLevel ||
+      eq?.hooks?.[0]?.effectiveStats?.hookSizeGrade ||
+      eq?.baits?.[0]?.effectiveStats?.hookSizeGrade ||
       1;
     const detail = {
       gameState: context.getGameStateName(),
@@ -51,7 +46,7 @@ class DebugService {
       hookDepth: ed.hookDepth,
       bottomDepth: ed.bottomDepth,
       lineLength: ed.lineLength,
-      baits: currentBaits,
+      baits: currentBaits.map((bait) => bait.itemId || bait.id),
       phase: env.phase,
       isRaining: env.isRaining,
       isFoggy: env.isFoggy,
@@ -59,8 +54,8 @@ class DebugService {
       eq,
       liveChances: context.getLiveChances(ed, {
         hookSize: currentHookSize,
-        baits: currentBaits,
-        baitTypes: currentBaitTypes,
+        baitCandidates: currentBaits,
+        exposureMs: context.getCastExposureMs?.() || 0,
         isPulling: input.isPulling,
       }),
       chumZones: context.getChumZones(),
@@ -88,8 +83,8 @@ class DebugService {
       };
       detail.liveChances = context.getLiveChances(boatEd, {
         hookSize: currentHookSize,
-        baits: currentBaits,
-        baitTypes: currentBaitTypes,
+        baitCandidates: currentBaits,
+        exposureMs: 0,
         isPulling: false,
       });
     }

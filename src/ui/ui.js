@@ -1437,7 +1437,7 @@ class InventoryUI {
           type: "feeder_rig",
         });
         const feederRigCaps =
-          equipped.feederRig?.effectiveStats?.capabilities ||
+          equipped.feederRig?.capabilities ||
           [];
         const hasChumSlot =
           feederRigCaps.includes("chum_mix") ||

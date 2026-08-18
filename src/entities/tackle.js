@@ -281,29 +281,31 @@ class Reel extends Equipment {
 }
 
 class Hook {
-  #equipmentPowerLevel;
+  #hookPowerGrade;
   #weight;
-  #quality;
-  #qualityModifier;
+  #qualityGrade;
+  #powerPolicy;
   #maxLoadKg;
   #durability;
   #durabilityMaxLoadLossPerPercent;
 
-  constructor(equipmentPowerLevel, weight, quality, options = {}) {
-    this.#equipmentPowerLevel = equipmentPowerLevel;
-    this.#weight = weight;
-    this.#quality = quality;
-    this.#qualityModifier =
-      options.qualityModifier || new HookQualityModifier();
-    this.#maxLoadKg = Hook.#numberOrDefault(options.maxLoadKg, Infinity);
-    this.#durability = Hook.#numberOrDefault(options.durability, 100);
+  constructor(stats = {}, { powerPolicy = new HookPowerPolicy() } = {}) {
+    this.#hookPowerGrade = Hook.#numberOrDefault(stats.hookPowerGrade, 1);
+    this.#weight = Hook.#numberOrDefault(stats.weight, 1);
+    this.#qualityGrade = Hook.#numberOrDefault(stats.quality, 1);
+    this.#powerPolicy = powerPolicy;
+    this.#maxLoadKg = Hook.#numberOrDefault(stats.maxLoadKg, Infinity);
+    this.#durability = Hook.#numberOrDefault(stats.durability, 100);
     this.#durabilityMaxLoadLossPerPercent =
-      Hook.#numberOrDefault(options.durabilityMaxLoadLossPerPercent, 0.001);
+      Hook.#numberOrDefault(stats.durabilityMaxLoadLossPerPercent, 0.001);
   }
 
   getPower() {
-    const equipmentPower = this.#equipmentPowerLevel * this.#weight * 0.01;
-    return equipmentPower + this.#qualityModifier.getPowerBonus(this.#quality);
+    return this.#powerPolicy.resolve({
+      hookPowerGrade: this.#hookPowerGrade,
+      weight: this.#weight,
+      qualityGrade: this.#qualityGrade,
+    });
   }
 
   getMaxLoadKg() {

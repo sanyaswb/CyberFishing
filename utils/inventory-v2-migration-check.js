@@ -10,6 +10,7 @@ const files = [
   "src/config/items/item_stat_override_config.js",
   "src/core/items/item_stat_override_policy.js",
   "src/core/items/effective_item_stats_resolver.js",
+  "src/core/items/freshness/item_freshness_state_policy.js",
   "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
   "src/infrastructure/storage/legacy_item_state_migration.js",
   "src/core/inventory/inventory_item_location.js",
@@ -40,21 +41,21 @@ for (const file of files) {
 vm.runInContext(
   `
   const definitions = {
-    rod: { id: "rod", itemType: "rod", variant: "feeder", gameplayStats: { equipmentCapabilities: { supportsReel: true, supportsFloat: false, supportsFeederRig: true, supportsLures: false } } },
-    spinRod: { id: "spinRod", itemType: "rod", variant: "spinning", gameplayStats: { equipmentCapabilities: { supportsReel: true, supportsFloat: false, supportsFeederRig: false, supportsLures: true } } },
-    floatRod: { id: "floatRod", itemType: "rod", variant: "float", gameplayStats: { equipmentCapabilities: { supportsReel: false, supportsFloat: true, supportsFeederRig: false, supportsLures: false } } },
-    poleRod: { id: "poleRod", itemType: "rod", variant: "pole", gameplayStats: { equipmentCapabilities: { supportsReel: false, supportsFloat: true, supportsFeederRig: false, supportsLures: false } } },
-    reel: { id: "reel", itemType: "reel", variant: "spinning_reel", gameplayStats: { assemblyProfileId: "reel_standard" } },
+    rod: { id: "rod", itemType: "rod", variant: "feeder", equipmentCapabilities: { supportsReel: true, supportsFloat: false, supportsFeederRig: true, supportsLures: false }, gameplayStats: {} },
+    spinRod: { id: "spinRod", itemType: "rod", variant: "spinning", equipmentCapabilities: { supportsReel: true, supportsFloat: false, supportsFeederRig: false, supportsLures: true }, gameplayStats: {} },
+    floatRod: { id: "floatRod", itemType: "rod", variant: "float", equipmentCapabilities: { supportsReel: false, supportsFloat: true, supportsFeederRig: false, supportsLures: false }, gameplayStats: {} },
+    poleRod: { id: "poleRod", itemType: "rod", variant: "pole", equipmentCapabilities: { supportsReel: false, supportsFloat: true, supportsFeederRig: false, supportsLures: false }, gameplayStats: {} },
+    reel: { id: "reel", itemType: "reel", variant: "spinning_reel", assemblyProfileId: "reel_standard", gameplayStats: {} },
     line: { id: "line", itemType: "fishing_line", gameplayStats: { lengthMeters: 25 } },
     line_test_1: { id: "line_test_1", itemType: "fishing_line", gameplayStats: { lengthMeters: 25 } },
     leader: { id: "leader", itemType: "leader_line", gameplayStats: {} },
-    spring: { id: "spring", itemType: "feeder_rig", gameplayStats: { assemblyProfileId: "feeder_spring_basic", hooksCount: 2, hasChumSlot: true } },
-    hook: { id: "hook", itemType: "hook", gameplayStats: { assemblyProfileId: "hook_standard" } },
+    spring: { id: "spring", itemType: "feeder_rig", assemblyProfileId: "feeder_spring_basic", gameplayStats: { hooksCount: 2, hasChumSlot: true } },
+    hook: { id: "hook", itemType: "hook", assemblyProfileId: "hook_standard", gameplayStats: {} },
     bait: { id: "bait", itemType: "bait", gameplayStats: {} },
     lure: { id: "lure", itemType: "lure", gameplayStats: {} },
     chum: { id: "chum", itemType: "chum_mix", gameplayStats: {} },
     net: { id: "net", itemType: "net", gameplayStats: {} },
-    boat: { id: "boat", itemType: "boat", gameplayStats: { assemblyProfileId: "bait_boat", sections: 2 } },
+    boat: { id: "boat", itemType: "boat", assemblyProfileId: "bait_boat", gameplayStats: { sections: 2 } },
   };
   let sequence = 0;
   const migration = new InventoryV2LegacyMigration({

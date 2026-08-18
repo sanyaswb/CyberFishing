@@ -171,17 +171,13 @@ class ItemDatabase {
     const item = this.#db[category][itemId];
     if (!item) return null;
 
+    const { gameplayStats = {}, displayStats = {}, ...metadata } = item;
     return {
-      id: item.id,
-      name: item.name,
-      icon: item.icon,
-      itemType: item.itemType,
+      ...metadata,
       variant: item.variant || null,
-      rarityProfile: item.rarityProfile ?? null,
-      progressionProfile: item.progressionProfile ?? null,
       displayStats: DisplayStatsResolver.resolve(item),
-      displayStatsSchema: item.displayStats || {},
-      gameplayStats: { ...(item.gameplayStats || {}) },
+      displayStatsSchema: displayStats,
+      gameplayStats: { ...gameplayStats },
     };
   }
 }
@@ -782,7 +778,7 @@ class EquipmentValidator {
       return this.validateLeader(itemData, equippedHydrated);
     }
 
-    const reqTag = itemData.effectiveStats?.requiresTag;
+    const reqTag = itemData.requiresTag;
     if (!reqTag) return { isValid: true };
 
     if (!equippedHydrated.rod) {
@@ -907,7 +903,7 @@ class EquipmentValidator {
       };
     }
 
-    const reqTag = itemData?.effectiveStats?.requiresTag;
+    const reqTag = itemData?.requiresTag;
     if (!reqTag) {
       return {
         hasCompatibility: false,
@@ -947,7 +943,7 @@ class EquipmentValidator {
     for (const part of parts) {
       if (!part) continue;
       const partCaps =
-        part.effectiveStats?.capabilities || [];
+        part.capabilities || [];
       for (let i = 0; i < partCaps.length; i++) {
         caps.add(partCaps[i]);
       }
@@ -976,9 +972,12 @@ class InventoryManager {
   #inventoryV2Bridge = null;
   #removeInventoryV2Listener = null;
   #lineCapacityStateProvider = () => null;
+  #freshnessExposureProvider = () => 0;
   #isLocked = false;
   #equippedCache = null;
   #effectiveStatsResolver;
+  #effectiveRarityResolver;
+  #itemFreshnessResolver;
 
   constructor(
     itemDB,
@@ -993,6 +992,7 @@ class InventoryManager {
     itemViewFactory = null,
     itemConditionResolver = null,
     itemFreshnessResolver = null,
+    baitEffectivenessCatalogResolver = null,
   ) {
     const cachedInventory = InventoryItemIdMigrationPolicy.migrateItems(
       CacheManager.get("player_inventory") || playerConfig.inventory || [],
@@ -1006,9 +1006,15 @@ class InventoryManager {
 
     this.#db = new ItemDatabase(itemDB);
     this.#effectiveStatsResolver = new EffectiveItemStatsResolver();
+    const sharedItemRarityResolver =
+      itemRarityResolver || new ItemRarityResolver();
+    this.#effectiveRarityResolver = new EffectiveItemRarityResolver({
+      itemRarityResolver: sharedItemRarityResolver,
+    });
+    this.#itemFreshnessResolver = itemFreshnessResolver;
     this.#itemFactory = new InventoryItemFactory({
       itemDatabase: this.#db,
-      itemRarityResolver: itemRarityResolver || new ItemRarityResolver(),
+      itemRarityResolver: sharedItemRarityResolver,
     });
     this.#stackingPolicy =
       stackingPolicy || new InventoryItemStackingPolicy();
@@ -1029,11 +1035,14 @@ class InventoryManager {
             itemDatabase: this.#db,
             progressionResolver: itemProgressionResolver,
             conditionResolver: itemConditionResolver,
-            freshnessResolver: itemFreshnessResolver,
+            freshnessResolver: this.#itemFreshnessResolver,
+            baitEffectivenessCatalogResolver,
+            effectiveRarityResolver: this.#effectiveRarityResolver,
             displayStatsResolver: this.#runtimeDisplayStatsResolver,
-            runtimeContextProvider: () => ({
+            runtimeContextProvider: (item) => ({
               reelConfig: this.#runtimeConfigProvider.getReelConfig(),
               lineCapacity: this.#buildLineCapacityContext(),
+              freshnessExposureMs: this.#freshnessExposureProvider(item),
             }),
           })
         : null
@@ -1066,6 +1075,7 @@ class InventoryManager {
       },
       loadValueProvider: () => this.getMaxTackleLoadKg(),
       lineConfig: this.#lineRules.config,
+      itemFreshnessResolver: this.#itemFreshnessResolver,
     });
     this.#inventoryV2Facade = this.#inventoryV2.facade;
     this.#inventoryV2Bridge = this.#inventoryV2.gameplayBridge;
@@ -1330,6 +1340,13 @@ class InventoryManager {
     this.#inventoryV2Facade?.setBoatChargeProvider?.(provider);
   }
 
+  setFreshnessExposureProvider(provider) {
+    if (typeof provider !== "function") {
+      throw new TypeError("Freshness exposure provider must be a function");
+    }
+    this.#freshnessExposureProvider = provider;
+  }
+
   handleRodRetrieved(context = {}) {
     return this.#inventoryV2Bridge?.handleRodRetrieved?.(context) ??
       this.#inventoryV2Bridge?.rodRetrieved?.(context) ??
@@ -1367,7 +1384,7 @@ class InventoryManager {
 
     const rod = eq.rod;
     const supportsReel =
-      rod.effectiveStats?.equipmentCapabilities?.supportsReel ??
+      rod.equipmentCapabilities?.supportsReel ??
       rod.effectiveStats?.supportsReel ??
       rod.effectiveStats?.hasReel ??
       rod.variant !== "pole";
@@ -1534,7 +1551,7 @@ class InventoryManager {
 
     if (itemData.itemType === "chum_mix") {
       const feederRigCaps =
-        eq.feederRig?.effectiveStats?.capabilities ||
+        eq.feederRig?.capabilities ||
         [];
       const hasFeederSlot = feederRigCaps.includes("chum_mix");
 
@@ -2357,7 +2374,10 @@ class InventoryManager {
         instanceId: invItem.instanceId,
         quantity: invItem.quantity || 1,
         buildId: invItem.buildId,
-        rarity: invItem.rarity ?? null,
+        rarity: this.#effectiveRarityResolver.resolve({
+          definition: baseItem,
+          instanceState,
+        }),
       };
     })();
     const hydrated = canonicalView;

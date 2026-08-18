@@ -30,6 +30,7 @@ class InventoryV2CommandService {
   #equipmentLineReadinessPolicy;
   #stackingPolicy;
   #reservationPolicy;
+  #baitExposureService;
   #sortConfig;
   #fallbackSequence = 0;
   #uiState = {
@@ -69,6 +70,7 @@ class InventoryV2CommandService {
     equipmentLineReadinessPolicy = null,
     stackingPolicy = null,
     reservationPolicy = null,
+    baitExposureService = null,
     instanceIdFactory = null,
     sortConfig = typeof INVENTORY_V2_SORT_CONFIG !== "undefined"
       ? INVENTORY_V2_SORT_CONFIG
@@ -96,6 +98,7 @@ class InventoryV2CommandService {
     this.#stackingPolicy =
       stackingPolicy || new ItemAssemblyStackingPolicy();
     this.#reservationPolicy = reservationPolicy;
+    this.#baitExposureService = baitExposureService;
     this.#instanceIdFactory = instanceIdFactory;
     this.#sortConfig = sortConfig;
     this.#uiState.sortCriterionIds = [
@@ -187,7 +190,31 @@ class InventoryV2CommandService {
   }
 
   rodRetrieved(context = {}) {
-    return this.#runAutoRefill(AutoRefillTrigger.ROD_RETRIEVED, context);
+    try {
+      const result = this.#transaction.runAtomic(() => {
+        const freshness = this.#baitExposureService?.apply?.({
+          instanceIds: context.baitInstanceIds || [],
+          exposureMs: context.exposureMs || 0,
+          exposureToken: context.exposureToken || null,
+        }) || [];
+        const report = this.#autoRefillCoordinator.handle(
+          AutoRefillTrigger.ROD_RETRIEVED,
+          context,
+        );
+        return { report, freshness };
+      });
+      this.#baitExposureService?.confirm?.({
+        instanceIds: context.baitInstanceIds || [],
+        exposureToken: context.exposureToken || null,
+      });
+      return this.#success({
+        report: result.report,
+        freshness: result.freshness,
+        warning: result.report.warning,
+      });
+    } catch (error) {
+      return this.#failure(error.message, error);
+    }
   }
 
   handChumUsed(context = {}) {

@@ -7,6 +7,7 @@ const FILES = [
   "src/core/input/fight_input_action_composer.js",
   "src/core/items/quality/item_quality_grade_policy.js",
   "src/core/items/quality/hook_quality_modifier.js",
+  "src/core/items/hook/hook_power_policy.js",
   "src/core/items/quality/net_quality_modifier.js",
   "src/core/items/quality/environmental_compensation_modifier.js",
   "src/core/core.js",

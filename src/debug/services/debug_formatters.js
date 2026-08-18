@@ -28,12 +28,11 @@ class DebugFormatters {
   static hookPower(hook) {
     if (!hook) return 0;
     const stats = hook.effectiveStats || hook;
-    const equipmentPowerLevel = Number(stats.equipmentPowerLevel) || 0;
-    const weight = Number(stats.weight) || 0;
-    const equipmentPower = equipmentPowerLevel * weight * 0.01;
-    return equipmentPower + new HookQualityModifier().getPowerBonus(
-      stats.quality,
-    );
+    return new HookPowerPolicy().resolve({
+      hookPowerGrade: stats.hookPowerGrade,
+      weight: stats.weight,
+      qualityGrade: stats.quality,
+    });
   }
 }
 

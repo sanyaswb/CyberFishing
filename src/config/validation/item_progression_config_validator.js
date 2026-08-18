@@ -87,6 +87,7 @@ class ItemProgressionConfigValidator {
       }
       if (group.freshness !== undefined) {
         this.#validateBoundedMetric(`${path}.freshness`, group.freshness);
+        this.#validateFreshness(`${path}.freshness`, group.freshness);
       }
     }
   }
@@ -295,10 +296,16 @@ class ItemProgressionConfigValidator {
       this.#error(path, "expected bounded metric config object");
       return;
     }
-    this.#requirePath(`${path}.statPath`, metric.statPath);
+    const hasAuthoredPath = String(metric.statPath || "").trim().length > 0;
+    const hasInstancePath = String(metric.instanceStatePath || "").trim().length > 0;
+    const hasDefault = metric.defaultCurrent !== undefined;
+    if (!hasAuthoredPath && !hasInstancePath && !hasDefault) {
+      this.#error(path, "bounded metric requires statPath, instanceStatePath or defaultCurrent");
+    }
+    if (hasAuthoredPath) this.#requirePath(`${path}.statPath`, metric.statPath);
     this.#requireGameplayConsumer(path, metric.gameplayConsumer);
-    if (metric.runtimeOverridePath !== undefined) {
-      this.#requirePath(`${path}.runtimeOverridePath`, metric.runtimeOverridePath);
+    if (metric.instanceStatePath !== undefined) {
+      this.#requirePath(`${path}.instanceStatePath`, metric.instanceStatePath);
     }
     this.#validateRange(path, metric.minimum, metric.maximum);
     if (metric.defaultCurrent !== undefined) {
@@ -314,12 +321,34 @@ class ItemProgressionConfigValidator {
     this.#rejectVisualKeys(path, metric);
   }
 
+  #validateFreshness(path, metric) {
+    if (metric.decayPolicyId !== "water_exposure_linear") {
+      this.#error(`${path}.decayPolicyId`, "expected water_exposure_linear");
+    }
+    const lossPerMinute = Number(metric.lossPerMinute);
+    if (!Number.isFinite(lossPerMinute) || lossPerMinute < 0) {
+      this.#error(`${path}.lossPerMinute`, "expected finite value >= 0");
+    }
+    if (metric.modifierPolicyId !== "linear_floor") {
+      this.#error(`${path}.modifierPolicyId`, "expected linear_floor");
+    }
+    const minimumMultiplier = Number(metric.minimumMultiplier);
+    if (
+      !Number.isFinite(minimumMultiplier) ||
+      minimumMultiplier < 0 ||
+      minimumMultiplier > 1
+    ) {
+      this.#error(`${path}.minimumMultiplier`, "expected value in [0, 1]");
+    }
+  }
+
   #validateItems(groups, itemDb) {
     for (const [categoryId, category] of Object.entries(itemDb || {})) {
       if (!category || typeof category !== "object") continue;
       for (const [itemId, item] of Object.entries(category)) {
         const effectiveItem = this.#withEffectiveStats(item);
         const path = `ITEM_DB.${categoryId}.${itemId}`;
+        this.#validateDefinitionContract(path, item);
         const technical =
           categoryId === "builds" ||
           item?.itemType === "build_box" ||
@@ -378,6 +407,34 @@ class ItemProgressionConfigValidator {
     }
   }
 
+  #validateDefinitionContract(path, item) {
+    const forbiddenTopLevel = ["level", "power", "type"];
+    for (const key of forbiddenTopLevel) {
+      if (Object.prototype.hasOwnProperty.call(item || {}, key)) {
+        this.#error(`${path}.${key}`, `use a domain-specific field instead of ${key}`);
+      }
+    }
+    const forbiddenGameplayStats = [
+      "level",
+      "power",
+      "type",
+      "rigPower",
+      "sensitivity",
+      "assemblyProfileId",
+      "requiresTag",
+      "capabilities",
+      "equipmentCapabilities",
+    ];
+    for (const key of forbiddenGameplayStats) {
+      if (Object.prototype.hasOwnProperty.call(item?.gameplayStats || {}, key)) {
+        this.#error(
+          `${path}.gameplayStats.${key}`,
+          "definition metadata and unconsumed generic stats must not live in gameplayStats",
+        );
+      }
+    }
+  }
+
   #validateNumericCapability(path, item, statPath, capabilityId, groupId) {
     const value = this.#readPath(item, statPath);
     if (!Number.isFinite(Number(value))) {
@@ -403,18 +460,20 @@ class ItemProgressionConfigValidator {
   }
 
   #validateItemBoundedMetric(path, item, metric, capabilityId, groupId) {
-    const authored = this.#readPath(item, metric.statPath);
+    const authored = metric.statPath
+      ? this.#readPath(item, metric.statPath)
+      : undefined;
     const value = authored ?? metric.defaultCurrent;
     if (!Number.isFinite(Number(value))) {
       this.#error(
-        `${path}.${metric.statPath}`,
+        `${path}.${metric.statPath || metric.instanceStatePath || capabilityId}`,
         `numeric ${capabilityId} is required by group ${groupId}`,
       );
       return;
     }
     if (Number(value) < Number(metric.minimum) || Number(value) > Number(metric.maximum)) {
       this.#error(
-        `${path}.${metric.statPath}`,
+        `${path}.${metric.statPath || metric.instanceStatePath || capabilityId}`,
         `${capabilityId} value is outside group bounds`,
       );
     }

@@ -3,12 +3,14 @@ class InventoryV2RefillInventoryPort {
   #signaturePolicy;
   #stackingPolicy;
   #reservationPolicy;
+  #candidatePolicy;
 
   constructor({
     repository,
     signaturePolicy,
     stackingPolicy,
     reservationPolicy = null,
+    candidatePolicy = new FreshestRefillCandidatePolicy(),
   } = {}) {
     if (!reservationPolicy?.isReserved) {
       throw new TypeError(
@@ -19,16 +21,21 @@ class InventoryV2RefillInventoryPort {
     this.#signaturePolicy = signaturePolicy;
     this.#stackingPolicy = stackingPolicy;
     this.#reservationPolicy = reservationPolicy;
+    if (!candidatePolicy?.select) {
+      throw new TypeError("InventoryV2RefillInventoryPort requires candidatePolicy.select");
+    }
+    this.#candidatePolicy = candidatePolicy;
   }
 
   takeOneExact(signature) {
-    const source = this.#repository.list().find(
+    const candidates = this.#repository.list().filter(
       (item) =>
         InventoryItemLocation.isInventory(item.location) &&
         !this.#isReserved(item) &&
         this.#repository.getChildren(item.instanceId).length === 0 &&
         this.#signaturePolicy.matches(item, signature),
     );
+    const source = this.#candidatePolicy.select(candidates);
     return source ? this.#repository.splitOne(source.instanceId) : null;
   }
 

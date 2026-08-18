@@ -213,8 +213,8 @@ class BiteRules {
 
   getHookSize(equipment) {
     return (
-      equipment?.hooks?.[0]?.effectiveStats?.equipmentPowerLevel ||
-      equipment?.baits?.[0]?.effectiveStats?.equipmentPowerLevel ||
+      equipment?.hooks?.[0]?.effectiveStats?.hookSizeGrade ||
+      equipment?.baits?.[0]?.effectiveStats?.hookSizeGrade ||
       1
     );
   }

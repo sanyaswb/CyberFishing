@@ -11,7 +11,7 @@
 │  │    │  ├── crucian_stalker--4.webp
 │  │    │  ├── crucian_stalker--5.webp
 │  │    │  └── crucian_stalker--6.webp
-│  │    └── uniq
+│  │    └── unique
 │  │      ├── crucian_stalker--1-uniq.webp
 │  │      ├── crucian_stalker--2-uniq.webp
 │  │      ├── crucian_stalker--3-uniq.webp
@@ -96,10 +96,12 @@
 │  │  └── world.js
 │  ├── application
 │  │  └── inventory
+│  │    ├── apply_bait_exposure_service.js
 │  │    ├── auto_refill_coordinator.js
 │  │    ├── equipment_auto_refill_target_provider.js
 │  │    ├── equipment_read_model_factory.js
 │  │    ├── equipment_transition_executor.js
+│  │    ├── freshest_refill_candidate_policy.js
 │  │    ├── inventory_v2_command_service.js
 │  │    ├── inventory_v2_composition_root.js
 │  │    ├── inventory_v2_context_item_filter.js
@@ -116,7 +118,8 @@
 │  │    ├── inventory_v2_subfilter_resolver.js
 │  │    ├── inventory_v2_transaction_participants.js
 │  │    ├── inventory_v2_view_model_factory.js
-│  │    └── loadout_application_service.js
+│  │    ├── loadout_application_service.js
+│  │    └── refill_compatible_signature_policy.js
 │  ├── assets
 │  │  ├── asset_load_result.js
 │  │  ├── asset_manifest.js
@@ -209,6 +212,7 @@
 │  │  │  ├── fish_direction_intent_sampler.js
 │  │  │  ├── fish_fight_direction_resolver.js
 │  │  │  ├── fish_retrieve_result.js
+│  │  │  ├── fishing_cast_exposure_resolver.js
 │  │  │  ├── hold_opposition_resolver.js
 │  │  │  ├── landing_lift_readiness_policy.js
 │  │  │  ├── landing_lift_tension_calculator.js
@@ -269,13 +273,25 @@
 │  │  │  ├── item_assembly_stacking_policy.js
 │  │  │  └── unlimited_assembly_capacity_policy.js
 │  │  ├── items
+│  │  │  ├── bait
+│  │  │  │  ├── bait_effectiveness_catalog_resolver.js
+│  │  │  │  ├── bait_effectiveness_descriptor.js
+│  │  │  │  ├── bait_effectiveness_grade_policy.js
+│  │  │  │  ├── bait_effectiveness_knowledge_policy.js
+│  │  │  │  ├── bait_effectiveness_match.js
+│  │  │  │  └── bait_effectiveness_resolver.js
 │  │  │  ├── condition
 │  │  │  │  ├── item_condition_descriptor.js
 │  │  │  │  └── item_condition_resolver.js
 │  │  │  ├── effective_item_stats_resolver.js
 │  │  │  ├── freshness
+│  │  │  │  ├── bait_freshness_decay_policy.js
+│  │  │  │  ├── bait_freshness_modifier.js
 │  │  │  │  ├── item_freshness_descriptor.js
-│  │  │  │  └── item_freshness_resolver.js
+│  │  │  │  ├── item_freshness_resolver.js
+│  │  │  │  └── item_freshness_state_policy.js
+│  │  │  ├── hook
+│  │  │  │  └── hook_power_policy.js
 │  │  │  ├── item_stat_override_policy.js
 │  │  │  ├── metrics
 │  │  │  │  └── item_bounded_metric_resolver.js
@@ -300,6 +316,7 @@
 │  │  │  │  └── net_quality_modifier.js
 │  │  │  └── rarity
 │  │  │    ├── authored_item_rarity_strategy.js
+│  │  │    ├── effective_item_rarity_resolver.js
 │  │  │    ├── item_rarity_descriptor.js
 │  │  │    ├── item_rarity_resolver.js
 │  │  │    ├── item_rarity_strategy_registry.js
@@ -545,6 +562,7 @@
 │  └── world
 │    └── world.js
 └── utils
+  ├── bait-effectiveness-check.js
   ├── check-js.js
   ├── consumable-event-identity-check.js
   ├── create-version-copy.js
@@ -555,6 +573,7 @@
   ├── float-depth-cast-check.js
   ├── game-cycle-check.js
   ├── git-version-copy.js
+  ├── hook-domain-semantics-check.js
   ├── inventory-lifecycle-check.js
   ├── inventory-v2-cast-and-lure-check.js
   ├── inventory-v2-equipment-check.js
@@ -565,8 +584,11 @@
   ├── inventory-v2-ui-check.js
   ├── item-assembly-domain-check.js
   ├── item-condition-check.js
+  ├── item-freshness-gameplay-check.js
   ├── item-progression-check.js
   ├── item-rarity-check.js
+  ├── item-rarity-roundtrip-check.js
+  ├── item-stat-contract-check.js
   ├── item-state-hardening-check.js
   ├── line-allocation-check.js
   ├── rarity-production-check.js

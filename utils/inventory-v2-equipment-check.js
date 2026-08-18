@@ -171,8 +171,8 @@ class InventoryV2EquipmentCheck {
     Assertion.equal(r.EQUIPMENT_AUXILIARY_SLOT_IDS.join(","), "handChum,net,delivery,gasMask", "auxiliary slots are separate");
 
     const visibility = new r.EquipmentSlotVisibilityPolicy();
-    const pole = { effectiveStats: { equipmentCapabilities: { supportsReel: false, supportsFloat: true } } };
-    const feeder = { effectiveStats: { equipmentCapabilities: { supportsReel: true, supportsFloat: false } } };
+    const pole = { equipmentCapabilities: { supportsReel: false, supportsFloat: true } };
+    const feeder = { equipmentCapabilities: { supportsReel: true, supportsFloat: false } };
     Assertion.equal(visibility.isVisible("reel", { rod: pole }), false, "pole hides reel by capability");
     Assertion.equal(visibility.isVisible("float", { rod: pole }), true, "pole shows float by capability");
     Assertion.equal(visibility.isVisible("reel", { rod: feeder }), true, "feeder shows reel by capability");
@@ -188,7 +188,7 @@ class InventoryV2EquipmentCheck {
   #checkAvailabilitySemantics() {
     const r = this.#runtime;
     const policy = new r.EquipmentSlotAvailabilityPolicy();
-    const rod = { effectiveStats: { equipmentCapabilities: { supportsReel: true, supportsFloat: false } } };
+    const rod = { equipmentCapabilities: { supportsReel: true, supportsFloat: false } };
     const state = new r.EquipmentState({ rod: "rod-a" });
     const leader = {
       instanceId: "leader-a",
@@ -306,7 +306,7 @@ class InventoryV2EquipmentCheck {
   #checkCanonicalReadModel() {
     const r = this.#runtime;
     const itemList = [
-      { instanceId: "rod", itemId: "rod", itemType: "rod", variant: "feeder", effectiveStats: { equipmentCapabilities: { supportsReel: true, supportsFeederRig: true } } },
+      { instanceId: "rod", itemId: "rod", itemType: "rod", variant: "feeder", equipmentCapabilities: { supportsReel: true, supportsFeederRig: true }, effectiveStats: {} },
       { instanceId: "reel", itemId: "reel", itemType: "reel", variant: "spinning_reel", effectiveStats: {} },
       { instanceId: "reel-line", itemId: "line", itemType: "fishing_line", effectiveStats: {}, location: { slotIndex: 0 } },
       { instanceId: "leader", itemId: "leader", itemType: "leader_line", effectiveStats: {} },
@@ -368,7 +368,7 @@ class InventoryV2EquipmentCheck {
   #checkFishingReadiness() {
     const r = this.#runtime;
     const items = new Map([
-      ["rod", { instanceId: "rod", itemId: "rod", itemType: "rod", variant: "feeder", effectiveStats: { equipmentCapabilities: { supportsReel: true, supportsFeederRig: true } } }],
+      ["rod", { instanceId: "rod", itemId: "rod", itemType: "rod", variant: "feeder", equipmentCapabilities: { supportsReel: true, supportsFeederRig: true }, effectiveStats: {} }],
       ["reel", { instanceId: "reel", itemId: "reel", itemType: "reel", variant: "spinning_reel", effectiveStats: {} }],
       ["line", { instanceId: "line", itemId: "line", itemType: "fishing_line", effectiveStats: {}, location: { slotIndex: 0 } }],
       ["leader", { instanceId: "leader", itemId: "leader", itemType: "leader_line", effectiveStats: {} }],

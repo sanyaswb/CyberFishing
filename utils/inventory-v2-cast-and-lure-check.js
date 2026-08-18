@@ -109,31 +109,39 @@ class LureProjectionAndBiteCheck {
             lureType + " must project its real item",
           );
 
-          const ids = [];
-          const types = [];
-          controller.collectAvailableBaits(equipment, [], ids, types);
-          sameValues(ids, [instanceId], lureType + " must reach the bite candidate ids");
-          sameValues(types, [lureType], lureType + " must keep its real bite type");
+          const candidates = [];
+          controller.collectAvailableBaits(equipment, [], candidates);
+          sameValues(
+            candidates.map((candidate) => candidate.instanceId),
+            [instanceId],
+            lureType + " must reach the bite candidates",
+          );
+          sameValues(
+            candidates.map((candidate) => candidate.variant || candidate.itemType),
+            [lureType],
+            lureType + " must keep its real bite type",
+          );
         }
 
         const bait = { id: "worm", instanceId: "worm-1", itemType: "bait" };
-        const ids = [];
-        const types = [];
+        const candidates = [];
         controller.collectAvailableBaits(
           { hooks: [], baits: [bait] },
           [],
-          ids,
-          types,
+          candidates,
         );
-        sameValues(ids, [], "ordinary bait without a hook must stay unavailable");
+        sameValues(candidates, [], "ordinary bait without a hook must stay unavailable");
 
         controller.collectAvailableBaits(
           { hooks: [{ id: "hook-1" }], baits: [bait] },
           [],
-          ids,
-          types,
+          candidates,
         );
-        sameValues(ids, ["worm"], "ordinary bait with a hook must stay available");
+        sameValues(
+          candidates.map((candidate) => candidate.id),
+          ["worm"],
+          "ordinary bait with a hook must stay available",
+        );
       })();
     `);
   }

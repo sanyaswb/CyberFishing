@@ -6,6 +6,8 @@ class InventoryItemViewFactory {
   #displayStatsResolver;
   #runtimeContextProvider;
   #effectiveStatsResolver;
+  #effectiveRarityResolver;
+  #baitEffectivenessCatalogResolver;
 
   constructor({
     itemDatabase,
@@ -15,6 +17,8 @@ class InventoryItemViewFactory {
     displayStatsResolver = null,
     runtimeContextProvider = () => ({}),
     effectiveStatsResolver = new EffectiveItemStatsResolver(),
+    effectiveRarityResolver = new EffectiveItemRarityResolver(),
+    baitEffectivenessCatalogResolver = null,
   } = {}) {
     if (!itemDatabase || typeof itemDatabase.getItemData !== "function") {
       throw new TypeError("InventoryItemViewFactory requires itemDatabase");
@@ -41,6 +45,25 @@ class InventoryItemViewFactory {
     this.#displayStatsResolver = displayStatsResolver;
     this.#runtimeContextProvider = runtimeContextProvider;
     this.#effectiveStatsResolver = effectiveStatsResolver;
+    if (
+      !effectiveRarityResolver ||
+      typeof effectiveRarityResolver.resolve !== "function"
+    ) {
+      throw new TypeError(
+        "InventoryItemViewFactory effectiveRarityResolver must implement resolve",
+      );
+    }
+    this.#effectiveRarityResolver = effectiveRarityResolver;
+    if (
+      baitEffectivenessCatalogResolver &&
+      typeof baitEffectivenessCatalogResolver.resolve !== "function"
+    ) {
+      throw new TypeError(
+        "InventoryItemViewFactory baitEffectivenessCatalogResolver must implement resolve",
+      );
+    }
+    this.#baitEffectivenessCatalogResolver =
+      baitEffectivenessCatalogResolver;
   }
 
   create(instance) {
@@ -48,6 +71,10 @@ class InventoryItemViewFactory {
     const baseItem = this.#itemDatabase.getItemData(instance.itemId);
     if (!baseItem) return null;
     const effectiveStats = this.#effectiveStatsResolver.resolve({
+      definition: baseItem,
+      instanceState: instance,
+    });
+    const rarity = this.#effectiveRarityResolver.resolve({
       definition: baseItem,
       instanceState: instance,
     });
@@ -60,10 +87,10 @@ class InventoryItemViewFactory {
       instanceId: instance.instanceId,
       quantity: instance.quantity || 1,
       buildId: instance.buildId,
-      rarity: instance.rarity ?? null,
+      rarity,
     };
     const runtimeContext = {
-      ...(this.#runtimeContextProvider() || {}),
+      ...(this.#runtimeContextProvider(hydrated) || {}),
       catalogItem: baseItem,
     };
     this.#displayStatsResolver?.apply?.(hydrated, runtimeContext);
@@ -73,8 +100,18 @@ class InventoryItemViewFactory {
     );
     const condition = this.#conditionResolver?.resolve(hydrated) || null;
     if (condition) hydrated.condition = condition;
-    const freshness = this.#freshnessResolver?.resolve(hydrated) || null;
+    const freshness = this.#freshnessResolver?.resolve(
+      hydrated,
+      undefined,
+      { exposureMs: runtimeContext.freshnessExposureMs },
+    ) || null;
     if (freshness) hydrated.freshness = freshness;
+    const baitEffectiveness =
+      this.#baitEffectivenessCatalogResolver?.resolve(hydrated, runtimeContext) ||
+      null;
+    if (baitEffectiveness?.available) {
+      hydrated.baitEffectiveness = baitEffectiveness;
+    }
     return hydrated;
   }
 

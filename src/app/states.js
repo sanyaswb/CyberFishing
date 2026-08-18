@@ -886,6 +886,7 @@ class WaitingState extends GameState {
     });
     this.#landingPolicyResolver = new LandingPolicyResolver();
     this.#idleRetrievePolicyResolver = new IdleRetrievePolicyResolver();
+    this.#castExposureResolver = new FishingCastExposureResolver();
   }
 
   #effectiveInput = {
@@ -894,11 +895,11 @@ class WaitingState extends GameState {
     idleRetrieveParams: null,
   };
   #pullDirection = new Vector2(0, 0);
-  #baitIds = [];
-  #baitTypes = [];
+  #baitCandidates = [];
   #recastAim;
   #landingPolicyResolver;
   #idleRetrievePolicyResolver;
+  #castExposureResolver;
   #isRecastAiming = false;
   #pendingRecast = null;
 
@@ -975,16 +976,13 @@ class WaitingState extends GameState {
       return;
     }
 
-    const baitIds = this.#baitIds;
-    const baitTypes = this.#baitTypes;
-    baitIds.length = 0;
-    baitTypes.length = 0;
+    const baitCandidates = this.#baitCandidates;
+    baitCandidates.length = 0;
 
     this.deps.fishing.collectAvailableBaits(
       eq,
       this.deps.eatenBaits,
-      baitIds,
-      baitTypes,
+      baitCandidates,
     );
 
     const biteEnv =
@@ -994,11 +992,15 @@ class WaitingState extends GameState {
 
     let hooked = this.deps.biteSystem.evaluateBite(dt, biteEnv, {
       hookSize:
-        eq?.hooks?.[0]?.effectiveStats?.equipmentPowerLevel ||
-        eq?.baits?.[0]?.effectiveStats?.equipmentPowerLevel ||
+        eq?.hooks?.[0]?.effectiveStats?.hookSizeGrade ||
+        eq?.baits?.[0]?.effectiveStats?.hookSizeGrade ||
         1,
-      baits: baitIds,
-      baitTypes: baitTypes,
+      baitCandidates,
+      exposureMs: this.#castExposureResolver.resolve({
+        nowMs: this.deps.clock.now,
+        castStartTimeMs: this.deps.getCastStartTime(),
+        timeScale: this.deps.config.debug?.timeScale || 1,
+      }),
       isPulling: effectiveInput.isPulling,
     });
 
@@ -1010,7 +1012,7 @@ class WaitingState extends GameState {
 
       const chosenSequence = this.deps.rules.bite.selectBiteSequence(
         template,
-        baitTypes,
+        baitCandidates.map((bait) => bait.variant || bait.itemType),
       );
       hooked = this.deps.fixedCatchFishFactory.create({
         template,

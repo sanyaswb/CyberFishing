@@ -16,6 +16,7 @@ class BiteSystem {
   #fishRarityResolver;
   #fishAnomalyVariantResolver;
   #fishVisualVariantResolver;
+  #baitEffectivenessResolver;
   #tickIndex = 0;
 
   constructor(
@@ -26,6 +27,7 @@ class BiteSystem {
     fishRarityResolver = null,
     fishAnomalyVariantResolver = null,
     fishVisualVariantResolver = null,
+    baitEffectivenessResolver = null,
   ) {
     if (
       !fishRarityResolver ||
@@ -44,6 +46,12 @@ class BiteSystem {
       typeof fishVisualVariantResolver.resolveImagePath !== "function"
     ) {
       throw new TypeError("BiteSystem requires fishVisualVariantResolver");
+    }
+    if (
+      !baitEffectivenessResolver ||
+      typeof baitEffectivenessResolver.resolveBestMatch !== "function"
+    ) {
+      throw new TypeError("BiteSystem requires baitEffectivenessResolver");
     }
     const physicsConfig = this.#resolvePhysicsConfig(runtimeConfig);
     const lineConfig = runtimeConfig?.ui?.line || runtimeConfig?.line || {};
@@ -65,6 +73,7 @@ class BiteSystem {
     this.#fishRarityResolver = fishRarityResolver;
     this.#fishAnomalyVariantResolver = fishAnomalyVariantResolver;
     this.#fishVisualVariantResolver = fishVisualVariantResolver;
+    this.#baitEffectivenessResolver = baitEffectivenessResolver;
   }
 
   setFishDatabase(fishDatabase) {
@@ -155,10 +164,13 @@ class BiteSystem {
     );
   }
 
-  #hasActiveLureType(baitTypes) {
-    const types = Array.isArray(baitTypes) ? baitTypes : [];
-    for (let i = 0; i < types.length; i++) {
-      const type = types[i];
+  #hasActiveLure(baitCandidates) {
+    const candidates = Array.isArray(baitCandidates) ? baitCandidates : [];
+    for (let i = 0; i < candidates.length; i++) {
+      const candidate = candidates[i];
+      const type = typeof candidate === "string"
+        ? candidate
+        : candidate?.variant || candidate?.itemType;
       if (type === "spinner" || type === "wobbler" || type === "jig") {
         return true;
       }
@@ -297,15 +309,15 @@ class BiteSystem {
     if (playerGear.hookSize > fish.maxHookSize) return 0;
     if (hookDepth < dc.minDepth || hookDepth > dc.maxDepth) return 0;
 
-    const baitsToTest = Array.isArray(playerGear.baits)
-      ? playerGear.baits
-      : [playerGear.baitId];
-
-    let maxBaitMult = 0;
-    for (let i = 0; i < baitsToTest.length; i++) {
-      const mult = fish.baitMultipliers[baitsToTest[i]] || 0;
-      if (mult > maxBaitMult) maxBaitMult = mult;
-    }
+    const baitCandidates = Array.isArray(playerGear.baitCandidates)
+      ? playerGear.baitCandidates
+      : [];
+    const baitMatch = this.#baitEffectivenessResolver.resolveBestMatch(
+      fish,
+      baitCandidates,
+      { exposureMs: playerGear.exposureMs },
+    );
+    const maxBaitMult = baitMatch.effectiveMultiplier;
 
     if (maxBaitMult === 0) return 0;
 
@@ -330,7 +342,7 @@ class BiteSystem {
 
     if (
       playerGear.isPulling &&
-      !this.#hasActiveLureType(playerGear.baitTypes)
+      !this.#hasActiveLure(baitCandidates)
     ) {
       chance *=
         this.#lineConfig?.passivePullBiteChanceMultiplier ??
@@ -364,16 +376,10 @@ class BiteSystem {
 
     const genWeight =
       curMinW + (curMaxW - curMinW) * Math.pow(this.#next(), wc.rarityCurve);
-    // --- ДОДАНО: Логіка вибору профілю клювання ---
-    const baitsToTest = Array.isArray(playerGear.baits)
-      ? playerGear.baits
-      : [playerGear.baitId];
-    const baitId = baitsToTest[0] || "oil_worm";
-
-    // --- ВИПРАВЛЕНО: Логіка вибору профілю клювання ---
-    // Беремо типи прямо з переданих даних гравця
-    const baitTypes = playerGear.baitTypes || ["float"];
-    const isActiveLure = this.#hasActiveLureType(baitTypes);
+    const baitCandidates = Array.isArray(playerGear.baitCandidates)
+      ? playerGear.baitCandidates
+      : [];
+    const isActiveLure = this.#hasActiveLure(baitCandidates);
 
     let chosenBiteSequence = null;
     if (fish.biteMechanics) {
@@ -559,18 +565,22 @@ class BiteSystem {
   #getBreakdown(fish, envData, playerGear) {
     const dc = fish.depthConfig;
     const hookDepth = envData.hookDepth;
-    const baitsToTest = Array.isArray(playerGear.baits)
-      ? playerGear.baits
-      : [playerGear.baitId];
-    let maxBaitMult = 0;
-    for (let i = 0; i < baitsToTest.length; i++) {
-      const mult = fish.baitMultipliers[baitsToTest[i]] || 0;
-      if (mult > maxBaitMult) maxBaitMult = mult;
-    }
+    const baitCandidates = Array.isArray(playerGear.baitCandidates)
+      ? playerGear.baitCandidates
+      : [];
+    const match = this.#baitEffectivenessResolver.resolveBestMatch(
+      fish,
+      baitCandidates,
+      { exposureMs: playerGear.exposureMs },
+    );
 
     return {
       base: fish.baseChance.toFixed(3),
-      bait: maxBaitMult.toFixed(2),
+      bait: match.effectiveMultiplier.toFixed(2),
+      affinity: match.affinityMultiplier.toFixed(2),
+      freshness: match.freshnessMultiplier.toFixed(2),
+      freshnessPercent: match.freshnessPercent.toFixed(2),
+      effectiveBaitMultiplier: match.effectiveMultiplier.toFixed(2),
       time: (fish.timeMultipliers[envData.timePhase] || 1.0).toFixed(2),
       depth: this.#getDepthChanceMultiplier(hookDepth, dc).toFixed(2),
       weather: (

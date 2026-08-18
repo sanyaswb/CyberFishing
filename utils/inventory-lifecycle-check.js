@@ -101,6 +101,11 @@ class InventoryRuntimeLoader {
     );
     this.#loadClass(
       context,
+      "src/core/items/rarity/effective_item_rarity_resolver.js",
+      "EffectiveItemRarityResolver",
+    );
+    this.#loadClass(
+      context,
       "src/core/inventory/inventory_item_stacking_policy.js",
       "InventoryItemStackingPolicy",
     );

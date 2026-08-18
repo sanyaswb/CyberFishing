@@ -24,10 +24,14 @@ class InventoryItemSnapshotMapper {
 
   #definitionResolver;
   #overridePolicy;
+  #freshnessStatePolicy;
+  #freshnessCapabilityProvider;
 
   constructor({
     itemDefinitionResolver,
     overridePolicy = new ItemStatOverridePolicy(),
+    freshnessStatePolicy = new ItemFreshnessStatePolicy(),
+    freshnessCapabilityProvider = null,
   } = {}) {
     if (!itemDefinitionResolver) {
       throw new TypeError(
@@ -41,6 +45,15 @@ class InventoryItemSnapshotMapper {
     }
     this.#definitionResolver = itemDefinitionResolver;
     this.#overridePolicy = overridePolicy;
+    this.#freshnessStatePolicy = freshnessStatePolicy;
+    this.#freshnessCapabilityProvider =
+      freshnessCapabilityProvider || ((definition) => {
+        const groupId = definition?.progressionProfile?.groupId;
+        const config = typeof ITEM_PROGRESSION_CONFIG !== "undefined"
+          ? ITEM_PROGRESSION_CONFIG
+          : globalThis.ITEM_PROGRESSION_CONFIG;
+        return config?.groups?.[groupId]?.freshness || null;
+      });
   }
 
   toSnapshot(item) {
@@ -65,6 +78,18 @@ class InventoryItemSnapshotMapper {
         if (Object.keys(overrides).length > 0) {
           snapshot.statOverrides = this.#clone(overrides);
         }
+        continue;
+      }
+      if (key === "freshnessState") {
+        if (!this.#freshnessCapabilityProvider(definition)) {
+          throw new TypeError(
+            `freshnessState is not supported by item ${item.itemId}`,
+          );
+        }
+        const state = this.#freshnessStatePolicy.normalize(item[key], {
+          omitDefault: true,
+        });
+        if (state) snapshot.freshnessState = this.#clone(state);
         continue;
       }
       if (key === "rarity" && this.#matchesAuthoredRarity(item.rarity, definition)) {

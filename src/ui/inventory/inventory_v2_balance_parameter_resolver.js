@@ -5,6 +5,7 @@ class InventoryV2BalanceParameterResolver {
   #reelConfig;
   #physicsConfig;
   #debugConfig;
+  #rarityVisualResolver;
 
   constructor({
     config = null,
@@ -13,6 +14,7 @@ class InventoryV2BalanceParameterResolver {
     reelConfig = null,
     physicsConfig = null,
     debugConfig = null,
+    rarityVisualResolver = null,
   } = {}) {
     this.#config =
       config || globalThis.INVENTORY_V2_BALANCE_TOOLTIP_CONFIG || {};
@@ -25,24 +27,41 @@ class InventoryV2BalanceParameterResolver {
       reelConfig || this.#physicsConfig?.tackle?.reel || {};
     this.#debugConfig =
       debugConfig || globalThis.CONFIG?.debug?.inventory || {};
+    if (
+      rarityVisualResolver &&
+      typeof rarityVisualResolver.resolve !== "function"
+    ) {
+      throw new TypeError(
+        "InventoryV2BalanceParameterResolver rarityVisualResolver must implement resolve",
+      );
+    }
+    this.#rarityVisualResolver = rarityVisualResolver;
   }
 
   resolve(item, context = {}) {
     if (!item || typeof item !== "object") return Object.freeze([]);
     const baselines = this.#resolveProgressionBaselines(item);
     const progressionRows = this.#progressionRows(item);
+    const contextualRows = this.#baitEffectivenessRows(item);
     const effectiveStatRows = this.#effectiveStatRows(item, baselines);
     const derivedRows = this.#derivedRows(item, context);
     const sections = this.#composeSections({
       item,
       progressionRows,
+      contextualRows,
       effectiveStatRows,
       derivedRows,
     });
     return Object.freeze(sections);
   }
 
-  #composeSections({ item, progressionRows, effectiveStatRows, derivedRows }) {
+  #composeSections({
+    item,
+    progressionRows,
+    contextualRows,
+    effectiveStatRows,
+    derivedRows,
+  }) {
     const gameplayRows = [...progressionRows, ...effectiveStatRows, ...derivedRows];
     const byId = new Map(gameplayRows.map((row) => [row.id, row]));
     const consumed = new Set();
@@ -84,6 +103,12 @@ class InventoryV2BalanceParameterResolver {
         ),
       ));
     }
+
+    sections.push(this.#section(
+      "bait-effectiveness",
+      "Ефективність за видом риби",
+      contextualRows,
+    ));
 
     sections.push(this.#section(
       "additional",
@@ -204,6 +229,60 @@ class InventoryV2BalanceParameterResolver {
       }));
     }
     return rows;
+  }
+
+  #baitEffectivenessRows(item) {
+    const descriptor = item.baitEffectiveness;
+    if (!descriptor?.available || !Array.isArray(descriptor.entries)) {
+      return [];
+    }
+    return descriptor.entries.map((entry) => {
+      const multiplier = Number(entry.multiplier);
+      const relative = Number(entry.relativeEffectiveness);
+      const impacts = [];
+      if (entry.discovered && Number.isFinite(relative)) {
+        impacts.push(this.#impact(
+          "Відносно найкращої наживки для цього виду",
+          `${this.#formatNumber(relative * 100, 0)}%`,
+          "neutral",
+        ));
+      }
+      if (
+        entry.discovered &&
+        Number.isFinite(Number(entry.freshnessMultiplier)) &&
+        Number(entry.freshnessMultiplier) !== 1
+      ) {
+        impacts.push(this.#impact(
+          "Модифікатор свіжості",
+          `×${this.#formatNumber(entry.freshnessMultiplier, 2)}`,
+          "negative",
+        ));
+      }
+      return this.#row({
+        id: `bait-effectiveness:${entry.fishId}`,
+        label: entry.fishName || entry.fishId,
+        technicalPath:
+          `fish.${entry.fishId}.baitMultipliers.${descriptor.baitId}`,
+        actualText: this.#effectivenessText(entry),
+        baselineText:
+          entry.discovered && Number.isFinite(Number(entry.effectiveMultiplier ?? multiplier))
+            ? `×${this.#formatNumber(entry.effectiveMultiplier ?? multiplier, 2)}`
+            : "—",
+        baselineLabel: "множник клювання",
+        impacts,
+      });
+    });
+  }
+
+  #effectivenessText(entry) {
+    if (!entry?.discovered) return "Невідомо";
+    if (!entry.compatible) return "Не підходить";
+    const maximum = Math.max(1, Math.floor(Number(entry.maximumStars) || 5));
+    const filled = Math.max(
+      0,
+      Math.min(maximum, Math.floor(Number(entry.stars) || 0)),
+    );
+    return `${"★".repeat(filled)}${"☆".repeat(maximum - filled)}`;
   }
 
   #effectiveStatRows(item, baselines) {
@@ -585,8 +664,11 @@ class InventoryV2BalanceParameterResolver {
   #rarityName(item) {
     const rarity = item.rarity;
     if (typeof rarity === "string") return rarity;
-    return rarity?.name || rarity?.label || rarity?.id ||
-      item.rarityProfile?.tier || "";
+    if (!rarity) return "";
+    const rarityId = this.#rarityVisualResolver?.resolve(rarity)?.id ||
+      rarity.id ||
+      "";
+    return globalThis.INVENTORY_V2_RARITY_NAMES?.[rarityId] || rarityId;
   }
 
   #humanize(value) {

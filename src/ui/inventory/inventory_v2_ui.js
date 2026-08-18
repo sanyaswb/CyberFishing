@@ -33,6 +33,7 @@ class InventoryV2UI {
     mountNode = globalThis.document?.body,
     documentRef = globalThis.document,
     rarityDomAdapter = null,
+    rarityVisualResolver = null,
     progressionDomAdapter = null,
     conditionDomAdapter = null,
     normalizer = null,
@@ -74,7 +75,11 @@ class InventoryV2UI {
       new globalThis.InventoryV2TooltipPresenter({
         documentRef,
         rarityDomAdapter,
-        balanceParameterResolver,
+        balanceParameterResolver:
+          balanceParameterResolver ||
+          new globalThis.InventoryV2BalanceParameterResolver({
+            rarityVisualResolver,
+          }),
       });
 
     const attachmentRenderer =
@@ -90,6 +95,7 @@ class InventoryV2UI {
       new globalThis.InventoryV2ItemParametersResolver({
         resourceMeterResolver: resolvedResourceMeterResolver,
         progressionDomAdapter,
+        rarityVisualResolver,
       });
     const itemParametersRenderer =
       new globalThis.InventoryV2ItemParametersRenderer({

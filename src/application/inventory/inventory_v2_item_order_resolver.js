@@ -82,7 +82,9 @@ class InventoryV2ItemOrderResolver {
     const counts = new Map(this.#rarityOptions.map((option) => [option.id, 0]));
     for (const item of items || []) {
       const rarityId = this.resolveRarityId(item);
-      counts.set(rarityId, (counts.get(rarityId) || 0) + 1);
+      if (this.#rarityRanks.has(rarityId)) {
+        counts.set(rarityId, (counts.get(rarityId) || 0) + 1);
+      }
     }
     return Object.freeze({
       criterionIds: Object.freeze([...criterionIds]),
@@ -125,12 +127,12 @@ class InventoryV2ItemOrderResolver {
       item?.rarityVisual?.id,
       typeof item?.rarity === "string" ? item.rarity : null,
       item?.rarity?.id,
-      item?.rarityProfile?.id,
     ]
       .map((value) => String(value || "").toLocaleLowerCase("en-US"))
       .find((value) => this.#rarityRanks.has(value));
     if (direct) return direct;
-    const rarity = item?.rarity || item?.rarityProfile || null;
+    const rarity = item?.rarity || null;
+    if (!rarity) return null;
     if (rarity?.isUnique === true) return "unique";
     const tier = Math.max(1, Math.round(Number(rarity?.tier) || 1));
     const maxTier = Math.max(tier, Math.round(Number(rarity?.maxTier) || tier));
@@ -154,8 +156,8 @@ class InventoryV2ItemOrderResolver {
     }
     if (criterionId === "rarity") {
       return (
-        (this.#rarityRanks.get(this.resolveRarityId(left)) || 0) -
-        (this.#rarityRanks.get(this.resolveRarityId(right)) || 0)
+        (this.#rarityRanks.get(this.resolveRarityId(left)) ?? -1) -
+        (this.#rarityRanks.get(this.resolveRarityId(right)) ?? -1)
       );
     }
     return (
@@ -218,14 +220,8 @@ class InventoryV2ItemOrderResolver {
     const available = new Set(
       this.#config.criteria.map((criterion) => criterion.id),
     );
-    const legacyIds = {
-      level: "ratingTier",
-      progressionLevel: "ratingTier",
-      power: "rating",
-    };
     return [...new Set(candidates.map((id) => {
-      const normalized = String(id || "");
-      return legacyIds[normalized] || normalized;
+      return String(id || "");
     }))]
       .filter((id) => available.has(id));
   }

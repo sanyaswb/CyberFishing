@@ -10,18 +10,29 @@ const INVENTORY_V2_RARITY_NAMES = Object.freeze({
 class InventoryV2ItemParametersResolver {
   #resourceMeterResolver;
   #progressionDomAdapter;
+  #rarityVisualResolver;
   #parameterConfig;
   #parameterAliases;
 
   constructor({
     resourceMeterResolver = null,
     progressionDomAdapter = null,
+    rarityVisualResolver = null,
     parameterConfig = null,
     parameterAliases = null,
   } = {}) {
     this.#resourceMeterResolver =
       resourceMeterResolver || new globalThis.InventoryV2ResourceMeterResolver();
     this.#progressionDomAdapter = progressionDomAdapter;
+    if (
+      rarityVisualResolver &&
+      typeof rarityVisualResolver.resolve !== "function"
+    ) {
+      throw new TypeError(
+        "InventoryV2ItemParametersResolver rarityVisualResolver must implement resolve",
+      );
+    }
+    this.#rarityVisualResolver = rarityVisualResolver;
     this.#parameterConfig =
       parameterConfig || globalThis.INVENTORY_V2_ITEM_PARAMETER_CONFIG || {};
     this.#parameterAliases =
@@ -46,11 +57,14 @@ class InventoryV2ItemParametersResolver {
     }
 
     if (item.rarity) {
-      const rarityId = item.rarity.id || item.rarityProfile?.id;
+      const rarityVisual = this.#rarityVisualResolver?.resolve(item.rarity) ||
+        item.rarityVisual ||
+        null;
+      const rarityId = rarityVisual?.id || item.rarity.id;
       const rarityName =
         INVENTORY_V2_RARITY_NAMES[rarityId] || rarityId || "Звичайний";
       const color =
-        item.rarityVisual?.cssColor || item.rarityColor || item.rarity.color;
+        rarityVisual?.cssColor || item.rarityColor || item.rarity.color;
       this.#append(parameters, renderedIds, "rarity", "text", rarityName, {
         color,
       });
@@ -118,6 +132,22 @@ class InventoryV2ItemParametersResolver {
       );
     }
 
+    const baitEffectiveness = item.baitEffectiveness;
+    if (
+      baitEffectiveness?.available &&
+      Array.isArray(baitEffectiveness.entries) &&
+      baitEffectiveness.entries.length > 0
+    ) {
+      this.#append(
+        parameters,
+        renderedIds,
+        "baitEffectiveness",
+        "effectiveness",
+        null,
+        { entries: baitEffectiveness.entries },
+      );
+    }
+
     const resource = this.#resourceMeterResolver.resolve(item);
     if (resource) {
       this.#append(
@@ -152,7 +182,7 @@ class InventoryV2ItemParametersResolver {
   #append(parameters, renderedIds, id, kind, value, extras = {}) {
     if (renderedIds.has(id)) return;
     const definition = this.#parameterConfig[id] || {};
-    parameters.push(Object.freeze({
+    const parameter = {
       id,
       kind,
       label: extras.label || definition.label || id,
@@ -163,7 +193,11 @@ class InventoryV2ItemParametersResolver {
       totalSections: this.#finiteOrUndefined(extras.totalSections),
       color: extras.color,
       resource: extras.resource || null,
-    }));
+    };
+    if (Array.isArray(extras.entries)) {
+      parameter.entries = Object.freeze([...extras.entries]);
+    }
+    parameters.push(Object.freeze(parameter));
     renderedIds.add(id);
   }
 

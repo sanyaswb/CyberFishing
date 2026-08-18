@@ -26,14 +26,19 @@ class LegacyItemStateMigration {
   ]);
 
   #overridePolicy;
+  #freshnessStatePolicy;
 
-  constructor({ overridePolicy = new ItemStatOverridePolicy() } = {}) {
+  constructor({
+    overridePolicy = new ItemStatOverridePolicy(),
+    freshnessStatePolicy = new ItemFreshnessStatePolicy(),
+  } = {}) {
     if (!overridePolicy || typeof overridePolicy.normalize !== "function") {
       throw new TypeError(
         "LegacyItemStateMigration requires ItemStatOverridePolicy",
       );
     }
     this.#overridePolicy = overridePolicy;
+    this.#freshnessStatePolicy = freshnessStatePolicy;
   }
 
   migrate(source, definition = {}, { warnings = null } = {}) {
@@ -49,7 +54,12 @@ class LegacyItemStateMigration {
       normalized.location = this.#clone(source.location);
     }
     for (const key of LegacyItemStateMigration.#instanceFactKeys) {
-      if (source[key] !== undefined) normalized[key] = this.#clone(source[key]);
+      if (source[key] === undefined) continue;
+      if (key === "freshnessState") {
+        this.#migrateFreshnessState(source, definition, normalized, warnings);
+        continue;
+      }
+      normalized[key] = this.#clone(source[key]);
     }
 
     const candidates = this.#legacyMutableCandidates(source);
@@ -69,6 +79,30 @@ class LegacyItemStateMigration {
     }
     this.#reportDiscardedAuthoredStats(source, definition, warnings);
     return normalized;
+  }
+
+  #migrateFreshnessState(source, definition, normalized, warnings) {
+    const groupId = definition?.progressionProfile?.groupId;
+    const config = typeof ITEM_PROGRESSION_CONFIG !== "undefined"
+      ? ITEM_PROGRESSION_CONFIG
+      : globalThis.ITEM_PROGRESSION_CONFIG;
+    const capability = config?.groups?.[groupId]?.freshness;
+    if (!capability) {
+      warnings?.push?.(
+        `Dropped unsupported legacy freshnessState for ${source.instanceId || source.itemId}.`,
+      );
+      return;
+    }
+    try {
+      const state = this.#freshnessStatePolicy.normalize(source.freshnessState, {
+        omitDefault: true,
+      });
+      if (state) normalized.freshnessState = state;
+    } catch (error) {
+      warnings?.push?.(
+        `Dropped invalid legacy freshnessState for ${source.instanceId || source.itemId}: ${error.message}`,
+      );
+    }
   }
 
   #legacyMutableCandidates(source) {

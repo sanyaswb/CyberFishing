@@ -63,7 +63,7 @@ class InventoryV2AssemblyParameterSectionResolver {
   #signature(item) {
     return this.#stableSerialize({
       itemId: item.itemId || item.id || item.itemType,
-      rarity: item.rarity?.id || item.rarity || item.rarityProfile?.tier,
+      rarity: item.rarity || null,
       ratingTier:
         item.progression?.ratingTier?.current ??
         item.progression?.ratingTier?.value,

@@ -53,6 +53,7 @@ class FishRarityCheck {
     FixedCatchFishFactory,
     HookedFishProfileSynchronizer,
     RarityAnimationResolver,
+    BaitEffectivenessResolver,
   ) {
     const rarityScale = Object.freeze({
       fishWeightBands: 7,
@@ -84,6 +85,7 @@ class FishRarityCheck {
     this.OutcomeRenderFrameBuilder = OutcomeRenderFrameBuilder;
     this.GameRenderFrame = GameRenderFrame;
     this.RarityAnimationResolver = RarityAnimationResolver;
+    this.baitEffectivenessResolver = new BaitEffectivenessResolver();
     this.fixture = new FishRarityFixture();
   }
 
@@ -383,6 +385,7 @@ class FishRarityCheck {
       this.resolver,
       this.anomalyVariantResolver,
       this.visualVariantResolver,
+      this.baitEffectivenessResolver,
     );
     const environment = {
       locationId: "test",
@@ -400,8 +403,7 @@ class FishRarityCheck {
     };
     const gear = {
       hookSize: 1,
-      baits: ["test_bait"],
-      baitTypes: ["float"],
+      baitCandidates: [{ itemId: "test_bait", itemType: "bait" }],
       isPulling: false,
     };
     const caught = biteSystem.evaluateBite(1000, environment, gear);
@@ -442,6 +444,7 @@ class FishRarityCheck {
       this.resolver,
       this.anomalyVariantResolver,
       this.visualVariantResolver,
+      this.baitEffectivenessResolver,
     );
     const uniqueCatch = uniqueBiteSystem.evaluateBite(1000, environment, gear);
     Assertion.that(uniqueCatch.hasAnomaly, "generated anomaly flag is true");
@@ -463,6 +466,7 @@ class FishRarityCheck {
       this.resolver,
       this.anomalyVariantResolver,
       this.visualVariantResolver,
+      this.baitEffectivenessResolver,
     );
     const ordinaryHighRollCatch = ordinaryBiteSystem.evaluateBite(
       1000,
@@ -492,6 +496,7 @@ class FishRarityCheck {
       this.resolver,
       this.anomalyVariantResolver,
       this.visualVariantResolver,
+      this.baitEffectivenessResolver,
     );
     const forcedAnomalyCatch = godModeBiteSystem.evaluateBite(
       1000,
@@ -504,7 +509,7 @@ class FishRarityCheck {
     );
     Assertion.equal(
       forcedAnomalyCatch.imagePath,
-      "assets/fish/crucian_stalker/crucian_stalker--6-uniq.webp",
+      "assets/fish/crucian_stalker/unique/crucian_stalker--6-uniq.webp",
       "God Mode forced anomaly uses the unique level skin",
     );
   }
@@ -841,7 +846,7 @@ class FishRarityCheck {
     Assertion.that(!ordinary.isUnique, "fixed catch 4.2kg is ordinary");
     Assertion.equal(
       ordinary.imagePath,
-      "assets/fish/crucian_stalker/crucian_stalker--6.webp",
+      "assets/fish/crucian_stalker/standart/crucian_stalker--6.webp",
       "fixed catch ordinary image",
     );
 
@@ -858,7 +863,7 @@ class FishRarityCheck {
     );
     Assertion.equal(
       godForced.imagePath,
-      "assets/fish/crucian_stalker/crucian_stalker--6-uniq.webp",
+      "assets/fish/crucian_stalker/unique/crucian_stalker--6-uniq.webp",
       "God Mode fixed catch uses the unique level skin",
     );
 
@@ -892,7 +897,7 @@ class FishRarityCheck {
       );
       Assertion.equal(
         unique.imagePath,
-        `assets/fish/crucian_stalker/crucian_stalker--${range.level}-uniq.webp`,
+        `assets/fish/crucian_stalker/unique/crucian_stalker--${range.level}-uniq.webp`,
         `fixed catch level ${range.level} unique image routing`,
       );
     }
@@ -914,7 +919,7 @@ class FishRarityCheck {
     Assertion.that(!fish.isUnique, "DevTools gap weight is not unique");
     Assertion.equal(
       fish.imagePath,
-      "assets/fish/crucian_stalker/crucian_stalker--2.webp",
+      "assets/fish/crucian_stalker/standart/crucian_stalker--2.webp",
       "DevTools gap weight image",
     );
 
@@ -928,7 +933,7 @@ class FishRarityCheck {
     Assertion.that(fish.isUnique, "DevTools anomaly toggle makes fish unique");
     Assertion.equal(
       fish.imagePath,
-      "assets/fish/crucian_stalker/crucian_stalker--2-uniq.webp",
+      "assets/fish/crucian_stalker/unique/crucian_stalker--2-uniq.webp",
       "DevTools anomaly toggle applies level skin",
     );
 
@@ -943,7 +948,7 @@ class FishRarityCheck {
     Assertion.that(fish.isUnique, "DevTools anomalous fish is unique");
     Assertion.equal(
       fish.imagePath,
-      "assets/fish/crucian_stalker/crucian_stalker--6-uniq.webp",
+      "assets/fish/crucian_stalker/unique/crucian_stalker--6-uniq.webp",
       "DevTools unique image routing",
     );
   }
@@ -1076,6 +1081,33 @@ const runtime = new RuntimeLoader().loadClasses([
     classNames: ["FishVisualVariantResolver"],
   },
   {
+    relativePath: "src/core/items/bait/bait_effectiveness_descriptor.js",
+    classNames: ["BaitEffectivenessDescriptor"],
+  },
+  {
+    relativePath: "src/core/items/freshness/bait_freshness_modifier.js",
+    classNames: ["BaitFreshnessModifier"],
+  },
+  {
+    relativePath: "src/core/items/bait/bait_effectiveness_match.js",
+    classNames: ["BaitEffectivenessMatch"],
+  },
+  {
+    relativePath: "src/core/items/bait/bait_effectiveness_grade_policy.js",
+    classNames: ["BaitEffectivenessGradePolicy"],
+  },
+  {
+    relativePath: "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+    classNames: [
+      "BaitEffectivenessKnowledgePolicy",
+      "AlwaysKnownBaitEffectivenessPolicy",
+    ],
+  },
+  {
+    relativePath: "src/core/items/bait/bait_effectiveness_resolver.js",
+    classNames: ["BaitEffectivenessResolver"],
+  },
+  {
     relativePath: "src/systems/bite_system.js",
     classNames: ["BiteSystem"],
   },
@@ -1133,5 +1165,6 @@ new FishRarityCheck(
   runtime.FixedCatchFishFactory,
   runtime.HookedFishProfileSynchronizer,
   runtime.RarityAnimationResolver,
+  runtime.BaitEffectivenessResolver,
 ).run();
 console.log("Fish rarity checks passed.");

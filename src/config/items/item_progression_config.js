@@ -15,7 +15,7 @@ const ITEM_PROGRESSION_CONFIG = (() => {
   });
   const condition = (gameplayConsumer) => ({
     statPath: "effectiveStats.durability",
-    runtimeOverridePath: "statOverrides.durability",
+    instanceStatePath: "statOverrides.durability",
     minimum: 0,
     maximum: 100,
     metricLabel: "Стан",
@@ -57,7 +57,7 @@ const ITEM_PROGRESSION_CONFIG = (() => {
   };
 
   return deepFreeze({
-    revision: 6,
+    revision: 7,
     qualityLimits: { minSections: 2, maxSections: 12 },
     groups: {
       "rod.spinning": {
@@ -188,7 +188,20 @@ const ITEM_PROGRESSION_CONFIG = (() => {
       "rig.feeder": {
         quality: quality("EnvironmentalCompensationModifier"),
       },
-      "bait.natural": {},
+      "bait.natural": {
+        freshness: {
+          instanceStatePath: "freshnessState.percent",
+          defaultCurrent: 100,
+          minimum: 0,
+          maximum: 100,
+          metricLabel: "Свіжість",
+          decayPolicyId: "water_exposure_linear",
+          lossPerMinute: 5,
+          modifierPolicyId: "linear_floor",
+          minimumMultiplier: 0.5,
+          gameplayConsumer: "BaitEffectivenessResolver",
+        },
+      },
       "lure.spinner": {
         quality: quality("EnvironmentalCompensationModifier"),
       },
