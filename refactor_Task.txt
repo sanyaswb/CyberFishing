@@ -1,9 +1,10 @@
 # CyberFishing — актуальний план незавершеного модульного рефакторингу
 
 **Stage 1 closure-версія:** `v0.24.31`  
+**Поточна release-версія:** `v0.24.32`
 **Тип робіт:** architecture / infrastructure refactoring  
 **Gameplay changes:** заборонені  
-**Поточний наступний етап:** `Stage 2.0 — Classic Bridge Build Foundation`
+**Поточний наступний етап:** `Stage 2.1 — Engine Asset Contracts`
 
 Цей документ містить тільки роботи, які ще не виконані.
 
@@ -40,23 +41,11 @@ architecture/migration/stage_2_approved_batches.json
 `removalStage`, `tests`, `architecture gates`, `rollback boundary` та
 `acceptance criteria` вже frozen і не проєктуються повторно під час реалізації.
 
-## Stage 2.0 — Classic Bridge Build Foundation
-
-- [ ] Додати build runner, який збирає тільки active approved ESM bridge wrappers.
-- [ ] Генерувати synchronous classic IIFE outputs у `dist/legacy-bridges/`.
-- [ ] Не робити `index.html` Vite entrypoint і не включати весь game graph у build.
-- [ ] Валідувати exact bridge registry records та exact global providers.
-- [ ] Інтегрувати build у dev-server як fail-fast prerequisite.
-- [ ] Довести deterministic output, cleanup/ignore semantics і empty-registry no-op.
-- [ ] Запустити focused check, Architecture, Quick, All та browser smoke.
-
 ## Approved dependency-safe batches
 
 Виконувати строго послідовно:
 
 ```text
-Stage 2.0 bridge build foundation
-    ↓
 Stage 2.1 engine asset contracts
     ↓
 Stage 2.2 engine dependency contract

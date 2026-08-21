@@ -1,5 +1,25 @@
 # CyberFishing changelog
 
+## v0.24.32 - Classic Bridge Build Foundation
+
+### Added
+
+- Added an executable Stage 2 execution-state contract with derived batch sequencing and an explicit `esmRuntimeIntegrationStarted` lifecycle flag.
+- Added exact migration-bridge identity, registry consumer set-equality, minimal wrapper AST and recursive approved dependency-closure validation.
+- Added a deterministic Vite IIFE bridge builder with graph diagnostics, safe staging and preservation of the previous validated output on failure.
+
+### Changed
+
+- Made the development server validate and build active approved bridges before opening its HTTP port.
+- Moved the package contract to Stage 2.0 while preserving CommonJS tooling, `index.html` ownership and the classic runtime.
+- Made the Stage 1 closure historical through exact reversible semantic release deltas instead of unrestricted path exceptions.
+
+### Validation
+
+- Kept the bridge registry empty: no runtime bridge artifacts or production ESM modules are active in this release.
+- Preserved 424 classic scripts, 771 confirmed dependency edges, 855 global identities and 203 exact known-debt diagnostics.
+- Made no gameplay, UI, fishing-physics, inventory or save-format changes.
+
 ## v0.24.31 - Modular Architecture Foundation
 
 ### Added

@@ -1,6 +1,9 @@
 const fs = require("fs");
 const http = require("http");
 const path = require("path");
+const {
+  LegacyBridgeBuildApplication,
+} = require("./build/build_legacy_bridges");
 
 const DEFAULT_HOST = "127.0.0.1";
 const DEFAULT_PORT = 4173;
@@ -138,32 +141,68 @@ class StaticFileServer {
 class DevServerApplication {
   #config;
   #server;
+  #bridgeBuilder;
+  #fatalErrorHandler;
+  #logger;
 
-  constructor(config = new DevServerConfig()) {
+  constructor(
+    config = new DevServerConfig(),
+    {
+      bridgeBuilder = new LegacyBridgeBuildApplication({
+        projectRoot: config.rootDir,
+      }),
+      server = new StaticFileServer(config).createServer(),
+      fatalErrorHandler = null,
+      logger = console,
+    } = {},
+  ) {
     this.#config = config;
-    this.#server = new StaticFileServer(config).createServer();
-  }
-
-  start() {
-    this.#server.on("error", (error) => this.#handleError(error));
-    this.#server.listen(this.#config.port, this.#config.host, () => {
-      const url = `http://${this.#config.host}:${this.#config.port}/`;
-      console.log(`Frontend dev server: ${url}`);
-      console.log(`Serving: ${this.#config.rootDir}`);
-      console.log("Press Ctrl+C to stop.");
+    this.#server = server;
+    this.#bridgeBuilder = bridgeBuilder;
+    this.#logger = logger;
+    this.#fatalErrorHandler = fatalErrorHandler || ((error) => {
+      this.#printServerError(error);
+      process.exitCode = 1;
     });
   }
 
-  #handleError(error) {
+  async start() {
+    const buildReport = await this.#bridgeBuilder.run();
+    this.#server.on("error", (error) => this.#fatalErrorHandler(error));
+    this.#server.listen(this.#config.port, this.#config.host, () => {
+      const url = `http://${this.#config.host}:${this.#config.port}/`;
+      this.#logger.log(`Frontend dev server: ${url}`);
+      this.#logger.log(`Serving: ${this.#config.rootDir}`);
+      this.#logger.log(
+        `Legacy bridges: ${buildReport.status} (${buildReport.bridgeCount}).`,
+      );
+      this.#logger.log("Press Ctrl+C to stop.");
+    });
+    return buildReport;
+  }
+
+  #printServerError(error) {
     if (error.code === "EADDRINUSE") {
-      console.error(
+      this.#logger.error(
         `Port ${this.#config.port} is already in use. Try npm run dev -- --port=4174.`,
       );
     } else {
-      console.error(`Dev server error: ${error.message}`);
+      this.#logger.error(`Dev server error: ${error.message}`);
     }
-    process.exit(1);
   }
 }
 
-new DevServerApplication().start();
+if (require.main === module) {
+  new DevServerApplication().start().catch((error) => {
+    console.error(`Legacy bridge build failed before listen: ${error.message}`);
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  DevServerApplication,
+  DevServerConfig,
+  MimeTypeRegistry,
+  StaticFileResolver,
+  StaticFileServer,
+};

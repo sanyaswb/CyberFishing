@@ -29,10 +29,17 @@
     ]
   },
   "stage": {
-    "current": "1.8.2",
-    "vite": "fixture-infrastructure-only",
+    "current": "2.0",
+    "vite": "fixture-and-approved-bridge-build-infrastructure",
     "productionEntrypoint": "unchanged-index-html",
     "sourceRuntime": "classic-scripts-unchanged",
-    "commonJsTooling": "preserved"
+    "commonJsTooling": "preserved",
+    "bridgeBuild": {
+      "status": "foundation-verified",
+      "registry": "architecture/guards/migration_bridge_registry.json",
+      "inputs": "approved-active-wrappers-only",
+      "output": "dist/legacy-bridges/",
+      "runtimeInputs": 0
+    }
   }
 }

@@ -36,6 +36,13 @@ class ApprovedStageTwoBatchFreezeCheck {
         "guards",
         "migration_bridge_registry.json",
       ),
+      executionState: path.join(
+        projectRoot,
+        "architecture",
+        "migration",
+        "stage_2_execution_state.json",
+      ),
+      index: path.join(projectRoot, "index.html"),
     });
   }
 
@@ -75,6 +82,8 @@ class ApprovedStageTwoBatchFreezeCheck {
       candidatePlan: this.#readJson(this.paths.candidates),
       manifest: this.#readJson(this.paths.manifest),
       bridgeRegistry: this.#readJson(this.paths.bridges),
+      executionState: this.#readJson(this.paths.executionState),
+      runtimeFacts: this.#runtimeFacts(fs.readFileSync(this.paths.index, "utf8")),
     };
   }
 
@@ -120,8 +129,17 @@ class ApprovedStageTwoBatchFreezeCheck {
     fixture.bridgeRegistry.bridges.push({ id: "premature-stage-1-bridge" });
     assert.throws(
       () => validator.validate(fixture),
-      /must not activate migration bridges/,
+      /requires an empty bridge registry/,
     );
+  }
+
+  #runtimeFacts(indexHtml) {
+    const scripts = [...indexHtml.matchAll(/<script\b([^>]*)\bsrc=["']([^"']+)["'][^>]*>/gi)];
+    return Object.freeze({
+      moduleScriptCount: scripts.filter((match) =>
+        /\btype\s*=\s*["']module["']/i.test(match[1]),
+      ).length,
+    });
   }
 
   #readJson(filePath) {

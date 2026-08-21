@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.31";
+const CURRENT_PROJECT_VERSION = "0.24.32";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "modular-architecture-foundation",
+  codename: "classic-bridge-build-foundation",
   updatedAt: "2026-08-21",
   notes: Object.freeze([
-    "Freeze the evidence-backed Stage 2 ESM migration batches",
-    "Enforce architecture boundaries, globals, browser capabilities and dev separation",
-    "Provide reproducible native ESM and isolated Vite build infrastructure",
-    "Preserve the classic-script runtime and gameplay behavior through Stage 1",
+    "Add an execution-state contract for ordered Stage 2 migration batches",
+    "Validate exact bridge registries, minimal wrappers and recursive dependency closures",
+    "Provide deterministic synchronous IIFE bridge builds with defensive output staging",
+    "Keep the bridge registry empty and preserve the 424-script classic runtime",
   ]),
 });
 

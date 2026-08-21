@@ -1,6 +1,6 @@
 {
   "name": "cyber-fishing",
-  "version": "0.24.31",
+  "version": "0.24.32",
   "private": true,
   "description": "CyberFishing browser game",
   "engines": {
@@ -11,6 +11,7 @@
   "source": "index.html",
   "scripts": {
     "dev": "node utils/dev-server.js",
+    "build:legacy-bridges": "node utils/build/build_legacy_bridges.js",
     "copy:version": "node utils/create-version-copy.js",
     "check": "node utils/run-checks.js",
     "check:list": "node utils/run-checks.js --list",

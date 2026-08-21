@@ -1,6 +1,165 @@
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const {
+  StageTwoExecutionStateValidator,
+} = require("../../build/legacy_bridge_build_config");
+
+class StageTwoSemanticClosureTransition {
+  constructor({ projectRoot, closure, state }) {
+    this.projectRoot = projectRoot;
+    this.closure = closure;
+    this.state = state;
+    this.releasedPaths = new Set([
+      "architecture/build/package_contract.json",
+      "index.html",
+      "package-lock.json",
+      "package.json",
+    ]);
+  }
+
+  validateCurrent() {
+    const packageJson = this.#readJson("package.json");
+    const packageLock = this.#readJson("package-lock.json");
+    const packageContract = this.#readJson(
+      "architecture/build/package_contract.json",
+    );
+    const indexHtml = this.#readText("index.html");
+    if (packageJson.version !== this.state.releaseVersion) {
+      throw new Error("Stage 2 package version differs from execution state");
+    }
+    if (
+      packageJson.scripts?.["build:legacy-bridges"] !==
+      "node utils/build/build_legacy_bridges.js"
+    ) {
+      throw new Error("Stage 2 package requires the exact legacy bridge build script");
+    }
+    if (
+      packageLock.version !== this.state.releaseVersion ||
+      packageLock.packages?.[""]?.version !== this.state.releaseVersion
+    ) {
+      throw new Error("Stage 2 lockfile version differs from execution state");
+    }
+    const expectedVersionScript =
+      `src/config/project_version.js?v=${this.state.releaseVersion}`;
+    if (!indexHtml.includes(expectedVersionScript)) {
+      throw new Error("Stage 2 index version query differs from execution state");
+    }
+    const expectedBridgeBuild = {
+      status: "foundation-verified",
+      registry: "architecture/guards/migration_bridge_registry.json",
+      inputs: "approved-active-wrappers-only",
+      output: "dist/legacy-bridges/",
+      runtimeInputs: 0,
+    };
+    if (
+      packageContract.stage?.current !== "2.0" ||
+      packageContract.stage?.vite !==
+        "fixture-and-approved-bridge-build-infrastructure" ||
+      JSON.stringify(packageContract.stage?.bridgeBuild) !==
+        JSON.stringify(expectedBridgeBuild)
+    ) {
+      throw new Error("Stage 2 package contract semantic delta is invalid");
+    }
+  }
+
+  isReleasedPath(relativePath) {
+    return this.releasedPaths.has(relativePath);
+  }
+
+  normalizedSha256(relativePath, sourceText = null) {
+    const text = sourceText ?? this.#readText(relativePath);
+    let normalized;
+    if (relativePath === "package.json") {
+      JSON.parse(text);
+      normalized = this.#replaceExact(
+        text,
+        `  "version": "${this.state.releaseVersion}",`,
+        `  "version": "${this.closure.version}",`,
+        "package version",
+      );
+      normalized = this.#removeExactLine(
+        normalized,
+        '    "build:legacy-bridges": "node utils/build/build_legacy_bridges.js",',
+        "legacy bridge build script",
+      );
+      // The Stage 1 closure was captured from the Windows working tree. The
+      // insertion split the pre-existing CRLF after `dev`; reverse that exact
+      // approved formatting delta before hashing the historical evidence.
+      normalized = normalized.replace(
+        '    "dev": "node utils/dev-server.js",\n',
+        '    "dev": "node utils/dev-server.js",\r\n',
+      );
+    } else if (relativePath === "package-lock.json") {
+      JSON.parse(text);
+      normalized = this.#replaceExactLine(
+        text,
+        `  "version": "${this.state.releaseVersion}",`,
+        `  "version": "${this.closure.version}",`,
+        "lockfile top-level version",
+      );
+      normalized = this.#replaceExactLine(
+        normalized,
+        `      "version": "${this.state.releaseVersion}",`,
+        `      "version": "${this.closure.version}",`,
+        "lockfile root package version",
+      );
+    } else if (relativePath === "architecture/build/package_contract.json") {
+      const value = JSON.parse(text);
+      value.stage.current = "1.8.2";
+      value.stage.vite = "fixture-infrastructure-only";
+      delete value.stage.bridgeBuild;
+      normalized = `${JSON.stringify(value, null, 2)}\n`;
+    } else if (relativePath === "index.html") {
+      const current =
+        `src/config/project_version.js?v=${this.state.releaseVersion}`;
+      const baseline = `src/config/project_version.js?v=${this.closure.version}`;
+      const occurrences = text.split(current).length - 1;
+      if (occurrences !== 1) {
+        throw new Error("Stage 2 index semantic delta must change one version query");
+      }
+      normalized = text.replace(current, baseline);
+    } else {
+      throw new Error(`Path is not a semantic closure delta: ${relativePath}`);
+    }
+    return crypto.createHash("sha256").update(normalized).digest("hex");
+  }
+
+  #replaceExact(text, current, baseline, subject) {
+    const occurrences = text.split(current).length - 1;
+    if (occurrences !== 1) {
+      throw new Error(`Stage 2 semantic delta requires one ${subject}`);
+    }
+    return text.replace(current, baseline);
+  }
+
+  #removeExactLine(text, line, subject) {
+    const linePattern = `${line}\n`;
+    const occurrences = text.split(linePattern).length - 1;
+    if (occurrences !== 1) {
+      throw new Error(`Stage 2 semantic delta requires one ${subject}`);
+    }
+    return text.replace(linePattern, "");
+  }
+
+  #replaceExactLine(text, current, baseline, subject) {
+    const escaped = current.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(`^${escaped}(?=\\r?$)`, "gm");
+    const matches = text.match(pattern) || [];
+    if (matches.length !== 1) {
+      throw new Error(`Stage 2 semantic delta requires one ${subject}`);
+    }
+    return text.replace(pattern, baseline);
+  }
+
+  #readJson(relativePath) {
+    return JSON.parse(this.#readText(relativePath));
+  }
+
+  #readText(relativePath) {
+    return fs.readFileSync(path.join(this.projectRoot, relativePath), "utf8");
+  }
+}
 
 class StageOneClosureValidator {
   constructor(projectRoot) {
@@ -39,6 +198,13 @@ class StageOneClosureValidator {
     const approvedPlan = this.#readJson(
       "architecture/migration/stage_2_approved_batches.json",
     );
+    const executionStatePath = path.join(
+      this.projectRoot,
+      "architecture/migration/stage_2_execution_state.json",
+    );
+    const executionState = fs.existsSync(executionStatePath)
+      ? JSON.parse(fs.readFileSync(executionStatePath, "utf8"))
+      : null;
     const fixturePackage = this.#readJson(
       "utils/architecture/esm-fixtures/package.json",
     );
@@ -48,8 +214,25 @@ class StageOneClosureValidator {
     );
     const changelog = this.#readText("CHANGELOG.md");
 
+    const runtimeFacts = this.#runtimeFacts(indexHtml);
+    let transition = null;
+    if (executionState) {
+      new StageTwoExecutionStateValidator().validate({
+        state: executionState,
+        approvedPlan,
+        bridgeRegistry,
+        runtimeFacts,
+      });
+      transition = new StageTwoSemanticClosureTransition({
+        projectRoot: this.projectRoot,
+        closure,
+        state: executionState,
+      });
+      transition.validateCurrent();
+    }
     this.#validateVersion({
       closure,
+      executionState,
       packageJson,
       packageLock,
       projectVersionSource,
@@ -72,7 +255,7 @@ class StageOneClosureValidator {
       errors,
     });
     this.#validateApprovedMigration({ closure, approvedPlan, errors });
-    this.#validateEvidence(closure?.immutableEvidence, errors);
+    this.#validateEvidence(closure?.immutableEvidence, transition, errors);
     this.#validateRequiredChecks(closure, errors);
     this.#validateNoTemporaryArtifacts(errors);
 
@@ -82,6 +265,8 @@ class StageOneClosureValidator {
 
     return Object.freeze({
       version: closure.version,
+      mode: transition ? "historical" : "strict",
+      currentVersion: executionState?.releaseVersion || closure.version,
       moduleCount: manifest.modules.length,
       edgeCount: this.#confirmedEdgeCount(manifest.modules),
       knownDebtCount: knownDebt.debts.length,
@@ -95,6 +280,7 @@ class StageOneClosureValidator {
 
   #validateVersion({
     closure,
+    executionState,
     packageJson,
     packageLock,
     projectVersionSource,
@@ -104,12 +290,13 @@ class StageOneClosureValidator {
     const sourceVersion = projectVersionSource.match(
       /CURRENT_PROJECT_VERSION\s*=\s*"([^"]+)"/,
     )?.[1];
+    const expectedCurrentVersion = executionState?.releaseVersion || closure.version;
     this.#require(
-      closure?.version === packageJson.version &&
-        closure.version === packageLock.version &&
-        closure.version === packageLock.packages?.[""]?.version &&
-        closure.version === sourceVersion,
-      "closure, package, lockfile and project source versions must match",
+      expectedCurrentVersion === packageJson.version &&
+        expectedCurrentVersion === packageLock.version &&
+        expectedCurrentVersion === packageLock.packages?.[""]?.version &&
+        expectedCurrentVersion === sourceVersion,
+      "package, lockfile, execution state and project source versions must match",
       errors,
     );
     this.#require(
@@ -117,6 +304,15 @@ class StageOneClosureValidator {
       "changelog must contain the Stage 1 closure version",
       errors,
     );
+    if (executionState) {
+      this.#require(
+        changelog.includes(
+          `## v${executionState.releaseVersion} - Classic Bridge Build Foundation`,
+        ),
+        "changelog must contain the Stage 2 foundation version",
+        errors,
+      );
+    }
   }
 
   #validateRuntime({ closure, indexHtml, errors }) {
@@ -283,7 +479,7 @@ class StageOneClosureValidator {
     );
   }
 
-  #validateEvidence(evidence, errors) {
+  #validateEvidence(evidence, transition, errors) {
     this.#require(
       Array.isArray(evidence) && evidence.length > 0,
       "immutableEvidence must not be empty",
@@ -300,8 +496,13 @@ class StageOneClosureValidator {
       this.#require(!paths.has(item?.path), `duplicate evidence path ${item?.path}`, errors);
       paths.add(item?.path);
       const absolutePath = path.join(this.projectRoot, item?.path || "");
+      const actualHash = transition?.isReleasedPath(item.path)
+        ? transition.normalizedSha256(item.path)
+        : fs.existsSync(absolutePath)
+          ? this.#sha256(absolutePath)
+          : null;
       this.#require(
-        fs.existsSync(absolutePath) && this.#sha256(absolutePath) === item?.sha256,
+        fs.existsSync(absolutePath) && actualHash === item?.sha256,
         `immutable evidence changed: ${item?.path}`,
         errors,
       );
@@ -381,6 +582,14 @@ class StageOneClosureValidator {
     return files.sort();
   }
 
+  #runtimeFacts(indexHtml) {
+    return Object.freeze({
+      moduleScriptCount: (
+        indexHtml.match(/<script\b[^>]*\btype\s*=\s*["']module["']/gi) || []
+      ).length,
+    });
+  }
+
   #walk(directory, visitor) {
     for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
       const filePath = path.join(directory, entry.name);
@@ -406,4 +615,7 @@ class StageOneClosureValidator {
   }
 }
 
-module.exports = { StageOneClosureValidator };
+module.exports = {
+  StageOneClosureValidator,
+  StageTwoSemanticClosureTransition,
+};

@@ -168,6 +168,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "architecture"],
   },
   {
+    id: "stage-2-legacy-bridge-build",
+    title: "Stage 2 classic bridge build foundation",
+    file: "utils/architecture/stage-2-legacy-bridge-build-check.js",
+    suites: ["quick", "architecture"],
+  },
+  {
     id: "line-allocation",
     title: "Line allocation domain",
     file: "utils/line-allocation-check.js",

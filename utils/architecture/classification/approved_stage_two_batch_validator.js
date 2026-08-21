@@ -1,4 +1,7 @@
 const { MigrationBatchPlanValidator } = require("./migration_batch_plan_validator");
+const {
+  ActiveBridgePlanResolver,
+} = require("../../build/legacy_bridge_build_config");
 
 class ApprovedStageTwoBatchValidator {
   constructor({ architecturePolicy }) {
@@ -8,7 +11,14 @@ class ApprovedStageTwoBatchValidator {
     });
   }
 
-  validate({ approvedPlan, candidatePlan, manifest, bridgeRegistry }) {
+  validate({
+    approvedPlan,
+    candidatePlan,
+    manifest,
+    bridgeRegistry,
+    executionState = null,
+    runtimeFacts = null,
+  }) {
     const errors = [];
     const candidateSummary = this.candidateValidator.validate({
       plan: candidatePlan,
@@ -40,8 +50,8 @@ class ApprovedStageTwoBatchValidator {
       errors,
     );
     this.#require(
-      Array.isArray(bridgeRegistry?.bridges) && bridgeRegistry.bridges.length === 0,
-      "Stage 1.9 must not activate migration bridges",
+      Array.isArray(bridgeRegistry?.bridges),
+      "Migration bridge registry must contain a bridges array",
       errors,
     );
 
@@ -72,6 +82,25 @@ class ApprovedStageTwoBatchValidator {
         outputPaths,
         errors,
       });
+    }
+
+    if (executionState) {
+      try {
+        new ActiveBridgePlanResolver().resolve({
+          state: executionState,
+          approvedPlan,
+          bridgeRegistry,
+          runtimeFacts,
+        });
+      } catch (error) {
+        errors.push(error.message);
+      }
+    } else {
+      this.#require(
+        bridgeRegistry?.bridges?.length === 0,
+        "Stage 1.9 without execution state must not activate migration bridges",
+        errors,
+      );
     }
 
     if (errors.length > 0) {

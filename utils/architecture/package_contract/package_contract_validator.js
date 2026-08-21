@@ -17,11 +17,16 @@ class PackageContractValidator {
     require(contract?.lockfile?.requiresIntegrity === true, "lockfile integrity hashes are required");
     require(contract?.lockfile?.gitPolicy === "required-not-ignored", "lockfile must not be ignored");
     require(this.#sameValues(contract?.dependencyPolicy?.directSections, ["dependencies", "devDependencies"]), "direct dependency sections are incomplete");
-    require(contract?.stage?.current === "1.8.2", "package contract must record Stage 1.8.2");
-    require(contract?.stage?.vite === "fixture-infrastructure-only", "Vite must remain fixture infrastructure only");
+    require(contract?.stage?.current === "2.0", "package contract must record Stage 2.0");
+    require(contract?.stage?.vite === "fixture-and-approved-bridge-build-infrastructure", "Vite usage must be limited to fixtures and approved bridge infrastructure");
     require(contract?.stage?.productionEntrypoint === "unchanged-index-html", "production entrypoint must remain index.html");
     require(contract?.stage?.sourceRuntime === "classic-scripts-unchanged", "classic source runtime must remain unchanged");
     require(contract?.stage?.commonJsTooling === "preserved", "CommonJS tooling must remain preserved");
+    require(contract?.stage?.bridgeBuild?.status === "foundation-verified", "legacy bridge build foundation must be verified");
+    require(contract?.stage?.bridgeBuild?.registry === "architecture/guards/migration_bridge_registry.json", "legacy bridge registry path is invalid");
+    require(contract?.stage?.bridgeBuild?.inputs === "approved-active-wrappers-only", "legacy bridge inputs must be exact approved wrappers");
+    require(contract?.stage?.bridgeBuild?.output === "dist/legacy-bridges/", "legacy bridge output path is invalid");
+    require(contract?.stage?.bridgeBuild?.runtimeInputs === 0, "Stage 2.0 must have zero active runtime bridge inputs");
     if (errors.length) throw new Error(`Package contract is invalid:\n- ${errors.join("\n- ")}`);
   }
 

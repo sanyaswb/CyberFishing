@@ -9,7 +9,8 @@
 │  ├── migration
 │  │  ├── module_migration_manifest.json
 │  │  ├── stage_1_6_initial_batches.json
-│  │  └── stage_2_approved_batches.json
+│  │  ├── stage_2_approved_batches.json
+│  │  └── stage_2_execution_state.json
 │  ├── module_architecture.json
 │  └── stage_1_closure.json
 ├── assets
@@ -728,6 +729,7 @@
   │  ├── render-architecture-doc.js
   │  ├── stage-1-6-migration-batch-plan-check.js
   │  ├── stage-1-closure-check.js
+  │  ├── stage-2-legacy-bridge-build-check.js
   │  ├── verify-fresh-package-install.js
   │  └── vite-fixture-build-check.js
   ├── bait-effectiveness-check.js

@@ -10,6 +10,7 @@ class RootPackageValidator {
     require(packageJson.packageManager === contract.runtime.packageManager, "package.json packageManager differs from package contract");
     require(packageJson.type === undefined, "root package.json must not set type while utils use CommonJS");
     require(packageJson.source === "index.html", "classic index.html source entrypoint must remain unchanged");
+    require(packageJson.scripts?.["build:legacy-bridges"] === "node utils/build/build_legacy_bridges.js", "package.json requires the exact legacy bridge build script");
     require(packageJson.dependencies?.vite === undefined, "Vite cannot be a production dependency");
     for (const section of contract.dependencyPolicy.directSections) {
       require(packageJson[section] && typeof packageJson[section] === "object", `package.json requires ${section}`);

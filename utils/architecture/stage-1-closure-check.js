@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const {
   StageOneClosureValidator,
+  StageTwoSemanticClosureTransition,
 } = require("./closure/stage_one_closure_validator");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
@@ -34,6 +35,7 @@ class StageOneClosureCheck {
     this.#assertChangedEvidenceFails(validator, closure);
     this.#assertChangedBaselineFails(validator, closure);
     this.#assertPrematureBridgeFails(validator, closure);
+    this.#assertArbitraryReleaseDeltaFails(closure);
 
     console.log(
       `Stage 1 closure passed for v${first.version}: ` +
@@ -62,6 +64,37 @@ class StageOneClosureCheck {
     assert.throws(
       () => validator.validate(fixture),
       /migration bridges were activated before Stage 2/,
+    );
+  }
+
+  #assertArbitraryReleaseDeltaFails(closure) {
+    const state = this.#readJson(
+      "architecture/migration/stage_2_execution_state.json",
+    );
+    const transition = new StageTwoSemanticClosureTransition({
+      projectRoot: this.projectRoot,
+      closure,
+      state,
+    });
+    const packagePath = "package.json";
+    const source = fs.readFileSync(path.join(this.projectRoot, packagePath), "utf8");
+    const unexpected = source.replace(
+      '  "private": true,',
+      '  "private": true,\n  "unexpectedStageTwoMetadata": true,',
+    );
+    const expected = closure.immutableEvidence.find(
+      (item) => item.path === packagePath,
+    ).sha256;
+    assert.notEqual(
+      transition.normalizedSha256(packagePath, unexpected),
+      expected,
+      "Semantic closure must not normalize arbitrary release-file changes",
+    );
+  }
+
+  #readJson(relativePath) {
+    return JSON.parse(
+      fs.readFileSync(path.join(this.projectRoot, relativePath), "utf8"),
     );
   }
 
