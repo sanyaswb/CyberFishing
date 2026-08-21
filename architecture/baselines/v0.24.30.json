@@ -1,0 +1,4689 @@
+{
+  "schemaVersion": 1,
+  "projectVersion": "0.24.30",
+  "generatedAt": "2026-08-18T01:18:16.483Z",
+  "repository": {
+    "commit": "a0195f53eed07ab6a13d5dca780716fe432eda33",
+    "branch": "develop"
+  },
+  "verification": {
+    "command": "node utils/run-checks.js --suite all",
+    "status": "passed",
+    "passedChecks": 28
+  },
+  "countingRules": {
+    "sourceJavaScriptFiles": "All .js files recursively under src/.",
+    "legacyScriptTags": "Script elements with a src attribute in index.html, in document order.",
+    "esmDeclarations": "Top-level ESTree import/export declaration nodes parsed by Espree.",
+    "globalAssignments": "ESTree AssignmentExpression nodes whose direct left-hand object is window or globalThis; equality comparisons and property reads are excluded.",
+    "debugJavaScriptFiles": "All .js files recursively under src/debug/."
+  },
+  "metrics": {
+    "sourceJavaScriptFiles": 424,
+    "legacyScriptTags": 424,
+    "classicScriptTags": 424,
+    "moduleScriptTags": 0,
+    "esmImportDeclarations": 0,
+    "esmExportDeclarations": 0,
+    "directGlobalAssignments": 240,
+    "windowAssignments": 147,
+    "globalThisAssignments": 93,
+    "distinctWindowProperties": 140,
+    "distinctGlobalThisProperties": 93,
+    "debugJavaScriptFiles": 89
+  },
+  "sourceFiles": [
+    "src/app/adapters.js",
+    "src/app/application.js",
+    "src/app/bite.js",
+    "src/app/bootstrap.js",
+    "src/app/cast_power.js",
+    "src/app/chum.js",
+    "src/app/context.js",
+    "src/app/core/dependency_contract_validator.js",
+    "src/app/core/event_bus.js",
+    "src/app/core/event_lifecycle.js",
+    "src/app/core/game_clock.js",
+    "src/app/core/game_loop.js",
+    "src/app/debug.js",
+    "src/app/fishing.js",
+    "src/app/fixed_catch_fish_factory.js",
+    "src/app/game.js",
+    "src/app/inventory.js",
+    "src/app/rendering/boat_chum_render_frame_builder.js",
+    "src/app/rendering/casting_render_frame_builder.js",
+    "src/app/rendering/fight_area_render_frame_builder.js",
+    "src/app/rendering/fight_hud_frame_builder.js",
+    "src/app/rendering/fishing_equipment_render_model_builder.js",
+    "src/app/rendering/fishing_render_frame_builder.js",
+    "src/app/rendering/game_render_coordinator.js",
+    "src/app/rendering/game_render_frame_builder.js",
+    "src/app/rendering/game_render_intent.js",
+    "src/app/rendering/landing_area_render_frame_builder.js",
+    "src/app/rendering/location_debug_render_frame_builder.js",
+    "src/app/rendering/outcome_render_frame_builder.js",
+    "src/app/rendering/world_render_frame_builder.js",
+    "src/app/rules.js",
+    "src/app/script.js",
+    "src/app/states.js",
+    "src/app/utils.js",
+    "src/app/world.js",
+    "src/application/inventory/apply_bait_exposure_service.js",
+    "src/application/inventory/auto_refill_coordinator.js",
+    "src/application/inventory/equipment_auto_refill_target_provider.js",
+    "src/application/inventory/equipment_read_model_factory.js",
+    "src/application/inventory/equipment_transition_executor.js",
+    "src/application/inventory/freshest_refill_candidate_policy.js",
+    "src/application/inventory/inventory_v2_command_service.js",
+    "src/application/inventory/inventory_v2_composition_root.js",
+    "src/application/inventory/inventory_v2_context_item_filter.js",
+    "src/application/inventory/inventory_v2_equipment_line_readiness_policy.js",
+    "src/application/inventory/inventory_v2_equipment_transition_port.js",
+    "src/application/inventory/inventory_v2_facade.js",
+    "src/application/inventory/inventory_v2_gameplay_bridge.js",
+    "src/application/inventory/inventory_v2_item_hydrator.js",
+    "src/application/inventory/inventory_v2_item_order_resolver.js",
+    "src/application/inventory/inventory_v2_item_view_factory.js",
+    "src/application/inventory/inventory_v2_line_allocation_service.js",
+    "src/application/inventory/inventory_v2_loadout_port.js",
+    "src/application/inventory/inventory_v2_refill_ports.js",
+    "src/application/inventory/inventory_v2_subfilter_resolver.js",
+    "src/application/inventory/inventory_v2_transaction_participants.js",
+    "src/application/inventory/inventory_v2_view_model_factory.js",
+    "src/application/inventory/loadout_application_service.js",
+    "src/application/inventory/refill_compatible_signature_policy.js",
+    "src/assets/asset_load_result.js",
+    "src/assets/asset_manifest.js",
+    "src/assets/asset_preload_coordinator.js",
+    "src/config/config.js",
+    "src/config/databases/fish_db.js",
+    "src/config/databases/fish/fish_categories.js",
+    "src/config/databases/fish/presets/fish_profile_factory.js",
+    "src/config/databases/fish/presets/fish_profile_presets.js",
+    "src/config/databases/fish/species/event_fish.js",
+    "src/config/databases/fish/species/peaceful_fish.js",
+    "src/config/databases/fish/species/predator_fish.js",
+    "src/config/databases/fish/species/rare_fish.js",
+    "src/config/databases/item_db.js",
+    "src/config/databases/map_db.js",
+    "src/config/inventory/equipment_slot_config.js",
+    "src/config/inventory/inventory_v2_item_parameter_config.js",
+    "src/config/inventory/inventory_v2_sort_config.js",
+    "src/config/inventory/item_assembly_profile_config.js",
+    "src/config/items/item_progression_config.js",
+    "src/config/items/item_stat_override_config.js",
+    "src/config/physics/environment_physics_config.js",
+    "src/config/physics/fight_physics_config.js",
+    "src/config/physics/physics_config_adapter.js",
+    "src/config/physics/physics_config.js",
+    "src/config/physics/physics_formula_map.js",
+    "src/config/physics/physics_units_and_naming.js",
+    "src/config/physics/retrieve_physics_config.js",
+    "src/config/physics/tackle_physics_config.js",
+    "src/config/physics/tension_physics_config.js",
+    "src/config/project_version.js",
+    "src/config/rarity/rarity_visual_config.js",
+    "src/config/runtime/config_override_store.js",
+    "src/config/runtime/immutable_config.js",
+    "src/config/runtime/resolved_config_provider.js",
+    "src/config/validation/config_schema_validator.js",
+    "src/config/validation/degradation_color_config_validator.js",
+    "src/config/validation/item_progression_config_validator.js",
+    "src/config/validation/item_rarity_config_validator.js",
+    "src/config/validation/rarity_config_validator.js",
+    "src/config/visual/degradation_color_config.js",
+    "src/core/assemblies/assembly_attachment_target_resolver.js",
+    "src/core/assemblies/assembly_completion_policy.js",
+    "src/core/assemblies/assembly_profile_registry.js",
+    "src/core/assemblies/assembly_state_repository.js",
+    "src/core/assemblies/assembly_state.js",
+    "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+    "src/core/assemblies/item_assembly_reader.js",
+    "src/core/assemblies/item_assembly_service.js",
+    "src/core/casting_distance.js",
+    "src/core/core.js",
+    "src/core/equipment/auto_refill_policy.js",
+    "src/core/equipment/equipment_compatibility_policy.js",
+    "src/core/equipment/equipment_slot_availability_policy.js",
+    "src/core/equipment/equipment_slot_visibility_policy.js",
+    "src/core/equipment/equipment_state.js",
+    "src/core/equipment/equipment_transition_planner.js",
+    "src/core/equipment/exact_item_signature_policy.js",
+    "src/core/equipment/fishing_readiness_policy.js",
+    "src/core/equipment/inventory_capacity_policy.js",
+    "src/core/equipment/rod_capability_resolver.js",
+    "src/core/equipment/terminal_line_slot_resolver.js",
+    "src/core/fish/fish_anomaly_variant_resolver.js",
+    "src/core/fish/fish_rarity_resolver.js",
+    "src/core/fish/fish_visual_variant_resolver.js",
+    "src/core/fishing/drag_force_calculator.js",
+    "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+    "src/core/fishing/fish_direction_intent_sampler.js",
+    "src/core/fishing/fish_fight_direction_resolver.js",
+    "src/core/fishing/fish_retrieve_result.js",
+    "src/core/fishing/fishing_cast_exposure_resolver.js",
+    "src/core/fishing/hold_opposition_resolver.js",
+    "src/core/fishing/landing_lift_readiness_policy.js",
+    "src/core/fishing/landing_lift_tension_calculator.js",
+    "src/core/fishing/landing_policy.js",
+    "src/core/fishing/line_constrained_fish_motion_resolver.js",
+    "src/core/fishing/line_constraint_state_resolver.js",
+    "src/core/fishing/line_radial_movement_splitter.js",
+    "src/core/fishing/line_tension_calculator.js",
+    "src/core/fishing/player_force_budget_allocator.js",
+    "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+    "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+    "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+    "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+    "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+    "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+    "src/core/fishing/pole_fight_sector_angle_constraint.js",
+    "src/core/fishing/pole_fight_sector_constraint.js",
+    "src/core/fishing/pole_fight_sector_geometry.js",
+    "src/core/fishing/recoverable_line_calculator.js",
+    "src/core/fishing/reel_auto_recovery_calculator.js",
+    "src/core/fishing/reel_hold_load_policy.js",
+    "src/core/fishing/reel_hold_recovery_system.js",
+    "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+    "src/core/fishing/reel_retrieve_speed_calculator.js",
+    "src/core/fishing/retrieve_policy.js",
+    "src/core/fishing/rod_control_angle_resolver.js",
+    "src/core/fishing/rod_control_movement_projector.js",
+    "src/core/fishing/rod_control_tension_mode_resolver.js",
+    "src/core/fishing/rod_pull_calculator.js",
+    "src/core/fishing/rod_pull_state.js",
+    "src/core/fishing/rod_stroke_capacity_resolver.js",
+    "src/core/fishing/rod_stroke_distance_tracker.js",
+    "src/core/fishing/rod_stroke_state.js",
+    "src/core/fishing/rod_stroke_tracker.js",
+    "src/core/fishing/simple_fight_force_calculator.js",
+    "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+    "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+    "src/core/fishing/stamina/stamina_balance_frame.js",
+    "src/core/fishing/stamina/stamina_drain_calculator.js",
+    "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+    "src/core/fishing/stamina/stamina_phase_machine.js",
+    "src/core/fishing/stamina/stamina_pressure_resolver.js",
+    "src/core/fishing/stamina/stamina_regen_calculator.js",
+    "src/core/fishing/stamina/stamina_transition_resolver.js",
+    "src/core/fishing/tackle_failure_selector.js",
+    "src/core/fishing/tackle_stress_accumulator.js",
+    "src/core/float_tackle_line_budget_policy.js",
+    "src/core/input/fight_input_action_composer.js",
+    "src/core/inventory/equip_target_selection_policy.js",
+    "src/core/inventory/flat_inventory_item_repository.js",
+    "src/core/inventory/inventory_item_location.js",
+    "src/core/inventory/inventory_item_reservation_policy.js",
+    "src/core/inventory/inventory_item_stacking_policy.js",
+    "src/core/inventory/item_assembly_stacking_policy.js",
+    "src/core/inventory/unlimited_assembly_capacity_policy.js",
+    "src/core/items/bait/bait_effectiveness_catalog_resolver.js",
+    "src/core/items/bait/bait_effectiveness_descriptor.js",
+    "src/core/items/bait/bait_effectiveness_grade_policy.js",
+    "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+    "src/core/items/bait/bait_effectiveness_match.js",
+    "src/core/items/bait/bait_effectiveness_resolver.js",
+    "src/core/items/condition/item_condition_descriptor.js",
+    "src/core/items/condition/item_condition_resolver.js",
+    "src/core/items/effective_item_stats_resolver.js",
+    "src/core/items/freshness/bait_freshness_decay_policy.js",
+    "src/core/items/freshness/bait_freshness_modifier.js",
+    "src/core/items/freshness/item_freshness_descriptor.js",
+    "src/core/items/freshness/item_freshness_resolver.js",
+    "src/core/items/freshness/item_freshness_state_policy.js",
+    "src/core/items/hook/hook_power_policy.js",
+    "src/core/items/item_stat_override_policy.js",
+    "src/core/items/metrics/item_bounded_metric_resolver.js",
+    "src/core/items/progression/composite_metric_strategy.js",
+    "src/core/items/progression/derived_stat_metric_strategy.js",
+    "src/core/items/progression/item_capacity_resolver.js",
+    "src/core/items/progression/item_catalog_baseline_registry.js",
+    "src/core/items/progression/item_metric_strategy_registry.js",
+    "src/core/items/progression/item_metric_strategy.js",
+    "src/core/items/progression/item_progression_descriptor.js",
+    "src/core/items/progression/item_progression_resolver.js",
+    "src/core/items/progression/item_quality_resolver.js",
+    "src/core/items/progression/item_rating_resolver.js",
+    "src/core/items/progression/item_rating_tier_resolver.js",
+    "src/core/items/progression/numeric_stat_metric_strategy.js",
+    "src/core/items/progression/target_range_metric_strategy.js",
+    "src/core/items/quality/environmental_compensation_modifier.js",
+    "src/core/items/quality/hook_quality_modifier.js",
+    "src/core/items/quality/item_quality_grade_policy.js",
+    "src/core/items/quality/net_quality_modifier.js",
+    "src/core/items/rarity/authored_item_rarity_strategy.js",
+    "src/core/items/rarity/effective_item_rarity_resolver.js",
+    "src/core/items/rarity/item_rarity_descriptor.js",
+    "src/core/items/rarity/item_rarity_resolver.js",
+    "src/core/items/rarity/item_rarity_strategy_registry.js",
+    "src/core/items/rarity/item_rarity_strategy.js",
+    "src/core/line/line_allocation_policy.js",
+    "src/core/line/line_inventory_controller.js",
+    "src/core/line/line_spool_state.js",
+    "src/core/loadouts/equipment_loadout_repository.js",
+    "src/core/loadouts/equipment_loadout.js",
+    "src/core/loadouts/loadout_equipment_transition_planner.js",
+    "src/debug/core/debug_console.js",
+    "src/debug/core/debug_context.js",
+    "src/debug/core/debug_event_binder.js",
+    "src/debug/core/debug_module_registry.js",
+    "src/debug/core/null_debug_runtime.js",
+    "src/debug/debug.js",
+    "src/debug/dev_tools.js",
+    "src/debug/god_mode.js",
+    "src/debug/modules/base_debug_module.js",
+    "src/debug/modules/bite_ticks_debug_module.js",
+    "src/debug/modules/catch_time_debug_module.js",
+    "src/debug/modules/deviations_debug_module.js",
+    "src/debug/modules/exhaustion_debug_module.js",
+    "src/debug/modules/forces_debug_module.js",
+    "src/debug/modules/location_debug_module.js",
+    "src/debug/modules/map_debug_module.js",
+    "src/debug/modules/net_debug_module.js",
+    "src/debug/modules/prediction_debug_module.js",
+    "src/debug/modules/reel_hold_gate_debug_module.js",
+    "src/debug/modules/reel_hold_gate_live_probe.js",
+    "src/debug/modules/rod_stroke_debug_module.js",
+    "src/debug/modules/stamina_debug_module.js",
+    "src/debug/modules/tension_debug_module.js",
+    "src/debug/overlay/config/overlay_modules_config.js",
+    "src/debug/overlay/core/overlay_controller.js",
+    "src/debug/overlay/core/overlay_module_base.js",
+    "src/debug/overlay/core/overlay_module_registry.js",
+    "src/debug/overlay/core/overlay_update_loop.js",
+    "src/debug/overlay/dom/overlay_dom_adapter.js",
+    "src/debug/overlay/dom/overlay_interaction_bridge.js",
+    "src/debug/overlay/dom/overlay_metric_info_bridge.js",
+    "src/debug/overlay/dom/overlay_scale_controls.js",
+    "src/debug/overlay/dom/overlay_style_installer.js",
+    "src/debug/overlay/dom/overlay_window_drag_controller.js",
+    "src/debug/overlay/modules/behavior_overlay_module.js",
+    "src/debug/overlay/modules/chances_detail_overlay_module.js",
+    "src/debug/overlay/modules/chum_overlay_module.js",
+    "src/debug/overlay/modules/debuffs_overlay_module.js",
+    "src/debug/overlay/modules/echo_overlay_module.js",
+    "src/debug/overlay/modules/fight_physics/fight_auto_recovery_section.js",
+    "src/debug/overlay/modules/fight_physics/fight_drag_section.js",
+    "src/debug/overlay/modules/fight_physics/fight_fish_section.js",
+    "src/debug/overlay/modules/fight_physics/fight_line_section.js",
+    "src/debug/overlay/modules/fight_physics/fight_movement_section.js",
+    "src/debug/overlay/modules/fight_physics/fight_physics_overlay_module.js",
+    "src/debug/overlay/modules/fight_physics/fight_reel_hold_section.js",
+    "src/debug/overlay/modules/fight_physics/fight_rod_control_force_section.js",
+    "src/debug/overlay/modules/fight_physics/fight_rod_control_geometry_section.js",
+    "src/debug/overlay/modules/fight_physics/fight_rod_control_input_section.js",
+    "src/debug/overlay/modules/fight_physics/fight_rod_control_section.js",
+    "src/debug/overlay/modules/fight_physics/fight_rod_control_visual_section.js",
+    "src/debug/overlay/modules/fight_physics/fight_rod_hold_section.js",
+    "src/debug/overlay/modules/fight_physics/fight_rod_stroke_section.js",
+    "src/debug/overlay/modules/fight_physics/fight_section_base.js",
+    "src/debug/overlay/modules/fight_physics/fight_tension_section.js",
+    "src/debug/overlay/modules/fight_summary/fight_summary_overlay_module.js",
+    "src/debug/overlay/modules/fight_summary/fish_movement_summary_overlay_module.js",
+    "src/debug/overlay/modules/fight_summary/line_and_drag_summary_overlay_module.js",
+    "src/debug/overlay/modules/fight_summary/rod_control_summary_overlay_module.js",
+    "src/debug/overlay/modules/fish_balance_overlay_module.js",
+    "src/debug/overlay/modules/fish_balance/fish_current_force_overlay_module.js",
+    "src/debug/overlay/modules/fish_balance/fish_debuffs_summary_overlay_module.js",
+    "src/debug/overlay/modules/fish_balance/fish_live_force_summary_section.js",
+    "src/debug/overlay/modules/fish_balance/fish_state_force_preview_section.js",
+    "src/debug/overlay/modules/fish_balance/fish_summary_overlay_module.js",
+    "src/debug/overlay/modules/fish_power_overlay_module.js",
+    "src/debug/overlay/modules/live_forces_overlay_module.js",
+    "src/debug/overlay/modules/player_max_overlay_module.js",
+    "src/debug/overlay/modules/stamina_balance_overlay_module.js",
+    "src/debug/overlay/modules/worst_case_overlay_module.js",
+    "src/debug/overlay/overlay_bootstrap.js",
+    "src/debug/overlay/services/overlay_console_metric_inspector.js",
+    "src/debug/overlay/services/overlay_html_builder.js",
+    "src/debug/overlay/services/overlay_metric_catalog.js",
+    "src/debug/overlay/services/overlay_metric_resolver.js",
+    "src/debug/overlay/services/overlay_settings_store.js",
+    "src/debug/overlay/services/overlay_value_formatter.js",
+    "src/debug/overlay/services/overlay_view_state_store.js",
+    "src/debug/overlay/services/worst_case_force_debug_selector.js",
+    "src/debug/services/active_fish_dev_tools_schema.js",
+    "src/debug/services/debug_data_selectors.js",
+    "src/debug/services/debug_formatters.js",
+    "src/debug/services/dev_tools_control_binding_registry.js",
+    "src/debug/services/dev_tools_parameter_alias_registry.js",
+    "src/debug/services/hooked_fish_profile_synchronizer.js",
+    "src/debug/services/item_progression_debug_snapshot_provider.js",
+    "src/debug/services/location_debug_data_provider.js",
+    "src/debug/services/location_dev_tools_schema.js",
+    "src/debug/services/memory_leak_watchdog.js",
+    "src/entities/fish.js",
+    "src/entities/tackle.js",
+    "src/infrastructure/location/depth_map_reader.js",
+    "src/infrastructure/location/location_asset_loader.js",
+    "src/infrastructure/location/offscreen_canvas_factory.js",
+    "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+    "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+    "src/infrastructure/storage/inventory_v2_snapshot_factory.js",
+    "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
+    "src/infrastructure/storage/inventory_v2_state_store.js",
+    "src/infrastructure/storage/inventory_v2_transaction_coordinator.js",
+    "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+    "src/infrastructure/storage/legacy_item_state_migration.js",
+    "src/input/pull_input_mapper.js",
+    "src/input/victory_action_gesture_resolver.js",
+    "src/render/casting/cast_scene_renderer.js",
+    "src/render/core/canvas_2d_surface.js",
+    "src/render/core/canvas_primitives.js",
+    "src/render/core/composite_renderer.js",
+    "src/render/core/image_asset_provider.js",
+    "src/render/core/render_allocation_diagnostics.js",
+    "src/render/core/render_component.js",
+    "src/render/core/render_frame_buffer.js",
+    "src/render/core/render_math.js",
+    "src/render/core/render_order.js",
+    "src/render/core/render_pass.js",
+    "src/render/fishing/fight_area_renderer.js",
+    "src/render/fishing/fishing_scene_renderer.js",
+    "src/render/fishing/float_renderer.js",
+    "src/render/fishing/line_visual_state_controller.js",
+    "src/render/fishing/rod_line_renderer.js",
+    "src/render/hud/fight_hud_renderer.js",
+    "src/render/hud/fight_status_bars_renderer.js",
+    "src/render/hud/hold_charges_renderer.js",
+    "src/render/hud/hud_bar_renderer.js",
+    "src/render/hud/player_pressure_fatigue_indicator_renderer.js",
+    "src/render/pipeline/casting_render_pass.js",
+    "src/render/pipeline/fishing_render_pass.js",
+    "src/render/pipeline/game_render_pipeline.js",
+    "src/render/pipeline/hud_render_pass.js",
+    "src/render/pipeline/outcome_render_pass.js",
+    "src/render/pipeline/world_render_pass.js",
+    "src/render/screens/game_over_renderer.js",
+    "src/render/screens/rarity_animation_resolver.js",
+    "src/render/screens/star_rating_renderer.js",
+    "src/render/screens/victory_layout_resolver.js",
+    "src/render/screens/victory_renderer.js",
+    "src/render/screens/victory_theme_resolver.js",
+    "src/render/world/boat_chum_renderer.js",
+    "src/render/world/location_debug_map_builder.js",
+    "src/render/world/world_debug_renderer.js",
+    "src/render/world/world_scene_renderer.js",
+    "src/services/weakest_tackle_limit_resolver.js",
+    "src/systems/bite_system.js",
+    "src/systems/chum_system.js",
+    "src/systems/drag_system.js",
+    "src/systems/fight_physics_pipeline.js",
+    "src/systems/fight_physics_system.js",
+    "src/systems/fish_force_system.js",
+    "src/systems/fish_retrieve_system.js",
+    "src/systems/inventory_item_factory.js",
+    "src/systems/inventory_item_view_factory.js",
+    "src/systems/inventory_system.js",
+    "src/systems/line_system.js",
+    "src/systems/player_force_system.js",
+    "src/systems/player_pull_motion_smoother.js",
+    "src/systems/reel_system.js",
+    "src/systems/rod_lateral_control_system.js",
+    "src/systems/rod_pull_system.js",
+    "src/systems/rod_visual_offset_system.js",
+    "src/systems/stamina_system.js",
+    "src/systems/tackle_stress_system.js",
+    "src/systems/tension_system.js",
+    "src/ui/condition/item_condition_dom_adapter.js",
+    "src/ui/interaction/horizontal_scroll_controller.js",
+    "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
+    "src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js",
+    "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
+    "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+    "src/ui/inventory/inventory_v2_bootstrap.js",
+    "src/ui/inventory/inventory_v2_dom_factory.js",
+    "src/ui/inventory/inventory_v2_header_renderer.js",
+    "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
+    "src/ui/inventory/inventory_v2_item_card_renderer.js",
+    "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
+    "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
+    "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
+    "src/ui/inventory/inventory_v2_long_press_controller.js",
+    "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
+    "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
+    "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
+    "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+    "src/ui/inventory/inventory_v2_ui.js",
+    "src/ui/inventory/inventory_v2_view_model.js",
+    "src/ui/progression/item_progression_dom_adapter.js",
+    "src/ui/progression/item_progression_visual_resolver.js",
+    "src/ui/rarity/item_rarity_dom_adapter.js",
+    "src/ui/styles/degradation_color_resolver.js",
+    "src/ui/styles/fight_area_style_resolver.js",
+    "src/ui/styles/hud_style_resolver.js",
+    "src/ui/styles/outcome_style_resolver.js",
+    "src/ui/styles/rarity_visual_resolver.js",
+    "src/ui/ui.js",
+    "src/ui/version_badge.js",
+    "src/world/world.js"
+  ],
+  "legacyScripts": [
+    {
+      "legacyLoadOrder": 1,
+      "currentPath": "src/config/project_version.js",
+      "source": "src/config/project_version.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 2,
+      "currentPath": "src/config/rarity/rarity_visual_config.js",
+      "source": "src/config/rarity/rarity_visual_config.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 3,
+      "currentPath": "src/config/visual/degradation_color_config.js",
+      "source": "src/config/visual/degradation_color_config.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 4,
+      "currentPath": "src/config/items/item_progression_config.js",
+      "source": "src/config/items/item_progression_config.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 5,
+      "currentPath": "src/config/items/item_stat_override_config.js",
+      "source": "src/config/items/item_stat_override_config.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 6,
+      "currentPath": "src/config/databases/item_db.js",
+      "source": "src/config/databases/item_db.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 7,
+      "currentPath": "src/config/databases/fish/presets/fish_profile_factory.js",
+      "source": "src/config/databases/fish/presets/fish_profile_factory.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 8,
+      "currentPath": "src/config/databases/fish/presets/fish_profile_presets.js",
+      "source": "src/config/databases/fish/presets/fish_profile_presets.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 9,
+      "currentPath": "src/config/databases/fish/species/peaceful_fish.js",
+      "source": "src/config/databases/fish/species/peaceful_fish.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 10,
+      "currentPath": "src/config/databases/fish/species/predator_fish.js",
+      "source": "src/config/databases/fish/species/predator_fish.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 11,
+      "currentPath": "src/config/databases/fish/species/rare_fish.js",
+      "source": "src/config/databases/fish/species/rare_fish.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 12,
+      "currentPath": "src/config/databases/fish/species/event_fish.js",
+      "source": "src/config/databases/fish/species/event_fish.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 13,
+      "currentPath": "src/config/databases/fish/fish_categories.js",
+      "source": "src/config/databases/fish/fish_categories.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 14,
+      "currentPath": "src/config/databases/fish_db.js",
+      "source": "src/config/databases/fish_db.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 15,
+      "currentPath": "src/config/databases/map_db.js",
+      "source": "src/config/databases/map_db.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 16,
+      "currentPath": "src/config/physics/environment_physics_config.js",
+      "source": "src/config/physics/environment_physics_config.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 17,
+      "currentPath": "src/config/physics/retrieve_physics_config.js",
+      "source": "src/config/physics/retrieve_physics_config.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 18,
+      "currentPath": "src/config/physics/fight_physics_config.js",
+      "source": "src/config/physics/fight_physics_config.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 19,
+      "currentPath": "src/config/physics/tackle_physics_config.js",
+      "source": "src/config/physics/tackle_physics_config.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 20,
+      "currentPath": "src/config/physics/tension_physics_config.js",
+      "source": "src/config/physics/tension_physics_config.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 21,
+      "currentPath": "src/config/physics/physics_formula_map.js",
+      "source": "src/config/physics/physics_formula_map.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 22,
+      "currentPath": "src/config/physics/physics_units_and_naming.js",
+      "source": "src/config/physics/physics_units_and_naming.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 23,
+      "currentPath": "src/config/physics/physics_config_adapter.js",
+      "source": "src/config/physics/physics_config_adapter.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 24,
+      "currentPath": "src/config/physics/physics_config.js",
+      "source": "src/config/physics/physics_config.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 25,
+      "currentPath": "src/config/runtime/config_override_store.js",
+      "source": "src/config/runtime/config_override_store.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 26,
+      "currentPath": "src/config/runtime/resolved_config_provider.js",
+      "source": "src/config/runtime/resolved_config_provider.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 27,
+      "currentPath": "src/config/runtime/immutable_config.js",
+      "source": "src/config/runtime/immutable_config.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 28,
+      "currentPath": "src/config/config.js",
+      "source": "src/config/config.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 29,
+      "currentPath": "src/config/inventory/item_assembly_profile_config.js",
+      "source": "src/config/inventory/item_assembly_profile_config.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 30,
+      "currentPath": "src/config/inventory/equipment_slot_config.js",
+      "source": "src/config/inventory/equipment_slot_config.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 31,
+      "currentPath": "src/config/inventory/inventory_v2_item_parameter_config.js",
+      "source": "src/config/inventory/inventory_v2_item_parameter_config.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 32,
+      "currentPath": "src/config/inventory/inventory_v2_sort_config.js",
+      "source": "src/config/inventory/inventory_v2_sort_config.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 33,
+      "currentPath": "src/config/validation/item_rarity_config_validator.js",
+      "source": "src/config/validation/item_rarity_config_validator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 34,
+      "currentPath": "src/config/validation/rarity_config_validator.js",
+      "source": "src/config/validation/rarity_config_validator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 35,
+      "currentPath": "src/config/validation/item_progression_config_validator.js",
+      "source": "src/config/validation/item_progression_config_validator.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 36,
+      "currentPath": "src/config/validation/degradation_color_config_validator.js",
+      "source": "src/config/validation/degradation_color_config_validator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 37,
+      "currentPath": "src/config/validation/config_schema_validator.js",
+      "source": "src/config/validation/config_schema_validator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 38,
+      "currentPath": "src/input/pull_input_mapper.js",
+      "source": "src/input/pull_input_mapper.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 39,
+      "currentPath": "src/input/victory_action_gesture_resolver.js",
+      "source": "src/input/victory_action_gesture_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 40,
+      "currentPath": "src/core/input/fight_input_action_composer.js",
+      "source": "src/core/input/fight_input_action_composer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 41,
+      "currentPath": "src/core/core.js",
+      "source": "src/core/core.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 42,
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "source": "src/core/fish/fish_rarity_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 43,
+      "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "source": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 44,
+      "currentPath": "src/core/fish/fish_visual_variant_resolver.js",
+      "source": "src/core/fish/fish_visual_variant_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 45,
+      "currentPath": "src/core/items/rarity/item_rarity_descriptor.js",
+      "source": "src/core/items/rarity/item_rarity_descriptor.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 46,
+      "currentPath": "src/core/items/rarity/item_rarity_strategy.js",
+      "source": "src/core/items/rarity/item_rarity_strategy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 47,
+      "currentPath": "src/core/items/rarity/authored_item_rarity_strategy.js",
+      "source": "src/core/items/rarity/authored_item_rarity_strategy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 48,
+      "currentPath": "src/core/items/rarity/item_rarity_strategy_registry.js",
+      "source": "src/core/items/rarity/item_rarity_strategy_registry.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 49,
+      "currentPath": "src/core/items/rarity/item_rarity_resolver.js",
+      "source": "src/core/items/rarity/item_rarity_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 50,
+      "currentPath": "src/core/items/rarity/effective_item_rarity_resolver.js",
+      "source": "src/core/items/rarity/effective_item_rarity_resolver.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 51,
+      "currentPath": "src/core/items/item_stat_override_policy.js",
+      "source": "src/core/items/item_stat_override_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 52,
+      "currentPath": "src/core/items/effective_item_stats_resolver.js",
+      "source": "src/core/items/effective_item_stats_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 53,
+      "currentPath": "src/core/items/metrics/item_bounded_metric_resolver.js",
+      "source": "src/core/items/metrics/item_bounded_metric_resolver.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 54,
+      "currentPath": "src/core/items/condition/item_condition_descriptor.js",
+      "source": "src/core/items/condition/item_condition_descriptor.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 55,
+      "currentPath": "src/core/items/condition/item_condition_resolver.js",
+      "source": "src/core/items/condition/item_condition_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 56,
+      "currentPath": "src/core/items/freshness/item_freshness_descriptor.js",
+      "source": "src/core/items/freshness/item_freshness_descriptor.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 57,
+      "currentPath": "src/core/items/freshness/item_freshness_state_policy.js",
+      "source": "src/core/items/freshness/item_freshness_state_policy.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 58,
+      "currentPath": "src/core/items/freshness/bait_freshness_decay_policy.js",
+      "source": "src/core/items/freshness/bait_freshness_decay_policy.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 59,
+      "currentPath": "src/core/items/freshness/bait_freshness_modifier.js",
+      "source": "src/core/items/freshness/bait_freshness_modifier.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 60,
+      "currentPath": "src/core/items/freshness/item_freshness_resolver.js",
+      "source": "src/core/items/freshness/item_freshness_resolver.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 61,
+      "currentPath": "src/core/items/bait/bait_effectiveness_descriptor.js",
+      "source": "src/core/items/bait/bait_effectiveness_descriptor.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 62,
+      "currentPath": "src/core/items/bait/bait_effectiveness_match.js",
+      "source": "src/core/items/bait/bait_effectiveness_match.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 63,
+      "currentPath": "src/core/items/bait/bait_effectiveness_grade_policy.js",
+      "source": "src/core/items/bait/bait_effectiveness_grade_policy.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 64,
+      "currentPath": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+      "source": "src/core/items/bait/bait_effectiveness_knowledge_policy.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 65,
+      "currentPath": "src/core/items/bait/bait_effectiveness_resolver.js",
+      "source": "src/core/items/bait/bait_effectiveness_resolver.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 66,
+      "currentPath": "src/core/items/bait/bait_effectiveness_catalog_resolver.js",
+      "source": "src/core/items/bait/bait_effectiveness_catalog_resolver.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 67,
+      "currentPath": "src/core/fishing/fishing_cast_exposure_resolver.js",
+      "source": "src/core/fishing/fishing_cast_exposure_resolver.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 68,
+      "currentPath": "src/core/items/quality/item_quality_grade_policy.js",
+      "source": "src/core/items/quality/item_quality_grade_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 69,
+      "currentPath": "src/core/items/quality/hook_quality_modifier.js",
+      "source": "src/core/items/quality/hook_quality_modifier.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 70,
+      "currentPath": "src/core/items/hook/hook_power_policy.js",
+      "source": "src/core/items/hook/hook_power_policy.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 71,
+      "currentPath": "src/core/items/quality/net_quality_modifier.js",
+      "source": "src/core/items/quality/net_quality_modifier.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 72,
+      "currentPath": "src/core/items/quality/environmental_compensation_modifier.js",
+      "source": "src/core/items/quality/environmental_compensation_modifier.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 73,
+      "currentPath": "src/core/items/progression/item_metric_strategy.js",
+      "source": "src/core/items/progression/item_metric_strategy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 74,
+      "currentPath": "src/core/items/progression/numeric_stat_metric_strategy.js",
+      "source": "src/core/items/progression/numeric_stat_metric_strategy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 75,
+      "currentPath": "src/core/items/progression/derived_stat_metric_strategy.js",
+      "source": "src/core/items/progression/derived_stat_metric_strategy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 76,
+      "currentPath": "src/core/items/progression/target_range_metric_strategy.js",
+      "source": "src/core/items/progression/target_range_metric_strategy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 77,
+      "currentPath": "src/core/items/progression/composite_metric_strategy.js",
+      "source": "src/core/items/progression/composite_metric_strategy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 78,
+      "currentPath": "src/core/items/progression/item_metric_strategy_registry.js",
+      "source": "src/core/items/progression/item_metric_strategy_registry.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 79,
+      "currentPath": "src/core/items/progression/item_catalog_baseline_registry.js",
+      "source": "src/core/items/progression/item_catalog_baseline_registry.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 80,
+      "currentPath": "src/core/items/progression/item_rating_resolver.js",
+      "source": "src/core/items/progression/item_rating_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 81,
+      "currentPath": "src/core/items/progression/item_rating_tier_resolver.js",
+      "source": "src/core/items/progression/item_rating_tier_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 82,
+      "currentPath": "src/core/items/progression/item_quality_resolver.js",
+      "source": "src/core/items/progression/item_quality_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 83,
+      "currentPath": "src/core/items/progression/item_capacity_resolver.js",
+      "source": "src/core/items/progression/item_capacity_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 84,
+      "currentPath": "src/core/items/progression/item_progression_descriptor.js",
+      "source": "src/core/items/progression/item_progression_descriptor.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 85,
+      "currentPath": "src/core/items/progression/item_progression_resolver.js",
+      "source": "src/core/items/progression/item_progression_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 86,
+      "currentPath": "src/core/inventory/equip_target_selection_policy.js",
+      "source": "src/core/inventory/equip_target_selection_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 87,
+      "currentPath": "src/core/inventory/inventory_item_stacking_policy.js",
+      "source": "src/core/inventory/inventory_item_stacking_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 88,
+      "currentPath": "src/core/float_tackle_line_budget_policy.js",
+      "source": "src/core/float_tackle_line_budget_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 89,
+      "currentPath": "src/core/casting_distance.js",
+      "source": "src/core/casting_distance.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 90,
+      "currentPath": "src/core/line/line_spool_state.js",
+      "source": "src/core/line/line_spool_state.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 91,
+      "currentPath": "src/core/fishing/rod_pull_state.js",
+      "source": "src/core/fishing/rod_pull_state.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 92,
+      "currentPath": "src/core/fishing/rod_stroke_state.js",
+      "source": "src/core/fishing/rod_stroke_state.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 93,
+      "currentPath": "src/core/fishing/rod_stroke_tracker.js",
+      "source": "src/core/fishing/rod_stroke_tracker.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 94,
+      "currentPath": "src/core/fishing/rod_stroke_distance_tracker.js",
+      "source": "src/core/fishing/rod_stroke_distance_tracker.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 95,
+      "currentPath": "src/core/fishing/player_force_budget_allocator.js",
+      "source": "src/core/fishing/player_force_budget_allocator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 96,
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "source": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 97,
+      "currentPath": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "source": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 98,
+      "currentPath": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+      "source": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 99,
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "source": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 100,
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "source": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 101,
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "source": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 102,
+      "currentPath": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+      "source": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 103,
+      "currentPath": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+      "source": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 104,
+      "currentPath": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+      "source": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 105,
+      "currentPath": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+      "source": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 106,
+      "currentPath": "src/core/fishing/stamina/stamina_drain_calculator.js",
+      "source": "src/core/fishing/stamina/stamina_drain_calculator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 107,
+      "currentPath": "src/core/fishing/stamina/stamina_regen_calculator.js",
+      "source": "src/core/fishing/stamina/stamina_regen_calculator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 108,
+      "currentPath": "src/core/fishing/stamina/stamina_transition_resolver.js",
+      "source": "src/core/fishing/stamina/stamina_transition_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 109,
+      "currentPath": "src/core/fishing/stamina/stamina_phase_machine.js",
+      "source": "src/core/fishing/stamina/stamina_phase_machine.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 110,
+      "currentPath": "src/core/fishing/stamina/stamina_balance_frame.js",
+      "source": "src/core/fishing/stamina/stamina_balance_frame.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 111,
+      "currentPath": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "source": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 112,
+      "currentPath": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "source": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 113,
+      "currentPath": "src/core/fishing/reel_auto_recovery_calculator.js",
+      "source": "src/core/fishing/reel_auto_recovery_calculator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 114,
+      "currentPath": "src/core/fishing/reel_hold_load_policy.js",
+      "source": "src/core/fishing/reel_hold_load_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 115,
+      "currentPath": "src/core/fishing/reel_hold_recovery_system.js",
+      "source": "src/core/fishing/reel_hold_recovery_system.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 116,
+      "currentPath": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+      "source": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 117,
+      "currentPath": "src/core/fishing/recoverable_line_calculator.js",
+      "source": "src/core/fishing/recoverable_line_calculator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 118,
+      "currentPath": "src/core/fishing/rod_stroke_capacity_resolver.js",
+      "source": "src/core/fishing/rod_stroke_capacity_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 119,
+      "currentPath": "src/core/fishing/rod_pull_calculator.js",
+      "source": "src/core/fishing/rod_pull_calculator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 120,
+      "currentPath": "src/core/fishing/landing_policy.js",
+      "source": "src/core/fishing/landing_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 121,
+      "currentPath": "src/core/fishing/retrieve_policy.js",
+      "source": "src/core/fishing/retrieve_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 122,
+      "currentPath": "src/core/fishing/fish_retrieve_result.js",
+      "source": "src/core/fishing/fish_retrieve_result.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 123,
+      "currentPath": "src/core/fishing/hold_opposition_resolver.js",
+      "source": "src/core/fishing/hold_opposition_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 124,
+      "currentPath": "src/core/fishing/fish_direction_intent_sampler.js",
+      "source": "src/core/fishing/fish_direction_intent_sampler.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 125,
+      "currentPath": "src/core/fishing/fish_fight_direction_resolver.js",
+      "source": "src/core/fishing/fish_fight_direction_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 126,
+      "currentPath": "src/core/fishing/rod_control_tension_mode_resolver.js",
+      "source": "src/core/fishing/rod_control_tension_mode_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 127,
+      "currentPath": "src/core/fishing/rod_control_angle_resolver.js",
+      "source": "src/core/fishing/rod_control_angle_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 128,
+      "currentPath": "src/core/fishing/drag_force_calculator.js",
+      "source": "src/core/fishing/drag_force_calculator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 129,
+      "currentPath": "src/core/fishing/line_tension_calculator.js",
+      "source": "src/core/fishing/line_tension_calculator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 130,
+      "currentPath": "src/core/fishing/line_constraint_state_resolver.js",
+      "source": "src/core/fishing/line_constraint_state_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 131,
+      "currentPath": "src/core/fishing/line_constrained_fish_motion_resolver.js",
+      "source": "src/core/fishing/line_constrained_fish_motion_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 132,
+      "currentPath": "src/core/fishing/line_radial_movement_splitter.js",
+      "source": "src/core/fishing/line_radial_movement_splitter.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 133,
+      "currentPath": "src/core/fishing/rod_control_movement_projector.js",
+      "source": "src/core/fishing/rod_control_movement_projector.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 134,
+      "currentPath": "src/core/fishing/pole_fight_sector_geometry.js",
+      "source": "src/core/fishing/pole_fight_sector_geometry.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 135,
+      "currentPath": "src/core/fishing/pole_fight_sector_constraint.js",
+      "source": "src/core/fishing/pole_fight_sector_constraint.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 136,
+      "currentPath": "src/core/fishing/pole_fight_sector_angle_constraint.js",
+      "source": "src/core/fishing/pole_fight_sector_angle_constraint.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 137,
+      "currentPath": "src/core/fishing/tackle_failure_selector.js",
+      "source": "src/core/fishing/tackle_failure_selector.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 138,
+      "currentPath": "src/core/fishing/tackle_stress_accumulator.js",
+      "source": "src/core/fishing/tackle_stress_accumulator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 139,
+      "currentPath": "src/core/fishing/simple_fight_force_calculator.js",
+      "source": "src/core/fishing/simple_fight_force_calculator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 140,
+      "currentPath": "src/core/fishing/landing_lift_tension_calculator.js",
+      "source": "src/core/fishing/landing_lift_tension_calculator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 141,
+      "currentPath": "src/core/fishing/landing_lift_readiness_policy.js",
+      "source": "src/core/fishing/landing_lift_readiness_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 142,
+      "currentPath": "src/core/line/line_allocation_policy.js",
+      "source": "src/core/line/line_allocation_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 143,
+      "currentPath": "src/core/line/line_inventory_controller.js",
+      "source": "src/core/line/line_inventory_controller.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 144,
+      "currentPath": "src/core/inventory/inventory_item_location.js",
+      "source": "src/core/inventory/inventory_item_location.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 145,
+      "currentPath": "src/core/inventory/inventory_item_reservation_policy.js",
+      "source": "src/core/inventory/inventory_item_reservation_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 146,
+      "currentPath": "src/core/inventory/flat_inventory_item_repository.js",
+      "source": "src/core/inventory/flat_inventory_item_repository.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 147,
+      "currentPath": "src/core/inventory/item_assembly_stacking_policy.js",
+      "source": "src/core/inventory/item_assembly_stacking_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 148,
+      "currentPath": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+      "source": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 149,
+      "currentPath": "src/core/assemblies/assembly_state.js",
+      "source": "src/core/assemblies/assembly_state.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 150,
+      "currentPath": "src/core/assemblies/assembly_state_repository.js",
+      "source": "src/core/assemblies/assembly_state_repository.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 151,
+      "currentPath": "src/core/assemblies/assembly_profile_registry.js",
+      "source": "src/core/assemblies/assembly_profile_registry.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 152,
+      "currentPath": "src/core/assemblies/item_assembly_reader.js",
+      "source": "src/core/assemblies/item_assembly_reader.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 153,
+      "currentPath": "src/core/assemblies/assembly_attachment_target_resolver.js",
+      "source": "src/core/assemblies/assembly_attachment_target_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 154,
+      "currentPath": "src/core/assemblies/assembly_completion_policy.js",
+      "source": "src/core/assemblies/assembly_completion_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 155,
+      "currentPath": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+      "source": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 156,
+      "currentPath": "src/core/assemblies/item_assembly_service.js",
+      "source": "src/core/assemblies/item_assembly_service.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 157,
+      "currentPath": "src/core/equipment/rod_capability_resolver.js",
+      "source": "src/core/equipment/rod_capability_resolver.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 158,
+      "currentPath": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "source": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 159,
+      "currentPath": "src/core/equipment/terminal_line_slot_resolver.js",
+      "source": "src/core/equipment/terminal_line_slot_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 160,
+      "currentPath": "src/core/equipment/equipment_state.js",
+      "source": "src/core/equipment/equipment_state.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 161,
+      "currentPath": "src/core/equipment/equipment_slot_availability_policy.js",
+      "source": "src/core/equipment/equipment_slot_availability_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 162,
+      "currentPath": "src/core/equipment/inventory_capacity_policy.js",
+      "source": "src/core/equipment/inventory_capacity_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 163,
+      "currentPath": "src/core/equipment/equipment_transition_planner.js",
+      "source": "src/core/equipment/equipment_transition_planner.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 164,
+      "currentPath": "src/core/equipment/exact_item_signature_policy.js",
+      "source": "src/core/equipment/exact_item_signature_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 165,
+      "currentPath": "src/core/equipment/auto_refill_policy.js",
+      "source": "src/core/equipment/auto_refill_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 166,
+      "currentPath": "src/core/equipment/fishing_readiness_policy.js",
+      "source": "src/core/equipment/fishing_readiness_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 167,
+      "currentPath": "src/core/equipment/equipment_compatibility_policy.js",
+      "source": "src/core/equipment/equipment_compatibility_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 168,
+      "currentPath": "src/core/loadouts/equipment_loadout.js",
+      "source": "src/core/loadouts/equipment_loadout.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 169,
+      "currentPath": "src/core/loadouts/equipment_loadout_repository.js",
+      "source": "src/core/loadouts/equipment_loadout_repository.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 170,
+      "currentPath": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "source": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 171,
+      "currentPath": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+      "source": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 172,
+      "currentPath": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+      "source": "src/infrastructure/storage/inventory_item_snapshot_mapper.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 173,
+      "currentPath": "src/infrastructure/storage/legacy_item_state_migration.js",
+      "source": "src/infrastructure/storage/legacy_item_state_migration.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 174,
+      "currentPath": "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
+      "source": "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 175,
+      "currentPath": "src/infrastructure/storage/inventory_v2_state_store.js",
+      "source": "src/infrastructure/storage/inventory_v2_state_store.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 176,
+      "currentPath": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 177,
+      "currentPath": "src/infrastructure/storage/inventory_v2_snapshot_factory.js",
+      "source": "src/infrastructure/storage/inventory_v2_snapshot_factory.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 178,
+      "currentPath": "src/infrastructure/storage/inventory_v2_transaction_coordinator.js",
+      "source": "src/infrastructure/storage/inventory_v2_transaction_coordinator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 179,
+      "currentPath": "src/application/inventory/inventory_v2_transaction_participants.js",
+      "source": "src/application/inventory/inventory_v2_transaction_participants.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 180,
+      "currentPath": "src/application/inventory/equipment_transition_executor.js",
+      "source": "src/application/inventory/equipment_transition_executor.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 181,
+      "currentPath": "src/application/inventory/inventory_v2_equipment_transition_port.js",
+      "source": "src/application/inventory/inventory_v2_equipment_transition_port.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 182,
+      "currentPath": "src/application/inventory/loadout_application_service.js",
+      "source": "src/application/inventory/loadout_application_service.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 183,
+      "currentPath": "src/application/inventory/inventory_v2_loadout_port.js",
+      "source": "src/application/inventory/inventory_v2_loadout_port.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 184,
+      "currentPath": "src/application/inventory/equipment_read_model_factory.js",
+      "source": "src/application/inventory/equipment_read_model_factory.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 185,
+      "currentPath": "src/application/inventory/equipment_auto_refill_target_provider.js",
+      "source": "src/application/inventory/equipment_auto_refill_target_provider.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 186,
+      "currentPath": "src/application/inventory/auto_refill_coordinator.js",
+      "source": "src/application/inventory/auto_refill_coordinator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 187,
+      "currentPath": "src/application/inventory/inventory_v2_refill_ports.js",
+      "source": "src/application/inventory/inventory_v2_refill_ports.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 188,
+      "currentPath": "src/application/inventory/refill_compatible_signature_policy.js",
+      "source": "src/application/inventory/refill_compatible_signature_policy.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 189,
+      "currentPath": "src/application/inventory/freshest_refill_candidate_policy.js",
+      "source": "src/application/inventory/freshest_refill_candidate_policy.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 190,
+      "currentPath": "src/application/inventory/apply_bait_exposure_service.js",
+      "source": "src/application/inventory/apply_bait_exposure_service.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 191,
+      "currentPath": "src/application/inventory/inventory_v2_item_hydrator.js",
+      "source": "src/application/inventory/inventory_v2_item_hydrator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 192,
+      "currentPath": "src/application/inventory/inventory_v2_item_view_factory.js",
+      "source": "src/application/inventory/inventory_v2_item_view_factory.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 193,
+      "currentPath": "src/application/inventory/inventory_v2_subfilter_resolver.js",
+      "source": "src/application/inventory/inventory_v2_subfilter_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 194,
+      "currentPath": "src/application/inventory/inventory_v2_item_order_resolver.js",
+      "source": "src/application/inventory/inventory_v2_item_order_resolver.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 195,
+      "currentPath": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "source": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 196,
+      "currentPath": "src/application/inventory/inventory_v2_view_model_factory.js",
+      "source": "src/application/inventory/inventory_v2_view_model_factory.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 197,
+      "currentPath": "src/application/inventory/inventory_v2_line_allocation_service.js",
+      "source": "src/application/inventory/inventory_v2_line_allocation_service.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 198,
+      "currentPath": "src/application/inventory/inventory_v2_equipment_line_readiness_policy.js",
+      "source": "src/application/inventory/inventory_v2_equipment_line_readiness_policy.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 199,
+      "currentPath": "src/application/inventory/inventory_v2_command_service.js",
+      "source": "src/application/inventory/inventory_v2_command_service.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 200,
+      "currentPath": "src/application/inventory/inventory_v2_gameplay_bridge.js",
+      "source": "src/application/inventory/inventory_v2_gameplay_bridge.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 201,
+      "currentPath": "src/application/inventory/inventory_v2_facade.js",
+      "source": "src/application/inventory/inventory_v2_facade.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 202,
+      "currentPath": "src/application/inventory/inventory_v2_composition_root.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 203,
+      "currentPath": "src/services/weakest_tackle_limit_resolver.js",
+      "source": "src/services/weakest_tackle_limit_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 204,
+      "currentPath": "src/world/world.js",
+      "source": "src/world/world.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 205,
+      "currentPath": "src/entities/tackle.js",
+      "source": "src/entities/tackle.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 206,
+      "currentPath": "src/entities/fish.js",
+      "source": "src/entities/fish.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 207,
+      "currentPath": "src/systems/stamina_system.js",
+      "source": "src/systems/stamina_system.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 208,
+      "currentPath": "src/systems/drag_system.js",
+      "source": "src/systems/drag_system.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 209,
+      "currentPath": "src/systems/line_system.js",
+      "source": "src/systems/line_system.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 210,
+      "currentPath": "src/systems/player_force_system.js",
+      "source": "src/systems/player_force_system.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 211,
+      "currentPath": "src/systems/fish_force_system.js",
+      "source": "src/systems/fish_force_system.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 212,
+      "currentPath": "src/systems/player_pull_motion_smoother.js",
+      "source": "src/systems/player_pull_motion_smoother.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 213,
+      "currentPath": "src/systems/rod_pull_system.js",
+      "source": "src/systems/rod_pull_system.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 214,
+      "currentPath": "src/systems/rod_lateral_control_system.js",
+      "source": "src/systems/rod_lateral_control_system.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 215,
+      "currentPath": "src/systems/rod_visual_offset_system.js",
+      "source": "src/systems/rod_visual_offset_system.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 216,
+      "currentPath": "src/systems/fish_retrieve_system.js",
+      "source": "src/systems/fish_retrieve_system.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 217,
+      "currentPath": "src/systems/reel_system.js",
+      "source": "src/systems/reel_system.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 218,
+      "currentPath": "src/systems/tension_system.js",
+      "source": "src/systems/tension_system.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 219,
+      "currentPath": "src/systems/tackle_stress_system.js",
+      "source": "src/systems/tackle_stress_system.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 220,
+      "currentPath": "src/systems/fight_physics_pipeline.js",
+      "source": "src/systems/fight_physics_pipeline.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 221,
+      "currentPath": "src/systems/fight_physics_system.js",
+      "source": "src/systems/fight_physics_system.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 222,
+      "currentPath": "src/systems/bite_system.js",
+      "source": "src/systems/bite_system.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 223,
+      "currentPath": "src/systems/chum_system.js",
+      "source": "src/systems/chum_system.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 224,
+      "currentPath": "src/systems/inventory_item_factory.js",
+      "source": "src/systems/inventory_item_factory.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 225,
+      "currentPath": "src/systems/inventory_item_view_factory.js",
+      "source": "src/systems/inventory_item_view_factory.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 226,
+      "currentPath": "src/systems/inventory_system.js",
+      "source": "src/systems/inventory_system.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 227,
+      "currentPath": "src/ui/interaction/horizontal_scroll_controller.js",
+      "source": "src/ui/interaction/horizontal_scroll_controller.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 228,
+      "currentPath": "src/ui/ui.js",
+      "source": "src/ui/ui.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 229,
+      "currentPath": "src/ui/version_badge.js",
+      "source": "src/ui/version_badge.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 230,
+      "currentPath": "src/ui/styles/hud_style_resolver.js",
+      "source": "src/ui/styles/hud_style_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 231,
+      "currentPath": "src/ui/styles/fight_area_style_resolver.js",
+      "source": "src/ui/styles/fight_area_style_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 232,
+      "currentPath": "src/ui/styles/outcome_style_resolver.js",
+      "source": "src/ui/styles/outcome_style_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 233,
+      "currentPath": "src/ui/styles/rarity_visual_resolver.js",
+      "source": "src/ui/styles/rarity_visual_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 234,
+      "currentPath": "src/ui/styles/degradation_color_resolver.js",
+      "source": "src/ui/styles/degradation_color_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 235,
+      "currentPath": "src/ui/rarity/item_rarity_dom_adapter.js",
+      "source": "src/ui/rarity/item_rarity_dom_adapter.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 236,
+      "currentPath": "src/ui/condition/item_condition_dom_adapter.js",
+      "source": "src/ui/condition/item_condition_dom_adapter.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 237,
+      "currentPath": "src/ui/progression/item_progression_visual_resolver.js",
+      "source": "src/ui/progression/item_progression_visual_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 238,
+      "currentPath": "src/ui/progression/item_progression_dom_adapter.js",
+      "source": "src/ui/progression/item_progression_dom_adapter.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 239,
+      "currentPath": "src/ui/inventory/inventory_v2_view_model.js",
+      "source": "src/ui/inventory/inventory_v2_view_model.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 240,
+      "currentPath": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "source": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 241,
+      "currentPath": "src/ui/inventory/inventory_v2_long_press_controller.js",
+      "source": "src/ui/inventory/inventory_v2_long_press_controller.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 242,
+      "currentPath": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
+      "source": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 243,
+      "currentPath": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+      "source": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 244,
+      "currentPath": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+      "source": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 245,
+      "currentPath": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
+      "source": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 246,
+      "currentPath": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
+      "source": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 247,
+      "currentPath": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
+      "source": "src/ui/inventory/inventory_v2_item_parameters_resolver.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 248,
+      "currentPath": "src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js",
+      "source": "src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 249,
+      "currentPath": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
+      "source": "src/ui/inventory/inventory_v2_item_parameters_renderer.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 250,
+      "currentPath": "src/ui/inventory/inventory_v2_item_card_renderer.js",
+      "source": "src/ui/inventory/inventory_v2_item_card_renderer.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 251,
+      "currentPath": "src/ui/inventory/inventory_v2_header_renderer.js",
+      "source": "src/ui/inventory/inventory_v2_header_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 252,
+      "currentPath": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
+      "source": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 253,
+      "currentPath": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
+      "source": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 254,
+      "currentPath": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
+      "source": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 255,
+      "currentPath": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
+      "source": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 256,
+      "currentPath": "src/ui/inventory/inventory_v2_ui.js",
+      "source": "src/ui/inventory/inventory_v2_ui.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 257,
+      "currentPath": "src/ui/inventory/inventory_v2_bootstrap.js",
+      "source": "src/ui/inventory/inventory_v2_bootstrap.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 258,
+      "currentPath": "src/debug/services/debug_formatters.js",
+      "source": "src/debug/services/debug_formatters.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 259,
+      "currentPath": "src/debug/services/debug_data_selectors.js",
+      "source": "src/debug/services/debug_data_selectors.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 260,
+      "currentPath": "src/debug/services/location_debug_data_provider.js",
+      "source": "src/debug/services/location_debug_data_provider.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 261,
+      "currentPath": "src/debug/services/memory_leak_watchdog.js",
+      "source": "src/debug/services/memory_leak_watchdog.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 262,
+      "currentPath": "src/debug/core/debug_context.js",
+      "source": "src/debug/core/debug_context.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 263,
+      "currentPath": "src/debug/core/debug_module_registry.js",
+      "source": "src/debug/core/debug_module_registry.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 264,
+      "currentPath": "src/debug/core/debug_console.js",
+      "source": "src/debug/core/debug_console.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 265,
+      "currentPath": "src/debug/core/debug_event_binder.js",
+      "source": "src/debug/core/debug_event_binder.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 266,
+      "currentPath": "src/debug/core/null_debug_runtime.js",
+      "source": "src/debug/core/null_debug_runtime.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 267,
+      "currentPath": "src/debug/modules/base_debug_module.js",
+      "source": "src/debug/modules/base_debug_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 268,
+      "currentPath": "src/debug/modules/location_debug_module.js",
+      "source": "src/debug/modules/location_debug_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 269,
+      "currentPath": "src/debug/modules/map_debug_module.js",
+      "source": "src/debug/modules/map_debug_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 270,
+      "currentPath": "src/debug/modules/forces_debug_module.js",
+      "source": "src/debug/modules/forces_debug_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 271,
+      "currentPath": "src/debug/modules/deviations_debug_module.js",
+      "source": "src/debug/modules/deviations_debug_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 272,
+      "currentPath": "src/debug/modules/tension_debug_module.js",
+      "source": "src/debug/modules/tension_debug_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 273,
+      "currentPath": "src/debug/modules/rod_stroke_debug_module.js",
+      "source": "src/debug/modules/rod_stroke_debug_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 274,
+      "currentPath": "src/debug/modules/reel_hold_gate_debug_module.js",
+      "source": "src/debug/modules/reel_hold_gate_debug_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 275,
+      "currentPath": "src/debug/modules/reel_hold_gate_live_probe.js",
+      "source": "src/debug/modules/reel_hold_gate_live_probe.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 276,
+      "currentPath": "src/debug/modules/stamina_debug_module.js",
+      "source": "src/debug/modules/stamina_debug_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 277,
+      "currentPath": "src/debug/modules/exhaustion_debug_module.js",
+      "source": "src/debug/modules/exhaustion_debug_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 278,
+      "currentPath": "src/debug/modules/catch_time_debug_module.js",
+      "source": "src/debug/modules/catch_time_debug_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 279,
+      "currentPath": "src/debug/modules/prediction_debug_module.js",
+      "source": "src/debug/modules/prediction_debug_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 280,
+      "currentPath": "src/debug/modules/net_debug_module.js",
+      "source": "src/debug/modules/net_debug_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 281,
+      "currentPath": "src/debug/modules/bite_ticks_debug_module.js",
+      "source": "src/debug/modules/bite_ticks_debug_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 282,
+      "currentPath": "src/debug/debug.js",
+      "source": "src/debug/debug.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 283,
+      "currentPath": "src/debug/god_mode.js",
+      "source": "src/debug/god_mode.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 284,
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "source": "src/debug/overlay/config/overlay_modules_config.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 285,
+      "currentPath": "src/debug/overlay/services/overlay_settings_store.js",
+      "source": "src/debug/overlay/services/overlay_settings_store.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 286,
+      "currentPath": "src/debug/overlay/services/overlay_view_state_store.js",
+      "source": "src/debug/overlay/services/overlay_view_state_store.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 287,
+      "currentPath": "src/debug/overlay/services/overlay_html_builder.js",
+      "source": "src/debug/overlay/services/overlay_html_builder.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 288,
+      "currentPath": "src/debug/overlay/services/overlay_value_formatter.js",
+      "source": "src/debug/overlay/services/overlay_value_formatter.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 289,
+      "currentPath": "src/debug/overlay/services/worst_case_force_debug_selector.js",
+      "source": "src/debug/overlay/services/worst_case_force_debug_selector.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 290,
+      "currentPath": "src/debug/overlay/services/overlay_metric_catalog.js",
+      "source": "src/debug/overlay/services/overlay_metric_catalog.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 291,
+      "currentPath": "src/debug/overlay/services/overlay_metric_resolver.js",
+      "source": "src/debug/overlay/services/overlay_metric_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 292,
+      "currentPath": "src/debug/overlay/services/overlay_console_metric_inspector.js",
+      "source": "src/debug/overlay/services/overlay_console_metric_inspector.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 293,
+      "currentPath": "src/debug/overlay/core/overlay_module_base.js",
+      "source": "src/debug/overlay/core/overlay_module_base.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 294,
+      "currentPath": "src/debug/overlay/core/overlay_module_registry.js",
+      "source": "src/debug/overlay/core/overlay_module_registry.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 295,
+      "currentPath": "src/debug/overlay/core/overlay_update_loop.js",
+      "source": "src/debug/overlay/core/overlay_update_loop.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 296,
+      "currentPath": "src/debug/overlay/core/overlay_controller.js",
+      "source": "src/debug/overlay/core/overlay_controller.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 297,
+      "currentPath": "src/debug/overlay/dom/overlay_style_installer.js",
+      "source": "src/debug/overlay/dom/overlay_style_installer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 298,
+      "currentPath": "src/debug/overlay/dom/overlay_scale_controls.js",
+      "source": "src/debug/overlay/dom/overlay_scale_controls.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 299,
+      "currentPath": "src/debug/overlay/dom/overlay_window_drag_controller.js",
+      "source": "src/debug/overlay/dom/overlay_window_drag_controller.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 300,
+      "currentPath": "src/debug/overlay/dom/overlay_dom_adapter.js",
+      "source": "src/debug/overlay/dom/overlay_dom_adapter.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 301,
+      "currentPath": "src/debug/overlay/dom/overlay_metric_info_bridge.js",
+      "source": "src/debug/overlay/dom/overlay_metric_info_bridge.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 302,
+      "currentPath": "src/debug/overlay/dom/overlay_interaction_bridge.js",
+      "source": "src/debug/overlay/dom/overlay_interaction_bridge.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 303,
+      "currentPath": "src/debug/overlay/modules/echo_overlay_module.js",
+      "source": "src/debug/overlay/modules/echo_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 304,
+      "currentPath": "src/debug/overlay/modules/behavior_overlay_module.js",
+      "source": "src/debug/overlay/modules/behavior_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 305,
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_live_force_summary_section.js",
+      "source": "src/debug/overlay/modules/fish_balance/fish_live_force_summary_section.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 306,
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_state_force_preview_section.js",
+      "source": "src/debug/overlay/modules/fish_balance/fish_state_force_preview_section.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 307,
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_summary_overlay_module.js",
+      "source": "src/debug/overlay/modules/fish_balance/fish_summary_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 308,
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_current_force_overlay_module.js",
+      "source": "src/debug/overlay/modules/fish_balance/fish_current_force_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 309,
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_debuffs_summary_overlay_module.js",
+      "source": "src/debug/overlay/modules/fish_balance/fish_debuffs_summary_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 310,
+      "currentPath": "src/debug/overlay/modules/fish_balance_overlay_module.js",
+      "source": "src/debug/overlay/modules/fish_balance_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 311,
+      "currentPath": "src/debug/overlay/modules/fight_summary/fight_summary_overlay_module.js",
+      "source": "src/debug/overlay/modules/fight_summary/fight_summary_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 312,
+      "currentPath": "src/debug/overlay/modules/fight_summary/line_and_drag_summary_overlay_module.js",
+      "source": "src/debug/overlay/modules/fight_summary/line_and_drag_summary_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 313,
+      "currentPath": "src/debug/overlay/modules/fight_summary/rod_control_summary_overlay_module.js",
+      "source": "src/debug/overlay/modules/fight_summary/rod_control_summary_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 314,
+      "currentPath": "src/debug/overlay/modules/fight_summary/fish_movement_summary_overlay_module.js",
+      "source": "src/debug/overlay/modules/fight_summary/fish_movement_summary_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 315,
+      "currentPath": "src/debug/overlay/modules/fish_power_overlay_module.js",
+      "source": "src/debug/overlay/modules/fish_power_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 316,
+      "currentPath": "src/debug/overlay/modules/debuffs_overlay_module.js",
+      "source": "src/debug/overlay/modules/debuffs_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 317,
+      "currentPath": "src/debug/overlay/modules/player_max_overlay_module.js",
+      "source": "src/debug/overlay/modules/player_max_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 318,
+      "currentPath": "src/debug/overlay/modules/live_forces_overlay_module.js",
+      "source": "src/debug/overlay/modules/live_forces_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 319,
+      "currentPath": "src/debug/overlay/modules/chances_detail_overlay_module.js",
+      "source": "src/debug/overlay/modules/chances_detail_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 320,
+      "currentPath": "src/debug/overlay/modules/chum_overlay_module.js",
+      "source": "src/debug/overlay/modules/chum_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 321,
+      "currentPath": "src/debug/overlay/modules/stamina_balance_overlay_module.js",
+      "source": "src/debug/overlay/modules/stamina_balance_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 322,
+      "currentPath": "src/debug/overlay/modules/worst_case_overlay_module.js",
+      "source": "src/debug/overlay/modules/worst_case_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 323,
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_section_base.js",
+      "source": "src/debug/overlay/modules/fight_physics/fight_section_base.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 324,
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_fish_section.js",
+      "source": "src/debug/overlay/modules/fight_physics/fight_fish_section.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 325,
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_hold_section.js",
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_hold_section.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 326,
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_input_section.js",
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_control_input_section.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 327,
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_force_section.js",
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_control_force_section.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 328,
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_geometry_section.js",
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_control_geometry_section.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 329,
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_visual_section.js",
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_control_visual_section.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 330,
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_section.js",
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_control_section.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 331,
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_reel_hold_section.js",
+      "source": "src/debug/overlay/modules/fight_physics/fight_reel_hold_section.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 332,
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_drag_section.js",
+      "source": "src/debug/overlay/modules/fight_physics/fight_drag_section.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 333,
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_line_section.js",
+      "source": "src/debug/overlay/modules/fight_physics/fight_line_section.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 334,
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_stroke_section.js",
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_stroke_section.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 335,
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_auto_recovery_section.js",
+      "source": "src/debug/overlay/modules/fight_physics/fight_auto_recovery_section.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 336,
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_movement_section.js",
+      "source": "src/debug/overlay/modules/fight_physics/fight_movement_section.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 337,
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_tension_section.js",
+      "source": "src/debug/overlay/modules/fight_physics/fight_tension_section.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 338,
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_physics_overlay_module.js",
+      "source": "src/debug/overlay/modules/fight_physics/fight_physics_overlay_module.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 339,
+      "currentPath": "src/debug/overlay/overlay_bootstrap.js",
+      "source": "src/debug/overlay/overlay_bootstrap.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 340,
+      "currentPath": "src/debug/services/active_fish_dev_tools_schema.js",
+      "source": "src/debug/services/active_fish_dev_tools_schema.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 341,
+      "currentPath": "src/debug/services/location_dev_tools_schema.js",
+      "source": "src/debug/services/location_dev_tools_schema.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 342,
+      "currentPath": "src/debug/services/hooked_fish_profile_synchronizer.js",
+      "source": "src/debug/services/hooked_fish_profile_synchronizer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 343,
+      "currentPath": "src/debug/services/item_progression_debug_snapshot_provider.js",
+      "source": "src/debug/services/item_progression_debug_snapshot_provider.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 344,
+      "currentPath": "src/debug/services/dev_tools_parameter_alias_registry.js",
+      "source": "src/debug/services/dev_tools_parameter_alias_registry.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 345,
+      "currentPath": "src/debug/services/dev_tools_control_binding_registry.js",
+      "source": "src/debug/services/dev_tools_control_binding_registry.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 346,
+      "currentPath": "src/debug/dev_tools.js",
+      "source": "src/debug/dev_tools.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 347,
+      "currentPath": "src/render/core/canvas_2d_surface.js",
+      "source": "src/render/core/canvas_2d_surface.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 348,
+      "currentPath": "src/infrastructure/location/offscreen_canvas_factory.js",
+      "source": "src/infrastructure/location/offscreen_canvas_factory.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 349,
+      "currentPath": "src/render/core/canvas_primitives.js",
+      "source": "src/render/core/canvas_primitives.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 350,
+      "currentPath": "src/render/core/image_asset_provider.js",
+      "source": "src/render/core/image_asset_provider.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 351,
+      "currentPath": "src/render/core/render_allocation_diagnostics.js",
+      "source": "src/render/core/render_allocation_diagnostics.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 352,
+      "currentPath": "src/assets/asset_manifest.js",
+      "source": "src/assets/asset_manifest.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 353,
+      "currentPath": "src/assets/asset_load_result.js",
+      "source": "src/assets/asset_load_result.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 354,
+      "currentPath": "src/assets/asset_preload_coordinator.js",
+      "source": "src/assets/asset_preload_coordinator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 355,
+      "currentPath": "src/infrastructure/location/depth_map_reader.js",
+      "source": "src/infrastructure/location/depth_map_reader.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 356,
+      "currentPath": "src/infrastructure/location/location_asset_loader.js",
+      "source": "src/infrastructure/location/location_asset_loader.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 357,
+      "currentPath": "src/render/core/render_frame_buffer.js",
+      "source": "src/render/core/render_frame_buffer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 358,
+      "currentPath": "src/render/core/render_pass.js",
+      "source": "src/render/core/render_pass.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 359,
+      "currentPath": "src/render/core/render_order.js",
+      "source": "src/render/core/render_order.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 360,
+      "currentPath": "src/render/core/render_math.js",
+      "source": "src/render/core/render_math.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 361,
+      "currentPath": "src/render/core/render_component.js",
+      "source": "src/render/core/render_component.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 362,
+      "currentPath": "src/render/core/composite_renderer.js",
+      "source": "src/render/core/composite_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 363,
+      "currentPath": "src/render/world/world_scene_renderer.js",
+      "source": "src/render/world/world_scene_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 364,
+      "currentPath": "src/render/world/world_debug_renderer.js",
+      "source": "src/render/world/world_debug_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 365,
+      "currentPath": "src/render/world/location_debug_map_builder.js",
+      "source": "src/render/world/location_debug_map_builder.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 366,
+      "currentPath": "src/render/world/boat_chum_renderer.js",
+      "source": "src/render/world/boat_chum_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 367,
+      "currentPath": "src/render/casting/cast_scene_renderer.js",
+      "source": "src/render/casting/cast_scene_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 368,
+      "currentPath": "src/render/fishing/fight_area_renderer.js",
+      "source": "src/render/fishing/fight_area_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 369,
+      "currentPath": "src/render/fishing/rod_line_renderer.js",
+      "source": "src/render/fishing/rod_line_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 370,
+      "currentPath": "src/render/fishing/float_renderer.js",
+      "source": "src/render/fishing/float_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 371,
+      "currentPath": "src/render/fishing/fishing_scene_renderer.js",
+      "source": "src/render/fishing/fishing_scene_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 372,
+      "currentPath": "src/render/fishing/line_visual_state_controller.js",
+      "source": "src/render/fishing/line_visual_state_controller.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 373,
+      "currentPath": "src/render/hud/hud_bar_renderer.js",
+      "source": "src/render/hud/hud_bar_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 374,
+      "currentPath": "src/render/hud/hold_charges_renderer.js",
+      "source": "src/render/hud/hold_charges_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 375,
+      "currentPath": "src/render/hud/fight_status_bars_renderer.js",
+      "source": "src/render/hud/fight_status_bars_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 376,
+      "currentPath": "src/render/hud/player_pressure_fatigue_indicator_renderer.js",
+      "source": "src/render/hud/player_pressure_fatigue_indicator_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 377,
+      "currentPath": "src/render/hud/fight_hud_renderer.js",
+      "source": "src/render/hud/fight_hud_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 378,
+      "currentPath": "src/render/screens/game_over_renderer.js",
+      "source": "src/render/screens/game_over_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 379,
+      "currentPath": "src/render/screens/victory_layout_resolver.js",
+      "source": "src/render/screens/victory_layout_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 380,
+      "currentPath": "src/render/screens/rarity_animation_resolver.js",
+      "source": "src/render/screens/rarity_animation_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 381,
+      "currentPath": "src/render/screens/star_rating_renderer.js",
+      "source": "src/render/screens/star_rating_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 382,
+      "currentPath": "src/render/screens/victory_theme_resolver.js",
+      "source": "src/render/screens/victory_theme_resolver.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 383,
+      "currentPath": "src/render/screens/victory_renderer.js",
+      "source": "src/render/screens/victory_renderer.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 384,
+      "currentPath": "src/render/pipeline/world_render_pass.js",
+      "source": "src/render/pipeline/world_render_pass.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 385,
+      "currentPath": "src/render/pipeline/casting_render_pass.js",
+      "source": "src/render/pipeline/casting_render_pass.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 386,
+      "currentPath": "src/render/pipeline/fishing_render_pass.js",
+      "source": "src/render/pipeline/fishing_render_pass.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 387,
+      "currentPath": "src/render/pipeline/hud_render_pass.js",
+      "source": "src/render/pipeline/hud_render_pass.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 388,
+      "currentPath": "src/render/pipeline/outcome_render_pass.js",
+      "source": "src/render/pipeline/outcome_render_pass.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 389,
+      "currentPath": "src/render/pipeline/game_render_pipeline.js",
+      "source": "src/render/pipeline/game_render_pipeline.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 390,
+      "currentPath": "src/app/utils.js",
+      "source": "src/app/utils.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 391,
+      "currentPath": "src/app/core/event_bus.js",
+      "source": "src/app/core/event_bus.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 392,
+      "currentPath": "src/app/core/event_lifecycle.js",
+      "source": "src/app/core/event_lifecycle.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 393,
+      "currentPath": "src/app/core/game_clock.js",
+      "source": "src/app/core/game_clock.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 394,
+      "currentPath": "src/app/core/game_loop.js",
+      "source": "src/app/core/game_loop.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 395,
+      "currentPath": "src/app/core/dependency_contract_validator.js",
+      "source": "src/app/core/dependency_contract_validator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 396,
+      "currentPath": "src/app/adapters.js",
+      "source": "src/app/adapters.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 397,
+      "currentPath": "src/app/rules.js",
+      "source": "src/app/rules.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 398,
+      "currentPath": "src/app/cast_power.js",
+      "source": "src/app/cast_power.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 399,
+      "currentPath": "src/app/context.js",
+      "source": "src/app/context.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 400,
+      "currentPath": "src/app/world.js",
+      "source": "src/app/world.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 401,
+      "currentPath": "src/app/inventory.js",
+      "source": "src/app/inventory.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 402,
+      "currentPath": "src/app/fishing.js",
+      "source": "src/app/fishing.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 403,
+      "currentPath": "src/app/bite.js",
+      "source": "src/app/bite.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 404,
+      "currentPath": "src/app/chum.js",
+      "source": "src/app/chum.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 405,
+      "currentPath": "src/app/debug.js",
+      "source": "src/app/debug.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 406,
+      "currentPath": "src/app/fixed_catch_fish_factory.js",
+      "source": "src/app/fixed_catch_fish_factory.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 407,
+      "currentPath": "src/app/states.js",
+      "source": "src/app/states.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 408,
+      "currentPath": "src/app/rendering/game_render_intent.js",
+      "source": "src/app/rendering/game_render_intent.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 409,
+      "currentPath": "src/app/rendering/boat_chum_render_frame_builder.js",
+      "source": "src/app/rendering/boat_chum_render_frame_builder.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 410,
+      "currentPath": "src/app/rendering/location_debug_render_frame_builder.js",
+      "source": "src/app/rendering/location_debug_render_frame_builder.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 411,
+      "currentPath": "src/app/rendering/world_render_frame_builder.js",
+      "source": "src/app/rendering/world_render_frame_builder.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 412,
+      "currentPath": "src/app/rendering/casting_render_frame_builder.js",
+      "source": "src/app/rendering/casting_render_frame_builder.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 413,
+      "currentPath": "src/app/rendering/landing_area_render_frame_builder.js",
+      "source": "src/app/rendering/landing_area_render_frame_builder.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 414,
+      "currentPath": "src/app/rendering/fight_area_render_frame_builder.js",
+      "source": "src/app/rendering/fight_area_render_frame_builder.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 415,
+      "currentPath": "src/app/rendering/fight_hud_frame_builder.js",
+      "source": "src/app/rendering/fight_hud_frame_builder.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 416,
+      "currentPath": "src/app/rendering/fishing_equipment_render_model_builder.js",
+      "source": "src/app/rendering/fishing_equipment_render_model_builder.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 417,
+      "currentPath": "src/app/rendering/fishing_render_frame_builder.js",
+      "source": "src/app/rendering/fishing_render_frame_builder.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 418,
+      "currentPath": "src/app/rendering/outcome_render_frame_builder.js",
+      "source": "src/app/rendering/outcome_render_frame_builder.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 419,
+      "currentPath": "src/app/rendering/game_render_frame_builder.js",
+      "source": "src/app/rendering/game_render_frame_builder.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 420,
+      "currentPath": "src/app/rendering/game_render_coordinator.js",
+      "source": "src/app/rendering/game_render_coordinator.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 421,
+      "currentPath": "src/app/application.js",
+      "source": "src/app/application.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 422,
+      "currentPath": "src/app/bootstrap.js",
+      "source": "src/app/bootstrap.js?v=0.24.30",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 423,
+      "currentPath": "src/app/game.js",
+      "source": "src/app/game.js",
+      "type": "classic"
+    },
+    {
+      "legacyLoadOrder": 424,
+      "currentPath": "src/app/script.js",
+      "source": "src/app/script.js",
+      "type": "classic"
+    }
+  ],
+  "globalAssignments": [
+    {
+      "scope": "globalThis",
+      "property": "ApplyBaitExposureService",
+      "currentPath": "src/application/inventory/apply_bait_exposure_service.js",
+      "line": 81,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "EquipmentReadModelFactory",
+      "currentPath": "src/application/inventory/equipment_read_model_factory.js",
+      "line": 203,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "FreshestRefillCandidatePolicy",
+      "currentPath": "src/application/inventory/freshest_refill_candidate_policy.js",
+      "line": 26,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2ApplicationError",
+      "currentPath": "src/application/inventory/inventory_v2_command_service.js",
+      "line": 1288,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2CommandService",
+      "currentPath": "src/application/inventory/inventory_v2_command_service.js",
+      "line": 1289,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2CompositionRoot",
+      "currentPath": "src/application/inventory/inventory_v2_composition_root.js",
+      "line": 447,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2ContextItemFilter",
+      "currentPath": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "line": 139,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "AssemblyInventoryContextFilterStrategy",
+      "currentPath": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "line": 140,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "EquipmentInventoryContextFilterStrategy",
+      "currentPath": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "line": 142,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2EquipmentLineReadinessPolicy",
+      "currentPath": "src/application/inventory/inventory_v2_equipment_line_readiness_policy.js",
+      "line": 90,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2EquipmentTransitionPort",
+      "currentPath": "src/application/inventory/inventory_v2_equipment_transition_port.js",
+      "line": 20,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2Facade",
+      "currentPath": "src/application/inventory/inventory_v2_facade.js",
+      "line": 82,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2GameplayBridge",
+      "currentPath": "src/application/inventory/inventory_v2_gameplay_bridge.js",
+      "line": 179,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2ItemHydrator",
+      "currentPath": "src/application/inventory/inventory_v2_item_hydrator.js",
+      "line": 104,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2ItemOrderResolver",
+      "currentPath": "src/application/inventory/inventory_v2_item_order_resolver.js",
+      "line": 252,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2ItemViewFactory",
+      "currentPath": "src/application/inventory/inventory_v2_item_view_factory.js",
+      "line": 128,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2LineAllocationService",
+      "currentPath": "src/application/inventory/inventory_v2_line_allocation_service.js",
+      "line": 387,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2LoadoutPort",
+      "currentPath": "src/application/inventory/inventory_v2_loadout_port.js",
+      "line": 98,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2RefillInventoryPort",
+      "currentPath": "src/application/inventory/inventory_v2_refill_ports.js",
+      "line": 103,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2RefillTargetWriter",
+      "currentPath": "src/application/inventory/inventory_v2_refill_ports.js",
+      "line": 104,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2SubfilterResolver",
+      "currentPath": "src/application/inventory/inventory_v2_subfilter_resolver.js",
+      "line": 61,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2SettingsTransactionParticipant",
+      "currentPath": "src/application/inventory/inventory_v2_transaction_participants.js",
+      "line": 39,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2RefillMemoryTransactionParticipant",
+      "currentPath": "src/application/inventory/inventory_v2_transaction_participants.js",
+      "line": 41,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2ViewModelFactory",
+      "currentPath": "src/application/inventory/inventory_v2_view_model_factory.js",
+      "line": 684,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "RefillCompatibleSignaturePolicy",
+      "currentPath": "src/application/inventory/refill_compatible_signature_policy.js",
+      "line": 55,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
+      "currentPath": "src/config/inventory/inventory_v2_item_parameter_config.js",
+      "line": 384,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
+      "currentPath": "src/config/inventory/inventory_v2_item_parameter_config.js",
+      "line": 386,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
+      "currentPath": "src/config/inventory/inventory_v2_item_parameter_config.js",
+      "line": 388,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "INVENTORY_V2_SORT_CONFIG",
+      "currentPath": "src/config/inventory/inventory_v2_sort_config.js",
+      "line": 74,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "ITEM_STAT_OVERRIDE_CONFIG",
+      "currentPath": "src/config/items/item_stat_override_config.js",
+      "line": 48,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "AssemblyAttachmentTargetResolver",
+      "currentPath": "src/core/assemblies/assembly_attachment_target_resolver.js",
+      "line": 150,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "AssemblyCompletionPolicy",
+      "currentPath": "src/core/assemblies/assembly_completion_policy.js",
+      "line": 93,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "EquipmentCompatibilityPolicy",
+      "currentPath": "src/core/equipment/equipment_compatibility_policy.js",
+      "line": 118,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "FishingCastExposureResolver",
+      "currentPath": "src/core/fishing/fishing_cast_exposure_resolver.js",
+      "line": 13,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryItemReservationPolicy",
+      "currentPath": "src/core/inventory/inventory_item_reservation_policy.js",
+      "line": 42,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "BaitEffectivenessCatalogResolver",
+      "currentPath": "src/core/items/bait/bait_effectiveness_catalog_resolver.js",
+      "line": 61,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "BaitEffectivenessDescriptor",
+      "currentPath": "src/core/items/bait/bait_effectiveness_descriptor.js",
+      "line": 41,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "BaitEffectivenessGradePolicy",
+      "currentPath": "src/core/items/bait/bait_effectiveness_grade_policy.js",
+      "line": 55,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "BaitEffectivenessKnowledgePolicy",
+      "currentPath": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+      "line": 13,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "AlwaysKnownBaitEffectivenessPolicy",
+      "currentPath": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+      "line": 14,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "BaitEffectivenessMatch",
+      "currentPath": "src/core/items/bait/bait_effectiveness_match.js",
+      "line": 22,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "BaitEffectivenessResolver",
+      "currentPath": "src/core/items/bait/bait_effectiveness_resolver.js",
+      "line": 165,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "EffectiveItemStatsResolver",
+      "currentPath": "src/core/items/effective_item_stats_resolver.js",
+      "line": 76,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "BaitFreshnessDecayPolicy",
+      "currentPath": "src/core/items/freshness/bait_freshness_decay_policy.js",
+      "line": 13,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "BaitFreshnessModifier",
+      "currentPath": "src/core/items/freshness/bait_freshness_modifier.js",
+      "line": 12,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "ItemFreshnessDescriptor",
+      "currentPath": "src/core/items/freshness/item_freshness_descriptor.js",
+      "line": 36,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "ItemFreshnessResolver",
+      "currentPath": "src/core/items/freshness/item_freshness_resolver.js",
+      "line": 51,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "ItemFreshnessStatePolicy",
+      "currentPath": "src/core/items/freshness/item_freshness_state_policy.js",
+      "line": 54,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "HookPowerPolicy",
+      "currentPath": "src/core/items/hook/hook_power_policy.js",
+      "line": 19,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "ItemStatOverridePolicy",
+      "currentPath": "src/core/items/item_stat_override_policy.js",
+      "line": 178,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "ItemBoundedMetricResolver",
+      "currentPath": "src/core/items/metrics/item_bounded_metric_resolver.js",
+      "line": 98,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "ItemProgressionResolver",
+      "currentPath": "src/core/items/progression/item_progression_resolver.js",
+      "line": 194,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "ItemRatingTierResolver",
+      "currentPath": "src/core/items/progression/item_rating_tier_resolver.js",
+      "line": 49,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "EnvironmentalCompensationModifier",
+      "currentPath": "src/core/items/quality/environmental_compensation_modifier.js",
+      "line": 18,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "HookQualityModifier",
+      "currentPath": "src/core/items/quality/hook_quality_modifier.js",
+      "line": 13,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "ItemQualityGradePolicy",
+      "currentPath": "src/core/items/quality/item_quality_grade_policy.js",
+      "line": 28,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "NetQualityModifier",
+      "currentPath": "src/core/items/quality/net_quality_modifier.js",
+      "line": 14,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "EffectiveItemRarityResolver",
+      "currentPath": "src/core/items/rarity/effective_item_rarity_resolver.js",
+      "line": 29,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "EquipmentLoadoutRepository",
+      "currentPath": "src/core/loadouts/equipment_loadout_repository.js",
+      "line": 71,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryItemSnapshotMapper",
+      "currentPath": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+      "line": 173,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2LegacyMigration",
+      "currentPath": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "line": 1179,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2SnapshotFactory",
+      "currentPath": "src/infrastructure/storage/inventory_v2_snapshot_factory.js",
+      "line": 48,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2SnapshotMigration",
+      "currentPath": "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
+      "line": 104,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "INVENTORY_V2_SCHEMA_VERSION",
+      "currentPath": "src/infrastructure/storage/inventory_v2_state_store.js",
+      "line": 87,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2StateStore",
+      "currentPath": "src/infrastructure/storage/inventory_v2_state_store.js",
+      "line": 88,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2TransactionCoordinator",
+      "currentPath": "src/infrastructure/storage/inventory_v2_transaction_coordinator.js",
+      "line": 143,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "LegacyInventoryUnitAllocator",
+      "currentPath": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+      "line": 44,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "LegacyItemStateMigration",
+      "currentPath": "src/infrastructure/storage/legacy_item_state_migration.js",
+      "line": 182,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "HorizontalScrollController",
+      "currentPath": "src/ui/interaction/horizontal_scroll_controller.js",
+      "line": 143,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2AssemblyEditorRenderer",
+      "currentPath": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
+      "line": 151,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2AssemblyParameterSectionResolver",
+      "currentPath": "src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js",
+      "line": 108,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2AttachmentBadgeRenderer",
+      "currentPath": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
+      "line": 78,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2BalanceParameterResolver",
+      "currentPath": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+      "line": 716,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2Bootstrap",
+      "currentPath": "src/ui/inventory/inventory_v2_bootstrap.js",
+      "line": 10,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2DomFactory",
+      "currentPath": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "line": 59,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2HeaderRenderer",
+      "currentPath": "src/ui/inventory/inventory_v2_header_renderer.js",
+      "line": 158,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2InventoryGridRenderer",
+      "currentPath": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
+      "line": 286,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2ItemCardRenderer",
+      "currentPath": "src/ui/inventory/inventory_v2_item_card_renderer.js",
+      "line": 290,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2ItemParametersRenderer",
+      "currentPath": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
+      "line": 289,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "INVENTORY_V2_RARITY_NAMES",
+      "currentPath": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
+      "line": 271,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2ItemParametersResolver",
+      "currentPath": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
+      "line": 272,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2LoadoutPanelRenderer",
+      "currentPath": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
+      "line": 137,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2LongPressController",
+      "currentPath": "src/ui/inventory/inventory_v2_long_press_controller.js",
+      "line": 257,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2ResourceMeterRenderer",
+      "currentPath": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
+      "line": 76,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "INVENTORY_V2_RESOURCE_METER_DEFINITIONS",
+      "currentPath": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
+      "line": 57,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2ResourceMeterResolver",
+      "currentPath": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
+      "line": 59,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2SavedLoadoutPreviewRenderer",
+      "currentPath": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
+      "line": 162,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2TooltipPresenter",
+      "currentPath": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+      "line": 263,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2UI",
+      "currentPath": "src/ui/inventory/inventory_v2_ui.js",
+      "line": 586,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2ActionType",
+      "currentPath": "src/ui/inventory/inventory_v2_view_model.js",
+      "line": 477,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2ActionContract",
+      "currentPath": "src/ui/inventory/inventory_v2_view_model.js",
+      "line": 478,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2FacadeContract",
+      "currentPath": "src/ui/inventory/inventory_v2_view_model.js",
+      "line": 479,
+      "operator": "="
+    },
+    {
+      "scope": "globalThis",
+      "property": "InventoryV2ViewModelNormalizer",
+      "currentPath": "src/ui/inventory/inventory_v2_view_model.js",
+      "line": 480,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "CYBER_FISHING_MEMORY_WATCHDOG",
+      "currentPath": "src/app/script.js",
+      "line": 32,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "getCyberFishingMemoryReport",
+      "currentPath": "src/app/script.js",
+      "line": 33,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "game",
+      "currentPath": "src/app/script.js",
+      "line": 42,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "CYBER_FISHING_MEMORY_WATCHDOG",
+      "currentPath": "src/app/script.js",
+      "line": 44,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "CYBER_FISHING_GAME_CLEANUP",
+      "currentPath": "src/app/script.js",
+      "line": 48,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "game",
+      "currentPath": "src/app/script.js",
+      "line": 5,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "CYBER_FISHING_CONFIG_RUNTIME",
+      "currentPath": "src/config/config.js",
+      "line": 804,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "CYBER_FISHING_PROJECT_VERSION",
+      "currentPath": "src/config/project_version.js",
+      "line": 27,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "LandingLiftReadinessPolicy",
+      "currentPath": "src/core/fishing/landing_lift_readiness_policy.js",
+      "line": 136,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "PlayerForceBudgetAllocator",
+      "currentPath": "src/core/fishing/player_force_budget_allocator.js",
+      "line": 199,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "PlayerPressureFatigueCalculator",
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "line": 439,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "PlayerPressureFatigueSourceResolver",
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "line": 110,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "PlayerPressureFatigueState",
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "line": 175,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "PlayerPressureGainResolver",
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "line": 96,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "PlayerReelFatigueSession",
+      "currentPath": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+      "line": 44,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "PlayerTensionBuildRateResolver",
+      "currentPath": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "line": 114,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "RodControlAngleResolver",
+      "currentPath": "src/core/fishing/rod_control_angle_resolver.js",
+      "line": 55,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "ActiveEnduranceDrainCalculator",
+      "currentPath": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+      "line": 47,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "PassiveEnduranceDrainCalculator",
+      "currentPath": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+      "line": 116,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "StaminaBalanceFrame",
+      "currentPath": "src/core/fishing/stamina/stamina_balance_frame.js",
+      "line": 305,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "StaminaDrainCalculator",
+      "currentPath": "src/core/fishing/stamina/stamina_drain_calculator.js",
+      "line": 88,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "StaminaLateralPositionResolver",
+      "currentPath": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+      "line": 49,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "StaminaPhaseMachine",
+      "currentPath": "src/core/fishing/stamina/stamina_phase_machine.js",
+      "line": 259,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "StaminaPressureResolver",
+      "currentPath": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+      "line": 148,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "StaminaRegenCalculator",
+      "currentPath": "src/core/fishing/stamina/stamina_regen_calculator.js",
+      "line": 131,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "StaminaTransitionResolver",
+      "currentPath": "src/core/fishing/stamina/stamina_transition_resolver.js",
+      "line": 88,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightInputActionComposer",
+      "currentPath": "src/core/input/fight_input_action_composer.js",
+      "line": 204,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DebugConsoleClass",
+      "currentPath": "src/debug/core/debug_console.js",
+      "line": 72,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DebugContext",
+      "currentPath": "src/debug/core/debug_context.js",
+      "line": 43,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DebugEventBinder",
+      "currentPath": "src/debug/core/debug_event_binder.js",
+      "line": 94,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DebugModuleRegistry",
+      "currentPath": "src/debug/core/debug_module_registry.js",
+      "line": 32,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "NullDebugRuntime",
+      "currentPath": "src/debug/core/null_debug_runtime.js",
+      "line": 10,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DEBUG_MODULES",
+      "currentPath": "src/debug/debug.js",
+      "line": 1,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DEBUG_MODULE_REGISTRY",
+      "currentPath": "src/debug/debug.js",
+      "line": 56,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DEBUG_CONSOLE_MODULES",
+      "currentPath": "src/debug/debug.js",
+      "line": 57,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DebugConsole",
+      "currentPath": "src/debug/debug.js",
+      "line": 58,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DebugRuntime",
+      "currentPath": "src/debug/debug.js",
+      "line": 59,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "CYBER_FISHING_DEBUG_EVENT_BINDER",
+      "currentPath": "src/debug/debug.js",
+      "line": 60,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "getActiveLocationDebugData",
+      "currentPath": "src/debug/debug.js",
+      "line": 61,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "getZoneBounds",
+      "currentPath": "src/debug/debug.js",
+      "line": 62,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "printLocationMapDebug",
+      "currentPath": "src/debug/debug.js",
+      "line": 63,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "printBiteTickLog",
+      "currentPath": "src/debug/debug.js",
+      "line": 64,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "printBiteSequenceLog",
+      "currentPath": "src/debug/debug.js",
+      "line": 65,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "CYBER_FISHING_DEBUG_EVENT_BINDER",
+      "currentPath": "src/debug/debug.js",
+      "line": 70,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DEBUG_MODULES",
+      "currentPath": "src/debug/dev_tools.js",
+      "line": 839,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "GodMode",
+      "currentPath": "src/debug/god_mode.js",
+      "line": 57,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "BaseDebugModule",
+      "currentPath": "src/debug/modules/base_debug_module.js",
+      "line": 34,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "ConsoleTableDebugModule",
+      "currentPath": "src/debug/modules/base_debug_module.js",
+      "line": 35,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "BiteTicksDebugModule",
+      "currentPath": "src/debug/modules/bite_ticks_debug_module.js",
+      "line": 189,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "BiteTickLogPrinter",
+      "currentPath": "src/debug/modules/bite_ticks_debug_module.js",
+      "line": 190,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "BiteSequenceLogPrinter",
+      "currentPath": "src/debug/modules/bite_ticks_debug_module.js",
+      "line": 191,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "CatchTimeDebugModule",
+      "currentPath": "src/debug/modules/catch_time_debug_module.js",
+      "line": 32,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DeviationsDebugModule",
+      "currentPath": "src/debug/modules/deviations_debug_module.js",
+      "line": 35,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "ExhaustionDebugModule",
+      "currentPath": "src/debug/modules/exhaustion_debug_module.js",
+      "line": 32,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "ForcesDebugModule",
+      "currentPath": "src/debug/modules/forces_debug_module.js",
+      "line": 44,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "LocationDebugModule",
+      "currentPath": "src/debug/modules/location_debug_module.js",
+      "line": 47,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "MapDebugModule",
+      "currentPath": "src/debug/modules/map_debug_module.js",
+      "line": 14,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "NetDebugModule",
+      "currentPath": "src/debug/modules/net_debug_module.js",
+      "line": 29,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "PredictionDebugModule",
+      "currentPath": "src/debug/modules/prediction_debug_module.js",
+      "line": 33,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "ReelHoldGateDebugModule",
+      "currentPath": "src/debug/modules/reel_hold_gate_debug_module.js",
+      "line": 204,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "ReelHoldGateLiveProbe",
+      "currentPath": "src/debug/modules/reel_hold_gate_live_probe.js",
+      "line": 318,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "CYBER_FISHING_REEL_HOLD_GATE_LIVE_PROBE",
+      "currentPath": "src/debug/modules/reel_hold_gate_live_probe.js",
+      "line": 319,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "RodStrokeDebugModule",
+      "currentPath": "src/debug/modules/rod_stroke_debug_module.js",
+      "line": 70,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "StaminaDebugModule",
+      "currentPath": "src/debug/modules/stamina_debug_module.js",
+      "line": 149,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "TensionDebugModule",
+      "currentPath": "src/debug/modules/tension_debug_module.js",
+      "line": 80,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OVERLAY_MODULES",
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "line": 165,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "BALANCE_OVERLAY_MODULE_KEYS",
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "line": 166,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OPTIONAL_OVERLAY_MODULE_KEYS",
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "line": 167,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "ADVANCED_OVERLAY_MODULE_KEYS",
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "line": 168,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OVERLAY_MODULE_GROUPS",
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "line": 169,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OVERLAY_MODULE_LABELS",
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "line": 170,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FIGHT_PHYSICS_CATEGORY_KEYS",
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "line": 171,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FIGHT_PHYSICS_SECTION_KEYS",
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "line": 172,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FIGHT_PHYSICS_RENDER_KEYS",
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "line": 173,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlayController",
+      "currentPath": "src/debug/overlay/core/overlay_controller.js",
+      "line": 98,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlayModule",
+      "currentPath": "src/debug/overlay/core/overlay_module_base.js",
+      "line": 43,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlayModuleRegistry",
+      "currentPath": "src/debug/overlay/core/overlay_module_registry.js",
+      "line": 23,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlayUpdateLoop",
+      "currentPath": "src/debug/overlay/core/overlay_update_loop.js",
+      "line": 27,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlayDomAdapter",
+      "currentPath": "src/debug/overlay/dom/overlay_dom_adapter.js",
+      "line": 115,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlayInteractionBridge",
+      "currentPath": "src/debug/overlay/dom/overlay_interaction_bridge.js",
+      "line": 115,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlayMetricInfoBridge",
+      "currentPath": "src/debug/overlay/dom/overlay_metric_info_bridge.js",
+      "line": 134,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlayScaleControls",
+      "currentPath": "src/debug/overlay/dom/overlay_scale_controls.js",
+      "line": 63,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlayStyleInstaller",
+      "currentPath": "src/debug/overlay/dom/overlay_style_installer.js",
+      "line": 86,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlayWindowDragController",
+      "currentPath": "src/debug/overlay/dom/overlay_window_drag_controller.js",
+      "line": 198,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "BehaviorModule",
+      "currentPath": "src/debug/overlay/modules/behavior_overlay_module.js",
+      "line": 44,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "ChancesDetailModule",
+      "currentPath": "src/debug/overlay/modules/chances_detail_overlay_module.js",
+      "line": 61,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "ChumOverlayModule",
+      "currentPath": "src/debug/overlay/modules/chum_overlay_module.js",
+      "line": 21,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DebuffsModule",
+      "currentPath": "src/debug/overlay/modules/debuffs_overlay_module.js",
+      "line": 48,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "EchoModule",
+      "currentPath": "src/debug/overlay/modules/echo_overlay_module.js",
+      "line": 56,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightAutoRecoverySection",
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_auto_recovery_section.js",
+      "line": 40,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightDragSection",
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_drag_section.js",
+      "line": 38,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightFishSection",
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_fish_section.js",
+      "line": 40,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightLineSection",
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_line_section.js",
+      "line": 53,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightMovementSection",
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_movement_section.js",
+      "line": 91,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightPhysicsOverlayModule",
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_physics_overlay_module.js",
+      "line": 114,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightReelHoldSection",
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_reel_hold_section.js",
+      "line": 51,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightRodControlForceSection",
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_force_section.js",
+      "line": 73,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightRodControlGeometrySection",
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_geometry_section.js",
+      "line": 65,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightRodControlInputSection",
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_input_section.js",
+      "line": 59,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightRodControlSection",
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_section.js",
+      "line": 30,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightRodControlVisualSection",
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_visual_section.js",
+      "line": 69,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightRodHoldSection",
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_hold_section.js",
+      "line": 28,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightRodStrokeSection",
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_stroke_section.js",
+      "line": 45,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightSectionBase",
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_section_base.js",
+      "line": 48,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightTensionSection",
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_tension_section.js",
+      "line": 40,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FightSummaryOverlayModule",
+      "currentPath": "src/debug/overlay/modules/fight_summary/fight_summary_overlay_module.js",
+      "line": 293,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FishMovementSummaryOverlayModule",
+      "currentPath": "src/debug/overlay/modules/fight_summary/fish_movement_summary_overlay_module.js",
+      "line": 73,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "LineAndDragSummaryOverlayModule",
+      "currentPath": "src/debug/overlay/modules/fight_summary/line_and_drag_summary_overlay_module.js",
+      "line": 78,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "RodControlSummaryOverlayModule",
+      "currentPath": "src/debug/overlay/modules/fight_summary/rod_control_summary_overlay_module.js",
+      "line": 68,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FishBalanceModule",
+      "currentPath": "src/debug/overlay/modules/fish_balance_overlay_module.js",
+      "line": 34,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FishCurrentForceOverlayModule",
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_current_force_overlay_module.js",
+      "line": 38,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FishDebuffsSummaryOverlayModule",
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_debuffs_summary_overlay_module.js",
+      "line": 85,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FishLiveForceSummarySection",
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_live_force_summary_section.js",
+      "line": 125,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FishStateForcePreviewSection",
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_state_force_preview_section.js",
+      "line": 303,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FishSummaryOverlayModule",
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_summary_overlay_module.js",
+      "line": 62,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "FishPowerModule",
+      "currentPath": "src/debug/overlay/modules/fish_power_overlay_module.js",
+      "line": 30,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "LiveForcesModule",
+      "currentPath": "src/debug/overlay/modules/live_forces_overlay_module.js",
+      "line": 58,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "PlayerMaxModule",
+      "currentPath": "src/debug/overlay/modules/player_max_overlay_module.js",
+      "line": 22,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "StaminaBalanceOverlayModule",
+      "currentPath": "src/debug/overlay/modules/stamina_balance_overlay_module.js",
+      "line": 343,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "WorstCaseModule",
+      "currentPath": "src/debug/overlay/modules/worst_case_overlay_module.js",
+      "line": 30,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "CYBER_FISHING_DEBUG_OVERLAY",
+      "currentPath": "src/debug/overlay/overlay_bootstrap.js",
+      "line": 67,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "CYBER_FISHING_OVERLAY_VIEW_STATE",
+      "currentPath": "src/debug/overlay/overlay_bootstrap.js",
+      "line": 68,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "CYBER_FISHING_OVERLAY_METRIC_INFO",
+      "currentPath": "src/debug/overlay/overlay_bootstrap.js",
+      "line": 69,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "CYBER_FISHING_OVERLAY_METRIC_INFO",
+      "currentPath": "src/debug/overlay/overlay_bootstrap.js",
+      "line": 76,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "CYBER_FISHING_OVERLAY_VIEW_STATE",
+      "currentPath": "src/debug/overlay/overlay_bootstrap.js",
+      "line": 77,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "CYBER_FISHING_DEBUG_OVERLAY",
+      "currentPath": "src/debug/overlay/overlay_bootstrap.js",
+      "line": 78,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlayConsoleMetricInspector",
+      "currentPath": "src/debug/overlay/services/overlay_console_metric_inspector.js",
+      "line": 33,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlayHtmlBuilder",
+      "currentPath": "src/debug/overlay/services/overlay_html_builder.js",
+      "line": 52,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlayMetricCatalog",
+      "currentPath": "src/debug/overlay/services/overlay_metric_catalog.js",
+      "line": 48,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlayMetricResolver",
+      "currentPath": "src/debug/overlay/services/overlay_metric_resolver.js",
+      "line": 141,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlaySettingsStore",
+      "currentPath": "src/debug/overlay/services/overlay_settings_store.js",
+      "line": 51,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlaySettingsStoreClass",
+      "currentPath": "src/debug/overlay/services/overlay_settings_store.js",
+      "line": 52,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlayValueFormatter",
+      "currentPath": "src/debug/overlay/services/overlay_value_formatter.js",
+      "line": 57,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "OverlayViewStateStore",
+      "currentPath": "src/debug/overlay/services/overlay_view_state_store.js",
+      "line": 107,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "WorstCaseForceDebugSelector",
+      "currentPath": "src/debug/overlay/services/worst_case_force_debug_selector.js",
+      "line": 113,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "ACTIVE_FISH_DEV_TOOLS_SCHEMA",
+      "currentPath": "src/debug/services/active_fish_dev_tools_schema.js",
+      "line": 140,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "ActiveFishDevToolsVisibilityPolicy",
+      "currentPath": "src/debug/services/active_fish_dev_tools_schema.js",
+      "line": 141,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DebugDataSelectors",
+      "currentPath": "src/debug/services/debug_data_selectors.js",
+      "line": 11,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DebugFormatters",
+      "currentPath": "src/debug/services/debug_formatters.js",
+      "line": 39,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DevToolsControlBindingRegistry",
+      "currentPath": "src/debug/services/dev_tools_control_binding_registry.js",
+      "line": 29,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DEV_TOOLS_PARAMETER_ALIAS_SCHEMA",
+      "currentPath": "src/debug/services/dev_tools_parameter_alias_registry.js",
+      "line": 113,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "DevToolsParameterAliasRegistry",
+      "currentPath": "src/debug/services/dev_tools_parameter_alias_registry.js",
+      "line": 114,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "LocationDebugDataProvider",
+      "currentPath": "src/debug/services/location_debug_data_provider.js",
+      "line": 263,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "LocationDebugPrinter",
+      "currentPath": "src/debug/services/location_debug_data_provider.js",
+      "line": 264,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "LocationDevToolsSchema",
+      "currentPath": "src/debug/services/location_dev_tools_schema.js",
+      "line": 45,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "MemoryLeakWatchdog",
+      "currentPath": "src/debug/services/memory_leak_watchdog.js",
+      "line": 266,
+      "operator": "="
+    },
+    {
+      "scope": "window",
+      "property": "WeakestTackleLimitResolver",
+      "currentPath": "src/services/weakest_tackle_limit_resolver.js",
+      "line": 84,
+      "operator": "="
+    }
+  ]
+}

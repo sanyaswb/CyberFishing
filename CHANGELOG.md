@@ -1,5 +1,26 @@
 # CyberFishing changelog
 
+## v0.24.31 - Modular Architecture Foundation
+
+### Added
+
+- Added an evidence-backed migration manifest for all 424 current JavaScript modules, including providers, consumers, environment capabilities and 771 confirmed source dependency edges.
+- Added executable architecture guards for dependency boundaries, SCC cycles, global namespace growth, browser capabilities, development leakage and ESM conventions.
+- Added reproducible package infrastructure with an exact Vite version, an isolated native ESM fixture runtime and a synthetic Vite build smoke check that leaves the classic game graph untouched.
+- Added the approved Stage 2 batch freeze: one bridge-build prerequisite and four ordered engine batches covering nine dependency-free modules.
+
+### Changed
+
+- Classified every current source module by target boundary, target path, roles, migration wave and explicit blockers.
+- Converted current architecture violations into 203 exact reviewed `KNOWN-DEBT` records while keeping new, changed or stale violations as hard failures.
+- Fixed the Stage 2 compatibility strategy to synchronous classic IIFE artifacts built from ESM wrappers, preserving `program-init` availability for eager legacy consumers such as `RenderPass` subclasses.
+
+### Validation
+
+- Kept `index.html` as the production entrypoint with 424 classic scripts and no production ESM or Vite game bundle in Stage 1.
+- Verified Architecture, Quick and full regression suites, reproducible `npm ci`, and browser startup without console errors.
+- Made no gameplay, UI, fishing-physics, inventory, save-format or game-state semantic changes.
+
 ## v0.24.30 - Effective Item Rarity Read Model
 
 ### Added

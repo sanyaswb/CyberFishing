@@ -1,0 +1,614 @@
+{
+  "schemaVersion": 1,
+  "stage": "1.9",
+  "status": "approved-frozen",
+  "approvedAtVersion": "0.24.31",
+  "sourceCandidatePlan": "architecture/migration/stage_1_6_initial_batches.json",
+  "sourceManifest": "architecture/migration/module_migration_manifest.json",
+  "prerequisite": {
+    "id": "stage-2.0-classic-bridge-build-foundation",
+    "status": "approved-prerequisite",
+    "objective": "Build synchronous classic IIFE compatibility artifacts from reviewed ESM bridge wrappers without making Vite own index.html.",
+    "runtimeInput": "approved-esm-bridge-wrappers-only",
+    "files": {
+      "create": [
+        "utils/architecture/stage-2-legacy-bridge-build-check.js",
+        "utils/build/build_legacy_bridges.js",
+        "utils/build/legacy_bridge_build_config.js"
+      ],
+      "modify": [
+        "package.json",
+        "utils/dev-server.js",
+        "utils/testing/suites/check_manifest.js"
+      ]
+    },
+    "output": {
+      "directory": "dist/legacy-bridges/",
+      "format": "iife",
+      "tracked": false,
+      "cleanBeforeBuild": true
+    },
+    "dependencyOrdering": [
+      "Validate the active bridge registry and approved batch specification.",
+      "Build only registered ESM bridge wrapper inputs.",
+      "Verify exact global providers and deterministic output paths.",
+      "Start the static development server only after a successful bridge build."
+    ],
+    "rollbackBoundary": "Remove the Stage 2 bridge build command and restore the unchanged Stage 1 static dev-server flow before any module cutover starts.",
+    "acceptanceCriteria": [
+      "Vite still does not use index.html as an input.",
+      "Only active approved bridge wrappers enter the build graph.",
+      "Every output is a synchronous classic IIFE under dist/legacy-bridges/.",
+      "Build output is generated, ignored and deterministic.",
+      "The dev server fails fast when a required compatibility artifact cannot be built.",
+      "An empty bridge registry produces no runtime artifacts and preserves the Stage 1 runtime.",
+      "Architecture, quick and all suites remain green."
+    ]
+  },
+  "batches": [
+    {
+      "id": "stage-2.1-engine-asset-contracts",
+      "order": 1,
+      "status": "approved",
+      "targetBoundary": "engine",
+      "migrationWave": 1,
+      "modules": [
+        {
+          "currentPath": "src/assets/asset_load_result.js",
+          "targetPath": "src/engine/assets/asset_load_result.js",
+          "providers": [
+            "AssetLoadResult"
+          ],
+          "legacyConsumers": [
+            "src/assets/asset_preload_coordinator.js"
+          ]
+        },
+        {
+          "currentPath": "src/assets/asset_manifest.js",
+          "targetPath": "src/engine/assets/asset_manifest.js",
+          "providers": [
+            "AssetManifest"
+          ],
+          "legacyConsumers": [
+            "src/assets/asset_preload_coordinator.js"
+          ]
+        }
+      ],
+      "dependencyOrdering": {
+        "batchPrerequisites": [
+          "stage-2.0-classic-bridge-build-foundation"
+        ],
+        "moduleOrder": [
+          "src/assets/asset_load_result.js",
+          "src/assets/asset_manifest.js"
+        ],
+        "reason": "Both modules are dependency-free leaves; the fixed order keeps the reviewed manifest order and makes rollback deterministic."
+      },
+      "bridgeStrategy": {
+        "kind": "vite-built-classic-iife",
+        "activation": "same-commit-as-module-cutover",
+        "wrapperSemantics": "esm-import-and-exact-global-exposure-only",
+        "scriptReplacement": "one-for-one-at-original-legacy-load-order-position",
+        "owner": "stage-2.1-engine-asset-contracts",
+        "removalStage": "stage-4",
+        "bridges": [
+          {
+            "sourceModule": "src/assets/asset_load_result.js",
+            "targetModule": "src/engine/assets/asset_load_result.js",
+            "wrapperPath": "src/engine/compat/stage_2/asset_load_result_legacy_bridge.js",
+            "outputPath": "dist/legacy-bridges/asset_load_result.iife.js",
+            "replacesScript": "src/assets/asset_load_result.js",
+            "registrySourceMode": "one-record-per-legacy-consumer",
+            "legacyConsumers": [
+              "src/assets/asset_preload_coordinator.js"
+            ],
+            "globalProviders": [
+              {
+                "symbol": "AssetLoadResult",
+                "mechanism": "global-this-property",
+                "availability": "program-init"
+              }
+            ]
+          },
+          {
+            "sourceModule": "src/assets/asset_manifest.js",
+            "targetModule": "src/engine/assets/asset_manifest.js",
+            "wrapperPath": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js",
+            "outputPath": "dist/legacy-bridges/asset_manifest.iife.js",
+            "replacesScript": "src/assets/asset_manifest.js",
+            "registrySourceMode": "one-record-per-legacy-consumer",
+            "legacyConsumers": [
+              "src/assets/asset_preload_coordinator.js"
+            ],
+            "globalProviders": [
+              {
+                "symbol": "AssetManifest",
+                "mechanism": "global-this-property",
+                "availability": "program-init"
+              }
+            ]
+          }
+        ]
+      },
+      "tests": {
+        "focused": [
+          "stage-2-asset-contracts-check"
+        ],
+        "suites": [
+          "architecture",
+          "quick",
+          "all"
+        ],
+        "browserSmoke": true
+      },
+      "architectureGates": [
+        "approved-stage-2-batch-freeze",
+        "architecture-guard-corpus",
+        "migration-manifest-integrity",
+        "observation-graph-integrity-corpus",
+        "root-package-contract",
+        "native-esm-fixture",
+        "vite-fixture-build",
+        "stage-2-legacy-bridge-build"
+      ],
+      "rollback": {
+        "boundary": "single-batch-atomic-cutover",
+        "steps": [
+          "Restore both original classic source files and their original index.html script paths.",
+          "Remove the two target ESM modules and bridge wrappers introduced by this batch.",
+          "Remove only this batch's exact bridge registry records and generated outputs.",
+          "Restore this batch's manifest entries and rerun architecture, quick and all suites."
+        ]
+      },
+      "acceptanceCriteria": [
+        "AssetLoadResult and AssetManifest are named ESM exports at their approved target paths.",
+        "No migrated module imports game, platform, dev, UI, Canvas or DOM code.",
+        "Bridge wrappers contain no business logic and expose only the two approved globals.",
+        "Classic consumers observe both globals at program initialization before use.",
+        "The original provider script positions are replaced one-for-one by generated IIFEs.",
+        "Manifest paths, statuses, providers, consumers and bridge records are updated atomically.",
+        "No speculative dependency edge, wildcard exception or unregistered global is added.",
+        "Focused contract tests, architecture, quick, all and browser smoke pass.",
+        "Rollback affects only this batch and restores the exact pre-cutover runtime."
+      ]
+    },
+    {
+      "id": "stage-2.2-engine-dependency-contract",
+      "order": 2,
+      "status": "approved",
+      "targetBoundary": "engine",
+      "migrationWave": 1,
+      "modules": [
+        {
+          "currentPath": "src/app/core/dependency_contract_validator.js",
+          "targetPath": "src/engine/di/dependency_contract_validator.js",
+          "providers": [
+            "DependencyContractValidator"
+          ],
+          "legacyConsumers": [
+            "src/app/bootstrap.js"
+          ]
+        }
+      ],
+      "dependencyOrdering": {
+        "batchPrerequisites": [
+          "stage-2.1-engine-asset-contracts"
+        ],
+        "moduleOrder": [
+          "src/app/core/dependency_contract_validator.js"
+        ],
+        "reason": "The validator is a dependency-free leaf and follows the first proven bridge cutover."
+      },
+      "bridgeStrategy": {
+        "kind": "vite-built-classic-iife",
+        "activation": "same-commit-as-module-cutover",
+        "wrapperSemantics": "esm-import-and-exact-global-exposure-only",
+        "scriptReplacement": "one-for-one-at-original-legacy-load-order-position",
+        "owner": "stage-2.2-engine-dependency-contract",
+        "removalStage": "stage-5",
+        "bridges": [
+          {
+            "sourceModule": "src/app/core/dependency_contract_validator.js",
+            "targetModule": "src/engine/di/dependency_contract_validator.js",
+            "wrapperPath": "src/engine/compat/stage_2/dependency_contract_validator_legacy_bridge.js",
+            "outputPath": "dist/legacy-bridges/dependency_contract_validator.iife.js",
+            "replacesScript": "src/app/core/dependency_contract_validator.js",
+            "registrySourceMode": "one-record-per-legacy-consumer",
+            "legacyConsumers": [
+              "src/app/bootstrap.js"
+            ],
+            "globalProviders": [
+              {
+                "symbol": "DependencyContractValidator",
+                "mechanism": "global-this-property",
+                "availability": "program-init"
+              }
+            ]
+          }
+        ]
+      },
+      "tests": {
+        "focused": [
+          "stage-2-dependency-contract-check"
+        ],
+        "suites": [
+          "architecture",
+          "quick",
+          "all"
+        ],
+        "browserSmoke": true
+      },
+      "architectureGates": [
+        "approved-stage-2-batch-freeze",
+        "architecture-guard-corpus",
+        "migration-manifest-integrity",
+        "observation-graph-integrity-corpus",
+        "root-package-contract",
+        "native-esm-fixture",
+        "vite-fixture-build",
+        "stage-2-legacy-bridge-build"
+      ],
+      "rollback": {
+        "boundary": "single-batch-atomic-cutover",
+        "steps": [
+          "Restore the original classic DependencyContractValidator source and script path.",
+          "Remove the target ESM module and its bridge wrapper.",
+          "Remove only this batch's exact bridge registry record and generated output.",
+          "Restore the manifest entry and rerun architecture, quick and all suites."
+        ]
+      },
+      "acceptanceCriteria": [
+        "DependencyContractValidator is a named ESM export at the approved target path.",
+        "The target module remains dependency-free and browser-API-free.",
+        "The bridge wrapper contains no validation logic and exposes only the approved global.",
+        "GameCompositionRoot observes the global at program initialization before build executes.",
+        "The original provider script position is replaced one-for-one by the generated IIFE.",
+        "Manifest and bridge registry changes are atomic with the module cutover.",
+        "No wildcard exception, speculative edge or unrelated bootstrap refactor is included.",
+        "Focused contract tests, architecture, quick, all and browser smoke pass.",
+        "Rollback affects only this batch and restores the exact pre-cutover runtime."
+      ]
+    },
+    {
+      "id": "stage-2.3-engine-event-primitives",
+      "order": 3,
+      "status": "approved",
+      "targetBoundary": "engine",
+      "migrationWave": 1,
+      "modules": [
+        {
+          "currentPath": "src/app/core/event_bus.js",
+          "targetPath": "src/engine/events/event_bus.js",
+          "providers": [
+            "EventBus"
+          ],
+          "legacyConsumers": [
+            "src/app/adapters.js",
+            "src/app/script.js"
+          ]
+        },
+        {
+          "currentPath": "src/app/core/event_lifecycle.js",
+          "targetPath": "src/engine/events/event_lifecycle.js",
+          "providers": [
+            "EventLifecycle"
+          ],
+          "legacyConsumers": [
+            "src/app/application.js",
+            "src/app/script.js"
+          ]
+        }
+      ],
+      "dependencyOrdering": {
+        "batchPrerequisites": [
+          "stage-2.2-engine-dependency-contract"
+        ],
+        "moduleOrder": [
+          "src/app/core/event_bus.js",
+          "src/app/core/event_lifecycle.js"
+        ],
+        "reason": "Both event primitives are dependency-free leaves and are migrated atomically to preserve shared lifecycle diagnostics."
+      },
+      "bridgeStrategy": {
+        "kind": "vite-built-classic-iife",
+        "activation": "same-commit-as-module-cutover",
+        "wrapperSemantics": "esm-import-and-exact-global-exposure-only",
+        "scriptReplacement": "one-for-one-at-original-legacy-load-order-position",
+        "owner": "stage-2.3-engine-event-primitives",
+        "removalStage": "stage-5",
+        "bridges": [
+          {
+            "sourceModule": "src/app/core/event_bus.js",
+            "targetModule": "src/engine/events/event_bus.js",
+            "wrapperPath": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
+            "outputPath": "dist/legacy-bridges/event_bus.iife.js",
+            "replacesScript": "src/app/core/event_bus.js",
+            "registrySourceMode": "one-record-per-legacy-consumer",
+            "legacyConsumers": [
+              "src/app/adapters.js",
+              "src/app/script.js"
+            ],
+            "globalProviders": [
+              {
+                "symbol": "EventBus",
+                "mechanism": "global-this-property",
+                "availability": "program-init"
+              }
+            ]
+          },
+          {
+            "sourceModule": "src/app/core/event_lifecycle.js",
+            "targetModule": "src/engine/events/event_lifecycle.js",
+            "wrapperPath": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
+            "outputPath": "dist/legacy-bridges/event_lifecycle.iife.js",
+            "replacesScript": "src/app/core/event_lifecycle.js",
+            "registrySourceMode": "one-record-per-legacy-consumer",
+            "legacyConsumers": [
+              "src/app/application.js",
+              "src/app/script.js"
+            ],
+            "globalProviders": [
+              {
+                "symbol": "EventLifecycle",
+                "mechanism": "global-this-property",
+                "availability": "program-init"
+              }
+            ]
+          }
+        ]
+      },
+      "tests": {
+        "focused": [
+          "stage-2-event-primitives-check"
+        ],
+        "suites": [
+          "architecture",
+          "quick",
+          "all"
+        ],
+        "browserSmoke": true
+      },
+      "architectureGates": [
+        "approved-stage-2-batch-freeze",
+        "architecture-guard-corpus",
+        "migration-manifest-integrity",
+        "observation-graph-integrity-corpus",
+        "root-package-contract",
+        "native-esm-fixture",
+        "vite-fixture-build",
+        "stage-2-legacy-bridge-build"
+      ],
+      "rollback": {
+        "boundary": "single-batch-atomic-cutover",
+        "steps": [
+          "Restore both original classic event sources and their script paths.",
+          "Remove the target ESM modules and their bridge wrappers.",
+          "Remove only this batch's exact bridge registry records and generated outputs.",
+          "Restore both manifest entries and rerun architecture, quick and all suites."
+        ]
+      },
+      "acceptanceCriteria": [
+        "EventBus and EventLifecycle are named ESM exports at their approved target paths.",
+        "Listener registration, disposal and active-listener diagnostics remain behaviorally identical.",
+        "Both target modules remain dependency-free and browser-API-free.",
+        "Bridge wrappers contain no event logic and expose only the two approved globals.",
+        "All classic consumers observe program-init availability before calling event APIs.",
+        "Original provider script positions are replaced one-for-one by generated IIFEs.",
+        "Manifest and bridge registry changes are atomic with the two-module cutover.",
+        "Focused lifecycle tests, architecture, quick, all and browser smoke pass.",
+        "Rollback affects only this batch and restores the exact pre-cutover runtime."
+      ]
+    },
+    {
+      "id": "stage-2.4-engine-rendering-primitives",
+      "order": 4,
+      "status": "approved",
+      "targetBoundary": "engine",
+      "migrationWave": 1,
+      "modules": [
+        {
+          "currentPath": "src/render/core/composite_renderer.js",
+          "targetPath": "src/engine/rendering/composite_renderer.js",
+          "providers": [
+            "CompositeRenderer"
+          ],
+          "legacyConsumers": [
+            "src/render/fishing/fishing_scene_renderer.js",
+            "src/render/hud/fight_hud_renderer.js",
+            "src/render/pipeline/world_render_pass.js"
+          ]
+        },
+        {
+          "currentPath": "src/render/core/render_component.js",
+          "targetPath": "src/engine/rendering/render_component.js",
+          "providers": [
+            "RenderComponent"
+          ],
+          "legacyConsumers": [
+            "src/app/bootstrap.js"
+          ]
+        },
+        {
+          "currentPath": "src/render/core/render_math.js",
+          "targetPath": "src/engine/rendering/render_math.js",
+          "providers": [
+            "RenderMath"
+          ],
+          "legacyConsumers": [
+            "src/app/rendering/boat_chum_render_frame_builder.js",
+            "src/app/rendering/casting_render_frame_builder.js",
+            "src/app/rendering/fight_hud_frame_builder.js",
+            "src/render/casting/cast_scene_renderer.js",
+            "src/render/fishing/line_visual_state_controller.js",
+            "src/render/hud/fight_status_bars_renderer.js",
+            "src/render/screens/star_rating_renderer.js",
+            "src/render/screens/victory_renderer.js"
+          ]
+        },
+        {
+          "currentPath": "src/render/core/render_pass.js",
+          "targetPath": "src/engine/rendering/render_pass.js",
+          "providers": [
+            "RenderPass"
+          ],
+          "legacyConsumers": [
+            "src/render/pipeline/casting_render_pass.js",
+            "src/render/pipeline/fishing_render_pass.js",
+            "src/render/pipeline/hud_render_pass.js",
+            "src/render/pipeline/outcome_render_pass.js",
+            "src/render/pipeline/world_render_pass.js"
+          ]
+        }
+      ],
+      "dependencyOrdering": {
+        "batchPrerequisites": [
+          "stage-2.3-engine-event-primitives"
+        ],
+        "moduleOrder": [
+          "src/render/core/composite_renderer.js",
+          "src/render/core/render_component.js",
+          "src/render/core/render_math.js",
+          "src/render/core/render_pass.js"
+        ],
+        "reason": "The four primitives are dependency-free; RenderPass stays last in the reviewed order, while its synchronous bridge is mandatory because five subclasses consume it eagerly through extends."
+      },
+      "bridgeStrategy": {
+        "kind": "vite-built-classic-iife",
+        "activation": "same-commit-as-module-cutover",
+        "wrapperSemantics": "esm-import-and-exact-global-exposure-only",
+        "scriptReplacement": "one-for-one-at-original-legacy-load-order-position",
+        "owner": "stage-2.4-engine-rendering-primitives",
+        "removalStage": "stage-5",
+        "bridges": [
+          {
+            "sourceModule": "src/render/core/composite_renderer.js",
+            "targetModule": "src/engine/rendering/composite_renderer.js",
+            "wrapperPath": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
+            "outputPath": "dist/legacy-bridges/composite_renderer.iife.js",
+            "replacesScript": "src/render/core/composite_renderer.js",
+            "registrySourceMode": "one-record-per-legacy-consumer",
+            "legacyConsumers": [
+              "src/render/fishing/fishing_scene_renderer.js",
+              "src/render/hud/fight_hud_renderer.js",
+              "src/render/pipeline/world_render_pass.js"
+            ],
+            "globalProviders": [
+              {
+                "symbol": "CompositeRenderer",
+                "mechanism": "global-this-property",
+                "availability": "program-init"
+              }
+            ]
+          },
+          {
+            "sourceModule": "src/render/core/render_component.js",
+            "targetModule": "src/engine/rendering/render_component.js",
+            "wrapperPath": "src/engine/compat/stage_2/render_component_legacy_bridge.js",
+            "outputPath": "dist/legacy-bridges/render_component.iife.js",
+            "replacesScript": "src/render/core/render_component.js",
+            "registrySourceMode": "one-record-per-legacy-consumer",
+            "legacyConsumers": [
+              "src/app/bootstrap.js"
+            ],
+            "globalProviders": [
+              {
+                "symbol": "RenderComponent",
+                "mechanism": "global-this-property",
+                "availability": "program-init"
+              }
+            ]
+          },
+          {
+            "sourceModule": "src/render/core/render_math.js",
+            "targetModule": "src/engine/rendering/render_math.js",
+            "wrapperPath": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
+            "outputPath": "dist/legacy-bridges/render_math.iife.js",
+            "replacesScript": "src/render/core/render_math.js",
+            "registrySourceMode": "one-record-per-legacy-consumer",
+            "legacyConsumers": [
+              "src/app/rendering/boat_chum_render_frame_builder.js",
+              "src/app/rendering/casting_render_frame_builder.js",
+              "src/app/rendering/fight_hud_frame_builder.js",
+              "src/render/casting/cast_scene_renderer.js",
+              "src/render/fishing/line_visual_state_controller.js",
+              "src/render/hud/fight_status_bars_renderer.js",
+              "src/render/screens/star_rating_renderer.js",
+              "src/render/screens/victory_renderer.js"
+            ],
+            "globalProviders": [
+              {
+                "symbol": "RenderMath",
+                "mechanism": "global-this-property",
+                "availability": "program-init"
+              }
+            ]
+          },
+          {
+            "sourceModule": "src/render/core/render_pass.js",
+            "targetModule": "src/engine/rendering/render_pass.js",
+            "wrapperPath": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
+            "outputPath": "dist/legacy-bridges/render_pass.iife.js",
+            "replacesScript": "src/render/core/render_pass.js",
+            "registrySourceMode": "one-record-per-legacy-consumer",
+            "legacyConsumers": [
+              "src/render/pipeline/casting_render_pass.js",
+              "src/render/pipeline/fishing_render_pass.js",
+              "src/render/pipeline/hud_render_pass.js",
+              "src/render/pipeline/outcome_render_pass.js",
+              "src/render/pipeline/world_render_pass.js"
+            ],
+            "globalProviders": [
+              {
+                "symbol": "RenderPass",
+                "mechanism": "global-this-property",
+                "availability": "program-init"
+              }
+            ]
+          }
+        ]
+      },
+      "tests": {
+        "focused": [
+          "stage-2-rendering-primitives-check"
+        ],
+        "suites": [
+          "architecture",
+          "quick",
+          "all"
+        ],
+        "browserSmoke": true
+      },
+      "architectureGates": [
+        "approved-stage-2-batch-freeze",
+        "architecture-guard-corpus",
+        "migration-manifest-integrity",
+        "observation-graph-integrity-corpus",
+        "root-package-contract",
+        "native-esm-fixture",
+        "vite-fixture-build",
+        "stage-2-legacy-bridge-build"
+      ],
+      "rollback": {
+        "boundary": "single-batch-atomic-cutover",
+        "steps": [
+          "Restore all four original classic rendering sources and their script paths.",
+          "Remove the four target ESM modules and their bridge wrappers.",
+          "Remove only this batch's exact bridge registry records and generated outputs.",
+          "Restore all four manifest entries and rerun architecture, quick and all suites."
+        ]
+      },
+      "acceptanceCriteria": [
+        "All four rendering primitives are named ESM exports at their approved target paths.",
+        "Update and render behavior, ordering and math results remain identical.",
+        "Target modules remain independent of game domain, platform, DOM, Canvas and dev code.",
+        "Bridge wrappers contain no rendering logic and expose only the four approved globals.",
+        "RenderPass is available synchronously before all five eager extends declarations execute.",
+        "Every original provider script position is replaced one-for-one by its generated IIFE.",
+        "Manifest and exact bridge registry changes are atomic with the four-module cutover.",
+        "No opportunistic renderer decomposition or gameplay-visible change is included.",
+        "Focused ordering/math tests, architecture, quick, all and browser smoke pass.",
+        "Rollback affects only this batch and restores the exact pre-cutover runtime."
+      ]
+    }
+  ]
+}

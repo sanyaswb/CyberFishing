@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-1-closure",
+  "status": "closed",
+  "version": "0.24.31",
+  "closedAt": "2026-08-21",
+  "strictUntil": "first-stage-2-batch-activation",
+  "runtimeBaseline": {
+    "entrypoint": "index.html",
+    "sourceModuleCount": 424,
+    "classicScriptCount": 424,
+    "moduleScriptCount": 0,
+    "productionViteEntrypoint": null,
+    "gameplayChanges": 0,
+    "saveFormatChanges": 0
+  },
+  "architectureBaseline": {
+    "manifestSchemaVersion": 5,
+    "classifiedModuleCount": 424,
+    "confirmedInterFileEdges": 771,
+    "globalIdentityCount": 855,
+    "knownDebtCount": 203,
+    "knownDebtByRule": {
+      "boundary-dependency": 118,
+      "browser-capability": 66,
+      "dev-leakage": 17,
+      "module-cycle": 1,
+      "qualified-role": 1
+    },
+    "activeBridgeCount": 0,
+    "guardFailureCount": 0
+  },
+  "buildBaseline": {
+    "packageManager": "npm@11.6.2",
+    "viteVersion": "8.2.1",
+    "toolingModuleSystem": "commonjs",
+    "fixtureModuleSystem": "isolated-esm",
+    "legacyGameBuildInput": false
+  },
+  "approvedMigration": {
+    "artifact": "architecture/migration/stage_2_approved_batches.json",
+    "prerequisiteCount": 1,
+    "batchCount": 4,
+    "moduleCount": 9,
+    "plannedBridgeCount": 9,
+    "firstStep": "stage-2.0-classic-bridge-build-foundation"
+  },
+  "immutableEvidence": [
+    {
+      "path": "architecture/module_architecture.json",
+      "sha256": "bb92840174c8fa87086c5336b558a01ff0d39401bcbdc6b8addc8ffbe275a693"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "3152108b958805653eaae0f2b61ec5547e6280f38cfb65090106e58e3c40ee5f"
+    },
+    {
+      "path": "architecture/migration/stage_1_6_initial_batches.json",
+      "sha256": "46e82d4ead6e95cbda597ad6e0014dd16f93234623f377d77bbed71fd68ef5b6"
+    },
+    {
+      "path": "architecture/migration/stage_2_approved_batches.json",
+      "sha256": "867b97eb943291f9c6607c899694405d4bde8f1807b76d491875ba3b6bf94c4a"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "sha256": "38a95ff83d0cbadbdd4c56389a2e1937c9347de3214c04920a955ff0b815d7f4"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "sha256": "77b621365ec53ef0dd0e7bbcb607a8065ef5f61e3efd75716b010f5039744c0a"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "417396c2eea72dd5335c4e07c71eb767b4c09c8867eaac1b715995e366277a93"
+    },
+    {
+      "path": "architecture/build/package_contract.json",
+      "sha256": "b6de9cac572bd7acc6036e81153040412c33e16393797fdd7b742e2edb5d1045"
+    },
+    {
+      "path": "architecture/build/vite_fixture_contract.json",
+      "sha256": "89a84e93a4382e9d9187b3b8795cc2ff9e53d2a94b13eedd4f393b7fbd13db47"
+    },
+    {
+      "path": "package.json",
+      "sha256": "e23f3d9d8be88805eb70daa71cb64c9097c644b09408041e03aa8f26fd85d277"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "c8e4170cdb332cd004acdce3a6dd8230123d51767d63c977c901078250a66c4e"
+    },
+    {
+      "path": "index.html",
+      "sha256": "1eb634412ee0126c7e249605ead3de28e2b4ddc9eab305ed2bc4b559b4186df3"
+    }
+  ],
+  "requiredChecks": [
+    "architecture-policy",
+    "architecture-documentation",
+    "migration-manifest-integrity",
+    "stage-1-6-migration-batch-plan",
+    "architecture-guard-fixtures",
+    "architecture-guard-corpus",
+    "root-package-contract",
+    "native-esm-fixture",
+    "vite-fixture-build",
+    "approved-stage-2-batch-freeze",
+    "stage-1-closure"
+  ],
+  "requiredSuites": [
+    "architecture",
+    "quick",
+    "all",
+    "browser-smoke",
+    "fresh-npm-ci"
+  ]
+}

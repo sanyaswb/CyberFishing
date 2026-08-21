@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-vite-fixture-build-contract",
+  "vite": {
+    "version": "8.2.1",
+    "dependencyType": "exact-dev-dependency",
+    "nodeEngines": "^20.19.0 || >=22.12.0",
+    "usage": "synthetic-fixture-build-only"
+  },
+  "fixture": {
+    "root": "utils/architecture/esm-fixtures",
+    "localPackage": "utils/architecture/esm-fixtures/package.json",
+    "moduleType": "module",
+    "entry": "utils/architecture/esm-fixtures/fixture-entry.js",
+    "allowedGraphPrefix": "utils/architecture/esm-fixtures/"
+  },
+  "nativeRuntime": {
+    "runner": "utils/architecture/native-esm-fixture-check.js",
+    "semantics": [
+      "static-import",
+      "named-export",
+      "dynamic-import",
+      "explicit-js-extension",
+      "no-global-exports",
+      "commonjs-coexistence"
+    ]
+  },
+  "viteBuild": {
+    "runner": "utils/architecture/vite-fixture-build-check.js",
+    "configFile": false,
+    "publicDir": false,
+    "output": "operating-system-temporary-directory",
+    "cleanup": "required",
+    "repositoryMutation": "forbidden"
+  },
+  "forbiddenInputs": [
+    "index.html",
+    "src/",
+    "assets/"
+  ],
+  "forbiddenEntrypoints": [
+    "src/entrypoints/game.entry.js",
+    "src/entrypoints/dev.entry.js"
+  ],
+  "legacyRuntime": {
+    "indexHtmlInput": "forbidden",
+    "sourceGraphInput": "forbidden",
+    "assetGraphInput": "forbidden",
+    "classicScriptCountPolicy": "unchanged-current-index-html"
+  }
+}

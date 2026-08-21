@@ -13,7 +13,6 @@ backstop_data
 dist
 .cache
 .parcel-cache+
-package-lock.json
 .tmp.drivedownload
 .tmp.driveupload
 

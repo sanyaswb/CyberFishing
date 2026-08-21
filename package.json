@@ -1,5 +1,13 @@
 {
-  "name": "name",
+  "name": "cyber-fishing",
+  "version": "0.24.31",
+  "private": true,
+  "description": "CyberFishing browser game",
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24.0.0",
+    "npm": ">=10.8.2"
+  },
+  "packageManager": "npm@11.6.2",
   "source": "index.html",
   "scripts": {
     "dev": "node utils/dev-server.js",
@@ -7,6 +15,18 @@
     "check": "node utils/run-checks.js",
     "check:list": "node utils/run-checks.js --list",
     "check:quick": "node utils/run-checks.js --suite quick",
+    "check:architecture": "node utils/run-checks.js --suite architecture",
+    "architecture:docs": "node utils/architecture/render-architecture-doc.js",
+    "architecture:manifest": "node utils/architecture/reconcile-migration-manifest.js",
+    "architecture:observe": "node utils/architecture/persist-migration-observations.js",
+    "architecture:collect-globals": "node utils/architecture/collect-global-provider-baseline.js",
+    "architecture:collect-debt": "node utils/architecture/collect-known-architecture-debt.js",
+    "architecture:package-contract": "node utils/architecture/package-contract-check.js",
+    "architecture:verify-install": "node utils/architecture/verify-fresh-package-install.js",
+    "architecture:esm-fixture": "node utils/architecture/native-esm-fixture-check.js",
+    "architecture:vite-fixture": "node utils/architecture/vite-fixture-build-check.js",
+    "architecture:freeze": "node utils/architecture/approved-stage-2-batch-freeze-check.js",
+    "architecture:closure": "node utils/architecture/stage-1-closure-check.js",
     "check:inventory": "node utils/run-checks.js --suite inventory",
     "check:inventory-v2": "node utils/run-checks.js --suite inventory-v2",
     "check:items": "node utils/run-checks.js --suite items",
@@ -24,6 +44,10 @@
   "devDependencies": {
     "@structure-codes/cli": "^0.0.6",
     "eslint": "^10.0.3",
-    "sharp": "^0.34.5"
+    "eslint-scope": "^9.1.2",
+    "espree": "^11.2.0",
+    "estraverse": "^5.3.0",
+    "sharp": "^0.34.5",
+    "vite": "8.2.1"
   }
 }

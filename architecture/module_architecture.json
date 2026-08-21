@@ -1,0 +1,1206 @@
+{
+  "schemaVersion": 2,
+  "policyId": "cyber-fishing-module-architecture",
+  "moduleRoles": [
+    {
+      "id": "engine-contract",
+      "description": "Reusable engine-owned interface or abstraction without CyberFishing or browser knowledge."
+    },
+    {
+      "id": "engine-runtime",
+      "description": "Reusable engine mechanism for lifecycle, events, state, timing, math, or rendering coordination."
+    },
+    {
+      "id": "engine-utility",
+      "description": "Stateless reusable algorithm or helper without CyberFishing or browser knowledge."
+    },
+    {
+      "id": "raw-config",
+      "description": "Dependency-free authored data without domain behavior."
+    },
+    {
+      "id": "config-factory",
+      "description": "Transforms authored configuration into stable domain-facing values."
+    },
+    {
+      "id": "domain-contract",
+      "description": "Stable domain-owned interface contract."
+    },
+    {
+      "id": "value-object",
+      "description": "Stable immutable domain value object."
+    },
+    {
+      "id": "domain-behavior",
+      "description": "CyberFishing entity, policy, rule, or domain service."
+    },
+    {
+      "id": "application-port",
+      "description": "Application-owned contract implemented by an outer layer."
+    },
+    {
+      "id": "application-service",
+      "description": "Use case or application orchestration."
+    },
+    {
+      "id": "presentation",
+      "description": "Read model or presentation coordination."
+    },
+    {
+      "id": "platform-adapter",
+      "description": "Concrete browser implementation of a contract or port."
+    },
+    {
+      "id": "dev-tool",
+      "description": "Development-only runtime behavior."
+    },
+    {
+      "id": "bootstrap",
+      "description": "Concrete dependency composition."
+    },
+    {
+      "id": "entrypoint",
+      "description": "Runtime process entrypoint."
+    }
+  ],
+  "targetBoundaries": [
+    {
+      "id": "engine",
+      "pathPrefixes": ["src/engine/"],
+      "description": "Reusable runtime mechanisms and contracts without CyberFishing or browser knowledge.",
+      "allowedDependencies": ["engine"]
+    },
+    {
+      "id": "game-config-raw",
+      "pathPrefixes": ["src/game/config/raw/"],
+      "description": "Dependency-free authored production data; domain concepts must not be disguised as constants.",
+      "allowedDependencies": []
+    },
+    {
+      "id": "game-config",
+      "pathPrefixes": ["src/game/config/"],
+      "description": "External configuration factories and assembly outside domain behavior.",
+      "allowedDependencies": [
+        "engine",
+        "game-config-raw",
+        "game-domain",
+        "game-config"
+      ]
+    },
+    {
+      "id": "game-domain",
+      "pathPrefixes": ["src/game/domain/"],
+      "description": "Pure CyberFishing rules, entities, policies, and value objects.",
+      "allowedDependencies": ["engine", "game-domain"]
+    },
+    {
+      "id": "game-application-ports",
+      "pathPrefixes": ["src/game/application/ports/"],
+      "description": "Contracts through which application services communicate with external implementations.",
+      "allowedDependencies": [
+        "engine",
+        "game-domain",
+        "game-application-ports"
+      ]
+    },
+    {
+      "id": "game-application",
+      "pathPrefixes": ["src/game/application/"],
+      "description": "CyberFishing use cases and orchestration over domain abstractions.",
+      "allowedDependencies": [
+        "engine",
+        "game-config",
+        "game-domain",
+        "game-application-ports",
+        "game-application"
+      ]
+    },
+    {
+      "id": "game-presentation",
+      "pathPrefixes": ["src/game/presentation/"],
+      "description": "Read models and presentation coordination without concrete DOM or Canvas APIs.",
+      "allowedDependencies": [
+        "engine",
+        "game-domain",
+        "game-application-ports",
+        "game-application",
+        "game-presentation"
+      ]
+    },
+    {
+      "id": "platform",
+      "pathPrefixes": ["src/platform/"],
+      "description": "Browser implementations for engine contracts and game application ports.",
+      "allowedDependencies": [
+        "engine",
+        "game-application-ports",
+        "platform"
+      ]
+    },
+    {
+      "id": "dev",
+      "pathPrefixes": ["src/dev/"],
+      "description": "Development-only diagnostics, overlays, probes, schemas, and tooling runtime.",
+      "allowedDependencies": [
+        "engine",
+        "game-config",
+        "game-domain",
+        "game-application-ports",
+        "game-application",
+        "game-presentation",
+        "platform",
+        "dev"
+      ]
+    },
+    {
+      "id": "bootstrap-production",
+      "pathPrefixes": ["src/bootstrap/production/"],
+      "description": "Production composition of concrete engine, game, and platform implementations.",
+      "allowedDependencies": [
+        "engine",
+        "game-config",
+        "game-domain",
+        "game-application-ports",
+        "game-application",
+        "game-presentation",
+        "platform",
+        "bootstrap-production"
+      ]
+    },
+    {
+      "id": "bootstrap-development",
+      "pathPrefixes": ["src/bootstrap/development/"],
+      "description": "Development composition that extends production composition with dev implementations.",
+      "allowedDependencies": [
+        "engine",
+        "game-config",
+        "game-domain",
+        "game-application-ports",
+        "game-application",
+        "game-presentation",
+        "platform",
+        "dev",
+        "bootstrap-production",
+        "bootstrap-development"
+      ]
+    },
+    {
+      "id": "entrypoint-game",
+      "pathPrefixes": [
+        "src/entrypoints/game.entry.js",
+        "src/entrypoints/game/"
+      ],
+      "description": "Production entrypoint that delegates exclusively to production bootstrap.",
+      "allowedDependencies": ["bootstrap-production"]
+    },
+    {
+      "id": "entrypoint-dev",
+      "pathPrefixes": [
+        "src/entrypoints/dev.entry.js",
+        "src/entrypoints/dev/"
+      ],
+      "description": "Development entrypoint that delegates exclusively to development bootstrap.",
+      "allowedDependencies": ["bootstrap-development"]
+    }
+  ],
+  "qualifiedDependencies": [
+    {
+      "id": "game-config-stable-domain-types-only",
+      "sourceBoundary": "game-config",
+      "targetBoundary": "game-domain",
+      "allowedTargetModuleRoles": ["domain-contract", "value-object"],
+      "description": "Configuration may use only stable domain contracts/value objects; arbitrary domain behavior is forbidden."
+    }
+  ],
+  "environments": {
+    "production": {
+      "rootBoundary": "entrypoint-game",
+      "forbiddenReachableBoundaries": [
+        "dev",
+        "bootstrap-development",
+        "entrypoint-dev"
+      ]
+    },
+    "development": {
+      "rootBoundary": "entrypoint-dev"
+    }
+  },
+  "migration": {
+    "statuses": [
+      {
+        "id": "legacy",
+        "description": "Tracked classic-script module that has not been classified.",
+        "allowedTransitions": ["classified"]
+      },
+      {
+        "id": "classified",
+        "description": "Ownership, target boundary, dependencies, and migration wave are known.",
+        "allowedTransitions": ["blocked", "ready"]
+      },
+      {
+        "id": "blocked",
+        "description": "Migration cannot start until explicit blockers are resolved.",
+        "allowedTransitions": ["classified", "ready"]
+      },
+      {
+        "id": "ready",
+        "description": "Dependencies and consumers allow the migration batch to start.",
+        "allowedTransitions": ["blocked", "migrating"]
+      },
+      {
+        "id": "migrating",
+        "description": "The module is actively moving to ESM in an approved dependency cluster.",
+        "allowedTransitions": ["blocked", "esm"]
+      },
+      {
+        "id": "esm",
+        "description": "The module uses explicit ESM imports and named exports.",
+        "allowedTransitions": ["migrating", "verified"]
+      },
+      {
+        "id": "verified",
+        "description": "Architecture, feature, regression, and runtime checks passed after migration.",
+        "allowedTransitions": ["migrating"]
+      }
+    ],
+    "waves": [
+      {
+        "order": 0,
+        "id": "architecture-tooling",
+        "description": "Baseline, policies, inventory, checks, documentation, and build foundation.",
+        "targetBoundaries": []
+      },
+      {
+        "order": 1,
+        "id": "pure-leaf",
+        "description": "Pure dependency-leaf modules selected from their eventual owners.",
+        "targetBoundaries": [
+          "engine",
+          "game-config-raw",
+          "game-config",
+          "game-domain"
+        ]
+      },
+      {
+        "order": 2,
+        "id": "engine-core",
+        "description": "Engine runtime, math, contracts, lifecycle, events, and rendering abstractions.",
+        "targetBoundaries": ["engine"]
+      },
+      {
+        "order": 3,
+        "id": "game-domain",
+        "description": "CyberFishing domain modules and production configuration.",
+        "targetBoundaries": [
+          "game-config-raw",
+          "game-config",
+          "game-domain"
+        ]
+      },
+      {
+        "order": 4,
+        "id": "game-application",
+        "description": "Application ports, use cases, and gameplay orchestration.",
+        "targetBoundaries": [
+          "game-application-ports",
+          "game-application"
+        ]
+      },
+      {
+        "order": 5,
+        "id": "platform",
+        "description": "Browser adapters for storage, audio, input, assets, timing, DOM, and Canvas.",
+        "targetBoundaries": ["platform"]
+      },
+      {
+        "order": 6,
+        "id": "presentation",
+        "description": "Presentation read models, frame builders, UI, HUD, screens, and render pipeline.",
+        "targetBoundaries": ["game-presentation"]
+      },
+      {
+        "order": 7,
+        "id": "bootstrap-dev",
+        "description": "Production/development composition, entrypoints, and dev runtime separation.",
+        "targetBoundaries": [
+          "dev",
+          "bootstrap-production",
+          "bootstrap-development",
+          "entrypoint-game",
+          "entrypoint-dev"
+        ]
+      }
+    ]
+  },
+  "migrationManifest": {
+    "schemaVersion": 5,
+    "schemaMigrations": [
+      {
+        "id": "stage-1.5.1-observation-contract",
+        "fromVersion": 1,
+        "toVersion": 2,
+        "preconditions": {
+          "dependencyStatus": "pending",
+          "dependencyItems": "empty"
+        },
+        "preserves": [
+          "currentPath",
+          "currentArea",
+          "observed.legacyLoadOrder",
+          "architecture",
+          "analysis.blockers"
+        ],
+        "initializes": [
+          "observed.providers",
+          "observed.consumers",
+          "observed.environment",
+          "analysis.dependencies.v2"
+        ]
+      },
+      {
+        "id": "stage-1.5.2-provider-availability-contract",
+        "fromVersion": 2,
+        "toVersion": 3,
+        "preconditions": {
+          "providerStatus": "pending",
+          "providerItems": "empty",
+          "providerIssues": "empty"
+        },
+        "preserves": [
+          "currentPath",
+          "currentArea",
+          "observed.legacyLoadOrder",
+          "observed.consumers",
+          "observed.environment",
+          "architecture",
+          "analysis"
+        ],
+        "initializes": [
+          "observationContract.providerModel.availability"
+        ]
+      },
+      {
+        "id": "stage-1.5.3-consumer-semantics-contract",
+        "fromVersion": 3,
+        "toVersion": 4,
+        "preconditions": {
+          "consumerStatus": "pending",
+          "consumerItems": "empty",
+          "consumerIssues": "empty"
+        },
+        "preserves": [
+          "currentPath",
+          "currentArea",
+          "observed.legacyLoadOrder",
+          "observed.providers",
+          "observed.environment",
+          "architecture",
+          "analysis"
+        ],
+        "initializes": [
+          "observationContract.consumerModel.accessRequirement",
+          "observationContract.consumerModel.executionPhase",
+          "observationContract.environmentModel.symbolClassifications"
+        ]
+      },
+      {
+        "id": "stage-1.5.5-confirmed-resolution-provenance",
+        "fromVersion": 4,
+        "toVersion": 5,
+        "preconditions": {
+          "dependencyStatus": "pending",
+          "confirmedItems": "absent",
+          "dependencyItems": "empty",
+          "unresolvedItems": "empty",
+          "ambiguousItems": "empty",
+          "dependencyIssues": "empty"
+        },
+        "preserves": [
+          "currentPath",
+          "currentArea",
+          "observed",
+          "architecture",
+          "analysis.blockers"
+        ],
+        "initializes": [
+          "analysis.dependencies.confirmed"
+        ]
+      }
+    ],
+    "sourceScope": "src/**/*.js",
+    "coveragePolicy": "filesystem-equality",
+    "entrySort": "currentPath-ascending",
+    "currentArea": {
+      "strategy": "source-relative-directory",
+      "rootValue": "root"
+    },
+    "legacyLoadOrder": {
+      "source": "index.html",
+      "firstValue": 1,
+      "outsideLegacyGraph": null
+    },
+    "observationContract": {
+      "principle": "facts-only",
+      "scannerMode": "ast-scope-aware",
+      "architectureClassification": "forbidden",
+      "statuses": [
+        {
+          "id": "pending",
+          "description": "The observation has not been performed; all result and issue collections are empty.",
+          "results": "forbidden",
+          "issues": "forbidden"
+        },
+        {
+          "id": "verified",
+          "description": "The observation completed under the full scanner contract; empty results are confirmed empty.",
+          "results": "allowed",
+          "issues": "forbidden"
+        },
+        {
+          "id": "partial",
+          "description": "Trustworthy results exist, but unsupported or dynamic constructs prevent complete observation.",
+          "results": "allowed",
+          "issues": "required"
+        },
+        {
+          "id": "failed",
+          "description": "The observation could not produce trustworthy results.",
+          "results": "forbidden",
+          "issues": "required"
+        }
+      ],
+      "issueFields": ["code", "message"],
+      "providerModel": {
+        "requiredFields": ["symbol", "mechanism", "availability"],
+        "mechanisms": [
+          "global-lexical",
+          "global-var",
+          "global-function",
+          "window-property",
+          "global-this-property",
+          "implicit-global"
+        ],
+        "availabilities": ["program-init", "conditional", "deferred"],
+        "availabilityPrecedence": [
+          "program-init",
+          "conditional",
+          "deferred"
+        ],
+        "confirmedWithoutControlFlow": ["program-init"]
+      },
+      "consumerModel": {
+        "requiredFields": [
+          "symbol",
+          "mechanism",
+          "accessRequirement",
+          "executionPhase"
+        ],
+        "mechanisms": [
+          "identifier",
+          "window-property",
+          "global-this-property"
+        ],
+        "accessRequirements": ["required", "guarded"],
+        "executionPhases": ["eager", "conditional", "deferred"],
+        "executionPhasePrecedence": ["eager", "conditional", "deferred"],
+        "classification": "project-symbol-candidate"
+      },
+      "resolutionModel": {
+        "kinds": ["confirmed", "unresolved", "ambiguous"],
+        "resolutionUnit": {
+          "kind": "consumer-observation",
+          "keyFields": [
+            "symbol",
+            "mechanism",
+            "accessRequirement",
+            "executionPhase"
+          ],
+          "deduplication": "exact-key"
+        },
+        "candidateModel": {
+          "lookupKey": "symbol",
+          "identity": "currentPath",
+          "sameSourceCompatibleFacts": "grouped",
+          "ambiguityScope": "distinct-source-files",
+          "environmentParticipation": "excluded"
+        },
+        "confirmedResolutionFields": [
+          "symbol",
+          "mechanism",
+          "accessRequirement",
+          "executionPhase",
+          "target",
+          "resolution"
+        ],
+        "confirmedDependencyFields": ["target", "symbols", "resolution"],
+        "unresolvedSymbolFields": [
+          "symbol",
+          "mechanism",
+          "accessRequirement",
+          "executionPhase",
+          "resolution"
+        ],
+        "ambiguousSymbolFields": [
+          "symbol",
+          "mechanism",
+          "accessRequirement",
+          "executionPhase",
+          "resolution",
+          "candidates"
+        ],
+        "confirmedProviderCount": 1,
+        "unresolvedProviderCount": 0,
+        "ambiguousProviderMinimum": 2,
+        "filenameHeuristics": "forbidden",
+        "pathHeuristics": "forbidden",
+        "reverseConsumers": "derived-only",
+        "availabilityCompatibility": {
+          "trustworthyProviderAvailabilities": ["program-init"],
+          "providerAvailabilityWithoutControlFlow": {
+            "program-init": "eligible",
+            "conditional": "ineligible",
+            "deferred": "ineligible"
+          },
+          "guardedConsumerPreservesSemantics": true,
+          "guardedConsumerRelaxesProviderProof": false
+        },
+        "legacyLoadOrder": {
+          "role": "resolution-evidence-only",
+          "executionPhaseRules": {
+            "eager": "provider-must-precede-consumer",
+            "conditional": "provider-must-precede-consumer",
+            "deferred": "later-provider-allowed"
+          },
+          "sameFileProgramInit": "eligible-self-resolution",
+          "missingOrderResult": "partial"
+        },
+        "selfResolution": {
+          "target": "consumer-currentPath",
+          "result": "confirmed",
+          "dependencyEdge": "forbidden",
+          "automaticPreference": "forbidden"
+        },
+        "graphModel": {
+          "lifecycle": "in-memory-only",
+          "nodeIdentity": "currentPath",
+          "edgeSource": "consumer-currentPath",
+          "edgeTarget": "provider-currentPath",
+          "edgeCreation": "confirmed-inter-file-only",
+          "speculativeEdges": "forbidden",
+          "selfEdges": "forbidden",
+          "edgeAggregationKey": ["source", "target"],
+          "symbolAggregation": "sorted-unique",
+          "observationMutation": "forbidden",
+          "architectureClassification": "forbidden"
+        },
+        "transientResultModel": {
+          "lifecycle": "in-memory-only",
+          "rootFields": ["sources", "graph"],
+          "sourceFields": [
+            "currentPath",
+            "status",
+            "confirmed",
+            "unresolved",
+            "ambiguous",
+            "issues"
+          ],
+          "sourceStatuses": ["verified", "partial", "failed"],
+          "statusSemantics": {
+            "verified": "complete-for-observed-consumers",
+            "partial": "results-with-issues",
+            "failed": "no-resolution-results"
+          },
+          "issueFields": ["code", "message"],
+          "graphFields": ["nodes", "edges"],
+          "graphEdgeFields": ["source", "target", "symbols"],
+          "pending": "forbidden",
+          "providerCorpusIncomplete": "suppress-single-provider-confirmation"
+        },
+        "classicScriptCompatibility": {
+          "environment": "browser-classic-script",
+          "providerToConsumerMechanisms": {
+            "global-lexical": ["identifier"],
+            "global-var": [
+              "identifier",
+              "window-property",
+              "global-this-property"
+            ],
+            "global-function": [
+              "identifier",
+              "window-property",
+              "global-this-property"
+            ],
+            "window-property": [
+              "identifier",
+              "window-property",
+              "global-this-property"
+            ],
+            "global-this-property": [
+              "identifier",
+              "window-property",
+              "global-this-property"
+            ],
+            "implicit-global": [
+              "identifier",
+              "window-property",
+              "global-this-property"
+            ]
+          },
+          "duplicateCompatibleProviderRecords": "forbidden"
+        }
+      },
+      "persistenceModel": {
+        "mode": "deterministic-reconcile",
+        "command": "architecture:observe",
+        "writeTiming": "after-full-validation",
+        "byteStability": "required",
+        "staleSourceResult": "error",
+        "factLevelConfirmed": "analysis.dependencies.confirmed",
+        "aggregatedInterFileEdges": "analysis.dependencies.items",
+        "selfResolutionPersistence": "confirmed-without-edge",
+        "reverseConsumers": "forbidden",
+        "updatedFields": [
+          "observed.providers",
+          "observed.consumers",
+          "observed.environment",
+          "analysis.dependencies"
+        ],
+        "preservedFields": [
+          "currentPath",
+          "currentArea",
+          "observed.legacyLoadOrder",
+          "architecture",
+          "analysis.blockers"
+        ]
+      },
+      "integrityModel": {
+        "authoritativeDirection": "source-dependencies-to-target",
+        "graphSource": "analysis.dependencies.items",
+        "reverseConsumers": "derived-only",
+        "reversePersistence": "forbidden",
+        "graphNodeIdentity": "currentPath",
+        "persistedEdgeFields": ["source", "target", "symbols"],
+        "reverseEntryFields": ["currentPath", "consumers"],
+        "reverseConsumerFields": ["source", "symbols"],
+        "graphInputs": ["confirmed-inter-file"],
+        "graphExcluded": ["unresolved", "ambiguous", "self-resolution"],
+        "consumerResolutionCardinality": "exactly-one",
+        "edgeProvenance": "fact-level-confirmed",
+        "edgeAggregation": "source-target-sorted-unique-symbols",
+        "staleObservationCheck": "fresh-scan-byte-equality",
+        "deterministicOutput": "required"
+      },
+      "strictModeModel": {
+        "programDirective": true,
+        "functionDirective": true,
+        "inheritedStrictness": true,
+        "classBodyAlwaysStrict": true,
+        "classMethodsAlwaysStrict": true,
+        "classFieldInitializersAlwaysStrict": true,
+        "classStaticBlocksAlwaysStrict": true
+      },
+      "environmentModel": {
+        "classificationEffect": "none",
+        "symbolClassifications": {
+          "builtins": "language-runtime",
+          "browserApis": "browser-api",
+          "externalConsumers": "project-symbol-candidate"
+        },
+        "builtins": [
+          "Array",
+          "ArrayBuffer",
+          "BigInt",
+          "Boolean",
+          "DataView",
+          "Date",
+          "Error",
+          "EvalError",
+          "FinalizationRegistry",
+          "Float32Array",
+          "Float64Array",
+          "Function",
+          "Infinity",
+          "Int16Array",
+          "Int32Array",
+          "Int8Array",
+          "Intl",
+          "JSON",
+          "Map",
+          "Math",
+          "NaN",
+          "Number",
+          "Object",
+          "Promise",
+          "Proxy",
+          "RangeError",
+          "ReferenceError",
+          "Reflect",
+          "RegExp",
+          "Set",
+          "SharedArrayBuffer",
+          "String",
+          "Symbol",
+          "SyntaxError",
+          "TypeError",
+          "URIError",
+          "Uint16Array",
+          "Uint32Array",
+          "Uint8Array",
+          "Uint8ClampedArray",
+          "WeakMap",
+          "WeakRef",
+          "WeakSet",
+          "decodeURI",
+          "decodeURIComponent",
+          "encodeURI",
+          "encodeURIComponent",
+          "eval",
+          "globalThis",
+          "isFinite",
+          "isNaN",
+          "parseFloat",
+          "parseInt",
+          "undefined"
+        ],
+        "browserApis": [
+          "Audio",
+          "AudioContext",
+          "Blob",
+          "CanvasRenderingContext2D",
+          "CustomEvent",
+          "Event",
+          "File",
+          "FileReader",
+          "HTMLElement",
+          "Image",
+          "KeyboardEvent",
+          "MouseEvent",
+          "MutationObserver",
+          "OffscreenCanvas",
+          "PointerEvent",
+          "ResizeObserver",
+          "TouchEvent",
+          "URL",
+          "URLSearchParams",
+          "WebSocket",
+          "addEventListener",
+          "cancelAnimationFrame",
+          "clearInterval",
+          "clearTimeout",
+          "console",
+          "crypto",
+          "document",
+          "dispatchEvent",
+          "fetch",
+          "getComputedStyle",
+          "innerHeight",
+          "innerWidth",
+          "localStorage",
+          "location",
+          "matchMedia",
+          "navigator",
+          "performance",
+          "prompt",
+          "removeEventListener",
+          "requestAnimationFrame",
+          "sessionStorage",
+          "setInterval",
+          "setTimeout",
+          "structuredClone",
+          "webkitAudioContext",
+          "window"
+        ],
+        "dynamicConstructKinds": [
+          "computed-window-property",
+          "computed-global-this-property",
+          "eval-call",
+          "function-constructor",
+          "string-code-execution",
+          "with-statement"
+        ],
+        "dynamicConstructResult": "partial"
+      },
+      "forbiddenAuthoritativeLocationFields": [
+        "line",
+        "column",
+        "loc",
+        "range"
+      ]
+    },
+    "blockerStatuses": ["pending", "verified"],
+    "classificationContract": {
+      "stage": "1.6",
+      "decisionMode": "reviewed-explicit",
+      "decisionFields": [
+        "targetBoundary",
+        "targetPath",
+        "roles",
+        "migrationWave",
+        "blockers"
+      ],
+      "architectureMutation": "reviewed-decision-only",
+      "ownershipInference": "forbidden",
+      "forbiddenOwnershipHeuristics": [
+        "current-path",
+        "filename",
+        "class-name",
+        "class-suffix"
+      ],
+      "requiredEvidence": [
+        "source-responsibility-review",
+        "observed.providers",
+        "observed.consumers",
+        "observed.environment",
+        "analysis.dependencies",
+        "derived.reverseConsumers"
+      ],
+      "evidenceLifecycle": "in-memory-read-only",
+      "evidenceEntryFields": [
+        "currentPath",
+        "decision",
+        "observations",
+        "dependencies",
+        "metrics"
+      ],
+      "decisionEntryFields": [
+        "migrationStatus",
+        "targetBoundary",
+        "targetPath",
+        "roles",
+        "migrationWave",
+        "blockers"
+      ],
+      "metricFields": [
+        "providerCount",
+        "consumerCount",
+        "confirmedCount",
+        "outgoingEdgeCount",
+        "incomingEdgeCount",
+        "unresolvedCount",
+        "ambiguousCount",
+        "builtinCount",
+        "browserApiCount",
+        "dynamicConstructCount",
+        "observationIssueCount",
+        "dependencyIssueCount"
+      ],
+      "reviewedStatuses": [
+        "classified",
+        "blocked",
+        "ready",
+        "migrating",
+        "esm",
+        "verified"
+      ],
+      "roleCompatibility": {
+        "engine": [
+          "engine-contract",
+          "engine-runtime",
+          "engine-utility"
+        ],
+        "game-config-raw": [
+          "raw-config"
+        ],
+        "game-config": [
+          "config-factory"
+        ],
+        "game-domain": [
+          "domain-behavior",
+          "domain-contract",
+          "value-object"
+        ],
+        "game-application-ports": [
+          "application-port"
+        ],
+        "game-application": [
+          "application-service"
+        ],
+        "game-presentation": [
+          "presentation"
+        ],
+        "platform": [
+          "platform-adapter"
+        ],
+        "dev": [
+          "dev-tool"
+        ],
+        "bootstrap-production": [
+          "bootstrap"
+        ],
+        "bootstrap-development": [
+          "bootstrap"
+        ],
+        "entrypoint-game": [
+          "entrypoint"
+        ],
+        "entrypoint-dev": [
+          "entrypoint"
+        ]
+      },
+      "targetPathSelection": "reviewed-explicit",
+      "roleSelection": "reviewed-explicit",
+      "blockerSelection": "reviewed-explicit",
+      "mixedResponsibility": {
+        "targetBoundary": "single-reviewed-owner",
+        "blocker": "mixed-responsibility-requires-decomposition"
+      },
+      "blockerCatalog": [
+        "ambiguous-architecture-owner",
+        "ambiguous-project-symbol",
+        "browser-api-coupling",
+        "dependency-cycle",
+        "dev-production-coupling",
+        "dynamic-code-analysis",
+        "eager-load-order-coupling",
+        "high-level-self-composition",
+        "legacy-global-contract",
+        "missing-regression-coverage",
+        "mixed-responsibility-requires-decomposition",
+        "target-path-conflict",
+        "unresolved-project-symbol",
+        "unsupported-static-analysis"
+      ],
+      "candidateSelection": {
+        "classificationEffect": "none",
+        "requiredMigrationStatus": "legacy",
+        "requiredObservationStatus": "verified",
+        "leafDefinition": "zero-confirmed-inter-file-outgoing-edges",
+        "providerRequirement": "at-least-one",
+        "uncertaintyPolicy": "exclude-unresolved-ambiguous-dynamic-or-issued",
+        "ordering": [
+          "browserApiCount-ascending",
+          "incomingEdgeCount-descending",
+          "providerCount-descending",
+          "currentPath-ascending"
+        ],
+        "resultFields": [
+          "currentPath",
+          "incomingEdgeCount",
+          "providerCount",
+          "browserApiCount",
+          "legacyLoadOrder",
+          "reviewRequired"
+        ]
+      }
+    },
+    "initialArchitecture": {
+      "migrationStatus": "legacy",
+      "roles": [],
+      "targetBoundary": null,
+      "targetPath": null,
+      "migrationWave": null
+    },
+    "initialObserved": {
+      "providers": {
+        "status": "pending",
+        "items": [],
+        "issues": []
+      },
+      "consumers": {
+        "status": "pending",
+        "items": [],
+        "issues": []
+      },
+      "environment": {
+        "status": "pending",
+        "builtins": [],
+        "browserApis": [],
+        "dynamicConstructs": [],
+        "issues": []
+      }
+    },
+    "initialAnalysis": {
+      "dependencies": {
+        "status": "pending",
+        "confirmed": [],
+        "items": [],
+        "unresolved": [],
+        "ambiguous": [],
+        "issues": []
+      },
+      "blockers": {
+        "status": "pending",
+        "items": []
+      }
+    },
+    "fieldConsistency": {
+      "legacyStatus": "legacy",
+      "classifiedStatusesRequireTargetBoundary": [
+        "classified",
+        "blocked",
+        "ready",
+        "migrating",
+        "esm",
+        "verified"
+      ],
+      "targetPathRequiresTargetBoundary": true,
+      "migrationWaveRequiresTargetBoundary": true,
+      "classifiedStatusesRequireTargetPath": [
+        "classified",
+        "blocked",
+        "ready",
+        "migrating",
+        "esm",
+        "verified"
+      ],
+      "classifiedStatusesRequireMigrationWave": [
+        "classified",
+        "blocked",
+        "ready",
+        "migrating",
+        "esm",
+        "verified"
+      ],
+      "classifiedStatusesRequireRoles": [
+        "classified",
+        "blocked",
+        "ready",
+        "migrating",
+        "esm",
+        "verified"
+      ],
+      "classifiedStatusesRequireReviewedBlockers": [
+        "classified",
+        "blocked",
+        "ready",
+        "migrating",
+        "esm",
+        "verified"
+      ],
+      "migrationWaveMustAllowTargetBoundary": true,
+      "rolesMustBeAllowedByTargetBoundary": true
+    }
+  },
+  "architectureGuards": {
+    "schemaVersion": 1,
+    "unifiedEdgeMechanisms": [
+      "legacy-confirmed",
+      "static-import",
+      "dynamic-import",
+      "side-effect-import",
+      "re-export",
+      "approved-bridge"
+    ],
+    "statuses": ["PASS", "KNOWN-DEBT", "FAIL"],
+    "statusSemantics": {
+      "PASS": "The rule is satisfied or an exact audited policy exception applies.",
+      "KNOWN-DEBT": "An exact legacy violation matches the reviewed debt registry.",
+      "FAIL": "A new, changed, stale, unsupported, or unregistered violation exists."
+    },
+    "ownershipValidation": "manifest-target-boundary",
+    "physicalPathValidation": "esm-and-verified-only",
+    "cycleAlgorithm": "tarjan-scc",
+    "cycleIdentity": "sorted-scc-members-and-internal-edges",
+    "diagnosticOrder": ["status", "rule", "source", "target", "location", "message"],
+    "exceptionScope": "exact-current-path-rule-target-or-subject",
+    "developmentOnlyRoles": ["dev-tool"],
+    "artifacts": {
+      "knownDebt": "architecture/guards/known_debt_registry.json",
+      "migrationBridges": "architecture/guards/migration_bridge_registry.json",
+      "globalProviderBaseline": "architecture/guards/global_provider_baseline.json"
+    },
+    "globalProviderMechanisms": [
+      "global-lexical",
+      "global-var",
+      "global-function",
+      "window-property",
+      "global-this-property",
+      "implicit-global"
+    ],
+    "browserCapabilities": {
+      "catalog": {
+        "dom": ["document", "HTMLElement", "MutationObserver", "ResizeObserver", "getComputedStyle", "prompt"],
+        "canvas": ["CanvasRenderingContext2D", "OffscreenCanvas"],
+        "storage": ["localStorage", "sessionStorage"],
+        "audio": ["Audio", "AudioContext", "webkitAudioContext"],
+        "timing": ["performance", "requestAnimationFrame", "cancelAnimationFrame", "setTimeout", "clearTimeout", "setInterval", "clearInterval"],
+        "browser-events": ["Event", "CustomEvent", "InputEvent", "KeyboardEvent", "MouseEvent", "PointerEvent", "TouchEvent", "addEventListener", "removeEventListener", "dispatchEvent"],
+        "image-loading": ["Image"],
+        "viewport": ["innerWidth", "innerHeight", "matchMedia"],
+        "location": ["location", "URL", "URLSearchParams"],
+        "network": ["fetch", "WebSocket"],
+        "file-io": ["Blob", "File", "FileReader"],
+        "browser-runtime": ["window", "navigator", "structuredClone"],
+        "cryptography": ["crypto"],
+        "diagnostics": ["console"]
+      },
+      "allowedBoundaries": {
+        "platform": ["dom", "canvas", "storage", "audio", "timing", "browser-events", "image-loading", "viewport", "location", "network", "file-io", "browser-runtime", "cryptography", "diagnostics"],
+        "dev": ["dom", "canvas", "storage", "audio", "timing", "browser-events", "image-loading", "viewport", "location", "network", "file-io", "browser-runtime", "cryptography", "diagnostics"]
+      },
+      "forbiddenBoundaryDefault": "none",
+      "unknownBrowserPropertyCapability": "browser-runtime"
+    }
+  },
+  "moduleConventions": {
+    "appliesToStatuses": ["migrating", "esm", "verified"],
+    "exports": {
+      "preferredMode": "named",
+      "defaultExports": "forbidden-with-exception"
+    },
+    "relativeImports": {
+      "explicitExtension": ".js"
+    },
+    "barrelModules": "forbidden-with-exception",
+    "sideEffectImports": {
+      "policy": "forbidden-with-exception",
+      "allowedBoundaries": [
+        "bootstrap-production",
+        "bootstrap-development",
+        "entrypoint-game",
+        "entrypoint-dev"
+      ]
+    },
+    "dynamicImports": {
+      "target": "statically-resolvable-with-exception"
+    },
+    "rawConfiguration": {
+      "boundary": "game-config-raw",
+      "importPolicy": "forbidden",
+      "domainConceptConstants": "forbidden"
+    },
+    "runtimeGlobalExports": "forbid-new"
+  },
+  "dependencyInjection": {
+    "domainConfigurationDelivery": [
+      "constructor-injection",
+      "factory",
+      "composition-root"
+    ],
+    "concreteCompositionBoundaries": [
+      "bootstrap-production",
+      "bootstrap-development"
+    ],
+    "highLevelSelfComposition": "forbidden"
+  },
+  "exceptions": {
+    "requiredFields": [
+      "id",
+      "rule",
+      "currentPath",
+      "reason",
+      "owner",
+      "removalStage"
+    ],
+    "allowedRules": [
+      "forbidden-dependency",
+      "legacy-global",
+      "module-convention",
+      "dev-leakage",
+      "dynamic-import",
+      "side-effect-import",
+      "compatibility-bridge"
+    ],
+    "allowedRemovalStages": [
+      "stage-2",
+      "stage-3",
+      "stage-4",
+      "stage-5",
+      "stage-6",
+      "stage-7"
+    ],
+    "identityFields": ["currentPath", "rule", "target", "subject"],
+    "matching": "exact-only",
+    "entries": []
+  }
+}

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.30";
+const CURRENT_PROJECT_VERSION = "0.24.31";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "effective-item-rarity-read-model",
-  updatedAt: "2026-08-18",
+  codename: "modular-architecture-foundation",
+  updatedAt: "2026-08-21",
   notes: Object.freeze([
-    "Restore authored rarity at the item read-model boundary after snapshot loading",
-    "Keep authored rarity out of canonical instance snapshots",
-    "Use the effective rarity descriptor for Inventory V2 visuals, filters and sorting",
-    "Sort inventory by rarity descending by default with stable ties",
+    "Freeze the evidence-backed Stage 2 ESM migration batches",
+    "Enforce architecture boundaries, globals, browser capabilities and dev separation",
+    "Provide reproducible native ESM and isolated Vite build infrastructure",
+    "Preserve the classic-script runtime and gameplay behavior through Stage 1",
   ]),
 });
 

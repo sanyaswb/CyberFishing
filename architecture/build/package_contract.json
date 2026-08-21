@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-root-package-contract",
+  "package": {
+    "name": "cyber-fishing",
+    "versionSource": "src/config/project_version.js",
+    "private": true,
+    "moduleTypePolicy": "root-type-field-absent-commonjs-tooling-preserved"
+  },
+  "runtime": {
+    "node": "^20.19.0 || ^22.13.0 || >=24.0.0",
+    "npm": ">=10.8.2",
+    "packageManager": "npm@11.6.2"
+  },
+  "lockfile": {
+    "path": "package-lock.json",
+    "format": "npm",
+    "lockfileVersion": 3,
+    "installCommand": "npm ci",
+    "requiresIntegrity": true,
+    "gitPolicy": "required-not-ignored"
+  },
+  "dependencyPolicy": {
+    "packageJsonRangesAuthoritative": true,
+    "lockfileResolutionsAuthoritative": true,
+    "directSections": [
+      "dependencies",
+      "devDependencies"
+    ]
+  },
+  "stage": {
+    "current": "1.8.2",
+    "vite": "fixture-infrastructure-only",
+    "productionEntrypoint": "unchanged-index-html",
+    "sourceRuntime": "classic-scripts-unchanged",
+    "commonJsTooling": "preserved"
+  }
+}

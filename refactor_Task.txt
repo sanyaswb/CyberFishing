@@ -1,0 +1,173 @@
+# CyberFishing — актуальний план незавершеного модульного рефакторингу
+
+**Stage 1 closure-версія:** `v0.24.31`  
+**Тип робіт:** architecture / infrastructure refactoring  
+**Gameplay changes:** заборонені  
+**Поточний наступний етап:** `Stage 2.0 — Classic Bridge Build Foundation`
+
+Цей документ містить тільки роботи, які ще не виконані.
+
+---
+
+# 1. Незмінні принципи
+
+```text
+OBSERVATION = FACTS
+
+CLASSIFICATION = ARCHITECTURAL DECISION
+```
+
+- Спочатку будуємо достовірний dependency graph, потім класифікуємо і лише після цього переносимо файли.
+- Не визначати architecture ownership за filename, поточною папкою або суфіксом класу.
+- Не змінювати fishing physics, inventory, items, progression, UI behavior, save format або game-state semantics у межах architecture tasks.
+- Не створювати runtime dependency scanner, runtime architecture validator або постійний dynamic script loader.
+- Не додавати новий global чи architecture exception лише для того, щоб зробити check зеленим.
+- Кожна наступна задача має охоплювати один невеликий dependency cluster разом із tests і manifest update.
+- Не змішувати ESM conversion з opportunistic API, formula або behavior refactoring.
+- Repository tooling залишається в `utils/`, доки окрема задача не обґрунтує path migration.
+
+---
+
+# 2. Stage 2 — Engine / low-level modules
+
+Authoritative execution specification:
+
+```text
+architecture/migration/stage_2_approved_batches.json
+```
+
+Поля `files`, `target paths`, `dependency ordering`, `bridge strategy`,
+`removalStage`, `tests`, `architecture gates`, `rollback boundary` та
+`acceptance criteria` вже frozen і не проєктуються повторно під час реалізації.
+
+## Stage 2.0 — Classic Bridge Build Foundation
+
+- [ ] Додати build runner, який збирає тільки active approved ESM bridge wrappers.
+- [ ] Генерувати synchronous classic IIFE outputs у `dist/legacy-bridges/`.
+- [ ] Не робити `index.html` Vite entrypoint і не включати весь game graph у build.
+- [ ] Валідувати exact bridge registry records та exact global providers.
+- [ ] Інтегрувати build у dev-server як fail-fast prerequisite.
+- [ ] Довести deterministic output, cleanup/ignore semantics і empty-registry no-op.
+- [ ] Запустити focused check, Architecture, Quick, All та browser smoke.
+
+## Approved dependency-safe batches
+
+Виконувати строго послідовно:
+
+```text
+Stage 2.0 bridge build foundation
+    ↓
+Stage 2.1 engine asset contracts
+    ↓
+Stage 2.2 engine dependency contract
+    ↓
+Stage 2.3 engine event primitives
+    ↓
+Stage 2.4 engine rendering primitives
+```
+
+Почати реальний ESM-перехід із затверджених pure/leaf low-level modules.
+Кожен batch є окремим atomic cutover із власним rollback boundary.
+
+## Подальший Engine scope
+
+Почати реальний ESM-перехід dependency-safe batches із pure/leaf і low-level modules:
+
+```text
+engine/runtime
+engine/math
+engine/contracts
+engine/rendering abstractions
+```
+
+Для кожного batch визначити current files, target files, imports, exports, consumers, temporary compatibility, tests та acceptance criteria.
+
+## Stage 3 — Game Domain
+
+Мігрувати domain clusters:
+
+```text
+items
+inventory
+equipment
+assemblies
+loadouts
+fish
+tackle
+line
+fishing domain
+stamina
+endurance
+tension
+rod control
+```
+
+Domain не залежить від platform, UI, Canvas, DOM або dev. Configuration надходить через DI/factories/composition root.
+
+## Stage 4 — Application + Platform
+
+Мігрувати:
+
+```text
+application services
+systems/orchestrators
+application ports
+browser adapters
+storage
+audio
+input
+assets
+DOM/Canvas adapters
+```
+
+## Stage 5 — Presentation + Bootstrap
+
+Мігрувати render/UI/screens/HUD/render pipeline, `GameApplication` і `GameCompositionRoot`. Створити production `game.entry.js` лише після готовності dependency graph.
+
+## Stage 6 — Development / Production Split
+
+Створити окремий `dev.entry.js`, фізично відокремити debug overlay, GodMode, diagnostics, watchdog, dev schemas та balance tools від production graph. Поступово видалити legacy globals і classic scripts.
+
+## Stage 7 — Structural Hardening
+
+Після стабільного ESM:
+
+- декомпозувати великі mixed-responsibility classes;
+- остаточно розділити engine/game/platform/dev;
+- видалити transitional compatibility code;
+- очистити legacy `systems/services/app` structure;
+- виконати production hardening.
+
+---
+
+# 8. Transitional compatibility rules
+
+Якщо dependency cluster неможливо мігрувати атомарно, дозволений тимчасовий `compat/` або `legacy_bridge/`.
+
+У bridge заборонені:
+
+```text
+business logic
+new domain behavior
+permanent APIs
+```
+
+Кожен bridge повинен мати owner, reason і `removalStage`.
+
+---
+
+# 9. Коли потрібно зупинитися
+
+Потрібне окреме architecture рішення, якщо пропонується:
+
+```text
+додати ще один global
+дозволити engine → game
+дозволити domain → document/window
+завантажити legacy scripts із нового entrypoint
+переписати gameplay class лише для ESM conversion
+додати файл у ignore, бо architecture check заважає
+розширити baseline лише для зеленого check
+```
+
+Такі ситуації не обходяться workaround — переглядається dependency design.

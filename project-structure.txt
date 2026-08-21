@@ -1,4 +1,17 @@
 ├── .gitignore
+├── architecture
+│  ├── baselines
+│  │  └── v0.24.30.json
+│  ├── guards
+│  │  ├── global_provider_baseline.json
+│  │  ├── known_debt_registry.json
+│  │  └── migration_bridge_registry.json
+│  ├── migration
+│  │  ├── module_migration_manifest.json
+│  │  ├── stage_1_6_initial_batches.json
+│  │  └── stage_2_approved_batches.json
+│  ├── module_architecture.json
+│  └── stage_1_closure.json
 ├── assets
 │  ├── audio
 │  │  └── bell_ring.mp3
@@ -41,6 +54,11 @@
 ├── CHANGELOG.md
 ├── convert-images.js
 ├── docs
+│  ├── architecture
+│  │  ├── esm_build_foundation.md
+│  │  ├── module_architecture.md
+│  │  ├── package_contract.md
+│  │  └── stage_1_closure_and_stage_2_freeze.md
 │  ├── balance_simulator.md
 │  ├── fish_config_architecture.md
 │  ├── fishing_physics_formula_map.md
@@ -54,6 +72,7 @@
 ├── package.json
 ├── project-structure.txt
 ├── README.md
+├── refactor_Task.txt
 ├── src
 │  ├── .tmp.driveupload
 │  ├── app
@@ -124,6 +143,7 @@
 │  │  ├── asset_load_result.js
 │  │  ├── asset_manifest.js
 │  │  └── asset_preload_coordinator.js
+│  ├── bootstrap
 │  ├── config
 │  │  ├── config.js
 │  │  ├── databases
@@ -431,6 +451,11 @@
 │  │    ├── location_debug_data_provider.js
 │  │    ├── location_dev_tools_schema.js
 │  │    └── memory_leak_watchdog.js
+│  ├── engine
+│  │  ├── contracts
+│  │  ├── events
+│  │  ├── loop
+│  │  └── time
 │  ├── entities
 │  │  ├── fish.js
 │  │  └── tackle.js
@@ -451,6 +476,10 @@
 │  ├── input
 │  │  ├── pull_input_mapper.js
 │  │  └── victory_action_gesture_resolver.js
+│  ├── platform
+│  │  └── browser
+│  │    ├── loop
+│  │    └── time
 │  ├── render
 │  │  ├── casting
 │  │  │  └── cast_scene_renderer.js
@@ -562,6 +591,145 @@
 │  └── world
 │    └── world.js
 └── utils
+  ├── architecture
+  │  ├── approved-stage-2-batch-freeze-check.js
+  │  ├── architecture-documentation-check.js
+  │  ├── architecture-guard-corpus-check.js
+  │  ├── architecture-guard-fixture-check.js
+  │  ├── architecture-policy-check.js
+  │  ├── classification
+  │  │  ├── approved_stage_two_batch_validator.js
+  │  │  ├── classification_completion_validator.js
+  │  │  ├── classification_evidence_builder.js
+  │  │  ├── conservative_leaf_candidate_ranker.js
+  │  │  └── migration_batch_plan_validator.js
+  │  ├── classification-evidence-corpus-check.js
+  │  ├── classification-evidence-fixture-check.js
+  │  ├── closure
+  │  │  └── stage_one_closure_validator.js
+  │  ├── collect-baseline.js
+  │  ├── collect-global-provider-baseline.js
+  │  ├── collect-known-architecture-debt.js
+  │  ├── core
+  │  │  ├── architecture_document_renderer.js
+  │  │  └── architecture_policy.js
+  │  ├── esm_infrastructure
+  │  │  ├── esm_fixture_graph_inspector.js
+  │  │  ├── repository_content_snapshot.js
+  │  │  └── vite_fixture_contract_validator.js
+  │  ├── esm-fixtures
+  │  │  ├── fixture-entry.js
+  │  │  ├── modules
+  │  │  │  ├── dynamic-value.js
+  │  │  │  └── static-math.js
+  │  │  └── package.json
+  │  ├── guards
+  │  │  ├── architecture_guard_engine.js
+  │  │  ├── contracts
+  │  │  │  ├── architecture_guard_policy_validator.js
+  │  │  │  └── guard_artifact_repository.js
+  │  │  ├── core
+  │  │  │  ├── canonical_json.js
+  │  │  │  ├── guard_models.js
+  │  │  │  ├── guard_outcome_classifier.js
+  │  │  │  └── guard_report_formatter.js
+  │  │  ├── corpus
+  │  │  │  └── architecture_guard_snapshot_builder.js
+  │  │  ├── graph
+  │  │  │  ├── tarjan_scc.js
+  │  │  │  └── unified_dependency_graph.js
+  │  │  ├── observation
+  │  │  │  └── esm_dependency_observer.js
+  │  │  └── rules
+  │  │    ├── boundary_guard.js
+  │  │    ├── bridge_registry_guard.js
+  │  │    ├── browser_capability_guard.js
+  │  │    ├── dev_leakage_guard.js
+  │  │    ├── esm_convention_guard.js
+  │  │    ├── global_namespace_guard.js
+  │  │    ├── physical_target_path_guard.js
+  │  │    └── scc_cycle_guard.js
+  │  ├── legacy-external-consumer-corpus-check.js
+  │  ├── legacy-external-consumer-scanner-fixture-check.js
+  │  ├── legacy-symbol-provider-corpus-check.js
+  │  ├── legacy-symbol-provider-scanner-fixture-check.js
+  │  ├── migration
+  │  │  ├── canonical_module_path.js
+  │  │  ├── current_area_resolver.js
+  │  │  ├── legacy_script_order_reader.js
+  │  │  ├── manifest_entry_factory.js
+  │  │  ├── migration_manifest_reconciler.js
+  │  │  ├── migration_manifest_repository.js
+  │  │  ├── migration_manifest_schema_migrator.js
+  │  │  ├── migration_manifest_validator.js
+  │  │  ├── migration_observation_reconciler.js
+  │  │  ├── persist_migration_observations_command.js
+  │  │  └── source_file_scanner.js
+  │  ├── migration-manifest-integrity-check.js
+  │  ├── migration-manifest-reconciler-check.js
+  │  ├── migration-manifest-schema-migration-check.js
+  │  ├── migration-manifest-validator-check.js
+  │  ├── migration-observation-persistence-corpus-check.js
+  │  ├── migration-observation-persistence-fixture-check.js
+  │  ├── native-esm-fixture-check.js
+  │  ├── observation
+  │  │  ├── consumers
+  │  │  │  ├── consumer_access_requirement_resolver.js
+  │  │  │  ├── consumer_environment_classifier.js
+  │  │  │  ├── consumer_execution_phase_resolver.js
+  │  │  │  ├── consumer_observation_assembler.js
+  │  │  │  ├── external_identifier_candidate_detector.js
+  │  │  │  ├── legacy_external_consumer_scanner.js
+  │  │  │  ├── member_read_classifier.js
+  │  │  │  ├── static_global_property_candidate_detector.js
+  │  │  │  └── unsupported_consumer_construct_detector.js
+  │  │  ├── integrity
+  │  │  │  ├── derived_reverse_consumer_index.js
+  │  │  │  ├── observation_graph_integrity_validator.js
+  │  │  │  └── persisted_dependency_graph.js
+  │  │  ├── parsing
+  │  │  │  └── legacy_source_parser.js
+  │  │  ├── persistence
+  │  │  │  ├── manifest_dependency_projector.js
+  │  │  │  ├── migration_observation_snapshot_builder.js
+  │  │  │  └── observation_manifest_projector.js
+  │  │  ├── providers
+  │  │  │  ├── global_property_provider_detector.js
+  │  │  │  ├── global_scope_provider_detector.js
+  │  │  │  ├── implicit_global_provider_detector.js
+  │  │  │  ├── legacy_symbol_provider_scanner.js
+  │  │  │  ├── provider_availability_resolver.js
+  │  │  │  ├── provider_observation_assembler.js
+  │  │  │  └── unsupported_provider_construct_detector.js
+  │  │  ├── resolution
+  │  │  │  ├── in_memory_dependency_graph_builder.js
+  │  │  │  ├── legacy_dependency_graph_analyzer.js
+  │  │  │  ├── legacy_load_order_index.js
+  │  │  │  ├── provider_candidate_index.js
+  │  │  │  ├── provider_resolution_contract.js
+  │  │  │  └── provider_resolution_engine.js
+  │  │  ├── scope
+  │  │  │  ├── ast_node_context_index.js
+  │  │  │  └── eslint_scope_analysis.js
+  │  │  └── shared
+  │  │    └── assignment_target_reader.js
+  │  ├── observation-graph-integrity-corpus-check.js
+  │  ├── observation-graph-integrity-fixture-check.js
+  │  ├── package_contract
+  │  │  ├── package_contract_validator.js
+  │  │  ├── package_lock_validator.js
+  │  │  └── root_package_validator.js
+  │  ├── package-contract-check.js
+  │  ├── persist-migration-observations.js
+  │  ├── provider-resolution-contract-check.js
+  │  ├── provider-resolution-corpus-check.js
+  │  ├── provider-resolution-engine-fixture-check.js
+  │  ├── reconcile-migration-manifest.js
+  │  ├── render-architecture-doc.js
+  │  ├── stage-1-6-migration-batch-plan-check.js
+  │  ├── stage-1-closure-check.js
+  │  ├── verify-fresh-package-install.js
+  │  └── vite-fixture-build-check.js
   ├── bait-effectiveness-check.js
   ├── check-js.js
   ├── consumable-event-identity-check.js

@@ -1,0 +1,220 @@
+{
+  "schemaVersion": 1,
+  "stage": "1.6",
+  "status": "reviewed-candidates",
+  "sourceOfTruth": "architecture/migration/module_migration_manifest.json",
+  "graphBaseline": {
+    "moduleCount": 424,
+    "confirmedInterFileEdges": 771
+  },
+  "selectionRules": [
+    "migrationStatus=classified",
+    "migrationWave=1",
+    "analysis.blockers.status=verified",
+    "analysis.blockers.items is empty",
+    "confirmed outgoing project dependencies are empty"
+  ],
+  "batches": [
+    {
+      "id": "stage-2.1-engine-asset-contracts",
+      "order": 1,
+      "intent": "Migrate the dependency-free asset manifest and load-result runtime contracts as one consumer-aligned cluster.",
+      "targetBoundary": "engine",
+      "migrationWave": 1,
+      "readiness": "candidate",
+      "confirmedOutgoingProjectDependencies": [],
+      "modules": [
+        {
+          "currentPath": "src/assets/asset_load_result.js",
+          "targetPath": "src/engine/assets/asset_load_result.js",
+          "providers": [
+            "AssetLoadResult"
+          ],
+          "legacyConsumers": [
+            "src/assets/asset_preload_coordinator.js"
+          ]
+        },
+        {
+          "currentPath": "src/assets/asset_manifest.js",
+          "targetPath": "src/engine/assets/asset_manifest.js",
+          "providers": [
+            "AssetManifest"
+          ],
+          "legacyConsumers": [
+            "src/assets/asset_preload_coordinator.js"
+          ]
+        }
+      ],
+      "compatibility": {
+        "mode": "temporary-legacy-global-bridge",
+        "reason": "The asset preload coordinator remains a classic-script consumer until its Stage 4 platform migration.",
+        "owner": "stage-2.1-engine-asset-contracts",
+        "removalStage": "Stage 4",
+        "stage1Action": "Plan only; no bridge or runtime source is created in Stage 1.6."
+      },
+      "gates": [
+        "Add focused contract tests before cutover.",
+        "Expose named ESM exports for every recorded provider.",
+        "Keep the recorded classic consumer behaviorally compatible.",
+        "Update the migration manifest in the same implementation batch."
+      ]
+    },
+    {
+      "id": "stage-2.2-engine-dependency-contract",
+      "order": 2,
+      "intent": "Migrate the dependency-free bootstrap dependency contract validator without changing composition behavior.",
+      "targetBoundary": "engine",
+      "migrationWave": 1,
+      "readiness": "candidate",
+      "confirmedOutgoingProjectDependencies": [],
+      "modules": [
+        {
+          "currentPath": "src/app/core/dependency_contract_validator.js",
+          "targetPath": "src/engine/di/dependency_contract_validator.js",
+          "providers": [
+            "DependencyContractValidator"
+          ],
+          "legacyConsumers": [
+            "src/app/bootstrap.js"
+          ]
+        }
+      ],
+      "compatibility": {
+        "mode": "temporary-legacy-global-bridge",
+        "reason": "The production composition root remains a classic-script consumer until its Stage 5 bootstrap migration.",
+        "owner": "stage-2.2-engine-dependency-contract",
+        "removalStage": "Stage 5",
+        "stage1Action": "Plan only; no bridge or runtime source is created in Stage 1.6."
+      },
+      "gates": [
+        "Add focused contract tests before cutover.",
+        "Expose named ESM exports for every recorded provider.",
+        "Keep the recorded classic consumer behaviorally compatible.",
+        "Update the migration manifest in the same implementation batch."
+      ]
+    },
+    {
+      "id": "stage-2.3-engine-event-primitives",
+      "order": 3,
+      "intent": "Migrate the dependency-free event bus and listener lifecycle primitives together.",
+      "targetBoundary": "engine",
+      "migrationWave": 1,
+      "readiness": "candidate",
+      "confirmedOutgoingProjectDependencies": [],
+      "modules": [
+        {
+          "currentPath": "src/app/core/event_bus.js",
+          "targetPath": "src/engine/events/event_bus.js",
+          "providers": [
+            "EventBus"
+          ],
+          "legacyConsumers": [
+            "src/app/adapters.js",
+            "src/app/script.js"
+          ]
+        },
+        {
+          "currentPath": "src/app/core/event_lifecycle.js",
+          "targetPath": "src/engine/events/event_lifecycle.js",
+          "providers": [
+            "EventLifecycle"
+          ],
+          "legacyConsumers": [
+            "src/app/application.js",
+            "src/app/script.js"
+          ]
+        }
+      ],
+      "compatibility": {
+        "mode": "temporary-legacy-global-bridge",
+        "reason": "Platform, application, and entrypoint consumers remain classic scripts until later dependency-safe waves.",
+        "owner": "stage-2.3-engine-event-primitives",
+        "removalStage": "Stage 5",
+        "stage1Action": "Plan only; no bridge or runtime source is created in Stage 1.6."
+      },
+      "gates": [
+        "Add focused lifecycle and listener-count regression tests before cutover.",
+        "Expose named ESM exports for every recorded provider.",
+        "Keep all recorded classic consumers behaviorally compatible.",
+        "Update the migration manifest in the same implementation batch."
+      ]
+    },
+    {
+      "id": "stage-2.4-engine-rendering-primitives",
+      "order": 4,
+      "intent": "Migrate the dependency-free rendering contract, component, composite, and math primitives as one low-level engine cluster.",
+      "targetBoundary": "engine",
+      "migrationWave": 1,
+      "readiness": "candidate",
+      "confirmedOutgoingProjectDependencies": [],
+      "modules": [
+        {
+          "currentPath": "src/render/core/composite_renderer.js",
+          "targetPath": "src/engine/rendering/composite_renderer.js",
+          "providers": [
+            "CompositeRenderer"
+          ],
+          "legacyConsumers": [
+            "src/render/fishing/fishing_scene_renderer.js",
+            "src/render/hud/fight_hud_renderer.js",
+            "src/render/pipeline/world_render_pass.js"
+          ]
+        },
+        {
+          "currentPath": "src/render/core/render_component.js",
+          "targetPath": "src/engine/rendering/render_component.js",
+          "providers": [
+            "RenderComponent"
+          ],
+          "legacyConsumers": [
+            "src/app/bootstrap.js"
+          ]
+        },
+        {
+          "currentPath": "src/render/core/render_math.js",
+          "targetPath": "src/engine/rendering/render_math.js",
+          "providers": [
+            "RenderMath"
+          ],
+          "legacyConsumers": [
+            "src/app/rendering/boat_chum_render_frame_builder.js",
+            "src/app/rendering/casting_render_frame_builder.js",
+            "src/app/rendering/fight_hud_frame_builder.js",
+            "src/render/casting/cast_scene_renderer.js",
+            "src/render/fishing/line_visual_state_controller.js",
+            "src/render/hud/fight_status_bars_renderer.js",
+            "src/render/screens/star_rating_renderer.js",
+            "src/render/screens/victory_renderer.js"
+          ]
+        },
+        {
+          "currentPath": "src/render/core/render_pass.js",
+          "targetPath": "src/engine/rendering/render_pass.js",
+          "providers": [
+            "RenderPass"
+          ],
+          "legacyConsumers": [
+            "src/render/pipeline/casting_render_pass.js",
+            "src/render/pipeline/fishing_render_pass.js",
+            "src/render/pipeline/hud_render_pass.js",
+            "src/render/pipeline/outcome_render_pass.js",
+            "src/render/pipeline/world_render_pass.js"
+          ]
+        }
+      ],
+      "compatibility": {
+        "mode": "temporary-legacy-global-bridge",
+        "reason": "Presentation and bootstrap consumers remain classic scripts until the Stage 5 presentation cutover.",
+        "owner": "stage-2.4-engine-rendering-primitives",
+        "removalStage": "Stage 5",
+        "stage1Action": "Plan only; no bridge or runtime source is created in Stage 1.6."
+      },
+      "gates": [
+        "Add focused render-contract and ordering tests before cutover.",
+        "Expose named ESM exports for every recorded provider.",
+        "Keep all recorded classic consumers behaviorally compatible.",
+        "Update the migration manifest in the same implementation batch."
+      ]
+    }
+  ]
+}

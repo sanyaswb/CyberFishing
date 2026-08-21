@@ -1,0 +1,5142 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-global-provider-baseline",
+  "generatedFrom": "architecture/migration/module_migration_manifest.json",
+  "identity": [
+    "currentPath",
+    "symbol",
+    "mechanism"
+  ],
+  "providers": [
+    {
+      "currentPath": "src/app/adapters.js",
+      "symbol": "BrowserAudioAdapter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/adapters.js",
+      "symbol": "BrowserBufferedAudioPlayer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/adapters.js",
+      "symbol": "BrowserDebugAdapter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/adapters.js",
+      "symbol": "BrowserEventTargetAdapter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/adapters.js",
+      "symbol": "CanvasMetricsProvider",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/adapters.js",
+      "symbol": "ConfigProvider",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/adapters.js",
+      "symbol": "DevFlagsProvider",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/application.js",
+      "symbol": "GameApplication",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/application.js",
+      "symbol": "GameDebugFacade",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/application.js",
+      "symbol": "GameFishingFacade",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/application.js",
+      "symbol": "GameViewportFacade",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/bite.js",
+      "symbol": "BiteEnvironmentService",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/bootstrap.js",
+      "symbol": "GameCompositionRoot",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/cast_power.js",
+      "symbol": "CastPowerAim",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/chum.js",
+      "symbol": "ChumController",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/context.js",
+      "symbol": "MutableFightFrameContext",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/core/dependency_contract_validator.js",
+      "symbol": "DependencyContractValidator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/core/event_bus.js",
+      "symbol": "EventBus",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/core/event_lifecycle.js",
+      "symbol": "EventLifecycle",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/core/game_clock.js",
+      "symbol": "GameClock",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/core/game_loop.js",
+      "symbol": "GameLoop",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/debug.js",
+      "symbol": "DebugService",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/fishing.js",
+      "symbol": "CastService",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/fishing.js",
+      "symbol": "CatchResolutionService",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/fishing.js",
+      "symbol": "FightService",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/fishing.js",
+      "symbol": "FightSessionFactory",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/fishing.js",
+      "symbol": "FishingController",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/fishing.js",
+      "symbol": "FishingForceService",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/fixed_catch_fish_factory.js",
+      "symbol": "FixedCatchFishFactory",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/game.js",
+      "symbol": "Game",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/inventory.js",
+      "symbol": "EquipmentService",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rendering/boat_chum_render_frame_builder.js",
+      "symbol": "BoatChumRenderFrameBuilder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rendering/casting_render_frame_builder.js",
+      "symbol": "CastingRenderFrameBuilder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rendering/fight_area_render_frame_builder.js",
+      "symbol": "FightAreaRenderFrameBuilder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rendering/fight_hud_frame_builder.js",
+      "symbol": "FightHudFrameBuilder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rendering/fishing_equipment_render_model_builder.js",
+      "symbol": "FishingEquipmentRenderModelBuilder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rendering/fishing_render_frame_builder.js",
+      "symbol": "FishingRenderFrameBuilder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rendering/game_render_coordinator.js",
+      "symbol": "GameRenderCoordinator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rendering/game_render_frame_builder.js",
+      "symbol": "GameRenderFrameBuilder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rendering/game_render_intent.js",
+      "symbol": "GameRenderIntent",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rendering/landing_area_render_frame_builder.js",
+      "symbol": "LandingAreaRenderFrameBuilder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rendering/location_debug_render_frame_builder.js",
+      "symbol": "LocationDebugRenderFrameBuilder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rendering/outcome_render_frame_builder.js",
+      "symbol": "OutcomeRenderFrameBuilder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rendering/world_render_frame_builder.js",
+      "symbol": "WorldRenderFrameBuilder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rules.js",
+      "symbol": "BaitRules",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rules.js",
+      "symbol": "BiteRules",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rules.js",
+      "symbol": "BoatRules",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rules.js",
+      "symbol": "CastRules",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rules.js",
+      "symbol": "ChumRules",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rules.js",
+      "symbol": "EquipmentRules",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/rules.js",
+      "symbol": "PlayerCastRules",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/script.js",
+      "symbol": "CYBER_FISHING_GAME_CLEANUP",
+      "mechanism": "window-property",
+      "availability": "deferred"
+    },
+    {
+      "currentPath": "src/app/script.js",
+      "symbol": "CYBER_FISHING_MEMORY_WATCHDOG",
+      "mechanism": "window-property",
+      "availability": "deferred"
+    },
+    {
+      "currentPath": "src/app/script.js",
+      "symbol": "game",
+      "mechanism": "window-property",
+      "availability": "deferred"
+    },
+    {
+      "currentPath": "src/app/script.js",
+      "symbol": "getCyberFishingMemoryReport",
+      "mechanism": "window-property",
+      "availability": "deferred"
+    },
+    {
+      "currentPath": "src/app/states.js",
+      "symbol": "BitingState",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/states.js",
+      "symbol": "FailedState",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/states.js",
+      "symbol": "GameState",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/states.js",
+      "symbol": "PlayingState",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/states.js",
+      "symbol": "ScoutingState",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/states.js",
+      "symbol": "StateDepsFactory",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/states.js",
+      "symbol": "StateMachine",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/states.js",
+      "symbol": "VictoryState",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/states.js",
+      "symbol": "WaitingState",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/utils.js",
+      "symbol": "SeededRng",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/utils.js",
+      "symbol": "normalizeDistance",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/world.js",
+      "symbol": "EnvironmentSystem",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/world.js",
+      "symbol": "GameWorld",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/app/world.js",
+      "symbol": "LocationManager",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/apply_bait_exposure_service.js",
+      "symbol": "ApplyBaitExposureService",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/apply_bait_exposure_service.js",
+      "symbol": "ApplyBaitExposureService",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/auto_refill_coordinator.js",
+      "symbol": "AutoRefillCoordinator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/auto_refill_coordinator.js",
+      "symbol": "AutoRefillPort",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/auto_refill_coordinator.js",
+      "symbol": "ExactInventoryAutoRefillPort",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/equipment_auto_refill_target_provider.js",
+      "symbol": "EquipmentAutoRefillTargetProvider",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/equipment_read_model_factory.js",
+      "symbol": "EquipmentReadModelFactory",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/equipment_read_model_factory.js",
+      "symbol": "EquipmentReadModelFactory",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/equipment_transition_executor.js",
+      "symbol": "EquipmentTransitionExecutor",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/equipment_transition_executor.js",
+      "symbol": "EquipmentTransitionPort",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/freshest_refill_candidate_policy.js",
+      "symbol": "FreshestRefillCandidatePolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/freshest_refill_candidate_policy.js",
+      "symbol": "FreshestRefillCandidatePolicy",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_command_service.js",
+      "symbol": "InventoryV2ApplicationError",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_command_service.js",
+      "symbol": "InventoryV2ApplicationError",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_command_service.js",
+      "symbol": "InventoryV2CommandService",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_command_service.js",
+      "symbol": "InventoryV2CommandService",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_composition_root.js",
+      "symbol": "InventoryV2CompositionRoot",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_composition_root.js",
+      "symbol": "InventoryV2CompositionRoot",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "symbol": "AssemblyInventoryContextFilterStrategy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "symbol": "AssemblyInventoryContextFilterStrategy",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "symbol": "EquipmentInventoryContextFilterStrategy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "symbol": "EquipmentInventoryContextFilterStrategy",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "symbol": "InventoryV2ContextItemFilter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "symbol": "InventoryV2ContextItemFilter",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_equipment_line_readiness_policy.js",
+      "symbol": "InventoryV2EquipmentLineReadinessPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_equipment_line_readiness_policy.js",
+      "symbol": "InventoryV2EquipmentLineReadinessPolicy",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_equipment_transition_port.js",
+      "symbol": "InventoryV2EquipmentTransitionPort",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_equipment_transition_port.js",
+      "symbol": "InventoryV2EquipmentTransitionPort",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_facade.js",
+      "symbol": "InventoryV2Facade",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_facade.js",
+      "symbol": "InventoryV2Facade",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_gameplay_bridge.js",
+      "symbol": "InventoryV2GameplayBridge",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_gameplay_bridge.js",
+      "symbol": "InventoryV2GameplayBridge",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_item_hydrator.js",
+      "symbol": "InventoryV2ItemHydrator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_item_hydrator.js",
+      "symbol": "InventoryV2ItemHydrator",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_item_order_resolver.js",
+      "symbol": "InventoryV2ItemOrderResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_item_order_resolver.js",
+      "symbol": "InventoryV2ItemOrderResolver",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_item_view_factory.js",
+      "symbol": "InventoryV2ItemViewFactory",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_item_view_factory.js",
+      "symbol": "InventoryV2ItemViewFactory",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_line_allocation_service.js",
+      "symbol": "InventoryV2LineAllocationService",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_line_allocation_service.js",
+      "symbol": "InventoryV2LineAllocationService",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_loadout_port.js",
+      "symbol": "InventoryV2LoadoutPort",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_loadout_port.js",
+      "symbol": "InventoryV2LoadoutPort",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_refill_ports.js",
+      "symbol": "InventoryV2RefillInventoryPort",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_refill_ports.js",
+      "symbol": "InventoryV2RefillInventoryPort",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_refill_ports.js",
+      "symbol": "InventoryV2RefillTargetWriter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_refill_ports.js",
+      "symbol": "InventoryV2RefillTargetWriter",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_subfilter_resolver.js",
+      "symbol": "InventoryV2SubfilterResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_subfilter_resolver.js",
+      "symbol": "InventoryV2SubfilterResolver",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_transaction_participants.js",
+      "symbol": "InventoryV2RefillMemoryTransactionParticipant",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_transaction_participants.js",
+      "symbol": "InventoryV2RefillMemoryTransactionParticipant",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_transaction_participants.js",
+      "symbol": "InventoryV2SettingsTransactionParticipant",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_transaction_participants.js",
+      "symbol": "InventoryV2SettingsTransactionParticipant",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_view_model_factory.js",
+      "symbol": "InventoryV2ViewModelFactory",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_view_model_factory.js",
+      "symbol": "InventoryV2ViewModelFactory",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/loadout_application_service.js",
+      "symbol": "LoadoutApplicationPort",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/loadout_application_service.js",
+      "symbol": "LoadoutApplicationService",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/refill_compatible_signature_policy.js",
+      "symbol": "RefillCompatibleSignaturePolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/application/inventory/refill_compatible_signature_policy.js",
+      "symbol": "RefillCompatibleSignaturePolicy",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/assets/asset_load_result.js",
+      "symbol": "AssetLoadResult",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/assets/asset_manifest.js",
+      "symbol": "AssetManifest",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/assets/asset_preload_coordinator.js",
+      "symbol": "AssetPreloadCoordinator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/config.js",
+      "symbol": "BASE_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/config.js",
+      "symbol": "CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/config.js",
+      "symbol": "CONFIG_OVERRIDE_STORE",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/config.js",
+      "symbol": "CONFIG_RUNTIME_CONTEXT",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/config.js",
+      "symbol": "CYBER_FISHING_CONFIG_RUNTIME",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/config/config.js",
+      "symbol": "INVENTORY_CATEGORIES",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/config.js",
+      "symbol": "RESOLVED_CONFIG_PROVIDER",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/config.js",
+      "symbol": "SLOT_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/config.js",
+      "symbol": "SUBFILTER_MAPPING",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/config.js",
+      "symbol": "UI_LAYOUT_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/fish/fish_categories.js",
+      "symbol": "FISH_CATEGORIES",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/fish/presets/fish_profile_factory.js",
+      "symbol": "cloneFishProfileValue",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/fish/presets/fish_profile_factory.js",
+      "symbol": "createFishFromPreset",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/fish/presets/fish_profile_factory.js",
+      "symbol": "createFishPhysicsProfile",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/fish/presets/fish_profile_factory.js",
+      "symbol": "mergeFishProfileValues",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/fish/presets/fish_profile_presets.js",
+      "symbol": "COMMON_LAST_DASH_BEHAVIOR",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/fish/presets/fish_profile_presets.js",
+      "symbol": "COMMON_LAST_DASH_TRIGGER",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/fish/presets/fish_profile_presets.js",
+      "symbol": "FISH_PROFILE_PRESETS",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/fish/presets/fish_profile_presets.js",
+      "symbol": "PEACEFUL_DIRECTION",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/fish/presets/fish_profile_presets.js",
+      "symbol": "PREDATOR_DIRECTION",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/fish/species/event_fish.js",
+      "symbol": "EVENT_FISH",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/fish/species/peaceful_fish.js",
+      "symbol": "PEACEFUL_FISH",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/fish/species/predator_fish.js",
+      "symbol": "PREDATOR_FISH",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/fish/species/rare_fish.js",
+      "symbol": "RARE_FISH",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/fish_db.js",
+      "symbol": "FISH_DB",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/item_db.js",
+      "symbol": "ITEM_DB",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/databases/map_db.js",
+      "symbol": "MAP_DB",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/inventory/equipment_slot_config.js",
+      "symbol": "EQUIPMENT_ALL_SLOT_IDS",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/inventory/equipment_slot_config.js",
+      "symbol": "EQUIPMENT_AUXILIARY_SLOT_IDS",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/inventory/equipment_slot_config.js",
+      "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/inventory/equipment_slot_config.js",
+      "symbol": "EQUIPMENT_SLOT_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/inventory/equipment_slot_config.js",
+      "symbol": "EquipmentSlotId",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/inventory/inventory_v2_item_parameter_config.js",
+      "symbol": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/inventory/inventory_v2_item_parameter_config.js",
+      "symbol": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/inventory/inventory_v2_item_parameter_config.js",
+      "symbol": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/inventory/inventory_v2_item_parameter_config.js",
+      "symbol": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/inventory/inventory_v2_item_parameter_config.js",
+      "symbol": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/inventory/inventory_v2_item_parameter_config.js",
+      "symbol": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/inventory/inventory_v2_sort_config.js",
+      "symbol": "INVENTORY_V2_SORT_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/inventory/inventory_v2_sort_config.js",
+      "symbol": "INVENTORY_V2_SORT_CONFIG",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/inventory/item_assembly_profile_config.js",
+      "symbol": "ITEM_ASSEMBLY_PROFILE_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/inventory/item_assembly_profile_config.js",
+      "symbol": "ITEM_ASSEMBLY_PROFILE_IDS",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/items/item_progression_config.js",
+      "symbol": "ITEM_PROGRESSION_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/items/item_stat_override_config.js",
+      "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/items/item_stat_override_config.js",
+      "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/physics/environment_physics_config.js",
+      "symbol": "ENVIRONMENT_PHYSICS_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/physics/environment_physics_config.js",
+      "symbol": "WATER_PHYSICS_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/physics/fight_physics_config.js",
+      "symbol": "FIGHT_PHYSICS_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/physics/physics_config.js",
+      "symbol": "CASTING_POWER_PHYSICS_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/physics/physics_config.js",
+      "symbol": "FLOAT_MOTION_PHYSICS_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/physics/physics_config.js",
+      "symbol": "PHYSICS_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/physics/physics_config.js",
+      "symbol": "SIMULATION_PHYSICS_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/physics/physics_config_adapter.js",
+      "symbol": "FightPhysicsConfigAdapter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/physics/physics_formula_map.js",
+      "symbol": "PHYSICS_FORMULA_MAP",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/physics/physics_units_and_naming.js",
+      "symbol": "PHYSICS_UNITS_AND_NAMING",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/physics/retrieve_physics_config.js",
+      "symbol": "BITE_FALLBACK_PHYSICS_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/physics/retrieve_physics_config.js",
+      "symbol": "LURE_RETRIEVE_PHYSICS_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/physics/retrieve_physics_config.js",
+      "symbol": "PASSIVE_RETRIEVE_PHYSICS_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/physics/retrieve_physics_config.js",
+      "symbol": "POLE_IDLE_RETRIEVE_PHYSICS_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/physics/tackle_physics_config.js",
+      "symbol": "TACKLE_PHYSICS_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/physics/tension_physics_config.js",
+      "symbol": "TENSION_PHYSICS_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/project_version.js",
+      "symbol": "CURRENT_PROJECT_VERSION",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/project_version.js",
+      "symbol": "CYBER_FISHING_PROJECT_VERSION",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/config/project_version.js",
+      "symbol": "PROJECT_VERSION_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/rarity/rarity_visual_config.js",
+      "symbol": "RARITY_VISUAL_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/runtime/config_override_store.js",
+      "symbol": "ConfigOverrideStore",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/runtime/immutable_config.js",
+      "symbol": "createRuntimeConfigContext",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/runtime/immutable_config.js",
+      "symbol": "deepCloneConfig",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/runtime/immutable_config.js",
+      "symbol": "deepFreezeConfig",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/runtime/immutable_config.js",
+      "symbol": "getRuntimeConfigPath",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/runtime/immutable_config.js",
+      "symbol": "setRuntimeConfigPath",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/runtime/resolved_config_provider.js",
+      "symbol": "ResolvedConfigProvider",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/validation/config_schema_validator.js",
+      "symbol": "ConfigSchemaValidator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/validation/config_schema_validator.js",
+      "symbol": "ConfigValidationResult",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/validation/degradation_color_config_validator.js",
+      "symbol": "DegradationColorConfigValidator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/validation/item_progression_config_validator.js",
+      "symbol": "ItemProgressionConfigValidator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/validation/item_rarity_config_validator.js",
+      "symbol": "ItemRarityConfigValidator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/validation/rarity_config_validator.js",
+      "symbol": "RarityConfigValidator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/visual/degradation_color_config.js",
+      "symbol": "DEGRADATION_COLOR_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/assemblies/assembly_attachment_target_resolver.js",
+      "symbol": "AssemblyAttachmentTargetResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/assemblies/assembly_attachment_target_resolver.js",
+      "symbol": "AssemblyAttachmentTargetResolver",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/assemblies/assembly_completion_policy.js",
+      "symbol": "AssemblyCompletionPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/assemblies/assembly_completion_policy.js",
+      "symbol": "AssemblyCompletionPolicy",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/assemblies/assembly_profile_registry.js",
+      "symbol": "AssemblyProfileRegistry",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/assemblies/assembly_state.js",
+      "symbol": "AssemblyPreparationStatus",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/assemblies/assembly_state.js",
+      "symbol": "AssemblyState",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/assemblies/assembly_state_repository.js",
+      "symbol": "AssemblyStateRepository",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+      "symbol": "ExactAssemblyRefillSignaturePolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/assemblies/item_assembly_reader.js",
+      "symbol": "ItemAssemblyPath",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/assemblies/item_assembly_reader.js",
+      "symbol": "ItemAssemblyReader",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/assemblies/item_assembly_service.js",
+      "symbol": "ItemAssemblyDomainError",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/assemblies/item_assembly_service.js",
+      "symbol": "ItemAssemblyService",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/casting_distance.js",
+      "symbol": "CastDistanceCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/casting_distance.js",
+      "symbol": "DistanceUnitConverter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/core.js",
+      "symbol": "CacheManager",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/core.js",
+      "symbol": "EventLogger",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/core.js",
+      "symbol": "InputManager",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/core.js",
+      "symbol": "PointerAction",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/core.js",
+      "symbol": "Vector2",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/auto_refill_policy.js",
+      "symbol": "AutoRefillMemory",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/auto_refill_policy.js",
+      "symbol": "AutoRefillPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/auto_refill_policy.js",
+      "symbol": "AutoRefillScope",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/auto_refill_policy.js",
+      "symbol": "AutoRefillSettings",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/auto_refill_policy.js",
+      "symbol": "AutoRefillTrigger",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/equipment_compatibility_policy.js",
+      "symbol": "EquipmentCompatibilityPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/equipment_compatibility_policy.js",
+      "symbol": "EquipmentCompatibilityPolicy",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/equipment_slot_availability_policy.js",
+      "symbol": "EquipmentSlotAvailabilityPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/equipment_slot_availability_policy.js",
+      "symbol": "EquipmentSlotAvailabilityState",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/equipment_slot_availability_policy.js",
+      "symbol": "EquipmentSlotWarningCode",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "symbol": "EquipmentSlotVisibilityPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/equipment_state.js",
+      "symbol": "EquipmentState",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/equipment_transition_planner.js",
+      "symbol": "EquipmentTransitionPlan",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/equipment_transition_planner.js",
+      "symbol": "ManualRodChangePlanner",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/exact_item_signature_policy.js",
+      "symbol": "ExactItemSignaturePolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/fishing_readiness_policy.js",
+      "symbol": "FishingReadinessPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/inventory_capacity_policy.js",
+      "symbol": "DelegatingInventoryCapacityPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/inventory_capacity_policy.js",
+      "symbol": "InventoryCapacityPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/inventory_capacity_policy.js",
+      "symbol": "UnlimitedInventoryCapacityPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/rod_capability_resolver.js",
+      "symbol": "RodCapabilityResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/equipment/terminal_line_slot_resolver.js",
+      "symbol": "TerminalLineSlotResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "symbol": "FishAnomalyVariantResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "symbol": "FishRarityResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fish/fish_visual_variant_resolver.js",
+      "symbol": "FishVisualVariantResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/drag_force_calculator.js",
+      "symbol": "DragForceCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "symbol": "EnduranceMovementDebuffCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/fish_direction_intent_sampler.js",
+      "symbol": "DEFAULT_FISH_LATERAL_RANGE",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/fish_direction_intent_sampler.js",
+      "symbol": "DEFAULT_FISH_RADIAL_RANGE",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/fish_direction_intent_sampler.js",
+      "symbol": "FishDirectionIntentSampler",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/fish_fight_direction_resolver.js",
+      "symbol": "FishFightDirectionResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/fish_retrieve_result.js",
+      "symbol": "FishRetrieveResult",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/fishing_cast_exposure_resolver.js",
+      "symbol": "FishingCastExposureResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/fishing_cast_exposure_resolver.js",
+      "symbol": "FishingCastExposureResolver",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/hold_opposition_resolver.js",
+      "symbol": "HoldOppositionResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/landing_lift_readiness_policy.js",
+      "symbol": "LandingLiftReadinessPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/landing_lift_readiness_policy.js",
+      "symbol": "LandingLiftReadinessPolicy",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/landing_lift_tension_calculator.js",
+      "symbol": "LandingLiftTensionCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/landing_policy.js",
+      "symbol": "LandingPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/landing_policy.js",
+      "symbol": "LandingPolicyResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/landing_policy.js",
+      "symbol": "PoleLandingPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/landing_policy.js",
+      "symbol": "ReelLandingPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/landing_policy.js",
+      "symbol": "resolveFightPhysicsConfig",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/line_constrained_fish_motion_resolver.js",
+      "symbol": "LineConstrainedFishMotionResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/line_constraint_state_resolver.js",
+      "symbol": "LineConstraintStateResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/line_radial_movement_splitter.js",
+      "symbol": "LineRadialMovementSplitter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/line_tension_calculator.js",
+      "symbol": "LineTensionCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/player_force_budget_allocator.js",
+      "symbol": "PlayerForceBudgetAllocator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/player_force_budget_allocator.js",
+      "symbol": "PlayerForceBudgetAllocator",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "symbol": "PlayerPressureFatigueCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "symbol": "PlayerPressureFatigueCalculator",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "symbol": "PlayerPressureFatigueSourceResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "symbol": "PlayerPressureFatigueSourceResolver",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "symbol": "PlayerPressureFatigueState",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "symbol": "PlayerPressureFatigueState",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "symbol": "PlayerPressureGainResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "symbol": "PlayerPressureGainResolver",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+      "symbol": "PlayerReelFatigueSession",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+      "symbol": "PlayerReelFatigueSession",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "symbol": "PlayerTensionBuildRateResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "symbol": "PlayerTensionBuildRateResolver",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/pole_fight_sector_angle_constraint.js",
+      "symbol": "PoleFightSectorAngleConstraint",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/pole_fight_sector_constraint.js",
+      "symbol": "PoleFightSectorConstraint",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/pole_fight_sector_geometry.js",
+      "symbol": "PoleFightSectorGeometry",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/recoverable_line_calculator.js",
+      "symbol": "LooseLineCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/recoverable_line_calculator.js",
+      "symbol": "RecoverableLineCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/reel_auto_recovery_calculator.js",
+      "symbol": "ReelAutoRecoveryCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/reel_hold_load_policy.js",
+      "symbol": "ReelHoldLoadPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/reel_hold_recovery_system.js",
+      "symbol": "ReelHoldRecoverySystem",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+      "symbol": "ReelRecoveryFishSlowdownPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "symbol": "ReelRetrieveSpeedCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/retrieve_policy.js",
+      "symbol": "IdleRetrievePolicyResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/retrieve_policy.js",
+      "symbol": "PassiveLureRetrievePolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/retrieve_policy.js",
+      "symbol": "PoleIdleRetrievePolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/retrieve_policy.js",
+      "symbol": "RetrievePolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/retrieve_policy.js",
+      "symbol": "resolveFightPhysicsConfig",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/rod_control_angle_resolver.js",
+      "symbol": "RodControlAngleResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/rod_control_angle_resolver.js",
+      "symbol": "RodControlAngleResolver",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/rod_control_movement_projector.js",
+      "symbol": "RodControlMovementProjector",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/rod_control_tension_mode_resolver.js",
+      "symbol": "RodControlTensionModeResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/rod_pull_calculator.js",
+      "symbol": "RodPullCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/rod_pull_state.js",
+      "symbol": "RodPullState",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/rod_stroke_capacity_resolver.js",
+      "symbol": "RodStrokeCapacityResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/rod_stroke_distance_tracker.js",
+      "symbol": "RodStrokeDistanceTracker",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/rod_stroke_state.js",
+      "symbol": "RodStrokeState",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/rod_stroke_tracker.js",
+      "symbol": "RodStrokeTracker",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/simple_fight_force_calculator.js",
+      "symbol": "SimpleFightForceCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+      "symbol": "ActiveEnduranceDrainCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+      "symbol": "ActiveEnduranceDrainCalculator",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+      "symbol": "PassiveEnduranceDrainCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+      "symbol": "PassiveEnduranceDrainCalculator",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_balance_frame.js",
+      "symbol": "StaminaBalanceFrame",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_balance_frame.js",
+      "symbol": "StaminaBalanceFrame",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_drain_calculator.js",
+      "symbol": "StaminaDrainCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_drain_calculator.js",
+      "symbol": "StaminaDrainCalculator",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+      "symbol": "StaminaLateralPositionResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+      "symbol": "StaminaLateralPositionResolver",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_phase_machine.js",
+      "symbol": "StaminaPhaseMachine",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_phase_machine.js",
+      "symbol": "StaminaPhaseMachine",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+      "symbol": "StaminaPressureResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+      "symbol": "StaminaPressureResolver",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_regen_calculator.js",
+      "symbol": "StaminaRegenCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_regen_calculator.js",
+      "symbol": "StaminaRegenCalculator",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_transition_resolver.js",
+      "symbol": "StaminaTransitionResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_transition_resolver.js",
+      "symbol": "StaminaTransitionResolver",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/fishing/tackle_failure_selector.js",
+      "symbol": "TackleFailureSelector",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/fishing/tackle_stress_accumulator.js",
+      "symbol": "TackleStressAccumulator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/float_tackle_line_budget_policy.js",
+      "symbol": "FloatTackleLineBudgetPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/input/fight_input_action_composer.js",
+      "symbol": "FightInputActionComposer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/input/fight_input_action_composer.js",
+      "symbol": "FightInputActionComposer",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/core/inventory/equip_target_selection_policy.js",
+      "symbol": "InventoryEquipTargetSelectionPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/inventory/flat_inventory_item_repository.js",
+      "symbol": "FlatInventoryItemRepository",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/inventory/inventory_item_location.js",
+      "symbol": "InventoryItemLocation",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/inventory/inventory_item_location.js",
+      "symbol": "InventoryItemLocationKind",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/inventory/inventory_item_reservation_policy.js",
+      "symbol": "InventoryItemReservationPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/inventory/inventory_item_reservation_policy.js",
+      "symbol": "InventoryItemReservationPolicy",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/inventory/inventory_item_stacking_policy.js",
+      "symbol": "InventoryItemStackingPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/inventory/item_assembly_stacking_policy.js",
+      "symbol": "ItemAssemblyStackingPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+      "symbol": "UnlimitedAssemblyCapacityPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_catalog_resolver.js",
+      "symbol": "BaitEffectivenessCatalogResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_catalog_resolver.js",
+      "symbol": "BaitEffectivenessCatalogResolver",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_descriptor.js",
+      "symbol": "BaitEffectivenessDescriptor",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_descriptor.js",
+      "symbol": "BaitEffectivenessDescriptor",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_grade_policy.js",
+      "symbol": "BaitEffectivenessGradePolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_grade_policy.js",
+      "symbol": "BaitEffectivenessGradePolicy",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+      "symbol": "AlwaysKnownBaitEffectivenessPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+      "symbol": "AlwaysKnownBaitEffectivenessPolicy",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+      "symbol": "BaitEffectivenessKnowledgePolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+      "symbol": "BaitEffectivenessKnowledgePolicy",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_match.js",
+      "symbol": "BaitEffectivenessMatch",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_match.js",
+      "symbol": "BaitEffectivenessMatch",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_resolver.js",
+      "symbol": "BaitEffectivenessResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_resolver.js",
+      "symbol": "BaitEffectivenessResolver",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/condition/item_condition_descriptor.js",
+      "symbol": "ItemConditionDescriptor",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/condition/item_condition_resolver.js",
+      "symbol": "ItemConditionResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/effective_item_stats_resolver.js",
+      "symbol": "EffectiveItemStatsResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/effective_item_stats_resolver.js",
+      "symbol": "EffectiveItemStatsResolver",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/freshness/bait_freshness_decay_policy.js",
+      "symbol": "BaitFreshnessDecayPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/freshness/bait_freshness_decay_policy.js",
+      "symbol": "BaitFreshnessDecayPolicy",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/freshness/bait_freshness_modifier.js",
+      "symbol": "BaitFreshnessModifier",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/freshness/bait_freshness_modifier.js",
+      "symbol": "BaitFreshnessModifier",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/freshness/item_freshness_descriptor.js",
+      "symbol": "ItemFreshnessDescriptor",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/freshness/item_freshness_descriptor.js",
+      "symbol": "ItemFreshnessDescriptor",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/freshness/item_freshness_resolver.js",
+      "symbol": "ItemFreshnessResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/freshness/item_freshness_resolver.js",
+      "symbol": "ItemFreshnessResolver",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/freshness/item_freshness_state_policy.js",
+      "symbol": "ItemFreshnessStatePolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/freshness/item_freshness_state_policy.js",
+      "symbol": "ItemFreshnessStatePolicy",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/hook/hook_power_policy.js",
+      "symbol": "HookPowerPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/hook/hook_power_policy.js",
+      "symbol": "HookPowerPolicy",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/item_stat_override_policy.js",
+      "symbol": "ItemStatOverridePolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/item_stat_override_policy.js",
+      "symbol": "ItemStatOverridePolicy",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/metrics/item_bounded_metric_resolver.js",
+      "symbol": "ItemBoundedMetricResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/metrics/item_bounded_metric_resolver.js",
+      "symbol": "ItemBoundedMetricResolver",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/progression/composite_metric_strategy.js",
+      "symbol": "CompositeMetricStrategy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/progression/derived_stat_metric_strategy.js",
+      "symbol": "DerivedStatMetricStrategy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/progression/item_capacity_resolver.js",
+      "symbol": "ItemCapacityResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/progression/item_catalog_baseline_registry.js",
+      "symbol": "ItemCatalogBaselineRegistry",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/progression/item_metric_strategy.js",
+      "symbol": "ItemMetricStrategy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/progression/item_metric_strategy_registry.js",
+      "symbol": "ItemMetricStrategyRegistry",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/progression/item_progression_descriptor.js",
+      "symbol": "ItemProgressionDescriptor",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/progression/item_progression_resolver.js",
+      "symbol": "ItemProgressionResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/progression/item_progression_resolver.js",
+      "symbol": "ItemProgressionResolver",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/progression/item_quality_resolver.js",
+      "symbol": "ItemQualityResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/progression/item_rating_resolver.js",
+      "symbol": "ItemRatingResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/progression/item_rating_tier_resolver.js",
+      "symbol": "ItemRatingTierResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/progression/item_rating_tier_resolver.js",
+      "symbol": "ItemRatingTierResolver",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/progression/numeric_stat_metric_strategy.js",
+      "symbol": "NumericStatMetricStrategy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/progression/target_range_metric_strategy.js",
+      "symbol": "TargetRangeMetricStrategy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/quality/environmental_compensation_modifier.js",
+      "symbol": "EnvironmentalCompensationModifier",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/quality/environmental_compensation_modifier.js",
+      "symbol": "EnvironmentalCompensationModifier",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/quality/hook_quality_modifier.js",
+      "symbol": "HookQualityModifier",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/quality/hook_quality_modifier.js",
+      "symbol": "HookQualityModifier",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/quality/item_quality_grade_policy.js",
+      "symbol": "ItemQualityGradePolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/quality/item_quality_grade_policy.js",
+      "symbol": "ItemQualityGradePolicy",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/quality/net_quality_modifier.js",
+      "symbol": "NetQualityModifier",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/quality/net_quality_modifier.js",
+      "symbol": "NetQualityModifier",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/rarity/authored_item_rarity_strategy.js",
+      "symbol": "AuthoredItemRarityStrategy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/rarity/effective_item_rarity_resolver.js",
+      "symbol": "EffectiveItemRarityResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/rarity/effective_item_rarity_resolver.js",
+      "symbol": "EffectiveItemRarityResolver",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/rarity/item_rarity_descriptor.js",
+      "symbol": "ItemRarityDescriptor",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/rarity/item_rarity_resolver.js",
+      "symbol": "ItemRarityResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/rarity/item_rarity_strategy.js",
+      "symbol": "ItemRarityStrategy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/items/rarity/item_rarity_strategy_registry.js",
+      "symbol": "ItemRarityStrategyRegistry",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/line/line_allocation_policy.js",
+      "symbol": "LineAllocationPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/line/line_inventory_controller.js",
+      "symbol": "LineInventoryController",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/line/line_spool_state.js",
+      "symbol": "LineSpoolState",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/loadouts/equipment_loadout.js",
+      "symbol": "EquipmentLoadout",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/loadouts/equipment_loadout.js",
+      "symbol": "LOADOUT_DISPLAY_NAME",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/loadouts/equipment_loadout_repository.js",
+      "symbol": "EquipmentLoadoutRepository",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/loadouts/equipment_loadout_repository.js",
+      "symbol": "EquipmentLoadoutRepository",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "symbol": "LoadoutEquipmentTransitionPlanner",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/core/debug_console.js",
+      "symbol": "DebugConsole",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/core/debug_console.js",
+      "symbol": "DebugConsoleClass",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/core/debug_context.js",
+      "symbol": "DebugContext",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/core/debug_context.js",
+      "symbol": "DebugContext",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/core/debug_event_binder.js",
+      "symbol": "DebugEventBinder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/core/debug_event_binder.js",
+      "symbol": "DebugEventBinder",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/core/debug_module_registry.js",
+      "symbol": "DebugModuleRegistry",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/core/debug_module_registry.js",
+      "symbol": "DebugModuleRegistry",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/core/null_debug_runtime.js",
+      "symbol": "NullDebugRuntime",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/core/null_debug_runtime.js",
+      "symbol": "NullDebugRuntime",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "CYBER_FISHING_DEBUG_EVENT_BINDER",
+      "mechanism": "window-property",
+      "availability": "deferred"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "DEBUG_CONSOLE_MODULES",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "DEBUG_MODULES",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "DEBUG_MODULE_REGISTRY",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "DebugConsole",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "DebugRuntime",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "biteSequenceLogger",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "biteTickLogger",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "debugConsole",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "debugContext",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "debugEventBinder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "debugModuleRegistry",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "getActiveLocationDebugData",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "getActiveLocationDebugData",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "getZoneBounds",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "getZoneBounds",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "printBiteSequenceLog",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "printBiteTickLog",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/debug.js",
+      "symbol": "printLocationMapDebug",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/dev_tools.js",
+      "symbol": "DEBUG_MODULES",
+      "mechanism": "window-property",
+      "availability": "deferred"
+    },
+    {
+      "currentPath": "src/debug/dev_tools.js",
+      "symbol": "DevTools",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/dev_tools.js",
+      "symbol": "DevToolsParameterTooltipProvider",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/dev_tools.js",
+      "symbol": "DevToolsUI",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/god_mode.js",
+      "symbol": "GodMode",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/god_mode.js",
+      "symbol": "GodMode",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/base_debug_module.js",
+      "symbol": "BaseDebugModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/base_debug_module.js",
+      "symbol": "BaseDebugModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/base_debug_module.js",
+      "symbol": "ConsoleTableDebugModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/base_debug_module.js",
+      "symbol": "ConsoleTableDebugModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/bite_ticks_debug_module.js",
+      "symbol": "BiteSequenceLogPrinter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/bite_ticks_debug_module.js",
+      "symbol": "BiteSequenceLogPrinter",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/bite_ticks_debug_module.js",
+      "symbol": "BiteTickLogPrinter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/bite_ticks_debug_module.js",
+      "symbol": "BiteTickLogPrinter",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/bite_ticks_debug_module.js",
+      "symbol": "BiteTicksDebugModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/bite_ticks_debug_module.js",
+      "symbol": "BiteTicksDebugModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/catch_time_debug_module.js",
+      "symbol": "CatchTimeDebugModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/catch_time_debug_module.js",
+      "symbol": "CatchTimeDebugModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/deviations_debug_module.js",
+      "symbol": "DeviationsDebugModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/deviations_debug_module.js",
+      "symbol": "DeviationsDebugModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/exhaustion_debug_module.js",
+      "symbol": "ExhaustionDebugModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/exhaustion_debug_module.js",
+      "symbol": "ExhaustionDebugModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/forces_debug_module.js",
+      "symbol": "ForcesDebugModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/forces_debug_module.js",
+      "symbol": "ForcesDebugModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/location_debug_module.js",
+      "symbol": "LocationDebugModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/location_debug_module.js",
+      "symbol": "LocationDebugModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/map_debug_module.js",
+      "symbol": "MapDebugModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/map_debug_module.js",
+      "symbol": "MapDebugModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/net_debug_module.js",
+      "symbol": "NetDebugModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/net_debug_module.js",
+      "symbol": "NetDebugModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/prediction_debug_module.js",
+      "symbol": "PredictionDebugModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/prediction_debug_module.js",
+      "symbol": "PredictionDebugModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/reel_hold_gate_debug_module.js",
+      "symbol": "ReelHoldGateDebugModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/reel_hold_gate_debug_module.js",
+      "symbol": "ReelHoldGateDebugModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/reel_hold_gate_live_probe.js",
+      "symbol": "CYBER_FISHING_REEL_HOLD_GATE_LIVE_PROBE",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/reel_hold_gate_live_probe.js",
+      "symbol": "ReelHoldGateLiveProbe",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/reel_hold_gate_live_probe.js",
+      "symbol": "ReelHoldGateLiveProbe",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/rod_stroke_debug_module.js",
+      "symbol": "RodStrokeDebugModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/rod_stroke_debug_module.js",
+      "symbol": "RodStrokeDebugModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/stamina_debug_module.js",
+      "symbol": "StaminaDebugModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/stamina_debug_module.js",
+      "symbol": "StaminaDebugModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/tension_debug_module.js",
+      "symbol": "TensionDebugModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/modules/tension_debug_module.js",
+      "symbol": "TensionDebugModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "ADVANCED_OVERLAY_MODULE_KEYS",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "ADVANCED_OVERLAY_MODULE_KEYS",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "BALANCE_OVERLAY_MODULE_KEYS",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "BALANCE_OVERLAY_MODULE_KEYS",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "FIGHT_PHYSICS_CATEGORY_KEYS",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "FIGHT_PHYSICS_CATEGORY_KEYS",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "FIGHT_PHYSICS_RENDER_KEYS",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "FIGHT_PHYSICS_RENDER_KEYS",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "FIGHT_PHYSICS_SECTION_KEYS",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "FIGHT_PHYSICS_SECTION_KEYS",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "OPTIONAL_OVERLAY_MODULE_KEYS",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "OPTIONAL_OVERLAY_MODULE_KEYS",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "OVERLAY_MODULES",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "OVERLAY_MODULES",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "OVERLAY_MODULE_GROUPS",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "OVERLAY_MODULE_GROUPS",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "OVERLAY_MODULE_LABELS",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/config/overlay_modules_config.js",
+      "symbol": "OVERLAY_MODULE_LABELS",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/core/overlay_controller.js",
+      "symbol": "OverlayController",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/core/overlay_controller.js",
+      "symbol": "OverlayController",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/core/overlay_module_base.js",
+      "symbol": "OverlayModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/core/overlay_module_base.js",
+      "symbol": "OverlayModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/core/overlay_module_registry.js",
+      "symbol": "OverlayModuleRegistry",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/core/overlay_module_registry.js",
+      "symbol": "OverlayModuleRegistry",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/core/overlay_update_loop.js",
+      "symbol": "OverlayUpdateLoop",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/core/overlay_update_loop.js",
+      "symbol": "OverlayUpdateLoop",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/dom/overlay_dom_adapter.js",
+      "symbol": "OverlayDomAdapter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/dom/overlay_dom_adapter.js",
+      "symbol": "OverlayDomAdapter",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/dom/overlay_interaction_bridge.js",
+      "symbol": "OverlayInteractionBridge",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/dom/overlay_interaction_bridge.js",
+      "symbol": "OverlayInteractionBridge",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/dom/overlay_metric_info_bridge.js",
+      "symbol": "OverlayMetricInfoBridge",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/dom/overlay_metric_info_bridge.js",
+      "symbol": "OverlayMetricInfoBridge",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/dom/overlay_scale_controls.js",
+      "symbol": "OverlayScaleControls",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/dom/overlay_scale_controls.js",
+      "symbol": "OverlayScaleControls",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/dom/overlay_style_installer.js",
+      "symbol": "OverlayStyleInstaller",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/dom/overlay_style_installer.js",
+      "symbol": "OverlayStyleInstaller",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/dom/overlay_window_drag_controller.js",
+      "symbol": "OverlayWindowDragController",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/dom/overlay_window_drag_controller.js",
+      "symbol": "OverlayWindowDragController",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/behavior_overlay_module.js",
+      "symbol": "BehaviorModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/behavior_overlay_module.js",
+      "symbol": "BehaviorModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/chances_detail_overlay_module.js",
+      "symbol": "ChancesDetailModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/chances_detail_overlay_module.js",
+      "symbol": "ChancesDetailModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/chum_overlay_module.js",
+      "symbol": "ChumOverlayModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/chum_overlay_module.js",
+      "symbol": "ChumOverlayModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/debuffs_overlay_module.js",
+      "symbol": "DebuffsModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/debuffs_overlay_module.js",
+      "symbol": "DebuffsModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/echo_overlay_module.js",
+      "symbol": "EchoModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/echo_overlay_module.js",
+      "symbol": "EchoModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_auto_recovery_section.js",
+      "symbol": "FightAutoRecoverySection",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_auto_recovery_section.js",
+      "symbol": "FightAutoRecoverySection",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_drag_section.js",
+      "symbol": "FightDragSection",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_drag_section.js",
+      "symbol": "FightDragSection",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_fish_section.js",
+      "symbol": "FightFishSection",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_fish_section.js",
+      "symbol": "FightFishSection",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_line_section.js",
+      "symbol": "FightLineSection",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_line_section.js",
+      "symbol": "FightLineSection",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_movement_section.js",
+      "symbol": "FightMovementSection",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_movement_section.js",
+      "symbol": "FightMovementSection",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_physics_overlay_module.js",
+      "symbol": "FightPhysicsOverlayModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_physics_overlay_module.js",
+      "symbol": "FightPhysicsOverlayModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_reel_hold_section.js",
+      "symbol": "FightReelHoldSection",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_reel_hold_section.js",
+      "symbol": "FightReelHoldSection",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_force_section.js",
+      "symbol": "FightRodControlForceSection",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_force_section.js",
+      "symbol": "FightRodControlForceSection",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_geometry_section.js",
+      "symbol": "FightRodControlGeometrySection",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_geometry_section.js",
+      "symbol": "FightRodControlGeometrySection",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_input_section.js",
+      "symbol": "FightRodControlInputSection",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_input_section.js",
+      "symbol": "FightRodControlInputSection",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_section.js",
+      "symbol": "FightRodControlSection",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_section.js",
+      "symbol": "FightRodControlSection",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_visual_section.js",
+      "symbol": "FightRodControlVisualSection",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_control_visual_section.js",
+      "symbol": "FightRodControlVisualSection",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_hold_section.js",
+      "symbol": "FightRodHoldSection",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_hold_section.js",
+      "symbol": "FightRodHoldSection",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_stroke_section.js",
+      "symbol": "FightRodStrokeSection",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_rod_stroke_section.js",
+      "symbol": "FightRodStrokeSection",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_section_base.js",
+      "symbol": "FightSectionBase",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_section_base.js",
+      "symbol": "FightSectionBase",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_tension_section.js",
+      "symbol": "FightTensionSection",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_physics/fight_tension_section.js",
+      "symbol": "FightTensionSection",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_summary/fight_summary_overlay_module.js",
+      "symbol": "FightSummaryOverlayModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_summary/fight_summary_overlay_module.js",
+      "symbol": "FightSummaryOverlayModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_summary/fish_movement_summary_overlay_module.js",
+      "symbol": "FishMovementSummaryOverlayModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_summary/fish_movement_summary_overlay_module.js",
+      "symbol": "FishMovementSummaryOverlayModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_summary/line_and_drag_summary_overlay_module.js",
+      "symbol": "LineAndDragSummaryOverlayModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_summary/line_and_drag_summary_overlay_module.js",
+      "symbol": "LineAndDragSummaryOverlayModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_summary/rod_control_summary_overlay_module.js",
+      "symbol": "RodControlSummaryOverlayModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fight_summary/rod_control_summary_overlay_module.js",
+      "symbol": "RodControlSummaryOverlayModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_current_force_overlay_module.js",
+      "symbol": "FishCurrentForceOverlayModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_current_force_overlay_module.js",
+      "symbol": "FishCurrentForceOverlayModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_debuffs_summary_overlay_module.js",
+      "symbol": "FishDebuffsSummaryOverlayModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_debuffs_summary_overlay_module.js",
+      "symbol": "FishDebuffsSummaryOverlayModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_live_force_summary_section.js",
+      "symbol": "FishLiveForceSummarySection",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_live_force_summary_section.js",
+      "symbol": "FishLiveForceSummarySection",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_state_force_preview_section.js",
+      "symbol": "FishStateForcePreviewSection",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_state_force_preview_section.js",
+      "symbol": "FishStateForcePreviewSection",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_summary_overlay_module.js",
+      "symbol": "FishSummaryOverlayModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fish_balance/fish_summary_overlay_module.js",
+      "symbol": "FishSummaryOverlayModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fish_balance_overlay_module.js",
+      "symbol": "FishBalanceModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fish_balance_overlay_module.js",
+      "symbol": "FishBalanceModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fish_power_overlay_module.js",
+      "symbol": "FishPowerModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/fish_power_overlay_module.js",
+      "symbol": "FishPowerModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/live_forces_overlay_module.js",
+      "symbol": "LiveForcesModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/live_forces_overlay_module.js",
+      "symbol": "LiveForcesModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/player_max_overlay_module.js",
+      "symbol": "PlayerMaxModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/player_max_overlay_module.js",
+      "symbol": "PlayerMaxModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/stamina_balance_overlay_module.js",
+      "symbol": "StaminaBalanceOverlayModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/stamina_balance_overlay_module.js",
+      "symbol": "StaminaBalanceOverlayModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/worst_case_overlay_module.js",
+      "symbol": "WorstCaseModule",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/modules/worst_case_overlay_module.js",
+      "symbol": "WorstCaseModule",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/overlay_bootstrap.js",
+      "symbol": "CYBER_FISHING_DEBUG_OVERLAY",
+      "mechanism": "window-property",
+      "availability": "deferred"
+    },
+    {
+      "currentPath": "src/debug/overlay/overlay_bootstrap.js",
+      "symbol": "CYBER_FISHING_OVERLAY_METRIC_INFO",
+      "mechanism": "window-property",
+      "availability": "deferred"
+    },
+    {
+      "currentPath": "src/debug/overlay/overlay_bootstrap.js",
+      "symbol": "CYBER_FISHING_OVERLAY_VIEW_STATE",
+      "mechanism": "window-property",
+      "availability": "deferred"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/overlay_console_metric_inspector.js",
+      "symbol": "OverlayConsoleMetricInspector",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/overlay_console_metric_inspector.js",
+      "symbol": "OverlayConsoleMetricInspector",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/overlay_html_builder.js",
+      "symbol": "OverlayHtmlBuilder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/overlay_html_builder.js",
+      "symbol": "OverlayHtmlBuilder",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/overlay_metric_catalog.js",
+      "symbol": "OverlayMetricCatalog",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/overlay_metric_catalog.js",
+      "symbol": "OverlayMetricCatalog",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/overlay_metric_resolver.js",
+      "symbol": "OverlayMetricResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/overlay_metric_resolver.js",
+      "symbol": "OverlayMetricResolver",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/overlay_settings_store.js",
+      "symbol": "OverlaySettingsStore",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/overlay_settings_store.js",
+      "symbol": "OverlaySettingsStore",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/overlay_settings_store.js",
+      "symbol": "OverlaySettingsStoreClass",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/overlay_value_formatter.js",
+      "symbol": "OverlayValueFormatter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/overlay_value_formatter.js",
+      "symbol": "OverlayValueFormatter",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/overlay_view_state_store.js",
+      "symbol": "OverlayViewStateStore",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/overlay_view_state_store.js",
+      "symbol": "OverlayViewStateStore",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/worst_case_force_debug_selector.js",
+      "symbol": "WorstCaseForceDebugSelector",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/overlay/services/worst_case_force_debug_selector.js",
+      "symbol": "WorstCaseForceDebugSelector",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/active_fish_dev_tools_schema.js",
+      "symbol": "ACTIVE_FISH_DEV_TOOLS_SCHEMA",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/active_fish_dev_tools_schema.js",
+      "symbol": "ACTIVE_FISH_DEV_TOOLS_SCHEMA",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/active_fish_dev_tools_schema.js",
+      "symbol": "ActiveFishDevToolsVisibilityPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/active_fish_dev_tools_schema.js",
+      "symbol": "ActiveFishDevToolsVisibilityPolicy",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/debug_data_selectors.js",
+      "symbol": "DebugDataSelectors",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/debug_data_selectors.js",
+      "symbol": "DebugDataSelectors",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/debug_formatters.js",
+      "symbol": "DebugFormatters",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/debug_formatters.js",
+      "symbol": "DebugFormatters",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/dev_tools_control_binding_registry.js",
+      "symbol": "DevToolsControlBindingRegistry",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/dev_tools_control_binding_registry.js",
+      "symbol": "DevToolsControlBindingRegistry",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/dev_tools_parameter_alias_registry.js",
+      "symbol": "DEV_TOOLS_PARAMETER_ALIAS_SCHEMA",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/dev_tools_parameter_alias_registry.js",
+      "symbol": "DEV_TOOLS_PARAMETER_ALIAS_SCHEMA",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/dev_tools_parameter_alias_registry.js",
+      "symbol": "DevToolsParameterAliasRegistry",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/dev_tools_parameter_alias_registry.js",
+      "symbol": "DevToolsParameterAliasRegistry",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/hooked_fish_profile_synchronizer.js",
+      "symbol": "HookedFishProfileSynchronizer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/item_progression_debug_snapshot_provider.js",
+      "symbol": "ItemProgressionDebugSnapshotProvider",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/location_debug_data_provider.js",
+      "symbol": "LocationDebugDataProvider",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/location_debug_data_provider.js",
+      "symbol": "LocationDebugDataProvider",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/location_debug_data_provider.js",
+      "symbol": "LocationDebugPrinter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/location_debug_data_provider.js",
+      "symbol": "LocationDebugPrinter",
+      "mechanism": "window-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/location_dev_tools_schema.js",
+      "symbol": "LocationDevToolsSchema",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/location_dev_tools_schema.js",
+      "symbol": "LocationDevToolsSchema",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/debug/services/memory_leak_watchdog.js",
+      "symbol": "MemoryLeakWatchdog",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/debug/services/memory_leak_watchdog.js",
+      "symbol": "MemoryLeakWatchdog",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/entities/fish.js",
+      "symbol": "FISH_FIGHT_EVENT",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/fish.js",
+      "symbol": "Fish",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/fish.js",
+      "symbol": "FishBehavior",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/fish.js",
+      "symbol": "FishCondition",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/fish.js",
+      "symbol": "FishEndurancePointsCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/fish.js",
+      "symbol": "FishPhysicsProfile",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/fish.js",
+      "symbol": "FishStaminaPointsCalculator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "BaitFactory",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "Equipment",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "FeederEntity",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "FloatEntity",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "Hook",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "JigEntity",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "Net",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "Reel",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "Rod",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "SpinnerEntity",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "WaterEntity",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "WobblerEntity",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "getGlobalFightPhysicsConfig",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "getGlobalFloatMotionConfig",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "getGlobalLureRetrieveConfig",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "getGlobalPassiveRetrieveConfig",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "getGlobalReelConfig",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "symbol": "getGlobalRuntimePhysicsConfig",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/location/depth_map_reader.js",
+      "symbol": "DepthMapReader",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/location/location_asset_loader.js",
+      "symbol": "LocationAssetLoader",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/location/offscreen_canvas_factory.js",
+      "symbol": "OffscreenCanvasFactory",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+      "symbol": "InventoryItemSnapshotMapper",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+      "symbol": "InventoryItemSnapshotMapper",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "symbol": "InventoryV2LegacyMigration",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "symbol": "InventoryV2LegacyMigration",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_snapshot_factory.js",
+      "symbol": "InventoryV2SnapshotFactory",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_snapshot_factory.js",
+      "symbol": "InventoryV2SnapshotFactory",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
+      "symbol": "InventoryV2SnapshotMigration",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
+      "symbol": "InventoryV2SnapshotMigration",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_state_store.js",
+      "symbol": "INVENTORY_V2_SCHEMA_VERSION",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_state_store.js",
+      "symbol": "INVENTORY_V2_SCHEMA_VERSION",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_state_store.js",
+      "symbol": "InventoryV2StateStore",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_state_store.js",
+      "symbol": "InventoryV2StateStore",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_transaction_coordinator.js",
+      "symbol": "InventoryV2TransactionCoordinator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_transaction_coordinator.js",
+      "symbol": "InventoryV2TransactionCoordinator",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+      "symbol": "LegacyInventoryUnitAllocator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+      "symbol": "LegacyInventoryUnitAllocator",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/legacy_item_state_migration.js",
+      "symbol": "LegacyItemStateMigration",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/legacy_item_state_migration.js",
+      "symbol": "LegacyItemStateMigration",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/input/pull_input_mapper.js",
+      "symbol": "PullInputMapper",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/input/victory_action_gesture_resolver.js",
+      "symbol": "VictoryActionGestureResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/casting/cast_scene_renderer.js",
+      "symbol": "CAST_AIM_DASH",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/casting/cast_scene_renderer.js",
+      "symbol": "CastSceneRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/core/canvas_2d_surface.js",
+      "symbol": "Canvas2DSurface",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/core/canvas_primitives.js",
+      "symbol": "CanvasPrimitives",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/core/composite_renderer.js",
+      "symbol": "CompositeRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/core/image_asset_provider.js",
+      "symbol": "ImageAssetProvider",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/core/render_allocation_diagnostics.js",
+      "symbol": "RenderAllocationDiagnostics",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/core/render_component.js",
+      "symbol": "RenderComponent",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/core/render_frame_buffer.js",
+      "symbol": "GameRenderFrame",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/core/render_frame_buffer.js",
+      "symbol": "RenderFrameBuffer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/core/render_frame_buffer.js",
+      "symbol": "ReusableRenderList",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/core/render_math.js",
+      "symbol": "RenderMath",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/core/render_order.js",
+      "symbol": "RENDER_ORDER",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/core/render_order.js",
+      "symbol": "RENDER_SEQUENCE",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/core/render_order.js",
+      "symbol": "RenderOrder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/core/render_pass.js",
+      "symbol": "RenderPass",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/fishing/fight_area_renderer.js",
+      "symbol": "FIGHT_AREA_AXIS_DASH",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/fishing/fight_area_renderer.js",
+      "symbol": "FIGHT_AREA_EMPTY_DASH",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/fishing/fight_area_renderer.js",
+      "symbol": "FIGHT_AREA_NET_DASH",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/fishing/fight_area_renderer.js",
+      "symbol": "FightAreaRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/fishing/fishing_scene_renderer.js",
+      "symbol": "FishingSceneRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/fishing/float_renderer.js",
+      "symbol": "FloatRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/fishing/line_visual_state_controller.js",
+      "symbol": "LineVisualStateController",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/fishing/rod_line_renderer.js",
+      "symbol": "RodLineRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/hud/fight_hud_renderer.js",
+      "symbol": "FightHudRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/hud/fight_status_bars_renderer.js",
+      "symbol": "FightStatusBarsRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/hud/hold_charges_renderer.js",
+      "symbol": "HoldChargesRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/hud/hud_bar_renderer.js",
+      "symbol": "HudBarRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/hud/player_pressure_fatigue_indicator_renderer.js",
+      "symbol": "PlayerPressureFatigueIndicatorRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/pipeline/casting_render_pass.js",
+      "symbol": "CastingRenderPass",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/pipeline/fishing_render_pass.js",
+      "symbol": "FishingRenderPass",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/pipeline/game_render_pipeline.js",
+      "symbol": "GameRenderPipeline",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/pipeline/hud_render_pass.js",
+      "symbol": "HudRenderPass",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/pipeline/outcome_render_pass.js",
+      "symbol": "OutcomeRenderPass",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/pipeline/world_render_pass.js",
+      "symbol": "WorldRenderPass",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/screens/game_over_renderer.js",
+      "symbol": "GameOverRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/screens/rarity_animation_resolver.js",
+      "symbol": "RarityAnimationResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/screens/star_rating_renderer.js",
+      "symbol": "StarRatingRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/screens/victory_layout_resolver.js",
+      "symbol": "VictoryLayoutResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/screens/victory_renderer.js",
+      "symbol": "VictoryRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/screens/victory_theme_resolver.js",
+      "symbol": "VictoryThemeResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/world/boat_chum_renderer.js",
+      "symbol": "BoatChumRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/world/location_debug_map_builder.js",
+      "symbol": "LocationDebugMapBuilder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/world/world_debug_renderer.js",
+      "symbol": "WorldDebugRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/render/world/world_scene_renderer.js",
+      "symbol": "WorldSceneRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/services/weakest_tackle_limit_resolver.js",
+      "symbol": "WeakestTackleLimitResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/services/weakest_tackle_limit_resolver.js",
+      "symbol": "WeakestTackleLimitResolver",
+      "mechanism": "window-property",
+      "availability": "conditional"
+    },
+    {
+      "currentPath": "src/systems/bite_system.js",
+      "symbol": "BiteSystem",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/bite_system.js",
+      "symbol": "CastManager",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/chum_system.js",
+      "symbol": "BaitBoat",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/chum_system.js",
+      "symbol": "ChumManager",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/chum_system.js",
+      "symbol": "ChumZone",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/drag_system.js",
+      "symbol": "DragSystem",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/fight_physics_pipeline.js",
+      "symbol": "FightPhysicsPipeline",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/fight_physics_pipeline.js",
+      "symbol": "FightPhysicsPipelineFrame",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/fight_physics_system.js",
+      "symbol": "FightPhysicsSystem",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/fish_force_system.js",
+      "symbol": "FishForceSystem",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/fish_retrieve_system.js",
+      "symbol": "FishRetrieveSystem",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_item_factory.js",
+      "symbol": "InventoryItemFactory",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_item_view_factory.js",
+      "symbol": "InventoryItemViewFactory",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "ConfiguredInventorySeeder",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "DisplayStatsResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "EquipmentStateMigrationPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "EquipmentValidator",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "Inventory",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "InventoryEquipment",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "InventoryEventBridge",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "InventoryItemIdMigrationPolicy",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "InventoryManager",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "InventoryRuntimeConfigProvider",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "InventoryRuntimeDisplayStatsResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "ItemDatabase",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "LineCompatibilityRules",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "LineRuntimeDisplayStatsResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "ReelRuntimeDisplayStatsResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "RuntimeDisplayStatFormatter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "symbol": "RuntimeDisplayStatWriter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/line_system.js",
+      "symbol": "LineSystem",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/player_force_system.js",
+      "symbol": "PlayerForceSystem",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/player_pull_motion_smoother.js",
+      "symbol": "PlayerPullMotionSmoother",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/reel_system.js",
+      "symbol": "ReelSystem",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/rod_lateral_control_system.js",
+      "symbol": "RodLateralControlSystem",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/rod_pull_system.js",
+      "symbol": "RodPullSystem",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/rod_visual_offset_system.js",
+      "symbol": "RodVisualOffsetSystem",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/stamina_system.js",
+      "symbol": "BuffManager",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/stamina_system.js",
+      "symbol": "StaminaController",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/tackle_stress_system.js",
+      "symbol": "TackleStressSystem",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/systems/tension_system.js",
+      "symbol": "TensionSystem",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/condition/item_condition_dom_adapter.js",
+      "symbol": "ItemConditionDomAdapter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/interaction/horizontal_scroll_controller.js",
+      "symbol": "HorizontalScrollController",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/interaction/horizontal_scroll_controller.js",
+      "symbol": "HorizontalScrollController",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
+      "symbol": "InventoryV2AssemblyEditorRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
+      "symbol": "InventoryV2AssemblyEditorRenderer",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js",
+      "symbol": "InventoryV2AssemblyParameterSectionResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js",
+      "symbol": "InventoryV2AssemblyParameterSectionResolver",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
+      "symbol": "InventoryV2AttachmentBadgeRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
+      "symbol": "InventoryV2AttachmentBadgeRenderer",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+      "symbol": "InventoryV2BalanceParameterResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+      "symbol": "InventoryV2BalanceParameterResolver",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_bootstrap.js",
+      "symbol": "InventoryV2Bootstrap",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_bootstrap.js",
+      "symbol": "InventoryV2Bootstrap",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "symbol": "InventoryV2DomFactory",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "symbol": "InventoryV2DomFactory",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_header_renderer.js",
+      "symbol": "InventoryV2HeaderRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_header_renderer.js",
+      "symbol": "InventoryV2HeaderRenderer",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
+      "symbol": "InventoryV2InventoryGridRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
+      "symbol": "InventoryV2InventoryGridRenderer",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_item_card_renderer.js",
+      "symbol": "InventoryV2ItemCardRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_item_card_renderer.js",
+      "symbol": "InventoryV2ItemCardRenderer",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
+      "symbol": "InventoryV2ItemParametersRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
+      "symbol": "InventoryV2ItemParametersRenderer",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
+      "symbol": "INVENTORY_V2_RARITY_NAMES",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
+      "symbol": "INVENTORY_V2_RARITY_NAMES",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
+      "symbol": "InventoryV2ItemParametersResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
+      "symbol": "InventoryV2ItemParametersResolver",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
+      "symbol": "InventoryV2LoadoutPanelRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
+      "symbol": "InventoryV2LoadoutPanelRenderer",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_long_press_controller.js",
+      "symbol": "InventoryV2LongPressController",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_long_press_controller.js",
+      "symbol": "InventoryV2LongPressController",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
+      "symbol": "InventoryV2ResourceMeterRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
+      "symbol": "InventoryV2ResourceMeterRenderer",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
+      "symbol": "INVENTORY_V2_RESOURCE_METER_DEFINITIONS",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
+      "symbol": "INVENTORY_V2_RESOURCE_METER_DEFINITIONS",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
+      "symbol": "InventoryV2ResourceMeterResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
+      "symbol": "InventoryV2ResourceMeterResolver",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
+      "symbol": "InventoryV2SavedLoadoutPreviewRenderer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
+      "symbol": "InventoryV2SavedLoadoutPreviewRenderer",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+      "symbol": "InventoryV2TooltipPresenter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+      "symbol": "InventoryV2TooltipPresenter",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_ui.js",
+      "symbol": "InventoryV2UI",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_ui.js",
+      "symbol": "InventoryV2UI",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_view_model.js",
+      "symbol": "InventoryV2ActionContract",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_view_model.js",
+      "symbol": "InventoryV2ActionContract",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_view_model.js",
+      "symbol": "InventoryV2ActionType",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_view_model.js",
+      "symbol": "InventoryV2ActionType",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_view_model.js",
+      "symbol": "InventoryV2FacadeContract",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_view_model.js",
+      "symbol": "InventoryV2FacadeContract",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_view_model.js",
+      "symbol": "InventoryV2ViewModelNormalizer",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_view_model.js",
+      "symbol": "InventoryV2ViewModelNormalizer",
+      "mechanism": "global-this-property",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/progression/item_progression_dom_adapter.js",
+      "symbol": "ItemProgressionDomAdapter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/progression/item_progression_visual_resolver.js",
+      "symbol": "ItemProgressionVisualResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/rarity/item_rarity_dom_adapter.js",
+      "symbol": "ItemRarityDomAdapter",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/styles/degradation_color_resolver.js",
+      "symbol": "DegradationColorResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/styles/fight_area_style_resolver.js",
+      "symbol": "FightAreaStyleResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/styles/hud_style_resolver.js",
+      "symbol": "HudStyleResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/styles/outcome_style_resolver.js",
+      "symbol": "OutcomeStyleResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/styles/rarity_visual_resolver.js",
+      "symbol": "RarityVisualResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/ui.js",
+      "symbol": "ChumUI",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/ui.js",
+      "symbol": "DepthSelectorUI",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/ui.js",
+      "symbol": "HoldChargesUI",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/ui.js",
+      "symbol": "InventoryUI",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/ui.js",
+      "symbol": "TimeDisplayUI",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/ui.js",
+      "symbol": "UIDraggableButton",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/ui.js",
+      "symbol": "UIManager",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/ui.js",
+      "symbol": "UIUtils",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/ui.js",
+      "symbol": "UI_EXCEPTIONS",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/ui.js",
+      "symbol": "initEngineInterface",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/version_badge.js",
+      "symbol": "GameVersionBadge",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/world/world.js",
+      "symbol": "DynamicZone",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/world/world.js",
+      "symbol": "GridCell",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/world/world.js",
+      "symbol": "LocationMap",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/world/world.js",
+      "symbol": "ViewportProjector",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    }
+  ]
+}
