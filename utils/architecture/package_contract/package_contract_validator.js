@@ -1,5 +1,5 @@
 class PackageContractValidator {
-  validate(contract) {
+  validate(contract, expectedStage) {
     const errors = [];
     const require = (condition, message) => { if (!condition) errors.push(message); };
     require(contract?.schemaVersion === 1, "package contract schemaVersion must equal 1");
@@ -17,16 +17,31 @@ class PackageContractValidator {
     require(contract?.lockfile?.requiresIntegrity === true, "lockfile integrity hashes are required");
     require(contract?.lockfile?.gitPolicy === "required-not-ignored", "lockfile must not be ignored");
     require(this.#sameValues(contract?.dependencyPolicy?.directSections, ["dependencies", "devDependencies"]), "direct dependency sections are incomplete");
-    require(contract?.stage?.current === "2.0", "package contract must record Stage 2.0");
-    require(contract?.stage?.vite === "fixture-and-approved-bridge-build-infrastructure", "Vite usage must be limited to fixtures and approved bridge infrastructure");
+    require(
+      contract?.stage?.current === expectedStage?.current,
+      `package contract must record Stage ${expectedStage?.current}`,
+    );
+    require(contract?.stage?.vite === "fixture-bridge-and-cumulative-runtime-infrastructure", "Vite usage must be limited to fixtures and approved compatibility infrastructure");
     require(contract?.stage?.productionEntrypoint === "unchanged-index-html", "production entrypoint must remain index.html");
-    require(contract?.stage?.sourceRuntime === "classic-scripts-unchanged", "classic source runtime must remain unchanged");
+    require(contract?.stage?.sourceRuntime === "classic-scripts-with-cumulative-iife-runtime", "classic source runtime must identify the cumulative IIFE runtime");
     require(contract?.stage?.commonJsTooling === "preserved", "CommonJS tooling must remain preserved");
-    require(contract?.stage?.bridgeBuild?.status === "foundation-verified", "legacy bridge build foundation must be verified");
+    require(contract?.stage?.bridgeBuild?.status === "transitioned-to-cumulative-runtime", "isolated legacy bridge runtime must be transitioned");
     require(contract?.stage?.bridgeBuild?.registry === "architecture/guards/migration_bridge_registry.json", "legacy bridge registry path is invalid");
-    require(contract?.stage?.bridgeBuild?.inputs === "approved-active-wrappers-only", "legacy bridge inputs must be exact approved wrappers");
+    require(contract?.stage?.bridgeBuild?.inputs === "stage-2-bridges-exposed-through-stage-3-cumulative-runtime", "legacy bridge transition inputs are invalid");
     require(contract?.stage?.bridgeBuild?.output === "dist/legacy-bridges/", "legacy bridge output path is invalid");
-    require(contract?.stage?.bridgeBuild?.runtimeInputs === 0, "Stage 2.0 must have zero active runtime bridge inputs");
+    require(contract?.stage?.bridgeBuild?.runtimeInputs === 0, "isolated bridge runtime must have zero active inputs");
+    require(contract?.stage?.cumulativeRuntimeBuild?.status === "runtime-integration-active", "cumulative runtime integration must be active");
+    require(contract?.stage?.cumulativeRuntimeBuild?.contract === "architecture/migration/stage_3_compatibility_runtime.json", "cumulative runtime contract path is invalid");
+    require(contract?.stage?.cumulativeRuntimeBuild?.executionState === "architecture/migration/stage_3_execution_state.json", "Stage 3 execution state path is invalid");
+    require(contract?.stage?.cumulativeRuntimeBuild?.output === "dist/stage-3-compat-runtime/", "cumulative runtime output path is invalid");
+    require(
+      contract?.stage?.cumulativeRuntimeBuild?.runtimeInputs === expectedStage?.runtimeInputs,
+      "package contract cumulative runtime input count differs from selected Stage 3 batches",
+    );
+    require(
+      contract?.stage?.cumulativeRuntimeBuild?.activationInputs === expectedStage?.activationInputs,
+      "package contract activation input count differs from selected Stage 3 batches",
+    );
     if (errors.length) throw new Error(`Package contract is invalid:\n- ${errors.join("\n- ")}`);
   }
 

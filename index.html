@@ -17,7 +17,7 @@
       class="game-version-badge"
       aria-label="Поточна версія гри"
     ></div>
-    <script src="src/config/project_version.js?v=0.24.32"></script>
+    <script src="src/config/project_version.js?v=0.24.41"></script>
     <script src="src/config/rarity/rarity_visual_config.js"></script>
     <script src="src/config/visual/degradation_color_config.js"></script>
     <script src="src/config/items/item_progression_config.js?v=0.24.30"></script>
@@ -104,7 +104,8 @@
     <script src="src/core/items/progression/item_capacity_resolver.js"></script>
     <script src="src/core/items/progression/item_progression_descriptor.js"></script>
     <script src="src/core/items/progression/item_progression_resolver.js"></script>
-    <script src="src/core/inventory/equip_target_selection_policy.js"></script>
+    <script src="dist/stage-3-compat-runtime/compat_runtime.iife.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/086_inventoryequiptargetselectionpolicy.js"></script>
     <script src="src/core/inventory/inventory_item_stacking_policy.js"></script>
     <script src="src/core/float_tackle_line_budget_policy.js"></script>
     <script src="src/core/casting_distance.js"></script>
@@ -131,7 +132,7 @@
     <script src="src/core/fishing/stamina/stamina_balance_frame.js"></script>
     <script src="src/core/fishing/endurance/endurance_movement_debuff_calculator.js"></script>
     <script src="src/core/fishing/reel_retrieve_speed_calculator.js"></script>
-    <script src="src/core/fishing/reel_auto_recovery_calculator.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/113_reelautorecoverycalculator.js"></script>
     <script src="src/core/fishing/reel_hold_load_policy.js"></script>
     <script src="src/core/fishing/reel_hold_recovery_system.js"></script>
     <script src="src/core/fishing/reel_recovery_fish_slowdown_policy.js"></script>
@@ -147,7 +148,7 @@
     <script src="src/core/fishing/rod_control_tension_mode_resolver.js"></script>
     <script src="src/core/fishing/rod_control_angle_resolver.js"></script>
     <script src="src/core/fishing/drag_force_calculator.js"></script>
-    <script src="src/core/fishing/line_tension_calculator.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/129_linetensioncalculator.js"></script>
     <script src="src/core/fishing/line_constraint_state_resolver.js"></script>
     <script src="src/core/fishing/line_constrained_fish_motion_resolver.js"></script>
     <script src="src/core/fishing/line_radial_movement_splitter.js"></script>
@@ -177,7 +178,7 @@
     <script src="src/core/assemblies/assembly_completion_policy.js"></script>
     <script src="src/core/assemblies/exact_assembly_refill_signature_policy.js"></script>
     <script src="src/core/assemblies/item_assembly_service.js"></script>
-    <script src="src/core/equipment/rod_capability_resolver.js?v=0.24.30"></script>
+    <script src="dist/stage-3-compat-runtime/activations/157_rodcapabilityresolver.js"></script>
     <script src="src/core/equipment/equipment_slot_visibility_policy.js"></script>
     <script src="src/core/equipment/terminal_line_slot_resolver.js"></script>
     <script src="src/core/equipment/equipment_state.js"></script>
@@ -381,17 +382,17 @@
     <script src="src/render/core/canvas_primitives.js"></script>
     <script src="src/render/core/image_asset_provider.js"></script>
     <script src="src/render/core/render_allocation_diagnostics.js"></script>
-    <script src="src/assets/asset_manifest.js"></script>
-    <script src="src/assets/asset_load_result.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/352_assetmanifest.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/353_assetloadresult.js"></script>
     <script src="src/assets/asset_preload_coordinator.js"></script>
     <script src="src/infrastructure/location/depth_map_reader.js"></script>
     <script src="src/infrastructure/location/location_asset_loader.js"></script>
     <script src="src/render/core/render_frame_buffer.js"></script>
-    <script src="src/render/core/render_pass.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/358_renderpass.js"></script>
     <script src="src/render/core/render_order.js"></script>
-    <script src="src/render/core/render_math.js"></script>
-    <script src="src/render/core/render_component.js"></script>
-    <script src="src/render/core/composite_renderer.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/360_rendermath.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/361_rendercomponent.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/362_compositerenderer.js"></script>
     <script src="src/render/world/world_scene_renderer.js"></script>
     <script src="src/render/world/world_debug_renderer.js"></script>
     <script src="src/render/world/location_debug_map_builder.js"></script>
@@ -424,11 +425,11 @@
     <script src="src/app/utils.js"></script>
 
     <!-- APP CORE -->
-    <script src="src/app/core/event_bus.js"></script>
-    <script src="src/app/core/event_lifecycle.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/391_eventbus.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/392_eventlifecycle.js"></script>
     <script src="src/app/core/game_clock.js"></script>
     <script src="src/app/core/game_loop.js"></script>
-    <script src="src/app/core/dependency_contract_validator.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/395_dependencycontractvalidator.js"></script>
 
     <!-- APP ADAPTERS / PROVIDERS -->
     <script src="src/app/adapters.js"></script>

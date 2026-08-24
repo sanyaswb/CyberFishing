@@ -208,29 +208,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-10028b05aee9",
-      "rule": "boundary-dependency",
-      "source": "src/app/script.js",
-      "target": "src/app/core/event_lifecycle.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "eager-load-order-coupling",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 7,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "10028b05aee905ff80b990d4a71d71cf6ec43b6bfc143d3d129c49a713ee7640",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/app/script.js",
-        "target": "src/app/core/event_lifecycle.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-11929144fbd7",
       "rule": "boundary-dependency",
       "source": "src/app/bootstrap.js",
@@ -543,6 +520,29 @@
       }
     },
     {
+      "id": "debt-boundary-dependency-3225127798f8",
+      "rule": "boundary-dependency",
+      "source": "src/app/script.js",
+      "target": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
+      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
+      "blockers": [
+        "browser-api-coupling",
+        "dev-production-coupling",
+        "eager-load-order-coupling",
+        "legacy-global-contract",
+        "mixed-responsibility-requires-decomposition"
+      ],
+      "owner": "architecture-team",
+      "migrationWave": 7,
+      "removalStage": "stage-2",
+      "evidenceFingerprint": "3225127798f87cc34d5edbd63003b704f468ab672a3f3082e99e33a191543e4f",
+      "identity": {
+        "rule": "boundary-dependency",
+        "source": "src/app/script.js",
+        "target": "src/engine/compat/stage_2/event_bus_legacy_bridge.js"
+      }
+    },
+    {
       "id": "debt-boundary-dependency-329f1b963e36",
       "rule": "boundary-dependency",
       "source": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
@@ -622,6 +622,29 @@
         "rule": "boundary-dependency",
         "source": "src/ui/inventory/inventory_v2_ui.js",
         "target": "src/ui/inventory/inventory_v2_long_press_controller.js"
+      }
+    },
+    {
+      "id": "debt-boundary-dependency-37a9f9bb3070",
+      "rule": "boundary-dependency",
+      "source": "src/app/script.js",
+      "target": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
+      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
+      "blockers": [
+        "browser-api-coupling",
+        "dev-production-coupling",
+        "eager-load-order-coupling",
+        "legacy-global-contract",
+        "mixed-responsibility-requires-decomposition"
+      ],
+      "owner": "architecture-team",
+      "migrationWave": 7,
+      "removalStage": "stage-2",
+      "evidenceFingerprint": "37a9f9bb30704ad1d6cbb367aec2d2732a7336b47ccc56eef31a3fe14cccb3d2",
+      "identity": {
+        "rule": "boundary-dependency",
+        "source": "src/app/script.js",
+        "target": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js"
       }
     },
     {
@@ -912,29 +935,6 @@
         "rule": "boundary-dependency",
         "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
         "target": "src/config/inventory/item_assembly_profile_config.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-6198d50a0d45",
-      "rule": "boundary-dependency",
-      "source": "src/app/script.js",
-      "target": "src/app/core/event_bus.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "eager-load-order-coupling",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 7,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "6198d50a0d45d7c7bd1bc9e9b8e16676545fac1714b96cda4cef48536fa10220",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/app/script.js",
-        "target": "src/app/core/event_bus.js"
       }
     },
     {

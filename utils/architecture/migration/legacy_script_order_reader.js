@@ -1,8 +1,9 @@
 const fs = require("node:fs");
 
 class LegacyScriptOrderReader {
-  constructor(indexPath) {
+  constructor(indexPath, { scriptAliases = new Map() } = {}) {
     this.indexPath = indexPath;
+    this.scriptAliases = new Map(scriptAliases);
   }
 
   read() {
@@ -17,9 +18,17 @@ class LegacyScriptOrderReader {
         ? "module"
         : "classic";
       const source = match[2];
+      const normalizedSource = this.#normalizeSourcePath(source);
+      if (
+        this.scriptAliases.has(normalizedSource) &&
+        this.scriptAliases.get(normalizedSource) === null
+      ) {
+        match = scriptPattern.exec(html);
+        continue;
+      }
       scripts.push({
         documentOrder: scripts.length + 1,
-        currentPath: this.#normalizeSourcePath(source),
+        currentPath: this.scriptAliases.get(normalizedSource) || normalizedSource,
         source,
         type,
         legacyLoadOrder: type === "classic" ? legacyLoadOrder : null,

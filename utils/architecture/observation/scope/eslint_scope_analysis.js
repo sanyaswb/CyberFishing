@@ -34,11 +34,11 @@ class ScopeAnalysis {
 }
 
 class EslintScopeAnalyzer {
-  analyze(syntaxTree) {
+  analyze(syntaxTree, sourceType = "script") {
     return new ScopeAnalysis(
       eslintScope.analyze(syntaxTree, {
         ecmaVersion: 2026,
-        sourceType: "script",
+        sourceType,
         optimistic: true,
         ignoreEval: false,
         nodejsScope: false,

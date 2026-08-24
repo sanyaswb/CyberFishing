@@ -1,5 +1,550 @@
 {
   "schemaVersion": 1,
   "kind": "cyber-fishing-migration-bridges",
-  "bridges": []
+  "bridges": [
+    {
+      "id": "bridge-0c0f9cf80110",
+      "bridge": "src/engine/compat/stage_2/asset_load_result_legacy_bridge.js",
+      "source": "src/assets/asset_preload_coordinator.js",
+      "target": "src/engine/assets/asset_load_result.js",
+      "reason": "Keep the reviewed classic AssetPreloadCoordinator consumer synchronous until its Stage 4 platform migration.",
+      "owner": "stage-2.1-engine-asset-contracts",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "AssetLoadResult",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-1af90d9ee5a6",
+      "bridge": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
+      "source": "src/render/fishing/fishing_scene_renderer.js",
+      "target": "src/engine/rendering/composite_renderer.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "CompositeRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-1cdd6e08f07e",
+      "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
+      "source": "src/render/screens/victory_renderer.js",
+      "target": "src/engine/rendering/render_math.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RenderMath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-246319f5e6e2",
+      "bridge": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
+      "source": "src/render/pipeline/outcome_render_pass.js",
+      "target": "src/engine/rendering/render_pass.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RenderPass",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-299e2a323f55",
+      "bridge": "src/core/equipment/rod_capability_resolver.js",
+      "source": "src/core/equipment/terminal_line_slot_resolver.js",
+      "target": "src/game/domain/equipment/rod_capability_resolver.js",
+      "reason": "Preserve the exact synchronous RodCapabilityResolver consumer set until Stage 5 migration removes the legacy symbol.",
+      "owner": "stage-3.candidate-004-equipment-4f2570dc",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RodCapabilityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-340e660ed69c",
+      "bridge": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js",
+      "source": "src/assets/asset_preload_coordinator.js",
+      "target": "src/engine/assets/asset_manifest.js",
+      "reason": "Keep the reviewed classic AssetPreloadCoordinator consumer synchronous until its Stage 4 platform migration.",
+      "owner": "stage-2.1-engine-asset-contracts",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "AssetManifest",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-397a03218e06",
+      "bridge": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
+      "source": "src/render/pipeline/hud_render_pass.js",
+      "target": "src/engine/rendering/render_pass.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RenderPass",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-4c97028596c9",
+      "bridge": "src/core/equipment/rod_capability_resolver.js",
+      "source": "src/core/equipment/equipment_compatibility_policy.js",
+      "target": "src/game/domain/equipment/rod_capability_resolver.js",
+      "reason": "Preserve the exact synchronous RodCapabilityResolver consumer set until Stage 5 migration removes the legacy symbol.",
+      "owner": "stage-3.candidate-004-equipment-4f2570dc",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RodCapabilityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-595a005d7c64",
+      "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
+      "source": "src/render/casting/cast_scene_renderer.js",
+      "target": "src/engine/rendering/render_math.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RenderMath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-5d3728373ab6",
+      "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
+      "source": "src/app/rendering/fight_hud_frame_builder.js",
+      "target": "src/engine/rendering/render_math.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RenderMath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-60496caa95fd",
+      "bridge": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
+      "source": "src/render/pipeline/casting_render_pass.js",
+      "target": "src/engine/rendering/render_pass.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RenderPass",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-63afd58b4545",
+      "bridge": "src/core/fishing/reel_auto_recovery_calculator.js",
+      "source": "src/systems/reel_system.js",
+      "target": "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "reason": "Preserve the exact synchronous ReelSystem consumer until application migration removes the legacy symbol.",
+      "owner": "stage-3.candidate-002-fishing-944d0790",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ReelAutoRecoveryCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-6aabd924bf06",
+      "bridge": "src/core/fishing/line_tension_calculator.js",
+      "source": "src/systems/tension_system.js",
+      "target": "src/game/domain/fishing/line_tension_calculator.js",
+      "reason": "Preserve the exact synchronous TensionSystem consumer until application migration removes the legacy symbol.",
+      "owner": "stage-3.candidate-003-fishing-9700ad4f",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "LineTensionCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-6b182910c818",
+      "bridge": "src/core/equipment/rod_capability_resolver.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/equipment/rod_capability_resolver.js",
+      "reason": "Preserve the exact synchronous RodCapabilityResolver consumer set until Stage 5 migration removes the legacy symbol.",
+      "owner": "stage-3.candidate-004-equipment-4f2570dc",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RodCapabilityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-6c8d26fe475b",
+      "bridge": "src/core/equipment/rod_capability_resolver.js",
+      "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "target": "src/game/domain/equipment/rod_capability_resolver.js",
+      "reason": "Preserve the exact synchronous RodCapabilityResolver consumer set until Stage 5 migration removes the legacy symbol.",
+      "owner": "stage-3.candidate-004-equipment-4f2570dc",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RodCapabilityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-6cb8d6b6b5dd",
+      "bridge": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
+      "source": "src/render/pipeline/world_render_pass.js",
+      "target": "src/engine/rendering/composite_renderer.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "CompositeRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-7376f5e6b272",
+      "bridge": "src/engine/compat/stage_2/dependency_contract_validator_legacy_bridge.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/engine/di/dependency_contract_validator.js",
+      "reason": "Keep the reviewed classic GameCompositionRoot consumer synchronous until its Stage 5 bootstrap migration.",
+      "owner": "stage-2.2-engine-dependency-contract",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "DependencyContractValidator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-7b4507b87811",
+      "bridge": "src/core/equipment/rod_capability_resolver.js",
+      "source": "src/core/equipment/fishing_readiness_policy.js",
+      "target": "src/game/domain/equipment/rod_capability_resolver.js",
+      "reason": "Preserve the exact synchronous RodCapabilityResolver consumer set until Stage 5 migration removes the legacy symbol.",
+      "owner": "stage-3.candidate-004-equipment-4f2570dc",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RodCapabilityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-7bdae928832e",
+      "bridge": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
+      "source": "src/app/adapters.js",
+      "target": "src/engine/events/event_bus.js",
+      "reason": "Keep the reviewed classic adapters consumer synchronous until its Stage 5 application migration.",
+      "owner": "stage-2.3-engine-event-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EventBus",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-8654ddb73e7e",
+      "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
+      "source": "src/render/fishing/line_visual_state_controller.js",
+      "target": "src/engine/rendering/render_math.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RenderMath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-93b3ed37a13e",
+      "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
+      "source": "src/render/hud/fight_status_bars_renderer.js",
+      "target": "src/engine/rendering/render_math.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RenderMath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-9538204fd8a3",
+      "bridge": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
+      "source": "src/render/hud/fight_hud_renderer.js",
+      "target": "src/engine/rendering/composite_renderer.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "CompositeRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-9a90ab115b6b",
+      "bridge": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
+      "source": "src/app/script.js",
+      "target": "src/engine/events/event_lifecycle.js",
+      "reason": "Keep the reviewed classic script consumer synchronous until its Stage 5 bootstrap migration.",
+      "owner": "stage-2.3-engine-event-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EventLifecycle",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-a5a1cd90cdd5",
+      "bridge": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
+      "source": "src/app/application.js",
+      "target": "src/engine/events/event_lifecycle.js",
+      "reason": "Keep the reviewed classic application consumer synchronous until its Stage 5 application migration.",
+      "owner": "stage-2.3-engine-event-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EventLifecycle",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-bc3ec26d121f",
+      "bridge": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
+      "source": "src/app/script.js",
+      "target": "src/engine/events/event_bus.js",
+      "reason": "Keep the reviewed classic script consumer synchronous until its Stage 5 bootstrap migration.",
+      "owner": "stage-2.3-engine-event-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EventBus",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-c518ccc47a20",
+      "bridge": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
+      "source": "src/render/pipeline/world_render_pass.js",
+      "target": "src/engine/rendering/render_pass.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RenderPass",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-d3fd9d86467b",
+      "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
+      "source": "src/render/screens/star_rating_renderer.js",
+      "target": "src/engine/rendering/render_math.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RenderMath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-f31aca4ae5d6",
+      "bridge": "src/engine/compat/stage_2/render_component_legacy_bridge.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/engine/rendering/render_component.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RenderComponent",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-f6bcda55f86a",
+      "bridge": "src/core/equipment/rod_capability_resolver.js",
+      "source": "src/application/inventory/equipment_read_model_factory.js",
+      "target": "src/game/domain/equipment/rod_capability_resolver.js",
+      "reason": "Preserve the exact synchronous RodCapabilityResolver consumer set until Stage 5 migration removes the legacy symbol.",
+      "owner": "stage-3.candidate-004-equipment-4f2570dc",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RodCapabilityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-f719db073789",
+      "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
+      "source": "src/app/rendering/casting_render_frame_builder.js",
+      "target": "src/engine/rendering/render_math.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RenderMath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-f880b0a474c6",
+      "bridge": "src/core/inventory/equip_target_selection_policy.js",
+      "source": "src/ui/ui.js",
+      "target": "src/game/domain/inventory/equip_target_selection_policy.js",
+      "reason": "Preserve the exact synchronous UI consumer until presentation migration removes the legacy symbol.",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryEquipTargetSelectionPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-fa6a4f31f3a9",
+      "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
+      "source": "src/app/rendering/boat_chum_render_frame_builder.js",
+      "target": "src/engine/rendering/render_math.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RenderMath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-fc583dce9ac7",
+      "bridge": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
+      "source": "src/render/pipeline/fishing_render_pass.js",
+      "target": "src/engine/rendering/render_pass.js",
+      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
+      "owner": "stage-2.4-engine-rendering-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RenderPass",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-fd866aee9c88",
+      "bridge": "src/core/equipment/rod_capability_resolver.js",
+      "source": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "target": "src/game/domain/equipment/rod_capability_resolver.js",
+      "reason": "Preserve the exact synchronous RodCapabilityResolver consumer set until Stage 5 migration removes the legacy symbol.",
+      "owner": "stage-3.candidate-004-equipment-4f2570dc",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RodCapabilityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    }
+  ]
 }

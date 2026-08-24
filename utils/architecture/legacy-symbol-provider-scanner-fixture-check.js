@@ -240,6 +240,19 @@ const fixtures = [
     expected: { status: "verified", items: [], issues: [] },
   },
   {
+    name: "ESM named exports are not legacy globals but bridge assignments are",
+    source: `
+      import { ExactSymbol } from "./exact_symbol.js";
+      export class NamedContract {}
+      globalThis.ExactSymbol = ExactSymbol;
+    `,
+    expected: {
+      status: "verified",
+      items: [provider("ExactSymbol", "global-this-property")],
+      issues: [],
+    },
+  },
+  {
     name: "parse failures cannot expose provider results",
     source: `class Broken {`,
     expected: {
@@ -248,7 +261,7 @@ const fixtures = [
       issues: [
         issue(
           "parse-failure",
-          "Source cannot be parsed as a browser classic script.",
+          "Source cannot be parsed as JavaScript script or module.",
         ),
       ],
     },

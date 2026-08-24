@@ -33,6 +33,9 @@ const {
 } = require(
   "./observation/persistence/migration_observation_snapshot_builder"
 );
+const {
+  StageTwoRuntimeScriptAliasResolver,
+} = require("./migration/stage_two_runtime_script_alias_resolver");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const SOURCE_ROOT = path.join(PROJECT_ROOT, "src");
@@ -135,6 +138,9 @@ class MigrationObservationPersistenceCorpusCheck {
 }
 
 const contract = architecture.migrationManifest.observationContract;
+const scriptAliases = new StageTwoRuntimeScriptAliasResolver().loadProject(
+  PROJECT_ROOT,
+);
 new MigrationObservationPersistenceCorpusCheck({
   sourceFileScanner: new SourceFileScanner({
     projectRoot: PROJECT_ROOT,
@@ -142,6 +148,7 @@ new MigrationObservationPersistenceCorpusCheck({
   }),
   legacyScriptOrderReader: new LegacyScriptOrderReader(
     path.join(PROJECT_ROOT, "index.html"),
+    { scriptAliases },
   ),
   snapshotBuilder: new MigrationObservationSnapshotBuilder({
     sourceReader: (absolutePath) => fs.readFileSync(absolutePath, "utf8"),

@@ -65,6 +65,7 @@ Boundary resolution uses the longest matching path prefix. Physical directories 
 | dev-tool | Development-only runtime behavior. |
 | bootstrap | Concrete dependency composition. |
 | entrypoint | Runtime process entrypoint. |
+| compatibility-bridge | Temporary exact legacy exposure shim that contains no business logic and has a reviewed removal stage. |
 
 Module roles are recorded in the migration manifest. They let architecture checks enforce qualified edges without relying on filename guesses.
 
@@ -130,7 +131,7 @@ Module roles are recorded in the migration manifest. They let architecture check
 - Required classification evidence: `source-responsibility-review`, `observed.providers`, `observed.consumers`, `observed.environment`, `analysis.dependencies`, `derived.reverseConsumers`; evidence lifecycle: `in-memory-read-only`.
 - Forbidden ownership heuristics: `current-path`, `filename`, `class-name`, `class-suffix`.
 - Target paths, roles, and blockers are `reviewed-explicit`, `reviewed-explicit`, and `reviewed-explicit`; no candidate rank can populate them.
-- Role compatibility is boundary-owned: `engine` → `engine-contract`/`engine-runtime`/`engine-utility`; `game-config-raw` → `raw-config`; `game-config` → `config-factory`; `game-domain` → `domain-behavior`/`domain-contract`/`value-object`; `game-application-ports` → `application-port`; `game-application` → `application-service`; `game-presentation` → `presentation`; `platform` → `platform-adapter`; `dev` → `dev-tool`; `bootstrap-production` → `bootstrap`; `bootstrap-development` → `bootstrap`; `entrypoint-game` → `entrypoint`; `entrypoint-dev` → `entrypoint`.
+- Role compatibility is boundary-owned: `engine` → `engine-contract`/`engine-runtime`/`engine-utility`; `game-config-raw` → `raw-config`; `game-config` → `config-factory`; `game-domain` → `compatibility-bridge`/`domain-behavior`/`domain-contract`/`value-object`; `game-application-ports` → `application-port`; `game-application` → `application-service`; `game-presentation` → `presentation`; `platform` → `platform-adapter`; `dev` → `dev-tool`; `bootstrap-production` → `bootstrap`; `bootstrap-development` → `bootstrap`; `entrypoint-game` → `entrypoint`; `entrypoint-dev` → `entrypoint`.
 - Mixed-responsibility modules retain one `single-reviewed-owner` and blocker `mixed-responsibility-requires-decomposition`.
 - Conservative leaf candidates require `legacy`, `verified` observations, `zero-confirmed-inter-file-outgoing-edges`, and `at-least-one` provider facts; uncertainty policy: `exclude-unresolved-ambiguous-dynamic-or-issued`.
 - Candidate ranking has `none` classification effect and orders by `browserApiCount-ascending`, `incomingEdgeCount-descending`, `providerCount-descending`, `currentPath-ascending`.

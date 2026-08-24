@@ -594,7 +594,12 @@ class MigrationManifestPolicyValidator {
       engine: ["engine-contract", "engine-runtime", "engine-utility"],
       "game-config-raw": ["raw-config"],
       "game-config": ["config-factory"],
-      "game-domain": ["domain-behavior", "domain-contract", "value-object"],
+      "game-domain": [
+        "compatibility-bridge",
+        "domain-behavior",
+        "domain-contract",
+        "value-object",
+      ],
       "game-application-ports": ["application-port"],
       "game-application": ["application-service"],
       "game-presentation": ["presentation"],

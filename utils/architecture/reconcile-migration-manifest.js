@@ -27,6 +27,9 @@ const {
 const {
   SourceFileScanner,
 } = require("./migration/source_file_scanner");
+const {
+  StageTwoRuntimeScriptAliasResolver,
+} = require("./migration/stage_two_runtime_script_alias_resolver");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const SOURCE_ROOT = path.join(PROJECT_ROOT, "src");
@@ -94,6 +97,9 @@ class ReconcileMigrationManifestCommand {
 }
 
 const policy = ArchitecturePolicy.load(POLICY_PATH);
+const scriptAliases = new StageTwoRuntimeScriptAliasResolver().loadProject(
+  PROJECT_ROOT,
+);
 const currentAreaResolver = new CurrentAreaResolver({
   rootValue: policy.migrationManifest.currentArea.rootValue,
 });
@@ -107,7 +113,9 @@ new ReconcileMigrationManifestCommand({
     projectRoot: PROJECT_ROOT,
     sourceRoot: SOURCE_ROOT,
   }),
-  legacyScriptOrderReader: new LegacyScriptOrderReader(INDEX_PATH),
+  legacyScriptOrderReader: new LegacyScriptOrderReader(INDEX_PATH, {
+    scriptAliases,
+  }),
   repository: new MigrationManifestRepository(MANIFEST_PATH),
   schemaMigrator: createMigrationManifestSchemaMigrator(
     policy.migrationManifest,

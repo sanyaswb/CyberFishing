@@ -1,0 +1,350 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-cumulative-compatibility-runtime",
+  "status": "migration-active",
+  "transport": {
+    "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+    "owner": "stage-3.0.4-single-instance-compatibility-runtime",
+    "reason": "Expose exact ESM module namespaces to reviewed classic activation shims without owning game state.",
+    "introducedStage": "stage-3.0.4",
+    "removalStage": "stage-5",
+    "surface": "module-exports-only",
+    "ownsGameState": false
+  },
+  "topology": {
+    "buildMode": "single-cumulative-iife",
+    "moduleInstancePolicy": "one-record-per-resolved-module",
+    "dependentTargetBuildPolicy": "isolated-per-wrapper-iife-forbidden",
+    "evaluationPolicy": "full-closure-effect-gate",
+    "exposurePolicy": "exact-legacy-load-order-activation"
+  },
+  "output": {
+    "directory": "dist/stage-3-compat-runtime/",
+    "runtimeFile": "compat_runtime.iife.js",
+    "activationDirectory": "activations/"
+  },
+  "approvedInfrastructureModules": [],
+  "approvedVirtualModules": [
+    "\u0000@oxc-project+runtime@0.146.0/helpers/esm/assertClassBrand.js",
+    "\u0000@oxc-project+runtime@0.146.0/helpers/esm/checkPrivateRedeclaration.js",
+    "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateFieldGet2.js",
+    "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateFieldInitSpec.js",
+    "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateFieldSet2.js",
+    "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateMethodInitSpec.js",
+    "\u0000rolldown/runtime.js"
+  ],
+  "previousRuntimeTransitions": [
+    {
+      "module": "src/engine/assets/asset_load_result.js",
+      "previousRuntime": "stage-2-isolated-iife",
+      "previousOutputs": [
+        "dist/legacy-bridges/asset_load_result.iife.js"
+      ],
+      "requiredTransition": "replace-isolated-output-with-cumulative-activation",
+      "activationIds": [
+        "activation-86e221fafb48"
+      ],
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "reason": "Prevent a duplicate Stage 2 module instance when Stage 3 cumulative runtime starts."
+    },
+    {
+      "module": "src/engine/assets/asset_manifest.js",
+      "previousRuntime": "stage-2-isolated-iife",
+      "previousOutputs": [
+        "dist/legacy-bridges/asset_manifest.iife.js"
+      ],
+      "requiredTransition": "replace-isolated-output-with-cumulative-activation",
+      "activationIds": [
+        "activation-765258a53eef"
+      ],
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "reason": "Prevent a duplicate Stage 2 module instance when Stage 3 cumulative runtime starts."
+    },
+    {
+      "module": "src/engine/di/dependency_contract_validator.js",
+      "previousRuntime": "stage-2-isolated-iife",
+      "previousOutputs": [
+        "dist/legacy-bridges/dependency_contract_validator.iife.js"
+      ],
+      "requiredTransition": "replace-isolated-output-with-cumulative-activation",
+      "activationIds": [
+        "activation-6ba241908a4c"
+      ],
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "reason": "Prevent a duplicate Stage 2 module instance when Stage 3 cumulative runtime starts."
+    },
+    {
+      "module": "src/engine/events/event_bus.js",
+      "previousRuntime": "stage-2-isolated-iife",
+      "previousOutputs": [
+        "dist/legacy-bridges/event_bus.iife.js"
+      ],
+      "requiredTransition": "replace-isolated-output-with-cumulative-activation",
+      "activationIds": [
+        "activation-3dcbed1b3310"
+      ],
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "reason": "Prevent a duplicate Stage 2 module instance when Stage 3 cumulative runtime starts."
+    },
+    {
+      "module": "src/engine/events/event_lifecycle.js",
+      "previousRuntime": "stage-2-isolated-iife",
+      "previousOutputs": [
+        "dist/legacy-bridges/event_lifecycle.iife.js"
+      ],
+      "requiredTransition": "replace-isolated-output-with-cumulative-activation",
+      "activationIds": [
+        "activation-ce7da074f74a"
+      ],
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "reason": "Prevent a duplicate Stage 2 module instance when Stage 3 cumulative runtime starts."
+    },
+    {
+      "module": "src/engine/rendering/composite_renderer.js",
+      "previousRuntime": "stage-2-isolated-iife",
+      "previousOutputs": [
+        "dist/legacy-bridges/composite_renderer.iife.js"
+      ],
+      "requiredTransition": "replace-isolated-output-with-cumulative-activation",
+      "activationIds": [
+        "activation-bf033497a3e1"
+      ],
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "reason": "Prevent a duplicate Stage 2 module instance when Stage 3 cumulative runtime starts."
+    },
+    {
+      "module": "src/engine/rendering/render_component.js",
+      "previousRuntime": "stage-2-isolated-iife",
+      "previousOutputs": [
+        "dist/legacy-bridges/render_component.iife.js"
+      ],
+      "requiredTransition": "replace-isolated-output-with-cumulative-activation",
+      "activationIds": [
+        "activation-3e0a233bf70c"
+      ],
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "reason": "Prevent a duplicate Stage 2 module instance when Stage 3 cumulative runtime starts."
+    },
+    {
+      "module": "src/engine/rendering/render_math.js",
+      "previousRuntime": "stage-2-isolated-iife",
+      "previousOutputs": [
+        "dist/legacy-bridges/render_math.iife.js"
+      ],
+      "requiredTransition": "replace-isolated-output-with-cumulative-activation",
+      "activationIds": [
+        "activation-75b968069153"
+      ],
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "reason": "Prevent a duplicate Stage 2 module instance when Stage 3 cumulative runtime starts."
+    },
+    {
+      "module": "src/engine/rendering/render_pass.js",
+      "previousRuntime": "stage-2-isolated-iife",
+      "previousOutputs": [
+        "dist/legacy-bridges/render_pass.iife.js"
+      ],
+      "requiredTransition": "replace-isolated-output-with-cumulative-activation",
+      "activationIds": [
+        "activation-886fb34615aa"
+      ],
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "reason": "Prevent a duplicate Stage 2 module instance when Stage 3 cumulative runtime starts."
+    }
+  ],
+  "sideEffectReviews": [
+    {
+      "module": "src/engine/assets/asset_load_result.js",
+      "evidenceFingerprint": "d0769d45b55b834bdfee9a8265fc31af309aa190f3d91e518e3f74b69a683083",
+      "decision": "approved-compatible",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "reason": "Private module-local storage is created once by the cumulative graph and owns no duplicated gameplay state."
+    },
+    {
+      "module": "src/engine/assets/asset_manifest.js",
+      "evidenceFingerprint": "a2cd0bd6166d6cc6e4c6c2b7607452e8814eda73185d4c107831da735438b709",
+      "decision": "approved-compatible",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "reason": "Private module-local storage is created once by the cumulative graph and owns no duplicated gameplay state."
+    },
+    {
+      "module": "src/engine/events/event_bus.js",
+      "evidenceFingerprint": "80822cdc389a9c2db5b76d5d1688b088e46234a7cb6e3b9bd05e84ea6d90bbfe",
+      "decision": "approved-compatible",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "reason": "Private module-local storage is created once by the cumulative graph and owns no duplicated gameplay state."
+    },
+    {
+      "module": "src/engine/events/event_lifecycle.js",
+      "evidenceFingerprint": "b69a74a66e9c04c69a7f4dc892060f3c10a34fc313c5f0bb9d5d2c5504bbe158",
+      "decision": "approved-compatible",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "reason": "Private module-local storage is created once by the cumulative graph and owns no duplicated gameplay state."
+    },
+    {
+      "module": "src/engine/rendering/composite_renderer.js",
+      "evidenceFingerprint": "3dd0152d9eafa14840de96eac9267db196db843d624afe3accac897b56869d41",
+      "decision": "approved-compatible",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "reason": "Private module-local storage is created once by the cumulative graph and owns no duplicated gameplay state."
+    }
+  ],
+  "activationPositions": [
+    {
+      "id": "activation-3dcbed1b3310",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "sourceProvider": "dist/legacy-bridges/event_bus.iife.js",
+      "targetModule": "src/engine/events/event_bus.js",
+      "exportName": "EventBus",
+      "legacySymbol": "EventBus",
+      "legacyScriptIndex": 391,
+      "shimFile": "activations/391_eventbus.js",
+      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-3e0a233bf70c",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "sourceProvider": "dist/legacy-bridges/render_component.iife.js",
+      "targetModule": "src/engine/rendering/render_component.js",
+      "exportName": "RenderComponent",
+      "legacySymbol": "RenderComponent",
+      "legacyScriptIndex": 361,
+      "shimFile": "activations/361_rendercomponent.js",
+      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-57add99af90d",
+      "owner": "stage-3.candidate-002-fishing-944d0790",
+      "sourceProvider": "src/core/fishing/reel_auto_recovery_calculator.js",
+      "targetModule": "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "exportName": "ReelAutoRecoveryCalculator",
+      "legacySymbol": "ReelAutoRecoveryCalculator",
+      "legacyScriptIndex": 113,
+      "shimFile": "activations/113_reelautorecoverycalculator.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-59bd96059da6",
+      "owner": "stage-3.candidate-004-equipment-4f2570dc",
+      "sourceProvider": "src/core/equipment/rod_capability_resolver.js",
+      "targetModule": "src/game/domain/equipment/rod_capability_resolver.js",
+      "exportName": "RodCapabilityResolver",
+      "legacySymbol": "RodCapabilityResolver",
+      "legacyScriptIndex": 157,
+      "shimFile": "activations/157_rodcapabilityresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-5c6e63e8ffb9",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "sourceProvider": "src/core/inventory/equip_target_selection_policy.js",
+      "targetModule": "src/game/domain/inventory/equip_target_selection_policy.js",
+      "exportName": "InventoryEquipTargetSelectionPolicy",
+      "legacySymbol": "InventoryEquipTargetSelectionPolicy",
+      "legacyScriptIndex": 86,
+      "shimFile": "activations/086_inventoryequiptargetselectionpolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-6ba241908a4c",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "sourceProvider": "dist/legacy-bridges/dependency_contract_validator.iife.js",
+      "targetModule": "src/engine/di/dependency_contract_validator.js",
+      "exportName": "DependencyContractValidator",
+      "legacySymbol": "DependencyContractValidator",
+      "legacyScriptIndex": 395,
+      "shimFile": "activations/395_dependencycontractvalidator.js",
+      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-75b968069153",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "sourceProvider": "dist/legacy-bridges/render_math.iife.js",
+      "targetModule": "src/engine/rendering/render_math.js",
+      "exportName": "RenderMath",
+      "legacySymbol": "RenderMath",
+      "legacyScriptIndex": 360,
+      "shimFile": "activations/360_rendermath.js",
+      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-765258a53eef",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "sourceProvider": "dist/legacy-bridges/asset_manifest.iife.js",
+      "targetModule": "src/engine/assets/asset_manifest.js",
+      "exportName": "AssetManifest",
+      "legacySymbol": "AssetManifest",
+      "legacyScriptIndex": 352,
+      "shimFile": "activations/352_assetmanifest.js",
+      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+      "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-86e221fafb48",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "sourceProvider": "dist/legacy-bridges/asset_load_result.iife.js",
+      "targetModule": "src/engine/assets/asset_load_result.js",
+      "exportName": "AssetLoadResult",
+      "legacySymbol": "AssetLoadResult",
+      "legacyScriptIndex": 353,
+      "shimFile": "activations/353_assetloadresult.js",
+      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+      "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-886fb34615aa",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "sourceProvider": "dist/legacy-bridges/render_pass.iife.js",
+      "targetModule": "src/engine/rendering/render_pass.js",
+      "exportName": "RenderPass",
+      "legacySymbol": "RenderPass",
+      "legacyScriptIndex": 358,
+      "shimFile": "activations/358_renderpass.js",
+      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-a8e624a68a8e",
+      "owner": "stage-3.candidate-003-fishing-9700ad4f",
+      "sourceProvider": "src/core/fishing/line_tension_calculator.js",
+      "targetModule": "src/game/domain/fishing/line_tension_calculator.js",
+      "exportName": "LineTensionCalculator",
+      "legacySymbol": "LineTensionCalculator",
+      "legacyScriptIndex": 129,
+      "shimFile": "activations/129_linetensioncalculator.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-bf033497a3e1",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "sourceProvider": "dist/legacy-bridges/composite_renderer.iife.js",
+      "targetModule": "src/engine/rendering/composite_renderer.js",
+      "exportName": "CompositeRenderer",
+      "legacySymbol": "CompositeRenderer",
+      "legacyScriptIndex": 362,
+      "shimFile": "activations/362_compositerenderer.js",
+      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-ce7da074f74a",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "sourceProvider": "dist/legacy-bridges/event_lifecycle.iife.js",
+      "targetModule": "src/engine/events/event_lifecycle.js",
+      "exportName": "EventLifecycle",
+      "legacySymbol": "EventLifecycle",
+      "legacyScriptIndex": 392,
+      "shimFile": "activations/392_eventlifecycle.js",
+      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+      "removalStage": "stage-5"
+    }
+  ]
+}

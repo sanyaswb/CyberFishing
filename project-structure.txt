@@ -10,7 +10,14 @@
 │  │  ├── module_migration_manifest.json
 │  │  ├── stage_1_6_initial_batches.json
 │  │  ├── stage_2_approved_batches.json
-│  │  └── stage_2_execution_state.json
+│  │  ├── stage_2_execution_state.json
+│  │  ├── stage_3_approved_batches.json
+│  │  ├── stage_3_candidate_batches.json
+│  │  ├── stage_3_candidate_policy.json
+│  │  ├── stage_3_compatibility_runtime.json
+│  │  ├── stage_3_domain_audit.json
+│  │  ├── stage_3_execution_state.json
+│  │  └── stage_3_review_evidence.json
 │  ├── module_architecture.json
 │  └── stage_1_closure.json
 ├── assets
@@ -85,9 +92,6 @@
 │  │  ├── chum.js
 │  │  ├── context.js
 │  │  ├── core
-│  │  │  ├── dependency_contract_validator.js
-│  │  │  ├── event_bus.js
-│  │  │  ├── event_lifecycle.js
 │  │  │  ├── game_clock.js
 │  │  │  └── game_loop.js
 │  │  ├── debug.js
@@ -141,8 +145,6 @@
 │  │    ├── loadout_application_service.js
 │  │    └── refill_compatible_signature_policy.js
 │  ├── assets
-│  │  ├── asset_load_result.js
-│  │  ├── asset_manifest.js
 │  │  └── asset_preload_coordinator.js
 │  ├── bootstrap
 │  ├── config
@@ -453,13 +455,45 @@
 │  │    ├── location_dev_tools_schema.js
 │  │    └── memory_leak_watchdog.js
 │  ├── engine
+│  │  ├── assets
+│  │  │  ├── asset_load_result.js
+│  │  │  └── asset_manifest.js
+│  │  ├── compat
+│  │  │  └── stage_2
+│  │  │    ├── asset_load_result_legacy_bridge.js
+│  │  │    ├── asset_manifest_legacy_bridge.js
+│  │  │    ├── composite_renderer_legacy_bridge.js
+│  │  │    ├── dependency_contract_validator_legacy_bridge.js
+│  │  │    ├── event_bus_legacy_bridge.js
+│  │  │    ├── event_lifecycle_legacy_bridge.js
+│  │  │    ├── render_component_legacy_bridge.js
+│  │  │    ├── render_math_legacy_bridge.js
+│  │  │    └── render_pass_legacy_bridge.js
 │  │  ├── contracts
+│  │  ├── di
+│  │  │  └── dependency_contract_validator.js
 │  │  ├── events
+│  │  │  ├── event_bus.js
+│  │  │  └── event_lifecycle.js
 │  │  ├── loop
+│  │  ├── rendering
+│  │  │  ├── composite_renderer.js
+│  │  │  ├── render_component.js
+│  │  │  ├── render_math.js
+│  │  │  └── render_pass.js
 │  │  └── time
 │  ├── entities
 │  │  ├── fish.js
 │  │  └── tackle.js
+│  ├── game
+│  │  └── domain
+│  │    ├── equipment
+│  │    │  └── rod_capability_resolver.js
+│  │    ├── fishing
+│  │    │  ├── line_tension_calculator.js
+│  │    │  └── reel_auto_recovery_calculator.js
+│  │    └── inventory
+│  │      └── equip_target_selection_policy.js
 │  ├── infrastructure
 │  │  ├── location
 │  │  │  ├── depth_map_reader.js
@@ -487,14 +521,10 @@
 │  │  ├── core
 │  │  │  ├── canvas_2d_surface.js
 │  │  │  ├── canvas_primitives.js
-│  │  │  ├── composite_renderer.js
 │  │  │  ├── image_asset_provider.js
 │  │  │  ├── render_allocation_diagnostics.js
-│  │  │  ├── render_component.js
 │  │  │  ├── render_frame_buffer.js
-│  │  │  ├── render_math.js
-│  │  │  ├── render_order.js
-│  │  │  └── render_pass.js
+│  │  │  └── render_order.js
 │  │  ├── fishing
 │  │  │  ├── fight_area_renderer.js
 │  │  │  ├── fishing_scene_renderer.js
@@ -614,6 +644,39 @@
   │  ├── core
   │  │  ├── architecture_document_renderer.js
   │  │  └── architecture_policy.js
+  │  ├── domain_audit
+  │  │  ├── conservative_domain_inventory_builder.js
+  │  │  ├── domain_audit_artifact_writer.js
+  │  │  ├── domain_audit_contract.js
+  │  │  ├── domain_audit_models.js
+  │  │  ├── domain_audit_repository.js
+  │  │  ├── domain_audit_schema_migrator.js
+  │  │  ├── domain_audit_validator.js
+  │  │  ├── domain_availability_analyzer.js
+  │  │  ├── domain_capability_classifier.js
+  │  │  ├── domain_configuration_input_observer.js
+  │  │  ├── domain_dependency_audit_assembler.js
+  │  │  ├── domain_dependency_audit_persistence.js
+  │  │  ├── domain_dependency_audit_pipeline.js
+  │  │  ├── domain_dependency_topology_analyzer.js
+  │  │  ├── domain_dependency_topology.js
+  │  │  ├── domain_performance_risk_observer.js
+  │  │  ├── domain_scope_selector.js
+  │  │  ├── domain_semantic_audit_persistence.js
+  │  │  ├── domain_semantic_audit_pipeline.js
+  │  │  ├── domain_source_effect_observer.js
+  │  │  ├── domain_state_ownership_observer.js
+  │  │  ├── induced_domain_graph_builder.js
+  │  │  ├── induced_domain_graph.js
+  │  │  └── stage_three_historical_audit_guard.js
+  │  ├── domain_batches
+  │  │  ├── domain_approved_prefix.js
+  │  │  ├── domain_candidate_artifact.js
+  │  │  ├── domain_candidate_batch_designer.js
+  │  │  ├── domain_candidate_cluster_selector.js
+  │  │  ├── domain_candidate_evidence.js
+  │  │  ├── domain_candidate_policy.js
+  │  │  └── stage_three_first_batch_contract.js
   │  ├── esm_infrastructure
   │  │  ├── esm_fixture_graph_inspector.js
   │  │  ├── repository_content_snapshot.js
@@ -624,6 +687,9 @@
   │  │  │  ├── dynamic-value.js
   │  │  │  └── static-math.js
   │  │  └── package.json
+  │  ├── generate-stage-3-approved-prefix.js
+  │  ├── generate-stage-3-candidate-batches.js
+  │  ├── generate-stage-3-domain-audit.js
   │  ├── guards
   │  │  ├── architecture_guard_engine.js
   │  │  ├── contracts
@@ -665,7 +731,8 @@
   │  │  ├── migration_manifest_validator.js
   │  │  ├── migration_observation_reconciler.js
   │  │  ├── persist_migration_observations_command.js
-  │  │  └── source_file_scanner.js
+  │  │  ├── source_file_scanner.js
+  │  │  └── stage_two_runtime_script_alias_resolver.js
   │  ├── migration-manifest-integrity-check.js
   │  ├── migration-manifest-reconciler-check.js
   │  ├── migration-manifest-schema-migration-check.js
@@ -729,7 +796,37 @@
   │  ├── render-architecture-doc.js
   │  ├── stage-1-6-migration-batch-plan-check.js
   │  ├── stage-1-closure-check.js
+  │  ├── stage-2-asset-contracts-check.js
+  │  ├── stage-2-dependency-contract-check.js
+  │  ├── stage-2-event-primitives-check.js
   │  ├── stage-2-legacy-bridge-build-check.js
+  │  ├── stage-2-rendering-primitives-check.js
+  │  ├── stage-3-approved-prefix-fixture-check.js
+  │  ├── stage-3-approved-prefix-integration-check.js
+  │  ├── stage-3-candidate-batch-fixture-check.js
+  │  ├── stage-3-candidate-batch-integration-check.js
+  │  ├── stage-3-compatibility-runtime-fixture-check.js
+  │  ├── stage-3-compatibility-runtime-integration-check.js
+  │  ├── stage-3-dependency-audit-integration-check.js
+  │  ├── stage-3-dependency-audit-persistence-fixture-check.js
+  │  ├── stage-3-domain-audit-corpus-check.js
+  │  ├── stage-3-domain-audit-fixture-check.js
+  │  ├── stage-3-domain-audit-schema-migration-check.js
+  │  ├── stage-3-domain-observation-fixture-check.js
+  │  ├── stage-3-domain-topology-corpus-check.js
+  │  ├── stage-3-domain-topology-fixture-check.js
+  │  ├── stage-3-induced-domain-graph-corpus-check.js
+  │  ├── stage-3-induced-domain-graph-fixture-check.js
+  │  ├── stage-3-inventory-equip-target-batch-check.js
+  │  ├── stage-3-line-tension-prebuild-check.js
+  │  ├── stage-3-line-tension-runtime-check.js
+  │  ├── stage-3-reel-auto-recovery-prebuild-check.js
+  │  ├── stage-3-reel-auto-recovery-runtime-check.js
+  │  ├── stage-3-rod-capability-prebuild-check.js
+  │  ├── stage-3-rod-capability-runtime-check.js
+  │  ├── stage-3-semantic-audit-integration-check.js
+  │  ├── stage-3-semantic-observation-fixture-check.js
+  │  ├── stage-3-semantic-persistence-fixture-check.js
   │  ├── verify-fresh-package-install.js
   │  └── vite-fixture-build-check.js
   ├── bait-effectiveness-check.js
@@ -770,6 +867,8 @@
   │  │  ├── check_runner.js
   │  │  └── source_runtime.js
   │  ├── README.md
+  │  ├── runtime
+  │  │  └── stage_three_compatibility_test_loader.js
   │  └── suites
   │    └── check_manifest.js
   └── victory-input-check.js

@@ -1,7 +1,9 @@
-const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 const { CheckAssertion } = require("./testing/core/check_assertion");
+const {
+  StageThreeCompatibilityTestLoader,
+} = require("./testing/runtime/stage_three_compatibility_test_loader");
 
 const ROOT = path.resolve(__dirname, "..");
 const Assertion = CheckAssertion.create("Inventory-v2 equipment check");
@@ -9,91 +11,86 @@ const Assertion = CheckAssertion.create("Inventory-v2 equipment check");
 class RuntimeLoader {
   load() {
     const context = vm.createContext({ console });
-    this.#load(context, "src/config/inventory/equipment_slot_config.js", [
+    const loader = new StageThreeCompatibilityTestLoader({
+      projectRoot: ROOT,
+      context,
+    });
+    loader.load("src/config/inventory/equipment_slot_config.js", [
       "EquipmentSlotId",
       "EQUIPMENT_MAIN_SLOT_IDS",
       "EQUIPMENT_AUXILIARY_SLOT_IDS",
       "EQUIPMENT_ALL_SLOT_IDS",
       "EQUIPMENT_SLOT_CONFIG",
     ]);
-    this.#load(context, "src/core/equipment/rod_capability_resolver.js", [
+    loader.load("src/core/equipment/rod_capability_resolver.js", [
       "RodCapabilityResolver",
     ]);
-    this.#load(context, "src/core/equipment/equipment_slot_visibility_policy.js", [
+    loader.load("src/core/equipment/equipment_slot_visibility_policy.js", [
       "EquipmentSlotVisibilityPolicy",
     ]);
-    this.#load(context, "src/core/equipment/terminal_line_slot_resolver.js", [
+    loader.load("src/core/equipment/terminal_line_slot_resolver.js", [
       "TerminalLineSlotResolver",
     ]);
-    this.#load(context, "src/core/equipment/equipment_state.js", ["EquipmentState"]);
-    this.#load(context, "src/core/equipment/equipment_slot_availability_policy.js", [
+    loader.load("src/core/equipment/equipment_state.js", ["EquipmentState"]);
+    loader.load("src/core/equipment/equipment_slot_availability_policy.js", [
       "EquipmentSlotAvailabilityState",
       "EquipmentSlotWarningCode",
       "EquipmentSlotAvailabilityPolicy",
     ]);
-    this.#load(context, "src/core/equipment/inventory_capacity_policy.js", [
+    loader.load("src/core/equipment/inventory_capacity_policy.js", [
       "InventoryCapacityPolicy",
       "UnlimitedInventoryCapacityPolicy",
       "DelegatingInventoryCapacityPolicy",
     ]);
-    this.#load(context, "src/core/equipment/equipment_transition_planner.js", [
+    loader.load("src/core/equipment/equipment_transition_planner.js", [
       "EquipmentTransitionPlan",
       "ManualRodChangePlanner",
     ]);
-    this.#load(context, "src/application/inventory/equipment_transition_executor.js", [
+    loader.load("src/application/inventory/equipment_transition_executor.js", [
       "EquipmentTransitionPort",
       "EquipmentTransitionExecutor",
     ]);
-    this.#load(context, "src/core/loadouts/equipment_loadout.js", [
+    loader.load("src/core/loadouts/equipment_loadout.js", [
       "LOADOUT_DISPLAY_NAME",
       "EquipmentLoadout",
     ]);
-    this.#load(context, "src/core/loadouts/loadout_equipment_transition_planner.js", [
+    loader.load("src/core/loadouts/loadout_equipment_transition_planner.js", [
       "LoadoutEquipmentTransitionPlanner",
     ]);
-    this.#load(context, "src/application/inventory/loadout_application_service.js", [
+    loader.load("src/application/inventory/loadout_application_service.js", [
       "LoadoutApplicationPort",
       "LoadoutApplicationService",
     ]);
-    this.#load(context, "src/core/equipment/exact_item_signature_policy.js", [
+    loader.load("src/core/equipment/exact_item_signature_policy.js", [
       "ExactItemSignaturePolicy",
     ]);
-    this.#load(context, "src/core/assemblies/exact_assembly_refill_signature_policy.js", [
+    loader.load("src/core/assemblies/exact_assembly_refill_signature_policy.js", [
       "ExactAssemblyRefillSignaturePolicy",
     ]);
-    this.#load(context, "src/core/equipment/auto_refill_policy.js", [
+    loader.load("src/core/equipment/auto_refill_policy.js", [
       "AutoRefillTrigger",
       "AutoRefillScope",
       "AutoRefillSettings",
       "AutoRefillMemory",
       "AutoRefillPolicy",
     ]);
-    this.#load(context, "src/application/inventory/equipment_auto_refill_target_provider.js", [
+    loader.load("src/application/inventory/equipment_auto_refill_target_provider.js", [
       "EquipmentAutoRefillTargetProvider",
     ]);
-    this.#load(context, "src/application/inventory/auto_refill_coordinator.js", [
+    loader.load("src/application/inventory/auto_refill_coordinator.js", [
       "AutoRefillPort",
       "ExactInventoryAutoRefillPort",
       "AutoRefillCoordinator",
     ]);
-    this.#load(context, "src/core/equipment/fishing_readiness_policy.js", [
+    loader.load("src/core/equipment/fishing_readiness_policy.js", [
       "FishingReadinessPolicy",
     ]);
-    this.#load(context, "src/application/inventory/equipment_read_model_factory.js", [
+    loader.load("src/application/inventory/equipment_read_model_factory.js", [
       "EquipmentReadModelFactory",
     ]);
     return context;
   }
 
-  #load(context, relativePath, names) {
-    const source = fs.readFileSync(path.join(ROOT, relativePath), "utf8");
-    const exports = names.map((name) => `${name}: typeof ${name} === "undefined" ? undefined : ${name}`).join(",");
-    vm.runInContext(
-      `${source}\nObject.assign(globalThis,{${exports}});`,
-      context,
-      { filename: relativePath },
-    );
-  }
 }
 
 class MemoryAssemblyReader {

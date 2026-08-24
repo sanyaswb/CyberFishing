@@ -1,5 +1,183 @@
 # CyberFishing changelog
 
+## v0.24.41 - Rod Capability Resolver
+
+### Added
+
+- Added `RodCapabilityResolver` as a named ESM export under `src/game/domain/equipment/`.
+- Added one exact position-157 activation shim and seven consumer-specific bridge records sharing one compatibility identity.
+- Added focused pre-build and post-build checks for frozen scope, resolver semantics, identity, activation timing and all seven consumers.
+
+### Changed
+
+- Extended the cumulative compatibility runtime from twelve to thirteen unique project modules without adding another IIFE or transport global.
+- Generalized the Stage 3.3 runtime check so its historical identity contract remains valid inside later cumulative graphs.
+- Advanced the live execution and package contracts to Stage 3.4 while preserving the frozen batch topology.
+
+### Validation
+
+- Preserved equipment-capability precedence, strict boolean handling, capability-name fallbacks, result shape and frozen-result semantics.
+- Preserved exact global identity for all seven legacy consumers without direct compatibility-transport reads.
+- Preserved 424 logical legacy positions through 425 physical classic scripts and zero module script tags.
+
+## v0.24.40 - Line Tension Calculator
+
+### Added
+
+- Added `LineTensionCalculator` as a named ESM export under `src/game/domain/fishing/`.
+- Added one exact position-129 activation shim for the remaining classic `TensionSystem` consumer.
+- Added separate pre-build contract and post-build identity, timing, mutability and behavior checks for Stage 3.3.
+
+### Changed
+
+- Extended the cumulative compatibility runtime from eleven to twelve unique project modules without adding another IIFE or transport global.
+- Generalized the Stage 3.2 runtime check to preserve its historical identity contract inside later cumulative graphs.
+- Advanced the live execution and package contracts to Stage 3.3 while preserving the frozen batch plan.
+
+### Validation
+
+- Preserved tension precedence, drag-slip gates, modes, component fallbacks, stress ratios, result aliases and result mutability.
+- Preserved one calculator instance per `TensionSystem` instance and removed compatibility transport access from its calculation path.
+- Preserved 424 logical legacy positions through 425 physical classic scripts and zero module script tags.
+
+## v0.24.39 - Reel Auto-Recovery Calculator
+
+### Added
+
+- Added `ReelAutoRecoveryCalculator` as a named ESM export under `src/game/domain/fishing/`.
+- Added one exact position-113 activation shim for the remaining classic `ReelSystem` consumer.
+- Added separate pre-build contract and post-build identity, timing and behavior checks for Stage 3.2.
+
+### Changed
+
+- Extended the existing cumulative compatibility runtime from ten to eleven unique project modules without creating another IIFE or transport global.
+- Separated actual project modules from approved Vite/OXC virtual build modules in the cumulative build report.
+- Advanced the live execution and package contracts to Stage 3.2 while preserving the frozen planning evidence.
+
+### Validation
+
+- Preserved calculator formulas, epsilon thresholds, clamp behavior, frozen result shape and `ReelSystem` integration.
+- Preserved 424 logical legacy positions through 425 physical classic scripts and zero module script tags.
+- Kept the calculator global unavailable until logical position 113 and equal to the exact ESM export after activation.
+
+## v0.24.38 - First Domain Cumulative Runtime
+
+### Added
+
+- Added `InventoryEquipTargetSelectionPolicy` as the first named ESM export under `src/game/domain/inventory/`.
+- Added one deterministic cumulative IIFE containing the nine completed Stage 2 engine modules and the first Stage 3 domain module.
+- Added ten exact activation shims that preserve each legacy symbol's approved load-order position.
+
+### Changed
+
+- Activated and completed frozen Stage 3 batch 001 without changing inventory selection behavior.
+- Replaced the nine isolated Stage 2 IIFE exposures with references from the single cumulative module graph.
+- Advanced the execution and package contracts to Stage 3.1 while keeping `index.html` as the production entrypoint.
+
+### Validation
+
+- Preserved 424 logical legacy positions through 425 physical classic scripts and zero module script tags.
+- Preserved one module instance per ESM source, exact class identity and the existing authoritative state owners.
+- Made no gameplay, UI, fishing-physics, save-format or inventory semantic changes.
+
+## v0.24.37 - Stage 3 Approved Prefix Freeze
+
+### Added
+
+- Added the frozen Stage 3 prefix containing 21 dependency-safe batches and 69 domain modules.
+- Added reviewed evidence for 41 side-effect decisions and five state-identity decisions.
+- Added executable validation for the review queue, deferred set, canonical activations and atomic rollback boundaries.
+
+### Changed
+
+- Marked batches 022–040 as `requires-replan` and retained 29 modules as explicitly deferred.
+- Kept runtime migration disabled until the first approved batch cutover.
+
+### Validation
+
+- Covered all 135 audited domain modules with zero unassigned modules.
+- Preserved runtime, `index.html`, gameplay and save semantics during the architecture-only freeze.
+
+## v0.24.36 - Engine Rendering Primitives
+
+### Added
+
+- Added named ESM exports for `CompositeRenderer`, `RenderComponent`, `RenderMath` and `RenderPass` under `src/engine/rendering/`.
+- Added four minimal compatibility wrappers and seventeen exact consumer-specific bridge records.
+- Added a lifecycle-aware focused check for composition ordering, component state, render math, inheritance and legacy load order.
+
+### Changed
+
+- Completed the fourth and final frozen Stage 2 batch and marked the ordered execution-state prefix complete through Stage 2.4.
+- Replaced the four original rendering scripts one-for-one at their legacy load positions without adding module script tags.
+- Advanced the package contract to nine approved runtime bridge inputs while preserving the classic production entrypoint.
+
+### Validation
+
+- Preserved 424 classic script tags, 771 confirmed legacy dependency edges, 855 global identities and 203 exact known-debt diagnostics.
+- Verified nine live ESM import edges only inside approved bridge graphs; production retains zero module script tags.
+- Preserved rendering composition, drawing calculations and gameplay behavior with no UI, save-format or physics changes.
+
+## v0.24.35 - Engine Event Primitives
+
+### Added
+
+- Added dependency-free named ESM exports for `EventBus` and `EventLifecycle` under `src/engine/events/`.
+- Added two minimal compatibility wrappers and four exact consumer-specific bridge records.
+- Added a lifecycle-aware focused check for registration, duplicate handlers, cleanup, reverse disposal and active-listener diagnostics.
+
+### Changed
+
+- Completed the third frozen Stage 2 batch and extended the ordered execution-state prefix through Stage 2.3.
+- Replaced both original event scripts one-for-one at legacy load positions 391 and 392.
+- Relocated two existing boundary-debt identities from migrated source paths to their exact wrapper paths without expanding debt.
+
+### Validation
+
+- Preserved 424 classic script tags, 771 confirmed legacy dependency edges, 855 global identities and 203 exact known-debt diagnostics.
+- Verified five live ESM import edges only inside approved bridge graphs; production retains zero module script tags.
+- Preserved the legacy retained-Set cleanup behavior after `EventBus.clear()` and made no gameplay, UI or save-format changes.
+
+## v0.24.34 - Engine Dependency Contract
+
+### Added
+
+- Added `DependencyContractValidator` as a dependency-free named ESM export under `src/engine/di/`.
+- Added one minimal approved compatibility wrapper and deterministic classic IIFE for `GameCompositionRoot`.
+- Added a lifecycle-aware focused contract check covering validation behavior, the exact consumer and runtime order.
+
+### Changed
+
+- Completed the second frozen Stage 2 batch and extended the ordered execution-state prefix through Stage 2.2.
+- Replaced the original dependency-validator script one-for-one at legacy load position 395.
+- Advanced the package contract to three approved runtime bridge inputs without changing the production entrypoint.
+
+### Validation
+
+- Preserved 424 classic script tags, 771 confirmed legacy dependency edges, 855 global identities and 203 exact known-debt diagnostics.
+- Verified three live ESM import edges only inside approved bridge graphs; production retains zero module script tags.
+- Made no gameplay, composition, UI, physics, inventory or save-format semantic changes.
+
+## v0.24.33 - Engine Asset Contracts
+
+### Added
+
+- Added dependency-free named ESM contracts for `AssetManifest` and `AssetLoadResult` under `src/engine/assets/`.
+- Added two minimal approved compatibility wrappers and deterministic classic IIFE artifacts for the existing preload coordinator.
+- Added lifecycle-aware runtime script aliases so legacy observations continue to describe the exact classic execution order during migration.
+
+### Changed
+
+- Activated and completed the first frozen Stage 2 batch while keeping `index.html` as the production entrypoint.
+- Replaced the two original asset contract scripts one-for-one with approved IIFE bridges at the same load positions.
+- Advanced the package and execution-state contracts to Stage 2.1 without moving any additional module cluster.
+
+### Validation
+
+- Preserved 424 classic script tags, 771 confirmed legacy dependency edges, 855 global identities and 203 exact known-debt diagnostics.
+- Verified two live ESM import edges only inside approved bridge build graphs; production still has zero module script tags.
+- Made no gameplay, UI, fishing-physics, inventory, asset-loading or save-format semantic changes.
+
 ## v0.24.32 - Classic Bridge Build Foundation
 
 ### Added

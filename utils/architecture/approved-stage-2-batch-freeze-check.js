@@ -65,7 +65,7 @@ class ApprovedStageTwoBatchFreezeCheck {
     this.#assertChangedTargetFails(validator, values);
     this.#assertAsyncBridgeFails(validator, values);
     this.#assertStaleConsumerFails(validator, values);
-    this.#assertPrematureBridgeActivationFails(validator, values);
+    this.#assertUnapprovedBridgeFails(validator, values);
 
     console.log(
       "Stage 2 batch freeze passed: " +
@@ -124,12 +124,15 @@ class ApprovedStageTwoBatchFreezeCheck {
     );
   }
 
-  #assertPrematureBridgeActivationFails(validator, values) {
+  #assertUnapprovedBridgeFails(validator, values) {
     const fixture = this.#clone(values);
-    fixture.bridgeRegistry.bridges.push({ id: "premature-stage-1-bridge" });
+    fixture.bridgeRegistry.bridges.push({
+      id: "premature-stage-2-bridge",
+      owner: "stage-2.1-engine-asset-contracts",
+    });
     assert.throws(
       () => validator.validate(fixture),
-      /requires an empty bridge registry/,
+      /non-contract fields|registry consumer set differs|does not belong to an allowed batch/,
     );
   }
 

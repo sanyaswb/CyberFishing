@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-candidate-eligibility-policy",
+  "statuses": [
+    "conditionally-eligible",
+    "deferred",
+    "eligible"
+  ],
+  "deferredBlockers": [
+    "browser-api-coupling",
+    "dev-production-coupling",
+    "mixed-responsibility-requires-decomposition"
+  ],
+  "conditionalSignals": [
+    "boundary-extraction-prerequisite",
+    "config-prerequisite",
+    "high-level-self-composition",
+    "hot-loop-performance-gate",
+    "legacy-compatibility-surface",
+    "partial-state-review",
+    "side-effect-review",
+    "stage-2-identity-transition"
+  ],
+  "clustering": {
+    "unit": "canonical-scc",
+    "ordering": "dependency-depth-then-reviewed-target-area",
+    "cohesion": "graph-component-dependency-layer-reviewed-target-area-and-risk-tier",
+    "maximumModulesPerBatch": 6,
+    "allowCrossSccSplit": false
+  },
+  "stateInvariant": {
+    "ownerBeforeAfter": "same-authoritative-owner",
+    "duplicateStateCopies": "forbidden",
+    "partialMeansUniversalBlocker": false
+  },
+  "performanceInvariant": {
+    "compatibilityLookupInHotLoop": "forbidden",
+    "requiredHotLoopEvidence": [
+      "allocation-equivalence",
+      "behavior-equivalence",
+      "delta-time-equivalence"
+    ]
+  },
+  "compatibilityInvariant": {
+    "topology": "single-cumulative-module-graph",
+    "bridgeReason": "exact-unmigrated-classic-consumer",
+    "removalCondition": "all-listed-legacy-consumers-migrated",
+    "runtimeActivationAllowed": false
+  },
+  "coverageInvariant": "exactly-one-of-assigned-or-deferred"
+}

@@ -1,0 +1,835 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-reviewed-freeze-evidence",
+  "status": "reviewed",
+  "releaseVersion": "0.24.37",
+  "sourceCandidate": {
+    "path": "architecture/migration/stage_3_candidate_batches.json",
+    "sha256": "e3831cd9cf6e485681ecddb1e82e64f05a0b79c37634b04ba5362f83348e0c1a"
+  },
+  "reviewOwner": "stage-3.0.6-approved-prefix-freeze",
+  "sideEffectReviews": [
+    {
+      "batchId": "stage-3.candidate-001-inventory-85f44b2e",
+      "module": "src/engine/assets/asset_load_result.js",
+      "originatingStage": "stage-2",
+      "evidenceFingerprint": "d0769d45b55b834bdfee9a8265fc31af309aa190f3d91e518e3f74b69a683083",
+      "decision": "approved-compatible",
+      "classification": "module-local-storage-evaluated-once",
+      "reason": "Private module-local storage is created once by the cumulative graph and owns no duplicated gameplay state.",
+      "observations": [
+        {
+          "kind": "initializer-execution",
+          "classification": "needs-review",
+          "location": "1:25"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-001-inventory-85f44b2e",
+      "module": "src/engine/assets/asset_manifest.js",
+      "originatingStage": "stage-2",
+      "evidenceFingerprint": "a2cd0bd6166d6cc6e4c6c2b7607452e8814eda73185d4c107831da735438b709",
+      "decision": "approved-compatible",
+      "classification": "module-local-storage-evaluated-once",
+      "reason": "Private module-local storage is created once by the cumulative graph and owns no duplicated gameplay state.",
+      "observations": [
+        {
+          "kind": "initializer-execution",
+          "classification": "needs-review",
+          "location": "1:27"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-001-inventory-85f44b2e",
+      "module": "src/engine/events/event_bus.js",
+      "originatingStage": "stage-2",
+      "evidenceFingerprint": "80822cdc389a9c2db5b76d5d1688b088e46234a7cb6e3b9bd05e84ea6d90bbfe",
+      "decision": "approved-compatible",
+      "classification": "module-local-storage-evaluated-once",
+      "reason": "Private module-local storage is created once by the cumulative graph and owns no duplicated gameplay state.",
+      "observations": [
+        {
+          "kind": "initializer-execution",
+          "classification": "needs-review",
+          "location": "2:24"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-001-inventory-85f44b2e",
+      "module": "src/engine/events/event_lifecycle.js",
+      "originatingStage": "stage-2",
+      "evidenceFingerprint": "b69a74a66e9c04c69a7f4dc892060f3c10a34fc313c5f0bb9d5d2c5504bbe158",
+      "decision": "approved-compatible",
+      "classification": "module-local-storage-evaluated-once",
+      "reason": "Private module-local storage is created once by the cumulative graph and owns no duplicated gameplay state.",
+      "observations": [
+        {
+          "kind": "initializer-execution",
+          "classification": "needs-review",
+          "location": "2:29"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-001-inventory-85f44b2e",
+      "module": "src/engine/rendering/composite_renderer.js",
+      "originatingStage": "stage-2",
+      "evidenceFingerprint": "3dd0152d9eafa14840de96eac9267db196db843d624afe3accac897b56869d41",
+      "decision": "approved-compatible",
+      "classification": "module-local-storage-evaluated-once",
+      "reason": "Private module-local storage is created once by the cumulative graph and owns no duplicated gameplay state.",
+      "observations": [
+        {
+          "kind": "initializer-execution",
+          "classification": "needs-review",
+          "location": "1:30"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-012-assemblies-2086347a",
+      "module": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "597623a7836bfc7cb1c954ec708748e7fdbc2d80a0f8ca25963aabaa394fb6b5",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "150:1",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-012-assemblies-2086347a",
+      "module": "src/game/domain/assemblies/assembly_completion_policy.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "39177ce9def1aab74c73b0da12adecf0d857145d316a3c24aed6d3ed77fbd519",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "93:1",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-020-assemblies-43d77861",
+      "module": "src/game/domain/assemblies/assembly_state.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "d559d72e7ac01079b2dac485577be03b7f5ab61a31806532d9a7eafc295d0728",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "call",
+          "location": "1:35",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-020-assemblies-43d77861",
+      "module": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "527b0bbeb48814cbdbdbe1cbbebdf073d41706cf4590769354a82915efff09c1",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "instantiation",
+          "location": "2:25",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-020-assemblies-43d77861",
+      "module": "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "bf43cfa483ccbfa108ef25c1e0f6b72859d0ecf547252c174e7e46e9ede89e72",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "instantiation",
+          "location": "2:25",
+          "classification": "observable"
+        },
+        {
+          "kind": "assignment",
+          "location": "55:1",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-021-equipment-4044fcef",
+      "module": "src/game/domain/equipment/auto_refill_policy.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "790b0d78a7577cb1fedc0c0c1b35c14ba9ca3d674e45e9383a0233ccd486be7c",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "call",
+          "location": "1:27",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "7:25",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-021-equipment-4044fcef",
+      "module": "src/game/domain/equipment/exact_item_signature_policy.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "242459b519c726064295ad2fb179700a926f1395b2d11477178e6b04f8c0d4f8",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "instantiation",
+          "location": "2:25",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-015-fishing-37dc3452",
+      "module": "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "79eec242a8317b609c3d0c8b84bd7e0ded98abe7e080be747615f56563ac08e5",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "call",
+          "location": "2:33",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-013-fishing-0267b3ea",
+      "module": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "e7da0afcb1debd928f98f52100ee0bbce33ce8c9bdb4f7a44f0bac9c5b2ce79e",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "call",
+          "location": "1:35",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "2:36",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-013-fishing-0267b3ea",
+      "module": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "db682f3f635a23921c63bdff10e02394afd7cc71c230d9eb27ef92d2b2442aeb",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "13:1",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-014-fishing-fefd469b",
+      "module": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "58d42336b0ba875f2f3f6187afc44b31ec7979fecf93131539621f14f82d5d81",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "136:3",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-013-fishing-0267b3ea",
+      "module": "src/game/domain/fishing/player_force_budget_allocator.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "49919e2a0f3e2331facd372502cbf09a56fad07b5ea93fdfc386e0671f625b89",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "199:3",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-013-fishing-0267b3ea",
+      "module": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "08072cb50a35a81ea62169dc35a2983fc4f523abbc48114ae7347cbf5b45fdca",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "439:3",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-016-fishing-f8c953aa",
+      "module": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "37906ed6e7b89b7c4df2468e049ad0c5faf0ccd3631bec3c651e3339bad85465",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "110:3",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-014-fishing-fefd469b",
+      "module": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "55c1feb3222b5c396673da6ab33657dc3c6a6470ed9f112b499369c0f1b486bf",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "175:3",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-015-fishing-37dc3452",
+      "module": "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "10b35ec5ba9966e909a585518769bb56048d0f080acf1f1801dd71865413475e",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "96:3",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-014-fishing-fefd469b",
+      "module": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "cccb2b0523d61cc865dd84b7d3327fe27e3fd5b0892d55ae08b801a4807bc0a1",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "114:3",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-013-fishing-0267b3ea",
+      "module": "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "15d05851ed14a48a937566692a0286a656cfbf026707da62b135cee4f0a97ad8",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "55:3",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-015-fishing-37dc3452",
+      "module": "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "63ee4b5d10719b15c8b5ca3cbe8b28616162d4d5af1b3d0f607fc4d7ceefc58c",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "47:3",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-015-fishing-37dc3452",
+      "module": "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "5e5bde9c2296a04fb27c697838443777e689567f95c547621d01c2a0d970f604",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "116:3",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-014-fishing-fefd469b",
+      "module": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "3f3aeb7c1d88aaaaa4edf4936704549a722a5e615932c5e898a758465a6ace12",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "88:3",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-015-fishing-37dc3452",
+      "module": "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "22b96c873426de27bfc88609731610567d9478d1a79783e9868d2439118f3e36",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "49:3",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-013-fishing-0267b3ea",
+      "module": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "dbd012dbd938ce213461bf54bceb31c96aa3d9f1eb0b6a06be7de3c6af43b9de",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "131:3",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-014-fishing-fefd469b",
+      "module": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "3f06b26fe809faf6cf86576df94be8911cd266f717033db539dd3b2eea6576e5",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "88:3",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-014-fishing-fefd469b",
+      "module": "src/game/domain/fishing/tackle_failure_selector.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "5d91be79f3a2d60f505b4f9b661a21e40e459f918974f47edcd1ddbfcda9f7e9",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "call",
+          "location": "2:39",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "9:32",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-015-fishing-37dc3452",
+      "module": "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "a78aea5a8a9bbcb974d70d27e6e6259703b04c976c566b6fc72de202218f4727",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "84:3",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-017-inventory-fd62478b",
+      "module": "src/game/domain/inventory/inventory_item_location.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "cbde6cf2d12c2e04367801b20bbeeb0028e925e5f23f83c4f0f974f60a9c6a59",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "call",
+          "location": "1:35",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-019-items-b0af5033",
+      "module": "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "c852b5eea4b15d5d38f1e5a6ace7ef98546ae1d558e9047ec3a07f593db24bbc",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "55:1",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-018-items-8ea4be10",
+      "module": "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "545539a42118f13e6f1e678dbbc609df5ce54c2b49695d3a6b02d0c114c418f7",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "13:1",
+          "classification": "observable"
+        },
+        {
+          "kind": "assignment",
+          "location": "14:1",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-018-items-8ea4be10",
+      "module": "src/game/domain/items/bait/bait_effectiveness_match.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "ebcb53361420f1d5f6032d107fc887854324b6f5546d64b0b84f10fdcbddd09e",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "22:1",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-019-items-b0af5033",
+      "module": "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "663598d2ee9171c789bc4c48a8b3b3942edc6eac9ec62c113cfac79b4acce43d",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "13:1",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-018-items-8ea4be10",
+      "module": "src/game/domain/items/freshness/bait_freshness_modifier.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "c04bc41ac0a11520d2c4ec5104fa93ae5208a98cd1b5ce51c3fb361a04492505",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "12:1",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-018-items-8ea4be10",
+      "module": "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "ab033107ab1b6fb229078264abc2e13766be618c30c75c9d180cda5c3815b983",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "54:1",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-018-items-8ea4be10",
+      "module": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "38d784f04d6890ae3df0b445bf40612295d6215e266bdbe38f353a1bd7f23ceb",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "98:1",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-018-items-8ea4be10",
+      "module": "src/game/domain/items/progression/item_rating_tier_resolver.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "a592752ccf7291125a750e2eb04ef6e7a23af1511a7948b7c0e5c3e7edee266c",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "49:1",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.candidate-019-items-b0af5033",
+      "module": "src/game/domain/items/quality/item_quality_grade_policy.js",
+      "originatingStage": "stage-3",
+      "evidenceFingerprint": "27eb479a1d7454315aae40802a62c9535a7d2e251f1b84a6fe128cf7aeac9215",
+      "decision": "approved-compatible",
+      "classification": "legacy-exposure-or-deterministic-local-initialization",
+      "reason": "Observed initialization is either deferred within the exported behavior, deterministic module-local state, or legacy exposure relocated to the exact activation shim.",
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "28:1",
+          "classification": "observable"
+        }
+      ]
+    }
+  ],
+  "stateIdentityReviews": [
+    {
+      "batchId": "stage-3.candidate-020-assemblies-43d77861",
+      "currentPath": "src/application/inventory/refill_compatible_signature_policy.js",
+      "targetPath": "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+      "authoritativeOwnersBefore": [
+        "RefillCompatibleSignaturePolicy#clone",
+        "RefillCompatibleSignaturePolicy#create",
+        "RefillCompatibleSignaturePolicy#freeze",
+        "RefillCompatibleSignaturePolicy.ignoredKeys"
+      ],
+      "authoritativeOwnersAfter": [
+        "RefillCompatibleSignaturePolicy#clone",
+        "RefillCompatibleSignaturePolicy#create",
+        "RefillCompatibleSignaturePolicy#freeze",
+        "RefillCompatibleSignaturePolicy.ignoredKeys"
+      ],
+      "reviewIssues": [
+        "collection-state-requires-cache-review:RefillCompatibleSignaturePolicy.ignoredKeys"
+      ],
+      "evidenceFingerprint": "3c27bb6c609d4a560c45131595c1f496680c91b0ff94d3d9255950fb7ec60c85",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "duplicateStateCopies": "forbidden",
+      "reason": "Collection state remains owned by the same class or instance; the cumulative runtime evaluates the module once and activation shims expose references rather than copies."
+    },
+    {
+      "batchId": "stage-3.candidate-020-assemblies-43d77861",
+      "currentPath": "src/core/assemblies/assembly_state.js",
+      "targetPath": "src/game/domain/assemblies/assembly_state.js",
+      "authoritativeOwnersBefore": [
+        "AssemblyState#assertId",
+        "AssemblyState#assertPath",
+        "AssemblyState#clone",
+        "AssemblyState#profileId",
+        "AssemblyState#refillSignatures",
+        "AssemblyState#rememberRefill",
+        "AssemblyState#rootInstanceId",
+        "AssemblyState#status"
+      ],
+      "authoritativeOwnersAfter": [
+        "AssemblyState#assertId",
+        "AssemblyState#assertPath",
+        "AssemblyState#clone",
+        "AssemblyState#profileId",
+        "AssemblyState#refillSignatures",
+        "AssemblyState#rememberRefill",
+        "AssemblyState#rootInstanceId",
+        "AssemblyState#status"
+      ],
+      "reviewIssues": [
+        "collection-state-requires-cache-review:AssemblyState#refillSignatures"
+      ],
+      "evidenceFingerprint": "d4795475b8ee6ed0b8a6f3e2a74a73768349e685bc1549e65735b1beb5abc2b8",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "duplicateStateCopies": "forbidden",
+      "reason": "Collection state remains owned by the same class or instance; the cumulative runtime evaluates the module once and activation shims expose references rather than copies."
+    },
+    {
+      "batchId": "stage-3.candidate-020-assemblies-43d77861",
+      "currentPath": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+      "targetPath": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "authoritativeOwnersBefore": [
+        "ExactAssemblyRefillSignaturePolicy#canonicalClone",
+        "ExactAssemblyRefillSignaturePolicy#create",
+        "ExactAssemblyRefillSignaturePolicy#deepFreeze",
+        "ExactAssemblyRefillSignaturePolicy#stableSerialize",
+        "ExactAssemblyRefillSignaturePolicy.ignoredKeys"
+      ],
+      "authoritativeOwnersAfter": [
+        "ExactAssemblyRefillSignaturePolicy#canonicalClone",
+        "ExactAssemblyRefillSignaturePolicy#create",
+        "ExactAssemblyRefillSignaturePolicy#deepFreeze",
+        "ExactAssemblyRefillSignaturePolicy#stableSerialize",
+        "ExactAssemblyRefillSignaturePolicy.ignoredKeys"
+      ],
+      "reviewIssues": [
+        "collection-state-requires-cache-review:ExactAssemblyRefillSignaturePolicy.ignoredKeys"
+      ],
+      "evidenceFingerprint": "dc57755a63798f9ac9dd6f3e7e5fae90a8269de5b58173bc642ab8d9d33637eb",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "duplicateStateCopies": "forbidden",
+      "reason": "Collection state remains owned by the same class or instance; the cumulative runtime evaluates the module once and activation shims expose references rather than copies."
+    },
+    {
+      "batchId": "stage-3.candidate-021-equipment-4044fcef",
+      "currentPath": "src/core/equipment/auto_refill_policy.js",
+      "targetPath": "src/game/domain/equipment/auto_refill_policy.js",
+      "authoritativeOwnersBefore": [
+        "AutoRefillMemory#clone",
+        "AutoRefillMemory#remember",
+        "AutoRefillMemory#signatures",
+        "AutoRefillPolicy#settings",
+        "AutoRefillSettings#autoBait",
+        "AutoRefillSettings#autoChum"
+      ],
+      "authoritativeOwnersAfter": [
+        "AutoRefillMemory#clone",
+        "AutoRefillMemory#remember",
+        "AutoRefillMemory#signatures",
+        "AutoRefillPolicy#settings",
+        "AutoRefillSettings#autoBait",
+        "AutoRefillSettings#autoChum"
+      ],
+      "reviewIssues": [
+        "collection-state-requires-cache-review:AutoRefillMemory#signatures"
+      ],
+      "evidenceFingerprint": "80ec7570c9bac68a81092264d03cd2f2d23930bc44ef0826214585e3818dafcc",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "duplicateStateCopies": "forbidden",
+      "reason": "Collection state remains owned by the same class or instance; the cumulative runtime evaluates the module once and activation shims expose references rather than copies."
+    },
+    {
+      "batchId": "stage-3.candidate-021-equipment-4044fcef",
+      "currentPath": "src/core/equipment/exact_item_signature_policy.js",
+      "targetPath": "src/game/domain/equipment/exact_item_signature_policy.js",
+      "authoritativeOwnersBefore": [
+        "ExactItemSignaturePolicy#canonicalize",
+        "ExactItemSignaturePolicy#create",
+        "ExactItemSignaturePolicy#deepFreeze",
+        "ExactItemSignaturePolicy.ignoredKeys"
+      ],
+      "authoritativeOwnersAfter": [
+        "ExactItemSignaturePolicy#canonicalize",
+        "ExactItemSignaturePolicy#create",
+        "ExactItemSignaturePolicy#deepFreeze",
+        "ExactItemSignaturePolicy.ignoredKeys"
+      ],
+      "reviewIssues": [
+        "collection-state-requires-cache-review:ExactItemSignaturePolicy.ignoredKeys"
+      ],
+      "evidenceFingerprint": "385d468dc4c4109618b2879e65e279bad2790b2ccacee35d3b76a86e9c5b7cc5",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "duplicateStateCopies": "forbidden",
+      "reason": "Collection state remains owned by the same class or instance; the cumulative runtime evaluates the module once and activation shims expose references rather than copies."
+    }
+  ]
+}

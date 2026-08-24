@@ -2,11 +2,16 @@
   "schemaVersion": 1,
   "kind": "cyber-fishing-stage-2-execution-state",
   "sourceClosureVersion": "0.24.31",
-  "releaseVersion": "0.24.32",
-  "status": "foundation-verified",
-  "completedBatchIds": [],
+  "releaseVersion": "0.24.36",
+  "status": "migration-complete",
+  "completedBatchIds": [
+    "stage-2.1-engine-asset-contracts",
+    "stage-2.2-engine-dependency-contract",
+    "stage-2.3-engine-event-primitives",
+    "stage-2.4-engine-rendering-primitives"
+  ],
   "activeBatchId": null,
-  "esmRuntimeIntegrationStarted": false,
+  "esmRuntimeIntegrationStarted": true,
   "closureTransition": {
     "mode": "semantic-release-delta"
   }

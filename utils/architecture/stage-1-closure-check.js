@@ -39,7 +39,7 @@ class StageOneClosureCheck {
 
     console.log(
       `Stage 1 closure passed for v${first.version}: ` +
-        `${first.moduleCount} classified modules, ${first.edgeCount} edges, ` +
+        `${first.moduleCount} tracked modules, ${first.edgeCount} edges, ` +
         `${first.knownDebtCount} exact known-debt records, ` +
         `${first.approvedBatchCount} approved Stage 2 batches / ` +
         `${first.approvedModuleCount} modules.`,
@@ -48,7 +48,11 @@ class StageOneClosureCheck {
 
   #assertChangedEvidenceFails(validator, closure) {
     const fixture = this.#clone(closure);
-    fixture.immutableEvidence[0].sha256 = "0".repeat(64);
+    const immutable = fixture.immutableEvidence.find(
+      (item) =>
+        item.path === "architecture/migration/stage_1_6_initial_batches.json",
+    );
+    immutable.sha256 = "0".repeat(64);
     assert.throws(() => validator.validate(fixture), /immutable evidence changed/);
   }
 
@@ -63,7 +67,7 @@ class StageOneClosureCheck {
     fixture.architectureBaseline.activeBridgeCount = 1;
     assert.throws(
       () => validator.validate(fixture),
-      /migration bridges were activated before Stage 2/,
+      /Stage 1 bridge baseline must remain zero/,
     );
   }
 

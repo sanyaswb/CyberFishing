@@ -56,7 +56,10 @@ class LegacyExternalConsumerScanner {
       return this.assembler.failed(currentPath, parsed.issue);
     }
     try {
-      const scopeAnalysis = this.scopeAnalyzer.analyze(parsed.syntaxTree);
+      const scopeAnalysis = this.scopeAnalyzer.analyze(
+        parsed.syntaxTree,
+        parsed.sourceType,
+      );
       const contextIndex = this.contextIndexFactory(parsed.syntaxTree);
       const observations = this.detectorFactory(contextIndex).map((detector) =>
         detector.detect(parsed.syntaxTree, scopeAnalysis)

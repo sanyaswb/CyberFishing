@@ -20,10 +20,20 @@ class ApprovedStageTwoBatchValidator {
     runtimeFacts = null,
   }) {
     const errors = [];
-    const candidateSummary = this.candidateValidator.validate({
-      plan: candidatePlan,
-      manifest,
-    });
+    const migrationStarted = executionState?.esmRuntimeIntegrationStarted === true;
+    const candidateSummary = migrationStarted
+      ? Object.freeze({
+          confirmedInterFileEdges: candidatePlan?.graphBaseline?.confirmedInterFileEdges,
+        })
+      : this.candidateValidator.validate({ plan: candidatePlan, manifest });
+    if (migrationStarted) {
+      this.#require(
+        candidatePlan?.graphBaseline?.moduleCount === 424 &&
+          candidateSummary.confirmedInterFileEdges === 771,
+        "Frozen candidate graph baseline changed after migration activation",
+        errors,
+      );
+    }
 
     this.#require(approvedPlan?.schemaVersion === 1, "schemaVersion must be 1", errors);
     this.#require(approvedPlan?.stage === "1.9", "stage must be 1.9", errors);
@@ -54,6 +64,12 @@ class ApprovedStageTwoBatchValidator {
       "Migration bridge registry must contain a bridges array",
       errors,
     );
+    const stageTwoBridgeRegistry = Object.freeze({
+      ...bridgeRegistry,
+      bridges: (bridgeRegistry?.bridges || []).filter((bridge) =>
+        /^stage-2\./.test(bridge.owner || ""),
+      ),
+    });
 
     this.#validatePrerequisite(approvedPlan?.prerequisite, errors);
 
@@ -89,15 +105,18 @@ class ApprovedStageTwoBatchValidator {
         new ActiveBridgePlanResolver().resolve({
           state: executionState,
           approvedPlan,
-          bridgeRegistry,
+          bridgeRegistry: stageTwoBridgeRegistry,
           runtimeFacts,
         });
       } catch (error) {
         errors.push(error.message);
       }
+      if (migrationStarted) {
+        this.#validateLifecycleManifest({ approvedPlan, manifest, executionState, errors });
+      }
     } else {
       this.#require(
-        bridgeRegistry?.bridges?.length === 0,
+        stageTwoBridgeRegistry.bridges.length === 0,
         "Stage 1.9 without execution state must not activate migration bridges",
         errors,
       );
@@ -119,6 +138,54 @@ class ApprovedStageTwoBatchValidator {
       bridgeCount: bridgePaths.size,
       confirmedInterFileEdges: candidateSummary.confirmedInterFileEdges,
     });
+  }
+
+  #validateLifecycleManifest({ approvedPlan, manifest, executionState, errors }) {
+    this.#require(
+      approvedPlan?.approvedAtVersion === executionState?.sourceClosureVersion,
+      "Execution state must originate from the frozen approved plan",
+      errors,
+    );
+    this.#require(
+      approvedPlan?.batches?.length === 4 &&
+        approvedPlan.batches.reduce((count, batch) => count + batch.modules.length, 0) === 9 &&
+        approvedPlan.batches.length === 4,
+      "Frozen approved batch anchors changed",
+      errors,
+    );
+    this.#require(
+      manifest?.modules?.length >= 424,
+      "Live manifest is smaller than the frozen Stage 1 baseline",
+      errors,
+    );
+    const entries = new Map((manifest?.modules || []).map((item) => [item.currentPath, item]));
+    const completed = new Set(executionState.completedBatchIds || []);
+    const allowed = new Set([
+      ...completed,
+      ...(executionState.activeBatchId ? [executionState.activeBatchId] : []),
+    ]);
+    for (const batch of approvedPlan.batches || []) {
+      for (const module of batch.modules || []) {
+        if (allowed.has(batch.id)) {
+          this.#require(!entries.has(module.currentPath), `${module.currentPath} remains after activated cutover`, errors);
+          const target = entries.get(module.targetPath);
+          const statuses = completed.has(batch.id) ? ["esm", "verified"] : ["migrating", "esm", "verified"];
+          this.#require(statuses.includes(target?.architecture?.migrationStatus), `${module.targetPath} has invalid activated status`, errors);
+        } else {
+          this.#require(entries.get(module.currentPath)?.architecture?.migrationStatus === "classified", `${module.currentPath} changed before its batch`, errors);
+        }
+      }
+      for (const bridge of batch.bridgeStrategy?.bridges || []) {
+        const wrapper = entries.get(bridge.wrapperPath);
+        this.#require(
+          allowed.has(batch.id)
+            ? ["migrating", "esm", "verified"].includes(wrapper?.architecture?.migrationStatus)
+            : wrapper === undefined,
+          `${bridge.wrapperPath} lifecycle does not match its batch`,
+          errors,
+        );
+      }
+    }
   }
 
   #validatePrerequisite(prerequisite, errors) {

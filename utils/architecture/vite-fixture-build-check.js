@@ -4,6 +4,8 @@ const os = require("node:os");
 const path = require("node:path");
 const { ViteFixtureContractValidator } = require("./esm_infrastructure/vite_fixture_contract_validator");
 const { RepositoryContentSnapshot } = require("./esm_infrastructure/repository_content_snapshot");
+const { LegacyScriptOrderReader } = require("./migration/legacy_script_order_reader");
+const { StageTwoRuntimeScriptAliasResolver } = require("./migration/stage_two_runtime_script_alias_resolver");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const CONTRACT_PATH = path.join(PROJECT_ROOT, "architecture/build/vite_fixture_contract.json");
@@ -19,8 +21,10 @@ class ViteFixtureBuildCheck {
     const entryPath = path.resolve(PROJECT_ROOT, contract.fixture.entry);
     const indexPath = path.join(PROJECT_ROOT, "index.html");
     const indexBefore = fs.readFileSync(indexPath, "utf8");
-    const legacyScriptCount = (indexBefore.match(/<script\b[^>]*\bsrc\s*=/giu) || []).length;
-    assert.equal(legacyScriptCount, 424, "Stage 1.8.2 requires the unchanged v0.24.30 classic-script baseline");
+    const scriptAliases = new StageTwoRuntimeScriptAliasResolver().loadProject(PROJECT_ROOT);
+    const logicalScripts = new LegacyScriptOrderReader(indexPath, { scriptAliases }).read();
+    assert.equal(logicalScripts.length, 424, "Vite fixture infrastructure must preserve the 424-position logical legacy runtime");
+    assert.equal(logicalScripts.filter((script) => script.type === "module").length, 0, "Vite fixture infrastructure must not activate module scripts");
     for (const forbidden of contract.forbiddenEntrypoints) assert(!fs.existsSync(path.resolve(PROJECT_ROOT, forbidden)), `Stage 1.8.2 cannot create ${forbidden}`);
     const repositorySnapshot = new RepositoryContentSnapshot(PROJECT_ROOT);
     const before = repositorySnapshot.capture();
@@ -61,7 +65,7 @@ class ViteFixtureBuildCheck {
     }
     repositorySnapshot.assertEqual(before, repositorySnapshot.capture());
     assert.equal(fs.readFileSync(indexPath, "utf8"), indexBefore, "Vite fixture build changed index.html");
-    console.log("Vite fixture build passed: exact Vite 8.2.1, synthetic ESM graph only, temporary output cleaned, 424 classic scripts and game runtime/assets untouched; 4 contract fixtures.");
+    console.log("Vite fixture build passed: exact Vite 8.2.1, synthetic ESM graph only, temporary output cleaned, 424 logical classic positions and game runtime/assets untouched; 4 contract fixtures.");
   }
 
   #runContractFixtures(contract, packageJson, installedVite) {

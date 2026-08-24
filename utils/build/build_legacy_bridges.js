@@ -217,6 +217,10 @@ class LegacyBridgeBuildApplication {
   }
 
   async run() {
+    if (this.#stageThreeCompatibilityActivated()) {
+      this.outputManager.cleanupInactiveOutput();
+      return this.#report("transitioned-to-cumulative-runtime", []);
+    }
     const inputs = this.#loadInputs();
     const runtimeFacts = this.#runtimeFacts();
     const resolved = new ActiveBridgePlanResolver().resolve({
@@ -258,6 +262,16 @@ class LegacyBridgeBuildApplication {
       this.outputManager.discard(stagingPath);
       throw error;
     }
+  }
+
+  #stageThreeCompatibilityActivated() {
+    const statePath = path.join(
+      this.projectRoot,
+      "architecture/migration/stage_3_execution_state.json",
+    );
+    if (!fs.existsSync(statePath)) return false;
+    const state = JSON.parse(fs.readFileSync(statePath, "utf8"));
+    return state.compatibilityRuntimeActivated === true;
   }
 
   #loadInputs() {

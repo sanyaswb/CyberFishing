@@ -5,6 +5,7 @@ class LegacySourceParser {
     try {
       return {
         status: "parsed",
+        sourceType: "script",
         syntaxTree: espree.parse(source, {
           ecmaVersion: "latest",
           sourceType: "script",
@@ -12,19 +13,36 @@ class LegacySourceParser {
           range: true,
         }),
       };
-    } catch (error) {
-      return {
-        status: "failed",
-        issue: {
-          code: "parse-failure",
-          message: "Source cannot be parsed as a browser classic script.",
-        },
-        diagnostic: {
-          message: error.message,
-          line: Number.isInteger(error.lineNumber) ? error.lineNumber : null,
-          column: Number.isInteger(error.column) ? error.column : null,
-        },
-      };
+    } catch (scriptError) {
+      try {
+        return {
+          status: "parsed",
+          sourceType: "module",
+          syntaxTree: espree.parse(source, {
+            ecmaVersion: "latest",
+            sourceType: "module",
+            loc: true,
+            range: true,
+          }),
+        };
+      } catch (moduleError) {
+        return {
+          status: "failed",
+          issue: {
+            code: "parse-failure",
+            message: "Source cannot be parsed as JavaScript script or module.",
+          },
+          diagnostic: {
+            message: moduleError.message,
+            line: Number.isInteger(moduleError.lineNumber)
+              ? moduleError.lineNumber
+              : null,
+            column: Number.isInteger(moduleError.column)
+              ? moduleError.column
+              : null,
+          },
+        };
+      }
     }
   }
 }

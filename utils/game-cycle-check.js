@@ -3,7 +3,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const ROOT = path.resolve(__dirname, "..");
-const FILES = [
+const LEGACY_FILES = [
   "src/core/input/fight_input_action_composer.js",
   "src/core/items/quality/item_quality_grade_policy.js",
   "src/core/items/quality/hook_quality_modifier.js",
@@ -108,6 +108,24 @@ const FILES = [
   "src/systems/fight_physics_system.js",
   "src/systems/stamina_system.js",
   "src/app/fishing.js",
+];
+
+const compatibilityContract = JSON.parse(fs.readFileSync(
+  path.join(
+    ROOT,
+    "architecture/migration/stage_3_compatibility_runtime.json",
+  ),
+  "utf8",
+));
+const activationBySource = new Map(
+  compatibilityContract.activationPositions.map((activation) => [
+    activation.sourceProvider,
+    `${compatibilityContract.output.directory}${activation.shimFile}`,
+  ]),
+);
+const FILES = [
+  `${compatibilityContract.output.directory}${compatibilityContract.output.runtimeFile}`,
+  ...LEGACY_FILES.map((file) => activationBySource.get(file) || file),
 ];
 
 const context = vm.createContext({

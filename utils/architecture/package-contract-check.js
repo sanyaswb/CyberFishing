@@ -13,6 +13,14 @@ const paths = {
   version: path.join(PROJECT_ROOT, "src/config/project_version.js"),
   gitignore: path.join(PROJECT_ROOT, ".gitignore"),
   index: path.join(PROJECT_ROOT, "index.html"),
+  stageThreeState: path.join(
+    PROJECT_ROOT,
+    "architecture/migration/stage_3_execution_state.json",
+  ),
+  stageThreeRuntime: path.join(
+    PROJECT_ROOT,
+    "architecture/migration/stage_3_compatibility_runtime.json",
+  ),
 };
 
 class PackageContractCheck {
@@ -27,13 +35,36 @@ class PackageContractCheck {
     const contract = JSON.parse(bytes.get("contract").toString("utf8"));
     const packageJson = JSON.parse(bytes.get("packageJson").toString("utf8"));
     const packageLock = JSON.parse(bytes.get("packageLock").toString("utf8"));
+    const stageThreeState = JSON.parse(
+      bytes.get("stageThreeState").toString("utf8"),
+    );
+    const stageThreeRuntime = JSON.parse(
+      bytes.get("stageThreeRuntime").toString("utf8"),
+    );
+    const selectedBatchCount = stageThreeState.completedBatchIds.length +
+      (stageThreeState.activeBatchId ? 1 : 0);
+    const expectedStage = {
+      current: `3.${selectedBatchCount}`,
+      runtimeInputs: new Set(
+        stageThreeRuntime.activationPositions.map(
+          (activation) => activation.targetModule,
+        ),
+      ).size,
+      activationInputs: stageThreeRuntime.activationPositions.length,
+    };
     const projectVersion = this.#readProjectVersion(bytes.get("version").toString("utf8"));
-    this.contractValidator.validate(contract);
+    this.contractValidator.validate(contract, expectedStage);
     this.packageValidator.validate({ packageJson, contract, projectVersion });
     this.lockValidator.validate({ packageJson, packageLock, contract });
     this.#validateCanonicalJson(bytes, contract, packageJson, packageLock);
     this.#validateGitPolicy(bytes.get("gitignore").toString("utf8"), contract);
-    this.#runFixtures({ contract, packageJson, packageLock, projectVersion });
+    this.#runFixtures({
+      contract,
+      packageJson,
+      packageLock,
+      projectVersion,
+      expectedStage,
+    });
     for (const [name, before] of bytes) assert(before.equals(fs.readFileSync(paths[name])), `Package contract check mutated ${name}`);
     const directCount = contract.dependencyPolicy.directSections.reduce((total, section) => total + Object.keys(packageJson[section]).length, 0);
     console.log(`Root package contract passed: ${packageJson.name}@${packageJson.version}, ${directCount} direct dependencies, ${Object.keys(packageLock.packages).length - 1} locked packages, npm lockfile v${packageLock.lockfileVersion}; 9 fixtures; read-only.`);
@@ -60,8 +91,14 @@ class PackageContractCheck {
 
   #runFixtures(actual) {
     const clone = (value) => JSON.parse(JSON.stringify(value));
-    assert.throws(() => this.contractValidator.validate({ ...clone(actual.contract), schemaVersion: 99 }), /schemaVersion/u);
-    assert.throws(() => this.contractValidator.validate({ ...clone(actual.contract), runtime: { ...actual.contract.runtime, packageManager: "npm@latest" } }), /packageManager/u);
+    assert.throws(() => this.contractValidator.validate(
+      { ...clone(actual.contract), schemaVersion: 99 },
+      actual.expectedStage,
+    ), /schemaVersion/u);
+    assert.throws(() => this.contractValidator.validate(
+      { ...clone(actual.contract), runtime: { ...actual.contract.runtime, packageManager: "npm@latest" } },
+      actual.expectedStage,
+    ), /packageManager/u);
     assert.throws(() => this.packageValidator.validate({ ...actual, packageJson: { ...clone(actual.packageJson), name: "stale" } }), /name differs/u);
     assert.throws(() => this.packageValidator.validate({ ...actual, packageJson: { ...clone(actual.packageJson), version: "0.0.0" } }), /version differs/u);
     assert.throws(() => this.packageValidator.validate({ ...actual, packageJson: { ...clone(actual.packageJson), type: "module" } }), /must not set type/u);

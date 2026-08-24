@@ -29,6 +29,9 @@ const {
   SourceFileScanner,
 } = require("./migration/source_file_scanner");
 const {
+  StageTwoRuntimeScriptAliasResolver,
+} = require("./migration/stage_two_runtime_script_alias_resolver");
+const {
   LegacySymbolProviderScannerFactory,
 } = require("./observation/providers/legacy_symbol_provider_scanner");
 const {
@@ -68,6 +71,9 @@ const MANIFEST_PATH = path.join(
 
 const policy = ArchitecturePolicy.load(POLICY_PATH);
 const observationContract = policy.observationContract;
+const scriptAliases = new StageTwoRuntimeScriptAliasResolver().loadProject(
+  PROJECT_ROOT,
+);
 const currentAreaResolver = new CurrentAreaResolver({
   rootValue: policy.migrationManifest.currentArea.rootValue,
 });
@@ -77,7 +83,9 @@ const summary = new PersistMigrationObservationsCommand({
     projectRoot: PROJECT_ROOT,
     sourceRoot: SOURCE_ROOT,
   }),
-  legacyScriptOrderReader: new LegacyScriptOrderReader(INDEX_PATH),
+  legacyScriptOrderReader: new LegacyScriptOrderReader(INDEX_PATH, {
+    scriptAliases,
+  }),
   snapshotBuilder: new MigrationObservationSnapshotBuilder({
     sourceReader: (absolutePath) => fs.readFileSync(absolutePath, "utf8"),
     providerScanner: new LegacySymbolProviderScannerFactory().create(

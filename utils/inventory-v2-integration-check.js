@@ -1,6 +1,8 @@
-const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const {
+  StageThreeCompatibilityTestLoader,
+} = require("./testing/runtime/stage_three_compatibility_test_loader");
 
 const root = path.resolve(__dirname, "..");
 const context = vm.createContext({ console });
@@ -76,11 +78,7 @@ const files = [
   "src/application/inventory/inventory_v2_composition_root.js",
 ];
 
-for (const file of files) {
-  vm.runInContext(fs.readFileSync(path.join(root, file), "utf8"), context, {
-    filename: file,
-  });
-}
+new StageThreeCompatibilityTestLoader({ projectRoot: root, context }).loadAll(files);
 
 vm.runInContext(
   `

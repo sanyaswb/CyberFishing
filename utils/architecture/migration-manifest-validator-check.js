@@ -19,6 +19,9 @@ const {
 const {
   SourceFileScanner,
 } = require("./migration/source_file_scanner");
+const {
+  StageTwoRuntimeScriptAliasResolver,
+} = require("./migration/stage_two_runtime_script_alias_resolver");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const SOURCE_ROOT = path.join(PROJECT_ROOT, "src");
@@ -620,6 +623,7 @@ new MigrationManifestValidatorCheck({
     }).scan(),
     legacyScripts: new LegacyScriptOrderReader(
       path.join(PROJECT_ROOT, "index.html"),
+      { scriptAliases: new StageTwoRuntimeScriptAliasResolver().loadProject(PROJECT_ROOT) },
     ).read(),
     canonicalPath: new CanonicalModulePath(),
     currentAreaResolver,

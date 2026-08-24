@@ -123,7 +123,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/app/core/event_bus.js",
+              "target": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
               "resolution": "confirmed"
             },
             {
@@ -145,13 +145,6 @@
           ],
           "items": [
             {
-              "target": "src/app/core/event_bus.js",
-              "symbols": [
-                "EventBus"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/config/physics/physics_config_adapter.js",
               "symbols": [
                 "FightPhysicsConfigAdapter"
@@ -169,6 +162,13 @@
               "target": "src/debug/god_mode.js",
               "symbols": [
                 "GodMode"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
+              "symbols": [
+                "EventBus"
               ],
               "resolution": "confirmed"
             }
@@ -340,7 +340,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/app/core/event_lifecycle.js",
+              "target": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
               "resolution": "confirmed"
             },
             {
@@ -417,13 +417,6 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/app/core/event_lifecycle.js",
-              "symbols": [
-                "EventLifecycle"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/app/core/game_clock.js",
               "symbols": [
                 "GameClock"
@@ -455,6 +448,13 @@
               "target": "src/core/inventory/inventory_item_location.js",
               "symbols": [
                 "InventoryItemLocation"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
+              "symbols": [
+                "EventLifecycle"
               ],
               "resolution": "confirmed"
             },
@@ -1806,7 +1806,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/app/core/dependency_contract_validator.js",
+              "target": "src/engine/compat/stage_2/dependency_contract_validator_legacy_bridge.js",
               "resolution": "confirmed"
             },
             {
@@ -2558,7 +2558,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/render/core/render_component.js",
+              "target": "src/engine/compat/stage_2/render_component_legacy_bridge.js",
               "resolution": "confirmed"
             },
             {
@@ -2767,13 +2767,6 @@
               "target": "src/app/chum.js",
               "symbols": [
                 "ChumController"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/app/core/dependency_contract_validator.js",
-              "symbols": [
-                "DependencyContractValidator"
               ],
               "resolution": "confirmed"
             },
@@ -3230,6 +3223,20 @@
               "resolution": "confirmed"
             },
             {
+              "target": "src/engine/compat/stage_2/dependency_contract_validator_legacy_bridge.js",
+              "symbols": [
+                "DependencyContractValidator"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/engine/compat/stage_2/render_component_legacy_bridge.js",
+              "symbols": [
+                "RenderComponent"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/entities/tackle.js",
               "symbols": [
                 "Net"
@@ -3282,13 +3289,6 @@
               "target": "src/render/core/image_asset_provider.js",
               "symbols": [
                 "ImageAssetProvider"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/render/core/render_component.js",
-              "symbols": [
-                "RenderComponent"
               ],
               "resolution": "confirmed"
             },
@@ -3844,173 +3844,6 @@
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/fishing/mutable_fight_frame_context.js",
         "migrationWave": 4
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [],
-          "items": [],
-          "unresolved": [],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
-      "currentPath": "src/app/core/dependency_contract_validator.js",
-      "currentArea": "app/core",
-      "observed": {
-        "legacyLoadOrder": 395,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "DependencyContractValidator",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "TypeError"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "engine-utility"
-        ],
-        "targetBoundary": "engine",
-        "targetPath": "src/engine/di/dependency_contract_validator.js",
-        "migrationWave": 1
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [],
-          "items": [],
-          "unresolved": [],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
-      "currentPath": "src/app/core/event_bus.js",
-      "currentArea": "app/core",
-      "observed": {
-        "legacyLoadOrder": 391,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "EventBus",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Map",
-            "Math",
-            "Set"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "engine-runtime"
-        ],
-        "targetBoundary": "engine",
-        "targetPath": "src/engine/events/event_bus.js",
-        "migrationWave": 1
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [],
-          "items": [],
-          "unresolved": [],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
-      "currentPath": "src/app/core/event_lifecycle.js",
-      "currentArea": "app/core",
-      "observed": {
-        "legacyLoadOrder": 392,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "EventLifecycle",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Math"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "engine-runtime"
-        ],
-        "targetBoundary": "engine",
-        "targetPath": "src/engine/events/event_lifecycle.js",
-        "migrationWave": 1
       },
       "analysis": {
         "dependencies": {
@@ -5027,7 +4860,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/render/core/render_math.js",
+              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
               "resolution": "confirmed"
             },
             {
@@ -5048,7 +4881,7 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/render/core/render_math.js",
+              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
               "symbols": [
                 "RenderMath"
               ],
@@ -5134,7 +4967,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/render/core/render_math.js",
+              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
               "resolution": "confirmed"
             },
             {
@@ -5155,7 +4988,7 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/render/core/render_math.js",
+              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
               "symbols": [
                 "RenderMath"
               ],
@@ -5315,13 +5148,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/render/core/render_math.js",
+              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/render/core/render_math.js",
+              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
               "symbols": [
                 "RenderMath"
               ],
@@ -6315,7 +6148,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/app/core/event_bus.js",
+              "target": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
               "resolution": "confirmed"
             },
             {
@@ -6323,7 +6156,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/app/core/event_lifecycle.js",
+              "target": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
               "resolution": "confirmed"
             },
             {
@@ -6361,20 +6194,6 @@
           ],
           "items": [
             {
-              "target": "src/app/core/event_bus.js",
-              "symbols": [
-                "EventBus"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/app/core/event_lifecycle.js",
-              "symbols": [
-                "EventLifecycle"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/app/core/game_loop.js",
               "symbols": [
                 "GameLoop"
@@ -6407,6 +6226,20 @@
               "target": "src/debug/services/memory_leak_watchdog.js",
               "symbols": [
                 "MemoryLeakWatchdog"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
+              "symbols": [
+                "EventBus"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
+              "symbols": [
+                "EventLifecycle"
               ],
               "resolution": "confirmed"
             }
@@ -10645,117 +10478,6 @@
       }
     },
     {
-      "currentPath": "src/assets/asset_load_result.js",
-      "currentArea": "assets",
-      "observed": {
-        "legacyLoadOrder": 353,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "AssetLoadResult",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Error",
-            "Object"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "engine-runtime"
-        ],
-        "targetBoundary": "engine",
-        "targetPath": "src/engine/assets/asset_load_result.js",
-        "migrationWave": 1
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [],
-          "items": [],
-          "unresolved": [],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
-      "currentPath": "src/assets/asset_manifest.js",
-      "currentArea": "assets",
-      "observed": {
-        "legacyLoadOrder": 352,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "AssetManifest",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "String"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "engine-runtime"
-        ],
-        "targetBoundary": "engine",
-        "targetPath": "src/engine/assets/asset_manifest.js",
-        "migrationWave": 1
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [],
-          "items": [],
-          "unresolved": [],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
       "currentPath": "src/assets/asset_preload_coordinator.js",
       "currentArea": "assets",
       "observed": {
@@ -10834,7 +10556,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/assets/asset_load_result.js",
+              "target": "src/engine/compat/stage_2/asset_load_result_legacy_bridge.js",
               "resolution": "confirmed"
             },
             {
@@ -10842,7 +10564,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/assets/asset_manifest.js",
+              "target": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js",
               "resolution": "confirmed"
             },
             {
@@ -10864,14 +10586,14 @@
           ],
           "items": [
             {
-              "target": "src/assets/asset_load_result.js",
+              "target": "src/engine/compat/stage_2/asset_load_result_legacy_bridge.js",
               "symbols": [
                 "AssetLoadResult"
               ],
               "resolution": "confirmed"
             },
             {
-              "target": "src/assets/asset_manifest.js",
+              "target": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js",
               "symbols": [
                 "AssetManifest"
               ],
@@ -16039,7 +15761,7 @@
           "items": [
             {
               "symbol": "RodCapabilityResolver",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -16047,15 +15769,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Object",
-            "Set"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -16065,7 +15792,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/equipment/rod_capability_resolver.js",
@@ -16076,7 +15803,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -17216,7 +16951,7 @@
           "items": [
             {
               "symbol": "LineTensionCalculator",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -17224,14 +16959,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -17241,7 +16982,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fishing/line_tension_calculator.js",
@@ -17252,7 +16993,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -17995,7 +17744,7 @@
           "items": [
             {
               "symbol": "ReelAutoRecoveryCalculator",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -18003,15 +17752,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number",
-            "Object"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -18021,7 +17775,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fishing/reel_auto_recovery_calculator.js",
@@ -18032,7 +17786,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -19999,7 +19761,7 @@
           "items": [
             {
               "symbol": "InventoryEquipTargetSelectionPolicy",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -20007,13 +19769,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Set"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -20023,7 +19792,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/inventory/equip_target_selection_policy.js",
@@ -20034,7 +19803,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -34656,6 +34433,959 @@
       }
     },
     {
+      "currentPath": "src/engine/assets/asset_load_result.js",
+      "currentArea": "engine/assets",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Error",
+            "Object",
+            "WeakMap"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-runtime"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/assets/asset_load_result.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/assets/asset_manifest.js",
+      "currentArea": "engine/assets",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "String",
+            "WeakMap"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-runtime"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/assets/asset_manifest.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/compat/stage_2/asset_load_result_legacy_bridge.js",
+      "currentArea": "engine/compat/stage_2",
+      "observed": {
+        "legacyLoadOrder": 353,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "AssetLoadResult",
+              "mechanism": "global-this-property",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "globalThis"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-runtime"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/compat/stage_2/asset_load_result_legacy_bridge.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js",
+      "currentArea": "engine/compat/stage_2",
+      "observed": {
+        "legacyLoadOrder": 352,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "AssetManifest",
+              "mechanism": "global-this-property",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "globalThis"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-runtime"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
+      "currentArea": "engine/compat/stage_2",
+      "observed": {
+        "legacyLoadOrder": 362,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "CompositeRenderer",
+              "mechanism": "global-this-property",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "globalThis"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-runtime"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/compat/stage_2/dependency_contract_validator_legacy_bridge.js",
+      "currentArea": "engine/compat/stage_2",
+      "observed": {
+        "legacyLoadOrder": 395,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "DependencyContractValidator",
+              "mechanism": "global-this-property",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "globalThis"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-utility"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/compat/stage_2/dependency_contract_validator_legacy_bridge.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
+      "currentArea": "engine/compat/stage_2",
+      "observed": {
+        "legacyLoadOrder": 391,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "EventBus",
+              "mechanism": "global-this-property",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "globalThis"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-runtime"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
+      "currentArea": "engine/compat/stage_2",
+      "observed": {
+        "legacyLoadOrder": 392,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "EventLifecycle",
+              "mechanism": "global-this-property",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "globalThis"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-runtime"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/compat/stage_2/render_component_legacy_bridge.js",
+      "currentArea": "engine/compat/stage_2",
+      "observed": {
+        "legacyLoadOrder": 361,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "RenderComponent",
+              "mechanism": "global-this-property",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "globalThis"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-runtime"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/compat/stage_2/render_component_legacy_bridge.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
+      "currentArea": "engine/compat/stage_2",
+      "observed": {
+        "legacyLoadOrder": 360,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "RenderMath",
+              "mechanism": "global-this-property",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "globalThis"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-utility"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
+      "currentArea": "engine/compat/stage_2",
+      "observed": {
+        "legacyLoadOrder": 358,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "RenderPass",
+              "mechanism": "global-this-property",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "globalThis"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-contract"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/di/dependency_contract_validator.js",
+      "currentArea": "engine/di",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-utility"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/di/dependency_contract_validator.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/events/event_bus.js",
+      "currentArea": "engine/events",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Map",
+            "Math",
+            "Set",
+            "WeakMap"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-runtime"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/events/event_bus.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/events/event_lifecycle.js",
+      "currentArea": "engine/events",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "WeakMap"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-runtime"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/events/event_lifecycle.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/rendering/composite_renderer.js",
+      "currentArea": "engine/rendering",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Error",
+            "Object",
+            "Set",
+            "TypeError",
+            "WeakMap"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-runtime"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/rendering/composite_renderer.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/rendering/render_component.js",
+      "currentArea": "engine/rendering",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Number",
+            "Object",
+            "String",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-runtime"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/rendering/render_component.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/rendering/render_math.js",
+      "currentArea": "engine/rendering",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Math",
+            "Number"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-utility"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/rendering/render_math.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/rendering/render_pass.js",
+      "currentArea": "engine/rendering",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Error"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-contract"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/rendering/render_pass.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/entities/fish.js",
       "currentArea": "entities",
       "observed": {
@@ -35175,6 +35905,207 @@
             "legacy-global-contract",
             "mixed-responsibility-requires-decomposition"
           ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/equipment/rod_capability_resolver.js",
+      "currentArea": "game/domain/equipment",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Object",
+            "Set"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/equipment/rod_capability_resolver.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/line_tension_calculator.js",
+      "currentArea": "game/domain/fishing",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/fishing/line_tension_calculator.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "currentArea": "game/domain/fishing",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number",
+            "Object"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/inventory/equip_target_selection_policy.js",
+      "currentArea": "game/domain/inventory",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Set"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/inventory/equip_target_selection_policy.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
         }
       }
     },
@@ -36766,13 +37697,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/render/core/render_math.js",
+              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/render/core/render_math.js",
+              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
               "symbols": [
                 "RenderMath"
               ],
@@ -36890,65 +37821,6 @@
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/canvas/canvas_primitives.js",
         "migrationWave": 5
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [],
-          "items": [],
-          "unresolved": [],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
-      "currentPath": "src/render/core/composite_renderer.js",
-      "currentArea": "render/core",
-      "observed": {
-        "legacyLoadOrder": 362,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "CompositeRenderer",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Array",
-            "Error",
-            "Object",
-            "Set",
-            "TypeError"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "engine-runtime"
-        ],
-        "targetBoundary": "engine",
-        "targetPath": "src/engine/rendering/composite_renderer.js",
-        "migrationWave": 1
       },
       "analysis": {
         "dependencies": {
@@ -37086,64 +37958,6 @@
       }
     },
     {
-      "currentPath": "src/render/core/render_component.js",
-      "currentArea": "render/core",
-      "observed": {
-        "legacyLoadOrder": 361,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "RenderComponent",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Number",
-            "Object",
-            "String",
-            "TypeError"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "engine-runtime"
-        ],
-        "targetBoundary": "engine",
-        "targetPath": "src/engine/rendering/render_component.js",
-        "migrationWave": 1
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [],
-          "items": [],
-          "unresolved": [],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
       "currentPath": "src/render/core/render_frame_buffer.js",
       "currentArea": "render/core",
       "observed": {
@@ -37239,63 +38053,6 @@
       }
     },
     {
-      "currentPath": "src/render/core/render_math.js",
-      "currentArea": "render/core",
-      "observed": {
-        "legacyLoadOrder": 360,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "RenderMath",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Array",
-            "Math",
-            "Number"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "engine-utility"
-        ],
-        "targetBoundary": "engine",
-        "targetPath": "src/engine/rendering/render_math.js",
-        "migrationWave": 1
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [],
-          "items": [],
-          "unresolved": [],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
       "currentPath": "src/render/core/render_order.js",
       "currentArea": "render/core",
       "observed": {
@@ -37361,61 +38118,6 @@
           "items": [
             "mixed-responsibility-requires-decomposition"
           ]
-        }
-      }
-    },
-    {
-      "currentPath": "src/render/core/render_pass.js",
-      "currentArea": "render/core",
-      "observed": {
-        "legacyLoadOrder": 358,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "RenderPass",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Error"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "engine-contract"
-        ],
-        "targetBoundary": "engine",
-        "targetPath": "src/engine/rendering/render_pass.js",
-        "migrationWave": 1
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [],
-          "items": [],
-          "unresolved": [],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
         }
       }
     },
@@ -37545,13 +38247,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/render/core/composite_renderer.js",
+              "target": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/render/core/composite_renderer.js",
+              "target": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
               "symbols": [
                 "CompositeRenderer"
               ],
@@ -37682,13 +38384,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/render/core/render_math.js",
+              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/render/core/render_math.js",
+              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
               "symbols": [
                 "RenderMath"
               ],
@@ -37814,13 +38516,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/render/core/composite_renderer.js",
+              "target": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/render/core/composite_renderer.js",
+              "target": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
               "symbols": [
                 "CompositeRenderer"
               ],
@@ -37898,13 +38600,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/render/core/render_math.js",
+              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/render/core/render_math.js",
+              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
               "symbols": [
                 "RenderMath"
               ],
@@ -38150,13 +38852,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "eager",
-              "target": "src/render/core/render_pass.js",
+              "target": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/render/core/render_pass.js",
+              "target": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
               "symbols": [
                 "RenderPass"
               ],
@@ -38229,13 +38931,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "eager",
-              "target": "src/render/core/render_pass.js",
+              "target": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/render/core/render_pass.js",
+              "target": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
               "symbols": [
                 "RenderPass"
               ],
@@ -38415,13 +39117,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "eager",
-              "target": "src/render/core/render_pass.js",
+              "target": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/render/core/render_pass.js",
+              "target": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
               "symbols": [
                 "RenderPass"
               ],
@@ -38494,13 +39196,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "eager",
-              "target": "src/render/core/render_pass.js",
+              "target": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/render/core/render_pass.js",
+              "target": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
               "symbols": [
                 "RenderPass"
               ],
@@ -38577,7 +39279,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/render/core/composite_renderer.js",
+              "target": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
               "resolution": "confirmed"
             },
             {
@@ -38585,20 +39287,20 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "eager",
-              "target": "src/render/core/render_pass.js",
+              "target": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/render/core/composite_renderer.js",
+              "target": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
               "symbols": [
                 "CompositeRenderer"
               ],
               "resolution": "confirmed"
             },
             {
-              "target": "src/render/core/render_pass.js",
+              "target": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
               "symbols": [
                 "RenderPass"
               ],
@@ -38787,13 +39489,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/render/core/render_math.js",
+              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/render/core/render_math.js",
+              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
               "symbols": [
                 "RenderMath"
               ],
@@ -38950,13 +39652,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/render/core/render_math.js",
+              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/render/core/render_math.js",
+              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
               "symbols": [
                 "RenderMath"
               ],

@@ -1,10 +1,10 @@
 # CyberFishing — актуальний план незавершеного модульного рефакторингу
 
 **Stage 1 closure-версія:** `v0.24.31`  
-**Поточна release-версія:** `v0.24.32`
+**Поточна release-версія:** `v0.24.41`
 **Тип робіт:** architecture / infrastructure refactoring  
 **Gameplay changes:** заборонені  
-**Поточний наступний етап:** `Stage 2.1 — Engine Asset Contracts`
+**Поточний наступний етап:** `Stage 3.5 — Fishing Foundation Cluster`
 
 Цей документ містить тільки роботи, які ще не виконані.
 
@@ -26,74 +26,73 @@ CLASSIFICATION = ARCHITECTURAL DECISION
 - Кожна наступна задача має охоплювати один невеликий dependency cluster разом із tests і manifest update.
 - Не змішувати ESM conversion з opportunistic API, formula або behavior refactoring.
 - Repository tooling залишається в `utils/`, доки окрема задача не обґрунтує path migration.
+- OOP є базовим стилем, але composition має перевагу над inheritance; pure calculations і value transformations не отримують штучних class hierarchies.
+- Кожна частина mutable game state повинна мати одного authoritative owner; cached/derived state позначається явно і не стає другим source of truth.
+- Domain contracts не залежать від `game/config`; raw configuration надходить через constructor injection, factories або composition root.
+- Performance-рішення приймаються за evidence: hot-loop participation, allocation frequency, DOM/Canvas access і profiling risk. Object pooling не додається без доведеного high-churn lifecycle.
 
 ---
 
-# 2. Stage 2 — Engine / low-level modules
+# 2. Stage 3 — Game Domain
 
-Authoritative execution specification:
-
-```text
-architecture/migration/stage_2_approved_batches.json
-```
-
-Поля `files`, `target paths`, `dependency ordering`, `bridge strategy`,
-`removalStage`, `tests`, `architecture gates`, `rollback boundary` та
-`acceptance criteria` вже frozen і не проєктуються повторно під час реалізації.
-
-## Approved dependency-safe batches
-
-Виконувати строго послідовно:
+## Цільова структура
 
 ```text
-Stage 2.1 engine asset contracts
-    ↓
-Stage 2.2 engine dependency contract
-    ↓
-Stage 2.3 engine event primitives
-    ↓
-Stage 2.4 engine rendering primitives
+src/game/domain/
+├── assemblies/
+├── casting/
+├── equipment/
+├── fish/
+├── fishing/
+├── inventory/
+├── items/
+├── line/
+├── loadouts/
+├── locations/
+├── rules/
+└── tackle/
+
+src/game/config/       external щодо domain
+src/game/application/  orchestration, не domain ownership
 ```
 
-Почати реальний ESM-перехід із затверджених pure/leaf low-level modules.
-Кожен batch є окремим atomic cutover із власним rollback boundary.
+Цільові paths визначаються reviewed Manifest metadata, а не назвою поточної папки. Новий піддомен додається лише через classification/policy review.
 
-## Подальший Engine scope
+Domain не залежить від platform, UI, Canvas, DOM, dev або raw configuration. Configuration надходить через constructor injection, factories або composition root. Domain може залежати лише від стабільних engine primitives і власних domain contracts/value objects.
 
-Почати реальний ESM-перехід dependency-safe batches із pure/leaf і low-level modules:
+## Stage 3.5–3.21 — Atomic Domain Migration Batches
+
+Завершено чотири frozen batches: `4/21` batches, `4/69` frozen domain-модулів. Наступний exact batch:
 
 ```text
-engine/runtime
-engine/math
-engine/contracts
-engine/rendering abstractions
+stage-3.candidate-005-fishing-45d0c7ce
+
+6 fishing domain modules
+7 activation contracts
+
+positions: 93, 117 (2 symbols), 118, 122, 128, 133
 ```
 
-Для кожного batch визначити current files, target files, imports, exports, consumers, temporary compatibility, tests та acceptance criteria.
+Batch 005 є першим multi-module Stage 3 cluster. Усі шість модулів мігруються атомарно відповідно до frozen internal dependency topology; partial cutover заборонений.
 
-## Stage 3 — Game Domain
-
-Мігрувати domain clusters:
+Кожен approved batch проходить один повторюваний pipeline:
 
 ```text
-items
-inventory
-equipment
-assemblies
-loadouts
-fish
-tackle
-line
-fishing domain
-stamina
-endurance
-tension
-rod control
+preflight
+→ named ESM targets
+→ exact temporary classic bridges
+→ Manifest + observations
+→ architecture guards
+→ focused behavior/state/performance checks
+→ Quick + Architecture + Full
+→ fresh npm ci acceptance
+→ browser smoke
+→ release + rollback boundary
 ```
 
-Domain не залежить від platform, UI, Canvas, DOM або dev. Configuration надходить через DI/factories/composition root.
+Stage 3 завершується, коли всі approved domain batches перенесені, domain boundary не має залежностей на platform/UI/Canvas/DOM/dev/config, state ownership однозначний, а тимчасові bridges мають контрольований removal path.
 
-## Stage 4 — Application + Platform
+# 3. Stage 4 — Application + Platform
 
 Мігрувати:
 
@@ -109,15 +108,15 @@ assets
 DOM/Canvas adapters
 ```
 
-## Stage 5 — Presentation + Bootstrap
+# 4. Stage 5 — Presentation + Bootstrap
 
 Мігрувати render/UI/screens/HUD/render pipeline, `GameApplication` і `GameCompositionRoot`. Створити production `game.entry.js` лише після готовності dependency graph.
 
-## Stage 6 — Development / Production Split
+# 5. Stage 6 — Development / Production Split
 
 Створити окремий `dev.entry.js`, фізично відокремити debug overlay, GodMode, diagnostics, watchdog, dev schemas та balance tools від production graph. Поступово видалити legacy globals і classic scripts.
 
-## Stage 7 — Structural Hardening
+# 6. Stage 7 — Structural Hardening
 
 Після стабільного ESM:
 
@@ -129,7 +128,7 @@ DOM/Canvas adapters
 
 ---
 
-# 8. Transitional compatibility rules
+# 7. Transitional compatibility rules
 
 Якщо dependency cluster неможливо мігрувати атомарно, дозволений тимчасовий `compat/` або `legacy_bridge/`.
 
@@ -145,7 +144,7 @@ permanent APIs
 
 ---
 
-# 9. Коли потрібно зупинитися
+# 8. Коли потрібно зупинитися
 
 Потрібне окреме architecture рішення, якщо пропонується:
 

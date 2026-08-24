@@ -19,6 +19,9 @@ const {
 } = require(
   "./observation/resolution/legacy_dependency_graph_analyzer"
 );
+const {
+  StageTwoRuntimeScriptAliasResolver,
+} = require("./migration/stage_two_runtime_script_alias_resolver");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const SOURCE_ROOT = path.join(PROJECT_ROOT, "src");
@@ -210,6 +213,9 @@ class ProviderResolutionCorpusCheck {
 
 const observationContract = architecture.migrationManifest.observationContract;
 const resolutionModel = observationContract.resolutionModel;
+const scriptAliases = new StageTwoRuntimeScriptAliasResolver().loadProject(
+  PROJECT_ROOT,
+);
 new ProviderResolutionCorpusCheck({
   sourceFileScanner: new SourceFileScanner({
     projectRoot: PROJECT_ROOT,
@@ -224,6 +230,7 @@ new ProviderResolutionCorpusCheck({
   analyzer: new LegacyDependencyGraphAnalyzerFactory().create(resolutionModel),
   legacyScriptOrderReader: new LegacyScriptOrderReader(
     path.join(PROJECT_ROOT, "index.html"),
+    { scriptAliases },
   ),
   contract: observationContract,
   manifestPath: MANIFEST_PATH,

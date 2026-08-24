@@ -53,7 +53,10 @@ class LegacySymbolProviderScanner {
     }
 
     try {
-      const scopeAnalysis = this.scopeAnalyzer.analyze(parsed.syntaxTree);
+      const scopeAnalysis = this.scopeAnalyzer.analyze(
+        parsed.syntaxTree,
+        parsed.sourceType,
+      );
       const contextIndex = this.contextIndexFactory(parsed.syntaxTree);
       const availabilityResolver = this.availabilityResolverFactory(contextIndex);
       const detectors = this.detectorFactory({

@@ -32,6 +32,16 @@ function environment(
 
 const fixtures = [
   {
+    name: "ESM imports and named exports remain local bindings",
+    source: `
+      import { ExactSymbol } from "./exact_symbol.js";
+      export class NamedContract { value = ExactSymbol; }
+      globalThis.ExactSymbol = ExactSymbol;
+    `,
+    consumers: { status: "verified", items: [], issues: [] },
+    environment: environment("verified", ["globalThis"]),
+  },
+  {
     name: "scope resolution excludes every local binding form",
     source: `
       function localScope(parameter, { destructured }) {
@@ -351,7 +361,7 @@ const fixtures = [
       issues: [
         issue(
           "parse-failure",
-          "Source cannot be parsed as a browser classic script.",
+          "Source cannot be parsed as JavaScript script or module.",
         ),
       ],
     },
@@ -363,7 +373,7 @@ const fixtures = [
       [
         issue(
           "parse-failure",
-          "Source cannot be parsed as a browser classic script.",
+          "Source cannot be parsed as JavaScript script or module.",
         ),
       ],
     ),

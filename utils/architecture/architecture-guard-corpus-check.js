@@ -31,7 +31,15 @@ for (const [currentPath, before] of sourceBytes) if (!before.equals(fs.readFileS
 if (snapshot.sources.length !== manifest.modules.length) throw new Error("Architecture guard did not scan every manifest source");
 if (snapshot.sources.some((item) => item.esm.status === "failed")) throw new Error("Architecture guard corpus contains parse failures");
 const esmEdges = snapshot.sources.flatMap((item) => item.esm.observations).filter((item) => item.resolutionStatus === "confirmed-project");
-if (esmEdges.length !== 0) throw new Error(`Stage 1.7 baseline expected 0 ESM project edges, received ${esmEdges.length}`);
+const actualEsmEdges = [...new Set(esmEdges.map((item) => `${item.source}->${item.resolvedTarget}`))].sort();
+const approvedEsmEdges = [...new Set(
+  bridgeRegistry.bridges
+    .filter((item) => item.introducedStage === "stage-2")
+    .map((item) => `${item.bridge}->${item.target}`),
+)].sort();
+if (JSON.stringify(actualEsmEdges) !== JSON.stringify(approvedEsmEdges)) {
+  throw new Error(`Live ESM edges must equal exact approved bridge edges: expected ${approvedEsmEdges.join(", ") || "none"}; received ${actualEsmEdges.join(", ") || "none"}`);
+}
 if (report.failureCount > 0) throw new Error(new GuardReportFormatter().format(report));
 const elapsed = Date.now() - started;
 if (elapsed > 5000) throw new Error(`Architecture guard corpus exceeded 5s target: ${elapsed}ms`);

@@ -643,6 +643,9 @@ class StageTwoLegacyBridgeBuildCheck {
       bridgeBuilder: {
         run: async () => ({ status: "no-active-bridges", bridgeCount: 0, outputs: [] }),
       },
+      compatibilityBuilder: {
+        run: async () => ({ status: "no-stage-3-state", activationCount: 0, outputs: [] }),
+      },
       server: successServer,
       logger: silentLogger,
     }).start();

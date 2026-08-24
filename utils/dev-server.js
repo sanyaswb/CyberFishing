@@ -4,6 +4,9 @@ const path = require("path");
 const {
   LegacyBridgeBuildApplication,
 } = require("./build/build_legacy_bridges");
+const {
+  StageThreeCompatibilityBuildApplication,
+} = require("./build/build_stage_3_compat_runtime");
 
 const DEFAULT_HOST = "127.0.0.1";
 const DEFAULT_PORT = 4173;
@@ -142,6 +145,7 @@ class DevServerApplication {
   #config;
   #server;
   #bridgeBuilder;
+  #compatibilityBuilder;
   #fatalErrorHandler;
   #logger;
 
@@ -149,6 +153,9 @@ class DevServerApplication {
     config = new DevServerConfig(),
     {
       bridgeBuilder = new LegacyBridgeBuildApplication({
+        projectRoot: config.rootDir,
+      }),
+      compatibilityBuilder = new StageThreeCompatibilityBuildApplication({
         projectRoot: config.rootDir,
       }),
       server = new StaticFileServer(config).createServer(),
@@ -159,6 +166,7 @@ class DevServerApplication {
     this.#config = config;
     this.#server = server;
     this.#bridgeBuilder = bridgeBuilder;
+    this.#compatibilityBuilder = compatibilityBuilder;
     this.#logger = logger;
     this.#fatalErrorHandler = fatalErrorHandler || ((error) => {
       this.#printServerError(error);
@@ -167,14 +175,24 @@ class DevServerApplication {
   }
 
   async start() {
-    const buildReport = await this.#bridgeBuilder.run();
+    const legacyBuildReport = await this.#bridgeBuilder.run();
+    const compatibilityBuildReport = await this.#compatibilityBuilder.run();
+    const buildReport = compatibilityBuildReport.status === "no-stage-3-state" ||
+      compatibilityBuildReport.status === "no-active-runtime"
+      ? legacyBuildReport
+      : compatibilityBuildReport;
     this.#server.on("error", (error) => this.#fatalErrorHandler(error));
     this.#server.listen(this.#config.port, this.#config.host, () => {
       const url = `http://${this.#config.host}:${this.#config.port}/`;
       this.#logger.log(`Frontend dev server: ${url}`);
       this.#logger.log(`Serving: ${this.#config.rootDir}`);
       this.#logger.log(
-        `Legacy bridges: ${buildReport.status} (${buildReport.bridgeCount}).`,
+        `Legacy bridges: ${legacyBuildReport.status} ` +
+          `(${legacyBuildReport.bridgeCount || 0}).`,
+      );
+      this.#logger.log(
+        `Stage 3 compatibility: ${compatibilityBuildReport.status} ` +
+          `(${compatibilityBuildReport.activationCount || 0} activations).`,
       );
       this.#logger.log("Press Ctrl+C to stop.");
     });

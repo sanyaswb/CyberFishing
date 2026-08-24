@@ -61,6 +61,10 @@
     {
       "id": "entrypoint",
       "description": "Runtime process entrypoint."
+    },
+    {
+      "id": "compatibility-bridge",
+      "description": "Temporary exact legacy exposure shim that contains no business logic and has a reviewed removal stage."
     }
   ],
   "targetBoundaries": [
@@ -905,6 +909,7 @@
           "config-factory"
         ],
         "game-domain": [
+          "compatibility-bridge",
           "domain-behavior",
           "domain-contract",
           "value-object"
