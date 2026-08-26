@@ -103,7 +103,8 @@ class StageTwoSemanticClosureTransition {
       };
       const selectedStageThreeBatchCount =
         this.stageThreeState.completedBatchIds.length +
-        (this.stageThreeState.activeBatchId ? 1 : 0);
+        (this.stageThreeState.activeBatchId &&
+          this.stageThreeState.activeBatchPhase !== "prebuild" ? 1 : 0);
       if (
         packageContract.stage?.current !== `3.${selectedStageThreeBatchCount}` ||
         packageContract.stage?.vite !==
@@ -564,8 +565,9 @@ class StageOneClosureValidator {
   }
 
   #stageThreeReleaseTitle(executionState) {
-    const lastBatch = executionState.activeBatchId ||
-      executionState.completedBatchIds?.[executionState.completedBatchIds.length - 1];
+    const lastBatch =
+      executionState.completedBatchIds?.[executionState.completedBatchIds.length - 1] ||
+      executionState.activeBatchId;
     const titles = {
       "stage-3.candidate-001-inventory-85f44b2e":
         "First Domain Cumulative Runtime",
@@ -575,6 +577,10 @@ class StageOneClosureValidator {
         "Line Tension Calculator",
       "stage-3.candidate-004-equipment-4f2570dc":
         "Rod Capability Resolver",
+      "stage-3.candidate-005-fishing-45d0c7ce":
+        "Fishing Foundation Cluster",
+      "stage-3.candidate-006-fishing-e48e70d8":
+        "Fishing Domain Primitives II",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }
@@ -603,11 +609,23 @@ class StageOneClosureValidator {
       .reduce((count, batch) => count + batch.bridgeStrategy.bridges.length, 0);
     const completedStageThree = new Set([
       ...(stageThreeState?.completedBatchIds || []),
-      ...(stageThreeState?.activeBatchId ? [stageThreeState.activeBatchId] : []),
+      ...(stageThreeState?.activeBatchId &&
+        stageThreeState.activeBatchPhase !== "prebuild"
+        ? [stageThreeState.activeBatchId]
+        : []),
     ]);
     const stageThreeTargetCount = (stageThreeApprovedPlan?.batches || [])
       .filter((batch) => completedStageThree.has(batch.id))
       .reduce((count, batch) => count + batch.modules.length, 0);
+    const selectedStageThreeBatch = (stageThreeApprovedPlan?.batches || [])
+      .filter((batch) => completedStageThree.has(batch.id))
+      .at(-1);
+    const cumulativeActivationCount =
+      selectedStageThreeBatch?.compatibility?.cumulativeActivationIds?.length || 0;
+    const additionalActivationScripts = Math.max(
+      0,
+      cumulativeActivationCount - activeWrapperCount - stageThreeTargetCount,
+    );
     this.#require(
       sourceFiles.length ===
         baseline.sourceModuleCount + activeWrapperCount + stageThreeTargetCount,
@@ -617,7 +635,8 @@ class StageOneClosureValidator {
     this.#require(
       scriptCount ===
         baseline.classicScriptCount +
-          (stageThreeState?.compatibilityRuntimeActivated === true ? 1 : 0),
+          (stageThreeState?.compatibilityRuntimeActivated === true ? 1 : 0) +
+          additionalActivationScripts,
       "classic script count changed",
       errors,
     );
@@ -675,7 +694,10 @@ class StageOneClosureValidator {
       .reduce((count, batch) => count + batch.bridgeStrategy.bridges.length, 0);
     const completedStageThree = new Set([
       ...(stageThreeState?.completedBatchIds || []),
-      ...(stageThreeState?.activeBatchId ? [stageThreeState.activeBatchId] : []),
+      ...(stageThreeState?.activeBatchId &&
+        stageThreeState.activeBatchPhase !== "prebuild"
+        ? [stageThreeState.activeBatchId]
+        : []),
     ]);
     const stageThreeTargets = (stageThreeApprovedPlan?.batches || [])
       .filter((batch) => completedStageThree.has(batch.id))

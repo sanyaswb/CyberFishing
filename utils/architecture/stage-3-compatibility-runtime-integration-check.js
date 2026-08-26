@@ -39,7 +39,10 @@ class StageThreeCompatibilityRuntimeIntegrationCheck {
     const approvedPlan = this.#readJson(
       "architecture/migration/stage_3_approved_batches.json",
     );
-    const selectedBatchId = state.activeBatchId || state.completedBatchIds.at(-1);
+    const prebuildOpen = state.activeBatchPhase === "prebuild";
+    const selectedBatchId = prebuildOpen
+      ? state.completedBatchIds.at(-1)
+      : (state.activeBatchId || state.completedBatchIds.at(-1));
     const selectedBatch = approvedPlan.batches.find(
       (batch) => batch.id === selectedBatchId,
     );
@@ -72,7 +75,6 @@ class StageThreeCompatibilityRuntimeIntegrationCheck {
     const moduleScripts = scripts.filter((match) =>
       /\btype\s*=\s*["']module["']/iu.test(match[1] || ""),
     );
-    assert.equal(scripts.length, 425, "Stage 3 migration requires 425 physical classic scripts");
     assert.equal(moduleScripts.length, 0, "Stage 3 migration must not activate a module script");
     const runtimePath = `${contract.output.directory}${contract.output.runtimeFile}`;
     assert.equal(
@@ -88,6 +90,15 @@ class StageThreeCompatibilityRuntimeIntegrationCheck {
     }).read();
     assert.equal(logicalScripts.length, 424);
     assert.equal(logicalScripts.filter((script) => script.type === "module").length, 0);
+    const activationProviderCount = new Set(
+      contract.activationPositions.map((activation) => activation.sourceProvider),
+    ).size;
+    assert.equal(
+      scripts.length,
+      logicalScripts.length + 1 +
+        (contract.activationPositions.length - activationProviderCount),
+      "Stage 3 physical scripts must derive from logical positions, one runtime and grouped activations",
+    );
 
     const previousRuntime = path.join(PROJECT_ROOT, "dist/legacy-bridges");
     const legacyReport = await new LegacyBridgeBuildApplication({
@@ -95,24 +106,43 @@ class StageThreeCompatibilityRuntimeIntegrationCheck {
     }).run();
     assert.equal(legacyReport.status, "transitioned-to-cumulative-runtime");
     assert.equal(fs.existsSync(previousRuntime), false, "isolated Stage 2 IIFEs must be removed");
-    const report = await new StageThreeCompatibilityBuildApplication({
-      projectRoot: PROJECT_ROOT,
-    }).run();
-    assert.equal(report.status, "built");
-    assert.equal(report.moduleCount, expectedProjectModules.length);
-    assert.equal(report.activationCount, expectedActivationIds.length);
-    assert.equal(report.outputs.length, expectedActivationIds.length + 1);
-    const runtime = report.outputs.find((output) => output.kind === "cumulative-runtime");
-    assert(runtime);
-    assert.deepEqual(runtime.projectModules, expectedProjectModules);
-    assert.equal(new Set(runtime.projectModules).size, expectedProjectModules.length);
-    assert.deepEqual(
-      runtime.virtualBuildModules,
-      [...new Set(runtime.virtualBuildModules)].sort(),
-    );
-    assert(runtime.virtualBuildModules.every((moduleId) =>
-      contract.approvedVirtualModules.includes(moduleId)),
-    );
+    let runtime = null;
+    if (prebuildOpen) {
+      const outputRoot = path.join(PROJECT_ROOT, contract.output.directory);
+      assert.equal(fs.existsSync(outputRoot), true, "validated prior runtime output must remain available");
+      assert.equal(
+        fs.existsSync(path.join(outputRoot, contract.output.runtimeFile)),
+        true,
+        "validated prior cumulative runtime must remain available",
+      );
+      assert.equal(
+        globSync("activations/*.js", { cwd: outputRoot, nodir: true }).length,
+        expectedActivationIds.length,
+        "prebuild must preserve the completed-prefix activation output",
+      );
+      runtime = {
+        path: `${contract.output.directory}${contract.output.runtimeFile}`,
+      };
+    } else {
+      const report = await new StageThreeCompatibilityBuildApplication({
+        projectRoot: PROJECT_ROOT,
+      }).run();
+      assert.equal(report.status, "built");
+      assert.equal(report.moduleCount, expectedProjectModules.length);
+      assert.equal(report.activationCount, expectedActivationIds.length);
+      assert.equal(report.outputs.length, expectedActivationIds.length + 1);
+      runtime = report.outputs.find((output) => output.kind === "cumulative-runtime");
+      assert(runtime);
+      assert.deepEqual(runtime.projectModules, expectedProjectModules);
+      assert.equal(new Set(runtime.projectModules).size, expectedProjectModules.length);
+      assert.deepEqual(
+        runtime.virtualBuildModules,
+        [...new Set(runtime.virtualBuildModules)].sort(),
+      );
+      assert(runtime.virtualBuildModules.every((moduleId) =>
+        contract.approvedVirtualModules.includes(moduleId)),
+      );
+    }
     assert.equal(
       fs.readFileSync(path.join(PROJECT_ROOT, runtime.path), "utf8")
         .includes(EXACT_TRANSPORT_GLOBAL),
@@ -133,9 +163,9 @@ class StageThreeCompatibilityRuntimeIntegrationCheck {
       fs.readFileSync(path.join(PROJECT_ROOT, relativePath), "utf8")
         .includes(EXACT_TRANSPORT_GLOBAL),
     );
-    const expectedTransportConsumers = contract.activationPositions
+    const expectedTransportConsumers = [...new Set(contract.activationPositions
       .filter((activation) => activation.sourceProvider.startsWith("src/"))
-      .map((activation) => activation.sourceProvider)
+      .map((activation) => activation.sourceProvider))]
       .sort();
     assert.deepEqual(transportConsumers, expectedTransportConsumers);
     for (const consumer of transportConsumers) {
@@ -151,7 +181,7 @@ class StageThreeCompatibilityRuntimeIntegrationCheck {
     console.log(
       `Stage 3.0.4 integration passed: one ${expectedProjectModules.length}-module cumulative graph, ` +
         `${expectedActivationIds.length} exact activations, 424 logical classic positions, ` +
-        "no isolated IIFEs and no domain transport dependency.",
+        `no isolated IIFEs and no domain transport dependency${prebuildOpen ? "; batch 006 remains planned-only" : ""}.`,
     );
   }
 

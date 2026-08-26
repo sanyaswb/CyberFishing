@@ -1,0 +1,639 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.candidate-006-fishing-e48e70d8",
+  "sourceReleaseVersion": "0.24.42",
+  "targetReleaseVersion": "0.24.43",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_006_execution_plan.json",
+    "sha256": "480ae96bcaaf859262a18176173db0b4c8a51db99d354e7a038ba472fc848d76"
+  },
+  "scope": {
+    "moduleCount": 6,
+    "exportCount": 6,
+    "activationCount": 6,
+    "consumerRelationshipCount": 7
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/FloatTackleLineBudgetPolicy/constructor-injected-config",
+      "kind": "behavior-equivalence",
+      "exportName": "FloatTackleLineBudgetPolicy",
+      "currentPath": "src/core/float_tackle_line_budget_policy.js",
+      "targetPath": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "baselineSourceSha256": "42d22ea178b18c126047672a61a73384f31f2653f26dc75017129c58599e8891",
+      "caseName": "constructor-injected-config",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FloatTackleLineBudgetPolicy/float-and-pole-applicability",
+      "kind": "behavior-equivalence",
+      "exportName": "FloatTackleLineBudgetPolicy",
+      "currentPath": "src/core/float_tackle_line_budget_policy.js",
+      "targetPath": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "baselineSourceSha256": "42d22ea178b18c126047672a61a73384f31f2653f26dc75017129c58599e8891",
+      "caseName": "float-and-pole-applicability",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FloatTackleLineBudgetPolicy/line-and-rod-budget",
+      "kind": "behavior-equivalence",
+      "exportName": "FloatTackleLineBudgetPolicy",
+      "currentPath": "src/core/float_tackle_line_budget_policy.js",
+      "targetPath": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "baselineSourceSha256": "42d22ea178b18c126047672a61a73384f31f2653f26dc75017129c58599e8891",
+      "caseName": "line-and-rod-budget",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FloatTackleLineBudgetPolicy/non-float-fallback",
+      "kind": "behavior-equivalence",
+      "exportName": "FloatTackleLineBudgetPolicy",
+      "currentPath": "src/core/float_tackle_line_budget_policy.js",
+      "targetPath": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "baselineSourceSha256": "42d22ea178b18c126047672a61a73384f31f2653f26dc75017129c58599e8891",
+      "caseName": "non-float-fallback",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FloatTackleLineBudgetPolicy/selected-depth-clamp",
+      "kind": "behavior-equivalence",
+      "exportName": "FloatTackleLineBudgetPolicy",
+      "currentPath": "src/core/float_tackle_line_budget_policy.js",
+      "targetPath": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "baselineSourceSha256": "42d22ea178b18c126047672a61a73384f31f2653f26dc75017129c58599e8891",
+      "caseName": "selected-depth-clamp",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FloatTackleLineBudgetPolicy/surface-depth-tolerance",
+      "kind": "behavior-equivalence",
+      "exportName": "FloatTackleLineBudgetPolicy",
+      "currentPath": "src/core/float_tackle_line_budget_policy.js",
+      "targetPath": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "baselineSourceSha256": "42d22ea178b18c126047672a61a73384f31f2653f26dc75017129c58599e8891",
+      "caseName": "surface-depth-tolerance",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/HoldOppositionResolver/invalid-numeric-inputs",
+      "kind": "behavior-equivalence",
+      "exportName": "HoldOppositionResolver",
+      "currentPath": "src/core/fishing/hold_opposition_resolver.js",
+      "targetPath": "src/game/domain/fishing/hold_opposition_resolver.js",
+      "baselineSourceSha256": "65467be65888f66fb9cc70e5195a963c8a3f71ea3d62243b8c8a2a68d6f81051",
+      "caseName": "invalid-numeric-inputs",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/HoldOppositionResolver/positive-and-negative-opposition",
+      "kind": "behavior-equivalence",
+      "exportName": "HoldOppositionResolver",
+      "currentPath": "src/core/fishing/hold_opposition_resolver.js",
+      "targetPath": "src/game/domain/fishing/hold_opposition_resolver.js",
+      "baselineSourceSha256": "65467be65888f66fb9cc70e5195a963c8a3f71ea3d62243b8c8a2a68d6f81051",
+      "caseName": "positive-and-negative-opposition",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/HoldOppositionResolver/ratio-boundaries",
+      "kind": "behavior-equivalence",
+      "exportName": "HoldOppositionResolver",
+      "currentPath": "src/core/fishing/hold_opposition_resolver.js",
+      "targetPath": "src/game/domain/fishing/hold_opposition_resolver.js",
+      "baselineSourceSha256": "65467be65888f66fb9cc70e5195a963c8a3f71ea3d62243b8c8a2a68d6f81051",
+      "caseName": "ratio-boundaries",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/HoldOppositionResolver/zero-force-input",
+      "kind": "behavior-equivalence",
+      "exportName": "HoldOppositionResolver",
+      "currentPath": "src/core/fishing/hold_opposition_resolver.js",
+      "targetPath": "src/game/domain/fishing/hold_opposition_resolver.js",
+      "baselineSourceSha256": "65467be65888f66fb9cc70e5195a963c8a3f71ea3d62243b8c8a2a68d6f81051",
+      "caseName": "zero-force-input",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/LandingLiftTensionCalculator/clamp-and-fallback-semantics",
+      "kind": "behavior-equivalence",
+      "exportName": "LandingLiftTensionCalculator",
+      "currentPath": "src/core/fishing/landing_lift_tension_calculator.js",
+      "targetPath": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "baselineSourceSha256": "ae01755d527797f176c9dc7bc7b3194e9612e4bd1a9ce63a261776ad8d9f6988",
+      "caseName": "clamp-and-fallback-semantics",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/LandingLiftTensionCalculator/delta-time-behavior",
+      "kind": "behavior-equivalence",
+      "exportName": "LandingLiftTensionCalculator",
+      "currentPath": "src/core/fishing/landing_lift_tension_calculator.js",
+      "targetPath": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "baselineSourceSha256": "ae01755d527797f176c9dc7bc7b3194e9612e4bd1a9ce63a261776ad8d9f6988",
+      "caseName": "delta-time-behavior",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/LandingLiftTensionCalculator/frozen-result",
+      "kind": "behavior-equivalence",
+      "exportName": "LandingLiftTensionCalculator",
+      "currentPath": "src/core/fishing/landing_lift_tension_calculator.js",
+      "targetPath": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "baselineSourceSha256": "ae01755d527797f176c9dc7bc7b3194e9612e4bd1a9ce63a261776ad8d9f6988",
+      "caseName": "frozen-result",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/LandingLiftTensionCalculator/landing-zone-gate",
+      "kind": "behavior-equivalence",
+      "exportName": "LandingLiftTensionCalculator",
+      "currentPath": "src/core/fishing/landing_lift_tension_calculator.js",
+      "targetPath": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "baselineSourceSha256": "ae01755d527797f176c9dc7bc7b3194e9612e4bd1a9ce63a261776ad8d9f6988",
+      "caseName": "landing-zone-gate",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/LandingLiftTensionCalculator/lift-gain-and-release",
+      "kind": "behavior-equivalence",
+      "exportName": "LandingLiftTensionCalculator",
+      "currentPath": "src/core/fishing/landing_lift_tension_calculator.js",
+      "targetPath": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "baselineSourceSha256": "ae01755d527797f176c9dc7bc7b3194e9612e4bd1a9ce63a261776ad8d9f6988",
+      "caseName": "lift-gain-and-release",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/LandingLiftTensionCalculator/tackle-load-slowdown",
+      "kind": "behavior-equivalence",
+      "exportName": "LandingLiftTensionCalculator",
+      "currentPath": "src/core/fishing/landing_lift_tension_calculator.js",
+      "targetPath": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "baselineSourceSha256": "ae01755d527797f176c9dc7bc7b3194e9612e4bd1a9ce63a261776ad8d9f6988",
+      "caseName": "tackle-load-slowdown",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/LineConstraintStateResolver/blocked-reasons",
+      "kind": "behavior-equivalence",
+      "exportName": "LineConstraintStateResolver",
+      "currentPath": "src/core/fishing/line_constraint_state_resolver.js",
+      "targetPath": "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "baselineSourceSha256": "293af87a0b3909c74d57660bdf2f026fcf39ec75191bb1f639ba74d45014d252",
+      "caseName": "blocked-reasons",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/LineConstraintStateResolver/drag-payout",
+      "kind": "behavior-equivalence",
+      "exportName": "LineConstraintStateResolver",
+      "currentPath": "src/core/fishing/line_constraint_state_resolver.js",
+      "targetPath": "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "baselineSourceSha256": "293af87a0b3909c74d57660bdf2f026fcf39ec75191bb1f639ba74d45014d252",
+      "caseName": "drag-payout",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/LineConstraintStateResolver/epsilon-boundaries",
+      "kind": "behavior-equivalence",
+      "exportName": "LineConstraintStateResolver",
+      "currentPath": "src/core/fishing/line_constraint_state_resolver.js",
+      "targetPath": "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "baselineSourceSha256": "293af87a0b3909c74d57660bdf2f026fcf39ec75191bb1f639ba74d45014d252",
+      "caseName": "epsilon-boundaries",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/LineConstraintStateResolver/hard-spool-limit",
+      "kind": "behavior-equivalence",
+      "exportName": "LineConstraintStateResolver",
+      "currentPath": "src/core/fishing/line_constraint_state_resolver.js",
+      "targetPath": "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "baselineSourceSha256": "293af87a0b3909c74d57660bdf2f026fcf39ec75191bb1f639ba74d45014d252",
+      "caseName": "hard-spool-limit",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/LineConstraintStateResolver/line-reserve",
+      "kind": "behavior-equivalence",
+      "exportName": "LineConstraintStateResolver",
+      "currentPath": "src/core/fishing/line_constraint_state_resolver.js",
+      "targetPath": "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "baselineSourceSha256": "293af87a0b3909c74d57660bdf2f026fcf39ec75191bb1f639ba74d45014d252",
+      "caseName": "line-reserve",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/LineConstraintStateResolver/taut-and-slack-line",
+      "kind": "behavior-equivalence",
+      "exportName": "LineConstraintStateResolver",
+      "currentPath": "src/core/fishing/line_constraint_state_resolver.js",
+      "targetPath": "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "baselineSourceSha256": "293af87a0b3909c74d57660bdf2f026fcf39ec75191bb1f639ba74d45014d252",
+      "caseName": "taut-and-slack-line",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/PoleFightSectorGeometry/angle-and-radius-calculations",
+      "kind": "behavior-equivalence",
+      "exportName": "PoleFightSectorGeometry",
+      "currentPath": "src/core/fishing/pole_fight_sector_geometry.js",
+      "targetPath": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "baselineSourceSha256": "5df68f3af503f6ec29431ab105df1fe734de88671eb0f1166a2d4fbb175539e8",
+      "caseName": "angle-and-radius-calculations",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/PoleFightSectorGeometry/contains-violation-and-point-at",
+      "kind": "behavior-equivalence",
+      "exportName": "PoleFightSectorGeometry",
+      "currentPath": "src/core/fishing/pole_fight_sector_geometry.js",
+      "targetPath": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "baselineSourceSha256": "5df68f3af503f6ec29431ab105df1fe734de88671eb0f1166a2d4fbb175539e8",
+      "caseName": "contains-violation-and-point-at",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/PoleFightSectorGeometry/invalid-points",
+      "kind": "behavior-equivalence",
+      "exportName": "PoleFightSectorGeometry",
+      "currentPath": "src/core/fishing/pole_fight_sector_geometry.js",
+      "targetPath": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "baselineSourceSha256": "5df68f3af503f6ec29431ab105df1fe734de88671eb0f1166a2d4fbb175539e8",
+      "caseName": "invalid-points",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/PoleFightSectorGeometry/no-module-global-frame",
+      "kind": "behavior-equivalence",
+      "exportName": "PoleFightSectorGeometry",
+      "currentPath": "src/core/fishing/pole_fight_sector_geometry.js",
+      "targetPath": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "baselineSourceSha256": "5df68f3af503f6ec29431ab105df1fe734de88671eb0f1166a2d4fbb175539e8",
+      "caseName": "no-module-global-frame",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/PoleFightSectorGeometry/per-instance-reusable-frame-identity",
+      "kind": "behavior-equivalence",
+      "exportName": "PoleFightSectorGeometry",
+      "currentPath": "src/core/fishing/pole_fight_sector_geometry.js",
+      "targetPath": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "baselineSourceSha256": "5df68f3af503f6ec29431ab105df1fe734de88671eb0f1166a2d4fbb175539e8",
+      "caseName": "per-instance-reusable-frame-identity",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/PoleFightSectorGeometry/sector-construction",
+      "kind": "behavior-equivalence",
+      "exportName": "PoleFightSectorGeometry",
+      "currentPath": "src/core/fishing/pole_fight_sector_geometry.js",
+      "targetPath": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "baselineSourceSha256": "5df68f3af503f6ec29431ab105df1fe734de88671eb0f1166a2d4fbb175539e8",
+      "caseName": "sector-construction",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/RodControlTensionModeResolver/alignment-thresholds",
+      "kind": "behavior-equivalence",
+      "exportName": "RodControlTensionModeResolver",
+      "currentPath": "src/core/fishing/rod_control_tension_mode_resolver.js",
+      "targetPath": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "baselineSourceSha256": "847cebcc5f9a935ffec5c319763ca8843c92a79355727c1ca2f3e790c418c04b",
+      "caseName": "alignment-thresholds",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/RodControlTensionModeResolver/frozen-result-semantics",
+      "kind": "behavior-equivalence",
+      "exportName": "RodControlTensionModeResolver",
+      "currentPath": "src/core/fishing/rod_control_tension_mode_resolver.js",
+      "targetPath": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "baselineSourceSha256": "847cebcc5f9a935ffec5c319763ca8843c92a79355727c1ca2f3e790c418c04b",
+      "caseName": "frozen-result-semantics",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/RodControlTensionModeResolver/minimum-fish-speed",
+      "kind": "behavior-equivalence",
+      "exportName": "RodControlTensionModeResolver",
+      "currentPath": "src/core/fishing/rod_control_tension_mode_resolver.js",
+      "targetPath": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "baselineSourceSha256": "847cebcc5f9a935ffec5c319763ca8843c92a79355727c1ca2f3e790c418c04b",
+      "caseName": "minimum-fish-speed",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/RodControlTensionModeResolver/normalized-control-axis",
+      "kind": "behavior-equivalence",
+      "exportName": "RodControlTensionModeResolver",
+      "currentPath": "src/core/fishing/rod_control_tension_mode_resolver.js",
+      "targetPath": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "baselineSourceSha256": "847cebcc5f9a935ffec5c319763ca8843c92a79355727c1ca2f3e790c418c04b",
+      "caseName": "normalized-control-axis",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/RodControlTensionModeResolver/same-opposite-and-side-modes",
+      "kind": "behavior-equivalence",
+      "exportName": "RodControlTensionModeResolver",
+      "currentPath": "src/core/fishing/rod_control_tension_mode_resolver.js",
+      "targetPath": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "baselineSourceSha256": "847cebcc5f9a935ffec5c319763ca8843c92a79355727c1ca2f3e790c418c04b",
+      "caseName": "same-opposite-and-side-modes",
+      "phases": [
+        "classic-baseline",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/globals-absent-before-activation",
+      "kind": "compatibility-invariant",
+      "caseName": "globals-absent-before-activation",
+      "phases": [
+        "pre-build-fixture",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/globals-equal-exact-export-after-activation",
+      "kind": "compatibility-invariant",
+      "caseName": "globals-equal-exact-export-after-activation",
+      "phases": [
+        "pre-build-fixture",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/module-evaluation-count-equals-one",
+      "kind": "compatibility-invariant",
+      "caseName": "module-evaluation-count-equals-one",
+      "phases": [
+        "pre-build-fixture",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/class-identity-preserved",
+      "kind": "compatibility-invariant",
+      "caseName": "class-identity-preserved",
+      "phases": [
+        "pre-build-fixture",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/seven-classic-consumers-retain-api",
+      "kind": "compatibility-invariant",
+      "caseName": "seven-classic-consumers-retain-api",
+      "phases": [
+        "pre-build-fixture",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/domain-does-not-read-transport-global",
+      "kind": "compatibility-invariant",
+      "caseName": "domain-does-not-read-transport-global",
+      "phases": [
+        "pre-build-fixture",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "FloatTackleLineBudgetPolicy",
+      "caseCount": 6,
+      "cases": [
+        "float-and-pole-applicability",
+        "selected-depth-clamp",
+        "surface-depth-tolerance",
+        "line-and-rod-budget",
+        "non-float-fallback",
+        "constructor-injected-config"
+      ]
+    },
+    {
+      "exportName": "HoldOppositionResolver",
+      "caseCount": 4,
+      "cases": [
+        "positive-and-negative-opposition",
+        "zero-force-input",
+        "ratio-boundaries",
+        "invalid-numeric-inputs"
+      ]
+    },
+    {
+      "exportName": "LandingLiftTensionCalculator",
+      "caseCount": 6,
+      "cases": [
+        "lift-gain-and-release",
+        "landing-zone-gate",
+        "tackle-load-slowdown",
+        "clamp-and-fallback-semantics",
+        "frozen-result",
+        "delta-time-behavior"
+      ]
+    },
+    {
+      "exportName": "LineConstraintStateResolver",
+      "caseCount": 6,
+      "cases": [
+        "taut-and-slack-line",
+        "line-reserve",
+        "drag-payout",
+        "hard-spool-limit",
+        "blocked-reasons",
+        "epsilon-boundaries"
+      ]
+    },
+    {
+      "exportName": "PoleFightSectorGeometry",
+      "caseCount": 6,
+      "cases": [
+        "sector-construction",
+        "angle-and-radius-calculations",
+        "contains-violation-and-point-at",
+        "invalid-points",
+        "per-instance-reusable-frame-identity",
+        "no-module-global-frame"
+      ]
+    },
+    {
+      "exportName": "RodControlTensionModeResolver",
+      "caseCount": 5,
+      "cases": [
+        "same-opposite-and-side-modes",
+        "minimum-fish-speed",
+        "alignment-thresholds",
+        "normalized-control-axis",
+        "frozen-result-semantics"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 7,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.6.2-planned-canonical-bridge-records"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.6.4-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

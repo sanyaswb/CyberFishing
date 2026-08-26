@@ -1,6 +1,8 @@
-const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const {
+  StageThreeCompatibilityTestLoader,
+} = require("./testing/runtime/stage_three_compatibility_test_loader");
 
 const ROOT = path.resolve(__dirname, "..");
 const LEGACY_FILES = [
@@ -110,24 +112,6 @@ const LEGACY_FILES = [
   "src/app/fishing.js",
 ];
 
-const compatibilityContract = JSON.parse(fs.readFileSync(
-  path.join(
-    ROOT,
-    "architecture/migration/stage_3_compatibility_runtime.json",
-  ),
-  "utf8",
-));
-const activationBySource = new Map(
-  compatibilityContract.activationPositions.map((activation) => [
-    activation.sourceProvider,
-    `${compatibilityContract.output.directory}${activation.shimFile}`,
-  ]),
-);
-const FILES = [
-  `${compatibilityContract.output.directory}${compatibilityContract.output.runtimeFile}`,
-  ...LEGACY_FILES.map((file) => activationBySource.get(file) || file),
-];
-
 const context = vm.createContext({
   console,
   Math,
@@ -138,11 +122,12 @@ const context = vm.createContext({
   window: { innerWidth: 1280, innerHeight: 720 },
 });
 
-for (const file of FILES) {
-  vm.runInContext(fs.readFileSync(path.join(ROOT, file), "utf8"), context, {
-    filename: file,
-  });
-}
+const compatibilityLoader = new StageThreeCompatibilityTestLoader({
+  projectRoot: ROOT,
+  context,
+});
+compatibilityLoader.loadRuntime();
+compatibilityLoader.loadAll(LEGACY_FILES);
 
 vm.runInContext(`
 const checks = [];

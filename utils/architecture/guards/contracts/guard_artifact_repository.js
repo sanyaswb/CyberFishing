@@ -43,8 +43,9 @@ class KnownDebtRegistryValidator {
 class MigrationBridgeRegistryValidator {
   validate(value) {
     if (value?.schemaVersion !== 1 || value?.kind !== "cyber-fishing-migration-bridges" || !Array.isArray(value?.bridges)) throw new Error("Invalid migration bridge registry");
+    if (value.plannedBridges !== undefined && !Array.isArray(value.plannedBridges)) throw new Error("plannedBridges must be an array");
     const ids = new Set();
-    for (const item of value.bridges) {
+    for (const item of [...value.bridges, ...(value.plannedBridges || [])]) {
       for (const field of ["id", "bridge", "source", "target", "reason", "owner", "introducedStage", "removalStage", "globalProviders"]) if (item[field] === undefined) throw new Error(`Bridge requires ${field}`);
       if (ids.has(item.id)) throw new Error(`Duplicate bridge id: ${item.id}`);
       ids.add(item.id);

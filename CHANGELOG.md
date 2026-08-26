@@ -1,5 +1,45 @@
 # CyberFishing changelog
 
+## v0.24.43 - Fishing Domain Primitives II
+
+### Added
+
+- Added six dependency-free named ESM fishing-domain modules for line budgeting, hold opposition, landing lift, line constraints, pole geometry and rod-control tension mode.
+- Added six exact activation contracts at logical legacy positions 88, 123, 126, 130, 134 and 140, backed by seven exact classic-consumer bridge relationships.
+- Added executable batch-006 audit, execution-plan, focused behavior/state matrix, pre-build, runtime and observation-reconciliation evidence.
+
+### Changed
+
+- Extended the single cumulative compatibility graph from nineteen to twenty-five unique project modules and from twenty to twenty-six activations.
+- Completed frozen Stage 3 batch 006 and advanced the ordered completed prefix to six batches without adding an isolated IIFE or module script.
+- Reconciled all six old provider paths as compatibility bridges and all six target paths as verified `game-domain` modules.
+
+### Validation
+
+- Preserved one evaluation and one class/state identity per ESM module, exact legacy exposure timing and all frozen behavior/state semantics.
+- Preserved 424 logical legacy positions through 426 physical classic scripts, one cumulative runtime and zero module scripts.
+- Preserved 203 exact known-debt diagnostics with zero architecture failures and introduced only six exact compatibility-transport unresolved observations.
+
+## v0.24.42 - Fishing Foundation Cluster
+
+### Added
+
+- Added six named ESM fishing-domain files exporting seven domain symbols across drag force, retrieve results, line recovery, rod-control movement and rod-stroke calculations.
+- Added seven exact activation contracts, including two symbols sharing logical legacy position 117.
+- Added reusable grouped activation aliasing plus focused pre-build and post-build checks for atomic multi-module migration.
+
+### Changed
+
+- Extended the cumulative compatibility runtime from thirteen to nineteen unique project modules and from thirteen to twenty activations.
+- Migrated seven exact legacy consumer relationships without exposing the compatibility transport to game or application code.
+- Advanced the live execution and package contracts to Stage 3.5 while preserving the frozen batch plan.
+
+### Validation
+
+- Preserved force, movement, line recovery, retrieve-result and rod-stroke semantics with exact ESM class identity.
+- Preserved one logical position for the two exports of `recoverable_line_calculator.js` while executing two adjacent activation shims.
+- Preserved 424 logical legacy positions through 426 physical classic scripts and zero module script tags.
+
 ## v0.24.41 - Rod Capability Resolver
 
 ### Added

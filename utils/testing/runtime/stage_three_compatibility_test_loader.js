@@ -17,26 +17,44 @@ class StageThreeCompatibilityTestLoader {
     this.#contract = this.#readJson(
       "architecture/migration/stage_3_compatibility_runtime.json",
     );
-    this.#activationBySource = new Map(
-      this.#contract.activationPositions.map((activation) => [
-        activation.sourceProvider,
-        `${this.#contract.output.directory}${activation.shimFile}`,
-      ]),
-    );
+    this.#activationBySource = new Map();
+    for (const activation of this.#contract.activationPositions) {
+      if (!this.#activationBySource.has(activation.sourceProvider)) {
+        this.#activationBySource.set(activation.sourceProvider, []);
+      }
+      this.#activationBySource.get(activation.sourceProvider).push(activation);
+    }
+    for (const activations of this.#activationBySource.values()) {
+      activations.sort((left, right) => left.id.localeCompare(right.id));
+    }
+  }
+
+  hasActivation(relativePath) {
+    return this.#activationBySource.has(relativePath);
+  }
+
+  loadRuntime() {
+    this.#loadRuntime();
   }
 
   load(relativePath, exposedNames = []) {
-    this.#loadRuntime();
-    const resolvedPath = this.#activationBySource.get(relativePath) || relativePath;
-    const source = this.#read(resolvedPath);
+    const activations = this.#activationBySource.get(relativePath) || [];
+    if (activations.length > 0) this.#loadRuntime();
+    const resolvedPaths = activations.length > 0
+      ? activations.map((activation) =>
+        `${this.#contract.output.directory}${activation.shimFile}`)
+      : [relativePath];
     const expose = exposedNames.length > 0
       ? `\nObject.assign(globalThis,{${exposedNames.map((name) =>
         `${name}: typeof ${name} === "undefined" ? undefined : ${name}`).join(",")}});`
       : "";
-    vm.runInContext(`${source}${expose}`, this.#context, {
-      filename: resolvedPath,
+    resolvedPaths.forEach((resolvedPath, index) => {
+      const suffix = index === resolvedPaths.length - 1 ? expose : "";
+      vm.runInContext(`${this.#read(resolvedPath)}${suffix}`, this.#context, {
+        filename: resolvedPath,
+      });
     });
-    return resolvedPath;
+    return resolvedPaths.length === 1 ? resolvedPaths[0] : [...resolvedPaths];
   }
 
   loadAll(relativePaths) {

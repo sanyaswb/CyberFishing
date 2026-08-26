@@ -1,14 +1,16 @@
 {
   "schemaVersion": 1,
   "kind": "cyber-fishing-stage-3-execution-state",
-  "releaseVersion": "0.24.41",
+  "releaseVersion": "0.24.43",
   "approvedPlanSha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb",
   "status": "migration-active",
   "completedBatchIds": [
     "stage-3.candidate-001-inventory-85f44b2e",
     "stage-3.candidate-002-fishing-944d0790",
     "stage-3.candidate-003-fishing-9700ad4f",
-    "stage-3.candidate-004-equipment-4f2570dc"
+    "stage-3.candidate-004-equipment-4f2570dc",
+    "stage-3.candidate-005-fishing-45d0c7ce",
+    "stage-3.candidate-006-fishing-e48e70d8"
   ],
   "activeBatchId": null,
   "compatibilityRuntimeActivated": true

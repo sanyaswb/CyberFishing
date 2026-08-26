@@ -3,6 +3,9 @@ const path = require("node:path");
 const {
   ActiveBridgePlanResolver,
 } = require("../../build/legacy_bridge_build_config");
+const {
+  StageThreeRuntimeScriptAliasResolver,
+} = require("./stage_three_runtime_script_alias_resolver");
 
 class StageTwoRuntimeScriptAliasResolver {
   resolve({ state, approvedPlan, bridgeRegistry, runtimeFacts }) {
@@ -58,10 +61,7 @@ class StageTwoRuntimeScriptAliasResolver {
     const contract = readJson(
       "architecture/migration/stage_3_compatibility_runtime.json",
     );
-    aliases.set(
-      `${contract.output.directory}${contract.output.runtimeFile}`,
-      null,
-    );
+    const logicalProviderByActivationId = new Map();
     for (const activation of contract.activationPositions || []) {
       const bridgePaths = [...new Set(bridgeRegistry.bridges
         .filter((bridge) =>
@@ -75,10 +75,14 @@ class StageTwoRuntimeScriptAliasResolver {
           `Stage 3 activation requires one exact registered bridge: ${activation.id}`,
         );
       }
-      aliases.set(
-        `${contract.output.directory}${activation.shimFile}`,
-        bridgePaths[0],
-      );
+      logicalProviderByActivationId.set(activation.id, bridgePaths[0]);
+    }
+    for (const [source, target] of
+      new StageThreeRuntimeScriptAliasResolver().resolve(contract, {
+        sourceProviderResolver: (activation) =>
+          logicalProviderByActivationId.get(activation.id),
+      })) {
+      aliases.set(source, target);
     }
     return aliases;
   }

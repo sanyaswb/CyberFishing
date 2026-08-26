@@ -8,6 +8,9 @@ const {
 const {
   CumulativeRuntimeBuildApplication,
 } = require("./compat_runtime/cumulative_runtime_builder");
+const {
+  StageThreeRuntimeScriptAliasResolver,
+} = require("../architecture/migration/stage_three_runtime_script_alias_resolver");
 
 class StageThreeCompatibilityBuildApplication {
   constructor({
@@ -32,20 +35,19 @@ class StageThreeCompatibilityBuildApplication {
         outputs: Object.freeze([]),
       });
     }
-    const executionState = this.#json(
+    const persistedExecutionState = this.#json(
       "architecture/migration/stage_3_execution_state.json",
     );
+    const executionState = persistedExecutionState.activeBatchPhase === "prebuild"
+      ? {
+        ...persistedExecutionState,
+        activeBatchId: null,
+      }
+      : persistedExecutionState;
     const contract = this.#json(
       "architecture/migration/stage_3_compatibility_runtime.json",
     );
-    const aliases = new Map();
-    aliases.set(`${contract.output.directory}${contract.output.runtimeFile}`, null);
-    for (const activation of contract.activationPositions || []) {
-      aliases.set(
-        `${contract.output.directory}${activation.shimFile}`,
-        activation.sourceProvider,
-      );
-    }
+    const aliases = new StageThreeRuntimeScriptAliasResolver().resolve(contract);
     return new CumulativeRuntimeBuildApplication({
       projectRoot: this.projectRoot,
       contract,

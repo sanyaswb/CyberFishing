@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-observation-reconciliation",
+  "status": "verified",
+  "batchId": "stage-3.candidate-006-fishing-e48e70d8",
+  "moduleCount": 449,
+  "targetCount": 6,
+  "activationCount": 6,
+  "bridgeRelationshipCount": 7,
+  "observations": {
+    "targetStatus": "verified",
+    "compatibilityTransportUnresolvedCount": 6,
+    "preexistingUnresolvedCount": 19,
+    "totalUnresolvedCount": 25,
+    "speculativeEdgeCount": 0,
+    "ambiguousCount": 0
+  },
+  "controlledGlobalTransitions": [
+    {
+      "currentPath": "src/core/fishing/hold_opposition_resolver.js",
+      "symbol": "HoldOppositionResolver",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "activationId": "activation-9857928fc9d0"
+    },
+    {
+      "currentPath": "src/core/fishing/landing_lift_tension_calculator.js",
+      "symbol": "LandingLiftTensionCalculator",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "activationId": "activation-8f8220d288e5"
+    },
+    {
+      "currentPath": "src/core/fishing/line_constraint_state_resolver.js",
+      "symbol": "LineConstraintStateResolver",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "activationId": "activation-775fb46bb6ce"
+    },
+    {
+      "currentPath": "src/core/fishing/pole_fight_sector_geometry.js",
+      "symbol": "PoleFightSectorGeometry",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "activationId": "activation-ffea5244c4bf"
+    },
+    {
+      "currentPath": "src/core/fishing/rod_control_tension_mode_resolver.js",
+      "symbol": "RodControlTensionModeResolver",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "activationId": "activation-f70148ad6a58"
+    },
+    {
+      "currentPath": "src/core/float_tackle_line_budget_policy.js",
+      "symbol": "FloatTackleLineBudgetPolicy",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "activationId": "activation-7678742c83cf"
+    }
+  ],
+  "fingerprints": {
+    "manifestSha256": "41f36802b2bfe4609d04369f54399c3d3e5f1dd46dec84df005ad9780104c2e6",
+    "registrySha256": "76a30ce7249e6e3440c1dcc79879ec8ae760f163158213bc93a8b5b4f17cc2cb",
+    "runtimeContractSha256": "d950f48d4bb078fb003089f7e5c9a694b3f07f42bd7ad669e310a28d41337f79"
+  },
+  "verdict": "eligible-for-architecture-guard-validation"
+}

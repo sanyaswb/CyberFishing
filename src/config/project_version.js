@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.41";
+const CURRENT_PROJECT_VERSION = "0.24.43";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "reel-auto-recovery-esm",
-  updatedAt: "2026-08-23",
+  codename: "fishing-domain-primitives-ii",
+  updatedAt: "2026-08-24",
   notes: Object.freeze([
-    "Migrate ReelAutoRecoveryCalculator to a named game-domain ESM export",
-    "Extend the single cumulative runtime from ten to eleven project modules",
-    "Preserve exact logical-position-113 exposure and ReelSystem integration",
-    "Keep recovery formulas, epsilon gates, clamps and result semantics unchanged",
+    "Migrate six dependency-free fishing primitives to named game-domain ESM exports",
+    "Extend the single cumulative runtime from nineteen to twenty-five project modules",
+    "Preserve six exact legacy exposure positions through approved activation shims",
+    "Keep fishing calculations, state ownership and classic consumer behavior unchanged",
   ]),
 });
 

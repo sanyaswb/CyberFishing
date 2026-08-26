@@ -191,6 +191,18 @@
   ],
   "activationPositions": [
     {
+      "id": "activation-2534a1bdbe18",
+      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+      "sourceProvider": "src/core/fishing/recoverable_line_calculator.js",
+      "targetModule": "src/game/domain/fishing/recoverable_line_calculator.js",
+      "exportName": "RecoverableLineCalculator",
+      "legacySymbol": "RecoverableLineCalculator",
+      "legacyScriptIndex": 117,
+      "shimFile": "activations/117_recoverablelinecalculator.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-3dcbed1b3310",
       "owner": "stage-3.candidate-001-inventory-85f44b2e",
       "sourceProvider": "dist/legacy-bridges/event_bus.iife.js",
@@ -215,6 +227,30 @@
       "removalStage": "stage-5"
     },
     {
+      "id": "activation-3fee104fb111",
+      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+      "sourceProvider": "src/core/fishing/rod_stroke_tracker.js",
+      "targetModule": "src/game/domain/fishing/rod_stroke_tracker.js",
+      "exportName": "RodStrokeTracker",
+      "legacySymbol": "RodStrokeTracker",
+      "legacyScriptIndex": 93,
+      "shimFile": "activations/093_rodstroketracker.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-4e28fdf337a3",
+      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+      "sourceProvider": "src/core/fishing/drag_force_calculator.js",
+      "targetModule": "src/game/domain/fishing/drag_force_calculator.js",
+      "exportName": "DragForceCalculator",
+      "legacySymbol": "DragForceCalculator",
+      "legacyScriptIndex": 128,
+      "shimFile": "activations/128_dragforcecalculator.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
       "id": "activation-57add99af90d",
       "owner": "stage-3.candidate-002-fishing-944d0790",
       "sourceProvider": "src/core/fishing/reel_auto_recovery_calculator.js",
@@ -225,6 +261,18 @@
       "shimFile": "activations/113_reelautorecoverycalculator.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-57b99d3aaf82",
+      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+      "sourceProvider": "src/core/fishing/rod_stroke_capacity_resolver.js",
+      "targetModule": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "exportName": "RodStrokeCapacityResolver",
+      "legacySymbol": "RodStrokeCapacityResolver",
+      "legacyScriptIndex": 118,
+      "shimFile": "activations/118_rodstrokecapacityresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
     },
     {
       "id": "activation-59bd96059da6",
@@ -287,6 +335,30 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-7678742c83cf",
+      "owner": "stage-3.candidate-006-fishing-e48e70d8",
+      "sourceProvider": "src/core/float_tackle_line_budget_policy.js",
+      "targetModule": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "exportName": "FloatTackleLineBudgetPolicy",
+      "legacySymbol": "FloatTackleLineBudgetPolicy",
+      "legacyScriptIndex": 88,
+      "shimFile": "activations/088_floattacklelinebudgetpolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
+      "id": "activation-775fb46bb6ce",
+      "owner": "stage-3.candidate-006-fishing-e48e70d8",
+      "sourceProvider": "src/core/fishing/line_constraint_state_resolver.js",
+      "targetModule": "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "exportName": "LineConstraintStateResolver",
+      "legacySymbol": "LineConstraintStateResolver",
+      "legacyScriptIndex": 130,
+      "shimFile": "activations/130_lineconstraintstateresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-86e221fafb48",
       "owner": "stage-3.candidate-001-inventory-85f44b2e",
       "sourceProvider": "dist/legacy-bridges/asset_load_result.iife.js",
@@ -311,6 +383,54 @@
       "removalStage": "stage-5"
     },
     {
+      "id": "activation-8f8220d288e5",
+      "owner": "stage-3.candidate-006-fishing-e48e70d8",
+      "sourceProvider": "src/core/fishing/landing_lift_tension_calculator.js",
+      "targetModule": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "exportName": "LandingLiftTensionCalculator",
+      "legacySymbol": "LandingLiftTensionCalculator",
+      "legacyScriptIndex": 140,
+      "shimFile": "activations/140_landinglifttensioncalculator.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-9857928fc9d0",
+      "owner": "stage-3.candidate-006-fishing-e48e70d8",
+      "sourceProvider": "src/core/fishing/hold_opposition_resolver.js",
+      "targetModule": "src/game/domain/fishing/hold_opposition_resolver.js",
+      "exportName": "HoldOppositionResolver",
+      "legacySymbol": "HoldOppositionResolver",
+      "legacyScriptIndex": 123,
+      "shimFile": "activations/123_holdoppositionresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
+      "id": "activation-9a198b228060",
+      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+      "sourceProvider": "src/core/fishing/recoverable_line_calculator.js",
+      "targetModule": "src/game/domain/fishing/recoverable_line_calculator.js",
+      "exportName": "LooseLineCalculator",
+      "legacySymbol": "LooseLineCalculator",
+      "legacyScriptIndex": 117,
+      "shimFile": "activations/117_looselinecalculator.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-9c5651e4f765",
+      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+      "sourceProvider": "src/core/fishing/fish_retrieve_result.js",
+      "targetModule": "src/game/domain/fishing/fish_retrieve_result.js",
+      "exportName": "FishRetrieveResult",
+      "legacySymbol": "FishRetrieveResult",
+      "legacyScriptIndex": 122,
+      "shimFile": "activations/122_fishretrieveresult.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
       "id": "activation-a8e624a68a8e",
       "owner": "stage-3.candidate-003-fishing-9700ad4f",
       "sourceProvider": "src/core/fishing/line_tension_calculator.js",
@@ -319,6 +439,18 @@
       "legacySymbol": "LineTensionCalculator",
       "legacyScriptIndex": 129,
       "shimFile": "activations/129_linetensioncalculator.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-be4932b7b0c5",
+      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+      "sourceProvider": "src/core/fishing/rod_control_movement_projector.js",
+      "targetModule": "src/game/domain/fishing/rod_control_movement_projector.js",
+      "exportName": "RodControlMovementProjector",
+      "legacySymbol": "RodControlMovementProjector",
+      "legacyScriptIndex": 133,
+      "shimFile": "activations/133_rodcontrolmovementprojector.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
     },
@@ -344,6 +476,30 @@
       "legacyScriptIndex": 392,
       "shimFile": "activations/392_eventlifecycle.js",
       "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-f70148ad6a58",
+      "owner": "stage-3.candidate-006-fishing-e48e70d8",
+      "sourceProvider": "src/core/fishing/rod_control_tension_mode_resolver.js",
+      "targetModule": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "exportName": "RodControlTensionModeResolver",
+      "legacySymbol": "RodControlTensionModeResolver",
+      "legacyScriptIndex": 126,
+      "shimFile": "activations/126_rodcontroltensionmoderesolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
+      "id": "activation-ffea5244c4bf",
+      "owner": "stage-3.candidate-006-fishing-e48e70d8",
+      "sourceProvider": "src/core/fishing/pole_fight_sector_geometry.js",
+      "targetModule": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "exportName": "PoleFightSectorGeometry",
+      "legacySymbol": "PoleFightSectorGeometry",
+      "legacyScriptIndex": 134,
+      "shimFile": "activations/134_polefightsectorgeometry.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     }
   ]

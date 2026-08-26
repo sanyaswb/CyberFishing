@@ -42,7 +42,8 @@ class PackageContractCheck {
       bytes.get("stageThreeRuntime").toString("utf8"),
     );
     const selectedBatchCount = stageThreeState.completedBatchIds.length +
-      (stageThreeState.activeBatchId ? 1 : 0);
+      (stageThreeState.activeBatchId &&
+        stageThreeState.activeBatchPhase !== "prebuild" ? 1 : 0);
     const expectedStage = {
       current: `3.${selectedBatchCount}`,
       runtimeInputs: new Set(

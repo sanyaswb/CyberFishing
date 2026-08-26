@@ -1,0 +1,821 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-dependency-state-audit",
+  "status": "verified",
+  "sourceReleaseVersion": "0.24.42",
+  "batchId": "stage-3.candidate-006-fishing-e48e70d8",
+  "sourceEvidence": {
+    "approvedPlan": {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    "manifest": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "3582b21f9d08d7fcda95ec576980c0ae818a11a378f6ad4ff88cf571612df9d5"
+    },
+    "domainAudit": {
+      "path": "architecture/migration/stage_3_domain_audit.json",
+      "sha256": "6a96b8ead58fab42c8c596b365776226a77c36978b9ef68b71c3df8ada6fa4cd"
+    },
+    "executionState": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "275cf1ed9f753977b1e7221258019c481355965dece1bd09df93e92c79d9fd97"
+    }
+  },
+  "scope": {
+    "targetCount": 6,
+    "modules": [
+      {
+        "currentPath": "src/core/fishing/hold_opposition_resolver.js",
+        "targetPath": "src/game/domain/fishing/hold_opposition_resolver.js",
+        "sourceSha256": "65467be65888f66fb9cc70e5195a963c8a3f71ea3d62243b8c8a2a68d6f81051",
+        "exports": [
+          "HoldOppositionResolver"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-adfa52519de5",
+          "members": [
+            "src/core/fishing/hold_opposition_resolver.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "classDeclarations": [
+            "HoldOppositionResolver"
+          ],
+          "moduleBindings": [],
+          "topLevelEffectKinds": [],
+          "transportReads": [],
+          "browserIdentifiers": []
+        },
+        "state": {
+          "moduleState": "none",
+          "classification": "stateless-behavior",
+          "instanceState": [],
+          "stateSemantics": "No mutable module or instance field; method-local values only.",
+          "authoritativeOwnerBefore": {
+            "module": "src/core/fishing/hold_opposition_resolver.js",
+            "authoritativeOwners": [
+              "HoldOppositionResolver#positive",
+              "HoldOppositionResolver#ratio"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/hold_opposition_resolver.js",
+            "authoritativeOwners": [
+              "HoldOppositionResolver#positive",
+              "HoldOppositionResolver#ratio"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": [],
+          "reviewEvidence": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "HoldOppositionResolver",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/landing_lift_tension_calculator.js",
+        "targetPath": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+        "sourceSha256": "ae01755d527797f176c9dc7bc7b3194e9612e4bd1a9ce63a261776ad8d9f6988",
+        "exports": [
+          "LandingLiftTensionCalculator"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-3a050ce2bd8a",
+          "members": [
+            "src/core/fishing/landing_lift_tension_calculator.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "classDeclarations": [
+            "LandingLiftTensionCalculator"
+          ],
+          "moduleBindings": [],
+          "topLevelEffectKinds": [],
+          "transportReads": [],
+          "browserIdentifiers": []
+        },
+        "state": {
+          "moduleState": "none",
+          "classification": "stateless-behavior",
+          "instanceState": [],
+          "stateSemantics": "No mutable module or instance field; each result is derived from method inputs.",
+          "authoritativeOwnerBefore": {
+            "module": "src/core/fishing/landing_lift_tension_calculator.js",
+            "authoritativeOwners": [
+              "LandingLiftTensionCalculator#clamp",
+              "LandingLiftTensionCalculator#number",
+              "LandingLiftTensionCalculator#positive"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+            "authoritativeOwners": [
+              "LandingLiftTensionCalculator#clamp",
+              "LandingLiftTensionCalculator#number",
+              "LandingLiftTensionCalculator#positive"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": [],
+          "reviewEvidence": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "LandingLiftTensionCalculator",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/line_constraint_state_resolver.js",
+        "targetPath": "src/game/domain/fishing/line_constraint_state_resolver.js",
+        "sourceSha256": "293af87a0b3909c74d57660bdf2f026fcf39ec75191bb1f639ba74d45014d252",
+        "exports": [
+          "LineConstraintStateResolver"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-4733cbe712f6",
+          "members": [
+            "src/core/fishing/line_constraint_state_resolver.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "classDeclarations": [
+            "LineConstraintStateResolver"
+          ],
+          "moduleBindings": [],
+          "topLevelEffectKinds": [],
+          "transportReads": [],
+          "browserIdentifiers": []
+        },
+        "state": {
+          "moduleState": "none",
+          "classification": "stateless-behavior",
+          "instanceState": [],
+          "stateSemantics": "No mutable module or instance field; each result is derived from method inputs.",
+          "authoritativeOwnerBefore": {
+            "module": "src/core/fishing/line_constraint_state_resolver.js",
+            "authoritativeOwners": [
+              "LineConstraintStateResolver#clamp",
+              "LineConstraintStateResolver#number"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/line_constraint_state_resolver.js",
+            "authoritativeOwners": [
+              "LineConstraintStateResolver#clamp",
+              "LineConstraintStateResolver#number"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": [],
+          "reviewEvidence": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "LineConstraintStateResolver",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/pole_fight_sector_geometry.js",
+        "targetPath": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+        "sourceSha256": "5df68f3af503f6ec29431ab105df1fe734de88671eb0f1166a2d4fbb175539e8",
+        "exports": [
+          "PoleFightSectorGeometry"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-9e98d042486f",
+          "members": [
+            "src/core/fishing/pole_fight_sector_geometry.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "classDeclarations": [
+            "PoleFightSectorGeometry"
+          ],
+          "moduleBindings": [],
+          "topLevelEffectKinds": [],
+          "transportReads": [],
+          "browserIdentifiers": []
+        },
+        "state": {
+          "moduleState": "none",
+          "classification": "instance-local-derived-buffer",
+          "instanceState": [
+            "PoleFightSectorGeometry#frame"
+          ],
+          "stateSemantics": "Each instance owns one reusable derived frame; the frame is not module-global or authoritative gameplay state.",
+          "authoritativeOwnerBefore": {
+            "module": "src/core/fishing/pole_fight_sector_geometry.js",
+            "authoritativeOwners": [
+              "PoleFightSectorGeometry#angleDeg",
+              "PoleFightSectorGeometry#boundaryIntersections",
+              "PoleFightSectorGeometry#clamp",
+              "PoleFightSectorGeometry#createFrame",
+              "PoleFightSectorGeometry#finiteNumber",
+              "PoleFightSectorGeometry#frame",
+              "PoleFightSectorGeometry#point",
+              "PoleFightSectorGeometry#radiusPx",
+              "PoleFightSectorGeometry#writeFrame"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+            "authoritativeOwners": [
+              "PoleFightSectorGeometry#angleDeg",
+              "PoleFightSectorGeometry#boundaryIntersections",
+              "PoleFightSectorGeometry#clamp",
+              "PoleFightSectorGeometry#createFrame",
+              "PoleFightSectorGeometry#finiteNumber",
+              "PoleFightSectorGeometry#frame",
+              "PoleFightSectorGeometry#point",
+              "PoleFightSectorGeometry#radiusPx",
+              "PoleFightSectorGeometry#writeFrame"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": [],
+          "reviewEvidence": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "PoleFightSectorGeometry",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/rod_control_tension_mode_resolver.js",
+        "targetPath": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+        "sourceSha256": "847cebcc5f9a935ffec5c319763ca8843c92a79355727c1ca2f3e790c418c04b",
+        "exports": [
+          "RodControlTensionModeResolver"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-952e8c49509d",
+          "members": [
+            "src/core/fishing/rod_control_tension_mode_resolver.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "classDeclarations": [
+            "RodControlTensionModeResolver"
+          ],
+          "moduleBindings": [],
+          "topLevelEffectKinds": [],
+          "transportReads": [],
+          "browserIdentifiers": []
+        },
+        "state": {
+          "moduleState": "none",
+          "classification": "stateless-behavior",
+          "instanceState": [],
+          "stateSemantics": "No mutable module or instance field; each result is derived from method inputs.",
+          "authoritativeOwnerBefore": {
+            "module": "src/core/fishing/rod_control_tension_mode_resolver.js",
+            "authoritativeOwners": [
+              "RodControlTensionModeResolver#clamp",
+              "RodControlTensionModeResolver#createResult"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+            "authoritativeOwners": [
+              "RodControlTensionModeResolver#clamp",
+              "RodControlTensionModeResolver#createResult"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": [],
+          "reviewEvidence": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "RodControlTensionModeResolver",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/float_tackle_line_budget_policy.js",
+        "targetPath": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+        "sourceSha256": "42d22ea178b18c126047672a61a73384f31f2653f26dc75017129c58599e8891",
+        "exports": [
+          "FloatTackleLineBudgetPolicy"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-4c4527c20bdc",
+          "members": [
+            "src/core/float_tackle_line_budget_policy.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "classDeclarations": [
+            "FloatTackleLineBudgetPolicy"
+          ],
+          "moduleBindings": [],
+          "topLevelEffectKinds": [],
+          "transportReads": [],
+          "browserIdentifiers": []
+        },
+        "state": {
+          "moduleState": "none",
+          "classification": "instance-local-config-reference",
+          "instanceState": [
+            "FloatTackleLineBudgetPolicy#config"
+          ],
+          "stateSemantics": "Constructor injection stores the supplied config reference per instance; the module does not import or own raw configuration.",
+          "authoritativeOwnerBefore": {
+            "module": "src/core/float_tackle_line_budget_policy.js",
+            "authoritativeOwners": [
+              "FloatTackleLineBudgetPolicy#appliesTo",
+              "FloatTackleLineBudgetPolicy#clamp",
+              "FloatTackleLineBudgetPolicy#config",
+              "FloatTackleLineBudgetPolicy#isSurfaceDepth",
+              "FloatTackleLineBudgetPolicy#minimumDepthMeters",
+              "FloatTackleLineBudgetPolicy#numberOrDefault",
+              "FloatTackleLineBudgetPolicy#readMeters"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+            "authoritativeOwners": [
+              "FloatTackleLineBudgetPolicy#appliesTo",
+              "FloatTackleLineBudgetPolicy#clamp",
+              "FloatTackleLineBudgetPolicy#config",
+              "FloatTackleLineBudgetPolicy#isSurfaceDepth",
+              "FloatTackleLineBudgetPolicy#minimumDepthMeters",
+              "FloatTackleLineBudgetPolicy#numberOrDefault",
+              "FloatTackleLineBudgetPolicy#readMeters"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": [],
+          "reviewEvidence": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "FloatTackleLineBudgetPolicy",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      }
+    ]
+  },
+  "closure": {
+    "existingCumulativeModuleCount": 19,
+    "existingCumulativeModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js"
+    ],
+    "newProjectModuleCount": 6,
+    "newProjectModules": [
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js"
+    ],
+    "resultingProjectModuleCount": 25,
+    "internalEdges": [],
+    "alreadyCumulativeDependencies": [],
+    "unexpectedDependencies": []
+  },
+  "evaluation": {
+    "legacyScriptOrderControlsEvaluation": false,
+    "ordering": "esm-graph-topology-with-lexicographic-diagnostic-tiebreak",
+    "stronglyConnectedComponents": [
+      {
+        "id": "scc-3a050ce2bd8a",
+        "members": [
+          "src/core/fishing/landing_lift_tension_calculator.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-4733cbe712f6",
+        "members": [
+          "src/core/fishing/line_constraint_state_resolver.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-4c4527c20bdc",
+        "members": [
+          "src/core/float_tackle_line_budget_policy.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-952e8c49509d",
+        "members": [
+          "src/core/fishing/rod_control_tension_mode_resolver.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-9e98d042486f",
+        "members": [
+          "src/core/fishing/pole_fight_sector_geometry.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-adfa52519de5",
+        "members": [
+          "src/core/fishing/hold_opposition_resolver.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      }
+    ],
+    "layers": [
+      [
+        "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+        "src/game/domain/fishing/hold_opposition_resolver.js",
+        "src/game/domain/fishing/landing_lift_tension_calculator.js",
+        "src/game/domain/fishing/line_constraint_state_resolver.js",
+        "src/game/domain/fishing/pole_fight_sector_geometry.js",
+        "src/game/domain/fishing/rod_control_tension_mode_resolver.js"
+      ]
+    ],
+    "cycles": []
+  },
+  "boundaries": {
+    "forbiddenEdges": [],
+    "directConfigDependencies": [],
+    "browserCapabilities": [],
+    "transportReads": []
+  },
+  "state": {
+    "safe": [
+      {
+        "module": "src/core/fishing/hold_opposition_resolver.js",
+        "classification": "stateless-behavior"
+      },
+      {
+        "module": "src/core/fishing/landing_lift_tension_calculator.js",
+        "classification": "stateless-behavior"
+      },
+      {
+        "module": "src/core/fishing/line_constraint_state_resolver.js",
+        "classification": "stateless-behavior"
+      },
+      {
+        "module": "src/core/fishing/pole_fight_sector_geometry.js",
+        "classification": "instance-local-derived-buffer"
+      },
+      {
+        "module": "src/core/fishing/rod_control_tension_mode_resolver.js",
+        "classification": "stateless-behavior"
+      },
+      {
+        "module": "src/core/float_tackle_line_budget_policy.js",
+        "classification": "instance-local-config-reference"
+      }
+    ],
+    "reviewed": [],
+    "unresolved": []
+  },
+  "effects": {
+    "safe": [
+      "src/core/fishing/hold_opposition_resolver.js",
+      "src/core/fishing/landing_lift_tension_calculator.js",
+      "src/core/fishing/line_constraint_state_resolver.js",
+      "src/core/fishing/pole_fight_sector_geometry.js",
+      "src/core/fishing/rod_control_tension_mode_resolver.js",
+      "src/core/float_tackle_line_budget_policy.js"
+    ],
+    "reviewed": [],
+    "unsafe": []
+  },
+  "compatibility": {
+    "providers": [
+      {
+        "module": "src/core/fishing/hold_opposition_resolver.js",
+        "symbol": "HoldOppositionResolver",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/fishing/landing_lift_tension_calculator.js",
+        "symbol": "LandingLiftTensionCalculator",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/fishing/line_constraint_state_resolver.js",
+        "symbol": "LineConstraintStateResolver",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/fishing/pole_fight_sector_geometry.js",
+        "symbol": "PoleFightSectorGeometry",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/fishing/rod_control_tension_mode_resolver.js",
+        "symbol": "RodControlTensionModeResolver",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/float_tackle_line_budget_policy.js",
+        "symbol": "FloatTackleLineBudgetPolicy",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      }
+    ],
+    "consumers": [
+      {
+        "provider": "src/core/fishing/hold_opposition_resolver.js",
+        "source": "src/systems/fish_force_system.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "HoldOppositionResolver"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/landing_lift_tension_calculator.js",
+        "source": "src/systems/fight_physics_system.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "LandingLiftTensionCalculator"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/line_constraint_state_resolver.js",
+        "source": "src/systems/fight_physics_system.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "LineConstraintStateResolver"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/pole_fight_sector_geometry.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "PoleFightSectorGeometry"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/pole_fight_sector_geometry.js",
+        "source": "src/core/fishing/pole_fight_sector_constraint.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "PoleFightSectorGeometry"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/rod_control_tension_mode_resolver.js",
+        "source": "src/systems/rod_lateral_control_system.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "RodControlTensionModeResolver"
+        ]
+      },
+      {
+        "provider": "src/core/float_tackle_line_budget_policy.js",
+        "source": "src/core/casting_distance.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "FloatTackleLineBudgetPolicy"
+        ]
+      }
+    ],
+    "activations": [
+      {
+        "id": "activation-7678742c83cf",
+        "owner": "stage-3.candidate-006-fishing-e48e70d8",
+        "sourceProvider": "src/core/float_tackle_line_budget_policy.js",
+        "targetModule": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+        "exportName": "FloatTackleLineBudgetPolicy",
+        "legacySymbol": "FloatTackleLineBudgetPolicy",
+        "legacyScriptIndex": 88,
+        "shimFile": "activations/088_floattacklelinebudgetpolicy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/casting_distance.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-775fb46bb6ce",
+        "owner": "stage-3.candidate-006-fishing-e48e70d8",
+        "sourceProvider": "src/core/fishing/line_constraint_state_resolver.js",
+        "targetModule": "src/game/domain/fishing/line_constraint_state_resolver.js",
+        "exportName": "LineConstraintStateResolver",
+        "legacySymbol": "LineConstraintStateResolver",
+        "legacyScriptIndex": 130,
+        "shimFile": "activations/130_lineconstraintstateresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/systems/fight_physics_system.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-8f8220d288e5",
+        "owner": "stage-3.candidate-006-fishing-e48e70d8",
+        "sourceProvider": "src/core/fishing/landing_lift_tension_calculator.js",
+        "targetModule": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+        "exportName": "LandingLiftTensionCalculator",
+        "legacySymbol": "LandingLiftTensionCalculator",
+        "legacyScriptIndex": 140,
+        "shimFile": "activations/140_landinglifttensioncalculator.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/systems/fight_physics_system.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-9857928fc9d0",
+        "owner": "stage-3.candidate-006-fishing-e48e70d8",
+        "sourceProvider": "src/core/fishing/hold_opposition_resolver.js",
+        "targetModule": "src/game/domain/fishing/hold_opposition_resolver.js",
+        "exportName": "HoldOppositionResolver",
+        "legacySymbol": "HoldOppositionResolver",
+        "legacyScriptIndex": 123,
+        "shimFile": "activations/123_holdoppositionresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/systems/fish_force_system.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-f70148ad6a58",
+        "owner": "stage-3.candidate-006-fishing-e48e70d8",
+        "sourceProvider": "src/core/fishing/rod_control_tension_mode_resolver.js",
+        "targetModule": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+        "exportName": "RodControlTensionModeResolver",
+        "legacySymbol": "RodControlTensionModeResolver",
+        "legacyScriptIndex": 126,
+        "shimFile": "activations/126_rodcontroltensionmoderesolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/systems/rod_lateral_control_system.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-ffea5244c4bf",
+        "owner": "stage-3.candidate-006-fishing-e48e70d8",
+        "sourceProvider": "src/core/fishing/pole_fight_sector_geometry.js",
+        "targetModule": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+        "exportName": "PoleFightSectorGeometry",
+        "legacySymbol": "PoleFightSectorGeometry",
+        "legacyScriptIndex": 134,
+        "shimFile": "activations/134_polefightsectorgeometry.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/bootstrap.js",
+          "src/core/fishing/pole_fight_sector_constraint.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      }
+    ]
+  },
+  "prerequisites": {
+    "frozen": [],
+    "newlyDiscovered": []
+  },
+  "issues": [],
+  "verdict": "eligible-for-execution-plan"
+}

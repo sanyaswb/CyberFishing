@@ -19,6 +19,22 @@
       ]
     },
     {
+      "id": "bridge-105a8ef0c687",
+      "bridge": "src/core/fishing/rod_control_movement_projector.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/rod_control_movement_projector.js",
+      "reason": "Preserve the exact synchronous Fishing Foundation consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "RodControlMovementProjector",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-1af90d9ee5a6",
       "bridge": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
       "source": "src/render/fishing/fishing_scene_renderer.js",
@@ -51,6 +67,42 @@
       ]
     },
     {
+      "id": "bridge-218534519854",
+      "bridge": "src/core/fishing/recoverable_line_calculator.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/recoverable_line_calculator.js",
+      "reason": "Preserve the exact synchronous Fishing Foundation consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "LooseLineCalculator",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "RecoverableLineCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-225041916b22",
+      "bridge": "src/core/float_tackle_line_budget_policy.js",
+      "source": "src/core/casting_distance.js",
+      "target": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "reason": "Preserve the exact synchronous Fishing Domain Primitives II consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-006-fishing-e48e70d8",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "FloatTackleLineBudgetPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-246319f5e6e2",
       "bridge": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
       "source": "src/render/pipeline/outcome_render_pass.js",
@@ -62,6 +114,22 @@
       "globalProviders": [
         {
           "symbol": "RenderPass",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-262c43042ef7",
+      "bridge": "src/core/fishing/rod_stroke_capacity_resolver.js",
+      "source": "src/core/fishing/rod_pull_calculator.js",
+      "target": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "reason": "Preserve the exact synchronous Fishing Foundation consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "RodStrokeCapacityResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -110,6 +178,22 @@
       "globalProviders": [
         {
           "symbol": "RenderPass",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-451e340bf590",
+      "bridge": "src/core/fishing/rod_control_tension_mode_resolver.js",
+      "source": "src/systems/rod_lateral_control_system.js",
+      "target": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "reason": "Preserve the exact synchronous Fishing Domain Primitives II consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-006-fishing-e48e70d8",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "RodControlTensionModeResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -227,6 +311,22 @@
       ]
     },
     {
+      "id": "bridge-6c073ecab1b3",
+      "bridge": "src/core/fishing/landing_lift_tension_calculator.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "reason": "Preserve the exact synchronous Fishing Domain Primitives II consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-006-fishing-e48e70d8",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "LandingLiftTensionCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-6c8d26fe475b",
       "bridge": "src/core/equipment/rod_capability_resolver.js",
       "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
@@ -254,6 +354,22 @@
       "globalProviders": [
         {
           "symbol": "CompositeRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-70c0e5efc338",
+      "bridge": "src/core/fishing/rod_stroke_tracker.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/rod_stroke_tracker.js",
+      "reason": "Preserve the exact synchronous Fishing Foundation consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "RodStrokeTracker",
           "mechanism": "global-this-property"
         }
       ]
@@ -323,6 +439,22 @@
       ]
     },
     {
+      "id": "bridge-87740b3c6660",
+      "bridge": "src/core/fishing/pole_fight_sector_geometry.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "reason": "Preserve the exact synchronous Fishing Domain Primitives II consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-006-fishing-e48e70d8",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "PoleFightSectorGeometry",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-93b3ed37a13e",
       "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
       "source": "src/render/hud/fight_status_bars_renderer.js",
@@ -387,6 +519,22 @@
       ]
     },
     {
+      "id": "bridge-a976ae6fdfc5",
+      "bridge": "src/core/fishing/drag_force_calculator.js",
+      "source": "src/systems/fish_retrieve_system.js",
+      "target": "src/game/domain/fishing/drag_force_calculator.js",
+      "reason": "Preserve the exact synchronous Fishing Foundation consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "DragForceCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-bc3ec26d121f",
       "bridge": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
       "source": "src/app/script.js",
@@ -419,6 +567,54 @@
       ]
     },
     {
+      "id": "bridge-c6c1e5eb790e",
+      "bridge": "src/core/fishing/hold_opposition_resolver.js",
+      "source": "src/systems/fish_force_system.js",
+      "target": "src/game/domain/fishing/hold_opposition_resolver.js",
+      "reason": "Preserve the exact synchronous Fishing Domain Primitives II consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-006-fishing-e48e70d8",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "HoldOppositionResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-c7d38bfb778f",
+      "bridge": "src/core/fishing/line_constraint_state_resolver.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "reason": "Preserve the exact synchronous Fishing Domain Primitives II consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-006-fishing-e48e70d8",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "LineConstraintStateResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-c88c4a3e2737",
+      "bridge": "src/core/fishing/fish_retrieve_result.js",
+      "source": "src/systems/fish_retrieve_system.js",
+      "target": "src/game/domain/fishing/fish_retrieve_result.js",
+      "reason": "Preserve the exact synchronous Fishing Foundation consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "FishRetrieveResult",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-d3fd9d86467b",
       "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
       "source": "src/render/screens/star_rating_renderer.js",
@@ -430,6 +626,22 @@
       "globalProviders": [
         {
           "symbol": "RenderMath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-e1840139830f",
+      "bridge": "src/core/fishing/drag_force_calculator.js",
+      "source": "src/systems/fish_force_system.js",
+      "target": "src/game/domain/fishing/drag_force_calculator.js",
+      "reason": "Preserve the exact synchronous Fishing Foundation consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "DragForceCalculator",
           "mechanism": "global-this-property"
         }
       ]
@@ -462,6 +674,22 @@
       "globalProviders": [
         {
           "symbol": "RodCapabilityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-f6d56e05e037",
+      "bridge": "src/core/fishing/pole_fight_sector_geometry.js",
+      "source": "src/core/fishing/pole_fight_sector_constraint.js",
+      "target": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "reason": "Preserve the exact synchronous Fishing Domain Primitives II consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-006-fishing-e48e70d8",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "PoleFightSectorGeometry",
           "mechanism": "global-this-property"
         }
       ]

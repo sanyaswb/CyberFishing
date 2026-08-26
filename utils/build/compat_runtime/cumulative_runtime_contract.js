@@ -280,9 +280,12 @@ class CumulativeRuntimeContractValidator {
     const activations = Array.isArray(contract?.activationPositions)
       ? contract.activationPositions
       : [];
+    const plannedActivations = Array.isArray(contract?.plannedActivationPositions)
+      ? contract.plannedActivationPositions
+      : [];
     const activationIds = [];
     const activationPositions = new Set();
-    for (const activation of activations) {
+    const validateActivation = (activation, lifecycle) => {
       try {
         const identity = CanonicalActivationIdentity.object(activation);
         const expectedKeys = [
@@ -308,8 +311,8 @@ class CumulativeRuntimeContractValidator {
         require(this.#text(activation.owner), `${activation.id} owner is required`);
         require(this.#text(activation.reason), `${activation.id} reason is required`);
         require(
-          ["stage-4", "stage-5"].includes(activation.removalStage),
-          `${activation.id} removalStage must be stage-4 or stage-5`,
+          ["stage-3", "stage-4", "stage-5"].includes(activation.removalStage),
+          `${activation.id} removalStage must be stage-3, stage-4 or stage-5`,
         );
         require(
           identity.shimFile.startsWith("activations/") && identity.shimFile.endsWith(".js"),
@@ -322,14 +325,27 @@ class CumulativeRuntimeContractValidator {
       } catch (error) {
         errors.push(error.message);
       }
-    }
+    };
+    for (const activation of activations) validateActivation(activation, "active");
+    for (const activation of plannedActivations) validateActivation(activation, "planned");
     require(
-      this.#sameArray(activationIds, [...activationIds].sort()),
+      this.#sameArray(
+        activations.map((activation) => activation.id),
+        [...activations.map((activation) => activation.id)].sort(),
+      ),
       "activationPositions must be sorted by canonical id",
     );
-    require(new Set(activationIds).size === activationIds.length, "activation ids must be unique");
+    require(
+      this.#sameArray(
+        plannedActivations.map((activation) => activation.id),
+        [...plannedActivations.map((activation) => activation.id)].sort(),
+      ),
+      "plannedActivationPositions must be sorted by canonical id",
+    );
+    require(new Set(activationIds).size === activationIds.length, "activation ids must be unique across active and planned records");
     if (contract?.status === "foundation-verified") {
       require(activations.length === 0, "foundation-verified requires no activation positions");
+      require(plannedActivations.length === 0, "foundation-verified requires no planned activation positions");
       require(reviews.length === 0, "foundation-verified requires no side-effect reviews");
       require(transitions.length === 0, "foundation-verified requires no previous runtime transitions");
     }

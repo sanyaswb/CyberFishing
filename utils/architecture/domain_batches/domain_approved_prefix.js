@@ -307,6 +307,17 @@ class StageThreeExecutionStateValidator {
       state.activeBatchId === null || state.activeBatchId === expectedActive,
       "Stage 3 activeBatchId must be the first batch after completed prefix",
     );
+    const activeBatchPhase = state.activeBatchId === null
+      ? null
+      : (state.activeBatchPhase || "runtime-active");
+    require(
+      activeBatchPhase === null || ["prebuild", "runtime-active"].includes(activeBatchPhase),
+      "Stage 3 activeBatchPhase must be prebuild or runtime-active",
+    );
+    require(
+      state.activeBatchId !== null || state.activeBatchPhase === undefined,
+      "Stage 3 inactive state must not retain activeBatchPhase",
+    );
     if (state.compatibilityRuntimeActivated === false) {
       require(completed.length === 0, "inactive compatibility runtime requires no completed batches");
       require(state.activeBatchId === null, "inactive compatibility runtime requires no active batch");
@@ -314,7 +325,8 @@ class StageThreeExecutionStateValidator {
       require(runtimeFacts?.runtimeScriptCount === 0, "inactive runtime must not appear in index.html");
       require(runtimeFacts?.outputExists === false, "inactive runtime must not leave build output");
     } else {
-      const selectedCount = completed.length + (state.activeBatchId ? 1 : 0);
+      const selectedCount = completed.length +
+        (state.activeBatchId && activeBatchPhase === "runtime-active" ? 1 : 0);
       const selectedBatch = approvedPlan.batches[selectedCount - 1];
       const expectedRuntimeScriptCount =
         1 + (selectedBatch?.compatibility?.cumulativeActivationIds?.length || 0);

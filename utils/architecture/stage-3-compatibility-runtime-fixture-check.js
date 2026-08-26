@@ -30,6 +30,9 @@ const {
 const {
   CumulativeRuntimeOutputManager,
 } = require("../build/compat_runtime/cumulative_runtime_output_manager");
+const {
+  StageThreeRuntimeScriptAliasResolver,
+} = require("./migration/stage_three_runtime_script_alias_resolver");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BASE_CONTRACT = JSON.parse(fs.readFileSync(
@@ -41,6 +44,7 @@ FOUNDATION_CONTRACT.status = "foundation-verified";
 FOUNDATION_CONTRACT.previousRuntimeTransitions = [];
 FOUNDATION_CONTRACT.sideEffectReviews = [];
 FOUNDATION_CONTRACT.activationPositions = [];
+FOUNDATION_CONTRACT.plannedActivationPositions = [];
 
 class TemporaryFixtureProject {
   constructor() {
@@ -195,6 +199,33 @@ class StageThreeCompatibilityRuntimeFixtureCheck {
       await callback();
       cases += 1;
     };
+
+    await count(async () => {
+      const contract = clone(BASE_CONTRACT);
+      contract.activationPositions = [
+        createActivation({
+          sourceProvider: "src/legacy/shared_provider.js",
+          legacySymbol: "FirstSymbol",
+          exportName: "FirstSymbol",
+          shimFile: "activations/first_symbol.js",
+        }),
+        createActivation({
+          sourceProvider: "src/legacy/shared_provider.js",
+          legacySymbol: "SecondSymbol",
+          exportName: "SecondSymbol",
+          shimFile: "activations/second_symbol.js",
+        }),
+      ];
+      const aliases = new StageThreeRuntimeScriptAliasResolver().resolve(contract);
+      assert.equal(
+        aliases.get("dist/stage-3-compat-runtime/activations/first_symbol.js"),
+        "src/legacy/shared_provider.js",
+      );
+      assert.equal(
+        aliases.get("dist/stage-3-compat-runtime/activations/second_symbol.js"),
+        null,
+      );
+    });
 
     await count(async () => {
       const validated = new CumulativeRuntimeContractValidator().validate(FOUNDATION_CONTRACT);

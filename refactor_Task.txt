@@ -1,10 +1,10 @@
 # CyberFishing — актуальний план незавершеного модульного рефакторингу
 
 **Stage 1 closure-версія:** `v0.24.31`  
-**Поточна release-версія:** `v0.24.41`
+**Поточна release-версія:** `v0.24.43`
 **Тип робіт:** architecture / infrastructure refactoring  
 **Gameplay changes:** заборонені  
-**Поточний наступний етап:** `Stage 3.5 — Fishing Foundation Cluster`
+**Поточний наступний етап:** `Stage 3.7.1 — Batch 007 Atomic Execution Plan`
 
 Цей документ містить тільки роботи, які ще не виконані.
 
@@ -60,20 +60,31 @@ src/game/application/  orchestration, не domain ownership
 
 Domain не залежить від platform, UI, Canvas, DOM, dev або raw configuration. Configuration надходить через constructor injection, factories або composition root. Domain може залежати лише від стабільних engine primitives і власних domain contracts/value objects.
 
-## Stage 3.5–3.21 — Atomic Domain Migration Batches
+## Stage 3.7–3.21 — Atomic Domain Migration Batches
 
-Завершено чотири frozen batches: `4/21` batches, `4/69` frozen domain-модулів. Наступний exact batch:
+Завершено шість frozen batches: `6/21` batches, `16/69` frozen domain-модулів. Наступний exact batch:
 
 ```text
-stage-3.candidate-005-fishing-45d0c7ce
+stage-3.candidate-007-fishing-bb8b3939
 
 6 fishing domain modules
-7 activation contracts
+6 activation contracts
 
-positions: 93, 117 (2 symbols), 118, 122, 128, 133
+positions: 91, 92, 112, 131, 132, 139
 ```
 
-Batch 005 є першим multi-module Stage 3 cluster. Усі шість модулів мігруються атомарно відповідно до frozen internal dependency topology; partial cutover заборонений.
+Batch 007 переносить наступні шість dependency-safe fishing primitives одним атомарним cluster; partial cutover заборонений:
+
+```text
+LineConstrainedFishMotionResolver
+LineRadialMovementSplitter
+ReelRetrieveSpeedCalculator
+RodPullState
+RodStrokeState
+SimpleFightForceCalculator
+```
+
+Stage 3.7.1 має створити atomic execution plan поверх verified evidence `architecture/migration/stage_3_batch_007_audit.json`. План повинен зафіксувати lifecycle, exact target/export/activation/consumer scope, cumulative transition `25 → 31`, registry transition `48 → 57`, representation-only cutover, performance/state gates і batch-007-only rollback.
 
 Кожен approved batch проходить один повторюваний pipeline:
 
