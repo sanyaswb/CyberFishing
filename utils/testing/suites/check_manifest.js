@@ -390,6 +390,36 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "architecture"],
   },
   {
+    id: "stage-3-batch-tooling-generalization",
+    title: "Stage 3.7.1 reusable batch tooling and batch-006 byte stability",
+    file: "utils/architecture/stage-3-batch-tooling-generalization-check.js",
+    suites: ["quick", "architecture"],
+  },
+  {
+    id: "stage-3-batch-007-execution-plan-fixtures",
+    title: "Stage 3.7.1 atomic execution-plan contract fixtures",
+    file: "utils/architecture/stage-3-batch-007-execution-plan-fixture-check.js",
+    suites: ["architecture"],
+  },
+  {
+    id: "stage-3-batch-007-execution-plan-integration",
+    title: "Stage 3.7.1 SCM-backed atomic execution plan",
+    file: "utils/architecture/stage-3-batch-007-execution-plan-integration-check.js",
+    suites: ["quick", "architecture"],
+  },
+  {
+    id: "stage-3-batch-007-test-matrix-fixtures",
+    title: "Stage 3.7.2 focused test-matrix contract fixtures",
+    file: "utils/architecture/stage-3-batch-007-test-matrix-fixture-check.js",
+    suites: ["architecture"],
+  },
+  {
+    id: "stage-3-batch-007-focused-test-matrix",
+    title: "Stage 3.7.2 classic and temporary-ESM behavior/compatibility matrix",
+    file: "utils/architecture/stage-3-batch-007-focused-test-matrix-check.js",
+    suites: ["quick", "architecture", "gameplay"],
+  },
+  {
     id: "stage-3-inventory-equip-target-batch",
     title: "Stage 3.1 inventory equip-target domain batch",
     file: "utils/architecture/stage-3-inventory-equip-target-batch-check.js",

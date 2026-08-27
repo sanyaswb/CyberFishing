@@ -5,30 +5,37 @@ const {
 } = require("../../build/legacy_bridge_build_config");
 const { immutableRecord } = require("../guards/core/guard_models");
 const {
-  BATCH_ID,
-  EXPECTED_TARGET_COUNT,
-} = require("./stage_three_batch_dependency_state_audit");
+  BATCH_006_EXECUTION_PROFILE,
+} = require("./stage_three_batch_execution_profile");
 
-const SOURCE_RELEASE_VERSION = "0.24.42";
-const TARGET_RELEASE_VERSION = "0.24.43";
-const BRIDGE_REASON =
-  "Preserve the exact synchronous Fishing Domain Primitives II consumer set until its approved migration stage removes the legacy symbols.";
+const SOURCE_RELEASE_VERSION = BATCH_006_EXECUTION_PROFILE.sourceReleaseVersion;
+const TARGET_RELEASE_VERSION = BATCH_006_EXECUTION_PROFILE.targetReleaseVersion;
+const BRIDGE_REASON = BATCH_006_EXECUTION_PROFILE.bridgeReason;
+const OPERATION_IDS = BATCH_006_EXECUTION_PROFILE.operationIds;
 
-const OPERATION_IDS = Object.freeze([
-  "verify-frozen-evidence",
-  "open-batch-006",
-  "create-six-named-esm-targets",
-  "render-six-activation-shims",
-  "register-seven-consumer-bridges",
-  "project-preliminary-manifest-metadata",
-  "build-single-cumulative-runtime",
-  "validate-identity-timing-and-behavior",
-  "persist-and-reconcile-observations",
-  "run-full-acceptance",
-  "close-release-0.24.43",
-]);
+const NUMBER_WORDS = Object.freeze({
+  1: "one",
+  2: "two",
+  3: "three",
+  4: "four",
+  5: "five",
+  6: "six",
+  7: "seven",
+  8: "eight",
+  9: "nine",
+});
+
+function numberWord(value) {
+  return NUMBER_WORDS[value] || String(value);
+}
 
 class StageThreeBatchExecutionPlanBuilder {
+  #profile;
+
+  constructor(profile = BATCH_006_EXECUTION_PROFILE) {
+    this.#profile = profile;
+  }
+
   build({
     audit,
     auditSha256,
@@ -41,19 +48,21 @@ class StageThreeBatchExecutionPlanBuilder {
     manifestSha256,
     bridgeRegistry,
     bridgeRegistrySha256,
+    scmCheckpoint = null,
     runtimeFacts,
     rollbackEvidence,
   }) {
-    const batch = approvedPlan.batches.find((record) => record.id === BATCH_ID);
-    this.#require(batch, `Approved batch is missing: ${BATCH_ID}`);
-    this.#require(batch.status === "approved-frozen", "Batch 006 is not approved-frozen");
-    this.#require(audit.status === "verified", "Stage 3.6.1 audit is not verified");
+    const profile = this.#profile;
+    const batch = approvedPlan.batches.find((record) => record.id === profile.batchId);
+    this.#require(batch, `Approved batch is missing: ${profile.batchId}`);
+    this.#require(batch.status === "approved-frozen", `Batch ${profile.batchNumber} is not approved-frozen`);
+    this.#require(audit.status === "verified", `${profile.auditStageLabel} audit is not verified`);
     this.#require(
       audit.verdict === "eligible-for-execution-plan",
-      "Stage 3.6.1 audit does not allow execution planning",
+      `${profile.auditStageLabel} audit does not allow execution planning`,
     );
-    this.#require(audit.batchId === BATCH_ID, "Audit batch identity differs");
-    this.#require(audit.sourceReleaseVersion === SOURCE_RELEASE_VERSION, "Audit source release differs");
+    this.#require(audit.batchId === profile.batchId, "Audit batch identity differs");
+    this.#require(audit.sourceReleaseVersion === profile.sourceReleaseVersion, "Audit source release differs");
     this.#require(
       audit.sourceEvidence.approvedPlan.sha256 === approvedPlanSha256,
       "Audit approved-plan evidence is stale",
@@ -66,7 +75,7 @@ class StageThreeBatchExecutionPlanBuilder {
       audit.sourceEvidence.executionState.sha256 === executionStateSha256,
       "Audit execution-state evidence is stale",
     );
-    this.#require(audit.scope.targetCount === EXPECTED_TARGET_COUNT, "Audit scope is not six targets");
+    this.#require(audit.scope.targetCount === profile.expectedTargetCount, "Audit target scope differs from profile");
     this.#require(audit.closure.unexpectedDependencies.length === 0, "Audit contains unexpected dependencies");
     this.#require(audit.prerequisites.newlyDiscovered.length === 0, "Audit discovered new prerequisites");
 
@@ -75,21 +84,28 @@ class StageThreeBatchExecutionPlanBuilder {
       .map((record) => record.id);
     this.#require(
       this.#same(executionState.completedBatchIds, completedPrefix),
-      "Execution state is not the exact completed prefix 001-005",
+      `Execution state is not the exact completed prefix before batch ${profile.batchNumber}`,
     );
     this.#require(executionState.activeBatchId === null, "Execution plan requires no active batch");
     this.#require(executionState.compatibilityRuntimeActivated === true, "Cumulative runtime must already be active");
-    this.#require(executionState.releaseVersion === SOURCE_RELEASE_VERSION, "Execution-state release differs");
+    this.#require(executionState.releaseVersion === profile.sourceReleaseVersion, "Execution-state release differs");
     this.#require(
-      runtimeContract.activationPositions.every((activation) => activation.owner !== BATCH_ID),
-      "Runtime contract already contains batch 006 activation",
+      runtimeContract.activationPositions.every((activation) => activation.owner !== profile.batchId),
+      `Runtime contract already contains batch ${profile.batchNumber} activation`,
     );
     this.#require(
-      bridgeRegistry.bridges.every((record) => record.owner !== BATCH_ID),
-      "Bridge registry already contains batch 006 record",
+      bridgeRegistry.bridges.every((record) => record.owner !== profile.batchId),
+      `Bridge registry already contains batch ${profile.batchNumber} record`,
     );
     this.#require(runtimeFacts.projectModuleCount === audit.closure.existingCumulativeModuleCount, "Current cumulative module count differs from audit");
     this.#require(runtimeFacts.activationCount === runtimeContract.activationPositions.length, "Current activation count differs from runtime contract");
+    if (profile.scmCheckpointRequired) {
+      this.#require(scmCheckpoint?.tag === profile.sourceReleaseTag, "SCM source-release tag differs");
+      this.#require(/^[a-f0-9]{40}$/u.test(scmCheckpoint?.commitSha), "SCM checkpoint commit is invalid");
+      this.#require(scmCheckpoint?.tagType === "tag", "SCM checkpoint must use an annotated tag");
+    } else {
+      this.#require(scmCheckpoint === null, "Historical profile must not gain SCM checkpoint evidence");
+    }
 
     const modules = audit.scope.modules.map((module) => ({
       currentPath: module.currentPath,
@@ -102,6 +118,10 @@ class StageThreeBatchExecutionPlanBuilder {
       behaviorChangeAllowed: false,
       directTransportReadAllowed: false,
     })).sort((left, right) => left.currentPath.localeCompare(right.currentPath));
+    this.#require(this.#same(
+      modules.map(({ currentPath, targetPath, exports }) => ({ currentPath, targetPath, exports })),
+      profile.expectedTargets,
+    ), "Exact target/export scope differs from profile");
 
     const activations = batch.compatibility.newActivations
       .map((activation) => ({
@@ -111,7 +131,15 @@ class StageThreeBatchExecutionPlanBuilder {
         removalCondition: activation.removalCondition,
       }))
       .sort((left, right) => left.id.localeCompare(right.id));
-    this.#require(activations.length === EXPECTED_TARGET_COUNT, "Batch 006 must add six activations");
+    this.#require(activations.length === profile.expectedActivationCount, "Batch activation count differs from profile");
+    this.#require(this.#same(
+      activations.map((activation) => activation.id),
+      profile.expectedActivationIds,
+    ), "Activation identity set differs from profile");
+    this.#require(this.#same(
+      activations.map((activation) => activation.legacyScriptIndex).sort((left, right) => left - right),
+      profile.expectedActivationPositions,
+    ), "Activation position set differs from profile");
 
     const activationByProvider = new Map(activations.map((activation) => [
       activation.sourceProvider,
@@ -128,8 +156,8 @@ class StageThreeBatchExecutionPlanBuilder {
         bridge: consumer.provider,
         source: consumer.source,
         target: activation.targetModule,
-        reason: BRIDGE_REASON,
-        owner: BATCH_ID,
+        reason: profile.bridgeReason,
+        owner: profile.batchId,
         introducedStage: "stage-3",
         removalStage: activation.removalStage,
         globalProviders: consumer.symbols.map((symbol) => ({
@@ -142,21 +170,25 @@ class StageThreeBatchExecutionPlanBuilder {
         ...record,
       };
     }).sort((left, right) => left.id.localeCompare(right.id));
-    this.#require(plannedBridges.length === 7, "Batch 006 must add seven consumer bridge records");
-    this.#require(new Set(plannedBridges.map((record) => record.id)).size === 7, "Planned bridge IDs must be unique");
+    this.#require(plannedBridges.length === profile.expectedConsumerCount, "Batch consumer bridge count differs from profile");
+    this.#require(new Set(plannedBridges.map((record) => record.id)).size === profile.expectedConsumerCount, "Planned bridge IDs must be unique");
+    this.#require(this.#same(
+      plannedBridges.map((record) => record.id),
+      profile.expectedBridgeIds,
+    ), "Canonical bridge identity set differs from profile");
 
     const completedState = {
-      releaseVersion: TARGET_RELEASE_VERSION,
+      releaseVersion: profile.targetReleaseVersion,
       status: "migration-active",
-      completedBatchIds: [...completedPrefix, BATCH_ID],
+      completedBatchIds: [...completedPrefix, profile.batchId],
       activeBatchId: null,
       compatibilityRuntimeActivated: true,
     };
     const openState = {
-      releaseVersion: SOURCE_RELEASE_VERSION,
+      releaseVersion: profile.sourceReleaseVersion,
       status: "migration-active",
       completedBatchIds: [...completedPrefix],
-      activeBatchId: BATCH_ID,
+      activeBatchId: profile.batchId,
       compatibilityRuntimeActivated: true,
     };
     const afterModuleCount = new Set([
@@ -167,31 +199,57 @@ class StageThreeBatchExecutionPlanBuilder {
     const afterBridgeCount = bridgeRegistry.bridges.length + plannedBridges.length;
 
     const operations = [
-      this.#operation(1, OPERATION_IDS[0], "read-only", "Verify audit fingerprints, frozen scope, current topology and completed prefix."),
-      this.#operation(2, OPERATION_IDS[1], "metadata", "Set activeBatchId to batch 006 without changing completedBatchIds."),
-      this.#operation(3, OPERATION_IDS[2], "source", "Create all six named ESM targets as representation-only copies."),
-      this.#operation(4, OPERATION_IDS[3], "source", "Replace all six classic providers with exact generated activation shims."),
-      this.#operation(5, OPERATION_IDS[4], "metadata", "Add the seven canonical consumer-specific bridge records as one set."),
-      this.#operation(6, OPERATION_IDS[5], "metadata", "Project target and compatibility-bridge metadata before build validation."),
-      this.#operation(7, OPERATION_IDS[6], "generated-output", "Build and atomically validate one cumulative 25-module runtime."),
-      this.#operation(8, OPERATION_IDS[7], "read-only", "Prove exact export identity, activation timing, one evaluation and behavior equivalence."),
-      this.#operation(9, OPERATION_IDS[8], "metadata", "Persist mechanical observations and reconcile Manifest facts after source/shim creation."),
-      this.#operation(10, OPERATION_IDS[9], "read-only", "Run focused, Architecture, Quick, Full, fresh-install and browser acceptance."),
-      this.#operation(11, OPERATION_IDS[10], "metadata", "Mark batch 006 completed, clear activeBatchId and publish v0.24.43 metadata."),
+      this.#operation(1, profile.operationIds[0], "read-only", "Verify audit fingerprints, frozen scope, current topology and completed prefix."),
+      this.#operation(2, profile.operationIds[1], "metadata", `Set activeBatchId to batch ${profile.batchNumber} without changing completedBatchIds.`),
+      this.#operation(3, profile.operationIds[2], "source", `Create all ${numberWord(profile.expectedTargetCount)} named ESM targets as representation-only copies.`),
+      this.#operation(4, profile.operationIds[3], "source", `Replace all ${numberWord(profile.expectedActivationCount)} classic providers with exact generated activation shims.`),
+      this.#operation(5, profile.operationIds[4], "metadata", `Add the ${numberWord(profile.expectedConsumerCount)} canonical consumer-specific bridge records as one set.`),
+      this.#operation(6, profile.operationIds[5], "metadata", "Project target and compatibility-bridge metadata before build validation."),
+      this.#operation(7, profile.operationIds[6], "generated-output", `Build and atomically validate one cumulative ${afterModuleCount}-module runtime.`),
+      this.#operation(8, profile.operationIds[7], "read-only", "Prove exact export identity, activation timing, one evaluation and behavior equivalence."),
+      this.#operation(9, profile.operationIds[8], "metadata", "Persist mechanical observations and reconcile Manifest facts after source/shim creation."),
+      this.#operation(10, profile.operationIds[9], "read-only", "Run focused, Architecture, Quick, Full, fresh-install and browser acceptance."),
+      this.#operation(11, profile.operationIds[10], "metadata", `Mark batch ${profile.batchNumber} completed, clear activeBatchId and publish v${profile.targetReleaseVersion} metadata.`),
     ];
+
+    const lifecycle = {
+      preState: {
+        releaseVersion: executionState.releaseVersion,
+        status: executionState.status,
+        completedBatchIds: [...executionState.completedBatchIds],
+        activeBatchId: executionState.activeBatchId,
+        compatibilityRuntimeActivated: executionState.compatibilityRuntimeActivated,
+      },
+      openState,
+    };
+    if (profile.includeRuntimeActiveState) {
+      lifecycle.runtimeActiveState = {
+        releaseVersion: profile.sourceReleaseVersion,
+        status: "migration-active",
+        completedBatchIds: [...completedPrefix],
+        activeBatchId: profile.batchId,
+        compatibilityRuntimeActivated: true,
+        projectModuleCount: afterModuleCount,
+        activationCount: afterActivationCount,
+        bridgeRecordCount: afterBridgeCount,
+        persistence: "execution-plan-phase-not-stage-3-execution-state-status",
+      };
+    }
+    lifecycle.completedState = completedState;
+    lifecycle.runtimeTargetSelection = "completed-batches-plus-active-batch-plus-promoted-stage-2-closure";
 
     return immutableRecord({
       schemaVersion: 1,
       kind: "cyber-fishing-stage-3-atomic-execution-plan",
       status: "execution-plan-verified",
-      batchId: BATCH_ID,
-      sourceReleaseVersion: SOURCE_RELEASE_VERSION,
-      targetReleaseVersion: TARGET_RELEASE_VERSION,
+      batchId: profile.batchId,
+      sourceReleaseVersion: profile.sourceReleaseVersion,
+      targetReleaseVersion: profile.targetReleaseVersion,
       runtimeMigrationAllowed: false,
-      runtimeMigrationUnlockCondition: "stage-3.6.3-focused-test-matrix-verified",
+      runtimeMigrationUnlockCondition: `${profile.focusedStageId}-focused-test-matrix-verified`,
       sourceEvidence: {
         audit: {
-          path: "architecture/migration/stage_3_batch_006_audit.json",
+          path: profile.auditPath,
           sha256: auditSha256,
         },
         approvedPlan: {
@@ -214,6 +272,7 @@ class StageThreeBatchExecutionPlanBuilder {
           path: "architecture/guards/migration_bridge_registry.json",
           sha256: bridgeRegistrySha256,
         },
+        ...(profile.scmCheckpointRequired ? { scmCheckpoint } : {}),
       },
       scope: {
         atomic: true,
@@ -224,18 +283,7 @@ class StageThreeBatchExecutionPlanBuilder {
         activationCount: activations.length,
         consumerRelationshipCount: plannedBridges.length,
       },
-      lifecycle: {
-        preState: {
-          releaseVersion: executionState.releaseVersion,
-          status: executionState.status,
-          completedBatchIds: [...executionState.completedBatchIds],
-          activeBatchId: executionState.activeBatchId,
-          compatibilityRuntimeActivated: executionState.compatibilityRuntimeActivated,
-        },
-        openState,
-        completedState,
-        runtimeTargetSelection: "completed-batches-plus-active-batch-plus-promoted-stage-2-closure",
-      },
+      lifecycle,
       compatibility: {
         activations,
         plannedBridgeRecords: plannedBridges,
@@ -276,13 +324,33 @@ class StageThreeBatchExecutionPlanBuilder {
         },
         policy: "one-for-one-provider-to-activation-replacement-preserves-logical-order",
       },
-      stateAndBehaviorInvariants: modules.map((module) => ({
-        module: module.currentPath,
-        stateClassification: module.stateClassification,
-        authoritativeOwnerPreserved: true,
-        duplicateStateCopies: "forbidden",
-        formulasApiDefaultsAndResultShapes: "unchanged",
-      })),
+      stateAndBehaviorInvariants: modules.map((module) => {
+        const invariant = {
+          module: module.currentPath,
+          stateClassification: module.stateClassification,
+          authoritativeOwnerPreserved: true,
+          duplicateStateCopies: "forbidden",
+          formulasApiDefaultsAndResultShapes: "unchanged",
+        };
+        if (profile.includeDetailedStatePerformanceGates) {
+          const audited = audit.scope.modules.find((record) => record.currentPath === module.currentPath);
+          return {
+            ...invariant,
+            authoritativeOwnerBefore: audited.state.authoritativeOwnerBefore,
+            authoritativeOwnerAfter: audited.state.authoritativeOwnerAfter,
+            publicStateShape: audited.state.publicStateShape,
+            snapshotShape: audited.state.snapshotShape,
+            stableResultIdentity: audited.state.stableResultIdentity,
+            mutatesCallerInputs: audited.state.mutatesCallerInputs,
+            behaviorFingerprint: audited.behavior.formulaDefaultsClampsRoundingFingerprint,
+            allocationBaseline: audited.performance.allocationBaseline,
+            additionalMigrationAllocationsAllowed: audited.performance.additionalMigrationAllocationsAllowed,
+            transportLookupsAllowed: audited.performance.transportLookupsAllowed,
+            representationComparison: audited.performance.comparisonMode,
+          };
+        }
+        return invariant;
+      }),
       operations,
       mutationBoundary: {
         sourceProvidersReplaced: modules.map((module) => module.currentPath).sort(),
@@ -307,10 +375,10 @@ class StageThreeBatchExecutionPlanBuilder {
       rollback: {
         atomic: true,
         partialRollbackAllowed: false,
-        fromRelease: TARGET_RELEASE_VERSION,
-        toRelease: SOURCE_RELEASE_VERSION,
+        fromRelease: profile.targetReleaseVersion,
+        toRelease: profile.sourceReleaseVersion,
         preserveCompletedBatchIds: [...completedPrefix],
-        removeBatchId: BATCH_ID,
+        removeBatchId: profile.batchId,
         restoreTopology: {
           projectModuleCount: runtimeFacts.projectModuleCount,
           activationCount: runtimeFacts.activationCount,
@@ -321,14 +389,14 @@ class StageThreeBatchExecutionPlanBuilder {
         },
         baselineEvidence: rollbackEvidence,
         targetsAbsentBeforeCutover: modules.map((module) => module.targetPath).sort(),
-        rule: "restore-only-batch-006-delta-and-keep-batches-001-through-005",
+        rule: profile.rollbackRule,
       },
       acceptance: {
         preBuild: [
           "audit-and-plan-fingerprints-current",
-          "completed-prefix-001-through-005",
-          "active-batch-006-only",
-          "six-targets-six-activations-seven-consumer-bridges",
+          `completed-prefix-001-through-${String(batch.order - 1).padStart(3, "0")}`,
+          `active-batch-${profile.batchNumber}-only`,
+          `${numberWord(profile.expectedTargetCount)}-targets-${numberWord(profile.expectedActivationCount)}-activations-${numberWord(profile.expectedConsumerCount)}-consumer-bridges`,
           "zero-new-prerequisites",
         ],
         postBuild: [
@@ -340,7 +408,7 @@ class StageThreeBatchExecutionPlanBuilder {
           "previous-valid-output-preserved-on-failure",
         ],
         suites: [
-          "focused-stage-3.6-behavior-and-identity",
+          `focused-${profile.focusedStageId.replace(/\.\d+$/u, "")}-behavior-and-identity`,
           "check:architecture",
           "check:quick",
           "check:full",
@@ -351,7 +419,7 @@ class StageThreeBatchExecutionPlanBuilder {
           "zero-gameplay-semantic-delta",
           "zero-new-architecture-guard-failures",
           "manifest-registry-runtime-contract-and-state-reconciled",
-          "batch-006-completed-and-active-batch-cleared",
+          `batch-${profile.batchNumber}-completed-and-active-batch-cleared`,
         ],
       },
       verdict: "eligible-for-focused-test-matrix",
@@ -367,12 +435,19 @@ class StageThreeBatchExecutionPlanBuilder {
   }
 
   #require(condition, message) {
-    if (!condition) throw new Error(`Stage 3.6.2 execution plan failed: ${message}`);
+    if (!condition) throw new Error(`${this.#profile.executionStageLabel} execution plan failed: ${message}`);
   }
 }
 
 class StageThreeBatchExecutionPlanValidator {
+  #profile;
+
+  constructor(profile = BATCH_006_EXECUTION_PROFILE) {
+    this.#profile = profile;
+  }
+
   validate(plan) {
+    const profile = this.#profile;
     const errors = [];
     const require = (condition, message) => {
       if (!condition) errors.push(message);
@@ -380,56 +455,92 @@ class StageThreeBatchExecutionPlanValidator {
     require(plan?.schemaVersion === 1, "schemaVersion must be 1");
     require(plan?.kind === "cyber-fishing-stage-3-atomic-execution-plan", "kind is invalid");
     require(plan?.status === "execution-plan-verified", "status must be execution-plan-verified");
-    require(plan?.batchId === BATCH_ID, "batchId is invalid");
-    require(plan?.sourceReleaseVersion === SOURCE_RELEASE_VERSION, "source release is invalid");
-    require(plan?.targetReleaseVersion === TARGET_RELEASE_VERSION, "target release is invalid");
-    require(plan?.runtimeMigrationAllowed === false, "Stage 3.6.2 must not unlock runtime migration");
-    require(plan?.runtimeMigrationUnlockCondition === "stage-3.6.3-focused-test-matrix-verified", "runtime unlock condition is invalid");
+    require(plan?.batchId === profile.batchId, "batchId is invalid");
+    require(plan?.sourceReleaseVersion === profile.sourceReleaseVersion, "source release is invalid");
+    require(plan?.targetReleaseVersion === profile.targetReleaseVersion, "target release is invalid");
+    require(plan?.runtimeMigrationAllowed === false, `${profile.executionStageLabel} must not unlock runtime migration`);
+    require(plan?.runtimeMigrationUnlockCondition === `${profile.focusedStageId}-focused-test-matrix-verified`, "runtime unlock condition is invalid");
     require(plan?.scope?.atomic === true, "scope must be atomic");
     require(plan?.scope?.partialCutoverAllowed === false, "partial cutover must be forbidden");
-    require(plan?.scope?.targetCount === EXPECTED_TARGET_COUNT, "target count must be six");
-    require(plan?.scope?.exportCount === EXPECTED_TARGET_COUNT, "export count must be six");
-    require(plan?.scope?.activationCount === EXPECTED_TARGET_COUNT, "activation count must be six");
-    require(plan?.scope?.consumerRelationshipCount === 7, "consumer relationship count must be seven");
-    require(new Set(plan?.scope?.modules?.map((module) => module.currentPath)).size === EXPECTED_TARGET_COUNT, "source paths must be unique");
-    require(new Set(plan?.scope?.modules?.map((module) => module.targetPath)).size === EXPECTED_TARGET_COUNT, "target paths must be unique");
-    require(plan?.lifecycle?.preState?.completedBatchIds?.length === 5, "pre-state must preserve five completed batches");
+    require(plan?.scope?.targetCount === profile.expectedTargetCount, "target count differs from profile");
+    require(plan?.scope?.exportCount === profile.expectedExportCount, "export count differs from profile");
+    require(plan?.scope?.activationCount === profile.expectedActivationCount, "activation count differs from profile");
+    require(plan?.scope?.consumerRelationshipCount === profile.expectedConsumerCount, "consumer count differs from profile");
+    require(new Set(plan?.scope?.modules?.map((module) => module.currentPath)).size === profile.expectedTargetCount, "source paths must be unique");
+    require(new Set(plan?.scope?.modules?.map((module) => module.targetPath)).size === profile.expectedTargetCount, "target paths must be unique");
+    require(plan?.scope?.modules?.every((module) =>
+      this.#same(module.importsAllowed, []) &&
+      module.behaviorChangeAllowed === false &&
+      module.directTransportReadAllowed === false &&
+      module.representationChange === "classic-class-declaration-to-named-esm-export-only"),
+    "module representation/boundary contract differs");
+    require(this.#same(
+      plan?.scope?.modules?.map(({ currentPath, targetPath, exports }) => ({ currentPath, targetPath, exports })),
+      profile.expectedTargets,
+    ), "exact target/export scope differs");
+    const completedBefore = Number(profile.batchNumber) - 1;
+    require(plan?.lifecycle?.preState?.completedBatchIds?.length === completedBefore, "pre-state completed prefix differs");
     require(plan?.lifecycle?.preState?.activeBatchId === null, "pre-state active batch must be null");
-    require(plan?.lifecycle?.openState?.activeBatchId === BATCH_ID, "open-state must activate batch 006");
-    require(plan?.lifecycle?.openState?.completedBatchIds?.length === 5, "open-state must not complete batch 006 early");
+    require(plan?.lifecycle?.openState?.activeBatchId === profile.batchId, "open-state must activate the profiled batch");
+    require(plan?.lifecycle?.openState?.completedBatchIds?.length === completedBefore, "open-state must not complete the batch early");
     require(plan?.lifecycle?.completedState?.activeBatchId === null, "completed-state active batch must be null");
-    require(plan?.lifecycle?.completedState?.completedBatchIds?.at(-1) === BATCH_ID, "completed-state must append batch 006");
-    require(plan?.lifecycle?.completedState?.completedBatchIds?.length === 6, "completed-state must contain six completed batches");
-    require(plan?.compatibility?.activations?.length === EXPECTED_TARGET_COUNT, "activation set is incomplete");
-    require(plan?.compatibility?.plannedBridgeRecords?.length === 7, "bridge set is incomplete");
-    require(plan?.compatibility?.registryTransition?.addCount === 7, "registry transition must add seven records");
+    require(plan?.lifecycle?.completedState?.completedBatchIds?.at(-1) === profile.batchId, "completed-state must append the profiled batch");
+    require(plan?.lifecycle?.completedState?.completedBatchIds?.length === completedBefore + 1, "completed-state prefix differs");
+    if (profile.includeRuntimeActiveState) {
+      require(plan?.lifecycle?.runtimeActiveState?.activeBatchId === profile.batchId, "runtime-active phase must keep the profiled batch active");
+      require(plan?.lifecycle?.runtimeActiveState?.completedBatchIds?.length === completedBefore, "runtime-active phase must not complete the batch early");
+      require(plan?.lifecycle?.runtimeActiveState?.persistence === "execution-plan-phase-not-stage-3-execution-state-status", "runtime-active persistence boundary differs");
+    } else {
+      require(plan?.lifecycle?.runtimeActiveState === undefined, "historical profile must not gain a runtime-active field");
+    }
+    require(plan?.compatibility?.activations?.length === profile.expectedActivationCount, "activation set is incomplete");
+    require(plan?.compatibility?.plannedBridgeRecords?.length === profile.expectedConsumerCount, "bridge set is incomplete");
+    require(this.#same(
+      plan?.compatibility?.activations?.map((record) => record.id),
+      profile.expectedActivationIds,
+    ), "activation identity set differs");
+    require(this.#same(
+      plan?.compatibility?.activations?.map((record) => record.legacyScriptIndex).sort((left, right) => left - right),
+      profile.expectedActivationPositions,
+    ), "activation position set differs");
+    require(this.#same(
+      plan?.compatibility?.plannedBridgeRecords?.map((record) => record.id),
+      profile.expectedBridgeIds,
+    ), "bridge identity set differs");
+    require(plan?.compatibility?.registryTransition?.addCount === profile.expectedConsumerCount, "registry transition add count differs");
     require(
       plan?.compatibility?.registryTransition?.afterCount ===
-        plan?.compatibility?.registryTransition?.beforeCount + 7,
+        plan?.compatibility?.registryTransition?.beforeCount + profile.expectedConsumerCount,
       "registry transition count is inconsistent",
     );
     require(plan?.compatibility?.transportOwnsGameState === false, "transport must not own game state");
     require(plan?.compatibility?.domainTransportReadsAllowed === false, "Domain transport reads must be forbidden");
     for (const record of plan?.compatibility?.plannedBridgeRecords || []) {
       require(record.id === CanonicalBridgeIdentity.id(record), `bridge ID is not canonical: ${record.id}`);
-      require(record.owner === BATCH_ID, `bridge owner differs: ${record.id}`);
+      require(record.owner === profile.batchId, `bridge owner differs: ${record.id}`);
       require(record.introducedStage === "stage-3", `bridge introducedStage differs: ${record.id}`);
     }
     require(plan?.cumulativeRuntime?.topology === "single-cumulative-module-graph", "runtime topology is invalid");
     require(plan?.cumulativeRuntime?.isolatedIifeAllowed === false, "isolated IIFE must be forbidden");
-    require(plan?.cumulativeRuntime?.addedProjectModuleCount === EXPECTED_TARGET_COUNT, "runtime must add six modules");
+    require(plan?.cumulativeRuntime?.addedProjectModuleCount === profile.expectedTargetCount, "runtime module delta differs");
     require(
       plan?.cumulativeRuntime?.afterProjectModuleCount ===
-        plan?.cumulativeRuntime?.beforeProjectModuleCount + EXPECTED_TARGET_COUNT,
+        plan?.cumulativeRuntime?.beforeProjectModuleCount + profile.expectedTargetCount,
       "runtime module count transition is inconsistent",
     );
     require(
       plan?.cumulativeRuntime?.afterActivationCount ===
-        plan?.cumulativeRuntime?.beforeActivationCount + EXPECTED_TARGET_COUNT,
+        plan?.cumulativeRuntime?.beforeActivationCount + profile.expectedActivationCount,
       "runtime activation count transition is inconsistent",
     );
     require(plan?.cumulativeRuntime?.projectModulesAfter?.length === plan?.cumulativeRuntime?.afterProjectModuleCount, "runtime module set is incomplete");
-    require(plan?.cumulativeRuntime?.expectedDependencyEdges?.length === 0, "batch 006 runtime must not add dependency edges");
+    require(plan?.cumulativeRuntime?.expectedDependencyEdges?.length === profile.expectedDependencyEdgeCount, "runtime dependency-edge count differs");
+    require(plan?.cumulativeRuntime?.beforeProjectModuleCount === profile.expectedTopology.beforeProjectModuleCount, "before module anchor differs");
+    require(plan?.cumulativeRuntime?.afterProjectModuleCount === profile.expectedTopology.afterProjectModuleCount, "after module anchor differs");
+    require(plan?.cumulativeRuntime?.beforeActivationCount === profile.expectedTopology.beforeActivationCount, "before activation anchor differs");
+    require(plan?.cumulativeRuntime?.afterActivationCount === profile.expectedTopology.afterActivationCount, "after activation anchor differs");
+    require(plan?.compatibility?.registryTransition?.beforeCount === profile.expectedTopology.beforeBridgeCount, "before bridge anchor differs");
+    require(plan?.compatibility?.registryTransition?.afterCount === profile.expectedTopology.afterBridgeCount, "after bridge anchor differs");
     require(plan?.cumulativeRuntime?.evaluationCountPerModule === 1, "module evaluation count must be one");
     require(plan?.cumulativeRuntime?.preservePreviousValidatedOutputOnFailure === true, "previous output must survive build failure");
     require(
@@ -442,25 +553,49 @@ class StageThreeBatchExecutionPlanValidator {
     );
     require(plan?.scriptTopology?.after?.moduleScriptCount === 0, "module scripts must remain zero");
     require(
-      this.#same(plan?.operations?.map((operation) => operation.id), OPERATION_IDS),
+      this.#same(plan?.operations?.map((operation) => operation.id), profile.operationIds),
       "operation order differs from contract",
     );
     require(plan?.operations?.every((operation, index) => operation.order === index + 1), "operation numbers must be contiguous");
     require(plan?.rollback?.atomic === true, "rollback must be atomic");
     require(plan?.rollback?.partialRollbackAllowed === false, "partial rollback must be forbidden");
-    require(plan?.rollback?.preserveCompletedBatchIds?.length === 5, "rollback must preserve batches 001-005");
-    require(plan?.rollback?.removeBatchId === BATCH_ID, "rollback must remove only batch 006");
-    require(plan?.rollback?.targetsAbsentBeforeCutover?.length === EXPECTED_TARGET_COUNT, "rollback target absence set is incomplete");
+    require(plan?.rollback?.preserveCompletedBatchIds?.length === completedBefore, "rollback completed prefix differs");
+    require(plan?.rollback?.removeBatchId === profile.batchId, "rollback must remove only the profiled batch");
+    require(plan?.rollback?.rule === profile.rollbackRule, "rollback rule differs from profile");
+    require(plan?.rollback?.targetsAbsentBeforeCutover?.length === profile.expectedTargetCount, "rollback target absence set is incomplete");
     require(plan?.stateAndBehaviorInvariants?.every((record) =>
       record.authoritativeOwnerPreserved === true &&
       record.duplicateStateCopies === "forbidden" &&
       record.formulasApiDefaultsAndResultShapes === "unchanged"), "state/behavior invariant is incomplete");
+    if (profile.includeDetailedStatePerformanceGates) {
+      require(plan?.stateAndBehaviorInvariants?.every((record) =>
+        record.authoritativeOwnerBefore?.module === record.module &&
+        record.authoritativeOwnerAfter?.module !== record.module &&
+        Array.isArray(record.publicStateShape) &&
+        Array.isArray(record.snapshotShape) &&
+        typeof record.stableResultIdentity === "boolean" &&
+        typeof record.mutatesCallerInputs === "boolean" &&
+        /^[a-f0-9]{64}$/u.test(record.behaviorFingerprint) &&
+        record.allocationBaseline &&
+        record.additionalMigrationAllocationsAllowed === 0 &&
+        record.transportLookupsAllowed === 0 &&
+        record.representationComparison === "target-ast-after-removing-export-must-equal-frozen-source-ast"),
+      "detailed state/performance invariant is incomplete");
+    }
     require(plan?.verdict === "eligible-for-focused-test-matrix", "verdict is invalid");
-    for (const evidence of Object.values(plan?.sourceEvidence || {})) {
+    for (const [key, evidence] of Object.entries(plan?.sourceEvidence || {})) {
+      if (key === "scmCheckpoint") continue;
       require(/^[a-f0-9]{64}$/.test(evidence.sha256), `evidence fingerprint is invalid: ${evidence.path}`);
     }
+    if (profile.scmCheckpointRequired) {
+      require(plan?.sourceEvidence?.scmCheckpoint?.tag === profile.sourceReleaseTag, "SCM tag evidence differs");
+      require(/^[a-f0-9]{40}$/u.test(plan?.sourceEvidence?.scmCheckpoint?.commitSha), "SCM commit evidence is invalid");
+      require(plan?.sourceEvidence?.scmCheckpoint?.tagType === "tag", "SCM tag must be annotated");
+    } else {
+      require(plan?.sourceEvidence?.scmCheckpoint === undefined, "historical plan must remain byte-stable without SCM field");
+    }
     if (errors.length > 0) {
-      throw new Error(`Stage 3.6.2 execution-plan contract failed:\n- ${errors.join("\n- ")}`);
+      throw new Error(`${profile.executionStageLabel} execution-plan contract failed:\n- ${errors.join("\n- ")}`);
     }
     return immutableRecord(plan);
   }

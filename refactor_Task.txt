@@ -4,7 +4,7 @@
 **Поточна release-версія:** `v0.24.43`
 **Тип робіт:** architecture / infrastructure refactoring  
 **Gameplay changes:** заборонені  
-**Поточний наступний етап:** `Stage 3.7.1 — Batch 007 Atomic Execution Plan`
+**Поточний наступний етап:** `Stage 3.7.3 — Batch 007 Pre-build Contract`
 
 Цей документ містить тільки роботи, які ще не виконані.
 
@@ -84,7 +84,17 @@ RodStrokeState
 SimpleFightForceCalculator
 ```
 
-Stage 3.7.1 має створити atomic execution plan поверх verified evidence `architecture/migration/stage_3_batch_007_audit.json`. План повинен зафіксувати lifecycle, exact target/export/activation/consumer scope, cumulative transition `25 → 31`, registry transition `48 → 57`, representation-only cutover, performance/state gates і batch-007-only rollback.
+Stage 3.7.0–3.7.2 завершені як read-only preparation. Verified evidence:
+
+```text
+architecture/migration/stage_3_batch_007_audit.json
+architecture/migration/stage_3_batch_007_execution_plan.json
+architecture/migration/stage_3_batch_007_test_matrix.json
+```
+
+Atomic execution plan зафіксував lifecycle `pre → open → runtime-active → completed`, exact scope `6 modules / 6 activations / 9 consumers`, cumulative transition `25 → 31`, registry transition `48 → 57`, representation-only cutover, performance/state gates і batch-007-only rollback. Focused matrix виконує `54` classic ↔ temporary native ESM behavior cases і `8` compatibility contracts, включно з module identity, activation timing та transport surface, derived із runtime contract.
+
+Наступний підетап `Stage 3.7.3` відкриває batch лише після pre-build validation. До його окремого виконання runtime cutover заборонений: execution state, Manifest, bridge registry, `src/`, `index.html` і cumulative output залишаються у topology `v0.24.43`.
 
 Кожен approved batch проходить один повторюваний pipeline:
 
