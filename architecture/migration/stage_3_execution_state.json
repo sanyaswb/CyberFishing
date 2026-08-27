@@ -12,6 +12,7 @@
     "stage-3.candidate-005-fishing-45d0c7ce",
     "stage-3.candidate-006-fishing-e48e70d8"
   ],
-  "activeBatchId": null,
-  "compatibilityRuntimeActivated": true
+  "activeBatchId": "stage-3.candidate-007-fishing-bb8b3939",
+  "compatibilityRuntimeActivated": true,
+  "activeBatchPhase": "prebuild"
 }

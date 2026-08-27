@@ -8,6 +8,9 @@ const {
   StageThreeBatchPrebuildContractValidator,
 } = require("./domain_batches/stage_three_batch_prebuild_contract");
 const {
+  BATCH_006_PREBUILD_PROFILE,
+} = require("./domain_batches/stage_three_batch_prebuild_profile");
+const {
   CumulativeRuntimeContractValidator,
 } = require("../build/compat_runtime/cumulative_runtime_contract");
 const {
@@ -23,7 +26,7 @@ class StageThreeBatch006PrebuildIntegrationCheck {
     const manifest = this.#json("architecture/migration/module_migration_manifest.json");
     const runtime = this.#json("architecture/migration/stage_3_compatibility_runtime.json");
     const registry = this.#json("architecture/guards/migration_bridge_registry.json");
-    new StageThreeBatchPrebuildContractValidator().validate(artifact);
+    new StageThreeBatchPrebuildContractValidator(BATCH_006_PREBUILD_PROFILE).validate(artifact);
     new CumulativeRuntimeContractValidator().validate(runtime);
     new MigrationBridgeRegistryValidator().validate(registry);
     assert.equal(state.compatibilityRuntimeActivated, true);

@@ -4,7 +4,7 @@
 **Поточна release-версія:** `v0.24.43`
 **Тип робіт:** architecture / infrastructure refactoring  
 **Gameplay changes:** заборонені  
-**Поточний наступний етап:** `Stage 3.7.3 — Batch 007 Pre-build Contract`
+**Поточний наступний етап:** `Stage 3.7.4 — Batch 007 Target Source and Build Validation`
 
 Цей документ містить тільки роботи, які ще не виконані.
 
@@ -94,7 +94,9 @@ architecture/migration/stage_3_batch_007_test_matrix.json
 
 Atomic execution plan зафіксував lifecycle `pre → open → runtime-active → completed`, exact scope `6 modules / 6 activations / 9 consumers`, cumulative transition `25 → 31`, registry transition `48 → 57`, representation-only cutover, performance/state gates і batch-007-only rollback. Focused matrix виконує `54` classic ↔ temporary native ESM behavior cases і `8` compatibility contracts, включно з module identity, activation timing та transport surface, derived із runtime contract.
 
-Наступний підетап `Stage 3.7.3` відкриває batch лише після pre-build validation. До його окремого виконання runtime cutover заборонений: execution state, Manifest, bridge registry, `src/`, `index.html` і cumulative output залишаються у topology `v0.24.43`.
+Stage 3.7.3 завершений: batch 007 відкрито через `activeBatchPhase: prebuild`. Planned target/activation/bridge records належать винятково versioned prebuild contract; Manifest, active runtime contract і active bridge registry не містять planned state та залишаються byte-identical baseline `v0.24.43`. Active topology залишається `25 modules / 26 activations / 48 bridges`, planned delta становить `+6 / +6 / +9`, а resulting topology `31 / 32 / 57` доведена exact set union.
+
+Наступний підетап `Stage 3.7.4` отримує право створити шість representation-only named ESM targets і виконати candidate cumulative build validation. Live `index.html`, classic providers, active activation set і validated runtime output не змінюються до окремого cutover gate.
 
 Кожен approved batch проходить один повторюваний pipeline:
 

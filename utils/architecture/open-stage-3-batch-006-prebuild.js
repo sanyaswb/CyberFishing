@@ -8,6 +8,9 @@ const {
   StageThreeBatchPrebuildContractValidator,
 } = require("./domain_batches/stage_three_batch_prebuild_contract");
 const {
+  BATCH_006_PREBUILD_PROFILE,
+} = require("./domain_batches/stage_three_batch_prebuild_profile");
+const {
   CumulativeRuntimeContractValidator,
 } = require("../build/compat_runtime/cumulative_runtime_contract");
 const {
@@ -51,7 +54,7 @@ function buildTransition() {
   const manifest = read(PATHS.manifest);
   const runtime = read(PATHS.runtimeContract);
   const registry = read(PATHS.bridgeRegistry);
-  const artifact = new StageThreeBatchPrebuildContractBuilder().build({
+  const artifact = new StageThreeBatchPrebuildContractBuilder(BATCH_006_PREBUILD_PROFILE).build({
     audit: audit.document,
     auditSha256: sha256(audit.bytes),
     executionPlan: plan.document,
@@ -64,7 +67,7 @@ function buildTransition() {
     runtimeContractSha256: sha256(runtime.bytes),
     bridgeRegistrySha256: sha256(registry.bytes),
   });
-  new StageThreeBatchPrebuildContractValidator().validate(artifact);
+  new StageThreeBatchPrebuildContractValidator(BATCH_006_PREBUILD_PROFILE).validate(artifact);
 
   const nextState = {
     ...state.document,

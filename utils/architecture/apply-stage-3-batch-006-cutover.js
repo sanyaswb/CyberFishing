@@ -22,6 +22,9 @@ const {
 const {
   StageThreeBatchPrebuildContractValidator,
 } = require("./domain_batches/stage_three_batch_prebuild_contract");
+const {
+  BATCH_006_PREBUILD_PROFILE,
+} = require("./domain_batches/stage_three_batch_prebuild_profile");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BATCH_ID = "stage-3.candidate-006-fishing-e48e70d8";
@@ -65,7 +68,7 @@ class StageThreeBatch006AtomicCutover {
     const manifest = this.#json(PATHS.manifest);
     const runtime = this.#json(PATHS.runtime);
     const registry = this.#json(PATHS.registry);
-    new StageThreeBatchPrebuildContractValidator().validate(prebuild);
+    new StageThreeBatchPrebuildContractValidator(BATCH_006_PREBUILD_PROFILE).validate(prebuild);
     this.#require(state.activeBatchId === BATCH_ID, "batch 006 is not active");
     this.#require(state.activeBatchPhase === "prebuild", "batch 006 is not in prebuild phase");
     this.#require(runtime.activationPositions.length === 20, "active activation baseline differs");

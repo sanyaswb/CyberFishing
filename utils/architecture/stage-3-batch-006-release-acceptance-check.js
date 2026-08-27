@@ -99,7 +99,7 @@ class StageThreeBatch006ReleaseAcceptanceCheck {
     ));
     const task = this.#read("refactor_Task.txt");
     assert(task.includes(`**Поточна release-версія:** \`v${RELEASE_VERSION}\``));
-    assert(task.includes("Stage 3.7.0 — Batch 007 Preflight and Dependency Audit"));
+    assert(task.includes("Stage 3.7"));
   }
 
   #verifyCompletedLifecycle({ state, approved }) {

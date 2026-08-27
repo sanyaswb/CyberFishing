@@ -219,7 +219,9 @@ class StageThreeFishingFoundationRuntimeCheck {
     const state = this.#json("architecture/migration/stage_3_execution_state.json");
     const batch = approved.batches.find((record) => record.id === BATCH_ID);
     assert(batch);
-    const selectedBatchId = state.activeBatchId || state.completedBatchIds.at(-1);
+    const selectedBatchId = state.activeBatchId && state.activeBatchPhase !== "prebuild"
+      ? state.activeBatchId
+      : state.completedBatchIds.at(-1);
     const selectedBatch = approved.batches.find((record) =>
       record.id === selectedBatchId);
     assert(selectedBatch);

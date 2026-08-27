@@ -1,13 +1,16 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 const {
   BATCH_007_EXECUTION_PROFILE,
 } = require("./domain_batches/stage_three_batch_execution_profile");
 const {
   StageThreeBatchExecutionPlanValidator,
 } = require("./domain_batches/stage_three_batch_execution_plan");
-const { buildPlan } = require("./generate-stage-3-batch-007-execution-plan");
+
+const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -16,7 +19,10 @@ function clone(value) {
 class StageThreeBatch007ExecutionPlanFixtureCheck {
   run() {
     const validator = new StageThreeBatchExecutionPlanValidator(BATCH_007_EXECUTION_PROFILE);
-    const valid = validator.validate(buildPlan());
+    const valid = validator.validate(JSON.parse(fs.readFileSync(path.join(
+      PROJECT_ROOT,
+      BATCH_007_EXECUTION_PROFILE.executionPlanPath,
+    ), "utf8")));
     this.#reject(validator, valid, (plan) => { plan.runtimeMigrationAllowed = true; }, "early runtime unlock");
     this.#reject(validator, valid, (plan) => { plan.scope.partialCutoverAllowed = true; }, "partial cutover");
     this.#reject(validator, valid, (plan) => { plan.scope.modules.pop(); plan.scope.targetCount -= 1; }, "incomplete scope");

@@ -40,8 +40,12 @@ class StageThreeBatch006RuntimeCheck {
     assert.deepEqual(state.completedBatchIds, approved.batches.slice(0, completed ? 6 : 5)
       .map((record) => record.id));
     if (completed) {
-      assert.equal(state.activeBatchId, null);
-      assert.equal(state.activeBatchPhase, undefined);
+      const nextBatchPrebuild = state.activeBatchId === approved.batches[6]?.id &&
+        state.activeBatchPhase === "prebuild";
+      assert.equal(
+        (state.activeBatchId === null && state.activeBatchPhase === undefined) || nextBatchPrebuild,
+        true,
+      );
     } else {
       assert.equal(state.activeBatchPhase, "runtime-active");
     }

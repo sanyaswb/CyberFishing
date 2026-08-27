@@ -6,6 +6,9 @@ const path = require("node:path");
 const {
   StageThreeBatchPrebuildContractValidator,
 } = require("./domain_batches/stage_three_batch_prebuild_contract");
+const {
+  BATCH_006_PREBUILD_PROFILE,
+} = require("./domain_batches/stage_three_batch_prebuild_profile");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
@@ -19,7 +22,7 @@ class StageThreeBatch006PrebuildFixtureCheck {
       PROJECT_ROOT,
       "architecture/migration/stage_3_batch_006_prebuild_contract.json",
     ), "utf8"));
-    const validator = new StageThreeBatchPrebuildContractValidator();
+    const validator = new StageThreeBatchPrebuildContractValidator(BATCH_006_PREBUILD_PROFILE);
     assert.doesNotThrow(() => validator.validate(valid));
     this.#reject(validator, valid, (record) => record.lifecycle.completedBatchIds.pop());
     this.#reject(validator, valid, (record) => record.lifecycle.activeBatchPhase = "runtime-active");

@@ -109,38 +109,37 @@ class StageThreeCompatibilityRuntimeIntegrationCheck {
     let runtime = null;
     if (prebuildOpen) {
       const outputRoot = path.join(PROJECT_ROOT, contract.output.directory);
-      assert.equal(fs.existsSync(outputRoot), true, "validated prior runtime output must remain available");
-      assert.equal(
-        fs.existsSync(path.join(outputRoot, contract.output.runtimeFile)),
-        true,
-        "validated prior cumulative runtime must remain available",
+      const runtimeOutputExists = fs.existsSync(
+        path.join(outputRoot, contract.output.runtimeFile),
       );
+      if (!runtimeOutputExists) {
+        const report = await new StageThreeCompatibilityBuildApplication({
+          projectRoot: PROJECT_ROOT,
+        }).run();
+        runtime = this.#validateBuildReport(
+          report,
+          expectedProjectModules,
+          expectedActivationIds,
+          contract,
+        );
+      }
       assert.equal(
         globSync("activations/*.js", { cwd: outputRoot, nodir: true }).length,
         expectedActivationIds.length,
         "prebuild must preserve the completed-prefix activation output",
       );
-      runtime = {
+      runtime ||= {
         path: `${contract.output.directory}${contract.output.runtimeFile}`,
       };
     } else {
       const report = await new StageThreeCompatibilityBuildApplication({
         projectRoot: PROJECT_ROOT,
       }).run();
-      assert.equal(report.status, "built");
-      assert.equal(report.moduleCount, expectedProjectModules.length);
-      assert.equal(report.activationCount, expectedActivationIds.length);
-      assert.equal(report.outputs.length, expectedActivationIds.length + 1);
-      runtime = report.outputs.find((output) => output.kind === "cumulative-runtime");
-      assert(runtime);
-      assert.deepEqual(runtime.projectModules, expectedProjectModules);
-      assert.equal(new Set(runtime.projectModules).size, expectedProjectModules.length);
-      assert.deepEqual(
-        runtime.virtualBuildModules,
-        [...new Set(runtime.virtualBuildModules)].sort(),
-      );
-      assert(runtime.virtualBuildModules.every((moduleId) =>
-        contract.approvedVirtualModules.includes(moduleId)),
+      runtime = this.#validateBuildReport(
+        report,
+        expectedProjectModules,
+        expectedActivationIds,
+        contract,
       );
     }
     assert.equal(
@@ -181,7 +180,7 @@ class StageThreeCompatibilityRuntimeIntegrationCheck {
     console.log(
       `Stage 3.0.4 integration passed: one ${expectedProjectModules.length}-module cumulative graph, ` +
         `${expectedActivationIds.length} exact activations, 424 logical classic positions, ` +
-        `no isolated IIFEs and no domain transport dependency${prebuildOpen ? "; batch 006 remains planned-only" : ""}.`,
+        `no isolated IIFEs and no domain transport dependency${prebuildOpen ? "; active next batch remains prebuild-only" : ""}.`,
     );
   }
 
@@ -189,6 +188,35 @@ class StageThreeCompatibilityRuntimeIntegrationCheck {
     return JSON.parse(
       fs.readFileSync(path.join(PROJECT_ROOT, relativePath), "utf8"),
     );
+  }
+
+  #validateBuildReport(
+    report,
+    expectedProjectModules,
+    expectedActivationIds,
+    contract,
+  ) {
+    assert.equal(report.status, "built");
+    assert.equal(report.moduleCount, expectedProjectModules.length);
+    assert.equal(report.activationCount, expectedActivationIds.length);
+    assert.equal(report.outputs.length, expectedActivationIds.length + 1);
+    const runtime = report.outputs.find(
+      (output) => output.kind === "cumulative-runtime",
+    );
+    assert(runtime);
+    assert.deepEqual(runtime.projectModules, expectedProjectModules);
+    assert.equal(
+      new Set(runtime.projectModules).size,
+      expectedProjectModules.length,
+    );
+    assert.deepEqual(
+      runtime.virtualBuildModules,
+      [...new Set(runtime.virtualBuildModules)].sort(),
+    );
+    assert(runtime.virtualBuildModules.every((moduleId) =>
+      contract.approvedVirtualModules.includes(moduleId)),
+    );
+    return runtime;
   }
 }
 

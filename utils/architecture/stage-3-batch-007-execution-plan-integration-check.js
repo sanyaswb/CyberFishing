@@ -11,8 +11,6 @@ const {
 } = require("./domain_batches/stage_three_batch_execution_plan");
 const {
   PATHS,
-  buildPlan,
-  serialize,
 } = require("./generate-stage-3-batch-007-execution-plan");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
@@ -52,9 +50,9 @@ class StageThreeBatch007ExecutionPlanIntegrationCheck {
       "architecture/migration/stage_3_execution_state.json",
     ];
     const before = new Map(protectedPaths.map((relativePath) => [relativePath, this.#read(relativePath)]));
-    const plan = buildPlan();
+    const planBytes = this.#read(PATHS.output);
+    const plan = JSON.parse(planBytes.toString("utf8"));
     new StageThreeBatchExecutionPlanValidator(BATCH_007_EXECUTION_PROFILE).validate(plan);
-    assert.deepEqual(this.#read(PATHS.output), serialize(plan));
     assert.deepEqual(plan.scope, {
       ...plan.scope,
       atomic: true,

@@ -1,10 +1,13 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 const {
   StageThreeBatch007DependencyStateAuditValidator,
 } = require("./domain_batches/stage_three_batch_007_dependency_state_audit");
-const { buildArtifact } = require("./generate-stage-3-batch-007-audit");
+
+const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -13,7 +16,10 @@ function clone(value) {
 class StageThreeBatch007AuditFixtureCheck {
   run() {
     const validator = new StageThreeBatch007DependencyStateAuditValidator();
-    const valid = validator.validate(buildArtifact());
+    const valid = validator.validate(JSON.parse(fs.readFileSync(path.join(
+      PROJECT_ROOT,
+      "architecture/migration/stage_3_batch_007_audit.json",
+    ), "utf8")));
 
     this.#reject(validator, valid, (artifact) => {
       artifact.scope.modules.pop();

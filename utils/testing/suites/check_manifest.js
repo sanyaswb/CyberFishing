@@ -420,6 +420,30 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "architecture", "gameplay"],
   },
   {
+    id: "stage-3-batch-prebuild-tooling-generalization",
+    title: "Stage 3.7.3 reusable prebuild tooling and batch-006 byte stability",
+    file: "utils/architecture/stage-3-batch-prebuild-tooling-generalization-check.js",
+    suites: ["quick", "architecture"],
+  },
+  {
+    id: "stage-3-batch-007-prebuild-fixtures",
+    title: "Stage 3.7.3 exact prebuild contract fixtures",
+    file: "utils/architecture/stage-3-batch-007-prebuild-fixture-check.js",
+    suites: ["architecture"],
+  },
+  {
+    id: "stage-3-batch-007-prebuild-transaction-fixtures",
+    title: "Stage 3.7.3 transactional metadata replacement fixtures",
+    file: "utils/architecture/stage-3-batch-007-prebuild-transaction-fixture-check.js",
+    suites: ["architecture"],
+  },
+  {
+    id: "stage-3-batch-007-prebuild-integration",
+    title: "Stage 3.7.3 prebuild-open state and frozen runtime topology",
+    file: "utils/architecture/stage-3-batch-007-prebuild-integration-check.js",
+    suites: ["quick", "architecture"],
+  },
+  {
     id: "stage-3-inventory-equip-target-batch",
     title: "Stage 3.1 inventory equip-target domain batch",
     file: "utils/architecture/stage-3-inventory-equip-target-batch-check.js",
