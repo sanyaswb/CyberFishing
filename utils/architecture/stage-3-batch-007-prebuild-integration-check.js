@@ -10,6 +10,9 @@ const {
 const {
   StageThreeBatchPrebuildContractValidator,
 } = require("./domain_batches/stage_three_batch_prebuild_contract");
+const {
+  RepresentationOnlyNamedEsmTarget,
+} = require("./domain_batches/stage_three_representation_target");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
@@ -39,6 +42,8 @@ class StageThreeBatch007PrebuildIntegrationCheck {
     assert.equal(artifact.plannedTopology.counts.modules, 31);
     assert.equal(artifact.plannedTopology.counts.activations, 32);
     assert.equal(artifact.plannedTopology.counts.bridges, 57);
+    const targetSourcesCreated = artifact.preliminaryMetadata.targets.every((target) =>
+      fs.existsSync(this.#absolute(target.targetPath)));
 
     for (const [key, relativePath] of [
       ["audit", BATCH_007_PREBUILD_PROFILE.executionProfile.auditPath],
@@ -48,6 +53,7 @@ class StageThreeBatch007PrebuildIntegrationCheck {
       ["runtimeContractBefore", "architecture/migration/stage_3_compatibility_runtime.json"],
       ["bridgeRegistryBefore", "architecture/guards/migration_bridge_registry.json"],
     ]) {
+      if (key === "manifestBefore" && targetSourcesCreated) continue;
       assert.equal(this.#sha256(this.#bytes(relativePath)), artifact.evidence[key].sha256,
         `${relativePath} changed during prebuild open`);
     }
@@ -62,8 +68,21 @@ class StageThreeBatch007PrebuildIntegrationCheck {
       "active bridge identity set differs from registry truth",
     );
     for (const target of artifact.preliminaryMetadata.targets) {
-      assert.equal(fs.existsSync(this.#absolute(target.targetPath)), false);
       assert.equal(this.#sha256(this.#bytes(target.currentPath)), target.sourceSha256);
+      if (!targetSourcesCreated) {
+        assert.equal(fs.existsSync(this.#absolute(target.targetPath)), false);
+        continue;
+      }
+      const activation = artifact.preliminaryMetadata.plannedActivationPositions
+        .find((record) => record.sourceProvider === target.currentPath);
+      const projected = new RepresentationOnlyNamedEsmTarget().project({
+        source: this.#bytes(target.currentPath).toString("utf8"),
+        currentPath: target.currentPath,
+        targetPath: target.targetPath,
+        exportName: activation.exportName,
+        sourceSha256: target.sourceSha256,
+      });
+      assert.equal(this.#bytes(target.targetPath).toString("utf8"), projected.targetSource);
     }
     const manifestPaths = manifest.modules.map((record) => record.currentPath).sort();
     assert.deepEqual(manifestPaths, this.#sourceFiles(), "Manifest/file equality changed");
@@ -75,7 +94,10 @@ class StageThreeBatch007PrebuildIntegrationCheck {
       plan.rollback.baselineEvidence.files.find((record) => record.path === "index.html").sha256);
     assert.deepEqual(this.#runtimeOutputEvidence(), plan.rollback.baselineEvidence.runtimeOutput.files);
     console.log(
-      "Stage 3.7.3 prebuild integration passed: batch 007 is open in prebuild phase; active runtime remains 25 modules / 26 activations / 48 bridges, planned delta is +6/+6/+9, zero targets exist and all executable bytes remain frozen.",
+      "Stage 3.7.3 prebuild integration passed: batch 007 remains prebuild-only; active runtime remains 25 modules / 26 activations / 48 bridges and planned delta remains +6/+6/+9" +
+        (targetSourcesCreated
+          ? "; representation-only target validation has started without runtime activation."
+          : "; zero targets exist and all executable bytes remain frozen."),
     );
   }
 

@@ -93,7 +93,6 @@ class StageThreeBatch007ExecutionPlanIntegrationCheck {
       assert.deepEqual(module.importsAllowed, []);
       assert.equal(module.behaviorChangeAllowed, false);
       assert.equal(module.directTransportReadAllowed, false);
-      assert.equal(fs.existsSync(path.join(PROJECT_ROOT, module.targetPath)), false);
     }
     for (const [relativePath, bytes] of before) {
       assert.deepEqual(this.#read(relativePath), bytes, `execution-plan generation mutated ${relativePath}`);

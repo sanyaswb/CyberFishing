@@ -617,6 +617,18 @@ class StageOneClosureValidator {
     const stageThreeTargetCount = (stageThreeApprovedPlan?.batches || [])
       .filter((batch) => completedStageThree.has(batch.id))
       .reduce((count, batch) => count + batch.modules.length, 0);
+    const prebuildBatch = stageThreeState?.activeBatchPhase === "prebuild"
+      ? (stageThreeApprovedPlan?.batches || []).find(
+        (batch) => batch.id === stageThreeState.activeBatchId,
+      )
+      : null;
+    const prebuildTargetCount = (prebuildBatch?.modules || []).filter((module) =>
+      fs.existsSync(path.join(this.projectRoot, module.targetPath))).length;
+    this.#require(
+      prebuildTargetCount === 0 || prebuildTargetCount === (prebuildBatch?.modules?.length || 0),
+      "Stage 3 prebuild target source set must be atomic",
+      errors,
+    );
     const selectedStageThreeBatch = (stageThreeApprovedPlan?.batches || [])
       .filter((batch) => completedStageThree.has(batch.id))
       .at(-1);
@@ -628,7 +640,8 @@ class StageOneClosureValidator {
     );
     this.#require(
       sourceFiles.length ===
-        baseline.sourceModuleCount + activeWrapperCount + stageThreeTargetCount,
+        baseline.sourceModuleCount + activeWrapperCount + stageThreeTargetCount +
+          prebuildTargetCount,
       "runtime source module count changed",
       errors,
     );
@@ -702,10 +715,33 @@ class StageOneClosureValidator {
     const stageThreeTargets = (stageThreeApprovedPlan?.batches || [])
       .filter((batch) => completedStageThree.has(batch.id))
       .reduce((count, batch) => count + batch.modules.length, 0);
+    const prebuildBatch = stageThreeState?.activeBatchPhase === "prebuild"
+      ? (stageThreeApprovedPlan?.batches || []).find(
+        (batch) => batch.id === stageThreeState.activeBatchId,
+      )
+      : null;
+    const manifestByPath = new Map(
+      manifest.modules.map((module) => [module.currentPath, module]),
+    );
+    const prebuildTargets = (prebuildBatch?.modules || []).filter((module) =>
+      fs.existsSync(path.join(this.projectRoot, module.targetPath)));
+    this.#require(
+      prebuildTargets.length === 0 ||
+        prebuildTargets.length === (prebuildBatch?.modules?.length || 0),
+      "Stage 3 prebuild target Manifest set must be atomic",
+      errors,
+    );
+    this.#require(
+      prebuildTargets.every((module) =>
+        manifestByPath.get(module.targetPath)?.architecture?.migrationStatus === "migrating"),
+      "Stage 3 prebuild target Manifest entries must remain migrating",
+      errors,
+    );
     this.#require(
       classifiedCount === baseline.classifiedModuleCount - activeModules &&
         manifest.modules.length ===
-          baseline.classifiedModuleCount + activeWrappers + stageThreeTargets,
+          baseline.classifiedModuleCount + activeWrappers + stageThreeTargets +
+            prebuildTargets.length,
       "Stage 1 classified set changed outside activated batches",
       errors,
     );

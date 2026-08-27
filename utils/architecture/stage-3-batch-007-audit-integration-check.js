@@ -75,7 +75,6 @@ class StageThreeBatch007AuditIntegrationCheck {
       newlyDiscovered: [],
     });
     for (const module of artifact.scope.modules) {
-      assert.equal(fs.existsSync(path.join(PROJECT_ROOT, module.targetPath)), false);
       assert.equal(module.outgoingProjectEdges.length, 0);
       assert.equal(module.dependencyDepth, 0);
       assert.equal(module.scc.cyclic, false);

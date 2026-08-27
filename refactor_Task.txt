@@ -4,7 +4,7 @@
 **Поточна release-версія:** `v0.24.43`
 **Тип робіт:** architecture / infrastructure refactoring  
 **Gameplay changes:** заборонені  
-**Поточний наступний етап:** `Stage 3.7.4 — Batch 007 Target Source and Build Validation`
+**Поточний наступний етап:** `Stage 3.7.5 — Batch 007 Atomic Runtime Cutover`
 
 Цей документ містить тільки роботи, які ще не виконані.
 
@@ -96,7 +96,9 @@ Atomic execution plan зафіксував lifecycle `pre → open → runtime-a
 
 Stage 3.7.3 завершений: batch 007 відкрито через `activeBatchPhase: prebuild`. Planned target/activation/bridge records належать винятково versioned prebuild contract; Manifest, active runtime contract і active bridge registry не містять planned state та залишаються byte-identical baseline `v0.24.43`. Active topology залишається `25 modules / 26 activations / 48 bridges`, planned delta становить `+6 / +6 / +9`, а resulting topology `31 / 32 / 57` доведена exact set union.
 
-Наступний підетап `Stage 3.7.4` отримує право створити шість representation-only named ESM targets і виконати candidate cumulative build validation. Live `index.html`, classic providers, active activation set і validated runtime output не змінюються до окремого cutover gate.
+Stage 3.7.4 завершений: створено шість representation-only named ESM targets, а механічні Manifest observations синхронізовано без зміни active runtime truth. Ізольований candidate build довів topology `31 project modules / 32 activations`; чотири додаткові OXC class-field helpers зареєстровані як exact candidate-only build-infrastructure delta без globals, browser capabilities або game-state ownership. Candidate output очищується після перевірки, тоді як live `index.html`, classic providers, active runtime contract, bridge registry і validated `25/26/48` output залишаються byte-identical.
+
+Наступний підетап `Stage 3.7.5` виконує атомарний runtime cutover: замінює шість classic providers exact activation shims, активує дев'ять bridge records, переносить candidate-only virtual helper allowlist у active runtime contract, перебудовує єдиний cumulative runtime і переводить `activeBatchPhase` у `runtime-active`. Partial cutover заборонений.
 
 Кожен approved batch проходить один повторюваний pipeline:
 

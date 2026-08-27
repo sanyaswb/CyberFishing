@@ -162,6 +162,10 @@ class CumulativeRuntimeContractValidator {
       "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateFieldInitSpec.js",
       "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateFieldSet2.js",
       "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateMethodInitSpec.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/defineProperty.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/toPrimitive.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/toPropertyKey.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/typeof.js",
     ]);
     require(
       Array.isArray(contract?.approvedVirtualModules) &&

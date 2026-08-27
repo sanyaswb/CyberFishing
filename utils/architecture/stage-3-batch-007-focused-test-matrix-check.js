@@ -89,12 +89,13 @@ class StageThreeBatch007FocusedTestMatrixCheck {
   #moduleDefinitions(plan) {
     return plan.scope.modules.map((module) => {
       assert.equal(module.exports.length, 1, `${module.currentPath} must have one exact export`);
-      assert.equal(fs.existsSync(this.#absolute(module.targetPath)), false,
-        `${module.targetPath} must not exist before runtime cutover`);
       return Object.freeze({
         ...module,
         exportName: module.exports[0],
         absoluteCurrentPath: this.#absolute(module.currentPath),
+        persistedTargetPath: fs.existsSync(this.#absolute(module.targetPath))
+          ? module.targetPath
+          : null,
       });
     });
   }
@@ -116,6 +117,13 @@ class StageThreeBatch007FocusedTestMatrixCheck {
         exportName: module.exportName,
         transportSymbol,
       });
+      if (module.persistedTargetPath) {
+        assert.equal(
+          this.#readText(module.persistedTargetPath),
+          loaded.candidateSource,
+          `${module.persistedTargetPath} differs from the verified representation-only candidate`,
+        );
+      }
       const cases = BATCH_007_EXECUTABLE_CASES[module.exportName];
       assert(cases, `Executable behavior cases missing: ${module.exportName}`);
       results.push(...parity.run({ exportName: module.exportName, classicClass, esmClass, cases }));

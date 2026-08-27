@@ -444,6 +444,18 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "architecture"],
   },
   {
+    id: "stage-3-batch-007-source-build-fixtures",
+    title: "Stage 3.7.4 representation target and candidate-build fixtures",
+    file: "utils/architecture/stage-3-batch-007-source-build-fixture-check.js",
+    suites: ["architecture"],
+  },
+  {
+    id: "stage-3-batch-007-source-build-integration",
+    title: "Stage 3.7.4 target source and isolated candidate build validation",
+    file: "utils/architecture/stage-3-batch-007-source-build-integration-check.js",
+    suites: ["quick", "architecture", "gameplay"],
+  },
+  {
     id: "stage-3-inventory-equip-target-batch",
     title: "Stage 3.1 inventory equip-target domain batch",
     file: "utils/architecture/stage-3-inventory-equip-target-batch-check.js",
