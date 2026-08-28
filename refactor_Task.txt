@@ -98,7 +98,9 @@ Stage 3.7.3 завершений: batch 007 відкрито через `activeB
 
 Stage 3.7.4 завершений: створено шість representation-only named ESM targets, а механічні Manifest observations синхронізовано без зміни active runtime truth. Ізольований candidate build довів topology `31 project modules / 32 activations`; чотири додаткові OXC class-field helpers зареєстровані як exact candidate-only build-infrastructure delta без globals, browser capabilities або game-state ownership. Candidate output очищується після перевірки, тоді як live `index.html`, classic providers, active runtime contract, bridge registry і validated `25/26/48` output залишаються byte-identical.
 
-Наступний підетап `Stage 3.7.5` виконує атомарний runtime cutover: замінює шість classic providers exact activation shims, активує дев'ять bridge records, переносить candidate-only virtual helper allowlist у active runtime contract, перебудовує єдиний cumulative runtime і переводить `activeBatchPhase` у `runtime-active`. Partial cutover заборонений.
+Stage 3.7.5 завершений: шість classic providers атомарно замінені exact activation shims, дев'ять reviewed bridge records активовані, а чотири candidate-only OXC helpers перенесені в exact active allowlist. Live topology тепер становить `31 project modules / 32 activations / 57 bridges` в одному cumulative ESM graph; runtime output byte-for-byte збігається з evidence Stage 3.7.4, `index.html` зберігає `426 physical classic scripts / 424 logical legacy positions / 0 module scripts`, а lifecycle залишається `activeBatchPhase: runtime-active` без передчасного завершення batch або зміни release `v0.24.43`. Механічний graph delta `771 → 772` зафіксований exact semantic evidence: один раніше unresolved guarded consumer став confirmed через approved activation, без speculative edge або розширення baseline.
+
+Наступний підетап `Stage 3.7.6` виконує post-build identity, activation timing і state/performance validation на фактичному live cumulative runtime. Він не завершує batch 007 і не створює release `v0.24.44` до проходження наступних observation, full acceptance та browser gates.
 
 Кожен approved batch проходить один повторюваний pipeline:
 

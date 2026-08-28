@@ -468,6 +468,18 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "architecture"],
   },
   {
+    id: "stage-3-batch-007-cutover-fixtures",
+    title: "Stage 3.7.5 atomic runtime cutover fixtures",
+    file: "utils/architecture/stage-3-batch-007-cutover-fixture-check.js",
+    suites: ["architecture"],
+  },
+  {
+    id: "stage-3-batch-007-runtime-cutover",
+    title: "Stage 3.7.5 atomic runtime cutover",
+    file: "utils/architecture/stage-3-batch-007-runtime-cutover-check.js",
+    suites: ["quick", "architecture"],
+  },
+  {
     id: "stage-3-reel-auto-recovery-runtime",
     title: "Stage 3.2 reel auto-recovery post-build runtime",
     file: "utils/architecture/stage-3-reel-auto-recovery-runtime-check.js",

@@ -14,5 +14,5 @@
   ],
   "activeBatchId": "stage-3.candidate-007-fishing-bb8b3939",
   "compatibilityRuntimeActivated": true,
-  "activeBatchPhase": "prebuild"
+  "activeBatchPhase": "runtime-active"
 }

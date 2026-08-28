@@ -25,16 +25,17 @@ class StageThreeBatch007PrebuildIntegrationCheck {
     const registry = this.#json("architecture/guards/migration_bridge_registry.json");
     const plan = this.#json(BATCH_007_PREBUILD_PROFILE.executionProfile.executionPlanPath);
     new StageThreeBatchPrebuildContractValidator(BATCH_007_PREBUILD_PROFILE).validate(artifact);
+    const runtimeActive = state.activeBatchPhase === "runtime-active";
 
     assert.deepEqual(state.completedBatchIds, BATCH_007_PREBUILD_PROFILE.completedPrefix);
     assert.equal(state.activeBatchId, BATCH_007_PREBUILD_PROFILE.batchId);
-    assert.equal(state.activeBatchPhase, "prebuild");
+    assert.equal(["prebuild", "runtime-active"].includes(state.activeBatchPhase), true);
     assert.equal(state.compatibilityRuntimeActivated, true);
     assert.equal(manifest.preliminaryMigration, undefined);
     assert.equal(runtime.plannedActivationPositions, undefined);
     assert.equal(registry.plannedBridges, undefined);
-    assert.equal(runtime.activationPositions.length, 26);
-    assert.equal(registry.bridges.length, 48);
+    assert.equal(runtime.activationPositions.length, runtimeActive ? 32 : 26);
+    assert.equal(registry.bridges.length, runtimeActive ? 57 : 48);
     assert.equal(artifact.activeTopology.counts.modules, 25);
     assert.equal(artifact.plannedDelta.counts.modules, 6);
     assert.equal(artifact.plannedDelta.counts.activations, 6);
@@ -53,36 +54,39 @@ class StageThreeBatch007PrebuildIntegrationCheck {
       ["runtimeContractBefore", "architecture/migration/stage_3_compatibility_runtime.json"],
       ["bridgeRegistryBefore", "architecture/guards/migration_bridge_registry.json"],
     ]) {
-      if (key === "manifestBefore" && targetSourcesCreated) continue;
+      if ((key === "manifestBefore" && targetSourcesCreated) ||
+        (runtimeActive && ["runtimeContractBefore", "bridgeRegistryBefore"].includes(key))) continue;
       assert.equal(this.#sha256(this.#bytes(relativePath)), artifact.evidence[key].sha256,
         `${relativePath} changed during prebuild open`);
     }
     assert.deepEqual(
-      artifact.activeTopology.activationIds,
+      runtimeActive ? artifact.plannedTopology.activationIds : artifact.activeTopology.activationIds,
       runtime.activationPositions.map((record) => record.id).sort(),
       "active activation identity set differs from runtime truth",
     );
     assert.deepEqual(
-      artifact.activeTopology.bridgeIds,
+      runtimeActive ? artifact.plannedTopology.bridgeIds : artifact.activeTopology.bridgeIds,
       registry.bridges.map((record) => record.id).sort(),
       "active bridge identity set differs from registry truth",
     );
     for (const target of artifact.preliminaryMetadata.targets) {
-      assert.equal(this.#sha256(this.#bytes(target.currentPath)), target.sourceSha256);
+      if (!runtimeActive) assert.equal(this.#sha256(this.#bytes(target.currentPath)), target.sourceSha256);
       if (!targetSourcesCreated) {
         assert.equal(fs.existsSync(this.#absolute(target.targetPath)), false);
         continue;
       }
       const activation = artifact.preliminaryMetadata.plannedActivationPositions
         .find((record) => record.sourceProvider === target.currentPath);
-      const projected = new RepresentationOnlyNamedEsmTarget().project({
-        source: this.#bytes(target.currentPath).toString("utf8"),
-        currentPath: target.currentPath,
-        targetPath: target.targetPath,
-        exportName: activation.exportName,
-        sourceSha256: target.sourceSha256,
-      });
-      assert.equal(this.#bytes(target.targetPath).toString("utf8"), projected.targetSource);
+      if (!runtimeActive) {
+        const projected = new RepresentationOnlyNamedEsmTarget().project({
+          source: this.#bytes(target.currentPath).toString("utf8"),
+          currentPath: target.currentPath,
+          targetPath: target.targetPath,
+          exportName: activation.exportName,
+          sourceSha256: target.sourceSha256,
+        });
+        assert.equal(this.#bytes(target.targetPath).toString("utf8"), projected.targetSource);
+      }
     }
     const manifestPaths = manifest.modules.map((record) => record.currentPath).sort();
     assert.deepEqual(manifestPaths, this.#sourceFiles(), "Manifest/file equality changed");
@@ -90,13 +94,19 @@ class StageThreeBatch007PrebuildIntegrationCheck {
     const scripts = [...html.matchAll(/<script\b([^>]*)\bsrc=["']([^"']+)["'][^>]*>/giu)];
     assert.equal(scripts.filter((match) => /\btype=["']module["']/iu.test(match[1])).length, 0);
     assert.equal(scripts.length, plan.scriptTopology.before.physicalClassicScriptCount);
-    assert.equal(this.#sha256(this.#bytes("index.html")),
-      plan.rollback.baselineEvidence.files.find((record) => record.path === "index.html").sha256);
-    assert.deepEqual(this.#runtimeOutputEvidence(), plan.rollback.baselineEvidence.runtimeOutput.files);
+    if (!runtimeActive) {
+      assert.equal(this.#sha256(this.#bytes("index.html")),
+        plan.rollback.baselineEvidence.files.find((record) => record.path === "index.html").sha256);
+      assert.deepEqual(this.#runtimeOutputEvidence(), plan.rollback.baselineEvidence.runtimeOutput.files);
+    }
     console.log(
-      "Stage 3.7.3 prebuild integration passed: batch 007 remains prebuild-only; active runtime remains 25 modules / 26 activations / 48 bridges and planned delta remains +6/+6/+9" +
+      "Stage 3.7.3 prebuild evidence passed" + (runtimeActive
+        ? " historically after the exact 31/32/57 runtime cutover"
+        : ": batch 007 remains prebuild-only with active 25/26/48 topology and planned +6/+6/+9") +
         (targetSourcesCreated
-          ? "; representation-only target validation has started without runtime activation."
+          ? (runtimeActive
+            ? "; representation-only targets remain exact historical evidence."
+            : "; representation-only target validation has started without runtime activation.")
           : "; zero targets exist and all executable bytes remain frozen."),
     );
   }

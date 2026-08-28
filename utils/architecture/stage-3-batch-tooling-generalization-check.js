@@ -67,15 +67,16 @@ class StageThreeBatchToolingGeneralizationCheck {
     const executionState = {
       ...historicalPlan.lifecycle.preState,
     };
+    const historicalOwners = new Set(executionState.completedBatchIds);
     const runtimeContract = {
       ...currentRuntime,
       activationPositions: currentRuntime.activationPositions.filter((record) =>
-        record.owner !== BATCH_006_EXECUTION_PROFILE.batchId),
+        historicalOwners.has(record.owner)),
     };
     const bridgeRegistry = {
       ...currentRegistry,
       bridges: currentRegistry.bridges.filter((record) =>
-        record.owner !== BATCH_006_EXECUTION_PROFILE.batchId),
+        /^stage-2\./u.test(record.owner) || historicalOwners.has(record.owner)),
     };
     const builder = new StageThreeBatchExecutionPlanBuilder(BATCH_006_EXECUTION_PROFILE);
     const plan = builder.build({

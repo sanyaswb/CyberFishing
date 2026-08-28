@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-runtime-cutover",
+  "status": "runtime-active-verified",
+  "batchId": "stage-3.candidate-007-fishing-bb8b3939",
+  "releaseVersion": "0.24.43",
+  "evidence": {
+    "prebuildContract": {
+      "path": "architecture/migration/stage_3_batch_007_prebuild_contract.json",
+      "sha256": "b1b259606a809ffbe2dfd3c27dd996284d4b205e6e041652176297454987d5dc"
+    },
+    "sourceBuildValidation": {
+      "path": "architecture/migration/stage_3_batch_007_source_build_validation.json",
+      "sha256": "d12767c4a1de27646f1bb9dd914ea3e18196f5f772cbc5f199cdf51286bf61b3"
+    },
+    "executionStateAfter": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "e70aa2388cab23411ae2507b4cc9469bee46f36e08516ca0af775f99e5d4884a"
+    },
+    "manifestAfterMechanicalObservation": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "4304de20717e84fb1632ea53e3b62617d119dd2ac0f49cfb8c9d28dc0a574eab"
+    },
+    "runtimeContractAfter": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "4f238a82b150266fe593735f4027429bf59af3c55b45139ce7434b3f6e55ac75"
+    },
+    "bridgeRegistryAfter": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "2372a9ccde069ab45294287fd427aa30d95cbc2f5756f565763662554ba778ef"
+    },
+    "indexAfter": {
+      "path": "index.html",
+      "sha256": "93972fa1936184e29534ccaaf75a0d1c42a7502e8de64e5b860010a1c4763c26"
+    }
+  },
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8"
+    ],
+    "activeBatchId": "stage-3.candidate-007-fishing-bb8b3939",
+    "activeBatchPhase": "runtime-active",
+    "compatibilityRuntimeActivated": true,
+    "batchCompleted": false
+  },
+  "topology": {
+    "counts": {
+      "modules": 31,
+      "activations": 32,
+      "bridges": 57
+    },
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js"
+    ],
+    "activationIds": [
+      "activation-00287f399f05",
+      "activation-2534a1bdbe18",
+      "activation-3dcbed1b3310",
+      "activation-3e0a233bf70c",
+      "activation-3fee104fb111",
+      "activation-4e28fdf337a3",
+      "activation-57add99af90d",
+      "activation-57b99d3aaf82",
+      "activation-59bd96059da6",
+      "activation-5c6e63e8ffb9",
+      "activation-6ba241908a4c",
+      "activation-75b968069153",
+      "activation-765258a53eef",
+      "activation-7678742c83cf",
+      "activation-775fb46bb6ce",
+      "activation-86e221fafb48",
+      "activation-886fb34615aa",
+      "activation-8f8220d288e5",
+      "activation-9857928fc9d0",
+      "activation-9a198b228060",
+      "activation-9c5651e4f765",
+      "activation-a63204f0676b",
+      "activation-a8e624a68a8e",
+      "activation-be4932b7b0c5",
+      "activation-bf033497a3e1",
+      "activation-ccddea60d16c",
+      "activation-ce7da074f74a",
+      "activation-da8d3f6d370f",
+      "activation-dcb3cecb345c",
+      "activation-f5eefdd6e6e2",
+      "activation-f70148ad6a58",
+      "activation-ffea5244c4bf"
+    ],
+    "bridgeIds": [
+      "bridge-0c0f9cf80110",
+      "bridge-105a8ef0c687",
+      "bridge-1975df3eebf9",
+      "bridge-1af90d9ee5a6",
+      "bridge-1cdd6e08f07e",
+      "bridge-218534519854",
+      "bridge-225041916b22",
+      "bridge-246319f5e6e2",
+      "bridge-262c43042ef7",
+      "bridge-292102f00c09",
+      "bridge-299e2a323f55",
+      "bridge-340e660ed69c",
+      "bridge-397a03218e06",
+      "bridge-451e340bf590",
+      "bridge-4c97028596c9",
+      "bridge-595a005d7c64",
+      "bridge-5d3728373ab6",
+      "bridge-60496caa95fd",
+      "bridge-63afd58b4545",
+      "bridge-6aabd924bf06",
+      "bridge-6b182910c818",
+      "bridge-6c073ecab1b3",
+      "bridge-6c8d26fe475b",
+      "bridge-6cb8d6b6b5dd",
+      "bridge-70c0e5efc338",
+      "bridge-7376f5e6b272",
+      "bridge-7b4507b87811",
+      "bridge-7bdae928832e",
+      "bridge-8654ddb73e7e",
+      "bridge-87740b3c6660",
+      "bridge-93b3ed37a13e",
+      "bridge-9538204fd8a3",
+      "bridge-9987d14a6b96",
+      "bridge-9a90ab115b6b",
+      "bridge-a5a1cd90cdd5",
+      "bridge-a976ae6fdfc5",
+      "bridge-bc3ec26d121f",
+      "bridge-c518ccc47a20",
+      "bridge-c5b20a842e06",
+      "bridge-c6c1e5eb790e",
+      "bridge-c7d38bfb778f",
+      "bridge-c88c4a3e2737",
+      "bridge-d3fd9d86467b",
+      "bridge-d88e995bce27",
+      "bridge-dcceaaf04a57",
+      "bridge-dd65f33afb4a",
+      "bridge-ddf61a64424b",
+      "bridge-e1840139830f",
+      "bridge-f20190e70bbd",
+      "bridge-f31aca4ae5d6",
+      "bridge-f6bcda55f86a",
+      "bridge-f6d56e05e037",
+      "bridge-f719db073789",
+      "bridge-f880b0a474c6",
+      "bridge-fa6a4f31f3a9",
+      "bridge-fc583dce9ac7",
+      "bridge-fd866aee9c88"
+    ]
+  },
+  "build": {
+    "status": "built",
+    "moduleCount": 31,
+    "activationCount": 32,
+    "runtimeSha256": "2bb747e4c4bbd2b3c45bf65563e64a10ec5617319c9cbda7d2c13486a5bb95d0",
+    "candidateRuntimeSha256": "2bb747e4c4bbd2b3c45bf65563e64a10ec5617319c9cbda7d2c13486a5bb95d0",
+    "virtualBuildModules": [
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/assertClassBrand.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/checkPrivateRedeclaration.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateFieldGet2.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateFieldInitSpec.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateFieldSet2.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateMethodInitSpec.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/defineProperty.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/toPrimitive.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/toPropertyKey.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/typeof.js",
+      "\u0000rolldown/runtime.js"
+    ],
+    "previousOutputPreservedUntilValidation": true
+  },
+  "sourceTransition": {
+    "targetCount": 6,
+    "shimCount": 6,
+    "representationOnly": true,
+    "partialCutoverAllowed": false,
+    "targets": [
+      {
+        "currentPath": "src/core/fishing/line_constrained_fish_motion_resolver.js",
+        "targetPath": "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+        "exportName": "LineConstrainedFishMotionResolver",
+        "targetSha256": "bbba751a87c681b057250a55d59384f133d154970f795b90805afb04d68e2040",
+        "activationId": "activation-f5eefdd6e6e2"
+      },
+      {
+        "currentPath": "src/core/fishing/line_radial_movement_splitter.js",
+        "targetPath": "src/game/domain/fishing/line_radial_movement_splitter.js",
+        "exportName": "LineRadialMovementSplitter",
+        "targetSha256": "b145f56fffc4962f4b32de8ec13d6efe6ec7613eeb371572349782e843426f9f",
+        "activationId": "activation-dcb3cecb345c"
+      },
+      {
+        "currentPath": "src/core/fishing/reel_retrieve_speed_calculator.js",
+        "targetPath": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+        "exportName": "ReelRetrieveSpeedCalculator",
+        "targetSha256": "4347b9593ca7b8387fb64f224c343cdb8c7633ea8f5fb3aaad86fc970a374f7b",
+        "activationId": "activation-da8d3f6d370f"
+      },
+      {
+        "currentPath": "src/core/fishing/rod_pull_state.js",
+        "targetPath": "src/game/domain/fishing/rod_pull_state.js",
+        "exportName": "RodPullState",
+        "targetSha256": "111fa719ea32f02f7824b951e2cd31a214468dd609c32ca24cd85193c1c1431c",
+        "activationId": "activation-a63204f0676b"
+      },
+      {
+        "currentPath": "src/core/fishing/rod_stroke_state.js",
+        "targetPath": "src/game/domain/fishing/rod_stroke_state.js",
+        "exportName": "RodStrokeState",
+        "targetSha256": "9454c72176e555ccce5501e18c13af687a373fdb1c4212884e52cf760c5d8248",
+        "activationId": "activation-00287f399f05"
+      },
+      {
+        "currentPath": "src/core/fishing/simple_fight_force_calculator.js",
+        "targetPath": "src/game/domain/fishing/simple_fight_force_calculator.js",
+        "exportName": "SimpleFightForceCalculator",
+        "targetSha256": "a4cdce35a7ff59a9b5f3ab532180561e7bb55072e01cec526e895cc2dca05992",
+        "activationId": "activation-ccddea60d16c"
+      }
+    ]
+  },
+  "dependencyObservation": {
+    "confirmedInterFileEdgesBefore": 771,
+    "confirmedInterFileEdgesAfter": 772,
+    "confirmedEdgeDelta": 1,
+    "newlyConfirmedEdges": [
+      {
+        "source": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+        "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
+        "symbols": [
+          "ReelRetrieveSpeedCalculator"
+        ],
+        "reason": "Exact approved guarded compatibility consumer became mechanically resolvable after activation."
+      }
+    ]
+  },
+  "scriptTopology": {
+    "physicalClassicScriptCount": 426,
+    "logicalLegacyPositionCount": 424,
+    "moduleScriptCount": 0
+  },
+  "rollback": {
+    "scope": "batch-007-only",
+    "preserveCompletedBatchesThrough": "stage-3.candidate-006-fishing-e48e70d8",
+    "partialRollbackAllowed": false,
+    "restoreTopology": {
+      "modules": 25,
+      "activations": 26,
+      "bridges": 48
+    }
+  },
+  "nextGate": "stage-3.7.6-post-build-identity-and-timing-validation"
+}

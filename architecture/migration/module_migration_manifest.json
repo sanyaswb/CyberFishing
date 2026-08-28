@@ -16834,7 +16834,7 @@
           "items": [
             {
               "symbol": "LineConstrainedFishMotionResolver",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -16842,15 +16842,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number",
-            "Object"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -16860,7 +16865,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
@@ -16871,7 +16876,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -16961,7 +16974,7 @@
           "items": [
             {
               "symbol": "LineRadialMovementSplitter",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -16969,14 +16982,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -16986,7 +17005,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fishing/line_radial_movement_splitter.js",
@@ -16997,7 +17016,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -18099,7 +18126,7 @@
           "items": [
             {
               "symbol": "ReelRetrieveSpeedCalculator",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -18107,14 +18134,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -18124,7 +18157,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
@@ -18135,7 +18168,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -18545,7 +18586,7 @@
           "items": [
             {
               "symbol": "RodPullState",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -18553,12 +18594,21 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [],
+          "builtins": [
+            "globalThis"
+          ],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -18567,7 +18617,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fishing/rod_pull_state.js",
@@ -18578,7 +18628,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -18726,7 +18784,7 @@
           "items": [
             {
               "symbol": "RodStrokeState",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -18734,14 +18792,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -18751,7 +18815,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fishing/rod_stroke_state.js",
@@ -18762,7 +18826,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -18852,7 +18924,7 @@
           "items": [
             {
               "symbol": "SimpleFightForceCalculator",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -18860,15 +18932,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number",
-            "Object"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -18878,7 +18955,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fishing/simple_fight_force_calculator.js",
@@ -18889,7 +18966,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -36402,7 +36487,7 @@
         }
       },
       "architecture": {
-        "migrationStatus": "migrating",
+        "migrationStatus": "esm",
         "roles": [
           "domain-behavior"
         ],
@@ -36503,7 +36588,7 @@
         }
       },
       "architecture": {
-        "migrationStatus": "migrating",
+        "migrationStatus": "esm",
         "roles": [
           "domain-behavior"
         ],
@@ -36755,7 +36840,7 @@
         }
       },
       "architecture": {
-        "migrationStatus": "migrating",
+        "migrationStatus": "esm",
         "roles": [
           "domain-behavior"
         ],
@@ -36903,7 +36988,7 @@
         }
       },
       "architecture": {
-        "migrationStatus": "migrating",
+        "migrationStatus": "esm",
         "roles": [
           "domain-behavior"
         ],
@@ -37003,7 +37088,7 @@
         }
       },
       "architecture": {
-        "migrationStatus": "migrating",
+        "migrationStatus": "esm",
         "roles": [
           "domain-behavior"
         ],
@@ -37104,7 +37189,7 @@
         }
       },
       "architecture": {
-        "migrationStatus": "migrating",
+        "migrationStatus": "esm",
         "roles": [
           "domain-behavior"
         ],
@@ -44643,6 +44728,14 @@
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
               "resolution": "confirmed"
+            },
+            {
+              "symbol": "ReelRetrieveSpeedCalculator",
+              "mechanism": "global-this-property",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred",
+              "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
+              "resolution": "confirmed"
             }
           ],
           "items": [
@@ -44650,6 +44743,13 @@
               "target": "src/config/inventory/inventory_v2_item_parameter_config.js",
               "symbols": [
                 "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
+              "symbols": [
+                "ReelRetrieveSpeedCalculator"
               ],
               "resolution": "confirmed"
             },
@@ -44671,13 +44771,6 @@
             },
             {
               "symbol": "CastDistanceCalculator",
-              "mechanism": "global-this-property",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "resolution": "unresolved"
-            },
-            {
-              "symbol": "ReelRetrieveSpeedCalculator",
               "mechanism": "global-this-property",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",

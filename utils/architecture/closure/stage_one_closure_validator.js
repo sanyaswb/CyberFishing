@@ -745,9 +745,13 @@ class StageOneClosureValidator {
       "Stage 1 classified set changed outside activated batches",
       errors,
     );
+    const stageThreeConfirmedEdgeDelta = this.#stageThreeConfirmedEdgeDelta(
+      manifest.modules,
+      baseline.confirmedInterFileEdges,
+    );
     this.#require(
       this.#confirmedEdgeCount(manifest.modules) ===
-        baseline.confirmedInterFileEdges,
+        baseline.confirmedInterFileEdges + stageThreeConfirmedEdgeDelta,
       "confirmed dependency edge count changed",
       errors,
     );
@@ -957,6 +961,44 @@ class StageOneClosureValidator {
         ).length,
       0,
     );
+  }
+
+  #stageThreeConfirmedEdgeDelta(modules, baselineEdgeCount) {
+    const migrationRoot = path.join(this.projectRoot, "architecture/migration");
+    const byPath = new Map(modules.map((module) => [module.currentPath, module]));
+    const identities = new Set();
+    let expectedBefore = baselineEdgeCount;
+    return fs.readdirSync(migrationRoot)
+      .filter((name) => /^stage_3_batch_\d+_runtime_cutover\.json$/u.test(name))
+      .sort()
+      .reduce((total, name) => {
+        const artifact = JSON.parse(fs.readFileSync(path.join(migrationRoot, name), "utf8"));
+        const delta = artifact?.dependencyObservation?.confirmedEdgeDelta || 0;
+        if (!Number.isInteger(delta) || delta < 0) {
+          throw new Error(`Stage 3 cutover confirmed-edge delta is invalid: ${name}`);
+        }
+        const records = artifact?.dependencyObservation?.newlyConfirmedEdges || [];
+        if (records.length !== delta ||
+          artifact.dependencyObservation.confirmedInterFileEdgesBefore !== expectedBefore ||
+          artifact.dependencyObservation.confirmedInterFileEdgesAfter !== expectedBefore + delta) {
+          throw new Error(`Stage 3 cutover confirmed-edge sequence is invalid: ${name}`);
+        }
+        for (const record of records) {
+          const identity = `${record.source}\0${record.target}\0${JSON.stringify(record.symbols)}`;
+          if (identities.has(identity)) {
+            throw new Error(`Stage 3 cutover confirmed-edge evidence is duplicated: ${name}`);
+          }
+          identities.add(identity);
+          const observed = byPath.get(record.source)?.analysis?.dependencies?.items || [];
+          if (!observed.some((edge) => edge.target === record.target &&
+            JSON.stringify(edge.symbols) === JSON.stringify(record.symbols) &&
+            edge.resolution === "confirmed")) {
+            throw new Error(`Stage 3 cutover confirmed-edge evidence is not observed: ${name}`);
+          }
+        }
+        expectedBefore += delta;
+        return total + delta;
+      }, 0);
   }
 
   #collectJavaScriptFiles(rootDirectory) {

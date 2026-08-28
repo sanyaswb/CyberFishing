@@ -40,23 +40,26 @@ class StageThreeBatch006RuntimeCheck {
     assert.deepEqual(state.completedBatchIds, approved.batches.slice(0, completed ? 6 : 5)
       .map((record) => record.id));
     if (completed) {
-      const nextBatchPrebuild = state.activeBatchId === approved.batches[6]?.id &&
-        state.activeBatchPhase === "prebuild";
+      const nextBatchOpen = state.activeBatchId === approved.batches[6]?.id &&
+        ["prebuild", "runtime-active"].includes(state.activeBatchPhase);
       assert.equal(
-        (state.activeBatchId === null && state.activeBatchPhase === undefined) || nextBatchPrebuild,
+        (state.activeBatchId === null && state.activeBatchPhase === undefined) || nextBatchOpen,
         true,
       );
     } else {
       assert.equal(state.activeBatchPhase, "runtime-active");
     }
+    const selectedCount = state.completedBatchIds.length +
+      (state.activeBatchId && state.activeBatchPhase === "runtime-active" ? 1 : 0);
+    const selectedBatch = approved.batches[selectedCount - 1];
     assert.equal(contract.activationPositions.length,
-      batch.compatibility.cumulativeActivationIds.length);
+      selectedBatch.compatibility.cumulativeActivationIds.length);
     assert.equal(contract.plannedActivationPositions, undefined);
     this.#verifyRepresentationOnly(executionPlan);
 
     const expectedModules = [
-      ...batch.cumulativeRuntimeTopology.stage2Targets,
-      ...batch.cumulativeRuntimeTopology.stage3Targets,
+      ...selectedBatch.cumulativeRuntimeTopology.stage2Targets,
+      ...selectedBatch.cumulativeRuntimeTopology.stage3Targets,
       ...contract.approvedInfrastructureModules,
     ].sort();
     const report = await new StageThreeCompatibilityBuildApplication({
@@ -65,8 +68,8 @@ class StageThreeBatch006RuntimeCheck {
     assert.equal(report.status, "built");
     assert.equal(report.moduleCount, expectedModules.length);
     assert.equal(report.activationCount,
-      batch.compatibility.cumulativeActivationIds.length);
-    assert.deepEqual(report.selectedBatchIds, approved.batches.slice(0, 6)
+      selectedBatch.compatibility.cumulativeActivationIds.length);
+    assert.deepEqual(report.selectedBatchIds, approved.batches.slice(0, selectedCount)
       .map((record) => record.id));
     const runtime = report.outputs.find((record) =>
       record.kind === "cumulative-runtime");
@@ -85,7 +88,7 @@ class StageThreeBatch006RuntimeCheck {
     await this.#verifyFailurePreservesOutput(contract);
     new StageThreeBatch006FocusedTestMatrixCheck().run();
     console.log(
-      `Stage 3.6.6 runtime passed: one ${expectedModules.length}-module cumulative graph, ` +
+      `Stage 3.6.6 runtime evidence passed inside the current ${expectedModules.length}-module cumulative graph, ` +
         `${report.activationCount} activations, unique module identities, exact bundled-module report, ` +
         "classic IIFE output and atomic failure preservation verified.",
     );

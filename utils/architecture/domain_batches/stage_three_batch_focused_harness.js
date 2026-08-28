@@ -48,8 +48,13 @@ class TemporaryEsmModuleFixtureBoundary {
     fs.writeFileSync(path.join(this.#root, "package.json"), '{"type":"module"}\n', "utf8");
     const loaded = new Map();
     for (const module of modules) {
-      const classicSource = fs.readFileSync(module.absoluteCurrentPath, "utf8");
-      const candidateSource = this.#asNamedEsm(classicSource, module.exportName);
+      const persisted = module.absoluteTargetPath && fs.existsSync(module.absoluteTargetPath);
+      const candidateSource = persisted
+        ? fs.readFileSync(module.absoluteTargetPath, "utf8")
+        : this.#asNamedEsm(fs.readFileSync(module.absoluteCurrentPath, "utf8"), module.exportName);
+      const classicSource = persisted
+        ? this.#asClassic(candidateSource, module.exportName)
+        : fs.readFileSync(module.absoluteCurrentPath, "utf8");
       const outputPath = path.join(this.#root, path.basename(module.targetPath));
       fs.writeFileSync(outputPath, candidateSource, "utf8");
       const url = pathToFileURL(outputPath).href;
@@ -86,6 +91,14 @@ class TemporaryEsmModuleFixtureBoundary {
       throw new Error(`Expected one classic declaration for temporary ESM export: ${exportName}`);
     }
     return source.replace(pattern, "$1export $2");
+  }
+
+  #asClassic(source, exportName) {
+    const marker = `export class ${exportName}`;
+    if (source.split(marker).length - 1 !== 1) {
+      throw new Error(`Expected one persisted named ESM export: ${exportName}`);
+    }
+    return source.replace(marker, `class ${exportName}`);
   }
 }
 

@@ -96,6 +96,9 @@ class StageThreeBatch007FocusedTestMatrixCheck {
         persistedTargetPath: fs.existsSync(this.#absolute(module.targetPath))
           ? module.targetPath
           : null,
+        absoluteTargetPath: fs.existsSync(this.#absolute(module.targetPath))
+          ? this.#absolute(module.targetPath)
+          : null,
       });
     });
   }

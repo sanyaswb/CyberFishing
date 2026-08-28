@@ -35,6 +35,22 @@
       ]
     },
     {
+      "id": "bridge-1975df3eebf9",
+      "bridge": "src/core/fishing/simple_fight_force_calculator.js",
+      "source": "src/systems/fish_retrieve_system.js",
+      "target": "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "reason": "Preserve the exact synchronous Fishing State and Motion Primitives consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-007-fishing-bb8b3939",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "SimpleFightForceCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-1af90d9ee5a6",
       "bridge": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
       "source": "src/render/fishing/fishing_scene_renderer.js",
@@ -130,6 +146,22 @@
       "globalProviders": [
         {
           "symbol": "RodStrokeCapacityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-292102f00c09",
+      "bridge": "src/core/fishing/line_constrained_fish_motion_resolver.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "reason": "Preserve the exact synchronous Fishing State and Motion Primitives consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-007-fishing-bb8b3939",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "LineConstrainedFishMotionResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -487,6 +519,22 @@
       ]
     },
     {
+      "id": "bridge-9987d14a6b96",
+      "bridge": "src/core/fishing/line_radial_movement_splitter.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "reason": "Preserve the exact synchronous Fishing State and Motion Primitives consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-007-fishing-bb8b3939",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "LineRadialMovementSplitter",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-9a90ab115b6b",
       "bridge": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
       "source": "src/app/script.js",
@@ -567,6 +615,22 @@
       ]
     },
     {
+      "id": "bridge-c5b20a842e06",
+      "bridge": "src/core/fishing/simple_fight_force_calculator.js",
+      "source": "src/systems/fish_force_system.js",
+      "target": "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "reason": "Preserve the exact synchronous Fishing State and Motion Primitives consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-007-fishing-bb8b3939",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "SimpleFightForceCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-c6c1e5eb790e",
       "bridge": "src/core/fishing/hold_opposition_resolver.js",
       "source": "src/systems/fish_force_system.js",
@@ -631,6 +695,70 @@
       ]
     },
     {
+      "id": "bridge-d88e995bce27",
+      "bridge": "src/core/fishing/rod_stroke_state.js",
+      "source": "src/systems/rod_pull_system.js",
+      "target": "src/game/domain/fishing/rod_stroke_state.js",
+      "reason": "Preserve the exact synchronous Fishing State and Motion Primitives consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-007-fishing-bb8b3939",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "RodStrokeState",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-dcceaaf04a57",
+      "bridge": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "source": "src/entities/tackle.js",
+      "target": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "reason": "Preserve the exact synchronous Fishing State and Motion Primitives consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-007-fishing-bb8b3939",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ReelRetrieveSpeedCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-dd65f33afb4a",
+      "bridge": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "reason": "Preserve the exact synchronous Fishing State and Motion Primitives consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-007-fishing-bb8b3939",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ReelRetrieveSpeedCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-ddf61a64424b",
+      "bridge": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "source": "src/systems/inventory_system.js",
+      "target": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "reason": "Preserve the exact synchronous Fishing State and Motion Primitives consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-007-fishing-bb8b3939",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ReelRetrieveSpeedCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-e1840139830f",
       "bridge": "src/core/fishing/drag_force_calculator.js",
       "source": "src/systems/fish_force_system.js",
@@ -642,6 +770,22 @@
       "globalProviders": [
         {
           "symbol": "DragForceCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-f20190e70bbd",
+      "bridge": "src/core/fishing/rod_pull_state.js",
+      "source": "src/systems/rod_pull_system.js",
+      "target": "src/game/domain/fishing/rod_pull_state.js",
+      "reason": "Preserve the exact synchronous Fishing State and Motion Primitives consumer set until its approved migration stage removes the legacy symbols.",
+      "owner": "stage-3.candidate-007-fishing-bb8b3939",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "RodPullState",
           "mechanism": "global-this-property"
         }
       ]

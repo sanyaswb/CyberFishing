@@ -258,7 +258,14 @@ class StageThreeBatch006FocusedTestMatrixCheck {
     const registry = context[contract.transport.symbol];
     assert(registry);
     assert.equal(registry.ownsGameState, false);
-    assert.equal(Object.keys(registry.modules).length, 25);
+    assert.equal(
+      Object.keys(registry.modules).length,
+      new Set(contract.activationPositions.map((activation) => activation.targetModule)).size,
+    );
+    for (const module of plan.scope.modules) {
+      assert(registry.modules[module.targetPath],
+        `historical batch-006 module missing from cumulative runtime: ${module.targetPath}`);
+    }
     const classes = new Map(plan.scope.modules.flatMap((module) =>
       module.exports.map((exportName) => [
         exportName,

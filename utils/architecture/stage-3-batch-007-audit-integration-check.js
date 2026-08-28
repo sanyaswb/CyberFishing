@@ -37,6 +37,10 @@ class StageThreeBatch007AuditIntegrationCheck {
     ]));
     const generated = JSON.parse(this.#readBytes(PATHS.output).toString("utf8"));
     new StageThreeBatch007DependencyStateAuditValidator().validate(generated);
+    this.moduleByCurrentPath = new Map(generated.scope.modules.map((module) => [
+      module.currentPath,
+      module,
+    ]));
 
     this.#verifyTopology(generated);
     this.#verifyStateAndBehavior(generated);
@@ -244,15 +248,16 @@ class StageThreeBatch007AuditIntegrationCheck {
     const registry = this.#json("architecture/guards/migration_bridge_registry.json");
     assert.equal(state.releaseVersion, "0.24.43");
     assert.equal(state.completedBatchIds.length, 6);
-    const prebuildOpen = state.activeBatchId === BATCH_ID &&
-      state.activeBatchPhase === "prebuild";
+    const batchOpen = state.activeBatchId === BATCH_ID &&
+      ["prebuild", "runtime-active"].includes(state.activeBatchPhase);
     assert.equal(
-      (state.activeBatchId === null && state.activeBatchPhase === undefined) || prebuildOpen,
+      (state.activeBatchId === null && state.activeBatchPhase === undefined) || batchOpen,
       true,
     );
-    assert.equal(runtime.activationPositions.length, 26);
+    const runtimeActive = state.activeBatchPhase === "runtime-active";
+    assert.equal(runtime.activationPositions.length, runtimeActive ? 32 : 26);
     assert.equal(runtime.plannedActivationPositions, undefined);
-    assert.equal(registry.bridges.length, 48);
+    assert.equal(registry.bridges.length, runtimeActive ? 57 : 48);
     assert.equal(registry.plannedBridges, undefined);
     assert.equal(this.#scriptSources().length, 426);
     assert.equal(this.#readText("index.html").includes('type="module"'), false);
@@ -261,8 +266,17 @@ class StageThreeBatch007AuditIntegrationCheck {
 
   #loadClass(relativePath, exportName) {
     const context = vm.createContext({});
+    let source = this.#readText(relativePath);
+    if (source.includes("__CYBER_FISHING_COMPAT_RUNTIME__")) {
+      const targetPath = this.moduleByCurrentPath.get(relativePath)?.targetPath;
+      assert(targetPath, `audit target mapping missing: ${relativePath}`);
+      source = this.#readText(targetPath).replace(
+        `export class ${exportName}`,
+        `class ${exportName}`,
+      );
+    }
     new vm.Script(
-      `${this.#readText(relativePath)}\nglobalThis.__AUDIT_CLASS__ = ${exportName};`,
+      `${source}\nglobalThis.__AUDIT_CLASS__ = ${exportName};`,
       { filename: relativePath },
     ).runInContext(context);
     return context.__AUDIT_CLASS__;
