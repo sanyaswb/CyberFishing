@@ -4,7 +4,7 @@
 **Поточна release-версія:** `v0.24.43`
 **Тип робіт:** architecture / infrastructure refactoring  
 **Gameplay changes:** заборонені  
-**Поточний наступний етап:** `Stage 3.7.5 — Batch 007 Atomic Runtime Cutover`
+**Поточний наступний етап:** `Stage 3.7.7 — Observations and Manifest Reconciliation`
 
 Цей документ містить тільки роботи, які ще не виконані.
 
@@ -100,7 +100,9 @@ Stage 3.7.4 завершений: створено шість representation-onl
 
 Stage 3.7.5 завершений: шість classic providers атомарно замінені exact activation shims, дев'ять reviewed bridge records активовані, а чотири candidate-only OXC helpers перенесені в exact active allowlist. Live topology тепер становить `31 project modules / 32 activations / 57 bridges` в одному cumulative ESM graph; runtime output byte-for-byte збігається з evidence Stage 3.7.4, `index.html` зберігає `426 physical classic scripts / 424 logical legacy positions / 0 module scripts`, а lifecycle залишається `activeBatchPhase: runtime-active` без передчасного завершення batch або зміни release `v0.24.43`. Механічний graph delta `771 → 772` зафіксований exact semantic evidence: один раніше unresolved guarded consumer став confirmed через approved activation, без speculative edge або розширення baseline.
 
-Наступний підетап `Stage 3.7.6` виконує post-build identity, activation timing і state/performance validation на фактичному live cumulative runtime. Він не завершує batch 007 і не створює release `v0.24.44` до проходження наступних observation, full acceptance та browser gates.
+Stage 3.7.6 завершений: фактичний live cumulative IIFE виконано рівно один раз і перевірено без підміни generated output тестовою topology. Доведено `31` unique project module records, одну transport assignment, exact identity шести batch-007 exports, відсутність globals до кожної approved activation position і exact exposure після неї. Усі `54` classic ↔ live ESM behavior cases, `6` activation timings та exact set із `9` classic consumers пройшли; `RodPullState` і `RodStrokeState` зберегли instance/snapshot shape та isolation, movement resolvers — reusable-result identity, а migration allocation/transport deltas дорівнюють нулю. Перевірка є read-only, lifecycle залишається `runtime-active`, release — `v0.24.43`.
+
+Наступний підетап `Stage 3.7.7` механічно перебудовує observations після live cutover, reconciles Migration Manifest і доводить exact provider/consumer/dependency/global transition. Він не завершує batch 007 і не створює release `v0.24.44`; це дозволено лише після Stage 3.7.8 acceptance та Stage 3.7.9 release closure.
 
 Кожен approved batch проходить один повторюваний pipeline:
 

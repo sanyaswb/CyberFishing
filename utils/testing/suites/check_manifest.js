@@ -480,6 +480,18 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "architecture"],
   },
   {
+    id: "stage-3-batch-007-live-runtime-fixtures",
+    title: "Stage 3.7.6 live identity/state/performance fixtures",
+    file: "utils/architecture/stage-3-batch-007-live-runtime-fixture-check.js",
+    suites: ["architecture"],
+  },
+  {
+    id: "stage-3-batch-007-live-runtime-integration",
+    title: "Stage 3.7.6 live identity/state/performance integration",
+    file: "utils/architecture/stage-3-batch-007-live-runtime-integration-check.js",
+    suites: ["quick", "architecture"],
+  },
+  {
     id: "stage-3-reel-auto-recovery-runtime",
     title: "Stage 3.2 reel auto-recovery post-build runtime",
     file: "utils/architecture/stage-3-reel-auto-recovery-runtime-check.js",
