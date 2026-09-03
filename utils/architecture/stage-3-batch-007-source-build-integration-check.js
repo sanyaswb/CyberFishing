@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const { verifyBatch007ManifestEvidence } = require("./domain_batches/stage_three_batch_007_manifest_transition");
 const {
   BATCH_007_PREBUILD_PROFILE,
 } = require("./domain_batches/stage_three_batch_prebuild_profile");
@@ -37,12 +38,16 @@ class StageThreeBatch007SourceBuildIntegrationCheck {
     assert.deepEqual(artifact.plannedTopology, prebuild.plannedTopology,
       "Stage 3.7.4 planned topology differs from frozen prebuild contract");
     const manifest = this.#json("architecture/migration/module_migration_manifest.json");
+    const expectedStatus = runtimeActive ? verifyBatch007ManifestEvidence(
+      this.#bytes("architecture/migration/module_migration_manifest.json"),
+      this.#json("architecture/migration/stage_3_batch_007_runtime_cutover.json")
+        .evidence.manifestAfterMechanicalObservation.sha256) : "migrating";
     const entries = new Map(manifest.modules.map((record) => [record.currentPath, record]));
     for (const source of artifact.sources) {
       assert.equal(this.#sha256(this.#bytes(source.targetPath)), source.targetSha256);
       const entry = entries.get(source.targetPath);
       assert(entry, `Manifest target missing: ${source.targetPath}`);
-      assert.equal(entry.architecture.migrationStatus, runtimeActive ? "esm" : "migrating");
+      assert.equal(entry.architecture.migrationStatus, expectedStatus);
       assert.equal(entry.architecture.targetBoundary, "game-domain");
       assert.equal(entry.architecture.targetPath, source.targetPath);
       assert.deepEqual(entry.architecture.roles, ["domain-behavior"]);

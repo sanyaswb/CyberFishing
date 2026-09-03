@@ -492,6 +492,18 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "architecture"],
   },
   {
+    id: "stage-3-batch-007-observation-fixtures",
+    title: "Stage 3.7.7 observation reconciliation and semantic-gate fixtures",
+    file: "utils/architecture/stage-3-batch-007-observation-fixture-check.js",
+    suites: ["architecture"],
+  },
+  {
+    id: "stage-3-batch-007-observation-integration",
+    title: "Stage 3.7.7 mechanical reconciliation (not release approval)",
+    file: "utils/architecture/finalize-stage-3-batch-007-observations.js",
+    suites: ["quick", "architecture"],
+  },
+  {
     id: "stage-3-reel-auto-recovery-runtime",
     title: "Stage 3.2 reel auto-recovery post-build runtime",
     file: "utils/architecture/stage-3-reel-auto-recovery-runtime-check.js",

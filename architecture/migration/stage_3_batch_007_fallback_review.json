@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-fallback-semantic-review",
+  "id": "stage-3.7.7-guarded-standalone-fallback-review",
+  "batchId": "stage-3.candidate-007-fishing-bb8b3939",
+  "status": "approved",
+  "approval": {
+    "authority": "user",
+    "approvedStage": "stage-3.7.7",
+    "reason": "Explicit approval of exactly two additional standalone fallback tooltip rows; production DI, formulas, gameplay, identity and save/API must remain unchanged."
+  },
+  "classification": "guarded-standalone-fallback-delta",
+  "scope": "InventoryV2BalanceParameterResolver standalone fallback only",
+  "source": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+  "sourceProvider": "src/core/fishing/reel_retrieve_speed_calculator.js",
+  "targetModule": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+  "symbol": "ReelRetrieveSpeedCalculator",
+  "activationId": "activation-da8d3f6d370f",
+  "productionDIBehaviorChanged": false,
+  "gameplaySemanticsChanged": false,
+  "calculatorFormulasChanged": false,
+  "runtimeIdentityChanged": false,
+  "saveApiChanged": false,
+  "additionalTooltipRows": [
+    "effective-retrieve-speed",
+    "retrieve-duration"
+  ],
+  "removalStage": "stage-5",
+  "removalDependencyRetained": true,
+  "scopeExpansionAllowed": false,
+  "authorizesBatchCompletion": false,
+  "observedBehaviorSha256": "37bbbafd74df88727423ff1851b3f7d5dd4add49d95398c31d5469c251a27fee",
+  "evidence": {
+    "fallbackSource": {
+      "path": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+      "sha256": "73644b2df8dfbbf1dec98bef44c96ce6c9b5f1363244490386d439c0b32f803f"
+    },
+    "calculatorTarget": {
+      "path": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "sha256": "4347b9593ca7b8387fb64f224c343cdb8c7633ea8f5fb3aaad86fc970a374f7b"
+    },
+    "bootstrap": {
+      "path": "src/app/bootstrap.js",
+      "sha256": "06706838ed08caa4529962259bc631af0a1dd6b3fce0f4d20139ff64eb6565ce"
+    },
+    "inventoryUI": {
+      "path": "src/ui/inventory/inventory_v2_ui.js",
+      "sha256": "52b4dafdd7f968196d1ef677122f109d09d04195b3f888c4aaf9631d37061f00"
+    },
+    "tooltip": {
+      "path": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+      "sha256": "d2ab593106e51050b9b671f819c2eff7f1e084fa355575917ac4d86ca8b934c3"
+    },
+    "inventoryBootstrap": {
+      "path": "src/ui/inventory/inventory_v2_bootstrap.js",
+      "sha256": "5aa5187cbebb65c9ab510076da827ff0bcb726f03556efb41b877be176df0a66"
+    },
+    "runtimeBundle": {
+      "path": "dist/stage-3-compat-runtime/compat_runtime.iife.js",
+      "sha256": "2bb747e4c4bbd2b3c45bf65563e64a10ec5617319c9cbda7d2c13486a5bb95d0"
+    }
+  }
+}

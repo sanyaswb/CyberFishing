@@ -1,0 +1,519 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-observation-reconciliation",
+  "status": "verified",
+  "batchId": "stage-3.candidate-007-fishing-bb8b3939",
+  "releaseVersion": "0.24.43",
+  "evidence": {
+    "approved": {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    "runtime": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "4f238a82b150266fe593735f4027429bf59af3c55b45139ce7434b3f6e55ac75"
+    },
+    "registry": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "2372a9ccde069ab45294287fd427aa30d95cbc2f5756f565763662554ba778ef"
+    },
+    "baseline": {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "sha256": "77b621365ec53ef0dd0e7bbcb607a8065ef5f61e3efd75716b010f5039744c0a"
+    },
+    "state": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "e70aa2388cab23411ae2507b4cc9469bee46f36e08516ca0af775f99e5d4884a"
+    },
+    "prebuild": {
+      "path": "architecture/migration/stage_3_batch_007_prebuild_contract.json",
+      "sha256": "b1b259606a809ffbe2dfd3c27dd996284d4b205e6e041652176297454987d5dc"
+    },
+    "cutover": {
+      "path": "architecture/migration/stage_3_batch_007_runtime_cutover.json",
+      "sha256": "1c856867b8401f6adc4093ad108f919dbd538ea9fecfa84519a18711d91b06a8"
+    },
+    "sourceBuild": {
+      "path": "architecture/migration/stage_3_batch_007_source_build_validation.json",
+      "sha256": "d12767c4a1de27646f1bb9dd914ea3e18196f5f772cbc5f199cdf51286bf61b3"
+    },
+    "live": {
+      "path": "architecture/migration/stage_3_batch_007_live_runtime_validation.json",
+      "sha256": "6558e972e75a0a0920301908df19822021023feb97d4a5f89b4733f39cb3e2ec"
+    },
+    "policy": {
+      "path": "architecture/module_architecture.json",
+      "sha256": "563423746bc86a99ced7bd0ffeb14e20ef4c62021c2c839c069225ec77cf79d6"
+    },
+    "fallbackReview": {
+      "path": "architecture/migration/stage_3_batch_007_fallback_review.json",
+      "sha256": "4d1ff6b4d843e941558c5a50c27ed78390d7b0175fe34f924ccb432c12793b89"
+    },
+    "historicalRepair": {
+      "path": "architecture/migration/stage_3_batch_007_changelog_repair.json",
+      "sha256": "f03c97d5dd1b133e251e73733f44fe4455be3078c13e41b6323136768674a7cc"
+    },
+    "fallbackSource": {
+      "path": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+      "sha256": "73644b2df8dfbbf1dec98bef44c96ce6c9b5f1363244490386d439c0b32f803f"
+    },
+    "calculatorTarget": {
+      "path": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "sha256": "4347b9593ca7b8387fb64f224c343cdb8c7633ea8f5fb3aaad86fc970a374f7b"
+    },
+    "bootstrap": {
+      "path": "src/app/bootstrap.js",
+      "sha256": "06706838ed08caa4529962259bc631af0a1dd6b3fce0f4d20139ff64eb6565ce"
+    },
+    "inventoryUI": {
+      "path": "src/ui/inventory/inventory_v2_ui.js",
+      "sha256": "52b4dafdd7f968196d1ef677122f109d09d04195b3f888c4aaf9631d37061f00"
+    },
+    "inventoryBootstrap": {
+      "path": "src/ui/inventory/inventory_v2_bootstrap.js",
+      "sha256": "5aa5187cbebb65c9ab510076da827ff0bcb726f03556efb41b877be176df0a66"
+    },
+    "tooltip": {
+      "path": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+      "sha256": "d2ab593106e51050b9b671f819c2eff7f1e084fa355575917ac4d86ca8b934c3"
+    },
+    "index": {
+      "path": "index.html",
+      "sha256": "93972fa1936184e29534ccaaf75a0d1c42a7502e8de64e5b860010a1c4763c26"
+    },
+    "runtimeBundle": {
+      "path": "dist/stage-3-compat-runtime/compat_runtime.iife.js",
+      "sha256": "2bb747e4c4bbd2b3c45bf65563e64a10ec5617319c9cbda7d2c13486a5bb95d0"
+    },
+    "changelog": {
+      "path": "CHANGELOG.md",
+      "sha256": "7de13a4997601e10982cd84077d8807a835f474fea9af5f466c350e93c51efab"
+    },
+    "manifest": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "3297cf02db47d75a0b80811e25d2be2c98aa81f69a3c9f77231dd60e82b41f3d"
+    }
+  },
+  "historicalManifestSha256": "4304de20717e84fb1632ea53e3b62617d119dd2ac0f49cfb8c9d28dc0a574eab",
+  "metadataTransition": {
+    "field": "architecture.migrationStatus",
+    "from": "esm",
+    "to": "verified",
+    "targets": [
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js"
+    ]
+  },
+  "totals": {
+    "modules": 455,
+    "providers": 856,
+    "consumers": 922,
+    "confirmed": 892,
+    "unresolved": 30,
+    "ambiguous": 0,
+    "edges": 772
+  },
+  "cutoverDependencyDelta": {
+    "confirmedInterFileEdgesBefore": 771,
+    "confirmedInterFileEdgesAfter": 772,
+    "confirmedEdgeDelta": 1,
+    "newlyConfirmedEdges": [
+      {
+        "source": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+        "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
+        "symbols": [
+          "ReelRetrieveSpeedCalculator"
+        ],
+        "reason": "Exact approved guarded compatibility consumer became mechanically resolvable after activation."
+      }
+    ]
+  },
+  "transportUnresolved": {
+    "batch": 6,
+    "elsewhere": 24,
+    "isProjectEdge": false
+  },
+  "controlledGlobalTransitions": [
+    {
+      "source": "src/core/fishing/line_constrained_fish_motion_resolver.js",
+      "target": "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "symbol": "LineConstrainedFishMotionResolver",
+      "activationId": "activation-f5eefdd6e6e2",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property"
+    },
+    {
+      "source": "src/core/fishing/line_radial_movement_splitter.js",
+      "target": "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "symbol": "LineRadialMovementSplitter",
+      "activationId": "activation-dcb3cecb345c",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property"
+    },
+    {
+      "source": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "target": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "symbol": "ReelRetrieveSpeedCalculator",
+      "activationId": "activation-da8d3f6d370f",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property"
+    },
+    {
+      "source": "src/core/fishing/rod_pull_state.js",
+      "target": "src/game/domain/fishing/rod_pull_state.js",
+      "symbol": "RodPullState",
+      "activationId": "activation-a63204f0676b",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property"
+    },
+    {
+      "source": "src/core/fishing/rod_stroke_state.js",
+      "target": "src/game/domain/fishing/rod_stroke_state.js",
+      "symbol": "RodStrokeState",
+      "activationId": "activation-00287f399f05",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property"
+    },
+    {
+      "source": "src/core/fishing/simple_fight_force_calculator.js",
+      "target": "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "symbol": "SimpleFightForceCalculator",
+      "activationId": "activation-ccddea60d16c",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property"
+    }
+  ],
+  "frozenBridgeRelationships": [
+    {
+      "source": "src/app/bootstrap.js",
+      "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "symbol": "ReelRetrieveSpeedCalculator"
+    },
+    {
+      "source": "src/entities/tackle.js",
+      "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "symbol": "ReelRetrieveSpeedCalculator"
+    },
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/core/fishing/line_constrained_fish_motion_resolver.js",
+      "symbol": "LineConstrainedFishMotionResolver"
+    },
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/core/fishing/line_radial_movement_splitter.js",
+      "symbol": "LineRadialMovementSplitter"
+    },
+    {
+      "source": "src/systems/fish_force_system.js",
+      "target": "src/core/fishing/simple_fight_force_calculator.js",
+      "symbol": "SimpleFightForceCalculator"
+    },
+    {
+      "source": "src/systems/fish_retrieve_system.js",
+      "target": "src/core/fishing/simple_fight_force_calculator.js",
+      "symbol": "SimpleFightForceCalculator"
+    },
+    {
+      "source": "src/systems/inventory_system.js",
+      "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "symbol": "ReelRetrieveSpeedCalculator"
+    },
+    {
+      "source": "src/systems/rod_pull_system.js",
+      "target": "src/core/fishing/rod_pull_state.js",
+      "symbol": "RodPullState"
+    },
+    {
+      "source": "src/systems/rod_pull_system.js",
+      "target": "src/core/fishing/rod_stroke_state.js",
+      "symbol": "RodStrokeState"
+    }
+  ],
+  "derivedIncomingConsumers": [
+    {
+      "source": "src/app/bootstrap.js",
+      "symbol": "ReelRetrieveSpeedCalculator",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/entities/tackle.js",
+      "symbol": "ReelRetrieveSpeedCalculator",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "symbol": "LineConstrainedFishMotionResolver",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/line_constrained_fish_motion_resolver.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "symbol": "LineRadialMovementSplitter",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/line_radial_movement_splitter.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/fish_force_system.js",
+      "symbol": "SimpleFightForceCalculator",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/simple_fight_force_calculator.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/fish_retrieve_system.js",
+      "symbol": "SimpleFightForceCalculator",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/simple_fight_force_calculator.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/inventory_system.js",
+      "symbol": "ReelRetrieveSpeedCalculator",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/rod_pull_system.js",
+      "symbol": "RodPullState",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/rod_pull_state.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/rod_pull_system.js",
+      "symbol": "RodStrokeState",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/rod_stroke_state.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+      "symbol": "ReelRetrieveSpeedCalculator",
+      "mechanism": "global-this-property",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "additionalGuardedConsumer": {
+    "classification": "guarded-optional-fallback-consumer",
+    "source": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+    "symbol": "ReelRetrieveSpeedCalculator",
+    "mechanism": "global-this-property",
+    "accessRequirement": "guarded",
+    "executionPhase": "deferred",
+    "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
+    "resolution": "confirmed"
+  },
+  "removalDependencies": [
+    {
+      "source": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+      "symbol": "ReelRetrieveSpeedCalculator",
+      "mechanism": "global-this-property",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "resolution": "confirmed",
+      "activationId": "activation-da8d3f6d370f",
+      "owner": "stage-3.candidate-007-fishing-bb8b3939",
+      "removalStage": "stage-5",
+      "sourceSha256": "73644b2df8dfbbf1dec98bef44c96ce6c9b5f1363244490386d439c0b32f803f",
+      "condition": "Remove the global fallback through reviewed explicit DI and rerun consumer/behavior checks before removing this activation.",
+      "autoBridgeApproval": false
+    }
+  ],
+  "fallback": {
+    "diagnosticScope": "isolated-real-resolver-and-live-bundle-not-browser-smoke",
+    "diResultsEqual": true,
+    "injectedGlobalReads": 0,
+    "standaloneResultsEqual": false,
+    "standaloneAddedRows": [
+      "effective-retrieve-speed",
+      "retrieve-duration"
+    ],
+    "beforeStandaloneRows": [
+      "stat:retrieveSpeedMetersPerSec",
+      "stat:bearingCount",
+      "stat:lineCapacityMeters"
+    ],
+    "afterStandaloneRows": [
+      "stat:retrieveSpeedMetersPerSec",
+      "stat:bearingCount",
+      "effective-retrieve-speed",
+      "retrieve-duration",
+      "stat:lineCapacityMeters"
+    ],
+    "callSites": [
+      {
+        "path": "src/app/bootstrap.js",
+        "calculatorInjected": true
+      },
+      {
+        "path": "src/ui/inventory/inventory_v2_ui.js",
+        "calculatorInjected": false
+      },
+      {
+        "path": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+        "calculatorInjected": false
+      }
+    ],
+    "constructorRoutesVerified": [
+      "standalone-tooltip",
+      "standalone-ui-via-bootstrap",
+      "injected-ui-via-bootstrap"
+    ],
+    "regressionCases": [
+      {
+        "id": "explicit-di-preserves-historical-production-output",
+        "status": "PASS",
+        "beforeSha256": "b1e90a27e91824b6ed6e195c70a122121feb3ae789f30b0c0688060e63e05080",
+        "afterSha256": "b1e90a27e91824b6ed6e195c70a122121feb3ae789f30b0c0688060e63e05080"
+      },
+      {
+        "id": "standalone-guarded-fallback-adds-exact-two-rows",
+        "status": "PASS",
+        "addedRows": [
+          "effective-retrieve-speed",
+          "retrieve-duration"
+        ],
+        "existingRowsAndSectionsUnchanged": true,
+        "beforeSha256": "d2630349f4b3ce8f4386ad25ea0043aba98879480ab40311aaaebd86e5548300",
+        "afterSha256": "b1e90a27e91824b6ed6e195c70a122121feb3ae789f30b0c0688060e63e05080"
+      }
+    ]
+  },
+  "semanticReview": {
+    "schemaVersion": 1,
+    "kind": "cyber-fishing-stage-3-fallback-semantic-review",
+    "id": "stage-3.7.7-guarded-standalone-fallback-review",
+    "batchId": "stage-3.candidate-007-fishing-bb8b3939",
+    "status": "approved",
+    "approval": {
+      "authority": "user",
+      "approvedStage": "stage-3.7.7",
+      "reason": "Explicit approval of exactly two additional standalone fallback tooltip rows; production DI, formulas, gameplay, identity and save/API must remain unchanged."
+    },
+    "classification": "guarded-standalone-fallback-delta",
+    "scope": "InventoryV2BalanceParameterResolver standalone fallback only",
+    "source": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+    "sourceProvider": "src/core/fishing/reel_retrieve_speed_calculator.js",
+    "targetModule": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+    "symbol": "ReelRetrieveSpeedCalculator",
+    "activationId": "activation-da8d3f6d370f",
+    "productionDIBehaviorChanged": false,
+    "gameplaySemanticsChanged": false,
+    "calculatorFormulasChanged": false,
+    "runtimeIdentityChanged": false,
+    "saveApiChanged": false,
+    "additionalTooltipRows": [
+      "effective-retrieve-speed",
+      "retrieve-duration"
+    ],
+    "removalStage": "stage-5",
+    "removalDependencyRetained": true,
+    "scopeExpansionAllowed": false,
+    "authorizesBatchCompletion": false,
+    "observedBehaviorSha256": "37bbbafd74df88727423ff1851b3f7d5dd4add49d95398c31d5469c251a27fee",
+    "evidence": {
+      "fallbackSource": {
+        "path": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+        "sha256": "73644b2df8dfbbf1dec98bef44c96ce6c9b5f1363244490386d439c0b32f803f"
+      },
+      "calculatorTarget": {
+        "path": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+        "sha256": "4347b9593ca7b8387fb64f224c343cdb8c7633ea8f5fb3aaad86fc970a374f7b"
+      },
+      "bootstrap": {
+        "path": "src/app/bootstrap.js",
+        "sha256": "06706838ed08caa4529962259bc631af0a1dd6b3fce0f4d20139ff64eb6565ce"
+      },
+      "inventoryUI": {
+        "path": "src/ui/inventory/inventory_v2_ui.js",
+        "sha256": "52b4dafdd7f968196d1ef677122f109d09d04195b3f888c4aaf9631d37061f00"
+      },
+      "tooltip": {
+        "path": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+        "sha256": "d2ab593106e51050b9b671f819c2eff7f1e084fa355575917ac4d86ca8b934c3"
+      },
+      "inventoryBootstrap": {
+        "path": "src/ui/inventory/inventory_v2_bootstrap.js",
+        "sha256": "5aa5187cbebb65c9ab510076da827ff0bcb726f03556efb41b877be176df0a66"
+      },
+      "runtimeBundle": {
+        "path": "dist/stage-3-compat-runtime/compat_runtime.iife.js",
+        "sha256": "2bb747e4c4bbd2b3c45bf65563e64a10ec5617319c9cbda7d2c13486a5bb95d0"
+      }
+    }
+  },
+  "historicalRepair": {
+    "schemaVersion": 1,
+    "kind": "cyber-fishing-historical-changelog-repair",
+    "status": "exact-restoration-verified",
+    "stage": "stage-3.7.7",
+    "path": "CHANGELOG.md",
+    "source": {
+      "kind": "git-blob",
+      "commit": "d6c313eaebe3a5f3c0edefa57a142f1503dc5b15",
+      "path": "CHANGELOG.md",
+      "blob": "01cb1a1f728a674f56365262bf4e80bb231f8a39"
+    },
+    "beforeSha256": "60f60d9f42a876dbed3065d05dca6d0887c0986d51ac00b8d2c23549fe3b7e0d",
+    "beforeByteLength": 2647,
+    "restoredSha256": "7de13a4997601e10982cd84077d8807a835f474fea9af5f466c350e93c51efab",
+    "restoredLineCount": 371,
+    "operation": "restore-deleted-suffix-only",
+    "retainedPrefixUnchanged": true,
+    "releaseNotesRewritten": false
+  },
+  "lifecycle": {
+    "activeBatchId": "stage-3.candidate-007-fishing-bb8b3939",
+    "activeBatchPhase": "runtime-active",
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8"
+    ],
+    "batchCompleted": false
+  },
+  "releaseGate": {
+    "status": "approved",
+    "scope": "stage-3.7.7-reconciliation-only",
+    "decisionId": "stage-3.7.7-guarded-standalone-fallback-review",
+    "authorizesReleaseClosure": false
+  },
+  "nextGate": "stage-3.7.8-full-acceptance-and-browser-smoke"
+}

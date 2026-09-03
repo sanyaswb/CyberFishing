@@ -36487,7 +36487,7 @@
         }
       },
       "architecture": {
-        "migrationStatus": "esm",
+        "migrationStatus": "verified",
         "roles": [
           "domain-behavior"
         ],
@@ -36588,7 +36588,7 @@
         }
       },
       "architecture": {
-        "migrationStatus": "esm",
+        "migrationStatus": "verified",
         "roles": [
           "domain-behavior"
         ],
@@ -36840,7 +36840,7 @@
         }
       },
       "architecture": {
-        "migrationStatus": "esm",
+        "migrationStatus": "verified",
         "roles": [
           "domain-behavior"
         ],
@@ -36988,7 +36988,7 @@
         }
       },
       "architecture": {
-        "migrationStatus": "esm",
+        "migrationStatus": "verified",
         "roles": [
           "domain-behavior"
         ],
@@ -37088,7 +37088,7 @@
         }
       },
       "architecture": {
-        "migrationStatus": "esm",
+        "migrationStatus": "verified",
         "roles": [
           "domain-behavior"
         ],
@@ -37189,7 +37189,7 @@
         }
       },
       "architecture": {
-        "migrationStatus": "esm",
+        "migrationStatus": "verified",
         "roles": [
           "domain-behavior"
         ],

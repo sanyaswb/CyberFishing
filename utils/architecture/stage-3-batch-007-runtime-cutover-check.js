@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const { verifyBatch007ManifestEvidence } = require("./domain_batches/stage_three_batch_007_manifest_transition");
 const {
   ActivationShimContractValidator,
   ActivationShimRenderer,
@@ -47,6 +48,10 @@ class StageThreeBatch007RuntimeCutoverCheck {
     new StageThreeBatch007CutoverContractValidator().validate(artifact);
     new StageThreeBatch007SourceBuildContractValidator().validate(sourceBuild);
     for (const evidence of Object.values(artifact.evidence)) {
+      if (evidence.path === "architecture/migration/module_migration_manifest.json") {
+        verifyBatch007ManifestEvidence(this.#bytes(evidence.path), evidence.sha256);
+        continue;
+      }
       assert.equal(this.#sha256(this.#bytes(evidence.path)), evidence.sha256,
         `Stage 3.7.5 evidence changed: ${evidence.path}`);
     }
@@ -103,7 +108,10 @@ class StageThreeBatch007RuntimeCutoverCheck {
       assert.equal(this.#read(source.targetPath).includes(EXACT_TRANSPORT_GLOBAL), false);
       assert.deepEqual(entries.get(source.currentPath).architecture.roles,
         ["compatibility-bridge"]);
-      assert.equal(entries.get(source.targetPath).architecture.migrationStatus, "esm");
+      const historical = this.#json(ARTIFACT_PATH).evidence.manifestAfterMechanicalObservation.sha256;
+      const expectedStatus = verifyBatch007ManifestEvidence(
+        this.#bytes("architecture/migration/module_migration_manifest.json"), historical);
+      assert.equal(entries.get(source.targetPath).architecture.migrationStatus, expectedStatus);
       assert.deepEqual(entries.get(source.targetPath).architecture.roles,
         ["domain-behavior"]);
       assert.equal(entries.get(source.currentPath).observed.consumers.items.length, 1);

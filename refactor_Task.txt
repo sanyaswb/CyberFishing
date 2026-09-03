@@ -4,7 +4,7 @@
 **Поточна release-версія:** `v0.24.43`
 **Тип робіт:** architecture / infrastructure refactoring  
 **Gameplay changes:** заборонені  
-**Поточний наступний етап:** `Stage 3.7.7 — Observations and Manifest Reconciliation`
+**Поточний наступний етап:** `Stage 3.7.8 — Full Acceptance and Browser Smoke`
 
 Цей документ містить тільки роботи, які ще не виконані.
 
@@ -102,7 +102,17 @@ Stage 3.7.5 завершений: шість classic providers атомарно 
 
 Stage 3.7.6 завершений: фактичний live cumulative IIFE виконано рівно один раз і перевірено без підміни generated output тестовою topology. Доведено `31` unique project module records, одну transport assignment, exact identity шести batch-007 exports, відсутність globals до кожної approved activation position і exact exposure після неї. Усі `54` classic ↔ live ESM behavior cases, `6` activation timings та exact set із `9` classic consumers пройшли; `RodPullState` і `RodStrokeState` зберегли instance/snapshot shape та isolation, movement resolvers — reusable-result identity, а migration allocation/transport deltas дорівнюють нулю. Перевірка є read-only, lifecycle залишається `runtime-active`, release — `v0.24.43`.
 
-Наступний підетап `Stage 3.7.7` механічно перебудовує observations після live cutover, reconciles Migration Manifest і доводить exact provider/consumer/dependency/global transition. Він не завершує batch 007 і не створює release `v0.24.44`; це дозволено лише після Stage 3.7.8 acceptance та Stage 3.7.9 release closure.
+Stage 3.7.7 завершений. Повторний scan усіх актуальних `src/**/*.js` відтворює observations byte-for-byte; єдиний Manifest delta — шість exact status transitions `esm → verified`. Historical evidence Stage 3.7.5/3.7.6 не переписується: validators reverse-normalize тільки ці шість статусів і перевіряють попередній SHA-256. Verified artifact: `architecture/migration/stage_3_batch_007_observation_reconciliation.json`.
+
+Semantic review погоджений користувачем: `InventoryV2BalanceParameterResolver → ReelRetrieveSpeedCalculator` є mechanically confirmed `guarded`/`deferred` optional fallback consumer, а не passive observer. Exact incoming set складається з дев'яти frozen bridge relationships плюс цього одного observed fallback; registry не отримує 58-й bridge. Versioned removal dependency прив'язаний до exact activation/source fingerprint та Stage 5: global не можна видалити, доки fallback споживається.
+
+Review artifact `architecture/migration/stage_3_batch_007_fallback_review.json` фіксує classification `guarded-standalone-fallback-delta` і scope `InventoryV2BalanceParameterResolver standalone fallback only`. Два executable regression cases доводять: explicit DI зберігає історичний production output без global fallback reads; standalone guarded fallback додає рівно `effective-retrieve-speed` і `retrieve-duration`, не змінюючи наявні rows, sections або порядок. Погодження не дозволяє змін formulas, production DI, gameplay, identity, save/API або розширення scope; exact source/activation/behavior fingerprints перевіряються. Runtime-код, registry, index, globals baseline, lifecycle і release не змінювалися.
+
+Historical `CHANGELOG.md` відновлений byte-for-byte з commit `d6c313eaebe3a5f3c0edefa57a142f1503dc5b15`, Git blob `01cb1a1f728a674f56365262bf4e80bb231f8a39`: повернуто тільки 371 видалений рядок, збережений prefix та старі release notes незмінні. Provenance і SHA-256 збережені в `architecture/migration/stage_3_batch_007_changelog_repair.json`.
+
+Acceptance 3.7.7: focused reconciliation/regressions PASS; Architecture `90/90`, Quick `53/53`, Full `118/118` PASS (release anchors, не policy constants). `--acceptance-gate` дозволяє наступний Stage 3.7.8; `--release-gate` залишається non-zero, оскільки повний release ще не дозволений. Наступний Stage 3.7.8 включає fresh `npm ci`, повторний full acceptance та browser smoke; лише Stage 3.7.9 може завершити batch 007 та випустити `v0.24.44`. Поточна release-версія залишається `v0.24.43`, completed prefix — `001–006`, batch 007 — `runtime-active`.
+
+Окремий tooling-hardening після `v0.24.44`, до batch 008: прибрати batch-006 defaults із generic execution-plan/focused-matrix builders і validators; profile, behaviorCases та compatibilityCases передавати обов'язково, missing input → FAIL. Batch-006 catalog винести в historical profile/catalog. Довести byte-for-byte відтворення batch-006 artifacts та збереження batch-007 checks; нові batches використовують shared pipeline + profile/catalog без копіювання всього набору tooling. Усередині активного batch 007 цей hardening не виконується.
 
 Кожен approved batch проходить один повторюваний pipeline:
 

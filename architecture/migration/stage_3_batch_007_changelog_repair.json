@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-historical-changelog-repair",
+  "status": "exact-restoration-verified",
+  "stage": "stage-3.7.7",
+  "path": "CHANGELOG.md",
+  "source": {
+    "kind": "git-blob",
+    "commit": "d6c313eaebe3a5f3c0edefa57a142f1503dc5b15",
+    "path": "CHANGELOG.md",
+    "blob": "01cb1a1f728a674f56365262bf4e80bb231f8a39"
+  },
+  "beforeSha256": "60f60d9f42a876dbed3065d05dca6d0887c0986d51ac00b8d2c23549fe3b7e0d",
+  "beforeByteLength": 2647,
+  "restoredSha256": "7de13a4997601e10982cd84077d8807a835f474fea9af5f466c350e93c51efab",
+  "restoredLineCount": 371,
+  "operation": "restore-deleted-suffix-only",
+  "retainedPrefixUnchanged": true,
+  "releaseNotesRewritten": false
+}

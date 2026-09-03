@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const { verifyBatch007ManifestEvidence } = require("./domain_batches/stage_three_batch_007_manifest_transition");
 const {
   StageThreeBatch007LiveRuntimeHarness,
   StageThreeBatch007LiveRuntimeValidationContractValidator,
@@ -29,6 +30,10 @@ class StageThreeBatch007LiveRuntimeIntegrationCheck {
     new StageThreeBatch007LiveRuntimeValidationContractValidator().validate(artifact);
     const before = this.#evidenceSnapshot(artifact);
     for (const evidence of Object.values(artifact.evidence)) {
+      if (evidence.path === "architecture/migration/module_migration_manifest.json") {
+        verifyBatch007ManifestEvidence(this.#bytes(evidence.path), evidence.sha256);
+        continue;
+      }
       assert.equal(this.#sha256(this.#bytes(evidence.path)), evidence.sha256,
         `Stage 3.7.6 evidence changed: ${evidence.path}`);
     }
