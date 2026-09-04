@@ -588,6 +588,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "architecture", "tools", "gameplay"],
   },
   {
+    id: "stage-3-batch-007-acceptance",
+    title: "Stage 3.7.8 superseding acceptance",
+    file: "utils/architecture/stage-3-batch-007-acceptance-check.js",
+    suites: ["quick", "architecture"],
+  },
+  {
     id: "inventory-v2-transaction",
     title: "Inventory V2 transactions",
     file: "utils/inventory-v2-transaction-check.js",

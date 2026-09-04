@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-007-acceptance",
+  "attemptId": "stage-3.7.8-2026-09-04-reel-retrieve-pass",
+  "stage": "3.7.8",
+  "batchId": "stage-3.candidate-007-fishing-bb8b3939",
+  "releaseVersion": "0.24.43",
+  "status": "verified",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "sourceCommit": "9b64354d790c04b1bebd80dfe7aa96ed6d3e1c28",
+  "sourceRepositoryClean": true,
+  "recordedAt": "2026-09-04T12:03:07.3333690Z",
+  "supersedes": {
+    "path": "architecture/migration/stage_3_batch_007_acceptance.json",
+    "sha256": "8f65867e6d25fb0aa42209600b0d8cb6feb5950bfb9c7dc9efdb0599b954a502",
+    "acceptanceOutcome": "FAIL",
+    "immutableCapture": {
+      "path": "architecture/migration/evidence/stage_3_batch_007_acceptance_capture.json",
+      "sha256": "5d93043a7e03858ac6710f6161986ad6135ddecc79401facd0b44ed528082292"
+    },
+    "policy": "The failed attempt remains immutable and is superseded, never reinterpreted."
+  },
+  "hydrationRepair": {
+    "path": "architecture/migration/evidence/stage_3_batch_007_equipment_hydration_repair.json",
+    "sha256": "d3753b72db78ba4b609ce05f0981fab17412a379f6ba7f49b1682c81a291f214",
+    "status": "verified",
+    "normalizationBoundary": "src/application/inventory/equipment_read_model_factory.js",
+    "downstreamPhysicsFallbacksAdded": false,
+    "stage3TopologyChanged": false
+  },
+  "freshInstall": {
+    "status": "passed",
+    "method": "Byte-identical working-tree copy of source commit with .git, node_modules and dist excluded; npm ci --no-audit --no-fund.",
+    "node": "v24.13.0",
+    "npm": "11.6.2",
+    "exitCode": 0,
+    "durationMs": 6010,
+    "logSha256": "5d7d048115d7cc31e7eff20d8eb41ca5214970aa69681c95c1e89fb40a36828f",
+    "lockfileChanged": false,
+    "dependencyUpdates": false,
+    "warnings": [
+      "Existing dependency deprecation warning: inflight@1.0.6",
+      "Existing dependency deprecation warning: glob@7.2.3"
+    ]
+  },
+  "suites": {
+    "architecture": {
+      "status": "passed",
+      "passedChecks": 92,
+      "failedChecks": 0,
+      "durationMs": 37492,
+      "logSha256": "abe09e731f76959484032003e0fbc5b96fc0dc0162762581100744a784335eda"
+    },
+    "quick": {
+      "status": "passed",
+      "passedChecks": 55,
+      "failedChecks": 0,
+      "durationMs": 20057,
+      "logSha256": "6c98c90cdc0e366299fd3144ca6fbc2427f662a2707de43bbc73ae9c6fb016ff"
+    },
+    "full": {
+      "status": "passed",
+      "passedChecks": 120,
+      "failedChecks": 0,
+      "durationMs": 40703,
+      "logSha256": "d16a4c23bbf1bb2db5de47d8ff8642676c50c4d6b6e1f446e0a375ad5a68c2e6"
+    },
+    "countSemantics": "Observed release-attempt anchors, not architecture policy constants."
+  },
+  "runtimeTopology": {
+    "projectModules": 31,
+    "activations": 32,
+    "bridgeRecords": 57,
+    "physicalClassicScripts": 426,
+    "logicalLegacyPositions": 424,
+    "moduleScripts": 0,
+    "cumulativeRuntimes": 1,
+    "isolatedIifeScripts": 0,
+    "bundleSha256": "2bb747e4c4bbd2b3c45bf65563e64a10ec5617319c9cbda7d2c13486a5bb95d0"
+  },
+  "browserSmoke": {
+    "status": "passed",
+    "performedBy": "user",
+    "captureMode": "opt-in DevTools Stage 3.7.8 reel/retrieve A/B probe",
+    "before": {
+      "capturedAt": "2026-09-04T11:48:18.041Z",
+      "available": true,
+      "hasReel": true,
+      "lineTotalMeters": 20,
+      "lineReleasedMeters": 10.973398726976804,
+      "rodStrokeWonMeters": 0.0757787039599016,
+      "autoRecoveredMeters": 0,
+      "holdRecoveredMeters": 0,
+      "autoRecoverBlockedReason": "hold_active"
+    },
+    "after": {
+      "capturedAt": "2026-09-04T11:48:18.117Z",
+      "available": true,
+      "hasReel": true,
+      "lineTotalMeters": 20,
+      "lineReleasedMeters": 10.902339921455539,
+      "rodStrokeWonMeters": 0,
+      "autoRecoveredMeters": 0.06139880552127279,
+      "holdRecoveredMeters": 0,
+      "autoRecoverBlockedReason": "none"
+    },
+    "recoveryEvidence": {
+      "frameRecovery": true,
+      "lineReleasedMetersReduced": true,
+      "lineReleasedMetersReducedBy": 0.071058805521265,
+      "rodStrokeWonMetersReduced": true,
+      "rodStrokeWonMetersReducedBy": 0.0757787039599016,
+      "strokeLineDesync": false
+    },
+    "console": {
+      "errors": 0,
+      "warnings": 0,
+      "scope": "since-devtools-probe-armed"
+    },
+    "blockerClassification": "none",
+    "verdict": "PASS"
+  },
+  "protectedInvariants": {
+    "fishingFormulasChanged": false,
+    "saveFormatChanged": false,
+    "apiChanged": false,
+    "duplicateModuleIdentityObserved": false,
+    "domainTransportLookupAdded": false,
+    "newArchitectureFailure": false
+  },
+  "nextStage": "Stage 3.7.9 — Release Closure v0.24.44"
+}
