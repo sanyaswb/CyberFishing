@@ -1,0 +1,472 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-007-acceptance",
+  "stage": "3.7.8",
+  "batchId": "stage-3.candidate-007-fishing-bb8b3939",
+  "releaseVersion": "0.24.43",
+  "status": "needs-review",
+  "acceptanceOutcome": "FAIL",
+  "verdict": "not-eligible-for-release-closure",
+  "nextGate": "stage-3.7.8-browser-reel-review",
+  "releaseClosureAllowed": false,
+  "sourceCommit": "fda9a3317ff09b6bbe1c7097b13010fe6ff6f9c0",
+  "repositoryClean": true,
+  "repositoryCleanScope": "Preflight and after browser, before adding these acceptance evidence files and the plan note.",
+  "recordedAt": "2026-09-03T16:03:55.870Z",
+  "immutableRun": {
+    "sourceSnapshotSha256": "9d4af573dc89a84332a3b73f3ed92acfe33add231108ceb400979f0c41d922d2",
+    "archive": {
+      "path": "architecture/migration/evidence/stage_3_batch_007_acceptance_capture.json",
+      "sha256": "5d93043a7e03858ac6710f6161986ad6135ddecc79401facd0b44ed528082292"
+    },
+    "description": "Snapshot of this acceptance attempt. A later successful attempt must explicitly supersede this record; do not reinterpret this run as PASS."
+  },
+  "preflight": {
+    "status": "passed",
+    "lifecycle": {
+      "schemaVersion": 1,
+      "kind": "cyber-fishing-stage-3-execution-state",
+      "releaseVersion": "0.24.43",
+      "approvedPlanSha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb",
+      "status": "migration-active",
+      "completedBatchIds": [
+        "stage-3.candidate-001-inventory-85f44b2e",
+        "stage-3.candidate-002-fishing-944d0790",
+        "stage-3.candidate-003-fishing-9700ad4f",
+        "stage-3.candidate-004-equipment-4f2570dc",
+        "stage-3.candidate-005-fishing-45d0c7ce",
+        "stage-3.candidate-006-fishing-e48e70d8"
+      ],
+      "activeBatchId": "stage-3.candidate-007-fishing-bb8b3939",
+      "compatibilityRuntimeActivated": true,
+      "activeBatchPhase": "runtime-active"
+    },
+    "stage376": "verified; live integration check passed",
+    "stage377": "verified; --acceptance-gate passed; --release-gate not bypassed",
+    "inputEvidence": {
+      "architecture/migration/stage_3_batch_007_live_runtime_validation.json": "6558e972e75a0a0920301908df19822021023feb97d4a5f89b4733f39cb3e2ec",
+      "architecture/migration/stage_3_batch_007_observation_reconciliation.json": "8fcbf2b81e1ec897722ab4038c64b60dc81fdf7d15d8a511da04ff901064815b",
+      "architecture/migration/stage_3_batch_007_fallback_review.json": "4d1ff6b4d843e941558c5a50c27ed78390d7b0175fe34f924ccb432c12793b89",
+      "architecture/migration/stage_3_batch_007_changelog_repair.json": "f03c97d5dd1b133e251e73733f44fe4455be3078c13e41b6323136768674a7cc",
+      "architecture/migration/stage_3_compatibility_runtime.json": "4f238a82b150266fe593735f4027429bf59af3c55b45139ce7434b3f6e55ac75",
+      "architecture/migration/module_migration_manifest.json": "3297cf02db47d75a0b80811e25d2be2c98aa81f69a3c9f77231dd60e82b41f3d",
+      "architecture/guards/migration_bridge_registry.json": "2372a9ccde069ab45294287fd427aa30d95cbc2f5756f565763662554ba778ef",
+      "architecture/guards/global_provider_baseline.json": "77b621365ec53ef0dd0e7bbcb607a8065ef5f61e3efd75716b010f5039744c0a",
+      "architecture/migration/stage_3_execution_state.json": "e70aa2388cab23411ae2507b4cc9469bee46f36e08516ca0af775f99e5d4884a",
+      "index.html": "93972fa1936184e29534ccaaf75a0d1c42a7502e8de64e5b860010a1c4763c26",
+      "package.json": "16f21f729cdf90938e54b6a47b149ab02d27fcdfc61d1c520cd1c1451dda307a",
+      "package-lock.json": "20d0aca65ac37736ece8d6d7ba8fc68ca131d0fa887b1440bfba7ef417b7aa73"
+    }
+  },
+  "freshInstall": {
+    "status": "passed",
+    "node": "v24.13.0",
+    "npm": "11.6.2",
+    "method": "Byte-identical copy of all 840 baseline Git-tracked files into a new temporary directory; node_modules and dist initially absent; npm ci --no-audit --no-fund.",
+    "lockfileUnchanged": true,
+    "dependencyUpdates": false,
+    "command": {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "C:\\nvm4w\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "ci",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exitCode": 0,
+      "durationMs": 7261,
+      "logSha256": "5a800aa7708ee54390121e6812e918faaf9d02b58dd7ede4c627123a41751487",
+      "tail": "\nadded 156 packages in 7s\nnpm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.\nnpm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me\n"
+    },
+    "warnings": [
+      "Existing dependency deprecation warning: inflight@1.0.6",
+      "Existing dependency deprecation warning: glob@7.2.3"
+    ],
+    "warningScope": "npm install diagnostics only; not browser console warnings. No dependency remediation performed."
+  },
+  "architectureSuite": {
+    "status": "passed",
+    "command": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "utils/run-checks.js",
+      "--suite",
+      "architecture"
+    ],
+    "exitCode": 0,
+    "durationMs": 39495,
+    "logSha256": "af59e540da20b914f96770a012c05f2b6acbe68c4e380cc10e088cbb9a075f98",
+    "passedChecks": 90,
+    "failedChecks": 0,
+    "tail": "irtual build modules, one calculator identity, activation at logical position 113 and calculator/ReelSystem semantics preserved.\n\n[check] Stage 3.3 line-tension pre-build contract\nStage 3.3 pre-build contract passed: frozen batch, exact ESM target, registry consumer set, activation-129 contract and bridge-only source verified.\n\n[check] Stage 3.3 line-tension post-build runtime\nStage 3.3 historical runtime passed inside the current 31-module graph: 11 approved virtual build modules, one calculator identity, activation at logical position 129 and calculator/TensionSystem semantics preserved.\n\n[check] Stage 3.4 rod-capability pre-build contract\nStage 3.4 pre-build contract passed: one frozen ESM target, one activation-157 shim and seven exact consumer bridge records verified.\n\n[check] Stage 3.4 rod-capability post-build runtime\nStage 3.4 historical runtime passed inside the current 31-module graph: one resolver identity, position-157 exposure, strict capability semantics and seven legacy consumers preserved.\n\n[check] Stage 3.5 fishing-foundation pre-build contract\nStage 3.5 pre-build contract passed: six frozen ESM targets, seven canonical activations, seven exact consumer bridges and grouped position-117 aliases verified.\n\n[check] Stage 3.5 fishing-foundation post-build runtime\nStage 3.5 historical runtime passed inside the current 31-module graph: seven exact Fishing Foundation identities, grouped position-117 timing and domain behavior preserved.\n\nPassed 90 checks in 39.40s.\n"
+  },
+  "quickSuite": {
+    "status": "passed",
+    "command": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "utils/run-checks.js",
+      "--suite",
+      "quick"
+    ],
+    "exitCode": 0,
+    "durationMs": 22391,
+    "logSha256": "31793d5a11249864467397ad58f2b72749a8b9833b0af6b44ff95b0d287412ba",
+    "passedChecks": 53,
+    "failedChecks": 0,
+    "tail": "nd bridge-only source verified.\n\n[check] Stage 3.3 line-tension post-build runtime\nStage 3.3 historical runtime passed inside the current 31-module graph: 11 approved virtual build modules, one calculator identity, activation at logical position 129 and calculator/TensionSystem semantics preserved.\n\n[check] Stage 3.4 rod-capability pre-build contract\nStage 3.4 pre-build contract passed: one frozen ESM target, one activation-157 shim and seven exact consumer bridge records verified.\n\n[check] Stage 3.4 rod-capability post-build runtime\nStage 3.4 historical runtime passed inside the current 31-module graph: one resolver identity, position-157 exposure, strict capability semantics and seven legacy consumers preserved.\n\n[check] Stage 3.5 fishing-foundation pre-build contract\nStage 3.5 pre-build contract passed: six frozen ESM targets, seven canonical activations, seven exact consumer bridges and grouped position-117 aliases verified.\n\n[check] Stage 3.5 fishing-foundation post-build runtime\nStage 3.5 historical runtime passed inside the current 31-module graph: seven exact Fishing Foundation identities, grouped position-117 timing and domain behavior preserved.\n\n[check] Final item stat contract\nFinal item stat contract checks passed.\n\n[check] Item rarity snapshot and Inventory V2\nItem rarity snapshot, sorting, filtering and UI checks passed.\n\n[check] Production rarity configuration\nProduction rarity config passed for 2 fish species and 24 item records.\n\nPassed 53 checks in 22.29s.\n"
+  },
+  "fullSuite": {
+    "status": "passed",
+    "command": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "utils/run-checks.js",
+      "--suite",
+      "all"
+    ],
+    "exitCode": 0,
+    "durationMs": 47242,
+    "logSha256": "7846e2a87973015d410bb6e99ac63b915b1dea7977ba19096264d729827216b7",
+    "passedChecks": 118,
+    "failedChecks": 0,
+    "tail": " creates runtime float/tackle entity\n- victory: rod hold produces force\n- victory: hold contributes player tension\n- victory: fight produces blocked-force or player-hold tension\n- easy fish reaches victory through full fight update cycle (last distance 0.000m, transition victory/no_reason, lift=0.250/0.250, liftActive=true, liftInZone=true, totalTension=0.250)\n- easy fish physically moves toward player during hold\n- easy fish stays under line break stress\n- cast succeeds with equipped test build and bait\n- cast creates runtime float/tackle entity\n- light_landing_lift: rod hold produces force\n- light_landing_lift: fight produces blocked-force or player-hold tension\n- cast succeeds with equipped test build and bait\n- cast creates runtime float/tackle entity\n- heavy_landing_lift: rod hold produces force\n- heavy_landing_lift: fight produces blocked-force or player-hold tension\n- light fish reaches victory through landing lift\n- near-limit fish can still reach victory through landing lift\n- near-limit fish takes longer to land than light fish\n- cast succeeds with equipped test build and bait\n- cast creates runtime float/tackle entity\n- line_break: fight produces blocked-force or player-hold tension\n- fish-pressure overload scenario exceeds line load (peak=2.1000, transition=failed/line)\n- fish-pressure overload scenario fails\n- fish-pressure overload scenario breaks the line\n\n[check] DevTools linked parameters\nDevTools linked parameter checks passed.\n\nPassed 118 checks in 47.15s.\n"
+  },
+  "countSemantics": "Observed totals are this run's anchors, not architecture policy constants. Each suite exit code was 0 with no failed checks.",
+  "runtimeTopology": {
+    "status": "passed",
+    "cumulativeRuntimes": 1,
+    "projectModules": 31,
+    "approvedVirtualBuildModules": 11,
+    "activations": 32,
+    "bridgeRecords": 57,
+    "isolatedIifeScripts": 0,
+    "moduleScripts": 0,
+    "physicalClassicScripts": 426,
+    "logicalLegacyPositions": 424,
+    "buildCommand": {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "utils/build/build_stage_3_compat_runtime.js"
+      ],
+      "exitCode": 0,
+      "durationMs": 580,
+      "logSha256": "b31471ff986a3a75b84df65b9bcfa92d9f3b479f5e47fb2b6898a8e7db83b93e",
+      "tail": "e04e430731bf53d7ef081b7b6650a952313c5c8450521f1eba4cab79\n- dist/stage-3-compat-runtime/activations/140_landinglifttensioncalculator.js bb2b7df44ea2d8ca32ba51236000ddc042b1cded9953266ec36ea0fdb3aee170\n- dist/stage-3-compat-runtime/activations/157_rodcapabilityresolver.js 462de6f1999ff5b789409dbe00273f9cce166f835c0a0843456167fe8833b988\n- dist/stage-3-compat-runtime/activations/352_assetmanifest.js c607661064a404d748893c6b76ce54747e3bcf0e30a4e40875663c59001e6ece\n- dist/stage-3-compat-runtime/activations/353_assetloadresult.js 663f88f08f1dac40bd03d635b5a1b3105c460bfb5903dcdceadc92add7dcf66f\n- dist/stage-3-compat-runtime/activations/358_renderpass.js 4d519d81bebdc82e2efc3b4a7fa2c9239597bbcfaa04c13daeb80cd9e0f144bd\n- dist/stage-3-compat-runtime/activations/360_rendermath.js a962bc192bdb40de397df3dd576ff1fb30965f8374ad4b2962db17e509837de3\n- dist/stage-3-compat-runtime/activations/361_rendercomponent.js d2636a7d6868af2195a848d4b0b72be6cc0c3dd5bb98d40192ed47b58ddb79d2\n- dist/stage-3-compat-runtime/activations/362_compositerenderer.js f04ebc0e624f926e7172fdbdb2562c3355fa1f58d56f30bf78ff97c1edf8be88\n- dist/stage-3-compat-runtime/activations/391_eventbus.js df1beb5019a18ebf9f666468d02e57689994af430a80904ae44447b7b75b2c77\n- dist/stage-3-compat-runtime/activations/392_eventlifecycle.js f54be747be93bca4e6d9047d65b3f08908f70688a400700d343851e68394c68f\n- dist/stage-3-compat-runtime/activations/395_dependencycontractvalidator.js d3f54e03c1c3a39474c9642bc364820187b47da05066460911ffe19617f45edd\n"
+    },
+    "bundleSha256": "2bb747e4c4bbd2b3c45bf65563e64a10ec5617319c9cbda7d2c13486a5bb95d0",
+    "freshAndOriginalBundleByteEqual": true,
+    "sourceOfTruth": "Execution state + approved runtime contract + actual generated output, checked again in the fresh workspace."
+  },
+  "runtimeIdentity": {
+    "status": "passed",
+    "command": {
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "utils/architecture/stage-3-batch-007-live-runtime-integration-check.js"
+      ],
+      "exitCode": 0,
+      "durationMs": 256,
+      "logSha256": "560b05b8027bba48a6c2ee9e0f26188280625f2b67f7d2b9a00c7b41f760651c",
+      "tail": "Stage 3.7.6 live-runtime integration passed: actual cumulative bundle preserves six exact class/state identities, six activation timings, 54 behavior cases, nine consumers and zero migration allocation/transport deltas; read-only.\n"
+    },
+    "cumulativeEvaluationCount": 1,
+    "transportAssignmentCount": 1,
+    "exactBatch007GlobalIdentities": 6,
+    "activationTimingCases": 6,
+    "behaviorCases": 54,
+    "classicConsumerSet": 9,
+    "moduleStateAndSnapshotIdentityPreserved": true,
+    "reusableResultIdentityPreserved": true,
+    "migrationAllocationDelta": 0,
+    "domainTransportLookupDelta": 0,
+    "proofScope": "Existing executable live-runtime harness, rerun against the freshly built actual IIFE. Browser probe independently checked six published references and disposable state/resolver instances; it does not replace timing/allocation harness coverage."
+  },
+  "manifestReconciliation": {
+    "status": "passed",
+    "command": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "utils/architecture/finalize-stage-3-batch-007-observations.js",
+      "--acceptance-gate"
+    ],
+    "exitCode": 0,
+    "durationMs": 2763,
+    "logSha256": "e7348289297ab162bbbe02e18640ed49e90ef051a1f34b0fb2bada4c5cade1e4",
+    "tail": "Stage 3.7.7 mechanical reconciliation passed: 455 modules, 772 edges, 9 frozen relationships + 1 reviewed guarded standalone fallback; Stage 3.7.8 eligible, release closure not authorized.\n"
+  },
+  "browserSmoke": {
+    "status": "incomplete-needs-review",
+    "surface": "Codex in-app browser",
+    "origin": "http://127.0.0.1:4378",
+    "environment": "Static server launched from the fresh npm-ci workspace, not the original node_modules/dist.",
+    "originalIndex": {
+      "path": "/index.html",
+      "loaded": true,
+      "canvasRendered": true,
+      "inventoryOpened": true,
+      "tooltipRendered": true,
+      "consoleErrors": 0,
+      "unexpectedWarnings": 0
+    },
+    "probe": {
+      "path": "/browser-probe.html",
+      "templateArchiveKey": "browser-probe.html",
+      "externalScriptSequenceByteEquivalent": true,
+      "originalIndexModified": false,
+      "instrumentation": "Separate test-only page: original index plus one inline acceptance probe. Probe's inline script is excluded from production script counts; all 426 external source URLs/order remain equal.",
+      "registryAccessScope": "Acceptance probe only; Domain/Application source unchanged.",
+      "seededFight": "FixedCatchFishFactory with existing configured crucian_stalker template, weight 0.25 kg; GameApplication.setState('playing', {fish}) after successful cast.",
+      "limitations": [
+        "Natural random bite selection was not tested.",
+        "Reel scenario uses the existing GameApplication.castLine command with a real water cell; it is not evidence of successful manual reel casting.",
+        "Disposable state/buffer identity checks do not claim private live-owner instrumentation or heap profiling."
+      ]
+    },
+    "bootAndUi": {
+      "status": "passed",
+      "canvasSize": {
+        "width": 1280,
+        "height": 720
+      },
+      "inventoryEquipAndAssemblyUiExercised": true,
+      "actualReelTooltip": {
+        "effectiveRetrieveSpeed": "1.4 м/с",
+        "retrieveDurationFor20Meters": "14.29 с"
+      },
+      "exactExportIdentities": [
+        "LineConstrainedFishMotionResolver",
+        "LineRadialMovementSplitter",
+        "ReelRetrieveSpeedCalculator",
+        "RodPullState",
+        "RodStrokeState",
+        "SimpleFightForceCalculator"
+      ],
+      "allSixExact": true,
+      "transportOwnsGameState": false,
+      "cumulativeNetworkResourceCount": 1
+    },
+    "stateProbe": {
+      "isolatedPullInstances": true,
+      "isolatedStrokeInstances": true,
+      "strokeWriteSnapshotReusesBuffer": true,
+      "motionResolveReusesResult": true,
+      "radialResolveVelocityReusesResult": true
+    },
+    "poleScenario": {
+      "status": "passed",
+      "loadout": "Test Build (Dev)",
+      "castInput": "Canvas drag [640,300] -> [640,540]",
+      "seededFight": true,
+      "hasReel": false,
+      "samples": [
+        {
+          "at": "2026-09-03T15:50:03.848Z",
+          "state": "scouting",
+          "position": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "at": "2026-09-03T15:50:11.492Z",
+          "state": "waiting",
+          "position": {
+            "x": 1304.986618189976,
+            "y": 544.9971305945
+          }
+        },
+        {
+          "at": "2026-09-03T15:50:20.057Z",
+          "state": "playing",
+          "position": {
+            "x": 1304.986618189976,
+            "y": 544.9971305945
+          }
+        },
+        {
+          "at": "2026-09-03T15:50:26.636Z",
+          "state": "playing",
+          "position": {
+            "x": 1370.5750836235013,
+            "y": 566.4209308680042
+          },
+          "rodPullActive": true,
+          "rodStrokeWonMeters": 0.9391322157730606,
+          "actualFishPullSpeedMps": 1.4247798200952422
+        },
+        {
+          "at": "2026-09-03T15:50:27.842Z",
+          "state": "playing",
+          "position": {
+            "x": 1352.396285668044,
+            "y": 539.493688452272
+          },
+          "rodPullActive": false,
+          "rodStrokeWonMeters": 0.4538205471475738,
+          "fishSpeedMps": 0.5768718576976208
+        },
+        {
+          "at": "2026-09-03T15:50:45.835Z",
+          "state": "playing",
+          "position": {
+            "x": 1211.679851353992,
+            "y": 520.0135217128258
+          },
+          "rodPullActive": false,
+          "rodStrokeWonMeters": 0,
+          "fishSpeedMps": 0.8372707508278222
+        }
+      ]
+    },
+    "reelScenario": {
+      "status": "not-proven",
+      "loadouts": [
+        "Test spinning rod + Test reel with line attached through assembly UI + Test spoon",
+        "Test Build (Dev2): Test feeder + prepared Test reel + base spring"
+      ],
+      "observation": "Both scenarios expose hasReel=true but lineTotalMeters=0 and lineReleasedMeters=0. Positive line recovery was not observed; do not count this as reel/retrieve PASS.",
+      "manualCastObservation": "Pointer casts created SpinnerEntity near shore and returned to scouting before later snapshots. Cause not established.",
+      "commandCast": {
+        "success": true,
+        "point": {
+          "x": 1280,
+          "y": 960
+        },
+        "waterDepth": 1.9113725490196085,
+        "nextState": "waiting"
+      },
+      "input": "Existing InputManager keyboard path: hold S for 1s to increase drag, then hold Space for 1s and release. No configuration/physics patch.",
+      "samples": [
+        {
+          "at": "2026-09-03T16:02:18.409Z",
+          "state": "playing",
+          "hasReel": true,
+          "dragRatio": 0.35339500000000024,
+          "lineTotalMeters": 0,
+          "lineReleasedMeters": 0,
+          "rodStrokeWonMeters": 0,
+          "autoRecoverActive": false,
+          "autoRecoverBlockedReason": "no_stroke_credit",
+          "autoRecoverSpeedMps": 1.4000000000000001
+        },
+        {
+          "at": "2026-09-03T16:02:22.927Z",
+          "state": "playing",
+          "position": {
+            "x": 1319.9845106050554,
+            "y": 1018.2969573218783
+          },
+          "hasReel": true,
+          "lineTotalMeters": 0,
+          "rodPullActive": true,
+          "rodStrokeWonMeters": 1.063570216799413,
+          "actualFishPullSpeedMps": 1.6208161415481537,
+          "autoRecoveredMeters": 0,
+          "autoRecoverBlockedReason": "raw_load_above_drag_limit"
+        },
+        {
+          "at": "2026-09-03T16:02:24.133Z",
+          "state": "playing",
+          "position": {
+            "x": 1321.4153853961895,
+            "y": 1031.3201270341115
+          },
+          "hasReel": true,
+          "dragRatio": 0.35339500000000024,
+          "lineTotalMeters": 0,
+          "lineReleasedMeters": 0,
+          "rodPullActive": false,
+          "rodStrokeWonMeters": 1.3046869772825285,
+          "retrieveActive": true,
+          "autoRecoverActive": false,
+          "autoRecoveredMeters": 0,
+          "lineRecoveredThisFrameMeters": 0,
+          "autoRecoverBlockedReason": "stroke_line_desync",
+          "autoRecoverSpeedMps": 1.4000000000000001,
+          "fishSpeedMps": 0.2693006209014232
+        },
+        {
+          "at": "2026-09-03T16:02:32.342Z",
+          "state": "playing",
+          "lineTotalMeters": 0,
+          "rodStrokeWonMeters": 1.2917024524209753,
+          "autoRecoveredMeters": 0,
+          "autoRecoverBlockedReason": "stroke_line_desync",
+          "fishSpeedMps": 0.6365502379259191
+        }
+      ],
+      "cause": "unresolved",
+      "migrationRegressionEstablished": false,
+      "requiredReview": "Trace UI-mounted line/equipment projection to runtime line budget, distinguish fixture setup from existing defect/regression using a known-good baseline. Do not repair gameplay inside acceptance."
+    },
+    "fishingGate": "FAIL: reel/retrieve integration not fully demonstrated; cast/rod/fish movement/fight-without-exceptions alone do not satisfy full smoke."
+  },
+  "consoleDiagnostics": {
+    "status": "passed-for-final-scenarios",
+    "errors": 0,
+    "unexpectedWarnings": 0,
+    "method": "smoke.dev.logs({levels:['error','warn'],limit:100}) returned [] on the final non-iframe probe, as did the original index smoke.",
+    "excludedHarnessAttempts": [
+      {
+        "attempt": "Discarded iframe diagnostic page",
+        "diagnostic": "MutationObserver.observe parameter 1 is not of type Node",
+        "classification": "Harness/browser instrumentation attempt, not attributed to game; not used as acceptance evidence."
+      },
+      {
+        "attempt": "Initial diagnostic getter without its required context",
+        "classification": "Probe setup error corrected only in test page, not runtime. Final page reads existing tensionMeter debug snapshot."
+      }
+    ]
+  },
+  "approvedStandaloneFallbackCheck": {
+    "status": "automated-regressions-passed",
+    "classification": "guarded-standalone-fallback-delta",
+    "scope": "InventoryV2BalanceParameterResolver standalone fallback only",
+    "productionDIBehaviorChanged": false,
+    "gameplaySemanticsChanged": false,
+    "additionalTooltipRows": [
+      "effective-retrieve-speed",
+      "retrieve-duration"
+    ],
+    "historicalProductionOutputAndNoGlobalReads": "Existing Stage 3.7.7 regression harness rerun in fresh suites/reconciliation.",
+    "browserConstructedInstance": {
+      "explicitInjectedCalculatorUsed": true,
+      "injectedCalls": 1,
+      "diEqualsStandalone": true,
+      "effectiveSpeed": "2.3 м/с",
+      "duration10Meters": "4.35 с"
+    },
+    "liveProductionWiringProof": "Fresh source/integration checks plus real tooltip rendering. Private UI dependency reference was not directly introspected in browser.",
+    "removalDependencyPreserved": true,
+    "newBridges": 0
+  },
+  "nonMutation": {
+    "all840BaselineTrackedFilesByteIdenticalAfterBrowser": true,
+    "freshBaselineTrackedFilesByteIdenticalAfterBrowser": true,
+    "sourceChanged": false,
+    "manifestChanged": false,
+    "registryChanged": false,
+    "policyChanged": false,
+    "indexChanged": false,
+    "versionChanged": false,
+    "executionStateChanged": false,
+    "gameplayPatched": false,
+    "onlyRepositoryDeliverables": [
+      "architecture/migration/stage_3_batch_007_acceptance.json",
+      "architecture/migration/evidence/stage_3_batch_007_acceptance_capture.json",
+      "refactor_Task.txt"
+    ]
+  },
+  "cleanup": {
+    "browserTestTabClosed": true,
+    "temporaryDevServerStopped": true,
+    "temporaryWorkspaceRemoved": false,
+    "retainedTemporaryWorkspace": "C:/Users/merko/AppData/Local/Temp/cyber-fishing-3-7-8-U5o8UE",
+    "reason": "Exact-path-validated PowerShell cleanup was rejected by the execution environment policy. No alternate deletion mechanism attempted.",
+    "generatedLocalLogs": "utils/generated/stage-3-7-8/ (ignored); contents preserved in the versioned capture artifact"
+  },
+  "stopDecision": {
+    "gateClosed": false,
+    "batchCompleted": false,
+    "releaseBumped": false,
+    "reason": "Automated suites passed, but positive browser reel recovery is unproven. Do not issue accepted/eligible-for-release-closure.",
+    "nextAction": "Review the browser reel line-budget discrepancy; rerun the relevant smoke after an explicit determination. Any confirmed regression returns to the appropriate prior gate."
+  }
+}

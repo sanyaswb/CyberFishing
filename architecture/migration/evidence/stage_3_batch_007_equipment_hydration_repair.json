@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-007-equipment-hydration-repair",
+  "status": "verified",
+  "stage": "3.7.8-integration-repair",
+  "releaseVersion": "0.24.43",
+  "sourceBaselineCommit": "fda9a3317ff09b6bbe1c7097b13010fe6ff6f9c0",
+  "rootCause": {
+    "classification": "raw-assembly-child-hydration-bypass",
+    "normalizationBoundary": "src/application/inventory/equipment_read_model_factory.js",
+    "readOnlyObservation": {
+      "repositoryReel": {
+        "exists": true,
+        "instanceId": "reel-instance"
+      },
+      "repositoryChildLine": {
+        "exists": true,
+        "instanceId": "line-instance",
+        "representation": "raw-object",
+        "hasEffectiveStats": false
+      },
+      "itemAssemblyReader": {
+        "returnsSameRawObject": true,
+        "instanceId": "line-instance",
+        "hasEffectiveStats": false
+      },
+      "directHydration": {
+        "instanceId": "line-instance",
+        "effectiveLengthMeters": 10
+      },
+      "equipmentProjection": {
+        "lineExists": true,
+        "returnsSameRawObject": true,
+        "instanceId": "line-instance",
+        "hasEffectiveStats": false
+      },
+      "castDistanceCalculator": {
+        "lineMeters": 0
+      },
+      "fightSessionFactory": {
+        "totalLineMeters": 0
+      },
+      "lineSystem": {
+        "totalLineMeters": 0
+      }
+    }
+  },
+  "repair": {
+    "strategy": "canonicalize-every-equipment-reference-at-projection-boundary",
+    "acceptedInputs": [
+      "instance-id",
+      "raw-inventory-object",
+      "already-hydrated-item"
+    ],
+    "failClosed": true,
+    "downstreamFallbacksAdded": false,
+    "productionResult": {
+      "rawRepositoryChildRemainsRaw": true,
+      "equipmentLineInstanceId": "line-instance",
+      "equipmentLineEffectiveLengthMeters": 10,
+      "castDistanceLineMeters": 10,
+      "lineSystemTotalLineMeters": 10
+    },
+    "coveredAssemblyChildren": [
+      "line",
+      "hook",
+      "bait",
+      "feeder-chum",
+      "delivery-cargo"
+    ]
+  },
+  "invariants": {
+    "stage3ProjectModules": 31,
+    "stage3Activations": 32,
+    "bridgeRecords": 57,
+    "completedBatchIds": "001-006",
+    "activeBatchId": "007",
+    "activeBatchPhase": "runtime-active",
+    "fishingFormulasChanged": false,
+    "saveFormatChanged": false,
+    "stage3TopologyChanged": false
+  },
+  "evidence": {
+    "normalizationBoundaryBeforeSha256": "f684135210d0505b5b92c8fe85684197b579cbdc530dafb4d3d72fd8f3238104",
+    "normalizationBoundaryAfterSha256": "60a029f61f874d71c01234563f4bc8d477ede92d3321ba51727e8878e7e1f340",
+    "manifestBeforeSha256": "3297cf02db47d75a0b80811e25d2be2c98aa81f69a3c9f77231dd60e82b41f3d",
+    "manifestAfterSha256": "b587ee57f3d02323afd215a6367b2d6593bb9907f6436c9e972297b6d2b801c1",
+    "observationDelta": {
+      "path": "src/application/inventory/equipment_read_model_factory.js",
+      "environmentBuiltinsAdded": [
+        "TypeError"
+      ],
+      "providerConsumerOrDependencyEdgesChanged": false
+    }
+  },
+  "acceptance": {
+    "focusedProductionShapedRegression": "PASS",
+    "freshNpmCi": "PASS",
+    "architecture": "91/91 PASS",
+    "quick": "54/54 PASS",
+    "full": "119/119 PASS",
+    "browserHydratedLineBudget": {
+      "status": "PASS",
+      "hasReel": true,
+      "lineTotalMeters": 10,
+      "lineReleasedMeters": 10,
+      "rodStrokeWonMeters": 1.0312892681425616,
+      "strokeLineDesyncObserved": false
+    },
+    "browserPositiveRetrieve": {
+      "status": "pending-manual-gate",
+      "lastBlockedReason": "raw_load_above_drag_limit",
+      "lastDragLimitKg": 0,
+      "requiredProof": "non-zero drag and autoRecoveredMeters > 0, or equivalent released-line/stroke-credit reduction"
+    },
+    "stage3_7_8Accepted": false,
+    "stage3_7_9ReleaseClosureAllowed": false
+  }
+}

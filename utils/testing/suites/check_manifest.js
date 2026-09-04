@@ -576,6 +576,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["inventory", "inventory-v2"],
   },
   {
+    id: "inventory-v2-equipment-hydration",
+    title: "Inventory V2 production-shaped equipment hydration",
+    file: "utils/inventory-v2-equipment-hydration-check.js",
+    suites: ["quick", "architecture", "inventory", "inventory-v2", "gameplay"],
+  },
+  {
     id: "inventory-v2-transaction",
     title: "Inventory V2 transactions",
     file: "utils/inventory-v2-transaction-check.js",

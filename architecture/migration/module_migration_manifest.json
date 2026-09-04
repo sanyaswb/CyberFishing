@@ -7068,6 +7068,7 @@
             "Number",
             "Object",
             "RegExp",
+            "TypeError",
             "globalThis"
           ],
           "browserApis": [],

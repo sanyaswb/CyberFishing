@@ -167,17 +167,63 @@ class EquipmentReadModelFactory {
 
   #item(reference) {
     if (!reference) return null;
-    if (typeof reference === "object") return reference;
-    const item = typeof this.#itemReader === "function"
-      ? this.#itemReader(reference)
-      : (
-      this.#itemReader?.getById?.(reference) ||
-      this.#itemReader?.getInstance?.(reference) ||
-      this.#itemReader?.hydrateInstance?.(reference) ||
-      this.#itemReader?.get?.(reference) ||
-      null
-    );
+    const item = this.#readCanonicalItem(reference);
+    if (!item) return null;
+    if (!this.#isCanonicalItem(item)) {
+      const instanceId =
+        item?.instanceId ||
+        (typeof reference === "string" ? reference : reference?.instanceId) ||
+        "unknown";
+      throw new TypeError(
+        `Equipment item must be hydrated before gameplay projection: ${instanceId}`,
+      );
+    }
     return item;
+  }
+
+  #readCanonicalItem(reference) {
+    if (this.#isCanonicalItem(reference)) return reference;
+
+    if (typeof this.#itemReader === "function") {
+      const first = this.#itemReader(reference);
+      if (this.#isCanonicalItem(first)) return first;
+      const instanceId =
+        typeof reference === "object" ? reference?.instanceId : null;
+      if (instanceId) {
+        const byInstanceId = this.#itemReader(instanceId);
+        if (this.#isCanonicalItem(byInstanceId)) return byInstanceId;
+        return byInstanceId || first || null;
+      }
+      return first || null;
+    }
+
+    const instanceId =
+      typeof reference === "string" ? reference : reference?.instanceId;
+    let firstResolved = null;
+    const attempts = [
+      ["hydrate", reference],
+      ["hydrateInstance", instanceId],
+      ["getById", instanceId],
+      ["getInstance", instanceId],
+      ["get", instanceId],
+    ];
+    for (const [method, argument] of attempts) {
+      if (!argument || typeof this.#itemReader?.[method] !== "function") continue;
+      const candidate = this.#itemReader[method](argument);
+      if (!firstResolved && candidate) firstResolved = candidate;
+      if (this.#isCanonicalItem(candidate)) return candidate;
+    }
+    return firstResolved || reference || null;
+  }
+
+  #isCanonicalItem(item) {
+    return (
+      item &&
+      typeof item === "object" &&
+      item.effectiveStats &&
+      typeof item.effectiveStats === "object" &&
+      !Array.isArray(item.effectiveStats)
+    );
   }
 
   #instanceId(item) {

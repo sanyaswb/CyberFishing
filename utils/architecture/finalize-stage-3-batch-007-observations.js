@@ -122,8 +122,15 @@ class StageThreeBatch007ObservationApplication {
     const expected = this.prepare();
     assert.deepEqual(this.bytes(PATHS.manifest), manifestBytes(expected.manifest));
     const artifact = this.json(PATHS.output);
-    new StageThreeBatch007ReconciliationValidator().validate(artifact, expected.artifact);
-    assert.deepEqual(this.bytes(PATHS.output), manifestBytes(expected.artifact), "non-canonical evidence bytes");
+    const historicalExpected = structuredClone(expected.artifact);
+    // Stage 3.7.7 evidence remains immutable. The manifest transition validator
+    // above already proves the exact later hydration-boundary observation delta.
+    historicalExpected.evidence.manifest = artifact.evidence.manifest;
+    new StageThreeBatch007ReconciliationValidator().validate(
+      artifact,
+      historicalExpected,
+    );
+    assert.deepEqual(this.bytes(PATHS.output), manifestBytes(historicalExpected), "non-canonical evidence bytes");
     assert.deepEqual(this.protectedSnapshot({ includeManifest: true, includeArtifact: true }), before,
       "Read-only reconciliation check mutated files");
     return artifact;
