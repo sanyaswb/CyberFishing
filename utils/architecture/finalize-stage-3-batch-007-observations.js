@@ -124,7 +124,20 @@ class StageThreeBatch007ObservationApplication {
     const artifact = this.json(PATHS.output);
     const historicalExpected = structuredClone(expected.artifact);
     // Stage 3.7.7 evidence remains immutable. The manifest transition validator
-    // above already proves the exact later hydration-boundary observation delta.
+    // above already proves the exact later hydration-boundary and opt-in probe
+    // observation deltas. The probe adds one required DEBUG_MODULES consumer
+    // and one confirmed relationship without changing the inter-file edge set.
+    assert.equal(
+      expected.artifact.totals.consumers,
+      artifact.totals.consumers + 1,
+      "Unexpected post-3.7.7 consumer delta",
+    );
+    assert.equal(
+      expected.artifact.totals.confirmed,
+      artifact.totals.confirmed + 1,
+      "Unexpected post-3.7.7 confirmed relationship delta",
+    );
+    historicalExpected.totals = structuredClone(artifact.totals);
     historicalExpected.evidence.manifest = artifact.evidence.manifest;
     new StageThreeBatch007ReconciliationValidator().validate(
       artifact,

@@ -582,6 +582,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "architecture", "inventory", "inventory-v2", "gameplay"],
   },
   {
+    id: "stage-3-batch-007-reel-retrieve-browser-probe",
+    title: "Stage 3.7.8 reel/retrieve browser probe contract",
+    file: "utils/browser-probes/stage_3_batch_007_reel_retrieve_probe_check.js",
+    suites: ["quick", "architecture", "tools", "gameplay"],
+  },
+  {
     id: "inventory-v2-transaction",
     title: "Inventory V2 transactions",
     file: "utils/inventory-v2-transaction-check.js",

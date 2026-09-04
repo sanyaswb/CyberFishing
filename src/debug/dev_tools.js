@@ -101,6 +101,7 @@ class DevTools {
   #parameterAliases;
   #itemProgressionDebugProvider;
   #itemProgressionResolver;
+  #reelRetrieveProbeState = Object.freeze({ status: "unavailable" });
   #isDisposed = false;
   #onDebugLiveUpdate = (event) => {
     if (this.#isDisposed) return;
@@ -114,6 +115,13 @@ class DevTools {
     ) {
       this.#populatePanel();
     }
+  };
+  #onReelRetrieveProbeState = (event) => {
+    if (this.#isDisposed) return;
+    this.#reelRetrieveProbeState = event.detail || Object.freeze({
+      status: "unavailable",
+    });
+    if (this.#isOpen) this.#populatePanel();
   };
 
   #excludeKeys = [
@@ -177,6 +185,11 @@ class DevTools {
       "debug-live-update",
       this.#onDebugLiveUpdate,
     );
+    document.addEventListener(
+      "stage-3-7-8-reel-retrieve-probe-state",
+      this.#onReelRetrieveProbeState,
+    );
+    this.#sendReelRetrieveProbeCommand("query");
   }
 
   toggle() {
@@ -195,6 +208,10 @@ class DevTools {
     document.removeEventListener(
       "debug-live-update",
       this.#onDebugLiveUpdate,
+    );
+    document.removeEventListener(
+      "stage-3-7-8-reel-retrieve-probe-state",
+      this.#onReelRetrieveProbeState,
     );
     this.#liveData = null;
     this.#ui.dispose();
@@ -271,6 +288,7 @@ class DevTools {
     }
 
     const debugContent = this.#renderConfigDebugSection(body);
+    this.#renderStageThreeBatch007ProbeSection(debugContent);
     this.#renderLocationDebugSection(debugContent);
 
     // 3. ITEM_DB (БАЗА ПРЕДМЕТІВ)
@@ -649,6 +667,120 @@ class DevTools {
     }
 
     this.#renderParameterAliases(obj, parentElement, path);
+  }
+
+  #renderStageThreeBatch007ProbeSection(debugContent) {
+    if (!debugContent) return;
+
+    const content = this.#createSectionWithCache(
+      "🧪 STAGE 3.7.8 REEL / RETRIEVE GATE",
+      debugContent,
+      ["DEBUG_TOOLS", "stage-3.7.8-reel-retrieve"],
+    );
+    const state = this.#reelRetrieveProbeState || { status: "unavailable" };
+    const activeStatuses = new Set([
+      "arming",
+      "armed",
+      "capturing-before",
+      "observing-recovery",
+    ]);
+
+    this.#ui.createInfoRow("status", state.status, content);
+    this.#ui.createInfoRow(
+      "instructions",
+      state.instructions ||
+        "Equip a spinning loadout, set drag above zero, start a fight, hold Space, then release it.",
+      content,
+    );
+
+    if (state.before) {
+      this.#ui.createInfoRow(
+        "A — BEFORE",
+        this.#formatReelRetrieveSnapshot(state.before),
+        content,
+      );
+    }
+    if (state.after) {
+      this.#ui.createInfoRow(
+        "B — AFTER",
+        this.#formatReelRetrieveSnapshot(state.after),
+        content,
+      );
+    }
+    if (state.verdict) {
+      this.#ui.createInfoRow(
+        "verdict",
+        `${state.verdict.status} / ${state.verdict.blockerClassification}`,
+        content,
+      );
+      this.#ui.createInfoRow(
+        "console",
+        `${state.verdict.console.errors} errors / ${state.verdict.console.warnings} warnings`,
+        content,
+      );
+      this.#ui.createButtonRow("Copy A/B result", content, () =>
+        this.#copyReelRetrieveProbeResult(state),
+      );
+    }
+    if (state.error) {
+      this.#ui.createInfoRow("error", state.error, content);
+    }
+
+    if (activeStatuses.has(state.status)) {
+      this.#ui.createButtonRow("Cancel A/B probe", content, () => {
+        this.#sendReelRetrieveProbeCommand("cancel");
+      });
+      return;
+    }
+
+    this.#ui.createButtonRow("Arm A/B probe", content, () => {
+      document.activeElement?.blur?.();
+      this.#sendReelRetrieveProbeCommand("arm");
+    });
+  }
+
+  #sendReelRetrieveProbeCommand(action) {
+    document.dispatchEvent(
+      new CustomEvent("stage-3-7-8-reel-retrieve-probe-command", {
+        detail: { action },
+      }),
+    );
+  }
+
+  #formatReelRetrieveSnapshot(snapshot) {
+    return [
+      `hasReel=${snapshot.hasReel}`,
+      `total=${this.#formatProbeNumber(snapshot.lineTotalMeters)}`,
+      `released=${this.#formatProbeNumber(snapshot.lineReleasedMeters)}`,
+      `stroke=${this.#formatProbeNumber(snapshot.rodStrokeWonMeters)}`,
+      `auto=${this.#formatProbeNumber(snapshot.autoRecoveredMeters)}`,
+      `hold=${this.#formatProbeNumber(snapshot.holdRecoveredMeters)}`,
+      `blocked=${snapshot.autoRecoverBlockedReason || "none"}`,
+    ].join("; ");
+  }
+
+  #formatProbeNumber(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number.toFixed(4) : "n/a";
+  }
+
+  #copyReelRetrieveProbeResult(state) {
+    const result = JSON.stringify(
+      {
+        before: state.before,
+        after: state.after,
+        verdict: state.verdict,
+      },
+      null,
+      2,
+    );
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(result).catch(() => {
+        window.prompt?.("Copy Stage 3.7.8 A/B result", result);
+      });
+      return;
+    }
+    window.prompt?.("Copy Stage 3.7.8 A/B result", result);
   }
 
   #renderItemProgressionSection(body) {

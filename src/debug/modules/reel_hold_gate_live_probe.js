@@ -1,38 +1,450 @@
 class ReelHoldGateLiveProbe {
   #lastSignature = "";
+  #latestAcceptanceLive = null;
+  #previousDebugModuleEnabled = null;
+  #acceptanceState = Object.freeze({ status: "idle" });
+  #acceptanceSubscribers = new Set();
+  #spaceHeld = false;
+  #bestBefore = null;
+  #animationFrame = null;
+  #recoveryRun = 0;
+  #recoveryWindowMs;
+  #consoleErrors = 0;
+  #consoleWarnings = 0;
+  #originalConsoleError = null;
+  #originalConsoleWarn = null;
+  #wrappedConsoleError = null;
+  #wrappedConsoleWarn = null;
 
   constructor({
     thresholdRatio = 0.95,
     debugModuleKey = "reelHoldGate",
+    recoveryWindowMs = 2000,
   } = {}) {
     this.thresholdRatio = thresholdRatio;
     this.debugModuleKey = debugModuleKey;
+    this.#recoveryWindowMs = recoveryWindowMs;
     this.#bind();
+  }
+
+  getAcceptanceState() {
+    return this.#acceptanceState;
+  }
+
+  subscribeAcceptance(subscriber) {
+    if (typeof subscriber !== "function") {
+      throw new TypeError("Reel retrieve probe subscriber must be a function");
+    }
+    this.#acceptanceSubscribers.add(subscriber);
+    subscriber(this.#acceptanceState);
+    return () => this.#acceptanceSubscribers.delete(subscriber);
+  }
+
+  async armAcceptance() {
+    this.#cancelAcceptanceRun();
+    this.#publishAcceptance({ status: "arming" });
+
+    try {
+      if (!window.DEBUG_MODULES) {
+        throw new Error("Debug module registry is unavailable");
+      }
+      this.#previousDebugModuleEnabled =
+        window.DEBUG_MODULES[this.debugModuleKey] === true;
+      window.DEBUG_MODULES[this.debugModuleKey] = true;
+      this.#startConsoleCapture();
+      this.#publishAcceptance({
+        status: "armed",
+        instructions:
+          "Start a fight, hold Space until stroke credit is positive, then release it.",
+      });
+      console.info(
+        "[Stage 3.7.8 probe] Armed. Hold Space to build stroke credit, then release Space.",
+      );
+    } catch (error) {
+      this.#stopConsoleCapture();
+      this.#restoreAcceptanceDebugModule();
+      this.#publishAcceptance({
+        status: "error",
+        error: error?.message || String(error),
+      });
+    }
+
+    return this.#acceptanceState;
+  }
+
+  cancelAcceptance() {
+    this.#cancelAcceptanceRun();
+    this.#publishAcceptance({ status: "idle" });
+  }
+
+  dispose() {
+    this.#cancelAcceptanceRun();
+    this.#acceptanceSubscribers.clear();
+    if (typeof document !== "undefined") {
+      document.removeEventListener("debug-live-update", this.#onDebugLiveUpdate);
+      document.removeEventListener(
+        "stage-3-7-8-reel-retrieve-probe-command",
+        this.#onAcceptanceCommand,
+      );
+    }
+    if (typeof window !== "undefined") {
+      window.removeEventListener("keydown", this.#onAcceptanceKeyDown, true);
+      window.removeEventListener("keyup", this.#onAcceptanceKeyUp, true);
+    }
   }
 
   #bind() {
     if (typeof document === "undefined") return;
 
-    document.addEventListener("debug-live-update", (event) => {
-      if (!this.#isEnabled()) {
-        this.#reset();
-        return;
-      }
+    document.addEventListener("debug-live-update", this.#onDebugLiveUpdate);
+    document.addEventListener(
+      "stage-3-7-8-reel-retrieve-probe-command",
+      this.#onAcceptanceCommand,
+    );
+    window.addEventListener("keydown", this.#onAcceptanceKeyDown, true);
+    window.addEventListener("keyup", this.#onAcceptanceKeyUp, true);
+  }
 
-      const live = event.detail || {};
-      if (live.gameState !== "playing") {
-        this.#reset();
-        return;
-      }
-      if (!this.#shouldInspect(live)) return;
+  #onAcceptanceCommand = (event) => {
+    const action = event.detail?.action;
+    if (action === "arm") {
+      this.armAcceptance();
+      return;
+    }
+    if (action === "cancel") {
+      this.cancelAcceptance();
+      return;
+    }
+    if (action === "query") {
+      this.#publishAcceptance(this.#acceptanceState);
+    }
+  };
 
-      const diagnosis = this.#diagnose(live);
-      const signature = this.#signature(live, diagnosis);
+  #onDebugLiveUpdate = (event) => {
+    this.#latestAcceptanceLive = event.detail || null;
+    if (!this.#isEnabled()) {
+      this.#resetLiveSignature();
+      return;
+    }
 
-      if (signature === this.#lastSignature) return;
-      this.#lastSignature = signature;
-      this.#print(live, diagnosis);
+    const live = event.detail || {};
+    if (live.gameState !== "playing") {
+      this.#resetLiveSignature();
+      return;
+    }
+    if (!this.#shouldInspect(live)) return;
+
+    const diagnosis = this.#diagnose(live);
+    const signature = this.#signature(live, diagnosis);
+
+    if (signature === this.#lastSignature) return;
+    this.#lastSignature = signature;
+    this.#print(live, diagnosis);
+  };
+
+  #onAcceptanceKeyDown = (event) => {
+    if (
+      event.code !== "Space" ||
+      event.repeat ||
+      this.#spaceHeld ||
+      this.#acceptanceState.status !== "armed" ||
+      this.#isEditableTarget(event.target)
+    ) {
+      return;
+    }
+
+    this.#spaceHeld = true;
+    this.#bestBefore = this.#readAcceptanceSnapshot();
+    this.#publishAcceptance({
+      status: "capturing-before",
+      before: this.#bestBefore,
     });
+    this.#sampleWhileHeld();
+  };
+
+  #onAcceptanceKeyUp = (event) => {
+    if (event.code !== "Space" || !this.#spaceHeld) return;
+
+    this.#spaceHeld = false;
+    const current = this.#readAcceptanceSnapshot();
+    const before = this.#preferStrokeCredit(this.#bestBefore, current);
+    this.#bestBefore = null;
+    console.info("A — BEFORE", before);
+    this.#publishAcceptance({
+      status: "observing-recovery",
+      before,
+    });
+    this.#observeRecovery(before);
+  };
+
+  #isEditableTarget(target) {
+    const tagName = String(target?.tagName || "").toLowerCase();
+    return (
+      tagName === "input" ||
+      tagName === "textarea" ||
+      tagName === "button" ||
+      target?.isContentEditable === true
+    );
+  }
+
+  #sampleWhileHeld() {
+    if (!this.#spaceHeld) return;
+    const current = this.#readAcceptanceSnapshot();
+    this.#bestBefore = this.#preferStrokeCredit(this.#bestBefore, current);
+    this.#animationFrame = window.requestAnimationFrame(() =>
+      this.#sampleWhileHeld(),
+    );
+  }
+
+  #observeRecovery(before) {
+    const run = ++this.#recoveryRun;
+    const startedAt = window.performance.now();
+    let bestAfter = this.#readAcceptanceSnapshot();
+    const trace = [];
+    let lastSignature = "";
+
+    const sample = () => {
+      if (run !== this.#recoveryRun) return;
+      const current = this.#readAcceptanceSnapshot();
+      const signature = this.#acceptanceSignature(current);
+      if (signature !== lastSignature && trace.length < 24) {
+        trace.push(current);
+        lastSignature = signature;
+      }
+      if (
+        this.#recoveryScore(before, current) >
+        this.#recoveryScore(before, bestAfter)
+      ) {
+        bestAfter = current;
+      }
+
+      if (window.performance.now() - startedAt < this.#recoveryWindowMs) {
+        this.#animationFrame = window.requestAnimationFrame(sample);
+        return;
+      }
+
+      const consoleSummary = Object.freeze({
+        errors: this.#consoleErrors,
+        warnings: this.#consoleWarnings,
+        scope: "since-devtools-probe-armed",
+      });
+      this.#stopConsoleCapture();
+      this.#restoreAcceptanceDebugModule();
+      const verdict = this.#evaluateAcceptance(
+        before,
+        bestAfter,
+        consoleSummary,
+      );
+      const result = {
+        status: "complete",
+        before,
+        after: bestAfter,
+        trace: Object.freeze([...trace]),
+        verdict,
+      };
+      this.#publishAcceptance(result);
+      console.info("B — AFTER", bestAfter);
+      console.info("REEL/RETRIEVE TRACE", trace);
+      console.info("STAGE 3.7.8 VERDICT", verdict);
+    };
+
+    this.#animationFrame = window.requestAnimationFrame(sample);
+  }
+
+  #readAcceptanceSnapshot() {
+    const debug = this.#latestAcceptanceLive;
+    const line = debug?.lineDebug || {};
+    return Object.freeze({
+      capturedAt: new Date().toISOString(),
+      available: !!debug,
+      hasReel: this.#firstBoolean(debug?.hasReel, line.reelHoldHasReel),
+      lineTotalMeters: this.#firstNumber(
+        debug?.lineTotalMeters,
+        debug?.lineTotalLengthMeters,
+        line.totalLineMeters,
+      ),
+      lineReleasedMeters: this.#firstNumber(
+        debug?.lineReleasedMeters,
+        line.releasedLineMeters,
+      ),
+      rodStrokeWonMeters: this.#firstNumber(
+        debug?.rodStrokeWonMeters,
+        line.rodStrokeWonMeters,
+      ),
+      autoRecoveredMeters: this.#firstNumber(
+        debug?.autoRecoveredMeters,
+        line.autoRecoveredMeters,
+      ),
+      holdRecoveredMeters: this.#firstNumber(
+        debug?.holdRecoveredMeters,
+        line.holdRecoveredMeters,
+      ),
+      autoRecoverBlockedReason:
+        debug?.autoRecoverBlockedReason ||
+        line.autoRecoverBlockedReason ||
+        "none",
+    });
+  }
+
+  #evaluateAcceptance(before, after, consoleSummary) {
+    const lineReduced =
+      this.#finiteNumber(after?.lineReleasedMeters) <
+      this.#finiteNumber(before?.lineReleasedMeters);
+    const strokeReduced =
+      this.#finiteNumber(after?.rodStrokeWonMeters) <
+      this.#finiteNumber(before?.rodStrokeWonMeters);
+    const frameRecovery =
+      this.#finiteNumber(after?.autoRecoveredMeters) > 0 ||
+      this.#finiteNumber(after?.holdRecoveredMeters) > 0;
+    const recoveryObserved = frameRecovery || lineReduced || strokeReduced;
+    const blockedReason = String(after?.autoRecoverBlockedReason || "none");
+    const strokeLineDesync = blockedReason === "stroke_line_desync";
+    const consoleClean =
+      this.#finiteNumber(consoleSummary.errors) === 0 &&
+      this.#finiteNumber(consoleSummary.warnings) === 0;
+    const setupValid =
+      before?.hasReel === true &&
+      this.#finiteNumber(before?.lineTotalMeters) > 0 &&
+      this.#finiteNumber(before?.lineReleasedMeters) > 0 &&
+      this.#finiteNumber(before?.rodStrokeWonMeters) > 0;
+
+    return Object.freeze({
+      status:
+        setupValid && recoveryObserved && !strokeLineDesync && consoleClean
+          ? "PASS"
+          : "NOT_PASS",
+      setupValid,
+      recoveryObserved,
+      recoveryEvidence: Object.freeze({
+        frameRecovery,
+        lineReleasedMetersReduced: lineReduced,
+        rodStrokeWonMetersReduced: strokeReduced,
+      }),
+      strokeLineDesync,
+      consoleClean,
+      blockerClassification: strokeLineDesync
+        ? "hydration-desync"
+        : !recoveryObserved && blockedReason !== "none"
+          ? "gameplay-gate-review"
+          : "none",
+      console: consoleSummary,
+    });
+  }
+
+  #preferStrokeCredit(left, right) {
+    if (!left) return right;
+    return right.rodStrokeWonMeters >= left.rodStrokeWonMeters ? right : left;
+  }
+
+  #recoveryScore(before, after) {
+    return (
+      Math.max(0, this.#finiteNumber(after?.autoRecoveredMeters)) * 1000 +
+      Math.max(0, this.#finiteNumber(after?.holdRecoveredMeters)) * 1000 +
+      Math.max(
+        0,
+        this.#finiteNumber(before?.lineReleasedMeters) -
+          this.#finiteNumber(after?.lineReleasedMeters),
+      ) *
+        100 +
+      Math.max(
+        0,
+        this.#finiteNumber(before?.rodStrokeWonMeters) -
+          this.#finiteNumber(after?.rodStrokeWonMeters),
+      )
+    );
+  }
+
+  #acceptanceSignature(snapshot) {
+    return [
+      snapshot.lineReleasedMeters,
+      snapshot.rodStrokeWonMeters,
+      snapshot.autoRecoveredMeters,
+      snapshot.holdRecoveredMeters,
+      snapshot.autoRecoverBlockedReason,
+    ].join("|");
+  }
+
+  #firstBoolean(...values) {
+    return values.find((candidate) => typeof candidate === "boolean") === true;
+  }
+
+  #firstNumber(...values) {
+    for (const value of values) {
+      const number = Number(value);
+      if (Number.isFinite(number)) return number;
+    }
+    return 0;
+  }
+
+  #finiteNumber(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : 0;
+  }
+
+  #startConsoleCapture() {
+    this.#stopConsoleCapture();
+    this.#consoleErrors = 0;
+    this.#consoleWarnings = 0;
+    this.#originalConsoleError = console.error;
+    this.#originalConsoleWarn = console.warn;
+    this.#wrappedConsoleError = (...args) => {
+      this.#consoleErrors += 1;
+      this.#originalConsoleError.apply(console, args);
+    };
+    this.#wrappedConsoleWarn = (...args) => {
+      this.#consoleWarnings += 1;
+      this.#originalConsoleWarn.apply(console, args);
+    };
+    console.error = this.#wrappedConsoleError;
+    console.warn = this.#wrappedConsoleWarn;
+  }
+
+  #stopConsoleCapture() {
+    if (console.error === this.#wrappedConsoleError) {
+      console.error = this.#originalConsoleError;
+    }
+    if (console.warn === this.#wrappedConsoleWarn) {
+      console.warn = this.#originalConsoleWarn;
+    }
+    this.#originalConsoleError = null;
+    this.#originalConsoleWarn = null;
+    this.#wrappedConsoleError = null;
+    this.#wrappedConsoleWarn = null;
+  }
+
+  #cancelAcceptanceRun() {
+    this.#recoveryRun += 1;
+    this.#spaceHeld = false;
+    this.#bestBefore = null;
+    this.#restoreAcceptanceDebugModule();
+    if (this.#animationFrame !== null) {
+      window.cancelAnimationFrame(this.#animationFrame);
+      this.#animationFrame = null;
+    }
+    this.#stopConsoleCapture();
+  }
+
+  #restoreAcceptanceDebugModule() {
+    if (
+      this.#previousDebugModuleEnabled !== null &&
+      window.DEBUG_MODULES
+    ) {
+      window.DEBUG_MODULES[this.debugModuleKey] =
+        this.#previousDebugModuleEnabled;
+    }
+    this.#previousDebugModuleEnabled = null;
+  }
+
+  #publishAcceptance(state) {
+    this.#acceptanceState = Object.freeze(state);
+    for (const subscriber of this.#acceptanceSubscribers) {
+      subscriber(this.#acceptanceState);
+    }
+    document.dispatchEvent(
+      new CustomEvent("stage-3-7-8-reel-retrieve-probe-state", {
+        detail: this.#acceptanceState,
+      }),
+    );
   }
 
   #isEnabled() {
@@ -310,7 +722,7 @@ class ReelHoldGateLiveProbe {
     return `${(number * 100).toFixed(1)}%`;
   }
 
-  #reset() {
+  #resetLiveSignature() {
     this.#lastSignature = "";
   }
 }

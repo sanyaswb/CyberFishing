@@ -1,4 +1,7 @@
 const crypto = require("node:crypto");
+const {
+  verifyBatch007PostHydrationManifestEvidence,
+} = require("./architecture/domain_batches/stage_three_batch_007_manifest_transition");
 const fs = require("node:fs");
 const path = require("node:path");
 const { CheckAssertion } = require("./testing/core/check_assertion");
@@ -359,10 +362,13 @@ class ProductionShapedEquipmentHydrationCheck {
       evidence.evidence.normalizationBoundaryAfterSha256,
       "normalization boundary matches reviewed repair evidence",
     );
-    Assertion.equal(
-      sha256("architecture/migration/module_migration_manifest.json"),
+    const manifestBytes = fs.readFileSync(path.join(
+      root,
+      "architecture/migration/module_migration_manifest.json",
+    ));
+    verifyBatch007PostHydrationManifestEvidence(
+      manifestBytes,
       evidence.evidence.manifestAfterSha256,
-      "Manifest matches reviewed observation reconciliation",
     );
   }
 }

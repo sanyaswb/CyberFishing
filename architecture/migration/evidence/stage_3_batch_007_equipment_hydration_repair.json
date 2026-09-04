@@ -108,12 +108,79 @@
       "strokeLineDesyncObserved": false
     },
     "browserPositiveRetrieve": {
-      "status": "pending-manual-gate",
+      "status": "passed",
+      "devOnlyProbe": "src/debug/modules/reel_hold_gate_live_probe.js",
+      "devToolsControl": "DEV TOOLS > DEBUG > STAGE 3.7.8 REEL / RETRIEVE GATE",
+      "productionEntrypointModified": false,
       "lastBlockedReason": "raw_load_above_drag_limit",
       "lastDragLimitKg": 0,
-      "requiredProof": "non-zero drag and autoRecoveredMeters > 0, or equivalent released-line/stroke-credit reduction"
+      "captureContract": {
+        "duringSpace": [
+          "hasReel",
+          "lineTotalMeters",
+          "lineReleasedMetersBefore",
+          "rodStrokeWonMetersBefore"
+        ],
+        "afterRelease": [
+          "lineReleasedMetersAfter",
+          "rodStrokeWonMetersAfter",
+          "autoRecoveredMeters",
+          "holdRecoveredMeters",
+          "autoRecoverBlockedReason",
+          "consoleErrors",
+          "consoleWarnings"
+        ]
+      },
+      "frameLocalMetrics": [
+        "autoRecoveredMeters",
+        "holdRecoveredMeters"
+      ],
+      "passContract": {
+        "hasReel": true,
+        "lineTotalMetersPositive": true,
+        "lineReleasedMetersBeforePositive": true,
+        "rodStrokeWonMetersBeforePositive": true,
+        "recoveryEvidence": "autoRecoveredMeters > 0 OR holdRecoveredMeters > 0 OR lineReleasedMetersAfter < lineReleasedMetersBefore OR rodStrokeWonMetersAfter < rodStrokeWonMetersBefore",
+        "forbiddenBlockedReason": "stroke_line_desync",
+        "consoleErrors": 0,
+        "consoleWarnings": 0
+      },
+      "nonDesyncBlockerPolicy": "classify the exact gameplay gate; do not automatically label it a migration regression",
+      "manualCapture": {
+        "before": {
+          "capturedAt": "2026-09-04T11:48:18.041Z",
+          "available": true,
+          "hasReel": true,
+          "lineTotalMeters": 20,
+          "lineReleasedMeters": 10.973398726976804,
+          "rodStrokeWonMeters": 0.0757787039599016,
+          "autoRecoveredMeters": 0,
+          "holdRecoveredMeters": 0,
+          "autoRecoverBlockedReason": "hold_active"
+        },
+        "after": {
+          "capturedAt": "2026-09-04T11:48:18.117Z",
+          "available": true,
+          "hasReel": true,
+          "lineTotalMeters": 20,
+          "lineReleasedMeters": 10.902339921455539,
+          "rodStrokeWonMeters": 0,
+          "autoRecoveredMeters": 0.06139880552127279,
+          "holdRecoveredMeters": 0,
+          "autoRecoverBlockedReason": "none"
+        },
+        "derived": {
+          "lineReleasedMetersReducedBy": 0.071058805521265,
+          "rodStrokeWonMetersReducedBy": 0.0757787039599016,
+          "frameRecoveryObserved": true,
+          "strokeLineDesync": false,
+          "consoleErrors": 0,
+          "consoleWarnings": 0
+        },
+        "verdict": "PASS"
+      }
     },
-    "stage3_7_8Accepted": false,
-    "stage3_7_9ReleaseClosureAllowed": false
+    "stage3_7_8Accepted": true,
+    "stage3_7_9ReleaseClosureAllowed": true
   }
 }

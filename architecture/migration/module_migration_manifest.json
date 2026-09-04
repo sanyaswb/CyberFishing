@@ -27198,6 +27198,12 @@
               "mechanism": "window-property",
               "accessRequirement": "guarded",
               "executionPhase": "deferred"
+            },
+            {
+              "symbol": "DEBUG_MODULES",
+              "mechanism": "window-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
             }
           ],
           "issues": []
@@ -27205,11 +27211,24 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Number"
+            "Date",
+            "Error",
+            "Math",
+            "Number",
+            "Object",
+            "Set",
+            "String",
+            "TypeError"
           ],
           "browserApis": [
+            "CustomEvent",
+            "addEventListener",
+            "cancelAnimationFrame",
             "console",
             "document",
+            "performance",
+            "removeEventListener",
+            "requestAnimationFrame",
             "window"
           ],
           "dynamicConstructs": [],
@@ -27233,6 +27252,14 @@
               "symbol": "DEBUG_MODULES",
               "mechanism": "window-property",
               "accessRequirement": "guarded",
+              "executionPhase": "deferred",
+              "target": "src/debug/debug.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "DEBUG_MODULES",
+              "mechanism": "window-property",
+              "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/debug/debug.js",
               "resolution": "confirmed"
