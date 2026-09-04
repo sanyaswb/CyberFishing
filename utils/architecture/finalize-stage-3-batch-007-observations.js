@@ -27,6 +27,9 @@ const { StageThreeBatch007ObservationReconciliation, StageThreeBatch007Reconcili
 const { StageThreeBatch007FallbackProbe, FALLBACK_SOURCE } = require("./domain_batches/stage_three_batch_007_fallback_probe");
 const { manifestBytes, sha256, verifyBatch007ManifestEvidence } = require("./domain_batches/stage_three_batch_007_manifest_transition");
 const { BATCH_007_PREBUILD_PROFILE: PROFILE } = require("./domain_batches/stage_three_batch_prebuild_profile");
+const {
+  StageThreeBatch007LifecycleTransition,
+} = require("./domain_batches/stage_three_batch_007_lifecycle_transition");
 
 const PATHS = Object.freeze({
   manifest: "architecture/migration/module_migration_manifest.json",
@@ -53,15 +56,22 @@ class StageThreeBatch007ObservationApplication {
   prepare() {
     const data = Object.fromEntries(Object.entries(PATHS).filter(([key]) => key !== "output")
       .map(([key, relative]) => [key, this.json(relative)]));
+    const lifecycle = new StageThreeBatch007LifecycleTransition();
     const before = this.protectedSnapshot();
     for (const artifact of [data.cutover, data.live]) {
       for (const evidence of Object.values(artifact.evidence)) {
-        if (evidence.path === PATHS.manifest) {
+        if (evidence.path === PATHS.state) {
+          lifecycle.verifyRuntimeActiveEvidence(this.bytes(evidence.path), evidence.sha256);
+        } else if (evidence.path === "index.html") {
+          lifecycle.verifyIndexEvidence(this.bytes(evidence.path), evidence.sha256);
+        } else if (evidence.path === PATHS.manifest) {
           verifyBatch007ManifestEvidence(this.bytes(evidence.path), evidence.sha256);
         } else assert.equal(sha256(this.bytes(evidence.path)), evidence.sha256,
           `Stale historical evidence: ${evidence.path}`);
       }
     }
+    const batchCompleted = lifecycle.isCompleted(data.state);
+    data.state = lifecycle.projectRuntimeActive(data.state);
     assert.equal(data.live.status, "verified");
     assert.equal(data.live.batchId, PROFILE.batchId);
     this.verifyHistoricalRepair(data.historicalRepair);
@@ -105,6 +115,14 @@ class StageThreeBatch007ObservationApplication {
       runtimeBundle: this.evidence(`${data.runtime.output.directory}${data.runtime.output.runtimeFile}`),
       changelog: this.evidence("CHANGELOG.md"),
     });
+    if (batchCompleted) {
+      evidence.state = structuredClone(data.live.evidence.executionState);
+      evidence.index = structuredClone(data.live.evidence.index);
+      evidence.changelog = {
+        path: data.historicalRepair.path,
+        sha256: data.historicalRepair.restoredSha256,
+      };
+    }
     const inputs = { ...data, observedManifest, batch, fallback, evidence };
     const result = new StageThreeBatch007ObservationReconciliation().build(inputs);
     createMigrationManifestValidator().validate({ manifest: result.manifest, policy, sourceFiles, legacyScripts,
@@ -139,6 +157,9 @@ class StageThreeBatch007ObservationApplication {
     );
     historicalExpected.totals = structuredClone(artifact.totals);
     historicalExpected.evidence.manifest = artifact.evidence.manifest;
+    historicalExpected.evidence.state = artifact.evidence.state;
+    historicalExpected.evidence.index = artifact.evidence.index;
+    historicalExpected.evidence.changelog = artifact.evidence.changelog;
     new StageThreeBatch007ReconciliationValidator().validate(
       artifact,
       historicalExpected,
@@ -194,7 +215,8 @@ class StageThreeBatch007ObservationApplication {
     assert.equal(record.operation, "restore-deleted-suffix-only");
     assert.equal(record.retainedPrefixUnchanged, true);
     assert.equal(record.releaseNotesRewritten, false);
-    const bytes = this.bytes(record.path);
+    const bytes = new StageThreeBatch007LifecycleTransition()
+      .historicalChangelogBytes(this.bytes(record.path), record.restoredSha256);
     assert(Number.isInteger(record.beforeByteLength) && record.beforeByteLength > 0 &&
       record.beforeByteLength < bytes.length);
     assert.equal(sha256(bytes.subarray(0, record.beforeByteLength)), record.beforeSha256,

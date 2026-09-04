@@ -17,6 +17,9 @@ const {
 const {
   RepresentationOnlyNamedEsmTarget,
 } = require("./domain_batches/stage_three_representation_target");
+const {
+  StageThreeBatch007LifecycleTransition,
+} = require("./domain_batches/stage_three_batch_007_lifecycle_transition");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const ARTIFACT_PATH = "architecture/migration/stage_3_batch_007_source_build_validation.json";
@@ -26,7 +29,9 @@ class StageThreeBatch007SourceBuildIntegrationCheck {
     const artifact = this.#json(ARTIFACT_PATH);
     new StageThreeBatch007SourceBuildContractValidator().validate(artifact);
     const state = this.#json("architecture/migration/stage_3_execution_state.json");
-    const runtimeActive = state.activeBatchPhase === "runtime-active";
+    const lifecycle = new StageThreeBatch007LifecycleTransition();
+    lifecycle.assertCurrentContainsBatch(state);
+    const runtimeActive = lifecycle.isRuntimeAvailable(state);
     const before = this.#protectedSnapshot();
     for (const [key, evidence] of Object.entries(artifact.evidence)) {
       if (runtimeActive && ["executionState", "manifestAfterTargetReconciliation",

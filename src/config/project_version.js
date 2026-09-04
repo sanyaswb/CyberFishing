@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.43";
+const CURRENT_PROJECT_VERSION = "0.24.44";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "fishing-domain-primitives-ii",
-  updatedAt: "2026-08-24",
+  codename: "fishing-domain-state-and-motion",
+  updatedAt: "2026-09-04",
   notes: Object.freeze([
-    "Migrate six dependency-free fishing primitives to named game-domain ESM exports",
-    "Extend the single cumulative runtime from nineteen to twenty-five project modules",
-    "Preserve six exact legacy exposure positions through approved activation shims",
-    "Keep fishing calculations, state ownership and classic consumer behavior unchanged",
+    "Migrate six fishing state, motion and force primitives to named game-domain ESM exports",
+    "Extend the single cumulative runtime from twenty-five to thirty-one project modules",
+    "Preserve six exact activation positions and nine classic consumer relationships",
+    "Normalize assembled equipment children before gameplay without changing fishing formulas",
   ]),
 });
 

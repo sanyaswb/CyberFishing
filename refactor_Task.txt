@@ -1,10 +1,10 @@
 # CyberFishing — актуальний план незавершеного модульного рефакторингу
 
 **Stage 1 closure-версія:** `v0.24.31`  
-**Поточна release-версія:** `v0.24.43`
+**Поточна release-версія:** `v0.24.44`
 **Тип робіт:** architecture / infrastructure refactoring  
 **Gameplay changes:** заборонені  
-**Поточний наступний етап:** `Stage 3.7.9 — Release Closure v0.24.44`
+**Поточний наступний етап:** `Stage 3.8.0 — Shared Batch Tooling Hardening and Batch 008 Preflight`
 
 Цей документ містить тільки роботи, які ще не виконані.
 
@@ -60,82 +60,48 @@ src/game/application/  orchestration, не domain ownership
 
 Domain не залежить від platform, UI, Canvas, DOM, dev або raw configuration. Configuration надходить через constructor injection, factories або composition root. Domain може залежати лише від стабільних engine primitives і власних domain contracts/value objects.
 
-## Stage 3.7–3.21 — Atomic Domain Migration Batches
+## Stage 3.8.0 — Shared Batch Tooling Hardening
 
-Завершено шість frozen batches: `6/21` batches, `16/69` frozen domain-модулів. Наступний exact batch:
+До відкриття batch 008 прибрати batch-006 defaults із generic execution-plan і focused-matrix builders/validators. `profile`, `behaviorCases` та `compatibilityCases` мають бути обов'язковими; missing input дає `FAIL`. Historical batch-006 catalog лишається versioned input, а byte-for-byte відтворення batch-006 artifacts і всі batch-007 checks повинні зберегтися.
 
-```text
-stage-3.candidate-007-fishing-bb8b3939
+## Stage 3.8–3.21 — Atomic Domain Migration Batches
 
-6 fishing domain modules
-6 activation contracts
-
-positions: 91, 92, 112, 131, 132, 139
-```
-
-Batch 007 переносить наступні шість dependency-safe fishing primitives одним атомарним cluster; partial cutover заборонений:
+Завершено `7/21` frozen batches і `22/69` frozen domain-модулів. Наступний exact batch:
 
 ```text
-LineConstrainedFishMotionResolver
-LineRadialMovementSplitter
-ReelRetrieveSpeedCalculator
-RodPullState
-RodStrokeState
-SimpleFightForceCalculator
+stage-3.candidate-008-fishing-f859ccd3
+
+3 ESM files / 3 exports / 3 activations
+positions: 90, 94, 114
+prerequisites: 0
 ```
 
-Stage 3.7.0–3.7.2 завершені як read-only preparation. Verified evidence:
+Batch 008 атомарно переносить:
 
 ```text
-architecture/migration/stage_3_batch_007_audit.json
-architecture/migration/stage_3_batch_007_execution_plan.json
-architecture/migration/stage_3_batch_007_test_matrix.json
+LineSpoolState
+RodStrokeDistanceTracker
+ReelHoldLoadPolicy
 ```
 
-Atomic execution plan зафіксував lifecycle `pre → open → runtime-active → completed`, exact scope `6 modules / 6 activations / 9 consumers`, cumulative transition `25 → 31`, registry transition `48 → 57`, representation-only cutover, performance/state gates і batch-007-only rollback. Focused matrix виконує `54` classic ↔ temporary native ESM behavior cases і `8` compatibility contracts, включно з module identity, activation timing та transport surface, derived із runtime contract.
+Frozen expectation `31 → 34` cumulative project modules derived only if recursive closure додає рівно ці три targets. Activation expectation `32 → 35`; exact bridge set складається з трьох classic consumers. Особлива увага: authoritative mutable state, object/result identity та hot-loop allocations; transport lookup у Domain заборонений.
 
-Stage 3.7.3 завершений: batch 007 відкрито через `activeBatchPhase: prebuild`. Planned target/activation/bridge records належать винятково versioned prebuild contract; Manifest, active runtime contract і active bridge registry не містять planned state та залишаються byte-identical baseline `v0.24.43`. Active topology залишається `25 modules / 26 activations / 48 bridges`, planned delta становить `+6 / +6 / +9`, а resulting topology `31 / 32 / 57` доведена exact set union.
-
-Stage 3.7.4 завершений: створено шість representation-only named ESM targets, а механічні Manifest observations синхронізовано без зміни active runtime truth. Ізольований candidate build довів topology `31 project modules / 32 activations`; чотири додаткові OXC class-field helpers зареєстровані як exact candidate-only build-infrastructure delta без globals, browser capabilities або game-state ownership. Candidate output очищується після перевірки, тоді як live `index.html`, classic providers, active runtime contract, bridge registry і validated `25/26/48` output залишаються byte-identical.
-
-Stage 3.7.5 завершений: шість classic providers атомарно замінені exact activation shims, дев'ять reviewed bridge records активовані, а чотири candidate-only OXC helpers перенесені в exact active allowlist. Live topology тепер становить `31 project modules / 32 activations / 57 bridges` в одному cumulative ESM graph; runtime output byte-for-byte збігається з evidence Stage 3.7.4, `index.html` зберігає `426 physical classic scripts / 424 logical legacy positions / 0 module scripts`, а lifecycle залишається `activeBatchPhase: runtime-active` без передчасного завершення batch або зміни release `v0.24.43`. Механічний graph delta `771 → 772` зафіксований exact semantic evidence: один раніше unresolved guarded consumer став confirmed через approved activation, без speculative edge або розширення baseline.
-
-Stage 3.7.6 завершений: фактичний live cumulative IIFE виконано рівно один раз і перевірено без підміни generated output тестовою topology. Доведено `31` unique project module records, одну transport assignment, exact identity шести batch-007 exports, відсутність globals до кожної approved activation position і exact exposure після неї. Усі `54` classic ↔ live ESM behavior cases, `6` activation timings та exact set із `9` classic consumers пройшли; `RodPullState` і `RodStrokeState` зберегли instance/snapshot shape та isolation, movement resolvers — reusable-result identity, а migration allocation/transport deltas дорівнюють нулю. Перевірка є read-only, lifecycle залишається `runtime-active`, release — `v0.24.43`.
-
-Stage 3.7.7 завершений. Повторний scan усіх актуальних `src/**/*.js` відтворює observations byte-for-byte; єдиний Manifest delta — шість exact status transitions `esm → verified`. Historical evidence Stage 3.7.5/3.7.6 не переписується: validators reverse-normalize тільки ці шість статусів і перевіряють попередній SHA-256. Verified artifact: `architecture/migration/stage_3_batch_007_observation_reconciliation.json`.
-
-Semantic review погоджений користувачем: `InventoryV2BalanceParameterResolver → ReelRetrieveSpeedCalculator` є mechanically confirmed `guarded`/`deferred` optional fallback consumer, а не passive observer. Exact incoming set складається з дев'яти frozen bridge relationships плюс цього одного observed fallback; registry не отримує 58-й bridge. Versioned removal dependency прив'язаний до exact activation/source fingerprint та Stage 5: global не можна видалити, доки fallback споживається.
-
-Review artifact `architecture/migration/stage_3_batch_007_fallback_review.json` фіксує classification `guarded-standalone-fallback-delta` і scope `InventoryV2BalanceParameterResolver standalone fallback only`. Два executable regression cases доводять: explicit DI зберігає історичний production output без global fallback reads; standalone guarded fallback додає рівно `effective-retrieve-speed` і `retrieve-duration`, не змінюючи наявні rows, sections або порядок. Погодження не дозволяє змін formulas, production DI, gameplay, identity, save/API або розширення scope; exact source/activation/behavior fingerprints перевіряються. Runtime-код, registry, index, globals baseline, lifecycle і release не змінювалися.
-
-Historical `CHANGELOG.md` відновлений byte-for-byte з commit `d6c313eaebe3a5f3c0edefa57a142f1503dc5b15`, Git blob `01cb1a1f728a674f56365262bf4e80bb231f8a39`: повернуто тільки 371 видалений рядок, збережений prefix та старі release notes незмінні. Provenance і SHA-256 збережені в `architecture/migration/stage_3_batch_007_changelog_repair.json`.
-
-Acceptance 3.7.7: focused reconciliation/regressions PASS; Architecture `90/90`, Quick `53/53`, Full `118/118` PASS (release anchors, не policy constants). `--acceptance-gate` дозволяє наступний Stage 3.7.8; `--release-gate` залишається non-zero, оскільки повний release ще не дозволений. Наступний Stage 3.7.8 включає fresh `npm ci`, повторний full acceptance та browser smoke; лише Stage 3.7.9 може завершити batch 007 та випустити `v0.24.44`. Поточна release-версія залишається `v0.24.43`, completed prefix — `001–006`, batch 007 — `runtime-active`.
-
-Stage 3.7.8 закритий новим immutable superseding evidence `architecture/migration/stage_3_batch_007_acceptance_pass.json`. Попередній FAIL attempt і його capture залишилися byte-identical та явно superseded. Repair у `EquipmentReadModelFactory` підтверджений production-shaped regressions, а ручний reel/retrieve gate довів positive line budget, frame-local recovery, зменшення released line, споживання stroke credit, відсутність `stroke_line_desync` і чисту console.
-
-Fresh acceptance для зафіксованого source commit `9b64354d790c04b1bebd80dfe7aa96ed6d3e1c28`: `npm ci` PASS, Architecture `92/92`, Quick `55/55`, Full `120/120`. Topology лишається `31 modules / 32 activations / 57 bridges`, `426 physical classic scripts / 424 logical positions / 0 module scripts`. Verdict: `eligible-for-release-closure`.
-
-Наступна дія — Stage 3.7.9 metadata-only release closure `v0.24.44`: завершити batch 007, очистити active lifecycle fields, оновити version/package/build/changelog/task metadata, виконати фінальні regressions і створити release commit/tag. До цього authoritative state лишається `v0.24.43`, completed `001–006`, active `007`, phase `runtime-active`.
-
-Окремий tooling-hardening після `v0.24.44`, до batch 008: прибрати batch-006 defaults із generic execution-plan/focused-matrix builders і validators; profile, behaviorCases та compatibilityCases передавати обов'язково, missing input → FAIL. Batch-006 catalog винести в historical profile/catalog. Довести byte-for-byte відтворення batch-006 artifacts та збереження batch-007 checks; нові batches використовують shared pipeline + profile/catalog без копіювання всього набору tooling. Усередині активного batch 007 цей hardening не виконується.
-
-Кожен approved batch проходить один повторюваний pipeline:
+Кожен batch `008–021` проходить той самий контрольований lifecycle:
 
 ```text
-preflight
-→ named ESM targets
-→ exact temporary classic bridges
-→ Manifest + observations
-→ architecture guards
-→ focused behavior/state/performance checks
-→ Quick + Architecture + Full
-→ fresh npm ci acceptance
-→ browser smoke
-→ release + rollback boundary
+preflight/audit
+→ atomic execution plan
+→ focused behavior/state/performance matrix
+→ prebuild
+→ source/build validation
+→ cumulative runtime cutover
+→ live identity/timing/state validation
+→ observations reconciliation
+→ fresh acceptance + browser smoke
+→ release closure with batch-only rollback
 ```
 
-Stage 3 завершується, коли всі approved domain batches перенесені, domain boundary не має залежностей на platform/UI/Canvas/DOM/dev/config, state ownership однозначний, а тимчасові bridges мають контрольований removal path.
+Після batch 021 потрібні graph-changing prerequisites, повторні observations/topology review та новий maximal-prefix freeze. Historical candidates `022–040` не є execution-ready після зміни graph. Stage 3 завершується лише після перенесення всіх approved Domain clusters, однозначного state ownership і контрольованого removal path для кожного bridge.
 
 # 3. Stage 4 — Application + Platform
 

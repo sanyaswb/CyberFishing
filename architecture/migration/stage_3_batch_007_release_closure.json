@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-release-closure",
+  "status": "verified",
+  "batchId": "stage-3.candidate-007-fishing-bb8b3939",
+  "releaseVersion": "0.24.44",
+  "previousReleaseVersion": "0.24.43",
+  "completedBatchCount": 7,
+  "completedDomainModuleCount": 22,
+  "runtimeTopology": {
+    "projectModuleCount": 31,
+    "activationCount": 32,
+    "bridgeRecordCount": 57,
+    "physicalClassicScriptCount": 426,
+    "logicalLegacyPositionCount": 424,
+    "moduleScriptCount": 0,
+    "cumulativeRuntimeCount": 1,
+    "isolatedIifeCount": 0
+  },
+  "acceptance": {
+    "supersedingEvidence": {
+      "status": "passed",
+      "path": "architecture/migration/stage_3_batch_007_acceptance_pass.json",
+      "sha256": "5b8c4723ff4583233449580bd4105685adaedfc0638565f60cf6875389a85c3c",
+      "supersededAttemptPreserved": true
+    },
+    "syntax": {
+      "status": "passed",
+      "fileCount": 751
+    },
+    "architecture": {
+      "status": "passed",
+      "passedChecks": 92,
+      "failedChecks": 0
+    },
+    "quick": {
+      "status": "passed",
+      "passedChecks": 55,
+      "failedChecks": 0
+    },
+    "full": {
+      "status": "passed",
+      "passedChecks": 120,
+      "failedChecks": 0
+    },
+    "freshInstall": {
+      "status": "passed",
+      "command": "npm ci --no-audit --no-fund",
+      "sourceCommit": "9b64354d790c04b1bebd80dfe7aa96ed6d3e1c28",
+      "lockfileChanged": false,
+      "architectureQuickFullPassed": true
+    },
+    "finalReleaseRegression": {
+      "status": "passed",
+      "source": "v0.24.44 release-candidate tree constrained by releaseEvidence SHA-256 records",
+      "npmCi": {
+        "exitCode": 0,
+        "durationMs": 6012,
+        "logSha256": "5d7d048115d7cc31e7eff20d8eb41ca5214970aa69681c95c1e89fb40a36828f"
+      },
+      "architecture": {
+        "passedChecks": 94,
+        "failedChecks": 0,
+        "durationMs": 33896,
+        "logSha256": "ec6d24ea1bf3ac8f644db7c5909f07b4e6e167da1506ac59af735c0c18373bcf"
+      },
+      "quick": {
+        "passedChecks": 57,
+        "failedChecks": 0,
+        "durationMs": 18249,
+        "logSha256": "c49d52bc592f87fc57ae507a2f3e479a3b93ad4d8b4c3c967dbf1f9b280b98ff"
+      },
+      "full": {
+        "passedChecks": 122,
+        "failedChecks": 0,
+        "durationMs": 39408,
+        "logSha256": "15a51c42c626e9921c9cb764e539b3e58e0e511e3e27aefd9cc06f59f54ecfc7"
+      },
+      "countSemantics": "Observed release anchors, not architecture policy constants."
+    },
+    "browserSmoke": {
+      "status": "passed",
+      "performedBy": "user",
+      "hasReel": true,
+      "lineTotalMeters": 20,
+      "lineReleasedMetersBefore": 10.973398726976804,
+      "lineReleasedMetersAfter": 10.902339921455539,
+      "rodStrokeWonMetersBefore": 0.0757787039599016,
+      "rodStrokeWonMetersAfter": 0,
+      "autoRecoveredMeters": 0.06139880552127279,
+      "strokeLineDesync": false,
+      "consoleWarningCount": 0,
+      "consoleErrorCount": 0
+    }
+  },
+  "rollback": {
+    "atomic": true,
+    "fromRelease": "0.24.44",
+    "toRelease": "0.24.43",
+    "removeBatchId": "stage-3.candidate-007-fishing-bb8b3939",
+    "preserveCompletedBatchCount": 6,
+    "restoreTopology": {
+      "projectModuleCount": 25,
+      "activationCount": 26,
+      "bridgeRecordCount": 48,
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0
+    }
+  },
+  "releaseEvidence": [
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "6a140fd8cf6c115a0d23254bf3aaf16f722055c42b6ef9c211bce47e25c6b662"
+    },
+    {
+      "path": "architecture/build/package_contract.json",
+      "sha256": "d1ca7293a8d9f48e654973e618c223d31828962427aed69a5a6d3460967a09b7"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "2372a9ccde069ab45294287fd427aa30d95cbc2f5756f565763662554ba778ef"
+    },
+    {
+      "path": "architecture/migration/evidence/stage_3_batch_007_equipment_hydration_repair.json",
+      "sha256": "d3753b72db78ba4b609ce05f0981fab17412a379f6ba7f49b1682c81a291f214"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "8a32dc970e91aab960b1d0e24facadf5b62b2b5de76acaecc6b525e7101a5bdf"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_007_acceptance_pass.json",
+      "sha256": "5b8c4723ff4583233449580bd4105685adaedfc0638565f60cf6875389a85c3c"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_007_execution_plan.json",
+      "sha256": "20828b1274644ecfc2415bfd8113eff2eec5720e683800da337a41ce25e97562"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_007_observation_reconciliation.json",
+      "sha256": "8fcbf2b81e1ec897722ab4038c64b60dc81fdf7d15d8a511da04ff901064815b"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "4f238a82b150266fe593735f4027429bf59af3c55b45139ce7434b3f6e55ac75"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "efdd192eb054997a7e3cf3e645ce362ad793993387db7e648d26ee9535cf4925"
+    },
+    {
+      "path": "index.html",
+      "sha256": "6aba7e698a2044f4d1c3bfa4fa961e712bb27576fc32fe866120d54ebb21f587"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "8670eca8439df97ecae8d88674307a934b6fa4fb71a04480a83d488cadfcaff8"
+    },
+    {
+      "path": "package.json",
+      "sha256": "ba5b289b3912588f7914f93cda6d28769bda17fb075b11842182083474094a2d"
+    },
+    {
+      "path": "refactor_Task.txt",
+      "sha256": "356415b503f3f407473c1e4e0916af9f9091bdd8e773893a8459bc9ee43fd763"
+    },
+    {
+      "path": "src/config/project_version.js",
+      "sha256": "306aa393bdbca1a7e7d433b0cfa572d0ca8733cc8f287c23c217640ef5ff33ff"
+    },
+    {
+      "path": "utils/architecture/closure/stage_one_closure_validator.js",
+      "sha256": "15a9375ca64f7d11bdc733f8b0803bc11948a1ecd136f70fec3e5ba6d42d81a7"
+    },
+    {
+      "path": "utils/architecture/domain_batches/stage_three_batch_007_lifecycle_transition.js",
+      "sha256": "0d1062cf22e5ab044ba38106bbf1d406a6570c6c05a41e9b648f0d2ec74ea3d1"
+    },
+    {
+      "path": "utils/architecture/finalize-stage-3-batch-007-observations.js",
+      "sha256": "57a5aa7afabaf379ff7db6277c7d6376cf18a5e3b31202780d3b90bb60084c8c"
+    },
+    {
+      "path": "utils/architecture/stage-3-batch-006-runtime-check.js",
+      "sha256": "acb8928a9bc333f0a68da2d3a4cece3cd81d68d8e431da15425bbf75b5e3ccb6"
+    },
+    {
+      "path": "utils/architecture/stage-3-batch-007-audit-integration-check.js",
+      "sha256": "a35f00cf437dbaf0ecaecdbbc6cfc64737dad38818653a6ca6fab8ed8e812962"
+    },
+    {
+      "path": "utils/architecture/stage-3-batch-007-live-runtime-integration-check.js",
+      "sha256": "5dd381c14c57251864a9707b7b4c6fc5c00af5c1b96c0dd8e30462d4e0a89b8e"
+    },
+    {
+      "path": "utils/architecture/stage-3-batch-007-prebuild-integration-check.js",
+      "sha256": "3fd47e8d5930e810ca153c7c70e663457444e49632ce7b1ec4b894a5b57b6720"
+    },
+    {
+      "path": "utils/architecture/stage-3-batch-007-runtime-cutover-check.js",
+      "sha256": "402736205770c6cdb64678803a2709e227499ed2f5383fea883a50b6d0562d1b"
+    },
+    {
+      "path": "utils/architecture/stage-3-batch-007-source-build-integration-check.js",
+      "sha256": "9453dc45954d3c05d267528d95d425abf0257c43364d9d52994bdb3a00860f07"
+    }
+  ],
+  "nextStage": "Stage 3.8.0 — Shared Batch Tooling Hardening and Batch 008 Preflight"
+}

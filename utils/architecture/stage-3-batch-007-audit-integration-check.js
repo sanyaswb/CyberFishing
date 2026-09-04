@@ -14,6 +14,9 @@ const {
 const {
   PATHS,
 } = require("./generate-stage-3-batch-007-audit");
+const {
+  StageThreeBatch007LifecycleTransition,
+} = require("./domain_batches/stage_three_batch_007_lifecycle_transition");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
@@ -246,15 +249,16 @@ class StageThreeBatch007AuditIntegrationCheck {
     const state = this.#json("architecture/migration/stage_3_execution_state.json");
     const runtime = this.#json("architecture/migration/stage_3_compatibility_runtime.json");
     const registry = this.#json("architecture/guards/migration_bridge_registry.json");
-    assert.equal(state.releaseVersion, "0.24.43");
-    assert.equal(state.completedBatchIds.length, 6);
+    const lifecycle = new StageThreeBatch007LifecycleTransition();
+    lifecycle.assertCurrentContainsBatch(state);
+    const completed = lifecycle.isCompleted(state);
     const batchOpen = state.activeBatchId === BATCH_ID &&
       ["prebuild", "runtime-active"].includes(state.activeBatchPhase);
     assert.equal(
-      (state.activeBatchId === null && state.activeBatchPhase === undefined) || batchOpen,
+      completed || batchOpen,
       true,
     );
-    const runtimeActive = state.activeBatchPhase === "runtime-active";
+    const runtimeActive = lifecycle.isRuntimeAvailable(state);
     assert.equal(runtime.activationPositions.length, runtimeActive ? 32 : 26);
     assert.equal(runtime.plannedActivationPositions, undefined);
     assert.equal(registry.bridges.length, runtimeActive ? 57 : 48);

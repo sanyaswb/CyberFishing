@@ -25,6 +25,9 @@ const {
   BATCH_007_PREBUILD_PROFILE,
 } = require("./domain_batches/stage_three_batch_prebuild_profile");
 const {
+  StageThreeBatch007LifecycleTransition,
+} = require("./domain_batches/stage_three_batch_007_lifecycle_transition");
+const {
   LegacyScriptOrderReader,
 } = require("./migration/legacy_script_order_reader");
 const {
@@ -45,9 +48,20 @@ class StageThreeBatch007RuntimeCutoverCheck {
     const runtime = this.#json("architecture/migration/stage_3_compatibility_runtime.json");
     const registry = this.#json("architecture/guards/migration_bridge_registry.json");
     const manifest = this.#json("architecture/migration/module_migration_manifest.json");
+    const lifecycle = new StageThreeBatch007LifecycleTransition();
+    lifecycle.assertCurrentContainsBatch(state);
+    const completed = lifecycle.isCompleted(state);
     new StageThreeBatch007CutoverContractValidator().validate(artifact);
     new StageThreeBatch007SourceBuildContractValidator().validate(sourceBuild);
     for (const evidence of Object.values(artifact.evidence)) {
+      if (evidence.path === "architecture/migration/stage_3_execution_state.json") {
+        lifecycle.verifyRuntimeActiveEvidence(this.#bytes(evidence.path), evidence.sha256);
+        continue;
+      }
+      if (evidence.path === "index.html") {
+        lifecycle.verifyIndexEvidence(this.#bytes(evidence.path), evidence.sha256);
+        continue;
+      }
       if (evidence.path === "architecture/migration/module_migration_manifest.json") {
         verifyBatch007ManifestEvidence(this.#bytes(evidence.path), evidence.sha256);
         continue;
@@ -55,10 +69,15 @@ class StageThreeBatch007RuntimeCutoverCheck {
       assert.equal(this.#sha256(this.#bytes(evidence.path)), evidence.sha256,
         `Stage 3.7.5 evidence changed: ${evidence.path}`);
     }
-    assert.deepEqual(state.completedBatchIds, BATCH_007_PREBUILD_PROFILE.completedPrefix);
-    assert.equal(state.activeBatchId, BATCH_007_PREBUILD_PROFILE.batchId);
-    assert.equal(state.activeBatchPhase, "runtime-active");
-    assert.equal(state.releaseVersion, "0.24.43");
+    assert.deepEqual(
+      state.completedBatchIds.slice(0, BATCH_007_PREBUILD_PROFILE.completedPrefix.length),
+      BATCH_007_PREBUILD_PROFILE.completedPrefix,
+    );
+    if (!completed) {
+      assert.equal(state.activeBatchId, BATCH_007_PREBUILD_PROFILE.batchId);
+      assert.equal(state.activeBatchPhase, "runtime-active");
+      assert.equal(state.releaseVersion, "0.24.43");
+    }
     assert.equal(runtime.activationPositions.length, 32);
     assert.equal(registry.bridges.length, 57);
     assert.deepEqual(runtime.activationPositions.map((record) => record.id).sort(),

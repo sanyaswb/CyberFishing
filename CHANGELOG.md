@@ -1,5 +1,25 @@
 # CyberFishing changelog
 
+## v0.24.44 - Fishing Domain State and Motion
+
+### Added
+
+- Added six named ESM game-domain modules for constrained fish motion, radial movement, reel retrieve speed, rod pull state, rod stroke state and fight-force calculation.
+- Added six exact activation shims at approved legacy positions and nine exact classic-consumer bridge relationships inside the existing cumulative runtime.
+- Added production-shaped equipment hydration regressions plus an opt-in DevTools A/B probe for real reel/retrieve browser acceptance.
+
+### Changed
+
+- Extended the single cumulative compatibility graph from twenty-five to thirty-one project modules and from twenty-six to thirty-two activations without introducing another IIFE or module script.
+- Normalized ID, raw assembly-child objects and already hydrated items at `EquipmentReadModelFactory`, preserving one canonical gameplay representation and avoiding downstream physics fallbacks.
+- Completed frozen Stage 3 batch 007 and advanced the ordered completed prefix to seven batches while preserving the exact 57-record compatibility registry.
+
+### Validation
+
+- Preserved all 54 behavior cases, mutable state/snapshot identity, reusable movement buffers, one module evaluation and zero migration allocation or transport-lookup deltas.
+- Fresh `npm ci` acceptance passed Architecture 92/92, Quick 55/55 and Full 120/120 on source commit `9b64354d790c04b1bebd80dfe7aa96ed6d3e1c28`.
+- Manual browser evidence confirmed a hydrated 20 m line, positive frame recovery, reduced released line, consumed stroke credit, no `stroke_line_desync` and zero console errors or warnings.
+
 ## v0.24.43 - Fishing Domain Primitives II
 
 ### Added

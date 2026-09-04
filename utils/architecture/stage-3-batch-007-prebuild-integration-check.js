@@ -13,6 +13,9 @@ const {
 const {
   RepresentationOnlyNamedEsmTarget,
 } = require("./domain_batches/stage_three_representation_target");
+const {
+  StageThreeBatch007LifecycleTransition,
+} = require("./domain_batches/stage_three_batch_007_lifecycle_transition");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
@@ -25,11 +28,19 @@ class StageThreeBatch007PrebuildIntegrationCheck {
     const registry = this.#json("architecture/guards/migration_bridge_registry.json");
     const plan = this.#json(BATCH_007_PREBUILD_PROFILE.executionProfile.executionPlanPath);
     new StageThreeBatchPrebuildContractValidator(BATCH_007_PREBUILD_PROFILE).validate(artifact);
-    const runtimeActive = state.activeBatchPhase === "runtime-active";
+    const lifecycle = new StageThreeBatch007LifecycleTransition();
+    lifecycle.assertCurrentContainsBatch(state);
+    const completed = lifecycle.isCompleted(state);
+    const runtimeActive = lifecycle.isRuntimeAvailable(state);
 
-    assert.deepEqual(state.completedBatchIds, BATCH_007_PREBUILD_PROFILE.completedPrefix);
-    assert.equal(state.activeBatchId, BATCH_007_PREBUILD_PROFILE.batchId);
-    assert.equal(["prebuild", "runtime-active"].includes(state.activeBatchPhase), true);
+    assert.deepEqual(
+      state.completedBatchIds.slice(0, BATCH_007_PREBUILD_PROFILE.completedPrefix.length),
+      BATCH_007_PREBUILD_PROFILE.completedPrefix,
+    );
+    if (!completed) {
+      assert.equal(state.activeBatchId, BATCH_007_PREBUILD_PROFILE.batchId);
+      assert.equal(["prebuild", "runtime-active"].includes(state.activeBatchPhase), true);
+    }
     assert.equal(state.compatibilityRuntimeActivated, true);
     assert.equal(manifest.preliminaryMigration, undefined);
     assert.equal(runtime.plannedActivationPositions, undefined);

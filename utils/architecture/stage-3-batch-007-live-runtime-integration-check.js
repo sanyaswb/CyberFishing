@@ -9,6 +9,9 @@ const {
   StageThreeBatch007LiveRuntimeHarness,
   StageThreeBatch007LiveRuntimeValidationContractValidator,
 } = require("./domain_batches/stage_three_batch_007_live_runtime_validation");
+const {
+  StageThreeBatch007LifecycleTransition,
+} = require("./domain_batches/stage_three_batch_007_lifecycle_transition");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const PATHS = Object.freeze({
@@ -27,9 +30,18 @@ const PATHS = Object.freeze({
 class StageThreeBatch007LiveRuntimeIntegrationCheck {
   run() {
     const artifact = this.#json(PATHS.artifact);
+    const lifecycle = new StageThreeBatch007LifecycleTransition();
     new StageThreeBatch007LiveRuntimeValidationContractValidator().validate(artifact);
     const before = this.#evidenceSnapshot(artifact);
     for (const evidence of Object.values(artifact.evidence)) {
+      if (evidence.path === PATHS.state) {
+        lifecycle.verifyRuntimeActiveEvidence(this.#bytes(evidence.path), evidence.sha256);
+        continue;
+      }
+      if (evidence.path === "index.html") {
+        lifecycle.verifyIndexEvidence(this.#bytes(evidence.path), evidence.sha256);
+        continue;
+      }
       if (evidence.path === "architecture/migration/module_migration_manifest.json") {
         verifyBatch007ManifestEvidence(this.#bytes(evidence.path), evidence.sha256);
         continue;
@@ -44,7 +56,7 @@ class StageThreeBatch007LiveRuntimeIntegrationCheck {
       prebuild: this.#json(PATHS.prebuild),
       sourceBuild: this.#json(PATHS.sourceBuild),
       cutover: this.#json(PATHS.cutover),
-      state: this.#json(PATHS.state),
+      state: lifecycle.projectRuntimeActive(this.#json(PATHS.state)),
       runtime: this.#json(PATHS.runtime),
       registry: this.#json(PATHS.registry),
     };

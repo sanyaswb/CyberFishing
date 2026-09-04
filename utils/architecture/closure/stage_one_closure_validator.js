@@ -581,6 +581,8 @@ class StageOneClosureValidator {
         "Fishing Foundation Cluster",
       "stage-3.candidate-006-fishing-e48e70d8":
         "Fishing Domain Primitives II",
+      "stage-3.candidate-007-fishing-bb8b3939":
+        "Fishing Domain State and Motion",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }
