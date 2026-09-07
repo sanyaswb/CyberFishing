@@ -1,6 +1,7 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const { spawnSync } = require("node:child_process");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -36,7 +37,7 @@ class StageThreeBatch007ReleaseAcceptanceCheck {
     console.log(
       "Stage 3.7.9 release acceptance passed: v0.24.44, completed prefix 001–007, " +
         "31-module cumulative runtime, 32 activations, 57 bridges, exact batch-007 rollback " +
-        "and Stage 3.8.0 handoff verified.",
+        "and Stage 3.8 handoff verified.",
     );
   }
 
@@ -139,7 +140,8 @@ class StageThreeBatch007ReleaseAcceptanceCheck {
     ));
     const task = this.#read("refactor_Task.txt");
     assert(task.includes(`**Поточна release-версія:** \`v${RELEASE_VERSION}\``));
-    assert(task.includes("Stage 3.8.0 — Shared Batch Tooling Hardening"));
+    assert(task.includes("**Поточний наступний етап:** `Stage 3.8."));
+    assert(!task.includes("## Stage 3.8.0 — Shared Batch Tooling Hardening"));
     assert(!task.includes("**Поточний наступний етап:** `Stage 3.7"));
   }
 
@@ -187,9 +189,67 @@ class StageThreeBatch007ReleaseAcceptanceCheck {
   }
 
   #verifyReleaseEvidence(closure) {
-    for (const record of closure.releaseEvidence) {
-      assert.equal(this.#sha256(record.path), record.sha256, `Stale release evidence: ${record.path}`);
+    const git = fs.existsSync(path.join(PROJECT_ROOT, ".git")) ? this.#resolveGit() : null;
+    if (git !== null) {
+      const releaseTag = `v${RELEASE_VERSION}`;
+      assert.equal(
+        this.#runGitText(git, ["cat-file", "-t", releaseTag]),
+        "tag",
+        `Release checkpoint ${releaseTag} must be an annotated tag`,
+      );
+      const taggedClosure = JSON.parse(this.#runGitBytes(git, [
+        "show",
+        `${releaseTag}:architecture/migration/stage_3_batch_007_release_closure.json`,
+      ]).toString("utf8"));
+      assert.deepEqual(taggedClosure, closure, "Stage 3.7.9 closure differs from its release tag");
+      for (const record of closure.releaseEvidence) {
+        this.#runGitBytes(git, ["cat-file", "-e", `${releaseTag}:${record.path}`]);
+      }
+      return;
     }
+    for (const record of closure.releaseEvidence) {
+      const bytes = fs.readFileSync(path.join(PROJECT_ROOT, record.path));
+      assert.equal(
+        crypto.createHash("sha256").update(bytes).digest("hex"),
+        record.sha256,
+        `Stale release evidence: ${record.path}`,
+      );
+    }
+  }
+
+  #resolveGit() {
+    const candidates = process.platform === "win32"
+      ? [process.env.GIT_EXECUTABLE, "C:/Program Files/Git/cmd/git.exe", "git"]
+      : [process.env.GIT_EXECUTABLE, "git"];
+    for (const candidate of candidates.filter(Boolean)) {
+      const result = spawnSync(candidate, ["--version"], {
+        cwd: PROJECT_ROOT,
+        encoding: "utf8",
+        shell: false,
+      });
+      if (result.status === 0) return candidate;
+    }
+    throw new Error("Cannot locate Git for Stage 3.7.9 release evidence verification");
+  }
+
+  #runGitText(git, argumentsList) {
+    return this.#runGitBytes(git, argumentsList).toString("utf8").trim();
+  }
+
+  #runGitBytes(git, argumentsList) {
+    const result = spawnSync(git, argumentsList, {
+      cwd: PROJECT_ROOT,
+      encoding: null,
+      maxBuffer: 32 * 1024 * 1024,
+      shell: false,
+    });
+    if (result.status !== 0) {
+      throw new Error(
+        `Git release-evidence verification failed: git ${argumentsList.join(" ")}\n` +
+        result.stderr.toString("utf8"),
+      );
+    }
+    return result.stdout;
   }
 
   #verifyRollback(closure, plan) {

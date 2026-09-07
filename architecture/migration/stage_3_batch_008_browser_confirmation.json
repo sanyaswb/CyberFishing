@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-008-browser-confirmation",
+  "batchId": "stage-3.candidate-008-fishing-f859ccd3",
+  "releaseVersion": "0.24.45",
+  "status": "passed",
+  "performedBy": "user",
+  "recordedAt": "2026-09-07T22:42:19.697Z",
+  "userStatement": "перевірив все окей",
+  "confirmationContext": "User quoted the complete requested browser checklist (launch/Canvas/inventory; cast to fight; line release/recovery; Stroke gained/lost/stable; hold/drag gates; console errors/warnings) and confirmed all checked and okay.",
+  "evidenceType": "explicit-user-confirmation-of-entire-checklist",
+  "checks": {
+    "bootCanvasInventory": "PASS",
+    "castWaitingFight": "PASS",
+    "lineReleaseRecovery": "PASS",
+    "strokeGained": "PASS",
+    "strokeLost": "PASS",
+    "strokeStable": "PASS",
+    "holdDragRecoveryGates": "PASS"
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "source": "user-reported-all-okay-checklist-confirmation",
+    "independentlyInstrumented": false
+  },
+  "telemetryCapture": null,
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_008_acceptance_pass.json",
+    "sha256": "d37e9bfcf3e5fb14d46ee0a6dd37aba8df424ebce1f4e183f3fc5315e384b29f"
+  },
+  "historicalSummaryPreserved": true
+}

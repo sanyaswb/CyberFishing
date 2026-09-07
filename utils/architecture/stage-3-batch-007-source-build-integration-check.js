@@ -22,6 +22,7 @@ const {
 } = require("./domain_batches/stage_three_batch_007_lifecycle_transition");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
+const { historicalManifestBytes } = require("./domain_batches/stage_three_pending_target_manifest");
 const ARTIFACT_PATH = "architecture/migration/stage_3_batch_007_source_build_validation.json";
 
 class StageThreeBatch007SourceBuildIntegrationCheck {
@@ -62,7 +63,9 @@ class StageThreeBatch007SourceBuildIntegrationCheck {
       assert.equal(entry.analysis.dependencies.status, "verified");
       assert.equal(entry.analysis.dependencies.items.length, 0);
     }
-    assert.equal(manifest.modules.length, artifact.manifestReconciliation.moduleCount);
+    assert.equal(JSON.parse(historicalManifestBytes(this.#bytes(
+      "architecture/migration/module_migration_manifest.json"), PROJECT_ROOT)).modules.length,
+    artifact.manifestReconciliation.moduleCount);
     const rebuilt = runtimeActive ? artifact.candidateBuild : await new StageThreeBatch007CandidateBuild(PROJECT_ROOT).run({
       prebuild,
       approvedPlan: this.#json("architecture/migration/stage_3_approved_batches.json"),

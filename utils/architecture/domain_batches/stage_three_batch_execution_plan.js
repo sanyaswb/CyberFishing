@@ -1,17 +1,13 @@
 "use strict";
 
+const crypto = require("node:crypto");
 const {
   CanonicalBridgeIdentity,
 } = require("../../build/legacy_bridge_build_config");
 const { immutableRecord } = require("../guards/core/guard_models");
 const {
-  BATCH_006_EXECUTION_PROFILE,
+  StageThreeBatchExecutionProfile,
 } = require("./stage_three_batch_execution_profile");
-
-const SOURCE_RELEASE_VERSION = BATCH_006_EXECUTION_PROFILE.sourceReleaseVersion;
-const TARGET_RELEASE_VERSION = BATCH_006_EXECUTION_PROFILE.targetReleaseVersion;
-const BRIDGE_REASON = BATCH_006_EXECUTION_PROFILE.bridgeReason;
-const OPERATION_IDS = BATCH_006_EXECUTION_PROFILE.operationIds;
 
 const NUMBER_WORDS = Object.freeze({
   1: "one",
@@ -32,8 +28,8 @@ function numberWord(value) {
 class StageThreeBatchExecutionPlanBuilder {
   #profile;
 
-  constructor(profile = BATCH_006_EXECUTION_PROFILE) {
-    this.#profile = profile;
+  constructor(profile) {
+    this.#profile = StageThreeBatchExecutionProfile.validateImmutable(profile);
   }
 
   build({
@@ -177,26 +173,38 @@ class StageThreeBatchExecutionPlanBuilder {
       profile.expectedBridgeIds,
     ), "Canonical bridge identity set differs from profile");
 
-    const completedState = {
-      releaseVersion: profile.targetReleaseVersion,
-      status: "migration-active",
-      completedBatchIds: [...completedPrefix, profile.batchId],
-      activeBatchId: null,
-      compatibilityRuntimeActivated: true,
-    };
-    const openState = {
-      releaseVersion: profile.sourceReleaseVersion,
-      status: "migration-active",
-      completedBatchIds: [...completedPrefix],
-      activeBatchId: profile.batchId,
-      compatibilityRuntimeActivated: true,
-    };
     const afterModuleCount = new Set([
       ...audit.closure.existingCumulativeModules,
       ...audit.closure.newProjectModules,
     ]).size;
     const afterActivationCount = runtimeFacts.activationCount + activations.length;
     const afterBridgeCount = bridgeRegistry.bridges.length + plannedBridges.length;
+    const currentLifecycleTopology = profile.persistActiveBatchPhase ? {
+      projectModuleCount: runtimeFacts.projectModuleCount,
+      activationCount: runtimeFacts.activationCount,
+      bridgeRecordCount: bridgeRegistry.bridges.length,
+    } : {};
+    const completedState = {
+      releaseVersion: profile.targetReleaseVersion,
+      status: "migration-active",
+      completedBatchIds: [...completedPrefix, profile.batchId],
+      activeBatchId: null,
+      compatibilityRuntimeActivated: true,
+      ...(profile.persistActiveBatchPhase ? {
+        projectModuleCount: afterModuleCount,
+        activationCount: afterActivationCount,
+        bridgeRecordCount: afterBridgeCount,
+      } : {}),
+    };
+    const openState = {
+      releaseVersion: profile.sourceReleaseVersion,
+      status: "migration-active",
+      completedBatchIds: [...completedPrefix],
+      activeBatchId: profile.batchId,
+      ...(profile.persistActiveBatchPhase ? { activeBatchPhase: "prebuild" } : {}),
+      compatibilityRuntimeActivated: true,
+      ...currentLifecycleTopology,
+    };
 
     const operations = [
       this.#operation(1, profile.operationIds[0], "read-only", "Verify audit fingerprints, frozen scope, current topology and completed prefix."),
@@ -219,6 +227,7 @@ class StageThreeBatchExecutionPlanBuilder {
         completedBatchIds: [...executionState.completedBatchIds],
         activeBatchId: executionState.activeBatchId,
         compatibilityRuntimeActivated: executionState.compatibilityRuntimeActivated,
+        ...currentLifecycleTopology,
       },
       openState,
     };
@@ -228,6 +237,7 @@ class StageThreeBatchExecutionPlanBuilder {
         status: "migration-active",
         completedBatchIds: [...completedPrefix],
         activeBatchId: profile.batchId,
+        ...(profile.persistActiveBatchPhase ? { activeBatchPhase: "runtime-active" } : {}),
         compatibilityRuntimeActivated: true,
         projectModuleCount: afterModuleCount,
         activationCount: afterActivationCount,
@@ -339,7 +349,12 @@ class StageThreeBatchExecutionPlanBuilder {
             authoritativeOwnerBefore: audited.state.authoritativeOwnerBefore,
             authoritativeOwnerAfter: audited.state.authoritativeOwnerAfter,
             publicStateShape: audited.state.publicStateShape,
-            snapshotShape: audited.state.snapshotShape,
+            ...(Array.isArray(audited.state.snapshotShape)
+              ? { snapshotShape: audited.state.snapshotShape }
+              : {}),
+            ...(Array.isArray(audited.state.resultShape)
+              ? { resultShape: audited.state.resultShape }
+              : {}),
             stableResultIdentity: audited.state.stableResultIdentity,
             mutatesCallerInputs: audited.state.mutatesCallerInputs,
             behaviorFingerprint: audited.behavior.formulaDefaultsClampsRoundingFingerprint,
@@ -442,8 +457,8 @@ class StageThreeBatchExecutionPlanBuilder {
 class StageThreeBatchExecutionPlanValidator {
   #profile;
 
-  constructor(profile = BATCH_006_EXECUTION_PROFILE) {
-    this.#profile = profile;
+  constructor(profile) {
+    this.#profile = StageThreeBatchExecutionProfile.validateImmutable(profile);
   }
 
   validate(plan) {
@@ -481,17 +496,83 @@ class StageThreeBatchExecutionPlanValidator {
     const completedBefore = Number(profile.batchNumber) - 1;
     require(plan?.lifecycle?.preState?.completedBatchIds?.length === completedBefore, "pre-state completed prefix differs");
     require(plan?.lifecycle?.preState?.activeBatchId === null, "pre-state active batch must be null");
+    require(plan?.lifecycle?.preState?.releaseVersion === profile.sourceReleaseVersion,
+      "pre-state release differs");
+    require(plan?.lifecycle?.preState?.status === "migration-active",
+      "pre-state status differs");
+    require(plan?.lifecycle?.preState?.compatibilityRuntimeActivated === true,
+      "pre-state cumulative runtime must be active");
     require(plan?.lifecycle?.openState?.activeBatchId === profile.batchId, "open-state must activate the profiled batch");
     require(plan?.lifecycle?.openState?.completedBatchIds?.length === completedBefore, "open-state must not complete the batch early");
+    require(this.#same(plan?.lifecycle?.openState?.completedBatchIds, plan?.lifecycle?.preState?.completedBatchIds),
+      "open-state completed prefix must equal pre-state");
+    require(plan?.lifecycle?.openState?.releaseVersion === profile.sourceReleaseVersion,
+      "open-state release differs");
+    require(plan?.lifecycle?.openState?.status === "migration-active",
+      "open-state status differs");
+    require(plan?.lifecycle?.openState?.compatibilityRuntimeActivated === true,
+      "open-state cumulative runtime must remain active");
     require(plan?.lifecycle?.completedState?.activeBatchId === null, "completed-state active batch must be null");
     require(plan?.lifecycle?.completedState?.completedBatchIds?.at(-1) === profile.batchId, "completed-state must append the profiled batch");
     require(plan?.lifecycle?.completedState?.completedBatchIds?.length === completedBefore + 1, "completed-state prefix differs");
+    require(this.#same(
+      plan?.lifecycle?.completedState?.completedBatchIds,
+      [...(plan?.lifecycle?.preState?.completedBatchIds || []), profile.batchId],
+    ), "completed-state must append only the profiled batch");
+    require(plan?.lifecycle?.completedState?.releaseVersion === profile.targetReleaseVersion,
+      "completed-state release differs");
+    require(plan?.lifecycle?.completedState?.status === "migration-active",
+      "completed-state status differs");
+    require(plan?.lifecycle?.completedState?.compatibilityRuntimeActivated === true,
+      "completed-state cumulative runtime must remain active");
     if (profile.includeRuntimeActiveState) {
       require(plan?.lifecycle?.runtimeActiveState?.activeBatchId === profile.batchId, "runtime-active phase must keep the profiled batch active");
       require(plan?.lifecycle?.runtimeActiveState?.completedBatchIds?.length === completedBefore, "runtime-active phase must not complete the batch early");
+      require(this.#same(
+        plan?.lifecycle?.runtimeActiveState?.completedBatchIds,
+        plan?.lifecycle?.preState?.completedBatchIds,
+      ), "runtime-active completed prefix must equal pre-state");
+      require(plan?.lifecycle?.runtimeActiveState?.releaseVersion === profile.sourceReleaseVersion,
+        "runtime-active release differs");
+      require(plan?.lifecycle?.runtimeActiveState?.status === "migration-active",
+        "runtime-active status differs");
+      require(plan?.lifecycle?.runtimeActiveState?.compatibilityRuntimeActivated === true,
+        "runtime-active cumulative runtime must remain active");
       require(plan?.lifecycle?.runtimeActiveState?.persistence === "execution-plan-phase-not-stage-3-execution-state-status", "runtime-active persistence boundary differs");
     } else {
       require(plan?.lifecycle?.runtimeActiveState === undefined, "historical profile must not gain a runtime-active field");
+    }
+    if (profile.persistActiveBatchPhase) {
+      require(plan?.lifecycle?.openState?.activeBatchPhase === "prebuild", "open-state phase must be prebuild");
+      require(plan?.lifecycle?.runtimeActiveState?.activeBatchPhase === "runtime-active",
+        "runtime-active phase is invalid");
+      require(plan?.lifecycle?.completedState?.activeBatchPhase === undefined,
+        "completed-state phase must be removed");
+      for (const stateName of ["preState", "openState"]) {
+        require(plan?.lifecycle?.[stateName]?.projectModuleCount === profile.expectedTopology.beforeProjectModuleCount,
+          `${stateName} module topology differs`);
+        require(plan?.lifecycle?.[stateName]?.activationCount === profile.expectedTopology.beforeActivationCount,
+          `${stateName} activation topology differs`);
+        require(plan?.lifecycle?.[stateName]?.bridgeRecordCount === profile.expectedTopology.beforeBridgeCount,
+          `${stateName} bridge topology differs`);
+      }
+      require(plan?.lifecycle?.runtimeActiveState?.projectModuleCount === profile.expectedTopology.afterProjectModuleCount,
+        "runtime-active module topology differs");
+      require(plan?.lifecycle?.runtimeActiveState?.activationCount === profile.expectedTopology.afterActivationCount,
+        "runtime-active activation topology differs");
+      require(plan?.lifecycle?.runtimeActiveState?.bridgeRecordCount === profile.expectedTopology.afterBridgeCount,
+        "runtime-active bridge topology differs");
+      require(plan?.lifecycle?.completedState?.projectModuleCount === profile.expectedTopology.afterProjectModuleCount,
+        "completed-state module topology differs");
+      require(plan?.lifecycle?.completedState?.activationCount === profile.expectedTopology.afterActivationCount,
+        "completed-state activation topology differs");
+      require(plan?.lifecycle?.completedState?.bridgeRecordCount === profile.expectedTopology.afterBridgeCount,
+        "completed-state bridge topology differs");
+    } else {
+      require(plan?.lifecycle?.openState?.activeBatchPhase === undefined,
+        "historical open-state must not gain activeBatchPhase");
+      require(plan?.lifecycle?.runtimeActiveState?.activeBatchPhase === undefined,
+        "historical runtime-active state must not gain activeBatchPhase");
     }
     require(plan?.compatibility?.activations?.length === profile.expectedActivationCount, "activation set is incomplete");
     require(plan?.compatibility?.plannedBridgeRecords?.length === profile.expectedConsumerCount, "bridge set is incomplete");
@@ -563,6 +644,54 @@ class StageThreeBatchExecutionPlanValidator {
     require(plan?.rollback?.removeBatchId === profile.batchId, "rollback must remove only the profiled batch");
     require(plan?.rollback?.rule === profile.rollbackRule, "rollback rule differs from profile");
     require(plan?.rollback?.targetsAbsentBeforeCutover?.length === profile.expectedTargetCount, "rollback target absence set is incomplete");
+    const baselineFiles = plan?.rollback?.baselineEvidence?.files || [];
+    const baselinePaths = baselineFiles.map((record) => record.path);
+    const requiredBaselinePaths = [
+      ...(plan?.mutationBoundary?.sourceProvidersReplaced || []),
+      ...(plan?.mutationBoundary?.architectureMetadata || []),
+      ...(plan?.mutationBoundary?.runtimeWiring || []),
+      ...(plan?.mutationBoundary?.releaseMetadata || []),
+    ];
+    require(baselineFiles.length > 0, "rollback baseline files are required");
+    require(new Set(baselinePaths).size === baselinePaths.length,
+      "rollback baseline file paths must be unique");
+    require(this.#same(baselinePaths, [...baselinePaths].sort((left, right) => left.localeCompare(right))),
+      "rollback baseline files must be sorted");
+    require(baselineFiles.every((record) =>
+      typeof record.path === "string" &&
+      record.path.length > 0 &&
+      !record.path.includes("\\") &&
+      !record.path.includes("..") &&
+      !record.path.includes("*") &&
+      /^[a-f0-9]{64}$/u.test(record.sha256)),
+    "rollback baseline file record is invalid");
+    require(requiredBaselinePaths.every((relativePath) => baselinePaths.includes(relativePath)),
+      "rollback baseline does not cover every mutable existing file");
+    const runtimeOutput = plan?.rollback?.baselineEvidence?.runtimeOutput;
+    const runtimeOutputFiles = runtimeOutput?.files || [];
+    const runtimeOutputPaths = runtimeOutputFiles.map((record) => record.path);
+    require(runtimeOutput?.path === plan?.mutationBoundary?.generatedOutput?.[0],
+      "rollback runtime output path differs from mutation boundary");
+    require(runtimeOutputFiles.length > 0, "rollback runtime output files are required");
+    require(new Set(runtimeOutputPaths).size === runtimeOutputPaths.length,
+      "rollback runtime output paths must be unique");
+    require(this.#same(
+      runtimeOutputPaths,
+      [...runtimeOutputPaths].sort((left, right) => left.localeCompare(right)),
+    ), "rollback runtime output files must be sorted");
+    require(runtimeOutputFiles.every((record) =>
+      typeof record.path === "string" &&
+      record.path.startsWith(`${runtimeOutput.path}/`) &&
+      !record.path.includes("\\") &&
+      !record.path.includes("..") &&
+      /^[a-f0-9]{64}$/u.test(record.sha256)),
+    "rollback runtime output record is invalid");
+    require(
+      runtimeOutput?.fingerprint === crypto.createHash("sha256")
+        .update(Buffer.from(JSON.stringify(runtimeOutputFiles), "utf8"))
+        .digest("hex"),
+      "rollback runtime output fingerprint differs",
+    );
     require(plan?.stateAndBehaviorInvariants?.every((record) =>
       record.authoritativeOwnerPreserved === true &&
       record.duplicateStateCopies === "forbidden" &&
@@ -570,9 +699,9 @@ class StageThreeBatchExecutionPlanValidator {
     if (profile.includeDetailedStatePerformanceGates) {
       require(plan?.stateAndBehaviorInvariants?.every((record) =>
         record.authoritativeOwnerBefore?.module === record.module &&
-        record.authoritativeOwnerAfter?.module !== record.module &&
-        Array.isArray(record.publicStateShape) &&
-        Array.isArray(record.snapshotShape) &&
+         record.authoritativeOwnerAfter?.module !== record.module &&
+         Array.isArray(record.publicStateShape) &&
+         (Array.isArray(record.snapshotShape) || Array.isArray(record.resultShape)) &&
         typeof record.stableResultIdentity === "boolean" &&
         typeof record.mutatesCallerInputs === "boolean" &&
         /^[a-f0-9]{64}$/u.test(record.behaviorFingerprint) &&
@@ -606,10 +735,6 @@ class StageThreeBatchExecutionPlanValidator {
 }
 
 module.exports = {
-  BRIDGE_REASON,
-  OPERATION_IDS,
-  SOURCE_RELEASE_VERSION,
-  TARGET_RELEASE_VERSION,
   StageThreeBatchExecutionPlanBuilder,
   StageThreeBatchExecutionPlanValidator,
 };

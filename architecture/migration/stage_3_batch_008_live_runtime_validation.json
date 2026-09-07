@@ -1,0 +1,1620 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-008-live-validation",
+  "status": "verified",
+  "batchId": "stage-3.candidate-008-fishing-f859ccd3",
+  "releaseVersion": "0.24.44",
+  "evidence": [
+    {
+      "path": "architecture/build/package_contract.json",
+      "sha256": "bde057d9fbc9baea846565b5255f582be2abab1f270bccf05b6d3e2f6eb9bf3a"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "8c54a8cff782914adb614cc6a5c2cabd3da3b1b34ecc5a76d76d6eaf22b0c254"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "0b8160380952e942899e8a56030f0f25912116098dbf456ec4886425fb7054c2"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_007_source_build_validation.json",
+      "sha256": "d12767c4a1de27646f1bb9dd914ea3e18196f5f772cbc5f199cdf51286bf61b3"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_audit.json",
+      "sha256": "a094280ee96a182f2e26cae1aabcdfe622abe4b89195295bffd980766aac4c6a"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_execution_plan.json",
+      "sha256": "0f97d3a7c00965ae12aeccf015a477596044ff0d913b87545b4c74225308cab1"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_prebuild_contract.json",
+      "sha256": "47643f3b06281b34fb7023ce822ca458631e8fee12c43daa35da90482c7ba905"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_runtime_cutover.json",
+      "sha256": "66f87cd12d619e31035a9544ca3e7ddef6723b7f791f69300e1930146e75fdd8"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_source_build_validation.json",
+      "sha256": "46ee47a46402799461dcb7cda05c54a7de98a8740ba80b8bbb6ae4f2fc4fef96"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_test_matrix.json",
+      "sha256": "7a71d9cdc78dbafaececbf7d5d5bf711b2ff2cadead7df117c81fbf151e47faa"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "5e17acf766b8254e1481514faff27ece5da0294dda67eb7f17ff3d27b6388064"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "702b7dd64b67375c1947a24f9a738edf303b4ac8395fd440670ec885563fef8d"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/086_inventoryequiptargetselectionpolicy.js",
+      "sha256": "cb952b9844350a33ef46f53ba1d546586a4f343f252a0ca6430ae6ac183fb3e1"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/088_floattacklelinebudgetpolicy.js",
+      "sha256": "aa49fd5deb57a9892901d4f697cb9592a9cd24785f18e48a494b0f05102f85fe"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/090_linespoolstate.js",
+      "sha256": "9e192c225b197269f2d1e7e6f3283ae2f74512d079f03ae12f59adca611fc69a"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/091_rodpullstate.js",
+      "sha256": "092780820147a1f819c1c350f130b52ae7000bc071a7147521537e408638e652"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/092_rodstrokestate.js",
+      "sha256": "bf54de1bcb822696237f94c50916a6c05d728784eca133b1e02a09cc502a31a1"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/093_rodstroketracker.js",
+      "sha256": "89b75153c54ddcf2d7524f657def542c54d07e59de0be80d24d4ce1f87d00cd4"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/094_rodstrokedistancetracker.js",
+      "sha256": "401876d27d46be7d6bde1f1f9968ef1e7d76bea8ae801fab8933af744d02a15e"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/112_reelretrievespeedcalculator.js",
+      "sha256": "cb9b08da01806aa1ed559b86c373d88fb6325ffab81361126c376f77386b4ac7"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/113_reelautorecoverycalculator.js",
+      "sha256": "d0fee6b406b2f98943440dc3aa3e911342ae6557ee9108820a8017162a6eb9ca"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/114_reelholdloadpolicy.js",
+      "sha256": "28b000dae36215428d62eb946d5e181f6d2521f793bfd653e855f5cae0641bd1"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/117_looselinecalculator.js",
+      "sha256": "260df1817215256f34a5c8604ac2da67f3ad01f2d183601216c89875b3cf1631"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/117_recoverablelinecalculator.js",
+      "sha256": "615e8d5c7e1e09b158642290d9a66ea1108a183b0edc2943a4cfceddd629503b"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/118_rodstrokecapacityresolver.js",
+      "sha256": "0497fb28a189f33126681f4b00334afd6c0e5018904f148ea0dec2e0c50f8cc1"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/122_fishretrieveresult.js",
+      "sha256": "6ccda8cbd8dfcfd2bd7c3896672be8f8bb46305666727cf18a562b975ff845a5"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/123_holdoppositionresolver.js",
+      "sha256": "9d92ea7a42772e5f20a794147c47547d91f7dcc0cef4f412d5a32e218a55fe67"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/126_rodcontroltensionmoderesolver.js",
+      "sha256": "cea2964616cdf6bc2995148d0260cb68d84b9edd097c4014b15ce5fd5e9ff9c5"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/128_dragforcecalculator.js",
+      "sha256": "f0dd2e753205b590022c03b3b19fce243120d0aa38a081f79b3700dfa9e1487d"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/129_linetensioncalculator.js",
+      "sha256": "15a7818493cd292bc68edf28218718c5ab960cd61db0a583401e3fcb1746d411"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/130_lineconstraintstateresolver.js",
+      "sha256": "8796bcbaa445dd5ac05a758b5bdd00f7c32cee9493b26c120ffb055140f38dfc"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/131_lineconstrainedfishmotionresolver.js",
+      "sha256": "deaf6dd9647e2777935475330ac178069ea1508ab7e9f578c34191eb37520aa0"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/132_lineradialmovementsplitter.js",
+      "sha256": "1692d1bd9409d60f68773288fdf6119957a1c2667db43f1d51095d6e22f9ed26"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/133_rodcontrolmovementprojector.js",
+      "sha256": "99e04f0a8fd51cf254ffb2b63d26f78dd51b028d00371fe20aac0eb25eca132b"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/134_polefightsectorgeometry.js",
+      "sha256": "75420e557172f1719ca885c0463b43441cc47965b6c8588497cc00ceccd8fa61"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/139_simplefightforcecalculator.js",
+      "sha256": "0fad5ebee04e430731bf53d7ef081b7b6650a952313c5c8450521f1eba4cab79"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/140_landinglifttensioncalculator.js",
+      "sha256": "bb2b7df44ea2d8ca32ba51236000ddc042b1cded9953266ec36ea0fdb3aee170"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/157_rodcapabilityresolver.js",
+      "sha256": "462de6f1999ff5b789409dbe00273f9cce166f835c0a0843456167fe8833b988"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/352_assetmanifest.js",
+      "sha256": "c607661064a404d748893c6b76ce54747e3bcf0e30a4e40875663c59001e6ece"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/353_assetloadresult.js",
+      "sha256": "663f88f08f1dac40bd03d635b5a1b3105c460bfb5903dcdceadc92add7dcf66f"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/358_renderpass.js",
+      "sha256": "4d519d81bebdc82e2efc3b4a7fa2c9239597bbcfaa04c13daeb80cd9e0f144bd"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/360_rendermath.js",
+      "sha256": "a962bc192bdb40de397df3dd576ff1fb30965f8374ad4b2962db17e509837de3"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/361_rendercomponent.js",
+      "sha256": "d2636a7d6868af2195a848d4b0b72be6cc0c3dd5bb98d40192ed47b58ddb79d2"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/362_compositerenderer.js",
+      "sha256": "f04ebc0e624f926e7172fdbdb2562c3355fa1f58d56f30bf78ff97c1edf8be88"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/391_eventbus.js",
+      "sha256": "df1beb5019a18ebf9f666468d02e57689994af430a80904ae44447b7b75b2c77"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/392_eventlifecycle.js",
+      "sha256": "f54be747be93bca4e6d9047d65b3f08908f70688a400700d343851e68394c68f"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/395_dependencycontractvalidator.js",
+      "sha256": "d3f54e03c1c3a39474c9642bc364820187b47da05066460911ffe19617f45edd"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/compat_runtime.iife.js",
+      "sha256": "6950a4f49df8e6f1b1747aeecf9c34c344e7d4834ddb12ba9b63d6686d4d8aca"
+    },
+    {
+      "path": "index.html",
+      "sha256": "11f17ee41f3a0a89ddba50a96be83e8bed15ce852022fd858ce5467e2a0f528c"
+    },
+    {
+      "path": "package.json",
+      "sha256": "ba5b289b3912588f7914f93cda6d28769bda17fb075b11842182083474094a2d"
+    },
+    {
+      "path": "src/core/fishing/reel_hold_load_policy.js",
+      "sha256": "28b000dae36215428d62eb946d5e181f6d2521f793bfd653e855f5cae0641bd1"
+    },
+    {
+      "path": "src/core/fishing/reel_hold_recovery_system.js",
+      "sha256": "8bb4b488a4f0da146ff95450f9dbf93cc9fd4edac5f8f655786976c9dfd6c02e"
+    },
+    {
+      "path": "src/core/fishing/rod_stroke_distance_tracker.js",
+      "sha256": "401876d27d46be7d6bde1f1f9968ef1e7d76bea8ae801fab8933af744d02a15e"
+    },
+    {
+      "path": "src/core/line/line_spool_state.js",
+      "sha256": "9e192c225b197269f2d1e7e6f3283ae2f74512d079f03ae12f59adca611fc69a"
+    },
+    {
+      "path": "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "sha256": "bbba751a87c681b057250a55d59384f133d154970f795b90805afb04d68e2040"
+    },
+    {
+      "path": "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "sha256": "b145f56fffc4962f4b32de8ec13d6efe6ec7613eeb371572349782e843426f9f"
+    },
+    {
+      "path": "src/game/domain/fishing/line_spool_state.js",
+      "sha256": "a816121ccb229b658a1d3d00cf34008227f036e1dc66f03a3a9fe89496e15c2a"
+    },
+    {
+      "path": "src/game/domain/fishing/reel_hold_load_policy.js",
+      "sha256": "5aa716f077764d9ada772388d55e2a5d2c3c432e3c77acd06fd23979de8f92f3"
+    },
+    {
+      "path": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "sha256": "4347b9593ca7b8387fb64f224c343cdb8c7633ea8f5fb3aaad86fc970a374f7b"
+    },
+    {
+      "path": "src/game/domain/fishing/rod_pull_state.js",
+      "sha256": "111fa719ea32f02f7824b951e2cd31a214468dd609c32ca24cd85193c1c1431c"
+    },
+    {
+      "path": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "sha256": "c139bc08f8130b9a34570e808e5203c6e4665becdc7d157085f4cd308c61568e"
+    },
+    {
+      "path": "src/game/domain/fishing/rod_stroke_state.js",
+      "sha256": "9454c72176e555ccce5501e18c13af687a373fdb1c4212884e52cf760c5d8248"
+    },
+    {
+      "path": "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "sha256": "a4cdce35a7ff59a9b5f3ab532180561e7bb55072e01cec526e895cc2dca05992"
+    },
+    {
+      "path": "src/systems/fight_physics_system.js",
+      "sha256": "5f8c84085a267826586cfa915c53eb8c7235674418fa2b38f462160fb65fe01b"
+    },
+    {
+      "path": "src/systems/line_system.js",
+      "sha256": "30c077864d172fa472663a63daf2d376c30c4b32c9dbfbe89422e235e963d246"
+    }
+  ],
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939"
+    ],
+    "activeBatchId": "stage-3.candidate-008-fishing-f859ccd3",
+    "activeBatchPhase": "runtime-active",
+    "batchCompleted": false
+  },
+  "runtime": {
+    "transportAssignmentCount": 1,
+    "transportOwnsGameState": false,
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js"
+    ],
+    "activationTiming": [
+      {
+        "activationId": "activation-5c6e63e8ffb9",
+        "symbol": "InventoryEquipTargetSelectionPolicy",
+        "targetModule": "src/game/domain/inventory/equip_target_selection_policy.js",
+        "legacyScriptIndex": 86,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-7678742c83cf",
+        "symbol": "FloatTackleLineBudgetPolicy",
+        "targetModule": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+        "legacyScriptIndex": 88,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-7f67db779ead",
+        "symbol": "LineSpoolState",
+        "targetModule": "src/game/domain/fishing/line_spool_state.js",
+        "legacyScriptIndex": 90,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-a63204f0676b",
+        "symbol": "RodPullState",
+        "targetModule": "src/game/domain/fishing/rod_pull_state.js",
+        "legacyScriptIndex": 91,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-00287f399f05",
+        "symbol": "RodStrokeState",
+        "targetModule": "src/game/domain/fishing/rod_stroke_state.js",
+        "legacyScriptIndex": 92,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-3fee104fb111",
+        "symbol": "RodStrokeTracker",
+        "targetModule": "src/game/domain/fishing/rod_stroke_tracker.js",
+        "legacyScriptIndex": 93,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-868e1186ae29",
+        "symbol": "RodStrokeDistanceTracker",
+        "targetModule": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+        "legacyScriptIndex": 94,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-da8d3f6d370f",
+        "symbol": "ReelRetrieveSpeedCalculator",
+        "targetModule": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+        "legacyScriptIndex": 112,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-57add99af90d",
+        "symbol": "ReelAutoRecoveryCalculator",
+        "targetModule": "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+        "legacyScriptIndex": 113,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-4d4619b15e3c",
+        "symbol": "ReelHoldLoadPolicy",
+        "targetModule": "src/game/domain/fishing/reel_hold_load_policy.js",
+        "legacyScriptIndex": 114,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-2534a1bdbe18",
+        "symbol": "RecoverableLineCalculator",
+        "targetModule": "src/game/domain/fishing/recoverable_line_calculator.js",
+        "legacyScriptIndex": 117,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-9a198b228060",
+        "symbol": "LooseLineCalculator",
+        "targetModule": "src/game/domain/fishing/recoverable_line_calculator.js",
+        "legacyScriptIndex": 117,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-57b99d3aaf82",
+        "symbol": "RodStrokeCapacityResolver",
+        "targetModule": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+        "legacyScriptIndex": 118,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-9c5651e4f765",
+        "symbol": "FishRetrieveResult",
+        "targetModule": "src/game/domain/fishing/fish_retrieve_result.js",
+        "legacyScriptIndex": 122,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-9857928fc9d0",
+        "symbol": "HoldOppositionResolver",
+        "targetModule": "src/game/domain/fishing/hold_opposition_resolver.js",
+        "legacyScriptIndex": 123,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-f70148ad6a58",
+        "symbol": "RodControlTensionModeResolver",
+        "targetModule": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+        "legacyScriptIndex": 126,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-4e28fdf337a3",
+        "symbol": "DragForceCalculator",
+        "targetModule": "src/game/domain/fishing/drag_force_calculator.js",
+        "legacyScriptIndex": 128,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-a8e624a68a8e",
+        "symbol": "LineTensionCalculator",
+        "targetModule": "src/game/domain/fishing/line_tension_calculator.js",
+        "legacyScriptIndex": 129,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-775fb46bb6ce",
+        "symbol": "LineConstraintStateResolver",
+        "targetModule": "src/game/domain/fishing/line_constraint_state_resolver.js",
+        "legacyScriptIndex": 130,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-f5eefdd6e6e2",
+        "symbol": "LineConstrainedFishMotionResolver",
+        "targetModule": "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+        "legacyScriptIndex": 131,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-dcb3cecb345c",
+        "symbol": "LineRadialMovementSplitter",
+        "targetModule": "src/game/domain/fishing/line_radial_movement_splitter.js",
+        "legacyScriptIndex": 132,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-be4932b7b0c5",
+        "symbol": "RodControlMovementProjector",
+        "targetModule": "src/game/domain/fishing/rod_control_movement_projector.js",
+        "legacyScriptIndex": 133,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-ffea5244c4bf",
+        "symbol": "PoleFightSectorGeometry",
+        "targetModule": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+        "legacyScriptIndex": 134,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-ccddea60d16c",
+        "symbol": "SimpleFightForceCalculator",
+        "targetModule": "src/game/domain/fishing/simple_fight_force_calculator.js",
+        "legacyScriptIndex": 139,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-8f8220d288e5",
+        "symbol": "LandingLiftTensionCalculator",
+        "targetModule": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+        "legacyScriptIndex": 140,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-59bd96059da6",
+        "symbol": "RodCapabilityResolver",
+        "targetModule": "src/game/domain/equipment/rod_capability_resolver.js",
+        "legacyScriptIndex": 157,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-765258a53eef",
+        "symbol": "AssetManifest",
+        "targetModule": "src/engine/assets/asset_manifest.js",
+        "legacyScriptIndex": 352,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-86e221fafb48",
+        "symbol": "AssetLoadResult",
+        "targetModule": "src/engine/assets/asset_load_result.js",
+        "legacyScriptIndex": 353,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-886fb34615aa",
+        "symbol": "RenderPass",
+        "targetModule": "src/engine/rendering/render_pass.js",
+        "legacyScriptIndex": 358,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-75b968069153",
+        "symbol": "RenderMath",
+        "targetModule": "src/engine/rendering/render_math.js",
+        "legacyScriptIndex": 360,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-3e0a233bf70c",
+        "symbol": "RenderComponent",
+        "targetModule": "src/engine/rendering/render_component.js",
+        "legacyScriptIndex": 361,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-bf033497a3e1",
+        "symbol": "CompositeRenderer",
+        "targetModule": "src/engine/rendering/composite_renderer.js",
+        "legacyScriptIndex": 362,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-3dcbed1b3310",
+        "symbol": "EventBus",
+        "targetModule": "src/engine/events/event_bus.js",
+        "legacyScriptIndex": 391,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-ce7da074f74a",
+        "symbol": "EventLifecycle",
+        "targetModule": "src/engine/events/event_lifecycle.js",
+        "legacyScriptIndex": 392,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-6ba241908a4c",
+        "symbol": "DependencyContractValidator",
+        "targetModule": "src/engine/di/dependency_contract_validator.js",
+        "legacyScriptIndex": 395,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      }
+    ],
+    "physicalClassicScripts": 426,
+    "logicalPositions": 424,
+    "moduleScripts": 0,
+    "cumulativeRuntimeScripts": 1,
+    "virtualBuildModules": [
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/assertClassBrand.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/checkPrivateRedeclaration.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateFieldGet2.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateFieldInitSpec.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateFieldSet2.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateMethodInitSpec.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/defineProperty.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/toPrimitive.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/toPropertyKey.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/typeof.js",
+      "\u0000rolldown/runtime.js"
+    ],
+    "bridgeCount": 60,
+    "bundleSha256": "6950a4f49df8e6f1b1747aeecf9c34c344e7d4834ddb12ba9b63d6686d4d8aca"
+  },
+  "evaluation": {
+    "method": "in-memory-namespace-and-class-initialization-probes-on-exact-bundle",
+    "scope": "three-eager-single-class-leaf-modules",
+    "productionBytesChanged": false,
+    "modules": [
+      {
+        "source": "src/game/domain/fishing/line_spool_state.js",
+        "exportName": "LineSpoolState",
+        "namespaceInitializationCount": 1,
+        "classInitializationCount": 1,
+        "moduleEvaluationCount": 1,
+        "exactNamespaceAndClassReferences": true
+      },
+      {
+        "source": "src/game/domain/fishing/reel_hold_load_policy.js",
+        "exportName": "ReelHoldLoadPolicy",
+        "namespaceInitializationCount": 1,
+        "classInitializationCount": 1,
+        "moduleEvaluationCount": 1,
+        "exactNamespaceAndClassReferences": true
+      },
+      {
+        "source": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+        "exportName": "RodStrokeDistanceTracker",
+        "namespaceInitializationCount": 1,
+        "classInitializationCount": 1,
+        "moduleEvaluationCount": 1,
+        "exactNamespaceAndClassReferences": true
+      }
+    ]
+  },
+  "behavior": {
+    "method": "uninstrumented-actual-bundle-vs-hash-pinned-classic",
+    "cases": [
+      {
+        "batch": "008",
+        "exportName": "LineSpoolState",
+        "caseName": "constructor-clamps",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "LineSpoolState",
+        "caseName": "total-released-and-remaining-line",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "LineSpoolState",
+        "caseName": "line-reserve-threshold",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "LineSpoolState",
+        "caseName": "spool-empty",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "LineSpoolState",
+        "caseName": "set-total-line",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "LineSpoolState",
+        "caseName": "set-released-line",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "LineSpoolState",
+        "caseName": "release",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "LineSpoolState",
+        "caseName": "recover",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "LineSpoolState",
+        "caseName": "minimum-released-line",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "LineSpoolState",
+        "caseName": "invalid-numeric-inputs",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "LineSpoolState",
+        "caseName": "same-instance-state-mutation",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "LineSpoolState",
+        "caseName": "private-state-isolation",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "ReelHoldLoadPolicy",
+        "caseName": "disabled",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "ReelHoldLoadPolicy",
+        "caseName": "no-reel",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "ReelHoldLoadPolicy",
+        "caseName": "not-holding",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "ReelHoldLoadPolicy",
+        "caseName": "drag-slipping",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "ReelHoldLoadPolicy",
+        "caseName": "at-drag-limit",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "ReelHoldLoadPolicy",
+        "caseName": "near-max-load",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "ReelHoldLoadPolicy",
+        "caseName": "zero-recover-speed",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "ReelHoldLoadPolicy",
+        "caseName": "ready",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "ReelHoldLoadPolicy",
+        "caseName": "drag-locked-semantics",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "ReelHoldLoadPolicy",
+        "caseName": "drag-limit-epsilon",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "ReelHoldLoadPolicy",
+        "caseName": "load-reserve-ratio-and-one-percent-gate",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "ReelHoldLoadPolicy",
+        "caseName": "retrieve-speed-scaling-and-delta-time",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "ReelHoldLoadPolicy",
+        "caseName": "invalid-numeric-coercion",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "ReelHoldLoadPolicy",
+        "caseName": "exact-blocked-reason-precedence-and-result-shape",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "RodStrokeDistanceTracker",
+        "caseName": "gained-distance",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "RodStrokeDistanceTracker",
+        "caseName": "lost-distance",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "RodStrokeDistanceTracker",
+        "caseName": "stable-distance",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "RodStrokeDistanceTracker",
+        "caseName": "exact-epsilon-boundary",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "RodStrokeDistanceTracker",
+        "caseName": "default-epsilon",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "RodStrokeDistanceTracker",
+        "caseName": "custom-reason-prefix",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "RodStrokeDistanceTracker",
+        "caseName": "invalid-numeric-inputs",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "RodStrokeDistanceTracker",
+        "caseName": "position-distance-calculation",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "RodStrokeDistanceTracker",
+        "caseName": "pixels-per-meter-fallback",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "008",
+        "exportName": "RodStrokeDistanceTracker",
+        "caseName": "exact-frozen-result-shape",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineConstrainedFishMotionResolver",
+        "caseName": "default-free-frame",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineConstrainedFishMotionResolver",
+        "caseName": "free-velocity-aliases",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineConstrainedFishMotionResolver",
+        "caseName": "zero-radius-branch",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineConstrainedFishMotionResolver",
+        "caseName": "inward-and-tangent-allowed",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineConstrainedFishMotionResolver",
+        "caseName": "outward-radial-projection",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineConstrainedFishMotionResolver",
+        "caseName": "delta-time-clamp",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineConstrainedFishMotionResolver",
+        "caseName": "exact-result-shape",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineConstrainedFishMotionResolver",
+        "caseName": "per-instance-reusable-frame-identity",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineConstrainedFishMotionResolver",
+        "caseName": "caller-input-immutability",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineRadialMovementSplitter",
+        "caseName": "zero-delta-or-radius",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineRadialMovementSplitter",
+        "caseName": "already-at-released-radius",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineRadialMovementSplitter",
+        "caseName": "no-crossing-free-frame",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineRadialMovementSplitter",
+        "caseName": "crossing-time-weighted-velocity",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineRadialMovementSplitter",
+        "caseName": "zero-velocity-no-crossing",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineRadialMovementSplitter",
+        "caseName": "pixels-per-meter-fallback-and-clamp",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineRadialMovementSplitter",
+        "caseName": "velocity-aliases",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineRadialMovementSplitter",
+        "caseName": "exact-result-shape",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineRadialMovementSplitter",
+        "caseName": "per-instance-reusable-result-identity",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "LineRadialMovementSplitter",
+        "caseName": "caller-input-immutability",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "ReelRetrieveSpeedCalculator",
+        "caseName": "default-zero",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "ReelRetrieveSpeedCalculator",
+        "caseName": "base-plus-bearing-bonus",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "ReelRetrieveSpeedCalculator",
+        "caseName": "independent-positive-clamps",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "ReelRetrieveSpeedCalculator",
+        "caseName": "nan-and-infinity-fallback",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "ReelRetrieveSpeedCalculator",
+        "caseName": "numeric-string-coercion",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "ReelRetrieveSpeedCalculator",
+        "caseName": "fractional-no-rounding",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodPullState",
+        "caseName": "exact-thirty-two-field-default-shape",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodPullState",
+        "caseName": "mutable-same-instance",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodPullState",
+        "caseName": "reset-return-and-identity",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodPullState",
+        "caseName": "reset-exact-defaults",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodPullState",
+        "caseName": "repeated-reset-idempotence",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodPullState",
+        "caseName": "instance-state-isolation",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodPullState",
+        "caseName": "zero-reset-allocations",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodStrokeState",
+        "caseName": "initial-state-and-snapshot",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodStrokeState",
+        "caseName": "capacity-clamp",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodStrokeState",
+        "caseName": "add-distance-cap",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodStrokeState",
+        "caseName": "lose-and-recover-distance",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodStrokeState",
+        "caseName": "compatibility-method-aliases",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodStrokeState",
+        "caseName": "start-cycle-preserves-unrecovered-stroke",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodStrokeState",
+        "caseName": "reset-semantics",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodStrokeState",
+        "caseName": "write-snapshot-target-identity",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodStrokeState",
+        "caseName": "exact-five-field-snapshot-aliases",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "RodStrokeState",
+        "caseName": "get-snapshot-fresh-object-and-instance-isolation",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "SimpleFightForceCalculator",
+        "caseName": "passive-active-opposition-formulas",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "SimpleFightForceCalculator",
+        "caseName": "slack-semantics",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "SimpleFightForceCalculator",
+        "caseName": "tension-ceiling-and-rod-hold-clamp",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "SimpleFightForceCalculator",
+        "caseName": "angle-and-ratio-clamps",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "SimpleFightForceCalculator",
+        "caseName": "raw-and-capped-player-tension",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "SimpleFightForceCalculator",
+        "caseName": "movable-cap-gate",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "SimpleFightForceCalculator",
+        "caseName": "total-and-net-force",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "SimpleFightForceCalculator",
+        "caseName": "toward-away-idle-speed",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "SimpleFightForceCalculator",
+        "caseName": "resistance-epsilon-and-defaults",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "SimpleFightForceCalculator",
+        "caseName": "nan-infinity-and-negative-inputs",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "SimpleFightForceCalculator",
+        "caseName": "fractional-no-rounding",
+        "outcome": "equivalent"
+      },
+      {
+        "batch": "007",
+        "exportName": "SimpleFightForceCalculator",
+        "caseName": "exact-frozen-result-shape-and-input-immutability",
+        "outcome": "equivalent"
+      }
+    ]
+  },
+  "state": {
+    "lineSpool": {
+      "owner": "LineSystem instance -> LineSpoolState instance",
+      "ownerIdentityPreserved": true,
+      "separateInstancesIndependent": true,
+      "releaseRecoverSameInstance": true,
+      "repeatedMutationFrames": 128,
+      "final": {
+        "total": 20,
+        "released": 9,
+        "remaining": 11
+      }
+    },
+    "tracker": {
+      "freshResultPerCall": true,
+      "frozenResult": true,
+      "callerInputUnchanged": true
+    },
+    "policy": {
+      "freshResultPerCall": true,
+      "frozenResult": false,
+      "callerInputUnchanged": true,
+      "resultCopiesIndependent": true
+    },
+    "actualLineSystem": {
+      "scenario": "actual-classic-LineSystem-with-injected-distance-port",
+      "spoolConstructions": 1,
+      "exactLiveClass": true,
+      "sameOwnerAfterReleaseRecover": true,
+      "projectionEqualsOwner": true,
+      "final": {
+        "total": 20,
+        "released": 9,
+        "remaining": 11
+      }
+    }
+  },
+  "consumers": [
+    {
+      "bridgeId": "bridge-19607c8ce243",
+      "source": "src/core/fishing/reel_hold_recovery_system.js",
+      "target": "src/game/domain/fishing/reel_hold_load_policy.js",
+      "symbol": "ReelHoldLoadPolicy",
+      "sourceSha256": "8bb4b488a4f0da146ff95450f9dbf93cc9fd4edac5f8f655786976c9dfd6c02e",
+      "exactGlobalClass": true,
+      "transportReads": 0,
+      "proof": "actual-classic-field-initializer"
+    },
+    {
+      "bridgeId": "bridge-3d9abab097f9",
+      "source": "src/systems/line_system.js",
+      "target": "src/game/domain/fishing/line_spool_state.js",
+      "symbol": "LineSpoolState",
+      "sourceSha256": "30c077864d172fa472663a63daf2d376c30c4b32c9dbfbe89422e235e963d246",
+      "exactGlobalClass": true,
+      "transportReads": 0,
+      "proof": "actual-LineSystem-construction-and-mutation"
+    },
+    {
+      "bridgeId": "bridge-8b99e1c44103",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "symbol": "RodStrokeDistanceTracker",
+      "sourceSha256": "5f8c84085a267826586cfa915c53eb8c7235674418fa2b38f462160fb65fe01b",
+      "exactGlobalClass": true,
+      "transportReads": 0,
+      "proof": "actual-classic-field-initializer"
+    }
+  ],
+  "performance": {
+    "modules": [
+      {
+        "source": "src/game/domain/fishing/line_spool_state.js",
+        "allocationSites": {
+          "objectExpressions": 1,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "methods": [
+          {
+            "name": "constructor",
+            "kind": "constructor",
+            "parameterCount": 1,
+            "allocations": {
+              "objectExpressions": 1,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "lineHasReserve",
+            "kind": "get",
+            "parameterCount": 0,
+            "allocations": {
+              "objectExpressions": 0,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "releasedLineMeters",
+            "kind": "get",
+            "parameterCount": 0,
+            "allocations": {
+              "objectExpressions": 0,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "remainingLineMeters",
+            "kind": "get",
+            "parameterCount": 0,
+            "allocations": {
+              "objectExpressions": 0,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "spoolEmpty",
+            "kind": "get",
+            "parameterCount": 0,
+            "allocations": {
+              "objectExpressions": 0,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "totalLineMeters",
+            "kind": "get",
+            "parameterCount": 0,
+            "allocations": {
+              "objectExpressions": 0,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "#clamp",
+            "kind": "method",
+            "parameterCount": 3,
+            "allocations": {
+              "objectExpressions": 0,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "#positive",
+            "kind": "method",
+            "parameterCount": 1,
+            "allocations": {
+              "objectExpressions": 0,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "recover",
+            "kind": "method",
+            "parameterCount": 2,
+            "allocations": {
+              "objectExpressions": 0,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "release",
+            "kind": "method",
+            "parameterCount": 1,
+            "allocations": {
+              "objectExpressions": 0,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "setReleasedLineMeters",
+            "kind": "method",
+            "parameterCount": 1,
+            "allocations": {
+              "objectExpressions": 0,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "setTotalLineMeters",
+            "kind": "method",
+            "parameterCount": 1,
+            "allocations": {
+              "objectExpressions": 0,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          }
+        ],
+        "additionalMigrationAllocationSites": 0,
+        "domainTransportReads": 0,
+        "proof": "exact-classic-sha-and-export-only-ast-equality"
+      },
+      {
+        "source": "src/game/domain/fishing/reel_hold_load_policy.js",
+        "allocationSites": {
+          "objectExpressions": 4,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "methods": [
+          {
+            "name": "#blockedReason",
+            "kind": "method",
+            "parameterCount": 1,
+            "allocations": {
+              "objectExpressions": 0,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "#positive",
+            "kind": "method",
+            "parameterCount": 2,
+            "allocations": {
+              "objectExpressions": 0,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "#ratio",
+            "kind": "method",
+            "parameterCount": 1,
+            "allocations": {
+              "objectExpressions": 0,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "evaluate",
+            "kind": "method",
+            "parameterCount": 1,
+            "allocations": {
+              "objectExpressions": 4,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          }
+        ],
+        "additionalMigrationAllocationSites": 0,
+        "domainTransportReads": 0,
+        "proof": "exact-classic-sha-and-export-only-ast-equality"
+      },
+      {
+        "source": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+        "allocationSites": {
+          "objectExpressions": 9,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 4,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "methods": [
+          {
+            "name": "#distanceMeters",
+            "kind": "method",
+            "parameterCount": 1,
+            "allocations": {
+              "objectExpressions": 0,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "#positive",
+            "kind": "method",
+            "parameterCount": 1,
+            "allocations": {
+              "objectExpressions": 0,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "calculate",
+            "kind": "method",
+            "parameterCount": 1,
+            "allocations": {
+              "objectExpressions": 5,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 4,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          },
+          {
+            "name": "calculateFromPositions",
+            "kind": "method",
+            "parameterCount": 1,
+            "allocations": {
+              "objectExpressions": 4,
+              "arrayExpressions": 0,
+              "newExpressions": 0,
+              "objectFreezeCalls": 0,
+              "objectAssignCalls": 0,
+              "roundingCalls": 0
+            }
+          }
+        ],
+        "additionalMigrationAllocationSites": 0,
+        "domainTransportReads": 0,
+        "proof": "exact-classic-sha-and-export-only-ast-equality"
+      }
+    ],
+    "transportReadsDuringBehaviorStateAndConsumers": 0,
+    "scope": "allocation-site-equivalence-not-heap-or-frame-time-benchmark"
+  },
+  "verdict": "eligible-for-observation-reconciliation",
+  "nextGate": "stage-3.8.7-observation-and-manifest-reconciliation"
+}

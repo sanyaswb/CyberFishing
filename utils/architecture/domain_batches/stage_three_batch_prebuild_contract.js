@@ -215,6 +215,10 @@ class StageThreeBatchPrebuildContractValidator {
     require(contract?.kind === "cyber-fishing-stage-3-prebuild-contract", "kind is invalid");
     require(contract?.status === "prebuild-open", "status must be prebuild-open");
     require(contract?.batchId === profile.batchId, "batchId differs");
+    require(contract?.sourceReleaseVersion === profile.executionProfile.sourceReleaseVersion,
+      "source release differs");
+    require(contract?.targetReleaseVersion === profile.executionProfile.targetReleaseVersion,
+      "target release differs");
     require(this.#same(contract?.lifecycle?.completedBatchIds, profile.completedPrefix), "completed prefix differs");
     require(contract?.lifecycle?.activeBatchId === profile.batchId, "active batch differs");
     require(contract?.lifecycle?.activeBatchPhase === "prebuild", "active phase differs");
@@ -236,6 +240,28 @@ class StageThreeBatchPrebuildContractValidator {
       "planned bridge identity differs");
     require(new Set(bridges.map((record) => `${record.bridge}\0${record.source}`)).size === bridges.length,
       "planned bridge consumer set is not exact");
+    require(this.#same(
+      targets.map((record) => ({
+        currentPath: record.currentPath,
+        targetPath: record.targetPath,
+      })).sort((left, right) => left.targetPath.localeCompare(right.targetPath)),
+      profile.executionProfile.expectedTargets.map((record) => ({
+        currentPath: record.currentPath,
+        targetPath: record.targetPath,
+      })).sort((left, right) => left.targetPath.localeCompare(right.targetPath)),
+    ), "planned target set differs from execution profile");
+    require(this.#same(
+      activations.map((record) => record.id).sort(),
+      [...profile.executionProfile.expectedActivationIds].sort(),
+    ), "planned activation id set differs from execution profile");
+    require(this.#same(
+      activations.map((record) => record.legacyScriptIndex).sort((left, right) => left - right),
+      [...profile.executionProfile.expectedActivationPositions].sort((left, right) => left - right),
+    ), "planned activation position set differs from execution profile");
+    require(this.#same(
+      bridges.map((record) => record.id).sort(),
+      [...profile.executionProfile.expectedBridgeIds].sort(),
+    ), "planned bridge id set differs from execution profile");
     require(contract?.locks?.runtimeCutoverAllowed === false, "prebuild must not allow runtime cutover");
     require(contract?.locks?.observationsFinal === false, "observations must remain preliminary");
     require(contract?.locks?.sourceFilesCreated === false, "prebuild must not create source files");

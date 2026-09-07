@@ -583,6 +583,8 @@ class StageOneClosureValidator {
         "Fishing Domain Primitives II",
       "stage-3.candidate-007-fishing-bb8b3939":
         "Fishing Domain State and Motion",
+      "stage-3.candidate-008-fishing-f859ccd3":
+        "Line Spool, Stroke Distance and Reel Hold",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }
@@ -975,6 +977,29 @@ class StageOneClosureValidator {
       .sort()
       .reduce((total, name) => {
         const artifact = JSON.parse(fs.readFileSync(path.join(migrationRoot, name), "utf8"));
+        if (!artifact.dependencyObservation && artifact.manifestTransition?.observations === "pending") {
+          // A cutover is not an observation approval. Its exact preliminary delta
+          // is independently guarded; no dependency facts may be invented here.
+          const { Batch008CutoverHistory } = require("../domain_batches/stage_three_batch_008_cutover_history");
+          const history = new Batch008CutoverHistory(this.projectRoot);
+          const { validateCutoverArtifact } = require("../domain_batches/stage_three_batch_008_cutover");
+          if (!history.active()) throw new Error(`Pending cutover has no active observation gate: ${name}`);
+          validateCutoverArtifact(artifact, history.json("architecture/migration/stage_3_batch_008_prebuild_contract.json"),
+            history.json("architecture/migration/stage_3_batch_008_source_build_validation.json"));
+          history.before("architecture/migration/module_migration_manifest.json");
+          const observationPath = path.join(migrationRoot, "stage_3_batch_008_observation_reconciliation.json");
+          if (fs.existsSync(observationPath)) {
+            const observation = JSON.parse(fs.readFileSync(observationPath, "utf8"));
+            const delta = observation.dependencyDelta;
+            if (observation.status !== "verified" || observation.batchId !== artifact.batchId ||
+                delta.confirmedInterFileEdgesBefore !== expectedBefore ||
+                delta.confirmedInterFileEdgesAfter !== expectedBefore ||
+                delta.newlyConfirmedEdges.length !== 0 || delta.removedEdges.length !== 0) {
+              throw new Error(`Reconciliation changed the exact confirmed-edge sequence: ${name}`);
+            }
+          }
+          return total;
+        }
         const delta = artifact?.dependencyObservation?.confirmedEdgeDelta || 0;
         if (!Number.isInteger(delta) || delta < 0) {
           throw new Error(`Stage 3 cutover confirmed-edge delta is invalid: ${name}`);

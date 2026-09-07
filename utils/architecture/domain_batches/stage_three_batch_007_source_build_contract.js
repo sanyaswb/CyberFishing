@@ -6,7 +6,7 @@ const {
 } = require("./stage_three_batch_007_candidate_build");
 const {
   BATCH_007_EXECUTION_PROFILE,
-} = require("./stage_three_batch_execution_profile");
+} = require("./stage_three_batch_007_execution_profile");
 const {
   BATCH_007_PREBUILD_PROFILE,
 } = require("./stage_three_batch_prebuild_profile");

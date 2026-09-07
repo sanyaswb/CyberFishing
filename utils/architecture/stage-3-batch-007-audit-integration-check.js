@@ -301,7 +301,7 @@ class StageThreeBatch007AuditIntegrationCheck {
   }
 
   #readBytes(relativePath) {
-    return fs.readFileSync(path.join(PROJECT_ROOT, relativePath));
+    return require("./domain_batches/stage_three_batch_008_cutover_history").historicalCutoverBytes(relativePath, fs.readFileSync(path.join(PROJECT_ROOT, relativePath)));
   }
 }
 

@@ -1,5 +1,21 @@
 # CyberFishing changelog
 
+## v0.24.45 - Line Spool, Stroke Distance and Reel Hold
+
+### Changed
+
+- Completed atomic Stage 3 batch 008: LineSpoolState, RodStrokeDistanceTracker and ReelHoldLoadPolicy are named game-domain ESM modules.
+- Extended the single cumulative graph from 31 to 34 project modules and from 32 to 35 activation contracts, with 60 exact bridge records and no isolated IIFEs.
+- Preserved the three logical activation positions (90, 94, 114), exact classic consumers, mutable state identity, hot-loop allocations, formulas, API and save format.
+- Advanced the ordered completed prefix to batches 001–008 (25 of 69 frozen Domain modules). The next task is batch 009 preflight; no runtime changes are included in release closure.
+
+### Validation
+
+- Stage 3.8.8 fresh npm ci acceptance passed Architecture 111/111, Quick 65/65 and Full 139/139; generated runtime output matched byte-for-byte.
+- Manual browser smoke was accepted from the user's overall test confirmation. No per-check console counters or numeric telemetry were supplied or inferred.
+- Preserved 424 logical positions, 426 physical classic scripts, zero module scripts, 203 registered known-debt diagnostics and zero guard failures.
+- Immutable acceptance and release-transition evidence records the exact batch-only rollback to v0.24.44; batches 001–007 remain completed.
+
 ## v0.24.44 - Fishing Domain State and Motion
 
 ### Added

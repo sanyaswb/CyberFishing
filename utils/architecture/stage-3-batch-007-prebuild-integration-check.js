@@ -151,7 +151,7 @@ class StageThreeBatch007PrebuildIntegrationCheck {
   }
 
   #bytes(relativePath) {
-    return fs.readFileSync(this.#absolute(relativePath));
+    return require("./domain_batches/stage_three_batch_008_cutover_history").historicalCutoverBytes(relativePath, fs.readFileSync(this.#absolute(relativePath)));
   }
 
   #absolute(relativePath) {

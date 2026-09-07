@@ -2,6 +2,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const architecture = require("../../architecture/module_architecture.json");
+const { historicalManifestBytes } = require("./domain_batches/stage_three_pending_target_manifest");
 const {
   PersistedDependencyGraph,
 } = require("./observation/integrity/persisted_dependency_graph");
@@ -31,7 +32,11 @@ class ObservationGraphIntegrityCorpusCheck {
 
   run() {
     const manifestBefore = fs.readFileSync(this.manifestPath, "utf8");
-    const manifest = JSON.parse(manifestBefore);
+    // Persisted graph proof covers observed nodes; the full live graph is still
+    // checked by architecture guards. Pending targets must reverse exactly.
+    const current = JSON.parse(manifestBefore);
+    const historical = JSON.parse(historicalManifestBytes(Buffer.from(manifestBefore), PROJECT_ROOT));
+    const manifest = current.modules.some((item) => item.observed.providers.status === "pending") ? historical : current;
     const first = this.#analyze(manifest);
     const second = this.#analyze(manifest);
     assert.deepEqual(second, first, "Integrity analysis must be deterministic");

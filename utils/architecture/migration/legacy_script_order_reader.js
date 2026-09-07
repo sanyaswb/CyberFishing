@@ -8,6 +8,10 @@ class LegacyScriptOrderReader {
 
   read() {
     const html = fs.readFileSync(this.indexPath, "utf8");
+    return this.parse(html);
+  }
+
+  parse(html) {
     const scriptPattern = /<script\b([^>]*)\bsrc\s*=\s*["']([^"']+)["']([^>]*)>\s*<\/script>/gi;
     const scripts = [];
     let legacyLoadOrder = 1;

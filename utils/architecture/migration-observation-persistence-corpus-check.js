@@ -2,6 +2,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const architecture = require("../../architecture/module_architecture.json");
+const { historicalManifestBytes, readPendingTargetTransition } = require("./domain_batches/stage_three_pending_target_manifest");
 const {
   SourceFileScanner,
 } = require("./migration/source_file_scanner");
@@ -76,6 +77,31 @@ class MigrationObservationPersistenceCorpusCheck {
       existingManifest: manifest,
       observationPatches: first,
     });
+    // Scan every live source. Pending persistence is permitted only for exact,
+    // approved prebuild targets; existing observations must still reconcile exactly.
+    const pendingTransition = readPendingTargetTransition(PROJECT_ROOT);
+    historicalManifestBytes(Buffer.from(manifestText), PROJECT_ROOT);
+    const pendingPaths = new Set(manifest.modules.filter((entry) => entry.observed.providers.status === "pending")
+      .map((entry) => entry.currentPath));
+    const allowedPaths = new Set((pendingTransition?.records || []).map((entry) => entry.currentPath));
+    const { Batch008CutoverHistory } = require("./domain_batches/stage_three_batch_008_cutover_history");
+    const history = new Batch008CutoverHistory(PROJECT_ROOT);
+    if (history.active()) {
+      for (const item of history.json("architecture/migration/stage_3_batch_008_source_build_validation.json").sources) {
+        allowedPaths.add(item.currentPath);
+      }
+    }
+    const { OUTPUT: observationEvidence } = require("./domain_batches/stage_three_batch_008_observation_transition");
+    if (fs.existsSync(path.join(PROJECT_ROOT, observationEvidence))) {
+      // The exact transition was validated above. After persistence no pending
+      // substitution is permitted: compare every live fact in every source.
+      allowedPaths.clear();
+    }
+    assert.deepEqual([...pendingPaths].sort(), [...allowedPaths].sort(), "Unexpected pending observation scope");
+    const pendingByPath = new Map(manifest.modules.filter((entry) => pendingPaths.has(entry.currentPath))
+      .map((entry) => [entry.currentPath, entry]));
+    reconciled.modules = reconciled.modules.map((entry) => pendingPaths.has(entry.currentPath)
+      ? structuredClone(pendingByPath.get(entry.currentPath)) : entry);
     const expectedText = `${JSON.stringify(reconciled, null, 2)}\n`;
     assert.equal(
       manifestText,
@@ -95,9 +121,10 @@ class MigrationObservationPersistenceCorpusCheck {
       stats.consumers,
       "Every persisted consumer requires exactly one resolution result",
     );
-    assert.equal(stats.pendingGroups, 0, "Persisted observations cannot be pending");
+    assert.equal(stats.pendingGroups, pendingPaths.size * 4,
+      "Only exact approved prebuild target observation groups may remain pending");
     console.log(
-      "Migration observation persistence corpus passed: " +
+      `Migration observation persistence corpus passed (${pendingPaths.size} exact pending modules; full live scan): ` +
         `${stats.modules} modules, ${stats.providers} providers, ` +
         `${stats.consumers} consumers, ${stats.confirmed} confirmed, ` +
         `${stats.unresolved} unresolved, ${stats.ambiguous} ambiguous, ` +

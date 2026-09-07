@@ -27,6 +27,7 @@ const { StageThreeBatch007ObservationReconciliation, StageThreeBatch007Reconcili
 const { StageThreeBatch007FallbackProbe, FALLBACK_SOURCE } = require("./domain_batches/stage_three_batch_007_fallback_probe");
 const { manifestBytes, sha256, verifyBatch007ManifestEvidence } = require("./domain_batches/stage_three_batch_007_manifest_transition");
 const { BATCH_007_PREBUILD_PROFILE: PROFILE } = require("./domain_batches/stage_three_batch_prebuild_profile");
+const { historicalManifestBytes } = require("./domain_batches/stage_three_pending_target_manifest");
 const {
   StageThreeBatch007LifecycleTransition,
 } = require("./domain_batches/stage_three_batch_007_lifecycle_transition");
@@ -56,6 +57,7 @@ class StageThreeBatch007ObservationApplication {
   prepare() {
     const data = Object.fromEntries(Object.entries(PATHS).filter(([key]) => key !== "output")
       .map(([key, relative]) => [key, this.json(relative)]));
+    data.manifest = JSON.parse(historicalManifestBytes(this.bytes(PATHS.manifest), this.root));
     const lifecycle = new StageThreeBatch007LifecycleTransition();
     const before = this.protectedSnapshot();
     for (const artifact of [data.cutover, data.live]) {
@@ -78,12 +80,13 @@ class StageThreeBatch007ObservationApplication {
     const policy = ArchitecturePolicy.load(this.absolute(PATHS.policy));
     const contract = policy.observationContract;
     const sourceFiles = new SourceFileScanner({ projectRoot: this.root,
-      sourceRoot: this.absolute("src") }).scan();
+      sourceRoot: this.absolute("src") }).scan().filter((source) =>
+      data.manifest.modules.some((entry) => entry.currentPath === source.currentPath));
     const legacyScripts = new LegacyScriptOrderReader(this.absolute("index.html"), {
       scriptAliases: new StageTwoRuntimeScriptAliasResolver().loadProject(this.root),
     }).read();
     const patches = new MigrationObservationSnapshotBuilder({
-      sourceReader: (absolute) => fs.readFileSync(absolute, "utf8"),
+      sourceReader: (absolute) => this.bytes(path.relative(this.root, absolute).replaceAll("\\", "/")).toString("utf8"),
       providerScanner: new LegacySymbolProviderScannerFactory().create(contract),
       consumerScanner: new LegacyExternalConsumerScannerFactory().create(contract),
       dependencyAnalyzer: new LegacyDependencyGraphAnalyzerFactory().create(contract.resolutionModel),
@@ -138,7 +141,7 @@ class StageThreeBatch007ObservationApplication {
   check() {
     const before = this.protectedSnapshot({ includeManifest: true, includeArtifact: true });
     const expected = this.prepare();
-    assert.deepEqual(this.bytes(PATHS.manifest), manifestBytes(expected.manifest));
+    assert.deepEqual(historicalManifestBytes(this.bytes(PATHS.manifest), this.root), manifestBytes(expected.manifest));
     const artifact = this.json(PATHS.output);
     const historicalExpected = structuredClone(expected.artifact);
     // Stage 3.7.7 evidence remains immutable. The manifest transition validator
@@ -171,6 +174,8 @@ class StageThreeBatch007ObservationApplication {
   }
 
   write({ failureInjector = null } = {}) {
+    assert.deepEqual(historicalManifestBytes(this.bytes(PATHS.manifest), this.root), this.bytes(PATHS.manifest),
+      "Historical batch-007 observation replay is read-only while a later pending target delta exists");
     const before = this.protectedSnapshot();
     const result = this.prepare();
     new ControlledMetadataTransaction({ projectRoot: this.root, failureInjector }).commit([
@@ -230,7 +235,7 @@ class StageThreeBatch007ObservationApplication {
 
   evidence(relative) { return { path: relative, sha256: sha256(this.bytes(relative)) }; }
   json(relative) { return JSON.parse(this.bytes(relative)); }
-  bytes(relative) { return fs.readFileSync(this.absolute(relative)); }
+  bytes(relative) { return require("./domain_batches/stage_three_batch_008_cutover_history").historicalCutoverBytes(relative, fs.readFileSync(this.absolute(relative)), this.root); }
   absolute(relative) {
     assert(!path.isAbsolute(relative) && !relative.includes("\\") &&
       !relative.split("/").some((part) => ["", ".", ".."].includes(part)), "invalid project-relative path");

@@ -44,7 +44,8 @@ class StageThreeDomainTopologyCorpusCheck {
     const before = this.contentSnapshot.capture();
     const manifestBytes = fs.readFileSync(paths.manifest, "utf8");
     const auditBytes = fs.readFileSync(paths.audit, "utf8");
-    const manifest = JSON.parse(manifestBytes);
+    const { historicalManifestBytes } = require("./domain_batches/stage_three_pending_target_manifest");
+    const manifest = JSON.parse(historicalManifestBytes(Buffer.from(manifestBytes), PROJECT_ROOT));
     const audit = JSON.parse(auditBytes);
     const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
     const snapshot = new ArchitectureGuardSnapshotBuilder({

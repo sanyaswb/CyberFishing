@@ -3,8 +3,13 @@
 const { immutableRecord } = require("../guards/core/guard_models");
 const {
   BATCH_006_EXECUTION_PROFILE,
+} = require("./stage_three_batch_006_execution_profile");
+const {
   BATCH_007_EXECUTION_PROFILE,
-} = require("./stage_three_batch_execution_profile");
+} = require("./stage_three_batch_007_execution_profile");
+const {
+  BATCH_008_EXECUTION_PROFILE,
+} = require("./stage_three_batch_008_execution_profile");
 
 const COMPLETED_005 = Object.freeze([
   "stage-3.candidate-001-inventory-85f44b2e",
@@ -17,6 +22,11 @@ const COMPLETED_005 = Object.freeze([
 const COMPLETED_006 = Object.freeze([
   ...COMPLETED_005,
   BATCH_006_EXECUTION_PROFILE.batchId,
+]);
+
+const COMPLETED_007 = Object.freeze([
+  ...COMPLETED_006,
+  BATCH_007_EXECUTION_PROFILE.batchId,
 ]);
 
 class StageThreeBatchPrebuildProfile {
@@ -104,8 +114,27 @@ const BATCH_007_PREBUILD_PROFILE = new StageThreeBatchPrebuildProfile({
   verdict: "eligible-for-target-source-and-build-validation",
 }).value;
 
+const BATCH_008_PREBUILD_PROFILE = new StageThreeBatchPrebuildProfile({
+  schemaVersion: 1,
+  contractSchemaVersion: 2,
+  stageLabel: "Stage 3.8.3",
+  batchId: BATCH_008_EXECUTION_PROFILE.batchId,
+  completedPrefix: COMPLETED_007,
+  executionProfile: BATCH_008_EXECUTION_PROFILE,
+  artifactPath: "architecture/migration/stage_3_batch_008_prebuild_contract.json",
+  planningStorage: "prebuild-contract-only",
+  topology: {
+    active: { modules: 31, activations: 32, bridges: 57 },
+    delta: { modules: 3, activations: 3, bridges: 3 },
+    planned: { modules: 34, activations: 35, bridges: 60 },
+  },
+  unlockCondition: "stage-3.8.4-target-source-and-build-validation",
+  verdict: "eligible-for-target-source-and-build-validation",
+}).value;
+
 module.exports = {
   BATCH_006_PREBUILD_PROFILE,
   BATCH_007_PREBUILD_PROFILE,
+  BATCH_008_PREBUILD_PROFILE,
   StageThreeBatchPrebuildProfile,
 };

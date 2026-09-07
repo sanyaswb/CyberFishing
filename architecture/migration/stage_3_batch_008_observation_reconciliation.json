@@ -1,0 +1,590 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-008-observation-reconciliation",
+  "status": "verified",
+  "batchId": "stage-3.candidate-008-fishing-f859ccd3",
+  "releaseVersion": "0.24.44",
+  "evidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_008_prebuild_contract.json",
+      "sha256": "47643f3b06281b34fb7023ce822ca458631e8fee12c43daa35da90482c7ba905"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_runtime_cutover.json",
+      "sha256": "66f87cd12d619e31035a9544ca3e7ddef6723b7f791f69300e1930146e75fdd8"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_live_runtime_validation.json",
+      "sha256": "0b47c3decdb1b95b317560e11b497be3f49fc4c01eeabda14117ca84601fae90"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_audit.json",
+      "sha256": "a094280ee96a182f2e26cae1aabcdfe622abe4b89195295bffd980766aac4c6a"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "702b7dd64b67375c1947a24f9a738edf303b4ac8395fd440670ec885563fef8d"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "5e17acf766b8254e1481514faff27ece5da0294dda67eb7f17ff3d27b6388064"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "8c54a8cff782914adb614cc6a5c2cabd3da3b1b34ecc5a76d76d6eaf22b0c254"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "sha256": "77b621365ec53ef0dd0e7bbcb607a8065ef5f61e3efd75716b010f5039744c0a"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "sha256": "890a38291597c17937915407e99b70185192f55588e3d3deea5fe741b1237aba"
+    },
+    {
+      "path": "architecture/module_architecture.json",
+      "sha256": "563423746bc86a99ced7bd0ffeb14e20ef4c62021c2c839c069225ec77cf79d6"
+    }
+  ],
+  "manifestTransition": {
+    "beforeSha256": "0b8160380952e942899e8a56030f0f25912116098dbf456ec4886425fb7054c2",
+    "afterSha256": "94d1b346b36c8a6ac4c85549a2034df516f12aa101c4c13817a479ca501daef9",
+    "records": [
+      {
+        "currentPath": "src/core/fishing/reel_hold_load_policy.js",
+        "before": {
+          "currentPath": "src/core/fishing/reel_hold_load_policy.js",
+          "currentArea": "core/fishing",
+          "observed": {
+            "legacyLoadOrder": 114,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/reel_hold_load_policy.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "af1475517bcfe5a8ec18bb30666bca5ebecbb8544c864b38ed3ece6610e8c72e"
+      },
+      {
+        "currentPath": "src/core/fishing/rod_stroke_distance_tracker.js",
+        "before": {
+          "currentPath": "src/core/fishing/rod_stroke_distance_tracker.js",
+          "currentArea": "core/fishing",
+          "observed": {
+            "legacyLoadOrder": 94,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "374102ffcc0c188d4060cc33c70f6b2fa6e40ce473296bb8becbd581d4d9735f"
+      },
+      {
+        "currentPath": "src/core/line/line_spool_state.js",
+        "before": {
+          "currentPath": "src/core/line/line_spool_state.js",
+          "currentArea": "core/line",
+          "observed": {
+            "legacyLoadOrder": 90,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/line_spool_state.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "d9b98305facc3af42b6a32190a4e8c1febce84a5db43228de658f3456e0d26f0"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/line_spool_state.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/line_spool_state.js",
+          "currentArea": "game/domain/fishing",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/line_spool_state.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "16481874119f5e10728ea86e2c0f63e650adccf2fd7c0f7cfbe2b410ad48747b"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/reel_hold_load_policy.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/reel_hold_load_policy.js",
+          "currentArea": "game/domain/fishing",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/reel_hold_load_policy.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "3f874ec223ab0c9f24b0e988f82273f90d6add32005a91b4c199a4267d8def12"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+          "currentArea": "game/domain/fishing",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "84d3814ecfcdf5be448f5c338daaf96699c7f1c501c6ead4911cef106790f26b"
+      }
+    ]
+  },
+  "totals": {
+    "modules": 458,
+    "providers": 856,
+    "consumers": 926,
+    "confirmed": 893,
+    "unresolved": 33,
+    "ambiguous": 0,
+    "edges": 772
+  },
+  "esm": [
+    {
+      "source": "src/game/domain/fishing/line_spool_state.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Math",
+        "Number"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/fishing/reel_hold_load_policy.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Math",
+        "Number"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Math",
+        "NaN",
+        "Number",
+        "Object"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    }
+  ],
+  "controlledGlobalTransitions": [
+    {
+      "source": "src/core/fishing/reel_hold_load_policy.js",
+      "target": "src/game/domain/fishing/reel_hold_load_policy.js",
+      "symbol": "ReelHoldLoadPolicy",
+      "activationId": "activation-4d4619b15e3c",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/line/line_spool_state.js",
+      "target": "src/game/domain/fishing/line_spool_state.js",
+      "symbol": "LineSpoolState",
+      "activationId": "activation-7f67db779ead",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/fishing/rod_stroke_distance_tracker.js",
+      "target": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "symbol": "RodStrokeDistanceTracker",
+      "activationId": "activation-868e1186ae29",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    }
+  ],
+  "derivedIncomingConsumers": [
+    {
+      "source": "src/core/fishing/reel_hold_recovery_system.js",
+      "symbol": "ReelHoldLoadPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/reel_hold_load_policy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "symbol": "RodStrokeDistanceTracker",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/rod_stroke_distance_tracker.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/line_system.js",
+      "symbol": "LineSpoolState",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/line/line_spool_state.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "guardedConsumers": [
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "symbol": "RodStrokeDistanceTracker",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/rod_stroke_distance_tracker.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "additionalConsumers": [],
+  "dependencyDelta": {
+    "confirmedInterFileEdgesBefore": 772,
+    "confirmedInterFileEdgesAfter": 772,
+    "newlyConfirmedEdges": [],
+    "removedEdges": []
+  },
+  "transportUnresolved": {
+    "count": 3,
+    "classification": "compatibility-transport-outside-src-project-graph",
+    "createsProjectDependencyEdge": false
+  },
+  "removalDependencies": [
+    {
+      "activationId": "activation-4d4619b15e3c",
+      "source": "src/core/fishing/reel_hold_load_policy.js",
+      "owner": "stage-3.candidate-008-fishing-f859ccd3",
+      "removalStage": "stage-3",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-7f67db779ead",
+      "source": "src/core/line/line_spool_state.js",
+      "owner": "stage-3.candidate-008-fishing-f859ccd3",
+      "removalStage": "stage-3",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-868e1186ae29",
+      "source": "src/core/fishing/rod_stroke_distance_tracker.js",
+      "owner": "stage-3.candidate-008-fishing-f859ccd3",
+      "removalStage": "stage-4",
+      "newBridgeApproved": false
+    }
+  ],
+  "graph": {
+    "modules": 458,
+    "consumers": 926,
+    "confirmed": 893,
+    "selfConfirmed": 3,
+    "unresolved": 33,
+    "ambiguous": 0,
+    "edges": 772,
+    "reverseLinks": 772,
+    "targetsWithConsumers": 415,
+    "reverseConsumers": "derived-only",
+    "unifiedEdges": 806
+  },
+  "guards": {
+    "failureCount": 0,
+    "knownDebtCount": 203,
+    "diagnosticsSha256": "b873636997b71ef8d67c46123a4ee58c1993e050be2fad36e9d44d66b6bb0ba6",
+    "baselineGlobals": 855
+  },
+  "metadataTransition": {
+    "field": "architecture.migrationStatus",
+    "from": "migrating",
+    "to": "verified",
+    "targets": [
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js"
+    ]
+  },
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939"
+    ],
+    "activeBatchId": "stage-3.candidate-008-fishing-f859ccd3",
+    "activeBatchPhase": "runtime-active",
+    "batchCompleted": false
+  },
+  "releaseClosureAuthorized": false,
+  "verdict": "eligible-for-full-acceptance",
+  "nextGate": "stage-3.8.8-full-acceptance-and-browser-smoke"
+}

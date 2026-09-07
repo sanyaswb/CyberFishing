@@ -7,6 +7,13 @@ const {
   StageThreeBatchFocusedTestMatrixBuilder,
   StageThreeBatchFocusedTestMatrixValidator,
 } = require("./domain_batches/stage_three_batch_focused_test_matrix");
+const {
+  BATCH_006_EXECUTION_PROFILE,
+} = require("./domain_batches/stage_three_batch_006_execution_profile");
+const {
+  BATCH_006_BEHAVIOR_CASES,
+  BATCH_006_COMPATIBILITY_CASES,
+} = require("./domain_batches/stage_three_batch_006_focused_test_catalog");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const PATHS = Object.freeze({
@@ -18,14 +25,23 @@ function absolute(relativePath) {
   return path.join(PROJECT_ROOT, relativePath);
 }
 
+function matrixDependencies() {
+  return {
+    profile: BATCH_006_EXECUTION_PROFILE,
+    behaviorCases: BATCH_006_BEHAVIOR_CASES,
+    compatibilityCases: BATCH_006_COMPATIBILITY_CASES,
+  };
+}
+
 function buildMatrix() {
   const planBytes = fs.readFileSync(absolute(PATHS.executionPlan));
   const executionPlan = JSON.parse(planBytes.toString("utf8"));
-  const matrix = new StageThreeBatchFocusedTestMatrixBuilder().build({
+  const dependencies = matrixDependencies();
+  const matrix = new StageThreeBatchFocusedTestMatrixBuilder(dependencies).build({
     executionPlan,
     executionPlanSha256: crypto.createHash("sha256").update(planBytes).digest("hex"),
   });
-  new StageThreeBatchFocusedTestMatrixValidator().validate(matrix);
+  new StageThreeBatchFocusedTestMatrixValidator(dependencies).validate(matrix);
   return matrix;
 }
 
@@ -46,4 +62,4 @@ if (require.main === module) {
   );
 }
 
-module.exports = { PATHS, buildMatrix, serialize, writeMatrix };
+module.exports = { PATHS, buildMatrix, matrixDependencies, serialize, writeMatrix };

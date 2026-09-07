@@ -2,79 +2,78 @@
 
 const { immutableRecord } = require("../guards/core/guard_models");
 const {
-  BATCH_006_EXECUTION_PROFILE,
+  StageThreeBatchExecutionProfile,
 } = require("./stage_three_batch_execution_profile");
 
-const BEHAVIOR_CASES = Object.freeze({
-  FloatTackleLineBudgetPolicy: Object.freeze([
-    "float-and-pole-applicability",
-    "selected-depth-clamp",
-    "surface-depth-tolerance",
-    "line-and-rod-budget",
-    "non-float-fallback",
-    "constructor-injected-config",
-  ]),
-  HoldOppositionResolver: Object.freeze([
-    "positive-and-negative-opposition",
-    "zero-force-input",
-    "ratio-boundaries",
-    "invalid-numeric-inputs",
-  ]),
-  RodControlTensionModeResolver: Object.freeze([
-    "same-opposite-and-side-modes",
-    "minimum-fish-speed",
-    "alignment-thresholds",
-    "normalized-control-axis",
-    "frozen-result-semantics",
-  ]),
-  LineConstraintStateResolver: Object.freeze([
-    "taut-and-slack-line",
-    "line-reserve",
-    "drag-payout",
-    "hard-spool-limit",
-    "blocked-reasons",
-    "epsilon-boundaries",
-  ]),
-  PoleFightSectorGeometry: Object.freeze([
-    "sector-construction",
-    "angle-and-radius-calculations",
-    "contains-violation-and-point-at",
-    "invalid-points",
-    "per-instance-reusable-frame-identity",
-    "no-module-global-frame",
-  ]),
-  LandingLiftTensionCalculator: Object.freeze([
-    "lift-gain-and-release",
-    "landing-zone-gate",
-    "tackle-load-slowdown",
-    "clamp-and-fallback-semantics",
-    "frozen-result",
-    "delta-time-behavior",
-  ]),
-});
+class StageThreeBatchFocusedInputs {
+  constructor(input) {
+    if (!input || typeof input !== "object") {
+      throw new Error("Stage 3 focused matrix requires profile, behaviorCases and compatibilityCases");
+    }
+    const profile = StageThreeBatchExecutionProfile.validateImmutable(input.profile);
+    this.#requireImmutable(input.behaviorCases, "behaviorCases");
+    this.#requireImmutable(input.compatibilityCases, "compatibilityCases");
+    if (Array.isArray(input.behaviorCases) || typeof input.behaviorCases !== "object") {
+      throw new Error("Stage 3 focused matrix behaviorCases must be an immutable record");
+    }
+    if (!Array.isArray(input.compatibilityCases)) {
+      throw new Error("Stage 3 focused matrix compatibilityCases must be an immutable array");
+    }
+    const expectedExports = profile.expectedTargets
+      .flatMap((target) => target.exports)
+      .sort();
+    const behaviorExports = Object.keys(input.behaviorCases).sort();
+    if (JSON.stringify(behaviorExports) !== JSON.stringify(expectedExports)) {
+      throw new Error("Stage 3 focused matrix behaviorCases must cover the exact profile exports");
+    }
+    for (const [exportName, cases] of Object.entries(input.behaviorCases)) {
+      if (!Array.isArray(cases) || cases.length === 0 ||
+        cases.some((item) => typeof item !== "string" || item.length === 0) ||
+        new Set(cases).size !== cases.length) {
+        throw new Error(`Stage 3 focused matrix behaviorCases are invalid: ${exportName}`);
+      }
+    }
+    if (input.compatibilityCases.length === 0 ||
+      input.compatibilityCases.some((item) => typeof item !== "string" || item.length === 0) ||
+      new Set(input.compatibilityCases).size !== input.compatibilityCases.length) {
+      throw new Error("Stage 3 focused matrix compatibilityCases are invalid");
+    }
+    this.value = Object.freeze({
+      profile,
+      behaviorCases: input.behaviorCases,
+      compatibilityCases: input.compatibilityCases,
+    });
+  }
 
-const COMPATIBILITY_CASES = Object.freeze([
-  "globals-absent-before-activation",
-  "globals-equal-exact-export-after-activation",
-  "module-evaluation-count-equals-one",
-  "class-identity-preserved",
-  "seven-classic-consumers-retain-api",
-  "domain-does-not-read-transport-global",
-]);
+  #requireImmutable(value, label, seen = new Set()) {
+    if (!value || typeof value !== "object" || !Object.isFrozen(value)) {
+      throw new Error(`Stage 3 focused matrix ${label} is required and must be deeply immutable`);
+    }
+    if (seen.has(value)) return;
+    seen.add(value);
+    for (const item of Object.values(value)) this.#requireNestedImmutable(item, label, seen);
+  }
+
+  #requireNestedImmutable(value, label, seen) {
+    if (!value || typeof value !== "object" || seen.has(value)) return;
+    if (!Object.isFrozen(value)) {
+      throw new Error(`Stage 3 focused matrix ${label} must be deeply immutable`);
+    }
+    seen.add(value);
+    for (const item of Object.values(value)) this.#requireNestedImmutable(item, label, seen);
+  }
+}
 
 class StageThreeBatchFocusedTestMatrixBuilder {
   #profile;
   #behaviorCases;
   #compatibilityCases;
 
-  constructor({
-    profile = BATCH_006_EXECUTION_PROFILE,
-    behaviorCases = BEHAVIOR_CASES,
-    compatibilityCases = COMPATIBILITY_CASES,
-  } = {}) {
-    this.#profile = profile;
-    this.#behaviorCases = behaviorCases;
-    this.#compatibilityCases = compatibilityCases;
+  constructor(input) {
+    const resolved = new StageThreeBatchFocusedInputs(input).value;
+    this.#profile = resolved.profile;
+    this.#behaviorCases = resolved.behaviorCases;
+    this.#compatibilityCases = resolved.compatibilityCases;
   }
 
   build({ executionPlan, executionPlanSha256 }) {
@@ -177,14 +176,11 @@ class StageThreeBatchFocusedTestMatrixValidator {
   #behaviorCases;
   #compatibilityCases;
 
-  constructor({
-    profile = BATCH_006_EXECUTION_PROFILE,
-    behaviorCases = BEHAVIOR_CASES,
-    compatibilityCases = COMPATIBILITY_CASES,
-  } = {}) {
-    this.#profile = profile;
-    this.#behaviorCases = behaviorCases;
-    this.#compatibilityCases = compatibilityCases;
+  constructor(input) {
+    const resolved = new StageThreeBatchFocusedInputs(input).value;
+    this.#profile = resolved.profile;
+    this.#behaviorCases = resolved.behaviorCases;
+    this.#compatibilityCases = resolved.compatibilityCases;
   }
 
   validate(matrix) {
@@ -203,6 +199,10 @@ class StageThreeBatchFocusedTestMatrixValidator {
     require(matrix?.kind === "cyber-fishing-stage-3-focused-test-matrix", "kind is invalid");
     require(matrix?.status === "verified", "status must be verified");
     require(matrix?.batchId === profile.batchId, "batchId is invalid");
+    require(matrix?.sourceReleaseVersion === profile.sourceReleaseVersion, "source release differs");
+    require(matrix?.targetReleaseVersion === profile.targetReleaseVersion, "target release differs");
+    require(matrix?.sourceExecutionPlan?.path === profile.executionPlanPath,
+      "execution-plan path differs");
     require(/^[a-f0-9]{64}$/.test(matrix?.sourceExecutionPlan?.sha256), "execution-plan fingerprint is invalid");
     require(matrix?.scope?.moduleCount === profile.expectedTargetCount, "module coverage differs from profile");
     require(matrix?.scope?.exportCount === profile.expectedExportCount, "export coverage differs from profile");
@@ -218,11 +218,22 @@ class StageThreeBatchFocusedTestMatrixValidator {
     );
     require(matrix?.behaviorCases?.every((record) =>
       this.#same(record.phases, profile.behaviorPhases) &&
-      record.requiredOutcome === "observable-result-equivalent"), "behavior phase contract differs");
+      record.requiredOutcome === "observable-result-equivalent" &&
+      /^[a-f0-9]{64}$/u.test(record.baselineSourceSha256) &&
+      profile.expectedTargets.some((target) =>
+        target.currentPath === record.currentPath &&
+        target.targetPath === record.targetPath &&
+        target.exports.includes(record.exportName))), "behavior phase/source contract differs");
     require(matrix?.compatibilityCases?.every((record) =>
       this.#same(record.phases, profile.compatibilityPhases) &&
       record.requiredOutcome === "exact-contract-pass"), "compatibility phase contract differs");
-    require(matrix?.coverage?.length === profile.expectedExportCount, "coverage records must include every export");
+    const expectedCoverage = Object.entries(this.#behaviorCases).map(([exportName, cases]) => ({
+      exportName,
+      caseCount: cases.length,
+      cases: [...cases],
+    })).sort((left, right) => left.exportName.localeCompare(right.exportName));
+    require(this.#same(matrix?.coverage, expectedCoverage),
+      "coverage records must include every exact export case");
     require(matrix?.identityContract?.moduleEvaluationCount === 1, "evaluation count must be one");
     require(matrix?.identityContract?.exactExportReference === true, "exact export reference is required");
     require(matrix?.identityContract?.globalAbsentBeforeActivation === true, "pre-activation absence is required");
@@ -234,6 +245,23 @@ class StageThreeBatchFocusedTestMatrixValidator {
     if (profile.includeDetailedStatePerformanceGates) {
       require(matrix?.statePerformanceContract?.modules?.length === profile.expectedTargetCount,
         "state/performance module coverage differs");
+      require(matrix?.statePerformanceContract?.modules?.every((record) =>
+        record.authoritativeOwnerPreserved === true &&
+        record.duplicateStateCopies === "forbidden" &&
+        record.formulasApiDefaultsAndResultShapes === "unchanged" &&
+        record.authoritativeOwnerBefore?.module === record.module &&
+        record.authoritativeOwnerAfter?.module !== record.module &&
+        Array.isArray(record.publicStateShape) &&
+        (Array.isArray(record.snapshotShape) || Array.isArray(record.resultShape)) &&
+        typeof record.stableResultIdentity === "boolean" &&
+        typeof record.mutatesCallerInputs === "boolean" &&
+        /^[a-f0-9]{64}$/u.test(record.behaviorFingerprint) &&
+        record.allocationBaseline &&
+        record.additionalMigrationAllocationsAllowed === 0 &&
+        record.transportLookupsAllowed === 0 &&
+        record.representationComparison ===
+          "target-ast-after-removing-export-must-equal-frozen-source-ast"),
+      "state/performance module contract differs");
       require(matrix?.statePerformanceContract?.additionalMigrationAllocationsAllowed === 0,
         "additional allocation budget must be zero");
       require(matrix?.statePerformanceContract?.transportLookupsAllowed === 0,
@@ -267,8 +295,7 @@ class StageThreeBatchFocusedTestMatrixValidator {
 }
 
 module.exports = {
-  BEHAVIOR_CASES,
-  COMPATIBILITY_CASES,
+  StageThreeBatchFocusedInputs,
   StageThreeBatchFocusedTestMatrixBuilder,
   StageThreeBatchFocusedTestMatrixValidator,
 };

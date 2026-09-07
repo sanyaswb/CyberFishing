@@ -5,7 +5,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const {
   BATCH_007_EXECUTION_PROFILE,
-} = require("./domain_batches/stage_three_batch_execution_profile");
+} = require("./domain_batches/stage_three_batch_007_execution_profile");
 const {
   StageThreeBatchExecutionPlanValidator,
 } = require("./domain_batches/stage_three_batch_execution_plan");

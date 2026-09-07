@@ -4,7 +4,10 @@ const assert = require("node:assert/strict");
 const {
   StageThreeBatchFocusedTestMatrixValidator,
 } = require("./domain_batches/stage_three_batch_focused_test_matrix");
-const { buildMatrix } = require("./generate-stage-3-batch-006-test-matrix");
+const {
+  buildMatrix,
+  matrixDependencies,
+} = require("./generate-stage-3-batch-006-test-matrix");
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -13,7 +16,7 @@ function clone(value) {
 class StageThreeBatch006TestMatrixFixtureCheck {
   run() {
     const valid = buildMatrix();
-    const validator = new StageThreeBatchFocusedTestMatrixValidator();
+    const validator = new StageThreeBatchFocusedTestMatrixValidator(matrixDependencies());
     assert.doesNotThrow(() => validator.validate(valid));
     this.#reject(validator, valid, (matrix) => matrix.behaviorCases.pop(), "missing behavior case");
     this.#reject(validator, valid, (matrix) => matrix.compatibilityCases.pop(), "missing compatibility case");

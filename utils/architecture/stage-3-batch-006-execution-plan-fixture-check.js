@@ -7,6 +7,9 @@ const {
   StageThreeBatchExecutionPlanValidator,
 } = require("./domain_batches/stage_three_batch_execution_plan");
 const {
+  BATCH_006_EXECUTION_PROFILE,
+} = require("./domain_batches/stage_three_batch_006_execution_profile");
+const {
   buildPlan,
 } = require("./generate-stage-3-batch-006-execution-plan");
 
@@ -16,7 +19,7 @@ function clone(value) {
 
 class StageThreeBatch006ExecutionPlanFixtureCheck {
   run() {
-    const validator = new StageThreeBatchExecutionPlanValidator();
+    const validator = new StageThreeBatchExecutionPlanValidator(BATCH_006_EXECUTION_PROFILE);
     const state = JSON.parse(fs.readFileSync(path.resolve(
       __dirname,
       "../../architecture/migration/stage_3_execution_state.json",

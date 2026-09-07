@@ -1,0 +1,220 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-release-closure",
+  "status": "verified",
+  "batchId": "stage-3.candidate-008-fishing-f859ccd3",
+  "releaseVersion": "0.24.45",
+  "previousReleaseVersion": "0.24.44",
+  "releasePublicationAllowed": true,
+  "completedBatchCount": 8,
+  "completedDomainModuleCount": 25,
+  "runtimeTopology": {
+    "projectModuleCount": 34,
+    "activationCount": 35,
+    "bridgeRecordCount": 60,
+    "physicalClassicScriptCount": 426,
+    "logicalLegacyPositionCount": 424,
+    "moduleScriptCount": 0,
+    "cumulativeRuntimeCount": 1,
+    "isolatedIifeCount": 0
+  },
+  "acceptance": {
+    "automatedEvidence": {
+      "path": "architecture/migration/stage_3_batch_008_automated_acceptance.json",
+      "sha256": "135ff135e5b5859cbfbb02eccc8731aa040a0d0493a21154c8e8c0c2d89f5161"
+    },
+    "historicalSummary": {
+      "path": "architecture/migration/stage_3_batch_008_acceptance_pass.json",
+      "sha256": "d37e9bfcf3e5fb14d46ee0a6dd37aba8df424ebce1f4e183f3fc5315e384b29f"
+    },
+    "browserProof": {
+      "path": "architecture/migration/stage_3_batch_008_browser_confirmation.json",
+      "sha256": "904857868c5c1720f11c5ebd82f49a8b2977bee974887f9dd3420780335d4645"
+    },
+    "browserGate": "passed-structured-user-confirmation"
+  },
+  "releaseTransition": {
+    "path": "architecture/migration/stage_3_batch_008_release_transition.json",
+    "sha256": "5bc78b2c55e3a95f917f6a2041ceefee575a76a8f85857a8cb6ff7af41eb5562"
+  },
+  "releaseEvidence": [
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "0bc2f2c5f3a6bbe532e2bab361c393a379f173d28795a1ca7ebed9fd36f3c65b"
+    },
+    {
+      "path": "architecture/build/package_contract.json",
+      "sha256": "bde057d9fbc9baea846565b5255f582be2abab1f270bccf05b6d3e2f6eb9bf3a"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "sha256": "77b621365ec53ef0dd0e7bbcb607a8065ef5f61e3efd75716b010f5039744c0a"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "sha256": "890a38291597c17937915407e99b70185192f55588e3d3deea5fe741b1237aba"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "8c54a8cff782914adb614cc6a5c2cabd3da3b1b34ecc5a76d76d6eaf22b0c254"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "94d1b346b36c8a6ac4c85549a2034df516f12aa101c4c13817a479ca501daef9"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_acceptance_pass.json",
+      "sha256": "d37e9bfcf3e5fb14d46ee0a6dd37aba8df424ebce1f4e183f3fc5315e384b29f"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_acceptance_verification.json",
+      "sha256": "bb53c2492537ae197c9b5df085d10a992cc6cb5b23cbc3016183b56645a6dfc8"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_automated_acceptance.json",
+      "sha256": "135ff135e5b5859cbfbb02eccc8731aa040a0d0493a21154c8e8c0c2d89f5161"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_live_runtime_validation.json",
+      "sha256": "0b47c3decdb1b95b317560e11b497be3f49fc4c01eeabda14117ca84601fae90"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_observation_reconciliation.json",
+      "sha256": "66dfe5907fa95e9974c33a7b0af15ef433a4f92f18923defb128ae66d3d0de49"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_release_regression.json",
+      "sha256": "ed08fdd9db7ad837033f78d13159e68147a58012c8e9d86c6b6650e97d11137d"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_source_build_validation.json",
+      "sha256": "46ee47a46402799461dcb7cda05c54a7de98a8740ba80b8bbb6ae4f2fc4fef96"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "5e17acf766b8254e1481514faff27ece5da0294dda67eb7f17ff3d27b6388064"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "f5bd12f009b13c1d916a89bceb54bea9e3500d32d99020bd365068b23c1c3577"
+    },
+    {
+      "path": "architecture/module_architecture.json",
+      "sha256": "563423746bc86a99ced7bd0ffeb14e20ef4c62021c2c839c069225ec77cf79d6"
+    },
+    {
+      "path": "index.html",
+      "sha256": "63cdf470caa04b5db3c38222ec59e2141f8ccaa99fbad538204bf8b6f8cb3a54"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "7e0a599101b85da7cba4baac33d1663e056f1d391e99f6c8c3fab9ad4172cb3d"
+    },
+    {
+      "path": "package.json",
+      "sha256": "d7d63261253aa8ba7903141da9ed70b8fd2f94954d16bf5830ea5d4ec7ec5d1b"
+    },
+    {
+      "path": "refactor_Task.txt",
+      "sha256": "aaf5d5f258f7837120a8447a33c2152306f1092440325f55d4c4a1835f7f9b8d"
+    },
+    {
+      "path": "src/config/project_version.js",
+      "sha256": "e20035daa0e56046d7f1ad96ee1a8b01df9881c46394618cc3e01813ff0d0451"
+    }
+  ],
+  "rollback": {
+    "atomic": true,
+    "fromRelease": "0.24.45",
+    "toRelease": "0.24.44",
+    "removeBatchId": "stage-3.candidate-008-fishing-f859ccd3",
+    "preserveCompletedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939"
+    ],
+    "restoreTopology": {
+      "projectModuleCount": 31,
+      "activationCount": 32,
+      "bridgeRecordCount": 57,
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0
+    },
+    "baselineEvidenceReference": {
+      "path": "architecture/migration/stage_3_batch_008_execution_plan.json",
+      "sha256": "0f97d3a7c00965ae12aeccf015a477596044ff0d913b87545b4c74225308cab1"
+    }
+  },
+  "finalRegression": {
+    "status": "passed",
+    "evidence": {
+      "path": "architecture/migration/stage_3_batch_008_release_regression.json",
+      "sha256": "ed08fdd9db7ad837033f78d13159e68147a58012c8e9d86c6b6650e97d11137d"
+    },
+    "testedClosure": {
+      "path": "architecture/migration/stage_3_batch_008_release_closure.json",
+      "sha256": "fc27e0a6d5722c16090ecbadb6de68e8e1fd8911a072d746e33eb3c2f6c4ab62",
+      "phase": "release-candidate"
+    },
+    "node": "v24.13.0",
+    "npm": "11.6.2",
+    "lockfileSha256": "7e0a599101b85da7cba4baac33d1663e056f1d391e99f6c8c3fab9ad4172cb3d",
+    "lockfileChanged": false,
+    "sourceCopy": {
+      "mode": "actual-working-tree-not-HEAD",
+      "files": 1532,
+      "sha256": "b707663a54e75dcf43589722e7519d8e0ae563c4bd5657b3543bce3a7ee082b7",
+      "sourceBytesUnchanged": true
+    },
+    "generatedRuntimeByteEquality": true,
+    "temporaryWorkspaceRemoved": true,
+    "steps": [
+      {
+        "id": "npm-ci",
+        "exitCode": 0,
+        "passedChecks": null,
+        "durationMs": 7373,
+        "stdoutSha256": "6e922da8a5232df63a20503f1a5d3bbfd28710a26e51d734a329eaedcc4cc463",
+        "stderrSha256": "48ef7f5585f4466411c62d6ebc6e8cdcc2154536defb0e3312cd486f7e1114a8"
+      },
+      {
+        "id": "cumulative-build",
+        "exitCode": 0,
+        "passedChecks": null,
+        "durationMs": 690,
+        "stdoutSha256": "bd11f892a1bafc123d3dcaeccd5c431eacb88efc7a95896f470f8818de7d3e4c",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "id": "architecture",
+        "exitCode": 0,
+        "passedChecks": 113,
+        "durationMs": 72233,
+        "stdoutSha256": "bac9c25b4395a0f0ae01e369a593e58448842ae8199dc41af75d0ab555fb0622",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "id": "quick",
+        "exitCode": 0,
+        "passedChecks": 66,
+        "durationMs": 38696,
+        "stdoutSha256": "3675da1f15c8448854d918a1b569f2db67ea2104f0862e4617fa6f97d41fe783",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "id": "full",
+        "exitCode": 0,
+        "passedChecks": 141,
+        "durationMs": 76499,
+        "stdoutSha256": "8ce6937698c2708cbff7b95ddffa16ecd35d2f53d826cb048f713b3b624b86f0",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ]
+  },
+  "nextStage": "Stage 3.9.0 — Batch 009 Preflight and Dependency/State Audit"
+}

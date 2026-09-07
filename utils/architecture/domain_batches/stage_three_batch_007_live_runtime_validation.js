@@ -20,7 +20,7 @@ const {
 } = require("./stage_three_batch_007_dependency_state_audit");
 const {
   BATCH_007_EXECUTION_PROFILE,
-} = require("./stage_three_batch_execution_profile");
+} = require("./stage_three_batch_007_execution_profile");
 const {
   BATCH_007_PREBUILD_PROFILE,
 } = require("./stage_three_batch_prebuild_profile");
@@ -338,7 +338,7 @@ class StageThreeBatch007LiveRuntimeHarness {
   }
 
   #bytes(relativePath) {
-    return fs.readFileSync(this.#absolute(relativePath));
+    return require("./stage_three_batch_008_cutover_history").historicalCutoverBytes(relativePath, fs.readFileSync(this.#absolute(relativePath)), this.projectRoot);
   }
 
   #read(relativePath) {

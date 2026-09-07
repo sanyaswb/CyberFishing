@@ -1,10 +1,10 @@
 # CyberFishing — актуальний план незавершеного модульного рефакторингу
 
 **Stage 1 closure-версія:** `v0.24.31`  
-**Поточна release-версія:** `v0.24.44`
+**Поточна release-версія:** `v0.24.45`
 **Тип робіт:** architecture / infrastructure refactoring  
 **Gameplay changes:** заборонені  
-**Поточний наступний етап:** `Stage 3.8.0 — Shared Batch Tooling Hardening and Batch 008 Preflight`
+**Поточний наступний етап:** `Stage 3.9.0 — Batch 009 Preflight and Dependency/State Audit`
 
 Цей документ містить тільки роботи, які ще не виконані.
 
@@ -60,33 +60,22 @@ src/game/application/  orchestration, не domain ownership
 
 Domain не залежить від platform, UI, Canvas, DOM, dev або raw configuration. Configuration надходить через constructor injection, factories або composition root. Domain може залежати лише від стабільних engine primitives і власних domain contracts/value objects.
 
-## Stage 3.8.0 — Shared Batch Tooling Hardening
+## Stage 3.9–3.21 — Atomic Domain Migration Batches
 
-До відкриття batch 008 прибрати batch-006 defaults із generic execution-plan і focused-matrix builders/validators. `profile`, `behaviorCases` та `compatibilityCases` мають бути обов'язковими; missing input дає `FAIL`. Historical batch-006 catalog лишається versioned input, а byte-for-byte відтворення batch-006 artifacts і всі batch-007 checks повинні зберегтися.
-
-## Stage 3.8–3.21 — Atomic Domain Migration Batches
-
-Завершено `7/21` frozen batches і `22/69` frozen domain-модулів. Наступний exact batch:
+Завершено `8/21` frozen batches і `25/69` frozen domain-модулів. Наступний exact batch:
 
 ```text
-stage-3.candidate-008-fishing-f859ccd3
+stage-3.candidate-009-fish-444e8034
 
-3 ESM files / 3 exports / 3 activations
-positions: 90, 94, 114
-prerequisites: 0
+FishAnomalyVariantResolver
+FishRarityResolver
 ```
 
-Batch 008 атомарно переносить:
+Stage 3.9.0: read-only preflight, exact dependency/state audit, approved activations/consumers і rollback boundary. Scope та порядок визначаються frozen plan; runtime migration не починається до наступних погоджених підетапів.
 
-```text
-LineSpoolState
-RodStrokeDistanceTracker
-ReelHoldLoadPolicy
-```
+Поточний accepted runtime: 34 project modules, 35 activation contracts, 60 bridge records; одна cumulative topology, жодного active batch. Особлива увага наступного аудиту: authoritative state, cached result identity та відсутність нового config/platform coupling.
 
-Frozen expectation `31 → 34` cumulative project modules derived only if recursive closure додає рівно ці три targets. Activation expectation `32 → 35`; exact bridge set складається з трьох classic consumers. Особлива увага: authoritative mutable state, object/result identity та hot-loop allocations; transport lookup у Domain заборонений.
-
-Кожен batch `008–021` проходить той самий контрольований lifecycle:
+Кожен batch `009–021` проходить той самий контрольований lifecycle:
 
 ```text
 preflight/audit

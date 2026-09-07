@@ -87,7 +87,9 @@ class StageThreeBatch007RuntimeCutoverCheck {
     this.#verifySources({ prebuild, sourceBuild, runtime, registry, manifest });
     this.#verifyScriptTopology(runtime);
     const outputBefore = this.#outputFingerprint(runtime.output.directory);
-    const report = await new StageThreeCompatibilityBuildApplication({ projectRoot: PROJECT_ROOT }).run();
+    const history = new (require("./domain_batches/stage_three_batch_008_cutover_history").Batch008CutoverHistory)(PROJECT_ROOT);
+    const report = history.active() ? history.historicalBuild().report :
+      await new StageThreeCompatibilityBuildApplication({ projectRoot: PROJECT_ROOT }).run();
     assert.equal(report.status, "built");
     assert.equal(report.moduleCount, 31);
     assert.equal(report.activationCount, 32);
@@ -99,7 +101,7 @@ class StageThreeBatch007RuntimeCutoverCheck {
       "deterministic rebuild changed validated runtime output");
     await this.#verifyFailurePreservesOutput(runtime.output.directory);
     console.log(
-      "Stage 3.7.5 runtime cutover passed: one 31-module graph, 32 exact activations, " +
+      "Stage 3.7.5 accepted cutover replay passed: historical 31-module graph, 32 exact activations, " +
       "57 bridges, six representation-only shims, exact candidate bytes and atomic output safety.",
     );
   }
@@ -180,7 +182,7 @@ class StageThreeBatch007RuntimeCutoverCheck {
 
   #json(relativePath) { return JSON.parse(this.#read(relativePath)); }
   #read(relativePath) { return this.#bytes(relativePath).toString("utf8"); }
-  #bytes(relativePath) { return fs.readFileSync(this.#absolute(relativePath)); }
+  #bytes(relativePath) { return require("./domain_batches/stage_three_batch_008_cutover_history").historicalCutoverBytes(relativePath, fs.readFileSync(this.#absolute(relativePath))); }
   #absolute(relativePath) { return path.resolve(PROJECT_ROOT, relativePath); }
   #sha256(value) { return crypto.createHash("sha256").update(value).digest("hex"); }
 }

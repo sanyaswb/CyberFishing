@@ -2,7 +2,8 @@
 
 const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
-const { BATCH_007_EXECUTION_PROFILE } = require("./stage_three_batch_execution_profile");
+const { BATCH_007_EXECUTION_PROFILE } = require("./stage_three_batch_007_execution_profile");
+const { historicalManifestBytes } = require("./stage_three_pending_target_manifest");
 
 const manifestBytes = (value) => Buffer.from(`${JSON.stringify(value, null, 2)}\n`, "utf8");
 const sha256 = (bytes) => crypto.createHash("sha256").update(bytes).digest("hex");
@@ -48,6 +49,7 @@ function reverseNormalizeAcceptanceProbe(manifest) {
 }
 
 function verifyBatch007PostHydrationManifestEvidence(bytes, historicalSha256) {
+  bytes = historicalManifestBytes(bytes);
   if (sha256(bytes) === historicalSha256) return "pre-probe";
   const manifest = JSON.parse(bytes);
   assert(manifestBytes(manifest).equals(Buffer.from(bytes)), "Manifest must retain canonical JSON bytes");
@@ -63,6 +65,7 @@ function verifyBatch007PostHydrationManifestEvidence(bytes, historicalSha256) {
 // Historical evidence is immutable. Only the exact reviewed semantic deltas may
 // be reverse-normalized, and all other bytes must reproduce its original hash.
 function verifyBatch007ManifestEvidence(bytes, historicalSha256) {
+  bytes = historicalManifestBytes(bytes);
   if (sha256(bytes) === historicalSha256) return "esm";
   const manifest = JSON.parse(bytes);
   assert(manifestBytes(manifest).equals(Buffer.from(bytes)), "Manifest must retain canonical JSON bytes");

@@ -8,6 +8,9 @@ const {
   StageThreeBatchExecutionPlanValidator,
 } = require("./domain_batches/stage_three_batch_execution_plan");
 const {
+  BATCH_006_EXECUTION_PROFILE,
+} = require("./domain_batches/stage_three_batch_006_execution_profile");
+const {
   LegacyScriptOrderReader,
 } = require("./migration/legacy_script_order_reader");
 const {
@@ -139,7 +142,7 @@ function buildPlan() {
       throw new Error(`Batch 006 target already exists before cutover: ${module.targetPath}`);
     }
   }
-  const plan = new StageThreeBatchExecutionPlanBuilder().build({
+  const plan = new StageThreeBatchExecutionPlanBuilder(BATCH_006_EXECUTION_PROFILE).build({
     audit: audit.document,
     auditSha256: audit.sha256,
     approvedPlan: approvedPlan.document,
@@ -158,7 +161,7 @@ function buildPlan() {
     }),
     rollbackEvidence: rollbackEvidence(),
   });
-  new StageThreeBatchExecutionPlanValidator().validate(plan);
+  new StageThreeBatchExecutionPlanValidator(BATCH_006_EXECUTION_PROFILE).validate(plan);
   return plan;
 }
 

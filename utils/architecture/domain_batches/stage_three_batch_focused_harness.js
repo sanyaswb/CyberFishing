@@ -44,7 +44,7 @@ class TemporaryEsmModuleFixtureBoundary {
   #root = null;
 
   async load(modules) {
-    this.#root = fs.mkdtempSync(path.join(os.tmpdir(), "cyber-fishing-stage-3-batch-007-esm-"));
+    this.#root = fs.mkdtempSync(path.join(os.tmpdir(), "cyber-fishing-stage-3-focused-esm-"));
     fs.writeFileSync(path.join(this.#root, "package.json"), '{"type":"module"}\n', "utf8");
     const loaded = new Map();
     for (const module of modules) {
@@ -77,7 +77,7 @@ class TemporaryEsmModuleFixtureBoundary {
     const resolved = path.resolve(this.#root);
     const expectedParent = path.resolve(os.tmpdir());
     if (path.dirname(resolved) !== expectedParent ||
-        !path.basename(resolved).startsWith("cyber-fishing-stage-3-batch-007-esm-")) {
+        !path.basename(resolved).startsWith("cyber-fishing-stage-3-focused-esm-")) {
       throw new Error(`Refusing to remove unverified ESM fixture directory: ${resolved}`);
     }
     fs.rmSync(resolved, { recursive: true, force: true });

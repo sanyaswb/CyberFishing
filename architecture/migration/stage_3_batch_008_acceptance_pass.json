@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-008-acceptance",
+  "stage": "3.8.8",
+  "batchId": "stage-3.candidate-008-fishing-f859ccd3",
+  "releaseVersion": "0.24.44",
+  "recordedAt": "2026-09-07T15:00:33.537Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_008_automated_acceptance.json",
+    "sha256": "135ff135e5b5859cbfbb02eccc8731aa040a0d0493a21154c8e8c0c2d89f5161",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "sourceAndRuntimeRevalidatedBeforeRecording": true,
+    "method": "Recomputed the exact tested working-tree snapshot, excluding only its subsequently generated automated acceptance record; compared every fresh-built runtime output SHA-256 with the live output.",
+    "freshInstall": "passed",
+    "architecture": { "passedChecks": 111, "failedChecks": 0 },
+    "quick": { "passedChecks": 65, "failedChecks": 0 },
+    "full": { "passedChecks": 139, "failedChecks": 0 },
+    "countSemantics": "Observed acceptance-attempt results, not policy constants. Full logs and tested source fingerprint remain in the referenced immutable automated evidence."
+  },
+  "browserSmoke": {
+    "status": "passed",
+    "performedBy": "user",
+    "evidenceType": "manual-test-summary-in-conversation",
+    "userStatement": "Поки працює все нормально після мого тесту",
+    "context": "Reply to the Stage 3.8.8 browser checklist covering boot/Canvas/inventory, cast/waiting/fight, line release/recovery, stroke gained/lost/stable, hold/load gates and console.",
+    "acceptanceBasis": "User-reported overall manual PASS in response to the supplied checklist; not an independently instrumented browser result.",
+    "perCheckResults": null,
+    "telemetryCapture": null,
+    "consoleCounts": null,
+    "limitations": "No individual check results, numeric A/B snapshots or console counts were supplied. None are inferred or copied from batch 007."
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_008_live_runtime_validation.json",
+      "sha256": "0b47c3decdb1b95b317560e11b497be3f49fc4c01eeabda14117ca84601fae90"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_008_observation_reconciliation.json",
+      "sha256": "66dfe5907fa95e9974c33a7b0af15ef433a4f92f18923defb128ae66d3d0de49"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "702b7dd64b67375c1947a24f9a738edf303b4ac8395fd440670ec885563fef8d"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "5e17acf766b8254e1481514faff27ece5da0294dda67eb7f17ff3d27b6388064"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "8c54a8cff782914adb614cc6a5c2cabd3da3b1b34ecc5a76d76d6eaf22b0c254"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "94d1b346b36c8a6ac4c85549a2034df516f12aa101c4c13817a479ca501daef9"
+    },
+    {
+      "path": "index.html",
+      "sha256": "11f17ee41f3a0a89ddba50a96be83e8bed15ce852022fd858ce5467e2a0f528c"
+    },
+    {
+      "path": "package.json",
+      "sha256": "ba5b289b3912588f7914f93cda6d28769bda17fb075b11842182083474094a2d"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "8670eca8439df97ecae8d88674307a934b6fa4fb71a04480a83d488cadfcaff8"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.candidate-008-fishing-f859ccd3",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.8.9 — Release Closure v0.24.45"
+}

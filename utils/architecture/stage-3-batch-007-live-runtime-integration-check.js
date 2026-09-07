@@ -68,7 +68,7 @@ class StageThreeBatch007LiveRuntimeIntegrationCheck {
     assert.deepEqual(this.#evidenceSnapshot(artifact), before,
       "Stage 3.7.6 integration mutated protected evidence");
     console.log(
-      "Stage 3.7.6 live-runtime integration passed: actual cumulative bundle preserves six exact " +
+      "Stage 3.7.6 accepted runtime replay passed: fingerprint-verified compiled graph preserves six exact " +
       "class/state identities, six activation timings, 54 behavior cases, nine consumers and zero " +
       "migration allocation/transport deltas; read-only.",
     );
@@ -86,7 +86,7 @@ class StageThreeBatch007LiveRuntimeIntegrationCheck {
   }
 
   #bytes(relativePath) {
-    return fs.readFileSync(path.resolve(PROJECT_ROOT, relativePath));
+    return require("./domain_batches/stage_three_batch_008_cutover_history").historicalCutoverBytes(relativePath, fs.readFileSync(path.resolve(PROJECT_ROOT, relativePath)));
   }
 
   #sha256(value) {

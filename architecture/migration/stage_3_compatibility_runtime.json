@@ -255,6 +255,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-4d4619b15e3c",
+      "owner": "stage-3.candidate-008-fishing-f859ccd3",
+      "sourceProvider": "src/core/fishing/reel_hold_load_policy.js",
+      "targetModule": "src/game/domain/fishing/reel_hold_load_policy.js",
+      "exportName": "ReelHoldLoadPolicy",
+      "legacySymbol": "ReelHoldLoadPolicy",
+      "legacyScriptIndex": 114,
+      "shimFile": "activations/114_reelholdloadpolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
       "id": "activation-4e28fdf337a3",
       "owner": "stage-3.candidate-005-fishing-45d0c7ce",
       "sourceProvider": "src/core/fishing/drag_force_calculator.js",
@@ -371,6 +383,30 @@
       "legacySymbol": "LineConstraintStateResolver",
       "legacyScriptIndex": 130,
       "shimFile": "activations/130_lineconstraintstateresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-7f67db779ead",
+      "owner": "stage-3.candidate-008-fishing-f859ccd3",
+      "sourceProvider": "src/core/line/line_spool_state.js",
+      "targetModule": "src/game/domain/fishing/line_spool_state.js",
+      "exportName": "LineSpoolState",
+      "legacySymbol": "LineSpoolState",
+      "legacyScriptIndex": 90,
+      "shimFile": "activations/090_linespoolstate.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
+      "id": "activation-868e1186ae29",
+      "owner": "stage-3.candidate-008-fishing-f859ccd3",
+      "sourceProvider": "src/core/fishing/rod_stroke_distance_tracker.js",
+      "targetModule": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "exportName": "RodStrokeDistanceTracker",
+      "legacySymbol": "RodStrokeDistanceTracker",
+      "legacyScriptIndex": 94,
+      "shimFile": "activations/094_rodstrokedistancetracker.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
     },

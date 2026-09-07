@@ -11,6 +11,9 @@ const {
 const {
   StageThreeBatchExecutionPlanValidator,
 } = require("./domain_batches/stage_three_batch_execution_plan");
+const {
+  BATCH_006_EXECUTION_PROFILE,
+} = require("./domain_batches/stage_three_batch_006_execution_profile");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
@@ -41,7 +44,7 @@ class StageThreeBatch006ExecutionPlanIntegrationCheck {
     const plan = historical
       ? JSON.parse(this.#read(PATHS.output).toString("utf8"))
       : buildPlan();
-    new StageThreeBatchExecutionPlanValidator().validate(plan);
+    new StageThreeBatchExecutionPlanValidator(BATCH_006_EXECUTION_PROFILE).validate(plan);
     if (!historical) {
       assert.deepEqual(this.#read(PATHS.output), serialize(plan));
     }

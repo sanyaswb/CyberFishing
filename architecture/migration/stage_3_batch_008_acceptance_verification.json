@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-008-acceptance-verification",
+  "stage": "3.8.8",
+  "recordedAt": "2026-09-07T15:06:45.447Z",
+  "status": "passed",
+  "acceptance": {
+    "path": "architecture/migration/stage_3_batch_008_acceptance_pass.json",
+    "sha256": "d37e9bfcf3e5fb14d46ee0a6dd37aba8df424ebce1f4e183f3fc5315e384b29f"
+  },
+  "scope": "Final acceptance record, plan heading and exact historical-heading support verified in an isolated copy of the actual working tree.",
+  "sourceCopy": {
+    "mode": "actual-working-tree-not-HEAD",
+    "files": 1523,
+    "sha256": "4783b9233205547c1a05b30f8d452081a63a1e4559ade104ef3b32699aa6a707",
+    "sourceBytesUnchanged": true
+  },
+  "sourceFingerprintScope": "Snapshot immediately before recording this supplemental verification result.",
+  "node": "v24.13.0",
+  "npm": "11.6.2",
+  "freshNpmCi": "passed",
+  "cumulativeBuild": "passed",
+  "suites": [
+    {
+      "id": "architecture",
+      "exitCode": 0,
+      "passedChecks": 111,
+      "durationMs": 65497,
+      "stdoutSha256": "b59937b1457ec5d65d934c81fb09d8d5583673277483fa359ef4d0061c28cc52"
+    },
+    {
+      "id": "quick",
+      "exitCode": 0,
+      "passedChecks": 65,
+      "durationMs": 35192,
+      "stdoutSha256": "b4a655229ad65b9d9a4af812ae7ef2463ec170073b8fac1ebcf181d115d0b47a"
+    },
+    {
+      "id": "full",
+      "exitCode": 0,
+      "passedChecks": 139,
+      "durationMs": 70423,
+      "stdoutSha256": "e9de4058bcea93bb1cfc42b93ce237d79bbc5c8400425a521f1050d888269f99"
+    }
+  ],
+  "lockfileChanged": false,
+  "runtimeOutputByteEquality": true,
+  "temporaryWorkspaceRemoved": true,
+  "gitDiffCheck": "passed",
+  "localArchitectureAttempts": {
+    "attemptCount": 2,
+    "status": "environment-filesystem-error",
+    "code": "EPERM",
+    "operation": "rename dist/stage-3-compat-runtime to dist/.stage-3-compat-runtime-previous",
+    "elevatedRetryAlsoFailed": true,
+    "resolution": "Same checks and a full fresh install/build passed in an isolated workspace; no check bypasses, permission changes or gameplay fixes were applied."
+  },
+  "lifecycleChanged": false,
+  "releaseVersion": "0.24.44",
+  "nextStage": "Stage 3.8.9 — Release Closure v0.24.45"
+}

@@ -1,0 +1,493 @@
+{
+  "schemaVersion": 2,
+  "kind": "cyber-fishing-stage-3-prebuild-contract",
+  "status": "prebuild-open",
+  "batchId": "stage-3.candidate-008-fishing-f859ccd3",
+  "sourceReleaseVersion": "0.24.44",
+  "targetReleaseVersion": "0.24.45",
+  "evidence": {
+    "audit": {
+      "path": "architecture/migration/stage_3_batch_008_audit.json",
+      "sha256": "a094280ee96a182f2e26cae1aabcdfe622abe4b89195295bffd980766aac4c6a"
+    },
+    "executionPlan": {
+      "path": "architecture/migration/stage_3_batch_008_execution_plan.json",
+      "sha256": "0f97d3a7c00965ae12aeccf015a477596044ff0d913b87545b4c74225308cab1"
+    },
+    "testMatrix": {
+      "path": "architecture/migration/stage_3_batch_008_test_matrix.json",
+      "sha256": "7a71d9cdc78dbafaececbf7d5d5bf711b2ff2cadead7df117c81fbf151e47faa"
+    },
+    "executionStateBefore": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "efdd192eb054997a7e3cf3e645ce362ad793993387db7e648d26ee9535cf4925"
+    },
+    "manifestBefore": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "8a32dc970e91aab960b1d0e24facadf5b62b2b5de76acaecc6b525e7101a5bdf"
+    },
+    "runtimeContractBefore": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "4f238a82b150266fe593735f4027429bf59af3c55b45139ce7434b3f6e55ac75"
+    },
+    "bridgeRegistryBefore": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "2372a9ccde069ab45294287fd427aa30d95cbc2f5756f565763662554ba778ef"
+    }
+  },
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939"
+    ],
+    "activeBatchId": "stage-3.candidate-008-fishing-f859ccd3",
+    "activeBatchPhase": "prebuild",
+    "compatibilityRuntimeActivated": true
+  },
+  "preliminaryMetadata": {
+    "targets": [
+      {
+        "currentPath": "src/core/line/line_spool_state.js",
+        "targetPath": "src/game/domain/fishing/line_spool_state.js",
+        "targetBoundary": "game-domain",
+        "roles": [
+          "domain-behavior"
+        ],
+        "migrationStatus": "planned",
+        "observationStatus": "pending",
+        "sourceSha256": "d2b00f29463360e2fc35b84144cbebcd4f5f0e40be6a4646776aaefeeda6e81e"
+      },
+      {
+        "currentPath": "src/core/fishing/reel_hold_load_policy.js",
+        "targetPath": "src/game/domain/fishing/reel_hold_load_policy.js",
+        "targetBoundary": "game-domain",
+        "roles": [
+          "domain-behavior"
+        ],
+        "migrationStatus": "planned",
+        "observationStatus": "pending",
+        "sourceSha256": "2809ffd535b2fbef54fb798283f981e9131c663dd393f375a18305fc6af16327"
+      },
+      {
+        "currentPath": "src/core/fishing/rod_stroke_distance_tracker.js",
+        "targetPath": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+        "targetBoundary": "game-domain",
+        "roles": [
+          "domain-behavior"
+        ],
+        "migrationStatus": "planned",
+        "observationStatus": "pending",
+        "sourceSha256": "9553e3067b90018f260bd5c9d6c10c6a17683a51d4fd7848e3f88ccafcfefc8d"
+      }
+    ],
+    "plannedActivationPositions": [
+      {
+        "id": "activation-4d4619b15e3c",
+        "owner": "stage-3.candidate-008-fishing-f859ccd3",
+        "sourceProvider": "src/core/fishing/reel_hold_load_policy.js",
+        "targetModule": "src/game/domain/fishing/reel_hold_load_policy.js",
+        "exportName": "ReelHoldLoadPolicy",
+        "legacySymbol": "ReelHoldLoadPolicy",
+        "legacyScriptIndex": 114,
+        "shimFile": "activations/114_reelholdloadpolicy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      {
+        "id": "activation-7f67db779ead",
+        "owner": "stage-3.candidate-008-fishing-f859ccd3",
+        "sourceProvider": "src/core/line/line_spool_state.js",
+        "targetModule": "src/game/domain/fishing/line_spool_state.js",
+        "exportName": "LineSpoolState",
+        "legacySymbol": "LineSpoolState",
+        "legacyScriptIndex": 90,
+        "shimFile": "activations/090_linespoolstate.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      {
+        "id": "activation-868e1186ae29",
+        "owner": "stage-3.candidate-008-fishing-f859ccd3",
+        "sourceProvider": "src/core/fishing/rod_stroke_distance_tracker.js",
+        "targetModule": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+        "exportName": "RodStrokeDistanceTracker",
+        "legacySymbol": "RodStrokeDistanceTracker",
+        "legacyScriptIndex": 94,
+        "shimFile": "activations/094_rodstrokedistancetracker.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4"
+      }
+    ],
+    "plannedBridges": [
+      {
+        "id": "bridge-19607c8ce243",
+        "bridge": "src/core/fishing/reel_hold_load_policy.js",
+        "source": "src/core/fishing/reel_hold_recovery_system.js",
+        "target": "src/game/domain/fishing/reel_hold_load_policy.js",
+        "reason": "Preserve the exact synchronous Line Spool, Rod Stroke Distance and Reel Hold Load consumer set until its approved migration stage removes the legacy symbols.",
+        "owner": "stage-3.candidate-008-fishing-f859ccd3",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ReelHoldLoadPolicy",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-3d9abab097f9",
+        "bridge": "src/core/line/line_spool_state.js",
+        "source": "src/systems/line_system.js",
+        "target": "src/game/domain/fishing/line_spool_state.js",
+        "reason": "Preserve the exact synchronous Line Spool, Rod Stroke Distance and Reel Hold Load consumer set until its approved migration stage removes the legacy symbols.",
+        "owner": "stage-3.candidate-008-fishing-f859ccd3",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "LineSpoolState",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-8b99e1c44103",
+        "bridge": "src/core/fishing/rod_stroke_distance_tracker.js",
+        "source": "src/systems/fight_physics_system.js",
+        "target": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+        "reason": "Preserve the exact synchronous Line Spool, Rod Stroke Distance and Reel Hold Load consumer set until its approved migration stage removes the legacy symbols.",
+        "owner": "stage-3.candidate-008-fishing-f859ccd3",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "RodStrokeDistanceTracker",
+            "mechanism": "global-this-property"
+          }
+        ]
+      }
+    ]
+  },
+  "planningStorage": "prebuild-contract-only",
+  "activeTopology": {
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js"
+    ],
+    "activationIds": [
+      "activation-00287f399f05",
+      "activation-2534a1bdbe18",
+      "activation-3dcbed1b3310",
+      "activation-3e0a233bf70c",
+      "activation-3fee104fb111",
+      "activation-4e28fdf337a3",
+      "activation-57add99af90d",
+      "activation-57b99d3aaf82",
+      "activation-59bd96059da6",
+      "activation-5c6e63e8ffb9",
+      "activation-6ba241908a4c",
+      "activation-75b968069153",
+      "activation-765258a53eef",
+      "activation-7678742c83cf",
+      "activation-775fb46bb6ce",
+      "activation-86e221fafb48",
+      "activation-886fb34615aa",
+      "activation-8f8220d288e5",
+      "activation-9857928fc9d0",
+      "activation-9a198b228060",
+      "activation-9c5651e4f765",
+      "activation-a63204f0676b",
+      "activation-a8e624a68a8e",
+      "activation-be4932b7b0c5",
+      "activation-bf033497a3e1",
+      "activation-ccddea60d16c",
+      "activation-ce7da074f74a",
+      "activation-da8d3f6d370f",
+      "activation-dcb3cecb345c",
+      "activation-f5eefdd6e6e2",
+      "activation-f70148ad6a58",
+      "activation-ffea5244c4bf"
+    ],
+    "bridgeIds": [
+      "bridge-0c0f9cf80110",
+      "bridge-105a8ef0c687",
+      "bridge-1975df3eebf9",
+      "bridge-1af90d9ee5a6",
+      "bridge-1cdd6e08f07e",
+      "bridge-218534519854",
+      "bridge-225041916b22",
+      "bridge-246319f5e6e2",
+      "bridge-262c43042ef7",
+      "bridge-292102f00c09",
+      "bridge-299e2a323f55",
+      "bridge-340e660ed69c",
+      "bridge-397a03218e06",
+      "bridge-451e340bf590",
+      "bridge-4c97028596c9",
+      "bridge-595a005d7c64",
+      "bridge-5d3728373ab6",
+      "bridge-60496caa95fd",
+      "bridge-63afd58b4545",
+      "bridge-6aabd924bf06",
+      "bridge-6b182910c818",
+      "bridge-6c073ecab1b3",
+      "bridge-6c8d26fe475b",
+      "bridge-6cb8d6b6b5dd",
+      "bridge-70c0e5efc338",
+      "bridge-7376f5e6b272",
+      "bridge-7b4507b87811",
+      "bridge-7bdae928832e",
+      "bridge-8654ddb73e7e",
+      "bridge-87740b3c6660",
+      "bridge-93b3ed37a13e",
+      "bridge-9538204fd8a3",
+      "bridge-9987d14a6b96",
+      "bridge-9a90ab115b6b",
+      "bridge-a5a1cd90cdd5",
+      "bridge-a976ae6fdfc5",
+      "bridge-bc3ec26d121f",
+      "bridge-c518ccc47a20",
+      "bridge-c5b20a842e06",
+      "bridge-c6c1e5eb790e",
+      "bridge-c7d38bfb778f",
+      "bridge-c88c4a3e2737",
+      "bridge-d3fd9d86467b",
+      "bridge-d88e995bce27",
+      "bridge-dcceaaf04a57",
+      "bridge-dd65f33afb4a",
+      "bridge-ddf61a64424b",
+      "bridge-e1840139830f",
+      "bridge-f20190e70bbd",
+      "bridge-f31aca4ae5d6",
+      "bridge-f6bcda55f86a",
+      "bridge-f6d56e05e037",
+      "bridge-f719db073789",
+      "bridge-f880b0a474c6",
+      "bridge-fa6a4f31f3a9",
+      "bridge-fc583dce9ac7",
+      "bridge-fd866aee9c88"
+    ],
+    "counts": {
+      "modules": 31,
+      "activations": 32,
+      "bridges": 57
+    },
+    "scriptTopology": {
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0
+    }
+  },
+  "plannedDelta": {
+    "projectModules": [
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js"
+    ],
+    "activationIds": [
+      "activation-4d4619b15e3c",
+      "activation-7f67db779ead",
+      "activation-868e1186ae29"
+    ],
+    "bridgeIds": [
+      "bridge-19607c8ce243",
+      "bridge-3d9abab097f9",
+      "bridge-8b99e1c44103"
+    ],
+    "counts": {
+      "modules": 3,
+      "activations": 3,
+      "bridges": 3
+    }
+  },
+  "plannedTopology": {
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js"
+    ],
+    "activationIds": [
+      "activation-00287f399f05",
+      "activation-2534a1bdbe18",
+      "activation-3dcbed1b3310",
+      "activation-3e0a233bf70c",
+      "activation-3fee104fb111",
+      "activation-4d4619b15e3c",
+      "activation-4e28fdf337a3",
+      "activation-57add99af90d",
+      "activation-57b99d3aaf82",
+      "activation-59bd96059da6",
+      "activation-5c6e63e8ffb9",
+      "activation-6ba241908a4c",
+      "activation-75b968069153",
+      "activation-765258a53eef",
+      "activation-7678742c83cf",
+      "activation-775fb46bb6ce",
+      "activation-7f67db779ead",
+      "activation-868e1186ae29",
+      "activation-86e221fafb48",
+      "activation-886fb34615aa",
+      "activation-8f8220d288e5",
+      "activation-9857928fc9d0",
+      "activation-9a198b228060",
+      "activation-9c5651e4f765",
+      "activation-a63204f0676b",
+      "activation-a8e624a68a8e",
+      "activation-be4932b7b0c5",
+      "activation-bf033497a3e1",
+      "activation-ccddea60d16c",
+      "activation-ce7da074f74a",
+      "activation-da8d3f6d370f",
+      "activation-dcb3cecb345c",
+      "activation-f5eefdd6e6e2",
+      "activation-f70148ad6a58",
+      "activation-ffea5244c4bf"
+    ],
+    "bridgeIds": [
+      "bridge-0c0f9cf80110",
+      "bridge-105a8ef0c687",
+      "bridge-19607c8ce243",
+      "bridge-1975df3eebf9",
+      "bridge-1af90d9ee5a6",
+      "bridge-1cdd6e08f07e",
+      "bridge-218534519854",
+      "bridge-225041916b22",
+      "bridge-246319f5e6e2",
+      "bridge-262c43042ef7",
+      "bridge-292102f00c09",
+      "bridge-299e2a323f55",
+      "bridge-340e660ed69c",
+      "bridge-397a03218e06",
+      "bridge-3d9abab097f9",
+      "bridge-451e340bf590",
+      "bridge-4c97028596c9",
+      "bridge-595a005d7c64",
+      "bridge-5d3728373ab6",
+      "bridge-60496caa95fd",
+      "bridge-63afd58b4545",
+      "bridge-6aabd924bf06",
+      "bridge-6b182910c818",
+      "bridge-6c073ecab1b3",
+      "bridge-6c8d26fe475b",
+      "bridge-6cb8d6b6b5dd",
+      "bridge-70c0e5efc338",
+      "bridge-7376f5e6b272",
+      "bridge-7b4507b87811",
+      "bridge-7bdae928832e",
+      "bridge-8654ddb73e7e",
+      "bridge-87740b3c6660",
+      "bridge-8b99e1c44103",
+      "bridge-93b3ed37a13e",
+      "bridge-9538204fd8a3",
+      "bridge-9987d14a6b96",
+      "bridge-9a90ab115b6b",
+      "bridge-a5a1cd90cdd5",
+      "bridge-a976ae6fdfc5",
+      "bridge-bc3ec26d121f",
+      "bridge-c518ccc47a20",
+      "bridge-c5b20a842e06",
+      "bridge-c6c1e5eb790e",
+      "bridge-c7d38bfb778f",
+      "bridge-c88c4a3e2737",
+      "bridge-d3fd9d86467b",
+      "bridge-d88e995bce27",
+      "bridge-dcceaaf04a57",
+      "bridge-dd65f33afb4a",
+      "bridge-ddf61a64424b",
+      "bridge-e1840139830f",
+      "bridge-f20190e70bbd",
+      "bridge-f31aca4ae5d6",
+      "bridge-f6bcda55f86a",
+      "bridge-f6d56e05e037",
+      "bridge-f719db073789",
+      "bridge-f880b0a474c6",
+      "bridge-fa6a4f31f3a9",
+      "bridge-fc583dce9ac7",
+      "bridge-fd866aee9c88"
+    ],
+    "counts": {
+      "modules": 34,
+      "activations": 35,
+      "bridges": 60
+    },
+    "targetSelection": "completed-batches-plus-active-batch-plus-promoted-stage-2-closure"
+  },
+  "locks": {
+    "sourceFilesCreated": false,
+    "sourceProvidersReplaced": false,
+    "indexChanged": false,
+    "runtimeRebuilt": false,
+    "observationsFinal": false,
+    "runtimeCutoverAllowed": false,
+    "unlockCondition": "stage-3.8.4-target-source-and-build-validation"
+  },
+  "verdict": "eligible-for-target-source-and-build-validation"
+}
