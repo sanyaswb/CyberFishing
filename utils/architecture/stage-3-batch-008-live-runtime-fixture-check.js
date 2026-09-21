@@ -13,7 +13,8 @@ const { RepresentationEquivalenceGuard } = require("./domain_batches/stage_three
 const { snapshot } = require("./stage-3-batch-008-source-build-integration-check");
 
 const root = path.resolve(__dirname, "../..");
-const read = (file) => fs.readFileSync(path.join(root, file));
+const read = (file) => new (require("./domain_batches/stage_three_batch_009_cutover_history").Batch009CutoverHistory)(root)
+  .before(file,fs.readFileSync(path.join(root,file)));
 const json = (file) => JSON.parse(read(file));
 const before = snapshot();
 const observed = new StageThreeBatch008LiveValidation(root).run();

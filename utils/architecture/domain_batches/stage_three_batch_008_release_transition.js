@@ -87,6 +87,7 @@ class StageThreeBatch008ReleaseTransition {
   }
 
   before(file, bytes = this.read(file)) {
+    bytes = require("./stage_three_batch_009_prebuild_history").beforeBatch009Prebuild(file, bytes, this.root);
     if (!RELEASE_PATHS.includes(file) || !fs.existsSync(path.join(this.root, TRANSITION))) return Buffer.from(bytes);
     const transition = this.validate(JSON.parse(this.read(TRANSITION)));
     const item = transition.records.find((record) => record.path === file);

@@ -396,6 +396,42 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "architecture"],
   },
   {
+      id: "stage-3-batch-009-cutover-fixtures",
+      title: "Stage 3.9.5–3.9.6 exact transaction rollback and live failure fixtures",
+      file: "utils/architecture/stage-3-batch-009-cutover-fixture-check.js",
+      suites: ["architecture"],
+    },
+    {
+      id: "stage-3-batch-009-live-runtime",
+      title: "Stage 3.9.5–3.9.6 actual published runtime identity, timing and state",
+      file: "utils/architecture/stage-3-batch-009-live-runtime-check.js",
+      suites: ["quick", "architecture"],
+    },
+    {
+      id: "stage-3-batch-009-source-build-fixtures",
+      title: "Stage 3.9.3–3.9.4 isolated prebuild and candidate failure fixtures",
+      file: "utils/architecture/stage-3-batch-009-source-build-fixture-check.js",
+      suites: ["architecture"],
+    },
+    {
+      id: "stage-3-batch-009-source-build",
+      title: "Stage 3.9.3–3.9.4 exact live prebuild and deterministic isolated candidate build",
+      file: "utils/architecture/stage-3-batch-009-source-build-check.js",
+      suites: ["quick", "architecture"],
+    },
+    {
+      id: "stage-3-batch-009-planning-fixtures",
+    title: "Stage 3.9.0–3.9.2 audit, execution and focused contract negative fixtures",
+    file: "utils/architecture/stage-3-batch-009-planning-fixture-check.js",
+    suites: ["architecture"],
+  },
+  {
+    id: "stage-3-batch-009-planning",
+    title: "Stage 3.9.0–3.9.2 live preflight and isolated ESM behavior/identity matrix",
+    file: "utils/architecture/stage-3-batch-009-planning-check.js",
+    suites: ["quick", "architecture"],
+  },
+  {
     id: "stage-3-batch-008-audit-fixtures",
     title: "Stage 3.8.0 batch-008 dependency/state preflight fixtures",
     file: "utils/architecture/stage-3-batch-008-audit-fixture-check.js",

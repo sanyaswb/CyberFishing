@@ -71,4 +71,5 @@ async function run() {
   console.log(`Stage 3.8.5 PASS: ${report.moduleCount}/${report.activationCount}/${artifact.topology.counts.bridges}; ` +
     `${cases} batch-007+008 behavior regressions on actual live bundle; exact shims, full topology and pending facts; release unchanged.`);
 }
-run().catch((error) => { console.error(error); process.exitCode = 1; });
+require("./domain_batches/stage_three_batch_009_historical_workspace").runHistoricalScript(ROOT,
+  "utils/architecture/stage-3-batch-008-runtime-cutover-check.js",run).catch((error) => { console.error(error); process.exitCode = 1; });

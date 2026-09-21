@@ -146,6 +146,9 @@ class StageThreeBatch008AtomicCutover {
   }
 
   async run() {
+    assert.equal(JSON.parse(fs.readFileSync(path.join(this.root, INPUT.state))).activeBatchId,
+      require("./stage_three_batch_008_execution_profile").BATCH_008_EXECUTION_PROFILE.batchId,
+      "Completed cutover replay is read-only");
     assert.equal(JSON.parse(fs.readFileSync(path.join(this.root, INPUT.state))).activeBatchPhase, "prebuild",
       "Completed cutover replay is read-only");
     const prepared = await this.prepare();

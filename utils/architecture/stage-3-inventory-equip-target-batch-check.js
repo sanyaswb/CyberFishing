@@ -169,7 +169,9 @@ class StageThreeInventoryEquipTargetBatchCheck {
     const activationPath = `${contract.output.directory}${activation.shimFile}`;
     const runtimeIndex = physical.indexOf(runtimePath);
     assert(runtimeIndex >= 0);
-    assert.equal(physical[runtimeIndex + 1], activationPath);
+    const earliest = [...contract.activationPositions].sort((a,b) => a.legacyScriptIndex-b.legacyScriptIndex || a.id.localeCompare(b.id))[0];
+    assert.equal(physical[runtimeIndex + 1], `${contract.output.directory}${earliest.shimFile}`);
+    assert(physical.indexOf(activationPath) > runtimeIndex);
     assert.equal(physical.filter((source) => source === runtimePath).length, 1);
     assert.equal(physical.some((source) => source.startsWith("dist/legacy-bridges/")), false);
     const aliases = new StageTwoRuntimeScriptAliasResolver().loadProject(

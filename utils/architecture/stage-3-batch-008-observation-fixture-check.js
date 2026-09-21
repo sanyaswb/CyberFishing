@@ -10,6 +10,7 @@ const { Batch008ObservationManifestTransition, MANIFEST, OUTPUT } = require("./d
 const { ControlledMetadataTransaction } = require("./domain_batches/controlled_metadata_transaction");
 const { canonicalBytes } = require("./domain_batches/stage_three_pending_target_manifest");
 
+function run() {
 const application = new StageThreeBatch008ObservationApplication(path.resolve(__dirname, "../.."));
 const protectedBefore = application.protectedSnapshot();
 const prepared = application.prepare();
@@ -136,3 +137,6 @@ try {
 assert.deepEqual(application.protectedSnapshot(), protectedBefore, "Fixtures changed project bytes");
 console.log(`Stage 3.8.7 fixtures PASS: ${failures} invalid input/evidence/transaction cases rejected; ` +
   "all four two-file rollback boundaries preserve exact bytes; immutable facts and frozen decisions.");
+}
+require("./domain_batches/stage_three_batch_009_historical_workspace").runHistoricalScript(path.resolve(__dirname,"../.."),
+  "utils/architecture/stage-3-batch-008-observation-fixture-check.js",run).catch(e=>{console.error(e.stack);process.exitCode=1;});

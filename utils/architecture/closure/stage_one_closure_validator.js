@@ -977,6 +977,14 @@ class StageOneClosureValidator {
       .sort()
       .reduce((total, name) => {
         const artifact = JSON.parse(fs.readFileSync(path.join(migrationRoot, name), "utf8"));
+        if (name === "stage_3_batch_009_runtime_cutover.json" && artifact.manifestTransition?.observations === "pending") {
+          const { Batch009CutoverHistory } = require("../domain_batches/stage_three_batch_009_cutover_history");
+          const history = new Batch009CutoverHistory(this.projectRoot);
+          if (!history.active()) throw new Error("Batch 009 pending cutover must remain runtime-active");
+          history.artifact();
+          history.before("architecture/migration/module_migration_manifest.json", fs.readFileSync(path.join(migrationRoot, "module_migration_manifest.json")));
+          return total; // Publication creates no authoritative observation edges.
+        }
         if (!artifact.dependencyObservation && artifact.manifestTransition?.observations === "pending") {
           // A cutover is not an observation approval. Its exact preliminary delta
           // is independently guarded; no dependency facts may be invented here.

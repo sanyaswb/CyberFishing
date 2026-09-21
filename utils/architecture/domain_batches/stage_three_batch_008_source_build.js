@@ -95,7 +95,10 @@ class StageThreeBatch008SourceBuild {
   }
 
   async run() {
-    assert.equal(JSON.parse(fs.readFileSync(this.absolute(PATHS.state))).activeBatchPhase, "prebuild",
+    const liveState = JSON.parse(fs.readFileSync(this.absolute(PATHS.state)));
+    assert.equal(liveState.activeBatchId, PROFILE.batchId,
+      "Source/build historical replay is read-only after cutover");
+    assert.equal(liveState.activeBatchPhase, "prebuild",
       "Source/build historical replay is read-only after cutover");
     const { artifact, nextManifest, before } = await this.prepare();
     new ControlledMetadataTransaction({ projectRoot: this.root, failureInjector: this.failureInjector }).commit([

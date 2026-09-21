@@ -1,0 +1,2541 @@
+{
+  "schemaVersion": 2,
+  "kind": "cyber-fishing-stage-3-prebuild-contract",
+  "status": "prebuild-open",
+  "batchId": "stage-3.candidate-009-fish-444e8034",
+  "sourceReleaseVersion": "0.24.45",
+  "targetReleaseVersion": "0.24.46",
+  "evidence": {
+    "audit": {
+      "path": "architecture/migration/stage_3_batch_009_audit.json",
+      "sha256": "bf8efa15938f765f9f29533b2d095f577d6720edbead1a0541b1cefc40d3a5e3"
+    },
+    "executionPlan": {
+      "path": "architecture/migration/stage_3_batch_009_execution_plan.json",
+      "sha256": "d2e4d08af7092178247599994bdc387bede6f9f5050ac9a820ee14ddfee10eaf"
+    },
+    "testMatrix": {
+      "path": "architecture/migration/stage_3_batch_009_test_matrix.json",
+      "sha256": "a578d2ea2bb4dba078335fd2a571784a1e02e6bedf2a99db63761ede042f350e"
+    },
+    "executionStateBefore": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "f5bd12f009b13c1d916a89bceb54bea9e3500d32d99020bd365068b23c1c3577"
+    },
+    "manifestBefore": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "94d1b346b36c8a6ac4c85549a2034df516f12aa101c4c13817a479ca501daef9"
+    },
+    "runtimeContractBefore": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "5e17acf766b8254e1481514faff27ece5da0294dda67eb7f17ff3d27b6388064"
+    },
+    "bridgeRegistryBefore": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "8c54a8cff782914adb614cc6a5c2cabd3da3b1b34ecc5a76d76d6eaf22b0c254"
+    }
+  },
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3"
+    ],
+    "activeBatchId": "stage-3.candidate-009-fish-444e8034",
+    "activeBatchPhase": "prebuild",
+    "compatibilityRuntimeActivated": true
+  },
+  "preliminaryMetadata": {
+    "targets": [
+      {
+        "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+        "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+        "targetBoundary": "game-domain",
+        "roles": [
+          "domain-behavior"
+        ],
+        "migrationStatus": "planned",
+        "observationStatus": "pending",
+        "sourceSha256": "5e5e0b080b6baf06828a631fa49802360fec2bb27c24cbccd9944c73593ab5dc"
+      },
+      {
+        "currentPath": "src/core/fish/fish_rarity_resolver.js",
+        "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+        "targetBoundary": "game-domain",
+        "roles": [
+          "domain-behavior"
+        ],
+        "migrationStatus": "planned",
+        "observationStatus": "pending",
+        "sourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572"
+      }
+    ],
+    "plannedActivationPositions": [
+      {
+        "id": "activation-85b75b58221b",
+        "owner": "stage-3.candidate-009-fish-444e8034",
+        "sourceProvider": "src/core/fish/fish_rarity_resolver.js",
+        "targetModule": "src/game/domain/fish/fish_rarity_resolver.js",
+        "exportName": "FishRarityResolver",
+        "legacySymbol": "FishRarityResolver",
+        "legacyScriptIndex": 42,
+        "shimFile": "activations/042_fishrarityresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      {
+        "id": "activation-ea32013c6230",
+        "owner": "stage-3.candidate-009-fish-444e8034",
+        "sourceProvider": "src/core/fish/fish_anomaly_variant_resolver.js",
+        "targetModule": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+        "exportName": "FishAnomalyVariantResolver",
+        "legacySymbol": "FishAnomalyVariantResolver",
+        "legacyScriptIndex": 43,
+        "shimFile": "activations/043_fishanomalyvariantresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      }
+    ],
+    "plannedBridges": [
+      {
+        "id": "bridge-19f525f74d35",
+        "bridge": "src/core/fish/fish_anomaly_variant_resolver.js",
+        "source": "src/app/bootstrap.js",
+        "target": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+        "reason": "Preserve the exact bootstrap consumers of Fish Rarity and Anomaly resolvers until bootstrap migration removes their legacy symbols.",
+        "owner": "stage-3.candidate-009-fish-444e8034",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "FishAnomalyVariantResolver",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-8d36f9222504",
+        "bridge": "src/core/fish/fish_rarity_resolver.js",
+        "source": "src/app/bootstrap.js",
+        "target": "src/game/domain/fish/fish_rarity_resolver.js",
+        "reason": "Preserve the exact bootstrap consumers of Fish Rarity and Anomaly resolvers until bootstrap migration removes their legacy symbols.",
+        "owner": "stage-3.candidate-009-fish-444e8034",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "FishRarityResolver",
+            "mechanism": "global-this-property"
+          }
+        ]
+      }
+    ]
+  },
+  "planningStorage": "prebuild-contract-only",
+  "activeTopology": {
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js"
+    ],
+    "activationIds": [
+      "activation-00287f399f05",
+      "activation-2534a1bdbe18",
+      "activation-3dcbed1b3310",
+      "activation-3e0a233bf70c",
+      "activation-3fee104fb111",
+      "activation-4d4619b15e3c",
+      "activation-4e28fdf337a3",
+      "activation-57add99af90d",
+      "activation-57b99d3aaf82",
+      "activation-59bd96059da6",
+      "activation-5c6e63e8ffb9",
+      "activation-6ba241908a4c",
+      "activation-75b968069153",
+      "activation-765258a53eef",
+      "activation-7678742c83cf",
+      "activation-775fb46bb6ce",
+      "activation-7f67db779ead",
+      "activation-868e1186ae29",
+      "activation-86e221fafb48",
+      "activation-886fb34615aa",
+      "activation-8f8220d288e5",
+      "activation-9857928fc9d0",
+      "activation-9a198b228060",
+      "activation-9c5651e4f765",
+      "activation-a63204f0676b",
+      "activation-a8e624a68a8e",
+      "activation-be4932b7b0c5",
+      "activation-bf033497a3e1",
+      "activation-ccddea60d16c",
+      "activation-ce7da074f74a",
+      "activation-da8d3f6d370f",
+      "activation-dcb3cecb345c",
+      "activation-f5eefdd6e6e2",
+      "activation-f70148ad6a58",
+      "activation-ffea5244c4bf"
+    ],
+    "bridgeIds": [
+      "bridge-0c0f9cf80110",
+      "bridge-105a8ef0c687",
+      "bridge-19607c8ce243",
+      "bridge-1975df3eebf9",
+      "bridge-1af90d9ee5a6",
+      "bridge-1cdd6e08f07e",
+      "bridge-218534519854",
+      "bridge-225041916b22",
+      "bridge-246319f5e6e2",
+      "bridge-262c43042ef7",
+      "bridge-292102f00c09",
+      "bridge-299e2a323f55",
+      "bridge-340e660ed69c",
+      "bridge-397a03218e06",
+      "bridge-3d9abab097f9",
+      "bridge-451e340bf590",
+      "bridge-4c97028596c9",
+      "bridge-595a005d7c64",
+      "bridge-5d3728373ab6",
+      "bridge-60496caa95fd",
+      "bridge-63afd58b4545",
+      "bridge-6aabd924bf06",
+      "bridge-6b182910c818",
+      "bridge-6c073ecab1b3",
+      "bridge-6c8d26fe475b",
+      "bridge-6cb8d6b6b5dd",
+      "bridge-70c0e5efc338",
+      "bridge-7376f5e6b272",
+      "bridge-7b4507b87811",
+      "bridge-7bdae928832e",
+      "bridge-8654ddb73e7e",
+      "bridge-87740b3c6660",
+      "bridge-8b99e1c44103",
+      "bridge-93b3ed37a13e",
+      "bridge-9538204fd8a3",
+      "bridge-9987d14a6b96",
+      "bridge-9a90ab115b6b",
+      "bridge-a5a1cd90cdd5",
+      "bridge-a976ae6fdfc5",
+      "bridge-bc3ec26d121f",
+      "bridge-c518ccc47a20",
+      "bridge-c5b20a842e06",
+      "bridge-c6c1e5eb790e",
+      "bridge-c7d38bfb778f",
+      "bridge-c88c4a3e2737",
+      "bridge-d3fd9d86467b",
+      "bridge-d88e995bce27",
+      "bridge-dcceaaf04a57",
+      "bridge-dd65f33afb4a",
+      "bridge-ddf61a64424b",
+      "bridge-e1840139830f",
+      "bridge-f20190e70bbd",
+      "bridge-f31aca4ae5d6",
+      "bridge-f6bcda55f86a",
+      "bridge-f6d56e05e037",
+      "bridge-f719db073789",
+      "bridge-f880b0a474c6",
+      "bridge-fa6a4f31f3a9",
+      "bridge-fc583dce9ac7",
+      "bridge-fd866aee9c88"
+    ],
+    "counts": {
+      "modules": 34,
+      "activations": 35,
+      "bridges": 60
+    },
+    "scriptTopology": {
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0
+    }
+  },
+  "plannedDelta": {
+    "projectModules": [
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js"
+    ],
+    "activationIds": [
+      "activation-85b75b58221b",
+      "activation-ea32013c6230"
+    ],
+    "bridgeIds": [
+      "bridge-19f525f74d35",
+      "bridge-8d36f9222504"
+    ],
+    "counts": {
+      "modules": 2,
+      "activations": 2,
+      "bridges": 2
+    }
+  },
+  "plannedTopology": {
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js"
+    ],
+    "activationIds": [
+      "activation-00287f399f05",
+      "activation-2534a1bdbe18",
+      "activation-3dcbed1b3310",
+      "activation-3e0a233bf70c",
+      "activation-3fee104fb111",
+      "activation-4d4619b15e3c",
+      "activation-4e28fdf337a3",
+      "activation-57add99af90d",
+      "activation-57b99d3aaf82",
+      "activation-59bd96059da6",
+      "activation-5c6e63e8ffb9",
+      "activation-6ba241908a4c",
+      "activation-75b968069153",
+      "activation-765258a53eef",
+      "activation-7678742c83cf",
+      "activation-775fb46bb6ce",
+      "activation-7f67db779ead",
+      "activation-85b75b58221b",
+      "activation-868e1186ae29",
+      "activation-86e221fafb48",
+      "activation-886fb34615aa",
+      "activation-8f8220d288e5",
+      "activation-9857928fc9d0",
+      "activation-9a198b228060",
+      "activation-9c5651e4f765",
+      "activation-a63204f0676b",
+      "activation-a8e624a68a8e",
+      "activation-be4932b7b0c5",
+      "activation-bf033497a3e1",
+      "activation-ccddea60d16c",
+      "activation-ce7da074f74a",
+      "activation-da8d3f6d370f",
+      "activation-dcb3cecb345c",
+      "activation-ea32013c6230",
+      "activation-f5eefdd6e6e2",
+      "activation-f70148ad6a58",
+      "activation-ffea5244c4bf"
+    ],
+    "bridgeIds": [
+      "bridge-0c0f9cf80110",
+      "bridge-105a8ef0c687",
+      "bridge-19607c8ce243",
+      "bridge-1975df3eebf9",
+      "bridge-19f525f74d35",
+      "bridge-1af90d9ee5a6",
+      "bridge-1cdd6e08f07e",
+      "bridge-218534519854",
+      "bridge-225041916b22",
+      "bridge-246319f5e6e2",
+      "bridge-262c43042ef7",
+      "bridge-292102f00c09",
+      "bridge-299e2a323f55",
+      "bridge-340e660ed69c",
+      "bridge-397a03218e06",
+      "bridge-3d9abab097f9",
+      "bridge-451e340bf590",
+      "bridge-4c97028596c9",
+      "bridge-595a005d7c64",
+      "bridge-5d3728373ab6",
+      "bridge-60496caa95fd",
+      "bridge-63afd58b4545",
+      "bridge-6aabd924bf06",
+      "bridge-6b182910c818",
+      "bridge-6c073ecab1b3",
+      "bridge-6c8d26fe475b",
+      "bridge-6cb8d6b6b5dd",
+      "bridge-70c0e5efc338",
+      "bridge-7376f5e6b272",
+      "bridge-7b4507b87811",
+      "bridge-7bdae928832e",
+      "bridge-8654ddb73e7e",
+      "bridge-87740b3c6660",
+      "bridge-8b99e1c44103",
+      "bridge-8d36f9222504",
+      "bridge-93b3ed37a13e",
+      "bridge-9538204fd8a3",
+      "bridge-9987d14a6b96",
+      "bridge-9a90ab115b6b",
+      "bridge-a5a1cd90cdd5",
+      "bridge-a976ae6fdfc5",
+      "bridge-bc3ec26d121f",
+      "bridge-c518ccc47a20",
+      "bridge-c5b20a842e06",
+      "bridge-c6c1e5eb790e",
+      "bridge-c7d38bfb778f",
+      "bridge-c88c4a3e2737",
+      "bridge-d3fd9d86467b",
+      "bridge-d88e995bce27",
+      "bridge-dcceaaf04a57",
+      "bridge-dd65f33afb4a",
+      "bridge-ddf61a64424b",
+      "bridge-e1840139830f",
+      "bridge-f20190e70bbd",
+      "bridge-f31aca4ae5d6",
+      "bridge-f6bcda55f86a",
+      "bridge-f6d56e05e037",
+      "bridge-f719db073789",
+      "bridge-f880b0a474c6",
+      "bridge-fa6a4f31f3a9",
+      "bridge-fc583dce9ac7",
+      "bridge-fd866aee9c88"
+    ],
+    "counts": {
+      "modules": 36,
+      "activations": 37,
+      "bridges": 62
+    },
+    "targetSelection": "completed-batches-plus-active-batch-plus-promoted-stage-2-closure"
+  },
+  "locks": {
+    "sourceFilesCreated": false,
+    "sourceProvidersReplaced": false,
+    "indexChanged": false,
+    "runtimeRebuilt": false,
+    "observationsFinal": false,
+    "runtimeCutoverAllowed": false,
+    "unlockCondition": "stage-3.9.4-target-source-and-build-validation"
+  },
+  "verdict": "eligible-for-target-source-and-build-validation",
+  "stateTransition": {
+    "path": "architecture/migration/stage_3_execution_state.json",
+    "beforeSha256": "f5bd12f009b13c1d916a89bceb54bea9e3500d32d99020bd365068b23c1c3577",
+    "afterSha256": "ff5423bfd0af2d8bf5667ed7215764e24d8389b79de895900dd55977a491beb2",
+    "beforeBase64": "ewogICJzY2hlbWFWZXJzaW9uIjogMSwKICAia2luZCI6ICJjeWJlci1maXNoaW5nLXN0YWdlLTMtZXhlY3V0aW9uLXN0YXRlIiwKICAicmVsZWFzZVZlcnNpb24iOiAiMC4yNC40NSIsCiAgImFwcHJvdmVkUGxhblNoYTI1NiI6ICJiY2Q5YTJjMjQ2ZWJmZjczZTgzNmQyNzYxZGRjNTJhZDkwZjM0ZTlmNTIzZGZhOTVkOWJhYzc2ZjBjMzEzMWJiIiwKICAic3RhdHVzIjogIm1pZ3JhdGlvbi1hY3RpdmUiLAogICJjb21wbGV0ZWRCYXRjaElkcyI6IFsKICAgICJzdGFnZS0zLmNhbmRpZGF0ZS0wMDEtaW52ZW50b3J5LTg1ZjQ0YjJlIiwKICAgICJzdGFnZS0zLmNhbmRpZGF0ZS0wMDItZmlzaGluZy05NDRkMDc5MCIsCiAgICAic3RhZ2UtMy5jYW5kaWRhdGUtMDAzLWZpc2hpbmctOTcwMGFkNGYiLAogICAgInN0YWdlLTMuY2FuZGlkYXRlLTAwNC1lcXVpcG1lbnQtNGYyNTcwZGMiLAogICAgInN0YWdlLTMuY2FuZGlkYXRlLTAwNS1maXNoaW5nLTQ1ZDBjN2NlIiwKICAgICJzdGFnZS0zLmNhbmRpZGF0ZS0wMDYtZmlzaGluZy1lNDhlNzBkOCIsCiAgICAic3RhZ2UtMy5jYW5kaWRhdGUtMDA3LWZpc2hpbmctYmI4YjM5MzkiLAogICAgInN0YWdlLTMuY2FuZGlkYXRlLTAwOC1maXNoaW5nLWY4NTljY2QzIgogIF0sCiAgImFjdGl2ZUJhdGNoSWQiOiBudWxsLAogICJjb21wYXRpYmlsaXR5UnVudGltZUFjdGl2YXRlZCI6IHRydWUKfQo=",
+    "afterBase64": "ewogICJzY2hlbWFWZXJzaW9uIjogMSwKICAia2luZCI6ICJjeWJlci1maXNoaW5nLXN0YWdlLTMtZXhlY3V0aW9uLXN0YXRlIiwKICAicmVsZWFzZVZlcnNpb24iOiAiMC4yNC40NSIsCiAgImFwcHJvdmVkUGxhblNoYTI1NiI6ICJiY2Q5YTJjMjQ2ZWJmZjczZTgzNmQyNzYxZGRjNTJhZDkwZjM0ZTlmNTIzZGZhOTVkOWJhYzc2ZjBjMzEzMWJiIiwKICAic3RhdHVzIjogIm1pZ3JhdGlvbi1hY3RpdmUiLAogICJjb21wbGV0ZWRCYXRjaElkcyI6IFsKICAgICJzdGFnZS0zLmNhbmRpZGF0ZS0wMDEtaW52ZW50b3J5LTg1ZjQ0YjJlIiwKICAgICJzdGFnZS0zLmNhbmRpZGF0ZS0wMDItZmlzaGluZy05NDRkMDc5MCIsCiAgICAic3RhZ2UtMy5jYW5kaWRhdGUtMDAzLWZpc2hpbmctOTcwMGFkNGYiLAogICAgInN0YWdlLTMuY2FuZGlkYXRlLTAwNC1lcXVpcG1lbnQtNGYyNTcwZGMiLAogICAgInN0YWdlLTMuY2FuZGlkYXRlLTAwNS1maXNoaW5nLTQ1ZDBjN2NlIiwKICAgICJzdGFnZS0zLmNhbmRpZGF0ZS0wMDYtZmlzaGluZy1lNDhlNzBkOCIsCiAgICAic3RhZ2UtMy5jYW5kaWRhdGUtMDA3LWZpc2hpbmctYmI4YjM5MzkiLAogICAgInN0YWdlLTMuY2FuZGlkYXRlLTAwOC1maXNoaW5nLWY4NTljY2QzIgogIF0sCiAgImFjdGl2ZUJhdGNoSWQiOiAic3RhZ2UtMy5jYW5kaWRhdGUtMDA5LWZpc2gtNDQ0ZTgwMzQiLAogICJjb21wYXRpYmlsaXR5UnVudGltZUFjdGl2YXRlZCI6IHRydWUsCiAgImFjdGl2ZUJhdGNoUGhhc2UiOiAicHJlYnVpbGQiCn0K"
+  },
+  "candidateIsolation": "temporary-workspace-only; no live source, registry, manifest, index or output publication",
+  "runtimeRelocation": {
+    "runtimePath": "dist/stage-3-compat-runtime/compat_runtime.iife.js",
+    "beforeLogicalPosition": 86,
+    "afterLogicalPosition": 42,
+    "required": true,
+    "strategy": "move-existing-single-runtime-immediately-before-earliest-approved-activation",
+    "logicalOrderUnchanged": true,
+    "physicalScriptCountUnchanged": true,
+    "existingActivationPositionsUnchanged": true,
+    "newInfrastructureGlobalAllowed": false,
+    "candidateBuildMustRevalidateEntireClosure": true
+  },
+  "protectedFiles": [
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "0bc2f2c5f3a6bbe532e2bab361c393a379f173d28795a1ca7ebed9fd36f3c65b"
+    },
+    {
+      "path": "architecture/build/package_contract.json",
+      "sha256": "bde057d9fbc9baea846565b5255f582be2abab1f270bccf05b6d3e2f6eb9bf3a"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "8c54a8cff782914adb614cc6a5c2cabd3da3b1b34ecc5a76d76d6eaf22b0c254"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "94d1b346b36c8a6ac4c85549a2034df516f12aa101c4c13817a479ca501daef9"
+    },
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_009_audit.json",
+      "sha256": "bf8efa15938f765f9f29533b2d095f577d6720edbead1a0541b1cefc40d3a5e3"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_009_execution_plan.json",
+      "sha256": "d2e4d08af7092178247599994bdc387bede6f9f5050ac9a820ee14ddfee10eaf"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_009_test_matrix.json",
+      "sha256": "a578d2ea2bb4dba078335fd2a571784a1e02e6bedf2a99db63761ede042f350e"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "5e17acf766b8254e1481514faff27ece5da0294dda67eb7f17ff3d27b6388064"
+    },
+    {
+      "path": "architecture/module_architecture.json",
+      "sha256": "563423746bc86a99ced7bd0ffeb14e20ef4c62021c2c839c069225ec77cf79d6"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/086_inventoryequiptargetselectionpolicy.js",
+      "sha256": "cb952b9844350a33ef46f53ba1d546586a4f343f252a0ca6430ae6ac183fb3e1"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/088_floattacklelinebudgetpolicy.js",
+      "sha256": "aa49fd5deb57a9892901d4f697cb9592a9cd24785f18e48a494b0f05102f85fe"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/090_linespoolstate.js",
+      "sha256": "9e192c225b197269f2d1e7e6f3283ae2f74512d079f03ae12f59adca611fc69a"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/091_rodpullstate.js",
+      "sha256": "092780820147a1f819c1c350f130b52ae7000bc071a7147521537e408638e652"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/092_rodstrokestate.js",
+      "sha256": "bf54de1bcb822696237f94c50916a6c05d728784eca133b1e02a09cc502a31a1"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/093_rodstroketracker.js",
+      "sha256": "89b75153c54ddcf2d7524f657def542c54d07e59de0be80d24d4ce1f87d00cd4"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/094_rodstrokedistancetracker.js",
+      "sha256": "401876d27d46be7d6bde1f1f9968ef1e7d76bea8ae801fab8933af744d02a15e"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/112_reelretrievespeedcalculator.js",
+      "sha256": "cb9b08da01806aa1ed559b86c373d88fb6325ffab81361126c376f77386b4ac7"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/113_reelautorecoverycalculator.js",
+      "sha256": "d0fee6b406b2f98943440dc3aa3e911342ae6557ee9108820a8017162a6eb9ca"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/114_reelholdloadpolicy.js",
+      "sha256": "28b000dae36215428d62eb946d5e181f6d2521f793bfd653e855f5cae0641bd1"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/117_looselinecalculator.js",
+      "sha256": "260df1817215256f34a5c8604ac2da67f3ad01f2d183601216c89875b3cf1631"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/117_recoverablelinecalculator.js",
+      "sha256": "615e8d5c7e1e09b158642290d9a66ea1108a183b0edc2943a4cfceddd629503b"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/118_rodstrokecapacityresolver.js",
+      "sha256": "0497fb28a189f33126681f4b00334afd6c0e5018904f148ea0dec2e0c50f8cc1"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/122_fishretrieveresult.js",
+      "sha256": "6ccda8cbd8dfcfd2bd7c3896672be8f8bb46305666727cf18a562b975ff845a5"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/123_holdoppositionresolver.js",
+      "sha256": "9d92ea7a42772e5f20a794147c47547d91f7dcc0cef4f412d5a32e218a55fe67"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/126_rodcontroltensionmoderesolver.js",
+      "sha256": "cea2964616cdf6bc2995148d0260cb68d84b9edd097c4014b15ce5fd5e9ff9c5"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/128_dragforcecalculator.js",
+      "sha256": "f0dd2e753205b590022c03b3b19fce243120d0aa38a081f79b3700dfa9e1487d"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/129_linetensioncalculator.js",
+      "sha256": "15a7818493cd292bc68edf28218718c5ab960cd61db0a583401e3fcb1746d411"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/130_lineconstraintstateresolver.js",
+      "sha256": "8796bcbaa445dd5ac05a758b5bdd00f7c32cee9493b26c120ffb055140f38dfc"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/131_lineconstrainedfishmotionresolver.js",
+      "sha256": "deaf6dd9647e2777935475330ac178069ea1508ab7e9f578c34191eb37520aa0"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/132_lineradialmovementsplitter.js",
+      "sha256": "1692d1bd9409d60f68773288fdf6119957a1c2667db43f1d51095d6e22f9ed26"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/133_rodcontrolmovementprojector.js",
+      "sha256": "99e04f0a8fd51cf254ffb2b63d26f78dd51b028d00371fe20aac0eb25eca132b"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/134_polefightsectorgeometry.js",
+      "sha256": "75420e557172f1719ca885c0463b43441cc47965b6c8588497cc00ceccd8fa61"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/139_simplefightforcecalculator.js",
+      "sha256": "0fad5ebee04e430731bf53d7ef081b7b6650a952313c5c8450521f1eba4cab79"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/140_landinglifttensioncalculator.js",
+      "sha256": "bb2b7df44ea2d8ca32ba51236000ddc042b1cded9953266ec36ea0fdb3aee170"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/157_rodcapabilityresolver.js",
+      "sha256": "462de6f1999ff5b789409dbe00273f9cce166f835c0a0843456167fe8833b988"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/352_assetmanifest.js",
+      "sha256": "c607661064a404d748893c6b76ce54747e3bcf0e30a4e40875663c59001e6ece"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/353_assetloadresult.js",
+      "sha256": "663f88f08f1dac40bd03d635b5a1b3105c460bfb5903dcdceadc92add7dcf66f"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/358_renderpass.js",
+      "sha256": "4d519d81bebdc82e2efc3b4a7fa2c9239597bbcfaa04c13daeb80cd9e0f144bd"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/360_rendermath.js",
+      "sha256": "a962bc192bdb40de397df3dd576ff1fb30965f8374ad4b2962db17e509837de3"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/361_rendercomponent.js",
+      "sha256": "d2636a7d6868af2195a848d4b0b72be6cc0c3dd5bb98d40192ed47b58ddb79d2"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/362_compositerenderer.js",
+      "sha256": "f04ebc0e624f926e7172fdbdb2562c3355fa1f58d56f30bf78ff97c1edf8be88"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/391_eventbus.js",
+      "sha256": "df1beb5019a18ebf9f666468d02e57689994af430a80904ae44447b7b75b2c77"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/392_eventlifecycle.js",
+      "sha256": "f54be747be93bca4e6d9047d65b3f08908f70688a400700d343851e68394c68f"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/activations/395_dependencycontractvalidator.js",
+      "sha256": "d3f54e03c1c3a39474c9642bc364820187b47da05066460911ffe19617f45edd"
+    },
+    {
+      "path": "dist/stage-3-compat-runtime/compat_runtime.iife.js",
+      "sha256": "6950a4f49df8e6f1b1747aeecf9c34c344e7d4834ddb12ba9b63d6686d4d8aca"
+    },
+    {
+      "path": "index.html",
+      "sha256": "63cdf470caa04b5db3c38222ec59e2141f8ccaa99fbad538204bf8b6f8cb3a54"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "7e0a599101b85da7cba4baac33d1663e056f1d391e99f6c8c3fab9ad4172cb3d"
+    },
+    {
+      "path": "package.json",
+      "sha256": "d7d63261253aa8ba7903141da9ed70b8fd2f94954d16bf5830ea5d4ec7ec5d1b"
+    },
+    {
+      "path": "refactor_Task.txt",
+      "sha256": "aaf5d5f258f7837120a8447a33c2152306f1092440325f55d4c4a1835f7f9b8d"
+    },
+    {
+      "path": "src/app/adapters.js",
+      "sha256": "7132792dd94a37e1bac248280d125ccf39ef4514e288e2eb8ee64e26f87b923f"
+    },
+    {
+      "path": "src/app/application.js",
+      "sha256": "c60e3d821d28671f5e3dcb0562ed7215f9e50853485c710e3c6afe8214bd34a4"
+    },
+    {
+      "path": "src/app/bite.js",
+      "sha256": "caf94e90aa79abd185012a2b0c73c35a9358c120f243ebeecee704531fe210eb"
+    },
+    {
+      "path": "src/app/bootstrap.js",
+      "sha256": "06706838ed08caa4529962259bc631af0a1dd6b3fce0f4d20139ff64eb6565ce"
+    },
+    {
+      "path": "src/app/cast_power.js",
+      "sha256": "ec02a22c2e9f57c3777c01b960615398e51aa3b4e48015ec8fed27921b820e4e"
+    },
+    {
+      "path": "src/app/chum.js",
+      "sha256": "f87e387d1155b3a3daa905e838403bbc160f1fba5dbb4e96ba451163cc9dc42d"
+    },
+    {
+      "path": "src/app/context.js",
+      "sha256": "dbc35c56a5db7f481bf9d6a3ea4544da2acc7a59db12146170a9110fbbeca2ef"
+    },
+    {
+      "path": "src/app/core/game_clock.js",
+      "sha256": "c7d11320c42991e5358218e7233afb384d3d2a53555a245a791cf811475851fe"
+    },
+    {
+      "path": "src/app/core/game_loop.js",
+      "sha256": "d6c2d7ca168847c15da903d3b8d14e0247b5029ef3ae0848be706dd9ba959ea2"
+    },
+    {
+      "path": "src/app/debug.js",
+      "sha256": "4419cf2399e2b0e0de2214be09c18de5bbf23c33d7c701dcb0af51e6977457f2"
+    },
+    {
+      "path": "src/app/fishing.js",
+      "sha256": "b03d5289528da1c22e979feecde804d5e1c2daa93975f032c0ad2d00bea2d6e5"
+    },
+    {
+      "path": "src/app/fixed_catch_fish_factory.js",
+      "sha256": "1291791555c84763246dca806d1fe5cfd8ca0f46bee90dca0ffec666ab07869d"
+    },
+    {
+      "path": "src/app/game.js",
+      "sha256": "fbb1cf7cf8dd05b956a4720bfc7a14c124685bf6d1626d0d0a08a4628cd3c524"
+    },
+    {
+      "path": "src/app/inventory.js",
+      "sha256": "64e6fb27aabbcd9fc42f2aafd762790962bdf2a1ebe2857b68fcae3f90b501ca"
+    },
+    {
+      "path": "src/app/rendering/boat_chum_render_frame_builder.js",
+      "sha256": "f22d3b178ba90bffed3ac39e3a0f58bf806afafcac047f81f3d92c76336d539e"
+    },
+    {
+      "path": "src/app/rendering/casting_render_frame_builder.js",
+      "sha256": "9aabc83a5de6de57a374a0c9bc26e4194c087a366d7525e3604737a1316759e1"
+    },
+    {
+      "path": "src/app/rendering/fight_area_render_frame_builder.js",
+      "sha256": "5d810594a45217b77d8ad7ec265a7159cb7be37bb0b5de5ac0c085bd648d7bd1"
+    },
+    {
+      "path": "src/app/rendering/fight_hud_frame_builder.js",
+      "sha256": "87a45dfd096ea2edbbadbda7e10f54aaedfcfc107c54b935e153ec1b0d72dd33"
+    },
+    {
+      "path": "src/app/rendering/fishing_equipment_render_model_builder.js",
+      "sha256": "29038c0f26758b89a8cbe8262ab6f2351b0a9ac782ba37c098b0dea826f0e4b0"
+    },
+    {
+      "path": "src/app/rendering/fishing_render_frame_builder.js",
+      "sha256": "b7010b14567025361c23a3024518518721a9fe67838942f94a052596db334b5b"
+    },
+    {
+      "path": "src/app/rendering/game_render_coordinator.js",
+      "sha256": "3bbbc6f8fd23371df74fbdec0af84c8672f7852163913b581ac326857de17c7c"
+    },
+    {
+      "path": "src/app/rendering/game_render_frame_builder.js",
+      "sha256": "289eacca1b7ada92f332939df9dc23a5a5ef496ccf788f9f83413723ade73ec5"
+    },
+    {
+      "path": "src/app/rendering/game_render_intent.js",
+      "sha256": "d1bdc2563f10eb26c7ee3b4fdaca87cec1cb784de2abb54322b9b82720fe4a59"
+    },
+    {
+      "path": "src/app/rendering/landing_area_render_frame_builder.js",
+      "sha256": "3e7ea727a62f367c301629a8ed070f8e403f0ec4edc08c1bc18a9ab96eb56648"
+    },
+    {
+      "path": "src/app/rendering/location_debug_render_frame_builder.js",
+      "sha256": "99ef10be545f3594cdb81045db534f8ddacf85e1c17ae036755b843d57968daa"
+    },
+    {
+      "path": "src/app/rendering/outcome_render_frame_builder.js",
+      "sha256": "4ff386c404a57cf065eb0155424f9e803cd38e18dd8671813560fa35ea3c248a"
+    },
+    {
+      "path": "src/app/rendering/world_render_frame_builder.js",
+      "sha256": "18b3778c354d16854ea162c7ba0a1379f23e4bbb078f95433edb7de21bd7b693"
+    },
+    {
+      "path": "src/app/rules.js",
+      "sha256": "3ed54c3d6c7fa80640a84ba8e89a5e1414f7716f517929a5bf0f85ccaac79a66"
+    },
+    {
+      "path": "src/app/script.js",
+      "sha256": "6f5b33c4922154ef9f1f1aaee55222393e461d592499edd5f94038c364348661"
+    },
+    {
+      "path": "src/app/states.js",
+      "sha256": "6edbf3651987266fc2365b7bb0448f76e1b080c107daeb92733aaaa161712736"
+    },
+    {
+      "path": "src/app/utils.js",
+      "sha256": "4fccd5274e330a6e76b398f717884b05f0f9298d9051ccc21395f709de137920"
+    },
+    {
+      "path": "src/app/world.js",
+      "sha256": "29f7c4acae4d8867314791958ff1671adca819e8d0a4b1aa6779daa3c87ec5da"
+    },
+    {
+      "path": "src/application/inventory/apply_bait_exposure_service.js",
+      "sha256": "7fca3e5f3264b62e35065845c13eb031442d499b71580c6cf3643ded6cdccc42"
+    },
+    {
+      "path": "src/application/inventory/auto_refill_coordinator.js",
+      "sha256": "8be80960bec7f1b8fe63e69e8377b0b5dce4c30cf904028d7c96d66a58f5b662"
+    },
+    {
+      "path": "src/application/inventory/equipment_auto_refill_target_provider.js",
+      "sha256": "db576017bf2876ecab1d21a6b85b07186e79c11ae5a2fcde36721a95b2540ba5"
+    },
+    {
+      "path": "src/application/inventory/equipment_read_model_factory.js",
+      "sha256": "60a029f61f874d71c01234563f4bc8d477ede92d3321ba51727e8878e7e1f340"
+    },
+    {
+      "path": "src/application/inventory/equipment_transition_executor.js",
+      "sha256": "f0f3b9f3be87705253d93d8f564accaa8aa248a0760c9133ac9d10c9a0c7d32e"
+    },
+    {
+      "path": "src/application/inventory/freshest_refill_candidate_policy.js",
+      "sha256": "cb2479cae59f4e5d3cdede9da697901878607f9c9b0620c5d5e7836e4e672994"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_command_service.js",
+      "sha256": "d71fb9a43a0b94869268006c79afc8daae894756924a72d967864cf4ca072705"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_composition_root.js",
+      "sha256": "ac41a71236dcc6eef30630f6aab52d17e0e257530175c4b3d987ce02d68f3e2b"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "sha256": "c7e5b4ce107d6ceb9ae90131f6ab969622975d60f03d7e6131e8fddc148f4f30"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_equipment_line_readiness_policy.js",
+      "sha256": "d8dbb70005fcec6bdc2c9424eccdb7bb4e336752396d62017b71a82aee132094"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_equipment_transition_port.js",
+      "sha256": "767107222e002d1fd11cc4c19b365c02a76cdf3693873b5ee2f1f78c476372be"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_facade.js",
+      "sha256": "9134b59edf0421268c47a97e9469d909490f495fa3cfa66ec36d5469e400a8b8"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_gameplay_bridge.js",
+      "sha256": "6a14c23f0e68cd1f29f03fafa768369d11ac74a16a66150b40a6cf4f965c1181"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_item_hydrator.js",
+      "sha256": "d8a4acc2f491d20cea69c74aebd3a091663b89491c2f911c515d818aef8130b4"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_item_order_resolver.js",
+      "sha256": "6fb87c436be2ba61b2092f1f38dcc8ad50855c94215afae29026d012692c882f"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_item_view_factory.js",
+      "sha256": "6b45890e072e7592b000fa3fb61897660ba2f6390d8281fc4b6120290ece1bd6"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_line_allocation_service.js",
+      "sha256": "38d52b4ee01d5ebb2de2741398c6e06e2236d11daed03c5b58a0530255b2e196"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_loadout_port.js",
+      "sha256": "b3e23fafeab87a0a2a06a5cad57334650107bdef877ec2c9051a9c0fcf841f88"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_refill_ports.js",
+      "sha256": "f5a6f1c8221006aebbade10b4aadedeaf2018f7529553dca6f70dc3997a057bb"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_subfilter_resolver.js",
+      "sha256": "1e4b977ed66b71b84a1c012e682b0f53fe61c857810753515a7893ff6a6d8eb7"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_transaction_participants.js",
+      "sha256": "86508ed3ade25ace5a21263e973b64511015414ade85b909a0969fab5a6567ba"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_view_model_factory.js",
+      "sha256": "bf25e6a60cb387042bbc47e26e145f491ef3c0594a3f0bb7eb2ebad8fd353972"
+    },
+    {
+      "path": "src/application/inventory/loadout_application_service.js",
+      "sha256": "d7c4972a8db5a5801662e055c401e3067238d25faa3f57d6fe23bba40f8a37ec"
+    },
+    {
+      "path": "src/application/inventory/refill_compatible_signature_policy.js",
+      "sha256": "5b7eb6383f0edde67e0ee4ed9a5fdd7d22a7ef58c29c8e9cd99137b707b75abe"
+    },
+    {
+      "path": "src/assets/asset_preload_coordinator.js",
+      "sha256": "87e98235cf4785b89e50502d5fb04cce79f43e3f6fbad24edecac12ab37b6243"
+    },
+    {
+      "path": "src/config/config.js",
+      "sha256": "6f8be6d5908f52fe21b2cde0e838cbab79044d4d85b32ce41badcc7a29e71775"
+    },
+    {
+      "path": "src/config/databases/fish/fish_categories.js",
+      "sha256": "da5abd6ceb7056f554c628ff14bc7eaa6cee87b02e363b8f0cf5fe127a4730fc"
+    },
+    {
+      "path": "src/config/databases/fish/presets/fish_profile_factory.js",
+      "sha256": "a89a4310188acc48883ddada5b42059d5e52c06de97e8a6f15ede8d886077949"
+    },
+    {
+      "path": "src/config/databases/fish/presets/fish_profile_presets.js",
+      "sha256": "1c86bf66d41703c0e6699105e5900fcb11c2b8f8b7485da6140b3d5a019b3724"
+    },
+    {
+      "path": "src/config/databases/fish/species/event_fish.js",
+      "sha256": "e103787e88952cde5e123589a63067b63870fbbe342c8b30f5261ac8da8b6f8b"
+    },
+    {
+      "path": "src/config/databases/fish/species/peaceful_fish.js",
+      "sha256": "e650daf32b7af1e44f36ebff0ab5ee049af511499bba84ca3ca406ff71793a37"
+    },
+    {
+      "path": "src/config/databases/fish/species/predator_fish.js",
+      "sha256": "f9cbbc0a87c3d4703abb556b713f185abca57bcc64ff81570457519691ac3357"
+    },
+    {
+      "path": "src/config/databases/fish/species/rare_fish.js",
+      "sha256": "ade48be55962a7af12f9f0c989fbe72ffba061e44537b3cfd40b231ed20d0908"
+    },
+    {
+      "path": "src/config/databases/fish_db.js",
+      "sha256": "d454a0a320b9ca6e678e2903d5b9d1df1feb34c66e93180466d6f8b3cf13f9c9"
+    },
+    {
+      "path": "src/config/databases/item_db.js",
+      "sha256": "607906885aa08c4956398600e9b6db3bac58dd1dbde3ed9204f499501f780b3a"
+    },
+    {
+      "path": "src/config/databases/map_db.js",
+      "sha256": "fdf2996411173331036546314faa95810f1770de4b590dcc0ce0c192da12dd5e"
+    },
+    {
+      "path": "src/config/inventory/equipment_slot_config.js",
+      "sha256": "cce72ed05ce0bdd47faf1cbcf119c2c72a0101f2ce462308d1fd85380a46358f"
+    },
+    {
+      "path": "src/config/inventory/inventory_v2_item_parameter_config.js",
+      "sha256": "ca2da74d85cc7278604914c409e16051e95dc51ac2593b7b449dfae6cd6f5028"
+    },
+    {
+      "path": "src/config/inventory/inventory_v2_sort_config.js",
+      "sha256": "de6d128e29f65ae994d2b579729448a8993eb2f0ed14a95e9ad12b640eb24f2b"
+    },
+    {
+      "path": "src/config/inventory/item_assembly_profile_config.js",
+      "sha256": "f0e8b97b7b5e58bb0852c08c033e66726fd70732c53ae11db00cc197d92daf9d"
+    },
+    {
+      "path": "src/config/items/item_progression_config.js",
+      "sha256": "b79eb1561beb5e25f294c353f85cb50244798a7a72044e32476e0b6cdbca9cc3"
+    },
+    {
+      "path": "src/config/items/item_stat_override_config.js",
+      "sha256": "1b87bcd4d266085c711a9cb5165a7622ff9315db0e22ac538e9befc66dd18dba"
+    },
+    {
+      "path": "src/config/metadata/dev_tool_parameter_descriptions.json",
+      "sha256": "8a79c97c0169b20f6104724a57ff2c410c7ae0d98810f4235e1c6cbfa5aad52b"
+    },
+    {
+      "path": "src/config/metadata/overlay_metric_descriptions.json",
+      "sha256": "af6744f49fdb8deec64012546675b12aefd5669ddd62c3592bcb74247788edc3"
+    },
+    {
+      "path": "src/config/metadata/parameter_labels.json",
+      "sha256": "844f067d899ff83fe43b5fc7bc594bbb2b03a3da4d93fe1b15ac51ac97365184"
+    },
+    {
+      "path": "src/config/physics/environment_physics_config.js",
+      "sha256": "b07b0f214522c6815360b1a73561ebaf5389e83c10584ade05c08474f2507edc"
+    },
+    {
+      "path": "src/config/physics/fight_physics_config.js",
+      "sha256": "3ecb51b84db34dafe91f79fa5b457d7c2b176b84b4314421c2ed031ce3f2c69d"
+    },
+    {
+      "path": "src/config/physics/physics_config.js",
+      "sha256": "af63eabd3b31f184449ece73cb6392ff54ba8a738476d095f1ff514ca81d00b1"
+    },
+    {
+      "path": "src/config/physics/physics_config_adapter.js",
+      "sha256": "1fc5b351ac686fff057bbeff350346b3bfbcbe3ac6f4dd8e6c63545b95429c47"
+    },
+    {
+      "path": "src/config/physics/physics_formula_map.js",
+      "sha256": "4f0e0667abacf20d5a90e95584d8ddd1dd0230510b9a27d8e10f18e41a3f501b"
+    },
+    {
+      "path": "src/config/physics/physics_units_and_naming.js",
+      "sha256": "500f21a4880f643b505e28e01e276356ab3dd6a18142a0fb59398d1c8cc26a9a"
+    },
+    {
+      "path": "src/config/physics/retrieve_physics_config.js",
+      "sha256": "fb9401ab076659b0c2f206751bea0a86ac98900f6f687c3b0aa43965ebc12455"
+    },
+    {
+      "path": "src/config/physics/tackle_physics_config.js",
+      "sha256": "916d42c1ea3625e03c2eb5072f4ba0a88c876ceb7729f555f2ed3853a7392b94"
+    },
+    {
+      "path": "src/config/physics/tension_physics_config.js",
+      "sha256": "b765785cb4059d4be9a8a0bdb0c75ff17077797277bec32120e3387c9aa7db91"
+    },
+    {
+      "path": "src/config/project_version.js",
+      "sha256": "e20035daa0e56046d7f1ad96ee1a8b01df9881c46394618cc3e01813ff0d0451"
+    },
+    {
+      "path": "src/config/rarity/rarity_visual_config.js",
+      "sha256": "e289f2b58a16c6babef9bdab6299f737fdb79295dc9558110744ad72d0587575"
+    },
+    {
+      "path": "src/config/runtime/config_override_store.js",
+      "sha256": "5ca2d425f914332539277a36328f88fa5c204c2edcac597e55502f12a5dc5964"
+    },
+    {
+      "path": "src/config/runtime/immutable_config.js",
+      "sha256": "6453598543dc3b1c0da3c38a203e692b12cbebb2e7261140d33de464d7d15119"
+    },
+    {
+      "path": "src/config/runtime/resolved_config_provider.js",
+      "sha256": "a92189ecba47368015e448bfd96140e8f4a825829cf2327e48af9e9c6b4e9fce"
+    },
+    {
+      "path": "src/config/validation/config_schema_validator.js",
+      "sha256": "0c7dfbf6417ac0a8a5860661dbed918df695b4274feaa29d26b66c669391fd49"
+    },
+    {
+      "path": "src/config/validation/degradation_color_config_validator.js",
+      "sha256": "b9001d68e15c82ce9bfb9f60df6e93651ee13f391444a66f0c757786da118242"
+    },
+    {
+      "path": "src/config/validation/item_progression_config_validator.js",
+      "sha256": "a54c1f336997f8e28b1b7d7c8236cb16ca26bf8058d3cc41275d3cdae176cc85"
+    },
+    {
+      "path": "src/config/validation/item_rarity_config_validator.js",
+      "sha256": "3cef0fdbd768d54d6eb8a3ddd4f8f4151b41784fa7deac96e2beb0b5ef8fba97"
+    },
+    {
+      "path": "src/config/validation/rarity_config_validator.js",
+      "sha256": "cdc95d417cc7995a24d466fa6c9a24553f943b785d2eb754b006566dce583a1d"
+    },
+    {
+      "path": "src/config/visual/degradation_color_config.js",
+      "sha256": "c849ed235a7b9401a126c663e67b9c69eae53f7be0ea0b28943be4f50bdfcf3e"
+    },
+    {
+      "path": "src/core/assemblies/assembly_attachment_target_resolver.js",
+      "sha256": "53778c9da91cb132317b66cef846c352718d337b8708bf31a1762dc0109962ba"
+    },
+    {
+      "path": "src/core/assemblies/assembly_completion_policy.js",
+      "sha256": "74e9b1bbb9ac309cd8ebfad9a6c04f6d9f6cb9922d77344cbbec1c5c9a2651df"
+    },
+    {
+      "path": "src/core/assemblies/assembly_profile_registry.js",
+      "sha256": "ccec783beabee775503f032abd359cbfc02e1136697def7d01d0efbb0955affc"
+    },
+    {
+      "path": "src/core/assemblies/assembly_state.js",
+      "sha256": "80e567e80b489f6933250927c7c8d173606f975515664f5034e840b39a4764c3"
+    },
+    {
+      "path": "src/core/assemblies/assembly_state_repository.js",
+      "sha256": "df687703775b302e9b1e6a78564b33f416843d1fff61164ae6bba063618903ae"
+    },
+    {
+      "path": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+      "sha256": "3334903a603239247f3b40c61714b0a599df12d966e3d30ae132fa59928fbf82"
+    },
+    {
+      "path": "src/core/assemblies/item_assembly_reader.js",
+      "sha256": "4c28580734cdab7dc1fe043fee21ca5a08a225acb99cbe4f1b9f8d795246daa3"
+    },
+    {
+      "path": "src/core/assemblies/item_assembly_service.js",
+      "sha256": "1cc2312c6d604cd880484836338539b83b5ef38041a71d4edeabca8e9cbc7a71"
+    },
+    {
+      "path": "src/core/casting_distance.js",
+      "sha256": "b0bac23c256442a046ac8064c0623a6f8c406559b9a538592060a47fee8ab93e"
+    },
+    {
+      "path": "src/core/core.js",
+      "sha256": "5be61b9e872ee7f0f03056d6ff97f19a6ffd2b9a2770144e19a78728ee5a4d1a"
+    },
+    {
+      "path": "src/core/equipment/auto_refill_policy.js",
+      "sha256": "231bed05e45bf75c908e347ff32d6dd469d73ffe86969058f79a72439d4d8404"
+    },
+    {
+      "path": "src/core/equipment/equipment_compatibility_policy.js",
+      "sha256": "610666864a1ac8014c293aee00ba3996be2d150075947b5556f7b213dab12ae4"
+    },
+    {
+      "path": "src/core/equipment/equipment_slot_availability_policy.js",
+      "sha256": "e3dacf09e64eef7b86c0ac7a87aa1f77c83b76dd912bb83c1555db1a17657726"
+    },
+    {
+      "path": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "sha256": "e3b197e6e2e72fedf1f5470a224fc61e723eb00e57dcabd1eaf1a03a73b44e65"
+    },
+    {
+      "path": "src/core/equipment/equipment_state.js",
+      "sha256": "ca67e252ada19d9991ab5f83964b1385bada3cc0c448ff93ae3ebaa0dc0da21a"
+    },
+    {
+      "path": "src/core/equipment/equipment_transition_planner.js",
+      "sha256": "89dbebf4963abcb4d120387c3894616e8c761c4c5d70a9e01e81c7b352a40c12"
+    },
+    {
+      "path": "src/core/equipment/exact_item_signature_policy.js",
+      "sha256": "d4982768a03b7c35b2febf6feba6add434a2208d4f3d7e8a10c7d8d085f0efea"
+    },
+    {
+      "path": "src/core/equipment/fishing_readiness_policy.js",
+      "sha256": "bcdde5c7518bc78e6aee1033a94f79e5e2229bfa2006b060a7a05f56f7ae9fa7"
+    },
+    {
+      "path": "src/core/equipment/inventory_capacity_policy.js",
+      "sha256": "46b0e7735856bc0fc8c208c4a14fdcc76968277f35e8694164937c3a9f6e2808"
+    },
+    {
+      "path": "src/core/equipment/rod_capability_resolver.js",
+      "sha256": "462de6f1999ff5b789409dbe00273f9cce166f835c0a0843456167fe8833b988"
+    },
+    {
+      "path": "src/core/equipment/terminal_line_slot_resolver.js",
+      "sha256": "cc9e2849dd68555ee41372c92509080750030952c5b799fd1fc49f6f9b105f35"
+    },
+    {
+      "path": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "sha256": "5e5e0b080b6baf06828a631fa49802360fec2bb27c24cbccd9944c73593ab5dc"
+    },
+    {
+      "path": "src/core/fish/fish_rarity_resolver.js",
+      "sha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572"
+    },
+    {
+      "path": "src/core/fish/fish_visual_variant_resolver.js",
+      "sha256": "ac697e42a104941db8bbc6e05bbbedd14d6cbd0397be7363eb3c1584ca4d1a15"
+    },
+    {
+      "path": "src/core/fishing/drag_force_calculator.js",
+      "sha256": "f0dd2e753205b590022c03b3b19fce243120d0aa38a081f79b3700dfa9e1487d"
+    },
+    {
+      "path": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "sha256": "91b801e69db3eb962533ed996161d250f4781e6a276991fe703966ab32ff7048"
+    },
+    {
+      "path": "src/core/fishing/fish_direction_intent_sampler.js",
+      "sha256": "4b8c7c62587f9ed3dce139846deca03aa19b5d33f51946e3ae824763fc899ba1"
+    },
+    {
+      "path": "src/core/fishing/fish_fight_direction_resolver.js",
+      "sha256": "311389a3ba2462292c3a9b830a3b6de2d865d46d318d8f73e513a4f2a69fdd92"
+    },
+    {
+      "path": "src/core/fishing/fish_retrieve_result.js",
+      "sha256": "6ccda8cbd8dfcfd2bd7c3896672be8f8bb46305666727cf18a562b975ff845a5"
+    },
+    {
+      "path": "src/core/fishing/fishing_cast_exposure_resolver.js",
+      "sha256": "15cd5dfb8a00a358441db24b1197c9717a69ceeaad08ad858e7e22f043440a83"
+    },
+    {
+      "path": "src/core/fishing/hold_opposition_resolver.js",
+      "sha256": "9d92ea7a42772e5f20a794147c47547d91f7dcc0cef4f412d5a32e218a55fe67"
+    },
+    {
+      "path": "src/core/fishing/landing_lift_readiness_policy.js",
+      "sha256": "b2e51ce609b38e6be301c8492e31ad8aba6f944a2e0c6a712639852bf0b63bf3"
+    },
+    {
+      "path": "src/core/fishing/landing_lift_tension_calculator.js",
+      "sha256": "bb2b7df44ea2d8ca32ba51236000ddc042b1cded9953266ec36ea0fdb3aee170"
+    },
+    {
+      "path": "src/core/fishing/landing_policy.js",
+      "sha256": "c7ec66c97690fb187006ee916896c7ea444b72b7dd95918b4df10e078188c70e"
+    },
+    {
+      "path": "src/core/fishing/line_constrained_fish_motion_resolver.js",
+      "sha256": "deaf6dd9647e2777935475330ac178069ea1508ab7e9f578c34191eb37520aa0"
+    },
+    {
+      "path": "src/core/fishing/line_constraint_state_resolver.js",
+      "sha256": "8796bcbaa445dd5ac05a758b5bdd00f7c32cee9493b26c120ffb055140f38dfc"
+    },
+    {
+      "path": "src/core/fishing/line_radial_movement_splitter.js",
+      "sha256": "1692d1bd9409d60f68773288fdf6119957a1c2667db43f1d51095d6e22f9ed26"
+    },
+    {
+      "path": "src/core/fishing/line_tension_calculator.js",
+      "sha256": "15a7818493cd292bc68edf28218718c5ab960cd61db0a583401e3fcb1746d411"
+    },
+    {
+      "path": "src/core/fishing/player_force_budget_allocator.js",
+      "sha256": "71900c9970cb75d001543f7e63d24e7da04c3b1401fb20a9a7f325912a151724"
+    },
+    {
+      "path": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "sha256": "b6e2fe24a06ab0ef41bddbfe84a30cbd485c052f4924e742cb717c930d1cf080"
+    },
+    {
+      "path": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "sha256": "49360c206fa26e84a96c828a7f9c54fe875a45921dde14b05f037a050a455a01"
+    },
+    {
+      "path": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "sha256": "16f37a71dcef4b40c453ae2d700bf3458883934c27c18ec905d5a2f4a4d0073d"
+    },
+    {
+      "path": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "sha256": "f9f7a11a8815e1bfdc173ccb1ea486d3434951cb21b14ad43d4849e96d226f81"
+    },
+    {
+      "path": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+      "sha256": "590ef10bf8385ac390a74de13d491f248c4d34a0fd52abf12b7ad42c851d76c9"
+    },
+    {
+      "path": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "sha256": "480384b6275775d9e40b3c3bee0da1f5c4a5c7c3dfe02ef39ce77a42de3f76d7"
+    },
+    {
+      "path": "src/core/fishing/pole_fight_sector_angle_constraint.js",
+      "sha256": "a4105ba8e5aa585a2af8cda400f6a61ecc13cce764ad9ffecb7f9951dcb4a9c4"
+    },
+    {
+      "path": "src/core/fishing/pole_fight_sector_constraint.js",
+      "sha256": "616c9606c7a9b68f981c2775910f3e5c0e5cd55642972818e23d9f3ecf09737f"
+    },
+    {
+      "path": "src/core/fishing/pole_fight_sector_geometry.js",
+      "sha256": "75420e557172f1719ca885c0463b43441cc47965b6c8588497cc00ceccd8fa61"
+    },
+    {
+      "path": "src/core/fishing/recoverable_line_calculator.js",
+      "sha256": "d5862345cb1d964dc7555a6ad6bd022f67c93316528c29616e7852284aef8a03"
+    },
+    {
+      "path": "src/core/fishing/reel_auto_recovery_calculator.js",
+      "sha256": "d0fee6b406b2f98943440dc3aa3e911342ae6557ee9108820a8017162a6eb9ca"
+    },
+    {
+      "path": "src/core/fishing/reel_hold_load_policy.js",
+      "sha256": "28b000dae36215428d62eb946d5e181f6d2521f793bfd653e855f5cae0641bd1"
+    },
+    {
+      "path": "src/core/fishing/reel_hold_recovery_system.js",
+      "sha256": "8bb4b488a4f0da146ff95450f9dbf93cc9fd4edac5f8f655786976c9dfd6c02e"
+    },
+    {
+      "path": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+      "sha256": "d1f6b73568268a7323845576953bb1935d8bac88329a7c139bfe366d4c624ec4"
+    },
+    {
+      "path": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "sha256": "cb9b08da01806aa1ed559b86c373d88fb6325ffab81361126c376f77386b4ac7"
+    },
+    {
+      "path": "src/core/fishing/retrieve_policy.js",
+      "sha256": "55e31b6f736238b8a6fb9a17fe33a70aa4573d276634d437e7cc0f964c8f4a11"
+    },
+    {
+      "path": "src/core/fishing/rod_control_angle_resolver.js",
+      "sha256": "b39bbe93a56655ef5ab74146f3a7ed652154d948cf31f08ffd0c23f3ef6d5ccf"
+    },
+    {
+      "path": "src/core/fishing/rod_control_movement_projector.js",
+      "sha256": "99e04f0a8fd51cf254ffb2b63d26f78dd51b028d00371fe20aac0eb25eca132b"
+    },
+    {
+      "path": "src/core/fishing/rod_control_tension_mode_resolver.js",
+      "sha256": "cea2964616cdf6bc2995148d0260cb68d84b9edd097c4014b15ce5fd5e9ff9c5"
+    },
+    {
+      "path": "src/core/fishing/rod_pull_calculator.js",
+      "sha256": "e73e8b1dbb448dc88deb7004c8b377da863a4d7b18e7782f1cb95c810271bb93"
+    },
+    {
+      "path": "src/core/fishing/rod_pull_state.js",
+      "sha256": "092780820147a1f819c1c350f130b52ae7000bc071a7147521537e408638e652"
+    },
+    {
+      "path": "src/core/fishing/rod_stroke_capacity_resolver.js",
+      "sha256": "0497fb28a189f33126681f4b00334afd6c0e5018904f148ea0dec2e0c50f8cc1"
+    },
+    {
+      "path": "src/core/fishing/rod_stroke_distance_tracker.js",
+      "sha256": "401876d27d46be7d6bde1f1f9968ef1e7d76bea8ae801fab8933af744d02a15e"
+    },
+    {
+      "path": "src/core/fishing/rod_stroke_state.js",
+      "sha256": "bf54de1bcb822696237f94c50916a6c05d728784eca133b1e02a09cc502a31a1"
+    },
+    {
+      "path": "src/core/fishing/rod_stroke_tracker.js",
+      "sha256": "89b75153c54ddcf2d7524f657def542c54d07e59de0be80d24d4ce1f87d00cd4"
+    },
+    {
+      "path": "src/core/fishing/simple_fight_force_calculator.js",
+      "sha256": "0fad5ebee04e430731bf53d7ef081b7b6650a952313c5c8450521f1eba4cab79"
+    },
+    {
+      "path": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+      "sha256": "1e7b61449be1e8065ed6e25f5972182a012cd78a60ff49cb11eaf86e7b3eb863"
+    },
+    {
+      "path": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+      "sha256": "62bed75a3fbee4d43da9194e8c69cfe43fb959fa6a75b7a41a93e7954127387c"
+    },
+    {
+      "path": "src/core/fishing/stamina/stamina_balance_frame.js",
+      "sha256": "456ca3389184269f20b645fd338794370d4d260b87644fd4217cefd84b4867a4"
+    },
+    {
+      "path": "src/core/fishing/stamina/stamina_drain_calculator.js",
+      "sha256": "170f1a8bbf98971aa848541475ccab7acfbdde0527abe6cab07790469c3ce123"
+    },
+    {
+      "path": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+      "sha256": "4843ff3576a72202343517341032ad4a9fa693c8906920d4a407246a18a04a0a"
+    },
+    {
+      "path": "src/core/fishing/stamina/stamina_phase_machine.js",
+      "sha256": "aa21064b25918456017b57aaa7ce6be8a85b3b7e7f8ce31f01a07cbe8cf47fe5"
+    },
+    {
+      "path": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+      "sha256": "901c2629d76b57db47d6fc5a643964a5c2e9f5fe6f0a5e66d136ccc96f6be56e"
+    },
+    {
+      "path": "src/core/fishing/stamina/stamina_regen_calculator.js",
+      "sha256": "f0ee7f48ffc3f79028e245058d9e0c11e77977c85b58c76613ac2c2a6ccb5608"
+    },
+    {
+      "path": "src/core/fishing/stamina/stamina_transition_resolver.js",
+      "sha256": "8a7f47f2a897dae12ae7dc26a84b93a3ab95c838fdf838ebc4189883a0cc7f51"
+    },
+    {
+      "path": "src/core/fishing/tackle_failure_selector.js",
+      "sha256": "b95f2da386ce93728774c312fa72f979704a6816d84da6c0f6579d265c4ae880"
+    },
+    {
+      "path": "src/core/fishing/tackle_stress_accumulator.js",
+      "sha256": "24e5d354aaef948489c64a8f5d07d939cb63505f639a8b611e002054051c67f3"
+    },
+    {
+      "path": "src/core/float_tackle_line_budget_policy.js",
+      "sha256": "aa49fd5deb57a9892901d4f697cb9592a9cd24785f18e48a494b0f05102f85fe"
+    },
+    {
+      "path": "src/core/input/fight_input_action_composer.js",
+      "sha256": "9e63644e11aab7882a9ef85923856cdcd32fcb1b27492f87212de0ee003f974b"
+    },
+    {
+      "path": "src/core/inventory/equip_target_selection_policy.js",
+      "sha256": "cb952b9844350a33ef46f53ba1d546586a4f343f252a0ca6430ae6ac183fb3e1"
+    },
+    {
+      "path": "src/core/inventory/flat_inventory_item_repository.js",
+      "sha256": "1b8344f923f628284c3e52ca3df80f9ab8452c54e5206d18ec8d082ff7724009"
+    },
+    {
+      "path": "src/core/inventory/inventory_item_location.js",
+      "sha256": "9d488c5dc7f7af3b514e8759ce654a5189e3f145a21aa55f527165ef87214191"
+    },
+    {
+      "path": "src/core/inventory/inventory_item_reservation_policy.js",
+      "sha256": "8ea7afa2c44859bf541bafee5ec8e5964deb00ce5bd5f685a5b6a77936dfa3af"
+    },
+    {
+      "path": "src/core/inventory/inventory_item_stacking_policy.js",
+      "sha256": "0af8f3fe0f824635e456f60354acd42c64e5f67fa8c60e841e93ef24ea59b1d8"
+    },
+    {
+      "path": "src/core/inventory/item_assembly_stacking_policy.js",
+      "sha256": "506ec92dc465510c51093b0cbd222efe3615c8885e38dbf57f180a590356180d"
+    },
+    {
+      "path": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+      "sha256": "6fa6df5ea81d8d77fa52a1f7696baf7fd988ddfdaeb591ac6b6c9a9c24e1c189"
+    },
+    {
+      "path": "src/core/items/bait/bait_effectiveness_catalog_resolver.js",
+      "sha256": "084ab7ddd404a37009aed2180a827f9a256aaa85bea259aff58898b236d0b45c"
+    },
+    {
+      "path": "src/core/items/bait/bait_effectiveness_descriptor.js",
+      "sha256": "c063db500e4889298540f0a32cba8e9da2147b9f0c79930889542fe3c08ace48"
+    },
+    {
+      "path": "src/core/items/bait/bait_effectiveness_grade_policy.js",
+      "sha256": "c9a48d131ff61617cf39f98e88cbc7457f57f185574f3993b54199a9d4dc9123"
+    },
+    {
+      "path": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+      "sha256": "ae97b1e5e8d09c8e0c5f984ca21209140abc6cfe6f62503df0309471955b0d17"
+    },
+    {
+      "path": "src/core/items/bait/bait_effectiveness_match.js",
+      "sha256": "f91ecc79b5b109fc3fb678887cbf5e01e2ee82541534225236a94946eb76fbb9"
+    },
+    {
+      "path": "src/core/items/bait/bait_effectiveness_resolver.js",
+      "sha256": "a58d98e24ad9faa447c4e02b5c39b950f2e4fbdb61c5429ed4bcb3a29b9033c6"
+    },
+    {
+      "path": "src/core/items/condition/item_condition_descriptor.js",
+      "sha256": "b0074635df20327c73f996c1104f843da5a01dfd359c6dd50284668c96eec7b5"
+    },
+    {
+      "path": "src/core/items/condition/item_condition_resolver.js",
+      "sha256": "3a3c00208996ea39836827a091acf6b5da9ccbdd6c9c1aee1380d2d1ab502345"
+    },
+    {
+      "path": "src/core/items/effective_item_stats_resolver.js",
+      "sha256": "6df002358564d0de20dba5e9776a56fe0c8de85541d6049cee81ed7c3c9b8068"
+    },
+    {
+      "path": "src/core/items/freshness/bait_freshness_decay_policy.js",
+      "sha256": "bae8026f0b9e27a97d4035e403332c07cc6a2565b4585f2346c8b3f3b3f5fa25"
+    },
+    {
+      "path": "src/core/items/freshness/bait_freshness_modifier.js",
+      "sha256": "5f95874f5df69e60139827b0a6794e0a67ee57f84eb1e2efe2b67163e5be56d7"
+    },
+    {
+      "path": "src/core/items/freshness/item_freshness_descriptor.js",
+      "sha256": "dcaf3fb10d557076361b0ddf69c23e82d065272da5448864de28275e74f1abf0"
+    },
+    {
+      "path": "src/core/items/freshness/item_freshness_resolver.js",
+      "sha256": "22216ca40978043f00037b829febbb5975ff463e99d5938ed341ce4922ee2e51"
+    },
+    {
+      "path": "src/core/items/freshness/item_freshness_state_policy.js",
+      "sha256": "1d42172005817bfabe4b1c9dd5b2a1ff1b01eac33330ea2c6cead0bcccb83dee"
+    },
+    {
+      "path": "src/core/items/hook/hook_power_policy.js",
+      "sha256": "42f13743c0d92297e1d4d9073cb43cab96d6410919d80ceca04418bb3e315a03"
+    },
+    {
+      "path": "src/core/items/item_stat_override_policy.js",
+      "sha256": "a5123fbd625c98afa6117187c78aed057d98430a3cd5c9c801bc28795d5a1ea9"
+    },
+    {
+      "path": "src/core/items/metrics/item_bounded_metric_resolver.js",
+      "sha256": "8888c8a0bd534b35e01621bed065598d6216432d1027ade37e681d7d0be86951"
+    },
+    {
+      "path": "src/core/items/progression/composite_metric_strategy.js",
+      "sha256": "d4279fdf0759d4bdf288f73dc8df9b2e9c03b570070584897293e747cddebc8b"
+    },
+    {
+      "path": "src/core/items/progression/derived_stat_metric_strategy.js",
+      "sha256": "1ae81e1c80d00dc80c3b51956a01fd2cbfa107927b6fd6eeabf6c1b552f34ead"
+    },
+    {
+      "path": "src/core/items/progression/item_capacity_resolver.js",
+      "sha256": "0b5af9fd7d3b716fe02fad5b1e6f4221aeb500fcb0a811bfcaf804f895f47e6d"
+    },
+    {
+      "path": "src/core/items/progression/item_catalog_baseline_registry.js",
+      "sha256": "4bf793d26bd578bfb7c457330f114db97e3d7589a182f06f25d6c21962034603"
+    },
+    {
+      "path": "src/core/items/progression/item_metric_strategy.js",
+      "sha256": "7fe0864d62ea0d642dfc3f392cbf74e5a13389a72167ddab1586cfdc9db49ebb"
+    },
+    {
+      "path": "src/core/items/progression/item_metric_strategy_registry.js",
+      "sha256": "3d344abe8577a7a5a56ade5d8e845e889f1b2d0b1e87e44f3119b4d9b0b07632"
+    },
+    {
+      "path": "src/core/items/progression/item_progression_descriptor.js",
+      "sha256": "337c6577f08bf3fc3016627f05f69709926dd41a2398eb67403e3e2454a757a6"
+    },
+    {
+      "path": "src/core/items/progression/item_progression_resolver.js",
+      "sha256": "6f32afa2f9c5495cb155193aa0c61d258b4b70a1305c47b38dcee85237c436e7"
+    },
+    {
+      "path": "src/core/items/progression/item_quality_resolver.js",
+      "sha256": "4b7bbf6358c16b5c0a23216865a803d818e13e2764e82f487a936ef770baf540"
+    },
+    {
+      "path": "src/core/items/progression/item_rating_resolver.js",
+      "sha256": "278ab1b84a3ff19847dd2da5e8fc63ed64468bba7a5788bf6298f9505557a5eb"
+    },
+    {
+      "path": "src/core/items/progression/item_rating_tier_resolver.js",
+      "sha256": "4e3d8536d418593c4012cd518fd47305cb6070a1e1741da1496aa5416ed40d13"
+    },
+    {
+      "path": "src/core/items/progression/numeric_stat_metric_strategy.js",
+      "sha256": "f27d4584185a10c41b542d574c3fe7d244e4544075e26522d28ce9ed7f17d192"
+    },
+    {
+      "path": "src/core/items/progression/target_range_metric_strategy.js",
+      "sha256": "cfbbb4bd4a4d5af2d255c0e322c9d1db15f630a7b786e7f0e1d2d776118f105c"
+    },
+    {
+      "path": "src/core/items/quality/environmental_compensation_modifier.js",
+      "sha256": "db531c3952e99d560933c8af10b8c10bda138d82def1104f5abba105e0d83830"
+    },
+    {
+      "path": "src/core/items/quality/hook_quality_modifier.js",
+      "sha256": "244794b2cb60edee0e970bdf575d18269c68b08f10975fef225dca4a158ea594"
+    },
+    {
+      "path": "src/core/items/quality/item_quality_grade_policy.js",
+      "sha256": "12904e2249d30cd16e2ffcd5b86cd902b49d093f053abc3daf92210626fe21d8"
+    },
+    {
+      "path": "src/core/items/quality/net_quality_modifier.js",
+      "sha256": "2313216f4a6f8e31ec92161282ea0dd031b3e60a374276f69e7ed1535a0d8b31"
+    },
+    {
+      "path": "src/core/items/rarity/authored_item_rarity_strategy.js",
+      "sha256": "bf208adb1b226f488856968c9f5034a934fe84ecee67aff0a8751336c7f5fbf5"
+    },
+    {
+      "path": "src/core/items/rarity/effective_item_rarity_resolver.js",
+      "sha256": "914c9a10e6fbbacdb97be7ac5aff6d18db7d4cee18a46ffe85dafd66242a1488"
+    },
+    {
+      "path": "src/core/items/rarity/item_rarity_descriptor.js",
+      "sha256": "022d8911182b7789d4c7377bceb5461133310516848b8cedf1601372198da112"
+    },
+    {
+      "path": "src/core/items/rarity/item_rarity_resolver.js",
+      "sha256": "d38f35105b6d25c02f5a38ec5c9e66d7b3656adf17ef2ce23c676f7ceda26f08"
+    },
+    {
+      "path": "src/core/items/rarity/item_rarity_strategy.js",
+      "sha256": "53a5a610f215adaff816d90a494572eb619b0d7be30012adb5bcc74b32b8c0d3"
+    },
+    {
+      "path": "src/core/items/rarity/item_rarity_strategy_registry.js",
+      "sha256": "8ace21be1c9a791acf61e3a2da04c3153f5fb6ae4ca887a0ab1a251cb8e944cb"
+    },
+    {
+      "path": "src/core/line/line_allocation_policy.js",
+      "sha256": "d9ed8fbda9c32f91f2e523d6d8b8b5ac4f759ee04b12a81f042c423932b23cc4"
+    },
+    {
+      "path": "src/core/line/line_inventory_controller.js",
+      "sha256": "1320c9d151b80e90d56f57d5b8fccfbe3555ab3cd9600b6046de6afc59aca85d"
+    },
+    {
+      "path": "src/core/line/line_spool_state.js",
+      "sha256": "9e192c225b197269f2d1e7e6f3283ae2f74512d079f03ae12f59adca611fc69a"
+    },
+    {
+      "path": "src/core/loadouts/equipment_loadout.js",
+      "sha256": "87b87c632252ab878653fcffb3663150a1499db00b05b0d60343e952826998a8"
+    },
+    {
+      "path": "src/core/loadouts/equipment_loadout_repository.js",
+      "sha256": "709de0de6d9c65ffb259c33a9a9ef425f9e85d44f8c50160225b0335d6bd42a2"
+    },
+    {
+      "path": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "sha256": "bb639122179a94eda0be158118e0c590aa5d37869fe34b9687e695eaae1d9b4e"
+    },
+    {
+      "path": "src/debug/core/debug_console.js",
+      "sha256": "00f1d8b88e01bb04a2a3d94b8e7c41eaf55ea42ecad6d23ac777a157e0efb426"
+    },
+    {
+      "path": "src/debug/core/debug_context.js",
+      "sha256": "6551c5d51b13efeea61ce2459daa35e6ce9f5f81a120e343d5950a33c0109a0c"
+    },
+    {
+      "path": "src/debug/core/debug_event_binder.js",
+      "sha256": "1647eb54b2c55c420b5cb3419250db2a6f1a276b4f6660ad313b7c7163996b44"
+    },
+    {
+      "path": "src/debug/core/debug_module_registry.js",
+      "sha256": "55799c89cc49040cf0277a604f7eef3516efac38d3c7227795ef876ec58f5642"
+    },
+    {
+      "path": "src/debug/core/null_debug_runtime.js",
+      "sha256": "b185e9dbba995f17d7ac20c469e2369d466091e2789ef0297c9cd8cae1227772"
+    },
+    {
+      "path": "src/debug/debug.js",
+      "sha256": "c263f3845d2cf21dda4bcc7d504f6fedb4ff0edbe365c540f31f49b05bb82a02"
+    },
+    {
+      "path": "src/debug/dev_tools.js",
+      "sha256": "c4ab84208549c5c46a639e6f7f9aee443718df18d78ab28333897ed1a9bde72d"
+    },
+    {
+      "path": "src/debug/god_mode.js",
+      "sha256": "1060ed73fb8c58d7332af4a60d7378e91da404dd7ca3a5f058ba0db76098021f"
+    },
+    {
+      "path": "src/debug/modules/base_debug_module.js",
+      "sha256": "0d47c1adb1336177f6c5731cfa4c3f6fd4929a6e9e29cdba545c393a0e5cf872"
+    },
+    {
+      "path": "src/debug/modules/bite_ticks_debug_module.js",
+      "sha256": "73ab8d1541b49f635d008e1923954f44d45b9f1f2778aa6ccfb3d781ab661f94"
+    },
+    {
+      "path": "src/debug/modules/catch_time_debug_module.js",
+      "sha256": "8decc9c58dfc19ba095ce2e19d2a911437316446cc7da1bedcb3d0cd1f7bed57"
+    },
+    {
+      "path": "src/debug/modules/deviations_debug_module.js",
+      "sha256": "e68ade71dab2e6994e814ccf6e98489ceea8dc32ea69ccf4cc841b8b55d3631e"
+    },
+    {
+      "path": "src/debug/modules/exhaustion_debug_module.js",
+      "sha256": "ce87dfe75f04890c752e32aac36030892898889bfe1b7d24e185c7be861327bc"
+    },
+    {
+      "path": "src/debug/modules/forces_debug_module.js",
+      "sha256": "00c87f337db91133262ce440baa11aceb63d3482c3ff45da06da74ba6d7e1137"
+    },
+    {
+      "path": "src/debug/modules/location_debug_module.js",
+      "sha256": "c2cc75c9c42933f575abe56eb49e350e9267171f9b366dca31e8858ccfb92ed2"
+    },
+    {
+      "path": "src/debug/modules/map_debug_module.js",
+      "sha256": "ace11e7cedff6b5a7bf37c39ef74ed3ef20f1c74fed246ee35b3757aa7f4dc50"
+    },
+    {
+      "path": "src/debug/modules/net_debug_module.js",
+      "sha256": "0a0e309e9baa071a310189eca2c3cd0c2902ee2bc92976b41763ac6402338cef"
+    },
+    {
+      "path": "src/debug/modules/prediction_debug_module.js",
+      "sha256": "72bf20dcbaa8fd45171ccd8c7f58ab48da017f73b9657c1702d872a9cbfed6ef"
+    },
+    {
+      "path": "src/debug/modules/reel_hold_gate_debug_module.js",
+      "sha256": "1892e0ba07c39974be9c7c008a15d4a415933e98d1c09c508dcb52260ae7404d"
+    },
+    {
+      "path": "src/debug/modules/reel_hold_gate_live_probe.js",
+      "sha256": "3323cfd44785c2713dc3ef96eaa6c482c51ce8888d024fc97ca860dabb973538"
+    },
+    {
+      "path": "src/debug/modules/rod_stroke_debug_module.js",
+      "sha256": "46ba801f858b2f5723e4e9db636eb78e708c3aa0852308b42934cbfbe73f27c2"
+    },
+    {
+      "path": "src/debug/modules/stamina_debug_module.js",
+      "sha256": "7597a9cb4bc69babdbf676aaaa9b0680162698c007cf3001697d5b512df63641"
+    },
+    {
+      "path": "src/debug/modules/tension_debug_module.js",
+      "sha256": "3817a5d70c222429a617f27a49473d62fd36cf4de9e0761a9e1fc76ef12d1d1e"
+    },
+    {
+      "path": "src/debug/overlay/config/overlay_modules_config.js",
+      "sha256": "31f8b47ccc44e8315892c218b6bf82b1789180e2dfc4b66481918ed097bea530"
+    },
+    {
+      "path": "src/debug/overlay/core/overlay_controller.js",
+      "sha256": "b7445fe95ff5ab9ad6299fe53f683ecda8412e445db810ac9bebaf54c4e944f0"
+    },
+    {
+      "path": "src/debug/overlay/core/overlay_module_base.js",
+      "sha256": "d472a7d44429464335a842398400b4757fe6b719d5a8c850fbb872f696a8e148"
+    },
+    {
+      "path": "src/debug/overlay/core/overlay_module_registry.js",
+      "sha256": "d4859d6ca9d21f9a4c26dd638837599626b050aed5130c25096d02ceb68ff6c1"
+    },
+    {
+      "path": "src/debug/overlay/core/overlay_update_loop.js",
+      "sha256": "3039964b2a4b098cb0880d1899237119420ab317063fcbaee17fece61f5062d3"
+    },
+    {
+      "path": "src/debug/overlay/dom/overlay_dom_adapter.js",
+      "sha256": "662e4a1c2846f30a4ebd83e5216f24e71ad60923f798b91657d6dd366de33184"
+    },
+    {
+      "path": "src/debug/overlay/dom/overlay_interaction_bridge.js",
+      "sha256": "edc24300ec766926ebb0485c201f440488ae24dadc1ef043d802807675dc4df1"
+    },
+    {
+      "path": "src/debug/overlay/dom/overlay_metric_info_bridge.js",
+      "sha256": "6ff64607d6734466dbbb6a86ccad7b91ef1e33ad5e33bc242541d4ad7b3ec614"
+    },
+    {
+      "path": "src/debug/overlay/dom/overlay_scale_controls.js",
+      "sha256": "965b5601bda3c263c507f18ea2d82a9f79002fa8572203227641b658cda13c51"
+    },
+    {
+      "path": "src/debug/overlay/dom/overlay_style_installer.js",
+      "sha256": "cea6cd30765f09f5bddbbee585be8bc5087321375511367d3d61ddd8dffd7eb8"
+    },
+    {
+      "path": "src/debug/overlay/dom/overlay_window_drag_controller.js",
+      "sha256": "0b74e78235337d40e582a7d686f7853adfb32ecdec468b14d80ee085f4a1ca82"
+    },
+    {
+      "path": "src/debug/overlay/modules/behavior_overlay_module.js",
+      "sha256": "b6bb748a96c1cf8e61920947068851a3a09d000b560b0d873f0e25bbe132c314"
+    },
+    {
+      "path": "src/debug/overlay/modules/chances_detail_overlay_module.js",
+      "sha256": "98f2c570d8906bd5fce1e1f00160b29957b035f7a945beb25859cc4ac9332a2a"
+    },
+    {
+      "path": "src/debug/overlay/modules/chum_overlay_module.js",
+      "sha256": "4fc8d6b70f4d8e9c6ed0b798387435a0ef725a74cb9a7051cebfacdde7f31bb2"
+    },
+    {
+      "path": "src/debug/overlay/modules/debuffs_overlay_module.js",
+      "sha256": "e4e3e4ff0cae92346ed2de2e90d0fcd0b2287507bf2778c6d40eaf507d71fba0"
+    },
+    {
+      "path": "src/debug/overlay/modules/echo_overlay_module.js",
+      "sha256": "514fd01b81e2ccd50bf92741810789b00608af7ca6afe7d96d01fc1a1b21bd81"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_physics/fight_auto_recovery_section.js",
+      "sha256": "1968aab1f04496c6782b6cab6fa05f5645ec536e95f21768b987cea3ac3e5225"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_physics/fight_drag_section.js",
+      "sha256": "51a236a18692e6c90dbf85c4421c4411cf4091bb63f003e62c80de6a69760169"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_physics/fight_fish_section.js",
+      "sha256": "f8db9566cd125ffadba786e4b99f1bc58312110bc52ac97a21e99398b714b911"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_physics/fight_line_section.js",
+      "sha256": "4c7b7ecccf8dd9952394fdadecd24153b5f02c44c35cdc256ce25c82191fb0ba"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_physics/fight_movement_section.js",
+      "sha256": "e16e506f1d8af75afa54768320cdeafad84a93414d6643da3b92ab0d5844b63b"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_physics/fight_physics_overlay_module.js",
+      "sha256": "45992824f154fbf4f6142d873711295af206a5c35f8b81e7bb6b1028715acfc2"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_physics/fight_reel_hold_section.js",
+      "sha256": "dfc8e1847aabd9157b0bbf38de186e9cd3fd19985386af18d426217e5129e1f5"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_physics/fight_rod_control_force_section.js",
+      "sha256": "c5a08d755e599608af31eb3fd3d4fd00449de097e9cc2d91d9bce90bef240578"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_physics/fight_rod_control_geometry_section.js",
+      "sha256": "43e5fe9022597374985831e7f6f03ff9d2b160f59e2d1d8dc4f5b1490c13706d"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_physics/fight_rod_control_input_section.js",
+      "sha256": "4dceae521b8f949cf4d84431aea79b046594531eecc7fbe286d2ce5b789236e5"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_physics/fight_rod_control_section.js",
+      "sha256": "2b058327addff9954ee614265b6efb40eb457b6f6ca1617d9359053fd16c61c3"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_physics/fight_rod_control_visual_section.js",
+      "sha256": "ca125d16d2a1dcd4e3d85fde8dfffd6e71c2083cd5cb6144e7b80a84280b9b3a"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_physics/fight_rod_hold_section.js",
+      "sha256": "d764c4329069862359400d3ab5b16e8ded1384d12cdc157d617fc64188b2b149"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_physics/fight_rod_stroke_section.js",
+      "sha256": "b88580efd2355fddf77b4a820f5f98a5524e73e1bb6aa698b3e486feac9d37f9"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_physics/fight_section_base.js",
+      "sha256": "0aa98ce4ee26e2c31f876f862a00155ae3945088d8e62671241a2a56b62d5e12"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_physics/fight_tension_section.js",
+      "sha256": "8cef00d3371aaa59d56e887ea03d6925d499ec99a6a576cf8d65469cf36a4db7"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_summary/fight_summary_overlay_module.js",
+      "sha256": "c8f21fc730fa8e02b861abb12170477f057242caadd3297f449a3ffaace0ed62"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_summary/fish_movement_summary_overlay_module.js",
+      "sha256": "0d473e92e1baeb712c11040edec2f5b7d1e16b7cb3be60115e2bf60e0767d998"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_summary/line_and_drag_summary_overlay_module.js",
+      "sha256": "66ebc21c1bb603c90b0e62e2b6468393698cc11aa8eefb05edbdf5bcb6d1e69b"
+    },
+    {
+      "path": "src/debug/overlay/modules/fight_summary/rod_control_summary_overlay_module.js",
+      "sha256": "daf41ed40d8f4728b0c2fb26b97701e790a58db5224db0daac2d0147a3a6c049"
+    },
+    {
+      "path": "src/debug/overlay/modules/fish_balance/fish_current_force_overlay_module.js",
+      "sha256": "30c194551ef6ed9dd0013500bc3992e827339f2237bb136a43cd1ca0fb5798e8"
+    },
+    {
+      "path": "src/debug/overlay/modules/fish_balance/fish_debuffs_summary_overlay_module.js",
+      "sha256": "71d01809d70bb1e517e9da70c6560de9d070162607a6772bac4a6987e506c822"
+    },
+    {
+      "path": "src/debug/overlay/modules/fish_balance/fish_live_force_summary_section.js",
+      "sha256": "2cff5effb461999641d712f6165d1ff200c7fdee8863a9f4ded826db8a6df307"
+    },
+    {
+      "path": "src/debug/overlay/modules/fish_balance/fish_state_force_preview_section.js",
+      "sha256": "eeff8c15cb41dc5bd36d731ecd9f3b5b18570ce22ec6ec4563137779fdb9e1d6"
+    },
+    {
+      "path": "src/debug/overlay/modules/fish_balance/fish_summary_overlay_module.js",
+      "sha256": "c228ace885767e3c574d7855ca3ae248f1ad7d968b9ec9b5f485aee9b29b7e2b"
+    },
+    {
+      "path": "src/debug/overlay/modules/fish_balance_overlay_module.js",
+      "sha256": "fb609d556934f22085813a9f9eddc2f10340b1bfa7f07e8ae146ebfc5c4cc6a9"
+    },
+    {
+      "path": "src/debug/overlay/modules/fish_power_overlay_module.js",
+      "sha256": "a0bcec45f9a4f17ffbc8580d4355b8e4bd548d21c7018d9e30d4e4c7a119e19f"
+    },
+    {
+      "path": "src/debug/overlay/modules/live_forces_overlay_module.js",
+      "sha256": "bad7c84efd5306a91c7a10d9c00f0c7ce1e7c63b7e6e90b6381377d878a540b3"
+    },
+    {
+      "path": "src/debug/overlay/modules/player_max_overlay_module.js",
+      "sha256": "fdb9d8f53ff5a4f962a600f56e5cbbc5fc961d21b19ae7777271cf7b0d5a8272"
+    },
+    {
+      "path": "src/debug/overlay/modules/stamina_balance_overlay_module.js",
+      "sha256": "406c849822684a72c03d7dd2994be893ff703a55a5a49be1ee00b15e2f371a5c"
+    },
+    {
+      "path": "src/debug/overlay/modules/worst_case_overlay_module.js",
+      "sha256": "cd3928a9f75e1ae9fbd38f198f7e5dd3d0902ef83f25c98a0ee944aaea01d0a1"
+    },
+    {
+      "path": "src/debug/overlay/overlay_bootstrap.js",
+      "sha256": "950c35789d341eed2e6a38119d98320e0001dd1afa486f48007bb50b25cbcca9"
+    },
+    {
+      "path": "src/debug/overlay/services/overlay_console_metric_inspector.js",
+      "sha256": "1a5d477f574c0516051a53c969bcd5556d12c9626bf91c9331ca050f781f1a57"
+    },
+    {
+      "path": "src/debug/overlay/services/overlay_html_builder.js",
+      "sha256": "3c487888701069c9b8060e8847de1c81a25f91bbf5db2f415210ea314e4a8981"
+    },
+    {
+      "path": "src/debug/overlay/services/overlay_metric_catalog.js",
+      "sha256": "e349b631d51807ab32ed4b49cd16f4a2674c48a648f5af5d43a291b36ffbd25f"
+    },
+    {
+      "path": "src/debug/overlay/services/overlay_metric_resolver.js",
+      "sha256": "da205b9ada165bc51e788500032ce628c69af7a5459fa836c55d7b09cf551afe"
+    },
+    {
+      "path": "src/debug/overlay/services/overlay_settings_store.js",
+      "sha256": "723da67d1ab50a58e03e9e46d8a0e4fd271313ae6b1d90f0233646cdc3b037a0"
+    },
+    {
+      "path": "src/debug/overlay/services/overlay_value_formatter.js",
+      "sha256": "1a79b8ca1f7060d6c3e0191b52afa44d86924c4bbc841487596e08e0b818e609"
+    },
+    {
+      "path": "src/debug/overlay/services/overlay_view_state_store.js",
+      "sha256": "0c768f68dbeb5a96ba61f18a522d47ae5cf0d5571f6c2a02e34eb05b66e37253"
+    },
+    {
+      "path": "src/debug/overlay/services/worst_case_force_debug_selector.js",
+      "sha256": "daf85fa1dc1e32255a141db618760caa2682dbe29eaa698b4365554619cec783"
+    },
+    {
+      "path": "src/debug/services/active_fish_dev_tools_schema.js",
+      "sha256": "6008aee4ab79321a3f299bf45c97c19d1bf665f523e41cf004e2e40afe4f3e0b"
+    },
+    {
+      "path": "src/debug/services/debug_data_selectors.js",
+      "sha256": "da2c6b3ad91cbcb25ea4c724b7061b64c596a1d4a33096f0e4dcb681fe1a7bd6"
+    },
+    {
+      "path": "src/debug/services/debug_formatters.js",
+      "sha256": "1c019cbac4031a203d9b04a60d62cd8a33ce7baab65e475e5aad788e62a11e41"
+    },
+    {
+      "path": "src/debug/services/dev_tools_control_binding_registry.js",
+      "sha256": "1059d98505d9a308fcaffe89ecfc8d8716edd19fa8e290ea322f461b06bb4316"
+    },
+    {
+      "path": "src/debug/services/dev_tools_parameter_alias_registry.js",
+      "sha256": "6ab815ab92f164e2e8c51af32e4a8d4086e67ae0f3758d0de12b4e9e920e161d"
+    },
+    {
+      "path": "src/debug/services/hooked_fish_profile_synchronizer.js",
+      "sha256": "b8ebd13c1871ae4789303f92ec3cca0a918e13122468f418d466482c2de449cf"
+    },
+    {
+      "path": "src/debug/services/item_progression_debug_snapshot_provider.js",
+      "sha256": "6c776f1ff6363966a804c7d48d603a8cf69079422a5b00b0ab25e8e7771a9216"
+    },
+    {
+      "path": "src/debug/services/location_debug_data_provider.js",
+      "sha256": "cf718d68c442e9cb8d8fae89f07d8cf17f36b4c1b4c7af6be8a91e837f82c299"
+    },
+    {
+      "path": "src/debug/services/location_dev_tools_schema.js",
+      "sha256": "5afdaddf356cf2ef0327f7f3a945778b45cb5bb979dacd40d4d86f239167d573"
+    },
+    {
+      "path": "src/debug/services/memory_leak_watchdog.js",
+      "sha256": "1af1277ce7bf070f2ed81bd03137f51e1b82d2384eba3c287ca96bee0c5de5f6"
+    },
+    {
+      "path": "src/engine/assets/asset_load_result.js",
+      "sha256": "b6d91cc6950680ad4f2d3a418abe923fb6d5dddc1668320aba381e2eebd83120"
+    },
+    {
+      "path": "src/engine/assets/asset_manifest.js",
+      "sha256": "d8c6988b6d9081c7a5675051096fc009dc4aaec37f881391ffb3a1b03a14ce30"
+    },
+    {
+      "path": "src/engine/compat/stage_2/asset_load_result_legacy_bridge.js",
+      "sha256": "e4fbf63658fd3363b258779e0805390cc5f441ca7010baebce7369a57a2d13eb"
+    },
+    {
+      "path": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js",
+      "sha256": "ac716a5f0168ea32086bee31e7a8b85389af2321ec8a1c879926f2a04bb308ac"
+    },
+    {
+      "path": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
+      "sha256": "445d50e38dd93ab1c4e0eeb02b2db5c8878ed2d37a397b104be23fe7861a2b31"
+    },
+    {
+      "path": "src/engine/compat/stage_2/dependency_contract_validator_legacy_bridge.js",
+      "sha256": "b0d04890e329bb330cb6b5642f3a088a21ee1374f82ad459e2f539eb670ceb72"
+    },
+    {
+      "path": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
+      "sha256": "a2c3ffb3ae96af9487763884b35454f76efc9077833321fcc32646b9c713947f"
+    },
+    {
+      "path": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
+      "sha256": "109770e72f43f816617276d5c4ef06a7200137e6c49382e400915194ed49f83c"
+    },
+    {
+      "path": "src/engine/compat/stage_2/render_component_legacy_bridge.js",
+      "sha256": "ffff276e91f849508819eefef996bfc2aa11f7a57819dcb85ee4d662e330662d"
+    },
+    {
+      "path": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
+      "sha256": "8f13c6107d2588f87295cf2978912d65fea5e2478ce0cdfc46e3e79a34aa23cb"
+    },
+    {
+      "path": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
+      "sha256": "491ccb58679272a681e69ef6adb643f2f80980cf5ef63cf589dd2762809fd58e"
+    },
+    {
+      "path": "src/engine/di/dependency_contract_validator.js",
+      "sha256": "265a7bc61092b225d1f52c89216edd925cf525371778d4e2e34bc6a6fe1f3e89"
+    },
+    {
+      "path": "src/engine/events/event_bus.js",
+      "sha256": "661f6727943debc2ecc97f8b244179da0d092320fdd6da9f490ca8768382b122"
+    },
+    {
+      "path": "src/engine/events/event_lifecycle.js",
+      "sha256": "f2dd7d126c2921a69d0ddf8077947c73a8efd196b4230835fe64271e863d9628"
+    },
+    {
+      "path": "src/engine/rendering/composite_renderer.js",
+      "sha256": "0d6c13862e76619e3bb5e56be05d851ac27e301a1ce668051ed5be7096d7f79a"
+    },
+    {
+      "path": "src/engine/rendering/render_component.js",
+      "sha256": "4b3c88d960a500cb8ffeaee0f97978bc9126cc8716a183e462ebf7dc705f4252"
+    },
+    {
+      "path": "src/engine/rendering/render_math.js",
+      "sha256": "5527fbbe0a05bfedcf59ea264f8e39fa9c34e614823f0a1cb9c148c41aea5e43"
+    },
+    {
+      "path": "src/engine/rendering/render_pass.js",
+      "sha256": "9827353d3daabc8b7cba8df6472d1500b0d0705e5443a6e3e9e3827940a6731a"
+    },
+    {
+      "path": "src/entities/fish.js",
+      "sha256": "a0377e38440e728f19ff83dde748d1937a76a45f8e0bbc8c37d08a4024216c01"
+    },
+    {
+      "path": "src/entities/tackle.js",
+      "sha256": "64fdbb317a15fab248f2b1f3270672d8bd7fbe80b9d15b0d46a2a8f1e2b0490d"
+    },
+    {
+      "path": "src/game/domain/equipment/rod_capability_resolver.js",
+      "sha256": "554c7f3142ad8088df38a02fc0c3e71e86deb3fa9b8df93b673215df9b4e33eb"
+    },
+    {
+      "path": "src/game/domain/fishing/drag_force_calculator.js",
+      "sha256": "ce2ad02fa8e564e2ce7bde4b984a7c44275cf5def0764b5fedde2e4a45b4549c"
+    },
+    {
+      "path": "src/game/domain/fishing/fish_retrieve_result.js",
+      "sha256": "ce3324b8b152f3694385606eed497706349b61d69c95dcefe414696781bb6ad7"
+    },
+    {
+      "path": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "sha256": "1396b967242ebad01eae468f6941b6700b2f4ad4a4252433aaae1727cea6d44f"
+    },
+    {
+      "path": "src/game/domain/fishing/hold_opposition_resolver.js",
+      "sha256": "be576855e5bfe2b9d51e1187306c396195234f3717a248afd991fa284a7762ae"
+    },
+    {
+      "path": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "sha256": "ef7b757d9de46ad52d2e67155181f93a4c352c3719c7ef833025c3f7ed8c2d86"
+    },
+    {
+      "path": "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "sha256": "bbba751a87c681b057250a55d59384f133d154970f795b90805afb04d68e2040"
+    },
+    {
+      "path": "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "sha256": "0ca87cf34316c034dc9565c35e1f48461bb797b055d6b61dbef428fd793bf547"
+    },
+    {
+      "path": "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "sha256": "b145f56fffc4962f4b32de8ec13d6efe6ec7613eeb371572349782e843426f9f"
+    },
+    {
+      "path": "src/game/domain/fishing/line_spool_state.js",
+      "sha256": "a816121ccb229b658a1d3d00cf34008227f036e1dc66f03a3a9fe89496e15c2a"
+    },
+    {
+      "path": "src/game/domain/fishing/line_tension_calculator.js",
+      "sha256": "113079de8eaff33183acf09d26c116357fe5708cb601be43eca4806052c0c2ff"
+    },
+    {
+      "path": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "sha256": "126b4845445dce0062c60471cd8b86f0189f3adb9ed95c8e4dfb0202d5ff1168"
+    },
+    {
+      "path": "src/game/domain/fishing/recoverable_line_calculator.js",
+      "sha256": "96fd594895bd40fd4bac467227abd7bc4affef134e07f62432b556d6a4e1a595"
+    },
+    {
+      "path": "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "sha256": "181ffe8e130619355be13872d3f12594fdeac27bf2f9c306ff02120f46d06652"
+    },
+    {
+      "path": "src/game/domain/fishing/reel_hold_load_policy.js",
+      "sha256": "5aa716f077764d9ada772388d55e2a5d2c3c432e3c77acd06fd23979de8f92f3"
+    },
+    {
+      "path": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "sha256": "4347b9593ca7b8387fb64f224c343cdb8c7633ea8f5fb3aaad86fc970a374f7b"
+    },
+    {
+      "path": "src/game/domain/fishing/rod_control_movement_projector.js",
+      "sha256": "bdd4e8095a2f72b43f07c0a9c386c7f8ad98df25b4721f585fe040143accaddc"
+    },
+    {
+      "path": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "sha256": "f5c3c80ce836e6afb00598b490b3717ec0c78881a7062f4370ca7b73665c0861"
+    },
+    {
+      "path": "src/game/domain/fishing/rod_pull_state.js",
+      "sha256": "111fa719ea32f02f7824b951e2cd31a214468dd609c32ca24cd85193c1c1431c"
+    },
+    {
+      "path": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "sha256": "f9255171fe2a71afb2c971d5070529f7d462ddc093ed3298a57ee749548c7b44"
+    },
+    {
+      "path": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "sha256": "c139bc08f8130b9a34570e808e5203c6e4665becdc7d157085f4cd308c61568e"
+    },
+    {
+      "path": "src/game/domain/fishing/rod_stroke_state.js",
+      "sha256": "9454c72176e555ccce5501e18c13af687a373fdb1c4212884e52cf760c5d8248"
+    },
+    {
+      "path": "src/game/domain/fishing/rod_stroke_tracker.js",
+      "sha256": "19427337472dbafe28b90a3e9da57cffe26e2ba0d521c80d1f971ad10ec07f45"
+    },
+    {
+      "path": "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "sha256": "a4cdce35a7ff59a9b5f3ab532180561e7bb55072e01cec526e895cc2dca05992"
+    },
+    {
+      "path": "src/game/domain/inventory/equip_target_selection_policy.js",
+      "sha256": "fed756404d8fecced0601ce4dbcbf81577277be24f75b7a7a7fd30e61c3cc751"
+    },
+    {
+      "path": "src/infrastructure/location/depth_map_reader.js",
+      "sha256": "6fa8aeeb0c88cadf4eb380c92a4900f3e41cfd9c0e2ad36a32cafab8caff5205"
+    },
+    {
+      "path": "src/infrastructure/location/location_asset_loader.js",
+      "sha256": "44a60827c4951f2be63586b00d99156bade14deb6b88b9f74e34c6f148d53559"
+    },
+    {
+      "path": "src/infrastructure/location/offscreen_canvas_factory.js",
+      "sha256": "c025ce4242f89e94577e65b7e327b2b3888793392e709fd16a8a6c61bb22a09e"
+    },
+    {
+      "path": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+      "sha256": "b1764933203c4096d5eda58815cdbe328c49132946865cc28bf325cbd47522a4"
+    },
+    {
+      "path": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "sha256": "a6ba10d49bbfe614438eb56c92a464443962c275485e289e42ccf477ca86e0d8"
+    },
+    {
+      "path": "src/infrastructure/storage/inventory_v2_snapshot_factory.js",
+      "sha256": "e1c0a72b419e7534e457cb9bf4251b363f96659ecee7ae0678c13f1bd5176254"
+    },
+    {
+      "path": "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
+      "sha256": "01725f27f120c15681656a1f8b7d3e11eb884ba257811ed0be72a8407b59cc29"
+    },
+    {
+      "path": "src/infrastructure/storage/inventory_v2_state_store.js",
+      "sha256": "47ff1194e1f0c5a3dbb11f90944587db98c9e308dfab81b196b122f75e00d0b4"
+    },
+    {
+      "path": "src/infrastructure/storage/inventory_v2_transaction_coordinator.js",
+      "sha256": "02ae7f1bc753c1089d0987a1023529ab756e16643bc8f708ce57e06936e7649c"
+    },
+    {
+      "path": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+      "sha256": "fe8918c9a1f481c3c6158bd1bac8cda38b98fb75e73baf0b9c53ca20ffdb60b9"
+    },
+    {
+      "path": "src/infrastructure/storage/legacy_item_state_migration.js",
+      "sha256": "6d0bac606f2c1d6f9a151224a0adfda8d877302902004c107fcc34ddcee37d1a"
+    },
+    {
+      "path": "src/input/pull_input_mapper.js",
+      "sha256": "cdba36710ace40900ba9d6a1f7c4fb3f48651622bf8f31f8a5dc94456e1de000"
+    },
+    {
+      "path": "src/input/victory_action_gesture_resolver.js",
+      "sha256": "64c68b50a19c041766b622815ce263a5da1b04d32d24c9d94ebf2598b8120900"
+    },
+    {
+      "path": "src/render/casting/cast_scene_renderer.js",
+      "sha256": "49c4ac62721a0e96162779361652fabcdcb9eff6fc38a8b0d5c99ad875b5fbfe"
+    },
+    {
+      "path": "src/render/core/canvas_2d_surface.js",
+      "sha256": "17eaf6c5c3867c1a9ed5f8bc9b233b2bf460c3ce59bc93fcef79a53eb8655dad"
+    },
+    {
+      "path": "src/render/core/canvas_primitives.js",
+      "sha256": "b9bc31b159b0ae58782ee9fdffba2a67630fa60adda7655a90c833ceb0400701"
+    },
+    {
+      "path": "src/render/core/image_asset_provider.js",
+      "sha256": "302142c38e88782a8dbef01ec61dda7921f9f0f3c0931969f6d3563ed7b466dc"
+    },
+    {
+      "path": "src/render/core/render_allocation_diagnostics.js",
+      "sha256": "17b1271dd3b5d943dcfed64fedc8a4829814e94d732bebee75a202d48d9d9156"
+    },
+    {
+      "path": "src/render/core/render_frame_buffer.js",
+      "sha256": "0e703cafae465ea9d9f9571c5e9e80db8853a6706994db5050700d9112dd4712"
+    },
+    {
+      "path": "src/render/core/render_order.js",
+      "sha256": "81855fc560d908ef79fe24d9cad1fa430f59dbf9712986b61e6ed56ea9acdf11"
+    },
+    {
+      "path": "src/render/fishing/fight_area_renderer.js",
+      "sha256": "c4fd3d7cef22a116b79ddaddd76a36f3aefb62c3c249552ff7537fd59e1fe83a"
+    },
+    {
+      "path": "src/render/fishing/fishing_scene_renderer.js",
+      "sha256": "0629f226b47ceddcb6a677371dc69d5937492b42e99070cc847aa5560b9ced4a"
+    },
+    {
+      "path": "src/render/fishing/float_renderer.js",
+      "sha256": "b9677b8df93663ef8258965e7ab3300cf9a54ea8dafbd37cd190c52c1bf50090"
+    },
+    {
+      "path": "src/render/fishing/line_visual_state_controller.js",
+      "sha256": "83f9447bd925bc50849326c54b6e8bde9bcf515b2de30bf96d4d9b9c80b3890b"
+    },
+    {
+      "path": "src/render/fishing/rod_line_renderer.js",
+      "sha256": "4e9e3623f607722373b869f00eedbcd090e57e7c050ddffcf558de7275c17237"
+    },
+    {
+      "path": "src/render/hud/fight_hud_renderer.js",
+      "sha256": "8381f61f35e23999112fa426dcacdc102b45958dc21c01a291bda2023bf8dd03"
+    },
+    {
+      "path": "src/render/hud/fight_status_bars_renderer.js",
+      "sha256": "e7aa9a1a519a52101e0d586301e8de78c8102a25b4104247054b7ab097c6020d"
+    },
+    {
+      "path": "src/render/hud/hold_charges_renderer.js",
+      "sha256": "aa61004552da722f1d9bef18bbf95dc1f9de9be5b3aeb981c6941de7d03acfec"
+    },
+    {
+      "path": "src/render/hud/hud_bar_renderer.js",
+      "sha256": "a122244acea26781032491142411a194b266bf5a81e99db75b3f01781d980d25"
+    },
+    {
+      "path": "src/render/hud/player_pressure_fatigue_indicator_renderer.js",
+      "sha256": "517660f2294cb5d8f42af6b98cff357e09f12aea9349b0e9e57583494c242319"
+    },
+    {
+      "path": "src/render/pipeline/casting_render_pass.js",
+      "sha256": "4f69d3bf3d4ec4f96a35bd3ef372d59fcc8d2d8c1c2cb22208f047d993485113"
+    },
+    {
+      "path": "src/render/pipeline/fishing_render_pass.js",
+      "sha256": "2f9fc5e232d4c204b3317de92747fe0a62e69dd78ec25df5e4d725502bc83021"
+    },
+    {
+      "path": "src/render/pipeline/game_render_pipeline.js",
+      "sha256": "5eb8373e144f340f0e82fce4d981af4348b066eda83e8b97364aec8b9f7f51d7"
+    },
+    {
+      "path": "src/render/pipeline/hud_render_pass.js",
+      "sha256": "6a5a7112e232440abcaf2d990136788143b298b291930ec77a1c851bce7b8ec8"
+    },
+    {
+      "path": "src/render/pipeline/outcome_render_pass.js",
+      "sha256": "c2765eb6ecafd49608f46bcfcac2c08611071f4c06deefafb10058e1f32ba1be"
+    },
+    {
+      "path": "src/render/pipeline/world_render_pass.js",
+      "sha256": "bfab26707fa93ac28e68d169561f3e848df948f60a2c1430610f62d186ec020f"
+    },
+    {
+      "path": "src/render/screens/game_over_renderer.js",
+      "sha256": "9e0ba555530fe61ff41fb4ef1d9eae9e1b63080f3f5d88130b92001bbb1d85cf"
+    },
+    {
+      "path": "src/render/screens/rarity_animation_resolver.js",
+      "sha256": "462177631856583e5ac42e3158bffcb4c0e0984fced56b2a5252f88ff8a5e337"
+    },
+    {
+      "path": "src/render/screens/star_rating_renderer.js",
+      "sha256": "c2a1f7a6e519915565452e4122f75089c9d5eff09a2da254463c0bfe3bdd11a6"
+    },
+    {
+      "path": "src/render/screens/victory_layout_resolver.js",
+      "sha256": "e952b40df8e4979248f3e07d22abba8e62f68ce2a5f4cfba9c44fe33e0a3cabb"
+    },
+    {
+      "path": "src/render/screens/victory_renderer.js",
+      "sha256": "9ae935dda1e0bd14902f15983d216b3d762c253a20988d5e8bf0f29ef3f14794"
+    },
+    {
+      "path": "src/render/screens/victory_theme_resolver.js",
+      "sha256": "9e8cec02c9f231d8374fd56b513e0505a0f4fddaee37d5c6e5362ff5faea8b4b"
+    },
+    {
+      "path": "src/render/world/boat_chum_renderer.js",
+      "sha256": "3c38c9d6ab1589035e2d3d2950af70bbedf0956b04dd0e2e034cd5524a843d97"
+    },
+    {
+      "path": "src/render/world/location_debug_map_builder.js",
+      "sha256": "15934f19efbef27a153de9210e0e8b94ccd416aec7b9448f6119e40afaf29278"
+    },
+    {
+      "path": "src/render/world/world_debug_renderer.js",
+      "sha256": "a380c53f2aace3b86e1bfe37593aaeaa85c2933605c91b7f8efcfb889178c17f"
+    },
+    {
+      "path": "src/render/world/world_scene_renderer.js",
+      "sha256": "a7085fd297c3546d0a09a8b7da780b157bd89e2734c124b91984e824cc3ae316"
+    },
+    {
+      "path": "src/services/weakest_tackle_limit_resolver.js",
+      "sha256": "b4e82d90ff9bbc194f985b73b68d9df9d10641ef6ad7188faec7d4c07b4e5317"
+    },
+    {
+      "path": "src/systems/bite_system.js",
+      "sha256": "3c6889cffa7c1e04393b133615d54b499fa420c325ebeb1c6fe08ab1e01c277f"
+    },
+    {
+      "path": "src/systems/chum_system.js",
+      "sha256": "afc043a455318d374a9f9fd60341558e5f383d3b8995f71e4be53d0351aab603"
+    },
+    {
+      "path": "src/systems/drag_system.js",
+      "sha256": "2465c62aef4280bc7e84d75bff1c937a25a459d4da6d99013dc551c7310a09a5"
+    },
+    {
+      "path": "src/systems/fight_physics_pipeline.js",
+      "sha256": "6e189eec74fa80d4ed7b05388e3d7b1791f8f9efbffd479a918aa0f86b9f9922"
+    },
+    {
+      "path": "src/systems/fight_physics_system.js",
+      "sha256": "5f8c84085a267826586cfa915c53eb8c7235674418fa2b38f462160fb65fe01b"
+    },
+    {
+      "path": "src/systems/fish_force_system.js",
+      "sha256": "59d28d370aebcb925741d43f2e45885add47ef1df8ae2e64595af5ec712d026c"
+    },
+    {
+      "path": "src/systems/fish_retrieve_system.js",
+      "sha256": "977828dd5f99ddb934571ebfba4933b968362ee131f192fb9f4598ada1a19d3e"
+    },
+    {
+      "path": "src/systems/inventory_item_factory.js",
+      "sha256": "18479c75cd58aa2590cf1a1e1de056eb226015d4a3502e83b1be06c19afd1b3c"
+    },
+    {
+      "path": "src/systems/inventory_item_view_factory.js",
+      "sha256": "4e84c36d86322b4f723c314ae42fe804e819d570407d4227cd0239040db97063"
+    },
+    {
+      "path": "src/systems/inventory_system.js",
+      "sha256": "ba0c4e1098f185f2ef72287ce0008c48576274182af88121946358ab8ed26220"
+    },
+    {
+      "path": "src/systems/line_system.js",
+      "sha256": "30c077864d172fa472663a63daf2d376c30c4b32c9dbfbe89422e235e963d246"
+    },
+    {
+      "path": "src/systems/player_force_system.js",
+      "sha256": "ed6e22d630d1e69b5562a1ba14af57f8e42d1a00144f5e10e4f54a623a79a687"
+    },
+    {
+      "path": "src/systems/player_pull_motion_smoother.js",
+      "sha256": "a0f63b0e597caf872ae01b46055f758d49b649f076a13e464bbf43b30e036e8a"
+    },
+    {
+      "path": "src/systems/reel_system.js",
+      "sha256": "496f81c5289fb37aa2c00c1047ba6c808abedabe3e1e47968fe8c8ebe1a8c0de"
+    },
+    {
+      "path": "src/systems/rod_lateral_control_system.js",
+      "sha256": "fb55cffc13f130204999f5b7ca67339eed47452547a88ed945a4bb246da6df74"
+    },
+    {
+      "path": "src/systems/rod_pull_system.js",
+      "sha256": "74bac2e8a1621fc1867bf1cd40f475de61712bbbc8949cbaea588a42d76c3dc8"
+    },
+    {
+      "path": "src/systems/rod_visual_offset_system.js",
+      "sha256": "1d5d529148cf8f8f837f6ac3533aac0a01940e61bcac593e9ece5fb5ee34dad5"
+    },
+    {
+      "path": "src/systems/stamina_system.js",
+      "sha256": "b5c450b2a0e6e71604694a5b272cbbdf3e63388e498d5d56b775a9271cfe1d09"
+    },
+    {
+      "path": "src/systems/tackle_stress_system.js",
+      "sha256": "e2ab71e4071dbc0d4632d570b4992663e29c1cc1147a3fbeca391601451ef5ec"
+    },
+    {
+      "path": "src/systems/tension_system.js",
+      "sha256": "fc93a580c8256bc5bf45bed75ed9fe56d86b74cdcf24f199698dea85e907fd1d"
+    },
+    {
+      "path": "src/ui/condition/item_condition_dom_adapter.js",
+      "sha256": "ed85a87a53e002f97e7cc53610ebb3849a12642c97a5b8fa38d21d3b137b146e"
+    },
+    {
+      "path": "src/ui/interaction/horizontal_scroll_controller.js",
+      "sha256": "dc224122a4181f0b2eac59d023d007e545abbdbfcd87a45d49dbb8f808d560a0"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
+      "sha256": "a994fabfb584598c398f6a53b205360b1e073eaea64f2ab49dc75d8de1efd223"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js",
+      "sha256": "5208f8f573ee9b0b54e8939ec354d98fe6dae82fe8aef171b4ea1ece79005f44"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
+      "sha256": "26751147e5eb3f418bba05a2aecb555e587c9f74fd167f99e3dae80b09a76589"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+      "sha256": "73644b2df8dfbbf1dec98bef44c96ce6c9b5f1363244490386d439c0b32f803f"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_bootstrap.js",
+      "sha256": "5aa5187cbebb65c9ab510076da827ff0bcb726f03556efb41b877be176df0a66"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "sha256": "510d16ff5c48b80f274e096fc3149b3052d7171d1253b069e5ab78d43c87531f"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_header_renderer.js",
+      "sha256": "84f9bcec13001032e9eb1caea9cf15e0e433a2625c54b171ed8dee8235cb7829"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
+      "sha256": "51e8bff3941c746a6c42d06630ab7b44ce0d9514ba2c9ce12629bd1693898727"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_item_card_renderer.js",
+      "sha256": "ac81078ca997ebe719a73b84d3fc111d30e386d1bb59e92fe87661759c121a1b"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
+      "sha256": "6a54c74a4c21eacc40fa49ba861538b644c9f7500fbd79746e69b5f075221c4d"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
+      "sha256": "784b129e7a4d206d35e9b4faa75c903022b41a8c25fbe4b02adce4e33f1eb488"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
+      "sha256": "853667246bbc56254c1a9bcbeb1c3f950bb7163154293fdeb7e391847753eb58"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_long_press_controller.js",
+      "sha256": "bad1fdf36fc9f99696ae3abe3ac25d9bea2ec66593ed6f81c2aed993cf518024"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
+      "sha256": "992f9429d7ccf7c55c164bd1b79c26648ad64efaefbf103113f2074a0f8d23ef"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
+      "sha256": "c1e2fe28e3f5c896b46ec59d17a95613763afc3f2129517d4ccef6b3a5ec1c6a"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
+      "sha256": "74ffe2b022e86aca6bca72a4c9b40883cc2059e724a2829488bd652914971e41"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+      "sha256": "d2ab593106e51050b9b671f819c2eff7f1e084fa355575917ac4d86ca8b934c3"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_ui.js",
+      "sha256": "52b4dafdd7f968196d1ef677122f109d09d04195b3f888c4aaf9631d37061f00"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_view_model.js",
+      "sha256": "61f93457204030e75d3a9a26548c5c88560ee9595283ba962feaa09bd8b9679d"
+    },
+    {
+      "path": "src/ui/progression/item_progression_dom_adapter.js",
+      "sha256": "aafb4dd050cea6f8c86971b3fec1e73d3b1e79a570db14a3a3880a45cc21663b"
+    },
+    {
+      "path": "src/ui/progression/item_progression_visual_resolver.js",
+      "sha256": "90df6083e178b2c29d08444a09715ee70eabbb66448d49d724af4ee4b99a4fdc"
+    },
+    {
+      "path": "src/ui/rarity/item_rarity_dom_adapter.js",
+      "sha256": "87eebab1e5cf36516678e0ae2298e6a7854ccacc2bb01ab3bde31434451b3651"
+    },
+    {
+      "path": "src/ui/styles/degradation_color_resolver.js",
+      "sha256": "f7e848d48836598f762f7a286f0b8803a12b4090dd76c21e8d1fb06e31b22463"
+    },
+    {
+      "path": "src/ui/styles/fight_area_style_resolver.js",
+      "sha256": "fed27db2d4c6d1697c18f82f3686da710dd94002c157a78ea2ae737206ac59d2"
+    },
+    {
+      "path": "src/ui/styles/hud_style_resolver.js",
+      "sha256": "14eb9e6b03321cb938ac110f6595031ce046a6f67b19e2d5a26a3eaec03e994f"
+    },
+    {
+      "path": "src/ui/styles/inventory_v2.css",
+      "sha256": "dfbf4b85507bce42403f0defce318b3d56aa505116d4c074f9a08913afcb060b"
+    },
+    {
+      "path": "src/ui/styles/outcome_style_resolver.js",
+      "sha256": "b01309648f9cfbf2d63e8b25a45869cae6727b369ba589669e099f819cce838b"
+    },
+    {
+      "path": "src/ui/styles/rarity_visual_resolver.js",
+      "sha256": "ab0dca9b29dca3f601221d93a6ee9ae6a6f4e5fe52930a74a3bddb3b1ac9fbc8"
+    },
+    {
+      "path": "src/ui/styles/style.css",
+      "sha256": "4f18ebb0c5a138e05ae594e059bf9429b237daeecaac4278879ad7f03c8f0dd4"
+    },
+    {
+      "path": "src/ui/ui.js",
+      "sha256": "c62db18e7ba3d437faa481e27d0cdc8ca49f575ee00793cc381e41ab56f1d0fd"
+    },
+    {
+      "path": "src/ui/version_badge.js",
+      "sha256": "2dd9c77e713036f0dd482a0ebed634ac656a100e3a1e38d0d19b7499022a33a0"
+    },
+    {
+      "path": "src/world/world.js",
+      "sha256": "c3bbe541f9e61776e4306064912106e592109eb1769c307ba6b18afb0b8cbf0b"
+    }
+  ]
+}

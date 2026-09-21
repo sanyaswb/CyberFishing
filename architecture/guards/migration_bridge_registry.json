@@ -67,6 +67,22 @@
       ]
     },
     {
+      "id": "bridge-19f525f74d35",
+      "bridge": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "reason": "Preserve the exact bootstrap consumers of Fish Rarity and Anomaly resolvers until bootstrap migration removes their legacy symbols.",
+      "owner": "stage-3.candidate-009-fish-444e8034",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "FishAnomalyVariantResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-1af90d9ee5a6",
       "bridge": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
       "source": "src/render/fishing/fishing_scene_renderer.js",
@@ -530,6 +546,22 @@
       "globalProviders": [
         {
           "symbol": "RodStrokeDistanceTracker",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-8d36f9222504",
+      "bridge": "src/core/fish/fish_rarity_resolver.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/fish/fish_rarity_resolver.js",
+      "reason": "Preserve the exact bootstrap consumers of Fish Rarity and Anomaly resolvers until bootstrap migration removes their legacy symbols.",
+      "owner": "stage-3.candidate-009-fish-444e8034",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "FishRarityResolver",
           "mechanism": "global-this-property"
         }
       ]

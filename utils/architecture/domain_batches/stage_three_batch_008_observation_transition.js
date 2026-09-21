@@ -123,6 +123,7 @@ class Batch008ObservationManifestTransition {
 // Historical validators call this exact view; live scanners never do. No facts
 // are suppressed in the current Manifest or in the new reconciliation check.
 function beforeBatch008Observations(bytes, root) {
+  bytes = new (require("./stage_three_batch_009_cutover_history").Batch009CutoverHistory)(root).before(MANIFEST,bytes);
   const read = (relative) => JSON.parse(fs.readFileSync(path.join(root, relative)));
   const cutover = read(CUTOVER);
   if (fingerprint(bytes) === cutover.writes.find((item) => item.path === MANIFEST).afterSha256) return Buffer.from(bytes);

@@ -15931,31 +15931,18 @@
       "observed": {
         "legacyLoadOrder": 43,
         "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "FishAnomalyVariantResolver",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
+          "status": "pending",
+          "items": [],
           "issues": []
         },
         "consumers": {
-          "status": "verified",
+          "status": "pending",
           "items": [],
           "issues": []
         },
         "environment": {
-          "status": "verified",
-          "builtins": [
-            "Array",
-            "Math",
-            "Number",
-            "Object",
-            "String",
-            "undefined"
-          ],
+          "status": "pending",
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -15964,7 +15951,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
@@ -15972,7 +15959,7 @@
       },
       "analysis": {
         "dependencies": {
-          "status": "verified",
+          "status": "pending",
           "confirmed": [],
           "items": [],
           "unresolved": [],
@@ -15991,32 +15978,18 @@
       "observed": {
         "legacyLoadOrder": 42,
         "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "FishRarityResolver",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
+          "status": "pending",
+          "items": [],
           "issues": []
         },
         "consumers": {
-          "status": "verified",
+          "status": "pending",
           "items": [],
           "issues": []
         },
         "environment": {
-          "status": "verified",
-          "builtins": [
-            "Array",
-            "Math",
-            "NaN",
-            "Number",
-            "Object",
-            "Set",
-            "String"
-          ],
+          "status": "pending",
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -16025,7 +15998,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
@@ -16033,7 +16006,7 @@
       },
       "analysis": {
         "dependencies": {
-          "status": "verified",
+          "status": "pending",
           "confirmed": [],
           "items": [],
           "unresolved": [],
@@ -36262,6 +36235,100 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "currentArea": "game/domain/fish",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "pending",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "pending",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "pending",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "migrating",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "pending",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "currentArea": "game/domain/fish",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "pending",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "pending",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "pending",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "migrating",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "pending",
           "confirmed": [],
           "items": [],
           "unresolved": [],

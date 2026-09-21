@@ -163,4 +163,6 @@ class StageThreeBatch007PrebuildIntegrationCheck {
   }
 }
 
-new StageThreeBatch007PrebuildIntegrationCheck().run();
+require("./domain_batches/stage_three_batch_009_historical_workspace").runHistoricalScript(path.resolve(__dirname,"../.."),
+  "utils/architecture/stage-3-batch-007-prebuild-integration-check.js",()=>new StageThreeBatch007PrebuildIntegrationCheck().run())
+  .catch(e=>{console.error(e.stack);process.exitCode=1;});

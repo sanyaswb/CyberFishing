@@ -1,0 +1,741 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.candidate-009-fish-444e8034",
+  "sourceReleaseVersion": "0.24.45",
+  "targetReleaseVersion": "0.24.46",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_009_execution_plan.json",
+    "sha256": "d2e4d08af7092178247599994bdc387bede6f9f5050ac9a820ee14ddfee10eaf"
+  },
+  "scope": {
+    "moduleCount": 2,
+    "exportCount": 2,
+    "activationCount": 2,
+    "consumerRelationshipCount": 2
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/FishAnomalyVariantResolver/anomaly-id-normalization",
+      "kind": "behavior-equivalence",
+      "exportName": "FishAnomalyVariantResolver",
+      "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "baselineSourceSha256": "5e5e0b080b6baf06828a631fa49802360fec2bb27c24cbccd9944c73593ab5dc",
+      "caseName": "anomaly-id-normalization",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishAnomalyVariantResolver/chance-clamps-and-invalid-values",
+      "kind": "behavior-equivalence",
+      "exportName": "FishAnomalyVariantResolver",
+      "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "baselineSourceSha256": "5e5e0b080b6baf06828a631fa49802360fec2bb27c24cbccd9944c73593ab5dc",
+      "caseName": "chance-clamps-and-invalid-values",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishAnomalyVariantResolver/chance-override-nullish-vs-zero",
+      "kind": "behavior-equivalence",
+      "exportName": "FishAnomalyVariantResolver",
+      "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "baselineSourceSha256": "5e5e0b080b6baf06828a631fa49802360fec2bb27c24cbccd9944c73593ab5dc",
+      "caseName": "chance-override-nullish-vs-zero",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishAnomalyVariantResolver/custom-none-id-and-default-normalization",
+      "kind": "behavior-equivalence",
+      "exportName": "FishAnomalyVariantResolver",
+      "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "baselineSourceSha256": "5e5e0b080b6baf06828a631fa49802360fec2bb27c24cbccd9944c73593ab5dc",
+      "caseName": "custom-none-id-and-default-normalization",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishAnomalyVariantResolver/disabled-and-missing-config",
+      "kind": "behavior-equivalence",
+      "exportName": "FishAnomalyVariantResolver",
+      "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "baselineSourceSha256": "5e5e0b080b6baf06828a631fa49802360fec2bb27c24cbccd9944c73593ab5dc",
+      "caseName": "disabled-and-missing-config",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishAnomalyVariantResolver/exact-roll-threshold",
+      "kind": "behavior-equivalence",
+      "exportName": "FishAnomalyVariantResolver",
+      "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "baselineSourceSha256": "5e5e0b080b6baf06828a631fa49802360fec2bb27c24cbccd9944c73593ab5dc",
+      "caseName": "exact-roll-threshold",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishAnomalyVariantResolver/input-immutability-and-result-shape",
+      "kind": "behavior-equivalence",
+      "exportName": "FishAnomalyVariantResolver",
+      "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "baselineSourceSha256": "5e5e0b080b6baf06828a631fa49802360fec2bb27c24cbccd9944c73593ab5dc",
+      "caseName": "input-immutability-and-result-shape",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishAnomalyVariantResolver/location-trim-case-and-array-semantics",
+      "kind": "behavior-equivalence",
+      "exportName": "FishAnomalyVariantResolver",
+      "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "baselineSourceSha256": "5e5e0b080b6baf06828a631fa49802360fec2bb27c24cbccd9944c73593ab5dc",
+      "caseName": "location-trim-case-and-array-semantics",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishAnomalyVariantResolver/none-cache-same-instance-cross-instance-isolation",
+      "kind": "behavior-equivalence",
+      "exportName": "FishAnomalyVariantResolver",
+      "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "baselineSourceSha256": "5e5e0b080b6baf06828a631fa49802360fec2bb27c24cbccd9944c73593ab5dc",
+      "caseName": "none-cache-same-instance-cross-instance-isolation",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishAnomalyVariantResolver/null-argument-errors-remain-errors",
+      "kind": "behavior-equivalence",
+      "exportName": "FishAnomalyVariantResolver",
+      "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "baselineSourceSha256": "5e5e0b080b6baf06828a631fa49802360fec2bb27c24cbccd9944c73593ab5dc",
+      "caseName": "null-argument-errors-remain-errors",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishAnomalyVariantResolver/roll-clamps-and-defaults",
+      "kind": "behavior-equivalence",
+      "exportName": "FishAnomalyVariantResolver",
+      "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "baselineSourceSha256": "5e5e0b080b6baf06828a631fa49802360fec2bb27c24cbccd9944c73593ab5dc",
+      "caseName": "roll-clamps-and-defaults",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishAnomalyVariantResolver/strict-enabled-false-only",
+      "kind": "behavior-equivalence",
+      "exportName": "FishAnomalyVariantResolver",
+      "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "baselineSourceSha256": "5e5e0b080b6baf06828a631fa49802360fec2bb27c24cbccd9944c73593ab5dc",
+      "caseName": "strict-enabled-false-only",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishRarityResolver/configured-range-inclusive-boundaries",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRarityResolver",
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "baselineSourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572",
+      "caseName": "configured-range-inclusive-boundaries",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishRarityResolver/defaults-and-nested-frozen-result",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRarityResolver",
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "baselineSourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572",
+      "caseName": "defaults-and-nested-frozen-result",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishRarityResolver/derived-level-depth-clamps-and-rounding",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRarityResolver",
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "baselineSourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572",
+      "caseName": "derived-level-depth-clamps-and-rounding",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishRarityResolver/explicit-level-and-max-level-clamps",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRarityResolver",
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "baselineSourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572",
+      "caseName": "explicit-level-and-max-level-clamps",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishRarityResolver/fresh-results-no-shared-cache",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRarityResolver",
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "baselineSourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572",
+      "caseName": "fresh-results-no-shared-cache",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishRarityResolver/inclusive-weight-bands",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRarityResolver",
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "baselineSourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572",
+      "caseName": "inclusive-weight-bands",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishRarityResolver/invalid-weight-with-ranges",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRarityResolver",
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "baselineSourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572",
+      "caseName": "invalid-weight-with-ranges",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishRarityResolver/none-id-config-snapshot-and-instance-isolation",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRarityResolver",
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "baselineSourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572",
+      "caseName": "none-id-config-snapshot-and-instance-isolation",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishRarityResolver/normalize-sort-reversed-and-invalid-ranges",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRarityResolver",
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "baselineSourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572",
+      "caseName": "normalize-sort-reversed-and-invalid-ranges",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishRarityResolver/null-argument-errors-remain-errors",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRarityResolver",
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "baselineSourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572",
+      "caseName": "null-argument-errors-remain-errors",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishRarityResolver/range-gap-tie-prefers-upper-level",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRarityResolver",
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "baselineSourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572",
+      "caseName": "range-gap-tie-prefers-upper-level",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishRarityResolver/resolve-rarity-api-and-no-input-mutation",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRarityResolver",
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "baselineSourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572",
+      "caseName": "resolve-rarity-api-and-no-input-mutation",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishRarityResolver/reversed-degenerate-and-invalid-depth",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRarityResolver",
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "baselineSourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572",
+      "caseName": "reversed-degenerate-and-invalid-depth",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishRarityResolver/scale-precedence-and-maximum-stars",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRarityResolver",
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "baselineSourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572",
+      "caseName": "scale-precedence-and-maximum-stars",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishRarityResolver/weight-unit-half-rounding-epsilon",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRarityResolver",
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "baselineSourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572",
+      "caseName": "weight-unit-half-rounding-epsilon",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/FishRarityResolver/zero-fallback-negative-clamp-and-rounding-config",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRarityResolver",
+      "currentPath": "src/core/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "baselineSourceSha256": "892c9d5ea48b5e9f8753bce51013e007cd93255b0d8187716d49a5c697bd5572",
+      "caseName": "zero-fallback-negative-clamp-and-rounding-config",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/named-export-representation-only",
+      "kind": "compatibility-invariant",
+      "caseName": "named-export-representation-only",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/native-module-namespace-and-class-identity",
+      "kind": "compatibility-invariant",
+      "caseName": "native-module-namespace-and-class-identity",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/globals-absent-before-exact-activation",
+      "kind": "compatibility-invariant",
+      "caseName": "globals-absent-before-exact-activation",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/globals-equal-exact-export-after-activation",
+      "kind": "compatibility-invariant",
+      "caseName": "globals-equal-exact-export-after-activation",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/two-relationships-one-bootstrap-consumer",
+      "kind": "compatibility-invariant",
+      "caseName": "two-relationships-one-bootstrap-consumer",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/instance-state-and-result-identity",
+      "kind": "compatibility-invariant",
+      "caseName": "instance-state-and-result-identity",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/zero-added-allocation-sites-and-domain-transport-reads",
+      "kind": "compatibility-invariant",
+      "caseName": "zero-added-allocation-sites-and-domain-transport-reads",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/whole-closure-earlier-evaluation",
+      "kind": "compatibility-invariant",
+      "caseName": "whole-closure-earlier-evaluation",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/runtime-relocation-preserves-existing-activation-order",
+      "kind": "compatibility-invariant",
+      "caseName": "runtime-relocation-preserves-existing-activation-order",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/production-shaped-fixed-catch-di-parity",
+      "kind": "compatibility-invariant",
+      "caseName": "production-shaped-fixed-catch-di-parity",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "FishAnomalyVariantResolver",
+      "caseCount": 12,
+      "cases": [
+        "disabled-and-missing-config",
+        "strict-enabled-false-only",
+        "exact-roll-threshold",
+        "chance-clamps-and-invalid-values",
+        "roll-clamps-and-defaults",
+        "chance-override-nullish-vs-zero",
+        "location-trim-case-and-array-semantics",
+        "anomaly-id-normalization",
+        "custom-none-id-and-default-normalization",
+        "none-cache-same-instance-cross-instance-isolation",
+        "input-immutability-and-result-shape",
+        "null-argument-errors-remain-errors"
+      ]
+    },
+    {
+      "exportName": "FishRarityResolver",
+      "caseCount": 16,
+      "cases": [
+        "defaults-and-nested-frozen-result",
+        "configured-range-inclusive-boundaries",
+        "range-gap-tie-prefers-upper-level",
+        "weight-unit-half-rounding-epsilon",
+        "normalize-sort-reversed-and-invalid-ranges",
+        "invalid-weight-with-ranges",
+        "derived-level-depth-clamps-and-rounding",
+        "reversed-degenerate-and-invalid-depth",
+        "explicit-level-and-max-level-clamps",
+        "inclusive-weight-bands",
+        "scale-precedence-and-maximum-stars",
+        "zero-fallback-negative-clamp-and-rounding-config",
+        "none-id-config-snapshot-and-instance-isolation",
+        "fresh-results-no-shared-cache",
+        "resolve-rarity-api-and-no-input-mutation",
+        "null-argument-errors-remain-errors"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 2,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.9.1-planned-canonical-bridge-records"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_009_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/core/fish/fish_anomaly_variant_resolver.js",
+        "stateClassification": "instance-owned-config-and-frozen-none-result-cache",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/fish/fish_anomaly_variant_resolver.js",
+          "authoritativeOwners": [
+            "FishAnomalyVariantResolver#none",
+            "FishAnomalyVariantResolver#noneAnomalyId",
+            "FishAnomalyVariantResolver#noneResult"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+          "authoritativeOwners": [
+            "FishAnomalyVariantResolver#none",
+            "FishAnomalyVariantResolver#noneAnomalyId",
+            "FishAnomalyVariantResolver#noneResult"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [
+          "anomalyId",
+          "hasAnomaly"
+        ],
+        "stableResultIdentity": true,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "013cc80294aec8f7c4de5a285cf6924699156cc0da350b85c66c6919fcc6ea5c",
+        "allocationBaseline": {
+          "objectExpressions": 4,
+          "arrayExpressions": 1,
+          "newExpressions": 0,
+          "objectFreezeCalls": 2,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/fish/fish_rarity_resolver.js",
+        "stateClassification": "instance-owned-normalized-config-and-none-id-set",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/fish/fish_rarity_resolver.js",
+          "authoritativeOwners": [
+            "FishRarityResolver#calculateRarity",
+            "FishRarityResolver#maxHalfSteps",
+            "FishRarityResolver#maxStars",
+            "FishRarityResolver#noneAnomalyIds",
+            "FishRarityResolver#normalizeAnomalyId",
+            "FishRarityResolver#normalizeRanges",
+            "FishRarityResolver#resolveDerivedLevel",
+            "FishRarityResolver#resolveForLevel",
+            "FishRarityResolver#resolveLevel",
+            "FishRarityResolver#resolveLevelRange",
+            "FishRarityResolver#resolveMaxLevel",
+            "FishRarityResolver#resolveWeightBandIndex",
+            "FishRarityResolver#toWeightUnit",
+            "FishRarityResolver#unitsPerStar",
+            "FishRarityResolver#weightBandsPerLevel",
+            "FishRarityResolver#weightUnitsPerKg"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fish/fish_rarity_resolver.js",
+          "authoritativeOwners": [
+            "FishRarityResolver#calculateRarity",
+            "FishRarityResolver#maxHalfSteps",
+            "FishRarityResolver#maxStars",
+            "FishRarityResolver#noneAnomalyIds",
+            "FishRarityResolver#normalizeAnomalyId",
+            "FishRarityResolver#normalizeRanges",
+            "FishRarityResolver#resolveDerivedLevel",
+            "FishRarityResolver#resolveForLevel",
+            "FishRarityResolver#resolveLevel",
+            "FishRarityResolver#resolveLevelRange",
+            "FishRarityResolver#resolveMaxLevel",
+            "FishRarityResolver#resolveWeightBandIndex",
+            "FishRarityResolver#toWeightUnit",
+            "FishRarityResolver#unitsPerStar",
+            "FishRarityResolver#weightBandsPerLevel",
+            "FishRarityResolver#weightUnitsPerKg"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [
+          "anomaly",
+          "hasAnomaly",
+          "isUnique",
+          "level",
+          "maxLevel",
+          "rarity"
+        ],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "a36211feb0f9e1567c61f50647e8f1bde4e9b37c41d2b37c8beff9d35809d301",
+        "allocationBaseline": {
+          "objectExpressions": 15,
+          "arrayExpressions": 3,
+          "newExpressions": 1,
+          "objectFreezeCalls": 2,
+          "objectAssignCalls": 0,
+          "roundingCalls": 12
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.9.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

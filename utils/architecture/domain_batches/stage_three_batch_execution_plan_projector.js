@@ -20,12 +20,14 @@ class StageThreeBatchExecutionPlanProjector {
   #profile;
   #paths;
   #rollbackFilePaths;
+  #readBytes;
 
-  constructor({ projectRoot, profile, paths, rollbackFilePaths }) {
+  constructor({ projectRoot, profile, paths, rollbackFilePaths, readBytes = null }) {
     this.#projectRoot = path.resolve(projectRoot);
     this.#profile = profile;
     this.#paths = Object.freeze({ ...paths });
     this.#rollbackFilePaths = Object.freeze([...rollbackFilePaths]);
+    this.#readBytes = readBytes;
   }
 
   buildPlan() {
@@ -218,7 +220,7 @@ class StageThreeBatchExecutionPlanProjector {
   }
 
   #bytes(relativePath) {
-    return fs.readFileSync(this.#absolute(relativePath));
+    return this.#readBytes ? this.#readBytes(relativePath) : fs.readFileSync(this.#absolute(relativePath));
   }
 
   #sha256(value) {

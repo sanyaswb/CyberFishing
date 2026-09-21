@@ -18,7 +18,8 @@ const CHECKS = Object.freeze(["bootCanvasInventory", "castWaitingFight", "lineRe
 class StageThreeBatch008ReleaseAcceptanceCheck {
   constructor(root = path.resolve(__dirname, "../.."), { read } = {}) {
     this.root = root;
-    this.read = read || ((file) => fs.readFileSync(path.join(root, file)));
+    this.read = read || ((file) => require("./domain_batches/stage_three_batch_009_prebuild_history")
+      .beforeBatch009Prebuild(file, fs.readFileSync(path.join(root, file)), root));
   }
   json(file) { return JSON.parse(this.read(file)); }
   verifyReference(record) {
@@ -170,8 +171,11 @@ class StageThreeBatch008ReleaseAcceptanceCheck {
   }
 }
 if (require.main === module) {
+  require("./domain_batches/stage_three_batch_009_historical_workspace").runHistoricalScript(path.resolve(__dirname,"../.."),
+    "utils/architecture/stage-3-batch-008-release-acceptance-check.js",()=>{
   try { const result = new StageThreeBatch008ReleaseAcceptanceCheck().run({ requireTag: process.argv.includes("--require-tag") });
     console.log(`Stage 3.8.9 ${result.status}: exact release metadata/reversal, completed prefix, browser proof and runtime topology verified.`);
   } catch (error) { console.error(error); process.exitCode = 1; }
+  }).catch(error=>{console.error(error.stack);process.exitCode=1;});
 }
 module.exports = { StageThreeBatch008ReleaseAcceptanceCheck, CLOSURE, BROWSER, CHECKS };

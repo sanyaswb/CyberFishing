@@ -1,0 +1,52 @@
+"use strict";
+const { StageThreeBatchExecutionProfile } = require("./stage_three_batch_execution_profile");
+
+const BATCH_009_EXECUTION_PROFILE = new StageThreeBatchExecutionProfile({
+  schemaVersion: 1,
+  batchId: "stage-3.candidate-009-fish-444e8034",
+  batchNumber: "009",
+  executionStageLabel: "Stage 3.9.1",
+  auditStageLabel: "Stage 3.9.0",
+  focusedStageId: "stage-3.9.2",
+  prebuildStageId: "stage-3.9.3",
+  sourceReleaseVersion: "0.24.45",
+  targetReleaseVersion: "0.24.46",
+  auditPath: "architecture/migration/stage_3_batch_009_audit.json",
+  executionPlanPath: "architecture/migration/stage_3_batch_009_execution_plan.json",
+  testMatrixPath: "architecture/migration/stage_3_batch_009_test_matrix.json",
+  expectedTargetCount: 2,
+  expectedExportCount: 2,
+  expectedActivationCount: 2,
+  expectedConsumerCount: 2,
+  expectedDependencyEdgeCount: 0,
+  expectedTargets: [
+    { currentPath: "src/core/fish/fish_anomaly_variant_resolver.js", targetPath: "src/game/domain/fish/fish_anomaly_variant_resolver.js", exports: ["FishAnomalyVariantResolver"] },
+    { currentPath: "src/core/fish/fish_rarity_resolver.js", targetPath: "src/game/domain/fish/fish_rarity_resolver.js", exports: ["FishRarityResolver"] },
+  ],
+  expectedActivationIds: ["activation-85b75b58221b", "activation-ea32013c6230"],
+  expectedActivationPositions: [42, 43],
+  expectedBridgeIds: ["bridge-19f525f74d35", "bridge-8d36f9222504"],
+  expectedTopology: {
+    beforeProjectModuleCount: 34, afterProjectModuleCount: 36,
+    beforeActivationCount: 35, afterActivationCount: 37,
+    beforeBridgeCount: 60, afterBridgeCount: 62,
+  },
+  includeRuntimeActiveState: true,
+  persistActiveBatchPhase: true,
+  includeDetailedStatePerformanceGates: true,
+  behaviorPhases: ["classic-baseline", "temporary-esm-parity", "post-cutover-esm"],
+  compatibilityPhases: ["pre-build-fixture", "temporary-esm-parity", "post-build-runtime"],
+  scmCheckpointRequired: true,
+  sourceReleaseTag: "v0.24.45",
+  bridgeReason: "Preserve the exact bootstrap consumers of Fish Rarity and Anomaly resolvers until bootstrap migration removes their legacy symbols.",
+  rollbackRule: "restore-only-batch-009-delta-and-keep-batches-001-through-008",
+  consumerSetSource: "stage-3.9.1-planned-canonical-bridge-records",
+  operationIds: [
+    "verify-frozen-evidence", "open-batch-009", "create-two-named-esm-targets",
+    "render-two-candidate-activation-shims", "project-two-consumer-bridges",
+    "project-candidate-manifest", "validate-candidate-and-commit-atomic-cutover",
+    "validate-identity-timing-state-and-behavior", "persist-and-reconcile-observations",
+    "run-full-acceptance", "close-release-0.24.46",
+  ],
+}).value;
+module.exports = { BATCH_009_EXECUTION_PROFILE };

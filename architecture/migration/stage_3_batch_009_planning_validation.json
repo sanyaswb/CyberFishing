@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-planning-validation",
+  "batchId": "stage-3.candidate-009-fish-444e8034",
+  "status": "passed",
+  "completedPreparationStages": ["3.9.0", "3.9.1", "3.9.2"],
+  "sourceReleaseVersion": "0.24.45",
+  "proposedTargetReleaseVersion": "0.24.46",
+  "evidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_009_audit.json",
+      "sha256": "bf8efa15938f765f9f29533b2d095f577d6720edbead1a0541b1cefc40d3a5e3"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_009_execution_plan.json",
+      "sha256": "d2e4d08af7092178247599994bdc387bede6f9f5050ac9a820ee14ddfee10eaf"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_009_test_matrix.json",
+      "sha256": "a578d2ea2bb4dba078335fd2a571784a1e02e6bedf2a99db63761ede042f350e"
+    }
+  ],
+  "focusedValidation": {
+    "classicNativeEsmBehaviorCases": 28,
+    "productionShapedFixedCatchDiCases": 6,
+    "compatibilityContracts": 10,
+    "negativeFixtures": 49,
+    "earlierEvaluationModules": 36,
+    "safeModules": 31,
+    "fingerprintReviewedModules": 5,
+    "unsafeModules": 0,
+    "simulatedActivationContracts": 37,
+    "newNativeModuleNamespaceIdentity": "passed",
+    "instanceStateAndCachedResultIdentity": "passed",
+    "formulaMutationDetection": "passed",
+    "runtimeMutationProtection": "passed"
+  },
+  "automaticSuites": [
+    {
+      "command": "node utils/run-checks.js --suite architecture",
+      "exitCode": 0,
+      "passed": 115,
+      "suiteDurationSeconds": 72.24
+    },
+    {
+      "command": "node utils/run-checks.js --suite quick",
+      "exitCode": 0,
+      "passed": 67,
+      "suiteDurationSeconds": 38.48
+    },
+    {
+      "command": "node utils/run-checks.js --suite all",
+      "phase": "final-rerun-after-code-review",
+      "exitCode": 0,
+      "passed": 143,
+      "suiteDurationSeconds": 71.96,
+      "stdoutSha256": "3ead44a303d10d76c575e30b5a1010d5ca6829201e4ab569b2a90bb0c2e66cad",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "node": "v24.19.0"
+    }
+  ],
+  "preservedLiveState": {
+    "releaseVersion": "0.24.45",
+    "completedBatchCount": 8,
+    "activeBatchId": null,
+    "activeBatchPhasePresent": false,
+    "projectModuleCount": 34,
+    "activationCount": 35,
+    "bridgeCount": 60,
+    "runtimeBeforeLogicalPosition": 86,
+    "sourceIndexManifestPolicyRegistryAndReleaseBytesChanged": false,
+    "runtimeOutputChanged": false,
+    "historicalEvidenceChanged": false
+  },
+  "notPerformed": [
+    "batch-009-prebuild-open",
+    "persisted-domain-esm-target-creation",
+    "36-module-candidate-bundle-build",
+    "new-bundle-module-evaluation-counter-measurement",
+    "live-runtime-cutover",
+    "browser-acceptance",
+    "fresh-npm-ci-release-acceptance",
+    "release-commit-or-tag"
+  ],
+  "nextStage": "3.9.3 — Pre-build Contract",
+  "runtimeMigrationAllowed": false,
+  "releasePublicationAllowed": false,
+  "verdict": "eligible-for-prebuild-contract"
+}

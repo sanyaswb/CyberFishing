@@ -6,8 +6,10 @@ const path = require("node:path");
 const { canonicalBytes, fingerprint } = require("./domain_batches/stage_three_pending_target_manifest");
 const { StageThreeBatch008ReleaseTransition, TRANSITION } = require("./domain_batches/stage_three_batch_008_release_transition");
 const { StageThreeBatch008ReleaseAcceptanceCheck, CHECKS, BROWSER, CLOSURE } = require("./stage-3-batch-008-release-acceptance-check");
+function run() {
 const root = path.resolve(__dirname, "../..");
-const read = (file) => fs.readFileSync(path.join(root, file));
+const read = (file) => require("./domain_batches/stage_three_batch_009_prebuild_history")
+  .beforeBatch009Prebuild(file, fs.readFileSync(path.join(root, file)), root);
 const transition = new StageThreeBatch008ReleaseTransition(root);
 const record = JSON.parse(read(TRANSITION));
 const guard = new StageThreeBatch008ReleaseAcceptanceCheck(root);
@@ -59,3 +61,6 @@ assert.equal(new StageThreeBatch008ReleaseAcceptanceCheck(root, { read: fixtureR
 assert.throws(() => new StageThreeBatch008ReleaseAcceptanceCheck(root, { read: fixtureReader }).run({ requireTag: true }));
 rejected++;
 console.log(`Stage 3.8.9 fixtures PASS: seven exact reversals; ${rejected} negative metadata/browser cases. Synthetic proof is not real acceptance.`);
+}
+require("./domain_batches/stage_three_batch_009_historical_workspace").runHistoricalScript(path.resolve(__dirname,"../.."),
+  "utils/architecture/stage-3-batch-008-release-fixture-check.js",run).catch(e=>{console.error(e.stack);process.exitCode=1;});

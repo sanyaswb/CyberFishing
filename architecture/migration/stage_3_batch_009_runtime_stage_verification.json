@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-009-runtime-stage-verification",
+  "batchId": "stage-3.candidate-009-fish-444e8034",
+  "stages": [
+    "3.9.5",
+    "3.9.6"
+  ],
+  "status": "passed",
+  "verifiedAt": "2026-09-21T18:17:44.562Z",
+  "releaseVersion": "0.24.45",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "evidence": [
+    {
+      "path": "package-lock.json",
+      "sha256": "7e0a599101b85da7cba4baac33d1663e056f1d391e99f6c8c3fab9ad4172cb3d"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_009_prebuild_contract.json",
+      "sha256": "f834fd068577e3883ffdb6e72e65526d4355b1a0042bf6ebdfea698ac556f2bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_009_source_build_validation.json",
+      "sha256": "76ad596d2b172fb09c62d0d08acb2d2e50c2855568f01993eb80852fc24f144e"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_009_runtime_cutover.json",
+      "sha256": "28a9e9bd7654cac4ec6696b53242f33fad41faa6dd9df3bc92b73cecd38a3a3e"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_009_live_runtime_validation.json",
+      "sha256": "344c752d416789aeaec5bf7de5ae4b18063aa6e412948b49aa41bb10741e738f"
+    }
+  ],
+  "runtimeSha256": "217a4d97bc3ccd9e85a3167a09280c2c79542109114a54e076a212457a413177",
+  "suites": [
+    {
+      "suite": "architecture",
+      "passed": 119,
+      "exitCode": 0,
+      "elapsedMs": 110364,
+      "stdoutSha256": "dd65b5deeafb1ca127a708ac41e7c48738fbfbbde8006c7ebeca7f02248182b3",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "quick",
+      "passed": 69,
+      "exitCode": 0,
+      "elapsedMs": 56182,
+      "stdoutSha256": "ec4c3778b5d9c4547d1126e9c99c177a90a3bddfceb55a48798428aa7fa99f45",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "all",
+      "passed": 147,
+      "exitCode": 0,
+      "elapsedMs": 119040,
+      "stdoutSha256": "8542a883e6715be71ca856e034d1ed71ea5f12345bd15bb91ee22f7563d2302e",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "focused": {
+    "transactionFailureBoundaries": 16,
+    "liveByteAndRepeatedEvaluationNegativeCases": 14,
+    "occupiedPublicationGate": "passed",
+    "behaviorCases": 28,
+    "productionShapedDiCases": 6,
+    "activationTimingCases": 37,
+    "newModulesEvaluatedOnce": 2,
+    "priorCandidateClosureEvaluationProofModules": 36,
+    "postActivationTransportReads": 0
+  },
+  "live": {
+    "completedPrefixCount": 8,
+    "activeBatch": "009",
+    "phase": "runtime-active",
+    "modules": 36,
+    "activations": 37,
+    "bridges": 62,
+    "cumulativeRuntimes": 1,
+    "isolatedIifes": 0
+  },
+  "representationOnly": true,
+  "performanceProof": "exact-source-allocation-sites-and-result-identity; not a frame-time benchmark",
+  "manifest": {
+    "observationsFinal": false,
+    "pendingPaths": [
+      "src/core/fish/fish_anomaly_variant_resolver.js",
+      "src/core/fish/fish_rarity_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js"
+    ],
+    "reconciliationStage": "3.9.7"
+  },
+  "finalization": {
+    "indexDelta": "Only two newly replaced activation tag line endings normalized to LF; runtime bytes and logical script order unchanged.",
+    "cutoverEvidence": "Current unaccepted batch-009 index after-image and dependent fingerprints updated atomically; historical before-images unchanged.",
+    "temporaryRepairToolRemoved": true
+  },
+  "gitDiffCheck": "passed",
+  "frozenReleaseArtifactsUnchanged": true,
+  "browserAcceptanceClaimed": false,
+  "freshInstallAcceptanceClaimed": false,
+  "batchCompleted": false,
+  "releaseClosurePerformed": false,
+  "next": "3.9.7-observation-reconciliation"
+}

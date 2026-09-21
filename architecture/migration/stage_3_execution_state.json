@@ -14,6 +14,7 @@
     "stage-3.candidate-007-fishing-bb8b3939",
     "stage-3.candidate-008-fishing-f859ccd3"
   ],
-  "activeBatchId": null,
-  "compatibilityRuntimeActivated": true
+  "activeBatchId": "stage-3.candidate-009-fish-444e8034",
+  "compatibilityRuntimeActivated": true,
+  "activeBatchPhase": "runtime-active"
 }

@@ -399,6 +399,18 @@
       "removalStage": "stage-3"
     },
     {
+      "id": "activation-85b75b58221b",
+      "owner": "stage-3.candidate-009-fish-444e8034",
+      "sourceProvider": "src/core/fish/fish_rarity_resolver.js",
+      "targetModule": "src/game/domain/fish/fish_rarity_resolver.js",
+      "exportName": "FishRarityResolver",
+      "legacySymbol": "FishRarityResolver",
+      "legacyScriptIndex": 42,
+      "shimFile": "activations/042_fishrarityresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-868e1186ae29",
       "owner": "stage-3.candidate-008-fishing-f859ccd3",
       "sourceProvider": "src/core/fishing/rod_stroke_distance_tracker.js",
@@ -577,6 +589,18 @@
       "shimFile": "activations/132_lineradialmovementsplitter.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-ea32013c6230",
+      "owner": "stage-3.candidate-009-fish-444e8034",
+      "sourceProvider": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "targetModule": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "exportName": "FishAnomalyVariantResolver",
+      "legacySymbol": "FishAnomalyVariantResolver",
+      "legacyScriptIndex": 43,
+      "shimFile": "activations/043_fishanomalyvariantresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-f5eefdd6e6e2",

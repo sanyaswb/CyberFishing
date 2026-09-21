@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-009-prebuild-verification",
+  "batchId": "stage-3.candidate-009-fish-444e8034",
+  "stages": [
+    "3.9.3",
+    "3.9.4"
+  ],
+  "status": "passed",
+  "releaseVersion": "0.24.45",
+  "runtimeCutoverPerformed": false,
+  "browserAcceptanceClaimed": false,
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64",
+    "packageLockSha256": "7e0a599101b85da7cba4baac33d1663e056f1d391e99f6c8c3fab9ad4172cb3d"
+  },
+  "evidence": {
+    "prebuild": {
+      "path": "architecture/migration/stage_3_batch_009_prebuild_contract.json",
+      "sha256": "f834fd068577e3883ffdb6e72e65526d4355b1a0042bf6ebdfea698ac556f2bb"
+    },
+    "candidateBuild": {
+      "path": "architecture/migration/stage_3_batch_009_source_build_validation.json",
+      "sha256": "76ad596d2b172fb09c62d0d08acb2d2e50c2855568f01993eb80852fc24f144e"
+    }
+  },
+  "suites": [
+    {
+      "suite": "architecture",
+      "passed": 117,
+      "exitCode": 0,
+      "elapsedMs": 81042,
+      "stdoutSha256": "6832f262d9786fd158ccca5f8f676fea5eef8c8d4fb22747a4d3fe523b0ad594",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "quick",
+      "exitCode": 0,
+      "elapsedMs": 43684,
+      "stdoutSha256": "b6ec9f30ba8d24b2b1c10cba6f6c9a03f1724fcf72b15e49dddb0dca2cfccf48",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": 68
+    },
+    {
+      "suite": "all",
+      "exitCode": 0,
+      "elapsedMs": 85955,
+      "stdoutSha256": "017dd930e8b47328aa2e30ecdf7c565120c8a286b65d8e6e14b44e1a31ccd057",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "passed": 145
+    }
+  ],
+  "focused": {
+    "negativeCases": 31,
+    "behaviorCases": 28,
+    "productionShapedDiCases": 6,
+    "evaluationCountOneModules": 36,
+    "activationTimingCases": 37,
+    "independentAbsoluteBuildRoots": 2,
+    "protectedFileHashesUnchanged": 513,
+    "safeEffects": 31,
+    "exactReviewedEffects": 5
+  },
+  "live": {
+    "completedPrefixCount": 8,
+    "activeBatch": "009",
+    "phase": "prebuild",
+    "modules": 34,
+    "activations": 35,
+    "bridges": 60
+  },
+  "candidate": {
+    "modules": 36,
+    "activations": 37,
+    "bridges": 62,
+    "virtualBuildModules": 11,
+    "published": false
+  },
+  "gitDiffCheck": "passed",
+  "next": "3.9.5-atomic-runtime-cutover"
+}
