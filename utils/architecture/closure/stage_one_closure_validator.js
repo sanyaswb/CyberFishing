@@ -585,6 +585,8 @@ class StageOneClosureValidator {
         "Fishing Domain State and Motion",
       "stage-3.candidate-008-fishing-f859ccd3":
         "Line Spool, Stroke Distance and Reel Hold",
+      "stage-3.candidate-009-fish-444e8034":
+        "Fish Rarity and Anomaly Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }
@@ -980,7 +982,15 @@ class StageOneClosureValidator {
         if (name === "stage_3_batch_009_runtime_cutover.json" && artifact.manifestTransition?.observations === "pending") {
           const { Batch009CutoverHistory } = require("../domain_batches/stage_three_batch_009_cutover_history");
           const history = new Batch009CutoverHistory(this.projectRoot);
-          if (!history.active()) throw new Error("Batch 009 pending cutover must remain runtime-active");
+          if (!history.active()) {
+            const { StageThreeBatch009ReleaseTransition, STATE } = require("../domain_batches/stage_three_batch_009_release_transition");
+            const release = new StageThreeBatch009ReleaseTransition(this.projectRoot);
+            const historicalState = JSON.parse(release.before(STATE));
+            if (historicalState.activeBatchId !== artifact.batchId ||
+                historicalState.activeBatchPhase !== "runtime-active") {
+              throw new Error("Batch 009 pending cutover lacks an exact runtime-active predecessor");
+            }
+          }
           history.artifact();
             history.before("architecture/migration/module_migration_manifest.json", fs.readFileSync(path.join(migrationRoot, "module_migration_manifest.json")));
             const observedPath = path.join(migrationRoot, "stage_3_batch_009_observation_reconciliation.json");

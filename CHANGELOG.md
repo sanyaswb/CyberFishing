@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.46 - Fish Rarity and Anomaly Domain
+
+### Changed
+
+- Completed atomic Stage 3 batch 009: FishRarityResolver and FishAnomalyVariantResolver are named game-domain ESM modules.
+- Extended the single cumulative graph from 34 to 36 project modules and from 35 to 37 activation contracts, with 62 exact bridge relationships and no isolated IIFE.
+- Preserved the exact logical activation positions 42 and 43, existing bootstrap consumers, class identity and fish rarity/anomaly behavior.
+- Advanced the completed ordered prefix to batches 001–009 (27 of 69 frozen Domain modules); the next task is batch 010 preflight.
+
 ## v0.24.45 - Line Spool, Stroke Distance and Reel Hold
 
 ### Changed

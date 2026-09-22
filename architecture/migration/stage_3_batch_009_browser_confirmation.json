@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-009-browser-confirmation",
+  "batchId": "stage-3.candidate-009-fish-444e8034",
+  "releaseVersion": "0.24.45",
+  "status": "passed",
+  "performedBy": "user",
+  "recordedAt": "2026-09-22T14:50:56.000Z",
+  "evidenceType": "user-confirmation-in-conversation",
+  "browserSummary": {
+    "userStatement": "так все працює я перевірив у браузері",
+    "context": "Collective response to the Stage 3.9.8 checklist covering launch, Canvas, inventory, cast/wait/fight and fish rarity/anomaly behavior.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": false
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "в консолі `0 errors / 0 warnings`",
+    "independentlyInstrumented": false
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_009_acceptance_pass.json",
+    "sha256": "c8739769a7470faf1a6a4fd021da17b9c0db3806f04fb673d893a3f448d8cd93"
+  },
+  "historicalSummaryPreserved": true
+}

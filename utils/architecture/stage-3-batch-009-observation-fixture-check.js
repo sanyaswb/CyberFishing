@@ -138,5 +138,8 @@ assert.deepEqual(application.protectedSnapshot(), protectedBefore, "Fixtures cha
 console.log(`Stage 3.9.7 fixtures PASS: ${failures} invalid input/evidence/transaction cases rejected; ` +
   "all four two-file rollback boundaries preserve exact bytes; immutable facts and frozen decisions.");
 }
-if (require.main === module) run().catch(error => { console.error(error.stack); process.exitCode = 1; });
+if (require.main === module) require("./domain_batches/stage_three_batch_009_release_history")
+  .runPreReleaseScript(path.resolve(__dirname, "../.."),
+    "utils/architecture/stage-3-batch-009-observation-fixture-check.js", run)
+  .catch(error => { console.error(error.stack); process.exitCode = 1; });
 module.exports = { run };

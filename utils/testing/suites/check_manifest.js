@@ -762,6 +762,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["architecture"],
   },
   {
+    id: "stage-3-batch-009-release-acceptance",
+    title: "Stage 3.9.9 exact release transition, browser proof and completed prefix",
+    file: "utils/architecture/stage-3-batch-009-release-check.js",
+    suites: ["quick", "architecture"],
+  },
+  {
     id: "inventory-v2-transaction",
     title: "Inventory V2 transactions",
     file: "utils/inventory-v2-transaction-check.js",

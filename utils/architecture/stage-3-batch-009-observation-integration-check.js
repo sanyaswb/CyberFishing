@@ -13,5 +13,8 @@ async function run() {
     " actual sources, four exact fact groups, two verified targets, exact forward/reverse consumers; " +
     first.artifact.guards.failureCount + " guard failures; runtime/lifecycle unchanged; no release approval.");
 }
-if (require.main === module) run().catch(error => { console.error(error.stack); process.exitCode = 1; });
+if (require.main === module) require("./domain_batches/stage_three_batch_009_release_history")
+  .runPreReleaseScript(path.resolve(__dirname, "../.."),
+    "utils/architecture/stage-3-batch-009-observation-integration-check.js", run)
+  .catch(error => { console.error(error.stack); process.exitCode = 1; });
 module.exports = { run };

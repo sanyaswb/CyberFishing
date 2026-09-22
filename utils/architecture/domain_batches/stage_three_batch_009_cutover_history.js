@@ -51,6 +51,8 @@ class Batch009CutoverHistory {
     cache.set(this.root,{signature,artifact:frozen});return frozen;
   }
   before(file, bytes) {
+    bytes = new (require("./stage_three_batch_009_release_transition").StageThreeBatch009ReleaseTransition)(this.root)
+      .before(file, bytes);
     if (!this.exists()) return Buffer.from(bytes);
     const manifest = "architecture/migration/module_migration_manifest.json";
     const normalize = value => file === manifest

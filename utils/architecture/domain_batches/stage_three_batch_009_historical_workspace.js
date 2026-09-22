@@ -4,13 +4,16 @@ const fs=require("node:fs");
 const path=require("node:path");
 const {Batch009CandidateWorkspace}=require("./stage_three_batch_009_candidate_workspace");
 const {Batch009CutoverHistory,CUTOVER}=require("./stage_three_batch_009_cutover_history");
+const {Batch009ReleaseHistoricalWorkspace}=require("./stage_three_batch_009_release_history");
+const {StageThreeBatch009ReleaseTransition,TRANSITION}=require("./stage_three_batch_009_release_transition");
 
 // Replay old checks on exact old files, rather than giving their scanners planned
 // or mixed inputs. Real current-source enforcement remains in the live guards.
 class Batch009HistoricalWorkspace {
   async run(root,action,{copyTools=false}={}) {
     const history=new Batch009CutoverHistory(root);
-    if(!history.active()) return action(root);
+    const released=new Batch009ReleaseHistoricalWorkspace().isCompleted(root);
+    if(!history.active()&&!released) return action(root);
     const artifact=history.artifact(),w=new Batch009CandidateWorkspace();
     try {
       const copy=relative=>{
@@ -21,8 +24,14 @@ class Batch009HistoricalWorkspace {
       };
       for(const dir of ["src","architecture","dist/stage-3-compat-runtime",...(copyTools?["utils"]:[])])copy(dir);
       for(const file of ["index.html","package.json","package-lock.json","CHANGELOG.md","refactor_Task.txt"]) w.write(file,fs.readFileSync(path.join(root,file)));
+      if(released){
+        const transition=new StageThreeBatch009ReleaseTransition(root);
+        const artifact=transition.validate(JSON.parse(transition.read(TRANSITION)));
+        for(const record of artifact.records) w.write(record.path,transition.reverse(transition.read(record.path),record));
+        fs.unlinkSync(path.join(w.root,TRANSITION));
+      }
       for(const r of artifact.writes) {
-        let bytes = fs.readFileSync(path.join(root,r.path));
+        let bytes = fs.readFileSync(path.join(w.root,r.path));
         if (r.path === "architecture/migration/module_migration_manifest.json") {
           bytes = require("./stage_three_batch_009_observation_transition").beforeBatch009Observations(bytes, root);
         }
@@ -47,7 +56,8 @@ class Batch009HistoricalWorkspace {
   }
 }
 async function runHistoricalScript(root,relative,action) {
-  if(!new Batch009CutoverHistory(root).active())return action();
+  if(!new Batch009CutoverHistory(root).active()&&
+      !new Batch009ReleaseHistoricalWorkspace().isCompleted(root))return action();
   console.log(`Historical batch replay in isolated workspace: ${relative}`);
   return new Batch009HistoricalWorkspace().run(root,temporary=>{
     const result=require("node:child_process").spawnSync(process.execPath,[path.join(temporary,relative),...process.argv.slice(2)],{cwd:temporary,encoding:"utf8",maxBuffer:32*1024*1024});

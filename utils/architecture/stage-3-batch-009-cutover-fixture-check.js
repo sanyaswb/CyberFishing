@@ -45,5 +45,7 @@ async function run(root=ROOT) {
   }
   console.log(`Stage 3.9.5–3.9.6 fixtures PASS: ${boundary.length} transaction failure boundaries, occupied publication gate, ${negatives} live-byte/evaluation mutations.`);
 }
-if(require.main===module)run().catch(e=>{console.error(e.stack);process.exitCode=1;});
+if(require.main===module)require("./domain_batches/stage_three_batch_009_release_history")
+  .runPreReleaseScript(ROOT,"utils/architecture/stage-3-batch-009-cutover-fixture-check.js",run)
+  .catch(e=>{console.error(e.stack);process.exitCode=1;});
 module.exports={run};
