@@ -982,7 +982,18 @@ class StageOneClosureValidator {
           const history = new Batch009CutoverHistory(this.projectRoot);
           if (!history.active()) throw new Error("Batch 009 pending cutover must remain runtime-active");
           history.artifact();
-          history.before("architecture/migration/module_migration_manifest.json", fs.readFileSync(path.join(migrationRoot, "module_migration_manifest.json")));
+            history.before("architecture/migration/module_migration_manifest.json", fs.readFileSync(path.join(migrationRoot, "module_migration_manifest.json")));
+            const observedPath = path.join(migrationRoot, "stage_3_batch_009_observation_reconciliation.json");
+            if (fs.existsSync(observedPath)) {
+              const observed = JSON.parse(fs.readFileSync(observedPath));
+              const delta = observed.dependencyDelta;
+              if (observed.status !== "verified" || observed.batchId !== artifact.batchId ||
+                  delta.confirmedInterFileEdgesBefore !== expectedBefore ||
+                  delta.confirmedInterFileEdgesAfter !== expectedBefore ||
+                  delta.newlyConfirmedEdges.length !== 0 || delta.removedEdges.length !== 0) {
+                throw new Error("Batch 009 reconciliation changed the confirmed-edge sequence");
+              }
+            }
           return total; // Publication creates no authoritative observation edges.
         }
         if (!artifact.dependencyObservation && artifact.manifestTransition?.observations === "pending") {

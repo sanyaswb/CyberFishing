@@ -400,7 +400,19 @@ const CHECK_DEFINITIONS = Object.freeze([
       title: "Stage 3.9.5–3.9.6 exact transaction rollback and live failure fixtures",
       file: "utils/architecture/stage-3-batch-009-cutover-fixture-check.js",
       suites: ["architecture"],
-    },
+      },
+      {
+        id: "stage-3-batch-009-observation-fixtures",
+        title: "Stage 3.9.7 exact observation delta, immutable history and rollback fixtures",
+        file: "utils/architecture/stage-3-batch-009-observation-fixture-check.js",
+        suites: ["architecture"],
+      },
+      {
+        id: "stage-3-batch-009-observation",
+        title: "Stage 3.9.7 full live observation and Manifest reconciliation",
+        file: "utils/architecture/stage-3-batch-009-observation-integration-check.js",
+        suites: ["quick", "architecture"],
+      },
     {
       id: "stage-3-batch-009-live-runtime",
       title: "Stage 3.9.5–3.9.6 actual published runtime identity, timing and state",

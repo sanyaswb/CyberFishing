@@ -22,11 +22,18 @@ class Batch009HistoricalWorkspace {
       for(const dir of ["src","architecture","dist/stage-3-compat-runtime",...(copyTools?["utils"]:[])])copy(dir);
       for(const file of ["index.html","package.json","package-lock.json","CHANGELOG.md","refactor_Task.txt"]) w.write(file,fs.readFileSync(path.join(root,file)));
       for(const r of artifact.writes) {
-        assert.equal(require("./stage_three_batch_009_cutover_history").hash(fs.readFileSync(path.join(root,r.path))),r.afterSha256,`Live cutover drift: ${r.path}`);
+        let bytes = fs.readFileSync(path.join(root,r.path));
+        if (r.path === "architecture/migration/module_migration_manifest.json") {
+          bytes = require("./stage_three_batch_009_observation_transition").beforeBatch009Observations(bytes, root);
+        }
+        assert.equal(require("./stage_three_batch_009_cutover_history").hash(bytes),r.afterSha256,`Live cutover drift: ${r.path}`);
         if(r.beforeBase64===null) fs.unlinkSync(path.join(w.root,r.path));
         else w.write(r.path,Buffer.from(r.beforeBase64,"base64"));
       }
       fs.unlinkSync(path.join(w.root,CUTOVER));
+      // Observation evidence has no meaning in a restored pre-cutover workspace.
+      const observation = path.join(w.root, require("./stage_three_batch_009_observation_transition").OUTPUT);
+      if (fs.existsSync(observation)) fs.unlinkSync(observation);
       if(copyTools) {
         // Junction is dependency resolution only; generated artifacts stay in w.root.
         fs.symlinkSync(path.join(root,"node_modules"),path.join(w.root,"node_modules"),"junction");

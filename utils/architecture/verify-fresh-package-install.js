@@ -23,8 +23,17 @@ class FreshPackageInstallVerifier {
       if (actualNpm !== expectedNpm) throw new Error(`packageManager requires npm ${expectedNpm}, received ${actualNpm}`);
       const lockPath = path.join(temporaryRoot, "package-lock.json");
       const lockBefore = fs.readFileSync(lockPath);
-      steps.push(this.#runNpm(["ci", "--no-audit", "--no-fund"], temporaryRoot, "npm-ci"));
+      // Acceptance needs build/test tooling even if npm inherits a production
+      // install mode from the host. This does not change the locked graph.
+      steps.push(this.#runNpm(["ci", "--include=dev", "--no-audit", "--no-fund"], temporaryRoot, "npm-ci"));
       if (!lockBefore.equals(fs.readFileSync(lockPath))) throw new Error("npm ci changed package-lock.json");
+      for (const name of Object.keys({ ...packageJson.dependencies, ...packageJson.devDependencies })) {
+        const installed = path.join(temporaryRoot, "node_modules", name, "package.json");
+        if (!fs.existsSync(installed)) {
+          throw new Error("Fresh npm ci did not install declared dependency " + name +
+            " in the isolated workspace. npm output:\n" + steps[0].stdout + "\n" + steps[0].stderr);
+        }
+      }
       if (packageJson.scripts["build:stage-3-compat-runtime"]) {
         steps.push(this.#runNode(["utils/build/build_stage_3_compat_runtime.js"], temporaryRoot, "cumulative-build"));
       }

@@ -101,7 +101,10 @@ class MigrationObservationPersistenceCorpusCheck {
     if (batch009.active()) {
       const cutover = batch009.artifact();
       batch009.before("architecture/migration/module_migration_manifest.json", Buffer.from(manifestText));
-      for (const file of cutover.manifestTransition.pendingPaths) allowedPaths.add(file);
+      const observation009 = require("./domain_batches/stage_three_batch_009_observation_transition").OUTPUT;
+      if (!fs.existsSync(path.join(PROJECT_ROOT, observation009))) {
+        for (const file of cutover.manifestTransition.pendingPaths) allowedPaths.add(file);
+      }
     }
     assert.deepEqual([...pendingPaths].sort(), [...allowedPaths].sort(), "Unexpected pending observation scope");
     const pendingByPath = new Map(manifest.modules.filter((entry) => pendingPaths.has(entry.currentPath))

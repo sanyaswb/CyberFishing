@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-009-acceptance",
+  "stage": "3.9.8",
+  "batchId": "stage-3.candidate-009-fish-444e8034",
+  "releaseVersion": "0.24.45",
+  "recordedAt": "2026-09-22T14:38:13.000Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_009_automated_acceptance.json",
+    "sha256": "aed7a9aaf7dfb7cdc2dacb0c5e2958851371c3fb61afa5678f34b0d4f831c544",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "freshInstall": "passed",
+    "cumulativeBuild": "passed",
+    "architecture": {
+      "passedChecks": 121,
+      "failedChecks": 0
+    },
+    "quick": {
+      "passedChecks": 70,
+      "failedChecks": 0
+    },
+    "full": {
+      "passedChecks": 149,
+      "failedChecks": 0
+    },
+    "runtimeOutputByteEquality": true,
+    "countSemantics": "Results of the recorded acceptance attempt, not architecture policy constants."
+  },
+  "browserSmoke": {
+    "status": "passed-user-reported",
+    "performedBy": "user",
+    "evidenceType": "manual-test-summary-in-conversation",
+    "userStatement": "так все працює я перевірив у браузері",
+    "context": "Response to the Stage 3.9.8 checklist: boot, Canvas, inventory, cast to waiting to fight, fish rarity, anomaly variant, and console errors/warnings.",
+    "acceptanceBasis": "The user reported the browser check as working after receiving the complete checklist. This is a collective manual confirmation, not independently instrumented evidence.",
+    "perCheckResults": null,
+    "consoleCounts": null,
+    "limitations": "Individual scenario results and numeric console error/warning counts were not provided; no per-check measurements are inferred."
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_009_live_runtime_validation.json",
+      "sha256": "344c752d416789aeaec5bf7de5ae4b18063aa6e412948b49aa41bb10741e738f"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_009_observation_reconciliation.json",
+      "sha256": "7645cd40118b6149e0705cf0af5c04f6a52dd24df9d2958b736b36f4b10dfe72"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "5783e6f1bdde82fd228ff856eb6570fafd4eab0fa2cd0db90f2696e6ae66b781"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "d0d0caed9ded5c6b0ff91233677238d1817868c3aa1241ebb1419aaae1d4a812"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "6a22ea5e016cdfbfef59f2fb3594db85f53bae06a539989339e61b8ed53e36f2"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "54ad32ef92b0282a6b128883995f75e46c11d0731ab996f768c56a1f0ade8d2c"
+    },
+    {
+      "path": "index.html",
+      "sha256": "663973735065912d0f1dc1744a97446b50cf56c93e856d144b5c95679d0018e7"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.candidate-009-fish-444e8034",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.9.9 — Release Closure v0.24.46"
+}

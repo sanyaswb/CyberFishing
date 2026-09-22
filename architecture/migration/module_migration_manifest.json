@@ -15931,18 +15931,33 @@
       "observed": {
         "legacyLoadOrder": 43,
         "providers": {
-          "status": "pending",
-          "items": [],
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "FishAnomalyVariantResolver",
+              "mechanism": "global-this-property",
+              "availability": "program-init"
+            }
+          ],
           "issues": []
         },
         "consumers": {
-          "status": "pending",
-          "items": [],
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
-          "status": "pending",
-          "builtins": [],
+          "status": "verified",
+          "builtins": [
+            "globalThis"
+          ],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -15959,10 +15974,18 @@
       },
       "analysis": {
         "dependencies": {
-          "status": "pending",
+          "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -15978,18 +16001,33 @@
       "observed": {
         "legacyLoadOrder": 42,
         "providers": {
-          "status": "pending",
-          "items": [],
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "FishRarityResolver",
+              "mechanism": "global-this-property",
+              "availability": "program-init"
+            }
+          ],
           "issues": []
         },
         "consumers": {
-          "status": "pending",
-          "items": [],
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
-          "status": "pending",
-          "builtins": [],
+          "status": "verified",
+          "builtins": [
+            "globalThis"
+          ],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -16006,10 +16044,18 @@
       },
       "analysis": {
         "dependencies": {
-          "status": "pending",
+          "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -36253,25 +36299,32 @@
       "observed": {
         "legacyLoadOrder": null,
         "providers": {
-          "status": "pending",
+          "status": "verified",
           "items": [],
           "issues": []
         },
         "consumers": {
-          "status": "pending",
+          "status": "verified",
           "items": [],
           "issues": []
         },
         "environment": {
-          "status": "pending",
-          "builtins": [],
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Math",
+            "Number",
+            "Object",
+            "String",
+            "undefined"
+          ],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
       },
       "architecture": {
-        "migrationStatus": "migrating",
+        "migrationStatus": "verified",
         "roles": [
           "domain-behavior"
         ],
@@ -36281,7 +36334,7 @@
       },
       "analysis": {
         "dependencies": {
-          "status": "pending",
+          "status": "verified",
           "confirmed": [],
           "items": [],
           "unresolved": [],
@@ -36300,25 +36353,33 @@
       "observed": {
         "legacyLoadOrder": null,
         "providers": {
-          "status": "pending",
+          "status": "verified",
           "items": [],
           "issues": []
         },
         "consumers": {
-          "status": "pending",
+          "status": "verified",
           "items": [],
           "issues": []
         },
         "environment": {
-          "status": "pending",
-          "builtins": [],
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Math",
+            "NaN",
+            "Number",
+            "Object",
+            "Set",
+            "String"
+          ],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
       },
       "architecture": {
-        "migrationStatus": "migrating",
+        "migrationStatus": "verified",
         "roles": [
           "domain-behavior"
         ],
@@ -36328,7 +36389,7 @@
       },
       "analysis": {
         "dependencies": {
-          "status": "pending",
+          "status": "verified",
           "confirmed": [],
           "items": [],
           "unresolved": [],

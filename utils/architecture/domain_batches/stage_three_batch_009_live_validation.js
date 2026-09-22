@@ -24,7 +24,12 @@ class Batch009LiveValidation {
     const pre=json(artifact.evidence.prebuild.path),proof=json(artifact.evidence.sourceBuild.path),state=json(STATE),runtime=json(PATHS.runtimeContract);
     assert.deepEqual(state,{...JSON.parse(Buffer.from(pre.stateTransition.afterBase64,"base64")),activeBatchPhase:"runtime-active"});
     assert.deepEqual(artifact.topology,pre.plannedTopology);assert.deepEqual(artifact.build,proof.report);
-    for(const w of artifact.writes) assert.equal(hash(read(w.path)),w.afterSha256,`Published bytes differ: ${w.path}`);
+    for(const w of artifact.writes) {
+      const bytes = w.path === PATHS.manifest
+        ? require("./stage_three_batch_009_observation_transition").beforeBatch009Observations(read(w.path), this.root)
+        : read(w.path);
+      assert.equal(hash(bytes),w.afterSha256,`Published bytes differ: ${w.path}`);
+    }
     for(const p of pre.protectedFiles) if(!artifact.writes.some(w=>w.path===p.path)) assert.equal(hash(read(p.path)),p.sha256,`Unrelated change: ${p.path}`);
     const code=read(runtime.output.directory+runtime.output.runtimeFile).toString();
     assert.equal(hash(Buffer.from(code)),proof.report.runtimeSha256);

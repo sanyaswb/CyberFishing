@@ -1,0 +1,540 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-009-observation-reconciliation",
+  "status": "verified",
+  "batchId": "stage-3.candidate-009-fish-444e8034",
+  "releaseVersion": "0.24.45",
+  "evidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_009_prebuild_contract.json",
+      "sha256": "f834fd068577e3883ffdb6e72e65526d4355b1a0042bf6ebdfea698ac556f2bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_009_runtime_cutover.json",
+      "sha256": "28a9e9bd7654cac4ec6696b53242f33fad41faa6dd9df3bc92b73cecd38a3a3e"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "d0d0caed9ded5c6b0ff91233677238d1817868c3aa1241ebb1419aaae1d4a812"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_009_live_runtime_validation.json",
+      "sha256": "344c752d416789aeaec5bf7de5ae4b18063aa6e412948b49aa41bb10741e738f"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_009_audit.json",
+      "sha256": "bf8efa15938f765f9f29533b2d095f577d6720edbead1a0541b1cefc40d3a5e3"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "5783e6f1bdde82fd228ff856eb6570fafd4eab0fa2cd0db90f2696e6ae66b781"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "6a22ea5e016cdfbfef59f2fb3594db85f53bae06a539989339e61b8ed53e36f2"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "sha256": "77b621365ec53ef0dd0e7bbcb607a8065ef5f61e3efd75716b010f5039744c0a"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "sha256": "890a38291597c17937915407e99b70185192f55588e3d3deea5fe741b1237aba"
+    },
+    {
+      "path": "architecture/module_architecture.json",
+      "sha256": "563423746bc86a99ced7bd0ffeb14e20ef4c62021c2c839c069225ec77cf79d6"
+    },
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    }
+  ],
+  "manifestTransition": {
+    "beforeSha256": "93f8db897896477759d2f33b6103fb1cb17502c8f18dc5125b7c41fb6eccb591",
+    "afterSha256": "54ad32ef92b0282a6b128883995f75e46c11d0731ab996f768c56a1f0ade8d2c",
+    "records": [
+      {
+        "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+        "before": {
+          "currentPath": "src/core/fish/fish_anomaly_variant_resolver.js",
+          "currentArea": "core/fish",
+          "observed": {
+            "legacyLoadOrder": 43,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "eb686468e42112fcb63a60470a9d7d3bc1fc99ab2d7c0a18c218ae627bb14fb6"
+      },
+      {
+        "currentPath": "src/core/fish/fish_rarity_resolver.js",
+        "before": {
+          "currentPath": "src/core/fish/fish_rarity_resolver.js",
+          "currentArea": "core/fish",
+          "observed": {
+            "legacyLoadOrder": 42,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "a5f5b404deb66c4572c7f83487ef3000d39ea05356e447f12bc2e57a97708dba"
+      },
+      {
+        "currentPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+        "before": {
+          "currentPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+          "currentArea": "game/domain/fish",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "5fb2251bfca56866d77208cb5e3faff08a1b5d00972192ad2089c6ab5cc72b8d"
+      },
+      {
+        "currentPath": "src/game/domain/fish/fish_rarity_resolver.js",
+        "before": {
+          "currentPath": "src/game/domain/fish/fish_rarity_resolver.js",
+          "currentArea": "game/domain/fish",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "2b3ee3743dd3a7b5a67afd5af190a1f189a5a292c10855a3fb6524e82ee06c13"
+      }
+    ]
+  },
+  "totals": {
+    "modules": 460,
+    "providers": 856,
+    "consumers": 928,
+    "confirmed": 893,
+    "unresolved": 35,
+    "ambiguous": 0,
+    "edges": 772
+  },
+  "esm": [
+    {
+      "source": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Array",
+        "Math",
+        "Number",
+        "Object",
+        "String",
+        "undefined"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/fish/fish_rarity_resolver.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Array",
+        "Math",
+        "NaN",
+        "Number",
+        "Object",
+        "Set",
+        "String"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    }
+  ],
+  "controlledGlobalTransitions": [
+    {
+      "source": "src/core/fish/fish_rarity_resolver.js",
+      "target": "src/game/domain/fish/fish_rarity_resolver.js",
+      "symbol": "FishRarityResolver",
+      "activationId": "activation-85b75b58221b",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "target": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "symbol": "FishAnomalyVariantResolver",
+      "activationId": "activation-ea32013c6230",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    }
+  ],
+  "derivedIncomingConsumers": [
+    {
+      "source": "src/app/bootstrap.js",
+      "symbol": "FishAnomalyVariantResolver",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/app/bootstrap.js",
+      "symbol": "FishRarityResolver",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fish/fish_rarity_resolver.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "guardedConsumers": [],
+  "additionalConsumers": [],
+  "dependencyDelta": {
+    "confirmedInterFileEdgesBefore": 772,
+    "confirmedInterFileEdgesAfter": 772,
+    "newlyConfirmedEdges": [],
+    "removedEdges": []
+  },
+  "transportUnresolved": {
+    "count": 2,
+    "classification": "compatibility-transport-outside-src-project-graph",
+    "createsProjectDependencyEdge": false
+  },
+  "removalDependencies": [
+    {
+      "activationId": "activation-85b75b58221b",
+      "source": "src/core/fish/fish_rarity_resolver.js",
+      "consumers": [
+        "src/app/bootstrap.js"
+      ],
+      "owner": "stage-3.candidate-009-fish-444e8034",
+      "removalStage": "stage-5",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-ea32013c6230",
+      "source": "src/core/fish/fish_anomaly_variant_resolver.js",
+      "consumers": [
+        "src/app/bootstrap.js"
+      ],
+      "owner": "stage-3.candidate-009-fish-444e8034",
+      "removalStage": "stage-5",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    }
+  ],
+  "globalNamespace": {
+    "newGlobals": [],
+    "removedSymbols": [],
+    "mechanismTransitions": [
+      {
+        "source": "src/core/fish/fish_rarity_resolver.js",
+        "target": "src/game/domain/fish/fish_rarity_resolver.js",
+        "symbol": "FishRarityResolver",
+        "activationId": "activation-85b75b58221b",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/fish/fish_anomaly_variant_resolver.js",
+        "target": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+        "symbol": "FishAnomalyVariantResolver",
+        "activationId": "activation-ea32013c6230",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      }
+    ]
+  },
+  "graph": {
+    "modules": 460,
+    "consumers": 928,
+    "confirmed": 893,
+    "selfConfirmed": 3,
+    "unresolved": 35,
+    "ambiguous": 0,
+    "edges": 772,
+    "reverseLinks": 772,
+    "targetsWithConsumers": 415,
+    "unifiedEdges": 808,
+    "reverseConsumers": "derived-only",
+    "verifiedIncoming": [
+      {
+        "sourceProvider": "src/core/fish/fish_rarity_resolver.js",
+        "targetModule": "src/game/domain/fish/fish_rarity_resolver.js",
+        "legacy": [
+          {
+            "source": "src/app/bootstrap.js",
+            "symbols": [
+              "FishRarityResolver"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/fish/fish_rarity_resolver.js",
+            "target": "src/game/domain/fish/fish_rarity_resolver.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-8d36f9222504",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/fish/fish_anomaly_variant_resolver.js",
+        "targetModule": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+        "legacy": [
+          {
+            "source": "src/app/bootstrap.js",
+            "symbols": [
+              "FishAnomalyVariantResolver"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/fish/fish_anomaly_variant_resolver.js",
+            "target": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-19f525f74d35",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "reverseIndexSha256": "09d86120d8d659e1a6272defbc486fe29c342c627c66bb224122aa0d6614839b"
+  },
+  "guards": {
+    "failureCount": 0,
+    "knownDebtCount": 203,
+    "diagnosticsSha256": "b873636997b71ef8d67c46123a4ee58c1993e050be2fad36e9d44d66b6bb0ba6",
+    "baselineGlobals": 855
+  },
+  "metadataTransition": {
+    "field": "architecture.migrationStatus",
+    "from": "migrating",
+    "to": "verified",
+    "targets": [
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js"
+    ]
+  },
+  "topology": {
+    "modules": 36,
+    "activations": 37,
+    "bridges": 62
+  },
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3"
+    ],
+    "activeBatchId": "stage-3.candidate-009-fish-444e8034",
+    "activeBatchPhase": "runtime-active",
+    "batchCompleted": false
+  },
+  "releaseClosureAuthorized": false,
+  "verdict": "eligible-for-full-acceptance",
+  "nextGate": "stage-3.9.8-full-acceptance-and-browser-smoke"
+}

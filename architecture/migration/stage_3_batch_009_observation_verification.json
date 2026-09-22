@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-009-observation-verification",
+  "batchId": "stage-3.candidate-009-fish-444e8034",
+  "stage": "3.9.7",
+  "status": "passed",
+  "releaseVersion": "0.24.45",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "evidence": [
+    {
+      "path": "package-lock.json",
+      "sha256": "7e0a599101b85da7cba4baac33d1663e056f1d391e99f6c8c3fab9ad4172cb3d"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "54ad32ef92b0282a6b128883995f75e46c11d0731ab996f768c56a1f0ade8d2c"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_009_observation_reconciliation.json",
+      "sha256": "7645cd40118b6149e0705cf0af5c04f6a52dd24df9d2958b736b36f4b10dfe72"
+    }
+  ],
+  "suites": [
+    {
+      "suite": "architecture",
+      "passed": 121,
+      "exitCode": 0,
+      "elapsedMs": 121332,
+      "stdoutSha256": "8aa3806e44379be20625f0ee22b433a42fdd188880a5aceb03e21c7689468629",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "quick",
+      "passed": 70,
+      "exitCode": 0,
+      "elapsedMs": 60679,
+      "stdoutSha256": "d4c0e4e24f6ec4e4b66f4c8195f11538eba71910cc412a3f0d4b83a589c58be6",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "all",
+      "passed": 149,
+      "exitCode": 0,
+      "elapsedMs": 119266,
+      "stdoutSha256": "bee84f61f01085f7d6520d4e05e2511c555fbdcbed7e7f44d4302587078ff894",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "focused": {
+    "negativeInputEvidenceAndTransactionCases": 55,
+    "transactionRollbackBoundaries": 4,
+    "fullCorpusReplayDeterministic": true,
+    "manifestWriteIdempotent": true,
+    "protectedByteHashesMatched": 518
+  },
+  "result": {
+    "actualSourceModules": 460,
+    "reconciledPaths": 4,
+    "newlyVerifiedEsmTargets": 2,
+    "pendingObservationModules": 0,
+    "confirmedLegacyEdges": 772,
+    "derivedReverseLinks": 772,
+    "unifiedEdges": 808,
+    "unexpectedConsumers": 0,
+    "newGlobals": 0,
+    "forbiddenDomainEdges": 0,
+    "guardFailures": 0,
+    "knownDebt": 203
+  },
+  "lifecycle": {
+    "completedPrefixCount": 8,
+    "activeBatch": "009",
+    "phase": "runtime-active",
+    "batchCompleted": false
+  },
+  "runtime": {
+    "modules": 36,
+    "activations": 37,
+    "bridges": 62,
+    "changed": false
+  },
+  "historicalEvidenceRewritten": false,
+  "sourceChanged": false,
+  "browserAcceptanceClaimed": false,
+  "freshInstallAcceptanceClaimed": false,
+  "releaseClosureAuthorized": false,
+  "gitDiffCheck": "passed",
+  "verdict": "eligible-for-full-acceptance",
+  "next": "3.9.8"
+}
