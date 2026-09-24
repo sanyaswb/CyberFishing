@@ -35,6 +35,12 @@ class StageThreeBatchPreflightProfile {
     const contracts = definition?.reviewedContracts;
     require(contracts && !Array.isArray(contracts) && typeof contracts === "object",
       "reviewedContracts are required");
+    if (definition?.sideEffectEvidence) {
+      require(typeof definition.sideEffectEvidence.path === "string" &&
+        definition.sideEffectEvidence.path.startsWith("architecture/migration/") &&
+        /^[a-f0-9]{64}$/u.test(definition.sideEffectEvidence.sha256),
+      "sideEffectEvidence needs an exact migration path and SHA-256");
+    }
     const expectedPaths = executionProfile?.expectedTargets.map((target) => target.currentPath).sort() || [];
     require(JSON.stringify(Object.keys(contracts || {}).sort()) === JSON.stringify(expectedPaths),
       "reviewedContracts must cover exact target paths");
@@ -54,6 +60,13 @@ class StageThreeBatchPreflightProfile {
         `${currentPath} mutatesCallerInputs must be boolean`);
       require(contract?.allocationBaseline && typeof contract.allocationBaseline === "object",
         `${currentPath} allocationBaseline is required`);
+      if (contract?.legacyExposure) {
+        require(Boolean(definition?.sideEffectEvidence),
+          `${currentPath} legacyExposure requires sideEffectEvidence`);
+        require(typeof contract.legacyExposure.symbol === "string" &&
+          /^\d+:\d+$/u.test(contract.legacyExposure.location),
+        `${currentPath} legacyExposure must name an exact symbol and location`);
+      }
     }
     require(Array.isArray(definition?.migrationGates) && definition.migrationGates.length > 0,
       "migrationGates are required");

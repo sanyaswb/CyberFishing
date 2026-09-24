@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-012-browser-confirmation",
+  "batchId": "stage-3.candidate-012-assemblies-2086347a",
+  "releaseVersion": "0.24.48",
+  "status": "passed",
+  "performedBy": "user",
+  "recordedAt": "2026-09-24T23:37:53.305Z",
+  "evidenceType": "user-confirmation-in-conversation",
+  "browserSummary": {
+    "userStatement": "PASS: attachment slots, assembly completion, equipment and fishing cycle",
+    "context": "User-reported PASS for the Stage 3.12.8 Assemblies checklist.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": false
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "0 errors, 0 warnings",
+    "independentlyInstrumented": false
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_012_acceptance_pass.json",
+    "sha256": "a73d8cf06634ac412df7a7c7ff40c1141c6a4521b58072a3b36eb2bdfac273e4"
+  },
+  "historicalSummaryPreserved": true
+}

@@ -45,12 +45,14 @@ class StageThreeObservationReconciliation {
       ({ source: item.source, target: item.provider, symbol })))), sorted(approved));
     const transitions = activations.map((item) => {
       const original = baseline.providers.filter((provider) => provider.currentPath === item.sourceProvider && provider.symbol === item.legacySymbol);
-      assert.equal(original.length, 1, "Missing exact approved legacy identity");
-      assert.equal(original[0].mechanism, "global-lexical");
+      const reviewedExposure = this.profile.legacyExposureBySource?.[item.sourceProvider];
+      assert.deepEqual(original.map(provider => provider.mechanism), reviewedExposure === item.legacySymbol
+        ? ["global-lexical", "global-this-property"] : ["global-lexical"],
+      "Missing exact approved legacy identity");
       assert(bridges.some((bridge) => bridge.bridge === item.sourceProvider && bridge.target === item.targetModule &&
         bridge.globalProviders.some((provider) => provider.symbol === item.legacySymbol && provider.mechanism === "global-this-property")));
       return { source: item.sourceProvider, target: item.targetModule, symbol: item.legacySymbol, activationId: item.id,
-        fromMechanism: original[0].mechanism, toMechanism: "global-this-property", approval: "exact-existing-activation-and-consumer-registry" };
+        fromMechanism: "global-lexical", toMechanism: "global-this-property", approval: "exact-existing-activation-and-consumer-registry" };
     });
     assert.deepEqual(esm.map((item) => item.source).sort(), activations.map((item) => item.targetModule).sort());
     for (const item of esm) {

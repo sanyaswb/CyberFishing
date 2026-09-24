@@ -16,6 +16,7 @@ class StageThreeObservationManifestTransition {
     this.prebuild = prebuild;
     this.cutover = cutover;
     this.runtime = runtime;
+    this.removedTargetBuiltins = [];
     assert.equal(prebuild.batchId, this.profile.batchId);
     assert.equal(cutover.batchId, this.profile.batchId);
     this.activations = prebuild.preliminaryMetadata.plannedActivationPositions;
@@ -63,7 +64,12 @@ class StageThreeObservationManifestTransition {
       assert.equal(target.observed.legacyLoadOrder, null);
       assert.deepEqual(target.observed.providers, empty());
       assert.deepEqual(target.observed.consumers, empty());
-      assert.deepEqual(target.observed.environment, previous.observed.environment,
+      const expectedTargetEnvironment = structuredClone(previous.observed.environment);
+      for (const builtin of this.removedTargetBuiltins) {
+        assert(expectedTargetEnvironment.builtins.includes(builtin), "Reviewed builtin was absent before cutover");
+        expectedTargetEnvironment.builtins = expectedTargetEnvironment.builtins.filter(item => item !== builtin);
+      }
+      assert.deepEqual(target.observed.environment, expectedTargetEnvironment,
         "ESM target acquired a new environment dependency");
       assert.deepEqual(target.observed.environment.browserApis, []);
       assert.deepEqual(target.observed.environment.dynamicConstructs, []);

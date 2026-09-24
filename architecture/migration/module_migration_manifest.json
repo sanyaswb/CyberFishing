@@ -13844,11 +13844,6 @@
           "items": [
             {
               "symbol": "AssemblyAttachmentTargetResolver",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "AssemblyAttachmentTargetResolver",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -13857,17 +13852,19 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Boolean",
-            "Number",
-            "Object",
-            "Set",
-            "TypeError",
             "globalThis"
           ],
           "browserApis": [],
@@ -13878,7 +13875,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
@@ -13889,7 +13886,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -13909,11 +13914,6 @@
           "items": [
             {
               "symbol": "AssemblyCompletionPolicy",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "AssemblyCompletionPolicy",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -13922,16 +13922,19 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Object",
-            "RangeError",
-            "Set",
-            "TypeError",
             "globalThis"
           ],
           "browserApis": [],
@@ -13942,7 +13945,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/assemblies/assembly_completion_policy.js",
@@ -13953,7 +13956,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -36320,6 +36331,111 @@
             "legacy-global-contract",
             "mixed-responsibility-requires-decomposition"
           ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "currentArea": "game/domain/assemblies",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Boolean",
+            "Number",
+            "Object",
+            "Set",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/assemblies/assembly_completion_policy.js",
+      "currentArea": "game/domain/assemblies",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Object",
+            "RangeError",
+            "Set",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/assemblies/assembly_completion_policy.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
         }
       }
     },

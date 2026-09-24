@@ -107,7 +107,7 @@ class StageThreeCompatibilityRuntimeIntegrationCheck {
     assert.equal(legacyReport.status, "transitioned-to-cumulative-runtime");
     assert.equal(fs.existsSync(previousRuntime), false, "isolated Stage 2 IIFEs must be removed");
     let runtime = null;
-    if (prebuildOpen) {
+    if (prebuildOpen || state.activeBatchPhase === "runtime-active") {
       const outputRoot = path.join(PROJECT_ROOT, contract.output.directory);
       const runtimeOutputExists = fs.existsSync(
         path.join(outputRoot, contract.output.runtimeFile),

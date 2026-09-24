@@ -1,0 +1,914 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-preflight-audit",
+  "status": "verified",
+  "stage": "Stage 3.12.0",
+  "sourceReleaseVersion": "0.24.48",
+  "batchId": "stage-3.candidate-012-assemblies-2086347a",
+  "sourceEvidence": {
+    "approvedPlan": {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    "manifest": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "7e22411e8bfb108608aa48c106dbada23010619b85f62cb676526be3be575a75"
+    },
+    "domainAudit": {
+      "path": "architecture/migration/stage_3_domain_audit.json",
+      "sha256": "6a96b8ead58fab42c8c596b365776226a77c36978b9ef68b71c3df8ada6fa4cd"
+    },
+    "executionState": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "b2abbedb5c8341f8bcce4282974f613c022ac6631eeb4bd32092c3b45ff387ae"
+    },
+    "runtimeContract": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "bfff663c21566e9bb295c6d6aacdd15fd6cc24882da0a1d066d6f7e0cac6094e"
+    },
+    "bridgeRegistry": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "289ac9e2b1e1eed1bd2aab041332ab03ceaf429627aa0cbdf0c745a94cab9e94"
+    },
+    "index": {
+      "path": "index.html",
+      "sha256": "86ac182db54105d6fb4098645be3ec6326599d8e62b1512b92192de88f6e32e4"
+    },
+    "runtimeOutput": {
+      "path": "dist/stage-3-compat-runtime",
+      "fingerprint": "c863e07c83521475c8dee438cc56fb3735be2bd240d54ab49c5f43e9d35ea58b"
+    },
+    "sideEffectReview": {
+      "path": "architecture/migration/stage_3_batch_012_side_effect_review.json",
+      "sha256": "0f2f7180c4339998be4556d4316878a233988aa34ac9fe47bea0ee23258f4c30"
+    }
+  },
+  "scope": {
+    "targetCount": 2,
+    "modules": [
+      {
+        "currentPath": "src/core/assemblies/assembly_attachment_target_resolver.js",
+        "targetPath": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+        "sourceSha256": "53778c9da91cb132317b66cef846c352718d337b8708bf31a1762dc0109962ba",
+        "exports": [
+          "AssemblyAttachmentTargetResolver"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-e0bcc695f5ae",
+          "members": [
+            "src/core/assemblies/assembly_attachment_target_resolver.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/assemblies/assembly_attachment_target_resolver.js",
+          "classDeclarations": [
+            "AssemblyAttachmentTargetResolver"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "ExpressionStatement@150:1"
+          ],
+          "fields": [
+            {
+              "name": "#profileRegistry",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#reader",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#repository",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#stateRepository",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 4,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "accepts",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "filterCompatibleCandidates",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 4,
+                "newExpressions": 0,
+                "objectFreezeCalls": 2,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "findCompatibleTargets",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 1,
+                "newExpressions": 0,
+                "objectFreezeCalls": 2,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "findPlacementTargets",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 1,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "hasCompatibleTarget",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "listTargets",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 2,
+                "arrayExpressions": 2,
+                "newExpressions": 1,
+                "objectFreezeCalls": 4,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 3,
+            "arrayExpressions": 8,
+            "newExpressions": 5,
+            "objectFreezeCalls": 9,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#profileRegistry",
+            "#reader",
+            "#repository",
+            "#stateRepository"
+          ],
+          "publicStateShape": [],
+          "resultShape": [
+            "capacity",
+            "depth",
+            "occupied",
+            "parentContext",
+            "parentInstanceId",
+            "rootInstanceId",
+            "slotDefinition",
+            "slotId",
+            "slotIndex",
+            "socketId"
+          ],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/assemblies/assembly_attachment_target_resolver.js",
+            "authoritativeOwners": [
+              "AssemblyAttachmentTargetResolver#accepts",
+              "AssemblyAttachmentTargetResolver#findCompatibleTargets",
+              "AssemblyAttachmentTargetResolver#listTargets",
+              "AssemblyAttachmentTargetResolver#profileRegistry",
+              "AssemblyAttachmentTargetResolver#reader",
+              "AssemblyAttachmentTargetResolver#repository",
+              "AssemblyAttachmentTargetResolver#stateRepository"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+            "authoritativeOwners": [
+              "AssemblyAttachmentTargetResolver#accepts",
+              "AssemblyAttachmentTargetResolver#findCompatibleTargets",
+              "AssemblyAttachmentTargetResolver#listTargets",
+              "AssemblyAttachmentTargetResolver#profileRegistry",
+              "AssemblyAttachmentTargetResolver#reader",
+              "AssemblyAttachmentTargetResolver#repository",
+              "AssemblyAttachmentTargetResolver#stateRepository"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "recursive-target-order-frozen-shapes-and-single-global-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "a2810e44e4c2ee659e36fec98b5a9885ad39c6b164fa92b0d87222eea7b93af8",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-recursive-target-discovery-and-frozen-results",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/application/inventory/inventory_v2_composition_root.js",
+              "marker": "new AssemblyAttachmentTargetResolver({"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 3,
+            "arrayExpressions": 8,
+            "newExpressions": 5,
+            "objectFreezeCalls": 9,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "150:1",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "currentPath": "src/core/assemblies/assembly_attachment_target_resolver.js",
+            "symbol": "AssemblyAttachmentTargetResolver",
+            "location": "150:1",
+            "sourceSha256": "53778c9da91cb132317b66cef846c352718d337b8708bf31a1762dc0109962ba",
+            "topLevelStatements": [
+              "class-declaration",
+              "global-this-assignment"
+            ],
+            "assignmentTarget": "globalThis.AssemblyAttachmentTargetResolver",
+            "evaluatedGlobalNames": [
+              "AssemblyAttachmentTargetResolver"
+            ],
+            "evaluationCount": 1,
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "AssemblyAttachmentTargetResolver",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "AssemblyAttachmentTargetResolver",
+            "mechanism": "global-this-property",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/assemblies/assembly_completion_policy.js",
+        "targetPath": "src/game/domain/assemblies/assembly_completion_policy.js",
+        "sourceSha256": "74e9b1bbb9ac309cd8ebfad9a6c04f6d9f6cb9922d77344cbbec1c5c9a2651df",
+        "exports": [
+          "AssemblyCompletionPolicy"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-fce1ee0e97f7",
+          "members": [
+            "src/core/assemblies/assembly_completion_policy.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/assemblies/assembly_completion_policy.js",
+          "classDeclarations": [
+            "AssemblyCompletionPolicy"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "ExpressionStatement@93:1"
+          ],
+          "fields": [
+            {
+              "name": "#assemblyReader",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#profileRegistry",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#repository",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#analyzeItem",
+              "kind": "method",
+              "parameterCount": 3,
+              "allocations": {
+                "objectExpressions": 2,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "analyze",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 2,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 2,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 5,
+            "arrayExpressions": 0,
+            "newExpressions": 3,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#assemblyReader",
+            "#profileRegistry",
+            "#repository"
+          ],
+          "publicStateShape": [],
+          "resultShape": [
+            "filledSlotCount",
+            "hasAnyComponent",
+            "hasSlots",
+            "isComplete",
+            "totalSlotCount"
+          ],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/assemblies/assembly_completion_policy.js",
+            "authoritativeOwners": [
+              "AssemblyCompletionPolicy#analyzeItem",
+              "AssemblyCompletionPolicy#assemblyReader",
+              "AssemblyCompletionPolicy#profileRegistry",
+              "AssemblyCompletionPolicy#repository"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/assemblies/assembly_completion_policy.js",
+            "authoritativeOwners": [
+              "AssemblyCompletionPolicy#analyzeItem",
+              "AssemblyCompletionPolicy#assemblyReader",
+              "AssemblyCompletionPolicy#profileRegistry",
+              "AssemblyCompletionPolicy#repository"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "recursive-completion-counting-cycle-detection-and-single-global-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "b0752ea1da6889465496e351d1ffae88b7b4c8a0fa299a0c934a4f4c5a7afd42",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-recursive-analysis-and-frozen-public-result",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/application/inventory/inventory_v2_composition_root.js",
+              "marker": "new AssemblyCompletionPolicy({"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 5,
+            "arrayExpressions": 0,
+            "newExpressions": 3,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "93:1",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "currentPath": "src/core/assemblies/assembly_completion_policy.js",
+            "symbol": "AssemblyCompletionPolicy",
+            "location": "93:1",
+            "sourceSha256": "74e9b1bbb9ac309cd8ebfad9a6c04f6d9f6cb9922d77344cbbec1c5c9a2651df",
+            "topLevelStatements": [
+              "class-declaration",
+              "global-this-assignment"
+            ],
+            "assignmentTarget": "globalThis.AssemblyCompletionPolicy",
+            "evaluatedGlobalNames": [
+              "AssemblyCompletionPolicy"
+            ],
+            "evaluationCount": 1,
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "AssemblyCompletionPolicy",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "AssemblyCompletionPolicy",
+            "mechanism": "global-this-property",
+            "availability": "program-init"
+          }
+        ]
+      }
+    ]
+  },
+  "runtimeBaseline": {
+    "projectModuleCount": 42,
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "activationCount": 43,
+    "bridgeCount": 74,
+    "scriptTopology": {
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0
+    }
+  },
+  "closure": {
+    "existingCumulativeModuleCount": 42,
+    "existingCumulativeModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "newProjectModuleCount": 2,
+    "newProjectModules": [
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js"
+    ],
+    "resultingProjectModuleCount": 44,
+    "internalEdges": [],
+    "alreadyCumulativeDependencies": [],
+    "unexpectedDependencies": []
+  },
+  "evaluation": {
+    "legacyScriptOrderControlsEvaluation": false,
+    "ordering": "esm-graph-topology-with-lexicographic-diagnostic-tiebreak",
+    "stronglyConnectedComponents": [
+      {
+        "id": "scc-e0bcc695f5ae",
+        "members": [
+          "src/core/assemblies/assembly_attachment_target_resolver.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-fce1ee0e97f7",
+        "members": [
+          "src/core/assemblies/assembly_completion_policy.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      }
+    ],
+    "layers": [
+      [
+        "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+        "src/game/domain/assemblies/assembly_completion_policy.js"
+      ]
+    ],
+    "cycles": []
+  },
+  "boundaries": {
+    "forbiddenEdges": [],
+    "directConfigDependencies": [],
+    "browserCapabilities": [],
+    "transportReads": [],
+    "forbiddenSourceReads": [],
+    "dynamicConstructs": []
+  },
+  "state": {
+    "reviewed": [
+      {
+        "module": "src/core/assemblies/assembly_attachment_target_resolver.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/assemblies/assembly_completion_policy.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      }
+    ],
+    "unresolved": []
+  },
+  "behavior": {
+    "resultShapeSensitive": [
+      "src/core/assemblies/assembly_attachment_target_resolver.js",
+      "src/core/assemblies/assembly_completion_policy.js"
+    ],
+    "mutableIdentitySensitive": [],
+    "formulaDefaultsClampsRoundingFingerprints": [
+      {
+        "module": "src/core/assemblies/assembly_attachment_target_resolver.js",
+        "sha256": "a2810e44e4c2ee659e36fec98b5a9885ad39c6b164fa92b0d87222eea7b93af8"
+      },
+      {
+        "module": "src/core/assemblies/assembly_completion_policy.js",
+        "sha256": "b0752ea1da6889465496e351d1ffae88b7b4c8a0fa299a0c934a4f4c5a7afd42"
+      }
+    ],
+    "unresolved": []
+  },
+  "performance": {
+    "reviewed": [
+      {
+        "module": "src/core/assemblies/assembly_attachment_target_resolver.js",
+        "classification": "existing-recursive-target-discovery-and-frozen-results",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/application/inventory/inventory_v2_composition_root.js",
+            "marker": "new AssemblyAttachmentTargetResolver({"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 3,
+          "arrayExpressions": 8,
+          "newExpressions": 5,
+          "objectFreezeCalls": 9,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/assemblies/assembly_completion_policy.js",
+        "classification": "existing-recursive-analysis-and-frozen-public-result",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/application/inventory/inventory_v2_composition_root.js",
+            "marker": "new AssemblyCompletionPolicy({"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 5,
+          "arrayExpressions": 0,
+          "newExpressions": 3,
+          "objectFreezeCalls": 2,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "unresolved": []
+  },
+  "effects": {
+    "safe": [],
+    "reviewed": [
+      "src/core/assemblies/assembly_attachment_target_resolver.js",
+      "src/core/assemblies/assembly_completion_policy.js"
+    ],
+    "unsafe": []
+  },
+  "compatibility": {
+    "providers": [
+      {
+        "module": "src/core/assemblies/assembly_attachment_target_resolver.js",
+        "symbol": "AssemblyAttachmentTargetResolver",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/assemblies/assembly_attachment_target_resolver.js",
+        "symbol": "AssemblyAttachmentTargetResolver",
+        "mechanism": "global-this-property",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/assemblies/assembly_completion_policy.js",
+        "symbol": "AssemblyCompletionPolicy",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/assemblies/assembly_completion_policy.js",
+        "symbol": "AssemblyCompletionPolicy",
+        "mechanism": "global-this-property",
+        "availability": "program-init"
+      }
+    ],
+    "consumers": [
+      {
+        "provider": "src/core/assemblies/assembly_attachment_target_resolver.js",
+        "source": "src/application/inventory/inventory_v2_composition_root.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "AssemblyAttachmentTargetResolver"
+        ]
+      },
+      {
+        "provider": "src/core/assemblies/assembly_completion_policy.js",
+        "source": "src/application/inventory/inventory_v2_composition_root.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "AssemblyCompletionPolicy"
+        ]
+      }
+    ],
+    "activations": [
+      {
+        "id": "activation-596779b33d76",
+        "owner": "stage-3.candidate-012-assemblies-2086347a",
+        "sourceProvider": "src/core/assemblies/assembly_completion_policy.js",
+        "targetModule": "src/game/domain/assemblies/assembly_completion_policy.js",
+        "exportName": "AssemblyCompletionPolicy",
+        "legacySymbol": "AssemblyCompletionPolicy",
+        "legacyScriptIndex": 154,
+        "shimFile": "activations/154_assemblycompletionpolicy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/application/inventory/inventory_v2_composition_root.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-974deda48a6f",
+        "owner": "stage-3.candidate-012-assemblies-2086347a",
+        "sourceProvider": "src/core/assemblies/assembly_attachment_target_resolver.js",
+        "targetModule": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+        "exportName": "AssemblyAttachmentTargetResolver",
+        "legacySymbol": "AssemblyAttachmentTargetResolver",
+        "legacyScriptIndex": 153,
+        "shimFile": "activations/153_assemblyattachmenttargetresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/application/inventory/inventory_v2_composition_root.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      }
+    ]
+  },
+  "prerequisites": {
+    "frozen": [],
+    "reviewed": [
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/assemblies/assembly_attachment_target_resolver.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/assemblies/assembly_attachment_target_resolver.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/assemblies/assembly_completion_policy.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/assemblies/assembly_completion_policy.js"
+      }
+    ],
+    "newlyDiscovered": []
+  },
+  "migrationGates": [
+    "two-exact-class-and-method-shapes",
+    "one-class-identity-per-export-and-activation",
+    "single-authoritative-instance-state",
+    "two-reviewed-global-assignments-only",
+    "exact-two-classic-consumers",
+    "activation-positions-153-and-154",
+    "zero-config-platform-browser-dev-dependencies",
+    "zero-added-hot-loop-allocations"
+  ],
+  "issues": [],
+  "verdict": "eligible-for-execution-plan",
+  "liveObservation": {
+    "status": "verified",
+    "sourceCount": 466,
+    "persistencePerformed": false,
+    "consumerRelationships": [
+      {
+        "provider": "src/core/assemblies/assembly_attachment_target_resolver.js",
+        "source": "src/application/inventory/inventory_v2_composition_root.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "AssemblyAttachmentTargetResolver"
+        ]
+      },
+      {
+        "provider": "src/core/assemblies/assembly_completion_policy.js",
+        "source": "src/application/inventory/inventory_v2_composition_root.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "AssemblyCompletionPolicy"
+        ]
+      }
+    ]
+  },
+  "plannedTopology": {
+    "projectModuleCount": 44,
+    "activationCount": 45,
+    "bridgeRecordCount": 76
+  }
+}

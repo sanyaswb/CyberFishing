@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-012-acceptance",
+  "stage": "3.12.8",
+  "batchId": "stage-3.candidate-012-assemblies-2086347a",
+  "releaseVersion": "0.24.48",
+  "plannedReleaseVersion": "0.24.49",
+  "recordedAt": "2026-09-24T23:37:53.305Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_012_automated_acceptance.json",
+    "sha256": "7b3abec1e3daafa13fcd95236fe2929f86e250d6e57c6699b74463f20bc9e7f2",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "full": {
+      "passedChecks": 175,
+      "failedChecks": 0
+    },
+    "countSemantics": "The full suite includes the architecture and quick checks; it ran in an isolated working-tree snapshot."
+  },
+  "browserSmoke": {
+    "status": "passed-user-reported",
+    "performedBy": "user",
+    "evidenceType": "manual-test-summary-in-conversation",
+    "userStatement": "PASS: attachment slots, assembly completion, equipment and fishing cycle",
+    "context": "Response to the Stage 3.12.8 Assemblies checklist: attachment target selection, occupied and capacity slots, assembly completion, equipment and gameplay continuation.",
+    "acceptanceBasis": "User-reported PASS for the batch-specific checklist; individual steps were not independently instrumented.",
+    "perCheckResults": null,
+    "consoleCounts": {
+      "errors": 0,
+      "warnings": 0,
+      "userStatement": "0 errors, 0 warnings"
+    }
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_012_live_runtime_validation.json",
+      "sha256": "7d9f603c1e47bc2065b6054014040001a2dc327f43aec571a15ea9d36b369c3d"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_012_observation_reconciliation.json",
+      "sha256": "3e94484d8fe06b7c59fd3b57dd3419bf9d388df2b54d526fdf31c9273fb76af0"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "12f0aaee0a3842bac256c4fe515d7ea93a32791ea398e318bdef1926ab480efe"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "180d74e5a4d4d1df1103bdd3ed5ef7e6ac3edf34de5b0e8a5700e358f08cd4c7"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "8bb981334c2e95c7d0560ac2c1d3c0ed834afe2381c065810766f4bf5c23a78d"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "a1c9412636cc61d75ff78c2e8f2ee66abd92f61e01382a83927308e94c7b980f"
+    },
+    {
+      "path": "index.html",
+      "sha256": "e97381527c09ad27ce3f84a841bcdcb5c838cdd7cbcf361d87673a2b26379880"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.candidate-012-assemblies-2086347a",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.12.9 — Release Closure v0.24.49"
+}

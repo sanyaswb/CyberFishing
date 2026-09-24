@@ -1,0 +1,1416 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-isolated-source-build-validation",
+  "status": "candidate-build-verified",
+  "batchId": "stage-3.candidate-012-assemblies-2086347a",
+  "sourceReleaseVersion": "0.24.48",
+  "plannedReleaseVersion": "0.24.49",
+  "prebuildSha256": "43270626a30d616ceb16e39de0493c341144885a3408781fcf6aa15323627cd2",
+  "report": {
+    "status": "candidate-build-verified",
+    "moduleCount": 44,
+    "activationCount": 45,
+    "selectedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034",
+      "stage-3.candidate-010-inventory-e3dffbe7",
+      "stage-3.candidate-011-items-11818ee5",
+      "stage-3.candidate-012-assemblies-2086347a"
+    ],
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "virtualBuildModules": [
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/assertClassBrand.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/checkPrivateRedeclaration.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateFieldGet2.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateFieldInitSpec.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateFieldSet2.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/classPrivateMethodInitSpec.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/defineProperty.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/toPrimitive.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/toPropertyKey.js",
+      "\u0000@oxc-project+runtime@0.146.0/helpers/esm/typeof.js",
+      "\u0000rolldown/runtime.js"
+    ],
+    "runtimeSha256": "c6f836c5a8a641d44447df8c615daa4a719e2ccfcc4be66d4535bfff0a012b78",
+    "activationOutputs": [
+      {
+        "activationId": "activation-00287f399f05",
+        "path": "dist/stage-3-compat-runtime/activations/092_rodstrokestate.js",
+        "sha256": "bf54de1bcb822696237f94c50916a6c05d728784eca133b1e02a09cc502a31a1",
+        "targetModule": "src/game/domain/fishing/rod_stroke_state.js",
+        "exportName": "RodStrokeState",
+        "legacyScriptIndex": 92
+      },
+      {
+        "activationId": "activation-18da11a56651",
+        "path": "dist/stage-3-compat-runtime/activations/148_unlimitedassemblycapacitypolicy.js",
+        "sha256": "8fa25164ea51b4f20e86aa21e954df28b0bad15017542a4f4aaf3c8ab311e4f5",
+        "targetModule": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+        "exportName": "UnlimitedAssemblyCapacityPolicy",
+        "legacyScriptIndex": 148
+      },
+      {
+        "activationId": "activation-249fe0228439",
+        "path": "dist/stage-3-compat-runtime/activations/045_itemraritydescriptor.js",
+        "sha256": "654da8c1e38c21e71b43f95d5f1dd3d40c4b2d28cbb06dce4f457a4248050e31",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+        "exportName": "ItemRarityDescriptor",
+        "legacyScriptIndex": 45
+      },
+      {
+        "activationId": "activation-2534a1bdbe18",
+        "path": "dist/stage-3-compat-runtime/activations/117_recoverablelinecalculator.js",
+        "sha256": "615e8d5c7e1e09b158642290d9a66ea1108a183b0edc2943a4cfceddd629503b",
+        "targetModule": "src/game/domain/fishing/recoverable_line_calculator.js",
+        "exportName": "RecoverableLineCalculator",
+        "legacyScriptIndex": 117
+      },
+      {
+        "activationId": "activation-3dcbed1b3310",
+        "path": "dist/stage-3-compat-runtime/activations/391_eventbus.js",
+        "sha256": "df1beb5019a18ebf9f666468d02e57689994af430a80904ae44447b7b75b2c77",
+        "targetModule": "src/engine/events/event_bus.js",
+        "exportName": "EventBus",
+        "legacyScriptIndex": 391
+      },
+      {
+        "activationId": "activation-3e0a233bf70c",
+        "path": "dist/stage-3-compat-runtime/activations/361_rendercomponent.js",
+        "sha256": "d2636a7d6868af2195a848d4b0b72be6cc0c3dd5bb98d40192ed47b58ddb79d2",
+        "targetModule": "src/engine/rendering/render_component.js",
+        "exportName": "RenderComponent",
+        "legacyScriptIndex": 361
+      },
+      {
+        "activationId": "activation-3fee104fb111",
+        "path": "dist/stage-3-compat-runtime/activations/093_rodstroketracker.js",
+        "sha256": "89b75153c54ddcf2d7524f657def542c54d07e59de0be80d24d4ce1f87d00cd4",
+        "targetModule": "src/game/domain/fishing/rod_stroke_tracker.js",
+        "exportName": "RodStrokeTracker",
+        "legacyScriptIndex": 93
+      },
+      {
+        "activationId": "activation-4d4619b15e3c",
+        "path": "dist/stage-3-compat-runtime/activations/114_reelholdloadpolicy.js",
+        "sha256": "28b000dae36215428d62eb946d5e181f6d2521f793bfd653e855f5cae0641bd1",
+        "targetModule": "src/game/domain/fishing/reel_hold_load_policy.js",
+        "exportName": "ReelHoldLoadPolicy",
+        "legacyScriptIndex": 114
+      },
+      {
+        "activationId": "activation-4e28fdf337a3",
+        "path": "dist/stage-3-compat-runtime/activations/128_dragforcecalculator.js",
+        "sha256": "f0dd2e753205b590022c03b3b19fce243120d0aa38a081f79b3700dfa9e1487d",
+        "targetModule": "src/game/domain/fishing/drag_force_calculator.js",
+        "exportName": "DragForceCalculator",
+        "legacyScriptIndex": 128
+      },
+      {
+        "activationId": "activation-57add99af90d",
+        "path": "dist/stage-3-compat-runtime/activations/113_reelautorecoverycalculator.js",
+        "sha256": "d0fee6b406b2f98943440dc3aa3e911342ae6557ee9108820a8017162a6eb9ca",
+        "targetModule": "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+        "exportName": "ReelAutoRecoveryCalculator",
+        "legacyScriptIndex": 113
+      },
+      {
+        "activationId": "activation-57b99d3aaf82",
+        "path": "dist/stage-3-compat-runtime/activations/118_rodstrokecapacityresolver.js",
+        "sha256": "0497fb28a189f33126681f4b00334afd6c0e5018904f148ea0dec2e0c50f8cc1",
+        "targetModule": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+        "exportName": "RodStrokeCapacityResolver",
+        "legacyScriptIndex": 118
+      },
+      {
+        "activationId": "activation-596779b33d76",
+        "path": "dist/stage-3-compat-runtime/activations/154_assemblycompletionpolicy.js",
+        "sha256": "1de8b34190dc474230f6999d329c1bb87032e7e109e9bcc11e937e89678bcee1",
+        "targetModule": "src/game/domain/assemblies/assembly_completion_policy.js",
+        "exportName": "AssemblyCompletionPolicy",
+        "legacyScriptIndex": 154
+      },
+      {
+        "activationId": "activation-597e6786200f",
+        "path": "dist/stage-3-compat-runtime/activations/073_itemmetricstrategy.js",
+        "sha256": "bc7b22cc1383c83b02a188e56fdc4b661cef24f074f8b000c5bbac9575f0828c",
+        "targetModule": "src/game/domain/items/progression/item_metric_strategy.js",
+        "exportName": "ItemMetricStrategy",
+        "legacyScriptIndex": 73
+      },
+      {
+        "activationId": "activation-59bd96059da6",
+        "path": "dist/stage-3-compat-runtime/activations/157_rodcapabilityresolver.js",
+        "sha256": "462de6f1999ff5b789409dbe00273f9cce166f835c0a0843456167fe8833b988",
+        "targetModule": "src/game/domain/equipment/rod_capability_resolver.js",
+        "exportName": "RodCapabilityResolver",
+        "legacyScriptIndex": 157
+      },
+      {
+        "activationId": "activation-5c6e63e8ffb9",
+        "path": "dist/stage-3-compat-runtime/activations/086_inventoryequiptargetselectionpolicy.js",
+        "sha256": "cb952b9844350a33ef46f53ba1d546586a4f343f252a0ca6430ae6ac183fb3e1",
+        "targetModule": "src/game/domain/inventory/equip_target_selection_policy.js",
+        "exportName": "InventoryEquipTargetSelectionPolicy",
+        "legacyScriptIndex": 86
+      },
+      {
+        "activationId": "activation-6ba241908a4c",
+        "path": "dist/stage-3-compat-runtime/activations/395_dependencycontractvalidator.js",
+        "sha256": "d3f54e03c1c3a39474c9642bc364820187b47da05066460911ffe19617f45edd",
+        "targetModule": "src/engine/di/dependency_contract_validator.js",
+        "exportName": "DependencyContractValidator",
+        "legacyScriptIndex": 395
+      },
+      {
+        "activationId": "activation-75b968069153",
+        "path": "dist/stage-3-compat-runtime/activations/360_rendermath.js",
+        "sha256": "a962bc192bdb40de397df3dd576ff1fb30965f8374ad4b2962db17e509837de3",
+        "targetModule": "src/engine/rendering/render_math.js",
+        "exportName": "RenderMath",
+        "legacyScriptIndex": 360
+      },
+      {
+        "activationId": "activation-765258a53eef",
+        "path": "dist/stage-3-compat-runtime/activations/352_assetmanifest.js",
+        "sha256": "c607661064a404d748893c6b76ce54747e3bcf0e30a4e40875663c59001e6ece",
+        "targetModule": "src/engine/assets/asset_manifest.js",
+        "exportName": "AssetManifest",
+        "legacyScriptIndex": 352
+      },
+      {
+        "activationId": "activation-7678742c83cf",
+        "path": "dist/stage-3-compat-runtime/activations/088_floattacklelinebudgetpolicy.js",
+        "sha256": "aa49fd5deb57a9892901d4f697cb9592a9cd24785f18e48a494b0f05102f85fe",
+        "targetModule": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+        "exportName": "FloatTackleLineBudgetPolicy",
+        "legacyScriptIndex": 88
+      },
+      {
+        "activationId": "activation-775fb46bb6ce",
+        "path": "dist/stage-3-compat-runtime/activations/130_lineconstraintstateresolver.js",
+        "sha256": "8796bcbaa445dd5ac05a758b5bdd00f7c32cee9493b26c120ffb055140f38dfc",
+        "targetModule": "src/game/domain/fishing/line_constraint_state_resolver.js",
+        "exportName": "LineConstraintStateResolver",
+        "legacyScriptIndex": 130
+      },
+      {
+        "activationId": "activation-7b2f08a8cb34",
+        "path": "dist/stage-3-compat-runtime/activations/048_itemraritystrategyregistry.js",
+        "sha256": "60880183c0ba49eb9bb9a44393872117e9c4c08c33ecc7e90c98f16e162a21e2",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+        "exportName": "ItemRarityStrategyRegistry",
+        "legacyScriptIndex": 48
+      },
+      {
+        "activationId": "activation-7f67db779ead",
+        "path": "dist/stage-3-compat-runtime/activations/090_linespoolstate.js",
+        "sha256": "9e192c225b197269f2d1e7e6f3283ae2f74512d079f03ae12f59adca611fc69a",
+        "targetModule": "src/game/domain/fishing/line_spool_state.js",
+        "exportName": "LineSpoolState",
+        "legacyScriptIndex": 90
+      },
+      {
+        "activationId": "activation-85b75b58221b",
+        "path": "dist/stage-3-compat-runtime/activations/042_fishrarityresolver.js",
+        "sha256": "0ae783a169059e70f0954fbeaef5ef4dd37439d8cec50b26e42350c143146ff2",
+        "targetModule": "src/game/domain/fish/fish_rarity_resolver.js",
+        "exportName": "FishRarityResolver",
+        "legacyScriptIndex": 42
+      },
+      {
+        "activationId": "activation-868e1186ae29",
+        "path": "dist/stage-3-compat-runtime/activations/094_rodstrokedistancetracker.js",
+        "sha256": "401876d27d46be7d6bde1f1f9968ef1e7d76bea8ae801fab8933af744d02a15e",
+        "targetModule": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+        "exportName": "RodStrokeDistanceTracker",
+        "legacyScriptIndex": 94
+      },
+      {
+        "activationId": "activation-86e221fafb48",
+        "path": "dist/stage-3-compat-runtime/activations/353_assetloadresult.js",
+        "sha256": "663f88f08f1dac40bd03d635b5a1b3105c460bfb5903dcdceadc92add7dcf66f",
+        "targetModule": "src/engine/assets/asset_load_result.js",
+        "exportName": "AssetLoadResult",
+        "legacyScriptIndex": 353
+      },
+      {
+        "activationId": "activation-886fb34615aa",
+        "path": "dist/stage-3-compat-runtime/activations/358_renderpass.js",
+        "sha256": "4d519d81bebdc82e2efc3b4a7fa2c9239597bbcfaa04c13daeb80cd9e0f144bd",
+        "targetModule": "src/engine/rendering/render_pass.js",
+        "exportName": "RenderPass",
+        "legacyScriptIndex": 358
+      },
+      {
+        "activationId": "activation-8f8220d288e5",
+        "path": "dist/stage-3-compat-runtime/activations/140_landinglifttensioncalculator.js",
+        "sha256": "bb2b7df44ea2d8ca32ba51236000ddc042b1cded9953266ec36ea0fdb3aee170",
+        "targetModule": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+        "exportName": "LandingLiftTensionCalculator",
+        "legacyScriptIndex": 140
+      },
+      {
+        "activationId": "activation-974deda48a6f",
+        "path": "dist/stage-3-compat-runtime/activations/153_assemblyattachmenttargetresolver.js",
+        "sha256": "15414a4bef90a4ab1ea18cab0ebe53497870aac16041a69882f19480f92e1683",
+        "targetModule": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+        "exportName": "AssemblyAttachmentTargetResolver",
+        "legacyScriptIndex": 153
+      },
+      {
+        "activationId": "activation-9857928fc9d0",
+        "path": "dist/stage-3-compat-runtime/activations/123_holdoppositionresolver.js",
+        "sha256": "9d92ea7a42772e5f20a794147c47547d91f7dcc0cef4f412d5a32e218a55fe67",
+        "targetModule": "src/game/domain/fishing/hold_opposition_resolver.js",
+        "exportName": "HoldOppositionResolver",
+        "legacyScriptIndex": 123
+      },
+      {
+        "activationId": "activation-9a198b228060",
+        "path": "dist/stage-3-compat-runtime/activations/117_looselinecalculator.js",
+        "sha256": "260df1817215256f34a5c8604ac2da67f3ad01f2d183601216c89875b3cf1631",
+        "targetModule": "src/game/domain/fishing/recoverable_line_calculator.js",
+        "exportName": "LooseLineCalculator",
+        "legacyScriptIndex": 117
+      },
+      {
+        "activationId": "activation-9c5651e4f765",
+        "path": "dist/stage-3-compat-runtime/activations/122_fishretrieveresult.js",
+        "sha256": "6ccda8cbd8dfcfd2bd7c3896672be8f8bb46305666727cf18a562b975ff845a5",
+        "targetModule": "src/game/domain/fishing/fish_retrieve_result.js",
+        "exportName": "FishRetrieveResult",
+        "legacyScriptIndex": 122
+      },
+      {
+        "activationId": "activation-a63204f0676b",
+        "path": "dist/stage-3-compat-runtime/activations/091_rodpullstate.js",
+        "sha256": "092780820147a1f819c1c350f130b52ae7000bc071a7147521537e408638e652",
+        "targetModule": "src/game/domain/fishing/rod_pull_state.js",
+        "exportName": "RodPullState",
+        "legacyScriptIndex": 91
+      },
+      {
+        "activationId": "activation-a8e624a68a8e",
+        "path": "dist/stage-3-compat-runtime/activations/129_linetensioncalculator.js",
+        "sha256": "15a7818493cd292bc68edf28218718c5ab960cd61db0a583401e3fcb1746d411",
+        "targetModule": "src/game/domain/fishing/line_tension_calculator.js",
+        "exportName": "LineTensionCalculator",
+        "legacyScriptIndex": 129
+      },
+      {
+        "activationId": "activation-b63d6fa4a955",
+        "path": "dist/stage-3-compat-runtime/activations/084_itemprogressiondescriptor.js",
+        "sha256": "8a6852ab3d45eabcccd58587a6a2d4875bdbb31a280f6aeec8593d73cc8dca1b",
+        "targetModule": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "exportName": "ItemProgressionDescriptor",
+        "legacyScriptIndex": 84
+      },
+      {
+        "activationId": "activation-be4932b7b0c5",
+        "path": "dist/stage-3-compat-runtime/activations/133_rodcontrolmovementprojector.js",
+        "sha256": "99e04f0a8fd51cf254ffb2b63d26f78dd51b028d00371fe20aac0eb25eca132b",
+        "targetModule": "src/game/domain/fishing/rod_control_movement_projector.js",
+        "exportName": "RodControlMovementProjector",
+        "legacyScriptIndex": 133
+      },
+      {
+        "activationId": "activation-bf033497a3e1",
+        "path": "dist/stage-3-compat-runtime/activations/362_compositerenderer.js",
+        "sha256": "f04ebc0e624f926e7172fdbdb2562c3355fa1f58d56f30bf78ff97c1edf8be88",
+        "targetModule": "src/engine/rendering/composite_renderer.js",
+        "exportName": "CompositeRenderer",
+        "legacyScriptIndex": 362
+      },
+      {
+        "activationId": "activation-ccddea60d16c",
+        "path": "dist/stage-3-compat-runtime/activations/139_simplefightforcecalculator.js",
+        "sha256": "0fad5ebee04e430731bf53d7ef081b7b6650a952313c5c8450521f1eba4cab79",
+        "targetModule": "src/game/domain/fishing/simple_fight_force_calculator.js",
+        "exportName": "SimpleFightForceCalculator",
+        "legacyScriptIndex": 139
+      },
+      {
+        "activationId": "activation-ce7da074f74a",
+        "path": "dist/stage-3-compat-runtime/activations/392_eventlifecycle.js",
+        "sha256": "f54be747be93bca4e6d9047d65b3f08908f70688a400700d343851e68394c68f",
+        "targetModule": "src/engine/events/event_lifecycle.js",
+        "exportName": "EventLifecycle",
+        "legacyScriptIndex": 392
+      },
+      {
+        "activationId": "activation-da8d3f6d370f",
+        "path": "dist/stage-3-compat-runtime/activations/112_reelretrievespeedcalculator.js",
+        "sha256": "cb9b08da01806aa1ed559b86c373d88fb6325ffab81361126c376f77386b4ac7",
+        "targetModule": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+        "exportName": "ReelRetrieveSpeedCalculator",
+        "legacyScriptIndex": 112
+      },
+      {
+        "activationId": "activation-dcb3cecb345c",
+        "path": "dist/stage-3-compat-runtime/activations/132_lineradialmovementsplitter.js",
+        "sha256": "1692d1bd9409d60f68773288fdf6119957a1c2667db43f1d51095d6e22f9ed26",
+        "targetModule": "src/game/domain/fishing/line_radial_movement_splitter.js",
+        "exportName": "LineRadialMovementSplitter",
+        "legacyScriptIndex": 132
+      },
+      {
+        "activationId": "activation-ea32013c6230",
+        "path": "dist/stage-3-compat-runtime/activations/043_fishanomalyvariantresolver.js",
+        "sha256": "dbf13d9472e7d6ed04fd87ff85ca2a22aea8ac675538103c2b6320d90a41bb42",
+        "targetModule": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+        "exportName": "FishAnomalyVariantResolver",
+        "legacyScriptIndex": 43
+      },
+      {
+        "activationId": "activation-edee20d9f6f3",
+        "path": "dist/stage-3-compat-runtime/activations/046_itemraritystrategy.js",
+        "sha256": "bdbebc3d7febc76bdfc36463ca3efb4564e1347889c2d69c6c59d7952387964b",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_strategy.js",
+        "exportName": "ItemRarityStrategy",
+        "legacyScriptIndex": 46
+      },
+      {
+        "activationId": "activation-f5eefdd6e6e2",
+        "path": "dist/stage-3-compat-runtime/activations/131_lineconstrainedfishmotionresolver.js",
+        "sha256": "deaf6dd9647e2777935475330ac178069ea1508ab7e9f578c34191eb37520aa0",
+        "targetModule": "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+        "exportName": "LineConstrainedFishMotionResolver",
+        "legacyScriptIndex": 131
+      },
+      {
+        "activationId": "activation-f70148ad6a58",
+        "path": "dist/stage-3-compat-runtime/activations/126_rodcontroltensionmoderesolver.js",
+        "sha256": "cea2964616cdf6bc2995148d0260cb68d84b9edd097c4014b15ce5fd5e9ff9c5",
+        "targetModule": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+        "exportName": "RodControlTensionModeResolver",
+        "legacyScriptIndex": 126
+      },
+      {
+        "activationId": "activation-ffea5244c4bf",
+        "path": "dist/stage-3-compat-runtime/activations/134_polefightsectorgeometry.js",
+        "sha256": "75420e557172f1719ca885c0463b43441cc47965b6c8588497cc00ceccd8fa61",
+        "targetModule": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+        "exportName": "PoleFightSectorGeometry",
+        "legacyScriptIndex": 134
+      }
+    ],
+    "candidateOutputPersisted": false
+  },
+  "validation": {
+    "behavior": [
+      {
+        "exportName": "AssemblyAttachmentTargetResolver",
+        "caseName": "required-injected-ports",
+        "outcome": "equivalent"
+      },
+      {
+        "exportName": "AssemblyAttachmentTargetResolver",
+        "caseName": "empty-root-and-frozen-targets",
+        "outcome": "equivalent"
+      },
+      {
+        "exportName": "AssemblyAttachmentTargetResolver",
+        "caseName": "slot-order-shape-and-compatible-selection",
+        "outcome": "equivalent"
+      },
+      {
+        "exportName": "AssemblyCompletionPolicy",
+        "caseName": "required-injected-ports",
+        "outcome": "equivalent"
+      },
+      {
+        "exportName": "AssemblyCompletionPolicy",
+        "caseName": "missing-root-default-and-frozen-result",
+        "outcome": "equivalent"
+      },
+      {
+        "exportName": "AssemblyCompletionPolicy",
+        "caseName": "single-empty-slot-and-completed-slot",
+        "outcome": "equivalent"
+      }
+    ],
+    "activationsVerified": 45,
+    "exactClassicConsumerRelationships": 2,
+    "priorExportsImplementationPreserved": 43,
+    "globalsAbsentBeforeApprovedPosition": true,
+    "exactExportIdentityAfterActivation": true,
+    "moduleEvaluationCounts": null,
+    "validationScope": "actual-unmodified-candidate-IIFE"
+  },
+  "effects": {
+    "status": "verified",
+    "records": [
+      {
+        "source": "src/engine/assets/asset_load_result.js",
+        "target": "src/engine/assets/asset_load_result.js",
+        "sourceSha256": "b6d91cc6950680ad4f2d3a418abe923fb6d5dddc1668320aba381e2eebd83120",
+        "candidateSha256": "b6d91cc6950680ad4f2d3a418abe923fb6d5dddc1668320aba381e2eebd83120",
+        "dependencies": [],
+        "effect": {
+          "module": "src/engine/assets/asset_load_result.js",
+          "classification": "needs-review",
+          "observations": [
+            {
+              "kind": "initializer-execution",
+              "classification": "needs-review",
+              "location": "1:25"
+            }
+          ],
+          "evidenceFingerprint": "d0769d45b55b834bdfee9a8265fc31af309aa190f3d91e518e3f74b69a683083"
+        },
+        "initializations": [
+          {
+            "binding": "recordsByResult",
+            "kind": "private-empty-weakmap"
+          }
+        ],
+        "review": {
+          "module": "src/engine/assets/asset_load_result.js",
+          "evidenceFingerprint": "d0769d45b55b834bdfee9a8265fc31af309aa190f3d91e518e3f74b69a683083",
+          "decision": "approved-compatible",
+          "owner": "stage-3.candidate-001-inventory-85f44b2e",
+          "reason": "Private module-local storage is created once by the cumulative graph and owns no duplicated gameplay state."
+        },
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/engine/assets/asset_manifest.js",
+        "target": "src/engine/assets/asset_manifest.js",
+        "sourceSha256": "d8c6988b6d9081c7a5675051096fc009dc4aaec37f881391ffb3a1b03a14ce30",
+        "candidateSha256": "d8c6988b6d9081c7a5675051096fc009dc4aaec37f881391ffb3a1b03a14ce30",
+        "dependencies": [],
+        "effect": {
+          "module": "src/engine/assets/asset_manifest.js",
+          "classification": "needs-review",
+          "observations": [
+            {
+              "kind": "initializer-execution",
+              "classification": "needs-review",
+              "location": "1:27"
+            }
+          ],
+          "evidenceFingerprint": "a2cd0bd6166d6cc6e4c6c2b7607452e8814eda73185d4c107831da735438b709"
+        },
+        "initializations": [
+          {
+            "binding": "recordsByManifest",
+            "kind": "private-empty-weakmap"
+          }
+        ],
+        "review": {
+          "module": "src/engine/assets/asset_manifest.js",
+          "evidenceFingerprint": "a2cd0bd6166d6cc6e4c6c2b7607452e8814eda73185d4c107831da735438b709",
+          "decision": "approved-compatible",
+          "owner": "stage-3.candidate-001-inventory-85f44b2e",
+          "reason": "Private module-local storage is created once by the cumulative graph and owns no duplicated gameplay state."
+        },
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/engine/di/dependency_contract_validator.js",
+        "target": "src/engine/di/dependency_contract_validator.js",
+        "sourceSha256": "265a7bc61092b225d1f52c89216edd925cf525371778d4e2e34bc6a6fe1f3e89",
+        "candidateSha256": "265a7bc61092b225d1f52c89216edd925cf525371778d4e2e34bc6a6fe1f3e89",
+        "dependencies": [],
+        "effect": {
+          "module": "src/engine/di/dependency_contract_validator.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "1d21fb432e5fbe1820b473fc54fda09f602b2d551411241f16dc2357f076795a"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/engine/events/event_bus.js",
+        "target": "src/engine/events/event_bus.js",
+        "sourceSha256": "661f6727943debc2ecc97f8b244179da0d092320fdd6da9f490ca8768382b122",
+        "candidateSha256": "661f6727943debc2ecc97f8b244179da0d092320fdd6da9f490ca8768382b122",
+        "dependencies": [],
+        "effect": {
+          "module": "src/engine/events/event_bus.js",
+          "classification": "needs-review",
+          "observations": [
+            {
+              "kind": "initializer-execution",
+              "classification": "needs-review",
+              "location": "2:24"
+            }
+          ],
+          "evidenceFingerprint": "80822cdc389a9c2db5b76d5d1688b088e46234a7cb6e3b9bd05e84ea6d90bbfe"
+        },
+        "initializations": [
+          {
+            "binding": "activeListenerCount",
+            "kind": "primitive-literal"
+          },
+          {
+            "binding": "listenersByBus",
+            "kind": "private-empty-weakmap"
+          }
+        ],
+        "review": {
+          "module": "src/engine/events/event_bus.js",
+          "evidenceFingerprint": "80822cdc389a9c2db5b76d5d1688b088e46234a7cb6e3b9bd05e84ea6d90bbfe",
+          "decision": "approved-compatible",
+          "owner": "stage-3.candidate-001-inventory-85f44b2e",
+          "reason": "Private module-local storage is created once by the cumulative graph and owns no duplicated gameplay state."
+        },
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/engine/events/event_lifecycle.js",
+        "target": "src/engine/events/event_lifecycle.js",
+        "sourceSha256": "f2dd7d126c2921a69d0ddf8077947c73a8efd196b4230835fe64271e863d9628",
+        "candidateSha256": "f2dd7d126c2921a69d0ddf8077947c73a8efd196b4230835fe64271e863d9628",
+        "dependencies": [],
+        "effect": {
+          "module": "src/engine/events/event_lifecycle.js",
+          "classification": "needs-review",
+          "observations": [
+            {
+              "kind": "initializer-execution",
+              "classification": "needs-review",
+              "location": "2:29"
+            }
+          ],
+          "evidenceFingerprint": "b69a74a66e9c04c69a7f4dc892060f3c10a34fc313c5f0bb9d5d2c5504bbe158"
+        },
+        "initializations": [
+          {
+            "binding": "activeListenerCount",
+            "kind": "primitive-literal"
+          },
+          {
+            "binding": "cleanupsByLifecycle",
+            "kind": "private-empty-weakmap"
+          }
+        ],
+        "review": {
+          "module": "src/engine/events/event_lifecycle.js",
+          "evidenceFingerprint": "b69a74a66e9c04c69a7f4dc892060f3c10a34fc313c5f0bb9d5d2c5504bbe158",
+          "decision": "approved-compatible",
+          "owner": "stage-3.candidate-001-inventory-85f44b2e",
+          "reason": "Private module-local storage is created once by the cumulative graph and owns no duplicated gameplay state."
+        },
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/engine/rendering/composite_renderer.js",
+        "target": "src/engine/rendering/composite_renderer.js",
+        "sourceSha256": "0d6c13862e76619e3bb5e56be05d851ac27e301a1ce668051ed5be7096d7f79a",
+        "candidateSha256": "0d6c13862e76619e3bb5e56be05d851ac27e301a1ce668051ed5be7096d7f79a",
+        "dependencies": [],
+        "effect": {
+          "module": "src/engine/rendering/composite_renderer.js",
+          "classification": "needs-review",
+          "observations": [
+            {
+              "kind": "initializer-execution",
+              "classification": "needs-review",
+              "location": "1:30"
+            }
+          ],
+          "evidenceFingerprint": "3dd0152d9eafa14840de96eac9267db196db843d624afe3accac897b56869d41"
+        },
+        "initializations": [
+          {
+            "binding": "componentsByRenderer",
+            "kind": "private-empty-weakmap"
+          }
+        ],
+        "review": {
+          "module": "src/engine/rendering/composite_renderer.js",
+          "evidenceFingerprint": "3dd0152d9eafa14840de96eac9267db196db843d624afe3accac897b56869d41",
+          "decision": "approved-compatible",
+          "owner": "stage-3.candidate-001-inventory-85f44b2e",
+          "reason": "Private module-local storage is created once by the cumulative graph and owns no duplicated gameplay state."
+        },
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/engine/rendering/render_component.js",
+        "target": "src/engine/rendering/render_component.js",
+        "sourceSha256": "4b3c88d960a500cb8ffeaee0f97978bc9126cc8716a183e462ebf7dc705f4252",
+        "candidateSha256": "4b3c88d960a500cb8ffeaee0f97978bc9126cc8716a183e462ebf7dc705f4252",
+        "dependencies": [],
+        "effect": {
+          "module": "src/engine/rendering/render_component.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "94b63309816c9c1c2691ff22f0d3657984b71335a9df772378bb3a5c9b158bc6"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/engine/rendering/render_math.js",
+        "target": "src/engine/rendering/render_math.js",
+        "sourceSha256": "5527fbbe0a05bfedcf59ea264f8e39fa9c34e614823f0a1cb9c148c41aea5e43",
+        "candidateSha256": "5527fbbe0a05bfedcf59ea264f8e39fa9c34e614823f0a1cb9c148c41aea5e43",
+        "dependencies": [],
+        "effect": {
+          "module": "src/engine/rendering/render_math.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "f06827775ad450a8bf346f8a009feb7687687eb98633c82f1b2942fc34c0ab6b"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/engine/rendering/render_pass.js",
+        "target": "src/engine/rendering/render_pass.js",
+        "sourceSha256": "9827353d3daabc8b7cba8df6472d1500b0d0705e5443a6e3e9e3827940a6731a",
+        "candidateSha256": "9827353d3daabc8b7cba8df6472d1500b0d0705e5443a6e3e9e3827940a6731a",
+        "dependencies": [],
+        "effect": {
+          "module": "src/engine/rendering/render_pass.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "fa84a57b3378567c1248355c2c1f88d84d14db3a3d76b67666a5d4af7763df29"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+        "target": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+        "sourceSha256": "769a6875ca8c143ad8b58421ae5c15291afe79b2a6eb483377421de0a7d411c5",
+        "candidateSha256": "769a6875ca8c143ad8b58421ae5c15291afe79b2a6eb483377421de0a7d411c5",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "5800cf8df938cac7bfb25e2074bfdfbbf7aa99015f05d8b470df1232e9c7749a"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/assemblies/assembly_completion_policy.js",
+        "target": "src/game/domain/assemblies/assembly_completion_policy.js",
+        "sourceSha256": "865e502f14ed3f0c257d2c542bc39693113453839cedbd1be62be4366ff9a2ec",
+        "candidateSha256": "865e502f14ed3f0c257d2c542bc39693113453839cedbd1be62be4366ff9a2ec",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/assemblies/assembly_completion_policy.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "4178ddf281f9623e8c11dee65c8e381ff372c68fc8c987ee6dcf809308d219d3"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/equipment/rod_capability_resolver.js",
+        "target": "src/game/domain/equipment/rod_capability_resolver.js",
+        "sourceSha256": "554c7f3142ad8088df38a02fc0c3e71e86deb3fa9b8df93b673215df9b4e33eb",
+        "candidateSha256": "554c7f3142ad8088df38a02fc0c3e71e86deb3fa9b8df93b673215df9b4e33eb",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/equipment/rod_capability_resolver.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "7fe91240141fcf7d8d868e254afd0bbef1132bee764a15c62c4f07078c9d3bae"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+        "target": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+        "sourceSha256": "578fc668627917f8abc3eb5c5ea2f12f624cb535f33db1f1899888fe7d1f572b",
+        "candidateSha256": "578fc668627917f8abc3eb5c5ea2f12f624cb535f33db1f1899888fe7d1f572b",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "3ede2434d50ef7e10aaeef18e52a7adacdaa37422b55bd8c303bfe4edd13c815"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fish/fish_rarity_resolver.js",
+        "target": "src/game/domain/fish/fish_rarity_resolver.js",
+        "sourceSha256": "4339d5a84a90d109ed050b7a7728fd28b019b8474bb554aa0f7e240f914cf6e7",
+        "candidateSha256": "4339d5a84a90d109ed050b7a7728fd28b019b8474bb554aa0f7e240f914cf6e7",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fish/fish_rarity_resolver.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "2fa4e8fe783416fa875361918a2e3888ae80ca2d5de6bb9829111ce49d87c253"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/drag_force_calculator.js",
+        "target": "src/game/domain/fishing/drag_force_calculator.js",
+        "sourceSha256": "ce2ad02fa8e564e2ce7bde4b984a7c44275cf5def0764b5fedde2e4a45b4549c",
+        "candidateSha256": "ce2ad02fa8e564e2ce7bde4b984a7c44275cf5def0764b5fedde2e4a45b4549c",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/drag_force_calculator.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "c7071d84f08a325157e254528f1c4fcb65fb411648a9e919af8c54d6f2a65212"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/fish_retrieve_result.js",
+        "target": "src/game/domain/fishing/fish_retrieve_result.js",
+        "sourceSha256": "ce3324b8b152f3694385606eed497706349b61d69c95dcefe414696781bb6ad7",
+        "candidateSha256": "ce3324b8b152f3694385606eed497706349b61d69c95dcefe414696781bb6ad7",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/fish_retrieve_result.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "67015d0b554996d7c1e147a42d2488b0b4fc66c66db3e8fb7356dade5bccf4d3"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+        "target": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+        "sourceSha256": "1396b967242ebad01eae468f6941b6700b2f4ad4a4252433aaae1727cea6d44f",
+        "candidateSha256": "1396b967242ebad01eae468f6941b6700b2f4ad4a4252433aaae1727cea6d44f",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "c0337f6fd73e90b991cc5ad55bbb627da1a0277479e9f465519b87273d44c162"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/hold_opposition_resolver.js",
+        "target": "src/game/domain/fishing/hold_opposition_resolver.js",
+        "sourceSha256": "be576855e5bfe2b9d51e1187306c396195234f3717a248afd991fa284a7762ae",
+        "candidateSha256": "be576855e5bfe2b9d51e1187306c396195234f3717a248afd991fa284a7762ae",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/hold_opposition_resolver.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "e62db6d66631efb20dee99b08942553259de3a13a90546ddc0cd6c1588e90058"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+        "target": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+        "sourceSha256": "ef7b757d9de46ad52d2e67155181f93a4c352c3719c7ef833025c3f7ed8c2d86",
+        "candidateSha256": "ef7b757d9de46ad52d2e67155181f93a4c352c3719c7ef833025c3f7ed8c2d86",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "4855438af08bfa95ef5686e9d1fc8bf31a5dbf4683d5a26f4705f87fae141a95"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+        "target": "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+        "sourceSha256": "bbba751a87c681b057250a55d59384f133d154970f795b90805afb04d68e2040",
+        "candidateSha256": "bbba751a87c681b057250a55d59384f133d154970f795b90805afb04d68e2040",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "0ad45f4a7cd47aaee769d190a912a10829bb4c3b87f9952e590cafa1dc2cdfbd"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/line_constraint_state_resolver.js",
+        "target": "src/game/domain/fishing/line_constraint_state_resolver.js",
+        "sourceSha256": "0ca87cf34316c034dc9565c35e1f48461bb797b055d6b61dbef428fd793bf547",
+        "candidateSha256": "0ca87cf34316c034dc9565c35e1f48461bb797b055d6b61dbef428fd793bf547",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/line_constraint_state_resolver.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "39b8fd0381cf4ec1e7b990ff5e99c100474721ad2fb6d61197db8097cb8d59a2"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/line_radial_movement_splitter.js",
+        "target": "src/game/domain/fishing/line_radial_movement_splitter.js",
+        "sourceSha256": "b145f56fffc4962f4b32de8ec13d6efe6ec7613eeb371572349782e843426f9f",
+        "candidateSha256": "b145f56fffc4962f4b32de8ec13d6efe6ec7613eeb371572349782e843426f9f",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/line_radial_movement_splitter.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "01be2df6eb54aa36e6a4a8862895c373d372520f9e398bcd8b75cdd7e7b151eb"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/line_spool_state.js",
+        "target": "src/game/domain/fishing/line_spool_state.js",
+        "sourceSha256": "a816121ccb229b658a1d3d00cf34008227f036e1dc66f03a3a9fe89496e15c2a",
+        "candidateSha256": "a816121ccb229b658a1d3d00cf34008227f036e1dc66f03a3a9fe89496e15c2a",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/line_spool_state.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "6425d3daa040faa97f93b3d14b97aaf4afc6b43adc14a7047118cdfb5dd52e38"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/line_tension_calculator.js",
+        "target": "src/game/domain/fishing/line_tension_calculator.js",
+        "sourceSha256": "113079de8eaff33183acf09d26c116357fe5708cb601be43eca4806052c0c2ff",
+        "candidateSha256": "113079de8eaff33183acf09d26c116357fe5708cb601be43eca4806052c0c2ff",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/line_tension_calculator.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "2d4ac05505eeecbf8ddc1d76a3b853e551d437b923aa9a21fe8ea1d38a0b585c"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+        "target": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+        "sourceSha256": "126b4845445dce0062c60471cd8b86f0189f3adb9ed95c8e4dfb0202d5ff1168",
+        "candidateSha256": "126b4845445dce0062c60471cd8b86f0189f3adb9ed95c8e4dfb0202d5ff1168",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "61548da7d54601ae55d17e7be2415f0d645f3bd27a309a4d9d402ec785c5ca94"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/recoverable_line_calculator.js",
+        "target": "src/game/domain/fishing/recoverable_line_calculator.js",
+        "sourceSha256": "96fd594895bd40fd4bac467227abd7bc4affef134e07f62432b556d6a4e1a595",
+        "candidateSha256": "96fd594895bd40fd4bac467227abd7bc4affef134e07f62432b556d6a4e1a595",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/recoverable_line_calculator.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "8c498f4fc810321613053a9d6d342498d6aea5a87f76ebeb1dd7ced6913be2d3"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+        "target": "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+        "sourceSha256": "181ffe8e130619355be13872d3f12594fdeac27bf2f9c306ff02120f46d06652",
+        "candidateSha256": "181ffe8e130619355be13872d3f12594fdeac27bf2f9c306ff02120f46d06652",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "82af945401211f3aff2dc36f7eb443caeabbeb61615e969c42937e718d016859"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/reel_hold_load_policy.js",
+        "target": "src/game/domain/fishing/reel_hold_load_policy.js",
+        "sourceSha256": "5aa716f077764d9ada772388d55e2a5d2c3c432e3c77acd06fd23979de8f92f3",
+        "candidateSha256": "5aa716f077764d9ada772388d55e2a5d2c3c432e3c77acd06fd23979de8f92f3",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/reel_hold_load_policy.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "93a5e78745e9666ff0a3ebddb8032b91731d26183285280b9553b1aba365a5f4"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+        "target": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+        "sourceSha256": "4347b9593ca7b8387fb64f224c343cdb8c7633ea8f5fb3aaad86fc970a374f7b",
+        "candidateSha256": "4347b9593ca7b8387fb64f224c343cdb8c7633ea8f5fb3aaad86fc970a374f7b",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "fd5ff9205602b2bc17b6d4a4a060e3048bcc15ec72f1b0a987b368db9a0d18bb"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/rod_control_movement_projector.js",
+        "target": "src/game/domain/fishing/rod_control_movement_projector.js",
+        "sourceSha256": "bdd4e8095a2f72b43f07c0a9c386c7f8ad98df25b4721f585fe040143accaddc",
+        "candidateSha256": "bdd4e8095a2f72b43f07c0a9c386c7f8ad98df25b4721f585fe040143accaddc",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/rod_control_movement_projector.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "9eafc69cf5692098b19f09b5797851b61b9b4d9bf1c5ad94d1aec6c9b30643c5"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+        "target": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+        "sourceSha256": "f5c3c80ce836e6afb00598b490b3717ec0c78881a7062f4370ca7b73665c0861",
+        "candidateSha256": "f5c3c80ce836e6afb00598b490b3717ec0c78881a7062f4370ca7b73665c0861",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "8d5efb5b412569a929e348034ea47d4dbbf31f16d7a90607dbd6453eff1c67c9"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/rod_pull_state.js",
+        "target": "src/game/domain/fishing/rod_pull_state.js",
+        "sourceSha256": "111fa719ea32f02f7824b951e2cd31a214468dd609c32ca24cd85193c1c1431c",
+        "candidateSha256": "111fa719ea32f02f7824b951e2cd31a214468dd609c32ca24cd85193c1c1431c",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/rod_pull_state.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "3c4788f623538ff46cba2bb36f269d5c36262da6d117ea2d8601878bae84f4d2"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+        "target": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+        "sourceSha256": "f9255171fe2a71afb2c971d5070529f7d462ddc093ed3298a57ee749548c7b44",
+        "candidateSha256": "f9255171fe2a71afb2c971d5070529f7d462ddc093ed3298a57ee749548c7b44",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "0dee2a4d0741997f4e4f13fe7f8ad2720cc818bb708e6c0594f525882da787f8"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+        "target": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+        "sourceSha256": "c139bc08f8130b9a34570e808e5203c6e4665becdc7d157085f4cd308c61568e",
+        "candidateSha256": "c139bc08f8130b9a34570e808e5203c6e4665becdc7d157085f4cd308c61568e",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "38ab7e705e567f40dc12144c532cf124219e2fa61e1b6cc062330a389f7379fa"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/rod_stroke_state.js",
+        "target": "src/game/domain/fishing/rod_stroke_state.js",
+        "sourceSha256": "9454c72176e555ccce5501e18c13af687a373fdb1c4212884e52cf760c5d8248",
+        "candidateSha256": "9454c72176e555ccce5501e18c13af687a373fdb1c4212884e52cf760c5d8248",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/rod_stroke_state.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "d9a0d7cbf96a51001a8c50714232d03bb960cdbdd7e4787d4b223ecebe52bd8f"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/rod_stroke_tracker.js",
+        "target": "src/game/domain/fishing/rod_stroke_tracker.js",
+        "sourceSha256": "19427337472dbafe28b90a3e9da57cffe26e2ba0d521c80d1f971ad10ec07f45",
+        "candidateSha256": "19427337472dbafe28b90a3e9da57cffe26e2ba0d521c80d1f971ad10ec07f45",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/rod_stroke_tracker.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "07551a7fe4de267fb8215321766115b98c1f3fd02f73467a406b91f047efa941"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/fishing/simple_fight_force_calculator.js",
+        "target": "src/game/domain/fishing/simple_fight_force_calculator.js",
+        "sourceSha256": "a4cdce35a7ff59a9b5f3ab532180561e7bb55072e01cec526e895cc2dca05992",
+        "candidateSha256": "a4cdce35a7ff59a9b5f3ab532180561e7bb55072e01cec526e895cc2dca05992",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/fishing/simple_fight_force_calculator.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "fecdd515d436c24d7dc8dd4f230a35a985573e7c48e6759ffd42fc9d300f7107"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/inventory/equip_target_selection_policy.js",
+        "target": "src/game/domain/inventory/equip_target_selection_policy.js",
+        "sourceSha256": "fed756404d8fecced0601ce4dbcbf81577277be24f75b7a7a7fd30e61c3cc751",
+        "candidateSha256": "fed756404d8fecced0601ce4dbcbf81577277be24f75b7a7a7fd30e61c3cc751",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/inventory/equip_target_selection_policy.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "eacb347076105800390e535716eeb85a9a74e40e137a691241ded6d7d0aae1b2"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+        "target": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+        "sourceSha256": "5c2855f96b49faaf4c2733a7bc3da42d714ff906dc6cc118b36f553caf8fc42e",
+        "candidateSha256": "5c2855f96b49faaf4c2733a7bc3da42d714ff906dc6cc118b36f553caf8fc42e",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "5fa0d3d2a75d12c21055b26116c978a9c61c8801d8239ba74eb6fdadecb152a9"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/items/progression/item_metric_strategy.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "sourceSha256": "d8c8a4a454a9beb13f9274522cee359ab9c6cf3eb03c66a899f687af1d7d5056",
+        "candidateSha256": "d8c8a4a454a9beb13f9274522cee359ab9c6cf3eb03c66a899f687af1d7d5056",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/items/progression/item_metric_strategy.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "2f62c21160dce7c94cb1d37c0f16cae2e144c82f9ccd435e1b5150785e5525db"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "target": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "sourceSha256": "b938deebc0b050fa0d49236e579ffc5467e6612ee4434254f169d46f7443173d",
+        "candidateSha256": "b938deebc0b050fa0d49236e579ffc5467e6612ee4434254f169d46f7443173d",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/items/progression/item_progression_descriptor.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "852e02011cb59d66ec2285dc00e0567380c7ca3b59511f55904c529c823c68d7"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+        "target": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+        "sourceSha256": "417db35b34a462af84df7c12ae11a4f087cdffce7d048a336dde14968e780293",
+        "candidateSha256": "417db35b34a462af84df7c12ae11a4f087cdffce7d048a336dde14968e780293",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "ba79249098a3f7d5652fb6bf31763d5d9f60110b7cb8f87c46b0cab9459f4aa4"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+        "target": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+        "sourceSha256": "f47f76df0cc062f6a4a6e1e670267199e22a6d26d38f8a65dfe4f200ac17a1b6",
+        "candidateSha256": "f47f76df0cc062f6a4a6e1e670267199e22a6d26d38f8a65dfe4f200ac17a1b6",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "cd7ca056fec488e277aea82b3095802b04840bfd752a4521072a644f864e7234"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      },
+      {
+        "source": "src/game/domain/items/rarity/item_rarity_strategy.js",
+        "target": "src/game/domain/items/rarity/item_rarity_strategy.js",
+        "sourceSha256": "01b90765a43e6f71f412de0db32dbb8433ea0e7379ea7eae57a9aae3d538e655",
+        "candidateSha256": "01b90765a43e6f71f412de0db32dbb8433ea0e7379ea7eae57a9aae3d538e655",
+        "dependencies": [],
+        "effect": {
+          "module": "src/game/domain/items/rarity/item_rarity_strategy.js",
+          "classification": "safe",
+          "observations": [],
+          "evidenceFingerprint": "1ea79b815ed7fc674692a56c79c44793ca1fb6aed903ad0c73b668d9edf81ad3"
+        },
+        "initializations": [],
+        "review": null,
+        "earlierEvaluation": "compatible-no-external-state-read-or-mutation"
+      }
+    ],
+    "safeCount": 39,
+    "reviewedCount": 5,
+    "unsafeCount": 0,
+    "unknownCount": 0,
+    "dependencyEdges": [],
+    "proofScope": "source-evaluation-only-not-live-cutover-acceptance",
+    "revalidationRequiredAtCandidateBuild": true
+  },
+  "sources": [
+    {
+      "currentPath": "src/core/assemblies/assembly_attachment_target_resolver.js",
+      "targetPath": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "exportName": "AssemblyAttachmentTargetResolver",
+      "sourceSha256": "53778c9da91cb132317b66cef846c352718d337b8708bf31a1762dc0109962ba",
+      "targetSha256": "769a6875ca8c143ad8b58421ae5c15291afe79b2a6eb483377421de0a7d411c5",
+      "validation": {
+        "representation": "classic-class-with-reviewed-global-exposure-to-named-esm-export",
+        "importCount": 0,
+        "exportCount": 1,
+        "dynamicImportCount": 0,
+        "forbiddenDependencyCount": 0,
+        "behaviorDelta": "none",
+        "stateOwnershipDelta": "none",
+        "allocationDelta": "none",
+        "currentPath": "src/core/assemblies/assembly_attachment_target_resolver.js",
+        "targetPath": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+        "exportName": "AssemblyAttachmentTargetResolver"
+      }
+    },
+    {
+      "currentPath": "src/core/assemblies/assembly_completion_policy.js",
+      "targetPath": "src/game/domain/assemblies/assembly_completion_policy.js",
+      "exportName": "AssemblyCompletionPolicy",
+      "sourceSha256": "74e9b1bbb9ac309cd8ebfad9a6c04f6d9f6cb9922d77344cbbec1c5c9a2651df",
+      "targetSha256": "865e502f14ed3f0c257d2c542bc39693113453839cedbd1be62be4366ff9a2ec",
+      "validation": {
+        "representation": "classic-class-with-reviewed-global-exposure-to-named-esm-export",
+        "importCount": 0,
+        "exportCount": 1,
+        "dynamicImportCount": 0,
+        "forbiddenDependencyCount": 0,
+        "behaviorDelta": "none",
+        "stateOwnershipDelta": "none",
+        "allocationDelta": "none",
+        "currentPath": "src/core/assemblies/assembly_completion_policy.js",
+        "targetPath": "src/game/domain/assemblies/assembly_completion_policy.js",
+        "exportName": "AssemblyCompletionPolicy"
+      }
+    }
+  ],
+  "candidateMetadata": {
+    "manifestSha256": "e89633c43f2b865f919ecaf0891e9c0939ceac61f8565442d59543b27c7da48c",
+    "manifestObservations": "pending-targets-only; historical-provider-facts-not-reconciled",
+    "indexSha256": "86ac182db54105d6fb4098645be3ec6326599d8e62b1512b92192de88f6e32e4",
+    "runtimeContractSha256": "180d74e5a4d4d1df1103bdd3ed5ef7e6ac3edf34de5b0e8a5700e358f08cd4c7",
+    "registrySha256": "8bb981334c2e95c7d0560ac2c1d3c0ed834afe2381c065810766f4bf5c23a78d",
+    "storage": "isolated-candidate-workspace-only",
+    "published": false
+  },
+  "reproducibility": {
+    "independentAbsoluteRoots": 2,
+    "exactReportAndBytes": true,
+    "runtimeSha256": "c6f836c5a8a641d44447df8c615daa4a719e2ccfcc4be66d4535bfff0a012b78"
+  },
+  "evaluationProof": {
+    "scope": "test-only-transform-instrumented-IIFE",
+    "runtimeSha256": "382fffdd553d9dea008f59543934fd4f2aa1208ff1c1302a5bafa064121d85bb",
+    "counts": {
+      "src/engine/assets/asset_load_result.js": 1,
+      "src/engine/assets/asset_manifest.js": 1,
+      "src/engine/di/dependency_contract_validator.js": 1,
+      "src/engine/events/event_bus.js": 1,
+      "src/engine/events/event_lifecycle.js": 1,
+      "src/engine/rendering/composite_renderer.js": 1,
+      "src/engine/rendering/render_component.js": 1,
+      "src/engine/rendering/render_math.js": 1,
+      "src/engine/rendering/render_pass.js": 1,
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js": 1,
+      "src/game/domain/assemblies/assembly_completion_policy.js": 1,
+      "src/game/domain/equipment/rod_capability_resolver.js": 1,
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js": 1,
+      "src/game/domain/fish/fish_rarity_resolver.js": 1,
+      "src/game/domain/fishing/drag_force_calculator.js": 1,
+      "src/game/domain/fishing/fish_retrieve_result.js": 1,
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js": 1,
+      "src/game/domain/fishing/hold_opposition_resolver.js": 1,
+      "src/game/domain/fishing/landing_lift_tension_calculator.js": 1,
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js": 1,
+      "src/game/domain/fishing/line_constraint_state_resolver.js": 1,
+      "src/game/domain/fishing/line_radial_movement_splitter.js": 1,
+      "src/game/domain/fishing/line_spool_state.js": 1,
+      "src/game/domain/fishing/line_tension_calculator.js": 1,
+      "src/game/domain/fishing/pole_fight_sector_geometry.js": 1,
+      "src/game/domain/fishing/recoverable_line_calculator.js": 1,
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js": 1,
+      "src/game/domain/fishing/reel_hold_load_policy.js": 1,
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js": 1,
+      "src/game/domain/fishing/rod_control_movement_projector.js": 1,
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js": 1,
+      "src/game/domain/fishing/rod_pull_state.js": 1,
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js": 1,
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js": 1,
+      "src/game/domain/fishing/rod_stroke_state.js": 1,
+      "src/game/domain/fishing/rod_stroke_tracker.js": 1,
+      "src/game/domain/fishing/simple_fight_force_calculator.js": 1,
+      "src/game/domain/inventory/equip_target_selection_policy.js": 1,
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js": 1,
+      "src/game/domain/items/progression/item_metric_strategy.js": 1,
+      "src/game/domain/items/progression/item_progression_descriptor.js": 1,
+      "src/game/domain/items/rarity/item_rarity_descriptor.js": 1,
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js": 1,
+      "src/game/domain/items/rarity/item_rarity_strategy.js": 1
+    },
+    "productionSourceChanged": false
+  },
+  "liveTopology": {
+    "modules": 42,
+    "activations": 43,
+    "bridges": 74
+  },
+  "nextGate": "stage-3.12.5-atomic-runtime-cutover",
+  "runtimeCutoverPerformed": false,
+  "verdict": "eligible-for-atomic-runtime-cutover"
+}

@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.49 - Assemblies Domain
+
+### Changed
+
+- Completed atomic Stage 3 batch 012: AssemblyAttachmentTargetResolver and AssemblyCompletionPolicy are named game-domain ESM modules.
+- Extended the cumulative graph from 42 to 44 project modules and from 43 to 45 activation contracts, with 76 exact bridge relationships.
+- Preserved activation positions 153 and 154, two classic consumer relationships, class identity and existing global exposure timing.
+- Advanced the completed ordered prefix to batches 001–012 (35 of 69 frozen Domain modules); the next task is batch 013 preflight.
+
 ## v0.24.48 - Items Progression and Rarity Domain
 
 ### Changed

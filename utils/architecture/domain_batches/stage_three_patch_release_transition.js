@@ -22,7 +22,7 @@ class StageThreePatchReleaseTransition {
   static replace(text, from, to, count) {
     assert(typeof from === "string" && from.length > 0 && from !== to);
     assert(Number.isInteger(count) && count > 0);
-    assert.equal(text.split(from).length - 1, count, "Non-exact release replacement");
+    assert.equal(text.split(from).length - 1, count, `Non-exact release replacement: ${from}`);
     return text.split(from).join(to);
   }
 

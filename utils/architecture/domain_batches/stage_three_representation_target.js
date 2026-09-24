@@ -4,6 +4,7 @@ const crypto = require("node:crypto");
 const espree = require("espree");
 const estraverse = require("estraverse");
 const { immutableRecord } = require("../guards/core/guard_models");
+const { StageThreeGlobalExposureReview } = require("./stage_three_global_exposure_review");
 
 const FORBIDDEN_IDENTIFIERS = Object.freeze(new Set([
   "CONFIG",
@@ -19,20 +20,24 @@ const FORBIDDEN_IDENTIFIERS = Object.freeze(new Set([
 ]));
 
 class RepresentationOnlyNamedEsmTarget {
-  project({ source, currentPath, targetPath, exportName, sourceSha256 }) {
+  project({ source, currentPath, targetPath, exportName, sourceSha256, legacyExposure = null }) {
     this.#require(typeof source === "string", "classic source is required");
     this.#require(this.#sha256(source) === sourceSha256,
       `classic source fingerprint differs: ${currentPath}`);
     const declaration = `class ${exportName}`;
     this.#require(source.split(declaration).length - 1 === 1,
       `classic class declaration is not exact: ${currentPath}#${exportName}`);
-    const targetSource = source.replace(declaration, `export class ${exportName}`);
+    const classSource = legacyExposure
+      ? this.#stripReviewedExposure(source, currentPath, exportName, legacyExposure)
+      : source;
+    const targetSource = classSource.replace(declaration, `export class ${exportName}`);
     const validation = this.validate({
       source: targetSource,
       classicSource: source,
       currentPath,
       targetPath,
       exportName,
+      legacyExposure,
     });
     return immutableRecord({
       currentPath,
@@ -45,7 +50,8 @@ class RepresentationOnlyNamedEsmTarget {
     });
   }
 
-  validate({ source, classicSource, currentPath, targetPath, exportName }) {
+  validate({ source, classicSource, currentPath, targetPath, exportName,
+    legacyExposure = null }) {
     let tree;
     try {
       tree = espree.parse(source, {
@@ -82,12 +88,17 @@ class RepresentationOnlyNamedEsmTarget {
     this.#require(forbidden.size === 0,
       `${targetPath} contains forbidden dependencies: ${[...forbidden].sort().join(", ")}`);
     const restoredClassic = source.replace(`export class ${exportName}`, `class ${exportName}`);
-    this.#require(restoredClassic === classicSource,
+    const expectedClassic = legacyExposure
+      ? this.#stripReviewedExposure(classicSource, currentPath, exportName, legacyExposure)
+      : classicSource;
+    this.#require(restoredClassic === expectedClassic,
       `${targetPath} changes behavior beyond the export token`);
     this.#require(!source.includes("__CYBER_FISHING_COMPAT_RUNTIME__"),
       `${targetPath} reads compatibility transport`);
     return immutableRecord({
-      representation: "classic-class-declaration-to-named-esm-export-only",
+      representation: legacyExposure
+        ? "classic-class-with-reviewed-global-exposure-to-named-esm-export"
+        : "classic-class-declaration-to-named-esm-export-only",
       importCount: 0,
       exportCount: 1,
       dynamicImportCount: 0,
@@ -103,6 +114,16 @@ class RepresentationOnlyNamedEsmTarget {
 
   #sha256(value) {
     return crypto.createHash("sha256").update(value).digest("hex");
+  }
+
+  #stripReviewedExposure(source, currentPath, exportName, legacyExposure) {
+    this.#require(legacyExposure.symbol === exportName,
+      `${currentPath} reviewed global exposure differs from named export`);
+    new StageThreeGlobalExposureReview().review({ source, currentPath,
+      symbol: exportName, location: legacyExposure.location });
+    const tree = espree.parse(source, { ecmaVersion: "latest", sourceType: "script", range: true });
+    const assignment = tree.body[1];
+    return `${source.slice(0, assignment.range[0]).trimEnd()}\n`;
   }
 
   #require(condition, message) {

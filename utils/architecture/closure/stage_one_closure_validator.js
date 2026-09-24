@@ -589,6 +589,10 @@ class StageOneClosureValidator {
         "Fish Rarity and Anomaly Domain",
       "stage-3.candidate-010-inventory-e3dffbe7":
         "Inventory Assembly Capacity Domain",
+      "stage-3.candidate-011-items-11818ee5":
+        "Items Progression and Rarity Domain",
+      "stage-3.candidate-012-assemblies-2086347a":
+        "Assemblies Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

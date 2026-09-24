@@ -1,0 +1,347 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.candidate-012-assemblies-2086347a",
+  "sourceReleaseVersion": "0.24.48",
+  "targetReleaseVersion": "0.24.49",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_012_execution_plan.json",
+    "sha256": "96a4177b4c5d8304c2ea0fccd3ba4c540a47dc8d4d612cf9b86b42cd876d31b9"
+  },
+  "scope": {
+    "moduleCount": 2,
+    "exportCount": 2,
+    "activationCount": 2,
+    "consumerRelationshipCount": 2
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/AssemblyAttachmentTargetResolver/empty-root-and-frozen-targets",
+      "kind": "behavior-equivalence",
+      "exportName": "AssemblyAttachmentTargetResolver",
+      "currentPath": "src/core/assemblies/assembly_attachment_target_resolver.js",
+      "targetPath": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "baselineSourceSha256": "53778c9da91cb132317b66cef846c352718d337b8708bf31a1762dc0109962ba",
+      "caseName": "empty-root-and-frozen-targets",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/AssemblyAttachmentTargetResolver/required-injected-ports",
+      "kind": "behavior-equivalence",
+      "exportName": "AssemblyAttachmentTargetResolver",
+      "currentPath": "src/core/assemblies/assembly_attachment_target_resolver.js",
+      "targetPath": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "baselineSourceSha256": "53778c9da91cb132317b66cef846c352718d337b8708bf31a1762dc0109962ba",
+      "caseName": "required-injected-ports",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/AssemblyAttachmentTargetResolver/slot-order-shape-and-compatible-selection",
+      "kind": "behavior-equivalence",
+      "exportName": "AssemblyAttachmentTargetResolver",
+      "currentPath": "src/core/assemblies/assembly_attachment_target_resolver.js",
+      "targetPath": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "baselineSourceSha256": "53778c9da91cb132317b66cef846c352718d337b8708bf31a1762dc0109962ba",
+      "caseName": "slot-order-shape-and-compatible-selection",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/AssemblyCompletionPolicy/missing-root-default-and-frozen-result",
+      "kind": "behavior-equivalence",
+      "exportName": "AssemblyCompletionPolicy",
+      "currentPath": "src/core/assemblies/assembly_completion_policy.js",
+      "targetPath": "src/game/domain/assemblies/assembly_completion_policy.js",
+      "baselineSourceSha256": "74e9b1bbb9ac309cd8ebfad9a6c04f6d9f6cb9922d77344cbbec1c5c9a2651df",
+      "caseName": "missing-root-default-and-frozen-result",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/AssemblyCompletionPolicy/required-injected-ports",
+      "kind": "behavior-equivalence",
+      "exportName": "AssemblyCompletionPolicy",
+      "currentPath": "src/core/assemblies/assembly_completion_policy.js",
+      "targetPath": "src/game/domain/assemblies/assembly_completion_policy.js",
+      "baselineSourceSha256": "74e9b1bbb9ac309cd8ebfad9a6c04f6d9f6cb9922d77344cbbec1c5c9a2651df",
+      "caseName": "required-injected-ports",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/AssemblyCompletionPolicy/single-empty-slot-and-completed-slot",
+      "kind": "behavior-equivalence",
+      "exportName": "AssemblyCompletionPolicy",
+      "currentPath": "src/core/assemblies/assembly_completion_policy.js",
+      "targetPath": "src/game/domain/assemblies/assembly_completion_policy.js",
+      "baselineSourceSha256": "74e9b1bbb9ac309cd8ebfad9a6c04f6d9f6cb9922d77344cbbec1c5c9a2651df",
+      "caseName": "single-empty-slot-and-completed-slot",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/two-representation-only-named-exports",
+      "kind": "compatibility-invariant",
+      "caseName": "two-representation-only-named-exports",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/two-native-esm-class-identities",
+      "kind": "compatibility-invariant",
+      "caseName": "two-native-esm-class-identities",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/two-classic-global-assignments-at-positions-153-and-154",
+      "kind": "compatibility-invariant",
+      "caseName": "two-classic-global-assignments-at-positions-153-and-154",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/two-exact-composition-root-consumers",
+      "kind": "compatibility-invariant",
+      "caseName": "two-exact-composition-root-consumers",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-instance-state-owner-per-class",
+      "kind": "compatibility-invariant",
+      "caseName": "single-instance-state-owner-per-class",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/zero-other-evaluation-effects-and-transport-reads",
+      "kind": "compatibility-invariant",
+      "caseName": "zero-other-evaluation-effects-and-transport-reads",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-prior-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-prior-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "AssemblyAttachmentTargetResolver",
+      "caseCount": 3,
+      "cases": [
+        "required-injected-ports",
+        "empty-root-and-frozen-targets",
+        "slot-order-shape-and-compatible-selection"
+      ]
+    },
+    {
+      "exportName": "AssemblyCompletionPolicy",
+      "caseCount": 3,
+      "cases": [
+        "required-injected-ports",
+        "missing-root-default-and-frozen-result",
+        "single-empty-slot-and-completed-slot"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 2,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.12.0-live-observation-and-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_012_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/core/assemblies/assembly_attachment_target_resolver.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/assemblies/assembly_attachment_target_resolver.js",
+          "authoritativeOwners": [
+            "AssemblyAttachmentTargetResolver#accepts",
+            "AssemblyAttachmentTargetResolver#findCompatibleTargets",
+            "AssemblyAttachmentTargetResolver#listTargets",
+            "AssemblyAttachmentTargetResolver#profileRegistry",
+            "AssemblyAttachmentTargetResolver#reader",
+            "AssemblyAttachmentTargetResolver#repository",
+            "AssemblyAttachmentTargetResolver#stateRepository"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+          "authoritativeOwners": [
+            "AssemblyAttachmentTargetResolver#accepts",
+            "AssemblyAttachmentTargetResolver#findCompatibleTargets",
+            "AssemblyAttachmentTargetResolver#listTargets",
+            "AssemblyAttachmentTargetResolver#profileRegistry",
+            "AssemblyAttachmentTargetResolver#reader",
+            "AssemblyAttachmentTargetResolver#repository",
+            "AssemblyAttachmentTargetResolver#stateRepository"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [
+          "capacity",
+          "depth",
+          "occupied",
+          "parentContext",
+          "parentInstanceId",
+          "rootInstanceId",
+          "slotDefinition",
+          "slotId",
+          "slotIndex",
+          "socketId"
+        ],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "a2810e44e4c2ee659e36fec98b5a9885ad39c6b164fa92b0d87222eea7b93af8",
+        "allocationBaseline": {
+          "objectExpressions": 3,
+          "arrayExpressions": 8,
+          "newExpressions": 5,
+          "objectFreezeCalls": 9,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/assemblies/assembly_completion_policy.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/assemblies/assembly_completion_policy.js",
+          "authoritativeOwners": [
+            "AssemblyCompletionPolicy#analyzeItem",
+            "AssemblyCompletionPolicy#assemblyReader",
+            "AssemblyCompletionPolicy#profileRegistry",
+            "AssemblyCompletionPolicy#repository"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/assemblies/assembly_completion_policy.js",
+          "authoritativeOwners": [
+            "AssemblyCompletionPolicy#analyzeItem",
+            "AssemblyCompletionPolicy#assemblyReader",
+            "AssemblyCompletionPolicy#profileRegistry",
+            "AssemblyCompletionPolicy#repository"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [
+          "filledSlotCount",
+          "hasAnyComponent",
+          "hasSlots",
+          "isComplete",
+          "totalSlotCount"
+        ],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "b0752ea1da6889465496e351d1ffae88b7b4c8a0fa299a0c934a4f4c5a7afd42",
+        "allocationBaseline": {
+          "objectExpressions": 5,
+          "arrayExpressions": 0,
+          "newExpressions": 3,
+          "objectFreezeCalls": 2,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.12.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

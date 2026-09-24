@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-012-side-effect-review",
+  "batchId": "stage-3.candidate-012-assemblies-2086347a",
+  "stage": "3.12.0",
+  "status": "reviewed-compatible-class-exposure-only",
+  "sourceReleaseVersion": "0.24.48",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "b2abbedb5c8341f8bcce4282974f613c022ac6631eeb4bd32092c3b45ff387ae"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/core/assemblies/assembly_attachment_target_resolver.js",
+      "symbol": "AssemblyAttachmentTargetResolver",
+      "location": "150:1",
+      "sourceSha256": "53778c9da91cb132317b66cef846c352718d337b8708bf31a1762dc0109962ba",
+      "topLevelStatements": [
+        "class-declaration",
+        "global-this-assignment"
+      ],
+      "assignmentTarget": "globalThis.AssemblyAttachmentTargetResolver",
+      "evaluatedGlobalNames": [
+        "AssemblyAttachmentTargetResolver"
+      ],
+      "evaluationCount": 1,
+      "otherTopLevelEffects": 0,
+      "targetPath": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "frozenEvidenceFingerprint": "597623a7836bfc7cb1c954ec708748e7fdbc2d80a0f8ca25963aabaa394fb6b5",
+      "activation": {
+        "id": "activation-974deda48a6f",
+        "owner": "stage-3.candidate-012-assemblies-2086347a",
+        "sourceProvider": "src/core/assemblies/assembly_attachment_target_resolver.js",
+        "targetModule": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+        "exportName": "AssemblyAttachmentTargetResolver",
+        "legacySymbol": "AssemblyAttachmentTargetResolver",
+        "legacyScriptIndex": 153,
+        "shimFile": "activations/153_assemblyattachmenttargetresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      }
+    },
+    {
+      "currentPath": "src/core/assemblies/assembly_completion_policy.js",
+      "symbol": "AssemblyCompletionPolicy",
+      "location": "93:1",
+      "sourceSha256": "74e9b1bbb9ac309cd8ebfad9a6c04f6d9f6cb9922d77344cbbec1c5c9a2651df",
+      "topLevelStatements": [
+        "class-declaration",
+        "global-this-assignment"
+      ],
+      "assignmentTarget": "globalThis.AssemblyCompletionPolicy",
+      "evaluatedGlobalNames": [
+        "AssemblyCompletionPolicy"
+      ],
+      "evaluationCount": 1,
+      "otherTopLevelEffects": 0,
+      "targetPath": "src/game/domain/assemblies/assembly_completion_policy.js",
+      "frozenEvidenceFingerprint": "39177ce9def1aab74c73b0da12adecf0d857145d316a3c24aed6d3ed77fbd519",
+      "activation": {
+        "id": "activation-596779b33d76",
+        "owner": "stage-3.candidate-012-assemblies-2086347a",
+        "sourceProvider": "src/core/assemblies/assembly_completion_policy.js",
+        "targetModule": "src/game/domain/assemblies/assembly_completion_policy.js",
+        "exportName": "AssemblyCompletionPolicy",
+        "legacySymbol": "AssemblyCompletionPolicy",
+        "legacyScriptIndex": 154,
+        "shimFile": "activations/154_assemblycompletionpolicy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      }
+    }
+  ],
+  "requiredCutoverProof": [
+    "named ESM targets contain class declarations without global assignments",
+    "activation shims publish the same class identity at logical positions 153 and 154",
+    "candidate and live runtime evaluate each class exactly once"
+  ],
+  "cutoverAllowedByThisEvidenceAlone": false
+}

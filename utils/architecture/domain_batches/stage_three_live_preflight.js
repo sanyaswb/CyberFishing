@@ -106,10 +106,30 @@ class StageThreeLivePreflight {
     };
     const evidence = Object.fromEntries(Object.entries(inputs)
       .map(([key]) => [`${key}Sha256`, sha(this.bytes(PATHS[key]))]));
+    let sideEffectReview = null;
+    let sideEffectReviewSha256 = null;
+    if (this.profile.sideEffectEvidence) {
+      const reference = this.profile.sideEffectEvidence;
+      const bytes = this.bytes(reference.path);
+      sideEffectReviewSha256 = sha(bytes);
+      assert.equal(sideEffectReviewSha256, reference.sha256, "side-effect review evidence drift");
+      sideEffectReview = JSON.parse(bytes);
+      assert.equal(sideEffectReview.batchId, this.profile.batchId);
+      assert.equal(sideEffectReview.status, "reviewed-compatible-class-exposure-only");
+      assert.deepEqual(sideEffectReview.inputs, [
+        { path: PATHS.approvedPlan, sha256: evidence.approvedPlanSha256 },
+        { path: PATHS.executionState, sha256: evidence.executionStateSha256 },
+      ]);
+      for (const module of sideEffectReview.modules) {
+        assert.equal(module.sourceSha256, sha(this.bytes(module.currentPath)),
+          `side-effect source drift: ${module.currentPath}`);
+      }
+    }
     const base = new StageThreeBatchPreflightAuditBuilder({ profile: this.profile }).build({
       ...inputs, ...evidence, indexSha256: sha(this.bytes(PATHS.index)),
       runtimeOutputFingerprint: this.projector.rollbackEvidence().runtimeOutput.fingerprint,
       runtimeFacts, sourceReader: file => this.read(file),
+      sideEffectReview, sideEffectReviewSha256,
     });
     const plannedTopology = {
       projectModuleCount: new Set([...base.runtimeBaseline.projectModules, ...base.closure.newProjectModules]).size,

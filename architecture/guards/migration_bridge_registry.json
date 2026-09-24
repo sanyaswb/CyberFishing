@@ -99,6 +99,22 @@
       ]
     },
     {
+      "id": "bridge-1c1aebb0522e",
+      "bridge": "src/core/assemblies/assembly_attachment_target_resolver.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "reason": "Preserve the exact Assemblies domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-012-assemblies-2086347a",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "AssemblyAttachmentTargetResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-1cdd6e08f07e",
       "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
       "source": "src/render/screens/victory_renderer.js",
@@ -642,6 +658,22 @@
       "globalProviders": [
         {
           "symbol": "CompositeRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-95d3da316a17",
+      "bridge": "src/core/assemblies/assembly_completion_policy.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/assemblies/assembly_completion_policy.js",
+      "reason": "Preserve the exact Assemblies domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-012-assemblies-2086347a",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "AssemblyCompletionPolicy",
           "mechanism": "global-this-property"
         }
       ]

@@ -327,6 +327,18 @@
       "removalStage": "stage-3"
     },
     {
+      "id": "activation-596779b33d76",
+      "owner": "stage-3.candidate-012-assemblies-2086347a",
+      "sourceProvider": "src/core/assemblies/assembly_completion_policy.js",
+      "targetModule": "src/game/domain/assemblies/assembly_completion_policy.js",
+      "exportName": "AssemblyCompletionPolicy",
+      "legacySymbol": "AssemblyCompletionPolicy",
+      "legacyScriptIndex": 154,
+      "shimFile": "activations/154_assemblycompletionpolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-597e6786200f",
       "owner": "stage-3.candidate-011-items-11818ee5",
       "sourceProvider": "src/core/items/progression/item_metric_strategy.js",
@@ -505,6 +517,18 @@
       "shimFile": "activations/140_landinglifttensioncalculator.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-974deda48a6f",
+      "owner": "stage-3.candidate-012-assemblies-2086347a",
+      "sourceProvider": "src/core/assemblies/assembly_attachment_target_resolver.js",
+      "targetModule": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "exportName": "AssemblyAttachmentTargetResolver",
+      "legacySymbol": "AssemblyAttachmentTargetResolver",
+      "legacyScriptIndex": 153,
+      "shimFile": "activations/153_assemblyattachmenttargetresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-9857928fc9d0",

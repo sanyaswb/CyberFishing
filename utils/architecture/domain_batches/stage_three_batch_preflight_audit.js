@@ -5,6 +5,7 @@ const { immutableRecord } = require("../guards/core/guard_models");
 const {
   StageThreeBatchPreflightProfile,
 } = require("./stage_three_batch_preflight_profile");
+const { StageThreeGlobalExposureReview } = require("./stage_three_global_exposure_review");
 const {
   StageThreeBatchSourceObserver,
 } = require("./stage_three_batch_source_observer");
@@ -35,6 +36,8 @@ class StageThreeBatchPreflightAuditBuilder {
     runtimeOutputFingerprint,
     runtimeFacts,
     sourceReader,
+    sideEffectReview = null,
+    sideEffectReviewSha256 = null,
   }) {
     const profile = this.#profile;
     const executionProfile = profile.executionProfile;
@@ -86,6 +89,17 @@ class StageThreeBatchPreflightAuditBuilder {
       reviewed: profile.reviewedContracts[module.currentPath],
       sourceReader,
     })).sort((left, right) => left.currentPath.localeCompare(right.currentPath));
+    if (profile.sideEffectEvidence) {
+      this.#require(sideEffectReview?.modules?.length === modules.length,
+        "side-effect review target count differs");
+      for (const module of modules) {
+        const evidence = sideEffectReview.modules.find(item => item.currentPath === module.currentPath);
+        this.#require(evidence && this.#same(evidence.sourceSha256, module.sourceSha256) &&
+          this.#same(evidence.symbol, module.effects.reviewedExposure?.symbol) &&
+          this.#same(evidence.location, module.effects.reviewedExposure?.location),
+        `side-effect review differs from live source: ${module.currentPath}`);
+      }
+    }
 
     const exactScope = modules.map(({ currentPath, targetPath, exports }) => ({
       currentPath,
@@ -165,7 +179,13 @@ class StageThreeBatchPreflightAuditBuilder {
       .map((read) => ({ module: module.currentPath, read })));
     const dynamicConstructs = modules.flatMap((module) => module.dynamicConstructs
       .map((construct) => ({ module: module.currentPath, construct })));
-    const unsafeEffects = modules.filter((module) => module.effects.classification !== "safe");
+    const unsafeEffects = modules.filter((module) => module.effects.classification === "unsafe");
+    const reviewedPrerequisites = batch.prerequisites.filter((prerequisite) =>
+      prerequisite.kind === "side-effect-review" && modules.some((module) =>
+        module.currentPath === prerequisite.module &&
+        module.effects.classification === "reviewed-compatible"));
+    const unresolvedPrerequisites = batch.prerequisites.filter((prerequisite) =>
+      !reviewedPrerequisites.includes(prerequisite));
     const unresolvedState = modules.filter((module) => !module.state.reviewed);
     const issues = [
       ...unexpectedDependencies.map((edge) => `unexpected:${edge.source}->${edge.target}`),
@@ -194,6 +214,10 @@ class StageThreeBatchPreflightAuditBuilder {
         bridgeRegistry: { path: "architecture/guards/migration_bridge_registry.json", sha256: bridgeRegistrySha256 },
         index: { path: "index.html", sha256: indexSha256 },
         runtimeOutput: { path: "dist/stage-3-compat-runtime", fingerprint: runtimeOutputFingerprint },
+        ...(profile.sideEffectEvidence ? {
+          sideEffectReview: { path: profile.sideEffectEvidence.path,
+            sha256: sideEffectReviewSha256 },
+        } : {}),
       },
       scope: { targetCount: modules.length, modules },
       runtimeBaseline: {
@@ -264,7 +288,8 @@ class StageThreeBatchPreflightAuditBuilder {
       effects: {
         safe: modules.filter((module) => module.effects.classification === "safe")
           .map((module) => module.currentPath),
-        reviewed: [],
+        reviewed: modules.filter((module) => module.effects.classification === "reviewed-compatible")
+          .map((module) => module.currentPath),
         unsafe: unsafeEffects.map((module) => module.currentPath),
       },
       compatibility: {
@@ -278,7 +303,8 @@ class StageThreeBatchPreflightAuditBuilder {
         activations,
       },
       prerequisites: {
-        frozen: [...batch.prerequisites],
+        frozen: unresolvedPrerequisites,
+        ...(profile.sideEffectEvidence ? { reviewed: reviewedPrerequisites } : {}),
         newlyDiscovered: issues.map((issue) => ({ kind: "preflight-blocker", issue })),
       },
       migrationGates: [...profile.migrationGates],
@@ -298,17 +324,31 @@ class StageThreeBatchPreflightAuditBuilder {
     this.#require(reviewed, `reviewed contract is missing: ${module.currentPath}`);
     const source = sourceReader(module.currentPath);
     const sourceShape = this.#sourceObserver.observe(source, module.currentPath);
-    const expectedSymbols = module.providers.map((provider) => provider.symbol).sort();
+    const expectedSymbols = [...new Set(module.providers.map((provider) => provider.symbol))].sort();
     const providerSymbols = manifestEntry.observed.providers.items
-      .map((provider) => provider.symbol).sort();
+      .map((provider) => provider.symbol);
     this.#require(this.#same(sourceShape.classDeclarations, expectedSymbols),
       `class declaration differs: ${module.currentPath}`);
-    this.#require(this.#same(providerSymbols, expectedSymbols),
+    this.#require(this.#same([...new Set(providerSymbols)].sort(), expectedSymbols),
       `provider facts differ: ${module.currentPath}`);
     this.#require(sourceShape.topLevelBindings.length === 0,
       `top-level binding exists: ${module.currentPath}`);
-    this.#require(sourceShape.topLevelEffects.length === 0,
-      `top-level effect exists: ${module.currentPath}`);
+    let reviewedExposure = null;
+    if (reviewed.legacyExposure) {
+      reviewedExposure = new StageThreeGlobalExposureReview().review({
+        source, currentPath: module.currentPath, ...reviewed.legacyExposure,
+      });
+      this.#require(this.#same(auditEntry.dependencyAudit.facts.topLevelEffects,
+        [{ kind: "assignment", location: reviewed.legacyExposure.location,
+          classification: "observable" }]),
+      `frozen top-level effect differs: ${module.currentPath}`);
+      this.#require(this.#same(sourceShape.topLevelEffects,
+        [`ExpressionStatement@${reviewed.legacyExposure.location}`]),
+      `reviewed top-level effect differs: ${module.currentPath}`);
+    } else {
+      this.#require(sourceShape.topLevelEffects.length === 0,
+        `top-level effect exists: ${module.currentPath}`);
+    }
     this.#require(sourceShape.forbiddenReads.length === 0,
       `forbidden source read exists: ${module.currentPath}`);
     this.#require(this.#same(
@@ -373,8 +413,10 @@ class StageThreeBatchPreflightAuditBuilder {
         comparisonMode: "target-ast-after-removing-export-must-equal-frozen-source-ast",
       },
       effects: {
-        classification: facts.topLevelEffects.length === 0 ? "safe" : "unsafe",
+        classification: facts.topLevelEffects.length === 0 ? "safe" :
+          reviewedExposure ? "reviewed-compatible" : "unsafe",
         topLevelEffects: [...facts.topLevelEffects],
+        ...(reviewedExposure ? { reviewedExposure } : {}),
       },
       providerFacts: manifestEntry.observed.providers.items,
     };
@@ -467,7 +509,8 @@ class StageThreeBatchPreflightAuditValidator {
       "transport lookups must be forbidden");
     require(artifact?.performance?.unresolved?.length === 0, "performance review is unresolved");
     require(artifact?.effects?.unsafe?.length === 0, "unsafe top-level effect exists");
-    require(artifact?.compatibility?.providers?.length === executionProfile.expectedExportCount,
+    require(new Set(artifact?.compatibility?.providers?.map(provider => provider.symbol)).size ===
+      executionProfile.expectedExportCount,
       "provider coverage differs");
     require(artifact?.compatibility?.consumers?.length === executionProfile.expectedConsumerCount,
       "consumer coverage differs");
@@ -503,7 +546,13 @@ class StageThreeBatchPreflightAuditValidator {
         `allocation budget differs: ${module.currentPath}`);
       require(module.performance?.transportLookupsAllowed === 0,
         `transport budget differs: ${module.currentPath}`);
-      require(module.effects?.classification === "safe", `effect classification differs: ${module.currentPath}`);
+      require(module.effects?.classification === (reviewed?.legacyExposure ?
+        "reviewed-compatible" : "safe"), `effect classification differs: ${module.currentPath}`);
+      if (reviewed?.legacyExposure) {
+        require(module.effects?.reviewedExposure?.symbol === reviewed.legacyExposure.symbol &&
+          module.effects?.reviewedExposure?.location === reviewed.legacyExposure.location,
+        `reviewed exposure differs: ${module.currentPath}`);
+      }
     }
     if (errors.length > 0) {
       throw new Error(`${profile.stageLabel} preflight contract failed:\n- ${errors.join("\n- ")}`);
