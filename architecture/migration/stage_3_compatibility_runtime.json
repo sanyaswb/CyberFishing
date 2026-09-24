@@ -219,6 +219,18 @@
       "removalStage": "stage-5"
     },
     {
+      "id": "activation-249fe0228439",
+      "owner": "stage-3.candidate-011-items-11818ee5",
+      "sourceProvider": "src/core/items/rarity/item_rarity_descriptor.js",
+      "targetModule": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "exportName": "ItemRarityDescriptor",
+      "legacySymbol": "ItemRarityDescriptor",
+      "legacyScriptIndex": 45,
+      "shimFile": "activations/045_itemraritydescriptor.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
       "id": "activation-2534a1bdbe18",
       "owner": "stage-3.candidate-005-fishing-45d0c7ce",
       "sourceProvider": "src/core/fishing/recoverable_line_calculator.js",
@@ -315,6 +327,18 @@
       "removalStage": "stage-3"
     },
     {
+      "id": "activation-597e6786200f",
+      "owner": "stage-3.candidate-011-items-11818ee5",
+      "sourceProvider": "src/core/items/progression/item_metric_strategy.js",
+      "targetModule": "src/game/domain/items/progression/item_metric_strategy.js",
+      "exportName": "ItemMetricStrategy",
+      "legacySymbol": "ItemMetricStrategy",
+      "legacyScriptIndex": 73,
+      "shimFile": "activations/073_itemmetricstrategy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
       "id": "activation-59bd96059da6",
       "owner": "stage-3.candidate-004-equipment-4f2570dc",
       "sourceProvider": "src/core/equipment/rod_capability_resolver.js",
@@ -397,6 +421,18 @@
       "shimFile": "activations/130_lineconstraintstateresolver.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-7b2f08a8cb34",
+      "owner": "stage-3.candidate-011-items-11818ee5",
+      "sourceProvider": "src/core/items/rarity/item_rarity_strategy_registry.js",
+      "targetModule": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+      "exportName": "ItemRarityStrategyRegistry",
+      "legacySymbol": "ItemRarityStrategyRegistry",
+      "legacyScriptIndex": 48,
+      "shimFile": "activations/048_itemraritystrategyregistry.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-7f67db779ead",
@@ -531,6 +567,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-b63d6fa4a955",
+      "owner": "stage-3.candidate-011-items-11818ee5",
+      "sourceProvider": "src/core/items/progression/item_progression_descriptor.js",
+      "targetModule": "src/game/domain/items/progression/item_progression_descriptor.js",
+      "exportName": "ItemProgressionDescriptor",
+      "legacySymbol": "ItemProgressionDescriptor",
+      "legacyScriptIndex": 84,
+      "shimFile": "activations/084_itemprogressiondescriptor.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
       "id": "activation-be4932b7b0c5",
       "owner": "stage-3.candidate-005-fishing-45d0c7ce",
       "sourceProvider": "src/core/fishing/rod_control_movement_projector.js",
@@ -613,6 +661,18 @@
       "shimFile": "activations/043_fishanomalyvariantresolver.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-edee20d9f6f3",
+      "owner": "stage-3.candidate-011-items-11818ee5",
+      "sourceProvider": "src/core/items/rarity/item_rarity_strategy.js",
+      "targetModule": "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "exportName": "ItemRarityStrategy",
+      "legacySymbol": "ItemRarityStrategy",
+      "legacyScriptIndex": 46,
+      "shimFile": "activations/046_itemraritystrategy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
     },
     {
       "id": "activation-f5eefdd6e6e2",

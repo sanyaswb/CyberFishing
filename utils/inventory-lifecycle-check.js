@@ -63,6 +63,9 @@ class InventoryRuntimeLoader {
       console,
     });
 
+    const runtimeFile = "dist/stage-3-compat-runtime/compat_runtime.iife.js";
+    vm.runInContext(this.#read(runtimeFile), context, { filename: runtimeFile });
+
     this.#loadSlotConfig(context);
     this.#loadClass(
       context,

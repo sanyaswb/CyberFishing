@@ -56,6 +56,18 @@ class CumulativeRuntimeOutputManager {
     }
   }
 
+  async publishWithRetry(stagingPath, { attempts = 8, intervalMs = 125 } = {}) {
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      try {
+        this.publish(stagingPath);
+        return;
+      } catch (error) {
+        if (!["EPERM", "EBUSY", "EACCES"].includes(error?.code) || attempt === attempts) throw error;
+        await new Promise(resolve => setTimeout(resolve, intervalMs));
+      }
+    }
+  }
+
   discard(stagingPath) {
     if (!stagingPath || !fs.existsSync(stagingPath)) return;
     this.#assertStaging(stagingPath);

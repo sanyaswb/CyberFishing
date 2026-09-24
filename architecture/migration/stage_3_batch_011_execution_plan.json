@@ -1,0 +1,1163 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-atomic-execution-plan",
+  "status": "execution-plan-verified",
+  "batchId": "stage-3.candidate-011-items-11818ee5",
+  "sourceReleaseVersion": "0.24.47",
+  "targetReleaseVersion": "0.24.48",
+  "runtimeMigrationAllowed": false,
+  "runtimeMigrationUnlockCondition": "stage-3.11.2-focused-test-matrix-verified",
+  "sourceEvidence": {
+    "audit": {
+      "path": "architecture/migration/stage_3_batch_011_audit.json",
+      "sha256": "3fabb47e1b7bb5a4c4ba9ce8cac2b755e14c7836c6cf3cfe11ba269365c647e5"
+    },
+    "approvedPlan": {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    "executionState": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "3786c5a4d5ca4b80e46e7884f05f47650d85dacb9572f4234d9a29fdec91d0bc"
+    },
+    "runtimeContract": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "08888ddb005c3ef78f5a1c9ddb5b7bf4dad2d9c4149969fa6ebce95018c4848c"
+    },
+    "manifest": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "4e5a8345cb5fcc3803089b35aa76a989237301ae5f5e673dc7876898f07346ae"
+    },
+    "bridgeRegistry": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "8275fdb7af3a852775718e1dc271622354639d64c0d67d600833e48a5da3613b"
+    },
+    "scmCheckpoint": {
+      "tag": "v0.24.47",
+      "commitSha": "cabde299b5284840ec9d0a77290d465667bb0ffd",
+      "tagType": "tag",
+      "rollbackMode": "exact-source-release-tag-plus-batch-delta"
+    }
+  },
+  "scope": {
+    "atomic": true,
+    "partialCutoverAllowed": false,
+    "modules": [
+      {
+        "currentPath": "src/core/items/progression/item_metric_strategy.js",
+        "targetPath": "src/game/domain/items/progression/item_metric_strategy.js",
+        "exports": [
+          "ItemMetricStrategy"
+        ],
+        "sourceSha256": "7fe0864d62ea0d642dfc3f392cbf74e5a13389a72167ddab1586cfdc9db49ebb",
+        "stateClassification": "authoritative-owner",
+        "representationChange": "classic-class-declaration-to-named-esm-export-only",
+        "importsAllowed": [],
+        "behaviorChangeAllowed": false,
+        "directTransportReadAllowed": false
+      },
+      {
+        "currentPath": "src/core/items/progression/item_progression_descriptor.js",
+        "targetPath": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "exports": [
+          "ItemProgressionDescriptor"
+        ],
+        "sourceSha256": "337c6577f08bf3fc3016627f05f69709926dd41a2398eb67403e3e2454a757a6",
+        "stateClassification": "authoritative-owner",
+        "representationChange": "classic-class-declaration-to-named-esm-export-only",
+        "importsAllowed": [],
+        "behaviorChangeAllowed": false,
+        "directTransportReadAllowed": false
+      },
+      {
+        "currentPath": "src/core/items/rarity/item_rarity_descriptor.js",
+        "targetPath": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+        "exports": [
+          "ItemRarityDescriptor"
+        ],
+        "sourceSha256": "022d8911182b7789d4c7377bceb5461133310516848b8cedf1601372198da112",
+        "stateClassification": "authoritative-owner",
+        "representationChange": "classic-class-declaration-to-named-esm-export-only",
+        "importsAllowed": [],
+        "behaviorChangeAllowed": false,
+        "directTransportReadAllowed": false
+      },
+      {
+        "currentPath": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "targetPath": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+        "exports": [
+          "ItemRarityStrategyRegistry"
+        ],
+        "sourceSha256": "8ace21be1c9a791acf61e3a2da04c3153f5fb6ae4ca887a0ab1a251cb8e944cb",
+        "stateClassification": "authoritative-owner",
+        "representationChange": "classic-class-declaration-to-named-esm-export-only",
+        "importsAllowed": [],
+        "behaviorChangeAllowed": false,
+        "directTransportReadAllowed": false
+      },
+      {
+        "currentPath": "src/core/items/rarity/item_rarity_strategy.js",
+        "targetPath": "src/game/domain/items/rarity/item_rarity_strategy.js",
+        "exports": [
+          "ItemRarityStrategy"
+        ],
+        "sourceSha256": "53a5a610f215adaff816d90a494572eb619b0d7be30012adb5bcc74b32b8c0d3",
+        "stateClassification": "stateless",
+        "representationChange": "classic-class-declaration-to-named-esm-export-only",
+        "importsAllowed": [],
+        "behaviorChangeAllowed": false,
+        "directTransportReadAllowed": false
+      }
+    ],
+    "targetCount": 5,
+    "exportCount": 5,
+    "activationCount": 5,
+    "consumerRelationshipCount": 10
+  },
+  "lifecycle": {
+    "preState": {
+      "releaseVersion": "0.24.47",
+      "status": "migration-active",
+      "completedBatchIds": [
+        "stage-3.candidate-001-inventory-85f44b2e",
+        "stage-3.candidate-002-fishing-944d0790",
+        "stage-3.candidate-003-fishing-9700ad4f",
+        "stage-3.candidate-004-equipment-4f2570dc",
+        "stage-3.candidate-005-fishing-45d0c7ce",
+        "stage-3.candidate-006-fishing-e48e70d8",
+        "stage-3.candidate-007-fishing-bb8b3939",
+        "stage-3.candidate-008-fishing-f859ccd3",
+        "stage-3.candidate-009-fish-444e8034",
+        "stage-3.candidate-010-inventory-e3dffbe7"
+      ],
+      "activeBatchId": null,
+      "compatibilityRuntimeActivated": true,
+      "projectModuleCount": 37,
+      "activationCount": 38,
+      "bridgeRecordCount": 64
+    },
+    "openState": {
+      "releaseVersion": "0.24.47",
+      "status": "migration-active",
+      "completedBatchIds": [
+        "stage-3.candidate-001-inventory-85f44b2e",
+        "stage-3.candidate-002-fishing-944d0790",
+        "stage-3.candidate-003-fishing-9700ad4f",
+        "stage-3.candidate-004-equipment-4f2570dc",
+        "stage-3.candidate-005-fishing-45d0c7ce",
+        "stage-3.candidate-006-fishing-e48e70d8",
+        "stage-3.candidate-007-fishing-bb8b3939",
+        "stage-3.candidate-008-fishing-f859ccd3",
+        "stage-3.candidate-009-fish-444e8034",
+        "stage-3.candidate-010-inventory-e3dffbe7"
+      ],
+      "activeBatchId": "stage-3.candidate-011-items-11818ee5",
+      "activeBatchPhase": "prebuild",
+      "compatibilityRuntimeActivated": true,
+      "projectModuleCount": 37,
+      "activationCount": 38,
+      "bridgeRecordCount": 64
+    },
+    "runtimeActiveState": {
+      "releaseVersion": "0.24.47",
+      "status": "migration-active",
+      "completedBatchIds": [
+        "stage-3.candidate-001-inventory-85f44b2e",
+        "stage-3.candidate-002-fishing-944d0790",
+        "stage-3.candidate-003-fishing-9700ad4f",
+        "stage-3.candidate-004-equipment-4f2570dc",
+        "stage-3.candidate-005-fishing-45d0c7ce",
+        "stage-3.candidate-006-fishing-e48e70d8",
+        "stage-3.candidate-007-fishing-bb8b3939",
+        "stage-3.candidate-008-fishing-f859ccd3",
+        "stage-3.candidate-009-fish-444e8034",
+        "stage-3.candidate-010-inventory-e3dffbe7"
+      ],
+      "activeBatchId": "stage-3.candidate-011-items-11818ee5",
+      "activeBatchPhase": "runtime-active",
+      "compatibilityRuntimeActivated": true,
+      "projectModuleCount": 42,
+      "activationCount": 43,
+      "bridgeRecordCount": 74,
+      "persistence": "execution-plan-phase-not-stage-3-execution-state-status"
+    },
+    "completedState": {
+      "releaseVersion": "0.24.48",
+      "status": "migration-active",
+      "completedBatchIds": [
+        "stage-3.candidate-001-inventory-85f44b2e",
+        "stage-3.candidate-002-fishing-944d0790",
+        "stage-3.candidate-003-fishing-9700ad4f",
+        "stage-3.candidate-004-equipment-4f2570dc",
+        "stage-3.candidate-005-fishing-45d0c7ce",
+        "stage-3.candidate-006-fishing-e48e70d8",
+        "stage-3.candidate-007-fishing-bb8b3939",
+        "stage-3.candidate-008-fishing-f859ccd3",
+        "stage-3.candidate-009-fish-444e8034",
+        "stage-3.candidate-010-inventory-e3dffbe7",
+        "stage-3.candidate-011-items-11818ee5"
+      ],
+      "activeBatchId": null,
+      "compatibilityRuntimeActivated": true,
+      "projectModuleCount": 42,
+      "activationCount": 43,
+      "bridgeRecordCount": 74
+    },
+    "runtimeTargetSelection": "completed-batches-plus-active-batch-plus-promoted-stage-2-closure"
+  },
+  "compatibility": {
+    "activations": [
+      {
+        "id": "activation-249fe0228439",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/rarity/item_rarity_descriptor.js",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+        "exportName": "ItemRarityDescriptor",
+        "legacySymbol": "ItemRarityDescriptor",
+        "legacyScriptIndex": 45,
+        "shimFile": "activations/045_itemraritydescriptor.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/items/rarity/authored_item_rarity_strategy.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-597e6786200f",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/progression/item_metric_strategy.js",
+        "targetModule": "src/game/domain/items/progression/item_metric_strategy.js",
+        "exportName": "ItemMetricStrategy",
+        "legacySymbol": "ItemMetricStrategy",
+        "legacyScriptIndex": 73,
+        "shimFile": "activations/073_itemmetricstrategy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/items/progression/composite_metric_strategy.js",
+          "src/core/items/progression/derived_stat_metric_strategy.js",
+          "src/core/items/progression/item_rating_resolver.js",
+          "src/core/items/progression/numeric_stat_metric_strategy.js",
+          "src/core/items/progression/target_range_metric_strategy.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-7b2f08a8cb34",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+        "exportName": "ItemRarityStrategyRegistry",
+        "legacySymbol": "ItemRarityStrategyRegistry",
+        "legacyScriptIndex": 48,
+        "shimFile": "activations/048_itemraritystrategyregistry.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/bootstrap.js",
+          "src/core/items/rarity/item_rarity_resolver.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-b63d6fa4a955",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/progression/item_progression_descriptor.js",
+        "targetModule": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "exportName": "ItemProgressionDescriptor",
+        "legacySymbol": "ItemProgressionDescriptor",
+        "legacyScriptIndex": 84,
+        "shimFile": "activations/084_itemprogressiondescriptor.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/items/progression/item_progression_resolver.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-edee20d9f6f3",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/rarity/item_rarity_strategy.js",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_strategy.js",
+        "exportName": "ItemRarityStrategy",
+        "legacySymbol": "ItemRarityStrategy",
+        "legacyScriptIndex": 46,
+        "shimFile": "activations/046_itemraritystrategy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/items/rarity/authored_item_rarity_strategy.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      }
+    ],
+    "plannedBridgeRecords": [
+      {
+        "id": "bridge-51b5e7e42e77",
+        "bridge": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/composite_metric_strategy.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ItemMetricStrategy",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-56ef92067f39",
+        "bridge": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/numeric_stat_metric_strategy.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ItemMetricStrategy",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-8133cc83f778",
+        "bridge": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/target_range_metric_strategy.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ItemMetricStrategy",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-9e3953224164",
+        "bridge": "src/core/items/rarity/item_rarity_descriptor.js",
+        "source": "src/core/items/rarity/authored_item_rarity_strategy.js",
+        "target": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ItemRarityDescriptor",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-a9380f14d75c",
+        "bridge": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "source": "src/app/bootstrap.js",
+        "target": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "ItemRarityStrategyRegistry",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-a970e658356c",
+        "bridge": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "source": "src/core/items/rarity/item_rarity_resolver.js",
+        "target": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "ItemRarityStrategyRegistry",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-cd92209bac28",
+        "bridge": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/item_rating_resolver.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ItemMetricStrategy",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-eea627bb5a05",
+        "bridge": "src/core/items/progression/item_progression_descriptor.js",
+        "source": "src/core/items/progression/item_progression_resolver.js",
+        "target": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ItemProgressionDescriptor",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-eec98f962cb7",
+        "bridge": "src/core/items/rarity/item_rarity_strategy.js",
+        "source": "src/core/items/rarity/authored_item_rarity_strategy.js",
+        "target": "src/game/domain/items/rarity/item_rarity_strategy.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ItemRarityStrategy",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-fa5b133d275d",
+        "bridge": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/derived_stat_metric_strategy.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ItemMetricStrategy",
+            "mechanism": "global-this-property"
+          }
+        ]
+      }
+    ],
+    "registryTransition": {
+      "beforeCount": 64,
+      "addCount": 10,
+      "afterCount": 74,
+      "operation": "exact-set-union-by-canonical-id"
+    },
+    "transportGlobal": "__CYBER_FISHING_COMPAT_RUNTIME__",
+    "transportOwnsGameState": false,
+    "domainTransportReadsAllowed": false
+  },
+  "cumulativeRuntime": {
+    "topology": "single-cumulative-module-graph",
+    "isolatedIifeAllowed": false,
+    "beforeProjectModuleCount": 37,
+    "addedProjectModuleCount": 5,
+    "afterProjectModuleCount": 42,
+    "beforeActivationCount": 38,
+    "addedActivationCount": 5,
+    "afterActivationCount": 43,
+    "projectModulesAfter": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "expectedDependencyEdges": [],
+    "evaluationCountPerModule": 1,
+    "outputReplacement": "validated-staging-then-atomic-replacement",
+    "preservePreviousValidatedOutputOnFailure": true
+  },
+  "scriptTopology": {
+    "before": {
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0
+    },
+    "after": {
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0,
+      "providerScriptsRemoved": 5,
+      "activationScriptsAdded": 5
+    },
+    "policy": "one-for-one-provider-to-activation-replacement-preserves-logical-order"
+  },
+  "stateAndBehaviorInvariants": [
+    {
+      "module": "src/core/items/progression/item_metric_strategy.js",
+      "stateClassification": "authoritative-owner",
+      "authoritativeOwnerPreserved": true,
+      "duplicateStateCopies": "forbidden",
+      "formulasApiDefaultsAndResultShapes": "unchanged",
+      "authoritativeOwnerBefore": {
+        "module": "src/core/items/progression/item_metric_strategy.js",
+        "authoritativeOwners": [
+          "ItemMetricStrategy#constructor",
+          "ItemMetricStrategy#id"
+        ]
+      },
+      "authoritativeOwnerAfter": {
+        "module": "src/game/domain/items/progression/item_metric_strategy.js",
+        "authoritativeOwners": [
+          "ItemMetricStrategy#constructor",
+          "ItemMetricStrategy#id"
+        ]
+      },
+      "publicStateShape": [
+        "id"
+      ],
+      "resultShape": [
+        "available",
+        "reason",
+        "strategyId"
+      ],
+      "stableResultIdentity": false,
+      "mutatesCallerInputs": false,
+      "behaviorFingerprint": "9411ea67ea98ad011090090f9eee61b992b8de5a7d2e1ab8737e61649bebb562",
+      "allocationBaseline": {
+        "objectExpressions": 4,
+        "arrayExpressions": 1,
+        "newExpressions": 2,
+        "objectFreezeCalls": 2,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "additionalMigrationAllocationsAllowed": 0,
+      "transportLookupsAllowed": 0,
+      "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+    },
+    {
+      "module": "src/core/items/progression/item_progression_descriptor.js",
+      "stateClassification": "authoritative-owner",
+      "authoritativeOwnerPreserved": true,
+      "duplicateStateCopies": "forbidden",
+      "formulasApiDefaultsAndResultShapes": "unchanged",
+      "authoritativeOwnerBefore": {
+        "module": "src/core/items/progression/item_progression_descriptor.js",
+        "authoritativeOwners": [
+          "ItemProgressionDescriptor#available",
+          "ItemProgressionDescriptor#groupId",
+          "ItemProgressionDescriptor#reason"
+        ]
+      },
+      "authoritativeOwnerAfter": {
+        "module": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "authoritativeOwners": [
+          "ItemProgressionDescriptor#available",
+          "ItemProgressionDescriptor#groupId",
+          "ItemProgressionDescriptor#reason"
+        ]
+      },
+      "publicStateShape": [],
+      "resultShape": [
+        "available",
+        "capacity",
+        "groupId",
+        "quality",
+        "rating",
+        "ratingTier",
+        "reason"
+      ],
+      "stableResultIdentity": true,
+      "mutatesCallerInputs": false,
+      "behaviorFingerprint": "2604ffb85832ebf9c619a01f6ad941cab8274559f27f51617afe0342119f7ff2",
+      "allocationBaseline": {
+        "objectExpressions": 1,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 1,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "additionalMigrationAllocationsAllowed": 0,
+      "transportLookupsAllowed": 0,
+      "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+    },
+    {
+      "module": "src/core/items/rarity/item_rarity_descriptor.js",
+      "stateClassification": "authoritative-owner",
+      "authoritativeOwnerPreserved": true,
+      "duplicateStateCopies": "forbidden",
+      "formulasApiDefaultsAndResultShapes": "unchanged",
+      "authoritativeOwnerBefore": {
+        "module": "src/core/items/rarity/item_rarity_descriptor.js",
+        "authoritativeOwners": [
+          "ItemRarityDescriptor#isUnique",
+          "ItemRarityDescriptor#maxTier",
+          "ItemRarityDescriptor#mode",
+          "ItemRarityDescriptor#normalized",
+          "ItemRarityDescriptor#tier",
+          "ItemRarityDescriptor#uniqueId"
+        ]
+      },
+      "authoritativeOwnerAfter": {
+        "module": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+        "authoritativeOwners": [
+          "ItemRarityDescriptor#isUnique",
+          "ItemRarityDescriptor#maxTier",
+          "ItemRarityDescriptor#mode",
+          "ItemRarityDescriptor#normalized",
+          "ItemRarityDescriptor#tier",
+          "ItemRarityDescriptor#uniqueId"
+        ]
+      },
+      "publicStateShape": [],
+      "resultShape": [
+        "isUnique",
+        "maxTier",
+        "mode",
+        "normalized",
+        "tier",
+        "uniqueId"
+      ],
+      "stableResultIdentity": true,
+      "mutatesCallerInputs": false,
+      "behaviorFingerprint": "e3d2bf41e8d38948da449c69aacd4431dfd0663df751c33f281ba92453747daa",
+      "allocationBaseline": {
+        "objectExpressions": 0,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 1,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "additionalMigrationAllocationsAllowed": 0,
+      "transportLookupsAllowed": 0,
+      "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+    },
+    {
+      "module": "src/core/items/rarity/item_rarity_strategy_registry.js",
+      "stateClassification": "authoritative-owner",
+      "authoritativeOwnerPreserved": true,
+      "duplicateStateCopies": "forbidden",
+      "formulasApiDefaultsAndResultShapes": "unchanged",
+      "authoritativeOwnerBefore": {
+        "module": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "authoritativeOwners": [
+          "ItemRarityStrategyRegistry#register",
+          "ItemRarityStrategyRegistry#strategies"
+        ]
+      },
+      "authoritativeOwnerAfter": {
+        "module": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+        "authoritativeOwners": [
+          "ItemRarityStrategyRegistry#register",
+          "ItemRarityStrategyRegistry#strategies"
+        ]
+      },
+      "publicStateShape": [],
+      "resultShape": [],
+      "stableResultIdentity": true,
+      "mutatesCallerInputs": false,
+      "behaviorFingerprint": "f994f5eab76f1667b76402ed59b1e448768f1d858a24b87cdd5c6d9ee1e29cc0",
+      "allocationBaseline": {
+        "objectExpressions": 0,
+        "arrayExpressions": 2,
+        "newExpressions": 2,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "additionalMigrationAllocationsAllowed": 0,
+      "transportLookupsAllowed": 0,
+      "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+    },
+    {
+      "module": "src/core/items/rarity/item_rarity_strategy.js",
+      "stateClassification": "stateless",
+      "authoritativeOwnerPreserved": true,
+      "duplicateStateCopies": "forbidden",
+      "formulasApiDefaultsAndResultShapes": "unchanged",
+      "authoritativeOwnerBefore": {
+        "module": "src/core/items/rarity/item_rarity_strategy.js",
+        "authoritativeOwners": []
+      },
+      "authoritativeOwnerAfter": {
+        "module": "src/game/domain/items/rarity/item_rarity_strategy.js",
+        "authoritativeOwners": []
+      },
+      "publicStateShape": [],
+      "resultShape": [],
+      "stableResultIdentity": false,
+      "mutatesCallerInputs": false,
+      "behaviorFingerprint": "24d6b4ef5d8c0b17d1df4eb7aee7d0a2d7ca5b3db24805cd22536744e916f6a5",
+      "allocationBaseline": {
+        "objectExpressions": 0,
+        "arrayExpressions": 0,
+        "newExpressions": 1,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "additionalMigrationAllocationsAllowed": 0,
+      "transportLookupsAllowed": 0,
+      "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+    }
+  ],
+  "operations": [
+    {
+      "order": 1,
+      "id": "verify-frozen-evidence",
+      "mutationKind": "read-only",
+      "outcome": "Verify audit fingerprints, frozen scope, current topology and completed prefix."
+    },
+    {
+      "order": 2,
+      "id": "open-batch-011",
+      "mutationKind": "metadata",
+      "outcome": "Set activeBatchId to batch 011 without changing completedBatchIds."
+    },
+    {
+      "order": 3,
+      "id": "create-five-named-esm-targets",
+      "mutationKind": "source",
+      "outcome": "Create all five named ESM targets as representation-only copies."
+    },
+    {
+      "order": 4,
+      "id": "render-five-candidate-activation-shims",
+      "mutationKind": "source",
+      "outcome": "Replace all five classic providers with exact generated activation shims."
+    },
+    {
+      "order": 5,
+      "id": "project-ten-consumer-bridges",
+      "mutationKind": "metadata",
+      "outcome": "Add the 10 canonical consumer-specific bridge records as one set."
+    },
+    {
+      "order": 6,
+      "id": "project-candidate-manifest",
+      "mutationKind": "metadata",
+      "outcome": "Project target and compatibility-bridge metadata before build validation."
+    },
+    {
+      "order": 7,
+      "id": "validate-candidate-and-commit-atomic-cutover",
+      "mutationKind": "generated-output",
+      "outcome": "Build and atomically validate one cumulative 42-module runtime."
+    },
+    {
+      "order": 8,
+      "id": "validate-identity-timing-state-and-behavior",
+      "mutationKind": "read-only",
+      "outcome": "Prove exact export identity, activation timing, one evaluation and behavior equivalence."
+    },
+    {
+      "order": 9,
+      "id": "persist-and-reconcile-observations",
+      "mutationKind": "metadata",
+      "outcome": "Persist mechanical observations and reconcile Manifest facts after source/shim creation."
+    },
+    {
+      "order": 10,
+      "id": "run-full-acceptance",
+      "mutationKind": "read-only",
+      "outcome": "Run focused, Architecture, Quick, Full, fresh-install and browser acceptance."
+    },
+    {
+      "order": 11,
+      "id": "close-release-0.24.48",
+      "mutationKind": "metadata",
+      "outcome": "Mark batch 011 completed, clear activeBatchId and publish v0.24.48 metadata."
+    }
+  ],
+  "mutationBoundary": {
+    "sourceProvidersReplaced": [
+      "src/core/items/progression/item_metric_strategy.js",
+      "src/core/items/progression/item_progression_descriptor.js",
+      "src/core/items/rarity/item_rarity_descriptor.js",
+      "src/core/items/rarity/item_rarity_strategy.js",
+      "src/core/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "esmTargetsCreated": [
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "architectureMetadata": [
+      "architecture/guards/migration_bridge_registry.json",
+      "architecture/migration/module_migration_manifest.json",
+      "architecture/migration/stage_3_compatibility_runtime.json",
+      "architecture/migration/stage_3_execution_state.json"
+    ],
+    "runtimeWiring": [
+      "index.html"
+    ],
+    "generatedOutput": [
+      "dist/stage-3-compat-runtime"
+    ],
+    "releaseMetadata": [
+      "CHANGELOG.md",
+      "architecture/build/package_contract.json",
+      "package-lock.json",
+      "package.json",
+      "refactor_Task.txt",
+      "src/config/project_version.js"
+    ]
+  },
+  "rollback": {
+    "atomic": true,
+    "partialRollbackAllowed": false,
+    "fromRelease": "0.24.48",
+    "toRelease": "0.24.47",
+    "preserveCompletedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034",
+      "stage-3.candidate-010-inventory-e3dffbe7"
+    ],
+    "removeBatchId": "stage-3.candidate-011-items-11818ee5",
+    "restoreTopology": {
+      "projectModuleCount": 37,
+      "activationCount": 38,
+      "bridgeRecordCount": 64,
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0
+    },
+    "baselineEvidence": {
+      "files": [
+        {
+          "path": "architecture/build/package_contract.json",
+          "sha256": "286d2284aa18a5b77eb448f02d609df7bb765a87df26d86376e84036daa0567e"
+        },
+        {
+          "path": "architecture/guards/migration_bridge_registry.json",
+          "sha256": "8275fdb7af3a852775718e1dc271622354639d64c0d67d600833e48a5da3613b"
+        },
+        {
+          "path": "architecture/migration/module_migration_manifest.json",
+          "sha256": "4e5a8345cb5fcc3803089b35aa76a989237301ae5f5e673dc7876898f07346ae"
+        },
+        {
+          "path": "architecture/migration/stage_3_compatibility_runtime.json",
+          "sha256": "08888ddb005c3ef78f5a1c9ddb5b7bf4dad2d9c4149969fa6ebce95018c4848c"
+        },
+        {
+          "path": "architecture/migration/stage_3_execution_state.json",
+          "sha256": "3786c5a4d5ca4b80e46e7884f05f47650d85dacb9572f4234d9a29fdec91d0bc"
+        },
+        {
+          "path": "CHANGELOG.md",
+          "sha256": "32a4dffbb2257da6157cd83074e9ab76ebdaae40d980e50989ffd79b2b6b35c9"
+        },
+        {
+          "path": "index.html",
+          "sha256": "b04c42ec271559127ffd40e9076547fa699c2745e5c32d7a3133e90249266bc5"
+        },
+        {
+          "path": "package-lock.json",
+          "sha256": "834c81f7b063253bbf95dd006ab652e11b62b1cb19321ec7c1ccf39b57e29b3c"
+        },
+        {
+          "path": "package.json",
+          "sha256": "b33d6d52ae887aa90055835688eaa9904e2b7ff8f30e84c7e6ee92129438bcf6"
+        },
+        {
+          "path": "refactor_Task.txt",
+          "sha256": "8a45b1844076470b946a8bf347523b9ac7c089cad539267891cac6c58190e826"
+        },
+        {
+          "path": "src/config/project_version.js",
+          "sha256": "a692567a97f390b095ab6fa5f13ff4dde4938955cfceadadb19ba05b24f94758"
+        },
+        {
+          "path": "src/core/items/progression/item_metric_strategy.js",
+          "sha256": "7fe0864d62ea0d642dfc3f392cbf74e5a13389a72167ddab1586cfdc9db49ebb"
+        },
+        {
+          "path": "src/core/items/progression/item_progression_descriptor.js",
+          "sha256": "337c6577f08bf3fc3016627f05f69709926dd41a2398eb67403e3e2454a757a6"
+        },
+        {
+          "path": "src/core/items/rarity/item_rarity_descriptor.js",
+          "sha256": "022d8911182b7789d4c7377bceb5461133310516848b8cedf1601372198da112"
+        },
+        {
+          "path": "src/core/items/rarity/item_rarity_strategy_registry.js",
+          "sha256": "8ace21be1c9a791acf61e3a2da04c3153f5fb6ae4ca887a0ab1a251cb8e944cb"
+        },
+        {
+          "path": "src/core/items/rarity/item_rarity_strategy.js",
+          "sha256": "53a5a610f215adaff816d90a494572eb619b0d7be30012adb5bcc74b32b8c0d3"
+        }
+      ],
+      "runtimeOutput": {
+        "path": "dist/stage-3-compat-runtime",
+        "files": [
+          {
+            "path": "dist/stage-3-compat-runtime/activations/042_fishrarityresolver.js",
+            "sha256": "0ae783a169059e70f0954fbeaef5ef4dd37439d8cec50b26e42350c143146ff2"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/043_fishanomalyvariantresolver.js",
+            "sha256": "dbf13d9472e7d6ed04fd87ff85ca2a22aea8ac675538103c2b6320d90a41bb42"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/086_inventoryequiptargetselectionpolicy.js",
+            "sha256": "cb952b9844350a33ef46f53ba1d546586a4f343f252a0ca6430ae6ac183fb3e1"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/088_floattacklelinebudgetpolicy.js",
+            "sha256": "aa49fd5deb57a9892901d4f697cb9592a9cd24785f18e48a494b0f05102f85fe"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/090_linespoolstate.js",
+            "sha256": "9e192c225b197269f2d1e7e6f3283ae2f74512d079f03ae12f59adca611fc69a"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/091_rodpullstate.js",
+            "sha256": "092780820147a1f819c1c350f130b52ae7000bc071a7147521537e408638e652"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/092_rodstrokestate.js",
+            "sha256": "bf54de1bcb822696237f94c50916a6c05d728784eca133b1e02a09cc502a31a1"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/093_rodstroketracker.js",
+            "sha256": "89b75153c54ddcf2d7524f657def542c54d07e59de0be80d24d4ce1f87d00cd4"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/094_rodstrokedistancetracker.js",
+            "sha256": "401876d27d46be7d6bde1f1f9968ef1e7d76bea8ae801fab8933af744d02a15e"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/112_reelretrievespeedcalculator.js",
+            "sha256": "cb9b08da01806aa1ed559b86c373d88fb6325ffab81361126c376f77386b4ac7"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/113_reelautorecoverycalculator.js",
+            "sha256": "d0fee6b406b2f98943440dc3aa3e911342ae6557ee9108820a8017162a6eb9ca"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/114_reelholdloadpolicy.js",
+            "sha256": "28b000dae36215428d62eb946d5e181f6d2521f793bfd653e855f5cae0641bd1"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/117_looselinecalculator.js",
+            "sha256": "260df1817215256f34a5c8604ac2da67f3ad01f2d183601216c89875b3cf1631"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/117_recoverablelinecalculator.js",
+            "sha256": "615e8d5c7e1e09b158642290d9a66ea1108a183b0edc2943a4cfceddd629503b"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/118_rodstrokecapacityresolver.js",
+            "sha256": "0497fb28a189f33126681f4b00334afd6c0e5018904f148ea0dec2e0c50f8cc1"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/122_fishretrieveresult.js",
+            "sha256": "6ccda8cbd8dfcfd2bd7c3896672be8f8bb46305666727cf18a562b975ff845a5"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/123_holdoppositionresolver.js",
+            "sha256": "9d92ea7a42772e5f20a794147c47547d91f7dcc0cef4f412d5a32e218a55fe67"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/126_rodcontroltensionmoderesolver.js",
+            "sha256": "cea2964616cdf6bc2995148d0260cb68d84b9edd097c4014b15ce5fd5e9ff9c5"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/128_dragforcecalculator.js",
+            "sha256": "f0dd2e753205b590022c03b3b19fce243120d0aa38a081f79b3700dfa9e1487d"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/129_linetensioncalculator.js",
+            "sha256": "15a7818493cd292bc68edf28218718c5ab960cd61db0a583401e3fcb1746d411"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/130_lineconstraintstateresolver.js",
+            "sha256": "8796bcbaa445dd5ac05a758b5bdd00f7c32cee9493b26c120ffb055140f38dfc"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/131_lineconstrainedfishmotionresolver.js",
+            "sha256": "deaf6dd9647e2777935475330ac178069ea1508ab7e9f578c34191eb37520aa0"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/132_lineradialmovementsplitter.js",
+            "sha256": "1692d1bd9409d60f68773288fdf6119957a1c2667db43f1d51095d6e22f9ed26"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/133_rodcontrolmovementprojector.js",
+            "sha256": "99e04f0a8fd51cf254ffb2b63d26f78dd51b028d00371fe20aac0eb25eca132b"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/134_polefightsectorgeometry.js",
+            "sha256": "75420e557172f1719ca885c0463b43441cc47965b6c8588497cc00ceccd8fa61"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/139_simplefightforcecalculator.js",
+            "sha256": "0fad5ebee04e430731bf53d7ef081b7b6650a952313c5c8450521f1eba4cab79"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/140_landinglifttensioncalculator.js",
+            "sha256": "bb2b7df44ea2d8ca32ba51236000ddc042b1cded9953266ec36ea0fdb3aee170"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/148_unlimitedassemblycapacitypolicy.js",
+            "sha256": "8fa25164ea51b4f20e86aa21e954df28b0bad15017542a4f4aaf3c8ab311e4f5"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/157_rodcapabilityresolver.js",
+            "sha256": "462de6f1999ff5b789409dbe00273f9cce166f835c0a0843456167fe8833b988"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/352_assetmanifest.js",
+            "sha256": "c607661064a404d748893c6b76ce54747e3bcf0e30a4e40875663c59001e6ece"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/353_assetloadresult.js",
+            "sha256": "663f88f08f1dac40bd03d635b5a1b3105c460bfb5903dcdceadc92add7dcf66f"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/358_renderpass.js",
+            "sha256": "4d519d81bebdc82e2efc3b4a7fa2c9239597bbcfaa04c13daeb80cd9e0f144bd"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/360_rendermath.js",
+            "sha256": "a962bc192bdb40de397df3dd576ff1fb30965f8374ad4b2962db17e509837de3"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/361_rendercomponent.js",
+            "sha256": "d2636a7d6868af2195a848d4b0b72be6cc0c3dd5bb98d40192ed47b58ddb79d2"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/362_compositerenderer.js",
+            "sha256": "f04ebc0e624f926e7172fdbdb2562c3355fa1f58d56f30bf78ff97c1edf8be88"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/391_eventbus.js",
+            "sha256": "df1beb5019a18ebf9f666468d02e57689994af430a80904ae44447b7b75b2c77"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/392_eventlifecycle.js",
+            "sha256": "f54be747be93bca4e6d9047d65b3f08908f70688a400700d343851e68394c68f"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/395_dependencycontractvalidator.js",
+            "sha256": "d3f54e03c1c3a39474c9642bc364820187b47da05066460911ffe19617f45edd"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/compat_runtime.iife.js",
+            "sha256": "b32b8fb3dd3a9a2cb83f2c2054719afd8f11c3cf6597c77d8959d14f5b77152e"
+          }
+        ],
+        "fingerprint": "a9e380c54e5cd4e9135b53507eca436801bdd2004369e689fb16b697dc52db14"
+      }
+    },
+    "targetsAbsentBeforeCutover": [
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "rule": "restore-only-batch-011-delta-and-keep-batches-001-through-010"
+  },
+  "acceptance": {
+    "preBuild": [
+      "audit-and-plan-fingerprints-current",
+      "completed-prefix-001-through-010",
+      "active-batch-011-only",
+      "five-targets-five-activations-10-consumer-bridges",
+      "zero-new-prerequisites"
+    ],
+    "postBuild": [
+      "actual-project-module-set-equals-plan",
+      "one-module-evaluation-per-source",
+      "exact-class-and-state-identity",
+      "globals-absent-before-and-exact-after-activation",
+      "zero-domain-transport-reads",
+      "previous-valid-output-preserved-on-failure"
+    ],
+    "suites": [
+      "focused-stage-3.11-behavior-and-identity",
+      "check:architecture",
+      "check:quick",
+      "check:full",
+      "fresh-npm-ci-architecture-quick-full",
+      "browser-smoke"
+    ],
+    "releaseCriteria": [
+      "zero-gameplay-semantic-delta",
+      "zero-new-architecture-guard-failures",
+      "manifest-registry-runtime-contract-and-state-reconciled",
+      "batch-011-completed-and-active-batch-cleared"
+    ]
+  },
+  "verdict": "eligible-for-focused-test-matrix"
+}

@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.48 - Items Progression and Rarity Domain
+
+### Changed
+
+- Completed atomic Stage 3 batch 011: five Items progression and rarity classes are named game-domain ESM modules.
+- Extended the single cumulative graph from 37 to 42 project modules and from 38 to 43 activation contracts, with 74 exact bridge relationships and no isolated IIFE.
+- Preserved five logical activation positions (45, 46, 48, 73, 84), ten classic consumers, descriptor identity, registry lifetime and metric behavior.
+- Advanced the completed ordered prefix to batches 001–011 (33 of 69 frozen Domain modules); the next task is batch 012 preflight.
+
 ## v0.24.47 - Inventory Assembly Capacity Domain
 
 ### Changed

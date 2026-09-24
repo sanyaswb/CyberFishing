@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-011-browser-confirmation",
+  "batchId": "stage-3.candidate-011-items-11818ee5",
+  "releaseVersion": "0.24.47",
+  "status": "passed",
+  "performedBy": "user",
+  "recordedAt": "2026-09-24T22:40:57.722Z",
+  "evidenceType": "user-confirmation-in-conversation",
+  "browserSummary": {
+    "userStatement": "PASS, 0 errors, 0 warnings",
+    "context": "User-reported PASS for the Stage 3.11.8 Items checklist.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": false
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "0 errors, 0 warnings",
+    "independentlyInstrumented": false
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_011_acceptance_pass.json",
+    "sha256": "bb0fbcc2692873ba112485d3d6cb641f1ac343fa0e2f55deb7c8ed7a18b810a6"
+  },
+  "historicalSummaryPreserved": true
+}

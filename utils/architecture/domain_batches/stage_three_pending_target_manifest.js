@@ -29,7 +29,7 @@ class PendingTargetManifestTransition {
         targetBoundary: target.targetBoundary, targetPath: target.targetPath, migrationWave: 1 };
       entry.analysis.blockers = { status: "verified", items: [] };
       return entry;
-    }).sort((a, b) => a.currentPath.localeCompare(b.currentPath));
+    }).sort((a, b) => a.currentPath < b.currentPath ? -1 : a.currentPath > b.currentPath ? 1 : 0);
   }
 
   add(bytes) {

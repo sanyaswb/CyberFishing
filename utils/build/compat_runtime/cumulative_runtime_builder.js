@@ -330,7 +330,11 @@ class CumulativeRuntimeBuildApplication {
       const activationOutputs = this.#writeActivationShims(stagingPath, contract);
       fs.rmSync(inputPath, { recursive: true, force: true });
       fs.rmSync(vitePath, { recursive: true, force: true });
-      this.outputManager.publish(stagingPath);
+      if (typeof this.outputManager.publishWithRetry === "function") {
+        await this.outputManager.publishWithRetry(stagingPath);
+      } else {
+        this.outputManager.publish(stagingPath);
+      }
       const runtimeRelative = `${contract.output.directory}${contract.output.runtimeFile}`;
       return Object.freeze({
         status: "built",

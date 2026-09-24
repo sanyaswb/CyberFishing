@@ -1,0 +1,731 @@
+{
+  "schemaVersion": 2,
+  "kind": "cyber-fishing-stage-3-prebuild-contract",
+  "status": "prebuild-open",
+  "batchId": "stage-3.candidate-011-items-11818ee5",
+  "sourceReleaseVersion": "0.24.47",
+  "targetReleaseVersion": "0.24.48",
+  "evidence": {
+    "audit": {
+      "path": "architecture/migration/stage_3_batch_011_audit.json",
+      "sha256": "3fabb47e1b7bb5a4c4ba9ce8cac2b755e14c7836c6cf3cfe11ba269365c647e5"
+    },
+    "executionPlan": {
+      "path": "architecture/migration/stage_3_batch_011_execution_plan.json",
+      "sha256": "91f2144b2be8ef220768d9d93113acf1a893c2207042bf679948abd98805a80e"
+    },
+    "testMatrix": {
+      "path": "architecture/migration/stage_3_batch_011_test_matrix.json",
+      "sha256": "fb77cf3b041a89944673d706a86be17921c86fdd60cfb018f165a53de4f41cef"
+    },
+    "executionStateBefore": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "3786c5a4d5ca4b80e46e7884f05f47650d85dacb9572f4234d9a29fdec91d0bc"
+    },
+    "manifestBefore": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "4e5a8345cb5fcc3803089b35aa76a989237301ae5f5e673dc7876898f07346ae"
+    },
+    "runtimeContractBefore": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "08888ddb005c3ef78f5a1c9ddb5b7bf4dad2d9c4149969fa6ebce95018c4848c"
+    },
+    "bridgeRegistryBefore": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "8275fdb7af3a852775718e1dc271622354639d64c0d67d600833e48a5da3613b"
+    }
+  },
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034",
+      "stage-3.candidate-010-inventory-e3dffbe7"
+    ],
+    "activeBatchId": "stage-3.candidate-011-items-11818ee5",
+    "activeBatchPhase": "prebuild",
+    "compatibilityRuntimeActivated": true
+  },
+  "preliminaryMetadata": {
+    "targets": [
+      {
+        "currentPath": "src/core/items/progression/item_metric_strategy.js",
+        "targetPath": "src/game/domain/items/progression/item_metric_strategy.js",
+        "targetBoundary": "game-domain",
+        "roles": [
+          "domain-behavior",
+          "domain-contract"
+        ],
+        "migrationStatus": "planned",
+        "observationStatus": "pending",
+        "sourceSha256": "7fe0864d62ea0d642dfc3f392cbf74e5a13389a72167ddab1586cfdc9db49ebb"
+      },
+      {
+        "currentPath": "src/core/items/progression/item_progression_descriptor.js",
+        "targetPath": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "targetBoundary": "game-domain",
+        "roles": [
+          "value-object"
+        ],
+        "migrationStatus": "planned",
+        "observationStatus": "pending",
+        "sourceSha256": "337c6577f08bf3fc3016627f05f69709926dd41a2398eb67403e3e2454a757a6"
+      },
+      {
+        "currentPath": "src/core/items/rarity/item_rarity_descriptor.js",
+        "targetPath": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+        "targetBoundary": "game-domain",
+        "roles": [
+          "value-object"
+        ],
+        "migrationStatus": "planned",
+        "observationStatus": "pending",
+        "sourceSha256": "022d8911182b7789d4c7377bceb5461133310516848b8cedf1601372198da112"
+      },
+      {
+        "currentPath": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "targetPath": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+        "targetBoundary": "game-domain",
+        "roles": [
+          "domain-behavior"
+        ],
+        "migrationStatus": "planned",
+        "observationStatus": "pending",
+        "sourceSha256": "8ace21be1c9a791acf61e3a2da04c3153f5fb6ae4ca887a0ab1a251cb8e944cb"
+      },
+      {
+        "currentPath": "src/core/items/rarity/item_rarity_strategy.js",
+        "targetPath": "src/game/domain/items/rarity/item_rarity_strategy.js",
+        "targetBoundary": "game-domain",
+        "roles": [
+          "domain-contract"
+        ],
+        "migrationStatus": "planned",
+        "observationStatus": "pending",
+        "sourceSha256": "53a5a610f215adaff816d90a494572eb619b0d7be30012adb5bcc74b32b8c0d3"
+      }
+    ],
+    "plannedActivationPositions": [
+      {
+        "id": "activation-249fe0228439",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/rarity/item_rarity_descriptor.js",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+        "exportName": "ItemRarityDescriptor",
+        "legacySymbol": "ItemRarityDescriptor",
+        "legacyScriptIndex": 45,
+        "shimFile": "activations/045_itemraritydescriptor.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      {
+        "id": "activation-597e6786200f",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/progression/item_metric_strategy.js",
+        "targetModule": "src/game/domain/items/progression/item_metric_strategy.js",
+        "exportName": "ItemMetricStrategy",
+        "legacySymbol": "ItemMetricStrategy",
+        "legacyScriptIndex": 73,
+        "shimFile": "activations/073_itemmetricstrategy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      {
+        "id": "activation-7b2f08a8cb34",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+        "exportName": "ItemRarityStrategyRegistry",
+        "legacySymbol": "ItemRarityStrategyRegistry",
+        "legacyScriptIndex": 48,
+        "shimFile": "activations/048_itemraritystrategyregistry.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      {
+        "id": "activation-b63d6fa4a955",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/progression/item_progression_descriptor.js",
+        "targetModule": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "exportName": "ItemProgressionDescriptor",
+        "legacySymbol": "ItemProgressionDescriptor",
+        "legacyScriptIndex": 84,
+        "shimFile": "activations/084_itemprogressiondescriptor.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      {
+        "id": "activation-edee20d9f6f3",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/rarity/item_rarity_strategy.js",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_strategy.js",
+        "exportName": "ItemRarityStrategy",
+        "legacySymbol": "ItemRarityStrategy",
+        "legacyScriptIndex": 46,
+        "shimFile": "activations/046_itemraritystrategy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      }
+    ],
+    "plannedBridges": [
+      {
+        "id": "bridge-51b5e7e42e77",
+        "bridge": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/composite_metric_strategy.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ItemMetricStrategy",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-56ef92067f39",
+        "bridge": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/numeric_stat_metric_strategy.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ItemMetricStrategy",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-8133cc83f778",
+        "bridge": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/target_range_metric_strategy.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ItemMetricStrategy",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-9e3953224164",
+        "bridge": "src/core/items/rarity/item_rarity_descriptor.js",
+        "source": "src/core/items/rarity/authored_item_rarity_strategy.js",
+        "target": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ItemRarityDescriptor",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-a9380f14d75c",
+        "bridge": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "source": "src/app/bootstrap.js",
+        "target": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "ItemRarityStrategyRegistry",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-a970e658356c",
+        "bridge": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "source": "src/core/items/rarity/item_rarity_resolver.js",
+        "target": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "ItemRarityStrategyRegistry",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-cd92209bac28",
+        "bridge": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/item_rating_resolver.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ItemMetricStrategy",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-eea627bb5a05",
+        "bridge": "src/core/items/progression/item_progression_descriptor.js",
+        "source": "src/core/items/progression/item_progression_resolver.js",
+        "target": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ItemProgressionDescriptor",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-eec98f962cb7",
+        "bridge": "src/core/items/rarity/item_rarity_strategy.js",
+        "source": "src/core/items/rarity/authored_item_rarity_strategy.js",
+        "target": "src/game/domain/items/rarity/item_rarity_strategy.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ItemRarityStrategy",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-fa5b133d275d",
+        "bridge": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/derived_stat_metric_strategy.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "ItemMetricStrategy",
+            "mechanism": "global-this-property"
+          }
+        ]
+      }
+    ]
+  },
+  "planningStorage": "prebuild-contract-only",
+  "activeTopology": {
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js"
+    ],
+    "activationIds": [
+      "activation-00287f399f05",
+      "activation-18da11a56651",
+      "activation-2534a1bdbe18",
+      "activation-3dcbed1b3310",
+      "activation-3e0a233bf70c",
+      "activation-3fee104fb111",
+      "activation-4d4619b15e3c",
+      "activation-4e28fdf337a3",
+      "activation-57add99af90d",
+      "activation-57b99d3aaf82",
+      "activation-59bd96059da6",
+      "activation-5c6e63e8ffb9",
+      "activation-6ba241908a4c",
+      "activation-75b968069153",
+      "activation-765258a53eef",
+      "activation-7678742c83cf",
+      "activation-775fb46bb6ce",
+      "activation-7f67db779ead",
+      "activation-85b75b58221b",
+      "activation-868e1186ae29",
+      "activation-86e221fafb48",
+      "activation-886fb34615aa",
+      "activation-8f8220d288e5",
+      "activation-9857928fc9d0",
+      "activation-9a198b228060",
+      "activation-9c5651e4f765",
+      "activation-a63204f0676b",
+      "activation-a8e624a68a8e",
+      "activation-be4932b7b0c5",
+      "activation-bf033497a3e1",
+      "activation-ccddea60d16c",
+      "activation-ce7da074f74a",
+      "activation-da8d3f6d370f",
+      "activation-dcb3cecb345c",
+      "activation-ea32013c6230",
+      "activation-f5eefdd6e6e2",
+      "activation-f70148ad6a58",
+      "activation-ffea5244c4bf"
+    ],
+    "bridgeIds": [
+      "bridge-0c0f9cf80110",
+      "bridge-105a8ef0c687",
+      "bridge-19607c8ce243",
+      "bridge-1975df3eebf9",
+      "bridge-19f525f74d35",
+      "bridge-1af90d9ee5a6",
+      "bridge-1cdd6e08f07e",
+      "bridge-218534519854",
+      "bridge-225041916b22",
+      "bridge-246319f5e6e2",
+      "bridge-262c43042ef7",
+      "bridge-292102f00c09",
+      "bridge-299e2a323f55",
+      "bridge-340e660ed69c",
+      "bridge-397a03218e06",
+      "bridge-3d9abab097f9",
+      "bridge-451e340bf590",
+      "bridge-4c97028596c9",
+      "bridge-595a005d7c64",
+      "bridge-5d3728373ab6",
+      "bridge-60496caa95fd",
+      "bridge-63afd58b4545",
+      "bridge-6aabd924bf06",
+      "bridge-6b182910c818",
+      "bridge-6c073ecab1b3",
+      "bridge-6c8d26fe475b",
+      "bridge-6cb8d6b6b5dd",
+      "bridge-70c0e5efc338",
+      "bridge-7376f5e6b272",
+      "bridge-7b4507b87811",
+      "bridge-7bdae928832e",
+      "bridge-8654ddb73e7e",
+      "bridge-87740b3c6660",
+      "bridge-8b99e1c44103",
+      "bridge-8d36f9222504",
+      "bridge-93b3ed37a13e",
+      "bridge-9538204fd8a3",
+      "bridge-9987d14a6b96",
+      "bridge-9a90ab115b6b",
+      "bridge-a5a1cd90cdd5",
+      "bridge-a976ae6fdfc5",
+      "bridge-ae3aff06a790",
+      "bridge-bc3ec26d121f",
+      "bridge-bd8716a31cf4",
+      "bridge-c518ccc47a20",
+      "bridge-c5b20a842e06",
+      "bridge-c6c1e5eb790e",
+      "bridge-c7d38bfb778f",
+      "bridge-c88c4a3e2737",
+      "bridge-d3fd9d86467b",
+      "bridge-d88e995bce27",
+      "bridge-dcceaaf04a57",
+      "bridge-dd65f33afb4a",
+      "bridge-ddf61a64424b",
+      "bridge-e1840139830f",
+      "bridge-f20190e70bbd",
+      "bridge-f31aca4ae5d6",
+      "bridge-f6bcda55f86a",
+      "bridge-f6d56e05e037",
+      "bridge-f719db073789",
+      "bridge-f880b0a474c6",
+      "bridge-fa6a4f31f3a9",
+      "bridge-fc583dce9ac7",
+      "bridge-fd866aee9c88"
+    ],
+    "counts": {
+      "modules": 37,
+      "activations": 38,
+      "bridges": 64
+    },
+    "scriptTopology": {
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0
+    }
+  },
+  "plannedDelta": {
+    "projectModules": [
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "activationIds": [
+      "activation-249fe0228439",
+      "activation-597e6786200f",
+      "activation-7b2f08a8cb34",
+      "activation-b63d6fa4a955",
+      "activation-edee20d9f6f3"
+    ],
+    "bridgeIds": [
+      "bridge-51b5e7e42e77",
+      "bridge-56ef92067f39",
+      "bridge-8133cc83f778",
+      "bridge-9e3953224164",
+      "bridge-a9380f14d75c",
+      "bridge-a970e658356c",
+      "bridge-cd92209bac28",
+      "bridge-eea627bb5a05",
+      "bridge-eec98f962cb7",
+      "bridge-fa5b133d275d"
+    ],
+    "counts": {
+      "modules": 5,
+      "activations": 5,
+      "bridges": 10
+    }
+  },
+  "plannedTopology": {
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "activationIds": [
+      "activation-00287f399f05",
+      "activation-18da11a56651",
+      "activation-249fe0228439",
+      "activation-2534a1bdbe18",
+      "activation-3dcbed1b3310",
+      "activation-3e0a233bf70c",
+      "activation-3fee104fb111",
+      "activation-4d4619b15e3c",
+      "activation-4e28fdf337a3",
+      "activation-57add99af90d",
+      "activation-57b99d3aaf82",
+      "activation-597e6786200f",
+      "activation-59bd96059da6",
+      "activation-5c6e63e8ffb9",
+      "activation-6ba241908a4c",
+      "activation-75b968069153",
+      "activation-765258a53eef",
+      "activation-7678742c83cf",
+      "activation-775fb46bb6ce",
+      "activation-7b2f08a8cb34",
+      "activation-7f67db779ead",
+      "activation-85b75b58221b",
+      "activation-868e1186ae29",
+      "activation-86e221fafb48",
+      "activation-886fb34615aa",
+      "activation-8f8220d288e5",
+      "activation-9857928fc9d0",
+      "activation-9a198b228060",
+      "activation-9c5651e4f765",
+      "activation-a63204f0676b",
+      "activation-a8e624a68a8e",
+      "activation-b63d6fa4a955",
+      "activation-be4932b7b0c5",
+      "activation-bf033497a3e1",
+      "activation-ccddea60d16c",
+      "activation-ce7da074f74a",
+      "activation-da8d3f6d370f",
+      "activation-dcb3cecb345c",
+      "activation-ea32013c6230",
+      "activation-edee20d9f6f3",
+      "activation-f5eefdd6e6e2",
+      "activation-f70148ad6a58",
+      "activation-ffea5244c4bf"
+    ],
+    "bridgeIds": [
+      "bridge-0c0f9cf80110",
+      "bridge-105a8ef0c687",
+      "bridge-19607c8ce243",
+      "bridge-1975df3eebf9",
+      "bridge-19f525f74d35",
+      "bridge-1af90d9ee5a6",
+      "bridge-1cdd6e08f07e",
+      "bridge-218534519854",
+      "bridge-225041916b22",
+      "bridge-246319f5e6e2",
+      "bridge-262c43042ef7",
+      "bridge-292102f00c09",
+      "bridge-299e2a323f55",
+      "bridge-340e660ed69c",
+      "bridge-397a03218e06",
+      "bridge-3d9abab097f9",
+      "bridge-451e340bf590",
+      "bridge-4c97028596c9",
+      "bridge-51b5e7e42e77",
+      "bridge-56ef92067f39",
+      "bridge-595a005d7c64",
+      "bridge-5d3728373ab6",
+      "bridge-60496caa95fd",
+      "bridge-63afd58b4545",
+      "bridge-6aabd924bf06",
+      "bridge-6b182910c818",
+      "bridge-6c073ecab1b3",
+      "bridge-6c8d26fe475b",
+      "bridge-6cb8d6b6b5dd",
+      "bridge-70c0e5efc338",
+      "bridge-7376f5e6b272",
+      "bridge-7b4507b87811",
+      "bridge-7bdae928832e",
+      "bridge-8133cc83f778",
+      "bridge-8654ddb73e7e",
+      "bridge-87740b3c6660",
+      "bridge-8b99e1c44103",
+      "bridge-8d36f9222504",
+      "bridge-93b3ed37a13e",
+      "bridge-9538204fd8a3",
+      "bridge-9987d14a6b96",
+      "bridge-9a90ab115b6b",
+      "bridge-9e3953224164",
+      "bridge-a5a1cd90cdd5",
+      "bridge-a9380f14d75c",
+      "bridge-a970e658356c",
+      "bridge-a976ae6fdfc5",
+      "bridge-ae3aff06a790",
+      "bridge-bc3ec26d121f",
+      "bridge-bd8716a31cf4",
+      "bridge-c518ccc47a20",
+      "bridge-c5b20a842e06",
+      "bridge-c6c1e5eb790e",
+      "bridge-c7d38bfb778f",
+      "bridge-c88c4a3e2737",
+      "bridge-cd92209bac28",
+      "bridge-d3fd9d86467b",
+      "bridge-d88e995bce27",
+      "bridge-dcceaaf04a57",
+      "bridge-dd65f33afb4a",
+      "bridge-ddf61a64424b",
+      "bridge-e1840139830f",
+      "bridge-eea627bb5a05",
+      "bridge-eec98f962cb7",
+      "bridge-f20190e70bbd",
+      "bridge-f31aca4ae5d6",
+      "bridge-f6bcda55f86a",
+      "bridge-f6d56e05e037",
+      "bridge-f719db073789",
+      "bridge-f880b0a474c6",
+      "bridge-fa5b133d275d",
+      "bridge-fa6a4f31f3a9",
+      "bridge-fc583dce9ac7",
+      "bridge-fd866aee9c88"
+    ],
+    "counts": {
+      "modules": 42,
+      "activations": 43,
+      "bridges": 74
+    },
+    "targetSelection": "completed-batches-plus-active-batch-plus-promoted-stage-2-closure"
+  },
+  "locks": {
+    "sourceFilesCreated": false,
+    "sourceProvidersReplaced": false,
+    "indexChanged": false,
+    "runtimeRebuilt": false,
+    "observationsFinal": false,
+    "runtimeCutoverAllowed": false,
+    "unlockCondition": "stage-3.11.4-target-source-and-build-validation"
+  },
+  "verdict": "eligible-for-target-source-and-build-validation",
+  "stateTransition": {
+    "path": "architecture/migration/stage_3_execution_state.json",
+    "beforeSha256": "3786c5a4d5ca4b80e46e7884f05f47650d85dacb9572f4234d9a29fdec91d0bc",
+    "afterSha256": "7e74b112d199ba77c6e245da0461cb94609c635f479c15df5bbcc858a96aeff2",
+    "beforeBase64": "ewogICJzY2hlbWFWZXJzaW9uIjogMSwKICAia2luZCI6ICJjeWJlci1maXNoaW5nLXN0YWdlLTMtZXhlY3V0aW9uLXN0YXRlIiwKICAicmVsZWFzZVZlcnNpb24iOiAiMC4yNC40NyIsCiAgImFwcHJvdmVkUGxhblNoYTI1NiI6ICJiY2Q5YTJjMjQ2ZWJmZjczZTgzNmQyNzYxZGRjNTJhZDkwZjM0ZTlmNTIzZGZhOTVkOWJhYzc2ZjBjMzEzMWJiIiwKICAic3RhdHVzIjogIm1pZ3JhdGlvbi1hY3RpdmUiLAogICJjb21wbGV0ZWRCYXRjaElkcyI6IFsKICAgICJzdGFnZS0zLmNhbmRpZGF0ZS0wMDEtaW52ZW50b3J5LTg1ZjQ0YjJlIiwKICAgICJzdGFnZS0zLmNhbmRpZGF0ZS0wMDItZmlzaGluZy05NDRkMDc5MCIsCiAgICAic3RhZ2UtMy5jYW5kaWRhdGUtMDAzLWZpc2hpbmctOTcwMGFkNGYiLAogICAgInN0YWdlLTMuY2FuZGlkYXRlLTAwNC1lcXVpcG1lbnQtNGYyNTcwZGMiLAogICAgInN0YWdlLTMuY2FuZGlkYXRlLTAwNS1maXNoaW5nLTQ1ZDBjN2NlIiwKICAgICJzdGFnZS0zLmNhbmRpZGF0ZS0wMDYtZmlzaGluZy1lNDhlNzBkOCIsCiAgICAic3RhZ2UtMy5jYW5kaWRhdGUtMDA3LWZpc2hpbmctYmI4YjM5MzkiLAogICAgInN0YWdlLTMuY2FuZGlkYXRlLTAwOC1maXNoaW5nLWY4NTljY2QzIiwKICAgICJzdGFnZS0zLmNhbmRpZGF0ZS0wMDktZmlzaC00NDRlODAzNCIsCiAgICAic3RhZ2UtMy5jYW5kaWRhdGUtMDEwLWludmVudG9yeS1lM2RmZmJlNyIKICBdLAogICJhY3RpdmVCYXRjaElkIjogbnVsbCwKICAiY29tcGF0aWJpbGl0eVJ1bnRpbWVBY3RpdmF0ZWQiOiB0cnVlCn0K",
+    "afterBase64": "ewogICJzY2hlbWFWZXJzaW9uIjogMSwKICAia2luZCI6ICJjeWJlci1maXNoaW5nLXN0YWdlLTMtZXhlY3V0aW9uLXN0YXRlIiwKICAicmVsZWFzZVZlcnNpb24iOiAiMC4yNC40NyIsCiAgImFwcHJvdmVkUGxhblNoYTI1NiI6ICJiY2Q5YTJjMjQ2ZWJmZjczZTgzNmQyNzYxZGRjNTJhZDkwZjM0ZTlmNTIzZGZhOTVkOWJhYzc2ZjBjMzEzMWJiIiwKICAic3RhdHVzIjogIm1pZ3JhdGlvbi1hY3RpdmUiLAogICJjb21wbGV0ZWRCYXRjaElkcyI6IFsKICAgICJzdGFnZS0zLmNhbmRpZGF0ZS0wMDEtaW52ZW50b3J5LTg1ZjQ0YjJlIiwKICAgICJzdGFnZS0zLmNhbmRpZGF0ZS0wMDItZmlzaGluZy05NDRkMDc5MCIsCiAgICAic3RhZ2UtMy5jYW5kaWRhdGUtMDAzLWZpc2hpbmctOTcwMGFkNGYiLAogICAgInN0YWdlLTMuY2FuZGlkYXRlLTAwNC1lcXVpcG1lbnQtNGYyNTcwZGMiLAogICAgInN0YWdlLTMuY2FuZGlkYXRlLTAwNS1maXNoaW5nLTQ1ZDBjN2NlIiwKICAgICJzdGFnZS0zLmNhbmRpZGF0ZS0wMDYtZmlzaGluZy1lNDhlNzBkOCIsCiAgICAic3RhZ2UtMy5jYW5kaWRhdGUtMDA3LWZpc2hpbmctYmI4YjM5MzkiLAogICAgInN0YWdlLTMuY2FuZGlkYXRlLTAwOC1maXNoaW5nLWY4NTljY2QzIiwKICAgICJzdGFnZS0zLmNhbmRpZGF0ZS0wMDktZmlzaC00NDRlODAzNCIsCiAgICAic3RhZ2UtMy5jYW5kaWRhdGUtMDEwLWludmVudG9yeS1lM2RmZmJlNyIKICBdLAogICJhY3RpdmVCYXRjaElkIjogInN0YWdlLTMuY2FuZGlkYXRlLTAxMS1pdGVtcy0xMTgxOGVlNSIsCiAgImNvbXBhdGliaWxpdHlSdW50aW1lQWN0aXZhdGVkIjogdHJ1ZSwKICAiYWN0aXZlQmF0Y2hQaGFzZSI6ICJwcmVidWlsZCIKfQo="
+  },
+  "publication": {
+    "writeSet": [
+      "architecture/migration/stage_3_batch_011_prebuild_contract.json",
+      "architecture/migration/stage_3_execution_state.json"
+    ],
+    "liveTopologyChanged": false,
+    "targetSourcesPublished": false,
+    "rollback": "restore-exact-before-state-and-remove-only-batch-011-prebuild-contract"
+  }
+}

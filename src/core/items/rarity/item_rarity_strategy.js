@@ -1,9 +1,1 @@
-class ItemRarityStrategy {
-  supports(_profile) {
-    return false;
-  }
-
-  resolve(_profile) {
-    throw new Error("ItemRarityStrategy.resolve must be implemented");
-  }
-}
+globalThis.ItemRarityStrategy = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/items/rarity/item_rarity_strategy.js"]["ItemRarityStrategy"];

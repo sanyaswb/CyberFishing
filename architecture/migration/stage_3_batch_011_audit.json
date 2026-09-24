@@ -1,0 +1,1491 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-preflight-audit",
+  "status": "verified",
+  "stage": "Stage 3.11.0",
+  "sourceReleaseVersion": "0.24.47",
+  "batchId": "stage-3.candidate-011-items-11818ee5",
+  "sourceEvidence": {
+    "approvedPlan": {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    "manifest": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "4e5a8345cb5fcc3803089b35aa76a989237301ae5f5e673dc7876898f07346ae"
+    },
+    "domainAudit": {
+      "path": "architecture/migration/stage_3_domain_audit.json",
+      "sha256": "6a96b8ead58fab42c8c596b365776226a77c36978b9ef68b71c3df8ada6fa4cd"
+    },
+    "executionState": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "3786c5a4d5ca4b80e46e7884f05f47650d85dacb9572f4234d9a29fdec91d0bc"
+    },
+    "runtimeContract": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "08888ddb005c3ef78f5a1c9ddb5b7bf4dad2d9c4149969fa6ebce95018c4848c"
+    },
+    "bridgeRegistry": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "8275fdb7af3a852775718e1dc271622354639d64c0d67d600833e48a5da3613b"
+    },
+    "index": {
+      "path": "index.html",
+      "sha256": "b04c42ec271559127ffd40e9076547fa699c2745e5c32d7a3133e90249266bc5"
+    },
+    "runtimeOutput": {
+      "path": "dist/stage-3-compat-runtime",
+      "fingerprint": "a9e380c54e5cd4e9135b53507eca436801bdd2004369e689fb16b697dc52db14"
+    }
+  },
+  "scope": {
+    "targetCount": 5,
+    "modules": [
+      {
+        "currentPath": "src/core/items/progression/item_metric_strategy.js",
+        "targetPath": "src/game/domain/items/progression/item_metric_strategy.js",
+        "sourceSha256": "7fe0864d62ea0d642dfc3f392cbf74e5a13389a72167ddab1586cfdc9db49ebb",
+        "exports": [
+          "ItemMetricStrategy"
+        ],
+        "roles": [
+          "domain-behavior",
+          "domain-contract"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-8f15ec1f06ee",
+          "members": [
+            "src/core/items/progression/item_metric_strategy.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/items/progression/item_metric_strategy.js",
+          "classDeclarations": [
+            "ItemMetricStrategy"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [
+            {
+              "name": "#id",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "id",
+              "kind": "get",
+              "parameterCount": 0,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "available",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 2,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "evaluate",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "finiteNumber",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "normalizeValue",
+              "kind": "method",
+              "parameterCount": 4,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 1,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "readPath",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "unavailable",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 2,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 4,
+            "arrayExpressions": 1,
+            "newExpressions": 2,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#id"
+          ],
+          "publicStateShape": [
+            "id"
+          ],
+          "resultShape": [
+            "available",
+            "reason",
+            "strategyId"
+          ],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/items/progression/item_metric_strategy.js",
+            "authoritativeOwners": [
+              "ItemMetricStrategy#constructor",
+              "ItemMetricStrategy#id"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/items/progression/item_metric_strategy.js",
+            "authoritativeOwners": [
+              "ItemMetricStrategy#constructor",
+              "ItemMetricStrategy#id"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "private-id-owner-subclass-identity-path-and-frozen-result-semantics",
+          "formulaDefaultsClampsRoundingFingerprint": "9411ea67ea98ad011090090f9eee61b992b8de5a7d2e1ab8737e61649bebb562",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-frozen-results-per-evaluation",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/core/items/progression/composite_metric_strategy.js",
+              "marker": "extends ItemMetricStrategy"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 4,
+            "arrayExpressions": 1,
+            "newExpressions": 2,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "ItemMetricStrategy",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/items/progression/item_progression_descriptor.js",
+        "targetPath": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "sourceSha256": "337c6577f08bf3fc3016627f05f69709926dd41a2398eb67403e3e2454a757a6",
+        "exports": [
+          "ItemProgressionDescriptor"
+        ],
+        "roles": [
+          "value-object"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-d385dd20ea0e",
+          "members": [
+            "src/core/items/progression/item_progression_descriptor.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/items/progression/item_progression_descriptor.js",
+          "classDeclarations": [
+            "ItemProgressionDescriptor"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [],
+          "publicStateShape": [],
+          "resultShape": [
+            "available",
+            "capacity",
+            "groupId",
+            "quality",
+            "rating",
+            "ratingTier",
+            "reason"
+          ],
+          "stableResultIdentity": true,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/items/progression/item_progression_descriptor.js",
+            "authoritativeOwners": [
+              "ItemProgressionDescriptor#available",
+              "ItemProgressionDescriptor#groupId",
+              "ItemProgressionDescriptor#reason"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/items/progression/item_progression_descriptor.js",
+            "authoritativeOwners": [
+              "ItemProgressionDescriptor#available",
+              "ItemProgressionDescriptor#groupId",
+              "ItemProgressionDescriptor#reason"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "optional-own-property-shape-and-frozen-descriptor-identity",
+          "formulaDefaultsClampsRoundingFingerprint": "2604ffb85832ebf9c619a01f6ad941cab8274559f27f51617afe0342119f7ff2",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "one-frozen-descriptor-per-resolution",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/core/items/progression/item_progression_resolver.js",
+              "marker": "new ItemProgressionDescriptor({"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "ItemProgressionDescriptor",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/items/rarity/item_rarity_descriptor.js",
+        "targetPath": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+        "sourceSha256": "022d8911182b7789d4c7377bceb5461133310516848b8cedf1601372198da112",
+        "exports": [
+          "ItemRarityDescriptor"
+        ],
+        "roles": [
+          "value-object"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-60abd64b2de0",
+          "members": [
+            "src/core/items/rarity/item_rarity_descriptor.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/items/rarity/item_rarity_descriptor.js",
+          "classDeclarations": [
+            "ItemRarityDescriptor"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [],
+          "publicStateShape": [],
+          "resultShape": [
+            "isUnique",
+            "maxTier",
+            "mode",
+            "normalized",
+            "tier",
+            "uniqueId"
+          ],
+          "stableResultIdentity": true,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/items/rarity/item_rarity_descriptor.js",
+            "authoritativeOwners": [
+              "ItemRarityDescriptor#isUnique",
+              "ItemRarityDescriptor#maxTier",
+              "ItemRarityDescriptor#mode",
+              "ItemRarityDescriptor#normalized",
+              "ItemRarityDescriptor#tier",
+              "ItemRarityDescriptor#uniqueId"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+            "authoritativeOwners": [
+              "ItemRarityDescriptor#isUnique",
+              "ItemRarityDescriptor#maxTier",
+              "ItemRarityDescriptor#mode",
+              "ItemRarityDescriptor#normalized",
+              "ItemRarityDescriptor#tier",
+              "ItemRarityDescriptor#uniqueId"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "frozen-rarity-descriptor-values-and-class-identity",
+          "formulaDefaultsClampsRoundingFingerprint": "e3d2bf41e8d38948da449c69aacd4431dfd0663df751c33f281ba92453747daa",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "one-frozen-descriptor-per-resolution",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/core/items/rarity/authored_item_rarity_strategy.js",
+              "marker": "new ItemRarityDescriptor({"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "ItemRarityDescriptor",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "targetPath": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+        "sourceSha256": "8ace21be1c9a791acf61e3a2da04c3153f5fb6ae4ca887a0ab1a251cb8e944cb",
+        "exports": [
+          "ItemRarityStrategyRegistry"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-0d516c95fff5",
+          "members": [
+            "src/core/items/rarity/item_rarity_strategy_registry.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/items/rarity/item_rarity_strategy_registry.js",
+          "classDeclarations": [
+            "ItemRarityStrategyRegistry"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [
+            {
+              "name": "#strategies",
+              "visibility": "private",
+              "initializerType": "ArrayExpression",
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 1,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "register",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "resolve",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 0,
+            "arrayExpressions": 2,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#strategies"
+          ],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": true,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/items/rarity/item_rarity_strategy_registry.js",
+            "authoritativeOwners": [
+              "ItemRarityStrategyRegistry#register",
+              "ItemRarityStrategyRegistry#strategies"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+            "authoritativeOwners": [
+              "ItemRarityStrategyRegistry#register",
+              "ItemRarityStrategyRegistry#strategies"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "single-private-strategy-array-registration-order-and-resolution-lifetime",
+          "formulaDefaultsClampsRoundingFingerprint": "f994f5eab76f1667b76402ed59b1e448768f1d858a24b87cdd5c6d9ee1e29cc0",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "registration-on-construction-and-linear-resolution",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/app/bootstrap.js",
+              "marker": "new ItemRarityStrategyRegistry(["
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 0,
+            "arrayExpressions": 2,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "ItemRarityStrategyRegistry",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/items/rarity/item_rarity_strategy.js",
+        "targetPath": "src/game/domain/items/rarity/item_rarity_strategy.js",
+        "sourceSha256": "53a5a610f215adaff816d90a494572eb619b0d7be30012adb5bcc74b32b8c0d3",
+        "exports": [
+          "ItemRarityStrategy"
+        ],
+        "roles": [
+          "domain-contract"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-98d57e7d0a88",
+          "members": [
+            "src/core/items/rarity/item_rarity_strategy.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/items/rarity/item_rarity_strategy.js",
+          "classDeclarations": [
+            "ItemRarityStrategy"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "resolve",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "supports",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "stateless",
+          "classification": "stateless",
+          "instanceFields": [],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/items/rarity/item_rarity_strategy.js",
+            "authoritativeOwners": []
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/items/rarity/item_rarity_strategy.js",
+            "authoritativeOwners": []
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "subclass-identity-and-default-abstract-method-behavior",
+          "formulaDefaultsClampsRoundingFingerprint": "24d6b4ef5d8c0b17d1df4eb7aee7d0a2d7ca5b3db24805cd22536744e916f6a5",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "contract-methods-only",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/core/items/rarity/authored_item_rarity_strategy.js",
+              "marker": "extends ItemRarityStrategy"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "ItemRarityStrategy",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      }
+    ]
+  },
+  "runtimeBaseline": {
+    "projectModuleCount": 37,
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js"
+    ],
+    "activationCount": 38,
+    "bridgeCount": 64,
+    "scriptTopology": {
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0
+    }
+  },
+  "closure": {
+    "existingCumulativeModuleCount": 37,
+    "existingCumulativeModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js"
+    ],
+    "newProjectModuleCount": 5,
+    "newProjectModules": [
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "resultingProjectModuleCount": 42,
+    "internalEdges": [],
+    "alreadyCumulativeDependencies": [],
+    "unexpectedDependencies": []
+  },
+  "evaluation": {
+    "legacyScriptOrderControlsEvaluation": false,
+    "ordering": "esm-graph-topology-with-lexicographic-diagnostic-tiebreak",
+    "stronglyConnectedComponents": [
+      {
+        "id": "scc-0d516c95fff5",
+        "members": [
+          "src/core/items/rarity/item_rarity_strategy_registry.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-60abd64b2de0",
+        "members": [
+          "src/core/items/rarity/item_rarity_descriptor.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-8f15ec1f06ee",
+        "members": [
+          "src/core/items/progression/item_metric_strategy.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-98d57e7d0a88",
+        "members": [
+          "src/core/items/rarity/item_rarity_strategy.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-d385dd20ea0e",
+        "members": [
+          "src/core/items/progression/item_progression_descriptor.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      }
+    ],
+    "layers": [
+      [
+        "src/game/domain/items/progression/item_metric_strategy.js",
+        "src/game/domain/items/progression/item_progression_descriptor.js",
+        "src/game/domain/items/rarity/item_rarity_descriptor.js",
+        "src/game/domain/items/rarity/item_rarity_strategy.js",
+        "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+      ]
+    ],
+    "cycles": []
+  },
+  "boundaries": {
+    "forbiddenEdges": [],
+    "directConfigDependencies": [],
+    "browserCapabilities": [],
+    "transportReads": [],
+    "forbiddenSourceReads": [],
+    "dynamicConstructs": []
+  },
+  "state": {
+    "reviewed": [
+      {
+        "module": "src/core/items/progression/item_metric_strategy.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/items/progression/item_progression_descriptor.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/items/rarity/item_rarity_descriptor.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/items/rarity/item_rarity_strategy.js",
+        "frozenStateRole": "stateless",
+        "classification": "stateless",
+        "ownerIdentity": "preserved"
+      }
+    ],
+    "unresolved": []
+  },
+  "behavior": {
+    "resultShapeSensitive": [
+      "src/core/items/progression/item_metric_strategy.js",
+      "src/core/items/progression/item_progression_descriptor.js",
+      "src/core/items/rarity/item_rarity_descriptor.js"
+    ],
+    "mutableIdentitySensitive": [
+      "src/core/items/progression/item_progression_descriptor.js",
+      "src/core/items/rarity/item_rarity_descriptor.js",
+      "src/core/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "formulaDefaultsClampsRoundingFingerprints": [
+      {
+        "module": "src/core/items/progression/item_metric_strategy.js",
+        "sha256": "9411ea67ea98ad011090090f9eee61b992b8de5a7d2e1ab8737e61649bebb562"
+      },
+      {
+        "module": "src/core/items/progression/item_progression_descriptor.js",
+        "sha256": "2604ffb85832ebf9c619a01f6ad941cab8274559f27f51617afe0342119f7ff2"
+      },
+      {
+        "module": "src/core/items/rarity/item_rarity_descriptor.js",
+        "sha256": "e3d2bf41e8d38948da449c69aacd4431dfd0663df751c33f281ba92453747daa"
+      },
+      {
+        "module": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "sha256": "f994f5eab76f1667b76402ed59b1e448768f1d858a24b87cdd5c6d9ee1e29cc0"
+      },
+      {
+        "module": "src/core/items/rarity/item_rarity_strategy.js",
+        "sha256": "24d6b4ef5d8c0b17d1df4eb7aee7d0a2d7ca5b3db24805cd22536744e916f6a5"
+      }
+    ],
+    "unresolved": []
+  },
+  "performance": {
+    "reviewed": [
+      {
+        "module": "src/core/items/progression/item_metric_strategy.js",
+        "classification": "existing-frozen-results-per-evaluation",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/core/items/progression/composite_metric_strategy.js",
+            "marker": "extends ItemMetricStrategy"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 4,
+          "arrayExpressions": 1,
+          "newExpressions": 2,
+          "objectFreezeCalls": 2,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/items/progression/item_progression_descriptor.js",
+        "classification": "one-frozen-descriptor-per-resolution",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/core/items/progression/item_progression_resolver.js",
+            "marker": "new ItemProgressionDescriptor({"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 1,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/items/rarity/item_rarity_descriptor.js",
+        "classification": "one-frozen-descriptor-per-resolution",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/core/items/rarity/authored_item_rarity_strategy.js",
+            "marker": "new ItemRarityDescriptor({"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 0,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "classification": "registration-on-construction-and-linear-resolution",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/app/bootstrap.js",
+            "marker": "new ItemRarityStrategyRegistry(["
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 0,
+          "arrayExpressions": 2,
+          "newExpressions": 2,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/items/rarity/item_rarity_strategy.js",
+        "classification": "contract-methods-only",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/core/items/rarity/authored_item_rarity_strategy.js",
+            "marker": "extends ItemRarityStrategy"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 0,
+          "arrayExpressions": 0,
+          "newExpressions": 1,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "unresolved": []
+  },
+  "effects": {
+    "safe": [
+      "src/core/items/progression/item_metric_strategy.js",
+      "src/core/items/progression/item_progression_descriptor.js",
+      "src/core/items/rarity/item_rarity_descriptor.js",
+      "src/core/items/rarity/item_rarity_strategy_registry.js",
+      "src/core/items/rarity/item_rarity_strategy.js"
+    ],
+    "reviewed": [],
+    "unsafe": []
+  },
+  "compatibility": {
+    "providers": [
+      {
+        "module": "src/core/items/progression/item_metric_strategy.js",
+        "symbol": "ItemMetricStrategy",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/progression/item_progression_descriptor.js",
+        "symbol": "ItemProgressionDescriptor",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/rarity/item_rarity_descriptor.js",
+        "symbol": "ItemRarityDescriptor",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "symbol": "ItemRarityStrategyRegistry",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/rarity/item_rarity_strategy.js",
+        "symbol": "ItemRarityStrategy",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      }
+    ],
+    "consumers": [
+      {
+        "provider": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/composite_metric_strategy.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemMetricStrategy"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/derived_stat_metric_strategy.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemMetricStrategy"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/item_rating_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemMetricStrategy"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/numeric_stat_metric_strategy.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemMetricStrategy"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/target_range_metric_strategy.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemMetricStrategy"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/item_progression_descriptor.js",
+        "source": "src/core/items/progression/item_progression_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemProgressionDescriptor"
+        ]
+      },
+      {
+        "provider": "src/core/items/rarity/item_rarity_descriptor.js",
+        "source": "src/core/items/rarity/authored_item_rarity_strategy.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemRarityDescriptor"
+        ]
+      },
+      {
+        "provider": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "ItemRarityStrategyRegistry"
+        ]
+      },
+      {
+        "provider": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "source": "src/core/items/rarity/item_rarity_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemRarityStrategyRegistry"
+        ]
+      },
+      {
+        "provider": "src/core/items/rarity/item_rarity_strategy.js",
+        "source": "src/core/items/rarity/authored_item_rarity_strategy.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemRarityStrategy"
+        ]
+      }
+    ],
+    "activations": [
+      {
+        "id": "activation-249fe0228439",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/rarity/item_rarity_descriptor.js",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+        "exportName": "ItemRarityDescriptor",
+        "legacySymbol": "ItemRarityDescriptor",
+        "legacyScriptIndex": 45,
+        "shimFile": "activations/045_itemraritydescriptor.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/items/rarity/authored_item_rarity_strategy.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-597e6786200f",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/progression/item_metric_strategy.js",
+        "targetModule": "src/game/domain/items/progression/item_metric_strategy.js",
+        "exportName": "ItemMetricStrategy",
+        "legacySymbol": "ItemMetricStrategy",
+        "legacyScriptIndex": 73,
+        "shimFile": "activations/073_itemmetricstrategy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/items/progression/composite_metric_strategy.js",
+          "src/core/items/progression/derived_stat_metric_strategy.js",
+          "src/core/items/progression/item_rating_resolver.js",
+          "src/core/items/progression/numeric_stat_metric_strategy.js",
+          "src/core/items/progression/target_range_metric_strategy.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-7b2f08a8cb34",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+        "exportName": "ItemRarityStrategyRegistry",
+        "legacySymbol": "ItemRarityStrategyRegistry",
+        "legacyScriptIndex": 48,
+        "shimFile": "activations/048_itemraritystrategyregistry.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/bootstrap.js",
+          "src/core/items/rarity/item_rarity_resolver.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-b63d6fa4a955",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/progression/item_progression_descriptor.js",
+        "targetModule": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "exportName": "ItemProgressionDescriptor",
+        "legacySymbol": "ItemProgressionDescriptor",
+        "legacyScriptIndex": 84,
+        "shimFile": "activations/084_itemprogressiondescriptor.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/items/progression/item_progression_resolver.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-edee20d9f6f3",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/rarity/item_rarity_strategy.js",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_strategy.js",
+        "exportName": "ItemRarityStrategy",
+        "legacySymbol": "ItemRarityStrategy",
+        "legacyScriptIndex": 46,
+        "shimFile": "activations/046_itemraritystrategy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/items/rarity/authored_item_rarity_strategy.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      }
+    ]
+  },
+  "prerequisites": {
+    "frozen": [],
+    "newlyDiscovered": []
+  },
+  "migrationGates": [
+    "five-exact-class-and-method-shapes",
+    "one-class-identity-per-export-and-activation",
+    "single-authoritative-instance-state",
+    "descriptor-own-keys-and-frozen-identity",
+    "registry-registration-order-and-lifetime",
+    "exact-ten-classic-consumers",
+    "five-approved-activation-positions",
+    "zero-config-platform-browser-dev-dependencies",
+    "zero-top-level-effects-and-transport-reads",
+    "zero-added-hot-loop-allocations"
+  ],
+  "issues": [],
+  "verdict": "eligible-for-execution-plan",
+  "liveObservation": {
+    "status": "verified",
+    "sourceCount": 461,
+    "persistencePerformed": false,
+    "consumerRelationships": [
+      {
+        "provider": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/composite_metric_strategy.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemMetricStrategy"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/derived_stat_metric_strategy.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemMetricStrategy"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/item_rating_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemMetricStrategy"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/numeric_stat_metric_strategy.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemMetricStrategy"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/item_metric_strategy.js",
+        "source": "src/core/items/progression/target_range_metric_strategy.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemMetricStrategy"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/item_progression_descriptor.js",
+        "source": "src/core/items/progression/item_progression_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemProgressionDescriptor"
+        ]
+      },
+      {
+        "provider": "src/core/items/rarity/item_rarity_descriptor.js",
+        "source": "src/core/items/rarity/authored_item_rarity_strategy.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemRarityDescriptor"
+        ]
+      },
+      {
+        "provider": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "ItemRarityStrategyRegistry"
+        ]
+      },
+      {
+        "provider": "src/core/items/rarity/item_rarity_strategy_registry.js",
+        "source": "src/core/items/rarity/item_rarity_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemRarityStrategyRegistry"
+        ]
+      },
+      {
+        "provider": "src/core/items/rarity/item_rarity_strategy.js",
+        "source": "src/core/items/rarity/authored_item_rarity_strategy.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemRarityStrategy"
+        ]
+      }
+    ]
+  },
+  "plannedTopology": {
+    "projectModuleCount": 42,
+    "activationCount": 43,
+    "bridgeRecordCount": 74
+  }
+}

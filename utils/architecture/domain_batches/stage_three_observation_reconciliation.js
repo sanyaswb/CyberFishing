@@ -5,6 +5,8 @@ const { immutableRecord } = require("../guards/core/guard_models");
 
 
 const sorted = (items) => [...items].sort((a, b) => JSON.stringify(a) < JSON.stringify(b) ? -1 : JSON.stringify(a) > JSON.stringify(b) ? 1 : 0);
+const uniqueRelationships = items => [...new Map(items.map(item =>
+  [JSON.stringify([item.source, item.target, item.symbol]), item])).values()];
 const edges = (manifest) => manifest.modules.flatMap((item) => item.analysis.dependencies.items
   .map((edge) => ({ source: item.currentPath, ...edge })));
 
@@ -36,7 +38,9 @@ class StageThreeObservationReconciliation {
     const identities = relationships.map((item) => ({ source: item.source, target: item.target, symbol: item.symbol }));
     const approved = bridges.flatMap((item) => item.globalProviders.map((provider) => ({
       source: item.source, target: item.bridge, symbol: provider.symbol })));
-    assert.deepEqual(sorted(identities), sorted(approved), "Exact consumer set must equal frozen registry relationships");
+    // Several references in one source are one bridge relationship.
+    assert.deepEqual(sorted(uniqueRelationships(identities)), sorted(approved),
+      "Exact consumer set must equal frozen registry relationships");
     assert.deepEqual(sorted(audit.compatibility.consumers.flatMap((item) => item.symbols.map((symbol) =>
       ({ source: item.source, target: item.provider, symbol })))), sorted(approved));
     const transitions = activations.map((item) => {

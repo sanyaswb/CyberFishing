@@ -64,10 +64,12 @@ class Batch010ReleaseCheck {
 }
 
 if (require.main === module) {
-  try {
-    const result = new Batch010ReleaseCheck().run();
-    console.log(`Stage 3.10.9 release check PASS: ${result.releaseFiles} reversible metadata files, completed prefix 001–010, 37/38/64.`);
-  } catch (error) { console.error(error.stack); process.exitCode = 1; }
+  new (require("./domain_batches/stage_three_batch_011_historical_workspace").Batch011HistoricalWorkspace)()
+    .run(path.resolve(__dirname, "../.."), root => {
+      const result = new Batch010ReleaseCheck().run(root);
+      console.log(`Stage 3.10.9 release check PASS: ${result.releaseFiles} reversible metadata files, completed prefix 001–010, 37/38/64.`);
+    })
+    .catch(error => { console.error(error.stack); process.exitCode = 1; });
 }
 
 module.exports = { Batch010ReleaseCheck };

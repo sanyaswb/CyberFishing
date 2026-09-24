@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-011-acceptance",
+  "stage": "3.11.8",
+  "batchId": "stage-3.candidate-011-items-11818ee5",
+  "releaseVersion": "0.24.47",
+  "plannedReleaseVersion": "0.24.48",
+  "recordedAt": "2026-09-24T22:40:57.722Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_011_automated_acceptance.json",
+    "sha256": "5ec5b3b32314645cff631c8d505891cafcfb5fa0c274784c52afc8aa95bb730a",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "architecture": {
+      "passedChecks": 140,
+      "failedChecks": 0
+    },
+    "quick": {
+      "passedChecks": 82,
+      "failedChecks": 0
+    },
+    "full": {
+      "passedChecks": 168,
+      "failedChecks": 0
+    },
+    "countSemantics": "Recorded results of this acceptance attempt, not architecture policy constants."
+  },
+  "browserSmoke": {
+    "status": "passed-user-reported",
+    "performedBy": "user",
+    "evidenceType": "manual-test-summary-in-conversation",
+    "userStatement": "PASS, 0 errors, 0 warnings",
+    "context": "Response to the Stage 3.11.8 Items checklist: rarity, progression and rating displays, item selection/equipment and gameplay continuation.",
+    "acceptanceBasis": "User-reported PASS for the batch-specific checklist; individual steps were not independently instrumented.",
+    "perCheckResults": null,
+    "consoleCounts": {
+      "errors": 0,
+      "warnings": 0,
+      "userStatement": "0 errors, 0 warnings"
+    }
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_011_live_runtime_validation.json",
+      "sha256": "316031f6b2655c63e1bc68e6e906609563e93be94a99793cd28a83da0b3870fc"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_011_observation_reconciliation.json",
+      "sha256": "a7ab8f503fd18cbb15b5937d4330dce3be4c62dd1fbfc8fa5e3557f3db729978"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "2a5a91ab71a246195adec4fbd1bdbc98b5e275d03d0b05890c18cc3ec8d7e7e4"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "bfff663c21566e9bb295c6d6aacdd15fd6cc24882da0a1d066d6f7e0cac6094e"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "289ac9e2b1e1eed1bd2aab041332ab03ceaf429627aa0cbdf0c745a94cab9e94"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "7e22411e8bfb108608aa48c106dbada23010619b85f62cb676526be3be575a75"
+    },
+    {
+      "path": "index.html",
+      "sha256": "57f716041f7b76b9be621fec83605369a87aae28034e95af0196f48bbcfdc499"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.candidate-011-items-11818ee5",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.11.9 — Release Closure v0.24.48"
+}
