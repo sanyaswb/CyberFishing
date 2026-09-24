@@ -20,6 +20,10 @@ class Batch009ReleaseHistoricalWorkspace {
 
   async run(root, action, { copyTools = false } = {}) {
     root = path.resolve(root);
+    if (fs.existsSync(path.join(root, "architecture/migration/stage_3_batch_010_prebuild_contract.json"))) {
+      return new (require("./stage_three_batch_010_historical_workspace").Batch010HistoricalWorkspace)()
+        .run(root, temporary => this.run(temporary, action, { copyTools }), { copyTools });
+    }
     if (!this.isCompleted(root)) return action(root);
     const release = new StageThreeBatch009ReleaseTransition(root);
     const transition = release.validate(JSON.parse(release.read(TRANSITION)));
@@ -50,6 +54,10 @@ class Batch009ReleaseHistoricalWorkspace {
 }
 
 async function runPreReleaseScript(root, relative, action) {
+  if (fs.existsSync(path.join(root, "architecture/migration/stage_3_batch_010_prebuild_contract.json"))) {
+    return new (require("./stage_three_batch_010_historical_workspace").Batch010HistoricalWorkspace)()
+      .run(root, temporary => runPreReleaseScript(temporary, relative, action), { copyTools: true });
+  }
   const history = new Batch009ReleaseHistoricalWorkspace();
   if (!history.isCompleted(root)) return action();
   console.log(`Historical pre-release replay in isolated workspace: ${relative}`);

@@ -587,6 +587,8 @@ class StageOneClosureValidator {
         "Line Spool, Stroke Distance and Reel Hold",
       "stage-3.candidate-009-fish-444e8034":
         "Fish Rarity and Anomaly Domain",
+      "stage-3.candidate-010-inventory-e3dffbe7":
+        "Inventory Assembly Capacity Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }
@@ -985,7 +987,9 @@ class StageOneClosureValidator {
           if (!history.active()) {
             const { StageThreeBatch009ReleaseTransition, STATE } = require("../domain_batches/stage_three_batch_009_release_transition");
             const release = new StageThreeBatch009ReleaseTransition(this.projectRoot);
-            const historicalState = JSON.parse(release.before(STATE));
+            const { Batch010History } = require("../domain_batches/stage_three_batch_010_history");
+            const historicalState = JSON.parse(release.before(STATE,
+              new Batch010History(this.projectRoot).before(STATE)));
             if (historicalState.activeBatchId !== artifact.batchId ||
                 historicalState.activeBatchPhase !== "runtime-active") {
               throw new Error("Batch 009 pending cutover lacks an exact runtime-active predecessor");
@@ -1005,6 +1009,22 @@ class StageOneClosureValidator {
               }
             }
           return total; // Publication creates no authoritative observation edges.
+        }
+        if (name === "stage_3_batch_010_runtime_cutover.json" && artifact.manifestTransition?.observations === "pending") {
+          const { Batch010CutoverHistory } = require("../domain_batches/stage_three_batch_010_cutover_history");
+          new Batch010CutoverHistory(this.projectRoot).artifact();
+          const observedPath = path.join(migrationRoot, "stage_3_batch_010_observation_reconciliation.json");
+          if (fs.existsSync(observedPath)) {
+            const observed = JSON.parse(fs.readFileSync(observedPath));
+            const delta = observed.dependencyDelta;
+            if (observed.status !== "verified" || observed.batchId !== artifact.batchId ||
+                delta.confirmedInterFileEdgesBefore !== expectedBefore ||
+                delta.confirmedInterFileEdgesAfter !== expectedBefore ||
+                delta.newlyConfirmedEdges.length !== 0 || delta.removedEdges.length !== 0) {
+              throw new Error("Batch 010 reconciliation changed the confirmed-edge sequence");
+            }
+          }
+          return total;
         }
         if (!artifact.dependencyObservation && artifact.manifestTransition?.observations === "pending") {
           // A cutover is not an observation approval. Its exact preliminary delta

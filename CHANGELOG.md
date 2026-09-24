@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.47 - Inventory Assembly Capacity Domain
+
+### Changed
+
+- Completed atomic Stage 3 batch 010: UnlimitedAssemblyCapacityPolicy is a named game-domain ESM module.
+- Extended the single cumulative graph from 36 to 37 project modules and from 37 to 38 activation contracts, with 64 exact bridge relationships and no isolated IIFE.
+- Preserved logical activation position 148, both classic consumers, class identity and fresh allowed/reason result behavior.
+- Advanced the completed ordered prefix to batches 001–010 (28 of 69 frozen Domain modules); the next task is batch 011 preflight.
+
 ## v0.24.46 - Fish Rarity and Anomaly Domain
 
 ### Changed

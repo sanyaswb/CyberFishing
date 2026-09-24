@@ -1,0 +1,358 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-010-observation-reconciliation",
+  "status": "verified",
+  "batchId": "stage-3.candidate-010-inventory-e3dffbe7",
+  "releaseVersion": "0.24.46",
+  "evidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_010_prebuild_contract.json",
+      "sha256": "e8c166b07fac553c7d4146b370dc3824499ab16212ac517f66477e87ee80ba34"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_010_runtime_cutover.json",
+      "sha256": "36b4708f1e14fe2b21744eac3f3f091b6d82ecc538134340419135e81955baeb"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "08888ddb005c3ef78f5a1c9ddb5b7bf4dad2d9c4149969fa6ebce95018c4848c"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_010_live_runtime_validation.json",
+      "sha256": "56d226d91f0c8c951fbd17cd9c5c764e02dbbdae06a3fdc29b5d5e81a8185a38"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_010_audit.json",
+      "sha256": "a3d85b788cb4b0c90affe2bc0230d4ccc72cc28199845e7b9e3c151f8a88cbf0"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "6a6b5945dfdf9ec31096b4ac3c4d0f9ad50e254c739a0e2d792eac653a087abc"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "8275fdb7af3a852775718e1dc271622354639d64c0d67d600833e48a5da3613b"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "sha256": "77b621365ec53ef0dd0e7bbcb607a8065ef5f61e3efd75716b010f5039744c0a"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "sha256": "890a38291597c17937915407e99b70185192f55588e3d3deea5fe741b1237aba"
+    },
+    {
+      "path": "architecture/module_architecture.json",
+      "sha256": "563423746bc86a99ced7bd0ffeb14e20ef4c62021c2c839c069225ec77cf79d6"
+    },
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    }
+  ],
+  "manifestTransition": {
+    "beforeSha256": "0e74ecb30a8dace0ff2512ee3119d0a509be36609662e7d93be0a8aaf9bae9cd",
+    "afterSha256": "4e5a8345cb5fcc3803089b35aa76a989237301ae5f5e673dc7876898f07346ae",
+    "records": [
+      {
+        "currentPath": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "before": {
+          "currentPath": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+          "currentArea": "core/inventory",
+          "observed": {
+            "legacyLoadOrder": 148,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "8c6c47257a0a41698480c4c802659ead18752206c4b1683793d558288c2612a3"
+      },
+      {
+        "currentPath": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+        "before": {
+          "currentPath": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+          "currentArea": "game/domain/inventory",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "adb47eca58cd76cab6072bc85ca5cb1046af8fd8a58c328a6f6f9b47e1204cb0"
+      }
+    ]
+  },
+  "totals": {
+    "modules": 461,
+    "providers": 856,
+    "consumers": 929,
+    "confirmed": 893,
+    "unresolved": 36,
+    "ambiguous": 0,
+    "edges": 772
+  },
+  "esm": [
+    {
+      "source": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [],
+      "globalMemberReads": [],
+      "issues": []
+    }
+  ],
+  "controlledGlobalTransitions": [
+    {
+      "source": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+      "target": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "symbol": "UnlimitedAssemblyCapacityPolicy",
+      "activationId": "activation-18da11a56651",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    }
+  ],
+  "derivedIncomingConsumers": [
+    {
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "symbol": "UnlimitedAssemblyCapacityPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/core/assemblies/item_assembly_service.js",
+      "symbol": "UnlimitedAssemblyCapacityPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "guardedConsumers": [],
+  "additionalConsumers": [],
+  "dependencyDelta": {
+    "confirmedInterFileEdgesBefore": 772,
+    "confirmedInterFileEdgesAfter": 772,
+    "newlyConfirmedEdges": [],
+    "removedEdges": []
+  },
+  "transportUnresolved": {
+    "count": 1,
+    "classification": "compatibility-transport-outside-src-project-graph",
+    "createsProjectDependencyEdge": false
+  },
+  "removalDependencies": [
+    {
+      "activationId": "activation-18da11a56651",
+      "source": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+      "consumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/core/assemblies/item_assembly_service.js"
+      ],
+      "owner": "stage-3.candidate-010-inventory-e3dffbe7",
+      "removalStage": "stage-5",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    }
+  ],
+  "globalNamespace": {
+    "newGlobals": [],
+    "removedSymbols": [],
+    "mechanismTransitions": [
+      {
+        "source": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "target": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+        "symbol": "UnlimitedAssemblyCapacityPolicy",
+        "activationId": "activation-18da11a56651",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      }
+    ]
+  },
+  "graph": {
+    "modules": 461,
+    "consumers": 929,
+    "confirmed": 893,
+    "selfConfirmed": 3,
+    "unresolved": 36,
+    "ambiguous": 0,
+    "edges": 772,
+    "reverseLinks": 772,
+    "targetsWithConsumers": 415,
+    "unifiedEdges": 809,
+    "reverseConsumers": "derived-only",
+    "verifiedIncoming": [
+      {
+        "sourceProvider": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "targetModule": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+        "legacy": [
+          {
+            "source": "src/application/inventory/inventory_v2_composition_root.js",
+            "symbols": [
+              "UnlimitedAssemblyCapacityPolicy"
+            ]
+          },
+          {
+            "source": "src/core/assemblies/item_assembly_service.js",
+            "symbols": [
+              "UnlimitedAssemblyCapacityPolicy"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+            "target": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-ae3aff06a790",
+                "leg": "bridge-target"
+              },
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-bd8716a31cf4",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "reverseIndexSha256": "3a9194af64471e0561015b80d8b46b3b84aeff1c110fa54a905bcdad43294e8b"
+  },
+  "guards": {
+    "failureCount": 0,
+    "knownDebtCount": 203,
+    "diagnosticsSha256": "b873636997b71ef8d67c46123a4ee58c1993e050be2fad36e9d44d66b6bb0ba6",
+    "baselineGlobals": 855
+  },
+  "metadataTransition": {
+    "field": "architecture.migrationStatus",
+    "from": "migrating",
+    "to": "verified",
+    "targets": [
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js"
+    ]
+  },
+  "topology": {
+    "modules": 37,
+    "activations": 38,
+    "bridges": 64
+  },
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034"
+    ],
+    "activeBatchId": "stage-3.candidate-010-inventory-e3dffbe7",
+    "activeBatchPhase": "runtime-active",
+    "batchCompleted": false
+  },
+  "releaseClosureAuthorized": false,
+  "verdict": "eligible-for-full-acceptance",
+  "nextGate": "stage-3.10.8-full-acceptance-and-browser-smoke"
+}

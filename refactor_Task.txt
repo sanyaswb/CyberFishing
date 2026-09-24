@@ -1,10 +1,10 @@
 # CyberFishing — актуальний план незавершеного модульного рефакторингу
 
 **Stage 1 closure-версія:** `v0.24.31`  
-**Поточна release-версія:** `v0.24.46`
+**Поточна release-версія:** `v0.24.47`
 **Тип робіт:** architecture / infrastructure refactoring  
 **Gameplay changes:** заборонені  
-**Поточний наступний етап:** `Stage 3.10.0 — Batch 010 Preflight and Dependency/State Audit`
+**Поточний наступний етап:** `Stage 3.11.0 — Batch 011 Preflight and Dependency/State Audit`
 
 Цей документ містить тільки роботи, які ще не виконані.
 
@@ -60,21 +60,25 @@ src/game/application/  orchestration, не domain ownership
 
 Domain не залежить від platform, UI, Canvas, DOM, dev або raw configuration. Configuration надходить через constructor injection, factories або composition root. Domain може залежати лише від стабільних engine primitives і власних domain contracts/value objects.
 
-## Stage 3.10–3.21 — Atomic Domain Migration Batches
+## Stage 3.11–3.21 — Atomic Domain Migration Batches
 
-Завершено `9/21` frozen batches і `27/69` frozen domain-модулів. Наступний exact batch:
+Завершено `10/21` frozen batches і `28/69` frozen domain-модулів. Наступний exact batch:
 
 ```text
-stage-3.candidate-010-inventory-e3dffbe7
+stage-3.candidate-011-items-11818ee5
 
-UnlimitedAssemblyCapacityPolicy
+ItemMetricStrategy
+ItemProgressionDescriptor
+ItemRarityDescriptor
+ItemRarityStrategy
+ItemRarityStrategyRegistry
 ```
 
-Stage 3.10.0: read-only preflight, exact dependency/state audit, approved activation/consumers і rollback boundary. Runtime migration не починається до наступних підетапів.
+Stage 3.11.0: read-only preflight, exact dependency/state audit, approved activation/consumers і rollback boundary. Runtime migration не починається до наступних підетапів.
 
-Поточний accepted runtime: 36 project modules, 37 activation contracts, 62 bridge records; одна cumulative topology, жодного active batch. Наступний scope береться з frozen plan і перевіряється на фактичному graph.
+Поточний accepted runtime: 37 project modules, 38 activation contracts, 64 bridge records; одна cumulative topology, жодного active batch. Наступний scope береться з frozen plan і перевіряється на фактичному graph.
 
-Кожен batch `010–021` проходить той самий контрольований lifecycle:
+Кожен batch `011–021` проходить той самий контрольований lifecycle:
 
 ```text
 preflight/audit

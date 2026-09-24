@@ -11,6 +11,10 @@ const {StageThreeBatch009ReleaseTransition,TRANSITION}=require("./stage_three_ba
 // or mixed inputs. Real current-source enforcement remains in the live guards.
 class Batch009HistoricalWorkspace {
   async run(root,action,{copyTools=false}={}) {
+    if(fs.existsSync(path.join(root,"architecture/migration/stage_3_batch_010_prebuild_contract.json"))) {
+      return new (require("./stage_three_batch_010_historical_workspace").Batch010HistoricalWorkspace)()
+        .run(root,temporary=>this.run(temporary,action,{copyTools}),{copyTools});
+    }
     const history=new Batch009CutoverHistory(root);
     const released=new Batch009ReleaseHistoricalWorkspace().isCompleted(root);
     if(!history.active()&&!released) return action(root);
@@ -56,6 +60,10 @@ class Batch009HistoricalWorkspace {
   }
 }
 async function runHistoricalScript(root,relative,action) {
+  if(fs.existsSync(path.join(root,"architecture/migration/stage_3_batch_010_prebuild_contract.json"))) {
+    return new (require("./stage_three_batch_010_historical_workspace").Batch010HistoricalWorkspace)()
+      .run(root,temporary=>runHistoricalScript(temporary,relative,action),{copyTools:true});
+  }
   if(!new Batch009CutoverHistory(root).active()&&
       !new Batch009ReleaseHistoricalWorkspace().isCompleted(root))return action();
   console.log(`Historical batch replay in isolated workspace: ${relative}`);

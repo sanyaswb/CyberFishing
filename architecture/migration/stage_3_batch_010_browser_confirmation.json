@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-010-browser-confirmation",
+  "batchId": "stage-3.candidate-010-inventory-e3dffbe7",
+  "releaseVersion": "0.24.46",
+  "status": "passed",
+  "performedBy": "user",
+  "recordedAt": "2026-09-24T13:53:44.688Z",
+  "evidenceType": "user-confirmation-in-conversation",
+  "browserSummary": {
+    "userStatement": "працює PASS - повний цикл ігрової сессії від початку спорядження до ловлі риби",
+    "context": "Collective PASS for the Stage 3.10.8 checklist and full equipment-to-fish gameplay cycle.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": false
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "0 errors, 0 warnings",
+    "independentlyInstrumented": false
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_010_acceptance_pass.json",
+    "sha256": "56f811019786c6bd5edb4cf3ba97218ec5dd888342366688c7c9143dc9b6156b"
+  },
+  "historicalSummaryPreserved": true
+}

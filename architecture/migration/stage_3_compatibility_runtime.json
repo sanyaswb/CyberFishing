@@ -207,6 +207,18 @@
       "removalStage": "stage-3"
     },
     {
+      "id": "activation-18da11a56651",
+      "owner": "stage-3.candidate-010-inventory-e3dffbe7",
+      "sourceProvider": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+      "targetModule": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "exportName": "UnlimitedAssemblyCapacityPolicy",
+      "legacySymbol": "UnlimitedAssemblyCapacityPolicy",
+      "legacyScriptIndex": 148,
+      "shimFile": "activations/148_unlimitedassemblycapacitypolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-2534a1bdbe18",
       "owner": "stage-3.candidate-005-fishing-45d0c7ce",
       "sourceProvider": "src/core/fishing/recoverable_line_calculator.js",

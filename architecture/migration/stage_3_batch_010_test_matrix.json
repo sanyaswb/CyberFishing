@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.candidate-010-inventory-e3dffbe7",
+  "sourceReleaseVersion": "0.24.46",
+  "targetReleaseVersion": "0.24.47",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_010_execution_plan.json",
+    "sha256": "6f4e208a846461fad6019699567f6306533e2d57b4c775e3a639f3da976cfbf2"
+  },
+  "scope": {
+    "moduleCount": 1,
+    "exportCount": 1,
+    "activationCount": 1,
+    "consumerRelationshipCount": 2
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/UnlimitedAssemblyCapacityPolicy/consumer-context-does-not-change-result",
+      "kind": "behavior-equivalence",
+      "exportName": "UnlimitedAssemblyCapacityPolicy",
+      "currentPath": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+      "targetPath": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "baselineSourceSha256": "6fa6df5ea81d8d77fa52a1f7696baf7fd988ddfdaeb591ac6b6c9a9c24e1c189",
+      "caseName": "consumer-context-does-not-change-result",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/UnlimitedAssemblyCapacityPolicy/exact-result-shape-and-values",
+      "kind": "behavior-equivalence",
+      "exportName": "UnlimitedAssemblyCapacityPolicy",
+      "currentPath": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+      "targetPath": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "baselineSourceSha256": "6fa6df5ea81d8d77fa52a1f7696baf7fd988ddfdaeb591ac6b6c9a9c24e1c189",
+      "caseName": "exact-result-shape-and-values",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/UnlimitedAssemblyCapacityPolicy/fresh-result-per-call",
+      "kind": "behavior-equivalence",
+      "exportName": "UnlimitedAssemblyCapacityPolicy",
+      "currentPath": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+      "targetPath": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "baselineSourceSha256": "6fa6df5ea81d8d77fa52a1f7696baf7fd988ddfdaeb591ac6b6c9a9c24e1c189",
+      "caseName": "fresh-result-per-call",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/UnlimitedAssemblyCapacityPolicy/stateless-across-instances",
+      "kind": "behavior-equivalence",
+      "exportName": "UnlimitedAssemblyCapacityPolicy",
+      "currentPath": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+      "targetPath": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "baselineSourceSha256": "6fa6df5ea81d8d77fa52a1f7696baf7fd988ddfdaeb591ac6b6c9a9c24e1c189",
+      "caseName": "stateless-across-instances",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/representation-only-named-export",
+      "kind": "compatibility-invariant",
+      "caseName": "representation-only-named-export",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/native-esm-namespace-and-class-identity",
+      "kind": "compatibility-invariant",
+      "caseName": "native-esm-namespace-and-class-identity",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-activation-at-position-148",
+      "kind": "compatibility-invariant",
+      "caseName": "one-activation-at-position-148",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/two-exact-classic-consumers",
+      "kind": "compatibility-invariant",
+      "caseName": "two-exact-classic-consumers",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/fresh-result-identity-and-one-object-allocation-per-call",
+      "kind": "compatibility-invariant",
+      "caseName": "fresh-result-identity-and-one-object-allocation-per-call",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/zero-config-browser-dev-platform-and-transport-dependencies",
+      "kind": "compatibility-invariant",
+      "caseName": "zero-config-browser-dev-platform-and-transport-dependencies",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-existing-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-existing-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "UnlimitedAssemblyCapacityPolicy",
+      "caseCount": 4,
+      "cases": [
+        "exact-result-shape-and-values",
+        "fresh-result-per-call",
+        "stateless-across-instances",
+        "consumer-context-does-not-change-result"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 2,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.10.0-live-observation-and-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_010_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "stateClassification": "stateless",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+          "authoritativeOwners": []
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+          "authoritativeOwners": []
+        },
+        "publicStateShape": [],
+        "resultShape": [
+          "allowed",
+          "reason"
+        ],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "5228f5f82b56d2eecebe098f11f5e365745740658f5382e13aae21c6fd644b08",
+        "allocationBaseline": {
+          "objectExpressions": 1,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.10.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

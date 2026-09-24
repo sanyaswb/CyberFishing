@@ -1,0 +1,693 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-atomic-execution-plan",
+  "status": "execution-plan-verified",
+  "batchId": "stage-3.candidate-010-inventory-e3dffbe7",
+  "sourceReleaseVersion": "0.24.46",
+  "targetReleaseVersion": "0.24.47",
+  "runtimeMigrationAllowed": false,
+  "runtimeMigrationUnlockCondition": "stage-3.10.2-focused-test-matrix-verified",
+  "sourceEvidence": {
+    "audit": {
+      "path": "architecture/migration/stage_3_batch_010_audit.json",
+      "sha256": "a3d85b788cb4b0c90affe2bc0230d4ccc72cc28199845e7b9e3c151f8a88cbf0"
+    },
+    "approvedPlan": {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    "executionState": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "964a6c4be73f91b090382638c51e355903bec50ea28c6911241d9cc6d2c30bcc"
+    },
+    "runtimeContract": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "d0d0caed9ded5c6b0ff91233677238d1817868c3aa1241ebb1419aaae1d4a812"
+    },
+    "manifest": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "54ad32ef92b0282a6b128883995f75e46c11d0731ab996f768c56a1f0ade8d2c"
+    },
+    "bridgeRegistry": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "6a22ea5e016cdfbfef59f2fb3594db85f53bae06a539989339e61b8ed53e36f2"
+    },
+    "scmCheckpoint": {
+      "tag": "v0.24.46",
+      "commitSha": "1147f1e73ed8e1c45547f821709a03805c84207c",
+      "tagType": "tag",
+      "rollbackMode": "exact-source-release-tag-plus-batch-delta"
+    }
+  },
+  "scope": {
+    "atomic": true,
+    "partialCutoverAllowed": false,
+    "modules": [
+      {
+        "currentPath": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "targetPath": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+        "exports": [
+          "UnlimitedAssemblyCapacityPolicy"
+        ],
+        "sourceSha256": "6fa6df5ea81d8d77fa52a1f7696baf7fd988ddfdaeb591ac6b6c9a9c24e1c189",
+        "stateClassification": "stateless",
+        "representationChange": "classic-class-declaration-to-named-esm-export-only",
+        "importsAllowed": [],
+        "behaviorChangeAllowed": false,
+        "directTransportReadAllowed": false
+      }
+    ],
+    "targetCount": 1,
+    "exportCount": 1,
+    "activationCount": 1,
+    "consumerRelationshipCount": 2
+  },
+  "lifecycle": {
+    "preState": {
+      "releaseVersion": "0.24.46",
+      "status": "migration-active",
+      "completedBatchIds": [
+        "stage-3.candidate-001-inventory-85f44b2e",
+        "stage-3.candidate-002-fishing-944d0790",
+        "stage-3.candidate-003-fishing-9700ad4f",
+        "stage-3.candidate-004-equipment-4f2570dc",
+        "stage-3.candidate-005-fishing-45d0c7ce",
+        "stage-3.candidate-006-fishing-e48e70d8",
+        "stage-3.candidate-007-fishing-bb8b3939",
+        "stage-3.candidate-008-fishing-f859ccd3",
+        "stage-3.candidate-009-fish-444e8034"
+      ],
+      "activeBatchId": null,
+      "compatibilityRuntimeActivated": true,
+      "projectModuleCount": 36,
+      "activationCount": 37,
+      "bridgeRecordCount": 62
+    },
+    "openState": {
+      "releaseVersion": "0.24.46",
+      "status": "migration-active",
+      "completedBatchIds": [
+        "stage-3.candidate-001-inventory-85f44b2e",
+        "stage-3.candidate-002-fishing-944d0790",
+        "stage-3.candidate-003-fishing-9700ad4f",
+        "stage-3.candidate-004-equipment-4f2570dc",
+        "stage-3.candidate-005-fishing-45d0c7ce",
+        "stage-3.candidate-006-fishing-e48e70d8",
+        "stage-3.candidate-007-fishing-bb8b3939",
+        "stage-3.candidate-008-fishing-f859ccd3",
+        "stage-3.candidate-009-fish-444e8034"
+      ],
+      "activeBatchId": "stage-3.candidate-010-inventory-e3dffbe7",
+      "activeBatchPhase": "prebuild",
+      "compatibilityRuntimeActivated": true,
+      "projectModuleCount": 36,
+      "activationCount": 37,
+      "bridgeRecordCount": 62
+    },
+    "runtimeActiveState": {
+      "releaseVersion": "0.24.46",
+      "status": "migration-active",
+      "completedBatchIds": [
+        "stage-3.candidate-001-inventory-85f44b2e",
+        "stage-3.candidate-002-fishing-944d0790",
+        "stage-3.candidate-003-fishing-9700ad4f",
+        "stage-3.candidate-004-equipment-4f2570dc",
+        "stage-3.candidate-005-fishing-45d0c7ce",
+        "stage-3.candidate-006-fishing-e48e70d8",
+        "stage-3.candidate-007-fishing-bb8b3939",
+        "stage-3.candidate-008-fishing-f859ccd3",
+        "stage-3.candidate-009-fish-444e8034"
+      ],
+      "activeBatchId": "stage-3.candidate-010-inventory-e3dffbe7",
+      "activeBatchPhase": "runtime-active",
+      "compatibilityRuntimeActivated": true,
+      "projectModuleCount": 37,
+      "activationCount": 38,
+      "bridgeRecordCount": 64,
+      "persistence": "execution-plan-phase-not-stage-3-execution-state-status"
+    },
+    "completedState": {
+      "releaseVersion": "0.24.47",
+      "status": "migration-active",
+      "completedBatchIds": [
+        "stage-3.candidate-001-inventory-85f44b2e",
+        "stage-3.candidate-002-fishing-944d0790",
+        "stage-3.candidate-003-fishing-9700ad4f",
+        "stage-3.candidate-004-equipment-4f2570dc",
+        "stage-3.candidate-005-fishing-45d0c7ce",
+        "stage-3.candidate-006-fishing-e48e70d8",
+        "stage-3.candidate-007-fishing-bb8b3939",
+        "stage-3.candidate-008-fishing-f859ccd3",
+        "stage-3.candidate-009-fish-444e8034",
+        "stage-3.candidate-010-inventory-e3dffbe7"
+      ],
+      "activeBatchId": null,
+      "compatibilityRuntimeActivated": true,
+      "projectModuleCount": 37,
+      "activationCount": 38,
+      "bridgeRecordCount": 64
+    },
+    "runtimeTargetSelection": "completed-batches-plus-active-batch-plus-promoted-stage-2-closure"
+  },
+  "compatibility": {
+    "activations": [
+      {
+        "id": "activation-18da11a56651",
+        "owner": "stage-3.candidate-010-inventory-e3dffbe7",
+        "sourceProvider": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "targetModule": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+        "exportName": "UnlimitedAssemblyCapacityPolicy",
+        "legacySymbol": "UnlimitedAssemblyCapacityPolicy",
+        "legacyScriptIndex": 148,
+        "shimFile": "activations/148_unlimitedassemblycapacitypolicy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/application/inventory/inventory_v2_composition_root.js",
+          "src/core/assemblies/item_assembly_service.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      }
+    ],
+    "plannedBridgeRecords": [
+      {
+        "id": "bridge-ae3aff06a790",
+        "bridge": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "source": "src/core/assemblies/item_assembly_service.js",
+        "target": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+        "reason": "Preserve the exact Inventory capacity policy consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-010-inventory-e3dffbe7",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "UnlimitedAssemblyCapacityPolicy",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-bd8716a31cf4",
+        "bridge": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "source": "src/application/inventory/inventory_v2_composition_root.js",
+        "target": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+        "reason": "Preserve the exact Inventory capacity policy consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-010-inventory-e3dffbe7",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "UnlimitedAssemblyCapacityPolicy",
+            "mechanism": "global-this-property"
+          }
+        ]
+      }
+    ],
+    "registryTransition": {
+      "beforeCount": 62,
+      "addCount": 2,
+      "afterCount": 64,
+      "operation": "exact-set-union-by-canonical-id"
+    },
+    "transportGlobal": "__CYBER_FISHING_COMPAT_RUNTIME__",
+    "transportOwnsGameState": false,
+    "domainTransportReadsAllowed": false
+  },
+  "cumulativeRuntime": {
+    "topology": "single-cumulative-module-graph",
+    "isolatedIifeAllowed": false,
+    "beforeProjectModuleCount": 36,
+    "addedProjectModuleCount": 1,
+    "afterProjectModuleCount": 37,
+    "beforeActivationCount": 37,
+    "addedActivationCount": 1,
+    "afterActivationCount": 38,
+    "projectModulesAfter": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js"
+    ],
+    "expectedDependencyEdges": [],
+    "evaluationCountPerModule": 1,
+    "outputReplacement": "validated-staging-then-atomic-replacement",
+    "preservePreviousValidatedOutputOnFailure": true
+  },
+  "scriptTopology": {
+    "before": {
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0
+    },
+    "after": {
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0,
+      "providerScriptsRemoved": 1,
+      "activationScriptsAdded": 1
+    },
+    "policy": "one-for-one-provider-to-activation-replacement-preserves-logical-order"
+  },
+  "stateAndBehaviorInvariants": [
+    {
+      "module": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+      "stateClassification": "stateless",
+      "authoritativeOwnerPreserved": true,
+      "duplicateStateCopies": "forbidden",
+      "formulasApiDefaultsAndResultShapes": "unchanged",
+      "authoritativeOwnerBefore": {
+        "module": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "authoritativeOwners": []
+      },
+      "authoritativeOwnerAfter": {
+        "module": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+        "authoritativeOwners": []
+      },
+      "publicStateShape": [],
+      "resultShape": [
+        "allowed",
+        "reason"
+      ],
+      "stableResultIdentity": false,
+      "mutatesCallerInputs": false,
+      "behaviorFingerprint": "5228f5f82b56d2eecebe098f11f5e365745740658f5382e13aae21c6fd644b08",
+      "allocationBaseline": {
+        "objectExpressions": 1,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "additionalMigrationAllocationsAllowed": 0,
+      "transportLookupsAllowed": 0,
+      "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+    }
+  ],
+  "operations": [
+    {
+      "order": 1,
+      "id": "verify-frozen-evidence",
+      "mutationKind": "read-only",
+      "outcome": "Verify audit fingerprints, frozen scope, current topology and completed prefix."
+    },
+    {
+      "order": 2,
+      "id": "open-batch-010",
+      "mutationKind": "metadata",
+      "outcome": "Set activeBatchId to batch 010 without changing completedBatchIds."
+    },
+    {
+      "order": 3,
+      "id": "create-named-esm-target",
+      "mutationKind": "source",
+      "outcome": "Create all one named ESM targets as representation-only copies."
+    },
+    {
+      "order": 4,
+      "id": "render-candidate-activation-shim",
+      "mutationKind": "source",
+      "outcome": "Replace all one classic providers with exact generated activation shims."
+    },
+    {
+      "order": 5,
+      "id": "project-two-consumer-bridges",
+      "mutationKind": "metadata",
+      "outcome": "Add the two canonical consumer-specific bridge records as one set."
+    },
+    {
+      "order": 6,
+      "id": "project-candidate-manifest",
+      "mutationKind": "metadata",
+      "outcome": "Project target and compatibility-bridge metadata before build validation."
+    },
+    {
+      "order": 7,
+      "id": "validate-candidate-and-commit-atomic-cutover",
+      "mutationKind": "generated-output",
+      "outcome": "Build and atomically validate one cumulative 37-module runtime."
+    },
+    {
+      "order": 8,
+      "id": "validate-identity-timing-state-and-behavior",
+      "mutationKind": "read-only",
+      "outcome": "Prove exact export identity, activation timing, one evaluation and behavior equivalence."
+    },
+    {
+      "order": 9,
+      "id": "persist-and-reconcile-observations",
+      "mutationKind": "metadata",
+      "outcome": "Persist mechanical observations and reconcile Manifest facts after source/shim creation."
+    },
+    {
+      "order": 10,
+      "id": "run-full-acceptance",
+      "mutationKind": "read-only",
+      "outcome": "Run focused, Architecture, Quick, Full, fresh-install and browser acceptance."
+    },
+    {
+      "order": 11,
+      "id": "close-release-0.24.47",
+      "mutationKind": "metadata",
+      "outcome": "Mark batch 010 completed, clear activeBatchId and publish v0.24.47 metadata."
+    }
+  ],
+  "mutationBoundary": {
+    "sourceProvidersReplaced": [
+      "src/core/inventory/unlimited_assembly_capacity_policy.js"
+    ],
+    "esmTargetsCreated": [
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js"
+    ],
+    "architectureMetadata": [
+      "architecture/guards/migration_bridge_registry.json",
+      "architecture/migration/module_migration_manifest.json",
+      "architecture/migration/stage_3_compatibility_runtime.json",
+      "architecture/migration/stage_3_execution_state.json"
+    ],
+    "runtimeWiring": [
+      "index.html"
+    ],
+    "generatedOutput": [
+      "dist/stage-3-compat-runtime"
+    ],
+    "releaseMetadata": [
+      "CHANGELOG.md",
+      "architecture/build/package_contract.json",
+      "package-lock.json",
+      "package.json",
+      "refactor_Task.txt",
+      "src/config/project_version.js"
+    ]
+  },
+  "rollback": {
+    "atomic": true,
+    "partialRollbackAllowed": false,
+    "fromRelease": "0.24.47",
+    "toRelease": "0.24.46",
+    "preserveCompletedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034"
+    ],
+    "removeBatchId": "stage-3.candidate-010-inventory-e3dffbe7",
+    "restoreTopology": {
+      "projectModuleCount": 36,
+      "activationCount": 37,
+      "bridgeRecordCount": 62,
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0
+    },
+    "baselineEvidence": {
+      "files": [
+        {
+          "path": "architecture/build/package_contract.json",
+          "sha256": "710f881405c8af55cd5f34cedb1e7da79773453f773a359dd5124d67ca672dda"
+        },
+        {
+          "path": "architecture/guards/migration_bridge_registry.json",
+          "sha256": "6a22ea5e016cdfbfef59f2fb3594db85f53bae06a539989339e61b8ed53e36f2"
+        },
+        {
+          "path": "architecture/migration/module_migration_manifest.json",
+          "sha256": "54ad32ef92b0282a6b128883995f75e46c11d0731ab996f768c56a1f0ade8d2c"
+        },
+        {
+          "path": "architecture/migration/stage_3_compatibility_runtime.json",
+          "sha256": "d0d0caed9ded5c6b0ff91233677238d1817868c3aa1241ebb1419aaae1d4a812"
+        },
+        {
+          "path": "architecture/migration/stage_3_execution_state.json",
+          "sha256": "964a6c4be73f91b090382638c51e355903bec50ea28c6911241d9cc6d2c30bcc"
+        },
+        {
+          "path": "CHANGELOG.md",
+          "sha256": "7772918e2004fe244587dcfb09557a60c903d36e09356659f7d2d611b40b8372"
+        },
+        {
+          "path": "index.html",
+          "sha256": "498b60206c5366bb9a05ddf148d158a14bfcf085397e67fa3d69ccc4df0865e0"
+        },
+        {
+          "path": "package-lock.json",
+          "sha256": "14c0425a98df1989ad4a0163e880c7e2f048909193660cc923b73f64aab0a151"
+        },
+        {
+          "path": "package.json",
+          "sha256": "f770995e064f3087363df74e09b44586673c311c3ea5c3695d5e65548262be37"
+        },
+        {
+          "path": "refactor_Task.txt",
+          "sha256": "63d58c59918df06dad4b909369f5102ba123251cf7a40c6d141a290890cac725"
+        },
+        {
+          "path": "src/config/project_version.js",
+          "sha256": "041bdf7dad597740f6cdf4c9bab0521b1b0bb25cdc30a0a48744ff12a4541a54"
+        },
+        {
+          "path": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+          "sha256": "6fa6df5ea81d8d77fa52a1f7696baf7fd988ddfdaeb591ac6b6c9a9c24e1c189"
+        }
+      ],
+      "runtimeOutput": {
+        "path": "dist/stage-3-compat-runtime",
+        "files": [
+          {
+            "path": "dist/stage-3-compat-runtime/activations/042_fishrarityresolver.js",
+            "sha256": "0ae783a169059e70f0954fbeaef5ef4dd37439d8cec50b26e42350c143146ff2"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/043_fishanomalyvariantresolver.js",
+            "sha256": "dbf13d9472e7d6ed04fd87ff85ca2a22aea8ac675538103c2b6320d90a41bb42"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/086_inventoryequiptargetselectionpolicy.js",
+            "sha256": "cb952b9844350a33ef46f53ba1d546586a4f343f252a0ca6430ae6ac183fb3e1"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/088_floattacklelinebudgetpolicy.js",
+            "sha256": "aa49fd5deb57a9892901d4f697cb9592a9cd24785f18e48a494b0f05102f85fe"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/090_linespoolstate.js",
+            "sha256": "9e192c225b197269f2d1e7e6f3283ae2f74512d079f03ae12f59adca611fc69a"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/091_rodpullstate.js",
+            "sha256": "092780820147a1f819c1c350f130b52ae7000bc071a7147521537e408638e652"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/092_rodstrokestate.js",
+            "sha256": "bf54de1bcb822696237f94c50916a6c05d728784eca133b1e02a09cc502a31a1"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/093_rodstroketracker.js",
+            "sha256": "89b75153c54ddcf2d7524f657def542c54d07e59de0be80d24d4ce1f87d00cd4"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/094_rodstrokedistancetracker.js",
+            "sha256": "401876d27d46be7d6bde1f1f9968ef1e7d76bea8ae801fab8933af744d02a15e"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/112_reelretrievespeedcalculator.js",
+            "sha256": "cb9b08da01806aa1ed559b86c373d88fb6325ffab81361126c376f77386b4ac7"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/113_reelautorecoverycalculator.js",
+            "sha256": "d0fee6b406b2f98943440dc3aa3e911342ae6557ee9108820a8017162a6eb9ca"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/114_reelholdloadpolicy.js",
+            "sha256": "28b000dae36215428d62eb946d5e181f6d2521f793bfd653e855f5cae0641bd1"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/117_looselinecalculator.js",
+            "sha256": "260df1817215256f34a5c8604ac2da67f3ad01f2d183601216c89875b3cf1631"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/117_recoverablelinecalculator.js",
+            "sha256": "615e8d5c7e1e09b158642290d9a66ea1108a183b0edc2943a4cfceddd629503b"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/118_rodstrokecapacityresolver.js",
+            "sha256": "0497fb28a189f33126681f4b00334afd6c0e5018904f148ea0dec2e0c50f8cc1"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/122_fishretrieveresult.js",
+            "sha256": "6ccda8cbd8dfcfd2bd7c3896672be8f8bb46305666727cf18a562b975ff845a5"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/123_holdoppositionresolver.js",
+            "sha256": "9d92ea7a42772e5f20a794147c47547d91f7dcc0cef4f412d5a32e218a55fe67"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/126_rodcontroltensionmoderesolver.js",
+            "sha256": "cea2964616cdf6bc2995148d0260cb68d84b9edd097c4014b15ce5fd5e9ff9c5"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/128_dragforcecalculator.js",
+            "sha256": "f0dd2e753205b590022c03b3b19fce243120d0aa38a081f79b3700dfa9e1487d"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/129_linetensioncalculator.js",
+            "sha256": "15a7818493cd292bc68edf28218718c5ab960cd61db0a583401e3fcb1746d411"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/130_lineconstraintstateresolver.js",
+            "sha256": "8796bcbaa445dd5ac05a758b5bdd00f7c32cee9493b26c120ffb055140f38dfc"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/131_lineconstrainedfishmotionresolver.js",
+            "sha256": "deaf6dd9647e2777935475330ac178069ea1508ab7e9f578c34191eb37520aa0"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/132_lineradialmovementsplitter.js",
+            "sha256": "1692d1bd9409d60f68773288fdf6119957a1c2667db43f1d51095d6e22f9ed26"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/133_rodcontrolmovementprojector.js",
+            "sha256": "99e04f0a8fd51cf254ffb2b63d26f78dd51b028d00371fe20aac0eb25eca132b"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/134_polefightsectorgeometry.js",
+            "sha256": "75420e557172f1719ca885c0463b43441cc47965b6c8588497cc00ceccd8fa61"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/139_simplefightforcecalculator.js",
+            "sha256": "0fad5ebee04e430731bf53d7ef081b7b6650a952313c5c8450521f1eba4cab79"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/140_landinglifttensioncalculator.js",
+            "sha256": "bb2b7df44ea2d8ca32ba51236000ddc042b1cded9953266ec36ea0fdb3aee170"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/157_rodcapabilityresolver.js",
+            "sha256": "462de6f1999ff5b789409dbe00273f9cce166f835c0a0843456167fe8833b988"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/352_assetmanifest.js",
+            "sha256": "c607661064a404d748893c6b76ce54747e3bcf0e30a4e40875663c59001e6ece"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/353_assetloadresult.js",
+            "sha256": "663f88f08f1dac40bd03d635b5a1b3105c460bfb5903dcdceadc92add7dcf66f"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/358_renderpass.js",
+            "sha256": "4d519d81bebdc82e2efc3b4a7fa2c9239597bbcfaa04c13daeb80cd9e0f144bd"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/360_rendermath.js",
+            "sha256": "a962bc192bdb40de397df3dd576ff1fb30965f8374ad4b2962db17e509837de3"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/361_rendercomponent.js",
+            "sha256": "d2636a7d6868af2195a848d4b0b72be6cc0c3dd5bb98d40192ed47b58ddb79d2"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/362_compositerenderer.js",
+            "sha256": "f04ebc0e624f926e7172fdbdb2562c3355fa1f58d56f30bf78ff97c1edf8be88"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/391_eventbus.js",
+            "sha256": "df1beb5019a18ebf9f666468d02e57689994af430a80904ae44447b7b75b2c77"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/392_eventlifecycle.js",
+            "sha256": "f54be747be93bca4e6d9047d65b3f08908f70688a400700d343851e68394c68f"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/395_dependencycontractvalidator.js",
+            "sha256": "d3f54e03c1c3a39474c9642bc364820187b47da05066460911ffe19617f45edd"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/compat_runtime.iife.js",
+            "sha256": "217a4d97bc3ccd9e85a3167a09280c2c79542109114a54e076a212457a413177"
+          }
+        ],
+        "fingerprint": "b3f20cae568ad3773ec48b204ab492cf4099eb870fe3f7f30a66c0c85dfdb4d2"
+      }
+    },
+    "targetsAbsentBeforeCutover": [
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js"
+    ],
+    "rule": "restore-only-batch-010-delta-and-keep-batches-001-through-009"
+  },
+  "acceptance": {
+    "preBuild": [
+      "audit-and-plan-fingerprints-current",
+      "completed-prefix-001-through-009",
+      "active-batch-010-only",
+      "one-targets-one-activations-two-consumer-bridges",
+      "zero-new-prerequisites"
+    ],
+    "postBuild": [
+      "actual-project-module-set-equals-plan",
+      "one-module-evaluation-per-source",
+      "exact-class-and-state-identity",
+      "globals-absent-before-and-exact-after-activation",
+      "zero-domain-transport-reads",
+      "previous-valid-output-preserved-on-failure"
+    ],
+    "suites": [
+      "focused-stage-3.10-behavior-and-identity",
+      "check:architecture",
+      "check:quick",
+      "check:full",
+      "fresh-npm-ci-architecture-quick-full",
+      "browser-smoke"
+    ],
+    "releaseCriteria": [
+      "zero-gameplay-semantic-delta",
+      "zero-new-architecture-guard-failures",
+      "manifest-registry-runtime-contract-and-state-reconciled",
+      "batch-010-completed-and-active-batch-cleared"
+    ]
+  },
+  "verdict": "eligible-for-focused-test-matrix"
+}

@@ -1,0 +1,465 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-preflight-audit",
+  "status": "verified",
+  "stage": "Stage 3.10.0",
+  "sourceReleaseVersion": "0.24.46",
+  "batchId": "stage-3.candidate-010-inventory-e3dffbe7",
+  "sourceEvidence": {
+    "approvedPlan": {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    "manifest": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "54ad32ef92b0282a6b128883995f75e46c11d0731ab996f768c56a1f0ade8d2c"
+    },
+    "domainAudit": {
+      "path": "architecture/migration/stage_3_domain_audit.json",
+      "sha256": "6a96b8ead58fab42c8c596b365776226a77c36978b9ef68b71c3df8ada6fa4cd"
+    },
+    "executionState": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "964a6c4be73f91b090382638c51e355903bec50ea28c6911241d9cc6d2c30bcc"
+    },
+    "runtimeContract": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "d0d0caed9ded5c6b0ff91233677238d1817868c3aa1241ebb1419aaae1d4a812"
+    },
+    "bridgeRegistry": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "6a22ea5e016cdfbfef59f2fb3594db85f53bae06a539989339e61b8ed53e36f2"
+    },
+    "index": {
+      "path": "index.html",
+      "sha256": "498b60206c5366bb9a05ddf148d158a14bfcf085397e67fa3d69ccc4df0865e0"
+    },
+    "runtimeOutput": {
+      "path": "dist/stage-3-compat-runtime",
+      "fingerprint": "b3f20cae568ad3773ec48b204ab492cf4099eb870fe3f7f30a66c0c85dfdb4d2"
+    }
+  },
+  "scope": {
+    "targetCount": 1,
+    "modules": [
+      {
+        "currentPath": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "targetPath": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+        "sourceSha256": "6fa6df5ea81d8d77fa52a1f7696baf7fd988ddfdaeb591ac6b6c9a9c24e1c189",
+        "exports": [
+          "UnlimitedAssemblyCapacityPolicy"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-f2bcd8072028",
+          "members": [
+            "src/core/inventory/unlimited_assembly_capacity_policy.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+          "classDeclarations": [
+            "UnlimitedAssemblyCapacityPolicy"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "canApply",
+              "kind": "method",
+              "parameterCount": 0,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "stateless",
+          "classification": "stateless",
+          "instanceFields": [],
+          "publicStateShape": [],
+          "resultShape": [
+            "allowed",
+            "reason"
+          ],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+            "authoritativeOwners": []
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+            "authoritativeOwners": []
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "exact-allowed-reason-result-and-fresh-object-identity",
+          "formulaDefaultsClampsRoundingFingerprint": "5228f5f82b56d2eecebe098f11f5e365745740658f5382e13aae21c6fd644b08",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "one-fresh-object-per-canApply-call",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/application/inventory/inventory_v2_composition_root.js",
+              "marker": "new UnlimitedAssemblyCapacityPolicy()"
+            },
+            {
+              "path": "src/core/assemblies/item_assembly_service.js",
+              "marker": "new UnlimitedAssemblyCapacityPolicy()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "UnlimitedAssemblyCapacityPolicy",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      }
+    ]
+  },
+  "runtimeBaseline": {
+    "projectModuleCount": 36,
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js"
+    ],
+    "activationCount": 37,
+    "bridgeCount": 62,
+    "scriptTopology": {
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0
+    }
+  },
+  "closure": {
+    "existingCumulativeModuleCount": 36,
+    "existingCumulativeModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js"
+    ],
+    "newProjectModuleCount": 1,
+    "newProjectModules": [
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js"
+    ],
+    "resultingProjectModuleCount": 37,
+    "internalEdges": [],
+    "alreadyCumulativeDependencies": [],
+    "unexpectedDependencies": []
+  },
+  "evaluation": {
+    "legacyScriptOrderControlsEvaluation": false,
+    "ordering": "esm-graph-topology-with-lexicographic-diagnostic-tiebreak",
+    "stronglyConnectedComponents": [
+      {
+        "id": "scc-f2bcd8072028",
+        "members": [
+          "src/core/inventory/unlimited_assembly_capacity_policy.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      }
+    ],
+    "layers": [
+      [
+        "src/game/domain/inventory/unlimited_assembly_capacity_policy.js"
+      ]
+    ],
+    "cycles": []
+  },
+  "boundaries": {
+    "forbiddenEdges": [],
+    "directConfigDependencies": [],
+    "browserCapabilities": [],
+    "transportReads": [],
+    "forbiddenSourceReads": [],
+    "dynamicConstructs": []
+  },
+  "state": {
+    "reviewed": [
+      {
+        "module": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "frozenStateRole": "stateless",
+        "classification": "stateless",
+        "ownerIdentity": "preserved"
+      }
+    ],
+    "unresolved": []
+  },
+  "behavior": {
+    "resultShapeSensitive": [
+      "src/core/inventory/unlimited_assembly_capacity_policy.js"
+    ],
+    "mutableIdentitySensitive": [],
+    "formulaDefaultsClampsRoundingFingerprints": [
+      {
+        "module": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "sha256": "5228f5f82b56d2eecebe098f11f5e365745740658f5382e13aae21c6fd644b08"
+      }
+    ],
+    "unresolved": []
+  },
+  "performance": {
+    "reviewed": [
+      {
+        "module": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "classification": "one-fresh-object-per-canApply-call",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/application/inventory/inventory_v2_composition_root.js",
+            "marker": "new UnlimitedAssemblyCapacityPolicy()"
+          },
+          {
+            "path": "src/core/assemblies/item_assembly_service.js",
+            "marker": "new UnlimitedAssemblyCapacityPolicy()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 1,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "unresolved": []
+  },
+  "effects": {
+    "safe": [
+      "src/core/inventory/unlimited_assembly_capacity_policy.js"
+    ],
+    "reviewed": [],
+    "unsafe": []
+  },
+  "compatibility": {
+    "providers": [
+      {
+        "module": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "symbol": "UnlimitedAssemblyCapacityPolicy",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      }
+    ],
+    "consumers": [
+      {
+        "provider": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "source": "src/application/inventory/inventory_v2_composition_root.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "UnlimitedAssemblyCapacityPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "source": "src/core/assemblies/item_assembly_service.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "UnlimitedAssemblyCapacityPolicy"
+        ]
+      }
+    ],
+    "activations": [
+      {
+        "id": "activation-18da11a56651",
+        "owner": "stage-3.candidate-010-inventory-e3dffbe7",
+        "sourceProvider": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "targetModule": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+        "exportName": "UnlimitedAssemblyCapacityPolicy",
+        "legacySymbol": "UnlimitedAssemblyCapacityPolicy",
+        "legacyScriptIndex": 148,
+        "shimFile": "activations/148_unlimitedassemblycapacitypolicy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/application/inventory/inventory_v2_composition_root.js",
+          "src/core/assemblies/item_assembly_service.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      }
+    ]
+  },
+  "prerequisites": {
+    "frozen": [],
+    "newlyDiscovered": []
+  },
+  "migrationGates": [
+    "exact-class-and-canApply-source-shape",
+    "stateless-single-instance-class-identity",
+    "fresh-result-per-call",
+    "zero-project-config-browser-dev-platform-dependencies",
+    "zero-top-level-effects-and-transport-reads",
+    "exact-two-classic-consumers",
+    "exact-position-148-activation",
+    "zero-added-allocations"
+  ],
+  "issues": [],
+  "verdict": "eligible-for-execution-plan",
+  "liveObservation": {
+    "status": "verified",
+    "sourceCount": 460,
+    "persistencePerformed": false,
+    "consumerRelationships": [
+      {
+        "provider": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "source": "src/application/inventory/inventory_v2_composition_root.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "UnlimitedAssemblyCapacityPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+        "source": "src/core/assemblies/item_assembly_service.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "UnlimitedAssemblyCapacityPolicy"
+        ]
+      }
+    ]
+  },
+  "sourceContract": {
+    "className": "UnlimitedAssemblyCapacityPolicy",
+    "methodName": "canApply",
+    "resultKeys": [
+      "allowed",
+      "reason"
+    ],
+    "resultValues": {
+      "allowed": true,
+      "reason": null
+    },
+    "freshResultPerCall": true,
+    "objectAllocationsPerCall": 1,
+    "instanceFields": [],
+    "topLevelEffects": [],
+    "externalReads": []
+  },
+  "plannedTopology": {
+    "projectModuleCount": 37,
+    "activationCount": 38,
+    "bridgeRecordCount": 64
+  }
+}

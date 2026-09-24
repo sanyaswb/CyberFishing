@@ -51,6 +51,7 @@ class Batch009CutoverHistory {
     cache.set(this.root,{signature,artifact:frozen});return frozen;
   }
   before(file, bytes) {
+    bytes = new (require("./stage_three_batch_010_history").Batch010History)(this.root).before(file, bytes);
     bytes = new (require("./stage_three_batch_009_release_transition").StageThreeBatch009ReleaseTransition)(this.root)
       .before(file, bytes);
     if (!this.exists()) return Buffer.from(bytes);
@@ -66,7 +67,9 @@ class Batch009CutoverHistory {
     if (digest !== item.afterSha256) {
       // A composed historical reader may already have reversed the preceding
       // accepted batch. Permit only its exact recorded states, never arbitrary bytes.
-      assert.equal(hash(normalize(this.raw(file))),item.afterSha256,`Actual batch-009 file drift: ${file}`);
+      const currentBeforeSuccessor = new (require("./stage_three_batch_010_history").Batch010History)(this.root)
+        .before(file, this.raw(file));
+      assert.equal(hash(normalize(currentBeforeSuccessor)),item.afterSha256,`Actual batch-009 file drift: ${file}`);
       const prior=["stage_3_batch_008_runtime_cutover.json","stage_3_batch_008_release_transition.json"]
         .flatMap(name=>{const p=JSON.parse(this.raw(`architecture/migration/${name}`));return p.writes||p.records;})
         .filter(r=>r.path===file).flatMap(r=>[r.beforeSha256,r.afterSha256]);

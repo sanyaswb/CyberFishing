@@ -663,6 +663,22 @@
       ]
     },
     {
+      "id": "bridge-ae3aff06a790",
+      "bridge": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+      "source": "src/core/assemblies/item_assembly_service.js",
+      "target": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "reason": "Preserve the exact Inventory capacity policy consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-010-inventory-e3dffbe7",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "UnlimitedAssemblyCapacityPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-bc3ec26d121f",
       "bridge": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
       "source": "src/app/script.js",
@@ -674,6 +690,22 @@
       "globalProviders": [
         {
           "symbol": "EventBus",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-bd8716a31cf4",
+      "bridge": "src/core/inventory/unlimited_assembly_capacity_policy.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "reason": "Preserve the exact Inventory capacity policy consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-010-inventory-e3dffbe7",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "UnlimitedAssemblyCapacityPolicy",
           "mechanism": "global-this-property"
         }
       ]

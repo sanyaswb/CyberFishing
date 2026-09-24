@@ -10,6 +10,7 @@ class AssemblyRuntimeLoader {
   #context = vm.createContext({ console });
 
   load() {
+    this.#load("dist/stage-3-compat-runtime/compat_runtime.iife.js", []);
     this.#load(
       "src/config/inventory/item_assembly_profile_config.js",
       ["ITEM_ASSEMBLY_PROFILE_IDS", "ITEM_ASSEMBLY_PROFILE_CONFIG"],

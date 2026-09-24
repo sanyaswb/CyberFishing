@@ -10,7 +10,7 @@ const PROJECT_ROOT = path.resolve(__dirname, "../..");
 class FreshPackageInstallVerifier {
   constructor({ projectRoot = PROJECT_ROOT } = {}) { this.projectRoot = path.resolve(projectRoot); }
 
-  run() {
+  run({ suites = true } = {}) {
     const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cyber-fishing-package-contract-"));
     try {
       this.#copyWorkspace(temporaryRoot);
@@ -37,9 +37,11 @@ class FreshPackageInstallVerifier {
       if (packageJson.scripts["build:stage-3-compat-runtime"]) {
         steps.push(this.#runNode(["utils/build/build_stage_3_compat_runtime.js"], temporaryRoot, "cumulative-build"));
       }
-      steps.push(this.#runNode(["utils/run-checks.js", "--suite", "architecture"], temporaryRoot, "architecture"));
-      steps.push(this.#runNode(["utils/run-checks.js", "--suite", "quick"], temporaryRoot, "quick"));
-      steps.push(this.#runNode(["utils/run-checks.js", "--suite", "all"], temporaryRoot, "full"));
+      if (suites) {
+        steps.push(this.#runNode(["utils/run-checks.js", "--suite", "architecture"], temporaryRoot, "architecture"));
+        steps.push(this.#runNode(["utils/run-checks.js", "--suite", "quick"], temporaryRoot, "quick"));
+        steps.push(this.#runNode(["utils/run-checks.js", "--suite", "all"], temporaryRoot, "full"));
+      }
       const runtimeContractPath = path.join(temporaryRoot, "architecture/migration/stage_3_compatibility_runtime.json");
       let runtimeOutput = [];
       if (fs.existsSync(runtimeContractPath)) {
@@ -55,7 +57,9 @@ class FreshPackageInstallVerifier {
       }
       assert.deepEqual(this.#snapshot(temporaryRoot), copiedFiles, "Clean install/build/checks modified copied sources");
       assert.deepEqual(this.#snapshot(this.projectRoot), copiedFiles, "Working tree changed during fresh verification");
-      console.log("Fresh package verification passed: npm ci reproduced the locked graph and Architecture, Quick, and Full suites passed in an isolated workspace.");
+      console.log(suites
+        ? "Fresh package verification passed: npm ci reproduced the locked graph and Architecture, Quick, and Full suites passed in an isolated workspace."
+        : "Fresh package verification passed: npm ci reproduced the locked graph and cumulative runtime output byte-for-byte in an isolated workspace.");
       return { status: "passed", node: process.version, npm: actualNpm, lockfileSha256: this.#sha256(lockBefore),
         lockfileChanged: false, dependenciesCopied: false, generatedOutputCopied: false,
         sourceCopy: { mode: "actual-working-tree-not-HEAD", files: copiedFiles.length,

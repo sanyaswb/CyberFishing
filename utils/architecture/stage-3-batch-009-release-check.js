@@ -102,9 +102,10 @@ class Batch009ReleaseCheck {
 }
 
 if (require.main === module) {
-  try {
-    const result = new Batch009ReleaseCheck().run();
+  new (require("./domain_batches/stage_three_batch_010_historical_workspace").Batch010HistoricalWorkspace)()
+    .run(path.resolve(__dirname, "../.."), root => {
+    const result = new Batch009ReleaseCheck().run(root);
     console.log(`Stage 3.9.9 release check PASS: ${result.releaseFiles} exact reversible metadata files, completed prefix 001–009, one cumulative ${result.topology.projectModuleCount}-module runtime.`);
-  } catch (error) { console.error(error.stack); process.exitCode = 1; }
+    }).catch(error => { console.error(error.stack); process.exitCode = 1; });
 }
 module.exports = { Batch009ReleaseCheck };

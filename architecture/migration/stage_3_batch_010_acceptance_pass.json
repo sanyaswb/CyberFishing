@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-010-acceptance",
+  "stage": "3.10.8",
+  "batchId": "stage-3.candidate-010-inventory-e3dffbe7",
+  "releaseVersion": "0.24.46",
+  "plannedReleaseVersion": "0.24.47",
+  "recordedAt": "2026-09-24T13:53:44.688Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_010_automated_acceptance.json",
+    "sha256": "85b470e74bf85997d10d6385053b6f2cdacf3941dcd3f17e33058d64dcb8b77a",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "architecture": {
+      "passedChecks": 130,
+      "failedChecks": 0
+    },
+    "quick": {
+      "passedChecks": 76,
+      "failedChecks": 0
+    },
+    "full": {
+      "passedChecks": 158,
+      "failedChecks": 0
+    },
+    "countSemantics": "Recorded results of this acceptance attempt, not architecture policy constants."
+  },
+  "browserSmoke": {
+    "status": "passed-user-reported",
+    "performedBy": "user",
+    "evidenceType": "manual-test-summary-in-conversation",
+    "userStatement": "працює PASS - повний цикл ігрової сессії від початку спорядження до ловлі риби",
+    "context": "Response to the Stage 3.10.8 checklist: game load, Canvas, inventory assembly creation/component and full equipment-to-fish session.",
+    "acceptanceBasis": "Collective PASS for the checklist and full game session; individual steps were not independently instrumented.",
+    "perCheckResults": null,
+    "consoleCounts": {
+      "errors": 0,
+      "warnings": 0,
+      "userStatement": "0 errors, 0 warnings"
+    }
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_010_live_runtime_validation.json",
+      "sha256": "56d226d91f0c8c951fbd17cd9c5c764e02dbbdae06a3fdc29b5d5e81a8185a38"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_010_observation_reconciliation.json",
+      "sha256": "6d3986387197019e26c9104d268ee64c56969d91a19b5f6f8af9c2d75f569385"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "6a6b5945dfdf9ec31096b4ac3c4d0f9ad50e254c739a0e2d792eac653a087abc"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "08888ddb005c3ef78f5a1c9ddb5b7bf4dad2d9c4149969fa6ebce95018c4848c"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "8275fdb7af3a852775718e1dc271622354639d64c0d67d600833e48a5da3613b"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "4e5a8345cb5fcc3803089b35aa76a989237301ae5f5e673dc7876898f07346ae"
+    },
+    {
+      "path": "index.html",
+      "sha256": "c2b2659a061300eb9aabece9eae35cc1870cbaceba8e9708ce615b6434e05b25"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.candidate-010-inventory-e3dffbe7",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.10.9 — Release Closure v0.24.47"
+}
