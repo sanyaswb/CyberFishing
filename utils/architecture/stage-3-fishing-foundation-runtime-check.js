@@ -319,7 +319,9 @@ class StageThreeFishingFoundationRuntimeCheck {
     const scripts = [...html.matchAll(
       /<script\b([^>]*)\bsrc=["']([^"']+)["']([^>]*)>/giu,
     )];
-    assert.equal(scripts.length, 426);
+    const providerCount = new Set(contract.activationPositions.map(item => item.sourceProvider)).size;
+    assert.equal(scripts.length, 424 + 1 +
+      contract.activationPositions.length - providerCount);
     assert.equal(scripts.filter((match) =>
       /\btype=["']module["']/iu.test(`${match[1]} ${match[3]}`)).length, 0);
     assert.equal(scripts.filter((match) =>

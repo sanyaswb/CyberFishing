@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-release-closure",
+  "status": "verified",
+  "batchId": "stage-3.candidate-013-fishing-0267b3ea",
+  "releaseVersion": "0.24.50",
+  "previousReleaseVersion": "0.24.49",
+  "releasePublicationAllowed": true,
+  "completedBatchCount": 13,
+  "completedDomainModuleCount": 41,
+  "runtimeTopology": {
+    "modules": 50,
+    "activations": 53,
+    "bridges": 83
+  },
+  "acceptance": {
+    "automatedEvidence": {
+      "path": "architecture/migration/stage_3_batch_013_automated_acceptance.json",
+      "sha256": "6b08fc148d723e26365d8b262a4e555525f2fe42eadc1ee7021a272766034034"
+    },
+    "historicalSummary": {
+      "path": "architecture/migration/stage_3_batch_013_acceptance_pass.json",
+      "sha256": "3e7ecc800cbac5d0814c65020188d9b35e5a7f5184a89716669486853949cc07"
+    },
+    "browserProof": {
+      "path": "architecture/migration/stage_3_batch_013_browser_confirmation.json",
+      "sha256": "717ad933a788b88742dfd9b8e4426ae2a0fcd22deacfc7e0334b710a7969407e"
+    },
+    "browserGate": "passed-user-confirmation-with-explicit-zero-console-counts"
+  },
+  "releaseTransition": {
+    "path": "architecture/migration/stage_3_batch_013_release_transition.json",
+    "sha256": "2345b46c772c8ab5a04fc28aeb2bfb8677cc786b9594fc46965b3bf9ddc50389"
+  },
+  "releaseEvidence": [
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "22bed7c760ab5faf686fba77310dda3debe530eab552afadfde647d3c5fbfb0d"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "1eb6eb6d6c183927f7d1b7e446ca4cbd8b318fd77b4763365324b675c94c9d85"
+    },
+    {
+      "path": "index.html",
+      "sha256": "631e705b840d54f03046322927a1086a65bfc7b56f0589f3efdffc468d2f6de1"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "adb33f606b9a91945962fe201aaf5722a6be1c320d1fda91b8df5a024f0662fb"
+    },
+    {
+      "path": "package.json",
+      "sha256": "1a91c6dea3b3da1261e8f4d6bd5328954c88e5e621c05a0dae689e864ca0eebf"
+    },
+    {
+      "path": "refactor_Task.txt",
+      "sha256": "e32feb73165e37df0aa8ecc309c1a2120db17dc23dbcfa05cb6a2449df2a7f9a"
+    },
+    {
+      "path": "src/config/project_version.js",
+      "sha256": "2f1e5a99bf00762080e9d8eac1b4cb1b1751491fcfbcbbc4c92d8e97d56bf3d0"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "9e729031a8db83cd7b3de697de5118017e0eb4f35d95b1ff829540bd7c61700b"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "abee63ee84cca8463e087ad96ef4761635f00b6f3112f64f579d58cbff754f25"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "11b72dd59a6350e2257f4877aa76142bb441523cd8fdbb4b826190bbe9ee7f83"
+    }
+  ],
+  "rollback": {
+    "atomic": true,
+    "partialRollbackAllowed": false,
+    "fromRelease": "0.24.50",
+    "toRelease": "0.24.49",
+    "removeBatchId": "stage-3.candidate-013-fishing-0267b3ea",
+    "preserveCompletedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034",
+      "stage-3.candidate-010-inventory-e3dffbe7",
+      "stage-3.candidate-011-items-11818ee5",
+      "stage-3.candidate-012-assemblies-2086347a"
+    ],
+    "restoreTopology": {
+      "projectModuleCount": 44,
+      "activationCount": 45,
+      "bridgeRecordCount": 76,
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0
+    },
+    "baselineEvidenceReference": {
+      "path": "architecture/migration/stage_3_batch_013_execution_plan.json",
+      "sha256": "1f89da062e96af957df68d0c20f6c0dffa7803bff0d41e30808742f23ae7a743"
+    }
+  },
+  "finalRegression": {
+    "status": "passed",
+    "evidence": {
+      "path": "architecture/migration/stage_3_batch_013_release_regression.json",
+      "sha256": "e43669261e4fda3c2aee354e5a18948817650853bae3ecf13e0ab0cf949c591c"
+    },
+    "preReleaseSuites": {
+      "full": {
+        "passedChecks": 176,
+        "failedChecks": 0
+      },
+      "countSemantics": "The full suite includes the architecture and quick checks; it ran in an isolated working-tree snapshot."
+    },
+    "node": "v24.13.0",
+    "npm": "11.6.2",
+    "lockfileSha256": "adb33f606b9a91945962fe201aaf5722a6be1c320d1fda91b8df5a024f0662fb",
+    "lockfileChanged": false,
+    "generatedRuntimeByteEquality": true,
+    "steps": [
+      {
+        "id": "npm-ci",
+        "exitCode": 0
+      },
+      {
+        "id": "cumulative-build",
+        "exitCode": 0
+      }
+    ]
+  },
+  "nextStage": "Stage 3.14.0 — Batch 014 Preflight and Dependency/State Audit"
+}

@@ -20,6 +20,8 @@ class StageThreeBatch008CandidateBuild {
     let validation;
     const build = new StageThreeBatchCandidateBuild({
       projectRoot: this.root, batchNumber: PROFILE.batchNumber, additionalVirtualModules: [],
+      indexHtml: require("./stage_three_batch_008_cutover_history").historicalCutoverBytes(
+        "index.html", fs.readFileSync(path.join(this.root, "index.html")), this.root).toString("utf8"),
       viteLoader: this.viteLoader,
       verifyOutput: async (output) => {
         validation = this.validateOutput(output);

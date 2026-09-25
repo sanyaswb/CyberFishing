@@ -46,15 +46,18 @@ class StageThreeObservationReconciliation {
     const transitions = activations.map((item) => {
       const original = baseline.providers.filter((provider) => provider.currentPath === item.sourceProvider && provider.symbol === item.legacySymbol);
       const reviewedExposure = this.profile.legacyExposureBySource?.[item.sourceProvider];
-      assert.deepEqual(original.map(provider => provider.mechanism), reviewedExposure === item.legacySymbol
-        ? ["global-lexical", "global-this-property"] : ["global-lexical"],
+      const exposure = typeof reviewedExposure === "string"
+        ? { symbol: reviewedExposure, mechanism: "global-this-property" } : reviewedExposure;
+      assert.deepEqual(original.map(provider => provider.mechanism), exposure?.symbol === item.legacySymbol
+        ? ["global-lexical", exposure.mechanism] : ["global-lexical"],
       "Missing exact approved legacy identity");
       assert(bridges.some((bridge) => bridge.bridge === item.sourceProvider && bridge.target === item.targetModule &&
         bridge.globalProviders.some((provider) => provider.symbol === item.legacySymbol && provider.mechanism === "global-this-property")));
       return { source: item.sourceProvider, target: item.targetModule, symbol: item.legacySymbol, activationId: item.id,
         fromMechanism: "global-lexical", toMechanism: "global-this-property", approval: "exact-existing-activation-and-consumer-registry" };
     });
-    assert.deepEqual(esm.map((item) => item.source).sort(), activations.map((item) => item.targetModule).sort());
+    assert.deepEqual(esm.map((item) => item.source).sort(),
+      [...new Set(activations.map((item) => item.targetModule))].sort());
     for (const item of esm) {
       assert.equal(item.status, "verified");
       assert.equal(item.hasEsmSyntax, true);
@@ -62,7 +65,7 @@ class StageThreeObservationReconciliation {
       assert.deepEqual(item.globalAssignments, []);
       assert.deepEqual(item.globalMemberReads, []);
       assert.deepEqual(item.issues, []);
-      assert.deepEqual(item.exports.map((value) => value.kind), ["named"]);
+      assert(item.exports.length > 0 && item.exports.every(value => value.kind === "named"));
       const target = result.manifest.modules.find((value) => value.currentPath === item.source);
       assert.deepEqual(item.externalIdentifiers, target.observed.environment.builtins);
     }
@@ -85,7 +88,7 @@ class StageThreeObservationReconciliation {
       guardedConsumers: relationships.filter((item) => item.accessRequirement === "guarded"),
       additionalConsumers: [], dependencyDelta: { confirmedInterFileEdgesBefore: edges(before).length,
         confirmedInterFileEdgesAfter: totals.edges, newlyConfirmedEdges: [], removedEdges: [] },
-      transportUnresolved: { count: activations.length, classification: "compatibility-transport-outside-src-project-graph",
+      transportUnresolved: { count: sourcePaths.size, classification: "compatibility-transport-outside-src-project-graph",
         createsProjectDependencyEdge: false },
       removalDependencies: activations.map((item) => ({ activationId: item.id, source: item.sourceProvider,
         consumers: item.consumers, owner: item.owner, removalStage: item.removalStage,

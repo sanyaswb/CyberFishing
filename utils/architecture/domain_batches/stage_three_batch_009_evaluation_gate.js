@@ -42,8 +42,18 @@ class Batch009EarlierEvaluationGate {
           const init = declaration.init;
           const localWeakMap = init?.type === "NewExpression" && init.callee.type === "Identifier" &&
             init.callee.name === "WeakMap" && init.arguments.length === 0;
-          assert(init?.type === "Literal" || localWeakMap, "unknown eager initializer");
-          initializations.push({ binding: declaration.id.name, kind: localWeakMap ? "private-empty-weakmap" : "primitive-literal" });
+          const frozenLiteralRange = init?.type === "CallExpression" &&
+            init.callee?.type === "MemberExpression" && init.callee.object?.name === "Object" &&
+            init.callee.property?.name === "freeze" && init.arguments.length === 1 &&
+            init.arguments[0].type === "ArrayExpression" && init.arguments[0].elements.length === 2 &&
+            init.arguments[0].elements.every(value => value.type === "Literal" &&
+              typeof value.value === "number" || value.type === "UnaryExpression" &&
+              value.operator === "-" && value.argument?.type === "Literal" &&
+              typeof value.argument.value === "number");
+          assert(init?.type === "Literal" || localWeakMap || frozenLiteralRange,
+            "unknown eager initializer");
+          initializations.push({ binding: declaration.id.name, kind: localWeakMap
+            ? "private-empty-weakmap" : frozenLiteralRange ? "frozen-literal-range" : "primitive-literal" });
         }
       }
       const effect = effects.observe({ modulePath: module.targetPath, source });
@@ -52,7 +62,8 @@ class Batch009EarlierEvaluationGate {
         assert.equal(effect.classification, "needs-review", "unsafe evaluation");
         assert.equal(review?.decision, "approved-compatible", "missing reviewed initialization");
         assert.equal(review.evidenceFingerprint, effect.evidenceFingerprint, "stale effect review");
-        assert(initializations.some(i => i.kind === "private-empty-weakmap"), "review does not prove private initialization");
+        assert(initializations.some(i => ["private-empty-weakmap", "frozen-literal-range"].includes(i.kind)),
+          "review does not prove compatible initialization");
       } else assert(!review, "stale unnecessary review");
       reviewMap.delete(module.targetPath);
       return {

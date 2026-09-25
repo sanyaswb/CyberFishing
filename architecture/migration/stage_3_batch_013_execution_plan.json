@@ -1,0 +1,1277 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-atomic-execution-plan",
+  "status": "execution-plan-verified",
+  "batchId": "stage-3.candidate-013-fishing-0267b3ea",
+  "sourceReleaseVersion": "0.24.49",
+  "targetReleaseVersion": "0.24.50",
+  "runtimeMigrationAllowed": false,
+  "runtimeMigrationUnlockCondition": "stage-3.13.2-focused-test-matrix-verified",
+  "sourceEvidence": {
+    "audit": {
+      "path": "architecture/migration/stage_3_batch_013_audit.json",
+      "sha256": "0e2789f3961815c6e9d8a6cfb50aa85c81cd5c0949cfd2776325e6031e8be49a"
+    },
+    "approvedPlan": {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    "executionState": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "84c7deda304fe8c25bb70bb2265dd7ecb5cdff652eab39a11300823a21059ff1"
+    },
+    "runtimeContract": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "180d74e5a4d4d1df1103bdd3ed5ef7e6ac3edf34de5b0e8a5700e358f08cd4c7"
+    },
+    "manifest": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "a1c9412636cc61d75ff78c2e8f2ee66abd92f61e01382a83927308e94c7b980f"
+    },
+    "bridgeRegistry": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "8bb981334c2e95c7d0560ac2c1d3c0ed834afe2381c065810766f4bf5c23a78d"
+    },
+    "scmCheckpoint": {
+      "tag": "v0.24.49",
+      "commitSha": "26024798f4667b0435c31bfb5756078f1f642e85",
+      "tagType": "tag",
+      "rollbackMode": "exact-source-release-tag-plus-batch-delta"
+    }
+  },
+  "scope": {
+    "atomic": true,
+    "partialCutoverAllowed": false,
+    "modules": [
+      {
+        "currentPath": "src/core/fishing/fish_direction_intent_sampler.js",
+        "targetPath": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+        "exports": [
+          "DEFAULT_FISH_LATERAL_RANGE",
+          "DEFAULT_FISH_RADIAL_RANGE",
+          "FishDirectionIntentSampler"
+        ],
+        "sourceSha256": "4b8c7c62587f9ed3dce139846deca03aa19b5d33f51946e3ae824763fc899ba1",
+        "stateClassification": "authoritative-owner",
+        "representationChange": "classic-declarations-to-named-esm-exports-only",
+        "importsAllowed": [],
+        "behaviorChangeAllowed": false,
+        "directTransportReadAllowed": false
+      },
+      {
+        "currentPath": "src/core/fishing/fishing_cast_exposure_resolver.js",
+        "targetPath": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+        "exports": [
+          "FishingCastExposureResolver"
+        ],
+        "sourceSha256": "15cd5dfb8a00a358441db24b1197c9717a69ceeaad08ad858e7e22f043440a83",
+        "stateClassification": "stateless",
+        "representationChange": "classic-class-declaration-to-named-esm-export-only",
+        "importsAllowed": [],
+        "behaviorChangeAllowed": false,
+        "directTransportReadAllowed": false
+      },
+      {
+        "currentPath": "src/core/fishing/player_force_budget_allocator.js",
+        "targetPath": "src/game/domain/fishing/player_force_budget_allocator.js",
+        "exports": [
+          "PlayerForceBudgetAllocator"
+        ],
+        "sourceSha256": "71900c9970cb75d001543f7e63d24e7da04c3b1401fb20a9a7f325912a151724",
+        "stateClassification": "authoritative-owner",
+        "representationChange": "classic-class-declaration-to-named-esm-export-only",
+        "importsAllowed": [],
+        "behaviorChangeAllowed": false,
+        "directTransportReadAllowed": false
+      },
+      {
+        "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+        "targetPath": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+        "exports": [
+          "PlayerPressureFatigueCalculator"
+        ],
+        "sourceSha256": "b6e2fe24a06ab0ef41bddbfe84a30cbd485c052f4924e742cb717c930d1cf080",
+        "stateClassification": "authoritative-owner",
+        "representationChange": "classic-class-declaration-to-named-esm-export-only",
+        "importsAllowed": [],
+        "behaviorChangeAllowed": false,
+        "directTransportReadAllowed": false
+      },
+      {
+        "currentPath": "src/core/fishing/rod_control_angle_resolver.js",
+        "targetPath": "src/game/domain/fishing/rod_control_angle_resolver.js",
+        "exports": [
+          "RodControlAngleResolver"
+        ],
+        "sourceSha256": "b39bbe93a56655ef5ab74146f3a7ed652154d948cf31f08ffd0c23f3ef6d5ccf",
+        "stateClassification": "authoritative-owner",
+        "representationChange": "classic-class-declaration-to-named-esm-export-only",
+        "importsAllowed": [],
+        "behaviorChangeAllowed": false,
+        "directTransportReadAllowed": false
+      },
+      {
+        "currentPath": "src/core/fishing/stamina/stamina_regen_calculator.js",
+        "targetPath": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+        "exports": [
+          "StaminaRegenCalculator"
+        ],
+        "sourceSha256": "f0ee7f48ffc3f79028e245058d9e0c11e77977c85b58c76613ac2c2a6ccb5608",
+        "stateClassification": "authoritative-owner",
+        "representationChange": "classic-class-declaration-to-named-esm-export-only",
+        "importsAllowed": [],
+        "behaviorChangeAllowed": false,
+        "directTransportReadAllowed": false
+      }
+    ],
+    "targetCount": 6,
+    "exportCount": 8,
+    "activationCount": 8,
+    "consumerRelationshipCount": 7
+  },
+  "lifecycle": {
+    "preState": {
+      "releaseVersion": "0.24.49",
+      "status": "migration-active",
+      "completedBatchIds": [
+        "stage-3.candidate-001-inventory-85f44b2e",
+        "stage-3.candidate-002-fishing-944d0790",
+        "stage-3.candidate-003-fishing-9700ad4f",
+        "stage-3.candidate-004-equipment-4f2570dc",
+        "stage-3.candidate-005-fishing-45d0c7ce",
+        "stage-3.candidate-006-fishing-e48e70d8",
+        "stage-3.candidate-007-fishing-bb8b3939",
+        "stage-3.candidate-008-fishing-f859ccd3",
+        "stage-3.candidate-009-fish-444e8034",
+        "stage-3.candidate-010-inventory-e3dffbe7",
+        "stage-3.candidate-011-items-11818ee5",
+        "stage-3.candidate-012-assemblies-2086347a"
+      ],
+      "activeBatchId": null,
+      "compatibilityRuntimeActivated": true,
+      "projectModuleCount": 44,
+      "activationCount": 45,
+      "bridgeRecordCount": 76
+    },
+    "openState": {
+      "releaseVersion": "0.24.49",
+      "status": "migration-active",
+      "completedBatchIds": [
+        "stage-3.candidate-001-inventory-85f44b2e",
+        "stage-3.candidate-002-fishing-944d0790",
+        "stage-3.candidate-003-fishing-9700ad4f",
+        "stage-3.candidate-004-equipment-4f2570dc",
+        "stage-3.candidate-005-fishing-45d0c7ce",
+        "stage-3.candidate-006-fishing-e48e70d8",
+        "stage-3.candidate-007-fishing-bb8b3939",
+        "stage-3.candidate-008-fishing-f859ccd3",
+        "stage-3.candidate-009-fish-444e8034",
+        "stage-3.candidate-010-inventory-e3dffbe7",
+        "stage-3.candidate-011-items-11818ee5",
+        "stage-3.candidate-012-assemblies-2086347a"
+      ],
+      "activeBatchId": "stage-3.candidate-013-fishing-0267b3ea",
+      "activeBatchPhase": "prebuild",
+      "compatibilityRuntimeActivated": true,
+      "projectModuleCount": 44,
+      "activationCount": 45,
+      "bridgeRecordCount": 76
+    },
+    "runtimeActiveState": {
+      "releaseVersion": "0.24.49",
+      "status": "migration-active",
+      "completedBatchIds": [
+        "stage-3.candidate-001-inventory-85f44b2e",
+        "stage-3.candidate-002-fishing-944d0790",
+        "stage-3.candidate-003-fishing-9700ad4f",
+        "stage-3.candidate-004-equipment-4f2570dc",
+        "stage-3.candidate-005-fishing-45d0c7ce",
+        "stage-3.candidate-006-fishing-e48e70d8",
+        "stage-3.candidate-007-fishing-bb8b3939",
+        "stage-3.candidate-008-fishing-f859ccd3",
+        "stage-3.candidate-009-fish-444e8034",
+        "stage-3.candidate-010-inventory-e3dffbe7",
+        "stage-3.candidate-011-items-11818ee5",
+        "stage-3.candidate-012-assemblies-2086347a"
+      ],
+      "activeBatchId": "stage-3.candidate-013-fishing-0267b3ea",
+      "activeBatchPhase": "runtime-active",
+      "compatibilityRuntimeActivated": true,
+      "projectModuleCount": 50,
+      "activationCount": 53,
+      "bridgeRecordCount": 83,
+      "persistence": "execution-plan-phase-not-stage-3-execution-state-status"
+    },
+    "completedState": {
+      "releaseVersion": "0.24.50",
+      "status": "migration-active",
+      "completedBatchIds": [
+        "stage-3.candidate-001-inventory-85f44b2e",
+        "stage-3.candidate-002-fishing-944d0790",
+        "stage-3.candidate-003-fishing-9700ad4f",
+        "stage-3.candidate-004-equipment-4f2570dc",
+        "stage-3.candidate-005-fishing-45d0c7ce",
+        "stage-3.candidate-006-fishing-e48e70d8",
+        "stage-3.candidate-007-fishing-bb8b3939",
+        "stage-3.candidate-008-fishing-f859ccd3",
+        "stage-3.candidate-009-fish-444e8034",
+        "stage-3.candidate-010-inventory-e3dffbe7",
+        "stage-3.candidate-011-items-11818ee5",
+        "stage-3.candidate-012-assemblies-2086347a",
+        "stage-3.candidate-013-fishing-0267b3ea"
+      ],
+      "activeBatchId": null,
+      "compatibilityRuntimeActivated": true,
+      "projectModuleCount": 50,
+      "activationCount": 53,
+      "bridgeRecordCount": 83
+    },
+    "runtimeTargetSelection": "completed-batches-plus-active-batch-plus-promoted-stage-2-closure"
+  },
+  "compatibility": {
+    "activations": [
+      {
+        "id": "activation-18af7e975cb0",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "sourceProvider": "src/core/fishing/fish_direction_intent_sampler.js",
+        "targetModule": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+        "exportName": "FishDirectionIntentSampler",
+        "legacySymbol": "FishDirectionIntentSampler",
+        "legacyScriptIndex": 124,
+        "shimFile": "activations/124_fishdirectionintentsampler.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/entities/fish.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-2a74f4c05932",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "sourceProvider": "src/core/fishing/fish_direction_intent_sampler.js",
+        "targetModule": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+        "exportName": "DEFAULT_FISH_RADIAL_RANGE",
+        "legacySymbol": "DEFAULT_FISH_RADIAL_RANGE",
+        "legacyScriptIndex": 124,
+        "shimFile": "activations/124_default_fish_radial_range.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/entities/fish.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-3890808eb3cc",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "sourceProvider": "src/core/fishing/rod_control_angle_resolver.js",
+        "targetModule": "src/game/domain/fishing/rod_control_angle_resolver.js",
+        "exportName": "RodControlAngleResolver",
+        "legacySymbol": "RodControlAngleResolver",
+        "legacyScriptIndex": 127,
+        "shimFile": "activations/127_rodcontrolangleresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/systems/rod_lateral_control_system.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-3ed53946507b",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "sourceProvider": "src/core/fishing/fish_direction_intent_sampler.js",
+        "targetModule": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+        "exportName": "DEFAULT_FISH_LATERAL_RANGE",
+        "legacySymbol": "DEFAULT_FISH_LATERAL_RANGE",
+        "legacyScriptIndex": 124,
+        "shimFile": "activations/124_default_fish_lateral_range.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/entities/fish.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-79ef4d67c996",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "sourceProvider": "src/core/fishing/player_force_budget_allocator.js",
+        "targetModule": "src/game/domain/fishing/player_force_budget_allocator.js",
+        "exportName": "PlayerForceBudgetAllocator",
+        "legacySymbol": "PlayerForceBudgetAllocator",
+        "legacyScriptIndex": 95,
+        "shimFile": "activations/095_playerforcebudgetallocator.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/systems/fight_physics_system.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-a44add7fda39",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "sourceProvider": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+        "targetModule": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+        "exportName": "PlayerPressureFatigueCalculator",
+        "legacySymbol": "PlayerPressureFatigueCalculator",
+        "legacyScriptIndex": 101,
+        "shimFile": "activations/101_playerpressurefatiguecalculator.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/systems/fight_physics_system.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-bafccd351254",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "sourceProvider": "src/core/fishing/fishing_cast_exposure_resolver.js",
+        "targetModule": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+        "exportName": "FishingCastExposureResolver",
+        "legacySymbol": "FishingCastExposureResolver",
+        "legacyScriptIndex": 67,
+        "shimFile": "activations/067_fishingcastexposureresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/application.js",
+          "src/app/states.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-dca4cdb154de",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "sourceProvider": "src/core/fishing/stamina/stamina_regen_calculator.js",
+        "targetModule": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+        "exportName": "StaminaRegenCalculator",
+        "legacySymbol": "StaminaRegenCalculator",
+        "legacyScriptIndex": 107,
+        "shimFile": "activations/107_staminaregencalculator.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/fishing/stamina/stamina_phase_machine.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      }
+    ],
+    "plannedBridgeRecords": [
+      {
+        "id": "bridge-2943aa6fa8b8",
+        "bridge": "src/core/fishing/fishing_cast_exposure_resolver.js",
+        "source": "src/app/application.js",
+        "target": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+        "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "FishingCastExposureResolver",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-509dd42a0477",
+        "bridge": "src/core/fishing/rod_control_angle_resolver.js",
+        "source": "src/systems/rod_lateral_control_system.js",
+        "target": "src/game/domain/fishing/rod_control_angle_resolver.js",
+        "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "RodControlAngleResolver",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-68a669b68de3",
+        "bridge": "src/core/fishing/player_force_budget_allocator.js",
+        "source": "src/systems/fight_physics_system.js",
+        "target": "src/game/domain/fishing/player_force_budget_allocator.js",
+        "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "PlayerForceBudgetAllocator",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-9420d12f86ac",
+        "bridge": "src/core/fishing/fishing_cast_exposure_resolver.js",
+        "source": "src/app/states.js",
+        "target": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+        "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "FishingCastExposureResolver",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-9f6a7d891df3",
+        "bridge": "src/core/fishing/fish_direction_intent_sampler.js",
+        "source": "src/entities/fish.js",
+        "target": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+        "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "DEFAULT_FISH_LATERAL_RANGE",
+            "mechanism": "global-this-property"
+          },
+          {
+            "symbol": "DEFAULT_FISH_RADIAL_RANGE",
+            "mechanism": "global-this-property"
+          },
+          {
+            "symbol": "FishDirectionIntentSampler",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-a2b17a1794bf",
+        "bridge": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+        "source": "src/systems/fight_physics_system.js",
+        "target": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+        "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "PlayerPressureFatigueCalculator",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      {
+        "id": "bridge-d1647c1fa147",
+        "bridge": "src/core/fishing/stamina/stamina_regen_calculator.js",
+        "source": "src/core/fishing/stamina/stamina_phase_machine.js",
+        "target": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+        "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-3",
+        "globalProviders": [
+          {
+            "symbol": "StaminaRegenCalculator",
+            "mechanism": "global-this-property"
+          }
+        ]
+      }
+    ],
+    "registryTransition": {
+      "beforeCount": 76,
+      "addCount": 7,
+      "afterCount": 83,
+      "operation": "exact-set-union-by-canonical-id"
+    },
+    "transportGlobal": "__CYBER_FISHING_COMPAT_RUNTIME__",
+    "transportOwnsGameState": false,
+    "domainTransportReadsAllowed": false
+  },
+  "cumulativeRuntime": {
+    "topology": "single-cumulative-module-graph",
+    "isolatedIifeAllowed": false,
+    "beforeProjectModuleCount": 44,
+    "addedProjectModuleCount": 6,
+    "afterProjectModuleCount": 50,
+    "beforeActivationCount": 45,
+    "addedActivationCount": 8,
+    "afterActivationCount": 53,
+    "projectModulesAfter": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "expectedDependencyEdges": [],
+    "evaluationCountPerModule": 1,
+    "outputReplacement": "validated-staging-then-atomic-replacement",
+    "preservePreviousValidatedOutputOnFailure": true
+  },
+  "scriptTopology": {
+    "before": {
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0
+    },
+    "after": {
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0,
+      "providerScriptsRemoved": 6,
+      "activationScriptsAdded": 8
+    },
+    "policy": "one-for-one-provider-to-activation-replacement-preserves-logical-order"
+  },
+  "stateAndBehaviorInvariants": [
+    {
+      "module": "src/core/fishing/fish_direction_intent_sampler.js",
+      "stateClassification": "authoritative-owner",
+      "authoritativeOwnerPreserved": true,
+      "duplicateStateCopies": "forbidden",
+      "formulasApiDefaultsAndResultShapes": "unchanged",
+      "authoritativeOwnerBefore": {
+        "module": "src/core/fishing/fish_direction_intent_sampler.js",
+        "authoritativeOwners": [
+          "FishDirectionIntentSampler#normalizeRange",
+          "FishDirectionIntentSampler#range",
+          "FishDirectionIntentSampler#rng"
+        ]
+      },
+      "authoritativeOwnerAfter": {
+        "module": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+        "authoritativeOwners": [
+          "FishDirectionIntentSampler#normalizeRange",
+          "FishDirectionIntentSampler#range",
+          "FishDirectionIntentSampler#rng"
+        ]
+      },
+      "publicStateShape": [],
+      "resultShape": [
+        "lateral",
+        "radial"
+      ],
+      "stableResultIdentity": false,
+      "mutatesCallerInputs": false,
+      "behaviorFingerprint": "e97811e6c521c4d2dc0bac125eb63338a0594558d6d53aa4e705b348f24dd6a5",
+      "allocationBaseline": {
+        "objectExpressions": 3,
+        "arrayExpressions": 2,
+        "newExpressions": 0,
+        "objectFreezeCalls": 1,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "additionalMigrationAllocationsAllowed": 0,
+      "transportLookupsAllowed": 0,
+      "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+    },
+    {
+      "module": "src/core/fishing/fishing_cast_exposure_resolver.js",
+      "stateClassification": "stateless",
+      "authoritativeOwnerPreserved": true,
+      "duplicateStateCopies": "forbidden",
+      "formulasApiDefaultsAndResultShapes": "unchanged",
+      "authoritativeOwnerBefore": {
+        "module": "src/core/fishing/fishing_cast_exposure_resolver.js",
+        "authoritativeOwners": []
+      },
+      "authoritativeOwnerAfter": {
+        "module": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+        "authoritativeOwners": []
+      },
+      "publicStateShape": [],
+      "resultShape": [],
+      "stableResultIdentity": false,
+      "mutatesCallerInputs": false,
+      "behaviorFingerprint": "f052d24ade03d91c27969832e59cc3c8293585eb14137e5779851f29f8b5c51e",
+      "allocationBaseline": {
+        "objectExpressions": 1,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "additionalMigrationAllocationsAllowed": 0,
+      "transportLookupsAllowed": 0,
+      "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+    },
+    {
+      "module": "src/core/fishing/player_force_budget_allocator.js",
+      "stateClassification": "authoritative-owner",
+      "authoritativeOwnerPreserved": true,
+      "duplicateStateCopies": "forbidden",
+      "formulasApiDefaultsAndResultShapes": "unchanged",
+      "authoritativeOwnerBefore": {
+        "module": "src/core/fishing/player_force_budget_allocator.js",
+        "authoritativeOwners": [
+          "PlayerForceBudgetAllocator#clamp01",
+          "PlayerForceBudgetAllocator#freeze",
+          "PlayerForceBudgetAllocator#positive",
+          "PlayerForceBudgetAllocator#reason",
+          "PlayerForceBudgetAllocator#resolveShares"
+        ]
+      },
+      "authoritativeOwnerAfter": {
+        "module": "src/game/domain/fishing/player_force_budget_allocator.js",
+        "authoritativeOwners": [
+          "PlayerForceBudgetAllocator#clamp01",
+          "PlayerForceBudgetAllocator#freeze",
+          "PlayerForceBudgetAllocator#positive",
+          "PlayerForceBudgetAllocator#reason",
+          "PlayerForceBudgetAllocator#resolveShares"
+        ]
+      },
+      "publicStateShape": [],
+      "resultShape": [],
+      "stableResultIdentity": false,
+      "mutatesCallerInputs": false,
+      "behaviorFingerprint": "6b8d611c09efff5a82ec3fde22ad8b7efd87bef47f3e2bd234b8d42263a1e0c2",
+      "allocationBaseline": {
+        "objectExpressions": 13,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 1,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "additionalMigrationAllocationsAllowed": 0,
+      "transportLookupsAllowed": 0,
+      "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+    },
+    {
+      "module": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "stateClassification": "authoritative-owner",
+      "authoritativeOwnerPreserved": true,
+      "duplicateStateCopies": "forbidden",
+      "formulasApiDefaultsAndResultShapes": "unchanged",
+      "authoritativeOwnerBefore": {
+        "module": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+        "authoritativeOwners": [
+          "PlayerPressureFatigueCalculator#clamp01",
+          "PlayerPressureFatigueCalculator#controlBreakFrame",
+          "PlayerPressureFatigueCalculator#fatigueProgressFromEfficiency",
+          "PlayerPressureFatigueCalculator#frame",
+          "PlayerPressureFatigueCalculator#holdMsFromEfficiency",
+          "PlayerPressureFatigueCalculator#lerp",
+          "PlayerPressureFatigueCalculator#positive",
+          "PlayerPressureFatigueCalculator#pressureFrame",
+          "PlayerPressureFatigueCalculator#recoveryFrame",
+          "PlayerPressureFatigueCalculator#sourceFrame"
+        ]
+      },
+      "authoritativeOwnerAfter": {
+        "module": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+        "authoritativeOwners": [
+          "PlayerPressureFatigueCalculator#clamp01",
+          "PlayerPressureFatigueCalculator#controlBreakFrame",
+          "PlayerPressureFatigueCalculator#fatigueProgressFromEfficiency",
+          "PlayerPressureFatigueCalculator#frame",
+          "PlayerPressureFatigueCalculator#holdMsFromEfficiency",
+          "PlayerPressureFatigueCalculator#lerp",
+          "PlayerPressureFatigueCalculator#positive",
+          "PlayerPressureFatigueCalculator#pressureFrame",
+          "PlayerPressureFatigueCalculator#recoveryFrame",
+          "PlayerPressureFatigueCalculator#sourceFrame"
+        ]
+      },
+      "publicStateShape": [],
+      "resultShape": [],
+      "stableResultIdentity": false,
+      "mutatesCallerInputs": false,
+      "behaviorFingerprint": "d7da639505b1a240c0c08ac34997160d912330690a4ba27e83b39caaaac20c24",
+      "allocationBaseline": {
+        "objectExpressions": 24,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 3,
+        "objectAssignCalls": 0,
+        "roundingCalls": 1
+      },
+      "additionalMigrationAllocationsAllowed": 0,
+      "transportLookupsAllowed": 0,
+      "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+    },
+    {
+      "module": "src/core/fishing/rod_control_angle_resolver.js",
+      "stateClassification": "authoritative-owner",
+      "authoritativeOwnerPreserved": true,
+      "duplicateStateCopies": "forbidden",
+      "formulasApiDefaultsAndResultShapes": "unchanged",
+      "authoritativeOwnerBefore": {
+        "module": "src/core/fishing/rod_control_angle_resolver.js",
+        "authoritativeOwners": [
+          "RodControlAngleResolver#clamp01",
+          "RodControlAngleResolver#number"
+        ]
+      },
+      "authoritativeOwnerAfter": {
+        "module": "src/game/domain/fishing/rod_control_angle_resolver.js",
+        "authoritativeOwners": [
+          "RodControlAngleResolver#clamp01",
+          "RodControlAngleResolver#number"
+        ]
+      },
+      "publicStateShape": [],
+      "resultShape": [],
+      "stableResultIdentity": false,
+      "mutatesCallerInputs": false,
+      "behaviorFingerprint": "bfc5fb304c71bd2dafa087d7cb1c145b0e494f2f86417e2125cc11eadbab6c9c",
+      "allocationBaseline": {
+        "objectExpressions": 3,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 1,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "additionalMigrationAllocationsAllowed": 0,
+      "transportLookupsAllowed": 0,
+      "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+    },
+    {
+      "module": "src/core/fishing/stamina/stamina_regen_calculator.js",
+      "stateClassification": "authoritative-owner",
+      "authoritativeOwnerPreserved": true,
+      "duplicateStateCopies": "forbidden",
+      "formulasApiDefaultsAndResultShapes": "unchanged",
+      "authoritativeOwnerBefore": {
+        "module": "src/core/fishing/stamina/stamina_regen_calculator.js",
+        "authoritativeOwners": [
+          "StaminaRegenCalculator#angleMultiplier",
+          "StaminaRegenCalculator#clamp01",
+          "StaminaRegenCalculator#fatigueMultiplier",
+          "StaminaRegenCalculator#lerp",
+          "StaminaRegenCalculator#positive"
+        ]
+      },
+      "authoritativeOwnerAfter": {
+        "module": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+        "authoritativeOwners": [
+          "StaminaRegenCalculator#angleMultiplier",
+          "StaminaRegenCalculator#clamp01",
+          "StaminaRegenCalculator#fatigueMultiplier",
+          "StaminaRegenCalculator#lerp",
+          "StaminaRegenCalculator#positive"
+        ]
+      },
+      "publicStateShape": [],
+      "resultShape": [],
+      "stableResultIdentity": false,
+      "mutatesCallerInputs": false,
+      "behaviorFingerprint": "0f46f7ab3fa511a00de21b147bb0ca4dd4ca0f168366a73809707e94efcc6157",
+      "allocationBaseline": {
+        "objectExpressions": 13,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 7,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "additionalMigrationAllocationsAllowed": 0,
+      "transportLookupsAllowed": 0,
+      "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+    }
+  ],
+  "operations": [
+    {
+      "order": 1,
+      "id": "verify-frozen-evidence",
+      "mutationKind": "read-only",
+      "outcome": "Verify audit fingerprints, frozen scope, current topology and completed prefix."
+    },
+    {
+      "order": 2,
+      "id": "open-batch-013",
+      "mutationKind": "metadata",
+      "outcome": "Set activeBatchId to batch 013 without changing completedBatchIds."
+    },
+    {
+      "order": 3,
+      "id": "create-six-named-esm-targets",
+      "mutationKind": "source",
+      "outcome": "Create all six named ESM targets as representation-only copies."
+    },
+    {
+      "order": 4,
+      "id": "render-eight-candidate-activation-shims",
+      "mutationKind": "source",
+      "outcome": "Replace all eight classic providers with exact generated activation shims."
+    },
+    {
+      "order": 5,
+      "id": "project-seven-consumer-bridges",
+      "mutationKind": "metadata",
+      "outcome": "Add the seven canonical consumer-specific bridge records as one set."
+    },
+    {
+      "order": 6,
+      "id": "project-candidate-manifest",
+      "mutationKind": "metadata",
+      "outcome": "Project target and compatibility-bridge metadata before build validation."
+    },
+    {
+      "order": 7,
+      "id": "validate-candidate-and-commit-atomic-cutover",
+      "mutationKind": "generated-output",
+      "outcome": "Build and atomically validate one cumulative 50-module runtime."
+    },
+    {
+      "order": 8,
+      "id": "validate-identity-timing-state-and-behavior",
+      "mutationKind": "read-only",
+      "outcome": "Prove exact export identity, activation timing, one evaluation and behavior equivalence."
+    },
+    {
+      "order": 9,
+      "id": "persist-and-reconcile-observations",
+      "mutationKind": "metadata",
+      "outcome": "Persist mechanical observations and reconcile Manifest facts after source/shim creation."
+    },
+    {
+      "order": 10,
+      "id": "run-full-acceptance",
+      "mutationKind": "read-only",
+      "outcome": "Run focused, Architecture, Quick, Full, fresh-install and browser acceptance."
+    },
+    {
+      "order": 11,
+      "id": "close-release-0.24.50",
+      "mutationKind": "metadata",
+      "outcome": "Mark batch 013 completed, clear activeBatchId and publish v0.24.50 metadata."
+    }
+  ],
+  "mutationBoundary": {
+    "sourceProvidersReplaced": [
+      "src/core/fishing/fish_direction_intent_sampler.js",
+      "src/core/fishing/fishing_cast_exposure_resolver.js",
+      "src/core/fishing/player_force_budget_allocator.js",
+      "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/core/fishing/rod_control_angle_resolver.js",
+      "src/core/fishing/stamina/stamina_regen_calculator.js"
+    ],
+    "esmTargetsCreated": [
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js"
+    ],
+    "architectureMetadata": [
+      "architecture/guards/migration_bridge_registry.json",
+      "architecture/migration/module_migration_manifest.json",
+      "architecture/migration/stage_3_compatibility_runtime.json",
+      "architecture/migration/stage_3_execution_state.json"
+    ],
+    "runtimeWiring": [
+      "index.html"
+    ],
+    "generatedOutput": [
+      "dist/stage-3-compat-runtime"
+    ],
+    "releaseMetadata": [
+      "CHANGELOG.md",
+      "architecture/build/package_contract.json",
+      "package-lock.json",
+      "package.json",
+      "refactor_Task.txt",
+      "src/config/project_version.js"
+    ]
+  },
+  "rollback": {
+    "atomic": true,
+    "partialRollbackAllowed": false,
+    "fromRelease": "0.24.50",
+    "toRelease": "0.24.49",
+    "preserveCompletedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034",
+      "stage-3.candidate-010-inventory-e3dffbe7",
+      "stage-3.candidate-011-items-11818ee5",
+      "stage-3.candidate-012-assemblies-2086347a"
+    ],
+    "removeBatchId": "stage-3.candidate-013-fishing-0267b3ea",
+    "restoreTopology": {
+      "projectModuleCount": 44,
+      "activationCount": 45,
+      "bridgeRecordCount": 76,
+      "physicalClassicScriptCount": 426,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0
+    },
+    "baselineEvidence": {
+      "files": [
+        {
+          "path": "architecture/build/package_contract.json",
+          "sha256": "a45034c968ea5c078bfa43cbc6e8550677fbf267cd45e30c3a13d5cebc7f3eb1"
+        },
+        {
+          "path": "architecture/guards/migration_bridge_registry.json",
+          "sha256": "8bb981334c2e95c7d0560ac2c1d3c0ed834afe2381c065810766f4bf5c23a78d"
+        },
+        {
+          "path": "architecture/migration/module_migration_manifest.json",
+          "sha256": "a1c9412636cc61d75ff78c2e8f2ee66abd92f61e01382a83927308e94c7b980f"
+        },
+        {
+          "path": "architecture/migration/stage_3_compatibility_runtime.json",
+          "sha256": "180d74e5a4d4d1df1103bdd3ed5ef7e6ac3edf34de5b0e8a5700e358f08cd4c7"
+        },
+        {
+          "path": "architecture/migration/stage_3_execution_state.json",
+          "sha256": "84c7deda304fe8c25bb70bb2265dd7ecb5cdff652eab39a11300823a21059ff1"
+        },
+        {
+          "path": "CHANGELOG.md",
+          "sha256": "3b642958395fa1d8e7d17114a3bc2f430a25771896296c2fc34bdd19beb412b6"
+        },
+        {
+          "path": "index.html",
+          "sha256": "fdd9c00cbaac80f9f00d09d8027203ef498a3798b4751759725444be49fed3b8"
+        },
+        {
+          "path": "package-lock.json",
+          "sha256": "9e6189ea1fe45132c0404c15d1193f8ddaebc5e10e4e4d0342cf34f66272787f"
+        },
+        {
+          "path": "package.json",
+          "sha256": "71d4089f889ba1e899c1ba9c7b10e69ce84000f173dff50e4ee6109af618d364"
+        },
+        {
+          "path": "refactor_Task.txt",
+          "sha256": "0a2784fcd231cbc763331414e2d25a84fef2fa84f7d6c5881f9f00d1af17aeda"
+        },
+        {
+          "path": "src/config/project_version.js",
+          "sha256": "a5fdb23a4b069ab5ef58c838e1ac33d6d1e6f01b3f6f88223b6f69b2c4ce6d88"
+        },
+        {
+          "path": "src/core/fishing/fish_direction_intent_sampler.js",
+          "sha256": "4b8c7c62587f9ed3dce139846deca03aa19b5d33f51946e3ae824763fc899ba1"
+        },
+        {
+          "path": "src/core/fishing/fishing_cast_exposure_resolver.js",
+          "sha256": "15cd5dfb8a00a358441db24b1197c9717a69ceeaad08ad858e7e22f043440a83"
+        },
+        {
+          "path": "src/core/fishing/player_force_budget_allocator.js",
+          "sha256": "71900c9970cb75d001543f7e63d24e7da04c3b1401fb20a9a7f325912a151724"
+        },
+        {
+          "path": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+          "sha256": "b6e2fe24a06ab0ef41bddbfe84a30cbd485c052f4924e742cb717c930d1cf080"
+        },
+        {
+          "path": "src/core/fishing/rod_control_angle_resolver.js",
+          "sha256": "b39bbe93a56655ef5ab74146f3a7ed652154d948cf31f08ffd0c23f3ef6d5ccf"
+        },
+        {
+          "path": "src/core/fishing/stamina/stamina_regen_calculator.js",
+          "sha256": "f0ee7f48ffc3f79028e245058d9e0c11e77977c85b58c76613ac2c2a6ccb5608"
+        }
+      ],
+      "runtimeOutput": {
+        "path": "dist/stage-3-compat-runtime",
+        "files": [
+          {
+            "path": "dist/stage-3-compat-runtime/activations/042_fishrarityresolver.js",
+            "sha256": "0ae783a169059e70f0954fbeaef5ef4dd37439d8cec50b26e42350c143146ff2"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/043_fishanomalyvariantresolver.js",
+            "sha256": "dbf13d9472e7d6ed04fd87ff85ca2a22aea8ac675538103c2b6320d90a41bb42"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/045_itemraritydescriptor.js",
+            "sha256": "654da8c1e38c21e71b43f95d5f1dd3d40c4b2d28cbb06dce4f457a4248050e31"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/046_itemraritystrategy.js",
+            "sha256": "bdbebc3d7febc76bdfc36463ca3efb4564e1347889c2d69c6c59d7952387964b"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/048_itemraritystrategyregistry.js",
+            "sha256": "60880183c0ba49eb9bb9a44393872117e9c4c08c33ecc7e90c98f16e162a21e2"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/073_itemmetricstrategy.js",
+            "sha256": "bc7b22cc1383c83b02a188e56fdc4b661cef24f074f8b000c5bbac9575f0828c"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/084_itemprogressiondescriptor.js",
+            "sha256": "8a6852ab3d45eabcccd58587a6a2d4875bdbb31a280f6aeec8593d73cc8dca1b"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/086_inventoryequiptargetselectionpolicy.js",
+            "sha256": "cb952b9844350a33ef46f53ba1d546586a4f343f252a0ca6430ae6ac183fb3e1"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/088_floattacklelinebudgetpolicy.js",
+            "sha256": "aa49fd5deb57a9892901d4f697cb9592a9cd24785f18e48a494b0f05102f85fe"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/090_linespoolstate.js",
+            "sha256": "9e192c225b197269f2d1e7e6f3283ae2f74512d079f03ae12f59adca611fc69a"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/091_rodpullstate.js",
+            "sha256": "092780820147a1f819c1c350f130b52ae7000bc071a7147521537e408638e652"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/092_rodstrokestate.js",
+            "sha256": "bf54de1bcb822696237f94c50916a6c05d728784eca133b1e02a09cc502a31a1"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/093_rodstroketracker.js",
+            "sha256": "89b75153c54ddcf2d7524f657def542c54d07e59de0be80d24d4ce1f87d00cd4"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/094_rodstrokedistancetracker.js",
+            "sha256": "401876d27d46be7d6bde1f1f9968ef1e7d76bea8ae801fab8933af744d02a15e"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/112_reelretrievespeedcalculator.js",
+            "sha256": "cb9b08da01806aa1ed559b86c373d88fb6325ffab81361126c376f77386b4ac7"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/113_reelautorecoverycalculator.js",
+            "sha256": "d0fee6b406b2f98943440dc3aa3e911342ae6557ee9108820a8017162a6eb9ca"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/114_reelholdloadpolicy.js",
+            "sha256": "28b000dae36215428d62eb946d5e181f6d2521f793bfd653e855f5cae0641bd1"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/117_looselinecalculator.js",
+            "sha256": "260df1817215256f34a5c8604ac2da67f3ad01f2d183601216c89875b3cf1631"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/117_recoverablelinecalculator.js",
+            "sha256": "615e8d5c7e1e09b158642290d9a66ea1108a183b0edc2943a4cfceddd629503b"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/118_rodstrokecapacityresolver.js",
+            "sha256": "0497fb28a189f33126681f4b00334afd6c0e5018904f148ea0dec2e0c50f8cc1"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/122_fishretrieveresult.js",
+            "sha256": "6ccda8cbd8dfcfd2bd7c3896672be8f8bb46305666727cf18a562b975ff845a5"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/123_holdoppositionresolver.js",
+            "sha256": "9d92ea7a42772e5f20a794147c47547d91f7dcc0cef4f412d5a32e218a55fe67"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/126_rodcontroltensionmoderesolver.js",
+            "sha256": "cea2964616cdf6bc2995148d0260cb68d84b9edd097c4014b15ce5fd5e9ff9c5"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/128_dragforcecalculator.js",
+            "sha256": "f0dd2e753205b590022c03b3b19fce243120d0aa38a081f79b3700dfa9e1487d"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/129_linetensioncalculator.js",
+            "sha256": "15a7818493cd292bc68edf28218718c5ab960cd61db0a583401e3fcb1746d411"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/130_lineconstraintstateresolver.js",
+            "sha256": "8796bcbaa445dd5ac05a758b5bdd00f7c32cee9493b26c120ffb055140f38dfc"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/131_lineconstrainedfishmotionresolver.js",
+            "sha256": "deaf6dd9647e2777935475330ac178069ea1508ab7e9f578c34191eb37520aa0"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/132_lineradialmovementsplitter.js",
+            "sha256": "1692d1bd9409d60f68773288fdf6119957a1c2667db43f1d51095d6e22f9ed26"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/133_rodcontrolmovementprojector.js",
+            "sha256": "99e04f0a8fd51cf254ffb2b63d26f78dd51b028d00371fe20aac0eb25eca132b"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/134_polefightsectorgeometry.js",
+            "sha256": "75420e557172f1719ca885c0463b43441cc47965b6c8588497cc00ceccd8fa61"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/139_simplefightforcecalculator.js",
+            "sha256": "0fad5ebee04e430731bf53d7ef081b7b6650a952313c5c8450521f1eba4cab79"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/140_landinglifttensioncalculator.js",
+            "sha256": "bb2b7df44ea2d8ca32ba51236000ddc042b1cded9953266ec36ea0fdb3aee170"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/148_unlimitedassemblycapacitypolicy.js",
+            "sha256": "8fa25164ea51b4f20e86aa21e954df28b0bad15017542a4f4aaf3c8ab311e4f5"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/153_assemblyattachmenttargetresolver.js",
+            "sha256": "15414a4bef90a4ab1ea18cab0ebe53497870aac16041a69882f19480f92e1683"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/154_assemblycompletionpolicy.js",
+            "sha256": "1de8b34190dc474230f6999d329c1bb87032e7e109e9bcc11e937e89678bcee1"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/157_rodcapabilityresolver.js",
+            "sha256": "462de6f1999ff5b789409dbe00273f9cce166f835c0a0843456167fe8833b988"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/352_assetmanifest.js",
+            "sha256": "c607661064a404d748893c6b76ce54747e3bcf0e30a4e40875663c59001e6ece"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/353_assetloadresult.js",
+            "sha256": "663f88f08f1dac40bd03d635b5a1b3105c460bfb5903dcdceadc92add7dcf66f"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/358_renderpass.js",
+            "sha256": "4d519d81bebdc82e2efc3b4a7fa2c9239597bbcfaa04c13daeb80cd9e0f144bd"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/360_rendermath.js",
+            "sha256": "a962bc192bdb40de397df3dd576ff1fb30965f8374ad4b2962db17e509837de3"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/361_rendercomponent.js",
+            "sha256": "d2636a7d6868af2195a848d4b0b72be6cc0c3dd5bb98d40192ed47b58ddb79d2"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/362_compositerenderer.js",
+            "sha256": "f04ebc0e624f926e7172fdbdb2562c3355fa1f58d56f30bf78ff97c1edf8be88"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/391_eventbus.js",
+            "sha256": "df1beb5019a18ebf9f666468d02e57689994af430a80904ae44447b7b75b2c77"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/392_eventlifecycle.js",
+            "sha256": "f54be747be93bca4e6d9047d65b3f08908f70688a400700d343851e68394c68f"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/activations/395_dependencycontractvalidator.js",
+            "sha256": "d3f54e03c1c3a39474c9642bc364820187b47da05066460911ffe19617f45edd"
+          },
+          {
+            "path": "dist/stage-3-compat-runtime/compat_runtime.iife.js",
+            "sha256": "c6f836c5a8a641d44447df8c615daa4a719e2ccfcc4be66d4535bfff0a012b78"
+          }
+        ],
+        "fingerprint": "7030e198699a4dae02b024c84c1b6ed88ede6a0eedd01975e19185bc55af45a1"
+      }
+    },
+    "targetsAbsentBeforeCutover": [
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js"
+    ],
+    "rule": "restore-only-batch-013-delta-and-keep-batches-001-through-012"
+  },
+  "acceptance": {
+    "preBuild": [
+      "audit-and-plan-fingerprints-current",
+      "completed-prefix-001-through-012",
+      "active-batch-013-only",
+      "six-targets-eight-activations-seven-consumer-bridges",
+      "zero-new-prerequisites"
+    ],
+    "postBuild": [
+      "actual-project-module-set-equals-plan",
+      "one-module-evaluation-per-source",
+      "exact-class-and-state-identity",
+      "globals-absent-before-and-exact-after-activation",
+      "zero-domain-transport-reads",
+      "previous-valid-output-preserved-on-failure"
+    ],
+    "suites": [
+      "focused-stage-3.13-behavior-and-identity",
+      "check:architecture",
+      "check:quick",
+      "check:full",
+      "fresh-npm-ci-architecture-quick-full",
+      "browser-smoke"
+    ],
+    "releaseCriteria": [
+      "zero-gameplay-semantic-delta",
+      "zero-new-architecture-guard-failures",
+      "manifest-registry-runtime-contract-and-state-reconciled",
+      "batch-013-completed-and-active-batch-cleared"
+    ]
+  },
+  "verdict": "eligible-for-focused-test-matrix"
+}

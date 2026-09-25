@@ -187,7 +187,9 @@ class StageThreeBatch006RuntimeCheck {
       { scriptAliases: aliases },
     ).read();
     assert.equal(logical.length, 424);
-    assert.equal(scripts.length, 426);
+    const providerCount = new Set(contract.activationPositions.map(item => item.sourceProvider)).size;
+    assert.equal(scripts.length, logical.length + 1 +
+      contract.activationPositions.length - providerCount);
   }
 
   async #verifyFailurePreservesOutput(contract) {

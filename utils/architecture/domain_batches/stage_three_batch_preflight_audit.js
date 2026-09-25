@@ -6,6 +6,7 @@ const {
   StageThreeBatchPreflightProfile,
 } = require("./stage_three_batch_preflight_profile");
 const { StageThreeGlobalExposureReview } = require("./stage_three_global_exposure_review");
+const { StageThreeReviewedEvaluationEffect } = require("./stage_three_reviewed_evaluation_effect");
 const {
   StageThreeBatchSourceObserver,
 } = require("./stage_three_batch_source_observer");
@@ -94,9 +95,12 @@ class StageThreeBatchPreflightAuditBuilder {
         "side-effect review target count differs");
       for (const module of modules) {
         const evidence = sideEffectReview.modules.find(item => item.currentPath === module.currentPath);
+        const reviewedEffect = module.effects.reviewedExposure;
         this.#require(evidence && this.#same(evidence.sourceSha256, module.sourceSha256) &&
-          this.#same(evidence.symbol, module.effects.reviewedExposure?.symbol) &&
-          this.#same(evidence.location, module.effects.reviewedExposure?.location),
+          (evidence.contract?.kind === "frozen-literal-ranges"
+            ? this.#same(evidence.review, reviewedEffect)
+            : this.#same(evidence.contract?.symbol || evidence.symbol, reviewedEffect?.symbol) &&
+              this.#same(evidence.contract?.location || evidence.location, reviewedEffect?.location)),
         `side-effect review differs from live source: ${module.currentPath}`);
       }
     }
@@ -327,23 +331,43 @@ class StageThreeBatchPreflightAuditBuilder {
     const expectedSymbols = [...new Set(module.providers.map((provider) => provider.symbol))].sort();
     const providerSymbols = manifestEntry.observed.providers.items
       .map((provider) => provider.symbol);
-    this.#require(this.#same(sourceShape.classDeclarations, expectedSymbols),
+    const expectedClasses = reviewed.frozenConstants
+      ? [reviewed.frozenConstants.className] : expectedSymbols;
+    this.#require(this.#same(sourceShape.classDeclarations, expectedClasses),
       `class declaration differs: ${module.currentPath}`);
     this.#require(this.#same([...new Set(providerSymbols)].sort(), expectedSymbols),
       `provider facts differ: ${module.currentPath}`);
-    this.#require(sourceShape.topLevelBindings.length === 0,
+    this.#require(this.#same(sourceShape.topLevelBindings,
+      reviewed.frozenConstants ? ["VariableDeclaration", "VariableDeclaration"] : []),
       `top-level binding exists: ${module.currentPath}`);
     let reviewedExposure = null;
-    if (reviewed.legacyExposure) {
-      reviewedExposure = new StageThreeGlobalExposureReview().review({
-        source, currentPath: module.currentPath, ...reviewed.legacyExposure,
+    if (reviewed.frozenConstants) {
+      reviewedExposure = new StageThreeReviewedEvaluationEffect().frozenConstants({
+        source, currentPath: module.currentPath, ...reviewed.frozenConstants,
       });
       this.#require(this.#same(auditEntry.dependencyAudit.facts.topLevelEffects,
-        [{ kind: "assignment", location: reviewed.legacyExposure.location,
-          classification: "observable" }]),
+        Object.values(reviewed.frozenConstants.bindings).map(({ location }) => ({
+          kind: "call", location, classification: "observable",
+        }))), `frozen top-level effect differs: ${module.currentPath}`);
+      this.#require(this.#same(sourceShape.topLevelEffects,
+        ["VariableDeclaration@1:1", "VariableDeclaration@2:1"]),
+      `reviewed top-level effect differs: ${module.currentPath}`);
+    } else if (reviewed.legacyExposure) {
+      const exposure = reviewed.legacyExposure;
+      reviewedExposure = exposure.mechanism === "window-property"
+        ? new StageThreeReviewedEvaluationEffect().windowExposure({
+          source, currentPath: module.currentPath, ...exposure,
+        })
+        : new StageThreeGlobalExposureReview().review({
+          source, currentPath: module.currentPath, ...exposure,
+        });
+      this.#require(this.#same(auditEntry.dependencyAudit.facts.topLevelEffects,
+        [{ kind: "assignment", location: exposure.location, classification: "observable" }]),
       `frozen top-level effect differs: ${module.currentPath}`);
       this.#require(this.#same(sourceShape.topLevelEffects,
-        [`ExpressionStatement@${reviewed.legacyExposure.location}`]),
+        [exposure.mechanism === "window-property"
+          ? `IfStatement@${reviewedExposure.guardLocation}`
+          : `ExpressionStatement@${exposure.location}`]),
       `reviewed top-level effect differs: ${module.currentPath}`);
     } else {
       this.#require(sourceShape.topLevelEffects.length === 0,
@@ -546,7 +570,7 @@ class StageThreeBatchPreflightAuditValidator {
         `allocation budget differs: ${module.currentPath}`);
       require(module.performance?.transportLookupsAllowed === 0,
         `transport budget differs: ${module.currentPath}`);
-      require(module.effects?.classification === (reviewed?.legacyExposure ?
+        require(module.effects?.classification === (reviewed?.legacyExposure || reviewed?.frozenConstants ?
         "reviewed-compatible" : "safe"), `effect classification differs: ${module.currentPath}`);
       if (reviewed?.legacyExposure) {
         require(module.effects?.reviewedExposure?.symbol === reviewed.legacyExposure.symbol &&

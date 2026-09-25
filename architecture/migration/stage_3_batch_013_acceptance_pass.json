@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-013-acceptance",
+  "stage": "3.13.8",
+  "batchId": "stage-3.candidate-013-fishing-0267b3ea",
+  "releaseVersion": "0.24.49",
+  "plannedReleaseVersion": "0.24.50",
+  "recordedAt": "2026-09-25T04:05:04.914Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_013_automated_acceptance.json",
+    "sha256": "6b08fc148d723e26365d8b262a4e555525f2fe42eadc1ee7021a272766034034",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "full": {
+      "passedChecks": 176,
+      "failedChecks": 0
+    },
+    "countSemantics": "The full suite includes the architecture and quick checks; it ran in an isolated working-tree snapshot."
+  },
+  "browserSmoke": {
+    "status": "passed-user-reported",
+    "performedBy": "user",
+    "evidenceType": "manual-test-summary-in-conversation",
+    "userStatement": "Все працює коректно PASS помилок немає",
+    "context": "Response to the Stage 3.13.8 Fishing checklist: casting, fish direction and response, rod control, pressure, fatigue and stamina during a catch.",
+    "acceptanceBasis": "User-reported PASS for the batch-specific checklist; individual steps were not independently instrumented.",
+    "perCheckResults": null,
+    "consoleCounts": {
+      "errors": 0,
+      "warnings": 0,
+      "userStatement": "0 errors, 0 warnings"
+    }
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_013_live_runtime_validation.json",
+      "sha256": "bb4468dde51e2df05c4f0589994aa6807f20f8311d62f985786a1b134c6bd1e2"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_013_observation_reconciliation.json",
+      "sha256": "8642f2c7187e2adcab8ef2fdef06be7389cc36cf7c143ab3cd067ae4e65fcc09"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "08b1e67a694198e5c30b05c7d9299ad94d0fa09f2fb05ec41e3225f3012a41c0"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "11b72dd59a6350e2257f4877aa76142bb441523cd8fdbb4b826190bbe9ee7f83"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "abee63ee84cca8463e087ad96ef4761635f00b6f3112f64f579d58cbff754f25"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "9e729031a8db83cd7b3de697de5118017e0eb4f35d95b1ff829540bd7c61700b"
+    },
+    {
+      "path": "index.html",
+      "sha256": "4e5c91bdbb31823176447a7092981de35ead81ca5255b20ff2e2aee338b46e4e"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.candidate-013-fishing-0267b3ea",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.13.9 — Release Closure v0.24.50"
+}

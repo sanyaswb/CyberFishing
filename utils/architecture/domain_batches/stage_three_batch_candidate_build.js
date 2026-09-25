@@ -24,10 +24,13 @@ const { StageThreeCandidateOutputManager } = require(
 );
 
 class StageThreeBatchCandidateBuild {
-  constructor({ projectRoot, batchNumber, additionalVirtualModules, verifyOutput = null, viteLoader } = {}) {
+  constructor({ projectRoot, batchNumber, additionalVirtualModules, sideEffectReviews = [], indexHtml = null,
+    verifyOutput = null, viteLoader } = {}) {
     assert(/^[a-zA-Z0-9-]+$/u.test(batchNumber || ""), "Candidate batch number is required");
     assert(Array.isArray(additionalVirtualModules), "Explicit virtual helper delta is required");
     this.additionalVirtualModules = Object.freeze([...additionalVirtualModules]);
+    this.sideEffectReviews = Object.freeze([...sideEffectReviews]);
+    this.indexHtml = indexHtml;
     this.verifyOutput = verifyOutput;
     this.viteLoader = viteLoader;
     this.projectRoot = path.resolve(projectRoot);
@@ -45,6 +48,9 @@ class StageThreeBatchCandidateBuild {
       ...runtimeContract.activationPositions,
       ...prebuild.preliminaryMetadata.plannedActivationPositions,
     ].sort((left, right) => left.id.localeCompare(right.id));
+    futureContract.sideEffectReviews = [
+      ...futureContract.sideEffectReviews, ...this.sideEffectReviews,
+    ];
     futureContract.approvedVirtualModules = [...new Set([
       ...futureContract.approvedVirtualModules,
       ...this.additionalVirtualModules,
@@ -67,10 +73,10 @@ class StageThreeBatchCandidateBuild {
         }),
         outputManager: this.outputManager,
         ...(this.viteLoader ? { viteLoader: this.viteLoader } : {}),
-        scriptOrderProvider: () => new LegacyScriptOrderReader(
-          this.#absolute("index.html"),
-          { scriptAliases: aliases },
-        ).read(),
+        scriptOrderProvider: () => this.indexHtml === null
+          ? new LegacyScriptOrderReader(this.#absolute("index.html"),
+            { scriptAliases: aliases }).read()
+          : new LegacyScriptOrderReader(null, { scriptAliases: aliases }).parse(this.indexHtml),
       }).run();
       this.#validateReport(report, prebuild);
       const result = this.#normalizeReport(report);

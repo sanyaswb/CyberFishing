@@ -1,0 +1,378 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-013-side-effect-review",
+  "batchId": "stage-3.candidate-013-fishing-0267b3ea",
+  "stage": "3.13.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.49",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "84c7deda304fe8c25bb70bb2265dd7ecb5cdff652eab39a11300823a21059ff1"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/core/fishing/fish_direction_intent_sampler.js",
+      "targetPath": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "sourceSha256": "4b8c7c62587f9ed3dce139846deca03aa19b5d33f51946e3ae824763fc899ba1",
+      "contract": {
+        "kind": "frozen-literal-ranges",
+        "className": "FishDirectionIntentSampler",
+        "bindings": {
+          "DEFAULT_FISH_RADIAL_RANGE": {
+            "location": "1:35",
+            "values": [
+              0.35,
+              1
+            ]
+          },
+          "DEFAULT_FISH_LATERAL_RANGE": {
+            "location": "2:36",
+            "values": [
+              -1,
+              1
+            ]
+          }
+        }
+      },
+      "review": {
+        "kind": "frozen-literal-ranges",
+        "currentPath": "src/core/fishing/fish_direction_intent_sampler.js",
+        "sourceSha256": "4b8c7c62587f9ed3dce139846deca03aa19b5d33f51946e3ae824763fc899ba1",
+        "className": "FishDirectionIntentSampler",
+        "bindings": {
+          "DEFAULT_FISH_RADIAL_RANGE": {
+            "location": "1:35",
+            "values": [
+              0.35,
+              1
+            ]
+          },
+          "DEFAULT_FISH_LATERAL_RANGE": {
+            "location": "2:36",
+            "values": [
+              -1,
+              1
+            ]
+          }
+        },
+        "topLevelStatementCount": 3,
+        "evaluationCount": 1,
+        "globalPropertiesAdded": [],
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "e7da0afcb1debd928f98f52100ee0bbce33ce8c9bdb4f7a44f0bac9c5b2ce79e",
+      "frozenObservations": [
+        {
+          "kind": "call",
+          "location": "1:35",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "2:36",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-18af7e975cb0",
+          "owner": "stage-3.candidate-013-fishing-0267b3ea",
+          "sourceProvider": "src/core/fishing/fish_direction_intent_sampler.js",
+          "targetModule": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+          "exportName": "FishDirectionIntentSampler",
+          "legacySymbol": "FishDirectionIntentSampler",
+          "legacyScriptIndex": 124,
+          "shimFile": "activations/124_fishdirectionintentsampler.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-3"
+        },
+        {
+          "id": "activation-2a74f4c05932",
+          "owner": "stage-3.candidate-013-fishing-0267b3ea",
+          "sourceProvider": "src/core/fishing/fish_direction_intent_sampler.js",
+          "targetModule": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+          "exportName": "DEFAULT_FISH_RADIAL_RANGE",
+          "legacySymbol": "DEFAULT_FISH_RADIAL_RANGE",
+          "legacyScriptIndex": 124,
+          "shimFile": "activations/124_default_fish_radial_range.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-3"
+        },
+        {
+          "id": "activation-3ed53946507b",
+          "owner": "stage-3.candidate-013-fishing-0267b3ea",
+          "sourceProvider": "src/core/fishing/fish_direction_intent_sampler.js",
+          "targetModule": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+          "exportName": "DEFAULT_FISH_LATERAL_RANGE",
+          "legacySymbol": "DEFAULT_FISH_LATERAL_RANGE",
+          "legacyScriptIndex": 124,
+          "shimFile": "activations/124_default_fish_lateral_range.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-3"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/fishing/fishing_cast_exposure_resolver.js",
+      "targetPath": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "sourceSha256": "15cd5dfb8a00a358441db24b1197c9717a69ceeaad08ad858e7e22f043440a83",
+      "contract": {
+        "kind": "global-this-class-exposure",
+        "symbol": "FishingCastExposureResolver",
+        "location": "13:1"
+      },
+      "review": {
+        "currentPath": "src/core/fishing/fishing_cast_exposure_resolver.js",
+        "symbol": "FishingCastExposureResolver",
+        "location": "13:1",
+        "sourceSha256": "15cd5dfb8a00a358441db24b1197c9717a69ceeaad08ad858e7e22f043440a83",
+        "topLevelStatements": [
+          "class-declaration",
+          "global-this-assignment"
+        ],
+        "assignmentTarget": "globalThis.FishingCastExposureResolver",
+        "evaluatedGlobalNames": [
+          "FishingCastExposureResolver"
+        ],
+        "evaluationCount": 1,
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "db682f3f635a23921c63bdff10e02394afd7cc71c230d9eb27ef92d2b2442aeb",
+      "frozenObservations": [
+        {
+          "kind": "assignment",
+          "location": "13:1",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-bafccd351254",
+          "owner": "stage-3.candidate-013-fishing-0267b3ea",
+          "sourceProvider": "src/core/fishing/fishing_cast_exposure_resolver.js",
+          "targetModule": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+          "exportName": "FishingCastExposureResolver",
+          "legacySymbol": "FishingCastExposureResolver",
+          "legacyScriptIndex": 67,
+          "shimFile": "activations/067_fishingcastexposureresolver.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-4"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/fishing/player_force_budget_allocator.js",
+      "targetPath": "src/game/domain/fishing/player_force_budget_allocator.js",
+      "sourceSha256": "71900c9970cb75d001543f7e63d24e7da04c3b1401fb20a9a7f325912a151724",
+      "contract": {
+        "kind": "guarded-window-class-exposure",
+        "symbol": "PlayerForceBudgetAllocator",
+        "location": "199:3"
+      },
+      "review": {
+        "kind": "guarded-window-class-exposure",
+        "currentPath": "src/core/fishing/player_force_budget_allocator.js",
+        "sourceSha256": "71900c9970cb75d001543f7e63d24e7da04c3b1401fb20a9a7f325912a151724",
+        "symbol": "PlayerForceBudgetAllocator",
+        "location": "199:3",
+        "guardLocation": "198:1",
+        "assignmentTarget": "window.PlayerForceBudgetAllocator",
+        "evaluationCount": 1,
+        "globalPropertiesAddedWithoutWindow": [],
+        "windowPropertiesAdded": [
+          "PlayerForceBudgetAllocator"
+        ],
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "49919e2a0f3e2331facd372502cbf09a56fad07b5ea93fdfc386e0671f625b89",
+      "frozenObservations": [
+        {
+          "kind": "assignment",
+          "location": "199:3",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-79ef4d67c996",
+          "owner": "stage-3.candidate-013-fishing-0267b3ea",
+          "sourceProvider": "src/core/fishing/player_force_budget_allocator.js",
+          "targetModule": "src/game/domain/fishing/player_force_budget_allocator.js",
+          "exportName": "PlayerForceBudgetAllocator",
+          "legacySymbol": "PlayerForceBudgetAllocator",
+          "legacyScriptIndex": 95,
+          "shimFile": "activations/095_playerforcebudgetallocator.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-4"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "targetPath": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "sourceSha256": "b6e2fe24a06ab0ef41bddbfe84a30cbd485c052f4924e742cb717c930d1cf080",
+      "contract": {
+        "kind": "guarded-window-class-exposure",
+        "symbol": "PlayerPressureFatigueCalculator",
+        "location": "439:3"
+      },
+      "review": {
+        "kind": "guarded-window-class-exposure",
+        "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+        "sourceSha256": "b6e2fe24a06ab0ef41bddbfe84a30cbd485c052f4924e742cb717c930d1cf080",
+        "symbol": "PlayerPressureFatigueCalculator",
+        "location": "439:3",
+        "guardLocation": "438:1",
+        "assignmentTarget": "window.PlayerPressureFatigueCalculator",
+        "evaluationCount": 1,
+        "globalPropertiesAddedWithoutWindow": [],
+        "windowPropertiesAdded": [
+          "PlayerPressureFatigueCalculator"
+        ],
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "08072cb50a35a81ea62169dc35a2983fc4f523abbc48114ae7347cbf5b45fdca",
+      "frozenObservations": [
+        {
+          "kind": "assignment",
+          "location": "439:3",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-a44add7fda39",
+          "owner": "stage-3.candidate-013-fishing-0267b3ea",
+          "sourceProvider": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+          "targetModule": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+          "exportName": "PlayerPressureFatigueCalculator",
+          "legacySymbol": "PlayerPressureFatigueCalculator",
+          "legacyScriptIndex": 101,
+          "shimFile": "activations/101_playerpressurefatiguecalculator.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-4"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/fishing/rod_control_angle_resolver.js",
+      "targetPath": "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "sourceSha256": "b39bbe93a56655ef5ab74146f3a7ed652154d948cf31f08ffd0c23f3ef6d5ccf",
+      "contract": {
+        "kind": "guarded-window-class-exposure",
+        "symbol": "RodControlAngleResolver",
+        "location": "55:3"
+      },
+      "review": {
+        "kind": "guarded-window-class-exposure",
+        "currentPath": "src/core/fishing/rod_control_angle_resolver.js",
+        "sourceSha256": "b39bbe93a56655ef5ab74146f3a7ed652154d948cf31f08ffd0c23f3ef6d5ccf",
+        "symbol": "RodControlAngleResolver",
+        "location": "55:3",
+        "guardLocation": "54:1",
+        "assignmentTarget": "window.RodControlAngleResolver",
+        "evaluationCount": 1,
+        "globalPropertiesAddedWithoutWindow": [],
+        "windowPropertiesAdded": [
+          "RodControlAngleResolver"
+        ],
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "15d05851ed14a48a937566692a0286a656cfbf026707da62b135cee4f0a97ad8",
+      "frozenObservations": [
+        {
+          "kind": "assignment",
+          "location": "55:3",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-3890808eb3cc",
+          "owner": "stage-3.candidate-013-fishing-0267b3ea",
+          "sourceProvider": "src/core/fishing/rod_control_angle_resolver.js",
+          "targetModule": "src/game/domain/fishing/rod_control_angle_resolver.js",
+          "exportName": "RodControlAngleResolver",
+          "legacySymbol": "RodControlAngleResolver",
+          "legacyScriptIndex": 127,
+          "shimFile": "activations/127_rodcontrolangleresolver.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-3"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_regen_calculator.js",
+      "targetPath": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "sourceSha256": "f0ee7f48ffc3f79028e245058d9e0c11e77977c85b58c76613ac2c2a6ccb5608",
+      "contract": {
+        "kind": "guarded-window-class-exposure",
+        "symbol": "StaminaRegenCalculator",
+        "location": "131:3"
+      },
+      "review": {
+        "kind": "guarded-window-class-exposure",
+        "currentPath": "src/core/fishing/stamina/stamina_regen_calculator.js",
+        "sourceSha256": "f0ee7f48ffc3f79028e245058d9e0c11e77977c85b58c76613ac2c2a6ccb5608",
+        "symbol": "StaminaRegenCalculator",
+        "location": "131:3",
+        "guardLocation": "130:1",
+        "assignmentTarget": "window.StaminaRegenCalculator",
+        "evaluationCount": 1,
+        "globalPropertiesAddedWithoutWindow": [],
+        "windowPropertiesAdded": [
+          "StaminaRegenCalculator"
+        ],
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "dbd012dbd938ce213461bf54bceb31c96aa3d9f1eb0b6a06be7de3c6af43b9de",
+      "frozenObservations": [
+        {
+          "kind": "assignment",
+          "location": "131:3",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-dca4cdb154de",
+          "owner": "stage-3.candidate-013-fishing-0267b3ea",
+          "sourceProvider": "src/core/fishing/stamina/stamina_regen_calculator.js",
+          "targetModule": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+          "exportName": "StaminaRegenCalculator",
+          "legacySymbol": "StaminaRegenCalculator",
+          "legacyScriptIndex": 107,
+          "shimFile": "activations/107_staminaregencalculator.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-3"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": {
+    "module": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+    "decision": "approved-compatible",
+    "evidenceFingerprint": "7faa39718746d494598b5b0c5fe438a46301798c41440b8525709b7b83e2be15",
+    "observations": [
+      {
+        "kind": "initializer-execution",
+        "classification": "needs-review",
+        "location": "1:42"
+      },
+      {
+        "kind": "initializer-execution",
+        "classification": "needs-review",
+        "location": "2:43"
+      }
+    ],
+    "exactEffect": "two Object.freeze calls on numeric literal arrays; no external state read or global write"
+  },
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.13.0-live-preflight-and-graph-audit"
+}

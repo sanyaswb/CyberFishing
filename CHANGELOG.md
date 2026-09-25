@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.50 - Fishing Domain
+
+### Changed
+
+- Completed atomic Stage 3 batch 013: six Fishing modules with eight named ESM exports, including two frozen direction ranges.
+- Extended the cumulative graph from 44 to 50 project modules and from 45 to 53 activation contracts, with 83 exact bridge relationships.
+- Preserved activation timing, seven classic consumer relationships, class identity, state ownership and fishing behavior.
+- Advanced the completed ordered prefix to batches 001–013 (41 of 69 frozen Domain modules); the next task is batch 014 preflight.
+
 ## v0.24.49 - Assemblies Domain
 
 ### Changed

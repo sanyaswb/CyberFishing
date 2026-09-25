@@ -177,7 +177,8 @@ class StageThreeBatch008ExecutionPlanIntegrationCheck {
       manifestSha256: evidence.manifest.sha256,
       bridgeRegistry: read("bridgeRegistry"), bridgeRegistrySha256: evidence.bridgeRegistry.sha256,
       scmCheckpoint: evidence.scmCheckpoint,
-      runtimeFacts: runtimeFacts({ runtimeContract: read("runtimeContract"), bridgeRegistry: read("bridgeRegistry") }),
+      runtimeFacts: runtimeFacts({ runtimeContract: read("runtimeContract"),
+        bridgeRegistry: read("bridgeRegistry"), indexBytes: inputs.bytes("index.html") }),
       rollbackEvidence: plan.rollback.baselineEvidence,
     });
     assert.deepEqual(Buffer.from(`${JSON.stringify(rebuilt, null, 2)}\n`), persistedBytes,

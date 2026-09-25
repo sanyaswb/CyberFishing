@@ -593,6 +593,12 @@ const CHECK_DEFINITIONS = Object.freeze([
       file: "utils/architecture/stage-3-batch-012-observation-integration-check.js",
       suites: ["quick", "architecture"],
     },
+    {
+      id: "stage-3-batch-013-architecture",
+      title: "Stage 3.13.0–3.13.7 fishing domain migration and rollback gates",
+      file: "utils/architecture/stage-3-batch-013-architecture-check.js",
+      suites: ["quick", "architecture"],
+    },
   {
     id: "stage-3-batch-008-audit-fixtures",
     title: "Stage 3.8.0 batch-008 dependency/state preflight fixtures",

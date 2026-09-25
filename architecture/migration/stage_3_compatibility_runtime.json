@@ -191,6 +191,13 @@
       "decision": "approved-compatible",
       "owner": "stage-3.candidate-001-inventory-85f44b2e",
       "reason": "Private module-local storage is created once by the cumulative graph and owns no duplicated gameplay state."
+    },
+    {
+      "module": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "evidenceFingerprint": "7faa39718746d494598b5b0c5fe438a46301798c41440b8525709b7b83e2be15",
+      "decision": "approved-compatible",
+      "owner": "stage-3.candidate-013-fishing-0267b3ea",
+      "reason": "two Object.freeze calls on numeric literal arrays; no external state read or global write"
     }
   ],
   "activationPositions": [
@@ -203,6 +210,18 @@
       "legacySymbol": "RodStrokeState",
       "legacyScriptIndex": 92,
       "shimFile": "activations/092_rodstrokestate.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
+      "id": "activation-18af7e975cb0",
+      "owner": "stage-3.candidate-013-fishing-0267b3ea",
+      "sourceProvider": "src/core/fishing/fish_direction_intent_sampler.js",
+      "targetModule": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "exportName": "FishDirectionIntentSampler",
+      "legacySymbol": "FishDirectionIntentSampler",
+      "legacyScriptIndex": 124,
+      "shimFile": "activations/124_fishdirectionintentsampler.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-3"
     },
@@ -243,6 +262,30 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-2a74f4c05932",
+      "owner": "stage-3.candidate-013-fishing-0267b3ea",
+      "sourceProvider": "src/core/fishing/fish_direction_intent_sampler.js",
+      "targetModule": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "exportName": "DEFAULT_FISH_RADIAL_RANGE",
+      "legacySymbol": "DEFAULT_FISH_RADIAL_RANGE",
+      "legacyScriptIndex": 124,
+      "shimFile": "activations/124_default_fish_radial_range.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
+      "id": "activation-3890808eb3cc",
+      "owner": "stage-3.candidate-013-fishing-0267b3ea",
+      "sourceProvider": "src/core/fishing/rod_control_angle_resolver.js",
+      "targetModule": "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "exportName": "RodControlAngleResolver",
+      "legacySymbol": "RodControlAngleResolver",
+      "legacyScriptIndex": 127,
+      "shimFile": "activations/127_rodcontrolangleresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
       "id": "activation-3dcbed1b3310",
       "owner": "stage-3.candidate-001-inventory-85f44b2e",
       "sourceProvider": "dist/legacy-bridges/event_bus.iife.js",
@@ -265,6 +308,18 @@
       "shimFile": "activations/361_rendercomponent.js",
       "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
       "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-3ed53946507b",
+      "owner": "stage-3.candidate-013-fishing-0267b3ea",
+      "sourceProvider": "src/core/fishing/fish_direction_intent_sampler.js",
+      "targetModule": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "exportName": "DEFAULT_FISH_LATERAL_RANGE",
+      "legacySymbol": "DEFAULT_FISH_LATERAL_RANGE",
+      "legacyScriptIndex": 124,
+      "shimFile": "activations/124_default_fish_lateral_range.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
     },
     {
       "id": "activation-3fee104fb111",
@@ -435,6 +490,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-79ef4d67c996",
+      "owner": "stage-3.candidate-013-fishing-0267b3ea",
+      "sourceProvider": "src/core/fishing/player_force_budget_allocator.js",
+      "targetModule": "src/game/domain/fishing/player_force_budget_allocator.js",
+      "exportName": "PlayerForceBudgetAllocator",
+      "legacySymbol": "PlayerForceBudgetAllocator",
+      "legacyScriptIndex": 95,
+      "shimFile": "activations/095_playerforcebudgetallocator.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-7b2f08a8cb34",
       "owner": "stage-3.candidate-011-items-11818ee5",
       "sourceProvider": "src/core/items/rarity/item_rarity_strategy_registry.js",
@@ -567,6 +634,18 @@
       "removalStage": "stage-3"
     },
     {
+      "id": "activation-a44add7fda39",
+      "owner": "stage-3.candidate-013-fishing-0267b3ea",
+      "sourceProvider": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "targetModule": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "exportName": "PlayerPressureFatigueCalculator",
+      "legacySymbol": "PlayerPressureFatigueCalculator",
+      "legacyScriptIndex": 101,
+      "shimFile": "activations/101_playerpressurefatiguecalculator.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-a63204f0676b",
       "owner": "stage-3.candidate-007-fishing-bb8b3939",
       "sourceProvider": "src/core/fishing/rod_pull_state.js",
@@ -601,6 +680,18 @@
       "shimFile": "activations/084_itemprogressiondescriptor.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-3"
+    },
+    {
+      "id": "activation-bafccd351254",
+      "owner": "stage-3.candidate-013-fishing-0267b3ea",
+      "sourceProvider": "src/core/fishing/fishing_cast_exposure_resolver.js",
+      "targetModule": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "exportName": "FishingCastExposureResolver",
+      "legacySymbol": "FishingCastExposureResolver",
+      "legacyScriptIndex": 67,
+      "shimFile": "activations/067_fishingcastexposureresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
     },
     {
       "id": "activation-be4932b7b0c5",
@@ -661,6 +752,18 @@
       "shimFile": "activations/112_reelretrievespeedcalculator.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-dca4cdb154de",
+      "owner": "stage-3.candidate-013-fishing-0267b3ea",
+      "sourceProvider": "src/core/fishing/stamina/stamina_regen_calculator.js",
+      "targetModule": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "exportName": "StaminaRegenCalculator",
+      "legacySymbol": "StaminaRegenCalculator",
+      "legacyScriptIndex": 107,
+      "shimFile": "activations/107_staminaregencalculator.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
     },
     {
       "id": "activation-dcb3cecb345c",

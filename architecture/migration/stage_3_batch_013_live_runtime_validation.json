@@ -1,0 +1,1153 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-live-runtime-validation",
+  "batchId": "stage-3.candidate-013-fishing-0267b3ea",
+  "status": "verified",
+  "releaseVersion": "0.24.49",
+  "cutoverSha256": "38eb582fe048e312642fc5118ce614f0165552305719965dd45512aca748de9c",
+  "runtimeSha256": "b88a9edcc38bfa2354a543b13844334570dfaf581d12ea0d7fe7544d47eb5a00",
+  "topology": {
+    "modules": 50,
+    "activations": 53,
+    "bridges": 83
+  },
+  "evaluation": [
+    {
+      "source": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "exportName": "FishingCastExposureResolver",
+      "namespaceInitializationCount": 1,
+      "classInitializationCount": 1,
+      "moduleEvaluationCount": 1,
+      "exactNamespaceAndClassReferences": true
+    },
+    {
+      "source": "src/game/domain/fishing/player_force_budget_allocator.js",
+      "exportName": "PlayerForceBudgetAllocator",
+      "namespaceInitializationCount": 1,
+      "classInitializationCount": 1,
+      "moduleEvaluationCount": 1,
+      "exactNamespaceAndClassReferences": true
+    },
+    {
+      "source": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "exportName": "PlayerPressureFatigueCalculator",
+      "namespaceInitializationCount": 1,
+      "classInitializationCount": 1,
+      "moduleEvaluationCount": 1,
+      "exactNamespaceAndClassReferences": true
+    },
+    {
+      "source": "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "exportName": "RodControlAngleResolver",
+      "namespaceInitializationCount": 1,
+      "classInitializationCount": 1,
+      "moduleEvaluationCount": 1,
+      "exactNamespaceAndClassReferences": true
+    },
+    {
+      "source": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "exportName": "StaminaRegenCalculator",
+      "namespaceInitializationCount": 1,
+      "classInitializationCount": 1,
+      "moduleEvaluationCount": 1,
+      "exactNamespaceAndClassReferences": true
+    }
+  ],
+  "activation": {
+    "transportAssignmentCount": 1,
+    "transportOwnsGameState": false,
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "activationTiming": [
+      {
+        "activationId": "activation-85b75b58221b",
+        "symbol": "FishRarityResolver",
+        "targetModule": "src/game/domain/fish/fish_rarity_resolver.js",
+        "legacyScriptIndex": 42,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-ea32013c6230",
+        "symbol": "FishAnomalyVariantResolver",
+        "targetModule": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+        "legacyScriptIndex": 43,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-249fe0228439",
+        "symbol": "ItemRarityDescriptor",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+        "legacyScriptIndex": 45,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-edee20d9f6f3",
+        "symbol": "ItemRarityStrategy",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_strategy.js",
+        "legacyScriptIndex": 46,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-7b2f08a8cb34",
+        "symbol": "ItemRarityStrategyRegistry",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+        "legacyScriptIndex": 48,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-bafccd351254",
+        "symbol": "FishingCastExposureResolver",
+        "targetModule": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+        "legacyScriptIndex": 67,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-597e6786200f",
+        "symbol": "ItemMetricStrategy",
+        "targetModule": "src/game/domain/items/progression/item_metric_strategy.js",
+        "legacyScriptIndex": 73,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-b63d6fa4a955",
+        "symbol": "ItemProgressionDescriptor",
+        "targetModule": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "legacyScriptIndex": 84,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-5c6e63e8ffb9",
+        "symbol": "InventoryEquipTargetSelectionPolicy",
+        "targetModule": "src/game/domain/inventory/equip_target_selection_policy.js",
+        "legacyScriptIndex": 86,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-7678742c83cf",
+        "symbol": "FloatTackleLineBudgetPolicy",
+        "targetModule": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+        "legacyScriptIndex": 88,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-7f67db779ead",
+        "symbol": "LineSpoolState",
+        "targetModule": "src/game/domain/fishing/line_spool_state.js",
+        "legacyScriptIndex": 90,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-a63204f0676b",
+        "symbol": "RodPullState",
+        "targetModule": "src/game/domain/fishing/rod_pull_state.js",
+        "legacyScriptIndex": 91,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-00287f399f05",
+        "symbol": "RodStrokeState",
+        "targetModule": "src/game/domain/fishing/rod_stroke_state.js",
+        "legacyScriptIndex": 92,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-3fee104fb111",
+        "symbol": "RodStrokeTracker",
+        "targetModule": "src/game/domain/fishing/rod_stroke_tracker.js",
+        "legacyScriptIndex": 93,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-868e1186ae29",
+        "symbol": "RodStrokeDistanceTracker",
+        "targetModule": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+        "legacyScriptIndex": 94,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-79ef4d67c996",
+        "symbol": "PlayerForceBudgetAllocator",
+        "targetModule": "src/game/domain/fishing/player_force_budget_allocator.js",
+        "legacyScriptIndex": 95,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-a44add7fda39",
+        "symbol": "PlayerPressureFatigueCalculator",
+        "targetModule": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+        "legacyScriptIndex": 101,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-dca4cdb154de",
+        "symbol": "StaminaRegenCalculator",
+        "targetModule": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+        "legacyScriptIndex": 107,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-da8d3f6d370f",
+        "symbol": "ReelRetrieveSpeedCalculator",
+        "targetModule": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+        "legacyScriptIndex": 112,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-57add99af90d",
+        "symbol": "ReelAutoRecoveryCalculator",
+        "targetModule": "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+        "legacyScriptIndex": 113,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-4d4619b15e3c",
+        "symbol": "ReelHoldLoadPolicy",
+        "targetModule": "src/game/domain/fishing/reel_hold_load_policy.js",
+        "legacyScriptIndex": 114,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-2534a1bdbe18",
+        "symbol": "RecoverableLineCalculator",
+        "targetModule": "src/game/domain/fishing/recoverable_line_calculator.js",
+        "legacyScriptIndex": 117,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-9a198b228060",
+        "symbol": "LooseLineCalculator",
+        "targetModule": "src/game/domain/fishing/recoverable_line_calculator.js",
+        "legacyScriptIndex": 117,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-57b99d3aaf82",
+        "symbol": "RodStrokeCapacityResolver",
+        "targetModule": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+        "legacyScriptIndex": 118,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-9c5651e4f765",
+        "symbol": "FishRetrieveResult",
+        "targetModule": "src/game/domain/fishing/fish_retrieve_result.js",
+        "legacyScriptIndex": 122,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-9857928fc9d0",
+        "symbol": "HoldOppositionResolver",
+        "targetModule": "src/game/domain/fishing/hold_opposition_resolver.js",
+        "legacyScriptIndex": 123,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-18af7e975cb0",
+        "symbol": "FishDirectionIntentSampler",
+        "targetModule": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+        "legacyScriptIndex": 124,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-2a74f4c05932",
+        "symbol": "DEFAULT_FISH_RADIAL_RANGE",
+        "targetModule": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+        "legacyScriptIndex": 124,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-3ed53946507b",
+        "symbol": "DEFAULT_FISH_LATERAL_RANGE",
+        "targetModule": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+        "legacyScriptIndex": 124,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-f70148ad6a58",
+        "symbol": "RodControlTensionModeResolver",
+        "targetModule": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+        "legacyScriptIndex": 126,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-3890808eb3cc",
+        "symbol": "RodControlAngleResolver",
+        "targetModule": "src/game/domain/fishing/rod_control_angle_resolver.js",
+        "legacyScriptIndex": 127,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-4e28fdf337a3",
+        "symbol": "DragForceCalculator",
+        "targetModule": "src/game/domain/fishing/drag_force_calculator.js",
+        "legacyScriptIndex": 128,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-a8e624a68a8e",
+        "symbol": "LineTensionCalculator",
+        "targetModule": "src/game/domain/fishing/line_tension_calculator.js",
+        "legacyScriptIndex": 129,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-775fb46bb6ce",
+        "symbol": "LineConstraintStateResolver",
+        "targetModule": "src/game/domain/fishing/line_constraint_state_resolver.js",
+        "legacyScriptIndex": 130,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-f5eefdd6e6e2",
+        "symbol": "LineConstrainedFishMotionResolver",
+        "targetModule": "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+        "legacyScriptIndex": 131,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-dcb3cecb345c",
+        "symbol": "LineRadialMovementSplitter",
+        "targetModule": "src/game/domain/fishing/line_radial_movement_splitter.js",
+        "legacyScriptIndex": 132,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-be4932b7b0c5",
+        "symbol": "RodControlMovementProjector",
+        "targetModule": "src/game/domain/fishing/rod_control_movement_projector.js",
+        "legacyScriptIndex": 133,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-ffea5244c4bf",
+        "symbol": "PoleFightSectorGeometry",
+        "targetModule": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+        "legacyScriptIndex": 134,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-ccddea60d16c",
+        "symbol": "SimpleFightForceCalculator",
+        "targetModule": "src/game/domain/fishing/simple_fight_force_calculator.js",
+        "legacyScriptIndex": 139,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-8f8220d288e5",
+        "symbol": "LandingLiftTensionCalculator",
+        "targetModule": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+        "legacyScriptIndex": 140,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-18da11a56651",
+        "symbol": "UnlimitedAssemblyCapacityPolicy",
+        "targetModule": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+        "legacyScriptIndex": 148,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-974deda48a6f",
+        "symbol": "AssemblyAttachmentTargetResolver",
+        "targetModule": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+        "legacyScriptIndex": 153,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-596779b33d76",
+        "symbol": "AssemblyCompletionPolicy",
+        "targetModule": "src/game/domain/assemblies/assembly_completion_policy.js",
+        "legacyScriptIndex": 154,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-59bd96059da6",
+        "symbol": "RodCapabilityResolver",
+        "targetModule": "src/game/domain/equipment/rod_capability_resolver.js",
+        "legacyScriptIndex": 157,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-765258a53eef",
+        "symbol": "AssetManifest",
+        "targetModule": "src/engine/assets/asset_manifest.js",
+        "legacyScriptIndex": 352,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-86e221fafb48",
+        "symbol": "AssetLoadResult",
+        "targetModule": "src/engine/assets/asset_load_result.js",
+        "legacyScriptIndex": 353,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-886fb34615aa",
+        "symbol": "RenderPass",
+        "targetModule": "src/engine/rendering/render_pass.js",
+        "legacyScriptIndex": 358,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-75b968069153",
+        "symbol": "RenderMath",
+        "targetModule": "src/engine/rendering/render_math.js",
+        "legacyScriptIndex": 360,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-3e0a233bf70c",
+        "symbol": "RenderComponent",
+        "targetModule": "src/engine/rendering/render_component.js",
+        "legacyScriptIndex": 361,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-bf033497a3e1",
+        "symbol": "CompositeRenderer",
+        "targetModule": "src/engine/rendering/composite_renderer.js",
+        "legacyScriptIndex": 362,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-3dcbed1b3310",
+        "symbol": "EventBus",
+        "targetModule": "src/engine/events/event_bus.js",
+        "legacyScriptIndex": 391,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-ce7da074f74a",
+        "symbol": "EventLifecycle",
+        "targetModule": "src/engine/events/event_lifecycle.js",
+        "legacyScriptIndex": 392,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      },
+      {
+        "activationId": "activation-6ba241908a4c",
+        "symbol": "DependencyContractValidator",
+        "targetModule": "src/engine/di/dependency_contract_validator.js",
+        "legacyScriptIndex": 395,
+        "globalAbsentBeforeActivation": true,
+        "globalExactAfterActivation": true,
+        "shimMatchesRenderer": true
+      }
+    ],
+    "physicalClassicScripts": 428,
+    "logicalPositions": 424,
+    "moduleScripts": 0,
+    "cumulativeRuntimeScripts": 1
+  },
+  "outputValidation": {
+    "behavior": [
+      {
+        "exportName": "DEFAULT_FISH_LATERAL_RANGE",
+        "caseName": "frozen-values-and-reference",
+        "outcome": "equivalent"
+      },
+      {
+        "exportName": "DEFAULT_FISH_RADIAL_RANGE",
+        "caseName": "frozen-values-and-reference",
+        "outcome": "equivalent"
+      },
+      {
+        "exportName": "FishDirectionIntentSampler",
+        "caseName": "default-range-rng-order",
+        "outcome": "equivalent"
+      },
+      {
+        "exportName": "FishDirectionIntentSampler",
+        "caseName": "reversed-and-invalid-ranges",
+        "outcome": "equivalent"
+      },
+      {
+        "exportName": "FishingCastExposureResolver",
+        "caseName": "elapsed-cast-time-and-inactive-edge-cases",
+        "outcome": "equivalent"
+      },
+      {
+        "exportName": "PlayerForceBudgetAllocator",
+        "caseName": "hold-control-allocation-and-clamps",
+        "outcome": "equivalent"
+      },
+      {
+        "exportName": "PlayerPressureFatigueCalculator",
+        "caseName": "pressure-fatigue-and-recovery-frames",
+        "outcome": "equivalent"
+      },
+      {
+        "exportName": "RodControlAngleResolver",
+        "caseName": "rod-angle-clamping-and-directions",
+        "outcome": "equivalent"
+      },
+      {
+        "exportName": "StaminaRegenCalculator",
+        "caseName": "regen-phase-and-configuration-boundaries",
+        "outcome": "equivalent"
+      }
+    ],
+    "activationsVerified": 53,
+    "exactClassicConsumerRelationships": 7,
+    "priorExportsImplementationPreserved": 45,
+    "globalsAbsentBeforeApprovedPosition": true,
+    "exactExportIdentityAfterActivation": true,
+    "moduleEvaluationCounts": null,
+    "validationScope": "actual-unmodified-candidate-IIFE"
+  },
+  "stateAndAllocationShapes": [
+    {
+      "source": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "fields": [
+        {
+          "name": "#rng",
+          "visibility": "private",
+          "initializerType": null,
+          "objectShape": []
+        }
+      ],
+      "methods": [
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#normalizeRange",
+          "kind": "method",
+          "parameterCount": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#range",
+          "kind": "method",
+          "parameterCount": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "sample",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 3,
+        "arrayExpressions": 2,
+        "newExpressions": 0,
+        "objectFreezeCalls": 1,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      }
+    },
+    {
+      "source": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "fields": [],
+      "methods": [
+        {
+          "name": "resolve",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 1,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      }
+    },
+    {
+      "source": "src/game/domain/fishing/player_force_budget_allocator.js",
+      "fields": [],
+      "methods": [
+        {
+          "name": "#clamp01",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#freeze",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#positive",
+          "kind": "method",
+          "parameterCount": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#reason",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveShares",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 5,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "resolve",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 8,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 13,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 1,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      }
+    },
+    {
+      "source": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "fields": [],
+      "methods": [
+        {
+          "name": "#clamp01",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#controlBreakFrame",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#fatigueProgressFromEfficiency",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#frame",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#holdMsFromEfficiency",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#lerp",
+          "kind": "method",
+          "parameterCount": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#positive",
+          "kind": "method",
+          "parameterCount": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#pressureFrame",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#recoveryFrame",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          }
+        },
+        {
+          "name": "#sourceFrame",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "calculate",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 8,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 24,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 3,
+        "objectAssignCalls": 0,
+        "roundingCalls": 1
+      }
+    },
+    {
+      "source": "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "fields": [],
+      "methods": [
+        {
+          "name": "#clamp01",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#number",
+          "kind": "method",
+          "parameterCount": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "resolve",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 3,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 1,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      }
+    },
+    {
+      "source": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "fields": [],
+      "methods": [
+        {
+          "name": "#angleMultiplier",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 4,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#clamp01",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#fatigueMultiplier",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#lerp",
+          "kind": "method",
+          "parameterCount": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#positive",
+          "kind": "method",
+          "parameterCount": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "calculate",
+          "kind": "method",
+          "parameterCount": 1,
+          "allocations": {
+            "objectExpressions": 7,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 13,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 7,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      }
+    }
+  ],
+  "postActivationTransportReads": 0,
+  "performanceProof": "exact-source-allocation-sites-and-result-identity; not a frame-time benchmark",
+  "browserAcceptanceClaimed": false,
+  "batchCompleted": false,
+  "observationsFinal": false,
+  "nextGate": "stage-3.13.7-observation-reconciliation"
+}

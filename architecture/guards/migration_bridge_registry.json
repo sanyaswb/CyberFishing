@@ -215,6 +215,22 @@
       ]
     },
     {
+      "id": "bridge-2943aa6fa8b8",
+      "bridge": "src/core/fishing/fishing_cast_exposure_resolver.js",
+      "source": "src/app/application.js",
+      "target": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-013-fishing-0267b3ea",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "FishingCastExposureResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-299e2a323f55",
       "bridge": "src/core/equipment/rod_capability_resolver.js",
       "source": "src/core/equipment/terminal_line_slot_resolver.js",
@@ -311,6 +327,22 @@
       ]
     },
     {
+      "id": "bridge-509dd42a0477",
+      "bridge": "src/core/fishing/rod_control_angle_resolver.js",
+      "source": "src/systems/rod_lateral_control_system.js",
+      "target": "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-013-fishing-0267b3ea",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "RodControlAngleResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-51b5e7e42e77",
       "bridge": "src/core/items/progression/item_metric_strategy.js",
       "source": "src/core/items/progression/composite_metric_strategy.js",
@@ -402,6 +434,22 @@
       "globalProviders": [
         {
           "symbol": "ReelAutoRecoveryCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-68a669b68de3",
+      "bridge": "src/core/fishing/player_force_budget_allocator.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/player_force_budget_allocator.js",
+      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-013-fishing-0267b3ea",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "PlayerForceBudgetAllocator",
           "mechanism": "global-this-property"
         }
       ]
@@ -647,6 +695,22 @@
       ]
     },
     {
+      "id": "bridge-9420d12f86ac",
+      "bridge": "src/core/fishing/fishing_cast_exposure_resolver.js",
+      "source": "src/app/states.js",
+      "target": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-013-fishing-0267b3ea",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "FishingCastExposureResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-9538204fd8a3",
       "bridge": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
       "source": "src/render/hud/fight_hud_renderer.js",
@@ -722,6 +786,46 @@
       "globalProviders": [
         {
           "symbol": "ItemRarityDescriptor",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-9f6a7d891df3",
+      "bridge": "src/core/fishing/fish_direction_intent_sampler.js",
+      "source": "src/entities/fish.js",
+      "target": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-013-fishing-0267b3ea",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "DEFAULT_FISH_LATERAL_RANGE",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "DEFAULT_FISH_RADIAL_RANGE",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "FishDirectionIntentSampler",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-a2b17a1794bf",
+      "bridge": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-013-fishing-0267b3ea",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "PlayerPressureFatigueCalculator",
           "mechanism": "global-this-property"
         }
       ]
@@ -930,6 +1034,22 @@
       "globalProviders": [
         {
           "symbol": "ItemMetricStrategy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-d1647c1fa147",
+      "bridge": "src/core/fishing/stamina/stamina_regen_calculator.js",
+      "source": "src/core/fishing/stamina/stamina_phase_machine.js",
+      "target": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-013-fishing-0267b3ea",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "StaminaRegenCalculator",
           "mechanism": "global-this-property"
         }
       ]

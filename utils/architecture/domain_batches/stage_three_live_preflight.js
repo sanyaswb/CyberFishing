@@ -115,7 +115,8 @@ class StageThreeLivePreflight {
       assert.equal(sideEffectReviewSha256, reference.sha256, "side-effect review evidence drift");
       sideEffectReview = JSON.parse(bytes);
       assert.equal(sideEffectReview.batchId, this.profile.batchId);
-      assert.equal(sideEffectReview.status, "reviewed-compatible-class-exposure-only");
+      assert(["reviewed-compatible-class-exposure-only", "reviewed-compatible"]
+        .includes(sideEffectReview.status));
       assert.deepEqual(sideEffectReview.inputs, [
         { path: PATHS.approvedPlan, sha256: evidence.approvedPlanSha256 },
         { path: PATHS.executionState, sha256: evidence.executionStateSha256 },

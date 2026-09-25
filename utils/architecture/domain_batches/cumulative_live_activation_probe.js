@@ -55,7 +55,8 @@ class CumulativeLiveActivationProbe {
         if (!shims.has(shimPath)) vm.runInContext(shim, context, { timeout: 1000 });
         shims.add(shimPath);
         const exact = transport.modules[item.targetModule]?.[item.exportName];
-        assert.equal(typeof exact, "function");
+        assert(Object.hasOwn(transport.modules[item.targetModule] || {}, item.exportName),
+          `Missing exact ESM export: ${item.targetModule}#${item.exportName}`);
         assert.equal(context[item.legacySymbol], exact);
         assert(!exposed.has(item.legacySymbol), "Duplicate/conflicting activation");
         exposed.set(item.legacySymbol, exact);

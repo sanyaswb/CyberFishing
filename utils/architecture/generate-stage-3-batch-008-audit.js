@@ -73,15 +73,15 @@ function runtimeOutputFingerprint(historical = null) {
   return sha256(Buffer.from(JSON.stringify(selected), "utf8"));
 }
 
-function runtimeFacts({ runtimeContract, bridgeRegistry }) {
-  const html = bytes(PATHS.index).toString("utf8");
+function runtimeFacts({ runtimeContract, bridgeRegistry, indexBytes = bytes(PATHS.index) }) {
+  const html = indexBytes.toString("utf8");
   const scripts = [...html.matchAll(/<script\b([^>]*)\bsrc=["']([^"']+)["'][^>]*>/giu)];
   const moduleScriptCount = scripts.filter((match) => /\btype=["']module["']/iu.test(match[1])).length;
   const runtimePath = `${runtimeContract.output.directory}${runtimeContract.output.runtimeFile}`;
   const aliases = new StageTwoRuntimeScriptAliasResolver().loadProject(PROJECT_ROOT);
-  const logicalScripts = new LegacyScriptOrderReader(absolute(PATHS.index), {
+  const logicalScripts = new LegacyScriptOrderReader(null, {
     scriptAliases: aliases,
-  }).read();
+  }).parse(html);
   const runtimeScriptCount = scripts.filter((match) => match[2].split("?")[0] === runtimePath).length;
   if (runtimeScriptCount !== 1) throw new Error("Stage 3.8.0 requires one cumulative runtime script");
   return Object.freeze({
@@ -135,6 +135,7 @@ function buildArtifact({ historicalPrebuild = false } = {}) {
     runtimeFacts: runtimeFacts({
       runtimeContract: runtimeContract.document,
       bridgeRegistry: bridgeRegistry.document,
+      indexBytes: historical ? historical.bytes(PATHS.index) : bytes(PATHS.index),
     }),
     sourceReader: (relativePath) => (historical ? historical.bytes(relativePath) : bytes(relativePath)).toString("utf8"),
   });

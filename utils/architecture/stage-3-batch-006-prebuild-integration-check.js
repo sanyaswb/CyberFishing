@@ -70,7 +70,11 @@ class StageThreeBatch006PrebuildIntegrationCheck {
       }
     }
     assert.equal(this.#scriptSources().filter((source) => source.includes("stage-3-compat-runtime/compat_runtime.iife.js")).length, 1);
-    assert.equal(this.#scriptSources().length, artifact.activeRuntimeTopology.physicalClassicScriptCount);
+    const activeProviderCount = new Set(runtime.activationPositions.map(item => item.sourceProvider)).size;
+    const expectedPhysicalScripts = cutoverStarted
+      ? 424 + 1 + runtime.activationPositions.length - activeProviderCount
+      : artifact.activeRuntimeTopology.physicalClassicScriptCount;
+    assert.equal(this.#scriptSources().length, expectedPhysicalScripts);
     assert.equal(this.#bytes("index.html").includes(Buffer.from('type="module"')), false);
     console.log(
       `Stage 3.6.4 prebuild integration passed: exact 6-target/6-activation/7-consumer evidence remains valid${cutoverStarted ? " after atomic cutover" : " with batch 006 open and runtime unchanged"}.`,

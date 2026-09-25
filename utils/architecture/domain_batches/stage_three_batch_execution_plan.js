@@ -109,7 +109,9 @@ class StageThreeBatchExecutionPlanBuilder {
       exports: [...module.exports],
       sourceSha256: module.sourceSha256,
       stateClassification: module.state.classification,
-      representationChange: "classic-class-declaration-to-named-esm-export-only",
+      representationChange: module.exports.length > 1
+        ? "classic-declarations-to-named-esm-exports-only"
+        : "classic-class-declaration-to-named-esm-export-only",
       importsAllowed: [],
       behaviorChangeAllowed: false,
       directTransportReadAllowed: false,
@@ -137,15 +139,20 @@ class StageThreeBatchExecutionPlanBuilder {
       profile.expectedActivationPositions,
     ), "Activation position set differs from profile");
 
-    const activationByProvider = new Map(activations.map((activation) => [
-      activation.sourceProvider,
-      activation,
-    ]));
+    const activationsByProvider = new Map();
+    for (const activation of activations) {
+      const providerActivations = activationsByProvider.get(activation.sourceProvider) || [];
+      providerActivations.push(activation);
+      activationsByProvider.set(activation.sourceProvider, providerActivations);
+    }
     const plannedBridges = batch.externalLegacyConsumers.map((consumer) => {
-      const activation = activationByProvider.get(consumer.provider);
+      const providerActivations = activationsByProvider.get(consumer.provider) || [];
+      const activation = providerActivations[0];
       this.#require(activation, `Activation missing for provider: ${consumer.provider}`);
       this.#require(
-        consumer.symbols.every((symbol) => symbol === activation.legacySymbol),
+        consumer.symbols.every((symbol) => providerActivations.some(item =>
+          item.legacySymbol === symbol && item.targetModule === activation.targetModule &&
+          item.removalStage === activation.removalStage)),
         `Consumer symbols differ from activation: ${consumer.provider}`,
       );
       const record = {
@@ -487,7 +494,8 @@ class StageThreeBatchExecutionPlanValidator {
       this.#same(module.importsAllowed, []) &&
       module.behaviorChangeAllowed === false &&
       module.directTransportReadAllowed === false &&
-      module.representationChange === "classic-class-declaration-to-named-esm-export-only"),
+      ["classic-class-declaration-to-named-esm-export-only",
+        "classic-declarations-to-named-esm-exports-only"].includes(module.representationChange)),
     "module representation/boundary contract differs");
     require(this.#same(
       plan?.scope?.modules?.map(({ currentPath, targetPath, exports }) => ({ currentPath, targetPath, exports })),

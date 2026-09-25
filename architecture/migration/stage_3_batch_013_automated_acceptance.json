@@ -1,0 +1,356 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-013-automated-acceptance",
+  "stage": "3.13.8",
+  "batchId": "stage-3.candidate-013-fishing-0267b3ea",
+  "releaseVersion": "0.24.49",
+  "plannedReleaseVersion": "0.24.50",
+  "recordedAt": "2026-09-25T04:02:43.600Z",
+  "status": "automated-pass-awaiting-browser",
+  "sourceCommit": "26024798f4667b0435c31bfb5756078f1f642e85",
+  "sourceMode": "isolated-working-tree-snapshot-with-uncommitted-batch-013-changes",
+  "evidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_013_audit.json",
+      "sha256": "0e2789f3961815c6e9d8a6cfb50aa85c81cd5c0949cfd2776325e6031e8be49a"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_013_side_effect_review.json",
+      "sha256": "59f3ac8e0128d5b2567e53aa97b66a9d0ef07bb03e4677026df2110fd15a1ec6"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_013_execution_plan.json",
+      "sha256": "1f89da062e96af957df68d0c20f6c0dffa7803bff0d41e30808742f23ae7a743"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_013_test_matrix.json",
+      "sha256": "75e9520d468e9aa362d8d690734988839a6738d23c8b9b17fba46056a5635803"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_013_prebuild_contract.json",
+      "sha256": "b0db3988f77e7d141c276412a08e6d2b420e5a05f35cd589e00daf80ce0dacf3"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_013_source_build_validation.json",
+      "sha256": "d9f2ce86f14848569c6b6b3e0827ec1694fc6cadfdeedb9f54ba638f8958c67b"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_013_runtime_cutover.json",
+      "sha256": "38eb582fe048e312642fc5118ce614f0165552305719965dd45512aca748de9c"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_013_live_runtime_validation.json",
+      "sha256": "bb4468dde51e2df05c4f0589994aa6807f20f8311d62f985786a1b134c6bd1e2"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_013_observation_reconciliation.json",
+      "sha256": "8642f2c7187e2adcab8ef2fdef06be7389cc36cf7c143ab3cd067ae4e65fcc09"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_013_known_debt_resolution.json",
+      "sha256": "8e8387854f99661e0dd1ebd2c877c987af7fed05d528098d0761386c0fda2f3e"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "9e729031a8db83cd7b3de697de5118017e0eb4f35d95b1ff829540bd7c61700b"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "11b72dd59a6350e2257f4877aa76142bb441523cd8fdbb4b826190bbe9ee7f83"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "abee63ee84cca8463e087ad96ef4761635f00b6f3112f64f579d58cbff754f25"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "08b1e67a694198e5c30b05c7d9299ad94d0fa09f2fb05ec41e3225f3012a41c0"
+    },
+    {
+      "path": "index.html",
+      "sha256": "4e5c91bdbb31823176447a7092981de35ead81ca5255b20ff2e2aee338b46e4e"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "9e6189ea1fe45132c0404c15d1193f8ddaebc5e10e4e4d0342cf34f66272787f"
+    },
+    {
+      "path": "utils/testing/suites/check_manifest.js",
+      "sha256": "e01986684adc57c19a38881fb0f5834364f4031fc62e1a1c82dfd5a7126d19bb"
+    }
+  ],
+  "topology": {
+    "modules": 50,
+    "activations": 53,
+    "bridges": 83
+  },
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034",
+      "stage-3.candidate-010-inventory-e3dffbe7",
+      "stage-3.candidate-011-items-11818ee5",
+      "stage-3.candidate-012-assemblies-2086347a"
+    ],
+    "activeBatchId": "stage-3.candidate-013-fishing-0267b3ea",
+    "activeBatchPhase": "runtime-active",
+    "batchCompleted": false
+  },
+  "suites": {
+    "full": {
+      "passedChecks": 176,
+      "failedChecks": 0
+    },
+    "countSemantics": "The full suite includes the architecture and quick checks; it ran in an isolated working-tree snapshot."
+  },
+  "freshInstall": {
+    "status": "passed",
+    "node": "v24.13.0",
+    "npm": "11.6.2",
+    "lockfileSha256": "9e6189ea1fe45132c0404c15d1193f8ddaebc5e10e4e4d0342cf34f66272787f",
+    "lockfileChanged": false,
+    "sourceBytesUnchanged": true,
+    "temporaryWorkspaceRemoved": true,
+    "generatedOutputCopied": false,
+    "runtimeOutput": [
+      {
+        "path": "dist/stage-3-compat-runtime/activations/042_fishrarityresolver.js",
+        "sha256": "0ae783a169059e70f0954fbeaef5ef4dd37439d8cec50b26e42350c143146ff2"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/043_fishanomalyvariantresolver.js",
+        "sha256": "dbf13d9472e7d6ed04fd87ff85ca2a22aea8ac675538103c2b6320d90a41bb42"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/045_itemraritydescriptor.js",
+        "sha256": "654da8c1e38c21e71b43f95d5f1dd3d40c4b2d28cbb06dce4f457a4248050e31"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/046_itemraritystrategy.js",
+        "sha256": "bdbebc3d7febc76bdfc36463ca3efb4564e1347889c2d69c6c59d7952387964b"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/048_itemraritystrategyregistry.js",
+        "sha256": "60880183c0ba49eb9bb9a44393872117e9c4c08c33ecc7e90c98f16e162a21e2"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/067_fishingcastexposureresolver.js",
+        "sha256": "48517ab228ec8b420ecc01c8de153f655a4fa022f235a7783ff629b665dbd9bf"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/073_itemmetricstrategy.js",
+        "sha256": "bc7b22cc1383c83b02a188e56fdc4b661cef24f074f8b000c5bbac9575f0828c"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/084_itemprogressiondescriptor.js",
+        "sha256": "8a6852ab3d45eabcccd58587a6a2d4875bdbb31a280f6aeec8593d73cc8dca1b"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/086_inventoryequiptargetselectionpolicy.js",
+        "sha256": "cb952b9844350a33ef46f53ba1d546586a4f343f252a0ca6430ae6ac183fb3e1"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/088_floattacklelinebudgetpolicy.js",
+        "sha256": "aa49fd5deb57a9892901d4f697cb9592a9cd24785f18e48a494b0f05102f85fe"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/090_linespoolstate.js",
+        "sha256": "9e192c225b197269f2d1e7e6f3283ae2f74512d079f03ae12f59adca611fc69a"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/091_rodpullstate.js",
+        "sha256": "092780820147a1f819c1c350f130b52ae7000bc071a7147521537e408638e652"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/092_rodstrokestate.js",
+        "sha256": "bf54de1bcb822696237f94c50916a6c05d728784eca133b1e02a09cc502a31a1"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/093_rodstroketracker.js",
+        "sha256": "89b75153c54ddcf2d7524f657def542c54d07e59de0be80d24d4ce1f87d00cd4"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/094_rodstrokedistancetracker.js",
+        "sha256": "401876d27d46be7d6bde1f1f9968ef1e7d76bea8ae801fab8933af744d02a15e"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/095_playerforcebudgetallocator.js",
+        "sha256": "3805e3f91c7702510b11a24da9fb56bf0cd1c2b83bca4f429092a94753060869"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/101_playerpressurefatiguecalculator.js",
+        "sha256": "80752d519b6436325743c12aec6b430c8c16be69eca7767e346eb200d964e660"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/107_staminaregencalculator.js",
+        "sha256": "1edb697a40a37c21dbe33a86e19f6d30dc053bff07abf93d4bc85ebc14b6d0b6"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/112_reelretrievespeedcalculator.js",
+        "sha256": "cb9b08da01806aa1ed559b86c373d88fb6325ffab81361126c376f77386b4ac7"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/113_reelautorecoverycalculator.js",
+        "sha256": "d0fee6b406b2f98943440dc3aa3e911342ae6557ee9108820a8017162a6eb9ca"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/114_reelholdloadpolicy.js",
+        "sha256": "28b000dae36215428d62eb946d5e181f6d2521f793bfd653e855f5cae0641bd1"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/117_looselinecalculator.js",
+        "sha256": "260df1817215256f34a5c8604ac2da67f3ad01f2d183601216c89875b3cf1631"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/117_recoverablelinecalculator.js",
+        "sha256": "615e8d5c7e1e09b158642290d9a66ea1108a183b0edc2943a4cfceddd629503b"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/118_rodstrokecapacityresolver.js",
+        "sha256": "0497fb28a189f33126681f4b00334afd6c0e5018904f148ea0dec2e0c50f8cc1"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/122_fishretrieveresult.js",
+        "sha256": "6ccda8cbd8dfcfd2bd7c3896672be8f8bb46305666727cf18a562b975ff845a5"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/123_holdoppositionresolver.js",
+        "sha256": "9d92ea7a42772e5f20a794147c47547d91f7dcc0cef4f412d5a32e218a55fe67"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/124_default_fish_lateral_range.js",
+        "sha256": "89a50a7b319e9a97bf31f8030683360cdd07bb9af0d0f203848ad7f72c508525"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/124_default_fish_radial_range.js",
+        "sha256": "a61a4efa3420947ce640c005b450ad709fc4ba3f71c7f63d4ddab253caa6e7a3"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/124_fishdirectionintentsampler.js",
+        "sha256": "7b5660e577052f0631851ca98bd085bd38e3257ec06a9a38940cf31e65df967f"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/126_rodcontroltensionmoderesolver.js",
+        "sha256": "cea2964616cdf6bc2995148d0260cb68d84b9edd097c4014b15ce5fd5e9ff9c5"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/127_rodcontrolangleresolver.js",
+        "sha256": "fd6c795620295bfa32f40b12fabb1373c4d8b57a2b3bda1803ed6104c3cf2cb2"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/128_dragforcecalculator.js",
+        "sha256": "f0dd2e753205b590022c03b3b19fce243120d0aa38a081f79b3700dfa9e1487d"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/129_linetensioncalculator.js",
+        "sha256": "15a7818493cd292bc68edf28218718c5ab960cd61db0a583401e3fcb1746d411"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/130_lineconstraintstateresolver.js",
+        "sha256": "8796bcbaa445dd5ac05a758b5bdd00f7c32cee9493b26c120ffb055140f38dfc"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/131_lineconstrainedfishmotionresolver.js",
+        "sha256": "deaf6dd9647e2777935475330ac178069ea1508ab7e9f578c34191eb37520aa0"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/132_lineradialmovementsplitter.js",
+        "sha256": "1692d1bd9409d60f68773288fdf6119957a1c2667db43f1d51095d6e22f9ed26"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/133_rodcontrolmovementprojector.js",
+        "sha256": "99e04f0a8fd51cf254ffb2b63d26f78dd51b028d00371fe20aac0eb25eca132b"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/134_polefightsectorgeometry.js",
+        "sha256": "75420e557172f1719ca885c0463b43441cc47965b6c8588497cc00ceccd8fa61"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/139_simplefightforcecalculator.js",
+        "sha256": "0fad5ebee04e430731bf53d7ef081b7b6650a952313c5c8450521f1eba4cab79"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/140_landinglifttensioncalculator.js",
+        "sha256": "bb2b7df44ea2d8ca32ba51236000ddc042b1cded9953266ec36ea0fdb3aee170"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/148_unlimitedassemblycapacitypolicy.js",
+        "sha256": "8fa25164ea51b4f20e86aa21e954df28b0bad15017542a4f4aaf3c8ab311e4f5"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/153_assemblyattachmenttargetresolver.js",
+        "sha256": "15414a4bef90a4ab1ea18cab0ebe53497870aac16041a69882f19480f92e1683"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/154_assemblycompletionpolicy.js",
+        "sha256": "1de8b34190dc474230f6999d329c1bb87032e7e109e9bcc11e937e89678bcee1"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/157_rodcapabilityresolver.js",
+        "sha256": "462de6f1999ff5b789409dbe00273f9cce166f835c0a0843456167fe8833b988"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/352_assetmanifest.js",
+        "sha256": "c607661064a404d748893c6b76ce54747e3bcf0e30a4e40875663c59001e6ece"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/353_assetloadresult.js",
+        "sha256": "663f88f08f1dac40bd03d635b5a1b3105c460bfb5903dcdceadc92add7dcf66f"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/358_renderpass.js",
+        "sha256": "4d519d81bebdc82e2efc3b4a7fa2c9239597bbcfaa04c13daeb80cd9e0f144bd"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/360_rendermath.js",
+        "sha256": "a962bc192bdb40de397df3dd576ff1fb30965f8374ad4b2962db17e509837de3"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/361_rendercomponent.js",
+        "sha256": "d2636a7d6868af2195a848d4b0b72be6cc0c3dd5bb98d40192ed47b58ddb79d2"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/362_compositerenderer.js",
+        "sha256": "f04ebc0e624f926e7172fdbdb2562c3355fa1f58d56f30bf78ff97c1edf8be88"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/391_eventbus.js",
+        "sha256": "df1beb5019a18ebf9f666468d02e57689994af430a80904ae44447b7b75b2c77"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/392_eventlifecycle.js",
+        "sha256": "f54be747be93bca4e6d9047d65b3f08908f70688a400700d343851e68394c68f"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/activations/395_dependencycontractvalidator.js",
+        "sha256": "d3f54e03c1c3a39474c9642bc364820187b47da05066460911ffe19617f45edd"
+      },
+      {
+        "path": "dist/stage-3-compat-runtime/compat_runtime.iife.js",
+        "sha256": "b88a9edcc38bfa2354a543b13844334570dfaf581d12ea0d7fe7544d47eb5a00"
+      }
+    ],
+    "steps": [
+      {
+        "id": "npm-ci",
+        "exitCode": 0
+      },
+      {
+        "id": "cumulative-build",
+        "exitCode": 0
+      }
+    ]
+  },
+  "browserSmoke": {
+    "status": "pending-user-verification"
+  },
+  "releaseClosureAllowed": false,
+  "nextGate": "manual-batch-013-browser-smoke-and-console-counts"
+}

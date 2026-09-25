@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-013-release-transition",
+  "batchId": "stage-3.candidate-013-fishing-0267b3ea",
+  "fromRelease": "0.24.49",
+  "toRelease": "0.24.50",
+  "acceptance": {
+    "path": "architecture/migration/stage_3_batch_013_acceptance_pass.json",
+    "sha256": "3e7ecc800cbac5d0814c65020188d9b35e5a7f5184a89716669486853949cc07"
+  },
+  "browserProof": {
+    "path": "architecture/migration/stage_3_batch_013_browser_confirmation.json",
+    "sha256": "717ad933a788b88742dfd9b8e4426ae2a0fcd22deacfc7e0334b710a7969407e"
+  },
+  "records": [
+    {
+      "path": "CHANGELOG.md",
+      "beforeSha256": "3b642958395fa1d8e7d17114a3bc2f430a25771896296c2fc34bdd19beb412b6",
+      "afterSha256": "22bed7c760ab5faf686fba77310dda3debe530eab552afadfde647d3c5fbfb0d",
+      "edits": [
+        {
+          "from": "# CyberFishing changelog\n\n",
+          "to": "# CyberFishing changelog\n\n## v0.24.50 - Fishing Domain\n\n### Changed\n\n- Completed atomic Stage 3 batch 013: six Fishing modules with eight named ESM exports, including two frozen direction ranges.\n- Extended the cumulative graph from 44 to 50 project modules and from 45 to 53 activation contracts, with 83 exact bridge relationships.\n- Preserved activation timing, seven classic consumer relationships, class identity, state ownership and fishing behavior.\n- Advanced the completed ordered prefix to batches 001–013 (41 of 69 frozen Domain modules); the next task is batch 014 preflight.\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "beforeSha256": "08b1e67a694198e5c30b05c7d9299ad94d0fa09f2fb05ec41e3225f3012a41c0",
+      "afterSha256": "1eb6eb6d6c183927f7d1b7e446ca4cbd8b318fd77b4763365324b675c94c9d85",
+      "edits": [
+        {
+          "from": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.49\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\"\n  ],\n  \"activeBatchId\": \"stage-3.candidate-013-fishing-0267b3ea\",\n  \"compatibilityRuntimeActivated\": true,\n  \"activeBatchPhase\": \"runtime-active\"\n}",
+          "to": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.50\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\"\n  ],\n  \"activeBatchId\": null,\n  \"compatibilityRuntimeActivated\": true\n}",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "index.html",
+      "beforeSha256": "4e5c91bdbb31823176447a7092981de35ead81ca5255b20ff2e2aee338b46e4e",
+      "afterSha256": "631e705b840d54f03046322927a1086a65bfc7b56f0589f3efdffc468d2f6de1",
+      "edits": [
+        {
+          "from": "    <script src=\"src/config/project_version.js?v=0.24.49\"></script>",
+          "to": "    <script src=\"src/config/project_version.js?v=0.24.50\"></script>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "beforeSha256": "9e6189ea1fe45132c0404c15d1193f8ddaebc5e10e4e4d0342cf34f66272787f",
+      "afterSha256": "adb33f606b9a91945962fe201aaf5722a6be1c320d1fda91b8df5a024f0662fb",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.49\",",
+          "to": "  \"version\": \"0.24.50\",",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "package.json",
+      "beforeSha256": "71d4089f889ba1e899c1ba9c7b10e69ce84000f173dff50e4ee6109af618d364",
+      "afterSha256": "1a91c6dea3b3da1261e8f4d6bd5328954c88e5e621c05a0dae689e864ca0eebf",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.49\",",
+          "to": "  \"version\": \"0.24.50\",",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "refactor_Task.txt",
+      "beforeSha256": "0a2784fcd231cbc763331414e2d25a84fef2fa84f7d6c5881f9f00d1af17aeda",
+      "afterSha256": "e32feb73165e37df0aa8ecc309c1a2120db17dc23dbcfa05cb6a2449df2a7f9a",
+      "edits": [
+        {
+          "from": "**Поточна release-версія:** `v0.24.49`",
+          "to": "**Поточна release-версія:** `v0.24.50`",
+          "count": 1
+        },
+        {
+          "from": "**Поточний наступний етап:** `Stage 3.13.0 — Batch 013 Preflight and Dependency/State Audit`",
+          "to": "**Поточний наступний етап:** `Stage 3.14.0 — Batch 014 Preflight and Dependency/State Audit`",
+          "count": 1
+        },
+        {
+          "from": "## Stage 3.13–3.21 — Atomic Domain Migration Batches\n\nЗавершено `12/21` frozen batches і `35/69` frozen domain-модулів. Наступний exact batch:\n\n```text\nstage-3.candidate-013-fishing-0267b3ea\n\nDEFAULT_FISH_LATERAL_RANGE\nDEFAULT_FISH_RADIAL_RANGE\nFishDirectionIntentSampler\nFishingCastExposureResolver\nPlayerForceBudgetAllocator\nPlayerPressureFatigueCalculator\nRodControlAngleResolver\nStaminaRegenCalculator\n```\n\nStage 3.13.0: read-only preflight, exact dependency/state audit, approved activation/consumers і rollback boundary. Runtime migration не починається до наступних підетапів.\n\nПоточний accepted runtime: 44 project modules, 45 activation contracts, 76 bridge records; одна cumulative topology, жодного active batch. Наступний scope береться з frozen plan і перевіряється на фактичному graph.\n\n",
+          "to": "## Stage 3.14–3.21 — Atomic Domain Migration Batches\n\nЗавершено `13/21` frozen batches і `41/69` frozen domain-модулів. Наступний exact batch:\n\n```text\nstage-3.candidate-014-fishing-fefd469b\n\nLandingLiftReadinessPolicy\nPlayerPressureFatigueState\nPlayerTensionBuildRateResolver\nStaminaDrainCalculator\nStaminaTransitionResolver\nTackleFailureSelector\n```\n\nStage 3.14.0: read-only preflight, exact dependency/state audit, approved activation/consumers і rollback boundary. Runtime migration не починається до наступних підетапів.\n\nПоточний accepted runtime: 50 project modules, 53 activation contracts, 83 bridge records; одна cumulative topology, жодного active batch. Наступний scope береться з frozen plan і перевіряється на фактичному graph.\n\n",
+          "count": 1
+        },
+        {
+          "from": "Кожен batch `013–021`",
+          "to": "Кожен batch `014–021`",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/config/project_version.js",
+      "beforeSha256": "a5fdb23a4b069ab5ef58c838e1ac33d6d1e6f01b3f6f88223b6f69b2c4ce6d88",
+      "afterSha256": "2f1e5a99bf00762080e9d8eac1b4cb1b1751491fcfbcbbc4c92d8e97d56bf3d0",
+      "edits": [
+        {
+          "from": "const CURRENT_PROJECT_VERSION = \"0.24.49\";",
+          "to": "const CURRENT_PROJECT_VERSION = \"0.24.50\";",
+          "count": 1
+        },
+        {
+          "from": "  codename: \"assemblies-domain\",",
+          "to": "  codename: \"fishing-domain\",",
+          "count": 1
+        },
+        {
+          "from": "  updatedAt: \"2026-09-24\",",
+          "to": "  updatedAt: \"2026-09-25\",",
+          "count": 1
+        },
+        {
+          "from": "  notes: Object.freeze([\n    \"Migrate two Assemblies classes to named game-domain ESM exports\",\n    \"Preserve one cumulative graph with forty-four project modules and forty-five activations\",\n    \"Complete frozen batch 012 with seventy-six exact classic-consumer bridge relationships\",\n    \"Preserve attachment target and assembly completion behavior and class identity\",\n  ]),",
+          "to": "  notes: Object.freeze([\n    \"Migrate six Fishing modules with eight named game-domain ESM exports\",\n    \"Preserve one cumulative graph with fifty project modules and fifty-three activations\",\n    \"Complete frozen batch 013 with eighty-three exact classic-consumer bridge relationships\",\n    \"Preserve cast, fish direction, rod control, fatigue and stamina behavior and identity\",\n  ]),",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

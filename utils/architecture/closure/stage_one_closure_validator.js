@@ -394,6 +394,11 @@ class StageOneClosureValidator {
     const knownDebt = this.#readJson(
       "architecture/guards/known_debt_registry.json",
     );
+    const debtForStageOneBaseline = fs.existsSync(path.join(this.projectRoot,
+      "architecture/migration/stage_3_batch_013_known_debt_resolution.json"))
+      ? JSON.parse(new (require("../domain_batches/stage_three_batch_013_history").Batch013History)(this.projectRoot)
+        .before("architecture/guards/known_debt_registry.json"))
+      : knownDebt;
     const globalBaseline = this.#readJson(
       "architecture/guards/global_provider_baseline.json",
     );
@@ -463,7 +468,7 @@ class StageOneClosureValidator {
     this.#validateArchitecture({
       closure,
       manifest,
-      knownDebt,
+      knownDebt: debtForStageOneBaseline,
       globalBaseline,
       bridgeRegistry,
       executionState,

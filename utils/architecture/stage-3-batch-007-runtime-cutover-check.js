@@ -149,8 +149,8 @@ class StageThreeBatch007RuntimeCutoverCheck {
     assert.equal(scripts.length, 426);
     assert.equal(scripts.filter((match) => /\btype=["']module["']/iu.test(match[1])).length, 0);
     const aliases = new StageThreeRuntimeScriptAliasResolver().resolve(runtime);
-    const logical = new LegacyScriptOrderReader(this.#absolute("index.html"),
-      { scriptAliases: aliases }).read();
+    const logical = new LegacyScriptOrderReader(null,
+      { scriptAliases: aliases }).parse(html);
     assert.equal(logical.length, 424);
   }
 

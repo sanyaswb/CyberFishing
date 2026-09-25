@@ -17,11 +17,13 @@ class StageThreeObservationManifestTransition {
     this.cutover = cutover;
     this.runtime = runtime;
     this.removedTargetBuiltins = [];
+    this.removedTargetBuiltinsBySource = {};
+    this.removedTargetBrowserApisBySource = {};
     assert.equal(prebuild.batchId, this.profile.batchId);
     assert.equal(cutover.batchId, this.profile.batchId);
     this.activations = prebuild.preliminaryMetadata.plannedActivationPositions;
-    this.paths = this.activations.flatMap((item) => [item.sourceProvider, item.targetModule]).sort();
-    assert.equal(new Set(this.paths).size, this.paths.length);
+    this.paths = [...new Set(this.activations.flatMap((item) =>
+      [item.sourceProvider, item.targetModule]))].sort();
     this.beforeSha256 = cutover.writes.find((item) => item.path === MANIFEST).afterSha256;
   }
 
@@ -34,7 +36,9 @@ class StageThreeObservationManifestTransition {
     for (const activation of this.activations) {
       const target = next.modules.find((item) => item.currentPath === activation.targetModule);
       assert.equal(old.get(target.currentPath).architecture.migrationStatus, "migrating");
-      assert.deepEqual(target.architecture, old.get(target.currentPath).architecture, "Scanner changed target classification");
+      assert(["migrating", "verified"].includes(target.architecture.migrationStatus));
+      assert.deepEqual({ ...target.architecture, migrationStatus: "migrating" },
+        old.get(target.currentPath).architecture, "Scanner changed target classification");
       target.architecture.migrationStatus = "verified";
     }
     this.validateDelta(before, next);
@@ -52,8 +56,11 @@ class StageThreeObservationManifestTransition {
       assert(source && target && previous, "Missing exact observation scope");
       assert.deepEqual(source.architecture.roles, ["compatibility-bridge"]);
       assert.equal(source.observed.legacyLoadOrder, activation.legacyScriptIndex);
-      assert.deepEqual(source.observed.providers, { status: "verified", items: [{ symbol: activation.legacySymbol,
-        mechanism: "global-this-property", availability: "program-init" }], issues: [] });
+      const providerItems = this.activations.filter(item =>
+        item.sourceProvider === activation.sourceProvider).map(item => ({
+        symbol: item.legacySymbol, mechanism: "global-this-property", availability: "program-init",
+      })).sort((left, right) => left.symbol.localeCompare(right.symbol));
+      assert.deepEqual(source.observed.providers, { status: "verified", items: providerItems, issues: [] });
       const transport = { symbol: this.runtime.transport.symbol, mechanism: "global-this-property",
         accessRequirement: "required", executionPhase: "eager" };
       assert.deepEqual(source.observed.consumers, { status: "verified", items: [transport], issues: [] });
@@ -65,9 +72,14 @@ class StageThreeObservationManifestTransition {
       assert.deepEqual(target.observed.providers, empty());
       assert.deepEqual(target.observed.consumers, empty());
       const expectedTargetEnvironment = structuredClone(previous.observed.environment);
-      for (const builtin of this.removedTargetBuiltins) {
+      for (const builtin of this.removedTargetBuiltinsBySource[activation.sourceProvider] ||
+        this.removedTargetBuiltins) {
         assert(expectedTargetEnvironment.builtins.includes(builtin), "Reviewed builtin was absent before cutover");
         expectedTargetEnvironment.builtins = expectedTargetEnvironment.builtins.filter(item => item !== builtin);
+      }
+      for (const api of this.removedTargetBrowserApisBySource[activation.sourceProvider] || []) {
+        assert(expectedTargetEnvironment.browserApis.includes(api), "Reviewed browser API was absent before cutover");
+        expectedTargetEnvironment.browserApis = expectedTargetEnvironment.browserApis.filter(item => item !== api);
       }
       assert.deepEqual(target.observed.environment, expectedTargetEnvironment,
         "ESM target acquired a new environment dependency");

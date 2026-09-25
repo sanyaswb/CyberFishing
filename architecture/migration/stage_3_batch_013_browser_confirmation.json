@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-013-browser-confirmation",
+  "batchId": "stage-3.candidate-013-fishing-0267b3ea",
+  "releaseVersion": "0.24.49",
+  "status": "passed",
+  "performedBy": "user",
+  "recordedAt": "2026-09-25T04:05:04.914Z",
+  "evidenceType": "user-confirmation-in-conversation",
+  "browserSummary": {
+    "userStatement": "Все працює коректно PASS помилок немає",
+    "context": "User-reported PASS for the Stage 3.13.8 Fishing checklist.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": false
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "0 errors, 0 warnings",
+    "independentlyInstrumented": false
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_013_acceptance_pass.json",
+    "sha256": "3e7ecc800cbac5d0814c65020188d9b35e5a7f5184a89716669486853949cc07"
+  },
+  "historicalSummaryPreserved": true
+}
