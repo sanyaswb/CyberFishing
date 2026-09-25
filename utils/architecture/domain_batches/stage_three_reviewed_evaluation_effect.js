@@ -14,12 +14,17 @@ class StageThreeReviewedEvaluationEffect {
     return espree.parse(source, { ecmaVersion: "latest", sourceType: "script", loc: true, range: true });
   }
 
+  // Reviews top-level constants initialized by Object.freeze over inert literals (arrays of
+  // string/numeric literals or plain objects with string literal values), followed by exactly one
+  // class. Two numeric pairs keep the historical "frozen-literal-ranges" kind.
   frozenConstants({ source, currentPath, className, bindings }) {
     const tree = this.parse(source);
     const names = Object.keys(bindings);
-    assert.equal(names.length, 2);
-    assert.equal(tree.body.length, 3, `${currentPath}: expected two constants and one class`);
-    for (let index = 0; index < 2; index += 1) {
+    assert(names.length > 0, `${currentPath}: frozen constants are required`);
+    assert.equal(tree.body.length, names.length + 1,
+      `${currentPath}: expected ${names.length} constants and one class`);
+    let ranges = names.length === 2;
+    for (let index = 0; index < names.length; index += 1) {
       const statement = tree.body[index];
       const expected = names[index];
       assert.equal(statement.type, "VariableDeclaration");
@@ -32,30 +37,41 @@ class StageThreeReviewedEvaluationEffect {
       assert.equal(call.callee.object.name, "Object");
       assert.equal(call.callee.property.name, "freeze");
       assert.equal(call.arguments.length, 1);
-      const array = call.arguments[0];
-      assert.equal(array.type, "ArrayExpression");
-      assert.equal(array.elements.length, 2);
-      for (const element of array.elements) {
-        assert(["Literal", "UnaryExpression"].includes(element.type), "Constant range must be numeric literals");
-        if (element.type === "UnaryExpression") {
-          assert.equal(element.operator, "-");
-          assert.equal(element.argument.type, "Literal");
-          assert.equal(typeof element.argument.value, "number");
-        } else assert.equal(typeof element.value, "number");
+      const literal = call.arguments[0];
+      if (literal.type === "ArrayExpression") {
+        assert(literal.elements.every(isInertLiteral),
+          `${currentPath}: constant array must contain string or numeric literals`);
+        ranges &&= literal.elements.length === 2 && literal.elements.every(element =>
+          element.type === "UnaryExpression" || typeof element.value === "number");
+      } else {
+        assert.equal(literal.type, "ObjectExpression", `${currentPath}: constant must be a literal`);
+        ranges = false;
+        for (const property of literal.properties) {
+          assert.equal(property.type, "Property");
+          assert.equal(property.kind, "init");
+          assert.equal(property.computed, false);
+          assert.equal(property.method, false);
+          assert.equal(property.key.type, "Identifier");
+          assert.equal(property.value.type, "Literal");
+          assert.equal(typeof property.value.value, "string");
+        }
       }
       assert.equal(position(call), bindings[expected].location);
     }
-    assert.equal(tree.body[2].type, "ClassDeclaration");
-    assert.equal(tree.body[2].id.name, className);
+    const declaration = tree.body[names.length];
+    assert.equal(declaration.type, "ClassDeclaration");
+    assert.equal(declaration.id.name, className);
     const context = vm.createContext({});
     vm.runInContext(source, context, { filename: currentPath });
     assert.deepEqual(Object.getOwnPropertyNames(context), [], "Frozen constants created globals");
     for (const [name, contract] of Object.entries(bindings)) {
       assert.equal(vm.runInContext(`Object.isFrozen(${name})`, context), true);
-      assert.deepEqual(Array.from(vm.runInContext(name, context)), contract.values);
+      const value = vm.runInContext(name, context);
+      assert.deepEqual(Array.isArray(value) ? Array.from(value) : { ...value }, contract.values);
     }
-    return Object.freeze({ kind: "frozen-literal-ranges", currentPath, sourceSha256: sha(source),
-      className, bindings, topLevelStatementCount: 3,
+    return Object.freeze({ kind: ranges ? "frozen-literal-ranges" : "frozen-literal-constants",
+      currentPath, sourceSha256: sha(source),
+      className, bindings, topLevelStatementCount: names.length + 1,
       evaluationCount: 1, globalPropertiesAdded: [], otherTopLevelEffects: 0 });
   }
 

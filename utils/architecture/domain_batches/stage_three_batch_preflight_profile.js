@@ -71,8 +71,10 @@ class StageThreeBatchPreflightProfile {
         require(Boolean(definition?.sideEffectEvidence),
           `${currentPath} frozenConstants requires sideEffectEvidence`);
         require(typeof contract.frozenConstants.className === "string" &&
-          Object.keys(contract.frozenConstants.bindings || {}).length === 2,
-        `${currentPath} frozenConstants must name one class and two bindings`);
+          Object.keys(contract.frozenConstants.bindings || {}).length > 0 &&
+          Object.values(contract.frozenConstants.bindings).every((binding) =>
+            /^\d+:\d+$/u.test(binding?.location)),
+        `${currentPath} frozenConstants must name one class and exact bindings`);
       }
       if (contract?.frozenStaticFields) {
         require(Boolean(definition?.sideEffectEvidence),

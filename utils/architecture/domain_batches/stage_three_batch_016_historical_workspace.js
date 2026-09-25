@@ -17,6 +17,13 @@ const sha = bytes => crypto.createHash("sha256").update(bytes).digest("hex");
 class Batch016HistoricalWorkspace {
   async run(root, action, { keepPrebuild = false, keepCutover = false, copyTools = false } = {}) {
     const projectRoot = path.resolve(root);
+    if (fs.existsSync(path.join(projectRoot,
+      "architecture/migration/stage_3_batch_017_runtime_cutover.json"))) {
+      const { Batch017HistoricalWorkspace } = require("./stage_three_batch_017_historical_workspace");
+      return new Batch017HistoricalWorkspace().run(projectRoot,
+        prior => this.run(prior, action, { keepPrebuild, keepCutover, copyTools }),
+        { copyTools });
+    }
     if (!fs.existsSync(path.join(projectRoot, PREBUILD))) return action(projectRoot);
     const parent = fs.realpathSync(os.tmpdir());
     const temporary = fs.mkdtempSync(path.join(parent, "cyber-batch016-historical-"));

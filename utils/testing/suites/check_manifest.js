@@ -615,6 +615,12 @@ const CHECK_DEFINITIONS = Object.freeze([
       id: "stage-3-batch-016-architecture",
       title: "Stage 3.16.0–3.16.7 fishing pressure fatigue source domain migration and rollback gates",
       file: "utils/architecture/stage-3-batch-016-architecture-check.js",
+      suites: ["history"],
+    },
+    {
+      id: "stage-3-batch-017-architecture",
+      title: "Stage 3.17.0–3.17.7 inventory item location domain migration and rollback gates",
+      file: "utils/architecture/stage-3-batch-017-architecture-check.js",
       suites: ["quick", "architecture", "history"],
     },
   {

@@ -57,18 +57,27 @@ class Batch009EarlierEvaluationGate {
           const init = declaration.init;
           const localWeakMap = init?.type === "NewExpression" && init.callee.type === "Identifier" &&
             init.callee.name === "WeakMap" && init.arguments.length === 0;
-          const frozenLiteralRange = init?.type === "CallExpression" &&
+          const frozenArgument = init?.type === "CallExpression" &&
             init.callee?.type === "MemberExpression" && init.callee.object?.name === "Object" &&
-            init.callee.property?.name === "freeze" && init.arguments.length === 1 &&
-            init.arguments[0].type === "ArrayExpression" && init.arguments[0].elements.length === 2 &&
-            init.arguments[0].elements.every(value => value.type === "Literal" &&
+            init.callee.property?.name === "freeze" && init.arguments.length === 1
+            ? init.arguments[0] : null;
+          const frozenLiteralRange = frozenArgument?.type === "ArrayExpression" &&
+            frozenArgument.elements.length === 2 &&
+            frozenArgument.elements.every(value => value.type === "Literal" &&
               typeof value.value === "number" || value.type === "UnaryExpression" &&
               value.operator === "-" && value.argument?.type === "Literal" &&
               typeof value.argument.value === "number");
-          assert(init?.type === "Literal" || localWeakMap || frozenLiteralRange,
+          const frozenLiteralConstant = !frozenLiteralRange && (
+            frozenArgument?.type === "ArrayExpression" && frozenArgument.elements.every(isInertLiteral) ||
+            frozenArgument?.type === "ObjectExpression" && frozenArgument.properties.every(property =>
+              property.type === "Property" && property.kind === "init" && !property.computed &&
+              !property.method && property.key.type === "Identifier" &&
+              property.value.type === "Literal" && typeof property.value.value === "string"));
+          assert(init?.type === "Literal" || localWeakMap || frozenLiteralRange || frozenLiteralConstant,
             "unknown eager initializer");
           initializations.push({ binding: declaration.id.name, kind: localWeakMap
-            ? "private-empty-weakmap" : frozenLiteralRange ? "frozen-literal-range" : "primitive-literal" });
+            ? "private-empty-weakmap" : frozenLiteralRange ? "frozen-literal-range"
+              : frozenLiteralConstant ? "frozen-literal-constant" : "primitive-literal" });
         }
       }
       const effect = effects.observe({ modulePath: module.targetPath, source });
@@ -78,7 +87,7 @@ class Batch009EarlierEvaluationGate {
         assert.equal(review?.decision, "approved-compatible", "missing reviewed initialization");
         assert.equal(review.evidenceFingerprint, effect.evidenceFingerprint, "stale effect review");
         assert(initializations.some(i => ["private-empty-weakmap", "frozen-literal-range",
-          "frozen-literal-static-field"].includes(i.kind)),
+          "frozen-literal-constant", "frozen-literal-static-field"].includes(i.kind)),
           "review does not prove compatible initialization");
       } else assert(!review, "stale unnecessary review");
       reviewMap.delete(module.targetPath);

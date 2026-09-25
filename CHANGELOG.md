@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.24.54 - Inventory Item Location Domain
+
+### Changed
+
+- Completed atomic Stage 3 batch 017: one Inventory module with two named ESM exports (InventoryItemLocation and the frozen InventoryItemLocationKind table).
+- Extended the cumulative graph from 63 to 64 project modules and from 66 to 68 activation contracts, with 111 exact bridge relationships.
+- Preserved activation timing, fifteen classic consumer relationships, class and kind-table identity, state ownership and inventory behavior.
+- Reviewed frozen top-level constants may now be any number of inert-literal tables (string or numeric arrays, string-valued objects); batch 013's two numeric ranges keep their exact review.
+- Advanced the completed ordered prefix to batches 001–017 (55 of 69 frozen Domain modules); the next task is batch 018 preflight.
+
 ## v0.24.53 - Fishing Pressure Fatigue Source Domain
 
 ### Changed

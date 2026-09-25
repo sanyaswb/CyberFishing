@@ -5,6 +5,7 @@ const vm = require("vm");
 const root = path.resolve(__dirname, "..");
 const context = vm.createContext({ console });
 for (const relativePath of [
+  "dist/stage-3-compat-runtime/compat_runtime.iife.js",
   "src/core/inventory/inventory_item_location.js",
   "src/core/inventory/flat_inventory_item_repository.js",
   "src/core/line/line_allocation_policy.js",

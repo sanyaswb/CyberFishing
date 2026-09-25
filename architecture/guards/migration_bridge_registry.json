@@ -51,6 +51,22 @@
       ]
     },
     {
+      "id": "bridge-0c362ab87767",
+      "bridge": "src/core/inventory/inventory_item_location.js",
+      "source": "src/core/assemblies/item_assembly_service.js",
+      "target": "src/game/domain/inventory/inventory_item_location.js",
+      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemLocation",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-105a8ef0c687",
       "bridge": "src/core/fishing/rod_control_movement_projector.js",
       "source": "src/systems/fight_physics_system.js",
@@ -311,6 +327,22 @@
       ]
     },
     {
+      "id": "bridge-357870b89ad9",
+      "bridge": "src/core/inventory/inventory_item_location.js",
+      "source": "src/core/inventory/item_assembly_stacking_policy.js",
+      "target": "src/game/domain/inventory/inventory_item_location.js",
+      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemLocation",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-397a03218e06",
       "bridge": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
       "source": "src/render/pipeline/hud_render_pass.js",
@@ -407,6 +439,22 @@
       ]
     },
     {
+      "id": "bridge-53764cfb47d0",
+      "bridge": "src/core/inventory/inventory_item_location.js",
+      "source": "src/core/inventory/flat_inventory_item_repository.js",
+      "target": "src/game/domain/inventory/inventory_item_location.js",
+      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemLocation",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-550eed84bb7c",
       "bridge": "src/core/fishing/tackle_failure_selector.js",
       "source": "src/systems/tackle_stress_system.js",
@@ -487,6 +535,22 @@
       ]
     },
     {
+      "id": "bridge-61c989dead40",
+      "bridge": "src/core/inventory/inventory_item_location.js",
+      "source": "src/application/inventory/inventory_v2_view_model_factory.js",
+      "target": "src/game/domain/inventory/inventory_item_location.js",
+      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemLocation",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-63afd58b4545",
       "bridge": "src/core/fishing/reel_auto_recovery_calculator.js",
       "source": "src/systems/reel_system.js",
@@ -498,6 +562,22 @@
       "globalProviders": [
         {
           "symbol": "ReelAutoRecoveryCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-65b88accc9a1",
+      "bridge": "src/core/inventory/inventory_item_location.js",
+      "source": "src/application/inventory/inventory_v2_line_allocation_service.js",
+      "target": "src/game/domain/inventory/inventory_item_location.js",
+      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemLocation",
           "mechanism": "global-this-property"
         }
       ]
@@ -679,6 +759,22 @@
       ]
     },
     {
+      "id": "bridge-81fd90ae9bb0",
+      "bridge": "src/core/inventory/inventory_item_location.js",
+      "source": "src/app/application.js",
+      "target": "src/game/domain/inventory/inventory_item_location.js",
+      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemLocation",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-8654ddb73e7e",
       "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
       "source": "src/render/fishing/line_visual_state_controller.js",
@@ -727,6 +823,22 @@
       ]
     },
     {
+      "id": "bridge-8cec1d46f092",
+      "bridge": "src/core/inventory/inventory_item_location.js",
+      "source": "src/application/inventory/inventory_v2_refill_ports.js",
+      "target": "src/game/domain/inventory/inventory_item_location.js",
+      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemLocation",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-8d36f9222504",
       "bridge": "src/core/fish/fish_rarity_resolver.js",
       "source": "src/app/bootstrap.js",
@@ -738,6 +850,22 @@
       "globalProviders": [
         {
           "symbol": "FishRarityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-92c7ce13cb8b",
+      "bridge": "src/core/inventory/inventory_item_location.js",
+      "source": "src/application/inventory/inventory_v2_loadout_port.js",
+      "target": "src/game/domain/inventory/inventory_item_location.js",
+      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemLocation",
           "mechanism": "global-this-property"
         }
       ]
@@ -770,6 +898,22 @@
       "globalProviders": [
         {
           "symbol": "FishingCastExposureResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-94443eb8e5b1",
+      "bridge": "src/core/inventory/inventory_item_location.js",
+      "source": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+      "target": "src/game/domain/inventory/inventory_item_location.js",
+      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemLocation",
           "mechanism": "global-this-property"
         }
       ]
@@ -855,6 +999,22 @@
       ]
     },
     {
+      "id": "bridge-9ce49a18f3b2",
+      "bridge": "src/core/inventory/inventory_item_location.js",
+      "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "target": "src/game/domain/inventory/inventory_item_location.js",
+      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemLocation",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-9e3953224164",
       "bridge": "src/core/items/rarity/item_rarity_descriptor.js",
       "source": "src/core/items/rarity/authored_item_rarity_strategy.js",
@@ -922,6 +1082,22 @@
       "globalProviders": [
         {
           "symbol": "PlayerPressureFatigueCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-a3d545c52d12",
+      "bridge": "src/core/inventory/inventory_item_location.js",
+      "source": "src/core/equipment/equipment_slot_availability_policy.js",
+      "target": "src/game/domain/inventory/inventory_item_location.js",
+      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemLocationKind",
           "mechanism": "global-this-property"
         }
       ]
@@ -1103,6 +1279,22 @@
       ]
     },
     {
+      "id": "bridge-c4dc5b7e33f1",
+      "bridge": "src/core/inventory/inventory_item_location.js",
+      "source": "src/core/inventory/inventory_item_reservation_policy.js",
+      "target": "src/game/domain/inventory/inventory_item_location.js",
+      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemLocation",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-c518ccc47a20",
       "bridge": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
       "source": "src/render/pipeline/world_render_pass.js",
@@ -1231,6 +1423,38 @@
       ]
     },
     {
+      "id": "bridge-d2178f043482",
+      "bridge": "src/core/inventory/inventory_item_location.js",
+      "source": "src/application/inventory/inventory_v2_command_service.js",
+      "target": "src/game/domain/inventory/inventory_item_location.js",
+      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemLocation",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-d23a9f662ce9",
+      "bridge": "src/core/inventory/inventory_item_location.js",
+      "source": "src/core/assemblies/item_assembly_reader.js",
+      "target": "src/game/domain/inventory/inventory_item_location.js",
+      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemLocation",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-d3fd9d86467b",
       "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
       "source": "src/render/screens/star_rating_renderer.js",
@@ -1322,6 +1546,22 @@
       "globalProviders": [
         {
           "symbol": "DragForceCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-e30124e33a3f",
+      "bridge": "src/core/inventory/inventory_item_location.js",
+      "source": "src/application/inventory/inventory_v2_gameplay_bridge.js",
+      "target": "src/game/domain/inventory/inventory_item_location.js",
+      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemLocation",
           "mechanism": "global-this-property"
         }
       ]

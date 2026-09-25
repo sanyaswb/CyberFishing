@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-017-acceptance",
+  "stage": "3.17.8",
+  "batchId": "stage-3.candidate-017-inventory-fd62478b",
+  "releaseVersion": "0.24.53",
+  "plannedReleaseVersion": "0.24.54",
+  "recordedAt": "2026-09-25T16:03:48.812Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_017_automated_acceptance.json",
+    "sha256": "4274edd9b0e2350af59326fbe2edf5e40f06530e9c91872d5731525c237258c6",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "full": {
+      "passedChecks": 180,
+      "failedChecks": 0
+    },
+    "fullRun": {
+      "platform": "windows",
+      "source": "npm run check on the owner's Windows machine, run by Claude in one uninterrupted run (1909.39s) after the batch-017 cutover; an earlier run stopped at inventory-v2-line-allocation, which loaded the legacy provider without the compatibility runtime and was fixed to load it first (batch 010 precedent)"
+    },
+    "supplementary": {
+      "quick": {
+        "passedChecks": 41,
+        "failedChecks": 0
+      },
+      "architecture": {
+        "passedChecks": 65,
+        "failedChecks": 0
+      },
+      "historyAfterSharedToolingChange": {
+        "passedChecks": 88,
+        "failedChecks": 0
+      }
+    },
+    "summary": "Windows Full 180/180 passed in one uninterrupted run, including all Inventory V2 suites that construct and normalize item locations and the game-cycle fight scenarios",
+    "countSemantics": "The full suite includes the architecture and quick checks."
+  },
+  "browserSmoke": {
+    "status": "passed-owner-authorized-automated-substitute",
+    "performedBy": "claude-automated-owner-authorized",
+    "evidenceType": "headless-game-cycle-and-inventory-suites-plus-automated-built-in-browser-load",
+    "userStatement": "PASS (owner-authorized automated substitute) — game-cycle-check.js and all Inventory V2 suites passed; built-in browser load rendered the game and the inventory screen with exact batch-017 identities.",
+    "context": "The owner authorized, during the batch 015-021 plan, replacing the manual visual smoke with game-cycle-check results when that check passes. Batch 017 migrates an Inventory module, so the Full suite also ran every Inventory V2 check that constructs and normalizes item locations. Claude loaded the game via npm run dev in the Claude desktop built-in browser, opened the inventory screen and the loadouts filter.",
+    "acceptanceBasis": "Owner-authorized substitute: headless game cycle and Inventory V2 suites in the Full suite plus an automated browser load of the inventory screen with instrumented console counts; no human played the game for this batch.",
+    "ownerAuthorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+    "perCheckResults": {
+      "gameCycle": "utils/game-cycle-check.js passed inside Full 180/180",
+      "inventorySuites": "inventory-lifecycle, inventory-v2-* (equipment, hydration, transaction, migration, cast-lure, line-allocation, integration, ui), item-assembly-domain passed inside Full 180/180",
+      "browserLoad": "Game rendered (v0.24.53 build label); inventory screen opened and rendered all items; loadouts filter rendered two loadouts; 64 compat modules; InventoryItemLocation and InventoryItemLocationKind globals identical to their ESM exports; kind table frozen; InventoryItemLocation.attached returned ATTACHED"
+    },
+    "consoleCounts": {
+      "errors": 0,
+      "warnings": 0,
+      "userStatement": "Built-in browser console, instrumented by Claude on launch, after opening the inventory and the loadouts filter: 0 errors, 0 warnings (one informational CacheManager log)."
+    }
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_017_live_runtime_validation.json",
+      "sha256": "debc2d462cff502f2b00c2ce84ed96f86602fad82c0f02a38d000fe646870f9e"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_017_observation_reconciliation.json",
+      "sha256": "9b403f227dd8a7e1b6cb164d640fcdc0a4ca1e5cee3a2f4128e539afb8b028c3"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "9d2aa6258d30510c90c61e51dfc4ae6e98598775ef0f85f076b1900b5ad7380b"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "ba16192b73312843d4f0dc8d9c2d0d9379b1fdb70af1234db100ab0ed60bf729"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "77fc3fcf8d5291d695b0ab42df94d120e7f450011f12042679dd15eb1b1011c5"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "bf99a1651fc0155abad3582d69a5f8212ec9e846b2d3468544d521a9a4d474fa"
+    },
+    {
+      "path": "index.html",
+      "sha256": "1e626095c85dec6cb549d5dd9ff56581350c621e475a4f5d435b92be6784095f"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.candidate-017-inventory-fd62478b",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.17.9 — Release Closure v0.24.54"
+}

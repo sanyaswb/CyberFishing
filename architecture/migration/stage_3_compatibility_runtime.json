@@ -212,6 +212,13 @@
       "decision": "approved-compatible",
       "owner": "stage-3.candidate-015-fishing-37dc3452",
       "reason": "one Object.freeze call on a numeric-literal static array during class definition; no external state read or global write"
+    },
+    {
+      "module": "src/game/domain/inventory/inventory_item_location.js",
+      "evidenceFingerprint": "320760ffc300171790a8ad6572d1b104cb0f0b4562bfaff4e3abea6a54c59f3c",
+      "decision": "approved-compatible",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "reason": "one Object.freeze call on a string-literal location kind table; no external state read or global write"
     }
   ],
   "activationPositions": [
@@ -238,6 +245,18 @@
       "shimFile": "activations/100_playerpressurefatiguestate.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-1203aa3f3b14",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "sourceProvider": "src/core/inventory/inventory_item_location.js",
+      "targetModule": "src/game/domain/inventory/inventory_item_location.js",
+      "exportName": "InventoryItemLocationKind",
+      "legacySymbol": "InventoryItemLocationKind",
+      "legacyScriptIndex": 144,
+      "shimFile": "activations/144_inventoryitemlocationkind.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-18af7e975cb0",
@@ -849,6 +868,18 @@
       "legacyScriptIndex": 362,
       "shimFile": "activations/362_compositerenderer.js",
       "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-c3a8ca11fb0e",
+      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "sourceProvider": "src/core/inventory/inventory_item_location.js",
+      "targetModule": "src/game/domain/inventory/inventory_item_location.js",
+      "exportName": "InventoryItemLocation",
+      "legacySymbol": "InventoryItemLocation",
+      "legacyScriptIndex": 144,
+      "shimFile": "activations/144_inventoryitemlocation.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
     {

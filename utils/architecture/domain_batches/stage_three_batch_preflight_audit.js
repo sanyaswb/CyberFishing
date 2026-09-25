@@ -97,7 +97,8 @@ class StageThreeBatchPreflightAuditBuilder {
         const evidence = sideEffectReview.modules.find(item => item.currentPath === module.currentPath);
         const reviewedEffect = module.effects.reviewedExposure;
         this.#require(evidence && this.#same(evidence.sourceSha256, module.sourceSha256) &&
-          (["frozen-literal-ranges", "frozen-literal-static-fields"].includes(evidence.contract?.kind)
+          (["frozen-literal-ranges", "frozen-literal-constants",
+            "frozen-literal-static-fields"].includes(evidence.contract?.kind)
             ? this.#same(evidence.review, reviewedEffect)
             : this.#same(evidence.contract?.symbol || evidence.symbol, reviewedEffect?.symbol) &&
               this.#same(evidence.contract?.location || evidence.location, reviewedEffect?.location)),
@@ -338,7 +339,7 @@ class StageThreeBatchPreflightAuditBuilder {
     this.#require(this.#same([...new Set(providerSymbols)].sort(), expectedSymbols),
       `provider facts differ: ${module.currentPath}`);
     this.#require(this.#same(sourceShape.topLevelBindings,
-      reviewed.frozenConstants ? ["VariableDeclaration", "VariableDeclaration"] : []),
+      Object.keys(reviewed.frozenConstants?.bindings || {}).map(() => "VariableDeclaration")),
       `top-level binding exists: ${module.currentPath}`);
     let reviewedExposure = null;
     if (reviewed.frozenConstants) {
@@ -350,7 +351,8 @@ class StageThreeBatchPreflightAuditBuilder {
           kind: "call", location, classification: "observable",
         }))), `frozen top-level effect differs: ${module.currentPath}`);
       this.#require(this.#same(sourceShape.topLevelEffects,
-        ["VariableDeclaration@1:1", "VariableDeclaration@2:1"]),
+        Object.values(reviewed.frozenConstants.bindings).map(({ location }) =>
+          `VariableDeclaration@${location.split(":")[0]}:1`)),
       `reviewed top-level effect differs: ${module.currentPath}`);
     } else if (reviewed.frozenStaticFields) {
       reviewedExposure = new StageThreeReviewedEvaluationEffect().frozenStaticFields({
