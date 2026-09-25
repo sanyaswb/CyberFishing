@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-014-acceptance",
+  "stage": "3.14.8",
+  "batchId": "stage-3.candidate-014-fishing-fefd469b",
+  "releaseVersion": "0.24.50",
+  "plannedReleaseVersion": "0.24.51",
+  "recordedAt": "2026-09-25T09:06:36.441Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_014_automated_acceptance.json",
+    "sha256": "18e65f087d07e076db3cdf71142d1d665862725815cdbf225ab795afb3176c64",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "full": {
+      "passedChecks": 177,
+      "failedChecks": 0
+    },
+    "fullRun": {
+      "platform": "windows",
+      "source": "owner-machine npm run check (single clean run after reboot, 1085.34s; earlier attempt aborted at check 137 by an external directory lock on dist/stage-3-compat-runtime, not a code failure)"
+    },
+    "summary": "Windows Full 177/177 passed in one uninterrupted run, including game-cycle (feeder victory/landing-lift and strong-fish line-break failure scenarios) and the Windows-only D:/escape.js source-build fixtures of batches 009/010.",
+    "countSemantics": "The full suite includes the architecture and quick checks."
+  },
+  "browserSmoke": {
+    "status": "passed-user-reported",
+    "performedBy": "user",
+    "evidenceType": "manual-test-summary-in-conversation",
+    "userStatement": "PASS — game launches and renders correctly; fishing checklist OK",
+    "context": "Response to the Stage 3.14.8 Fishing checklist: casting, fish direction and response, rod control, pressure, fatigue and stamina during a catch.",
+    "acceptanceBasis": "User-reported PASS for the batch-specific checklist; individual steps were not independently instrumented.",
+    "perCheckResults": null,
+    "consoleCounts": {
+      "errors": 0,
+      "warnings": 0,
+      "userStatement": "Console: 0 errors, 0 warnings"
+    }
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_014_live_runtime_validation.json",
+      "sha256": "626eba542f18485cbb45aa42c4d07c79c313a03b8f237a80c8e08a701f0ab6a2"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_014_observation_reconciliation.json",
+      "sha256": "8d542e218f2da0a171a158c8498ca716728b930081127e7a43a36959d9bed42e"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "9473d2b8a21e400882d2294a0dc1319478a1e83f45850fc65f46a76cf6b5882b"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "404e28e17cbe97c3943cc4f80a714d2dc426890916402121a7aac1cc4748ef25"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "81a0d6843e0217c9f2003cdfa86ae949088e0ea0c72430a75678c896ed4c2200"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "4ebabd1e198087276c9f2dd6ffda8c9e7f9922078294ddf60433aedf2a31acf7"
+    },
+    {
+      "path": "index.html",
+      "sha256": "ee767954654563fe189626c01bdde47bd61db393bd6e98bcadbd3ef1d4eb0abf"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.candidate-014-fishing-fefd469b",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.14.9 — Release Closure v0.24.51"
+}

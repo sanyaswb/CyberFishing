@@ -58,6 +58,63 @@ class StageThreeReviewedEvaluationEffect {
       evaluationCount: 1, globalPropertiesAdded: [], otherTopLevelEffects: 0 });
   }
 
+  // Reviews a class whose only evaluation-time effects are static fields initialized by
+  // Object.freeze over string literals (arrays or plain objects). No other top-level code
+  // is allowed, and evaluation must not create globals.
+  frozenStaticFields({ source, currentPath, className, bindings }) {
+    const tree = this.parse(source);
+    const names = Object.keys(bindings);
+    assert(names.length > 0, `${currentPath}: frozen static fields are required`);
+    assert.equal(tree.body.length, 1, `${currentPath}: expected exactly one class declaration`);
+    const declaration = tree.body[0];
+    assert.equal(declaration.type, "ClassDeclaration");
+    assert.equal(declaration.id.name, className);
+    assert.equal(declaration.superClass, null, `${currentPath}: superclass requires review`);
+    const statics = declaration.body.body.filter(member => member.static);
+    assert.deepEqual(statics.map(member => member.type), names.map(() => "PropertyDefinition"),
+      `${currentPath}: unexpected static member or static block`);
+    assert.deepEqual(statics.map(member => member.key.name), names,
+      `${currentPath}: static field order differs`);
+    for (const member of statics) {
+      assert.equal(member.computed, false);
+      assert.equal(member.key.type, "Identifier");
+      const call = member.value;
+      assert.equal(call?.type, "CallExpression");
+      assert.equal(call.callee.type, "MemberExpression");
+      assert.equal(call.callee.object.name, "Object");
+      assert.equal(call.callee.property.name, "freeze");
+      assert.equal(call.arguments.length, 1);
+      const literal = call.arguments[0];
+      if (literal.type === "ArrayExpression") {
+        assert(literal.elements.every(element => element?.type === "Literal" &&
+          typeof element.value === "string"), `${currentPath}: static array must contain string literals`);
+      } else {
+        assert.equal(literal.type, "ObjectExpression", `${currentPath}: static value must be a literal`);
+        for (const property of literal.properties) {
+          assert.equal(property.type, "Property");
+          assert.equal(property.kind, "init");
+          assert.equal(property.computed, false);
+          assert.equal(property.method, false);
+          assert.equal(property.key.type, "Identifier");
+          assert.equal(property.value.type, "Literal");
+          assert.equal(typeof property.value.value, "string");
+        }
+      }
+      assert.equal(position(call), bindings[member.key.name].location);
+    }
+    const context = vm.createContext({});
+    vm.runInContext(source, context, { filename: currentPath });
+    assert.deepEqual(Object.getOwnPropertyNames(context), [], "Frozen static fields created globals");
+    for (const [name, contract] of Object.entries(bindings)) {
+      assert.equal(vm.runInContext(`Object.isFrozen(${className}.${name})`, context), true);
+      const value = vm.runInContext(`${className}.${name}`, context);
+      assert.deepEqual(Array.isArray(value) ? Array.from(value) : { ...value }, contract.values);
+    }
+    return Object.freeze({ kind: "frozen-literal-static-fields", currentPath, sourceSha256: sha(source),
+      className, bindings, topLevelStatementCount: 1,
+      evaluationCount: 1, globalPropertiesAdded: [], otherTopLevelEffects: 0 });
+  }
+
   windowExposure({ source, currentPath, symbol, location }) {
     const tree = this.parse(source);
     assert.equal(tree.body.length, 2, `${currentPath}: expected class and guarded window assignment`);

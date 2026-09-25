@@ -1,0 +1,2323 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-preflight-audit",
+  "status": "verified",
+  "stage": "Stage 3.14.0",
+  "sourceReleaseVersion": "0.24.50",
+  "batchId": "stage-3.candidate-014-fishing-fefd469b",
+  "sourceEvidence": {
+    "approvedPlan": {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    "manifest": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "9e729031a8db83cd7b3de697de5118017e0eb4f35d95b1ff829540bd7c61700b"
+    },
+    "domainAudit": {
+      "path": "architecture/migration/stage_3_domain_audit.json",
+      "sha256": "6a96b8ead58fab42c8c596b365776226a77c36978b9ef68b71c3df8ada6fa4cd"
+    },
+    "executionState": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "1eb6eb6d6c183927f7d1b7e446ca4cbd8b318fd77b4763365324b675c94c9d85"
+    },
+    "runtimeContract": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "11b72dd59a6350e2257f4877aa76142bb441523cd8fdbb4b826190bbe9ee7f83"
+    },
+    "bridgeRegistry": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "abee63ee84cca8463e087ad96ef4761635f00b6f3112f64f579d58cbff754f25"
+    },
+    "index": {
+      "path": "index.html",
+      "sha256": "631e705b840d54f03046322927a1086a65bfc7b56f0589f3efdffc468d2f6de1"
+    },
+    "runtimeOutput": {
+      "path": "dist/stage-3-compat-runtime",
+      "fingerprint": "9abdcf87c96e4977577f7f3773bb62d3901c711bc8ebd7908d7bcd2336dea2c4"
+    },
+    "sideEffectReview": {
+      "path": "architecture/migration/stage_3_batch_014_side_effect_review.json",
+      "sha256": "889837de05b33d2729926474eb18c9cc82a3ee127b49922054c0c962858e8b17"
+    }
+  },
+  "scope": {
+    "targetCount": 6,
+    "modules": [
+      {
+        "currentPath": "src/core/fishing/landing_lift_readiness_policy.js",
+        "targetPath": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+        "sourceSha256": "b2e51ce609b38e6be301c8492e31ad8aba6f944a2e0c6a712639852bf0b63bf3",
+        "exports": [
+          "LandingLiftReadinessPolicy"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-83708391e848",
+          "members": [
+            "src/core/fishing/landing_lift_readiness_policy.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/fishing/landing_lift_readiness_policy.js",
+          "classDeclarations": [
+            "LandingLiftReadinessPolicy"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "IfStatement@135:1"
+          ],
+          "fields": [],
+          "methods": [
+            {
+              "name": "#freeze",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#notReady",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#positive",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "evaluate",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 10,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 11,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/fishing/landing_lift_readiness_policy.js",
+            "authoritativeOwners": [
+              "LandingLiftReadinessPolicy#freeze",
+              "LandingLiftReadinessPolicy#notReady",
+              "LandingLiftReadinessPolicy#positive"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+            "authoritativeOwners": [
+              "LandingLiftReadinessPolicy#freeze",
+              "LandingLiftReadinessPolicy#notReady",
+              "LandingLiftReadinessPolicy#positive"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "landing-lift-readiness-reasons-epsilon-and-window-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "8e70704fbcdf27d7c74b747c4d2338b63f5130662df8b09039941a9c081db816",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-landing-lift-readiness-evaluation",
+          "callSites": [
+            "src/systems/fight_physics_system.js"
+          ],
+          "callSiteEvidence": [
+            {
+              "path": "src/systems/fight_physics_system.js",
+              "marker": "new LandingLiftReadinessPolicy()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 11,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "136:3",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "guarded-window-class-exposure",
+            "currentPath": "src/core/fishing/landing_lift_readiness_policy.js",
+            "sourceSha256": "b2e51ce609b38e6be301c8492e31ad8aba6f944a2e0c6a712639852bf0b63bf3",
+            "symbol": "LandingLiftReadinessPolicy",
+            "location": "136:3",
+            "guardLocation": "135:1",
+            "assignmentTarget": "window.LandingLiftReadinessPolicy",
+            "evaluationCount": 1,
+            "globalPropertiesAddedWithoutWindow": [],
+            "windowPropertiesAdded": [
+              "LandingLiftReadinessPolicy"
+            ],
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "LandingLiftReadinessPolicy",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "LandingLiftReadinessPolicy",
+            "mechanism": "window-property",
+            "availability": "conditional"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "targetPath": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "sourceSha256": "16f37a71dcef4b40c453ae2d700bf3458883934c27c18ec905d5a2f4a4d0073d",
+        "exports": [
+          "PlayerPressureFatigueState"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-90ba0d68d36d",
+          "members": [
+            "src/core/fishing/player_pressure/player_pressure_fatigue_state.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+          "classDeclarations": [
+            "PlayerPressureFatigueState"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "IfStatement@174:1"
+          ],
+          "fields": [
+            {
+              "name": "controlBreakEnabled",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "controlBreakFatigueProgressThreshold",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "controlBreakMinContinuousPressureMs",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "delayAfterPressureMs",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "efficiency",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "enabled",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "fatigueDurationMs",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "fatigueElapsedMs",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "fatigueProgress",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "fatigueRatio",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "fatigueRemainingMs",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "graceDurationMs",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "graceElapsedMs",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "graceRemainingMs",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "holdElapsedMs",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "isControlExhausted",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "pressureActive",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "pressureHoldMs",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "pressureKg",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "recoveryDelayElapsedMs",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "recoveryDelayMs",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "recoveryDelayRemainingMs",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "recoveryIdleMs",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "recoveryPerSecond",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "recoveryProgress",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "recoveryRemainingMs",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "recoveryState",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "sourceActive",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "sourceMode",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "sourceReason",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            },
+            {
+              "name": "stateName",
+              "visibility": "public",
+              "initializerType": "Literal",
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "#positive",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#ratio",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "applyFrame",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "reset",
+              "kind": "method",
+              "parameterCount": 0,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "toFrame",
+              "kind": "method",
+              "parameterCount": 0,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "controlBreakEnabled",
+            "controlBreakFatigueProgressThreshold",
+            "controlBreakMinContinuousPressureMs",
+            "delayAfterPressureMs",
+            "efficiency",
+            "enabled",
+            "fatigueDurationMs",
+            "fatigueElapsedMs",
+            "fatigueProgress",
+            "fatigueRatio",
+            "fatigueRemainingMs",
+            "graceDurationMs",
+            "graceElapsedMs",
+            "graceRemainingMs",
+            "holdElapsedMs",
+            "isControlExhausted",
+            "pressureActive",
+            "pressureHoldMs",
+            "pressureKg",
+            "recoveryDelayElapsedMs",
+            "recoveryDelayMs",
+            "recoveryDelayRemainingMs",
+            "recoveryIdleMs",
+            "recoveryPerSecond",
+            "recoveryProgress",
+            "recoveryRemainingMs",
+            "recoveryState",
+            "sourceActive",
+            "sourceMode",
+            "sourceReason",
+            "stateName"
+          ],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+            "authoritativeOwners": [
+              "PlayerPressureFatigueState#controlBreakEnabled",
+              "PlayerPressureFatigueState#controlBreakFatigueProgressThreshold",
+              "PlayerPressureFatigueState#controlBreakMinContinuousPressureMs",
+              "PlayerPressureFatigueState#delayAfterPressureMs",
+              "PlayerPressureFatigueState#efficiency",
+              "PlayerPressureFatigueState#enabled",
+              "PlayerPressureFatigueState#fatigueDurationMs",
+              "PlayerPressureFatigueState#fatigueElapsedMs",
+              "PlayerPressureFatigueState#fatigueProgress",
+              "PlayerPressureFatigueState#fatigueRatio",
+              "PlayerPressureFatigueState#fatigueRemainingMs",
+              "PlayerPressureFatigueState#graceDurationMs",
+              "PlayerPressureFatigueState#graceElapsedMs",
+              "PlayerPressureFatigueState#graceRemainingMs",
+              "PlayerPressureFatigueState#holdElapsedMs",
+              "PlayerPressureFatigueState#isControlExhausted",
+              "PlayerPressureFatigueState#positive",
+              "PlayerPressureFatigueState#pressureActive",
+              "PlayerPressureFatigueState#pressureHoldMs",
+              "PlayerPressureFatigueState#pressureKg",
+              "PlayerPressureFatigueState#ratio",
+              "PlayerPressureFatigueState#recoveryDelayElapsedMs",
+              "PlayerPressureFatigueState#recoveryDelayMs",
+              "PlayerPressureFatigueState#recoveryDelayRemainingMs",
+              "PlayerPressureFatigueState#recoveryIdleMs",
+              "PlayerPressureFatigueState#recoveryPerSecond",
+              "PlayerPressureFatigueState#recoveryProgress",
+              "PlayerPressureFatigueState#recoveryRemainingMs",
+              "PlayerPressureFatigueState#recoveryState",
+              "PlayerPressureFatigueState#sourceActive",
+              "PlayerPressureFatigueState#sourceMode",
+              "PlayerPressureFatigueState#sourceReason",
+              "PlayerPressureFatigueState#stateName"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+            "authoritativeOwners": [
+              "PlayerPressureFatigueState#controlBreakEnabled",
+              "PlayerPressureFatigueState#controlBreakFatigueProgressThreshold",
+              "PlayerPressureFatigueState#controlBreakMinContinuousPressureMs",
+              "PlayerPressureFatigueState#delayAfterPressureMs",
+              "PlayerPressureFatigueState#efficiency",
+              "PlayerPressureFatigueState#enabled",
+              "PlayerPressureFatigueState#fatigueDurationMs",
+              "PlayerPressureFatigueState#fatigueElapsedMs",
+              "PlayerPressureFatigueState#fatigueProgress",
+              "PlayerPressureFatigueState#fatigueRatio",
+              "PlayerPressureFatigueState#fatigueRemainingMs",
+              "PlayerPressureFatigueState#graceDurationMs",
+              "PlayerPressureFatigueState#graceElapsedMs",
+              "PlayerPressureFatigueState#graceRemainingMs",
+              "PlayerPressureFatigueState#holdElapsedMs",
+              "PlayerPressureFatigueState#isControlExhausted",
+              "PlayerPressureFatigueState#positive",
+              "PlayerPressureFatigueState#pressureActive",
+              "PlayerPressureFatigueState#pressureHoldMs",
+              "PlayerPressureFatigueState#pressureKg",
+              "PlayerPressureFatigueState#ratio",
+              "PlayerPressureFatigueState#recoveryDelayElapsedMs",
+              "PlayerPressureFatigueState#recoveryDelayMs",
+              "PlayerPressureFatigueState#recoveryDelayRemainingMs",
+              "PlayerPressureFatigueState#recoveryIdleMs",
+              "PlayerPressureFatigueState#recoveryPerSecond",
+              "PlayerPressureFatigueState#recoveryProgress",
+              "PlayerPressureFatigueState#recoveryRemainingMs",
+              "PlayerPressureFatigueState#recoveryState",
+              "PlayerPressureFatigueState#sourceActive",
+              "PlayerPressureFatigueState#sourceMode",
+              "PlayerPressureFatigueState#sourceReason",
+              "PlayerPressureFatigueState#stateName"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "mutable-fatigue-state-owner-defaults-reset-frame-and-window-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "a0ab0b27c4ba78d2ae46a92cdff845191a5126690adc8c4f024a161a0fee0613",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-fight-physics-fatigue-state-frame",
+          "callSites": [
+            "src/systems/fight_physics_system.js"
+          ],
+          "callSiteEvidence": [
+            {
+              "path": "src/systems/fight_physics_system.js",
+              "marker": "new PlayerPressureFatigueState()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "175:3",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "guarded-window-class-exposure",
+            "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+            "sourceSha256": "16f37a71dcef4b40c453ae2d700bf3458883934c27c18ec905d5a2f4a4d0073d",
+            "symbol": "PlayerPressureFatigueState",
+            "location": "175:3",
+            "guardLocation": "174:1",
+            "assignmentTarget": "window.PlayerPressureFatigueState",
+            "evaluationCount": 1,
+            "globalPropertiesAddedWithoutWindow": [],
+            "windowPropertiesAdded": [
+              "PlayerPressureFatigueState"
+            ],
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "PlayerPressureFatigueState",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "PlayerPressureFatigueState",
+            "mechanism": "window-property",
+            "availability": "conditional"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "targetPath": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "sourceSha256": "480384b6275775d9e40b3c3bee0da1f5c4a5c7c3dfe02ef39ce77a42de3f76d7",
+        "exports": [
+          "PlayerTensionBuildRateResolver"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-8c43b316fa27",
+          "members": [
+            "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+          "classDeclarations": [
+            "PlayerTensionBuildRateResolver"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "IfStatement@113:1"
+          ],
+          "fields": [
+            {
+              "name": "#config",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 2,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#clamp01",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#mode",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#multiplier",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#positive",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "resolve",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 8,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 2,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 10,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#config"
+          ],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+            "authoritativeOwners": [
+              "PlayerTensionBuildRateResolver#clamp01",
+              "PlayerTensionBuildRateResolver#config",
+              "PlayerTensionBuildRateResolver#mode",
+              "PlayerTensionBuildRateResolver#multiplier",
+              "PlayerTensionBuildRateResolver#positive"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+            "authoritativeOwners": [
+              "PlayerTensionBuildRateResolver#clamp01",
+              "PlayerTensionBuildRateResolver#config",
+              "PlayerTensionBuildRateResolver#mode",
+              "PlayerTensionBuildRateResolver#multiplier",
+              "PlayerTensionBuildRateResolver#positive"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "tension-build-rate-thresholds-multipliers-and-window-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "39f37fc10dfec56f823f18894ca9c6605b2adff72d79e26fc9cfa7910830dac8",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-fight-physics-tension-build-rate",
+          "callSites": [
+            "src/systems/fight_physics_system.js"
+          ],
+          "callSiteEvidence": [
+            {
+              "path": "src/systems/fight_physics_system.js",
+              "marker": "new PlayerTensionBuildRateResolver()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 10,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "114:3",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "guarded-window-class-exposure",
+            "currentPath": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+            "sourceSha256": "480384b6275775d9e40b3c3bee0da1f5c4a5c7c3dfe02ef39ce77a42de3f76d7",
+            "symbol": "PlayerTensionBuildRateResolver",
+            "location": "114:3",
+            "guardLocation": "113:1",
+            "assignmentTarget": "window.PlayerTensionBuildRateResolver",
+            "evaluationCount": 1,
+            "globalPropertiesAddedWithoutWindow": [],
+            "windowPropertiesAdded": [
+              "PlayerTensionBuildRateResolver"
+            ],
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "PlayerTensionBuildRateResolver",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "PlayerTensionBuildRateResolver",
+            "mechanism": "window-property",
+            "availability": "conditional"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/stamina/stamina_drain_calculator.js",
+        "targetPath": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+        "sourceSha256": "170f1a8bbf98971aa848541475ccab7acfbdde0527abe6cab07790469c3ce123",
+        "exports": [
+          "StaminaDrainCalculator"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-a7f6da3121d5",
+          "members": [
+            "src/core/fishing/stamina/stamina_drain_calculator.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/fishing/stamina/stamina_drain_calculator.js",
+          "classDeclarations": [
+            "StaminaDrainCalculator"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "IfStatement@87:1"
+          ],
+          "fields": [],
+          "methods": [
+            {
+              "name": "#clamp01",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#positive",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "calculate",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 4,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/fishing/stamina/stamina_drain_calculator.js",
+            "authoritativeOwners": [
+              "StaminaDrainCalculator#clamp01",
+              "StaminaDrainCalculator#positive"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+            "authoritativeOwners": [
+              "StaminaDrainCalculator#clamp01",
+              "StaminaDrainCalculator#positive"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "stamina-drain-advantage-curve-and-window-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "ea8959cebd8978ce8040f3d1ad3f23277c35bd77a5a01431d2eab9f484e1b7e3",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-stamina-drain-calculation",
+          "callSites": [
+            "src/core/fishing/stamina/stamina_phase_machine.js"
+          ],
+          "callSiteEvidence": [
+            {
+              "path": "src/core/fishing/stamina/stamina_phase_machine.js",
+              "marker": "drainCalculator = new StaminaDrainCalculator()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "88:3",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "guarded-window-class-exposure",
+            "currentPath": "src/core/fishing/stamina/stamina_drain_calculator.js",
+            "sourceSha256": "170f1a8bbf98971aa848541475ccab7acfbdde0527abe6cab07790469c3ce123",
+            "symbol": "StaminaDrainCalculator",
+            "location": "88:3",
+            "guardLocation": "87:1",
+            "assignmentTarget": "window.StaminaDrainCalculator",
+            "evaluationCount": 1,
+            "globalPropertiesAddedWithoutWindow": [],
+            "windowPropertiesAdded": [
+              "StaminaDrainCalculator"
+            ],
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "StaminaDrainCalculator",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "StaminaDrainCalculator",
+            "mechanism": "window-property",
+            "availability": "conditional"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/stamina/stamina_transition_resolver.js",
+        "targetPath": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+        "sourceSha256": "8a7f47f2a897dae12ae7dc26a84b93a3ab95c838fdf838ebc4189883a0cc7f51",
+        "exports": [
+          "StaminaTransitionResolver"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-9c995eb1f321",
+          "members": [
+            "src/core/fishing/stamina/stamina_transition_resolver.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/fishing/stamina/stamina_transition_resolver.js",
+          "classDeclarations": [
+            "StaminaTransitionResolver"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "IfStatement@87:1"
+          ],
+          "fields": [],
+          "methods": [
+            {
+              "name": "#clamp01",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#normalizePhase",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#positive",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "resolve",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 8,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 4,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 8,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 4,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/fishing/stamina/stamina_transition_resolver.js",
+            "authoritativeOwners": [
+              "StaminaTransitionResolver#clamp01",
+              "StaminaTransitionResolver#normalizePhase",
+              "StaminaTransitionResolver#positive"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+            "authoritativeOwners": [
+              "StaminaTransitionResolver#clamp01",
+              "StaminaTransitionResolver#normalizePhase",
+              "StaminaTransitionResolver#positive"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "stamina-exhaustion-phase-transitions-and-window-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "78c7ee2a69b5dfced9bb83704426c5a7ec5af8691f646c7b7ce94779d073e69a",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-stamina-phase-transition",
+          "callSites": [
+            "src/core/fishing/stamina/stamina_phase_machine.js"
+          ],
+          "callSiteEvidence": [
+            {
+              "path": "src/core/fishing/stamina/stamina_phase_machine.js",
+              "marker": "transitionResolver = new StaminaTransitionResolver()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 8,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 4,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "88:3",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "guarded-window-class-exposure",
+            "currentPath": "src/core/fishing/stamina/stamina_transition_resolver.js",
+            "sourceSha256": "8a7f47f2a897dae12ae7dc26a84b93a3ab95c838fdf838ebc4189883a0cc7f51",
+            "symbol": "StaminaTransitionResolver",
+            "location": "88:3",
+            "guardLocation": "87:1",
+            "assignmentTarget": "window.StaminaTransitionResolver",
+            "evaluationCount": 1,
+            "globalPropertiesAddedWithoutWindow": [],
+            "windowPropertiesAdded": [
+              "StaminaTransitionResolver"
+            ],
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "StaminaTransitionResolver",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "StaminaTransitionResolver",
+            "mechanism": "window-property",
+            "availability": "conditional"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/tackle_failure_selector.js",
+        "targetPath": "src/game/domain/fishing/tackle_failure_selector.js",
+        "sourceSha256": "b95f2da386ce93728774c312fa72f979704a6816d84da6c0f6579d265c4ae880",
+        "exports": [
+          "TackleFailureSelector"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-74a5df7e6de8",
+          "members": [
+            "src/core/fishing/tackle_failure_selector.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/fishing/tackle_failure_selector.js",
+          "classDeclarations": [
+            "TackleFailureSelector"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [
+            {
+              "name": "DEFAULT_TIE_BREAK_PRIORITY",
+              "visibility": "public",
+              "initializerType": "CallExpression",
+              "objectShape": []
+            },
+            {
+              "name": "RESULT_BY_COMPONENT",
+              "visibility": "public",
+              "initializerType": "CallExpression",
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "#buildPriorityMap",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#normalizePriority",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 1,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#positiveFinite",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#priorityOf",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "select",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 8,
+                "arrayExpressions": 1,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 9,
+            "arrayExpressions": 3,
+            "newExpressions": 2,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "DEFAULT_TIE_BREAK_PRIORITY",
+            "RESULT_BY_COMPONENT"
+          ],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/fishing/tackle_failure_selector.js",
+            "authoritativeOwners": [
+              "TackleFailureSelector#buildPriorityMap",
+              "TackleFailureSelector#normalizePriority",
+              "TackleFailureSelector#positiveFinite",
+              "TackleFailureSelector#priorityOf",
+              "TackleFailureSelector.DEFAULT_TIE_BREAK_PRIORITY",
+              "TackleFailureSelector.RESULT_BY_COMPONENT"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/tackle_failure_selector.js",
+            "authoritativeOwners": [
+              "TackleFailureSelector#buildPriorityMap",
+              "TackleFailureSelector#normalizePriority",
+              "TackleFailureSelector#positiveFinite",
+              "TackleFailureSelector#priorityOf",
+              "TackleFailureSelector.DEFAULT_TIE_BREAK_PRIORITY",
+              "TackleFailureSelector.RESULT_BY_COMPONENT"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "failure-order-tie-break-static-frozen-tables-and-class-identity",
+          "formulaDefaultsClampsRoundingFingerprint": "b465c9628a048ed8341453a38f5ef96340365c32ddeb5473620025dcedcbc094",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-tackle-failure-selection",
+          "callSites": [
+            "src/systems/tackle_stress_system.js"
+          ],
+          "callSiteEvidence": [
+            {
+              "path": "src/systems/tackle_stress_system.js",
+              "marker": "new TackleFailureSelector()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 9,
+            "arrayExpressions": 3,
+            "newExpressions": 2,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "call",
+              "location": "2:39",
+              "classification": "observable"
+            },
+            {
+              "kind": "call",
+              "location": "9:32",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "frozen-literal-static-fields",
+            "currentPath": "src/core/fishing/tackle_failure_selector.js",
+            "sourceSha256": "b95f2da386ce93728774c312fa72f979704a6816d84da6c0f6579d265c4ae880",
+            "className": "TackleFailureSelector",
+            "bindings": {
+              "DEFAULT_TIE_BREAK_PRIORITY": {
+                "location": "2:39",
+                "values": [
+                  "leader",
+                  "line",
+                  "hook",
+                  "rod",
+                  "reel"
+                ]
+              },
+              "RESULT_BY_COMPONENT": {
+                "location": "9:32",
+                "values": {
+                  "leader": "leader_lost",
+                  "line": "line_break",
+                  "hook": "hook_bent",
+                  "rod": "rod_broken",
+                  "reel": "reel_broken"
+                }
+              }
+            },
+            "topLevelStatementCount": 1,
+            "evaluationCount": 1,
+            "globalPropertiesAdded": [],
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "TackleFailureSelector",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      }
+    ]
+  },
+  "runtimeBaseline": {
+    "projectModuleCount": 50,
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "activationCount": 53,
+    "bridgeCount": 83,
+    "scriptTopology": {
+      "physicalClassicScriptCount": 428,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0
+    }
+  },
+  "closure": {
+    "existingCumulativeModuleCount": 50,
+    "existingCumulativeModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "newProjectModuleCount": 6,
+    "newProjectModules": [
+      "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "src/game/domain/fishing/tackle_failure_selector.js"
+    ],
+    "resultingProjectModuleCount": 56,
+    "internalEdges": [],
+    "alreadyCumulativeDependencies": [],
+    "unexpectedDependencies": []
+  },
+  "evaluation": {
+    "legacyScriptOrderControlsEvaluation": false,
+    "ordering": "esm-graph-topology-with-lexicographic-diagnostic-tiebreak",
+    "stronglyConnectedComponents": [
+      {
+        "id": "scc-74a5df7e6de8",
+        "members": [
+          "src/core/fishing/tackle_failure_selector.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-83708391e848",
+        "members": [
+          "src/core/fishing/landing_lift_readiness_policy.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-8c43b316fa27",
+        "members": [
+          "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-90ba0d68d36d",
+        "members": [
+          "src/core/fishing/player_pressure/player_pressure_fatigue_state.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-9c995eb1f321",
+        "members": [
+          "src/core/fishing/stamina/stamina_transition_resolver.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-a7f6da3121d5",
+        "members": [
+          "src/core/fishing/stamina/stamina_drain_calculator.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      }
+    ],
+    "layers": [
+      [
+        "src/game/domain/fishing/landing_lift_readiness_policy.js",
+        "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+        "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+        "src/game/domain/fishing/tackle_failure_selector.js"
+      ]
+    ],
+    "cycles": []
+  },
+  "boundaries": {
+    "forbiddenEdges": [],
+    "directConfigDependencies": [],
+    "browserCapabilities": [],
+    "transportReads": [],
+    "forbiddenSourceReads": [],
+    "dynamicConstructs": []
+  },
+  "state": {
+    "reviewed": [
+      {
+        "module": "src/core/fishing/landing_lift_readiness_policy.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_drain_calculator.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_transition_resolver.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/fishing/tackle_failure_selector.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      }
+    ],
+    "unresolved": []
+  },
+  "behavior": {
+    "resultShapeSensitive": [],
+    "mutableIdentitySensitive": [],
+    "formulaDefaultsClampsRoundingFingerprints": [
+      {
+        "module": "src/core/fishing/landing_lift_readiness_policy.js",
+        "sha256": "8e70704fbcdf27d7c74b747c4d2338b63f5130662df8b09039941a9c081db816"
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "sha256": "a0ab0b27c4ba78d2ae46a92cdff845191a5126690adc8c4f024a161a0fee0613"
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "sha256": "39f37fc10dfec56f823f18894ca9c6605b2adff72d79e26fc9cfa7910830dac8"
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_drain_calculator.js",
+        "sha256": "ea8959cebd8978ce8040f3d1ad3f23277c35bd77a5a01431d2eab9f484e1b7e3"
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_transition_resolver.js",
+        "sha256": "78c7ee2a69b5dfced9bb83704426c5a7ec5af8691f646c7b7ce94779d073e69a"
+      },
+      {
+        "module": "src/core/fishing/tackle_failure_selector.js",
+        "sha256": "b465c9628a048ed8341453a38f5ef96340365c32ddeb5473620025dcedcbc094"
+      }
+    ],
+    "unresolved": []
+  },
+  "performance": {
+    "reviewed": [
+      {
+        "module": "src/core/fishing/landing_lift_readiness_policy.js",
+        "classification": "existing-landing-lift-readiness-evaluation",
+        "callSites": [
+          "src/systems/fight_physics_system.js"
+        ],
+        "callSiteEvidence": [
+          {
+            "path": "src/systems/fight_physics_system.js",
+            "marker": "new LandingLiftReadinessPolicy()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 11,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "classification": "existing-fight-physics-fatigue-state-frame",
+        "callSites": [
+          "src/systems/fight_physics_system.js"
+        ],
+        "callSiteEvidence": [
+          {
+            "path": "src/systems/fight_physics_system.js",
+            "marker": "new PlayerPressureFatigueState()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 2,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "classification": "existing-fight-physics-tension-build-rate",
+        "callSites": [
+          "src/systems/fight_physics_system.js"
+        ],
+        "callSiteEvidence": [
+          {
+            "path": "src/systems/fight_physics_system.js",
+            "marker": "new PlayerTensionBuildRateResolver()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 10,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 2,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_drain_calculator.js",
+        "classification": "existing-stamina-drain-calculation",
+        "callSites": [
+          "src/core/fishing/stamina/stamina_phase_machine.js"
+        ],
+        "callSiteEvidence": [
+          {
+            "path": "src/core/fishing/stamina/stamina_phase_machine.js",
+            "marker": "drainCalculator = new StaminaDrainCalculator()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 4,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_transition_resolver.js",
+        "classification": "existing-stamina-phase-transition",
+        "callSites": [
+          "src/core/fishing/stamina/stamina_phase_machine.js"
+        ],
+        "callSiteEvidence": [
+          {
+            "path": "src/core/fishing/stamina/stamina_phase_machine.js",
+            "marker": "transitionResolver = new StaminaTransitionResolver()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 8,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 4,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/fishing/tackle_failure_selector.js",
+        "classification": "existing-tackle-failure-selection",
+        "callSites": [
+          "src/systems/tackle_stress_system.js"
+        ],
+        "callSiteEvidence": [
+          {
+            "path": "src/systems/tackle_stress_system.js",
+            "marker": "new TackleFailureSelector()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 9,
+          "arrayExpressions": 3,
+          "newExpressions": 2,
+          "objectFreezeCalls": 2,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "unresolved": []
+  },
+  "effects": {
+    "safe": [],
+    "reviewed": [
+      "src/core/fishing/landing_lift_readiness_policy.js",
+      "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "src/core/fishing/stamina/stamina_drain_calculator.js",
+      "src/core/fishing/stamina/stamina_transition_resolver.js",
+      "src/core/fishing/tackle_failure_selector.js"
+    ],
+    "unsafe": []
+  },
+  "compatibility": {
+    "providers": [
+      {
+        "module": "src/core/fishing/landing_lift_readiness_policy.js",
+        "symbol": "LandingLiftReadinessPolicy",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/fishing/landing_lift_readiness_policy.js",
+        "symbol": "LandingLiftReadinessPolicy",
+        "mechanism": "window-property",
+        "availability": "conditional"
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "symbol": "PlayerPressureFatigueState",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "symbol": "PlayerPressureFatigueState",
+        "mechanism": "window-property",
+        "availability": "conditional"
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "symbol": "PlayerTensionBuildRateResolver",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "symbol": "PlayerTensionBuildRateResolver",
+        "mechanism": "window-property",
+        "availability": "conditional"
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_drain_calculator.js",
+        "symbol": "StaminaDrainCalculator",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_drain_calculator.js",
+        "symbol": "StaminaDrainCalculator",
+        "mechanism": "window-property",
+        "availability": "conditional"
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_transition_resolver.js",
+        "symbol": "StaminaTransitionResolver",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_transition_resolver.js",
+        "symbol": "StaminaTransitionResolver",
+        "mechanism": "window-property",
+        "availability": "conditional"
+      },
+      {
+        "module": "src/core/fishing/tackle_failure_selector.js",
+        "symbol": "TackleFailureSelector",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      }
+    ],
+    "consumers": [
+      {
+        "provider": "src/core/fishing/landing_lift_readiness_policy.js",
+        "source": "src/systems/fight_physics_system.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "LandingLiftReadinessPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "source": "src/systems/fight_physics_system.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "PlayerPressureFatigueState"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "source": "src/systems/fight_physics_system.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "PlayerTensionBuildRateResolver"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/stamina/stamina_drain_calculator.js",
+        "source": "src/core/fishing/stamina/stamina_phase_machine.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "StaminaDrainCalculator"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/stamina/stamina_transition_resolver.js",
+        "source": "src/core/fishing/stamina/stamina_phase_machine.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "StaminaTransitionResolver"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/tackle_failure_selector.js",
+        "source": "src/systems/tackle_stress_system.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "TackleFailureSelector"
+        ]
+      }
+    ],
+    "activations": [
+      {
+        "id": "activation-0621e81b56b8",
+        "owner": "stage-3.candidate-014-fishing-fefd469b",
+        "sourceProvider": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "targetModule": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "exportName": "PlayerPressureFatigueState",
+        "legacySymbol": "PlayerPressureFatigueState",
+        "legacyScriptIndex": 100,
+        "shimFile": "activations/100_playerpressurefatiguestate.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/systems/fight_physics_system.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-2eff98891b2d",
+        "owner": "stage-3.candidate-014-fishing-fefd469b",
+        "sourceProvider": "src/core/fishing/stamina/stamina_drain_calculator.js",
+        "targetModule": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+        "exportName": "StaminaDrainCalculator",
+        "legacySymbol": "StaminaDrainCalculator",
+        "legacyScriptIndex": 106,
+        "shimFile": "activations/106_staminadraincalculator.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/fishing/stamina/stamina_phase_machine.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-8110687cd3e1",
+        "owner": "stage-3.candidate-014-fishing-fefd469b",
+        "sourceProvider": "src/core/fishing/tackle_failure_selector.js",
+        "targetModule": "src/game/domain/fishing/tackle_failure_selector.js",
+        "exportName": "TackleFailureSelector",
+        "legacySymbol": "TackleFailureSelector",
+        "legacyScriptIndex": 137,
+        "shimFile": "activations/137_tacklefailureselector.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/systems/tackle_stress_system.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-9398dc78c283",
+        "owner": "stage-3.candidate-014-fishing-fefd469b",
+        "sourceProvider": "src/core/fishing/stamina/stamina_transition_resolver.js",
+        "targetModule": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+        "exportName": "StaminaTransitionResolver",
+        "legacySymbol": "StaminaTransitionResolver",
+        "legacyScriptIndex": 108,
+        "shimFile": "activations/108_staminatransitionresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/fishing/stamina/stamina_phase_machine.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-aff068f84afe",
+        "owner": "stage-3.candidate-014-fishing-fefd469b",
+        "sourceProvider": "src/core/fishing/landing_lift_readiness_policy.js",
+        "targetModule": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+        "exportName": "LandingLiftReadinessPolicy",
+        "legacySymbol": "LandingLiftReadinessPolicy",
+        "legacyScriptIndex": 141,
+        "shimFile": "activations/141_landingliftreadinesspolicy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/systems/fight_physics_system.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-ee66782e3f9e",
+        "owner": "stage-3.candidate-014-fishing-fefd469b",
+        "sourceProvider": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "targetModule": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "exportName": "PlayerTensionBuildRateResolver",
+        "legacySymbol": "PlayerTensionBuildRateResolver",
+        "legacyScriptIndex": 97,
+        "shimFile": "activations/097_playertensionbuildrateresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/systems/fight_physics_system.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      }
+    ]
+  },
+  "prerequisites": {
+    "frozen": [],
+    "reviewed": [
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/fishing/landing_lift_readiness_policy.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/fishing/landing_lift_readiness_policy.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/fishing/stamina/stamina_drain_calculator.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/fishing/stamina/stamina_drain_calculator.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/fishing/stamina/stamina_transition_resolver.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/fishing/stamina/stamina_transition_resolver.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/fishing/tackle_failure_selector.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/fishing/tackle_failure_selector.js"
+      }
+    ],
+    "newlyDiscovered": []
+  },
+  "migrationGates": [
+    "six-exact-source-and-method-shapes",
+    "six-export-identities-and-activations",
+    "two-frozen-static-literal-evaluation-effects",
+    "five-reviewed-window-class-exposures",
+    "six-exact-consumer-relationships",
+    "all-legacy-activation-positions-preserved",
+    "zero-config-platform-browser-dev-dependencies",
+    "zero-added-hot-loop-allocations"
+  ],
+  "issues": [],
+  "verdict": "eligible-for-execution-plan",
+  "liveObservation": {
+    "status": "verified",
+    "sourceCount": 474,
+    "persistencePerformed": false,
+    "consumerRelationships": [
+      {
+        "provider": "src/core/fishing/landing_lift_readiness_policy.js",
+        "source": "src/systems/fight_physics_system.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "LandingLiftReadinessPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "source": "src/systems/fight_physics_system.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "PlayerPressureFatigueState"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "source": "src/systems/fight_physics_system.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "PlayerTensionBuildRateResolver"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/stamina/stamina_drain_calculator.js",
+        "source": "src/core/fishing/stamina/stamina_phase_machine.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "StaminaDrainCalculator"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/stamina/stamina_transition_resolver.js",
+        "source": "src/core/fishing/stamina/stamina_phase_machine.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "StaminaTransitionResolver"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/tackle_failure_selector.js",
+        "source": "src/systems/tackle_stress_system.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "TackleFailureSelector"
+        ]
+      }
+    ]
+  },
+  "plannedTopology": {
+    "projectModuleCount": 56,
+    "activationCount": 59,
+    "bridgeRecordCount": 89
+  }
+}

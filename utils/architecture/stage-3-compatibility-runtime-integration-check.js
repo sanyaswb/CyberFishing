@@ -61,7 +61,8 @@ class StageThreeCompatibilityRuntimeIntegrationCheck {
       contract.activationPositions.map((activation) => activation.id).sort(),
       expectedActivationIds,
     );
-    assert.equal(contract.sideEffectReviews.length, 5 + Number(selectedBatch.order >= 13));
+    assert.equal(contract.sideEffectReviews.length,
+      5 + Number(selectedBatch.order >= 13) + Number(selectedBatch.order >= 14));
     assert.equal(contract.previousRuntimeTransitions.length, 9);
     assert.equal(contract.approvedInfrastructureModules.length, 0);
     assert.equal(contract.transport.symbol, EXACT_TRANSPORT_GLOBAL);

@@ -1,16 +1,16 @@
-# CyberFishing — актуальний план незавершеного модульного рефакторингу
+# CyberFishing — Current Plan for the Remaining Modular Refactor
 
-**Stage 1 closure-версія:** `v0.24.31`  
-**Поточна release-версія:** `v0.24.50`
-**Тип робіт:** architecture / infrastructure refactoring  
-**Gameplay changes:** заборонені  
-**Поточний наступний етап:** `Stage 3.14.0 — Batch 014 Preflight and Dependency/State Audit`
+- **Stage 1 closure version:** `v0.24.31`
+- **Current release version:** `v0.24.51`
+- **Work type:** architecture / infrastructure refactoring
+- **Gameplay changes:** prohibited
+- **Next step:** `Stage 3.15.0 — Batch 015 Preflight and Dependency/State Audit`
 
-Цей документ містить тільки роботи, які ще не виконані.
+This document records the completed Stage 3 prefix and the work that remains.
 
 ---
 
-# 1. Незмінні принципи
+# 1. Invariants
 
 ```text
 OBSERVATION = FACTS
@@ -18,24 +18,24 @@ OBSERVATION = FACTS
 CLASSIFICATION = ARCHITECTURAL DECISION
 ```
 
-- Спочатку будуємо достовірний dependency graph, потім класифікуємо і лише після цього переносимо файли.
-- Не визначати architecture ownership за filename, поточною папкою або суфіксом класу.
-- Не змінювати fishing physics, inventory, items, progression, UI behavior, save format або game-state semantics у межах architecture tasks.
-- Не створювати runtime dependency scanner, runtime architecture validator або постійний dynamic script loader.
-- Не додавати новий global чи architecture exception лише для того, щоб зробити check зеленим.
-- Кожна наступна задача має охоплювати один невеликий dependency cluster разом із tests і manifest update.
-- Не змішувати ESM conversion з opportunistic API, formula або behavior refactoring.
-- Repository tooling залишається в `utils/`, доки окрема задача не обґрунтує path migration.
-- OOP є базовим стилем, але composition має перевагу над inheritance; pure calculations і value transformations не отримують штучних class hierarchies.
-- Кожна частина mutable game state повинна мати одного authoritative owner; cached/derived state позначається явно і не стає другим source of truth.
-- Domain contracts не залежать від `game/config`; raw configuration надходить через constructor injection, factories або composition root.
-- Performance-рішення приймаються за evidence: hot-loop participation, allocation frequency, DOM/Canvas access і profiling risk. Object pooling не додається без доведеного high-churn lifecycle.
+- Build a reliable dependency graph first, then classify ownership, and only then move files.
+- Do not infer architectural ownership from a filename, current directory, or class suffix.
+- Do not change fishing physics, inventory, items, progression, UI behavior, save format, or game-state semantics during architecture tasks.
+- Do not create a runtime dependency scanner, runtime architecture validator, or permanent dynamic script loader.
+- Do not add a global or an architecture exception merely to make a check pass.
+- Keep each subsequent task to one small dependency cluster, with relevant tests and a manifest update.
+- Do not mix ESM conversion with opportunistic API, formula, or behavior refactoring.
+- Keep repository tooling in `utils/` unless a separate task justifies moving it.
+- Use OOP as the default style, but prefer composition over inheritance; do not introduce artificial class hierarchies for pure calculations or value transformations.
+- Give each mutable game-state fact one authoritative owner. Explicitly mark cached or derived state and never treat it as a second source of truth.
+- Keep Domain contracts independent of `game/config`; inject raw configuration through constructors, factories, or the composition root.
+- Base performance decisions on evidence: hot-loop participation, allocation frequency, DOM/Canvas access, and profiling risk. Add object pooling only for a proven high-churn lifecycle.
 
 ---
 
 # 2. Stage 3 — Game Domain
 
-## Цільова структура
+## Target structure
 
 ```text
 src/game/domain/
@@ -52,34 +52,53 @@ src/game/domain/
 ├── rules/
 └── tackle/
 
-src/game/config/       external щодо domain
-src/game/application/  orchestration, не domain ownership
+src/game/config/       external to Domain
+src/game/application/  orchestration, not Domain ownership
 ```
 
-Цільові paths визначаються reviewed Manifest metadata, а не назвою поточної папки. Новий піддомен додається лише через classification/policy review.
+Reviewed Manifest metadata determines target paths, not current directory names. Add a new subdomain only after classification and policy review.
 
-Domain не залежить від platform, UI, Canvas, DOM, dev або raw configuration. Configuration надходить через constructor injection, factories або composition root. Domain може залежати лише від стабільних engine primitives і власних domain contracts/value objects.
+Domain must not depend on platform, UI, Canvas, DOM, dev, or raw configuration. Inject configuration through constructors, factories, or the composition root. Domain may depend only on stable engine primitives and its own Domain contracts or value objects.
 
-## Stage 3.14–3.21 — Atomic Domain Migration Batches
+## Completed batches 001–014 checklist
 
-Завершено `13/21` frozen batches і `41/69` frozen domain-модулів. Наступний exact batch:
+- [x] **001 · Inventory · 1 module:** `InventoryEquipTargetSelectionPolicy`.
+- [x] **002 · Fishing · 1 module:** `ReelAutoRecoveryCalculator`.
+- [x] **003 · Fishing · 1 module:** `LineTensionCalculator`.
+- [x] **004 · Equipment · 1 module:** `RodCapabilityResolver`.
+- [x] **005 · Fishing · 6 modules:** drag force, loose and recoverable line calculations, rod movement, and rod stroke.
+- [x] **006 · Fishing · 6 modules:** hold opposition, landing lift tension, line constraints, fight sector, and float tackle policy.
+- [x] **007 · Fishing · 6 modules:** line-constrained fish motion, retrieve speed, pull and stroke state, and fight force.
+- [x] **008 · Fishing · 3 modules:** `ReelHoldLoadPolicy`, `RodStrokeDistanceTracker`, `LineSpoolState`.
+- [x] **009 · Fish · 2 modules:** `FishAnomalyVariantResolver`, `FishRarityResolver`.
+- [x] **010 · Inventory · 1 module:** `UnlimitedAssemblyCapacityPolicy`.
+- [x] **011 · Items · 5 modules:** item metrics, progression, and rarity rules and registry.
+- [x] **012 · Assemblies · 2 modules:** `AssemblyAttachmentTargetResolver`, `AssemblyCompletionPolicy`.
+- [x] **013 · Fishing · 6 modules / 8 exports:** fish direction, cast exposure, force budget, pressure fatigue, rod angle, and stamina regeneration.
+- [x] **014 · Fishing · 6 modules:** landing lift readiness, pressure fatigue state, tension build rate, stamina drain and transition, and tackle failure selection.
+
+**Checkpoint `v0.24.51`:** `14/21` frozen batches and `47/69` frozen Domain modules are complete. The cumulative runtime has `56` project modules, `59` activations, and `89` bridge records. `activeBatchId = null`; batch `015` is next. For batch 014, Windows Full 177/177 passed in one uninterrupted run, including game-cycle (feeder victory/landing-lift and strong-fish line-break failure scenarios) and the Windows-only D:/escape.js source-build fixtures of batches 009/010.; user-performed browser smoke passed with `0 errors` and `0 warnings`.
+
+## Stage 3.15–3.21 — Atomic Domain Migration Batches
+
+`14/21` frozen batches and `47/69` frozen Domain modules are complete. The next exact batch is:
 
 ```text
-stage-3.candidate-014-fishing-fefd469b
+stage-3.candidate-015-fishing-37dc3452
 
-LandingLiftReadinessPolicy
-PlayerPressureFatigueState
-PlayerTensionBuildRateResolver
-StaminaDrainCalculator
-StaminaTransitionResolver
-TackleFailureSelector
+EnduranceMovementDebuffCalculator
+PlayerPressureGainResolver
+ActiveEnduranceDrainCalculator
+PassiveEnduranceDrainCalculator
+StaminaLateralPositionResolver
+WeakestTackleLimitResolver
 ```
 
-Stage 3.14.0: read-only preflight, exact dependency/state audit, approved activation/consumers і rollback boundary. Runtime migration не починається до наступних підетапів.
+Stage 3.15.0: perform a read-only preflight and an exact dependency and state audit; verify approved activations, consumers, and the rollback boundary. Do not start runtime migration before the subsequent phases.
 
-Поточний accepted runtime: 50 project modules, 53 activation contracts, 83 bridge records; одна cumulative topology, жодного active batch. Наступний scope береться з frozen plan і перевіряється на фактичному graph.
+Current accepted runtime: 56 project modules, 59 activation contracts, and 89 bridge records in one cumulative topology, with no active batch. Take the next scope from the frozen plan and verify it against the actual graph.
 
-Кожен batch `014–021` проходить той самий контрольований lifecycle:
+Each batch `015–021` follows the same controlled lifecycle:
 
 ```text
 preflight/audit
@@ -94,11 +113,11 @@ preflight/audit
 → release closure with batch-only rollback
 ```
 
-Після batch 021 потрібні graph-changing prerequisites, повторні observations/topology review та новий maximal-prefix freeze. Historical candidates `022–040` не є execution-ready після зміни graph. Stage 3 завершується лише після перенесення всіх approved Domain clusters, однозначного state ownership і контрольованого removal path для кожного bridge.
+After batch 021, complete graph-changing prerequisites, repeat the observation and topology review, and establish a new maximal-prefix freeze. Historical candidates `022–040` are not execution ready after the graph changes. Stage 3 is complete only when all approved Domain clusters have migrated, state ownership is unambiguous, and every bridge has a controlled removal path.
 
 # 3. Stage 4 — Application + Platform
 
-Мігрувати:
+Migrate:
 
 ```text
 application services
@@ -114,29 +133,29 @@ DOM/Canvas adapters
 
 # 4. Stage 5 — Presentation + Bootstrap
 
-Мігрувати render/UI/screens/HUD/render pipeline, `GameApplication` і `GameCompositionRoot`. Створити production `game.entry.js` лише після готовності dependency graph.
+Migrate the rendering pipeline, UI, screens, HUD, `GameApplication`, and `GameCompositionRoot`. Create the production `game.entry.js` only after the dependency graph is ready.
 
 # 5. Stage 6 — Development / Production Split
 
-Створити окремий `dev.entry.js`, фізично відокремити debug overlay, GodMode, diagnostics, watchdog, dev schemas та balance tools від production graph. Поступово видалити legacy globals і classic scripts.
+Create a separate `dev.entry.js`. Physically separate the debug overlay, GodMode, diagnostics, watchdog, dev schemas, and balance tools from the production graph. Gradually remove legacy globals and classic scripts.
 
 # 6. Stage 7 — Structural Hardening
 
-Після стабільного ESM:
+After ESM is stable:
 
-- декомпозувати великі mixed-responsibility classes;
-- остаточно розділити engine/game/platform/dev;
-- видалити transitional compatibility code;
-- очистити legacy `systems/services/app` structure;
-- виконати production hardening.
+- Decompose large classes with mixed responsibilities.
+- Complete the separation of engine, game, platform, and dev code.
+- Remove transitional compatibility code.
+- Clean up the legacy `systems/services/app` structure.
+- Complete production hardening.
 
 ---
 
 # 7. Transitional compatibility rules
 
-Якщо dependency cluster неможливо мігрувати атомарно, дозволений тимчасовий `compat/` або `legacy_bridge/`.
+If a dependency cluster cannot be migrated atomically, a temporary `compat/` or `legacy_bridge/` is allowed.
 
-У bridge заборонені:
+Bridges must not contain:
 
 ```text
 business logic
@@ -144,22 +163,22 @@ new domain behavior
 permanent APIs
 ```
 
-Кожен bridge повинен мати owner, reason і `removalStage`.
+Every bridge must have an owner, a reason, and a `removalStage`.
 
 ---
 
-# 8. Коли потрібно зупинитися
+# 8. When to Stop
 
-Потрібне окреме architecture рішення, якщо пропонується:
+Make a separate architecture decision if a change would:
 
 ```text
-додати ще один global
-дозволити engine → game
-дозволити domain → document/window
-завантажити legacy scripts із нового entrypoint
-переписати gameplay class лише для ESM conversion
-додати файл у ignore, бо architecture check заважає
-розширити baseline лише для зеленого check
+add another global
+allow engine → game dependencies
+allow domain → document/window dependencies
+load legacy scripts from a new entrypoint
+rewrite a gameplay class solely for ESM conversion
+ignore a file because an architecture check blocks it
+expand a baseline solely to make a check pass
 ```
 
-Такі ситуації не обходяться workaround — переглядається dependency design.
+Do not bypass these cases with a workaround; review the dependency design.

@@ -598,6 +598,10 @@ class StageOneClosureValidator {
         "Items Progression and Rarity Domain",
       "stage-3.candidate-012-assemblies-2086347a":
         "Assemblies Domain",
+      "stage-3.candidate-013-fishing-0267b3ea":
+        "Fishing Domain",
+      "stage-3.candidate-014-fishing-fefd469b":
+        "Fishing Stamina and Tackle Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

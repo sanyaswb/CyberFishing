@@ -15,6 +15,19 @@ class RepresentationOnlyReviewedEsmTarget {
     targetEvaluation = null }) {
     assert.equal(sha(source), sourceSha256, `${currentPath}: source changed after audit`);
     const reviewer = new StageThreeReviewedEvaluationEffect();
+    if (contract.frozenStaticFields) {
+      assert(!contract.frozenConstants && !contract.legacyExposure);
+      reviewer.frozenStaticFields({ source, currentPath, ...contract.frozenStaticFields });
+      assert.deepEqual(exports, [contract.frozenStaticFields.className]);
+      assert(targetEvaluation, `${targetPath}: reviewed static-field evaluation is required`);
+      const projected = new RepresentationOnlyNamedEsmTarget().project({ source, currentPath,
+        targetPath, exportName: exports[0], sourceSha256 });
+      const observed = new ModuleEvaluationEffectObserver().observe({ modulePath: targetPath,
+        source: projected.targetSource });
+      assert.equal(observed.evidenceFingerprint, targetEvaluation.evidenceFingerprint);
+      assert.deepEqual(observed.observations, targetEvaluation.observations);
+      return projected;
+    }
     if (!contract.frozenConstants && contract.legacyExposure?.mechanism !== "window-property") {
       assert.equal(exports.length, 1);
       return new RepresentationOnlyNamedEsmTarget().project({ source, currentPath, targetPath,

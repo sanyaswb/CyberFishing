@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.50";
+const CURRENT_PROJECT_VERSION = "0.24.51";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "fishing-domain",
+  codename: "fishing-stamina-tackle-domain",
   updatedAt: "2026-09-25",
   notes: Object.freeze([
-    "Migrate six Fishing modules with eight named game-domain ESM exports",
-    "Preserve one cumulative graph with fifty project modules and fifty-three activations",
-    "Complete frozen batch 013 with eighty-three exact classic-consumer bridge relationships",
-    "Preserve cast, fish direction, rod control, fatigue and stamina behavior and identity",
+    "Migrate six Fishing modules with six named game-domain ESM exports",
+    "Preserve one cumulative graph with fifty-six project modules and fifty-nine activations",
+    "Complete frozen batch 014 with eighty-nine exact classic-consumer bridge relationships",
+    "Preserve landing lift, pressure fatigue, tension build, stamina and tackle failure behavior",
   ]),
 });
 

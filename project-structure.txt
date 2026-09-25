@@ -7,11 +7,130 @@
 │  │  ├── known_debt_registry.json
 │  │  └── migration_bridge_registry.json
 │  ├── migration
+│  │  ├── evidence
+│  │  │  ├── stage_3_batch_007_acceptance_capture.json
+│  │  │  └── stage_3_batch_007_equipment_hydration_repair.json
 │  │  ├── module_migration_manifest.json
 │  │  ├── stage_1_6_initial_batches.json
 │  │  ├── stage_2_approved_batches.json
 │  │  ├── stage_2_execution_state.json
 │  │  ├── stage_3_approved_batches.json
+│  │  ├── stage_3_batch_006_audit.json
+│  │  ├── stage_3_batch_006_execution_plan.json
+│  │  ├── stage_3_batch_006_observation_reconciliation.json
+│  │  ├── stage_3_batch_006_prebuild_contract.json
+│  │  ├── stage_3_batch_006_release_closure.json
+│  │  ├── stage_3_batch_006_test_matrix.json
+│  │  ├── stage_3_batch_007_acceptance_pass.json
+│  │  ├── stage_3_batch_007_acceptance.json
+│  │  ├── stage_3_batch_007_audit.json
+│  │  ├── stage_3_batch_007_changelog_repair.json
+│  │  ├── stage_3_batch_007_execution_plan.json
+│  │  ├── stage_3_batch_007_fallback_review.json
+│  │  ├── stage_3_batch_007_live_runtime_validation.json
+│  │  ├── stage_3_batch_007_observation_reconciliation.json
+│  │  ├── stage_3_batch_007_prebuild_contract.json
+│  │  ├── stage_3_batch_007_release_closure.json
+│  │  ├── stage_3_batch_007_runtime_cutover.json
+│  │  ├── stage_3_batch_007_source_build_validation.json
+│  │  ├── stage_3_batch_007_test_matrix.json
+│  │  ├── stage_3_batch_008_acceptance_pass.json
+│  │  ├── stage_3_batch_008_acceptance_verification.json
+│  │  ├── stage_3_batch_008_audit.json
+│  │  ├── stage_3_batch_008_automated_acceptance.json
+│  │  ├── stage_3_batch_008_browser_confirmation.json
+│  │  ├── stage_3_batch_008_execution_plan.json
+│  │  ├── stage_3_batch_008_live_runtime_validation.json
+│  │  ├── stage_3_batch_008_observation_reconciliation.json
+│  │  ├── stage_3_batch_008_prebuild_contract.json
+│  │  ├── stage_3_batch_008_release_closure.json
+│  │  ├── stage_3_batch_008_release_regression.json
+│  │  ├── stage_3_batch_008_release_transition.json
+│  │  ├── stage_3_batch_008_runtime_cutover.json
+│  │  ├── stage_3_batch_008_source_build_validation.json
+│  │  ├── stage_3_batch_008_test_matrix.json
+│  │  ├── stage_3_batch_009_acceptance_pass.json
+│  │  ├── stage_3_batch_009_audit.json
+│  │  ├── stage_3_batch_009_automated_acceptance.json
+│  │  ├── stage_3_batch_009_browser_confirmation.json
+│  │  ├── stage_3_batch_009_execution_plan.json
+│  │  ├── stage_3_batch_009_handoff.md
+│  │  ├── stage_3_batch_009_live_runtime_validation.json
+│  │  ├── stage_3_batch_009_observation_handoff.md
+│  │  ├── stage_3_batch_009_observation_reconciliation.json
+│  │  ├── stage_3_batch_009_observation_verification.json
+│  │  ├── stage_3_batch_009_planning_validation.json
+│  │  ├── stage_3_batch_009_prebuild_contract.json
+│  │  ├── stage_3_batch_009_prebuild_handoff.md
+│  │  ├── stage_3_batch_009_prebuild_validation.json
+│  │  ├── stage_3_batch_009_release_closure.json
+│  │  ├── stage_3_batch_009_release_final_verification.json
+│  │  ├── stage_3_batch_009_release_regression.json
+│  │  ├── stage_3_batch_009_release_transition.json
+│  │  ├── stage_3_batch_009_runtime_cutover.json
+│  │  ├── stage_3_batch_009_runtime_handoff.md
+│  │  ├── stage_3_batch_009_runtime_stage_verification.json
+│  │  ├── stage_3_batch_009_source_build_validation.json
+│  │  ├── stage_3_batch_009_test_matrix.json
+│  │  ├── stage_3_batch_010_acceptance_pass.json
+│  │  ├── stage_3_batch_010_audit.json
+│  │  ├── stage_3_batch_010_automated_acceptance.json
+│  │  ├── stage_3_batch_010_browser_confirmation.json
+│  │  ├── stage_3_batch_010_execution_plan.json
+│  │  ├── stage_3_batch_010_live_runtime_validation.json
+│  │  ├── stage_3_batch_010_observation_reconciliation.json
+│  │  ├── stage_3_batch_010_prebuild_contract.json
+│  │  ├── stage_3_batch_010_release_closure.json
+│  │  ├── stage_3_batch_010_release_regression.json
+│  │  ├── stage_3_batch_010_release_transition.json
+│  │  ├── stage_3_batch_010_runtime_cutover.json
+│  │  ├── stage_3_batch_010_source_build_validation.json
+│  │  ├── stage_3_batch_010_test_matrix.json
+│  │  ├── stage_3_batch_011_acceptance_pass.json
+│  │  ├── stage_3_batch_011_audit.json
+│  │  ├── stage_3_batch_011_automated_acceptance.json
+│  │  ├── stage_3_batch_011_browser_confirmation.json
+│  │  ├── stage_3_batch_011_execution_plan.json
+│  │  ├── stage_3_batch_011_live_runtime_validation.json
+│  │  ├── stage_3_batch_011_observation_reconciliation.json
+│  │  ├── stage_3_batch_011_prebuild_contract.json
+│  │  ├── stage_3_batch_011_release_closure.json
+│  │  ├── stage_3_batch_011_release_regression.json
+│  │  ├── stage_3_batch_011_release_transition.json
+│  │  ├── stage_3_batch_011_runtime_cutover.json
+│  │  ├── stage_3_batch_011_source_build_validation.json
+│  │  ├── stage_3_batch_011_test_matrix.json
+│  │  ├── stage_3_batch_012_acceptance_pass.json
+│  │  ├── stage_3_batch_012_audit.json
+│  │  ├── stage_3_batch_012_automated_acceptance.json
+│  │  ├── stage_3_batch_012_browser_confirmation.json
+│  │  ├── stage_3_batch_012_execution_plan.json
+│  │  ├── stage_3_batch_012_live_runtime_validation.json
+│  │  ├── stage_3_batch_012_observation_reconciliation.json
+│  │  ├── stage_3_batch_012_prebuild_contract.json
+│  │  ├── stage_3_batch_012_release_closure.json
+│  │  ├── stage_3_batch_012_release_regression.json
+│  │  ├── stage_3_batch_012_release_transition.json
+│  │  ├── stage_3_batch_012_runtime_cutover.json
+│  │  ├── stage_3_batch_012_side_effect_review.json
+│  │  ├── stage_3_batch_012_source_build_validation.json
+│  │  ├── stage_3_batch_012_test_matrix.json
+│  │  ├── stage_3_batch_013_acceptance_pass.json
+│  │  ├── stage_3_batch_013_audit.json
+│  │  ├── stage_3_batch_013_automated_acceptance.json
+│  │  ├── stage_3_batch_013_browser_confirmation.json
+│  │  ├── stage_3_batch_013_execution_plan.json
+│  │  ├── stage_3_batch_013_known_debt_resolution.json
+│  │  ├── stage_3_batch_013_live_runtime_validation.json
+│  │  ├── stage_3_batch_013_observation_reconciliation.json
+│  │  ├── stage_3_batch_013_prebuild_contract.json
+│  │  ├── stage_3_batch_013_release_closure.json
+│  │  ├── stage_3_batch_013_release_regression.json
+│  │  ├── stage_3_batch_013_release_transition.json
+│  │  ├── stage_3_batch_013_runtime_cutover.json
+│  │  ├── stage_3_batch_013_side_effect_review.json
+│  │  ├── stage_3_batch_013_source_build_validation.json
+│  │  ├── stage_3_batch_013_test_matrix.json
 │  │  ├── stage_3_candidate_batches.json
 │  │  ├── stage_3_candidate_policy.json
 │  │  ├── stage_3_compatibility_runtime.json
@@ -78,7 +197,6 @@
 ├── index.html
 ├── package-lock.json
 ├── package.json
-├── project-structure.txt
 ├── README.md
 ├── refactor_Task.txt
 ├── src
@@ -487,13 +605,57 @@
 │  │  └── tackle.js
 │  ├── game
 │  │  └── domain
+│  │    ├── assemblies
+│  │    │  ├── assembly_attachment_target_resolver.js
+│  │    │  └── assembly_completion_policy.js
 │  │    ├── equipment
 │  │    │  └── rod_capability_resolver.js
+│  │    ├── fish
+│  │    │  ├── fish_anomaly_variant_resolver.js
+│  │    │  └── fish_rarity_resolver.js
 │  │    ├── fishing
+│  │    │  ├── drag_force_calculator.js
+│  │    │  ├── fish_direction_intent_sampler.js
+│  │    │  ├── fish_retrieve_result.js
+│  │    │  ├── fishing_cast_exposure_resolver.js
+│  │    │  ├── float_tackle_line_budget_policy.js
+│  │    │  ├── hold_opposition_resolver.js
+│  │    │  ├── landing_lift_tension_calculator.js
+│  │    │  ├── line_constrained_fish_motion_resolver.js
+│  │    │  ├── line_constraint_state_resolver.js
+│  │    │  ├── line_radial_movement_splitter.js
+│  │    │  ├── line_spool_state.js
 │  │    │  ├── line_tension_calculator.js
-│  │    │  └── reel_auto_recovery_calculator.js
-│  │    └── inventory
-│  │      └── equip_target_selection_policy.js
+│  │    │  ├── player_force_budget_allocator.js
+│  │    │  ├── player_pressure
+│  │    │  │  └── player_pressure_fatigue_calculator.js
+│  │    │  ├── pole_fight_sector_geometry.js
+│  │    │  ├── recoverable_line_calculator.js
+│  │    │  ├── reel_auto_recovery_calculator.js
+│  │    │  ├── reel_hold_load_policy.js
+│  │    │  ├── reel_retrieve_speed_calculator.js
+│  │    │  ├── rod_control_angle_resolver.js
+│  │    │  ├── rod_control_movement_projector.js
+│  │    │  ├── rod_control_tension_mode_resolver.js
+│  │    │  ├── rod_pull_state.js
+│  │    │  ├── rod_stroke_capacity_resolver.js
+│  │    │  ├── rod_stroke_distance_tracker.js
+│  │    │  ├── rod_stroke_state.js
+│  │    │  ├── rod_stroke_tracker.js
+│  │    │  ├── simple_fight_force_calculator.js
+│  │    │  └── stamina
+│  │    │    └── stamina_regen_calculator.js
+│  │    ├── inventory
+│  │    │  ├── equip_target_selection_policy.js
+│  │    │  └── unlimited_assembly_capacity_policy.js
+│  │    └── items
+│  │      ├── progression
+│  │      │  ├── item_metric_strategy.js
+│  │      │  └── item_progression_descriptor.js
+│  │      └── rarity
+│  │        ├── item_rarity_descriptor.js
+│  │        ├── item_rarity_strategy_registry.js
+│  │        └── item_rarity_strategy.js
 │  ├── infrastructure
 │  │  ├── location
 │  │  │  ├── depth_map_reader.js
@@ -623,6 +785,12 @@
 │    └── world.js
 └── utils
   ├── architecture
+  │  ├── accept-stage-3-batch-008-automated.js
+  │  ├── accept-stage-3-batch-009-automated.js
+  │  ├── apply-stage-3-batch-006-cutover.js
+  │  ├── apply-stage-3-batch-007-runtime-cutover.js
+  │  ├── apply-stage-3-batch-008-runtime-cutover.js
+  │  ├── apply-stage-3-batch-009-runtime-cutover.js
   │  ├── approved-stage-2-batch-freeze-check.js
   │  ├── architecture-documentation-check.js
   │  ├── architecture-guard-corpus-check.js
@@ -670,13 +838,159 @@
   │  │  ├── induced_domain_graph.js
   │  │  └── stage_three_historical_audit_guard.js
   │  ├── domain_batches
+  │  │  ├── controlled_metadata_transaction.js
+  │  │  ├── cumulative_live_activation_probe.js
   │  │  ├── domain_approved_prefix.js
   │  │  ├── domain_candidate_artifact.js
   │  │  ├── domain_candidate_batch_designer.js
   │  │  ├── domain_candidate_cluster_selector.js
   │  │  ├── domain_candidate_evidence.js
   │  │  ├── domain_candidate_policy.js
-  │  │  └── stage_three_first_batch_contract.js
+  │  │  ├── eager_class_module_evaluation_probe.js
+  │  │  ├── stage_three_batch_006_execution_profile.js
+  │  │  ├── stage_three_batch_006_focused_test_catalog.js
+  │  │  ├── stage_three_batch_007_behavior_cases.js
+  │  │  ├── stage_three_batch_007_candidate_build.js
+  │  │  ├── stage_three_batch_007_cutover_contract.js
+  │  │  ├── stage_three_batch_007_dependency_state_audit.js
+  │  │  ├── stage_three_batch_007_execution_profile.js
+  │  │  ├── stage_three_batch_007_fallback_probe.js
+  │  │  ├── stage_three_batch_007_fallback_review.js
+  │  │  ├── stage_three_batch_007_focused_test_catalog.js
+  │  │  ├── stage_three_batch_007_lifecycle_transition.js
+  │  │  ├── stage_three_batch_007_live_runtime_validation.js
+  │  │  ├── stage_three_batch_007_manifest_transition.js
+  │  │  ├── stage_three_batch_007_observation_reconciliation.js
+  │  │  ├── stage_three_batch_007_source_build_contract.js
+  │  │  ├── stage_three_batch_008_behavior_cases.js
+  │  │  ├── stage_three_batch_008_candidate_build.js
+  │  │  ├── stage_three_batch_008_cutover_history.js
+  │  │  ├── stage_three_batch_008_cutover.js
+  │  │  ├── stage_three_batch_008_execution_profile.js
+  │  │  ├── stage_three_batch_008_focused_test_catalog.js
+  │  │  ├── stage_three_batch_008_historical_inputs.js
+  │  │  ├── stage_three_batch_008_live_validation.js
+  │  │  ├── stage_three_batch_008_observation_application.js
+  │  │  ├── stage_three_batch_008_observation_reconciliation.js
+  │  │  ├── stage_three_batch_008_observation_transition.js
+  │  │  ├── stage_three_batch_008_preflight_profile.js
+  │  │  ├── stage_three_batch_008_release_transition.js
+  │  │  ├── stage_three_batch_008_source_build.js
+  │  │  ├── stage_three_batch_008_state_probe.js
+  │  │  ├── stage_three_batch_009_behavior_cases.js
+  │  │  ├── stage_three_batch_009_candidate_validation.js
+  │  │  ├── stage_three_batch_009_candidate_workspace.js
+  │  │  ├── stage_three_batch_009_cutover_history.js
+  │  │  ├── stage_three_batch_009_cutover.js
+  │  │  ├── stage_three_batch_009_evaluation_gate.js
+  │  │  ├── stage_three_batch_009_execution_profile.js
+  │  │  ├── stage_three_batch_009_focused_test_catalog.js
+  │  │  ├── stage_three_batch_009_historical_workspace.js
+  │  │  ├── stage_three_batch_009_live_validation.js
+  │  │  ├── stage_three_batch_009_observation_application.js
+  │  │  ├── stage_three_batch_009_observation_reconciliation.js
+  │  │  ├── stage_three_batch_009_observation_transition.js
+  │  │  ├── stage_three_batch_009_planning.js
+  │  │  ├── stage_three_batch_009_prebuild_history.js
+  │  │  ├── stage_three_batch_009_prebuild.js
+  │  │  ├── stage_three_batch_009_preflight_profile.js
+  │  │  ├── stage_three_batch_009_release_history.js
+  │  │  ├── stage_three_batch_009_release_transition.js
+  │  │  ├── stage_three_batch_009_source_build.js
+  │  │  ├── stage_three_batch_010_behavior_cases.js
+  │  │  ├── stage_three_batch_010_candidate_validation.js
+  │  │  ├── stage_three_batch_010_candidate_workspace.js
+  │  │  ├── stage_three_batch_010_cutover_history.js
+  │  │  ├── stage_three_batch_010_cutover.js
+  │  │  ├── stage_three_batch_010_focused_test_catalog.js
+  │  │  ├── stage_three_batch_010_historical_workspace.js
+  │  │  ├── stage_three_batch_010_history.js
+  │  │  ├── stage_three_batch_010_live_validation.js
+  │  │  ├── stage_three_batch_010_observation_application.js
+  │  │  ├── stage_three_batch_010_observation_reconciliation.js
+  │  │  ├── stage_three_batch_010_observation_transition.js
+  │  │  ├── stage_three_batch_010_planning.js
+  │  │  ├── stage_three_batch_010_prebuild.js
+  │  │  ├── stage_three_batch_010_preflight_profile.js
+  │  │  ├── stage_three_batch_010_preflight.js
+  │  │  ├── stage_three_batch_010_release_transition.js
+  │  │  ├── stage_three_batch_010_source_build.js
+  │  │  ├── stage_three_batch_011_behavior_cases.js
+  │  │  ├── stage_three_batch_011_candidate_validation.js
+  │  │  ├── stage_three_batch_011_candidate_workspace.js
+  │  │  ├── stage_three_batch_011_cutover_history.js
+  │  │  ├── stage_three_batch_011_cutover.js
+  │  │  ├── stage_three_batch_011_focused_test_catalog.js
+  │  │  ├── stage_three_batch_011_historical_workspace.js
+  │  │  ├── stage_three_batch_011_history.js
+  │  │  ├── stage_three_batch_011_live_validation.js
+  │  │  ├── stage_three_batch_011_observation_application.js
+  │  │  ├── stage_three_batch_011_observation_reconciliation.js
+  │  │  ├── stage_three_batch_011_observation_transition.js
+  │  │  ├── stage_three_batch_011_planning.js
+  │  │  ├── stage_three_batch_011_prebuild.js
+  │  │  ├── stage_three_batch_011_preflight_profile.js
+  │  │  ├── stage_three_batch_011_release_transition.js
+  │  │  ├── stage_three_batch_011_source_build.js
+  │  │  ├── stage_three_batch_012_behavior_cases.js
+  │  │  ├── stage_three_batch_012_candidate_validation.js
+  │  │  ├── stage_three_batch_012_candidate_workspace.js
+  │  │  ├── stage_three_batch_012_cutover_history.js
+  │  │  ├── stage_three_batch_012_cutover.js
+  │  │  ├── stage_three_batch_012_focused_test_catalog.js
+  │  │  ├── stage_three_batch_012_historical_workspace.js
+  │  │  ├── stage_three_batch_012_history.js
+  │  │  ├── stage_three_batch_012_live_validation.js
+  │  │  ├── stage_three_batch_012_observation_application.js
+  │  │  ├── stage_three_batch_012_observation_reconciliation.js
+  │  │  ├── stage_three_batch_012_observation_transition.js
+  │  │  ├── stage_three_batch_012_planning.js
+  │  │  ├── stage_three_batch_012_prebuild.js
+  │  │  ├── stage_three_batch_012_preflight_profile.js
+  │  │  ├── stage_three_batch_012_release_transition.js
+  │  │  ├── stage_three_batch_012_source_build.js
+  │  │  ├── stage_three_batch_013_behavior_cases.js
+  │  │  ├── stage_three_batch_013_candidate_validation.js
+  │  │  ├── stage_three_batch_013_candidate_workspace.js
+  │  │  ├── stage_three_batch_013_cutover_history.js
+  │  │  ├── stage_three_batch_013_cutover.js
+  │  │  ├── stage_three_batch_013_focused_test_catalog.js
+  │  │  ├── stage_three_batch_013_historical_workspace.js
+  │  │  ├── stage_three_batch_013_history.js
+  │  │  ├── stage_three_batch_013_live_validation.js
+  │  │  ├── stage_three_batch_013_observation_application.js
+  │  │  ├── stage_three_batch_013_observation_reconciliation.js
+  │  │  ├── stage_three_batch_013_observation_transition.js
+  │  │  ├── stage_three_batch_013_planning.js
+  │  │  ├── stage_three_batch_013_prebuild.js
+  │  │  ├── stage_three_batch_013_preflight_profile.js
+  │  │  ├── stage_three_batch_013_release_transition.js
+  │  │  ├── stage_three_batch_013_source_build.js
+  │  │  ├── stage_three_batch_candidate_build.js
+  │  │  ├── stage_three_batch_dependency_state_audit.js
+  │  │  ├── stage_three_batch_execution_plan_projector.js
+  │  │  ├── stage_three_batch_execution_plan.js
+  │  │  ├── stage_three_batch_execution_profile.js
+  │  │  ├── stage_three_batch_focused_harness.js
+  │  │  ├── stage_three_batch_focused_test_matrix.js
+  │  │  ├── stage_three_batch_prebuild_application.js
+  │  │  ├── stage_three_batch_prebuild_contract.js
+  │  │  ├── stage_three_batch_prebuild_profile.js
+  │  │  ├── stage_three_batch_prebuild_projector.js
+  │  │  ├── stage_three_batch_preflight_audit.js
+  │  │  ├── stage_three_batch_preflight_profile.js
+  │  │  ├── stage_three_batch_source_observer.js
+  │  │  ├── stage_three_candidate_output_manager.js
+  │  │  ├── stage_three_first_batch_contract.js
+  │  │  ├── stage_three_global_exposure_review.js
+  │  │  ├── stage_three_live_preflight.js
+  │  │  ├── stage_three_observation_manifest_transition.js
+  │  │  ├── stage_three_observation_reconciliation.js
+  │  │  ├── stage_three_patch_release_transition.js
+  │  │  ├── stage_three_pending_target_manifest.js
+  │  │  ├── stage_three_representation_target.js
+  │  │  ├── stage_three_reviewed_evaluation_effect.js
+  │  │  └── stage_three_reviewed_representation_target.js
   │  ├── esm_infrastructure
   │  │  ├── esm_fixture_graph_inspector.js
   │  │  ├── repository_content_snapshot.js
@@ -687,7 +1001,27 @@
   │  │  │  ├── dynamic-value.js
   │  │  │  └── static-math.js
   │  │  └── package.json
+  │  ├── finalize-stage-3-batch-006-observations.js
+  │  ├── finalize-stage-3-batch-007-observations.js
+  │  ├── finalize-stage-3-batch-008-observations.js
+  │  ├── finalize-stage-3-batch-009-observations.js
+  │  ├── finalize-stage-3-batch-009-release.js
+  │  ├── finalize-stage-3-batch-010-release.js
+  │  ├── finalize-stage-3-batch-011-release.js
+  │  ├── finalize-stage-3-batch-012-release.js
+  │  ├── finalize-stage-3-batch-013-release.js
   │  ├── generate-stage-3-approved-prefix.js
+  │  ├── generate-stage-3-batch-006-audit.js
+  │  ├── generate-stage-3-batch-006-execution-plan.js
+  │  ├── generate-stage-3-batch-006-test-matrix.js
+  │  ├── generate-stage-3-batch-007-audit.js
+  │  ├── generate-stage-3-batch-007-execution-plan.js
+  │  ├── generate-stage-3-batch-007-test-matrix.js
+  │  ├── generate-stage-3-batch-008-audit.js
+  │  ├── generate-stage-3-batch-008-execution-plan.js
+  │  ├── generate-stage-3-batch-008-test-matrix.js
+  │  ├── generate-stage-3-batch-009-planning.js
+  │  ├── generate-stage-3-batch-009-source-build.js
   │  ├── generate-stage-3-candidate-batches.js
   │  ├── generate-stage-3-domain-audit.js
   │  ├── guards
@@ -732,6 +1066,8 @@
   │  │  ├── migration_observation_reconciler.js
   │  │  ├── persist_migration_observations_command.js
   │  │  ├── source_file_scanner.js
+  │  │  ├── stage_three_manifest_metadata_projector.js
+  │  │  ├── stage_three_runtime_script_alias_resolver.js
   │  │  └── stage_two_runtime_script_alias_resolver.js
   │  ├── migration-manifest-integrity-check.js
   │  ├── migration-manifest-reconciler-check.js
@@ -758,6 +1094,7 @@
   │  │  ├── parsing
   │  │  │  └── legacy_source_parser.js
   │  │  ├── persistence
+  │  │  │  ├── live_observation_snapshot.js
   │  │  │  ├── manifest_dependency_projector.js
   │  │  │  ├── migration_observation_snapshot_builder.js
   │  │  │  └── observation_manifest_projector.js
@@ -783,17 +1120,53 @@
   │  │    └── assignment_target_reader.js
   │  ├── observation-graph-integrity-corpus-check.js
   │  ├── observation-graph-integrity-fixture-check.js
+  │  ├── open-stage-3-batch-006-prebuild.js
+  │  ├── open-stage-3-batch-007-prebuild.js
+  │  ├── open-stage-3-batch-008-prebuild.js
+  │  ├── open-stage-3-batch-012-prebuild.js
+  │  ├── open-stage-3-batch-013-prebuild.js
   │  ├── package_contract
   │  │  ├── package_contract_validator.js
   │  │  ├── package_lock_validator.js
   │  │  └── root_package_validator.js
   │  ├── package-contract-check.js
   │  ├── persist-migration-observations.js
+  │  ├── prepare-stage-3-batch-007-source-build.js
+  │  ├── prepare-stage-3-batch-008-source-build.js
+  │  ├── project-stage-3-batch-008-release.js
+  │  ├── project-stage-3-batch-009-release.js
+  │  ├── project-stage-3-batch-010-release.js
+  │  ├── project-stage-3-batch-011-release.js
+  │  ├── project-stage-3-batch-012-release.js
+  │  ├── project-stage-3-batch-013-release.js
   │  ├── provider-resolution-contract-check.js
   │  ├── provider-resolution-corpus-check.js
   │  ├── provider-resolution-engine-fixture-check.js
+  │  ├── publish-stage-3-batch-009-release.js
+  │  ├── publish-stage-3-batch-010-release.js
+  │  ├── publish-stage-3-batch-011-release.js
+  │  ├── publish-stage-3-batch-012-release.js
+  │  ├── publish-stage-3-batch-013-release.js
   │  ├── reconcile-migration-manifest.js
+  │  ├── record-stage-3-batch-010-automated-acceptance.js
+  │  ├── record-stage-3-batch-010-browser-acceptance.js
+  │  ├── record-stage-3-batch-011-automated-acceptance.js
+  │  ├── record-stage-3-batch-011-browser-acceptance.js
+  │  ├── record-stage-3-batch-012-audit.js
+  │  ├── record-stage-3-batch-012-automated-acceptance.js
+  │  ├── record-stage-3-batch-012-browser-acceptance.js
+  │  ├── record-stage-3-batch-012-matrix.js
+  │  ├── record-stage-3-batch-012-plan.js
+  │  ├── record-stage-3-batch-012-side-effect-review.js
+  │  ├── record-stage-3-batch-013-audit.js
+  │  ├── record-stage-3-batch-013-automated-acceptance.js
+  │  ├── record-stage-3-batch-013-browser-acceptance.js
+  │  ├── record-stage-3-batch-013-matrix.js
+  │  ├── record-stage-3-batch-013-plan.js
+  │  ├── record-stage-3-batch-013-side-effect-review.js
   │  ├── render-architecture-doc.js
+  │  ├── replay-stage-3-batch-008-precutover-build.js
+  │  ├── resolve-stage-3-batch-013-known-debt.js
   │  ├── stage-1-6-migration-batch-plan-check.js
   │  ├── stage-1-closure-check.js
   │  ├── stage-2-asset-contracts-check.js
@@ -803,6 +1176,99 @@
   │  ├── stage-2-rendering-primitives-check.js
   │  ├── stage-3-approved-prefix-fixture-check.js
   │  ├── stage-3-approved-prefix-integration-check.js
+  │  ├── stage-3-batch-006-audit-fixture-check.js
+  │  ├── stage-3-batch-006-audit-integration-check.js
+  │  ├── stage-3-batch-006-execution-plan-fixture-check.js
+  │  ├── stage-3-batch-006-execution-plan-integration-check.js
+  │  ├── stage-3-batch-006-focused-test-matrix-check.js
+  │  ├── stage-3-batch-006-observation-check.js
+  │  ├── stage-3-batch-006-prebuild-fixture-check.js
+  │  ├── stage-3-batch-006-prebuild-integration-check.js
+  │  ├── stage-3-batch-006-release-acceptance-check.js
+  │  ├── stage-3-batch-006-runtime-check.js
+  │  ├── stage-3-batch-006-test-matrix-fixture-check.js
+  │  ├── stage-3-batch-007-acceptance-check.js
+  │  ├── stage-3-batch-007-audit-fixture-check.js
+  │  ├── stage-3-batch-007-audit-integration-check.js
+  │  ├── stage-3-batch-007-cutover-fixture-check.js
+  │  ├── stage-3-batch-007-execution-plan-fixture-check.js
+  │  ├── stage-3-batch-007-execution-plan-integration-check.js
+  │  ├── stage-3-batch-007-focused-test-matrix-check.js
+  │  ├── stage-3-batch-007-live-runtime-fixture-check.js
+  │  ├── stage-3-batch-007-live-runtime-integration-check.js
+  │  ├── stage-3-batch-007-observation-fixture-check.js
+  │  ├── stage-3-batch-007-prebuild-fixture-check.js
+  │  ├── stage-3-batch-007-prebuild-integration-check.js
+  │  ├── stage-3-batch-007-prebuild-transaction-fixture-check.js
+  │  ├── stage-3-batch-007-release-acceptance-check.js
+  │  ├── stage-3-batch-007-runtime-cutover-check.js
+  │  ├── stage-3-batch-007-source-build-fixture-check.js
+  │  ├── stage-3-batch-007-source-build-integration-check.js
+  │  ├── stage-3-batch-007-test-matrix-fixture-check.js
+  │  ├── stage-3-batch-008-audit-fixture-check.js
+  │  ├── stage-3-batch-008-audit-integration-check.js
+  │  ├── stage-3-batch-008-cutover-fixture-check.js
+  │  ├── stage-3-batch-008-execution-plan-fixture-check.js
+  │  ├── stage-3-batch-008-execution-plan-integration-check.js
+  │  ├── stage-3-batch-008-focused-test-matrix-check.js
+  │  ├── stage-3-batch-008-live-runtime-fixture-check.js
+  │  ├── stage-3-batch-008-live-runtime-integration-check.js
+  │  ├── stage-3-batch-008-observation-fixture-check.js
+  │  ├── stage-3-batch-008-observation-integration-check.js
+  │  ├── stage-3-batch-008-prebuild-fixture-check.js
+  │  ├── stage-3-batch-008-prebuild-integration-check.js
+  │  ├── stage-3-batch-008-prebuild-transaction-fixture-check.js
+  │  ├── stage-3-batch-008-release-acceptance-check.js
+  │  ├── stage-3-batch-008-release-fixture-check.js
+  │  ├── stage-3-batch-008-runtime-cutover-check.js
+  │  ├── stage-3-batch-008-source-build-fixture-check.js
+  │  ├── stage-3-batch-008-source-build-integration-check.js
+  │  ├── stage-3-batch-008-test-matrix-fixture-check.js
+  │  ├── stage-3-batch-009-cutover-fixture-check.js
+  │  ├── stage-3-batch-009-live-runtime-check.js
+  │  ├── stage-3-batch-009-observation-fixture-check.js
+  │  ├── stage-3-batch-009-observation-integration-check.js
+  │  ├── stage-3-batch-009-planning-check.js
+  │  ├── stage-3-batch-009-planning-fixture-check.js
+  │  ├── stage-3-batch-009-release-candidate-check.js
+  │  ├── stage-3-batch-009-release-check.js
+  │  ├── stage-3-batch-009-release-fixture-check.js
+  │  ├── stage-3-batch-009-source-build-check.js
+  │  ├── stage-3-batch-009-source-build-fixture-check.js
+  │  ├── stage-3-batch-010-audit-check.js
+  │  ├── stage-3-batch-010-audit-fixture-check.js
+  │  ├── stage-3-batch-010-live-runtime-check.js
+  │  ├── stage-3-batch-010-observation-integration-check.js
+  │  ├── stage-3-batch-010-planning-check.js
+  │  ├── stage-3-batch-010-planning-fixture-check.js
+  │  ├── stage-3-batch-010-release-check.js
+  │  ├── stage-3-batch-010-release-fixture-check.js
+  │  ├── stage-3-batch-010-source-build-check.js
+  │  ├── stage-3-batch-010-source-build-fixture-check.js
+  │  ├── stage-3-batch-011-audit-check.js
+  │  ├── stage-3-batch-011-audit-fixture-check.js
+  │  ├── stage-3-batch-011-cutover-fixture-check.js
+  │  ├── stage-3-batch-011-live-runtime-check.js
+  │  ├── stage-3-batch-011-observation-integration-check.js
+  │  ├── stage-3-batch-011-planning-check.js
+  │  ├── stage-3-batch-011-release-check.js
+  │  ├── stage-3-batch-011-release-projection-fixture-check.js
+  │  ├── stage-3-batch-011-source-build-check.js
+  │  ├── stage-3-batch-011-source-build-fixture-check.js
+  │  ├── stage-3-batch-012-audit-check.js
+  │  ├── stage-3-batch-012-cutover-fixture-check.js
+  │  ├── stage-3-batch-012-focused-parity-check.js
+  │  ├── stage-3-batch-012-live-runtime-check.js
+  │  ├── stage-3-batch-012-observation-integration-check.js
+  │  ├── stage-3-batch-012-planning-check.js
+  │  ├── stage-3-batch-012-release-check.js
+  │  ├── stage-3-batch-012-source-build-check.js
+  │  ├── stage-3-batch-013-architecture-check.js
+  │  ├── stage-3-batch-013-focused-parity-check.js
+  │  ├── stage-3-batch-013-isolated-suite.js
+  │  ├── stage-3-batch-013-release-check.js
+  │  ├── stage-3-batch-prebuild-tooling-generalization-check.js
+  │  ├── stage-3-batch-tooling-generalization-check.js
   │  ├── stage-3-candidate-batch-fixture-check.js
   │  ├── stage-3-candidate-batch-integration-check.js
   │  ├── stage-3-compatibility-runtime-fixture-check.js
@@ -815,6 +1281,8 @@
   │  ├── stage-3-domain-observation-fixture-check.js
   │  ├── stage-3-domain-topology-corpus-check.js
   │  ├── stage-3-domain-topology-fixture-check.js
+  │  ├── stage-3-fishing-foundation-prebuild-check.js
+  │  ├── stage-3-fishing-foundation-runtime-check.js
   │  ├── stage-3-induced-domain-graph-corpus-check.js
   │  ├── stage-3-induced-domain-graph-fixture-check.js
   │  ├── stage-3-inventory-equip-target-batch-check.js
@@ -827,9 +1295,22 @@
   │  ├── stage-3-semantic-audit-integration-check.js
   │  ├── stage-3-semantic-observation-fixture-check.js
   │  ├── stage-3-semantic-persistence-fixture-check.js
+  │  ├── update-stage-3-manifest-metadata.js
+  │  ├── validate-stage-3-batch-007-live-runtime.js
+  │  ├── validate-stage-3-batch-008-live-runtime.js
+  │  ├── validate-stage-3-batch-009-live-runtime.js
   │  ├── verify-fresh-package-install.js
+  │  ├── verify-stage-3-batch-008-release.js
+  │  ├── verify-stage-3-batch-009-final.js
+  │  ├── verify-stage-3-batch-009-release.js
+  │  ├── verify-stage-3-batch-010-release.js
+  │  ├── verify-stage-3-batch-011-release.js
+  │  ├── verify-stage-3-batch-012-release.js
+  │  ├── verify-stage-3-batch-013-release.js
   │  └── vite-fixture-build-check.js
   ├── bait-effectiveness-check.js
+  ├── browser-probes
+  │  └── stage_3_batch_007_reel_retrieve_probe_check.js
   ├── check-js.js
   ├── consumable-event-identity-check.js
   ├── create-version-copy.js
@@ -839,11 +1320,29 @@
   ├── fish-rarity-check.js
   ├── float-depth-cast-check.js
   ├── game-cycle-check.js
+  ├── generated
+  │  └── stage-3-7-8
+  │    ├── all.log
+  │    ├── architecture.log
+  │    ├── browser-probe-runtime.html
+  │    ├── browser-probe.html
+  │    ├── capture.cjs
+  │    ├── generated-build.log
+  │    ├── hydration-diagnostic.cjs
+  │    ├── live-identity.log
+  │    ├── npm-ci.log
+  │    ├── prepare-browser.cjs
+  │    ├── quick.log
+  │    ├── reconciliation.log
+  │    ├── result.json
+  │    ├── run.cjs
+  │    └── verify-evidence.cjs
   ├── git-version-copy.js
   ├── hook-domain-semantics-check.js
   ├── inventory-lifecycle-check.js
   ├── inventory-v2-cast-and-lure-check.js
   ├── inventory-v2-equipment-check.js
+  ├── inventory-v2-equipment-hydration-check.js
   ├── inventory-v2-integration-check.js
   ├── inventory-v2-line-allocation-check.js
   ├── inventory-v2-migration-check.js

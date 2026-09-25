@@ -32,7 +32,9 @@ class DomainBehaviorParityHarness {
       if (Object.is(value, -0)) return "__-0__";
       return value;
     }
-    if (Array.isArray(value)) return value.map((item) => this.#normalize(item));
+    // Array.from keeps the normalized copy in this realm; Array#map would inherit the
+    // species constructor of a classic vm-realm array and fail prototype-sensitive comparison.
+    if (Array.isArray(value)) return Array.from(value, (item) => this.#normalize(item));
     if (value && typeof value === "object") {
       return Object.fromEntries(Object.keys(value).sort().map((key) => [key, this.#normalize(value[key])]));
     }

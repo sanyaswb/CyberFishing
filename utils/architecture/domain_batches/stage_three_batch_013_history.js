@@ -18,7 +18,8 @@ class Batch013History {
   exists() { return fs.existsSync(path.join(this.root, PREBUILD)); }
 
   before(file, provided = this.bytes(file)) {
-    let bytes = Buffer.from(provided);
+    let bytes = new (require("./stage_three_batch_014_history").Batch014History)(this.root)
+      .before(file, provided);
     if (!this.exists()) return bytes;
     bytes = new Batch013ReleaseTransition(this.root).before(file, bytes);
     if (file === MANIFEST) bytes = beforeBatch013Observations(bytes, this.root);

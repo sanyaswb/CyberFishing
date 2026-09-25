@@ -63,8 +63,12 @@ class Batch013ArchitectureCheck {
         assert.deepEqual(snapshot(), before, "Batch-only rollback changed frozen prefix");
       }
     }, { keepPrebuild: true });
-    const live = await new Batch013LiveValidation(root).run();
-    const observed = await new Batch013ObservationApplication(root).check();
+    // Live/observation evidence is replayed at the batch-013 runtime-active checkpoint:
+    // later batches and the 0.24.50 release metadata are reversed in an isolated copy.
+    const { live, observed } = await history.run(root, async active => ({
+      live: await new Batch013LiveValidation(active).run(),
+      observed: await new Batch013ObservationApplication(active).check(),
+    }), { keepCutover: true });
     assert.deepEqual(live.topology, { modules: 50, activations: 53, bridges: 83 });
     assert.equal(observed.artifact.guards.failureCount, 0);
     console.log("Stage 3.13.0–.7 PASS: audit/plan replay, 9 parity cases, 50 evaluations once, " +

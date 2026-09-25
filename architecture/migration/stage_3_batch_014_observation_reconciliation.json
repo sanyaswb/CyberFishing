@@ -1,0 +1,1342 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-014-observation-reconciliation",
+  "status": "verified",
+  "batchId": "stage-3.candidate-014-fishing-fefd469b",
+  "releaseVersion": "0.24.50",
+  "evidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_014_prebuild_contract.json",
+      "sha256": "89dd00f1098221f52e01d52a55476a1d3f50f0f0ee63dfe180475919f5090f36"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_014_runtime_cutover.json",
+      "sha256": "22ffe3a0fba81012ce0c637344873aa6c5bb149a06b348b353499eeb7d21ad6f"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "404e28e17cbe97c3943cc4f80a714d2dc426890916402121a7aac1cc4748ef25"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_014_live_runtime_validation.json",
+      "sha256": "626eba542f18485cbb45aa42c4d07c79c313a03b8f237a80c8e08a701f0ab6a2"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_014_audit.json",
+      "sha256": "a59d67d188f43b4eafa77dcc943c7a4290c534411472db6fc2f3f5d1061d02d7"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "9473d2b8a21e400882d2294a0dc1319478a1e83f45850fc65f46a76cf6b5882b"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "81a0d6843e0217c9f2003cdfa86ae949088e0ea0c72430a75678c896ed4c2200"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "sha256": "77b621365ec53ef0dd0e7bbcb607a8065ef5f61e3efd75716b010f5039744c0a"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "sha256": "c21ac22f118518f0d40937d8a2cb6ce4bdbf60fcbe8fa90d6b7b64c03690a441"
+    },
+    {
+      "path": "architecture/module_architecture.json",
+      "sha256": "563423746bc86a99ced7bd0ffeb14e20ef4c62021c2c839c069225ec77cf79d6"
+    },
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    }
+  ],
+  "manifestTransition": {
+    "beforeSha256": "d8c661538cc47c1bfb62e18cec16a352fb29f3fa005d1d0fe3fdc9891ab72862",
+    "afterSha256": "4ebabd1e198087276c9f2dd6ffda8c9e7f9922078294ddf60433aedf2a31acf7",
+    "records": [
+      {
+        "currentPath": "src/core/fishing/landing_lift_readiness_policy.js",
+        "before": {
+          "currentPath": "src/core/fishing/landing_lift_readiness_policy.js",
+          "currentArea": "core/fishing",
+          "observed": {
+            "legacyLoadOrder": 141,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "f9a3fb4e02dc59eff98b852b1599a21e797bc41ccc7e54918b146f9a6fb5a93b"
+      },
+      {
+        "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "before": {
+          "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+          "currentArea": "core/fishing/player_pressure",
+          "observed": {
+            "legacyLoadOrder": 100,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "be0103dc83cf898abd91362ae98c6ebb30501134f2edcbb3173d20f6e426d919"
+      },
+      {
+        "currentPath": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "before": {
+          "currentPath": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+          "currentArea": "core/fishing/player_pressure",
+          "observed": {
+            "legacyLoadOrder": 97,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "317b0b70c433ef9f7dd487b58daa94d1e22037dc0c089599e5c2292470c7742d"
+      },
+      {
+        "currentPath": "src/core/fishing/stamina/stamina_drain_calculator.js",
+        "before": {
+          "currentPath": "src/core/fishing/stamina/stamina_drain_calculator.js",
+          "currentArea": "core/fishing/stamina",
+          "observed": {
+            "legacyLoadOrder": 106,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "511149e9880a71037fc4c34a7e91cff42c4d6993309f7abbc4104fce1b680648"
+      },
+      {
+        "currentPath": "src/core/fishing/stamina/stamina_transition_resolver.js",
+        "before": {
+          "currentPath": "src/core/fishing/stamina/stamina_transition_resolver.js",
+          "currentArea": "core/fishing/stamina",
+          "observed": {
+            "legacyLoadOrder": 108,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "d207b72c28fd0556ba083c7d08f8d69a4dda096fe9accbc4551e6263f826fc39"
+      },
+      {
+        "currentPath": "src/core/fishing/tackle_failure_selector.js",
+        "before": {
+          "currentPath": "src/core/fishing/tackle_failure_selector.js",
+          "currentArea": "core/fishing",
+          "observed": {
+            "legacyLoadOrder": 137,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/tackle_failure_selector.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "f65985efc85ce2b1cceb14b2508748d672764869966eefaba126a3213fe81af1"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+          "currentArea": "game/domain/fishing",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "e5230510fb224ea7ed13110411ab02f17d8b786a8e6198b61cee76ca0e7b3077"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+          "currentArea": "game/domain/fishing/player_pressure",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "f1342076d17395c924550eee4dabe482190ac1384ff16137e488998d0fdc58e9"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+          "currentArea": "game/domain/fishing/player_pressure",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "2d10e959697ca0c596ce882dd40763e793d8e976645e52a4304b259b647437e1"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+          "currentArea": "game/domain/fishing/stamina",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "acc68ae3e1af66b7a05cef2cfa4aee8a4c02fa4ddd90633249a249ff01b5f282"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+          "currentArea": "game/domain/fishing/stamina",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "d51529d46d7c61b11865ca088e2637afbf80e435a7b018d7c4ffb443c0b02a92"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/tackle_failure_selector.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/tackle_failure_selector.js",
+          "currentArea": "game/domain/fishing",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/tackle_failure_selector.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "06d4bebb410882c9c82bbda87e4d9f5796bfa39f4f4be8f8259f8bf086441009"
+      }
+    ]
+  },
+  "totals": {
+    "modules": 480,
+    "providers": 844,
+    "consumers": 948,
+    "confirmed": 893,
+    "unresolved": 55,
+    "ambiguous": 0,
+    "edges": 772
+  },
+  "esm": [
+    {
+      "source": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 7,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Math",
+        "Number",
+        "Object"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Math",
+        "Number",
+        "Object"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Math",
+        "Number",
+        "Object"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Math",
+        "Number",
+        "Object"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Math",
+        "Number",
+        "Object",
+        "String"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/fishing/tackle_failure_selector.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Array",
+        "Infinity",
+        "Map",
+        "Number",
+        "Object",
+        "Set"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    }
+  ],
+  "controlledGlobalTransitions": [
+    {
+      "source": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "target": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "symbol": "PlayerPressureFatigueState",
+      "activationId": "activation-0621e81b56b8",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/fishing/stamina/stamina_drain_calculator.js",
+      "target": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "symbol": "StaminaDrainCalculator",
+      "activationId": "activation-2eff98891b2d",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/fishing/tackle_failure_selector.js",
+      "target": "src/game/domain/fishing/tackle_failure_selector.js",
+      "symbol": "TackleFailureSelector",
+      "activationId": "activation-8110687cd3e1",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/fishing/stamina/stamina_transition_resolver.js",
+      "target": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "symbol": "StaminaTransitionResolver",
+      "activationId": "activation-9398dc78c283",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/fishing/landing_lift_readiness_policy.js",
+      "target": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "symbol": "LandingLiftReadinessPolicy",
+      "activationId": "activation-aff068f84afe",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "target": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "symbol": "PlayerTensionBuildRateResolver",
+      "activationId": "activation-ee66782e3f9e",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    }
+  ],
+  "derivedIncomingConsumers": [
+    {
+      "source": "src/core/fishing/stamina/stamina_phase_machine.js",
+      "symbol": "StaminaDrainCalculator",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/stamina/stamina_drain_calculator.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/core/fishing/stamina/stamina_phase_machine.js",
+      "symbol": "StaminaTransitionResolver",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/stamina/stamina_transition_resolver.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "symbol": "LandingLiftReadinessPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/landing_lift_readiness_policy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "symbol": "PlayerPressureFatigueState",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "symbol": "PlayerTensionBuildRateResolver",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/tackle_stress_system.js",
+      "symbol": "TackleFailureSelector",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/tackle_failure_selector.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "guardedConsumers": [
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "symbol": "LandingLiftReadinessPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/landing_lift_readiness_policy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "symbol": "PlayerPressureFatigueState",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "symbol": "PlayerTensionBuildRateResolver",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "additionalConsumers": [],
+  "dependencyDelta": {
+    "confirmedInterFileEdgesBefore": 772,
+    "confirmedInterFileEdgesAfter": 772,
+    "newlyConfirmedEdges": [],
+    "removedEdges": []
+  },
+  "transportUnresolved": {
+    "count": 6,
+    "classification": "compatibility-transport-outside-src-project-graph",
+    "createsProjectDependencyEdge": false
+  },
+  "removalDependencies": [
+    {
+      "activationId": "activation-0621e81b56b8",
+      "source": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "consumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "owner": "stage-3.candidate-014-fishing-fefd469b",
+      "removalStage": "stage-4",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-2eff98891b2d",
+      "source": "src/core/fishing/stamina/stamina_drain_calculator.js",
+      "consumers": [
+        "src/core/fishing/stamina/stamina_phase_machine.js"
+      ],
+      "owner": "stage-3.candidate-014-fishing-fefd469b",
+      "removalStage": "stage-3",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-8110687cd3e1",
+      "source": "src/core/fishing/tackle_failure_selector.js",
+      "consumers": [
+        "src/systems/tackle_stress_system.js"
+      ],
+      "owner": "stage-3.candidate-014-fishing-fefd469b",
+      "removalStage": "stage-3",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-9398dc78c283",
+      "source": "src/core/fishing/stamina/stamina_transition_resolver.js",
+      "consumers": [
+        "src/core/fishing/stamina/stamina_phase_machine.js"
+      ],
+      "owner": "stage-3.candidate-014-fishing-fefd469b",
+      "removalStage": "stage-3",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-aff068f84afe",
+      "source": "src/core/fishing/landing_lift_readiness_policy.js",
+      "consumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "owner": "stage-3.candidate-014-fishing-fefd469b",
+      "removalStage": "stage-4",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-ee66782e3f9e",
+      "source": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "consumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "owner": "stage-3.candidate-014-fishing-fefd469b",
+      "removalStage": "stage-4",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    }
+  ],
+  "globalNamespace": {
+    "newGlobals": [],
+    "removedSymbols": [],
+    "mechanismTransitions": [
+      {
+        "source": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "target": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "symbol": "PlayerPressureFatigueState",
+        "activationId": "activation-0621e81b56b8",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/fishing/stamina/stamina_drain_calculator.js",
+        "target": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+        "symbol": "StaminaDrainCalculator",
+        "activationId": "activation-2eff98891b2d",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/fishing/tackle_failure_selector.js",
+        "target": "src/game/domain/fishing/tackle_failure_selector.js",
+        "symbol": "TackleFailureSelector",
+        "activationId": "activation-8110687cd3e1",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/fishing/stamina/stamina_transition_resolver.js",
+        "target": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+        "symbol": "StaminaTransitionResolver",
+        "activationId": "activation-9398dc78c283",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/fishing/landing_lift_readiness_policy.js",
+        "target": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+        "symbol": "LandingLiftReadinessPolicy",
+        "activationId": "activation-aff068f84afe",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "target": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "symbol": "PlayerTensionBuildRateResolver",
+        "activationId": "activation-ee66782e3f9e",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      }
+    ]
+  },
+  "graph": {
+    "modules": 480,
+    "consumers": 948,
+    "confirmed": 893,
+    "selfConfirmed": 3,
+    "unresolved": 55,
+    "ambiguous": 0,
+    "edges": 772,
+    "reverseLinks": 772,
+    "targetsWithConsumers": 415,
+    "unifiedEdges": 828,
+    "reverseConsumers": "derived-only",
+    "verifiedIncoming": [
+      {
+        "sourceProvider": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "targetModule": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "legacy": [
+          {
+            "source": "src/systems/fight_physics_system.js",
+            "symbols": [
+              "PlayerPressureFatigueState"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+            "target": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-a59383ea4b2f",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/fishing/stamina/stamina_drain_calculator.js",
+        "targetModule": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+        "legacy": [
+          {
+            "source": "src/core/fishing/stamina/stamina_phase_machine.js",
+            "symbols": [
+              "StaminaDrainCalculator"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/fishing/stamina/stamina_drain_calculator.js",
+            "target": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-c53a729057bb",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/fishing/tackle_failure_selector.js",
+        "targetModule": "src/game/domain/fishing/tackle_failure_selector.js",
+        "legacy": [
+          {
+            "source": "src/systems/tackle_stress_system.js",
+            "symbols": [
+              "TackleFailureSelector"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/fishing/tackle_failure_selector.js",
+            "target": "src/game/domain/fishing/tackle_failure_selector.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-550eed84bb7c",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/fishing/stamina/stamina_transition_resolver.js",
+        "targetModule": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+        "legacy": [
+          {
+            "source": "src/core/fishing/stamina/stamina_phase_machine.js",
+            "symbols": [
+              "StaminaTransitionResolver"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/fishing/stamina/stamina_transition_resolver.js",
+            "target": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-a880353d8927",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/fishing/landing_lift_readiness_policy.js",
+        "targetModule": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+        "legacy": [
+          {
+            "source": "src/systems/fight_physics_system.js",
+            "symbols": [
+              "LandingLiftReadinessPolicy"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/fishing/landing_lift_readiness_policy.js",
+            "target": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-9b112859f6f0",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "targetModule": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "legacy": [
+          {
+            "source": "src/systems/fight_physics_system.js",
+            "symbols": [
+              "PlayerTensionBuildRateResolver"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+            "target": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-ebcf2ae98878",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "reverseIndexSha256": "6bc35d4089e439f1f8c0e0079ca5decf21a1ea609c3dc05d2e1e0d762f6a527f"
+  },
+  "guards": {
+    "failureCount": 0,
+    "knownDebtCount": 194,
+    "diagnosticsSha256": "a0fee6f28b632002dc8e1bcc42be204edd300806a86e1fc3e952cd701c0a4731",
+    "baselineGlobals": 855
+  },
+  "metadataTransition": {
+    "field": "architecture.migrationStatus",
+    "from": "migrating",
+    "to": "verified",
+    "targets": [
+      "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "src/game/domain/fishing/tackle_failure_selector.js"
+    ]
+  },
+  "topology": {
+    "modules": 56,
+    "activations": 59,
+    "bridges": 89
+  },
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034",
+      "stage-3.candidate-010-inventory-e3dffbe7",
+      "stage-3.candidate-011-items-11818ee5",
+      "stage-3.candidate-012-assemblies-2086347a",
+      "stage-3.candidate-013-fishing-0267b3ea"
+    ],
+    "activeBatchId": "stage-3.candidate-014-fishing-fefd469b",
+    "activeBatchPhase": "runtime-active",
+    "batchCompleted": false
+  },
+  "releaseClosureAuthorized": false,
+  "verdict": "eligible-for-full-acceptance",
+  "nextGate": "stage-3.14.8-full-acceptance-and-browser-smoke"
+}

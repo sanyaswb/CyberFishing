@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.51 - Fishing Stamina and Tackle Domain
+
+### Changed
+
+- Completed atomic Stage 3 batch 014: six Fishing modules with six named ESM exports (landing lift readiness, pressure fatigue state, tension build rate, stamina drain and transition, tackle failure selection).
+- Extended the cumulative graph from 50 to 56 project modules and from 53 to 59 activation contracts, with 89 exact bridge relationships.
+- Preserved activation timing, six classic consumer relationships, class identity, two frozen static failure tables, state ownership and fishing behavior.
+- Advanced the completed ordered prefix to batches 001–014 (47 of 69 frozen Domain modules); the next task is batch 015 preflight.
+
 ## v0.24.50 - Fishing Domain
 
 ### Changed

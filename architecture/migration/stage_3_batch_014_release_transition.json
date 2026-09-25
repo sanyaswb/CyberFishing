@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-014-release-transition",
+  "batchId": "stage-3.candidate-014-fishing-fefd469b",
+  "fromRelease": "0.24.50",
+  "toRelease": "0.24.51",
+  "acceptance": {
+    "path": "architecture/migration/stage_3_batch_014_acceptance_pass.json",
+    "sha256": "c8e52fde3f18e09af782bea29053e9e553351523c194cc363e2810c891afd824"
+  },
+  "browserProof": {
+    "path": "architecture/migration/stage_3_batch_014_browser_confirmation.json",
+    "sha256": "456de668b4b0b6f111c69087f60241ce7447f0b4e4ccbcb0cd4207e3ed002314"
+  },
+  "records": [
+    {
+      "path": "CHANGELOG.md",
+      "beforeSha256": "22bed7c760ab5faf686fba77310dda3debe530eab552afadfde647d3c5fbfb0d",
+      "afterSha256": "d8667d88032dfcb250f8b6ed53350fde9203a8f6943c73f0c26e8bf4e1980dca",
+      "edits": [
+        {
+          "from": "# CyberFishing changelog\n\n",
+          "to": "# CyberFishing changelog\n\n## v0.24.51 - Fishing Stamina and Tackle Domain\n\n### Changed\n\n- Completed atomic Stage 3 batch 014: six Fishing modules with six named ESM exports (landing lift readiness, pressure fatigue state, tension build rate, stamina drain and transition, tackle failure selection).\n- Extended the cumulative graph from 50 to 56 project modules and from 53 to 59 activation contracts, with 89 exact bridge relationships.\n- Preserved activation timing, six classic consumer relationships, class identity, two frozen static failure tables, state ownership and fishing behavior.\n- Advanced the completed ordered prefix to batches 001–014 (47 of 69 frozen Domain modules); the next task is batch 015 preflight.\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "beforeSha256": "9473d2b8a21e400882d2294a0dc1319478a1e83f45850fc65f46a76cf6b5882b",
+      "afterSha256": "2e58bd3c03b4a9fbc3629db19cf9afe6c6a4a47613b565ffc150b1a24e8a6c23",
+      "edits": [
+        {
+          "from": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.50\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\"\n  ],\n  \"activeBatchId\": \"stage-3.candidate-014-fishing-fefd469b\",\n  \"compatibilityRuntimeActivated\": true,\n  \"activeBatchPhase\": \"runtime-active\"\n}",
+          "to": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.51\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\"\n  ],\n  \"activeBatchId\": null,\n  \"compatibilityRuntimeActivated\": true\n}",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "index.html",
+      "beforeSha256": "ee767954654563fe189626c01bdde47bd61db393bd6e98bcadbd3ef1d4eb0abf",
+      "afterSha256": "3d87cdd12403cf3420c1a9efd522be865c09c24033f0693d89b95418630a99c9",
+      "edits": [
+        {
+          "from": "    <script src=\"src/config/project_version.js?v=0.24.50\"></script>",
+          "to": "    <script src=\"src/config/project_version.js?v=0.24.51\"></script>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "beforeSha256": "adb33f606b9a91945962fe201aaf5722a6be1c320d1fda91b8df5a024f0662fb",
+      "afterSha256": "57912c473c22b6cb69b60925a59fba3bfc5ea2c9bee863c1b3fb1dfde3dbc2ad",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.50\",",
+          "to": "  \"version\": \"0.24.51\",",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "package.json",
+      "beforeSha256": "1a91c6dea3b3da1261e8f4d6bd5328954c88e5e621c05a0dae689e864ca0eebf",
+      "afterSha256": "c7d3dba2ba1a501bba815cb023acd596db0bc26dc9191cf3e6119dcf3754703f",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.50\",",
+          "to": "  \"version\": \"0.24.51\",",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "refactor_Task.txt",
+      "beforeSha256": "e32feb73165e37df0aa8ecc309c1a2120db17dc23dbcfa05cb6a2449df2a7f9a",
+      "afterSha256": "46d5c4097c1b01f7f2a4052d2629c1e4b9ecfba339b64086129b008ad9c6ccd5",
+      "edits": [
+        {
+          "from": "# CyberFishing — актуальний план незавершеного модульного рефакторингу\n\n**Stage 1 closure-версія:** `v0.24.31`  \n**Поточна release-версія:** `v0.24.50`\n**Тип робіт:** architecture / infrastructure refactoring  \n**Gameplay changes:** заборонені  \n**Поточний наступний етап:** `Stage 3.14.0 — Batch 014 Preflight and Dependency/State Audit`\n\nЦей документ містить тільки роботи, які ще не виконані.\n\n---\n\n# 1. Незмінні принципи\n\n```text\nOBSERVATION = FACTS\n\nCLASSIFICATION = ARCHITECTURAL DECISION\n```\n\n- Спочатку будуємо достовірний dependency graph, потім класифікуємо і лише після цього переносимо файли.\n- Не визначати architecture ownership за filename, поточною папкою або суфіксом класу.\n- Не змінювати fishing physics, inventory, items, progression, UI behavior, save format або game-state semantics у межах architecture tasks.\n- Не створювати runtime dependency scanner, runtime architecture validator або постійний dynamic script loader.\n- Не додавати новий global чи architecture exception лише для того, щоб зробити check зеленим.\n- Кожна наступна задача має охоплювати один невеликий dependency cluster разом із tests і manifest update.\n- Не змішувати ESM conversion з opportunistic API, formula або behavior refactoring.\n- Repository tooling залишається в `utils/`, доки окрема задача не обґрунтує path migration.\n- OOP є базовим стилем, але composition має перевагу над inheritance; pure calculations і value transformations не отримують штучних class hierarchies.\n- Кожна частина mutable game state повинна мати одного authoritative owner; cached/derived state позначається явно і не стає другим source of truth.\n- Domain contracts не залежать від `game/config`; raw configuration надходить через constructor injection, factories або composition root.\n- Performance-рішення приймаються за evidence: hot-loop participation, allocation frequency, DOM/Canvas access і profiling risk. Object pooling не додається без доведеного high-churn lifecycle.\n\n---\n\n# 2. Stage 3 — Game Domain\n\n## Цільова структура\n\n```text\nsrc/game/domain/\n├── assemblies/\n├── casting/\n├── equipment/\n├── fish/\n├── fishing/\n├── inventory/\n├── items/\n├── line/\n├── loadouts/\n├── locations/\n├── rules/\n└── tackle/\n\nsrc/game/config/       external щодо domain\nsrc/game/application/  orchestration, не domain ownership\n```\n\nЦільові paths визначаються reviewed Manifest metadata, а не назвою поточної папки. Новий піддомен додається лише через classification/policy review.\n\nDomain не залежить від platform, UI, Canvas, DOM, dev або raw configuration. Configuration надходить через constructor injection, factories або composition root. Domain може залежати лише від стабільних engine primitives і власних domain contracts/value objects.\n\n## Stage 3.14–3.21 — Atomic Domain Migration Batches\n\nЗавершено `13/21` frozen batches і `41/69` frozen domain-модулів. Наступний exact batch:\n\n```text\nstage-3.candidate-014-fishing-fefd469b\n\nLandingLiftReadinessPolicy\nPlayerPressureFatigueState\nPlayerTensionBuildRateResolver\nStaminaDrainCalculator\nStaminaTransitionResolver\nTackleFailureSelector\n```\n\nStage 3.14.0: read-only preflight, exact dependency/state audit, approved activation/consumers і rollback boundary. Runtime migration не починається до наступних підетапів.\n\nПоточний accepted runtime: 50 project modules, 53 activation contracts, 83 bridge records; одна cumulative topology, жодного active batch. Наступний scope береться з frozen plan і перевіряється на фактичному graph.\n\nКожен batch `014–021` проходить той самий контрольований lifecycle:\n\n```text\npreflight/audit\n→ atomic execution plan\n→ focused behavior/state/performance matrix\n→ prebuild\n→ source/build validation\n→ cumulative runtime cutover\n→ live identity/timing/state validation\n→ observations reconciliation\n→ fresh acceptance + browser smoke\n→ release closure with batch-only rollback\n```\n\nПісля batch 021 потрібні graph-changing prerequisites, повторні observations/topology review та новий maximal-prefix freeze. Historical candidates `022–040` не є execution-ready після зміни graph. Stage 3 завершується лише після перенесення всіх approved Domain clusters, однозначного state ownership і контрольованого removal path для кожного bridge.\n\n# 3. Stage 4 — Application + Platform\n\nМігрувати:\n\n```text\napplication services\nsystems/orchestrators\napplication ports\nbrowser adapters\nstorage\naudio\ninput\nassets\nDOM/Canvas adapters\n```\n\n# 4. Stage 5 — Presentation + Bootstrap\n\nМігрувати render/UI/screens/HUD/render pipeline, `GameApplication` і `GameCompositionRoot`. Створити production `game.entry.js` лише після готовності dependency graph.\n\n# 5. Stage 6 — Development / Production Split\n\nСтворити окремий `dev.entry.js`, фізично відокремити debug overlay, GodMode, diagnostics, watchdog, dev schemas та balance tools від production graph. Поступово видалити legacy globals і classic scripts.\n\n# 6. Stage 7 — Structural Hardening\n\nПісля стабільного ESM:\n\n- декомпозувати великі mixed-responsibility classes;\n- остаточно розділити engine/game/platform/dev;\n- видалити transitional compatibility code;\n- очистити legacy `systems/services/app` structure;\n- виконати production hardening.\n\n---\n\n# 7. Transitional compatibility rules\n\nЯкщо dependency cluster неможливо мігрувати атомарно, дозволений тимчасовий `compat/` або `legacy_bridge/`.\n\nУ bridge заборонені:\n\n```text\nbusiness logic\nnew domain behavior\npermanent APIs\n```\n\nКожен bridge повинен мати owner, reason і `removalStage`.\n\n---\n\n# 8. Коли потрібно зупинитися\n\nПотрібне окреме architecture рішення, якщо пропонується:\n\n```text\nдодати ще один global\nдозволити engine → game\nдозволити domain → document/window\nзавантажити legacy scripts із нового entrypoint\nпереписати gameplay class лише для ESM conversion\nдодати файл у ignore, бо architecture check заважає\nрозширити baseline лише для зеленого check\n```\n\nТакі ситуації не обходяться workaround — переглядається dependency design.\n",
+          "to": "# CyberFishing — Current Plan for the Remaining Modular Refactor\n\n- **Stage 1 closure version:** `v0.24.31`\n- **Current release version:** `v0.24.51`\n- **Work type:** architecture / infrastructure refactoring\n- **Gameplay changes:** prohibited\n- **Next step:** `Stage 3.15.0 — Batch 015 Preflight and Dependency/State Audit`\n\nThis document records the completed Stage 3 prefix and the work that remains.\n\n---\n\n# 1. Invariants\n\n```text\nOBSERVATION = FACTS\n\nCLASSIFICATION = ARCHITECTURAL DECISION\n```\n\n- Build a reliable dependency graph first, then classify ownership, and only then move files.\n- Do not infer architectural ownership from a filename, current directory, or class suffix.\n- Do not change fishing physics, inventory, items, progression, UI behavior, save format, or game-state semantics during architecture tasks.\n- Do not create a runtime dependency scanner, runtime architecture validator, or permanent dynamic script loader.\n- Do not add a global or an architecture exception merely to make a check pass.\n- Keep each subsequent task to one small dependency cluster, with relevant tests and a manifest update.\n- Do not mix ESM conversion with opportunistic API, formula, or behavior refactoring.\n- Keep repository tooling in `utils/` unless a separate task justifies moving it.\n- Use OOP as the default style, but prefer composition over inheritance; do not introduce artificial class hierarchies for pure calculations or value transformations.\n- Give each mutable game-state fact one authoritative owner. Explicitly mark cached or derived state and never treat it as a second source of truth.\n- Keep Domain contracts independent of `game/config`; inject raw configuration through constructors, factories, or the composition root.\n- Base performance decisions on evidence: hot-loop participation, allocation frequency, DOM/Canvas access, and profiling risk. Add object pooling only for a proven high-churn lifecycle.\n\n---\n\n# 2. Stage 3 — Game Domain\n\n## Target structure\n\n```text\nsrc/game/domain/\n├── assemblies/\n├── casting/\n├── equipment/\n├── fish/\n├── fishing/\n├── inventory/\n├── items/\n├── line/\n├── loadouts/\n├── locations/\n├── rules/\n└── tackle/\n\nsrc/game/config/       external to Domain\nsrc/game/application/  orchestration, not Domain ownership\n```\n\nReviewed Manifest metadata determines target paths, not current directory names. Add a new subdomain only after classification and policy review.\n\nDomain must not depend on platform, UI, Canvas, DOM, dev, or raw configuration. Inject configuration through constructors, factories, or the composition root. Domain may depend only on stable engine primitives and its own Domain contracts or value objects.\n\n## Completed batches 001–014 checklist\n\n- [x] **001 · Inventory · 1 module:** `InventoryEquipTargetSelectionPolicy`.\n- [x] **002 · Fishing · 1 module:** `ReelAutoRecoveryCalculator`.\n- [x] **003 · Fishing · 1 module:** `LineTensionCalculator`.\n- [x] **004 · Equipment · 1 module:** `RodCapabilityResolver`.\n- [x] **005 · Fishing · 6 modules:** drag force, loose and recoverable line calculations, rod movement, and rod stroke.\n- [x] **006 · Fishing · 6 modules:** hold opposition, landing lift tension, line constraints, fight sector, and float tackle policy.\n- [x] **007 · Fishing · 6 modules:** line-constrained fish motion, retrieve speed, pull and stroke state, and fight force.\n- [x] **008 · Fishing · 3 modules:** `ReelHoldLoadPolicy`, `RodStrokeDistanceTracker`, `LineSpoolState`.\n- [x] **009 · Fish · 2 modules:** `FishAnomalyVariantResolver`, `FishRarityResolver`.\n- [x] **010 · Inventory · 1 module:** `UnlimitedAssemblyCapacityPolicy`.\n- [x] **011 · Items · 5 modules:** item metrics, progression, and rarity rules and registry.\n- [x] **012 · Assemblies · 2 modules:** `AssemblyAttachmentTargetResolver`, `AssemblyCompletionPolicy`.\n- [x] **013 · Fishing · 6 modules / 8 exports:** fish direction, cast exposure, force budget, pressure fatigue, rod angle, and stamina regeneration.\n- [x] **014 · Fishing · 6 modules:** landing lift readiness, pressure fatigue state, tension build rate, stamina drain and transition, and tackle failure selection.\n\n**Checkpoint `v0.24.51`:** `14/21` frozen batches and `47/69` frozen Domain modules are complete. The cumulative runtime has `56` project modules, `59` activations, and `89` bridge records. `activeBatchId = null`; batch `015` is next. For batch 014, Windows Full 177/177 passed in one uninterrupted run, including game-cycle (feeder victory/landing-lift and strong-fish line-break failure scenarios) and the Windows-only D:/escape.js source-build fixtures of batches 009/010.; user-performed browser smoke passed with `0 errors` and `0 warnings`.\n\n## Stage 3.15–3.21 — Atomic Domain Migration Batches\n\n`14/21` frozen batches and `47/69` frozen Domain modules are complete. The next exact batch is:\n\n```text\nstage-3.candidate-015-fishing-37dc3452\n\nEnduranceMovementDebuffCalculator\nPlayerPressureGainResolver\nActiveEnduranceDrainCalculator\nPassiveEnduranceDrainCalculator\nStaminaLateralPositionResolver\nWeakestTackleLimitResolver\n```\n\nStage 3.15.0: perform a read-only preflight and an exact dependency and state audit; verify approved activations, consumers, and the rollback boundary. Do not start runtime migration before the subsequent phases.\n\nCurrent accepted runtime: 56 project modules, 59 activation contracts, and 89 bridge records in one cumulative topology, with no active batch. Take the next scope from the frozen plan and verify it against the actual graph.\n\nEach batch `015–021` follows the same controlled lifecycle:\n\n```text\npreflight/audit\n→ atomic execution plan\n→ focused behavior/state/performance matrix\n→ prebuild\n→ source/build validation\n→ cumulative runtime cutover\n→ live identity/timing/state validation\n→ observations reconciliation\n→ fresh acceptance + browser smoke\n→ release closure with batch-only rollback\n```\n\nAfter batch 021, complete graph-changing prerequisites, repeat the observation and topology review, and establish a new maximal-prefix freeze. Historical candidates `022–040` are not execution ready after the graph changes. Stage 3 is complete only when all approved Domain clusters have migrated, state ownership is unambiguous, and every bridge has a controlled removal path.\n\n# 3. Stage 4 — Application + Platform\n\nMigrate:\n\n```text\napplication services\nsystems/orchestrators\napplication ports\nbrowser adapters\nstorage\naudio\ninput\nassets\nDOM/Canvas adapters\n```\n\n# 4. Stage 5 — Presentation + Bootstrap\n\nMigrate the rendering pipeline, UI, screens, HUD, `GameApplication`, and `GameCompositionRoot`. Create the production `game.entry.js` only after the dependency graph is ready.\n\n# 5. Stage 6 — Development / Production Split\n\nCreate a separate `dev.entry.js`. Physically separate the debug overlay, GodMode, diagnostics, watchdog, dev schemas, and balance tools from the production graph. Gradually remove legacy globals and classic scripts.\n\n# 6. Stage 7 — Structural Hardening\n\nAfter ESM is stable:\n\n- Decompose large classes with mixed responsibilities.\n- Complete the separation of engine, game, platform, and dev code.\n- Remove transitional compatibility code.\n- Clean up the legacy `systems/services/app` structure.\n- Complete production hardening.\n\n---\n\n# 7. Transitional compatibility rules\n\nIf a dependency cluster cannot be migrated atomically, a temporary `compat/` or `legacy_bridge/` is allowed.\n\nBridges must not contain:\n\n```text\nbusiness logic\nnew domain behavior\npermanent APIs\n```\n\nEvery bridge must have an owner, a reason, and a `removalStage`.\n\n---\n\n# 8. When to Stop\n\nMake a separate architecture decision if a change would:\n\n```text\nadd another global\nallow engine → game dependencies\nallow domain → document/window dependencies\nload legacy scripts from a new entrypoint\nrewrite a gameplay class solely for ESM conversion\nignore a file because an architecture check blocks it\nexpand a baseline solely to make a check pass\n```\n\nDo not bypass these cases with a workaround; review the dependency design.\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/config/project_version.js",
+      "beforeSha256": "2f1e5a99bf00762080e9d8eac1b4cb1b1751491fcfbcbbc4c92d8e97d56bf3d0",
+      "afterSha256": "87c75597158c593ac42475f993e53e3b8bba9192588ffa9224f9142f0658b6a8",
+      "edits": [
+        {
+          "from": "const CURRENT_PROJECT_VERSION = \"0.24.50\";",
+          "to": "const CURRENT_PROJECT_VERSION = \"0.24.51\";",
+          "count": 1
+        },
+        {
+          "from": "  codename: \"fishing-domain\",",
+          "to": "  codename: \"fishing-stamina-tackle-domain\",",
+          "count": 1
+        },
+        {
+          "from": "  notes: Object.freeze([\n    \"Migrate six Fishing modules with eight named game-domain ESM exports\",\n    \"Preserve one cumulative graph with fifty project modules and fifty-three activations\",\n    \"Complete frozen batch 013 with eighty-three exact classic-consumer bridge relationships\",\n    \"Preserve cast, fish direction, rod control, fatigue and stamina behavior and identity\",\n  ]),",
+          "to": "  notes: Object.freeze([\n    \"Migrate six Fishing modules with six named game-domain ESM exports\",\n    \"Preserve one cumulative graph with fifty-six project modules and fifty-nine activations\",\n    \"Complete frozen batch 014 with eighty-nine exact classic-consumer bridge relationships\",\n    \"Preserve landing lift, pressure fatigue, tension build, stamina and tackle failure behavior\",\n  ]),",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

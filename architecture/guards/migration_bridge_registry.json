@@ -359,6 +359,22 @@
       ]
     },
     {
+      "id": "bridge-550eed84bb7c",
+      "bridge": "src/core/fishing/tackle_failure_selector.js",
+      "source": "src/systems/tackle_stress_system.js",
+      "target": "src/game/domain/fishing/tackle_failure_selector.js",
+      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-014-fishing-fefd469b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "TackleFailureSelector",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-56ef92067f39",
       "bridge": "src/core/items/progression/item_metric_strategy.js",
       "source": "src/core/items/progression/numeric_stat_metric_strategy.js",
@@ -775,6 +791,22 @@
       ]
     },
     {
+      "id": "bridge-9b112859f6f0",
+      "bridge": "src/core/fishing/landing_lift_readiness_policy.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-014-fishing-fefd469b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "LandingLiftReadinessPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-9e3953224164",
       "bridge": "src/core/items/rarity/item_rarity_descriptor.js",
       "source": "src/core/items/rarity/authored_item_rarity_strategy.js",
@@ -831,6 +863,22 @@
       ]
     },
     {
+      "id": "bridge-a59383ea4b2f",
+      "bridge": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-014-fishing-fefd469b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "PlayerPressureFatigueState",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-a5a1cd90cdd5",
       "bridge": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
       "source": "src/app/application.js",
@@ -842,6 +890,22 @@
       "globalProviders": [
         {
           "symbol": "EventLifecycle",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-a880353d8927",
+      "bridge": "src/core/fishing/stamina/stamina_transition_resolver.js",
+      "source": "src/core/fishing/stamina/stamina_phase_machine.js",
+      "target": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-014-fishing-fefd469b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "StaminaTransitionResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -954,6 +1018,22 @@
       "globalProviders": [
         {
           "symbol": "RenderPass",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-c53a729057bb",
+      "bridge": "src/core/fishing/stamina/stamina_drain_calculator.js",
+      "source": "src/core/fishing/stamina/stamina_phase_machine.js",
+      "target": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-014-fishing-fefd469b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "StaminaDrainCalculator",
           "mechanism": "global-this-property"
         }
       ]
@@ -1146,6 +1226,22 @@
       "globalProviders": [
         {
           "symbol": "DragForceCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-ebcf2ae98878",
+      "bridge": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-014-fishing-fefd469b",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "PlayerTensionBuildRateResolver",
           "mechanism": "global-this-property"
         }
       ]

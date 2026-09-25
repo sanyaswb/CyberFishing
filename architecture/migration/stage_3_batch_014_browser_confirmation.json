@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-014-browser-confirmation",
+  "batchId": "stage-3.candidate-014-fishing-fefd469b",
+  "releaseVersion": "0.24.50",
+  "status": "passed",
+  "performedBy": "user",
+  "recordedAt": "2026-09-25T09:06:36.441Z",
+  "evidenceType": "user-confirmation-in-conversation",
+  "browserSummary": {
+    "userStatement": "PASS — game launches and renders correctly; fishing checklist OK",
+    "context": "User-reported PASS for the Stage 3.14.8 Fishing checklist.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": false
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "Console: 0 errors, 0 warnings",
+    "independentlyInstrumented": false
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_014_acceptance_pass.json",
+    "sha256": "c8e52fde3f18e09af782bea29053e9e553351523c194cc363e2810c891afd824"
+  },
+  "historicalSummaryPreserved": true
+}

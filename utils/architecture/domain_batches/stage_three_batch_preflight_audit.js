@@ -97,7 +97,7 @@ class StageThreeBatchPreflightAuditBuilder {
         const evidence = sideEffectReview.modules.find(item => item.currentPath === module.currentPath);
         const reviewedEffect = module.effects.reviewedExposure;
         this.#require(evidence && this.#same(evidence.sourceSha256, module.sourceSha256) &&
-          (evidence.contract?.kind === "frozen-literal-ranges"
+          (["frozen-literal-ranges", "frozen-literal-static-fields"].includes(evidence.contract?.kind)
             ? this.#same(evidence.review, reviewedEffect)
             : this.#same(evidence.contract?.symbol || evidence.symbol, reviewedEffect?.symbol) &&
               this.#same(evidence.contract?.location || evidence.location, reviewedEffect?.location)),
@@ -352,6 +352,16 @@ class StageThreeBatchPreflightAuditBuilder {
       this.#require(this.#same(sourceShape.topLevelEffects,
         ["VariableDeclaration@1:1", "VariableDeclaration@2:1"]),
       `reviewed top-level effect differs: ${module.currentPath}`);
+    } else if (reviewed.frozenStaticFields) {
+      reviewedExposure = new StageThreeReviewedEvaluationEffect().frozenStaticFields({
+        source, currentPath: module.currentPath, ...reviewed.frozenStaticFields,
+      });
+      this.#require(this.#same(auditEntry.dependencyAudit.facts.topLevelEffects,
+        Object.values(reviewed.frozenStaticFields.bindings).map(({ location }) => ({
+          kind: "call", location, classification: "observable",
+        }))), `frozen static-field effect differs: ${module.currentPath}`);
+      this.#require(sourceShape.topLevelEffects.length === 0,
+        `reviewed static-field class has a top-level effect: ${module.currentPath}`);
     } else if (reviewed.legacyExposure) {
       const exposure = reviewed.legacyExposure;
       reviewedExposure = exposure.mechanism === "window-property"
@@ -570,7 +580,8 @@ class StageThreeBatchPreflightAuditValidator {
         `allocation budget differs: ${module.currentPath}`);
       require(module.performance?.transportLookupsAllowed === 0,
         `transport budget differs: ${module.currentPath}`);
-        require(module.effects?.classification === (reviewed?.legacyExposure || reviewed?.frozenConstants ?
+        require(module.effects?.classification === (reviewed?.legacyExposure || reviewed?.frozenConstants ||
+          reviewed?.frozenStaticFields ?
         "reviewed-compatible" : "safe"), `effect classification differs: ${module.currentPath}`);
       if (reviewed?.legacyExposure) {
         require(module.effects?.reviewedExposure?.symbol === reviewed.legacyExposure.symbol &&

@@ -1,0 +1,675 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.candidate-014-fishing-fefd469b",
+  "sourceReleaseVersion": "0.24.50",
+  "targetReleaseVersion": "0.24.51",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_014_execution_plan.json",
+    "sha256": "6d9327c8c25838e8a6a8effa59c98b51c04d8ca6f230e84a205ec4e298be17a8"
+  },
+  "scope": {
+    "moduleCount": 6,
+    "exportCount": 6,
+    "activationCount": 6,
+    "consumerRelationshipCount": 6
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/LandingLiftReadinessPolicy/disabled-invalid-and-epsilon-edges",
+      "kind": "behavior-equivalence",
+      "exportName": "LandingLiftReadinessPolicy",
+      "currentPath": "src/core/fishing/landing_lift_readiness_policy.js",
+      "targetPath": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "baselineSourceSha256": "b2e51ce609b38e6be301c8492e31ad8aba6f944a2e0c6a712639852bf0b63bf3",
+      "caseName": "disabled-invalid-and-epsilon-edges",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/LandingLiftReadinessPolicy/readiness-reason-ladder",
+      "kind": "behavior-equivalence",
+      "exportName": "LandingLiftReadinessPolicy",
+      "currentPath": "src/core/fishing/landing_lift_readiness_policy.js",
+      "targetPath": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "baselineSourceSha256": "b2e51ce609b38e6be301c8492e31ad8aba6f944a2e0c6a712639852bf0b63bf3",
+      "caseName": "readiness-reason-ladder",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/PlayerPressureFatigueState/defaults-apply-frame-and-reset",
+      "kind": "behavior-equivalence",
+      "exportName": "PlayerPressureFatigueState",
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "targetPath": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "baselineSourceSha256": "16f37a71dcef4b40c453ae2d700bf3458883934c27c18ec905d5a2f4a4d0073d",
+      "caseName": "defaults-apply-frame-and-reset",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/PlayerPressureFatigueState/fallbacks-clamps-and-alias-fields",
+      "kind": "behavior-equivalence",
+      "exportName": "PlayerPressureFatigueState",
+      "currentPath": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "targetPath": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "baselineSourceSha256": "16f37a71dcef4b40c453ae2d700bf3458883934c27c18ec905d5a2f4a4d0073d",
+      "caseName": "fallbacks-clamps-and-alias-fields",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/PlayerTensionBuildRateResolver/constructor-and-call-config-precedence",
+      "kind": "behavior-equivalence",
+      "exportName": "PlayerTensionBuildRateResolver",
+      "currentPath": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "targetPath": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "baselineSourceSha256": "480384b6275775d9e40b3c3bee0da1f5c4a5c7c3dfe02ef39ce77a42de3f76d7",
+      "caseName": "constructor-and-call-config-precedence",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/PlayerTensionBuildRateResolver/mode-multipliers-and-thresholds",
+      "kind": "behavior-equivalence",
+      "exportName": "PlayerTensionBuildRateResolver",
+      "currentPath": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "targetPath": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "baselineSourceSha256": "480384b6275775d9e40b3c3bee0da1f5c4a5c7c3dfe02ef39ce77a42de3f76d7",
+      "caseName": "mode-multipliers-and-thresholds",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/StaminaDrainCalculator/advantage-curve-drain",
+      "kind": "behavior-equivalence",
+      "exportName": "StaminaDrainCalculator",
+      "currentPath": "src/core/fishing/stamina/stamina_drain_calculator.js",
+      "targetPath": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "baselineSourceSha256": "170f1a8bbf98971aa848541475ccab7acfbdde0527abe6cab07790469c3ce123",
+      "caseName": "advantage-curve-drain",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/StaminaDrainCalculator/threshold-disabled-and-invalid-inputs",
+      "kind": "behavior-equivalence",
+      "exportName": "StaminaDrainCalculator",
+      "currentPath": "src/core/fishing/stamina/stamina_drain_calculator.js",
+      "targetPath": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "baselineSourceSha256": "170f1a8bbf98971aa848541475ccab7acfbdde0527abe6cab07790469c3ce123",
+      "caseName": "threshold-disabled-and-invalid-inputs",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/StaminaTransitionResolver/locked-phase-and-invalid-inputs",
+      "kind": "behavior-equivalence",
+      "exportName": "StaminaTransitionResolver",
+      "currentPath": "src/core/fishing/stamina/stamina_transition_resolver.js",
+      "targetPath": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "baselineSourceSha256": "8a7f47f2a897dae12ae7dc26a84b93a3ab95c838fdf838ebc4189883a0cc7f51",
+      "caseName": "locked-phase-and-invalid-inputs",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/StaminaTransitionResolver/stamina-to-exhaustion-and-recovery",
+      "kind": "behavior-equivalence",
+      "exportName": "StaminaTransitionResolver",
+      "currentPath": "src/core/fishing/stamina/stamina_transition_resolver.js",
+      "targetPath": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "baselineSourceSha256": "8a7f47f2a897dae12ae7dc26a84b93a3ab95c838fdf838ebc4189883a0cc7f51",
+      "caseName": "stamina-to-exhaustion-and-recovery",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/TackleFailureSelector/static-frozen-tables-and-fallback",
+      "kind": "behavior-equivalence",
+      "exportName": "TackleFailureSelector",
+      "currentPath": "src/core/fishing/tackle_failure_selector.js",
+      "targetPath": "src/game/domain/fishing/tackle_failure_selector.js",
+      "baselineSourceSha256": "b95f2da386ce93728774c312fa72f979704a6816d84da6c0f6579d265c4ae880",
+      "caseName": "static-frozen-tables-and-fallback",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/TackleFailureSelector/weakest-component-and-tie-break",
+      "kind": "behavior-equivalence",
+      "exportName": "TackleFailureSelector",
+      "currentPath": "src/core/fishing/tackle_failure_selector.js",
+      "targetPath": "src/game/domain/fishing/tackle_failure_selector.js",
+      "baselineSourceSha256": "b95f2da386ce93728774c312fa72f979704a6816d84da6c0f6579d265c4ae880",
+      "caseName": "weakest-component-and-tie-break",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/six-representation-only-named-esm-targets-and-six-exact-exports",
+      "kind": "compatibility-invariant",
+      "caseName": "six-representation-only-named-esm-targets-and-six-exact-exports",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-esm-evaluation-per-target-with-two-reviewed-frozen-static-initializers",
+      "kind": "compatibility-invariant",
+      "caseName": "one-esm-evaluation-per-target-with-two-reviewed-frozen-static-initializers",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/six-exact-classic-activations-at-six-legacy-positions",
+      "kind": "compatibility-invariant",
+      "caseName": "six-exact-classic-activations-at-six-legacy-positions",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/six-exact-classic-consumer-relationships",
+      "kind": "compatibility-invariant",
+      "caseName": "six-exact-classic-consumer-relationships",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/five-window-class-exposures-replaced-by-shim-with-exact-identity",
+      "kind": "compatibility-invariant",
+      "caseName": "five-window-class-exposures-replaced-by-shim-with-exact-identity",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/static-table-identity-preserved-through-single-class-evaluation",
+      "kind": "compatibility-invariant",
+      "caseName": "static-table-identity-preserved-through-single-class-evaluation",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/authoritative-state-owners-and-zero-extra-hot-loop-allocations",
+      "kind": "compatibility-invariant",
+      "caseName": "authoritative-state-owners-and-zero-extra-hot-loop-allocations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-prior-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-prior-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "LandingLiftReadinessPolicy",
+      "caseCount": 2,
+      "cases": [
+        "readiness-reason-ladder",
+        "disabled-invalid-and-epsilon-edges"
+      ]
+    },
+    {
+      "exportName": "PlayerPressureFatigueState",
+      "caseCount": 2,
+      "cases": [
+        "defaults-apply-frame-and-reset",
+        "fallbacks-clamps-and-alias-fields"
+      ]
+    },
+    {
+      "exportName": "PlayerTensionBuildRateResolver",
+      "caseCount": 2,
+      "cases": [
+        "mode-multipliers-and-thresholds",
+        "constructor-and-call-config-precedence"
+      ]
+    },
+    {
+      "exportName": "StaminaDrainCalculator",
+      "caseCount": 2,
+      "cases": [
+        "advantage-curve-drain",
+        "threshold-disabled-and-invalid-inputs"
+      ]
+    },
+    {
+      "exportName": "StaminaTransitionResolver",
+      "caseCount": 2,
+      "cases": [
+        "stamina-to-exhaustion-and-recovery",
+        "locked-phase-and-invalid-inputs"
+      ]
+    },
+    {
+      "exportName": "TackleFailureSelector",
+      "caseCount": 2,
+      "cases": [
+        "weakest-component-and-tie-break",
+        "static-frozen-tables-and-fallback"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 6,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.14.0-live-observation-and-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_014_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/core/fishing/landing_lift_readiness_policy.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/fishing/landing_lift_readiness_policy.js",
+          "authoritativeOwners": [
+            "LandingLiftReadinessPolicy#freeze",
+            "LandingLiftReadinessPolicy#notReady",
+            "LandingLiftReadinessPolicy#positive"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+          "authoritativeOwners": [
+            "LandingLiftReadinessPolicy#freeze",
+            "LandingLiftReadinessPolicy#notReady",
+            "LandingLiftReadinessPolicy#positive"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "8e70704fbcdf27d7c74b747c4d2338b63f5130662df8b09039941a9c081db816",
+        "allocationBaseline": {
+          "objectExpressions": 11,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+          "authoritativeOwners": [
+            "PlayerPressureFatigueState#controlBreakEnabled",
+            "PlayerPressureFatigueState#controlBreakFatigueProgressThreshold",
+            "PlayerPressureFatigueState#controlBreakMinContinuousPressureMs",
+            "PlayerPressureFatigueState#delayAfterPressureMs",
+            "PlayerPressureFatigueState#efficiency",
+            "PlayerPressureFatigueState#enabled",
+            "PlayerPressureFatigueState#fatigueDurationMs",
+            "PlayerPressureFatigueState#fatigueElapsedMs",
+            "PlayerPressureFatigueState#fatigueProgress",
+            "PlayerPressureFatigueState#fatigueRatio",
+            "PlayerPressureFatigueState#fatigueRemainingMs",
+            "PlayerPressureFatigueState#graceDurationMs",
+            "PlayerPressureFatigueState#graceElapsedMs",
+            "PlayerPressureFatigueState#graceRemainingMs",
+            "PlayerPressureFatigueState#holdElapsedMs",
+            "PlayerPressureFatigueState#isControlExhausted",
+            "PlayerPressureFatigueState#positive",
+            "PlayerPressureFatigueState#pressureActive",
+            "PlayerPressureFatigueState#pressureHoldMs",
+            "PlayerPressureFatigueState#pressureKg",
+            "PlayerPressureFatigueState#ratio",
+            "PlayerPressureFatigueState#recoveryDelayElapsedMs",
+            "PlayerPressureFatigueState#recoveryDelayMs",
+            "PlayerPressureFatigueState#recoveryDelayRemainingMs",
+            "PlayerPressureFatigueState#recoveryIdleMs",
+            "PlayerPressureFatigueState#recoveryPerSecond",
+            "PlayerPressureFatigueState#recoveryProgress",
+            "PlayerPressureFatigueState#recoveryRemainingMs",
+            "PlayerPressureFatigueState#recoveryState",
+            "PlayerPressureFatigueState#sourceActive",
+            "PlayerPressureFatigueState#sourceMode",
+            "PlayerPressureFatigueState#sourceReason",
+            "PlayerPressureFatigueState#stateName"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+          "authoritativeOwners": [
+            "PlayerPressureFatigueState#controlBreakEnabled",
+            "PlayerPressureFatigueState#controlBreakFatigueProgressThreshold",
+            "PlayerPressureFatigueState#controlBreakMinContinuousPressureMs",
+            "PlayerPressureFatigueState#delayAfterPressureMs",
+            "PlayerPressureFatigueState#efficiency",
+            "PlayerPressureFatigueState#enabled",
+            "PlayerPressureFatigueState#fatigueDurationMs",
+            "PlayerPressureFatigueState#fatigueElapsedMs",
+            "PlayerPressureFatigueState#fatigueProgress",
+            "PlayerPressureFatigueState#fatigueRatio",
+            "PlayerPressureFatigueState#fatigueRemainingMs",
+            "PlayerPressureFatigueState#graceDurationMs",
+            "PlayerPressureFatigueState#graceElapsedMs",
+            "PlayerPressureFatigueState#graceRemainingMs",
+            "PlayerPressureFatigueState#holdElapsedMs",
+            "PlayerPressureFatigueState#isControlExhausted",
+            "PlayerPressureFatigueState#positive",
+            "PlayerPressureFatigueState#pressureActive",
+            "PlayerPressureFatigueState#pressureHoldMs",
+            "PlayerPressureFatigueState#pressureKg",
+            "PlayerPressureFatigueState#ratio",
+            "PlayerPressureFatigueState#recoveryDelayElapsedMs",
+            "PlayerPressureFatigueState#recoveryDelayMs",
+            "PlayerPressureFatigueState#recoveryDelayRemainingMs",
+            "PlayerPressureFatigueState#recoveryIdleMs",
+            "PlayerPressureFatigueState#recoveryPerSecond",
+            "PlayerPressureFatigueState#recoveryProgress",
+            "PlayerPressureFatigueState#recoveryRemainingMs",
+            "PlayerPressureFatigueState#recoveryState",
+            "PlayerPressureFatigueState#sourceActive",
+            "PlayerPressureFatigueState#sourceMode",
+            "PlayerPressureFatigueState#sourceReason",
+            "PlayerPressureFatigueState#stateName"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "a0ab0b27c4ba78d2ae46a92cdff845191a5126690adc8c4f024a161a0fee0613",
+        "allocationBaseline": {
+          "objectExpressions": 2,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+          "authoritativeOwners": [
+            "PlayerTensionBuildRateResolver#clamp01",
+            "PlayerTensionBuildRateResolver#config",
+            "PlayerTensionBuildRateResolver#mode",
+            "PlayerTensionBuildRateResolver#multiplier",
+            "PlayerTensionBuildRateResolver#positive"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+          "authoritativeOwners": [
+            "PlayerTensionBuildRateResolver#clamp01",
+            "PlayerTensionBuildRateResolver#config",
+            "PlayerTensionBuildRateResolver#mode",
+            "PlayerTensionBuildRateResolver#multiplier",
+            "PlayerTensionBuildRateResolver#positive"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "39f37fc10dfec56f823f18894ca9c6605b2adff72d79e26fc9cfa7910830dac8",
+        "allocationBaseline": {
+          "objectExpressions": 10,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 2,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_drain_calculator.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/fishing/stamina/stamina_drain_calculator.js",
+          "authoritativeOwners": [
+            "StaminaDrainCalculator#clamp01",
+            "StaminaDrainCalculator#positive"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+          "authoritativeOwners": [
+            "StaminaDrainCalculator#clamp01",
+            "StaminaDrainCalculator#positive"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "ea8959cebd8978ce8040f3d1ad3f23277c35bd77a5a01431d2eab9f484e1b7e3",
+        "allocationBaseline": {
+          "objectExpressions": 4,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_transition_resolver.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/fishing/stamina/stamina_transition_resolver.js",
+          "authoritativeOwners": [
+            "StaminaTransitionResolver#clamp01",
+            "StaminaTransitionResolver#normalizePhase",
+            "StaminaTransitionResolver#positive"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+          "authoritativeOwners": [
+            "StaminaTransitionResolver#clamp01",
+            "StaminaTransitionResolver#normalizePhase",
+            "StaminaTransitionResolver#positive"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "78c7ee2a69b5dfced9bb83704426c5a7ec5af8691f646c7b7ce94779d073e69a",
+        "allocationBaseline": {
+          "objectExpressions": 8,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 4,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/fishing/tackle_failure_selector.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/fishing/tackle_failure_selector.js",
+          "authoritativeOwners": [
+            "TackleFailureSelector#buildPriorityMap",
+            "TackleFailureSelector#normalizePriority",
+            "TackleFailureSelector#positiveFinite",
+            "TackleFailureSelector#priorityOf",
+            "TackleFailureSelector.DEFAULT_TIE_BREAK_PRIORITY",
+            "TackleFailureSelector.RESULT_BY_COMPONENT"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fishing/tackle_failure_selector.js",
+          "authoritativeOwners": [
+            "TackleFailureSelector#buildPriorityMap",
+            "TackleFailureSelector#normalizePriority",
+            "TackleFailureSelector#positiveFinite",
+            "TackleFailureSelector#priorityOf",
+            "TackleFailureSelector.DEFAULT_TIE_BREAK_PRIORITY",
+            "TackleFailureSelector.RESULT_BY_COMPONENT"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "b465c9628a048ed8341453a38f5ef96340365c32ddeb5473620025dcedcbc094",
+        "allocationBaseline": {
+          "objectExpressions": 9,
+          "arrayExpressions": 3,
+          "newExpressions": 2,
+          "objectFreezeCalls": 2,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.14.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

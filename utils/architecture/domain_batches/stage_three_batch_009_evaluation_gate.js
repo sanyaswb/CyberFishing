@@ -32,7 +32,22 @@ class Batch009EarlierEvaluationGate {
           assert.equal(node.superClass, null, "eager superclass dependency requires review");
           for (const member of node.body.body) {
             assert(!member.computed && member.type !== "StaticBlock", "eager class effect requires review");
-            assert(!(member.static && member.type === "PropertyDefinition"), "static initialization requires review");
+            if (member.static && member.type === "PropertyDefinition") {
+              const value = member.value;
+              const literal = value?.arguments?.[0];
+              const frozenLiteral = value?.type === "CallExpression" &&
+                value.callee?.type === "MemberExpression" && value.callee.object?.name === "Object" &&
+                value.callee.property?.name === "freeze" && value.arguments.length === 1 &&
+                (literal.type === "ArrayExpression" && literal.elements.every(element =>
+                  element?.type === "Literal" && typeof element.value === "string") ||
+                literal.type === "ObjectExpression" && literal.properties.every(property =>
+                  property.type === "Property" && property.kind === "init" && !property.computed &&
+                  !property.method && property.key.type === "Identifier" &&
+                  property.value.type === "Literal" && typeof property.value.value === "string"));
+              assert(frozenLiteral, "static initialization requires review");
+              initializations.push({ binding: `${node.id.name}.${member.key.name}`,
+                kind: "frozen-literal-static-field" });
+            }
           }
           continue;
         }
@@ -62,7 +77,8 @@ class Batch009EarlierEvaluationGate {
         assert.equal(effect.classification, "needs-review", "unsafe evaluation");
         assert.equal(review?.decision, "approved-compatible", "missing reviewed initialization");
         assert.equal(review.evidenceFingerprint, effect.evidenceFingerprint, "stale effect review");
-        assert(initializations.some(i => ["private-empty-weakmap", "frozen-literal-range"].includes(i.kind)),
+        assert(initializations.some(i => ["private-empty-weakmap", "frozen-literal-range",
+          "frozen-literal-static-field"].includes(i.kind)),
           "review does not prove compatible initialization");
       } else assert(!review, "stale unnecessary review");
       reviewMap.delete(module.targetPath);
