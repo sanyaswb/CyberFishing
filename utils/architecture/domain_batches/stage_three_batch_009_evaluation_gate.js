@@ -5,6 +5,7 @@ const espree = require("espree");
 const { ModuleEvaluationEffectObserver } = require("../../build/compat_runtime/cumulative_side_effect_gate");
 const { EsmDependencyObserver } = require("../guards/observation/esm_dependency_observer");
 const { immutableRecord } = require("../guards/core/guard_models");
+const { isInertLiteral } = require("./stage_three_inert_literal");
 
 // A deliberately conservative, batch-scoped proof: no imported/eager external
 // dependency is silently treated as safe merely because the old build passed.
@@ -38,8 +39,7 @@ class Batch009EarlierEvaluationGate {
               const frozenLiteral = value?.type === "CallExpression" &&
                 value.callee?.type === "MemberExpression" && value.callee.object?.name === "Object" &&
                 value.callee.property?.name === "freeze" && value.arguments.length === 1 &&
-                (literal.type === "ArrayExpression" && literal.elements.every(element =>
-                  element?.type === "Literal" && typeof element.value === "string") ||
+                (literal.type === "ArrayExpression" && literal.elements.every(isInertLiteral) ||
                 literal.type === "ObjectExpression" && literal.properties.every(property =>
                   property.type === "Property" && property.kind === "init" && !property.computed &&
                   !property.method && property.key.type === "Identifier" &&

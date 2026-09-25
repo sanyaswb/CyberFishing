@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
 const vm = require("node:vm");
 const espree = require("espree");
+const { isInertLiteral } = require("./stage_three_inert_literal");
 
 const sha = value => crypto.createHash("sha256").update(value).digest("hex");
 const position = node => `${node.loc.start.line}:${node.loc.start.column + 1}`;
@@ -59,7 +60,7 @@ class StageThreeReviewedEvaluationEffect {
   }
 
   // Reviews a class whose only evaluation-time effects are static fields initialized by
-  // Object.freeze over string literals (arrays or plain objects). No other top-level code
+  // Object.freeze over string literal objects or string/numeric literal arrays. No other top-level code
   // is allowed, and evaluation must not create globals.
   frozenStaticFields({ source, currentPath, className, bindings }) {
     const tree = this.parse(source);
@@ -86,8 +87,8 @@ class StageThreeReviewedEvaluationEffect {
       assert.equal(call.arguments.length, 1);
       const literal = call.arguments[0];
       if (literal.type === "ArrayExpression") {
-        assert(literal.elements.every(element => element?.type === "Literal" &&
-          typeof element.value === "string"), `${currentPath}: static array must contain string literals`);
+        assert(literal.elements.every(isInertLiteral),
+          `${currentPath}: static array must contain string or numeric literals`);
       } else {
         assert.equal(literal.type, "ObjectExpression", `${currentPath}: static value must be a literal`);
         for (const property of literal.properties) {

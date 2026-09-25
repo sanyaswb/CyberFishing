@@ -1,5 +1,16 @@
 # CyberFishing changelog
 
+## v0.24.52 - Fishing Endurance and Pressure Domain
+
+### Changed
+
+- Completed atomic Stage 3 batch 015: six Fishing modules with six named ESM exports (endurance movement debuff, pressure gain, active and passive endurance drain, stamina lateral position, weakest tackle limit).
+- Extended the cumulative graph from 56 to 62 project modules and from 59 to 65 activation contracts, with 95 exact bridge relationships.
+- Preserved activation timing, six classic consumer relationships, class identity, the frozen static radial range, the static effective-load helper, state ownership and fishing behavior.
+- Reviewed frozen static tables may now hold numeric literals as well as strings (one shared inert-literal rule for the reviewer and the evaluation gate).
+- Moved replay checks of released batches to a new `history` suite: `quick` and `architecture` keep the cumulative invariants and the latest batch check; the full suite still runs every check.
+- Advanced the completed ordered prefix to batches 001–015 (53 of 69 frozen Domain modules); the next task is batch 016 preflight.
+
 ## v0.24.51 - Fishing Stamina and Tackle Domain
 
 ### Changed

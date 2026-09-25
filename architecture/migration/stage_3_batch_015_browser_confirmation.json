@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-015-browser-confirmation",
+  "batchId": "stage-3.candidate-015-fishing-37dc3452",
+  "releaseVersion": "0.24.51",
+  "status": "passed",
+  "performedBy": "claude-automated-owner-authorized",
+  "recordedAt": "2026-09-25T12:54:16.111Z",
+  "evidenceType": "automated-substitute-authorized-by-owner-in-conversation",
+  "gate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts",
+  "browserSummary": {
+    "userStatement": "PASS (owner-authorized automated substitute) — game-cycle-check.js passed with the added critical scenarios; built-in browser load rendered the game with exact batch-015 identities.",
+    "context": "The owner waived the manual visual smoke for batch 015 on condition that utils/game-cycle-check.js passes, and allowed adding critical scenarios. Claude added game-cycle scenarios for the exhaustion phase with the endurance movement debuff, weak-hook and weak-rod failures, pole (no reel) victory and line break, and spinning victory; mutation checks confirmed the new scenarios fail when EnduranceMovementDebuffCalculator or WeakestTackleLimitResolver is not loaded. Claude also loaded the game via npm run dev in the Claude desktop built-in browser.",
+    "individualResultsProvided": true,
+    "independentlyInstrumented": true
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "Built-in browser console, instrumented by Claude on launch and after one click: 0 errors, 0 warnings (one informational CacheManager log).",
+    "independentlyInstrumented": true
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_015_acceptance_pass.json",
+    "sha256": "aaa956e84b8a03cac375c855113363b0cc8aa368a7d9ac76fb16db5a74ca00d5"
+  },
+  "historicalSummaryPreserved": true
+}

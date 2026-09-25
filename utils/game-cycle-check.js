@@ -1645,6 +1645,222 @@ assert(
 assert(breakCase.transition?.name === "failed", "fish-pressure overload scenario fails");
 assert(breakCase.transition?.data?.reason === "line", "fish-pressure overload scenario breaks the line");
 
+function runLongFightUntilTransition({ equipment, fishData, startDistanceMeters, frames, checkWater = () => true, closeDrag = true }) {
+  const config = createConfig();
+  const cast = createCast({ config, equipment, distanceMeters: startDistanceMeters });
+  const fight = new FightService({
+    config,
+    rng: createRng(),
+    devFlags: createDevFlags(),
+  });
+  fight.startFight(fishData, equipment);
+  const phases = new Set();
+  let debuffFrame = null;
+  let peakEnduranceDrain = 0;
+  let transition = null;
+  let lastDebug = null;
+  for (let frame = 0; frame < frames; frame++) {
+    const result = fight.updateFight(1000 / 30, {
+      floatEntity: cast.floatEntity,
+      bounds: cast.bounds,
+      input: {
+        isPulling: true,
+        retrieve: false,
+        pointerDown: false,
+        dragIncrease: closeDrag,
+        pullDirection: { x: 0, y: 1 },
+      },
+      env: {},
+      net: null,
+      fishData,
+      getRodVirtualPos: () => cast.rodVirtualPos,
+      checkWater,
+    });
+    lastDebug = fight.getDebugData({
+      floatEntity: cast.floatEntity,
+      boundaries: cast.bounds,
+      rodPos: cast.rodVirtualPos,
+      screenOffset: 0,
+      equipment,
+    });
+    phases.add(lastDebug.staminaPhase);
+    peakEnduranceDrain = Math.max(peakEnduranceDrain, Number(lastDebug.enduranceTotalDrain) || 0);
+    if (debuffFrame === null && lastDebug.enduranceMovementDebuffActive === true) {
+      debuffFrame = { ...lastDebug };
+    }
+    if (result.transition) {
+      transition = result.transition;
+      break;
+    }
+  }
+  return { phases, debuffFrame, peakEnduranceDrain, transition, lastDebug };
+}
+
+const exhaustionCase = runLongFightUntilTransition({
+  equipment: createTestBuild({
+    rodMaxLoadKg: 50,
+    reelMaxLoadKg: 50,
+    lineMaxLoadKg: 50,
+    hookMaxLoadKg: 50,
+  }),
+  fishData: createFish({
+    weightKg: 2,
+    basePower: 1.5,
+    baseSpeed: 1,
+    forceMultiplier: 1,
+    speedMultiplier: 1,
+  }),
+  startDistanceMeters: 15,
+  frames: 1200,
+});
+assert(exhaustionCase.phases.has("stamina"), "strong-tackle fight starts in the stamina phase");
+assert(exhaustionCase.phases.has("exhaustion"), "sustained pressure drains fish stamina into exhaustion");
+assert(exhaustionCase.peakEnduranceDrain > 0, "exhaustion phase drains fish endurance");
+assert(exhaustionCase.debuffFrame !== null, "endurance movement debuff activates during exhaustion");
+assert(
+  Number(exhaustionCase.debuffFrame.enduranceMovementDebuffPower) >= 0 &&
+    Number(exhaustionCase.debuffFrame.enduranceMovementDebuffPower) <= 1,
+  "endurance movement debuff power stays within 0..1",
+);
+assert(
+  exhaustionCase.transition?.name === "victory",
+  "exhausted fish is landed through the full fight update cycle",
+);
+
+for (const [component, result, overrides] of [
+  ["hook", "hook_bent", { hookMaxLoadKg: 0.6, lineMaxLoadKg: 5, rodMaxLoadKg: 5, reelMaxLoadKg: 5 }],
+  ["rod", "rod_broken", { rodMaxLoadKg: 0.6, lineMaxLoadKg: 5, hookMaxLoadKg: 5, reelMaxLoadKg: 5 }],
+]) {
+  const weakCase = runLongFightUntilTransition({
+    equipment: createTestBuild({ ...overrides, reelHasDrag: false }),
+    fishData: createFish({
+      weightKg: 1,
+      basePower: 3,
+      baseSpeed: 0,
+      forceMultiplier: 1.0,
+      speedMultiplier: 0,
+    }),
+    startDistanceMeters: 5,
+    frames: 300,
+    checkWater: () => false,
+    closeDrag: false,
+  });
+  assert(
+    weakCase.lastDebug.weakestTackleLimitComponent === component,
+    "weakest tackle limit resolves the weak " + component,
+  );
+  assert(
+    weakCase.lastDebug.selectedFailureResult === result,
+    "tackle failure selector reports " + result + " for the weak " + component,
+  );
+  assert(
+    weakCase.transition?.name === "failed" && weakCase.transition?.data?.reason === component,
+    "strong fish breaks the weak " + component,
+  );
+}
+
+function createPoleBuild({ lineMaxLoadKg = 20 } = {}) {
+  return {
+    rod: hydrate("rods", "rod_test_float", {
+      instanceId: "cycle_pole_rod",
+      lengthMeters: 5,
+      hasReel: false,
+      maxLoadKg: 20,
+    }),
+    reel: null,
+    line: hydrate("lines", "line_test_1", {
+      instanceId: "cycle_pole_line",
+      lengthMeters: 6,
+      maxLoadKg: lineMaxLoadKg,
+    }),
+    float: hydrate("floats", "float_day", {
+      instanceId: "cycle_pole_float",
+    }),
+    hooks: [
+      hydrate("hooks", "hook_basic", {
+        instanceId: "cycle_pole_hook",
+        maxLoadKg: 20,
+      }),
+    ],
+    baits: [
+      hydrate("baits", "bread", {
+        instanceId: "cycle_pole_bait",
+      }),
+    ],
+  };
+}
+
+const poleVictory = runFightScenario({
+  name: "pole_victory",
+  equipment: createPoleBuild(),
+  fishData: createFish({
+    weightKg: 0.2,
+    basePower: 0.5,
+    baseSpeed: 0.8,
+    forceMultiplier: 0.5,
+    speedMultiplier: 0.8,
+  }),
+  startDistanceMeters: 3,
+  frames: 400,
+  closeDrag: true,
+  requireHold: false,
+  requirePlayerTension: false,
+});
+assert(poleVictory.transition?.name === "victory", "pole rod without a reel lands a light fish");
+assert(
+  poleVictory.lastDebug.weakestTackleLimitComponent !== "reel",
+  "pole rod weakest tackle limit ignores the missing reel",
+);
+
+const poleBreak = runFightScenario({
+  name: "pole_line_break",
+  equipment: createPoleBuild({ lineMaxLoadKg: 0.5 }),
+  fishData: createFish({
+    weightKg: 1,
+    basePower: 3,
+    baseSpeed: 0,
+    forceMultiplier: 1.0,
+    speedMultiplier: 0,
+  }),
+  startDistanceMeters: 4,
+  frames: 400,
+  checkWater: () => false,
+  requireHold: false,
+  requirePlayerTension: false,
+});
+assert(
+  poleBreak.transition?.name === "failed" && poleBreak.transition?.data?.reason === "line",
+  "pole rod line breaks under a strong fish",
+);
+
+const spinningBuild = createTestBuild({
+  rodMaxLoadKg: 20,
+  reelMaxLoadKg: 20,
+  lineMaxLoadKg: 20,
+  hookMaxLoadKg: 20,
+});
+spinningBuild.rod = hydrate("rods", "rod_test_spin", {
+  instanceId: "cycle_spin_rod",
+  maxLoadKg: 20,
+  holdTensionRatio: 1.0,
+});
+delete spinningBuild.feederRig;
+const spinningVictory = runFightScenario({
+  name: "spinning_victory",
+  equipment: spinningBuild,
+  fishData: createFish({
+    weightKg: 0.25,
+    basePower: 0.5,
+    baseSpeed: 0.8,
+    forceMultiplier: 0.5,
+    speedMultiplier: 0.8,
+  }),
+  startDistanceMeters: 1.8,
+  frames: 400,
+  closeDrag: true,
+});
+assert(spinningVictory.transition?.name === "victory", "spinning rod lands a light fish");
+
 console.log("game-cycle-check passed:");
 console.log("- victory peak line stress: " + (victory.peakLineStress * 100).toFixed(1) + "%");
 console.log("- victory peak total tension: " + victory.peakTotalTension.toFixed(3) + " kg");

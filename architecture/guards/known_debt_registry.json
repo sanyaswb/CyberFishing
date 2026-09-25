@@ -2684,26 +2684,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-2ea0384c0611",
-      "rule": "browser-capability",
-      "source": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
-      "target": "environment:browser-runtime",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "legacy-browser-capability"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 1,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "2ea0384c0611edaac668d2a3a6f6c7bc66e0d7870e75b9bd8f6fb798dcee577c",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
-        "target": "environment:browser-runtime",
-        "identifier": "window"
-      }
-    },
-    {
       "id": "debt-browser-capability-36211a794946",
       "rule": "browser-capability",
       "source": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
@@ -2742,26 +2722,6 @@
         "source": "src/systems/fight_physics_pipeline.js",
         "target": "environment:timing",
         "identifier": "performance"
-      }
-    },
-    {
-      "id": "debt-browser-capability-3eef9c7796d4",
-      "rule": "browser-capability",
-      "source": "src/services/weakest_tackle_limit_resolver.js",
-      "target": "environment:browser-runtime",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "legacy-browser-capability"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 1,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "3eef9c7796d4a9ef83f2b7ef4afa6c2c78612523e74e1848eaa471a529f78f96",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/services/weakest_tackle_limit_resolver.js",
-        "target": "environment:browser-runtime",
-        "identifier": "window"
       }
     },
     {
@@ -2809,26 +2769,6 @@
         "source": "src/application/inventory/inventory_v2_command_service.js",
         "target": "environment:cryptography",
         "identifier": "crypto"
-      }
-    },
-    {
-      "id": "debt-browser-capability-4219df466ab4",
-      "rule": "browser-capability",
-      "source": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
-      "target": "environment:browser-runtime",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "legacy-browser-capability"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 1,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "4219df466ab4a11742732ff97c0335aaa21b819c4d6ddd8c5d97eb1392ac52ea",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
-        "target": "environment:browser-runtime",
-        "identifier": "window"
       }
     },
     {
@@ -3307,26 +3247,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-ace733a989d9",
-      "rule": "browser-capability",
-      "source": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
-      "target": "environment:browser-runtime",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "legacy-browser-capability"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 1,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "ace733a989d9a884fbb10e333a0891f7fa2252e2c107137b4673307f849b760c",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
-        "target": "environment:browser-runtime",
-        "identifier": "window"
-      }
-    },
-    {
       "id": "debt-browser-capability-af15d3daf1d0",
       "rule": "browser-capability",
       "source": "src/core/fishing/stamina/stamina_pressure_resolver.js",
@@ -3565,26 +3485,6 @@
         "source": "src/ui/ui.js",
         "target": "environment:viewport",
         "identifier": "innerHeight"
-      }
-    },
-    {
-      "id": "debt-browser-capability-d852e4b898e8",
-      "rule": "browser-capability",
-      "source": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
-      "target": "environment:browser-runtime",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "legacy-browser-capability"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 1,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "d852e4b898e80f4ba2b6259c528ee823e81bcac07dcc252356bfc1081c46be5d",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
-        "target": "environment:browser-runtime",
-        "identifier": "window"
       }
     },
     {

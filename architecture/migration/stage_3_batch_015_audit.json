@@ -1,0 +1,2119 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-preflight-audit",
+  "status": "verified",
+  "stage": "Stage 3.15.0",
+  "sourceReleaseVersion": "0.24.51",
+  "batchId": "stage-3.candidate-015-fishing-37dc3452",
+  "sourceEvidence": {
+    "approvedPlan": {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    "manifest": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "4ebabd1e198087276c9f2dd6ffda8c9e7f9922078294ddf60433aedf2a31acf7"
+    },
+    "domainAudit": {
+      "path": "architecture/migration/stage_3_domain_audit.json",
+      "sha256": "6a96b8ead58fab42c8c596b365776226a77c36978b9ef68b71c3df8ada6fa4cd"
+    },
+    "executionState": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "2e58bd3c03b4a9fbc3629db19cf9afe6c6a4a47613b565ffc150b1a24e8a6c23"
+    },
+    "runtimeContract": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "404e28e17cbe97c3943cc4f80a714d2dc426890916402121a7aac1cc4748ef25"
+    },
+    "bridgeRegistry": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "81a0d6843e0217c9f2003cdfa86ae949088e0ea0c72430a75678c896ed4c2200"
+    },
+    "index": {
+      "path": "index.html",
+      "sha256": "3d87cdd12403cf3420c1a9efd522be865c09c24033f0693d89b95418630a99c9"
+    },
+    "runtimeOutput": {
+      "path": "dist/stage-3-compat-runtime",
+      "fingerprint": "6e7ee64a232bd22dd0bde8be1e4c4b1a5cbb011979328afa0e038ece69ac375b"
+    },
+    "sideEffectReview": {
+      "path": "architecture/migration/stage_3_batch_015_side_effect_review.json",
+      "sha256": "e7caf6527d853968fa91c5e2d43d2d649b6c6273d81998ebdc740cdb74eb377b"
+    }
+  },
+  "scope": {
+    "targetCount": 6,
+    "modules": [
+      {
+        "currentPath": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+        "targetPath": "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+        "sourceSha256": "91b801e69db3eb962533ed996161d250f4781e6a276991fe703966ab32ff7048",
+        "exports": [
+          "EnduranceMovementDebuffCalculator"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-b6faae74ae04",
+          "members": [
+            "src/core/fishing/endurance/endurance_movement_debuff_calculator.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+          "classDeclarations": [
+            "EnduranceMovementDebuffCalculator"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [
+            {
+              "name": "DEFAULT_RADIAL_RANGE",
+              "visibility": "public",
+              "initializerType": "CallExpression",
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "#calculateBehaviorWeightMultipliers",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 3,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 2,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#calculateProgress",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#calculateRadialRangeOverride",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 1,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#clamp01",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#lerp",
+              "kind": "method",
+              "parameterCount": 3,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#normalizeRange",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 3,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#positive",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "calculate",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 10,
+                "arrayExpressions": 2,
+                "newExpressions": 0,
+                "objectFreezeCalls": 5,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 13,
+            "arrayExpressions": 7,
+            "newExpressions": 0,
+            "objectFreezeCalls": 9,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "DEFAULT_RADIAL_RANGE"
+          ],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+            "authoritativeOwners": [
+              "EnduranceMovementDebuffCalculator#calculateBehaviorWeightMultipliers",
+              "EnduranceMovementDebuffCalculator#calculateProgress",
+              "EnduranceMovementDebuffCalculator#calculateRadialRangeOverride",
+              "EnduranceMovementDebuffCalculator#clamp01",
+              "EnduranceMovementDebuffCalculator#lerp",
+              "EnduranceMovementDebuffCalculator#normalizeRange",
+              "EnduranceMovementDebuffCalculator#positive",
+              "EnduranceMovementDebuffCalculator.DEFAULT_RADIAL_RANGE"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+            "authoritativeOwners": [
+              "EnduranceMovementDebuffCalculator#calculateBehaviorWeightMultipliers",
+              "EnduranceMovementDebuffCalculator#calculateProgress",
+              "EnduranceMovementDebuffCalculator#calculateRadialRangeOverride",
+              "EnduranceMovementDebuffCalculator#clamp01",
+              "EnduranceMovementDebuffCalculator#lerp",
+              "EnduranceMovementDebuffCalculator#normalizeRange",
+              "EnduranceMovementDebuffCalculator#positive",
+              "EnduranceMovementDebuffCalculator.DEFAULT_RADIAL_RANGE"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "endurance-movement-debuff-progress-radial-range-static-frozen-default",
+          "formulaDefaultsClampsRoundingFingerprint": "a3afc0aa98707036eb3f4f760ea8d85b838242c8e06f2d27e9b016df892508ef",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-fish-force-endurance-debuff",
+          "callSites": [
+            "src/systems/fish_force_system.js"
+          ],
+          "callSiteEvidence": [
+            {
+              "path": "src/systems/fish_force_system.js",
+              "marker": "new EnduranceMovementDebuffCalculator()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 13,
+            "arrayExpressions": 7,
+            "newExpressions": 0,
+            "objectFreezeCalls": 9,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "call",
+              "location": "2:33",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "frozen-literal-static-fields",
+            "currentPath": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+            "sourceSha256": "91b801e69db3eb962533ed996161d250f4781e6a276991fe703966ab32ff7048",
+            "className": "EnduranceMovementDebuffCalculator",
+            "bindings": {
+              "DEFAULT_RADIAL_RANGE": {
+                "location": "2:33",
+                "values": [
+                  0.35,
+                  1
+                ]
+              }
+            },
+            "topLevelStatementCount": 1,
+            "evaluationCount": 1,
+            "globalPropertiesAdded": [],
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "EnduranceMovementDebuffCalculator",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+        "targetPath": "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+        "sourceSha256": "f9f7a11a8815e1bfdc173ccb1ea486d3434951cb21b14ad43d4849e96d226f81",
+        "exports": [
+          "PlayerPressureGainResolver"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-dcf7c5ad5bbb",
+          "members": [
+            "src/core/fishing/player_pressure/player_pressure_gain_resolver.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+          "classDeclarations": [
+            "PlayerPressureGainResolver"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "IfStatement@95:1"
+          ],
+          "fields": [
+            {
+              "name": "#config",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 2,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#clamp01",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#mode",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#multiplier",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#positive",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "resolve",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 7,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 9,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#config"
+          ],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+            "authoritativeOwners": [
+              "PlayerPressureGainResolver#clamp01",
+              "PlayerPressureGainResolver#config",
+              "PlayerPressureGainResolver#mode",
+              "PlayerPressureGainResolver#multiplier",
+              "PlayerPressureGainResolver#positive"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+            "authoritativeOwners": [
+              "PlayerPressureGainResolver#clamp01",
+              "PlayerPressureGainResolver#config",
+              "PlayerPressureGainResolver#mode",
+              "PlayerPressureGainResolver#multiplier",
+              "PlayerPressureGainResolver#positive"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "player-pressure-gain-curve-config-defaults-and-window-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "161f690d968f231357d205ccb9cf49268d2909993d3ef1d77ee2bec9d5cc493c",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-fight-physics-pressure-gain",
+          "callSites": [
+            "src/systems/fight_physics_system.js"
+          ],
+          "callSiteEvidence": [
+            {
+              "path": "src/systems/fight_physics_system.js",
+              "marker": "new PlayerPressureGainResolver()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 9,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "96:3",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "guarded-window-class-exposure",
+            "currentPath": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+            "sourceSha256": "f9f7a11a8815e1bfdc173ccb1ea486d3434951cb21b14ad43d4849e96d226f81",
+            "symbol": "PlayerPressureGainResolver",
+            "location": "96:3",
+            "guardLocation": "95:1",
+            "assignmentTarget": "window.PlayerPressureGainResolver",
+            "evaluationCount": 1,
+            "globalPropertiesAddedWithoutWindow": [],
+            "windowPropertiesAdded": [
+              "PlayerPressureGainResolver"
+            ],
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "PlayerPressureGainResolver",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "PlayerPressureGainResolver",
+            "mechanism": "window-property",
+            "availability": "conditional"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+        "targetPath": "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+        "sourceSha256": "1e7b61449be1e8065ed6e25f5972182a012cd78a60ff49cb11eaf86e7b3eb863",
+        "exports": [
+          "ActiveEnduranceDrainCalculator"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-c706ea5daaab",
+          "members": [
+            "src/core/fishing/stamina/active_endurance_drain_calculator.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+          "classDeclarations": [
+            "ActiveEnduranceDrainCalculator"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "IfStatement@46:1"
+          ],
+          "fields": [],
+          "methods": [
+            {
+              "name": "#clamp01",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#positive",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "calculate",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 3,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+            "authoritativeOwners": [
+              "ActiveEnduranceDrainCalculator#clamp01",
+              "ActiveEnduranceDrainCalculator#positive"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+            "authoritativeOwners": [
+              "ActiveEnduranceDrainCalculator#clamp01",
+              "ActiveEnduranceDrainCalculator#positive"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "active-endurance-drain-ratio-rate-and-window-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "1f15e1cc5d3a980bc124fbe95690180db0779a7cfb8135052148668a75b82613",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-stamina-balance-active-drain",
+          "callSites": [
+            "src/core/fishing/stamina/stamina_balance_frame.js"
+          ],
+          "callSiteEvidence": [
+            {
+              "path": "src/core/fishing/stamina/stamina_balance_frame.js",
+              "marker": "activeEnduranceDrainCalculator = new ActiveEnduranceDrainCalculator()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "47:3",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "guarded-window-class-exposure",
+            "currentPath": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+            "sourceSha256": "1e7b61449be1e8065ed6e25f5972182a012cd78a60ff49cb11eaf86e7b3eb863",
+            "symbol": "ActiveEnduranceDrainCalculator",
+            "location": "47:3",
+            "guardLocation": "46:1",
+            "assignmentTarget": "window.ActiveEnduranceDrainCalculator",
+            "evaluationCount": 1,
+            "globalPropertiesAddedWithoutWindow": [],
+            "windowPropertiesAdded": [
+              "ActiveEnduranceDrainCalculator"
+            ],
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "ActiveEnduranceDrainCalculator",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "ActiveEnduranceDrainCalculator",
+            "mechanism": "window-property",
+            "availability": "conditional"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+        "targetPath": "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+        "sourceSha256": "62bed75a3fbee4d43da9194e8c69cfe43fb959fa6a75b7a41a93e7954127387c",
+        "exports": [
+          "PassiveEnduranceDrainCalculator"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-dcef49a3e3b7",
+          "members": [
+            "src/core/fishing/stamina/passive_endurance_drain_calculator.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+          "classDeclarations": [
+            "PassiveEnduranceDrainCalculator"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "IfStatement@115:1"
+          ],
+          "fields": [],
+          "methods": [
+            {
+              "name": "#behaviorMultiplier",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#clamp01",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#normalizeBehaviorName",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#positive",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#rawLineTautRatio",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#resolveLineTautRatio",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "calculate",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 6,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 8,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+            "authoritativeOwners": [
+              "PassiveEnduranceDrainCalculator#behaviorMultiplier",
+              "PassiveEnduranceDrainCalculator#clamp01",
+              "PassiveEnduranceDrainCalculator#normalizeBehaviorName",
+              "PassiveEnduranceDrainCalculator#positive",
+              "PassiveEnduranceDrainCalculator#rawLineTautRatio",
+              "PassiveEnduranceDrainCalculator#resolveLineTautRatio"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+            "authoritativeOwners": [
+              "PassiveEnduranceDrainCalculator#behaviorMultiplier",
+              "PassiveEnduranceDrainCalculator#clamp01",
+              "PassiveEnduranceDrainCalculator#normalizeBehaviorName",
+              "PassiveEnduranceDrainCalculator#positive",
+              "PassiveEnduranceDrainCalculator#rawLineTautRatio",
+              "PassiveEnduranceDrainCalculator#resolveLineTautRatio"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "passive-endurance-drain-taut-line-behavior-and-window-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "265015ba608075a2e169f02442c6f70fbab2ecbad0f7d3c920bf0ecd68299cc3",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-stamina-balance-passive-drain",
+          "callSites": [
+            "src/core/fishing/stamina/stamina_balance_frame.js"
+          ],
+          "callSiteEvidence": [
+            {
+              "path": "src/core/fishing/stamina/stamina_balance_frame.js",
+              "marker": "passiveEnduranceDrainCalculator = new PassiveEnduranceDrainCalculator()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 8,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "116:3",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "guarded-window-class-exposure",
+            "currentPath": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+            "sourceSha256": "62bed75a3fbee4d43da9194e8c69cfe43fb959fa6a75b7a41a93e7954127387c",
+            "symbol": "PassiveEnduranceDrainCalculator",
+            "location": "116:3",
+            "guardLocation": "115:1",
+            "assignmentTarget": "window.PassiveEnduranceDrainCalculator",
+            "evaluationCount": 1,
+            "globalPropertiesAddedWithoutWindow": [],
+            "windowPropertiesAdded": [
+              "PassiveEnduranceDrainCalculator"
+            ],
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "PassiveEnduranceDrainCalculator",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "PassiveEnduranceDrainCalculator",
+            "mechanism": "window-property",
+            "availability": "conditional"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+        "targetPath": "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+        "sourceSha256": "4843ff3576a72202343517341032ad4a9fa693c8906920d4a407246a18a04a0a",
+        "exports": [
+          "StaminaLateralPositionResolver"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-f1984c1beca4",
+          "members": [
+            "src/core/fishing/stamina/stamina_lateral_position_resolver.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+          "classDeclarations": [
+            "StaminaLateralPositionResolver"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "IfStatement@48:1"
+          ],
+          "fields": [],
+          "methods": [
+            {
+              "name": "#clamp01",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#positive",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "resolve",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 3,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+            "authoritativeOwners": [
+              "StaminaLateralPositionResolver#clamp01",
+              "StaminaLateralPositionResolver#positive"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+            "authoritativeOwners": [
+              "StaminaLateralPositionResolver#clamp01",
+              "StaminaLateralPositionResolver#positive"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "stamina-lateral-position-offset-angle-ratio-and-window-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "faaa5c4fa9cb99ab40cce45fa5823be0da6228a4767544991c2961459f80c54d",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-stamina-pressure-lateral-position",
+          "callSites": [
+            "src/core/fishing/stamina/stamina_pressure_resolver.js"
+          ],
+          "callSiteEvidence": [
+            {
+              "path": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+              "marker": "lateralPositionResolver = new StaminaLateralPositionResolver()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "49:3",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "guarded-window-class-exposure",
+            "currentPath": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+            "sourceSha256": "4843ff3576a72202343517341032ad4a9fa693c8906920d4a407246a18a04a0a",
+            "symbol": "StaminaLateralPositionResolver",
+            "location": "49:3",
+            "guardLocation": "48:1",
+            "assignmentTarget": "window.StaminaLateralPositionResolver",
+            "evaluationCount": 1,
+            "globalPropertiesAddedWithoutWindow": [],
+            "windowPropertiesAdded": [
+              "StaminaLateralPositionResolver"
+            ],
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "StaminaLateralPositionResolver",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "StaminaLateralPositionResolver",
+            "mechanism": "window-property",
+            "availability": "conditional"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/services/weakest_tackle_limit_resolver.js",
+        "targetPath": "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+        "sourceSha256": "b4e82d90ff9bbc194f985b73b68d9df9d10641ef6ad7188faec7d4c07b4e5317",
+        "exports": [
+          "WeakestTackleLimitResolver"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-d17020bbfb05",
+          "members": [
+            "src/services/weakest_tackle_limit_resolver.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/services/weakest_tackle_limit_resolver.js",
+          "classDeclarations": [
+            "WeakestTackleLimitResolver"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "IfStatement@83:1"
+          ],
+          "fields": [],
+          "methods": [
+            {
+              "name": "#candidate",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#itemLimit",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#lineLimit",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#positiveFinite",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "effectiveItemMaxLoadKg",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "resolve",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 3,
+                "arrayExpressions": 1,
+                "newExpressions": 0,
+                "objectFreezeCalls": 2,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 4,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 3,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/services/weakest_tackle_limit_resolver.js",
+            "authoritativeOwners": [
+              "WeakestTackleLimitResolver#candidate",
+              "WeakestTackleLimitResolver#itemLimit",
+              "WeakestTackleLimitResolver#lineLimit",
+              "WeakestTackleLimitResolver#positiveFinite"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+            "authoritativeOwners": [
+              "WeakestTackleLimitResolver#candidate",
+              "WeakestTackleLimitResolver#itemLimit",
+              "WeakestTackleLimitResolver#lineLimit",
+              "WeakestTackleLimitResolver#positiveFinite"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "weakest-tackle-limit-component-order-and-window-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "e60ac119a36232bf32217b421066bbe504250ecb23f6d9320d577623d48e9f32",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-tackle-stress-weakest-limit",
+          "callSites": [
+            "src/systems/tackle_stress_system.js"
+          ],
+          "callSiteEvidence": [
+            {
+              "path": "src/systems/tackle_stress_system.js",
+              "marker": "new WeakestTackleLimitResolver()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 4,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 3,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "84:3",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "guarded-window-class-exposure",
+            "currentPath": "src/services/weakest_tackle_limit_resolver.js",
+            "sourceSha256": "b4e82d90ff9bbc194f985b73b68d9df9d10641ef6ad7188faec7d4c07b4e5317",
+            "symbol": "WeakestTackleLimitResolver",
+            "location": "84:3",
+            "guardLocation": "83:1",
+            "assignmentTarget": "window.WeakestTackleLimitResolver",
+            "evaluationCount": 1,
+            "globalPropertiesAddedWithoutWindow": [],
+            "windowPropertiesAdded": [
+              "WeakestTackleLimitResolver"
+            ],
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "WeakestTackleLimitResolver",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "WeakestTackleLimitResolver",
+            "mechanism": "window-property",
+            "availability": "conditional"
+          }
+        ]
+      }
+    ]
+  },
+  "runtimeBaseline": {
+    "projectModuleCount": 56,
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "src/game/domain/fishing/tackle_failure_selector.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "activationCount": 59,
+    "bridgeCount": 89,
+    "scriptTopology": {
+      "physicalClassicScriptCount": 428,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0
+    }
+  },
+  "closure": {
+    "existingCumulativeModuleCount": 56,
+    "existingCumulativeModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "src/game/domain/fishing/tackle_failure_selector.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "newProjectModuleCount": 6,
+    "newProjectModules": [
+      "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+      "src/game/domain/fishing/weakest_tackle_limit_resolver.js"
+    ],
+    "resultingProjectModuleCount": 62,
+    "internalEdges": [],
+    "alreadyCumulativeDependencies": [],
+    "unexpectedDependencies": []
+  },
+  "evaluation": {
+    "legacyScriptOrderControlsEvaluation": false,
+    "ordering": "esm-graph-topology-with-lexicographic-diagnostic-tiebreak",
+    "stronglyConnectedComponents": [
+      {
+        "id": "scc-b6faae74ae04",
+        "members": [
+          "src/core/fishing/endurance/endurance_movement_debuff_calculator.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-c706ea5daaab",
+        "members": [
+          "src/core/fishing/stamina/active_endurance_drain_calculator.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-d17020bbfb05",
+        "members": [
+          "src/services/weakest_tackle_limit_resolver.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-dcef49a3e3b7",
+        "members": [
+          "src/core/fishing/stamina/passive_endurance_drain_calculator.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-dcf7c5ad5bbb",
+        "members": [
+          "src/core/fishing/player_pressure/player_pressure_gain_resolver.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-f1984c1beca4",
+        "members": [
+          "src/core/fishing/stamina/stamina_lateral_position_resolver.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      }
+    ],
+    "layers": [
+      [
+        "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+        "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+        "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+        "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+        "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+        "src/game/domain/fishing/weakest_tackle_limit_resolver.js"
+      ]
+    ],
+    "cycles": []
+  },
+  "boundaries": {
+    "forbiddenEdges": [],
+    "directConfigDependencies": [],
+    "browserCapabilities": [],
+    "transportReads": [],
+    "forbiddenSourceReads": [],
+    "dynamicConstructs": []
+  },
+  "state": {
+    "reviewed": [
+      {
+        "module": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/services/weakest_tackle_limit_resolver.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      }
+    ],
+    "unresolved": []
+  },
+  "behavior": {
+    "resultShapeSensitive": [],
+    "mutableIdentitySensitive": [],
+    "formulaDefaultsClampsRoundingFingerprints": [
+      {
+        "module": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+        "sha256": "a3afc0aa98707036eb3f4f760ea8d85b838242c8e06f2d27e9b016df892508ef"
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+        "sha256": "161f690d968f231357d205ccb9cf49268d2909993d3ef1d77ee2bec9d5cc493c"
+      },
+      {
+        "module": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+        "sha256": "1f15e1cc5d3a980bc124fbe95690180db0779a7cfb8135052148668a75b82613"
+      },
+      {
+        "module": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+        "sha256": "265015ba608075a2e169f02442c6f70fbab2ecbad0f7d3c920bf0ecd68299cc3"
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+        "sha256": "faaa5c4fa9cb99ab40cce45fa5823be0da6228a4767544991c2961459f80c54d"
+      },
+      {
+        "module": "src/services/weakest_tackle_limit_resolver.js",
+        "sha256": "e60ac119a36232bf32217b421066bbe504250ecb23f6d9320d577623d48e9f32"
+      }
+    ],
+    "unresolved": []
+  },
+  "performance": {
+    "reviewed": [
+      {
+        "module": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+        "classification": "existing-fish-force-endurance-debuff",
+        "callSites": [
+          "src/systems/fish_force_system.js"
+        ],
+        "callSiteEvidence": [
+          {
+            "path": "src/systems/fish_force_system.js",
+            "marker": "new EnduranceMovementDebuffCalculator()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 13,
+          "arrayExpressions": 7,
+          "newExpressions": 0,
+          "objectFreezeCalls": 9,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+        "classification": "existing-fight-physics-pressure-gain",
+        "callSites": [
+          "src/systems/fight_physics_system.js"
+        ],
+        "callSiteEvidence": [
+          {
+            "path": "src/systems/fight_physics_system.js",
+            "marker": "new PlayerPressureGainResolver()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 9,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+        "classification": "existing-stamina-balance-active-drain",
+        "callSites": [
+          "src/core/fishing/stamina/stamina_balance_frame.js"
+        ],
+        "callSiteEvidence": [
+          {
+            "path": "src/core/fishing/stamina/stamina_balance_frame.js",
+            "marker": "activeEnduranceDrainCalculator = new ActiveEnduranceDrainCalculator()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 3,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+        "classification": "existing-stamina-balance-passive-drain",
+        "callSites": [
+          "src/core/fishing/stamina/stamina_balance_frame.js"
+        ],
+        "callSiteEvidence": [
+          {
+            "path": "src/core/fishing/stamina/stamina_balance_frame.js",
+            "marker": "passiveEnduranceDrainCalculator = new PassiveEnduranceDrainCalculator()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 8,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+        "classification": "existing-stamina-pressure-lateral-position",
+        "callSites": [
+          "src/core/fishing/stamina/stamina_pressure_resolver.js"
+        ],
+        "callSiteEvidence": [
+          {
+            "path": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+            "marker": "lateralPositionResolver = new StaminaLateralPositionResolver()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 3,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/services/weakest_tackle_limit_resolver.js",
+        "classification": "existing-tackle-stress-weakest-limit",
+        "callSites": [
+          "src/systems/tackle_stress_system.js"
+        ],
+        "callSiteEvidence": [
+          {
+            "path": "src/systems/tackle_stress_system.js",
+            "marker": "new WeakestTackleLimitResolver()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 4,
+          "arrayExpressions": 1,
+          "newExpressions": 0,
+          "objectFreezeCalls": 3,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "unresolved": []
+  },
+  "effects": {
+    "safe": [],
+    "reviewed": [
+      "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+      "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+      "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+      "src/services/weakest_tackle_limit_resolver.js"
+    ],
+    "unsafe": []
+  },
+  "compatibility": {
+    "providers": [
+      {
+        "module": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+        "symbol": "EnduranceMovementDebuffCalculator",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+        "symbol": "PlayerPressureGainResolver",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+        "symbol": "PlayerPressureGainResolver",
+        "mechanism": "window-property",
+        "availability": "conditional"
+      },
+      {
+        "module": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+        "symbol": "ActiveEnduranceDrainCalculator",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+        "symbol": "ActiveEnduranceDrainCalculator",
+        "mechanism": "window-property",
+        "availability": "conditional"
+      },
+      {
+        "module": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+        "symbol": "PassiveEnduranceDrainCalculator",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+        "symbol": "PassiveEnduranceDrainCalculator",
+        "mechanism": "window-property",
+        "availability": "conditional"
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+        "symbol": "StaminaLateralPositionResolver",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+        "symbol": "StaminaLateralPositionResolver",
+        "mechanism": "window-property",
+        "availability": "conditional"
+      },
+      {
+        "module": "src/services/weakest_tackle_limit_resolver.js",
+        "symbol": "WeakestTackleLimitResolver",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/services/weakest_tackle_limit_resolver.js",
+        "symbol": "WeakestTackleLimitResolver",
+        "mechanism": "window-property",
+        "availability": "conditional"
+      }
+    ],
+    "consumers": [
+      {
+        "provider": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+        "source": "src/systems/fish_force_system.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "EnduranceMovementDebuffCalculator"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+        "source": "src/systems/fight_physics_system.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "PlayerPressureGainResolver"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+        "source": "src/core/fishing/stamina/stamina_balance_frame.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ActiveEnduranceDrainCalculator"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+        "source": "src/core/fishing/stamina/stamina_balance_frame.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "PassiveEnduranceDrainCalculator"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+        "source": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "StaminaLateralPositionResolver"
+        ]
+      },
+      {
+        "provider": "src/services/weakest_tackle_limit_resolver.js",
+        "source": "src/systems/tackle_stress_system.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "WeakestTackleLimitResolver"
+        ]
+      }
+    ],
+    "activations": [
+      {
+        "id": "activation-20cb461d88b8",
+        "owner": "stage-3.candidate-015-fishing-37dc3452",
+        "sourceProvider": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+        "targetModule": "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+        "exportName": "StaminaLateralPositionResolver",
+        "legacySymbol": "StaminaLateralPositionResolver",
+        "legacyScriptIndex": 104,
+        "shimFile": "activations/104_staminalateralpositionresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/fishing/stamina/stamina_pressure_resolver.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-34fdfded9090",
+        "owner": "stage-3.candidate-015-fishing-37dc3452",
+        "sourceProvider": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+        "targetModule": "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+        "exportName": "PlayerPressureGainResolver",
+        "legacySymbol": "PlayerPressureGainResolver",
+        "legacyScriptIndex": 96,
+        "shimFile": "activations/096_playerpressuregainresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/systems/fight_physics_system.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-3b06bb1eb5b8",
+        "owner": "stage-3.candidate-015-fishing-37dc3452",
+        "sourceProvider": "src/services/weakest_tackle_limit_resolver.js",
+        "targetModule": "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+        "exportName": "WeakestTackleLimitResolver",
+        "legacySymbol": "WeakestTackleLimitResolver",
+        "legacyScriptIndex": 203,
+        "shimFile": "activations/203_weakesttacklelimitresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/systems/tackle_stress_system.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-a9ba2b558615",
+        "owner": "stage-3.candidate-015-fishing-37dc3452",
+        "sourceProvider": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+        "targetModule": "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+        "exportName": "ActiveEnduranceDrainCalculator",
+        "legacySymbol": "ActiveEnduranceDrainCalculator",
+        "legacyScriptIndex": 102,
+        "shimFile": "activations/102_activeendurancedraincalculator.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/fishing/stamina/stamina_balance_frame.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-e94561a6959c",
+        "owner": "stage-3.candidate-015-fishing-37dc3452",
+        "sourceProvider": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+        "targetModule": "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+        "exportName": "PassiveEnduranceDrainCalculator",
+        "legacySymbol": "PassiveEnduranceDrainCalculator",
+        "legacyScriptIndex": 103,
+        "shimFile": "activations/103_passiveendurancedraincalculator.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/fishing/stamina/stamina_balance_frame.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-fa95b209e285",
+        "owner": "stage-3.candidate-015-fishing-37dc3452",
+        "sourceProvider": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+        "targetModule": "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+        "exportName": "EnduranceMovementDebuffCalculator",
+        "legacySymbol": "EnduranceMovementDebuffCalculator",
+        "legacyScriptIndex": 111,
+        "shimFile": "activations/111_endurancemovementdebuffcalculator.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/systems/fish_force_system.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      }
+    ]
+  },
+  "prerequisites": {
+    "frozen": [],
+    "reviewed": [
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/fishing/stamina/active_endurance_drain_calculator.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/fishing/stamina/active_endurance_drain_calculator.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/fishing/stamina/passive_endurance_drain_calculator.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/fishing/stamina/stamina_lateral_position_resolver.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/services/weakest_tackle_limit_resolver.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/services/weakest_tackle_limit_resolver.js"
+      }
+    ],
+    "newlyDiscovered": []
+  },
+  "migrationGates": [
+    "six-exact-source-and-method-shapes",
+    "six-export-identities-and-activations",
+    "one-frozen-static-numeric-literal-evaluation-effect",
+    "five-reviewed-window-class-exposures",
+    "six-exact-consumer-relationships",
+    "all-legacy-activation-positions-preserved",
+    "zero-config-platform-browser-dev-dependencies",
+    "zero-added-hot-loop-allocations"
+  ],
+  "issues": [],
+  "verdict": "eligible-for-execution-plan",
+  "liveObservation": {
+    "status": "verified",
+    "sourceCount": 480,
+    "persistencePerformed": false,
+    "consumerRelationships": [
+      {
+        "provider": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+        "source": "src/systems/fish_force_system.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "EnduranceMovementDebuffCalculator"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+        "source": "src/systems/fight_physics_system.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "PlayerPressureGainResolver"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+        "source": "src/core/fishing/stamina/stamina_balance_frame.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ActiveEnduranceDrainCalculator"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+        "source": "src/core/fishing/stamina/stamina_balance_frame.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "PassiveEnduranceDrainCalculator"
+        ]
+      },
+      {
+        "provider": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+        "source": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "StaminaLateralPositionResolver"
+        ]
+      },
+      {
+        "provider": "src/services/weakest_tackle_limit_resolver.js",
+        "source": "src/systems/tackle_stress_system.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "WeakestTackleLimitResolver"
+        ]
+      }
+    ]
+  },
+  "plannedTopology": {
+    "projectModuleCount": 62,
+    "activationCount": 65,
+    "bridgeRecordCount": 95
+  }
+}
