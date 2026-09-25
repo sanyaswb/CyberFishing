@@ -612,6 +612,8 @@ class StageOneClosureValidator {
         "Items Bait Freshness and Metrics Domain",
       "stage-3.candidate-019-items-b0af5033":
         "Items Bait Grade Decay and Quality Domain",
+      "stage-3.candidate-020-assemblies-43d77861":
+        "Assemblies Refill Signature and State Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

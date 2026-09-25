@@ -115,6 +115,22 @@
       ]
     },
     {
+      "id": "bridge-18e896f28aa4",
+      "bridge": "src/application/inventory/refill_compatible_signature_policy.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+      "reason": "Preserve the exact Assemblies domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-020-assemblies-43d77861",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RefillCompatibleSignaturePolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-19607c8ce243",
       "bridge": "src/core/fishing/reel_hold_load_policy.js",
       "source": "src/core/fishing/reel_hold_recovery_system.js",
@@ -658,6 +674,22 @@
       "globalProviders": [
         {
           "symbol": "ReelAutoRecoveryCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-65a33fea8e4f",
+      "bridge": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+      "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "target": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "reason": "Preserve the exact Assemblies domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-020-assemblies-43d77861",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ExactAssemblyRefillSignaturePolicy",
           "mechanism": "global-this-property"
         }
       ]
@@ -1327,6 +1359,22 @@
       ]
     },
     {
+      "id": "bridge-a7acd7dabc86",
+      "bridge": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+      "source": "src/application/inventory/auto_refill_coordinator.js",
+      "target": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "reason": "Preserve the exact Assemblies domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-020-assemblies-43d77861",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ExactAssemblyRefillSignaturePolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-a880353d8927",
       "bridge": "src/core/fishing/stamina/stamina_transition_resolver.js",
       "source": "src/core/fishing/stamina/stamina_phase_machine.js",
@@ -1418,6 +1466,26 @@
       "globalProviders": [
         {
           "symbol": "UnlimitedAssemblyCapacityPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-afb1d1b1fb1e",
+      "bridge": "src/core/assemblies/assembly_state.js",
+      "source": "src/core/assemblies/assembly_state_repository.js",
+      "target": "src/game/domain/assemblies/assembly_state.js",
+      "reason": "Preserve the exact Assemblies domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-020-assemblies-43d77861",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "AssemblyPreparationStatus",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "AssemblyState",
           "mechanism": "global-this-property"
         }
       ]
@@ -1802,6 +1870,22 @@
       "globalProviders": [
         {
           "symbol": "BaitEffectivenessMatch",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-e01af933a4a4",
+      "bridge": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+      "source": "src/core/assemblies/item_assembly_service.js",
+      "target": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "reason": "Preserve the exact Assemblies domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-020-assemblies-43d77861",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ExactAssemblyRefillSignaturePolicy",
           "mechanism": "global-this-property"
         }
       ]

@@ -7,6 +7,7 @@ const {
 } = require("./stage_three_batch_preflight_profile");
 const { StageThreeGlobalExposureReview } = require("./stage_three_global_exposure_review");
 const { StageThreeReviewedEvaluationEffect } = require("./stage_three_reviewed_evaluation_effect");
+const { StageThreeStateIdentityReview } = require("./stage_three_state_identity_review");
 const {
   StageThreeBatchSourceObserver,
 } = require("./stage_three_batch_source_observer");
@@ -88,6 +89,7 @@ class StageThreeBatchPreflightAuditBuilder {
       manifestEntry: manifestByPath.get(module.currentPath),
       auditEntry: auditByPath.get(module.currentPath),
       reviewed: profile.reviewedContracts[module.currentPath],
+      stateGate: (batch.gates?.stateIdentity || []).find((gate) => gate.module === module.currentPath),
       sourceReader,
     })).sort((left, right) => left.currentPath.localeCompare(right.currentPath));
     if (profile.sideEffectEvidence) {
@@ -98,7 +100,7 @@ class StageThreeBatchPreflightAuditBuilder {
         const reviewedEffect = module.effects.reviewedExposure;
         this.#require(evidence && this.#same(evidence.sourceSha256, module.sourceSha256) &&
           (["frozen-literal-ranges", "frozen-literal-constants", "frozen-literal-static-fields",
-            "class-family-global-exposures"].includes(evidence.contract?.kind)
+            "class-family-global-exposures", "private-static-literal-sets"].includes(evidence.contract?.kind)
             ? this.#same(evidence.review, reviewedEffect)
             : this.#same(evidence.contract?.symbol || evidence.symbol, reviewedEffect?.symbol) &&
               this.#same(evidence.contract?.location || evidence.location, reviewedEffect?.location)),
@@ -186,9 +188,12 @@ class StageThreeBatchPreflightAuditBuilder {
       .map((construct) => ({ module: module.currentPath, construct })));
     const unsafeEffects = modules.filter((module) => module.effects.classification === "unsafe");
     const reviewedPrerequisites = batch.prerequisites.filter((prerequisite) =>
-      prerequisite.kind === "side-effect-review" && modules.some((module) =>
+      (prerequisite.kind === "side-effect-review" && modules.some((module) =>
         module.currentPath === prerequisite.module &&
-        module.effects.classification === "reviewed-compatible"));
+        module.effects.classification === "reviewed-compatible")) ||
+      (prerequisite.kind === "state-review" && prerequisite.action === "prove-state-identity-invariant" &&
+        modules.some((module) => module.currentPath === prerequisite.module &&
+          module.state.identityReview?.invariant === "same-authoritative-owner-before-and-after")));
     const unresolvedPrerequisites = batch.prerequisites.filter((prerequisite) =>
       !reviewedPrerequisites.includes(prerequisite));
     const unresolvedState = modules.filter((module) => !module.state.reviewed);
@@ -318,12 +323,28 @@ class StageThreeBatchPreflightAuditBuilder {
     });
   }
 
-  #moduleRecord({ module, manifestEntry, auditEntry, reviewed, sourceReader }) {
+  #moduleRecord({ module, manifestEntry, auditEntry, reviewed, stateGate, sourceReader }) {
     this.#require(manifestEntry, `Manifest entry is missing: ${module.currentPath}`);
     this.#require(auditEntry?.dependencyAudit?.status === "verified",
       `dependency audit is stale: ${module.currentPath}`);
-    this.#require(auditEntry?.stateOwnership?.status === "verified",
+    // A partial state audit is accepted only through a reviewed collection state-identity proof
+    // that covers exactly the frozen plan's review issues for this module.
+    const partialState = auditEntry?.stateOwnership?.status === "partial" &&
+      Boolean(reviewed?.stateIdentityReview) && stateGate?.status === "partial";
+    this.#require(auditEntry?.stateOwnership?.status === "verified" || partialState,
       `state audit is stale: ${module.currentPath}`);
+    let identityReview = null;
+    if (partialState) {
+      identityReview = new StageThreeStateIdentityReview().review({
+        source: sourceReader(module.currentPath), currentPath: module.currentPath,
+        ...reviewed.stateIdentityReview,
+      });
+      const prefix = "collection-state-requires-cache-review:";
+      this.#require(stateGate.reviewIssues.every((issue) => issue.startsWith(prefix)) &&
+        this.#same(stateGate.reviewIssues.map((issue) => issue.slice(prefix.length)).sort(),
+          identityReview.collections.map((collection) => collection.owner).sort()),
+      `state identity review differs from frozen review issues: ${module.currentPath}`);
+    }
     this.#require(auditEntry?.configurationInput?.status === "verified",
       `configuration audit is stale: ${module.currentPath}`);
     this.#require(reviewed, `reviewed contract is missing: ${module.currentPath}`);
@@ -364,6 +385,21 @@ class StageThreeBatchPreflightAuditBuilder {
         }))), `frozen static-field effect differs: ${module.currentPath}`);
       this.#require(sourceShape.topLevelEffects.length === 0,
         `reviewed static-field class has a top-level effect: ${module.currentPath}`);
+    } else if (reviewed.privateStaticSets) {
+      const exposure = reviewed.legacyExposure || null;
+      reviewedExposure = new StageThreeReviewedEvaluationEffect().privateStaticSets({
+        source, currentPath: module.currentPath, ...reviewed.privateStaticSets,
+        exposure: exposure && { symbol: exposure.symbol, location: exposure.location },
+      });
+      this.#require(this.#same(auditEntry.dependencyAudit.facts.topLevelEffects, [
+        ...Object.values(reviewed.privateStaticSets.bindings).map(({ location }) => ({
+          kind: "instantiation", location, classification: "observable",
+        })),
+        ...(exposure ? [{ kind: "assignment", location: exposure.location, classification: "observable" }] : []),
+      ]), `frozen private static set effect differs: ${module.currentPath}`);
+      this.#require(this.#same(sourceShape.topLevelEffects,
+        exposure ? [`ExpressionStatement@${exposure.location}`] : []),
+      `reviewed private static set effect differs: ${module.currentPath}`);
     } else if (reviewed.classFamily) {
       reviewedExposure = new StageThreeReviewedEvaluationEffect().classFamily({
         source, currentPath: module.currentPath, ...reviewed.classFamily,
@@ -440,6 +476,7 @@ class StageThreeBatchPreflightAuditBuilder {
         authoritativeOwnerAfter: module.stateOwnershipInvariant.after,
         ownerIdentity: module.stateOwnershipInvariant.ownerIdentity,
         duplicateStateCopies: module.stateOwnershipInvariant.duplicateStateCopies,
+        ...(identityReview ? { identityReview } : {}),
       },
       behavior: {
         semanticRisk: reviewed.semanticRisk,
@@ -594,9 +631,13 @@ class StageThreeBatchPreflightAuditValidator {
       require(module.performance?.transportLookupsAllowed === 0,
         `transport budget differs: ${module.currentPath}`);
         require(module.effects?.classification === (reviewed?.legacyExposure || reviewed?.frozenConstants ||
-          reviewed?.frozenStaticFields || reviewed?.classFamily ?
+          reviewed?.frozenStaticFields || reviewed?.classFamily || reviewed?.privateStaticSets ?
         "reviewed-compatible" : "safe"), `effect classification differs: ${module.currentPath}`);
-      if (reviewed?.legacyExposure) {
+      if (reviewed?.legacyExposure && reviewed?.privateStaticSets) {
+        require(module.effects?.reviewedExposure?.exposure?.symbol === reviewed.legacyExposure.symbol &&
+          module.effects?.reviewedExposure?.exposure?.location === reviewed.legacyExposure.location,
+        `reviewed exposure differs: ${module.currentPath}`);
+      } else if (reviewed?.legacyExposure) {
         require(module.effects?.reviewedExposure?.symbol === reviewed.legacyExposure.symbol &&
           module.effects?.reviewedExposure?.location === reviewed.legacyExposure.location,
         `reviewed exposure differs: ${module.currentPath}`);

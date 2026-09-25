@@ -189,6 +189,64 @@ class StageThreeReviewedEvaluationEffect {
       evaluationCount: 1, otherTopLevelEffects: 0 });
   }
 
+  // Reviews one class whose only static members are private fields initialized by
+  // `new Set([...inert literals])`, optionally followed by one exact `globalThis.X = X`.
+  privateStaticSets({ source, currentPath, className, bindings, exposure = null }) {
+    const tree = this.parse(source);
+    const names = Object.keys(bindings);
+    assert(names.length > 0 && names.every(name => name.startsWith("#")),
+      `${currentPath}: private static set bindings are required`);
+    assert.equal(tree.body.length, exposure ? 2 : 1,
+      `${currentPath}: expected one class${exposure ? " and one global exposure" : ""}`);
+    const declaration = tree.body[0];
+    assert.equal(declaration.type, "ClassDeclaration");
+    assert.equal(declaration.id.name, className);
+    assert.equal(declaration.superClass, null, `${currentPath}: superclass requires review`);
+    const statics = declaration.body.body.filter(member => member.static);
+    assert.deepEqual(statics.map(member => member.type), names.map(() => "PropertyDefinition"),
+      `${currentPath}: unexpected static member or static block`);
+    assert.deepEqual(statics.map(member => `#${member.key.name}`), names,
+      `${currentPath}: static field order differs`);
+    for (const member of statics) {
+      assert.equal(member.key.type, "PrivateIdentifier", `${currentPath}: static set must be private`);
+      assert.equal(member.computed, false);
+      const creation = member.value;
+      assert.equal(creation?.type, "NewExpression");
+      assert.equal(creation.callee.type, "Identifier");
+      assert.equal(creation.callee.name, "Set");
+      assert.equal(creation.arguments.length, 1);
+      const [literal] = creation.arguments;
+      assert.equal(literal.type, "ArrayExpression");
+      assert(literal.elements.every(isInertLiteral), `${currentPath}: set must contain literals`);
+      const contract = bindings[`#${member.key.name}`];
+      assert.equal(position(creation), contract.location);
+      assert.deepEqual(literal.elements.map(element => element.type === "UnaryExpression"
+        ? -element.argument.value : element.value), contract.values);
+    }
+    if (exposure) {
+      const statement = tree.body[1];
+      assert.equal(statement.type, "ExpressionStatement");
+      assert.equal(position(statement), exposure.location);
+      const assignment = statement.expression;
+      assert.equal(assignment.type, "AssignmentExpression");
+      assert.equal(assignment.operator, "=");
+      assert.equal(assignment.left.type, "MemberExpression");
+      assert.equal(assignment.left.computed, false);
+      assert.equal(assignment.left.object.name, "globalThis");
+      assert.equal(assignment.left.property.name, className);
+      assert.equal(exposure.symbol, className);
+      assert.equal(assignment.right.type, "Identifier");
+      assert.equal(assignment.right.name, className);
+    }
+    const context = vm.createContext({});
+    vm.runInContext(source, context, { filename: currentPath });
+    assert.deepEqual(Object.getOwnPropertyNames(context), exposure ? [className] : [],
+      `${currentPath}: source evaluation changed unexpected globals`);
+    return Object.freeze({ kind: "private-static-literal-sets", currentPath, sourceSha256: sha(source),
+      className, bindings, exposure, topLevelStatementCount: tree.body.length,
+      evaluationCount: 1, globalPropertiesAdded: exposure ? [className] : [], otherTopLevelEffects: 0 });
+  }
+
   windowExposure({ source, currentPath, symbol, location }) {
     const tree = this.parse(source);
     assert.equal(tree.body.length, 2, `${currentPath}: expected class and guarded window assignment`);

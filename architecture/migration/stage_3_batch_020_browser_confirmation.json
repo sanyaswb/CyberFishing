@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-020-browser-confirmation",
+  "batchId": "stage-3.candidate-020-assemblies-43d77861",
+  "releaseVersion": "0.24.56",
+  "status": "passed",
+  "performedBy": "claude-automated-owner-authorized",
+  "recordedAt": "2026-09-25T22:33:05.460Z",
+  "evidenceType": "automated-substitute-authorized-by-owner-in-conversation",
+  "gate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts",
+  "browserSummary": {
+    "userStatement": "PASS (owner-authorized automated substitute) — game-cycle-check.js and the Assemblies/Inventory suites passed; built-in browser load rendered the game, the inventory and the kits filter with exact batch-020 identities.",
+    "context": "The owner authorized, during the batch 015-021 plan, replacing the manual visual smoke with game-cycle-check results when that check passes. Batch 020 migrates Assemblies modules, so the Full suite also ran the item assembly, inventory and refill suites. Claude loaded the game via npm run dev in the Claude desktop built-in browser, opened the inventory and the kits filter.",
+    "individualResultsProvided": true,
+    "independentlyInstrumented": true
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "Built-in browser console, instrumented by Claude on launch, after opening the inventory and the kits filter: 0 errors, 0 warnings (one informational CacheManager log).",
+    "independentlyInstrumented": true
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_020_acceptance_pass.json",
+    "sha256": "770f6ca725b2eb200fb52ebd9a8bf4f9e7a03557469aeaa4efb76bb61235af6b"
+  },
+  "historicalSummaryPreserved": true
+}

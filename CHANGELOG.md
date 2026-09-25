@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.24.57 - Assemblies Refill Signature and State Domain
+
+### Changed
+
+- Completed atomic Stage 3 batch 020: three Assemblies modules with four named ESM exports (refill-compatible and exact assembly refill signatures, assembly state and its preparation status table).
+- Extended the cumulative graph from 73 to 76 project modules and from 77 to 81 activation contracts, with 135 exact bridge relationships.
+- Preserved activation timing, five classic consumer relationships, class and status-table identity, private ignored-key sets, per-instance refill signature maps and assembly behavior.
+- Added a reviewed private static literal set shape (a private static field initialized by new Set of literals, optionally with one global exposure).
+- Advanced the completed ordered prefix to batches 001–020 (67 of 69 frozen Domain modules); the next task is batch 021 preflight.
+
 ## v0.24.56 - Items Bait Grade Decay and Quality Domain
 
 ### Changed

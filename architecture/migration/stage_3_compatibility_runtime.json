@@ -219,6 +219,27 @@
       "decision": "approved-compatible",
       "owner": "stage-3.candidate-017-inventory-fd62478b",
       "reason": "one Object.freeze call on a string-literal location kind table; no external state read or global write"
+    },
+    {
+      "module": "src/game/domain/assemblies/assembly_state.js",
+      "evidenceFingerprint": "9794b23cf95d9cbfd7c95e7474a849d92782c71bc39baa3fc8a1a2b40dd478f7",
+      "decision": "approved-compatible",
+      "owner": "stage-3.candidate-020-assemblies-43d77861",
+      "reason": "one Object.freeze call on a string-literal status table; no external state read or global write"
+    },
+    {
+      "module": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "evidenceFingerprint": "b32ca098720a6f8f41f892239ccb67371d9356382e5957d33b535aaa887fa11b",
+      "decision": "approved-compatible",
+      "owner": "stage-3.candidate-020-assemblies-43d77861",
+      "reason": "one private static Set of string literals created during class definition; unreachable from outside the class; no external state read or global write"
+    },
+    {
+      "module": "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+      "evidenceFingerprint": "39ea60e3a16a7255984cfcac9cb64a12c443393db317e37af05c118815bc71cb",
+      "decision": "approved-compatible",
+      "owner": "stage-3.candidate-020-assemblies-43d77861",
+      "reason": "one private static Set of string literals created during class definition; unreachable from outside the class; no external state read or global write"
     }
   ],
   "activationPositions": [
@@ -315,6 +336,18 @@
       "legacySymbol": "RecoverableLineCalculator",
       "legacyScriptIndex": 117,
       "shimFile": "activations/117_recoverablelinecalculator.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-28ccfbfa82e2",
+      "owner": "stage-3.candidate-020-assemblies-43d77861",
+      "sourceProvider": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+      "targetModule": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "exportName": "ExactAssemblyRefillSignaturePolicy",
+      "legacySymbol": "ExactAssemblyRefillSignaturePolicy",
+      "legacyScriptIndex": 155,
+      "shimFile": "activations/155_exactassemblyrefillsignaturepolicy.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
     },
@@ -535,6 +568,18 @@
       "removalStage": "stage-5"
     },
     {
+      "id": "activation-73dd5c8cd351",
+      "owner": "stage-3.candidate-020-assemblies-43d77861",
+      "sourceProvider": "src/application/inventory/refill_compatible_signature_policy.js",
+      "targetModule": "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+      "exportName": "RefillCompatibleSignaturePolicy",
+      "legacySymbol": "RefillCompatibleSignaturePolicy",
+      "legacyScriptIndex": 188,
+      "shimFile": "activations/188_refillcompatiblesignaturepolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-75b968069153",
       "owner": "stage-3.candidate-001-inventory-85f44b2e",
       "sourceProvider": "dist/legacy-bridges/render_math.iife.js",
@@ -727,6 +772,18 @@
       "removalStage": "stage-5"
     },
     {
+      "id": "activation-97cede2d09c5",
+      "owner": "stage-3.candidate-020-assemblies-43d77861",
+      "sourceProvider": "src/core/assemblies/assembly_state.js",
+      "targetModule": "src/game/domain/assemblies/assembly_state.js",
+      "exportName": "AssemblyState",
+      "legacySymbol": "AssemblyState",
+      "legacyScriptIndex": 149,
+      "shimFile": "activations/149_assemblystate.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
       "id": "activation-9857928fc9d0",
       "owner": "stage-3.candidate-006-fishing-e48e70d8",
       "sourceProvider": "src/core/fishing/hold_opposition_resolver.js",
@@ -881,6 +938,18 @@
       "shimFile": "activations/059_baitfreshnessmodifier.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-b3d160e2af4c",
+      "owner": "stage-3.candidate-020-assemblies-43d77861",
+      "sourceProvider": "src/core/assemblies/assembly_state.js",
+      "targetModule": "src/game/domain/assemblies/assembly_state.js",
+      "exportName": "AssemblyPreparationStatus",
+      "legacySymbol": "AssemblyPreparationStatus",
+      "legacyScriptIndex": 149,
+      "shimFile": "activations/149_assemblypreparationstatus.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
     },
     {
       "id": "activation-b63d6fa4a955",

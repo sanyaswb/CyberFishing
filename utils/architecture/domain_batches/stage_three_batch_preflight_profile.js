@@ -89,6 +89,30 @@ class StageThreeBatchPreflightProfile {
       }
     }
     for (const [currentPath, contract] of Object.entries(contracts || {})) {
+      const review = contract?.stateIdentityReview;
+      if (!review) continue;
+      require(typeof review.className === "string" && Array.isArray(review.collections) &&
+        review.collections.length > 0 && review.collections.every((collection) =>
+          typeof collection?.owner === "string" && collection.field?.startsWith("#") &&
+          ["static", "instance"].includes(collection.scope) &&
+          ["Set", "Map"].includes(collection.collection) &&
+          Array.isArray(collection.allowedOperations) && collection.allowedOperations.length > 0),
+      `${currentPath} stateIdentityReview must name private Set/Map collections and their operations`);
+    }
+    for (const [currentPath, contract] of Object.entries(contracts || {})) {
+      const sets = contract?.privateStaticSets;
+      if (!sets) continue;
+      require(Boolean(definition?.sideEffectEvidence),
+        `${currentPath} privateStaticSets requires sideEffectEvidence`);
+      require(!contract.frozenConstants && !contract.frozenStaticFields && !contract.classFamily &&
+        (!contract.legacyExposure || contract.legacyExposure.mechanism === "global-this-property"),
+      `${currentPath} privateStaticSets combine only with a global-this exposure`);
+      require(typeof sets.className === "string" && Object.keys(sets.bindings || {}).length > 0 &&
+        Object.entries(sets.bindings).every(([name, binding]) => name.startsWith("#") &&
+          /^\d+:\d+$/u.test(binding?.location) && Array.isArray(binding?.values)),
+      `${currentPath} privateStaticSets must name one class and exact private set bindings`);
+    }
+    for (const [currentPath, contract] of Object.entries(contracts || {})) {
       const family = contract?.classFamily;
       if (!family) continue;
       require(Boolean(definition?.sideEffectEvidence),

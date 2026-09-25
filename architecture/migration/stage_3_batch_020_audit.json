@@ -1,0 +1,1605 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-preflight-audit",
+  "status": "verified",
+  "stage": "Stage 3.20.0",
+  "sourceReleaseVersion": "0.24.56",
+  "batchId": "stage-3.candidate-020-assemblies-43d77861",
+  "sourceEvidence": {
+    "approvedPlan": {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    "manifest": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "0ecbefa86876b96017b838c7f9ddcf267d62fda4d55182de866089c41fa8fb7b"
+    },
+    "domainAudit": {
+      "path": "architecture/migration/stage_3_domain_audit.json",
+      "sha256": "6a96b8ead58fab42c8c596b365776226a77c36978b9ef68b71c3df8ada6fa4cd"
+    },
+    "executionState": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "2e34e0e2902c8d29b2598aa6132599349b0ffbdaf5c85cb4e9649c2695a7f866"
+    },
+    "runtimeContract": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "4d2fa6dbf48ba6cec22c4ab2646f81607129cb894e0f9e6cba23f738578cbd90"
+    },
+    "bridgeRegistry": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "19e01274c178f7995e8fdb9ba73fcbf5e9976ab8310f41e4fe6876a48f35790c"
+    },
+    "index": {
+      "path": "index.html",
+      "sha256": "b5adee9d2a186e26b9d0c67451adb2c72024f4fc1f9d9818bd30f9f8de96f467"
+    },
+    "runtimeOutput": {
+      "path": "dist/stage-3-compat-runtime",
+      "fingerprint": "1fa0fd1ab0dd5f7b92bcc52d5a3d35a20043b0efc44f6ed69a183d2dd7941655"
+    },
+    "sideEffectReview": {
+      "path": "architecture/migration/stage_3_batch_020_side_effect_review.json",
+      "sha256": "f592997a611cea93ac9ecf1ddb213b227a3885f5915dede120554c7b7f4bc681"
+    }
+  },
+  "scope": {
+    "targetCount": 3,
+    "modules": [
+      {
+        "currentPath": "src/application/inventory/refill_compatible_signature_policy.js",
+        "targetPath": "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+        "sourceSha256": "5b7eb6383f0edde67e0ee4ed9a5fdd7d22a7ef58c29c8e9cd99137b707b75abe",
+        "exports": [
+          "RefillCompatibleSignaturePolicy"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-c81e44209e63",
+          "members": [
+            "src/application/inventory/refill_compatible_signature_policy.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/application/inventory/refill_compatible_signature_policy.js",
+          "classDeclarations": [
+            "RefillCompatibleSignaturePolicy"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "ExpressionStatement@55:1"
+          ],
+          "fields": [
+            {
+              "name": "#ignoredKeys",
+              "visibility": "private",
+              "initializerType": "NewExpression",
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "#clone",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 1,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#freeze",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "create",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 2,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "matches",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "toKey",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 3,
+            "arrayExpressions": 2,
+            "newExpressions": 2,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#ignoredKeys"
+          ],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/application/inventory/refill_compatible_signature_policy.js",
+            "authoritativeOwners": [
+              "RefillCompatibleSignaturePolicy#clone",
+              "RefillCompatibleSignaturePolicy#create",
+              "RefillCompatibleSignaturePolicy#freeze",
+              "RefillCompatibleSignaturePolicy.ignoredKeys"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+            "authoritativeOwners": [
+              "RefillCompatibleSignaturePolicy#clone",
+              "RefillCompatibleSignaturePolicy#create",
+              "RefillCompatibleSignaturePolicy#freeze",
+              "RefillCompatibleSignaturePolicy.ignoredKeys"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden",
+          "identityReview": {
+            "kind": "collection-state-identity",
+            "currentPath": "src/application/inventory/refill_compatible_signature_policy.js",
+            "className": "RefillCompatibleSignaturePolicy",
+            "sourceSha256": "5b7eb6383f0edde67e0ee4ed9a5fdd7d22a7ef58c29c8e9cd99137b707b75abe",
+            "collections": [
+              {
+                "owner": "RefillCompatibleSignaturePolicy.ignoredKeys",
+                "field": "#ignoredKeys",
+                "scope": "static",
+                "collection": "Set",
+                "creation": "once-per-class-evaluation",
+                "creationLocation": "2:25",
+                "operations": [
+                  {
+                    "method": "has",
+                    "location": "16:11"
+                  }
+                ],
+                "methods": [
+                  "has"
+                ],
+                "mutatingMethods": [],
+                "escapes": 0,
+                "externalAccess": "impossible-private-field",
+                "derivedCache": false
+              }
+            ],
+            "invariant": "same-authoritative-owner-before-and-after"
+          }
+        },
+        "behavior": {
+          "semanticRisk": "refill-compatible-signature-ignored-keys-canonical-clone-freeze-and-global-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "523b41af71763691b582542220f2fd59f47503875cd7a184dce159952a06da4e",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-refill-compatible-signature",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/application/inventory/inventory_v2_composition_root.js",
+              "marker": "new RefillCompatibleSignaturePolicy()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 3,
+            "arrayExpressions": 2,
+            "newExpressions": 2,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "instantiation",
+              "location": "2:25",
+              "classification": "observable"
+            },
+            {
+              "kind": "assignment",
+              "location": "55:1",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "private-static-literal-sets",
+            "currentPath": "src/application/inventory/refill_compatible_signature_policy.js",
+            "sourceSha256": "5b7eb6383f0edde67e0ee4ed9a5fdd7d22a7ef58c29c8e9cd99137b707b75abe",
+            "className": "RefillCompatibleSignaturePolicy",
+            "bindings": {
+              "#ignoredKeys": {
+                "location": "2:25",
+                "values": [
+                  "instanceId",
+                  "quantity",
+                  "location",
+                  "buildId",
+                  "freshnessState"
+                ]
+              }
+            },
+            "exposure": {
+              "symbol": "RefillCompatibleSignaturePolicy",
+              "location": "55:1"
+            },
+            "topLevelStatementCount": 2,
+            "evaluationCount": 1,
+            "globalPropertiesAdded": [
+              "RefillCompatibleSignaturePolicy"
+            ],
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "RefillCompatibleSignaturePolicy",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "RefillCompatibleSignaturePolicy",
+            "mechanism": "global-this-property",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/assemblies/assembly_state.js",
+        "targetPath": "src/game/domain/assemblies/assembly_state.js",
+        "sourceSha256": "80e567e80b489f6933250927c7c8d173606f975515664f5034e840b39a4764c3",
+        "exports": [
+          "AssemblyPreparationStatus",
+          "AssemblyState"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-50c6bc47e572",
+          "members": [
+            "src/core/assemblies/assembly_state.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/assemblies/assembly_state.js",
+          "classDeclarations": [
+            "AssemblyState"
+          ],
+          "topLevelBindings": [
+            "VariableDeclaration"
+          ],
+          "topLevelEffects": [
+            "VariableDeclaration@1:1"
+          ],
+          "fields": [
+            {
+              "name": "#profileId",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#refillSignatures",
+              "visibility": "private",
+              "initializerType": "NewExpression",
+              "objectShape": []
+            },
+            {
+              "name": "#rootInstanceId",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#status",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 3,
+                "arrayExpressions": 1,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "isDraft",
+              "kind": "get",
+              "parameterCount": 0,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "isPrepared",
+              "kind": "get",
+              "parameterCount": 0,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "profileId",
+              "kind": "get",
+              "parameterCount": 0,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "rootInstanceId",
+              "kind": "get",
+              "parameterCount": 0,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "status",
+              "kind": "get",
+              "parameterCount": 0,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#assertId",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#assertPath",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#clone",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "clearRefill",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 1,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getRefillSignature",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "markPrepared",
+              "kind": "method",
+              "parameterCount": 0,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "rememberRefill",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "toSnapshot",
+              "kind": "method",
+              "parameterCount": 0,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 2,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 5,
+            "arrayExpressions": 4,
+            "newExpressions": 5,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#profileId",
+            "#refillSignatures",
+            "#rootInstanceId",
+            "#status"
+          ],
+          "publicStateShape": [
+            "isDraft",
+            "isPrepared",
+            "profileId",
+            "rootInstanceId",
+            "status"
+          ],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/assemblies/assembly_state.js",
+            "authoritativeOwners": [
+              "AssemblyState#assertId",
+              "AssemblyState#assertPath",
+              "AssemblyState#clone",
+              "AssemblyState#profileId",
+              "AssemblyState#refillSignatures",
+              "AssemblyState#rememberRefill",
+              "AssemblyState#rootInstanceId",
+              "AssemblyState#status"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/assemblies/assembly_state.js",
+            "authoritativeOwners": [
+              "AssemblyState#assertId",
+              "AssemblyState#assertPath",
+              "AssemblyState#clone",
+              "AssemblyState#profileId",
+              "AssemblyState#refillSignatures",
+              "AssemblyState#rememberRefill",
+              "AssemblyState#rootInstanceId",
+              "AssemblyState#status"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden",
+          "identityReview": {
+            "kind": "collection-state-identity",
+            "currentPath": "src/core/assemblies/assembly_state.js",
+            "className": "AssemblyState",
+            "sourceSha256": "80e567e80b489f6933250927c7c8d173606f975515664f5034e840b39a4764c3",
+            "collections": [
+              {
+                "owner": "AssemblyState#refillSignatures",
+                "field": "#refillSignatures",
+                "scope": "instance",
+                "collection": "Map",
+                "creation": "once-per-instance",
+                "creationLocation": "10:23",
+                "operations": [
+                  {
+                    "method": "set",
+                    "location": "66:5"
+                  },
+                  {
+                    "method": "get",
+                    "location": "72:23"
+                  },
+                  {
+                    "method": "keys",
+                    "location": "78:34"
+                  },
+                  {
+                    "method": "delete",
+                    "location": "81:9"
+                  },
+                  {
+                    "method": "entries",
+                    "location": "93:13"
+                  }
+                ],
+                "methods": [
+                  "delete",
+                  "entries",
+                  "get",
+                  "keys",
+                  "set"
+                ],
+                "mutatingMethods": [
+                  "delete",
+                  "set"
+                ],
+                "escapes": 0,
+                "externalAccess": "impossible-private-field",
+                "derivedCache": false
+              }
+            ],
+            "invariant": "same-authoritative-owner-before-and-after"
+          }
+        },
+        "behavior": {
+          "semanticRisk": "assembly-preparation-status-table-mutable-refill-signature-map-and-snapshots",
+          "formulaDefaultsClampsRoundingFingerprint": "8ed6004576ab69f8a95e99025053ec38cfbc5db7c2c694b2bb6d6b944f5b04f7",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-assembly-state-lifecycle",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/core/assemblies/assembly_state_repository.js",
+              "marker": "new AssemblyState(snapshot)"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 5,
+            "arrayExpressions": 4,
+            "newExpressions": 5,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "call",
+              "location": "1:35",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "frozen-literal-constants",
+            "currentPath": "src/core/assemblies/assembly_state.js",
+            "sourceSha256": "80e567e80b489f6933250927c7c8d173606f975515664f5034e840b39a4764c3",
+            "className": "AssemblyState",
+            "bindings": {
+              "AssemblyPreparationStatus": {
+                "location": "1:35",
+                "values": {
+                  "DRAFT": "DRAFT",
+                  "PREPARED": "PREPARED"
+                }
+              }
+            },
+            "topLevelStatementCount": 2,
+            "evaluationCount": 1,
+            "globalPropertiesAdded": [],
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "AssemblyPreparationStatus",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "AssemblyState",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+        "targetPath": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+        "sourceSha256": "3334903a603239247f3b40c61714b0a599df12d966e3d30ae132fa59928fbf82",
+        "exports": [
+          "ExactAssemblyRefillSignaturePolicy"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-351b4d0298cb",
+          "members": [
+            "src/core/assemblies/exact_assembly_refill_signature_policy.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+          "classDeclarations": [
+            "ExactAssemblyRefillSignaturePolicy"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [
+            {
+              "name": "#ignoredKeys",
+              "visibility": "private",
+              "initializerType": "NewExpression",
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "#canonicalClone",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 1,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#deepFreeze",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#stableSerialize",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "create",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 2,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "matches",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "toKey",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 3,
+            "arrayExpressions": 2,
+            "newExpressions": 2,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#ignoredKeys"
+          ],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+            "authoritativeOwners": [
+              "ExactAssemblyRefillSignaturePolicy#canonicalClone",
+              "ExactAssemblyRefillSignaturePolicy#create",
+              "ExactAssemblyRefillSignaturePolicy#deepFreeze",
+              "ExactAssemblyRefillSignaturePolicy#stableSerialize",
+              "ExactAssemblyRefillSignaturePolicy.ignoredKeys"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+            "authoritativeOwners": [
+              "ExactAssemblyRefillSignaturePolicy#canonicalClone",
+              "ExactAssemblyRefillSignaturePolicy#create",
+              "ExactAssemblyRefillSignaturePolicy#deepFreeze",
+              "ExactAssemblyRefillSignaturePolicy#stableSerialize",
+              "ExactAssemblyRefillSignaturePolicy.ignoredKeys"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden",
+          "identityReview": {
+            "kind": "collection-state-identity",
+            "currentPath": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+            "className": "ExactAssemblyRefillSignaturePolicy",
+            "sourceSha256": "3334903a603239247f3b40c61714b0a599df12d966e3d30ae132fa59928fbf82",
+            "collections": [
+              {
+                "owner": "ExactAssemblyRefillSignaturePolicy.ignoredKeys",
+                "field": "#ignoredKeys",
+                "scope": "static",
+                "collection": "Set",
+                "creation": "once-per-class-evaluation",
+                "creationLocation": "2:25",
+                "operations": [
+                  {
+                    "method": "has",
+                    "location": "32:11"
+                  }
+                ],
+                "methods": [
+                  "has"
+                ],
+                "mutatingMethods": [],
+                "escapes": 0,
+                "externalAccess": "impossible-private-field",
+                "derivedCache": false
+              }
+            ],
+            "invariant": "same-authoritative-owner-before-and-after"
+          }
+        },
+        "behavior": {
+          "semanticRisk": "exact-assembly-refill-signature-ignored-keys-deep-freeze-and-stable-serialization",
+          "formulaDefaultsClampsRoundingFingerprint": "79188a1681ad9853cab424740b3978da62b7c12388ff124cf43d2529ff12521c",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-exact-assembly-refill-signature",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/core/assemblies/item_assembly_service.js",
+              "marker": "new ExactAssemblyRefillSignaturePolicy()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 3,
+            "arrayExpressions": 2,
+            "newExpressions": 2,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "instantiation",
+              "location": "2:25",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "private-static-literal-sets",
+            "currentPath": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+            "sourceSha256": "3334903a603239247f3b40c61714b0a599df12d966e3d30ae132fa59928fbf82",
+            "className": "ExactAssemblyRefillSignaturePolicy",
+            "bindings": {
+              "#ignoredKeys": {
+                "location": "2:25",
+                "values": [
+                  "instanceId",
+                  "quantity",
+                  "location",
+                  "buildId",
+                  "progression",
+                  "ratingPercent",
+                  "progressionLevel",
+                  "ratingTier",
+                  "normalizedRating",
+                  "ratingColor",
+                  "ratingGradient",
+                  "powerPercent",
+                  "powerLevel",
+                  "normalizedPower",
+                  "powerColor",
+                  "powerGradient",
+                  "qualityMax",
+                  "capacityPercent",
+                  "conditionPercent",
+                  "freshness",
+                  "freshnessPercent"
+                ]
+              }
+            },
+            "exposure": null,
+            "topLevelStatementCount": 1,
+            "evaluationCount": 1,
+            "globalPropertiesAdded": [],
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "ExactAssemblyRefillSignaturePolicy",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      }
+    ]
+  },
+  "runtimeBaseline": {
+    "projectModuleCount": 73,
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "src/game/domain/fishing/tackle_failure_selector.js",
+      "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/inventory_item_location.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_match.js",
+      "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+      "src/game/domain/items/freshness/bait_freshness_modifier.js",
+      "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/progression/item_rating_tier_resolver.js",
+      "src/game/domain/items/quality/item_quality_grade_policy.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "activationCount": 77,
+    "bridgeCount": 130,
+    "scriptTopology": {
+      "physicalClassicScriptCount": 429,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0
+    }
+  },
+  "closure": {
+    "existingCumulativeModuleCount": 73,
+    "existingCumulativeModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "src/game/domain/fishing/tackle_failure_selector.js",
+      "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/inventory_item_location.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_match.js",
+      "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+      "src/game/domain/items/freshness/bait_freshness_modifier.js",
+      "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/progression/item_rating_tier_resolver.js",
+      "src/game/domain/items/quality/item_quality_grade_policy.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "newProjectModuleCount": 3,
+    "newProjectModules": [
+      "src/game/domain/assemblies/assembly_state.js",
+      "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "src/game/domain/assemblies/refill_compatible_signature_policy.js"
+    ],
+    "resultingProjectModuleCount": 76,
+    "internalEdges": [],
+    "alreadyCumulativeDependencies": [],
+    "unexpectedDependencies": []
+  },
+  "evaluation": {
+    "legacyScriptOrderControlsEvaluation": false,
+    "ordering": "esm-graph-topology-with-lexicographic-diagnostic-tiebreak",
+    "stronglyConnectedComponents": [
+      {
+        "id": "scc-351b4d0298cb",
+        "members": [
+          "src/core/assemblies/exact_assembly_refill_signature_policy.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-50c6bc47e572",
+        "members": [
+          "src/core/assemblies/assembly_state.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-c81e44209e63",
+        "members": [
+          "src/application/inventory/refill_compatible_signature_policy.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      }
+    ],
+    "layers": [
+      [
+        "src/game/domain/assemblies/assembly_state.js",
+        "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+        "src/game/domain/assemblies/refill_compatible_signature_policy.js"
+      ]
+    ],
+    "cycles": []
+  },
+  "boundaries": {
+    "forbiddenEdges": [],
+    "directConfigDependencies": [],
+    "browserCapabilities": [],
+    "transportReads": [],
+    "forbiddenSourceReads": [],
+    "dynamicConstructs": []
+  },
+  "state": {
+    "reviewed": [
+      {
+        "module": "src/application/inventory/refill_compatible_signature_policy.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/assemblies/assembly_state.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      }
+    ],
+    "unresolved": []
+  },
+  "behavior": {
+    "resultShapeSensitive": [],
+    "mutableIdentitySensitive": [],
+    "formulaDefaultsClampsRoundingFingerprints": [
+      {
+        "module": "src/application/inventory/refill_compatible_signature_policy.js",
+        "sha256": "523b41af71763691b582542220f2fd59f47503875cd7a184dce159952a06da4e"
+      },
+      {
+        "module": "src/core/assemblies/assembly_state.js",
+        "sha256": "8ed6004576ab69f8a95e99025053ec38cfbc5db7c2c694b2bb6d6b944f5b04f7"
+      },
+      {
+        "module": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+        "sha256": "79188a1681ad9853cab424740b3978da62b7c12388ff124cf43d2529ff12521c"
+      }
+    ],
+    "unresolved": []
+  },
+  "performance": {
+    "reviewed": [
+      {
+        "module": "src/application/inventory/refill_compatible_signature_policy.js",
+        "classification": "existing-refill-compatible-signature",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/application/inventory/inventory_v2_composition_root.js",
+            "marker": "new RefillCompatibleSignaturePolicy()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 3,
+          "arrayExpressions": 2,
+          "newExpressions": 2,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/assemblies/assembly_state.js",
+        "classification": "existing-assembly-state-lifecycle",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/core/assemblies/assembly_state_repository.js",
+            "marker": "new AssemblyState(snapshot)"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 5,
+          "arrayExpressions": 4,
+          "newExpressions": 5,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+        "classification": "existing-exact-assembly-refill-signature",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/core/assemblies/item_assembly_service.js",
+            "marker": "new ExactAssemblyRefillSignaturePolicy()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 3,
+          "arrayExpressions": 2,
+          "newExpressions": 2,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "unresolved": []
+  },
+  "effects": {
+    "safe": [],
+    "reviewed": [
+      "src/application/inventory/refill_compatible_signature_policy.js",
+      "src/core/assemblies/assembly_state.js",
+      "src/core/assemblies/exact_assembly_refill_signature_policy.js"
+    ],
+    "unsafe": []
+  },
+  "compatibility": {
+    "providers": [
+      {
+        "module": "src/application/inventory/refill_compatible_signature_policy.js",
+        "symbol": "RefillCompatibleSignaturePolicy",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/application/inventory/refill_compatible_signature_policy.js",
+        "symbol": "RefillCompatibleSignaturePolicy",
+        "mechanism": "global-this-property",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/assemblies/assembly_state.js",
+        "symbol": "AssemblyPreparationStatus",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/assemblies/assembly_state.js",
+        "symbol": "AssemblyState",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+        "symbol": "ExactAssemblyRefillSignaturePolicy",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      }
+    ],
+    "consumers": [
+      {
+        "provider": "src/application/inventory/refill_compatible_signature_policy.js",
+        "source": "src/application/inventory/inventory_v2_composition_root.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "RefillCompatibleSignaturePolicy"
+        ]
+      },
+      {
+        "provider": "src/core/assemblies/assembly_state.js",
+        "source": "src/core/assemblies/assembly_state_repository.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "AssemblyPreparationStatus",
+          "AssemblyState"
+        ]
+      },
+      {
+        "provider": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+        "source": "src/application/inventory/auto_refill_coordinator.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "ExactAssemblyRefillSignaturePolicy"
+        ]
+      },
+      {
+        "provider": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+        "source": "src/core/assemblies/item_assembly_service.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ExactAssemblyRefillSignaturePolicy"
+        ]
+      },
+      {
+        "provider": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+        "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+        "sourceBoundary": "platform",
+        "symbols": [
+          "ExactAssemblyRefillSignaturePolicy"
+        ]
+      }
+    ],
+    "activations": [
+      {
+        "id": "activation-28ccfbfa82e2",
+        "owner": "stage-3.candidate-020-assemblies-43d77861",
+        "sourceProvider": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+        "targetModule": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+        "exportName": "ExactAssemblyRefillSignaturePolicy",
+        "legacySymbol": "ExactAssemblyRefillSignaturePolicy",
+        "legacyScriptIndex": 155,
+        "shimFile": "activations/155_exactassemblyrefillsignaturepolicy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/application/inventory/auto_refill_coordinator.js",
+          "src/core/assemblies/item_assembly_service.js",
+          "src/infrastructure/storage/inventory_v2_legacy_migration.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-73dd5c8cd351",
+        "owner": "stage-3.candidate-020-assemblies-43d77861",
+        "sourceProvider": "src/application/inventory/refill_compatible_signature_policy.js",
+        "targetModule": "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+        "exportName": "RefillCompatibleSignaturePolicy",
+        "legacySymbol": "RefillCompatibleSignaturePolicy",
+        "legacyScriptIndex": 188,
+        "shimFile": "activations/188_refillcompatiblesignaturepolicy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/application/inventory/inventory_v2_composition_root.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-97cede2d09c5",
+        "owner": "stage-3.candidate-020-assemblies-43d77861",
+        "sourceProvider": "src/core/assemblies/assembly_state.js",
+        "targetModule": "src/game/domain/assemblies/assembly_state.js",
+        "exportName": "AssemblyState",
+        "legacySymbol": "AssemblyState",
+        "legacyScriptIndex": 149,
+        "shimFile": "activations/149_assemblystate.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/assemblies/assembly_state_repository.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-b3d160e2af4c",
+        "owner": "stage-3.candidate-020-assemblies-43d77861",
+        "sourceProvider": "src/core/assemblies/assembly_state.js",
+        "targetModule": "src/game/domain/assemblies/assembly_state.js",
+        "exportName": "AssemblyPreparationStatus",
+        "legacySymbol": "AssemblyPreparationStatus",
+        "legacyScriptIndex": 149,
+        "shimFile": "activations/149_assemblypreparationstatus.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/assemblies/assembly_state_repository.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      }
+    ]
+  },
+  "prerequisites": {
+    "frozen": [],
+    "reviewed": [
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/application/inventory/refill_compatible_signature_policy.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/application/inventory/refill_compatible_signature_policy.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/assemblies/assembly_state.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/assemblies/assembly_state.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/assemblies/exact_assembly_refill_signature_policy.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/assemblies/exact_assembly_refill_signature_policy.js"
+      },
+      {
+        "id": "state-review:prove-state-identity-invariant:src/application/inventory/refill_compatible_signature_policy.js",
+        "kind": "state-review",
+        "action": "prove-state-identity-invariant",
+        "module": "src/application/inventory/refill_compatible_signature_policy.js"
+      },
+      {
+        "id": "state-review:prove-state-identity-invariant:src/core/assemblies/assembly_state.js",
+        "kind": "state-review",
+        "action": "prove-state-identity-invariant",
+        "module": "src/core/assemblies/assembly_state.js"
+      },
+      {
+        "id": "state-review:prove-state-identity-invariant:src/core/assemblies/exact_assembly_refill_signature_policy.js",
+        "kind": "state-review",
+        "action": "prove-state-identity-invariant",
+        "module": "src/core/assemblies/exact_assembly_refill_signature_policy.js"
+      }
+    ],
+    "newlyDiscovered": []
+  },
+  "migrationGates": [
+    "three-exact-source-and-method-shapes",
+    "four-export-identities-and-activations",
+    "two-reviewed-private-static-literal-sets",
+    "one-frozen-string-literal-constant",
+    "one-reviewed-global-this-class-exposure",
+    "five-exact-consumer-relationships",
+    "all-legacy-activation-positions-preserved",
+    "zero-config-platform-browser-dev-dependencies",
+    "zero-added-hot-loop-allocations"
+  ],
+  "issues": [],
+  "verdict": "eligible-for-execution-plan",
+  "liveObservation": {
+    "status": "verified",
+    "sourceCount": 497,
+    "persistencePerformed": false,
+    "consumerRelationships": [
+      {
+        "provider": "src/application/inventory/refill_compatible_signature_policy.js",
+        "source": "src/application/inventory/inventory_v2_composition_root.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "RefillCompatibleSignaturePolicy"
+        ]
+      },
+      {
+        "provider": "src/core/assemblies/assembly_state.js",
+        "source": "src/core/assemblies/assembly_state_repository.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "AssemblyPreparationStatus",
+          "AssemblyState"
+        ]
+      },
+      {
+        "provider": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+        "source": "src/application/inventory/auto_refill_coordinator.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "ExactAssemblyRefillSignaturePolicy"
+        ]
+      },
+      {
+        "provider": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+        "source": "src/core/assemblies/item_assembly_service.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ExactAssemblyRefillSignaturePolicy"
+        ]
+      },
+      {
+        "provider": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+        "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+        "sourceBoundary": "platform",
+        "symbols": [
+          "ExactAssemblyRefillSignaturePolicy"
+        ]
+      }
+    ]
+  },
+  "plannedTopology": {
+    "projectModuleCount": 76,
+    "activationCount": 81,
+    "bridgeRecordCount": 135
+  }
+}
