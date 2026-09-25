@@ -2640,26 +2640,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-2a291373fbe1",
-      "rule": "browser-capability",
-      "source": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
-      "target": "environment:browser-runtime",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "legacy-browser-capability"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 1,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "2a291373fbe1bd01e3b6fae14f5c564faae0a9008884d077babffffd969cae1f",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
-        "target": "environment:browser-runtime",
-        "identifier": "window"
-      }
-    },
-    {
       "id": "debt-browser-capability-2d65e06ba655",
       "rule": "browser-capability",
       "source": "src/systems/inventory_system.js",

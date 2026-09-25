@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.24.53 - Fishing Pressure Fatigue Source Domain
+
+### Changed
+
+- Completed atomic Stage 3 batch 016: one Fishing module with one named ESM export (pressure fatigue source resolution).
+- Extended the cumulative graph from 62 to 63 project modules and from 65 to 66 activation contracts, with 96 exact bridge relationships.
+- Preserved activation timing, the classic fight-physics consumer relationship, class identity, state ownership and fishing behavior.
+- Batches without a reviewed target-side evaluation effect add no runtime side-effect review.
+- Advanced the completed ordered prefix to batches 001–016 (54 of 69 frozen Domain modules); the next task is batch 017 preflight.
+
 ## v0.24.52 - Fishing Endurance and Pressure Domain
 
 ### Changed

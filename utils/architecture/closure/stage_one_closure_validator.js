@@ -604,6 +604,8 @@ class StageOneClosureValidator {
         "Fishing Stamina and Tackle Domain",
       "stage-3.candidate-015-fishing-37dc3452":
         "Fishing Endurance and Pressure Domain",
+      "stage-3.candidate-016-fishing-f8c953aa":
+        "Fishing Pressure Fatigue Source Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

@@ -732,6 +732,18 @@
       "removalStage": "stage-3"
     },
     {
+      "id": "activation-a0ef26ab86ac",
+      "owner": "stage-3.candidate-016-fishing-f8c953aa",
+      "sourceProvider": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "targetModule": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "exportName": "PlayerPressureFatigueSourceResolver",
+      "legacySymbol": "PlayerPressureFatigueSourceResolver",
+      "legacyScriptIndex": 99,
+      "shimFile": "activations/099_playerpressurefatiguesourceresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-a44add7fda39",
       "owner": "stage-3.candidate-013-fishing-0267b3ea",
       "sourceProvider": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
