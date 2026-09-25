@@ -610,6 +610,8 @@ class StageOneClosureValidator {
         "Inventory Item Location Domain",
       "stage-3.candidate-018-items-8ea4be10":
         "Items Bait Freshness and Metrics Domain",
+      "stage-3.candidate-019-items-b0af5033":
+        "Items Bait Grade Decay and Quality Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

@@ -52,9 +52,13 @@ class Batch009EarlierEvaluationGate {
                   property.type === "Property" && property.kind === "init" && !property.computed &&
                   !property.method && property.key.type === "Identifier" &&
                   property.value.type === "Literal" && typeof property.value.value === "string"));
-              assert(frozenLiteral, "static initialization requires review");
+              const primitiveLiteral = value?.type === "Literal" &&
+                (value.value === null || ["string", "boolean"].includes(typeof value.value) ||
+                  typeof value.value === "number" && Number.isFinite(value.value)) ||
+                isInertLiteral(value);
+              assert(frozenLiteral || primitiveLiteral, "static initialization requires review");
               initializations.push({ binding: `${node.id.name}.${member.key.name}`,
-                kind: "frozen-literal-static-field" });
+                kind: frozenLiteral ? "frozen-literal-static-field" : "primitive-literal-static-field" });
             }
           }
           declaredClasses.add(node.id.name);

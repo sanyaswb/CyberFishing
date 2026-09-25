@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-019-acceptance",
+  "stage": "3.19.8",
+  "batchId": "stage-3.candidate-019-items-b0af5033",
+  "releaseVersion": "0.24.55",
+  "plannedReleaseVersion": "0.24.56",
+  "recordedAt": "2026-09-25T20:03:41.633Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_019_automated_acceptance.json",
+    "sha256": "681fc308c6a0a4f265fcad9642b5d654aeb5e041bbb7d67be70d6690cc4614da",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "full": {
+      "passedChecks": 182,
+      "failedChecks": 0
+    },
+    "fullRun": {
+      "platform": "windows",
+      "source": "npm run check on the owner's Windows machine, run by Claude in one uninterrupted run (2527.23s) after the batch-019 cutover"
+    },
+    "supplementary": {
+      "quick": {
+        "passedChecks": 41,
+        "failedChecks": 0
+      },
+      "architecture": {
+        "passedChecks": 65,
+        "failedChecks": 0
+      },
+      "historyAfterSharedToolingChange": {
+        "passedChecks": 90,
+        "failedChecks": 0
+      }
+    },
+    "summary": "Windows Full 182/182 passed in one uninterrupted run, including bait effectiveness, item freshness gameplay, hook domain semantics and item quality suites and the game-cycle fight scenarios",
+    "countSemantics": "The full suite includes the architecture and quick checks."
+  },
+  "browserSmoke": {
+    "status": "passed-owner-authorized-automated-substitute",
+    "performedBy": "claude-automated-owner-authorized",
+    "evidenceType": "headless-game-cycle-and-item-suites-plus-automated-built-in-browser-load",
+    "userStatement": "PASS (owner-authorized automated substitute) — game-cycle-check.js and the Items suites passed; built-in browser load rendered the game and the inventory screen with exact batch-019 identities.",
+    "context": "The owner authorized, during the batch 015-021 plan, replacing the manual visual smoke with game-cycle-check results when that check passes. Batch 019 migrates Items modules, so the Full suite also ran the bait effectiveness, item freshness, hook and quality suites. Claude loaded the game via npm run dev in the Claude desktop built-in browser and opened the inventory screen.",
+    "acceptanceBasis": "Owner-authorized substitute: headless game cycle and Items suites in the Full suite plus an automated browser load with instrumented console counts; no human played the game for this batch.",
+    "ownerAuthorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+    "perCheckResults": {
+      "gameCycle": "utils/game-cycle-check.js passed inside Full 182/182",
+      "itemSuites": "bait-effectiveness, item-freshness-gameplay, hook-domain-semantics, item-stat-contract and inventory suites passed inside Full 182/182",
+      "browserLoad": "Game rendered (v0.24.55 build label); inventory screen rendered all items; 73 compat modules; three globals identical to their ESM exports; static values DEFAULT_MAXIMUM_STARS=5, MINIMUM=1, MAXIMUM=10; grade policy resolved best for equal multipliers"
+    },
+    "consoleCounts": {
+      "errors": 0,
+      "warnings": 0,
+      "userStatement": "Built-in browser console, instrumented by Claude on launch and after opening the inventory: 0 errors, 0 warnings (one informational CacheManager log)."
+    }
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_019_live_runtime_validation.json",
+      "sha256": "cefcf710e5f865ff248b935b1654a80eaae74bfd9bb874c72c55fcde6c7ea2a6"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_019_observation_reconciliation.json",
+      "sha256": "d614daecca2bc1d8ba63c43c151a52ca93b31254f5b9208e42ae1f9669038bfd"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "5baf4cff45a02d6972632764907d996c974f89085cc012deb738a2ce072b47dc"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "4d2fa6dbf48ba6cec22c4ab2646f81607129cb894e0f9e6cba23f738578cbd90"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "19e01274c178f7995e8fdb9ba73fcbf5e9976ab8310f41e4fe6876a48f35790c"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "0ecbefa86876b96017b838c7f9ddcf267d62fda4d55182de866089c41fa8fb7b"
+    },
+    {
+      "path": "index.html",
+      "sha256": "87d6fc5b17e550c70ee3a71033c7b42bde82e88cc02cac5a3c07d81893846724"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.candidate-019-items-b0af5033",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.19.9 — Release Closure v0.24.56"
+}

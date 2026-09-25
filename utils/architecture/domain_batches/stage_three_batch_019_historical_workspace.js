@@ -5,28 +5,21 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { PREBUILD } = require("./stage_three_batch_018_prebuild");
+const { PREBUILD } = require("./stage_three_batch_019_prebuild");
 
 const STATE = "architecture/migration/stage_3_execution_state.json";
-const CUTOVER = "architecture/migration/stage_3_batch_018_runtime_cutover.json";
-const OBSERVATION = "architecture/migration/stage_3_batch_018_observation_reconciliation.json";
+const CUTOVER = "architecture/migration/stage_3_batch_019_runtime_cutover.json";
+const OBSERVATION = "architecture/migration/stage_3_batch_019_observation_reconciliation.json";
 const MANIFEST = "architecture/migration/module_migration_manifest.json";
-const RELEASE = "architecture/migration/stage_3_batch_018_release_transition.json";
+const RELEASE = "architecture/migration/stage_3_batch_019_release_transition.json";
 const sha = bytes => crypto.createHash("sha256").update(bytes).digest("hex");
 
-class Batch018HistoricalWorkspace {
+class Batch019HistoricalWorkspace {
   async run(root, action, { keepPrebuild = false, keepCutover = false, copyTools = false } = {}) {
     const projectRoot = path.resolve(root);
-    if (fs.existsSync(path.join(projectRoot,
-      "architecture/migration/stage_3_batch_019_runtime_cutover.json"))) {
-      const { Batch019HistoricalWorkspace } = require("./stage_three_batch_019_historical_workspace");
-      return new Batch019HistoricalWorkspace().run(projectRoot,
-        prior => this.run(prior, action, { keepPrebuild, keepCutover, copyTools }),
-        { copyTools });
-    }
     if (!fs.existsSync(path.join(projectRoot, PREBUILD))) return action(projectRoot);
     const parent = fs.realpathSync(os.tmpdir());
-    const temporary = fs.mkdtempSync(path.join(parent, "cyber-batch018-historical-"));
+    const temporary = fs.mkdtempSync(path.join(parent, "cyber-batch019-historical-"));
     const copy = relative => {
       for (const entry of fs.readdirSync(path.join(projectRoot, relative), { withFileTypes: true })) {
         assert(!entry.isSymbolicLink(), `historical copy refuses symlink: ${relative}/${entry.name}`);
@@ -49,7 +42,7 @@ class Batch018HistoricalWorkspace {
         path.join(temporary, "node_modules"), "junction");
       const releasePath = path.join(temporary, RELEASE);
       if (fs.existsSync(releasePath)) {
-        const transition = new (require("./stage_three_batch_018_release_transition").Batch018ReleaseTransition)(temporary);
+        const transition = new (require("./stage_three_batch_019_release_transition").Batch019ReleaseTransition)(temporary);
         const artifact = transition.validate(JSON.parse(fs.readFileSync(releasePath)));
         for (const record of artifact.records) {
           const target = path.join(temporary, record.path);
@@ -61,8 +54,8 @@ class Batch018HistoricalWorkspace {
       const observationPath = path.join(temporary, OBSERVATION);
       if (fs.existsSync(observationPath)) {
         const manifest = path.join(temporary, MANIFEST);
-        const prior = require("./stage_three_batch_018_observation_transition")
-          .beforeBatch018Observations(fs.readFileSync(manifest), temporary);
+        const prior = require("./stage_three_batch_019_observation_transition")
+          .beforeBatch019Observations(fs.readFileSync(manifest), temporary);
         assert.notDeepEqual(prior, fs.readFileSync(manifest), "Observation transition did not reverse");
         fs.writeFileSync(manifest, prior);
         fs.unlinkSync(observationPath);
@@ -73,14 +66,14 @@ class Batch018HistoricalWorkspace {
         for (const record of cutover.writes) {
           const target = path.join(temporary, record.path);
           const current = fs.existsSync(target) ? fs.readFileSync(target) : null;
-          assert.equal(current && sha(current), record.afterSha256, `batch 018 cutover drift: ${record.path}`);
+          assert.equal(current && sha(current), record.afterSha256, `batch 019 cutover drift: ${record.path}`);
           if (record.beforeBase64 === null) fs.unlinkSync(target);
           else fs.writeFileSync(target, Buffer.from(record.beforeBase64, "base64"));
         }
         fs.unlinkSync(cutoverPath);
       }
       const debtResolutionPath = path.join(temporary,
-        "architecture/migration/stage_3_batch_018_known_debt_resolution.json");
+        "architecture/migration/stage_3_batch_019_known_debt_resolution.json");
       if (fs.existsSync(debtResolutionPath)) {
         const resolution = JSON.parse(fs.readFileSync(debtResolutionPath));
         const debt = path.join(temporary, resolution.registry.path);
@@ -112,10 +105,10 @@ class Batch018HistoricalWorkspace {
       const resolved = fs.realpathSync(temporary);
       assert.equal(resolved, temporary);
       assert.equal(path.dirname(resolved), parent);
-      assert(path.basename(resolved).startsWith("cyber-batch018-historical-"));
+      assert(path.basename(resolved).startsWith("cyber-batch019-historical-"));
       fs.rmSync(resolved, { recursive: true, force: true });
     }
   }
 }
 
-module.exports = { Batch018HistoricalWorkspace };
+module.exports = { Batch019HistoricalWorkspace };

@@ -895,6 +895,18 @@
       "removalStage": "stage-3"
     },
     {
+      "id": "activation-b7cb0e61096d",
+      "owner": "stage-3.candidate-019-items-b0af5033",
+      "sourceProvider": "src/core/items/bait/bait_effectiveness_grade_policy.js",
+      "targetModule": "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+      "exportName": "BaitEffectivenessGradePolicy",
+      "legacySymbol": "BaitEffectivenessGradePolicy",
+      "legacyScriptIndex": 63,
+      "shimFile": "activations/063_baiteffectivenessgradepolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-bafccd351254",
       "owner": "stage-3.candidate-013-fishing-0267b3ea",
       "sourceProvider": "src/core/fishing/fishing_cast_exposure_resolver.js",
@@ -1003,6 +1015,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-e5ee66b391d6",
+      "owner": "stage-3.candidate-019-items-b0af5033",
+      "sourceProvider": "src/core/items/freshness/bait_freshness_decay_policy.js",
+      "targetModule": "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+      "exportName": "BaitFreshnessDecayPolicy",
+      "legacySymbol": "BaitFreshnessDecayPolicy",
+      "legacyScriptIndex": 58,
+      "shimFile": "activations/058_baitfreshnessdecaypolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-e94561a6959c",
       "owner": "stage-3.candidate-015-fishing-37dc3452",
       "sourceProvider": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
@@ -1049,6 +1073,18 @@
       "shimFile": "activations/097_playertensionbuildrateresolver.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-f247ec6b1d17",
+      "owner": "stage-3.candidate-019-items-b0af5033",
+      "sourceProvider": "src/core/items/quality/item_quality_grade_policy.js",
+      "targetModule": "src/game/domain/items/quality/item_quality_grade_policy.js",
+      "exportName": "ItemQualityGradePolicy",
+      "legacySymbol": "ItemQualityGradePolicy",
+      "legacyScriptIndex": 68,
+      "shimFile": "activations/068_itemqualitygradepolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
     },
     {
       "id": "activation-f5eefdd6e6e2",

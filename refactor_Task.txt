@@ -1,10 +1,10 @@
 # CyberFishing — Current Plan for the Remaining Modular Refactor
 
 - **Stage 1 closure version:** `v0.24.31`
-- **Current release version:** `v0.24.55`
+- **Current release version:** `v0.24.56`
 - **Work type:** architecture / infrastructure refactoring
 - **Gameplay changes:** prohibited
-- **Next step:** `Stage 3.19.0 — Batch 019 Preflight and Dependency/State Audit`
+- **Next step:** `Stage 3.20.0 — Batch 020 Preflight and Dependency/State Audit`
 
 This document records the completed Stage 3 prefix and the work that remains.
 
@@ -60,7 +60,7 @@ Reviewed Manifest metadata determines target paths, not current directory names.
 
 Domain must not depend on platform, UI, Canvas, DOM, dev, or raw configuration. Inject configuration through constructors, factories, or the composition root. Domain may depend only on stable engine primitives and its own Domain contracts or value objects.
 
-## Completed batches 001–018 checklist
+## Completed batches 001–019 checklist
 
 - [x] **001 · Inventory · 1 module:** `InventoryEquipTargetSelectionPolicy`.
 - [x] **002 · Fishing · 1 module:** `ReelAutoRecoveryCalculator`.
@@ -80,26 +80,28 @@ Domain must not depend on platform, UI, Canvas, DOM, dev, or raw configuration. 
 - [x] **016 · Fishing · 1 module:** `PlayerPressureFatigueSourceResolver`.
 - [x] **017 · Inventory · 1 module / 2 exports:** `InventoryItemLocation`, `InventoryItemLocationKind`.
 - [x] **018 · Items · 6 modules / 7 exports:** bait effectiveness knowledge and match, bait freshness modifier, item freshness state, bounded item metrics, and rating tiers.
+- [x] **019 · Items · 3 modules:** `BaitEffectivenessGradePolicy`, `BaitFreshnessDecayPolicy`, `ItemQualityGradePolicy`.
 
-**Checkpoint `v0.24.55`:** `18/21` frozen batches and `61/69` frozen Domain modules are complete. The cumulative runtime has `70` project modules, `74` activations, and `123` bridge records. `activeBatchId = null`; batch `019` is next. For batch 018, Windows Full 181/181 passed in one uninterrupted run, including bait effectiveness, item freshness gameplay, item condition, rating and progression suites and the game-cycle fight scenarios; owner-authorized automated smoke (headless game cycle and built-in browser load) passed with `0 errors` and `0 warnings`.
+**Checkpoint `v0.24.56`:** `19/21` frozen batches and `64/69` frozen Domain modules are complete. The cumulative runtime has `73` project modules, `77` activations, and `130` bridge records. `activeBatchId = null`; batch `020` is next. For batch 019, Windows Full 182/182 passed in one uninterrupted run, including bait effectiveness, item freshness gameplay, hook domain semantics and item quality suites and the game-cycle fight scenarios; owner-authorized automated smoke (headless game cycle and built-in browser load) passed with `0 errors` and `0 warnings`.
 
-## Stage 3.19–3.21 — Atomic Domain Migration Batches
+## Stage 3.20–3.21 — Atomic Domain Migration Batches
 
-`18/21` frozen batches and `61/69` frozen Domain modules are complete. The next exact batch is:
+`19/21` frozen batches and `64/69` frozen Domain modules are complete. The next exact batch is:
 
 ```text
-stage-3.candidate-019-items-b0af5033
+stage-3.candidate-020-assemblies-43d77861
 
-BaitEffectivenessGradePolicy
-BaitFreshnessDecayPolicy
-ItemQualityGradePolicy
+RefillCompatibleSignaturePolicy
+AssemblyPreparationStatus
+AssemblyState
+ExactAssemblyRefillSignaturePolicy
 ```
 
-Stage 3.19.0: perform a read-only preflight and an exact dependency and state audit; verify approved activations, consumers, and the rollback boundary. Do not start runtime migration before the subsequent phases.
+Stage 3.20.0: perform a read-only preflight and an exact dependency and state audit; verify approved activations, consumers, and the rollback boundary. Do not start runtime migration before the subsequent phases.
 
-Current accepted runtime: 70 project modules, 74 activation contracts, and 123 bridge records in one cumulative topology, with no active batch. Take the next scope from the frozen plan and verify it against the actual graph.
+Current accepted runtime: 73 project modules, 77 activation contracts, and 130 bridge records in one cumulative topology, with no active batch. Take the next scope from the frozen plan and verify it against the actual graph.
 
-Each batch `019–021` follows the same controlled lifecycle:
+Each batch `020–021` follows the same controlled lifecycle:
 
 ```text
 preflight/audit

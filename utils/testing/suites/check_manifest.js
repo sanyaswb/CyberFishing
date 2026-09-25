@@ -627,6 +627,12 @@ const CHECK_DEFINITIONS = Object.freeze([
       id: "stage-3-batch-018-architecture",
       title: "Stage 3.18.0–3.18.7 items bait freshness and metrics domain migration and rollback gates",
       file: "utils/architecture/stage-3-batch-018-architecture-check.js",
+      suites: ["history"],
+    },
+    {
+      id: "stage-3-batch-019-architecture",
+      title: "Stage 3.19.0–3.19.7 items bait grade decay and quality domain migration and rollback gates",
+      file: "utils/architecture/stage-3-batch-019-architecture-check.js",
       suites: ["quick", "architecture", "history"],
     },
   {
