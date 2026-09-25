@@ -132,6 +132,63 @@ class StageThreeReviewedEvaluationEffect {
       evaluationCount: 1, globalPropertiesAdded: [], otherTopLevelEffects: 0 });
   }
 
+  // Reviews N class declarations followed by one exact `globalThis.X = X` per class. A class may
+  // extend only a class declared earlier in the same module; evaluation must create exactly the
+  // exposed globals.
+  classFamily({ source, currentPath, classes, localSuperclasses = {}, exposures }) {
+    const tree = this.parse(source);
+    assert(classes.length > 1, `${currentPath}: a class family needs several classes`);
+    assert.deepEqual(exposures.map(item => item.symbol).sort(), [...classes].sort(),
+      `${currentPath}: every class needs exactly one reviewed exposure`);
+    assert.equal(tree.body.length, classes.length + exposures.length,
+      `${currentPath}: expected class declarations followed by global exposures`);
+    for (const name of Object.keys(localSuperclasses)) assert(classes.includes(name));
+    classes.forEach((name, index) => {
+      const declaration = tree.body[index];
+      assert.equal(declaration.type, "ClassDeclaration");
+      assert.equal(declaration.id.name, name);
+      const parent = localSuperclasses[name];
+      if (parent) {
+        assert.equal(declaration.superClass?.type, "Identifier");
+        assert.equal(declaration.superClass.name, parent);
+        const parentIndex = classes.indexOf(parent);
+        assert(parentIndex >= 0 && parentIndex < index, `${currentPath}: superclass must be declared earlier`);
+      } else {
+        assert.equal(declaration.superClass, null, `${currentPath}: superclass requires review`);
+      }
+    });
+    exposures.forEach(({ symbol, location }, index) => {
+      const statement = tree.body[classes.length + index];
+      assert.equal(statement.type, "ExpressionStatement");
+      assert.equal(position(statement), location);
+      const assignment = statement.expression;
+      assert.equal(assignment.type, "AssignmentExpression");
+      assert.equal(assignment.operator, "=");
+      assert.equal(assignment.left.type, "MemberExpression");
+      assert.equal(assignment.left.computed, false);
+      assert.equal(assignment.left.object.type, "Identifier");
+      assert.equal(assignment.left.object.name, "globalThis");
+      assert.equal(assignment.left.property.name, symbol);
+      assert.equal(assignment.right.type, "Identifier");
+      assert.equal(assignment.right.name, symbol);
+    });
+    const context = vm.createContext({});
+    vm.runInContext(source, context, { filename: currentPath });
+    const evaluatedGlobalNames = Object.getOwnPropertyNames(context).sort();
+    assert.deepEqual(evaluatedGlobalNames, [...classes].sort(),
+      `${currentPath}: source evaluation changed unexpected globals`);
+    for (const name of classes) {
+      assert.equal(typeof context[name], "function");
+      assert.equal(context[name].name, name);
+      const parent = localSuperclasses[name];
+      if (parent) assert.equal(Object.getPrototypeOf(context[name]), context[parent]);
+    }
+    return Object.freeze({ kind: "class-family-global-exposures", currentPath,
+      sourceSha256: sha(source), classes, localSuperclasses, exposures,
+      topLevelStatementCount: tree.body.length, evaluatedGlobalNames,
+      evaluationCount: 1, otherTopLevelEffects: 0 });
+  }
+
   windowExposure({ source, currentPath, symbol, location }) {
     const tree = this.parse(source);
     assert.equal(tree.body.length, 2, `${currentPath}: expected class and guarded window assignment`);

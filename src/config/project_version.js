@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.54";
+const CURRENT_PROJECT_VERSION = "0.24.55";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "inventory-item-location-domain",
+  codename: "items-bait-freshness-metrics-domain",
   updatedAt: "2026-09-25",
   notes: Object.freeze([
-    "Migrate one Inventory module with two named game-domain ESM exports",
-    "Preserve one cumulative graph with sixty-four project modules and sixty-eight activations",
-    "Complete frozen batch 017 with one hundred eleven exact classic-consumer bridge relationships",
-    "Preserve inventory item location kinds, factories, normalization and validation errors",
+    "Migrate six Items modules with seven named game-domain ESM exports",
+    "Preserve one cumulative graph with seventy project modules and seventy-four activations",
+    "Complete frozen batch 018 with one hundred twenty-three exact classic-consumer bridge relationships",
+    "Preserve bait knowledge, match, freshness, bounded metric and rating tier behavior",
   ]),
 });
 

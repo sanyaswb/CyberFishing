@@ -1,0 +1,52 @@
+"use strict";
+
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+const { Batch018ReleaseProjection } = require("./project-stage-3-batch-018-release");
+const { Batch018ReleaseCheck } = require("./stage-3-batch-018-release-check");
+const { ControlledMetadataTransaction } = require("./domain_batches/controlled_metadata_transaction");
+const { TRANSITION } = require("./domain_batches/stage_three_batch_018_release_transition");
+const { sha, serialize } = require("./domain_batches/stage_three_batch_018_planning");
+
+class Batch018ReleasePublisher {
+  run(root = path.resolve(__dirname, "../.."), { failureInjector = null } = {}) {
+    const projected = new Batch018ReleaseProjection().run(root);
+    const runtime = JSON.parse(fs.readFileSync(path.join(root,
+      "architecture/migration/stage_3_compatibility_runtime.json")));
+    const outputPaths = [runtime.output.directory + runtime.output.runtimeFile,
+      ...runtime.activationPositions.map(item => runtime.output.directory + item.shimFile)];
+    const protectedPaths = [
+      "architecture/migration/module_migration_manifest.json",
+      "architecture/guards/migration_bridge_registry.json",
+      "architecture/migration/stage_3_compatibility_runtime.json",
+      ...outputPaths,
+      ...require("./domain_batches/stage_three_batch_018_preflight_profile")
+        .BATCH_018_PREFLIGHT_PROFILE.executionProfile.expectedTargets.map(item => item.targetPath),
+    ];
+    const protectedBefore = protectedPaths.map(file => ({ file,
+      sha256: sha(fs.readFileSync(path.join(root, file))) }));
+    const writes = [
+      ...projected.writes.map(item => ({ relativePath: item.path, bytes: item.after })),
+      { relativePath: TRANSITION, bytes: serialize(projected.transition) },
+    ];
+    new ControlledMetadataTransaction({ projectRoot: root, failureInjector }).commit(writes, () => {
+      new Batch018ReleaseCheck().run(root);
+      for (const item of protectedBefore) {
+        assert.equal(sha(fs.readFileSync(path.join(root, item.file))), item.sha256,
+          `Release changed runtime/source: ${item.file}`);
+      }
+      for (const item of writes) {
+        assert.deepEqual(fs.readFileSync(path.join(root, item.relativePath)), item.bytes);
+      }
+    });
+    console.log("Stage 3.18.9 release published: v0.24.55, completed 001–018, active null; exact metadata reversal and runtime stability verified.");
+  }
+}
+
+if (require.main === module) {
+  try { new Batch018ReleasePublisher().run(); }
+  catch (error) { console.error(error.stack); process.exitCode = 1; }
+}
+
+module.exports = { Batch018ReleasePublisher };

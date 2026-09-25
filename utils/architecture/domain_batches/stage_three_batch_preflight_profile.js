@@ -88,6 +88,22 @@ class StageThreeBatchPreflightProfile {
         `${currentPath} frozenStaticFields must name one class and exact static bindings`);
       }
     }
+    for (const [currentPath, contract] of Object.entries(contracts || {})) {
+      const family = contract?.classFamily;
+      if (!family) continue;
+      require(Boolean(definition?.sideEffectEvidence),
+        `${currentPath} classFamily requires sideEffectEvidence`);
+      require(!contract.legacyExposure && !contract.frozenConstants && !contract.frozenStaticFields,
+        `${currentPath} classFamily cannot be combined with another reviewed effect`);
+      require(Array.isArray(family.classes) && family.classes.length > 1 &&
+        Array.isArray(family.exposures) && family.exposures.length === family.classes.length &&
+        family.exposures.every((item) => family.classes.includes(item?.symbol) &&
+          /^\d+:\d+$/u.test(item?.location)) &&
+        Object.entries(family.localSuperclasses || {}).every(([child, parent]) =>
+          family.classes.indexOf(parent) >= 0 &&
+          family.classes.indexOf(parent) < family.classes.indexOf(child)),
+      `${currentPath} classFamily must name ordered classes, local superclasses and exact exposures`);
+    }
     require(Array.isArray(definition?.migrationGates) && definition.migrationGates.length > 0,
       "migrationGates are required");
     if (errors.length > 0) {

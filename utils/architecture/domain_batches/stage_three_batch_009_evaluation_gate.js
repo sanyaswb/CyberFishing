@@ -25,12 +25,20 @@ class Batch009EarlierEvaluationGate {
       assert.equal(observed.globalAssignments.length, 0, "ESM global assignment");
       const tree = espree.parse(source, { ecmaVersion: "latest", sourceType: "module" });
       const initializations = [];
+      const declaredClasses = new Set();
       for (const statement of tree.body) {
         const node = statement.type === "ExportNamedDeclaration" ? statement.declaration : statement;
         assert(node, "unsupported export");
         if (node.type === "FunctionDeclaration") continue;
         if (node.type === "ClassDeclaration") {
-          assert.equal(node.superClass, null, "eager superclass dependency requires review");
+          // Only a class declared earlier in the same module may be a superclass: it is fully
+          // evaluated before the subclass and is not an external eager dependency.
+          const localSuperclass = node.superClass?.type === "Identifier" &&
+            declaredClasses.has(node.superClass.name);
+          assert(node.superClass === null || localSuperclass, "eager superclass dependency requires review");
+          if (localSuperclass) {
+            initializations.push({ binding: node.id.name, kind: "local-superclass" });
+          }
           for (const member of node.body.body) {
             assert(!member.computed && member.type !== "StaticBlock", "eager class effect requires review");
             if (member.static && member.type === "PropertyDefinition") {
@@ -49,6 +57,7 @@ class Batch009EarlierEvaluationGate {
                 kind: "frozen-literal-static-field" });
             }
           }
+          declaredClasses.add(node.id.name);
           continue;
         }
         assert.equal(node.type, "VariableDeclaration", "unsupported top-level effect");
@@ -87,7 +96,7 @@ class Batch009EarlierEvaluationGate {
         assert.equal(review?.decision, "approved-compatible", "missing reviewed initialization");
         assert.equal(review.evidenceFingerprint, effect.evidenceFingerprint, "stale effect review");
         assert(initializations.some(i => ["private-empty-weakmap", "frozen-literal-range",
-          "frozen-literal-constant", "frozen-literal-static-field"].includes(i.kind)),
+          "frozen-literal-constant", "frozen-literal-static-field", "local-superclass"].includes(i.kind)),
           "review does not prove compatible initialization");
       } else assert(!review, "stale unnecessary review");
       reviewMap.delete(module.targetPath);

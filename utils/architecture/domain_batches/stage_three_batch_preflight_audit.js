@@ -97,8 +97,8 @@ class StageThreeBatchPreflightAuditBuilder {
         const evidence = sideEffectReview.modules.find(item => item.currentPath === module.currentPath);
         const reviewedEffect = module.effects.reviewedExposure;
         this.#require(evidence && this.#same(evidence.sourceSha256, module.sourceSha256) &&
-          (["frozen-literal-ranges", "frozen-literal-constants",
-            "frozen-literal-static-fields"].includes(evidence.contract?.kind)
+          (["frozen-literal-ranges", "frozen-literal-constants", "frozen-literal-static-fields",
+            "class-family-global-exposures"].includes(evidence.contract?.kind)
             ? this.#same(evidence.review, reviewedEffect)
             : this.#same(evidence.contract?.symbol || evidence.symbol, reviewedEffect?.symbol) &&
               this.#same(evidence.contract?.location || evidence.location, reviewedEffect?.location)),
@@ -364,6 +364,17 @@ class StageThreeBatchPreflightAuditBuilder {
         }))), `frozen static-field effect differs: ${module.currentPath}`);
       this.#require(sourceShape.topLevelEffects.length === 0,
         `reviewed static-field class has a top-level effect: ${module.currentPath}`);
+    } else if (reviewed.classFamily) {
+      reviewedExposure = new StageThreeReviewedEvaluationEffect().classFamily({
+        source, currentPath: module.currentPath, ...reviewed.classFamily,
+      });
+      this.#require(this.#same(auditEntry.dependencyAudit.facts.topLevelEffects,
+        reviewed.classFamily.exposures.map(({ location }) => ({
+          kind: "assignment", location, classification: "observable",
+        }))), `frozen class-family effect differs: ${module.currentPath}`);
+      this.#require(this.#same(sourceShape.topLevelEffects,
+        reviewed.classFamily.exposures.map(({ location }) => `ExpressionStatement@${location}`)),
+      `reviewed class-family effect differs: ${module.currentPath}`);
     } else if (reviewed.legacyExposure) {
       const exposure = reviewed.legacyExposure;
       reviewedExposure = exposure.mechanism === "window-property"
@@ -583,7 +594,7 @@ class StageThreeBatchPreflightAuditValidator {
       require(module.performance?.transportLookupsAllowed === 0,
         `transport budget differs: ${module.currentPath}`);
         require(module.effects?.classification === (reviewed?.legacyExposure || reviewed?.frozenConstants ||
-          reviewed?.frozenStaticFields ?
+          reviewed?.frozenStaticFields || reviewed?.classFamily ?
         "reviewed-compatible" : "safe"), `effect classification differs: ${module.currentPath}`);
       if (reviewed?.legacyExposure) {
         require(module.effects?.reviewedExposure?.symbol === reviewed.legacyExposure.symbol &&

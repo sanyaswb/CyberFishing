@@ -1,0 +1,2027 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-preflight-audit",
+  "status": "verified",
+  "stage": "Stage 3.18.0",
+  "sourceReleaseVersion": "0.24.54",
+  "batchId": "stage-3.candidate-018-items-8ea4be10",
+  "sourceEvidence": {
+    "approvedPlan": {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    "manifest": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "bf99a1651fc0155abad3582d69a5f8212ec9e846b2d3468544d521a9a4d474fa"
+    },
+    "domainAudit": {
+      "path": "architecture/migration/stage_3_domain_audit.json",
+      "sha256": "6a96b8ead58fab42c8c596b365776226a77c36978b9ef68b71c3df8ada6fa4cd"
+    },
+    "executionState": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "edd3dd3540e900d6f797b873e2e0cf7b60701b60d765a3dfde555020bd50c83f"
+    },
+    "runtimeContract": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "ba16192b73312843d4f0dc8d9c2d0d9379b1fdb70af1234db100ab0ed60bf729"
+    },
+    "bridgeRegistry": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "77fc3fcf8d5291d695b0ab42df94d120e7f450011f12042679dd15eb1b1011c5"
+    },
+    "index": {
+      "path": "index.html",
+      "sha256": "f2f78953bb9df770186121a2ecbb6b1cdb692c98b38f7bc1fe9caca3bd4b0850"
+    },
+    "runtimeOutput": {
+      "path": "dist/stage-3-compat-runtime",
+      "fingerprint": "47efea1a14f1e8c38ccae325951d698f6b245031a7f92251bd84ba310412854b"
+    },
+    "sideEffectReview": {
+      "path": "architecture/migration/stage_3_batch_018_side_effect_review.json",
+      "sha256": "de4cdeab07b74820423539f08e57a8b170615ab7b16fbdce69985b28df1117ce"
+    }
+  },
+  "scope": {
+    "targetCount": 6,
+    "modules": [
+      {
+        "currentPath": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+        "targetPath": "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+        "sourceSha256": "ae97b1e5e8d09c8e0c5f984ca21209140abc6cfe6f62503df0309471955b0d17",
+        "exports": [
+          "AlwaysKnownBaitEffectivenessPolicy",
+          "BaitEffectivenessKnowledgePolicy"
+        ],
+        "roles": [
+          "domain-behavior",
+          "domain-contract"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-087f379a7733",
+          "members": [
+            "src/core/items/bait/bait_effectiveness_knowledge_policy.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+          "classDeclarations": [
+            "AlwaysKnownBaitEffectivenessPolicy",
+            "BaitEffectivenessKnowledgePolicy"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "ExpressionStatement@13:1",
+            "ExpressionStatement@14:1"
+          ],
+          "fields": [],
+          "methods": [
+            {
+              "name": "isDiscovered",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "isDiscovered",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "stateless",
+          "classification": "stateless",
+          "instanceFields": [],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+            "authoritativeOwners": []
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+            "authoritativeOwners": []
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "abstract-knowledge-contract-local-inheritance-and-always-known-discovery",
+          "formulaDefaultsClampsRoundingFingerprint": "c6fcdc96ab2b84e175dd5e994105b6690e9d93f74ca5e15187cbfaeb67188c41",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-bait-effectiveness-knowledge-lookup",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/app/bootstrap.js",
+              "marker": "new AlwaysKnownBaitEffectivenessPolicy()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "13:1",
+              "classification": "observable"
+            },
+            {
+              "kind": "assignment",
+              "location": "14:1",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "class-family-global-exposures",
+            "currentPath": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+            "sourceSha256": "ae97b1e5e8d09c8e0c5f984ca21209140abc6cfe6f62503df0309471955b0d17",
+            "classes": [
+              "BaitEffectivenessKnowledgePolicy",
+              "AlwaysKnownBaitEffectivenessPolicy"
+            ],
+            "localSuperclasses": {
+              "AlwaysKnownBaitEffectivenessPolicy": "BaitEffectivenessKnowledgePolicy"
+            },
+            "exposures": [
+              {
+                "symbol": "BaitEffectivenessKnowledgePolicy",
+                "location": "13:1"
+              },
+              {
+                "symbol": "AlwaysKnownBaitEffectivenessPolicy",
+                "location": "14:1"
+              }
+            ],
+            "topLevelStatementCount": 4,
+            "evaluatedGlobalNames": [
+              "AlwaysKnownBaitEffectivenessPolicy",
+              "BaitEffectivenessKnowledgePolicy"
+            ],
+            "evaluationCount": 1,
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "AlwaysKnownBaitEffectivenessPolicy",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "AlwaysKnownBaitEffectivenessPolicy",
+            "mechanism": "global-this-property",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "BaitEffectivenessKnowledgePolicy",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "BaitEffectivenessKnowledgePolicy",
+            "mechanism": "global-this-property",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/items/bait/bait_effectiveness_match.js",
+        "targetPath": "src/game/domain/items/bait/bait_effectiveness_match.js",
+        "sourceSha256": "f91ecc79b5b109fc3fb678887cbf5e01e2ee82541534225236a94946eb76fbb9",
+        "exports": [
+          "BaitEffectivenessMatch"
+        ],
+        "roles": [
+          "value-object"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-2a538a4bccbb",
+          "members": [
+            "src/core/items/bait/bait_effectiveness_match.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/items/bait/bait_effectiveness_match.js",
+          "classDeclarations": [
+            "BaitEffectivenessMatch"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "ExpressionStatement@22:1"
+          ],
+          "fields": [],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/items/bait/bait_effectiveness_match.js",
+            "authoritativeOwners": [
+              "BaitEffectivenessMatch#affinityMultiplier",
+              "BaitEffectivenessMatch#baitId",
+              "BaitEffectivenessMatch#candidate",
+              "BaitEffectivenessMatch#effectiveMultiplier",
+              "BaitEffectivenessMatch#freshnessMultiplier",
+              "BaitEffectivenessMatch#freshnessPercent",
+              "BaitEffectivenessMatch#instanceId"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/items/bait/bait_effectiveness_match.js",
+            "authoritativeOwners": [
+              "BaitEffectivenessMatch#affinityMultiplier",
+              "BaitEffectivenessMatch#baitId",
+              "BaitEffectivenessMatch#candidate",
+              "BaitEffectivenessMatch#effectiveMultiplier",
+              "BaitEffectivenessMatch#freshnessMultiplier",
+              "BaitEffectivenessMatch#freshnessPercent",
+              "BaitEffectivenessMatch#instanceId"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "bait-match-score-fields-defaults-and-global-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "01a4110a8ed8c5b573e149593560d4c8ee06c8b7672a14a839e5809002c8023c",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-bait-effectiveness-match-value",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/core/items/bait/bait_effectiveness_resolver.js",
+              "marker": "new BaitEffectivenessMatch()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "22:1",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "currentPath": "src/core/items/bait/bait_effectiveness_match.js",
+            "symbol": "BaitEffectivenessMatch",
+            "location": "22:1",
+            "sourceSha256": "f91ecc79b5b109fc3fb678887cbf5e01e2ee82541534225236a94946eb76fbb9",
+            "topLevelStatements": [
+              "class-declaration",
+              "global-this-assignment"
+            ],
+            "assignmentTarget": "globalThis.BaitEffectivenessMatch",
+            "evaluatedGlobalNames": [
+              "BaitEffectivenessMatch"
+            ],
+            "evaluationCount": 1,
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "BaitEffectivenessMatch",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "BaitEffectivenessMatch",
+            "mechanism": "global-this-property",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/items/freshness/bait_freshness_modifier.js",
+        "targetPath": "src/game/domain/items/freshness/bait_freshness_modifier.js",
+        "sourceSha256": "5f95874f5df69e60139827b0a6794e0a67ee57f84eb1e2efe2b67163e5be56d7",
+        "exports": [
+          "BaitFreshnessModifier"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-16c103a9399f",
+          "members": [
+            "src/core/items/freshness/bait_freshness_modifier.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/items/freshness/bait_freshness_modifier.js",
+          "classDeclarations": [
+            "BaitFreshnessModifier"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "ExpressionStatement@12:1"
+          ],
+          "fields": [],
+          "methods": [
+            {
+              "name": "resolve",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "stateless",
+          "classification": "stateless",
+          "instanceFields": [],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/items/freshness/bait_freshness_modifier.js",
+            "authoritativeOwners": []
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/items/freshness/bait_freshness_modifier.js",
+            "authoritativeOwners": []
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "bait-freshness-multiplier-curve-and-global-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "ed62ed21454d6133422257a282fb00be7aec1a56a37f4b21a291f6d4b6028bef",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-bait-freshness-modifier",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/app/bootstrap.js",
+              "marker": "new BaitFreshnessModifier()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "12:1",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "currentPath": "src/core/items/freshness/bait_freshness_modifier.js",
+            "symbol": "BaitFreshnessModifier",
+            "location": "12:1",
+            "sourceSha256": "5f95874f5df69e60139827b0a6794e0a67ee57f84eb1e2efe2b67163e5be56d7",
+            "topLevelStatements": [
+              "class-declaration",
+              "global-this-assignment"
+            ],
+            "assignmentTarget": "globalThis.BaitFreshnessModifier",
+            "evaluatedGlobalNames": [
+              "BaitFreshnessModifier"
+            ],
+            "evaluationCount": 1,
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "BaitFreshnessModifier",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "BaitFreshnessModifier",
+            "mechanism": "global-this-property",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/items/freshness/item_freshness_state_policy.js",
+        "targetPath": "src/game/domain/items/freshness/item_freshness_state_policy.js",
+        "sourceSha256": "1d42172005817bfabe4b1c9dd5b2a1ff1b01eac33330ea2c6cead0bcccb83dee",
+        "exports": [
+          "ItemFreshnessStatePolicy"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-4114bb835ac8",
+          "members": [
+            "src/core/items/freshness/item_freshness_state_policy.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/items/freshness/item_freshness_state_policy.js",
+          "classDeclarations": [
+            "ItemFreshnessStatePolicy"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "ExpressionStatement@54:1"
+          ],
+          "fields": [
+            {
+              "name": "#defaultPercent",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#maximum",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#minimum",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "create",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 3,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "normalize",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 2,
+                "arrayExpressions": 0,
+                "newExpressions": 4,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 1
+              }
+            },
+            {
+              "name": "resolvePercent",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 6,
+            "arrayExpressions": 0,
+            "newExpressions": 5,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#defaultPercent",
+            "#maximum",
+            "#minimum"
+          ],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/items/freshness/item_freshness_state_policy.js",
+            "authoritativeOwners": [
+              "ItemFreshnessStatePolicy#defaultPercent",
+              "ItemFreshnessStatePolicy#maximum",
+              "ItemFreshnessStatePolicy#minimum",
+              "ItemFreshnessStatePolicy#normalize"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/items/freshness/item_freshness_state_policy.js",
+            "authoritativeOwners": [
+              "ItemFreshnessStatePolicy#defaultPercent",
+              "ItemFreshnessStatePolicy#maximum",
+              "ItemFreshnessStatePolicy#minimum",
+              "ItemFreshnessStatePolicy#normalize"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "freshness-percent-bounds-defaults-and-global-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "29bd880efaa830a529546e6256bcd8ce6df67651b5c11439efa29644b0f39fa0",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-item-freshness-state-normalization",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/application/inventory/apply_bait_exposure_service.js",
+              "marker": "freshnessStatePolicy = new ItemFreshnessStatePolicy()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 6,
+            "arrayExpressions": 0,
+            "newExpressions": 5,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "54:1",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "currentPath": "src/core/items/freshness/item_freshness_state_policy.js",
+            "symbol": "ItemFreshnessStatePolicy",
+            "location": "54:1",
+            "sourceSha256": "1d42172005817bfabe4b1c9dd5b2a1ff1b01eac33330ea2c6cead0bcccb83dee",
+            "topLevelStatements": [
+              "class-declaration",
+              "global-this-assignment"
+            ],
+            "assignmentTarget": "globalThis.ItemFreshnessStatePolicy",
+            "evaluatedGlobalNames": [
+              "ItemFreshnessStatePolicy"
+            ],
+            "evaluationCount": 1,
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "ItemFreshnessStatePolicy",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "ItemFreshnessStatePolicy",
+            "mechanism": "global-this-property",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/items/metrics/item_bounded_metric_resolver.js",
+        "targetPath": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+        "sourceSha256": "8888c8a0bd534b35e01621bed065598d6216432d1027ade37e681d7d0be86951",
+        "exports": [
+          "ItemBoundedMetricResolver"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-2e2f5d7bcbba",
+          "members": [
+            "src/core/items/metrics/item_bounded_metric_resolver.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/items/metrics/item_bounded_metric_resolver.js",
+          "classDeclarations": [
+            "ItemBoundedMetricResolver"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "ExpressionStatement@98:1"
+          ],
+          "fields": [
+            {
+              "name": "#capabilityId",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#descriptorFactory",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#profileProvider",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 3,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#createDescriptor",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#readPath",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#unavailable",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "resolve",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 3,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#capabilityId",
+            "#descriptorFactory",
+            "#profileProvider"
+          ],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/items/metrics/item_bounded_metric_resolver.js",
+            "authoritativeOwners": [
+              "ItemBoundedMetricResolver#capabilityId",
+              "ItemBoundedMetricResolver#createDescriptor",
+              "ItemBoundedMetricResolver#descriptorFactory",
+              "ItemBoundedMetricResolver#profileProvider",
+              "ItemBoundedMetricResolver#readPath",
+              "ItemBoundedMetricResolver#unavailable"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+            "authoritativeOwners": [
+              "ItemBoundedMetricResolver#capabilityId",
+              "ItemBoundedMetricResolver#createDescriptor",
+              "ItemBoundedMetricResolver#descriptorFactory",
+              "ItemBoundedMetricResolver#profileProvider",
+              "ItemBoundedMetricResolver#readPath",
+              "ItemBoundedMetricResolver#unavailable"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "bounded-metric-resolution-subclass-contract-and-global-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "0e98a9a594bd9692053aa136cce50df8b48fb5cf86232c3faeba78e28cf6457f",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-bounded-item-metric-resolution",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/core/items/condition/item_condition_resolver.js",
+              "marker": "class ItemConditionResolver extends ItemBoundedMetricResolver"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 3,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "98:1",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "currentPath": "src/core/items/metrics/item_bounded_metric_resolver.js",
+            "symbol": "ItemBoundedMetricResolver",
+            "location": "98:1",
+            "sourceSha256": "8888c8a0bd534b35e01621bed065598d6216432d1027ade37e681d7d0be86951",
+            "topLevelStatements": [
+              "class-declaration",
+              "global-this-assignment"
+            ],
+            "assignmentTarget": "globalThis.ItemBoundedMetricResolver",
+            "evaluatedGlobalNames": [
+              "ItemBoundedMetricResolver"
+            ],
+            "evaluationCount": 1,
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "ItemBoundedMetricResolver",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "ItemBoundedMetricResolver",
+            "mechanism": "global-this-property",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/items/progression/item_rating_tier_resolver.js",
+        "targetPath": "src/game/domain/items/progression/item_rating_tier_resolver.js",
+        "sourceSha256": "4e3d8536d418593c4012cd518fd47305cb6070a1e1741da1496aa5416ed40d13",
+        "exports": [
+          "ItemRatingTierResolver"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-3644313628fc",
+          "members": [
+            "src/core/items/progression/item_rating_tier_resolver.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/items/progression/item_rating_tier_resolver.js",
+          "classDeclarations": [
+            "ItemRatingTierResolver"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [
+            "ExpressionStatement@49:1"
+          ],
+          "fields": [],
+          "methods": [
+            {
+              "name": "resolve",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 4,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 3,
+                "objectAssignCalls": 0,
+                "roundingCalls": 1
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 3,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "state-participant",
+          "classification": "state-participant",
+          "instanceFields": [],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/items/progression/item_rating_tier_resolver.js",
+            "authoritativeOwners": []
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/items/progression/item_rating_tier_resolver.js",
+            "authoritativeOwners": []
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "item-rating-tier-thresholds-rounding-and-global-exposure",
+          "formulaDefaultsClampsRoundingFingerprint": "aab9d1ee1f0c2970a92f92814758449a6a7b353a4d626ec30411a443147679e4",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-item-rating-tier-resolution",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/app/bootstrap.js",
+              "marker": "new ItemRatingTierResolver()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 3,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "assignment",
+              "location": "49:1",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "currentPath": "src/core/items/progression/item_rating_tier_resolver.js",
+            "symbol": "ItemRatingTierResolver",
+            "location": "49:1",
+            "sourceSha256": "4e3d8536d418593c4012cd518fd47305cb6070a1e1741da1496aa5416ed40d13",
+            "topLevelStatements": [
+              "class-declaration",
+              "global-this-assignment"
+            ],
+            "assignmentTarget": "globalThis.ItemRatingTierResolver",
+            "evaluatedGlobalNames": [
+              "ItemRatingTierResolver"
+            ],
+            "evaluationCount": 1,
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "ItemRatingTierResolver",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "ItemRatingTierResolver",
+            "mechanism": "global-this-property",
+            "availability": "program-init"
+          }
+        ]
+      }
+    ]
+  },
+  "runtimeBaseline": {
+    "projectModuleCount": 64,
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "src/game/domain/fishing/tackle_failure_selector.js",
+      "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/inventory_item_location.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "activationCount": 68,
+    "bridgeCount": 111,
+    "scriptTopology": {
+      "physicalClassicScriptCount": 429,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0
+    }
+  },
+  "closure": {
+    "existingCumulativeModuleCount": 64,
+    "existingCumulativeModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "src/game/domain/fishing/tackle_failure_selector.js",
+      "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/inventory_item_location.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "newProjectModuleCount": 6,
+    "newProjectModules": [
+      "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_match.js",
+      "src/game/domain/items/freshness/bait_freshness_modifier.js",
+      "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "src/game/domain/items/progression/item_rating_tier_resolver.js"
+    ],
+    "resultingProjectModuleCount": 70,
+    "internalEdges": [],
+    "alreadyCumulativeDependencies": [],
+    "unexpectedDependencies": []
+  },
+  "evaluation": {
+    "legacyScriptOrderControlsEvaluation": false,
+    "ordering": "esm-graph-topology-with-lexicographic-diagnostic-tiebreak",
+    "stronglyConnectedComponents": [
+      {
+        "id": "scc-087f379a7733",
+        "members": [
+          "src/core/items/bait/bait_effectiveness_knowledge_policy.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-16c103a9399f",
+        "members": [
+          "src/core/items/freshness/bait_freshness_modifier.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-2a538a4bccbb",
+        "members": [
+          "src/core/items/bait/bait_effectiveness_match.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-2e2f5d7bcbba",
+        "members": [
+          "src/core/items/metrics/item_bounded_metric_resolver.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-3644313628fc",
+        "members": [
+          "src/core/items/progression/item_rating_tier_resolver.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-4114bb835ac8",
+        "members": [
+          "src/core/items/freshness/item_freshness_state_policy.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      }
+    ],
+    "layers": [
+      [
+        "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+        "src/game/domain/items/bait/bait_effectiveness_match.js",
+        "src/game/domain/items/freshness/bait_freshness_modifier.js",
+        "src/game/domain/items/freshness/item_freshness_state_policy.js",
+        "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+        "src/game/domain/items/progression/item_rating_tier_resolver.js"
+      ]
+    ],
+    "cycles": []
+  },
+  "boundaries": {
+    "forbiddenEdges": [],
+    "directConfigDependencies": [],
+    "browserCapabilities": [],
+    "transportReads": [],
+    "forbiddenSourceReads": [],
+    "dynamicConstructs": []
+  },
+  "state": {
+    "reviewed": [
+      {
+        "module": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+        "frozenStateRole": "stateless",
+        "classification": "stateless",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/items/bait/bait_effectiveness_match.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/items/freshness/bait_freshness_modifier.js",
+        "frozenStateRole": "stateless",
+        "classification": "stateless",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/items/freshness/item_freshness_state_policy.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/items/metrics/item_bounded_metric_resolver.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/items/progression/item_rating_tier_resolver.js",
+        "frozenStateRole": "state-participant",
+        "classification": "state-participant",
+        "ownerIdentity": "preserved"
+      }
+    ],
+    "unresolved": []
+  },
+  "behavior": {
+    "resultShapeSensitive": [],
+    "mutableIdentitySensitive": [],
+    "formulaDefaultsClampsRoundingFingerprints": [
+      {
+        "module": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+        "sha256": "c6fcdc96ab2b84e175dd5e994105b6690e9d93f74ca5e15187cbfaeb67188c41"
+      },
+      {
+        "module": "src/core/items/bait/bait_effectiveness_match.js",
+        "sha256": "01a4110a8ed8c5b573e149593560d4c8ee06c8b7672a14a839e5809002c8023c"
+      },
+      {
+        "module": "src/core/items/freshness/bait_freshness_modifier.js",
+        "sha256": "ed62ed21454d6133422257a282fb00be7aec1a56a37f4b21a291f6d4b6028bef"
+      },
+      {
+        "module": "src/core/items/freshness/item_freshness_state_policy.js",
+        "sha256": "29bd880efaa830a529546e6256bcd8ce6df67651b5c11439efa29644b0f39fa0"
+      },
+      {
+        "module": "src/core/items/metrics/item_bounded_metric_resolver.js",
+        "sha256": "0e98a9a594bd9692053aa136cce50df8b48fb5cf86232c3faeba78e28cf6457f"
+      },
+      {
+        "module": "src/core/items/progression/item_rating_tier_resolver.js",
+        "sha256": "aab9d1ee1f0c2970a92f92814758449a6a7b353a4d626ec30411a443147679e4"
+      }
+    ],
+    "unresolved": []
+  },
+  "performance": {
+    "reviewed": [
+      {
+        "module": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+        "classification": "existing-bait-effectiveness-knowledge-lookup",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/app/bootstrap.js",
+            "marker": "new AlwaysKnownBaitEffectivenessPolicy()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 0,
+          "arrayExpressions": 0,
+          "newExpressions": 1,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/items/bait/bait_effectiveness_match.js",
+        "classification": "existing-bait-effectiveness-match-value",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/core/items/bait/bait_effectiveness_resolver.js",
+            "marker": "new BaitEffectivenessMatch()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 1,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/items/freshness/bait_freshness_modifier.js",
+        "classification": "existing-bait-freshness-modifier",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/app/bootstrap.js",
+            "marker": "new BaitFreshnessModifier()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 1,
+          "arrayExpressions": 0,
+          "newExpressions": 1,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/items/freshness/item_freshness_state_policy.js",
+        "classification": "existing-item-freshness-state-normalization",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/application/inventory/apply_bait_exposure_service.js",
+            "marker": "freshnessStatePolicy = new ItemFreshnessStatePolicy()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 6,
+          "arrayExpressions": 0,
+          "newExpressions": 5,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 1
+        }
+      },
+      {
+        "module": "src/core/items/metrics/item_bounded_metric_resolver.js",
+        "classification": "existing-bounded-item-metric-resolution",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/core/items/condition/item_condition_resolver.js",
+            "marker": "class ItemConditionResolver extends ItemBoundedMetricResolver"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 4,
+          "arrayExpressions": 0,
+          "newExpressions": 3,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/items/progression/item_rating_tier_resolver.js",
+        "classification": "existing-item-rating-tier-resolution",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/app/bootstrap.js",
+            "marker": "new ItemRatingTierResolver()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 4,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 3,
+          "objectAssignCalls": 0,
+          "roundingCalls": 1
+        }
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "unresolved": []
+  },
+  "effects": {
+    "safe": [],
+    "reviewed": [
+      "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+      "src/core/items/bait/bait_effectiveness_match.js",
+      "src/core/items/freshness/bait_freshness_modifier.js",
+      "src/core/items/freshness/item_freshness_state_policy.js",
+      "src/core/items/metrics/item_bounded_metric_resolver.js",
+      "src/core/items/progression/item_rating_tier_resolver.js"
+    ],
+    "unsafe": []
+  },
+  "compatibility": {
+    "providers": [
+      {
+        "module": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+        "symbol": "AlwaysKnownBaitEffectivenessPolicy",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+        "symbol": "AlwaysKnownBaitEffectivenessPolicy",
+        "mechanism": "global-this-property",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+        "symbol": "BaitEffectivenessKnowledgePolicy",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+        "symbol": "BaitEffectivenessKnowledgePolicy",
+        "mechanism": "global-this-property",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/bait/bait_effectiveness_match.js",
+        "symbol": "BaitEffectivenessMatch",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/bait/bait_effectiveness_match.js",
+        "symbol": "BaitEffectivenessMatch",
+        "mechanism": "global-this-property",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/freshness/bait_freshness_modifier.js",
+        "symbol": "BaitFreshnessModifier",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/freshness/bait_freshness_modifier.js",
+        "symbol": "BaitFreshnessModifier",
+        "mechanism": "global-this-property",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/freshness/item_freshness_state_policy.js",
+        "symbol": "ItemFreshnessStatePolicy",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/freshness/item_freshness_state_policy.js",
+        "symbol": "ItemFreshnessStatePolicy",
+        "mechanism": "global-this-property",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/metrics/item_bounded_metric_resolver.js",
+        "symbol": "ItemBoundedMetricResolver",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/metrics/item_bounded_metric_resolver.js",
+        "symbol": "ItemBoundedMetricResolver",
+        "mechanism": "global-this-property",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/progression/item_rating_tier_resolver.js",
+        "symbol": "ItemRatingTierResolver",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/progression/item_rating_tier_resolver.js",
+        "symbol": "ItemRatingTierResolver",
+        "mechanism": "global-this-property",
+        "availability": "program-init"
+      }
+    ],
+    "consumers": [
+      {
+        "provider": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "AlwaysKnownBaitEffectivenessPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+        "source": "src/core/items/bait/bait_effectiveness_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "AlwaysKnownBaitEffectivenessPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/items/bait/bait_effectiveness_match.js",
+        "source": "src/core/items/bait/bait_effectiveness_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "BaitEffectivenessMatch"
+        ]
+      },
+      {
+        "provider": "src/core/items/freshness/bait_freshness_modifier.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "BaitFreshnessModifier"
+        ]
+      },
+      {
+        "provider": "src/core/items/freshness/bait_freshness_modifier.js",
+        "source": "src/core/items/bait/bait_effectiveness_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "BaitFreshnessModifier"
+        ]
+      },
+      {
+        "provider": "src/core/items/freshness/item_freshness_state_policy.js",
+        "source": "src/application/inventory/apply_bait_exposure_service.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "ItemFreshnessStatePolicy"
+        ]
+      },
+      {
+        "provider": "src/core/items/freshness/item_freshness_state_policy.js",
+        "source": "src/application/inventory/freshest_refill_candidate_policy.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "ItemFreshnessStatePolicy"
+        ]
+      },
+      {
+        "provider": "src/core/items/freshness/item_freshness_state_policy.js",
+        "source": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+        "sourceBoundary": "platform",
+        "symbols": [
+          "ItemFreshnessStatePolicy"
+        ]
+      },
+      {
+        "provider": "src/core/items/freshness/item_freshness_state_policy.js",
+        "source": "src/infrastructure/storage/legacy_item_state_migration.js",
+        "sourceBoundary": "platform",
+        "symbols": [
+          "ItemFreshnessStatePolicy"
+        ]
+      },
+      {
+        "provider": "src/core/items/metrics/item_bounded_metric_resolver.js",
+        "source": "src/core/items/condition/item_condition_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemBoundedMetricResolver"
+        ]
+      },
+      {
+        "provider": "src/core/items/metrics/item_bounded_metric_resolver.js",
+        "source": "src/core/items/freshness/item_freshness_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemBoundedMetricResolver"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/item_rating_tier_resolver.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "ItemRatingTierResolver"
+        ]
+      }
+    ],
+    "activations": [
+      {
+        "id": "activation-7a545a4f3325",
+        "owner": "stage-3.candidate-018-items-8ea4be10",
+        "sourceProvider": "src/core/items/bait/bait_effectiveness_match.js",
+        "targetModule": "src/game/domain/items/bait/bait_effectiveness_match.js",
+        "exportName": "BaitEffectivenessMatch",
+        "legacySymbol": "BaitEffectivenessMatch",
+        "legacyScriptIndex": 62,
+        "shimFile": "activations/062_baiteffectivenessmatch.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/items/bait/bait_effectiveness_resolver.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-a1c4f48a2220",
+        "owner": "stage-3.candidate-018-items-8ea4be10",
+        "sourceProvider": "src/core/items/metrics/item_bounded_metric_resolver.js",
+        "targetModule": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+        "exportName": "ItemBoundedMetricResolver",
+        "legacySymbol": "ItemBoundedMetricResolver",
+        "legacyScriptIndex": 53,
+        "shimFile": "activations/053_itemboundedmetricresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/items/condition/item_condition_resolver.js",
+          "src/core/items/freshness/item_freshness_resolver.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-ab53a7e2f8cc",
+        "owner": "stage-3.candidate-018-items-8ea4be10",
+        "sourceProvider": "src/core/items/freshness/item_freshness_state_policy.js",
+        "targetModule": "src/game/domain/items/freshness/item_freshness_state_policy.js",
+        "exportName": "ItemFreshnessStatePolicy",
+        "legacySymbol": "ItemFreshnessStatePolicy",
+        "legacyScriptIndex": 57,
+        "shimFile": "activations/057_itemfreshnessstatepolicy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/application/inventory/apply_bait_exposure_service.js",
+          "src/application/inventory/freshest_refill_candidate_policy.js",
+          "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+          "src/infrastructure/storage/legacy_item_state_migration.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-ac48840f32b4",
+        "owner": "stage-3.candidate-018-items-8ea4be10",
+        "sourceProvider": "src/core/items/progression/item_rating_tier_resolver.js",
+        "targetModule": "src/game/domain/items/progression/item_rating_tier_resolver.js",
+        "exportName": "ItemRatingTierResolver",
+        "legacySymbol": "ItemRatingTierResolver",
+        "legacyScriptIndex": 81,
+        "shimFile": "activations/081_itemratingtierresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/bootstrap.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-b363ddbc09ea",
+        "owner": "stage-3.candidate-018-items-8ea4be10",
+        "sourceProvider": "src/core/items/freshness/bait_freshness_modifier.js",
+        "targetModule": "src/game/domain/items/freshness/bait_freshness_modifier.js",
+        "exportName": "BaitFreshnessModifier",
+        "legacySymbol": "BaitFreshnessModifier",
+        "legacyScriptIndex": 59,
+        "shimFile": "activations/059_baitfreshnessmodifier.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/bootstrap.js",
+          "src/core/items/bait/bait_effectiveness_resolver.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-fa2fa2abbda3",
+        "owner": "stage-3.candidate-018-items-8ea4be10",
+        "sourceProvider": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+        "targetModule": "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+        "exportName": "AlwaysKnownBaitEffectivenessPolicy",
+        "legacySymbol": "AlwaysKnownBaitEffectivenessPolicy",
+        "legacyScriptIndex": 64,
+        "shimFile": "activations/064_alwaysknownbaiteffectivenesspolicy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/bootstrap.js",
+          "src/core/items/bait/bait_effectiveness_resolver.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      }
+    ]
+  },
+  "prerequisites": {
+    "frozen": [],
+    "reviewed": [
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/items/bait/bait_effectiveness_knowledge_policy.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/items/bait/bait_effectiveness_match.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/items/bait/bait_effectiveness_match.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/items/freshness/bait_freshness_modifier.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/items/freshness/bait_freshness_modifier.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/items/freshness/item_freshness_state_policy.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/items/freshness/item_freshness_state_policy.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/items/metrics/item_bounded_metric_resolver.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/items/metrics/item_bounded_metric_resolver.js"
+      },
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/items/progression/item_rating_tier_resolver.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/items/progression/item_rating_tier_resolver.js"
+      }
+    ],
+    "newlyDiscovered": []
+  },
+  "migrationGates": [
+    "six-exact-source-and-method-shapes",
+    "seven-export-identities-six-activations",
+    "one-reviewed-local-class-family-with-two-global-exposures",
+    "five-reviewed-global-this-class-exposures",
+    "twelve-exact-consumer-relationships",
+    "all-legacy-activation-positions-preserved",
+    "zero-config-platform-browser-dev-dependencies",
+    "zero-added-hot-loop-allocations"
+  ],
+  "issues": [],
+  "verdict": "eligible-for-execution-plan",
+  "liveObservation": {
+    "status": "verified",
+    "sourceCount": 488,
+    "persistencePerformed": false,
+    "consumerRelationships": [
+      {
+        "provider": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "AlwaysKnownBaitEffectivenessPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+        "source": "src/core/items/bait/bait_effectiveness_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "AlwaysKnownBaitEffectivenessPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/items/bait/bait_effectiveness_match.js",
+        "source": "src/core/items/bait/bait_effectiveness_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "BaitEffectivenessMatch"
+        ]
+      },
+      {
+        "provider": "src/core/items/freshness/bait_freshness_modifier.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "BaitFreshnessModifier"
+        ]
+      },
+      {
+        "provider": "src/core/items/freshness/bait_freshness_modifier.js",
+        "source": "src/core/items/bait/bait_effectiveness_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "BaitFreshnessModifier"
+        ]
+      },
+      {
+        "provider": "src/core/items/freshness/item_freshness_state_policy.js",
+        "source": "src/application/inventory/apply_bait_exposure_service.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "ItemFreshnessStatePolicy"
+        ]
+      },
+      {
+        "provider": "src/core/items/freshness/item_freshness_state_policy.js",
+        "source": "src/application/inventory/freshest_refill_candidate_policy.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "ItemFreshnessStatePolicy"
+        ]
+      },
+      {
+        "provider": "src/core/items/freshness/item_freshness_state_policy.js",
+        "source": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+        "sourceBoundary": "platform",
+        "symbols": [
+          "ItemFreshnessStatePolicy"
+        ]
+      },
+      {
+        "provider": "src/core/items/freshness/item_freshness_state_policy.js",
+        "source": "src/infrastructure/storage/legacy_item_state_migration.js",
+        "sourceBoundary": "platform",
+        "symbols": [
+          "ItemFreshnessStatePolicy"
+        ]
+      },
+      {
+        "provider": "src/core/items/metrics/item_bounded_metric_resolver.js",
+        "source": "src/core/items/condition/item_condition_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemBoundedMetricResolver"
+        ]
+      },
+      {
+        "provider": "src/core/items/metrics/item_bounded_metric_resolver.js",
+        "source": "src/core/items/freshness/item_freshness_resolver.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemBoundedMetricResolver"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/item_rating_tier_resolver.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "ItemRatingTierResolver"
+        ]
+      }
+    ]
+  },
+  "plannedTopology": {
+    "projectModuleCount": 70,
+    "activationCount": 74,
+    "bridgeRecordCount": 123
+  }
+}

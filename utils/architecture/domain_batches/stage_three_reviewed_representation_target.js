@@ -28,14 +28,28 @@ class RepresentationOnlyReviewedEsmTarget {
       assert.deepEqual(observed.observations, targetEvaluation.observations);
       return projected;
     }
-    if (!contract.frozenConstants && contract.legacyExposure?.mechanism !== "window-property") {
+    if (!contract.frozenConstants && !contract.classFamily &&
+      contract.legacyExposure?.mechanism !== "window-property") {
       assert.equal(exports.length, 1);
       return new RepresentationOnlyNamedEsmTarget().project({ source, currentPath, targetPath,
         exportName: exports[0], sourceSha256, legacyExposure: contract.legacyExposure });
     }
     let classicBody;
     let targetSource;
-    if (contract.frozenConstants) {
+    if (contract.classFamily) {
+      assert(!contract.legacyExposure && !contract.frozenStaticFields);
+      const family = contract.classFamily;
+      reviewer.classFamily({ source, currentPath, ...family });
+      const tree = espree.parse(source, { ecmaVersion: "latest", sourceType: "script", range: true });
+      classicBody = `${source.slice(0, tree.body[family.classes.length].range[0]).trimEnd()}\n`;
+      targetSource = classicBody;
+      for (const name of family.classes) {
+        const token = `class ${name} `;
+        assert.equal(targetSource.split(token).length - 1, 1);
+        targetSource = targetSource.replace(token, `export ${token}`);
+      }
+      assert.deepEqual(exports, [...family.classes].sort());
+    } else if (contract.frozenConstants) {
       reviewer.frozenConstants({ source, currentPath, ...contract.frozenConstants });
       classicBody = source;
       targetSource = source;
@@ -71,9 +85,10 @@ class RepresentationOnlyReviewedEsmTarget {
     for (const name of Object.keys(contract.frozenConstants?.bindings || {})) {
       restored = restored.replace(`export const ${name}`, `const ${name}`);
     }
-    restored = restored.replace(`export class ${contract.frozenConstants?.className ||
-      contract.legacyExposure.symbol}`, `class ${contract.frozenConstants?.className ||
-      contract.legacyExposure.symbol}`);
+    for (const name of contract.classFamily?.classes || [contract.frozenConstants?.className ||
+      contract.legacyExposure.symbol]) {
+      restored = restored.replace(`export class ${name}`, `class ${name}`);
+    }
     assert.equal(restored, classicBody, `${targetPath}: non-representation source delta`);
     if (targetEvaluation) {
       const observed = new ModuleEvaluationEffectObserver().observe({ modulePath: targetPath,

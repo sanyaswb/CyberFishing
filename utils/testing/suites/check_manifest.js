@@ -621,6 +621,12 @@ const CHECK_DEFINITIONS = Object.freeze([
       id: "stage-3-batch-017-architecture",
       title: "Stage 3.17.0–3.17.7 inventory item location domain migration and rollback gates",
       file: "utils/architecture/stage-3-batch-017-architecture-check.js",
+      suites: ["history"],
+    },
+    {
+      id: "stage-3-batch-018-architecture",
+      title: "Stage 3.18.0–3.18.7 items bait freshness and metrics domain migration and rollback gates",
+      file: "utils/architecture/stage-3-batch-018-architecture-check.js",
       suites: ["quick", "architecture", "history"],
     },
   {

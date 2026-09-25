@@ -83,6 +83,22 @@
       ]
     },
     {
+      "id": "bridge-145734990113",
+      "bridge": "src/core/items/freshness/bait_freshness_modifier.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/items/freshness/bait_freshness_modifier.js",
+      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-018-items-8ea4be10",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "BaitFreshnessModifier",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-19607c8ce243",
       "bridge": "src/core/fishing/reel_hold_load_policy.js",
       "source": "src/core/fishing/reel_hold_recovery_system.js",
@@ -174,6 +190,22 @@
       "globalProviders": [
         {
           "symbol": "RenderMath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-1d1043ea5488",
+      "bridge": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+      "source": "src/core/items/bait/bait_effectiveness_resolver.js",
+      "target": "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-018-items-8ea4be10",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "AlwaysKnownBaitEffectivenessPolicy",
           "mechanism": "global-this-property"
         }
       ]
@@ -327,6 +359,22 @@
       ]
     },
     {
+      "id": "bridge-3479b9326142",
+      "bridge": "src/core/items/freshness/item_freshness_state_policy.js",
+      "source": "src/application/inventory/freshest_refill_candidate_policy.js",
+      "target": "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-018-items-8ea4be10",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ItemFreshnessStatePolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-357870b89ad9",
       "bridge": "src/core/inventory/inventory_item_location.js",
       "source": "src/core/inventory/item_assembly_stacking_policy.js",
@@ -391,6 +439,22 @@
       ]
     },
     {
+      "id": "bridge-497d2debe2ba",
+      "bridge": "src/core/items/freshness/item_freshness_state_policy.js",
+      "source": "src/application/inventory/apply_bait_exposure_service.js",
+      "target": "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-018-items-8ea4be10",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ItemFreshnessStatePolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-4c97028596c9",
       "bridge": "src/core/equipment/rod_capability_resolver.js",
       "source": "src/core/equipment/equipment_compatibility_policy.js",
@@ -434,6 +498,22 @@
       "globalProviders": [
         {
           "symbol": "ItemMetricStrategy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-52a796afbccb",
+      "bridge": "src/core/items/freshness/item_freshness_state_policy.js",
+      "source": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+      "target": "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-018-items-8ea4be10",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ItemFreshnessStatePolicy",
           "mechanism": "global-this-property"
         }
       ]
@@ -679,6 +759,22 @@
       ]
     },
     {
+      "id": "bridge-6e95376ecf9f",
+      "bridge": "src/core/items/freshness/item_freshness_state_policy.js",
+      "source": "src/infrastructure/storage/legacy_item_state_migration.js",
+      "target": "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-018-items-8ea4be10",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ItemFreshnessStatePolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-70c0e5efc338",
       "bridge": "src/core/fishing/rod_stroke_tracker.js",
       "source": "src/systems/fight_physics_system.js",
@@ -706,6 +802,38 @@
       "globalProviders": [
         {
           "symbol": "DependencyContractValidator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-77296222f78c",
+      "bridge": "src/core/items/freshness/bait_freshness_modifier.js",
+      "source": "src/core/items/bait/bait_effectiveness_resolver.js",
+      "target": "src/game/domain/items/freshness/bait_freshness_modifier.js",
+      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-018-items-8ea4be10",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "BaitFreshnessModifier",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-783560dad6b0",
+      "bridge": "src/core/items/metrics/item_bounded_metric_resolver.js",
+      "source": "src/core/items/condition/item_condition_resolver.js",
+      "target": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-018-items-8ea4be10",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "ItemBoundedMetricResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -994,6 +1122,22 @@
       "globalProviders": [
         {
           "symbol": "LandingLiftReadinessPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-9c79441f163f",
+      "bridge": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-018-items-8ea4be10",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "AlwaysKnownBaitEffectivenessPolicy",
           "mechanism": "global-this-property"
         }
       ]
@@ -1423,6 +1567,22 @@
       ]
     },
     {
+      "id": "bridge-d1f629c5a0fa",
+      "bridge": "src/core/items/metrics/item_bounded_metric_resolver.js",
+      "source": "src/core/items/freshness/item_freshness_resolver.js",
+      "target": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-018-items-8ea4be10",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "ItemBoundedMetricResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-d2178f043482",
       "bridge": "src/core/inventory/inventory_item_location.js",
       "source": "src/application/inventory/inventory_v2_command_service.js",
@@ -1466,6 +1626,22 @@
       "globalProviders": [
         {
           "symbol": "RenderMath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-d79a992a6af8",
+      "bridge": "src/core/items/progression/item_rating_tier_resolver.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/items/progression/item_rating_tier_resolver.js",
+      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-018-items-8ea4be10",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemRatingTierResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -1530,6 +1706,22 @@
       "globalProviders": [
         {
           "symbol": "ReelRetrieveSpeedCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-dfd570a5e25e",
+      "bridge": "src/core/items/bait/bait_effectiveness_match.js",
+      "source": "src/core/items/bait/bait_effectiveness_resolver.js",
+      "target": "src/game/domain/items/bait/bait_effectiveness_match.js",
+      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-018-items-8ea4be10",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "BaitEffectivenessMatch",
           "mechanism": "global-this-property"
         }
       ]

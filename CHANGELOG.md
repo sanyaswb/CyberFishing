@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.24.55 - Items Bait Freshness and Metrics Domain
+
+### Changed
+
+- Completed atomic Stage 3 batch 018: six Items modules with seven named ESM exports (bait effectiveness knowledge and match, bait freshness modifier, item freshness state, bounded item metrics, rating tiers).
+- Extended the cumulative graph from 64 to 70 project modules and from 68 to 74 activation contracts, with 123 exact bridge relationships.
+- Preserved activation timing, twelve classic consumer relationships, class identity, the local knowledge-policy inheritance chain, state ownership and item behavior.
+- Added a reviewed class-family shape (several classes with exact global exposures, local superclasses only); the unconsumed abstract BaitEffectivenessKnowledgePolicy is kept as an ESM export without a classic global.
+- Advanced the completed ordered prefix to batches 001–018 (61 of 69 frozen Domain modules); the next task is batch 019 preflight.
+
 ## v0.24.54 - Inventory Item Location Domain
 
 ### Changed
