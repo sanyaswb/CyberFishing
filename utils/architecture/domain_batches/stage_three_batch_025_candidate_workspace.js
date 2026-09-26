@@ -1,0 +1,102 @@
+"use strict";
+
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
+const { PendingTargetManifestTransition } = require("./stage_three_pending_target_manifest");
+const { ActivationShimRenderer } = require("../../build/compat_runtime/activation_shim");
+const { ActivationRetirementProjection, RetiredActivationPlaceholder } =
+  require("../../build/compat_runtime/activation_retirement");
+const { PATHS } = require("./stage_three_live_preflight");
+const { serialize } = require("./stage_three_batch_025_planning");
+const { StageThreeApprovedPlanSource } = require("./stage_three_approved_plan_source");
+
+class Batch025CandidateWorkspace {
+  constructor() {
+    this.parent = fs.realpathSync(os.tmpdir());
+    this.root = fs.mkdtempSync(path.join(this.parent, "cyber-batch025-candidate-"));
+    Object.defineProperty(this, "allocatedRoot", { value: this.root });
+  }
+
+  write(relative, bytes) {
+    assert.equal(this.root, this.allocatedRoot);
+    assert(!path.isAbsolute(relative) && !relative.includes("\\") &&
+      relative.split("/").every(part => part && part !== "." && part !== ".."));
+    const target = path.resolve(this.root, relative);
+    assert.equal(path.relative(this.root, target).replaceAll("\\", "/"), relative);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, bytes);
+  }
+
+  prepare(app, prebuild, projections, sideEffectReviews) {
+    const runtime = app.json(PATHS.runtimeContract);
+    const state = app.json(PATHS.executionState);
+    const approved = new StageThreeApprovedPlanSource({ read: file => app.bytes(file) }).load(state).document;
+    const retiredActivations = retiredActivationsOf(runtime, prebuild);
+    const retirement = new ActivationRetirementProjection();
+    const future = retirement.contract({ ...runtime, sideEffectReviews: [
+      ...runtime.sideEffectReviews, ...sideEffectReviews,
+    ], activationPositions: [
+      ...runtime.activationPositions, ...prebuild.preliminaryMetadata.plannedActivationPositions,
+    ].sort((a, b) => a.id.localeCompare(b.id)) }, retiredActivations, prebuild.batchId);
+    for (const source of prebuild.activeTopology.projectModules) this.write(source, app.bytes(source));
+    for (const projection of projections) this.write(projection.targetPath, projection.targetSource);
+    const renderer = new ActivationShimRenderer();
+    const byProvider = new Map();
+    for (const activation of future.activationPositions) {
+      const shims = byProvider.get(activation.sourceProvider) || [];
+      shims.push(renderer.render(activation, runtime.transport.symbol));
+      byProvider.set(activation.sourceProvider, shims);
+    }
+    for (const [provider, shims] of byProvider) {
+      this.write(provider, shims.join(""));
+    }
+    for (const activation of retiredActivations) {
+      this.write(activation.sourceProvider, new RetiredActivationPlaceholder().render(activation));
+    }
+    const pending = new PendingTargetManifestTransition({
+      policy: app.json("architecture/module_architecture.json"), prebuild,
+      approvedBatch: approved.batches.find(batch => batch.id === prebuild.batchId),
+    });
+    const manifest = pending.add(app.bytes(PATHS.manifest));
+    assert.deepEqual(pending.reverse(manifest), app.bytes(PATHS.manifest));
+    this.write(PATHS.manifest, manifest);
+    this.write(PATHS.runtimeContract, serialize(future));
+    const registry = app.json(PATHS.bridgeRegistry);
+    const retired = new Set(prebuild.plannedDelta.retiredBridgeIds || []);
+    this.write(PATHS.bridgeRegistry, serialize({ ...registry, bridges: [
+      ...registry.bridges.filter(record => !retired.has(record.id)), ...prebuild.preliminaryMetadata.plannedBridges,
+    ].sort((a, b) => a.id.localeCompare(b.id)) }));
+    this.write(PATHS.executionState, serialize({
+      ...app.json(PATHS.executionState), activeBatchPhase: "runtime-active",
+    }));
+    this.write(PATHS.approvedPlan, app.bytes(PATHS.approvedPlan));
+    this.write(state.continuationPlan.path, app.bytes(state.continuationPlan.path));
+    const html = retirement.index(app.read(PATHS.index), runtime.output.directory, retiredActivations);
+    assert.equal((html.match(/compat_runtime\.iife\.js/gu) || []).length, 1);
+    this.write(PATHS.index, html);
+    this.write("dist/stage-3-compat-runtime/previous-validated-output.txt", "previous validated output sentinel\n");
+    return { future, manifest, html };
+  }
+
+  cleanup() {
+    assert.equal(this.root, this.allocatedRoot);
+    const resolved = fs.realpathSync(this.root);
+    assert.equal(resolved, this.root);
+    assert.equal(path.dirname(resolved), this.parent);
+    assert(path.basename(resolved).startsWith("cyber-batch025-candidate-"));
+    fs.rmSync(resolved, { recursive: true, force: true });
+  }
+}
+
+// The active activation contracts this batch retires, in prebuild order.
+function retiredActivationsOf(runtime, prebuild) {
+  return (prebuild.plannedDelta.retiredActivationIds || []).map(id => {
+    const activation = runtime.activationPositions.find(item => item.id === id);
+    assert(activation, `Retired activation is not active: ${id}`);
+    return activation;
+  });
+}
+
+module.exports = { Batch025CandidateWorkspace, retiredActivationsOf };

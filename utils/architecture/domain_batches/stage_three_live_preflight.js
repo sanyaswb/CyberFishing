@@ -148,9 +148,14 @@ class StageThreeLivePreflight {
       runtimeFacts, sourceReader: file => this.read(file),
       sideEffectReview, sideEffectReviewSha256,
     });
+    // Stage 3 activations whose every bridge is held by a module of this batch lose their last
+    // classic consumer: the batch retires them (inert placeholder position, no global).
+    const retiring = this.retiringActivations({ runtimeContract, bridgeRegistry, currentPaths });
+    assert.deepEqual(retiring.map(item => item.id), this.profile.executionProfile.expectedRetiredActivationIds || [],
+      "retiring activation set differs from the profile");
     const plannedTopology = {
       projectModuleCount: new Set([...base.runtimeBaseline.projectModules, ...base.closure.newProjectModules]).size,
-      activationCount: runtimeFacts.activationCount + base.compatibility.activations.length,
+      activationCount: runtimeFacts.activationCount + base.compatibility.activations.length - retiring.length,
       bridgeRecordCount: runtimeFacts.bridgeCount + consumers.length -
         (this.profile.executionProfile.expectedRetiredBridgeIds || []).length,
     };
@@ -159,8 +164,22 @@ class StageThreeLivePreflight {
       liveObservation: { status: "verified", sourceCount: live.modules.length,
         persistencePerformed: false, consumerRelationships: consumers },
       plannedTopology,
+      ...(retiring.length > 0 ? { activationRetirement: {
+        reason: "all-listed-legacy-consumers-migrated", placeholder: "inert-classic-position",
+        activations: retiring.map(item => ({ ...item })) } } : {}),
     });
     return this.validate(artifact);
+  }
+
+  retiringActivations({ runtimeContract, bridgeRegistry, currentPaths }) {
+    const holds = (bridge, activation) => bridge.target === activation.targetModule &&
+      bridge.globalProviders.some(provider => provider.symbol === activation.legacySymbol);
+    return runtimeContract.activationPositions.filter(activation => activation.owner.startsWith("stage-3."))
+      .filter(activation => {
+        const bridges = bridgeRegistry.bridges.filter(bridge => holds(bridge, activation));
+        return bridges.length > 0 && bridges.every(bridge => currentPaths.has(bridge.source));
+      })
+      .sort((left, right) => left.id.localeCompare(right.id));
   }
 
   validate(artifact) {

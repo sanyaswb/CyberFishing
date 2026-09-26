@@ -8,6 +8,7 @@ const {
 const { StageThreeGlobalExposureReview } = require("./stage_three_global_exposure_review");
 const { StageThreeReviewedEvaluationEffect } = require("./stage_three_reviewed_evaluation_effect");
 const { StageThreeStateIdentityReview } = require("./stage_three_state_identity_review");
+const { StageThreeCompositionIdentityReview } = require("./stage_three_composition_identity_review");
 const {
   StageThreeBatchSourceObserver,
 } = require("./stage_three_batch_source_observer");
@@ -94,6 +95,7 @@ class StageThreeBatchPreflightAuditBuilder {
       reviewed: profile.reviewedContracts[module.currentPath],
       stateGate: (batch.gates?.stateIdentity || []).find((gate) => gate.module === module.currentPath),
       sourceReader,
+      reviewedImports: expectedImports.filter((record) => record.consumer === module.currentPath),
     })).sort((left, right) => left.currentPath.localeCompare(right.currentPath));
     if (profile.sideEffectEvidence) {
       this.#require(sideEffectReview?.modules?.length === modules.length,
@@ -213,7 +215,15 @@ class StageThreeBatchPreflightAuditBuilder {
         module.effects.classification === "reviewed-compatible")) ||
       (prerequisite.kind === "state-review" && prerequisite.action === "prove-state-identity-invariant" &&
         modules.some((module) => module.currentPath === prerequisite.module &&
-          module.state.identityReview?.invariant === "same-authoritative-owner-before-and-after")));
+          module.state.identityReview?.invariant === "same-authoritative-owner-before-and-after")) ||
+      // Self-composition stays inside Domain: every composed class is a proven owner-created
+      // instance of a reviewed Domain import, so no cross-layer injection boundary is involved.
+      (prerequisite.kind === "dependency-inversion-review" &&
+        prerequisite.action === "review-constructor-injection-boundary" &&
+        modules.some((module) => module.currentPath === prerequisite.module &&
+          (module.state.identityReview?.compositions || []).length > 0 &&
+          module.state.identityReview.compositions.every((composition) =>
+            composition.provider?.startsWith("src/game/domain/")))));
     const unresolvedPrerequisites = batch.prerequisites.filter((prerequisite) =>
       !reviewedPrerequisites.includes(prerequisite));
     const unresolvedState = modules.filter((module) => !module.state.reviewed);
@@ -346,27 +356,49 @@ class StageThreeBatchPreflightAuditBuilder {
     });
   }
 
-  #moduleRecord({ module, manifestEntry, auditEntry, reviewed, stateGate, sourceReader }) {
+  #moduleRecord({ module, manifestEntry, auditEntry, reviewed, stateGate, sourceReader, reviewedImports = [] }) {
     this.#require(manifestEntry, `Manifest entry is missing: ${module.currentPath}`);
     this.#require(auditEntry?.dependencyAudit?.status === "verified",
       `dependency audit is stale: ${module.currentPath}`);
     // A partial state audit is accepted only through a reviewed collection state-identity proof
     // that covers exactly the frozen plan's review issues for this module.
-    const partialState = auditEntry?.stateOwnership?.status === "partial" &&
-      Boolean(reviewed?.stateIdentityReview) && stateGate?.status === "partial";
+    // Self-composition issues are proven instead by owner-created instances of reviewed imports.
+    const compositionPrefix = "self-composition:";
+    const compositionIssues = (stateGate?.reviewIssues || []).filter((issue) => issue.startsWith(compositionPrefix));
+    const collectionGate = stateGate && compositionIssues.length > 0
+      ? { ...stateGate, reviewIssues: stateGate.reviewIssues.filter((issue) => !issue.startsWith(compositionPrefix)) }
+      : stateGate;
+    const partialState = auditEntry?.stateOwnership?.status === "partial" && stateGate?.status === "partial" &&
+      (collectionGate.reviewIssues.length === 0 || Boolean(reviewed?.stateIdentityReview)) &&
+      (compositionIssues.length === 0 || reviewed?.compositionIdentityReview === true) &&
+      Boolean(reviewed?.stateIdentityReview || reviewed?.compositionIdentityReview);
     this.#require(auditEntry?.stateOwnership?.status === "verified" || partialState,
       `state audit is stale: ${module.currentPath}`);
     let identityReview = null;
-    if (partialState) {
+    if (partialState && reviewed.stateIdentityReview) {
       identityReview = new StageThreeStateIdentityReview().review({
         source: sourceReader(module.currentPath), currentPath: module.currentPath,
         ...reviewed.stateIdentityReview,
       });
       const prefix = "collection-state-requires-cache-review:";
-      this.#require(stateGate.reviewIssues.every((issue) => issue.startsWith(prefix)) &&
-        this.#same(stateGate.reviewIssues.map((issue) => issue.slice(prefix.length)).sort(),
+      this.#require(collectionGate.reviewIssues.every((issue) => issue.startsWith(prefix)) &&
+        this.#same(collectionGate.reviewIssues.map((issue) => issue.slice(prefix.length)).sort(),
           identityReview.collections.map((collection) => collection.owner).sort()),
       `state identity review differs from frozen review issues: ${module.currentPath}`);
+    }
+    if (partialState && compositionIssues.length > 0) {
+      const composition = new StageThreeCompositionIdentityReview().review({
+        source: sourceReader(module.currentPath), currentPath: module.currentPath,
+        issues: compositionIssues, reviewedImports,
+      });
+      identityReview = identityReview
+        ? { ...identityReview, compositions: composition.compositions }
+        : composition;
+    }
+    if (partialState) {
+      const covered = collectionGate.reviewIssues.length + compositionIssues.length;
+      this.#require(covered === stateGate.reviewIssues.length,
+        `state identity review leaves frozen review issues unproven: ${module.currentPath}`);
     }
     this.#require(auditEntry?.configurationInput?.status === "verified",
       `configuration audit is stale: ${module.currentPath}`);

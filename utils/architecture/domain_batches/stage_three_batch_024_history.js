@@ -10,6 +10,8 @@ const { CUTOVER } = require("./stage_three_batch_024_cutover");
 const { MANIFEST, beforeBatch024Observations } = require("./stage_three_batch_024_observation_transition");
 const { Batch024ReleaseTransition } = require("./stage_three_batch_024_release_transition");
 
+const { InformationalDocumentFreeze } = require("../informational_documents");
+
 const STATE = "architecture/migration/stage_3_execution_state.json";
 
 class Batch024History {
@@ -18,7 +20,10 @@ class Batch024History {
   exists() { return fs.existsSync(path.join(this.root, PREBUILD)); }
 
   before(file, provided = this.bytes(file)) {
-    let bytes = Buffer.from(provided);
+    let bytes = new (require("./stage_three_batch_025_history").Batch025History)(this.root).before(file, provided);
+    // Informational documents are unpinned after v0.24.62: history continues from their frozen bytes.
+    const pinned = new InformationalDocumentFreeze(this.root).pinned(file);
+    if (pinned) bytes = pinned;
     if (!this.exists()) return bytes;
     bytes = new Batch024ReleaseTransition(this.root).before(file, bytes);
     if (file === MANIFEST) bytes = beforeBatch024Observations(bytes, this.root);

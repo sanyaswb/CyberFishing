@@ -6,6 +6,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { PREBUILD } = require("./stage_three_batch_024_prebuild");
+const { InformationalDocumentFreeze } = require("../informational_documents");
 
 const STATE = "architecture/migration/stage_3_execution_state.json";
 const CUTOVER = "architecture/migration/stage_3_batch_024_runtime_cutover.json";
@@ -17,6 +18,12 @@ const sha = bytes => crypto.createHash("sha256").update(bytes).digest("hex");
 class Batch024HistoricalWorkspace {
   async run(root, action, { keepPrebuild = false, keepCutover = false, copyTools = false } = {}) {
     const projectRoot = path.resolve(root);
+    if (fs.existsSync(path.join(projectRoot, "architecture/migration/stage_3_batch_025_runtime_cutover.json")) ||
+      fs.existsSync(path.join(projectRoot, "architecture/migration/stage_3_batch_025_prebuild_contract.json"))) {
+      const { Batch025HistoricalWorkspace } = require("./stage_three_batch_025_historical_workspace");
+      return new Batch025HistoricalWorkspace().run(projectRoot,
+        prior => this.run(prior, action, { keepPrebuild, keepCutover, copyTools }), { copyTools });
+    }
     if (!fs.existsSync(path.join(projectRoot, PREBUILD))) return action(projectRoot);
     const parent = fs.realpathSync(os.tmpdir());
     const temporary = fs.mkdtempSync(path.join(parent, "cyber-batch024-historical-"));
@@ -40,6 +47,8 @@ class Batch024HistoricalWorkspace {
       }
       if (copyTools) fs.symlinkSync(path.join(projectRoot, "node_modules"),
         path.join(temporary, "node_modules"), "junction");
+      // Informational documents are unpinned after v0.24.62: replay continues from their frozen bytes.
+      new InformationalDocumentFreeze(temporary).restore(temporary);
       const releasePath = path.join(temporary, RELEASE);
       if (fs.existsSync(releasePath)) {
         const transition = new (require("./stage_three_batch_024_release_transition").Batch024ReleaseTransition)(temporary);

@@ -95,11 +95,11 @@ class StageTwoSemanticClosureTransition {
         contract: "architecture/migration/stage_3_compatibility_runtime.json",
         executionState: "architecture/migration/stage_3_execution_state.json",
         output: cumulativeContract.output.directory,
-        runtimeInputs: new Set(
-          cumulativeContract.activationPositions.map(
-            (activation) => activation.targetModule,
-          ),
-        ).size,
+        // A retired activation's ESM module stays in the cumulative graph for its importers.
+        runtimeInputs: new Set([
+          ...cumulativeContract.activationPositions,
+          ...(cumulativeContract.retiredActivations || []).map((record) => record.activation),
+        ].map((activation) => activation.targetModule)).size,
         activationInputs: cumulativeContract.activationPositions.length,
       };
       if (
@@ -630,6 +630,8 @@ class StageOneClosureValidator {
         "Items Metric Strategies Domain",
       "stage-3.replan-322.batch-024-inventory-21307d68":
         "Inventory Reservation Policy Domain",
+      "stage-3.replan-322.batch-025-fishing-9bcfae5e":
+        "Fishing Sector Pressure and Retrieve Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }
@@ -681,8 +683,10 @@ class StageOneClosureValidator {
     const selectedStageThreeBatch = (stageThreeApprovedPlan?.batches || [])
       .filter((batch) => completedStageThree.has(batch.id))
       .at(-1);
+    // A retired activation keeps its script slot as an inert classic placeholder.
     const cumulativeActivationCount =
-      selectedStageThreeBatch?.compatibility?.cumulativeActivationIds?.length || 0;
+      (selectedStageThreeBatch?.compatibility?.cumulativeActivationIds?.length || 0) +
+      (selectedStageThreeBatch?.compatibility?.cumulativeRetiredActivationIds?.length || 0);
     const additionalActivationScripts = Math.max(
       0,
       cumulativeActivationCount - activeWrapperCount - stageThreeTargetCount,

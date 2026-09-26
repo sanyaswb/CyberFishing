@@ -60,8 +60,10 @@ class StageThreeBatchPrebuildProfile {
         `active topology ${field} is invalid`);
       require(Number.isInteger(topology?.delta?.[field]) && topology.delta[field] >= 0,
         `delta topology ${field} is invalid`);
-      const retired = field === "bridges"
-        ? (definition?.executionProfile?.expectedRetiredBridgeIds || []).length : 0;
+      const retired = {
+        bridges: (definition?.executionProfile?.expectedRetiredBridgeIds || []).length,
+        activations: (definition?.executionProfile?.expectedRetiredActivationIds || []).length,
+      }[field] || 0;
       require(topology?.planned?.[field] === topology?.active?.[field] + topology?.delta?.[field] - retired,
         `planned topology ${field} must equal active + delta - retired`);
     }

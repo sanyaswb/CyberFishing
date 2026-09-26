@@ -90,6 +90,14 @@ class StageThreeBatchExecutionProfile {
     }
     require(Array.isArray(retired) && retired.every(id => /^bridge-[a-f0-9]{12}$/u.test(id)) &&
       new Set(retired).size === retired.length, "expectedRetiredBridgeIds must be unique bridge ids");
+    const retiredActivations = definition?.expectedRetiredActivationIds ?? [];
+    require(Array.isArray(retiredActivations) && retiredActivations.every(id => /^activation-[a-f0-9]{12}$/u.test(id)) &&
+      new Set(retiredActivations).size === retiredActivations.length &&
+      JSON.stringify(retiredActivations) === JSON.stringify([...retiredActivations].sort()),
+    "expectedRetiredActivationIds must be sorted unique activation ids");
+    // Owner decision 2026-09-26: informational documents leave release metadata from batch 025 on.
+    require(definition?.informationalDocumentsExcluded === undefined ||
+      definition.informationalDocumentsExcluded === true, "informationalDocumentsExcluded must be true when set");
     if (definition?.continuationPlan !== undefined) {
       require(normalizedPath(definition.continuationPlan?.path) &&
         /^[a-f0-9]{64}$/u.test(definition.continuationPlan?.sha256 || ""),
@@ -131,8 +139,9 @@ class StageThreeBatchExecutionProfile {
       "project-module topology delta must equal expectedTargetCount",
     );
     require(
-      topology?.afterActivationCount - topology?.beforeActivationCount === definition?.expectedActivationCount,
-      "activation topology delta must equal expectedActivationCount",
+      topology?.afterActivationCount - topology?.beforeActivationCount ===
+        definition?.expectedActivationCount - (definition?.expectedRetiredActivationIds?.length || 0),
+      "activation topology delta must equal expectedActivationCount minus retired activations",
     );
     require(
       topology?.afterBridgeCount - topology?.beforeBridgeCount ===

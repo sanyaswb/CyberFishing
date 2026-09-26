@@ -15,6 +15,7 @@ const {
   serialize,
 } = require("./generate-stage-3-batch-006-test-matrix");
 
+const { StageThreeRetirementView } = require("./domain_batches/stage_three_retirement_view");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
 class StageThreeBatch006FocusedTestMatrixCheck {
@@ -212,7 +213,11 @@ class StageThreeBatch006FocusedTestMatrixCheck {
       modules[module.targetPath])).size, 6);
     assert.equal(plan.cumulativeRuntime?.evaluationCountPerModule ?? 1, 1);
     assert.equal(plan.compatibility.plannedBridgeRecords.length, 7);
-    for (const record of plan.compatibility.plannedBridgeRecords) {
+    // A consumer that a later batch migrated is an activation shim now, no longer a legacy reader.
+    const migrated = runtime.active ? new StageThreeRetirementView({ projectRoot: PROJECT_ROOT,
+      runtimeContract: JSON.parse(this.#readText("architecture/migration/stage_3_compatibility_runtime.json")),
+    }).migratedSources() : new Set();
+    for (const record of plan.compatibility.plannedBridgeRecords.filter((item) => !migrated.has(item.source))) {
       const source = this.#readText(record.source);
       for (const provider of record.globalProviders) {
         assert.match(source, new RegExp(`\\b${provider.symbol}\\b`, "u"));
@@ -260,7 +265,7 @@ class StageThreeBatch006FocusedTestMatrixCheck {
     assert.equal(registry.ownsGameState, false);
     assert.equal(
       Object.keys(registry.modules).length,
-      new Set(contract.activationPositions.map((activation) => activation.targetModule)).size,
+      StageThreeRetirementView.activationModuleCount(contract),
     );
     for (const module of plan.scope.modules) {
       assert(registry.modules[module.targetPath],

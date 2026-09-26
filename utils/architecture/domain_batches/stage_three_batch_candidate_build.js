@@ -1,6 +1,7 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const { ActivationRetirementProjection } = require("../../build/compat_runtime/activation_retirement");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -43,11 +44,17 @@ class StageThreeBatchCandidateBuild {
   async run({ prebuild, approvedPlan, executionState, runtimeContract,
     stageTwoApprovedPlan, stageTwoExecutionState }) {
     const activeOutputBefore = this.#snapshotActiveOutput();
-    const futureContract = structuredClone(runtimeContract);
+    let futureContract = structuredClone(runtimeContract);
     futureContract.activationPositions = [
       ...runtimeContract.activationPositions,
       ...prebuild.preliminaryMetadata.plannedActivationPositions,
     ].sort((left, right) => left.id.localeCompare(right.id));
+    // Activations the prebuild retires leave the candidate contract with a ledger entry.
+    const retiredIds = prebuild.plannedDelta?.retiredActivationIds || [];
+    if (retiredIds.length > 0) {
+      futureContract = new ActivationRetirementProjection().contract(futureContract, retiredIds.map((id) =>
+        runtimeContract.activationPositions.find((activation) => activation.id === id)), prebuild.batchId);
+    }
     futureContract.sideEffectReviews = [
       ...futureContract.sideEffectReviews, ...this.sideEffectReviews,
     ];

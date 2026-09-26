@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.63 - Fishing Sector Pressure and Retrieve Domain
+
+### Changed
+
+- Completed batch 025 of the Stage 3.22 approved prefix: PoleFightSectorConstraint, StaminaPressureResolver and FishRetrieveSystem as named ESM exports.
+- Their owner-created collaborators (PoleFightSectorGeometry, StaminaLateralPositionResolver, DragForceCalculator, FishRetrieveResult, SimpleFightForceCalculator) are reviewed imports; a composition-identity review proves each new X at its audited location, and Domain-internal self-composition resolves the constructor-injection review. The guarded window exposure moved to the activation shim.
+- Extended the cumulative graph from 83 to 86 project modules and from 93 to 94 activation contracts (3 added, 2 consumer-less activations retired as inert classic placeholders), with 141 exact bridge relationships (4 added, 5 retired).
+- The next task is batch 026 preflight.
+
 ## v0.24.62 - Inventory Reservation Policy Domain
 
 ### Changed

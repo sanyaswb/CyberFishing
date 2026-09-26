@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-025-side-effect-review",
+  "batchId": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+  "stage": "3.26.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.62",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_22/approved_prefix.json",
+      "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "5246dca64e18721eac0557bcb46f5b7f18b2b42865439eb035d0561758a66a41"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/core/fishing/pole_fight_sector_constraint.js",
+      "targetPath": "src/game/domain/fishing/pole_fight_sector_constraint.js",
+      "sourceSha256": "616c9606c7a9b68f981c2775910f3e5c0e5cd55642972818e23d9f3ecf09737f",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/fishing/pole_fight_sector_constraint.js",
+        "sourceSha256": "616c9606c7a9b68f981c2775910f3e5c0e5cd55642972818e23d9f3ecf09737f"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-754e57609bef",
+          "owner": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+          "sourceProvider": "src/core/fishing/pole_fight_sector_constraint.js",
+          "targetModule": "src/game/domain/fishing/pole_fight_sector_constraint.js",
+          "exportName": "PoleFightSectorConstraint",
+          "legacySymbol": "PoleFightSectorConstraint",
+          "legacyScriptIndex": 135,
+          "shimFile": "activations/135_polefightsectorconstraint.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-4"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+      "targetPath": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+      "sourceSha256": "901c2629d76b57db47d6fc5a643964a5c2e9f5fe6f0a5e66d136ccc96f6be56e",
+      "contract": {
+        "kind": "guarded-window-class-exposure",
+        "symbol": "StaminaPressureResolver",
+        "location": "148:3"
+      },
+      "review": {
+        "kind": "guarded-window-class-exposure",
+        "currentPath": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+        "sourceSha256": "901c2629d76b57db47d6fc5a643964a5c2e9f5fe6f0a5e66d136ccc96f6be56e",
+        "symbol": "StaminaPressureResolver",
+        "location": "148:3",
+        "guardLocation": "147:1",
+        "assignmentTarget": "window.StaminaPressureResolver",
+        "evaluationCount": 1,
+        "globalPropertiesAddedWithoutWindow": [],
+        "windowPropertiesAdded": [
+          "StaminaPressureResolver"
+        ],
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "53cb66db5b8fe4974178e34a9e4a3bf9f2d4836d29f04985a742270317948e44",
+      "frozenObservations": [
+        {
+          "kind": "assignment",
+          "location": "148:3",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-89d032a4a1e8",
+          "owner": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+          "sourceProvider": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+          "targetModule": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+          "exportName": "StaminaPressureResolver",
+          "legacySymbol": "StaminaPressureResolver",
+          "legacyScriptIndex": 105,
+          "shimFile": "activations/105_staminapressureresolver.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-3"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/systems/fish_retrieve_system.js",
+      "targetPath": "src/game/domain/fishing/fish_retrieve_system.js",
+      "sourceSha256": "977828dd5f99ddb934571ebfba4933b968362ee131f192fb9f4598ada1a19d3e",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/systems/fish_retrieve_system.js",
+        "sourceSha256": "977828dd5f99ddb934571ebfba4933b968362ee131f192fb9f4598ada1a19d3e"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-e0fd80ed679d",
+          "owner": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+          "sourceProvider": "src/systems/fish_retrieve_system.js",
+          "targetModule": "src/game/domain/fishing/fish_retrieve_system.js",
+          "exportName": "FishRetrieveSystem",
+          "legacySymbol": "FishRetrieveSystem",
+          "legacyScriptIndex": 216,
+          "shimFile": "activations/216_fishretrievesystem.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-4"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": null,
+  "targetEffectFree": [
+    {
+      "module": "src/game/domain/fishing/fish_retrieve_system.js",
+      "classification": "safe",
+      "evidenceFingerprint": "0d9bdff851388224ea48e75ad08c3a891286f15775e2057142249e4fcf33bce3"
+    },
+    {
+      "module": "src/game/domain/fishing/pole_fight_sector_constraint.js",
+      "classification": "safe",
+      "evidenceFingerprint": "eb4db63e77b6919328db3b1120672a58ce6fc263d71e059d9c1c4b19d983d73f"
+    },
+    {
+      "module": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+      "classification": "safe",
+      "evidenceFingerprint": "b02f82d57e11e01ee56f59a5e7812d97edc10d048763fdc325aa7ccd23c6b9d9"
+    }
+  ],
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.26.0-live-preflight-and-graph-audit"
+}

@@ -8,6 +8,7 @@ const HISTORICAL_PLAN = "architecture/migration/stage_3_approved_batches.json";
 const CONTINUATION_KIND = "cyber-fishing-stage-3-22-approved-prefix";
 const HISTORICAL_DOMAIN_AUDIT = "architecture/migration/stage_3_domain_audit.json";
 const CONTINUATION_DOMAIN_AUDIT = "architecture/migration/stage_3_22/domain_audit.json";
+const RUNTIME_CONTRACT = "architecture/migration/stage_3_compatibility_runtime.json";
 const sha256 = bytes => crypto.createHash("sha256").update(bytes).digest("hex");
 
 // Single source of the Stage 3 execution plan. Without an adopted continuation it returns the frozen
@@ -40,7 +41,21 @@ class StageThreeApprovedPlanSource {
     const continuation = JSON.parse(continuationBytes.toString("utf8"));
     this.#validateContinuation(continuation, historical, historicalSha256);
     const batches = [...historical.batches];
-    for (const batch of continuation.batches) batches.push(this.#normalize(batch, batches.at(-1)));
+    const retiredBy = this.#retiredBy();
+    const continuationIds = new Set(continuation.batches.map(batch => batch.id));
+    for (const retiring of retiredBy.values()) {
+      assert(continuationIds.has(retiring), `activation retired by an unknown batch: ${retiring}`);
+    }
+    // The frozen cumulative set is proven against the recorded fingerprint; activations retired by
+    // this or an earlier continuation batch are then removed from the effective cumulative set.
+    let frozenCumulative = [...historical.batches.at(-1).compatibility.cumulativeActivationIds];
+    const retiredSoFar = new Set();
+    for (const batch of continuation.batches) {
+      frozenCumulative = [...frozenCumulative,
+        ...batch.compatibility.newActivations.map(activation => activation.contract.id)].sort();
+      for (const [id, retiring] of retiredBy) if (retiring === batch.id) retiredSoFar.add(id);
+      batches.push(this.#normalize(batch, batches.at(-1), frozenCumulative, retiredSoFar));
+    }
     const document = { ...historical, batches, continuation: { path: reference.path, sha256: reference.sha256 } };
     return Object.freeze({
       document,
@@ -88,6 +103,13 @@ class StageThreeApprovedPlanSource {
     return result;
   }
 
+  #retiredBy() {
+    let bytes;
+    try { bytes = this.read(RUNTIME_CONTRACT); } catch { return new Map(); }
+    const retired = JSON.parse(bytes.toString("utf8")).retiredActivations || [];
+    return new Map(retired.map(record => [record.activation.id, record.retiredBy]));
+  }
+
   #validateContinuation(continuation, historical, historicalSha256) {
     assert.equal(continuation.kind, CONTINUATION_KIND, "continuation plan kind is invalid");
     assert.equal(continuation.status, "approved-prefix-frozen", "continuation plan is not frozen");
@@ -104,19 +126,20 @@ class StageThreeApprovedPlanSource {
 
   // Adds the cumulative fields historical consumers read and proves them against the recorded
   // cumulative activation count and fingerprint of the continuation batch.
-  #normalize(batch, previous) {
+  #normalize(batch, previous, frozenCumulative, retiredSoFar) {
     const previousTopology = previous.cumulativeRuntimeTopology;
-    const cumulativeActivationIds = [...previous.compatibility.cumulativeActivationIds,
-      ...batch.compatibility.newActivations.map(activation => activation.contract.id)].sort();
-    assert.equal(cumulativeActivationIds.length, batch.compatibility.cumulativeActivationCount,
+    assert.equal(frozenCumulative.length, batch.compatibility.cumulativeActivationCount,
       `cumulative activation count differs: ${batch.id}`);
-    assert.equal(CanonicalJson.fingerprint(cumulativeActivationIds), batch.compatibility.cumulativeActivationFingerprint,
+    assert.equal(CanonicalJson.fingerprint(frozenCumulative), batch.compatibility.cumulativeActivationFingerprint,
       `cumulative activation fingerprint differs: ${batch.id}`);
+    const cumulativeActivationIds = frozenCumulative.filter(id => !retiredSoFar.has(id));
+    const retiredActivationIds = [...retiredSoFar].sort();
     const stage3Targets = [...new Set([...previousTopology.stage3Targets,
       ...batch.modules.map(module => module.targetPath)])].sort();
     return {
       ...batch,
-      compatibility: { ...batch.compatibility, cumulativeActivationIds },
+      compatibility: { ...batch.compatibility, cumulativeActivationIds,
+        ...(retiredActivationIds.length > 0 ? { cumulativeRetiredActivationIds: retiredActivationIds } : {}) },
       cumulativeRuntimeTopology: {
         ...batch.cumulativeRuntimeTopology,
         stage3Targets,

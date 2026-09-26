@@ -6,6 +6,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const sha = bytes => crypto.createHash("sha256").update(bytes).digest("hex");
 const { StageThreeApprovedPlanSource } = require("./stage_three_approved_plan_source");
+const { INFORMATIONAL_DOCUMENTS } = require("../informational_documents");
 
 const STATE = "architecture/migration/stage_3_execution_state.json";
 const RELEASE_PATHS = Object.freeze([
@@ -19,6 +20,12 @@ class StageThreePatchReleaseTransition {
     this.profile = Object.freeze({ ...profile });
   }
   bytes(file) { return fs.readFileSync(path.join(this.root, file)); }
+
+  // Historical profiles keep RELEASE_PATHS; from batch 025 on informational documents are not release metadata.
+  releasePaths() {
+    return this.profile.informationalDocumentsExcluded
+      ? RELEASE_PATHS.filter(file => !INFORMATIONAL_DOCUMENTS.includes(file)) : RELEASE_PATHS;
+  }
 
   static replace(text, from, to, count) {
     assert(typeof from === "string" && from.length > 0 && from !== to);
@@ -34,7 +41,7 @@ class StageThreePatchReleaseTransition {
     assert.equal(record.batchId, profile.batchId);
     assert.equal(record.fromRelease, profile.fromRelease);
     assert.equal(record.toRelease, profile.toRelease);
-    assert.deepEqual(record.records.map(item => item.path), RELEASE_PATHS);
+    assert.deepEqual(record.records.map(item => item.path), this.releasePaths());
     for (const reference of [record.acceptance, record.browserProof]) {
       assert.match(reference.sha256, /^[a-f0-9]{64}$/u);
       assert.equal(sha(this.bytes(reference.path)), reference.sha256,
@@ -112,7 +119,7 @@ class StageThreePatchReleaseTransition {
   }
 
   before(file, bytes = this.bytes(file)) {
-    if (!RELEASE_PATHS.includes(file) || !fs.existsSync(path.join(this.root, this.profile.transitionPath))) {
+    if (!this.releasePaths().includes(file) || !fs.existsSync(path.join(this.root, this.profile.transitionPath))) {
       return Buffer.from(bytes);
     }
     const transition = this.validate(JSON.parse(this.bytes(this.profile.transitionPath)));

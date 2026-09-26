@@ -1,1 +1,1 @@
-globalThis.FishRetrieveResult = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/fish_retrieve_result.js"]["FishRetrieveResult"];
+// Retired Stage 3 activation activation-9c5651e4f765: FishRetrieveResult is served only through ESM imports of src/game/domain/fishing/fish_retrieve_result.js.

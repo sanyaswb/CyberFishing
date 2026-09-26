@@ -1,5 +1,7 @@
 "use strict";
 
+const { INFORMATIONAL_DOCUMENTS } = require("../informational_documents");
+
 const crypto = require("node:crypto");
 const path = require("node:path");
 const {
@@ -185,7 +187,17 @@ class StageThreeBatchExecutionPlanBuilder {
       ...audit.closure.existingCumulativeModules,
       ...audit.closure.newProjectModules,
     ]).size;
-    const afterActivationCount = runtimeFacts.activationCount + activations.length;
+    // Stage 3 activations whose last listed classic consumer migrates in this batch retire as
+    // inert classic placeholders; the audit derived them exactly from the live registry.
+    const retiredActivations = (audit.activationRetirement?.activations || []).map((record) => {
+      const active = runtimeContract.activationPositions.find((item) => item.id === record.id);
+      this.#require(active && JSON.stringify(active) === JSON.stringify(record),
+        `Retired activation differs from runtime contract: ${record.id}`);
+      return { ...record };
+    }).sort((left, right) => left.id.localeCompare(right.id));
+    this.#require(this.#same(retiredActivations.map((record) => record.id), profile.expectedRetiredActivationIds || []),
+      "Retired activation identity set differs from profile");
+    const afterActivationCount = runtimeFacts.activationCount + activations.length - retiredActivations.length;
     // A migrated classic source stops reading legacy globals, so the bridges it held retire.
     const currentPaths = new Set(modules.map((module) => module.currentPath));
     const retiredBridges = bridgeRegistry.bridges.filter((record) => currentPaths.has(record.source))
@@ -322,6 +334,14 @@ class StageThreeBatchExecutionPlanBuilder {
             retiredBridgeRecords: retiredBridges.map((record) => ({ ...record })),
           } : {}),
         },
+        ...(retiredActivations.length > 0 ? {
+          activationRetirement: {
+            reason: audit.activationRetirement.reason,
+            placeholder: audit.activationRetirement.placeholder,
+            retireCount: retiredActivations.length,
+            retiredActivations,
+          },
+        } : {}),
         transportGlobal: runtimeContract.transport.symbol,
         transportOwnsGameState: false,
         domainTransportReadsAllowed: false,
@@ -334,6 +354,7 @@ class StageThreeBatchExecutionPlanBuilder {
         afterProjectModuleCount: afterModuleCount,
         beforeActivationCount: runtimeFacts.activationCount,
         addedActivationCount: activations.length,
+        ...(retiredActivations.length > 0 ? { retiredActivationCount: retiredActivations.length } : {}),
         afterActivationCount,
         projectModulesAfter: [
           ...audit.closure.existingCumulativeModules,
@@ -350,6 +371,8 @@ class StageThreeBatchExecutionPlanBuilder {
           ...runtimeFacts.scriptTopology,
           providerScriptsRemoved: modules.length,
           activationScriptsAdded: activations.length,
+          ...(retiredActivations.length > 0
+            ? { activationScriptsReplacedByClassicPlaceholders: retiredActivations.length } : {}),
         },
         policy: "one-for-one-provider-to-activation-replacement-preserves-logical-order",
       },
@@ -389,6 +412,9 @@ class StageThreeBatchExecutionPlanBuilder {
       mutationBoundary: {
         sourceProvidersReplaced: modules.map((module) => module.currentPath).sort(),
         esmTargetsCreated: modules.map((module) => module.targetPath).sort(),
+        ...(retiredActivations.length > 0 ? {
+          retiredActivationPlaceholders: retiredActivations.map((record) => record.sourceProvider).sort(),
+        } : {}),
         architectureMetadata: [
           "architecture/guards/migration_bridge_registry.json",
           "architecture/migration/module_migration_manifest.json",
@@ -404,7 +430,7 @@ class StageThreeBatchExecutionPlanBuilder {
           "package.json",
           "refactor_Task.txt",
           "src/config/project_version.js",
-        ],
+        ].filter((file) => !(profile.informationalDocumentsExcluded && INFORMATIONAL_DOCUMENTS.includes(file))),
       },
       rollback: {
         atomic: true,
@@ -617,6 +643,14 @@ class StageThreeBatchExecutionPlanValidator {
       profile.expectedActivationPositions,
     ), "activation position set differs");
     require(this.#same(
+      (plan?.compatibility?.activationRetirement?.retiredActivations || []).map((record) => record.id),
+      profile.expectedRetiredActivationIds || [],
+    ), "retired activation identity set differs");
+    require(this.#same(
+      (plan?.compatibility?.activationRetirement?.retiredActivations || []).map((record) => record.sourceProvider).sort(),
+      plan?.mutationBoundary?.retiredActivationPlaceholders || [],
+    ), "retired activation placeholder set differs");
+    require(this.#same(
       plan?.compatibility?.plannedBridgeRecords?.map((record) => record.id),
       profile.expectedBridgeIds,
     ), "bridge identity set differs");
@@ -644,7 +678,8 @@ class StageThreeBatchExecutionPlanValidator {
     );
     require(
       plan?.cumulativeRuntime?.afterActivationCount ===
-        plan?.cumulativeRuntime?.beforeActivationCount + profile.expectedActivationCount,
+        plan?.cumulativeRuntime?.beforeActivationCount + profile.expectedActivationCount -
+          (profile.expectedRetiredActivationIds || []).length,
       "runtime activation count transition is inconsistent",
     );
     require(plan?.cumulativeRuntime?.projectModulesAfter?.length === plan?.cumulativeRuntime?.afterProjectModuleCount, "runtime module set is incomplete");
@@ -681,6 +716,7 @@ class StageThreeBatchExecutionPlanValidator {
     const baselinePaths = baselineFiles.map((record) => record.path);
     const requiredBaselinePaths = [
       ...(plan?.mutationBoundary?.sourceProvidersReplaced || []),
+      ...(plan?.mutationBoundary?.retiredActivationPlaceholders || []),
       ...(plan?.mutationBoundary?.architectureMetadata || []),
       ...(plan?.mutationBoundary?.runtimeWiring || []),
       ...(plan?.mutationBoundary?.releaseMetadata || []),

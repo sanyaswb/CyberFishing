@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-025-acceptance",
+  "stage": "3.26.8",
+  "batchId": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+  "releaseVersion": "0.24.62",
+  "plannedReleaseVersion": "0.24.63",
+  "recordedAt": "2026-09-26T21:00:19.763Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_025_automated_acceptance.json",
+    "sha256": "e0c265966c1d3e46d73d37bf02b94f6e5e69f58e24cfdacaba16f251b02e5caa",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "full": {
+      "passedChecks": 190,
+      "failedChecks": 0
+    },
+    "fullRun": {
+      "platform": "win32 (Windows 11 Pro 10.0.26200), Node v24.13.0",
+      "source": "node utils/run-checks.js (complete catalog, sequential) on a byte-identical snapshot copy of the working tree (robocopy excluding node_modules, node_modules junction); diff -rq against the working tree after the run: no differences; 4771.20 s"
+    },
+    "supplementary": {
+      "quick": "43/43 on the working tree",
+      "architecture": "67/67 on the working tree",
+      "retirementFixtures": "stage-3-activation-retirement-fixtures: 29 negative and rollback cases"
+    },
+    "summary": "Full 190/190, Architecture 67/67 and Quick 43/43 passed for batch 025 (86 modules / 94 activations / 141 bridges, 2 retired activations). Eleven 006-008 history checks run on the exact reconstructed pre-025 checkpoint through run-check-at-checkpoint.js.",
+    "countSemantics": "The full suite includes the architecture and quick checks."
+  },
+  "browserSmoke": {
+    "status": "passed-user-reported",
+    "performedBy": "user",
+    "evidenceType": "manual-test-summary-in-conversation",
+    "userStatement": "User (owner) message 1: \"PASS, errors 0, warnings 0\\\" or describe the problem\"; confirmation after a clarification request: \"Так наразі все працює\". Played through VS Code Go Live (static server of the working tree) with a hard reload.",
+    "context": "Response to the Stage 3.26.8 Fishing checklist: casting, fight sector limits of the rod, lateral stamina pressure, reeling/retrieve of the fish, landing and zero console errors/warnings.",
+    "acceptanceBasis": "User-reported PASS for the batch-specific checklist; individual steps were not independently instrumented.",
+    "perCheckResults": null,
+    "consoleCounts": {
+      "errors": 0,
+      "warnings": 0,
+      "userStatement": "errors 0, warnings 0 (user-reported)"
+    }
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_025_live_runtime_validation.json",
+      "sha256": "bcfc67c610d81f4686ebb22bcc3fbaa6513c44853a6d9f80e1f47be9df490ffe"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_025_observation_reconciliation.json",
+      "sha256": "68fa4230eb6b0797633caa47e178779e7ad8856b5b71ce9fdc30311c18f61ab3"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "30f23f74e66b56095cd612f76c81c3483b65754953cd6727cc5d0f3db2df735b"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "2e26b32a2690b4c9cadbf2a364f2f5a898de9108b39bce8074d5ff04998d6fde"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "d0e03d96dead7c2e3b702bbe604de96159a23cbee23b00a4fc3ff33df25ea20a"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "a57e7f318211b14d98838059f687c2f67460426d20f91b0ba042bac10d937f39"
+    },
+    {
+      "path": "index.html",
+      "sha256": "ef1f893f5c358875463c23cf90cbfde9cd9c4c38a87f2e82a72fd081d5489e47"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.26.9 — Release Closure v0.24.63"
+}

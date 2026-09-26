@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.62";
+const CURRENT_PROJECT_VERSION = "0.24.63";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "inventory-reservation-policy-domain",
+  codename: "fishing-sector-pressure-retrieve-domain",
   updatedAt: "2026-09-26",
   notes: Object.freeze([
-    "Migrate the inventory reservation policy as a named game-domain ESM export",
-    "Move its reviewed globalThis exposure to the exact activation shim",
-    "Import InventoryItemLocation from its completed ESM owner",
-    "Preserve eighty-three project modules, ninety-three activations and one hundred forty-two bridges",
+    "Migrate the pole fight sector constraint, stamina pressure resolver and fish retrieve system",
+    "Import their five owner-created collaborators from completed ESM owners",
+    "Move the guarded window exposure of StaminaPressureResolver to the exact activation shim",
+    "Retire StaminaLateralPositionResolver and FishRetrieveResult activations as inert classic placeholders",
+    "Preserve eighty-six project modules, ninety-four activations and one hundred forty-one bridges",
   ]),
 });
 

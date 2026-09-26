@@ -16474,32 +16474,17 @@
         "legacyLoadOrder": 122,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "FishRetrieveResult",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -16519,15 +16504,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -17774,7 +17751,7 @@
           "items": [
             {
               "symbol": "PoleFightSectorConstraint",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -17784,10 +17761,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "PoleFightSectorGeometry",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -17795,9 +17772,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number",
-            "Object"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -17807,7 +17782,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fishing/pole_fight_sector_constraint.js",
@@ -17816,26 +17791,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "PoleFightSectorGeometry",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/pole_fight_sector_geometry.js",
-              "resolution": "confirmed"
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/fishing/pole_fight_sector_geometry.js",
-              "symbols": [
-                "PoleFightSectorGeometry"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -19503,32 +19469,17 @@
         "legacyLoadOrder": 104,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "StaminaLateralPositionResolver",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -19548,15 +19499,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -19730,13 +19673,8 @@
           "items": [
             {
               "symbol": "StaminaPressureResolver",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
-            },
-            {
-              "symbol": "StaminaPressureResolver",
-              "mechanism": "window-property",
-              "availability": "conditional"
             }
           ],
           "issues": []
@@ -19745,10 +19683,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "StaminaLateralPositionResolver",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -19756,13 +19694,9 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number",
-            "Object"
+            "globalThis"
           ],
-          "browserApis": [
-            "window"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -19770,7 +19704,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
@@ -19779,26 +19713,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "StaminaLateralPositionResolver",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
-              "symbols": [
-                "StaminaLateralPositionResolver"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -37298,6 +37223,56 @@
       }
     },
     {
+      "currentPath": "src/game/domain/fishing/fish_retrieve_system.js",
+      "currentArea": "game/domain/fishing",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/fishing/fish_retrieve_system.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
       "currentArea": "game/domain/fishing",
       "observed": {
@@ -38090,6 +38065,57 @@
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/pole_fight_sector_constraint.js",
+      "currentArea": "game/domain/fishing",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number",
+            "Object"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/fishing/pole_fight_sector_constraint.js",
         "migrationWave": 1
       },
       "analysis": {
@@ -39000,6 +39026,57 @@
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+      "currentArea": "game/domain/fishing/stamina",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number",
+            "Object"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
         "migrationWave": 1
       },
       "analysis": {
@@ -45535,7 +45612,7 @@
           "items": [
             {
               "symbol": "FishRetrieveSystem",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -45545,22 +45622,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "DragForceCalculator",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "FishRetrieveResult",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "SimpleFightForceCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -45568,8 +45633,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -45579,7 +45643,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fishing/fish_retrieve_system.js",
@@ -45588,56 +45652,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "DragForceCalculator",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/drag_force_calculator.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FishRetrieveResult",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/fish_retrieve_result.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "SimpleFightForceCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/simple_fight_force_calculator.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/fishing/drag_force_calculator.js",
-              "symbols": [
-                "DragForceCalculator"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/fish_retrieve_result.js",
-              "symbols": [
-                "FishRetrieveResult"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/simple_fight_force_calculator.js",
-              "symbols": [
-                "SimpleFightForceCalculator"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },

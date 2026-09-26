@@ -356,7 +356,9 @@ const CHECK_DEFINITIONS = Object.freeze([
   {
     id: "stage-3-batch-006-prebuild-integration",
     title: "Stage 3.6.4 pre-build metadata and active-runtime separation",
-    file: "utils/architecture/stage-3-batch-006-prebuild-integration-check.js",
+    file: "utils/architecture/run-check-at-checkpoint.js",
+    // Runs on the exact reconstructed state before batch 025 (it retired files this check reads).
+    args: ["--before-batch", "025", "utils/architecture/stage-3-batch-006-prebuild-integration-check.js"],
     suites: ["history"],
   },
   {
@@ -663,7 +665,19 @@ const CHECK_DEFINITIONS = Object.freeze([
       id: "stage-3-batch-024-architecture",
       title: "Stage 3.25.0–3.25.7 inventory reservation policy domain migration with reviewed exposure, import and rollback gates",
       file: "utils/architecture/stage-3-batch-024-architecture-check.js",
+      suites: ["history"],
+    },
+    {
+      id: "stage-3-batch-025-architecture",
+      title: "Stage 3.26.0–3.26.7 fishing sector pressure and retrieve domain migration with reviewed imports, activation retirement and rollback gates",
+      file: "utils/architecture/stage-3-batch-025-architecture-check.js",
       suites: ["quick", "architecture", "history"],
+    },
+    {
+      id: "stage-3-activation-retirement-fixtures",
+      title: "Stage 3 activation retirement negative, placeholder and rollback fixtures",
+      file: "utils/architecture/stage-3-activation-retirement-fixtures-check.js",
+      suites: ["quick", "architecture"],
     },
     {
       id: "stage-3-22-post-freeze-review",
@@ -680,7 +694,9 @@ const CHECK_DEFINITIONS = Object.freeze([
   {
     id: "stage-3-batch-008-audit-integration",
     title: "Stage 3.8.0 batch-008 dependency/state preflight integration",
-    file: "utils/architecture/stage-3-batch-008-audit-integration-check.js",
+    file: "utils/architecture/run-check-at-checkpoint.js",
+    // Runs on the exact reconstructed state before batch 025 (it retired files this check reads).
+    args: ["--before-batch", "025", "utils/architecture/stage-3-batch-008-audit-integration-check.js"],
     suites: ["history"],
   },
   {
@@ -692,7 +708,9 @@ const CHECK_DEFINITIONS = Object.freeze([
   {
     id: "stage-3-batch-008-execution-plan-integration",
     title: "Stage 3.8.1 SCM-backed atomic execution plan",
-    file: "utils/architecture/stage-3-batch-008-execution-plan-integration-check.js",
+    file: "utils/architecture/run-check-at-checkpoint.js",
+    // Runs on the exact reconstructed state before batch 025 (it retired files this check reads).
+    args: ["--before-batch", "025", "utils/architecture/stage-3-batch-008-execution-plan-integration-check.js"],
     suites: ["history"],
   },
   {
@@ -722,25 +740,33 @@ const CHECK_DEFINITIONS = Object.freeze([
   {
     id: "stage-3-batch-008-prebuild-integration",
     title: "Stage 3.8.3 prebuild-open state and frozen runtime topology",
-    file: "utils/architecture/stage-3-batch-008-prebuild-integration-check.js",
+    file: "utils/architecture/run-check-at-checkpoint.js",
+    // Runs on the exact reconstructed state before batch 025 (it retired files this check reads).
+    args: ["--before-batch", "025", "utils/architecture/stage-3-batch-008-prebuild-integration-check.js"],
     suites: ["history"],
   },
   {
     id: "stage-3-batch-008-source-build-fixtures",
     title: "Stage 3.8.4 source/build negative and failure-recovery fixtures",
-    file: "utils/architecture/stage-3-batch-008-source-build-fixture-check.js",
+    file: "utils/architecture/run-check-at-checkpoint.js",
+    // Runs on the exact reconstructed state before batch 025 (it retired files this check reads).
+    args: ["--before-batch", "025", "utils/architecture/stage-3-batch-008-source-build-fixture-check.js"],
     suites: ["history"],
   },
   {
     id: "stage-3-batch-008-source-build-integration",
     title: "Stage 3.8.4 actual candidate build, identity and pending Manifest",
-    file: "utils/architecture/stage-3-batch-008-source-build-integration-check.js",
+    file: "utils/architecture/run-check-at-checkpoint.js",
+    // Runs on the exact reconstructed state before batch 025 (it retired files this check reads).
+    args: ["--before-batch", "025", "utils/architecture/stage-3-batch-008-source-build-integration-check.js"],
     suites: ["gameplay", "history"],
   },
   {
     id: "stage-3-batch-008-cutover-fixtures",
     title: "Stage 3.8.5 full transaction rollback boundaries",
-    file: "utils/architecture/stage-3-batch-008-cutover-fixture-check.js",
+    file: "utils/architecture/run-check-at-checkpoint.js",
+    // Runs on the exact reconstructed state before batch 025 (it retired files this check reads).
+    args: ["--before-batch", "025", "utils/architecture/stage-3-batch-008-cutover-fixture-check.js"],
     suites: ["history"],
   },
   {
@@ -752,13 +778,17 @@ const CHECK_DEFINITIONS = Object.freeze([
   {
     id: "stage-3-batch-008-live-runtime-fixtures",
     title: "Stage 3.8.6 evaluation, timing, state and allocation negative fixtures",
-    file: "utils/architecture/stage-3-batch-008-live-runtime-fixture-check.js",
+    file: "utils/architecture/run-check-at-checkpoint.js",
+    // Runs on the exact reconstructed state before batch 025 (it retired files this check reads).
+    args: ["--before-batch", "025", "utils/architecture/stage-3-batch-008-live-runtime-fixture-check.js"],
     suites: ["history"],
   },
   {
     id: "stage-3-batch-008-live-runtime-integration",
     title: "Stage 3.8.6 actual live runtime and immutable evidence replay",
-    file: "utils/architecture/stage-3-batch-008-live-runtime-integration-check.js",
+    file: "utils/architecture/run-check-at-checkpoint.js",
+    // Runs on the exact reconstructed state before batch 025 (it retired files this check reads).
+    args: ["--before-batch", "025", "utils/architecture/stage-3-batch-008-live-runtime-integration-check.js"],
     suites: ["gameplay", "history"],
   },
   {
@@ -794,7 +824,9 @@ const CHECK_DEFINITIONS = Object.freeze([
   {
     id: "stage-3-batch-007-focused-test-matrix",
     title: "Stage 3.7.2 classic and temporary-ESM behavior/compatibility matrix",
-    file: "utils/architecture/stage-3-batch-007-focused-test-matrix-check.js",
+    file: "utils/architecture/run-check-at-checkpoint.js",
+    // Runs on the exact reconstructed state before batch 025 (it retired files this check reads).
+    args: ["--before-batch", "025", "utils/architecture/stage-3-batch-007-focused-test-matrix-check.js"],
     suites: ["gameplay", "history"],
   },
   {
@@ -866,7 +898,9 @@ const CHECK_DEFINITIONS = Object.freeze([
   {
     id: "stage-3-batch-007-live-runtime-integration",
     title: "Stage 3.7.6 live identity/state/performance integration",
-    file: "utils/architecture/stage-3-batch-007-live-runtime-integration-check.js",
+    file: "utils/architecture/run-check-at-checkpoint.js",
+    // Runs on the exact reconstructed state before batch 025 (it retired files this check reads).
+    args: ["--before-batch", "025", "utils/architecture/stage-3-batch-007-live-runtime-integration-check.js"],
     suites: ["history"],
   },
   {

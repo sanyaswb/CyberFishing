@@ -15,6 +15,7 @@ const {
 } = require("./migration/stage_two_runtime_script_alias_resolver");
 
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
+const { StageThreeRetirementView } = require("./domain_batches/stage_three_retirement_view");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BATCH_ID = "stage-3.candidate-005-fishing-45d0c7ce";
 
@@ -254,8 +255,12 @@ class StageThreeFishingFoundationRuntimeCheck {
       contract.approvedVirtualModules.includes(moduleId)));
 
     const context = vm.createContext({});
+    const view = new StageThreeRetirementView({ projectRoot: PROJECT_ROOT, runtimeContract: contract });
     const activations = contract.activationPositions.filter((record) =>
       record.owner === BATCH_ID);
+    // Retired activations publish no global; their exports stay in the cumulative runtime.
+    const retiredActivations = view.activationsOwnedBy(BATCH_ID).filter((record) => view.isRetired(record.id));
+    for (const activation of retiredActivations) assert.equal(context[activation.legacySymbol], undefined);
     for (const activation of activations) {
       assert.equal(context[activation.legacySymbol], undefined);
     }
@@ -289,6 +294,11 @@ class StageThreeFishingFoundationRuntimeCheck {
         exportsByName[activation.exportName] = exactExport;
       }
     }
+    for (const activation of retiredActivations) {
+      assert.equal(context[activation.legacySymbol], undefined, `Retired global published: ${activation.id}`);
+      exportsByName[activation.exportName] = transport.modules[activation.targetModule][activation.exportName];
+      assert.equal(exportsByName[activation.exportName].name, activation.exportName);
+    }
     assert.equal(
       activations.filter((record) => record.legacyScriptIndex === 117).length,
       2,
@@ -297,7 +307,7 @@ class StageThreeFishingFoundationRuntimeCheck {
     context[contract.transport.symbol] = null;
     assert.equal(new exportsByName.RecoverableLineCalculator()
       .calculateRecoverableLineMeters({ releasedMeters: 5, fishDistanceMeters: 2 }), 3);
-    this.#verifyConsumers(batch, contract.transport.symbol);
+    this.#verifyConsumers(batch, contract.transport.symbol, view.migratedSources());
     this.#verifyScriptTopology(contract);
 
     console.log(
@@ -306,8 +316,9 @@ class StageThreeFishingFoundationRuntimeCheck {
     );
   }
 
-  #verifyConsumers(batch, transportSymbol) {
-    for (const record of batch.externalLegacyConsumers) {
+  #verifyConsumers(batch, transportSymbol, migratedSources) {
+    // A consumer that a later batch migrated is an activation shim now and no longer a legacy reader.
+    for (const record of batch.externalLegacyConsumers.filter((item) => !migratedSources.has(item.source))) {
       const source = this.#read(record.source);
       assert(record.symbols.some((symbol) =>
         new RegExp(`\\b${symbol}\\b`, "u").test(source)));

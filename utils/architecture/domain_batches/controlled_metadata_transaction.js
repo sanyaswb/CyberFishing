@@ -16,12 +16,12 @@ class ControlledMetadataTransaction {
     const records = writes.map((write, index) => this.#record(write, index));
     try {
       for (const record of records) {
-        fs.writeFileSync(record.stagingPath, record.bytes, { flag: "wx" });
+        if (!record.remove) fs.writeFileSync(record.stagingPath, record.bytes, { flag: "wx" });
       }
       this.#inject("after-staging", 0);
       for (const [index, record] of records.entries()) {
         if (record.originalExists) fs.renameSync(record.targetPath, record.backupPath);
-        fs.renameSync(record.stagingPath, record.targetPath);
+        if (!record.remove) fs.renameSync(record.stagingPath, record.targetPath);
         record.replaced = true;
         this.#inject("after-replacement", index + 1);
       }
@@ -58,11 +58,15 @@ class ControlledMetadataTransaction {
       }
     }
     const originalExists = fs.existsSync(targetPath);
+    // A null payload removes an existing file; the backup restores it on rollback.
+    const remove = write.bytes === null;
+    if (remove && !originalExists) throw new Error(`Controlled removal target is missing: ${relativePath}`);
     return {
+      remove,
       targetPath,
       stagingPath,
       backupPath,
-      bytes: Buffer.isBuffer(write.bytes) ? write.bytes : Buffer.from(write.bytes),
+      bytes: remove ? null : Buffer.isBuffer(write.bytes) ? write.bytes : Buffer.from(write.bytes),
       originalExists,
       originalBytes: originalExists ? fs.readFileSync(targetPath) : null,
       replaced: false,
@@ -71,7 +75,7 @@ class ControlledMetadataTransaction {
 
   #rollback(records) {
     for (const record of [...records].reverse()) {
-      if (record.replaced && fs.existsSync(record.targetPath)) fs.unlinkSync(record.targetPath);
+      if (record.replaced && !record.remove && fs.existsSync(record.targetPath)) fs.unlinkSync(record.targetPath);
       if (fs.existsSync(record.backupPath)) fs.renameSync(record.backupPath, record.targetPath);
       if (record.originalExists && !fs.existsSync(record.targetPath)) {
         fs.writeFileSync(record.targetPath, record.originalBytes, { flag: "wx" });

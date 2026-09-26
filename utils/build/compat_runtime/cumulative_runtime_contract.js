@@ -332,6 +332,29 @@ class CumulativeRuntimeContractValidator {
     };
     for (const activation of activations) validateActivation(activation, "active");
     for (const activation of plannedActivations) validateActivation(activation, "planned");
+    // Retired activations: every listed classic consumer migrated, so the global is removed and the
+    // legacy position stays as an inert classic placeholder until the script order is retired.
+    const retired = Array.isArray(contract?.retiredActivations) ? contract.retiredActivations : [];
+    const retiredKeys = ["activation", "placeholder", "reason", "retiredBy"];
+    for (const record of retired) {
+      require(this.#sameArray(Object.keys(record || {}).sort(), retiredKeys),
+        `retired activation has non-contract fields: ${record?.activation?.id || "<unknown>"}`);
+      const activation = record?.activation || {};
+      require(this.#sameArray(Object.keys(activation).sort(), ["exportName", "id", "legacyScriptIndex",
+        "legacySymbol", "owner", "reason", "removalStage", "shimFile", "sourceProvider", "targetModule"]),
+      `retired activation contract has non-contract fields: ${activation.id || "<unknown>"}`);
+      require(activation.id === CanonicalActivationIdentity.id(activation),
+        `retired activation id is not canonical: ${activation.id}`);
+      require(!activationIds.includes(activation.id), `retired activation is still active: ${activation.id}`);
+      require(record.reason === "all-listed-legacy-consumers-migrated",
+        `${activation.id} retirement reason is invalid`);
+      require(record.placeholder === "inert-classic-position", `${activation.id} placeholder is invalid`);
+      require(this.#text(record.retiredBy), `${activation.id} retiredBy is required`);
+    }
+    require(this.#sameArray(retired.map((record) => record.activation.id),
+      [...retired.map((record) => record.activation.id)].sort()) &&
+      new Set(retired.map((record) => record.activation.id)).size === retired.length,
+    "retiredActivations must be sorted and unique by activation id");
     require(
       this.#sameArray(
         activations.map((activation) => activation.id),

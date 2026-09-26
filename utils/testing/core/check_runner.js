@@ -11,7 +11,7 @@ class CheckProcessExecutor {
     const startedAt = Date.now();
     const result = spawnSync(
       this.nodePath,
-      [path.join(this.projectRoot, check.file)],
+      [path.join(this.projectRoot, check.file), ...(check.args || [])],
       { cwd: this.projectRoot, stdio: "inherit" },
     );
     return {

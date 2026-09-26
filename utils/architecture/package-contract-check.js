@@ -46,11 +46,11 @@ class PackageContractCheck {
       current: new StageThreeApprovedPlanSource({
         read: (file) => fs.readFileSync(path.join(PROJECT_ROOT, file)),
       }).currentStage(stageThreeState),
-      runtimeInputs: new Set(
-        stageThreeRuntime.activationPositions.map(
-          (activation) => activation.targetModule,
-        ),
-      ).size,
+      // A retired activation's ESM module stays in the cumulative graph for its importers.
+      runtimeInputs: new Set([
+        ...stageThreeRuntime.activationPositions,
+        ...(stageThreeRuntime.retiredActivations || []).map((record) => record.activation),
+      ].map((activation) => activation.targetModule)).size,
       activationInputs: stageThreeRuntime.activationPositions.length,
     };
     const projectVersion = this.#readProjectVersion(bytes.get("version").toString("utf8"));

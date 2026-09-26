@@ -22,8 +22,11 @@ class StageThreeObservationManifestTransition {
     assert.equal(prebuild.batchId, this.profile.batchId);
     assert.equal(cutover.batchId, this.profile.batchId);
     this.activations = prebuild.preliminaryMetadata.plannedActivationPositions;
-    this.paths = [...new Set(this.activations.flatMap((item) =>
-      [item.sourceProvider, item.targetModule]))].sort();
+    // Activations this batch retired leave an inert classic placeholder whose observed facts become empty.
+    this.retired = (runtime.retiredActivations || []).filter((record) => record.retiredBy === profile.batchId)
+      .map((record) => record.activation);
+    this.paths = [...new Set([...this.activations.flatMap((item) =>
+      [item.sourceProvider, item.targetModule]), ...this.retired.map((item) => item.sourceProvider)])].sort();
     this.beforeSha256 = cutover.writes.find((item) => item.path === MANIFEST).afterSha256;
   }
 
@@ -92,6 +95,19 @@ class StageThreeObservationManifestTransition {
       assert.equal(target.architecture.migrationStatus, "verified");
       assert.equal(target.architecture.targetBoundary, "game-domain");
       assert.equal(target.architecture.targetPath, target.currentPath);
+    }
+    for (const activation of this.retired) {
+      const placeholder = byPath.get(activation.sourceProvider);
+      const previous = before.modules.find((item) => item.currentPath === activation.sourceProvider);
+      assert(placeholder && previous, "Missing retired placeholder record");
+      assert.deepEqual(placeholder.architecture, previous.architecture, "Retired placeholder classification changed");
+      assert.equal(placeholder.observed.legacyLoadOrder, activation.legacyScriptIndex);
+      assert.deepEqual(placeholder.observed.providers, empty());
+      assert.deepEqual(placeholder.observed.consumers, empty());
+      assert.deepEqual(placeholder.observed.environment, { status: "verified", builtins: [], browserApis: [],
+        dynamicConstructs: [], issues: [] });
+      assert.deepEqual(placeholder.analysis.dependencies, { status: "verified", confirmed: [], items: [],
+        unresolved: [], ambiguous: [], issues: [] });
     }
     const paths = new Set(this.paths);
     const normalized = structuredClone(after);

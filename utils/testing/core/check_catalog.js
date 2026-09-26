@@ -2,11 +2,16 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 class CheckDefinition {
-  constructor({ id, title, file, suites = [] }) {
+  constructor({ id, title, file, suites = [], args = [] }) {
     this.id = String(id || "").trim();
     this.title = String(title || "").trim();
     this.file = String(file || "").trim();
     this.suites = Object.freeze([...new Set(suites)]);
+    if (!Array.isArray(args) || args.some((arg) => typeof arg !== "string" || arg.length === 0)) {
+      throw new Error(`Check args must be non-empty strings: ${this.id}`);
+    }
+    // Passed to the check process directly (no shell interpolation).
+    this.args = Object.freeze([...args]);
     Object.freeze(this);
   }
 }

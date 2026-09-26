@@ -17,6 +17,8 @@ const {
 const {
   StageTwoRuntimeScriptAliasResolver,
 } = require("./migration/stage_two_runtime_script_alias_resolver");
+const { RetiredActivationPlaceholder } = require("../build/compat_runtime/activation_retirement");
+const { StageThreeRetirementView } = require("./domain_batches/stage_three_retirement_view");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BATCH_ID = "stage-3.candidate-005-fishing-45d0c7ce";
@@ -62,9 +64,9 @@ class StageThreeFishingFoundationPrebuildCheck {
 
     const approvedActivations = batch.compatibility.newActivations;
     assert.equal(approvedActivations.length, 7);
-    const ownerActivations = contract.activationPositions.filter(
-      (record) => record.owner === BATCH_ID,
-    );
+    // Activations a later batch retired remain part of this batch's contract (retired ledger).
+    const view = new StageThreeRetirementView({ projectRoot: PROJECT_ROOT, runtimeContract: contract });
+    const ownerActivations = view.activationsOwnedBy(BATCH_ID);
     assert.deepEqual(
       ownerActivations,
       approvedActivations.map((record) => record.contract)
@@ -77,12 +79,15 @@ class StageThreeFishingFoundationPrebuildCheck {
 
     for (const [source, target, symbols] of MODULES) {
       this.#verifyEsmTarget(target, symbols);
-      const expectedShim = ownerActivations
-        .filter((activation) => activation.sourceProvider === source)
-        .map((activation) => new ActivationShimRenderer().render(
-          activation,
-          contract.transport.symbol,
-        ))
+      const providerActivations = ownerActivations
+        .filter((activation) => activation.sourceProvider === source);
+      const retired = providerActivations.filter((activation) => view.isRetired(activation.id));
+      assert(retired.length === 0 || retired.length === providerActivations.length,
+        "A provider retires all of its activations at once");
+      const expectedShim = providerActivations
+        .map((activation) => retired.length > 0
+          ? new RetiredActivationPlaceholder().render(activation)
+          : new ActivationShimRenderer().render(activation, contract.transport.symbol))
         .join("");
       assert.equal(this.#read(source), expectedShim);
       assert.equal(expectedShim.includes("function"), false);
@@ -102,7 +107,11 @@ class StageThreeFishingFoundationPrebuildCheck {
       ));
     }
 
-    const records = registry.bridges.filter((record) => record.owner === BATCH_ID);
+    // Bridges whose classic source a later batch migrated are retired with exact plan records.
+    const retiredBridgeIds = new Set(view.retiredBridgeRecords().map((record) => record.id));
+    const records = [...registry.bridges, ...view.retiredBridgeRecords()]
+      .filter((record) => record.owner === BATCH_ID)
+      .sort((left, right) => left.id.localeCompare(right.id));
     assert.equal(records.length, 7);
     assert.deepEqual(records.map((record) => record.id),
       [...records.map((record) => record.id)].sort());
@@ -131,6 +140,10 @@ class StageThreeFishingFoundationPrebuildCheck {
           mechanism: "global-this-property",
         })),
       });
+      if (retiredBridgeIds.has(record.id)) {
+        assert(view.migratedSources().has(record.source), `Retired bridge source is not migrated: ${record.source}`);
+        continue;
+      }
       assert.match(this.#read(record.source), new RegExp(
         `\\b(${consumer.symbols.join("|")})\\b`,
         "u",
@@ -138,7 +151,7 @@ class StageThreeFishingFoundationPrebuildCheck {
       assert.equal(this.#read(record.source).includes(contract.transport.symbol), false);
     }
 
-    this.#verifyScriptTopology(contract, ownerActivations);
+    this.#verifyScriptTopology(contract, ownerActivations, view);
     console.log(
       "Stage 3.5 pre-build contract passed: six frozen ESM targets, seven canonical activations, seven exact consumer bridges and grouped position-117 aliases verified.",
     );
@@ -169,15 +182,21 @@ class StageThreeFishingFoundationPrebuildCheck {
     assert.deepEqual(forbidden, []);
   }
 
-  #verifyScriptTopology(contract, activations) {
+  #verifyScriptTopology(contract, activations, view) {
     const html = this.#read("index.html");
     const physicalScripts = [...html.matchAll(
       /<script\b[^>]*\bsrc=["']([^"']+)["']/giu,
     )].map((match) => match[1].split("?")[0]);
-    for (const [source] of MODULES) assert.equal(physicalScripts.includes(source), false);
+    // A retired activation's slot loads its inert classic placeholder instead of the shim.
+    const retiredSources = new Set(activations.filter((activation) => view.isRetired(activation.id))
+      .map((activation) => activation.sourceProvider));
+    for (const [source] of MODULES) {
+      assert.equal(physicalScripts.filter((item) => item === source).length, retiredSources.has(source) ? 1 : 0);
+    }
     for (const activation of activations) {
       const output = `${contract.output.directory}${activation.shimFile}`;
-      assert.equal(physicalScripts.filter((source) => source === output).length, 1);
+      assert.equal(physicalScripts.filter((source) => source === output).length,
+        view.isRetired(activation.id) ? 0 : 1);
     }
     const aliases = new StageTwoRuntimeScriptAliasResolver().loadProject(PROJECT_ROOT);
     const logical = new LegacyScriptOrderReader(

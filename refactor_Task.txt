@@ -1,10 +1,11 @@
 # CyberFishing — Current Plan for the Remaining Modular Refactor
 
 - **Stage 1 closure version:** `v0.24.31`
-- **Current release version:** `v0.24.62`
+- **Current release version:** `v0.24.63`
 - **Work type:** architecture / infrastructure refactoring
 - **Gameplay changes:** prohibited
-- **Next step:** `Stage 3.26.0 — Batch 025 Preflight from the Stage 3.22 Approved Prefix (stage-3.replan-322.batch-025-fishing-9bcfae5e)`
+- **Next step:** shared Stage 3 batch tooling for 026+ (separate tooling commit, owner spec 2026-09-26), then `Stage 3.27 — Batch 026 (stage-3.replan-322.batch-026-inventory-ad73f2fb)`; see “Next steps” below
+- **Informational document:** since v0.24.62 this file and `FORCODEX.md` are informational only; no check reads their live bytes (owner decision 2026-09-26, frozen bytes in `architecture/migration/stage_3_informational_documents_freeze.json`)
 
 This document records the completed Stage 3 prefix and the work that remains.
 
@@ -120,12 +121,12 @@ Audit-only stage: no prerequisite refactoring, module migration or cutover; `run
 
 ### New approved prefix (11 batches / 21 modules)
 
-The prefix is frozen but not yet adopted by the execution state, which keeps batches 001–021 and the historical approved-plan fingerprint. Each batch is a separate patch release with a batch-only rollback checkpoint; after the prefix the runtime topology is `99` modules, `109` activations and `139` bridges.
+The prefix was adopted by the execution state at batch 022 (`continuationPlan`); the historical approved-plan fingerprint is unchanged. Each batch is a separate patch release with a batch-only rollback checkpoint; after the prefix the runtime topology is `99` modules, `109` activations and `139` bridges.
 
 - [x] **022 · Assemblies · 1 module / 2 exports:** `ItemAssemblyPath`, `ItemAssemblyReader` — `stage-3.replan-322.batch-022-assemblies-9cb3eecf`.
 - [x] **023 · Items · 3 modules:** `DerivedStatMetricStrategy`, `NumericStatMetricStrategy`, `TargetRangeMetricStrategy` — `stage-3.replan-322.batch-023-items-c91fce82`.
 - [x] **024 · Inventory · 1 module:** `InventoryItemReservationPolicy` — `stage-3.replan-322.batch-024-inventory-21307d68`.
-- [ ] **025 · Fishing · 3 modules:** `FishRetrieveSystem`, `PoleFightSectorConstraint`, `StaminaPressureResolver` — `stage-3.replan-322.batch-025-fishing-9bcfae5e`.
+- [x] **025 · Fishing · 3 modules:** `FishRetrieveSystem`, `PoleFightSectorConstraint`, `StaminaPressureResolver` — `stage-3.replan-322.batch-025-fishing-9bcfae5e`.
 - [ ] **026 · Inventory · 1 module:** `ItemAssemblyStackingPolicy` — `stage-3.replan-322.batch-026-inventory-ad73f2fb`.
 - [ ] **027 · Items · 5 modules:** `ItemMetricStrategyRegistry`, `EnvironmentalCompensationModifier`, `HookQualityModifier`, `NetQualityModifier`, `AuthoredItemRarityStrategy` — `stage-3.replan-322.batch-027-items-e8f84667`.
 - [ ] **028 · Assemblies · 1 module / 2 exports:** `ItemAssemblyDomainError`, `ItemAssemblyService` — `stage-3.replan-322.batch-028-assemblies-f4be469e`.
@@ -135,6 +136,8 @@ The prefix is frozen but not yet adopted by the execution state, which keeps bat
 - [ ] **032 · Items · 1 module:** `EffectiveItemRarityResolver` — `stage-3.replan-322.batch-032-items-096b3398`.
 
 **Checkpoint `v0.24.62`:** batches 022–024 of the approved prefix are complete (completed batches 001–024). Batch 024 migrated InventoryItemReservationPolicy: its reviewed globalThis exposure moved to the activation shim and it imports `InventoryItemLocation` from the completed ESM owner. The cumulative runtime has `83` project modules, `93` activations and `142` bridge records. Windows Full 188/188 passed in one uninterrupted run (4248 s), including the batch-024 architecture check, the game-cycle fight scenarios and the inventory-v2 equipment/integration suites; Architecture 66/66 and Quick 42/42 passed before it; owner-authorized automated smoke (headless game cycle and built-in browser load) passed with `0 errors` and `0 warnings`.
+
+**Checkpoint `v0.24.63`:** batch 025 is complete (completed batches 001–025, 77 migrated Domain modules). PoleFightSectorConstraint, StaminaPressureResolver and FishRetrieveSystem are named ESM exports with five reviewed imports; the guarded window exposure moved to the activation shim. First activation retirement: StaminaLateralPositionResolver and FishRetrieveResult lost their last classic readers and were retired as inert classic placeholders (their ESM modules stay in the graph). The cumulative runtime has `86` project modules, `94` activations (2 retired) and `141` bridge records. Windows Full 190/190 (4771 s, sequential, on a byte-identical snapshot copy of the working tree), Architecture 67/67, Quick 43/43, fresh npm ci and byte-identical build; browser PASS performed by the owner (Go Live, hard reload) with `0 errors` and `0 warnings`. Post-release: Quick 42/42, Architecture 66/66.
 
 ### Review queue
 
@@ -158,11 +161,36 @@ The prefix is frozen but not yet adopted by the execution state, which keeps bat
 - `stage-3.22.prerequisite.collection-identity-evidence` (freeze-evidence): Prove or restructure collection state identity where the reviewed collection proof fails.
 - `stage-3.22.prerequisite.hot-loop-equivalence-evidence` (freeze-evidence): Record allocation, behavior and deltaTime equivalence evidence for the hot-loop fishing cluster before it is frozen.
 
+### Activation retirement (new mechanism, from batch 025)
+
+When a batch migrates the last listed classic consumer of an earlier Stage 3 activation, that activation retires in the same cutover: the runtime contract drops it and records it in `retiredActivations`; its `index.html` tag points back to the classic source path; the classic source becomes a one-line inert comment placeholder; the generated dist shim is deleted. Legacy positions and IDs are not renumbered; placeholders are removed in Stage 5. Expected retirements: 025 (StaminaLateralPositionResolver, FishRetrieveResult), 027 (ItemRarityDescriptor, ItemRarityStrategy, ItemQualityGradePolicy), 029 (StaminaDrainCalculator, StaminaTransitionResolver, StaminaRegenCalculator, StaminaPressureResolver), 030 (HookQualityModifier), 031 (ActiveEnduranceDrainCalculator, PassiveEnduranceDrainCalculator, StaminaPhaseMachine).
+
+- [x] Runtime contract validator accepts the `retiredActivations` ledger; approved-plan source subtracts retired activations from cumulative IDs.
+- [x] Execution profile `expectedRetiredActivationIds`; live preflight derives the retiring set from registry + contract and records `activationRetirement` in the audit.
+- [x] Execution plan builder/validator, prebuild contract/profile: activation counts are (active − retired) + delta; placeholders join the rollback baseline.
+- [x] Shared `utils/build/compat_runtime/activation_retirement.js` (placeholder renderer + contract/index projection); controlled metadata transaction supports removal (`bytes: null`).
+- [x] Batch 025 candidate workspace and candidate validation apply the retirement (retired globals absent, implementations preserved through the transport).
+- [x] Batch 025 cutover: placeholder writes, index tag switch, dist shim deletion records; cutover history accepts deletion records (`afterBase64: null`).
+- [x] Live validation, observation reconciliation for placeholder providers, and the known-debt resolution of the stale `debt-browser-capability-af15d3daf1d0` (precedent: `resolve-stage-3-batch-016-known-debt.js`).
+- [x] Batch 025 release tooling counts: 86 modules / 94 activations / 141 bridges; fresh runtime outputs 95; package contract `activationInputs` 94.
+- [x] Negative fixtures `stage-3-activation-retirement-fixtures` (29 cases: premature retirement, wrong ids/providers, non-inert placeholders, partial publication and rollback of removals).
+- [x] Live checks of earlier batches read retired records through `stage_three_retirement_view.js`; history checks that read deleted files run on the exact pre-025 reconstruction via `run-check-at-checkpoint.js` (check catalog `args`).
+
 ### Next steps
 
-1. Stage 3.23.0: adopt the approved prefix and migrate `stage-3.replan-322.batch-022-assemblies-9cb3eecf` (preflight → ESM targets and imports → candidate build → cutover → verification → release `v0.24.60`), then the rest of the prefix in order.
-2. Resolve backlog prerequisites as separate tasks, never mixed with a module migration; every graph change is followed by a repeated graph review and a new freeze for the affected modules.
-3. Repeat prerequisite → graph review → freeze → migration batches until every approved Domain cluster is migrated, ownership is confirmed and bridges are removed under control.
+1. **Shared Stage 3 batch tooling (owner spec 2026-09-26)** — separate commit, no version change, no active batch:
+   - [ ] Shared lifecycle components (planning, candidate validation, cutover, live validation, reconciliation, acceptance/release, history, isolated workspace) extracted from the 022–025 per-batch files; algorithms and transactions reused.
+   - [ ] Batch definition = `profile.js` + `behavior_cases.js` (+ optional `fixtures.js`), validated against the approved plan and the current graph; expectations never derived from the validated output.
+   - [ ] One dispatcher `node utils/architecture/stage-3-batch.js --batch NNN --step <step>` (audit … history); each step checks predecessor artifacts and hashes; no automatic progression to cutover or release.
+   - [ ] Shared check entrypoint (architecture/parity/release modes) using catalog `args` (already supported).
+   - [ ] Equivalence: old vs shared implementation on reconstructed batch-025 inputs produce identical artifacts/bytes; one compatibility adapter at the latest historical boundary.
+   - [ ] Batch 026 pilot in an isolated workspace (ItemAssemblyStackingPolicy scenarios from the spec); negative and rollback cases; Architecture → Quick → one Full, fresh npm ci, build equality, git diff --check.
+   - [ ] English documentation of the command sequence and profile/scenario authoring.
+2. **Check pipeline acceleration (proposal awaiting owner approval):** input-traced seals (unchanged inputs → sealed PASS), release-checkpoint history (old layers sealed, cheap link check per release), parallel runner with resource locks (e.g. `dist-writer`), long suites on snapshot copies, honest sealed-vs-executed reporting.
+3. **Batches 026–032 (`v0.24.64`–`v0.24.70`)** through the shared tooling; recompute retirements at each preflight (expected 027, 029, 030, 031); 028–032 import earlier-batch exports; `batch-completion` prerequisites from the execution state. Browser acceptance is performed by the owner with explicit console counts.
+4. **Review queue:** 033 (collection identity for `AssemblyStateRepository#states`) and 034 (hot-loop equivalence evidence) need their evidence prerequisites first.
+5. **Prerequisite backlog:** resolve as separate tasks, never mixed with a module migration (Vector2 extraction, descriptor boundaries, config injection, decompositions); every graph change is followed by a repeated graph review and a new freeze.
+6. Repeat prerequisite → graph review → freeze → migration batches until every approved Domain cluster is migrated, ownership is confirmed and bridges have a controlled removal path; then Stage 4 starts.
 
 Stage 3 is complete only when all approved Domain clusters have migrated, state ownership is unambiguous, and every bridge has a controlled removal path.
 

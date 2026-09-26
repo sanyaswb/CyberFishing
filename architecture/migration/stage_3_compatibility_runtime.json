@@ -330,18 +330,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-20cb461d88b8",
-      "owner": "stage-3.candidate-015-fishing-37dc3452",
-      "sourceProvider": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
-      "targetModule": "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
-      "exportName": "StaminaLateralPositionResolver",
-      "legacySymbol": "StaminaLateralPositionResolver",
-      "legacyScriptIndex": 104,
-      "shimFile": "activations/104_staminalateralpositionresolver.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-23610c146ce8",
       "owner": "stage-3.candidate-021-equipment-4044fcef",
       "sourceProvider": "src/core/equipment/auto_refill_policy.js",
@@ -666,6 +654,18 @@
       "removalStage": "stage-5"
     },
     {
+      "id": "activation-754e57609bef",
+      "owner": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+      "sourceProvider": "src/core/fishing/pole_fight_sector_constraint.js",
+      "targetModule": "src/game/domain/fishing/pole_fight_sector_constraint.js",
+      "exportName": "PoleFightSectorConstraint",
+      "legacySymbol": "PoleFightSectorConstraint",
+      "legacyScriptIndex": 135,
+      "shimFile": "activations/135_polefightsectorconstraint.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-75b968069153",
       "owner": "stage-3.candidate-001-inventory-85f44b2e",
       "sourceProvider": "dist/legacy-bridges/render_math.iife.js",
@@ -846,6 +846,18 @@
       "removalStage": "stage-5"
     },
     {
+      "id": "activation-89d032a4a1e8",
+      "owner": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+      "sourceProvider": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+      "targetModule": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+      "exportName": "StaminaPressureResolver",
+      "legacySymbol": "StaminaPressureResolver",
+      "legacyScriptIndex": 105,
+      "shimFile": "activations/105_staminapressureresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
       "id": "activation-8f8220d288e5",
       "owner": "stage-3.candidate-006-fishing-e48e70d8",
       "sourceProvider": "src/core/fishing/landing_lift_tension_calculator.js",
@@ -928,18 +940,6 @@
       "shimFile": "activations/117_looselinecalculator.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
-    },
-    {
-      "id": "activation-9c5651e4f765",
-      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
-      "sourceProvider": "src/core/fishing/fish_retrieve_result.js",
-      "targetModule": "src/game/domain/fishing/fish_retrieve_result.js",
-      "exportName": "FishRetrieveResult",
-      "legacySymbol": "FishRetrieveResult",
-      "legacyScriptIndex": 122,
-      "shimFile": "activations/122_fishretrieveresult.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
     },
     {
       "id": "activation-9d32b36c0350",
@@ -1242,6 +1242,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-e0fd80ed679d",
+      "owner": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+      "sourceProvider": "src/systems/fish_retrieve_system.js",
+      "targetModule": "src/game/domain/fishing/fish_retrieve_system.js",
+      "exportName": "FishRetrieveSystem",
+      "legacySymbol": "FishRetrieveSystem",
+      "legacyScriptIndex": 216,
+      "shimFile": "activations/216_fishretrievesystem.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-e5ee66b391d6",
       "owner": "stage-3.candidate-019-items-b0af5033",
       "sourceProvider": "src/core/items/freshness/bait_freshness_decay_policy.js",
@@ -1372,6 +1384,42 @@
       "shimFile": "activations/134_polefightsectorgeometry.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    }
+  ],
+  "retiredActivations": [
+    {
+      "activation": {
+        "id": "activation-20cb461d88b8",
+        "owner": "stage-3.candidate-015-fishing-37dc3452",
+        "sourceProvider": "src/core/fishing/stamina/stamina_lateral_position_resolver.js",
+        "targetModule": "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+        "exportName": "StaminaLateralPositionResolver",
+        "legacySymbol": "StaminaLateralPositionResolver",
+        "legacyScriptIndex": 104,
+        "shimFile": "activations/104_staminalateralpositionresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-322.batch-025-fishing-9bcfae5e"
+    },
+    {
+      "activation": {
+        "id": "activation-9c5651e4f765",
+        "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+        "sourceProvider": "src/core/fishing/fish_retrieve_result.js",
+        "targetModule": "src/game/domain/fishing/fish_retrieve_result.js",
+        "exportName": "FishRetrieveResult",
+        "legacySymbol": "FishRetrieveResult",
+        "legacyScriptIndex": 122,
+        "shimFile": "activations/122_fishretrieveresult.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-322.batch-025-fishing-9bcfae5e"
     }
   ]
 }

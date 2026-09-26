@@ -1,0 +1,439 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+  "sourceReleaseVersion": "0.24.62",
+  "targetReleaseVersion": "0.24.63",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_025_execution_plan.json",
+    "sha256": "d42159d6898e11cdf7df6b59080047e0c6204c75e3953c3042fc5ddd7912ac97"
+  },
+  "scope": {
+    "moduleCount": 3,
+    "exportCount": 3,
+    "activationCount": 3,
+    "consumerRelationshipCount": 4
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/FishRetrieveSystem/retrieve-forces-caller-mutation-and-config-sources",
+      "kind": "behavior-equivalence",
+      "exportName": "FishRetrieveSystem",
+      "currentPath": "src/systems/fish_retrieve_system.js",
+      "targetPath": "src/game/domain/fishing/fish_retrieve_system.js",
+      "baselineSourceSha256": "977828dd5f99ddb934571ebfba4933b968362ee131f192fb9f4598ada1a19d3e",
+      "caseName": "retrieve-forces-caller-mutation-and-config-sources",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/PoleFightSectorConstraint/default-geometry-clamping-recovery-and-frame-reuse",
+      "kind": "behavior-equivalence",
+      "exportName": "PoleFightSectorConstraint",
+      "currentPath": "src/core/fishing/pole_fight_sector_constraint.js",
+      "targetPath": "src/game/domain/fishing/pole_fight_sector_constraint.js",
+      "baselineSourceSha256": "616c9606c7a9b68f981c2775910f3e5c0e5cd55642972818e23d9f3ecf09737f",
+      "caseName": "default-geometry-clamping-recovery-and-frame-reuse",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/PoleFightSectorConstraint/injected-geometry-frame",
+      "kind": "behavior-equivalence",
+      "exportName": "PoleFightSectorConstraint",
+      "currentPath": "src/core/fishing/pole_fight_sector_constraint.js",
+      "targetPath": "src/game/domain/fishing/pole_fight_sector_constraint.js",
+      "baselineSourceSha256": "616c9606c7a9b68f981c2775910f3e5c0e5cd55642972818e23d9f3ecf09737f",
+      "caseName": "injected-geometry-frame",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/StaminaPressureResolver/pressure-inputs-lateral-position-and-control-direction",
+      "kind": "behavior-equivalence",
+      "exportName": "StaminaPressureResolver",
+      "currentPath": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+      "targetPath": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+      "baselineSourceSha256": "901c2629d76b57db47d6fc5a643964a5c2e9f5fe6f0a5e66d136ccc96f6be56e",
+      "caseName": "pressure-inputs-lateral-position-and-control-direction",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/three-representation-only-named-esm-targets-and-three-exact-exports",
+      "kind": "compatibility-invariant",
+      "caseName": "three-representation-only-named-esm-targets-and-three-exact-exports",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/five-exact-completed-prefix-imports-bound-to-the-cumulative-instances",
+      "kind": "compatibility-invariant",
+      "caseName": "five-exact-completed-prefix-imports-bound-to-the-cumulative-instances",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/five-owner-created-composition-identities-preserved",
+      "kind": "compatibility-invariant",
+      "caseName": "five-owner-created-composition-identities-preserved",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/reviewed-guarded-window-exposure-moved-to-the-exact-activation-shim",
+      "kind": "compatibility-invariant",
+      "caseName": "reviewed-guarded-window-exposure-moved-to-the-exact-activation-shim",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-esm-evaluation-per-target-without-top-level-effects",
+      "kind": "compatibility-invariant",
+      "caseName": "one-esm-evaluation-per-target-without-top-level-effects",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/three-exact-classic-activations-at-their-legacy-positions",
+      "kind": "compatibility-invariant",
+      "caseName": "three-exact-classic-activations-at-their-legacy-positions",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/four-exact-classic-consumer-relationships-and-five-retired-bridges",
+      "kind": "compatibility-invariant",
+      "caseName": "four-exact-classic-consumer-relationships-and-five-retired-bridges",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/reused-sector-frame-identity-and-caller-input-mutation-preserved",
+      "kind": "compatibility-invariant",
+      "caseName": "reused-sector-frame-identity-and-caller-input-mutation-preserved",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/two-consumerless-activations-retired-as-inert-classic-placeholders",
+      "kind": "compatibility-invariant",
+      "caseName": "two-consumerless-activations-retired-as-inert-classic-placeholders",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-prior-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-prior-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "FishRetrieveSystem",
+      "caseCount": 1,
+      "cases": [
+        "retrieve-forces-caller-mutation-and-config-sources"
+      ]
+    },
+    {
+      "exportName": "PoleFightSectorConstraint",
+      "caseCount": 2,
+      "cases": [
+        "default-geometry-clamping-recovery-and-frame-reuse",
+        "injected-geometry-frame"
+      ]
+    },
+    {
+      "exportName": "StaminaPressureResolver",
+      "caseCount": 1,
+      "cases": [
+        "pressure-inputs-lateral-position-and-control-direction"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 4,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.26.0-live-observation-and-stage-3.22-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_025_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/core/fishing/pole_fight_sector_constraint.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/fishing/pole_fight_sector_constraint.js",
+          "authoritativeOwners": [
+            "PoleFightSectorConstraint#createFrame",
+            "PoleFightSectorConstraint#findBoundaryPoint",
+            "PoleFightSectorConstraint#frame",
+            "PoleFightSectorConstraint#geometry",
+            "PoleFightSectorConstraint#point",
+            "PoleFightSectorConstraint#resolveAllowedVelocity",
+            "PoleFightSectorConstraint#resolveBoundaryType",
+            "PoleFightSectorConstraint#resolveMovement",
+            "PoleFightSectorConstraint#writeFrame"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fishing/pole_fight_sector_constraint.js",
+          "authoritativeOwners": [
+            "PoleFightSectorConstraint#createFrame",
+            "PoleFightSectorConstraint#findBoundaryPoint",
+            "PoleFightSectorConstraint#frame",
+            "PoleFightSectorConstraint#geometry",
+            "PoleFightSectorConstraint#point",
+            "PoleFightSectorConstraint#resolveAllowedVelocity",
+            "PoleFightSectorConstraint#resolveBoundaryType",
+            "PoleFightSectorConstraint#resolveMovement",
+            "PoleFightSectorConstraint#writeFrame"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [
+          "active",
+          "allowedMoveRatio",
+          "angleDeg",
+          "apexOffsetPx",
+          "boundaryType",
+          "clamped",
+          "clampedAngleDeg",
+          "enabled",
+          "enforceRadius",
+          "forwardX",
+          "forwardY",
+          "leftBoundaryDirectionX",
+          "leftBoundaryDirectionY",
+          "leftBoundaryRadiusIntersectionX",
+          "leftBoundaryRadiusIntersectionY",
+          "limitRadiusPx",
+          "maxAngleFromCenterDeg",
+          "originX",
+          "originY",
+          "outside",
+          "positionX",
+          "positionY",
+          "proposedAngleDeg",
+          "radialOriginX",
+          "radialOriginY",
+          "radiusPx",
+          "recoveryMovement",
+          "rightBoundaryDirectionX",
+          "rightBoundaryDirectionY",
+          "rightBoundaryRadiusIntersectionX",
+          "rightBoundaryRadiusIntersectionY",
+          "sectorApexX",
+          "sectorApexY",
+          "shoreOpeningWidthMeters",
+          "side",
+          "velocityAdjusted",
+          "velocityX",
+          "velocityY"
+        ],
+        "stableResultIdentity": true,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "e7e1ad92116e97f5fe9949b6cde5d7e6636519121b5e32683c73fed4308d91ff",
+        "allocationBaseline": {
+          "objectExpressions": 25,
+          "arrayExpressions": 0,
+          "newExpressions": 1,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 1,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+          "authoritativeOwners": [
+            "StaminaPressureResolver#clamp01",
+            "StaminaPressureResolver#lateralPositionResolver",
+            "StaminaPressureResolver#lerp",
+            "StaminaPressureResolver#positive",
+            "StaminaPressureResolver#resolveControlDirection"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+          "authoritativeOwners": [
+            "StaminaPressureResolver#clamp01",
+            "StaminaPressureResolver#lateralPositionResolver",
+            "StaminaPressureResolver#lerp",
+            "StaminaPressureResolver#positive",
+            "StaminaPressureResolver#resolveControlDirection"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "87699e0ccca7f1e48fd5f65049143d8af31da58d80815f96d26f31722dbd67e0",
+        "allocationBaseline": {
+          "objectExpressions": 15,
+          "arrayExpressions": 0,
+          "newExpressions": 1,
+          "objectFreezeCalls": 5,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/systems/fish_retrieve_system.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/systems/fish_retrieve_system.js",
+          "authoritativeOwners": [
+            "FishRetrieveSystem#calculator",
+            "FishRetrieveSystem#configSource",
+            "FishRetrieveSystem#dragForceCalculator",
+            "FishRetrieveSystem#positive",
+            "FishRetrieveSystem#ratio",
+            "FishRetrieveSystem#resolveFishWeight",
+            "FishRetrieveSystem#resolveHoldRatio",
+            "FishRetrieveSystem#resolvePixelsPerMeter",
+            "FishRetrieveSystem#resolvePlayerPullPressure",
+            "FishRetrieveSystem#resolveRodHoldConfig",
+            "FishRetrieveSystem#resolveTensionConfig",
+            "FishRetrieveSystem#resolveWaterConfig"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fishing/fish_retrieve_system.js",
+          "authoritativeOwners": [
+            "FishRetrieveSystem#calculator",
+            "FishRetrieveSystem#configSource",
+            "FishRetrieveSystem#dragForceCalculator",
+            "FishRetrieveSystem#positive",
+            "FishRetrieveSystem#ratio",
+            "FishRetrieveSystem#resolveFishWeight",
+            "FishRetrieveSystem#resolveHoldRatio",
+            "FishRetrieveSystem#resolvePixelsPerMeter",
+            "FishRetrieveSystem#resolvePlayerPullPressure",
+            "FishRetrieveSystem#resolveRodHoldConfig",
+            "FishRetrieveSystem#resolveTensionConfig",
+            "FishRetrieveSystem#resolveWaterConfig"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": true,
+        "behaviorFingerprint": "a05dfe902a82cbe1dd4c4178fce93870af31df6eb44f29b1521977f756df8d6b",
+        "allocationBaseline": {
+          "objectExpressions": 14,
+          "arrayExpressions": 0,
+          "newExpressions": 3,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.26.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

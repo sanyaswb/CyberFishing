@@ -170,6 +170,14 @@ class StageThreeBatchToolingGeneralizationCheck {
       `generic focused builder changed historical batch-${profile.batchNumber} bytes`);
   }
 
+  // Every bridge record a recorded execution plan retired, from the immutable plan artifacts.
+  #retiredBridgeRecords() {
+    const directory = "architecture/migration";
+    return fs.readdirSync(path.join(PROJECT_ROOT, directory))
+      .filter((name) => /^stage_3_batch_\d{3}_execution_plan\.json$/u.test(name)).sort()
+      .flatMap((name) => this.#json(`${directory}/${name}`).compatibility.registryTransition.retiredBridgeRecords || []);
+  }
+
   #rebuildHistoricalPlan(profile, historicalPlan) {
     const audit = this.#json(profile.auditPath);
     const approvedPlan = this.#json("architecture/migration/stage_3_approved_batches.json");
@@ -179,13 +187,19 @@ class StageThreeBatchToolingGeneralizationCheck {
     const historicalOwners = new Set(executionState.completedBatchIds);
     const runtimeContract = {
       ...currentRuntime,
-      activationPositions: currentRuntime.activationPositions.filter((record) =>
-        historicalOwners.has(record.owner)),
+      // Activations retired by later batches were active at this historical checkpoint.
+      activationPositions: [
+        ...currentRuntime.activationPositions,
+        ...(currentRuntime.retiredActivations || []).map((record) => record.activation),
+      ].filter((record) => historicalOwners.has(record.owner))
+        .sort((left, right) => left.id.localeCompare(right.id)),
     };
     const bridgeRegistry = {
       ...currentRegistry,
-      bridges: currentRegistry.bridges.filter((record) =>
-        /^stage-2\./u.test(record.owner) || historicalOwners.has(record.owner)),
+      // Bridges retired by later batches were active at this historical checkpoint.
+      bridges: [...currentRegistry.bridges, ...this.#retiredBridgeRecords()].filter((record) =>
+        /^stage-2\./u.test(record.owner) || historicalOwners.has(record.owner))
+        .sort((left, right) => left.id.localeCompare(right.id)),
     };
     const plan = new StageThreeBatchExecutionPlanBuilder(profile).build({
       audit,
