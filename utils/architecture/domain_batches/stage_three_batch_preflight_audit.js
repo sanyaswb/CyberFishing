@@ -354,7 +354,8 @@ class StageThreeBatchPreflightAuditBuilder {
     const providerSymbols = manifestEntry.observed.providers.items
       .map((provider) => provider.symbol);
     const expectedClasses = reviewed.frozenConstants
-      ? [reviewed.frozenConstants.className] : expectedSymbols;
+      ? [...(reviewed.frozenConstants.classNames || [reviewed.frozenConstants.className])].sort()
+      : expectedSymbols;
     this.#require(this.#same(sourceShape.classDeclarations, expectedClasses),
       `class declaration differs: ${module.currentPath}`);
     this.#require(this.#same([...new Set(providerSymbols)].sort(), expectedSymbols),

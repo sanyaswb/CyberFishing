@@ -64,7 +64,7 @@ class StageThreeCompatibilityRuntimeIntegrationCheck {
     assert.equal(contract.sideEffectReviews.length,
       5 + Number(selectedBatch.order >= 13) + Number(selectedBatch.order >= 14) +
       Number(selectedBatch.order >= 15) + Number(selectedBatch.order >= 17) +
-      3 * Number(selectedBatch.order >= 20));
+      3 * Number(selectedBatch.order >= 20) + 2 * Number(selectedBatch.order >= 21));
     assert.equal(contract.previousRuntimeTransitions.length, 9);
     assert.equal(contract.approvedInfrastructureModules.length, 0);
     assert.equal(contract.transport.symbol, EXACT_TRANSPORT_GLOBAL);

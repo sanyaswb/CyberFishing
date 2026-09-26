@@ -1,0 +1,382 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.candidate-021-equipment-4044fcef",
+  "sourceReleaseVersion": "0.24.57",
+  "targetReleaseVersion": "0.24.58",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_021_execution_plan.json",
+    "sha256": "357424cf012bc2767e9c84ab475fe83e0431b5ef7e763f0564603b872a119425"
+  },
+  "scope": {
+    "moduleCount": 2,
+    "exportCount": 6,
+    "activationCount": 6,
+    "consumerRelationshipCount": 4
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/AutoRefillMemory/remember-forget-clone-and-snapshot",
+      "kind": "behavior-equivalence",
+      "exportName": "AutoRefillMemory",
+      "currentPath": "src/core/equipment/auto_refill_policy.js",
+      "targetPath": "src/game/domain/equipment/auto_refill_policy.js",
+      "baselineSourceSha256": "231bed05e45bf75c908e347ff32d6dd469d73ffe86969058f79a72439d4d8404",
+      "caseName": "remember-forget-clone-and-snapshot",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/AutoRefillPolicy/trigger-scope-resolution",
+      "kind": "behavior-equivalence",
+      "exportName": "AutoRefillPolicy",
+      "currentPath": "src/core/equipment/auto_refill_policy.js",
+      "targetPath": "src/game/domain/equipment/auto_refill_policy.js",
+      "baselineSourceSha256": "231bed05e45bf75c908e347ff32d6dd469d73ffe86969058f79a72439d4d8404",
+      "caseName": "trigger-scope-resolution",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/AutoRefillScope/frozen-scope-table",
+      "kind": "behavior-equivalence",
+      "exportName": "AutoRefillScope",
+      "currentPath": "src/core/equipment/auto_refill_policy.js",
+      "targetPath": "src/game/domain/equipment/auto_refill_policy.js",
+      "baselineSourceSha256": "231bed05e45bf75c908e347ff32d6dd469d73ffe86969058f79a72439d4d8404",
+      "caseName": "frozen-scope-table",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/AutoRefillSettings/defaults-toggles-and-snapshot",
+      "kind": "behavior-equivalence",
+      "exportName": "AutoRefillSettings",
+      "currentPath": "src/core/equipment/auto_refill_policy.js",
+      "targetPath": "src/game/domain/equipment/auto_refill_policy.js",
+      "baselineSourceSha256": "231bed05e45bf75c908e347ff32d6dd469d73ffe86969058f79a72439d4d8404",
+      "caseName": "defaults-toggles-and-snapshot",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/AutoRefillTrigger/frozen-trigger-table",
+      "kind": "behavior-equivalence",
+      "exportName": "AutoRefillTrigger",
+      "currentPath": "src/core/equipment/auto_refill_policy.js",
+      "targetPath": "src/game/domain/equipment/auto_refill_policy.js",
+      "baselineSourceSha256": "231bed05e45bf75c908e347ff32d6dd469d73ffe86969058f79a72439d4d8404",
+      "caseName": "frozen-trigger-table",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/ExactItemSignaturePolicy/ignored-keys-canonical-properties-and-freeze",
+      "kind": "behavior-equivalence",
+      "exportName": "ExactItemSignaturePolicy",
+      "currentPath": "src/core/equipment/exact_item_signature_policy.js",
+      "targetPath": "src/game/domain/equipment/exact_item_signature_policy.js",
+      "baselineSourceSha256": "d4982768a03b7c35b2febf6feba6add434a2208d4f3d7e8a10c7d8d085f0efea",
+      "caseName": "ignored-keys-canonical-properties-and-freeze",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/ExactItemSignaturePolicy/keys-errors-and-static-privacy",
+      "kind": "behavior-equivalence",
+      "exportName": "ExactItemSignaturePolicy",
+      "currentPath": "src/core/equipment/exact_item_signature_policy.js",
+      "targetPath": "src/game/domain/equipment/exact_item_signature_policy.js",
+      "baselineSourceSha256": "d4982768a03b7c35b2febf6feba6add434a2208d4f3d7e8a10c7d8d085f0efea",
+      "caseName": "keys-errors-and-static-privacy",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/two-representation-only-named-esm-targets-and-six-exact-exports",
+      "kind": "compatibility-invariant",
+      "caseName": "two-representation-only-named-esm-targets-and-six-exact-exports",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-esm-evaluation-per-target-with-three-reviewed-initializers",
+      "kind": "compatibility-invariant",
+      "caseName": "one-esm-evaluation-per-target-with-three-reviewed-initializers",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/six-exact-classic-activations-at-two-legacy-positions",
+      "kind": "compatibility-invariant",
+      "caseName": "six-exact-classic-activations-at-two-legacy-positions",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/four-exact-classic-consumer-relationships",
+      "kind": "compatibility-invariant",
+      "caseName": "four-exact-classic-consumer-relationships",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/trigger-scope-tables-and-private-set-identity-preserved-through-single-evaluation",
+      "kind": "compatibility-invariant",
+      "caseName": "trigger-scope-tables-and-private-set-identity-preserved-through-single-evaluation",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/per-instance-signature-memory-state-identity-preserved",
+      "kind": "compatibility-invariant",
+      "caseName": "per-instance-signature-memory-state-identity-preserved",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/authoritative-state-owners-and-zero-extra-allocations",
+      "kind": "compatibility-invariant",
+      "caseName": "authoritative-state-owners-and-zero-extra-allocations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-prior-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-prior-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "AutoRefillMemory",
+      "caseCount": 1,
+      "cases": [
+        "remember-forget-clone-and-snapshot"
+      ]
+    },
+    {
+      "exportName": "AutoRefillPolicy",
+      "caseCount": 1,
+      "cases": [
+        "trigger-scope-resolution"
+      ]
+    },
+    {
+      "exportName": "AutoRefillScope",
+      "caseCount": 1,
+      "cases": [
+        "frozen-scope-table"
+      ]
+    },
+    {
+      "exportName": "AutoRefillSettings",
+      "caseCount": 1,
+      "cases": [
+        "defaults-toggles-and-snapshot"
+      ]
+    },
+    {
+      "exportName": "AutoRefillTrigger",
+      "caseCount": 1,
+      "cases": [
+        "frozen-trigger-table"
+      ]
+    },
+    {
+      "exportName": "ExactItemSignaturePolicy",
+      "caseCount": 2,
+      "cases": [
+        "ignored-keys-canonical-properties-and-freeze",
+        "keys-errors-and-static-privacy"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 4,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.21.0-live-observation-and-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_021_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/core/equipment/auto_refill_policy.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/equipment/auto_refill_policy.js",
+          "authoritativeOwners": [
+            "AutoRefillMemory#clone",
+            "AutoRefillMemory#remember",
+            "AutoRefillMemory#signatures",
+            "AutoRefillPolicy#settings",
+            "AutoRefillSettings#autoBait",
+            "AutoRefillSettings#autoChum"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/equipment/auto_refill_policy.js",
+          "authoritativeOwners": [
+            "AutoRefillMemory#clone",
+            "AutoRefillMemory#remember",
+            "AutoRefillMemory#signatures",
+            "AutoRefillPolicy#settings",
+            "AutoRefillSettings#autoBait",
+            "AutoRefillSettings#autoChum"
+          ]
+        },
+        "publicStateShape": [
+          "autoBait",
+          "autoChum"
+        ],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "ab9a41fc0924f617f2d70883196702f65d02941c884ad87dcac0fd07cac487df",
+        "allocationBaseline": {
+          "objectExpressions": 7,
+          "arrayExpressions": 6,
+          "newExpressions": 2,
+          "objectFreezeCalls": 6,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/equipment/exact_item_signature_policy.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/equipment/exact_item_signature_policy.js",
+          "authoritativeOwners": [
+            "ExactItemSignaturePolicy#canonicalize",
+            "ExactItemSignaturePolicy#create",
+            "ExactItemSignaturePolicy#deepFreeze",
+            "ExactItemSignaturePolicy.ignoredKeys"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/equipment/exact_item_signature_policy.js",
+          "authoritativeOwners": [
+            "ExactItemSignaturePolicy#canonicalize",
+            "ExactItemSignaturePolicy#create",
+            "ExactItemSignaturePolicy#deepFreeze",
+            "ExactItemSignaturePolicy.ignoredKeys"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "cd1e6dba4cfc434d859912f56c72a659dbc23690e3c3f1e02e873868783e8f1c",
+        "allocationBaseline": {
+          "objectExpressions": 3,
+          "arrayExpressions": 1,
+          "newExpressions": 2,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.21.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

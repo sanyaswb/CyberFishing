@@ -17,12 +17,15 @@ class StageThreeReviewedEvaluationEffect {
   // Reviews top-level constants initialized by Object.freeze over inert literals (arrays of
   // string/numeric literals or plain objects with string literal values), followed by exactly one
   // class. Two numeric pairs keep the historical "frozen-literal-ranges" kind.
-  frozenConstants({ source, currentPath, className, bindings }) {
+  frozenConstants({ source, currentPath, className, classNames = null, bindings }) {
     const tree = this.parse(source);
     const names = Object.keys(bindings);
+    const classes = classNames || [className];
     assert(names.length > 0, `${currentPath}: frozen constants are required`);
-    assert.equal(tree.body.length, names.length + 1,
-      `${currentPath}: expected ${names.length} constants and one class`);
+    assert(classes.length > 0 && (!classNames || !className),
+      `${currentPath}: name either one class or several classes`);
+    assert.equal(tree.body.length, names.length + classes.length,
+      `${currentPath}: expected ${names.length} constants and ${classes.length} classes`);
     let ranges = names.length === 2;
     for (let index = 0; index < names.length; index += 1) {
       const statement = tree.body[index];
@@ -58,9 +61,12 @@ class StageThreeReviewedEvaluationEffect {
       }
       assert.equal(position(call), bindings[expected].location);
     }
-    const declaration = tree.body[names.length];
-    assert.equal(declaration.type, "ClassDeclaration");
-    assert.equal(declaration.id.name, className);
+    classes.forEach((name, index) => {
+      const declaration = tree.body[names.length + index];
+      assert.equal(declaration.type, "ClassDeclaration");
+      assert.equal(declaration.id.name, name);
+      assert.equal(declaration.superClass, null, `${currentPath}: superclass requires review`);
+    });
     const context = vm.createContext({});
     vm.runInContext(source, context, { filename: currentPath });
     assert.deepEqual(Object.getOwnPropertyNames(context), [], "Frozen constants created globals");
@@ -71,7 +77,8 @@ class StageThreeReviewedEvaluationEffect {
     }
     return Object.freeze({ kind: ranges ? "frozen-literal-ranges" : "frozen-literal-constants",
       currentPath, sourceSha256: sha(source),
-      className, bindings, topLevelStatementCount: names.length + 1,
+      ...(classNames ? { classNames } : { className }), bindings,
+      topLevelStatementCount: names.length + classes.length,
       evaluationCount: 1, globalPropertiesAdded: [], otherTopLevelEffects: 0 });
   }
 

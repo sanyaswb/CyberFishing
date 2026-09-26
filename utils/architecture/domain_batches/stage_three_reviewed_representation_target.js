@@ -74,11 +74,14 @@ class RepresentationOnlyReviewedEsmTarget {
         assert.equal(targetSource.split(token).length - 1, 1);
         targetSource = targetSource.replace(token, `export ${token}`);
       }
-      const token = `class ${contract.frozenConstants.className}`;
-      assert.equal(targetSource.split(token).length - 1, 1);
-      targetSource = targetSource.replace(token, `export ${token}`);
+      const constantClasses = contract.frozenConstants.classNames || [contract.frozenConstants.className];
+      for (const name of constantClasses) {
+        const token = `class ${name} `;
+        assert.equal(targetSource.split(token).length - 1, 1);
+        targetSource = targetSource.replace(token, `export ${token}`);
+      }
       assert.deepEqual(exports, [...Object.keys(contract.frozenConstants.bindings),
-        contract.frozenConstants.className].sort());
+        ...constantClasses].sort());
     } else {
       const exposure = contract.legacyExposure;
       reviewer.windowExposure({ source, currentPath, ...exposure });
@@ -101,8 +104,8 @@ class RepresentationOnlyReviewedEsmTarget {
     for (const name of Object.keys(contract.frozenConstants?.bindings || {})) {
       restored = restored.replace(`export const ${name}`, `const ${name}`);
     }
-    for (const name of contract.classFamily?.classes || [contract.frozenConstants?.className ||
-      contract.legacyExposure.symbol]) {
+    for (const name of contract.classFamily?.classes || contract.frozenConstants?.classNames ||
+      [contract.frozenConstants?.className || contract.legacyExposure.symbol]) {
       restored = restored.replace(`export class ${name}`, `class ${name}`);
     }
     assert.equal(restored, classicBody, `${targetPath}: non-representation source delta`);

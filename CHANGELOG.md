@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.24.58 - Equipment Auto Refill Policy Domain
+
+### Changed
+
+- Completed atomic Stage 3 batch 021: two Equipment modules with six named ESM exports (auto-refill triggers, scopes, settings, memory and policy, exact item signatures).
+- Extended the cumulative graph from 76 to 78 project modules and from 81 to 87 activation contracts, with 139 exact bridge relationships.
+- Preserved activation timing, four classic consumer relationships, class and table identity, the per-instance signature memory, the private ignored-key set and equipment behavior.
+- Reviewed frozen top-level constants may be followed by several classes; the collection state-identity review accepts in-place for-of iteration.
+- Completed the frozen Stage 3 plan: batches 001–021 (69 of 69 frozen Domain modules); the next task is the post-freeze graph review and a new maximal-prefix freeze.
+
 ## v0.24.57 - Assemblies Refill Signature and State Domain
 
 ### Changed

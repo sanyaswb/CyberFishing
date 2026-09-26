@@ -70,7 +70,9 @@ class StageThreeBatchPreflightProfile {
       if (contract?.frozenConstants) {
         require(Boolean(definition?.sideEffectEvidence),
           `${currentPath} frozenConstants requires sideEffectEvidence`);
-        require(typeof contract.frozenConstants.className === "string" &&
+        require((typeof contract.frozenConstants.className === "string") !==
+          (Array.isArray(contract.frozenConstants.classNames) &&
+            contract.frozenConstants.classNames.length > 1) &&
           Object.keys(contract.frozenConstants.bindings || {}).length > 0 &&
           Object.values(contract.frozenConstants.bindings).every((binding) =>
             /^\d+:\d+$/u.test(binding?.location)),

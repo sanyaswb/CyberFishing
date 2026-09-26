@@ -36,6 +36,7 @@ class StageThreeStateIdentityReview {
       assert.equal(creation.callee.type, "Identifier");
       assert.equal(creation.callee.name, collection.collection);
       const operations = [];
+      const iterations = [];
       estraverse.traverse(tree, {
         fallback: "iteration",
         enter(node, parent) {
@@ -45,7 +46,13 @@ class StageThreeStateIdentityReview {
             (collection.scope !== "static" || node.object.name === className),
           `${currentPath}: ${collection.field} is accessed through an unexpected receiver`);
           if (parent === definition) return;
-          // Every use must be `owner.#field.method(...)`; the collection itself never escapes.
+          // `for (... of owner.#field)` reads the collection in place without exposing it.
+          if (parent?.type === "ForOfStatement" && parent.right === node) {
+            operations.push({ method: "iterate", location: position(node) });
+            iterations.push(position(node));
+            return;
+          }
+          // Every other use must be `owner.#field.method(...)`; the collection never escapes.
           assert(parent?.type === "MemberExpression" && parent.object === node && !parent.computed &&
             parent.property.type === "Identifier", `${currentPath}: ${collection.field} escapes its owner`);
           operations.push({ method: parent.property.name, location: position(node) });
@@ -62,7 +69,7 @@ class StageThreeStateIdentityReview {
             node.callee.object.property.name === name) calls.push(position(node.callee.object));
         },
       });
-      assert.deepEqual(operations.map(item => item.location).sort(), [...calls].sort(),
+      assert.deepEqual(operations.map(item => item.location).sort(), [...calls, ...iterations].sort(),
         `${currentPath}: ${collection.field} is read without a direct method call`);
       const methods = [...new Set(operations.map(item => item.method))].sort();
       assert(methods.every(method => collection.allowedOperations.includes(method)),

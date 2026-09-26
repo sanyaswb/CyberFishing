@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-release-closure",
+  "status": "verified",
+  "batchId": "stage-3.candidate-021-equipment-4044fcef",
+  "releaseVersion": "0.24.58",
+  "previousReleaseVersion": "0.24.57",
+  "releasePublicationAllowed": true,
+  "completedBatchCount": 21,
+  "completedDomainModuleCount": 69,
+  "runtimeTopology": {
+    "modules": 78,
+    "activations": 87,
+    "bridges": 139
+  },
+  "acceptance": {
+    "automatedEvidence": {
+      "path": "architecture/migration/stage_3_batch_021_automated_acceptance.json",
+      "sha256": "1783d8d0ce01d2a1a93fb10b191c41a87dac9429854129acce7af9b0932fec1a"
+    },
+    "historicalSummary": {
+      "path": "architecture/migration/stage_3_batch_021_acceptance_pass.json",
+      "sha256": "89c7b4c4bbc3775080d992f6087276bdfd7eb284dd2fa077c2164bb3b45a7064"
+    },
+    "browserProof": {
+      "path": "architecture/migration/stage_3_batch_021_browser_confirmation.json",
+      "sha256": "da8cb9daeb2882e16d15ead798e492c1bf4db4b5ba2c2096e22936542b942b9a"
+    },
+    "browserGate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts"
+  },
+  "releaseTransition": {
+    "path": "architecture/migration/stage_3_batch_021_release_transition.json",
+    "sha256": "8f922659a1e03e198c04739d8922bdb3d4f6a61dc9ab6ab5a3775ca3ceacad5c"
+  },
+  "releaseEvidence": [
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "966dcbb675f9c75631eea66a398ff4dd1c604dca96f6c81c3f6b65bca53a0715"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "53e59d94bfeccf4f6142f054813bf7593d9d97617932750bafb05dea47d8d638"
+    },
+    {
+      "path": "index.html",
+      "sha256": "0d06e9d093345038454a9ff7da53e8efbbbc48389b22514e04237b36af764c48"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "56a1cda8871fecb519d5302b6c85942a80faa039fc63cfac795ca66c8296791e"
+    },
+    {
+      "path": "package.json",
+      "sha256": "fb466c75bac4dc3d86cae9ceaa28252cc9d14e50c3e92dfccb3ab44b8d674391"
+    },
+    {
+      "path": "refactor_Task.txt",
+      "sha256": "f08e3bd0478f9f449c73cf1398e2c8472883ad096185de0eb3c9441b656f036d"
+    },
+    {
+      "path": "src/config/project_version.js",
+      "sha256": "45d288ecb59ec540a692ce0fa78b9a215ba06aba9875e0a9d336b12f28284718"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "780aa57c235bbc7586759b5cc67b2f9f286267d64fdf60392bfe6f89b1342580"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "2c8cc9d62b7dc1288a9708fa419a6610f874c3d31719e1916d1ecd31b4c36430"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "ebea14626e8e6f2f55d1e02c07b85f906f614771b8edc39be16796eb1609b1c5"
+    }
+  ],
+  "rollback": {
+    "atomic": true,
+    "partialRollbackAllowed": false,
+    "fromRelease": "0.24.58",
+    "toRelease": "0.24.57",
+    "removeBatchId": "stage-3.candidate-021-equipment-4044fcef",
+    "preserveCompletedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034",
+      "stage-3.candidate-010-inventory-e3dffbe7",
+      "stage-3.candidate-011-items-11818ee5",
+      "stage-3.candidate-012-assemblies-2086347a",
+      "stage-3.candidate-013-fishing-0267b3ea",
+      "stage-3.candidate-014-fishing-fefd469b",
+      "stage-3.candidate-015-fishing-37dc3452",
+      "stage-3.candidate-016-fishing-f8c953aa",
+      "stage-3.candidate-017-inventory-fd62478b",
+      "stage-3.candidate-018-items-8ea4be10",
+      "stage-3.candidate-019-items-b0af5033",
+      "stage-3.candidate-020-assemblies-43d77861"
+    ],
+    "restoreTopology": {
+      "projectModuleCount": 76,
+      "activationCount": 81,
+      "bridgeRecordCount": 135,
+      "physicalClassicScriptCount": 430,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0
+    },
+    "baselineEvidenceReference": {
+      "path": "architecture/migration/stage_3_batch_021_execution_plan.json",
+      "sha256": "357424cf012bc2767e9c84ab475fe83e0431b5ef7e763f0564603b872a119425"
+    }
+  },
+  "finalRegression": {
+    "status": "passed",
+    "evidence": {
+      "path": "architecture/migration/stage_3_batch_021_release_regression.json",
+      "sha256": "969008a063941c3c26286331f8bf1dfe3d1ecfcb5cbbe0a8000dc0b29df35385"
+    },
+    "preReleaseSuites": {
+      "full": {
+        "passedChecks": 184,
+        "failedChecks": 0
+      },
+      "fullRun": {
+        "platform": "windows",
+        "source": "npm run check on the owner's Windows machine, run by Claude in one uninterrupted run (3208.53s) after the batch-021 cutover; an earlier run stopped at consumable-event-identity, which loaded the legacy auto-refill provider without the compatibility runtime and was fixed to load it first (batch 010/017 precedent)"
+      },
+      "supplementary": {
+        "quick": {
+          "passedChecks": 41,
+          "failedChecks": 0
+        },
+        "architecture": {
+          "passedChecks": 65,
+          "failedChecks": 0
+        },
+        "historyAfterSharedToolingChange": {
+          "passedChecks": 92,
+          "failedChecks": 0
+        }
+      },
+      "summary": "Windows Full 184/184 passed in one uninterrupted run, including consumable event identity, inventory equipment and integration suites with auto-refill, and the game-cycle fight scenarios",
+      "countSemantics": "The full suite includes the architecture and quick checks."
+    },
+    "node": "v24.13.0",
+    "npm": "11.6.2",
+    "lockfileSha256": "56a1cda8871fecb519d5302b6c85942a80faa039fc63cfac795ca66c8296791e",
+    "lockfileChanged": false,
+    "generatedRuntimeByteEquality": true,
+    "steps": [
+      {
+        "id": "npm-ci",
+        "exitCode": 0
+      },
+      {
+        "id": "cumulative-build",
+        "exitCode": 0
+      }
+    ]
+  },
+  "nextStage": "Stage 3.22.0 — Post-Freeze Graph Review and New Maximal-Prefix Freeze"
+}

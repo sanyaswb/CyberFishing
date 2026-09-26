@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-021-browser-confirmation",
+  "batchId": "stage-3.candidate-021-equipment-4044fcef",
+  "releaseVersion": "0.24.57",
+  "status": "passed",
+  "performedBy": "claude-automated-owner-authorized",
+  "recordedAt": "2026-09-26T02:05:17.783Z",
+  "evidenceType": "automated-substitute-authorized-by-owner-in-conversation",
+  "gate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts",
+  "browserSummary": {
+    "userStatement": "PASS (owner-authorized automated substitute) — game-cycle-check.js and the Equipment/Inventory suites passed; built-in browser load rendered the game and the inventory screen with exact batch-021 identities.",
+    "context": "The owner authorized, during the batch 015-021 plan, replacing the manual visual smoke with game-cycle-check results when that check passes. Batch 021 migrates Equipment auto-refill modules, so the Full suite also ran the consumable event identity and inventory equipment/integration suites. Claude loaded the game via npm run dev in the Claude desktop built-in browser and opened the inventory screen.",
+    "individualResultsProvided": true,
+    "independentlyInstrumented": true
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "Built-in browser console, instrumented by Claude on launch and after opening the inventory: 0 errors, 0 warnings (one informational CacheManager log).",
+    "independentlyInstrumented": true
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_021_acceptance_pass.json",
+    "sha256": "89c7b4c4bbc3775080d992f6087276bdfd7eb284dd2fa077c2164bb3b45a7064"
+  },
+  "historicalSummaryPreserved": true
+}

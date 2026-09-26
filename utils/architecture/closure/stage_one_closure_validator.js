@@ -614,6 +614,8 @@ class StageOneClosureValidator {
         "Items Bait Grade Decay and Quality Domain",
       "stage-3.candidate-020-assemblies-43d77861":
         "Assemblies Refill Signature and State Domain",
+      "stage-3.candidate-021-equipment-4044fcef":
+        "Equipment Auto Refill Policy Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

@@ -62,6 +62,7 @@ vm.runInContext(
 );
 
 const files = [
+  "dist/stage-3-compat-runtime/compat_runtime.iife.js",
   "src/core/equipment/auto_refill_policy.js",
   "src/application/inventory/equipment_auto_refill_target_provider.js",
   "src/app/inventory.js",

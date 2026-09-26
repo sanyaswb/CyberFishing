@@ -35,6 +35,22 @@
       ]
     },
     {
+      "id": "bridge-085faac976d6",
+      "bridge": "src/core/equipment/exact_item_signature_policy.js",
+      "source": "src/application/inventory/auto_refill_coordinator.js",
+      "target": "src/game/domain/equipment/exact_item_signature_policy.js",
+      "reason": "Preserve the exact Equipment domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-021-equipment-4044fcef",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ExactItemSignaturePolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-0c0f9cf80110",
       "bridge": "src/engine/compat/stage_2/asset_load_result_legacy_bridge.js",
       "source": "src/assets/asset_preload_coordinator.js",
@@ -290,6 +306,26 @@
       "globalProviders": [
         {
           "symbol": "FloatTackleLineBudgetPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-242afef6802f",
+      "bridge": "src/core/equipment/auto_refill_policy.js",
+      "source": "src/application/inventory/equipment_auto_refill_target_provider.js",
+      "target": "src/game/domain/equipment/auto_refill_policy.js",
+      "reason": "Preserve the exact Equipment domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-021-equipment-4044fcef",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "AutoRefillMemory",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "AutoRefillScope",
           "mechanism": "global-this-property"
         }
       ]
@@ -631,6 +667,22 @@
       ]
     },
     {
+      "id": "bridge-603f6e08a836",
+      "bridge": "src/core/equipment/auto_refill_policy.js",
+      "source": "src/application/inventory/inventory_v2_command_service.js",
+      "target": "src/game/domain/equipment/auto_refill_policy.js",
+      "reason": "Preserve the exact Equipment domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-021-equipment-4044fcef",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "AutoRefillTrigger",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-60496caa95fd",
       "bridge": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
       "source": "src/render/pipeline/casting_render_pass.js",
@@ -818,6 +870,30 @@
       "globalProviders": [
         {
           "symbol": "ItemFreshnessStatePolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-6fcf1bea53e9",
+      "bridge": "src/core/equipment/auto_refill_policy.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/equipment/auto_refill_policy.js",
+      "reason": "Preserve the exact Equipment domain consumers until their legacy symbols are removed.",
+      "owner": "stage-3.candidate-021-equipment-4044fcef",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "AutoRefillMemory",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "AutoRefillPolicy",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "AutoRefillSettings",
           "mechanism": "global-this-property"
         }
       ]

@@ -1,0 +1,295 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-021-side-effect-review",
+  "batchId": "stage-3.candidate-021-equipment-4044fcef",
+  "stage": "3.21.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.57",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "d9f76851d43613f93c905270844d2afb275642ae7275e3ab0c994bda384c77b4"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/core/equipment/auto_refill_policy.js",
+      "targetPath": "src/game/domain/equipment/auto_refill_policy.js",
+      "sourceSha256": "231bed05e45bf75c908e347ff32d6dd469d73ffe86969058f79a72439d4d8404",
+      "contract": {
+        "kind": "frozen-literal-constants",
+        "classNames": [
+          "AutoRefillSettings",
+          "AutoRefillMemory",
+          "AutoRefillPolicy"
+        ],
+        "bindings": {
+          "AutoRefillTrigger": {
+            "location": "1:27",
+            "values": {
+              "ROD_RETRIEVED": "rod-retrieved",
+              "HAND_CHUM_USED": "hand-chum-used",
+              "BOAT_RETURNED": "boat-returned"
+            }
+          },
+          "AutoRefillScope": {
+            "location": "7:25",
+            "values": {
+              "TACKLE_BAIT": "tackle-bait",
+              "TACKLE_CHUM": "tackle-chum",
+              "HAND_CHUM": "hand-chum",
+              "BOAT_CHUM": "boat-chum"
+            }
+          }
+        }
+      },
+      "review": {
+        "kind": "frozen-literal-constants",
+        "currentPath": "src/core/equipment/auto_refill_policy.js",
+        "sourceSha256": "231bed05e45bf75c908e347ff32d6dd469d73ffe86969058f79a72439d4d8404",
+        "classNames": [
+          "AutoRefillSettings",
+          "AutoRefillMemory",
+          "AutoRefillPolicy"
+        ],
+        "bindings": {
+          "AutoRefillTrigger": {
+            "location": "1:27",
+            "values": {
+              "ROD_RETRIEVED": "rod-retrieved",
+              "HAND_CHUM_USED": "hand-chum-used",
+              "BOAT_RETURNED": "boat-returned"
+            }
+          },
+          "AutoRefillScope": {
+            "location": "7:25",
+            "values": {
+              "TACKLE_BAIT": "tackle-bait",
+              "TACKLE_CHUM": "tackle-chum",
+              "HAND_CHUM": "hand-chum",
+              "BOAT_CHUM": "boat-chum"
+            }
+          }
+        },
+        "topLevelStatementCount": 5,
+        "evaluationCount": 1,
+        "globalPropertiesAdded": [],
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "790b0d78a7577cb1fedc0c0c1b35c14ba9ca3d674e45e9383a0233ccd486be7c",
+      "frozenObservations": [
+        {
+          "kind": "call",
+          "location": "1:27",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "7:25",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-23610c146ce8",
+          "owner": "stage-3.candidate-021-equipment-4044fcef",
+          "sourceProvider": "src/core/equipment/auto_refill_policy.js",
+          "targetModule": "src/game/domain/equipment/auto_refill_policy.js",
+          "exportName": "AutoRefillSettings",
+          "legacySymbol": "AutoRefillSettings",
+          "legacyScriptIndex": 165,
+          "shimFile": "activations/165_autorefillsettings.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-35621c703348",
+          "owner": "stage-3.candidate-021-equipment-4044fcef",
+          "sourceProvider": "src/core/equipment/auto_refill_policy.js",
+          "targetModule": "src/game/domain/equipment/auto_refill_policy.js",
+          "exportName": "AutoRefillTrigger",
+          "legacySymbol": "AutoRefillTrigger",
+          "legacyScriptIndex": 165,
+          "shimFile": "activations/165_autorefilltrigger.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-99430ac00c3f",
+          "owner": "stage-3.candidate-021-equipment-4044fcef",
+          "sourceProvider": "src/core/equipment/auto_refill_policy.js",
+          "targetModule": "src/game/domain/equipment/auto_refill_policy.js",
+          "exportName": "AutoRefillPolicy",
+          "legacySymbol": "AutoRefillPolicy",
+          "legacyScriptIndex": 165,
+          "shimFile": "activations/165_autorefillpolicy.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-9d32b36c0350",
+          "owner": "stage-3.candidate-021-equipment-4044fcef",
+          "sourceProvider": "src/core/equipment/auto_refill_policy.js",
+          "targetModule": "src/game/domain/equipment/auto_refill_policy.js",
+          "exportName": "AutoRefillMemory",
+          "legacySymbol": "AutoRefillMemory",
+          "legacyScriptIndex": 165,
+          "shimFile": "activations/165_autorefillmemory.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-a658f15200ed",
+          "owner": "stage-3.candidate-021-equipment-4044fcef",
+          "sourceProvider": "src/core/equipment/auto_refill_policy.js",
+          "targetModule": "src/game/domain/equipment/auto_refill_policy.js",
+          "exportName": "AutoRefillScope",
+          "legacySymbol": "AutoRefillScope",
+          "legacyScriptIndex": 165,
+          "shimFile": "activations/165_autorefillscope.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/equipment/exact_item_signature_policy.js",
+      "targetPath": "src/game/domain/equipment/exact_item_signature_policy.js",
+      "sourceSha256": "d4982768a03b7c35b2febf6feba6add434a2208d4f3d7e8a10c7d8d085f0efea",
+      "contract": {
+        "kind": "private-static-literal-sets",
+        "className": "ExactItemSignaturePolicy",
+        "bindings": {
+          "#ignoredKeys": {
+            "location": "2:25",
+            "values": [
+              "instanceId",
+              "quantity",
+              "location",
+              "buildId",
+              "progression",
+              "ratingPercent",
+              "progressionLevel",
+              "ratingTier",
+              "normalizedRating",
+              "ratingColor",
+              "ratingGradient",
+              "powerPercent",
+              "powerLevel",
+              "normalizedPower",
+              "powerColor",
+              "powerGradient",
+              "qualityMax",
+              "capacityPercent",
+              "conditionPercent",
+              "freshness",
+              "freshnessPercent"
+            ]
+          }
+        },
+        "exposure": null
+      },
+      "review": {
+        "kind": "private-static-literal-sets",
+        "currentPath": "src/core/equipment/exact_item_signature_policy.js",
+        "sourceSha256": "d4982768a03b7c35b2febf6feba6add434a2208d4f3d7e8a10c7d8d085f0efea",
+        "className": "ExactItemSignaturePolicy",
+        "bindings": {
+          "#ignoredKeys": {
+            "location": "2:25",
+            "values": [
+              "instanceId",
+              "quantity",
+              "location",
+              "buildId",
+              "progression",
+              "ratingPercent",
+              "progressionLevel",
+              "ratingTier",
+              "normalizedRating",
+              "ratingColor",
+              "ratingGradient",
+              "powerPercent",
+              "powerLevel",
+              "normalizedPower",
+              "powerColor",
+              "powerGradient",
+              "qualityMax",
+              "capacityPercent",
+              "conditionPercent",
+              "freshness",
+              "freshnessPercent"
+            ]
+          }
+        },
+        "exposure": null,
+        "topLevelStatementCount": 1,
+        "evaluationCount": 1,
+        "globalPropertiesAdded": [],
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "242459b519c726064295ad2fb179700a926f1395b2d11477178e6b04f8c0d4f8",
+      "frozenObservations": [
+        {
+          "kind": "instantiation",
+          "location": "2:25",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-3496b09d5f7c",
+          "owner": "stage-3.candidate-021-equipment-4044fcef",
+          "sourceProvider": "src/core/equipment/exact_item_signature_policy.js",
+          "targetModule": "src/game/domain/equipment/exact_item_signature_policy.js",
+          "exportName": "ExactItemSignaturePolicy",
+          "legacySymbol": "ExactItemSignaturePolicy",
+          "legacyScriptIndex": 164,
+          "shimFile": "activations/164_exactitemsignaturepolicy.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-4"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": null,
+  "targetEvaluations": [
+    {
+      "module": "src/game/domain/equipment/auto_refill_policy.js",
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "1a4de4f99b2a5b22e97d2ce729adef153cc9ce380a3a709d5bff692cb21a299b",
+      "observations": [
+        {
+          "kind": "initializer-execution",
+          "classification": "needs-review",
+          "location": "1:34"
+        },
+        {
+          "kind": "initializer-execution",
+          "classification": "needs-review",
+          "location": "7:32"
+        }
+      ],
+      "exactEffect": "two Object.freeze calls on string-literal trigger and scope tables; no external state read or global write"
+    },
+    {
+      "module": "src/game/domain/equipment/exact_item_signature_policy.js",
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "30d4b4d9b8366d62558d6a27c313af19f9d31011921587cd1e913d390bd4b2cb",
+      "observations": [
+        {
+          "kind": "initializer-execution",
+          "classification": "needs-review",
+          "location": "2:25"
+        }
+      ],
+      "exactEffect": "one private static Set of string literals created during class definition; unreachable from outside the class; no external state read or global write"
+    }
+  ],
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.21.0-live-preflight-and-graph-audit"
+}

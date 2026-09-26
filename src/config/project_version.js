@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.57";
+const CURRENT_PROJECT_VERSION = "0.24.58";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "assemblies-refill-signature-state-domain",
-  updatedAt: "2026-09-25",
+  codename: "equipment-auto-refill-policy-domain",
+  updatedAt: "2026-09-26",
   notes: Object.freeze([
-    "Migrate three Assemblies modules with four named game-domain ESM exports",
-    "Preserve one cumulative graph with seventy-six project modules and eighty-one activations",
-    "Complete frozen batch 020 with one hundred thirty-five exact classic-consumer bridge relationships",
-    "Preserve refill signatures, assembly preparation state and refill signature memory",
+    "Migrate two Equipment modules with six named game-domain ESM exports",
+    "Preserve one cumulative graph with seventy-eight project modules and eighty-seven activations",
+    "Complete the last frozen batch 021 with one hundred thirty-nine exact classic-consumer bridge relationships",
+    "Preserve auto-refill triggers, scopes, settings, memory, policy and exact item signatures",
   ]),
 });
 
