@@ -93,20 +93,15 @@ class Batch013LiveValidation {
           ? this.json(PROFILE.sideEffectEvidence.path).targetEvaluation : null,
       });
       assert.equal(targetSource, approved.targetSource, "Published ESM source changed");
-      const observer = new StageThreeBatchSourceObserver();
-      const before = observer.observe(classicSource, source.currentPath);
-      const after = observer.observe(classicSource, source.currentPath);
-      assert.deepEqual(after.fields, before.fields, "Instance state changed");
-      assert.deepEqual(after.methods, before.methods, "Method shape or allocations changed");
-      assert.deepEqual(after.allocationTotals, before.allocationTotals,
-        "Allocation sites changed");
+      // The exact-source comparison above guards the migration; this records the reviewed shape.
+      const shape = new StageThreeBatchSourceObserver().observe(classicSource, source.currentPath);
       for (const symbol of PROFILE.executionProfile.expectedTargets.find(target =>
         target.targetPath === source.targetPath).exports) {
         const exported = activation.transport.modules[source.targetPath][symbol];
         for (const test of Object.values(BATCH_013_EXECUTABLE_CASES[symbol])) test(exported);
       }
-      shapes.push({ source: source.targetPath, fields: after.fields,
-        methods: after.methods, allocationTotals: after.allocationTotals });
+      shapes.push({ source: source.targetPath, fields: shape.fields,
+        methods: shape.methods, allocationTotals: shape.allocationTotals });
     }
     assert.equal(activation.transportReads(), readsBefore);
     return {
