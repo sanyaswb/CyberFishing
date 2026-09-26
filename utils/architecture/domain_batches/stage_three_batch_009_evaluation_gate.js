@@ -10,7 +10,9 @@ const { isInertLiteral } = require("./stage_three_inert_literal");
 // A deliberately conservative, batch-scoped proof: no imported/eager external
 // dependency is silently treated as safe merely because the old build passed.
 class Batch009EarlierEvaluationGate {
-  verify({ projectRoot, modules, read, reviews }) {
+  // `reviewedImports` maps a target to its exact plan-reviewed static imports of modules that are
+  // themselves in the verified closure; any other dependency still requires a new audit.
+  verify({ projectRoot, modules, read, reviews, reviewedImports = {} }) {
     assert.equal(new Set(modules.map(m => m.targetPath)).size, modules.length, "duplicate module record");
     const effects = new ModuleEvaluationEffectObserver();
     const esm = new EsmDependencyObserver({ projectRoot });
@@ -21,12 +23,27 @@ class Batch009EarlierEvaluationGate {
       const source = module.currentPath === module.targetPath ? raw : raw.replace(/^class /u, "export class ");
       const observed = esm.observeFile(module.targetPath, source);
       assert.equal(observed.status, "verified", "unknown ESM construct");
-      assert.equal(observed.observations.length, 0, "batch-009 closure changed: dependency requires re-audit");
+      const allowedImports = reviewedImports[module.targetPath] || [];
+      const closure = new Set(modules.map(item => item.targetPath));
+      assert.deepEqual(observed.observations.map(item => ({ mechanism: item.mechanism,
+        specifier: item.specifier, resolvedTarget: item.resolvedTarget, status: item.resolutionStatus })),
+      allowedImports.map(item => ({ mechanism: "static-import", specifier: item.specifier,
+        resolvedTarget: item.from, status: "confirmed-project" })),
+      "batch-009 closure changed: dependency requires re-audit");
+      assert(allowedImports.every(item => closure.has(item.from)), "reviewed import leaves the verified closure");
       assert.equal(observed.globalAssignments.length, 0, "ESM global assignment");
       const tree = espree.parse(source, { ecmaVersion: "latest", sourceType: "module" });
       const initializations = [];
       const declaredClasses = new Set();
       for (const statement of tree.body) {
+        if (statement.type === "ImportDeclaration") {
+          // Pure binding: the imported module is itself verified inside this closure.
+          assert(allowedImports.some(item => item.specifier === statement.source.value &&
+            statement.specifiers.length === 1 && statement.specifiers[0].type === "ImportSpecifier" &&
+            statement.specifiers[0].imported.name === item.exportName &&
+            statement.specifiers[0].local.name === item.exportName), "unreviewed import declaration");
+          continue;
+        }
         const node = statement.type === "ExportNamedDeclaration" ? statement.declaration : statement;
         assert(node, "unsupported export");
         if (node.type === "FunctionDeclaration") continue;

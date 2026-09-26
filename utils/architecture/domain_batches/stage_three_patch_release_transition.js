@@ -5,6 +5,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const sha = bytes => crypto.createHash("sha256").update(bytes).digest("hex");
+const { StageThreeApprovedPlanSource } = require("./stage_three_approved_plan_source");
 
 const STATE = "architecture/migration/stage_3_execution_state.json";
 const RELEASE_PATHS = Object.freeze([
@@ -63,7 +64,8 @@ class StageThreePatchReleaseTransition {
       assert.equal(old.releaseVersion, profile.fromRelease);
       assert.equal(old.activeBatchId, profile.batchId);
       assert.equal(old.activeBatchPhase, "runtime-active");
-      const approved = JSON.parse(this.bytes("architecture/migration/stage_3_approved_batches.json"));
+      // An adopted continuation is appended to the historical plan; historical releases see it unchanged.
+      const approved = new StageThreeApprovedPlanSource({ read: item => this.bytes(item) }).load(old).document;
       assert.deepEqual(old.completedBatchIds,
         approved.batches.slice(0, profile.completedBefore).map(item => item.id));
       const expected = { ...old, releaseVersion: profile.toRelease,

@@ -11,6 +11,9 @@ const {
 const {
   StageThreeRuntimeScriptAliasResolver,
 } = require("../architecture/migration/stage_three_runtime_script_alias_resolver");
+const {
+  StageThreeApprovedPlanSource,
+} = require("../architecture/domain_batches/stage_three_approved_plan_source");
 
 class StageThreeCompatibilityBuildApplication {
   constructor({
@@ -51,9 +54,10 @@ class StageThreeCompatibilityBuildApplication {
     return new CumulativeRuntimeBuildApplication({
       projectRoot: this.projectRoot,
       contract,
-      approvedPlan: this.#json(
-        "architecture/migration/stage_3_approved_batches.json",
-      ),
+      // The execution plan source appends an adopted continuation to the historical plan.
+      approvedPlan: new StageThreeApprovedPlanSource({
+        read: (relativePath) => fs.readFileSync(this.#path(relativePath)),
+      }).load(persistedExecutionState).document,
       executionState,
       stageTwoApprovedPlan: this.#json(
         "architecture/migration/stage_2_approved_batches.json",

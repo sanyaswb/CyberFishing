@@ -1,0 +1,870 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-preflight-audit",
+  "status": "verified",
+  "stage": "Stage 3.23.0",
+  "sourceReleaseVersion": "0.24.59",
+  "batchId": "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+  "sourceEvidence": {
+    "approvedPlan": {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "0c1680dc3038939e3223b38ce43399f742e4a98414f66332d63089b35cc4c3d0",
+      "references": [
+        {
+          "path": "architecture/migration/stage_3_approved_batches.json",
+          "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+        },
+        {
+          "path": "architecture/migration/stage_3_22/approved_prefix.json",
+          "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+        }
+      ]
+    },
+    "manifest": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "780aa57c235bbc7586759b5cc67b2f9f286267d64fdf60392bfe6f89b1342580"
+    },
+    "domainAudit": {
+      "path": "architecture/migration/stage_3_22/domain_audit.json",
+      "sha256": "b9e38673c8501448dce63fa9380edcb95fedddf9ba8a9be88c90d3c4918893b5"
+    },
+    "executionState": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "df8ca9e0f5b999388d7331e800e47128575878cac57d9b565d5d4c9605947a4d"
+    },
+    "runtimeContract": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "ebea14626e8e6f2f55d1e02c07b85f906f614771b8edc39be16796eb1609b1c5"
+    },
+    "bridgeRegistry": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "2c8cc9d62b7dc1288a9708fa419a6610f874c3d31719e1916d1ecd31b4c36430"
+    },
+    "index": {
+      "path": "index.html",
+      "sha256": "12f2a788c448344dc33cff08e91ff207d43b34209ebb6721c246bd204935252c"
+    },
+    "runtimeOutput": {
+      "path": "dist/stage-3-compat-runtime",
+      "fingerprint": "ea7f121519ea70e2ef80fda14714c3b707500e18fa191642bcbbf02c36fad3a3"
+    }
+  },
+  "scope": {
+    "targetCount": 1,
+    "modules": [
+      {
+        "currentPath": "src/core/assemblies/item_assembly_reader.js",
+        "targetPath": "src/game/domain/assemblies/item_assembly_reader.js",
+        "sourceSha256": "4c28580734cdab7dc1fe043fee21ca5a08a225acb99cbe4f1b9f8d795246daa3",
+        "exports": [
+          "ItemAssemblyPath",
+          "ItemAssemblyReader"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-df50dfddfa82",
+          "members": [
+            "src/core/assemblies/item_assembly_reader.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [
+          {
+            "target": "src/core/inventory/inventory_item_location.js",
+            "targetBoundary": "game-domain",
+            "symbols": [
+              "InventoryItemLocation"
+            ],
+            "executionPhases": [
+              "deferred"
+            ],
+            "policy": "allowed"
+          }
+        ],
+        "capabilities": [],
+        "availabilityConstraints": [
+          {
+            "symbol": "InventoryItemLocation",
+            "target": "src/core/inventory/inventory_item_location.js",
+            "consumerPhase": "deferred",
+            "providerAvailability": "program-init",
+            "resolution": "confirmed"
+          }
+        ],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/assemblies/item_assembly_reader.js",
+          "classDeclarations": [
+            "ItemAssemblyPath",
+            "ItemAssemblyReader"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [
+            {
+              "name": "#profileRegistry",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#repository",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#stateRepository",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 3,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#formatSegment",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#resolveSlotDefinition",
+              "kind": "method",
+              "parameterCount": 3,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getAssemblyState",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getChild",
+              "kind": "method",
+              "parameterCount": 3,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getChildren",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getPathToItem",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 1,
+                "newExpressions": 3,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getPathToSlot",
+              "kind": "method",
+              "parameterCount": 4,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 2,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getRefillSignature",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getRootInstanceId",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 2,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getSlotCapacity",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "listDescendants",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "parse",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 2,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "readChildren",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "readPath",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "readSlot",
+              "kind": "method",
+              "parameterCount": 3,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 2,
+            "arrayExpressions": 1,
+            "newExpressions": 12,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#profileRegistry",
+            "#repository",
+            "#stateRepository"
+          ],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/assemblies/item_assembly_reader.js",
+            "authoritativeOwners": [
+              "ItemAssemblyReader#formatSegment",
+              "ItemAssemblyReader#getChild",
+              "ItemAssemblyReader#getChildren",
+              "ItemAssemblyReader#getPathToItem",
+              "ItemAssemblyReader#getRootInstanceId",
+              "ItemAssemblyReader#profileRegistry",
+              "ItemAssemblyReader#repository",
+              "ItemAssemblyReader#resolveSlotDefinition",
+              "ItemAssemblyReader#stateRepository"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/assemblies/item_assembly_reader.js",
+            "authoritativeOwners": [
+              "ItemAssemblyReader#formatSegment",
+              "ItemAssemblyReader#getChild",
+              "ItemAssemblyReader#getChildren",
+              "ItemAssemblyReader#getPathToItem",
+              "ItemAssemblyReader#getRootInstanceId",
+              "ItemAssemblyReader#profileRegistry",
+              "ItemAssemblyReader#repository",
+              "ItemAssemblyReader#resolveSlotDefinition",
+              "ItemAssemblyReader#stateRepository"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "assembly-path-parsing-root-resolution-and-slot-path-formatting",
+          "formulaDefaultsClampsRoundingFingerprint": "1df710fffe0a8c2d0be9342457791cf142c2e55f26a1090417aa42b0e20eca34",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-assembly-read-model",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/application/inventory/inventory_v2_composition_root.js",
+              "marker": "new ItemAssemblyReader({"
+            },
+            {
+              "path": "src/application/inventory/inventory_v2_refill_ports.js",
+              "marker": "ItemAssemblyPath.parse(target.path)"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 2,
+            "arrayExpressions": 1,
+            "newExpressions": 12,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "ItemAssemblyPath",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "ItemAssemblyReader",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      }
+    ]
+  },
+  "runtimeBaseline": {
+    "projectModuleCount": 78,
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/assemblies/assembly_state.js",
+      "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+      "src/game/domain/equipment/auto_refill_policy.js",
+      "src/game/domain/equipment/exact_item_signature_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "src/game/domain/fishing/tackle_failure_selector.js",
+      "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/inventory_item_location.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_match.js",
+      "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+      "src/game/domain/items/freshness/bait_freshness_modifier.js",
+      "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/progression/item_rating_tier_resolver.js",
+      "src/game/domain/items/quality/item_quality_grade_policy.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "activationCount": 87,
+    "bridgeCount": 139,
+    "scriptTopology": {
+      "physicalClassicScriptCount": 434,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0
+    }
+  },
+  "closure": {
+    "existingCumulativeModuleCount": 78,
+    "existingCumulativeModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/assemblies/assembly_state.js",
+      "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+      "src/game/domain/equipment/auto_refill_policy.js",
+      "src/game/domain/equipment/exact_item_signature_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "src/game/domain/fishing/tackle_failure_selector.js",
+      "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/inventory_item_location.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_match.js",
+      "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+      "src/game/domain/items/freshness/bait_freshness_modifier.js",
+      "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/progression/item_rating_tier_resolver.js",
+      "src/game/domain/items/quality/item_quality_grade_policy.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "newProjectModuleCount": 1,
+    "newProjectModules": [
+      "src/game/domain/assemblies/item_assembly_reader.js"
+    ],
+    "resultingProjectModuleCount": 79,
+    "internalEdges": [],
+    "alreadyCumulativeDependencies": [],
+    "resolvedImports": [
+      {
+        "source": "src/core/assemblies/item_assembly_reader.js",
+        "target": "src/game/domain/inventory/inventory_item_location.js",
+        "viaShim": "src/core/inventory/inventory_item_location.js",
+        "symbols": [
+          "InventoryItemLocation"
+        ],
+        "exportName": "InventoryItemLocation",
+        "activationId": "activation-c3a8ca11fb0e"
+      }
+    ],
+    "unexpectedDependencies": []
+  },
+  "evaluation": {
+    "legacyScriptOrderControlsEvaluation": false,
+    "ordering": "esm-graph-topology-with-lexicographic-diagnostic-tiebreak",
+    "stronglyConnectedComponents": [
+      {
+        "id": "scc-df50dfddfa82",
+        "members": [
+          "src/core/assemblies/item_assembly_reader.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      }
+    ],
+    "layers": [
+      [
+        "src/game/domain/assemblies/item_assembly_reader.js"
+      ]
+    ],
+    "cycles": []
+  },
+  "boundaries": {
+    "forbiddenEdges": [],
+    "directConfigDependencies": [],
+    "browserCapabilities": [],
+    "transportReads": [],
+    "forbiddenSourceReads": [],
+    "dynamicConstructs": []
+  },
+  "state": {
+    "reviewed": [
+      {
+        "module": "src/core/assemblies/item_assembly_reader.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      }
+    ],
+    "unresolved": []
+  },
+  "behavior": {
+    "resultShapeSensitive": [],
+    "mutableIdentitySensitive": [],
+    "formulaDefaultsClampsRoundingFingerprints": [
+      {
+        "module": "src/core/assemblies/item_assembly_reader.js",
+        "sha256": "1df710fffe0a8c2d0be9342457791cf142c2e55f26a1090417aa42b0e20eca34"
+      }
+    ],
+    "unresolved": []
+  },
+  "performance": {
+    "reviewed": [
+      {
+        "module": "src/core/assemblies/item_assembly_reader.js",
+        "classification": "existing-assembly-read-model",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/application/inventory/inventory_v2_composition_root.js",
+            "marker": "new ItemAssemblyReader({"
+          },
+          {
+            "path": "src/application/inventory/inventory_v2_refill_ports.js",
+            "marker": "ItemAssemblyPath.parse(target.path)"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 2,
+          "arrayExpressions": 1,
+          "newExpressions": 12,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "unresolved": []
+  },
+  "effects": {
+    "safe": [
+      "src/core/assemblies/item_assembly_reader.js"
+    ],
+    "reviewed": [],
+    "unsafe": []
+  },
+  "compatibility": {
+    "providers": [
+      {
+        "module": "src/core/assemblies/item_assembly_reader.js",
+        "symbol": "ItemAssemblyPath",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/assemblies/item_assembly_reader.js",
+        "symbol": "ItemAssemblyReader",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      }
+    ],
+    "consumers": [
+      {
+        "provider": "src/core/assemblies/item_assembly_reader.js",
+        "source": "src/application/inventory/inventory_v2_composition_root.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "ItemAssemblyReader"
+        ]
+      },
+      {
+        "provider": "src/core/assemblies/item_assembly_reader.js",
+        "source": "src/application/inventory/inventory_v2_refill_ports.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "ItemAssemblyPath"
+        ]
+      },
+      {
+        "provider": "src/core/assemblies/item_assembly_reader.js",
+        "source": "src/core/assemblies/item_assembly_service.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemAssemblyReader"
+        ]
+      },
+      {
+        "provider": "src/core/assemblies/item_assembly_reader.js",
+        "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+        "sourceBoundary": "platform",
+        "symbols": [
+          "ItemAssemblyReader"
+        ]
+      }
+    ],
+    "activations": [
+      {
+        "id": "activation-846a4f1261db",
+        "owner": "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+        "sourceProvider": "src/core/assemblies/item_assembly_reader.js",
+        "targetModule": "src/game/domain/assemblies/item_assembly_reader.js",
+        "exportName": "ItemAssemblyReader",
+        "legacySymbol": "ItemAssemblyReader",
+        "legacyScriptIndex": 152,
+        "shimFile": "activations/152_itemassemblyreader.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/application/inventory/inventory_v2_composition_root.js",
+          "src/core/assemblies/item_assembly_service.js",
+          "src/infrastructure/storage/inventory_v2_legacy_migration.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-b1c0f1f37980",
+        "owner": "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+        "sourceProvider": "src/core/assemblies/item_assembly_reader.js",
+        "targetModule": "src/game/domain/assemblies/item_assembly_reader.js",
+        "exportName": "ItemAssemblyPath",
+        "legacySymbol": "ItemAssemblyPath",
+        "legacyScriptIndex": 152,
+        "shimFile": "activations/152_itemassemblypath.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/application/inventory/inventory_v2_refill_ports.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      }
+    ]
+  },
+  "prerequisites": {
+    "frozen": [],
+    "newlyDiscovered": []
+  },
+  "migrationGates": [
+    "one-exact-source-and-method-shape",
+    "two-export-identities-and-activations",
+    "one-exact-completed-prefix-import",
+    "four-exact-consumer-relationships",
+    "one-retired-classic-bridge",
+    "all-legacy-activation-positions-preserved",
+    "zero-config-platform-browser-dev-dependencies",
+    "zero-added-hot-loop-allocations"
+  ],
+  "issues": [],
+  "verdict": "eligible-for-execution-plan",
+  "liveObservation": {
+    "status": "verified",
+    "sourceCount": 502,
+    "persistencePerformed": false,
+    "consumerRelationships": [
+      {
+        "provider": "src/core/assemblies/item_assembly_reader.js",
+        "source": "src/application/inventory/inventory_v2_composition_root.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "ItemAssemblyReader"
+        ]
+      },
+      {
+        "provider": "src/core/assemblies/item_assembly_reader.js",
+        "source": "src/application/inventory/inventory_v2_refill_ports.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "ItemAssemblyPath"
+        ]
+      },
+      {
+        "provider": "src/core/assemblies/item_assembly_reader.js",
+        "source": "src/core/assemblies/item_assembly_service.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemAssemblyReader"
+        ]
+      },
+      {
+        "provider": "src/core/assemblies/item_assembly_reader.js",
+        "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+        "sourceBoundary": "platform",
+        "symbols": [
+          "ItemAssemblyReader"
+        ]
+      }
+    ]
+  },
+  "plannedTopology": {
+    "projectModuleCount": 79,
+    "activationCount": 89,
+    "bridgeRecordCount": 142
+  }
+}

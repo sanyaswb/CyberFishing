@@ -17,6 +17,7 @@ const {
   readRuntimeFacts,
 } = require("./generate-stage-3-approved-prefix");
 
+const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const { StageThreeBatch008HistoricalInputs } = require("./domain_batches/stage_three_batch_008_historical_inputs");
 
@@ -29,7 +30,7 @@ class StageThreeBatch008PrebuildIntegrationCheck {
     const runtime = this.#json("architecture/migration/stage_3_compatibility_runtime.json");
     const registry = this.#json("architecture/guards/migration_bridge_registry.json");
     const approvedPlanBytes = this.#bytes("architecture/migration/stage_3_approved_batches.json");
-    const approvedPlan = JSON.parse(approvedPlanBytes.toString("utf8"));
+    const approvedPlan = this.#executionPlan();
     const plan = this.#json(BATCH_008_PREBUILD_PROFILE.executionProfile.executionPlanPath);
     const matrix = this.#json(BATCH_008_PREBUILD_PROFILE.executionProfile.testMatrixPath);
     new StageThreeBatchPrebuildContractValidator(BATCH_008_PREBUILD_PROFILE).validate(artifact);
@@ -121,6 +122,14 @@ class StageThreeBatch008PrebuildIntegrationCheck {
 
   #serialize(value) {
     return Buffer.from(`${JSON.stringify(value, null, 2)}\n`, "utf8");
+  }
+
+  // The execution plan source keeps historical batch records exact and appends an adopted
+  // continuation, so positions derived from the live completed prefix stay valid.
+  #executionPlan() {
+    return new StageThreeApprovedPlanSource({
+      read: (file) => fs.readFileSync(path.join(PROJECT_ROOT, file)),
+    }).load(this.#json("architecture/migration/stage_3_execution_state.json")).document;
   }
 
   #json(relativePath) {

@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-release-closure",
+  "status": "verified",
+  "batchId": "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+  "releaseVersion": "0.24.60",
+  "previousReleaseVersion": "0.24.59",
+  "releasePublicationAllowed": true,
+  "completedBatchCount": 22,
+  "completedDomainModuleCount": 70,
+  "runtimeTopology": {
+    "modules": 79,
+    "activations": 89,
+    "bridges": 142
+  },
+  "acceptance": {
+    "automatedEvidence": {
+      "path": "architecture/migration/stage_3_batch_022_automated_acceptance.json",
+      "sha256": "59ed2e11a42ed9e64380bdec795e7b321caba69773a3071174d02aafc8ce4c08"
+    },
+    "historicalSummary": {
+      "path": "architecture/migration/stage_3_batch_022_acceptance_pass.json",
+      "sha256": "0c2d0c5a493146b2d0419aefd74edcc1e5495cd6798c2666566d7a67296fda91"
+    },
+    "browserProof": {
+      "path": "architecture/migration/stage_3_batch_022_browser_confirmation.json",
+      "sha256": "42e86089b688bd6d94170a6f96f7e166e5675a65bb9c26668cead3e472b37717"
+    },
+    "browserGate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts"
+  },
+  "releaseTransition": {
+    "path": "architecture/migration/stage_3_batch_022_release_transition.json",
+    "sha256": "564727f55782fb8f1db17a15f4995e0521310e9822f7ff531aca014a8bf11a9f"
+  },
+  "releaseEvidence": [
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "bac136e54e315cfb2e23aaccca1949dded6b87ef39e445669d579cab0011b1cd"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "be7a2e00ebdc9a8c9b8f1507c5935fa239929503ca1aebd39ee565bbbbd3e9d4"
+    },
+    {
+      "path": "index.html",
+      "sha256": "e25ec3432ca3818cc809398aa6ce35dbf66874ddefc49bff5dba5f38cdc71f3f"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "51d117c28483a0c8659ba2de8aea2b0ae38bd5618cad340f70224b4f72970196"
+    },
+    {
+      "path": "package.json",
+      "sha256": "d4ed3c0262f82a81a7854d7abb353f3e2da04ede5d5da26e71e25583d387ddee"
+    },
+    {
+      "path": "refactor_Task.txt",
+      "sha256": "d601d52b27a5b3336aac903acfd982f6cde7bb59bb6c470442f4187785ee5b79"
+    },
+    {
+      "path": "src/config/project_version.js",
+      "sha256": "93f683a0e67e8b42c92f1310a8e851274bc5e4e47a08242a617a8d0e25a4031d"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "d4b0eb1ffa1befae658ce1e0d7bb0f9bd97891e9723f8bb9115f659139a7e99a"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "e0a9c2c1e32efde1c55c3f9534539dceadfc7540091cb599804319d3a661fa06"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "9a2887e65cd5d1d48b4b232ca963df394f604c05ce9df6a0036587d10a584f0d"
+    }
+  ],
+  "rollback": {
+    "atomic": true,
+    "partialRollbackAllowed": false,
+    "fromRelease": "0.24.60",
+    "toRelease": "0.24.59",
+    "removeBatchId": "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+    "preserveCompletedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034",
+      "stage-3.candidate-010-inventory-e3dffbe7",
+      "stage-3.candidate-011-items-11818ee5",
+      "stage-3.candidate-012-assemblies-2086347a",
+      "stage-3.candidate-013-fishing-0267b3ea",
+      "stage-3.candidate-014-fishing-fefd469b",
+      "stage-3.candidate-015-fishing-37dc3452",
+      "stage-3.candidate-016-fishing-f8c953aa",
+      "stage-3.candidate-017-inventory-fd62478b",
+      "stage-3.candidate-018-items-8ea4be10",
+      "stage-3.candidate-019-items-b0af5033",
+      "stage-3.candidate-020-assemblies-43d77861",
+      "stage-3.candidate-021-equipment-4044fcef"
+    ],
+    "restoreTopology": {
+      "projectModuleCount": 78,
+      "activationCount": 87,
+      "bridgeRecordCount": 139,
+      "physicalClassicScriptCount": 434,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0
+    },
+    "baselineEvidenceReference": {
+      "path": "architecture/migration/stage_3_batch_022_execution_plan.json",
+      "sha256": "d442819a58b694e0fc2ca5da0e1705b438949e52b873922eb39b71a806ae5d04"
+    }
+  },
+  "finalRegression": {
+    "status": "passed",
+    "evidence": {
+      "path": "architecture/migration/stage_3_batch_022_release_regression.json",
+      "sha256": "feabb16f7e78628c11d21c79e796c3c585adde00f8d8a2141b58858b74e9c735"
+    },
+    "preReleaseSuites": {
+      "full": {
+        "passedChecks": 186,
+        "failedChecks": 0
+      },
+      "fullRun": {
+        "platform": "windows",
+        "source": "node utils/run-checks.js --suite all (one uninterrupted run, 3628.00s)"
+      },
+      "supplementary": {
+        "architecture": {
+          "passedChecks": 66,
+          "failedChecks": 0
+        },
+        "quick": {
+          "passedChecks": 42,
+          "failedChecks": 0
+        }
+      },
+      "summary": "Windows Full 186/186 passed in one uninterrupted run (3628 s), including the batch-022 architecture check, the game-cycle fight scenarios and the inventory/assembly suites; Architecture 66/66 and Quick 42/42 passed before it",
+      "countSemantics": "The full suite includes the architecture and quick checks."
+    },
+    "node": "v24.13.0",
+    "npm": "11.6.2",
+    "lockfileSha256": "51d117c28483a0c8659ba2de8aea2b0ae38bd5618cad340f70224b4f72970196",
+    "lockfileChanged": false,
+    "generatedRuntimeByteEquality": true,
+    "steps": [
+      {
+        "id": "npm-ci",
+        "exitCode": 0
+      },
+      {
+        "id": "cumulative-build",
+        "exitCode": 0
+      }
+    ]
+  },
+  "nextStage": "Stage 3.24.0 — Batch 023 Preflight (stage-3.replan-322.batch-023-items-c91fce82)"
+}

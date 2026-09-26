@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.24.60 - Assemblies Item Reader Domain
+
+### Changed
+
+- Completed batch 022, the first batch of the Stage 3.22 approved prefix: ItemAssemblyReader and ItemAssemblyPath as named ESM exports of one Assemblies read-model module.
+- The migrated module imports InventoryItemLocation from its completed ESM owner; the classic global read and its bridge were retired. Tooling now supports exact reviewed imports of completed-prefix exports (representation, evaluation gate, observation reconciliation, guard corpus and confirmed-edge ledger).
+- The execution state adopted the Stage 3.22 approved prefix through the batch-022 prebuild (historical approved-plan fingerprint and completed batches unchanged); one plan source serves the build, preflight, release and closure tooling.
+- Extended the cumulative graph from 78 to 79 project modules and from 87 to 89 activation contracts, with 142 exact bridge relationships (4 added, 1 retired).
+- The next task is batch 023 preflight.
+
 ## v0.24.59 - Post-Freeze Domain Graph Review
 
 ### Changed

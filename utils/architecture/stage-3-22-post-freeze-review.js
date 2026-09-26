@@ -42,7 +42,7 @@ function write({ root = PROJECT_ROOT, commit }) {
   return result;
 }
 
-function main(argv) {
+function main(argv, root = PROJECT_ROOT) {
   if (argv.includes("--write")) {
     const commit = argv[argv.indexOf("--commit") + 1];
     if (!argv.includes("--commit") || !commit) throw new Error("--write requires --commit <baseline sha>");
@@ -51,7 +51,7 @@ function main(argv) {
     console.log(`Stage 3.22 post-freeze review written: ${REVIEW_ARTIFACTS.length} artifacts.`);
     return;
   }
-  const { result, mismatches } = replay();
+  const { result, mismatches } = replay({ root });
   if (mismatches.length > 0) {
     console.error(`Stage 3.22 post-freeze review replay differs:\n- ${mismatches.join("\n- ")}`);
     process.exitCode = 1;
@@ -62,6 +62,13 @@ function main(argv) {
     `${result.summary.approvedPrefix.reviewQueueBatchCount} requiring evidence).`);
 }
 
-if (require.main === module) main(process.argv.slice(2));
+if (require.main === module) {
+  if (process.argv.includes("--write")) main(process.argv.slice(2));
+  else {
+    const { Batch022HistoricalWorkspace } = require("./domain_batches/stage_three_batch_022_historical_workspace");
+    new Batch022HistoricalWorkspace().run(PROJECT_ROOT, prior => main(process.argv.slice(2), prior))
+      .catch(error => { console.error(error.stack); process.exitCode = 1; });
+  }
+}
 
 module.exports = { REVIEW_ARTIFACTS, checkpointWorkspace, replay, write };

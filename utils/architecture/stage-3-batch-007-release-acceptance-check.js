@@ -12,6 +12,7 @@ const {
   StageTwoRuntimeScriptAliasResolver,
 } = require("./migration/stage_two_runtime_script_alias_resolver");
 
+const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BATCH_ID = "stage-3.candidate-007-fishing-bb8b3939";
 const RELEASE_VERSION = "0.24.44";
@@ -22,7 +23,7 @@ class StageThreeBatch007ReleaseAcceptanceCheck {
     const closure = this.#json("architecture/migration/stage_3_batch_007_release_closure.json");
     const accepted = this.#json("architecture/migration/stage_3_batch_007_acceptance_pass.json");
     const state = this.#json("architecture/migration/stage_3_execution_state.json");
-    const approved = this.#json("architecture/migration/stage_3_approved_batches.json");
+    const approved = this.#executionPlan();
     const plan = this.#json("architecture/migration/stage_3_batch_007_execution_plan.json");
 
     this.#verifyClosure(closure, accepted);
@@ -149,7 +150,7 @@ class StageThreeBatch007ReleaseAcceptanceCheck {
     const runtime = this.#json("architecture/migration/stage_3_compatibility_runtime.json");
     const registry = this.#json("architecture/guards/migration_bridge_registry.json");
     const manifest = this.#json("architecture/migration/module_migration_manifest.json");
-    const approved = this.#json("architecture/migration/stage_3_approved_batches.json");
+    const approved = this.#executionPlan();
     const batch = approved.batches[6];
     assert.equal(runtime.activationPositions.length, closure.runtimeTopology.activationCount);
     assert.equal(runtime.activationPositions.filter((item) => item.owner === BATCH_ID).length, 6);
@@ -269,6 +270,14 @@ class StageThreeBatch007ReleaseAcceptanceCheck {
       preserveCompletedBatchCount: 6,
       restoreTopology: plan.rollback.restoreTopology,
     });
+  }
+
+  // The execution plan source keeps historical batch records exact and appends an adopted
+  // continuation, so positions derived from the live completed prefix stay valid.
+  #executionPlan() {
+    return new StageThreeApprovedPlanSource({
+      read: (file) => fs.readFileSync(path.join(PROJECT_ROOT, file)),
+    }).load(this.#json("architecture/migration/stage_3_execution_state.json")).document;
   }
 
   #json(relativePath) {

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.59";
+const CURRENT_PROJECT_VERSION = "0.24.60";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "post-freeze-domain-graph-review",
+  codename: "assemblies-item-reader-domain",
   updatedAt: "2026-09-26",
   notes: Object.freeze([
-    "Complete the Stage 3.22 post-freeze Domain graph review without module migration",
-    "Resolve activation shims to ESM owners in a logical graph of 135 Domain modules",
-    "Freeze a new approved prefix of 11 batches and 21 modules from batch 022",
-    "Keep the runtime topology at 78 modules, 87 activations and 139 bridges",
+    "Migrate the Assemblies read model with two named game-domain ESM exports",
+    "Import InventoryItemLocation from its completed ESM owner instead of the legacy global",
+    "Adopt the Stage 3.22 approved prefix and complete its first batch 022",
+    "Preserve seventy-nine project modules, eighty-nine activations and one hundred forty-two bridges",
   ]),
 });
 

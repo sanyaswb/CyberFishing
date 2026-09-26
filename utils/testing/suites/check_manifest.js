@@ -645,6 +645,12 @@ const CHECK_DEFINITIONS = Object.freeze([
       id: "stage-3-batch-021-architecture",
       title: "Stage 3.21.0–3.21.7 equipment auto refill policy domain migration and rollback gates",
       file: "utils/architecture/stage-3-batch-021-architecture-check.js",
+      suites: ["history"],
+    },
+    {
+      id: "stage-3-batch-022-architecture",
+      title: "Stage 3.23.0–3.23.7 assemblies item reader domain migration with reviewed prefix import and rollback gates",
+      file: "utils/architecture/stage-3-batch-022-architecture-check.js",
       suites: ["quick", "architecture", "history"],
     },
     {

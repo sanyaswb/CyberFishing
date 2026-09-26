@@ -14,6 +14,7 @@ const {
   StageTwoRuntimeScriptAliasResolver,
 } = require("./migration/stage_two_runtime_script_alias_resolver");
 
+const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BATCH_ID = "stage-3.candidate-002-fishing-944d0790";
 const SOURCE_PROVIDER = "src/core/fishing/reel_auto_recovery_calculator.js";
@@ -108,9 +109,7 @@ class ReelAutoRecoveryBehaviorVerifier {
 
 class StageThreeReelAutoRecoveryRuntimeCheck {
   async run() {
-    const approved = this.#json(
-      "architecture/migration/stage_3_approved_batches.json",
-    );
+    const approved = this.#executionPlan();
     const contract = this.#json(
       "architecture/migration/stage_3_compatibility_runtime.json",
     );
@@ -255,6 +254,14 @@ class StageThreeReelAutoRecoveryRuntimeCheck {
       JSON.parse(JSON.stringify(recoverCalls)),
       [{ meters: 1, minReleasedMeters: 1 }],
     );
+  }
+
+  // The execution plan source keeps this historical batch record exact and appends an adopted
+  // continuation, so the live selected batch is always found.
+  #executionPlan() {
+    return new StageThreeApprovedPlanSource({
+      read: (file) => fs.readFileSync(path.join(PROJECT_ROOT, file)),
+    }).load(this.#json("architecture/migration/stage_3_execution_state.json")).document;
   }
 
   #json(relativePath) {

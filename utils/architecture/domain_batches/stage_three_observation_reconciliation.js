@@ -9,6 +9,12 @@ const uniqueRelationships = items => [...new Map(items.map(item =>
   [JSON.stringify([item.source, item.target, item.symbol]), item])).values()];
 const edges = (manifest) => manifest.modules.flatMap((item) => item.analysis.dependencies.items
   .map((edge) => ({ source: item.currentPath, ...edge })));
+const edgeKey = (edge) => JSON.stringify([edge.source, edge.target, [...(edge.symbols || [])].sort()]);
+const edgeDelta = (from, to) => {
+  const keys = new Set(to.map(edgeKey));
+  return from.filter((edge) => !keys.has(edgeKey(edge)))
+    .sort((left, right) => edgeKey(left).localeCompare(edgeKey(right)));
+};
 
 class StageThreeObservationReconciliation {
   constructor({ profile, transitionFactory }) {
@@ -61,7 +67,16 @@ class StageThreeObservationReconciliation {
     for (const item of esm) {
       assert.equal(item.status, "verified");
       assert.equal(item.hasEsmSyntax, true);
-      assert.deepEqual(item.observations, [], "Unexpected ESM dependency");
+      // Only the plan's exact reviewed imports of completed-prefix exports may appear.
+      const reviewedImports = (this.profile.executionProfile?.expectedImports || [])
+        .filter((record) => record.consumer === activations.find((activation) =>
+          activation.targetModule === item.source)?.sourceProvider);
+      assert.deepEqual(item.observations.map((observation) => ({ mechanism: observation.mechanism,
+        resolvedTarget: observation.resolvedTarget, status: observation.resolutionStatus })).sort((left, right) =>
+        left.resolvedTarget.localeCompare(right.resolvedTarget)),
+      reviewedImports.map((record) => ({ mechanism: "static-import", resolvedTarget: record.from,
+        status: "confirmed-project" })).sort((left, right) => left.resolvedTarget.localeCompare(right.resolvedTarget)),
+      "Unexpected ESM dependency");
       assert.deepEqual(item.globalAssignments, []);
       assert.deepEqual(item.globalMemberReads, []);
       assert.deepEqual(item.issues, []);
@@ -87,7 +102,9 @@ class StageThreeObservationReconciliation {
       totals, esm, controlledGlobalTransitions: transitions, derivedIncomingConsumers: relationships,
       guardedConsumers: relationships.filter((item) => item.accessRequirement === "guarded"),
       additionalConsumers: [], dependencyDelta: { confirmedInterFileEdgesBefore: edges(before).length,
-        confirmedInterFileEdgesAfter: totals.edges, newlyConfirmedEdges: [], removedEdges: [] },
+        confirmedInterFileEdgesAfter: totals.edges,
+        newlyConfirmedEdges: edgeDelta(edges(result.manifest), edges(before)),
+        removedEdges: edgeDelta(edges(before), edges(result.manifest)) },
       transportUnresolved: { count: sourcePaths.size, classification: "compatibility-transport-outside-src-project-graph",
         createsProjectDependencyEdge: false },
       removalDependencies: activations.map((item) => ({ activationId: item.id, source: item.sourceProvider,

@@ -9,6 +9,7 @@ const {
   StageThreeExecutionStateValidator,
 } = require("./domain_batches/domain_approved_prefix");
 const { PATHS, buildArtifacts, readRuntimeFacts } = require("./generate-stage-3-approved-prefix");
+const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
@@ -57,8 +58,11 @@ class StageThreeApprovedPrefixIntegrationCheck {
       reviewEvidenceSha256: sha256(persisted.review),
       approvedPlan,
     });
+    // The historical plan stays frozen; the live state is validated against the execution plan
+    // source, which appends an adopted Stage 3.22 continuation to the historical prefix.
+    const executionPlan = new StageThreeApprovedPlanSource({ read }).load(state).document;
     new StageThreeExecutionStateValidator().validate({
-      approvedPlan,
+      approvedPlan: executionPlan,
       approvedPlanSha256: sha256(persisted.approved),
       state,
       runtimeFacts: readRuntimeFacts(),
@@ -78,11 +82,11 @@ class StageThreeApprovedPrefixIntegrationCheck {
         state.completedBatchIds[0] === approvedPlan.batches[0].id,
       true,
     );
-    assert.equal(state.completedBatchIds.length <= approvedPlan.batches.length, true);
+    assert.equal(state.completedBatchIds.length <= executionPlan.batches.length, true);
     if (state.activeBatchId) {
       assert.equal(
         state.activeBatchId,
-        approvedPlan.batches[state.completedBatchIds.length].id,
+        executionPlan.batches[state.completedBatchIds.length].id,
       );
     }
     for (const [relativePath, bytes] of before) {

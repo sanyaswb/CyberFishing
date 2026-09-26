@@ -11,6 +11,7 @@ const {
   StageTwoRuntimeScriptAliasResolver,
 } = require("./migration/stage_two_runtime_script_alias_resolver");
 
+const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BATCH_ID = "stage-3.candidate-006-fishing-e48e70d8";
 const RELEASE_VERSION = "0.24.43";
@@ -21,7 +22,7 @@ class StageThreeBatch006ReleaseAcceptanceCheck {
     const packageJson = this.#json("package.json");
     const packageLock = this.#json("package-lock.json");
     const state = this.#json("architecture/migration/stage_3_execution_state.json");
-    const approved = this.#json("architecture/migration/stage_3_approved_batches.json");
+    const approved = this.#executionPlan();
     const runtime = this.#json("architecture/migration/stage_3_compatibility_runtime.json");
     const registry = this.#json("architecture/guards/migration_bridge_registry.json");
     const manifest = this.#json("architecture/migration/module_migration_manifest.json");
@@ -190,6 +191,14 @@ class StageThreeBatch006ReleaseAcceptanceCheck {
       logicalLegacyPositionCount: 424,
       moduleScriptCount: 0,
     });
+  }
+
+  // The execution plan source keeps historical batch records exact and appends an adopted
+  // continuation, so positions derived from the live completed prefix stay valid.
+  #executionPlan() {
+    return new StageThreeApprovedPlanSource({
+      read: (file) => fs.readFileSync(path.join(PROJECT_ROOT, file)),
+    }).load(this.#json("architecture/migration/stage_3_execution_state.json")).document;
   }
 
   #json(relativePath) {

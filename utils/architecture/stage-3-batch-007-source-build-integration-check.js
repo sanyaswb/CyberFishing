@@ -21,6 +21,7 @@ const {
   StageThreeBatch007LifecycleTransition,
 } = require("./domain_batches/stage_three_batch_007_lifecycle_transition");
 
+const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const { historicalManifestBytes } = require("./domain_batches/stage_three_pending_target_manifest");
 const ARTIFACT_PATH = "architecture/migration/stage_3_batch_007_source_build_validation.json";
@@ -68,7 +69,7 @@ class StageThreeBatch007SourceBuildIntegrationCheck {
     artifact.manifestReconciliation.moduleCount);
     const rebuilt = runtimeActive ? artifact.candidateBuild : await new StageThreeBatch007CandidateBuild(PROJECT_ROOT).run({
       prebuild,
-      approvedPlan: this.#json("architecture/migration/stage_3_approved_batches.json"),
+      approvedPlan: this.#executionPlan(),
       executionState: this.#json("architecture/migration/stage_3_execution_state.json"),
       runtimeContract: this.#json("architecture/migration/stage_3_compatibility_runtime.json"),
       stageTwoApprovedPlan: this.#json("architecture/migration/stage_2_approved_batches.json"),
@@ -113,6 +114,14 @@ class StageThreeBatch007SourceBuildIntegrationCheck {
       path: path.relative(PROJECT_ROOT, absolutePath).replaceAll("\\", "/"),
       sha256: this.#sha256(fs.readFileSync(absolutePath)),
     })).sort((left, right) => left.path.localeCompare(right.path));
+  }
+
+  // The execution plan source keeps historical batch records exact and appends an adopted
+  // continuation, so positions derived from the live completed prefix stay valid.
+  #executionPlan() {
+    return new StageThreeApprovedPlanSource({
+      read: (file) => fs.readFileSync(path.join(PROJECT_ROOT, file)),
+    }).load(this.#json("architecture/migration/stage_3_execution_state.json")).document;
   }
 
   #json(relativePath) {

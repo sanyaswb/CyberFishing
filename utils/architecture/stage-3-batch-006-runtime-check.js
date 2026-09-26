@@ -22,13 +22,14 @@ const {
   StageThreeBatch006FocusedTestMatrixCheck,
 } = require("./stage-3-batch-006-focused-test-matrix-check");
 
+const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BATCH_ID = "stage-3.candidate-006-fishing-e48e70d8";
 
 class StageThreeBatch006RuntimeCheck {
   async run() {
     const state = this.#json("architecture/migration/stage_3_execution_state.json");
-    const approved = this.#json("architecture/migration/stage_3_approved_batches.json");
+    const approved = this.#executionPlan();
     const contract = this.#json("architecture/migration/stage_3_compatibility_runtime.json");
     const executionPlan = this.#json(
       "architecture/migration/stage_3_batch_006_execution_plan.json",
@@ -225,6 +226,14 @@ class StageThreeBatch006RuntimeCheck {
     walk(root);
     records.sort((left, right) => left.path.localeCompare(right.path));
     return this.#sha256(Buffer.from(JSON.stringify(records), "utf8"));
+  }
+
+  // The execution plan source keeps historical batch records exact and appends an adopted
+  // continuation, so positions derived from the live completed prefix stay valid.
+  #executionPlan() {
+    return new StageThreeApprovedPlanSource({
+      read: (file) => fs.readFileSync(path.join(PROJECT_ROOT, file)),
+    }).load(this.#json("architecture/migration/stage_3_execution_state.json")).document;
   }
 
   #json(relativePath) {

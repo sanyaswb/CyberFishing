@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const { globSync } = require("glob");
+const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 const {
   CumulativeRuntimeContractValidator,
   EXACT_TRANSPORT_GLOBAL,
@@ -36,9 +37,10 @@ class StageThreeCompatibilityRuntimeIntegrationCheck {
     const state = this.#readJson(
       "architecture/migration/stage_3_execution_state.json",
     );
-    const approvedPlan = this.#readJson(
-      "architecture/migration/stage_3_approved_batches.json",
-    );
+    // The execution plan source appends an adopted continuation to the historical plan.
+    const approvedPlan = new StageThreeApprovedPlanSource({
+      read: (file) => fs.readFileSync(path.join(PROJECT_ROOT, file)),
+    }).load(this.#readJson("architecture/migration/stage_3_execution_state.json")).document;
     const prebuildOpen = state.activeBatchPhase === "prebuild";
     const selectedBatchId = prebuildOpen
       ? state.completedBatchIds.at(-1)

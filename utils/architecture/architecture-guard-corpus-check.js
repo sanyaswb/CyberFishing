@@ -5,6 +5,7 @@ const { GuardArtifactRepository, GlobalProviderBaselineValidator, KnownDebtRegis
 const { ArchitectureGuardSnapshotBuilder } = require("./guards/corpus/architecture_guard_snapshot_builder");
 const { ArchitectureGuardEngine } = require("./guards/architecture_guard_engine");
 const { GuardReportFormatter } = require("./guards/core/guard_report_formatter");
+const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const paths = {
@@ -32,11 +33,22 @@ if (snapshot.sources.length !== manifest.modules.length) throw new Error("Archit
 if (snapshot.sources.some((item) => item.esm.status === "failed")) throw new Error("Architecture guard corpus contains parse failures");
 const esmEdges = snapshot.sources.flatMap((item) => item.esm.observations).filter((item) => item.resolutionStatus === "confirmed-project");
 const actualEsmEdges = [...new Set(esmEdges.map((item) => `${item.source}->${item.resolvedTarget}`))].sort();
-const approvedEsmEdges = [...new Set(
-  bridgeRegistry.bridges
+// Approved ESM edges: exact Stage 2 bridge edges plus the reviewed imports of completed-prefix
+// exports declared by Stage 3 batches that are completed or runtime-active in the execution plan.
+const stageThreeState = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, "architecture/migration/stage_3_execution_state.json")));
+const stageThreePlan = new StageThreeApprovedPlanSource({ read: (file) => fs.readFileSync(path.join(PROJECT_ROOT, file)) })
+  .load(stageThreeState).document;
+const selectedBatchIds = new Set([...stageThreeState.completedBatchIds,
+  ...(stageThreeState.activeBatchPhase === "runtime-active" ? [stageThreeState.activeBatchId] : [])]);
+const reviewedImportEdges = stageThreePlan.batches.filter((batch) => selectedBatchIds.has(batch.id))
+  .flatMap((batch) => (batch.imports || []).filter((item) => item.resolution === "completed-prefix")
+    .map((item) => `${batch.modules.find((module) => module.currentPath === item.consumer).targetPath}->${item.from}`));
+const approvedEsmEdges = [...new Set([
+  ...bridgeRegistry.bridges
     .filter((item) => item.introducedStage === "stage-2")
     .map((item) => `${item.bridge}->${item.target}`),
-)].sort();
+  ...reviewedImportEdges,
+])].sort();
 if (JSON.stringify(actualEsmEdges) !== JSON.stringify(approvedEsmEdges)) {
   throw new Error(`Live ESM edges must equal exact approved bridge edges: expected ${approvedEsmEdges.join(", ") || "none"}; received ${actualEsmEdges.join(", ") || "none"}`);
 }

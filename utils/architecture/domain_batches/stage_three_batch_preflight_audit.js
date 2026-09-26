@@ -40,6 +40,9 @@ class StageThreeBatchPreflightAuditBuilder {
     sourceReader,
     sideEffectReview = null,
     sideEffectReviewSha256 = null,
+    planEvidence = null,
+    activationPositions = [],
+    expectedImports = [],
   }) {
     const profile = this.#profile;
     const executionProfile = profile.executionProfile;
@@ -124,10 +127,27 @@ class StageThreeBatchPreflightAuditBuilder {
         resolution: edge.resolution,
       }))).sort(this.#edgeCompare);
     const internalEdges = outgoingEdges.filter((edge) => currentPaths.has(edge.target));
+    // A read of an activation shim is a dependency on the completed ESM owner behind it; it is
+    // accepted only when it is exactly one of the batch's reviewed imports.
+    const resolvedImports = outgoingEdges.flatMap((edge) => {
+      const reviewed = expectedImports.filter((record) => record.consumer === edge.source &&
+        record.viaShim === edge.target);
+      const exact = reviewed.length > 0 &&
+        this.#same(reviewed.map((record) => record.legacySymbol).sort(), edge.symbols) &&
+        reviewed.every((record) => existingModules.has(record.from) && activationPositions.some((activation) =>
+          activation.id === record.activationId && activation.sourceProvider === record.viaShim &&
+          activation.targetModule === record.from && activation.exportName === record.exportName &&
+          activation.legacySymbol === record.legacySymbol));
+      return exact ? reviewed.map((record) => ({ source: edge.source, target: record.from, viaShim: edge.target,
+        symbols: [record.legacySymbol], exportName: record.exportName, activationId: record.activationId })) : [];
+    });
+    const importedShims = new Set(resolvedImports.map((record) => `${record.source}\0${record.viaShim}`));
+    this.#require(resolvedImports.length === expectedImports.length, "reviewed imports differ from observed shim reads");
     const alreadyCumulativeDependencies = outgoingEdges.filter((edge) =>
       existingModules.has(edge.target));
     const unexpectedDependencies = outgoingEdges.filter((edge) =>
-      !currentPaths.has(edge.target) && !existingModules.has(edge.target));
+      !currentPaths.has(edge.target) && !existingModules.has(edge.target) &&
+      !importedShims.has(`${edge.source}\0${edge.target}`));
     const frozenNewTargets = batch.cumulativeRuntimeTopology.stage3Targets
       .filter((target) => !existingModules.has(target))
       .sort();
@@ -216,9 +236,11 @@ class StageThreeBatchPreflightAuditBuilder {
       sourceReleaseVersion: executionState.releaseVersion,
       batchId: profile.batchId,
       sourceEvidence: {
-        approvedPlan: { path: "architecture/migration/stage_3_approved_batches.json", sha256: approvedPlanSha256 },
+        approvedPlan: { path: "architecture/migration/stage_3_approved_batches.json", sha256: approvedPlanSha256,
+          ...(planEvidence ? { references: planEvidence.references } : {}) },
         manifest: { path: "architecture/migration/module_migration_manifest.json", sha256: manifestSha256 },
-        domainAudit: { path: "architecture/migration/stage_3_domain_audit.json", sha256: domainAuditSha256 },
+        domainAudit: { path: planEvidence ? planEvidence.domainAuditPath : "architecture/migration/stage_3_domain_audit.json",
+          sha256: domainAuditSha256 },
         executionState: { path: "architecture/migration/stage_3_execution_state.json", sha256: executionStateSha256 },
         runtimeContract: { path: "architecture/migration/stage_3_compatibility_runtime.json", sha256: runtimeContractSha256 },
         bridgeRegistry: { path: "architecture/guards/migration_bridge_registry.json", sha256: bridgeRegistrySha256 },
@@ -245,6 +267,7 @@ class StageThreeBatchPreflightAuditBuilder {
         resultingProjectModuleCount: new Set([...existingModules, ...frozenNewTargets]).size,
         internalEdges,
         alreadyCumulativeDependencies,
+        ...(expectedImports.length > 0 ? { resolvedImports } : {}),
         unexpectedDependencies,
       },
       evaluation: {

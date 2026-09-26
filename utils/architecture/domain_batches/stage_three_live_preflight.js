@@ -11,6 +11,7 @@ const { StageTwoRuntimeScriptAliasResolver } = require("../migration/stage_two_r
 const { StageThreeBatchExecutionPlanProjector } = require("./stage_three_batch_execution_plan_projector");
 const { StageThreeBatchPreflightAuditBuilder, StageThreeBatchPreflightAuditValidator } = require("./stage_three_batch_preflight_audit");
 const { immutableRecord } = require("../guards/core/guard_models");
+const { StageThreeApprovedPlanSource } = require("./stage_three_approved_plan_source");
 
 const PATHS = Object.freeze({
   approvedPlan: "architecture/migration/stage_3_approved_batches.json",
@@ -45,10 +46,17 @@ class StageThreeLivePreflight {
     const inputs = Object.fromEntries(Object.entries(PATHS)
       .filter(([key]) => !["index", "runtimeOutput"].includes(key))
       .map(([key, file]) => [key, this.json(file)]));
+    // The plan source returns the historical plan unchanged or, after adoption, the historical
+    // prefix followed by the Stage 3.22 continuation; its audit evidence follows the same plan.
+    const plan = new StageThreeApprovedPlanSource({ read: file => this.bytes(file) })
+      .load(inputs.executionState, { adopting: this.profile.executionProfile.continuationPlan || null });
+    inputs.approvedPlan = plan.document;
+    const domainAuditDocument = this.json(plan.domainAuditPath);
+    inputs.domainAudit = plan.continuation ? domainAuditDocument.document : domainAuditDocument;
     const { approvedPlan, manifest, domainAudit, executionState, runtimeContract, bridgeRegistry } = inputs;
     const batchId = this.profile.batchId;
     const targets = this.profile.executionProfile.expectedTargets;
-    assert.equal(executionState.approvedPlanSha256, sha(this.bytes(PATHS.approvedPlan)), "approved plan fingerprint is stale");
+    const expectedImports = this.profile.executionProfile.expectedImports || [];
     assert(!Object.hasOwn(executionState, "activeBatchPhase"), "active batch phase already exists");
     for (const target of targets) {
       assert(!fs.existsSync(path.join(this.root, target.targetPath)), `target already exists: ${target.targetPath}`);
@@ -71,7 +79,8 @@ class StageThreeLivePreflight {
       assert.equal(module.architecture.targetPath, target.targetPath, "target ownership drift");
       assert.equal(module.architecture.targetBoundary, "game-domain", "target boundary drift");
       assert.equal(module.architecture.migrationStatus, "classified", "source is no longer classic-classified");
-      assert.deepEqual(module.analysis.dependencies.items, [], `target acquired a project dependency: ${target.currentPath}`);
+      assert.deepEqual(module.analysis.dependencies.items, this.#reviewedImportItems(expectedImports, target.currentPath),
+        `target dependency differs from its reviewed imports: ${target.currentPath}`);
     }
     const batch = approvedPlan.batches.find(record => record.id === batchId);
     assert(batch, `frozen batch missing: ${batchId}`);
@@ -106,6 +115,10 @@ class StageThreeLivePreflight {
     };
     const evidence = Object.fromEntries(Object.entries(inputs)
       .map(([key]) => [`${key}Sha256`, sha(this.bytes(PATHS[key]))]));
+    if (plan.continuation) {
+      evidence.approvedPlanSha256 = plan.sha256;
+      evidence.domainAuditSha256 = sha(this.bytes(plan.domainAuditPath));
+    }
     let sideEffectReview = null;
     let sideEffectReviewSha256 = null;
     if (this.profile.sideEffectEvidence) {
@@ -128,6 +141,8 @@ class StageThreeLivePreflight {
     }
     const base = new StageThreeBatchPreflightAuditBuilder({ profile: this.profile }).build({
       ...inputs, ...evidence, indexSha256: sha(this.bytes(PATHS.index)),
+      ...(plan.continuation ? { planEvidence: { references: plan.references, domainAuditPath: plan.domainAuditPath } } : {}),
+      activationPositions: runtimeContract.activationPositions, expectedImports,
       runtimeOutputFingerprint: this.projector.rollbackEvidence().runtimeOutput.fingerprint,
       runtimeFacts, sourceReader: file => this.read(file),
       sideEffectReview, sideEffectReviewSha256,
@@ -135,7 +150,8 @@ class StageThreeLivePreflight {
     const plannedTopology = {
       projectModuleCount: new Set([...base.runtimeBaseline.projectModules, ...base.closure.newProjectModules]).size,
       activationCount: runtimeFacts.activationCount + base.compatibility.activations.length,
-      bridgeRecordCount: runtimeFacts.bridgeCount + consumers.length,
+      bridgeRecordCount: runtimeFacts.bridgeCount + consumers.length -
+        (this.profile.executionProfile.expectedRetiredBridgeIds || []).length,
     };
     const artifact = immutableRecord({
       ...base,
@@ -157,13 +173,27 @@ class StageThreeLivePreflight {
     assert.equal(artifact.liveObservation.status, "verified");
     assert.equal(artifact.liveObservation.persistencePerformed, false);
     assert.deepEqual(artifact.liveObservation.consumerRelationships, artifact.compatibility.consumers);
+    const expectedImports = this.profile.executionProfile.expectedImports || [];
     for (const module of artifact.scope.modules) {
       assert.equal(module.dependencyDepth, 0);
       assert.equal(module.scc.cyclic, false);
       assert.deepEqual(module.scc.members, [module.currentPath]);
-      assert.deepEqual(module.outgoingProjectEdges, []);
+      assert.deepEqual(module.outgoingProjectEdges.map(({ target, symbols }) => ({ target, symbols })),
+        this.#reviewedImportItems(expectedImports, module.currentPath).map(({ target, symbols }) => ({ target, symbols })));
     }
     return artifact;
+  }
+
+  // A reviewed import of a completed-prefix export is observed on the classic source as a confirmed
+  // read of the activation shim that exposes that export.
+  #reviewedImportItems(expectedImports, consumer) {
+    const byShim = new Map();
+    for (const record of expectedImports.filter(item => item.consumer === consumer)) {
+      if (!byShim.has(record.viaShim)) byShim.set(record.viaShim, []);
+      byShim.get(record.viaShim).push(record.legacySymbol);
+    }
+    return [...byShim].sort(([left], [right]) => left.localeCompare(right))
+      .map(([target, symbols]) => ({ target, symbols: symbols.sort(), resolution: "confirmed" }));
   }
 
   verifyReplay(artifact) {

@@ -4,6 +4,7 @@ const path = require("node:path");
 const { PackageContractValidator } = require("./package_contract/package_contract_validator");
 const { RootPackageValidator } = require("./package_contract/root_package_validator");
 const { PackageLockValidator } = require("./package_contract/package_lock_validator");
+const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const paths = {
@@ -41,11 +42,10 @@ class PackageContractCheck {
     const stageThreeRuntime = JSON.parse(
       bytes.get("stageThreeRuntime").toString("utf8"),
     );
-    const selectedBatchCount = stageThreeState.completedBatchIds.length +
-      (stageThreeState.activeBatchId &&
-        stageThreeState.activeBatchPhase !== "prebuild" ? 1 : 0);
     const expectedStage = {
-      current: `3.${selectedBatchCount}`,
+      current: new StageThreeApprovedPlanSource({
+        read: (file) => fs.readFileSync(path.join(PROJECT_ROOT, file)),
+      }).currentStage(stageThreeState),
       runtimeInputs: new Set(
         stageThreeRuntime.activationPositions.map(
           (activation) => activation.targetModule,

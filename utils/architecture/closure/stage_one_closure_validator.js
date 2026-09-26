@@ -1,4 +1,5 @@
 const crypto = require("node:crypto");
+const { StageThreeApprovedPlanSource } = require("../domain_batches/stage_three_approved_plan_source");
 const fs = require("node:fs");
 const path = require("node:path");
 const {
@@ -101,12 +102,10 @@ class StageTwoSemanticClosureTransition {
         ).size,
         activationInputs: cumulativeContract.activationPositions.length,
       };
-      const selectedStageThreeBatchCount =
-        this.stageThreeState.completedBatchIds.length +
-        (this.stageThreeState.activeBatchId &&
-          this.stageThreeState.activeBatchPhase !== "prebuild" ? 1 : 0);
       if (
-        packageContract.stage?.current !== `3.${selectedStageThreeBatchCount}` ||
+        packageContract.stage?.current !== new StageThreeApprovedPlanSource({
+          read: (file) => fs.readFileSync(path.join(this.projectRoot, file)),
+        }).currentStage(this.stageThreeState) ||
         packageContract.stage?.vite !==
           "fixture-bridge-and-cumulative-runtime-infrastructure" ||
         packageContract.stage?.sourceRuntime !==
@@ -423,7 +422,9 @@ class StageOneClosureValidator {
       ? JSON.parse(fs.readFileSync(stageThreeStatePath, "utf8"))
       : null;
     const stageThreeApprovedPlan = stageThreeState
-      ? this.#readJson("architecture/migration/stage_3_approved_batches.json")
+      ? new StageThreeApprovedPlanSource({
+        read: (file) => fs.readFileSync(path.join(this.projectRoot, file)),
+      }).load(stageThreeState).document
       : null;
     const fixturePackage = this.#readJson(
       "utils/architecture/esm-fixtures/package.json",
@@ -623,6 +624,8 @@ class StageOneClosureValidator {
         "Assemblies Refill Signature and State Domain",
       "stage-3.candidate-021-equipment-4044fcef":
         "Equipment Auto Refill Policy Domain",
+      "stage-3.replan-322.batch-022-assemblies-9cb3eecf":
+        "Assemblies Item Reader Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }
@@ -1005,6 +1008,34 @@ class StageOneClosureValidator {
     );
   }
 
+  #reviewedImportEdgesRetiredByCutover(artifact) {
+    const write = artifact.writes.find((item) => item.path === "architecture/migration/module_migration_manifest.json");
+    const edgesOf = (bytes) => JSON.parse(Buffer.from(bytes, "base64")).modules.flatMap((module) =>
+      module.analysis.dependencies.items.map((edge) =>
+        JSON.stringify([module.currentPath, edge.target, [...edge.symbols].sort()])));
+    const before = edgesOf(write.beforeBase64);
+    const after = new Set(edgesOf(write.afterBase64));
+    const removed = before.filter((edge) => !after.has(edge)).sort();
+    const added = [...after].filter((edge) => !before.includes(edge));
+    const state = JSON.parse(fs.readFileSync(path.join(this.projectRoot, "architecture/migration/stage_3_execution_state.json")));
+    const batch = new StageThreeApprovedPlanSource({
+      read: (file) => fs.readFileSync(path.join(this.projectRoot, file)),
+    }).load(state).document.batches.find((record) => record.id === artifact.batchId);
+    const byEdge = new Map();
+    for (const item of (batch?.imports || []).filter((record) => record.resolution === "completed-prefix")) {
+      const key = `${item.consumer}\0${item.viaShim}`;
+      byEdge.set(key, [...(byEdge.get(key) || []), item.legacySymbol]);
+    }
+    const reviewed = [...byEdge].map(([key, symbols]) => {
+      const [consumer, shim] = key.split("\0");
+      return JSON.stringify([consumer, shim, symbols.sort()]);
+    }).sort();
+    if (added.length !== 0 || JSON.stringify(removed) !== JSON.stringify(reviewed)) {
+      throw new Error(`Stage 3 cutover changed classic edges beyond reviewed imports: ${artifact.batchId}`);
+    }
+    return removed.length;
+  }
+
   #stageThreeConfirmedEdgeDelta(modules, baselineEdgeCount) {
     const migrationRoot = path.join(this.projectRoot, "architecture/migration");
     const byPath = new Map(modules.map((module) => [module.currentPath, module]));
@@ -1051,6 +1082,11 @@ class StageOneClosureValidator {
           const History = require(`../domain_batches/stage_three_batch_${number}_cutover_history`)
             [`Batch${number}CutoverHistory`];
           new History(this.projectRoot).artifact();
+          // A migrated source that imported completed-prefix exports stops reading their legacy
+          // globals: its cutover removes exactly those classic edges and adds none.
+          const retiredEdges = this.#reviewedImportEdgesRetiredByCutover(artifact);
+          expectedBefore -= retiredEdges;
+          total -= retiredEdges;
           const observedPath = path.join(migrationRoot, `stage_3_batch_${number}_observation_reconciliation.json`);
           if (fs.existsSync(observedPath)) {
             const observed = JSON.parse(fs.readFileSync(observedPath));

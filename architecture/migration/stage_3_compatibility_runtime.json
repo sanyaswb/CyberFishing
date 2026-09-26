@@ -738,6 +738,18 @@
       "removalStage": "stage-3"
     },
     {
+      "id": "activation-846a4f1261db",
+      "owner": "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+      "sourceProvider": "src/core/assemblies/item_assembly_reader.js",
+      "targetModule": "src/game/domain/assemblies/item_assembly_reader.js",
+      "exportName": "ItemAssemblyReader",
+      "legacySymbol": "ItemAssemblyReader",
+      "legacyScriptIndex": 152,
+      "shimFile": "activations/152_itemassemblyreader.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-85b75b58221b",
       "owner": "stage-3.candidate-009-fish-444e8034",
       "sourceProvider": "src/core/fish/fish_rarity_resolver.js",
@@ -1012,6 +1024,18 @@
       "shimFile": "activations/141_landingliftreadinesspolicy.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-b1c0f1f37980",
+      "owner": "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+      "sourceProvider": "src/core/assemblies/item_assembly_reader.js",
+      "targetModule": "src/game/domain/assemblies/item_assembly_reader.js",
+      "exportName": "ItemAssemblyPath",
+      "legacySymbol": "ItemAssemblyPath",
+      "legacyScriptIndex": 152,
+      "shimFile": "activations/152_itemassemblypath.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-b363ddbc09ea",

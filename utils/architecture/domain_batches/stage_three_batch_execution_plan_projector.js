@@ -14,6 +14,7 @@ const {
 const {
   StageTwoRuntimeScriptAliasResolver,
 } = require("../migration/stage_two_runtime_script_alias_resolver");
+const { StageThreeApprovedPlanSource } = require("./stage_three_approved_plan_source");
 
 class StageThreeBatchExecutionPlanProjector {
   #projectRoot;
@@ -32,8 +33,10 @@ class StageThreeBatchExecutionPlanProjector {
 
   buildPlan() {
     const audit = this.#readJsonWithFingerprint(this.#paths.audit);
-    const approvedPlan = this.#readJsonWithFingerprint(this.#paths.approvedPlan);
     const executionState = this.#readJsonWithFingerprint(this.#paths.executionState);
+    const planSource = new StageThreeApprovedPlanSource({ read: (file) => this.#bytes(file) })
+      .load(executionState.document, { adopting: this.#profile.continuationPlan || null });
+    const approvedPlan = Object.freeze({ document: planSource.document, sha256: planSource.sha256 });
     const runtimeContract = this.#readJsonWithFingerprint(this.#paths.runtimeContract);
     const manifest = this.#readJsonWithFingerprint(this.#paths.manifest);
     const bridgeRegistry = this.#readJsonWithFingerprint(this.#paths.bridgeRegistry);

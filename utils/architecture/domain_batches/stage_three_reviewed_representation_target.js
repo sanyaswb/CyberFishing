@@ -11,9 +11,51 @@ const { ModuleEvaluationEffectObserver } = require("../../build/compat_runtime/c
 const sha = value => crypto.createHash("sha256").update(value).digest("hex");
 
 class RepresentationOnlyReviewedEsmTarget {
-  project({ source, currentPath, targetPath, exports, sourceSha256, contract,
+  // `imports` are the plan's exact reviewed imports of completed-prefix exports. They form a
+  // header of single named imports; removing it must restore the leaf projection byte-for-byte.
+  project({ imports = [], ...options }) {
+    const base = this.#projectLeaf(options);
+    return imports.length === 0 ? base : this.#withImports(base, imports, options);
+  }
+
+  #withImports(base, imports, { source, currentPath, targetPath, exports, sourceSha256 }) {
+    const classic = espree.parse(source, { ecmaVersion: "latest", sourceType: "script" });
+    const declared = new Set(classic.body.flatMap(node => node.id ? [node.id.name]
+      : (node.declarations || []).map(item => item.id.name)));
+    const lines = imports.map(record => {
+      assert.match(record.specifier, /^\.{1,2}\/[a-z0-9_/.-]+\.js$/u, `${targetPath}: import specifier is not exact`);
+      assert.match(record.exportName, /^[A-Za-z_$][\w$]*$/u);
+      assert(!declared.has(record.exportName), `${targetPath}: import would shadow a declaration`);
+      assert(new RegExp(`\\b${record.exportName}\\b`, "u").test(source),
+        `${currentPath}: reviewed import ${record.exportName} is not read by the classic source`);
+      return `import { ${record.exportName} } from "${record.specifier}";`;
+    }).sort();
+    assert.equal(new Set(lines).size, lines.length, `${targetPath}: duplicate reviewed import`);
+    const header = `${lines.join("\n")}\n\n`;
+    const targetSource = header + base.targetSource;
+    const tree = espree.parse(targetSource, { ecmaVersion: "latest", sourceType: "module" });
+    const declarations = tree.body.filter(node => node.type === "ImportDeclaration");
+    assert.equal(declarations.length, lines.length, `${targetPath}: unexpected import declaration`);
+    assert(tree.body.slice(0, lines.length).every(node => node.type === "ImportDeclaration" &&
+      node.specifiers.length === 1 && node.specifiers[0].type === "ImportSpecifier" &&
+      node.specifiers[0].imported.name === node.specifiers[0].local.name),
+    `${targetPath}: reviewed imports must be single named bindings before the body`);
+    assert.equal(targetSource.slice(header.length), base.targetSource, `${targetPath}: import header changed the body`);
+    assert.equal(sha(source), sourceSha256);
+    return immutableRecord({ ...base, exports, targetSha256: sha(targetSource), targetSource,
+      validation: { ...base.validation, importCount: lines.length,
+        imports: imports.map(({ specifier, exportName }) => ({ specifier, exportName }))
+          .sort((left, right) => `${left.specifier}\0${left.exportName}`
+            .localeCompare(`${right.specifier}\0${right.exportName}`)) } });
+  }
+
+  #projectLeaf({ source, currentPath, targetPath, exports, sourceSha256, contract,
     targetEvaluation = null }) {
     assert.equal(sha(source), sourceSha256, `${currentPath}: source changed after audit`);
+    if (!contract.privateStaticSets && !contract.frozenStaticFields && !contract.frozenConstants &&
+      !contract.classFamily && !contract.legacyExposure && exports.length > 1) {
+      return this.#classDeclarationsOnly({ source, currentPath, targetPath, exports, sourceSha256 });
+    }
     const reviewer = new StageThreeReviewedEvaluationEffect();
     if (contract.privateStaticSets) {
       assert(!contract.frozenConstants && !contract.frozenStaticFields && !contract.classFamily);
@@ -118,6 +160,37 @@ class RepresentationOnlyReviewedEsmTarget {
     return immutableRecord({ currentPath, targetPath, exportName: exports[0], exports,
       sourceSha256, targetSha256: sha(targetSource), targetSource,
       validation: { representation: "reviewed-classic-declarations-to-named-esm-exports-only",
+        importCount: 0, exportCount: exports.length, dynamicImportCount: 0,
+        forbiddenDependencyCount: 0, behaviorDelta: "none", stateOwnershipDelta: "none",
+        allocationDelta: "none", currentPath, targetPath },
+    });
+  }
+
+  // A classic script of plain class declarations only (global lexical providers, no top-level
+  // effect) becomes the same classes with an `export` token each.
+  #classDeclarationsOnly({ source, currentPath, targetPath, exports, sourceSha256 }) {
+    const tree = espree.parse(source, { ecmaVersion: "latest", sourceType: "script" });
+    assert(tree.body.every(node => node.type === "ClassDeclaration"),
+      `${currentPath}: only plain class declarations may use the class-declarations shape`);
+    assert.deepEqual(tree.body.map(node => node.id.name).sort(), exports, `${currentPath}: class set differs`);
+    let targetSource = source;
+    for (const name of exports) {
+      const token = `class ${name} `;
+      assert.equal(targetSource.split(token).length - 1, 1, `${currentPath}: class token is not exact: ${name}`);
+      targetSource = targetSource.replace(token, `export ${token}`);
+    }
+    const target = espree.parse(targetSource, { ecmaVersion: "latest", sourceType: "module" });
+    assert(target.body.every(node => node.type === "ExportNamedDeclaration" && node.source === null &&
+      node.declaration?.type === "ClassDeclaration"), `${targetPath}: only direct named class exports are allowed`);
+    assert(!targetSource.includes("window") && !targetSource.includes("globalThis") &&
+      !targetSource.includes("__CYBER_FISHING_COMPAT_RUNTIME__"),
+    `${targetPath}: target retains a browser or transport dependency`);
+    let restored = targetSource;
+    for (const name of exports) restored = restored.replace(`export class ${name} `, `class ${name} `);
+    assert.equal(restored, source, `${targetPath}: non-representation source delta`);
+    return immutableRecord({ currentPath, targetPath, exportName: exports[0], exports,
+      sourceSha256, targetSha256: sha(targetSource), targetSource,
+      validation: { representation: "classic-class-declarations-to-named-esm-exports-only",
         importCount: 0, exportCount: exports.length, dynamicImportCount: 0,
         forbiddenDependencyCount: 0, behaviorDelta: "none", stateOwnershipDelta: "none",
         allocationDelta: "none", currentPath, targetPath },

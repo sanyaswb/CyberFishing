@@ -111,7 +111,14 @@ class StageThreeBatchPrebuildContractBuilder {
     const deltaActivationIds = activations.map((record) => record.id).sort();
     const deltaBridgeIds = bridges.map((record) => record.id).sort();
     const plannedActivationIds = this.#union(activeActivationIds, deltaActivationIds);
-    const plannedBridgeIds = this.#union(activeBridgeIds, deltaBridgeIds);
+    // Bridges held by a migrated classic source retire with it; the planned set is exact.
+    const retiredBridgeIds = (executionPlan.compatibility.registryTransition.retiredBridgeRecords || [])
+      .map((record) => record.id).sort();
+    this.#require(this.#same(retiredBridgeIds, [...(profile.executionProfile.expectedRetiredBridgeIds || [])].sort()),
+      "retired bridge set differs from profile");
+    this.#require(retiredBridgeIds.every((id) => activeBridgeIds.includes(id)), "retired bridge is not active");
+    const plannedBridgeIds = this.#union(activeBridgeIds.filter((id) => !retiredBridgeIds.includes(id)),
+      deltaBridgeIds);
     this.#require(activeProjectModules.length === profile.topology.active.modules,
       "active module set differs from profile");
     this.#require(activeActivationIds.length === profile.topology.active.activations,
@@ -133,6 +140,7 @@ class StageThreeBatchPrebuildContractBuilder {
         projectModules: targetPaths,
         activationIds: deltaActivationIds,
         bridgeIds: deltaBridgeIds,
+        ...(retiredBridgeIds.length > 0 ? { retiredBridgeIds } : {}),
         counts: { ...profile.topology.delta },
       },
       plannedTopology: {
@@ -335,8 +343,12 @@ class StageThreeBatchPrebuildContractValidator {
       "planned module set is not the exact active + delta union");
     require(this.#same(planned?.activationIds, this.#union(active?.activationIds, delta?.activationIds)),
       "planned activation set is not the exact active + delta union");
-    require(this.#same(planned?.bridgeIds, this.#union(active?.bridgeIds, delta?.bridgeIds)),
-      "planned bridge set is not the exact active + delta union");
+    const retired = delta?.retiredBridgeIds || [];
+    require(this.#same(retired, [...(profile.executionProfile.expectedRetiredBridgeIds || [])].sort()),
+      "retired bridge delta differs from profile");
+    require(this.#same(planned?.bridgeIds, this.#union(
+      (active?.bridgeIds || []).filter((id) => !retired.includes(id)), delta?.bridgeIds)),
+    "planned bridge set is not the exact (active - retired) + delta union");
     require(this.#same(delta?.projectModules,
       contract?.preliminaryMetadata?.targets?.map((record) => record.targetPath).sort()),
     "planned module delta differs from exact target metadata");

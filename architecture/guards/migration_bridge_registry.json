@@ -115,6 +115,22 @@
       ]
     },
     {
+      "id": "bridge-165cb09a0730",
+      "bridge": "src/core/assemblies/item_assembly_reader.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/assemblies/item_assembly_reader.js",
+      "reason": "Preserve the exact Assemblies read-model consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemAssemblyReader",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-17302d0ad53c",
       "bridge": "src/core/items/freshness/bait_freshness_decay_policy.js",
       "source": "src/core/items/freshness/item_freshness_resolver.js",
@@ -995,6 +1011,22 @@
       ]
     },
     {
+      "id": "bridge-7d2a79c0168c",
+      "bridge": "src/core/assemblies/item_assembly_reader.js",
+      "source": "src/application/inventory/inventory_v2_refill_ports.js",
+      "target": "src/game/domain/assemblies/item_assembly_reader.js",
+      "reason": "Preserve the exact Assemblies read-model consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemAssemblyPath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-8133cc83f778",
       "bridge": "src/core/items/progression/item_metric_strategy.js",
       "source": "src/core/items/progression/target_range_metric_strategy.js",
@@ -1435,6 +1467,22 @@
       ]
     },
     {
+      "id": "bridge-a6ee164c50c8",
+      "bridge": "src/core/assemblies/item_assembly_reader.js",
+      "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "target": "src/game/domain/assemblies/item_assembly_reader.js",
+      "reason": "Preserve the exact Assemblies read-model consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemAssemblyReader",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-a7acd7dabc86",
       "bridge": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
       "source": "src/application/inventory/auto_refill_coordinator.js",
@@ -1631,6 +1679,22 @@
       ]
     },
     {
+      "id": "bridge-c49ad9e90c8b",
+      "bridge": "src/core/assemblies/item_assembly_reader.js",
+      "source": "src/core/assemblies/item_assembly_service.js",
+      "target": "src/game/domain/assemblies/item_assembly_reader.js",
+      "reason": "Preserve the exact Assemblies read-model consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemAssemblyReader",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-c4dc5b7e33f1",
       "bridge": "src/core/inventory/inventory_item_location.js",
       "source": "src/core/inventory/inventory_item_reservation_policy.js",
@@ -1810,22 +1874,6 @@
       "id": "bridge-d2178f043482",
       "bridge": "src/core/inventory/inventory_item_location.js",
       "source": "src/application/inventory/inventory_v2_command_service.js",
-      "target": "src/game/domain/inventory/inventory_item_location.js",
-      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-017-inventory-fd62478b",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "InventoryItemLocation",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-d23a9f662ce9",
-      "bridge": "src/core/inventory/inventory_item_location.js",
-      "source": "src/core/assemblies/item_assembly_reader.js",
       "target": "src/game/domain/inventory/inventory_item_location.js",
       "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
       "owner": "stage-3.candidate-017-inventory-fd62478b",

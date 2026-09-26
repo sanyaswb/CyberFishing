@@ -76,6 +76,25 @@ class StageThreeBatchExecutionProfile {
       "expectedActivationIds must be unique");
     require(new Set(definition?.expectedBridgeIds || []).size === definition?.expectedBridgeIds?.length,
       "expectedBridgeIds must be unique");
+    // Continuation batches may import exports of the completed prefix and retire the bridges their
+    // classic sources held; both lists are explicit and empty for every leaf-only batch.
+    const imports = definition?.expectedImports ?? [];
+    const retired = definition?.expectedRetiredBridgeIds ?? [];
+    require(Array.isArray(imports), "expectedImports must be an array");
+    for (const record of imports) {
+      require(normalizedPath(record?.consumer) && normalizedPath(record?.from) && normalizedPath(record?.viaShim),
+        "expected import paths are invalid");
+      require(typeof record?.exportName === "string" && record.exportName === record?.legacySymbol,
+        "expected import must bind the exact legacy symbol export");
+      require(/^activation-[a-f0-9]{12}$/u.test(record?.activationId || ""), "expected import activation is invalid");
+    }
+    require(Array.isArray(retired) && retired.every(id => /^bridge-[a-f0-9]{12}$/u.test(id)) &&
+      new Set(retired).size === retired.length, "expectedRetiredBridgeIds must be unique bridge ids");
+    if (definition?.continuationPlan !== undefined) {
+      require(normalizedPath(definition.continuationPlan?.path) &&
+        /^[a-f0-9]{64}$/u.test(definition.continuationPlan?.sha256 || ""),
+      "continuationPlan needs an exact project path and SHA-256");
+    }
     require(typeof definition?.includeRuntimeActiveState === "boolean",
       "includeRuntimeActiveState must be boolean");
     require(typeof definition?.persistActiveBatchPhase === "boolean",
@@ -116,8 +135,9 @@ class StageThreeBatchExecutionProfile {
       "activation topology delta must equal expectedActivationCount",
     );
     require(
-      topology?.afterBridgeCount - topology?.beforeBridgeCount === definition?.expectedConsumerCount,
-      "bridge topology delta must equal expectedConsumerCount",
+      topology?.afterBridgeCount - topology?.beforeBridgeCount ===
+        definition?.expectedConsumerCount - (definition?.expectedRetiredBridgeIds?.length || 0),
+      "bridge topology delta must equal expectedConsumerCount minus retired bridges",
     );
     if (errors.length > 0) {
       throw new Error(`Stage 3 batch execution profile failed:\n- ${errors.join("\n- ")}`);

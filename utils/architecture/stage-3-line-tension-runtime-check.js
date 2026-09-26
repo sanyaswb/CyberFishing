@@ -14,6 +14,7 @@ const {
   StageTwoRuntimeScriptAliasResolver,
 } = require("./migration/stage_two_runtime_script_alias_resolver");
 
+const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BATCH_ID = "stage-3.candidate-003-fishing-9700ad4f";
 const SOURCE_PROVIDER = "src/core/fishing/line_tension_calculator.js";
@@ -144,9 +145,7 @@ class LineTensionBehaviorVerifier {
 
 class StageThreeLineTensionRuntimeCheck {
   async run() {
-    const approved = this.#json(
-      "architecture/migration/stage_3_approved_batches.json",
-    );
+    const approved = this.#executionPlan();
     const contract = this.#json(
       "architecture/migration/stage_3_compatibility_runtime.json",
     );
@@ -281,6 +280,14 @@ class StageThreeLineTensionRuntimeCheck {
     const second = new TensionSystem();
     assert.equal(constructorCount, 2);
     assert.equal(second.calculate(input).mode, "drag_limit");
+  }
+
+  // The execution plan source keeps this historical batch record exact and appends an adopted
+  // continuation, so the live selected batch is always found.
+  #executionPlan() {
+    return new StageThreeApprovedPlanSource({
+      read: (file) => fs.readFileSync(path.join(PROJECT_ROOT, file)),
+    }).load(this.#json("architecture/migration/stage_3_execution_state.json")).document;
   }
 
   #json(relativePath) {

@@ -14,6 +14,7 @@ const {
   StageTwoRuntimeScriptAliasResolver,
 } = require("./migration/stage_two_runtime_script_alias_resolver");
 
+const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BATCH_ID = "stage-3.candidate-001-inventory-85f44b2e";
 const SOURCE_PROVIDER = "src/core/inventory/equip_target_selection_policy.js";
@@ -74,9 +75,7 @@ class InventoryEquipTargetBehaviorVerifier {
 
 class StageThreeInventoryEquipTargetBatchCheck {
   run() {
-    const approved = this.#json(
-      "architecture/migration/stage_3_approved_batches.json",
-    );
+    const approved = this.#executionPlan();
     const state = this.#json(
       "architecture/migration/stage_3_execution_state.json",
     );
@@ -224,6 +223,14 @@ class StageThreeInventoryEquipTargetBatchCheck {
     const entry = manifest.modules.find((item) => item.currentPath === currentPath);
     assert(entry, `Manifest entry is missing: ${currentPath}`);
     return entry;
+  }
+
+  // The execution plan source keeps this historical batch record exact and appends an adopted
+  // continuation, so the live selected batch is always found.
+  #executionPlan() {
+    return new StageThreeApprovedPlanSource({
+      read: (file) => fs.readFileSync(path.join(PROJECT_ROOT, file)),
+    }).load(this.#json("architecture/migration/stage_3_execution_state.json")).document;
   }
 
   #json(relativePath) {

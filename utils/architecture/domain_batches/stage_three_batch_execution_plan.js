@@ -1,6 +1,7 @@
 "use strict";
 
 const crypto = require("node:crypto");
+const path = require("node:path");
 const {
   CanonicalBridgeIdentity,
 } = require("../../build/legacy_bridge_build_config");
@@ -112,7 +113,7 @@ class StageThreeBatchExecutionPlanBuilder {
       representationChange: module.exports.length > 1
         ? "classic-declarations-to-named-esm-exports-only"
         : "classic-class-declaration-to-named-esm-export-only",
-      importsAllowed: [],
+      importsAllowed: this.#importsAllowed(module),
       behaviorChangeAllowed: false,
       directTransportReadAllowed: false,
     })).sort((left, right) => left.currentPath.localeCompare(right.currentPath));
@@ -185,7 +186,13 @@ class StageThreeBatchExecutionPlanBuilder {
       ...audit.closure.newProjectModules,
     ]).size;
     const afterActivationCount = runtimeFacts.activationCount + activations.length;
-    const afterBridgeCount = bridgeRegistry.bridges.length + plannedBridges.length;
+    // A migrated classic source stops reading legacy globals, so the bridges it held retire.
+    const currentPaths = new Set(modules.map((module) => module.currentPath));
+    const retiredBridges = bridgeRegistry.bridges.filter((record) => currentPaths.has(record.source))
+      .sort((left, right) => left.id.localeCompare(right.id));
+    this.#require(this.#same(retiredBridges.map((record) => record.id), profile.expectedRetiredBridgeIds || []),
+      "Retired bridge identity set differs from profile");
+    const afterBridgeCount = bridgeRegistry.bridges.length + plannedBridges.length - retiredBridges.length;
     const currentLifecycleTopology = profile.persistActiveBatchPhase ? {
       projectModuleCount: runtimeFacts.projectModuleCount,
       activationCount: runtimeFacts.activationCount,
@@ -308,7 +315,12 @@ class StageThreeBatchExecutionPlanBuilder {
           beforeCount: bridgeRegistry.bridges.length,
           addCount: plannedBridges.length,
           afterCount: afterBridgeCount,
-          operation: "exact-set-union-by-canonical-id",
+          operation: retiredBridges.length > 0
+            ? "exact-set-union-and-retirement-by-canonical-id" : "exact-set-union-by-canonical-id",
+          ...(retiredBridges.length > 0 ? {
+            retireCount: retiredBridges.length,
+            retiredBridgeRecords: retiredBridges.map((record) => ({ ...record })),
+          } : {}),
         },
         transportGlobal: runtimeContract.transport.symbol,
         transportOwnsGameState: false,
@@ -452,6 +464,18 @@ class StageThreeBatchExecutionPlanBuilder {
     return { order, id, mutationKind, outcome };
   }
 
+  // Exact ESM imports a representation-only target may declare: only reviewed exports of the
+  // completed prefix, by relative specifier from the target module.
+  #importsAllowed(module) {
+    return (this.#profile.expectedImports || []).filter((record) => record.consumer === module.currentPath)
+      .map((record) => {
+        const relative = path.posix.relative(path.posix.dirname(module.targetPath), record.from);
+        return { specifier: relative.startsWith(".") ? relative : `./${relative}`, from: record.from,
+          exportName: record.exportName, activationId: record.activationId };
+      })
+      .sort((left, right) => `${left.specifier}\0${left.exportName}`.localeCompare(`${right.specifier}\0${right.exportName}`));
+  }
+
   #same(left, right) {
     return JSON.stringify(left) === JSON.stringify(right);
   }
@@ -491,7 +515,7 @@ class StageThreeBatchExecutionPlanValidator {
     require(new Set(plan?.scope?.modules?.map((module) => module.currentPath)).size === profile.expectedTargetCount, "source paths must be unique");
     require(new Set(plan?.scope?.modules?.map((module) => module.targetPath)).size === profile.expectedTargetCount, "target paths must be unique");
     require(plan?.scope?.modules?.every((module) =>
-      this.#same(module.importsAllowed, []) &&
+      this.#same(module.importsAllowed, this.#importsAllowed(module)) &&
       module.behaviorChangeAllowed === false &&
       module.directTransportReadAllowed === false &&
       ["classic-class-declaration-to-named-esm-export-only",
@@ -599,7 +623,8 @@ class StageThreeBatchExecutionPlanValidator {
     require(plan?.compatibility?.registryTransition?.addCount === profile.expectedConsumerCount, "registry transition add count differs");
     require(
       plan?.compatibility?.registryTransition?.afterCount ===
-        plan?.compatibility?.registryTransition?.beforeCount + profile.expectedConsumerCount,
+        plan?.compatibility?.registryTransition?.beforeCount + profile.expectedConsumerCount -
+          (profile.expectedRetiredBridgeIds || []).length,
       "registry transition count is inconsistent",
     );
     require(plan?.compatibility?.transportOwnsGameState === false, "transport must not own game state");
@@ -735,6 +760,18 @@ class StageThreeBatchExecutionPlanValidator {
       throw new Error(`${profile.executionStageLabel} execution-plan contract failed:\n- ${errors.join("\n- ")}`);
     }
     return immutableRecord(plan);
+  }
+
+  // Exact ESM imports a representation-only target may declare: only reviewed exports of the
+  // completed prefix, by relative specifier from the target module.
+  #importsAllowed(module) {
+    return (this.#profile.expectedImports || []).filter((record) => record.consumer === module.currentPath)
+      .map((record) => {
+        const relative = path.posix.relative(path.posix.dirname(module.targetPath), record.from);
+        return { specifier: relative.startsWith(".") ? relative : `./${relative}`, from: record.from,
+          exportName: record.exportName, activationId: record.activationId };
+      })
+      .sort((left, right) => `${left.specifier}\0${left.exportName}`.localeCompare(`${right.specifier}\0${right.exportName}`));
   }
 
   #same(left, right) {

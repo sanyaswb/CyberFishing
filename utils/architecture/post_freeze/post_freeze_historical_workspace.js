@@ -8,14 +8,20 @@ const { PostFreezeReleaseTransition } = require("./post_freeze_release_transitio
 const { DIRECTORY } = require("./post_freeze_paths");
 
 const PREFIX = "cyber-stage322-historical-";
+const BATCH_022_PREBUILD = "architecture/migration/stage_3_batch_022_prebuild_contract.json";
 
-// Head of the historical replay chain after the v0.24.59 release: an isolated copy with the
-// audit-only release reversed and the Stage 3.22 artifacts removed is exactly the batch-021
-// release checkpoint, so released batch checks replay there while cumulative guards keep running
-// against the live workspace.
+// Historical replay link after the v0.24.59 release: an isolated copy with the audit-only release
+// reversed and the Stage 3.22 artifacts removed is exactly the batch-021 release checkpoint, so
+// released batch checks replay there while cumulative guards keep running against the live
+// workspace. Later batches are peeled first by their own historical workspaces.
 class PostFreezeHistoricalWorkspace {
   async run(root, action, { copyTools = false } = {}) {
     const projectRoot = path.resolve(root);
+    if (fs.existsSync(path.join(projectRoot, BATCH_022_PREBUILD))) {
+      const { Batch022HistoricalWorkspace } = require("../domain_batches/stage_three_batch_022_historical_workspace");
+      return new Batch022HistoricalWorkspace().run(projectRoot, prior => this.run(prior, action, { copyTools }),
+        { copyTools });
+    }
     if (!new PostFreezeReleaseTransition(projectRoot).exists()) return action(projectRoot);
     const parent = fs.realpathSync(os.tmpdir());
     const temporary = fs.mkdtempSync(path.join(parent, PREFIX));

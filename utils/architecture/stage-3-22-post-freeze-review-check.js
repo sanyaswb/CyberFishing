@@ -210,9 +210,12 @@ class Stage322PostFreezeReviewCheck {
   }
 }
 
+// Later batches change the reviewed inputs; the review replays at its own checkpoint, which the
+// batch-022 historical workspace reconstructs (it is the live tree until batch 022 opens).
 if (require.main === module) {
-  try { new Stage322PostFreezeReviewCheck().run(); }
-  catch (error) { console.error(error.stack); process.exitCode = 1; }
+  const { Batch022HistoricalWorkspace } = require("./domain_batches/stage_three_batch_022_historical_workspace");
+  new Batch022HistoricalWorkspace().run(PROJECT_ROOT, prior => new Stage322PostFreezeReviewCheck().run(prior))
+    .catch(error => { console.error(error.stack); process.exitCode = 1; });
 }
 
 module.exports = { Stage322PostFreezeReviewCheck };
