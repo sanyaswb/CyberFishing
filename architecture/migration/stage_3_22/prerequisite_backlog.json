@@ -1,0 +1,1230 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-22-prerequisite-backlog",
+  "stage": "3.22",
+  "status": "open",
+  "sources": {
+    "graphReview": {
+      "path": "architecture/migration/stage_3_22/graph_review.json",
+      "sha256": "a2fccd1c3d6f2e4bd6e085fcddc8a5ff65a59b58979f273354502899bf4c770f"
+    }
+  },
+  "refactoringPerformed": false,
+  "summary": {
+    "taskCount": 14,
+    "graphChangingTaskCount": 12,
+    "evidenceTaskCount": 2,
+    "prerequisiteBlockedModuleCount": 9,
+    "deferredModuleCount": 29,
+    "candidateModuleCount": 28
+  },
+  "tasks": [
+    {
+      "id": "stage-3.22.prerequisite.vector2-extraction",
+      "kind": "boundary-extraction",
+      "graphChanging": true,
+      "status": "open",
+      "intent": "Extract the Vector2 value type from the platform core script into a reusable engine math module.",
+      "prerequisiteIds": [
+        "boundary-extraction:src/core/fishing/fish_fight_direction_resolver.js:src/core/core.js",
+        "boundary-extraction:src/entities/tackle.js:src/core/core.js",
+        "boundary-extraction:src/systems/fish_force_system.js:src/core/core.js",
+        "boundary-extraction:src/systems/player_force_system.js:src/core/core.js",
+        "boundary-extraction:src/world/world.js:src/core/core.js"
+      ],
+      "provider": "src/core/core.js",
+      "symbols": [
+        "Vector2"
+      ],
+      "configSymbols": [],
+      "modules": [
+        "src/core/fishing/fish_fight_direction_resolver.js",
+        "src/entities/tackle.js",
+        "src/systems/fish_force_system.js",
+        "src/systems/player_force_system.js",
+        "src/world/world.js"
+      ],
+      "unblocksCandidates": [
+        "src/core/fishing/fish_fight_direction_resolver.js",
+        "src/systems/player_force_system.js"
+      ],
+      "affectedConsumers": [
+        "src/app/application.js",
+        "src/app/cast_power.js",
+        "src/app/fishing.js",
+        "src/app/rendering/boat_chum_render_frame_builder.js",
+        "src/app/rendering/casting_render_frame_builder.js",
+        "src/app/rendering/fight_area_render_frame_builder.js",
+        "src/app/rendering/fishing_render_frame_builder.js",
+        "src/app/rendering/landing_area_render_frame_builder.js",
+        "src/app/rendering/location_debug_render_frame_builder.js",
+        "src/app/rendering/world_render_frame_builder.js",
+        "src/app/states.js",
+        "src/app/world.js",
+        "src/core/fishing/fish_fight_direction_resolver.js",
+        "src/entities/tackle.js",
+        "src/systems/chum_system.js",
+        "src/systems/fight_physics_system.js",
+        "src/systems/fish_force_system.js",
+        "src/systems/player_force_system.js",
+        "src/world/world.js"
+      ],
+      "compositionCallSites": [],
+      "targetBoundaries": {
+        "from": "platform",
+        "to": "engine",
+        "proposedTarget": "src/engine/math/vector2.js"
+      },
+      "compatibilityRequirements": [
+        "Vector2 keeps its constructor, prototype methods and value semantics byte-for-byte.",
+        "The legacy global Vector2 stays available to every unmigrated classic consumer through one reviewed bridge.",
+        "No new permanent global; CacheManager and InputManager stay in the platform core script."
+      ],
+      "checks": [
+        "focused Vector2 parity (construction, arithmetic, normalization, immutability of inputs)",
+        "check:architecture",
+        "check:quick",
+        "game-cycle-check fight scenarios"
+      ],
+      "graphReviewRepeatCondition": {
+        "trigger": "The forbidden Domain → src/core/core.js Vector2 edges disappear from the physical graph.",
+        "action": "Repeat the Stage 3.22 post-freeze graph review (fresh observation, logical graph, eligibility and candidate plan) after the task lands and before any dependent cluster is frozen or executed."
+      }
+    },
+    {
+      "id": "stage-3.22.prerequisite.bait-effectiveness-descriptor-boundary",
+      "kind": "descriptor-boundary",
+      "graphChanging": true,
+      "status": "open",
+      "intent": "Separate the Domain bait-effectiveness result from presentation descriptor fields.",
+      "prerequisiteIds": [
+        "boundary-extraction:src/core/items/bait/bait_effectiveness_resolver.js:src/core/items/bait/bait_effectiveness_descriptor.js"
+      ],
+      "provider": "src/core/items/bait/bait_effectiveness_descriptor.js",
+      "symbols": [
+        "BaitEffectivenessDescriptor"
+      ],
+      "configSymbols": [],
+      "modules": [
+        "src/core/items/bait/bait_effectiveness_resolver.js"
+      ],
+      "unblocksCandidates": [
+        "src/core/items/bait/bait_effectiveness_resolver.js"
+      ],
+      "affectedConsumers": [
+        "src/core/items/bait/bait_effectiveness_resolver.js"
+      ],
+      "compositionCallSites": [],
+      "targetBoundaries": {
+        "from": "game-presentation",
+        "to": "game-domain-result-plus-presentation-mapper"
+      },
+      "compatibilityRequirements": [
+        "Existing descriptor consumers receive identical fields and values through a presentation mapper.",
+        "BaitEffectivenessResolver returns a Domain result without presentation-only fields."
+      ],
+      "checks": [
+        "focused bait effectiveness parity (result and descriptor fields)",
+        "check:architecture",
+        "check:quick",
+        "inventory/bait scenarios of game-cycle-check"
+      ],
+      "graphReviewRepeatCondition": {
+        "trigger": "BaitEffectivenessResolver no longer depends on the presentation descriptor module.",
+        "action": "Repeat the Stage 3.22 post-freeze graph review (fresh observation, logical graph, eligibility and candidate plan) after the task lands and before any dependent cluster is frozen or executed."
+      }
+    },
+    {
+      "id": "stage-3.22.prerequisite.item-freshness-descriptor-boundary",
+      "kind": "descriptor-boundary",
+      "graphChanging": true,
+      "status": "open",
+      "intent": "Separate the Domain freshness result from presentation descriptor fields.",
+      "prerequisiteIds": [
+        "boundary-extraction:src/core/items/freshness/item_freshness_resolver.js:src/core/items/freshness/item_freshness_descriptor.js"
+      ],
+      "provider": "src/core/items/freshness/item_freshness_descriptor.js",
+      "symbols": [
+        "ItemFreshnessDescriptor"
+      ],
+      "configSymbols": [],
+      "modules": [
+        "src/core/items/freshness/item_freshness_resolver.js"
+      ],
+      "unblocksCandidates": [
+        "src/core/items/freshness/item_freshness_resolver.js"
+      ],
+      "affectedConsumers": [
+        "src/core/items/freshness/item_freshness_resolver.js"
+      ],
+      "compositionCallSites": [],
+      "targetBoundaries": {
+        "from": "game-presentation",
+        "to": "game-domain-result-plus-presentation-mapper"
+      },
+      "compatibilityRequirements": [
+        "Existing freshness descriptor consumers receive identical fields and values through a presentation mapper.",
+        "ItemFreshnessResolver returns a Domain result without presentation-only fields."
+      ],
+      "checks": [
+        "focused freshness parity (result and descriptor fields)",
+        "check:architecture",
+        "check:quick"
+      ],
+      "graphReviewRepeatCondition": {
+        "trigger": "ItemFreshnessResolver no longer depends on the presentation descriptor module.",
+        "action": "Repeat the Stage 3.22 post-freeze graph review (fresh observation, logical graph, eligibility and candidate plan) after the task lands and before any dependent cluster is frozen or executed."
+      }
+    },
+    {
+      "id": "stage-3.22.prerequisite.item-condition-descriptor-boundary",
+      "kind": "descriptor-boundary",
+      "graphChanging": true,
+      "status": "open",
+      "intent": "Separate the Domain condition result from presentation descriptor fields.",
+      "prerequisiteIds": [
+        "boundary-extraction:src/core/items/condition/item_condition_resolver.js:src/core/items/condition/item_condition_descriptor.js"
+      ],
+      "provider": "src/core/items/condition/item_condition_descriptor.js",
+      "symbols": [
+        "ItemConditionDescriptor"
+      ],
+      "configSymbols": [],
+      "modules": [
+        "src/core/items/condition/item_condition_resolver.js"
+      ],
+      "unblocksCandidates": [
+        "src/core/items/condition/item_condition_resolver.js"
+      ],
+      "affectedConsumers": [
+        "src/core/items/condition/item_condition_resolver.js"
+      ],
+      "compositionCallSites": [],
+      "targetBoundaries": {
+        "from": "game-presentation",
+        "to": "game-domain-result-plus-presentation-mapper"
+      },
+      "compatibilityRequirements": [
+        "Existing condition descriptor consumers receive identical fields and values through a presentation mapper.",
+        "ItemConditionResolver returns a Domain result without presentation-only fields."
+      ],
+      "checks": [
+        "focused condition parity (result and descriptor fields)",
+        "check:architecture",
+        "check:quick"
+      ],
+      "graphReviewRepeatCondition": {
+        "trigger": "ItemConditionResolver no longer depends on the presentation descriptor module.",
+        "action": "Repeat the Stage 3.22 post-freeze graph review (fresh observation, logical graph, eligibility and candidate plan) after the task lands and before any dependent cluster is frozen or executed."
+      }
+    },
+    {
+      "id": "stage-3.22.prerequisite.assembly-profile-registry-config-injection",
+      "kind": "config-injection",
+      "graphChanging": true,
+      "status": "open",
+      "intent": "Deliver ITEM_ASSEMBLY_PROFILE_CONFIG to AssemblyProfileRegistry through its constructor from the composition roots.",
+      "prerequisiteIds": [
+        "config-di:replace-direct-config-read-with-di:src/core/assemblies/assembly_profile_registry.js"
+      ],
+      "provider": "src/core/assemblies/assembly_profile_registry.js",
+      "symbols": [
+        "AssemblyProfileRegistry"
+      ],
+      "configSymbols": [
+        "ITEM_ASSEMBLY_PROFILE_CONFIG"
+      ],
+      "modules": [
+        "src/core/assemblies/assembly_profile_registry.js"
+      ],
+      "unblocksCandidates": [
+        "src/core/assemblies/assembly_profile_registry.js"
+      ],
+      "affectedConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/infrastructure/storage/inventory_v2_legacy_migration.js"
+      ],
+      "compositionCallSites": [
+        {
+          "path": "src/application/inventory/inventory_v2_composition_root.js",
+          "location": "72:29",
+          "context": "explicit-composition"
+        },
+        {
+          "path": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+          "location": "57:29",
+          "context": "explicit-composition"
+        }
+      ],
+      "targetBoundaries": {
+        "from": "game-config-raw-direct-read",
+        "to": "constructor-injection-from-composition"
+      },
+      "compatibilityRequirements": [
+        "Every composition call site passes the same frozen profile table; registry behavior and profile order are unchanged.",
+        "The raw config global is read only in composition code, never inside the Domain module."
+      ],
+      "checks": [
+        "focused assembly profile parity",
+        "inventory-v2 persistence and migration checks",
+        "check:architecture",
+        "check:quick"
+      ],
+      "graphReviewRepeatCondition": {
+        "trigger": "The forbidden AssemblyProfileRegistry → ITEM_ASSEMBLY_PROFILE_CONFIG read disappears.",
+        "action": "Repeat the Stage 3.22 post-freeze graph review (fresh observation, logical graph, eligibility and candidate plan) after the task lands and before any dependent cluster is frozen or executed."
+      }
+    },
+    {
+      "id": "stage-3.22.prerequisite.item-stat-override-policy-config-injection",
+      "kind": "config-injection",
+      "graphChanging": true,
+      "status": "open",
+      "intent": "Replace the ItemStatOverridePolicy global default with configuration injected at composition, including the default-parameter call sites.",
+      "prerequisiteIds": [
+        "config-di:replace-direct-config-read-with-di:src/core/items/item_stat_override_policy.js"
+      ],
+      "provider": "src/core/items/item_stat_override_policy.js",
+      "symbols": [
+        "ItemStatOverridePolicy"
+      ],
+      "configSymbols": [
+        "ITEM_STAT_OVERRIDE_CONFIG"
+      ],
+      "modules": [
+        "src/core/items/item_stat_override_policy.js"
+      ],
+      "unblocksCandidates": [
+        "src/core/items/effective_item_stats_resolver.js",
+        "src/core/items/item_stat_override_policy.js",
+        "src/core/items/progression/item_progression_resolver.js"
+      ],
+      "affectedConsumers": [
+        "src/core/items/effective_item_stats_resolver.js",
+        "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+        "src/infrastructure/storage/legacy_item_state_migration.js"
+      ],
+      "compositionCallSites": [
+        {
+          "path": "src/core/items/effective_item_stats_resolver.js",
+          "location": "4:34",
+          "context": "default-parameter-global-default"
+        },
+        {
+          "path": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+          "location": "32:22",
+          "context": "default-parameter-global-default"
+        },
+        {
+          "path": "src/infrastructure/storage/legacy_item_state_migration.js",
+          "location": "32:22",
+          "context": "default-parameter-global-default"
+        }
+      ],
+      "targetBoundaries": {
+        "from": "game-config-raw-direct-read",
+        "to": "constructor-injection-from-composition"
+      },
+      "compatibilityRequirements": [
+        "Default-parameter call sites receive an explicitly composed policy with the same override table.",
+        "Effective stats, snapshots and legacy migration results stay byte-identical."
+      ],
+      "checks": [
+        "focused effective-stats parity",
+        "inventory snapshot and legacy migration checks",
+        "check:architecture",
+        "check:quick"
+      ],
+      "graphReviewRepeatCondition": {
+        "trigger": "The forbidden ItemStatOverridePolicy → ITEM_STAT_OVERRIDE_CONFIG read disappears.",
+        "action": "Repeat the Stage 3.22 post-freeze graph review (fresh observation, logical graph, eligibility and candidate plan) after the task lands and before any dependent cluster is frozen or executed."
+      }
+    },
+    {
+      "id": "stage-3.22.prerequisite.equipment-decomposition",
+      "kind": "responsibility-decomposition",
+      "graphChanging": true,
+      "status": "open",
+      "intent": "Decompose equipment slot catalog, state, transition planning, readiness and compatibility responsibilities.",
+      "prerequisiteIds": [
+        "architecture-prerequisite:complete-separate-decomposition-task:src/config/inventory/equipment_slot_config.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/core/equipment/equipment_compatibility_policy.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/core/equipment/equipment_transition_planner.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/core/equipment/fishing_readiness_policy.js",
+        "boundary-extraction:src/core/equipment/equipment_compatibility_policy.js:src/core/equipment/equipment_slot_visibility_policy.js",
+        "boundary-extraction:src/core/equipment/equipment_compatibility_policy.js:src/core/equipment/terminal_line_slot_resolver.js",
+        "domain-dependency:src/config/inventory/equipment_slot_config.js"
+      ],
+      "modules": [
+        {
+          "currentPath": "src/config/inventory/equipment_slot_config.js",
+          "targetPath": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/core/equipment/equipment_compatibility_policy.js",
+          "targetPath": "src/game/domain/equipment/equipment_compatibility_policy.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/core/equipment/equipment_state.js",
+          "targetPath": "src/game/domain/equipment/equipment_state.js",
+          "reasonCodes": [
+            "deferred-domain-dependency"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/core/equipment/equipment_transition_planner.js",
+          "targetPath": "src/game/domain/equipment/equipment_transition_planner.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/core/equipment/fishing_readiness_policy.js",
+          "targetPath": "src/game/domain/equipment/fishing_readiness_policy.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        }
+      ],
+      "relatedPrerequisiteTaskIds": [],
+      "affectedConsumers": [
+        "src/application/inventory/inventory_v2_command_service.js",
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/application/inventory/inventory_v2_context_item_filter.js",
+        "src/application/inventory/inventory_v2_view_model_factory.js",
+        "src/application/inventory/loadout_application_service.js",
+        "src/core/equipment/equipment_compatibility_policy.js",
+        "src/core/equipment/equipment_slot_availability_policy.js",
+        "src/core/equipment/equipment_slot_visibility_policy.js",
+        "src/core/equipment/equipment_state.js",
+        "src/core/equipment/equipment_transition_planner.js",
+        "src/core/equipment/fishing_readiness_policy.js",
+        "src/core/equipment/terminal_line_slot_resolver.js",
+        "src/core/loadouts/equipment_loadout.js",
+        "src/core/loadouts/loadout_equipment_transition_planner.js",
+        "src/infrastructure/storage/inventory_v2_legacy_migration.js"
+      ],
+      "ambiguousProviders": [],
+      "targetBoundaries": {
+        "domainTargets": [
+          "src/game/domain/equipment/equipment_compatibility_policy.js",
+          "src/game/domain/equipment/equipment_slot_catalog.js",
+          "src/game/domain/equipment/equipment_state.js",
+          "src/game/domain/equipment/equipment_transition_planner.js",
+          "src/game/domain/equipment/fishing_readiness_policy.js"
+        ],
+        "extractedResponsibilities": [
+          "mixed-responsibility-requires-decomposition->game-domain-plus-owning-layer"
+        ]
+      },
+      "compatibilityRequirements": [
+        "Each decomposition is a separate reviewed task; it is never combined with a module migration.",
+        "Legacy globals of unmigrated consumers stay available through reviewed bridges only.",
+        "Gameplay formulas, state semantics, save format and timing stay unchanged."
+      ],
+      "checks": [
+        "focused parity for every decomposed responsibility",
+        "check:architecture",
+        "check:quick",
+        "game-cycle-check"
+      ],
+      "graphReviewRepeatCondition": {
+        "trigger": "A decomposition removes a deferral blocker or changes the Domain dependency graph.",
+        "action": "Repeat the Stage 3.22 post-freeze graph review (fresh observation, logical graph, eligibility and candidate plan) after the task lands and before any dependent cluster is frozen or executed."
+      }
+    },
+    {
+      "id": "stage-3.22.prerequisite.inventory-decomposition",
+      "kind": "responsibility-decomposition",
+      "graphChanging": true,
+      "status": "open",
+      "intent": "Decompose inventory capacity, flat repository, stacking and line allocation responsibilities.",
+      "prerequisiteIds": [
+        "architecture-prerequisite:complete-separate-decomposition-task:src/core/equipment/inventory_capacity_policy.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/core/inventory/flat_inventory_item_repository.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/core/inventory/inventory_item_stacking_policy.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/core/line/line_allocation_policy.js"
+      ],
+      "modules": [
+        {
+          "currentPath": "src/core/equipment/inventory_capacity_policy.js",
+          "targetPath": "src/game/domain/inventory/inventory_capacity_policy.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/core/inventory/flat_inventory_item_repository.js",
+          "targetPath": "src/game/domain/inventory/flat_inventory_item_repository.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/core/inventory/inventory_item_stacking_policy.js",
+          "targetPath": "src/game/domain/inventory/inventory_item_stacking_policy.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/core/line/line_allocation_policy.js",
+          "targetPath": "src/game/domain/line/line_allocation_policy.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        }
+      ],
+      "relatedPrerequisiteTaskIds": [],
+      "affectedConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/application/inventory/inventory_v2_line_allocation_service.js",
+        "src/application/inventory/loadout_application_service.js",
+        "src/core/equipment/equipment_transition_planner.js",
+        "src/core/line/line_inventory_controller.js",
+        "src/core/loadouts/loadout_equipment_transition_planner.js",
+        "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+        "src/systems/inventory_system.js"
+      ],
+      "ambiguousProviders": [],
+      "targetBoundaries": {
+        "domainTargets": [
+          "src/game/domain/inventory/flat_inventory_item_repository.js",
+          "src/game/domain/inventory/inventory_capacity_policy.js",
+          "src/game/domain/inventory/inventory_item_stacking_policy.js",
+          "src/game/domain/line/line_allocation_policy.js"
+        ],
+        "extractedResponsibilities": [
+          "mixed-responsibility-requires-decomposition->game-domain-plus-owning-layer"
+        ]
+      },
+      "compatibilityRequirements": [
+        "Each decomposition is a separate reviewed task; it is never combined with a module migration.",
+        "Legacy globals of unmigrated consumers stay available through reviewed bridges only.",
+        "Gameplay formulas, state semantics, save format and timing stay unchanged."
+      ],
+      "checks": [
+        "focused parity for every decomposed responsibility",
+        "check:architecture",
+        "check:quick",
+        "game-cycle-check"
+      ],
+      "graphReviewRepeatCondition": {
+        "trigger": "A decomposition removes a deferral blocker or changes the Domain dependency graph.",
+        "action": "Repeat the Stage 3.22 post-freeze graph review (fresh observation, logical graph, eligibility and candidate plan) after the task lands and before any dependent cluster is frozen or executed."
+      }
+    },
+    {
+      "id": "stage-3.22.prerequisite.loadouts-decomposition",
+      "kind": "responsibility-decomposition",
+      "graphChanging": true,
+      "status": "open",
+      "intent": "Decompose loadout model, repository and equipment transition planning responsibilities.",
+      "prerequisiteIds": [
+        "architecture-prerequisite:complete-separate-decomposition-task:src/core/loadouts/equipment_loadout.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/core/loadouts/loadout_equipment_transition_planner.js",
+        "domain-dependency:src/core/loadouts/equipment_loadout.js"
+      ],
+      "modules": [
+        {
+          "currentPath": "src/core/loadouts/equipment_loadout.js",
+          "targetPath": "src/game/domain/loadouts/equipment_loadout.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/core/loadouts/equipment_loadout_repository.js",
+          "targetPath": "src/game/domain/loadouts/equipment_loadout_repository.js",
+          "reasonCodes": [
+            "deferred-domain-dependency",
+            "partial-state-review",
+            "side-effect-review"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/core/loadouts/loadout_equipment_transition_planner.js",
+          "targetPath": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        }
+      ],
+      "relatedPrerequisiteTaskIds": [],
+      "affectedConsumers": [
+        "src/application/inventory/inventory_v2_command_service.js",
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/application/inventory/loadout_application_service.js",
+        "src/core/loadouts/equipment_loadout_repository.js",
+        "src/infrastructure/storage/inventory_v2_legacy_migration.js"
+      ],
+      "ambiguousProviders": [],
+      "targetBoundaries": {
+        "domainTargets": [
+          "src/game/domain/loadouts/equipment_loadout.js",
+          "src/game/domain/loadouts/equipment_loadout_repository.js",
+          "src/game/domain/loadouts/loadout_equipment_transition_planner.js"
+        ],
+        "extractedResponsibilities": [
+          "mixed-responsibility-requires-decomposition->game-domain-plus-owning-layer"
+        ]
+      },
+      "compatibilityRequirements": [
+        "Each decomposition is a separate reviewed task; it is never combined with a module migration.",
+        "Legacy globals of unmigrated consumers stay available through reviewed bridges only.",
+        "Gameplay formulas, state semantics, save format and timing stay unchanged."
+      ],
+      "checks": [
+        "focused parity for every decomposed responsibility",
+        "check:architecture",
+        "check:quick",
+        "game-cycle-check"
+      ],
+      "graphReviewRepeatCondition": {
+        "trigger": "A decomposition removes a deferral blocker or changes the Domain dependency graph.",
+        "action": "Repeat the Stage 3.22 post-freeze graph review (fresh observation, logical graph, eligibility and candidate plan) after the task lands and before any dependent cluster is frozen or executed."
+      }
+    },
+    {
+      "id": "stage-3.22.prerequisite.item-progression-decomposition",
+      "kind": "responsibility-decomposition",
+      "graphChanging": true,
+      "status": "open",
+      "intent": "Decompose item metric composition, capacity, rating and catalog baseline responsibilities.",
+      "prerequisiteIds": [
+        "architecture-prerequisite:complete-separate-decomposition-task:src/core/items/progression/composite_metric_strategy.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/core/items/progression/item_capacity_resolver.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/core/items/progression/item_rating_resolver.js",
+        "architecture-prerequisite:extract-browser-capability-to-platform:src/core/items/progression/item_catalog_baseline_registry.js"
+      ],
+      "modules": [
+        {
+          "currentPath": "src/core/items/progression/composite_metric_strategy.js",
+          "targetPath": "src/game/domain/items/progression/composite_metric_strategy.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/core/items/progression/item_capacity_resolver.js",
+          "targetPath": "src/game/domain/items/progression/item_capacity_resolver.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/core/items/progression/item_catalog_baseline_registry.js",
+          "targetPath": "src/game/domain/items/progression/item_catalog_baseline_registry.js",
+          "reasonCodes": [
+            "browser-api-coupling"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/core/items/progression/item_rating_resolver.js",
+          "targetPath": "src/game/domain/items/progression/item_rating_resolver.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        }
+      ],
+      "relatedPrerequisiteTaskIds": [],
+      "affectedConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "ambiguousProviders": [],
+      "targetBoundaries": {
+        "domainTargets": [
+          "src/game/domain/items/progression/composite_metric_strategy.js",
+          "src/game/domain/items/progression/item_capacity_resolver.js",
+          "src/game/domain/items/progression/item_catalog_baseline_registry.js",
+          "src/game/domain/items/progression/item_rating_resolver.js"
+        ],
+        "extractedResponsibilities": [
+          "browser-api-coupling->platform",
+          "mixed-responsibility-requires-decomposition->game-domain-plus-owning-layer"
+        ]
+      },
+      "compatibilityRequirements": [
+        "Each decomposition is a separate reviewed task; it is never combined with a module migration.",
+        "Legacy globals of unmigrated consumers stay available through reviewed bridges only.",
+        "Gameplay formulas, state semantics, save format and timing stay unchanged."
+      ],
+      "checks": [
+        "focused parity for every decomposed responsibility",
+        "check:architecture",
+        "check:quick",
+        "game-cycle-check"
+      ],
+      "graphReviewRepeatCondition": {
+        "trigger": "A decomposition removes a deferral blocker or changes the Domain dependency graph.",
+        "action": "Repeat the Stage 3.22 post-freeze graph review (fresh observation, logical graph, eligibility and candidate plan) after the task lands and before any dependent cluster is frozen or executed."
+      }
+    },
+    {
+      "id": "stage-3.22.prerequisite.fishing-systems-decomposition",
+      "kind": "responsibility-decomposition",
+      "graphChanging": true,
+      "status": "open",
+      "intent": "Decompose fishing systems and policies that mix Domain rules with config, browser or DEV responsibilities.",
+      "prerequisiteIds": [
+        "architecture-prerequisite:complete-separate-decomposition-task:src/core/casting_distance.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/core/fishing/landing_policy.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/core/fishing/retrieve_policy.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/core/fishing/rod_pull_calculator.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/systems/fish_force_system.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/systems/stamina_system.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/systems/tackle_stress_system.js",
+        "architecture-prerequisite:remove-development-runtime-dependency:src/systems/tackle_stress_system.js",
+        "config-di:replace-direct-config-read-with-di:src/core/casting_distance.js",
+        "config-di:replace-direct-config-read-with-di:src/core/fishing/landing_policy.js",
+        "config-di:replace-direct-config-read-with-di:src/core/fishing/retrieve_policy.js",
+        "config-di:replace-direct-config-read-with-di:src/systems/fish_force_system.js",
+        "domain-dependency:src/core/casting_distance.js",
+        "domain-dependency:src/core/fishing/rod_pull_calculator.js"
+      ],
+      "modules": [
+        {
+          "currentPath": "src/core/casting_distance.js",
+          "targetPath": "src/game/domain/casting/cast_distance_calculator.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/core/fishing/landing_policy.js",
+          "targetPath": "src/game/domain/fishing/landing_policy.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/core/fishing/retrieve_policy.js",
+          "targetPath": "src/game/domain/fishing/retrieve_policy.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/core/fishing/rod_pull_calculator.js",
+          "targetPath": "src/game/domain/fishing/rod_pull_calculator.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/systems/fish_force_system.js",
+          "targetPath": "src/game/domain/fishing/fish_force_system.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/systems/line_system.js",
+          "targetPath": "src/game/domain/fishing/line_system.js",
+          "reasonCodes": [
+            "deferred-domain-dependency",
+            "high-level-self-composition",
+            "partial-state-review"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/systems/rod_pull_system.js",
+          "targetPath": "src/game/domain/fishing/rod_pull_system.js",
+          "reasonCodes": [
+            "deferred-domain-dependency",
+            "high-level-self-composition",
+            "hot-loop-performance-gate",
+            "partial-state-review"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/systems/stamina_system.js",
+          "targetPath": "src/game/domain/fishing/stamina_system.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/systems/tackle_stress_system.js",
+          "targetPath": "src/game/domain/fishing/tackle_stress_system.js",
+          "reasonCodes": [
+            "dev-production-coupling",
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        }
+      ],
+      "relatedPrerequisiteTaskIds": [
+        "stage-3.22.prerequisite.vector2-extraction"
+      ],
+      "affectedConsumers": [
+        "src/app/bootstrap.js",
+        "src/app/fishing.js",
+        "src/app/rules.js",
+        "src/app/states.js",
+        "src/entities/tackle.js",
+        "src/systems/fight_physics_system.js",
+        "src/systems/inventory_system.js",
+        "src/systems/line_system.js",
+        "src/systems/rod_pull_system.js"
+      ],
+      "ambiguousProviders": [
+        {
+          "symbol": "resolveFightPhysicsConfig",
+          "modules": [
+            "src/core/fishing/landing_policy.js",
+            "src/core/fishing/retrieve_policy.js"
+          ]
+        }
+      ],
+      "targetBoundaries": {
+        "domainTargets": [
+          "src/game/domain/casting/cast_distance_calculator.js",
+          "src/game/domain/fishing/fish_force_system.js",
+          "src/game/domain/fishing/landing_policy.js",
+          "src/game/domain/fishing/line_system.js",
+          "src/game/domain/fishing/retrieve_policy.js",
+          "src/game/domain/fishing/rod_pull_calculator.js",
+          "src/game/domain/fishing/rod_pull_system.js",
+          "src/game/domain/fishing/stamina_system.js",
+          "src/game/domain/fishing/tackle_stress_system.js"
+        ],
+        "extractedResponsibilities": [
+          "dev-production-coupling->dev",
+          "mixed-responsibility-requires-decomposition->game-domain-plus-owning-layer"
+        ]
+      },
+      "compatibilityRequirements": [
+        "Each decomposition is a separate reviewed task; it is never combined with a module migration.",
+        "Legacy globals of unmigrated consumers stay available through reviewed bridges only.",
+        "Gameplay formulas, state semantics, save format and timing stay unchanged."
+      ],
+      "checks": [
+        "focused parity for every decomposed responsibility",
+        "check:architecture",
+        "check:quick",
+        "game-cycle-check"
+      ],
+      "graphReviewRepeatCondition": {
+        "trigger": "A decomposition removes a deferral blocker or changes the Domain dependency graph.",
+        "action": "Repeat the Stage 3.22 post-freeze graph review (fresh observation, logical graph, eligibility and candidate plan) after the task lands and before any dependent cluster is frozen or executed."
+      }
+    },
+    {
+      "id": "stage-3.22.prerequisite.entities-world-rules-decomposition",
+      "kind": "responsibility-decomposition",
+      "graphChanging": true,
+      "status": "open",
+      "intent": "Decompose the fish and tackle entities, the location world and gameplay rules.",
+      "prerequisiteIds": [
+        "architecture-prerequisite:complete-separate-decomposition-task:src/app/rules.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/entities/fish.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/entities/tackle.js",
+        "architecture-prerequisite:complete-separate-decomposition-task:src/world/world.js",
+        "architecture-prerequisite:extract-browser-capability-to-platform:src/entities/fish.js",
+        "architecture-prerequisite:remove-development-runtime-dependency:src/entities/tackle.js",
+        "architecture-prerequisite:remove-development-runtime-dependency:src/world/world.js",
+        "boundary-extraction:src/entities/tackle.js:src/debug/god_mode.js",
+        "config-di:replace-direct-config-read-with-di:src/app/rules.js",
+        "config-di:replace-direct-config-read-with-di:src/entities/tackle.js"
+      ],
+      "modules": [
+        {
+          "currentPath": "src/app/rules.js",
+          "targetPath": "src/game/domain/rules/gameplay_rules.js",
+          "reasonCodes": [
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/entities/fish.js",
+          "targetPath": "src/game/domain/fish/fish.js",
+          "reasonCodes": [
+            "browser-api-coupling",
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/entities/tackle.js",
+          "targetPath": "src/game/domain/tackle/tackle.js",
+          "reasonCodes": [
+            "dev-production-coupling",
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        },
+        {
+          "currentPath": "src/world/world.js",
+          "targetPath": "src/game/domain/locations/location_world.js",
+          "reasonCodes": [
+            "dev-production-coupling",
+            "mixed-responsibility-requires-decomposition"
+          ],
+          "historicalCoverage": "deferred"
+        }
+      ],
+      "relatedPrerequisiteTaskIds": [
+        "stage-3.22.prerequisite.vector2-extraction"
+      ],
+      "affectedConsumers": [
+        "src/app/application.js",
+        "src/app/bootstrap.js",
+        "src/app/fishing.js",
+        "src/debug/services/active_fish_dev_tools_schema.js",
+        "src/systems/bite_system.js",
+        "src/systems/fight_physics_system.js",
+        "src/systems/fish_force_system.js"
+      ],
+      "ambiguousProviders": [],
+      "targetBoundaries": {
+        "domainTargets": [
+          "src/game/domain/fish/fish.js",
+          "src/game/domain/locations/location_world.js",
+          "src/game/domain/rules/gameplay_rules.js",
+          "src/game/domain/tackle/tackle.js"
+        ],
+        "extractedResponsibilities": [
+          "browser-api-coupling->platform",
+          "dev-production-coupling->dev",
+          "mixed-responsibility-requires-decomposition->game-domain-plus-owning-layer"
+        ]
+      },
+      "compatibilityRequirements": [
+        "Each decomposition is a separate reviewed task; it is never combined with a module migration.",
+        "Legacy globals of unmigrated consumers stay available through reviewed bridges only.",
+        "Gameplay formulas, state semantics, save format and timing stay unchanged."
+      ],
+      "checks": [
+        "focused parity for every decomposed responsibility",
+        "check:architecture",
+        "check:quick",
+        "game-cycle-check"
+      ],
+      "graphReviewRepeatCondition": {
+        "trigger": "A decomposition removes a deferral blocker or changes the Domain dependency graph.",
+        "action": "Repeat the Stage 3.22 post-freeze graph review (fresh observation, logical graph, eligibility and candidate plan) after the task lands and before any dependent cluster is frozen or executed."
+      }
+    },
+    {
+      "id": "stage-3.22.prerequisite.collection-identity-evidence",
+      "kind": "freeze-evidence",
+      "graphChanging": false,
+      "status": "open",
+      "intent": "Prove or restructure collection state identity where the reviewed collection proof fails.",
+      "modules": [
+        "src/core/assemblies/assembly_state_repository.js"
+      ],
+      "findings": [
+        "src/core/assemblies/assembly_state_repository.js:collection-identity-unproven:AssemblyStateRepository#states"
+      ],
+      "checks": [
+        "StageThreeStateIdentityReview on the reviewed collection",
+        "focused persistence round-trip"
+      ],
+      "graphReviewRepeatCondition": {
+        "trigger": "Only if collecting the evidence changes source or the dependency graph.",
+        "action": "Repeat the Stage 3.22 freeze review for the affected clusters; repeat the graph review when the trigger applies."
+      }
+    },
+    {
+      "id": "stage-3.22.prerequisite.hot-loop-equivalence-evidence",
+      "kind": "freeze-evidence",
+      "graphChanging": false,
+      "status": "open",
+      "intent": "Record allocation, behavior and deltaTime equivalence evidence for the hot-loop fishing cluster before it is frozen.",
+      "modules": [
+        "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+        "src/core/fishing/reel_hold_recovery_system.js",
+        "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+        "src/core/fishing/tackle_stress_accumulator.js",
+        "src/systems/player_pull_motion_smoother.js",
+        "src/systems/rod_lateral_control_system.js"
+      ],
+      "findings": [
+        "src/core/fishing/player_pressure/player_reel_fatigue_session.js:hot-loop-equivalence-evidence-missing",
+        "src/core/fishing/reel_hold_recovery_system.js:hot-loop-equivalence-evidence-missing",
+        "src/core/fishing/reel_recovery_fish_slowdown_policy.js:hot-loop-equivalence-evidence-missing",
+        "src/core/fishing/tackle_stress_accumulator.js:hot-loop-equivalence-evidence-missing",
+        "src/systems/player_pull_motion_smoother.js:hot-loop-equivalence-evidence-missing",
+        "src/systems/rod_lateral_control_system.js:hot-loop-equivalence-evidence-missing"
+      ],
+      "checks": [
+        "focused allocation-equivalence probe",
+        "focused deltaTime-equivalence probe",
+        "game-cycle-check fight scenarios",
+        "no compatibility lookup in the hot loop"
+      ],
+      "graphReviewRepeatCondition": {
+        "trigger": "Only if collecting the evidence changes source or the dependency graph.",
+        "action": "Repeat the Stage 3.22 freeze review for the affected clusters; repeat the graph review when the trigger applies."
+      }
+    }
+  ],
+  "coverage": {
+    "prerequisiteBlocked": [
+      {
+        "currentPath": "src/core/assemblies/assembly_profile_registry.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.assembly-profile-registry-config-injection"
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/fish_fight_direction_resolver.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.vector2-extraction"
+        ]
+      },
+      {
+        "currentPath": "src/core/items/bait/bait_effectiveness_resolver.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.bait-effectiveness-descriptor-boundary"
+        ]
+      },
+      {
+        "currentPath": "src/core/items/condition/item_condition_resolver.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.item-condition-descriptor-boundary"
+        ]
+      },
+      {
+        "currentPath": "src/core/items/effective_item_stats_resolver.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.item-stat-override-policy-config-injection"
+        ]
+      },
+      {
+        "currentPath": "src/core/items/freshness/item_freshness_resolver.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.item-freshness-descriptor-boundary"
+        ]
+      },
+      {
+        "currentPath": "src/core/items/item_stat_override_policy.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.item-stat-override-policy-config-injection"
+        ]
+      },
+      {
+        "currentPath": "src/core/items/progression/item_progression_resolver.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.item-stat-override-policy-config-injection"
+        ]
+      },
+      {
+        "currentPath": "src/systems/player_force_system.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.vector2-extraction"
+        ]
+      }
+    ],
+    "deferred": [
+      {
+        "currentPath": "src/app/rules.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.entities-world-rules-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/config/inventory/equipment_slot_config.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.equipment-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/casting_distance.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.fishing-systems-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/equipment/equipment_compatibility_policy.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.equipment-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/equipment/equipment_state.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.equipment-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/equipment/equipment_transition_planner.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.equipment-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/equipment/fishing_readiness_policy.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.equipment-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/equipment/inventory_capacity_policy.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.inventory-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/landing_policy.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.fishing-systems-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/retrieve_policy.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.fishing-systems-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/fishing/rod_pull_calculator.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.fishing-systems-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/inventory/flat_inventory_item_repository.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.inventory-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/inventory/inventory_item_stacking_policy.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.inventory-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/items/progression/composite_metric_strategy.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.item-progression-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/items/progression/item_capacity_resolver.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.item-progression-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/items/progression/item_catalog_baseline_registry.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.item-progression-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/items/progression/item_rating_resolver.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.item-progression-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/line/line_allocation_policy.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.inventory-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/loadouts/equipment_loadout.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.loadouts-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/loadouts/equipment_loadout_repository.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.loadouts-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/core/loadouts/loadout_equipment_transition_planner.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.loadouts-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/entities/fish.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.entities-world-rules-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/entities/tackle.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.entities-world-rules-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/systems/fish_force_system.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.fishing-systems-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/systems/line_system.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.fishing-systems-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/systems/rod_pull_system.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.fishing-systems-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/systems/stamina_system.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.fishing-systems-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/systems/tackle_stress_system.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.fishing-systems-decomposition"
+        ]
+      },
+      {
+        "currentPath": "src/world/world.js",
+        "taskIds": [
+          "stage-3.22.prerequisite.entities-world-rules-decomposition"
+        ]
+      }
+    ],
+    "uncoveredPrerequisites": []
+  }
+}

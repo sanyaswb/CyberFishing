@@ -1,5 +1,18 @@
 # CyberFishing changelog
 
+## v0.24.59 - Post-Freeze Domain Graph Review
+
+### Changed
+
+- Completed Stage 3.22, an audit-only post-freeze Domain graph review: no prerequisite refactoring, module migration or cutover; `runtimeMigrationAllowed = false`.
+- Refreshed observations in memory with 0 drift; the Domain scope holds 135 modules (69 completed ESM targets and 66 remaining classic modules).
+- Preserved the physical graph and resolved 55 activation-shim dependencies to their ESM owners with consumer, symbol, export, execution-phase and activation-position provenance; the logical graph has 0 cyclic SCCs.
+- Reassessed the remaining modules: 28 review candidates, 9 prerequisite-blocked and 29 deferred.
+- Froze a new approved prefix of 11 batches and 21 modules (`batch-022-assemblies-9cb3eecf`–`batch-032-items-096b3398`); `batch-033-assemblies-3cd39292` and `batch-034-fishing-b761d4f1` require evidence before a freeze.
+- Recorded 14 backlog tasks: 12 graph-changing prerequisite and decomposition tasks and 2 freeze-evidence tasks.
+- Validation: focused Stage 3.22 check (15 negative fixtures), Architecture 65/65, Quick 41/41, Full 185/185 (windows), fresh npm ci, cumulative build and git diff --check passed; browser smoke not required and not recorded.
+- The execution state keeps completed batches 001–021 and the historical approved-plan fingerprint; the runtime topology stays at 78 modules, 87 activations and 139 bridges.
+
 ## v0.24.58 - Equipment Auto Refill Policy Domain
 
 ### Changed

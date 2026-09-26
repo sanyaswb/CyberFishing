@@ -1,11 +1,26 @@
 const { CanonicalJson } = require("../guards/core/canonical_json");
 
 class DomainAuditValidator {
+  #completedPrefix = null;
+
   constructor(contract) {
     this.contract = contract;
   }
 
-  validate(document, { expectedInventory = null } = {}) {
+  // completedPrefix = { targets: Set, activationShimsByTarget: Map<target, Set<shim>> } names the
+  // verified ESM targets of an already completed migration prefix. They have no classic load
+  // position and are reached by their own activation shims through the compatibility transport, so
+  // those shim consumers carry no classic symbols. Without it every entry must be classic.
+  validate(document, { expectedInventory = null, completedPrefix = null } = {}) {
+    this.#completedPrefix = completedPrefix;
+    try {
+      return this.#validateDocument(document, expectedInventory);
+    } finally {
+      this.#completedPrefix = null;
+    }
+  }
+
+  #validateDocument(document, expectedInventory) {
     this.#requireObject(document, "Domain audit");
     this.#requireExactFields(document, this.contract.rootFields, "Domain audit");
     this.#require(
@@ -87,10 +102,15 @@ class DomainAuditValidator {
     this.#requireObject(evidence, label);
     this.#requireExactFields(evidence, this.contract.evidenceFields, label);
     this.#requireFingerprint(evidence.fingerprint, `${label} fingerprint`);
-    this.#require(
-      Number.isInteger(evidence.legacyLoadOrder) && evidence.legacyLoadOrder > 0,
-      `${label} requires a positive legacyLoadOrder`,
-    );
+    if (this.#completedPrefix?.targets.has(entry.currentPath) === true) {
+      this.#require(evidence.legacyLoadOrder === null,
+        `${label} completed ESM target must not have a legacyLoadOrder`);
+    } else {
+      this.#require(
+        Number.isInteger(evidence.legacyLoadOrder) && evidence.legacyLoadOrder > 0,
+        `${label} requires a positive legacyLoadOrder`,
+      );
+    }
     this.#validateObservationGroup(evidence.providers, ["status", "items", "issues"], `${label} providers`);
     this.#validateObservationGroup(evidence.consumers, ["status", "items", "issues"], `${label} consumers`);
     this.#validateObservationGroup(
@@ -194,6 +214,7 @@ class DomainAuditValidator {
     this.#validateDependencyReverseConsumers(
       facts.reverseConsumers,
       `${label}.reverseConsumers`,
+      currentPath,
     );
     this.#validateScc(facts.scc, currentPath, `${label}.scc`);
     this.#require(
@@ -241,7 +262,8 @@ class DomainAuditValidator {
     this.#requireSortedUnique(keys, `${label} targets`);
   }
 
-  #validateDependencyReverseConsumers(records, label) {
+  #validateDependencyReverseConsumers(records, label, currentPath) {
+    const shims = this.#completedPrefix?.activationShimsByTarget.get(currentPath) || new Set();
     this.#require(Array.isArray(records), `${label} must be an array`);
     const keys = [];
     for (const record of records) {
@@ -253,7 +275,7 @@ class DomainAuditValidator {
       this.#requireModulePath(record.source, `${label} source`);
       this.#requireNonEmptyString(record.sourceBoundary, `${label} sourceBoundary`);
       this.#requireSortedUnique(record.symbols, `${label} symbols`);
-      this.#require(record.symbols.length > 0, `${label} requires symbols`);
+      this.#require(record.symbols.length > 0 || shims.has(record.source), `${label} requires symbols`);
       keys.push(record.source);
     }
     this.#requireSortedUnique(keys, `${label} sources`);

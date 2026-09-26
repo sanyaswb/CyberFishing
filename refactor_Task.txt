@@ -1,10 +1,10 @@
 # CyberFishing — Current Plan for the Remaining Modular Refactor
 
 - **Stage 1 closure version:** `v0.24.31`
-- **Current release version:** `v0.24.58`
+- **Current release version:** `v0.24.59`
 - **Work type:** architecture / infrastructure refactoring
 - **Gameplay changes:** prohibited
-- **Next step:** `Stage 3.22.0 — Post-Freeze Graph Review and New Maximal-Prefix Freeze`
+- **Next step:** `Stage 3.23.0 — Batch 022 Preflight from the Stage 3.22 Approved Prefix (stage-3.replan-322.batch-022-assemblies-9cb3eecf)`
 
 This document records the completed Stage 3 prefix and the work that remains.
 
@@ -88,7 +88,7 @@ Domain must not depend on platform, UI, Canvas, DOM, dev, or raw configuration. 
 
 ## Stage 3.14–3.21 — Atomic Domain Migration Batches (complete)
 
-All `21/21` frozen batches and `69/69` frozen Domain modules are migrated. Stage 3.22.0 starts with the graph-changing prerequisites below; no historical candidate is execution ready until the new freeze exists.
+All `21/21` frozen batches and `69/69` frozen Domain modules are migrated. Stage 3.22 then reviewed the post-freeze graph and froze a new approved prefix (see below).
 
 Current accepted runtime: 78 project modules, 87 activation contracts, and 139 bridge records in one cumulative topology, with no active batch.
 
@@ -109,7 +109,60 @@ preflight/audit
 
 Check suites: replay checks of released batches run in the `history` suite; `quick` and `architecture` keep the cumulative invariants, the active batch checks, and the latest released batch check. Run `quick` after each sub-stage, `history` whenever shared tooling changes, and the full suite (which includes `history`) at acceptance and release closure.
 
-With batch 021 complete, complete graph-changing prerequisites, repeat the observation and topology review, and establish a new maximal-prefix freeze. Historical candidates `022–040` are not execution ready after the graph changes. Stage 3 is complete only when all approved Domain clusters have migrated, state ownership is unambiguous, and every bridge has a controlled removal path.
+## Stage 3.22 — Post-Freeze Graph Review (complete, `v0.24.59`)
+
+Audit-only stage: no prerequisite refactoring, module migration or cutover; `runtimeMigrationAllowed = false`. Artifacts live in `architecture/migration/stage_3_22/`; `node utils/architecture/stage-3-22-post-freeze-review.js` replays them byte-for-byte at the recorded checkpoint.
+
+- **Observation:** fresh in-memory observation with `0` drift; Domain scope `135` = `69` completed ESM targets + `66` remaining classic modules.
+- **Logical graph:** the physical graph is preserved; `55` activation-shim reads resolve to their ESM owners with full provenance; `0` cyclic SCCs; maximum planning depth `2`.
+- **Reassessment:** `28` review candidates, `9` prerequisite-blocked and `29` deferred modules; complete, non-overlapping coverage with `0` unassigned. Historical candidates `022–040` remain reference material only.
+- **Gate outcomes:** focused Stage 3.22 check (15 negative fixtures), Architecture 65/65, Quick 41/41, Full 185/185 (windows), fresh npm ci, cumulative build and git diff --check passed; browser smoke not required and not recorded.
+
+### New approved prefix (11 batches / 21 modules)
+
+The prefix is frozen but not yet adopted by the execution state, which keeps batches 001–021 and the historical approved-plan fingerprint. Each batch is a separate patch release with a batch-only rollback checkpoint; after the prefix the runtime topology is `99` modules, `109` activations and `139` bridges.
+
+- [ ] **022 · Assemblies · 1 module / 2 exports:** `ItemAssemblyPath`, `ItemAssemblyReader` — `stage-3.replan-322.batch-022-assemblies-9cb3eecf`.
+- [ ] **023 · Items · 3 modules:** `DerivedStatMetricStrategy`, `NumericStatMetricStrategy`, `TargetRangeMetricStrategy` — `stage-3.replan-322.batch-023-items-c91fce82`.
+- [ ] **024 · Inventory · 1 module:** `InventoryItemReservationPolicy` — `stage-3.replan-322.batch-024-inventory-21307d68`.
+- [ ] **025 · Fishing · 3 modules:** `FishRetrieveSystem`, `PoleFightSectorConstraint`, `StaminaPressureResolver` — `stage-3.replan-322.batch-025-fishing-9bcfae5e`.
+- [ ] **026 · Inventory · 1 module:** `ItemAssemblyStackingPolicy` — `stage-3.replan-322.batch-026-inventory-ad73f2fb`.
+- [ ] **027 · Items · 5 modules:** `ItemMetricStrategyRegistry`, `EnvironmentalCompensationModifier`, `HookQualityModifier`, `NetQualityModifier`, `AuthoredItemRarityStrategy` — `stage-3.replan-322.batch-027-items-e8f84667`.
+- [ ] **028 · Assemblies · 1 module / 2 exports:** `ItemAssemblyDomainError`, `ItemAssemblyService` — `stage-3.replan-322.batch-028-assemblies-f4be469e`.
+- [ ] **029 · Fishing · 2 modules:** `PoleFightSectorAngleConstraint`, `StaminaPhaseMachine` — `stage-3.replan-322.batch-029-fishing-f2a8faba`.
+- [ ] **030 · Items · 2 modules:** `HookPowerPolicy`, `ItemRarityResolver` — `stage-3.replan-322.batch-030-items-a3bf25f7`.
+- [ ] **031 · Fishing · 1 module:** `StaminaBalanceFrame` — `stage-3.replan-322.batch-031-fishing-d2f28c0f`.
+- [ ] **032 · Items · 1 module:** `EffectiveItemRarityResolver` — `stage-3.replan-322.batch-032-items-096b3398`.
+
+### Review queue
+
+- **033** `stage-3.replan-322.batch-033-assemblies-3cd39292` (1 module): requires evidence — `stage-3.22.prerequisite.collection-identity-evidence`.
+- **034** `stage-3.replan-322.batch-034-fishing-b761d4f1` (6 modules): requires evidence — `stage-3.22.prerequisite.hot-loop-equivalence-evidence`.
+
+### Prerequisite backlog
+
+- `stage-3.22.prerequisite.vector2-extraction` (boundary-extraction): Extract the Vector2 value type from the platform core script into a reusable engine math module.
+- `stage-3.22.prerequisite.bait-effectiveness-descriptor-boundary` (descriptor-boundary): Separate the Domain bait-effectiveness result from presentation descriptor fields.
+- `stage-3.22.prerequisite.item-freshness-descriptor-boundary` (descriptor-boundary): Separate the Domain freshness result from presentation descriptor fields.
+- `stage-3.22.prerequisite.item-condition-descriptor-boundary` (descriptor-boundary): Separate the Domain condition result from presentation descriptor fields.
+- `stage-3.22.prerequisite.assembly-profile-registry-config-injection` (config-injection): Deliver ITEM_ASSEMBLY_PROFILE_CONFIG to AssemblyProfileRegistry through its constructor from the composition roots.
+- `stage-3.22.prerequisite.item-stat-override-policy-config-injection` (config-injection): Replace the ItemStatOverridePolicy global default with configuration injected at composition, including the default-parameter call sites.
+- `stage-3.22.prerequisite.equipment-decomposition` (responsibility-decomposition): Decompose equipment slot catalog, state, transition planning, readiness and compatibility responsibilities.
+- `stage-3.22.prerequisite.inventory-decomposition` (responsibility-decomposition): Decompose inventory capacity, flat repository, stacking and line allocation responsibilities.
+- `stage-3.22.prerequisite.loadouts-decomposition` (responsibility-decomposition): Decompose loadout model, repository and equipment transition planning responsibilities.
+- `stage-3.22.prerequisite.item-progression-decomposition` (responsibility-decomposition): Decompose item metric composition, capacity, rating and catalog baseline responsibilities.
+- `stage-3.22.prerequisite.fishing-systems-decomposition` (responsibility-decomposition): Decompose fishing systems and policies that mix Domain rules with config, browser or DEV responsibilities.
+- `stage-3.22.prerequisite.entities-world-rules-decomposition` (responsibility-decomposition): Decompose the fish and tackle entities, the location world and gameplay rules.
+- `stage-3.22.prerequisite.collection-identity-evidence` (freeze-evidence): Prove or restructure collection state identity where the reviewed collection proof fails.
+- `stage-3.22.prerequisite.hot-loop-equivalence-evidence` (freeze-evidence): Record allocation, behavior and deltaTime equivalence evidence for the hot-loop fishing cluster before it is frozen.
+
+### Next steps
+
+1. Stage 3.23.0: adopt the approved prefix and migrate `stage-3.replan-322.batch-022-assemblies-9cb3eecf` (preflight → ESM targets and imports → candidate build → cutover → verification → release `v0.24.60`), then the rest of the prefix in order.
+2. Resolve backlog prerequisites as separate tasks, never mixed with a module migration; every graph change is followed by a repeated graph review and a new freeze for the affected modules.
+3. Repeat prerequisite → graph review → freeze → migration batches until every approved Domain cluster is migrated, ownership is confirmed and bridges are removed under control.
+
+Stage 3 is complete only when all approved Domain clusters have migrated, state ownership is unambiguous, and every bridge has a controlled removal path.
 
 # 3. Stage 4 — Application + Platform
 

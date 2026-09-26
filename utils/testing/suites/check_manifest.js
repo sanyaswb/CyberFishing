@@ -647,6 +647,12 @@ const CHECK_DEFINITIONS = Object.freeze([
       file: "utils/architecture/stage-3-batch-021-architecture-check.js",
       suites: ["quick", "architecture", "history"],
     },
+    {
+      id: "stage-3-22-post-freeze-review",
+      title: "Stage 3.22 post-freeze graph review, next-prefix plan and freeze replay",
+      file: "utils/architecture/stage-3-22-post-freeze-review-check.js",
+      suites: ["quick", "architecture"],
+    },
   {
     id: "stage-3-batch-008-audit-fixtures",
     title: "Stage 3.8.0 batch-008 dependency/state preflight fixtures",

@@ -570,6 +570,13 @@ class StageOneClosureValidator {
   }
 
   #stageThreeReleaseTitle(executionState) {
+    // Audit-only Stage 3 releases complete no batch; their exact title is keyed by release version.
+    const auditOnlyTitles = {
+      "0.24.59": "Post-Freeze Domain Graph Review",
+    };
+    if (Object.hasOwn(auditOnlyTitles, executionState.releaseVersion)) {
+      return auditOnlyTitles[executionState.releaseVersion];
+    }
     const lastBatch =
       executionState.completedBatchIds?.[executionState.completedBatchIds.length - 1] ||
       executionState.activeBatchId;

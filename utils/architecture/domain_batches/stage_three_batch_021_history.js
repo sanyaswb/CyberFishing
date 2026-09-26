@@ -18,7 +18,9 @@ class Batch021History {
   exists() { return fs.existsSync(path.join(this.root, PREBUILD)); }
 
   before(file, provided = this.bytes(file)) {
-    let bytes = Buffer.from(provided);
+    // The Stage 3.22 audit-only release precedes every batch-021 transition in the chain.
+    let bytes = new (require("../post_freeze/post_freeze_release_transition").PostFreezeReleaseTransition)(this.root)
+      .before(file, provided);
     if (!this.exists()) return bytes;
     bytes = new Batch021ReleaseTransition(this.root).before(file, bytes);
     if (file === MANIFEST) bytes = beforeBatch021Observations(bytes, this.root);
