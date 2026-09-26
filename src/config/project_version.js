@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.61";
+const CURRENT_PROJECT_VERSION = "0.24.62";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "items-metric-strategies-domain",
+  codename: "inventory-reservation-policy-domain",
   updatedAt: "2026-09-26",
   notes: Object.freeze([
-    "Migrate three item metric strategies as named game-domain ESM exports",
-    "Import the shared ItemMetricStrategy superclass from its completed ESM owner",
-    "Complete batch 023 of the Stage 3.22 approved prefix",
-    "Preserve eighty-two project modules, ninety-two activations and one hundred forty-two bridges",
+    "Migrate the inventory reservation policy as a named game-domain ESM export",
+    "Move its reviewed globalThis exposure to the exact activation shim",
+    "Import InventoryItemLocation from its completed ESM owner",
+    "Preserve eighty-three project modules, ninety-three activations and one hundred forty-two bridges",
   ]),
 });
 

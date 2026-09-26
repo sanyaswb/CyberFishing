@@ -628,6 +628,8 @@ class StageOneClosureValidator {
         "Assemblies Item Reader Domain",
       "stage-3.replan-322.batch-023-items-c91fce82":
         "Items Metric Strategies Domain",
+      "stage-3.replan-322.batch-024-inventory-21307d68":
+        "Inventory Reservation Policy Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

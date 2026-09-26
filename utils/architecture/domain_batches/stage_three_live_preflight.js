@@ -131,7 +131,8 @@ class StageThreeLivePreflight {
       assert(["reviewed-compatible-class-exposure-only", "reviewed-compatible"]
         .includes(sideEffectReview.status));
       assert.deepEqual(sideEffectReview.inputs, [
-        { path: PATHS.approvedPlan, sha256: evidence.approvedPlanSha256 },
+        ...(plan.continuation ? plan.references
+          : [{ path: PATHS.approvedPlan, sha256: evidence.approvedPlanSha256 }]),
         { path: PATHS.executionState, sha256: evidence.executionStateSha256 },
       ]);
       for (const module of sideEffectReview.modules) {

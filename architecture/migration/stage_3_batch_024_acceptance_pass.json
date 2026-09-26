@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-024-acceptance",
+  "stage": "3.25.8",
+  "batchId": "stage-3.replan-322.batch-024-inventory-21307d68",
+  "releaseVersion": "0.24.61",
+  "plannedReleaseVersion": "0.24.62",
+  "recordedAt": "2026-09-26T15:34:05.224Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_024_automated_acceptance.json",
+    "sha256": "01d50e5313d3eaf2e1e8cf9484a8fc194165caca0cf8b2f74a46cb5629e0aa38",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "full": {
+      "passedChecks": 188,
+      "failedChecks": 0
+    },
+    "fullRun": {
+      "platform": "windows",
+      "source": "node utils/run-checks.js --suite all (one uninterrupted run, 4247.72s)"
+    },
+    "supplementary": {
+      "architecture": {
+        "passedChecks": 66,
+        "failedChecks": 0
+      },
+      "quick": {
+        "passedChecks": 42,
+        "failedChecks": 0
+      }
+    },
+    "summary": "Windows Full 188/188 passed in one uninterrupted run (4248 s), including the batch-024 architecture check, the game-cycle fight scenarios and the inventory-v2 equipment/integration suites; Architecture 66/66 and Quick 42/42 passed before it",
+    "countSemantics": "The full suite includes the architecture and quick checks."
+  },
+  "browserSmoke": {
+    "status": "passed-owner-authorized-automated-substitute",
+    "performedBy": "claude-automated-owner-authorized",
+    "evidenceType": "headless-game-cycle-and-inventory-suites-plus-automated-built-in-browser-load",
+    "userStatement": "PASS (owner-authorized automated substitute) — game-cycle-check.js and the Inventory-v2 suites passed; built-in browser load rendered the game and opened the inventory modal with the exact batch-024 identity.",
+    "context": "The owner authorized, during the batch 015-021 plan, replacing the manual visual smoke with game-cycle-check results when that check passes, and on 2026-09-26 asked to continue the plan autonomously until Stage 3 is complete. Batch 024 migrates the inventory reservation policy, so the Full suite also ran the inventory-v2 equipment, integration and consumable identity suites. Claude loaded the game via the dev server in the Claude desktop built-in browser and opened the inventory modal.",
+    "acceptanceBasis": "Owner-authorized substitute: headless game cycle and Inventory-v2 suites in the Full suite plus an automated browser load with instrumented console counts; no human played the game for this batch.",
+    "ownerAuthorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+    "perCheckResults": {
+      "gameCycle": "utils/game-cycle-check.js passed inside Full 188/188",
+      "inventorySuites": "inventory-v2 equipment, integration, line allocation and consumable identity suites passed inside Full 188/188",
+      "browserLoad": "Game rendered (v0.24.61 build label); inventory modal visible (inventory-v2-modal); 83 compat modules; the InventoryItemReservationPolicy global identical to its ESM export; the live policy reserved an equipped root, a saved-loadout root and a LOADOUT-located item and left a free item unreserved"
+    },
+    "consoleCounts": {
+      "errors": 0,
+      "warnings": 0,
+      "userStatement": "Built-in browser console, instrumented by Claude on launch, after opening the inventory modal and after exercising the live reservation policy: 0 errors, 0 warnings (one informational CacheManager log)."
+    }
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_024_live_runtime_validation.json",
+      "sha256": "1c8202cf1759daf33f328a316c4966cb9000e914eeb7a57d5d5ecab4f21f3529"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_024_observation_reconciliation.json",
+      "sha256": "a51f970756a6fe4ff32288fcc5a19f4cc20c6633b2487aee6ae68e34c88af1c5"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "e2212ab30cfa52ed89bed20b961a9773e055eadaaaaad9537e7b3a8339882b5e"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "f7da3e9319b59dc03650cd78146e4ea062d954d66fa322376d6a8befec1119cf"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "be73ce80cfd9bd8a27dace0d8713fff3c6c6c40d4b620d59dad9406afdffe787"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "95629d4bd67bd27a8ba9262e667e7ad2ec33c4ae56a6a00441a1f73126f262b7"
+    },
+    {
+      "path": "index.html",
+      "sha256": "989ad2b3268addf808b15e739005ff7f848b58908ffdd7ae0c013ed41d107533"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.replan-322.batch-024-inventory-21307d68",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.25.9 — Release Closure v0.24.62"
+}

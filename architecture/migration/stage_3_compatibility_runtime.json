@@ -522,6 +522,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-490b698c2a9d",
+      "owner": "stage-3.replan-322.batch-024-inventory-21307d68",
+      "sourceProvider": "src/core/inventory/inventory_item_reservation_policy.js",
+      "targetModule": "src/game/domain/inventory/inventory_item_reservation_policy.js",
+      "exportName": "InventoryItemReservationPolicy",
+      "legacySymbol": "InventoryItemReservationPolicy",
+      "legacyScriptIndex": 145,
+      "shimFile": "activations/145_inventoryitemreservationpolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-4cdf0ce1fb18",
       "owner": "stage-3.replan-322.batch-023-items-c91fce82",
       "sourceProvider": "src/core/items/progression/target_range_metric_strategy.js",

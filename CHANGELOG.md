@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.62 - Inventory Reservation Policy Domain
+
+### Changed
+
+- Completed batch 024 of the Stage 3.22 approved prefix: InventoryItemReservationPolicy as a named ESM export.
+- Its reviewed globalThis exposure moved to the exact activation shim; the target imports InventoryItemLocation from the completed ESM owner, and the classic global read and its bridge were retired. Reviewed side-effect evidence references both plan fingerprints under the adopted continuation.
+- Extended the cumulative graph from 82 to 83 project modules and from 92 to 93 activation contracts, with 142 exact bridge relationships (1 added, 1 retired).
+- The next task is batch 025 preflight.
+
 ## v0.24.61 - Items Metric Strategies Domain
 
 ### Changed
