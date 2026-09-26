@@ -626,6 +626,8 @@ class StageOneClosureValidator {
         "Equipment Auto Refill Policy Domain",
       "stage-3.replan-322.batch-022-assemblies-9cb3eecf":
         "Assemblies Item Reader Domain",
+      "stage-3.replan-322.batch-023-items-c91fce82":
+        "Items Metric Strategies Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

@@ -52,9 +52,17 @@ class Batch009EarlierEvaluationGate {
           // evaluated before the subclass and is not an external eager dependency.
           const localSuperclass = node.superClass?.type === "Identifier" &&
             declaredClasses.has(node.superClass.name);
-          assert(node.superClass === null || localSuperclass, "eager superclass dependency requires review");
+          // A reviewed import of a verified closure module is evaluated before this module by ESM
+          // ordering, so it may be the eager superclass exactly like a local class.
+          const importedSuperclass = node.superClass?.type === "Identifier" && !localSuperclass &&
+            allowedImports.some(item => item.exportName === node.superClass.name);
+          assert(node.superClass === null || localSuperclass || importedSuperclass,
+            "eager superclass dependency requires review");
           if (localSuperclass) {
             initializations.push({ binding: node.id.name, kind: "local-superclass" });
+          }
+          if (importedSuperclass) {
+            initializations.push({ binding: node.id.name, kind: "reviewed-imported-superclass" });
           }
           for (const member of node.body.body) {
             assert(!member.computed && member.type !== "StaticBlock", "eager class effect requires review");

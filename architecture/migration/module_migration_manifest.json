@@ -22261,7 +22261,7 @@
           "items": [
             {
               "symbol": "DerivedStatMetricStrategy",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -22271,8 +22271,8 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "ItemMetricStrategy",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
               "executionPhase": "eager"
             }
@@ -22282,9 +22282,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Number",
-            "Object",
-            "String"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -22294,7 +22292,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
@@ -22303,26 +22301,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "ItemMetricStrategy",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
               "executionPhase": "eager",
-              "target": "src/core/items/progression/item_metric_strategy.js",
-              "resolution": "confirmed"
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/items/progression/item_metric_strategy.js",
-              "symbols": [
-                "ItemMetricStrategy"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -23044,7 +23033,7 @@
           "items": [
             {
               "symbol": "NumericStatMetricStrategy",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -23054,8 +23043,8 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "ItemMetricStrategy",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
               "executionPhase": "eager"
             }
@@ -23065,7 +23054,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "String"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -23075,7 +23064,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
@@ -23084,26 +23073,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "ItemMetricStrategy",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
               "executionPhase": "eager",
-              "target": "src/core/items/progression/item_metric_strategy.js",
-              "resolution": "confirmed"
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/items/progression/item_metric_strategy.js",
-              "symbols": [
-                "ItemMetricStrategy"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -23123,7 +23103,7 @@
           "items": [
             {
               "symbol": "TargetRangeMetricStrategy",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -23133,8 +23113,8 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "ItemMetricStrategy",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
               "executionPhase": "eager"
             }
@@ -23144,8 +23124,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "String"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -23155,7 +23134,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/items/progression/target_range_metric_strategy.js",
@@ -23164,26 +23143,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "ItemMetricStrategy",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
               "executionPhase": "eager",
-              "target": "src/core/items/progression/item_metric_strategy.js",
-              "resolution": "confirmed"
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/items/progression/item_metric_strategy.js",
-              "symbols": [
-                "ItemMetricStrategy"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -39783,6 +39753,57 @@
       }
     },
     {
+      "currentPath": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+      "currentArea": "game/domain/items/progression",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Number",
+            "Object",
+            "String"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/domain/items/progression/item_metric_strategy.js",
       "currentArea": "game/domain/items/progression",
       "observed": {
@@ -39923,6 +39944,105 @@
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/items/progression/item_rating_tier_resolver.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+      "currentArea": "game/domain/items/progression",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "String"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/progression/target_range_metric_strategy.js",
+      "currentArea": "game/domain/items/progression",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "String"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/items/progression/target_range_metric_strategy.js",
         "migrationWave": 1
       },
       "analysis": {

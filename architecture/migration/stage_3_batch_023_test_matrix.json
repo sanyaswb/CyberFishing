@@ -1,0 +1,327 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.replan-322.batch-023-items-c91fce82",
+  "sourceReleaseVersion": "0.24.60",
+  "targetReleaseVersion": "0.24.61",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_023_execution_plan.json",
+    "sha256": "415085e10cb07ca6924bdab64ec90e889f09916193955122e6bf438c621341b7"
+  },
+  "scope": {
+    "moduleCount": 3,
+    "exportCount": 3,
+    "activationCount": 3,
+    "consumerRelationshipCount": 3
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/DerivedStatMetricStrategy/ratio-upgrade-level-and-unsupported-formulas",
+      "kind": "behavior-equivalence",
+      "exportName": "DerivedStatMetricStrategy",
+      "currentPath": "src/core/items/progression/derived_stat_metric_strategy.js",
+      "targetPath": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+      "baselineSourceSha256": "1ae81e1c80d00dc80c3b51956a01fd2cbfa107927b6fd6eeabf6c1b552f34ead",
+      "caseName": "ratio-upgrade-level-and-unsupported-formulas",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/NumericStatMetricStrategy/stat-path-values-and-missing-metrics",
+      "kind": "behavior-equivalence",
+      "exportName": "NumericStatMetricStrategy",
+      "currentPath": "src/core/items/progression/numeric_stat_metric_strategy.js",
+      "targetPath": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+      "baselineSourceSha256": "f27d4584185a10c41b542d574c3fe7d244e4544075e26522d28ce9ed7f17d192",
+      "caseName": "stat-path-values-and-missing-metrics",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/TargetRangeMetricStrategy/target-falloff-normalization-and-invalid-ranges",
+      "kind": "behavior-equivalence",
+      "exportName": "TargetRangeMetricStrategy",
+      "currentPath": "src/core/items/progression/target_range_metric_strategy.js",
+      "targetPath": "src/game/domain/items/progression/target_range_metric_strategy.js",
+      "baselineSourceSha256": "cfbbb4bd4a4d5af2d255c0e322c9d1db15f630a7b786e7f0e1d2d776118f105c",
+      "caseName": "target-falloff-normalization-and-invalid-ranges",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/three-representation-only-named-esm-targets-and-three-exact-exports",
+      "kind": "compatibility-invariant",
+      "caseName": "three-representation-only-named-esm-targets-and-three-exact-exports",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/three-exact-imported-superclass-bindings-to-the-cumulative-instance",
+      "kind": "compatibility-invariant",
+      "caseName": "three-exact-imported-superclass-bindings-to-the-cumulative-instance",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-esm-evaluation-per-target-after-its-imported-superclass",
+      "kind": "compatibility-invariant",
+      "caseName": "one-esm-evaluation-per-target-after-its-imported-superclass",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/three-exact-classic-activations-at-three-legacy-positions",
+      "kind": "compatibility-invariant",
+      "caseName": "three-exact-classic-activations-at-three-legacy-positions",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/three-exact-classic-consumer-relationships-and-three-retired-bridges",
+      "kind": "compatibility-invariant",
+      "caseName": "three-exact-classic-consumer-relationships-and-three-retired-bridges",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/authoritative-state-owners-and-zero-extra-allocations",
+      "kind": "compatibility-invariant",
+      "caseName": "authoritative-state-owners-and-zero-extra-allocations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-prior-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-prior-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "DerivedStatMetricStrategy",
+      "caseCount": 1,
+      "cases": [
+        "ratio-upgrade-level-and-unsupported-formulas"
+      ]
+    },
+    {
+      "exportName": "NumericStatMetricStrategy",
+      "caseCount": 1,
+      "cases": [
+        "stat-path-values-and-missing-metrics"
+      ]
+    },
+    {
+      "exportName": "TargetRangeMetricStrategy",
+      "caseCount": 1,
+      "cases": [
+        "target-falloff-normalization-and-invalid-ranges"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 3,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.24.0-live-observation-and-stage-3.22-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_023_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/core/items/progression/derived_stat_metric_strategy.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/items/progression/derived_stat_metric_strategy.js",
+          "authoritativeOwners": [
+            "DerivedStatMetricStrategy#available",
+            "DerivedStatMetricStrategy#finiteNumber",
+            "DerivedStatMetricStrategy#readPath",
+            "DerivedStatMetricStrategy#resolveRatio",
+            "DerivedStatMetricStrategy#resolveUpgradeLevelStat",
+            "DerivedStatMetricStrategy#unavailable"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+          "authoritativeOwners": [
+            "DerivedStatMetricStrategy#available",
+            "DerivedStatMetricStrategy#finiteNumber",
+            "DerivedStatMetricStrategy#readPath",
+            "DerivedStatMetricStrategy#resolveRatio",
+            "DerivedStatMetricStrategy#resolveUpgradeLevelStat",
+            "DerivedStatMetricStrategy#unavailable"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "33140d3f0639aa5f8cdb2bd76431e74e6ba5594d500f30b5f9ae4fc72e6b82e7",
+        "allocationBaseline": {
+          "objectExpressions": 8,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 2,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/items/progression/numeric_stat_metric_strategy.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/items/progression/numeric_stat_metric_strategy.js",
+          "authoritativeOwners": [
+            "NumericStatMetricStrategy#available",
+            "NumericStatMetricStrategy#finiteNumber",
+            "NumericStatMetricStrategy#readPath",
+            "NumericStatMetricStrategy#unavailable"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+          "authoritativeOwners": [
+            "NumericStatMetricStrategy#available",
+            "NumericStatMetricStrategy#finiteNumber",
+            "NumericStatMetricStrategy#readPath",
+            "NumericStatMetricStrategy#unavailable"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "f89e24fad5376cb0049a307badda9ec8b79bb07410413d134480eb0da767be15",
+        "allocationBaseline": {
+          "objectExpressions": 3,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/items/progression/target_range_metric_strategy.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/items/progression/target_range_metric_strategy.js",
+          "authoritativeOwners": [
+            "TargetRangeMetricStrategy#available",
+            "TargetRangeMetricStrategy#finiteNumber",
+            "TargetRangeMetricStrategy#readPath",
+            "TargetRangeMetricStrategy#unavailable"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/items/progression/target_range_metric_strategy.js",
+          "authoritativeOwners": [
+            "TargetRangeMetricStrategy#available",
+            "TargetRangeMetricStrategy#finiteNumber",
+            "TargetRangeMetricStrategy#readPath",
+            "TargetRangeMetricStrategy#unavailable"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "a3c8988b4c2bd26e05690d34cd9b99f2b16d1c527c0e2ec03ea3dc98357b7d17",
+        "allocationBaseline": {
+          "objectExpressions": 5,
+          "arrayExpressions": 1,
+          "newExpressions": 0,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.24.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

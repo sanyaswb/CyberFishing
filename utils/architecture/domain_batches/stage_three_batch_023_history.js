@@ -3,27 +3,27 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const { sha } = require("./stage_three_batch_022_planning");
-const { Batch022CutoverHistory } = require("./stage_three_batch_022_cutover_history");
-const { PREBUILD } = require("./stage_three_batch_022_prebuild");
-const { CUTOVER } = require("./stage_three_batch_022_cutover");
-const { MANIFEST, beforeBatch022Observations } = require("./stage_three_batch_022_observation_transition");
-const { Batch022ReleaseTransition } = require("./stage_three_batch_022_release_transition");
+const { sha } = require("./stage_three_batch_023_planning");
+const { Batch023CutoverHistory } = require("./stage_three_batch_023_cutover_history");
+const { PREBUILD } = require("./stage_three_batch_023_prebuild");
+const { CUTOVER } = require("./stage_three_batch_023_cutover");
+const { MANIFEST, beforeBatch023Observations } = require("./stage_three_batch_023_observation_transition");
+const { Batch023ReleaseTransition } = require("./stage_three_batch_023_release_transition");
 
 const STATE = "architecture/migration/stage_3_execution_state.json";
 
-class Batch022History {
+class Batch023History {
   constructor(root) { this.root = path.resolve(root); }
   bytes(file) { return fs.readFileSync(path.join(this.root, file)); }
   exists() { return fs.existsSync(path.join(this.root, PREBUILD)); }
 
   before(file, provided = this.bytes(file)) {
-    let bytes = new (require("./stage_three_batch_023_history").Batch023History)(this.root).before(file, provided);
+    let bytes = Buffer.from(provided);
     if (!this.exists()) return bytes;
-    bytes = new Batch022ReleaseTransition(this.root).before(file, bytes);
-    if (file === MANIFEST) bytes = beforeBatch022Observations(bytes, this.root);
+    bytes = new Batch023ReleaseTransition(this.root).before(file, bytes);
+    if (file === MANIFEST) bytes = beforeBatch023Observations(bytes, this.root);
     if (file === "architecture/guards/known_debt_registry.json") {
-      const resolutionPath = "architecture/migration/stage_3_batch_022_known_debt_resolution.json";
+      const resolutionPath = "architecture/migration/stage_3_batch_023_known_debt_resolution.json";
       if (fs.existsSync(path.join(this.root, resolutionPath))) {
         const transition = JSON.parse(this.bytes(resolutionPath)).registry;
         if (sha(bytes) === transition.afterSha256) {
@@ -34,7 +34,7 @@ class Batch022History {
     }
     const prebuild = JSON.parse(this.bytes(PREBUILD));
     if (fs.existsSync(path.join(this.root, CUTOVER))) {
-      const cutover = new Batch022CutoverHistory(this.root).artifact();
+      const cutover = new Batch023CutoverHistory(this.root).artifact();
       const record = cutover.writes.find(item => item.path === file);
       if (record && sha(bytes) === record.afterSha256) {
         if (record.beforeBase64 === null) return bytes;
@@ -53,4 +53,4 @@ class Batch022History {
   }
 }
 
-module.exports = { Batch022History };
+module.exports = { Batch023History };

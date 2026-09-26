@@ -282,6 +282,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-0937f80ab214",
+      "owner": "stage-3.replan-322.batch-023-items-c91fce82",
+      "sourceProvider": "src/core/items/progression/numeric_stat_metric_strategy.js",
+      "targetModule": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+      "exportName": "NumericStatMetricStrategy",
+      "legacySymbol": "NumericStatMetricStrategy",
+      "legacyScriptIndex": 74,
+      "shimFile": "activations/074_numericstatmetricstrategy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-1203aa3f3b14",
       "owner": "stage-3.candidate-017-inventory-fd62478b",
       "sourceProvider": "src/core/inventory/inventory_item_location.js",
@@ -510,6 +522,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-4cdf0ce1fb18",
+      "owner": "stage-3.replan-322.batch-023-items-c91fce82",
+      "sourceProvider": "src/core/items/progression/target_range_metric_strategy.js",
+      "targetModule": "src/game/domain/items/progression/target_range_metric_strategy.js",
+      "exportName": "TargetRangeMetricStrategy",
+      "legacySymbol": "TargetRangeMetricStrategy",
+      "legacyScriptIndex": 76,
+      "shimFile": "activations/076_targetrangemetricstrategy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-4d4619b15e3c",
       "owner": "stage-3.candidate-008-fishing-f859ccd3",
       "sourceProvider": "src/core/fishing/reel_hold_load_policy.js",
@@ -724,6 +748,18 @@
       "shimFile": "activations/090_linespoolstate.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-3"
+    },
+    {
+      "id": "activation-80378caca1ef",
+      "owner": "stage-3.replan-322.batch-023-items-c91fce82",
+      "sourceProvider": "src/core/items/progression/derived_stat_metric_strategy.js",
+      "targetModule": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+      "exportName": "DerivedStatMetricStrategy",
+      "legacySymbol": "DerivedStatMetricStrategy",
+      "legacyScriptIndex": 75,
+      "shimFile": "activations/075_derivedstatmetricstrategy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-8110687cd3e1",

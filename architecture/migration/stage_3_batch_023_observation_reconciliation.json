@@ -1,0 +1,779 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-023-observation-reconciliation",
+  "status": "verified",
+  "batchId": "stage-3.replan-322.batch-023-items-c91fce82",
+  "releaseVersion": "0.24.60",
+  "evidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_023_prebuild_contract.json",
+      "sha256": "8bce0f7005c921c9c2e71111764c86a1d36d1b54dbc37de72489507075a36825"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_023_runtime_cutover.json",
+      "sha256": "d4f82f7d41a9f9f17f7e348e05a7b8dc6ea01f9d7c18d7ea9ecdcfbbc566798d"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "599a2d3a6383c89e4fea2e66f5482536b4b979ff14048a143a7c2d0d5df958dc"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_023_live_runtime_validation.json",
+      "sha256": "e241bbff1583d01bf9b7dbedeca5dd78322a62a25f890cb0a35d77fba055bf4a"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_023_audit.json",
+      "sha256": "6f709155947d4a1748bf2cbbcef3d63bd78e6eaaba21018a0854a820262feef8"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "aa617c8917715861bc5c9a12e45c5273d9ad83c183861f1d99fc53e8338b3f9c"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "9319611f76f083bd5320aa997f6c31cca2faa9a31f124e8f797cbe36b6b39f50"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "sha256": "77b621365ec53ef0dd0e7bbcb607a8065ef5f61e3efd75716b010f5039744c0a"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "sha256": "0c0eb7e5fe2a9d2dbf8a8f3e92bad2daf468fabc8cd289a72545bbd2082aaf33"
+    },
+    {
+      "path": "architecture/module_architecture.json",
+      "sha256": "563423746bc86a99ced7bd0ffeb14e20ef4c62021c2c839c069225ec77cf79d6"
+    },
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    }
+  ],
+  "manifestTransition": {
+    "beforeSha256": "7bf6b0ad3f045391da8ddc2a55551bdc7509f669259b188abb5a0feba2d0ae25",
+    "afterSha256": "d57d18c58ed08d521c4fc9f3f1eb085d22aa538cad769c96b6c1938b6f2c8950",
+    "records": [
+      {
+        "currentPath": "src/core/items/progression/derived_stat_metric_strategy.js",
+        "before": {
+          "currentPath": "src/core/items/progression/derived_stat_metric_strategy.js",
+          "currentArea": "core/items/progression",
+          "observed": {
+            "legacyLoadOrder": 75,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "1f420bbbb4a1a87014a5ccd77d36b297aec9d240fff99baf1decedfe0166130b"
+      },
+      {
+        "currentPath": "src/core/items/progression/numeric_stat_metric_strategy.js",
+        "before": {
+          "currentPath": "src/core/items/progression/numeric_stat_metric_strategy.js",
+          "currentArea": "core/items/progression",
+          "observed": {
+            "legacyLoadOrder": 74,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "a55da5f50b5911d4bf3672696b509e4b0ed455720292dd746cefe5e53de49244"
+      },
+      {
+        "currentPath": "src/core/items/progression/target_range_metric_strategy.js",
+        "before": {
+          "currentPath": "src/core/items/progression/target_range_metric_strategy.js",
+          "currentArea": "core/items/progression",
+          "observed": {
+            "legacyLoadOrder": 76,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/items/progression/target_range_metric_strategy.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "28bfcd9144fc94981f2517c369095fb2ee6de3010011d1728f602e96283fd193"
+      },
+      {
+        "currentPath": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+        "before": {
+          "currentPath": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+          "currentArea": "game/domain/items/progression",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "d6cc40c82c69b7a7aed5d812fea1dfa9750e9af04181d14dbf4b3a381a3c1b7f"
+      },
+      {
+        "currentPath": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+        "before": {
+          "currentPath": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+          "currentArea": "game/domain/items/progression",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "775927ade2b4c749b83250832fc92e4a70f1d81c5515bdd0a286f0eccabb37fb"
+      },
+      {
+        "currentPath": "src/game/domain/items/progression/target_range_metric_strategy.js",
+        "before": {
+          "currentPath": "src/game/domain/items/progression/target_range_metric_strategy.js",
+          "currentArea": "game/domain/items/progression",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/items/progression/target_range_metric_strategy.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "74e0ee7f58f43cfd40735fb3f9fbe9efc7de9482ea91f1c3a6b38ea0f3550e45"
+      }
+    ]
+  },
+  "totals": {
+    "modules": 506,
+    "providers": 826,
+    "consumers": 970,
+    "confirmed": 889,
+    "unresolved": 81,
+    "ambiguous": 0,
+    "edges": 768
+  },
+  "esm": [
+    {
+      "source": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [
+        {
+          "source": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+          "specifier": "./item_metric_strategy.js",
+          "resolvedTarget": "src/game/domain/items/progression/item_metric_strategy.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 1,
+            "column": 36
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 3,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Number",
+        "Object",
+        "String"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [
+        {
+          "source": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+          "specifier": "./item_metric_strategy.js",
+          "resolvedTarget": "src/game/domain/items/progression/item_metric_strategy.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 1,
+            "column": 36
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 3,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "String"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/items/progression/target_range_metric_strategy.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [
+        {
+          "source": "src/game/domain/items/progression/target_range_metric_strategy.js",
+          "specifier": "./item_metric_strategy.js",
+          "resolvedTarget": "src/game/domain/items/progression/item_metric_strategy.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 1,
+            "column": 36
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 3,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Math",
+        "String"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    }
+  ],
+  "controlledGlobalTransitions": [
+    {
+      "source": "src/core/items/progression/numeric_stat_metric_strategy.js",
+      "target": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+      "symbol": "NumericStatMetricStrategy",
+      "activationId": "activation-0937f80ab214",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/items/progression/target_range_metric_strategy.js",
+      "target": "src/game/domain/items/progression/target_range_metric_strategy.js",
+      "symbol": "TargetRangeMetricStrategy",
+      "activationId": "activation-4cdf0ce1fb18",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/items/progression/derived_stat_metric_strategy.js",
+      "target": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+      "symbol": "DerivedStatMetricStrategy",
+      "activationId": "activation-80378caca1ef",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    }
+  ],
+  "derivedIncomingConsumers": [
+    {
+      "source": "src/app/bootstrap.js",
+      "symbol": "DerivedStatMetricStrategy",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/items/progression/derived_stat_metric_strategy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/app/bootstrap.js",
+      "symbol": "NumericStatMetricStrategy",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/items/progression/numeric_stat_metric_strategy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/app/bootstrap.js",
+      "symbol": "TargetRangeMetricStrategy",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/items/progression/target_range_metric_strategy.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "guardedConsumers": [],
+  "additionalConsumers": [],
+  "dependencyDelta": {
+    "confirmedInterFileEdgesBefore": 768,
+    "confirmedInterFileEdgesAfter": 768,
+    "newlyConfirmedEdges": [],
+    "removedEdges": []
+  },
+  "transportUnresolved": {
+    "count": 3,
+    "classification": "compatibility-transport-outside-src-project-graph",
+    "createsProjectDependencyEdge": false
+  },
+  "removalDependencies": [
+    {
+      "activationId": "activation-0937f80ab214",
+      "source": "src/core/items/progression/numeric_stat_metric_strategy.js",
+      "consumers": [
+        "src/app/bootstrap.js"
+      ],
+      "owner": "stage-3.replan-322.batch-023-items-c91fce82",
+      "removalStage": "stage-5",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-4cdf0ce1fb18",
+      "source": "src/core/items/progression/target_range_metric_strategy.js",
+      "consumers": [
+        "src/app/bootstrap.js"
+      ],
+      "owner": "stage-3.replan-322.batch-023-items-c91fce82",
+      "removalStage": "stage-5",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-80378caca1ef",
+      "source": "src/core/items/progression/derived_stat_metric_strategy.js",
+      "consumers": [
+        "src/app/bootstrap.js"
+      ],
+      "owner": "stage-3.replan-322.batch-023-items-c91fce82",
+      "removalStage": "stage-5",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    }
+  ],
+  "globalNamespace": {
+    "newGlobals": [],
+    "removedSymbols": [],
+    "mechanismTransitions": [
+      {
+        "source": "src/core/items/progression/numeric_stat_metric_strategy.js",
+        "target": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+        "symbol": "NumericStatMetricStrategy",
+        "activationId": "activation-0937f80ab214",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/items/progression/target_range_metric_strategy.js",
+        "target": "src/game/domain/items/progression/target_range_metric_strategy.js",
+        "symbol": "TargetRangeMetricStrategy",
+        "activationId": "activation-4cdf0ce1fb18",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/items/progression/derived_stat_metric_strategy.js",
+        "target": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+        "symbol": "DerivedStatMetricStrategy",
+        "activationId": "activation-80378caca1ef",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      }
+    ]
+  },
+  "graph": {
+    "modules": 506,
+    "consumers": 970,
+    "confirmed": 889,
+    "selfConfirmed": 3,
+    "unresolved": 81,
+    "ambiguous": 0,
+    "edges": 768,
+    "reverseLinks": 768,
+    "targetsWithConsumers": 415,
+    "unifiedEdges": 854,
+    "reverseConsumers": "derived-only",
+    "verifiedIncoming": [
+      {
+        "sourceProvider": "src/core/items/progression/numeric_stat_metric_strategy.js",
+        "targetModule": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+        "legacy": [
+          {
+            "source": "src/app/bootstrap.js",
+            "symbols": [
+              "NumericStatMetricStrategy"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/items/progression/numeric_stat_metric_strategy.js",
+            "target": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-ed528b9594f7",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/items/progression/target_range_metric_strategy.js",
+        "targetModule": "src/game/domain/items/progression/target_range_metric_strategy.js",
+        "legacy": [
+          {
+            "source": "src/app/bootstrap.js",
+            "symbols": [
+              "TargetRangeMetricStrategy"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/items/progression/target_range_metric_strategy.js",
+            "target": "src/game/domain/items/progression/target_range_metric_strategy.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-5021e2c92869",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/items/progression/derived_stat_metric_strategy.js",
+        "targetModule": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+        "legacy": [
+          {
+            "source": "src/app/bootstrap.js",
+            "symbols": [
+              "DerivedStatMetricStrategy"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/items/progression/derived_stat_metric_strategy.js",
+            "target": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-465e746a78c9",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "reverseIndexSha256": "6681f6a675d07d6b514f39fc1f5edda4a507665ac3124f3ab92be9594ed76bb7"
+  },
+  "guards": {
+    "failureCount": 0,
+    "knownDebtCount": 188,
+    "diagnosticsSha256": "87906765326d27bcc38f2ae7ca8b25681dbbe4c772ff6b8250f6097d90d153e6",
+    "baselineGlobals": 855
+  },
+  "metadataTransition": {
+    "field": "architecture.migrationStatus",
+    "from": "migrating",
+    "to": "verified",
+    "targets": [
+      "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+      "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+      "src/game/domain/items/progression/target_range_metric_strategy.js"
+    ]
+  },
+  "topology": {
+    "modules": 82,
+    "activations": 92,
+    "bridges": 142
+  },
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034",
+      "stage-3.candidate-010-inventory-e3dffbe7",
+      "stage-3.candidate-011-items-11818ee5",
+      "stage-3.candidate-012-assemblies-2086347a",
+      "stage-3.candidate-013-fishing-0267b3ea",
+      "stage-3.candidate-014-fishing-fefd469b",
+      "stage-3.candidate-015-fishing-37dc3452",
+      "stage-3.candidate-016-fishing-f8c953aa",
+      "stage-3.candidate-017-inventory-fd62478b",
+      "stage-3.candidate-018-items-8ea4be10",
+      "stage-3.candidate-019-items-b0af5033",
+      "stage-3.candidate-020-assemblies-43d77861",
+      "stage-3.candidate-021-equipment-4044fcef",
+      "stage-3.replan-322.batch-022-assemblies-9cb3eecf"
+    ],
+    "activeBatchId": "stage-3.replan-322.batch-023-items-c91fce82",
+    "activeBatchPhase": "runtime-active",
+    "batchCompleted": false
+  },
+  "releaseClosureAuthorized": false,
+  "verdict": "eligible-for-full-acceptance",
+  "nextGate": "stage-3.24.8-full-acceptance-and-browser-smoke"
+}

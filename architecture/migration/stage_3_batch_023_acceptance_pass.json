@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-023-acceptance",
+  "stage": "3.24.8",
+  "batchId": "stage-3.replan-322.batch-023-items-c91fce82",
+  "releaseVersion": "0.24.60",
+  "plannedReleaseVersion": "0.24.61",
+  "recordedAt": "2026-09-26T13:03:42.688Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_023_automated_acceptance.json",
+    "sha256": "652f9014738450a5752794a43eac06d5be9c990224636d1826578849829f68f8",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "full": {
+      "passedChecks": 187,
+      "failedChecks": 0
+    },
+    "fullRun": {
+      "platform": "windows",
+      "source": "node utils/run-checks.js --suite all (one uninterrupted run, 3995.75s)"
+    },
+    "supplementary": {
+      "architecture": {
+        "passedChecks": 66,
+        "failedChecks": 0
+      },
+      "quick": {
+        "passedChecks": 42,
+        "failedChecks": 0
+      }
+    },
+    "summary": "Windows Full 187/187 passed in one uninterrupted run (3996 s), including the batch-023 architecture check, the game-cycle fight scenarios and the item rarity/progression suites; Architecture 66/66 and Quick 42/42 passed before it",
+    "countSemantics": "The full suite includes the architecture and quick checks."
+  },
+  "browserSmoke": {
+    "status": "passed-owner-authorized-automated-substitute",
+    "performedBy": "claude-automated-owner-authorized",
+    "evidenceType": "headless-game-cycle-and-item-suites-plus-automated-built-in-browser-load",
+    "userStatement": "PASS (owner-authorized automated substitute) — game-cycle-check.js and the item rarity/progression suites passed; built-in browser load rendered the game and the inventory with exact batch-023 identities.",
+    "context": "The owner authorized, during the batch 015-021 plan, replacing the manual visual smoke with game-cycle-check results when that check passes, and on 2026-09-26 asked to continue the plan autonomously until Stage 3 is complete. Batch 023 migrates item metric strategies, so the Full suite also ran the item rarity, progression and inventory suites. Claude loaded the game via the dev server in the Claude desktop built-in browser and opened the inventory.",
+    "acceptanceBasis": "Owner-authorized substitute: headless game cycle and item/inventory suites in the Full suite plus an automated browser load with instrumented console counts; no human played the game for this batch.",
+    "ownerAuthorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+    "perCheckResults": {
+      "gameCycle": "utils/game-cycle-check.js passed inside Full 187/187",
+      "itemSuites": "item rarity snapshot, final item stat contract, production rarity and inventory-v2 suites passed inside Full 187/187",
+      "browserLoad": "Game rendered (v0.24.60 build label); inventory DOM rendered with 26 rating/rarity badges; 82 compat modules; the three strategy globals identical to their ESM exports and subclassing the shared ItemMetricStrategy export; live NumericStatMetricStrategy and TargetRangeMetricStrategy evaluations returned the expected values"
+    },
+    "consoleCounts": {
+      "errors": 0,
+      "warnings": 0,
+      "userStatement": "Built-in browser console, instrumented by Claude on launch, after opening the inventory and after evaluating the live strategies: 0 errors, 0 warnings (one informational CacheManager log)."
+    }
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_023_live_runtime_validation.json",
+      "sha256": "e241bbff1583d01bf9b7dbedeca5dd78322a62a25f890cb0a35d77fba055bf4a"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_023_observation_reconciliation.json",
+      "sha256": "a4db53afc65a3a27ca821813957bc73fa4bf204b6abc37e6f39d119d389d2590"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "aa617c8917715861bc5c9a12e45c5273d9ad83c183861f1d99fc53e8338b3f9c"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "599a2d3a6383c89e4fea2e66f5482536b4b979ff14048a143a7c2d0d5df958dc"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "9319611f76f083bd5320aa997f6c31cca2faa9a31f124e8f797cbe36b6b39f50"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "d57d18c58ed08d521c4fc9f3f1eb085d22aa538cad769c96b6c1938b6f2c8950"
+    },
+    {
+      "path": "index.html",
+      "sha256": "f695e280798c0456518ea8c390fc7b7117d4f0a9ab60e2cdcf116ab0673b61b2"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.replan-322.batch-023-items-c91fce82",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.24.9 — Release Closure v0.24.61"
+}

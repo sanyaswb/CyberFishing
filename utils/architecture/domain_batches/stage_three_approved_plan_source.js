@@ -64,6 +64,30 @@ class StageThreeApprovedPlanSource {
     return `3.${number}`;
   }
 
+  // Exact reviewed completed-prefix imports of every target in the given batches, keyed by target
+  // path, in the execution plan's `importsAllowed` shape (relative specifier from the target).
+  static reviewedImports(document, batchIds) {
+    const selected = new Set(batchIds);
+    const result = {};
+    for (const batch of document.batches.filter(record => selected.has(record.id))) {
+      for (const module of batch.modules) {
+        const imports = (batch.imports || []).filter(record => record.consumer === module.currentPath &&
+          record.resolution === "completed-prefix");
+        if (imports.length === 0) continue;
+        const directory = module.targetPath.split("/").slice(0, -1);
+        result[module.targetPath] = imports.map(record => {
+          const target = record.from.split("/");
+          let common = 0;
+          while (common < directory.length && directory[common] === target[common]) common += 1;
+          const relative = [...directory.slice(common).map(() => ".."), ...target.slice(common)].join("/");
+          return { specifier: relative.startsWith(".") ? relative : `./${relative}`, from: record.from,
+            exportName: record.exportName, activationId: record.activationId };
+        }).sort((left, right) => `${left.specifier}\0${left.exportName}`.localeCompare(`${right.specifier}\0${right.exportName}`));
+      }
+    }
+    return result;
+  }
+
   #validateContinuation(continuation, historical, historicalSha256) {
     assert.equal(continuation.kind, CONTINUATION_KIND, "continuation plan kind is invalid");
     assert.equal(continuation.status, "approved-prefix-frozen", "continuation plan is not frozen");

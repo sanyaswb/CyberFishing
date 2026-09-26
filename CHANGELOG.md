@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.61 - Items Metric Strategies Domain
+
+### Changed
+
+- Completed batch 023 of the Stage 3.22 approved prefix: DerivedStatMetricStrategy, NumericStatMetricStrategy and TargetRangeMetricStrategy as named ESM exports.
+- Each target imports its eager superclass ItemMetricStrategy from the completed ESM owner; the three classic global reads and their bridges were retired. The evaluation gate accepts a reviewed imported superclass of a verified closure module, and reviewed imports of every selected batch are re-verified.
+- Extended the cumulative graph from 79 to 82 project modules and from 89 to 92 activation contracts, with 142 exact bridge relationships (3 added, 3 retired).
+- The next task is batch 024 preflight.
+
 ## v0.24.60 - Assemblies Item Reader Domain
 
 ### Changed

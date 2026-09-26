@@ -1,10 +1,10 @@
 # CyberFishing — Current Plan for the Remaining Modular Refactor
 
 - **Stage 1 closure version:** `v0.24.31`
-- **Current release version:** `v0.24.60`
+- **Current release version:** `v0.24.61`
 - **Work type:** architecture / infrastructure refactoring
 - **Gameplay changes:** prohibited
-- **Next step:** `Stage 3.24.0 — Batch 023 Preflight from the Stage 3.22 Approved Prefix (stage-3.replan-322.batch-023-items-c91fce82)`
+- **Next step:** `Stage 3.25.0 — Batch 024 Preflight from the Stage 3.22 Approved Prefix (stage-3.replan-322.batch-024-inventory-21307d68)`
 
 This document records the completed Stage 3 prefix and the work that remains.
 
@@ -123,7 +123,7 @@ Audit-only stage: no prerequisite refactoring, module migration or cutover; `run
 The prefix is frozen but not yet adopted by the execution state, which keeps batches 001–021 and the historical approved-plan fingerprint. Each batch is a separate patch release with a batch-only rollback checkpoint; after the prefix the runtime topology is `99` modules, `109` activations and `139` bridges.
 
 - [x] **022 · Assemblies · 1 module / 2 exports:** `ItemAssemblyPath`, `ItemAssemblyReader` — `stage-3.replan-322.batch-022-assemblies-9cb3eecf`.
-- [ ] **023 · Items · 3 modules:** `DerivedStatMetricStrategy`, `NumericStatMetricStrategy`, `TargetRangeMetricStrategy` — `stage-3.replan-322.batch-023-items-c91fce82`.
+- [x] **023 · Items · 3 modules:** `DerivedStatMetricStrategy`, `NumericStatMetricStrategy`, `TargetRangeMetricStrategy` — `stage-3.replan-322.batch-023-items-c91fce82`.
 - [ ] **024 · Inventory · 1 module:** `InventoryItemReservationPolicy` — `stage-3.replan-322.batch-024-inventory-21307d68`.
 - [ ] **025 · Fishing · 3 modules:** `FishRetrieveSystem`, `PoleFightSectorConstraint`, `StaminaPressureResolver` — `stage-3.replan-322.batch-025-fishing-9bcfae5e`.
 - [ ] **026 · Inventory · 1 module:** `ItemAssemblyStackingPolicy` — `stage-3.replan-322.batch-026-inventory-ad73f2fb`.
@@ -134,7 +134,7 @@ The prefix is frozen but not yet adopted by the execution state, which keeps bat
 - [ ] **031 · Fishing · 1 module:** `StaminaBalanceFrame` — `stage-3.replan-322.batch-031-fishing-d2f28c0f`.
 - [ ] **032 · Items · 1 module:** `EffectiveItemRarityResolver` — `stage-3.replan-322.batch-032-items-096b3398`.
 
-**Checkpoint `v0.24.60`:** batch 022 is complete — the first migrated Domain module that imports a completed-prefix export (`InventoryItemLocation`) instead of reading its legacy global. The execution state adopted the Stage 3.22 approved prefix (historical approved-plan fingerprint unchanged); completed batches 001–022. The cumulative runtime has `79` project modules, `89` activations and `142` bridge records (one retired). Windows Full 186/186 passed in one uninterrupted run (3628 s), including the batch-022 architecture check, the game-cycle fight scenarios and the inventory/assembly suites; Architecture 66/66 and Quick 42/42 passed before it; owner-authorized automated smoke (headless game cycle and built-in browser load) passed with `0 errors` and `0 warnings`.
+**Checkpoint `v0.24.61`:** batches 022–023 of the approved prefix are complete (completed batches 001–023). Batch 023 migrated three item metric strategies whose shared superclass `ItemMetricStrategy` is now an imported completed-prefix export. The cumulative runtime has `82` project modules, `92` activations and `142` bridge records. Windows Full 187/187 passed in one uninterrupted run (3996 s), including the batch-023 architecture check, the game-cycle fight scenarios and the item rarity/progression suites; Architecture 66/66 and Quick 42/42 passed before it; owner-authorized automated smoke (headless game cycle and built-in browser load) passed with `0 errors` and `0 warnings`.
 
 ### Review queue
 

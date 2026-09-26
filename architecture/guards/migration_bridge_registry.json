@@ -523,6 +523,22 @@
       ]
     },
     {
+      "id": "bridge-465e746a78c9",
+      "bridge": "src/core/items/progression/derived_stat_metric_strategy.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+      "reason": "Preserve the exact item metric strategy consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-023-items-c91fce82",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "DerivedStatMetricStrategy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-497d2debe2ba",
       "bridge": "src/core/items/freshness/item_freshness_state_policy.js",
       "source": "src/application/inventory/apply_bait_exposure_service.js",
@@ -550,6 +566,22 @@
       "globalProviders": [
         {
           "symbol": "RodCapabilityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-5021e2c92869",
+      "bridge": "src/core/items/progression/target_range_metric_strategy.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/items/progression/target_range_metric_strategy.js",
+      "reason": "Preserve the exact item metric strategy consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-023-items-c91fce82",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "TargetRangeMetricStrategy",
           "mechanism": "global-this-property"
         }
       ]
@@ -630,22 +662,6 @@
       "globalProviders": [
         {
           "symbol": "TackleFailureSelector",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-56ef92067f39",
-      "bridge": "src/core/items/progression/item_metric_strategy.js",
-      "source": "src/core/items/progression/numeric_stat_metric_strategy.js",
-      "target": "src/game/domain/items/progression/item_metric_strategy.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-011-items-11818ee5",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "ItemMetricStrategy",
           "mechanism": "global-this-property"
         }
       ]
@@ -1022,22 +1038,6 @@
       "globalProviders": [
         {
           "symbol": "ItemAssemblyPath",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-8133cc83f778",
-      "bridge": "src/core/items/progression/item_metric_strategy.js",
-      "source": "src/core/items/progression/target_range_metric_strategy.js",
-      "target": "src/game/domain/items/progression/item_metric_strategy.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-011-items-11818ee5",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "ItemMetricStrategy",
           "mechanism": "global-this-property"
         }
       ]
@@ -2095,6 +2095,22 @@
       ]
     },
     {
+      "id": "bridge-ed528b9594f7",
+      "bridge": "src/core/items/progression/numeric_stat_metric_strategy.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+      "reason": "Preserve the exact item metric strategy consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-023-items-c91fce82",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "NumericStatMetricStrategy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-eea627bb5a05",
       "bridge": "src/core/items/progression/item_progression_descriptor.js",
       "source": "src/core/items/progression/item_progression_resolver.js",
@@ -2234,22 +2250,6 @@
       "globalProviders": [
         {
           "symbol": "InventoryEquipTargetSelectionPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-fa5b133d275d",
-      "bridge": "src/core/items/progression/item_metric_strategy.js",
-      "source": "src/core/items/progression/derived_stat_metric_strategy.js",
-      "target": "src/game/domain/items/progression/item_metric_strategy.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-011-items-11818ee5",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "ItemMetricStrategy",
           "mechanism": "global-this-property"
         }
       ]
