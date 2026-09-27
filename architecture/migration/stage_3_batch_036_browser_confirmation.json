@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-036-browser-confirmation",
+  "batchId": "stage-3.replan-336.batch-036-items-e1a5aaa4",
+  "releaseVersion": "0.24.73",
+  "status": "passed",
+  "performedBy": "claude-automated-substitute",
+  "recordedAt": "2026-09-27T22:14:30.513Z",
+  "evidenceType": "owner-authorized-automated-substitute",
+  "gate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts",
+  "browserSummary": {
+    "userStatement": "PASS (automated substitute, 2026-09-28): node utils/game-cycle-check.js re-executed without seals (exit 0); the game loaded from npm run dev in the built-in browser with ItemStatOverridePolicy and EffectiveItemStatsResolver published as ESM classes; the line details show the effective stats (max load, strength, thickness, length 25 m) and the inventory is restored identically after a reload; screenshots taken; dev server stopped afterwards.",
+    "context": "Automated substitute per the owner's 2026-09-27 authorization: game-cycle loop re-executed without seals and a built-in-browser load of the game (inventory effective stats, line length and save/reload) with screenshots and console counts.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": true
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console)",
+    "independentlyInstrumented": true
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_036_acceptance_pass.json",
+    "sha256": "3c9efd9acd7f83cad643d0a1046ada50c0b0b2b4fab206ff97b692c8fce3e17c"
+  },
+  "historicalSummaryPreserved": true
+}

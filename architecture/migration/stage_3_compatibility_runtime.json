@@ -853,6 +853,18 @@
       "removalStage": "stage-3"
     },
     {
+      "id": "activation-83027557e714",
+      "owner": "stage-3.replan-336.batch-036-items-e1a5aaa4",
+      "sourceProvider": "src/core/items/item_stat_override_policy.js",
+      "targetModule": "src/game/domain/items/item_stat_override_policy.js",
+      "exportName": "ItemStatOverridePolicy",
+      "legacySymbol": "ItemStatOverridePolicy",
+      "legacyScriptIndex": 51,
+      "shimFile": "activations/051_itemstatoverridepolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-846a4f1261db",
       "owner": "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
       "sourceProvider": "src/core/assemblies/item_assembly_reader.js",
@@ -1282,6 +1294,18 @@
       "legacyScriptIndex": 392,
       "shimFile": "activations/392_eventlifecycle.js",
       "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-d4bfb713b7de",
+      "owner": "stage-3.replan-336.batch-036-items-e1a5aaa4",
+      "sourceProvider": "src/core/items/effective_item_stats_resolver.js",
+      "targetModule": "src/game/domain/items/effective_item_stats_resolver.js",
+      "exportName": "EffectiveItemStatsResolver",
+      "legacySymbol": "EffectiveItemStatsResolver",
+      "legacyScriptIndex": 52,
+      "shimFile": "activations/052_effectiveitemstatsresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
     {

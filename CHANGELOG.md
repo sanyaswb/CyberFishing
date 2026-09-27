@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.24.74 - Items Effective Stats Domain
+
+### Changed
+
+- Completed batch 036: ItemStatOverridePolicy and EffectiveItemStatsResolver as named ESM exports, composed by GameCompositionRoot from the injected override table; their reviewed globalThis exposures moved to the activation shims.
+- Extended the cumulative graph from 107 to 109 project modules and from 99 to 101 activation contracts, with 145 exact bridge relationships (2 added).
+- The next task is batch 037 preflight.
+
 ## v0.24.73 - Items Condition Resolver Domain
 
 ### Changed

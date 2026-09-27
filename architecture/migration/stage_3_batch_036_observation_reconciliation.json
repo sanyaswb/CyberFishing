@@ -1,0 +1,568 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-036-observation-reconciliation",
+  "status": "verified",
+  "batchId": "stage-3.replan-336.batch-036-items-e1a5aaa4",
+  "releaseVersion": "0.24.73",
+  "evidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_036_prebuild_contract.json",
+      "sha256": "ce54353f8bf89be883536cf833b050bc33dc94597c953e17f567a922bec5bc27"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_036_runtime_cutover.json",
+      "sha256": "024cb3f466bb1cdef74fb4d33fc362f5782a2d4254f967a528d2a3af6b4353f3"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "1abb3628f77b6a24db61fa8039283a403f9046cb026c8616a03cb93a9fc0a15a"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_036_live_runtime_validation.json",
+      "sha256": "1e9e9cf332be92150594f7e4b2109688d473da619b710d488983b9abf5be8ead"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_036_audit.json",
+      "sha256": "e9b100306a74441de18d2651fa29069deea53a400a31a25c47f4264c786ad4a9"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "e6e3feeffcb649eef6a1aed7f23e3b448e1753a3be987d0a8ce9d4a95f43e1c8"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "6b6ba8c45237882166bceace7fb7fdbde93608abfce0eeb90f1c91fed917583e"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "sha256": "77b621365ec53ef0dd0e7bbcb607a8065ef5f61e3efd75716b010f5039744c0a"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "sha256": "8e8a7b54c6e669dcc8c0cebdb28866f3373fe00f02f1e1b4d0d2d76a622388a6"
+    },
+    {
+      "path": "architecture/module_architecture.json",
+      "sha256": "563423746bc86a99ced7bd0ffeb14e20ef4c62021c2c839c069225ec77cf79d6"
+    },
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    }
+  ],
+  "manifestTransition": {
+    "beforeSha256": "7bf7f0979a9bf892904741f4807977b79c1e3209f5cc884012bcb30c97cb74d8",
+    "afterSha256": "87900117e83aef6c3d9621e18290f887c2027318468ac2be2b552d69aa85e568",
+    "records": [
+      {
+        "currentPath": "src/core/items/effective_item_stats_resolver.js",
+        "before": {
+          "currentPath": "src/core/items/effective_item_stats_resolver.js",
+          "currentArea": "core/items",
+          "observed": {
+            "legacyLoadOrder": 52,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/items/effective_item_stats_resolver.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "fa7e621fd84518e308a6b8ba8270c08310db9978caad93c6ed97b02f06695a2c"
+      },
+      {
+        "currentPath": "src/core/items/item_stat_override_policy.js",
+        "before": {
+          "currentPath": "src/core/items/item_stat_override_policy.js",
+          "currentArea": "core/items",
+          "observed": {
+            "legacyLoadOrder": 51,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/items/item_stat_override_policy.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": [
+                "legacy-global-contract"
+              ]
+            }
+          }
+        },
+        "afterSha256": "f87aa26680f9f7931bb7a719993f848064a0e3dfd6a8488595522b18b3ab634f"
+      },
+      {
+        "currentPath": "src/game/domain/items/effective_item_stats_resolver.js",
+        "before": {
+          "currentPath": "src/game/domain/items/effective_item_stats_resolver.js",
+          "currentArea": "game/domain/items",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/items/effective_item_stats_resolver.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "35cac12facf020f788f01cd2690846dcfe062734e480af6ae117998887d96a47"
+      },
+      {
+        "currentPath": "src/game/domain/items/item_stat_override_policy.js",
+        "before": {
+          "currentPath": "src/game/domain/items/item_stat_override_policy.js",
+          "currentArea": "game/domain/items",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/items/item_stat_override_policy.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "da02ac030bf58b307abb4f3b1c62d10d274e3277af2f98db403f01533c1afb99"
+      }
+    ]
+  },
+  "totals": {
+    "modules": 533,
+    "providers": 795,
+    "consumers": 929,
+    "confirmed": 838,
+    "unresolved": 91,
+    "ambiguous": 0,
+    "edges": 718
+  },
+  "esm": [
+    {
+      "source": "src/game/domain/items/effective_item_stats_resolver.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Array",
+        "Number",
+        "Object",
+        "TypeError"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/items/item_stat_override_policy.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Array",
+        "Number",
+        "Object",
+        "RangeError",
+        "Set",
+        "String",
+        "TypeError",
+        "undefined"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    }
+  ],
+  "controlledGlobalTransitions": [
+    {
+      "source": "src/core/items/item_stat_override_policy.js",
+      "target": "src/game/domain/items/item_stat_override_policy.js",
+      "symbol": "ItemStatOverridePolicy",
+      "activationId": "activation-83027557e714",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/items/effective_item_stats_resolver.js",
+      "target": "src/game/domain/items/effective_item_stats_resolver.js",
+      "symbol": "EffectiveItemStatsResolver",
+      "activationId": "activation-d4bfb713b7de",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    }
+  ],
+  "derivedIncomingConsumers": [
+    {
+      "source": "src/app/bootstrap.js",
+      "symbol": "EffectiveItemStatsResolver",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/items/effective_item_stats_resolver.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/app/bootstrap.js",
+      "symbol": "ItemStatOverridePolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/items/item_stat_override_policy.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "guardedConsumers": [],
+  "additionalConsumers": [],
+  "dependencyDelta": {
+    "confirmedInterFileEdgesBefore": 718,
+    "confirmedInterFileEdgesAfter": 718,
+    "newlyConfirmedEdges": [],
+    "removedEdges": []
+  },
+  "transportUnresolved": {
+    "count": 2,
+    "classification": "compatibility-transport-outside-src-project-graph",
+    "createsProjectDependencyEdge": false
+  },
+  "removalDependencies": [
+    {
+      "activationId": "activation-83027557e714",
+      "source": "src/core/items/item_stat_override_policy.js",
+      "consumers": [
+        "src/app/bootstrap.js"
+      ],
+      "owner": "stage-3.replan-336.batch-036-items-e1a5aaa4",
+      "removalStage": "stage-5",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-d4bfb713b7de",
+      "source": "src/core/items/effective_item_stats_resolver.js",
+      "consumers": [
+        "src/app/bootstrap.js"
+      ],
+      "owner": "stage-3.replan-336.batch-036-items-e1a5aaa4",
+      "removalStage": "stage-5",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    }
+  ],
+  "globalNamespace": {
+    "newGlobals": [],
+    "removedSymbols": [],
+    "mechanismTransitions": [
+      {
+        "source": "src/core/items/item_stat_override_policy.js",
+        "target": "src/game/domain/items/item_stat_override_policy.js",
+        "symbol": "ItemStatOverridePolicy",
+        "activationId": "activation-83027557e714",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/items/effective_item_stats_resolver.js",
+        "target": "src/game/domain/items/effective_item_stats_resolver.js",
+        "symbol": "EffectiveItemStatsResolver",
+        "activationId": "activation-d4bfb713b7de",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      }
+    ]
+  },
+  "graph": {
+    "modules": 533,
+    "consumers": 929,
+    "confirmed": 838,
+    "selfConfirmed": 3,
+    "unresolved": 91,
+    "ambiguous": 0,
+    "edges": 718,
+    "reverseLinks": 718,
+    "targetsWithConsumers": 398,
+    "unifiedEdges": 848,
+    "reverseConsumers": "derived-only",
+    "verifiedIncoming": [
+      {
+        "sourceProvider": "src/core/items/item_stat_override_policy.js",
+        "targetModule": "src/game/domain/items/item_stat_override_policy.js",
+        "legacy": [
+          {
+            "source": "src/app/bootstrap.js",
+            "symbols": [
+              "ItemStatOverridePolicy"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/items/item_stat_override_policy.js",
+            "target": "src/game/domain/items/item_stat_override_policy.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-74ff3d1ea14b",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/items/effective_item_stats_resolver.js",
+        "targetModule": "src/game/domain/items/effective_item_stats_resolver.js",
+        "legacy": [
+          {
+            "source": "src/app/bootstrap.js",
+            "symbols": [
+              "EffectiveItemStatsResolver"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/items/effective_item_stats_resolver.js",
+            "target": "src/game/domain/items/effective_item_stats_resolver.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-c17208d5e755",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "reverseIndexSha256": "dc82d8ecbe2a715ee98e249ea8d407e840eb845b77447dd0e5af0310fa387d50"
+  },
+  "guards": {
+    "failureCount": 0,
+    "knownDebtCount": 175,
+    "diagnosticsSha256": "5f5c126d3ee56869ee3305828b9279a4463e9b218e2d6e31f0a5e7e435f3bc06",
+    "baselineGlobals": 855
+  },
+  "metadataTransition": {
+    "field": "architecture.migrationStatus",
+    "from": "migrating",
+    "to": "verified",
+    "targets": [
+      "src/game/domain/items/effective_item_stats_resolver.js",
+      "src/game/domain/items/item_stat_override_policy.js"
+    ]
+  },
+  "topology": {
+    "modules": 109,
+    "activations": 101,
+    "bridges": 145
+  },
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034",
+      "stage-3.candidate-010-inventory-e3dffbe7",
+      "stage-3.candidate-011-items-11818ee5",
+      "stage-3.candidate-012-assemblies-2086347a",
+      "stage-3.candidate-013-fishing-0267b3ea",
+      "stage-3.candidate-014-fishing-fefd469b",
+      "stage-3.candidate-015-fishing-37dc3452",
+      "stage-3.candidate-016-fishing-f8c953aa",
+      "stage-3.candidate-017-inventory-fd62478b",
+      "stage-3.candidate-018-items-8ea4be10",
+      "stage-3.candidate-019-items-b0af5033",
+      "stage-3.candidate-020-assemblies-43d77861",
+      "stage-3.candidate-021-equipment-4044fcef",
+      "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+      "stage-3.replan-322.batch-023-items-c91fce82",
+      "stage-3.replan-322.batch-024-inventory-21307d68",
+      "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+      "stage-3.replan-322.batch-026-inventory-ad73f2fb",
+      "stage-3.replan-322.batch-027-items-e8f84667",
+      "stage-3.replan-322.batch-028-assemblies-f4be469e",
+      "stage-3.replan-322.batch-029-fishing-f2a8faba",
+      "stage-3.replan-322.batch-030-items-a3bf25f7",
+      "stage-3.replan-322.batch-031-fishing-d2f28c0f",
+      "stage-3.replan-322.batch-032-items-096b3398",
+      "stage-3.replan-322.batch-033-assemblies-3cd39292",
+      "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "stage-3.replan-336.batch-035-items-48cb5bbc"
+    ],
+    "activeBatchId": "stage-3.replan-336.batch-036-items-e1a5aaa4",
+    "activeBatchPhase": "runtime-active",
+    "batchCompleted": false
+  },
+  "releaseClosureAuthorized": false,
+  "verdict": "eligible-for-full-acceptance",
+  "nextGate": "stage-3.37.8-full-acceptance-and-browser-smoke"
+}

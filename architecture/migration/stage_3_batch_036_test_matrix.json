@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.replan-336.batch-036-items-e1a5aaa4",
+  "sourceReleaseVersion": "0.24.73",
+  "targetReleaseVersion": "0.24.74",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_036_execution_plan.json",
+    "sha256": "4b8940eba57517a66782009e14f002a75e60b16c4caa4100ea23bbd16d7503e9"
+  },
+  "scope": {
+    "moduleCount": 2,
+    "exportCount": 2,
+    "activationCount": 2,
+    "consumerRelationshipCount": 2
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/EffectiveItemStatsResolver/authored-stats-overrides-and-deep-freeze",
+      "kind": "behavior-equivalence",
+      "exportName": "EffectiveItemStatsResolver",
+      "currentPath": "src/core/items/effective_item_stats_resolver.js",
+      "targetPath": "src/game/domain/items/effective_item_stats_resolver.js",
+      "baselineSourceSha256": "898d5844ea8afcda180edd33892551f417d7b727778e1ee7d4eeb026e2525271",
+      "caseName": "authored-stats-overrides-and-deep-freeze",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/ItemStatOverridePolicy/configuration-contract",
+      "kind": "behavior-equivalence",
+      "exportName": "ItemStatOverridePolicy",
+      "currentPath": "src/core/items/item_stat_override_policy.js",
+      "targetPath": "src/game/domain/items/item_stat_override_policy.js",
+      "baselineSourceSha256": "4557460c60aadf457be4c0239471be8555b0f3209738504183410adf4b7d5668",
+      "caseName": "configuration-contract",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/ItemStatOverridePolicy/normalize-values-operations-and-rejections",
+      "kind": "behavior-equivalence",
+      "exportName": "ItemStatOverridePolicy",
+      "currentPath": "src/core/items/item_stat_override_policy.js",
+      "targetPath": "src/game/domain/items/item_stat_override_policy.js",
+      "baselineSourceSha256": "4557460c60aadf457be4c0239471be8555b0f3209738504183410adf4b7d5668",
+      "caseName": "normalize-values-operations-and-rejections",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/two-representation-only-named-esm-targets-and-two-exact-exports",
+      "kind": "compatibility-invariant",
+      "caseName": "two-representation-only-named-esm-targets-and-two-exact-exports",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/two-reviewed-global-this-exposures-moved-to-the-exact-activation-shims",
+      "kind": "compatibility-invariant",
+      "caseName": "two-reviewed-global-this-exposures-moved-to-the-exact-activation-shims",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-esm-evaluation-per-target-without-top-level-effects",
+      "kind": "compatibility-invariant",
+      "caseName": "one-esm-evaluation-per-target-without-top-level-effects",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/two-exact-classic-activations-at-their-legacy-positions",
+      "kind": "compatibility-invariant",
+      "caseName": "two-exact-classic-activations-at-their-legacy-positions",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/two-exact-classic-consumer-relationships",
+      "kind": "compatibility-invariant",
+      "caseName": "two-exact-classic-consumer-relationships",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-prior-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-prior-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "EffectiveItemStatsResolver",
+      "caseCount": 1,
+      "cases": [
+        "authored-stats-overrides-and-deep-freeze"
+      ]
+    },
+    {
+      "exportName": "ItemStatOverridePolicy",
+      "caseCount": 2,
+      "cases": [
+        "normalize-values-operations-and-rejections",
+        "configuration-contract"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 2,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.37.0-live-observation-and-stage-3.36-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_036_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/core/items/effective_item_stats_resolver.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/items/effective_item_stats_resolver.js",
+          "authoritativeOwners": [
+            "EffectiveItemStatsResolver#applyOverrides",
+            "EffectiveItemStatsResolver#clone",
+            "EffectiveItemStatsResolver#deepFreeze",
+            "EffectiveItemStatsResolver#overridePolicy",
+            "EffectiveItemStatsResolver#resolveOverride"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/items/effective_item_stats_resolver.js",
+          "authoritativeOwners": [
+            "EffectiveItemStatsResolver#applyOverrides",
+            "EffectiveItemStatsResolver#clone",
+            "EffectiveItemStatsResolver#deepFreeze",
+            "EffectiveItemStatsResolver#overridePolicy",
+            "EffectiveItemStatsResolver#resolveOverride"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "4904eecb63dca74b831e6e12cd7234df9bc091a3e3d7dc0dc660b0bcfe19acf4",
+        "allocationBaseline": {
+          "objectExpressions": 8,
+          "arrayExpressions": 1,
+          "newExpressions": 1,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/items/item_stat_override_policy.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/items/item_stat_override_policy.js",
+          "authoritativeOwners": [
+            "ItemStatOverridePolicy#assertConfig",
+            "ItemStatOverridePolicy#assertValue",
+            "ItemStatOverridePolicy#clone",
+            "ItemStatOverridePolicy#config",
+            "ItemStatOverridePolicy#isOperation",
+            "ItemStatOverridePolicy#normalizeEntry",
+            "ItemStatOverridePolicy#normalizeOperation"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/items/item_stat_override_policy.js",
+          "authoritativeOwners": [
+            "ItemStatOverridePolicy#assertConfig",
+            "ItemStatOverridePolicy#assertValue",
+            "ItemStatOverridePolicy#clone",
+            "ItemStatOverridePolicy#config",
+            "ItemStatOverridePolicy#isOperation",
+            "ItemStatOverridePolicy#normalizeEntry",
+            "ItemStatOverridePolicy#normalizeOperation"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "3023af4744fd3ab5e79dd3d8194f88bbed7a19477eeff28f8f5b24259784db2c",
+        "allocationBaseline": {
+          "objectExpressions": 7,
+          "arrayExpressions": 6,
+          "newExpressions": 26,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.37.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

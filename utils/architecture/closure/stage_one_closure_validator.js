@@ -652,6 +652,8 @@ class StageOneClosureValidator {
         "Fishing Hot-Loop Cluster Domain",
       "stage-3.replan-336.batch-035-items-48cb5bbc":
         "Items Condition Resolver Domain",
+      "stage-3.replan-336.batch-036-items-e1a5aaa4":
+        "Items Effective Stats Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

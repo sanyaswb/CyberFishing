@@ -20,12 +20,12 @@ Full plan: refactor_Task.txt. Changelog: CHANGELOG.md.
 - npm run check:quick (~40 s), npm run check:architecture, npm run check -- --suite history, npm run check (Full, ~55-70 min on Windows).
 
 ## Current state (2026-09-27)
-- Released v0.24.73 (batch 035): batches 001–035 complete, 98 migrated Domain modules; Stage 3.36.0 approved prefix adopted; runtime 107 modules / 99 activations (18 retired) / 143 bridges; activeBatchId = null.
+- Released v0.24.74 (batch 036): batches 001–036 complete, 100 migrated Domain modules; runtime 109 modules / 101 activations (18 retired) / 145 bridges; activeBatchId = null.
 - Shared Stage 3 batch tooling (utils/architecture/stage_three_batches, README there): one dispatcher "node utils/architecture/stage-3-batch.js --batch NNN --step <step>"; a batch = definitions/NNN/profile.js + behavior_cases.js.
 - Check pipeline (utils/testing/CHECKS.md): input-traced seals, history base (release 0.24.63 reconstruction for history-only checks up to 025), parallel runner (--jobs, default 4), --no-seal, --reseal.
 - Browser acceptance: owner-authorized automated substitute since 2026-09-27 (game-cycle check without seals + built-in browser screenshots + instrumented console counts; authorization quoted verbatim in evidence).
 
 ## Next tasks
-2. Stage 3.36.0 repeated graph review done (stage_3_36_graph_review/): 4 frozen batches 035–038 (7 modules unblocked by prerequisites 001–005). Next: batches 036–038 (v0.24.74–v0.24.76), then Vector2 extraction and the decompositions, then another review.
+2. Stage 3.36.0 repeated graph review done (stage_3_36_graph_review/): 4 frozen batches 035–038 (7 modules unblocked by prerequisites 001–005). Next: batches 037–038 (v0.24.75–v0.24.76), then Vector2 extraction and the decompositions, then another review.
 2a. Follow-up: reconcile the compatibility transport removalStage (stage-5) with Stage 6 compatibility removal (HookPowerPolicy activation is stage-6).
 3. Review queue 033/034 evidence prerequisites; prerequisite backlog; graph re-review and new freeze; repeat until Stage 3 is complete, then Stage 4.
