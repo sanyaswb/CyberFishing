@@ -1,0 +1,706 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+  "sourceReleaseVersion": "0.24.71",
+  "targetReleaseVersion": "0.24.72",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_034_execution_plan.json",
+    "sha256": "d901d9e79ad85c39abc2b5b9e26e3d568804151fde9f2057ec25dc3b4c3c5397"
+  },
+  "scope": {
+    "moduleCount": 6,
+    "exportCount": 6,
+    "activationCount": 6,
+    "consumerRelationshipCount": 6
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/PlayerPullMotionSmoother/debug-identity-reset-and-axis-reset",
+      "kind": "behavior-equivalence",
+      "exportName": "PlayerPullMotionSmoother",
+      "currentPath": "src/systems/player_pull_motion_smoother.js",
+      "targetPath": "src/game/domain/fishing/player_pull_motion_smoother.js",
+      "baselineSourceSha256": "a0f63b0e597caf872ae01b46055f758d49b649f076a13e464bbf43b30e036e8a",
+      "caseName": "debug-identity-reset-and-axis-reset",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/PlayerPullMotionSmoother/inertia-smoothing-over-frame-rates",
+      "kind": "behavior-equivalence",
+      "exportName": "PlayerPullMotionSmoother",
+      "currentPath": "src/systems/player_pull_motion_smoother.js",
+      "targetPath": "src/game/domain/fishing/player_pull_motion_smoother.js",
+      "baselineSourceSha256": "a0f63b0e597caf872ae01b46055f758d49b649f076a13e464bbf43b30e036e8a",
+      "caseName": "inertia-smoothing-over-frame-rates",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/PlayerReelFatigueSession/latch-start-end-and-frozen-state",
+      "kind": "behavior-equivalence",
+      "exportName": "PlayerReelFatigueSession",
+      "currentPath": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+      "targetPath": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+      "baselineSourceSha256": "590ef10bf8385ac390a74de13d491f248c4d34a0fd52abf12b7ad42c851d76c9",
+      "caseName": "latch-start-end-and-frozen-state",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/ReelHoldRecoverySystem/blocked-reasons-and-defaults",
+      "kind": "behavior-equivalence",
+      "exportName": "ReelHoldRecoverySystem",
+      "currentPath": "src/core/fishing/reel_hold_recovery_system.js",
+      "targetPath": "src/game/domain/fishing/reel_hold_recovery_system.js",
+      "baselineSourceSha256": "8bb4b488a4f0da146ff95450f9dbf93cc9fd4edac5f8f655786976c9dfd6c02e",
+      "caseName": "blocked-reasons-and-defaults",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/ReelHoldRecoverySystem/hold-recovery-timer-over-frame-rates",
+      "kind": "behavior-equivalence",
+      "exportName": "ReelHoldRecoverySystem",
+      "currentPath": "src/core/fishing/reel_hold_recovery_system.js",
+      "targetPath": "src/game/domain/fishing/reel_hold_recovery_system.js",
+      "baselineSourceSha256": "8bb4b488a4f0da146ff95450f9dbf93cc9fd4edac5f8f655786976c9dfd6c02e",
+      "caseName": "hold-recovery-timer-over-frame-rates",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/ReelRecoveryFishSlowdownPolicy/slowdown-state-in-place-and-multipliers",
+      "kind": "behavior-equivalence",
+      "exportName": "ReelRecoveryFishSlowdownPolicy",
+      "currentPath": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+      "targetPath": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+      "baselineSourceSha256": "d1f6b73568268a7323845576953bb1935d8bac88329a7c139bfe366d4c624ec4",
+      "caseName": "slowdown-state-in-place-and-multipliers",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/RodLateralControlSystem/intent-disabled-and-reset",
+      "kind": "behavior-equivalence",
+      "exportName": "RodLateralControlSystem",
+      "currentPath": "src/systems/rod_lateral_control_system.js",
+      "targetPath": "src/game/domain/fishing/rod_lateral_control_system.js",
+      "baselineSourceSha256": "fb55cffc13f130204999f5b7ca67339eed47452547a88ed945a4bb246da6df74",
+      "caseName": "intent-disabled-and-reset",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/RodLateralControlSystem/rod-control-frames-over-frame-rates",
+      "kind": "behavior-equivalence",
+      "exportName": "RodLateralControlSystem",
+      "currentPath": "src/systems/rod_lateral_control_system.js",
+      "targetPath": "src/game/domain/fishing/rod_lateral_control_system.js",
+      "baselineSourceSha256": "fb55cffc13f130204999f5b7ca67339eed47452547a88ed945a4bb246da6df74",
+      "caseName": "rod-control-frames-over-frame-rates",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/TackleStressAccumulator/guaranteed-failure-defaults-and-reset",
+      "kind": "behavior-equivalence",
+      "exportName": "TackleStressAccumulator",
+      "currentPath": "src/core/fishing/tackle_stress_accumulator.js",
+      "targetPath": "src/game/domain/fishing/tackle_stress_accumulator.js",
+      "baselineSourceSha256": "24e5d354aaef948489c64a8f5d07d939cb63505f639a8b611e002054051c67f3",
+      "caseName": "guaranteed-failure-defaults-and-reset",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/TackleStressAccumulator/stress-accumulation-roll-timer-over-frame-rates",
+      "kind": "behavior-equivalence",
+      "exportName": "TackleStressAccumulator",
+      "currentPath": "src/core/fishing/tackle_stress_accumulator.js",
+      "targetPath": "src/game/domain/fishing/tackle_stress_accumulator.js",
+      "baselineSourceSha256": "24e5d354aaef948489c64a8f5d07d939cb63505f639a8b611e002054051c67f3",
+      "caseName": "stress-accumulation-roll-timer-over-frame-rates",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/six-representation-only-named-esm-targets-and-six-exact-exports",
+      "kind": "compatibility-invariant",
+      "caseName": "six-representation-only-named-esm-targets-and-six-exact-exports",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/three-exact-completed-prefix-imports-bound-to-the-cumulative-instances",
+      "kind": "compatibility-invariant",
+      "caseName": "three-exact-completed-prefix-imports-bound-to-the-cumulative-instances",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/three-owner-created-composition-identities-preserved",
+      "kind": "compatibility-invariant",
+      "caseName": "three-owner-created-composition-identities-preserved",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/reviewed-guarded-window-exposure-moved-to-the-exact-activation-shim",
+      "kind": "compatibility-invariant",
+      "caseName": "reviewed-guarded-window-exposure-moved-to-the-exact-activation-shim",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-esm-evaluation-per-target-without-top-level-effects",
+      "kind": "compatibility-invariant",
+      "caseName": "one-esm-evaluation-per-target-without-top-level-effects",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/six-exact-classic-activations-at-their-legacy-positions",
+      "kind": "compatibility-invariant",
+      "caseName": "six-exact-classic-activations-at-their-legacy-positions",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/six-exact-classic-consumer-relationships-and-three-retired-bridges",
+      "kind": "compatibility-invariant",
+      "caseName": "six-exact-classic-consumer-relationships-and-three-retired-bridges",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/three-consumerless-activations-retired-as-inert-classic-placeholders",
+      "kind": "compatibility-invariant",
+      "caseName": "three-consumerless-activations-retired-as-inert-classic-placeholders",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/recorded-hot-loop-evidence-resolves-every-performance-prerequisite",
+      "kind": "compatibility-invariant",
+      "caseName": "recorded-hot-loop-evidence-resolves-every-performance-prerequisite",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/post-cutover-member-fingerprints-allocation-sites-and-game-cycle-traces-equal",
+      "kind": "compatibility-invariant",
+      "caseName": "post-cutover-member-fingerprints-allocation-sites-and-game-cycle-traces-equal",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-prior-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-prior-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "PlayerPullMotionSmoother",
+      "caseCount": 2,
+      "cases": [
+        "inertia-smoothing-over-frame-rates",
+        "debug-identity-reset-and-axis-reset"
+      ]
+    },
+    {
+      "exportName": "PlayerReelFatigueSession",
+      "caseCount": 1,
+      "cases": [
+        "latch-start-end-and-frozen-state"
+      ]
+    },
+    {
+      "exportName": "ReelHoldRecoverySystem",
+      "caseCount": 2,
+      "cases": [
+        "hold-recovery-timer-over-frame-rates",
+        "blocked-reasons-and-defaults"
+      ]
+    },
+    {
+      "exportName": "ReelRecoveryFishSlowdownPolicy",
+      "caseCount": 1,
+      "cases": [
+        "slowdown-state-in-place-and-multipliers"
+      ]
+    },
+    {
+      "exportName": "RodLateralControlSystem",
+      "caseCount": 2,
+      "cases": [
+        "rod-control-frames-over-frame-rates",
+        "intent-disabled-and-reset"
+      ]
+    },
+    {
+      "exportName": "TackleStressAccumulator",
+      "caseCount": 2,
+      "cases": [
+        "stress-accumulation-roll-timer-over-frame-rates",
+        "guaranteed-failure-defaults-and-reset"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 6,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.35.0-live-observation-and-stage-3.22-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_034_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+          "authoritativeOwners": [
+            "PlayerReelFatigueSession#active",
+            "PlayerReelFatigueSession#endedThisFrame",
+            "PlayerReelFatigueSession#getState",
+            "PlayerReelFatigueSession#startedThisFrame"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+          "authoritativeOwners": [
+            "PlayerReelFatigueSession#active",
+            "PlayerReelFatigueSession#endedThisFrame",
+            "PlayerReelFatigueSession#getState",
+            "PlayerReelFatigueSession#startedThisFrame"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "1c347f08066c2f8b583554c8cad592d69276f448cfe4f3df7cdf8bde07ad6db0",
+        "allocationBaseline": {
+          "objectExpressions": 2,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/fishing/reel_hold_recovery_system.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/fishing/reel_hold_recovery_system.js",
+          "authoritativeOwners": [
+            "ReelHoldRecoverySystem#blockedReason",
+            "ReelHoldRecoverySystem#createState",
+            "ReelHoldRecoverySystem#isStrokeFull",
+            "ReelHoldRecoverySystem#lineRecoveryBlockedReason",
+            "ReelHoldRecoverySystem#loadPolicy",
+            "ReelHoldRecoverySystem#positive",
+            "ReelHoldRecoverySystem#ratio",
+            "ReelHoldRecoverySystem#resolveDelayMs",
+            "ReelHoldRecoverySystem#state",
+            "ReelHoldRecoverySystem#timerMs"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fishing/reel_hold_recovery_system.js",
+          "authoritativeOwners": [
+            "ReelHoldRecoverySystem#blockedReason",
+            "ReelHoldRecoverySystem#createState",
+            "ReelHoldRecoverySystem#isStrokeFull",
+            "ReelHoldRecoverySystem#lineRecoveryBlockedReason",
+            "ReelHoldRecoverySystem#loadPolicy",
+            "ReelHoldRecoverySystem#positive",
+            "ReelHoldRecoverySystem#ratio",
+            "ReelHoldRecoverySystem#resolveDelayMs",
+            "ReelHoldRecoverySystem#state",
+            "ReelHoldRecoverySystem#timerMs"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "246e3e52ddd70fc40ab1397d5bfb87bd301b9eaa201756cbbffc02c2a2d793d6",
+        "allocationBaseline": {
+          "objectExpressions": 12,
+          "arrayExpressions": 0,
+          "newExpressions": 1,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+          "authoritativeOwners": [
+            "ReelRecoveryFishSlowdownPolicy#createState",
+            "ReelRecoveryFishSlowdownPolicy#positive",
+            "ReelRecoveryFishSlowdownPolicy#reset",
+            "ReelRecoveryFishSlowdownPolicy#resolveMultiplier",
+            "ReelRecoveryFishSlowdownPolicy#resolveSource"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+          "authoritativeOwners": [
+            "ReelRecoveryFishSlowdownPolicy#createState",
+            "ReelRecoveryFishSlowdownPolicy#positive",
+            "ReelRecoveryFishSlowdownPolicy#reset",
+            "ReelRecoveryFishSlowdownPolicy#resolveMultiplier",
+            "ReelRecoveryFishSlowdownPolicy#resolveSource"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "3c36dca169ff1a36fe6dd654aaeb48d3f4786bccfa7629fd709ac5d21fc3f46f",
+        "allocationBaseline": {
+          "objectExpressions": 4,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/fishing/tackle_stress_accumulator.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/fishing/tackle_stress_accumulator.js",
+          "authoritativeOwners": [
+            "TackleStressAccumulator#calculateFailureChance",
+            "TackleStressAccumulator#clamp",
+            "TackleStressAccumulator#getDebugData",
+            "TackleStressAccumulator#getStressRatio",
+            "TackleStressAccumulator#lastFailureChance",
+            "TackleStressAccumulator#lastFailureSource",
+            "TackleStressAccumulator#lastGuaranteedFailure",
+            "TackleStressAccumulator#lastOverloadKg",
+            "TackleStressAccumulator#lastRollPassed",
+            "TackleStressAccumulator#lastRollValue",
+            "TackleStressAccumulator#lastStressGainPerSecond",
+            "TackleStressAccumulator#nonNegative",
+            "TackleStressAccumulator#positive",
+            "TackleStressAccumulator#result",
+            "TackleStressAccumulator#roll",
+            "TackleStressAccumulator#rollTimerMs",
+            "TackleStressAccumulator#stressValue"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fishing/tackle_stress_accumulator.js",
+          "authoritativeOwners": [
+            "TackleStressAccumulator#calculateFailureChance",
+            "TackleStressAccumulator#clamp",
+            "TackleStressAccumulator#getDebugData",
+            "TackleStressAccumulator#getStressRatio",
+            "TackleStressAccumulator#lastFailureChance",
+            "TackleStressAccumulator#lastFailureSource",
+            "TackleStressAccumulator#lastGuaranteedFailure",
+            "TackleStressAccumulator#lastOverloadKg",
+            "TackleStressAccumulator#lastRollPassed",
+            "TackleStressAccumulator#lastRollValue",
+            "TackleStressAccumulator#lastStressGainPerSecond",
+            "TackleStressAccumulator#nonNegative",
+            "TackleStressAccumulator#positive",
+            "TackleStressAccumulator#result",
+            "TackleStressAccumulator#roll",
+            "TackleStressAccumulator#rollTimerMs",
+            "TackleStressAccumulator#stressValue"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "b5f23470c444b2a2ab419940d585541837702067aac0b29bca89a8765f76bbb5",
+        "allocationBaseline": {
+          "objectExpressions": 14,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/systems/player_pull_motion_smoother.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/systems/player_pull_motion_smoother.js",
+          "authoritativeOwners": [
+            "PlayerPullMotionSmoother#createDebug",
+            "PlayerPullMotionSmoother#debug",
+            "PlayerPullMotionSmoother#updateAxis",
+            "PlayerPullMotionSmoother#velocityX",
+            "PlayerPullMotionSmoother#velocityY"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fishing/player_pull_motion_smoother.js",
+          "authoritativeOwners": [
+            "PlayerPullMotionSmoother#createDebug",
+            "PlayerPullMotionSmoother#debug",
+            "PlayerPullMotionSmoother#updateAxis",
+            "PlayerPullMotionSmoother#velocityX",
+            "PlayerPullMotionSmoother#velocityY"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "b5feca3296ca2442580e43b5fef984f4552ff6699e894dd660f2f59de74666ad",
+        "allocationBaseline": {
+          "objectExpressions": 8,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/systems/rod_lateral_control_system.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/systems/rod_lateral_control_system.js",
+          "authoritativeOwners": [
+            "RodLateralControlSystem#angleResolver",
+            "RodLateralControlSystem#centerStartDirectionX",
+            "RodLateralControlSystem#clamp01",
+            "RodLateralControlSystem#controlBuildRatio",
+            "RodLateralControlSystem#controlStartedCentered",
+            "RodLateralControlSystem#createResult",
+            "RodLateralControlSystem#forceBlockedReason",
+            "RodLateralControlSystem#hasPoint",
+            "RodLateralControlSystem#intentBlockedReason",
+            "RodLateralControlSystem#legacyResolveModeFromFishVelocityX",
+            "RodLateralControlSystem#number",
+            "RodLateralControlSystem#pressureEfficiency",
+            "RodLateralControlSystem#pressureGainMultiplier",
+            "RodLateralControlSystem#resetControlSession",
+            "RodLateralControlSystem#resolveControlBuildPerSecond",
+            "RodLateralControlSystem#resolveForceFrame",
+            "RodLateralControlSystem#resolveIntent",
+            "RodLateralControlSystem#resolveMoveFrame",
+            "RodLateralControlSystem#resolveTargetFrame",
+            "RodLateralControlSystem#resolveTensionModeFrame",
+            "RodLateralControlSystem#resolveTensionMultiplier",
+            "RodLateralControlSystem#result",
+            "RodLateralControlSystem#tensionBuildRateMultiplier",
+            "RodLateralControlSystem#tensionModeResolver",
+            "RodLateralControlSystem#updateControlBuildRatio",
+            "RodLateralControlSystem#wasControlActive"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/fishing/rod_lateral_control_system.js",
+          "authoritativeOwners": [
+            "RodLateralControlSystem#angleResolver",
+            "RodLateralControlSystem#centerStartDirectionX",
+            "RodLateralControlSystem#clamp01",
+            "RodLateralControlSystem#controlBuildRatio",
+            "RodLateralControlSystem#controlStartedCentered",
+            "RodLateralControlSystem#createResult",
+            "RodLateralControlSystem#forceBlockedReason",
+            "RodLateralControlSystem#hasPoint",
+            "RodLateralControlSystem#intentBlockedReason",
+            "RodLateralControlSystem#legacyResolveModeFromFishVelocityX",
+            "RodLateralControlSystem#number",
+            "RodLateralControlSystem#pressureEfficiency",
+            "RodLateralControlSystem#pressureGainMultiplier",
+            "RodLateralControlSystem#resetControlSession",
+            "RodLateralControlSystem#resolveControlBuildPerSecond",
+            "RodLateralControlSystem#resolveForceFrame",
+            "RodLateralControlSystem#resolveIntent",
+            "RodLateralControlSystem#resolveMoveFrame",
+            "RodLateralControlSystem#resolveTargetFrame",
+            "RodLateralControlSystem#resolveTensionModeFrame",
+            "RodLateralControlSystem#resolveTensionMultiplier",
+            "RodLateralControlSystem#result",
+            "RodLateralControlSystem#tensionBuildRateMultiplier",
+            "RodLateralControlSystem#tensionModeResolver",
+            "RodLateralControlSystem#updateControlBuildRatio",
+            "RodLateralControlSystem#wasControlActive"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "8e9e6b51ba192dbcc11ba2dc0bac97bf9dac935e9fa1c2ca04213038fde989b6",
+        "allocationBaseline": {
+          "objectExpressions": 42,
+          "arrayExpressions": 0,
+          "newExpressions": 2,
+          "objectFreezeCalls": 3,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.35.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

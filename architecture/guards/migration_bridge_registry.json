@@ -3,6 +3,22 @@
   "kind": "cyber-fishing-migration-bridges",
   "bridges": [
     {
+      "id": "bridge-0095bdc3c5cc",
+      "bridge": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+      "reason": "Preserve the exact hot-loop fishing consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "PlayerReelFatigueSession",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-021cb2032053",
       "bridge": "src/core/items/hook/hook_power_policy.js",
       "source": "src/entities/tackle.js",
@@ -158,22 +174,6 @@
       "globalProviders": [
         {
           "symbol": "RefillCompatibleSignaturePolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-19607c8ce243",
-      "bridge": "src/core/fishing/reel_hold_load_policy.js",
-      "source": "src/core/fishing/reel_hold_recovery_system.js",
-      "target": "src/game/domain/fishing/reel_hold_load_policy.js",
-      "reason": "Preserve the exact synchronous Line Spool, Rod Stroke Distance and Reel Hold Load consumer set until its approved migration stage removes the legacy symbols.",
-      "owner": "stage-3.candidate-008-fishing-f859ccd3",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "ReelHoldLoadPolicy",
           "mechanism": "global-this-property"
         }
       ]
@@ -571,22 +571,6 @@
       ]
     },
     {
-      "id": "bridge-451e340bf590",
-      "bridge": "src/core/fishing/rod_control_tension_mode_resolver.js",
-      "source": "src/systems/rod_lateral_control_system.js",
-      "target": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
-      "reason": "Preserve the exact synchronous Fishing Domain Primitives II consumer set until its approved migration stage removes the legacy symbols.",
-      "owner": "stage-3.candidate-006-fishing-e48e70d8",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "RodControlTensionModeResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-465e746a78c9",
       "bridge": "src/core/items/progression/derived_stat_metric_strategy.js",
       "source": "src/app/bootstrap.js",
@@ -598,6 +582,22 @@
       "globalProviders": [
         {
           "symbol": "DerivedStatMetricStrategy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-46e283c7d3b4",
+      "bridge": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+      "reason": "Preserve the exact hot-loop fishing consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ReelRecoveryFishSlowdownPolicy",
           "mechanism": "global-this-property"
         }
       ]
@@ -646,22 +646,6 @@
       "globalProviders": [
         {
           "symbol": "TargetRangeMetricStrategy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-509dd42a0477",
-      "bridge": "src/core/fishing/rod_control_angle_resolver.js",
-      "source": "src/systems/rod_lateral_control_system.js",
-      "target": "src/game/domain/fishing/rod_control_angle_resolver.js",
-      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-013-fishing-0267b3ea",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "RodControlAngleResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -726,6 +710,22 @@
       "globalProviders": [
         {
           "symbol": "ItemAssemblyStackingPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-54ef64d12545",
+      "bridge": "src/core/fishing/tackle_stress_accumulator.js",
+      "source": "src/systems/tackle_stress_system.js",
+      "target": "src/game/domain/fishing/tackle_stress_accumulator.js",
+      "reason": "Preserve the exact hot-loop fishing consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "TackleStressAccumulator",
           "mechanism": "global-this-property"
         }
       ]
@@ -1691,6 +1691,22 @@
       ]
     },
     {
+      "id": "bridge-b2d34369a857",
+      "bridge": "src/systems/rod_lateral_control_system.js",
+      "source": "src/app/fishing.js",
+      "target": "src/game/domain/fishing/rod_lateral_control_system.js",
+      "reason": "Preserve the exact hot-loop fishing consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "RodLateralControlSystem",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-b6066189c484",
       "bridge": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
       "source": "src/systems/fight_physics_system.js",
@@ -1750,6 +1766,38 @@
       "globalProviders": [
         {
           "symbol": "EventBus",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-bc742ffa077f",
+      "bridge": "src/systems/player_pull_motion_smoother.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/player_pull_motion_smoother.js",
+      "reason": "Preserve the exact hot-loop fishing consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "PlayerPullMotionSmoother",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-bc7633877a9c",
+      "bridge": "src/core/fishing/reel_hold_recovery_system.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/reel_hold_recovery_system.js",
+      "reason": "Preserve the exact hot-loop fishing consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ReelHoldRecoverySystem",
           "mechanism": "global-this-property"
         }
       ]

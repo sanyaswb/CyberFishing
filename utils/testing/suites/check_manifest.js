@@ -727,6 +727,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       title: "Stage 3.34.0–3.34.7 assemblies assembly state repository domain migration with freeze-extension adoption, retirements and rollback gates",
       file: "utils/architecture/stage-3-batch-check-runner.js",
       args: ["--batch", "033", "--mode", "architecture"],
+      suites: ["history"],
+    },
+    {
+      id: "stage-3-batch-034-architecture",
+      title: "Stage 3.35.0–3.35.7 fishing hot-loop cluster domain migration with recorded hot-loop evidence, trace equivalence, retirements and rollback gates",
+      file: "utils/architecture/stage-3-batch-check-runner.js",
+      args: ["--batch", "034", "--mode", "architecture"],
       suites: ["quick", "architecture", "history"],
     },
     {

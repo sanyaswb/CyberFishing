@@ -648,6 +648,8 @@ class StageOneClosureValidator {
         "Items Effective Rarity Resolver Domain",
       "stage-3.replan-322.batch-033-assemblies-3cd39292":
         "Assemblies Assembly State Repository Domain",
+      "stage-3.replan-322.batch-034-fishing-b761d4f1":
+        "Fishing Hot-Loop Cluster Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

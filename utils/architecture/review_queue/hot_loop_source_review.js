@@ -29,11 +29,15 @@ class StageThreeHotLoopSourceReview {
     this.observer = observer;
   }
 
-  review({ source, currentPath, className }) {
-    const tree = espree.parse(source, { ecmaVersion: "latest", sourceType: "script", loc: true, range: true });
-    const declaration = tree.body.find(node => node.type === "ClassDeclaration" && node.id.name === className);
+  // `sourceType: "module"` reviews the exported class of an ESM target the same way, so its member
+  // fingerprints and allocation sites compare directly with the classic record.
+  review({ source, currentPath, className, sourceType = "script" }) {
+    const tree = espree.parse(source, { ecmaVersion: "latest", sourceType, loc: true, range: true });
+    const declaration = tree.body.map(node => (node.type === "ExportNamedDeclaration" ? node.declaration : node))
+      .find(node => node?.type === "ClassDeclaration" && node.id.name === className);
     assert(declaration, `${currentPath}: class ${className} is missing`);
-    const observed = this.observer.observe(source, currentPath);
+    const observed = this.observer.observe(sourceType === "script" ? source
+      : source.slice(declaration.range[0], declaration.range[1]), currentPath);
     const allocations = new Map(observed.methods.map(method => [`${method.kind}\0${method.name}`, method.allocations]));
     const memberName = key => key.type === "PrivateIdentifier" ? `#${key.name}` : key.name;
     const members = declaration.body.body.map(member => ({
@@ -44,7 +48,7 @@ class StageThreeHotLoopSourceReview {
     }));
     const enclosing = node => members.find(member =>
       member.node.range[0] <= node.range[0] && node.range[1] <= member.node.range[1]) || null;
-    const scope = eslintScope.analyze(tree, { ecmaVersion: 2022, sourceType: "script" });
+    const scope = eslintScope.analyze(tree, { ecmaVersion: 2022, sourceType });
     const free = [];
     const unresolved = new Set(scope.globalScope.through.map(reference => reference.identifier));
     for (const reference of scope.globalScope.through) {

@@ -1,0 +1,1625 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-034-observation-reconciliation",
+  "status": "verified",
+  "batchId": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+  "releaseVersion": "0.24.71",
+  "evidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_034_prebuild_contract.json",
+      "sha256": "8cbd79ee9b5c629033d6ab21ab709cf7b3aa6752ce99bafddc8fe46e69c593a9"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_034_runtime_cutover.json",
+      "sha256": "4814b23f178368332646377c469c535ae390ea7c2dd881dcc54f16320cbd2c66"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "39c532b8d4014687d4255074243dae1a79e2134411f95f47b48db7624014263e"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_034_live_runtime_validation.json",
+      "sha256": "10c22914397c52b827932ed35c86ac77db515e452a3198d7d31f1772c1b6bcba"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_034_audit.json",
+      "sha256": "ffd4e7abb5b9cb4b3ac5cc2220252b38cc2973ae5872f9fa3a3c1a84e4a80eb4"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "f7bcba7722ef341bea1f2914d3c484037618e288b5f877630f5c6f8aa29f7f16"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "9428b204e78cb10b609dcf7dbcb16c9d5c53f6ea24797d046117feb7128eb58f"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "sha256": "77b621365ec53ef0dd0e7bbcb607a8065ef5f61e3efd75716b010f5039744c0a"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "sha256": "3aff6f5e2e4e4d220a2b8a2cc67017754938295135ecbcd5273df0f3d2a5e612"
+    },
+    {
+      "path": "architecture/module_architecture.json",
+      "sha256": "563423746bc86a99ced7bd0ffeb14e20ef4c62021c2c839c069225ec77cf79d6"
+    },
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    }
+  ],
+  "manifestTransition": {
+    "beforeSha256": "2274c37774583075279e6f46ba6c2775ff297471d4ae4842b8f02ebbf3533767",
+    "afterSha256": "e6f95885ddd623b6bda7bf7cc4d3136cf6cb8e34699be78b8d196d7d3e86e7ce",
+    "records": [
+      {
+        "currentPath": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+        "before": {
+          "currentPath": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+          "currentArea": "core/fishing/player_pressure",
+          "observed": {
+            "legacyLoadOrder": 98,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "94fbf76a803c01320262c70c87ae9c9ea27facac0205d773a5d3180809c7f599"
+      },
+      {
+        "currentPath": "src/core/fishing/reel_hold_load_policy.js",
+        "before": {
+          "currentPath": "src/core/fishing/reel_hold_load_policy.js",
+          "currentArea": "core/fishing",
+          "observed": {
+            "legacyLoadOrder": 114,
+            "providers": {
+              "status": "verified",
+              "items": [
+                {
+                  "symbol": "ReelHoldLoadPolicy",
+                  "mechanism": "global-this-property",
+                  "availability": "program-init"
+                }
+              ],
+              "issues": []
+            },
+            "consumers": {
+              "status": "verified",
+              "items": [
+                {
+                  "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+                  "mechanism": "global-this-property",
+                  "accessRequirement": "required",
+                  "executionPhase": "eager"
+                }
+              ],
+              "issues": []
+            },
+            "environment": {
+              "status": "verified",
+              "builtins": [
+                "globalThis"
+              ],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/reel_hold_load_policy.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "verified",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [
+                {
+                  "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+                  "mechanism": "global-this-property",
+                  "accessRequirement": "required",
+                  "executionPhase": "eager",
+                  "resolution": "unresolved"
+                }
+              ],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "a20c1f321da4e9ecc65fb3f62c5ba48d071d2ee25e58b473a0fae350ce72d28e"
+      },
+      {
+        "currentPath": "src/core/fishing/reel_hold_recovery_system.js",
+        "before": {
+          "currentPath": "src/core/fishing/reel_hold_recovery_system.js",
+          "currentArea": "core/fishing",
+          "observed": {
+            "legacyLoadOrder": 115,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/reel_hold_recovery_system.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "d8423e29af411274c2438233f3fc7baefd80c9e6d1e7f6284dfe51feb03d72bd"
+      },
+      {
+        "currentPath": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+        "before": {
+          "currentPath": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+          "currentArea": "core/fishing",
+          "observed": {
+            "legacyLoadOrder": 116,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "74096331076f6225f2814c270122243adb1dc95cbde436fb56dac860d547af65"
+      },
+      {
+        "currentPath": "src/core/fishing/rod_control_angle_resolver.js",
+        "before": {
+          "currentPath": "src/core/fishing/rod_control_angle_resolver.js",
+          "currentArea": "core/fishing",
+          "observed": {
+            "legacyLoadOrder": 127,
+            "providers": {
+              "status": "verified",
+              "items": [
+                {
+                  "symbol": "RodControlAngleResolver",
+                  "mechanism": "global-this-property",
+                  "availability": "program-init"
+                }
+              ],
+              "issues": []
+            },
+            "consumers": {
+              "status": "verified",
+              "items": [
+                {
+                  "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+                  "mechanism": "global-this-property",
+                  "accessRequirement": "required",
+                  "executionPhase": "eager"
+                }
+              ],
+              "issues": []
+            },
+            "environment": {
+              "status": "verified",
+              "builtins": [
+                "globalThis"
+              ],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/rod_control_angle_resolver.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "verified",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [
+                {
+                  "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+                  "mechanism": "global-this-property",
+                  "accessRequirement": "required",
+                  "executionPhase": "eager",
+                  "resolution": "unresolved"
+                }
+              ],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "3b7ae301ed1537e04fcfdb12da3336fa44c55b90c55149fbe8716746003902b5"
+      },
+      {
+        "currentPath": "src/core/fishing/rod_control_tension_mode_resolver.js",
+        "before": {
+          "currentPath": "src/core/fishing/rod_control_tension_mode_resolver.js",
+          "currentArea": "core/fishing",
+          "observed": {
+            "legacyLoadOrder": 126,
+            "providers": {
+              "status": "verified",
+              "items": [
+                {
+                  "symbol": "RodControlTensionModeResolver",
+                  "mechanism": "global-this-property",
+                  "availability": "program-init"
+                }
+              ],
+              "issues": []
+            },
+            "consumers": {
+              "status": "verified",
+              "items": [
+                {
+                  "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+                  "mechanism": "global-this-property",
+                  "accessRequirement": "required",
+                  "executionPhase": "eager"
+                }
+              ],
+              "issues": []
+            },
+            "environment": {
+              "status": "verified",
+              "builtins": [
+                "globalThis"
+              ],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "verified",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [
+                {
+                  "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+                  "mechanism": "global-this-property",
+                  "accessRequirement": "required",
+                  "executionPhase": "eager",
+                  "resolution": "unresolved"
+                }
+              ],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "fa3c36ea1a289c93eeac0a8366bf371fa8c62c0a7e8ac3c4448e23706a1a91dd"
+      },
+      {
+        "currentPath": "src/core/fishing/tackle_stress_accumulator.js",
+        "before": {
+          "currentPath": "src/core/fishing/tackle_stress_accumulator.js",
+          "currentArea": "core/fishing",
+          "observed": {
+            "legacyLoadOrder": 138,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/tackle_stress_accumulator.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "0c5253fa6ccdeed899c9617660ea770c659fe24a05ba5df17a685ceef08d21c4"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+          "currentArea": "game/domain/fishing/player_pressure",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "a1a97e073983475d8ae04d9b0c22a18a1c623af47e7291fd097774199ab24585"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/player_pull_motion_smoother.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/player_pull_motion_smoother.js",
+          "currentArea": "game/domain/fishing",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/player_pull_motion_smoother.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "97e1c3f04cd2a9c6a52a46eab039557dd835c2201c41ef3f147067a8cf51d094"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/reel_hold_recovery_system.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/reel_hold_recovery_system.js",
+          "currentArea": "game/domain/fishing",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/reel_hold_recovery_system.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "e70a47ffe0565aa46de392ee186e54bd3c34aaf61a98a68238f1d4e4ff10cc43"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+          "currentArea": "game/domain/fishing",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "df936ac09f321b58056051f9aad78b4d66c9a3e55dfeb96cb9aa95bb2897f680"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/rod_lateral_control_system.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/rod_lateral_control_system.js",
+          "currentArea": "game/domain/fishing",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/rod_lateral_control_system.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "f7c0bca3f7371ae094297bfbe3eef86ac52d6a51f7f809b5bbdde444a48f8bc1"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/tackle_stress_accumulator.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/tackle_stress_accumulator.js",
+          "currentArea": "game/domain/fishing",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/tackle_stress_accumulator.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "99e694b04840182759cc0c572e8ffbba1d86729efe6ff9658b160f42bcc5ba47"
+      },
+      {
+        "currentPath": "src/systems/player_pull_motion_smoother.js",
+        "before": {
+          "currentPath": "src/systems/player_pull_motion_smoother.js",
+          "currentArea": "systems",
+          "observed": {
+            "legacyLoadOrder": 212,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/player_pull_motion_smoother.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "25021fa3a23ae08883499d24c29bbe3ad4e625055f3b5cba34122603f98cfdeb"
+      },
+      {
+        "currentPath": "src/systems/rod_lateral_control_system.js",
+        "before": {
+          "currentPath": "src/systems/rod_lateral_control_system.js",
+          "currentArea": "systems",
+          "observed": {
+            "legacyLoadOrder": 214,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/rod_lateral_control_system.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "5b4fa53b09a3aa0f3a11e114b4a9322d1d143de9dd5f3e19066add40aeaddec9"
+      }
+    ]
+  },
+  "totals": {
+    "modules": 530,
+    "providers": 797,
+    "consumers": 943,
+    "confirmed": 855,
+    "unresolved": 88,
+    "ambiguous": 0,
+    "edges": 735
+  },
+  "esm": [
+    {
+      "source": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Object"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/fishing/player_pull_motion_smoother.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Math",
+        "Number"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/fishing/reel_hold_recovery_system.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [
+        {
+          "source": "src/game/domain/fishing/reel_hold_recovery_system.js",
+          "specifier": "./reel_hold_load_policy.js",
+          "resolvedTarget": "src/game/domain/fishing/reel_hold_load_policy.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 1,
+            "column": 36
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 3,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Math",
+        "Number"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Math",
+        "Number"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/fishing/rod_lateral_control_system.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [
+        {
+          "source": "src/game/domain/fishing/rod_lateral_control_system.js",
+          "specifier": "./rod_control_angle_resolver.js",
+          "resolvedTarget": "src/game/domain/fishing/rod_control_angle_resolver.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 1,
+            "column": 41
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        },
+        {
+          "source": "src/game/domain/fishing/rod_lateral_control_system.js",
+          "specifier": "./rod_control_tension_mode_resolver.js",
+          "resolvedTarget": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 2,
+            "column": 47
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 4,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Math",
+        "Number",
+        "Object"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/fishing/tackle_stress_accumulator.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Math",
+        "Number"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    }
+  ],
+  "controlledGlobalTransitions": [
+    {
+      "source": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+      "target": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+      "symbol": "PlayerReelFatigueSession",
+      "activationId": "activation-6f9f31ec1100",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/systems/player_pull_motion_smoother.js",
+      "target": "src/game/domain/fishing/player_pull_motion_smoother.js",
+      "symbol": "PlayerPullMotionSmoother",
+      "activationId": "activation-7e9f7bbaf846",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+      "target": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+      "symbol": "ReelRecoveryFishSlowdownPolicy",
+      "activationId": "activation-8d90074016f4",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/fishing/tackle_stress_accumulator.js",
+      "target": "src/game/domain/fishing/tackle_stress_accumulator.js",
+      "symbol": "TackleStressAccumulator",
+      "activationId": "activation-9f3fc146aed0",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/systems/rod_lateral_control_system.js",
+      "target": "src/game/domain/fishing/rod_lateral_control_system.js",
+      "symbol": "RodLateralControlSystem",
+      "activationId": "activation-c23a9b7efff6",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/fishing/reel_hold_recovery_system.js",
+      "target": "src/game/domain/fishing/reel_hold_recovery_system.js",
+      "symbol": "ReelHoldRecoverySystem",
+      "activationId": "activation-e092bb522808",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    }
+  ],
+  "derivedIncomingConsumers": [
+    {
+      "source": "src/app/fishing.js",
+      "symbol": "RodLateralControlSystem",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/systems/rod_lateral_control_system.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "symbol": "PlayerPullMotionSmoother",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/systems/player_pull_motion_smoother.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "symbol": "PlayerReelFatigueSession",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "symbol": "ReelHoldRecoverySystem",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/reel_hold_recovery_system.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "symbol": "ReelRecoveryFishSlowdownPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/tackle_stress_system.js",
+      "symbol": "TackleStressAccumulator",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/tackle_stress_accumulator.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "guardedConsumers": [
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "symbol": "PlayerReelFatigueSession",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "symbol": "ReelRecoveryFishSlowdownPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "additionalConsumers": [],
+  "dependencyDelta": {
+    "confirmedInterFileEdgesBefore": 735,
+    "confirmedInterFileEdgesAfter": 735,
+    "newlyConfirmedEdges": [],
+    "removedEdges": []
+  },
+  "transportUnresolved": {
+    "count": 6,
+    "classification": "compatibility-transport-outside-src-project-graph",
+    "createsProjectDependencyEdge": false
+  },
+  "removalDependencies": [
+    {
+      "activationId": "activation-6f9f31ec1100",
+      "source": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+      "consumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "removalStage": "stage-4",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-7e9f7bbaf846",
+      "source": "src/systems/player_pull_motion_smoother.js",
+      "consumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "removalStage": "stage-4",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-8d90074016f4",
+      "source": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+      "consumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "removalStage": "stage-4",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-9f3fc146aed0",
+      "source": "src/core/fishing/tackle_stress_accumulator.js",
+      "consumers": [
+        "src/systems/tackle_stress_system.js"
+      ],
+      "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "removalStage": "stage-3",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-c23a9b7efff6",
+      "source": "src/systems/rod_lateral_control_system.js",
+      "consumers": [
+        "src/app/fishing.js"
+      ],
+      "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "removalStage": "stage-4",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-e092bb522808",
+      "source": "src/core/fishing/reel_hold_recovery_system.js",
+      "consumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "removalStage": "stage-4",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    }
+  ],
+  "globalNamespace": {
+    "newGlobals": [],
+    "removedSymbols": [
+      {
+        "symbol": "RodControlAngleResolver",
+        "source": "src/core/fishing/rod_control_angle_resolver.js",
+        "consumers": 0,
+        "reason": "retired-activation-all-listed-legacy-consumers-migrated"
+      },
+      {
+        "symbol": "ReelHoldLoadPolicy",
+        "source": "src/core/fishing/reel_hold_load_policy.js",
+        "consumers": 0,
+        "reason": "retired-activation-all-listed-legacy-consumers-migrated"
+      },
+      {
+        "symbol": "RodControlTensionModeResolver",
+        "source": "src/core/fishing/rod_control_tension_mode_resolver.js",
+        "consumers": 0,
+        "reason": "retired-activation-all-listed-legacy-consumers-migrated"
+      }
+    ],
+    "mechanismTransitions": [
+      {
+        "source": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+        "target": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+        "symbol": "PlayerReelFatigueSession",
+        "activationId": "activation-6f9f31ec1100",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/systems/player_pull_motion_smoother.js",
+        "target": "src/game/domain/fishing/player_pull_motion_smoother.js",
+        "symbol": "PlayerPullMotionSmoother",
+        "activationId": "activation-7e9f7bbaf846",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+        "target": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+        "symbol": "ReelRecoveryFishSlowdownPolicy",
+        "activationId": "activation-8d90074016f4",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/fishing/tackle_stress_accumulator.js",
+        "target": "src/game/domain/fishing/tackle_stress_accumulator.js",
+        "symbol": "TackleStressAccumulator",
+        "activationId": "activation-9f3fc146aed0",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/systems/rod_lateral_control_system.js",
+        "target": "src/game/domain/fishing/rod_lateral_control_system.js",
+        "symbol": "RodLateralControlSystem",
+        "activationId": "activation-c23a9b7efff6",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/fishing/reel_hold_recovery_system.js",
+        "target": "src/game/domain/fishing/reel_hold_recovery_system.js",
+        "symbol": "ReelHoldRecoverySystem",
+        "activationId": "activation-e092bb522808",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      }
+    ]
+  },
+  "graph": {
+    "modules": 530,
+    "consumers": 943,
+    "confirmed": 855,
+    "selfConfirmed": 3,
+    "unresolved": 88,
+    "ambiguous": 0,
+    "edges": 735,
+    "reverseLinks": 735,
+    "targetsWithConsumers": 398,
+    "unifiedEdges": 861,
+    "reverseConsumers": "derived-only",
+    "verifiedIncoming": [
+      {
+        "sourceProvider": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+        "targetModule": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+        "legacy": [
+          {
+            "source": "src/systems/fight_physics_system.js",
+            "symbols": [
+              "PlayerReelFatigueSession"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+            "target": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-0095bdc3c5cc",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/systems/player_pull_motion_smoother.js",
+        "targetModule": "src/game/domain/fishing/player_pull_motion_smoother.js",
+        "legacy": [
+          {
+            "source": "src/systems/fight_physics_system.js",
+            "symbols": [
+              "PlayerPullMotionSmoother"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/systems/player_pull_motion_smoother.js",
+            "target": "src/game/domain/fishing/player_pull_motion_smoother.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-bc742ffa077f",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+        "targetModule": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+        "legacy": [
+          {
+            "source": "src/systems/fight_physics_system.js",
+            "symbols": [
+              "ReelRecoveryFishSlowdownPolicy"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+            "target": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-46e283c7d3b4",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/fishing/tackle_stress_accumulator.js",
+        "targetModule": "src/game/domain/fishing/tackle_stress_accumulator.js",
+        "legacy": [
+          {
+            "source": "src/systems/tackle_stress_system.js",
+            "symbols": [
+              "TackleStressAccumulator"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/fishing/tackle_stress_accumulator.js",
+            "target": "src/game/domain/fishing/tackle_stress_accumulator.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-54ef64d12545",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/systems/rod_lateral_control_system.js",
+        "targetModule": "src/game/domain/fishing/rod_lateral_control_system.js",
+        "legacy": [
+          {
+            "source": "src/app/fishing.js",
+            "symbols": [
+              "RodLateralControlSystem"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/systems/rod_lateral_control_system.js",
+            "target": "src/game/domain/fishing/rod_lateral_control_system.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-b2d34369a857",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/fishing/reel_hold_recovery_system.js",
+        "targetModule": "src/game/domain/fishing/reel_hold_recovery_system.js",
+        "legacy": [
+          {
+            "source": "src/systems/fight_physics_system.js",
+            "symbols": [
+              "ReelHoldRecoverySystem"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/fishing/reel_hold_recovery_system.js",
+            "target": "src/game/domain/fishing/reel_hold_recovery_system.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-bc7633877a9c",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "reverseIndexSha256": "d04f923ec21e0e0bc281c0a3c40083b0fd273de080c10cb8a4e201f2ef034c60"
+  },
+  "guards": {
+    "failureCount": 0,
+    "knownDebtCount": 184,
+    "diagnosticsSha256": "39d41dbe8a1e8d06adb8dbff42c287a2ee2bb51ac76738f9fbb8e233a343010a",
+    "baselineGlobals": 855
+  },
+  "metadataTransition": {
+    "field": "architecture.migrationStatus",
+    "from": "migrating",
+    "to": "verified",
+    "targets": [
+      "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+      "src/game/domain/fishing/player_pull_motion_smoother.js",
+      "src/game/domain/fishing/reel_hold_recovery_system.js",
+      "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+      "src/game/domain/fishing/rod_lateral_control_system.js",
+      "src/game/domain/fishing/tackle_stress_accumulator.js"
+    ]
+  },
+  "topology": {
+    "modules": 106,
+    "activations": 98,
+    "bridges": 143
+  },
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034",
+      "stage-3.candidate-010-inventory-e3dffbe7",
+      "stage-3.candidate-011-items-11818ee5",
+      "stage-3.candidate-012-assemblies-2086347a",
+      "stage-3.candidate-013-fishing-0267b3ea",
+      "stage-3.candidate-014-fishing-fefd469b",
+      "stage-3.candidate-015-fishing-37dc3452",
+      "stage-3.candidate-016-fishing-f8c953aa",
+      "stage-3.candidate-017-inventory-fd62478b",
+      "stage-3.candidate-018-items-8ea4be10",
+      "stage-3.candidate-019-items-b0af5033",
+      "stage-3.candidate-020-assemblies-43d77861",
+      "stage-3.candidate-021-equipment-4044fcef",
+      "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+      "stage-3.replan-322.batch-023-items-c91fce82",
+      "stage-3.replan-322.batch-024-inventory-21307d68",
+      "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+      "stage-3.replan-322.batch-026-inventory-ad73f2fb",
+      "stage-3.replan-322.batch-027-items-e8f84667",
+      "stage-3.replan-322.batch-028-assemblies-f4be469e",
+      "stage-3.replan-322.batch-029-fishing-f2a8faba",
+      "stage-3.replan-322.batch-030-items-a3bf25f7",
+      "stage-3.replan-322.batch-031-fishing-d2f28c0f",
+      "stage-3.replan-322.batch-032-items-096b3398",
+      "stage-3.replan-322.batch-033-assemblies-3cd39292"
+    ],
+    "activeBatchId": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+    "activeBatchPhase": "runtime-active",
+    "batchCompleted": false
+  },
+  "releaseClosureAuthorized": false,
+  "verdict": "eligible-for-full-acceptance",
+  "nextGate": "stage-3.35.8-full-acceptance-and-browser-smoke"
+}

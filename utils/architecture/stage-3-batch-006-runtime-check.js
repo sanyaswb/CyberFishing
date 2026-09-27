@@ -23,6 +23,8 @@ const {
 } = require("./stage-3-batch-006-focused-test-matrix-check");
 
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
+const { StageThreeRetirementView } = require("./domain_batches/stage_three_retirement_view");
+const { RetiredActivationPlaceholder } = require("../build/compat_runtime/activation_retirement");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BATCH_ID = "stage-3.candidate-006-fishing-e48e70d8";
 
@@ -151,12 +153,19 @@ class StageThreeBatch006RuntimeCheck {
   }
 
   #verifyActivations(contract, batch) {
-    const ownerActivations = contract.activationPositions.filter((record) =>
-      record.owner === BATCH_ID);
+    // Activations a later batch retired stay in the owner's contract through the retired ledger.
+    const view = new StageThreeRetirementView({ projectRoot: PROJECT_ROOT, runtimeContract: contract });
+    const ownerActivations = view.activationsOwnedBy(BATCH_ID);
     assert.equal(ownerActivations.length, 6);
     assert.deepEqual(ownerActivations.map((record) => record.id).sort(),
       batch.compatibility.newActivations.map((record) => record.contract.id).sort());
     for (const activation of ownerActivations) {
+      if (view.isRetired(activation.id)) {
+        new RetiredActivationPlaceholder().validateProvider({ code: this.#read(activation.sourceProvider),
+          activations: view.retiredActivations().filter((item) => item.sourceProvider === activation.sourceProvider) });
+        assert.equal(fs.existsSync(path.join(PROJECT_ROOT, contract.output.directory, activation.shimFile)), false);
+        continue;
+      }
       const shim = this.#read(`${contract.output.directory}${activation.shimFile}`);
       assert.equal(this.#read(activation.sourceProvider), shim);
       const tree = espree.parse(shim, { ecmaVersion: "latest", sourceType: "script" });

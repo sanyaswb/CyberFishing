@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-034-browser-confirmation",
+  "batchId": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+  "releaseVersion": "0.24.71",
+  "status": "passed",
+  "performedBy": "claude-automated-substitute",
+  "recordedAt": "2026-09-27T15:51:07.463Z",
+  "evidenceType": "owner-authorized-automated-substitute",
+  "gate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts",
+  "browserSummary": {
+    "userStatement": "PASS (automated substitute, 2026-09-27): node utils/game-cycle-check.js re-executed without seals (exit 0, 208 scenario assertions passed, including the fight, reel-hold, stress and rod-control scenarios) and the live validation reproduced all six recorded hot-loop game-cycle traces and member fingerprints; the game loaded from npm run dev in the built-in browser with the six migrated globals published and the three retired globals absent; a cast could not be started by the built-in browser's synthetic pointer input (known limitation), so the fight is covered by the game-cycle traces; screenshots taken; dev server stopped afterwards.",
+    "context": "Automated substitute per the owner's 2026-09-27 authorization: game-cycle loop (fight, reel hold, stress and rod control scenarios) re-executed without seals, the recorded hot-loop traces reproduced, and a built-in-browser load of the game with screenshots and console counts.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": true
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console)",
+    "independentlyInstrumented": true
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_034_acceptance_pass.json",
+    "sha256": "0bb93e4092ec33fdfa80d51738ff46a14c9c3fc058ee4afa9ddfe8e1d0663c1c"
+  },
+  "historicalSummaryPreserved": true
+}

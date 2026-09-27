@@ -1,0 +1,255 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-034-side-effect-review",
+  "batchId": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+  "stage": "3.35.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.71",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_22/approved_prefix.json",
+      "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+    },
+    {
+      "path": "architecture/migration/stage_3_34_review_queue/freeze_extension.json",
+      "sha256": "5142dcb02f3b9936654440fbf804f66e4e47daff46acca18ce222d22a8ecba00"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "25fac8ff7dfe97cff5cdc1e14fc389cead00bc8800849fc72e712dcb93dfa9e0"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+      "targetPath": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+      "sourceSha256": "590ef10bf8385ac390a74de13d491f248c4d34a0fd52abf12b7ad42c851d76c9",
+      "contract": {
+        "kind": "guarded-window-class-exposure",
+        "symbol": "PlayerReelFatigueSession",
+        "location": "44:3"
+      },
+      "review": {
+        "kind": "guarded-window-class-exposure",
+        "currentPath": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+        "sourceSha256": "590ef10bf8385ac390a74de13d491f248c4d34a0fd52abf12b7ad42c851d76c9",
+        "symbol": "PlayerReelFatigueSession",
+        "location": "44:3",
+        "guardLocation": "43:1",
+        "assignmentTarget": "window.PlayerReelFatigueSession",
+        "evaluationCount": 1,
+        "globalPropertiesAddedWithoutWindow": [],
+        "windowPropertiesAdded": [
+          "PlayerReelFatigueSession"
+        ],
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "1dfe70fa605c1be981968c0b6202c78d5f94e74a7aca497b4a301cb20cbdb12a",
+      "frozenObservations": [
+        {
+          "kind": "assignment",
+          "location": "44:3",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-6f9f31ec1100",
+          "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+          "sourceProvider": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+          "targetModule": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+          "exportName": "PlayerReelFatigueSession",
+          "legacySymbol": "PlayerReelFatigueSession",
+          "legacyScriptIndex": 98,
+          "shimFile": "activations/098_playerreelfatiguesession.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-4"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/fishing/reel_hold_recovery_system.js",
+      "targetPath": "src/game/domain/fishing/reel_hold_recovery_system.js",
+      "sourceSha256": "8bb4b488a4f0da146ff95450f9dbf93cc9fd4edac5f8f655786976c9dfd6c02e",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/fishing/reel_hold_recovery_system.js",
+        "sourceSha256": "8bb4b488a4f0da146ff95450f9dbf93cc9fd4edac5f8f655786976c9dfd6c02e"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-e092bb522808",
+          "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+          "sourceProvider": "src/core/fishing/reel_hold_recovery_system.js",
+          "targetModule": "src/game/domain/fishing/reel_hold_recovery_system.js",
+          "exportName": "ReelHoldRecoverySystem",
+          "legacySymbol": "ReelHoldRecoverySystem",
+          "legacyScriptIndex": 115,
+          "shimFile": "activations/115_reelholdrecoverysystem.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-4"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+      "targetPath": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+      "sourceSha256": "d1f6b73568268a7323845576953bb1935d8bac88329a7c139bfe366d4c624ec4",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+        "sourceSha256": "d1f6b73568268a7323845576953bb1935d8bac88329a7c139bfe366d4c624ec4"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-8d90074016f4",
+          "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+          "sourceProvider": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+          "targetModule": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+          "exportName": "ReelRecoveryFishSlowdownPolicy",
+          "legacySymbol": "ReelRecoveryFishSlowdownPolicy",
+          "legacyScriptIndex": 116,
+          "shimFile": "activations/116_reelrecoveryfishslowdownpolicy.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-4"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/fishing/tackle_stress_accumulator.js",
+      "targetPath": "src/game/domain/fishing/tackle_stress_accumulator.js",
+      "sourceSha256": "24e5d354aaef948489c64a8f5d07d939cb63505f639a8b611e002054051c67f3",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/fishing/tackle_stress_accumulator.js",
+        "sourceSha256": "24e5d354aaef948489c64a8f5d07d939cb63505f639a8b611e002054051c67f3"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-9f3fc146aed0",
+          "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+          "sourceProvider": "src/core/fishing/tackle_stress_accumulator.js",
+          "targetModule": "src/game/domain/fishing/tackle_stress_accumulator.js",
+          "exportName": "TackleStressAccumulator",
+          "legacySymbol": "TackleStressAccumulator",
+          "legacyScriptIndex": 138,
+          "shimFile": "activations/138_tacklestressaccumulator.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-3"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/systems/player_pull_motion_smoother.js",
+      "targetPath": "src/game/domain/fishing/player_pull_motion_smoother.js",
+      "sourceSha256": "a0f63b0e597caf872ae01b46055f758d49b649f076a13e464bbf43b30e036e8a",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/systems/player_pull_motion_smoother.js",
+        "sourceSha256": "a0f63b0e597caf872ae01b46055f758d49b649f076a13e464bbf43b30e036e8a"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-7e9f7bbaf846",
+          "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+          "sourceProvider": "src/systems/player_pull_motion_smoother.js",
+          "targetModule": "src/game/domain/fishing/player_pull_motion_smoother.js",
+          "exportName": "PlayerPullMotionSmoother",
+          "legacySymbol": "PlayerPullMotionSmoother",
+          "legacyScriptIndex": 212,
+          "shimFile": "activations/212_playerpullmotionsmoother.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-4"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/systems/rod_lateral_control_system.js",
+      "targetPath": "src/game/domain/fishing/rod_lateral_control_system.js",
+      "sourceSha256": "fb55cffc13f130204999f5b7ca67339eed47452547a88ed945a4bb246da6df74",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/systems/rod_lateral_control_system.js",
+        "sourceSha256": "fb55cffc13f130204999f5b7ca67339eed47452547a88ed945a4bb246da6df74"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-c23a9b7efff6",
+          "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+          "sourceProvider": "src/systems/rod_lateral_control_system.js",
+          "targetModule": "src/game/domain/fishing/rod_lateral_control_system.js",
+          "exportName": "RodLateralControlSystem",
+          "legacySymbol": "RodLateralControlSystem",
+          "legacyScriptIndex": 214,
+          "shimFile": "activations/214_rodlateralcontrolsystem.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-4"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": null,
+  "targetEffectFree": [
+    {
+      "module": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+      "classification": "safe",
+      "evidenceFingerprint": "8f7f8a6bf5cbc56b3a780025b9d6a1ae51ed6bf787bf5eb0d0554ba1ac2666db"
+    },
+    {
+      "module": "src/game/domain/fishing/player_pull_motion_smoother.js",
+      "classification": "safe",
+      "evidenceFingerprint": "f0871628f639a0e926902190ea25ae728ce7df8009629d7391f60d2d1ffb59ed"
+    },
+    {
+      "module": "src/game/domain/fishing/reel_hold_recovery_system.js",
+      "classification": "safe",
+      "evidenceFingerprint": "49d49684c1e3b95c3984a06fd3f043f844c098b5ea6d6ce07ae984cbfa5df91e"
+    },
+    {
+      "module": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+      "classification": "safe",
+      "evidenceFingerprint": "ac9f1c62c032bb370bd5faefca9a97d086fb6e38b7412d80579c3c8063368520"
+    },
+    {
+      "module": "src/game/domain/fishing/rod_lateral_control_system.js",
+      "classification": "safe",
+      "evidenceFingerprint": "4d7ae695782c0ead684fa4ed1af09082b000e24d48e5f892d8f5fe7e64132db7"
+    },
+    {
+      "module": "src/game/domain/fishing/tackle_stress_accumulator.js",
+      "classification": "safe",
+      "evidenceFingerprint": "c716a69c588363c9e77bdf5f83dd7343969e20476546d8d6af6c53738ca936fe"
+    }
+  ],
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.35.0-live-preflight-and-graph-audit"
+}

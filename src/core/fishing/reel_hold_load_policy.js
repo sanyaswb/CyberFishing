@@ -1,1 +1,1 @@
-globalThis.ReelHoldLoadPolicy = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/reel_hold_load_policy.js"]["ReelHoldLoadPolicy"];
+// Retired Stage 3 activation activation-4d4619b15e3c: ReelHoldLoadPolicy is served only through ESM imports of src/game/domain/fishing/reel_hold_load_policy.js.

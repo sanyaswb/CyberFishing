@@ -1,1 +1,1 @@
-globalThis.RodControlTensionModeResolver = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/rod_control_tension_mode_resolver.js"]["RodControlTensionModeResolver"];
+// Retired Stage 3 activation activation-f70148ad6a58: RodControlTensionModeResolver is served only through ESM imports of src/game/domain/fishing/rod_control_tension_mode_resolver.js.

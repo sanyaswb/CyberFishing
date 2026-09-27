@@ -20,12 +20,12 @@ Full plan: refactor_Task.txt. Changelog: CHANGELOG.md.
 - npm run check:quick (~40 s), npm run check:architecture, npm run check -- --suite history, npm run check (Full, ~55-70 min on Windows).
 
 ## Current state (2026-09-27)
-- Released v0.24.71 (batch 033): batches 001–033 complete, 91 migrated Domain modules; the Stage 3.34.0 freeze extension (stage_3_34_review_queue/) is adopted; runtime 100 modules / 95 activations (15 retired) / 140 bridges; activeBatchId = null.
+- Released v0.24.72 (batch 034): batches 001–034 complete (Stage 3.22 prefix and Stage 3.34.0 freeze extension done), 97 migrated Domain modules; runtime 106 modules / 98 activations (18 retired) / 143 bridges; activeBatchId = null.
 - Shared Stage 3 batch tooling (utils/architecture/stage_three_batches, README there): one dispatcher "node utils/architecture/stage-3-batch.js --batch NNN --step <step>"; a batch = definitions/NNN/profile.js + behavior_cases.js.
 - Check pipeline (utils/testing/CHECKS.md): input-traced seals, history base (release 0.24.63 reconstruction for history-only checks up to 025), parallel runner (--jobs, default 4), --no-seal, --reseal.
 - Browser acceptance: owner-authorized automated substitute since 2026-09-27 (game-cycle check without seals + built-in browser screenshots + instrumented console counts; authorization quoted verbatim in evidence).
 
 ## Next tasks
-2. Batch 034 (v0.24.72): six hot-loop fishing modules; preflight resolves performance-review prerequisites from the recorded hot-loop evidence; live validation must reproduce member fingerprints, allocation sites and game-cycle traces.
+2. Prerequisite backlog: build the shared prerequisite-transition tooling (peelable source/metadata transitions between batches, own history layer), then AssemblyProfileRegistry and ItemStatOverridePolicy config injection, the three descriptor boundaries, Vector2 extraction, decompositions; then a repeated graph review and a new freeze.
 2a. Follow-up: reconcile the compatibility transport removalStage (stage-5) with Stage 6 compatibility removal (HookPowerPolicy activation is stage-6).
 3. Review queue 033/034 evidence prerequisites; prerequisite backlog; graph re-review and new freeze; repeat until Stage 3 is complete, then Stage 4.

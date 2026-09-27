@@ -24,6 +24,7 @@ const PATHS = Object.freeze({
   runtimeOutput: "dist/stage-3-compat-runtime",
 });
 const sha = bytes => crypto.createHash("sha256").update(bytes).digest("hex");
+const HOT_LOOP_KIND = "cyber-fishing-stage-3-review-queue-hot-loop-evidence";
 const serialize = value => Buffer.from(`${JSON.stringify(value, null, 2)}\n`, "utf8");
 const consumerCompare = (a, b) => `${a.provider}\0${a.source}\0${a.symbols.join(",")}`
   .localeCompare(`${b.provider}\0${b.source}\0${b.symbols.join(",")}`);
@@ -140,9 +141,11 @@ class StageThreeLivePreflight {
           `side-effect source drift: ${module.currentPath}`);
       }
     }
+    const hotLoopEvidence = this.#hotLoopEvidence(plan, batch);
     const base = new StageThreeBatchPreflightAuditBuilder({ profile: this.profile }).build({
       ...inputs, ...evidence, indexSha256: sha(this.bytes(PATHS.index)),
       ...(plan.continuation ? { planEvidence: { references: plan.references, domainAuditPath: plan.domainAuditPath } } : {}),
+      ...(hotLoopEvidence ? { hotLoopEvidence } : {}),
       activationPositions: runtimeContract.activationPositions, expectedImports,
       runtimeOutputFingerprint: this.projector.rollbackEvidence().runtimeOutput.fingerprint,
       runtimeFacts, sourceReader: file => this.read(file),
@@ -210,6 +213,22 @@ class StageThreeLivePreflight {
 
   // A reviewed import of a completed-prefix export is observed on the classic source as a confirmed
   // read of the activation shim that exposes that export.
+  // Recorded review-queue hot-loop evidence of a freeze-extension batch with hot-loop prerequisites.
+  #hotLoopEvidence(plan, batch) {
+    const modules = batch.prerequisites.filter(prerequisite => prerequisite.kind === "performance-review")
+      .map(prerequisite => prerequisite.module);
+    if (modules.length === 0) return null;
+    assert(plan.continuation?.extension, "hot-loop prerequisites need an adopted freeze extension");
+    const extension = this.json(plan.continuation.extension.path);
+    const references = extension.sources.evidence.filter(reference => this.json(reference.path).kind === HOT_LOOP_KIND);
+    assert.equal(references.length, 1, "freeze extension must reference exactly one hot-loop evidence document");
+    const [reference] = references;
+    assert.equal(sha(this.bytes(reference.path)), reference.sha256, "hot-loop evidence drift");
+    const records = this.json(reference.path).records.filter(record => modules.includes(record.currentPath));
+    assert.equal(records.length, modules.length, "hot-loop evidence does not cover every prerequisite module");
+    return { path: reference.path, sha256: reference.sha256, records };
+  }
+
   #reviewedImportItems(expectedImports, consumer) {
     const byShim = new Map();
     for (const record of expectedImports.filter(item => item.consumer === consumer)) {

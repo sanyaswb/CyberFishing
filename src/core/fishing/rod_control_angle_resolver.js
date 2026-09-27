@@ -1,1 +1,1 @@
-globalThis.RodControlAngleResolver = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/rod_control_angle_resolver.js"]["RodControlAngleResolver"];
+// Retired Stage 3 activation activation-3890808eb3cc: RodControlAngleResolver is served only through ESM imports of src/game/domain/fishing/rod_control_angle_resolver.js.

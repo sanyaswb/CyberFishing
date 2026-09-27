@@ -14,6 +14,7 @@ const { RetiredActivationPlaceholder } = require("../../../build/compat_runtime/
 const { CumulativeLiveActivationProbe } = require("../../domain_batches/cumulative_live_activation_probe");
 const { EagerClassModuleEvaluationProbe } = require("../../domain_batches/eager_class_module_evaluation_probe");
 const { StageThreeBatchSourceObserver } = require("../../domain_batches/stage_three_batch_source_observer");
+const { StageThreeHotLoopEquivalence } = require("./hot_loop_equivalence");
 const { RepresentationOnlyReviewedEsmTarget } = require("../../domain_batches/stage_three_reviewed_representation_target");
 const { ControlledMetadataTransaction } = require("../../domain_batches/controlled_metadata_transaction");
 
@@ -134,6 +135,8 @@ class StageThreeBatchLiveValidation {
         methods: shape.methods, allocationTotals: shape.allocationTotals });
     }
     assert.equal(activation.transportReads(), readsBefore);
+    // Hot-loop gates of the frozen plan: recorded member fingerprints and game-cycle traces reproduce.
+    const hotLoopEquivalence = new StageThreeHotLoopEquivalence(this.root, this.definition).verify();
     return {
       schemaVersion: 1, kind: "cyber-fishing-stage-3-live-runtime-validation",
       batchId: PROFILE.batchId, status: "verified", releaseVersion: state.releaseVersion,
@@ -141,6 +144,7 @@ class StageThreeBatchLiveValidation {
       topology: prebuild.plannedTopology.counts,
       evaluation, activation: activation.evidence, outputValidation,
       stateAndAllocationShapes: shapes, postActivationTransportReads: 0, retiredActivations,
+      ...(hotLoopEquivalence ? { hotLoopEquivalence } : {}),
       performanceProof: "exact-source-allocation-sites-and-result-identity; not a frame-time benchmark",
       browserAcceptanceClaimed: false, batchCompleted: false, observationsFinal: false,
       nextGate: `stage-${context.step(7)}-observation-reconciliation`,

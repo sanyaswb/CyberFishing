@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.24.72 - Fishing Hot-Loop Cluster Domain
+
+### Changed
+
+- Completed batch 034, the last batch of the Stage 3.34.0 freeze extension: PlayerReelFatigueSession, ReelHoldRecoverySystem, ReelRecoveryFishSlowdownPolicy, TackleStressAccumulator, PlayerPullMotionSmoother and RodLateralControlSystem as named ESM exports.
+- Hot-loop gates: the preflight resolves the recorded review-queue evidence of the unchanged sources, and the live validation reproduces every class member fingerprint, allocation site and game-cycle trace (call counts, deltaTime ranges, ordered arguments and results).
+- Retired the ReelHoldLoadPolicy, RodControlAngleResolver and RodControlTensionModeResolver activations as inert classic placeholders.
+- Extended the cumulative graph from 100 to 106 project modules and from 95 to 98 activation contracts, with 143 exact bridge relationships (6 added, 3 retired).
+- The next task is the prerequisite backlog (Vector2 extraction, descriptor boundaries, config injections, decompositions) and a new graph review.
+
 ## v0.24.71 - Assemblies Assembly State Repository Domain
 
 ### Changed

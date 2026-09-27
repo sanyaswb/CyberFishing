@@ -42,6 +42,7 @@ class StageThreeBatchPreflightAuditBuilder {
     sideEffectReview = null,
     sideEffectReviewSha256 = null,
     planEvidence = null,
+    hotLoopEvidence = null,
     activationPositions = [],
     expectedImports = [],
   }) {
@@ -238,6 +239,11 @@ class StageThreeBatchPreflightAuditBuilder {
           module.state.identityReview?.invariant === "same-authoritative-owner-before-and-after")) ||
       // Self-composition stays inside Domain: every composed class is a proven owner-created
       // instance of a reviewed Domain import, so no cross-layer injection boundary is involved.
+      // Hot-loop equivalence is proven by the recorded review-queue evidence of the unchanged source;
+      // the post-cutover live validation must reproduce its member fingerprints and game-cycle traces.
+      (prerequisite.kind === "performance-review" && prerequisite.action === "prove-hot-loop-equivalence" &&
+        (hotLoopEvidence?.records || []).some((record) => record.currentPath === prerequisite.module &&
+          record.verdict === "proven" && record.sourceSha256 === this.#sha256(sourceReader(prerequisite.module)))) ||
       (prerequisite.kind === "dependency-inversion-review" &&
         prerequisite.action === "review-constructor-injection-boundary" &&
         modules.some((module) => module.currentPath === prerequisite.module &&
@@ -280,6 +286,7 @@ class StageThreeBatchPreflightAuditBuilder {
           sideEffectReview: { path: profile.sideEffectEvidence.path,
             sha256: sideEffectReviewSha256 },
         } : {}),
+        ...(hotLoopEvidence ? { hotLoopEvidence: { path: hotLoopEvidence.path, sha256: hotLoopEvidence.sha256 } } : {}),
       },
       scope: { targetCount: modules.length, modules },
       runtimeBaseline: {

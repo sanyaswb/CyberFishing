@@ -17,7 +17,7 @@
       class="game-version-badge"
       aria-label="Поточна версія гри"
     ></div>
-    <script src="src/config/project_version.js?v=0.24.71"></script>
+    <script src="src/config/project_version.js?v=0.24.72"></script>
     <script src="src/config/rarity/rarity_visual_config.js"></script>
     <script src="src/config/visual/degradation_color_config.js"></script>
     <script src="src/config/items/item_progression_config.js?v=0.24.30"></script>
@@ -118,7 +118,7 @@
     <script src="dist/stage-3-compat-runtime/activations/095_playerforcebudgetallocator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/096_playerpressuregainresolver.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/097_playertensionbuildrateresolver.js"></script>
-    <script src="src/core/fishing/player_pressure/player_reel_fatigue_session.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/098_playerreelfatiguesession.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/099_playerpressurefatiguesourceresolver.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/100_playerpressurefatiguestate.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/101_playerpressurefatiguecalculator.js"></script>
@@ -134,9 +134,9 @@
     <script src="dist/stage-3-compat-runtime/activations/111_endurancemovementdebuffcalculator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/112_reelretrievespeedcalculator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/113_reelautorecoverycalculator.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/114_reelholdloadpolicy.js"></script>
-    <script src="src/core/fishing/reel_hold_recovery_system.js"></script>
-    <script src="src/core/fishing/reel_recovery_fish_slowdown_policy.js"></script>
+    <script src="src/core/fishing/reel_hold_load_policy.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/115_reelholdrecoverysystem.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/116_reelrecoveryfishslowdownpolicy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/117_recoverablelinecalculator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/117_looselinecalculator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/118_rodstrokecapacityresolver.js"></script>
@@ -149,8 +149,8 @@
 <script src="dist/stage-3-compat-runtime/activations/124_default_fish_radial_range.js"></script>
 <script src="dist/stage-3-compat-runtime/activations/124_default_fish_lateral_range.js"></script>
     <script src="src/core/fishing/fish_fight_direction_resolver.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/126_rodcontroltensionmoderesolver.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/127_rodcontrolangleresolver.js"></script>
+    <script src="src/core/fishing/rod_control_tension_mode_resolver.js"></script>
+    <script src="src/core/fishing/rod_control_angle_resolver.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/128_dragforcecalculator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/129_linetensioncalculator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/130_lineconstraintstateresolver.js"></script>
@@ -161,7 +161,7 @@
     <script src="dist/stage-3-compat-runtime/activations/135_polefightsectorconstraint.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/136_polefightsectorangleconstraint.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/137_tacklefailureselector.js"></script>
-    <script src="src/core/fishing/tackle_stress_accumulator.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/138_tacklestressaccumulator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/139_simplefightforcecalculator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/140_landinglifttensioncalculator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/141_landingliftreadinesspolicy.js"></script>
@@ -247,9 +247,9 @@
     <script src="src/systems/line_system.js"></script>
     <script src="src/systems/player_force_system.js"></script>
     <script src="src/systems/fish_force_system.js"></script>
-    <script src="src/systems/player_pull_motion_smoother.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/212_playerpullmotionsmoother.js"></script>
     <script src="src/systems/rod_pull_system.js"></script>
-    <script src="src/systems/rod_lateral_control_system.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/214_rodlateralcontrolsystem.js"></script>
     <script src="src/systems/rod_visual_offset_system.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/216_fishretrievesystem.js"></script>
     <script src="src/systems/reel_system.js"></script>

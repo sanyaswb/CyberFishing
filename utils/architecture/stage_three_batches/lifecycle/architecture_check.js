@@ -63,10 +63,12 @@ class StageThreeBatchArchitectureCheck {
         assert.deepEqual(snapshot(), before, "Batch-only rollback changed the frozen prefix");
       }
     }, { keepPrebuild: true });
+    // A hot-loop batch re-runs the game-cycle trace in the replay, which needs the project tooling.
     const { live, observed } = await history.run(root, async active => ({
       live: await new StageThreeBatchLiveValidation(active, definition, this.registry).run(),
       observed: await new StageThreeBatchObservationApplication(active, definition, this.registry).check(),
-    }), { keepCutover: true });
+    }), { keepCutover: true, copyTools: Object.values(PROFILE.reviewedContracts)
+      .some(contract => (contract.hotLoopCallSites || []).length > 0) });
     const topology = execution.expectedTopology;
     assert.deepEqual(live.topology, { modules: topology.afterProjectModuleCount,
       activations: topology.afterActivationCount, bridges: topology.afterBridgeCount });

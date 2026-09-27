@@ -16,6 +16,7 @@ const {
 } = require("./generate-stage-3-batch-006-test-matrix");
 
 const { StageThreeRetirementView } = require("./domain_batches/stage_three_retirement_view");
+const { RetiredActivationPlaceholder } = require("../build/compat_runtime/activation_retirement");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
 class StageThreeBatch006FocusedTestMatrixCheck {
@@ -193,6 +194,10 @@ class StageThreeBatch006FocusedTestMatrixCheck {
   #compatibility(plan, classes, runtime) {
     const transport = "__CYBER_FISHING_COMPAT_RUNTIME__";
     const modules = runtime.modules;
+    // In the live runtime an activation a later batch retired has no shim: its classic source is the
+    // inert placeholder, and the rendered shim still resolves the exact cumulative export.
+    const view = runtime.active ? new StageThreeRetirementView({ projectRoot: PROJECT_ROOT,
+      runtimeContract: JSON.parse(this.#readText("architecture/migration/stage_3_compatibility_runtime.json")) }) : null;
     for (const activation of plan.compatibility.activations) {
       const context = runtime.active ? runtime.context : vm.createContext({
         [transport]: { modules },
@@ -200,7 +205,13 @@ class StageThreeBatch006FocusedTestMatrixCheck {
       assert.equal(context[activation.legacySymbol], undefined);
       const code = new ActivationShimRenderer().render(activation, transport);
       new ActivationShimContractValidator().validate({ code, activation, transportSymbol: transport });
-      const actualCode = runtime.active
+      const retired = runtime.active && view.isRetired(activation.id);
+      if (retired) {
+        new RetiredActivationPlaceholder().validateProvider({ code: this.#readText(activation.sourceProvider),
+          activations: view.retiredActivations().filter((item) => item.sourceProvider === activation.sourceProvider) });
+        assert.equal(fs.existsSync(path.join(PROJECT_ROOT, "dist/stage-3-compat-runtime", activation.shimFile)), false);
+      }
+      const actualCode = runtime.active && !retired
         ? this.#readText(`dist/stage-3-compat-runtime/${activation.shimFile}`)
         : code;
       assert.equal(actualCode, code);
