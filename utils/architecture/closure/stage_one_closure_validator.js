@@ -650,6 +650,8 @@ class StageOneClosureValidator {
         "Assemblies Assembly State Repository Domain",
       "stage-3.replan-322.batch-034-fishing-b761d4f1":
         "Fishing Hot-Loop Cluster Domain",
+      "stage-3.replan-336.batch-035-items-48cb5bbc":
+        "Items Condition Resolver Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }
@@ -1095,10 +1097,17 @@ class StageOneClosureValidator {
     const byPath = new Map(modules.map((module) => [module.currentPath, module]));
     const identities = new Set();
     let expectedBefore = baselineEdgeCount;
+    // Prerequisite transitions recorded after a batch change the edge count seen by later batches.
+    const { StageThreePrerequisiteLedger } = require("../stage_three_prerequisites/core/prerequisite_ledger");
+    const prerequisites = new StageThreePrerequisiteLedger(this.projectRoot).records();
     return fs.readdirSync(migrationRoot)
       .filter((name) => /^stage_3_batch_\d+_runtime_cutover\.json$/u.test(name))
       .sort()
       .reduce((total, name) => {
+        const batchNumber = Number(/^stage_3_batch_(\d+)_/u.exec(name)[1]);
+        while (prerequisites.length > 0 && Number(prerequisites[0].afterBatch) < batchNumber) {
+          expectedBefore += prerequisites.shift().dependencyObservation.confirmedEdgeDelta;
+        }
         const artifact = JSON.parse(fs.readFileSync(path.join(migrationRoot, name), "utf8"));
         if (name === "stage_3_batch_009_runtime_cutover.json" && artifact.manifestTransition?.observations === "pending") {
           const { Batch009CutoverHistory } = require("../domain_batches/stage_three_batch_009_cutover_history");

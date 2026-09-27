@@ -29,7 +29,7 @@
     ]
   },
   "stage": {
-    "current": "3.35",
+    "current": "3.36",
     "vite": "fixture-bridge-and-cumulative-runtime-infrastructure",
     "productionEntrypoint": "unchanged-index-html",
     "sourceRuntime": "classic-scripts-with-cumulative-iife-runtime",
@@ -46,8 +46,8 @@
       "contract": "architecture/migration/stage_3_compatibility_runtime.json",
       "executionState": "architecture/migration/stage_3_execution_state.json",
       "output": "dist/stage-3-compat-runtime/",
-      "runtimeInputs": 106,
-      "activationInputs": 98
+      "runtimeInputs": 107,
+      "activationInputs": 99
     }
   }
 }

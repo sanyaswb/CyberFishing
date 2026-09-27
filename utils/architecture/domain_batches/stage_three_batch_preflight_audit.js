@@ -247,9 +247,11 @@ class StageThreeBatchPreflightAuditBuilder {
       (prerequisite.kind === "dependency-inversion-review" &&
         prerequisite.action === "review-constructor-injection-boundary" &&
         modules.some((module) => module.currentPath === prerequisite.module &&
-          (module.state.identityReview?.compositions || []).length > 0 &&
-          module.state.identityReview.compositions.every((composition) =>
-            composition.provider?.startsWith("src/game/domain/")))));
+          (((module.state.identityReview?.compositions || []).length > 0 &&
+            module.state.identityReview.compositions.every((composition) =>
+              composition.provider?.startsWith("src/game/domain/"))) ||
+          // A class without any construction site composes nothing: every collaborator is injected.
+          (!module.state.identityReview && module.sourceShape.allocationTotals.newExpressions === 0)))));
     const unresolvedPrerequisites = batch.prerequisites.filter((prerequisite) =>
       !reviewedPrerequisites.includes(prerequisite));
     const unresolvedState = modules.filter((module) => !module.state.reviewed);

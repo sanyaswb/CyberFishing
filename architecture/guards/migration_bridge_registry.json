@@ -459,6 +459,22 @@
       ]
     },
     {
+      "id": "bridge-30af1aabaaa6",
+      "bridge": "src/core/items/condition/item_condition_resolver.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/items/condition/item_condition_resolver.js",
+      "reason": "Preserve the exact item condition resolver consumer until its legacy symbol is removed.",
+      "owner": "stage-3.replan-336.batch-035-items-48cb5bbc",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemConditionResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-32071390ea55",
       "bridge": "src/core/assemblies/assembly_state_repository.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -1118,22 +1134,6 @@
       "globalProviders": [
         {
           "symbol": "AuthoredItemRarityStrategy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-783560dad6b0",
-      "bridge": "src/core/items/metrics/item_bounded_metric_resolver.js",
-      "source": "src/core/items/condition/item_condition_resolver.js",
-      "target": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-018-items-8ea4be10",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "ItemBoundedMetricResolver",
           "mechanism": "global-this-property"
         }
       ]

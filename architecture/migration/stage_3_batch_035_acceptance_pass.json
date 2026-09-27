@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-035-acceptance",
+  "stage": "3.36.8",
+  "batchId": "stage-3.replan-336.batch-035-items-48cb5bbc",
+  "releaseVersion": "0.24.72",
+  "plannedReleaseVersion": "0.24.73",
+  "recordedAt": "2026-09-27T20:59:43.900Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_035_automated_acceptance.json",
+    "sha256": "f8d20a997cf9ffaf8b10facfea54134b72e6b276d6e2b807c920cb80d999bcce",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "full": {
+      "passedChecks": 210,
+      "failedChecks": 0
+    },
+    "fullRun": {
+      "platform": "win32 (Windows 11 Pro 10.0.26200), Node v24.13.0",
+      "source": "node utils/run-checks.js (complete catalog, 4 jobs) on the working tree: 103 checks executed, 107 accepted by content-addressed seals (every traced input byte-identical to a passing run; history-only checks up to 025 in the link-checked reconstruction of release 0.24.63); 3132.54 s."
+    },
+    "supplementary": {
+      "sealing": "utils/testing/CHECKS.md; executed 103, sealed 107"
+    },
+    "summary": "Full 210/210 (103 executed, 107 sealed) for batch 035 (107 modules / 99 activations / 143 bridges).",
+    "countSemantics": "The full suite includes the architecture and quick checks.",
+    "catalog": {
+      "full": 210,
+      "architecture": 77,
+      "quick": 52
+    }
+  },
+  "browserSmoke": {
+    "status": "passed-automated-substitute",
+    "performedBy": "claude-automated-substitute",
+    "evidenceType": "automated-game-cycle-and-built-in-browser-screenshots",
+    "userStatement": "PASS (automated substitute, 2026-09-27): node utils/game-cycle-check.js re-executed without seals (exit 0); the game loaded from npm run dev in the built-in browser with ItemConditionResolver published as the ESM class extending ItemBoundedMetricResolver; the line details in the inventory show the condition metric (current condition 100%, condition 100%) through the injected descriptor factory; screenshots taken; dev server stopped afterwards.",
+    "context": "Automated substitute per the owner's 2026-09-27 authorization: game-cycle loop re-executed without seals and a built-in-browser load of the game (item condition in the inventory details) with screenshots and console counts.",
+    "acceptanceBasis": "Owner-authorized automated substitute (2026-09-27): game-cycle loop re-executed without seals and the game loaded in the built-in browser with screenshots and an instrumented console read.",
+    "ownerAuthorization": "Great, I’m heading to work now and leaving you to carry on with the work. Run the test for PASS yourself—run the loop, then take a screenshot; if everything looks good, keep going; if not, fix it and proceed without needing my approval. I’m giving you full control—stick to the plan outlined in CLODE and the refactor task.",
+    "perCheckResults": null,
+    "consoleCounts": {
+      "errors": 0,
+      "warnings": 0,
+      "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console)"
+    }
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_035_live_runtime_validation.json",
+      "sha256": "e056df82bc495ef1bf17792f111b554ea88c89dcb2699950cd618b0487ae924c"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_035_observation_reconciliation.json",
+      "sha256": "d18be3b1b58e5f0e18f65a3c1ac9c09d02320d59c146ec5ac4723a040cb0d057"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "3069c6bd85add1b978382776a76746e871562e75fdf8e9afff97e2a42419f2bd"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "c9372c7bd1f6405d921a9c7b0b790eab40002490dee14e7556c82a34e07d57c9"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "cc0ad64fbdffe52f1a627839ab616de96dfe31de1a267910e004cfd002291cc5"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "40f669839e22a96b6d4b172faff79ab50defb1dee4cd46d79a8fb1edb19f121d"
+    },
+    {
+      "path": "index.html",
+      "sha256": "fbc85c99e7348770da2fb343188b8a0d415775d3790c19085a687ffba9c15abe"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.replan-336.batch-035-items-48cb5bbc",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.36.9 — Release Closure v0.24.73"
+}

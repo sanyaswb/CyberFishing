@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-035-side-effect-review",
+  "batchId": "stage-3.replan-336.batch-035-items-48cb5bbc",
+  "stage": "3.36.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.72",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_22/approved_prefix.json",
+      "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+    },
+    {
+      "path": "architecture/migration/stage_3_34_review_queue/freeze_extension.json",
+      "sha256": "5142dcb02f3b9936654440fbf804f66e4e47daff46acca18ce222d22a8ecba00"
+    },
+    {
+      "path": "architecture/migration/stage_3_36_graph_review/approved_prefix.json",
+      "sha256": "f5b2071225b846440768ad90468855bed202510285727263680327bfd6b287b7"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "b2d7311512cf96914317f264cc71292a32af7cd86af175e6941a76d80c6c2639"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/core/items/condition/item_condition_resolver.js",
+      "targetPath": "src/game/domain/items/condition/item_condition_resolver.js",
+      "sourceSha256": "b062bbe77dd8bce3fb1a0c8f93fd2989a41725b53b6a1231bdeac2c9736fbc2d",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/items/condition/item_condition_resolver.js",
+        "sourceSha256": "b062bbe77dd8bce3fb1a0c8f93fd2989a41725b53b6a1231bdeac2c9736fbc2d"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-7d1f057c4c36",
+          "owner": "stage-3.replan-336.batch-035-items-48cb5bbc",
+          "sourceProvider": "src/core/items/condition/item_condition_resolver.js",
+          "targetModule": "src/game/domain/items/condition/item_condition_resolver.js",
+          "exportName": "ItemConditionResolver",
+          "legacySymbol": "ItemConditionResolver",
+          "legacyScriptIndex": 55,
+          "shimFile": "activations/055_itemconditionresolver.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": null,
+  "targetEffectFree": [
+    {
+      "module": "src/game/domain/items/condition/item_condition_resolver.js",
+      "classification": "safe",
+      "evidenceFingerprint": "923225bd39d6277f27ddd4cca1339aec7e96f4123fb3db92b6c3b1ffef070f16"
+    }
+  ],
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.36.0-live-preflight-and-graph-audit"
+}

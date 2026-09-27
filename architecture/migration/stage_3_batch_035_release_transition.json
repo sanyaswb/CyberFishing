@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-035-release-transition",
+  "batchId": "stage-3.replan-336.batch-035-items-48cb5bbc",
+  "fromRelease": "0.24.72",
+  "toRelease": "0.24.73",
+  "acceptance": {
+    "path": "architecture/migration/stage_3_batch_035_acceptance_pass.json",
+    "sha256": "2bfcc79dd0f4f98158c07b7bba0c638d0ec8fa35a630fccd33d7a3a396956a1b"
+  },
+  "browserProof": {
+    "path": "architecture/migration/stage_3_batch_035_browser_confirmation.json",
+    "sha256": "e559b3eb1379784f1c53319fd94596937fa38b4b59627ba2c6e3435a5d3011c1"
+  },
+  "records": [
+    {
+      "path": "CHANGELOG.md",
+      "beforeSha256": "22696b686718b654ba49b56010fac883460c1e871a6d44389123e8070f447cb4",
+      "afterSha256": "73dd166a5186a50cf929e473b6d8bb58af3114aac332cf2510592b0f0890586a",
+      "edits": [
+        {
+          "from": "# CyberFishing changelog\n\n",
+          "to": "# CyberFishing changelog\n\n## v0.24.73 - Items Condition Resolver Domain\n\n### Changed\n\n- Prerequisite transitions 001-005 (config injection of AssemblyProfileRegistry and ItemStatOverridePolicy, descriptor boundaries of the condition, freshness and bait-effectiveness resolvers) and the Stage 3.36.0 repeated graph review froze batches 035-038.\n- Completed batch 035: ItemConditionResolver as a named ESM export extending the imported ItemBoundedMetricResolver; its descriptor factory stays injected by GameCompositionRoot.\n- Extended the cumulative graph from 106 to 107 project modules and from 98 to 99 activation contracts, with 143 exact bridge relationships (1 added, 1 retired).\n- The next task is batch 036 preflight.\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "beforeSha256": "3069c6bd85add1b978382776a76746e871562e75fdf8e9afff97e2a42419f2bd",
+      "afterSha256": "eefc18c371ab75dde0c8b1ad03d134066d9e2b4c1c14af206c882025cb18ec79",
+      "edits": [
+        {
+          "from": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.72\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\",\n    \"stage-3.candidate-015-fishing-37dc3452\",\n    \"stage-3.candidate-016-fishing-f8c953aa\",\n    \"stage-3.candidate-017-inventory-fd62478b\",\n    \"stage-3.candidate-018-items-8ea4be10\",\n    \"stage-3.candidate-019-items-b0af5033\",\n    \"stage-3.candidate-020-assemblies-43d77861\",\n    \"stage-3.candidate-021-equipment-4044fcef\",\n    \"stage-3.replan-322.batch-022-assemblies-9cb3eecf\",\n    \"stage-3.replan-322.batch-023-items-c91fce82\",\n    \"stage-3.replan-322.batch-024-inventory-21307d68\",\n    \"stage-3.replan-322.batch-025-fishing-9bcfae5e\",\n    \"stage-3.replan-322.batch-026-inventory-ad73f2fb\",\n    \"stage-3.replan-322.batch-027-items-e8f84667\",\n    \"stage-3.replan-322.batch-028-assemblies-f4be469e\",\n    \"stage-3.replan-322.batch-029-fishing-f2a8faba\",\n    \"stage-3.replan-322.batch-030-items-a3bf25f7\",\n    \"stage-3.replan-322.batch-031-fishing-d2f28c0f\",\n    \"stage-3.replan-322.batch-032-items-096b3398\",\n    \"stage-3.replan-322.batch-033-assemblies-3cd39292\",\n    \"stage-3.replan-322.batch-034-fishing-b761d4f1\"\n  ],\n  \"activeBatchId\": \"stage-3.replan-336.batch-035-items-48cb5bbc\",\n  \"compatibilityRuntimeActivated\": true,\n  \"continuationPlan\": {\n    \"path\": \"architecture/migration/stage_3_36_graph_review/approved_prefix.json\",\n    \"sha256\": \"f5b2071225b846440768ad90468855bed202510285727263680327bfd6b287b7\"\n  },\n  \"activeBatchPhase\": \"runtime-active\"\n}",
+          "to": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.73\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\",\n    \"stage-3.candidate-015-fishing-37dc3452\",\n    \"stage-3.candidate-016-fishing-f8c953aa\",\n    \"stage-3.candidate-017-inventory-fd62478b\",\n    \"stage-3.candidate-018-items-8ea4be10\",\n    \"stage-3.candidate-019-items-b0af5033\",\n    \"stage-3.candidate-020-assemblies-43d77861\",\n    \"stage-3.candidate-021-equipment-4044fcef\",\n    \"stage-3.replan-322.batch-022-assemblies-9cb3eecf\",\n    \"stage-3.replan-322.batch-023-items-c91fce82\",\n    \"stage-3.replan-322.batch-024-inventory-21307d68\",\n    \"stage-3.replan-322.batch-025-fishing-9bcfae5e\",\n    \"stage-3.replan-322.batch-026-inventory-ad73f2fb\",\n    \"stage-3.replan-322.batch-027-items-e8f84667\",\n    \"stage-3.replan-322.batch-028-assemblies-f4be469e\",\n    \"stage-3.replan-322.batch-029-fishing-f2a8faba\",\n    \"stage-3.replan-322.batch-030-items-a3bf25f7\",\n    \"stage-3.replan-322.batch-031-fishing-d2f28c0f\",\n    \"stage-3.replan-322.batch-032-items-096b3398\",\n    \"stage-3.replan-322.batch-033-assemblies-3cd39292\",\n    \"stage-3.replan-322.batch-034-fishing-b761d4f1\",\n    \"stage-3.replan-336.batch-035-items-48cb5bbc\"\n  ],\n  \"activeBatchId\": null,\n  \"compatibilityRuntimeActivated\": true,\n  \"continuationPlan\": {\n    \"path\": \"architecture/migration/stage_3_36_graph_review/approved_prefix.json\",\n    \"sha256\": \"f5b2071225b846440768ad90468855bed202510285727263680327bfd6b287b7\"\n  }\n}",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "index.html",
+      "beforeSha256": "fbc85c99e7348770da2fb343188b8a0d415775d3790c19085a687ffba9c15abe",
+      "afterSha256": "10e30b93dd8468209b019b5a9e3c96ddc7f717c0127a180501143c7d4e186dfb",
+      "edits": [
+        {
+          "from": "    <script src=\"src/config/project_version.js?v=0.24.72\"></script>",
+          "to": "    <script src=\"src/config/project_version.js?v=0.24.73\"></script>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "beforeSha256": "8faec7ed515bbfbda7c3a773c0130718ba17d0be8e248dd6d5c5ef4cfda2a60d",
+      "afterSha256": "7812f62f21911e9f527b43228e930e95dbc3b05d36241d463b3280e841799336",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.72\",",
+          "to": "  \"version\": \"0.24.73\",",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "package.json",
+      "beforeSha256": "e5fd4e577245b3ea886ff961b1c04995a5cda914f73c7d894e2265050f22530f",
+      "afterSha256": "e41bf779722b9a95a90623f44f0eb467cdd0365140713d6524618dfb161d0ed3",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.72\",",
+          "to": "  \"version\": \"0.24.73\",",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/config/project_version.js",
+      "beforeSha256": "7e6024e68a3ad5be04192861e24e2e3f424c97dc86c39a28223491751c06ec5c",
+      "afterSha256": "50511cabd4eda0ee4a9258754f7409376298770498c8e2501e55a4e894b9e9eb",
+      "edits": [
+        {
+          "from": "const CURRENT_PROJECT_VERSION = \"0.24.72\";",
+          "to": "const CURRENT_PROJECT_VERSION = \"0.24.73\";",
+          "count": 1
+        },
+        {
+          "from": "  codename: \"fishing-hot-loop-cluster-domain\",",
+          "to": "  codename: \"items-condition-resolver-domain\",",
+          "count": 1
+        },
+        {
+          "from": "  notes: Object.freeze([\n    \"Migrate the six hot-loop fishing modules frozen by the review-queue extension\",\n    \"Import ReelHoldLoadPolicy, RodControlAngleResolver and RodControlTensionModeResolver from the completed prefix\",\n    \"Move the guarded window exposure of PlayerReelFatigueSession to the exact activation shim\",\n    \"Reproduce every recorded member fingerprint and game-cycle trace after the cutover\",\n    \"Retire the ReelHoldLoadPolicy, RodControlAngleResolver and RodControlTensionModeResolver activations\",\n    \"Preserve one hundred six project modules, ninety-eight activations and one hundred forty-three bridges\",\n  ]),",
+          "to": "  notes: Object.freeze([\n    \"Adopt the Stage 3.36.0 approved prefix (batches 035 to 038)\",\n    \"Migrate the item condition resolver\",\n    \"Extend the completed-prefix ItemBoundedMetricResolver through a reviewed import\",\n    \"Keep the presentation descriptor factory injected by composition\",\n    \"Preserve one hundred seven project modules, ninety-nine activations and one hundred forty-three bridges\",\n  ]),",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

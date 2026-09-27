@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.72";
+const CURRENT_PROJECT_VERSION = "0.24.73";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,15 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "fishing-hot-loop-cluster-domain",
+  codename: "items-condition-resolver-domain",
   updatedAt: "2026-09-27",
   notes: Object.freeze([
-    "Migrate the six hot-loop fishing modules frozen by the review-queue extension",
-    "Import ReelHoldLoadPolicy, RodControlAngleResolver and RodControlTensionModeResolver from the completed prefix",
-    "Move the guarded window exposure of PlayerReelFatigueSession to the exact activation shim",
-    "Reproduce every recorded member fingerprint and game-cycle trace after the cutover",
-    "Retire the ReelHoldLoadPolicy, RodControlAngleResolver and RodControlTensionModeResolver activations",
-    "Preserve one hundred six project modules, ninety-eight activations and one hundred forty-three bridges",
+    "Adopt the Stage 3.36.0 approved prefix (batches 035 to 038)",
+    "Migrate the item condition resolver",
+    "Extend the completed-prefix ItemBoundedMetricResolver through a reviewed import",
+    "Keep the presentation descriptor factory injected by composition",
+    "Preserve one hundred seven project modules, ninety-nine activations and one hundred forty-three bridges",
   ]),
 });
 

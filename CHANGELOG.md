@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.73 - Items Condition Resolver Domain
+
+### Changed
+
+- Prerequisite transitions 001-005 (config injection of AssemblyProfileRegistry and ItemStatOverridePolicy, descriptor boundaries of the condition, freshness and bait-effectiveness resolvers) and the Stage 3.36.0 repeated graph review froze batches 035-038.
+- Completed batch 035: ItemConditionResolver as a named ESM export extending the imported ItemBoundedMetricResolver; its descriptor factory stays injected by GameCompositionRoot.
+- Extended the cumulative graph from 106 to 107 project modules and from 98 to 99 activation contracts, with 143 exact bridge relationships (1 added, 1 retired).
+- The next task is batch 036 preflight.
+
 ## v0.24.72 - Fishing Hot-Loop Cluster Domain
 
 ### Changed

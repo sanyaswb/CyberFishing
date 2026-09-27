@@ -793,6 +793,18 @@
       "removalStage": "stage-5"
     },
     {
+      "id": "activation-7d1f057c4c36",
+      "owner": "stage-3.replan-336.batch-035-items-48cb5bbc",
+      "sourceProvider": "src/core/items/condition/item_condition_resolver.js",
+      "targetModule": "src/game/domain/items/condition/item_condition_resolver.js",
+      "exportName": "ItemConditionResolver",
+      "legacySymbol": "ItemConditionResolver",
+      "legacyScriptIndex": 55,
+      "shimFile": "activations/055_itemconditionresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-7e9f7bbaf846",
       "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
       "sourceProvider": "src/systems/player_pull_motion_smoother.js",

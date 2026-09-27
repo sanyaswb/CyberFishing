@@ -1,10 +1,1 @@
-class ItemConditionResolver extends ItemBoundedMetricResolver {
-  // The presentation descriptor factory is injected by composition.
-  constructor({ profileProvider, descriptorFactory } = {}) {
-    super({
-      capabilityId: "condition",
-      profileProvider,
-      descriptorFactory,
-    });
-  }
-}
+globalThis.ItemConditionResolver = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/items/condition/item_condition_resolver.js"]["ItemConditionResolver"];

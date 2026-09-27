@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-035-browser-confirmation",
+  "batchId": "stage-3.replan-336.batch-035-items-48cb5bbc",
+  "releaseVersion": "0.24.72",
+  "status": "passed",
+  "performedBy": "claude-automated-substitute",
+  "recordedAt": "2026-09-27T20:59:43.900Z",
+  "evidenceType": "owner-authorized-automated-substitute",
+  "gate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts",
+  "browserSummary": {
+    "userStatement": "PASS (automated substitute, 2026-09-27): node utils/game-cycle-check.js re-executed without seals (exit 0); the game loaded from npm run dev in the built-in browser with ItemConditionResolver published as the ESM class extending ItemBoundedMetricResolver; the line details in the inventory show the condition metric (current condition 100%, condition 100%) through the injected descriptor factory; screenshots taken; dev server stopped afterwards.",
+    "context": "Automated substitute per the owner's 2026-09-27 authorization: game-cycle loop re-executed without seals and a built-in-browser load of the game (item condition in the inventory details) with screenshots and console counts.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": true
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console)",
+    "independentlyInstrumented": true
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_035_acceptance_pass.json",
+    "sha256": "2bfcc79dd0f4f98158c07b7bba0c638d0ec8fa35a630fccd33d7a3a396956a1b"
+  },
+  "historicalSummaryPreserved": true
+}
